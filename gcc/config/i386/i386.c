@@ -127,48 +127,49 @@ const struct processor_costs *ix86_tune_cost = NULL;
 const struct processor_costs *ix86_cost = NULL;
 
 /* Processor feature/optimization bitmasks.  */
-#define m_386 (1U<<PROCESSOR_I386)
-#define m_486 (1U<<PROCESSOR_I486)
-#define m_PENT (1U<<PROCESSOR_PENTIUM)
-#define m_LAKEMONT (1U<<PROCESSOR_LAKEMONT)
-#define m_PPRO (1U<<PROCESSOR_PENTIUMPRO)
-#define m_PENT4 (1U<<PROCESSOR_PENTIUM4)
-#define m_NOCONA (1U<<PROCESSOR_NOCONA)
+#define m_386 (HOST_WIDE_INT_1U<<PROCESSOR_I386)
+#define m_486 (HOST_WIDE_INT_1U<<PROCESSOR_I486)
+#define m_PENT (HOST_WIDE_INT_1U<<PROCESSOR_PENTIUM)
+#define m_LAKEMONT (HOST_WIDE_INT_1U<<PROCESSOR_LAKEMONT)
+#define m_PPRO (HOST_WIDE_INT_1U<<PROCESSOR_PENTIUMPRO)
+#define m_PENT4 (HOST_WIDE_INT_1U<<PROCESSOR_PENTIUM4)
+#define m_NOCONA (HOST_WIDE_INT_1U<<PROCESSOR_NOCONA)
 #define m_P4_NOCONA (m_PENT4 | m_NOCONA)
-#define m_CORE2 (1U<<PROCESSOR_CORE2)
-#define m_NEHALEM (1U<<PROCESSOR_NEHALEM)
-#define m_SANDYBRIDGE (1U<<PROCESSOR_SANDYBRIDGE)
-#define m_HASWELL (1U<<PROCESSOR_HASWELL)
+#define m_CORE2 (HOST_WIDE_INT_1U<<PROCESSOR_CORE2)
+#define m_NEHALEM (HOST_WIDE_INT_1U<<PROCESSOR_NEHALEM)
+#define m_SANDYBRIDGE (HOST_WIDE_INT_1U<<PROCESSOR_SANDYBRIDGE)
+#define m_HASWELL (HOST_WIDE_INT_1U<<PROCESSOR_HASWELL)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_HASWELL)
-#define m_BONNELL (1U<<PROCESSOR_BONNELL)
-#define m_SILVERMONT (1U<<PROCESSOR_SILVERMONT)
-#define m_KNL (1U<<PROCESSOR_KNL)
-#define m_KNM (1U<<PROCESSOR_KNM)
-#define m_SKYLAKE_AVX512 (1U<<PROCESSOR_SKYLAKE_AVX512)
-#define m_CANNONLAKE (1U<<PROCESSOR_CANNONLAKE)
-#define m_ICELAKE (1U<<PROCESSOR_ICELAKE)
-#define m_INTEL (1U<<PROCESSOR_INTEL)
+#define m_BONNELL (HOST_WIDE_INT_1U<<PROCESSOR_BONNELL)
+#define m_SILVERMONT (HOST_WIDE_INT_1U<<PROCESSOR_SILVERMONT)
+#define m_KNL (HOST_WIDE_INT_1U<<PROCESSOR_KNL)
+#define m_KNM (HOST_WIDE_INT_1U<<PROCESSOR_KNM)
+#define m_SKYLAKE_AVX512 (HOST_WIDE_INT_1U<<PROCESSOR_SKYLAKE_AVX512)
+#define m_CANNONLAKE (HOST_WIDE_INT_1U<<PROCESSOR_CANNONLAKE)
+#define m_ICELAKE_CLIENT (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_CLIENT)
+#define m_ICELAKE_SERVER (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_SERVER)
+#define m_INTEL (HOST_WIDE_INT_1U<<PROCESSOR_INTEL)
 
-#define m_GEODE (1U<<PROCESSOR_GEODE)
-#define m_K6 (1U<<PROCESSOR_K6)
+#define m_GEODE (HOST_WIDE_INT_1U<<PROCESSOR_GEODE)
+#define m_K6 (HOST_WIDE_INT_1U<<PROCESSOR_K6)
 #define m_K6_GEODE (m_K6 | m_GEODE)
-#define m_K8 (1U<<PROCESSOR_K8)
-#define m_ATHLON (1U<<PROCESSOR_ATHLON)
+#define m_K8 (HOST_WIDE_INT_1U<<PROCESSOR_K8)
+#define m_ATHLON (HOST_WIDE_INT_1U<<PROCESSOR_ATHLON)
 #define m_ATHLON_K8 (m_K8 | m_ATHLON)
-#define m_AMDFAM10 (1U<<PROCESSOR_AMDFAM10)
-#define m_BDVER1 (1U<<PROCESSOR_BDVER1)
-#define m_BDVER2 (1U<<PROCESSOR_BDVER2)
-#define m_BDVER3 (1U<<PROCESSOR_BDVER3)
-#define m_BDVER4 (1U<<PROCESSOR_BDVER4)
-#define m_ZNVER1 (1U<<PROCESSOR_ZNVER1)
-#define m_BTVER1 (1U<<PROCESSOR_BTVER1)
-#define m_BTVER2 (1U<<PROCESSOR_BTVER2)
+#define m_AMDFAM10 (HOST_WIDE_INT_1U<<PROCESSOR_AMDFAM10)
+#define m_BDVER1 (HOST_WIDE_INT_1U<<PROCESSOR_BDVER1)
+#define m_BDVER2 (HOST_WIDE_INT_1U<<PROCESSOR_BDVER2)
+#define m_BDVER3 (HOST_WIDE_INT_1U<<PROCESSOR_BDVER3)
+#define m_BDVER4 (HOST_WIDE_INT_1U<<PROCESSOR_BDVER4)
+#define m_ZNVER1 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER1)
+#define m_BTVER1 (HOST_WIDE_INT_1U<<PROCESSOR_BTVER1)
+#define m_BTVER2 (HOST_WIDE_INT_1U<<PROCESSOR_BTVER2)
 #define m_BDVER	(m_BDVER1 | m_BDVER2 | m_BDVER3 | m_BDVER4)
 #define m_BTVER (m_BTVER1 | m_BTVER2)
 #define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER \
 			| m_ZNVER1)
 
-#define m_GENERIC (1U<<PROCESSOR_GENERIC)
+#define m_GENERIC (HOST_WIDE_INT_1U<<PROCESSOR_GENERIC)
 
 const char* ix86_tune_feature_names[X86_TUNE_LAST] = {
 #undef DEF_TUNE
@@ -182,7 +183,7 @@ unsigned char ix86_tune_features[X86_TUNE_LAST];
 
 /* Feature tests against the various tunings used to create ix86_tune_features
    based on the processor mask.  */
-static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
+static unsigned long long initial_ix86_tune_features[X86_TUNE_LAST] = {
 #undef DEF_TUNE
 #define DEF_TUNE(tune, name, selector) selector,
 #include "x86-tune.def"
@@ -194,7 +195,7 @@ unsigned char ix86_arch_features[X86_ARCH_LAST];
 
 /* Feature tests against the various architecture variations, used to create
    ix86_arch_features based on the processor mask.  */
-static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
+static unsigned long long initial_ix86_arch_features[X86_ARCH_LAST] = {
   /* X86_ARCH_CMOV: Conditional move was added for pentiumpro.  */
   ~(m_386 | m_486 | m_PENT | m_LAKEMONT | m_K6),
 
@@ -860,7 +861,8 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"knm", &slm_cost, 16, 15, 16, 7, 16},
   {"skylake-avx512", &skylake_cost, 16, 10, 16, 10, 16},
   {"cannonlake", &skylake_cost, 16, 10, 16, 10, 16},
-  {"icelake", &skylake_cost, 16, 10, 16, 10, 16},
+  {"icelake-client", &skylake_cost, 16, 10, 16, 10, 16},
+  {"icelake-server", &skylake_cost, 16, 10, 16, 10, 16},
   {"intel", &intel_cost, 16, 15, 16, 7, 16},
   {"geode", &geode_cost, 0, 0, 0, 0, 0},
   {"k6", &k6_cost, 32, 7, 32, 7, 32},
@@ -3445,6 +3447,8 @@ ix86_option_override_internal (bool main_args_p,
   const wide_int_bitmask PTA_VPCLMULQDQ (0, HOST_WIDE_INT_1U << 4);
   const wide_int_bitmask PTA_AVX512BITALG (0, HOST_WIDE_INT_1U << 5);
   const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
+  const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
+  const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
 
   const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
     | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
@@ -3460,16 +3464,18 @@ ix86_option_override_internal (bool main_args_p,
   const wide_int_bitmask PTA_BROADWELL = PTA_HASWELL | PTA_ADX | PTA_PRFCHW
     | PTA_RDSEED;
   const wide_int_bitmask PTA_SKYLAKE = PTA_BROADWELL | PTA_CLFLUSHOPT
-    | PTA_XSAVEC | PTA_XSAVES;
+    | PTA_XSAVEC | PTA_XSAVES | PTA_SGX;
   const wide_int_bitmask PTA_SKYLAKE_AVX512 = PTA_SKYLAKE | PTA_AVX512F
     | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
     | PTA_CLWB;
   const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
     | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
     | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA;
-  const wide_int_bitmask PTA_ICELAKE = PTA_CANNONLAKE | PTA_AVX512VNNI
+  const wide_int_bitmask PTA_ICELAKE_CLIENT = PTA_CANNONLAKE | PTA_AVX512VNNI
     | PTA_GFNI | PTA_VAES | PTA_AVX512VBMI2 | PTA_VPCLMULQDQ | PTA_AVX512BITALG
-    | PTA_RDPID;
+    | PTA_RDPID | PTA_CLWB;
+  const wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT | PTA_PCONFIG
+    | PTA_WBNOINVD;
   const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
     | PTA_AVX512F | PTA_AVX512CD;
   const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
@@ -3541,7 +3547,10 @@ ix86_option_override_internal (bool main_args_p,
       {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL,
         PTA_SKYLAKE_AVX512},
       {"cannonlake", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_CANNONLAKE},
-      {"icelake", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_ICELAKE},
+      {"icelake-client", PROCESSOR_ICELAKE_CLIENT, CPU_HASWELL,
+	PTA_ICELAKE_CLIENT},
+      {"icelake-server", PROCESSOR_ICELAKE_SERVER, CPU_HASWELL,
+	PTA_ICELAKE_SERVER},
       {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -4150,6 +4159,12 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_RDPID) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_RDPID))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_RDPID;
+	if (((processor_alias_table[i].flags & PTA_PCONFIG) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_PCONFIG))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PCONFIG;
+	if (((processor_alias_table[i].flags & PTA_WBNOINVD) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_WBNOINVD))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_WBNOINVD;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
@@ -32376,9 +32391,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_HASWELL:
 	    case PROCESSOR_SKYLAKE_AVX512:
-	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_GFNI)
-		arg_str = "icelake";
-	      else if (new_target->x_ix86_isa_flags
+	      if (new_target->x_ix86_isa_flags
 			& OPTION_MASK_ISA_AVX512VBMI)
 		arg_str = "cannonlake";
 	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
@@ -32389,6 +32402,14 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 		arg_str = "broadwell";
 	      else
 		arg_str = "haswell";
+	      priority = P_PROC_AVX2;
+	      break;
+	    case PROCESSOR_ICELAKE_CLIENT:
+	      arg_str = "icelake-client";
+	      priority = P_PROC_AVX2;
+	      break;
+	    case PROCESSOR_ICELAKE_SERVER:
+	      arg_str = "icelake-server";
 	      priority = P_PROC_AVX2;
 	      break;
 	    case PROCESSOR_BONNELL:
@@ -33105,7 +33126,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_COREI7_SKYLAKE,
     M_INTEL_COREI7_SKYLAKE_AVX512,
     M_INTEL_COREI7_CANNONLAKE,
-    M_INTEL_COREI7_ICELAKE
+    M_INTEL_COREI7_ICELAKE_CLIENT,
+    M_INTEL_COREI7_ICELAKE_SERVER
   };
 
   static struct _arch_names_table
@@ -33130,7 +33152,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"skylake", M_INTEL_COREI7_SKYLAKE},
       {"skylake-avx512", M_INTEL_COREI7_SKYLAKE_AVX512},
       {"cannonlake", M_INTEL_COREI7_CANNONLAKE},
-      {"icelake", M_INTEL_COREI7_ICELAKE},
+      {"icelake-client", M_INTEL_COREI7_ICELAKE_CLIENT},
+      {"icelake-server", M_INTEL_COREI7_ICELAKE_SERVER},
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"knl", M_INTEL_KNL},

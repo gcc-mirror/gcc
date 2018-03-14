@@ -825,9 +825,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  if (arch)
 	    {
 	      /* This is unknown family 0x6 CPU.  */
+	      /* Assume Ice Lake Server.  */
+	      if (has_wbnoinvd)
+		cpu = "icelake-server";
 	      /* Assume Ice Lake.  */
-	      if (has_gfni)
-		cpu = "icelake";
+	      else if (has_gfni)
+		cpu = "icelake-client";
 	      /* Assume Cannon Lake.  */
 	      else if (has_avx512vbmi)
 		cpu = "cannonlake";

@@ -1,3 +1,8 @@
+2018-03-14  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.h (processor_subtypes): Split up icelake on
+	icelake client and icelake server.
+
 2018-03-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/fptr.c (_dl_read_access_allowed): New.
