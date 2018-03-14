@@ -318,10 +318,8 @@ GFORTRAN_8 {
     _gfortran_ishftc8;
     _gfortran_itime_i4;
     _gfortran_itime_i8;
-    _gfortran_kill_i4;
-    _gfortran_kill_i4_sub;
-    _gfortran_kill_i8;
-    _gfortran_kill_i8_sub;
+    _gfortran_kill;
+    _gfortran_kill_sub;
     _gfortran_link_i4;
     _gfortran_link_i4_sub;
     _gfortran_link_i8;

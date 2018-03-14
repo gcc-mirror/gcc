@@ -1,3 +1,12 @@
+2018-03-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* libgfortran/gfortran.map: Remove _gfortran_kill_i4,
+	_gfortran_kill_i4_sub, _gfortran_kill_i8, and _gfortran_kill_i8_sub.
+	Add _gfortran_kill and _gfortran_kill_sub.
+	* libgfortran/intrinsics/kill.c: Eliminate _gfortran_kill_i4,
+	_gfortran_kill_i4_sub, _gfortran_kill_i8, and _gfortran_kill_i8_sub.
+	Add _gfortran_kill and _gfortran_kill_sub.
+
 2018-02-23  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/84519

@@ -2255,7 +2255,7 @@ add_functions (void)
   make_generic ("ishftc", GFC_ISYM_ISHFTC, GFC_STD_F95);
 
   add_sym_2 ("kill", GFC_ISYM_KILL, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER,
-	     di, GFC_STD_GNU, gfc_check_kill, NULL, gfc_resolve_kill,
+	     di, GFC_STD_GNU, gfc_check_kill, NULL, NULL,
 	     pid, BT_INTEGER, di, REQUIRED, sig, BT_INTEGER, di, REQUIRED);
 
   make_generic ("kill", GFC_ISYM_KILL, GFC_STD_GNU);
@@ -3724,7 +3724,7 @@ add_subroutines (void)
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_3s ("kill", GFC_ISYM_KILL, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
-	      gfc_check_kill_sub, NULL, gfc_resolve_kill_sub,
+	      gfc_check_kill_sub, NULL, NULL,
 	      pid, BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      sig, BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);

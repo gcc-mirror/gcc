@@ -8719,7 +8719,7 @@ Sends the signal specified by @var{SIG} to the process @var{PID}.
 See @code{kill(2)}.
 
 This intrinsic is provided in both subroutine and function forms;
-however,  only one form can be used in any given program unit.
+however, only one form can be used in any given program unit.
 
 @item @emph{Class}:
 Subroutine, function
@@ -8732,16 +8732,13 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{PID} @tab Shall be a scalar @code{INTEGER} with
-@code{INTENT(IN)}
-@item @var{SIG} @tab Shall be a scalar @code{INTEGER} with
-@code{INTENT(IN)}
-@item @var{STATUS} @tab [Subroutine](Optional) status flag of type
-@code{INTEGER(4)} or @code{INTEGER(8)}.
+@item @var{PID} @tab Shall be a scalar @code{INTEGER} with @code{INTENT(IN)}.
+@item @var{SIG} @tab Shall be a scalar @code{INTEGER} with @code{INTENT(IN)}.
+@item @var{STATUS} @tab [Subroutine](Optional)
+Shall be a scalar @code{INTEGER}.
 Returns 0 on success; otherwise a system-specific error code is returned.
 @item @var{STATUS} @tab [Function] The kind type parameter is that of
-@code{pid} if @code{pid} is of type @code{INTEGER(4)} or @code{INTEGER(8)};
-otherwise, it is default integer kind.
+@code{pid}.
 Returns 0 on success; otherwise a system-specific error code is returned.
 @end multitable
 
