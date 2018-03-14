@@ -1,5 +1,10 @@
 2018-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/83392
+	* sanopt.c (maybe_optimize_ubsan_ptr_ifn): Handle also
+	INTEGER_CST offset, add it together with bitpos / 8 and
+	sign extend based on POINTER_SIZE.
+
 	PR target/84844
 	Revert
 	2017-04-20  Uros Bizjak  <ubizjak@gmail.com>
