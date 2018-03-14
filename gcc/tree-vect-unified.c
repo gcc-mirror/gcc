@@ -2415,7 +2415,7 @@ get_transition_state (struct primop_tree *ptree)
      registers.  */
   if (PT_NODE_OP (ptree) < MAX_TREE_CODES) 
   {
-    return get_REG_terminal_state (GET_MODE_SIZE (TYPE_MODE (PT_VEC_TYPE (ptree))));
+    return get_REG_terminal_state (GET_MODE_INNER (TYPE_MODE (PT_VEC_TYPE (ptree))));
   }
 
   /* We need not handle POP_PH as it is only for tile construction.  POP_CONCAT
@@ -2434,12 +2434,12 @@ get_transition_state (struct primop_tree *ptree)
 			PT_AUX (get_child_at_index (ptree, i)));
     	  }
 
-        return transition_state_for_ilv (PT_DIVISION (ptree), idx);
+        return transition_state_for_ilv (PT_DIVISION (ptree), idx, GET_MODE_INNER (TYPE_MODE (PT_VEC_TYPE (ptree))));
 
       case POP_EXTR:
 	return transition_state_for_extr (PT_DIVISION (ptree),
 				 PT_OPERAND_SELECTOR (ptree),
-				 PT_AUX (get_child_at_index (ptree, 0)));
+				 PT_AUX (get_child_at_index (ptree, 0)), GET_MODE_INNER (TYPE_MODE (PT_VEC_TYPE (ptree))));
 
       default:
         gcc_assert (!"Operator not handled.");
@@ -2458,11 +2458,11 @@ label_permute_tree (struct primop_tree *ptree)
       switch (PT_NODE_OP (ptree))
 	{
 	  case POP_MEMREF:
-	    PT_AUX (ptree) = get_REG_terminal_state (GET_MODE_SIZE (TYPE_MODE (PT_VEC_TYPE (ptree))));
+	    PT_AUX (ptree) = get_REG_terminal_state (GET_MODE_INNER (TYPE_MODE (PT_VEC_TYPE (ptree))));
 	    printf ("tree : %d >> state : %d\n", PT_PID (ptree), PT_AUX (ptree));
 	    break;
 	  case POP_CONST:
-	    PT_AUX (ptree) = get_CONST_terminal_state ();
+	    PT_AUX (ptree) = get_CONST_terminal_state (GET_MODE_INNER (TYPE_MODE (PT_VEC_TYPE (ptree))));
 	    printf ("tree : %d >> state : %d\n", PT_PID (ptree), PT_AUX (ptree));
 	    break;
 	  default:
@@ -2487,7 +2487,7 @@ label_permute_tree (struct primop_tree *ptree)
   if (PT_AUX (ptree) == -1)
     {
       printf ("\n labeled to REG\n");
-      PT_AUX (ptree) = (get_REG_terminal_state (GET_MODE_SIZE (TYPE_MODE (PT_VEC_TYPE (ptree)))));
+      PT_AUX (ptree) = (get_REG_terminal_state (GET_MODE_INNER (TYPE_MODE (PT_VEC_TYPE (ptree)))));
     }
   else
     {
@@ -2538,7 +2538,7 @@ unified_perm_tree_code_generation (struct ITER_node *inode)
       reset_aux_field (tmp_tree);
       ret = label_permute_tree (tmp_tree);
       if (ret == true)
-        ret = reduce_permute_tree (tmp_tree, get_REG_terminal_state (GET_MODE_SIZE (TYPE_MODE (PT_VEC_TYPE (tmp_tree)))));
+        ret = reduce_permute_tree (tmp_tree, get_REG_terminal_state (GET_MODE_INNER (TYPE_MODE (PT_VEC_TYPE (tmp_tree)))));
 
       return ret;
     }

@@ -762,15 +762,10 @@ create_rule_for_ptree (struct primop_tree *ptree, int spec_idx, int out_vecsize,
      if (spec_idx != -1)
 	{
 	  sprintf (buf, "reg_%s", type_name[type]);
-	  sprintf (buf1, "mem_%s", type_name[type]);
-	  sprintf (buf2, "const_%s", type_name[type]);
 
 	  ruleno = create_rule_NT_to_NT (
-    			 target_type == 'R' ?
-    				create_non_terminal (buf, type) :
-	    		 target_type == 'M' ?
-    				create_non_terminal (buf1, type) :
-    			    	create_non_terminal (buf2, type), nt, -1, 0);
+    				create_non_terminal (buf, type),
+			    	nt, -1, 0);
 	}
       return nt;
     }
@@ -1664,10 +1659,10 @@ print_trans_map ()
   for (j = 0; j < op_list.length (); j++)
     {
       if (op_list[j]->pcode == POP_ILV)
-        printf ("  int %s_%s_%d", tree_code_name[op_list[j]->pcode], type_name[op_list[i]->type],
+        printf ("  int %s_%s_%d", tree_code_name[op_list[j]->pcode], type_name[op_list[j]->type],
 		 op_list[j]->arity);
       else
-        printf ("  int %s_%s_%d_%d", tree_code_name[op_list[j]->pcode], type_name[op_list[i]->type],
+        printf ("  int %s_%s_%d_%d", tree_code_name[op_list[j]->pcode], type_name[op_list[j]->type],
 		 op_list[j]->arity, op_list[j]->sel);
 
       for (k = 0; k < op_list[j]->act_arity; k++)
@@ -1682,10 +1677,10 @@ print_trans_map ()
   for (j = 0; j < op_list.length (); j++)
     {
       if (op_list[j]->pcode == POP_ILV)
-        sprintf (str, "  transition.%s__%s_%d", tree_code_name[op_list[j]->pcode], type_name[op_list[i]->type],
+        sprintf (str, "  transition.%s_%s_%d", tree_code_name[op_list[j]->pcode], type_name[op_list[j]->type],
 		 op_list[j]->arity);
       else
-        sprintf (str, "  transition.%s_%s_%d_%d", tree_code_name[op_list[j]->pcode], type_name[op_list[i]->type],
+        sprintf (str, "  transition.%s_%s_%d_%d", tree_code_name[op_list[j]->pcode], type_name[op_list[j]->type],
 		 op_list[j]->arity, op_list[j]->sel);
 
       for (i = 0; i < op_list[j]->index_map.length (); i++)
@@ -1750,15 +1745,25 @@ print_terminals ()
       printf ("}\n\n");
     }
 
-  printf ("int get_REG_terminal_state (int vector_size)\n{\n");
-  printf ("  switch (vector_size)\n  {\n");
-  for (i = 1; i <= floor_log2 (MAX_VECTOR_SIZE); i++)
+  printf ("int get_REG_terminal_state (int type)\n{\n");
+  printf ("  switch (type)\n  {\n");
+  for (i = 0; i < type_name.length (); i++)
     {
-      printf ("case %d: return get_REG_%d_terminal_state ();\n",
-	(1 << i), (1 << i));
+      printf ("case %smode: return get_REG_%s_terminal_state ();\n",type_name[i], type_name[i]);
     }
-  printf ("    default:\n      gcc_assert (!\"vector size not supported\");\n");
+  printf ("    default:\n      gcc_assert (!\"Type not supported\");\n");
   printf ("  }\n}\n\n");
+
+  printf ("int get_CONST_terminal_state (int type)\n{\n");
+  printf ("  switch (type)\n  {\n");
+  for (i = 0; i < type_name.length (); i++)
+    {
+      printf ("case %smode: return get_CONST_%s_terminal_state ();\n",type_name[i], type_name[i]);
+    }
+  printf ("    default:\n      gcc_assert (!\"Type not supported\");\n");
+  printf ("  }\n}\n\n");
+
+
 }
 
 void
@@ -1865,13 +1870,14 @@ print_state_fn_for_ilv ()
   int i, j;
   char *str = (char *) xcalloc (100, sizeof (char));
   printf ("int\ntransition_state_for_ilv");
-  printf (" (int act_arity, vec<int> state_idx)\n{\n");
+  printf (" (int act_arity, vec<int> state_idx, int type)\n{\n");
 
   for (i = 0; i < op_list.length (); i++)
     {
       if (op_list[i]->pcode == POP_ILV)
 	{
-	  printf ("  if (act_arity == %d)\n    {\n", op_list[i]->arity);
+	  printf ("  if (act_arity == %d && type == %smode)\n    {\n", op_list[i]->arity, type_name[op_list[i]->type]);
+	  sprintf (str, "");
 	  for (j = 0; j < op_list[i]->act_arity; j++)
 	    {
 	        printf ("\tif (rep_state_map[MAP_OP_ILV_%s_%d_%d]",
@@ -1896,15 +1902,15 @@ print_state_fn_for_extr ()
   int i;
 
   printf ("int\ntransition_state_for_extr");
-  printf (" (int act_arity, int sel, int state_idx)\n{\n");
+  printf (" (int act_arity, int sel, int state_idx, int type)\n{\n");
 
   for (i = 0; i < op_list.length (); i++)
     {
       if (op_list[i]->pcode == POP_EXTR)
 	{
-	  printf ("  if (act_arity == %d && sel == %d)\n    {\n",
+	  printf ("  if (act_arity == %d && sel == %d && type == %smode)\n    {\n",
 		op_list[i]->arity,
-		op_list[i]->sel);
+		op_list[i]->sel, type_name[op_list[i]->type]);
 	  printf ("      if (rep_state_map[MAP_OP_EXTR_%s_%d_%d]",
 		type_name[op_list[i]->type], op_list[i]->arity, op_list[i]->sel);
 	  printf ("[state_idx] == -1)\n");
