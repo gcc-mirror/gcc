@@ -110,7 +110,8 @@ proc scan-dump-times { args } {
     if {$result_count == $times} {
         pass "$testname"
     } else {
-        fail "$testname (found $result_count times)"
+	verbose -log "$testcase: pattern found $result_count times"
+        fail "$testname"
     }
 }
 
