@@ -14778,6 +14778,9 @@ distribute_links (struct insn_link *links)
 	     || GET_CODE (reg) == SUBREG)
 	reg = XEXP (reg, 0);
 
+      if (reg == pc_rtx)
+	continue;
+
       /* A LOG_LINK is defined as being placed on the first insn that uses
 	 a register and points to the insn that sets the register.  Start
 	 searching at the next insn after the target of the link and stop

@@ -1,3 +1,8 @@
+2018-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/84780
+	* combine.c (distribute_links): Don't make a link based on pc_rtx.
+
 2018-03-14  Martin Liska  <mliska@suse.cz>
 
 	* tree.c (record_node_allocation_statistics): Use
