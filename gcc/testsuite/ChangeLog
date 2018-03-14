@@ -1,3 +1,9 @@
+2018-03-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84852
+	* gcc.dg/fixits-pr84852-1.c: New test.
+	* gcc.dg/fixits-pr84852-2.c: New test.
+
 2018-03-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* lib/scanasm.exp (scan-assembler-times): Move FAIL debug info into a

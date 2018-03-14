@@ -1,3 +1,38 @@
+2018-03-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84852
+	* diagnostic-show-locus.c (class layout_point): Convert m_line
+	from int to linenum_type.
+	(line_span::comparator): Use linenum "compare" function when
+	comparing line numbers.
+	(test_line_span): New function.
+	(layout_range::contains_point): Convert param "row" from int to
+	linenum_type.
+	(layout_range::intersects_line_p): Likewise.
+	(layout::will_show_line_p): Likewise.
+	(layout::print_source_line): Likewise.
+	(layout::should_print_annotation_line_p): Likewise.
+	(layout::print_annotation_line): Likewise.
+	(layout::print_leading_fixits): Likewise.
+	(layout::annotation_line_showed_range_p): Likewise.
+	(struct line_corrections): Likewise for field m_row.
+	(line_corrections::line_corrections): Likewise for param "row".
+	(layout::print_trailing_fixits): Likewise.
+	(layout::get_state_at_point): Likewise.
+	(layout::get_x_bound_for_row): Likewise.
+	(layout::print_line): Likewise.
+	(diagnostic_show_locus): Likewise for locals "last_line" and
+	"row".
+	(selftest::diagnostic_show_locus_c_tests): Call test_line_span.
+	* input.c (selftest::test_linenum_comparisons): New function.
+	(selftest::input_c_tests): Call it.
+	* selftest.c (selftest::test_assertions): Test ASSERT_GT,
+	ASSERT_GT_AT, ASSERT_LT, and ASSERT_LT_AT.
+	* selftest.h (ASSERT_GT): New macro.
+	(ASSERT_GT_AT): New macro.
+	(ASSERT_LT): New macro.
+	(ASSERT_LT_AT): New macro.
+
 2018-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/84780
