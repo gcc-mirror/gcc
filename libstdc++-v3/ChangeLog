@@ -1,3 +1,15 @@
+2018-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78420
+	* include/bits/stl_function.h (greater<_Tp*>, less<_Tp*>)
+	(greater_equal<_Tp*>, less_equal<_Tp>*): Add partial specializations
+	to ensure total order for pointers.
+	(greater<void>, less<void>, greater_equal<void>, less_equal<void>):
+	Add operator() overloads for pointer arguments and make generic
+	overloads dispatch to new _S_cmp functions when comparisons would
+	use built-in operators for pointers.
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: New.
+
 2018-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/84773
