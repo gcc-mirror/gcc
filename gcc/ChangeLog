@@ -1,3 +1,15 @@
+2018-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84844
+	Revert
+	2017-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78090
+	* config/i386/constraints.md (Yc): New register constraint.
+	* config/i386/i386.md (*float<SWI48:mode><MODEF:mode>2_mixed):
+	Use Yc constraint for alternative 2 of operand 0.  Remove
+	preferred_for_speed attribute.
+
 2018-03-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84830

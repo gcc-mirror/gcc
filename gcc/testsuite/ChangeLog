@@ -1,3 +1,8 @@
+2018-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84844
+	* gcc.target/i386/pr84844.c: New test.
+
 2018-03-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84830
