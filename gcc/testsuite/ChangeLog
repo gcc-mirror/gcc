@@ -1,3 +1,9 @@
+gcc/testsuite/ChangeLog:
+
+2018-03-14  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-7-runnable.c: New test file.
+
 2018-03-14  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/8480

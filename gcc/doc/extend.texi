@@ -18448,6 +18448,12 @@ vector double vec_perm (vector double, vector double, vector unsigned char);
 vector long vec_perm (vector long, vector long, vector unsigned char);
 vector unsigned long vec_perm (vector unsigned long, vector unsigned long,
                                vector unsigned char);
+vector bool char vec_permxor (vector bool char, vector bool char,
+                              vector bool char);
+vector unsigned char vec_permxor (vector signed char, vector signed char,
+                                  vector signed char);
+vector unsigned char vec_permxor (vector unsigned char, vector unsigned char,
+                                  vector unsigned char);
 vector double vec_rint (vector double);
 vector double vec_recip (vector double, vector double);
 vector double vec_rsqrt (vector double);

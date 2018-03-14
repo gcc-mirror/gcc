@@ -3827,6 +3827,29 @@
   DONE;
 })
 
+(define_expand "altivec_vpermxor"
+  [(use (match_operand:V16QI 0 "register_operand"))
+   (use (match_operand:V16QI 1 "register_operand"))
+   (use (match_operand:V16QI 2 "register_operand"))
+   (use (match_operand:V16QI 3 "register_operand"))]
+  "TARGET_P8_VECTOR"
+{
+  if (!BYTES_BIG_ENDIAN)
+    {
+      /* vpermxor indexes the bytes using Big Endian numbering.  If LE,
+	 change indexing in operand[3] to BE index.  */
+      rtx be_index = gen_reg_rtx (V16QImode);
+
+      emit_insn (gen_one_cmplv16qi2 (be_index, operands[3]));
+      emit_insn (gen_crypto_vpermxor_v16qi (operands[0], operands[1],
+					    operands[2], be_index));
+    }
+  else
+    emit_insn (gen_crypto_vpermxor_v16qi (operands[0], operands[1],
+					  operands[2], operands[3]));
+  DONE;
+})
+
 (define_expand "altivec_negv4sf2"
   [(use (match_operand:V4SF 0 "register_operand"))
    (use (match_operand:V4SF 1 "register_operand"))]

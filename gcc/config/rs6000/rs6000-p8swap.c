@@ -753,6 +753,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VPERM_UNS:
 	  case UNSPEC_VPERMHI:
 	  case UNSPEC_VPERMSI:
+	  case UNSPEC_VPERMXOR:
 	  case UNSPEC_VPKPX:
 	  case UNSPEC_VSLDOI:
 	  case UNSPEC_VSLO:
