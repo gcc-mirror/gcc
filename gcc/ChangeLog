@@ -1,3 +1,9 @@
+2018-03-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/83451
+	* config/pa/pa.c (pa_emit_move_sequence):  Always emit secondary reload
+	insn for floating-point loads and stores.
+
 2018-03-14  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c: Add macro definitions for
