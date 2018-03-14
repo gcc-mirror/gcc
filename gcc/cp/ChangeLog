@@ -1,3 +1,10 @@
+2018-03-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84596
+	* semantics.c (finish_static_assert): Check
+	instantiation_dependent_expression_p instead of
+	{type,value}_dependent_expression_p.
+
 2018-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
