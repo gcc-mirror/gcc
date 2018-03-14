@@ -8115,6 +8115,85 @@ gfc_conv_intrinsic_iargc (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Generate code for the KILL intrinsic.  */
+
+static void
+conv_intrinsic_kill (gfc_se *se, gfc_expr *expr)
+{
+  tree *args;
+  tree int4_type_node = gfc_get_int_type (4);
+  tree pid;
+  tree sig;
+  tree tmp;
+  unsigned int num_args;
+
+  num_args = gfc_intrinsic_argument_list_length (expr);
+  args = XALLOCAVEC (tree, num_args);
+  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
+
+  /* Convert PID to a INTEGER(4) entity.  */
+  pid = convert (int4_type_node, args[0]);
+
+  /* Convert SIG to a INTEGER(4) entity.  */
+  sig = convert (int4_type_node, args[1]);
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_kill, 2, pid, sig);
+
+  se->expr = fold_convert (TREE_TYPE (args[0]), tmp);
+}
+
+
+static tree
+conv_intrinsic_kill_sub (gfc_code *code)
+{
+  stmtblock_t block;
+  gfc_se se, se_stat;
+  tree int4_type_node = gfc_get_int_type (4);
+  tree pid;
+  tree sig;
+  tree statp;
+  tree tmp;
+
+  /* Make the function call.  */
+  gfc_init_block (&block);
+  gfc_init_se (&se, NULL);
+
+  /* Convert PID to a INTEGER(4) entity.  */
+  gfc_conv_expr (&se, code->ext.actual->expr);
+  gfc_add_block_to_block (&block, &se.pre);
+  pid = fold_convert (int4_type_node, gfc_evaluate_now (se.expr, &block));
+  gfc_add_block_to_block (&block, &se.post);
+
+  /* Convert SIG to a INTEGER(4) entity.  */
+  gfc_conv_expr (&se, code->ext.actual->next->expr);
+  gfc_add_block_to_block (&block, &se.pre);
+  sig = fold_convert (int4_type_node, gfc_evaluate_now (se.expr, &block));
+  gfc_add_block_to_block (&block, &se.post);
+
+  /* Deal with an optional STATUS.  */
+  if (code->ext.actual->next->next->expr)
+    {
+      gfc_init_se (&se_stat, NULL);
+      gfc_conv_expr (&se_stat, code->ext.actual->next->next->expr);
+      statp = gfc_create_var (gfc_get_int_type (4), "_statp");
+    }
+  else
+    statp = NULL_TREE;
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_kill_sub, 3, pid, sig,
+	statp ? gfc_build_addr_expr (NULL_TREE, statp) : null_pointer_node);
+
+  gfc_add_expr_to_block (&block, tmp);
+
+  if (statp && statp != se_stat.expr)
+    gfc_add_modify (&block, se_stat.expr,
+		    fold_convert (TREE_TYPE (se_stat.expr), statp));
+
+  return gfc_finish_block (&block);
+}
+
+
+
 /* The loc intrinsic returns the address of its argument as
    gfc_index_integer_kind integer.  */
 
@@ -9068,6 +9147,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_isnan (se, expr);
       break;
 
+    case GFC_ISYM_KILL:
+      conv_intrinsic_kill (se, expr);
+      break;
+
     case GFC_ISYM_LSHIFT:
       gfc_conv_intrinsic_shift (se, expr, false, false);
       break;
@@ -9344,7 +9427,6 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_GETPID:
     case GFC_ISYM_GETUID:
     case GFC_ISYM_HOSTNM:
-    case GFC_ISYM_KILL:
     case GFC_ISYM_IERRNO:
     case GFC_ISYM_IRAND:
     case GFC_ISYM_ISATTY:
@@ -10819,6 +10901,10 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
 
     case GFC_ISYM_FREE:
       res = conv_intrinsic_free (code);
+      break;
+
+    case GFC_ISYM_KILL:
+      res = conv_intrinsic_kill_sub (code);
       break;
 
     case GFC_ISYM_SYSTEM_CLOCK:
