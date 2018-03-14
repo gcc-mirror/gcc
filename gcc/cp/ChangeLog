@@ -1,3 +1,9 @@
+2018-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/82336 - link error with list-init default argument.
+	* decl.c (check_default_argument): Unshare an initializer list.
+
 2018-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84843
