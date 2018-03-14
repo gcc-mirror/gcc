@@ -1,5 +1,9 @@
 2018-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/83392
+	* c-c++-common/ubsan/ptr-overflow-sanitization-1.c: Adjust expected
+	check count from 17 to 14.
+
 	PR target/84844
 	* gcc.target/i386/pr84844.c: New test.
 

@@ -486,12 +486,17 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
       HOST_WIDE_INT bitpos;
       base = get_inner_reference (base, &bitsize, &pbitpos, &offset, &mode,
 				  &unsignedp, &reversep, &volatilep);
-      if (offset == NULL_TREE
+      if ((offset == NULL_TREE || TREE_CODE (offset) == INTEGER_CST)
 	  && DECL_P (base)
 	  && pbitpos.is_constant (&bitpos))
 	{
 	  gcc_assert (!DECL_REGISTER (base));
-	  offset_int expr_offset = bitpos / BITS_PER_UNIT;
+	  offset_int expr_offset;
+	  if (offset)
+	    expr_offset = wi::to_offset (offset) + bitpos / BITS_PER_UNIT;
+	  else
+	    expr_offset = bitpos / BITS_PER_UNIT;
+	  expr_offset = wi::sext (expr_offset, POINTER_SIZE);
 	  offset_int total_offset = expr_offset + cur_offset;
 	  if (total_offset != wi::sext (total_offset, POINTER_SIZE))
 	    {
@@ -511,7 +516,7 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
 	      && (!is_global_var (base) || decl_binds_to_current_def_p (base)))
 	    {
 	      offset_int base_size = wi::to_offset (DECL_SIZE_UNIT (base));
-	      if (bitpos >= 0
+	      if (!wi::neg_p (expr_offset)
 		  && wi::les_p (total_offset, base_size))
 		{
 		  if (!wi::neg_p (total_offset)
@@ -532,7 +537,7 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
 	     */
 
 	  bool sign_cur_offset = !wi::neg_p (cur_offset);
-	  bool sign_expr_offset = bitpos >= 0;
+	  bool sign_expr_offset = !wi::neg_p (expr_offset);
 
 	  tree base_addr
 	    = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (base)), base);
