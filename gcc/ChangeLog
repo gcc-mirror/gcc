@@ -1,3 +1,22 @@
+2018-03-14  Julia Koval  <julia.koval@intel.com>
+
+	* config.gcc (icelake-client, icelake-server): New.
+	(icelake): Remove.
+	* config/i386/i386.c (initial_ix86_tune_features): Extend to 64 bit.
+	(initial_ix86_arch_features): Ditto.
+	(PTA_SKYLAKE): Add SGX.
+	(PTA_ICELAKE): Remove.
+	(PTA_ICELAKE_CLIENT): New.
+	(PTA_ICELAKE_SERVER): New.
+	(ix86_option_override_internal): Split up icelake on icelake client and
+	icelake server.
+	(get_builtin_code_for_version): Ditto.
+	(fold_builtin_cpu): Ditto.
+	* config/i386/driver-i386.c (config/i386/driver-i386.c): Ditto.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Ditto
+	* config/i386/i386.h (processor_type): Ditto.
+	* doc/invoke.texi: Ditto.
+
 2018-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83392

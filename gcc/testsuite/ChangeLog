@@ -1,3 +1,9 @@
+2018-03-14  Julia Koval  <julia.koval@intel.com>
+
+	* g++.dg/ext/mv16.C: Split up icelake on icelake client and icelake
+	server.
+	* gcc.target/i386/funcspec-56.inc: Ditto.
+
 2018-03-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/aarch64/sve/mul_highpart_1_run.c: Restrict to
