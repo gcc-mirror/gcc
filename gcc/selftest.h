@@ -333,6 +333,44 @@ extern int num_passes;
     ::selftest::fail ((LOC), desc);					\
   SELFTEST_END_STMT
 
+/* Evaluate LHS and RHS and compare them with >, calling
+   ::selftest::pass if LHS > RHS,
+   ::selftest::fail otherwise.  */
+
+#define ASSERT_GT(LHS, RHS)				\
+  ASSERT_GT_AT ((SELFTEST_LOCATION), (LHS), (RHS))
+
+/* Like ASSERT_GT, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_GT_AT(LOC, LHS, RHS)		       \
+  SELFTEST_BEGIN_STMT					       \
+  const char *desc_ = "ASSERT_GT (" #LHS ", " #RHS ")";	       \
+  if ((LHS) > (RHS))					       \
+    ::selftest::pass ((LOC), desc_);			       \
+  else							       \
+    ::selftest::fail ((LOC), desc_);			       \
+  SELFTEST_END_STMT
+
+/* Evaluate LHS and RHS and compare them with <, calling
+   ::selftest::pass if LHS < RHS,
+   ::selftest::fail otherwise.  */
+
+#define ASSERT_LT(LHS, RHS)				\
+  ASSERT_LT_AT ((SELFTEST_LOCATION), (LHS), (RHS))
+
+/* Like ASSERT_LT, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_LT_AT(LOC, LHS, RHS)		       \
+  SELFTEST_BEGIN_STMT					       \
+  const char *desc_ = "ASSERT_LT (" #LHS ", " #RHS ")";	       \
+  if ((LHS) < (RHS))					       \
+    ::selftest::pass ((LOC), desc_);			       \
+  else							       \
+    ::selftest::fail ((LOC), desc_);			       \
+  SELFTEST_END_STMT
+
 /* Evaluate EXPECTED and ACTUAL and compare them with strcmp, calling
    ::selftest::pass if they are equal,
    ::selftest::fail if they are non-equal.  */
