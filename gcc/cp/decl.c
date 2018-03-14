@@ -12668,7 +12668,9 @@ check_default_argument (tree decl, tree arg, tsubst_flags_t complain)
      A default argument expression is implicitly converted to the
      parameter type.  */
   ++cp_unevaluated_operand;
-  perform_implicit_conversion_flags (decl_type, arg, complain,
+  /* Avoid digest_init clobbering the initializer.  */
+  tree carg = BRACE_ENCLOSED_INITIALIZER_P (arg) ? unshare_expr (arg): arg;
+  perform_implicit_conversion_flags (decl_type, carg, complain,
 				     LOOKUP_IMPLICIT);
   --cp_unevaluated_operand;
 
