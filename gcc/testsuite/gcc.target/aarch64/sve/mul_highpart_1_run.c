@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target aarch64_sve_hw } } */
 /* { dg-options "-O2 -ftree-vectorize -fno-vect-cost-model --save-temps" } */
 
 #include "mul_highpart_1.c"
