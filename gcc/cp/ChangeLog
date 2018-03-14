@@ -1,3 +1,10 @@
+2018-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83916 - ICE with template template parameters.
+	* pt.c (convert_template_argument): Don't substitute into type of
+	non-type parameter if we don't have enough arg levels.
+	(unify): Likewise.
+
 2018-03-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84596

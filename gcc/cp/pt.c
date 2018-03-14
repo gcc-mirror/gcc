@@ -7974,7 +7974,11 @@ convert_template_argument (tree parm,
     {
       tree t = TREE_TYPE (parm);
 
-      if (tree a = type_uses_auto (t))
+      if (TEMPLATE_PARM_LEVEL (get_template_parm_index (parm))
+	  > TMPL_ARGS_DEPTH (args))
+	/* We don't have enough levels of args to do any substitution.  This
+	   can happen in the context of -fnew-ttp-matching.  */;
+      else if (tree a = type_uses_auto (t))
 	{
 	  t = do_auto_deduction (t, arg, a, complain, adc_unify, args);
 	  if (t == error_mark_node)
@@ -21224,14 +21228,22 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	 template-parameter exactly, except that a template-argument
 	 deduced from an array bound may be of any integral type.
 	 The non-type parameter might use already deduced type parameters.  */
-      ++processing_template_decl;
-      tparm = tsubst (TREE_TYPE (parm), targs, 0, NULL_TREE);
-      --processing_template_decl;
-      if (tree a = type_uses_auto (tparm))
+      tparm = TREE_TYPE (parm);
+      if (TEMPLATE_PARM_LEVEL (parm) > TMPL_ARGS_DEPTH (targs))
+	/* We don't have enough levels of args to do any substitution.  This
+	   can happen in the context of -fnew-ttp-matching.  */;
+      else
 	{
-	  tparm = do_auto_deduction (tparm, arg, a, complain, adc_unify);
-	  if (tparm == error_mark_node)
-	    return 1;
+	  ++processing_template_decl;
+	  tparm = tsubst (tparm, targs, tf_none, NULL_TREE);
+	  --processing_template_decl;
+
+	  if (tree a = type_uses_auto (tparm))
+	    {
+	      tparm = do_auto_deduction (tparm, arg, a, complain, adc_unify);
+	      if (tparm == error_mark_node)
+		return 1;
+	    }
 	}
 
       if (!TREE_TYPE (arg))
