@@ -1,3 +1,8 @@
+2018-03-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84596
+	* g++.dg/cpp0x/static_assert15.C: New test.
+
 2018-03-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/61775

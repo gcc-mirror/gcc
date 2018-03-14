@@ -8630,8 +8630,7 @@ finish_static_assert (tree condition, tree message, location_t location,
   if (check_for_bare_parameter_packs (condition))
     condition = error_mark_node;
 
-  if (type_dependent_expression_p (condition) 
-      || value_dependent_expression_p (condition))
+  if (instantiation_dependent_expression_p (condition))
     {
       /* We're in a template; build a STATIC_ASSERT and put it in
          the right place. */
