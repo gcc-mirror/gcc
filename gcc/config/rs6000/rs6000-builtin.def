@@ -2008,6 +2008,8 @@ BU_P8V_AV_P (VCMPEQUD_P,	"vcmpequd_p",	CONST,	vector_eq_v2di_p)
 BU_P8V_AV_P (VCMPGTSD_P,	"vcmpgtsd_p",	CONST,	vector_gt_v2di_p)
 BU_P8V_AV_P (VCMPGTUD_P,	"vcmpgtud_p",	CONST,	vector_gtu_v2di_p)
 
+BU_P8V_AV_3 (VPERMXOR,		"vpermxor",	CONST, 	altivec_vpermxor)
+
 /* ISA 2.05 overloaded 2 argument functions.  */
 BU_P6_OVERLOAD_2 (CMPB, "cmpb")
 
@@ -2069,6 +2071,7 @@ BU_P8V_OVERLOAD_3 (VADDECUQ,	"vaddecuq")
 BU_P8V_OVERLOAD_3 (VADDEUQM,	"vaddeuqm")
 BU_P8V_OVERLOAD_3 (VSUBECUQ,	"vsubecuq")
 BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
+BU_P8V_OVERLOAD_3 (VPERMXOR,   "vpermxor")
 
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)

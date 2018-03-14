@@ -1,3 +1,14 @@
+2018-03-14  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add macro definitions for
+	ALTIVEC_BUILTIN_VEC_PERMXOR.
+	* config/rs6000/rs6000.h: Add #define for vec_permxor builtin.
+	* config/rs6000/rs6000-builtin.def: Add macro expansions for VPERMXOR.
+	* config/rs6000/altivec.md (altivec_vpermxor): New define expand.
+	* config/rs6000/rs6000-p8swap.c (rtx_is_swappable_p): Add case
+	UNSPEC_VPERMXOR.
+	* config/doc/extend.texi: Add prototypes for vec_permxor.
+
 2018-03-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/84852
