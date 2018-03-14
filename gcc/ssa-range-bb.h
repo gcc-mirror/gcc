@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 class block_ranger
 {
   class gori_map *gori; 	/* Generates Outgoing Range Info.  */
+  irange bool_zero;
+  irange bool_one;
   bool logical_expr_p (tree_code code, tree type) const;
   bool eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
 		     const irange& op1_true, const irange& op1_false,
@@ -39,7 +41,6 @@ class block_ranger
   bool process_logical (range_stmt& stmt, irange& r, tree name,
 			const irange& lhs);
   bool get_range (range_stmt& stmt, irange& r, tree name, const irange& lhs);
-protected:
   bool get_range_from_stmt (gimple *stmt, irange& r, tree name,
 			    const irange& lhs);
 public:

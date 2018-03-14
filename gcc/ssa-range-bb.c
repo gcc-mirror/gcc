@@ -333,8 +333,21 @@ gori_map::dump(FILE *f)
 }
 /* -------------------------------------------------------------------------*/
 
+block_ranger::block_ranger () : bool_zero (boolean_type_node, 0, 0),
+				bool_one (boolean_type_node, 1, 1)
+{
+  gori = new gori_map ();
+  initialize_global_ssa_range_cache ();
 
-/* Return TRUE if a CODE expression with operands of type TYPE is a boolean
+}
+
+block_ranger::~block_ranger ()
+{
+  destroy_global_ssa_range_cache ();
+  delete gori;
+}
+
+/* Return TRUE if CODE with operands of type TYPE is a boolean
    evaluation.  These are important to identify as both sides of a logical
    binary expression must be evaluated in order to calculate a range.  */
 bool
@@ -360,6 +373,8 @@ block_ranger::logical_expr_p (tree_code code, tree type) const
   return false;
 }
 
+/* Evaluate a binary logical expression given true and false ranges for each
+   of the operands. Base the result on the value in the LHS.  */
 bool
 block_ranger::eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
 			    const irange& op1_true, const irange& op1_false,
@@ -369,28 +384,50 @@ block_ranger::eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
   gcc_checking_assert (logical_expr_p (stmt.get_code (),
 				       TREE_TYPE (stmt.operand1 ())));
  
-  /* If the LHS can be TRUE OR FALSE, then we cant really tell anything.  */
+  /* If the LHS can be TRUE OR FALSE, then both need to be evalauted and
+     combined, otherwise any range restrictions that have been determined
+     leading up to this point would be lost.  */
   if (!wi::eq_p (lhs.lower_bound(), lhs.upper_bound()))
-    return false;
+    {
+      irange r1;
+      if (eval_logical (r1, stmt, bool_zero, op1_true, op1_false, op2_true,
+			op2_false) &&
+	  eval_logical (r, stmt, bool_one, op1_true, op1_false, op2_true,
+			op2_false))
+	{
+	  r.union_ (r1);
+	  return true;
+	}
+      return false;
 
-  /* Now combine based on the result.  */
+    }
+
+  /* Now combine based on whether the result is TRUE or FALSE.  */
   switch (stmt.get_code ())
     {
 
-      /* A logical AND of two ranges is executed when we are walking forward
-	 with ranges that have been determined.   x_8 is an unsigned char.
-	       b_1 = x_8 < 20
-	       b_2 = x_8 > 5
-	       c_2 = b_1 && b_2
-	 if we are looking for the range of x_8, the ranges on each side 
-	 will be:   b_1 carries x_8 = [0, 19],   b_2 carries [6, 255]
-	 the result of the AND is the intersection of the 2 ranges, [6, 255]. */
+      /* A logical operation on two ranges is executed with operand ranges that
+	 have been determined for both a TRUE and FALSE result..
+	 Assuming x_8 is an unsigned char:
+		b_1 = x_8 < 20
+		b_2 = x_8 > 5
+	 if we are looking for the range of x_8, the operand ranges will be:
+	 will be: 
+	 b_1 TRUE	x_8 = [0, 19]
+	 b_1 FALSE  	x_8 = [20, 255]
+	 b_2 TRUE 	x_8 = [6, 255]
+	 b_2 FALSE	x_8 = [0,5]. */
+	       
+      /*	c_2 = b_1 && b_2
+	 The result of an AND operation with a TRUE result is the intersection
+	 of the 2 TRUE ranges, [0,19] intersect [6,255]  ->   [6, 19]. */
       case TRUTH_AND_EXPR:
       case BIT_AND_EXPR:
         if (!lhs.zero_p ())
 	  r = irange_intersect (op1_true, op2_true);
 	else
 	  {
+	    /* The FALSE side is the union of the other 3 cases.  */
 	    irange ff = irange_intersect (op1_false, op2_false);
 	    irange tf = irange_intersect (op1_true, op2_false);
 	    irange ft = irange_intersect (op1_false, op2_true);
@@ -399,20 +436,17 @@ block_ranger::eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
 	  }
         break;
 
-      /* A logical OR of two ranges is executed when we are walking forward with
-	 ranges that have been determined.   x_8 is an unsigned char.
-	       b_1 = x_8 > 20
-	       b_2 = x_8 < 5
-	       c_2 = b_1 || b_2
-	 if we are looking for the range of x_8, the ranges on each side
-	 will be:   b_1 carries x_8 = [21, 255],   b_2 carries [0, 4]
-	 the result of the OR is the union_ of the 2 ranges, [0,4][21,255].  */
+      /* 	c_2 = b_1 || b_2
+	 An OR operation will only take the FALSE path if both operands are
+	 false, so [20, 255] intersect [0, 5] is the union: [0,5][20,255].  */
       case TRUTH_OR_EXPR:
       case BIT_IOR_EXPR:
         if (lhs.zero_p ())
 	  r = irange_intersect (op1_false, op2_false);
 	else
 	  {
+	    /* The TRUE side of the OR operation will be the union of the other
+	       three combinations.  */
 	    irange tt = irange_intersect (op1_true, op2_true);
 	    irange tf = irange_intersect (op1_true, op2_false);
 	    irange ft = irange_intersect (op1_false, op2_true);
@@ -429,7 +463,7 @@ block_ranger::eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
 }
 
 /* Given a logical STMT, calculate true and false for each potential path 
-   and resolve the outcome based on the logical operator.  */
+   using NAME and resolve the outcome based on the logical operator.  */
 bool
 block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
 		       const irange& lhs)
@@ -440,17 +474,7 @@ block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
   bool op1_in_chain, op2_in_chain;
   bool ret;
 
-  irange bool_zero (boolean_type_node, 0, 0);
-  irange bool_one (boolean_type_node, 1, 1);
   irange op1_true, op1_false, op2_true, op2_false;
-
-  /* If the lhs is not a true or false constant, we can't tell anything
-     about the arguments.  */
-  if (lhs.range_for_type_p ())
-    {
-      r.set_range_for_type (TREE_TYPE (name));
-      return true;
-    }
 
   /* Reaching this point means NAME is not in this stmt, but one of the
      names in it ought to be derived from it.  */
@@ -618,21 +642,6 @@ block_ranger::get_range_from_stmt (gimple *stmt, irange& r, tree name,
   return get_range (rn, r, name, lhs);
 }
 
-/*  ---------------------------------------------------------------------  */
-
-
-block_ranger::block_ranger ()
-{
-  gori = new gori_map ();
-  initialize_global_ssa_range_cache ();
-}
-
-block_ranger::~block_ranger ()
-{
-  destroy_global_ssa_range_cache ();
-  delete gori;
-}
-
 void
 block_ranger::dump (FILE *f)
 {
@@ -721,16 +730,10 @@ block_ranger::range_on_edge (irange& r, tree name, edge e)
   gcc_assert (stmt);
 
   if (e->flags & EDGE_TRUE_VALUE)
-    {
-      irange bool_true (boolean_type_node,  1 , 1);
-      return get_range_from_stmt (stmt, r, name, bool_true);
-    }
+    return get_range_from_stmt (stmt, r, name, bool_one);
 
   if (e->flags & EDGE_FALSE_VALUE)
-    {
-      irange bool_false (boolean_type_node,  0 , 0);
-      return get_range_from_stmt (stmt, r, name, bool_false);
-    }
+    return get_range_from_stmt (stmt, r, name, bool_zero);
 
   return false;
 }
