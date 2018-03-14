@@ -2154,6 +2154,35 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   /* clean (ANTIC_IN (block)) is defered to after the iteration converged
      because it can cause non-convergence, see for example PR81181.  */
 
+  /* Intersect ANTIC_IN with the old ANTIC_IN.  This is required until
+     we properly represent the maximum expression set, thus not prune
+     values without expressions during the iteration.  */
+  if (was_visited
+      && bitmap_and_into (&ANTIC_IN (block)->values, &old->values))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "warning: intersecting with old ANTIC_IN "
+		 "shrinks the set\n");
+      /* Prune expressions not in the value set.  */
+      bitmap_iterator bi;
+      unsigned int i;
+      unsigned int to_clear = -1U;
+      FOR_EACH_EXPR_ID_IN_SET (ANTIC_IN (block), i, bi)
+	{
+	  if (to_clear != -1U)
+	    {
+	      bitmap_clear_bit (&ANTIC_IN (block)->expressions, to_clear);
+	      to_clear = -1U;
+	    }
+	  pre_expr expr = expression_for_id (i);
+	  unsigned int value_id = get_expr_value_id (expr);
+	  if (!bitmap_bit_p (&ANTIC_IN (block)->values, value_id))
+	    to_clear = i;
+	}
+      if (to_clear != -1U)
+	bitmap_clear_bit (&ANTIC_IN (block)->expressions, to_clear);
+    }
+
   if (!bitmap_set_equal (old, ANTIC_IN (block)))
     {
       changed = true;
