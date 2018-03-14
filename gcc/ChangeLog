@@ -1,3 +1,11 @@
+2018-03-14  Martin Liska  <mliska@suse.cz>
+
+	* tree.c (record_node_allocation_statistics): Use
+	get_stats_node_kind.
+	(get_stats_node_kind): New function extracted from
+	record_node_allocation_statistics.
+	(free_node): Use get_stats_node_kind.
+
 2018-03-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (compute_antic_aux): Remove code that asserts
