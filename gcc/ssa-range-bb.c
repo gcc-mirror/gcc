@@ -503,6 +503,7 @@ block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
       ret &= get_operand_range (op1_false, name);
     }
 
+  /* If operand1 evaluated OK, move on to operand 2.  */
   if (ret)
     {
       if (op2_in_chain)
@@ -518,6 +519,7 @@ block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
 	  ret &= get_operand_range (op2_false, name);
 	}
     }
+
   if (!ret || !eval_logical (r, stmt, lhs, op1_true, op1_false, op2_true,
 			     op2_false))
     r.set_range_for_type (TREE_TYPE (name));
@@ -526,11 +528,10 @@ block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
 
 
 /* Given the expression in STMT, return an evaluation in R for NAME.
-   Returning false means the name being looked for is NOT resolvable, and
-   can be removed from the GORI map to avoid future searches.  */
+   Returning false means the name being looked for was NOT resolvable.  */
 bool
 block_ranger::get_range (range_stmt& stmt, irange& r, tree name,
-		 const irange& lhs)
+			 const irange& lhs)
 {
   range_stmt op_stmt;
   irange op1_range, op2_range;
@@ -638,7 +639,7 @@ block_ranger::get_range_from_stmt (gimple *stmt, irange& r, tree name,
       r.clear (TREE_TYPE (name));
       return true;
     }
-
+ 
   return get_range (rn, r, name, lhs);
 }
 
