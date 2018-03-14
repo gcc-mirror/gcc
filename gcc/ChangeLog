@@ -1,3 +1,9 @@
+2018-03-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/83451
+	* config/pa/pa.c (pa_emit_move_sequence):  Always emit secondary reload
+	insn for floating-point loads and stores.
+
 2018-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (-mclflushopt): Fix spelling of option.
