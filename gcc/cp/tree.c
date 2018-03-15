@@ -5347,6 +5347,19 @@ cp_tree_code_length (enum tree_code code)
     }
 }
 
+/* Wrapper around warn_deprecated_use that doesn't warn for
+   current_class_type.  */
+
+void
+cp_warn_deprecated_use (tree node)
+{
+  if (TYPE_P (node)
+      && current_class_type
+      && TYPE_MAIN_VARIANT (node) == current_class_type)
+    return;
+  warn_deprecated_use (node, NULL_TREE);
+}
+
 /* Implement -Wzero_as_null_pointer_constant.  Return true if the
    conditions for the warning hold, false otherwise.  */
 bool
