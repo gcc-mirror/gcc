@@ -5,6 +5,7 @@
 	(ERDINFO, ETRACKC, ELDBC, ELDUC): New leaves.
 
 2018-03-15  David Malcolm  <dmalcolm@redhat.com>
+	    Paul Hua <paul.hua.gm@gmail.com>
 
 	PR c/84852
 	* gcc.dg/fixits-pr84852-1.c: Fix filename in dg-regexp.
