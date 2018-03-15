@@ -1,3 +1,9 @@
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84860
+	* optabs.c (emit_conditional_move): Pass address of cmode's copy
+	rather than address of cmode as last argument to prepare_cmp_insn.
+
 2018-03-15  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386.c (F_AVX512VBMI2, F_GFNI, F_VPCLMULQDQ,
