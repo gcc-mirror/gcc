@@ -1,3 +1,8 @@
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84860
+	* gcc.c-torture/compile/pr84860.c: New test.
+
 2018-03-15  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/builtin_target.c (check_intel_cpu_model): Add
