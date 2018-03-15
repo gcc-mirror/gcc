@@ -1,5 +1,9 @@
 2018-03-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84801 - ICE with unexpanded pack in lambda.
+	* pt.c (check_for_bare_parameter_packs): Don't return early for a
+	lambda in non-template context.
+
 	PR c++/81236 - auto variable and auto function
 	* pt.c (tsubst_baselink): Update the type of the BASELINK after
 	mark_used.

@@ -4043,7 +4043,8 @@ check_for_bare_parameter_packs (tree t)
     return false;
 
   /* A lambda might use a parameter pack from the containing context.  */
-  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
+  if (current_class_type && LAMBDA_TYPE_P (current_class_type)
+      && CLASSTYPE_TEMPLATE_INFO (current_class_type))
     return false;
 
   if (TREE_CODE (t) == TYPE_DECL)
