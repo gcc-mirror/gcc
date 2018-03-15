@@ -1,3 +1,8 @@
+2018-03-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/84711
+	* gcc.target/arm/big-endian-subreg.c: New.
+
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84860
