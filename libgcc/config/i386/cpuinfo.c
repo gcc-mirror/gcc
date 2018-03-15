@@ -287,6 +287,16 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	features |= (1 << FEATURE_AVX512IFMA);
       if (ecx & bit_AVX512VBMI)
 	features |= (1 << FEATURE_AVX512VBMI);
+      if (ecx & bit_AVX512VBMI2)
+	features |= (1 << FEATURE_AVX512VBMI2);
+      if (ecx & bit_GFNI)
+	features |= (1 << FEATURE_GFNI);
+      if (ecx & bit_VPCLMULQDQ)
+	features |= (1 << FEATURE_VPCLMULQDQ);
+      if (ecx & bit_AVX512VNNI)
+	features |= (1 << FEATURE_AVX512VNNI);
+      if (ecx & bit_AVX512BITALG)
+	features |= (1 << FEATURE_AVX512BITALG);
       if (ecx & bit_AVX512VPOPCNTDQ)
 	features |= (1 << FEATURE_AVX512VPOPCNTDQ);
       if (edx & bit_AVX5124VNNIW)

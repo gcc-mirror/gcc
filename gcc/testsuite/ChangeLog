@@ -1,3 +1,10 @@
+2018-03-15  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/builtin_target.c (check_intel_cpu_model): Add
+	cannonlake.
+	(check_features): Add avx512vbmi2, gfni, vpclmulqdq, avx512vnni,
+	avx512bitalg.
+
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/84853

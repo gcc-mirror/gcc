@@ -1,3 +1,12 @@
+2018-03-15  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.c (get_available_features): Add
+	FEATURE_AVX512VBMI2, FEATURE_GFNI, FEATURE_VPCLMULQDQ,
+	FEATURE_AVX512VNNI, FEATURE_AVX512BITALG.
+	* config/i386/cpuinfo.h (processor_features): Add FEATURE_AVX512VBMI2,
+	FEATURE_GFNI, FEATURE_VPCLMULQDQ, FEATURE_AVX512VNNI,
+	FEATURE_AVX512BITALG.
+
 2018-03-14  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/cpuinfo.h (processor_subtypes): Split up icelake on

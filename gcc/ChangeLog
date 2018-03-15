@@ -1,3 +1,8 @@
+2018-03-15  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c (F_AVX512VBMI2, F_GFNI, F_VPCLMULQDQ,
+	F_AVX512VNNI, F_AVX512BITALG): New.
+
 2018-03-14  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/83451
