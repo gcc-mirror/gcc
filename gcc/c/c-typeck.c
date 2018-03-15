@@ -11350,7 +11350,8 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	}
       else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE
-		|| code0 == VECTOR_TYPE)
+		|| (code0 == VECTOR_TYPE
+		    && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE))
 	       && code1 == INTEGER_TYPE)
 	{
 	  doing_shift = true;
@@ -11408,7 +11409,8 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	}
       else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE
-		|| code0 == VECTOR_TYPE)
+		|| (code0 == VECTOR_TYPE
+		    && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE))
 	       && code1 == INTEGER_TYPE)
 	{
 	  doing_shift = true;

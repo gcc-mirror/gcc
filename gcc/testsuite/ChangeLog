@@ -1,4 +1,7 @@
-gcc/testsuite/ChangeLog:
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84853
+	* gcc.dg/pr84853.c: New test.
 
 2018-03-14  Carl Love  <cel@us.ibm.com>
 
