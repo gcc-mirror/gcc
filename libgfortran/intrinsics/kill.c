@@ -51,11 +51,11 @@ kill_sub (GFC_INTEGER_4 pid, GFC_INTEGER_4 signal, GFC_INTEGER_4 *status)
 }
 iexport(kill_sub);
 
-extern GFC_INTEGER_4 kill (GFC_INTEGER_4, GFC_INTEGER_4);
-export_proto(kill);
+extern GFC_INTEGER_4 PREFIX (kill) (GFC_INTEGER_4, GFC_INTEGER_4);
+export_proto_np(PREFIX (kill));
 
 GFC_INTEGER_4
-kill (GFC_INTEGER_4 pid, GFC_INTEGER_4 signal)
+PREFIX (kill) (GFC_INTEGER_4 pid, GFC_INTEGER_4 signal)
 {
   int val;
   val = (int)kill (pid, signal);
