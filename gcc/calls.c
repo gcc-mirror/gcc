@@ -3422,9 +3422,14 @@ expand_call (tree exp, rtx target, int ignore)
 	if (CALL_EXPR_RETURN_SLOT_OPT (exp)
 	    && target
 	    && MEM_P (target)
-	    && !(MEM_ALIGN (target) < TYPE_ALIGN (rettype)
-		 && targetm.slow_unaligned_access (TYPE_MODE (rettype),
-						   MEM_ALIGN (target))))
+	    /* If rettype is addressable, we may not create a temporary.
+	       If target is properly aligned at runtime and the compiler
+	       just doesn't know about it, it will work fine, otherwise it
+	       will be UB.  */
+	    && (TREE_ADDRESSABLE (rettype)
+		|| !(MEM_ALIGN (target) < TYPE_ALIGN (rettype)
+		     && targetm.slow_unaligned_access (TYPE_MODE (rettype),
+						       MEM_ALIGN (target)))))
 	  structure_value_addr = XEXP (target, 0);
 	else
 	  {

@@ -1,3 +1,8 @@
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79085
+	* g++.dg/opt/pr79085.C: New test.
+
 2018-03-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/84574
