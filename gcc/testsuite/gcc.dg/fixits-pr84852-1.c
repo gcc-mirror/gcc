@@ -22,4 +22,4 @@ int foo (void) { return strlen(""); }
 #endif
 
 /* We need this, to consume a stray line marker for the bogus line.  */
-/* { dg-regexp ".*fixits-pr84852.c:-812156810:25:" } */
+/* { dg-regexp ".*fixits-pr84852-1.c:-812156810:25:" } */
