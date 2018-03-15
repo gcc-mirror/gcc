@@ -11453,9 +11453,9 @@ abi_v4_pass_in_fpr (machine_mode mode, bool named)
 {
   if (!TARGET_HARD_FLOAT)
     return false;
-  if (mode == DFmode)
+  if (TARGET_DOUBLE_FLOAT && mode == DFmode)
     return true;
-  if (mode == SFmode && named)
+  if (TARGET_SINGLE_FLOAT && mode == SFmode && named)
     return true;
   /* ABI_V4 passes complex IBM long double in 8 gprs.
      Stupid, but we can't change the ABI now.  */

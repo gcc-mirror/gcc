@@ -1,3 +1,9 @@
+2018-03-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (abi_v4_pass_in_fpr): Add back the
+	TARGET_DOUBLE_FLOAT and TARGET_SINGLE_FLOAT conditions on the DFmode
+	resp. SFmode cases.
+
 2018-03-15  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/84711
