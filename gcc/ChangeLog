@@ -1,3 +1,8 @@
+2018-03-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84852
+	* gcc.dg/fixits-pr84852-1.c: Fix filename in dg-regexp.
+
 2018-03-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (abi_v4_pass_in_fpr): Add back the
