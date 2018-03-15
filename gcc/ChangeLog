@@ -1,3 +1,10 @@
+2018-03-15  Vladimir Mezentsev  <vladimir.mezentsev@oracle.com>
+
+	PR target/68256
+	* varasm.c (hash_section): Return an unchangeble hash value
+	* config/aarch64/aarch64.c (aarch64_use_blocks_for_constant_p):
+	Return !aarch64_can_use_per_function_literal_pools_p ().
+
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84860

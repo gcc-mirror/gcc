@@ -225,7 +225,7 @@ hash_section (section *sect)
 {
   if (sect->common.flags & SECTION_NAMED)
     return htab_hash_string (sect->named.name);
-  return sect->common.flags;
+  return sect->common.flags & ~SECTION_DECLARED;
 }
 
 /* Helper routines for maintaining object_block_htab.  */
