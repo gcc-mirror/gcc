@@ -1,5 +1,9 @@
 2018-03-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84820 - no error for invalid qualified-id.
+	* parser.c (cp_parser_make_indirect_declarator): Don't wrap
+	cp_error_declarator.
+
 	PR c++/84801 - ICE with unexpanded pack in lambda.
 	* pt.c (check_for_bare_parameter_packs): Don't return early for a
 	lambda in non-template context.
