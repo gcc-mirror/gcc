@@ -1,3 +1,9 @@
+2018-03-15  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/sgxintrin.h (_enclv_u32): New intrinsic.
+	(__enclv_bc, __enclv_cd, __enclv_generic): New definitions.
+	(ERDINFO, ETRACKC, ELDBC, ELDUC): New leaves.
+
 2018-03-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/84852

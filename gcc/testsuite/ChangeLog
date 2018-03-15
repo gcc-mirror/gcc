@@ -1,3 +1,7 @@
+2018-03-15  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/sgx.c (_enclv_u32): Test new intrinsic.
+
 2018-03-15  Richard Biener  <rguenther@suse.de>
 
 	PR c/84873
