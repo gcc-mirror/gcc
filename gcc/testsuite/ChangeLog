@@ -1,3 +1,8 @@
+2018-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/84873
+	* c-c++-common/pr84873.c: New testcase.
+
 2018-03-15  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/84711
