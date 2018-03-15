@@ -7733,11 +7733,9 @@ aarch64_can_use_per_function_literal_pools_p (void)
 static bool
 aarch64_use_blocks_for_constant_p (machine_mode, const_rtx)
 {
-  /* Fixme:: In an ideal world this would work similar
-     to the logic in aarch64_select_rtx_section but this
-     breaks bootstrap in gcc go.  For now we workaround
-     this by returning false here.  */
-  return false;
+  /* We can't use blocks for constants when we're using a per-function
+     constant pool.  */
+  return !aarch64_can_use_per_function_literal_pools_p ();
 }
 
 /* Select appropriate section for constants depending
