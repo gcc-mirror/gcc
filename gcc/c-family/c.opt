@@ -1512,9 +1512,9 @@ fmodules
 C++ ObjC++ Driver Var(flag_modules) Uinteger
 Enable C++ modules (experimental).
 
-fmodules++
+fmodules-atom
 C++ ObjC++ Driver Var(flag_modules) Uinteger
-Enable C++ modules (more experimental).
+Enable C++ atom modules (more experimental).
 
 fmodules-ts
 C++ ObjC++ Alias(fmodules)

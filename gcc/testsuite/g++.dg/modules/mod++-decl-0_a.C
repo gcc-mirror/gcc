@@ -1,10 +1,6 @@
-// { dg-options "-fmodules++" }
+// { dg-options "-fmodules-atom" }
 // { dg-module-bmi "thing" }
 
 export module thing;
-module 
-{
-  int bar ();
-}
 
 export int baz ();

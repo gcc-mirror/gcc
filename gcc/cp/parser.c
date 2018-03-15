@@ -12658,7 +12658,12 @@ check_module_outermost (const cp_token *token, const char *msg)
 
 /* Module-declaration
      module ;
-     module module-name attr-spec-seq-opt ; */
+     module module-name attr-spec-seq-opt ;
+
+   with  fmodule++
+     module module-name attr-spec-seq-opt ;
+     import-decls-opt
+*/
 
 static bool
 cp_parser_module_declaration (cp_parser *parser, bool maybe_global,
@@ -12681,22 +12686,6 @@ cp_parser_module_declaration (cp_parser *parser, bool maybe_global,
   if (!*name)
     return false;
 
-  if (flag_modules == 2
-      && cp_lexer_nth_token_is_keyword (parser->lexer, 1, RID_MODULE)
-      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_BRACE))
-    {
-      /* Consume the global module.  */
-      cp_lexer_consume_token (parser->lexer);
-      matching_braces braces;
-      if (braces.require_open (parser))
-	{
-	  cp_parser_declaration_seq_opt (parser);
-			  
-	  /* Look for the final `}'.  */
-	  braces.require_close (parser);
-	}
-    }
-
   declare_module (name, exporting, attrs);
   return false;
 }
@@ -12705,7 +12694,7 @@ cp_parser_module_declaration (cp_parser *parser, bool maybe_global,
    import module-name attr-spec-seq-opt ; */
 
 static void
-cp_parser_import_declaration (cp_parser *parser)
+cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
 
@@ -12719,7 +12708,7 @@ cp_parser_import_declaration (cp_parser *parser)
   else if (!check_module_outermost (token, "module-import"))
     ;
   else
-    import_module (name, attrs);
+    import_module (name, exporting, attrs);
 }
 
 /*  export-declaration.
@@ -12797,6 +12786,7 @@ static void
 cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 {
   bool in_global = top_level && flag_modules;
+  bool import_ok = in_global && flag_modules == 2;
 
   while (true)
     {
@@ -12868,6 +12858,22 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 
 	      continue;
 	    }
+	}
+
+      if (import_ok)
+	{
+	  bool exporting
+	    = cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT);
+	  if (cp_lexer_nth_token_is_keyword (parser->lexer,
+					     1 + exporting, RID_IMPORT))
+	    {
+	      if (exporting)
+		cp_lexer_consume_token (parser->lexer);
+	      cp_parser_import_declaration (parser, exporting);
+	      continue;
+	    }
+	  else
+	    import_ok = false;
 	}
 
       /* Parse the declaration itself.  */
@@ -12960,7 +12966,7 @@ cp_parser_declaration (cp_parser* parser)
       else
 	cp_parser_explicit_instantiation (parser);
     }
-  else if (token1.keyword == RID_IMPORT)
+  else if (token1.keyword == RID_IMPORT && flag_modules != 2)
     cp_parser_import_declaration (parser);
   /* If the next token is `export', it's new-style modules or
      old-style template.  */

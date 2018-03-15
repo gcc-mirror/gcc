@@ -6990,17 +6990,20 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_module (const cp_expr &name, tree)
+import_module (const cp_expr &name, bool exporting, tree)
 {
+  if (export_depth)
+    exporting = true;
+
   gcc_assert (global_namespace == current_scope ());
   if (module_state *imp
       = module_state::do_import (name.get_location (), *name,
 				 /*unit_p=*/false, /*import_p=*/true))
     {
       imp->imported = true;
-      if (export_depth != 0)
+      if (exporting)
 	imp->exported = true;
-      (*module_state::modules)[MODULE_NONE]->set_import (imp, export_depth != 0);
+      (*module_state::modules)[MODULE_NONE]->set_import (imp, exporting);
     }
   gcc_assert (global_namespace == current_scope ());
 }
@@ -7092,7 +7095,7 @@ handle_module_option (unsigned code, const char *arg, int)
 {
   switch (opt_code (code))
     {
-    case OPT_fmodules__:
+    case OPT_fmodules_atom:
       flag_modules = 2;
       return true;
 

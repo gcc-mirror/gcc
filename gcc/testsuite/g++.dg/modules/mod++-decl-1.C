@@ -1,4 +1,4 @@
-// { dg-options "-fmodules++" }
+// { dg-options "-fmodules-atom" }
 
 int i;
 

@@ -1,14 +1,12 @@
-// { dg-options "-fmodules++" }
-module thing;
+// { dg-options "-fmodules-atom" }
+export module pop;
+// { dg-module-bmi "pop" }
+export import thing;
 
-module
-{
-  void bink ();
-}
+void bink ();
 
 void bonk ()
 {
   baz ();
-  bar (); // { dg-error "not declared" }
   bink ();
 }

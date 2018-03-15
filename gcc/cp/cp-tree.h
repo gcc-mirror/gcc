@@ -6534,7 +6534,7 @@ extern void pop_module_export (int);
 extern void declare_module (const cp_expr &, bool, tree);
 extern void init_module_processing ();
 extern void finish_module ();
-extern void import_module (const cp_expr &, tree);
+extern void import_module (const cp_expr &, bool, tree);
 extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
