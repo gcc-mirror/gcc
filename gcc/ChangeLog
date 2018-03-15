@@ -1,3 +1,9 @@
+2018-03-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/84711
+	* config/arm/arm.c (arm_can_change_mode_class): Use GET_MODE_UNIT_SIZE
+	instead of GET_MODE_SIZE when comparing Units.
+
 2018-03-15  Vladimir Mezentsev  <vladimir.mezentsev@oracle.com>
 
 	PR target/68256
