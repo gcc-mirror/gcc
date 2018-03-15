@@ -1,3 +1,9 @@
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79085
+	* calls.c (expand_call): For TREE_ADDRESSABLE rettype ignore alignment
+	check and use address of target always.
+
 2018-03-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/84574
