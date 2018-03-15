@@ -1,5 +1,11 @@
 2018-03-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81236 - auto variable and auto function
+	* pt.c (tsubst_baselink): Update the type of the BASELINK after
+	mark_used.
+
+2018-03-14  Jason Merrill  <jason@redhat.com>
+
 	PR c++/83916 - ICE with template template parameters.
 	* pt.c (convert_template_argument): Don't substitute into type of
 	non-type parameter if we don't have enough arg levels.
