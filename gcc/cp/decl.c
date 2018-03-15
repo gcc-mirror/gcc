@@ -10448,7 +10448,7 @@ grokdeclarator (const cp_declarator *declarator,
      suppress reports of deprecated items.  */
   if (type && TREE_DEPRECATED (type)
       && deprecated_state != DEPRECATED_SUPPRESS)
-    warn_deprecated_use (type, NULL_TREE);
+    cp_warn_deprecated_use (type);
   if (type && TREE_CODE (type) == TYPE_DECL)
     {
       typedef_decl = type;
@@ -10456,7 +10456,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (TREE_DEPRECATED (type)
 	  && DECL_ARTIFICIAL (typedef_decl)
 	  && deprecated_state != DEPRECATED_SUPPRESS)
-	warn_deprecated_use (type, NULL_TREE);
+	cp_warn_deprecated_use (type);
     }
   /* No type at all: default to `int', and set DEFAULTED_INT
      because it was not a user-defined typedef.  */
@@ -11271,8 +11271,18 @@ grokdeclarator (const cp_declarator *declarator,
 		  explicitp = 2;
 	      }
 
-	    arg_types = grokparms (declarator->u.function.parameters,
-				   &parms);
+	    tree pushed_scope = NULL_TREE;
+	    if (funcdecl_p
+		&& decl_context != FIELD
+		&& inner_declarator->u.id.qualifying_scope
+		&& CLASS_TYPE_P (inner_declarator->u.id.qualifying_scope))
+	      pushed_scope
+		= push_scope (inner_declarator->u.id.qualifying_scope);
+
+	    arg_types = grokparms (declarator->u.function.parameters, &parms);
+
+	    if (pushed_scope)
+	      pop_scope (pushed_scope);
 
 	    if (inner_declarator
 		&& inner_declarator->kind == cdk_id
@@ -12799,7 +12809,7 @@ grokparms (tree parmlist, tree *parms)
 	    {
 	      tree deptype = type_is_deprecated (type);
 	      if (deptype)
-		warn_deprecated_use (deptype, NULL_TREE);
+		cp_warn_deprecated_use (deptype);
 	    }
 
 	  /* Top-level qualifiers on the parameters are

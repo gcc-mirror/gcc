@@ -1,3 +1,13 @@
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84222
+	* cp-tree.h (cp_warn_deprecated_use): Declare.
+	* tree.c (cp_warn_deprecated_use): New function.
+	* typeck2.c (build_functional_cast): Use it.
+	* decl.c (grokparms): Likewise.
+	(grokdeclarator): Likewise.  Temporarily push nested class scope
+	around grokparms call for out of class member definitions.
+
 2018-03-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84820 - no error for invalid qualified-id.
