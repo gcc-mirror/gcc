@@ -12657,19 +12657,29 @@ check_module_outermost (const cp_token *token, const char *msg)
 }
 
 /* Module-declaration
-   module module-name attr-spec-seq-opt ; */
+     module ;
+     module module-name attr-spec-seq-opt ; */
 
-static void
-cp_parser_module_declaration (cp_parser *parser, bool exporting)
+static bool
+cp_parser_module_declaration (cp_parser *parser, bool maybe_global,
+			      bool exporting)
 {
   cp_lexer_consume_token (parser->lexer);
+
+  if (maybe_global && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+    {
+      /* Global module piece.  */
+      cp_lexer_consume_token (parser->lexer);
+      return true;
+    }
+
   cp_expr name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
   if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
-    return;
+    return false;
   if (!*name)
-    return;
+    return false;
 
   if (flag_modules == 2
       && cp_lexer_nth_token_is_keyword (parser->lexer, 1, RID_MODULE)
@@ -12688,6 +12698,7 @@ cp_parser_module_declaration (cp_parser *parser, bool exporting)
     }
 
   declare_module (name, exporting, attrs);
+  return false;
 }
 
 /* Import-declaration
@@ -12775,7 +12786,8 @@ cp_parser_module_proclamation (cp_parser *parser)
 /* Declarations [gram.dcl.dcl] */
 
 /* Parse an optional declaration-sequence.  TOP_LEVEL is true, if this
-   is the top-level declaration sequence.
+   is the top-level declaration sequence.  That affects whether we
+   deal with module-preamble.
 
    declaration-seq:
      declaration
@@ -12784,6 +12796,8 @@ cp_parser_module_proclamation (cp_parser *parser)
 static void
 cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 {
+  bool in_global = top_level && flag_modules;
+
   while (true)
     {
       cp_token *token;
@@ -12826,20 +12840,31 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 	  continue;
 	}
 
-      if (top_level && flag_modules)
+      if (in_global)
 	{
-	  /* Clear top-level, we either have a preamble or we don't.  */
-	  if (flag_modules == 2)
-	    top_level = false;
-
+	  /* Look for module-declaration.  Note, in_global is set to
+	     true on entry if this is toplevel.  */
 	  bool exporting = token->keyword == RID_EXPORT;
 
+	  in_global = !top_level;
 	  if (cp_lexer_nth_token_is_keyword (parser->lexer, 1 + exporting,
 					     RID_MODULE))
 	    {
+	      bool maybe_global = top_level;
+
+	      /* Clear top-level, we either have a preamble or we don't.  */
+	      top_level = false;
+
 	      if (exporting)
-		cp_lexer_consume_token (parser->lexer);
-	      cp_parser_module_declaration (parser, exporting);
+		{
+		  cp_lexer_consume_token (parser->lexer);
+		  maybe_global = false;
+		}
+	      else if (flag_modules == 2)
+		maybe_global = false;
+
+	      in_global = cp_parser_module_declaration
+		(parser, maybe_global, exporting);
 
 	      continue;
 	    }

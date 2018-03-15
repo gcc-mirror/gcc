@@ -1,3 +1,4 @@
+module;
 static void Bar () {}
 
 export module Foo;

@@ -1,3 +1,4 @@
+module;
 
 extern module foo : void Baz ();
 

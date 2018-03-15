@@ -1,4 +1,4 @@
-
+module;
 export void Foo (); // { dg-error "after a module interface" }
 
 export module bob;

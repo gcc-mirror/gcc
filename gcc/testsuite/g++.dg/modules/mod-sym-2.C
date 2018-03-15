@@ -1,3 +1,4 @@
+module;
 inline void Foo () {}
 
 export module okely.dokely;

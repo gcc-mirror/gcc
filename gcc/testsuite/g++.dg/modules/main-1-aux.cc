@@ -1,5 +1,6 @@
 // Used by main.C
 
+module;
 extern "C" int printf (const char *, ...);
 export module helgen;
 

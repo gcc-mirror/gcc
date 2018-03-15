@@ -1,3 +1,4 @@
+module;
 import Kevin;
 
 export module Bob; // { dg-error "module after import" }
