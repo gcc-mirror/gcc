@@ -1,3 +1,9 @@
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgfortran/84880
+	* intrinsics/kill.c (kill): Rename to...
+	(PREFIX (kill)): ... this.  Use export_proto_np instead of export_proto.
+
 2018-03-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* libgfortran/gfortran.map: Remove _gfortran_kill_i4,
