@@ -1,3 +1,8 @@
+2018-03-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.md (movsi_internal): Fix thinko in 
+	split predicate.
+
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79085
