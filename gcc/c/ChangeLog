@@ -1,3 +1,10 @@
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84853
+	* c-typeck.c (build_binary_op) <case RSHIFT_EXPR, case LSHIFT_EXPR>:
+	If code1 is INTEGER_TYPE, only allow code0 VECTOR_TYPE if it has
+	INTEGER_TYPE element type.
+
 2018-03-13  David Pagan  <dave.pagan@oracle.com>
 
 	PR c/46921
