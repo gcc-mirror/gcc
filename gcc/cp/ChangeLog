@@ -1,3 +1,9 @@
+2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84874
+	* decl.c (reshape_init_class): Don't assert d->cur->index == field
+	if d->cur->index is a FIELD_DECL, instead set field to d->cur->index.
+
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84222
