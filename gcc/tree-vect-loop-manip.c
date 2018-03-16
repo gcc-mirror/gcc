@@ -2700,7 +2700,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 /* Function vect_create_cond_for_niters_checks.
 
    Create a conditional expression that represents the run-time checks for
-   loop's niter.  The loop is guaranteed to to terminate if the run-time
+   loop's niter.  The loop is guaranteed to terminate if the run-time
    checks hold.
 
    Input:

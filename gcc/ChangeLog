@@ -1,3 +1,12 @@
+2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84909
+	* hsa-gen.c (mem_type_for_type): Fix comment typo.
+	* tree-vect-loop-manip.c (vect_create_cond_for_niters_checks):
+	Likewise.
+	* gimple-ssa-warn-restrict.c (builtin_memref::set_base_and_offset):
+	Likewise.
+
 2018-03-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/84876

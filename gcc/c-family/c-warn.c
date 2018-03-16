@@ -1138,8 +1138,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
       conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
       if (conversion_kind == UNSAFE_IMAGINARY)
 	warning_at (loc, OPT_Wconversion,
-		    "conversion from %qT to to %qT discards imaginary "
-		    "component",
+		    "conversion from %qT to %qT discards imaginary component",
 		    expr_type, type);
       else
 	{
