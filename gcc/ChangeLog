@@ -1,3 +1,9 @@
+2018-03-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/84722
+	* multiple_target.c (create_dispatcher_calls): Redirect also
+	an alias.
+
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79937
