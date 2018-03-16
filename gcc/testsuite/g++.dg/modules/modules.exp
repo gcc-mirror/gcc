@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2017, 2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ if ![info exists DEFAULT_CXXFLAGS] then {
     set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
 }
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
-lappend DEFAULT_MODFLAGS "-std=c++14" "-fmodules" "-fmodule-wrapper="
+lappend DEFAULT_MODFLAGS "-std=c++17" "-fmodule-wrapper="
 setenv CXX_MODULE_PATH "$srcdir/$subdir"
 dg-init
 
@@ -200,16 +200,27 @@ proc cleanup_module_files { files } {
     }
 }
 
+proc mode_list { test } {
+    if [search_for $test "-fmodules"] {
+	return { "" }
+    }
+    return { "-fmodules-ts" "-fmodules-atom" }
+}
+
 # not grouped tests, sadly tcl doesn't have negated glob
-foreach src [prune [lsort [find $srcdir/$subdir "*.C"]] \
+foreach test [prune [lsort [find $srcdir/$subdir "*.C"]] \
 		 "$srcdir/$subdir/*_?.C"] {
-    if [runtest_file_p $runtests $src] {
-	set module_bmis {}
-	set module_paths [list $srcdir/$subdir/]
-	# don't bother running these at each -std level
-	dg-test $src "" $DEFAULT_MODFLAGS
-	set testcase [string range $src [string length "$srcdir/"] end]
-	cleanup_module_files [module_bmi_p $testcase $module_bmis]
+    if [runtest_file_p $runtests $test] {
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach mode [mode_list $test] {
+	    set module_bmis {}
+	    set module_paths [list $srcdir/$subdir/]
+	    verbose "Testing $nshort, $mode" 1
+	    dg-test $test $mode $DEFAULT_MODFLAGS
+	    set testcase [string range $test [string length "$srcdir/"] end]
+	    cleanup_module_files [module_bmi_p $testcase $module_bmis]
+	}
     }
 }
 
@@ -217,31 +228,35 @@ foreach src [prune [lsort [find $srcdir/$subdir "*.C"]] \
 foreach src [lsort [find $srcdir/$subdir "*_a.C"]] {
     # use the FOO_a.C name as the parallelization key
     if [runtest_file_p $runtests $src] {
-	set mod_files {}
-	set module_do {}
-	set srcs [lsort [find [file dirname $src] \
-			 [regsub {_a.C$} [file tail $src] {_[a-z].C}]]]
-	set asm_list {}
-	verbose "Modules $srcs" 1
-	foreach test $srcs {
-	    set module_bmis {}
-	    dg-test -keep-output $test "" $DEFAULT_MODFLAGS
-	    lappend asm_list [regsub {\.C$} [file tail $test] {.s}]
-	    set testcase [string range $test [string length "$srcdir/"] end]
-	    lappend mod_files [module_bmi_p $testcase $module_bmis]
-	}
-	set ok 1
-	if { $module_do != "" } {
-	    set testcase [regsub {_a.C} $src {}]
-	    set testcase \
-		[string range $testcase [string length "$srcdir/"] end]
-	    set ok [module_do_it $module_do $testcase $asm_list]
-	}
-	if { $ok } {
-	    foreach asm $asm_list {
-		file_on_host delete $asm
+	set tests [lsort [find [file dirname $src] \
+			      [regsub {_a.C$} [file tail $src] {_[a-z].C}]]]
+
+	foreach mode [mode_list $src] {
+	    set mod_files {}
+	    set module_do {}
+	    set asm_list {}
+	    foreach test $tests {
+		set module_bmis {}
+		set nshort [file tail [file dirname $test]]/[file tail $test]
+		verbose "Testing $nshort, $mode" 1
+		dg-test -keep-output $test $mode $DEFAULT_MODFLAGS
+		lappend asm_list [regsub {\.C$} [file tail $test] {.s}]
+		set testcase [string range $test [string length "$srcdir/"] end]
+		lappend mod_files [module_bmi_p $testcase $module_bmis]
 	    }
-	    cleanup_module_files $mod_files
+	    set ok 1
+	    if { $module_do != "" } {
+		set testcase [regsub {_a.C} $src {}]
+		set testcase \
+		    [string range $testcase [string length "$srcdir/"] end]
+		set ok [module_do_it $module_do $testcase $asm_list]
+	    }
+	    if { $ok } {
+		foreach asm $asm_list {
+		    file_on_host delete $asm
+		}
+		cleanup_module_files $mod_files
+	    }
 	}
     }
 }

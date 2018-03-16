@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 module Foo;
 // { dg-message "-: Frob\\(int, int, long int\\)" "Foo.nms" { target *-*-* } 0 }
 // { dg-message "-: Frob@Foo\\(int, long int, int\\)" "Foo.nms" { target *-*-* } 0 }

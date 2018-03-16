@@ -1,5 +1,5 @@
 // { dg-module-do run { target *-*-* } "main-3-aux.s" }
-// { dg-options "-fmodules -fmodule-file=main-3-map" }
+// { dg-options "-fmodules-ts -fmodule-file=main-3-map" }
 // Relies on CXX_MODULE_WRAPPER functionality, setting options above
 // overrides the default -fmodule-wrapper=
 

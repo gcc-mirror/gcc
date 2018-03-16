@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 export module Frink;
 // { dg-module-bmi Frink }
 

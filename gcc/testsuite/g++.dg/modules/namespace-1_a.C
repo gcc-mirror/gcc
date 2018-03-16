@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 export module Frob;
 // { dg-module-bmi Frob }
 

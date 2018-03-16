@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 module Foo;
 
 int bob (int a)

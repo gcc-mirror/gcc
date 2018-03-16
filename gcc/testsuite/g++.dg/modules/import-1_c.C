@@ -1,4 +1,4 @@
-// { dg-additional-options "-fdump-lang-module" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 // { dg-final { scan-lang-dump "Writing export import Baz" "module" } }
 // { dg-final { scan-lang-dump "Writing export import Bar" "module" } }
 

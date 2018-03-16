@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 export module Bob; // { dg-message "declared here" }
 // No need to dg-module-bmi
 

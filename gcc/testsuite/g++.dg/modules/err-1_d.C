@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 import Foo;
 // { dg-message "-: Frob\\(int, int, long int\\)" "Foo.nms" { target *-*-* } 0 }
 

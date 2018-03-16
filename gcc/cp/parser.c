@@ -3315,8 +3315,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	inform (location, "%<concept%> only available with -fconcepts");
       else if (!flag_modules && (id == ridpointers[(int)RID_MODULE]
 				 || id == ridpointers[(int)RID_IMPORT]))
-	inform (location, "%qE only available with -fmodules or -fmodules++",
-		id);
+	inform (location,
+		"%qE only available with -fmodules-ts or -fmodules-atom", id);
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	{

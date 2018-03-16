@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 import Foo;
 
 void Frob ()

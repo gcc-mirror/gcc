@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 // { dg-module-do run }
 
 export module Foo;

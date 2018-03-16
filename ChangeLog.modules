@@ -1,4 +1,36 @@
+2018-03-16  Nathan Sidwell  <nathan@acm.org>
+
+	Remove -fmodules, forcing -fmodules-{ts,atom}
+	gcc/cp/
+	* parser.c (cp_parser_diagnose_invalid_type_name): Adjust error.
+	gcc/c-family/
+	* c.opt (fmodules): Remove.
+	gcc/
+	* doc/invoke (fmodules): Remove.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Iterate over -fmodules-{ts,atom}.
+	* g++.dg/modules: Mark tests that are -fmodules-ts only.
+
 2018-03-15  Nathan Sidwell  <nathan@acm.org>
+
+	Implement Atom module & import placement
+	gcc/
+	* doc/invoke.texi (-fmodules): Document -fmodules-atom.
+	gcc/c-family/
+	* c.opt (fmodules-atom): Renamed from fmodules++.
+	gcc/cp/
+	* cp-tree.h (import_module): Add parameter.
+	* module.c (import_module): Add exporting param.
+	(handle_module_option): Adjust.
+	* parser.c (cp_parser_module_declaration): Remove fmodules++
+	global module parsing.
+	(cp_parser_import_declaration): Adjust.
+	(cp_parser_declaration_seq_opt): Parse imports under -fmodules++ ...
+	(cp_parser_declaration): and not here.
+	gcc/testsuite/
+	* g++.dg/modules/mod++-decl-0_[abc].C: Adjust.
+	* g++.dg/modules/mod++-decl-2.C: Adjust.
+	* g++.dg/modules/mod++-decl-3.C: New.
 
 	Implement p0713 - identifiying module source
 	gcc/cp/

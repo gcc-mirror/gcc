@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 module;
 
 import thing.baz;

@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 module;
 
 extern module foo : void Baz ();

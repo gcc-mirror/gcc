@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 export module Bar;
 // { dg-module-bmi "Bar" }
 
