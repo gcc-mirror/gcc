@@ -950,7 +950,7 @@ synthesize_method (tree fndecl)
   pop_deferring_access_checks ();
 
   if (error_count != errorcount || warning_count != warningcount + werrorcount)
-    inform (input_location, "synthesized method %qD first required here ",
+    inform (input_location, "synthesized method %qD first required here",
 	    fndecl);
 }
 
