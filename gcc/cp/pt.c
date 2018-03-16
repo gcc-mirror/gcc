@@ -6933,18 +6933,11 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  return NULL_TREE;
 	}
 
-      if (!glvalue_p (expr)
-	  || TYPE_REF_IS_RVALUE (type) != xvalue_p (expr))
+      if (!lvalue_p (expr))
 	{
 	  if (complain & tf_error)
-	    {
-	      if (TYPE_REF_IS_RVALUE (type))
-		error ("%qE is not a valid template argument for type %qT "
-		       "because it is not an xvalue", expr, type);
-	      else
-		error ("%qE is not a valid template argument for type %qT "
-		       "because it is not an lvalue", expr, type);
-	    }
+	    error ("%qE is not a valid template argument for type %qT "
+		   "because it is not an lvalue", expr, type);
 	  return NULL_TREE;
 	}
 
@@ -23992,7 +23985,10 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 {
   if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     return false;
-  else if (POINTER_TYPE_P (type))
+  else if (TYPE_PTR_P (type))
+    return false;
+  else if (TREE_CODE (type) == REFERENCE_TYPE
+	   && !TYPE_REF_IS_RVALUE (type))
     return false;
   else if (TYPE_PTRMEM_P (type))
     return false;
