@@ -1,3 +1,8 @@
+2018-03-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69395
+	* decl.c (merge_array_spec): Correct the error condition.
+
 2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78741
