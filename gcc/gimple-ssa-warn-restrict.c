@@ -417,7 +417,7 @@ builtin_memref::set_base_and_offset (tree expr)
 
   poly_int64 bytepos = exact_div (bitpos, BITS_PER_UNIT);
 
-  /* Convert the poly_int64 offset to to offset_int.  The offset
+  /* Convert the poly_int64 offset to offset_int.  The offset
      should be constant but be prepared for it not to be just in
      case.  */
   offset_int cstoff;

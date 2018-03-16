@@ -1,5 +1,9 @@
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/84909
+	* c-warn.c (conversion_warning): Replace "to to" with "to" in
+	diagnostics.
+
 	PR c/84910
 	* c-warn.c (diagnose_mismatched_attributes): Remove trailing space from
 	diagnostics.
