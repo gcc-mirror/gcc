@@ -245,15 +245,9 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 				    unsigned_type_node)
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
 				    integer_type_node))
-	  {
-	    /* ???  Do not use convert () here or fold arbitrary trees
-	       since folding can introduce tree sharing which is not
-	       allowed during gimplification.  */
-	    if (TREE_CODE (*op1_p) == INTEGER_CST)
-	      *op1_p = fold_convert (unsigned_type_node, *op1_p);
-	    else
-	      *op1_p = build1 (NOP_EXPR, unsigned_type_node, *op1_p);
-	  }
+	  /* Make sure to unshare the result, tree sharing is invalid
+	     during gimplification.  */
+	  *op1_p = unshare_expr (convert (unsigned_type_node, *op1_p));
 	break;
       }
 
