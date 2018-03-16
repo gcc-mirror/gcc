@@ -1,5 +1,9 @@
 2018-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84720 - ICE with rvalue ref non-type argument.
+	* pt.c (invalid_nontype_parm_type_p): Prohibit rvalue reference.
+	(convert_nontype_argument): Revert earlier change.
+
 	PR c++/80227 - SFINAE and negative array size.
 	* decl.c (compute_array_index_type): Use
 	build_converted_constant_expr and valid_constant_size_p.
