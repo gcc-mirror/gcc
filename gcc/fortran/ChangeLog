@@ -1,5 +1,11 @@
 2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/78741
+	* decl.c (get_proc_name):  Check for clash of entry name with
+	subroutine name.
+
+2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/69395
 	* decl.c (merge_array_spec): Limit the merging to maximum allowed
 	dimensions, and issue error message if limit is exceeded.
