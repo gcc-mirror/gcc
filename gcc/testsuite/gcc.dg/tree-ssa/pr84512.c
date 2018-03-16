@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-optimized" } */
+/* { dg-require-effective-target vect_int_mult } */
 
 int foo()
 {
