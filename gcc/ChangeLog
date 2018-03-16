@@ -1,3 +1,11 @@
+2018-03-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/84876
+	* lra-assigns.c (lra_split_hard_reg_for): Don't use
+	regno_allocno_class_array and sorted_pseudos.
+	* lra-constraints.c (spill_hard_reg_in_range): Ignore hard regs in
+	insns where regno is used.
+
 2018-03-16  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/84833

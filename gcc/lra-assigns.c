@@ -1737,41 +1737,46 @@ find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
 bool
 lra_split_hard_reg_for (void)
 {
-  int i, regno, n;
+  int i, regno;
   rtx_insn *insn, *first, *last;
   unsigned int u;
   bitmap_iterator bi;
+  enum reg_class rclass;
   int max_regno = max_reg_num ();
   /* We did not assign hard regs to reload pseudos after two
      iterations.  Either it's an asm and something is wrong with the
      constraints, or we have run out of spill registers; error out in
      either case.  */
   bool asm_p = false;
-  bitmap_head failed_reload_insns;
+  bitmap_head failed_reload_insns, failed_reload_pseudos;
   
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "\n****** Splitting a hard reg after assignment #%d: ******\n\n",
 	     lra_assignment_iter);
-  for (n = 0, i = lra_constraint_new_regno_start; i < max_regno; i++)
+  bitmap_initialize (&failed_reload_pseudos, &reg_obstack);
+  for (i = lra_constraint_new_regno_start; i < max_regno; i++)
     if (reg_renumber[i] < 0 && lra_reg_info[i].nrefs != 0
-	&& regno_allocno_class_array[i] != NO_REGS
+	&& (rclass = lra_get_allocno_class (i)) != NO_REGS
 	&& ! bitmap_bit_p (&non_reload_pseudos, i))
       {
-	sorted_pseudos[n++] = i;
 	if (! find_reload_regno_insns (i, first, last))
 	  continue;
-	if (spill_hard_reg_in_range (i, regno_allocno_class_array[i],
-				     first, last))
-	  return true;
+	if (spill_hard_reg_in_range (i, rclass, first, last))
+	  {
+	    bitmap_clear (&failed_reload_pseudos);
+	    return true;
+	  }
+	bitmap_set_bit (&failed_reload_pseudos, i);
       }
   bitmap_initialize (&failed_reload_insns, &reg_obstack);
-  for (i = 0; i < n; i++)
+  EXECUTE_IF_SET_IN_BITMAP (&failed_reload_pseudos, 0, u, bi)
     {
-      regno = sorted_pseudos[i];
+      regno = u;
       bitmap_ior_into (&failed_reload_insns,
 		       &lra_reg_info[regno].insn_bitmap);
-      lra_setup_reg_renumber (regno, ira_class_hard_regs[regno_allocno_class_array[regno]][0], false);
+      lra_setup_reg_renumber
+	(regno, ira_class_hard_regs[lra_get_allocno_class (regno)][0], false);
     }
   EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
     {
@@ -1805,5 +1810,7 @@ lra_split_hard_reg_for (void)
 	  fatal_insn ("this is the insn:", insn);
 	}
     }
+  bitmap_clear (&failed_reload_pseudos);
+  bitmap_clear (&failed_reload_insns);
   return false;
 }
