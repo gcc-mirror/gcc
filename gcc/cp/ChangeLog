@@ -1,3 +1,9 @@
+2018-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83937 - wrong C++17 handling of init-list ctor argument.
+	* call.c (build_special_member_call): Don't convert an init-list
+	argument directly to the class type.
+
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79937
