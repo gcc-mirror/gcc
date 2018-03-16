@@ -470,7 +470,8 @@ get_rank (tree e)
 
 /* We want integer ones to end up last no matter what, since they are
    the ones we can do the most with.  */
-#define INTEGER_CONST_TYPE 1 << 3
+#define INTEGER_CONST_TYPE 1 << 4
+#define FLOAT_ONE_CONST_TYPE 1 << 3
 #define FLOAT_CONST_TYPE 1 << 2
 #define OTHER_CONST_TYPE 1 << 1
 
@@ -482,7 +483,14 @@ constant_type (tree t)
   if (INTEGRAL_TYPE_P (TREE_TYPE (t)))
     return INTEGER_CONST_TYPE;
   else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (t)))
-    return FLOAT_CONST_TYPE;
+    {
+      /* Sort -1.0 and 1.0 constants last, while in some cases
+	 const_binop can't optimize some inexact operations, multiplication
+	 by -1.0 or 1.0 can be always merged with others.  */
+      if (real_onep (t) || real_minus_onep (t))
+	return FLOAT_ONE_CONST_TYPE;
+      return FLOAT_CONST_TYPE;
+    }
   else
     return OTHER_CONST_TYPE;
 }
@@ -504,7 +512,7 @@ sort_by_operand_rank (const void *pa, const void *pb)
   if (oea->rank == 0)
     {
       if (constant_type (oeb->op) != constant_type (oea->op))
-	return constant_type (oeb->op) - constant_type (oea->op);
+	return constant_type (oea->op) - constant_type (oeb->op);
       else
 	/* To make sorting result stable, we use unique IDs to determine
 	   order.  */
