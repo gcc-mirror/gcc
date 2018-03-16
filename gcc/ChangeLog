@@ -1,3 +1,8 @@
+2018-03-16  Julia Koval  <julia.koval@intel.com>
+
+	* doc/invoke.texi (Skylake Server): Add CLWB.
+	Cannonlake): Remove CLWB.
+
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84841
