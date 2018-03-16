@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2018-01-30 00:32+0200\n"
+"PO-Revision-Date: 2018-03-16 19:20+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "Language: uk\n"
@@ -4543,7 +4543,7 @@ msgstr ""
 #: cp/error.c:3432
 #, c-format
 msgid "In static member function %qs"
-msgstr ""
+msgstr "У статичній функції-члені %qs"
 
 #: cp/error.c:3434
 #, c-format
@@ -22443,7 +22443,7 @@ msgstr ""
 #: tree-diagnostic.c:202
 #, gcc-internal-format
 msgid "in definition of macro %qs"
-msgstr "у оголошенні макросу %qs"
+msgstr "у визначенні макросу %qs"
 
 #: tree-diagnostic.c:219
 #, gcc-internal-format
@@ -22594,7 +22594,7 @@ msgstr ""
 #: tree-ssa-ccp.c:3461
 #, gcc-internal-format, gfc-internal-format
 msgid "argument %u null where non-null expected"
-msgstr ""
+msgstr "порожній аргумент %u там, де мав бути непорожній аргумент"
 
 #: tree-ssa-ccp.c:3466
 #, gcc-internal-format
@@ -22609,22 +22609,22 @@ msgstr "у виклику функції %qD, оголошено тут"
 #: tree-ssa-loop-niter.c:3049
 #, gcc-internal-format, gfc-internal-format
 msgid "iteration %s invokes undefined behavior"
-msgstr ""
+msgstr "ітерація %s викликає невизначену поведінку"
 
 #: tree-ssa-loop-niter.c:3050
 #, gcc-internal-format
 msgid "within this loop"
-msgstr ""
+msgstr "у цьому циклі"
 
 #: tree-ssa-loop-prefetch.c:2065
 #, gcc-internal-format
 msgid "%<l1-cache-size%> parameter is not a power of two %d"
-msgstr ""
+msgstr "параметр %<l1-cache-size%> не є степенем двійки %d"
 
 #: tree-ssa-operands.c:975
 #, gcc-internal-format
 msgid "virtual definition of statement not up-to-date"
-msgstr ""
+msgstr "віртуальне визначення неактуальної інструкції"
 
 #: tree-ssa-operands.c:982
 #, gcc-internal-format
@@ -22634,7 +22634,7 @@ msgstr ""
 #: tree-ssa-operands.c:992
 #, gcc-internal-format
 msgid "virtual use of statement not up-to-date"
-msgstr ""
+msgstr "віртуальне використання неактуальної інструкції"
 
 #: tree-ssa-operands.c:999
 #, gcc-internal-format
@@ -22704,32 +22704,32 @@ msgstr ""
 #: tree-ssa-strlen.c:2114
 #, gcc-internal-format
 msgid "length computed here"
-msgstr ""
+msgstr "довжину обчислено тут:"
 
 #: tree-ssa-uninit.c:191 varasm.c:331
 #, gcc-internal-format
 msgid "%qD was declared here"
-msgstr ""
+msgstr "%qD було оголошено тут:"
 
 #: tree-ssa-uninit.c:259
 #, gcc-internal-format
 msgid "%qD is used uninitialized in this function"
-msgstr ""
+msgstr "%qD використовується без ініціалізації у цій функції"
 
 #: tree-ssa-uninit.c:264 tree-ssa-uninit.c:2624
 #, gcc-internal-format
 msgid "%qD may be used uninitialized in this function"
-msgstr ""
+msgstr "%qD може бути використано без ініціалізації у цій функції"
 
 #: tree-ssa-uninit.c:369
 #, gcc-internal-format
 msgid "%qE is used uninitialized in this function"
-msgstr ""
+msgstr "%qE використано без ініціалізації у цій функції"
 
 #: tree-ssa-uninit.c:379
 #, gcc-internal-format
 msgid "%qE may be used uninitialized in this function"
-msgstr ""
+msgstr "%qE може бути використано без ініціалізації у цій функції"
 
 #: tree-ssa.c:647
 #, gcc-internal-format, gfc-internal-format
@@ -22744,7 +22744,7 @@ msgstr ""
 #: tree-ssa.c:677
 #, gcc-internal-format
 msgid "stmt with wrong VUSE"
-msgstr ""
+msgstr "stmt із помилковим VUSE"
 
 #: tree-ssa.c:707
 #, gcc-internal-format, gfc-internal-format
@@ -22754,57 +22754,57 @@ msgstr ""
 #: tree-ssa.c:733
 #, gcc-internal-format
 msgid "expected an SSA_NAME object"
-msgstr ""
+msgstr "мало бути використано об'єкт SSA_NAME"
 
 #: tree-ssa.c:739
 #, gcc-internal-format
 msgid "found an SSA_NAME that had been released into the free pool"
-msgstr ""
+msgstr "виявлено SSA_NAME, яку мало бути вивільнено до вільного буфера"
 
 #: tree-ssa.c:746
 #, gcc-internal-format
 msgid "type mismatch between an SSA_NAME and its symbol"
-msgstr ""
+msgstr "невідповідність типів між SSA_NAME та її символом"
 
 #: tree-ssa.c:752
 #, gcc-internal-format
 msgid "found a virtual definition for a GIMPLE register"
-msgstr ""
+msgstr "виявлено віртуальне визначення регістра GIMPLE"
 
 #: tree-ssa.c:758
 #, gcc-internal-format
 msgid "virtual SSA name for non-VOP decl"
-msgstr ""
+msgstr "віртуальна назва SSA для оголошення, яке не належить до VOP"
 
 #: tree-ssa.c:764
 #, gcc-internal-format
 msgid "found a real definition for a non-register"
-msgstr ""
+msgstr "виявлено реальне визначення для змінної, яка не є регістровою"
 
 #: tree-ssa.c:771
 #, gcc-internal-format
 msgid "found a default name with a non-empty defining statement"
-msgstr ""
+msgstr "виявлено типову назву для непорожньої інструкції визначення"
 
 #: tree-ssa.c:801
 #, gcc-internal-format
 msgid "RESULT_DECL should be read only when DECL_BY_REFERENCE is set"
-msgstr ""
+msgstr "RESULT_DECL має бути придатним лише для читання, якщо встановлено DECL_BY_REFERENCE"
 
 #: tree-ssa.c:807
 #, gcc-internal-format, gfc-internal-format
 msgid "SSA_NAME created in two different blocks %i and %i"
-msgstr ""
+msgstr "SSA_NAME створено у двох різних блоках, %i і %i"
 
 #: tree-ssa.c:816 tree-ssa.c:1150
 #, gcc-internal-format
 msgid "SSA_NAME_DEF_STMT is wrong"
-msgstr ""
+msgstr "SSA_NAME_DEF_STMT є помилковим"
 
 #: tree-ssa.c:868
 #, gcc-internal-format
 msgid "missing definition"
-msgstr ""
+msgstr "пропущено визначення"
 
 #: tree-ssa.c:874
 #, gcc-internal-format, gfc-internal-format
@@ -22814,12 +22814,12 @@ msgstr ""
 #: tree-ssa.c:882
 #, gcc-internal-format, gfc-internal-format
 msgid "definition in block %i follows the use"
-msgstr ""
+msgstr "визначення у блоці %i слідує за використанням"
 
 #: tree-ssa.c:889
 #, gcc-internal-format
 msgid "SSA_NAME_OCCURS_IN_ABNORMAL_PHI should be set"
-msgstr ""
+msgstr "має бути встановлено SSA_NAME_OCCURS_IN_ABNORMAL_PHI"
 
 #: tree-ssa.c:897
 #, gcc-internal-format
@@ -25769,12 +25769,12 @@ msgstr ""
 #: c-family/c-warn.c:648
 #, gcc-internal-format
 msgid "dereferencing type-punned pointer will break strict-aliasing rules"
-msgstr ""
+msgstr "розіменовування вказівника із каламбуром типізації порушить правила строгого злиття"
 
 #: c-family/c-warn.c:655 c-family/c-warn.c:672
 #, gcc-internal-format
 msgid "dereferencing type-punned pointer might break strict-aliasing rules"
-msgstr ""
+msgstr "розіменовування вказівника із каламбуром типізації може порушити правила строгого злиття"
 
 #: c-family/c-warn.c:795
 #, gcc-internal-format
@@ -34873,7 +34873,7 @@ msgstr ""
 #: c/c-parser.c:6871 cp/typeck.c:4457
 #, gcc-internal-format
 msgid "first %<sizeof%> operand was declared here"
-msgstr ""
+msgstr "перший операнд %<sizeof%> було оголошено тут:"
 
 #: c/c-parser.c:7088
 #, gcc-internal-format
