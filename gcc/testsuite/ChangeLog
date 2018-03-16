@@ -1,5 +1,8 @@
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84841
+	* gcc.dg/pr84841.c: New test.
+
 	PR c++/84874
 	* g++.dg/cpp2a/desig7.C: New test.
 

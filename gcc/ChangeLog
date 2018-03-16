@@ -1,3 +1,13 @@
+2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84841
+	* tree-ssa-reassoc.c (INTEGER_CONST_TYPE): Change to 1 << 4 from
+	1 << 3.
+	(FLOAT_ONE_CONST_TYPE): Define.
+	(constant_type): Return FLOAT_ONE_CONST_TYPE for -1.0 and 1.0.
+	(sort_by_operand_rank): Put entries with higher constant_type last
+	rather than first to match comments.
+
 2018-03-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (movsi_internal): Fix thinko in 
