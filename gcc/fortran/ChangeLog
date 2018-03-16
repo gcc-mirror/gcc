@@ -1,3 +1,9 @@
+2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78741
+	* decl.c (get_proc_name):  Check for clash of entry name with
+	subroutine name.
+
 2018-03-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83939
