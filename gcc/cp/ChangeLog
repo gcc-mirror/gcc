@@ -1,3 +1,11 @@
+2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84910
+	* parser.c (cp_parser_lambda_introducer): Remove trailing space from
+	diagnostics.
+	* method.c (synthesize_method): Likewise.
+	* pt.c (convert_nontype_argument): Likewise.
+
 2018-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84720 - ICE with rvalue ref non-type argument.

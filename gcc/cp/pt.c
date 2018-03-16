@@ -6753,7 +6753,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	      else
 		expr = cxx_constant_value (expr);
 	      if (errorcount > errs || warningcount + werrorcount > warns)
-		inform (loc, "in template argument for type %qT ", type);
+		inform (loc, "in template argument for type %qT", type);
 	      if (expr == error_mark_node)
 		return NULL_TREE;
 	      /* else cxx_constant_value complained but gave us

@@ -2258,7 +2258,7 @@ diagnose_mismatched_attributes (tree olddecl, tree newdecl)
 	   && DECL_UNINLINABLE (newdecl)
 	   && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
     warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows inline declaration ", newdecl, noinline);
+		       "%qs follows inline declaration", newdecl, noinline);
 
   return warned;
 }

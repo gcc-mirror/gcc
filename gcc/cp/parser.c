@@ -10383,7 +10383,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 		   && TREE_CODE (capture_init_expr) != PARM_DECL)
 	    {
 	      error_at (capture_token->location,
-			"capture of non-variable %qE ",
+			"capture of non-variable %qE",
 			capture_init_expr);
 	      if (DECL_P (capture_init_expr))
 		inform (DECL_SOURCE_LOCATION (capture_init_expr),
