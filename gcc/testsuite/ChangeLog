@@ -1,3 +1,8 @@
+2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69395
+	* gfortran.dg/pr69395.f90: New test.
+
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79085

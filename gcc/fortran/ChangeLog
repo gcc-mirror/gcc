@@ -1,3 +1,9 @@
+2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69395
+	* decl.c (merge_array_spec): Limit the merging to maximum allowed
+	dimensions, and issue error message if limit is exceeded.
+
 2018-03-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* check.c (gfc_check_kill_sub):  Remove check for INTEGER(4) or (8).
