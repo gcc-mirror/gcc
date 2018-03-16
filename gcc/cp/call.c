@@ -8827,7 +8827,12 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	/* If we're using this to initialize a non-temporary object, don't
 	   require the destructor to be accessible.  */
 	sub_complain |= tf_no_cleanup;
-      if (!reference_related_p (class_type, TREE_TYPE (arg)))
+      if (BRACE_ENCLOSED_INITIALIZER_P (arg)
+	  && !CONSTRUCTOR_IS_DIRECT_INIT (arg))
+	/* An init-list arg needs to convert to the parm type (83937), so fall
+	   through to normal processing.  */
+	arg = error_mark_node;
+      else if (!reference_related_p (class_type, TREE_TYPE (arg)))
 	arg = perform_implicit_conversion_flags (class_type, arg,
 						 sub_complain,
 						 flags);
