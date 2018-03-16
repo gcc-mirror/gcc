@@ -1,5 +1,10 @@
 2018-03-16  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/84833
+	* gcc.target/i386/mvc11.c: New test.
+
+2018-03-16  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/84722
 	* gcc.target/i386/mvc10.c: New test.
 
