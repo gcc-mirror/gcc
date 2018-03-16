@@ -1,12 +1,15 @@
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84874
+	* g++.dg/cpp2a/desig8.C: New test.
+
 	PR tree-optimization/84841
 	* gcc.dg/pr84841.c: New test.
 
 	PR c++/84874
 	* g++.dg/cpp2a/desig7.C: New test.
 
-03-16-2018  Mark Doffman  <mark.doffman@codethink.co.uk>
+2018-03-16  Mark Doffman  <mark.doffman@codethink.co.uk>
             Jim MacArthur  <jim.macarthur@codethink.co.uk>
 
 	* gfortran.dg/automatic_1.f90: New test.
