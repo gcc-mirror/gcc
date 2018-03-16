@@ -804,7 +804,7 @@ cleanup:
 static bool
 merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 {
-  int i;
+  int i, j;
 
   if ((from->type == AS_ASSUMED_RANK && to->corank)
       || (to->type == AS_ASSUMED_RANK && from->corank))
@@ -822,8 +822,14 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 
       for (i = 0; i < to->corank; i++)
 	{
-	  to->lower[from->rank + i] = to->lower[i];
-	  to->upper[from->rank + i] = to->upper[i];
+	  /* Do not exceed the limits on lower[] and upper[].  gfortran
+	     cleans up elsewhere.  */
+	  j = from->rank + i;
+	  if (j >= GFC_MAX_DIMENSIONS)
+	    break;
+
+	  to->lower[j] = to->lower[i];
+	  to->upper[j] = to->upper[i];
 	}
       for (i = 0; i < from->rank; i++)
 	{
@@ -846,19 +852,33 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 
       for (i = 0; i < from->corank; i++)
 	{
+	  /* Do not exceed the limits on lower[] and upper[].  gfortran
+	     cleans up elsewhere.  */
+	  j = to->rank + i;
+	  if (j >= GFC_MAX_DIMENSIONS)
+	    break;
+
 	  if (copy)
 	    {
-	      to->lower[to->rank + i] = gfc_copy_expr (from->lower[i]);
-	      to->upper[to->rank + i] = gfc_copy_expr (from->upper[i]);
+	      to->lower[j] = gfc_copy_expr (from->lower[i]);
+	      to->upper[j] = gfc_copy_expr (from->upper[i]);
 	    }
 	  else
 	    {
-	      to->lower[to->rank + i] = from->lower[i];
-	      to->upper[to->rank + i] = from->upper[i];
+	      to->lower[j] = from->lower[i];
+	      to->upper[j] = from->upper[i];
 	    }
 	}
     }
 
+  if (to->rank + to->corank >= GFC_MAX_DIMENSIONS)
+    {
+      gfc_error ("Sum of array rank %d and corank %d at %C exceeds maximum "
+		 "allowed dimensions of %d",
+		 to->rank, to->corank, GFC_MAX_DIMENSIONS);
+      to->corank = GFC_MAX_DIMENSIONS - to->rank;
+      return false;
+    }
   return true;
 }
 
