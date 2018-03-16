@@ -1538,6 +1538,13 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       }
       break;
 
+    case TARGET_EXPR:
+      if (TARGET_EXPR_INITIAL (stmt)
+	  && TREE_CODE (TARGET_EXPR_INITIAL (stmt)) == CONSTRUCTOR
+	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (TARGET_EXPR_INITIAL (stmt)))
+	TARGET_EXPR_NO_ELIDE (stmt) = 1;
+      break;
+
     default:
       if (IS_TYPE_OR_DECL_P (stmt))
 	*walk_subtrees = 0;
@@ -2492,7 +2499,11 @@ cp_fold (tree x)
 	      }
 	  }
 	if (nelts)
-	  x = build_constructor (TREE_TYPE (x), nelts);
+	  {
+	    x = build_constructor (TREE_TYPE (x), nelts);
+	    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (x)
+	      = CONSTRUCTOR_PLACEHOLDER_BOUNDARY (org_x);
+	  }
 	break;
       }
     case TREE_VEC:

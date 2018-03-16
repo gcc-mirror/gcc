@@ -5211,6 +5211,8 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	    tree init = TARGET_EXPR_INITIAL (*from_p);
 
 	    if (init
+		&& (TREE_CODE (*expr_p) != MODIFY_EXPR
+		    || !TARGET_EXPR_NO_ELIDE (*from_p))
 		&& !VOID_TYPE_P (TREE_TYPE (init)))
 	      {
 		*from_p = init;

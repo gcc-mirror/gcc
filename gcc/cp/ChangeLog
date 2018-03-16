@@ -1,3 +1,25 @@
+2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79937
+	PR c++/82410
+	* cp-tree.h (CONSTRUCTOR_PLACEHOLDER_BOUNDARY): Define.
+	(find_placeholder): Declare.
+	* tree.c (struct replace_placeholders_t): Add exp member.
+	(replace_placeholders_r): Don't walk into ctors with
+	CONSTRUCTOR_PLACEHOLDER_BOUNDARY flag set, unless they are equal to
+	d->exp.  Replace PLACEHOLDER_EXPR with unshare_expr (x) rather than x.
+	(replace_placeholders): Initialize data.exp.
+	(find_placeholders_r, find_placeholders): New functions.
+	* typeck2.c (process_init_constructor_record,
+	process_init_constructor_union): Set CONSTRUCTOR_PLACEHOLDER_BOUNDARY
+	if adding NSDMI on which find_placeholder returns true.
+	* call.c (build_over_call): Don't call replace_placeholders here.
+	* cp-gimplify.c (cp_genericize_r): Set TARGET_EXPR_NO_ELIDE on
+	TARGET_EXPRs with CONSTRUCTOR_PLACEHOLDER_BOUNDARY set on
+	TARGET_EXPR_INITIAL.
+	(cp_fold): Copy over CONSTRUCTOR_PLACEHOLDER_BOUNDARY bit to new
+	ctor.
+
 2018-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/83911 - ICE with multiversioned constructor.
