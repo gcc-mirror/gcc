@@ -1470,6 +1470,9 @@ process_init_constructor_record (tree type, tree init, int nested,
 	    }
 	  /* C++14 aggregate NSDMI.  */
 	  next = get_nsdmi (field, /*ctor*/false, complain);
+	  if (!CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init)
+	      && find_placeholders (next))
+	    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
 	}
       else if (type_build_ctor_call (TREE_TYPE (field)))
 	{
@@ -1608,10 +1611,11 @@ process_init_constructor_union (tree type, tree init, int nested,
 	  if (TREE_CODE (field) == FIELD_DECL
 	      && DECL_INITIAL (field) != NULL_TREE)
 	    {
-	      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (init),
-				      field,
-				      get_nsdmi (field, /*in_ctor=*/false,
-						 complain));
+	      tree val = get_nsdmi (field, /*in_ctor=*/false, complain);
+	      if (!CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init)
+		  && find_placeholders (val))
+		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+	      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (init), field, val);
 	      break;
 	    }
 	}

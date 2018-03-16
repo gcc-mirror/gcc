@@ -1197,6 +1197,9 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
 #define TARGET_EXPR_INITIAL(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 1)
 #define TARGET_EXPR_CLEANUP(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 2)
+/* Don't elide the initialization of TARGET_EXPR_SLOT for this TARGET_EXPR
+   on rhs of MODIFY_EXPR.  */
+#define TARGET_EXPR_NO_ELIDE(NODE) (TARGET_EXPR_CHECK (NODE)->base.private_flag)
 
 /* DECL_EXPR accessor. This gives access to the DECL associated with
    the given declaration statement.  */

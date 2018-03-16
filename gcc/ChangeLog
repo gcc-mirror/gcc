@@ -1,3 +1,11 @@
+2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79937
+	PR c++/82410
+	* tree.h (TARGET_EXPR_NO_ELIDE): Define.
+	* gimplify.c (gimplify_modify_expr_rhs): Don't elide TARGET_EXPRs with
+	TARGET_EXPR_NO_ELIDE flag set unless *expr_p is INIT_EXPR.
+
 2018-03-16  Julia Koval  <julia.koval@intel.com>
 
 	* doc/invoke.texi (Skylake Server): Add CLWB.

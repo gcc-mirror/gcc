@@ -3096,6 +3096,7 @@ build_ctor_subob_ref (tree index, tree type, tree obj)
 struct replace_placeholders_t
 {
   tree obj;	    /* The object to be substituted for a PLACEHOLDER_EXPR.  */
+  tree exp;	    /* The outermost exp.  */
   bool seen;	    /* Whether we've encountered a PLACEHOLDER_EXPR.  */
   hash_set<tree> *pset;	/* To avoid walking same trees multiple times.  */
 };
@@ -3124,7 +3125,7 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 							   TREE_TYPE (x));
 	     x = TREE_OPERAND (x, 0))
 	  gcc_assert (TREE_CODE (x) == COMPONENT_REF);
-	*t = x;
+	*t = unshare_expr (x);
 	*walk_subtrees = false;
 	d->seen = true;
       }
@@ -3134,7 +3135,12 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
       {
 	constructor_elt *ce;
 	vec<constructor_elt,va_gc> *v = CONSTRUCTOR_ELTS (*t);
-	if (d->pset->add (*t))
+	/* Don't walk into CONSTRUCTOR_PLACEHOLDER_BOUNDARY ctors
+	   other than the d->exp one, those have PLACEHOLDER_EXPRs
+	   related to another object.  */
+	if ((CONSTRUCTOR_PLACEHOLDER_BOUNDARY (*t)
+	     && *t != d->exp)
+	    || d->pset->add (*t))
 	  {
 	    *walk_subtrees = false;
 	    return NULL_TREE;
@@ -3192,14 +3198,55 @@ replace_placeholders (tree exp, tree obj, bool *seen_p)
     return exp;
 
   tree *tp = &exp;
-  hash_set<tree> pset;
-  replace_placeholders_t data = { obj, false, &pset };
   if (TREE_CODE (exp) == TARGET_EXPR)
     tp = &TARGET_EXPR_INITIAL (exp);
+  hash_set<tree> pset;
+  replace_placeholders_t data = { obj, *tp, false, &pset };
   cp_walk_tree (tp, replace_placeholders_r, &data, NULL);
   if (seen_p)
     *seen_p = data.seen;
   return exp;
+}
+
+/* Callback function for find_placeholders.  */
+
+static tree
+find_placeholders_r (tree *t, int *walk_subtrees, void *)
+{
+  if (TYPE_P (*t) || TREE_CONSTANT (*t))
+    {
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+
+  switch (TREE_CODE (*t))
+    {
+    case PLACEHOLDER_EXPR:
+      return *t;
+
+    case CONSTRUCTOR:
+      if (CONSTRUCTOR_PLACEHOLDER_BOUNDARY (*t))
+	*walk_subtrees = false;
+      break;
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return true if EXP contains a PLACEHOLDER_EXPR.  Don't walk into
+   ctors with CONSTRUCTOR_PLACEHOLDER_BOUNDARY flag set.  */
+
+bool
+find_placeholders (tree exp)
+{
+  /* This is only relevant for C++14.  */
+  if (cxx_dialect < cxx14)
+    return false;
+
+  return cp_walk_tree_without_duplicates (&exp, find_placeholders_r, NULL);
 }
 
 /* Similar to `build_nt', but for template definitions of dependent
