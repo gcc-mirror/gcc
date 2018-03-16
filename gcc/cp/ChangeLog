@@ -1,5 +1,10 @@
 2018-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84906 - silent wrong code with ambiguous conversion.
+	* call.c (build_user_type_conversion_1): Set need_temporary_p on
+	ambiguous conversion.
+	(convert_like_real): Check it.
+
 	PR c++/83937 - wrong C++17 handling of init-list ctor argument.
 	* call.c (build_special_member_call): Don't convert an init-list
 	argument directly to the class type.

@@ -93,7 +93,8 @@ struct conversion {
   BOOL_BITFIELD bad_p : 1;
   /* If KIND is ck_ref_bind ck_base_conv, true to indicate that a
      temporary should be created to hold the result of the
-     conversion.  */
+     conversion.  If KIND is ck_ambig, true if the context is
+     copy-initialization.  */
   BOOL_BITFIELD need_temporary_p : 1;
   /* If KIND is ck_ptr or ck_pmem, true to indicate that a conversion
      from a pointer-to-derived to pointer-to-base is being performed.  */
@@ -3943,6 +3944,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
       cand->second_conv->user_conv_p = true;
       if (!any_strictly_viable (candidates))
 	cand->second_conv->bad_p = true;
+      if (flags & LOOKUP_ONLYCONVERTING)
+	cand->second_conv->need_temporary_p = true;
       /* If there are viable candidates, don't set ICS_BAD_FLAG; an
 	 ambiguous conversion is no worse than another user-defined
 	 conversion.  */
@@ -6834,8 +6837,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       if (complain & tf_error)
 	{
 	  /* Call build_user_type_conversion again for the error.  */
-	  build_user_type_conversion (totype, convs->u.expr, LOOKUP_IMPLICIT,
-				      complain);
+	  int flags = (convs->need_temporary_p
+		       ? LOOKUP_IMPLICIT : LOOKUP_NORMAL);
+	  build_user_type_conversion (totype, convs->u.expr, flags, complain);
+	  gcc_assert (seen_error ());
 	  if (fn)
 	    inform (DECL_SOURCE_LOCATION (fn),
 		    "  initializing argument %P of %qD", argnum, fn);
