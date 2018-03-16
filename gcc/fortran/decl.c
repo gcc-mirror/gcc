@@ -871,7 +871,7 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 	}
     }
 
-  if (to->rank + to->corank >= GFC_MAX_DIMENSIONS)
+  if (to->rank + to->corank > GFC_MAX_DIMENSIONS)
     {
       gfc_error ("Sum of array rank %d and corank %d at %C exceeds maximum "
 		 "allowed dimensions of %d",
