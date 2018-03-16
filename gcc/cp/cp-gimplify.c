@@ -1513,6 +1513,29 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		       == REFERENCE_TYPE))
 	    *walk_subtrees = 0;
 	}
+      /* Fall through.  */
+    case AGGR_INIT_EXPR:
+      /* For calls to a multi-versioned function, overload resolution
+	 returns the function with the highest target priority, that is,
+	 the version that will checked for dispatching first.  If this
+	 version is inlinable, a direct call to this version can be made
+	 otherwise the call should go through the dispatcher.  */
+      {
+	tree fn = cp_get_callee_fndecl (stmt);
+	if (fn && DECL_FUNCTION_VERSIONED (fn)
+	    && (current_function_decl == NULL
+		|| !targetm.target_option.can_inline_p (current_function_decl,
+							fn)))
+	  if (tree dis = get_function_version_dispatcher (fn))
+	    {
+	      mark_versions_used (dis);
+	      dis = build_address (dis);
+	      if (TREE_CODE (stmt) == CALL_EXPR)
+		CALL_EXPR_FN (stmt) = dis;
+	      else
+		AGGR_INIT_EXPR_FN (stmt) = dis;
+	    }
+      }
       break;
 
     default:

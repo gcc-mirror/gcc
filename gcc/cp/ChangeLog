@@ -1,3 +1,10 @@
+2018-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83911 - ICE with multiversioned constructor.
+	* cp-gimplify.c (cp_genericize_r): Replace versioned function with
+	dispatchere here.
+	* call.c (build_over_call): Not here.
+
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84874

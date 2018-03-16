@@ -8204,23 +8204,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
     }
 
-  /* For calls to a multi-versioned function, overload resolution
-     returns the function with the highest target priority, that is,
-     the version that will checked for dispatching first.  If this
-     version is inlinable, a direct call to this version can be made
-     otherwise the call should go through the dispatcher.  */
-
-  if (DECL_FUNCTION_VERSIONED (fn)
-      && (current_function_decl == NULL
-	  || !targetm.target_option.can_inline_p (current_function_decl, fn)))
-    {
-      fn = get_function_version_dispatcher (fn);
-      if (fn == NULL)
-	return NULL;
-      if (!already_used)
-	mark_versions_used (fn);
-    }
-
   if (!already_used
       && !mark_used (fn, complain))
     return error_mark_node;
