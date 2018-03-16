@@ -1,5 +1,11 @@
 2018-03-16  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/84833
+	* multiple_target.c (create_dispatcher_calls): Redirect
+	reference in the symbol table.
+
+2018-03-16  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/84722
 	* multiple_target.c (create_dispatcher_calls): Redirect also
 	an alias.
