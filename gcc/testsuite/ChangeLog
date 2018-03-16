@@ -1,5 +1,9 @@
 2018-03-16  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/tree-ssa/pr84512.c: Require effective target vect_int_mult.
+
+2018-03-16  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.dg/builtin-unreachable-6.c: Require effective target label_values.
 
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
