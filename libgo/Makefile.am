@@ -399,7 +399,8 @@ noinst_DATA = \
 	internal/testenv.gox \
 	internal/trace.gox \
 	net/internal/socktest.gox \
-	os/signal/internal/pty.gox
+	os/signal/internal/pty.gox \
+	runtime/pprof/internal/profile.gox
 
 if LIBGO_IS_RTEMS
 rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
@@ -1094,6 +1095,7 @@ CHECK_DEPS = \
 	$(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) \
 	$(toolexeclibgounicode_DATA) \
+	$(noinst_DATA) \
 	$(noinst_LIBRARIES)
 
 if GOC_IS_LLGO
