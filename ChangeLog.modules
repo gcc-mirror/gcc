@@ -1,3 +1,23 @@
+2018-03-15  Nathan Sidwell  <nathan@acm.org>
+
+	Implement p0713 - identifiying module source
+	gcc/cp/
+	* parser.c (cp_parser_module_declaration): Allow global module
+	preamble.  Return bool.
+	(cp_parser_declaration_seq_opt): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/circ-1_d.C: Adjust.
+	* g++.dg/modules/global-1_a.C: Adjust.
+	* g++.dg/modules/main-[123]-aux.cc: Adjust.
+	* g++.dg/modules/main-aux.cc: Adjust.
+	* g++.dg/modules/mod-decl-[13].C: Adjust.
+	* g++.dg/modules/mod-decl-5_b.C: Adjust.
+	* g++.dg/modules/mod-exp-1_b.C: Adjust.
+	* g++.dg/modules/mod-sym-2.C: Adjust.
+	* g++.dg/modules/proclaim-1.C: Adjust.
+	* g++.dg/modules/static-1_a.C: Adjust.
+	* g++.dg/modules/p0713-[123].C: New: Adjust.
+
 2018-03-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
