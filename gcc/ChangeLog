@@ -1,3 +1,9 @@
+2018-03-17  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32.c (nds32_asm_output_mi_thunk,
+	nds32_print_operand, nds32_print_operand_address): Use
+	HOST_WIDE_INT_PRINT_DEC instead.
+
 2018-03-17  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_register_priority): Modify cost.
