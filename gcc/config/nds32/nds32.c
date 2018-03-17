@@ -1234,9 +1234,24 @@ static int
 nds32_register_priority (int hard_regno)
 {
   /* Encourage to use r0-r7 for LRA when optimize for size.  */
-  if (optimize_size && hard_regno < 8)
-    return 4;
-  return 3;
+  if (optimize_size)
+    {
+      if (hard_regno < 8)
+	return 4;
+      else if (hard_regno < 16)
+	return 3;
+      else if (hard_regno < 28)
+	return 2;
+      else
+	return 1;
+    }
+  else
+    {
+      if (hard_regno > 27)
+	return 1;
+      else
+	return 4;
+    }
 }
 
 

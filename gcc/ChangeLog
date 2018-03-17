@@ -1,3 +1,7 @@
+2018-03-17  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_register_priority): Modify cost.
+
 2018-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84902
