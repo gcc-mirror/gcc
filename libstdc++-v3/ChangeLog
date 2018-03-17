@@ -1,3 +1,8 @@
+2018-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: Adjust
+	to compile as C++98.
+
 2018-03-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78420
