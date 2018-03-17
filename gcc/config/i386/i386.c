@@ -183,7 +183,7 @@ unsigned char ix86_tune_features[X86_TUNE_LAST];
 
 /* Feature tests against the various tunings used to create ix86_tune_features
    based on the processor mask.  */
-static unsigned long long initial_ix86_tune_features[X86_TUNE_LAST] = {
+static unsigned HOST_WIDE_INT initial_ix86_tune_features[X86_TUNE_LAST] = {
 #undef DEF_TUNE
 #define DEF_TUNE(tune, name, selector) selector,
 #include "x86-tune.def"
@@ -195,7 +195,7 @@ unsigned char ix86_arch_features[X86_ARCH_LAST];
 
 /* Feature tests against the various architecture variations, used to create
    ix86_arch_features based on the processor mask.  */
-static unsigned long long initial_ix86_arch_features[X86_ARCH_LAST] = {
+static unsigned HOST_WIDE_INT initial_ix86_arch_features[X86_ARCH_LAST] = {
   /* X86_ARCH_CMOV: Conditional move was added for pentiumpro.  */
   ~(m_386 | m_486 | m_PENT | m_LAKEMONT | m_K6),
 
@@ -3310,7 +3310,7 @@ parse_mtune_ctrl_str (bool dump)
 static void
 set_ix86_tune_features (enum processor_type ix86_tune, bool dump)
 {
-  unsigned int ix86_tune_mask = 1u << ix86_tune;
+  unsigned HOST_WIDE_INT ix86_tune_mask = HOST_WIDE_INT_1U << ix86_tune;
   int i;
 
   for (i = 0; i < X86_TUNE_LAST; ++i)
@@ -3318,7 +3318,8 @@ set_ix86_tune_features (enum processor_type ix86_tune, bool dump)
       if (ix86_tune_no_default)
         ix86_tune_features[i] = 0;
       else
-        ix86_tune_features[i] = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
+	ix86_tune_features[i]
+	  = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
     }
 
   if (dump)
@@ -3373,7 +3374,7 @@ ix86_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts_set)
 {
   int i;
-  unsigned int ix86_arch_mask;
+  unsigned HOST_WIDE_INT ix86_arch_mask;
   const bool ix86_tune_specified = (opts->x_ix86_tune_string != NULL);
 
   const wide_int_bitmask PTA_3DNOW (HOST_WIDE_INT_1U << 0);
@@ -4234,7 +4235,7 @@ ix86_option_override_internal (bool main_args_p,
       XDELETEVEC (s);
     }
 
-  ix86_arch_mask = 1u << ix86_arch;
+  ix86_arch_mask = HOST_WIDE_INT_1U << ix86_arch;
   for (i = 0; i < X86_ARCH_LAST; ++i)
     ix86_arch_features[i] = !!(initial_ix86_arch_features[i] & ix86_arch_mask);
 
@@ -5159,7 +5160,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
 {
   enum processor_type old_tune = ix86_tune;
   enum processor_type old_arch = ix86_arch;
-  unsigned int ix86_arch_mask;
+  unsigned HOST_WIDE_INT ix86_arch_mask;
   int i;
 
   /* We don't change -fPIC.  */
@@ -5210,7 +5211,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
   /* Recreate the arch feature tests if the arch changed */
   if (old_arch != ix86_arch)
     {
-      ix86_arch_mask = 1u << ix86_arch;
+      ix86_arch_mask = HOST_WIDE_INT_1U << ix86_arch;
       for (i = 0; i < X86_ARCH_LAST; ++i)
 	ix86_arch_features[i]
 	  = !!(initial_ix86_arch_features[i] & ix86_arch_mask);

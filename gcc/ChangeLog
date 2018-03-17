@@ -1,3 +1,17 @@
+2018-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84902
+	* config/i386/i386.c (initial_ix86_tune_features,
+	initial_ix86_arch_features): Use unsigned HOST_WIDE_INT rather than
+	unsigned long long.
+	(set_ix86_tune_features): Change ix86_tune_mask from unsigned int
+	to unsigned HOST_WIDE_INT, initialize to HOST_WIDE_INT_1U << ix86_tune
+	rather than 1u << ix86_tune.  Formatting fix.
+	(ix86_option_override_internal): Change ix86_arch_mask from
+	unsigned int to unsigned HOST_WIDE_INT, initialize to
+	HOST_WIDE_INT_1U << ix86_arch rather than 1u << ix86_arch.
+	(ix86_function_specific_restore): Likewise.
+
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84899
