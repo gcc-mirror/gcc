@@ -26,6 +26,11 @@
 extern void nds32_init_expanders (void);
 
 
+/* Register Usage.  */
+
+/* -- Order of Allocation of Registers.  */
+extern void nds32_adjust_reg_alloc_order (void);
+
 /* Register Classes.  */
 
 extern enum reg_class nds32_regno_reg_class (int);

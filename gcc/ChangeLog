@@ -1,3 +1,11 @@
+2018-03-17  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32-protos.h (nds32_adjust_reg_alloc_order): Declare.
+	* config/nds32/nds32.c (nds32_reg_alloc_order_for_speed): New array.
+	(nds32_adjust_reg_alloc_order): New function.
+	* config/nds32/nds32.h (ADJUST_REG_ALLOC_ORDER): Define.
+
 2018-03-17  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/nds32.c (nds32_asm_output_mi_thunk,

@@ -627,6 +627,10 @@ enum nds32_builtins
    96,  97,  98,  99, 100,                \
 }
 
+/* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
+   to be rearranged based on optimizing for speed or size.  */
+#define ADJUST_REG_ALLOC_ORDER nds32_adjust_reg_alloc_order ()
+
 /* Tell IRA to use the order we define rather than messing it up with its
    own cost calculations.  */
 #define HONOR_REG_ALLOC_ORDER optimize_size

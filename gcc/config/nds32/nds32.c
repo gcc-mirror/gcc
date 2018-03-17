@@ -82,6 +82,18 @@ static const char * const nds32_intrinsic_register_names[] =
   "$PSW", "$IPSW", "$ITYPE", "$IPC"
 };
 
+
+/* Defining register allocation order for performance.
+   We want to allocate callee-saved registers after others.
+   It may be used by nds32_adjust_reg_alloc_order().  */
+static const int nds32_reg_alloc_order_for_speed[] =
+{
+   0,   1,   2,   3,   4,   5,  16,  17,
+  18,  19,  20,  21,  22,  23,  24,  25,
+  26,  27,   6,   7,   8,   9,  10,  11,
+  12,  13,  14,  15
+};
+
 /* Defining target-specific uses of __attribute__.  */
 static const struct attribute_spec nds32_attribute_table[] =
 {
@@ -2869,6 +2881,25 @@ nds32_init_expanders (void)
 
 
 /* Register Usage.  */
+
+/* -- Order of Allocation of Registers.  */
+
+void
+nds32_adjust_reg_alloc_order (void)
+{
+  const int nds32_reg_alloc_order[] = REG_ALLOC_ORDER;
+
+  /* Copy the default register allocation order, which is designed
+     to optimize for code size.  */
+  memcpy(reg_alloc_order, nds32_reg_alloc_order, sizeof (reg_alloc_order));
+
+  /* Adjust few register allocation order when optimizing for speed.  */
+  if (!optimize_size)
+    {
+      memcpy (reg_alloc_order, nds32_reg_alloc_order_for_speed,
+	      sizeof (nds32_reg_alloc_order_for_speed));
+    }
+}
 
 /* -- How Values Fit in Registers.  */
 
