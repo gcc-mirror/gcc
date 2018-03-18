@@ -1,3 +1,8 @@
+2018-03-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/65453
+	* gfortran.dg/pr65453.f90: New test.
+
 2018-03-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84913
