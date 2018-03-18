@@ -1,3 +1,9 @@
+2018-03-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84913
+	* tree-vect-loop.c (vectorizable_reduction): Don't try to
+	vectorize chains of COND_EXPRs.
+
 2018-03-18  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.h (MAX_REGS_PER_ADDRESS): Fix the value.
