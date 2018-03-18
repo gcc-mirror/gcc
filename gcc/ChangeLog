@@ -1,3 +1,7 @@
+2018-03-18  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+
 2018-03-17  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 

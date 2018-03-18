@@ -1066,6 +1066,11 @@ enum reg_class
    when the condition is true.  */
 #define STORE_FLAG_VALUE 1
 
+/* A C expression that indicates whether the architecture defines a value for
+   clz or ctz with a zero operand.  In nds32 clz for 0 result 32 is defined
+   in ISA spec */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
+
 /* An alias for the machine mode for pointers.  */
 #define Pmode SImode
 
