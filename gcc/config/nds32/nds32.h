@@ -867,6 +867,10 @@ enum reg_class
    other values are interpreted relative to that.  */
 #define BRANCH_COST(speed_p, predictable_p) ((speed_p) ? 2 : 0)
 
+/* Override BRANCH_COST heuristic which empirically produces worse
+   performance for removing short circuiting from the logical ops.  */
+#define LOGICAL_OP_NON_SHORT_CIRCUIT 0
+
 #define SLOW_BYTE_ACCESS 1
 
 #define NO_FUNCTION_CSE 1
