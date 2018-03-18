@@ -1703,14 +1703,18 @@ build_def_use (basic_block bb)
 		     and we must instead make sure to make the operand visible
 		     to the machinery that tracks hard registers.  */
 		  machine_mode i_mode = recog_data.operand_mode[i];
-		  machine_mode matches_mode = recog_data.operand_mode[matches];
-		  if (matches >= 0
-		      && maybe_ne (GET_MODE_SIZE (i_mode),
-				   GET_MODE_SIZE (matches_mode))
-		      && !verify_reg_in_set (op, &live_in_chains))
+		  if (matches >= 0)
 		    {
-		      untracked_operands |= 1 << i;
-		      untracked_operands |= 1 << matches;
+		      machine_mode matches_mode
+			= recog_data.operand_mode[matches];
+
+		      if (maybe_ne (GET_MODE_SIZE (i_mode),
+				    GET_MODE_SIZE (matches_mode))
+			  && !verify_reg_in_set (op, &live_in_chains))
+			{
+			  untracked_operands |= 1 << i;
+			  untracked_operands |= 1 << matches;
+			}
 		    }
 		}
 #ifdef STACK_REGS
