@@ -1,5 +1,9 @@
 2018-03-18  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.h (MAX_REGS_PER_ADDRESS): Fix the value.
+
+2018-03-18  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Define.
 
 2018-03-18  Chung-Ju Wu  <jasonwucj@gmail.com>

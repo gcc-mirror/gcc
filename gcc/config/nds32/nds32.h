@@ -851,7 +851,7 @@ enum reg_class
 
 #define CONSTANT_ADDRESS_P(x) (CONSTANT_P (x) && GET_CODE (x) != CONST_DOUBLE)
 
-#define MAX_REGS_PER_ADDRESS 2
+#define MAX_REGS_PER_ADDRESS 3
 
 
 /* Anchored Addresses.  */
