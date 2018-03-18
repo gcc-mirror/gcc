@@ -1,3 +1,12 @@
+2018-03-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2016-12-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_callee_copies): New function.
+	* config/pa/pa.opt (mcaller-copies): New option.
+	* doc/invoke.texi (mcaller-copies): Document option.
+
 2018-03-14  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/83451

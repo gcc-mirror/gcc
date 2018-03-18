@@ -41,6 +41,10 @@ mbig-switch
 Target Ignore
 Does nothing.  Preserved for backward compatibility.
 
+mcaller-copies
+Target Report Mask(CALLER_COPIES)
+Caller copies function arguments passed by hidden reference.
+
 mdisable-fpregs
 Target Report Mask(DISABLE_FPREGS)
 Disable FP regs.
