@@ -1,3 +1,8 @@
+2018-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Adjust link to
+	docbook.org.
+
 2018-03-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/function_objects/comparisons_pointer.cc: Adjust
