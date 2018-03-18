@@ -1,5 +1,13 @@
 2018-03-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/77414
+	* decl.c (get_proc_name):  Check for a subroutine re-defined in
+	the contain portion of a subroutine.  Change language of existing
+	error message to better describe the issue. While here fix whitespace
+	issues.
+
+2018-03-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/65453
 	* decl.c (get_proc_name): Catch clash between a procedure statement
 	and a contained subprogram
