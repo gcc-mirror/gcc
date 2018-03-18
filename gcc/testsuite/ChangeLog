@@ -1,3 +1,9 @@
+2018-03-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77414
+	* gfortran.dg/pr77414.f90: New test.
+	* gfortran.dg/internal_references_1.f90: Adjust error message.
+
 2018-03-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/65453
