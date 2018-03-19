@@ -1,3 +1,9 @@
+2018-03-19  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/78651
+	* dwarf2asm.c (dw2_output_indirect_constant_1): Disable ASan before
+	calling assemble_variable.
+
 2018-03-19  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/81647
