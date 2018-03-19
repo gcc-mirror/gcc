@@ -1,3 +1,8 @@
+2018-03-19  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/81647
+	* gcc.target/aarch64/pr81647.c: New.
+
 2018-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84933
