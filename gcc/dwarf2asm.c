@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2.h"
 #include "function.h"
 #include "emit-rtl.h"
+#include "fold-const.h"
 
 #ifndef XCOFF_DEBUGGING_INFO
 #define XCOFF_DEBUGGING_INFO 0
@@ -954,7 +955,7 @@ dw2_output_indirect_constant_1 (const char *sym, tree id)
   SET_DECL_ASSEMBLER_NAME (decl, id);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
-  DECL_INITIAL (decl) = decl;
+  DECL_INITIAL (decl) = build_fold_addr_expr (decl);
   TREE_READONLY (decl) = 1;
   TREE_STATIC (decl) = 1;
 
