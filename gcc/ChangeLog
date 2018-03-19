@@ -1,3 +1,8 @@
+2018-03-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/84711
+	* config/arm/arm.c (arm_can_change_mode_class): revert r258554.
+
 2018-03-18  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/84635

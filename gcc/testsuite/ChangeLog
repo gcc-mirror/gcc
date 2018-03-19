@@ -1,3 +1,8 @@
+2018-03-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/84711
+	* gcc.target/arm/big-endian-subreg.c: Delete.
+
 2018-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84931
