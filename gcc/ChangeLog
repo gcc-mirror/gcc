@@ -1,5 +1,9 @@
 2018-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84946
+	* gimple-ssa-store-merging.c (mem_valid_for_store_merging): Compute
+	bitsize + bitsize in poly_uint64 rather than poly_int64.
+
 	PR sanitizer/78651
 	* dwarf2asm.c: Include fold-const.c.
 	(dw2_output_indirect_constant_1): Set DECL_INITIAL (decl) to ADDR_EXPR
