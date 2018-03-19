@@ -1,5 +1,10 @@
 2018-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/78651
+	* dwarf2asm.c: Include fold-const.c.
+	(dw2_output_indirect_constant_1): Set DECL_INITIAL (decl) to ADDR_EXPR
+	of decl rather than decl itself.
+
 	PR rtl-optimization/84643
 	* memmodel.h (enum memmodel): Add MEMMODEL_MAX enumerator.
 
