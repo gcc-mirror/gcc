@@ -1,3 +1,9 @@
+2018-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84931
+	* simplify.c (gfc_convert_constant): Correctly handle iterators
+	for type conversion.
+
 2018-03-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77414

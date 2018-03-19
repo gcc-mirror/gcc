@@ -1,3 +1,8 @@
+2018-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84931
+	* gfortran.dg/array_constructor_52.f90: New test.
+
 2018-03-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77414
