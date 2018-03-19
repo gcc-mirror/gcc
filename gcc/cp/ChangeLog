@@ -1,3 +1,8 @@
+2018-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71834 - template-id with too few arguments.
+	* pt.c (coerce_template_parms): Check fixed_parameter_pack_p.
+
 2018-03-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84835
