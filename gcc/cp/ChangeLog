@@ -1,5 +1,9 @@
 2018-03-19  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/84835
+	* lambda.c (maybe_add_lambda_conv_op): Force C++ linkage.
+	* pt.c (build_template_decl): Propagate language linkage.
+
 	PR c++/84812
 	* name-lookup.c (set_local_extern_decl_linkage): Defend against
 	ambiguous lookups.

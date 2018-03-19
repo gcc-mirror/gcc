@@ -1176,6 +1176,7 @@ maybe_add_lambda_conv_op (tree type)
   tree thistype = cp_build_qualified_type (type, TYPE_QUAL_CONST);
   tree fntype = build_method_type_directly (thistype, rettype, void_list_node);
   tree convfn = build_lang_decl (FUNCTION_DECL, name, fntype);
+  SET_DECL_LANGUAGE (convfn, lang_cplusplus);
   tree fn = convfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
@@ -1208,6 +1209,7 @@ maybe_add_lambda_conv_op (tree type)
 
   name = get_identifier ("_FUN");
   tree statfn = build_lang_decl (FUNCTION_DECL, name, stattype);
+  SET_DECL_LANGUAGE (statfn, lang_cplusplus);
   fn = statfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   grokclassfn (type, fn, NO_SPECIAL);
