@@ -4677,6 +4677,7 @@ tree
 build_template_decl (tree decl, tree parms, bool member_template_p)
 {
   tree tmpl = build_lang_decl (TEMPLATE_DECL, DECL_NAME (decl), NULL_TREE);
+  SET_DECL_LANGUAGE (tmpl, DECL_LANGUAGE (decl));
   DECL_TEMPLATE_PARMS (tmpl) = parms;
   DECL_CONTEXT (tmpl) = DECL_CONTEXT (decl);
   DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
