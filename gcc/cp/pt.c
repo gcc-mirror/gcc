@@ -12917,7 +12917,7 @@ enclosing_instantiation_of (tree otctx)
       for (; flambda_count < lambda_count && fn && LAMBDA_FUNCTION_P (fn);
 	   fn = decl_function_context (fn))
 	++flambda_count;
-      if (DECL_TEMPLATE_INFO (fn)
+      if ((fn && DECL_TEMPLATE_INFO (fn))
 	  ? most_general_template (fn) != most_general_template (tctx)
 	  : fn != tctx)
 	continue;
