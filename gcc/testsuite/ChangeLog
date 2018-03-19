@@ -3,6 +3,9 @@
 	PR c++/84925
 	* g++.dg/cpp1z/lambda-__func__.C: New test.
 
+	PR c++/84927
+	* g++.dg/cpp1y/nsdmi-aggr9.C: New test.
+
 2018-03-19  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/78651

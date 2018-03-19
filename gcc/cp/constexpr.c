@@ -2880,7 +2880,12 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	  (*p)->last().value = elt;
 	}
       else
-	CONSTRUCTOR_APPEND_ELT (*p, index, elt);
+	{
+	  CONSTRUCTOR_APPEND_ELT (*p, index, elt);
+	  /* Adding an element might change the ctor's flags.  */
+	  TREE_CONSTANT (ctx->ctor) = constant_p;
+	  TREE_SIDE_EFFECTS (ctx->ctor) = side_effects_p;
+	}
     }
   if (*non_constant_p || !changed)
     return t;
@@ -4530,11 +4535,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  /* Don't re-process a constant CONSTRUCTOR, but do fold it to
 	     VECTOR_CST if applicable.  */
-	  /* FIXME after GCC 6 branches, make the verify unconditional.  */
-	  if (CHECKING_P)
-	    verify_constructor_flags (t);
-	  else
-	    recompute_constructor_flags (t);
+	  verify_constructor_flags (t);
 	  if (TREE_CONSTANT (t))
 	    return fold (t);
 	}
