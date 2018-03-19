@@ -8016,26 +8016,32 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	{
 	  gfc_expr *tmp;
 	  if (c->iterator == NULL)
-	    tmp = f (c->expr, kind);
+	    {
+	      tmp = f (c->expr, kind);
+	      if (tmp == NULL)
+		{
+		  gfc_free_expr (result);
+		  return NULL;
+		}
+
+	      gfc_constructor_append_expr (&result->value.constructor,
+					   tmp, &c->where);
+	    }
 	  else
 	    {
+	      gfc_constructor *n;
 	      g = gfc_convert_constant (c->expr, type, kind);
-	      if (g == &gfc_bad_expr)
+	      if (g == NULL || g == &gfc_bad_expr)
 	        {
 		  gfc_free_expr (result);
 		  return g;
 		}
-	      tmp = g;
+	      n = gfc_constructor_get ();
+	      n->expr = g;
+	      n->iterator = gfc_copy_iterator (c->iterator);
+	      n->where = c->where;
+	      gfc_constructor_append (&result->value.constructor, n);
 	    }
-
-	  if (tmp == NULL)
-	    {
-	      gfc_free_expr (result);
-	      return NULL;
-	    }
-
-	  gfc_constructor_append_expr (&result->value.constructor,
-				       tmp, &c->where);
 	}
 
       break;
