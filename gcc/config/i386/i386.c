@@ -12031,18 +12031,22 @@ ix86_setup_frame_addresses (void)
    labels in call and return thunks.  */
 static int indirectlabelno;
 
-/* True if call and return thunk functions are needed.  */
+/* True if call thunk function is needed.  */
 static bool indirect_thunk_needed = false;
-/* True if call and return thunk functions with the BND prefix are
-   needed.  */
+/* True if call thunk function with the BND prefix is needed.  */
 static bool indirect_thunk_bnd_needed = false;
 
 /* Bit masks of integer registers, which contain branch target, used
-   by call and return thunks functions.  */
+   by call thunk functions.  */
 static int indirect_thunks_used;
 /* Bit masks of integer registers, which contain branch target, used
-   by call and return thunks functions with the BND prefix.  */
+   by call thunk functions with the BND prefix.  */
 static int indirect_thunks_bnd_used;
+
+/* True if return thunk function is needed.  */
+static bool indirect_return_needed = false;
+/* True if return thunk function with the BND prefix is needed.  */
+static bool indirect_return_bnd_needed = false;
 
 /* True if return thunk function via CX is needed.  */
 static bool indirect_return_via_cx;
@@ -12190,16 +12194,18 @@ output_indirect_thunk (bool need_bnd_p, unsigned int regno)
 /* Output a funtion with a call and return thunk for indirect branch.
    If BND_P is true, the BND prefix is needed.  If REGNO != INVALID_REGNUM,
    the function address is in REGNO.  Otherwise, the function address is
-   on the top of stack.  */
+   on the top of stack.  Thunk is used for function return if RET_P is
+   true.  */
 
 static void
-output_indirect_thunk_function (bool need_bnd_p, unsigned int regno)
+output_indirect_thunk_function (bool need_bnd_p, unsigned int regno,
+				bool ret_p)
 {
   char name[32];
   tree decl;
 
   /* Create __x86_indirect_thunk/__x86_indirect_thunk_bnd.  */
-  indirect_thunk_name (name, regno, need_bnd_p, false);
+  indirect_thunk_name (name, regno, need_bnd_p, ret_p);
   decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 		     get_identifier (name),
 		     build_function_type_list (void_type_node, NULL_TREE));
@@ -12241,50 +12247,6 @@ output_indirect_thunk_function (bool need_bnd_p, unsigned int regno)
 	switch_to_section (text_section);
 	ASM_OUTPUT_LABEL (asm_out_file, name);
       }
-
-  /* Create alias for __x86_return_thunk/__x86_return_thunk_bnd or
-     __x86_return_thunk_ecx/__x86_return_thunk_ecx_bnd.  */
-  bool need_alias;
-  if (regno == INVALID_REGNUM)
-    need_alias = true;
-  else if (regno == CX_REG)
-    {
-      if (need_bnd_p)
-	need_alias = indirect_return_via_cx_bnd;
-      else
-	need_alias = indirect_return_via_cx;
-    }
-  else
-    need_alias = false;
-
-  if (need_alias)
-    {
-      char alias[32];
-
-      indirect_thunk_name (alias, regno, need_bnd_p, true);
-#if TARGET_MACHO
-      if (TARGET_MACHO)
-	{
-	  fputs ("\t.weak_definition\t", asm_out_file);
-	  assemble_name (asm_out_file, alias);
-	  fputs ("\n\t.private_extern\t", asm_out_file);
-	  assemble_name (asm_out_file, alias);
-	  putc ('\n', asm_out_file);
-	  ASM_OUTPUT_LABEL (asm_out_file, alias);
-	}
-#else
-      ASM_OUTPUT_DEF (asm_out_file, alias, name);
-      if (USE_HIDDEN_LINKONCE)
-	{
-	  fputs ("\t.globl\t", asm_out_file);
-	  assemble_name (asm_out_file, alias);
-	  putc ('\n', asm_out_file);
-	  fputs ("\t.hidden\t", asm_out_file);
-	  assemble_name (asm_out_file, alias);
-	  putc ('\n', asm_out_file);
-	}
-#endif
-    }
 
   DECL_INITIAL (decl) = make_node (BLOCK);
   current_function_decl = decl;
@@ -12332,19 +12294,29 @@ ix86_code_end (void)
   rtx xops[2];
   unsigned int regno;
 
+  if (indirect_return_needed)
+    output_indirect_thunk_function (false, INVALID_REGNUM, true);
+  if (indirect_return_bnd_needed)
+    output_indirect_thunk_function (true, INVALID_REGNUM, true);
+
+  if (indirect_return_via_cx)
+    output_indirect_thunk_function (false, CX_REG, true);
+  if (indirect_return_via_cx_bnd)
+    output_indirect_thunk_function (true, CX_REG, true);
+
   if (indirect_thunk_needed)
-    output_indirect_thunk_function (false, INVALID_REGNUM);
+    output_indirect_thunk_function (false, INVALID_REGNUM, false);
   if (indirect_thunk_bnd_needed)
-    output_indirect_thunk_function (true, INVALID_REGNUM);
+    output_indirect_thunk_function (true, INVALID_REGNUM, false);
 
   for (regno = FIRST_REX_INT_REG; regno <= LAST_REX_INT_REG; regno++)
     {
       unsigned int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
       if ((indirect_thunks_used & (1 << i)))
-	output_indirect_thunk_function (false, regno);
+	output_indirect_thunk_function (false, regno, false);
 
       if ((indirect_thunks_bnd_used & (1 << i)))
-	output_indirect_thunk_function (true, regno);
+	output_indirect_thunk_function (true, regno, false);
     }
 
   for (regno = AX_REG; regno <= SP_REG; regno++)
@@ -12353,10 +12325,10 @@ ix86_code_end (void)
       tree decl;
 
       if ((indirect_thunks_used & (1 << regno)))
-	output_indirect_thunk_function (false, regno);
+	output_indirect_thunk_function (false, regno, false);
 
       if ((indirect_thunks_bnd_used & (1 << regno)))
-	output_indirect_thunk_function (true, regno);
+	output_indirect_thunk_function (true, regno, false);
 
       if (!(pic_labels_used & (1 << regno)))
 	continue;
@@ -29168,12 +29140,12 @@ ix86_output_function_return (bool long_p)
 			       true);
 	  if (need_bnd_p)
 	    {
-	      indirect_thunk_bnd_needed |= need_thunk;
+	      indirect_return_bnd_needed |= need_thunk;
 	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
 	    }
 	  else
 	    {
-	      indirect_thunk_needed |= need_thunk;
+	      indirect_return_needed |= need_thunk;
 	      fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	    }
 	}
