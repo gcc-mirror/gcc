@@ -3948,7 +3948,8 @@ mem_valid_for_store_merging (tree mem, poly_uint64 *pbitsize,
   if (known_eq (bitregion_end, 0U))
     {
       bitregion_start = round_down_to_byte_boundary (bitpos);
-      bitregion_end = round_up_to_byte_boundary (bitpos + bitsize);
+      bitregion_end = bitpos;
+      bitregion_end = round_up_to_byte_boundary (bitregion_end + bitsize);
     }
 
   if (offset != NULL_TREE)
