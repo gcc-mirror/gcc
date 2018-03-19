@@ -1,3 +1,8 @@
+2018-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84929
+	* gcc.dg/torture/pr84929.c: New testcase.
+
 2018-03-19  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/84711

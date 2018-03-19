@@ -1,3 +1,9 @@
+2018-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84929
+	* tree-data-ref.c (analyze_siv_subscript_cst_affine): Guard
+	chrec_is_positive against non-chrec arg.
+
 2018-03-19  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/84711
