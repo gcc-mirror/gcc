@@ -1,3 +1,8 @@
+2018-03-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84812
+	* g++.dg/lookup/pr84812.C: New.
+
 2018-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84929
