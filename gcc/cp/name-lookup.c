@@ -2878,7 +2878,9 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 	    = find_namespace_value (current_namespace, DECL_NAME (decl));
 	  loc_value = ns_value;
 	}
-      if (loc_value == error_mark_node)
+      if (loc_value == error_mark_node
+	  /* An ambiguous lookup.  */
+	  || (loc_value && TREE_CODE (loc_value) == TREE_LIST))
 	loc_value = NULL_TREE;
 
       for (ovl_iterator iter (loc_value); iter; ++iter)
@@ -2926,7 +2928,8 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
       if (ns_value == decl)
 	ns_value = find_namespace_value (current_namespace, DECL_NAME (decl));
 
-      if (ns_value == error_mark_node)
+      if (ns_value == error_mark_node
+	  || (ns_value && TREE_CODE (ns_value) == TREE_LIST))
 	ns_value = NULL_TREE;
 
       for (ovl_iterator iter (ns_value); iter; ++iter)
