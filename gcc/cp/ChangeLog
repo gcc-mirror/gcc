@@ -1,3 +1,8 @@
+2018-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84925
+	* pt.c (enclosing_instantiation_of): Check if fn is null.
+
 2018-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71834 - template-id with too few arguments.

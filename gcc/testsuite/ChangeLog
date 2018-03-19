@@ -1,3 +1,8 @@
+2018-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84925
+	* g++.dg/cpp1z/lambda-__func__.C: New test.
+
 2018-03-19  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/78651
