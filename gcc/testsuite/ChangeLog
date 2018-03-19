@@ -1,3 +1,8 @@
+2018-03-19  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/pr84512.c: Don't require effective target
+	vect_int_mult.  Add nvptx xfail for PR84958.
+
 2018-03-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84835
