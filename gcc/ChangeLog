@@ -1,3 +1,8 @@
+2018-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/84643
+	* memmodel.h (enum memmodel): Add MEMMODEL_MAX enumerator.
+
 2018-03-19  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/78651
