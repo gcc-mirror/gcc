@@ -1,3 +1,14 @@
+2018-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/84761
+	* sanitizer_common/sanitizer_linux_libcdep.cc (__GLIBC_PREREQ):
+	Define if not defined.
+	(DL_INTERNAL_FUNCTION): Don't define.
+	(InitTlsSize): For __i386__ if not compiled against glibc 2.27+
+	determine at runtime whether to use regparm(3), stdcall calling
+	convention for older glibcs or normal calling convention for
+	newer glibcs for call to _dl_get_tls_static_info.
+
 2018-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* sanitizer_common/sanitizer_stacktrace.cc
