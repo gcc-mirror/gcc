@@ -1,3 +1,18 @@
+2018-03-19  Jim Wilson  <jimw@sifive.com>
+
+	PR bootstrap/84856
+	* config/riscv/riscv.c (riscv_function_arg_boundary): Use
+	PREFERRED_STACK_BOUNDARY instead of STACK_BOUNDARY.
+	(riscv_first_stack_step): Likewise.
+	(riscv_option_override): Use STACK_BOUNDARY instead of
+	MIN_STACK_BOUNDARY.
+	* config/riscv/riscv.h (STACK_BOUNDARY): Renamed from
+	MIN_STACK_BOUNDARY.
+	(BIGGEST_ALIGNMENT): Set to 128.
+	(PREFERRED_STACK_BOUNDARY): Renamed from STACK_BOUNDARY.
+	(RISCV_STACK_ALIGN): Use PREFERRED_STACK_BOUNDARY instead of
+	STACK_BOUNDARY.
+
 2018-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84933

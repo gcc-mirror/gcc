@@ -124,13 +124,13 @@ along with GCC; see the file COPYING3.  If not see
 #define FUNCTION_BOUNDARY (TARGET_RVC ? 16 : 32)
 
 /* The smallest supported stack boundary the calling convention supports.  */
-#define MIN_STACK_BOUNDARY (2 * BITS_PER_WORD)
+#define STACK_BOUNDARY (2 * BITS_PER_WORD)
 
 /* The ABI stack alignment.  */
 #define ABI_STACK_BOUNDARY 128
 
 /* There is no point aligning anything to a rounder boundary than this.  */
-#define BIGGEST_ALIGNMENT STACK_BOUNDARY
+#define BIGGEST_ALIGNMENT 128
 
 /* The user-level ISA permits unaligned accesses, but they are not required
    of the privileged architecture.  */
@@ -482,7 +482,7 @@ enum reg_class
    `crtl->outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
-#define STACK_BOUNDARY riscv_stack_boundary
+#define PREFERRED_STACK_BOUNDARY riscv_stack_boundary
 
 /* Symbolic macros for the registers used to return integer and floating
    point values.  */
@@ -540,7 +540,7 @@ typedef struct {
 
 /* Align based on stack boundary, which might have been set by the user.  */
 #define RISCV_STACK_ALIGN(LOC) \
-  (((LOC) + ((STACK_BOUNDARY/8)-1)) & -(STACK_BOUNDARY/8))
+  (((LOC) + ((PREFERRED_STACK_BOUNDARY/8)-1)) & -(PREFERRED_STACK_BOUNDARY/8))
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
