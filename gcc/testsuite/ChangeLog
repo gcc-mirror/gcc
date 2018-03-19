@@ -1,3 +1,12 @@
+2018-03-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-03-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84574
+	* gcc.target/i386/ret-thunk-9.c: Expect __x86_return_thunk
+	label instead of __x86_indirect_thunk label.
+
 2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78741
