@@ -2202,7 +2202,7 @@ riscv_expand_conditional_branch (rtx label, rtx_code code, rtx op0, rtx op1)
 
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Every parameter gets at
    least PARM_BOUNDARY bits of alignment, but will be given anything up
-   to STACK_BOUNDARY bits if the type requires it.  */
+   to PREFERRED_STACK_BOUNDARY bits if the type requires it.  */
 
 static unsigned int
 riscv_function_arg_boundary (machine_mode mode, const_tree type)
@@ -2215,7 +2215,7 @@ riscv_function_arg_boundary (machine_mode mode, const_tree type)
   else
     alignment = type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode);
 
-  return MIN (STACK_BOUNDARY, MAX (PARM_BOUNDARY, alignment));
+  return MIN (PREFERRED_STACK_BOUNDARY, MAX (PARM_BOUNDARY, alignment));
 }
 
 /* If MODE represents an argument that can be passed or returned in
@@ -3506,7 +3506,7 @@ riscv_first_stack_step (struct riscv_frame_info *frame)
     return frame->total_size;
 
   HOST_WIDE_INT min_first_step = frame->total_size - frame->fp_sp_offset;
-  HOST_WIDE_INT max_first_step = IMM_REACH / 2 - STACK_BOUNDARY / 8;
+  HOST_WIDE_INT max_first_step = IMM_REACH / 2 - PREFERRED_STACK_BOUNDARY / 8;
   HOST_WIDE_INT min_second_step = frame->total_size - max_first_step;
   gcc_assert (min_first_step <= max_first_step);
 
@@ -4142,7 +4142,7 @@ riscv_option_override (void)
   riscv_stack_boundary = ABI_STACK_BOUNDARY;
   if (riscv_preferred_stack_boundary_arg)
     {
-      int min = ctz_hwi (MIN_STACK_BOUNDARY / 8);
+      int min = ctz_hwi (STACK_BOUNDARY / 8);
       int max = 8;
 
       if (!IN_RANGE (riscv_preferred_stack_boundary_arg, min, max))
