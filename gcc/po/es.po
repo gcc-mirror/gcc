@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2018-03-11 10:34+0100\n"
+"PO-Revision-Date: 2018-03-18 22:49+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -31718,10 +31718,9 @@ msgstr "no se admiten E500 y FPRs"
 
 #: config/powerpcspe/freebsd64.h:98 config/powerpcspe/linux64.h:115
 #: config/rs6000/freebsd64.h:98 config/rs6000/linux64.h:115
-#, fuzzy, gcc-internal-format
-#| msgid "-mas100-syntax is incompatible with -gdwarf"
+#, gcc-internal-format
 msgid "-mcall-aixdesc incompatible with -mabi=elfv2"
-msgstr "-mas100-syntax es incompatible con -gdwarf"
+msgstr "-mcall-aixdesc es incompatible con -mabi=elfv2"
 
 #: config/powerpcspe/freebsd64.h:113 config/powerpcspe/linux64.h:135
 #: config/rs6000/freebsd64.h:113 config/rs6000/linux64.h:135
@@ -31803,10 +31802,9 @@ msgid "ABI requires -march=rv%d"
 msgstr "ABI requiere -march=rv%d"
 
 #: config/riscv/riscv.c:4126
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-mpreferred-stack-boundary=%d is not between %d and %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "-mpreferred-stack-boundary=%d must be between %d and %d"
-msgstr "-mpreferred-stack-boundary=%d no está entre %d y %d"
+msgstr "-mpreferred-stack-boundary=%d debe estar entre %d y %d"
 
 #. Address spaces are currently only supported by C.
 #: config/rl78/rl78.c:374
@@ -31862,80 +31860,68 @@ msgstr "se convierte puntero lejano a puntero cercano"
 #: config/rs6000/rs6000-c.c:6118 config/rs6000/rs6000-c.c:6169
 #: config/rs6000/rs6000-c.c:6439 config/rs6000/rs6000-c.c:6505
 #: config/rs6000/rs6000-c.c:6856 config/rs6000/rs6000-c.c:6897
-#, fuzzy, gcc-internal-format
-#| msgid "%s only accepts 1 argument"
+#, gcc-internal-format
 msgid "builtin %qs only accepts 2 arguments"
-msgstr "%s sólo acepta 1 argumento"
+msgstr "el interno %qs sólo acepta 2 argumentos"
 
 #: config/rs6000/rs6000-c.c:6242 config/rs6000/rs6000-c.c:6325
 #: config/rs6000/rs6000-c.c:6677
-#, fuzzy, gcc-internal-format
-#| msgid "%s only accepts 1 argument"
+#, gcc-internal-format
 msgid "builtin %qs only accepts 3 arguments"
-msgstr "%s sólo acepta 1 argumento"
+msgstr "el interno %qs solo acepta 3 argumentos"
 
 #: config/rs6000/rs6000-c.c:6434
-#, fuzzy, gcc-internal-format
-#| msgid "%s only accepts 1 argument"
+#, gcc-internal-format
 msgid "builtin %qs only accepts 1 argument"
-msgstr "%s sólo acepta 1 argumento"
+msgstr "el interno %qs solo acepta 1 argumento"
 
 #: config/rs6000/rs6000-c.c:6961
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin function %s not supported in this compiler configuration"
+#, gcc-internal-format
 msgid "builtin function %qs not supported in this compiler configuration"
-msgstr "No se admite la función interna %s en esta configuración del compilador"
+msgstr "no se admite la función interna %s en esta configuración del compilador"
 
 #: config/rs6000/rs6000-c.c:6969
-#, fuzzy, gcc-internal-format
-#| msgid "invalid parameter combination for AltiVec intrinsic %s"
+#, gcc-internal-format
 msgid "invalid parameter combination for AltiVec intrinsic %qs"
-msgstr "combinación de parámetros no válida para el intrínseco AltiVec %s"
+msgstr "combinación de parámetros no válida para el intrínseco AltiVec %qs"
 
 #: config/rs6000/rs6000.c:3743 config/rs6000/rs6000.c:3746
 #: config/rs6000/rs6000.c:3749
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is predetermined %qs for %qs"
+#, gcc-internal-format
 msgid "%qs requires %qs or %qs"
-msgstr "%qE está predeterminado como %qs para %qs"
+msgstr "%qs requiere %qs o %qs"
 
 #: config/rs6000/rs6000.c:3850
-#, fuzzy, gcc-internal-format
-#| msgid "-m64 requires PowerPC64 architecture, enabling"
+#, gcc-internal-format
 msgid "%qs requires PowerPC64 architecture, enabling"
-msgstr "-m64 requiere la arquitectura PowerPC64, activando"
+msgstr "%qs requiere la arquitectura PowerPC64, activando"
 
 #: config/rs6000/rs6000.c:4029
-#, fuzzy, gcc-internal-format
-#| msgid "-malign-power is not supported for 64-bit Darwin; it is incompatible with the installed C and C++ libraries"
+#, gcc-internal-format
 msgid "%qs is not supported for 64-bit Darwin; it is incompatible with the installed C and C++ libraries"
-msgstr "no se admite -malign-power para Darwin de 64-bit; es incompatible con las bibliotecas C y C++ instaladas"
+msgstr "no se admite %qs para Darwin de 64 bits; es incompatible con las bibliotecas C y C++ instaladas"
 
 #: config/rs6000/rs6000.c:4128
-#, fuzzy, gcc-internal-format
-#| msgid "will not generate power9 instructions because assembler lacks power9 support"
+#, gcc-internal-format
 msgid "will not generate %qs instructions because assembler lacks %qs support"
-msgstr "no generará instrucciones power9 porque el ensamblador no las admite"
+msgstr "no generará instrucciones %qsporque el ensamblador no admite %qs"
 
 #: config/rs6000/rs6000.c:4221
-#, fuzzy, gcc-internal-format
-#| msgid "-mstring is not supported on little endian systems"
+#, gcc-internal-format
 msgid "%qs is not supported on little endian systems"
-msgstr "no se admite -mstring en sistemas little endian"
+msgstr "no se admite %qs en sistemas little endian"
 
 #: config/rs6000/rs6000.c:4314
-#, fuzzy, gcc-internal-format
-#| msgid "Power9 target option is incompatible with -mcpu=<xxx> for <xxx> less than power9"
+#, gcc-internal-format
 msgid "power9 target option is incompatible with %<%s=<xxx>%> for <xxx> less than power9"
-msgstr "la opción del objetivo Power9 es incompatible con -mcpu=<xxx> para <xxx> menor que power9"
+msgstr "la opción del objetivo power9 es incompatible con %<%s=<xxx%> para <xxx> menor que power9"
 
 #. Enforce that none of the ISA_3_0_MASKS_SERVER flags
 #. were explicitly cleared.
 #: config/rs6000/rs6000.c:4322
-#, fuzzy, gcc-internal-format
-#| msgid "-mpower9-minmax incompatible with explicitly disabled options"
+#, gcc-internal-format
 msgid "%qs incompatible with explicitly disabled options"
-msgstr "-mpower9-minmax es incompatible con las opciones desactivadas explícitamente"
+msgstr "%qs es incompatible con las opciones desactivadas explícitamente"
 
 #. We prefer to not mention undocumented options in
 #. error messages.  However, if users have managed to select
@@ -31948,137 +31934,116 @@ msgstr "-mpower9-minmax es incompatible con las opciones desactivadas explícita
 #: config/rs6000/rs6000.c:4519 config/rs6000/rs6000.c:4546
 #: config/rs6000/rs6000.c:4561 config/rs6000/rs6000.c:4569
 #: config/rs6000/rs6000.c:4665
-#, fuzzy, gcc-internal-format
-#| msgid "--resource requires -o"
+#, gcc-internal-format
 msgid "%qs requires %qs"
-msgstr "--resource requiere -o"
+msgstr "%qs requiere %qs"
 
 #: config/rs6000/rs6000.c:4606
-#, fuzzy, gcc-internal-format
-#| msgid "using IEEE extended precision long double"
+#, gcc-internal-format
 msgid "Using IEEE extended precision long double"
-msgstr "se usa long double de precisión extendida de IEEE"
+msgstr "Se usa long double de precisión extendida de IEEE"
 
 #: config/rs6000/rs6000.c:4608
-#, fuzzy, gcc-internal-format
-#| msgid "using IBM extended precision long double"
+#, gcc-internal-format
 msgid "Using IBM extended precision long double"
-msgstr "se usa long double de precisión extendida de IBM"
+msgstr "Se usa long double de precisión extendida de IBM"
 
 #: config/rs6000/rs6000.c:4625
-#, fuzzy, gcc-internal-format
-#| msgid "-mfloat128 requires VSX support"
+#, gcc-internal-format
 msgid "%qs requires VSX support"
-msgstr "-mfloat128 necesita soporte para VSX"
+msgstr "%qs necesita soporte para VSX"
 
 #: config/rs6000/rs6000.c:4634
 #, gcc-internal-format
 msgid "The -mfloat128 option may not be fully supported"
-msgstr ""
+msgstr "Es posible que la opción -mfloat128 no funcione perfectamente"
 
 #: config/rs6000/rs6000.c:4657
-#, fuzzy, gcc-internal-format
-#| msgid "-mfloat128-hardware requires full ISA 3.0 support"
+#, gcc-internal-format
 msgid "%qs requires full ISA 3.0 support"
-msgstr "-mfloat128-hardware requiere suporte pleno de ISA 3.0"
+msgstr "%qs requiere suporte pleno de ISA 3.0"
 
 #: config/rs6000/rs6000.c:4724
-#, fuzzy, gcc-internal-format
-#| msgid "unknown vectorization library ABI type (%s) for -mveclibabi= switch"
+#, gcc-internal-format
 msgid "unknown vectorization library ABI type (%qs) for %qs switch"
-msgstr "tipo de ABI de biblioteca de vectorización desconocida (%s) para la opción -mveclibabi="
+msgstr "tipo de ABI de biblioteca de vectorización desconocida (%qs) para la opción %qs"
 
 #: config/rs6000/rs6000.c:4930
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not valid for %qs"
+#, gcc-internal-format
 msgid "%qs is not a valid number in %qs"
-msgstr "%qs no es válido para %qs"
+msgstr "%qs no es un número válido en %qs"
 
 #: config/rs6000/rs6000.c:4935
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not valid for %qs"
+#, gcc-internal-format
 msgid "%qs is not a valid offset in %qs"
-msgstr "%qs no es válido para %qs"
+msgstr "%qs no es un desplazamiento válido en %qs"
 
 #: config/rs6000/rs6000.c:4947
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not a valid base register in -mstack-protector-guard-reg="
+#, gcc-internal-format
 msgid "%qs is not a valid base register in %qs"
-msgstr "%qs no es un registro base válido en -mstack-protector-guard-reg="
+msgstr "%qs no es un registro base válido en %qs"
 
 #: config/rs6000/rs6000.c:4955
-#, fuzzy, gcc-internal-format
-#| msgid "-mstack-protector-guard=tls needs a valid base register"
+#, gcc-internal-format
 msgid "%qs needs a valid base register"
-msgstr "-mstack-protector-guard==tls necesita un registro bae válido"
+msgstr "%qs necesita un registro bae válido"
 
 #: config/rs6000/rs6000.c:5253
-#, fuzzy, gcc-internal-format
-#| msgid "unknown option for -mrecip=%s"
+#, gcc-internal-format
 msgid "unknown option for %<%s=%s%>"
-msgstr "opción desconocida para -mrecip=%s"
+msgstr "opción desconocida para %<%s=%s%>"
 
 #: config/rs6000/rs6000.c:11385
-#, fuzzy, gcc-internal-format
-#| msgid "cannot return value in vector register because altivec instructions are disabled, use -maltivec to enable them"
+#, gcc-internal-format
 msgid "cannot return value in vector register because altivec instructions are disabled, use %qs to enable them"
-msgstr "no se puede devolver un valor en el registro vector porque las instrucciones altivec están desactivadas, use -maltivec para activarlas"
+msgstr "no se puede devolver un valor en el registro vector porque las instrucciones altivec están desactivadas, use %qs para activarlas"
 
 #: config/rs6000/rs6000.c:11846
-#, fuzzy, gcc-internal-format
-#| msgid "cannot pass argument in vector register because altivec instructions are disabled, use -maltivec to enable them"
+#, gcc-internal-format
 msgid "cannot pass argument in vector register because altivec instructions are disabled, use %qs to enable them"
-msgstr "no se puede pasar argumentos en el registro vector porque las instrucciones altivec están desactivadas, use -maltivec para activarlas"
+msgstr "no se puede pasar argumentos en el registro vector porque las instrucciones altivec están desactivadas, use %qs para activarlas"
 
 #: config/rs6000/rs6000.c:13555
-#, fuzzy, gcc-internal-format
-#| msgid "internal error: builtin function %s already processed"
+#, gcc-internal-format
 msgid "internal error: builtin function %qs already processed"
-msgstr "error interno: la función interna %s ya se procesó"
+msgstr "error interno: la función interna %qs ya se procesó"
 
 #: config/rs6000/rs6000.c:14133
-#, fuzzy, gcc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
+#, gcc-internal-format
 msgid "argument 2 must be a 1-bit unsigned literal"
-msgstr "el argumento 2 debe ser un literal sin signo de 5 bits"
+msgstr "el argumento 2 debe ser un literal sin signo de 1 bit"
 
 #: config/rs6000/rs6000.c:14172
-#, fuzzy, gcc-internal-format
-#| msgid "argument %d of %qE must be a pointer type"
+#, gcc-internal-format
 msgid "argument 1 of %qs must be a constant"
-msgstr "el argumento %d de %qE debe ser un tipo puntero"
+msgstr "el argumento 1 de %qs debe ser constante"
 
 #: config/rs6000/rs6000.c:14230 config/rs6000/rs6000.c:16008
-#, fuzzy, gcc-internal-format
-#| msgid "argument 1 of __builtin_spe_predicate is out of range"
+#, gcc-internal-format
 msgid "argument 1 of %qs is out of range"
-msgstr "el argumento 1 de __builtin_spe_predicate está fuera de rango"
+msgstr "el argumento 1 de %qs está fuera de rango"
 
 #: config/rs6000/rs6000.c:14724
-#, fuzzy, gcc-internal-format
-#| msgid "%srtd%s is ignored in 64bit mode"
+#, gcc-internal-format
 msgid "builtin %qs is only valid in 64-bit mode"
-msgstr "se descarta %srtd%s en el modo de 64bit"
+msgstr "el interno %qs solo es válido en el modo de 64 bits"
 
 #: config/rs6000/rs6000.c:14921
-#, fuzzy, gcc-internal-format
-#| msgid "%s only accepts 1 argument"
+#, gcc-internal-format
 msgid "builtin %qs only accepts a string argument"
-msgstr "%s sólo acepta 1 argumento"
+msgstr "el interno %qs sólo acepta un argumento de cadena"
 
 #. Invalid CPU argument.
 #: config/rs6000/rs6000.c:14940
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is an invalid argument to -mcpu="
+#, gcc-internal-format
 msgid "cpu %qs is an invalid argument to builtin %qs"
-msgstr "%qs es un argumento no válido para -mcpu="
+msgstr "la cpu %qs es un argumento no válido para el interno %qs"
 
 #. Invalid HWCAP argument.
 #: config/rs6000/rs6000.c:14968
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is an invalid argument to -mcpu="
+#, gcc-internal-format
 msgid "%s %qs is an invalid argument to builtin %qs"
-msgstr "%qs es un argumento no válido para -mcpu="
+msgstr "%s %qs es un argumento no válido para el interno %qs"
 
 #: config/rs6000/rs6000.c:14994
 #, gcc-internal-format
@@ -32086,123 +32051,104 @@ msgid "builtin %qs needs GLIBC (2.23 and newer) that exports hardware capability
 msgstr ""
 
 #: config/rs6000/rs6000.c:15727
-#, fuzzy, gcc-internal-format
-#| msgid "second argument to %<__builtin_expect%> must be a constant"
+#, gcc-internal-format
 msgid "second argument to %qs must be 0..12"
-msgstr "el segundo argumento de %<__builtin_expect%> debe ser una constante"
+msgstr "el segundo argumento de %qs debe estar en 0..12"
 
 #: config/rs6000/rs6000.c:15744
-#, fuzzy, gcc-internal-format
-#| msgid "third argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "third argument to %qs must be 0..12"
-msgstr "el tercer argumento de %<__builtin_prefetch%> debe ser una constante"
+msgstr "el tercer argumento de %qs debe estar en 0..12"
 
 #: config/rs6000/rs6000.c:15960
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument %d of %qE must be a pointer type"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument 1 of %s must be a constant"
-msgstr "el argumento %d de %qE debe ser un tipo puntero"
+msgstr "el argumento 1 de %s debe ser una constante"
 
 #: config/rs6000/rs6000.c:16030
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin function %s is only valid for the cell processor"
+#, gcc-internal-format
 msgid "builtin function %qs is only valid for the cell processor"
-msgstr "La función interna %s sólo es válida para el procesador cell"
+msgstr "la función interna %qs solo es válida para el procesador cell"
 
 #: config/rs6000/rs6000.c:16032 config/rs6000/rs6000.c:16034
 #: config/rs6000/rs6000.c:16036 config/rs6000/rs6000.c:16038
 #: config/rs6000/rs6000.c:16044 config/rs6000/rs6000.c:16046
 #: config/rs6000/rs6000.c:16053 config/rs6000/rs6000.c:16060
 #: config/rs6000/rs6000.c:16067 config/rs6000/rs6000.c:16073
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin function %s requires the -mvsx option"
+#, gcc-internal-format
 msgid "builtin function %qs requires the %qs option"
-msgstr "La función interna %s requiere la opción -mvsx"
+msgstr "la función interna %qs requiere la opción %qs"
 
 #: config/rs6000/rs6000.c:16041 config/rs6000/rs6000.c:16050
 #: config/rs6000/rs6000.c:16057 config/rs6000/rs6000.c:16064
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin function %s requires the -mvsx option"
+#, gcc-internal-format
 msgid "builtin function %qs requires the %qs and %qs options"
-msgstr "La función interna %s requiere la opción -mvsx"
+msgstr "la función interna %qs requiere las opciones %qs y %qs"
 
 #: config/rs6000/rs6000.c:16070
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin function %s requires the -maltivec option"
+#, gcc-internal-format
 msgid "builtin function %qs requires ISA 3.0 IEEE 128-bit floating point"
-msgstr "La función interna %s requiere la opción -maltivec"
+msgstr "la función interna %qs requiere requiere coma flotante de 128 bits del IEEE de ISA 3.0"
 
 #: config/rs6000/rs6000.c:16075
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin function %s is not supported with the current options"
+#, gcc-internal-format
 msgid "builtin function %qs is not supported with the current options"
-msgstr "La función interna %s no se admite con las opciones actuales"
+msgstr "la función interna %qs no se admite con las opciones actuales"
 
 #: config/rs6000/rs6000.c:18293
-#, fuzzy, gcc-internal-format
-#| msgid "internal error: builtin function %s had an unexpected return type %s"
+#, gcc-internal-format
 msgid "internal error: builtin function %qs had an unexpected return type %qs"
-msgstr "error interno: la función interna %s tiene un tipo de devolución inesperado %s"
+msgstr "error interno: la función interna %qs tiene un tipo de devolución inesperado %qs"
 
 #: config/rs6000/rs6000.c:18310
-#, fuzzy, gcc-internal-format
-#| msgid "internal error: builtin function %s, argument %d had unexpected argument type %s"
+#, gcc-internal-format
 msgid "internal error: builtin function %qs, argument %d had unexpected argument type %qs"
-msgstr "error interno: función interna %s, el argumento %d tiene el tipo de argumento inesperado %s"
+msgstr "error interno: función interna %qs, el argumento %d tiene el tipo de argumento inesperado %qs"
 
 #: config/rs6000/rs6000.c:29484
-#, fuzzy, gcc-internal-format
-#| msgid "-fsplit-stack does not support 3 register parameters"
+#, gcc-internal-format
 msgid "%qs uses register r29"
-msgstr "-fsplit-stack no admite 3 parámetros de registro"
+msgstr "%qs usa el registro r29"
 
 #: config/rs6000/rs6000.c:32780
-#, fuzzy, gcc-internal-format
-#| msgid "You cannot take the address of a nested function if you use the -mno-pointers-to-nested-functions option."
+#, gcc-internal-format
 msgid "you cannot take the address of a nested function if you use the %qs option"
-msgstr "No se puede tomar la dirección de una función anindada si se usa la opción -mno-pointers-to-nested-functions."
+msgstr "no se puede tomar la dirección de una función anindada si se usa la opción %qs"
 
 #: config/rs6000/rs6000.c:32874
-#, fuzzy, gcc-internal-format
-#| msgid "use of %<long%> in AltiVec types is invalid for 64-bit code without -mvsx"
+#, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is invalid for 64-bit code without %qs"
-msgstr "el uso de %<long%> en tipos AltiVec es no válido para código de 64 bit sin -mvsx"
+msgstr "el uso de %<long%> en tipos AltiVec no es válido para código de 64 bits sin %qs"
 
 #: config/rs6000/rs6000.c:32882
-#, fuzzy, gcc-internal-format
-#| msgid "use of %<long long%> in AltiVec types is invalid without -mvsx"
+#, gcc-internal-format
 msgid "use of %<long long%> in AltiVec types is invalid without %qs"
-msgstr "el uso de %<long long%> en tipos AltiVec es no válido sin -mvsx"
+msgstr "el uso de %<long long%> en tipos AltiVec no es válido sin %qs"
 
 #: config/rs6000/rs6000.c:32885
-#, fuzzy, gcc-internal-format
-#| msgid "use of %<double%> in AltiVec types is invalid without -mvsx"
+#, gcc-internal-format
 msgid "use of %<double%> in AltiVec types is invalid without %qs"
-msgstr "el uso de %<double%> en tipos AltiVec es no válido sin -mvsx"
+msgstr "el uso de %<double%> en tipos AltiVec no es válido sin %qs"
 
 #: config/rs6000/rs6000.c:36902
-#, fuzzy, gcc-internal-format
-#| msgid "invalid cpu \"%s\" for %s\"%s\"%s"
+#, gcc-internal-format
 msgid "invalid cpu %qs for %s%qs%s"
-msgstr "cpu \"%s\" no válido para %s\"%s\"%s"
+msgstr "cpu %qs no válida para %s%qs%s"
 
 #: config/rs6000/rs6000.c:36905
-#, fuzzy, gcc-internal-format
-#| msgid "%s\"%s\"%s is not allowed"
+#, gcc-internal-format
 msgid "%s%qs%s is not allowed"
-msgstr "%s\"%s\"%s no está definido"
+msgstr "%s%qs%s no está permitido"
 
 #: config/rs6000/rs6000.c:36907
-#, fuzzy, gcc-internal-format
-#| msgid "%s\"%s\"%s is invalid"
+#, gcc-internal-format
 msgid "%s%qs%s is invalid"
-msgstr "%s\"%s\"%s es no válido"
+msgstr "%s%qs%s no es válido"
 
 #: config/rs6000/rs6000.c:37442
-#, fuzzy, gcc-internal-format
-#| msgid "%<-march=%s%> requires %<-mfp32%>"
+#, gcc-internal-format
 msgid "%<-mno-%s%> turns off %<-m%s%>"
-msgstr "%<-march=%s%> requiere %<-mfp32%>"
+msgstr "%<-mno=%s%> anula %<-m%s%>"
 
 #: config/rs6000/rs6000.c:37601
 #, gcc-internal-format
