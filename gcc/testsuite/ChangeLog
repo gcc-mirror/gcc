@@ -1,3 +1,11 @@
+2018-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84859
+	* gcc.dg/tree-ssa/pr84859.c: New testcase.
+	* gcc.dg/tree-ssa/pr35286.c: Disable cselim.
+	* gcc.dg/tree-ssa/split-path-6.c: Likewise.
+	* gcc.dg/tree-ssa/split-path-7.c: Likewise.
+
 2018-03-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84812

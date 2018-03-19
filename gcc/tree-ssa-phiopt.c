@@ -2035,6 +2035,36 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   return true;
 }
 
+/* Return the single store in BB with VDEF or NULL if there are
+   other stores in the BB or loads following the store.  */
+
+static gimple *
+single_trailing_store_in_bb (basic_block bb, tree vdef)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (vdef))
+    return NULL;
+  gimple *store = SSA_NAME_DEF_STMT (vdef);
+  if (gimple_bb (store) != bb
+      || gimple_code (store) == GIMPLE_PHI)
+    return NULL;
+
+  /* Verify there is no other store in this BB.  */
+  if (!SSA_NAME_IS_DEFAULT_DEF (gimple_vuse (store))
+      && gimple_bb (SSA_NAME_DEF_STMT (gimple_vuse (store))) == bb
+      && gimple_code (SSA_NAME_DEF_STMT (gimple_vuse (store))) != GIMPLE_PHI)
+    return NULL;
+
+  /* Verify there is no load or store after the store.  */
+  use_operand_p use_p;
+  imm_use_iterator imm_iter;
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_vdef (store))
+    if (USE_STMT (use_p) != store
+	&& gimple_bb (USE_STMT (use_p)) == bb)
+      return NULL;
+
+  return store;
+}
+
 /* Conditional store replacement.  We already know
    that the recognized pattern looks like so:
 
@@ -2061,8 +2091,6 @@ static bool
 cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
                                 basic_block join_bb)
 {
-  gimple *then_assign = last_and_only_stmt (then_bb);
-  gimple *else_assign = last_and_only_stmt (else_bb);
   vec<data_reference_p> then_datarefs, else_datarefs;
   vec<ddr_p> then_ddrs, else_ddrs;
   gimple *then_store, *else_store;
@@ -2073,13 +2101,32 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   tree then_lhs, else_lhs;
   basic_block blocks[3];
 
+  /* Handle the case with single store in THEN_BB and ELSE_BB.  That is
+     cheap enough to always handle as it allows us to elide dependence
+     checking.  */
+  gphi *vphi = NULL;
+  for (gphi_iterator si = gsi_start_phis (join_bb); !gsi_end_p (si);
+       gsi_next (&si))
+    if (virtual_operand_p (gimple_phi_result (si.phi ())))
+      {
+	vphi = si.phi ();
+	break;
+      }
+  if (!vphi)
+    return false;
+  tree then_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (then_bb));
+  tree else_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (else_bb));
+  gimple *then_assign = single_trailing_store_in_bb (then_bb, then_vdef);
+  if (then_assign)
+    {
+      gimple *else_assign = single_trailing_store_in_bb (else_bb, else_vdef);
+      if (else_assign)
+	return cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
+						 then_assign, else_assign);
+    }
+
   if (MAX_STORES_TO_SINK == 0)
     return false;
-
-  /* Handle the case with single statement in THEN_BB and ELSE_BB.  */
-  if (then_assign && else_assign)
-    return cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
-                                             then_assign, else_assign);
 
   /* Find data references.  */
   then_datarefs.create (1);
