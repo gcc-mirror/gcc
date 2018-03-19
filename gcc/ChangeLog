@@ -1,5 +1,11 @@
 2018-03-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84933
+	* tree-vrp.c (set_and_canonicalize_value_range): Treat out-of-bound
+	values as -INF/INF when canonicalizing an ANTI_RANGE to a RANGE.
+
+2018-03-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84859
 	* tree-ssa-phiopt.c (single_trailing_store_in_bb): New function.
 	(cond_if_else_store_replacement): Perform sinking operation on

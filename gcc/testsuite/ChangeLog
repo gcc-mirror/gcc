@@ -1,5 +1,10 @@
 2018-03-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84933
+	* g++.dg/pr84933.C: New testcase.
+
+2018-03-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84859
 	* gcc.dg/tree-ssa/pr84859.c: New testcase.
 	* gcc.dg/tree-ssa/pr35286.c: Disable cselim.
