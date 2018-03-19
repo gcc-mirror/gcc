@@ -3,6 +3,12 @@
 	PR c++/84925
 	* pt.c (enclosing_instantiation_of): Check if fn is null.
 
+	PR c++/84927
+	* constexpr.c (cxx_eval_bare_aggregate): Update constructor's flags
+	as we evaluate the elements.
+	(cxx_eval_constant_expression): Verify constructor's flags
+	unconditionally.
+
 2018-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71834 - template-id with too few arguments.
