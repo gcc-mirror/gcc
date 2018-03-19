@@ -1,3 +1,9 @@
+2018-03-19  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/81647
+	* config/aarch64/aarch64-simd.md (vec_cmp<mode><v_int_equiv>): Modify
+	instructions for UNLT, UNLE, UNGT, UNGE, UNEQ, UNORDERED and ORDERED.
+
 2018-03-19  Jim Wilson  <jimw@sifive.com>
 
 	PR bootstrap/84856
