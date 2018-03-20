@@ -1,3 +1,9 @@
+2018-03-20  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/84954
+	* config/nvptx/nvptx.c (prevent_branch_around_nothing): Also update
+	seen_label if seen_label is already set.
+
 2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84945

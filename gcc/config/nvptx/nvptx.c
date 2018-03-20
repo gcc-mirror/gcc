@@ -4419,13 +4419,14 @@ prevent_branch_around_nothing (void)
   rtx_insn *seen_label = NULL;
     for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
       {
-	if (seen_label == NULL)
+	if (INSN_P (insn) && condjump_p (insn))
 	  {
-	    if (INSN_P (insn) && condjump_p (insn))
-	      seen_label = label_ref_label (nvptx_condjump_label (insn, false));
-
+	    seen_label = label_ref_label (nvptx_condjump_label (insn, false));
 	    continue;
 	  }
+
+	if (seen_label == NULL)
+	  continue;
 
 	if (NOTE_P (insn) || DEBUG_INSN_P (insn))
 	  continue;
