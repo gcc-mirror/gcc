@@ -973,7 +973,13 @@ dw2_output_indirect_constant_1 (const char *sym, tree id)
   unsigned int save_flag_sanitize = flag_sanitize;
   flag_sanitize &= ~(SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS
 		     | SANITIZE_KERNEL_ADDRESS);
+  /* And also temporarily disable -fsection-anchors.  These indirect constants
+     are never referenced from code, so it doesn't make any sense to aggregate
+     them in blocks.  */
+  int save_flag_section_anchors = flag_section_anchors;
+  flag_section_anchors = 0;
   assemble_variable (decl, 1, 1, 1);
+  flag_section_anchors = save_flag_section_anchors;
   flag_sanitize = save_flag_sanitize;
   assemble_integer (sym_ref, POINTER_SIZE_UNITS, POINTER_SIZE, 1);
 
