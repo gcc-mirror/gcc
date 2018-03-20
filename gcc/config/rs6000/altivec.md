@@ -2747,39 +2747,47 @@
   "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
+; The following patterns embody what lvx should usually look like.
+(define_expand "altivec_lvx_<VM2:mode>"
+  [(set (match_operand:VM2 0 "register_operand")
+	(match_operand:VM2 1 "altivec_indexed_or_indirect_operand"))]
+  "TARGET_ALTIVEC"
+{
+  rtx addr = XEXP (operand1, 0);
+  if (rs6000_sum_of_two_registers_p (addr))
+    {
+      rtx op1 = XEXP (addr, 0);
+      rtx op2 = XEXP (addr, 1);
+      if (TARGET_64BIT)
+	emit_insn (gen_altivec_lvx_<VM2:mode>_2op_di (operand0, op1, op2));
+      else
+	emit_insn (gen_altivec_lvx_<VM2:mode>_2op_si (operand0, op1, op2));
+    }
+  else
+    {
+      if (TARGET_64BIT)
+	emit_insn (gen_altivec_lvx_<VM2:mode>_1op_di (operand0, addr));
+      else
+	emit_insn (gen_altivec_lvx_<VM2:mode>_1op_si (operand0, addr));
+    }
+  DONE;
+})
+
 ; The next two patterns embody what lvx should usually look like.
-(define_insn "altivec_lvx_<mode>_2op"
+(define_insn "altivec_lvx_<VM2:mode>_2op_<P:mptrsize>"
   [(set (match_operand:VM2 0 "register_operand" "=v")
-        (mem:VM2 (and:DI (plus:DI (match_operand:DI 1 "register_operand" "b")
-                                  (match_operand:DI 2 "register_operand" "r"))
-		         (const_int -16))))]
-  "TARGET_ALTIVEC && TARGET_64BIT"
+	(mem:VM2 (and:P (plus:P (match_operand:P 1 "register_operand" "b")
+				(match_operand:P 2 "register_operand" "r"))
+			(const_int -16))))]
+  "TARGET_ALTIVEC"
   "lvx %0,%1,%2"
   [(set_attr "type" "vecload")])
 
-(define_insn "altivec_lvx_<mode>_1op"
+(define_insn "altivec_lvx_<VM2:mode>_1op_<P:mptrsize>"
   [(set (match_operand:VM2 0 "register_operand" "=v")
-        (mem:VM2 (and:DI (match_operand:DI 1 "register_operand" "r")
-			 (const_int -16))))]
-  "TARGET_ALTIVEC && TARGET_64BIT"
-  "lvx %0,0,%1"
-  [(set_attr "type" "vecload")])
-
-; 32-bit versions of the above.
-(define_insn "altivec_lvx_<mode>_2op_si"
-  [(set (match_operand:VM2 0 "register_operand" "=v")
-        (mem:VM2 (and:SI (plus:SI (match_operand:SI 1 "register_operand" "b")
-                                  (match_operand:SI 2 "register_operand" "r"))
-		         (const_int -16))))]
-  "TARGET_ALTIVEC && TARGET_32BIT"
-  "lvx %0,%1,%2"
-  [(set_attr "type" "vecload")])
-
-(define_insn "altivec_lvx_<mode>_1op_si"
-  [(set (match_operand:VM2 0 "register_operand" "=v")
-        (mem:VM2 (and:SI (match_operand:SI 1 "register_operand" "r")
-			 (const_int -16))))]
-  "TARGET_ALTIVEC && TARGET_32BIT"
+	(mem:VM2 (and:P (match_operand:P 1 "register_operand" "r")
+			(const_int -16))))]
+  "TARGET_ALTIVEC"
   "lvx %0,0,%1"
   [(set_attr "type" "vecload")])
 
@@ -2795,39 +2803,47 @@
   "stvx %1,%y0"
   [(set_attr "type" "vecstore")])
 
+; The following patterns embody what stvx should usually look like.
+(define_expand "altivec_stvx_<VM2:mode>"
+  [(set (match_operand:VM2 1 "altivec_indexed_or_indirect_operand")
+	(match_operand:VM2 0 "register_operand"))]
+  "TARGET_ALTIVEC"
+{
+  rtx addr = XEXP (operand1, 0);
+  if (rs6000_sum_of_two_registers_p (addr))
+    {
+      rtx op1 = XEXP (addr, 0);
+      rtx op2 = XEXP (addr, 1);
+      if (TARGET_64BIT)
+	emit_insn (gen_altivec_stvx_<VM2:mode>_2op_di (operand0, op1, op2));
+      else
+	emit_insn (gen_altivec_stvx_<VM2:mode>_2op_si (operand0, op1, op2));
+    }
+  else
+    {
+      if (TARGET_64BIT)
+	emit_insn (gen_altivec_stvx_<VM2:mode>_1op_di (operand0, addr));
+      else
+	emit_insn (gen_altivec_stvx_<VM2:mode>_1op_si (operand0, addr));
+    }
+  DONE;
+})
+
 ; The next two patterns embody what stvx should usually look like.
-(define_insn "altivec_stvx_<mode>_2op"
-  [(set (mem:VM2 (and:DI (plus:DI (match_operand:DI 1 "register_operand" "b")
-  	                          (match_operand:DI 2 "register_operand" "r"))
-	                 (const_int -16)))
-        (match_operand:VM2 0 "register_operand" "v"))]
-  "TARGET_ALTIVEC && TARGET_64BIT"
+(define_insn "altivec_stvx_<VM2:mode>_2op_<P:mptrsize>"
+  [(set (mem:VM2 (and:P (plus:P (match_operand:P 1 "register_operand" "b")
+				(match_operand:P 2 "register_operand" "r"))
+			(const_int -16)))
+	(match_operand:VM2 0 "register_operand" "v"))]
+  "TARGET_ALTIVEC"
   "stvx %0,%1,%2"
   [(set_attr "type" "vecstore")])
 
-(define_insn "altivec_stvx_<mode>_1op"
-  [(set (mem:VM2 (and:DI (match_operand:DI 1 "register_operand" "r")
-	                 (const_int -16)))
-        (match_operand:VM2 0 "register_operand" "v"))]
-  "TARGET_ALTIVEC && TARGET_64BIT"
-  "stvx %0,0,%1"
-  [(set_attr "type" "vecstore")])
-
-; 32-bit versions of the above.
-(define_insn "altivec_stvx_<mode>_2op_si"
-  [(set (mem:VM2 (and:SI (plus:SI (match_operand:SI 1 "register_operand" "b")
-  	                          (match_operand:SI 2 "register_operand" "r"))
-	                 (const_int -16)))
-        (match_operand:VM2 0 "register_operand" "v"))]
-  "TARGET_ALTIVEC && TARGET_32BIT"
-  "stvx %0,%1,%2"
-  [(set_attr "type" "vecstore")])
-
-(define_insn "altivec_stvx_<mode>_1op_si"
-  [(set (mem:VM2 (and:SI (match_operand:SI 1 "register_operand" "r")
-	                 (const_int -16)))
-        (match_operand:VM2 0 "register_operand" "v"))]
-  "TARGET_ALTIVEC && TARGET_32BIT"
+(define_insn "altivec_stvx_<VM2:mode>_1op_<P:mptrsize>"
+  [(set (mem:VM2 (and:P (match_operand:P 1 "register_operand" "r")
+			(const_int -16)))
+	(match_operand:VM2 0 "register_operand" "v"))]
+  "TARGET_ALTIVEC"
   "stvx %0,0,%1"
   [(set_attr "type" "vecstore")])
 
