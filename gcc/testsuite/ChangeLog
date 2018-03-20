@@ -1,3 +1,8 @@
+2018-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84945
+	* gcc.target/i386/pr84945.c: New test.
+
 2018-03-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/81647

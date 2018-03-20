@@ -33265,8 +33265,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	}
 
       /* Get the appropriate field in __cpu_model.  */
-      ref =  build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
-		     field, NULL_TREE);
+      ref = build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+		    field, NULL_TREE);
 
       /* Check the value.  */
       final = build2 (EQ_EXPR, unsigned_type_node, ref,
@@ -33296,20 +33296,34 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	  return integer_zero_node;
 	}
 
+      if (isa_names_table[i].feature >= 32)
+	{
+	  tree __cpu_features2_var = make_var_decl (unsigned_type_node,
+						    "__cpu_features2");
+
+	  varpool_node::add (__cpu_features2_var);
+	  field_val = (1U << (isa_names_table[i].feature - 32));
+	  /* Return __cpu_features2 & field_val  */
+	  final = build2 (BIT_AND_EXPR, unsigned_type_node,
+			  __cpu_features2_var,
+			  build_int_cstu (unsigned_type_node, field_val));
+	  return build1 (CONVERT_EXPR, integer_type_node, final);
+	}
+
       field = TYPE_FIELDS (__processor_model_type);
       /* Get the last field, which is __cpu_features.  */
       while (DECL_CHAIN (field))
         field = DECL_CHAIN (field);
 
       /* Get the appropriate field: __cpu_model.__cpu_features  */
-      ref =  build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
-		     field, NULL_TREE);
+      ref = build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+		    field, NULL_TREE);
 
       /* Access the 0th element of __cpu_features array.  */
       array_elt = build4 (ARRAY_REF, unsigned_type_node, ref,
 			  integer_zero_node, NULL_TREE, NULL_TREE);
 
-      field_val = (1 << isa_names_table[i].feature);
+      field_val = (1U << isa_names_table[i].feature);
       /* Return __cpu_model.__cpu_features[0] & field_val  */
       final = build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
 		      build_int_cstu (unsigned_type_node, field_val));

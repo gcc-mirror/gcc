@@ -1,5 +1,10 @@
 2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84945
+	* config/i386/i386.c (fold_builtin_cpu): For features above 31
+	use __cpu_features2 variable instead of __cpu_model.__cpu_features[0].
+	Use 1U instead of 1.  Formatting fixes.
+
 	PR c/84953
 	* builtins.c (fold_builtin_strpbrk): For strpbrk(x, "") use type
 	instead of TREE_TYPE (s1) for the return value.
