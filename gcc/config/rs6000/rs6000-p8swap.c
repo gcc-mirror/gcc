@@ -1548,94 +1548,31 @@ mimic_memory_attributes_and_flags (rtx new_mem_exp, const_rtx original_mem_exp)
 rtx
 rs6000_gen_stvx (enum machine_mode mode, rtx dest_exp, rtx src_exp)
 {
-  rtx memory_address = XEXP (dest_exp, 0);
   rtx stvx;
 
-  if (rs6000_sum_of_two_registers_p (memory_address))
-    {
-      rtx op1, op2;
-      op1 = XEXP (memory_address, 0);
-      op2 = XEXP (memory_address, 1);
-      if (mode == V16QImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v16qi_2op (src_exp, op1, op2)
-	  : gen_altivec_stvx_v16qi_2op_si (src_exp, op1, op2);
-      else if (mode == V8HImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v8hi_2op (src_exp, op1, op2)
-	  : gen_altivec_stvx_v8hi_2op_si (src_exp, op1, op2);
+  if (mode == V16QImode)
+    stvx = gen_altivec_stvx_v16qi (src_exp, dest_exp);
+  else if (mode == V8HImode)
+    stvx = gen_altivec_stvx_v8hi (src_exp, dest_exp);
 #ifdef HAVE_V8HFmode
-      else if (mode == V8HFmode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v8hf_2op (src_exp, op1, op2)
-	  : gen_altivec_stvx_v8hf_2op_si (src_exp, op1, op2);
+  else if (mode == V8HFmode)
+    stvx = gen_altivec_stvx_v8hf (src_exp, dest_exp);
 #endif
-      else if (mode == V4SImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v4si_2op (src_exp, op1, op2)
-	  : gen_altivec_stvx_v4si_2op_si (src_exp, op1, op2);
-      else if (mode == V4SFmode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v4sf_2op (src_exp, op1, op2)
-	  : gen_altivec_stvx_v4sf_2op_si (src_exp, op1, op2);
-      else if (mode == V2DImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v2di_2op (src_exp, op1, op2)
-	  : gen_altivec_stvx_v2di_2op_si (src_exp, op1, op2);
-      else if (mode == V2DFmode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v2df_2op (src_exp, op1, op2)
-	  : gen_altivec_stvx_v2df_2op_si (src_exp, op1, op2);
-      else if (mode == V1TImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v1ti_2op (src_exp, op1, op2)
-	  : gen_altivec_stvx_v1ti_2op_si (src_exp, op1, op2);
-      else
-	/* KFmode, TFmode, other modes not expected in this context.  */
-	gcc_unreachable ();
-    }
-  else				/* REG_P (memory_address) */
-    {
-      if (mode == V16QImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v16qi_1op (src_exp, memory_address)
-	  : gen_altivec_stvx_v16qi_1op_si (src_exp, memory_address);
-      else if (mode == V8HImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v8hi_1op (src_exp, memory_address)
-	  : gen_altivec_stvx_v8hi_1op_si (src_exp, memory_address);
-#ifdef HAVE_V8HFmode
-      else if (mode == V8HFmode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v8hf_1op (src_exp, memory_address)
-	  : gen_altivec_stvx_v8hf_1op_si (src_exp, memory_address);
-#endif
-      else if (mode == V4SImode)
-	stvx =TARGET_64BIT
-	  ? gen_altivec_stvx_v4si_1op (src_exp, memory_address)
-	  : gen_altivec_stvx_v4si_1op_si (src_exp, memory_address);
-      else if (mode == V4SFmode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v4sf_1op (src_exp, memory_address)
-	  : gen_altivec_stvx_v4sf_1op_si (src_exp, memory_address);
-      else if (mode == V2DImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v2di_1op (src_exp, memory_address)
-	  : gen_altivec_stvx_v2di_1op_si (src_exp, memory_address);
-      else if (mode == V2DFmode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v2df_1op (src_exp, memory_address)
-	  : gen_altivec_stvx_v2df_1op_si (src_exp, memory_address);
-      else if (mode == V1TImode)
-	stvx = TARGET_64BIT
-	  ? gen_altivec_stvx_v1ti_1op (src_exp, memory_address)
-	  : gen_altivec_stvx_v1ti_1op_si (src_exp, memory_address);
-      else
-	/* KFmode, TFmode, other modes not expected in this context.  */
-	gcc_unreachable ();
-    }
+  else if (mode == V4SImode)
+    stvx = gen_altivec_stvx_v4si (src_exp, dest_exp);
+  else if (mode == V4SFmode)
+    stvx = gen_altivec_stvx_v4sf (src_exp, dest_exp);
+  else if (mode == V2DImode)
+    stvx = gen_altivec_stvx_v2di (src_exp, dest_exp);
+  else if (mode == V2DFmode)
+    stvx = gen_altivec_stvx_v2df (src_exp, dest_exp);
+  else if (mode == V1TImode)
+    stvx = gen_altivec_stvx_v1ti (src_exp, dest_exp);
+  else
+    /* KFmode, TFmode, other modes not expected in this context.  */
+    gcc_unreachable ();
 
-  rtx new_mem_exp = SET_DEST (stvx);
+  rtx new_mem_exp = SET_DEST (PATTERN (stvx));
   mimic_memory_attributes_and_flags (new_mem_exp, dest_exp);
   return stvx;
 }
@@ -1727,95 +1664,31 @@ replace_swapped_aligned_store (swap_web_entry *insn_entry,
 rtx
 rs6000_gen_lvx (enum machine_mode mode, rtx dest_exp, rtx src_exp)
 {
-  rtx memory_address = XEXP (src_exp, 0);
   rtx lvx;
 
-  if (rs6000_sum_of_two_registers_p (memory_address))
-    {
-      rtx op1, op2;
-      op1 = XEXP (memory_address, 0);
-      op2 = XEXP (memory_address, 1);
-
-      if (mode == V16QImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v16qi_2op (dest_exp, op1, op2)
-	  : gen_altivec_lvx_v16qi_2op_si (dest_exp, op1, op2);
-      else if (mode == V8HImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v8hi_2op (dest_exp, op1, op2)
-	  : gen_altivec_lvx_v8hi_2op_si (dest_exp, op1, op2);
+  if (mode == V16QImode)
+    lvx = gen_altivec_lvx_v16qi (dest_exp, src_exp);
+  else if (mode == V8HImode)
+    lvx = gen_altivec_lvx_v8hi (dest_exp, src_exp);
 #ifdef HAVE_V8HFmode
-      else if (mode == V8HFmode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v8hf_2op (dest_exp, op1, op2)
-	  : gen_altivec_lvx_v8hf_2op_si (dest_exp, op1, op2);
+  else if (mode == V8HFmode)
+    lvx = gen_altivec_lvx_v8hf (dest_exp, src_exp);
 #endif
-      else if (mode == V4SImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v4si_2op (dest_exp, op1, op2)
-	  : gen_altivec_lvx_v4si_2op_si (dest_exp, op1, op2);
-      else if (mode == V4SFmode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v4sf_2op (dest_exp, op1, op2)
-	  : gen_altivec_lvx_v4sf_2op_si (dest_exp, op1, op2);
-      else if (mode == V2DImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v2di_2op (dest_exp, op1, op2)
-	  : gen_altivec_lvx_v2di_2op_si (dest_exp, op1, op2);
-      else if (mode == V2DFmode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v2df_2op (dest_exp, op1, op2)
-	  : gen_altivec_lvx_v2df_2op_si (dest_exp, op1, op2);
-      else if (mode == V1TImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v1ti_2op (dest_exp, op1, op2)
-	  : gen_altivec_lvx_v1ti_2op_si (dest_exp, op1, op2);
-      else
-	/* KFmode, TFmode, other modes not expected in this context.  */
-	gcc_unreachable ();
-    }
-  else				/* REG_P (memory_address) */
-    {
-      if (mode == V16QImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v16qi_1op (dest_exp, memory_address)
-	  : gen_altivec_lvx_v16qi_1op_si (dest_exp, memory_address);
-      else if (mode == V8HImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v8hi_1op (dest_exp, memory_address)
-	  : gen_altivec_lvx_v8hi_1op_si (dest_exp, memory_address);
-#ifdef HAVE_V8HFmode
-      else if (mode == V8HFmode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v8hf_1op (dest_exp, memory_address)
-	  : gen_altivec_lvx_v8hf_1op_si (dest_exp, memory_address);
-#endif
-      else if (mode == V4SImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v4si_1op (dest_exp, memory_address)
-	  : gen_altivec_lvx_v4si_1op_si (dest_exp, memory_address);
-      else if (mode == V4SFmode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v4sf_1op (dest_exp, memory_address)
-	  : gen_altivec_lvx_v4sf_1op_si (dest_exp, memory_address);
-      else if (mode == V2DImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v2di_1op (dest_exp, memory_address)
-	  : gen_altivec_lvx_v2di_1op_si (dest_exp, memory_address);
-      else if (mode == V2DFmode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v2df_1op (dest_exp, memory_address)
-	  : gen_altivec_lvx_v2df_1op_si (dest_exp, memory_address);
-      else if (mode == V1TImode)
-	lvx = TARGET_64BIT
-	  ? gen_altivec_lvx_v1ti_1op (dest_exp, memory_address)
-	  : gen_altivec_lvx_v1ti_1op_si (dest_exp, memory_address);
-      else
-	/* KFmode, TFmode, other modes not expected in this context.  */
-	gcc_unreachable ();
-    }
+  else if (mode == V4SImode)
+    lvx = gen_altivec_lvx_v4si (dest_exp, src_exp);
+  else if (mode == V4SFmode)
+    lvx = gen_altivec_lvx_v4sf (dest_exp, src_exp);
+  else if (mode == V2DImode)
+    lvx = gen_altivec_lvx_v2di (dest_exp, src_exp);
+  else if (mode == V2DFmode)
+    lvx = gen_altivec_lvx_v2df (dest_exp, src_exp);
+  else if (mode == V1TImode)
+    lvx = gen_altivec_lvx_v1ti (dest_exp, src_exp);
+  else
+    /* KFmode, TFmode, other modes not expected in this context.  */
+    gcc_unreachable ();
 
-  rtx new_mem_exp = SET_SRC (lvx);
+  rtx new_mem_exp = SET_SRC (PATTERN (lvx));
   mimic_memory_attributes_and_flags (new_mem_exp, src_exp);
 
   return lvx;

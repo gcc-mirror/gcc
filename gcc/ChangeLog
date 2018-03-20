@@ -1,3 +1,23 @@
+2018-03-20  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83789
+	* config/rs6000/altivec.md (altivec_lvx_<mode>_2op): Delete define_insn.
+	(altivec_lvx_<mode>_1op): Likewise.
+	(altivec_stvx_<mode>_2op): Likewise.
+	(altivec_stvx_<mode>_1op): Likewise.
+	(altivec_lvx_<VM2:mode>): New define_expand.
+	(altivec_stvx_<VM2:mode>): Likewise.
+	(altivec_lvx_<VM2:mode>_2op_<P:mptrsize>): New define_insn.
+	(altivec_lvx_<VM2:mode>_1op_<P:mptrsize>): Likewise.
+	(altivec_stvx_<VM2:mode>_2op_<P:mptrsize>): Likewise.
+	(altivec_stvx_<VM2:mode>_1op_<P:mptrsize>): Likewise.
+	* config/rs6000/rs6000-p8swap.c (rs6000_gen_stvx): Use new expanders.
+	(rs6000_gen_lvx): Likewise.
+	* config/rs6000/rs6000.c (altivec_expand_lv_builtin): Likewise.
+	(altivec_expand_stv_builtin): Likewise.
+	(altivec_expand_builtin): Likewise.
+	* config/rs6000/vector.md: Likewise.
+
 2018-03-20  Richard Biener  <rguenther@suse.de>
 
 	PR target/84986
