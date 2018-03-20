@@ -7012,6 +7012,7 @@ extern tree lookup_add				(tree fns, tree lookup);
 extern tree lookup_maybe_add			(tree fns, tree lookup,
 						 bool deduping);
 extern void lookup_keep				(tree lookup, bool keep);
+extern void lookup_list_keep			(tree list, bool keep);
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
 extern tree dependent_name			(tree);

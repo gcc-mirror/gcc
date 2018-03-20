@@ -1,3 +1,11 @@
+2018-03-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84970
+	* cp-tree.h (lookup_list_keep): Declare.
+	* tree.c (lookup_list_keep): New, broken out of ...
+	(build_min): ... here.  Call it.
+	* decl.c (cp_finish_decl): Call lookup_list_keep.
+
 2018-03-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84937 - ICE with class deduction and auto.

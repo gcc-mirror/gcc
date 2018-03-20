@@ -7034,7 +7034,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
 
       if (init)
-	DECL_INITIAL (decl) = init;
+	{
+	  if (TREE_CODE (init) == TREE_LIST)
+	    lookup_list_keep (init, true);
+	  DECL_INITIAL (decl) = init;
+	}
       if (dep_init)
 	{
 	  retrofit_lang_decl (decl);
