@@ -50462,7 +50462,11 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	  }
 	  break;
 	case NOP_EXPR:
-	  stmt_cost = 0;
+	  /* Only sign-conversions are free.  */
+	  if (tree_nop_conversion_p
+	        (TREE_TYPE (gimple_assign_lhs (stmt_info->stmt)),
+		 TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))))
+	    stmt_cost = 0;
 	  break;
 
 	case BIT_IOR_EXPR:

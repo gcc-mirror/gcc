@@ -1,3 +1,10 @@
+2018-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/84986
+	* config/i386/i386.c (ix86_add_stmt_cost): Only cost
+	sign-conversions as zero, fall back to standard scalar_stmt
+	cost for the rest.
+
 2018-03-20  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/84825
