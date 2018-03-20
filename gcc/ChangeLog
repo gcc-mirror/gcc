@@ -1,3 +1,9 @@
+2018-03-20  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/84825
+	* predict.c (rebuild_frequencies): Handle case when we have
+	PROFILE_ABSENT, but flag_guess_branch_prob is false.
+
 2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84990
