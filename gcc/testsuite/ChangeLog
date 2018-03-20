@@ -1,5 +1,10 @@
 2018-03-20  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/84825
+	* g++.dg/ipa/pr84825.C: New test.
+
+2018-03-20  Martin Liska  <mliska@suse.cz>
+
 	* gcc.dg/lto/chkp-ctor-merge_0.c: Remove.
 
 2018-03-20  Jakub Jelinek  <jakub@redhat.com>

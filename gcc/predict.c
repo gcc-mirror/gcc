@@ -3998,6 +3998,9 @@ rebuild_frequencies (void)
     }
   else if (profile_status_for_fn (cfun) == PROFILE_READ)
     update_max_bb_count ();
+  else if (profile_status_for_fn (cfun) == PROFILE_ABSENT
+	   && !flag_guess_branch_prob)
+    ;
   else
     gcc_unreachable ();
   timevar_pop (TV_REBUILD_FREQUENCIES);
