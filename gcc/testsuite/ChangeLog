@@ -1,5 +1,8 @@
 2018-03-20  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/84962
+	* g++.dg/lookup/pr84962.C: New.
+
 	PR c++/84970
 	* g++.dg/lookup/pr84970.C: New.
 
