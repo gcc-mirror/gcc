@@ -1,5 +1,11 @@
 2018-03-20  Tom de Vries  <tom@codesourcery.com>
 
+	PR target/84952
+	* config/nvptx/nvptx.c (nvptx_single): Don't neuter bar.sync.
+	(nvptx_process_pars): Emit bar.sync asap and alap.
+
+2018-03-20  Tom de Vries  <tom@codesourcery.com>
+
 	PR target/84954
 	* config/nvptx/nvptx.c (prevent_branch_around_nothing): Also update
 	seen_label if seen_label is already set.
