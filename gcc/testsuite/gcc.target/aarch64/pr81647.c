@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -fdump-tree-ssa" } */
+/* { dg-require-effective-target fenv_exceptions } */
 
 #include <fenv.h>
 
