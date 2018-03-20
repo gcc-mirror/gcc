@@ -1,3 +1,8 @@
+2018-03-20  David H. Gutteridge  <dhgutteridge@sympatico.ca>
+
+	PR target/84838
+	* Minor grammar fixes for x86 options.
+
 2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/84875
