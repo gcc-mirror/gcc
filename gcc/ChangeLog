@@ -1,3 +1,9 @@
+2018-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/84875
+	* dce.c (delete_unmarked_insns): Don't remove frame related noop moves
+	holding REG_CFA_RESTORE notes, instead turn them into a USE.
+
 2018-03-20  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/83789
