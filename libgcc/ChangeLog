@@ -1,3 +1,13 @@
+2018-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84945
+	* config/i386/cpuinfo.h (__cpu_features2): Declare.
+	* config/i386/cpuinfo.c (__cpu_features2): New variable for
+	ifndef SHARED only.
+	(set_feature): Define.
+	(get_available_features): Use set_feature macro.  Set __cpu_features2
+	to the second word of features ifndef SHARED.
+
 2018-03-15  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/cpuinfo.c (get_available_features): Add

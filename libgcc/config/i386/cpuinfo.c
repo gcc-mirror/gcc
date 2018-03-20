@@ -39,6 +39,13 @@ int __cpu_indicator_init (void)
 
 
 struct __processor_model __cpu_model = { };
+#ifndef SHARED
+/* We want to move away from __cpu_model in libgcc_s.so.1 and the
+   size of __cpu_model is part of ABI.  So, new features that don't
+   fit into __cpu_model.__cpu_features[0] go into extra variables
+   in libgcc.a only, preferrably hidden.  */
+unsigned int __cpu_features2;
+#endif
 
 
 /* Get the specific type of AMD CPU.  */
@@ -231,78 +238,82 @@ get_available_features (unsigned int ecx, unsigned int edx,
   unsigned int ext_level;
 
   unsigned int features = 0;
+  unsigned int features2 = 0;
+
+#define set_feature(f) \
+  if (f < 32) features |= (1U << f); else features2 |= (1U << (f - 32))
 
   if (edx & bit_CMOV)
-    features |= (1 << FEATURE_CMOV);
+    set_feature (FEATURE_CMOV);
   if (edx & bit_MMX)
-    features |= (1 << FEATURE_MMX);
+    set_feature (FEATURE_MMX);
   if (edx & bit_SSE)
-    features |= (1 << FEATURE_SSE);
+    set_feature (FEATURE_SSE);
   if (edx & bit_SSE2)
-    features |= (1 << FEATURE_SSE2);
+    set_feature (FEATURE_SSE2);
   if (ecx & bit_POPCNT)
-    features |= (1 << FEATURE_POPCNT);
+    set_feature (FEATURE_POPCNT);
   if (ecx & bit_AES)
-    features |= (1 << FEATURE_AES);
+    set_feature (FEATURE_AES);
   if (ecx & bit_PCLMUL)
-    features |= (1 << FEATURE_PCLMUL);
+    set_feature (FEATURE_PCLMUL);
   if (ecx & bit_SSE3)
-    features |= (1 << FEATURE_SSE3);
+    set_feature (FEATURE_SSE3);
   if (ecx & bit_SSSE3)
-    features |= (1 << FEATURE_SSSE3);
+    set_feature (FEATURE_SSSE3);
   if (ecx & bit_SSE4_1)
-    features |= (1 << FEATURE_SSE4_1);
+    set_feature (FEATURE_SSE4_1);
   if (ecx & bit_SSE4_2)
-    features |= (1 << FEATURE_SSE4_2);
+    set_feature (FEATURE_SSE4_2);
   if (ecx & bit_AVX)
-    features |= (1 << FEATURE_AVX);
+    set_feature (FEATURE_AVX);
   if (ecx & bit_FMA)
-    features |= (1 << FEATURE_FMA);
+    set_feature (FEATURE_FMA);
 
   /* Get Advanced Features at level 7 (eax = 7, ecx = 0). */
   if (max_cpuid_level >= 7)
     {
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
       if (ebx & bit_BMI)
-        features |= (1 << FEATURE_BMI);
+	set_feature (FEATURE_BMI);
       if (ebx & bit_AVX2)
-	features |= (1 << FEATURE_AVX2);
+	set_feature (FEATURE_AVX2);
       if (ebx & bit_BMI2)
-        features |= (1 << FEATURE_BMI2);
+	set_feature (FEATURE_BMI2);
       if (ebx & bit_AVX512F)
-	features |= (1 << FEATURE_AVX512F);
+	set_feature (FEATURE_AVX512F);
       if (ebx & bit_AVX512VL)
-	features |= (1 << FEATURE_AVX512VL);
+	set_feature (FEATURE_AVX512VL);
       if (ebx & bit_AVX512BW)
-	features |= (1 << FEATURE_AVX512BW);
+	set_feature (FEATURE_AVX512BW);
       if (ebx & bit_AVX512DQ)
-	features |= (1 << FEATURE_AVX512DQ);
+	set_feature (FEATURE_AVX512DQ);
       if (ebx & bit_AVX512CD)
-	features |= (1 << FEATURE_AVX512CD);
+	set_feature (FEATURE_AVX512CD);
       if (ebx & bit_AVX512PF)
-	features |= (1 << FEATURE_AVX512PF);
+	set_feature (FEATURE_AVX512PF);
       if (ebx & bit_AVX512ER)
-	features |= (1 << FEATURE_AVX512ER);
+	set_feature (FEATURE_AVX512ER);
       if (ebx & bit_AVX512IFMA)
-	features |= (1 << FEATURE_AVX512IFMA);
+	set_feature (FEATURE_AVX512IFMA);
       if (ecx & bit_AVX512VBMI)
-	features |= (1 << FEATURE_AVX512VBMI);
+	set_feature (FEATURE_AVX512VBMI);
       if (ecx & bit_AVX512VBMI2)
-	features |= (1 << FEATURE_AVX512VBMI2);
+	set_feature (FEATURE_AVX512VBMI2);
       if (ecx & bit_GFNI)
-	features |= (1 << FEATURE_GFNI);
+	set_feature (FEATURE_GFNI);
       if (ecx & bit_VPCLMULQDQ)
-	features |= (1 << FEATURE_VPCLMULQDQ);
+	set_feature (FEATURE_VPCLMULQDQ);
       if (ecx & bit_AVX512VNNI)
-	features |= (1 << FEATURE_AVX512VNNI);
+	set_feature (FEATURE_AVX512VNNI);
       if (ecx & bit_AVX512BITALG)
-	features |= (1 << FEATURE_AVX512BITALG);
+	set_feature (FEATURE_AVX512BITALG);
       if (ecx & bit_AVX512VPOPCNTDQ)
-	features |= (1 << FEATURE_AVX512VPOPCNTDQ);
+	set_feature (FEATURE_AVX512VPOPCNTDQ);
       if (edx & bit_AVX5124VNNIW)
-	features |= (1 << FEATURE_AVX5124VNNIW);
+	set_feature (FEATURE_AVX5124VNNIW);
       if (edx & bit_AVX5124FMAPS)
-	features |= (1 << FEATURE_AVX5124FMAPS);
+	set_feature (FEATURE_AVX5124FMAPS);
     }
 
   /* Check cpuid level of extended features.  */
@@ -313,14 +324,19 @@ get_available_features (unsigned int ecx, unsigned int edx,
       __cpuid (0x80000001, eax, ebx, ecx, edx);
 
       if (ecx & bit_SSE4a)
-	features |= (1 << FEATURE_SSE4_A);
+	set_feature (FEATURE_SSE4_A);
       if (ecx & bit_FMA4)
-	features |= (1 << FEATURE_FMA4);
+	set_feature (FEATURE_FMA4);
       if (ecx & bit_XOP)
-	features |= (1 << FEATURE_XOP);
+	set_feature (FEATURE_XOP);
     }
     
   __cpu_model.__cpu_features[0] = features;
+#ifndef SHARED
+  __cpu_features2 = features2;
+#else
+  (void) features2;
+#endif
 }
 
 /* A constructor function that is sets __cpu_model and __cpu_features with

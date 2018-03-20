@@ -124,3 +124,4 @@ extern struct __processor_model
   unsigned int __cpu_subtype;
   unsigned int __cpu_features[1];
 } __cpu_model;
+extern unsigned int __cpu_features2;
