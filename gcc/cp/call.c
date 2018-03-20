@@ -8739,7 +8739,7 @@ check_self_delegation (tree ret)
 {
   if (TREE_CODE (ret) == TARGET_EXPR)
     ret = TARGET_EXPR_INITIAL (ret);
-  tree fn = cp_get_callee_fndecl (ret);
+  tree fn = cp_get_callee_fndecl_nofold (ret);
   if (fn && DECL_ABSTRACT_ORIGIN (fn) == current_function_decl)
     error ("constructor delegates to itself");
 }

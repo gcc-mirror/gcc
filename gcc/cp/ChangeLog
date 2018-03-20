@@ -1,3 +1,11 @@
+2018-03-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84978, ICE with NRVO.
+	* cvt.c (cp_get_fndecl_from_callee): Add fold parameter.
+	(cp_get_callee_fndecl_nofold): New.
+	* cp-gimplify.c (cp_genericize_r): Use it instead.
+	* call.c (check_self_delegation): Likewise.
+
 2018-03-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84962
