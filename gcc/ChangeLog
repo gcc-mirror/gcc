@@ -1,3 +1,10 @@
+2018-03-20  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82989
+	* config/arm/neon.md (ashldi3_neon): Update ?s for constraints
+	to favor GPR over NEON registers.
+	(<shift>di3_neon): Likewise.
+
 2018-03-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/84952
