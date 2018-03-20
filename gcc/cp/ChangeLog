@@ -1,3 +1,8 @@
+2018-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84937 - ICE with class deduction and auto.
+	* pt.c (rewrite_template_parm): Fix auto handling.
+
 2018-03-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84925
@@ -9,7 +14,7 @@
 	(cxx_eval_constant_expression): Verify constructor's flags
 	unconditionally.
 
-2018-03-16  Jason Merrill  <jason@redhat.com>
+2018-03-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71834 - template-id with too few arguments.
 	* pt.c (coerce_template_parms): Check fixed_parameter_pack_p.
