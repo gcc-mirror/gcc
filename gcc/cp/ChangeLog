@@ -1,5 +1,9 @@
 2018-03-20  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/84962
+	* name-lookup.c (pushdecl_class_level): Push anon-struct's
+	member_vec, if there is one.
+
 	PR c++/84970
 	* cp-tree.h (lookup_list_keep): Declare.
 	* tree.c (lookup_list_keep): New, broken out of ...

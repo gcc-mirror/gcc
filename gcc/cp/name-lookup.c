@@ -4490,16 +4490,30 @@ pushdecl_class_level (tree x)
       /* If X is an anonymous aggregate, all of its members are
 	 treated as if they were members of the class containing the
 	 aggregate, for naming purposes.  */
-      tree f;
-
-      for (f = TYPE_FIELDS (TREE_TYPE (x)); f; f = DECL_CHAIN (f))
-	{
-	  location_t save_location = input_location;
-	  input_location = DECL_SOURCE_LOCATION (f);
-	  if (!pushdecl_class_level (f))
-	    is_valid = false;
-	  input_location = save_location;
+      location_t save_location = input_location;
+      tree anon = TREE_TYPE (x);
+      if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
+	for (unsigned ix = member_vec->length (); ix--;)
+	  {
+	    tree binding = (*member_vec)[ix];
+	    if (STAT_HACK_P (binding))
+	      {
+		if (!pushdecl_class_level (STAT_TYPE (binding)))
+		  is_valid = false;
+		binding = STAT_DECL (binding);
+	      }
+	    if (!pushdecl_class_level (binding))
+	      is_valid = false;
 	}
+      else
+	for (tree f = TYPE_FIELDS (anon); f; f = DECL_CHAIN (f))
+	  if (TREE_CODE (f) == FIELD_DECL)
+	    {
+	      input_location = DECL_SOURCE_LOCATION (f);
+	      if (!pushdecl_class_level (f))
+		is_valid = false;
+	    }
+      input_location = save_location;
     }
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return is_valid;
