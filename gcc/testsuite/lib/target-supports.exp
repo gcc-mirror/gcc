@@ -6611,7 +6611,8 @@ proc check_effective_target_vect_load_lanes { } {
 	verbose "check_effective_target_vect_load_lanes: using cached result" 2
     } else {
 	set et_vect_load_lanes 0
-	if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok])
+	# We don't support load_lanes correctly on big-endian arm.
+	if { ([istarget arm-*-*] && [check_effective_target_arm_neon_ok])
 	     || [istarget aarch64*-*-*] } {
 	    set et_vect_load_lanes 1
 	}
