@@ -1409,7 +1409,7 @@ pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
     else
       pp_string(buffer, s);
   else
-    if (!strcmp (s, "bool"))
+    if (!strcmp (s, "u_Bool") || !strcmp (s, "bool"))
       {
 	if (package_prefix)
 	  {
