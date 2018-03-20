@@ -1,3 +1,8 @@
+2018-03-20  Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libgomp.graphite/force-parallel-4.c: XFAIL one
+	parallelizable loop.
+
 2018-02-19  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84148
