@@ -4111,7 +4111,15 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       /* We ask for an rvalue for the RESULT_DECL when indirecting
 	 through an invisible reference, or in named return value
 	 optimization.  */
-      return (*ctx->values->get (t));
+      if (tree *p = ctx->values->get (t))
+	return *p;
+      else
+	{
+	  if (!ctx->quiet)
+	    error ("%qE is not a constant expression", t);
+	  *non_constant_p = true;
+	}
+      break;
 
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))

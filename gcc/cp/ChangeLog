@@ -1,3 +1,9 @@
+2018-03-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84978, ICE with NRVO.
+	* constexpr.c (cxx_eval_constant_expression): Handle the case when
+	a RESULT_DECL isn't in the hash map.
+
 2018-03-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84978, ICE with NRVO.
