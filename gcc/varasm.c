@@ -1253,13 +1253,6 @@ use_blocks_for_decl_p (tree decl)
   if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
     return false;
 
-  /* Detect decls created by dw2_force_const_mem.  Such decls are
-     special because DECL_INITIAL doesn't specify the decl's true value.
-     dw2_output_indirect_constants will instead call assemble_variable
-     with dont_output_data set to 1 and then print the contents itself.  */
-  if (DECL_INITIAL (decl) == decl)
-    return false;
-
   /* If this decl is an alias, then we don't want to emit a
      definition.  */
   if (VAR_P (decl)

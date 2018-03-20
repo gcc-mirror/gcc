@@ -1,5 +1,11 @@
 2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84990
+	* dwarf2asm.c (dw2_output_indirect_constant_1): Temporarily turn off
+	flag_section_anchors.
+	* varasm.c (use_blocks_for_decl_p): Remove hack for
+	dw2_force_const_mem.
+
 	PR target/84845
 	* config/aarch64/aarch64.md (*aarch64_reg_<mode>3_neg_mask2): Rename
 	to ...
