@@ -3969,7 +3969,9 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   while (true)
     {
       /* Find first insn of from block.  */
-      while (head != BB_END (from) && !INSN_P (head))
+      while (head != BB_END (from)
+	     && (!INSN_P (head)
+		 || recog_memoized (head) == CODE_FOR_nvptx_barsync))
 	head = NEXT_INSN (head);
 
       if (from == to)
@@ -4018,6 +4020,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	{
 	default:
 	  break;
+	case CODE_FOR_nvptx_barsync:
 	case CODE_FOR_nvptx_fork:
 	case CODE_FOR_nvptx_forked:
 	case CODE_FOR_nvptx_joining:
@@ -4275,8 +4278,8 @@ nvptx_process_pars (parallel *par)
       nvptx_wpropagate (false, par->forked_block, par->forked_insn);
       nvptx_wpropagate (true, par->forked_block, par->fork_insn);
       /* Insert begin and end synchronizations.  */
-      emit_insn_after (nvptx_wsync (false), par->forked_insn);
-      emit_insn_before (nvptx_wsync (true), par->joining_insn);
+      emit_insn_before (nvptx_wsync (false), par->forked_insn);
+      emit_insn_before (nvptx_wsync (true), par->join_insn);
     }
   else if (par->mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR))
     nvptx_vpropagate (par->forked_block, par->forked_insn);
