@@ -6110,7 +6110,8 @@ extern tree cp_convert_and_check                (tree, tree, tsubst_flags_t);
 extern tree cp_fold_convert			(tree, tree);
 extern tree cp_get_callee			(tree);
 extern tree cp_get_callee_fndecl		(tree);
-extern tree cp_get_fndecl_from_callee		(tree);
+extern tree cp_get_callee_fndecl_nofold		(tree);
+extern tree cp_get_fndecl_from_callee		(tree, bool fold = true);
 extern tree convert_to_void			(tree, impl_conv_void,
                                  		 tsubst_flags_t);
 extern tree convert_force			(tree, tree, int,

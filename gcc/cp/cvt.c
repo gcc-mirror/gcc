@@ -941,7 +941,7 @@ cp_get_callee (tree call)
    if we can.  */
 
 tree
-cp_get_fndecl_from_callee (tree fn)
+cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
 {
   if (fn == NULL_TREE)
     return fn;
@@ -951,7 +951,8 @@ cp_get_fndecl_from_callee (tree fn)
   if (type == unknown_type_node)
     return NULL_TREE;
   gcc_assert (POINTER_TYPE_P (type));
-  fn = maybe_constant_init (fn);
+  if (fold)
+    fn = maybe_constant_init (fn);
   STRIP_NOPS (fn);
   if (TREE_CODE (fn) == ADDR_EXPR)
     {
@@ -969,6 +970,14 @@ tree
 cp_get_callee_fndecl (tree call)
 {
   return cp_get_fndecl_from_callee (cp_get_callee (call));
+}
+
+/* As above, but not using the constexpr machinery.  */
+
+tree
+cp_get_callee_fndecl_nofold (tree call)
+{
+  return cp_get_fndecl_from_callee (cp_get_callee (call), false);
 }
 
 /* Subroutine of convert_to_void.  Warn if we're discarding something with

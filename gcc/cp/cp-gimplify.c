@@ -1521,7 +1521,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	 version is inlinable, a direct call to this version can be made
 	 otherwise the call should go through the dispatcher.  */
       {
-	tree fn = cp_get_callee_fndecl (stmt);
+	tree fn = cp_get_callee_fndecl_nofold (stmt);
 	if (fn && DECL_FUNCTION_VERSIONED (fn)
 	    && (current_function_decl == NULL
 		|| !targetm.target_option.can_inline_p (current_function_decl,
