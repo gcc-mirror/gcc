@@ -27893,9 +27893,9 @@ You can control this behavior for a specific function by using the
 function attribute @code{indirect_branch}.  @xref{Function Attributes}.
 
 Note that @option{-mcmodel=large} is incompatible with
-@option{-mindirect-branch=thunk} nor
+@option{-mindirect-branch=thunk} and
 @option{-mindirect-branch=thunk-extern} since the thunk function may
-not be reachable in large code model.
+not be reachable in the large code model.
 
 Note that @option{-mindirect-branch=thunk-extern} is incompatible with
 @option{-fcf-protection=branch} and @option{-fcheck-pointer-bounds}
@@ -27914,9 +27914,9 @@ using the function attribute @code{function_return}.
 @xref{Function Attributes}.
 
 Note that @option{-mcmodel=large} is incompatible with
-@option{-mfunction-return=thunk} nor
+@option{-mfunction-return=thunk} and
 @option{-mfunction-return=thunk-extern} since the thunk function may
-not be reachable in large code model.
+not be reachable in the large code model.
 
 
 @item -mindirect-branch-register
