@@ -1,3 +1,8 @@
+2018-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/84986
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr84986.c: New testcase.
+
 2018-03-20  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/84825
