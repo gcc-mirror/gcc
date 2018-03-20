@@ -1,3 +1,7 @@
+2018-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (pp_ada_tree_identifier): Deal specifically with _Bool.
+
 2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/84909
