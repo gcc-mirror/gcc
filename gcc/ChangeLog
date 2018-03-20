@@ -1,3 +1,18 @@
+2018-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84845
+	* config/aarch64/aarch64.md (*aarch64_reg_<mode>3_neg_mask2): Rename
+	to ...
+	(*aarch64_<optab>_reg_<mode>3_neg_mask2): ... this.  If pseudos can't
+	be created, use lowpart_subreg of operands[0] rather than operands[0]
+	itself.
+	(*aarch64_reg_<mode>3_minus_mask): Rename to ...
+	(*aarch64_ashl_reg_<mode>3_minus_mask): ... this.
+	(*aarch64_<optab>_reg_di3_mask2): Use const_int_operand predicate
+	and n constraint instead of aarch64_shift_imm_di and Usd.
+	(*aarch64_reg_<optab>_minus<mode>3): Rename to ...
+	(*aarch64_<optab>_reg_minus<mode>3): ... this.
+
 2018-03-20  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/82989

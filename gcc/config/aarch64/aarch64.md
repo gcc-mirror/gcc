@@ -4282,7 +4282,7 @@
   [(set_attr "type" "shift_reg")]
 )
 
-(define_insn_and_split "*aarch64_reg_<mode>3_neg_mask2"
+(define_insn_and_split "*aarch64_<optab>_reg_<mode>3_neg_mask2"
   [(set (match_operand:GPI 0 "register_operand" "=&r")
 	(SHIFT:GPI
 	  (match_operand:GPI 1 "register_operand" "r")
@@ -4295,7 +4295,7 @@
   [(const_int 0)]
   {
     rtx tmp = (can_create_pseudo_p () ? gen_reg_rtx (SImode)
-	       : operands[0]);
+	       : lowpart_subreg (SImode, operands[0], <MODE>mode));
     emit_insn (gen_negsi2 (tmp, operands[2]));
 
     rtx and_op = gen_rtx_AND (SImode, tmp, operands[3]);
@@ -4306,7 +4306,7 @@
   }
 )
 
-(define_insn_and_split "*aarch64_reg_<mode>3_minus_mask"
+(define_insn_and_split "*aarch64_ashl_reg_<mode>3_minus_mask"
   [(set (match_operand:GPI 0 "register_operand" "=&r")
 	(ashift:GPI
 	  (match_operand:GPI 1 "register_operand" "r")
@@ -4340,8 +4340,8 @@
 	  (match_operand:DI 1 "register_operand" "r")
 	  (match_operator 4 "subreg_lowpart_operator"
 	   [(and:SI (match_operand:SI 2 "register_operand" "r")
-		     (match_operand 3 "aarch64_shift_imm_di" "Usd"))])))]
-  "((~INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode)-1)) == 0)"
+		    (match_operand 3 "const_int_operand" "n"))])))]
+  "((~INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode) - 1)) == 0)"
 {
   rtx xop[3];
   xop[0] = operands[0];
@@ -4353,7 +4353,7 @@
   [(set_attr "type" "shift_reg")]
 )
 
-(define_insn_and_split "*aarch64_reg_<optab>_minus<mode>3"
+(define_insn_and_split "*aarch64_<optab>_reg_minus<mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=&r")
 	(ASHIFT:GPI
 	  (match_operand:GPI 1 "register_operand" "r")
