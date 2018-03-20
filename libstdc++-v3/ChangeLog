@@ -1,3 +1,19 @@
+2018-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/84998
+	* include/bits/stl_bvector.h: Fix std::hash friend declaration.
+	* include/std/bitset: Likewise.
+	* include/bits/stl_map.h (std::map<>): Fix _Rb_tree_merge_helper friend
+	declaration.
+	* include/bits/stl_multimap.h (std::multimap<>): Likewise.
+	* include/bits/stl_multiset.h (std::multiset<>): Likewise.
+	* include/bits/stl_set.h (std::set<>): Likewise.
+	* include/bits/unordered_map.h (std::unordered_map<>): Fix
+	_Hash_merge_helper friend declaration.
+	(std::unordered_multimap<>): Likewise.
+	* include/bits/unordered_set.h (std::unordered_set<>): Likewise.
+	(std::unordered_multiset<>): Likewise.
+
 2018-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/api.xml: www.fsf.org has moved to https. Also omit
@@ -8,7 +24,8 @@
 	* doc/xml/manual/spine.xml: Ditto.
 	* doc/xml/spine.xml: Ditto.
 
-2018-03-19  Gerald Pfeifer  <gerald@pfeifer.com>	
+2018-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* doc/xml/manual/documentation_hacking.xml: Adjust link to
 	docbook.org.
 

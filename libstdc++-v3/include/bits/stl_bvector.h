@@ -58,6 +58,7 @@
 
 #if __cplusplus >= 201103L
 #include <initializer_list>
+#include <bits/functional_hash.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -591,7 +592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Base::_Bit_alloc_traits		_Bit_alloc_traits;
 
 #if __cplusplus >= 201103L
-      template<typename> friend struct hash;
+      friend struct std::hash<vector>;
 #endif
 
     public:
@@ -1312,8 +1313,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #if __cplusplus >= 201103L
-
-#include <bits/functional_hash.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
