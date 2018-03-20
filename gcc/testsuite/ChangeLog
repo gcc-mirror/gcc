@@ -1,3 +1,8 @@
+2018-03-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84970
+	* g++.dg/lookup/pr84970.C: New.
+
 2018-03-20  Richard Biener  <rguenther@suse.de>
 
 	PR target/84986

@@ -2436,6 +2436,20 @@ lookup_keep (tree lookup, bool keep)
     ovl_used (lookup);
 }
 
+/* LIST is a TREE_LIST whose TREE_VALUEs may be OVERLOADS that need
+   keeping, or may be ignored.  */
+
+void
+lookup_list_keep (tree list, bool keep)
+{
+  for (; list; list = TREE_CHAIN (list))
+    {
+      tree v = TREE_VALUE (list);
+      if (TREE_CODE (v) == OVERLOAD)
+	lookup_keep (v, keep);
+    }
+}
+
 /* Returns nonzero if X is an expression for a (possibly overloaded)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly
@@ -3315,9 +3329,7 @@ build_min (enum tree_code code, tree tt, ...)
 
   if (code == CAST_EXPR)
     /* The single operand is a TREE_LIST, which we have to check.  */
-    for (tree v = TREE_OPERAND (t, 0); v; v = TREE_CHAIN (v))
-      if (TREE_CODE (TREE_VALUE (v)) == OVERLOAD)
-	lookup_keep (TREE_VALUE (v), true);
+    lookup_list_keep (TREE_OPERAND (t, 0), true);
 
   return t;
 }
