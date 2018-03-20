@@ -98,19 +98,18 @@ gori_map::gori_map ()
 
 gori_map::~gori_map ()
 {
-  unsigned x;
-  int bb;
-  for (bb = 0; bb < last_basic_block_for_fn (cfun); ++bb)
+  unsigned x, bb;
+  for (bb = 0; bb < outgoing.length (); ++bb)
     if (outgoing[bb])
       BITMAP_FREE (outgoing[bb]);
   outgoing.release ();
 
-  for (bb = 0; bb < last_basic_block_for_fn (cfun); ++bb)
+  for (bb = 0; bb < incoming.length (); ++bb)
     if (incoming[bb])
       BITMAP_FREE (incoming[bb]);
   incoming.release ();
 
-  for (x = 0; x < num_ssa_names; ++x)
+  for (x = 0; x < def_chain.length (); ++x)
     if (def_chain[x])
       BITMAP_FREE (def_chain[x]);
   def_chain.release ();
@@ -281,9 +280,11 @@ gori_map::dump(FILE *f, basic_block bb)
       return;
     }
 
-  for (x = 1; x< num_ssa_names; x++)
+  for (x = 1; x < num_ssa_names; x++)
     {
       tree name = ssa_name (x);
+      if (!name)
+	continue;
       gimple *stmt = SSA_NAME_DEF_STMT (name);
       if (stmt && gimple_bb (stmt) == bb && def_chain[x] &&
 	  !bitmap_empty_p (def_chain[x]))
@@ -706,6 +707,12 @@ block_ranger::get_derived_range_stmt (range_stmt& stmt, tree name, basic_block b
 }
 #endif
 
+
+tree
+block_ranger::single_import (tree name)
+{
+  return gori->single_import (name);
+}
 
 bool
 block_ranger::range_p (basic_block bb, tree name)

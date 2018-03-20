@@ -59,6 +59,7 @@ public:
   bool range_of_def (irange& r, gimple *g, tree name,
 		     const irange& range_for_name);
 
+  tree single_import (tree name);
   void dump (FILE *f);
   void exercise (FILE *f);
 };
