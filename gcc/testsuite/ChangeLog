@@ -1,3 +1,8 @@
+2018-03-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/84615
+	* gfortran.dg/char_result_17.f90: New test.
+
 2018-03-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84994

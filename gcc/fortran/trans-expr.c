@@ -5973,9 +5973,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
 	  gfc_add_block_to_block (&se->post, &parmse.post);
 	  tmp = parmse.expr;
+	  /* TODO: It would be better to have the charlens as
+	     gfc_charlen_type_node already when the interface is
+	     created instead of converting it here (see PR 84615).  */
 	  tmp = fold_build2_loc (input_location, MAX_EXPR,
-				 TREE_TYPE (tmp), tmp,
-				 build_zero_cst (TREE_TYPE (tmp)));
+				 gfc_charlen_type_node,
+				 fold_convert (gfc_charlen_type_node, tmp),
+				 build_zero_cst (gfc_charlen_type_node));
 	  cl.backend_decl = tmp;
 	}
 
