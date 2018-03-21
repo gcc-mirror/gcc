@@ -5022,7 +5022,7 @@ decl_linkage (tree decl)
   if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
        || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
       && DECL_CHAIN (decl)
-      && DECL_CLONED_FUNCTION (DECL_CHAIN (decl)))
+      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)))
     return decl_linkage (DECL_CHAIN (decl));
 
   if (TREE_CODE (decl) == NAMESPACE_DECL)
