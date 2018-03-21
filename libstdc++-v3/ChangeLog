@@ -1,3 +1,13 @@
+2018-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: Use
+	VERIFY instead of assert.
+	* testsuite/20_util/hash/84998.cc: New test.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc: New
+	copy of test adjusted for Debug Mode.
+	* testsuite/23_containers/vector/cons/destructible_neg.cc: Do not run
+	test in Debug Mode.
+
 2018-03-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/84998

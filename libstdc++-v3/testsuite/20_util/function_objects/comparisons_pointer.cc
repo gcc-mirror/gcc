@@ -174,7 +174,7 @@ test05()
   int n = 0;
   while (ss >> n)
     sum += n;
-  assert( sum == 1 );
+  VERIFY( sum == 1 );
 
 #if __cplusplus >= 201402L
   static_assert( lt(y, y+1), "constexpr less<const X*>" );
