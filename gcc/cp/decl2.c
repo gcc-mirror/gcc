@@ -1940,7 +1940,7 @@ vague_linkage_p (tree decl)
       if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
 	   || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
 	  && DECL_CHAIN (decl)
-	  && DECL_CLONED_FUNCTION (DECL_CHAIN (decl)))
+	  && DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)))
 	return vague_linkage_p (DECL_CHAIN (decl));
 
       gcc_checking_assert (!DECL_COMDAT (decl));

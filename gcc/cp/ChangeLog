@@ -1,3 +1,9 @@
+2018-03-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85008
+	* tree.c (decl_linkage): Use DECL_CLONED_FUNCTION_P.
+	* decl2.c (vague_linkage_p): Likewise.
+
 2018-03-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84994
