@@ -1,5 +1,10 @@
+2018-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84972
+	* g++.dg/ext/desig10.C: New.
+
 2018-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
-	Harald Anlauf  <anlauf@gmx.de>
+	    Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/84957
 	* gfortran.dg/pr84957.f90: New test.

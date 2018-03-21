@@ -1,3 +1,9 @@
+2018-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84972
+	* decl.c (maybe_deduce_size_from_array_init): Set TREE_TYPE to
+	error_mark_node when check_array_designated_initializer fails.
+
 2018-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84961
