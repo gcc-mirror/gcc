@@ -1,5 +1,11 @@
 2018-03-21  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/84963
+	* ipa-icf.c (sem_item_optimizer::fixup_points_to_sets): Remove
+	not intended return statement.
+
+2018-03-21  Martin Liska  <mliska@suse.cz>
+
 	PR target/84988
 	* tree-chkp.c (CHKP_ARRAY_MAX_CHECK_STEPS): Define a new macro.
 	(chkp_find_bound_slots_1): Limit number of iterations.
