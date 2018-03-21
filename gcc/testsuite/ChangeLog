@@ -1,3 +1,8 @@
+2018-03-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84836
+	* g++.dg/lookup/pr84836.C: New.
+
 2018-03-21  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/84969

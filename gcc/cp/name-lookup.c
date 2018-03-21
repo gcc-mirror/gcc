@@ -2481,21 +2481,12 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
  done:
   if (to_val)
     {
-      if (level->kind != sk_namespace
-	  && !to_type && binding->value && OVL_P (to_val))
-	update_local_overload (binding, to_val);
+      if (level->kind == sk_namespace || to_type == decl || to_val == decl)
+	add_decl_to_level (level, decl);
       else
 	{
-	  tree to_add = to_val;
-      
-	  if (level->kind == sk_namespace)
-	    to_add = decl;
-	  else if (to_type == decl)
-	    to_add = decl;
-	  else if (TREE_CODE (to_add) == OVERLOAD)
-	    to_add = build_tree_list (NULL_TREE, to_add);
-
-	  add_decl_to_level (level, to_add);
+	  gcc_checking_assert (binding->value && OVL_P (binding->value));
+	  update_local_overload (binding, to_val);
 	}
 
       if (slot)
