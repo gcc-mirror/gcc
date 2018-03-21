@@ -1,3 +1,11 @@
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84961
+	* c-c++-common/pr43690.c: Don't expect errors on "m" (--x) and
+	"m" (++x) in C++.
+	* g++.dg/torture/pr84961-1.C: New test.
+	* g++.dg/torture/pr84961-2.C: New test.
+
 2018-03-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/85008

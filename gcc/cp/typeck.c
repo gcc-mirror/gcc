@@ -6357,6 +6357,25 @@ build_unary_op (location_t /*location*/,
   return cp_build_unary_op (code, xarg, noconvert, tf_warning_or_error);
 }
 
+/* Adjust LVALUE, an MODIFY_EXPR, PREINCREMENT_EXPR or PREDECREMENT_EXPR,
+   so that it is a valid lvalue even for GENERIC by replacing
+   (lhs = rhs) with ((lhs = rhs), lhs)
+   (--lhs) with ((--lhs), lhs)
+   (++lhs) with ((++lhs), lhs)
+   and if lhs has side-effects, calling cp_stabilize_reference on it, so
+   that it can be evaluated multiple times.  */
+
+tree
+genericize_compound_lvalue (tree lvalue)
+{
+  if (TREE_SIDE_EFFECTS (TREE_OPERAND (lvalue, 0)))
+    lvalue = build2 (TREE_CODE (lvalue), TREE_TYPE (lvalue),
+		     cp_stabilize_reference (TREE_OPERAND (lvalue, 0)),
+		     TREE_OPERAND (lvalue, 1));
+  return build2 (COMPOUND_EXPR, TREE_TYPE (TREE_OPERAND (lvalue, 0)),
+		 lvalue, TREE_OPERAND (lvalue, 0));
+}
+
 /* Apply unary lvalue-demanding operator CODE to the expression ARG
    for certain kinds of expressions which are not really lvalues
    but which we can accept as lvalues.
@@ -6391,17 +6410,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
   if (TREE_CODE (arg) == MODIFY_EXPR
       || TREE_CODE (arg) == PREINCREMENT_EXPR
       || TREE_CODE (arg) == PREDECREMENT_EXPR)
-    {
-      tree lvalue = TREE_OPERAND (arg, 0);
-      if (TREE_SIDE_EFFECTS (lvalue))
-	{
-	  lvalue = cp_stabilize_reference (lvalue);
-	  arg = build2 (TREE_CODE (arg), TREE_TYPE (arg),
-			lvalue, TREE_OPERAND (arg, 1));
-	}
-      return unary_complex_lvalue
-	(code, build2 (COMPOUND_EXPR, TREE_TYPE (lvalue), arg, lvalue));
-    }
+    return unary_complex_lvalue (code, genericize_compound_lvalue (arg));
 
   if (code != ADDR_EXPR)
     return NULL_TREE;
@@ -7887,11 +7896,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
     case PREINCREMENT_EXPR:
       if (compound_side_effects_p)
 	newrhs = rhs = stabilize_expr (rhs, &preeval);
-      if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
-	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
-		      cp_stabilize_reference (TREE_OPERAND (lhs, 0)),
-		      TREE_OPERAND (lhs, 1));
-      lhs = build2 (COMPOUND_EXPR, lhstype, lhs, TREE_OPERAND (lhs, 0));
+      lhs = genericize_compound_lvalue (lhs);
     maybe_add_compound:
       /* If we had (bar, --foo) = 5; or (bar, (baz, --foo)) = 5;
 	 and looked through the COMPOUND_EXPRs, readd them now around
@@ -7914,11 +7919,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
     case MODIFY_EXPR:
       if (compound_side_effects_p)
 	newrhs = rhs = stabilize_expr (rhs, &preeval);
-      if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
-	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
-		      cp_stabilize_reference (TREE_OPERAND (lhs, 0)),
-		      TREE_OPERAND (lhs, 1));
-      lhs = build2 (COMPOUND_EXPR, lhstype, lhs, TREE_OPERAND (lhs, 0));
+      lhs = genericize_compound_lvalue (lhs);
       goto maybe_add_compound;
 
     case MIN_EXPR:

@@ -1,3 +1,14 @@
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84961
+	* cp-tree.h (genericize_compound_lvalue): Declare.
+	* typeck.c (genericize_compound_lvalue): New function.
+	(unary_complex_lvalue, cp_build_modify_expr): Use it.
+	* semantics.c (finish_asm_stmt): Replace MODIFY_EXPR, PREINCREMENT_EXPR
+	and PREDECREMENT_EXPR in output and "m" constrained input operands with
+	COMPOUND_EXPR.  Call cxx_mark_addressable on the rightmost
+	COMPOUND_EXPR operand.
+
 2018-03-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/85008
