@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target arm_neon_ok } */
+/* { dg-require-effective-target arm_neon_hw } */
 /* { dg-additional-options "-O3 -fno-inline -std=gnu99" } */
 /* { dg-add-options arm_neon } */
 
