@@ -1692,7 +1692,9 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
       break;
     }
 
-  if (VECTOR_MODE_P (mode) && vec_duplicate_p (op, &elt))
+  if (VECTOR_MODE_P (mode)
+      && vec_duplicate_p (op, &elt)
+      && code != VEC_DUPLICATE)
     {
       /* Try applying the operator to ELT and see if that simplifies.
 	 We can duplicate the result if so.
