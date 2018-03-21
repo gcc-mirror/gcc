@@ -33,6 +33,13 @@
 	PR c++/84978, ICE with NRVO.
 	* g++.dg/opt/nrv19.C: New test.
 
+2018-03-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82518
+	* lib/target-supports.exp (check_effective_target_vect_load_lanes):
+	Disable for armeb targets.
+	* gcc.target/arm/pr82518.c: New test.
+
 2018-03-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84962
