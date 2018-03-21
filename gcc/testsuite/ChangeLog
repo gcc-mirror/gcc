@@ -1,5 +1,8 @@
 2018-03-21  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/71965
+	* g++.dg/concepts/pr71965.C: New.
+
 	PR c++/84610
 	PR c++/84642
 	* g++.dg/cpp0x/pr84610.C: New.
