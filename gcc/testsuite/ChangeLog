@@ -1,5 +1,8 @@
 2018-03-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84982
+	* c-c++-common/pr84982.c: New test.
+
 	PR c++/84961
 	* c-c++-common/pr43690.c: Don't expect errors on "m" (--x) and
 	"m" (++x) in C++.

@@ -1,3 +1,10 @@
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84982
+	* gimple-ssa-store-merging.c (invert_op): Handle boolean inversion
+	by flipping the least significant bit rather than all bits from
+	bitpos to bitpos + bitsize - 1.
+
 2018-03-21  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/extend.texi (Deprecated Features): Remove mention of
