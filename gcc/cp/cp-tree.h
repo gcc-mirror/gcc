@@ -7145,6 +7145,7 @@ extern tree cp_build_addressof			(location_t, tree,
 extern tree cp_build_addr_expr			(tree, tsubst_flags_t);
 extern tree cp_build_unary_op                   (enum tree_code, tree, bool,
                                                  tsubst_flags_t);
+extern tree genericize_compound_lvalue		(tree);
 extern tree unary_complex_lvalue		(enum tree_code, tree);
 extern tree build_x_conditional_expr		(location_t, tree, tree, tree, 
                                                  tsubst_flags_t);

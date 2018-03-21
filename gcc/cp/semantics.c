@@ -1512,6 +1512,21 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		      && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
 	    cxx_readonly_error (operand, lv_asm);
 
+	  tree *op = &operand;
+	  while (TREE_CODE (*op) == COMPOUND_EXPR)
+	    op = &TREE_OPERAND (*op, 1);
+	  switch (TREE_CODE (*op))
+	    {
+	    case PREINCREMENT_EXPR:
+	    case PREDECREMENT_EXPR:
+	    case MODIFY_EXPR:
+	      *op = genericize_compound_lvalue (*op);
+	      op = &TREE_OPERAND (*op, 1);
+	      break;
+	    default:
+	      break;
+	    }
+
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
 	  oconstraints[i] = constraint;
 
@@ -1520,7 +1535,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	    {
 	      /* If the operand is going to end up in memory,
 		 mark it addressable.  */
-	      if (!allows_reg && !cxx_mark_addressable (operand))
+	      if (!allows_reg && !cxx_mark_addressable (*op))
 		operand = error_mark_node;
 	    }
 	  else
@@ -1562,7 +1577,23 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  /* Strip the nops as we allow this case.  FIXME, this really
 		     should be rejected or made deprecated.  */
 		  STRIP_NOPS (operand);
-		  if (!cxx_mark_addressable (operand))
+
+		  tree *op = &operand;
+		  while (TREE_CODE (*op) == COMPOUND_EXPR)
+		    op = &TREE_OPERAND (*op, 1);
+		  switch (TREE_CODE (*op))
+		    {
+		    case PREINCREMENT_EXPR:
+		    case PREDECREMENT_EXPR:
+		    case MODIFY_EXPR:
+		      *op = genericize_compound_lvalue (*op);
+		      op = &TREE_OPERAND (*op, 1);
+		      break;
+		    default:
+		      break;
+		    }
+
+		  if (!cxx_mark_addressable (*op))
 		    operand = error_mark_node;
 		}
 	      else if (!allows_reg && !allows_mem)
