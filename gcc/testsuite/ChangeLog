@@ -1,3 +1,7 @@
+2018-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tree-ssa/pr84512.c: xfail on 64-bit SPARC.
+
 2018-03-21  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/82989
