@@ -1,3 +1,8 @@
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/84989
+	* gcc.target/i386/pr84989.c: New test.
+
 2018-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/pr82518.c: Require arm_neon_hw.
