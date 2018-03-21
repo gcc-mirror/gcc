@@ -1,3 +1,9 @@
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84999
+	* c-typeck.c (build_binary_op): If c_common_type_for_size fails when
+	building vector comparison, diagnose it and return error_mark_node.
+
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/84853
