@@ -1,3 +1,8 @@
+2018-03-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/extend.texi (__builtin_tgmath): Document when complex
+	integer types are treated as _Complex _Float64.
+
 2018-03-21  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/extend.texi (__builtin_extend_pointer): Remove pasto.

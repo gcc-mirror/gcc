@@ -1,3 +1,7 @@
+2018-03-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/builtin-tgmath-3.c: New test.
+
 2018-03-21  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/71965

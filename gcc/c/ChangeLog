@@ -1,3 +1,9 @@
+2018-03-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression): For __builtin_tgmath
+	where all functions return the same _FloatN or _FloatNx type,
+	treat integer types as _Float64 instead of double.
+
 2018-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/84999
