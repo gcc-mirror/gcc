@@ -1,3 +1,11 @@
+2018-03-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84892
+	* g++.dg/other/accessor-fixits-1.C
+	(test_access_const_t1_color): New.
+	(test_deref_const_t1_color): New.
+	* g++.dg/other/accessor-fixits-5.C: New testcase.
+
 2018-03-21  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/83126

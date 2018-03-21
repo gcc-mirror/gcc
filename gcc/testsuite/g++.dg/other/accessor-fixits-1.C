@@ -35,6 +35,28 @@ int test_access_t1_color (t1 &ref)
      { dg-end-multiline-output "" } */
 }
 
+int test_access_const_t1_color (const t1 &ref)
+{
+  return ref.m_color; // { dg-error ".int t1::m_color. is private within this context" }
+  /* { dg-begin-multiline-output "" }
+   return ref.m_color;
+              ^~~~~~~
+     { dg-end-multiline-output "" } */
+
+
+  /* { dg-begin-multiline-output "" }
+   int m_color;
+       ^~~~~~~
+     { dg-end-multiline-output "" } */
+
+  // { dg-message "field .int t1::m_color. can be accessed via .int t1::get_color\\(\\) const." "" { target *-*-* } .-12 }
+  /* { dg-begin-multiline-output "" }
+   return ref.m_color;
+              ^~~~~~~
+              get_color()
+     { dg-end-multiline-output "" } */
+}
+
 int test_access_t1_shape (t1 &ref)
 {
   return ref.m_shape; // { dg-error ".int t1::m_shape. is protected within this context" }
@@ -58,6 +80,28 @@ int test_access_t1_shape (t1 &ref)
 }
 
 int test_deref_t1_color (t1 *ptr)
+{
+  return ptr->m_color; // { dg-error ".int t1::m_color. is private within this context" }
+  /* { dg-begin-multiline-output "" }
+   return ptr->m_color;
+               ^~~~~~~
+     { dg-end-multiline-output "" } */
+
+
+  /* { dg-begin-multiline-output "" }
+   int m_color;
+       ^~~~~~~
+     { dg-end-multiline-output "" } */
+
+  // { dg-message "field .int t1::m_color. can be accessed via .int t1::get_color\\(\\) const." "" { target *-*-* } .-12 }
+  /* { dg-begin-multiline-output "" }
+   return ptr->m_color;
+               ^~~~~~~
+               get_color()
+     { dg-end-multiline-output "" } */
+}
+
+int test_deref_const_t1_color (const t1 *ptr)
 {
   return ptr->m_color; // { dg-error ".int t1::m_color. is private within this context" }
   /* { dg-begin-multiline-output "" }

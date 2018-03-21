@@ -1,3 +1,10 @@
+2018-03-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84892
+	* search.c (field_accessor_p): Use class_of_this_parm rather than
+	type_of_this_parm, to check that "this" is a "const T *", rather
+	than a "T *const".
+
 2018-03-21  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (finish_struct_anon_r): Refactor, deprecate anything
