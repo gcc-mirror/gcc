@@ -2264,6 +2264,8 @@ static tree synthesize_implicit_template_parm
   (cp_parser *, tree);
 static tree finish_fully_implicit_template
   (cp_parser *, tree);
+static void abort_fully_implicit_template
+  (cp_parser *);
 
 /* Classes [gram.class] */
 
@@ -3585,7 +3587,7 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 
   /* Unwind generic function template scope if necessary.  */
   if (parser->fully_implicit_function_template_p)
-    finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+    abort_fully_implicit_template (parser);
 
   while (true)
     {
@@ -3675,7 +3677,7 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 
   /* Unwind generic function template scope if necessary.  */
   if (parser->fully_implicit_function_template_p)
-    finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+    abort_fully_implicit_template (parser);
 
   while (nesting_depth >= 0)
     {
@@ -39273,9 +39275,41 @@ finish_fully_implicit_template (cp_parser *parser, tree member_decl_opt)
   end_template_decl ();
 
   parser->fully_implicit_function_template_p = false;
+  parser->implicit_template_parms = 0;
+  parser->implicit_template_scope = 0;
   --parser->num_template_parameter_lists;
 
   return member_decl_opt;
+}
+
+/* Like finish_fully_implicit_template, but to be used in error
+   recovery, rearranging scopes so that we restore the state we had
+   before synthesize_implicit_template_parm inserted the implement
+   template parms scope.  */
+
+static void
+abort_fully_implicit_template (cp_parser *parser)
+{
+  cp_binding_level *return_to_scope = current_binding_level;
+
+  if (parser->implicit_template_scope
+      && return_to_scope != parser->implicit_template_scope)
+    {
+      cp_binding_level *child = return_to_scope;
+      for (cp_binding_level *scope = child->level_chain;
+	   scope != parser->implicit_template_scope;
+	   scope = child->level_chain)
+	child = scope;
+      child->level_chain = parser->implicit_template_scope->level_chain;
+      parser->implicit_template_scope->level_chain = return_to_scope;
+      current_binding_level = parser->implicit_template_scope;
+    }
+  else
+    return_to_scope = return_to_scope->level_chain;
+
+  finish_fully_implicit_template (parser, NULL);
+
+  gcc_assert (current_binding_level == return_to_scope);
 }
 
 /* Helper function for diagnostics that have complained about things
