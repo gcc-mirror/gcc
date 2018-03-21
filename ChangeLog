@@ -1,3 +1,8 @@
+2018-03-21  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Move maintainers of now-removed picochip and score
+	ports to write after approval.
+
 2018-03-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* MAINTAINERS: Add entry for SVE maintainership.

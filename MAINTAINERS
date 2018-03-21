@@ -91,7 +91,6 @@ nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
 nvptx port		Tom de Vries		<tom@codesourcery.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
-picochip port		Daniel Towner		<dant@picochip.com>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
 riscv port		Kito Cheng		<kito.cheng@gmail.com>
 riscv port		Palmer Dabbelt		<palmer@sifive.com>
@@ -105,7 +104,6 @@ rx port			Nick Clifton		<nickc@redhat.com>
 s390 port		Hartmut Penner		<hepenner@us.ibm.com>
 s390 port		Ulrich Weigand		<uweigand@de.ibm.com>
 s390 port		Andreas Krebbel		<Andreas.Krebbel@de.ibm.com>
-score port		Chen Liqin		<liqin.gcc@gmail.com>
 sh port			Alexandre Oliva		<aoliva@redhat.com>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		David S. Miller		<davem@redhat.com>
@@ -480,6 +478,7 @@ James Lemke					<jim@lemke.org>
 Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>
 Renlin Li					<renlin.li@arm.com>
 Xinliang David Li				<davidxl@google.com>
+Chen Liqin					<liqin.gcc@gmail.com>
 Martin Liska					<mliska@suse.cz>
 Jiangning Liu					<jiangning.liu@arm.com>
 Sa Liu						<saliu@de.ibm.com>
@@ -609,6 +608,7 @@ Caroline Tice					<cmtice@google.com>
 Kai Tietz					<ktietz70@googlemail.com>
 Ilya Tocar					<tocarip@gmail.com>
 Philipp Tomsich					<philipp.tomsich@theobroma-systems.com>
+Daniel Towner					<dant@picochip.com>
 Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
 Igor Tsimbalist					<igor.v.tsimbalist@intel.com>
