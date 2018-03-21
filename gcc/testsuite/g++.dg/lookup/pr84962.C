@@ -6,7 +6,7 @@ struct X {
   struct 
   {
     template <typename> int a ();
-    // { dg-error "can only have" "" { target *-*-* } .-1 }
+    // { dg-error "public non-static data member" "" { target *-*-* } .-1 }
   };
 
   int  : a; // { dg-error "non-integral" }

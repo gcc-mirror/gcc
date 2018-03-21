@@ -1,5 +1,10 @@
 2018-03-21  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (finish_struct_anon_r): Refactor, deprecate anything
+	other than public non-static data members.
+	* parser.c (cp_parser_init_declarator): Deprecate attributes after
+	parenthesized initializer.
+
 	PR c++/84836
 	* name-lookup.c (update_binding): Correct logic for local binding
 	update.
