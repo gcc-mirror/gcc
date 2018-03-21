@@ -1,3 +1,7 @@
+2018-03-21  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/extend.texi (__builtin_extend_pointer): Remove pasto.
+
 2018-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84960
