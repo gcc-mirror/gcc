@@ -3612,15 +3612,16 @@ void
 sem_item_optimizer::fixup_points_to_sets (void)
 {
   /* TODO: remove in GCC 9 and trigger PTA re-creation after IPA passes.  */
-
   cgraph_node *cnode;
-  return;
 
   FOR_EACH_DEFINED_FUNCTION (cnode)
     {
       tree name;
       unsigned i;
       function *fn = DECL_STRUCT_FUNCTION (cnode->decl);
+      if (!gimple_in_ssa_p (fn))
+	continue;
+
       FOR_EACH_SSA_NAME (i, name, fn)
 	if (POINTER_TYPE_P (TREE_TYPE (name))
 	    && SSA_NAME_PTR_INFO (name))
