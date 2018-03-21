@@ -8261,13 +8261,17 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   return call;
 }
 
-/* Return the DECL of the first non-public data member of class TYPE
-   or null if none can be found.  */
-
-static tree
-first_non_public_field (tree type)
+namespace
 {
-  if (!CLASS_TYPE_P (type))
+
+/* Return the DECL of the first non-static subobject of class TYPE
+   that satisfies the predicate PRED or null if none can be found.  */
+
+template <class Predicate>
+tree
+first_non_static_field (tree type, Predicate pred)
+{
+  if (!type || !CLASS_TYPE_P (type))
     return NULL_TREE;
 
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -8276,7 +8280,7 @@ first_non_public_field (tree type)
 	continue;
       if (TREE_STATIC (field))
 	continue;
-      if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
+      if (pred (field))
 	return field;
     }
 
@@ -8286,13 +8290,50 @@ first_non_public_field (tree type)
        BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
       tree base = TREE_TYPE (base_binfo);
-
-      if (tree field = first_non_public_field (base))
+      if (pred (base))
+	return base;
+      if (tree field = first_non_static_field (base, pred))
 	return field;
     }
 
   return NULL_TREE;
 }
+
+struct NonPublicField
+{
+  bool operator() (const_tree t)
+  {
+    return DECL_P (t) && (TREE_PRIVATE (t) || TREE_PROTECTED (t));
+  }
+};
+
+/* Return the DECL of the first non-public subobject of class TYPE
+   or null if none can be found.  */
+
+static inline tree
+first_non_public_field (tree type)
+{
+  return first_non_static_field (type, NonPublicField ());
+}
+
+struct NonTrivialField
+{
+  bool operator() (const_tree t)
+  {
+    return !trivial_type_p (DECL_P (t) ? TREE_TYPE (t) : t);
+  }
+};
+
+/* Return the DECL of the first non-trivial subobject of class TYPE
+   or null if none can be found.  */
+
+static inline tree
+first_non_trivial_field (tree type)
+{
+  return first_non_static_field (type, NonTrivialField ());
+}
+
+}   /* unnamed namespace */
 
 /* Return true if all copy and move assignment operator overloads for
    class TYPE are trivial and at least one of them is not deleted and,
@@ -8419,22 +8460,30 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
   if (!desttype || !COMPLETE_TYPE_P (desttype) || !CLASS_TYPE_P (desttype))
     return;
 
-  /* Check to see if the raw memory call is made by a ctor or dtor
-     with this as the destination argument for the destination type.
-     If so, be more permissive.  */
+  /* Check to see if the raw memory call is made by a non-static member
+     function with THIS as the destination argument for the destination
+     type.  If so, and if the class has no non-trivial bases or members,
+     be more permissive.  */
   if (current_function_decl
-      && (DECL_CONSTRUCTOR_P (current_function_decl)
-	  || DECL_DESTRUCTOR_P (current_function_decl))
+      && DECL_NONSTATIC_MEMBER_FUNCTION_P (current_function_decl)
       && is_this_parameter (tree_strip_nop_conversions (dest)))
     {
       tree ctx = DECL_CONTEXT (current_function_decl);
       bool special = same_type_ignoring_top_level_qualifiers_p (ctx, desttype);
-
       tree binfo = TYPE_BINFO (ctx);
 
-      /* A ctor and dtor for a class with no bases and no virtual functions
-	 can do whatever they want.  Bail early with no further checking.  */
-      if (special && !BINFO_VTABLE (binfo) && !BINFO_N_BASE_BINFOS (binfo))
+      /* FIXME: The following if statement is overly permissive (see
+	 bug 84851).  Remove it in GCC 9.  */
+      if (special
+	  && !BINFO_VTABLE (binfo)
+	  && !BINFO_N_BASE_BINFOS (binfo)
+	  && (DECL_CONSTRUCTOR_P (current_function_decl)
+	      || DECL_DESTRUCTOR_P (current_function_decl)))
+	return;
+
+      if (special
+	  && !BINFO_VTABLE (binfo)
+	  && !first_non_trivial_field (desttype))
 	return;
     }
 
