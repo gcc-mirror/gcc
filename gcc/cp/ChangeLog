@@ -1,3 +1,9 @@
+2018-03-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84804
+	* name-lookup.c (do_pushtag): Permit lambdas to be pushed into
+	complete classes.
+
 2018-03-21  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/84850
