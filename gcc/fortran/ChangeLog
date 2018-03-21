@@ -1,3 +1,10 @@
+2018-03-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85001
+	* interface.c (symbol_rank): Remove bogus null pointer check that
+	crept in when translating a ternary operator into an if-else 
+	constructor.
+
 2018-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84931

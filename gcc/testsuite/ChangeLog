@@ -1,3 +1,8 @@
+2018-03-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85001
+	* gfortran.dg/interface_41.f90: New test.
+
 2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/84875
