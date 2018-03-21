@@ -1,3 +1,9 @@
+2018-03-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71638, ICE with NSDMI and reference.
+	* constexpr.c (cxx_eval_bare_aggregate): Update constructor's flags
+	even when we replace an element.
+
 2018-03-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84978, ICE with NRVO.

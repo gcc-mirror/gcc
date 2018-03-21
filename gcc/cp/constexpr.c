@@ -2873,16 +2873,17 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (index))));
 	  changed = true;
 	}
-      else if (new_ctx.ctor != ctx->ctor)
-	{
-	  /* We appended this element above; update the value.  */
-	  gcc_assert ((*p)->last().index == index);
-	  (*p)->last().value = elt;
-	}
       else
 	{
-	  CONSTRUCTOR_APPEND_ELT (*p, index, elt);
-	  /* Adding an element might change the ctor's flags.  */
+	  if (new_ctx.ctor != ctx->ctor)
+	    {
+	      /* We appended this element above; update the value.  */
+	      gcc_assert ((*p)->last().index == index);
+	      (*p)->last().value = elt;
+	    }
+	  else
+	    CONSTRUCTOR_APPEND_ELT (*p, index, elt);
+	  /* Adding or replacing an element might change the ctor's flags.  */
 	  TREE_CONSTANT (ctx->ctor) = constant_p;
 	  TREE_SIDE_EFFECTS (ctx->ctor) = side_effects_p;
 	}
