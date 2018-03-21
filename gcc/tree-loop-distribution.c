@@ -2569,6 +2569,7 @@ fuse_memset_builtins (vec<struct partition *> *partitions)
 {
   unsigned i, j;
   struct partition *part1, *part2;
+  tree rhs1, rhs2;
 
   for (i = 0; partitions->iterate (i, &part1);)
     {
@@ -2585,6 +2586,12 @@ fuse_memset_builtins (vec<struct partition *> *partitions)
 	  if (part2->kind != PKIND_MEMSET
 	      || !operand_equal_p (part1->builtin->dst_base_base,
 				   part2->builtin->dst_base_base, 0))
+	    break;
+
+	  /* Memset calls setting different values can't be merged.  */
+	  rhs1 = gimple_assign_rhs1 (DR_STMT (part1->builtin->dst_dr));
+	  rhs2 = gimple_assign_rhs1 (DR_STMT (part2->builtin->dst_dr));
+	  if (!operand_equal_p (rhs1, rhs2, 0))
 	    break;
 	}
 
@@ -2617,8 +2624,8 @@ fuse_memset_builtins (vec<struct partition *> *partitions)
 	  i++;
 	  continue;
 	}
-      tree rhs1 = gimple_assign_rhs1 (DR_STMT (part1->builtin->dst_dr));
-      tree rhs2 = gimple_assign_rhs1 (DR_STMT (part2->builtin->dst_dr));
+      rhs1 = gimple_assign_rhs1 (DR_STMT (part1->builtin->dst_dr));
+      rhs2 = gimple_assign_rhs1 (DR_STMT (part2->builtin->dst_dr));
       int bytev1 = const_with_all_bytes_same (rhs1);
       int bytev2 = const_with_all_bytes_same (rhs2);
       /* Only merge memset partitions of the same value.  */
