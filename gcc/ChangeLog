@@ -41,6 +41,12 @@
 	(altivec_expand_builtin): Likewise.
 	* config/rs6000/vector.md: Likewise.
 
+2018-03-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82518
+	* config/arm/arm.c (arm_array_mode_supported_p): Return false for
+	BYTES_BIG_ENDIAN.
+
 2018-03-20  Richard Biener  <rguenther@suse.de>
 
 	PR target/84986
