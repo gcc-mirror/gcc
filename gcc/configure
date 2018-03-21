@@ -24490,6 +24490,12 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_soname=yes
       ld_soname_option='-install_name'
       ;;
+    # Solaris 2 ld always supports -h.  It also supports --soname for GNU
+    # ld compatiblity since some Solaris 10 update.
+    *-*-solaris2*)
+      gcc_cv_ld_soname=yes
+      ld_soname_option='-h'
+      ;;
   esac
 fi
 # Don't AC_DEFINE result, only used in jit/Make-lang.in so far.
