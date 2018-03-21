@@ -1,3 +1,13 @@
+2018-03-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84811
+	* poly-int.h (poly_span_traits): Remove the T3 parameter and
+	promote HOST_WIDE_INT T2 - T1 results to unsigned HOST_WIDE_INT.
+	(maybe_in_range_p, known_in_range_p, ranges_known_overlap_p):
+	(known_subrange_p): Update accordingly.  Cast each value involved
+	in the size comparison, rather than casting the result of the
+	subtraction.
+
 2018-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84982
