@@ -1,3 +1,8 @@
+2018-03-21  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/extend.texi (Deprecated Features): Remove mention of
+	long-deleted deprecations.
+
 2018-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR jit/84288
@@ -12,7 +17,7 @@
 
 2018-03-21  Nathan Sidwell  <nathan@acm.org>
 
-	* doc/extend.texi (Deprecated Features): Update deprecared flags,
+	* doc/extend.texi (Deprecated Features): Update deprecated flags,
 	mention anon-struct/union members and trailing attributes.
 
 2018-03-21  Bin Cheng  <bin.cheng@arm.com>
@@ -9282,6 +9287,4 @@
 
 Copyright (C) 2018 Free Software Foundation, Inc.
 
-Copying and distribution of this file, with or without modification,
-are permitted in any medium without royalty provided the copyright
-notice and this notice are preserved.
+Copying and distribu
