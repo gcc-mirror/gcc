@@ -1,3 +1,20 @@
+2018-03-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84994
+	* g++.dg/other/accessor-fixits-1.C: Move to...
+	* g++.dg/torture/accessor-fixits-1.C: ...here.
+	* g++.dg/other/accessor-fixits-2.C: Move to...
+	* g++.dg/torture/accessor-fixits-2.C: ...here.
+	* g++.dg/other/accessor-fixits-3.C: Move to...
+	* g++.dg/torture/accessor-fixits-3.C: ...here.
+	* g++.dg/other/accessor-fixits-4.C: Move to...
+	* g++.dg/torture/accessor-fixits-4.C: ...here.
+	* g++.dg/other/accessor-fixits-5.C: Move to...
+	* g++.dg/torture/accessor-fixits-5.C: ...here.
+	* g++.dg/torture/accessor-fixits-6.C: New testcase.
+	* g++.dg/torture/accessor-fixits-7.C: New testcase.
+	* g++.dg/torture/accessor-fixits-8.C: New testcase.
+
 2018-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/tree-ssa/pr84512.c: xfail on 64-bit SPARC.

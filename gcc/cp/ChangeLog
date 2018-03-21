@@ -1,3 +1,14 @@
+2018-03-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84994
+	* constexpr.c (constexpr_fn_retval): Make non-"static".
+	* cp-tree.h (constexpr_fn_retval): New decl.
+	* search.c (direct_accessor_p): Update leading comment.
+	(reference_accessor_p): Likewise.
+	(field_accessor_p): Replace check that function body is a
+	RETURN_EXPR with a call to constexpr_fn_retval.  Fix
+	indentation of "field_type" decl.
+
 2018-03-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84804
