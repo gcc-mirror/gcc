@@ -5467,7 +5467,9 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	      failure = 1;
 	}
 
-      if (!failure)
+      if (failure)
+	TREE_TYPE (decl) = error_mark_node;
+      else
 	{
 	  failure = cp_complete_array_type (&TREE_TYPE (decl), initializer,
 					    do_default);
