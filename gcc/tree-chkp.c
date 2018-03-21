@@ -1688,6 +1688,10 @@ chkp_find_bounds_for_elem (tree elem, tree *all_bounds,
     }
 }
 
+/* Maximum number of elements to check in an array.  */
+
+#define CHKP_ARRAY_MAX_CHECK_STEPS    4096
+
 /* Fill HAVE_BOUND output bitmap with information about
    bounds requred for object of type TYPE.
 
@@ -1733,7 +1737,9 @@ chkp_find_bound_slots_1 (const_tree type, bitmap have_bound,
 	  || integer_minus_onep (maxval))
 	return;
 
-      for (cur = 0; cur <= TREE_INT_CST_LOW (maxval); cur++)
+      for (cur = 0;
+	  cur <= MIN (CHKP_ARRAY_MAX_CHECK_STEPS, TREE_INT_CST_LOW (maxval));
+	  cur++)
 	chkp_find_bound_slots_1 (etype, have_bound, offs + cur * esize);
     }
 }

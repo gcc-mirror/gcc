@@ -1,3 +1,9 @@
+2018-03-21  Martin Liska  <mliska@suse.cz>
+
+	PR target/84988
+	* tree-chkp.c (CHKP_ARRAY_MAX_CHECK_STEPS): Define a new macro.
+	(chkp_find_bound_slots_1): Limit number of iterations.
+
 2018-03-20  David H. Gutteridge  <dhgutteridge@sympatico.ca>
 
 	PR target/84838
