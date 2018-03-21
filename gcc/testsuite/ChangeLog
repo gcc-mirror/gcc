@@ -1,3 +1,8 @@
+2018-03-21  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.dg/vect/vect-strided-shift-1.c: Add dg-skip-if for
+	MIPS with -mpaired-single directives.
+
 2018-03-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85001
