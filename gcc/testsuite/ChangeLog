@@ -1,3 +1,9 @@
+2018-03-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71638, ICE with NSDMI and reference.
+	* g++.dg/cpp0x/nsdmi14.C: New test.
+	* g++.dg/cpp1y/nsdmi-aggr10.C: New test.
+
 2018-03-21  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.dg/vect/vect-strided-shift-1.c: Add dg-skip-if for
