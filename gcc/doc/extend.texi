@@ -23827,19 +23827,9 @@ While the list below is not exhaustive, it documents some of the options
 that are now deprecated or have been removed:
 
 @table @code
-@item -fexternal-templates
-@itemx -falt-external-templates
-These are two options provided alternative methods of template
-instantiation.  @xref{Template Instantiation}.  The options have been removed.
-
-@item -fstrict-prototype
-@itemx -fno-strict-prototype
-Previously it was possible to use an empty prototype parameter list to
-indicate an unspecified number of parameters (like C), rather than no
-parameters, as C++ demands.  This feature has been removed.
 
 @item -fno-for-scope
-@item -ffriend-injection
+@itemx -ffriend-injection
 These two options provide compatibility with pre-standard C++.
 @xref{Backwards Compatibility}.
 
@@ -23849,23 +23839,6 @@ G++ allows a virtual function returning @samp{void *} to be overridden
 by one returning a different pointer type.  This extension to the
 covariant return type rules is now deprecated and will be removed from a
 future version.
-
-The G++ minimum and maximum operators (@samp{<?} and @samp{>?}) and
-their compound forms (@samp{<?=}) and @samp{>?=}) have been deprecated
-and are now removed from G++.  Code using these operators should be
-modified to use @code{std::min} and @code{std::max} instead.
-
-The named return value extension has been deprecated, and is now
-removed from G++.
-
-The use of initializer lists with new expressions has been deprecated,
-and is now removed from G++.
-
-Floating and complex non-type template parameters have been deprecated,
-and are now removed from G++.
-
-The implicit typename extension has been deprecated and is now
-removed from G++.
 
 The use of default arguments in function pointers, function typedefs
 and other places where they are not permitted by the standard is
