@@ -96,7 +96,7 @@ $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	$(EXTRA_GCC_OBJS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
-	     $(CPPLIB) $(LIBDECNUMBER) $(LIBS) $(BACKENDLIBS) \
+	     $(CPPLIB) $(LIBDECNUMBER) $(EXTRA_GCC_LIBS) $(LIBS) $(BACKENDLIBS) \
 	     $(EXTRA_GCC_OBJS) \
 	     $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
 	     $(LIBGCCJIT_SONAME_OPTION)
