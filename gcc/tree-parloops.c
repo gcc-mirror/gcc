@@ -2235,6 +2235,25 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   calculate_dominance_info (CDI_DOMINATORS);
 }
 
+/* Return number of phis in bb.  If COUNT_VIRTUAL_P is false, don't count the
+   virtual phi.  */
+
+static unsigned int
+num_phis (basic_block bb, bool count_virtual_p)
+{
+  unsigned int nr_phis = 0;
+  gphi_iterator gsi;
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      if (!count_virtual_p && virtual_operand_p (PHI_RESULT (gsi.phi ())))
+	continue;
+
+      nr_phis++;
+    }
+
+  return nr_phis;
+}
+
 /* Generates code to execute the iterations of LOOP in N_THREADS
    threads in parallel, which can be 0 if that number is to be determined
    later.
@@ -2370,6 +2389,26 @@ gen_parallel_loop (struct loop *loop,
 
   /* Base all the induction variables in LOOP on a single control one.  */
   canonicalize_loop_ivs (loop, &nit, true);
+  if (num_phis (loop->header, false) != reduction_list->elements () + 1)
+    {
+      /* The call to canonicalize_loop_ivs above failed to "base all the
+	 induction variables in LOOP on a single control one".  Do damage
+	 control.  */
+      basic_block preheader = loop_preheader_edge (loop)->src;
+      basic_block cond_bb = single_pred (preheader);
+      gcond *cond = as_a <gcond *> (gsi_stmt (gsi_last_bb (cond_bb)));
+      gimple_cond_make_true (cond);
+      update_stmt (cond);
+      /* We've gotten rid of the duplicate loop created by loop_version, but
+	 we can't undo whatever canonicalize_loop_ivs has done.
+	 TODO: Fix this properly by ensuring that the call to
+	 canonicalize_loop_ivs succeeds.  */
+      if (dump_file
+	  && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "canonicalize_loop_ivs failed for loop %d,"
+		 " aborting transformation\n", loop->num);
+      return;
+    }
 
   /* Ensure that the exit condition is the first statement in the loop.
      The common case is that latch of the loop is empty (apart from the
