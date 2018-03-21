@@ -8530,10 +8530,12 @@ c_parser_postfix_expression (c_parser *parser)
 	       argument is decimal, or if the only alternatives for
 	       type-generic arguments are of decimal types, and are
 	       otherwise treated as double (or _Complex double for
-	       complex integer types).  After that adjustment, types
-	       are combined following the usual arithmetic
-	       conversions.  If the function only accepts complex
-	       arguments, a complex type is produced.  */
+	       complex integer types, or _Float64 or _Complex _Float64
+	       if all the return types are the same _FloatN or
+	       _FloatNx type).  After that adjustment, types are
+	       combined following the usual arithmetic conversions.
+	       If the function only accepts complex arguments, a
+	       complex type is produced.  */
 	    bool arg_complex = all_complex;
 	    bool arg_binary = all_binary;
 	    bool arg_int_decimal = all_decimal;
@@ -8632,6 +8634,19 @@ c_parser_postfix_expression (c_parser *parser)
 		      }
 		  }
 	      }
+	    /* For a macro rounding its result to a narrower type, map
+	       integer types to _Float64 not double if the return type
+	       is a _FloatN or _FloatNx type.  */
+	    bool arg_int_float64 = false;
+	    if (parm_kind[0] == tgmath_fixed
+		&& SCALAR_FLOAT_TYPE_P (parm_first[0])
+		&& float64_type_node != NULL_TREE)
+	      for (unsigned int j = 0; j < NUM_FLOATN_NX_TYPES; j++)
+		if (parm_first[0] == FLOATN_TYPE_NODE (j))
+		  {
+		    arg_int_float64 = true;
+		    break;
+		  }
 	    tree arg_real = NULL_TREE;
 	    for (unsigned int j = 1; j <= nargs; j++)
 	      {
@@ -8644,6 +8659,8 @@ c_parser_postfix_expression (c_parser *parser)
 		if (INTEGRAL_TYPE_P (type))
 		  type = (arg_int_decimal
 			  ? dfloat64_type_node
+			  : arg_int_float64
+			  ? float64_type_node
 			  : double_type_node);
 		if (arg_real == NULL_TREE)
 		  arg_real = type;
