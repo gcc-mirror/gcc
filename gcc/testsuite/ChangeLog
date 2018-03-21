@@ -1,5 +1,12 @@
 2018-03-21  Nathan Sidwell  <nathan@acm.org>
 
+	* g++.dg/ext/anon-struct6.C: Adjust.
+	* g++.dg/ext/deprecate-1.C: New.
+	* g++.dg/ext/deprecate-2.C: New.
+	* g++.dg/lookup/pr84602.C: Adjust.
+	* g++.dg/lookup/pr84962.C: Adjust.
+	* g++.old-deja/g++.other/anon4.C
+
 	PR c++/84836
 	* g++.dg/lookup/pr84836.C: New.
 

@@ -23824,23 +23824,25 @@ some cases that the feature will be dropped in the future.  In other
 cases, the feature might be gone already.
 
 While the list below is not exhaustive, it documents some of the options
-that are now deprecated:
+that are now deprecated or have been removed:
 
 @table @code
 @item -fexternal-templates
 @itemx -falt-external-templates
-These are two of the many ways for G++ to implement template
-instantiation.  @xref{Template Instantiation}.  The C++ standard clearly
-defines how template definitions have to be organized across
-implementation units.  G++ has an implicit instantiation mechanism that
-should work just fine for standard-conforming code.
+These are two options provided alternative methods of template
+instantiation.  @xref{Template Instantiation}.  The options have been removed.
 
 @item -fstrict-prototype
 @itemx -fno-strict-prototype
 Previously it was possible to use an empty prototype parameter list to
 indicate an unspecified number of parameters (like C), rather than no
-parameters, as C++ demands.  This feature has been removed, except where
-it is required for backwards compatibility.   @xref{Backwards Compatibility}.
+parameters, as C++ demands.  This feature has been removed.
+
+@item -fno-for-scope
+@item -ffriend-injection
+These two options provide compatibility with pre-standard C++.
+@xref{Backwards Compatibility}.
+
 @end table
 
 G++ allows a virtual function returning @samp{void *} to be overridden
@@ -23878,6 +23880,14 @@ with an initializer in a class definition. The standard only allows
 initializers for static members of const integral types and const
 enumeration types so this extension has been deprecated and will be removed
 from a future version.
+
+G++ allows attributes to follow a parenthesized direct initializer,
+e.g.@: @samp{ int f (0) __attribute__ ((something)); } This extension
+has been ignored since G++ 3.3 and is deprecated.
+
+G++ allows anonymous structs and unions to have members that are not
+public non-static data members (i.e.@: fields).  These extensions are
+deprecated.
 
 @node Backwards Compatibility
 @section Backwards Compatibility
