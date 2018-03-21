@@ -1,3 +1,10 @@
+2018-03-21  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84610
+	PR c++/84642
+	* g++.dg/cpp0x/pr84610.C: New.
+	* g++.dg/cpp0x/pr84642.C: New.
+
 2018-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/84999

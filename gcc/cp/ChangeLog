@@ -1,3 +1,13 @@
+2018-03-21  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84610
+	PR c++/84642
+	* parser.c (abort_fully_implicit_template_p): New.
+	(cp_parser_skip_to_end_of_statement): Use it.
+	(cp_parser_skip_to_end_of_block_or_statement): Likewise.
+	(finish_fully_implicit_template_p): Clear
+	implicit_template_parms and implicit_template_scope.
+
 2018-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84972
