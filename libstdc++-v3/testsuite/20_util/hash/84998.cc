@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,31 +15,26 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-D_GLIBCXX_DEBUG" }
 // { dg-do compile { target c++11 } }
-// { dg-require-normal-mode "" }
 
+// PR libstdc++/84998
+
+#include <bitset>
 #include <vector>
 
-// PR libstdc++/80553
-
-struct DeletedDtor {
-  ~DeletedDtor() = delete;
-};
-
-class PrivateDtor {
-  ~PrivateDtor() { }
-};
-
-void
+std::size_t
 test01()
 {
-  std::vector<DeletedDtor> v; // { dg-error "here" }
+  std::bitset<1> b;
+  std::hash<std::bitset<1>> h;
+  return h(b);
 }
 
-void
+std::size_t
 test02()
 {
-  std::vector<PrivateDtor> v; // { dg-error "here" }
+  std::vector<bool> b;
+  std::hash<std::vector<bool>> h;
+  return h(b);
 }
-
-// { dg-error "value type is destructible" "" { target *-*-* } 0 }
