@@ -1,3 +1,9 @@
+2018-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/84957
+	* trans-types.c (gfc_sym_type): Do not dereference NULL pointer.
+
 2018-03-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/84615
