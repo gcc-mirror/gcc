@@ -1,8 +1,14 @@
+2018-03-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/84615
+	* trans-expr.c (gfc_conv_procedure_call): Convert charlen to
+	gfc_charlen_type_node when calling procedure.
+
 2018-03-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85001
 	* interface.c (symbol_rank): Remove bogus null pointer check that
-	crept in when translating a ternary operator into an if-else 
+	crept in when translating a ternary operator into an if-else
 	constructor.
 
 2018-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
