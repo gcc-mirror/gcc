@@ -1,3 +1,9 @@
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84960
+	* tree-cfg.c (remove_bb): Don't move forced labels into bb->prev_bb
+	if it is ENTRY block, move them into single succ of ENTRY in that case.
+
 2018-03-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84811
