@@ -1,3 +1,7 @@
+2018-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pr82518.c: Require arm_neon_hw.
+
 2018-03-21  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/84963
