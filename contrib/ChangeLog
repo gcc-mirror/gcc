@@ -1,3 +1,7 @@
+2018-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* test_summary: Match possible single quotes in configure path.
+
 2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* update-copyright.py: Remove "libcilkrts" reference.

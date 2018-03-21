@@ -103,14 +103,15 @@ BEGIN {
 NR == 1 {
     configflags = $0 " ";
     srcdir = configflags;
-    sub(/\/configure .*/, "", srcdir);
+    sub(/\/configure\047? .*/, "", srcdir);
+    sub(/^\047/, "", srcdir);
     if ( system("test -f " srcdir "/LAST_UPDATED") == 0 ) {
         printf "LAST_UPDATED: ";
         system("tail -1 " srcdir "/LAST_UPDATED");
         print "";
     }
 
-    sub(/^[^ ]*\/configure */, " ", configflags);
+    sub(/^[^ ]*\/configure\047? */, " ", configflags);
     sub(/,;t t $/, " ", configflags);
     sub(/ --with-gcc-version-trigger=[^ ]* /, " ", configflags);
     sub(/ --norecursion /, " ", configflags);
