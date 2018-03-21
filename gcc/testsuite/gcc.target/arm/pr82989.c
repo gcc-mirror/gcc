@@ -13,26 +13,21 @@ void f_shr_imm (uint64_t *a)
 {
   *a += *a >> 32;
 }
-/* { dg-final { scan-assembler-not "vshr*" } } */
 
 void f_shr_reg (uint64_t *a, uint64_t b)
 {
   *a += *a >> b;
 }
-/* { dg-final { scan-assembler-not "vshl*" } } */
-/* Only 2 times for f_shr_reg. f_shr_imm should not have any.  */
-/* { dg-final { scan-assembler-times {lsr\tr[0-9]+, r[0-9]+, r[0-9]} 2 } } */
 
 void f_shl_imm (uint64_t *a)
 {
   *a += *a << 32;
 }
-/* { dg-final { scan-assembler-not "vshl*" } } */
 
 void f_shl_reg (uint64_t *a, uint64_t b)
 {
   *a += *a << b;
 }
 /* { dg-final { scan-assembler-not "vshl*" } } */
-/* Only 2 times for f_shl_reg. f_shl_imm should not have any.  */
-/* { dg-final { scan-assembler-times {lsl\tr[0-9]+, r[0-9]+, r[0-9]} 2 } } */
+/* { dg-final { scan-assembler-not "vshr*" } } */
+/* { dg-final { scan-assembler-not "vmov*" } } */
