@@ -1747,8 +1747,8 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
      that the "this" parameter is const.  */
   if (const_p)
     {
-      tree this_type = type_of_this_parm (fntype);
-      if (!TYPE_READONLY (this_type))
+      tree this_class = class_of_this_parm (fntype);
+      if (!TYPE_READONLY (this_class))
 	return false;
     }
 
