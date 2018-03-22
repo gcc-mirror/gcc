@@ -1,3 +1,10 @@
+2018-03-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/addr-modes-float.c: Move dg-do before
+	dg-require-effective-target.
+	* gcc.target/arm/addr-modes-int.c: Likewise.
+	* gcc.target/nios2/lo-addr-tls.c: Likewise.
+
 2018-03-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/84760
