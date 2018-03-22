@@ -1,3 +1,8 @@
+2018-03-22  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/84826
+	* gcc.target/arm/pr84826.c: New test.
+
 2018-03-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/addr-modes-float.c: Move dg-do before
