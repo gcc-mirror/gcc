@@ -1,3 +1,8 @@
+2018-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/84941
+	* gcc.dg/pr84941.c: New test.
+
 2018-03-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/84956

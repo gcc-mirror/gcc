@@ -1,3 +1,9 @@
+2018-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/84941
+	* function.c (match_asm_constraints_1): Don't do the optimization
+	if input isn't a REG, SUBREG, MEM or constant.
+
 2018-03-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/84956
