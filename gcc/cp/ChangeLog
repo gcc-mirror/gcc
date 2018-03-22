@@ -15,6 +15,12 @@
 	(cxx_eval_constant_expression): Verify constructor's flags
 	unconditionally.
 
+	2018-03-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71638, ICE with NSDMI and reference.
+	* constexpr.c (cxx_eval_bare_aggregate): Update constructor's flags
+	even when we replace an element.
+
 2018-03-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84785 - ICE with alias template and default targs.
