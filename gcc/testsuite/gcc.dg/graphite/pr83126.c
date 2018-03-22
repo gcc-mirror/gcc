@@ -1,3 +1,4 @@
+/* { dg-do compile { target pthread } }  */
 /* { dg-additional-options "-w -ftree-parallelize-loops=2 -floop-parallelize-all -O1" }  */
 
 void

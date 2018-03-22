@@ -1,3 +1,7 @@
+2018-03-22  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/graphite/pr83126.c: Require pthread for the test.
+
 2018-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/84941
