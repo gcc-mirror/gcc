@@ -1,3 +1,18 @@
+2018-03-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def: Remove various BU_ALTIVEC_X
+	macro expansions for definition of ST_INTERNAL_<mode> and
+	LD_INTERNAL_<mode> builtins.
+	* config/rs6000/rs6000-protos.h (rs6000_address_for_altivec):
+	Remove prototype.
+	* config/rs6000/rs6000.c (altivec_expand_ld_builtin): Delete this
+	function.
+	(altivec_expand_st_builtin): Likewise.
+	(altivec_expand_builtin): Remove calls to deleted functions.
+	(rs6000_address_for_altivec): Delete this function.
+	* config/rs6000/vector.md: Remove expands for
+	vector_altivec_load_<mode> and vector_altivec_store_<mode>.
+
 2018-03-22  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/84826
