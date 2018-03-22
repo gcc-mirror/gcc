@@ -1,3 +1,12 @@
+2018-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81311 - wrong C++17 overload resolution.
+	* call.c (build_user_type_conversion_1): Remove C++17 code.
+	(conv_binds_ref_to_prvalue): New.
+	(build_over_call): Handle C++17 copy elision.
+	(build_special_member_call): Only do C++17 copy elision here if the
+	argument is already the right type.
+
 2018-03-21  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/71965
