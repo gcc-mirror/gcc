@@ -1,3 +1,11 @@
+2018-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/85018
+	* dwarf2asm.c (dw2_output_indirect_constant_1): Set
+	DECL_INITIAL (decl) to decl at the end.
+	* varasm.c (use_blocks_for_decl_p): Revert the 2018-03-20 change,
+	adjust the comment.
+
 2018-03-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/extend.texi (__builtin_tgmath): Document when complex
