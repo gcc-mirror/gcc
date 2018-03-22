@@ -7,6 +7,14 @@
 	* semantics.c (finish_if_stmt_cond): Check if the type of the condition
 	is boolean.
 
+	2018-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84927
+	* constexpr.c (cxx_eval_bare_aggregate): Update constructor's flags
+	as we evaluate the elements.
+	(cxx_eval_constant_expression): Verify constructor's flags
+	unconditionally.
+
 2018-03-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84785 - ICE with alias template and default targs.
