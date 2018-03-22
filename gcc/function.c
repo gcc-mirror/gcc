@@ -6662,7 +6662,9 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       if (! REG_P (output)
 	  || rtx_equal_p (output, input)
 	  || (GET_MODE (input) != VOIDmode
-	      && GET_MODE (input) != GET_MODE (output)))
+	      && GET_MODE (input) != GET_MODE (output))
+	  || !(REG_P (input) || SUBREG_P (input)
+	       || MEM_P (input) || CONSTANT_P (input)))
 	continue;
 
       /* We can't do anything if the output is also used as input,
