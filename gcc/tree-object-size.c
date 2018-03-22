@@ -1,5 +1,5 @@
 /* __builtin_object_size (ptr, object_size_type) computation
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -210,11 +210,17 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	}
       if (sz != unknown[object_size_type])
 	{
-	  offset_int dsz = wi::sub (sz, mem_ref_offset (pt_var));
-	  if (wi::neg_p (dsz))
-	    sz = 0;
-	  else if (wi::fits_uhwi_p (dsz))
-	    sz = dsz.to_uhwi ();
+	  offset_int mem_offset;
+	  if (mem_ref_offset (pt_var).is_constant (&mem_offset))
+	    {
+	      offset_int dsz = wi::sub (sz, mem_offset);
+	      if (wi::neg_p (dsz))
+		sz = 0;
+	      else if (wi::fits_uhwi_p (dsz))
+		sz = dsz.to_uhwi ();
+	      else
+		sz = unknown[object_size_type];
+	    }
 	  else
 	    sz = unknown[object_size_type];
 	}
@@ -430,8 +436,7 @@ alloc_object_size (const gcall *call, int object_size_type)
 	arg2 = 1;
 	/* fall through */
       case BUILT_IN_MALLOC:
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
 	arg1 = 0;
       default:
 	break;
@@ -465,34 +470,17 @@ alloc_object_size (const gcall *call, int object_size_type)
 static tree
 pass_through_call (const gcall *call)
 {
-  tree callee = gimple_call_fndecl (call);
+  unsigned rf = gimple_call_return_flags (call);
+  if (rf & ERF_RETURNS_ARG)
+    {
+      unsigned argnum = rf & ERF_RETURN_ARG_MASK;
+      if (argnum < gimple_call_num_args (call))
+	return gimple_call_arg (call, argnum);
+    }
 
-  if (callee
-      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
-    switch (DECL_FUNCTION_CODE (callee))
-      {
-      case BUILT_IN_MEMCPY:
-      case BUILT_IN_MEMMOVE:
-      case BUILT_IN_MEMSET:
-      case BUILT_IN_STRCPY:
-      case BUILT_IN_STRNCPY:
-      case BUILT_IN_STRCAT:
-      case BUILT_IN_STRNCAT:
-      case BUILT_IN_MEMCPY_CHK:
-      case BUILT_IN_MEMMOVE_CHK:
-      case BUILT_IN_MEMSET_CHK:
-      case BUILT_IN_STRCPY_CHK:
-      case BUILT_IN_STRNCPY_CHK:
-      case BUILT_IN_STPNCPY_CHK:
-      case BUILT_IN_STRCAT_CHK:
-      case BUILT_IN_STRNCAT_CHK:
-      case BUILT_IN_ASSUME_ALIGNED:
-	if (gimple_call_num_args (call) >= 1)
-	  return gimple_call_arg (call, 0);
-	break;
-      default:
-	break;
-      }
+  /* __builtin_assume_aligned is intentionally not marked RET1.  */
+  if (gimple_call_builtin_p (call, BUILT_IN_ASSUME_ALIGNED))
+    return gimple_call_arg (call, 0);
 
   return NULL_TREE;
 }

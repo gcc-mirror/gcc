@@ -22,7 +22,7 @@ print *,c1%comp
 
 call sub(c1)
 
-if (c1%comp/=5) call abort()
+if (c1%comp/=5) STOP 1
 
 deallocate(c1)
 

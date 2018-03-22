@@ -1,5 +1,5 @@
 /* IRA hard register and memory cost calculation for allocnos or pseudos.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1368,12 +1368,12 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
       rtx src = SET_SRC (set);
 
       if (GET_CODE (dest) == SUBREG
-	  && (GET_MODE_SIZE (GET_MODE (dest))
-	      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))))
+	  && known_eq (GET_MODE_SIZE (GET_MODE (dest)),
+		       GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))))
 	dest = SUBREG_REG (dest);
       if (GET_CODE (src) == SUBREG
-	  && (GET_MODE_SIZE (GET_MODE (src))
-	      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
+	  && known_eq (GET_MODE_SIZE (GET_MODE (src)),
+		       GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
 	src = SUBREG_REG (src);
       if (REG_P (src) && REG_P (dest)
 	  && find_regno_note (insn, REG_DEAD, REGNO (src))
@@ -1471,7 +1471,10 @@ scan_one_insn (rtx_insn *insn)
 	      && targetm.legitimate_constant_p (GET_MODE (SET_DEST (set)),
 						XEXP (note, 0))
 	      && REG_N_SETS (REGNO (SET_DEST (set))) == 1))
-      && general_operand (SET_SRC (set), GET_MODE (SET_SRC (set))))
+      && general_operand (SET_SRC (set), GET_MODE (SET_SRC (set)))
+      /* LRA does not use equiv with a symbol for PIC code.  */
+      && (! ira_use_lra_p || ! pic_offset_table_rtx
+	  || ! contains_symbol_ref_p (XEXP (note, 0))))
     {
       enum reg_class cl = GENERAL_REGS;
       rtx reg = SET_DEST (set);

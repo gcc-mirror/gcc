@@ -9,5 +9,5 @@ c { dg-do run }
       IF (A(IM5) .NE. -5. .OR. A(IM1) .NE. -1. .OR.
      ,    A(IZ)  .NE.  0. .OR.
      ,    A(IP5) .NE. +5. .OR. A(IP1) .NE. +1. )
-     ,  CALL ABORT
+     ,  STOP 1
       END

@@ -1,5 +1,5 @@
 /* Reassociation for trees.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -232,7 +232,7 @@ reassoc_remove_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
-  if (!MAY_HAVE_DEBUG_STMTS || gimple_code (stmt) == GIMPLE_PHI)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS || gimple_code (stmt) == GIMPLE_PHI)
     return gsi_remove (gsi, true);
 
   gimple_stmt_iterator prev = *gsi;
@@ -470,7 +470,8 @@ get_rank (tree e)
 
 /* We want integer ones to end up last no matter what, since they are
    the ones we can do the most with.  */
-#define INTEGER_CONST_TYPE 1 << 3
+#define INTEGER_CONST_TYPE 1 << 4
+#define FLOAT_ONE_CONST_TYPE 1 << 3
 #define FLOAT_CONST_TYPE 1 << 2
 #define OTHER_CONST_TYPE 1 << 1
 
@@ -482,7 +483,14 @@ constant_type (tree t)
   if (INTEGRAL_TYPE_P (TREE_TYPE (t)))
     return INTEGER_CONST_TYPE;
   else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (t)))
-    return FLOAT_CONST_TYPE;
+    {
+      /* Sort -1.0 and 1.0 constants last, while in some cases
+	 const_binop can't optimize some inexact operations, multiplication
+	 by -1.0 or 1.0 can be always merged with others.  */
+      if (real_onep (t) || real_minus_onep (t))
+	return FLOAT_ONE_CONST_TYPE;
+      return FLOAT_CONST_TYPE;
+    }
   else
     return OTHER_CONST_TYPE;
 }
@@ -495,63 +503,66 @@ sort_by_operand_rank (const void *pa, const void *pb)
   const operand_entry *oea = *(const operand_entry *const *)pa;
   const operand_entry *oeb = *(const operand_entry *const *)pb;
 
+  if (oeb->rank != oea->rank)
+    return oeb->rank > oea->rank ? 1 : -1;
+
   /* It's nicer for optimize_expression if constants that are likely
-     to fold when added/multiplied//whatever are put next to each
+     to fold when added/multiplied/whatever are put next to each
      other.  Since all constants have rank 0, order them by type.  */
-  if (oeb->rank == 0 && oea->rank == 0)
+  if (oea->rank == 0)
     {
       if (constant_type (oeb->op) != constant_type (oea->op))
-	return constant_type (oeb->op) - constant_type (oea->op);
+	return constant_type (oea->op) - constant_type (oeb->op);
       else
 	/* To make sorting result stable, we use unique IDs to determine
 	   order.  */
 	return oeb->id > oea->id ? 1 : -1;
     }
 
+  if (TREE_CODE (oea->op) != SSA_NAME)
+    {
+      if (TREE_CODE (oeb->op) != SSA_NAME)
+	return oeb->id > oea->id ? 1 : -1;
+      else
+	return 1;
+    }
+  else if (TREE_CODE (oeb->op) != SSA_NAME)
+    return -1;
+
   /* Lastly, make sure the versions that are the same go next to each
      other.  */
-  if (oeb->rank == oea->rank
-      && TREE_CODE (oea->op) == SSA_NAME
-      && TREE_CODE (oeb->op) == SSA_NAME)
+  if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
     {
       /* As SSA_NAME_VERSION is assigned pretty randomly, because we reuse
 	 versions of removed SSA_NAMEs, so if possible, prefer to sort
 	 based on basic block and gimple_uid of the SSA_NAME_DEF_STMT.
 	 See PR60418.  */
-      if (!SSA_NAME_IS_DEFAULT_DEF (oea->op)
-	  && !SSA_NAME_IS_DEFAULT_DEF (oeb->op)
-	  && !oea->stmt_to_insert
-	  && !oeb->stmt_to_insert
-	  && SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
+      gimple *stmta = SSA_NAME_DEF_STMT (oea->op);
+      gimple *stmtb = SSA_NAME_DEF_STMT (oeb->op);
+      basic_block bba = gimple_bb (stmta);
+      basic_block bbb = gimple_bb (stmtb);
+      if (bbb != bba)
 	{
-	  gimple *stmta = SSA_NAME_DEF_STMT (oea->op);
-	  gimple *stmtb = SSA_NAME_DEF_STMT (oeb->op);
-	  basic_block bba = gimple_bb (stmta);
-	  basic_block bbb = gimple_bb (stmtb);
-	  if (bbb != bba)
-	    {
-	      if (bb_rank[bbb->index] != bb_rank[bba->index])
-		return bb_rank[bbb->index] - bb_rank[bba->index];
-	    }
-	  else
-	    {
-	      bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
-	      bool db = reassoc_stmt_dominates_stmt_p (stmtb, stmta);
-	      if (da != db)
-		return da ? 1 : -1;
-	    }
+	  /* One of the SSA_NAMEs can be defined in oeN->stmt_to_insert
+	     but the other might not.  */
+	  if (!bba)
+	    return 1;
+	  if (!bbb)
+	    return -1;
+	  /* If neither is, compare bb_rank.  */
+	  if (bb_rank[bbb->index] != bb_rank[bba->index])
+	    return (bb_rank[bbb->index] >> 16) - (bb_rank[bba->index] >> 16);
 	}
 
-      if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
-	return SSA_NAME_VERSION (oeb->op) > SSA_NAME_VERSION (oea->op) ? 1 : -1;
-      else
-	return oeb->id > oea->id ? 1 : -1;
+      bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
+      bool db = reassoc_stmt_dominates_stmt_p (stmtb, stmta);
+      if (da != db)
+	return da ? 1 : -1;
+
+      return SSA_NAME_VERSION (oeb->op) > SSA_NAME_VERSION (oea->op) ? 1 : -1;
     }
 
-  if (oeb->rank != oea->rank)
-    return oeb->rank > oea->rank ? 1 : -1;
-  else
-    return oeb->id > oea->id ? 1 : -1;
+  return oeb->id > oea->id ? 1 : -1;
 }
 
 /* Add an operand entry to *OPS for the tree operand OP.  */
@@ -2379,7 +2390,16 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 	    r = otherrange + i;
 	  else
 	    r = otherrangep[i];
-	  fprintf (dump_file, " and %c[", r->in_p ? '+' : '-');
+	  if (r->exp
+	      && r->exp != range->exp
+	      && TREE_CODE (r->exp) == SSA_NAME)
+	    {
+	      fprintf (dump_file, " and ");
+	      print_generic_expr (dump_file, r->exp);
+	    }
+	  else
+	    fprintf (dump_file, " and");
+	  fprintf (dump_file, " %c[", r->in_p ? '+' : '-');
 	  print_generic_expr (dump_file, r->low);
 	  fprintf (dump_file, ", ");
 	  print_generic_expr (dump_file, r->high);
@@ -2880,6 +2900,134 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
   return any_changes;
 }
 
+/* Optimize x != 0 && y != 0 && z != 0 into (x | y | z) != 0
+   and similarly x != -1 && y != -1 && y != -1 into (x & y & z) != -1.  */
+
+static bool
+optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
+				  vec<operand_entry *> *ops,
+				  struct range_entry *ranges)
+{
+  int i;
+  unsigned int b;
+  bool any_changes = false;
+  auto_vec<int, 128> buckets;
+  auto_vec<int, 32> chains;
+  auto_vec<struct range_entry *, 32> candidates;
+
+  for (i = first; i < length; i++)
+    {
+      if (ranges[i].exp == NULL_TREE
+	  || TREE_CODE (ranges[i].exp) != SSA_NAME
+	  || !ranges[i].in_p
+	  || TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) <= 1
+	  || TREE_CODE (TREE_TYPE (ranges[i].exp)) == BOOLEAN_TYPE
+	  || ranges[i].low == NULL_TREE
+	  || ranges[i].low != ranges[i].high)
+	continue;
+
+      bool zero_p = integer_zerop (ranges[i].low);
+      if (!zero_p && !integer_all_onesp (ranges[i].low))
+	continue;
+
+      b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 2 + !zero_p;
+      if (buckets.length () <= b)
+	buckets.safe_grow_cleared (b + 1);
+      if (chains.length () <= (unsigned) i)
+	chains.safe_grow (i + 1);
+      chains[i] = buckets[b];
+      buckets[b] = i + 1;
+    }
+
+  FOR_EACH_VEC_ELT (buckets, b, i)
+    if (i && chains[i - 1])
+      {
+	int j, k = i;
+	for (j = chains[i - 1]; j; j = chains[j - 1])
+	  {
+	    gimple *gk = SSA_NAME_DEF_STMT (ranges[k - 1].exp);
+	    gimple *gj = SSA_NAME_DEF_STMT (ranges[j - 1].exp);
+	    if (reassoc_stmt_dominates_stmt_p (gk, gj))
+	      k = j;
+	  }
+	tree type1 = TREE_TYPE (ranges[k - 1].exp);
+	tree type2 = NULL_TREE;
+	bool strict_overflow_p = false;
+	candidates.truncate (0);
+	for (j = i; j; j = chains[j - 1])
+	  {
+	    tree type = TREE_TYPE (ranges[j - 1].exp);
+	    strict_overflow_p |= ranges[j - 1].strict_overflow_p;
+	    if (j == k
+		|| useless_type_conversion_p (type1, type))
+	      ;
+	    else if (type2 == NULL_TREE
+		     || useless_type_conversion_p (type2, type))
+	      {
+		if (type2 == NULL_TREE)
+		  type2 = type;
+		candidates.safe_push (&ranges[j - 1]);
+	      }
+	  }
+	unsigned l = candidates.length ();
+	for (j = i; j; j = chains[j - 1])
+	  {
+	    tree type = TREE_TYPE (ranges[j - 1].exp);
+	    if (j == k)
+	      continue;
+	    if (useless_type_conversion_p (type1, type))
+	      ;
+	    else if (type2 == NULL_TREE
+		     || useless_type_conversion_p (type2, type))
+	      continue;
+	    candidates.safe_push (&ranges[j - 1]);
+	  }
+	gimple_seq seq = NULL;
+	tree op = NULL_TREE;
+	unsigned int id;
+	struct range_entry *r;
+	candidates.safe_push (&ranges[k - 1]);
+	FOR_EACH_VEC_ELT (candidates, id, r)
+	  {
+	    gimple *g;
+	    if (id == 0)
+	      {
+		op = r->exp;
+		continue;
+	      }
+	    if (id == l)
+	      {
+		g = gimple_build_assign (make_ssa_name (type1), NOP_EXPR, op);
+		gimple_seq_add_stmt_without_update (&seq, g);
+		op = gimple_assign_lhs (g);
+	      }
+	    tree type = TREE_TYPE (r->exp);
+	    tree exp = r->exp;
+	    if (id >= l && !useless_type_conversion_p (type1, type))
+	      {
+		g = gimple_build_assign (make_ssa_name (type1), NOP_EXPR, exp);
+		gimple_seq_add_stmt_without_update (&seq, g);
+		exp = gimple_assign_lhs (g);
+	      }
+	    g = gimple_build_assign (make_ssa_name (id >= l ? type1 : type2),
+				     (b & 1) ? BIT_AND_EXPR : BIT_IOR_EXPR,
+				     op, exp);
+	    gimple_seq_add_stmt_without_update (&seq, g);
+	    op = gimple_assign_lhs (g);
+	  }
+	candidates.pop ();
+	if (update_range_test (&ranges[k - 1], NULL, candidates.address (),
+			       candidates.length (), opcode, ops, op,
+			       seq, true, ranges[k - 1].low,
+			       ranges[k - 1].low, strict_overflow_p))
+	  any_changes = true;
+	else
+	  gimple_seq_discard (seq);
+      }
+
+  return any_changes;
+}
+
 /* Attempt to optimize for signed a and b where b is known to be >= 0:
    a >= 0 && a < b into (unsigned) a < (unsigned) b
    a >= 0 && a <= b into (unsigned) a <= (unsigned) b  */
@@ -3202,6 +3350,8 @@ optimize_range_tests (enum tree_code opcode,
   if (lshift_cheap_p (optimize_function_for_speed_p (cfun)))
     any_changes |= optimize_range_tests_to_bit_test (opcode, first, length,
 						     ops, ranges);
+  any_changes |= optimize_range_tests_cmp_bitwise (opcode, first, length,
+						   ops, ranges);
   any_changes |= optimize_range_tests_var_bound (opcode, first, length, ops,
 						 ranges);
 
@@ -5483,6 +5633,7 @@ attempt_builtin_copysign (vec<operand_entry *> *ops)
 	      switch (gimple_call_combined_fn (old_call))
 		{
 		CASE_CFN_COPYSIGN:
+		CASE_CFN_COPYSIGN_FN:
 		  arg0 = gimple_call_arg (old_call, 0);
 		  arg1 = gimple_call_arg (old_call, 1);
 		  /* The first argument of copysign must be a constant,
@@ -5768,7 +5919,7 @@ reassociate_bb (basic_block bb)
 		     move it to the front.  This helps ensure that we generate
 		     (X & Y) & C rather than (X & C) & Y.  The former will
 		     often match a canonical bit test when we get to RTL.  */
-		  if (ops.length () != 2
+		  if (ops.length () > 2
 		      && (rhs_code == BIT_AND_EXPR
 		          || rhs_code == BIT_IOR_EXPR
 		          || rhs_code == BIT_XOR_EXPR)
@@ -5891,12 +6042,10 @@ branch_fixup (void)
 
       edge etrue = make_edge (cond_bb, merge_bb, EDGE_TRUE_VALUE);
       etrue->probability = profile_probability::even ();
-      etrue->count = cond_bb->count.apply_scale (1, 2);
       edge efalse = find_edge (cond_bb, then_bb);
       efalse->flags = EDGE_FALSE_VALUE;
       efalse->probability -= etrue->probability;
-      efalse->count -= etrue->count;
-      then_bb->count -= etrue->count;
+      then_bb->count -= etrue->count ();
 
       tree othervar = NULL_TREE;
       if (gimple_assign_rhs1 (use_stmt) == var)
@@ -5990,7 +6139,7 @@ init_reassoc (void)
 
   /* Set up rank for each BB  */
   for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
-    bb_rank[bbs[i]] = ++rank  << 16;
+    bb_rank[bbs[i]] = ++rank << 16;
 
   free (bbs);
   calculate_dominance_info (CDI_POST_DOMINATORS);

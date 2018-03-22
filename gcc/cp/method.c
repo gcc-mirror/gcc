@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -31,22 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "toplev.h"
 #include "common/common-target.h"
-
-/* Various flags to control the mangling process.  */
-
-enum mangling_flags
-{
-  /* No flags.  */
-  mf_none = 0,
-  /* The thing we are presently mangling is part of a template type,
-     rather than a fully instantiated type.  Therefore, we may see
-     complex expressions where we would normally expect to see a
-     simple integer constant.  */
-  mf_maybe_uninstantiated = 1,
-  /* When mangling a numeric value, use the form `_XX_' (instead of
-     just `XX') if the value has more than one digit.  */
-  mf_use_underscores_around_value = 2
-};
 
 static void do_build_copy_assign (tree);
 static void do_build_copy_constructor (tree);
@@ -206,7 +190,7 @@ make_alias_for (tree target, tree newid)
 			   TREE_CODE (target), newid, TREE_TYPE (target));
   DECL_LANG_SPECIFIC (alias) = DECL_LANG_SPECIFIC (target);
   cxx_dup_lang_specific_decl (alias);
-  DECL_CONTEXT (alias) = NULL;
+  DECL_CONTEXT (alias) = DECL_CONTEXT (target);
   TREE_READONLY (alias) = TREE_READONLY (target);
   TREE_THIS_VOLATILE (alias) = TREE_THIS_VOLATILE (target);
   TREE_PUBLIC (alias) = 0;
@@ -815,7 +799,7 @@ do_build_copy_assign (tree fndecl)
 	  parmvec = make_tree_vector_single (converted_parm);
 	  finish_expr_stmt
 	    (build_special_member_call (current_class_ref,
-					cp_assignment_operator_id (NOP_EXPR),
+					assign_op_identifier,
 					&parmvec,
 					base_binfo,
 					flags,
@@ -929,7 +913,8 @@ synthesize_method (tree fndecl)
   start_preparsed_function (fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
   stmt = begin_function_body ();
 
-  if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)
+  if (DECL_ASSIGNMENT_OPERATOR_P (fndecl)
+      && DECL_OVERLOADED_OPERATOR_IS (fndecl, NOP_EXPR))
     {
       do_build_copy_assign (fndecl);
       need_body = false;
@@ -953,7 +938,7 @@ synthesize_method (tree fndecl)
     }
 
   finish_function_body (stmt);
-  expand_or_defer_fn (finish_function (0));
+  expand_or_defer_fn (finish_function (/*inline_p=*/false));
 
   input_location = save_input_location;
 
@@ -965,7 +950,7 @@ synthesize_method (tree fndecl)
   pop_deferring_access_checks ();
 
   if (error_count != errorcount || warning_count != warningcount + werrorcount)
-    inform (input_location, "synthesized method %qD first required here ",
+    inform (input_location, "synthesized method %qD first required here",
 	    fndecl);
 }
 
@@ -1108,7 +1093,7 @@ get_copy_assign (tree type)
   int quals = (TYPE_HAS_CONST_COPY_ASSIGN (type)
 	       ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
   tree argtype = build_stub_type (type, quals, false);
-  tree fn = locate_fn_flags (type, cp_assignment_operator_id (NOP_EXPR), argtype,
+  tree fn = locate_fn_flags (type, assign_op_identifier, argtype,
 			     LOOKUP_NORMAL, tf_warning_or_error);
   if (fn == error_mark_node)
     return NULL_TREE;
@@ -1292,7 +1277,7 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
       if (diag)
 	{
 	  inform (DECL_SOURCE_LOCATION (fn),
-		  "defaulted constructor calls non-constexpr %qD", fn);
+		  "defaulted constructor calls non-%<constexpr%> %qD", fn);
 	  explain_invalid_constexpr_fn (fn);
 	}
     }
@@ -1319,6 +1304,15 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
       if (TREE_CODE (field) != FIELD_DECL
 	  || DECL_ARTIFICIAL (field))
 	continue;
+
+      /* Variant members only affect deletedness.  In particular, they don't
+	 affect the exception-specification of a user-provided destructor,
+	 which we're figuring out via get_defaulted_eh_spec.  So if we aren't
+	 asking if this is deleted, don't even look up the function; we don't
+	 want an error about a deleted function we aren't actually calling.  */
+      if (sfk == sfk_destructor && deleted_p == NULL
+	  && TREE_CODE (DECL_CONTEXT (field)) == UNION_TYPE)
+	break;
 
       mem_type = strip_array_types (TREE_TYPE (field));
       if (assign_p)
@@ -1565,7 +1559,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     case sfk_move_assignment:
     case sfk_copy_assignment:
       assign_p = true;
-      fnname = cp_assignment_operator_id (NOP_EXPR);
+      fnname = assign_op_identifier;
       break;
 
     case sfk_destructor:
@@ -1702,12 +1696,12 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	{
 	  /* Unlike for base ctor/op=/dtor, for operator delete it's fine
 	     to have a null fn (no class-specific op delete).  */
-	  fn = locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
+	  fn = locate_fn_flags (ctype, ovl_op_identifier (false, DELETE_EXPR),
 				ptr_type_node, flags, tf_none);
 	  if (fn && fn == error_mark_node)
 	    {
 	      if (complain & tf_error)
-		locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
+		locate_fn_flags (ctype, ovl_op_identifier (false, DELETE_EXPR),
 				 ptr_type_node, flags, complain);
 	      if (deleted_p)
 		*deleted_p = true;
@@ -1865,7 +1859,7 @@ maybe_explain_implicit_delete (tree decl)
 		      "%q#D is implicitly deleted because the default "
 		      "definition would be ill-formed:", decl);
 	      synthesized_method_walk (ctype, sfk, const_p,
-				       NULL, NULL, NULL, NULL, true,
+				       NULL, NULL, &deleted_p, NULL, true,
 				       &inh, parms);
 	    }
 	  else if (!comp_except_specs
@@ -2007,7 +2001,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 	  || kind == sfk_move_assignment)
 	{
 	  return_type = build_reference_type (type);
-	  name = cp_assignment_operator_id (NOP_EXPR);
+	  name = assign_op_identifier;
 	}
       else
 	name = ctor_identifier;
@@ -2077,7 +2071,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 
   if (!IDENTIFIER_CDTOR_P (name))
     /* Assignment operator.  */
-    SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
+    DECL_OVERLOADED_OPERATOR_CODE_RAW (fn) = OVL_OP_NOP_EXPR;
   else if (IDENTIFIER_CTOR_P (name))
     DECL_CXX_CONSTRUCTOR_P (fn) = true;
   else
@@ -2191,9 +2185,11 @@ defaulted_late_check (tree fn)
       || !compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
 		     TYPE_ARG_TYPES (TREE_TYPE (implicit_fn))))
     {
-      error ("defaulted declaration %q+D", fn);
-      error_at (DECL_SOURCE_LOCATION (fn),
-		"does not match expected signature %qD", implicit_fn);
+      error ("defaulted declaration %q+D does not match the "
+	     "expected signature", fn);
+      inform (DECL_SOURCE_LOCATION (fn),
+	      "expected signature: %qD", implicit_fn);
+      return;
     }
 
   if (DECL_DELETED_FN (implicit_fn))
@@ -2254,8 +2250,8 @@ defaulted_late_check (tree fn)
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	{
 	  error ("explicitly defaulted function %q+D cannot be declared "
-		 "as constexpr because the implicit declaration is not "
-		 "constexpr:", fn);
+		 "as %<constexpr%> because the implicit declaration is not "
+		 "%<constexpr%>:", fn);
 	  explain_implicit_non_constexpr (fn);
 	}
       DECL_DECLARED_CONSTEXPR_P (fn) = false;
@@ -2316,7 +2312,7 @@ defaultable_fn_check (tree fn)
   else if (DECL_DESTRUCTOR_P (fn))
     kind = sfk_destructor;
   else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
-	   && DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR)
+	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR))
     {
       if (copy_fn_p (fn))
 	kind = sfk_copy_assignment;

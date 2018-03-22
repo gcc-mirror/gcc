@@ -5,6 +5,7 @@
 
 class MyExceptionHandler { };
 
+int
 main() {
   try {
     throw MyExceptionHandler();

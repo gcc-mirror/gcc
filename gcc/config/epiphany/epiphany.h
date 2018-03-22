@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Argonaut EPIPHANY cpu.
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -146,12 +146,6 @@ along with GCC; see the file COPYING3.  If not see
 #define FASTEST_ALIGNMENT 64
 
 #define MALLOC_ABI_ALIGNMENT BIGGEST_ALIGNMENT
-
-/* Make strings dword-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
 
 /* Make arrays of chars dword-aligned for the same reasons.
    Also, align arrays of SImode items.  */
@@ -452,12 +446,6 @@ typedef struct GTY (()) machine_function
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET epiphany_stack_offset
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */
@@ -891,7 +879,7 @@ enum
 };
 
 extern int epiphany_normal_fp_rounding;
-#ifndef IN_LIBGCC2
+#ifndef USED_FOR_TARGET
 extern rtl_opt_pass *make_pass_mode_switch_use (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_resolve_sw_modes (gcc::context *ctxt);
 #endif

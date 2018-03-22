@@ -1,5 +1,5 @@
 /* FR30 specific functions.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -19,6 +19,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 /*{{{  Includes */ 
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -189,6 +191,9 @@ static int fr30_num_arg_regs (machine_mode, const_tree);
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE fr30_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT fr30_trampoline_init
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

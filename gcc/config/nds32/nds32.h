@@ -1,5 +1,5 @@
 /* Definitions of target machine of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -130,6 +130,10 @@ enum nds32_16bit_address_type
 /* Define the last integer register number.  */
 #define NDS32_LAST_GPR_REGNUM 31
 
+#define NDS32_FIRST_CALLEE_SAVE_GPR_REGNUM 6
+#define NDS32_LAST_CALLEE_SAVE_GPR_REGNUM \
+  (TARGET_REDUCED_REGS ? 10 : 14)
+
 /* Define double word alignment bits.  */
 #define NDS32_DOUBLE_WORD_ALIGNMENT 64
 
@@ -159,18 +163,18 @@ enum nds32_16bit_address_type
 /* This macro is used to return the register number for passing argument.
    We need to obey the following rules:
      1. If it is required MORE THAN one register,
-        we need to further check if it really needs to be
-        aligned on double words.
-          a) If double word alignment is necessary,
-             the register number must be even value.
-          b) Otherwise, the register number can be odd or even value.
+	we need to further check if it really needs to be
+	aligned on double words.
+	  a) If double word alignment is necessary,
+	     the register number must be even value.
+	  b) Otherwise, the register number can be odd or even value.
      2. If it is required ONLY one register,
-        the register number can be odd or even value.  */
-#define NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG(reg_offset, mode, type)  \
-  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                     \
-   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)          \
-      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)      \
-      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))                \
+	the register number can be odd or even value.  */
+#define NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG(reg_offset, mode, type) \
+  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                    \
+   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)         \
+      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)     \
+      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))               \
    : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))
 
 /* This macro is to check if there are still available registers
@@ -195,6 +199,19 @@ enum nds32_16bit_address_type
    it is required to be saved.  */
 #define NDS32_REQUIRED_CALLEE_SAVED_P(regno)                  \
   ((!call_used_regs[regno]) && (df_regs_ever_live_p (regno)))
+
+/* This macro is to check if the push25/pop25 are available to be used
+   for code generation.  Because pop25 also performs return behavior,
+   the instructions may not be available for some cases.
+   If we want to use push25/pop25, all the following conditions must
+   be satisfied:
+     1. TARGET_V3PUSH is set.
+     2. Current function is not an ISR function.
+     3. Current function is not a variadic function.*/
+#define NDS32_V3PUSH_AVAILABLE_P  \
+  (TARGET_V3PUSH \
+   && !nds32_isr_function_p (current_function_decl) \
+   && (cfun->machine->va_args_size == 0))
 
 /* ------------------------------------------------------------------------ */
 
@@ -345,7 +362,17 @@ enum nds32_builtins
   NDS32_BUILTIN_MTSR,
   NDS32_BUILTIN_MTUSR,
   NDS32_BUILTIN_SETGIE_EN,
-  NDS32_BUILTIN_SETGIE_DIS
+  NDS32_BUILTIN_SETGIE_DIS,
+  NDS32_BUILTIN_FFB,
+  NDS32_BUILTIN_FFMISM,
+  NDS32_BUILTIN_FLMISM,
+  NDS32_BUILTIN_UALOAD_HW,
+  NDS32_BUILTIN_UALOAD_W,
+  NDS32_BUILTIN_UALOAD_DW,
+  NDS32_BUILTIN_UASTORE_HW,
+  NDS32_BUILTIN_UASTORE_W,
+  NDS32_BUILTIN_UASTORE_DW,
+  NDS32_BUILTIN_COUNT
 };
 
 /* ------------------------------------------------------------------------ */
@@ -430,34 +457,8 @@ enum nds32_builtins
 
 /* Run-time Target Specification.  */
 
-#define TARGET_CPU_CPP_BUILTINS()                     \
-  do                                                  \
-    {                                                 \
-      builtin_define ("__nds32__");                   \
-                                                      \
-      if (TARGET_ISA_V2)                              \
-        builtin_define ("__NDS32_ISA_V2__");          \
-      if (TARGET_ISA_V3)                              \
-        builtin_define ("__NDS32_ISA_V3__");          \
-      if (TARGET_ISA_V3M)                             \
-        builtin_define ("__NDS32_ISA_V3M__");         \
-                                                      \
-      if (TARGET_BIG_ENDIAN)                          \
-        builtin_define ("__big_endian__");            \
-      if (TARGET_REDUCED_REGS)                        \
-        builtin_define ("__NDS32_REDUCED_REGS__");    \
-      if (TARGET_CMOV)                                \
-        builtin_define ("__NDS32_CMOV__");            \
-      if (TARGET_PERF_EXT)                            \
-        builtin_define ("__NDS32_PERF_EXT__");        \
-      if (TARGET_16_BIT)                              \
-        builtin_define ("__NDS32_16_BIT__");          \
-      if (TARGET_GP_DIRECT)                           \
-        builtin_define ("__NDS32_GP_DIRECT__");       \
-                                                      \
-      builtin_assert ("cpu=nds32");                   \
-      builtin_assert ("machine=nds32");               \
-    } while (0)
+#define TARGET_CPU_CPP_BUILTINS() \
+  nds32_cpu_cpp_builtins (pfile)
 
 
 /* Defining Data Structures for Per-function Information.  */
@@ -526,7 +527,7 @@ enum nds32_builtins
    from 0 to just below FIRST_PSEUDO_REGISTER.
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
-#define FIRST_PSEUDO_REGISTER 34
+#define FIRST_PSEUDO_REGISTER 101
 
 /* An initializer that says which registers are used for fixed
    purposes all throughout the compiled code and are therefore
@@ -542,19 +543,33 @@ enum nds32_builtins
 
    reserved for assembler : $r15
    reserved for other use : $r24, $r25, $r26, $r27 */
-#define FIXED_REGISTERS                 \
-{ /* r0  r1  r2  r3  r4  r5  r6  r7  */ \
-      0,  0,  0,  0,  0,  0,  0,  0,    \
-  /* r8  r9  r10 r11 r12 r13 r14 r15 */ \
-      0,  0,  0,  0,  0,  0,  0,  1,    \
-  /* r16 r17 r18 r19 r20 r21 r22 r23 */ \
-      0,  0,  0,  0,  0,  0,  0,  0,    \
-  /* r24 r25 r26 r27 r28 r29 r30 r31 */ \
-      1,  1,  1,  1,  0,  1,  0,  1,    \
-  /* ARG_POINTER:32 */                  \
-      1,                                \
-  /* FRAME_POINTER:33 */                \
-      1                                 \
+#define FIXED_REGISTERS \
+{ /* r0   r1   r2   r3   r4   r5   r6   r7   */ \
+      0,   0,   0,   0,   0,   0,   0,   0,     \
+  /* r8   r9   r10  r11  r12  r13  r14  r15  */ \
+      0,   0,   0,   0,   0,   0,   0,   1,     \
+  /* r16  r17  r18  r19  r20  r21  r22  r23  */ \
+      0,   0,   0,   0,   0,   0,   0,   0,     \
+  /* r24  r25  r26  r27  r28  r29  r30  r31  */ \
+      1,   1,   1,   1,   0,   1,   0,   1,     \
+  /* AP   FP    Reserved.................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1                     \
 }
 
 /* Identifies the registers that are not available for
@@ -563,34 +578,58 @@ enum nds32_builtins
 
    0 : callee-save registers
    1 : caller-save registers */
-#define CALL_USED_REGISTERS             \
-{ /* r0  r1  r2  r3  r4  r5  r6  r7  */ \
-      1,  1,  1,  1,  1,  1,  0,  0,    \
-  /* r8  r9  r10 r11 r12 r13 r14 r15 */ \
-      0,  0,  0,  0,  0,  0,  0,  1,    \
-  /* r16 r17 r18 r19 r20 r21 r22 r23 */ \
-      1,  1,  1,  1,  1,  1,  1,  1,    \
-  /* r24 r25 r26 r27 r28 r29 r30 r31 */ \
-      1,  1,  1,  1,  0,  1,  0,  1,    \
-  /* ARG_POINTER:32 */                  \
-      1,                                \
-  /* FRAME_POINTER:33 */                \
-      1                                 \
+#define CALL_USED_REGISTERS \
+{ /* r0   r1   r2   r3   r4   r5   r6   r7   */ \
+      1,   1,   1,   1,   1,   1,   0,   0,     \
+  /* r8   r9   r10  r11  r12  r13  r14  r15  */ \
+      0,   0,   0,   0,   0,   0,   0,   1,     \
+  /* r16  r17  r18  r19  r20  r21  r22  r23  */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* r24  r25  r26  r27  r28  r29  r30  r31  */ \
+      1,   1,   1,   1,   0,   1,   0,   1,     \
+  /* AP   FP    Reserved.................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1                     \
 }
 
 /* In nds32 target, we have three levels of registers:
      LOW_COST_REGS    : $r0 ~ $r7
      MIDDLE_COST_REGS : $r8 ~ $r11, $r16 ~ $r19
      HIGH_COST_REGS   : $r12 ~ $r14, $r20 ~ $r31 */
-#define REG_ALLOC_ORDER           \
-{                                 \
-   0,  1,  2,  3,  4,  5,  6,  7, \
-   8,  9, 10, 11, 16, 17, 18, 19, \
-  12, 13, 14, 15, 20, 21, 22, 23, \
-  24, 25, 26, 27, 28, 29, 30, 31, \
-  32,                             \
-  33                              \
+#define REG_ALLOC_ORDER \
+{   0,   1,   2,   3,   4,   5,   6,   7, \
+   16,  17,  18,  19,   9,  10,  11,  12, \
+   13,  14,  8,   15,  20,  21,  22,  23, \
+   24,  25,  26,  27,  28,  29,  30,  31, \
+   32,  33,  34,  35,  36,  37,  38,  39, \
+   40,  41,  42,  43,  44,  45,  46,  47, \
+   48,  49,  50,  51,  52,  53,  54,  55, \
+   56,  57,  58,  59,  60,  61,  62,  63, \
+   64,  65,  66,  67,  68,  69,  70,  71, \
+   72,  73,  74,  75,  76,  77,  78,  79, \
+   80,  81,  82,  83,  84,  85,  86,  87, \
+   88,  89,  90,  91,  92,  93,  94,  95, \
+   96,  97,  98,  99, 100,                \
 }
+
+/* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
+   to be rearranged based on optimizing for speed or size.  */
+#define ADJUST_REG_ALLOC_ORDER nds32_adjust_reg_alloc_order ()
 
 /* Tell IRA to use the order we define rather than messing it up with its
    own cost calculations.  */
@@ -609,8 +648,11 @@ enum nds32_builtins
 enum reg_class
 {
   NO_REGS,
+  R5_REG,
+  R8_REG,
   R15_TA_REG,
   STACK_REG,
+  FRAME_POINTER_REG,
   LOW_REGS,
   MIDDLE_REGS,
   HIGH_REGS,
@@ -625,8 +667,11 @@ enum reg_class
 #define REG_CLASS_NAMES \
 {                       \
   "NO_REGS",            \
+  "R5_REG",             \
+  "R8_REG",             \
   "R15_TA_REG",         \
   "STACK_REG",          \
+  "FRAME_POINTER_REG",  \
   "LOW_REGS",           \
   "MIDDLE_REGS",        \
   "HIGH_REGS",          \
@@ -636,16 +681,30 @@ enum reg_class
 }
 
 #define REG_CLASS_CONTENTS \
-{                                                            \
-  {0x00000000, 0x00000000}, /* NO_REGS     :              */ \
-  {0x00008000, 0x00000000}, /* R15_TA_REG  : 15           */ \
-  {0x80000000, 0x00000000}, /* STACK_REG   : 31           */ \
-  {0x000000ff, 0x00000000}, /* LOW_REGS    : 0-7          */ \
-  {0x000f0fff, 0x00000000}, /* MIDDLE_REGS : 0-11, 16-19  */ \
-  {0xfff07000, 0x00000000}, /* HIGH_REGS   : 12-14, 20-31 */ \
-  {0xffffffff, 0x00000000}, /* GENERAL_REGS: 0-31         */ \
-  {0x00000000, 0x00000003}, /* FRAME_REGS  : 32, 33       */ \
-  {0xffffffff, 0x00000003}  /* ALL_REGS    : 0-31, 32, 33 */ \
+{ /* NO_REGS                                    */  \
+  {0x00000000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* R5_REG              : 5                    */  \
+  {0x00000020, 0x00000000, 0x00000000, 0x00000000}, \
+  /* R8_REG              : 8                    */  \
+  {0x00000100, 0x00000000, 0x00000000, 0x00000000}, \
+  /* R15_TA_REG          : 15                   */  \
+  {0x00008000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* STACK_REG           : 31                   */  \
+  {0x80000000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* FRAME_POINTER_REG   : 28                   */  \
+  {0x10000000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* LOW_REGS            : 0-7                  */  \
+  {0x000000ff, 0x00000000, 0x00000000, 0x00000000}, \
+  /* MIDDLE_REGS         : 0-11, 16-19          */  \
+  {0x000f0fff, 0x00000000, 0x00000000, 0x00000000}, \
+  /* HIGH_REGS           : 12-14, 20-31         */  \
+  {0xfff07000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* GENERAL_REGS        : 0-31                 */  \
+  {0xffffffff, 0x00000000, 0x00000000, 0x00000000}, \
+  /* FRAME_REGS          : 32, 33               */  \
+  {0x00000000, 0x00000003, 0x00000000, 0x00000000}, \
+  /* ALL_REGS            : 0-100                */  \
+  {0xffffffff, 0xffffffff, 0xffffffff, 0x0000001f}  \
 }
 
 #define REGNO_REG_CLASS(regno) nds32_regno_reg_class (regno)
@@ -680,8 +739,6 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 1
-
-#define STARTING_FRAME_OFFSET 0
 
 #define STACK_POINTER_OFFSET 0
 
@@ -761,13 +818,13 @@ enum reg_class
    The trampoline code for nds32 target must contains following parts:
 
      1. instructions (4 * 4 = 16 bytes):
-          get $pc first
-          load chain_value to static chain register via $pc
-          load nested function address to $r15 via $pc
-          jump to desired nested function via $r15
+	  get $pc first
+	  load chain_value to static chain register via $pc
+	  load nested function address to $r15 via $pc
+	  jump to desired nested function via $r15
      2. data (4 * 2 = 8 bytes):
-          chain_value
-          nested function address
+	  chain_value
+	  nested function address
 
    Please check nds32.c implementation for more information.  */
 #define TRAMPOLINE_SIZE 24
@@ -794,7 +851,7 @@ enum reg_class
 
 #define CONSTANT_ADDRESS_P(x) (CONSTANT_P (x) && GET_CODE (x) != CONST_DOUBLE)
 
-#define MAX_REGS_PER_ADDRESS 2
+#define MAX_REGS_PER_ADDRESS 3
 
 
 /* Anchored Addresses.  */
@@ -809,6 +866,10 @@ enum reg_class
    A value of 1 is the default;
    other values are interpreted relative to that.  */
 #define BRANCH_COST(speed_p, predictable_p) ((speed_p) ? 2 : 0)
+
+/* Override BRANCH_COST heuristic which empirically produces worse
+   performance for removing short circuiting from the logical ops.  */
+#define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
 #define SLOW_BYTE_ACCESS 1
 
@@ -858,14 +919,20 @@ enum reg_class
 
 #define LOCAL_LABEL_PREFIX "."
 
-#define REGISTER_NAMES                                            \
-{                                                                 \
-  "$r0",  "$r1",  "$r2",  "$r3",  "$r4",  "$r5",  "$r6",  "$r7",  \
+#define REGISTER_NAMES \
+{ "$r0",  "$r1",  "$r2",  "$r3",  "$r4",  "$r5",  "$r6",  "$r7",  \
   "$r8",  "$r9",  "$r10", "$r11", "$r12", "$r13", "$r14", "$ta",  \
   "$r16", "$r17", "$r18", "$r19", "$r20", "$r21", "$r22", "$r23", \
   "$r24", "$r25", "$r26", "$r27", "$fp",  "$gp",  "$lp",  "$sp",  \
-  "$AP",                                                          \
-  "$SFP"                                                          \
+  "$AP",  "$SFP", "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA"                            \
 }
 
 /* Output normal jump table entry.  */
@@ -906,10 +973,10 @@ enum reg_class
   do                                                   \
     {                                                  \
       /* Because our jump table is in text section,    \
-         we need to make sure 2-byte alignment after   \
-         the jump table for instructions fetch.  */    \
+	 we need to make sure 2-byte alignment after   \
+	 the jump table for instructions fetch.  */    \
       if (GET_MODE (PATTERN (table)) == QImode)        \
-        ASM_OUTPUT_ALIGN (stream, 1);                  \
+	ASM_OUTPUT_ALIGN (stream, 1);                  \
       asm_fprintf (stream, "\t! Jump Table End\n");    \
     }  while (0)
 
@@ -1002,6 +1069,11 @@ enum reg_class
    an integral mode and stored by a store-flag instruction ('cstoremode4')
    when the condition is true.  */
 #define STORE_FLAG_VALUE 1
+
+/* A C expression that indicates whether the architecture defines a value for
+   clz or ctz with a zero operand.  In nds32 clz for 0 result 32 is defined
+   in ISA spec */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 
 /* An alias for the machine mode for pointers.  */
 #define Pmode SImode

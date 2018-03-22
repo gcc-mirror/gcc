@@ -11,6 +11,6 @@
 contains
   subroutine bar (s)
     character(len=*), optional :: s
-    if (.not. present (S)) call abort
+    if (.not. present (S)) STOP 1
   end subroutine bar
 end

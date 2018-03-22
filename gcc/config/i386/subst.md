@@ -1,5 +1,5 @@
 ;; GCC machine description for AVX512F instructions
-;; Copyright (C) 2013-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -37,8 +37,7 @@
    V8DI  V4DI  V2DI
    V16SF V8SF  V4SF
    V8DF  V4DF  V2DF
-   QI HI SI DI SF DF
-   CCFP CCFPU])
+   QI HI SI DI SF DF])
 
 (define_subst_attr "mask_name" "mask" "" "_mask")
 (define_subst_attr "mask_applied" "mask" "false" "true")
@@ -62,8 +61,8 @@
 (define_subst_attr "store_mask_predicate" "mask" "nonimmediate_operand" "register_operand")
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
 (define_subst_attr "mask_prefix2" "mask" "maybe_vex" "evex")
-(define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex")
-(define_subst_attr "mask_prefix4" "mask" "orig,orig,vex" "evex")
+(define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex,evex")
+(define_subst_attr "mask_prefix4" "mask" "orig,orig,vex" "evex,evex,evex")
 (define_subst_attr "mask_expand_op3" "mask" "3" "5")
 
 (define_subst "mask"
@@ -183,6 +182,16 @@
 	  UNSPEC_EMBEDDED_ROUNDING))
 ])
 
+(define_subst "round_saeonly"
+  [(set (match_operand:CCFP 0)
+        (match_operand:CCFP 1))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+	(unspec:CCFP [(match_dup 1)
+	  (match_operand:SI 2 "const48_operand")]
+	  UNSPEC_EMBEDDED_ROUNDING))
+])
+
 (define_subst_attr "round_expand_name" "round_expand" "" "_round")
 (define_subst_attr "round_expand_nimm_predicate" "round_expand" "nonimmediate_operand" "register_operand")
 (define_subst_attr "round_expand_operand" "round_expand" "" ", operands[5]")
@@ -262,6 +271,7 @@
 (define_subst_attr "round_scalar_mask_op3" "round_scalar" "" "<round_scalar_mask_operand3>")
 (define_subst_attr "round_scalar_constraint" "round_scalar" "vm" "v")
 (define_subst_attr "round_scalar_prefix" "round_scalar" "vex" "evex")
+(define_subst_attr "round_scalar_nimm_predicate" "round_scalar" "vector_operand" "register_operand")
 
 (define_subst "round_scalar"
   [(set (match_operand:SUBST_V 0)

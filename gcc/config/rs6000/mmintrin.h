@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -49,7 +49,7 @@
    C language 64-bit scalar operation or optimized to use the newer
    128-bit SSE/Altivec operations.  We recomend this for new
    applications.  */
-#warning "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this warning."
+#error "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this error."
 #endif
 
 #ifndef _MMINTRIN_H_INCLUDED
@@ -463,8 +463,8 @@ _mm_add_pi32 (__m64 __m1, __m64 __m2)
 #if _ARCH_PWR9
   __vector signed int a, b, c;
 
-  a = (__vector signed int)vec_splats (__m1, __m1);
-  b = (__vector signed int)vec_splats (__m2, __m2);
+  a = (__vector signed int)vec_splats (__m1);
+  b = (__vector signed int)vec_splats (__m2);
   c = vec_add (a, b);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)c, 0));
 #else
@@ -854,7 +854,7 @@ _mm_cmpeq_pi32 (__m64 __m1, __m64 __m2)
 
   a = (__vector signed int)vec_splats (__m1);
   b = (__vector signed int)vec_splats (__m2);
-  c = (__vector signed short)vec_cmpeq (a, b);
+  c = (__vector signed int)vec_cmpeq (a, b);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)c, 0));
 #else
   __m64_union m1, m2, res;
@@ -883,7 +883,7 @@ _mm_cmpgt_pi32 (__m64 __m1, __m64 __m2)
 
   a = (__vector signed int)vec_splats (__m1);
   b = (__vector signed int)vec_splats (__m2);
-  c = (__vector signed short)vec_cmpgt (a, b);
+  c = (__vector signed int)vec_cmpgt (a, b);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)c, 0));
 #else
   __m64_union m1, m2, res;

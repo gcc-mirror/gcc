@@ -1,5 +1,5 @@
 /* Wrapper for ar/ranlib/nm to pass the LTO plugin.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Andi Kleen.
 
 This file is part of GCC.
@@ -194,14 +194,6 @@ main (int ac, char **av)
 #ifdef CROSS_DIRECTORY_STRUCTURE
       real_exe_name = concat (target_machine, "-", PERSONALITY, NULL);
 #endif
-      /* Do not search original location in the same folder.  */
-      char *exe_folder = lrealpath (av[0]);
-      exe_folder[strlen (exe_folder) - strlen (lbasename (exe_folder))] = '\0';
-      char *location = concat (exe_folder, PERSONALITY, NULL);
-
-      if (access (location, X_OK) == 0)
-	remove_prefix (exe_folder, &path);
-
       exe_name = find_a_file (&path, real_exe_name, X_OK);
       if (!exe_name)
 	{

@@ -1,5 +1,5 @@
 /* Language-dependent hooks for LTO.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "lto-tree.h"
 #include "lto.h"
-#include "cilk.h"
 #include "stringpool.h"
 #include "attribs.h"
 
@@ -58,46 +57,82 @@ static tree handle_format_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
 static tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
 
+/* Helper to define attribute exclusions.  */
+#define ATTR_EXCL(name, function, type, variable)	\
+  { name, function, type, variable }
+
+/* Define attributes that are mutually exclusive with one another.  */
+static const struct attribute_spec::exclusions attr_noreturn_exclusions[] =
+{
+  ATTR_EXCL ("noreturn", true, true, true),
+  ATTR_EXCL ("alloc_align", true, true, true),
+  ATTR_EXCL ("alloc_size", true, true, true),
+  ATTR_EXCL ("const", true, true, true),
+  ATTR_EXCL ("malloc", true, true, true),
+  ATTR_EXCL ("pure", true, true, true),
+  ATTR_EXCL ("returns_twice", true, true, true),
+  ATTR_EXCL ("warn_unused_result", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_returns_twice_exclusions[] =
+{
+  ATTR_EXCL ("noreturn", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
+{
+  ATTR_EXCL ("const", true, true, true),
+  ATTR_EXCL ("noreturn", true, true, true),
+  ATTR_EXCL ("pure", true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
 /* Table of machine-independent attributes supported in GIMPLE.  */
 const struct attribute_spec lto_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       do_diagnostic } */
-  { "noreturn",               0, 0, true,  false, false,
-			      handle_noreturn_attribute, false },
-  { "leaf",		      0, 0, true,  false, false,
-			      handle_leaf_attribute, false },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "noreturn",               0, 0, true,  false, false, false,
+			      handle_noreturn_attribute,
+			      attr_noreturn_exclusions },
+  { "leaf",		      0, 0, true,  false, false, false,
+			      handle_leaf_attribute, NULL },
   /* The same comments as for noreturn attributes apply to const ones.  */
-  { "const",                  0, 0, true,  false, false,
-			      handle_const_attribute, false },
-  { "malloc",                 0, 0, true,  false, false,
-			      handle_malloc_attribute, false },
-  { "pure",                   0, 0, true,  false, false,
-			      handle_pure_attribute, false },
-  { "no vops",                0, 0, true,  false, false,
-			      handle_novops_attribute, false },
-  { "nonnull",                0, -1, false, true, true,
-			      handle_nonnull_attribute, false },
-  { "nothrow",                0, 0, true,  false, false,
-			      handle_nothrow_attribute, false },
-  { "patchable_function_entry", 1, 2, true, false, false,
+  { "const",                  0, 0, true,  false, false, false,
+			      handle_const_attribute,
+			      attr_const_pure_exclusions },
+  { "malloc",                 0, 0, true,  false, false, false,
+			      handle_malloc_attribute, NULL },
+  { "pure",                   0, 0, true,  false, false, false,
+			      handle_pure_attribute,
+			      attr_const_pure_exclusions },
+  { "no vops",                0, 0, true,  false, false, false,
+			      handle_novops_attribute, NULL },
+  { "nonnull",                0, -1, false, true, true, false,
+			      handle_nonnull_attribute, NULL },
+  { "nothrow",                0, 0, true,  false, false, false,
+			      handle_nothrow_attribute, NULL },
+  { "patchable_function_entry", 1, 2, true, false, false, false,
 			      handle_patchable_function_entry_attribute,
-			      false },
-  { "returns_twice",          0, 0, true,  false, false,
-			      handle_returns_twice_attribute, false },
-  { "sentinel",               0, 1, false, true, true,
-			      handle_sentinel_attribute, false },
-  { "type generic",           0, 0, false, true, true,
-			      handle_type_generic_attribute, false },
-  { "fn spec",	 	      1, 1, false, true, true,
-			      handle_fnspec_attribute, false },
-  { "transaction_pure",	      0, 0, false, true, true,
-			      handle_transaction_pure_attribute, false },
+			      NULL },
+  { "returns_twice",          0, 0, true,  false, false, false,
+			      handle_returns_twice_attribute,
+			      attr_returns_twice_exclusions },
+  { "sentinel",               0, 1, false, true, true, false,
+			      handle_sentinel_attribute, NULL },
+  { "type generic",           0, 0, false, true, true, false,
+			      handle_type_generic_attribute, NULL },
+  { "fn spec",	 	      1, 1, false, true, true, false,
+			      handle_fnspec_attribute, NULL },
+  { "transaction_pure",	      0, 0, false, true, true, false,
+			      handle_transaction_pure_attribute, NULL },
   /* For internal use only.  The leading '*' both prevents its usage in
      source code and signals that it may be overridden by machine tables.  */
-  { "*tm regparm",            0, 0, false, true, true,
-			      ignore_attribute, false },
-  { NULL,                     0, 0, false, false, false, NULL, false }
+  { "*tm regparm",            0, 0, false, true, true, false,
+			      ignore_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -105,13 +140,13 @@ const struct attribute_spec lto_attribute_table[] =
 
 const struct attribute_spec lto_format_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "format",                 3, 3, false, true,  true,
-			      handle_format_attribute, false },
-  { "format_arg",             1, 1, false, true,  true,
-			      handle_format_arg_attribute, false },
-  { NULL,                     0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "format",                 3, 3, false, true,  true, false,
+			      handle_format_attribute, NULL },
+  { "format_arg",             1, 1, false, true,  true, false,
+			      handle_format_arg_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 enum built_in_attribute
@@ -265,6 +300,10 @@ handle_const_attribute (tree *node, tree ARG_UNUSED (name),
 			tree ARG_UNUSED (args), int ARG_UNUSED (flags),
 			bool * ARG_UNUSED (no_add_attrs))
 {
+  if (TREE_CODE (*node) != FUNCTION_DECL
+      || !DECL_BUILT_IN (*node))
+    inform (UNKNOWN_LOCATION, "%s:%s: %E: %E", __FILE__, __func__, *node, name);
+
   tree type = TREE_TYPE (*node);
 
   /* See FIXME comment on noreturn in c_common_attribute_table.  */
@@ -854,11 +893,13 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
          flag_pie is 2.  */
       flag_pie = MAX (flag_pie, flag_pic);
       flag_pic = flag_pie;
+      flag_shlib = 0;
       break;
 
     case LTO_LINKER_OUTPUT_EXEC: /* Normal executable */
       flag_pic = 0;
       flag_pie = 0;
+      flag_shlib = 0;
       break;
 
     case LTO_LINKER_OUTPUT_UNKNOWN:
@@ -971,7 +1012,16 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
       if (inner_type != NULL_TREE)
 	return build_complex_type (inner_type);
     }
-  else if (VECTOR_MODE_P (mode))
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+						    GET_MODE_NUNITS (mode));
+      tree bool_type = build_nonstandard_boolean_type (elem_bits);
+      return build_vector_type_for_mode (bool_type, mode);
+    }
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = lto_type_for_mode (inner_mode, unsigned_p);
@@ -1259,9 +1309,6 @@ lto_init (void)
       lto_define_builtins (build_reference_type (va_list_type_node),
 			   va_list_type_node);
     }
-
-  if (flag_cilkplus)
-    cilk_init_builtins ();
 
   targetm.init_builtins ();
   build_common_builtin_nodes ();

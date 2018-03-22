@@ -1,5 +1,5 @@
 /* Wrapper to call lto.  Used by collect2 and the linker plugin.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    Factored out of collect2 by Rafael Espindola <espindola@google.com>
 
@@ -282,7 +282,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	case OPT_fopenmp:
 	case OPT_fopenacc:
-	case OPT_fcilkplus:
 	case OPT_fcheck_pointer_bounds:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
@@ -292,7 +291,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  /* -fopenmp > -fno-openmp,
 	     -fopenacc > -fno-openacc,
-	     -fcilkplus > -fno-cilkplus,
 	     -fcheck_pointer_bounds > -fcheck_pointer_bounds  */
 	  else if (foption->value > (*decoded_options)[j].value)
 	    (*decoded_options)[j] = *foption;
@@ -549,7 +547,6 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fopenmp:
 	case OPT_fopenacc:
 	case OPT_fopenacc_dim_:
-	case OPT_fcilkplus:
 	case OPT_foffload_abi_:
 	case OPT_O:
 	case OPT_Ofast:
@@ -626,7 +623,6 @@ append_linker_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 
 	case OPT_fopenmp:
 	case OPT_fopenacc:
-	case OPT_fcilkplus:
 	  /* Ignore -fno-XXX form of these options, as otherwise
 	     corresponding builtins will not be enabled.  */
 	  if (option->value == 0)

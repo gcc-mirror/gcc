@@ -117,6 +117,10 @@ AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
 XCFLAGS="-Wall -Wextra"
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+XCFLAGS="$XCFLAGS $CET_FLAGS"
+
 AC_SUBST(XCFLAGS)
 
 if test "${multilib}" = "yes"; then

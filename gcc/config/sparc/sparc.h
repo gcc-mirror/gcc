@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -579,12 +579,6 @@ extern enum cmodel sparc_cmodel;
 #define STACK_SAVEAREA_MODE(LEVEL) \
   ((LEVEL) == SAVE_NONLOCAL ? (TARGET_ARCH64 ? TImode : DImode) : Pmode)
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
@@ -777,13 +771,29 @@ extern enum cmodel sparc_cmodel;
 /* The soft frame pointer does not have the stack bias applied.  */
 #define FRAME_POINTER_REGNUM 101
 
-/* Given the stack bias, the stack pointer isn't actually aligned.  */
 #define INIT_EXPANDERS							 \
   do {									 \
-    if (crtl->emit.regno_pointer_align && SPARC_STACK_BIAS)	 \
+    if (crtl->emit.regno_pointer_align)					 \
       {									 \
-	REGNO_POINTER_ALIGN (STACK_POINTER_REGNUM) = BITS_PER_UNIT;	 \
-	REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = BITS_PER_UNIT; \
+	/* The biased stack pointer is only aligned on BITS_PER_UNIT.  */\
+	if (SPARC_STACK_BIAS)						 \
+	  {								 \
+	    REGNO_POINTER_ALIGN (STACK_POINTER_REGNUM)			 \
+	      = BITS_PER_UNIT;	 					 \
+	    REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM)		 \
+	      = BITS_PER_UNIT;						 \
+	  }								 \
+									 \
+	/* In 32-bit mode, not everything is double-word aligned.  */	 \
+	if (TARGET_ARCH32)						 \
+	  {								 \
+	    REGNO_POINTER_ALIGN (VIRTUAL_INCOMING_ARGS_REGNUM)		 \
+	      = BITS_PER_WORD;						 \
+	    REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM)		 \
+	      = BITS_PER_WORD;						 \
+	    REGNO_POINTER_ALIGN (VIRTUAL_OUTGOING_ARGS_REGNUM)		 \
+	      = BITS_PER_WORD;						 \
+	  }								 \
       }									 \
   } while (0)
 
@@ -798,11 +808,14 @@ extern enum cmodel sparc_cmodel;
 
 #define GLOBAL_OFFSET_TABLE_REGNUM 23
 
-/* Register which holds offset table for position-independent
-   data references.  */
+/* Register which holds offset table for position-independent data references.
+   The original SPARC ABI imposes no requirement on the choice of the register
+   so we use a pseudo-register to make sure it is properly saved and restored
+   around calls to setjmp.  Now the ABI of VxWorks RTP makes it live on entry
+   to PLT entries so we use the canonical GOT register in this case.  */
 
 #define PIC_OFFSET_TABLE_REGNUM \
-  (flag_pic ? GLOBAL_OFFSET_TABLE_REGNUM : INVALID_REGNUM)
+  (TARGET_VXWORKS_RTP && flag_pic ? GLOBAL_OFFSET_TABLE_REGNUM : INVALID_REGNUM)
 
 /* Pick a default value we can notice from override_options:
    !v9: Default is on.
@@ -1048,12 +1061,6 @@ extern char leaf_reg_remap[];
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset of first parameter from the argument pointer register value.
    !v9: This is 64 for the ins and locals, plus 4 for the struct-return reg

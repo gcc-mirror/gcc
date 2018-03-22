@@ -26,6 +26,6 @@ struct F : D
   F (int &, const int &, const A &);
   bool foo (int &, bool) const;
 };
-bool D::foo (int &, bool) const {}
+bool D::foo (int &, bool) const { return true; }
 F::F (int &, const int &, const A &) {}
-bool F::foo (int &, bool) const {}
+bool F::foo (int &, bool) const { return false; }

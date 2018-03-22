@@ -1,5 +1,5 @@
 /* SSA name expresssons routines
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -74,6 +74,7 @@ extern void set_range_info_raw (tree, enum value_range_type,
 extern bool get_range_info (const_tree, wide_int *, wide_int *);
 extern void set_nonzero_bits (tree, const wide_int &);
 extern wide_int get_nonzero_bits (const_tree);
+extern void get_nonzero_bits_as_range (irange &, const_tree);
 extern bool ssa_name_has_boolean_range (tree);
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (struct function *);
@@ -86,8 +87,7 @@ extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
 extern void mark_ptr_info_alignment_unknown (struct ptr_info_def *);
 extern void set_ptr_info_alignment (struct ptr_info_def *, unsigned int,
 				    unsigned int);
-extern void adjust_ptr_info_misalignment (struct ptr_info_def *,
-					  unsigned int);
+extern void adjust_ptr_info_misalignment (struct ptr_info_def *, poly_uint64);
 extern struct ptr_info_def *get_ptr_info (tree);
 extern void set_ptr_nonnull (tree);
 extern bool get_ptr_nonnull (const_tree);

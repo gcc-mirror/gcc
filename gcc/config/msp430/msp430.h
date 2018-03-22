@@ -1,5 +1,5 @@
 /* GCC backend definitions for the TI MSP430 Processor
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -196,7 +196,6 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 #define WORD_REGISTER_OPERATIONS	1
 
 #define MOVE_MAX 			8
-#define STARTING_FRAME_OFFSET		0
 
 #define INCOMING_RETURN_ADDR_RTX \
   msp430_incoming_return_addr_rtx ()

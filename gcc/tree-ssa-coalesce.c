@@ -1,5 +1,5 @@
 /* Coalesce SSA_NAMES together for the out-of-ssa pass.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "ssa.h"
+#include "tree-ssa.h"
 #include "tree-pretty-print.h"
 #include "diagnostic-core.h"
 #include "dumpfile.h"
@@ -163,7 +164,8 @@ coalesce_cost (int frequency, bool optimize_for_size)
 static inline int
 coalesce_cost_bb (basic_block bb)
 {
-  return coalesce_cost (bb->frequency, optimize_bb_for_size_p (bb));
+  return coalesce_cost (bb->count.to_frequency (cfun),
+			optimize_bb_for_size_p (bb));
 }
 
 
@@ -1923,7 +1925,7 @@ set_parm_default_def_partition (tree var, void *arg_)
 /* Allocate and return a bitmap that has a bit set for each partition
    that contains a default def for a parameter.  */
 
-extern bitmap
+bitmap
 get_parm_default_def_partitions (var_map map)
 {
   bitmap parm_default_def_parts = BITMAP_ALLOC (NULL);
@@ -1934,4 +1936,29 @@ get_parm_default_def_partitions (var_map map)
   for_all_parms (set_parm_default_def_partition, &arg);
 
   return parm_default_def_parts;
+}
+
+/* Allocate and return a bitmap that has a bit set for each partition
+   that contains an undefined value.  */
+
+bitmap
+get_undefined_value_partitions (var_map map)
+{
+  bitmap undefined_value_parts = BITMAP_ALLOC (NULL);
+
+  for (unsigned int i = 1; i < num_ssa_names; i++)
+    {
+      tree var = ssa_name (i);
+      if (var
+	  && !virtual_operand_p (var)
+	  && !has_zero_uses (var)
+	  && ssa_undefined_value_p (var))
+	{
+	  const int p = var_to_partition (map, var);
+	  if (p != NO_PARTITION)
+	    bitmap_set_bit (undefined_value_parts, p);
+	}
+    }
+
+  return undefined_value_parts;
 }

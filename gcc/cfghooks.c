@@ -1,5 +1,5 @@
 /* Hooks for cfg representation specific functions.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -146,12 +146,15 @@ verify_flow_info (void)
 	  error ("verify_flow_info: Wrong count of block %i", bb->index);
 	  err = 1;
 	}
-      if (bb->frequency < 0)
+      /* FIXME: Graphite and SLJL and target code still tends to produce
+	 edges with no probablity.  */
+      if (profile_status_for_fn (cfun) >= PROFILE_GUESSED
+          && !bb->count.initialized_p () && !flag_graphite && 0)
 	{
-	  error ("verify_flow_info: Wrong frequency of block %i %i",
-		 bb->index, bb->frequency);
+	  error ("verify_flow_info: Missing count of block %i", bb->index);
 	  err = 1;
 	}
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (last_visited [e->dest->index] == bb)
@@ -160,15 +163,18 @@ verify_flow_info (void)
 		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
+	  /* FIXME: Graphite and SLJL and target code still tends to produce
+	     edges with no probablity.  */
+	  if (profile_status_for_fn (cfun) >= PROFILE_GUESSED
+	      && !e->probability.initialized_p () && !flag_graphite && 0)
+	    {
+	      error ("Uninitialized probability of edge %i->%i", e->src->index,
+		     e->dest->index);
+	      err = 1;
+	    }
 	  if (!e->probability.verify ())
 	    {
 	      error ("verify_flow_info: Wrong probability of edge %i->%i",
-		     e->src->index, e->dest->index);
-	      err = 1;
-	    }
-	  if (!e->count.verify ())
-	    {
-	      error ("verify_flow_info: Wrong count of edge %i->%i",
 		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
@@ -294,6 +300,14 @@ debug (basic_block_def *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
+static void
+debug_slim (basic_block ptr)
+{
+  fprintf (stderr, "<basic_block %p (%d)>", (void *) ptr, ptr->index);
+}
+
+DEFINE_DEBUG_VEC (basic_block_def *)
+DEFINE_DEBUG_HASH_SET (basic_block_def *)
 
 /* Dumps basic block BB to pretty-printer PP, for use as a label of
    a DOT graph record-node.  The implementation of this hook is
@@ -311,7 +325,6 @@ dump_bb_for_graph (pretty_printer *pp, basic_block bb)
   /* TODO: Add pretty printer for counter.  */
   if (bb->count.initialized_p ())
     pp_printf (pp, "COUNT:" "%" PRId64, bb->count.to_gcov_type ());
-  pp_printf (pp, " FREQ:%i |", bb->frequency);
   pp_write_text_to_stream (pp);
   if (!(dump_flags & TDF_SLIM))
     cfg_hooks->dump_bb_for_graph (pp, bb);
@@ -443,7 +456,6 @@ redirect_edge_succ_nodup (edge e, basic_block new_succ)
     {
       s->flags |= e->flags;
       s->probability += e->probability;
-      s->count += e->count;
       /* FIXME: This should be called via a hook and only for IR_GIMPLE.  */
       redirect_edge_var_map_dup (s, e);
       remove_edge (e);
@@ -510,7 +522,6 @@ split_block_1 (basic_block bb, void *i)
     return NULL;
 
   new_bb->count = bb->count;
-  new_bb->frequency = bb->frequency;
   new_bb->discriminator = bb->discriminator;
 
   if (dom_info_available_p (CDI_DOMINATORS))
@@ -622,8 +633,7 @@ basic_block
 split_edge (edge e)
 {
   basic_block ret;
-  profile_count count = e->count;
-  int freq = EDGE_FREQUENCY (e);
+  profile_count count = e->count ();
   edge f;
   bool irr = (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
   struct loop *loop;
@@ -637,9 +647,7 @@ split_edge (edge e)
 
   ret = cfg_hooks->split_edge (e);
   ret->count = count;
-  ret->frequency = freq;
   single_succ_edge (ret)->probability = profile_probability::always ();
-  single_succ_edge (ret)->count = count;
 
   if (irr)
     {
@@ -867,8 +875,6 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
   fallthru = split_block_after_labels (bb);
   dummy = fallthru->src;
   dummy->count = profile_count::zero ();
-  dummy->frequency = 0;
-  fallthru->count = profile_count::zero ();
   bb = fallthru->dest;
 
   /* Redirect back edges we want to keep.  */
@@ -878,12 +884,7 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 
       if (redirect_edge_p (e))
 	{
-	  dummy->frequency += EDGE_FREQUENCY (e);
-	  if (dummy->frequency > BB_FREQ_MAX)
-	    dummy->frequency = BB_FREQ_MAX;
-
-	  dummy->count += e->count;
-	  fallthru->count += e->count;
+	  dummy->count += e->count ();
 	  ei_next (&ei);
 	  continue;
 	}
@@ -1069,7 +1070,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 {
   edge s, n;
   basic_block new_bb;
-  profile_count new_count = e ? e->count : profile_count::uninitialized ();
+  profile_count new_count = e ? e->count (): profile_count::uninitialized ();
   edge_iterator ei;
 
   if (!cfg_hooks->duplicate_block)
@@ -1093,13 +1094,6 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 	 is no need to actually check for duplicated edges.  */
       n = unchecked_make_edge (new_bb, s->dest, s->flags);
       n->probability = s->probability;
-      if (e && bb->count > profile_count::zero ())
-	{
-	  n->count = s->count.apply_scale (new_count, bb->count);
-	  s->count -= n->count;
-	}
-      else
-	n->count = s->count;
       n->aux = s->aux;
     }
 
@@ -1108,19 +1102,10 @@ duplicate_block (basic_block bb, edge e, basic_block after)
       new_bb->count = new_count;
       bb->count -= new_count;
 
-      new_bb->frequency = EDGE_FREQUENCY (e);
-      bb->frequency -= EDGE_FREQUENCY (e);
-
       redirect_edge_and_branch_force (e, new_bb);
-
-      if (bb->frequency < 0)
-	bb->frequency = 0;
     }
   else
-    {
-      new_bb->count = bb->count;
-      new_bb->frequency = bb->frequency;
-    }
+    new_bb->count = bb->count;
 
   set_bb_original (new_bb, bb);
   set_bb_copy (bb, new_bb);
@@ -1463,23 +1448,16 @@ account_profile_record (struct profile_record *record, int after_pass)
 	    record->num_mismatched_freq_out[after_pass]++;
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    lsum += e->count;
+	    lsum += e->count ();
 	  if (EDGE_COUNT (bb->succs) && (lsum.differs_from_p (bb->count)))
 	    record->num_mismatched_count_out[after_pass]++;
 	}
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
-	  int sum = 0;
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    sum += EDGE_FREQUENCY (e);
-	  if (abs (sum - bb->frequency) > 100
-	      || (MAX (sum, bb->frequency) > 10
-		  && abs ((sum - bb->frequency) * 100 / (MAX (sum, bb->frequency) + 1)) > 10))
-	    record->num_mismatched_freq_in[after_pass]++;
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    lsum += e->count;
+	    lsum += e->count ();
 	  if (lsum.differs_from_p (bb->count))
 	    record->num_mismatched_count_in[after_pass]++;
 	}

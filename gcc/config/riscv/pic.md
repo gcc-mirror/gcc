@@ -1,5 +1,5 @@
 ;; PIC codegen for RISC-V for GNU compiler.
-;; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 
 ;; This file is part of GCC.
@@ -22,11 +22,18 @@
 ;; Simplify PIC loads to static variables.
 ;; These should go away once we figure out how to emit auipc discretely.
 
-(define_insn "*local_pic_load<mode>"
+(define_insn "*local_pic_load_s<mode>"
   [(set (match_operand:ANYI 0 "register_operand" "=r")
-	(mem:ANYI (match_operand 1 "absolute_symbolic_operand" "")))]
+	(sign_extend:ANYI (mem:ANYI (match_operand 1 "absolute_symbolic_operand" ""))))]
   "USE_LOAD_ADDRESS_MACRO (operands[1])"
   "<load>\t%0,%1"
+  [(set (attr "length") (const_int 8))])
+
+(define_insn "*local_pic_load_u<mode>"
+  [(set (match_operand:ZERO_EXTEND_LOAD 0 "register_operand" "=r")
+	(zero_extend:ZERO_EXTEND_LOAD (mem:ZERO_EXTEND_LOAD (match_operand 1 "absolute_symbolic_operand" ""))))]
+  "USE_LOAD_ADDRESS_MACRO (operands[1])"
+  "<load>u\t%0,%1"
   [(set (attr "length") (const_int 8))])
 
 (define_insn "*local_pic_load<mode>"

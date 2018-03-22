@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -407,12 +407,104 @@ struct GTY((user)) vec
 {
 };
 
+/* Generic vec<> debug helpers.
+
+   These need to be instantiated for each vec<TYPE> used throughout
+   the compiler like this:
+
+    DEFINE_DEBUG_VEC (TYPE)
+
+   The reason we have a debug_helper() is because GDB can't
+   disambiguate a plain call to debug(some_vec), and it must be called
+   like debug<TYPE>(some_vec).  */
+
+template<typename T>
+void
+debug_helper (vec<T> &ref)
+{
+  unsigned i;
+  for (i = 0; i < ref.length (); ++i)
+    {
+      fprintf (stderr, "[%d] = ", i);
+      debug_slim (ref[i]);
+      fputc ('\n', stderr);
+    }
+}
+
+/* We need a separate va_gc variant here because default template
+   argument for functions cannot be used in c++-98.  Once this
+   restriction is removed, those variant should be folded with the
+   above debug_helper.  */
+
+template<typename T>
+void
+debug_helper (vec<T, va_gc> &ref)
+{
+  unsigned i;
+  for (i = 0; i < ref.length (); ++i)
+    {
+      fprintf (stderr, "[%d] = ", i);
+      debug_slim (ref[i]);
+      fputc ('\n', stderr);
+    }
+}
+
+/* Macro to define debug(vec<T>) and debug(vec<T, va_gc>) helper
+   functions for a type T.  */
+
+#define DEFINE_DEBUG_VEC(T) \
+  template void debug_helper (vec<T> &);		\
+  template void debug_helper (vec<T, va_gc> &);		\
+  /* Define the vec<T> debug functions.  */		\
+  DEBUG_FUNCTION void					\
+  debug (vec<T> &ref)					\
+  {							\
+    debug_helper <T> (ref);				\
+  }							\
+  DEBUG_FUNCTION void					\
+  debug (vec<T> *ptr)					\
+  {							\
+    if (ptr)						\
+      debug (*ptr);					\
+    else						\
+      fprintf (stderr, "<nil>\n");			\
+  }							\
+  /* Define the vec<T, va_gc> debug functions.  */	\
+  DEBUG_FUNCTION void					\
+  debug (vec<T, va_gc> &ref)				\
+  {							\
+    debug_helper <T> (ref);				\
+  }							\
+  DEBUG_FUNCTION void					\
+  debug (vec<T, va_gc> *ptr)				\
+  {							\
+    if (ptr)						\
+      debug (*ptr);					\
+    else						\
+      fprintf (stderr, "<nil>\n");			\
+  }
+
 /* Default-construct N elements in DST.  */
 
 template <typename T>
 inline void
 vec_default_construct (T *dst, unsigned n)
 {
+#ifdef BROKEN_VALUE_INITIALIZATION
+  /* Versions of GCC before 4.4 sometimes leave certain objects
+     uninitialized when value initialized, though if the type has
+     user defined default ctor, that ctor is invoked.  As a workaround
+     perform clearing first and then the value initialization, which
+     fixes the case when value initialization doesn't initialize due to
+     the bugs and should initialize to all zeros, but still allows
+     vectors for types with user defined default ctor that initializes
+     some or all elements to non-zero.  If T has no user defined
+     default ctor and some non-static data members have user defined
+     default ctors that initialize to non-zero the workaround will
+     still not work properly; in that case we just need to provide
+     user defined default ctor.  */
+  memset (dst, '\0', sizeof (T) * n);
+#endif
   for ( ; n; ++dst, --n)
     ::new (static_cast<void*>(dst)) T ();
 }

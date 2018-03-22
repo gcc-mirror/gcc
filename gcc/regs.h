@@ -1,5 +1,5 @@
 /* Define per-register tables for data flow info and register allocation.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -130,8 +130,10 @@ extern size_t reg_info_p_size;
    frequency.  */
 #define REG_FREQ_FROM_BB(bb) (optimize_function_for_size_p (cfun)	      \
 			      ? REG_FREQ_MAX				      \
-			      : ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\
-			      ? ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\
+			      : ((bb)->count.to_frequency (cfun)	      \
+				* REG_FREQ_MAX / BB_FREQ_MAX)		      \
+			      ? ((bb)->count.to_frequency (cfun)	      \
+				 * REG_FREQ_MAX / BB_FREQ_MAX)		      \
 			      : 1)
 
 /* Indexed by N, gives number of insns in which register N dies.

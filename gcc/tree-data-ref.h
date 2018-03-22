@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -203,11 +203,20 @@ typedef struct data_reference *data_reference_p;
 
 struct dr_with_seg_len
 {
-  dr_with_seg_len (data_reference_p d, tree len)
-    : dr (d), seg_len (len) {}
+  dr_with_seg_len (data_reference_p d, tree len, unsigned HOST_WIDE_INT size,
+		   unsigned int a)
+    : dr (d), seg_len (len), access_size (size), align (a) {}
 
   data_reference_p dr;
+  /* The offset of the last access that needs to be checked minus
+     the offset of the first.  */
   tree seg_len;
+  /* A value that, when added to abs (SEG_LEN), gives the total number of
+     bytes in the segment.  */
+  poly_uint64 access_size;
+  /* The minimum common alignment of DR's start address, SEG_LEN and
+     ACCESS_SIZE.  */
+  unsigned int align;
 };
 
 /* This struct contains two dr_with_seg_len objects with aliasing data
@@ -436,11 +445,11 @@ extern void free_data_ref (data_reference_p);
 extern void free_data_refs (vec<data_reference_p> );
 extern bool find_data_references_in_stmt (struct loop *, gimple *,
 					  vec<data_reference_p> *);
-extern bool graphite_find_data_references_in_stmt (loop_p, loop_p, gimple *,
+extern bool graphite_find_data_references_in_stmt (edge, loop_p, gimple *,
 						   vec<data_reference_p> *);
 tree find_data_references_in_loop (struct loop *, vec<data_reference_p> *);
 bool loop_nest_has_data_refs (loop_p loop);
-struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple *, bool,
+struct data_reference *create_data_ref (edge, loop_p, tree, gimple *, bool,
 					bool);
 extern bool find_loop_nest (struct loop *, vec<loop_p> *);
 extern struct data_dependence_relation *initialize_data_dependence_relation
@@ -472,9 +481,13 @@ extern bool dr_equal_offsets_p (struct data_reference *,
 extern bool runtime_alias_check_p (ddr_p, struct loop *, bool);
 extern int data_ref_compare_tree (tree, tree);
 extern void prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *,
-					   unsigned HOST_WIDE_INT);
+					   poly_uint64);
 extern void create_runtime_alias_checks (struct loop *,
 					 vec<dr_with_seg_len_pair_t> *, tree*);
+extern tree dr_direction_indicator (struct data_reference *);
+extern tree dr_zero_step_indicator (struct data_reference *);
+extern bool dr_known_forward_stride_p (struct data_reference *);
+
 /* Return true when the base objects of data references A and B are
    the same memory object.  */
 

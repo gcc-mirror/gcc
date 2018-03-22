@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 using GAS.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,10 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 /* these come from i386/bsd.h, but are specific to sequent */
 #undef DBX_NO_XREFS
 #undef DBX_CONTIN_LENGTH
-
-/* Ask for COFF symbols.  */
-
-#define SDB_DEBUGGING_INFO 1
 
 /* Output #ident as a .ident.  */
 

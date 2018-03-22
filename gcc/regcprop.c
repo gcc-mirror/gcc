@@ -1,5 +1,5 @@
 /* Copy propagation on hard registers for the GNU compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -345,8 +345,8 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
      We can't properly represent the latter case in our tables, so don't
      record anything then.  */
   else if (sn < hard_regno_nregs (sr, vd->e[sr].mode)
-	   && (GET_MODE_SIZE (vd->e[sr].mode) > UNITS_PER_WORD
-	       ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
+	   && maybe_ne (subreg_lowpart_offset (GET_MODE (dest),
+					       vd->e[sr].mode), 0U))
     return;
 
   /* If SRC had been assigned a mode narrower than the copy, we can't
@@ -406,15 +406,14 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
     {
       int copy_nregs = hard_regno_nregs (copy_regno, copy_mode);
       int use_nregs = hard_regno_nregs (copy_regno, new_mode);
-      int copy_offset
-	= GET_MODE_SIZE (copy_mode) / copy_nregs * (copy_nregs - use_nregs);
-      int offset
-	= GET_MODE_SIZE (orig_mode) - GET_MODE_SIZE (new_mode) - copy_offset;
-      int byteoffset = offset % UNITS_PER_WORD;
-      int wordoffset = offset - byteoffset;
-
-      offset = ((WORDS_BIG_ENDIAN ? wordoffset : 0)
-		+ (BYTES_BIG_ENDIAN ? byteoffset : 0));
+      poly_uint64 bytes_per_reg;
+      if (!can_div_trunc_p (GET_MODE_SIZE (copy_mode),
+			    copy_nregs, &bytes_per_reg))
+	return NULL_RTX;
+      poly_uint64 copy_offset = bytes_per_reg * (copy_nregs - use_nregs);
+      poly_uint64 offset
+	= subreg_size_lowpart_offset (GET_MODE_SIZE (new_mode) + copy_offset,
+				      GET_MODE_SIZE (orig_mode));
       regno += subreg_regno_offset (regno, orig_mode, offset, new_mode);
       if (targetm.hard_regno_mode_ok (regno, new_mode))
 	return gen_raw_REG (new_mode, regno);
@@ -432,6 +431,8 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
   unsigned int regno = REGNO (reg);
   machine_mode mode = GET_MODE (reg);
   unsigned int i;
+
+  gcc_assert (regno < FIRST_PSEUDO_REGISTER);
 
   /* If we are accessing REG in some mode other that what we set it in,
      make sure that the replacement is valid.  In particular, consider
@@ -757,7 +758,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       next = NEXT_INSN (insn);
       if (!NONDEBUG_INSN_P (insn))
 	{
-	  if (DEBUG_INSN_P (insn))
+	  if (DEBUG_BIND_INSN_P (insn))
 	    {
 	      rtx loc = INSN_VAR_LOCATION_LOC (insn);
 	      if (!VAR_LOC_UNKNOWN_P (loc))
@@ -871,8 +872,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      /* And likewise, if we are narrowing on big endian the transformation
 		 is also invalid.  */
 	      if (REG_NREGS (src) < hard_regno_nregs (regno, vd->e[regno].mode)
-		  && (GET_MODE_SIZE (vd->e[regno].mode) > UNITS_PER_WORD
-		      ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
+		  && maybe_ne (subreg_lowpart_offset (mode,
+						      vd->e[regno].mode), 0U))
 		goto no_move_special_case;
 	    }
 
@@ -1302,7 +1303,7 @@ pass_cprop_hardreg::execute (function *fun)
       copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       FOR_EACH_BB_FN (bb, fun)
 	if (bitmap_bit_p (visited, bb->index)

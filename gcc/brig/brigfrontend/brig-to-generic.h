@@ -1,5 +1,5 @@
 /* brig-to-generic.h -- brig to gcc generic conversion
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -36,7 +36,6 @@
 #include "hsa-brig-format.h"
 #include "brig-function.h"
 
-
 struct reg_decl_index_entry;
 
 /* Converts an HSAIL BRIG input to GENERIC.  This class holds global state
@@ -56,6 +55,7 @@ private:
 public:
   brig_to_generic ();
 
+  void analyze (const char *brig_blob);
   void parse (const char *brig_blob);
 
   void write_globals ();
@@ -78,16 +78,8 @@ public:
   void start_function (tree f);
   void finish_function ();
 
-  void append_group_variable (const std::string &name, size_t size,
-			      size_t alignment);
-
   void append_private_variable (const std::string &name, size_t size,
 				size_t alignment);
-
-  size_t group_variable_segment_offset (const std::string &name) const;
-
-  bool
-  has_group_variable (const std::string &name) const;
 
   size_t
   private_variable_segment_offset (const std::string &name) const;
@@ -107,10 +99,15 @@ public:
     { return get_mangled_name_tmpl (var); }
   std::string get_mangled_name (const BrigDirectiveExecutable *func) const;
 
-  size_t group_segment_size () const;
   size_t private_segment_size () const;
 
   brig_function *get_finished_function (tree func_decl);
+
+  void add_group_variable (const std::string &name, size_t size,
+			   size_t alignment, bool function_scope);
+
+  void add_reg_used_as_type (const BrigOperandRegister &brig_reg,
+			     tree operand_type);
 
   static tree s_fp16_type;
   static tree s_fp32_type;
@@ -123,10 +120,24 @@ public:
   /* The currently built function.  */
   brig_function *m_cf;
 
+  /* Stores the module and function scope group variable offsets.  */
+  group_variable_offset_index m_module_group_variables;
+
   /* The name of the currently handled BRIG module.  */
   std::string m_module_name;
 
+  /* Set to true if the compilation is in 'analyze' phase.  */
+  bool m_analyzing;
+
+  /* Accumulates the total group segment usage.  */
+  size_t m_total_group_segment_usage;
+
+  /* Statistics about register uses per function.  */
+  std::map<std::string, regs_use_index> m_fn_regs_use_index;
+
 private:
+
+  void find_brig_sections ();
   /* The BRIG blob and its different sections of the file currently being
      parsed.  */
   const char *m_brig;
@@ -144,10 +155,6 @@ private:
   /* The size of each private variable, including the alignment padding.  */
   std::map<std::string, size_t> m_private_data_sizes;
 
-  /* The same for group variables.  */
-  size_t m_next_group_offset;
-  var_offset_table m_group_offsets;
-
   /* And private.  */
   size_t m_next_private_offset;
   var_offset_table m_private_offsets;
@@ -161,9 +168,6 @@ private:
   /* Stores all already processed functions from the translation unit
      for some interprocedural analysis.  */
   std::map<std::string, brig_function *> m_finished_functions;
-
-  /* The parsed BRIG blobs.  Owned and will be deleted after use.  */
-  std::vector<const char *> m_brig_blobs;
 
   /* The original dump file.  */
   FILE *m_dump_file;
@@ -214,11 +218,14 @@ protected:
 
 tree call_builtin (tree pdecl, int nargs, tree rettype, ...);
 
-tree build_reinterpret_cast (tree destination_type, tree source);
+tree build_resize_convert_view (tree destination_type, tree source);
+tree build_reinterpret_to_uint (tree source);
 
 tree build_stmt (enum tree_code code, ...);
 
 tree get_unsigned_int_type (tree type);
+
+tree get_scalar_unsigned_int_type (tree type);
 
 void dump_function (FILE *dump_file, brig_function *f);
 

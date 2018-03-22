@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -238,6 +238,11 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
 	 as a pointer.  */
       gcc_assert (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (expr)))
 		  == GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)));
+
+      /* FIXME needed because convert_to_pointer_maybe_fold still folds
+	 conversion of constants.  */
+      if (!dofold)
+	return build1 (CONVERT_EXPR, type, expr);
 
       return convert_to_pointer_maybe_fold (type, expr, dofold);
     }
@@ -582,7 +587,7 @@ ignore_overflows (tree expr, tree orig)
     {
       gcc_assert (!TREE_OVERFLOW (orig));
       /* Ensure constant sharing.  */
-      expr = wide_int_to_tree (TREE_TYPE (expr), expr);
+      expr = wide_int_to_tree (TREE_TYPE (expr), wi::to_wide (expr));
     }
   return expr;
 }
@@ -691,7 +696,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 
   /* FIXME remove when moving to c_fully_fold model.  */
   if (!CLASS_TYPE_P (type))
-    e = scalar_constant_value (e);
+    {
+      e = mark_rvalue_use (e);
+      e = scalar_constant_value (e);
+    }
   if (error_operand_p (e))
     return error_mark_node;
 
@@ -933,7 +941,7 @@ cp_get_callee (tree call)
    if we can.  */
 
 tree
-cp_get_fndecl_from_callee (tree fn)
+cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
 {
   if (fn == NULL_TREE)
     return fn;
@@ -943,7 +951,8 @@ cp_get_fndecl_from_callee (tree fn)
   if (type == unknown_type_node)
     return NULL_TREE;
   gcc_assert (POINTER_TYPE_P (type));
-  fn = maybe_constant_init (fn);
+  if (fold)
+    fn = maybe_constant_init (fn);
   STRIP_NOPS (fn);
   if (TREE_CODE (fn) == ADDR_EXPR)
     {
@@ -961,6 +970,14 @@ tree
 cp_get_callee_fndecl (tree call)
 {
   return cp_get_fndecl_from_callee (cp_get_callee (call));
+}
+
+/* As above, but not using the constexpr machinery.  */
+
+tree
+cp_get_callee_fndecl_nofold (tree call)
+{
+  return cp_get_fndecl_from_callee (cp_get_callee (call), false);
 }
 
 /* Subroutine of convert_to_void.  Warn if we're discarding something with
@@ -1055,24 +1072,12 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
 
-  if (implicit == ICV_CAST)
-    mark_exp_read (expr);
-  else
-    {
-      tree exprv = expr;
+  expr = maybe_undo_parenthesized_ref (expr);
 
-      while (TREE_CODE (exprv) == COMPOUND_EXPR)
-	exprv = TREE_OPERAND (exprv, 1);
-      if (DECL_P (exprv)
-	  || handled_component_p (exprv)
-	  || INDIRECT_REF_P (exprv))
-	/* Expr is not being 'used' here, otherwise we whould have
-	   called mark_{rl}value_use use here, which would have in turn
-	   called mark_exp_read.  Rather, we call mark_exp_read directly
-	   to avoid some warnings when
-	   -Wunused-but-set-{variable,parameter} is in effect.  */
-	mark_exp_read (exprv);
-    }
+  expr = mark_discarded_use (expr);
+  if (implicit == ICV_CAST)
+    /* An explicit cast to void avoids all -Wunused-but-set* warnings.  */
+    mark_exp_read (expr);
 
   if (!TREE_TYPE (expr))
     return expr;
@@ -1656,7 +1661,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   tree conv = NULL_TREE;
   tree winner = NULL_TREE;
 
-  if (expr == null_node
+  if (null_node_p (expr)
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
     {
@@ -1848,12 +1853,27 @@ type_promotes_to (tree type)
 	   || type == char32_type_node
 	   || type == wchar_type_node)
     {
+      tree prom = type;
+
+      if (TREE_CODE (type) == ENUMERAL_TYPE)
+	{
+	  prom = ENUM_UNDERLYING_TYPE (prom);
+	  if (!ENUM_IS_SCOPED (type)
+	      && ENUM_FIXED_UNDERLYING_TYPE_P (type))
+	    {
+	      /* ISO C++17, 7.6/4.  A prvalue of an unscoped enumeration type
+		 whose underlying type is fixed (10.2) can be converted to a
+		 prvalue of its underlying type. Moreover, if integral promotion
+		 can be applied to its underlying type, a prvalue of an unscoped
+		 enumeration type whose underlying type is fixed can also be 
+		 converted to a prvalue of the promoted underlying type.  */
+	      return type_promotes_to (prom);
+	    }
+	}
+
       int precision = MAX (TYPE_PRECISION (type),
 			   TYPE_PRECISION (integer_type_node));
       tree totype = c_common_type_for_size (precision, 0);
-      tree prom = type;
-      if (TREE_CODE (prom) == ENUMERAL_TYPE)
-	prom = ENUM_UNDERLYING_TYPE (prom);
       if (TYPE_UNSIGNED (prom)
 	  && ! int_fits_type_p (TYPE_MAX_VALUE (prom), totype))
 	prom = c_common_type_for_size (precision, 1);

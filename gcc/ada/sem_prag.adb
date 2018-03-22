@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,7 @@ with Sem_Ch12;  use Sem_Ch12;
 with Sem_Ch13;  use Sem_Ch13;
 with Sem_Disp;  use Sem_Disp;
 with Sem_Dist;  use Sem_Dist;
+with Sem_Elab;  use Sem_Elab;
 with Sem_Elim;  use Sem_Elim;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Intr;  use Sem_Intr;
@@ -217,7 +218,7 @@ package body Sem_Prag is
       Freeze_Id   : Entity_Id);
    --  Subsidiary to the analysis of pragmas Contract_Cases, Part_Of, Post, and
    --  Pre. Emit a freezing-related error message where Freeze_Id is the entity
-   --  of a body which caused contract "freezing" and Contract_Id denotes the
+   --  of a body which caused contract freezing and Contract_Id denotes the
    --  entity of the affected contstruct.
 
    procedure Duplication_Error (Prag : Node_Id; Prev : Node_Id);
@@ -432,7 +433,7 @@ package body Sem_Prag is
 
                --  Emit a clarification message when the case guard contains
                --  at least one undefined reference, possibly due to contract
-               --  "freezing".
+               --  freezing.
 
                if Errors /= Serious_Errors_Detected
                  and then Present (Freeze_Id)
@@ -447,7 +448,7 @@ package body Sem_Prag is
 
             --  Emit a clarification message when the consequence contains
             --  at least one undefined reference, possibly due to contract
-            --  "freezing".
+            --  freezing.
 
             if Errors /= Serious_Errors_Detected
               and then Present (Freeze_Id)
@@ -2751,10 +2752,6 @@ package body Sem_Prag is
       --  A list of all initialization items processed so far. This list is
       --  used to detect duplicate items.
 
-      Non_Null_Seen : Boolean := False;
-      Null_Seen     : Boolean := False;
-      --  Flags used to check the legality of a null initialization list
-
       States_And_Objs : Elist_Id := No_Elist;
       --  A list of all abstract states and objects declared in the visible
       --  declarations of the related package. This list is used to detect the
@@ -2784,85 +2781,67 @@ package body Sem_Prag is
          Item_Id : Entity_Id;
 
       begin
-         --  Null initialization list
+         Analyze       (Item);
+         Resolve_State (Item);
 
-         if Nkind (Item) = N_Null then
-            if Null_Seen then
-               SPARK_Msg_N ("multiple null initializations not allowed", Item);
+         if Is_Entity_Name (Item) then
+            Item_Id := Entity_Of (Item);
 
-            elsif Non_Null_Seen then
-               SPARK_Msg_N
-                 ("cannot mix null and non-null initialization items", Item);
-            else
-               Null_Seen := True;
-            end if;
+            if Present (Item_Id)
+              and then Ekind_In (Item_Id, E_Abstract_State,
+                                          E_Constant,
+                                          E_Variable)
+            then
+               --  When the initialization item is undefined, it appears as
+               --  Any_Id. Do not continue with the analysis of the item.
 
-         --  Initialization item
+               if Item_Id = Any_Id then
+                  null;
 
-         else
-            Non_Null_Seen := True;
+               --  The state or variable must be declared in the visible
+               --  declarations of the package (SPARK RM 7.1.5(7)).
 
-            if Null_Seen then
-               SPARK_Msg_N
-                 ("cannot mix null and non-null initialization items", Item);
-            end if;
+               elsif not Contains (States_And_Objs, Item_Id) then
+                  Error_Msg_Name_1 := Chars (Pack_Id);
+                  SPARK_Msg_NE
+                    ("initialization item & must appear in the visible "
+                     & "declarations of package %", Item, Item_Id);
 
-            Analyze       (Item);
-            Resolve_State (Item);
+               --  Detect a duplicate use of the same initialization item
+               --  (SPARK RM 7.1.5(5)).
 
-            if Is_Entity_Name (Item) then
-               Item_Id := Entity_Of (Item);
+               elsif Contains (Items_Seen, Item_Id) then
+                  SPARK_Msg_N ("duplicate initialization item", Item);
 
-               if Present (Item_Id)
-                 and then Ekind_In (Item_Id, E_Abstract_State,
-                                             E_Constant,
-                                             E_Variable)
-               then
-                  --  The state or variable must be declared in the visible
-                  --  declarations of the package (SPARK RM 7.1.5(7)).
-
-                  if not Contains (States_And_Objs, Item_Id) then
-                     Error_Msg_Name_1 := Chars (Pack_Id);
-                     SPARK_Msg_NE
-                       ("initialization item & must appear in the visible "
-                        & "declarations of package %", Item, Item_Id);
-
-                  --  Detect a duplicate use of the same initialization item
-                  --  (SPARK RM 7.1.5(5)).
-
-                  elsif Contains (Items_Seen, Item_Id) then
-                     SPARK_Msg_N ("duplicate initialization item", Item);
-
-                  --  The item is legal, add it to the list of processed states
-                  --  and variables.
-
-                  else
-                     Append_New_Elmt (Item_Id, Items_Seen);
-
-                     if Ekind (Item_Id) = E_Abstract_State then
-                        Append_New_Elmt (Item_Id, States_Seen);
-                     end if;
-
-                     if Present (Encapsulating_State (Item_Id)) then
-                        Append_New_Elmt (Item_Id, Constits_Seen);
-                     end if;
-                  end if;
-
-               --  The item references something that is not a state or object
-               --  (SPARK RM 7.1.5(3)).
+               --  The item is legal, add it to the list of processed states
+               --  and variables.
 
                else
-                  SPARK_Msg_N
-                    ("initialization item must denote object or state", Item);
+                  Append_New_Elmt (Item_Id, Items_Seen);
+
+                  if Ekind (Item_Id) = E_Abstract_State then
+                     Append_New_Elmt (Item_Id, States_Seen);
+                  end if;
+
+                  if Present (Encapsulating_State (Item_Id)) then
+                     Append_New_Elmt (Item_Id, Constits_Seen);
+                  end if;
                end if;
 
-            --  Some form of illegal construct masquerading as a name
-            --  (SPARK RM 7.1.5(3)). This is a syntax error, always report.
+            --  The item references something that is not a state or object
+            --  (SPARK RM 7.1.5(3)).
 
             else
-               Error_Msg_N
+               SPARK_Msg_N
                  ("initialization item must denote object or state", Item);
             end if;
+
+         --  Some form of illegal construct masquerading as a name
+         --  (SPARK RM 7.1.5(3)). This is a syntax error, always report.
+
+         else
+            Error_Msg_N
+              ("initialization item must denote object or state", Item);
          end if;
       end Analyze_Initialization_Item;
 
@@ -2888,7 +2867,6 @@ package body Sem_Prag is
 
          procedure Analyze_Input_Item (Input : Node_Id) is
             Input_Id : Entity_Id;
-            Input_OK : Boolean := True;
 
          begin
             --  Null input list
@@ -2929,6 +2907,8 @@ package body Sem_Prag is
                                                  E_In_Parameter,
                                                  E_In_Out_Parameter,
                                                  E_Out_Parameter,
+                                                 E_Protected_Type,
+                                                 E_Task_Type,
                                                  E_Variable)
                   then
                      --  The input cannot denote states or objects declared
@@ -2954,11 +2934,11 @@ package body Sem_Prag is
                            null;
 
                         else
-                           Input_OK := False;
                            Error_Msg_Name_1 := Chars (Pack_Id);
                            SPARK_Msg_NE
                              ("input item & cannot denote a visible object or "
                               & "state of package %", Input, Input_Id);
+                           return;
                         end if;
                      end if;
 
@@ -2966,26 +2946,25 @@ package body Sem_Prag is
                      --  (SPARK RM 7.1.5(5)).
 
                      if Contains (Inputs_Seen, Input_Id) then
-                        Input_OK := False;
                         SPARK_Msg_N ("duplicate input item", Input);
+                        return;
                      end if;
 
-                     --  Input is legal, add it to the list of processed inputs
+                     --  At this point it is known that the input is legal. Add
+                     --  it to the list of processed inputs.
 
-                     if Input_OK then
-                        Append_New_Elmt (Input_Id, Inputs_Seen);
+                     Append_New_Elmt (Input_Id, Inputs_Seen);
 
-                        if Ekind (Input_Id) = E_Abstract_State then
-                           Append_New_Elmt (Input_Id, States_Seen);
-                        end if;
+                     if Ekind (Input_Id) = E_Abstract_State then
+                        Append_New_Elmt (Input_Id, States_Seen);
+                     end if;
 
-                        if Ekind_In (Input_Id, E_Abstract_State,
-                                               E_Constant,
-                                               E_Variable)
-                          and then Present (Encapsulating_State (Input_Id))
-                        then
-                           Append_New_Elmt (Input_Id, Constits_Seen);
-                        end if;
+                     if Ekind_In (Input_Id, E_Abstract_State,
+                                            E_Constant,
+                                            E_Variable)
+                       and then Present (Encapsulating_State (Input_Id))
+                     then
+                        Append_New_Elmt (Input_Id, Constits_Seen);
                      end if;
 
                   --  The input references something that is not a state or an
@@ -3161,11 +3140,347 @@ package body Sem_Prag is
       Encap_Id : out Entity_Id;
       Legal    : out Boolean)
    is
-      Encap_Typ   : Entity_Id;
-      Item_Decl   : Node_Id;
-      Pack_Id     : Entity_Id;
-      Placement   : State_Space_Kind;
-      Parent_Unit : Entity_Id;
+      procedure Check_Part_Of_Abstract_State;
+      pragma Inline (Check_Part_Of_Abstract_State);
+      --  Verify the legality of indicator Part_Of when the encapsulator is an
+      --  abstract state.
+
+      procedure Check_Part_Of_Concurrent_Type;
+      pragma Inline (Check_Part_Of_Concurrent_Type);
+      --  Verify the legality of indicator Part_Of when the encapsulator is a
+      --  single concurrent type.
+
+      ----------------------------------
+      -- Check_Part_Of_Abstract_State --
+      ----------------------------------
+
+      procedure Check_Part_Of_Abstract_State is
+         Pack_Id     : Entity_Id;
+         Placement   : State_Space_Kind;
+         Parent_Unit : Entity_Id;
+
+      begin
+         --  Determine where the object, package instantiation or state lives
+         --  with respect to the enclosing packages or package bodies.
+
+         Find_Placement_In_State_Space
+           (Item_Id   => Item_Id,
+            Placement => Placement,
+            Pack_Id   => Pack_Id);
+
+         --  The item appears in a non-package construct with a declarative
+         --  part (subprogram, block, etc). As such, the item is not allowed
+         --  to be a part of an encapsulating state because the item is not
+         --  visible.
+
+         if Placement = Not_In_Package then
+            SPARK_Msg_N
+              ("indicator Part_Of cannot appear in this context "
+               & "(SPARK RM 7.2.6(5))", Indic);
+
+            Error_Msg_Name_1 := Chars (Scope (Encap_Id));
+            SPARK_Msg_NE
+              ("\& is not part of the hidden state of package %",
+               Indic, Item_Id);
+            return;
+
+         --  The item appears in the visible state space of some package. In
+         --  general this scenario does not warrant Part_Of except when the
+         --  package is a private child unit and the encapsulating state is
+         --  declared in a parent unit or a public descendant of that parent
+         --  unit.
+
+         elsif Placement = Visible_State_Space then
+            if Is_Child_Unit (Pack_Id)
+              and then Is_Private_Descendant (Pack_Id)
+            then
+               --  A variable or state abstraction which is part of the visible
+               --  state of a private child unit or its public descendants must
+               --  have its Part_Of indicator specified. The Part_Of indicator
+               --  must denote a state declared by either the parent unit of
+               --  the private unit or by a public descendant of that parent
+               --  unit.
+
+               --  Find the nearest private ancestor (which can be the current
+               --  unit itself).
+
+               Parent_Unit := Pack_Id;
+               while Present (Parent_Unit) loop
+                  exit when
+                    Private_Present
+                      (Parent (Unit_Declaration_Node (Parent_Unit)));
+                  Parent_Unit := Scope (Parent_Unit);
+               end loop;
+
+               Parent_Unit := Scope (Parent_Unit);
+
+               if not Is_Child_Or_Sibling (Pack_Id, Scope (Encap_Id)) then
+                  SPARK_Msg_NE
+                    ("indicator Part_Of must denote abstract state of & or of "
+                     & "its public descendant (SPARK RM 7.2.6(3))",
+                     Indic, Parent_Unit);
+                  return;
+
+               elsif Scope (Encap_Id) = Parent_Unit
+                 or else
+                   (Is_Ancestor_Package (Parent_Unit, Scope (Encap_Id))
+                     and then not Is_Private_Descendant (Scope (Encap_Id)))
+               then
+                  null;
+
+               else
+                  SPARK_Msg_NE
+                    ("indicator Part_Of must denote abstract state of & or of "
+                     & "its public descendant (SPARK RM 7.2.6(3))",
+                     Indic, Parent_Unit);
+                  return;
+               end if;
+
+            --  Indicator Part_Of is not needed when the related package is not
+            --  a private child unit or a public descendant thereof.
+
+            else
+               SPARK_Msg_N
+                 ("indicator Part_Of cannot appear in this context "
+                  & "(SPARK RM 7.2.6(5))", Indic);
+
+               Error_Msg_Name_1 := Chars (Pack_Id);
+               SPARK_Msg_NE
+                 ("\& is declared in the visible part of package %",
+                  Indic, Item_Id);
+               return;
+            end if;
+
+         --  When the item appears in the private state space of a package, the
+         --  encapsulating state must be declared in the same package.
+
+         elsif Placement = Private_State_Space then
+            if Scope (Encap_Id) /= Pack_Id then
+               SPARK_Msg_NE
+                 ("indicator Part_Of must denote an abstract state of "
+                  & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
+
+               Error_Msg_Name_1 := Chars (Pack_Id);
+               SPARK_Msg_NE
+                 ("\& is declared in the private part of package %",
+                  Indic, Item_Id);
+               return;
+            end if;
+
+         --  Items declared in the body state space of a package do not need
+         --  Part_Of indicators as the refinement has already been seen.
+
+         else
+            SPARK_Msg_N
+              ("indicator Part_Of cannot appear in this context "
+               & "(SPARK RM 7.2.6(5))", Indic);
+
+            if Scope (Encap_Id) = Pack_Id then
+               Error_Msg_Name_1 := Chars (Pack_Id);
+               SPARK_Msg_NE
+                 ("\& is declared in the body of package %", Indic, Item_Id);
+            end if;
+
+            return;
+         end if;
+
+         --  At this point it is known that the Part_Of indicator is legal
+
+         Legal := True;
+      end Check_Part_Of_Abstract_State;
+
+      -----------------------------------
+      -- Check_Part_Of_Concurrent_Type --
+      -----------------------------------
+
+      procedure Check_Part_Of_Concurrent_Type is
+         function In_Proper_Order
+           (First  : Node_Id;
+            Second : Node_Id) return Boolean;
+         pragma Inline (In_Proper_Order);
+         --  Determine whether node First precedes node Second
+
+         procedure Placement_Error;
+         pragma Inline (Placement_Error);
+         --  Emit an error concerning the illegal placement of the item with
+         --  respect to the single concurrent type.
+
+         ---------------------
+         -- In_Proper_Order --
+         ---------------------
+
+         function In_Proper_Order
+           (First  : Node_Id;
+            Second : Node_Id) return Boolean
+         is
+            N : Node_Id;
+
+         begin
+            if List_Containing (First) = List_Containing (Second) then
+               N := First;
+               while Present (N) loop
+                  if N = Second then
+                     return True;
+                  end if;
+
+                  Next (N);
+               end loop;
+            end if;
+
+            return False;
+         end In_Proper_Order;
+
+         ---------------------
+         -- Placement_Error --
+         ---------------------
+
+         procedure Placement_Error is
+         begin
+            SPARK_Msg_N
+              ("indicator Part_Of must denote a previously declared single "
+               & "protected type or single task type", Encap);
+         end Placement_Error;
+
+         --  Local variables
+
+         Conc_Typ      : constant Entity_Id := Etype (Encap_Id);
+         Encap_Decl    : constant Node_Id   := Declaration_Node (Encap_Id);
+         Encap_Context : constant Node_Id   := Parent (Encap_Decl);
+
+         Item_Context : Node_Id;
+         Item_Decl    : Node_Id;
+         Prv_Decls    : List_Id;
+         Vis_Decls    : List_Id;
+
+      --  Start of processing for Check_Part_Of_Concurrent_Type
+
+      begin
+         --  Only abstract states and variables can act as constituents of an
+         --  encapsulating single concurrent type.
+
+         if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
+            null;
+
+         --  The constituent is a constant
+
+         elsif Ekind (Item_Id) = E_Constant then
+            Error_Msg_Name_1 := Chars (Encap_Id);
+            SPARK_Msg_NE
+              (Fix_Msg (Conc_Typ, "constant & cannot act as constituent of "
+               & "single protected type %"), Indic, Item_Id);
+            return;
+
+         --  The constituent is a package instantiation
+
+         else
+            Error_Msg_Name_1 := Chars (Encap_Id);
+            SPARK_Msg_NE
+              (Fix_Msg (Conc_Typ, "package instantiation & cannot act as "
+               & "constituent of single protected type %"), Indic, Item_Id);
+            return;
+         end if;
+
+         --  When the item denotes an abstract state of a nested package, use
+         --  the declaration of the package to detect proper placement.
+
+         --    package Pack is
+         --       task T;
+         --       package Nested
+         --         with Abstract_State => (State with Part_Of => T)
+
+         if Ekind (Item_Id) = E_Abstract_State then
+            Item_Decl := Unit_Declaration_Node (Scope (Item_Id));
+         else
+            Item_Decl := Declaration_Node (Item_Id);
+         end if;
+
+         Item_Context := Parent (Item_Decl);
+
+         --  The item and the single concurrent type must appear in the same
+         --  declarative region, with the item following the declaration of
+         --  the single concurrent type (SPARK RM 9(3)).
+
+         if Item_Context = Encap_Context then
+            if Nkind_In (Item_Context, N_Package_Specification,
+                                       N_Protected_Definition,
+                                       N_Task_Definition)
+            then
+               Prv_Decls := Private_Declarations (Item_Context);
+               Vis_Decls := Visible_Declarations (Item_Context);
+
+               --  The placement is OK when the single concurrent type appears
+               --  within the visible declarations and the item in the private
+               --  declarations.
+               --
+               --    package Pack is
+               --       protected PO ...
+               --    private
+               --       Constit : ... with Part_Of => PO;
+               --    end Pack;
+
+               if List_Containing (Encap_Decl) = Vis_Decls
+                 and then List_Containing (Item_Decl) = Prv_Decls
+               then
+                  null;
+
+               --  The placement is illegal when the item appears within the
+               --  visible declarations and the single concurrent type is in
+               --  the private declarations.
+               --
+               --    package Pack is
+               --       Constit : ... with Part_Of => PO;
+               --    private
+               --       protected PO ...
+               --    end Pack;
+
+               elsif List_Containing (Item_Decl) = Vis_Decls
+                 and then List_Containing (Encap_Decl) = Prv_Decls
+               then
+                  Placement_Error;
+                  return;
+
+               --  Otherwise both the item and the single concurrent type are
+               --  in the same list. Ensure that the declaration of the single
+               --  concurrent type precedes that of the item.
+
+               elsif not In_Proper_Order
+                           (First  => Encap_Decl,
+                            Second => Item_Decl)
+               then
+                  Placement_Error;
+                  return;
+               end if;
+
+            --  Otherwise both the item and the single concurrent type are
+            --  in the same list. Ensure that the declaration of the single
+            --  concurrent type precedes that of the item.
+
+            elsif not In_Proper_Order
+                        (First  => Encap_Decl,
+                         Second => Item_Decl)
+            then
+               Placement_Error;
+               return;
+            end if;
+
+         --  Otherwise the item and the single concurrent type reside within
+         --  unrelated regions.
+
+         else
+            Error_Msg_Name_1 := Chars (Encap_Id);
+            SPARK_Msg_NE
+              (Fix_Msg (Conc_Typ, "constituent & must be declared "
+               & "immediately within the same region as single protected "
+               & "type %"), Indic, Item_Id);
+            return;
+         end if;
+
+         --  At this point it is known that the Part_Of indicator is legal
+
+         Legal := True;
+      end Check_Part_Of_Concurrent_Type;
+
+   --  Start of processing for Analyze_Part_Of
 
    begin
       --  Assume that the indicator is illegal
@@ -3225,230 +3540,13 @@ package body Sem_Prag is
       --  The encapsulator is an abstract state
 
       if Ekind (Encap_Id) = E_Abstract_State then
-
-         --  Determine where the object, package instantiation or state lives
-         --  with respect to the enclosing packages or package bodies.
-
-         Find_Placement_In_State_Space
-           (Item_Id   => Item_Id,
-            Placement => Placement,
-            Pack_Id   => Pack_Id);
-
-         --  The item appears in a non-package construct with a declarative
-         --  part (subprogram, block, etc). As such, the item is not allowed
-         --  to be a part of an encapsulating state because the item is not
-         --  visible.
-
-         if Placement = Not_In_Package then
-            SPARK_Msg_N
-              ("indicator Part_Of cannot appear in this context "
-               & "(SPARK RM 7.2.6(5))", Indic);
-            Error_Msg_Name_1 := Chars (Scope (Encap_Id));
-            SPARK_Msg_NE
-              ("\& is not part of the hidden state of package %",
-               Indic, Item_Id);
-            return;
-
-         --  The item appears in the visible state space of some package. In
-         --  general this scenario does not warrant Part_Of except when the
-         --  package is a private child unit and the encapsulating state is
-         --  declared in a parent unit or a public descendant of that parent
-         --  unit.
-
-         elsif Placement = Visible_State_Space then
-            if Is_Child_Unit (Pack_Id)
-              and then Is_Private_Descendant (Pack_Id)
-            then
-               --  A variable or state abstraction which is part of the visible
-               --  state of a private child unit (or one of its public
-               --  descendants) must have its Part_Of indicator specified. The
-               --  Part_Of indicator must denote a state abstraction declared
-               --  by either the parent unit of the private unit or by a public
-               --  descendant of that parent unit.
-
-               --  Find nearest private ancestor (which can be the current unit
-               --  itself).
-
-               Parent_Unit := Pack_Id;
-               while Present (Parent_Unit) loop
-                  exit when
-                    Private_Present
-                      (Parent (Unit_Declaration_Node (Parent_Unit)));
-                  Parent_Unit := Scope (Parent_Unit);
-               end loop;
-
-               Parent_Unit := Scope (Parent_Unit);
-
-               if not Is_Child_Or_Sibling (Pack_Id, Scope (Encap_Id)) then
-                  SPARK_Msg_NE
-                    ("indicator Part_Of must denote abstract state or public "
-                     & "descendant of & (SPARK RM 7.2.6(3))",
-                     Indic, Parent_Unit);
-                  return;
-
-               elsif Scope (Encap_Id) = Parent_Unit
-                 or else
-                   (Is_Ancestor_Package (Parent_Unit, Scope (Encap_Id))
-                     and then not Is_Private_Descendant (Scope (Encap_Id)))
-               then
-                  null;
-
-               else
-                  SPARK_Msg_NE
-                    ("indicator Part_Of must denote abstract state or public "
-                     & "descendant of & (SPARK RM 7.2.6(3))",
-                     Indic, Parent_Unit);
-                  return;
-               end if;
-
-            --  Indicator Part_Of is not needed when the related package is not
-            --  a private child unit or a public descendant thereof.
-
-            else
-               SPARK_Msg_N
-                 ("indicator Part_Of cannot appear in this context "
-                  & "(SPARK RM 7.2.6(5))", Indic);
-               Error_Msg_Name_1 := Chars (Pack_Id);
-               SPARK_Msg_NE
-                 ("\& is declared in the visible part of package %",
-                  Indic, Item_Id);
-               return;
-            end if;
-
-         --  When the item appears in the private state space of a package, the
-         --  encapsulating state must be declared in the same package.
-
-         elsif Placement = Private_State_Space then
-            if Scope (Encap_Id) /= Pack_Id then
-               SPARK_Msg_NE
-                 ("indicator Part_Of must designate an abstract state of "
-                  & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
-               Error_Msg_Name_1 := Chars (Pack_Id);
-               SPARK_Msg_NE
-                 ("\& is declared in the private part of package %",
-                  Indic, Item_Id);
-               return;
-            end if;
-
-         --  Items declared in the body state space of a package do not need
-         --  Part_Of indicators as the refinement has already been seen.
-
-         else
-            SPARK_Msg_N
-              ("indicator Part_Of cannot appear in this context "
-               & "(SPARK RM 7.2.6(5))", Indic);
-
-            if Scope (Encap_Id) = Pack_Id then
-               Error_Msg_Name_1 := Chars (Pack_Id);
-               SPARK_Msg_NE
-                 ("\& is declared in the body of package %", Indic, Item_Id);
-            end if;
-
-            return;
-         end if;
+         Check_Part_Of_Abstract_State;
 
       --  The encapsulator is a single concurrent type
 
       else
-         Encap_Typ := Etype (Encap_Id);
-
-         --  Only abstract states and variables can act as constituents of an
-         --  encapsulating single concurrent type.
-
-         if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
-            null;
-
-         --  The constituent is a constant
-
-         elsif Ekind (Item_Id) = E_Constant then
-            Error_Msg_Name_1 := Chars (Encap_Id);
-            SPARK_Msg_NE
-              (Fix_Msg (Encap_Typ, "constant & cannot act as constituent of "
-               & "single protected type %"), Indic, Item_Id);
-            return;
-
-         --  The constituent is a package instantiation
-
-         else
-            Error_Msg_Name_1 := Chars (Encap_Id);
-            SPARK_Msg_NE
-              (Fix_Msg (Encap_Typ, "package instantiation & cannot act as "
-               & "constituent of single protected type %"), Indic, Item_Id);
-            return;
-         end if;
-
-         --  When the item denotes an abstract state of a nested package, use
-         --  the declaration of the package to detect proper placement.
-
-         --    package Pack is
-         --       task T;
-         --       package Nested
-         --         with Abstract_State => (State with Part_Of => T)
-
-         if Ekind (Item_Id) = E_Abstract_State then
-            Item_Decl := Unit_Declaration_Node (Scope (Item_Id));
-         else
-            Item_Decl := Declaration_Node (Item_Id);
-         end if;
-
-         --  Both the item and its encapsulating single concurrent type must
-         --  appear in the same declarative region (SPARK RM 9.3). Note that
-         --  privacy is ignored.
-
-         if Parent (Item_Decl) /= Parent (Declaration_Node (Encap_Id)) then
-            Error_Msg_Name_1 := Chars (Encap_Id);
-            SPARK_Msg_NE
-              (Fix_Msg (Encap_Typ, "constituent & must be declared "
-               & "immediately within the same region as single protected "
-               & "type %"), Indic, Item_Id);
-            return;
-         end if;
-
-         --  The declaration of the item should follow the declaration of its
-         --  encapsulating single concurrent type and must appear in the same
-         --  declarative region (SPARK RM 9.3).
-
-         declare
-            N : Node_Id;
-
-         begin
-            N := Next (Declaration_Node (Encap_Id));
-            while Present (N) loop
-               exit when N = Item_Decl;
-               Next (N);
-            end loop;
-
-            --  The single concurrent type might be in the visible part of a
-            --  package, and the declaration of the item in the private part
-            --  of the same package.
-
-            if No (N) then
-               declare
-                  Pack : constant Node_Id :=
-                           Parent (Declaration_Node (Encap_Id));
-               begin
-                  if Nkind (Pack) = N_Package_Specification
-                    and then not In_Private_Part (Encap_Id)
-                  then
-                     N := First (Private_Declarations (Pack));
-                     while Present (N) loop
-                        exit when N = Item_Decl;
-                        Next (N);
-                     end loop;
-                  end if;
-               end;
-            end if;
-
-            if No (N) then
-               SPARK_Msg_N
-                 ("indicator Part_Of must denote a previously declared "
-                  & "single protected type or single task type", Encap);
-               return;
-            end if;
-         end;
+         Check_Part_Of_Concurrent_Type;
       end if;
-
-      Legal := True;
    end Analyze_Part_Of;
 
    ----------------------------------
@@ -3504,7 +3602,7 @@ package body Sem_Prag is
       end if;
 
       --  Emit a clarification message when the encapsulator is undefined,
-      --  possibly due to contract "freezing".
+      --  possibly due to contract freezing.
 
       if Errors /= Serious_Errors_Detected
         and then Present (Freeze_Id)
@@ -5811,8 +5909,8 @@ package body Sem_Prag is
 
             procedure Check_Grouping (L : List_Id) is
                HSS  : Node_Id;
-               Prag : Node_Id;
                Stmt : Node_Id;
+               Prag : Node_Id := Empty; -- init to avoid warning
 
             begin
                --  Inspect the list of declarations or statements looking for
@@ -5866,16 +5964,15 @@ package body Sem_Prag is
 
                      else
                         while Present (Stmt) loop
-
                            --  The current pragma is either the first pragma
-                           --  of the group or is a member of the group. Stop
-                           --  the search as the placement is legal.
+                           --  of the group or is a member of the group.
+                           --  Stop the search as the placement is legal.
 
                            if Stmt = N then
                               raise Stop_Search;
 
-                           --  Skip group members, but keep track of the last
-                           --  pragma in the group.
+                           --  Skip group members, but keep track of the
+                           --  last pragma in the group.
 
                            elsif Is_Loop_Pragma (Stmt) then
                               Prag := Stmt;
@@ -9097,14 +9194,9 @@ package body Sem_Prag is
          --  The entity of the first Ghost subprogram encountered while
          --  processing the arguments of the pragma.
 
-         procedure Make_Inline (Subp : Entity_Id);
-         --  Subp is the defining unit name of the subprogram declaration. If
-         --  the pragma is valid, call Set_Inline_Flags on Subp, as well as on
-         --  the corresponding body, if there is one present.
-
-         procedure Set_Inline_Flags (Subp : Entity_Id);
-         --  Set Has_Pragma_{No_Inline,Inline,Inline_Always} flag on Subp.
-         --  Also set or clear Is_Inlined flag on Subp depending on Status.
+         procedure Check_Inline_Always_Placement (Spec_Id : Entity_Id);
+         --  Verify the placement of pragma Inline_Always with respect to the
+         --  initial declaration of subprogram Spec_Id.
 
          function Inlining_Not_Possible (Subp : Entity_Id) return Boolean;
          --  Returns True if it can be determined at this stage that inlining
@@ -9115,6 +9207,222 @@ package body Sem_Prag is
          --
          --  ??? is business with link symbols still valid, or does it relate
          --  to front end ZCX which is being phased out ???
+
+         procedure Make_Inline (Subp : Entity_Id);
+         --  Subp is the defining unit name of the subprogram declaration. If
+         --  the pragma is valid, call Set_Inline_Flags on Subp, as well as on
+         --  the corresponding body, if there is one present.
+
+         procedure Set_Inline_Flags (Subp : Entity_Id);
+         --  Set Has_Pragma_{No_Inline,Inline,Inline_Always} flag on Subp.
+         --  Also set or clear Is_Inlined flag on Subp depending on Status.
+
+         -----------------------------------
+         -- Check_Inline_Always_Placement --
+         -----------------------------------
+
+         procedure Check_Inline_Always_Placement (Spec_Id : Entity_Id) is
+            Spec_Decl : constant Node_Id := Unit_Declaration_Node (Spec_Id);
+
+            function Compilation_Unit_OK return Boolean;
+            pragma Inline (Compilation_Unit_OK);
+            --  Determine whether pragma Inline_Always applies to a compatible
+            --  compilation unit denoted by Spec_Id.
+
+            function Declarative_List_OK return Boolean;
+            pragma Inline (Declarative_List_OK);
+            --  Determine whether the initial declaration of subprogram Spec_Id
+            --  and the pragma appear in compatible declarative lists.
+
+            function Subprogram_Body_OK return Boolean;
+            pragma Inline (Subprogram_Body_OK);
+            --  Determine whether pragma Inline_Always applies to a compatible
+            --  subprogram body denoted by Spec_Id.
+
+            -------------------------
+            -- Compilation_Unit_OK --
+            -------------------------
+
+            function Compilation_Unit_OK return Boolean is
+               Comp_Unit : constant Node_Id := Parent (Spec_Decl);
+
+            begin
+               --  The pragma appears after the initial declaration of a
+               --  compilation unit.
+
+               --    procedure Comp_Unit;
+               --    pragma Inline_Always (Comp_Unit);
+
+               --  Note that for compatibility reasons, the following case is
+               --  also accepted.
+
+               --    procedure Stand_Alone_Body_Comp_Unit is
+               --       ...
+               --    end Stand_Alone_Body_Comp_Unit;
+               --    pragma Inline_Always (Stand_Alone_Body_Comp_Unit);
+
+               return
+                 Nkind (Comp_Unit) = N_Compilation_Unit
+                   and then Present (Aux_Decls_Node (Comp_Unit))
+                   and then Is_List_Member (N)
+                   and then List_Containing (N) =
+                              Pragmas_After (Aux_Decls_Node (Comp_Unit));
+            end Compilation_Unit_OK;
+
+            -------------------------
+            -- Declarative_List_OK --
+            -------------------------
+
+            function Declarative_List_OK return Boolean is
+               Context : constant Node_Id := Parent (Spec_Decl);
+
+               Init_Decl : Node_Id;
+               Init_List : List_Id;
+               Prag_List : List_Id;
+
+            begin
+               --  Determine the proper initial declaration. In general this is
+               --  the declaration node of the subprogram except when the input
+               --  denotes a generic instantiation.
+
+               --    procedure Inst is new Gen;
+               --    pragma Inline_Always (Inst);
+
+               --  In this case the original subprogram is moved inside an
+               --  anonymous package while pragma Inline_Always remains at the
+               --  level of the anonymous package. Use the declaration of the
+               --  package because it reflects the placement of the original
+               --  instantiation.
+
+               --    package Anon_Pack is
+               --       procedure Inst is ... end Inst;  --  original
+               --    end Anon_Pack;
+
+               --    procedure Inst renames Anon_Pack.Inst;
+               --    pragma Inline_Always (Inst);
+
+               if Is_Generic_Instance (Spec_Id) then
+                  Init_Decl := Parent (Parent (Spec_Decl));
+                  pragma Assert (Nkind (Init_Decl) = N_Package_Declaration);
+               else
+                  Init_Decl := Spec_Decl;
+               end if;
+
+               if Is_List_Member (Init_Decl) and then Is_List_Member (N) then
+                  Init_List := List_Containing (Init_Decl);
+                  Prag_List := List_Containing (N);
+
+                  --  The pragma and then initial declaration appear within the
+                  --  same declarative list.
+
+                  if Init_List = Prag_List then
+                     return True;
+
+                  --  A special case of the above is when both the pragma and
+                  --  the initial declaration appear in different lists of a
+                  --  package spec, protected definition, or a task definition.
+
+                  --    package Pack is
+                  --       procedure Proc;
+                  --    private
+                  --       pragma Inline_Always (Proc);
+                  --    end Pack;
+
+                  elsif Nkind_In (Context, N_Package_Specification,
+                                           N_Protected_Definition,
+                                           N_Task_Definition)
+                    and then Init_List = Visible_Declarations (Context)
+                    and then Prag_List = Private_Declarations (Context)
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               return False;
+            end Declarative_List_OK;
+
+            ------------------------
+            -- Subprogram_Body_OK --
+            ------------------------
+
+            function Subprogram_Body_OK return Boolean is
+               Body_Decl : Node_Id;
+
+            begin
+               --  The pragma appears within the declarative list of a stand-
+               --  alone subprogram body.
+
+               --    procedure Stand_Alone_Body is
+               --       pragma Inline_Always (Stand_Alone_Body);
+               --    begin
+               --       ...
+               --    end Stand_Alone_Body;
+
+               --  The compiler creates a dummy spec in this case, however the
+               --  pragma remains within the declarative list of the body.
+
+               if Nkind (Spec_Decl) = N_Subprogram_Declaration
+                 and then not Comes_From_Source (Spec_Decl)
+                 and then Present (Corresponding_Body (Spec_Decl))
+               then
+                  Body_Decl :=
+                    Unit_Declaration_Node (Corresponding_Body (Spec_Decl));
+
+                  if Present (Declarations (Body_Decl))
+                    and then Is_List_Member (N)
+                    and then List_Containing (N) = Declarations (Body_Decl)
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               return False;
+            end Subprogram_Body_OK;
+
+         --  Start of processing for Check_Inline_Always_Placement
+
+         begin
+            --  This check is relevant only for pragma Inline_Always
+
+            if Pname /= Name_Inline_Always then
+               return;
+
+            --  Nothing to do when the pragma is internally generated on the
+            --  assumption that it is properly placed.
+
+            elsif not Comes_From_Source (N) then
+               return;
+
+            --  Nothing to do for internally generated subprograms that act
+            --  as accidental homonyms of a source subprogram being inlined.
+
+            elsif not Comes_From_Source (Spec_Id) then
+               return;
+
+            --  Nothing to do for generic formal subprograms that act as
+            --  homonyms of another source subprogram being inlined.
+
+            elsif Is_Formal_Subprogram (Spec_Id) then
+               return;
+
+            elsif Compilation_Unit_OK
+              or else Declarative_List_OK
+              or else Subprogram_Body_OK
+            then
+               return;
+            end if;
+
+            --  At this point it is known that the pragma applies to or appears
+            --  within a completing body, a completing stub, or a subunit.
+
+            Error_Msg_Name_1 := Pname;
+            Error_Msg_Name_2 := Chars (Spec_Id);
+            Error_Msg_Sloc   := Sloc (Spec_Id);
+
+            Error_Msg_N
+              ("pragma % must appear on initial declaration of subprogram "
+               & "% defined #", N);
+         end Check_Inline_Always_Placement;
 
          ---------------------------
          -- Inlining_Not_Possible --
@@ -9236,6 +9544,12 @@ package body Sem_Prag is
             --  retrieve it as the alias of the visible subprogram instance.
 
             if Is_Subprogram (Subp) then
+
+               --  Ensure that pragma Inline_Always is associated with the
+               --  initial declaration of the subprogram.
+
+               Check_Inline_Always_Placement (Subp);
+
                if Is_Wrapper_Package (Scope (Subp)) then
                   Inner_Subp := Subp;
                else
@@ -11167,6 +11481,7 @@ package body Sem_Prag is
                         SPARK_Msg_N
                           ("expression of external state property must be "
                            & "static", Expr);
+                        return;
                      end if;
 
                   --  The lack of expression defaults the property to True
@@ -11339,6 +11654,11 @@ package body Sem_Prag is
                   Set_Ekind               (State_Id, E_Abstract_State);
                   Set_Etype               (State_Id, Standard_Void_Type);
                   Set_Encapsulating_State (State_Id, Empty);
+
+                  --  Set the SPARK mode from the current context
+
+                  Set_SPARK_Pragma           (State_Id, SPARK_Mode_Pragma);
+                  Set_SPARK_Pragma_Inherited (State_Id);
 
                   --  An abstract state declared within a Ghost region becomes
                   --  Ghost (SPARK RM 6.9(2)).
@@ -13002,7 +13322,7 @@ package body Sem_Prag is
                      Analyze (N);
                      raise Pragma_Exit;
 
-                     --  No other possibilities
+                  --  No other possibilities
 
                   when others =>
                      raise Program_Error;
@@ -13019,23 +13339,21 @@ package body Sem_Prag is
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 
-            --  Deal with analyzing the string argument
+            --  Deal with analyzing the string argument. If checks are not
+            --  on we don't want any expansion (since such expansion would
+            --  not get properly deleted) but we do want to analyze (to get
+            --  proper references). The Preanalyze_And_Resolve routine does
+            --  just what we want. Ditto if pragma is active, because it will
+            --  be rewritten as an if-statement whose analysis will complete
+            --  analysis and expansion of the string message. This makes a
+            --  difference in the unusual case where the expression for the
+            --  string may have a side effect, such as raising an exception.
+            --  This is mandated by RM 11.4.2, which specifies that the string
+            --  expression is only evaluated if the check fails and
+            --  Assertion_Error is to be raised.
 
             if Arg_Count = 3 then
-
-               --  If checks are not on we don't want any expansion (since
-               --  such expansion would not get properly deleted) but
-               --  we do want to analyze (to get proper references).
-               --  The Preanalyze_And_Resolve routine does just what we want
-
-               if Is_Ignored (N) then
-                  Preanalyze_And_Resolve (Str, Standard_String);
-
-                  --  Otherwise we need a proper analysis and expansion
-
-               else
-                  Analyze_And_Resolve (Str, Standard_String);
-               end if;
+               Preanalyze_And_Resolve (Str, Standard_String);
             end if;
 
             --  Now you might think we could just do the same with the Boolean
@@ -13662,8 +13980,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -14167,12 +14485,11 @@ package body Sem_Prag is
                Call := Get_Pragma_Arg (Arg1);
             end if;
 
-            if Nkind_In (Call,
-                 N_Indexed_Component,
-                 N_Function_Call,
-                 N_Identifier,
-                 N_Expanded_Name,
-                 N_Selected_Component)
+            if Nkind_In (Call, N_Expanded_Name,
+                               N_Function_Call,
+                               N_Identifier,
+                               N_Indexed_Component,
+                               N_Selected_Component)
             then
                --  If this pragma Debug comes from source, its argument was
                --  parsed as a name form (which is syntactically identical).
@@ -14523,8 +14840,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -14788,18 +15105,17 @@ package body Sem_Prag is
                      --  compilation unit. If the pragma appears in some unit
                      --  in the context, there might still be a need for an
                      --  Elaborate_All_Desirable from the current compilation
-                     --  to the named unit, so we keep the check enabled.
+                     --  to the named unit, so we keep the check enabled. This
+                     --  does not apply in SPARK mode, where we allow pragma
+                     --  Elaborate, but we don't trust it to be right so we
+                     --  will still insist on the Elaborate_All.
 
-                     if In_Extended_Main_Source_Unit (N) then
-
-                        --  This does not apply in SPARK mode, where we allow
-                        --  pragma Elaborate, but we don't trust it to be right
-                        --  so we will still insist on the Elaborate_All.
-
-                        if SPARK_Mode /= On then
-                           Set_Suppress_Elaboration_Warnings
-                             (Entity (Name (Citem)));
-                        end if;
+                     if Legacy_Elaboration_Checks
+                       and then In_Extended_Main_Source_Unit (N)
+                       and then SPARK_Mode /= On
+                     then
+                        Set_Suppress_Elaboration_Warnings
+                          (Entity (Name (Citem)));
                      end if;
 
                      exit Inner;
@@ -14815,24 +15131,6 @@ package body Sem_Prag is
 
                Next (Arg);
             end loop Outer;
-
-            --  Give a warning if operating in static mode with one of the
-            --  gnatwl/-gnatwE (elaboration warnings enabled) switches set.
-
-            if Elab_Warnings
-              and not Dynamic_Elaboration_Checks
-
-              --  pragma Elaborate not allowed in SPARK mode anyway. We
-              --  already complained about it, no point in generating any
-              --  further complaint.
-
-              and SPARK_Mode /= On
-            then
-               Error_Msg_N
-                 ("?l?use of pragma Elaborate may not be safe", N);
-               Error_Msg_N
-                 ("?l?use pragma Elaborate_All instead if possible", N);
-            end if;
          end Elaborate;
 
          -------------------
@@ -14883,10 +15181,13 @@ package body Sem_Prag is
                      --  unit if the pragma is in the current compilation, as
                      --  for pragma Elaborate.
 
-                     if In_Extended_Main_Source_Unit (N) then
+                     if Legacy_Elaboration_Checks
+                       and then In_Extended_Main_Source_Unit (N)
+                     then
                         Set_Suppress_Elaboration_Warnings
                           (Entity (Name (Citem)));
                      end if;
+
                      exit Innr;
                   end if;
 
@@ -14934,7 +15235,7 @@ package body Sem_Prag is
             then
                Error_Pragma ("pragma% must refer to a spec, not a body");
             else
-               Set_Body_Required (Cunit_Node, True);
+               Set_Body_Required (Cunit_Node);
                Set_Has_Pragma_Elaborate_Body (Cunit_Ent);
 
                --  If we are in dynamic elaboration mode, then we suppress
@@ -14942,17 +15243,19 @@ package body Sem_Prag is
                --  fine NOT to do dynamic checks at the first level (and such
                --  checks will be suppressed because no elaboration boolean
                --  is created for Elaborate_Body packages).
-
+               --
                --  But in the static model of elaboration, Elaborate_Body is
                --  definitely NOT good enough to ensure elaboration safety on
                --  its own, since the body may WITH other units that are not
                --  safe from an elaboration point of view, so a client must
                --  still do an Elaborate_All on such units.
-
+               --
                --  Debug flag -gnatdD restores the old behavior of 3.13, where
                --  Elaborate_Body always suppressed elab warnings.
 
-               if Dynamic_Elaboration_Checks or Debug_Flag_DD then
+               if Legacy_Elaboration_Checks
+                 and then (Dynamic_Elaboration_Checks or Debug_Flag_DD)
+               then
                   Set_Suppress_Elaboration_Warnings (Cunit_Ent);
                end if;
             end if;
@@ -15463,8 +15766,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -15906,7 +16209,7 @@ package body Sem_Prag is
                then
                   Id := Defining_Entity (Context);
 
-               --  Pragma Ghost applies to a stand alone subprogram body
+               --  Pragma Ghost applies to a stand-alone subprogram body
 
                elsif Nkind (Context) = N_Subprogram_Body
                  and then No (Corresponding_Spec (Context))
@@ -16050,8 +16353,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -16301,6 +16604,20 @@ package body Sem_Prag is
                   return;
                end if;
 
+               --  Ada 2012 (AI05-0030): Cannot apply the implementation_kind
+               --  By_Protected_Procedure to the primitive procedure of a task
+               --  interface.
+
+               if Chars (Arg2) = Name_By_Protected_Procedure
+                 and then Is_Interface (Typ)
+                 and then Is_Task_Interface (Typ)
+               then
+                  Error_Pragma_Arg
+                    ("implementation kind By_Protected_Procedure cannot be "
+                     & "applied to a task interface primitive", Arg2);
+                  return;
+               end if;
+
             --  Procedures declared inside a protected type must be accepted
 
             elsif Ekind (Proc_Id) = E_Procedure
@@ -16313,20 +16630,6 @@ package body Sem_Prag is
             else
                Error_Pragma_Arg
                  ("pragma % must be applied to a primitive procedure", Arg1);
-               return;
-            end if;
-
-            --  Ada 2012 (AI05-0030): Cannot apply the implementation_kind
-            --  By_Protected_Procedure to the primitive procedure of a task
-            --  interface.
-
-            if Chars (Arg2) = Name_By_Protected_Procedure
-              and then Is_Interface (Typ)
-              and then Is_Task_Interface (Typ)
-            then
-               Error_Pragma_Arg
-                 ("implementation kind By_Protected_Procedure cannot be "
-                  & "applied to a task interface primitive", Arg2);
                return;
             end if;
 
@@ -17994,7 +18297,7 @@ package body Sem_Prag is
             Variant := First (Pragma_Argument_Associations (N));
             while Present (Variant) loop
                if Chars (Variant) = No_Name then
-                  Error_Pragma_Arg ("expect name `Increases`", Variant);
+                  Error_Pragma_Arg_Ident ("expect name `Increases`", Variant);
 
                elsif not Nam_In (Chars (Variant), Name_Decreases,
                                                   Name_Increases)
@@ -19828,8 +20131,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -19875,8 +20178,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -19941,6 +20244,13 @@ package body Sem_Prag is
             --  general Assertion_Policy pragma) to preserve existing warnings.
 
             Set_Has_Predicates (Typ);
+
+            --  Indicate that the pragma must be processed at the point the
+            --  type is frozen, as is done for the corresponding aspect.
+
+            Set_Has_Delayed_Aspects (Typ);
+            Set_Has_Delayed_Freeze (Typ);
+
             Set_Predicates_Ignored (Typ,
               Present (Check_Policy_List)
                 and then
@@ -20032,7 +20342,10 @@ package body Sem_Prag is
                else
                   if not Debug_Flag_U then
                      Set_Is_Preelaborated (Ent);
-                     Set_Suppress_Elaboration_Warnings (Ent);
+
+                     if Legacy_Elaboration_Checks then
+                        Set_Suppress_Elaboration_Warnings (Ent);
+                     end if;
                   end if;
                end if;
             end if;
@@ -20660,7 +20973,10 @@ package body Sem_Prag is
             if not Debug_Flag_U then
                Set_Is_Pure (Ent);
                Set_Has_Pragma_Pure (Ent);
-               Set_Suppress_Elaboration_Warnings (Ent);
+
+               if Legacy_Elaboration_Checks then
+                  Set_Suppress_Elaboration_Warnings (Ent);
+               end if;
             end if;
          end Pure;
 
@@ -21859,7 +22175,7 @@ package body Sem_Prag is
 
                if Nkind_In (Decl, N_Entry_Body, N_Subprogram_Body) then
 
-                  --  A stand alone subprogram body
+                  --  A stand-alone subprogram body
 
                   if Body_Id = Spec_Id then
                      Check_Pragma_Conformance
@@ -24082,11 +24398,16 @@ package body Sem_Prag is
                               else
                                  OK := Set_Warning_Switch (Chr);
                               end if;
-                           end if;
 
-                           if not OK then
+                              if not OK then
+                                 Error_Pragma_Arg
+                                   ("invalid warning switch character " & Chr,
+                                    Arg1);
+                              end if;
+
+                           else
                               Error_Pragma_Arg
-                                ("invalid warning switch character " & Chr,
+                                ("invalid wide character in warning switch ",
                                  Arg1);
                            end if;
 
@@ -24437,7 +24758,7 @@ package body Sem_Prag is
       Preanalyze_Assert_Expression (Expr, Standard_Boolean);
 
       --  Emit a clarification message when the expression contains at least
-      --  one undefined reference, possibly due to contract "freezing".
+      --  one undefined reference, possibly due to contract freezing.
 
       if Errors /= Serious_Errors_Detected
         and then Present (Freeze_Id)
@@ -27104,25 +27425,14 @@ package body Sem_Prag is
                      end loop;
                   end if;
 
-                  --  Constants are part of the hidden state of a package, but
-                  --  the compiler cannot determine whether they have variable
-                  --  input (SPARK RM 7.1.1(2)) and cannot classify them as a
-                  --  hidden state. Accept the constant quietly even if it is
-                  --  a visible state or lacks a Part_Of indicator.
+                  --  At this point it is known that the constituent is not
+                  --  part of the package hidden state and cannot be used in
+                  --  a refinement (SPARK RM 7.2.2(9)).
 
-                  if Ekind (Constit_Id) = E_Constant then
-                     Collect_Constituent;
-
-                  --  If we get here, then the constituent is not a hidden
-                  --  state of the related package and may not be used in a
-                  --  refinement (SPARK RM 7.2.2(9)).
-
-                  else
-                     Error_Msg_Name_1 := Chars (Spec_Id);
-                     SPARK_Msg_NE
-                       ("cannot use & in refinement, constituent is not a "
-                        & "hidden state of package %", Constit, Constit_Id);
-                  end if;
+                  Error_Msg_Name_1 := Chars (Spec_Id);
+                  SPARK_Msg_NE
+                    ("cannot use & in refinement, constituent is not a hidden "
+                     & "state of package %", Constit, Constit_Id);
                end if;
             end Match_Constituent;
 
@@ -27187,7 +27497,7 @@ package body Sem_Prag is
                   Constit_Id := Entity_Of (Constit);
 
                   --  When a constituent is declared after a subprogram body
-                  --  that caused "freezing" of the related contract where
+                  --  that caused freezing of the related contract where
                   --  pragma Refined_State resides, the constituent appears
                   --  undefined and carries Any_Id as its entity.
 
@@ -27231,7 +27541,7 @@ package body Sem_Prag is
                         --  Stop the compilation, as this leads to a multitude
                         --  of misleading cascaded errors.
 
-                        raise Program_Error;
+                        raise Unrecoverable_Error;
                      end if;
 
                   --  The constituent is a valid state or object
@@ -27579,6 +27889,10 @@ package body Sem_Prag is
       if Is_Analyzed_Pragma (N) then
          return;
       end if;
+
+      --  Save the scenario for examination by the ABE Processing phase
+
+      Record_Elaboration_Scenario (N);
 
       --  Replicate the abstract states declared by the package because the
       --  matching algorithm will consume states.
@@ -28227,8 +28541,8 @@ package body Sem_Prag is
             end if;
          end if;
 
-      --  When the item appears in the private state space of a packge, it must
-      --  be a part of some state declared by the said package.
+      --  When the item appears in the private state space of a package, it
+      --  must be a part of some state declared by the said package.
 
       else pragma Assert (Placement = Private_State_Space);
 
@@ -28576,7 +28890,7 @@ package body Sem_Prag is
       Depends   : Node_Id;
       Formal    : Entity_Id;
       Global    : Node_Id;
-      Spec_Id   : Entity_Id;
+      Spec_Id   : Entity_Id := Empty;
       Subp_Decl : Node_Id;
       Typ       : Entity_Id;
 
@@ -28644,7 +28958,7 @@ package body Sem_Prag is
          Depends := Get_Pragma (Subp_Id, Pragma_Refined_Depends);
          Global  := Get_Pragma (Subp_Id, Pragma_Refined_Global);
 
-      --  Subprogram declaration or stand alone body case, look for pragmas
+      --  Subprogram declaration or stand-alone body case, look for pragmas
       --  Depends and Global
 
       else
@@ -29119,7 +29433,7 @@ package body Sem_Prag is
       elsif Present (Corresponding_Aspect (Prag)) then
          return Parent (Corresponding_Aspect (Prag));
 
-      --  No candidate packge [body] found
+      --  No candidate package [body] found
 
       else
          return Empty;
@@ -29193,10 +29507,11 @@ package body Sem_Prag is
       elsif N = Name_Off then
          return Off;
 
-      --  Any other argument is illegal
+      --  Any other argument is illegal. Assume that no SPARK mode applies to
+      --  avoid potential cascaded errors.
 
       else
-         raise Program_Error;
+         return None;
       end if;
    end Get_SPARK_Mode_Type;
 
@@ -29548,7 +29863,7 @@ package body Sem_Prag is
       Pragma_Linker_Constructor             => -1,
       Pragma_Linker_Destructor              => -1,
       Pragma_Linker_Options                 => -1,
-      Pragma_Linker_Section                 =>  0,
+      Pragma_Linker_Section                 => -1,
       Pragma_List                           =>  0,
       Pragma_Lock_Free                      =>  0,
       Pragma_Locking_Policy                 =>  0,

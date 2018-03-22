@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@
 --  content of entities in the tree, so this package is used for routines that
 --  require more than minimal semantic knowledge.
 
-with Alloc; use Alloc;
+with Alloc;
 with Namet; use Namet;
 with Table;
 with Types; use Types;

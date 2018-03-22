@@ -7,14 +7,14 @@
        INQUIRE(UNIT=10,NEXTREC=J)
        IF (J.NE.2) THEN
 !          PRINT*,'NEXTREC RETURNED ',J,' EXPECTED 2'
-           CALL ABORT
+           STOP 1
        ENDIF
  200   FORMAT(I4,/,I4)
        WRITE(UNIT=10,REC=2,FMT=200)2,3
        INQUIRE(UNIT=10,NEXTREC=J)
        IF (J.NE.4) THEN
 !          PRINT*,'NEXTREC RETURNED ',J,' EXPECTED 4'
-           CALL ABORT
+           STOP 2
        ENDIF
        CLOSE(UNIT=10,STATUS='DELETE')
        END

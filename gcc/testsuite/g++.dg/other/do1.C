@@ -7,7 +7,7 @@
 
 void init ()
 {
-  do {  } while (0)
-	    obj = 0; // { dg-error "expected|not declared" }
+  do {  } while (0) // { dg-error "expected ';'" }
+	    obj = 0; // { dg-error "not declared" }
      
 }

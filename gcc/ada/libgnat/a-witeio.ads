@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -51,7 +51,7 @@ with System.WCh_Con;
 
 package Ada.Wide_Text_IO is
 
-   type File_Type is limited private;
+   type File_Type is limited private with Default_Initial_Condition;
    type File_Mode is (In_File, Out_File, Append_File);
 
    --  The following representation clause allows the use of unchecked

@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V for GNU compiler.
-;; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -259,6 +259,9 @@
 ;; Iterator for QImode extension patterns.
 (define_mode_iterator SUPERQI [HI SI (DI "TARGET_64BIT")])
 
+;; Iterator for extending loads.
+(define_mode_iterator ZERO_EXTEND_LOAD [QI HI (SI "TARGET_64BIT")])
+
 ;; Iterator for hardware integer modes narrower than XLEN.
 (define_mode_iterator SUBX [QI HI (SI "TARGET_64BIT")])
 
@@ -411,7 +414,7 @@
 	(plus:SI (match_operand:SI 1 "register_operand" " r,r")
 		 (match_operand:SI 2 "arith_operand"    " r,I")))]
   ""
-  { return TARGET_64BIT ? "addw\t%0,%1,%2" : "add\t%0,%1,%2"; }
+  { return TARGET_64BIT ? "add%i2w\t%0,%1,%2" : "add%i2\t%0,%1,%2"; }
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
@@ -420,7 +423,7 @@
 	(plus:DI (match_operand:DI 1 "register_operand" " r,r")
 		 (match_operand:DI 2 "arith_operand"    " r,I")))]
   "TARGET_64BIT"
-  "add\t%0,%1,%2"
+  "add%i2\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
 
@@ -430,7 +433,7 @@
 	     (plus:SI (match_operand:SI 1 "register_operand" " r,r")
 		      (match_operand:SI 2 "arith_operand"    " r,I"))))]
   "TARGET_64BIT"
-  "addw\t%0,%1,%2"
+  "add%i2w\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
@@ -441,7 +444,7 @@
 			      (match_operand:DI 2 "arith_operand"    " r,I"))
 		     0)))]
   "TARGET_64BIT"
-  "addw\t%0,%1,%2"
+  "add%i2w\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
@@ -702,7 +705,7 @@
 	(any_div:SI (match_operand:SI 1 "register_operand" " r")
 		    (match_operand:SI 2 "register_operand" " r")))]
   "TARGET_DIV"
-  { return TARGET_64BIT ? "<insn>w\t%0,%1,%2" : "<insn>\t%0,%1,%2"; }
+  { return TARGET_64BIT ? "<insn>%i2w\t%0,%1,%2" : "<insn>%i2\t%0,%1,%2"; }
   [(set_attr "type" "idiv")
    (set_attr "mode" "SI")])
 
@@ -711,7 +714,7 @@
 	(any_div:DI (match_operand:DI 1 "register_operand" " r")
 		    (match_operand:DI 2 "register_operand" " r")))]
   "TARGET_DIV && TARGET_64BIT"
-  "<insn>\t%0,%1,%2"
+  "<insn>%i2\t%0,%1,%2"
   [(set_attr "type" "idiv")
    (set_attr "mode" "DI")])
 
@@ -721,7 +724,7 @@
 	    (any_div:SI (match_operand:SI 1 "register_operand" " r")
 			(match_operand:SI 2 "register_operand" " r"))))]
   "TARGET_DIV && TARGET_64BIT"
-  "<insn>w\t%0,%1,%2"
+  "<insn>%i2w\t%0,%1,%2"
   [(set_attr "type" "idiv")
    (set_attr "mode" "DI")])
 
@@ -925,7 +928,7 @@
 	(any_bitwise:X (match_operand:X 1 "register_operand" "%r,r")
 		       (match_operand:X 2 "arith_operand"    " r,I")))]
   ""
-  "<insn>\t%0,%1,%2"
+  "<insn>%i2\t%0,%1,%2"
   [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
@@ -934,7 +937,7 @@
 	(any_bitwise:SI (match_operand:SI 1 "register_operand" "%r,r")
 			(match_operand:SI 2 "arith_operand"    " r,I")))]
   "TARGET_64BIT"
-  "<insn>\t%0,%1,%2"
+  "<insn>%i2\t%0,%1,%2"
   [(set_attr "type" "logical")
    (set_attr "mode" "SI")])
 
@@ -1022,7 +1025,7 @@
 	    (match_operand:QI 1 "nonimmediate_operand" " r,m")))]
   ""
   "@
-   and\t%0,%1,0xff
+   andi\t%0,%1,0xff
    lbu\t%0,%1"
   [(set_attr "move_type" "andi,load")
    (set_attr "mode" "<SUPERQI:MODE>")])
@@ -1315,7 +1318,7 @@
 	(plus:HI (match_operand:HISI 1 "register_operand" " r,r")
 		 (match_operand:HISI 2 "arith_operand"    " r,I")))]
   ""
-  { return TARGET_64BIT ? "addw\t%0,%1,%2" : "add\t%0,%1,%2"; }
+  { return TARGET_64BIT ? "add%i2w\t%0,%1,%2" : "add%i2\t%0,%1,%2"; }
   [(set_attr "type" "arith")
    (set_attr "mode" "HI")])
 
@@ -1324,7 +1327,7 @@
 	(xor:HI (match_operand:HISI 1 "register_operand" " r,r")
 		(match_operand:HISI 2 "arith_operand"    " r,I")))]
   ""
-  "xor\t%0,%1,%2"
+  "xor%i2\t%0,%1,%2"
   [(set_attr "type" "logical")
    (set_attr "mode" "HI")])
 
@@ -1433,6 +1436,19 @@
   DONE;
 })
 
+(define_expand "movmemsi"
+  [(parallel [(set (match_operand:BLK 0 "general_operand")
+		   (match_operand:BLK 1 "general_operand"))
+	      (use (match_operand:SI 2 ""))
+	      (use (match_operand:SI 3 "const_int_operand"))])]
+  ""
+{
+  if (riscv_expand_block_move (operands[0], operands[1], operands[2]))
+    DONE;
+  else
+    FAIL;
+})
+
 ;; Expand in-line code to clear the instruction cache between operand[0] and
 ;; operand[1].
 (define_expand "clear_cache"
@@ -1440,7 +1456,13 @@
    (match_operand 1 "pmode_register_operand")]
   ""
 {
+#ifdef ICACHE_FLUSH_FUNC
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, ICACHE_FLUSH_FUNC),
+		     LCT_NORMAL, VOIDmode, operands[0], Pmode,
+		     operands[1], Pmode, const0_rtx, Pmode);
+#else
   emit_insn (gen_fence_i ());
+#endif
   DONE;
 })
 
@@ -1472,7 +1494,7 @@
     operands[2] = GEN_INT (INTVAL (operands[2])
 			   & (GET_MODE_BITSIZE (SImode) - 1));
 
-  return TARGET_64BIT ? "<insn>w\t%0,%1,%2" : "<insn>\t%0,%1,%2";
+  return TARGET_64BIT ? "<insn>%i2w\t%0,%1,%2" : "<insn>%i2\t%0,%1,%2";
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
@@ -1488,7 +1510,7 @@
     operands[2] = GEN_INT (INTVAL (operands[2])
 			   & (GET_MODE_BITSIZE (DImode) - 1));
 
-  return "<insn>\t%0,%1,%2";
+  return "<insn>%i2\t%0,%1,%2";
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")])
@@ -1503,7 +1525,50 @@
   if (GET_CODE (operands[2]) == CONST_INT)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
-  return "<insn>w\t%0,%1,%2";
+  return "<insn>%i2w\t%0,%1,%2";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+;; Non-canonical, but can be formed by ree when combine is not successful at
+;; producing one of the two canonical patterns below.
+(define_insn "*lshrsi3_zero_extend_1"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(zero_extend:DI
+	 (lshiftrt:SI (match_operand:SI     1 "register_operand" " r")
+		      (match_operand:SI     2 "const_int_operand"))))]
+  "TARGET_64BIT && (INTVAL (operands[2]) & 0x1f) > 0"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+
+  return "srliw\t%0,%1,%2";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+;; Canonical form for a zero-extend of a logical right shift.
+(define_insn "*lshrsi3_zero_extend_2"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(zero_extract:DI (match_operand:DI  1 "register_operand" " r")
+			 (match_operand     2 "const_int_operand")
+			 (match_operand     3 "const_int_operand")))]
+  "(TARGET_64BIT && (INTVAL (operands[3]) > 0)
+    && (INTVAL (operands[2]) + INTVAL (operands[3]) == 32))"
+{
+  return "srliw\t%0,%1,%3";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+;; Canonical form for a zero-extend of a logical right shift when the
+;; shift count is 31.
+(define_insn "*lshrsi3_zero_extend_3"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(lt:DI (match_operand:SI            1 "register_operand" " r")
+	       (const_int 0)))]
+  "TARGET_64BIT"
+{
+  return "srliw\t%0,%1,31";
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
@@ -1722,7 +1787,7 @@
 	(any_ge:GPR (match_operand:X 1 "register_operand" " r")
 		    (const_int 1)))]
   ""
-  "slt<u>\t%0,zero,%1"
+  "slt%i2<u>\t%0,zero,%1"
   [(set_attr "type" "slt")
    (set_attr "mode" "<MODE>")])
 
@@ -1731,7 +1796,7 @@
 	(any_lt:GPR (match_operand:X 1 "register_operand" "  r")
 		    (match_operand:X 2 "arith_operand"    " rI")))]
   ""
-  "slt<u>\t%0,%1,%2"
+  "slt%i2<u>\t%0,%1,%2"
   [(set_attr "type" "slt")
    (set_attr "mode" "<MODE>")])
 
@@ -1742,7 +1807,7 @@
   ""
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
-  return "slt<u>\t%0,%1,%2";
+  return "slt%i2<u>\t%0,%1,%2";
 }
   [(set_attr "type" "slt")
    (set_attr "mode" "<MODE>")])
@@ -1862,7 +1927,9 @@
 (define_insn "simple_return"
   [(simple_return)]
   ""
-  "ret"
+{
+  return riscv_output_return ();
+}
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 

@@ -1,3 +1,13 @@
+2018-01-25  Richard Biener  <rguenther@suse.de>
+
+	* gcc_release (build_sources): Use getconf to get at the number
+	of cores in the system and pass -jN to gcc_build.
+
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_version_svn: Ignore the GCC 5 branch.
+	* crontab: Remove entry for the GCC 5 branch.
+
 2017-05-23  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc_release (XZ): Default to xz --best.

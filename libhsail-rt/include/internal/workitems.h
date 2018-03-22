@@ -1,7 +1,7 @@
 /* workitems.h -- Types for context data passed as hidden parameters to special
    built-ins.
 
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -62,6 +62,11 @@ typedef struct
   /* (Flat) pointer to the beginning of the group segment allocated
      to the work-group.  */
   void *group_base_ptr;
+
+  /* The offset in the group memory for the kernel local group variables.
+     To support module scope group variables, there might be need to preseve
+     room for them in the beginning of the group segment.  */
+  uint32_t initial_group_offset;
 
   /* Similarly to the private segment that gets space allocated for all
      WIs in the work-group.  */

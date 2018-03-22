@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std __attribute__ ((__visibility__ ("default")))
 {

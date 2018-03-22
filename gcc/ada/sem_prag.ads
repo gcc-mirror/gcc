@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,6 +174,27 @@ package Sem_Prag is
       Pragma_SPARK_Mode      => True,
       Pragma_Warnings        => True,
       others                 => False);
+
+   --  The following table lists all pragmas which are significant in SPARK and
+   --  as a result get translated into verification conditions. The table is an
+   --  amalgamation of the pragmas listed in SPARK RM 16.1 and internally added
+   --  entries.
+
+   Pragma_Significant_In_SPARK : constant array (Pragma_Id) of Boolean :=
+     (Pragma_All_Calls_Remote              => False,
+      Pragma_Asynchronous                  => False,
+      Pragma_Default_Storage_Pool          => False,
+      Pragma_Discard_Names                 => False,
+      Pragma_Dispatching_Domain            => False,
+      Pragma_Priority_Specific_Dispatching => False,
+      Pragma_Remote_Call_Interface         => False,
+      Pragma_Remote_Types                  => False,
+      Pragma_Shared_Passive                => False,
+      Pragma_Task_Dispatching_Policy       => False,
+      Pragma_Unmodified                    => False,
+      Pragma_Unreferenced                  => False,
+      Pragma_Warnings                      => False,
+      others                               => True);
 
    -----------------
    -- Subprograms --

@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2017 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2018 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -316,6 +316,8 @@
 ; neon_cls_q
 ; neon_cnt
 ; neon_cnt_q
+; neon_dot
+; neon_dot_q
 ; neon_ext
 ; neon_ext_q
 ; neon_rbit
@@ -764,6 +766,8 @@
 \
   neon_abs,\
   neon_abs_q,\
+  neon_dot,\
+  neon_dot_q,\
   neon_neg,\
   neon_neg_q,\
   neon_qneg,\
@@ -1080,6 +1084,10 @@
   crypto_sha256_fast,\
   crypto_sha256_slow,\
   crypto_pmull,\
+  crypto_sha512,\
+  crypto_sha3,\
+  crypto_sm3,\
+  crypto_sm4,\
   coproc"
    (const_string "untyped"))
 
@@ -1110,8 +1118,8 @@
           neon_sub, neon_sub_q, neon_sub_widen, neon_sub_long, neon_qsub,\
           neon_qsub_q, neon_sub_halve, neon_sub_halve_q,\
           neon_sub_halve_narrow_q,\
-          neon_abs, neon_abs_q, neon_neg, neon_neg_q, neon_qneg,\
-          neon_qneg_q, neon_qabs, neon_qabs_q, neon_abd, neon_abd_q,\
+	  neon_abs, neon_abs_q, neon_dot, neon_dot_q, neon_neg, neon_neg_q,\
+	  neon_qneg, neon_qneg_q, neon_qabs, neon_qabs_q, neon_abd, neon_abd_q,\
           neon_abd_long, neon_minmax, neon_minmax_q, neon_compare,\
           neon_compare_q, neon_compare_zero, neon_compare_zero_q,\
           neon_arith_acc, neon_arith_acc_q, neon_reduc_add,\

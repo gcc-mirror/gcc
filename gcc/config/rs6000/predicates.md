@@ -1,5 +1,5 @@
 ;; Predicate definitions for POWER and PowerPC.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -198,6 +198,16 @@
 
   return CA_REGNO_P (REGNO (op));
 })
+
+;; Return 1 if operand is constant zero (scalars and vectors).
+(define_predicate "zero_constant"
+  (and (match_code "const_int,const_double,const_wide_int,const_vector")
+       (match_test "op == CONST0_RTX (mode)")))
+
+;; Return 1 if operand is constant -1 (scalars and vectors).
+(define_predicate "all_ones_constant"
+  (and (match_code "const_int,const_double,const_wide_int,const_vector")
+       (match_test "op == CONSTM1_RTX (mode) && !FLOAT_MODE_P (mode)")))
 
 ;; Return 1 if op is a signed 5-bit constant integer.
 (define_predicate "s5bit_cint_operand"
@@ -543,10 +553,14 @@
     (match_operand 0 "u_short_cint_operand")
     (match_operand 0 "gpc_reg_operand")))
 
-;; Return 1 if op is any constant integer 
-;; or non-special register.
+;; Return 1 if op is any constant integer or a non-special register.
 (define_predicate "reg_or_cint_operand"
   (ior (match_code "const_int")
+       (match_operand 0 "gpc_reg_operand")))
+
+;; Return 1 if op is constant zero or a non-special register.
+(define_predicate "reg_or_zero_operand"
+  (ior (match_operand 0 "zero_constant")
        (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if op is a constant integer valid for addition with addis, addi.
@@ -743,16 +757,6 @@
        (and (match_test "TARGET_ALTIVEC")
 	    (and (match_test "easy_altivec_constant (op, mode)")
 		 (match_test "vspltis_shifted (op) != 0")))))
-
-;; Return 1 if operand is constant zero (scalars and vectors).
-(define_predicate "zero_constant"
-  (and (match_code "const_int,const_double,const_wide_int,const_vector")
-       (match_test "op == CONST0_RTX (mode)")))
-
-;; Return 1 if operand is constant -1 (scalars and vectors).
-(define_predicate "all_ones_constant"
-  (and (match_code "const_int,const_double,const_wide_int,const_vector")
-       (match_test "op == CONSTM1_RTX (mode) && !FLOAT_MODE_P (mode)")))
 
 ;; Return 1 if operand is a vector int register or is either a vector constant
 ;; of all 0 bits of a vector constant of all 1 bits.
@@ -1216,85 +1220,6 @@
   (and (match_operand 0 "branch_comparison_operator")
        (match_code "eq,lt,gt,ltu,gtu,unordered")))
 
-;; Return 1 if OP is a load multiple operation, known to be a PARALLEL.
-(define_predicate "load_multiple_operation"
-  (match_code "parallel")
-{
-  int count = XVECLEN (op, 0);
-  unsigned int dest_regno;
-  rtx src_addr;
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != MEM)
-    return 0;
-
-  dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
-  src_addr = XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0);
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i);
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != SImode
-	  || REGNO (SET_DEST (elt)) != dest_regno + i
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_MODE (SET_SRC (elt)) != SImode
-	  || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
-	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
-	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
-	  || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != i * 4)
-	return 0;
-    }
-
-  return 1;
-})
-
-;; Return 1 if OP is a store multiple operation, known to be a PARALLEL.
-;; The second vector element is a CLOBBER.
-(define_predicate "store_multiple_operation"
-  (match_code "parallel")
-{
-  int count = XVECLEN (op, 0) - 1;
-  unsigned int src_regno;
-  rtx dest_addr;
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != MEM
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != REG)
-    return 0;
-
-  src_regno = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
-  dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, 0)), 0);
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i + 1);
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != SImode
-	  || REGNO (SET_SRC (elt)) != src_regno + i
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || GET_MODE (SET_DEST (elt)) != SImode
-	  || GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
-	  || ! rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
-	  || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
-	  || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != i * 4)
-	return 0;
-    }
-
-  return 1;
-})
-
 ;; Return 1 if OP is valid for a save_world call in prologue, known to be
 ;; a PARLLEL.
 (define_predicate "save_world_operation"
@@ -1370,12 +1295,11 @@
   rtx elt;
   int count = XVECLEN (op, 0);
 
-  if (count != 59)
+  if (count != 58)
     return 0;
 
   index = 0;
   if (GET_CODE (XVECEXP (op, 0, index++)) != RETURN
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE
       || GET_CODE (XVECEXP (op, 0, index++)) != USE
       || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER)
     return 0;

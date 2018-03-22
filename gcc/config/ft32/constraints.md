@@ -1,5 +1,5 @@
 ;; Constraint definitions for FT32
-;; Copyright (C) 2015-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2018 Free Software Foundation, Inc.
 ;; Contributed by FTDI <support@ftdi.com>
 
 ;; This file is part of GCC.
@@ -91,7 +91,7 @@
 (define_constraint "L"
   "A 16-bit unsigned constant, multiple of 4 (-65532..0)"
   (and (match_code "const_int")
-       (match_test "-65532 <= ival && ival <= 0 && (ival & 3) == 0")))
+       (match_test "ival >= -65532 && ival <= 0 && (ival & 3) == 0")))
 
 (define_constraint "S"
   "A 20-bit signed constant (-524288..524287)"
@@ -105,9 +105,9 @@
 (define_constraint "b"
   "A constant for a bitfield width (1..16)"
   (and (match_code "const_int")
-       (match_test "1 <= ival && ival <= 16")))
+       (match_test "ival >= 1 && ival <= 16")))
 
 (define_constraint "KA"
   "A 10-bit signed constant (-512..511)"
   (and (match_code "const_int")
-       (match_test "-512 <= ival && ival <= 511")))
+       (match_test "ival >= -512 && ival <= 511")))

@@ -14,5 +14,5 @@ program main
   data(2,2)%i = 4
   write (unit=line1, fmt="(4I4)") reshape(transpose(data),shape(data))
   write (unit=line2, fmt="(4I4)") (/ 1, 3, 2, 4 /)
-  if (line1 /= line2) call abort
+  if (line1 /= line2) STOP 1
 END program main

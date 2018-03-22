@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,7 @@ package body Exp_Ch11 is
 
    procedure Warn_If_No_Propagation (N : Node_Id);
    --  Called for an exception raise that is not a local raise (and thus can
-   --  not be optimized to a goto. Issues warning if No_Exception_Propagation
+   --  not be optimized to a goto). Issues warning if No_Exception_Propagation
    --  restriction is set. N is the node for the raise or equivalent call.
 
    ---------------------------
@@ -998,15 +998,10 @@ package body Exp_Ch11 is
          --  if a source generated handler was not the target of a local raise.
 
          else
-            if Restriction_Active (No_Exception_Propagation)
-              and then not Has_Local_Raise (Handler)
+            if not Has_Local_Raise (Handler)
               and then Comes_From_Source (Handler)
-              and then Warn_On_Non_Local_Exception
             then
-               Warn_No_Exception_Propagation_Active (Handler);
-               Error_Msg_N
-                 ("\?X?this handler can never be entered, "
-                  & "and has been removed", Handler);
+               Warn_If_No_Local_Raise (Handler);
             end if;
 
             if No_Exception_Propagation_Active then
@@ -1424,19 +1419,28 @@ package body Exp_Ch11 is
          return;
       end if;
 
-      --  Add clean up actions if required
+      --  Add cleanup actions if required. No cleanup actions are needed in
+      --  thunks associated with interfaces, because they only displace the
+      --  pointer to the object. For extended return statements, we need
+      --  cleanup actions if the Handled_Statement_Sequence contains generated
+      --  objects of controlled types, for example. We do not want to clean up
+      --  the return object.
 
-      if not Nkind_In (Parent (N), N_Package_Body,
-                                   N_Accept_Statement,
-                                   N_Extended_Return_Statement)
+      if not Nkind_In (Parent (N), N_Accept_Statement,
+                                   N_Extended_Return_Statement,
+                                   N_Package_Body)
         and then not Delay_Cleanups (Current_Scope)
-
-        --  No cleanup action needed in thunks associated with interfaces
-        --  because they only displace the pointer to the object.
-
         and then not Is_Thunk (Current_Scope)
       then
          Expand_Cleanup_Actions (Parent (N));
+
+      elsif Nkind (Parent (N)) = N_Extended_Return_Statement
+        and then Handled_Statement_Sequence (Parent (N)) = N
+        and then not Delay_Cleanups (Current_Scope)
+      then
+         pragma Assert (not Is_Thunk (Current_Scope));
+         Expand_Cleanup_Actions (Parent (N));
+
       else
          Set_First_Real_Statement (N, First (Statements (N)));
       end if;
@@ -1859,8 +1863,14 @@ package body Exp_Ch11 is
          --  Otherwise, if the No_Exception_Propagation restriction is active
          --  and the warning is enabled, generate the appropriate warnings.
 
+         --  ??? Do not do it for the Call_Marker nodes inserted by the ABE
+         --  mechanism because this generates too many false positives, or
+         --  for generic instantiations for the same reason.
+
          elsif Warn_On_Non_Local_Exception
            and then Restriction_Active (No_Exception_Propagation)
+           and then Nkind (N) /= N_Call_Marker
+           and then Nkind (N) not in N_Generic_Instantiation
          then
             Warn_No_Exception_Propagation_Active (N);
 
@@ -2116,6 +2126,8 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("PE_All_Guards_Closed");
          when PE_Bad_Predicated_Generic_Type =>
             Add_Str_To_Name_Buffer ("PE_Bad_Predicated_Generic_Type");
+         when PE_Build_In_Place_Mismatch =>
+            Add_Str_To_Name_Buffer ("PE_Build_In_Place_Mismatch");
          when PE_Current_Task_In_Entry_Body =>
             Add_Str_To_Name_Buffer ("PE_Current_Task_In_Entry_Body");
          when PE_Duplicated_Entry_Address =>
@@ -2153,6 +2165,22 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("SE_Object_Too_Large");
       end case;
    end Get_RT_Exception_Name;
+
+   ----------------------------
+   -- Warn_If_No_Local_Raise --
+   ----------------------------
+
+   procedure Warn_If_No_Local_Raise (N : Node_Id) is
+   begin
+      if Restriction_Active (No_Exception_Propagation)
+        and then Warn_On_Non_Local_Exception
+      then
+         Warn_No_Exception_Propagation_Active (N);
+
+         Error_Msg_N
+           ("\?X?this handler can never be entered, and has been removed", N);
+      end if;
+   end Warn_If_No_Local_Raise;
 
    ----------------------------
    -- Warn_If_No_Propagation --

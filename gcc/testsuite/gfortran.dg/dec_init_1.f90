@@ -15,10 +15,10 @@ subroutine dummy(i1,r1,c1,l1,i2,r2,c2,l2)
   character, intent(inout) :: c2
   logical, intent(inout) :: l2
   print *, i1, i2, l1, l2, ichar(c1), ichar(c2), r1, r2
-  if ( i1 .ne. 0 .or. i2 .ne. 0 ) call abort()
-  if ( l1 .or. l2 ) call abort()
-  if ( c1 .ne. achar(0) .or. c2 .ne. achar(0) ) call abort()
-  if ( r1 .ne. 0.0 .or. r2 .ne. 0.0 ) call abort()
+  if ( i1 .ne. 0 .or. i2 .ne. 0 ) STOP 1
+  if ( l1 .or. l2 ) STOP 2
+  if ( c1 .ne. achar(0) .or. c2 .ne. achar(0) ) STOP 3
+  if ( r1 .ne. 0.0 .or. r2 .ne. 0.0 ) STOP 4
 end subroutine
 
 structure /s3/

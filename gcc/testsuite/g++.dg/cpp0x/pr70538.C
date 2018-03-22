@@ -11,5 +11,5 @@ class B {
 template <typename> class C : B {
   using base_type = B;
   base_type::base_type;  // { dg-warning "access declarations" }
-  PathComponentPiece m_fn1() {}
+  PathComponentPiece m_fn1() { return PathComponentPiece(); }
 };

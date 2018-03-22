@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005-2017 Free Software Foundation, Inc.
+Copyright (C) 2005-2018 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
@@ -8715,36 +8715,36 @@ end program test_itime
 @table @asis
 @item @emph{Description}:
 @item @emph{Standard}:
-Sends the signal specified by @var{SIGNAL} to the process @var{PID}.
+Sends the signal specified by @var{SIG} to the process @var{PID}.
 See @code{kill(2)}.
 
-This intrinsic is provided in both subroutine and function forms; however,
-only one form can be used in any given program unit.
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
 
 @item @emph{Class}:
 Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{CALL KILL(C, VALUE [, STATUS])}
-@item @code{STATUS = KILL(C, VALUE)}
+@item @code{CALL KILL(PID, SIG [, STATUS])}
+@item @code{STATUS = KILL(PID, SIG)}
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{C} @tab Shall be a scalar @code{INTEGER}, with
-@code{INTENT(IN)}
-@item @var{VALUE} @tab Shall be a scalar @code{INTEGER}, with
-@code{INTENT(IN)}
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)} or
-@code{INTEGER(8)}. Returns 0 on success, or a system-specific error code
-otherwise.
+@item @var{PID} @tab Shall be a scalar @code{INTEGER} with @code{INTENT(IN)}.
+@item @var{SIG} @tab Shall be a scalar @code{INTEGER} with @code{INTENT(IN)}.
+@item @var{STATUS} @tab [Subroutine](Optional)
+Shall be a scalar @code{INTEGER}.
+Returns 0 on success; otherwise a system-specific error code is returned.
+@item @var{STATUS} @tab [Function] The kind type parameter is that of
+@code{pid}.
+Returns 0 on success; otherwise a system-specific error code is returned.
 @end multitable
 
 @item @emph{See also}:
 @ref{ABORT}, @ref{EXIT}
 @end table
-
 
 
 @node KIND
@@ -9870,6 +9870,7 @@ one or two.
 type; otherwise, an array of @code{LOGICAL} type. The rank shall be one
 or two, and the first (or only) dimension of @var{MATRIX_B} shall be
 equal to the last (or only) dimension of @var{MATRIX_A}.
+@var{MATRIX_A} and @var{MATRIX_B} shall not both be rank one arrays.
 @end multitable
 
 @item @emph{Return value}:
@@ -9997,15 +9998,16 @@ and all of the elements of @var{MASK} along a given row are zero, the
 result value for that row is zero.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
+@var{KIND} argument are available in Fortran 2003 and later.
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{RESULT = MAXLOC(ARRAY, DIM [, MASK])}
-@item @code{RESULT = MAXLOC(ARRAY [, MASK])}
+@item @code{RESULT = MAXLOC(ARRAY, DIM [, MASK] [,KIND])}
+@item @code{RESULT = MAXLOC(ARRAY [, MASK] [,KIND])}
 @end multitable
 
 @item @emph{Arguments}:
@@ -10017,6 +10019,8 @@ Transformational function
 inclusive.  It may not be an optional dummy argument.
 @item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
 @end multitable
 
 @item @emph{Return value}:
@@ -10025,8 +10029,9 @@ equal to the rank of @var{ARRAY}.  If @var{DIM} is present, the result
 is an array with a rank one less than the rank of @var{ARRAY}, and a
 size corresponding to the size of @var{ARRAY} with the @var{DIM}
 dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
-of one, the result is a scalar.  In all cases, the result is of default
-@code{INTEGER} type.
+of one, the result is a scalar.   If the optional argument @var{KIND}
+is present, the result is an integer of kind @var{KIND}, otherwise it
+is of default kind.
 
 @item @emph{See also}:
 @ref{MAX}, @ref{MAXVAL}
@@ -10345,26 +10350,29 @@ and all of the elements of @var{MASK} along a given row are zero, the
 result value for that row is zero.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
+@var{KIND} argument are available in Fortran 2003 and later.
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{RESULT = MINLOC(ARRAY, DIM [, MASK])}
-@item @code{RESULT = MINLOC(ARRAY [, MASK])}
+@item @code{RESULT = MINLOC(ARRAY, DIM [, MASK] [,KIND])}
+@item @code{RESULT = MINLOC(ARRAY [, MASK], [,KIND])}
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER} or
-@code{REAL}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
+@code{REAL} or @code{CHARACTER}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
 @item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
 @end multitable
 
 @item @emph{Return value}:
@@ -10373,8 +10381,9 @@ equal to the rank of @var{ARRAY}.  If @var{DIM} is present, the result
 is an array with a rank one less than the rank of @var{ARRAY}, and a
 size corresponding to the size of @var{ARRAY} with the @var{DIM}
 dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
-of one, the result is a scalar.  In all cases, the result is of default
-@code{INTEGER} type.
+of one, the result is a scalar.  If the optional argument @var{KIND}
+is present, the result is an integer of kind @var{KIND}, otherwise it
+is of default kind.
 
 @item @emph{See also}:
 @ref{MIN}, @ref{MINVAL}

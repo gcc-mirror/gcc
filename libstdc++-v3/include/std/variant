@@ -1,6 +1,6 @@
 // <variant> -*- C++ -*-
 
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -891,7 +891,7 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
     }
 
   template<typename _Tp, typename... _Types>
@@ -900,7 +900,7 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	std::move(__v));
     }
 
@@ -910,7 +910,7 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
     }
 
   template<typename _Tp, typename... _Types>
@@ -919,7 +919,7 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	std::move(__v));
     }
 
@@ -958,7 +958,8 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(__ptr);
+      return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+	  __ptr);
     }
 
   template<typename _Tp, typename... _Types>
@@ -969,7 +970,8 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(__ptr);
+      return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+	  __ptr);
     }
 
   struct monostate { };
@@ -1420,15 +1422,15 @@ namespace __variant
 	variant<_Types...>, std::index_sequence_for<_Types...>>,
       public __variant_hash_call_base<_Types...>
     {
-      using result_type = size_t;
-      using argument_type = variant<_Types...>;
+      using result_type [[__deprecated__]] = size_t;
+      using argument_type [[__deprecated__]] = variant<_Types...>;
     };
 
   template<>
     struct hash<monostate>
     {
-      using result_type = size_t;
-      using argument_type = monostate;
+      using result_type [[__deprecated__]] = size_t;
+      using argument_type [[__deprecated__]] = monostate;
 
       size_t
       operator()(const monostate& __t) const noexcept
@@ -1437,6 +1439,11 @@ namespace __variant
 	return __magic_monostate_hash;
       }
     };
+
+  template<typename... _Types>
+    struct __is_fast_hash<hash<variant<_Types...>>>
+    : bool_constant<(__is_fast_hash<_Types>::value && ...)>
+    { };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

@@ -1,5 +1,5 @@
 /* Shrink-wrapping related optimizations.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -309,10 +309,10 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
      move it as far as we can.  */
   do
     {
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	{
 	  FOR_BB_INSNS_REVERSE (bb, dinsn)
-	    if (DEBUG_INSN_P (dinsn))
+	    if (DEBUG_BIND_INSN_P (dinsn))
 	      {
 		df_ref use;
 		FOR_EACH_INSN_USE (use, dinsn)
@@ -561,8 +561,7 @@ handle_simple_exit (edge e)
       BB_END (old_bb) = end;
 
       redirect_edge_succ (e, new_bb);
-      new_bb->count = e->count;
-      new_bb->frequency = EDGE_FREQUENCY (e);
+      new_bb->count = e->count ();
       e->flags |= EDGE_FALLTHRU;
 
       e = make_single_succ_edge (new_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
@@ -881,18 +880,17 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
      the correct answer for reducible flow graphs; for irreducible flow graphs
      our profile is messed up beyond repair anyway.  */
 
-  gcov_type num = 0;
-  gcov_type den = 0;
+  profile_count num = profile_count::zero ();
+  profile_count den = profile_count::zero ();
 
   FOR_EACH_EDGE (e, ei, pro->preds)
     if (!dominated_by_p (CDI_DOMINATORS, e->src, pro))
       {
-	num += EDGE_FREQUENCY (e);
-	den += e->src->frequency;
+	if (e->count ().initialized_p ())
+	  num += e->count ();
+	if (e->src->count.initialized_p ())
+	  den += e->src->count;
       }
-
-  if (den == 0)
-    den = 1;
 
   /* All is okay, so do it.  */
 
@@ -920,10 +918,9 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
 	if (dump_file)
 	  fprintf (dump_file, "Duplicated %d to %d\n", bb->index, dup->index);
-
-	bb->frequency = RDIV (num * bb->frequency, den);
-	dup->frequency -= bb->frequency;
-	bb->count = bb->count.apply_scale (num, den);
+	
+	if (num == profile_count::zero () || den.nonzero_p ())
+	  bb->count = bb->count.apply_scale (num, den);
 	dup->count -= bb->count;
       }
 
@@ -996,8 +993,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 	  continue;
 	}
 
-      new_bb->count += e->src->count.apply_probability (e->probability);
-      new_bb->frequency += EDGE_FREQUENCY (e);
+      new_bb->count += e->count ();
 
       redirect_edge_and_branch_force (e, new_bb);
       if (dump_file)
@@ -1182,7 +1178,7 @@ place_prologue_for_one_component (unsigned int which, basic_block head)
 	     work: this does not always add up to the block frequency at
 	     all, and even if it does, rounding error makes for bad
 	     decisions.  */
-	  SW (bb)->own_cost = bb->frequency;
+	  SW (bb)->own_cost = bb->count.to_frequency (cfun);
 
 	  edge e;
 	  edge_iterator ei;
@@ -1373,6 +1369,8 @@ spread_components (sbitmap components)
 
       bitmap_clear_bit (seen, bb->index);
     }
+
+  todo.release ();
 
   /* Finally, mark everything not not needed both forwards and backwards.  */
 

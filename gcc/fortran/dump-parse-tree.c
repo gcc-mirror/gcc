@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -348,12 +348,10 @@ show_constructor (gfc_constructor_base base)
 
 
 static void
-show_char_const (const gfc_char_t *c, int length)
+show_char_const (const gfc_char_t *c, gfc_charlen_t length)
 {
-  int i;
-
   fputc ('\'', dumpfile);
-  for (i = 0; i < length; i++)
+  for (size_t i = 0; i < (size_t) length; i++)
     {
       if (c[i] == '\'')
 	fputs ("''", dumpfile);
@@ -465,7 +463,8 @@ show_expr (gfc_expr *p)
 	  break;
 
 	case BT_HOLLERITH:
-	  fprintf (dumpfile, "%dH", p->representation.length);
+	  fprintf (dumpfile, HOST_WIDE_INT_PRINT_DEC "H",
+		   p->representation.length);
 	  c = p->representation.string;
 	  for (i = 0; i < p->representation.length; i++, c++)
 	    {
@@ -967,8 +966,17 @@ show_symbol (gfc_symbol *sym)
       show_indent ();
       fputs ("PDT parameters", dumpfile);
       show_actual_arglist (sym->param_list);
-
     }
+
+  if (sym->attr.flavor == FL_NAMELIST)
+    {
+      gfc_namelist *nl;
+      show_indent ();
+      fputs ("variables : ", dumpfile);
+      for (nl = sym->namelist; nl; nl = nl->next)
+	fprintf (dumpfile, " %s",nl->sym->name);
+    }
+
   --show_level;
 }
 
@@ -1860,6 +1868,22 @@ show_code_node (int level, gfc_code *c)
       fputs ("FAIL IMAGE ", dumpfile);
       break;
 
+    case EXEC_CHANGE_TEAM:
+      fputs ("CHANGE TEAM", dumpfile);
+      break;
+
+    case EXEC_END_TEAM:
+      fputs ("END TEAM", dumpfile);
+      break;
+
+    case EXEC_FORM_TEAM:
+      fputs ("FORM TEAM", dumpfile);
+      break;
+
+    case EXEC_SYNC_TEAM:
+      fputs ("SYNC TEAM", dumpfile);
+      break;
+
     case EXEC_SYNC_ALL:
       fputs ("SYNC ALL ", dumpfile);
       if (c->expr2 != NULL)
@@ -1979,8 +2003,8 @@ show_code_node (int level, gfc_code *c)
       d = d->block;
       for (; d; d = d->block)
 	{
+	  fputs("\n", dumpfile);
 	  code_indent (level, 0);
-
 	  if (d->expr1 == NULL)
 	    fputs ("ELSE", dumpfile);
 	  else
@@ -2170,9 +2194,12 @@ show_code_node (int level, gfc_code *c)
             fputc (',', dumpfile);
         }
       show_expr (c->expr1);
+      ++show_level;
 
       show_code (level + 1, c->block->next);
+      --show_level;
       code_indent (level, c->label1);
+      show_indent ();
       fputs ("END DO", dumpfile);
       break;
 
@@ -2727,6 +2754,41 @@ show_code_node (int level, gfc_code *c)
 	fprintf (dumpfile, " EOR=%d", dt->eor->value);
       break;
 
+    case EXEC_WAIT:
+      fputs ("WAIT", dumpfile);
+
+      if (c->ext.wait != NULL)
+	{
+	  gfc_wait *wait = c->ext.wait;
+	  if (wait->unit)
+	    {
+	      fputs (" UNIT=", dumpfile);
+	      show_expr (wait->unit);
+	    }
+	  if (wait->iostat)
+	    {
+	      fputs (" IOSTAT=", dumpfile);
+	      show_expr (wait->iostat);
+	    }
+	  if (wait->iomsg)
+	    {
+	      fputs (" IOMSG=", dumpfile);
+	      show_expr (wait->iomsg);
+	    }
+	  if (wait->id)
+	    {
+	      fputs (" ID=", dumpfile);
+	      show_expr (wait->id);
+	    }
+	  if (wait->err)
+	    fprintf (dumpfile, " ERR=%d", wait->err->value);
+	  if (wait->end)
+	    fprintf (dumpfile, " END=%d", wait->end->value);
+	  if (wait->eor)
+	    fprintf (dumpfile, " EOR=%d", wait->eor->value);
+	}
+      break;
+
     case EXEC_OACC_PARALLEL_LOOP:
     case EXEC_OACC_PARALLEL:
     case EXEC_OACC_KERNELS_LOOP:
@@ -2960,7 +3022,6 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
   *type_name = "<error>";
   if (ts->type == BT_REAL || ts->type == BT_INTEGER)
     {
- 
       if (ts->is_c_interop && ts->interop_kind)
 	{
 	  *type_name = ts->interop_kind->name + 2;
@@ -2975,8 +3036,7 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 	{
 	  /* The user did not specify a C interop type.  Let's look through
 	     the available table and use the first one, but warn.  */
-	  int i;
-	  for (i=0; i<ISOCBINDING_NUMBER; i++)
+	  for (int i = 0; i < ISOCBINDING_NUMBER; i++)
 	    {
 	      if (c_interop_kinds_table[i].f90_type == ts->type
 		  && c_interop_kinds_table[i].value == ts->kind)
@@ -2989,6 +3049,48 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 
 		  ret = T_WARN;
 		  break;
+		}
+	    }
+	}
+    }
+  else if (ts->type == BT_LOGICAL)
+    {
+      if (ts->is_c_interop && ts->interop_kind)
+	{
+	  *type_name = "_Bool";
+	  ret = T_OK;
+	}
+      else
+	{
+	  /* Let's select an appropriate int, with a warning. */
+	  for (int i = 0; i < ISOCBINDING_NUMBER; i++)
+	    {
+	      if (c_interop_kinds_table[i].f90_type == BT_INTEGER
+		  && c_interop_kinds_table[i].value == ts->kind)
+		{
+		  *type_name = c_interop_kinds_table[i].name + 2;
+		  ret = T_WARN;
+		}
+	    }
+	}
+    }
+  else if (ts->type == BT_CHARACTER)
+    {
+      if (ts->is_c_interop)
+	{
+	  *type_name = "char";
+	  ret = T_OK;
+	}
+      else
+	{
+	  /* Let's select an appropriate int, with a warning. */
+	  for (int i = 0; i < ISOCBINDING_NUMBER; i++)
+	    {
+	      if (c_interop_kinds_table[i].f90_type == BT_INTEGER
+		  && c_interop_kinds_table[i].value == ts->kind)
+		{
+		  *type_name = c_interop_kinds_table[i].name + 2;
+		  ret = T_WARN;
 		}
 	    }
 	}
@@ -3036,24 +3138,32 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 /* Write out a declaration.  */
 static void
 write_decl (gfc_typespec *ts, gfc_array_spec *as, const char *sym_name,
-	    bool func_ret)
+	    bool func_ret, locus *where)
 {
-    const char *pre, *type_name, *post;
-    bool asterisk;
-    enum type_return rok;
+  const char *pre, *type_name, *post;
+  bool asterisk;
+  enum type_return rok;
 
-    rok = get_c_type_name (ts, as, &pre, &type_name, &asterisk, &post, func_ret);
-    gcc_assert (rok != T_ERROR);
-    fputs (type_name, dumpfile);
-    fputs (pre, dumpfile);
-    if (asterisk)
-      fputs ("*", dumpfile);
+  rok = get_c_type_name (ts, as, &pre, &type_name, &asterisk, &post, func_ret);
+  if (rok == T_ERROR)
+    {
+      gfc_error_now ("Cannot convert %qs to interoperable type at %L",
+		     gfc_typename (ts), where);
+      fprintf (dumpfile, "/* Cannot convert '%s' to interoperable type */",
+	       gfc_typename (ts));
+      return;
+    }
+  fputs (type_name, dumpfile);
+  fputs (pre, dumpfile);
+  if (asterisk)
+    fputs ("*", dumpfile);
 
-    fputs (sym_name, dumpfile);
-    fputs (post, dumpfile);
+  fputs (sym_name, dumpfile);
+  fputs (post, dumpfile);
     
-    if (rok == T_WARN)
-      fputs(" /* WARNING: non-interoperable KIND */", dumpfile);
+  if (rok == T_WARN)
+    fprintf (dumpfile," /* WARNING: Converting '%s' to interoperable type */",
+	     gfc_typename (ts));
 }
 
 /* Write out an interoperable type.  It will be written as a typedef
@@ -3068,7 +3178,7 @@ write_type (gfc_symbol *sym)
   for (c = sym->components; c; c = c->next)
     {
       fputs ("    ", dumpfile);
-      write_decl (&(c->ts), c->as, c->name, false);
+      write_decl (&(c->ts), c->as, c->name, false, &sym->declared_at);
       fputs (";\n", dumpfile);
     }
 
@@ -3090,7 +3200,7 @@ write_variable (gfc_symbol *sym)
     sym_name = sym->name;
 
   fputs ("extern ", dumpfile);
-  write_decl (&(sym->ts), sym->as, sym_name, false);
+  write_decl (&(sym->ts), sym->as, sym_name, false, &sym->declared_at);
   fputs (";\n", dumpfile);
 }
 
@@ -3117,7 +3227,7 @@ write_proc (gfc_symbol *sym)
       fputs (sym_name, dumpfile);
     }
   else
-    write_decl (&(sym->ts), sym->as, sym->name, true);
+    write_decl (&(sym->ts), sym->as, sym_name, true, &sym->declared_at);
 
   fputs (" (", dumpfile);
 
@@ -3127,7 +3237,14 @@ write_proc (gfc_symbol *sym)
       s = f->sym;
       rok = get_c_type_name (&(s->ts), NULL, &pre, &type_name, &asterisk,
 			     &post, false);
-      gcc_assert (rok != T_ERROR);
+      if (rok == T_ERROR)
+	{
+	  gfc_error_now ("Cannot convert %qs to interoperable type at %L",
+			 gfc_typename (&s->ts), &s->declared_at);
+	  fprintf (stderr, "/* Cannot convert '%s' to interoperable type */",
+		   gfc_typename (&s->ts));
+	  return;
+	}
 
       if (!s->attr.value)
 	asterisk = true;
@@ -3148,9 +3265,10 @@ write_proc (gfc_symbol *sym)
       if (rok == T_WARN)
 	fputs(" /* WARNING: non-interoperable KIND */ ", dumpfile);
 
-      fputs (f->next ? ", " : ")", dumpfile);
+      if (f->next)
+	fputs(", ", dumpfile);
     }
-  fputs (";\n", dumpfile);
+  fputs (");\n", dumpfile);
 }
 
 

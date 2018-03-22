@@ -306,11 +306,11 @@ irange::cast (const_tree new_type)
 	 constified.  */
       /* Get the extreme bounds for the new type, but within the old type,
 	 so we can properly compare them.  */
-      wide_int lbound = fold_convert (const_cast<tree> (type),
-				      TYPE_MIN_VALUE (new_type));
+      wide_int lbound = wi::to_wide (fold_convert (const_cast<tree> (type),
+						   TYPE_MIN_VALUE (new_type)));
       wide_int ubound
-	= fold_convert (const_cast <tree> (type),
-			TYPE_MAX_VALUE (new_type));
+	= wi::to_wide (fold_convert (const_cast <tree> (type),
+				     TYPE_MAX_VALUE (new_type)));
 
       if (wi::lt_p (bounds[0], lbound, TYPE_SIGN (type))
 	  || wi::gt_p (bounds[nitems - 1], ubound, TYPE_SIGN (type)))
@@ -351,8 +351,8 @@ irange::cast (const_tree new_type)
 	      && new_precision > TYPE_PRECISION (type))
 	  || sbit0 == sbit1)
 	{
-	  bounds[i] = b0;
-	  bounds[i + 1] = b1;
+	  bounds[i] = wi::to_wide (b0);
+	  bounds[i + 1] = wi::to_wide (b1);
 	}
       else
 	{
@@ -369,7 +369,7 @@ irange::cast (const_tree new_type)
 	    }
 	  /*  If we're about to construct [MIN, b1==MAX].  That's just
 	      the entire range.  */
-	  if ((wide_int) b1 == max)
+	  if (wi::to_wide (b1) == max)
 	    {
 	      bounds[0] = min;
 	      bounds[1] = max;
@@ -383,8 +383,8 @@ irange::cast (const_tree new_type)
 	  if (!sbit0 && sbit1)
 	    {
 	      bounds[i] = min;
-	      bounds[i + 1] = b1;
-	      bounds[nitems++] = b0;
+	      bounds[i + 1] = wi::to_wide (b1);
+	      bounds[nitems++] = wi::to_wide (b0);
 	      bounds[nitems++] = max;
 	    }
 	  /* From sign bit to no sign bit: [-5, 5]
@@ -392,8 +392,8 @@ irange::cast (const_tree new_type)
 	  else
 	    {
 	      bounds[i] = min;
-	      bounds[i + 1] = b1;
-	      bounds[nitems++] = b0;
+	      bounds[i + 1] = wi::to_wide (b1);
+	      bounds[nitems++] = wi::to_wide (b0);
 	      bounds[nitems++] = max;
 	    }
 	}
@@ -426,7 +426,7 @@ irange::contains_p (const_tree element) const
 			 const_cast <tree> (element));
   if (TREE_OVERFLOW (t))
     return false;
-  wide_int wi = t;
+  wide_int wi = wi::to_wide (t);
   return contains_p (wi);
 }
 
@@ -1138,7 +1138,8 @@ irange_tests ()
   r1 = irange (integer_type_node, 5, 10);
   ASSERT_TRUE (r1.valid_p ());
 
-  r1 = irange (integer_type_node, (wide_int) INT(5), (wide_int) INT(10));
+  r1 = irange (integer_type_node,
+	       wi::to_wide (INT(5)), wi::to_wide (INT(10)));
   ASSERT_TRUE (r1.valid_p ());
   ASSERT_TRUE (r1.contains_p (INT (7)));
   ASSERT_TRUE (r1.contains_p (7));
@@ -1151,7 +1152,8 @@ irange_tests ()
      to range, default to the range for the new type.  */
   r1 = irange (integer_type_node, integer_zero_node, maxint);
   r1.cast (short_integer_type_node);
-  ASSERT_TRUE (r1.lower_bound () == minshort && r1.upper_bound() == maxshort);
+  ASSERT_TRUE (r1.lower_bound () == wi::to_wide (minshort)
+	       && r1.upper_bound() == wi::to_wide (maxshort));
 
   /* (unsigned char)[-5,-1] => [251,255].  */
   r0 = rold = irange (signed_char_type_node, -5, -1);
@@ -1272,9 +1274,7 @@ irange_tests ()
   ASSERT_TRUE (r0 == r2);
 
   /* NOT(-MIN,+MAX) is the empty set and should return false.  */
-  r0 = irange (integer_type_node,
-	       wide_int_to_tree (integer_type_node, minint),
-	       wide_int_to_tree (integer_type_node, maxint));
+  r0 = irange (integer_type_node, minint, maxint);
   ASSERT_TRUE (r0.invert ().empty_p ());
   r1.clear ();
   ASSERT_TRUE (r0 == r1);

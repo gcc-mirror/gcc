@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -620,7 +620,7 @@ cgraph_node::analyze (void)
     {
       cgraph_node *t = cgraph_node::get (thunk.alias);
 
-      create_edge (t, NULL, t->count, CGRAPH_FREQ_BASE);
+      create_edge (t, NULL, t->count);
       callees->can_throw_external = !TREE_NOTHROW (t->decl);
       /* Target code in expand_thunk may need the thunk's target
 	 to be analyzed, so recurse here.  */
@@ -1296,6 +1296,93 @@ analyze_functions (bool first_time)
   input_location = saved_loc;
 }
 
+/* Check declaration of the type of ALIAS for compatibility with its TARGET
+   (which may be an ifunc resolver) and issue a diagnostic when they are
+   not compatible according to language rules (plus a C++ extension for
+   non-static member functions).  */
+
+static void
+maybe_diag_incompatible_alias (tree alias, tree target)
+{
+  tree altype = TREE_TYPE (alias);
+  tree targtype = TREE_TYPE (target);
+
+  bool ifunc = lookup_attribute ("ifunc", DECL_ATTRIBUTES (alias));
+  tree funcptr = altype;
+
+  if (ifunc)
+    {
+      /* Handle attribute ifunc first.  */
+      if (TREE_CODE (altype) == METHOD_TYPE)
+	{
+	  /* Set FUNCPTR to the type of the alias target.  If the type
+	     is a non-static member function of class C, construct a type
+	     of an ordinary function taking C* as the first argument,
+	     followed by the member function argument list, and use it
+	     instead to check for incompatibility.  This conversion is
+	     not defined by the language but an extension provided by
+	     G++.  */
+
+	  tree rettype = TREE_TYPE (altype);
+	  tree args = TYPE_ARG_TYPES (altype);
+	  altype = build_function_type (rettype, args);
+	  funcptr = altype;
+	}
+
+      targtype = TREE_TYPE (targtype);
+
+      if (POINTER_TYPE_P (targtype))
+	{
+	  targtype = TREE_TYPE (targtype);
+
+	  /* Only issue Wattribute-alias for conversions to void* with
+	     -Wextra.  */
+	  if (VOID_TYPE_P (targtype) && !extra_warnings)
+	    return;
+
+	  /* Proceed to handle incompatible ifunc resolvers below.  */
+	}
+      else
+	{
+	  funcptr = build_pointer_type (funcptr);
+
+	  error_at (DECL_SOURCE_LOCATION (target),
+		    "%<ifunc%> resolver for %qD must return %qT",
+		 alias, funcptr);
+	  inform (DECL_SOURCE_LOCATION (alias),
+		  "resolver indirect function declared here");
+	  return;
+	}
+    }
+
+  if ((!FUNC_OR_METHOD_TYPE_P (targtype)
+       || (prototype_p (altype)
+	   && prototype_p (targtype)
+	   && !types_compatible_p (altype, targtype))))
+    {
+      /* Warn for incompatibilities.  Avoid warning for functions
+	 without a prototype to make it possible to declare aliases
+	 without knowing the exact type, as libstdc++ does.  */
+      if (ifunc)
+	{
+	  funcptr = build_pointer_type (funcptr);
+
+	  if (warning_at (DECL_SOURCE_LOCATION (target),
+			  OPT_Wattribute_alias,
+			  "%<ifunc%> resolver for %qD should return %qT",
+			  alias, funcptr))
+	    inform (DECL_SOURCE_LOCATION (alias),
+		    "resolver indirect function declared here");
+	}
+      else if (warning_at (DECL_SOURCE_LOCATION (alias),
+			   OPT_Wattribute_alias,
+			   "%qD alias between functions of incompatible "
+			   "types %qT and %qT", alias, altype, targtype))
+	inform (DECL_SOURCE_LOCATION (target),
+		"aliased declaration here");
+    }
+}
+
 /* Translate the ugly representation of aliases as alias pairs into nice
    representation in callgraph.  We don't handle all cases yet,
    unfortunately.  */
@@ -1305,7 +1392,7 @@ handle_alias_pairs (void)
 {
   alias_pair *p;
   unsigned i;
-  
+
   for (i = 0; alias_pairs && alias_pairs->iterate (i, &p);)
     {
       symtab_node *target_node = symtab_node::get_for_asmname (p->target);
@@ -1352,6 +1439,8 @@ handle_alias_pairs (void)
       if (TREE_CODE (p->decl) == FUNCTION_DECL
           && target_node && is_a <cgraph_node *> (target_node))
 	{
+	  maybe_diag_incompatible_alias (p->decl, target_node->decl);
+
 	  cgraph_node *src_node = cgraph_node::get (p->decl);
 	  if (src_node && src_node->definition)
 	    src_node->reset ();
@@ -1366,10 +1455,11 @@ handle_alias_pairs (void)
 	}
       else
 	{
-	  error ("%q+D alias in between function and variable is not supported",
+	  error ("%q+D alias between function and variable is not supported",
 		 p->decl);
-	  warning (0, "%q+D aliased declaration",
-		   target_node->decl);
+	  inform (DECL_SOURCE_LOCATION (target_node->decl),
+		  "aliased declaration here");
+
 	  alias_pairs->unordered_remove (i);
 	}
     }
@@ -1511,17 +1601,12 @@ init_lowered_empty_function (tree decl, bool in_ssa, profile_count count)
 
   /* Create BB for body of the function and connect it properly.  */
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = count;
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency = BB_FREQ_MAX;
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count = count;
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency = BB_FREQ_MAX;
   bb = create_basic_block (NULL, ENTRY_BLOCK_PTR_FOR_FN (cfun));
   bb->count = count;
-  bb->frequency = BB_FREQ_MAX;
   e = make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, EDGE_FALLTHRU);
-  e->count = count;
   e->probability = profile_probability::always ();
   e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-  e->count = count;
   e->probability = profile_probability::always ();
   add_bb_to_loop (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
@@ -1764,8 +1849,12 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       else
 	resdecl = DECL_RESULT (thunk_fndecl);
 
+      profile_count cfg_count = count;
+      if (!cfg_count.initialized_p ())
+	cfg_count = profile_count::from_gcov_type (BB_FREQ_MAX).guessed_local ();
+
       bb = then_bb = else_bb = return_bb
-	= init_lowered_empty_function (thunk_fndecl, true, count);
+	= init_lowered_empty_function (thunk_fndecl, true, cfg_count);
 
       bsi = gsi_start_bb (bb);
 
@@ -1861,7 +1950,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	      resbnd = chkp_insert_retbnd_call (NULL, restmp, &bsi);
 	      create_edge (get_create (gimple_call_fndecl (gsi_stmt (bsi))),
 			   as_a <gcall *> (gsi_stmt (bsi)),
-			   callees->count, callees->frequency);
+			   callees->count);
 	    }
 
 	  if (restmp && !this_adjusting
@@ -1878,14 +1967,11 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		     adjustment, because that's why we're emitting a
 		     thunk.  */
 		  then_bb = create_basic_block (NULL, bb);
-		  then_bb->count = count - count.apply_scale (1, 16);
-		  then_bb->frequency = BB_FREQ_MAX - BB_FREQ_MAX / 16;
+		  then_bb->count = cfg_count - cfg_count.apply_scale (1, 16);
 		  return_bb = create_basic_block (NULL, then_bb);
-		  return_bb->count = count;
-		  return_bb->frequency = BB_FREQ_MAX;
+		  return_bb->count = cfg_count;
 		  else_bb = create_basic_block (NULL, else_bb);
-		  then_bb->count = count.apply_scale (1, 16);
-		  then_bb->frequency = BB_FREQ_MAX / 16;
+		  else_bb->count = cfg_count.apply_scale (1, 16);
 		  add_bb_to_loop (then_bb, bb->loop_father);
 		  add_bb_to_loop (return_bb, bb->loop_father);
 		  add_bb_to_loop (else_bb, bb->loop_father);
@@ -1898,17 +1984,14 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		  e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
 		  e->probability = profile_probability::guessed_always ()
 					.apply_scale (1, 16);
-		  e->count = count - count.apply_scale (1, 16);
 		  e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
 		  e->probability = profile_probability::guessed_always ()
 					.apply_scale (1, 16);
-		  e->count = count.apply_scale (1, 16);
 		  make_single_succ_edge (return_bb,
 					 EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
 		  make_single_succ_edge (then_bb, return_bb, EDGE_FALLTHRU);
 		  e = make_edge (else_bb, return_bb, EDGE_FALLTHRU);
 		  e->probability = profile_probability::always ();
-		  e->count = count.apply_scale (1, 16);
 		  bsi = gsi_last_bb (then_bb);
 		}
 
@@ -1943,8 +2026,10 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	}
 
       cfun->gimple_df->in_ssa_p = true;
+      update_max_bb_count ();
       profile_status_for_fn (cfun)
-        = count.initialized_p () ? PROFILE_READ : PROFILE_GUESSED;
+        = cfg_count.initialized_p () && cfg_count.ipa_p ()
+	  ? PROFILE_READ : PROFILE_GUESSED;
       /* FIXME: C++ FE should stop setting TREE_ASM_WRITTEN on thunks.  */
       TREE_ASM_WRITTEN (thunk_fndecl) = false;
       delete_unreachable_blocks ();
@@ -2070,8 +2155,8 @@ cgraph_node::expand (void)
 
       if (ret_type && TYPE_SIZE_UNIT (ret_type)
 	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
-	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
-				   larger_than_size))
+	  && compare_tree_int (TYPE_SIZE_UNIT (ret_type),
+			       larger_than_size) > 0)
 	{
 	  unsigned int size_as_int
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
@@ -2494,6 +2579,7 @@ symbol_table::compile (void)
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
+  switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();
   if (!quiet_flag)
     fprintf (stderr, "Assembling functions:\n");
@@ -2674,7 +2760,7 @@ cgraph_node::create_wrapper (cgraph_node *target)
 
   memset (&thunk, 0, sizeof (cgraph_thunk_info));
   thunk.thunk_p = true;
-  create_edge (target, NULL, count, CGRAPH_FREQ_BASE);
+  create_edge (target, NULL, count);
   callees->can_throw_external = !TREE_NOTHROW (target->decl);
 
   tree arguments = DECL_ARGUMENTS (decl);

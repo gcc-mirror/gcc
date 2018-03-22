@@ -23,7 +23,7 @@ contains
       type is (real(8))
         write (res, '(a, F4.1)') "real8", w
       type is (character(*, kind = 4))
-        call abort
+        STOP 1
       type is (character(*))
         write (res, '(a, I2, a, a)') "char(", LEN(w), ")", trim(w)
     end select
@@ -67,132 +67,132 @@ END MODULE
 
 ! Test pointing to derived types.
   u1 => obj1
-  if (SAME_TYPE_AS (obj1, u1) .neqv. .TRUE.) call abort
+  if (SAME_TYPE_AS (obj1, u1) .neqv. .TRUE.) STOP 1
   u2 => obj2
   call bar (u1, res)
-  if (trim (res) .ne. "type(a)  99") call abort
+  if (trim (res) .ne. "type(a)  99") STOP 1
 
   call foo (u2, res)
-  if (trim (res) .ne. "type(a) array 999 999 999") call abort
+  if (trim (res) .ne. "type(a) array 999 999 999") STOP 1
 
-  if (SAME_TYPE_AS (obj1, u1) .neqv. .TRUE.) call abort
+  if (SAME_TYPE_AS (obj1, u1) .neqv. .TRUE.) STOP 1
 
 ! Check allocate with an array SOURCE.
   allocate (u2(5), source = [(a(i), i = 1,5)])
-  if (SAME_TYPE_AS (u1, a(2)) .neqv. .TRUE.) call abort
+  if (SAME_TYPE_AS (u1, a(2)) .neqv. .TRUE.) STOP 1
   call foo (u2, res)
-  if (trim (res) .ne. "type(a) array   1   2   3   4   5") call abort
+  if (trim (res) .ne. "type(a) array   1   2   3   4   5") STOP 1
 
   deallocate (u2)
 
 ! Point to intrinsic targets.
   u1 => obj3
   call bar (u1, res)
-  if (trim (res) .ne. "integer 999") call abort
+  if (trim (res) .ne. "integer 999") STOP 1
 
   u2 => obj4
   call foo (u2, res)
-  if (trim (res) .ne. "real array 1.0 2.0 3.0 4.0") call abort
+  if (trim (res) .ne. "real array 1.0 2.0 3.0 4.0") STOP 1
 
   u2 => obj5
   call foo (u2, res)
-  if (trim (res) .ne. "integer array  99 198 297") call abort
+  if (trim (res) .ne. "integer array  99 198 297") STOP 1
 
 ! Test allocate with source.
   allocate (u1, source = sun)
   call bar (u1, res)
-  if (trim (res) .ne. "char( 8)sunshine") call abort
+  if (trim (res) .ne. "char( 8)sunshine") STOP 1
   deallocate (u1)
 
   allocate (u2(3), source = [7,8,9])
   call foo (u2, res)
-  if (trim (res) .ne. "integer array   7   8   9") call abort
+  if (trim (res) .ne. "integer array   7   8   9") STOP 1
 
   deallocate (u2)
 
-  if (EXTENDS_TYPE_OF (obj1, u2) .neqv. .TRUE.) call abort
-  if (EXTENDS_TYPE_OF (u2, obj1) .neqv. .FALSE.) call abort
+  if (EXTENDS_TYPE_OF (obj1, u2) .neqv. .TRUE.) STOP 1
+  if (EXTENDS_TYPE_OF (u2, obj1) .neqv. .FALSE.) STOP 1
 
   allocate (u2(3), source = [5.0,6.0,7.0])
   call foo (u2, res)
-  if (trim (res) .ne. "real array 5.0 6.0 7.0") call abort
+  if (trim (res) .ne. "real array 5.0 6.0 7.0") STOP 1
 
-  if (EXTENDS_TYPE_OF (obj1, u2) .neqv. .FALSE.) call abort
-  if (EXTENDS_TYPE_OF (u2, obj1) .neqv. .FALSE.) call abort
+  if (EXTENDS_TYPE_OF (obj1, u2) .neqv. .FALSE.) STOP 1
+  if (EXTENDS_TYPE_OF (u2, obj1) .neqv. .FALSE.) STOP 1
   deallocate (u2)
 
 ! Check allocate with a MOLD tag.
   allocate (u2(3), mold = 8.0)
   call foo (u2, res)
-  if (res(1:10) .ne. "real array") call abort
+  if (res(1:10) .ne. "real array") STOP 1
   deallocate (u2)
 
 ! Test passing an intrinsic type to a CLASS(*) formal.
   call bar(1, res)
-  if (trim (res) .ne. "integer   1") call abort
+  if (trim (res) .ne. "integer   1") STOP 1
 
   call bar(2.0, res)
-  if (trim (res) .ne. "real4 2.0") call abort
+  if (trim (res) .ne. "real4 2.0") STOP 1
 
   call bar(2d0, res)
-  if (trim (res) .ne. "real8 2.0") call abort
+  if (trim (res) .ne. "real8 2.0") STOP 1
 
   call bar(a(3), res)
-  if (trim (res) .ne. "type(a)   3") call abort
+  if (trim (res) .ne. "type(a)   3") STOP 1
 
   call bar(sun, res)
-  if (trim (res) .ne. "char( 8)sunshine") call abort
+  if (trim (res) .ne. "char( 8)sunshine") STOP 1
 
   call bar (obj3, res)
-  if (trim (res) .ne. "integer 999") call abort
+  if (trim (res) .ne. "integer 999") STOP 1
 
   call foo([4,5], res)
-  if (trim (res) .ne. "integer array   4   5") call abort
+  if (trim (res) .ne. "integer array   4   5") STOP 1
 
   call foo([6.0,7.0], res)
-  if (trim (res) .ne. "real array 6.0 7.0") call abort
+  if (trim (res) .ne. "real array 6.0 7.0") STOP 1
 
   call foo([a(8),a(9)], res)
-  if (trim (res) .ne. "type(a) array   8   9") call abort
+  if (trim (res) .ne. "type(a) array   8   9") STOP 1
 
   call foo([sun, " & rain"], res)
-  if (trim (res) .ne. "char( 8, 2)sunshine & rain") call abort
+  if (trim (res) .ne. "char( 8, 2)sunshine & rain") STOP 1
 
   call foo([sun//" never happens", " & rain always happens"], res)
-  if (trim (res) .ne. "char(22, 2)sunshine never happens & rain always happens") call abort
+  if (trim (res) .ne. "char(22, 2)sunshine never happens & rain always happens") STOP 1
 
   call foo (obj4, res)
-  if (trim (res) .ne. "real array 1.0 2.0 3.0 4.0") call abort
+  if (trim (res) .ne. "real array 1.0 2.0 3.0 4.0") STOP 1
 
   call foo (obj5, res)
-  if (trim (res) .ne. "integer array  99 198 297") call abort
+  if (trim (res) .ne. "integer array  99 198 297") STOP 1
 
 ! Allocatable entities
-  if (EXTENDS_TYPE_OF (obj1, u3) .neqv. .TRUE.) call abort
-  if (EXTENDS_TYPE_OF (u3, obj1) .neqv. .FALSE.) call abort
-  if (EXTENDS_TYPE_OF (obj1, u4) .neqv. .TRUE.) call abort
-  if (EXTENDS_TYPE_OF (u4, obj1) .neqv. .FALSE.) call abort
+  if (EXTENDS_TYPE_OF (obj1, u3) .neqv. .TRUE.) STOP 1
+  if (EXTENDS_TYPE_OF (u3, obj1) .neqv. .FALSE.) STOP 1
+  if (EXTENDS_TYPE_OF (obj1, u4) .neqv. .TRUE.) STOP 1
+  if (EXTENDS_TYPE_OF (u4, obj1) .neqv. .FALSE.) STOP 1
 
   allocate (u3, source = 2.4)
   call bar (u3, res)
-  if (trim (res) .ne. "real4 2.4") call abort
+  if (trim (res) .ne. "real4 2.4") STOP 1
 
   allocate (u4(2), source = [a(88), a(99)])
   call foo (u4, res)
-  if (trim (res) .ne. "type(a) array  88  99") call abort
+  if (trim (res) .ne. "type(a) array  88  99") STOP 1
 
-  if (EXTENDS_TYPE_OF (obj1, u3) .neqv. .FALSE.) call abort
-  if (EXTENDS_TYPE_OF (u3, obj1) .neqv. .FALSE.) call abort
+  if (EXTENDS_TYPE_OF (obj1, u3) .neqv. .FALSE.) STOP 1
+  if (EXTENDS_TYPE_OF (u3, obj1) .neqv. .FALSE.) STOP 1
 
   deallocate (u3)
-  if (EXTENDS_TYPE_OF (obj1, u3) .neqv. .TRUE.) call abort
-  if (EXTENDS_TYPE_OF (u3, obj1) .neqv. .FALSE.) call abort
+  if (EXTENDS_TYPE_OF (obj1, u3) .neqv. .TRUE.) STOP 1
+  if (EXTENDS_TYPE_OF (u3, obj1) .neqv. .FALSE.) STOP 1
 
-  if (EXTENDS_TYPE_OF (obj1, u4) .neqv. .TRUE.) call abort
-  if (EXTENDS_TYPE_OF (u4, obj1) .neqv. .TRUE.) call abort
+  if (EXTENDS_TYPE_OF (obj1, u4) .neqv. .TRUE.) STOP 1
+  if (EXTENDS_TYPE_OF (u4, obj1) .neqv. .TRUE.) STOP 1
   deallocate (u4)
-  if (EXTENDS_TYPE_OF (obj1, u4) .neqv. .TRUE.) call abort
-  if (EXTENDS_TYPE_OF (u4, obj1) .neqv. .FALSE.) call abort
+  if (EXTENDS_TYPE_OF (obj1, u4) .neqv. .TRUE.) STOP 1
+  if (EXTENDS_TYPE_OF (u4, obj1) .neqv. .FALSE.) STOP 1
 
 
 ! Check assumed rank calls
@@ -205,7 +205,7 @@ contains
     integer :: ranki
     integer i
     i = rank (arg)
-    if (i .ne. ranki) call abort
+    if (i .ne. ranki) STOP 1
   end subroutine
 
 END

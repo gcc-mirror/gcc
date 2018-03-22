@@ -1,6 +1,6 @@
 // 2005-06-28  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2017 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,7 +67,7 @@ void test01()
   fmt2.imbue(loc);
   InIt ibeg2(fmt2);
   err2 = ios_base::goodbit;
-  mg.get(ibeg2, iend2, intl, fmt2, err2, val2);
+  ibeg2 = mg.get(ibeg2, iend2, intl, fmt2, err2, val2);
   VERIFY( err2 == ios_base::failbit );
   VERIFY( *ibeg2 == '#' );
   VERIFY( val2 == "" );

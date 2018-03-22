@@ -5,7 +5,7 @@ character(1),parameter :: hex_chars(0:15)=&
   (/'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'/)
 
 c = hex_chars(i)
-if (c.ne.'3') call abort()
+if (c.ne.'3') STOP 1
 end
 
 program strarray_1

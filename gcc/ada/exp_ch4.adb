@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -630,7 +630,9 @@ package body Exp_Ch4 is
 
             --    [Deep_]Finalize (Obj_Ref.all);
 
-            if Needs_Finalization (DesigT) then
+            if Needs_Finalization (DesigT)
+              and then not No_Heap_Finalization (PtrT)
+            then
                Fin_Call :=
                  Make_Final_Call
                    (Obj_Ref =>
@@ -793,14 +795,9 @@ package body Exp_Ch4 is
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
          --  to a build-in-place function, then access to the allocated object
-         --  must be passed to the function. Currently we limit such functions
-         --  to those with constrained limited result subtypes, but eventually
-         --  we plan to expand the allowed forms of functions that are treated
-         --  as build-in-place.
+         --  must be passed to the function.
 
-         if Ada_Version >= Ada_2005
-           and then Is_Build_In_Place_Function_Call (Exp)
-         then
+         if Is_Build_In_Place_Function_Call (Exp) then
             Make_Build_In_Place_Call_In_Allocator (N, Exp);
             Apply_Accessibility_Check (N, Built_In_Place => True);
             return;
@@ -812,9 +809,7 @@ package body Exp_Ch4 is
          --  in-place object to reference the secondary dispatch table of a
          --  covered interface type.
 
-         elsif Ada_Version >= Ada_2005
-           and then Present (Unqual_BIP_Iface_Function_Call (Exp))
-         then
+         elsif Present (Unqual_BIP_Iface_Function_Call (Exp)) then
             Make_Build_In_Place_Iface_Call_In_Allocator (N, Exp);
             Apply_Accessibility_Check (N, Built_In_Place => True);
             return;
@@ -1076,12 +1071,15 @@ package body Exp_Ch4 is
          --  object can be limited but not inherently limited if this allocator
          --  came from a return statement (we're allocating the result on the
          --  secondary stack). In that case, the object will be moved, so we do
-         --  want to Adjust.
+         --  want to Adjust. However, if it's a nonlimited build-in-place
+         --  function call, Adjust is not wanted.
 
          if Needs_Finalization (DesigT)
            and then Needs_Finalization (T)
            and then not Aggr_In_Place
            and then not Is_Limited_View (T)
+           and then not Alloc_For_BIP_Return (N)
+           and then not Is_Build_In_Place_Function_Call (Expression (N))
          then
             --  An unchecked conversion is needed in the classwide case because
             --  the designated type can be an ancestor of the subtype mark of
@@ -1223,14 +1221,9 @@ package body Exp_Ch4 is
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
          --  to a build-in-place function, then access to the allocated object
-         --  must be passed to the function. Currently we limit such functions
-         --  to those with constrained limited result subtypes, but eventually
-         --  we plan to expand the allowed forms of functions that are treated
-         --  as build-in-place.
+         --  must be passed to the function.
 
-         if Ada_Version >= Ada_2005
-           and then Is_Build_In_Place_Function_Call (Exp)
-         then
+         if Is_Build_In_Place_Function_Call (Exp) then
             Make_Build_In_Place_Call_In_Allocator (N, Exp);
          end if;
       end if;
@@ -2773,7 +2766,7 @@ package body Exp_Ch4 is
       --  special case of setting the right high bound for a null result.
       --  This is of type Ityp.
 
-      High_Bound : Node_Id;
+      High_Bound : Node_Id := Empty;
       --  A tree node representing the high bound of the result (of type Ityp)
 
       Result : Node_Id;
@@ -4179,10 +4172,10 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Nonbinary_Modular_Op
 
    begin
-      --  No action needed if we are not generating C code for a nonbinary
-      --  modular operand.
+      --  No action needed if front-end expansion is not required or if we
+      --  have a binary modular operand.
 
-      if not Modify_Tree_For_C
+      if not Expand_Nonbinary_Modular_Ops
         or else not Non_Binary_Modulus (Typ)
       then
          return;
@@ -4807,7 +4800,7 @@ package body Exp_Ch4 is
 
                declare
                   Dis : Boolean := False;
-                  Typ : Entity_Id;
+                  Typ : Entity_Id := Empty;
 
                begin
                   if Has_Discriminants (T) then
@@ -5347,7 +5340,7 @@ package body Exp_Ch4 is
            and then Is_Finalizable_Transient (Act, N)
          then
             Process_Transient_In_Expression (Act, N, Acts);
-            return Abandon;
+            return Skip;
 
          --  Avoid processing temporary function results multiple times when
          --  dealing with nested expression_with_actions.
@@ -5463,12 +5456,10 @@ package body Exp_Ch4 is
       Typ   : constant Entity_Id  := Etype (N);
 
       Actions : List_Id;
-      Cnn     : Entity_Id;
       Decl    : Node_Id;
       Expr    : Node_Id;
       New_If  : Node_Id;
       New_N   : Node_Id;
-      Ptr_Typ : Entity_Id;
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -5572,65 +5563,67 @@ package body Exp_Ch4 is
          Process_If_Case_Statements (N, Then_Actions (N));
          Process_If_Case_Statements (N, Else_Actions (N));
 
-         --  Generate:
-         --    type Ann is access all Typ;
+         declare
+            Cnn     : constant Entity_Id := Make_Temporary (Loc, 'C', N);
+            Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
 
-         Ptr_Typ := Make_Temporary (Loc, 'A');
+         begin
+            --  Generate:
+            --    type Ann is access all Typ;
 
-         Insert_Action (N,
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Ptr_Typ,
-             Type_Definition     =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present        => True,
-                 Subtype_Indication => New_Occurrence_Of (Typ, Loc))));
+            Insert_Action (N,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Ptr_Typ,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present        => True,
+                    Subtype_Indication => New_Occurrence_Of (Typ, Loc))));
 
-         --  Generate:
-         --    Cnn : Ann;
+            --  Generate:
+            --    Cnn : Ann;
 
-         Cnn := Make_Temporary (Loc, 'C', N);
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cnn,
+                Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
 
-         Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Cnn,
-             Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
+            --  Generate:
+            --    if Cond then
+            --       Cnn := <Thenx>'Unrestricted_Access;
+            --    else
+            --       Cnn := <Elsex>'Unrestricted_Access;
+            --    end if;
 
-         --  Generate:
-         --    if Cond then
-         --       Cnn := <Thenx>'Unrestricted_Access;
-         --    else
-         --       Cnn := <Elsex>'Unrestricted_Access;
-         --    end if;
+            New_If :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Thenx),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                    Expression =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Relocate_Node (Thenx),
+                        Attribute_Name => Name_Unrestricted_Access))),
 
-         New_If :=
-           Make_Implicit_If_Statement (N,
-             Condition       => Relocate_Node (Cond),
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Thenx),
-                 Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                 Expression =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => Relocate_Node (Thenx),
-                     Attribute_Name => Name_Unrestricted_Access))),
+                Else_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Elsex),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                    Expression =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Relocate_Node (Elsex),
+                        Attribute_Name => Name_Unrestricted_Access))));
 
-             Else_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Elsex),
-                 Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                 Expression =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => Relocate_Node (Elsex),
-                     Attribute_Name => Name_Unrestricted_Access))));
+            --  Preserve the original context for which the if statement is
+            --  being generated. This is needed by the finalization machinery
+            --  to prevent the premature finalization of controlled objects
+            --  found within the if statement.
 
-         --  Preserve the original context for which the if statement is being
-         --  generated. This is needed by the finalization machinery to prevent
-         --  the premature finalization of controlled objects found within the
-         --  if statement.
+            Set_From_Conditional_Expression (New_If);
 
-         Set_From_Conditional_Expression (New_If);
-
-         New_N :=
-           Make_Explicit_Dereference (Loc,
-             Prefix => New_Occurrence_Of (Cnn, Loc));
+            New_N :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Cnn, Loc));
+         end;
 
       --  If the result is an unconstrained array and the if expression is in a
       --  context other than the initializing expression of the declaration of
@@ -5651,6 +5644,7 @@ package body Exp_Ch4 is
       then
          declare
             Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
+
          begin
             Insert_Action (N,
               Make_Object_Declaration (Loc,
@@ -5689,31 +5683,34 @@ package body Exp_Ch4 is
 
             --  and replace the if expression by a reference to Cnn
 
-            Cnn := Make_Temporary (Loc, 'C', N);
+            declare
+               Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
 
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cnn,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+            begin
+               Decl :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Cnn,
+                   Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-            New_If :=
-              Make_Implicit_If_Statement (N,
-                Condition       => Relocate_Node (Cond),
+               New_If :=
+                 Make_Implicit_If_Statement (N,
+                   Condition       => Relocate_Node (Cond),
 
-                Then_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Thenx),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                    Expression => Relocate_Node (Thenx))),
+                   Then_Statements => New_List (
+                     Make_Assignment_Statement (Sloc (Thenx),
+                       Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                       Expression => Relocate_Node (Thenx))),
 
-                Else_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Elsex),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                    Expression => Relocate_Node (Elsex))));
+                   Else_Statements => New_List (
+                     Make_Assignment_Statement (Sloc (Elsex),
+                       Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                       Expression => Relocate_Node (Elsex))));
 
-            Set_Assignment_OK (Name (First (Then_Statements (New_If))));
-            Set_Assignment_OK (Name (First (Else_Statements (New_If))));
+               Set_Assignment_OK (Name (First (Then_Statements (New_If))));
+               Set_Assignment_OK (Name (First (Else_Statements (New_If))));
 
-            New_N := New_Occurrence_Of (Cnn, Loc);
+               New_N := New_Occurrence_Of (Cnn, Loc);
+            end;
 
          --  Regular path using Expression_With_Actions
 
@@ -6018,10 +6015,20 @@ package body Exp_Ch4 is
               --  have a test in the generic that makes sense with some types
               --  and not with other types.
 
-              and then not In_Instance
+              --  Similarly, do not rewrite membership as a validity check if
+              --  within the predicate function for the type.
+
             then
-               Substitute_Valid_Check;
-               goto Leave;
+               if In_Instance
+                 or else (Ekind (Current_Scope) = E_Function
+                           and then Is_Predicate_Function (Current_Scope))
+               then
+                  null;
+
+               else
+                  Substitute_Valid_Check;
+                  goto Leave;
+               end if;
             end if;
 
             --  If we have an explicit range, do a bit of optimization based on
@@ -6572,18 +6579,14 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (P)
-      then
+      if Is_Build_In_Place_Function_Call (P) then
          Make_Build_In_Place_Call_In_Anonymous_Context (P);
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers
       --  interface types.
 
-      elsif Ada_Version >= Ada_2005
-        and then Present (Unqual_BIP_Iface_Function_Call (P))
-      then
+      elsif Present (Unqual_BIP_Iface_Function_Call (P)) then
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (P);
       end if;
 
@@ -6906,12 +6909,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular additions into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Add;
 
    ---------------------
@@ -6937,12 +6935,7 @@ package body Exp_Ch4 is
          Expand_Intrinsic_Call (N, Entity (N));
       end if;
 
-      --  When generating C code, convert nonbinary modular operators into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_And;
 
    ------------------------
@@ -7185,12 +7178,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular divisions into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Divide;
 
    --------------------
@@ -8694,12 +8682,7 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Typ);
       end if;
 
-      --  When generating C code, convert nonbinary modular minus into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Minus;
 
    ---------------------
@@ -9177,12 +9160,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular multiplications
-      --  into code that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Multiply;
 
    --------------------
@@ -9494,12 +9472,7 @@ package body Exp_Ch4 is
          Expand_Intrinsic_Call (N, Entity (N));
       end if;
 
-      --  When generating C code, convert nonbinary modular operators into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Or;
 
    ----------------------
@@ -9933,12 +9906,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular subtractions into
-      --  code that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Subtract;
 
    ---------------------
@@ -9962,7 +9930,6 @@ package body Exp_Ch4 is
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
-
       end if;
    end Expand_N_Op_Xor;
 
@@ -10110,6 +10077,77 @@ package body Exp_Ch4 is
       Analyze_And_Resolve (N, Standard_Boolean);
    end Expand_N_Quantified_Expression;
 
+   -----------------------------------
+   -- Expand_N_Reduction_Expression --
+   -----------------------------------
+
+   procedure Expand_N_Reduction_Expression (N : Node_Id) is
+      Actions   : constant List_Id    := New_List;
+      Expr      : constant Node_Id    := Expression (N);
+      Iter_Spec : constant Node_Id    := Iterator_Specification (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Loop_Spec : constant Node_Id    := Loop_Parameter_Specification (N);
+      Typ       : constant Entity_Id  := Etype (N);
+
+      Actual        : Node_Id;
+      New_Call      : Node_Id;
+      Reduction_Par : Node_Id;
+      Result        : Entity_Id;
+      Scheme        : Node_Id;
+
+   begin
+      Result   := Make_Temporary (Loc, 'R', N);
+      New_Call := New_Copy_Tree (Expr);
+
+      if Nkind (New_Call) = N_Function_Call then
+         Actual := First (Parameter_Associations (New_Call));
+
+         if Nkind (Actual) /= N_Reduction_Expression_Parameter then
+            Actual := Next_Actual (Actual);
+         end if;
+
+      elsif Nkind (New_Call) in N_Binary_Op then
+         Actual := Left_Opnd (New_Call);
+
+         if Nkind (Actual) /= N_Reduction_Expression_Parameter then
+            Actual := Right_Opnd (New_Call);
+         end if;
+      end if;
+
+      Reduction_Par := Expression (Actual);
+
+      Append_To (Actions,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Result,
+          Object_Definition   => New_Occurrence_Of (Typ, Loc),
+          Expression          => New_Copy_Tree (Reduction_Par)));
+
+      if Present (Iter_Spec) then
+         Scheme :=
+           Make_Iteration_Scheme (Loc,
+             Iterator_Specification => Iter_Spec);
+      else
+         Scheme :=
+           Make_Iteration_Scheme (Loc,
+             Loop_Parameter_Specification => Loop_Spec);
+      end if;
+
+      Replace (Actual, New_Occurrence_Of (Result, Loc));
+
+      Append_To (Actions,
+        Make_Loop_Statement (Loc,
+          Iteration_Scheme => Scheme,
+          Statements       => New_List (Make_Assignment_Statement (Loc,
+            New_Occurrence_Of (Result, Loc), New_Call)),
+          End_Label        => Empty));
+
+      Rewrite (N,
+        Make_Expression_With_Actions (Loc,
+          Expression => New_Occurrence_Of (Result, Loc),
+          Actions    => Actions));
+      Analyze_And_Resolve (N, Typ);
+   end Expand_N_Reduction_Expression;
+
    ---------------------------------
    -- Expand_N_Selected_Component --
    ---------------------------------
@@ -10221,18 +10259,14 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (P)
-      then
+      if Is_Build_In_Place_Function_Call (P) then
          Make_Build_In_Place_Call_In_Anonymous_Context (P);
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers
       --  interface types.
 
-      elsif Ada_Version >= Ada_2005
-        and then Present (Unqual_BIP_Iface_Function_Call (P))
-      then
+      elsif Present (Unqual_BIP_Iface_Function_Call (P)) then
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (P);
       end if;
 
@@ -10587,18 +10621,14 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (Pref)
-      then
+      if Is_Build_In_Place_Function_Call (Pref) then
          Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers
       --  interface types.
 
-      elsif Ada_Version >= Ada_2005
-        and then Present (Unqual_BIP_Iface_Function_Call (Pref))
-      then
+      elsif Present (Unqual_BIP_Iface_Function_Call (Pref)) then
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (Pref);
       end if;
 
@@ -10764,6 +10794,8 @@ package body Exp_Ch4 is
 
                      if Present (Stored) then
                         Elmt := First_Elmt (Stored);
+                     else
+                        Elmt := No_Elmt; -- init to avoid warning
                      end if;
 
                      Cons := New_List;
@@ -11294,6 +11326,7 @@ package body Exp_Ch4 is
          elsif In_Instance_Body
            and then Ekind (Operand_Type) = E_Anonymous_Access_Type
            and then Nkind (Operand) = N_Selected_Component
+           and then Ekind (Entity (Selector_Name (Operand))) = E_Discriminant
            and then Object_Access_Level (Operand) >
                       Type_Access_Level (Target_Type)
          then
@@ -13126,10 +13159,10 @@ package body Exp_Ch4 is
       Comp : Node_Id;
       --  Comparison operand, set only if Is_Zero is false
 
-      Ent : Entity_Id;
+      Ent : Entity_Id := Empty;
       --  Entity whose length is being compared
 
-      Index : Node_Id;
+      Index : Node_Id := Empty;
       --  Integer_Literal node for length attribute expression, or Empty
       --  if there is no such expression present.
 

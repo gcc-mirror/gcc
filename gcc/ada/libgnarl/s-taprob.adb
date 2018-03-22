@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --            Copyright (C) 1991-2017, Florida State University             --
---                     Copyright (C) 1995-2017, AdaCore                     --
+--                     Copyright (C) 1995-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ package body System.Tasking.Protected_Objects is
 
    begin
       if Init_Priority = Unspecified_Priority then
-         Init_Priority  := System.Priority'Last;
+         Init_Priority := System.Priority'Last;
       end if;
 
       Initialize_Lock (Init_Priority, Object.L'Access);

@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fdump-tree-original" }
-! 
+!
 ! PR fortran/47586
 ! Missing deep copy for data pointer returning functions when the type
 ! has allocatable components
@@ -46,24 +46,24 @@ program prog
   this = that  ! (1) direct assignment: works (deep copy)
   that%i = [2, -5]
   !print *,this%i
-  if(any (this%i /= [3, 7])) call abort()
+  if(any (this%i /= [3, 7])) STOP 1
   this = p     ! (2) using a pointer works as well
   that%i = [10, 1]
   !print *,this%i
-  if(any (this%i /= [2, -5])) call abort()
+  if(any (this%i /= [2, -5])) STOP 2
   this = find_x(that)  ! (3) pointer function: used to fail (deep copy missing)
   that%i = [4, 6]
   !print *,this%i
-  if(any (this%i /= [10, 1])) call abort()
+  if(any (this%i /= [10, 1])) STOP 3
   this = tab%tbp(that)  ! other case: typebound procedure
   that%i = [8, 9]
   !print *,this%i
-  if(any (this%i /= [4, 6])) call abort()
+  if(any (this%i /= [4, 6])) STOP 4
   tab%ppc => find_x
   this = tab%ppc(that)  ! other case: procedure pointer component
   that%i = [-1, 2]
   !print *,this%i
-  if(any (this%i /= [8, 9])) call abort()
+  if(any (this%i /= [8, 9])) STOP 5
 
  end block
 end program prog
@@ -77,15 +77,15 @@ end program prog
 ! statements.
 ! It is assumed that if the number of allocate is right, the number of
 ! deep copies is right too.
-! { dg-final { scan-tree-dump-times "__builtin_malloc" 12 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_malloc" 15 "original" } }
 
 !
 ! Realloc are only used for assignments to `that%i'.  Don't know why.
 ! { dg-final { scan-tree-dump-times "__builtin_realloc" 6 "original" } }
-! 
+!
 
 ! No leak: Only assignments to `this' use malloc.  Assignments to `that%i'
 ! take the realloc path after the first assignment, so don't count as a malloc.
-! { dg-final { scan-tree-dump-times "__builtin_free" 7 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 10 "original" } }
 !
 

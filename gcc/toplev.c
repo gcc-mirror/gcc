@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -83,12 +83,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "edit-context.h"
 #include "tree-pass.h"
 #include "dumpfile.h"
+#include "ipa-fnsummary.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
 #endif
-
-#include "sdbout.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data declarations. */
@@ -239,7 +238,7 @@ announce_function (tree decl)
     }
 }
 
-/* Initialize local_tick with a random number or -1 if
+/* Initialize local_tick with the time of day, or -1 if
    flag_random_seed is set.  */
 
 static void
@@ -247,19 +246,6 @@ init_local_tick (void)
 {
   if (!flag_random_seed)
     {
-      /* Try urandom first. Time of day is too likely to collide. 
-	 In case of any error we just use the local tick. */
-
-      int fd = open ("/dev/urandom", O_RDONLY);
-      if (fd >= 0)
-        {
-          if (read (fd, &random_seed, sizeof (random_seed))
-              != sizeof (random_seed))
-            random_seed = 0;
-          close (fd);
-        }
-
-      /* Now get the tick anyways  */
 #ifdef HAVE_GETTIMEOFDAY
       {
 	struct timeval tv;
@@ -280,34 +266,33 @@ init_local_tick (void)
     local_tick = -1;
 }
 
-/* Set up a default flag_random_seed and local_tick, unless the user
-   already specified one.  Must be called after init_local_tick.  */
-
-static void
-init_random_seed (void)
-{
-  if (!random_seed)
-    random_seed = local_tick ^ getpid ();  /* Old racey fallback method */
-}
-
 /* Obtain the random_seed.  Unless NOINIT, initialize it if
    it's not provided in the command line.  */
 
 HOST_WIDE_INT
 get_random_seed (bool noinit)
 {
-  if (!flag_random_seed && !noinit)
-    init_random_seed ();
+  if (!random_seed && !noinit)
+    {
+      int fd = open ("/dev/urandom", O_RDONLY);
+      if (fd >= 0)
+        {
+          if (read (fd, &random_seed, sizeof (random_seed))
+              != sizeof (random_seed))
+            random_seed = 0;
+          close (fd);
+        }
+      if (!random_seed)
+	random_seed = local_tick ^ getpid ();
+    }
   return random_seed;
 }
 
-/* Modify the random_seed string to VAL.  Return its previous
-   value.  */
+/* Set flag_random_seed to VAL, and if non-null, reinitialize random_seed.  */
 
-const char *
+void
 set_random_seed (const char *val)
 {
-  const char *old = flag_random_seed;
   flag_random_seed = val;
   if (flag_random_seed)
     {
@@ -318,7 +303,6 @@ set_random_seed (const char *val)
       if (!(endp > flag_random_seed && *endp == 0))
         random_seed = crc32_string (0, flag_random_seed);
     }
-  return old;
 }
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
@@ -541,10 +525,9 @@ compile_file (void)
       /* Do dbx symbols.  */
       timevar_push (TV_SYMOUT);
 
-    #if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
-      if (dwarf2out_do_frame ())
-	dwarf2out_frame_finish ();
-    #endif
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
+      dwarf2out_frame_finish ();
+#endif
 
       (*debug_hooks->finish) (main_input_filename);
       timevar_pop (TV_SYMOUT);
@@ -818,11 +801,6 @@ print_switch_values (print_switch_fn_type print_fn)
   int pos = 0;
   size_t j;
 
-  /* Fill in the -frandom-seed option, if the user didn't pass it, so
-     that it can be printed below.  This helps reproducibility.  */
-  if (!flag_random_seed)
-    init_random_seed ();
-
   /* Print the options as passed.  */
   pos = print_single_switch (print_fn, pos,
 			     SWITCH_TYPE_DESCRIPTIVE, _("options passed: "));
@@ -978,19 +956,32 @@ output_stack_usage (void)
   stack_usage_kind = STATIC;
 
   /* Add the maximum amount of space pushed onto the stack.  */
-  if (current_function_pushed_stack_size > 0)
+  if (maybe_ne (current_function_pushed_stack_size, 0))
     {
-      stack_usage += current_function_pushed_stack_size;
-      stack_usage_kind = DYNAMIC_BOUNDED;
+      HOST_WIDE_INT extra;
+      if (current_function_pushed_stack_size.is_constant (&extra))
+	{
+	  stack_usage += extra;
+	  stack_usage_kind = DYNAMIC_BOUNDED;
+	}
+      else
+	{
+	  extra = constant_lower_bound (current_function_pushed_stack_size);
+	  stack_usage += extra;
+	  stack_usage_kind = DYNAMIC;
+	}
     }
 
   /* Now on to the tricky part: dynamic stack allocation.  */
   if (current_function_allocates_dynamic_stack_space)
     {
-      if (current_function_has_unbounded_dynamic_stack_size)
-	stack_usage_kind = DYNAMIC;
-      else
-	stack_usage_kind = DYNAMIC_BOUNDED;
+      if (stack_usage_kind != DYNAMIC)
+	{
+	  if (current_function_has_unbounded_dynamic_stack_size)
+	    stack_usage_kind = DYNAMIC;
+	  else
+	    stack_usage_kind = DYNAMIC_BOUNDED;
+	}
 
       /* Add the size even in the unbounded case, this can't hurt.  */
       stack_usage += current_function_dynamic_stack_size;
@@ -1297,6 +1288,32 @@ process_options (void)
 	   "-floop-parallelize-all)");
 #endif
 
+  if (flag_cf_protection != CF_NONE
+      && !(flag_cf_protection & CF_SET))
+    {
+      if (flag_cf_protection == CF_FULL)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcf-protection=full%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
+	}
+      if (flag_cf_protection == CF_BRANCH)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcf-protection=branch%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
+	}
+      if (flag_cf_protection == CF_RETURN)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcf-protection=return%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
+	}
+    }
+
   if (flag_check_pointer_bounds)
     {
       if (targetm.chkp_bound_mode () == VOIDmode)
@@ -1461,8 +1478,6 @@ process_options (void)
   else if (write_symbols == XCOFF_DEBUG)
     debug_hooks = &xcoff_debug_hooks;
 #endif
-  else if (SDB_DEBUGGING_INFO && write_symbols == SDB_DEBUG)
-    debug_hooks = &sdb_debug_hooks;
 #ifdef DWARF2_DEBUGGING_INFO
   else if (write_symbols == DWARF2_DEBUG)
     debug_hooks = &dwarf2_debug_hooks;
@@ -1520,8 +1535,9 @@ process_options (void)
     flag_var_tracking_uninit = flag_var_tracking;
 
   if (flag_var_tracking_assignments == AUTODETECT_VALUE)
-    flag_var_tracking_assignments = flag_var_tracking
-      && !(flag_selective_scheduling || flag_selective_scheduling2);
+    flag_var_tracking_assignments
+      = (flag_var_tracking
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
   if (flag_var_tracking_assignments_toggle)
     flag_var_tracking_assignments = !flag_var_tracking_assignments;
@@ -1533,6 +1549,65 @@ process_options (void)
       && (flag_selective_scheduling || flag_selective_scheduling2))
     warning_at (UNKNOWN_LOCATION, 0,
 		"var-tracking-assignments changes selective scheduling");
+
+  if (debug_nonbind_markers_p == AUTODETECT_VALUE)
+    debug_nonbind_markers_p
+      = (optimize
+	 && debug_info_level >= DINFO_LEVEL_NORMAL
+	 && (write_symbols == DWARF2_DEBUG
+	     || write_symbols == VMS_AND_DWARF2_DEBUG)
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+
+  if (dwarf2out_as_loc_support == AUTODETECT_VALUE)
+    dwarf2out_as_loc_support
+      = dwarf2out_default_as_loc_support ();
+  if (dwarf2out_as_locview_support == AUTODETECT_VALUE)
+    dwarf2out_as_locview_support
+      = dwarf2out_default_as_locview_support ();
+
+  if (debug_variable_location_views == AUTODETECT_VALUE)
+    {
+      debug_variable_location_views
+	= (flag_var_tracking
+	   && debug_info_level >= DINFO_LEVEL_NORMAL
+	   && (write_symbols == DWARF2_DEBUG
+	       || write_symbols == VMS_AND_DWARF2_DEBUG)
+	   && !dwarf_strict
+	   && dwarf2out_as_loc_support
+	   && dwarf2out_as_locview_support);
+    }
+  else if (debug_variable_location_views == -1 && dwarf_version != 5)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "without -gdwarf-5, -gvariable-location-views=incompat5 "
+		  "is equivalent to -gvariable-location-views");
+      debug_variable_location_views = 1;
+    }
+
+  if (debug_internal_reset_location_views == 2)
+    {
+      debug_internal_reset_location_views
+	= (debug_variable_location_views
+	   && targetm.reset_location_view);
+    }
+  else if (debug_internal_reset_location_views
+	   && !debug_variable_location_views)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-ginternal-reset-location-views is forced disabled "
+		  "without -gvariable-location-views");
+      debug_internal_reset_location_views = 0;
+    }
+
+  if (debug_inline_points == AUTODETECT_VALUE)
+    debug_inline_points = debug_variable_location_views;
+  else if (debug_inline_points && !debug_nonbind_markers_p)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-ginline-points is forced disabled without "
+		  "-gstatement-frontiers");
+      debug_inline_points = 0;
+    }
 
   if (flag_tree_cselim == AUTODETECT_VALUE)
     {
@@ -1603,6 +1678,26 @@ process_options (void)
 		  "-fassociative-math disabled; other options take "
 		  "precedence");
       flag_associative_math = 0;
+    }
+
+  /* -fstack-clash-protection is not currently supported on targets
+     where the stack grows up.  */
+  if (flag_stack_clash_protection && !STACK_GROWS_DOWNWARD)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fstack-clash-protection%> is not supported on targets "
+		  "where the stack grows from lower to higher addresses");
+      flag_stack_clash_protection = 0;
+    }
+
+  /* We can not support -fstack-check= and -fstack-clash-protection at
+     the same time.  */
+  if (flag_stack_check != NO_STACK_CHECK && flag_stack_clash_protection)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fstack-check=%> and %<-fstack-clash_protection%> are "
+		  "mutually exclusive.  Disabling %<-fstack-check=%>");
+      flag_stack_check = NO_STACK_CHECK;
     }
 
   /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
@@ -2186,7 +2281,7 @@ toplev::main (int argc, char **argv)
     {
       gcc_assert (global_dc->edit_context_ptr);
 
-      pretty_printer (pp);
+      pretty_printer pp;
       pp_show_color (&pp) = pp_show_color (global_dc->printer);
       global_dc->edit_context_ptr->print_diff (&pp, true);
       pp_flush (&pp);
@@ -2214,6 +2309,7 @@ toplev::finalize (void)
 
   /* Needs to be called before cgraph_c_finalize since it uses symtab.  */
   ipa_reference_c_finalize ();
+  ipa_fnsummary_c_finalize ();
 
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();

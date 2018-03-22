@@ -1,5 +1,5 @@
 /* Header file for SSA dominator optimizations.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -182,8 +182,15 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 		      case BIT_AND_EXPR:
 			return gimple_assign_rhs1 (stmt);
 
-		      case BIT_XOR_EXPR:
 		      case MINUS_EXPR:
+			/* This is unsafe for certain floats even in non-IEEE
+			   formats.  In IEEE, it is unsafe because it does
+			   wrong for NaNs.  */
+			if (FLOAT_TYPE_P (result_type)
+			    && HONOR_NANS (result_type))
+			  break;
+			/* FALLTHRU */
+		      case BIT_XOR_EXPR:
 		      case TRUNC_MOD_EXPR:
 		      case CEIL_MOD_EXPR:
 		      case FLOOR_MOD_EXPR:
@@ -195,6 +202,9 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 		      case FLOOR_DIV_EXPR:
 		      case ROUND_DIV_EXPR:
 		      case EXACT_DIV_EXPR:
+			/* Avoid _Fract types where we can't build 1.  */
+			if (ALL_FRACT_MODE_P (TYPE_MODE (result_type)))
+			  break;
 			return build_one_cst (result_type);
 
 		      default:
@@ -204,8 +214,8 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 		break;
 	      }
 
-	      default:
-		break;
+	    default:
+	      break;
 	    }
 	}
     }
@@ -480,13 +490,13 @@ avail_expr_hash (class expr_hash_elt *p)
 	     Dealing with both MEM_REF and ARRAY_REF allows us not to care
 	     about equivalence with other statements not considered here.  */
 	  bool reverse;
-	  HOST_WIDE_INT offset, size, max_size;
+	  poly_int64 offset, size, max_size;
 	  tree base = get_ref_base_and_extent (t, &offset, &size, &max_size,
 					       &reverse);
 	  /* Strictly, we could try to normalize variable-sized accesses too,
 	    but here we just deal with the common case.  */
-	  if (size != -1
-	      && size == max_size)
+	  if (known_size_p (max_size)
+	      && known_eq (size, max_size))
 	    {
 	      enum tree_code code = MEM_REF;
 	      hstate.add_object (code);
@@ -520,26 +530,26 @@ equal_mem_array_ref_p (tree t0, tree t1)
   if (!types_compatible_p (TREE_TYPE (t0), TREE_TYPE (t1)))
     return false;
   bool rev0;
-  HOST_WIDE_INT off0, sz0, max0;
+  poly_int64 off0, sz0, max0;
   tree base0 = get_ref_base_and_extent (t0, &off0, &sz0, &max0, &rev0);
-  if (sz0 == -1
-      || sz0 != max0)
+  if (!known_size_p (max0)
+      || maybe_ne (sz0, max0))
     return false;
 
   bool rev1;
-  HOST_WIDE_INT off1, sz1, max1;
+  poly_int64 off1, sz1, max1;
   tree base1 = get_ref_base_and_extent (t1, &off1, &sz1, &max1, &rev1);
-  if (sz1 == -1
-      || sz1 != max1)
+  if (!known_size_p (max1)
+      || maybe_ne (sz1, max1))
     return false;
 
   if (rev0 != rev1)
     return false;
 
   /* Types were compatible, so this is a sanity check.  */
-  gcc_assert (sz0 == sz1);
+  gcc_assert (known_eq (sz0, sz1));
 
-  return (off0 == off1) && operand_equal_p (base0, base1, 0);
+  return known_eq (off0, off1) && operand_equal_p (base0, base1, 0);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are

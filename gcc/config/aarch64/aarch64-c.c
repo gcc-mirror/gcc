@@ -1,5 +1,5 @@
 /* Target-specific code for C family languages.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -106,6 +108,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
 
   aarch64_def_or_undef (TARGET_CRC32, "__ARM_FEATURE_CRC32", pfile);
+  aarch64_def_or_undef (TARGET_DOTPROD, "__ARM_FEATURE_DOTPROD", pfile);
 
   cpp_undef (pfile, "__AARCH64_CMODEL_TINY__");
   cpp_undef (pfile, "__AARCH64_CMODEL_SMALL__");
@@ -133,6 +136,23 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_CRYPTO, "__ARM_FEATURE_CRYPTO", pfile);
   aarch64_def_or_undef (TARGET_SIMD_RDMA, "__ARM_FEATURE_QRDMX", pfile);
+  aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE", pfile);
+  cpp_undef (pfile, "__ARM_FEATURE_SVE_BITS");
+  if (TARGET_SVE)
+    {
+      int bits;
+      if (!BITS_PER_SVE_VECTOR.is_constant (&bits))
+	bits = 0;
+      builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
+    }
+
+  aarch64_def_or_undef (TARGET_AES, "__ARM_FEATURE_AES", pfile);
+  aarch64_def_or_undef (TARGET_SHA2, "__ARM_FEATURE_SHA2", pfile);
+  aarch64_def_or_undef (TARGET_SHA3, "__ARM_FEATURE_SHA3", pfile);
+  aarch64_def_or_undef (TARGET_SHA3, "__ARM_FEATURE_SHA512", pfile);
+  aarch64_def_or_undef (TARGET_SM4, "__ARM_FEATURE_SM3", pfile);
+  aarch64_def_or_undef (TARGET_SM4, "__ARM_FEATURE_SM4", pfile);
+  aarch64_def_or_undef (TARGET_F16FML, "__ARM_FEATURE_FP16_FML", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
@@ -165,7 +185,7 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
      information that it specifies.  */
   if (args)
     {
-      if (!aarch64_process_target_attr (args, "pragma"))
+      if (!aarch64_process_target_attr (args))
 	return false;
 
       aarch64_override_options_internal (&global_options);

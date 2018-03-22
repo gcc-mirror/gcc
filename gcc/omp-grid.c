@@ -1,6 +1,6 @@
 /* Lowering and expansion of OpenMP directives for HSA GPU agents.
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1237,7 +1237,7 @@ grid_process_kernel_body_copy (grid_prop *grid, gimple_seq seq,
 
       if (gimple_omp_for_combined_p (inner_loop))
 	grid_eliminate_combined_simd_part (inner_loop);
-      struct walk_stmt_info body_wi;;
+      struct walk_stmt_info body_wi;
       memset (&body_wi, 0, sizeof (body_wi));
       walk_gimple_seq_mod (gimple_omp_body_ptr (inner_loop),
 			   grid_process_grid_body, NULL, &body_wi);
@@ -1315,6 +1315,7 @@ grid_attempt_target_gridification (gomp_target *target,
       n1 = fold_convert (itype, n1);
       n2 = fold_convert (itype, n2);
 
+      tree cond = fold_build2 (cond_code, boolean_type_node, n1, n2);
       tree step
 	= omp_get_for_step_from_incr (loc, gimple_omp_for_incr (inner_loop, i));
 
@@ -1328,6 +1329,7 @@ grid_attempt_target_gridification (gomp_target *target,
 			 fold_build1 (NEGATE_EXPR, itype, step));
       else
 	t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
+      t = fold_build3 (COND_EXPR, itype, cond, t, build_zero_cst (itype));
       if (grid.tiling)
 	{
 	  if (cond_code == GT_EXPR)

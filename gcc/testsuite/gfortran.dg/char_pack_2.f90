@@ -29,25 +29,25 @@ contains
     do i2 = 1, n2
       do i1 = 1, n1
         i = i + 1
-        if (b (i) .ne. a (i1, i2)) call abort
+        if (b (i) .ne. a (i1, i2)) STOP 1
       end do
     end do
-    if (size (b, 1) .ne. i) call abort
+    if (size (b, 1) .ne. i) STOP 2
   end subroutine test1
 
   subroutine test2 (b)
     character (len = slen), dimension (:) :: b
 
-    if (size (b, 1) .ne. nv) call abort
+    if (size (b, 1) .ne. nv) STOP 3
     i = 0
     do i2 = 1, n2
       do i1 = 1, n1
         i = i + 1
-        if (b (i) .ne. a (i1, i2)) call abort
+        if (b (i) .ne. a (i1, i2)) STOP 4
       end do
     end do
     do i = i + 1, nv
-      if (b (i) .ne. vector (i)) call abort
+      if (b (i) .ne. vector (i)) STOP 5
     end do
   end subroutine test2
 end program main

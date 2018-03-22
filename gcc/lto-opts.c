@@ -1,6 +1,6 @@
 /* LTO IL options.
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Simon Baldwin <simonb@google.com>
 
 This file is part of GCC.
@@ -70,73 +70,10 @@ lto_write_options (void)
 
   obstack_init (&temporary_obstack);
 
-  /* Output options that affect GIMPLE IL semantics and are implicitly
-     enabled by the frontend.
-     This for now includes an explicit set of options that we also handle
-     explicitly in lto-wrapper.c.  In the end the effects on GIMPLE IL
-     semantics should be explicitely encoded in the IL or saved per
-     function rather than per compilation unit.  */
-  /* -fexceptions causes the EH machinery to be initialized, enabling
-     generation of unwind data so that explicit throw() calls work.  */
-  if (!global_options_set.x_flag_exceptions
-      && global_options.x_flag_exceptions)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p,
-				   "-fexceptions");
-  /* -fnon-call-exceptions changes the generation of exception
-      regions.  It is enabled implicitly by the Go frontend.  */
-  if (!global_options_set.x_flag_non_call_exceptions
-      && global_options.x_flag_non_call_exceptions)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p,
-				   "-fnon-call-exceptions");
-  /* The default -ffp-contract changes depending on the language
-     standard.  Pass thru conservative standard settings.  */
-  if (!global_options_set.x_flag_fp_contract_mode)
-    switch (global_options.x_flag_fp_contract_mode)
-      {
-      case FP_CONTRACT_OFF:
-	append_to_collect_gcc_options (&temporary_obstack, &first_p,
-				       "-ffp-contract=off");
-	break;
-      case FP_CONTRACT_ON:
-	append_to_collect_gcc_options (&temporary_obstack, &first_p,
-				       "-ffp-contract=on");
-	break;
-      case FP_CONTRACT_FAST:
-	/* Nothing.  That merges conservatively and is the default for LTO.  */
-	break;
-      default:
-	gcc_unreachable ();
-      }
-  /* The default -fmath-errno, -fsigned-zeros and -ftrapping-math change
-     depending on the language (they can be disabled by the Ada front-end).
-     Pass thru conservative standard settings.  */
-  if (!global_options_set.x_flag_errno_math)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p,
-				   global_options.x_flag_errno_math
-				   ? "-fmath-errno"
-				   : "-fno-math-errno");
-  if (!global_options_set.x_flag_signed_zeros)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p,
-				   global_options.x_flag_signed_zeros
-				   ? "-fsigned-zeros"
-				   : "-fno-signed-zeros");
-  if (!global_options_set.x_flag_trapping_math)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p,
-				   global_options.x_flag_trapping_math
-				   ? "-ftrapping-math"
-				   : "-fno-trapping-math");
-  /* We need to merge -f[no-]strict-overflow, -f[no-]wrapv and -f[no-]trapv
-     conservatively, so stream out their defaults.  */
-  if (!global_options_set.x_flag_wrapv
-      && global_options.x_flag_wrapv)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-fwrapv");
-  if (!global_options_set.x_flag_trapv
-      && !global_options.x_flag_trapv)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-fno-trapv");
-
   if (!global_options_set.x_flag_openmp
       && !global_options.x_flag_openmp)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-fno-openmp");
+    append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				   "-fno-openmp");
   if (!global_options_set.x_flag_openacc
       && !global_options.x_flag_openacc)
     append_to_collect_gcc_options (&temporary_obstack, &first_p,

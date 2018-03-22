@@ -1,5 +1,5 @@
 /* Declarations and definitions dealing with attribute handling.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +31,7 @@ extern void init_attributes (void);
    from tree.h.  Depending on these flags, some attributes may be
    returned to be applied at a later stage (for example, to apply
    a decl attribute to the declaration rather than to its type).  */
-extern tree decl_attributes (tree *, tree, int);
+extern tree decl_attributes (tree *, tree, int, tree = NULL_TREE);
 
 extern bool cxx11_attribute_p (const_tree);
 extern tree get_attribute_name (const_tree);
@@ -76,6 +76,16 @@ extern tree remove_attribute (const char *, tree);
 /* Given two attributes lists, return a list of their union.  */
 
 extern tree merge_attributes (tree, tree);
+
+/* Duplicate all attributes with name NAME in ATTR list to *ATTRS if
+   they are missing there.  */
+
+extern void duplicate_one_attribute (tree *, tree, const char *);
+
+/* Duplicate all attributes from user DECL to the corresponding
+   builtin that should be propagated.  */
+
+extern void copy_attributes_to_builtin (tree);
 
 /* Given two Windows decl attributes lists, possibly including
    dllimport, return a list of their union .  */

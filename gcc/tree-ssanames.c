@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
+#include "cfgloop.h"
+#include "tree-scalar-evolution.h"
 
 /* Rewriting a function into SSA form can create a huge number of SSA_NAMEs,
    many of which may be thrown away shortly after their creation if jumps
@@ -241,6 +243,9 @@ verify_ssaname_freelists (struct function *fun)
 void
 flush_ssaname_freelist (void)
 {
+  /* If there were any SSA names released reset the SCEV cache.  */
+  if (! vec_safe_is_empty (FREE_SSANAMES_QUEUE (cfun)))
+    scev_reset_htab ();
   vec_safe_splice (FREE_SSANAMES (cfun), FREE_SSANAMES_QUEUE (cfun));
   vec_safe_truncate (FREE_SSANAMES_QUEUE (cfun), 0);
 }
@@ -452,8 +457,8 @@ set_nonzero_bits (tree name, const wide_int &mask)
       if (mask == -1)
 	return;
       set_range_info_raw (name, VR_RANGE,
-			  TYPE_MIN_VALUE (TREE_TYPE (name)),
-			  TYPE_MAX_VALUE (TREE_TYPE (name)));
+			  wi::to_wide (TYPE_MIN_VALUE (TREE_TYPE (name))),
+			  wi::to_wide (TYPE_MAX_VALUE (TREE_TYPE (name))));
     }
   irange_storage *ri = SSA_NAME_RANGE_INFO (name);
   ri->set_nonzero_bits (mask);
@@ -466,7 +471,7 @@ wide_int
 get_nonzero_bits (const_tree name)
 {
   if (TREE_CODE (name) == INTEGER_CST)
-    return name;
+    return wi::to_wide (name);
 
   /* Use element_precision instead of TYPE_PRECISION so complex and
      vector types get a non-zero precision.  */
@@ -485,6 +490,23 @@ get_nonzero_bits (const_tree name)
     return wi::shwi (-1, precision);
 
   return ri->get_nonzero_bits ();
+}
+
+/* Similar to above, but return the non-zero bits as an irange in IR.  */
+/* FIXME: This possibly deprecates intersect_range_with_nonzero_bits.  */
+
+void
+get_nonzero_bits_as_range (irange &ir, const_tree name)
+{
+  wide_int nzb = get_nonzero_bits (name);
+  if (nzb == 0)
+    {
+      ir.set_range_for_type (TREE_TYPE (name));
+      ir.clear ();
+      return;
+    }
+  // FIXME: errr, this needs testing.
+  ir = irange (TREE_TYPE (name), wi::clz (nzb), wi::ctz (nzb));
 }
 
 /* Return TRUE is OP, an SSA_NAME has a range of values [0..1], false
@@ -560,7 +582,7 @@ release_ssa_name_fn (struct function *fn, tree var)
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
       use_operand_p imm = &(SSA_NAME_IMM_USE_NODE (var));
 
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	insert_debug_temp_for_var_def (NULL, var);
 
       if (flag_checking)
@@ -641,13 +663,16 @@ set_ptr_info_alignment (struct ptr_info_def *pi, unsigned int align,
    misalignment by INCREMENT modulo its current alignment.  */
 
 void
-adjust_ptr_info_misalignment (struct ptr_info_def *pi,
-			      unsigned int increment)
+adjust_ptr_info_misalignment (struct ptr_info_def *pi, poly_uint64 increment)
 {
   if (pi->align != 0)
     {
-      pi->misalign += increment;
-      pi->misalign &= (pi->align - 1);
+      increment += pi->misalign;
+      if (!known_misalignment (increment, pi->align, &pi->misalign))
+	{
+	  pi->align = known_alignment (increment);
+	  pi->misalign = 0;
+	}
     }
 }
 

@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -255,7 +255,7 @@ typedef GFC_INTEGER_4 GFC_IO_INT;
 typedef ptrdiff_t index_type;
 
 /* The type used for the lengths of character variables.  */
-typedef GFC_INTEGER_4 gfc_charlen_type;
+typedef size_t gfc_charlen_type;
 
 /* Definitions of CHARACTER data types:
      - CHARACTER(KIND=1) corresponds to the C char type,
@@ -266,12 +266,8 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
    simply equal to the kind parameter itself.  */
 #define GFC_SIZE_OF_CHAR_KIND(kind) (kind)
 
-/* This will be 0 on little-endian machines and one on big-endian machines.  */
-extern int big_endian;
-internal_proto(big_endian);
-
 #define GFOR_POINTER_TO_L1(p, kind) \
-  (big_endian * (kind - 1) + (GFC_LOGICAL_1 *)(p))
+  ((__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? 1: 0) * (kind - 1) + (GFC_LOGICAL_1 *)(p))
 
 #define GFC_INTEGER_1_HUGE \
   (GFC_INTEGER_1)((((GFC_UINTEGER_1)1) << 7) - 1)
@@ -331,57 +327,80 @@ typedef struct descriptor_dimension
   index_type lower_bound;
   index_type _ubound;
 }
-
 descriptor_dimension;
 
-#define GFC_ARRAY_DESCRIPTOR(r, type) \
+typedef struct dtype_type
+{
+  size_t elem_len;
+  int version;
+  signed char rank;
+  signed char type;
+  signed short attribute;
+}
+dtype_type;
+
+#define GFC_ARRAY_DESCRIPTOR(type) \
 struct {\
   type *base_addr;\
   size_t offset;\
-  index_type dtype;\
+  dtype_type dtype;\
+  index_type span;\
+  descriptor_dimension dim[];\
+}
+
+/* Commonly used array descriptor types.  */
+typedef GFC_ARRAY_DESCRIPTOR (void) gfc_array_void;
+typedef GFC_ARRAY_DESCRIPTOR (char) gfc_array_char;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_1) gfc_array_i1;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_2) gfc_array_i2;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_4) gfc_array_i4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_8) gfc_array_i8;
+#ifdef HAVE_GFC_INTEGER_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_16) gfc_array_i16;
+#endif
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_4) gfc_array_r4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_8) gfc_array_r8;
+#ifdef HAVE_GFC_REAL_10
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_10) gfc_array_r10;
+#endif
+#ifdef HAVE_GFC_REAL_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_16) gfc_array_r16;
+#endif
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_4) gfc_array_c4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_8) gfc_array_c8;
+#ifdef HAVE_GFC_COMPLEX_10
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_10) gfc_array_c10;
+#endif
+#ifdef HAVE_GFC_COMPLEX_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_16) gfc_array_c16;
+#endif
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_1) gfc_array_l1;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_2) gfc_array_l2;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_4) gfc_array_l4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_8) gfc_array_l8;
+#ifdef HAVE_GFC_LOGICAL_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_16) gfc_array_l16;
+#endif
+typedef gfc_array_i1 gfc_array_s1;
+typedef gfc_array_i4 gfc_array_s4;
+
+/* These are for when you actually want to declare a descriptor, as
+   opposed to a pointer to it.  */
+
+#define GFC_FULL_ARRAY_DESCRIPTOR(r, type) \
+struct {\
+  type *base_addr;\
+  size_t offset;\
+  dtype_type dtype;\
   index_type span;\
   descriptor_dimension dim[r];\
 }
 
-/* Commonly used array descriptor types.  */
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) gfc_array_void;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, char) gfc_array_char;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_1) gfc_array_i1;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_2) gfc_array_i2;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_array_i4;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_8) gfc_array_i8;
-#ifdef HAVE_GFC_INTEGER_16
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_16) gfc_array_i16;
-#endif
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_REAL_4) gfc_array_r4;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_REAL_8) gfc_array_r8;
-#ifdef HAVE_GFC_REAL_10
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_REAL_10) gfc_array_r10;
-#endif
-#ifdef HAVE_GFC_REAL_16
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_REAL_16) gfc_array_r16;
-#endif
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_COMPLEX_4) gfc_array_c4;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_COMPLEX_8) gfc_array_c8;
-#ifdef HAVE_GFC_COMPLEX_10
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_COMPLEX_10) gfc_array_c10;
-#endif
-#ifdef HAVE_GFC_COMPLEX_16
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_COMPLEX_16) gfc_array_c16;
-#endif
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_1) gfc_array_l1;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_2) gfc_array_l2;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_4) gfc_array_l4;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_8) gfc_array_l8;
-#ifdef HAVE_GFC_LOGICAL_16
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
-#endif
+typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_full_array_i4;
 
-
-#define GFC_DESCRIPTOR_RANK(desc) ((desc)->dtype & GFC_DTYPE_RANK_MASK)
-#define GFC_DESCRIPTOR_TYPE(desc) (((desc)->dtype & GFC_DTYPE_TYPE_MASK) \
-                                   >> GFC_DTYPE_TYPE_SHIFT)
-#define GFC_DESCRIPTOR_SIZE(desc) ((desc)->dtype >> GFC_DTYPE_SIZE_SHIFT)
+#define GFC_DESCRIPTOR_RANK(desc) ((desc)->dtype.rank)
+#define GFC_DESCRIPTOR_TYPE(desc) ((desc)->dtype.type)
+#define GFC_DESCRIPTOR_SIZE(desc) ((desc)->dtype.elem_len)
 #define GFC_DESCRIPTOR_DATA(desc) ((desc)->base_addr)
 #define GFC_DESCRIPTOR_DTYPE(desc) ((desc)->dtype)
 
@@ -414,7 +433,24 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 #define GFC_DTYPE_SIZE_MASK (-((index_type) 1 << GFC_DTYPE_SIZE_SHIFT))
 #define GFC_DTYPE_TYPE_SIZE_MASK (GFC_DTYPE_SIZE_MASK | GFC_DTYPE_TYPE_MASK)
 
-#define GFC_DTYPE_TYPE_SIZE(desc) ((desc)->dtype & GFC_DTYPE_TYPE_SIZE_MASK)
+#define GFC_DTYPE_TYPE_SIZE(desc) (( ((desc)->dtype.type << GFC_DTYPE_TYPE_SHIFT) \
+    | ((desc)->dtype.elem_len << GFC_DTYPE_SIZE_SHIFT) ) & GFC_DTYPE_TYPE_SIZE_MASK)
+
+/* Macros to set size and type information.  */
+
+#define GFC_DTYPE_COPY(a,b) do { (a)->dtype = (b)->dtype; } while(0)
+#define GFC_DTYPE_COPY_SETRANK(a,b,n) \
+  do { \
+  (a)->dtype.rank = ((b)->dtype.rank | n ); \
+  } while (0)
+
+#define GFC_DTYPE_IS_UNSET(a) (unlikely((a)->dtype.elem_len == 0))
+#define GFC_DTYPE_CLEAR(a) do { (a)->dtype.elem_len = 0; \
+				(a)->dtype.version = 0; \
+				(a)->dtype.rank = 0; \
+				(a)->dtype.type = 0; \
+				(a)->dtype.attribute = 0; \
+} while(0)
 
 #define GFC_DTYPE_INTEGER_1 ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT) \
    | (sizeof(GFC_INTEGER_1) << GFC_DTYPE_SIZE_SHIFT))
@@ -468,19 +504,6 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
    | (sizeof(GFC_COMPLEX_16) << GFC_DTYPE_SIZE_SHIFT))
 #endif
 
-#define GFC_DTYPE_DERIVED_1 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_1) << GFC_DTYPE_SIZE_SHIFT))
-#define GFC_DTYPE_DERIVED_2 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_2) << GFC_DTYPE_SIZE_SHIFT))
-#define GFC_DTYPE_DERIVED_4 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_4) << GFC_DTYPE_SIZE_SHIFT))
-#define GFC_DTYPE_DERIVED_8 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_8) << GFC_DTYPE_SIZE_SHIFT))
-#ifdef HAVE_GFC_INTEGER_16
-#define GFC_DTYPE_DERIVED_16 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_16) << GFC_DTYPE_SIZE_SHIFT))
-#endif
-
 /* Macros to determine the alignment of pointers.  */
 
 #define GFC_UNALIGNED_2(x) (((uintptr_t)(x)) & \
@@ -514,7 +537,7 @@ typedef struct
   int separator_len;
   const char *separator;
 
-  int all_unbuffered, unbuffered_preconnected, default_recl;
+  int all_unbuffered, unbuffered_preconnected;
   int fpe, backtrace;
 }
 options_t;
@@ -578,12 +601,6 @@ iexport_data_proto(line);
 
 extern char *filename;
 iexport_data_proto(filename);
-
-
-/* The default value of record length for preconnected units is defined
-   here. This value can be overriden by an environment variable.
-   Default value is 1 Gb.  */
-#define DEFAULT_RECL 1073741824
 
 
 #define CHARACTER2(name) \
@@ -871,7 +888,7 @@ internal_proto(filename_from_unit);
 
 /* stop.c */
 
-extern _Noreturn void stop_string (const char *, GFC_INTEGER_4);
+extern _Noreturn void stop_string (const char *, size_t, bool);
 export_proto(stop_string);
 
 /* reshape_packed.c */
@@ -1342,7 +1359,7 @@ iexport_proto(random_seed_i8);
 
 /* size.c */
 
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) array_t;
+typedef GFC_ARRAY_DESCRIPTOR (void) array_t;
 
 extern index_type size0 (const array_t * array); 
 iexport_proto(size0);

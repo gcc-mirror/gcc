@@ -2,6 +2,7 @@
 // We were getting different canonical types for matching types because
 // TYPE_ALIGN wasn't propagated to all the variants fast enough.
 // { dg-options "" }
+// { dg-additional-options "-Wno-return-type" }
 
 typedef __SIZE_TYPE__ size_t;
 enum { chunk_size = 16 };

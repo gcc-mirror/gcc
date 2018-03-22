@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -191,6 +191,10 @@ along with GCC; see the file COPYING3.  If not see
 
    The interesting part is this can be viewed either as general store motion
    or general dead store elimination in either intra/inter-iterations way.
+
+   With trivial effort, we also support load inside Store-Store chains if the
+   load is dominated by a store statement in the same iteration of loop.  You
+   can see this as a restricted Store-Mixed-Load-Store chain.
 
    TODO: For now, we don't support store-store chains in multi-exit loops.  We
    force to not unroll in case of store-store chain even if other chains might
@@ -676,7 +680,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
   tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset,
 				  &name_expansions);
-  aff_combination_const (&delta, type, wi::to_widest (DR_INIT (dr)));
+  aff_combination_const (&delta, type, wi::to_poly_widest (DR_INIT (dr)));
   aff_combination_add (offset, &delta);
 }
 
@@ -688,7 +692,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
 static bool
 determine_offset (struct data_reference *a, struct data_reference *b,
-		  widest_int *off)
+		  poly_widest_int *off)
 {
   aff_tree diff, baseb, step;
   tree typea, typeb;
@@ -797,7 +801,7 @@ split_data_refs_to_components (struct loop *loop,
 
   FOR_EACH_VEC_ELT (depends, i, ddr)
     {
-      widest_int dummy_off;
+      poly_widest_int dummy_off;
 
       if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
 	continue;
@@ -902,8 +906,6 @@ split_data_refs_to_components (struct loop *loop,
 				gimple_bb (dataref->stmt));
       dataref->pos = comp->refs.length ();
       comp->refs.quick_push (dataref);
-      if (DR_IS_READ (dr))
-	comp->eliminate_store_p = false;
     }
 
   for (i = 0; i < n; i++)
@@ -956,7 +958,11 @@ suitable_component_p (struct loop *loop, struct component *comp)
 
   for (i = 1; comp->refs.iterate (i, &a); i++)
     {
-      if (!determine_offset (first->ref, a->ref, &a->offset))
+      /* Polynomial offsets are no use, since we need to know the
+	 gap between iteration numbers at compile time.  */
+      poly_widest_int offset;
+      if (!determine_offset (first->ref, a->ref, &offset)
+	  || !offset.is_constant (&a->offset))
 	return false;
 
       enum ref_step_type a_step;
@@ -1020,6 +1026,17 @@ order_drefs (const void *a, const void *b)
   return (*da)->pos - (*db)->pos;
 }
 
+/* Compares two drefs A and B by their position.  Callback for qsort.  */
+
+static int
+order_drefs_by_pos (const void *a, const void *b)
+{
+  const dref *const da = (const dref *) a;
+  const dref *const db = (const dref *) b;
+
+  return (*da)->pos - (*db)->pos;
+}
+
 /* Returns root of the CHAIN.  */
 
 static inline dref
@@ -1028,19 +1045,36 @@ get_chain_root (chain_p chain)
   return chain->refs[0];
 }
 
-/* Given CHAIN, returns the last ref at DISTANCE, or NULL if it doesn't
+/* Given CHAIN, returns the last write ref at DISTANCE, or NULL if it doesn't
    exist.  */
 
 static inline dref
-get_chain_last_ref_at (chain_p chain, unsigned distance)
+get_chain_last_write_at (chain_p chain, unsigned distance)
 {
-  unsigned i;
+  for (unsigned i = chain->refs.length (); i > 0; i--)
+    if (DR_IS_WRITE (chain->refs[i - 1]->ref)
+	&& distance == chain->refs[i - 1]->distance)
+      return chain->refs[i - 1];
 
-  for (i = chain->refs.length (); i > 0; i--)
-    if (distance == chain->refs[i - 1]->distance)
-      break;
+  return NULL;
+}
 
-  return (i > 0) ? chain->refs[i - 1] : NULL;
+/* Given CHAIN, returns the last write ref with the same distance before load
+   at index LOAD_IDX, or NULL if it doesn't exist.  */
+
+static inline dref
+get_chain_last_write_before_load (chain_p chain, unsigned load_idx)
+{
+  gcc_assert (load_idx < chain->refs.length ());
+
+  unsigned distance = chain->refs[load_idx]->distance;
+
+  for (unsigned i = load_idx; i > 0; i--)
+    if (DR_IS_WRITE (chain->refs[i - 1]->ref)
+	&& distance == chain->refs[i - 1]->distance)
+      return chain->refs[i - 1];
+
+  return NULL;
 }
 
 /* Adds REF to the chain CHAIN.  */
@@ -1052,11 +1086,6 @@ add_ref_to_chain (chain_p chain, dref ref)
 
   gcc_assert (wi::les_p (root->offset, ref->offset));
   widest_int dist = ref->offset - root->offset;
-  if (wi::leu_p (MAX_DISTANCE, dist))
-    {
-      free (ref);
-      return;
-    }
   gcc_assert (wi::fits_uhwi_p (dist));
 
   chain->refs.safe_push (ref);
@@ -1068,6 +1097,10 @@ add_ref_to_chain (chain_p chain, dref ref)
       chain->length = ref->distance;
       chain->has_max_use_after = false;
     }
+
+  /* Promote this chain to CT_STORE_STORE if it has multiple stores.  */
+  if (DR_IS_WRITE (ref->ref))
+    chain->type = CT_STORE_STORE;
 
   /* Don't set the flag for store-store chain since there is no use.  */
   if (chain->type != CT_STORE_STORE
@@ -1158,7 +1191,7 @@ valid_initializer_p (struct data_reference *ref,
 		     unsigned distance, struct data_reference *root)
 {
   aff_tree diff, base, step;
-  widest_int off;
+  poly_widest_int off;
 
   /* Both REF and ROOT must be accessing the same object.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (ref), DR_BASE_ADDRESS (root), 0))
@@ -1186,7 +1219,7 @@ valid_initializer_p (struct data_reference *ref,
   if (!aff_combination_constant_multiple_p (&diff, &step, &off))
     return false;
 
-  if (off != distance)
+  if (maybe_ne (off, distance))
     return false;
 
   return true;
@@ -1331,12 +1364,39 @@ determine_roots_comp (struct loop *loop,
 
   /* Trivial component.  */
   if (comp->refs.length () <= 1)
-    return;
+    {
+      if (comp->refs.length () == 1)
+	{
+	  free (comp->refs[0]);
+	  comp->refs.truncate (0);
+	}
+      return;
+    }
 
   comp->refs.qsort (order_drefs);
+
+  /* For Store-Store chain, we only support load if it is dominated by a
+     store statement in the same iteration of loop.  */
+  if (comp->eliminate_store_p)
+    for (a = NULL, i = 0; i < comp->refs.length (); i++)
+      {
+	if (DR_IS_WRITE (comp->refs[i]->ref))
+	  a = comp->refs[i];
+	else if (a == NULL || a->offset != comp->refs[i]->offset)
+	  {
+	    /* If there is load that is not dominated by a store in the
+	       same iteration of loop, clear the flag so no Store-Store
+	       chain is generated for this component.  */
+	    comp->eliminate_store_p = false;
+	    break;
+	  }
+      }
+
+  /* Determine roots and create chains for components.  */
   FOR_EACH_VEC_ELT (comp->refs, i, a)
     {
       if (!chain
+	  || (chain->type == CT_LOAD && DR_IS_WRITE (a->ref))
 	  || (!comp->eliminate_store_p && DR_IS_WRITE (a->ref))
 	  || wi::leu_p (MAX_DISTANCE, a->offset - last_ofs))
 	{
@@ -1348,11 +1408,11 @@ determine_roots_comp (struct loop *loop,
 	  else
 	    release_chain (chain);
 
-	  if (DR_IS_READ (a->ref))
-	    type = CT_LOAD;
-	  else
-	    type = comp->eliminate_store_p ? CT_STORE_STORE : CT_STORE_LOAD;
-
+	  /* Determine type of the chain.  If the root reference is a load,
+	     this can only be a CT_LOAD chain; other chains are intialized
+	     to CT_STORE_LOAD and might be promoted to CT_STORE_STORE when
+	     new reference is added.  */
+	  type = DR_IS_READ (a->ref) ? CT_LOAD : CT_STORE_LOAD;
 	  chain = make_rooted_chain (a, type);
 	  last_ofs = a->offset;
 	  continue;
@@ -1655,14 +1715,15 @@ is_inv_store_elimination_chain (struct loop *loop, chain_p chain)
   /* If loop iterates for unknown times or fewer times than chain->lenght,
      we still need to setup root variable and propagate it with PHI node.  */
   tree niters = number_of_latch_executions (loop);
-  if (TREE_CODE (niters) != INTEGER_CST || wi::leu_p (niters, chain->length))
+  if (TREE_CODE (niters) != INTEGER_CST
+      || wi::leu_p (wi::to_wide (niters), chain->length))
     return false;
 
   /* Check stores in chain for elimination if they only store loop invariant
      values.  */
   for (unsigned i = 0; i < chain->length; i++)
     {
-      dref a = get_chain_last_ref_at (chain, i);
+      dref a = get_chain_last_write_at (chain, i);
       if (a == NULL)
 	continue;
 
@@ -1706,7 +1767,7 @@ initialize_root_vars_store_elim_1 (chain_p chain)
   /* Initialize root value for eliminated stores at each distance.  */
   for (i = 0; i < n; i++)
     {
-      dref a = get_chain_last_ref_at (chain, i);
+      dref a = get_chain_last_write_at (chain, i);
       if (a == NULL)
 	continue;
 
@@ -1769,10 +1830,13 @@ initialize_root_vars_store_elim_2 (struct loop *loop,
 	{
 	  /* Root value is rhs operand of the store to be eliminated if
 	     it isn't loaded from memory before loop.  */
-	  dref a = get_chain_last_ref_at (chain, i);
+	  dref a = get_chain_last_write_at (chain, i);
 	  val = gimple_assign_rhs1 (a->stmt);
 	  if (TREE_CLOBBER_P (val))
-	    val = get_or_create_ssa_default_def (cfun, SSA_NAME_VAR (var));
+	    {
+	      val = get_or_create_ssa_default_def (cfun, SSA_NAME_VAR (var));
+	      gimple_assign_set_rhs1 (a->stmt, val);
+	    }
 
 	  vtemps[n - i - 1] = val;
 	}
@@ -2040,7 +2104,7 @@ static void
 execute_pred_commoning_chain (struct loop *loop, chain_p chain,
 			      bitmap tmp_vars)
 {
-  unsigned i, n;
+  unsigned i;
   dref a;
   tree var;
   bool in_lhs;
@@ -2077,10 +2141,29 @@ execute_pred_commoning_chain (struct loop *loop, chain_p chain,
 	  finalize_eliminated_stores (loop, chain);
 	}
 
-      /* Eliminate the stores killed by following store.  */
-      n = chain->refs.length ();
-      for (i = 0; i < n - 1; i++)
-	remove_stmt (chain->refs[i]->stmt);
+      bool last_store_p = true;
+      for (i = chain->refs.length (); i > 0; i--)
+	{
+	  a = chain->refs[i - 1];
+	  /* Preserve the last store of the chain.  Eliminate other stores
+	     which are killed by the last one.  */
+	  if (DR_IS_WRITE (a->ref))
+	    {
+	      if (last_store_p)
+		last_store_p = false;
+	      else
+		remove_stmt (a->stmt);
+
+	      continue;
+	    }
+
+	  /* Any load in Store-Store chain must be dominated by a previous
+	     store, we replace the load reference with rhs of the store.  */
+	  dref b = get_chain_last_write_before_load (chain, i - 1);
+	  gcc_assert (b != NULL);
+	  var = gimple_assign_rhs1 (b->stmt);
+	  replace_ref_with (a->stmt, var, false, false);
+	}
     }
   else
     {
@@ -2519,11 +2602,10 @@ remove_name_from_operation (gimple *stmt, tree op)
 }
 
 /* Reassociates the expression in that NAME1 and NAME2 are used so that they
-   are combined in a single statement, and returns this statement.  Note the
-   statement is inserted before INSERT_BEFORE if it's not NULL.  */
+   are combined in a single statement, and returns this statement.  */
 
 static gimple *
-reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
+reassociate_to_the_same_stmt (tree name1, tree name2)
 {
   gimple *stmt1, *stmt2, *root1, *root2, *s1, *s2;
   gassign *new_stmt, *tmp_stmt;
@@ -2580,12 +2662,6 @@ reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
   var = create_tmp_reg (type, "predreastmp");
   new_name = make_ssa_name (var);
   new_stmt = gimple_build_assign (new_name, code, name1, name2);
-  if (insert_before && stmt_dominates_stmt_p (insert_before, s1))
-    bsi = gsi_for_stmt (insert_before);
-  else
-    bsi = gsi_for_stmt (s1);
-
-  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);
 
   var = create_tmp_reg (type, "predreastmp");
   tmp_name = make_ssa_name (var);
@@ -2602,6 +2678,7 @@ reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
   s1 = gsi_stmt (bsi);
   update_stmt (s1);
 
+  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);
   gsi_insert_before (&bsi, tmp_stmt, GSI_SAME_STMT);
 
   return new_stmt;
@@ -2610,11 +2687,10 @@ reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
 /* Returns the statement that combines references R1 and R2.  In case R1
    and R2 are not used in the same statement, but they are used with an
    associative and commutative operation in the same expression, reassociate
-   the expression so that they are used in the same statement.  The combined
-   statement is inserted before INSERT_BEFORE if it's not NULL.  */
+   the expression so that they are used in the same statement.  */
 
 static gimple *
-stmt_combining_refs (dref r1, dref r2, gimple *insert_before)
+stmt_combining_refs (dref r1, dref r2)
 {
   gimple *stmt1, *stmt2;
   tree name1 = name_for_ref (r1);
@@ -2625,7 +2701,7 @@ stmt_combining_refs (dref r1, dref r2, gimple *insert_before)
   if (stmt1 == stmt2)
     return stmt1;
 
-  return reassociate_to_the_same_stmt (name1, name2, insert_before);
+  return reassociate_to_the_same_stmt (name1, name2);
 }
 
 /* Tries to combine chains CH1 and CH2 together.  If this succeeds, the
@@ -2638,8 +2714,7 @@ combine_chains (chain_p ch1, chain_p ch2)
   enum tree_code op = ERROR_MARK;
   bool swap = false;
   chain_p new_chain;
-  int i, j, num;
-  gimple *root_stmt;
+  unsigned i;
   tree rslt_type = NULL_TREE;
 
   if (ch1 == ch2)
@@ -2660,9 +2735,6 @@ combine_chains (chain_p ch1, chain_p ch2)
 	return NULL;
     }
 
-  ch1->combined = true;
-  ch2->combined = true;
-
   if (swap)
     std::swap (ch1, ch2);
 
@@ -2674,69 +2746,65 @@ combine_chains (chain_p ch1, chain_p ch2)
   new_chain->rslt_type = rslt_type;
   new_chain->length = ch1->length;
 
-  gimple *insert = NULL;
-  num = ch1->refs.length ();
-  i = (new_chain->length == 0) ? num - 1 : 0;
-  j = (new_chain->length == 0) ? -1 : 1;
-  /* For ZERO length chain, process refs in reverse order so that dominant
-     position is ready when it comes to the root ref.
-     For non-ZERO length chain, process refs in order.  See PR79663.  */
-  for (; num > 0; num--, i += j)
+  for (i = 0; (ch1->refs.iterate (i, &r1)
+	       && ch2->refs.iterate (i, &r2)); i++)
     {
-      r1 = ch1->refs[i];
-      r2 = ch2->refs[i];
       nw = XCNEW (struct dref_d);
+      nw->stmt = stmt_combining_refs (r1, r2);
       nw->distance = r1->distance;
-
-      /* For ZERO length chain, insert combined stmt of root ref at dominant
-	 position.  */
-      nw->stmt = stmt_combining_refs (r1, r2, i == 0 ? insert : NULL);
-      /* For ZERO length chain, record dominant position where combined stmt
-	 of root ref should be inserted.  In this case, though all root refs
-	 dominate following ones, it's possible that combined stmt doesn't.
-	 See PR70754.  */
-      if (new_chain->length == 0
-	  && (insert == NULL || stmt_dominates_stmt_p (nw->stmt, insert)))
-	insert = nw->stmt;
 
       new_chain->refs.safe_push (nw);
     }
-  if (new_chain->length == 0)
-    {
-      /* Restore the order for ZERO length chain's refs.  */
-      num = new_chain->refs.length () >> 1;
-      for (i = 0, j = new_chain->refs.length () - 1; i < num; i++, j--)
-	std::swap (new_chain->refs[i], new_chain->refs[j]);
 
-      /* For ZERO length chain, has_max_use_after must be true since root
-	 combined stmt must dominates others.  */
-      new_chain->has_max_use_after = true;
-      return new_chain;
-    }
-
-  new_chain->has_max_use_after = false;
-  root_stmt = get_chain_root (new_chain)->stmt;
-  for (i = 1; new_chain->refs.iterate (i, &nw); i++)
-    {
-      if (nw->distance == new_chain->length
-	  && !stmt_dominates_stmt_p (nw->stmt, root_stmt))
-	{
-	  new_chain->has_max_use_after = true;
-	  break;
-	}
-    }
-
+  ch1->combined = true;
+  ch2->combined = true;
   return new_chain;
 }
 
-/* Try to combine the CHAINS.  */
+/* Recursively update position information of all offspring chains to ROOT
+   chain's position information.  */
 
 static void
-try_combine_chains (vec<chain_p> *chains)
+update_pos_for_combined_chains (chain_p root)
+{
+  chain_p ch1 = root->ch1, ch2 = root->ch2;
+  dref ref, ref1, ref2;
+  for (unsigned j = 0; (root->refs.iterate (j, &ref)
+			&& ch1->refs.iterate (j, &ref1)
+			&& ch2->refs.iterate (j, &ref2)); ++j)
+    ref1->pos = ref2->pos = ref->pos;
+
+  if (ch1->type == CT_COMBINATION)
+    update_pos_for_combined_chains (ch1);
+  if (ch2->type == CT_COMBINATION)
+    update_pos_for_combined_chains (ch2);
+}
+
+/* Returns true if statement S1 dominates statement S2.  */
+
+static bool
+pcom_stmt_dominates_stmt_p (gimple *s1, gimple *s2)
+{
+  basic_block bb1 = gimple_bb (s1), bb2 = gimple_bb (s2);
+
+  if (!bb1 || s1 == s2)
+    return true;
+
+  if (bb1 == bb2)
+    return gimple_uid (s1) < gimple_uid (s2);
+
+  return dominated_by_p (CDI_DOMINATORS, bb2, bb1);
+}
+
+/* Try to combine the CHAINS in LOOP.  */
+
+static void
+try_combine_chains (struct loop *loop, vec<chain_p> *chains)
 {
   unsigned i, j;
   chain_p ch1, ch2, cch;
   auto_vec<chain_p> worklist;
+  bool combined_p = false;
 
   FOR_EACH_VEC_ELT (*chains, i, ch1)
     if (chain_can_be_combined_p (ch1))
@@ -2758,6 +2826,78 @@ try_combine_chains (vec<chain_p> *chains)
 	    {
 	      worklist.safe_push (cch);
 	      chains->safe_push (cch);
+	      combined_p = true;
+	      break;
+	    }
+	}
+    }
+  if (!combined_p)
+    return;
+
+  /* Setup UID for all statements in dominance order.  */
+  basic_block *bbs = get_loop_body (loop);
+  renumber_gimple_stmt_uids_in_blocks (bbs, loop->num_nodes);
+  free (bbs);
+
+  /* Re-association in combined chains may generate statements different to
+     order of references of the original chain.  We need to keep references
+     of combined chain in dominance order so that all uses will be inserted
+     after definitions.  Note:
+       A) This is necessary for all combined chains.
+       B) This is only necessary for ZERO distance references because other
+	  references inherit value from loop carried PHIs.
+
+     We first update position information for all combined chains.  */
+  dref ref;
+  for (i = 0; chains->iterate (i, &ch1); ++i)
+    {
+      if (ch1->type != CT_COMBINATION || ch1->combined)
+	continue;
+
+      for (j = 0; ch1->refs.iterate (j, &ref); ++j)
+	ref->pos = gimple_uid (ref->stmt);
+
+      update_pos_for_combined_chains (ch1);
+    }
+  /* Then sort references according to newly updated position information.  */
+  for (i = 0; chains->iterate (i, &ch1); ++i)
+    {
+      if (ch1->type != CT_COMBINATION && !ch1->combined)
+	continue;
+
+      /* Find the first reference with non-ZERO distance.  */
+      if (ch1->length == 0)
+	j = ch1->refs.length();
+      else
+	{
+	  for (j = 0; ch1->refs.iterate (j, &ref); ++j)
+	    if (ref->distance != 0)
+	      break;
+	}
+
+      /* Sort all ZERO distance references by position.  */
+      qsort (&ch1->refs[0], j, sizeof (ch1->refs[0]), order_drefs_by_pos);
+
+      if (ch1->combined)
+	continue;
+
+      /* For ZERO length chain, has_max_use_after must be true since root
+	 combined stmt must dominates others.  */
+      if (ch1->length == 0)
+	{
+	  ch1->has_max_use_after = true;
+	  continue;
+	}
+      /* Check if there is use at max distance after root for combined chains
+	 and set flag accordingly.  */
+      ch1->has_max_use_after = false;
+      gimple *root_stmt = get_chain_root (ch1)->stmt;
+      for (j = 1; ch1->refs.iterate (j, &ref); ++j)
+	{
+	  if (ref->distance == ch1->length
+	      && !pcom_stmt_dominates_stmt_p (ref->stmt, root_stmt))
+	    {
+	      ch1->has_max_use_after = true;
 	      break;
 	    }
 	}
@@ -3095,7 +3235,7 @@ tree_predictive_commoning_loop (struct loop *loop)
   loop_closed_ssa = prepare_finalizers (loop, chains);
 
   /* Try to combine the chains that are always worked with together.  */
-  try_combine_chains (&chains);
+  try_combine_chains (loop, &chains);
 
   insert_init_seqs (loop, chains);
 

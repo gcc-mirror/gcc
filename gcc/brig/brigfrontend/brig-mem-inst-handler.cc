@@ -1,5 +1,5 @@
 /* brig-mem-inst-handler.cc -- brig memory inst handler
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -41,7 +41,11 @@ brig_mem_inst_handler::build_mem_access (const BrigInstBase *brig_inst,
 
   tree instr_type = gccbrig_tree_type_for_hsa_type (brig_inst->type);
 
-  if (VECTOR_TYPE_P (TREE_TYPE (data)))
+  /* In case of {ld,st}_v{2,4}. Note: since 'register' variables may
+     be any type, even a vector type, we distinguish the registers
+     from operand lists by checking for constructor nodes (which
+     operand lists are represented as).  */
+  if (VECTOR_TYPE_P (TREE_TYPE (data)) && TREE_CODE (data) == CONSTRUCTOR)
     instr_type = TREE_TYPE (data);
 
   tree ptype = build_pointer_type (instr_type);
@@ -151,14 +155,7 @@ brig_mem_inst_handler::operator () (const BrigBase *base)
 				 address_base, ptr_offset);
 
 	  if (is_store && TREE_TYPE (data) != instr_type)
-	    {
-	      if (int_size_in_bytes (TREE_TYPE (data))
-		    == int_size_in_bytes (instr_type)
-		  && !INTEGRAL_TYPE_P (instr_type))
-		data = build1 (VIEW_CONVERT_EXPR, instr_type, data);
-	      else
-		data = convert (instr_type, data);
-	    }
+	    data = build_resize_convert_view (instr_type, data);
 
 	  build_mem_access (brig_inst, address, data);
 

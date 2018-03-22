@@ -1,5 +1,5 @@
 ;; Machine description of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -52,13 +52,17 @@
 
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
-  "unknown,move,load,store,alu,compare,branch,call,misc"
+  "unknown,move,load,store,load_multiple,store_multiple,alu,compare,branch,call,misc"
   (const_string "unknown"))
 
 
 ;; Length, in bytes, default is 4-bytes.
 (define_attr "length" "" (const_int 4))
 
+;; Indicate the amount of micro instructions.
+(define_attr "combo"
+  "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25"
+  (const_string "1"))
 
 ;; Enabled, which is used to enable/disable insn alternatives.
 ;; Note that we use length and TARGET_16_BIT here as criteria.
@@ -269,12 +273,12 @@
     {
     case 0:
       /* addi Rt4,Rt4,-x  ==>  subi45 Rt4,x
-         where 0 <= x <= 31 */
+	 where 0 <= x <= 31 */
       operands[2] = gen_int_mode (-INTVAL (operands[2]), SImode);
       return "subi45\t%0, %2";
     case 1:
       /* addi Rt3,Ra3,-x  ==>  subi333 Rt3,Ra3,x
-         where 0 <= x <= 7 */
+	 where 0 <= x <= 7 */
       operands[2] = gen_int_mode (-INTVAL (operands[2]), SImode);
       return "subi333\t%0, %1, %2";
     case 2:
@@ -320,7 +324,7 @@
 ;; and needs to ensure it is exact_log2 value.
 (define_insn "*add_slli"
   [(set (match_operand:SI 0 "register_operand"                    "=r")
-        (plus:SI (mult:SI (match_operand:SI 1 "register_operand"  " r")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand"  " r")
 			  (match_operand:SI 2 "immediate_operand" " i"))
 		 (match_operand:SI 3 "register_operand"           " r")))]
   "TARGET_ISA_V3
@@ -415,9 +419,9 @@
 
 (define_insn "*maddr32_0"
   [(set (match_operand:SI 0 "register_operand"                   "=r")
-        (plus:SI (match_operand:SI 3 "register_operand"          " 0")
-                 (mult:SI (match_operand:SI 1 "register_operand" " r")
-                          (match_operand:SI 2 "register_operand" " r"))))]
+	(plus:SI (match_operand:SI 3 "register_operand"          " 0")
+		 (mult:SI (match_operand:SI 1 "register_operand" " r")
+			  (match_operand:SI 2 "register_operand" " r"))))]
   ""
   "maddr32\t%0, %1, %2"
   [(set_attr "type"   "alu")
@@ -425,9 +429,9 @@
 
 (define_insn "*maddr32_1"
   [(set (match_operand:SI 0 "register_operand"                   "=r")
-        (plus:SI (mult:SI (match_operand:SI 1 "register_operand" " r")
-                          (match_operand:SI 2 "register_operand" " r"))
-                 (match_operand:SI 3 "register_operand"          " 0")))]
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" " r")
+			  (match_operand:SI 2 "register_operand" " r"))
+		 (match_operand:SI 3 "register_operand"          " 0")))]
   ""
   "maddr32\t%0, %1, %2"
   [(set_attr "type"   "alu")
@@ -435,9 +439,9 @@
 
 (define_insn "*msubr32"
   [(set (match_operand:SI 0 "register_operand"                    "=r")
-        (minus:SI (match_operand:SI 3 "register_operand"          " 0")
-                  (mult:SI (match_operand:SI 1 "register_operand" " r")
-                           (match_operand:SI 2 "register_operand" " r"))))]
+	(minus:SI (match_operand:SI 3 "register_operand"          " 0")
+		  (mult:SI (match_operand:SI 1 "register_operand" " r")
+			   (match_operand:SI 2 "register_operand" " r"))))]
   ""
   "msubr32\t%0, %1, %2"
   [(set_attr "type"   "alu")
@@ -448,10 +452,10 @@
 
 (define_insn "divmodsi4"
   [(set (match_operand:SI 0 "register_operand"         "=r")
-        (div:SI (match_operand:SI 1 "register_operand" " r")
-                (match_operand:SI 2 "register_operand" " r")))
+	(div:SI (match_operand:SI 1 "register_operand" " r")
+		(match_operand:SI 2 "register_operand" " r")))
    (set (match_operand:SI 3 "register_operand"         "=r")
-        (mod:SI (match_dup 1) (match_dup 2)))]
+	(mod:SI (match_dup 1) (match_dup 2)))]
   ""
   "divsr\t%0, %3, %1, %2"
   [(set_attr "type"   "alu")
@@ -459,10 +463,10 @@
 
 (define_insn "udivmodsi4"
   [(set (match_operand:SI 0 "register_operand"          "=r")
-        (udiv:SI (match_operand:SI 1 "register_operand" " r")
-                (match_operand:SI 2 "register_operand"  " r")))
+	(udiv:SI (match_operand:SI 1 "register_operand" " r")
+		 (match_operand:SI 2 "register_operand"  " r")))
    (set (match_operand:SI 3 "register_operand"          "=r")
-        (umod:SI (match_dup 1) (match_dup 2)))]
+	(umod:SI (match_dup 1) (match_dup 2)))]
   ""
   "divr\t%0, %3, %1, %2"
   [(set_attr "type"   "alu")
@@ -2089,11 +2093,8 @@ create_template:
   ""
 {
   /* Note that only under V3/V3M ISA, we could use v3push prologue.
-     In addition, we do not want to use v3push for isr function
-     and variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+     In addition, we need to check if v3push is indeed available.  */
+  if (NDS32_V3PUSH_AVAILABLE_P)
     nds32_expand_prologue_v3push ();
   else
     nds32_expand_prologue ();
@@ -2104,11 +2105,8 @@ create_template:
   ""
 {
   /* Note that only under V3/V3M ISA, we could use v3pop epilogue.
-     In addition, we do not want to use v3pop for isr function
-     and variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+     In addition, we need to check if v3push is indeed available.  */
+  if (NDS32_V3PUSH_AVAILABLE_P)
     nds32_expand_epilogue_v3pop (false);
   else
     nds32_expand_epilogue (false);
@@ -2121,10 +2119,7 @@ create_template:
   /* Pass true to indicate that this is sibcall epilogue and
      exit from a function without the final branch back to the
      calling function.  */
-  if (TARGET_V3PUSH && !nds32_isr_function_p (current_function_decl))
-    nds32_expand_epilogue_v3pop (true);
-  else
-    nds32_expand_epilogue (true);
+  nds32_expand_epilogue (true);
 
   DONE;
 })
@@ -2166,7 +2161,8 @@ create_template:
 {
   return nds32_output_stack_push (operands[0]);
 }
-  [(set_attr "type" "misc")
+  [(set_attr "type" "store_multiple")
+   (set_attr "combo" "12")
    (set_attr "enabled" "1")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_V3PUSH
@@ -2188,7 +2184,8 @@ create_template:
 {
   return nds32_output_stack_pop (operands[0]);
 }
-  [(set_attr "type" "misc")
+  [(set_attr "type" "load_multiple")
+   (set_attr "combo" "12")
    (set_attr "enabled" "1")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_V3PUSH
@@ -2275,8 +2272,8 @@ create_template:
       add_tmp = gen_int_mode (-INTVAL (operands[1]), SImode);
 
       /* If the integer value is not in the range of imm15s,
-         we need to force register first because our addsi3 pattern
-         only accept nds32_rimm15s_operand predicate.  */
+	 we need to force register first because our addsi3 pattern
+	 only accept nds32_rimm15s_operand predicate.  */
       add_tmp = force_reg (SImode, add_tmp);
 
       emit_insn (gen_addsi3 (reg, operands[0], add_tmp));
@@ -2336,7 +2333,7 @@ create_template:
 (define_insn "clzsi2"
   [(set (match_operand:SI 0 "register_operand"         "=r")
 	(clz:SI (match_operand:SI 1 "register_operand" " r")))]
-  "TARGET_PERF_EXT"
+  "TARGET_EXT_PERF"
   "clz\t%0, %1"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
@@ -2345,7 +2342,7 @@ create_template:
   [(set (match_operand:SI 0 "register_operand"          "=r")
 	(smax:SI (match_operand:SI 1 "register_operand" " r")
 		 (match_operand:SI 2 "register_operand" " r")))]
-  "TARGET_PERF_EXT"
+  "TARGET_EXT_PERF"
   "max\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
@@ -2354,7 +2351,7 @@ create_template:
   [(set (match_operand:SI 0 "register_operand"          "=r")
 	(smin:SI (match_operand:SI 1 "register_operand" " r")
 		 (match_operand:SI 2 "register_operand" " r")))]
-  "TARGET_PERF_EXT"
+  "TARGET_EXT_PERF"
   "min\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
@@ -2364,7 +2361,7 @@ create_template:
 	(zero_extract:SI (match_operand:SI 1 "register_operand"  "    r")
 			 (const_int 1)
 			 (match_operand:SI 2 "immediate_operand" " Iu05")))]
-  "TARGET_PERF_EXT"
+  "TARGET_EXT_PERF"
   "btst\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])

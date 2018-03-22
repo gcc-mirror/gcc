@@ -1,5 +1,5 @@
 /* brig-inst-mod-handler.cc -- brig rounding moded instruction handling
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 

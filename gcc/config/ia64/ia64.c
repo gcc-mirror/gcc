@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -18,6 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -329,12 +331,12 @@ static tree ia64_fold_builtin (tree, int, tree *, bool);
 static tree ia64_builtin_decl (unsigned, bool);
 
 static reg_class_t ia64_preferred_reload_class (rtx, reg_class_t);
-static machine_mode ia64_get_reg_raw_mode (int regno);
+static fixed_size_mode ia64_get_reg_raw_mode (int regno);
 static section * ia64_hpux_function_section (tree, enum node_frequency,
 					     bool, bool);
 
-static bool ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
-					      const unsigned char *sel);
+static bool ia64_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
+					   const vec_perm_indices &);
 
 static unsigned int ia64_hard_regno_nregs (unsigned int, machine_mode);
 static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
@@ -360,18 +362,18 @@ static bool ia64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d);
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "syscall_linkage", 0, 0, false, true,  true,  NULL, false },
-  { "model",	       1, 1, true, false, false, ia64_handle_model_attribute,
-    false },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "syscall_linkage", 0, 0, false, true,  true,  false, NULL, NULL },
+  { "model",	       1, 1, true, false, false,  false,
+    ia64_handle_model_attribute, NULL },
 #if TARGET_ABI_OPEN_VMS
-  { "common_object",   1, 1, true, false, false,
-    ia64_vms_common_object_attribute, false },
+  { "common_object",   1, 1, true, false, false, false,
+    ia64_vms_common_object_attribute, NULL },
 #endif
-  { "version_id",      1, 1, true, false, false,
-    ia64_handle_version_id_attribute, false },
-  { NULL,	       0, 0, false, false, false, NULL, false }
+  { "version_id",      1, 1, true, false, false, false,
+    ia64_handle_version_id_attribute, NULL },
+  { NULL,	       0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Initialize the GCC target structure.  */
@@ -653,8 +655,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_DELAY_VARTRACK
 #define TARGET_DELAY_VARTRACK true
 
-#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
-#define TARGET_VECTORIZE_VEC_PERM_CONST_OK ia64_vectorize_vec_perm_const_ok
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST ia64_vectorize_vec_perm_const
 
 #undef TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
 #define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P ia64_attribute_takes_identifier_p
@@ -672,6 +674,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS ia64_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1936,7 +1941,7 @@ ia64_expand_vecint_compare (enum rtx_code code, machine_mode mode,
 	    /* Subtract (-(INT MAX) - 1) from both operands to make
 	       them signed.  */
 	    mask = gen_int_mode (0x80000000, SImode);
-	    mask = gen_rtx_CONST_VECTOR (V2SImode, gen_rtvec (2, mask, mask));
+	    mask = gen_const_vec_duplicate (V2SImode, mask);
 	    mask = force_reg (mode, mask);
 	    t1 = gen_reg_rtx (mode);
 	    emit_insn (gen_subv2si3 (t1, op0, mask));
@@ -2704,7 +2709,8 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
     mark_reg_gr_used_mask (cfun->machine->ia64_eh_epilogue_bsp, NULL);
 
   /* Static stack checking uses r2 and r3.  */
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     current_frame_info.gr_used_mask |= 0xc;
 
   /* Find the size of the register stack frame.  We have only 80 local
@@ -3494,7 +3500,8 @@ ia64_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = current_frame_info.total_size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       HOST_WIDE_INT size = current_frame_info.total_size;
       int bs_size = BACKING_STORE_SIZE (current_frame_info.n_input_regs
@@ -3502,15 +3509,16 @@ ia64_expand_prologue (void)
 
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    ia64_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					 size - STACK_CHECK_PROTECT,
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    ia64_emit_probe_stack_range (get_stack_check_protect (),
+					 size - get_stack_check_protect (),
 					 bs_size);
-	  else if (size + bs_size > STACK_CHECK_PROTECT)
-	    ia64_emit_probe_stack_range (STACK_CHECK_PROTECT, 0, bs_size);
+	  else if (size + bs_size > get_stack_check_protect ())
+	    ia64_emit_probe_stack_range (get_stack_check_protect (),
+					 0, bs_size);
 	}
       else if (size + bs_size > 0)
-	ia64_emit_probe_stack_range (STACK_CHECK_PROTECT, size, bs_size);
+	ia64_emit_probe_stack_range (get_stack_check_protect (), size, bs_size);
     }
 
   if (dump_file) 
@@ -11323,7 +11331,7 @@ ia64_dconst_0_375 (void)
   return ia64_dconst_0_375_rtx;
 }
 
-static machine_mode
+static fixed_size_mode
 ia64_get_reg_raw_mode (int regno)
 {
   if (FR_REGNO_P (regno))
@@ -11736,32 +11744,31 @@ ia64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
-bool
-ia64_expand_vec_perm_const (rtx operands[4])
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
+
+static bool
+ia64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
+			       rtx op1, const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
   unsigned char perm[MAX_VECT_LEN];
-  int i, nelt, which;
-  rtx sel;
+  unsigned int i, nelt, which;
 
-  d.target = operands[0];
-  d.op0 = operands[1];
-  d.op1 = operands[2];
-  sel = operands[3];
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
 
-  d.vmode = GET_MODE (d.target);
+  d.vmode = vmode;
   gcc_assert (VECTOR_MODE_P (d.vmode));
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = false;
+  d.testing_p = !target;
 
-  gcc_assert (GET_CODE (sel) == CONST_VECTOR);
-  gcc_assert (XVECLEN (sel, 0) == nelt);
+  gcc_assert (sel.length () == nelt);
   gcc_checking_assert (sizeof (d.perm) == sizeof (perm));
 
   for (i = which = 0; i < nelt; ++i)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      int ei = INTVAL (e) & (2 * nelt - 1);
+      unsigned int ei = sel[i] & (2 * nelt - 1);
 
       which |= (ei < nelt ? 1 : 2);
       d.perm[i] = ei;
@@ -11774,7 +11781,7 @@ ia64_expand_vec_perm_const (rtx operands[4])
       gcc_unreachable();
 
     case 3:
-      if (!rtx_equal_p (d.op0, d.op1))
+      if (d.testing_p || !rtx_equal_p (d.op0, d.op1))
 	{
 	  d.one_operand_p = false;
 	  break;
@@ -11802,6 +11809,22 @@ ia64_expand_vec_perm_const (rtx operands[4])
       break;
     }
 
+  if (d.testing_p)
+    {
+      /* We have to go through the motions and see if we can
+	 figure out how to generate the requested permutation.  */
+      d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+      d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+      if (!d.one_operand_p)
+	d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+      start_sequence ();
+      bool ret = ia64_expand_vec_perm_const_1 (&d);
+      end_sequence ();
+
+      return ret;
+    }
+
   if (ia64_expand_vec_perm_const_1 (&d))
     return true;
 
@@ -11816,52 +11839,6 @@ ia64_expand_vec_perm_const (rtx operands[4])
     }
 
   return false;
-}
-
-/* Implement targetm.vectorize.vec_perm_const_ok.  */
-
-static bool
-ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
-				  const unsigned char *sel)
-{
-  struct expand_vec_perm_d d;
-  unsigned int i, nelt, which;
-  bool ret;
-
-  d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = true;
-
-  /* Extract the values from the vector CST into the permutation
-     array in D.  */
-  memcpy (d.perm, sel, nelt);
-  for (i = which = 0; i < nelt; ++i)
-    {
-      unsigned char e = d.perm[i];
-      gcc_assert (e < 2 * nelt);
-      which |= (e < nelt ? 1 : 2);
-    }
-
-  /* For all elements from second vector, fold the elements to first.  */
-  if (which == 2)
-    for (i = 0; i < nelt; ++i)
-      d.perm[i] -= nelt;
-
-  /* Check whether the mask can be applied to the vector type.  */
-  d.one_operand_p = (which != 3);
-
-  /* Otherwise we have to go through the motions and see if we can
-     figure out how to generate the requested permutation.  */
-  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
-  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
-  if (!d.one_operand_p)
-    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
-
-  start_sequence ();
-  ret = ia64_expand_vec_perm_const_1 (&d);
-  end_sequence ();
-
-  return ret;
 }
 
 void

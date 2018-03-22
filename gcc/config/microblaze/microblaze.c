@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Xilinx MicroBlaze.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -18,6 +18,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -215,18 +217,13 @@ int fast_interrupt;
 int save_volatiles;
 
 const struct attribute_spec microblaze_attribute_table[] = {
-  /* name         min_len, max_len, decl_req, type_req, fn_type, req_handler,
-     affects_type_identity */
-  {"interrupt_handler", 0,       0,     true,    false,   false,        NULL,
-    false },
-  {"break_handler",     0,       0,     true,    false,   false,        NULL,
-    false },
-  {"fast_interrupt",    0,       0,     true,    false,   false,        NULL,
-    false },
-  {"save_volatiles"   , 0,       0,     true,    false,   false,        NULL,
-    false },
-  { NULL,        	0,       0,    false,    false,   false,        NULL,
-    false }
+  /* name         min_len, max_len, decl_req, type_req, fn_type_req,
+     affects_type_identity, handler, exclude */
+  {"interrupt_handler",	0,       0,    true, false, false, false, NULL, NULL },
+  {"break_handler",	0,       0,    true, false, false, false, NULL, NULL },
+  {"fast_interrupt",	0,       0,    true, false, false, false, NULL, NULL },
+  {"save_volatiles",	0,       0,    true, false, false, false, NULL, NULL },
+  { NULL,        	0,       0,   false, false, false, false, NULL, NULL }
 };
 
 static int microblaze_interrupt_function_p (tree);
@@ -2726,7 +2723,7 @@ microblaze_function_prologue (FILE * file)
 			  STACK_POINTER_REGNUM]), fsiz,
 	       reg_names[MB_ABI_SUB_RETURN_ADDR_REGNUM + GP_REG_FIRST],
 	       current_frame_info.var_size, current_frame_info.num_gp,
-	       crtl->outgoing_args_size);
+	       (int) crtl->outgoing_args_size);
       fprintf (file, "\t.mask\t0x%08lx\n", current_frame_info.mask);
     }
 }
@@ -3397,7 +3394,9 @@ microblaze_asm_output_ident (const char *string)
   else
     section_asm_op = READONLY_DATA_SECTION_ASM_OP;
 
-  buf = ACONCAT ((section_asm_op, "\n\t.ascii \"", string, "\\0\"\n", NULL));
+  buf = ACONCAT (("\t.pushsection", section_asm_op,
+                  "\n\t.ascii \"", string, "\\0\"\n",
+                  "\t.popsection\n", NULL));
   symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
 }
 
@@ -3800,6 +3799,24 @@ microblaze_machine_dependent_reorg (void)
       return;
     }
 }
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+microblaze_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+microblaze_starting_frame_offset (void)
+{
+  return (crtl->outgoing_args_size + FIRST_PARM_OFFSET(FNDECL));
+}
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO      microblaze_encode_section_info
@@ -3903,6 +3920,12 @@ microblaze_machine_dependent_reorg (void)
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P microblaze_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT microblaze_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET microblaze_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

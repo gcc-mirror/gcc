@@ -1,5 +1,5 @@
 /* A pass for lowering gimple to HSAIL
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
 
@@ -211,7 +211,7 @@ hsa_function_representation::hsa_function_representation
     m_seen_error (false), m_temp_symbol_count (0), m_ssa_map (),
     m_modified_cfg (modified_cfg)
 {
-  int sym_init_len = (vec_safe_length (cfun->local_decls) / 2) + 1;;
+  int sym_init_len = (vec_safe_length (cfun->local_decls) / 2) + 1;
   m_local_symbols = new hash_table <hsa_noop_symbol_hasher> (sym_init_len);
   m_ssa_map.safe_grow_cleared (ssa_names_count);
 }
@@ -564,6 +564,19 @@ get_integer_type_by_bytes (unsigned size, bool sign)
   return 0;
 }
 
+/* If T points to an integral type smaller than 32 bits, change it to a 32bit
+   equivalent and return the result.  Otherwise just return the result.   */
+
+static BrigType16_t
+hsa_extend_inttype_to_32bit (BrigType16_t t)
+{
+  if (t == BRIG_TYPE_U8 || t == BRIG_TYPE_U16)
+    return BRIG_TYPE_U32;
+  else if (t == BRIG_TYPE_S8 || t == BRIG_TYPE_S16)
+    return BRIG_TYPE_S32;
+  return t;
+}
+
 /* Return HSA type for tree TYPE, which has to fit into BrigType16_t.  Pointers
    are assumed to use flat addressing.  If min32int is true, always expand
    integer types to one that has at least 32 bits.  */
@@ -580,8 +593,13 @@ hsa_type_for_scalar_tree_type (const_tree type, bool min32int)
   if (POINTER_TYPE_P (type))
     return hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT);
 
-  if (TREE_CODE (type) == VECTOR_TYPE || TREE_CODE (type) == COMPLEX_TYPE)
+  if (TREE_CODE (type) == VECTOR_TYPE)
     base = TREE_TYPE (type);
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      base = TREE_TYPE (type);
+      min32int = true;
+    }
   else
     base = type;
 
@@ -652,14 +670,9 @@ hsa_type_for_scalar_tree_type (const_tree type, bool min32int)
     }
 
   if (min32int)
-    {
-      /* Registers/immediate operands can only be 32bit or more except for
-	 f16.  */
-      if (res == BRIG_TYPE_U8 || res == BRIG_TYPE_U16)
-	res = BRIG_TYPE_U32;
-      else if (res == BRIG_TYPE_S8 || res == BRIG_TYPE_S16)
-	res = BRIG_TYPE_S32;
-    }
+    /* Registers/immediate operands can only be 32bit or more except for
+       f16.  */
+    res = hsa_extend_inttype_to_32bit (res);
 
   if (TREE_CODE (type) == COMPLEX_TYPE)
     {
@@ -678,7 +691,7 @@ mem_type_for_type (BrigType16_t type)
   /* HSA has non-intuitive constraints on load/store types.  If it's
      a bit-type it _must_ be B128, if it's not a bit-type it must be
      64bit max.  So for loading entities of 128 bits (e.g. vectors)
-     we have to to B128, while for loading the rest we have to use the
+     we have to use B128, while for loading the rest we have to use the
      input type (??? or maybe also flattened to a equally sized non-vector
      unsigned type?).  */
   if ((type & BRIG_TYPE_PACK_MASK) == BRIG_TYPE_PACK_128)
@@ -919,9 +932,13 @@ get_symbol_for_decl (tree decl)
 	  else if (lookup_attribute ("hsa_group_segment",
 				     DECL_ATTRIBUTES (decl)))
 	    segment = BRIG_SEGMENT_GROUP;
-	  else if (TREE_STATIC (decl)
-		   || lookup_attribute ("hsa_global_segment",
-					DECL_ATTRIBUTES (decl)))
+	  else if (TREE_STATIC (decl))
+	    {
+	      segment = BRIG_SEGMENT_GLOBAL;
+	      allocation = BRIG_ALLOCATION_PROGRAM;
+	    }
+	  else if (lookup_attribute ("hsa_global_segment",
+				     DECL_ATTRIBUTES (decl)))
 	    segment = BRIG_SEGMENT_GLOBAL;
 	  else
 	    segment = BRIG_SEGMENT_PRIVATE;
@@ -1009,6 +1026,16 @@ hsa_get_string_cst_symbol (tree string_cst)
   return sym;
 }
 
+/* Make the type of a MOV instruction larger if mandated by HSAIL rules.  */
+
+static void
+hsa_fixup_mov_insn_type (hsa_insn_basic *insn)
+{
+  insn->m_type = hsa_extend_inttype_to_32bit (insn->m_type);
+  if (insn->m_type == BRIG_TYPE_B8 || insn->m_type == BRIG_TYPE_B16)
+    insn->m_type = BRIG_TYPE_B32;
+}
+
 /* Constructor of the ancestor of all operands.  K is BRIG kind that identified
    what the operator is.  */
 
@@ -1050,15 +1077,31 @@ hsa_op_with_type::get_in_type (BrigType16_t dtype, hsa_bb *hbb)
   else
     {
       dest = new hsa_op_reg (m_type);
-      hbb->append_insn (new hsa_insn_basic (2, BRIG_OPCODE_MOV,
-					    dest->m_type, dest, this));
 
+      hsa_insn_basic *mov = new hsa_insn_basic (2, BRIG_OPCODE_MOV,
+						dest->m_type, dest, this);
+      hsa_fixup_mov_insn_type (mov);
+      hbb->append_insn (mov);
       /* We cannot simply for instance: 'mov_u32 $_3, 48 (s32)' because
 	 type of the operand must be same as type of the instruction.  */
       dest->m_type = dtype;
     }
 
   return dest;
+}
+
+/* If this operand has integer type smaller than 32 bits, extend it to 32 bits,
+   adding instructions to HBB if needed.  */
+
+hsa_op_with_type *
+hsa_op_with_type::extend_int_to_32bit (hsa_bb *hbb)
+{
+  if (m_type == BRIG_TYPE_U8 || m_type == BRIG_TYPE_U16)
+    return get_in_type (BRIG_TYPE_U32, hbb);
+  else if (m_type == BRIG_TYPE_S8 || m_type == BRIG_TYPE_S16)
+    return get_in_type (BRIG_TYPE_S32, hbb);
+  else
+    return this;
 }
 
 /* Constructor of class representing HSA immediate values.  TREE_VAL is the
@@ -1292,7 +1335,7 @@ hsa_function_representation::reg_for_gimple_ssa (tree ssa)
     return m_ssa_map[SSA_NAME_VERSION (ssa)];
 
   hreg = new hsa_op_reg (hsa_type_for_scalar_tree_type (TREE_TYPE (ssa),
-							 true));
+							false));
   hreg->m_gimple_ssa = ssa;
   m_ssa_map[SSA_NAME_VERSION (ssa)] = hreg;
 
@@ -1799,7 +1842,7 @@ gen_address_calculation (tree exp, hsa_bb *hbb, BrigType16_t addrtype)
 
     case INTEGER_CST:
       {
-       hsa_op_immed *imm = new hsa_op_immed (exp);
+	hsa_op_immed *imm = new hsa_op_immed (exp);
        if (addrtype != imm->m_type)
 	 imm->m_type = addrtype;
        return imm;
@@ -1920,8 +1963,8 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
       goto out;
     }
   else if (TREE_CODE (ref) == BIT_FIELD_REF
-	   && ((tree_to_uhwi (TREE_OPERAND (ref, 1)) % BITS_PER_UNIT) != 0
-	       || (tree_to_uhwi (TREE_OPERAND (ref, 2)) % BITS_PER_UNIT) != 0))
+	   && (!multiple_p (bit_field_size (ref), BITS_PER_UNIT)
+	       || !multiple_p (bit_field_offset (ref), BITS_PER_UNIT)))
     {
       HSA_SORRY_ATV (EXPR_LOCATION (origref),
 		     "support for HSA does not implement "
@@ -1933,12 +1976,22 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
     {
       machine_mode mode;
       int unsignedp, volatilep, preversep;
+      poly_int64 pbitsize, pbitpos;
+      tree new_ref;
 
-      ref = get_inner_reference (ref, &bitsize, &bitpos, &varoffset, &mode,
-				 &unsignedp, &preversep, &volatilep);
-
-      offset = bitpos;
-      offset = wi::rshift (offset, LOG2_BITS_PER_UNIT, SIGNED);
+      new_ref = get_inner_reference (ref, &pbitsize, &pbitpos, &varoffset,
+				     &mode, &unsignedp, &preversep,
+				     &volatilep);
+      /* When this isn't true, the switch below will report an
+	 appropriate error.  */
+      if (pbitsize.is_constant () && pbitpos.is_constant ())
+	{
+	  bitsize = pbitsize.to_constant ();
+	  bitpos = pbitpos.to_constant ();
+	  ref = new_ref;
+	  offset = bitpos;
+	  offset = wi::rshift (offset, LOG2_BITS_PER_UNIT, SIGNED);
+	}
     }
 
   switch (TREE_CODE (ref))
@@ -1957,8 +2010,10 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
     case SSA_NAME:
       {
 	addrtype = hsa_get_segment_addr_type (BRIG_SEGMENT_PRIVATE);
-	symbol = hsa_cfun->create_hsa_temporary (flat_addrtype);
-	hsa_op_reg *r = hsa_cfun->reg_for_gimple_ssa (ref);
+	hsa_op_with_type *r = hsa_cfun->reg_for_gimple_ssa (ref);
+	if (r->m_type == BRIG_TYPE_B1)
+	  r = r->get_in_type (BRIG_TYPE_U32, hbb);
+	symbol = hsa_cfun->create_hsa_temporary (r->m_type);
 
 	hbb->append_insn (new hsa_insn_mem (BRIG_OPCODE_ST, r->m_type,
 					    r, new hsa_op_address (symbol)));
@@ -2247,13 +2302,18 @@ hsa_build_append_simple_mov (hsa_op_reg *dest, hsa_op_base *src, hsa_bb *hbb)
      rules like when dealing with memory.  */
   BrigType16_t tp = mem_type_for_type (dest->m_type);
   hsa_insn_basic *insn = new hsa_insn_basic (2, BRIG_OPCODE_MOV, tp, dest, src);
+  hsa_fixup_mov_insn_type (insn);
+  unsigned dest_size = hsa_type_bit_size (dest->m_type);
   if (hsa_op_reg *sreg = dyn_cast <hsa_op_reg *> (src))
-    gcc_assert (hsa_type_bit_size (dest->m_type)
-		== hsa_type_bit_size (sreg->m_type));
+    gcc_assert (dest_size == hsa_type_bit_size (sreg->m_type));
   else
-    gcc_assert (hsa_type_bit_size (dest->m_type)
-		== hsa_type_bit_size (as_a <hsa_op_immed *> (src)->m_type));
-
+    {
+      unsigned imm_size
+	=  hsa_type_bit_size (as_a <hsa_op_immed *> (src)->m_type);
+      gcc_assert ((dest_size == imm_size)
+		  /* Eventually < 32bit registers will be promoted to 32bit. */
+		  || (dest_size < 32 && imm_size == 32));
+    }
   hbb->append_insn (insn);
 }
 
@@ -2268,13 +2328,15 @@ gen_hsa_insns_for_bitfield (hsa_op_reg *dest, hsa_op_reg *value_reg,
 			    HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 			    hsa_bb *hbb)
 {
-  unsigned type_bitsize = hsa_type_bit_size (dest->m_type);
+  unsigned type_bitsize
+    = hsa_type_bit_size (hsa_extend_inttype_to_32bit (dest->m_type));
   unsigned left_shift = type_bitsize - (bitsize + bitpos);
   unsigned right_shift = left_shift + bitpos;
 
   if (left_shift)
     {
-      hsa_op_reg *value_reg_2 = new hsa_op_reg (dest->m_type);
+      hsa_op_reg *value_reg_2
+	= new hsa_op_reg (hsa_extend_inttype_to_32bit (dest->m_type));
       hsa_op_immed *c = new hsa_op_immed (left_shift, BRIG_TYPE_U32);
 
       hsa_insn_basic *lshift
@@ -2288,7 +2350,8 @@ gen_hsa_insns_for_bitfield (hsa_op_reg *dest, hsa_op_reg *value_reg,
 
   if (right_shift)
     {
-      hsa_op_reg *value_reg_2 = new hsa_op_reg (dest->m_type);
+      hsa_op_reg *value_reg_2
+	= new hsa_op_reg (hsa_extend_inttype_to_32bit (dest->m_type));
       hsa_op_immed *c = new hsa_op_immed (right_shift, BRIG_TYPE_U32);
 
       hsa_insn_basic *rshift
@@ -2301,8 +2364,10 @@ gen_hsa_insns_for_bitfield (hsa_op_reg *dest, hsa_op_reg *value_reg,
     }
 
     hsa_insn_basic *assignment
-      = new hsa_insn_basic (2, BRIG_OPCODE_MOV, dest->m_type, dest, value_reg);
+      = new hsa_insn_basic (2, BRIG_OPCODE_MOV, dest->m_type, NULL, value_reg);
+    hsa_fixup_mov_insn_type (assignment);
     hbb->append_insn (assignment);
+    assignment->set_output_in_type (dest, 0, hbb);
 }
 
 
@@ -2318,8 +2383,10 @@ gen_hsa_insns_for_bitfield_load (hsa_op_reg *dest, hsa_op_address *addr,
 				 hsa_bb *hbb, BrigAlignment8_t align)
 {
   hsa_op_reg *value_reg = new hsa_op_reg (dest->m_type);
-  hsa_insn_mem *mem = new hsa_insn_mem (BRIG_OPCODE_LD, dest->m_type, value_reg,
-					addr);
+  hsa_insn_mem *mem
+  = new hsa_insn_mem (BRIG_OPCODE_LD,
+		      hsa_extend_inttype_to_32bit (dest->m_type),
+		      value_reg, addr);
   mem->set_align (align);
   hbb->append_insn (mem);
   gen_hsa_insns_for_bitfield (dest, value_reg, bitsize, bitpos, hbb);
@@ -2446,9 +2513,10 @@ gen_hsa_insns_for_load (hsa_op_reg *dest, tree rhs, tree type, hsa_bb *hbb)
 	real_reg : imag_reg;
 
       hsa_insn_basic *insn = new hsa_insn_basic (2, BRIG_OPCODE_MOV,
-						 dest->m_type, dest, source);
-
+						 dest->m_type, NULL, source);
+      hsa_fixup_mov_insn_type (insn);
       hbb->append_insn (insn);
+      insn->set_output_in_type (dest, 0, hbb);
     }
   else if (TREE_CODE (rhs) == BIT_FIELD_REF
 	   && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
@@ -2584,6 +2652,7 @@ gen_hsa_insns_for_store (tree lhs, hsa_op_base *src, hsa_bb *hbb)
 
       hsa_insn_basic *basic = new hsa_insn_basic (2, BRIG_OPCODE_MOV, mem_type,
 						  new_value_reg, src);
+      hsa_fixup_mov_insn_type (basic);
       hbb->append_insn (basic);
 
       if (bitpos)
@@ -2954,8 +3023,10 @@ gen_hsa_cmp_insn_from_gimple (enum tree_code code, tree lhs, tree rhs,
     ? (BrigType16_t) BRIG_TYPE_B1 : dest->m_type;
 
   hsa_insn_cmp *cmp = new hsa_insn_cmp (compare, dest_type);
-  cmp->set_op (1, hsa_reg_or_immed_for_gimple_op (lhs, hbb));
-  cmp->set_op (2, hsa_reg_or_immed_for_gimple_op (rhs, hbb));
+  hsa_op_with_type *op1 = hsa_reg_or_immed_for_gimple_op (lhs, hbb);
+  cmp->set_op (1, op1->extend_int_to_32bit (hbb));
+  hsa_op_with_type *op2 = hsa_reg_or_immed_for_gimple_op (rhs, hbb);
+  cmp->set_op (2, op2->extend_int_to_32bit (hbb));
 
   hbb->append_insn (cmp);
   cmp->set_output_in_type (dest, 0, hbb);
@@ -2973,8 +3044,14 @@ gen_hsa_unary_operation (BrigOpcode opcode, hsa_op_reg *dest,
   hsa_insn_basic *insn;
 
   if (opcode == BRIG_OPCODE_MOV && hsa_needs_cvt (dest->m_type, op1->m_type))
-    insn = new hsa_insn_cvt (dest, op1);
-  else if (opcode == BRIG_OPCODE_FIRSTBIT || opcode == BRIG_OPCODE_LASTBIT)
+    {
+      insn = new hsa_insn_cvt (dest, op1);
+      hbb->append_insn (insn);
+      return;
+    }
+
+  op1 = op1->extend_int_to_32bit (hbb);
+  if (opcode == BRIG_OPCODE_FIRSTBIT || opcode == BRIG_OPCODE_LASTBIT)
     {
       BrigType16_t srctype = hsa_type_integer_p (op1->m_type) ? op1->m_type
 	: hsa_unsigned_type_for_type (op1->m_type);
@@ -2983,9 +3060,12 @@ gen_hsa_unary_operation (BrigOpcode opcode, hsa_op_reg *dest,
     }
   else
     {
-      insn = new hsa_insn_basic (2, opcode, dest->m_type, dest, op1);
+      BrigType16_t optype = hsa_extend_inttype_to_32bit (dest->m_type);
+      insn = new hsa_insn_basic (2, opcode, optype, NULL, op1);
 
-      if (opcode == BRIG_OPCODE_ABS || opcode == BRIG_OPCODE_NEG)
+      if (opcode == BRIG_OPCODE_MOV)
+	hsa_fixup_mov_insn_type (insn);
+      else if (opcode == BRIG_OPCODE_ABS || opcode == BRIG_OPCODE_NEG)
 	{
 	  /* ABS and NEG only exist in _s form :-/  */
 	  if (insn->m_type == BRIG_TYPE_U32)
@@ -2996,9 +3076,7 @@ gen_hsa_unary_operation (BrigOpcode opcode, hsa_op_reg *dest,
     }
 
   hbb->append_insn (insn);
-
-  if (opcode == BRIG_OPCODE_FIRSTBIT || opcode == BRIG_OPCODE_LASTBIT)
-    insn->set_output_in_type (dest, 0, hbb);
+  insn->set_output_in_type (dest, 0, hbb);
 }
 
 /* Generate a binary instruction with OPCODE and append it to a basic block
@@ -3007,9 +3085,14 @@ gen_hsa_unary_operation (BrigOpcode opcode, hsa_op_reg *dest,
 
 static void
 gen_hsa_binary_operation (int opcode, hsa_op_reg *dest,
-			  hsa_op_base *op1, hsa_op_base *op2, hsa_bb *hbb)
+			  hsa_op_with_type *op1, hsa_op_with_type *op2,
+			  hsa_bb *hbb)
 {
   gcc_checking_assert (dest);
+
+  BrigType16_t optype = hsa_extend_inttype_to_32bit (dest->m_type);
+  op1 = op1->extend_int_to_32bit (hbb);
+  op2 = op2->extend_int_to_32bit (hbb);
 
   if ((opcode == BRIG_OPCODE_SHL || opcode == BRIG_OPCODE_SHR)
       && is_a <hsa_op_immed *> (op2))
@@ -3026,9 +3109,10 @@ gen_hsa_binary_operation (int opcode, hsa_op_reg *dest,
       i->set_type (hsa_unsigned_type_for_type (i->m_type));
     }
 
-  hsa_insn_basic *insn = new hsa_insn_basic (3, opcode, dest->m_type, dest,
+  hsa_insn_basic *insn = new hsa_insn_basic (3, opcode, optype, NULL,
 					     op1, op2);
   hbb->append_insn (insn);
+  insn->set_output_in_type (dest, 0, hbb);
 }
 
 /* Generate HSA instructions for a single assignment.  HBB is the basic block
@@ -3150,6 +3234,7 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
 	else if (TREE_CODE (rhs2) == SSA_NAME)
 	  {
 	    hsa_op_reg *s = hsa_cfun->reg_for_gimple_ssa (rhs2);
+	    s = as_a <hsa_op_reg *> (s->extend_int_to_32bit (hbb));
 	    hsa_op_reg *d = new hsa_op_reg (s->m_type);
 	    hsa_op_immed *size_imm = new hsa_op_immed (bitsize, BRIG_TYPE_U32);
 
@@ -3253,8 +3338,11 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
 
 	hsa_op_with_type *op2 = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
 	hsa_op_with_type *op3 = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
+	op2 = op2->extend_int_to_32bit (hbb);
+	op3 = op3->extend_int_to_32bit (hbb);
 
-	BrigType16_t utype = hsa_unsigned_type_for_type (dest->m_type);
+	BrigType16_t type = hsa_extend_inttype_to_32bit (dest->m_type);
+	BrigType16_t utype = hsa_unsigned_type_for_type (type);
 	if (is_a <hsa_op_immed *> (op2))
 	  op2->m_type = utype;
 	if (is_a <hsa_op_immed *> (op3))
@@ -3262,10 +3350,11 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
 
 	hsa_insn_basic *insn
 	  = new hsa_insn_basic (4, BRIG_OPCODE_CMOV,
-				hsa_bittype_for_type (dest->m_type),
-				dest, ctrl, op2, op3);
+				hsa_bittype_for_type (type),
+				NULL, ctrl, op2, op3);
 
 	hbb->append_insn (insn);
+	insn->set_output_in_type (dest, 0, hbb);
 	return;
       }
     case COMPLEX_EXPR:
@@ -3273,7 +3362,9 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
 	hsa_op_reg *dest
 	  = hsa_cfun->reg_for_gimple_ssa (gimple_assign_lhs (assign));
 	hsa_op_with_type *rhs1_reg = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
+	rhs1_reg = rhs1_reg->extend_int_to_32bit (hbb);
 	hsa_op_with_type *rhs2_reg = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
+	rhs2_reg = rhs2_reg->extend_int_to_32bit (hbb);
 
 	if (hsa_seen_error ())
 	  return;
@@ -3298,11 +3389,10 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
     }
 
 
-  hsa_op_reg *dest = hsa_cfun->reg_for_gimple_ssa (gimple_assign_lhs (assign));
-
+  hsa_op_reg *dest = hsa_cfun->reg_for_gimple_ssa (lhs);
   hsa_op_with_type *op1 = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
-  hsa_op_with_type *op2 = rhs2 != NULL_TREE ?
-    hsa_reg_or_immed_for_gimple_op (rhs2, hbb) : NULL;
+  hsa_op_with_type *op2
+    = rhs2 ? hsa_reg_or_immed_for_gimple_op (rhs2, hbb) : NULL;
 
   if (hsa_seen_error ())
     return;
@@ -3312,6 +3402,7 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
     case GIMPLE_TERNARY_RHS:
       {
 	hsa_op_with_type *op3 = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
+	op3 = op3->extend_int_to_32bit (hbb);
 	hsa_insn_basic *insn = new hsa_insn_basic (4, opcode, dest->m_type, dest,
 						   op1, op2, op3);
 	hbb->append_insn (insn);
@@ -3407,14 +3498,15 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   tree highest = get_switch_high (s);
 
   hsa_op_reg *index = hsa_cfun->reg_for_gimple_ssa (index_tree);
+  index = as_a <hsa_op_reg *> (index->extend_int_to_32bit (hbb));
 
   hsa_op_reg *cmp1_reg = new hsa_op_reg (BRIG_TYPE_B1);
-  hsa_op_immed *cmp1_immed = new hsa_op_immed (lowest);
+  hsa_op_immed *cmp1_immed = new hsa_op_immed (lowest, true);
   hbb->append_insn (new hsa_insn_cmp (BRIG_COMPARE_GE, cmp1_reg->m_type,
 				      cmp1_reg, index, cmp1_immed));
 
   hsa_op_reg *cmp2_reg = new hsa_op_reg (BRIG_TYPE_B1);
-  hsa_op_immed *cmp2_immed = new hsa_op_immed (highest);
+  hsa_op_immed *cmp2_immed = new hsa_op_immed (highest, true);
   hbb->append_insn (new hsa_insn_cmp (BRIG_COMPARE_LE, cmp2_reg->m_type,
 				      cmp2_reg, index, cmp2_immed));
 
@@ -3444,7 +3536,7 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   hsa_op_reg *sub_index = new hsa_op_reg (index->m_type);
   hbb->append_insn (new hsa_insn_basic (3, BRIG_OPCODE_SUB, sub_index->m_type,
 					sub_index, index,
-					new hsa_op_immed (lowest)));
+					new hsa_op_immed (lowest, true)));
 
   hsa_op_base *tmp = sub_index->get_in_type (BRIG_TYPE_U64, hbb);
   sub_index = as_a <hsa_op_reg *> (tmp);
@@ -3760,7 +3852,6 @@ void
 hsa_insn_basic::set_output_in_type (hsa_op_reg *dest, unsigned op_index,
 				    hsa_bb *hbb)
 {
-  hsa_insn_basic *insn;
   gcc_checking_assert (op_output_p (op_index));
 
   if (dest->m_type == m_type)
@@ -3769,15 +3860,28 @@ hsa_insn_basic::set_output_in_type (hsa_op_reg *dest, unsigned op_index,
       return;
     }
 
-  hsa_op_reg *tmp = new hsa_op_reg (m_type);
-  set_op (op_index, tmp);
-
+  hsa_insn_basic *insn;
+  hsa_op_reg *tmp;
   if (hsa_needs_cvt (dest->m_type, m_type))
-    insn = new hsa_insn_cvt (dest, tmp);
+    {
+      tmp = new hsa_op_reg (m_type);
+      insn = new hsa_insn_cvt (dest, tmp);
+    }
+  else if (hsa_type_bit_size (dest->m_type) == hsa_type_bit_size (m_type))
+    {
+      /* When output, HSA registers do not really have types, only sizes, so if
+	 the sizes match, we can use the register directly.  */
+      set_op (op_index, dest);
+      return;
+    }
   else
-    insn = new hsa_insn_basic (2, BRIG_OPCODE_MOV, dest->m_type,
-			       dest, tmp->get_in_type (dest->m_type, hbb));
-
+    {
+      tmp = new hsa_op_reg (m_type);
+      insn = new hsa_insn_basic (2, BRIG_OPCODE_MOV, dest->m_type,
+				 dest, tmp->get_in_type (dest->m_type, hbb));
+      hsa_fixup_mov_insn_type (insn);
+    }
+  set_op (op_index, tmp);
   hbb->append_insn (insn);
 }
 
@@ -4148,12 +4252,11 @@ gen_hsa_alloca (gcall *call, hsa_bb *hbb)
 
   built_in_function fn = DECL_FUNCTION_CODE (gimple_call_fndecl (call));
 
-  gcc_checking_assert (fn == BUILT_IN_ALLOCA
-		       || fn == BUILT_IN_ALLOCA_WITH_ALIGN);
+  gcc_checking_assert (ALLOCA_FUNCTION_CODE_P (fn));
 
   unsigned bit_alignment = 0;
 
-  if (fn == BUILT_IN_ALLOCA_WITH_ALIGN)
+  if (fn != BUILT_IN_ALLOCA)
     {
       tree alignment_tree = gimple_call_arg (call, 1);
       if (TREE_CODE (alignment_tree) != INTEGER_CST)
@@ -4200,6 +4303,7 @@ gen_hsa_clrsb (gcall *call, hsa_bb *hbb)
   hsa_op_reg *dest = hsa_cfun->reg_for_gimple_ssa (lhs);
   tree rhs1 = gimple_call_arg (call, 0);
   hsa_op_with_type *arg = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
+  arg->extend_int_to_32bit (hbb);
   BrigType16_t bittype = hsa_bittype_for_type (arg->m_type);
   unsigned bitsize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (rhs1)));
 
@@ -4272,6 +4376,7 @@ gen_hsa_ffs (gcall *call, hsa_bb *hbb)
 
   tree rhs1 = gimple_call_arg (call, 0);
   hsa_op_with_type *arg = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
+  arg = arg->extend_int_to_32bit (hbb);
 
   hsa_op_reg *tmp = new hsa_op_reg (BRIG_TYPE_U32);
   hsa_insn_srctype *insn = new hsa_insn_srctype (2, BRIG_OPCODE_LASTBIT,
@@ -4361,7 +4466,9 @@ gen_hsa_divmod (gcall *call, hsa_bb *hbb)
   tree rhs1 = gimple_call_arg (call, 1);
 
   hsa_op_with_type *arg0 = hsa_reg_or_immed_for_gimple_op (rhs0, hbb);
+  arg0 = arg0->extend_int_to_32bit (hbb);
   hsa_op_with_type *arg1 = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
+  arg1 = arg1->extend_int_to_32bit (hbb);
 
   hsa_op_reg *dest0 = new hsa_op_reg (arg0->m_type);
   hsa_op_reg *dest1 = new hsa_op_reg (arg1->m_type);
@@ -4374,11 +4481,13 @@ gen_hsa_divmod (gcall *call, hsa_bb *hbb)
   hbb->append_insn (insn);
 
   hsa_op_reg *dest = hsa_cfun->reg_for_gimple_ssa (lhs);
+  BrigType16_t dst_type = hsa_extend_inttype_to_32bit (dest->m_type);
   BrigType16_t src_type = hsa_bittype_for_type (dest0->m_type);
 
-  insn = new hsa_insn_packed (3, BRIG_OPCODE_COMBINE, dest->m_type,
-			      src_type, dest, dest0, dest1);
+  insn = new hsa_insn_packed (3, BRIG_OPCODE_COMBINE, dst_type,
+			      src_type, NULL, dest0, dest1);
   hbb->append_insn (insn);
+  insn->set_output_in_type (dest, 0, hbb);
 }
 
 /* Set VALUE to a shadow kernel debug argument and append a new instruction
@@ -4936,8 +5045,8 @@ gen_hsa_atomic_for_builtin (bool ret_orig, enum BrigAtomicOperation acode,
       tgt = addr;
     }
 
-  hsa_op_base *op = hsa_reg_or_immed_for_gimple_op (gimple_call_arg (stmt, 1),
-						    hbb);
+  hsa_op_with_type *op
+    = hsa_reg_or_immed_for_gimple_op (gimple_call_arg (stmt, 1), hbb);
   if (lhs)
     {
       atominsn->set_op (0, dest);
@@ -5560,8 +5669,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 
 	break;
       }
-    case BUILT_IN_ALLOCA:
-    case BUILT_IN_ALLOCA_WITH_ALIGN:
+    CASE_BUILT_IN_ALLOCA:
       {
 	gen_hsa_alloca (call, hbb);
 	break;
@@ -6175,7 +6283,7 @@ convert_switch_statements (void)
 	    tree label = gimple_switch_label (s, i);
 	    basic_block label_bb = label_to_block_fn (func, CASE_LABEL (label));
 	    edge e = find_edge (bb, label_bb);
-	    edge_counts.safe_push (e->count);
+	    edge_counts.safe_push (e->count ());
 	    edge_probabilities.safe_push (e->probability);
 	    gphi_iterator phi_gsi;
 
@@ -6265,7 +6373,6 @@ convert_switch_statements (void)
 	    if (prob_sum.initialized_p ())
 	      new_edge->probability = edge_probabilities[i] / prob_sum;
 
-	    new_edge->count = edge_counts[i];
 	    new_edges.safe_push (new_edge);
 
 	    if (i < labels - 1)
@@ -6281,10 +6388,7 @@ convert_switch_statements (void)
 
 		edge next_edge = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
 		next_edge->probability = new_edge->probability.invert ();
-		next_edge->count = edge_counts[0]
-		  + sum_slice <profile_count> (edge_counts, i, labels,
-					       profile_count::zero ());
-		next_bb->frequency = EDGE_FREQUENCY (next_edge);
+		next_bb->count = next_edge->count ();
 		cur_bb = next_bb;
 	      }
 	    else /* Link last IF statement and default label
@@ -6292,7 +6396,6 @@ convert_switch_statements (void)
 	      {
 		edge e = make_edge (cur_bb, default_label_bb, EDGE_FALSE_VALUE);
 		e->probability = new_edge->probability.invert ();
-		e->count = edge_counts[0];
 		new_edges.safe_insert (0, e);
 	      }
 	  }

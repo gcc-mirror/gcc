@@ -1,5 +1,5 @@
 /* Loop optimizer initialization routines and RTL loop optimization passes.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -361,8 +361,8 @@ pass_loop2::gate (function *fun)
       && (flag_move_loop_invariants
 	  || flag_unswitch_loops
 	  || flag_unroll_loops
-	  || (flag_branch_on_count_reg
-	      && targetm.have_doloop_end ())))
+	  || (flag_branch_on_count_reg && targetm.have_doloop_end ())
+	  || cfun->has_unroll))
     return true;
   else
     {
@@ -560,7 +560,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return (flag_unroll_loops || flag_unroll_all_loops);
+      return (flag_unroll_loops || flag_unroll_all_loops || cfun->has_unroll);
     }
 
   virtual unsigned int execute (function *);

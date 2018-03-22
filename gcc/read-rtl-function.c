@@ -1,5 +1,5 @@
 /* read-rtl-function.c - Reader for RTL function dumps
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -321,7 +321,7 @@ static int
 parse_note_insn_name (const char *string)
 {
   for (int i = 0; i < NOTE_INSN_MAX; i++)
-    if (0 == strcmp (string, GET_NOTE_INSN_NAME (i)))
+    if (strcmp (string, GET_NOTE_INSN_NAME (i)) == 0)
       return i;
   fatal_with_file_and_line ("unrecognized NOTE_INSN name: `%s'", string);
 }
@@ -1079,7 +1079,7 @@ function_reader::read_rtx_operand_r (rtx x)
 	 "orig:%i", ORIGINAL_REGNO (rtx).
 	 Consume it, we don't set ORIGINAL_REGNO, since we can
 	 get that from the 2nd copy later.  */
-      if (0 == strncmp (desc, "orig:", 5))
+      if (strncmp (desc, "orig:", 5) == 0)
 	{
 	  expect_original_regno = true;
 	  desc_start += 5;
@@ -1312,7 +1312,7 @@ function_reader::parse_mem_expr (const char *desc)
 {
   tree fndecl = cfun->decl;
 
-  if (0 == strcmp (desc, "<retval>"))
+  if (strcmp (desc, "<retval>") == 0)
     return DECL_RESULT (fndecl);
 
   tree param = find_param_by_name (fndecl, desc);
@@ -2143,9 +2143,9 @@ test_loading_mem ()
   ASSERT_EQ (42, MEM_ALIAS_SET (mem1));
   /* "+17".  */
   ASSERT_TRUE (MEM_OFFSET_KNOWN_P (mem1));
-  ASSERT_EQ (17, MEM_OFFSET (mem1));
+  ASSERT_KNOWN_EQ (17, MEM_OFFSET (mem1));
   /* "S8".  */
-  ASSERT_EQ (8, MEM_SIZE (mem1));
+  ASSERT_KNOWN_EQ (8, MEM_SIZE (mem1));
   /* "A128.  */
   ASSERT_EQ (128, MEM_ALIGN (mem1));
   /* "AS5.  */
@@ -2159,9 +2159,9 @@ test_loading_mem ()
   ASSERT_EQ (43, MEM_ALIAS_SET (mem2));
   /* "+18".  */
   ASSERT_TRUE (MEM_OFFSET_KNOWN_P (mem2));
-  ASSERT_EQ (18, MEM_OFFSET (mem2));
+  ASSERT_KNOWN_EQ (18, MEM_OFFSET (mem2));
   /* "S9".  */
-  ASSERT_EQ (9, MEM_SIZE (mem2));
+  ASSERT_KNOWN_EQ (9, MEM_SIZE (mem2));
   /* "AS6.  */
   ASSERT_EQ (6, MEM_ADDR_SPACE (mem2));
 }

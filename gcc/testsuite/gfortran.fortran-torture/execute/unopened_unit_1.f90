@@ -7,7 +7,7 @@ program unopened_unit_1
   Rewind(99)
   Do I = 1,10
     Read(99,*)J
-    If (J.ne.I) Call abort
+    If (J.ne.I) STOP 1
   End Do
   Close(99, Status='Delete')
 End program

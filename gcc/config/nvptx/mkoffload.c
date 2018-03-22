@@ -1,6 +1,6 @@
 /* Offload image generation tool for PTX.
 
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    Contributed by Nathan Sidwell <nathan@codesourcery.com> and
    Bernd Schmidt <bernds@codesourcery.com>.
@@ -26,6 +26,8 @@
 
    This is not a complete assembler.  We presume the source is well
    formed from the compiler and can die horribly if it is not.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"

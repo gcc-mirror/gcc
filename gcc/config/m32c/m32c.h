@@ -1,5 +1,5 @@
 /* Target Definitions for R8C/M16C/M32C
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -421,7 +421,6 @@ enum reg_class
 #define STACK_PUSH_CODE PRE_DEC
 #define FRAME_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET 0
 #define FIRST_PARM_OFFSET(F) 0
 
 #define RETURN_ADDR_RTX(COUNT,FA) m32c_return_addr_rtx (COUNT)

@@ -1,5 +1,5 @@
 /* Definitions for option handling of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -38,6 +38,12 @@ enum nds32_cmodel_type
   CMODEL_SMALL,
   CMODEL_MEDIUM,
   CMODEL_LARGE
+};
+
+/* The various ANDES CPU.  */
+enum nds32_cpu_type
+{
+  CPU_N9
 };
 
 #endif

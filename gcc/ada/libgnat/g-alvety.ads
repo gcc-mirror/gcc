@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +35,6 @@
 with GNAT.Altivec.Low_Level_Vectors;
 
 package GNAT.Altivec.Vector_Types is
-
-   use GNAT.Altivec.Low_Level_Vectors;
 
    ---------------------------------------------------
    -- Vector type declarations [PIM-2.1 Data Types] --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -258,7 +258,7 @@ package body System.Tasking.Utilities is
 
       pragma Assert (Parent = Environment_Task);
 
-      Self_Id.Master_of_Task := Independent_Task_Level;
+      Self_Id.Master_Of_Task := Independent_Task_Level;
 
       --  Update Independent_Task_Count that is needed for the GLADE
       --  termination rule. See also pending update in
@@ -396,7 +396,7 @@ package body System.Tasking.Utilities is
          end loop;
 
          if P.Common.State = Master_Phase_2_Sleep
-           and then C.Master_of_Task = P.Master_Within
+           and then C.Master_Of_Task = P.Master_Within
          then
             pragma Assert (P.Common.Wait_Count > 0);
             P.Common.Wait_Count := P.Common.Wait_Count - 1;
@@ -462,7 +462,7 @@ package body System.Tasking.Utilities is
       --  P has non-passive dependents
 
       if P.Common.State = Master_Completion_Sleep
-        and then C.Master_of_Task = P.Master_Within
+        and then C.Master_Of_Task = P.Master_Within
       then
          pragma Debug
            (Debug.Trace

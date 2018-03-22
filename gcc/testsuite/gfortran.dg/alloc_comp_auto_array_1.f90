@@ -35,8 +35,8 @@ CONTAINS
   SUBROUTINE extend_lists2
     type(VARYING_STRING),DIMENSION(list_size) :: vocab_swap
     allocate (vocab_swap(1)%chars(10))
-    if (.not.allocated(vocab_swap(1)%chars)) call abort ()
-    if (allocated(vocab_swap(10)%chars)) call abort ()
+    if (.not.allocated(vocab_swap(1)%chars)) STOP 1
+    if (allocated(vocab_swap(10)%chars)) STOP 2
   ENDSUBROUTINE extend_lists2
   
 ENDPROGRAM vocabulary_word_count

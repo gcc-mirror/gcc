@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -63,9 +63,7 @@ extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
 extern void rs6000_split_vec_extract_var (rtx, rtx, rtx, rtx, rtx);
 extern rtx rs6000_adjust_vec_address (rtx, rtx, rtx, rtx, machine_mode);
 extern void rs6000_split_v4si_init (rtx []);
-extern bool altivec_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
-extern bool rs6000_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_lvx_be (rtx, rtx, machine_mode, unsigned);
 extern void altivec_expand_stvx_be (rtx, rtx, machine_mode, unsigned);
 extern void altivec_expand_stvex_be (rtx, rtx, machine_mode, unsigned);
@@ -73,12 +71,12 @@ extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
 extern void rs6000_generate_float2_code (bool, rtx, rtx, rtx);
+extern void rs6000_generate_float2_double_code (rtx, rtx, rtx);
 extern void rs6000_generate_vsigned2_code (bool, rtx, rtx, rtx);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
 extern bool expand_block_compare (rtx[]);
 extern bool expand_strn_compare (rtx[], int);
-extern const char * rs6000_output_load_multiple (rtx[]);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
 extern bool rs6000_is_valid_and_mask (rtx, machine_mode);
 extern bool rs6000_is_valid_shift_mask (rtx, rtx, machine_mode);
@@ -96,7 +94,7 @@ extern bool quad_address_p (rtx, machine_mode, bool);
 extern bool quad_load_store_p (rtx, rtx);
 extern bool fusion_gpr_load_p (rtx, rtx, rtx, rtx);
 extern void expand_fusion_gpr_load (rtx *);
-extern void emit_fusion_addis (rtx, rtx, const char *, const char *);
+extern void emit_fusion_addis (rtx, rtx);
 extern void emit_fusion_load_store (rtx, rtx, rtx, const char *);
 extern const char *emit_fusion_gpr_load (rtx, rtx);
 extern bool fusion_p9_p (rtx, rtx, rtx, rtx);
@@ -124,18 +122,19 @@ extern void print_operand_address (FILE *, rtx);
 extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
 extern rtx rs6000_emit_eqne (machine_mode, rtx, rtx, rtx);
-extern void rs6000_emit_sISEL (machine_mode, rtx[]);
 extern void rs6000_emit_sCOND (machine_mode, rtx[]);
 extern void rs6000_emit_cbranch (machine_mode, rtx[]);
 extern char * output_cbranch (rtx, const char *, int, rtx_insn *);
-extern const char * output_probe_stack_range (rtx, rtx);
+extern const char * output_probe_stack_range (rtx, rtx, rtx);
 extern void rs6000_emit_dot_insn (rtx dst, rtx src, int dot, rtx ccreg);
 extern bool rs6000_emit_set_const (rtx, rtx);
 extern int rs6000_emit_cmove (rtx, rtx, rtx, rtx);
+extern int rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
 extern int rs6000_emit_vector_cond_expr (rtx, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_minmax (rtx, enum rtx_code, rtx, rtx);
-extern void rs6000_split_signbit (rtx, rtx);
 extern void rs6000_expand_atomic_compare_and_swap (rtx op[]);
+extern rtx swap_endian_selector_for_mode (machine_mode mode);
+
 extern void rs6000_expand_atomic_exchange (rtx op[]);
 extern void rs6000_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_swdiv (rtx, rtx, rtx, bool);
@@ -209,7 +208,6 @@ extern void rs6000_emit_epilogue (int);
 extern void rs6000_expand_split_stack_prologue (void);
 extern void rs6000_split_stack_space_check (rtx, rtx);
 extern void rs6000_emit_eh_reg_restore (rtx, rtx);
-extern const char * output_isel (rtx *);
 extern void rs6000_call_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
@@ -230,6 +228,7 @@ extern void rs6000_cpu_cpp_builtins (struct cpp_reader *);
 #ifdef TREE_CODE
 extern bool rs6000_pragma_target_parse (tree, tree);
 #endif
+extern void rs6000_activate_target_options (tree new_tree);
 extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT, HOST_WIDE_INT);
 extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 						HOST_WIDE_INT);
@@ -254,5 +253,9 @@ namespace gcc { class context; }
 class rtl_opt_pass;
 
 extern rtl_opt_pass *make_pass_analyze_swaps (gcc::context *);
+extern bool rs6000_sum_of_two_registers_p (const_rtx expr);
+extern bool rs6000_quadword_masked_address_p (const_rtx exp);
+extern rtx rs6000_gen_lvx (enum machine_mode, rtx, rtx);
+extern rtx rs6000_gen_stvx (enum machine_mode, rtx, rtx);
 
 #endif  /* rs6000-protos.h */

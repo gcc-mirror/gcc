@@ -10,3 +10,5 @@ auto [j, k] { a, a };	// { dg-error "invalid initializer for structured binding 
 auto [l, m] = { a };	// { dg-error "deducing from brace-enclosed initializer list requires" }
 auto [n, o] {};		// { dg-error "invalid initializer for structured binding declaration" }
 auto [p, q] ();		// { dg-error "invalid initializer for structured binding declaration" }
+auto [r, s] = {};	// { dg-error "deducing from brace-enclosed initializer list requires" }
+auto [t, u] = { a, a };	// { dg-error "deducing from brace-enclosed initializer list requires" }

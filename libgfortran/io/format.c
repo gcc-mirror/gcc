@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -266,7 +266,8 @@ free_format_data (format_data *fmt)
     return;
 
   /* Free vlist descriptors in the fnode_array if one was allocated.  */
-  for (fnp = fmt->array.array; fnp->format != FMT_NONE; fnp++)
+  for (fnp = fmt->array.array; fnp < &fmt->array.array[FARRAY_SIZE] &&
+       fnp->format != FMT_NONE; fnp++)
     if (fnp->format == FMT_DT)
 	{
 	  if (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist))
@@ -1023,8 +1024,9 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 
       t = format_lex (fmt);
 
-      /* Initialize the vlist to a zero size array.  */
-      tail->u.udf.vlist= xmalloc (sizeof(gfc_array_i4));
+      /* Initialize the vlist to a zero size, rank-one array.  */
+      tail->u.udf.vlist= xmalloc (sizeof(gfc_array_i4)
+				  + sizeof (descriptor_dimension));
       GFC_DESCRIPTOR_DATA(tail->u.udf.vlist) = NULL;
       GFC_DIMENSION_SET(tail->u.udf.vlist->dim[0],1, 0, 0);
 

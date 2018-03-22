@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -247,62 +247,68 @@ parse_output_constraint (const char **constraint_p, int operand_num,
     }
 
   /* Loop through the constraint string.  */
-  for (p = constraint + 1; *p; p += CONSTRAINT_LEN (*p, p))
-    switch (*p)
-      {
-      case '+':
-      case '=':
-	error ("operand constraint contains incorrectly positioned "
-	       "%<+%> or %<=%>");
-	return false;
+  for (p = constraint + 1; *p; )
+    {
+      switch (*p)
+	{
+	case '+':
+	case '=':
+	  error ("operand constraint contains incorrectly positioned "
+		 "%<+%> or %<=%>");
+	  return false;
 
-      case '%':
-	if (operand_num + 1 == ninputs + noutputs)
-	  {
-	    error ("%<%%%> constraint used with last operand");
-	    return false;
-	  }
-	break;
-
-      case '?':  case '!':  case '*':  case '&':  case '#':
-      case '$':  case '^':
-      case 'E':  case 'F':  case 'G':  case 'H':
-      case 's':  case 'i':  case 'n':
-      case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
-      case 'N':  case 'O':  case 'P':  case ',':
-	break;
-
-      case '0':  case '1':  case '2':  case '3':  case '4':
-      case '5':  case '6':  case '7':  case '8':  case '9':
-      case '[':
-	error ("matching constraint not valid in output operand");
-	return false;
-
-      case '<':  case '>':
-	/* ??? Before flow, auto inc/dec insns are not supposed to exist,
-	   excepting those that expand_call created.  So match memory
-	   and hope.  */
-	*allows_mem = true;
-	break;
-
-      case 'g':  case 'X':
-	*allows_reg = true;
-	*allows_mem = true;
-	break;
-
-      default:
-	if (!ISALPHA (*p))
+	case '%':
+	  if (operand_num + 1 == ninputs + noutputs)
+	    {
+	      error ("%<%%%> constraint used with last operand");
+	      return false;
+	    }
 	  break;
-	enum constraint_num cn = lookup_constraint (p);
-	if (reg_class_for_constraint (cn) != NO_REGS
-	    || insn_extra_address_constraint (cn))
-	  *allows_reg = true;
-	else if (insn_extra_memory_constraint (cn))
+
+	case '?':  case '!':  case '*':  case '&':  case '#':
+	case '$':  case '^':
+	case 'E':  case 'F':  case 'G':  case 'H':
+	case 's':  case 'i':  case 'n':
+	case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
+	case 'N':  case 'O':  case 'P':  case ',':
+	  break;
+
+	case '0':  case '1':  case '2':  case '3':  case '4':
+	case '5':  case '6':  case '7':  case '8':  case '9':
+	case '[':
+	  error ("matching constraint not valid in output operand");
+	  return false;
+
+	case '<':  case '>':
+	  /* ??? Before flow, auto inc/dec insns are not supposed to exist,
+	     excepting those that expand_call created.  So match memory
+	     and hope.  */
 	  *allows_mem = true;
-	else
-	  insn_extra_constraint_allows_reg_mem (cn, allows_reg, allows_mem);
-	break;
-      }
+	  break;
+
+	case 'g':  case 'X':
+	  *allows_reg = true;
+	  *allows_mem = true;
+	  break;
+
+	default:
+	  if (!ISALPHA (*p))
+	    break;
+	  enum constraint_num cn = lookup_constraint (p);
+	  if (reg_class_for_constraint (cn) != NO_REGS
+	      || insn_extra_address_constraint (cn))
+	    *allows_reg = true;
+	  else if (insn_extra_memory_constraint (cn))
+	    *allows_mem = true;
+	  else
+	    insn_extra_constraint_allows_reg_mem (cn, allows_reg, allows_mem);
+	  break;
+	}
+
+      for (size_t len = CONSTRAINT_LEN (*p, p); len; len--, p++)
+	if (*p == '\0')
+	  break;
+    }
 
   return true;
 }
@@ -941,7 +947,7 @@ expand_case (gswitch *stmt)
 	 original type.  Make sure to drop overflow flags.  */
       low = fold_convert (index_type, low);
       if (TREE_OVERFLOW (low))
-	low = wide_int_to_tree (index_type, low);
+	low = wide_int_to_tree (index_type, wi::to_wide (low));
 
       /* The canonical from of a case label in GIMPLE is that a simple case
 	 has an empty CASE_HIGH.  For the casesi and tablejump expanders,
@@ -950,7 +956,7 @@ expand_case (gswitch *stmt)
 	high = low;
       high = fold_convert (index_type, high);
       if (TREE_OVERFLOW (high))
-	high = wide_int_to_tree (index_type, high);
+	high = wide_int_to_tree (index_type, wi::to_wide (high));
 
       case_list.safe_push (simple_case_node (low, high, lab));
     }

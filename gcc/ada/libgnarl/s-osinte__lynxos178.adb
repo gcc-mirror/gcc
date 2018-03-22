@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                     Copyright (C) 2001-2017, AdaCore                     --
+--                     Copyright (C) 2001-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,8 +36,6 @@ pragma Polling (Off);
 --  operations. It may cause infinite loops and other problems.
 
 package body System.OS_Interface is
-
-   use Interfaces.C;
 
    ------------------
    --  Current_CPU --

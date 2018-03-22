@@ -13,7 +13,7 @@ struct x {};
 using ::x;
 using ::a;
 
-extern "C" void foo ();		// { dg-error "previous declaration" }
+extern "C" void foo ();		// { dg-message "previous declaration" }
 
 namespace {
   extern "C" int foo ();	// { dg-error "C.*linkage" }

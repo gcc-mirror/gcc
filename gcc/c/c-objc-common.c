@@ -1,5 +1,5 @@
 /* Some code common to C and ObjC front ends.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-objc-common.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
-			    int, bool, bool, bool, bool, const char **);
+			    int, bool, bool, bool, bool *, const char **);
 
 bool
 c_missing_noreturn_ok_p (tree decl)
@@ -79,7 +79,7 @@ c_objc_common_init (void)
 static bool
 c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 		int precision, bool wide, bool set_locus, bool hash,
-		bool, const char **)
+		bool *quoted, const char **)
 {
   tree t = NULL_TREE;
   tree name;
@@ -166,12 +166,20 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 	      return true;
 
 	    /* They're not, print the stripped version now.  */
+	    if (*quoted)
+	      pp_end_quote (pp, pp_show_color (pp));
 	    pp_c_whitespace (cpp);
 	    pp_left_brace (cpp);
 	    pp_c_ws_string (cpp, _("aka"));
 	    pp_c_whitespace (cpp);
+	    if (*quoted)
+	      pp_begin_quote (pp, pp_show_color (pp));
 	    cpp->type_id (TYPE_CANONICAL (t));
+	    if (*quoted)
+	      pp_end_quote (pp, pp_show_color (pp));
 	    pp_right_brace (cpp);
+	    /* No further closing quotes are needed.  */
+	    *quoted = false;
 	  }
 	return true;
       }

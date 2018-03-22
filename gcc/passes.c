@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -198,7 +198,9 @@ rest_of_decl_compilation (tree decl,
 
   /* Can't defer this, because it needs to happen before any
      later function definitions are processed.  */
-  if (DECL_ASSEMBLER_NAME_SET_P (decl) && DECL_REGISTER (decl))
+  if (HAS_DECL_ASSEMBLER_NAME_P (decl)
+      && DECL_ASSEMBLER_NAME_SET_P (decl)
+      && DECL_REGISTER (decl))
     make_decl_rtl (decl);
 
   /* Forward declarations for nested functions are not "external",
@@ -1583,7 +1585,7 @@ pass_manager::pass_manager (context *ctxt)
 
 #define NEXT_PASS(PASS, NUM) \
   do { \
-    gcc_assert (NULL == PASS ## _ ## NUM); \
+    gcc_assert (PASS ## _ ## NUM == NULL); \
     if ((NUM) == 1)                              \
       PASS ## _1 = make_##PASS (m_ctxt);          \
     else                                         \

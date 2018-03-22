@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2017 Free Software Foundation, Inc.
+# Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,11 +45,13 @@ proc scan-dump { args } {
     }
 
     set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
 
     set printable_pattern [make_pattern_printable [lindex $args 1]]
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump $suf \"$printable_pattern\""
-    set src [file tail [lindex $testcase 0]]
+    set src [file tail $filename]
     set output_file "[glob -nocomplain $src.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
@@ -86,10 +88,13 @@ proc scan-dump-times { args } {
     }
 
     set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
+    set times [lindex $args 2]
     set suf [dump-suffix [lindex $args 3]]
     set printable_pattern [make_pattern_printable [lindex $args 1]]
     set testname "$testcase scan-[lindex $args 0]-dump-times $suf \"$printable_pattern\" [lindex $args 2]"
-    set src [file tail [lindex $testcase 0]]
+    set src [file tail $filename]
     set output_file "[glob -nocomplain $src.[lindex $args 3]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
@@ -101,9 +106,11 @@ proc scan-dump-times { args } {
     set text [read $fd]
     close $fd
 
-    if { [llength [regexp -inline -all -- [lindex $args 1] $text]] == [lindex $args 2]} {
+    set result_count [llength [regexp -inline -all -- [lindex $args 1] $text]]
+    if {$result_count == $times} {
         pass "$testname"
     } else {
+	verbose -log "$testcase: pattern found $result_count times"
         fail "$testname"
     }
 }
@@ -126,10 +133,12 @@ proc scan-dump-not { args } {
     }
 
     set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
     set printable_pattern [make_pattern_printable [lindex $args 1]]
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-not $suf \"$printable_pattern\""
-    set src [file tail [lindex $testcase 0]]
+    set src [file tail $filename]
     set output_file "[glob -nocomplain $src.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
@@ -179,10 +188,12 @@ proc scan-dump-dem { args } {
     }
 
     set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
     set printable_pattern [make_pattern_printable [lindex $args 1]]
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-dem $suf \"$printable_pattern\""
-    set src [file tail [lindex $testcase 0]]
+    set src [file tail $filename]
     set output_file "[glob -nocomplain $src.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
@@ -231,10 +242,12 @@ proc scan-dump-dem-not { args } {
     }
 
     set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
     set printable_pattern [make_pattern_printable [lindex $args 1]
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"$printable_pattern\""
-    set src [file tail [lindex $testcase 0]]
+    set src [file tail $filename]
     set output_file "[glob -nocomplain $src.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"

@@ -1,5 +1,5 @@
 /* brig-function.h -- declaration of brig_function class.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -30,8 +30,7 @@
 #include "tree.h"
 #include "tree-iterator.h"
 #include "hsa-brig-format.h"
-
-class brig_to_generic;
+#include "brig-util.h"
 
 #include <map>
 #include <string>
@@ -40,18 +39,11 @@ class brig_to_generic;
 
 #include "phsa.h"
 
+class brig_to_generic;
+
 typedef std::map<std::string, tree> label_index;
 typedef std::map<const BrigDirectiveVariable *, tree> variable_index;
 typedef std::vector<tree> tree_stl_vec;
-
-/* There are 128 c regs and 2048 s/d/q regs each in the HSAIL.  */
-#define BRIG_2_TREE_HSAIL_C_REG_COUNT (128)
-#define BRIG_2_TREE_HSAIL_S_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_D_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_Q_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT				       \
-  (BRIG_2_TREE_HSAIL_C_REG_COUNT + BRIG_2_TREE_HSAIL_S_REG_COUNT	       \
-   + BRIG_2_TREE_HSAIL_D_REG_COUNT + BRIG_2_TREE_HSAIL_Q_REG_COUNT)
 
 /* Holds data for the currently built GENERIC function.  */
 
@@ -83,6 +75,12 @@ public:
   tree label (const std::string &name);
 
   tree add_local_variable (std::string name, tree type);
+
+  size_t group_variable_segment_offset (const std::string &name) const;
+
+  bool has_group_variable (const std::string &name) const;
+
+  size_t group_segment_size () const;
 
   tree get_m_var_declfor_reg (const BrigOperandRegister *reg);
 
@@ -119,10 +117,16 @@ public:
 
   /* The __context function argument.  */
   tree m_context_arg;
+
   /* The __group_base_ptr argument in the current function.
-     Points to the start of the group segment for the kernel
-     instance.  */
+     Points to the start of the group segment for the work-group.  */
   tree m_group_base_arg;
+
+   /* The __group_local_offset_ptr argument in the current function.  It
+      contains the offset related to the group_base_ptr where the function's
+      local area for group variables resides.  */
+  tree m_group_local_offset_arg;
+
   /* The __private_base_ptr argument in the current function.
      Points to the start of the private segment.  */
   tree m_private_base_arg;
@@ -159,7 +163,7 @@ public:
   /* True if the function has at least one alloca instruction.  */
   bool m_has_allocas;
 
-  /* If the kernel containts at least one function call that _may_
+  /* If the kernel contains at least one function call that _may_
      contain a barrier call, this is set to true.  */
   bool m_has_function_calls_with_barriers;
 
@@ -199,12 +203,19 @@ public:
   /* The functions called by this function.  */
   std::vector<tree> m_called_functions;
 
+  /* Stores the kernel scope group variable offsets if the function is
+     a kernel.  */
+  group_variable_offset_index m_local_group_variables;
+
   brig_to_generic *m_parent;
   /* The metadata of the function that should be stored with the binary and
      passed to the HSA runtime:  */
   phsa_descriptor m_descriptor;
 
 private:
+
+  tree get_tree_type_for_hsa_reg (const BrigOperandRegister *reg) const;
+
   /* Bookkeeping for the different HSA registers and their tree declarations
      for the currently generated function.  */
   reg_decl_index_entry *m_regs[BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT];

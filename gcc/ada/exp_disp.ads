@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -173,6 +173,11 @@ package Exp_Disp is
    function Building_Static_DT (Typ : Entity_Id) return Boolean;
    pragma Inline (Building_Static_DT);
    --  Returns true when building statically allocated dispatch tables
+
+   function Building_Static_Secondary_DT (Typ : Entity_Id) return Boolean;
+   pragma Inline (Building_Static_Secondary_DT);
+   --  Returns true when building statically allocated secondary dispatch
+   --  tables
 
    procedure Build_Static_Dispatch_Tables (N : Node_Id);
    --  N is a library level package declaration or package body. Build the

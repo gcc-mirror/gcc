@@ -1,7 +1,7 @@
 /* PR ipa/61800 */
 /* { dg-do compile } */
 /* { dg-require-visibility "" } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-return-type" } */
 
 #pragma GCC visibility push(hidden)
 class A

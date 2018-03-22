@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "substring-locations.h"
 #include "spellcheck.h"
+#include "selftest.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -338,9 +339,6 @@ const struct c_common_resword c_common_reswords[] =
   { "_Atomic",		RID_ATOMIC,    D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
-  { "_Cilk_spawn",      RID_CILK_SPAWN, 0 },
-  { "_Cilk_sync",       RID_CILK_SYNC,  0 },
-  { "_Cilk_for",        RID_CILK_FOR,   0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
   { "_Float16",         RID_FLOAT16,   D_CONLY },
   { "_Float32",         RID_FLOAT32,   D_CONLY },
@@ -376,6 +374,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
+  { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },
   { "__builtin_offsetof", RID_OFFSETOF, 0 },
   { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, D_CONLY },
   { "__builtin_va_arg",	RID_VA_ARG,	0 },
@@ -869,19 +868,6 @@ c_get_substring_location (const substring_loc &substr_loc,
 }
 
 
-/* Fold X for consideration by one of the warning functions when checking
-   whether an expression has a constant value.  */
-
-tree
-fold_for_warn (tree x)
-{
-  if (c_dialect_cxx ())
-    return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
-  else
-    /* The C front-end has already folded X appropriately.  */
-    return x;
-}
-
 /* Return true iff T is a boolean promoted to int.  */
 
 bool
@@ -942,15 +928,16 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
 
   convertible_lax =
     (tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2))
-     && (TREE_CODE (TREE_TYPE (t1)) != REAL_TYPE ||
-	 TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2))
+     && (TREE_CODE (TREE_TYPE (t1)) != REAL_TYPE
+	 || known_eq (TYPE_VECTOR_SUBPARTS (t1),
+		      TYPE_VECTOR_SUBPARTS (t2)))
      && (INTEGRAL_TYPE_P (TREE_TYPE (t1))
 	 == INTEGRAL_TYPE_P (TREE_TYPE (t2))));
 
   if (!convertible_lax || flag_lax_vector_conversions)
     return convertible_lax;
 
-  if (TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
+  if (known_eq (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
       && lang_hooks.types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
     return true;
 
@@ -1018,10 +1005,10 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       return error_mark_node;
     }
 
-  if (TYPE_VECTOR_SUBPARTS (TREE_TYPE (v0))
-      != TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask))
-      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (v1))
-	 != TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask)))
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (v0)),
+		TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask)))
+      && maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (v1)),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask))))
     {
       if (complain)
 	error_at (loc, "__builtin_shuffle number of elements of the "
@@ -2280,7 +2267,16 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
       if (inner_type != NULL_TREE)
 	return build_complex_type (inner_type);
     }
-  else if (VECTOR_MODE_P (mode))
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+						    GET_MODE_NUNITS (mode));
+      tree bool_type = build_nonstandard_boolean_type (elem_bits);
+      return build_vector_type_for_mode (bool_type, mode);
+    }
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = c_common_type_for_mode (inner_mode, unsignedp);
@@ -2694,9 +2690,9 @@ binary_op_error (rich_location *richloc, enum tree_code code,
     default:
       gcc_unreachable ();
     }
-  error_at_rich_loc (richloc,
-		     "invalid operands to binary %s (have %qT and %qT)",
-		     opname, type0, type1);
+  error_at (richloc,
+	    "invalid operands to binary %s (have %qT and %qT)",
+	    opname, type0, type1);
 }
 
 /* Given an expression as a tree, return its original type.  Do this
@@ -3158,7 +3154,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 			      convert (TREE_TYPE (intop), size_exp));
     intop = convert (sizetype, t);
     if (TREE_OVERFLOW_P (intop) && !TREE_OVERFLOW (t))
-      intop = wide_int_to_tree (TREE_TYPE (intop), intop);
+      intop = wide_int_to_tree (TREE_TYPE (intop), wi::to_wide (intop));
   }
 
   /* Create the sum or difference.  */
@@ -3934,9 +3930,6 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
   targetm.init_builtins ();
 
   build_common_builtin_nodes ();
-
-  if (flag_cilkplus)
-    cilk_init_builtins ();
 }
 
 /* Like get_identifier, but avoid warnings about null arguments when
@@ -4903,6 +4896,64 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
   return error_mark_node;
 }
 
+/* Subroutine of c_switch_covers_all_cases_p, called via
+   splay_tree_foreach.  Return 1 if it doesn't cover all the cases.
+   ARGS[0] is initially NULL and after the first iteration is the
+   so far highest case label.  ARGS[1] is the minimum of SWITCH_COND's
+   type.  */
+
+static int
+c_switch_covers_all_cases_p_1 (splay_tree_node node, void *data)
+{
+  tree label = (tree) node->value;
+  tree *args = (tree *) data;
+
+  /* If there is a default case, we shouldn't have called this.  */
+  gcc_assert (CASE_LOW (label));
+
+  if (args[0] == NULL_TREE)
+    {
+      if (wi::to_widest (args[1]) < wi::to_widest (CASE_LOW (label)))
+	return 1;
+    }
+  else if (wi::add (wi::to_widest (args[0]), 1)
+	   != wi::to_widest (CASE_LOW (label)))
+    return 1;
+  if (CASE_HIGH (label))
+    args[0] = CASE_HIGH (label);
+  else
+    args[0] = CASE_LOW (label);
+  return 0;
+}
+
+/* Return true if switch with CASES and switch condition with type
+   covers all possible values in the case labels.  */
+
+bool
+c_switch_covers_all_cases_p (splay_tree cases, tree type)
+{
+  /* If there is default:, this is always the case.  */
+  splay_tree_node default_node
+    = splay_tree_lookup (cases, (splay_tree_key) NULL);
+  if (default_node)
+    return true;
+
+  if (!INTEGRAL_TYPE_P (type))
+    return false;
+
+  tree args[2] = { NULL_TREE, TYPE_MIN_VALUE (type) };
+  if (splay_tree_foreach (cases, c_switch_covers_all_cases_p_1, args))
+    return false;
+
+  /* If there are no cases at all, or if the highest case label
+     is smaller than TYPE_MAX_VALUE, return false.  */
+  if (args[0] == NULL_TREE
+      || wi::to_widest (args[0]) < wi::to_widest (TYPE_MAX_VALUE (type)))
+    return false;
+
+  return true;
+}
+
 /* Finish an expression taking the address of LABEL (an
    IDENTIFIER_NODE).  Returns an expression for the address.
 
@@ -5258,25 +5309,37 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
     }
 }
 
-/* Check that the same argument isn't passed to restrict arguments
-   and other arguments.  */
+/* Check that the same argument isn't passed to two or more
+   restrict-qualified formal and issue a -Wrestrict warning
+   if it is.  Return true if a warning has been issued.  */
 
-static void
+static bool
 check_function_restrict (const_tree fndecl, const_tree fntype,
 			 int nargs, tree *argarray)
 {
   int i;
-  tree parms;
+  tree parms = TYPE_ARG_TYPES (fntype);
 
   if (fndecl
-      && TREE_CODE (fndecl) == FUNCTION_DECL
-      && DECL_ARGUMENTS (fndecl))
-    parms = DECL_ARGUMENTS (fndecl);
-  else
-    parms = TYPE_ARG_TYPES (fntype);
+      && TREE_CODE (fndecl) == FUNCTION_DECL)
+    {
+      /* Avoid diagnosing calls built-ins with a zero size/bound
+	 here.  They are checked in more detail elsewhere.  */
+      if (DECL_BUILT_IN (fndecl)
+	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+	  && nargs == 3
+	  && TREE_CODE (argarray[2]) == INTEGER_CST
+	  && integer_zerop (argarray[2]))
+	return false;
+
+      if (DECL_ARGUMENTS (fndecl))
+	parms = DECL_ARGUMENTS (fndecl);
+    }
 
   for (i = 0; i < nargs; i++)
     TREE_VISITED (argarray[i]) = 0;
+
+  bool warned = false;
 
   for (i = 0; i < nargs && parms && parms != void_list_node; i++)
     {
@@ -5294,11 +5357,13 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
       if (POINTER_TYPE_P (type)
 	  && TYPE_RESTRICT (type)
 	  && !TYPE_READONLY (TREE_TYPE (type)))
-	warn_for_restrict (i, argarray, nargs);
+	warned |= warn_for_restrict (i, argarray, nargs);
     }
 
   for (i = 0; i < nargs; i++)
     TREE_VISITED (argarray[i]) = 0;
+
+  return warned;
 }
 
 /* Helper for check_function_nonnull; given a list of operands which
@@ -5358,7 +5423,7 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
   /* Verify the arg number is a small constant.  */
   if (tree_fits_uhwi_p (arg_num_expr))
     {
-      *valp = TREE_INT_CST_LOW (arg_num_expr);
+      *valp = tree_to_uhwi (arg_num_expr);
       return true;
     }
   else
@@ -5539,8 +5604,10 @@ attribute_fallthrough_p (tree attr)
 
 
 /* Check for valid arguments being passed to a function with FNTYPE.
-   There are NARGS arguments in the array ARGARRAY.  LOC should be used for
-   diagnostics.  Return true if -Wnonnull warning has been diagnosed.  */
+   There are NARGS arguments in the array ARGARRAY.  LOC should be used
+   for diagnostics.  Return true if either -Wnonnull or -Wrestrict has
+   been issued.  */
+
 bool
 check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
 			  int nargs, tree *argarray, vec<location_t> *arglocs)
@@ -5563,7 +5630,7 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
     check_function_sentinel (fntype, nargs, argarray);
 
   if (warn_restrict)
-    check_function_restrict (fndecl, fntype, nargs, argarray);
+    warned_p |= check_function_restrict (fndecl, fntype, nargs, argarray);
   return warned_p;
 }
 
@@ -5695,6 +5762,16 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX:
+      if (!tree_fits_uhwi_p (args[2]))
+	{
+	  error_at (ARG_LOCATION (2),
+		    "third argument to function %qE must be a constant integer",
+		    fndecl);
+	  return false;
+	}
+      /* fall through */
+
     case BUILT_IN_ALLOCA_WITH_ALIGN:
       {
 	/* Get the requested alignment (in bits) if it's a constant
@@ -5880,10 +5957,10 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 static char *
 catenate_strings (const char *lhs, const char *rhs_start, int rhs_size)
 {
-  const int lhs_size = strlen (lhs);
+  const size_t lhs_size = strlen (lhs);
   char *result = XNEWVEC (char, lhs_size + rhs_size);
-  strncpy (result, lhs, lhs_size);
-  strncpy (result + lhs_size, rhs_start, rhs_size);
+  memcpy (result, lhs, lhs_size);
+  memcpy (result + lhs_size, rhs_start, rhs_size);
   return result;
 }
 
@@ -5934,7 +6011,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
       else
 	message = catenate_messages (gmsgid, " before %s'\\x%x'");
 
-      error_at_rich_loc (richloc, message, prefix, val);
+      error_at (richloc, message, prefix, val);
       free (message);
       message = NULL;
     }
@@ -5962,7 +6039,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
   else if (token_type == CPP_NAME)
     {
       message = catenate_messages (gmsgid, " before %qE");
-      error_at_rich_loc (richloc, message, value);
+      error_at (richloc, message, value);
       free (message);
       message = NULL;
     }
@@ -5975,16 +6052,16 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
   else if (token_type < N_TTYPES)
     {
       message = catenate_messages (gmsgid, " before %qs token");
-      error_at_rich_loc (richloc, message, cpp_type2name (token_type, token_flags));
+      error_at (richloc, message, cpp_type2name (token_type, token_flags));
       free (message);
       message = NULL;
     }
   else
-    error_at_rich_loc (richloc, gmsgid);
+    error_at (richloc, gmsgid);
 
   if (message)
     {
-      error_at_rich_loc (richloc, message);
+      error_at (richloc, message);
       free (message);
     }
 #undef catenate_messages
@@ -6658,24 +6735,25 @@ get_atomic_generic_size (location_t loc, tree function,
   for (x = n_param - n_model ; x < n_param; x++)
     {
       tree p = (*params)[x];
-      if (TREE_CODE (p) == INTEGER_CST)
-        {
-	  int i = tree_to_uhwi (p);
-	  if (i < 0 || (memmodel_base (i) >= MEMMODEL_LAST))
-	    {
-	      warning_at (loc, OPT_Winvalid_memory_model,
-			  "invalid memory model argument %d of %qE", x + 1,
-			  function);
-	    }
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (p)))
+	{
+	  error_at (loc, "non-integer memory model argument %d of %qE", x + 1,
+		    function);
+	  return 0;
 	}
-      else
-	if (!INTEGRAL_TYPE_P (TREE_TYPE (p)))
-	  {
-	    error_at (loc, "non-integer memory model argument %d of %qE", x + 1,
-		   function);
-	    return 0;
-	  }
-      }
+      p = fold_for_warn (p);
+      if (TREE_CODE (p) == INTEGER_CST)
+	{
+	  /* memmodel_base masks the low 16 bits, thus ignore any bits above
+	     it by using TREE_INT_CST_LOW instead of tree_to_*hwi.  Those high
+	     bits will be checked later during expansion in target specific
+	     way.  */
+	  if (memmodel_base (TREE_INT_CST_LOW (p)) >= MEMMODEL_LAST)
+	    warning_at (loc, OPT_Winvalid_memory_model,
+			"invalid memory model argument %d of %qE", x + 1,
+			function);
+	}
+    }
 
   return size_0;
 }
@@ -7557,7 +7635,6 @@ c_common_init_ts (void)
 {
   MARK_TS_TYPED (C_MAYBE_CONST_EXPR);
   MARK_TS_TYPED (EXCESS_PRECISION_EXPR);
-  MARK_TS_TYPED (ARRAY_NOTATION_REF);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE
@@ -7591,7 +7668,7 @@ convert_vector_to_array_for_subscript (location_t loc,
 
       if (TREE_CODE (index) == INTEGER_CST)
         if (!tree_fits_uhwi_p (index)
-            || tree_to_uhwi (index) >= TYPE_VECTOR_SUBPARTS (type))
+	    || maybe_ge (tree_to_uhwi (index), TYPE_VECTOR_SUBPARTS (type)))
           warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
 
       /* We are building an ARRAY_REF so mark the vector as addressable
@@ -7766,6 +7843,8 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
 {
   if (TREE_CODE (expr) == ADDR_EXPR)
     expr = TREE_OPERAND (expr, 0);
+
+  STRIP_ANY_LOCATION_WRAPPER (expr);
 
   if (TREE_TYPE (expr)
       && TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
@@ -7946,16 +8025,193 @@ c_flt_eval_method (bool maybe_c11_only_p)
     return c_ts18661_flt_eval_method ();
 }
 
+/* An enum for get_missing_token_insertion_kind for describing the best
+   place to insert a missing token, if there is one.  */
+
+enum missing_token_insertion_kind
+{
+  MTIK_IMPOSSIBLE,
+  MTIK_INSERT_BEFORE_NEXT,
+  MTIK_INSERT_AFTER_PREV
+};
+
+/* Given a missing token of TYPE, determine if it is reasonable to
+   emit a fix-it hint suggesting the insertion of the token, and,
+   if so, where the token should be inserted relative to other tokens.
+
+   It only makes sense to do this for values of TYPE that are symbols.
+
+   Some symbols should go before the next token, e.g. in:
+     if flag)
+   we want to insert the missing '(' immediately before "flag",
+   giving:
+     if (flag)
+   rather than:
+     if( flag)
+   These use MTIK_INSERT_BEFORE_NEXT.
+
+   Other symbols should go after the previous token, e.g. in:
+     if (flag
+       do_something ();
+   we want to insert the missing ')' immediately after the "flag",
+   giving:
+     if (flag)
+       do_something ();
+   rather than:
+     if (flag
+       )do_something ();
+   These use MTIK_INSERT_AFTER_PREV.  */
+
+static enum missing_token_insertion_kind
+get_missing_token_insertion_kind (enum cpp_ttype type)
+{
+  switch (type)
+    {
+      /* Insert missing "opening" brackets immediately
+	 before the next token.  */
+    case CPP_OPEN_SQUARE:
+    case CPP_OPEN_PAREN:
+      return MTIK_INSERT_BEFORE_NEXT;
+
+      /* Insert other missing symbols immediately after
+	 the previous token.  */
+    case CPP_CLOSE_PAREN:
+    case CPP_CLOSE_SQUARE:
+    case CPP_SEMICOLON:
+    case CPP_COMMA:
+    case CPP_COLON:
+      return MTIK_INSERT_AFTER_PREV;
+
+      /* Other kinds of token don't get fix-it hints.  */
+    default:
+      return MTIK_IMPOSSIBLE;
+    }
+}
+
+/* Given RICHLOC, a location for a diagnostic describing a missing token
+   of kind TOKEN_TYPE, potentially add a fix-it hint suggesting the
+   insertion of the token.
+
+   The location of the attempted fix-it hint depends on TOKEN_TYPE:
+   it will either be:
+     (a) immediately after PREV_TOKEN_LOC, or
+
+     (b) immediately before the primary location within RICHLOC (taken to
+	 be that of the token following where the token was expected).
+
+   If we manage to add a fix-it hint, then the location of the
+   fix-it hint is likely to be more useful as the primary location
+   of the diagnostic than that of the following token, so we swap
+   these locations.
+
+   For example, given this bogus code:
+       123456789012345678901234567890
+   1 | int missing_semicolon (void)
+   2 | {
+   3 |   return 42
+   4 | }
+
+   we will emit:
+
+     "expected ';' before '}'"
+
+   RICHLOC's primary location is at the closing brace, so before "swapping"
+   we would emit the error at line 4 column 1:
+
+       123456789012345678901234567890
+   3 |   return 42  |< fix-it hint emitted for this line
+     |            ; |
+   4 | }            |< "expected ';' before '}'" emitted at this line
+     | ^            |
+
+   It's more useful for the location of the diagnostic to be at the
+   fix-it hint, so we swap the locations, so the primary location
+   is at the fix-it hint, with the old primary location inserted
+   as a secondary location, giving this, with the error at line 3
+   column 12:
+
+       123456789012345678901234567890
+   3 |   return 42   |< "expected ';' before '}'" emitted at this line,
+     |            ^  |   with fix-it hint
+   4 |            ;  |
+     | }             |< secondary range emitted here
+     | ~             |.  */
+
+void
+maybe_suggest_missing_token_insertion (rich_location *richloc,
+				       enum cpp_ttype token_type,
+				       location_t prev_token_loc)
+{
+  gcc_assert (richloc);
+
+  enum missing_token_insertion_kind mtik
+    = get_missing_token_insertion_kind (token_type);
+
+  switch (mtik)
+    {
+    default:
+      gcc_unreachable ();
+      break;
+
+    case MTIK_IMPOSSIBLE:
+      return;
+
+    case MTIK_INSERT_BEFORE_NEXT:
+      /* Attempt to add the fix-it hint before the primary location
+	 of RICHLOC.  */
+      richloc->add_fixit_insert_before (cpp_type2name (token_type, 0));
+      break;
+
+    case MTIK_INSERT_AFTER_PREV:
+      /* Attempt to add the fix-it hint after PREV_TOKEN_LOC.  */
+      richloc->add_fixit_insert_after (prev_token_loc,
+				       cpp_type2name (token_type, 0));
+      break;
+    }
+
+  /* If we were successful, use the fix-it hint's location as the
+     primary location within RICHLOC, adding the old primary location
+     back as a secondary location.  */
+  if (!richloc->seen_impossible_fixit_p ())
+    {
+      fixit_hint *hint = richloc->get_last_fixit_hint ();
+      location_t hint_loc = hint->get_start_loc ();
+      location_t old_loc = richloc->get_loc ();
+
+      richloc->set_range (line_table, 0, hint_loc, true);
+      richloc->add_range (old_loc, false);
+    }
+}
+
 #if CHECKING_P
 
 namespace selftest {
+
+/* Verify that fold_for_warn on error_mark_node is safe.  */
+
+static void
+test_fold_for_warn ()
+{
+  ASSERT_EQ (error_mark_node, fold_for_warn (error_mark_node));
+}
+
+/* Run all of the selftests within this file.  */
+
+static void
+c_common_c_tests ()
+{
+  test_fold_for_warn ();
+}
 
 /* Run all of the tests within c-family.  */
 
 void
 c_family_tests (void)
 {
+  c_common_c_tests ();
   c_format_c_tests ();
+  c_pretty_print_c_tests ();
+  c_spellcheck_cc_tests ();
 }
 
 } // namespace selftest

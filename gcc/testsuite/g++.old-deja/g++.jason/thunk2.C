@@ -40,10 +40,13 @@ void* test(MMixin& anExample)
   return anExample.MixinFunc(1,A(0)).p;
 }
 
+int
 main ()
 {
   CExample c;
 
   if (test(c) != &c)
     return 1;
+
+  return 0;
 }

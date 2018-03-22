@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -224,6 +224,8 @@ extern tree arm_valid_target_attribute_tree (tree, struct gcc_options *,
 extern void arm_configure_build_target (struct arm_build_target *,
 					struct cl_target_option *,
 					struct gcc_options *, bool);
+extern void arm_option_reconfigure_globals (void);
+extern void arm_options_perform_arch_sanity_checks (void);
 extern void arm_pr_long_calls (struct cpp_reader *);
 extern void arm_pr_no_long_calls (struct cpp_reader *);
 extern void arm_pr_long_calls_off (struct cpp_reader *);
@@ -261,12 +263,32 @@ struct cpu_vec_costs {
 
 struct cpu_cost_table;
 
+/* Addressing mode operations.  Used to index tables in struct
+   addr_mode_cost_table.  */
+enum arm_addr_mode_op
+{
+   AMO_DEFAULT,
+   AMO_NO_WB,	/* Offset with no writeback.  */
+   AMO_WB,	/* Offset with writeback.  */
+   AMO_MAX	/* For array size.  */
+};
+
+/* Table of additional costs in units of COSTS_N_INSNS() when using
+   addressing modes for each access type.  */
+struct addr_mode_cost_table
+{
+   const int integer[AMO_MAX];
+   const int fp[AMO_MAX];
+   const int vector[AMO_MAX];
+};
+
 /* Dump function ARM_PRINT_TUNE_INFO should be updated whenever this
    structure is modified.  */
 
 struct tune_params
 {
   const struct cpu_cost_table *insn_extra_cost;
+  const struct addr_mode_cost_table *addr_mode_costs;
   bool (*sched_adjust_cost) (rtx_insn *, int, rtx_insn *, int *);
   int (*branch_cost) (bool, bool);
   /* Vectorizer costs.  */
@@ -335,7 +357,6 @@ extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
 
 extern bool arm_gen_setmem (rtx *);
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
-extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 
 extern bool arm_autoinc_modes_ok_p (machine_mode, enum arm_auto_incmodes);
 
@@ -524,9 +545,9 @@ extern const arch_option all_architectures[];
 extern const cpu_option all_cores[];
 
 const cpu_option *arm_parse_cpu_option_name (const cpu_option *, const char *,
-					     const char *);
+					     const char *, bool = true);
 const arch_option *arm_parse_arch_option_name (const arch_option *,
-					       const char *, const char *);
+					       const char *, const char *, bool = true);
 void arm_parse_option_features (sbitmap, const cpu_arch_option *,
 				const char *);
 

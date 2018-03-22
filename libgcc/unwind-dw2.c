@@ -1,5 +1,5 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -216,12 +216,12 @@ _Unwind_IsExtendedContext (struct _Unwind_Context *context)
 	  || (context->flags & EXTENDED_CONTEXT_BIT));
 }
 
-/* Get the value of register INDEX as saved in CONTEXT.  */
+/* Get the value of register REGNO as saved in CONTEXT.  */
 
 inline _Unwind_Word
-_Unwind_GetGR (struct _Unwind_Context *context, int index)
+_Unwind_GetGR (struct _Unwind_Context *context, int regno)
 {
-  int size;
+  int size, index;
   _Unwind_Context_Reg_Val val;
 
 #ifdef DWARF_ZERO_REG
@@ -229,13 +229,21 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
     return 0;
 #endif
 
-  index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  index = DWARF_REG_TO_UNWIND_COLUMN (regno);
   gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
   size = dwarf_reg_size_table[index];
   val = context->reg[index];
 
   if (_Unwind_IsExtendedContext (context) && context->by_value[index])
     return _Unwind_Get_Unwind_Word (val);
+
+#ifdef DWARF_LAZY_REGISTER_VALUE
+  {
+    _Unwind_Word value;
+    if (DWARF_LAZY_REGISTER_VALUE (regno, &value))
+      return value;
+  }
+#endif
 
   /* This will segfault if the register hasn't been saved.  */
   if (size == sizeof(_Unwind_Ptr))
@@ -1644,14 +1652,18 @@ uw_frob_return_addr (struct _Unwind_Context *current
 
 /* Install TARGET into CURRENT so that we can return to it.  This is a
    macro because __builtin_eh_return must be invoked in the context of
-   our caller.  */
+   our caller.  FRAMES is a number of frames to be unwind.
+   _Unwind_Frames_Extra is a macro to do additional work during unwinding
+   if needed, for example shadow stack pointer adjustment for Intel CET
+   technology.  */
 
-#define uw_install_context(CURRENT, TARGET)				\
+#define uw_install_context(CURRENT, TARGET, FRAMES)			\
   do									\
     {									\
       long offset = uw_install_context_1 ((CURRENT), (TARGET));		\
       void *handler = uw_frob_return_addr ((CURRENT), (TARGET));	\
       _Unwind_DebugHook ((TARGET)->cfa, handler);			\
+      _Unwind_Frames_Extra (FRAMES);					\
       __builtin_eh_return (offset, handler);				\
     }									\
   while (0)

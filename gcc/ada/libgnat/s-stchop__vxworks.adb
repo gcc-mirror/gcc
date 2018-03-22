@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,8 +103,6 @@ package body System.Stack_Checking.Operations is
    --------------------------------------
 
    procedure Set_Stack_Limit_For_Current_Task is
-      use Interfaces.C;
-
       type OS_Stack_Info is record
          Size  : Interfaces.C.int;
          Base  : System.Address;

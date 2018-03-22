@@ -676,6 +676,15 @@ class Type
   const Type*
   forwarded() const;
 
+  // Return the type skipping any alias definitions and any defined
+  // forward declarations.  This is like forwarded, but also
+  // recursively expands alias definitions to the aliased type.
+  Type*
+  unalias();
+
+  const Type*
+  unalias() const;
+
   // Return true if this is a basic type: a type which is not composed
   // of other types, and is not void.
   bool
@@ -906,6 +915,15 @@ class Type
   bool
   is_unsafe_pointer_type() const
   { return this->points_to() != NULL && this->points_to()->is_void_type(); }
+
+  // Return a version of this type with any expressions copied, but
+  // only if copying the expressions will affect the size of the type.
+  // If there are no such expressions in the type (expressions can
+  // only occur in array types), just return the same type.  If any
+  // expressions can not affect the size of the type, just return the
+  // same type.
+  Type*
+  copy_expressions();
 
   // Look for field or method NAME for TYPE.  Return an expression for
   // it, bound to EXPR.
@@ -1212,11 +1230,6 @@ class Type
   // Build the GC symbol for this type.
   void
   make_gc_symbol_var(Gogo*);
-
-  // Return the name of the type descriptor variable.  If NAME is not
-  // NULL, it is the name to use.
-  std::string
-  type_descriptor_var_name(Gogo*, Named_type* name);
 
   // Return true if the type descriptor for this type should be
   // defined in some other package.  If NAME is not NULL, it is the
@@ -1556,6 +1569,92 @@ class Typed_identifier_list
 
  private:
   std::vector<Typed_identifier> entries_;
+};
+
+// A type used to indicate a parsing error.  This exists to simplify
+// later error detection.
+
+class Error_type : public Type
+{
+ public:
+  Error_type()
+    : Type(TYPE_ERROR)
+  { }
+
+ protected:
+  bool
+  do_compare_is_identity(Gogo*)
+  { return false; }
+
+  Btype*
+  do_get_backend(Gogo* gogo);
+
+  Expression*
+  do_type_descriptor(Gogo*, Named_type*);
+
+  void
+  do_reflection(Gogo*, std::string*) const;
+
+  void
+  do_mangled_name(Gogo*, std::string* ret) const;
+};
+
+// The void type.
+
+class Void_type : public Type
+{
+ public:
+  Void_type()
+    : Type(TYPE_VOID)
+  { }
+
+ protected:
+  bool
+  do_compare_is_identity(Gogo*)
+  { return false; }
+
+  Btype*
+  do_get_backend(Gogo* gogo);
+
+  Expression*
+  do_type_descriptor(Gogo*, Named_type*)
+  { go_unreachable(); }
+
+  void
+  do_reflection(Gogo*, std::string*) const
+  { }
+
+  void
+  do_mangled_name(Gogo*, std::string* ret) const;
+};
+
+// The boolean type.
+
+class Boolean_type : public Type
+{
+ public:
+  Boolean_type()
+    : Type(TYPE_BOOLEAN)
+  { }
+
+ protected:
+  bool
+  do_compare_is_identity(Gogo*)
+  { return true; }
+
+  Btype*
+  do_get_backend(Gogo* gogo);
+
+  Expression*
+  do_type_descriptor(Gogo*, Named_type* name);
+
+  // We should not be asked for the reflection string of a basic type.
+  void
+  do_reflection(Gogo*, std::string* ret) const
+  { ret->append("bool"); }
+
+  void
+  do_mangled_name(Gogo*, std::string* ret) const;
 };
 
 // The type of an integer.
@@ -1984,6 +2083,11 @@ class Function_type : public Type
   Btype*
   get_backend_fntype(Gogo*);
 
+  // Return whether this is a Backend_function_type.
+  virtual bool
+  is_backend_function_type() const
+  { return false; }
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2077,6 +2181,12 @@ class Backend_function_type : public Function_type
       : Function_type(receiver, parameters, results, location)
   { }
 
+  // Return whether this is a Backend_function_type. This overrides
+  // Function_type::is_backend_function_type.
+  bool
+  is_backend_function_type() const
+  { return true; }
+
  protected:
   Btype*
   do_get_backend(Gogo* gogo)
@@ -2141,6 +2251,37 @@ class Pointer_type : public Type
  private:
   // The type to which this type points.
   Type* to_type_;
+};
+
+// The nil type.  We use a special type for nil because it is not the
+// same as any other type.  In C term nil has type void*, but there is
+// no such type in Go.
+
+class Nil_type : public Type
+{
+ public:
+  Nil_type()
+    : Type(TYPE_NIL)
+  { }
+
+ protected:
+  bool
+  do_compare_is_identity(Gogo*)
+  { return false; }
+
+  Btype*
+  do_get_backend(Gogo* gogo);
+
+  Expression*
+  do_type_descriptor(Gogo*, Named_type*)
+  { go_unreachable(); }
+
+  void
+  do_reflection(Gogo*, std::string*) const
+  { go_unreachable(); }
+
+  void
+  do_mangled_name(Gogo*, std::string* ret) const;
 };
 
 // The type of a field in a struct.
@@ -2311,6 +2452,11 @@ class Struct_type : public Type
   size_t
   field_count() const
   { return this->fields_->size(); }
+
+  // Location of struct definition.
+  Location
+  location() const
+  { return this->location_; }
 
   // Push a new field onto the end of the struct.  This is used when
   // building a closure variable.
@@ -2714,6 +2860,9 @@ class Map_type : public Type
   static Type*
   make_map_type_descriptor_type();
 
+  // This must be in  sync with libgo/go/runtime/hashmap.go.
+  static const int bucket_size = 8;
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2755,7 +2904,6 @@ class Map_type : public Type
 
  private:
   // These must be in sync with libgo/go/runtime/hashmap.go.
-  static const int bucket_size = 8;
   static const int max_key_size = 128;
   static const int max_val_size = 128;
   static const int max_zero_size = 1024;
@@ -3036,6 +3184,20 @@ class Interface_type : public Type
 
   bool
   assume_identical(const Interface_type*, const Interface_type*) const;
+
+  struct Bmethods_map_entry
+  {
+    Btype *btype;
+    bool is_placeholder;
+  };
+
+  // A mapping from Interface_type to the backend type of its bmethods_,
+  // used to ensure that the backend representation of identical types
+  // is identical.
+  typedef Unordered_map_hash(const Interface_type*, Bmethods_map_entry,
+                             Type_hash_identical, Type_identical) Bmethods_map;
+
+  static Bmethods_map bmethods_map;
 
   // The list of methods associated with the interface from the
   // parser.  This will be NULL for the empty interface.  This may

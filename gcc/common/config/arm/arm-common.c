@@ -1,5 +1,5 @@
 /* Common hooks for ARM.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -18,6 +18,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define INCLUDE_LIST
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -30,13 +31,13 @@
 #include "flags.h"
 #include "sbitmap.h"
 #include "diagnostic.h"
+#include <algorithm>
 
 /* Set default optimization options.  */
 static const struct default_options arm_option_optimization_table[] =
   {
     /* Enable section anchors by default at -O1 or higher.  */
     { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
@@ -63,7 +64,13 @@ arm_except_unwind_info (struct gcc_options *opts)
 	return UI_TARGET;
     }
 
-  /* ... we use sjlj exceptions for backwards compatibility.  */
+  /* ... honor target configurations requesting DWARF2 EH...  */
+#ifdef DWARF2_UNWIND_INFO
+  if (DWARF2_UNWIND_INFO)
+    return UI_DWARF2;
+#endif
+
+  /* ... or fallback to sjlj exceptions for backwards compatibility.  */
   return UI_SJLJ;
 }
 
@@ -109,26 +116,99 @@ arm_rewrite_mcpu (int argc, const char **argv)
   return arm_rewrite_selected_cpu (argv[argc - 1]);
 }
 
-/* Truncate NAME at the first '+' character seen, or return
-   NAME unmodified.  Similar to arm_rewrite_selected_cpu, but we must
-   preserve '.' as that is part of some architecture names.  */
+/* Comparator for arm_rewrite_selected_arch.  Compare the two arch extension
+   strings FIRST and SECOND and return TRUE if FIRST is less than SECOND
+   alphabetically.  */
 
+static bool
+compare_opt_names (const char *first, const char *second)
+{
+  return strcmp (first, second) <= 0;
+}
+
+/* Rewrite the architecture string for passing to the assembler.
+   Although the syntax is similar we cannot assume that it supports
+   the newer FP related options.  So strip any option that only
+   defines features in the standard -mfpu options out.  We'll generate
+   a suitable -mfpu option elsewhere to carry that information.  NAME
+   should already have been canonicalized, so we do not expect to
+   encounter +no.. options that remove features.  A final problem is
+   that the assembler expects the feature extensions to be listed
+   alphabetically, so we build a list of required options and then
+   sort them into canonical order in the resulting string.  */
 const char *
 arm_rewrite_selected_arch (const char *name)
 {
-  static char output_buf[ARM_CPU_NAME_LENGTH + 1] = {0};
-  char *arg_pos;
+  /* The result we return needs to be semi persistent, so handle being
+     re-invoked.  */
+  static char *asm_arch = NULL;
 
-  strncpy (output_buf, name, ARM_CPU_NAME_LENGTH);
-  output_buf[ARM_CPU_NAME_LENGTH] = 0;
+  if (asm_arch)
+    {
+      free (asm_arch);
+      asm_arch = NULL;
+    }
 
-  arg_pos = strchr (output_buf, '+');
+  const char *arg_pos = strchr (name, '+');
 
-  /* If we found a '+' truncate the entry at that point.  */
-  if (arg_pos)
-    *arg_pos = '\0';
+  /* No extension options? just return the original string.  */
+  if (arg_pos == NULL)
+    return name;
 
-  return output_buf;
+  const arch_option *arch_opt
+    = arm_parse_arch_option_name (all_architectures, "-march", name);
+
+  auto_sbitmap fpu_bits (isa_num_bits);
+  static const enum isa_feature fpu_bitlist[]
+    = { ISA_ALL_FPU_INTERNAL, isa_nobit };
+
+  arm_initialize_isa (fpu_bits, fpu_bitlist);
+
+  auto_sbitmap opt_bits (isa_num_bits);
+
+  /* Ensure that the resulting string is large enough for the result.  We
+     never add options, so using strdup here will ensure that.  */
+  asm_arch = xstrdup (name);
+  asm_arch[arg_pos - name] = '\0';
+
+  std::vector<const char *>optlist;
+
+  while (arg_pos)
+    {
+      const char *end = strchr (arg_pos + 1, '+');
+      size_t len = end ? end - arg_pos : strlen (arg_pos);
+
+      for (const cpu_arch_extension *entry = arch_opt->common.extensions;
+	   entry->name != NULL;
+	   entry++)
+	{
+	  if (strncmp (entry->name, arg_pos + 1, len - 1) == 0
+	      && entry->name[len - 1] == '\0')
+	    {
+	      /* Don't expect removal options.  */
+	      gcc_assert (!entry->remove);
+	      arm_initialize_isa (opt_bits, entry->isa_bits);
+	      if (!bitmap_subset_p (opt_bits, fpu_bits))
+		optlist.push_back (entry->name);
+	      bitmap_clear (opt_bits);
+	      break;
+	    }
+	}
+
+      arg_pos = end;
+    }
+
+  std::sort (optlist.begin (), optlist.end (), compare_opt_names);
+
+  for (std::vector<const char *>::iterator opt_iter = optlist.begin ();
+       opt_iter != optlist.end ();
+       ++opt_iter)
+    {
+      strcat (asm_arch, "+");
+      strcat (asm_arch, (*opt_iter));
+    }
+
+  return asm_arch;
 }
 
 /* Called by the driver to rewrite a name passed to the -march
@@ -199,7 +279,8 @@ arm_target_thumb_only (int argc, const char **argv)
   if (arch)
     {
       const arch_option *arch_opt
-	= arm_parse_arch_option_name (all_architectures, "-march", arch);
+	= arm_parse_arch_option_name (all_architectures, "-march", arch,
+				      false);
 
       if (arch_opt && !check_isa_bits_for (arch_opt->common.isa_bits,
 					   isa_bit_notm))
@@ -208,7 +289,7 @@ arm_target_thumb_only (int argc, const char **argv)
   else if (cpu)
     {
       const cpu_option *cpu_opt
-	= arm_parse_cpu_option_name (all_cores, "-mcpu", cpu);
+	= arm_parse_cpu_option_name (all_cores, "-mcpu", cpu, false);
 
       if (cpu_opt && !check_isa_bits_for (cpu_opt->common.isa_bits,
 					  isa_bit_notm))
@@ -229,6 +310,12 @@ arm_print_hint_for_cpu_option (const char *target,
   auto_vec<const char*> candidates;
   for (; list->common.name != NULL; list++)
     candidates.safe_push (list->common.name);
+
+#ifdef HAVE_LOCAL_CPU_DETECT
+  /* Add also "native" as possible value.  */
+  candidates.safe_push ("native");
+#endif
+
   char *s;
   const char *hint = candidates_list_and_hint (target, s, candidates);
   if (hint)
@@ -243,10 +330,11 @@ arm_print_hint_for_cpu_option (const char *target,
 /* Parse the base component of a CPU selection in LIST.  Return a
    pointer to the entry in the architecture table.  OPTNAME is the
    name of the option we are parsing and can be used if a diagnostic
-   is needed.  */
+   is needed.  If COMPLAIN is true (the default) emit error
+   messages and hints on invalid input.  */
 const cpu_option *
 arm_parse_cpu_option_name (const cpu_option *list, const char *optname,
-			   const char *target)
+			   const char *target, bool complain)
 {
   const cpu_option *entry;
   const char *end  = strchr (target, '+');
@@ -259,8 +347,11 @@ arm_parse_cpu_option_name (const cpu_option *list, const char *optname,
 	return entry;
     }
 
-  error_at (input_location, "unrecognized %s target: %s", optname, target);
-  arm_print_hint_for_cpu_option (target, list);
+  if (complain)
+    {
+      error_at (input_location, "unrecognized %s target: %s", optname, target);
+      arm_print_hint_for_cpu_option (target, list);
+    }
   return NULL;
 }
 
@@ -273,6 +364,12 @@ arm_print_hint_for_arch_option (const char *target,
   auto_vec<const char*> candidates;
   for (; list->common.name != NULL; list++)
     candidates.safe_push (list->common.name);
+
+#ifdef HAVE_LOCAL_CPU_DETECT
+  /* Add also "native" as possible value.  */
+  candidates.safe_push ("native");
+#endif
+
   char *s;
   const char *hint = candidates_list_and_hint (target, s, candidates);
   if (hint)
@@ -287,10 +384,11 @@ arm_print_hint_for_arch_option (const char *target,
 /* Parse the base component of a CPU or architecture selection in
    LIST.  Return a pointer to the entry in the architecture table.
    OPTNAME is the name of the option we are parsing and can be used if
-   a diagnostic is needed.  */
+   a diagnostic is needed.  If COMPLAIN is true (the default) emit error
+   messages and hints on invalid input.  */
 const arch_option *
 arm_parse_arch_option_name (const arch_option *list, const char *optname,
-			    const char *target)
+			    const char *target, bool complain)
 {
   const arch_option *entry;
   const char *end  = strchr (target, '+');
@@ -303,8 +401,11 @@ arm_parse_arch_option_name (const arch_option *list, const char *optname,
 	return entry;
     }
 
-  error_at (input_location, "unrecognized %s target: %s", optname, target);
-  arm_print_hint_for_arch_option (target, list);
+  if (complain)
+    {
+      error_at (input_location, "unrecognized %s target: %s", optname, target);
+      arm_print_hint_for_arch_option (target, list);
+    }
   return NULL;
 }
 
@@ -574,7 +675,7 @@ arm_canon_arch_option (int argc, const char **argv)
 	{
 	  /* The easiest and safest way to remove the default fpu
 	     capabilities is to look for a '+no..' option that removes
-	     the base FPU bit (isa_bit_VFPv2).  If that doesn't exist
+	     the base FPU bit (isa_bit_vfpv2).  If that doesn't exist
 	     then the best we can do is strip out all the bits that
 	     might be part of the most capable FPU we know about,
 	     which is "crypto-neon-fp-armv8".  */
@@ -586,7 +687,7 @@ arm_canon_arch_option (int argc, const char **argv)
 		   ++ext)
 		{
 		  if (ext->remove
-		      && check_isa_bits_for (ext->isa_bits, isa_bit_VFPv2))
+		      && check_isa_bits_for (ext->isa_bits, isa_bit_vfpv2))
 		    {
 		      arm_initialize_isa (fpu_isa, ext->isa_bits);
 		      bitmap_and_compl (target_isa, target_isa, fpu_isa);
@@ -620,7 +721,7 @@ arm_canon_arch_option (int argc, const char **argv)
     {
       /* Clearing the VFPv2 bit is sufficient to stop any extention that
 	 builds on the FPU from matching.  */
-      bitmap_clear_bit (target_isa, isa_bit_VFPv2);
+      bitmap_clear_bit (target_isa, isa_bit_vfpv2);
     }
 
   /* If we don't have a selected architecture by now, something's
@@ -692,8 +793,8 @@ arm_canon_arch_option (int argc, const char **argv)
      capable FPU variant that we do support.  This is sufficient for
      multilib selection.  */
 
-  if (bitmap_bit_p (target_isa_unsatisfied, isa_bit_VFPv2)
-      && bitmap_bit_p (fpu_isa, isa_bit_VFPv2))
+  if (bitmap_bit_p (target_isa_unsatisfied, isa_bit_vfpv2)
+      && bitmap_bit_p (fpu_isa, isa_bit_vfpv2))
     {
       std::list<candidate_extension *>::iterator ipoint = extensions.begin ();
 
@@ -816,6 +917,86 @@ arm_be8_option (int argc, const char **argv)
     return "--be8";
 
   return "";
+}
+
+/* Generate a -mfpu= option for passing to the assembler.  This is
+   only called when -mfpu was set (possibly defaulted) to auto and is
+   needed to ensure that the assembler knows the correct FPU to use.
+   It wouldn't really be needed except that the compiler can be used
+   to invoke the assembler directly on hand-written files that lack
+   the necessary internal .fpu directives.  We assume that the architecture
+   canonicalization calls have already been made so that we have a final
+   -march= option to derive the fpu from.  */
+const char*
+arm_asm_auto_mfpu (int argc, const char **argv)
+{
+  static char *auto_fpu = NULL;
+  const char *arch = NULL;
+  static const enum isa_feature fpu_bitlist[]
+    = { ISA_ALL_FPU_INTERNAL, isa_nobit };
+  const arch_option *selected_arch;
+  static const char* fpuname = "softvfp";
+
+  /* Handle multiple calls to this routine.  */
+  if (auto_fpu)
+    {
+      free (auto_fpu);
+      auto_fpu = NULL;
+    }
+
+  while (argc)
+    {
+      if (strcmp (argv[0], "arch") == 0)
+	arch = argv[1];
+      else
+	fatal_error (input_location,
+		     "unrecognized operand to %%:asm_auto_mfpu");
+      argc -= 2;
+      argv += 2;
+    }
+
+  auto_sbitmap target_isa (isa_num_bits);
+  auto_sbitmap fpubits (isa_num_bits);
+
+  gcc_assert (arch != NULL);
+  selected_arch = arm_parse_arch_option_name (all_architectures,
+					      "-march", arch);
+  if (selected_arch == NULL)
+    return "";
+
+  arm_initialize_isa (target_isa, selected_arch->common.isa_bits);
+  arm_parse_option_features (target_isa, &selected_arch->common,
+			     strchr (arch, '+'));
+  arm_initialize_isa (fpubits, fpu_bitlist);
+
+  bitmap_and (fpubits, fpubits, target_isa);
+
+  /* The logic below is essentially identical to that in
+     arm.c:arm_identify_fpu_from_isa(), but that only works in the main
+     part of the compiler.  */
+
+  /* If there are no FPU capability bits, we just pass -mfpu=softvfp.  */
+  if (!bitmap_empty_p (fpubits))
+    {
+      unsigned int i;
+      auto_sbitmap cand_fpubits (isa_num_bits);
+      for (i = 0; i < TARGET_FPU_auto; i++)
+	{
+	  arm_initialize_isa (cand_fpubits, all_fpus[i].isa_bits);
+	  if (bitmap_equal_p (fpubits, cand_fpubits))
+	    {
+	      fpuname = all_fpus[i].name;
+	      break;
+	    }
+	}
+
+      gcc_assert (i != TARGET_FPU_auto);
+    }
+
+  auto_fpu = (char *) xmalloc (strlen (fpuname) + sizeof ("-mfpu="));
+  strcpy (auto_fpu, "-mfpu=");
+  strcat (auto_fpu, fpuname);
+  return auto_fpu;
 }
 
 #undef ARM_CPU_NAME_LENGTH

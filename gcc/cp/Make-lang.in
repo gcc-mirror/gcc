@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C++.
-#   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -39,7 +39,7 @@ CXX_INSTALL_NAME := $(shell echo c++|sed '$(program_transform_name)')
 GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
 CXX_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo c++|sed '$(program_transform_name)')
 GXX_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo g++|sed '$(program_transform_name)')
-CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h
+CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h operators.def
 
 #
 # Define the names for selecting c++ in LANGUAGES.
@@ -73,7 +73,7 @@ CXX_C_OBJS = attribs.o incpath.o \
 # Language-specific object files for C++ and Objective C++.
 CXX_AND_OBJCXX_OBJS = \
 	cp/call.o cp/class.o cp/constexpr.o cp/constraint.o \
-	cp/cp-array-notation.o cp/cp-cilkplus.o cp/cp-gimplify.o \
+	cp/cp-gimplify.o \
 	cp/cp-objcp-common.o cp/cp-ubsan.o \
 	cp/cvt.o cp/cxx-pretty-print.o \
 	cp/decl.o cp/decl2.o cp/dump.o \
@@ -176,7 +176,7 @@ check-c++17:
 
 # Run the testsuite in all standard conformance levels.
 check-c++-all:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,17,concepts" check-g++
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,17,2a,concepts" check-g++
 
 # Run the testsuite with garbage collection at every opportunity.
 check-g++-strict-gc:
@@ -238,6 +238,11 @@ c++.install-plugin: installdirs
 	  $(mkinstalldirs) $(DESTDIR)$$dir; \
 	  $(INSTALL_DATA) $$path $(DESTDIR)$$dest; \
 	done
+# Install import library.
+ifeq ($(plugin_implib),yes)
+	$(mkinstalldirs) $(DESTDIR)$(plugin_resourcesdir)
+	$(INSTALL_DATA) cc1plus$(exeext).a $(DESTDIR)/$(plugin_resourcesdir)/cc1plus$(exeext).a
+endif
 
 c++.uninstall:
 	-rm -rf $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext)

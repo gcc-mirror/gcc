@@ -65,10 +65,10 @@ prog kernel &kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
 
 /* { dg-final { scan-tree-dump "__hsail_waitfbar \\\(0, __context\\\);" "gimple"} } */
 /* { dg-final { scan-tree-dump "__hsail_initfbar \\\(0, __context\\\);" "gimple"} } */
-/* { dg-final { scan-tree-dump "__hsail_initfbar \\\(32, __context\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "__hsail_initfbar \\\(__group_local_offset, __context\\\);" "gimple"} } */
 /* { dg-final { scan-tree-dump "__hsail_joinfbar \\\(0, __context\\\);" "gimple"} } */
-/* { dg-final { scan-tree-dump "@skip_init:\[\n ]+__builtin___hsail_barrier \\\(__context\\\);\[\n ]+__builtin___hsail_joinfbar \\\(32, __context\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "@skip_init:\[\n ]+__builtin___hsail_barrier \\\(__context\\\);\[\n ]+__builtin___hsail_joinfbar \\\(__group_local_offset, __context\\\);" "gimple"} } */
 
-/* { dg-final { scan-tree-dump "__hsail_arrivefbar \\\(32, __context\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "__hsail_arrivefbar \\\(__group_local_offset, __context\\\);" "gimple"} } */
 
-/* { dg-final { scan-tree-dump "__hsail_releasefbar \\\(0, __context\\\);\[\n ]+__builtin___hsail_releasefbar \\\(32, __context\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "__hsail_releasefbar \\\(0, __context\\\);\[\n ]+__builtin___hsail_releasefbar \\\(__group_local_offset, __context\\\);" "gimple"} } */

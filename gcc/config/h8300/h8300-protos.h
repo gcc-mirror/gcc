@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 version
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -112,5 +112,6 @@ extern bool            h8sx_mergeable_memrefs_p (rtx, rtx);
 extern bool            h8sx_emit_movmd (rtx, rtx, rtx, HOST_WIDE_INT);
 extern void            h8300_swap_into_er6 (rtx);
 extern void            h8300_swap_out_of_er6 (rtx);
+extern poly_int64      h8300_push_rounding (poly_int64);
 
 #endif /* ! GCC_H8300_PROTOS_H */

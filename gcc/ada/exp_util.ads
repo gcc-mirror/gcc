@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,9 @@ package Exp_Util is
 
    --    For an expression occurring in a declaration (declarations always
    --    appear in lists), the actions are similarly inserted into the list
-   --    just before the associated declaration.
+   --    just before the associated declaration. ???Declarations do not always
+   --    appear in lists; in particular, a library unit declaration does not
+   --    appear in a list, and Insert_Action will crash in that case.
 
    --  The following special cases arise:
 
@@ -856,11 +858,8 @@ package Exp_Util is
    --  False means that it is not known if the value is positive or negative.
 
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id;
-   --  Expr is an object of a type which Has_Invariants set (and which thus
-   --  also has an Invariant_Procedure set). If invariants are enabled, this
-   --  function returns a call to the Invariant procedure passing Expr as the
-   --  argument, and returns it unanalyzed. If invariants are not enabled,
-   --  returns a null statement.
+   --  Generate a call to the Invariant_Procedure associated with the type of
+   --  expression Expr. Expr is passed as an actual parameter in the call.
 
    function Make_Predicate_Call
      (Typ  : Entity_Id;

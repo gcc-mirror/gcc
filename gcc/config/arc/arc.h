@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -141,9 +141,6 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 /* Should we try to unalign likely taken branches without a delay slot.  */
 #define TARGET_UNALIGN_BRANCH (TARGET_ARC700 && !optimize_size)
 
-/* Should we upsize short delayed branches with a short delay insn?  */
-#define TARGET_UPSIZE_DBR (TARGET_ARC700 && !optimize_size)
-
 /* Should we add padding before a return insn to avoid mispredict?  */
 #define TARGET_PAD_RETURN (TARGET_ARC700 && !optimize_size)
 
@@ -271,13 +268,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)             \
   (TREE_CODE (TYPE) == ARRAY_TYPE               \
@@ -295,7 +285,7 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* On the ARC the lower address bits are masked to 0 as necessary.  The chip
    won't croak when given an unaligned address, but the insn will still fail
    to produce the correct result.  */
-#define STRICT_ALIGNMENT 1
+#define STRICT_ALIGNMENT (!unaligned_access && !TARGET_HS)
 
 /* Layout of source language data types.  */
 
@@ -665,12 +655,6 @@ extern enum reg_class arc_regno_reg_class[];
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 0
-
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */
 #define STACK_POINTER_OFFSET (0)
@@ -740,7 +724,7 @@ arc_return_addr_rtx(COUNT,FRAME)
   ((CUM) = 0)
 
 /* The number of registers used for parameter passing.  Local to this file.  */
-#define MAX_ARC_PARM_REGS 8
+#define MAX_ARC_PARM_REGS (TARGET_RF16 ? 4 : 8)
 
 /* 1 if N is a possible register number for function argument passing.  */
 #define FUNCTION_ARG_REGNO_P(N) \
@@ -835,14 +819,14 @@ extern int arc_initial_elimination_offset(int from, int to);
     fprintf (FILE, "\tbl\t__mcount@plt\n");			\
   else								\
     fprintf (FILE, "\tbl\t__mcount\n");				\
-  } while (0);
+  } while (0)
 
 #define NO_PROFILE_COUNTERS  1
 
 /* Trampolines.  */
 
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE 20
+#define TRAMPOLINE_SIZE 16
 
 /* Alignment required for a trampoline in bits .  */
 /* For actual data alignment we just need 32, no more than the stack;
@@ -1304,7 +1288,8 @@ do {							\
   do                                                    \
     {                                                   \
       if (GET_CODE (PATTERN (JUMPTABLE)) == ADDR_DIFF_VEC \
-	  && ((GET_MODE_SIZE (GET_MODE (PATTERN (JUMPTABLE))) \
+	  && ((GET_MODE_SIZE (as_a <scalar_int_mode>	\
+			      (GET_MODE (PATTERN (JUMPTABLE)))) \
 	       * XVECLEN (PATTERN (JUMPTABLE), 1) + 1)	\
 	      & 2))					\
       arc_toggle_unalign ();				\
@@ -1378,8 +1363,11 @@ do { \
 
 /* Frame info.  */
 
-#define EH_RETURN_DATA_REGNO(N)	\
-  ((N) < 4 ? (N) : INVALID_REGNUM)
+#define EH_RETURN_DATA_REGNO(N)  ((N) < 2 ? (N) : INVALID_REGNUM)
+
+#define EH_RETURN_STACKADJ_RTX   gen_rtx_REG (Pmode, 2)
+
+#define EH_RETURN_HANDLER_RTX    arc_eh_return_address_location ()
 
 /* Turn off splitting of long stabs.  */
 #define DBX_CONTIN_LENGTH 0
@@ -1415,10 +1403,11 @@ do { \
  : SImode)
 
 #define ADDR_VEC_ALIGN(VEC_INSN) \
-  (exact_log2 (GET_MODE_SIZE (GET_MODE (PATTERN (VEC_INSN)))))
+  (exact_log2 (GET_MODE_SIZE (as_a <scalar_int_mode> \
+			      (GET_MODE (PATTERN (VEC_INSN))))))
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE));
+  ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE))
 
 #define INSN_LENGTH_ALIGNMENT(INSN)		  \
   ((JUMP_TABLE_DATA_P (INSN)			  \
@@ -1638,5 +1627,7 @@ enum
 /* Custom FP instructions used by QuarkSE EM cpu.  */
 #define TARGET_FPX_QUARK    (TARGET_EM && TARGET_SPFP		\
 			     && (arc_fpu_build == FPX_QK))
+/* DBNZ support is available for ARCv2 core3 cpus.  */
+#define TARGET_DBNZ (TARGET_V2 && (arc_tune == ARC_TUNE_CORE_3))
 
 #endif /* GCC_ARC_H */

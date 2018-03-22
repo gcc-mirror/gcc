@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,8 +27,6 @@ extern int folding_initializer;
 /* Convert between trees and native memory representation.  */
 extern int native_encode_expr (const_tree, unsigned char *, int, int off = -1);
 extern tree native_interpret_expr (tree, const unsigned char *, int);
-extern bool can_native_encode_type_p (tree);
-extern bool can_native_encode_string_p (const_tree);
 
 /* Fold constants as much as possible in an expression.
    Returns the simplified expression.
@@ -116,15 +114,15 @@ extern tree fold_indirect_ref_loc (location_t, tree);
 extern tree build_simple_mem_ref_loc (location_t, tree);
 #define build_simple_mem_ref(T)\
 	build_simple_mem_ref_loc (UNKNOWN_LOCATION, T)
-extern offset_int mem_ref_offset (const_tree);
-extern tree build_invariant_address (tree, tree, HOST_WIDE_INT);
+extern poly_offset_int mem_ref_offset (const_tree);
+extern tree build_invariant_address (tree, tree, poly_int64);
 extern tree constant_boolean_node (bool, tree);
 extern tree div_if_zero_remainder (const_tree, const_tree);
 
 extern bool tree_swap_operands_p (const_tree, const_tree);
 extern enum tree_code swap_tree_comparison (enum tree_code);
 
-extern bool ptr_difference_const (tree, tree, HOST_WIDE_INT *);
+extern bool ptr_difference_const (tree, tree, poly_int64_pod *);
 extern enum tree_code invert_tree_comparison (enum tree_code, bool);
 
 extern bool tree_unary_nonzero_warnv_p (enum tree_code, tree, tree, bool *);
@@ -154,7 +152,7 @@ extern bool may_negate_without_overflow_p (const_tree);
 extern tree round_up_loc (location_t, tree, unsigned int);
 #define round_down(T,N) round_down_loc (UNKNOWN_LOCATION, T, N)
 extern tree round_down_loc (location_t, tree, int);
-extern tree size_int_kind (HOST_WIDE_INT, enum size_type_kind);
+extern tree size_int_kind (poly_int64, enum size_type_kind);
 #define size_binop(CODE,T1,T2)\
    size_binop_loc (UNKNOWN_LOCATION, CODE, T1, T2)
 extern tree size_binop_loc (location_t, enum tree_code, tree, tree);

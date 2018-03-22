@@ -1,5 +1,5 @@
 /* GCC backend definitions for the Renesas RL78 processor.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -149,7 +149,6 @@
 #define HAS_LONG_UNCOND_BRANCH		0
 
 #define MOVE_MAX 			2
-#define STARTING_FRAME_OFFSET		0
 
 #define ADDR_SPACE_NEAR			1
 #define ADDR_SPACE_FAR			2

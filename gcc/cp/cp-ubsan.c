@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -205,7 +205,7 @@ cp_ubsan_check_member_access_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (TREE_CODE (t) == ADDR_EXPR)
 	{
 	  *walk_subtrees = 0;
-	  t = TREE_OPERAND (stmt, 0);
+	  t = TREE_OPERAND (t, 0);
 	  cp_walk_tree (&t, cp_ubsan_check_member_access_r, data, ucmd->pset);
 	}
       break;
@@ -298,8 +298,7 @@ cp_ubsan_dfs_initialize_vtbl_ptrs (tree binfo, void *data)
 
       /* Compute the location of the vtpr.  */
       tree vtbl_ptr
-	= build_vfield_ref (cp_build_indirect_ref (base_ptr, RO_NULL,
-						   tf_warning_or_error),
+	= build_vfield_ref (cp_build_fold_indirect_ref (base_ptr),
 			    TREE_TYPE (binfo));
       gcc_assert (vtbl_ptr != error_mark_node);
 

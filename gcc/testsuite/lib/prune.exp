@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +28,10 @@ proc prune_gcc_output { text } {
 
     #send_user "Before:$text\n"
 
-    regsub -all "(^|\n)(\[^\n\]*: )?In ((static member |lambda )?function|member|method|(copy )?constructor|destructor|instantiation|substitution|program|subroutine|block-data)\[^\n\]*" $text "" text
+    # Handle any freeform regexps.
+    set text [handle-dg-regexps $text]
+
+    regsub -all "(^|\n)(\[^\n\]*: \[iI\]|I)n ((static member |lambda )?function|member|method|(copy )?constructor|destructor|instantiation|substitution|program|subroutine|block-data)\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*(: )?At (top level|global scope):\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   (recursively )?required \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   . skipping \[0-9\]* instantiation contexts \[^\n\]*" $text "" text
@@ -72,9 +75,6 @@ proc prune_gcc_output { text } {
 
     # Call into multiline.exp to handle any multiline output directives.
     set text [handle-multiline-outputs $text]
-
-    # Handle any freeform regexps.
-    set text [handle-dg-regexps $text]
 
     #send_user "After:$text\n"
 

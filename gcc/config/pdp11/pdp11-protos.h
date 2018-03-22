@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -44,3 +44,4 @@ extern void pdp11_asm_output_var (FILE *, const char *, int, int, bool);
 extern void pdp11_expand_prologue (void);
 extern void pdp11_expand_epilogue (void);
 extern int pdp11_branch_cost (void);
+extern poly_int64 pdp11_push_rounding (poly_int64);

@@ -21,6 +21,7 @@ struct StackVarDescr {
   uptr size;
   const char *name_pos;
   uptr name_len;
+  uptr line;
 };
 
 // Returns the number of globals close to the provided address and copies
@@ -43,8 +44,7 @@ bool ParseFrameDescription(const char *frame_descr,
 // Different kinds of error reports.
 void ReportGenericError(uptr pc, uptr bp, uptr sp, uptr addr, bool is_write,
                         uptr access_size, u32 exp, bool fatal);
-void ReportStackOverflow(const SignalContext &sig);
-void ReportDeadlySignal(int signo, const SignalContext &sig);
+void ReportDeadlySignal(const SignalContext &sig);
 void ReportNewDeleteSizeMismatch(uptr addr, uptr delete_size,
                                  BufferedStackTrace *free_stack);
 void ReportDoubleFree(uptr addr, BufferedStackTrace *free_stack);

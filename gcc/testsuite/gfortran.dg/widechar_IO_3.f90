@@ -12,12 +12,12 @@ program test1
   rewind(10)
   wide = "wrong"
   read(10) wide
-  if (wide /= k4_"abcdefg") call abort
+  if (wide /= k4_"abcdefg") STOP 1
   rewind(10)
   write(10) widearray(2:4,3:7)
   widearray(2:4,3:7)=""
   rewind(10)
   read(10) widearray(2:4,3:7)
   close(10)
-  if (any(widearray.ne.k4_"1234abcd")) call abort
+  if (any(widearray.ne.k4_"1234abcd")) STOP 2
 end program test1

@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -390,7 +390,7 @@ extern void handle_common_deferred_options (void);
 unsigned int parse_sanitizer_options (const char *, location_t, int,
 				      unsigned int, int, bool);
 
-unsigned int parse_no_sanitize_attribute (char *value, char **wrong_argument);
+unsigned int parse_no_sanitize_attribute (char *value);
 extern bool common_handle_option (struct gcc_options *opts,
 				  struct gcc_options *opts_set,
 				  const struct cl_decoded_option *decoded,

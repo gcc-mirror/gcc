@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1693,6 +1693,7 @@ package body Sem_Aux is
         and then Nkind (N) /= N_Package_Renaming_Declaration
         and then Nkind (N) /= N_Procedure_Instantiation
         and then Nkind (N) /= N_Protected_Body
+        and then Nkind (N) /= N_Protected_Type_Declaration
         and then Nkind (N) /= N_Subprogram_Declaration
         and then Nkind (N) /= N_Subprogram_Body
         and then Nkind (N) /= N_Subprogram_Body_Stub

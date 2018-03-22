@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -415,7 +415,19 @@ handle_pragma_scalar_storage_order (cpp_reader *ARG_UNUSED(dummy))
   tree x;
 
   if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
-    error ("scalar_storage_order is not supported");
+    {
+      error ("scalar_storage_order is not supported because endianness "
+	     "is not uniform");
+      return;
+    }
+
+  if (c_dialect_cxx ())
+    {
+      if (warn_unknown_pragmas > in_system_header_at (input_location))
+	warning (OPT_Wunknown_pragmas,
+		 "%<#pragma scalar_storage_order%> is not supported for C++");
+      return;
+    }
 
   token = pragma_lex (&x);
   if (token != CPP_NAME)
@@ -1331,20 +1343,6 @@ c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
 	return;
       }
 
-  if (id == PRAGMA_CILK_SIMD)
-    {
-      *space = NULL;
-      *name = "simd";
-      return;
-    }
-
-  if (id == PRAGMA_CILK_GRAINSIZE)
-    {
-      *space = "cilk";
-      *name = "grainsize";
-      return;
-    }
-
   if (id >= PRAGMA_FIRST_EXTERNAL
       && (id < PRAGMA_FIRST_EXTERNAL + registered_pp_pragmas.length ()))
     {
@@ -1520,10 +1518,6 @@ init_pragma (void)
 				      omp_pragmas_simd[i].id, true, true);
     }
 
-  if (flag_cilkplus)
-    cpp_register_deferred_pragma (parse_in, NULL, "simd", PRAGMA_CILK_SIMD,
-				  true, false);
-
   if (!flag_preprocess_only)
     cpp_register_deferred_pragma (parse_in, "GCC", "pch_preprocess",
 				  PRAGMA_GCC_PCH_PREPROCESS, false, false);
@@ -1532,9 +1526,9 @@ init_pragma (void)
     cpp_register_deferred_pragma (parse_in, "GCC", "ivdep", PRAGMA_IVDEP, false,
 				  false);
 
-  if (flag_cilkplus)
-    cpp_register_deferred_pragma (parse_in, "cilk", "grainsize",
-				  PRAGMA_CILK_GRAINSIZE, true, false);
+  if (!flag_preprocess_only)
+    cpp_register_deferred_pragma (parse_in, "GCC", "unroll", PRAGMA_UNROLL,
+				  false, false);
 
 #ifdef HANDLE_PRAGMA_PACK_WITH_EXPANSION
   c_register_pragma_with_expansion (0, "pack", handle_pragma_pack);

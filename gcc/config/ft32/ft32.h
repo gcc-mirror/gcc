@@ -1,5 +1,5 @@
 /* Target Definitions for ft32.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
    Contributed by FTDI <support@ftdi.com>
 
    This file is part of GCC.
@@ -39,6 +39,7 @@
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!symbolic:-lc}} \
+                   %{mcompress:--relax} \
                    %{msim:-Tsim.ld}"
 
 #undef  LINK_SPEC
@@ -199,12 +200,12 @@ enum reg_class
 
 #define GLOBAL_ASM_OP "\t.global\t"
 
-#define JUMP_TABLES_IN_TEXT_SECTION 1
+#define JUMP_TABLES_IN_TEXT_SECTION (TARGET_NOPM ? 0 : 1)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-    fprintf (FILE, "\tjmp\t.L%d\n", VALUE);				\
+    fprintf (FILE, "\t.long\t.L%d\n", VALUE)				\
 
 /* Passing Arguments in Registers */
 
@@ -232,10 +233,6 @@ enum reg_class
 /* Define this macro if pushing a word onto the stack moves the stack
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
-
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the argument pointer register to the first argument's
    address.  On some machines it may depend on the data type of the
@@ -353,12 +350,6 @@ enum reg_class
 /* Largest integer machine mode for structures.  If undefined, the default
    is GET_MODE_SIZE(DImode).  */
 #define MAX_FIXED_MODE_SIZE 32
-
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST       \
-    && (ALIGN) < FASTEST_ALIGNMENT)     \
-   ? FASTEST_ALIGNMENT : (ALIGN))
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
@@ -479,8 +470,8 @@ do { \
 #define ADDR_SPACE_PM 1
 
 #define REGISTER_TARGET_PRAGMAS() do { \
-  c_register_addr_space ("__flash__", ADDR_SPACE_PM); \
-} while (0);
+  c_register_addr_space ("__flash__", TARGET_NOPM ? 0 : ADDR_SPACE_PM); \
+} while (0)
 
 extern int ft32_is_mem_pm(rtx o);
 

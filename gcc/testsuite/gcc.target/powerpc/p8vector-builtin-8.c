@@ -7,7 +7,9 @@
 
 /* Test POWER8 vector built-ins added for version 1.1 of ELFv2 ABI.  */
 
+vector signed char        vsca, vscb, vscc;
 vector unsigned char      vuca, vucb, vucc;
+vector signed short       vssa, vssb;
 vector bool     char      vbca, vbcb;
 vector unsigned short     vusa, vusb;
 vector bool     short     vbsa, vbsb;
@@ -21,8 +23,10 @@ vector signed   __int128  vsxa, vsxb, vsxc;
 vector unsigned __int128  vuxa, vuxb, vuxc;
 vector          double    vda,  vdb;
 
-void foo (vector unsigned char *vucr,
+void foo (vector signed char *vscr,
+	  vector unsigned char *vucr,
 	  vector bool char *vbcr,
+	  vector signed short *vssr,
 	  vector unsigned short *vusr,
 	  vector bool short *vbsr,
 	  vector signed int *vsir,
@@ -46,6 +50,24 @@ void foo (vector unsigned char *vucr,
   *vuir++ = vec_addec (vuia, vuib, vuic);
   *vsxr++ = vec_addec (vsxa, vsxb, vsxc);
   *vuxr++ = vec_addec (vuxa, vuxb, vuxc);
+  *vscr++ = vec_adds (vsca, vscb);
+  *vucr++ = vec_adds (vuca, vucb);
+  *vsir++ = vec_adds (vsia, vsib);
+  *vuir++ = vec_adds (vuia, vuib);
+  *vssr++ = vec_adds (vssa, vssb);
+  *vusr++ = vec_adds (vusa, vusb);
+  *vscr++ = vec_adds (vbca, vscb);
+  *vscr++ = vec_adds (vsca, vbcb);
+  *vucr++ = vec_adds (vbca, vucb);
+  *vucr++ = vec_adds (vuca, vbcb);
+  *vsir++ = vec_adds (vbia, vsib);
+  *vsir++ = vec_adds (vsia, vbib);
+  *vuir++ = vec_adds (vbia, vuib);
+  *vuir++ = vec_adds (vuia, vbib);
+  *vssr++ = vec_adds (vbsa, vssb);
+  *vssr++ = vec_adds (vssa, vbsb);
+  *vusr++ = vec_adds (vbsa, vusb);
+  *vusr++ = vec_adds (vusa, vbsb);
   *vucr++ = vec_bperm (vuca, vucb);
   *vulr++ = vec_bperm (vuxa, vucb);
   *vbcr++ = vec_eqv (vbca, vbcb);
@@ -80,6 +102,17 @@ void foo (vector unsigned char *vucr,
   *vuir++ = vec_subec (vuia, vuib, vuic);
   *vsxr++ = vec_subec (vsxa, vsxb, vsxc);
   *vuxr++ = vec_subec (vuxa, vuxb, vuxc);
+  *vscr++ = vec_subs (vsca, vscb);
+  *vucr++ = vec_subs (vuca, vucb);
+  *vsir++ = vec_subs (vsia, vsib);
+  *vuir++ = vec_subs (vuia, vuib);
+  *vssr++ = vec_subs (vssa, vssb);
+  *vusr++ = vec_subs (vusa, vusb);
+  *vsir++ = vec_sum2s (vsia, vsib);
+  *vsir++ = vec_sum4s (vsca, vsib);
+  *vsir++ = vec_sum4s (vssa, vsib);
+  *vuir++ = vec_sum4s (vuca, vuib);
+
 }
 
 /* { dg-final { scan-assembler-times "vaddcuq" 2 } } */
@@ -104,4 +137,14 @@ void foo (vector unsigned char *vucr,
 /* { dg-final { scan-assembler-times "vpmsumd" 1 } } */
 /* { dg-final { scan-assembler-times "vshasigmaw" 1 } } */
 /* { dg-final { scan-assembler-times "vshasigmad" 1 } } */
+/* { dg-final { scan-assembler-times "vsubsbs" 1 } }   vec_subs */
+/* { dg-final { scan-assembler-times "vsububs" 1 } }   vec_subs */
+/* { dg-final { scan-assembler-times "vsubsws" 1 } }   vec_subs */
+/* { dg-final { scan-assembler-times "vsubuws" 1 } }   vec_subs */
+/* { dg-final { scan-assembler-times "vsubshs" 1 } }   vec_subs */
+/* { dg-final { scan-assembler-times "vsubuhs" 1 } }   vec_subs */
+/* { dg-final { scan-assembler-times "vsum2sws" 1 } }  vec_sum2s */
+/* { dg-final { scan-assembler-times "vsum4sws" 0 } }  vec_sum4s */
+/* { dg-final { scan-assembler-times "vsum4shs" 1 } }  vec_sum4s */
+/* { dg-final { scan-assembler-times "vsum4ubs" 1 } }  vec_sum4s */
 

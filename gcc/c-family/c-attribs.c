@@ -1,5 +1,5 @@
 /* C-family attributes handling.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,6 +65,7 @@ static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nocf_check_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noipa_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -149,6 +150,93 @@ static tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
 static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
 
+/* Helper to define attribute exclusions.  */
+#define ATTR_EXCL(name, function, type, variable)	\
+  { name, function, type, variable }
+
+/* Define attributes that are mutually exclusive with one another.  */
+static const struct attribute_spec::exclusions attr_aligned_exclusions[] =
+{
+  /* Attribute name     exclusion applies to:
+	                function, type, variable */
+  ATTR_EXCL ("aligned", true, false, false),
+  ATTR_EXCL ("packed", true, false, false),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+static const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
+{
+  ATTR_EXCL ("cold", true, true, true),
+  ATTR_EXCL ("hot", true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+static const struct attribute_spec::exclusions attr_common_exclusions[] =
+{
+  ATTR_EXCL ("common", true, true, true),
+  ATTR_EXCL ("nocommon", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_inline_exclusions[] =
+{
+  ATTR_EXCL ("noinline", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_noinline_exclusions[] =
+{
+  ATTR_EXCL ("always_inline", true, true, true),
+  ATTR_EXCL ("gnu_inline", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_noreturn_exclusions[] =
+{
+  ATTR_EXCL ("alloc_align", true, true, true),
+  ATTR_EXCL ("alloc_size", true, true, true),
+  ATTR_EXCL ("const", true, true, true),
+  ATTR_EXCL ("malloc", true, true, true),
+  ATTR_EXCL ("pure", true, true, true),
+  ATTR_EXCL ("returns_twice", true, true, true),
+  ATTR_EXCL ("warn_unused_result", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions
+attr_warn_unused_result_exclusions[] =
+{
+  ATTR_EXCL ("noreturn", true, true, true),
+  ATTR_EXCL ("warn_unused_result", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_returns_twice_exclusions[] =
+{
+  ATTR_EXCL ("noreturn", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+/* Exclusions that apply to attribute alloc_align, alloc_size, and malloc.  */
+static const struct attribute_spec::exclusions attr_alloc_exclusions[] =
+{
+  ATTR_EXCL ("const", true, true, true),
+  ATTR_EXCL ("noreturn", true, true, true),
+  ATTR_EXCL ("pure", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
+{
+  ATTR_EXCL ("const", true, true, true),
+  ATTR_EXCL ("alloc_align", true, true, true),
+  ATTR_EXCL ("alloc_size", true, true, true),
+  ATTR_EXCL ("malloc", true, true, true),
+  ATTR_EXCL ("noreturn", true, true, true),
+  ATTR_EXCL ("pure", true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
 /* Table of machine-independent attributes common to all C-like languages.
 
    All attributes referencing arguments should be additionally processed
@@ -157,217 +245,227 @@ static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
    Current list of processed common attributes: nonnull.  */
 const struct attribute_spec c_common_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "packed",                 0, 0, false, false, false,
-			      handle_packed_attribute , false},
-  { "nocommon",               0, 0, true,  false, false,
-			      handle_nocommon_attribute, false},
-  { "common",                 0, 0, true,  false, false,
-			      handle_common_attribute, false },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "packed",                 0, 0, false, false, false, false,
+			      handle_packed_attribute,
+	                      attr_aligned_exclusions },
+  { "nocommon",               0, 0, true,  false, false, false,
+			      handle_nocommon_attribute,
+	                      attr_common_exclusions },
+  { "common",                 0, 0, true,  false, false, false,
+			      handle_common_attribute,
+	                      attr_common_exclusions },
   /* FIXME: logically, noreturn attributes should be listed as
      "false, true, true" and apply to function types.  But implementing this
      would require all the places in the compiler that use TREE_THIS_VOLATILE
      on a decl to identify non-returning functions to be located and fixed
      to check the function type instead.  */
-  { "noreturn",               0, 0, true,  false, false,
-			      handle_noreturn_attribute, false },
-  { "volatile",               0, 0, true,  false, false,
-			      handle_noreturn_attribute, false },
-  { "stack_protect",          0, 0, true,  false, false,
-			      handle_stack_protect_attribute, false },
-  { "noinline",               0, 0, true,  false, false,
-			      handle_noinline_attribute, false },
-  { "noclone",                0, 0, true,  false, false,
-			      handle_noclone_attribute, false },
-  { "no_icf",                 0, 0, true,  false, false,
-			      handle_noicf_attribute, false },
-  { "noipa",		      0, 0, true,  false, false,
-			      handle_noipa_attribute, false },
-  { "leaf",                   0, 0, true,  false, false,
-			      handle_leaf_attribute, false },
-  { "always_inline",          0, 0, true,  false, false,
-			      handle_always_inline_attribute, false },
-  { "gnu_inline",             0, 0, true,  false, false,
-			      handle_gnu_inline_attribute, false },
-  { "artificial",             0, 0, true,  false, false,
-			      handle_artificial_attribute, false },
-  { "flatten",                0, 0, true,  false, false,
-			      handle_flatten_attribute, false },
-  { "used",                   0, 0, true,  false, false,
-			      handle_used_attribute, false },
-  { "unused",                 0, 0, false, false, false,
-			      handle_unused_attribute, false },
-  { "externally_visible",     0, 0, true,  false, false,
-			      handle_externally_visible_attribute, false },
-  { "no_reorder",	      0, 0, true, false, false,
-                              handle_no_reorder_attribute, false },
+  { "noreturn",               0, 0, true,  false, false, false,
+			      handle_noreturn_attribute,
+	                      attr_noreturn_exclusions },
+  { "volatile",               0, 0, true,  false, false, false,
+			      handle_noreturn_attribute, NULL },
+  { "stack_protect",          0, 0, true,  false, false, false,
+			      handle_stack_protect_attribute, NULL },
+  { "noinline",               0, 0, true,  false, false, false,
+			      handle_noinline_attribute,
+	                      attr_noinline_exclusions },
+  { "noclone",                0, 0, true,  false, false, false,
+			      handle_noclone_attribute, NULL },
+  { "no_icf",                 0, 0, true,  false, false, false,
+			      handle_noicf_attribute, NULL },
+  { "noipa",		      0, 0, true,  false, false, false,
+			      handle_noipa_attribute, NULL },
+  { "leaf",                   0, 0, true,  false, false, false,
+			      handle_leaf_attribute, NULL },
+  { "always_inline",          0, 0, true,  false, false, false,
+			      handle_always_inline_attribute,
+	                      attr_inline_exclusions },
+  { "gnu_inline",             0, 0, true,  false, false, false,
+			      handle_gnu_inline_attribute,
+	                      attr_inline_exclusions },
+  { "artificial",             0, 0, true,  false, false, false,
+			      handle_artificial_attribute, NULL },
+  { "flatten",                0, 0, true,  false, false, false,
+			      handle_flatten_attribute, NULL },
+  { "used",                   0, 0, true,  false, false, false,
+			      handle_used_attribute, NULL },
+  { "unused",                 0, 0, false, false, false, false,
+			      handle_unused_attribute, NULL },
+  { "externally_visible",     0, 0, true,  false, false, false,
+			      handle_externally_visible_attribute, NULL },
+  { "no_reorder",	      0, 0, true, false, false, false,
+	                      handle_no_reorder_attribute, NULL },
   /* The same comments as for noreturn attributes apply to const ones.  */
-  { "const",                  0, 0, true,  false, false,
-			      handle_const_attribute, false },
-  { "scalar_storage_order",   1, 1, false, false, false,
-			      handle_scalar_storage_order_attribute, false },
-  { "transparent_union",      0, 0, false, false, false,
-			      handle_transparent_union_attribute, false },
-  { "constructor",            0, 1, true,  false, false,
-			      handle_constructor_attribute, false },
-  { "destructor",             0, 1, true,  false, false,
-			      handle_destructor_attribute, false },
-  { "mode",                   1, 1, false,  true, false,
-			      handle_mode_attribute, false },
-  { "section",                1, 1, true,  false, false,
-			      handle_section_attribute, false },
-  { "aligned",                0, 1, false, false, false,
-			      handle_aligned_attribute, false },
-  { "warn_if_not_aligned",    0, 1, false, false, false,
-			      handle_warn_if_not_aligned_attribute,
-			      false },
-  { "weak",                   0, 0, true,  false, false,
-			      handle_weak_attribute, false },
-  { "noplt",                   0, 0, true,  false, false,
-			      handle_noplt_attribute, false },
-  { "ifunc",                  1, 1, true,  false, false,
-			      handle_ifunc_attribute, false },
-  { "alias",                  1, 1, true,  false, false,
-			      handle_alias_attribute, false },
-  { "weakref",                0, 1, true,  false, false,
-			      handle_weakref_attribute, false },
-  { "no_instrument_function", 0, 0, true,  false, false,
+  { "const",                  0, 0, true,  false, false, false,
+			      handle_const_attribute,
+	                      attr_const_pure_exclusions },
+  { "scalar_storage_order",   1, 1, false, false, false, false,
+			      handle_scalar_storage_order_attribute, NULL },
+  { "transparent_union",      0, 0, false, false, false, false,
+			      handle_transparent_union_attribute, NULL },
+  { "constructor",            0, 1, true,  false, false, false,
+			      handle_constructor_attribute, NULL },
+  { "destructor",             0, 1, true,  false, false, false,
+			      handle_destructor_attribute, NULL },
+  { "mode",                   1, 1, false,  true, false, false,
+			      handle_mode_attribute, NULL },
+  { "section",                1, 1, true,  false, false, false,
+			      handle_section_attribute, NULL },
+  { "aligned",                0, 1, false, false, false, false,
+			      handle_aligned_attribute,
+	                      attr_aligned_exclusions },
+  { "warn_if_not_aligned",    0, 1, false, false, false, false,
+			      handle_warn_if_not_aligned_attribute, NULL },
+  { "weak",                   0, 0, true,  false, false, false,
+			      handle_weak_attribute, NULL },
+  { "noplt",                   0, 0, true,  false, false, false,
+			      handle_noplt_attribute, NULL },
+  { "ifunc",                  1, 1, true,  false, false, false,
+			      handle_ifunc_attribute, NULL },
+  { "alias",                  1, 1, true,  false, false, false,
+			      handle_alias_attribute, NULL },
+  { "weakref",                0, 1, true,  false, false, false,
+			      handle_weakref_attribute, NULL },
+  { "no_instrument_function", 0, 0, true,  false, false, false,
 			      handle_no_instrument_function_attribute,
-			      false },
-  { "no_profile_instrument_function",  0, 0, true, false, false,
+			      NULL },
+  { "no_profile_instrument_function",  0, 0, true, false, false, false,
 			      handle_no_profile_instrument_function_attribute,
-			      false },
-  { "malloc",                 0, 0, true,  false, false,
-			      handle_malloc_attribute, false },
-  { "returns_twice",          0, 0, true,  false, false,
-			      handle_returns_twice_attribute, false },
-  { "no_stack_limit",         0, 0, true,  false, false,
-			      handle_no_limit_stack_attribute, false },
-  { "pure",                   0, 0, true,  false, false,
-			      handle_pure_attribute, false },
-  { "transaction_callable",   0, 0, false, true,  false,
-			      handle_tm_attribute, false },
-  { "transaction_unsafe",     0, 0, false, true,  false,
-			      handle_tm_attribute, true },
-  { "transaction_safe",       0, 0, false, true,  false,
-			      handle_tm_attribute, true },
-  { "transaction_safe_dynamic", 0, 0, true, false,  false,
-			      handle_tm_attribute, false },
-  { "transaction_may_cancel_outer", 0, 0, false, true, false,
-			      handle_tm_attribute, false },
+			      NULL },
+  { "malloc",                 0, 0, true,  false, false, false,
+			      handle_malloc_attribute, attr_alloc_exclusions },
+  { "returns_twice",          0, 0, true,  false, false, false,
+			      handle_returns_twice_attribute,
+	                      attr_returns_twice_exclusions },
+  { "no_stack_limit",         0, 0, true,  false, false, false,
+			      handle_no_limit_stack_attribute, NULL },
+  { "pure",                   0, 0, true,  false, false, false,
+			      handle_pure_attribute,
+	                      attr_const_pure_exclusions },
+  { "transaction_callable",   0, 0, false, true,  false, false,
+			      handle_tm_attribute, NULL },
+  { "transaction_unsafe",     0, 0, false, true,  false, true,
+			      handle_tm_attribute, NULL },
+  { "transaction_safe",       0, 0, false, true,  false, true,
+			      handle_tm_attribute, NULL },
+  { "transaction_safe_dynamic", 0, 0, true, false,  false, false,
+			      handle_tm_attribute, NULL },
+  { "transaction_may_cancel_outer", 0, 0, false, true, false, false,
+			      handle_tm_attribute, NULL },
   /* ??? These two attributes didn't make the transition from the
      Intel language document to the multi-vendor language document.  */
-  { "transaction_pure",       0, 0, false, true,  false,
-			      handle_tm_attribute, false },
-  { "transaction_wrap",       1, 1, true,  false,  false,
-			     handle_tm_wrap_attribute, false },
+  { "transaction_pure",       0, 0, false, true,  false, false,
+			      handle_tm_attribute, NULL },
+  { "transaction_wrap",       1, 1, true,  false,  false, false,
+			     handle_tm_wrap_attribute, NULL },
   /* For internal use (marking of builtins) only.  The name contains space
      to prevent its usage in source code.  */
-  { "no vops",                0, 0, true,  false, false,
-			      handle_novops_attribute, false },
-  { "deprecated",             0, 1, false, false, false,
-			      handle_deprecated_attribute, false },
-  { "vector_size",	      1, 1, false, true, false,
-			      handle_vector_size_attribute, true },
-  { "visibility",	      1, 1, false, false, false,
-			      handle_visibility_attribute, false },
-  { "tls_model",	      1, 1, true,  false, false,
-			      handle_tls_model_attribute, false },
-  { "nonnull",                0, -1, false, true, true,
-			      handle_nonnull_attribute, false },
-  { "nonstring",              0, 0, true, false, false,
-			      handle_nonstring_attribute, false },
-  { "nothrow",                0, 0, true,  false, false,
-			      handle_nothrow_attribute, false },
-  { "may_alias",	      0, 0, false, true, false, NULL, false },
-  { "cleanup",		      1, 1, true, false, false,
-			      handle_cleanup_attribute, false },
-  { "warn_unused_result",     0, 0, false, true, true,
-			      handle_warn_unused_result_attribute, false },
-  { "sentinel",               0, 1, false, true, true,
-			      handle_sentinel_attribute, false },
+  { "no vops",                0, 0, true,  false, false, false,
+			      handle_novops_attribute, NULL },
+  { "deprecated",             0, 1, false, false, false, false,
+			      handle_deprecated_attribute, NULL },
+  { "vector_size",	      1, 1, false, true, false, true,
+			      handle_vector_size_attribute, NULL },
+  { "visibility",	      1, 1, false, false, false, false,
+			      handle_visibility_attribute, NULL },
+  { "tls_model",	      1, 1, true,  false, false, false,
+			      handle_tls_model_attribute, NULL },
+  { "nonnull",                0, -1, false, true, true, false,
+			      handle_nonnull_attribute, NULL },
+  { "nonstring",              0, 0, true, false, false, false,
+			      handle_nonstring_attribute, NULL },
+  { "nothrow",                0, 0, true,  false, false, false,
+			      handle_nothrow_attribute, NULL },
+  { "may_alias",	      0, 0, false, true, false, false, NULL, NULL },
+  { "cleanup",		      1, 1, true, false, false, false,
+			      handle_cleanup_attribute, NULL },
+  { "warn_unused_result",     0, 0, false, true, true, false,
+			      handle_warn_unused_result_attribute,
+	                      attr_warn_unused_result_exclusions },
+  { "sentinel",               0, 1, false, true, true, false,
+			      handle_sentinel_attribute, NULL },
   /* For internal use (marking of builtins) only.  The name contains space
      to prevent its usage in source code.  */
-  { "type generic",           0, 0, false, true, true,
-			      handle_type_generic_attribute, false },
-  { "alloc_size",	      1, 2, false, true, true,
-			      handle_alloc_size_attribute, false },
-  { "cold",                   0, 0, true,  false, false,
-			      handle_cold_attribute, false },
-  { "hot",                    0, 0, true,  false, false,
-			      handle_hot_attribute, false },
+  { "type generic",           0, 0, false, true, true, false,
+			      handle_type_generic_attribute, NULL },
+  { "alloc_size",	      1, 2, false, true, true, false,
+			      handle_alloc_size_attribute,
+	                      attr_alloc_exclusions },
+  { "cold",                   0, 0, true,  false, false, false,
+			      handle_cold_attribute,
+	                      attr_cold_hot_exclusions },
+  { "hot",                    0, 0, true,  false, false, false,
+			      handle_hot_attribute,
+	                      attr_cold_hot_exclusions },
   { "no_address_safety_analysis",
-			      0, 0, true, false, false,
+			      0, 0, true, false, false, false,
 			      handle_no_address_safety_analysis_attribute,
-			      false },
-  { "no_sanitize",	      1, 1, true, false, false,
-			      handle_no_sanitize_attribute,
-			      false },
-  { "no_sanitize_address",    0, 0, true, false, false,
-			      handle_no_sanitize_address_attribute,
-			      false },
-  { "no_sanitize_thread",     0, 0, true, false, false,
-			      handle_no_sanitize_thread_attribute,
-			      false },
-  { "no_sanitize_undefined",  0, 0, true, false, false,
-			      handle_no_sanitize_undefined_attribute,
-			      false },
-  { "asan odr indicator",     0, 0, true, false, false,
-			      handle_asan_odr_indicator_attribute,
-			      false },
-  { "warning",		      1, 1, true,  false, false,
-			      handle_error_attribute, false },
-  { "error",		      1, 1, true,  false, false,
-			      handle_error_attribute, false },
-  { "target",                 1, -1, true, false, false,
-			      handle_target_attribute, false },
-  { "target_clones",          1, -1, true, false, false,
-			      handle_target_clones_attribute, false },
-  { "optimize",               1, -1, true, false, false,
-			      handle_optimize_attribute, false },
+			      NULL },
+  { "no_sanitize",	      1, 1, true, false, false, false,
+			      handle_no_sanitize_attribute, NULL },
+  { "no_sanitize_address",    0, 0, true, false, false, false,
+			      handle_no_sanitize_address_attribute, NULL },
+  { "no_sanitize_thread",     0, 0, true, false, false, false,
+			      handle_no_sanitize_thread_attribute, NULL },
+  { "no_sanitize_undefined",  0, 0, true, false, false, false,
+			      handle_no_sanitize_undefined_attribute, NULL },
+  { "asan odr indicator",     0, 0, true, false, false, false,
+			      handle_asan_odr_indicator_attribute, NULL },
+  { "warning",		      1, 1, true,  false, false, false,
+			      handle_error_attribute, NULL },
+  { "error",		      1, 1, true,  false, false, false,
+			      handle_error_attribute, NULL },
+  { "target",                 1, -1, true, false, false, false,
+			      handle_target_attribute, NULL },
+  { "target_clones",          1, -1, true, false, false, false,
+			      handle_target_clones_attribute, NULL },
+  { "optimize",               1, -1, true, false, false, false,
+			      handle_optimize_attribute, NULL },
   /* For internal use only.  The leading '*' both prevents its usage in
      source code and signals that it may be overridden by machine tables.  */
-  { "*tm regparm",            0, 0, false, true, true,
-			      ignore_attribute, false },
-  { "no_split_stack",	      0, 0, true,  false, false,
-			      handle_no_split_stack_attribute, false },
+  { "*tm regparm",            0, 0, false, true, true, false,
+			      ignore_attribute, NULL },
+  { "no_split_stack",	      0, 0, true,  false, false, false,
+			      handle_no_split_stack_attribute, NULL },
   /* For internal use (marking of builtins and runtime functions) only.
      The name contains space to prevent its usage in source code.  */
-  { "fn spec",		      1, 1, false, true, true,
-			      handle_fnspec_attribute, false },
-  { "warn_unused",            0, 0, false, false, false,
-			      handle_warn_unused_attribute, false },
-  { "returns_nonnull",        0, 0, false, true, true,
-			      handle_returns_nonnull_attribute, false },
-  { "omp declare simd",       0, -1, true,  false, false,
-			      handle_omp_declare_simd_attribute, false },
-  { "cilk simd function",     0, -1, true,  false, false,
-			      handle_omp_declare_simd_attribute, false },
-  { "simd",		      0, 1, true,  false, false,
-			      handle_simd_attribute, false },
-  { "omp declare target",     0, 0, true, false, false,
-			      handle_omp_declare_target_attribute, false },
-  { "omp declare target link", 0, 0, true, false, false,
-			      handle_omp_declare_target_attribute, false },
-  { "alloc_align",	      1, 1, false, true, true,
-			      handle_alloc_align_attribute, false },
-  { "assume_aligned",	      1, 2, false, true, true,
-			      handle_assume_aligned_attribute, false },
-  { "designated_init",        0, 0, false, true, false,
-			      handle_designated_init_attribute, false },
-  { "bnd_variable_size",      0, 0, true,  false, false,
-			      handle_bnd_variable_size_attribute, false },
-  { "bnd_legacy",             0, 0, true, false, false,
-			      handle_bnd_legacy, false },
-  { "bnd_instrument",         0, 0, true, false, false,
-			      handle_bnd_instrument, false },
-  { "fallthrough",	      0, 0, false, false, false,
-			      handle_fallthrough_attribute, false },
-  { "patchable_function_entry",	1, 2, true, false, false,
+  { "fn spec",		      1, 1, false, true, true, false,
+			      handle_fnspec_attribute, NULL },
+  { "warn_unused",            0, 0, false, false, false, false,
+			      handle_warn_unused_attribute, NULL },
+  { "returns_nonnull",        0, 0, false, true, true, false,
+			      handle_returns_nonnull_attribute, NULL },
+  { "omp declare simd",       0, -1, true,  false, false, false,
+			      handle_omp_declare_simd_attribute, NULL },
+  { "simd",		      0, 1, true,  false, false, false,
+			      handle_simd_attribute, NULL },
+  { "omp declare target",     0, 0, true, false, false, false,
+			      handle_omp_declare_target_attribute, NULL },
+  { "omp declare target link", 0, 0, true, false, false, false,
+			      handle_omp_declare_target_attribute, NULL },
+  { "alloc_align",	      1, 1, false, true, true, false,
+			      handle_alloc_align_attribute,
+	                      attr_alloc_exclusions },
+  { "assume_aligned",	      1, 2, false, true, true, false,
+			      handle_assume_aligned_attribute, NULL },
+  { "designated_init",        0, 0, false, true, false, false,
+			      handle_designated_init_attribute, NULL },
+  { "bnd_variable_size",      0, 0, true,  false, false, false,
+			      handle_bnd_variable_size_attribute, NULL },
+  { "bnd_legacy",             0, 0, true, false, false, false,
+			      handle_bnd_legacy, NULL },
+  { "bnd_instrument",         0, 0, true, false, false, false,
+			      handle_bnd_instrument, NULL },
+  { "fallthrough",	      0, 0, false, false, false, false,
+			      handle_fallthrough_attribute, NULL },
+  { "patchable_function_entry",	1, 2, true, false, false, false,
 			      handle_patchable_function_entry_attribute,
-			      false },
-  { NULL,                     0, 0, false, false, false, NULL, false }
+			      NULL },
+  { "nocf_check",	      0, 0, false, true, true, true,
+			      handle_nocf_check_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -379,13 +477,13 @@ const struct attribute_spec c_common_attribute_table[] =
    Current list of processed format attributes: format, format_arg.  */
 const struct attribute_spec c_common_format_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "format",                 3, 3, false, true,  true,
-			      handle_format_attribute, false },
-  { "format_arg",             1, 1, false, true,  true,
-			      handle_format_arg_attribute, false },
-  { NULL,                     0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "format",                 3, 3, false, true,  true, false,
+			      handle_format_attribute, NULL },
+  { "format_arg",             1, 1, false, true,  true, false,
+			      handle_format_arg_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Returns TRUE iff the attribute indicated by ATTR_ID takes a plain
@@ -426,7 +524,7 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     {
       if (TYPE_ALIGN (TREE_TYPE (*node)) <= BITS_PER_UNIT
 	  /* Still pack bitfields.  */
-	  && ! DECL_INITIAL (*node))
+	  && ! DECL_C_BIT_FIELD (*node))
 	warning (OPT_Wattributes,
 		 "%qE attribute ignored for field of type %qT",
 		 name, TREE_TYPE (*node));
@@ -523,14 +621,7 @@ handle_hot_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   if (TREE_CODE (*node) == FUNCTION_DECL
       || TREE_CODE (*node) == LABEL_DECL)
     {
-      if (lookup_attribute ("cold", DECL_ATTRIBUTES (*node)) != NULL)
-	{
-	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
-		   "with attribute %qs", name, "cold");
-	  *no_add_attrs = true;
-	}
-      /* Most of the rest of the hot processing is done later with
-	 lookup_attribute.  */
+      /* Attribute hot processing is done later with lookup_attribute.  */
     }
   else
     {
@@ -551,14 +642,7 @@ handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   if (TREE_CODE (*node) == FUNCTION_DECL
       || TREE_CODE (*node) == LABEL_DECL)
     {
-      if (lookup_attribute ("hot", DECL_ATTRIBUTES (*node)) != NULL)
-	{
-	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
-		   "with attribute %qs", name, "hot");
-	  *no_add_attrs = true;
-	}
-      /* Most of the rest of the cold processing is done later with
-	 lookup_attribute.  */
+      /* Attribute cold processing is done later with lookup_attribute.  */
     }
   else
     {
@@ -613,15 +697,8 @@ handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
       return NULL_TREE;
     }
 
-  char *error_value = NULL;
   char *string = ASTRDUP (TREE_STRING_POINTER (id));
-  unsigned int flags = parse_no_sanitize_attribute (string, &error_value);
-
-  if (error_value)
-    {
-      error ("wrong argument: \"%s\"", error_value);
-      return NULL_TREE;
-    }
+  unsigned int flags = parse_no_sanitize_attribute (string);
 
   add_no_sanitize_value (*node, flags);
 
@@ -730,10 +807,6 @@ handle_noipa_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
-  else
-    DECL_ATTRIBUTES (*node)
-      = tree_cons (get_identifier ("stack_protect"),
-		   NULL_TREE, DECL_ATTRIBUTES (*node));
 
   return NULL_TREE;
 }
@@ -777,6 +850,30 @@ handle_noclone_attribute (tree *node, tree name,
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "nocf_check" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nocf_check_attribute (tree *node, tree name,
+			  tree ARG_UNUSED (args),
+			  int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != METHOD_TYPE)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  else if (!(flag_cf_protection & CF_BRANCH))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored. Use "
+				"-fcf-protection option to enable it", name);
       *no_add_attrs = true;
     }
 
@@ -1072,7 +1169,7 @@ handle_no_reorder_attribute (tree *pnode,
 
 static tree
 handle_const_attribute (tree *node, tree name, tree ARG_UNUSED (args),
-			int ARG_UNUSED (flags), bool *no_add_attrs)
+			int flags, bool *no_add_attrs)
 {
   tree type = TREE_TYPE (*node);
 
@@ -1092,6 +1189,14 @@ handle_const_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
+
+  /* void __builtin_unreachable(void) is const.  Accept other such
+     built-ins but warn on user-defined functions that return void.  */
+  if (!(flags & ATTR_FLAG_BUILT_IN)
+      && TREE_CODE (*node) == FUNCTION_DECL
+      && VOID_TYPE_P (TREE_TYPE (type)))
+    warning (OPT_Wattributes, "%qE attribute on function "
+	     "returning %<void%>", name);
 
   return NULL_TREE;
 }
@@ -1675,15 +1780,19 @@ check_cxx_fundamental_alignment_constraints (tree node,
    handle_aligned_attribute.  */
 
 static tree
-common_handle_aligned_attribute (tree *node, tree args, int flags,
+common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
 				 bool *no_add_attrs,
 				 bool warn_if_not_aligned_p)
 {
   tree decl = NULL_TREE;
   tree *type = NULL;
-  int is_type = 0;
+  bool is_type = false;
   tree align_expr;
-  int i;
+
+  /* The last (already pushed) declaration with all validated attributes
+     merged in or the current about-to-be-pushed one if one hasn't been
+     yet.  */
+  tree last_decl = node[1] ? node[1] : *node;
 
   if (args)
     {
@@ -1702,12 +1811,26 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
       is_type = TREE_CODE (*node) == TYPE_DECL;
     }
   else if (TYPE_P (*node))
-    type = node, is_type = 1;
+    type = node, is_type = true;
 
-  if ((i = check_user_alignment (align_expr, true)) == -1
-      || !check_cxx_fundamental_alignment_constraints (*node, i, flags))
-    *no_add_attrs = true;
-  else if (is_type)
+  /* Log2 of specified alignment.  */
+  int pow2align = check_user_alignment (align_expr, true);
+  if (pow2align == -1
+      || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
+    {
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* The alignment in bits corresponding to the specified alignment.  */
+  unsigned bitalign = (1U << pow2align) * BITS_PER_UNIT;
+
+  /* The alignment of the current declaration and that of the last
+     pushed declaration, determined on demand below.  */
+  unsigned curalign = 0;
+  unsigned lastalign = 0;
+
+  if (is_type)
     {
       if ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	/* OK, modify the type in place.  */;
@@ -1728,12 +1851,12 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
 
       if (warn_if_not_aligned_p)
 	{
-	  SET_TYPE_WARN_IF_NOT_ALIGN (*type, (1U << i) * BITS_PER_UNIT);
+	  SET_TYPE_WARN_IF_NOT_ALIGN (*type, bitalign);
 	  warn_if_not_aligned_p = false;
 	}
       else
 	{
-	  SET_TYPE_ALIGN (*type, (1U << i) * BITS_PER_UNIT);
+	  SET_TYPE_ALIGN (*type, bitalign);
 	  TYPE_USER_ALIGN (*type) = 1;
 	}
     }
@@ -1743,8 +1866,37 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
       error ("alignment may not be specified for %q+D", decl);
       *no_add_attrs = true;
     }
+  else if (TREE_CODE (decl) == FUNCTION_DECL
+	   && ((curalign = DECL_ALIGN (decl)) > bitalign
+	       || ((lastalign = DECL_ALIGN (last_decl)) > bitalign)))
+    {
+      /* Either a prior attribute on the same declaration or one
+	 on a prior declaration of the same function specifies
+	 stricter alignment than this attribute.  */
+      bool note = lastalign != 0;
+      if (lastalign)
+	curalign = lastalign;
+
+      curalign /= BITS_PER_UNIT;
+      bitalign /= BITS_PER_UNIT;
+
+      bool diagd = true;
+      if (DECL_USER_ALIGN (decl) || DECL_USER_ALIGN (last_decl))
+	diagd = warning (OPT_Wattributes,
+			  "ignoring attribute %<%E (%u)%> because it conflicts "
+			  "with attribute %<%E (%u)%>",
+			  name, bitalign, name, curalign);
+      else if (!warn_if_not_aligned_p)
+	/* Do not error out for attribute warn_if_not_aligned.  */
+	error ("alignment for %q+D must be at least %d", decl, curalign);
+
+      if (diagd && note)
+	inform (DECL_SOURCE_LOCATION (last_decl), "previous declaration here");
+
+      *no_add_attrs = true;
+    }
   else if (DECL_USER_ALIGN (decl)
-	   && DECL_ALIGN (decl) > (1U << i) * BITS_PER_UNIT)
+	   && DECL_ALIGN (decl) > bitalign)
     /* C++-11 [dcl.align/4]:
 
 	   When multiple alignment-specifiers are specified for an
@@ -1756,7 +1908,7 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
     *no_add_attrs = true;
   else if (!warn_if_not_aligned_p
 	   && TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_ALIGN (decl) > (1U << i) * BITS_PER_UNIT)
+	   && DECL_ALIGN (decl) > bitalign)
     {
       /* Don't warn function alignment here if warn_if_not_aligned_p is
 	 true.  It will be warned later.  */
@@ -1773,15 +1925,15 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
     {
       if (warn_if_not_aligned_p)
 	{
-	  if (TREE_CODE (decl) == FIELD_DECL && !DECL_INITIAL (decl))
+	  if (TREE_CODE (decl) == FIELD_DECL && !DECL_C_BIT_FIELD (decl))
 	    {
-	      SET_DECL_WARN_IF_NOT_ALIGN (decl, (1U << i) * BITS_PER_UNIT);
+	      SET_DECL_WARN_IF_NOT_ALIGN (decl, bitalign);
 	      warn_if_not_aligned_p = false;
 	    }
 	}
       else
 	{
-	  SET_DECL_ALIGN (decl, (1U << i) * BITS_PER_UNIT);
+	  SET_DECL_ALIGN (decl, bitalign);
 	  DECL_USER_ALIGN (decl) = 1;
 	}
     }
@@ -1800,10 +1952,10 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
    struct attribute_spec.handler.  */
 
 static tree
-handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
+handle_aligned_attribute (tree *node, tree name, tree args,
 			  int flags, bool *no_add_attrs)
 {
-  return common_handle_aligned_attribute (node, args, flags,
+  return common_handle_aligned_attribute (node, name, args, flags,
 					 no_add_attrs, false);
 }
 
@@ -1811,11 +1963,11 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
    struct attribute_spec.handler.  */
 
 static tree
-handle_warn_if_not_aligned_attribute (tree *node, tree ARG_UNUSED (name),
+handle_warn_if_not_aligned_attribute (tree *node, tree name,
 				      tree args, int flags,
 				      bool *no_add_attrs)
 {
-  return common_handle_aligned_attribute (node, args, flags,
+  return common_handle_aligned_attribute (node, name, args, flags,
 					  no_add_attrs, true);
 }
 
@@ -2419,50 +2571,37 @@ handle_simd_attribute (tree *node, tree name, tree args, int, bool *no_add_attrs
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
-      if (lookup_attribute ("cilk simd function",
-			    DECL_ATTRIBUTES (*node)) != NULL)
+      tree t = get_identifier ("omp declare simd");
+      tree attr = NULL_TREE;
+      if (args)
 	{
-	  error_at (DECL_SOURCE_LOCATION (*node),
-		    "%<__simd__%> attribute cannot be used in the same "
-		    "function marked as a Cilk Plus SIMD-enabled function");
-	  *no_add_attrs = true;
-	}
-      else
-	{
-	  tree t = get_identifier ("omp declare simd");
-	  tree attr = NULL_TREE;
-	  if (args)
+	  tree id = TREE_VALUE (args);
+
+	  if (TREE_CODE (id) != STRING_CST)
 	    {
-	      tree id = TREE_VALUE (args);
-
-	      if (TREE_CODE (id) != STRING_CST)
-		{
-		  error ("attribute %qE argument not a string", name);
-		  *no_add_attrs = true;
-		  return NULL_TREE;
-		}
-
-	      if (strcmp (TREE_STRING_POINTER (id), "notinbranch") == 0)
-		attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
-					 OMP_CLAUSE_NOTINBRANCH);
-	      else
-		if (strcmp (TREE_STRING_POINTER (id), "inbranch") == 0)
-		  attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
-					   OMP_CLAUSE_INBRANCH);
-		else
-		{
-		  error ("only %<inbranch%> and %<notinbranch%> flags are "
-			 "allowed for %<__simd__%> attribute");
-		  *no_add_attrs = true;
-		  return NULL_TREE;
-		}
+	      error ("attribute %qE argument not a string", name);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
 	    }
 
-	  DECL_ATTRIBUTES (*node) = tree_cons (t,
-					       build_tree_list (NULL_TREE,
-								attr),
-					       DECL_ATTRIBUTES (*node));
+	  if (strcmp (TREE_STRING_POINTER (id), "notinbranch") == 0)
+	    attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				     OMP_CLAUSE_NOTINBRANCH);
+	  else if (strcmp (TREE_STRING_POINTER (id), "inbranch") == 0)
+	    attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				     OMP_CLAUSE_INBRANCH);
+	  else
+	    {
+	      error ("only %<inbranch%> and %<notinbranch%> flags are "
+		     "allowed for %<__simd__%> attribute");
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
 	}
+
+      DECL_ATTRIBUTES (*node)
+	= tree_cons (t, build_tree_list (NULL_TREE, attr),
+		     DECL_ATTRIBUTES (*node));
     }
   else
     {
@@ -2537,8 +2676,15 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 		       int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
-    DECL_PURE_P (*node) = 1;
-  /* ??? TODO: Support types.  */
+    {
+      tree type = TREE_TYPE (*node);
+      if (VOID_TYPE_P (TREE_TYPE (type)))
+	warning (OPT_Wattributes, "%qE attribute on function "
+		 "returning %<void%>", name);
+
+      DECL_PURE_P (*node) = 1;
+      /* ??? TODO: Support types.  */
+    }
   else
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
@@ -3048,8 +3194,13 @@ handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
       if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	{
+	  /* Accept the attribute on arrays and pointers to all three
+	     narrow character types.  */
 	  tree eltype = TREE_TYPE (type);
-	  if (eltype == char_type_node)
+	  eltype = TYPE_MAIN_VARIANT (eltype);
+	  if (eltype == char_type_node
+	      || eltype == signed_char_type_node
+	      || eltype == unsigned_char_type_node)
 	    return NULL_TREE;
 	}
 

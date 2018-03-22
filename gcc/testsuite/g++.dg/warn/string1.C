@@ -1,5 +1,5 @@
 // PR c++/35652
-// { dg-options "-O" }
+// { dg-options "-O -Wall" }
 
 #include <string>
 int test() {
@@ -15,4 +15,6 @@ int test() {
   //
   std::string s = "";
   s += 'x' + "y";	      // { dg-warning "bounds of constant string" }
+
+  return 0;
 }

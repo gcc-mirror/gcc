@@ -4,5 +4,5 @@
 // does not.
 int f(int x,
 #pragma interface  // { dg-error "not allowed here" }
-      // { dg-bogus "expected identifier" "" { xfail *-*-* } .-1 }
-      int y);
+      // The parser gets confused and issues an error on the next line.
+      int y); // { dg-bogus "" "" { xfail *-*-* } } 

@@ -1,5 +1,5 @@
 /* RunTime Type Identification
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
    type_info objects for static initialization.
 
    The type information VAR_DECL of a type is held on the
-   IDENTIFIER_GLOBAL_VALUE of the type's mangled name. That VAR_DECL
+   get_global_binding of the type's mangled name. That VAR_DECL
    will be the internal type.  It will usually have the correct
    internal type reflecting the kind of type it represents (pointer,
    array, function, class, inherited class, etc).  When the type it
@@ -206,8 +206,7 @@ build_headof (tree exp)
   index = build_int_cst (NULL_TREE,
 			 -2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE);
 
-  offset = build_vtbl_ref (cp_build_indirect_ref (exp, RO_NULL, 
-                                                  tf_warning_or_error), 
+  offset = build_vtbl_ref (cp_build_fold_indirect_ref (exp),
                            index);
 
   type = cp_build_qualified_type (ptr_type_node,
@@ -226,7 +225,7 @@ throw_bad_cast (void)
   if (!fn)
     {
       tree name = get_identifier ("__cxa_bad_cast");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      fn = get_global_binding (name);
       if (!fn)
 	fn = push_throw_library_fn
 	  (name, build_function_type_list (ptr_type_node, NULL_TREE));
@@ -245,7 +244,7 @@ throw_bad_typeid (void)
   if (!fn)
     {
       tree name = get_identifier ("__cxa_bad_typeid");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      fn = get_global_binding (name);
       if (!fn)
 	{
 	  tree t = build_reference_type (const_type_info_type_node);
@@ -303,7 +302,7 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
     /* Otherwise return the type_info for the static type of the expr.  */
     t = get_tinfo_ptr (TYPE_MAIN_VARIANT (type));
 
-  return cp_build_indirect_ref (t, RO_NULL, complain);
+  return cp_build_fold_indirect_ref (t);
 }
 
 static bool
@@ -319,9 +318,9 @@ typeid_ok_p (void)
     {
       gcc_rich_location richloc (input_location);
       maybe_add_include_fixit (&richloc, "<typeinfo>");
-      error_at_rich_loc (&richloc,
-			 "must %<#include <typeinfo>%> before using"
-			 " %<typeid%>");
+      error_at (&richloc,
+		"must %<#include <typeinfo>%> before using"
+		" %<typeid%>");
 
       return false;
     }
@@ -365,7 +364,7 @@ build_typeid (tree exp, tsubst_flags_t complain)
       exp = cp_build_addr_expr (exp, complain);
       exp = save_expr (exp);
       cond = cp_convert (boolean_type_node, exp, complain);
-      exp = cp_build_indirect_ref (exp, RO_NULL, complain);
+      exp = cp_build_fold_indirect_ref (exp);
     }
 
   exp = get_tinfo_decl_dynamic (exp, complain);
@@ -446,7 +445,7 @@ get_tinfo_decl (tree type)
 
   name = mangle_typeinfo_for_type (type);
 
-  d = IDENTIFIER_GLOBAL_VALUE (name);
+  d = get_global_binding (name);
   if (!d)
     {
       int ix = get_pseudo_ti_index (type);
@@ -529,7 +528,7 @@ get_typeid (tree type, tsubst_flags_t complain)
   if (!type)
     return error_mark_node;
 
-  return cp_build_indirect_ref (get_tinfo_ptr (type), RO_NULL, complain);
+  return cp_build_fold_indirect_ref (get_tinfo_ptr (type));
 }
 
 /* Check whether TEST is null before returning RESULT.  If TEST is used in

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2017, AdaCore                     --
+--                     Copyright (C) 2000-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -907,8 +907,6 @@ package body GNAT.Expect is
       Status     : not null access Integer;
       Err_To_Out : Boolean := False) return String
    is
-      use GNAT.Expect;
-
       Process : Process_Descriptor;
 
       Output : String_Access := new String (1 .. 1024);

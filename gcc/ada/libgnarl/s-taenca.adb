@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,6 @@ package body System.Tasking.Entry_Calls is
    package STPO renames System.Task_Primitives.Operations;
 
    use Parameters;
-   use Task_Primitives;
    use Protected_Objects.Entries;
    use Protected_Objects.Operations;
 

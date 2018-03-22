@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -515,6 +515,12 @@ package body Sem is
          when N_Record_Representation_Clause =>
             Analyze_Record_Representation_Clause (N);
 
+         when N_Reduction_Expression =>
+            Analyze_Reduction_Expression (N);
+
+         when N_Reduction_Expression_Parameter =>
+            Analyze_Reduction_Expression_Parameter (N);
+
          when N_Reference =>
             Analyze_Reference (N);
 
@@ -611,6 +617,14 @@ package body Sem is
 
          when N_With_Clause =>
             Analyze_With_Clause (N);
+
+         --  A call to analyze a marker is ignored because the node does not
+         --  have any static and run-time semantics.
+
+         when N_Call_Marker
+            | N_Variable_Reference_Marker
+         =>
+            null;
 
          --  A call to analyze the Empty node is an error, but most likely it
          --  is an error caused by an attempt to analyze a malformed piece of
@@ -731,6 +745,33 @@ package body Sem is
       end case;
 
       Debug_A_Exit ("analyzing  ", N, "  (done)");
+
+      --  Mark relevant use-type and use-package clauses as effective
+      --  preferring the original node over the analyzed one in the case that
+      --  constant folding has occurred and removed references that need to be
+      --  examined. Also, if the node in question is overloaded then this is
+      --  deferred until resolution.
+
+      declare
+         Operat : Node_Id := Empty;
+      begin
+         --  Attempt to obtain a checkable operator node
+
+         if Nkind (Original_Node (N)) in N_Op then
+            Operat := Original_Node (N);
+         elsif Nkind (N) in N_Op then
+            Operat := N;
+         end if;
+
+         --  Mark the operator
+
+         if Present (Operat)
+           and then Present (Entity (Operat))
+           and then not Is_Overloaded (Operat)
+         then
+            Mark_Use_Clauses (Operat);
+         end if;
+      end;
 
       --  Now that we have analyzed the node, we call the expander to perform
       --  possible expansion. We skip this for subexpressions, because we don't
@@ -1229,6 +1270,15 @@ package body Sem is
       Scope_Stack.Release;
       Scope_Stack.Locked := True;
    end Lock;
+
+   ------------------------
+   -- Preanalysis_Active --
+   ------------------------
+
+   function Preanalysis_Active return Boolean is
+   begin
+      return not Full_Analysis and not Expander_Active;
+   end Preanalysis_Active;
 
    ----------------
    -- Preanalyze --

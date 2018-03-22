@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 
+#pragma GCC target "+nosve"
+
 int a[30 +1][30 +1], b[30 +1][30 +1], r[30 +1][30 +1];
 
 void foo (void) {

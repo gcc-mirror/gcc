@@ -11,6 +11,6 @@
       read(76, rec=1) as_read, byte, byte, byte, byte
       read(76, rec=2, err=3) as_read, byte, byte, byte, byte
       stop
-  3   call abort()
+  3   STOP 1
       end program test
 

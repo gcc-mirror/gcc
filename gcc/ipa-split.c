@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
 This file is part of GCC.
@@ -111,7 +111,7 @@ along with GCC; see the file COPYING3.  If not see
 struct split_bb_info
 {
   unsigned int size;
-  unsigned int time;
+  sreal time;
 };
 
 static vec<split_bb_info> bb_info_vec;
@@ -121,13 +121,18 @@ static vec<split_bb_info> bb_info_vec;
 struct split_point
 {
   /* Size of the partitions.  */
-  unsigned int header_time, header_size, split_time, split_size;
+  sreal header_time, split_time;
+  unsigned int header_size, split_size;
 
   /* SSA names that need to be passed into spit function.  */
   bitmap ssa_names_to_pass;
 
   /* Basic block where we split (that will become entry point of new function.  */
   basic_block entry_bb;
+
+  /* Count for entering the split part.
+     This is not count of the entry_bb because it may be in loop.  */
+  profile_count count;
 
   /* Basic blocks we are splitting away.  */
   bitmap split_bbs;
@@ -191,10 +196,11 @@ dump_split_point (FILE * file, struct split_point *current)
 {
   fprintf (file,
 	   "Split point at BB %i\n"
-	   "  header time: %i header size: %i\n"
-	   "  split time: %i split size: %i\n  bbs: ",
-	   current->entry_bb->index, current->header_time,
-	   current->header_size, current->split_time, current->split_size);
+	   "  header time: %f header size: %i\n"
+	   "  split time: %f split size: %i\n  bbs: ",
+	   current->entry_bb->index, current->header_time.to_double (),
+	   current->header_size, current->split_time.to_double (),
+	   current->split_size);
   dump_bitmap (file, current->split_bbs);
   fprintf (file, "  SSA names to pass: ");
   dump_bitmap (file, current->ssa_names_to_pass);
@@ -426,7 +432,6 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   edge_iterator ei;
   gphi_iterator bsi;
   unsigned int i;
-  int incoming_freq = 0;
   tree retval;
   tree retbnd;
   bool back_edge = false;
@@ -434,18 +439,21 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_split_point (dump_file, current);
 
+  current->count = profile_count::zero ();
   FOR_EACH_EDGE (e, ei, current->entry_bb->preds)
     {
       if (e->flags & EDGE_DFS_BACK)
 	back_edge = true;
       if (!bitmap_bit_p (current->split_bbs, e->src->index))
-        incoming_freq += EDGE_FREQUENCY (e);
+	current->count += e->count ();
     }
 
-  /* Do not split when we would end up calling function anyway.  */
-  if (incoming_freq
-      >= (ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency
-	  * PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY) / 100))
+  /* Do not split when we would end up calling function anyway.
+     Compares are three state, use !(...<...) to also give up when outcome
+     is unknown.  */
+  if (!(current->count
+       < (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale
+	   (PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY), 100))))
     {
       /* When profile is guessed, we can not expect it to give us
 	 realistic estimate on likelyness of function taking the
@@ -454,13 +462,17 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 	 is likely noticeable win.  */
       if (back_edge
 	  && profile_status_for_fn (cfun) != PROFILE_READ
-	  && incoming_freq < ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency)
+	  && current->count
+		 < ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "  Split before loop, accepting despite low frequencies %i %i.\n",
-		     incoming_freq,
-		     ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency);
+	    {
+	      fprintf (dump_file,
+		       "  Split before loop, accepting despite low counts");
+	      current->count.dump (dump_file);
+	      fprintf (dump_file, " ");
+	      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.dump (dump_file);
+	    }
 	}
       else
 	{
@@ -546,10 +558,13 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 		 "  Refused: split size is smaller than call overhead\n");
       return;
     }
+  /* FIXME: The logic here is not very precise, because inliner does use
+     inline predicates to reduce function body size.  We add 10 to anticipate
+     that.  Next stage1 we should try to be more meaningful here.  */
   if (current->header_size + call_overhead
       >= (unsigned int)(DECL_DECLARED_INLINE_P (current_function_decl)
 			? MAX_INLINE_INSNS_SINGLE
-			: MAX_INLINE_INSNS_AUTO))
+			: MAX_INLINE_INSNS_AUTO) + 10)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -562,7 +577,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
      Limit this duplication.  This is consistent with limit in tree-sra.c  
      FIXME: with LTO we ought to be able to do better!  */
   if (DECL_ONE_ONLY (current_function_decl)
-      && current->split_size >= (unsigned int) MAX_INLINE_INSNS_AUTO)
+      && current->split_size >= (unsigned int) MAX_INLINE_INSNS_AUTO + 10)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -710,12 +725,13 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  Accepted!\n");
 
-  /* At the moment chose split point with lowest frequency and that leaves
+  /* At the moment chose split point with lowest count and that leaves
      out smallest size of header.
      In future we might re-consider this heuristics.  */
   if (!best_split_point.split_bbs
-      || best_split_point.entry_bb->frequency > current->entry_bb->frequency
-      || (best_split_point.entry_bb->frequency == current->entry_bb->frequency
+      || best_split_point.count
+	 > current->count
+      || (best_split_point.count == current->count 
 	  && best_split_point.split_size < current->split_size))
 	
     {
@@ -1023,7 +1039,8 @@ struct stack_entry
   int earliest;
 
   /* Overall time and size of all BBs reached from this BB in DFS walk.  */
-  int overall_time, overall_size;
+  sreal overall_time;
+  int overall_size;
 
   /* When false we can not split on this BB.  */
   bool can_split;
@@ -1048,7 +1065,7 @@ struct stack_entry
    the component used by consider_split.  */
 
 static void
-find_split_points (basic_block return_bb, int overall_time, int overall_size)
+find_split_points (basic_block return_bb, sreal overall_time, int overall_size)
 {
   stack_entry first;
   vec<stack_entry> stack = vNULL;
@@ -1285,8 +1302,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	  FOR_EACH_EDGE (e, ei, return_bb->preds)
 	    if (bitmap_bit_p (split_point->split_bbs, e->src->index))
 	      {
-		new_return_bb->count += e->count;
-		new_return_bb->frequency += EDGE_FREQUENCY (e);
+		new_return_bb->count += e->count ();
 		redirect_edge_and_branch (e, new_return_bb);
 		redirected = true;
 		break;
@@ -1444,6 +1460,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
       }
     else
       break;
+  call_bb->count = split_point->count;
   e = split_block (split_point->entry_bb, last_stmt);
   remove_edge (e);
 
@@ -1471,7 +1488,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned i = 0, len = 0;
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  debug_args = decl_debug_args_lookup (node->decl);
 	  if (debug_args)
@@ -1484,11 +1501,12 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	    tree ddecl;
 	    gimple *def_temp;
 
-	    /* This needs to be done even without MAY_HAVE_DEBUG_STMTS,
-	       otherwise if it didn't exist before, we'd end up with
-	       different SSA_NAME_VERSIONs between -g and -g0.  */
+	    /* This needs to be done even without
+	       MAY_HAVE_DEBUG_BIND_STMTS, otherwise if it didn't exist
+	       before, we'd end up with different SSA_NAME_VERSIONs
+	       between -g and -g0.  */
 	    arg = get_or_create_ssa_default_def (cfun, parm);
-	    if (!MAY_HAVE_DEBUG_STMTS || debug_args == NULL)
+	    if (!MAY_HAVE_DEBUG_BIND_STMTS || debug_args == NULL)
 	      continue;
 
 	    while (i < len && (**debug_args)[i] != DECL_ORIGIN (parm))
@@ -1720,7 +1738,8 @@ execute_split_functions (void)
 {
   gimple_stmt_iterator bsi;
   basic_block bb;
-  int overall_time = 0, overall_size = 0;
+  sreal overall_time = 0;
+  int overall_size = 0;
   int todo = 0;
   struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
@@ -1735,6 +1754,12 @@ execute_split_functions (void)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: main function.\n");
+      return 0;
+    }
+  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not splitting: function is unlikely executed.\n");
       return 0;
     }
   /* This can be relaxed; function might become inlinable after splitting
@@ -1811,33 +1836,36 @@ execute_split_functions (void)
 
   /* Compute local info about basic blocks and determine function size/time.  */
   bb_info_vec.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
-  memset (&best_split_point, 0, sizeof (best_split_point));
+  best_split_point.split_bbs = NULL;
   basic_block return_bb = find_return_bb ();
   int tsan_exit_found = -1;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      int time = 0;
+      sreal time = 0;
       int size = 0;
-      int freq = compute_call_stmt_bb_frequency (current_function_decl, bb);
+      sreal freq = bb->count.to_sreal_scale
+			 (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Basic block %i\n", bb->index);
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  int this_time, this_size;
+	  sreal this_time;
+	  int this_size;
 	  gimple *stmt = gsi_stmt (bsi);
 
 	  this_size = estimate_num_insns (stmt, &eni_size_weights);
-	  this_time = estimate_num_insns (stmt, &eni_time_weights) * freq;
+	  this_time = (sreal)estimate_num_insns (stmt, &eni_time_weights)
+			 * freq;
 	  size += this_size;
 	  time += this_time;
 	  check_forbidden_calls (stmt);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "  freq:%6i size:%3i time:%3i ",
-		       freq, this_size, this_time);
+	      fprintf (dump_file, "  freq:%4.2f size:%3i time:%4.2f ",
+		       freq.to_double (), this_size, this_time.to_double ());
 	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 

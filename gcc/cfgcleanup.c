@@ -1,5 +1,5 @@
 /* Control flow optimization code for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -558,9 +558,7 @@ try_forward_edges (int mode, basic_block b)
       else
 	{
 	  /* Save the values now, as the edge may get removed.  */
-	  profile_count edge_count = e->count;
-	  profile_probability edge_probability = e->probability;
-	  int edge_frequency;
+	  profile_count edge_count = e->count ();
 	  int n = 0;
 
 	  e->goto_locus = goto_locus;
@@ -585,8 +583,6 @@ try_forward_edges (int mode, basic_block b)
 	  /* We successfully forwarded the edge.  Now update profile
 	     data: for each edge we traversed in the chain, remove
 	     the original edge's execution count.  */
-	  edge_frequency = edge_probability.apply (b->frequency);
-
 	  do
 	    {
 	      edge t;
@@ -596,16 +592,12 @@ try_forward_edges (int mode, basic_block b)
 		  gcc_assert (n < nthreaded_edges);
 		  t = threaded_edges [n++];
 		  gcc_assert (t->src == first);
-		  update_bb_profile_for_threading (first, edge_frequency,
-						   edge_count, t);
+		  update_bb_profile_for_threading (first, edge_count, t);
 		  update_br_prob_note (first);
 		}
 	      else
 		{
 		  first->count -= edge_count;
-		  first->frequency -= edge_frequency;
-		  if (first->frequency < 0)
-		    first->frequency = 0;
 		  /* It is possible that as the result of
 		     threading we've removed edge as it is
 		     threaded to the fallthru edge.  Avoid
@@ -616,7 +608,6 @@ try_forward_edges (int mode, basic_block b)
 		  t = single_succ_edge (first);
 		}
 
-	      t->count -= edge_count;
 	      first = t->dest;
 	    }
 	  while (first != target);
@@ -873,8 +864,6 @@ merge_memattrs (rtx x, rtx y)
 	MEM_ATTRS (x) = 0;
       else
 	{
-	  HOST_WIDE_INT mem_size;
-
 	  if (MEM_ALIAS_SET (x) != MEM_ALIAS_SET (y))
 	    {
 	      set_mem_alias_set (x, 0);
@@ -890,20 +879,23 @@ merge_memattrs (rtx x, rtx y)
 	    }
 	  else if (MEM_OFFSET_KNOWN_P (x) != MEM_OFFSET_KNOWN_P (y)
 		   || (MEM_OFFSET_KNOWN_P (x)
-		       && MEM_OFFSET (x) != MEM_OFFSET (y)))
+		       && maybe_ne (MEM_OFFSET (x), MEM_OFFSET (y))))
 	    {
 	      clear_mem_offset (x);
 	      clear_mem_offset (y);
 	    }
 
-	  if (MEM_SIZE_KNOWN_P (x) && MEM_SIZE_KNOWN_P (y))
-	    {
-	      mem_size = MAX (MEM_SIZE (x), MEM_SIZE (y));
-	      set_mem_size (x, mem_size);
-	      set_mem_size (y, mem_size);
-	    }
+	  if (!MEM_SIZE_KNOWN_P (x))
+	    clear_mem_size (y);
+	  else if (!MEM_SIZE_KNOWN_P (y))
+	    clear_mem_size (x);
+	  else if (known_le (MEM_SIZE (x), MEM_SIZE (y)))
+	    set_mem_size (x, MEM_SIZE (y));
+	  else if (known_le (MEM_SIZE (y), MEM_SIZE (x)))
+	    set_mem_size (y, MEM_SIZE (x));
 	  else
 	    {
+	      /* The sizes aren't ordered, so we can't merge them.  */
 	      clear_mem_size (x);
 	      clear_mem_size (y);
 	    }
@@ -1181,7 +1173,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
       /* ??? Worse, this adjustment had better be constant lest we
          have differing incoming stack levels.  */
       if (!frame_pointer_needed
-          && find_args_size_adjust (i1) == HOST_WIDE_INT_MIN)
+	  && known_eq (find_args_size_adjust (i1), HOST_WIDE_INT_MIN))
 	return dir_none;
     }
   else if (p1 || p2)
@@ -2110,7 +2102,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   else
     redirect_edges_to = osrc2;
 
-  /* Recompute the frequencies and counts of outgoing edges.  */
+  /* Recompute the counts of destinations of outgoing edges.  */
   FOR_EACH_EDGE (s, ei, redirect_edges_to->succs)
     {
       edge s2;
@@ -2129,34 +2121,21 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 	    break;
 	}
 
-      s->count += s2->count;
-
       /* Take care to update possible forwarder blocks.  We verified
 	 that there is no more than one in the chain, so we can't run
 	 into infinite loop.  */
       if (FORWARDER_BLOCK_P (s->dest))
-	{
-	  single_succ_edge (s->dest)->count += s2->count;
-	  s->dest->count += s2->count;
-	  s->dest->frequency += EDGE_FREQUENCY (s);
-	}
+	s->dest->count += s->count ();
 
       if (FORWARDER_BLOCK_P (s2->dest))
-	{
-	  single_succ_edge (s2->dest)->count -= s2->count;
-	  s2->dest->count -= s2->count;
-	  s2->dest->frequency -= EDGE_FREQUENCY (s);
-	  if (s2->dest->frequency < 0)
-	    s2->dest->frequency = 0;
-	}
+	s2->dest->count -= s->count ();
 
-      if (!redirect_edges_to->frequency && !src1->frequency)
-	s->probability = s->probability.combine_with_freq
-			   (redirect_edges_to->frequency,
-			    s2->probability, src1->frequency);
+      s->probability = s->probability.combine_with_count
+			  (redirect_edges_to->count,
+			   s2->probability, src1->count);
     }
 
-  /* Adjust count and frequency for the block.  An earlier jump
+  /* Adjust count for the block.  An earlier jump
      threading pass may have left the profile in an inconsistent
      state (see update_bb_profile_for_threading) so we must be
      prepared for overflows.  */
@@ -2164,9 +2143,6 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   do
     {
       tmp->count += src1->count;
-      tmp->frequency += src1->frequency;
-      if (tmp->frequency > BB_FREQ_MAX)
-        tmp->frequency = BB_FREQ_MAX;
       if (tmp == redirect_edges_to)
         break;
       tmp = find_fallthru_edge (tmp->succs)->dest;
@@ -2472,9 +2448,7 @@ try_head_merge_bb (basic_block bb)
       max_match--;
       if (max_match == 0)
 	return false;
-      do
-	e0_last_head = prev_real_insn (e0_last_head);
-      while (DEBUG_INSN_P (e0_last_head));
+      e0_last_head = prev_real_nondebug_insn (e0_last_head);
     }
 
   if (max_match == 0)
@@ -3034,8 +3008,11 @@ try_optimize_cfg (int mode)
                  to detect and fix during edge forwarding, and in some cases
                  is only visible after newly unreachable blocks are deleted,
                  which will be done in fixup_partitions.  */
-	      fixup_partitions ();
-	      checking_verify_flow_info ();
+	      if ((mode & CLEANUP_NO_PARTITIONING) == 0)
+		{
+		  fixup_partitions ();
+	          checking_verify_flow_info ();
+		}
             }
 
 	  changed_overall |= changed;
@@ -3060,13 +3037,13 @@ delete_unreachable_blocks (void)
 
   find_unreachable_blocks ();
 
-  /* When we're in GIMPLE mode and there may be debug insns, we should
-     delete blocks in reverse dominator order, so as to get a chance
-     to substitute all released DEFs into debug stmts.  If we don't
-     have dominators information, walking blocks backward gets us a
-     better chance of retaining most debug information than
+  /* When we're in GIMPLE mode and there may be debug bind insns, we
+     should delete blocks in reverse dominator order, so as to get a
+     chance to substitute all released DEFs into debug bind stmts.  If
+     we don't have dominators information, walking blocks backward
+     gets us a better chance of retaining most debug information than
      otherwise.  */
-  if (MAY_HAVE_DEBUG_INSNS && current_ir_type () == IR_GIMPLE
+  if (MAY_HAVE_DEBUG_BIND_INSNS && current_ir_type () == IR_GIMPLE
       && dom_info_available_p (CDI_DOMINATORS))
     {
       for (b = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;

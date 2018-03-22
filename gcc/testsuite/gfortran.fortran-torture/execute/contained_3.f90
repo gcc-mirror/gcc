@@ -5,7 +5,7 @@ program contained_3
   call test
 contains
   subroutine test
-    if (sub(3) .ne. 6) call abort
+    if (sub(3) .ne. 6) STOP 1
   end subroutine
   integer function sub(i)
     integer i

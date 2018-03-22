@@ -15,9 +15,10 @@ type :: t(i,a,x)         ! { dg-error "does not|has neither" }
   real, kind :: x        ! { dg-error "must be INTEGER" }
 end type
 
-type :: t1(k,y)          ! { dg-error "not declared as a component of the type" }
+type :: t1(k,y)          ! { dg-error "does not have a component" }
   integer, kind :: k
 end type
 
-type(t1(4,4)) :: z
+! This is a knock-on from the previous error
+type(t1(4,4)) :: z       ! { dg-error "Invalid character in name" }
 end

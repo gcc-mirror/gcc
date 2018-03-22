@@ -1,5 +1,5 @@
 /* Utilities for ipa analysis.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -404,17 +404,18 @@ ipa_merge_profiles (struct cgraph_node *dst,
 
   /* FIXME when we merge in unknown profile, we ought to set counts as
      unsafe.  */
-  if (!src->count.initialized_p ())
+  if (!src->count.initialized_p ()
+      || !(src->count.ipa () == src->count))
     return;
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Merging profiles of %s to %s\n",
 	       src->dump_name (), dst->dump_name ());
     }
-  if (dst->count.initialized_p ())
-    dst->count += src->count;
-  else
-    dst->count = src->count;
+  if (dst->count.initialized_p () && dst->count.ipa () == dst->count)
+    dst->count += src->count.ipa ();
+  else 
+    dst->count = src->count.ipa ();
 
   /* This is ugly.  We need to get both function bodies into memory.
      If declaration is merged, we need to duplicate it to be able
@@ -524,24 +525,40 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	  unsigned int i;
 
 	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
-	  if (dstbb->count.initialized_p ())
-	    dstbb->count += srcbb->count;
-	  else
-	    dstbb->count = srcbb->count;
-	  for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+
+	  /* Either sum the profiles if both are IPA and not global0, or
+	     pick more informative one (that is nonzero IPA if other is
+	     uninitialized, guessed or global0).   */
+	  if (!dstbb->count.ipa ().initialized_p ()
+	      || (dstbb->count.ipa () == profile_count::zero ()
+		  && (srcbb->count.ipa ().initialized_p ()
+		      && !(srcbb->count.ipa () == profile_count::zero ()))))
 	    {
-	      edge srce = EDGE_SUCC (srcbb, i);
-	      edge dste = EDGE_SUCC (dstbb, i);
-	      if (dstbb->count.initialized_p ())
-	        dste->count += srce->count;
-	      else
-		dste->count = srce->count;
-	      if (dstbb->count > 0 && dste->count.initialized_p ())
-		dste->probability = dste->count.probability_in (dstbb->count);
+	      dstbb->count = srcbb->count;
+	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+		{
+		  edge srce = EDGE_SUCC (srcbb, i);
+		  edge dste = EDGE_SUCC (dstbb, i);
+		  if (srce->probability.initialized_p ())
+		    dste->probability = srce->probability;
+		}
+	    }	
+	  else if (srcbb->count.ipa ().initialized_p ()
+		   && !(srcbb->count.ipa () == profile_count::zero ()))
+	    {
+	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+		{
+		  edge srce = EDGE_SUCC (srcbb, i);
+		  edge dste = EDGE_SUCC (dstbb, i);
+		  dste->probability = 
+		    dste->probability * dstbb->count.probability_in (dstbb->count + srcbb->count)
+		    + srce->probability * srcbb->count.probability_in (dstbb->count + srcbb->count);
+		}
+	      dstbb->count += srcbb->count;
 	    }
 	}
       push_cfun (dstcfun);
-      counts_to_freqs ();
+      update_max_bb_count ();
       compute_function_frequency ();
       pop_cfun ();
       for (e = dst->callees; e; e = e->next_callee)
@@ -549,17 +566,11 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	  if (e->speculative)
 	    continue;
 	  e->count = gimple_bb (e->call_stmt)->count;
-	  e->frequency = compute_call_stmt_bb_frequency
-			     (dst->decl,
-			      gimple_bb (e->call_stmt));
 	}
       for (e = dst->indirect_calls, e2 = src->indirect_calls; e;
 	   e2 = (e2 ? e2->next_callee : NULL), e = e->next_callee)
 	{
 	  profile_count count = gimple_bb (e->call_stmt)->count;
-	  int freq = compute_call_stmt_bb_frequency
-			(dst->decl,
-			 gimple_bb (e->call_stmt));
 	  /* When call is speculative, we need to re-distribute probabilities
 	     the same way as they was.  This is not really correct because
 	     in the other copy the speculation may differ; but probably it
@@ -608,12 +619,6 @@ ipa_merge_profiles (struct cgraph_node *dst,
 			   indirect->count += indirect2->count;
 			}
 		    }
-		  int  prob = direct->count.probability_in (direct->count
-							    + indirect->count).
-			      to_reg_br_prob_base ();
-		  direct->frequency = RDIV (freq * prob, REG_BR_PROB_BASE);
-		  indirect->frequency = RDIV (freq * (REG_BR_PROB_BASE - prob),
-					      REG_BR_PROB_BASE);
 		}
 	      else
 		/* At the moment we should have only profile feedback based
@@ -627,17 +632,10 @@ ipa_merge_profiles (struct cgraph_node *dst,
 
 	      e2->speculative_call_info (direct, indirect, ref);
 	      e->count = count;
-	      e->frequency = freq;
-	      int prob = direct->count.probability_in (e->count)
-			 .to_reg_br_prob_base ();
-	      e->make_speculative (direct->callee, direct->count,
-				   RDIV (freq * prob, REG_BR_PROB_BASE));
+	      e->make_speculative (direct->callee, direct->count);
 	    }
 	  else
-	    {
-	      e->count = count;
-	      e->frequency = freq;
-	    }
+	    e->count = count;
 	}
       if (!preserve_body)
         src->release_body ();

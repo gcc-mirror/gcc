@@ -5,7 +5,7 @@
 
 int foo (int);
 
-int
+void
 bar (int a, int b, int c)
 {
   foo (a + b & c); // { dg-warning "parentheses" "correct warning" }

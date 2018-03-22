@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -122,7 +122,6 @@ enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
 
 /* Stack and Calling.  */
 
-#define STARTING_FRAME_OFFSET 0
 #define FRAME_GROWS_DOWNWARD 0
 #define STACK_GROWS_DOWNWARD 1
 

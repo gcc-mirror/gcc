@@ -1,3 +1,36 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-next-runtime-abi-01.c (generate_dispatch_table): Use ; instead
+	of ;;.
+
+2017-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* objc-encoding.c (encode_type): Use memcpy instead of strncpy.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* objc-gnu-runtime-abi-01.c (objc_gnu_runtime_abi_01_init): Use
+	UNKNOWN_LOCATION rather than 0.
+
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	* objc-act.c (objc_common_tree_size): Return size of TYPE nodes.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* objc-act.c (objc_decl_method_attributes): Use wi::to_wide when
+	operating on trees as wide_ints.
+
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-act.c (check_ivars, gen_declaration): For OBJCPLUS look at
+	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
@@ -3757,7 +3790,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2017 Free Software Foundation, Inc.
+Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

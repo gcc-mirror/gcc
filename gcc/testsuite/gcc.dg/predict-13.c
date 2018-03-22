@@ -21,4 +21,4 @@ int main(int argc, char **argv)
 }
 
 /* { dg-final { scan-tree-dump-times "combined heuristics of edge\[^:\]*: 33.3%" 3 "profile_estimate"} } */
-/* { dg-final { scan-tree-dump-times "combined heuristics of edge\[^:\]*: 0.0%" 2 "profile_estimate"} } */
+/* { dg-final { scan-tree-dump-times "combined heuristics of edge\[^:\]*: 0.1%" 2 "profile_estimate"} } */

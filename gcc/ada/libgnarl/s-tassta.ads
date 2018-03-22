@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,7 +70,7 @@ package System.Tasking.Stages is
    --   tE : aliased boolean := false;
    --   tZ : size_type := unspecified_size;
    --   type tV (discr : integer) is limited record
-   --      _task_id : task_id;
+   --      _task_id         : task_id;
    --   end record;
    --   procedure tB (_task : access tV);
    --   freeze tV [
@@ -168,7 +168,7 @@ package System.Tasking.Stages is
 
    procedure Create_Task
      (Priority             : Integer;
-      Size                 : System.Parameters.Size_Type;
+      Stack_Size           : System.Parameters.Size_Type;
       Secondary_Stack_Size : System.Parameters.Size_Type;
       Task_Info            : System.Task_Info.Task_Info_Type;
       CPU                  : Integer;
@@ -187,31 +187,44 @@ package System.Tasking.Stages is
    --
    --  Priority is the task's priority (assumed to be in range of type
    --   System.Any_Priority)
-   --  Size is the stack size of the task to create
-   --  Secondary_Stack_Size is the secondary stack size of the task to create
+   --
+   --  Stack_Size is the stack size of the task to create
+   --
+   --  Secondary_Stack_Size is the size of the secondary stack to be used by
+   --  the task.
+   --
    --  Task_Info is the task info associated with the created task, or
    --   Unspecified_Task_Info if none.
+   --
    --  CPU is the task affinity. Passed as an Integer because the undefined
    --   value is not in the range of CPU_Range. Static range checks are
    --   performed when analyzing the pragma, and dynamic ones are performed
    --   before setting the affinity at run time.
+   --
    --  Relative_Deadline is the relative deadline associated with the created
    --   task by means of a pragma Relative_Deadline, or 0.0 if none.
+   --
    --  Domain is the dispatching domain associated with the created task by
    --   means of a Dispatching_Domain pragma or aspect, or null if none.
+   --
    --  State is the compiler generated task's procedure body
+   --
    --  Discriminants is a pointer to a limited record whose discriminants
    --   are those of the task to create. This parameter should be passed as
    --   the single argument to State.
+   --
    --  Elaborated is a pointer to a Boolean that must be set to true on exit
    --   if the task could be successfully elaborated.
+   --
    --  Chain is a linked list of task that needs to be created. On exit,
    --   Created_Task.Activation_Link will be Chain.T_ID, and Chain.T_ID
    --   will be Created_Task (e.g the created task will be linked at the front
    --   of Chain).
+   --
    --  Task_Image is a string created by the compiler that the
    --   run time can store to ease the debugging and the
    --   Ada.Task_Identification facility.
+   --
    --  Created_Task is the resulting task.
    --
    --  This procedure can raise Storage_Error if the task creation failed.
@@ -272,7 +285,7 @@ package System.Tasking.Stages is
      (From, To   : Activation_Chain_Access;
       New_Master : Master_ID);
    --  Compiler interface only. Do not call from within the RTS.
-   --  Move all tasks on From list to To list, and change their Master_of_Task
+   --  Move all tasks on From list to To list, and change their Master_Of_Task
    --  to be New_Master. This is used to implement build-in-place function
    --  returns. Tasks that are part of the return object are initially placed
    --  on an activation chain local to the return statement, and their master

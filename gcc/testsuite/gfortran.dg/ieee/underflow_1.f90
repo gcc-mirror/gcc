@@ -16,16 +16,16 @@ program test_underflow_control
     x = tiny(x)
     call ieee_set_underflow_mode(.true.)
     x = x / 2000._kx
-    if (x == 0) call abort
+    if (x == 0) STOP 1
     call ieee_get_underflow_mode(l)
-    if (.not. l) call abort
+    if (.not. l) STOP 2
 
     x = tiny(x)
     call ieee_set_underflow_mode(.false.)
     x = x / 2000._kx
-    if (x > 0) call abort
+    if (x > 0) STOP 3
     call ieee_get_underflow_mode(l)
-    if (l) call abort
+    if (l) STOP 4
 
   end if
 
@@ -34,16 +34,16 @@ program test_underflow_control
     y = tiny(y)
     call ieee_set_underflow_mode(.true.)
     y = y / 2000._ky
-    if (y == 0) call abort
+    if (y == 0) STOP 5
     call ieee_get_underflow_mode(l)
-    if (.not. l) call abort
+    if (.not. l) STOP 6
 
     y = tiny(y)
     call ieee_set_underflow_mode(.false.)
     y = y / 2000._ky
-    if (y > 0) call abort
+    if (y > 0) STOP 7
     call ieee_get_underflow_mode(l)
-    if (l) call abort
+    if (l) STOP 8
 
   end if
 

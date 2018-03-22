@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -148,16 +148,14 @@ extern int darwin_emit_branch_islands;
 
 /* Pad the outgoing args area to 16 bytes instead of the usual 8.  */
 
-#undef STARTING_FRAME_OFFSET
-#define STARTING_FRAME_OFFSET						\
-  (FRAME_GROWS_DOWNWARD							\
-   ? 0									\
-   : (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
-      + RS6000_SAVE_AREA))
+#undef RS6000_STARTING_FRAME_OFFSET
+#define RS6000_STARTING_FRAME_OFFSET					\
+  (RS6000_ALIGN (crtl->outgoing_args_size, 16)				\
+   + RS6000_SAVE_AREA)
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
+  (RS6000_ALIGN (crtl->outgoing_args_size.to_constant (), 16)		\
    + (STACK_POINTER_OFFSET))
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */
@@ -273,6 +271,9 @@ extern int darwin_emit_branch_islands;
 /* Darwin always uses IBM long double, never IEEE long double.  */
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0
+
+#undef  TARGET_IEEEQUAD_DEFAULT
+#define TARGET_IEEEQUAD_DEFAULT 0
 
 /* Since Darwin doesn't do TOCs, stub this out.  */
 

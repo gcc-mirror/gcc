@@ -1,5 +1,5 @@
 /* Simulate storage of variables into target memory.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Paul Thomas and Brooks Moses
 
 This file is part of GCC.
@@ -65,7 +65,7 @@ size_logical (int kind)
 
 
 static size_t
-size_character (int length, int kind)
+size_character (gfc_charlen_t length, int kind)
 {
   int i = gfc_validate_kind (BT_CHARACTER, kind, false);
   return length * gfc_character_kinds[i].bit_size / 8;
@@ -97,9 +97,9 @@ gfc_element_size (gfc_expr *e)
 	       && e->ts.u.cl->length->expr_type == EXPR_CONSTANT
 	       && e->ts.u.cl->length->ts.type == BT_INTEGER)
 	{
-	  int length;
+	  HOST_WIDE_INT length;
 
-	  gfc_extract_int (e->ts.u.cl->length, &length);
+	  gfc_extract_hwi (e->ts.u.cl->length, &length);
 	  return size_character (length, e->ts.kind);
 	}
       else
@@ -216,17 +216,16 @@ encode_logical (int kind, int logical, unsigned char *buffer, size_t buffer_size
 }
 
 
-int
-gfc_encode_character (int kind, int length, const gfc_char_t *string,
+size_t
+gfc_encode_character (int kind, size_t length, const gfc_char_t *string,
 		      unsigned char *buffer, size_t buffer_size)
 {
   size_t elsize = size_character (1, kind);
   tree type = gfc_get_char_type (kind);
-  int i;
 
   gcc_assert (buffer_size >= size_character (length, kind));
 
-  for (i = 0; i < length; i++)
+  for (size_t i = 0; i < length; i++)
     native_encode_expr (build_int_cst (type, string[i]), &buffer[i*elsize],
 			elsize);
 
@@ -319,11 +318,11 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 				     buffer, buffer_size);
       else
 	{
-	  int start, end;
+	  HOST_WIDE_INT start, end;
 
 	  gcc_assert (source->expr_type == EXPR_SUBSTRING);
-	  gfc_extract_int (source->ref->u.ss.start, &start);
-	  gfc_extract_int (source->ref->u.ss.end, &end);
+	  gfc_extract_hwi (source->ref->u.ss.start, &start);
+	  gfc_extract_hwi (source->ref->u.ss.end, &end);
 	  return gfc_encode_character (source->ts.kind, MAX(end - start + 1, 0),
 				       &source->value.character.string[start-1],
 				       buffer, buffer_size);
@@ -349,22 +348,21 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 }
 
 
-static int
+static size_t
 interpret_array (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
 {
   gfc_constructor_base base = NULL;
-  int array_size = 1;
-  int i;
-  int ptr = 0;
+  size_t array_size = 1;
+  size_t ptr = 0;
 
   /* Calculate array size from its shape and rank.  */
   gcc_assert (result->rank > 0 && result->shape);
 
-  for (i = 0; i < result->rank; i++)
-    array_size *= (int)mpz_get_ui (result->shape[i]);
+  for (int i = 0; i < result->rank; i++)
+    array_size *= mpz_get_ui (result->shape[i]);
 
   /* Iterate over array elements, producing constructors.  */
-  for (i = 0; i < array_size; i++)
+  for (size_t i = 0; i < array_size; i++)
     {
       gfc_expr *e = gfc_get_constant_expr (result->ts.type, result->ts.kind,
 					   &result->where);
@@ -429,20 +427,18 @@ gfc_interpret_logical (int kind, unsigned char *buffer, size_t buffer_size,
 {
   tree t = native_interpret_expr (gfc_get_logical_type (kind), buffer,
 				  buffer_size);
-  *logical = wi::eq_p (t, 0) ? 0 : 1;
+  *logical = wi::to_wide (t) == 0 ? 0 : 1;
   return size_logical (kind);
 }
 
 
-int
+size_t
 gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
 			 gfc_expr *result)
 {
-  int i;
-
   if (result->ts.u.cl && result->ts.u.cl->length)
     result->value.character.length =
-      (int) mpz_get_ui (result->ts.u.cl->length->value.integer);
+      gfc_mpz_get_hwi (result->ts.u.cl->length->value.integer);
 
   gcc_assert (buffer_size >= size_character (result->value.character.length,
 					     result->ts.kind));
@@ -450,16 +446,16 @@ gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
     gfc_get_wide_string (result->value.character.length + 1);
 
   if (result->ts.kind == gfc_default_character_kind)
-    for (i = 0; i < result->value.character.length; i++)
+    for (size_t i = 0; i < (size_t) result->value.character.length; i++)
       result->value.character.string[i] = (gfc_char_t) buffer[i];
   else
     {
       mpz_t integer;
-      unsigned bytes = size_character (1, result->ts.kind);
+      size_t bytes = size_character (1, result->ts.kind);
       mpz_init (integer);
       gcc_assert (bytes <= sizeof (unsigned long));
 
-      for (i = 0; i < result->value.character.length; i++)
+      for (size_t i = 0; i < (size_t) result->value.character.length; i++)
 	{
 	  gfc_conv_tree_to_mpz (integer,
 	    native_interpret_expr (gfc_get_char_type (result->ts.kind),
@@ -551,6 +547,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
       gcc_assert (ptr % 8 == 0);
       ptr = ptr/8 + TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));
 
+      gcc_assert (e->ts.type != BT_VOID || cmp->attr.caf_token);
       gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e, true);
     }
 
@@ -559,7 +556,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
 
 
 /* Read a binary buffer to a constant expression.  */
-int
+size_t
 gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
 			   gfc_expr *result, bool convert_widechar)
 {
@@ -604,6 +601,13 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
       result->representation.length =
         gfc_interpret_derived (buffer, buffer_size, result);
       gcc_assert (result->representation.length >= 0);
+      break;
+
+    case BT_VOID:
+      /* This deals with caf_tokens.  */
+      result->representation.length =
+        gfc_interpret_integer (result->ts.kind, buffer, buffer_size,
+			       result->value.integer);
       break;
 
     default:

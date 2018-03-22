@@ -1,6 +1,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-maltivec=be -mabi=altivec -std=gnu99 -mvsx" } */
+/* Disable warnings to squelch deprecation message about -maltivec=be.  */
+/* { dg-options "-maltivec=be -mabi=altivec -std=gnu99 -mvsx -w" } */
 
 #include "harness.h"
 

@@ -1,4 +1,4 @@
-# Copyright (C) 1998-2017 Free Software Foundation, Inc.
+# Copyright (C) 1998-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -36,7 +36,7 @@ v7ve_fps	:= vfpv3-d16 vfpv3 vfpv3-d16-fp16 vfpv3-fp16 vfpv4 neon \
 
 # Not all these permutations exist for all architecture variants, but
 # it seems to work ok.
-v8_fps		:= simd fp16 crypto fp16+crypto
+v8_fps		:= simd fp16 crypto fp16+crypto dotprod fp16fml
 
 # We don't do anything special with these.  Pre-v4t probably doesn't work.
 all_early_nofp	:= armv2 armv2a armv3 armv3m armv4 armv4t armv5 armv5t
@@ -46,7 +46,7 @@ all_early_arch	:= armv5e armv5tej armv6 armv6j armv6k armv6z armv6kz \
 
 all_v7_a_r	:= armv7-a armv7ve armv7-r
 
-all_v8_archs	:= armv8-a armv8-a+crc armv8.1-a armv8.2-a
+all_v8_archs	:= armv8-a armv8-a+crc armv8.1-a armv8.2-a armv8.3-a armv8.4-a
 
 # No floating point variants, require thumb1 softfp
 all_nofp_t	:= armv6-m armv6s-m armv8-m.base

@@ -1,3 +1,37 @@
+2018-02-09  Alexandre Oliva <aoliva@redhat.com>
+
+	* dwarf2.def (DW_AT_GNU_entry_view): New.
+
+	* dwarf2.def (DW_AT_GNU_locviews): New.
+	* dwarf2.h (enum dwarf_location_list_entry_type): Add
+	DW_LLE_GNU_view_pair.
+	(DW_LLE_view_pair): Define.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-11-20  Kito Cheng  <kito.cheng@gmail.com>
+
+	* longlong.h [__riscv] (__umulsidi3): Define.
+	[__riscv] (umul_ppmm): Likewise.
+	[__riscv] (__muluw3): Likewise.
+
+2017-11-10  Stephen Crane <sjc@immunant.com>
+
+	* plugin-api.h: Add plugin API for processing plugin-added
+	input files.
+
+2017-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* unique-ptr.h: Make include of <memory> conditional on C++11 or
+	later.
+
+2017-10-16  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* unique-ptr.h: New file.
+
 2017-09-15  Yao Qi  <yao.qi@linaro.org>
 	    Pedro Alves  <palves@redhat.com>
 

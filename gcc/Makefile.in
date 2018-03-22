@@ -1,7 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987-2017 Free Software Foundation, Inc.
+# Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -57,6 +57,7 @@ MAKEOVERRIDES =
 build=@build@
 host=@host@
 host_noncanonical=@host_noncanonical@
+host_os=@host_os@
 target=@target@
 target_noncanonical:=@target_noncanonical@
 
@@ -392,6 +393,11 @@ PLUGINCFLAGS = @CXXFLAGS@
 PLUGINLIBS = @pluginlibs@
 
 enable_plugin = @enable_plugin@
+
+# On MinGW plugin installation involves installing import libraries.
+ifeq ($(enable_plugin),yes)
+  plugin_implib := $(if $(strip $(filter mingw%,$(host_os))),yes,no)
+endif
 
 enable_host_shared = @enable_host_shared@
 
@@ -917,7 +923,7 @@ RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
-	gtm-builtins.def sanitizer.def cilkplus.def cilk-builtins.def \
+	gtm-builtins.def sanitizer.def \
 	hsa-builtins.def
 INTERNAL_FN_DEF = internal-fn.def
 INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
@@ -1110,6 +1116,10 @@ endif
 
 LANG_MAKEFRAGS = @all_lang_makefrags@
 
+# Used by gcc/jit/Make-lang.in
+LD_VERSION_SCRIPT_OPTION = @ld_version_script_option@
+LD_SONAME_OPTION = @ld_soname_option@
+
 # Flags to pass to recursive makes.
 # CC is set by configure.
 # ??? The choices here will need some experimenting with.
@@ -1161,6 +1171,7 @@ FLAGS_TO_PASS = \
 	"libexecsubdir=$(libexecsubdir)" \
 	"datarootdir=$(datarootdir)" \
 	"datadir=$(datadir)" \
+	"libsubdir=$(libsubdir)" \
 	"localedir=$(localedir)"
 #
 # Lists of files for various purposes.
@@ -1188,9 +1199,8 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-lex.o c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
-  c-family/c-cilkplus.o \
-  c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o \
-  c-family/c-attribs.o c-family/c-warn.o
+  c-family/c-ubsan.o c-family/known-headers.o \
+  c-family/c-attribs.o c-family/c-warn.o c-family/c-spellcheck.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
@@ -1239,7 +1249,6 @@ OBJS = \
 	cgraphbuild.o \
 	cgraphunit.o \
 	cgraphclones.o \
-	cilk-common.o \
 	combine.o \
 	combine-stack-adj.o \
 	compare-elim.o \
@@ -1272,6 +1281,7 @@ OBJS = \
 	dwarf2asm.o \
 	dwarf2cfi.o \
 	dwarf2out.o \
+	early-remat.o \
 	emit-rtl.o \
 	et-forest.o \
 	except.o \
@@ -1279,6 +1289,7 @@ OBJS = \
 	expmed.o \
 	expr.o \
 	fibonacci_heap.o \
+	file-prefix-map.o \
 	final.o \
 	fixed-value.o \
 	fold-const.o \
@@ -1297,9 +1308,13 @@ OBJS = \
 	gimple-iterator.o \
 	gimple-fold.o \
 	gimple-laddress.o \
+	gimple-loop-interchange.o \
+	gimple-loop-jam.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
 	gimple-ssa-backprop.o \
+	gimple-ssa-evrp.o \
+	gimple-ssa-evrp-analyze.o \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-nonnull-compare.o \
 	gimple-ssa-split-paths.o \
@@ -1307,6 +1322,7 @@ OBJS = \
 	gimple-ssa-strength-reduction.o \
 	gimple-ssa-sprintf.o \
 	gimple-ssa-warn-alloca.o \
+	gimple-ssa-warn-restrict.o \
 	gimple-streamer-in.o \
 	gimple-streamer-out.o \
 	gimple-walk.o \
@@ -1353,6 +1369,7 @@ OBJS = \
 	ipa-predicate.o \
 	ipa-profile.o \
 	ipa-prop.o \
+	ipa-param-manipulation.o \
 	ipa-pure-const.o \
 	ipa-icf.o \
 	ipa-icf-gimple.o \
@@ -1444,11 +1461,11 @@ OBJS = \
 	rtlhash.o \
 	rtlanal.o \
 	rtlhooks.o \
+	rtx-vector-builder.o \
 	run-rtl-passes.o \
 	sched-deps.o \
 	sched-ebb.o \
 	sched-rgn.o \
-	sdbout.o \
 	sel-sched-ir.o \
 	sel-sched-dump.o \
 	sel-sched.o \
@@ -1571,15 +1588,19 @@ OBJS = \
 	tree-vect-loop-manip.o \
 	tree-vect-slp.o \
 	tree-vectorizer.o \
+	tree-vector-builder.o \
 	tree-vrp.o \
 	tree.o \
 	typed-splay-tree.o \
+	unique-ptr-tests.o \
 	valtrack.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
 	varpool.o \
+	vec-perm-indices.o \
 	vmsdbgout.o \
+	vr-values.o \
 	vtable-verify.o \
 	web.o \
 	wide-int.o \
@@ -1596,7 +1617,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 	pretty-print.o intl.o \
 	sbitmap.o \
 	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
-	selftest.o
+	selftest.o selftest-diagnostic.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
@@ -1909,9 +1930,12 @@ rest.cross: specs
 # Specify -o /dev/null so the output of -S is discarded. More importantly
 # It does not try to create a file with the name "null.s" on POSIX and
 # "nul.s" on Windows. Because on Windows "nul" is a reserved file name.
+# Beware that /dev/null is not available to mingw tools, so directly use
+# "nul" instead of "/dev/null" if we're building on a mingw machine.
 # Specify the path to gcc/testsuite/selftests within the srcdir
 # as an argument to -fself-test.
-SELFTEST_FLAGS = -nostdinc /dev/null -S -o /dev/null \
+DEVNULL=$(if $(findstring mingw,$(build)),nul,/dev/null)
+SELFTEST_FLAGS = -nostdinc $(DEVNULL) -S -o $(DEVNULL) \
 	-fself-test=$(srcdir)/testsuite/selftests
 
 C_SELFTEST_FLAGS = -xc $(SELFTEST_FLAGS)
@@ -2137,7 +2161,7 @@ CFLAGS-collect2.o += -DTARGET_MACHINE=\"$(target_noncanonical)\" \
 
 LTO_WRAPPER_OBJS = lto-wrapper.o collect-utils.o ggc-none.o
 lto-wrapper$(exeext): $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBDEPS)
-	+$(LINKER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o T$@ \
 	   $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBS)
 	mv -f T$@ $@
 
@@ -2503,8 +2527,8 @@ s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
 GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
-  $(srcdir)/wide-int.h $(srcdir)/alias.h $(srcdir)/cilk.h \
-  $(srcdir)/cilk-common.c $(srcdir)/coverage.c  $(srcdir)/rtl.h \
+  $(srcdir)/wide-int.h $(srcdir)/alias.h \
+  $(srcdir)/coverage.c  $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
@@ -2530,7 +2554,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/lists.c $(srcdir)/optabs-libfuncs.c \
   $(srcdir)/profile.c $(srcdir)/mcf.c \
   $(srcdir)/reg-stack.c $(srcdir)/cfgrtl.c \
-  $(srcdir)/sdbout.c $(srcdir)/stor-layout.c \
+  $(srcdir)/stor-layout.c \
   $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \
@@ -2799,7 +2823,8 @@ genprog = $(genprogerr) check checksum condmd match
 build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 
 build/genrecog$(build_exeext) : build/hash-table.o build/inchash.o
-build/gencfn-macros$(build_exeext) : build/hash-table.o build/ggc-none.o
+build/gencfn-macros$(build_exeext) : build/hash-table.o build/vec.o \
+  build/ggc-none.o
 
 # For stage1 and when cross-compiling use the build libcpp which is
 # built with NLS disabled.  For stage2+ use the host library and
@@ -2830,11 +2855,15 @@ $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o 
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
 # Generated source files for gengtype.  Prepend inclusion of
-# bconfig.h because AIX requires _LARGE_FILES to be defined before
+# config.h/bconfig.h because AIX requires _LARGE_FILES to be defined before
 # any system header is included.
 gengtype-lex.c : gengtype-lex.l
 	-$(FLEX) $(FLEXFLAGS) -o$@ $< && { \
-	  echo '#include "bconfig.h"' > $@.tmp; \
+	  echo '#ifdef HOST_GENERATOR_FILE' > $@.tmp; \
+	  echo '#include "config.h"'       >> $@.tmp; \
+	  echo '#else'                     >> $@.tmp; \
+	  echo '#include "bconfig.h"'      >> $@.tmp; \
+	  echo '#endif'                    >> $@.tmp; \
 	  cat $@ >> $@.tmp; \
 	  mv $@.tmp $@; \
 	}
@@ -3150,7 +3179,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
 	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
 	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi   \
-	 match-and-simplify.texi
+	 match-and-simplify.texi poly-int.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
 	 gcc-common.texi gcc-vers.texi
@@ -3473,7 +3502,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(C_COMMON_H) c-family/c-objc.h $(C_PRETTY_PRINT_H) \
   tree-iterator.h $(PLUGIN_H) $(TREE_SSA_H) langhooks.h incpath.h debug.h \
   $(EXCEPT_H) tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H) \
-  $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
+  ipa-param-manipulation.h $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
   cppdefault.h flags.h $(MD5_H) params.def params.h params-enum.h \
   prefix.h tree-inline.h $(GIMPLE_PRETTY_PRINT_H) realmpfr.h \
   $(IPA_PROP_H) $(TARGET_H) $(RTL_H) $(TM_P_H) $(CFGLOOP_H) $(EMIT_RTL_H) \
@@ -3489,8 +3518,8 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   tree-ssa-loop-niter.h tree-ssa-ter.h tree-ssa-threadedge.h \
   tree-ssa-threadupdate.h inchash.h wide-int.h signop.h hash-map.h \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
-  lcm.h cfgloopmanip.h builtins.def chkp-builtins.def pass-instances.def \
-  params.list
+  lcm.h cfgloopmanip.h file-prefix-map.h builtins.def chkp-builtins.def \
+  pass-instances.def params.list
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
@@ -4138,12 +4167,12 @@ TAGS: lang.tags
 	    incs="$$incs --include $$dir/TAGS.sub";	\
 	  fi;						\
 	done;						\
-	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c *.cc \
+	etags -o TAGS.sub c-family/*.h c-family/*.c c-family/*.cc \
+	      *.h *.c *.cc \
 	      ../include/*.h ../libiberty/*.c \
 	      ../libcpp/*.c ../libcpp/include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
-	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\).*(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def \
-	      --language=none --regex="/DEFTIMEVAR (\([A-Za-z_0-9]+\)/\1/" timevar.def \
+	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\|DEFTIMEVAR\|DEFPARAM\|DEFPARAMENUM5\)[ ]?(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def timevar.def params.def \
 		; \
 	etags --include TAGS.sub $$incs)
 

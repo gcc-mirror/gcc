@@ -1,6 +1,6 @@
 // Debugging set implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -298,13 +298,7 @@ namespace __debug
 
 #if __cplusplus > 201402L
       using node_type = typename _Base::node_type;
-
-      struct insert_return_type
-      {
-	bool inserted;
-	iterator position;
-	node_type node;
-      };
+      using insert_return_type = _Node_insert_return<iterator, node_type>;
 
       node_type
       extract(const_iterator __position)
@@ -328,7 +322,7 @@ namespace __debug
       {
 	auto __ret = _Base::insert(std::move(__nh));
 	iterator __pos = iterator(__ret.position, this);
-	return { __ret.inserted, __pos, std::move(__ret.node) };
+	return { __pos, __ret.inserted, std::move(__ret.node) };
       }
 
       iterator
@@ -559,6 +553,42 @@ namespace __debug
       const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT	{ return *this; }
     };
+
+#if __cpp_deduction_guides >= 201606
+
+  template<typename _InputIterator,
+	   typename _Compare =
+	     less<typename iterator_traits<_InputIterator>::value_type>,
+	   typename _Allocator =
+	     allocator<typename iterator_traits<_InputIterator>::value_type>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    set(_InputIterator, _InputIterator,
+       _Compare = _Compare(), _Allocator = _Allocator())
+   -> set<typename iterator_traits<_InputIterator>::value_type,
+	  _Compare, _Allocator>;
+
+ template<typename _Key, typename _Compare = less<_Key>,
+	  typename _Allocator = allocator<_Key>,
+	  typename = _RequireAllocator<_Allocator>>
+   set(initializer_list<_Key>,
+       _Compare = _Compare(), _Allocator = _Allocator())
+   -> set<_Key, _Compare, _Allocator>;
+
+ template<typename _InputIterator, typename _Allocator,
+	  typename = _RequireInputIter<_InputIterator>,
+	  typename = _RequireAllocator<_Allocator>>
+   set(_InputIterator, _InputIterator, _Allocator)
+   -> set<typename iterator_traits<_InputIterator>::value_type,
+	  less<typename iterator_traits<_InputIterator>::value_type>,
+	  _Allocator>;
+
+ template<typename _Key, typename _Allocator,
+	  typename = _RequireAllocator<_Allocator>>
+   set(initializer_list<_Key>, _Allocator)
+   -> set<_Key, less<_Key>, _Allocator>;
+
+#endif
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool

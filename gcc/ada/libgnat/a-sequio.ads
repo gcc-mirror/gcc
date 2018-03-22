@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -50,7 +50,7 @@ package Ada.Sequential_IO is
      (Element_Type'Has_Tagged_Values,
       "Element_Type for Sequential_IO instance has tagged values");
 
-   type File_Type is limited private;
+   type File_Type is limited private with Default_Initial_Condition;
 
    type File_Mode is (In_File, Out_File, Append_File);
 

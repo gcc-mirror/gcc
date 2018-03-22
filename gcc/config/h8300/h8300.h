@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 (generic)
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -352,25 +352,7 @@ enum reg_class {
 
 #define FRAME_GROWS_DOWNWARD 1
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-
-#define STARTING_FRAME_OFFSET 0
-
-/* If we generate an insn to push BYTES bytes,
-   this says how many the stack pointer really advances by.
-
-   On the H8/300, @-sp really pushes a byte if you ask it to - but that's
-   dangerous, so we claim that it always pushes a word, then we catch
-   the mov.b rx,@-sp and turn it into a mov.w rx,@-sp on output.
-
-   On the H8/300H, we simplify TARGET_QUICKCALL by setting this to 4
-   and doing a similar thing.  */
-
-#define PUSH_ROUNDING(BYTES) \
-  (((BYTES) + PARM_BOUNDARY / 8 - 1) & -PARM_BOUNDARY / 8)
+#define PUSH_ROUNDING(BYTES) h8300_push_rounding (BYTES)
 
 /* Offset of first parameter from the argument pointer register value.  */
 /* Is equal to the size of the saved fp + pc, even if an fp isn't

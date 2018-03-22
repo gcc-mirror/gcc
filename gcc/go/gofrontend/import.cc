@@ -607,8 +607,9 @@ Import::import_func(Package* package)
   Typed_identifier_list* parameters;
   Typed_identifier_list* results;
   bool is_varargs;
+  bool nointerface;
   Function::import_func(this, &name, &receiver,
-			&parameters, &results, &is_varargs);
+			&parameters, &results, &is_varargs, &nointerface);
   Function_type *fntype = Type::make_function_type(receiver, parameters,
 						   results, this->location_);
   if (is_varargs)
@@ -648,6 +649,10 @@ Import::import_func(Package* package)
       if (this->add_to_globals_)
 	this->gogo_->add_dot_import_object(no);
     }
+
+  if (nointerface)
+    no->func_declaration_value()->set_nointerface();
+
   return no;
 }
 
@@ -756,13 +761,6 @@ Import::read_type()
 
   this->require_c_string(" ");
 
-  bool is_alias = false;
-  if (this->match_c_string("= "))
-    {
-      stream->advance(2);
-      is_alias = true;
-    }
-
   // The package name may follow.  This is the name of the package in
   // the package clause of that package.  The type name will include
   // the pkgpath, which may be different.
@@ -773,6 +771,13 @@ Import::read_type()
       while ((c = stream->get_char()) != '"')
 	package_name += c;
       this->require_c_string(" ");
+    }
+
+  bool is_alias = false;
+  if (this->match_c_string("= "))
+    {
+      stream->advance(2);
+      is_alias = true;
     }
 
   // Declare the type in the appropriate package.  If we haven't seen

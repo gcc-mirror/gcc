@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,12 +37,12 @@
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 
-with System.Parameters;
-with System.Task_Info;
-with System.Soft_Links;
-with System.Task_Primitives;
-with System.Stack_Usage;
 with System.Multiprocessors;
+with System.Parameters;
+with System.Soft_Links;
+with System.Stack_Usage;
+with System.Task_Info;
+with System.Task_Primitives;
 
 package System.Tasking is
    pragma Preelaborate;
@@ -702,13 +702,6 @@ package System.Tasking is
       --  need to do different things depending on the situation.
       --
       --  Protection: Self.L
-
-      Secondary_Stack_Size : System.Parameters.Size_Type;
-      --  Secondary_Stack_Size is the size of the secondary stack for the
-      --  task. Defined here since it is the responsibility of the task to
-      --  creates its own secondary stack.
-      --
-      --  Protected: Only accessed by Self
    end record;
 
    ---------------------------------------
@@ -989,7 +982,7 @@ package System.Tasking is
       --  updated it itself using information from a suspended Caller, or
       --  after Caller has updated it and awakened Self.
 
-      Master_of_Task : Master_Level;
+      Master_Of_Task : Master_Level;
       --  The task executing the master of this task, and the ID of this task's
       --  master (unique only among masters currently active within Parent).
       --
@@ -1173,7 +1166,6 @@ package System.Tasking is
       Domain               : Dispatching_Domain_Access;
       Task_Info            : System.Task_Info.Task_Info_Type;
       Stack_Size           : System.Parameters.Size_Type;
-      Secondary_Stack_Size : System.Parameters.Size_Type;
       T                    : Task_Id;
       Success              : out Boolean);
    --  Initialize fields of the TCB for task T, and link into global TCB

@@ -1,5 +1,5 @@
 /* Definitions of target machine for Altera Nios II.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -91,10 +91,6 @@
 #define STACK_BOUNDARY 32
 #define PREFERRED_STACK_BOUNDARY 32
 #define MAX_FIXED_MODE_SIZE 64
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)                          \
-  ((TREE_CODE (EXP) == STRING_CST)                              \
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
 #define LABEL_ALIGN(LABEL) nios2_label_align (LABEL)
 
@@ -225,7 +221,7 @@ enum reg_class
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 #define CDX_REG_P(REGNO)						\
-  ((REGNO) == 16 || (REGNO) == 17 || (2 <= (REGNO) && (REGNO) <= 7))
+  ((REGNO) == 16 || (REGNO) == 17 || ((REGNO) >= 2 && (REGNO) <= 7))
 
 /* Tests for various kinds of constants used in the Nios II port.  */
 
@@ -256,7 +252,7 @@ enum reg_class
 
 /* Stack layout.  */
 #define STACK_GROWS_DOWNWARD 1
-#define STARTING_FRAME_OFFSET 0
+#define FRAME_GROWS_DOWNWARD 1
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 /* Before the prologue, RA lives in r31.  */
@@ -435,7 +431,7 @@ typedef struct nios2_args
 /* Output before 'small' uninitialized data.  */
 #define SBSS_SECTION_ASM_OP "\t.section\t.sbss"
 
-#ifndef IN_LIBGCC2
+#ifndef USED_FOR_TARGET
 /* Default the definition of "small data" to 8 bytes.  */
 extern unsigned HOST_WIDE_INT nios2_section_threshold;
 #endif

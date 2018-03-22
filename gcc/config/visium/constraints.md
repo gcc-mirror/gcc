@@ -1,5 +1,5 @@
 ;; Constraint definitions for Visium.
-;; Copyright (C) 2006-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -48,17 +48,17 @@
 (define_constraint "J"
   "Integer constant in the range 0 .. 65535 (16-bit immediate)"
   (and (match_code "const_int")
-       (match_test "0 <= ival && ival <= 65535")))
+       (match_test "IN_RANGE (ival, 0, 65535)")))
 
 (define_constraint "K"
   "Integer constant in the range 1 .. 31 (5-bit immediate)"
   (and (match_code "const_int")
-       (match_test "1 <= ival && ival <= 31")))
+       (match_test "IN_RANGE (ival, 1, 31)")))
 
 (define_constraint "L"
   "Integer constant in the range -65535 .. -1 (16-bit negative immediate)"
   (and (match_code "const_int")
-       (match_test "-65535 <= ival && ival <= -1")))
+       (match_test "IN_RANGE (ival, -65535, -1)")))
 
 (define_constraint "M"
   "Integer constant -1"

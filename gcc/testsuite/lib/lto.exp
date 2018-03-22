@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+# Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,126 @@
 # <http://www.gnu.org/licenses/>.
 
 # Contributed by Diego Novillo <dnovillo@google.com>
+
+# A subroutine of lto_handle_diagnostics: check TEXT for the expected
+# diagnostics for one specific source file, issuing PASS/FAIL results.
+# Return TEXT, stripped of any diagnostics that were handled.
+#
+# NAME is the testcase name to use when reporting PASS/FAIL results.
+# FILENAME is the name (with full path) of the file we're interested in.
+# MESSAGES_FOR_FILE is a list of expected messages, akin to DejaGnu's
+# "dg-messages" variable.
+# TEXT is the textual output from the LTO link.
+
+proc lto_handle_diagnostics_for_file { name filename messages_for_file text } {
+    global dg-linenum-format
+
+    set filename_without_path [file tail $filename]
+
+    # This loop is adapted from the related part of DejaGnu's dg-test,
+    # with changes as detailed below to cope with the LTO case.
+
+    foreach i ${messages_for_file} {
+	verbose "Scanning for message: $i" 4
+
+	# Remove all error messages for the line [lindex $i 0]
+	# in the source file.  If we find any, success!
+	set line [lindex $i 0]
+	set pattern [lindex $i 2]
+	set comment [lindex $i 3]
+	verbose "line: $line" 4
+	verbose "pattern: $pattern" 4
+	verbose "comment: $comment" 4
+	#send_user "Before:\n$text\n"
+
+	# Unlike dg-test, we use $filename_without_path in this pattern.
+	# This is to ensure that we have the correct file/line combination.
+	# This imposes the restriction that the filename can't contain
+	# any regexp control characters.  We have to strip the path, since
+	# e.g. the '+' in "g++.dg" wouldn't be valid.
+	set pat "(^|\n)(\[^\n\]+$filename_without_path$line\[^\n\]*($pattern)\[^\n\]*\n?)+"
+	if {[regsub -all $pat $text "\n" text]} {
+	    set text [string trimleft $text]
+	    set ok pass
+	    set uhoh fail
+	} else {
+	    set ok fail
+	    set uhoh pass
+	}
+	#send_user "After:\n$text\n"
+
+	# $line will either be a formatted line number or a number all by
+	# itself.  Delete the formatting.
+	scan $line ${dg-linenum-format} line
+
+	# Unlike dg-test, add the filename to the PASS/FAIL message (rather
+	# than just the line number) so that the user can identify the
+	# pertinent directive.
+	set describe_where "$filename_without_path line $line"
+
+	# Issue the PASS/FAIL, adding "LTO" to the messages (e.g. "LTO errors")
+	# to distinguish them from the non-LTO case (in case we ever need to
+	# support both).
+	switch [lindex $i 1] {
+	    "ERROR" {
+		$ok "$name $comment (test for LTO errors, $describe_where)"
+	    }
+	    "XERROR" {
+		x$ok "$name $comment (test for LTO errors, $describe_where)"
+	    }
+	    "WARNING" {
+		$ok "$name $comment (test for LTO warnings, $describe_where)"
+	    }
+	    "XWARNING" {
+		x$ok "$name $comment (test for LTO warnings, $describe_where)"
+	    }
+	    "BOGUS" {
+		$uhoh "$name $comment (test for LTO bogus messages, $describe_where)"
+	    }
+	    "XBOGUS" {
+		x$uhoh "$name $comment (test for LTO bogus messages, $describe_where)"
+	    }
+	    "BUILD" {
+		$uhoh "$name $comment (test for LTO build failure, $describe_where)"
+	    }
+	    "XBUILD" {
+		x$uhoh "$name $comment (test for LTO build failure, $describe_where)"
+	    }
+	    "EXEC" { }
+	    "XEXEC" { }
+	}
+    }
+    return $text
+}
+
+# Support for checking for link-time diagnostics: check for
+# the expected diagnostics within TEXT, issuing PASS/FAIL results.
+# Return TEXT, stripped of any diagnostics that were handled.
+#
+# TEXT is the textual output from the LTO link.
+
+proc lto_handle_diagnostics { text } {
+    global testcase
+
+    upvar dg-messages-by-file messages_by_file
+
+    verbose "lto_handle_diagnostics: entry: $text" 2
+
+    if { ![array exists messages_by_file] } {
+	error "lto_handle_diagnostics: messages_by_file not defined"
+    }
+
+    foreach src [lsort [array names messages_by_file]] {
+	set dg-messages $messages_by_file($src)
+	verbose "  messages for $src: ${dg-messages}" 3
+	set text [lto_handle_diagnostics_for_file $testcase $src \
+		      ${dg-messages} $text]
+    }
+
+    verbose "lto_handle_diagnostics: exit: $text" 2
+
+    return $text
+}
 
 # Prune messages that aren't useful.
 
@@ -38,6 +158,9 @@ proc lto_prune_warns { text } {
     regsub -all "(^|\n)ld: warning: symbol \[`'\]\[^\n\]*' has differing sizes:" $text "" text
     regsub -all "(^|\n)\[ \t\]*\[\(\]file \[^\n\]* value=\[^\n\]*; file \[^\n\]* value=\[^\n\]*\[)\];" $text "" text
     regsub -all "(^|\n)\[ \t\]*\[^\n\]* definition taken" $text "" text
+
+    # Ignore informational notes.
+    regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
 
     verbose "lto_prune_warns: exit: $text" 2
 
@@ -181,6 +304,10 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     global compile_type
     global board_info
 
+    upvar dg-messages-by-file dg-messages-by-file
+
+    verbose "lto-link-and-maybe-run" 2
+
     # Check that all of the objects were built successfully.
     foreach obj [split $objlist] {
 	if ![file_on_host exists $obj] then {
@@ -217,12 +344,17 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
 	set board_info($target_board,ldscript) $saved_ldscript
     }
 
+    # Check for diagnostics specified by directives
+    set comp_output [lto_handle_diagnostics $comp_output]
+
     # Prune unimportant visibility warnings before checking output.
     set comp_output [lto_prune_warns $comp_output]
 
     if ![${tool}_check_compile "$testcase $testname link" $optstr \
 	 $dest $comp_output] then {
-	unresolved "$testcase $testname execute $optstr"
+	if { ![string compare "execute" $compile_type] } {
+	    unresolved "$testcase $testname execute $optstr"
+	}
 	return
     }
 
@@ -241,6 +373,51 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
 	file_on_host delete $dest
     }
     $status "$testcase $testname execute $optstr"
+}
+
+# Potentially handle the given dg- directive (a list)
+# Return true is the directive was handled, false otherwise.
+
+proc lto-can-handle-directive { op } {
+    set cmd [lindex $op 0]
+
+    # dg-warning and dg-message append to dg-messages.
+    upvar dg-messages dg-messages
+
+    # A list of directives to recognize, and a list of directives
+    # to remap them to.
+    # For example, "dg-lto-warning" is implemented by calling "dg-warning".
+    set directives { dg-lto-warning dg-lto-message }
+    set remapped_directives { dg-warning dg-message }
+
+    set idx [lsearch -exact $directives $cmd]
+    if { $idx != -1 } {
+	verbose "remapping from: $op" 4
+
+	set remapped_cmd [lindex $remapped_directives $idx]
+	set op [lreplace $op 0 0 $remapped_cmd]
+
+	verbose "remapped to: $op" 4
+
+	set status [catch "$op" errmsg]
+	if { $status != 0 } {
+	    if { 0 && [info exists errorInfo] } {
+		# This also prints a backtrace which will just confuse
+		# testcase writers, so it's disabled.
+		perror "$name: $errorInfo\n"
+	    } else {
+		perror "$name: $errmsg for \"$op\"\n"
+	    }
+	    # ??? The call to unresolved here is necessary to clear `errcnt'.
+	    # What we really need is a proc like perror that doesn't set errcnt.
+	    # It should also set exit_status to 1.
+	    unresolved "$name: $errmsg for \"$op\""
+	}
+
+	return true
+    }
+
+    return false
 }
 
 # lto-get-options-main -- get target requirements for a test and
@@ -266,6 +443,10 @@ proc lto-get-options-main { src } {
     upvar dg-final-code dg-final-code
     set dg-final-code ""
 
+    # dg-warning and dg-message append to dg-messages.
+    upvar dg-messages-by-file dg-messages-by-file
+    set dg-messages ""
+    
     set tmp [dg-get-options $src]
     verbose "getting options for $src: $tmp"
     foreach op $tmp {
@@ -342,11 +523,14 @@ proc lto-get-options-main { src } {
 	    } else {
 		append dg-final-code "[lindex $op 2]\n"
 	    }
-	} else {
+	} elseif { ![lto-can-handle-directive $op] } {
 	    # Ignore unrecognized dg- commands, but warn about them.
 	    warning "lto.exp does not support $cmd"
 	}
     }
+
+    verbose "dg-messages: ${dg-messages}" 3
+    set dg-messages-by-file($src) ${dg-messages}
 
     # Return flags to use for compiling the primary source file and for
     # linking.
@@ -373,6 +557,10 @@ proc lto-get-options { src } {
     # dg-xfail-if needs access to dg-do-what.
     upvar dg-do-what dg-do-what 
 
+    # dg-warning appends to dg-messages.
+    upvar dg-messages-by-file dg-messages-by-file
+    set dg-messages ""
+
     set tmp [dg-get-options $src]
     foreach op $tmp {
 	set cmd [lindex $op 0]
@@ -386,10 +574,17 @@ proc lto-get-options { src } {
 	    }
 	} elseif { [string match "dg-require-*" $cmd] } {
 	    warning "lto.exp does not support $cmd in secondary source files"
-	} else {
+	} elseif { ![lto-can-handle-directive $op] } {
 	    # Ignore unrecognized dg- commands, but warn about them.
 	    warning "lto.exp does not support $cmd in secondary source files"
 	}
+    }
+
+    verbose "dg-messages: ${dg-messages}" 3
+    if { [info exists dg-messages-by-file($src)] } {
+	append dg-messages-by-file($src) ${dg-messages}
+    } else {
+	set dg-messages-by-file($src) ${dg-messages}
     }
 
     return ${dg-extra-tool-flags}
@@ -421,6 +616,7 @@ proc lto-execute { src1 sid } {
     verbose "lto-execute: $src1" 1
     set compile_type "run"
     set dg-do-what [list ${dg-do-what-default} "" P]
+    array set dg-messages-by-file [list]
     set extra_flags(0) [lto-get-options-main $src1]
     set compile_xfail(0) "" 
 

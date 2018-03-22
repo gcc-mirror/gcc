@@ -1,5 +1,5 @@
 /* Callgraph transformations to handle inlining
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -51,39 +51,25 @@ along with GCC; see the file COPYING3.  If not see
 int ncalls_inlined;
 int nfunctions_inlined;
 
-/* Scale frequency of NODE edges by FREQ_SCALE.  */
+/* Scale counts of NODE edges by NUM/DEN.  */
 
 static void
-update_noncloned_frequencies (struct cgraph_node *node, 
-			      int freq_scale, profile_count num,
-			      profile_count den)
+update_noncloned_counts (struct cgraph_node *node, 
+			 profile_count num, profile_count den)
 {
   struct cgraph_edge *e;
-  bool scale = (num == profile_count::zero () || den > 0);
 
-  /* We do not want to ignore high loop nest after freq drops to 0.  */
-  if (!freq_scale)
-    freq_scale = 1;
+  profile_count::adjust_for_ipa_scaling (&num, &den);
+
   for (e = node->callees; e; e = e->next_callee)
     {
-      e->frequency = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
-      if (e->frequency > CGRAPH_FREQ_MAX)
-        e->frequency = CGRAPH_FREQ_MAX;
       if (!e->inline_failed)
-        update_noncloned_frequencies (e->callee, freq_scale, num, den);
-      if (scale)
-	e->count = e->count.apply_scale (num, den);
+        update_noncloned_counts (e->callee, num, den);
+      e->count = e->count.apply_scale (num, den);
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
-    {
-      e->frequency = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
-      if (e->frequency > CGRAPH_FREQ_MAX)
-        e->frequency = CGRAPH_FREQ_MAX;
-      if (scale)
-	e->count = e->count.apply_scale (num, den);
-    }
-  if (scale)
-    node->count = node->count.apply_scale (num, den);
+    e->count = e->count.apply_scale (num, den);
+  node->count = node->count.apply_scale (num, den);
 }
 
 /* We removed or are going to remove the last call to NODE.
@@ -171,12 +157,11 @@ master_clone_with_noninline_clones_p (struct cgraph_node *node)
    By default the offline copy is removed, when it appears dead after inlining.
    UPDATE_ORIGINAL prevents this transformation.
    If OVERALL_SIZE is non-NULL, the size is updated to reflect the
-   transformation.
-   FREQ_SCALE specify the scaling of frequencies of call sites.  */
+   transformation.  */
 
 void
 clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
-		     bool update_original, int *overall_size, int freq_scale)
+		     bool update_original, int *overall_size)
 {
   struct cgraph_node *inlining_into;
   struct cgraph_edge *next;
@@ -220,8 +205,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    }
 	  duplicate = false;
 	  e->callee->externally_visible = false;
-          update_noncloned_frequencies (e->callee, e->frequency,
-					e->count, e->callee->count);
+          update_noncloned_counts (e->callee, e->count, e->callee->count);
 
 	  dump_callgraph_transformation (e->callee, inlining_into,
 					 "inlining to");
@@ -230,11 +214,8 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	{
 	  struct cgraph_node *n;
 
-	  if (freq_scale == -1)
-	    freq_scale = e->frequency;
 	  n = e->callee->create_clone (e->callee->decl,
-				       MIN (e->count, e->callee->count),
-				       freq_scale,
+				       e->count,
 				       update_original, vNULL, true,
 				       inlining_into,
 				       NULL);
@@ -252,7 +233,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     {
       next = e->next_callee;
       if (!e->inline_failed)
-        clone_inlined_nodes (e, duplicate, update_original, overall_size, freq_scale);
+        clone_inlined_nodes (e, duplicate, update_original, overall_size);
     }
 }
 
@@ -459,7 +440,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	}
     }
 
-  clone_inlined_nodes (e, true, update_original, overall_size, e->frequency);
+  clone_inlined_nodes (e, true, update_original, overall_size);
 
   gcc_assert (curr->callee->global.inlined_to == to);
 
@@ -676,11 +657,10 @@ inline_transform (struct cgraph_node *node)
     {
       profile_count num = node->count;
       profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-      bool scale = num.initialized_p ()
-		   && (den > 0 || num == profile_count::zero ())
-		   && !(num == den);
+      bool scale = num.initialized_p () && !(num == den);
       if (scale)
 	{
+	  profile_count::adjust_for_ipa_scaling (&num, &den);
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Applying count scale ");
@@ -691,14 +671,11 @@ inline_transform (struct cgraph_node *node)
 	    }
 
 	  basic_block bb;
+	  cfun->cfg->count_max = profile_count::uninitialized ();
 	  FOR_ALL_BB_FN (bb, cfun)
 	    {
 	      bb->count = bb->count.apply_scale (num, den);
-	
-	      edge e;
-	      edge_iterator ei;
-	      FOR_EACH_EDGE (e, ei, bb->succs)
-		e->count = e->count.apply_scale (num, den);
+	      cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
 	    }
 	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
 	}

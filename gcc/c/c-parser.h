@@ -1,5 +1,5 @@
 /* Declarations for the parser for C and Objective-C.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
    influenced by and fragments based on the C++ parser.
@@ -137,7 +137,8 @@ extern c_token * c_parser_peek_2nd_token (c_parser *parser);
 extern c_token * c_parser_peek_nth_token (c_parser *parser, unsigned int n);
 extern bool c_parser_require (c_parser *parser, enum cpp_ttype type,
 			      const char *msgid,
-			      location_t matching_location = UNKNOWN_LOCATION);
+			      location_t matching_location = UNKNOWN_LOCATION,
+			      bool type_is_unique=true);
 extern bool c_parser_error (c_parser *parser, const char *gmsgid);
 extern void c_parser_consume_token (c_parser *parser);
 extern void c_parser_skip_until_found (c_parser *parser, enum cpp_ttype type,
@@ -186,6 +187,6 @@ c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 		     bool *seen_id);
 extern void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
 				bool, bool, bool, enum c_lookahead_kind);
-extern struct c_type_name *c_parser_type_name (c_parser *);
+extern struct c_type_name *c_parser_type_name (c_parser *, bool = false);
 
 #endif

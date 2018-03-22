@@ -3,11 +3,11 @@
 ! argument of the subroutine directly, but instead use a copy of it.
 function M(NAMES)
   CHARACTER*(*) NAMES(*)
-  if (any(names(1:2).ne."asdfg")) call abort
+  if (any(names(1:2).ne."asdfg")) STOP 1
   m = LEN(NAMES(1))
 END function M
 
 character(5) :: c(2)
 c = "asdfg"
-if(m(c).ne.5) call abort()
+if(m(c).ne.5) STOP 1
 end

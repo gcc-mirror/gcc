@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -181,6 +183,9 @@ static void xtensa_conditional_register_usage (void);
 static unsigned int xtensa_hard_regno_nregs (unsigned int, machine_mode);
 static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
+static HOST_WIDE_INT xtensa_constant_alignment (const_tree, HOST_WIDE_INT);
+static HOST_WIDE_INT xtensa_starting_frame_offset (void);
+static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 
 
 
@@ -316,6 +321,15 @@ static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P xtensa_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT xtensa_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET xtensa_starting_frame_offset
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET xtensa_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2684,7 +2698,7 @@ xtensa_call_save_reg(int regno)
 #define XTENSA_STACK_ALIGN(LOC) (((LOC) + STACK_BYTES-1) & ~(STACK_BYTES-1))
 
 long
-compute_frame_size (int size)
+compute_frame_size (poly_int64 size)
 {
   int regno;
 
@@ -4241,10 +4255,7 @@ hwloop_optimize (hwloop_info loop)
       entry_after = BB_END (entry_bb);
       while (DEBUG_INSN_P (entry_after)
              || (NOTE_P (entry_after)
-                 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK
-		 /* Make sure we don't split a call and its corresponding
-		    CALL_ARG_LOCATION note.  */
-                 && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
+		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))
         entry_after = PREV_INSN (entry_after);
 
       emit_insn_after (seq, entry_after);
@@ -4378,6 +4389,39 @@ enum reg_class xtensa_regno_to_class (int regno)
     return GR_REGS;
   else
     return regno_to_class[regno];
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Align string constants and
+   constructors to at least a word boundary.  The typical use of this
+   macro is to increase alignment for string constants to be word
+   aligned so that 'strcpy' calls that copy constants can be done
+   inline.  */
+
+static HOST_WIDE_INT
+xtensa_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if ((TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+      && !optimize_size)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+xtensa_starting_frame_offset (void)
+{
+  if (FRAME_GROWS_DOWNWARD)
+    return 0;
+  return crtl->outgoing_args_size;
+}
+
+/* Implement TARGET_ASAN_SHADOW_OFFSET.  */
+
+static unsigned HOST_WIDE_INT
+xtensa_asan_shadow_offset (void)
+{
+  return HOST_WIDE_INT_UC (0x10000000);
 }
 
 #include "gt-xtensa.h"

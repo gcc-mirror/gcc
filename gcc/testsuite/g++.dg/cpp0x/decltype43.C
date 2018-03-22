@@ -22,6 +22,6 @@ struct B
 int main()
 {
   int x = B<decltype(A<int>::a(1))>::b(A<int>::a(1));
-  int y = B<decltype(A     ::a(2))>::b(A<int>::a(2)); // { dg-error "template argument" }
+  int y = B<decltype(A     ::a(2))>::b(A<int>::a(2)); // { dg-error "template" }
   return x + y;
 }

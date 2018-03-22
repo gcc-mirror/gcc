@@ -16,16 +16,16 @@ contains
   subroutine test1(cmp)
     logical  :: cmp
     volatile :: l, lv
-    if (l  .neqv. cmp) call abort()
-    if (lv .neqv. cmp) call abort()
+    if (l  .neqv. cmp) STOP 1
+    if (lv .neqv. cmp) STOP 2
     l = .false.
     lv = .false.
     if(l .or. lv) print *, 'one_test1' ! not optimized away
   end subroutine test1
   subroutine test2(cmp)
     logical  :: cmp
-    if (l  .neqv. cmp) call abort()
-    if (lv .neqv. cmp) call abort()
+    if (l  .neqv. cmp) STOP 3
+    if (lv .neqv. cmp) STOP 4
     l = .false.
     if(l)  print *, 'one_test2_1' ! optimized away
     lv = .false.
@@ -41,8 +41,8 @@ contains
   subroutine test1t(cmp)
     logical  :: cmp
     volatile :: l, lv
-    if (l  .neqv. cmp) call abort()
-    if (lv .neqv. cmp) call abort()
+    if (l  .neqv. cmp) STOP 5
+    if (lv .neqv. cmp) STOP 6
     l = .false.
     if(l)  print *, 'two_test1_1' ! not optimized away
     lv = .false.
@@ -50,8 +50,8 @@ contains
   end subroutine test1t
   subroutine test2t(cmp)
     logical  :: cmp
-    if (l  .neqv. cmp) call abort()
-    if (lv .neqv. cmp) call abort()
+    if (l  .neqv. cmp) STOP 7
+    if (lv .neqv. cmp) STOP 8
     l = .false.
     if(l)  print *, 'two_test2_1' ! not optimized away
     lv = .false.
@@ -81,8 +81,8 @@ contains
     use :: one
     logical  :: cmp
     volatile :: lm,lmv
-    if(lm  .neqv. cmp) call abort()
-    if(lmv .neqv. cmp) call abort()
+    if(lm  .neqv. cmp) STOP 9
+    if(lmv .neqv. cmp) STOP 10
     l  = .false.
     lv = .false.
     call test1(.false.)
@@ -107,8 +107,8 @@ contains
     use :: one
     logical  :: cmp
     volatile :: lv
-    if(lm .neqv. cmp) call abort
-    if(lmv .neqv. cmp) call abort()
+    if(lm .neqv. cmp) STOP 1
+    if(lmv .neqv. cmp) STOP 11
     l  = .false.
     lv = .false.
     call test1(.false.)

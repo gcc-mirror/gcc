@@ -1,5 +1,5 @@
 ;; DFA-based pipeline description for the XLP.
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;;
 ;; xlp.md   Machine Description for the Broadcom XLP Microprocessor
 ;; This file is part of GCC.

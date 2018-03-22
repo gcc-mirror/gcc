@@ -1,5 +1,5 @@
 /* Operations with very long integers.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -2132,6 +2132,70 @@ wi::only_sign_bit_p (const wide_int_ref &x)
   return only_sign_bit_p (x, x.precision);
 }
 
+/* Return VAL if VAL has no bits set outside MASK.  Otherwise round VAL
+   down to the previous value that has no bits set outside MASK.
+   This rounding wraps for signed values if VAL is negative and
+   the top bit of MASK is clear.
+
+   For example, round_down_for_mask (6, 0xf1) would give 1 and
+   round_down_for_mask (24, 0xf1) would give 17.  */
+
+wide_int
+wi::round_down_for_mask (const wide_int &val, const wide_int &mask)
+{
+  /* Get the bits in VAL that are outside the mask.  */
+  wide_int extra_bits = wi::bit_and_not (val, mask);
+  if (extra_bits == 0)
+    return val;
+
+  /* Get a mask that includes the top bit in EXTRA_BITS and is all 1s
+     below that bit.  */
+  unsigned int precision = val.get_precision ();
+  wide_int lower_mask = wi::mask (precision - wi::clz (extra_bits),
+				  false, precision);
+
+  /* Clear the bits that aren't in MASK, but ensure that all bits
+     in MASK below the top cleared bit are set.  */
+  return (val & mask) | (mask & lower_mask);
+}
+
+/* Return VAL if VAL has no bits set outside MASK.  Otherwise round VAL
+   up to the next value that has no bits set outside MASK.  The rounding
+   wraps if there are no suitable values greater than VAL.
+
+   For example, round_up_for_mask (6, 0xf1) would give 16 and
+   round_up_for_mask (24, 0xf1) would give 32.  */
+
+wide_int
+wi::round_up_for_mask (const wide_int &val, const wide_int &mask)
+{
+  /* Get the bits in VAL that are outside the mask.  */
+  wide_int extra_bits = wi::bit_and_not (val, mask);
+  if (extra_bits == 0)
+    return val;
+
+  /* Get a mask that is all 1s above the top bit in EXTRA_BITS.  */
+  unsigned int precision = val.get_precision ();
+  wide_int upper_mask = wi::mask (precision - wi::clz (extra_bits),
+				  true, precision);
+
+  /* Get the bits of the mask that are above the top bit in EXTRA_BITS.  */
+  upper_mask &= mask;
+
+  /* Conceptually we need to:
+
+     - clear bits of VAL outside UPPER_MASK
+     - add the lowest bit in UPPER_MASK to VAL (or add 0 if UPPER_MASK is 0)
+     - propagate the carry through the bits of VAL in UPPER_MASK
+
+     If (~VAL & UPPER_MASK) is nonzero, the carry eventually
+     reaches that bit and the process leaves all lower bits clear.
+     If (~VAL & UPPER_MASK) is zero then the result is also zero.  */
+  wide_int tmp = wi::bit_and_not (upper_mask, val);
+
+  return (val | tmp) & -tmp;
+}
+
 /*
  * Private utilities.
  */
@@ -2146,6 +2210,39 @@ template void generic_wide_int <wide_int_ref_storage <true> >::dump () const;
 template void offset_int::dump () const;
 template void widest_int::dump () const;
 
+/* We could add all the above ::dump variants here, but wide_int and
+   widest_int should handle the common cases.  Besides, you can always
+   call the dump method directly.  */
+
+DEBUG_FUNCTION void
+debug (const wide_int &ref)
+{
+  ref.dump ();
+}
+
+DEBUG_FUNCTION void
+debug (const wide_int *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+DEBUG_FUNCTION void
+debug (const widest_int &ref)
+{
+  ref.dump ();
+}
+
+DEBUG_FUNCTION void
+debug (const widest_int *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
 
 #if CHECKING_P
 
@@ -2351,6 +2448,53 @@ test_overflow ()
     }
 }
 
+/* Test the round_{down,up}_for_mask functions.  */
+
+static void
+test_round_for_mask ()
+{
+  unsigned int prec = 18;
+  ASSERT_EQ (17, wi::round_down_for_mask (wi::shwi (17, prec),
+					  wi::shwi (0xf1, prec)));
+  ASSERT_EQ (17, wi::round_up_for_mask (wi::shwi (17, prec),
+					wi::shwi (0xf1, prec)));
+
+  ASSERT_EQ (1, wi::round_down_for_mask (wi::shwi (6, prec),
+					 wi::shwi (0xf1, prec)));
+  ASSERT_EQ (16, wi::round_up_for_mask (wi::shwi (6, prec),
+					wi::shwi (0xf1, prec)));
+
+  ASSERT_EQ (17, wi::round_down_for_mask (wi::shwi (24, prec),
+					  wi::shwi (0xf1, prec)));
+  ASSERT_EQ (32, wi::round_up_for_mask (wi::shwi (24, prec),
+					wi::shwi (0xf1, prec)));
+
+  ASSERT_EQ (0x011, wi::round_down_for_mask (wi::shwi (0x22, prec),
+					     wi::shwi (0x111, prec)));
+  ASSERT_EQ (0x100, wi::round_up_for_mask (wi::shwi (0x22, prec),
+					   wi::shwi (0x111, prec)));
+
+  ASSERT_EQ (100, wi::round_down_for_mask (wi::shwi (101, prec),
+					   wi::shwi (0xfc, prec)));
+  ASSERT_EQ (104, wi::round_up_for_mask (wi::shwi (101, prec),
+					 wi::shwi (0xfc, prec)));
+
+  ASSERT_EQ (0x2bc, wi::round_down_for_mask (wi::shwi (0x2c2, prec),
+					     wi::shwi (0xabc, prec)));
+  ASSERT_EQ (0x800, wi::round_up_for_mask (wi::shwi (0x2c2, prec),
+					   wi::shwi (0xabc, prec)));
+
+  ASSERT_EQ (0xabc, wi::round_down_for_mask (wi::shwi (0xabd, prec),
+					     wi::shwi (0xabc, prec)));
+  ASSERT_EQ (0, wi::round_up_for_mask (wi::shwi (0xabd, prec),
+				       wi::shwi (0xabc, prec)));
+
+  ASSERT_EQ (0xabc, wi::round_down_for_mask (wi::shwi (0x1000, prec),
+					     wi::shwi (0xabc, prec)));
+  ASSERT_EQ (0, wi::round_up_for_mask (wi::shwi (0x1000, prec),
+				       wi::shwi (0xabc, prec)));
+}
+
 /* Run all of the selftests within this file, for all value types.  */
 
 void
@@ -2360,6 +2504,7 @@ wide_int_cc_tests ()
   run_all_wide_int_tests <offset_int> ();
   run_all_wide_int_tests <widest_int> ();
   test_overflow ();
+  test_round_for_mask ();
 }
 
 } // namespace selftest

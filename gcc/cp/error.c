@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -50,15 +50,14 @@ static cxx_pretty_printer * const cxx_pp = &actual_pretty_printer;
 # define NEXT_CODE(T) (TREE_CODE (TREE_TYPE (T)))
 
 static const char *args_to_string (tree, int);
-static const char *assop_to_string (enum tree_code);
 static const char *code_to_string (enum tree_code);
 static const char *cv_to_string (tree, int);
 static const char *decl_to_string (tree, int);
 static const char *expr_to_string (tree);
 static const char *fndecl_to_string (tree, int);
-static const char *op_to_string	(enum tree_code);
+static const char *op_to_string	(bool, enum tree_code);
 static const char *parm_to_string (int);
-static const char *type_to_string (tree, int);
+static const char *type_to_string (tree, int, bool, bool *, bool);
 
 static void dump_alias_template_specialization (cxx_pretty_printer *, tree, int);
 static void dump_type (cxx_pretty_printer *, tree, int);
@@ -100,7 +99,7 @@ static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
-			int, bool, bool, bool, bool, const char **);
+			int, bool, bool, bool, bool *, const char **);
 
 /* Struct for handling %H or %I, which require delaying printing the
    type until a postprocessing stage.  */
@@ -1202,17 +1201,6 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_right_bracket (pp);
       break;
 
-    case ARRAY_NOTATION_REF:
-      dump_decl (pp, ARRAY_NOTATION_ARRAY (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_left_bracket (pp);
-      dump_decl (pp, ARRAY_NOTATION_START (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_decl (pp, ARRAY_NOTATION_LENGTH (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_decl (pp, ARRAY_NOTATION_STRIDE (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_right_bracket (pp);
-      break;
-
       /* So that we can do dump_decl on an aggr type.  */
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -1484,7 +1472,7 @@ find_typenames_r (tree *tp, int *walk_subtrees, void *data)
     /* Add the typename without any cv-qualifiers.  */
     mv = TYPE_MAIN_VARIANT (*tp);
 
-  if (TREE_CODE (*tp) == TYPE_PACK_EXPANSION)
+  if (PACK_EXPANSION_P (*tp))
     {
       /* Don't mess with parameter packs since we don't remember
 	 the pack expansion context for a particular typename.  */
@@ -1574,6 +1562,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
   int do_outer_scope = ! (flags & TFF_UNQUALIFIED_NAME);
   tree exceptions;
   bool constexpr_p;
+  tree ret = NULL_TREE;
 
   flags &= ~(TFF_UNQUALIFIED_NAME | TFF_TEMPLATE_NAME);
   if (TREE_CODE (t) == TEMPLATE_DECL)
@@ -1636,7 +1625,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 		   && !DECL_DESTRUCTOR_P (t) && !deduction_guide_p (t));
   if (show_return)
     {
-      tree ret = fndecl_declared_return_type (t);
+      ret = fndecl_declared_return_type (t);
       dump_type_prefix (pp, ret, flags);
     }
 
@@ -1677,7 +1666,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 	}
 
       if (show_return)
-	dump_type_suffix (pp, TREE_TYPE (fntype), flags);
+	dump_type_suffix (pp, ret, flags);
       else if (deduction_guide_p (t))
 	{
 	  pp_cxx_ws_string (pp, "->");
@@ -2227,10 +2216,13 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_binary_op (pp, "+", t, flags);
       break;
 
+    case POINTER_DIFF_EXPR:
+      dump_binary_op (pp, "-", t, flags);
+      break;
+
     case INIT_EXPR:
     case MODIFY_EXPR:
-      dump_binary_op (pp, assignment_operator_name_info[NOP_EXPR].name,
-		      t, flags);
+      dump_binary_op (pp, OVL_OP_INFO (true, NOP_EXPR)->name, t, flags);
       break;
 
     case PLUS_EXPR:
@@ -2254,7 +2246,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case EQ_EXPR:
     case NE_EXPR:
     case EXACT_DIV_EXPR:
-      dump_binary_op (pp, operator_name_info[TREE_CODE (t)].name, t, flags);
+      dump_binary_op (pp, OVL_OP_INFO (false, TREE_CODE (t))->name, t, flags);
       break;
 
     case CEIL_DIV_EXPR:
@@ -2299,17 +2291,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_left_bracket (pp);
       dump_expr (pp, TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_right_bracket (pp);
-      break;
-
-    case ARRAY_NOTATION_REF:
-      dump_expr (pp, ARRAY_NOTATION_ARRAY (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_left_bracket (pp);
-      dump_expr (pp, ARRAY_NOTATION_START (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_expr (pp, ARRAY_NOTATION_LENGTH (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_expr (pp, ARRAY_NOTATION_STRIDE (t), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_right_bracket (pp);
       break;
 
@@ -2385,14 +2366,14 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case TRUTH_NOT_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
-      dump_unary_op (pp, operator_name_info [TREE_CODE (t)].name, t, flags);
+      dump_unary_op (pp, OVL_OP_INFO (false, TREE_CODE (t))->name, t, flags);
       break;
 
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
       pp_cxx_left_paren (pp);
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_ws_string (pp, operator_name_info[TREE_CODE (t)].name);
+      pp_cxx_ws_string (pp, OVL_OP_INFO (false, TREE_CODE (t))->name);
       pp_cxx_right_paren (pp);
       break;
 
@@ -2655,7 +2636,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      pp_cxx_ws_string (pp, operator_name_info[TREE_CODE (t)].name);
+      pp_cxx_ws_string (pp, OVL_OP_INFO (false, TREE_CODE (t))->name);
       pp_cxx_whitespace (pp);
       dump_expr (pp, TREE_OPERAND (t, 0), flags);
       break;
@@ -3135,14 +3116,34 @@ parm_to_string (int p)
 }
 
 static const char *
-op_to_string (enum tree_code p)
+op_to_string (bool assop, enum tree_code p)
 {
-  tree id = operator_name_info[p].identifier;
+  tree id = ovl_op_identifier (assop, p);
   return id ? IDENTIFIER_POINTER (id) : M_("<unknown>");
 }
 
+/* Return a GC-allocated representation of type TYP, with verbosity VERBOSE.
+
+   If QUOTE is non-NULL and if *QUOTE is true, then quotes are added to the
+   string in appropriate places, and *QUOTE is written to with false
+   to suppress pp_format's trailing close quote so that e.g.
+     foo_typedef {aka underlying_foo} {enum}
+   can be printed by "%qT" as:
+     `foo_typedef' {aka `underlying_foo'} {enum}
+   rather than:
+     `foo_typedef {aka underlying_foo} {enum}'
+   When adding such quotes, if POSTPROCESSED is true (for handling %H and %I)
+   then a leading open quote will be added, whereas if POSTPROCESSED is false
+   (for handling %T) then any leading quote has already been added by
+   pp_format, or is not needed due to QUOTE being NULL (for template arguments
+   within %H and %I).
+
+   SHOW_COLOR is used to determine the colorization of any quotes that
+   are added.  */
+
 static const char *
-type_to_string (tree typ, int verbose)
+type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
+		bool show_color)
 {
   int flags = 0;
   if (verbose)
@@ -3150,7 +3151,19 @@ type_to_string (tree typ, int verbose)
   flags |= TFF_TEMPLATE_HEADER;
 
   reinit_cxx_pp ();
+
+  if (postprocessed && quote && *quote)
+    pp_begin_quote (cxx_pp, show_color);
+
+  struct obstack *ob = pp_buffer (cxx_pp)->obstack;
+  int type_start, type_len;
+  type_start = obstack_object_size (ob);
+
   dump_type (cxx_pp, typ, flags);
+
+  /* Remember the end of the initial dump.  */
+  type_len = obstack_object_size (ob) - type_start;
+
   /* If we're printing a type that involves typedefs, also print the
      stripped version.  But sometimes the stripped version looks
      exactly the same, so we don't want it after all.  To avoid printing
@@ -3159,30 +3172,46 @@ type_to_string (tree typ, int verbose)
       && !uses_template_parms (typ))
     {
       int aka_start, aka_len; char *p;
-      struct obstack *ob = pp_buffer (cxx_pp)->obstack;
-      /* Remember the end of the initial dump.  */
-      int len = obstack_object_size (ob);
       tree aka = strip_typedefs (typ);
+      if (quote && *quote)
+	pp_end_quote (cxx_pp, show_color);
       pp_string (cxx_pp, " {aka");
       pp_cxx_whitespace (cxx_pp);
+      if (quote && *quote)
+	pp_begin_quote (cxx_pp, show_color);
       /* And remember the start of the aka dump.  */
       aka_start = obstack_object_size (ob);
       dump_type (cxx_pp, aka, flags);
       aka_len = obstack_object_size (ob) - aka_start;
+      if (quote && *quote)
+	pp_end_quote (cxx_pp, show_color);
       pp_right_brace (cxx_pp);
       p = (char*)obstack_base (ob);
-      /* If they are identical, cut off the aka with a NUL.  */
-      if (len == aka_len && memcmp (p, p+aka_start, len) == 0)
-	p[len] = '\0';
+      /* If they are identical, cut off the aka by unwinding the obstack.  */
+      if (type_len == aka_len
+	  && memcmp (p + type_start, p+aka_start, type_len) == 0)
+	{
+	  /* We can't add a '\0' here, since we may be adding a closing quote
+	     below, and it would be hidden by the '\0'.
+	     Instead, manually unwind the current object within the obstack
+	     so that the insertion point is at the end of the type, before
+	     the "' {aka".  */
+	  int delta = type_start + type_len - obstack_object_size (ob);
+	  gcc_assert (delta <= 0);
+	  obstack_blank_fast (ob, delta);
+	}
+      else
+	if (quote)
+	  /* No further closing quotes are needed.  */
+	  *quote = false;
+    }
+
+  if (quote && *quote)
+    {
+      pp_end_quote (cxx_pp, show_color);
+      *quote = false;
     }
   return pp_ggc_formatted_text (cxx_pp);
-}
-
-static const char *
-assop_to_string (enum tree_code p)
-{
-  tree id = assignment_operator_name_info[(int) p].identifier;
-  return id ? IDENTIFIER_POINTER (id) : M_("{unknown}");
 }
 
 static const char *
@@ -3201,7 +3230,7 @@ args_to_string (tree p, int verbose)
   reinit_cxx_pp ();
   for (; p; p = TREE_CHAIN (p))
     {
-      if (TREE_VALUE (p) == null_node)
+      if (null_node_p (TREE_VALUE (p)))
 	pp_cxx_ws_string (cxx_pp, "NULL");
       else
 	dump_type (cxx_pp, error_type (TREE_VALUE (p)), flags);
@@ -3592,11 +3621,11 @@ maybe_print_constexpr_context (diagnostic_context *context)
       const char *s = expr_as_string (t, 0);
       if (context->show_column)
 	pp_verbatim (context->printer,
-		     _("%r%s:%d:%d:%R   in constexpr expansion of %qs"),
+		     _("%r%s:%d:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, xloc.column, s);
       else
 	pp_verbatim (context->printer,
-		     _("%r%s:%d:%R   in constexpr expansion of %qs"),
+		     _("%r%s:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, s);
       pp_newline (context->printer);
     }
@@ -3638,7 +3667,7 @@ static const char *
 arg_to_string (tree arg, bool verbose)
 {
   if (TYPE_P (arg))
-    return type_to_string (arg, verbose);
+    return type_to_string (arg, verbose, true, NULL, false);
   else
     return expr_to_string (arg);
 }
@@ -3928,10 +3957,13 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
 	}
       else
 	{
-	  /* If the types were not comparable, they are printed normally,
-	     and no difference tree is printed.  */
-	  type_a_text = type_to_string (type_a.m_tree, type_a.m_verbose);
-	  type_b_text = type_to_string (type_b.m_tree, type_b.m_verbose);
+	  /* If the types were not comparable (or if only one of %H/%I was
+	     provided), they are printed normally, and no difference tree
+	     is printed.  */
+	  type_a_text = type_to_string (type_a.m_tree, type_a.m_verbose,
+					true, &type_a.m_quote, show_color);
+	  type_b_text = type_to_string (type_b.m_tree, type_b.m_verbose,
+					true, &type_b.m_quote, show_color);
 	}
 
       if (type_a.m_quote)
@@ -4004,7 +4036,7 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
 static bool
 cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 	    int precision, bool wide, bool set_locus, bool verbose,
-	    bool quoted, const char **buffer_ptr)
+	    bool *quoted, const char **buffer_ptr)
 {
   gcc_assert (pp->m_format_postprocessor);
   cxx_format_postprocessor *postprocessor
@@ -4043,11 +4075,16 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'E': result = expr_to_string (next_tree);		break;
     case 'F': result = fndecl_to_string (next_tree, verbose);	break;
     case 'L': result = language_to_string (next_lang);		break;
-    case 'O': result = op_to_string (next_tcode);		break;
+    case 'O': result = op_to_string (false, next_tcode);	break;
     case 'P': result = parm_to_string (next_int);		break;
-    case 'Q': result = assop_to_string (next_tcode);		break;
+    case 'Q': result = op_to_string (true, next_tcode);		break;
     case 'S': result = subst_to_string (next_tree);		break;
-    case 'T': result = type_to_string (next_tree, verbose);	break;
+    case 'T':
+      {
+	result = type_to_string (next_tree, verbose, false, quoted,
+				 pp_show_color (pp));
+      }
+      break;
     case 'V': result = cv_to_string (next_tree, verbose);	break;
     case 'X': result = eh_spec_to_string (next_tree, verbose);  break;
 
@@ -4063,14 +4100,14 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'H':
       {
 	defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
-				    buffer_ptr, verbose, quoted);
+				    buffer_ptr, verbose, *quoted);
 	return true;
       }
 
     case 'I':
       {
 	defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
-				    buffer_ptr, verbose, quoted);
+				    buffer_ptr, verbose, *quoted);
 	return true;
       }
 

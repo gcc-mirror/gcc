@@ -1,5 +1,5 @@
 ;; Constraint definitions of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -41,9 +41,52 @@
 (define_register_constraint "t" "R15_TA_REG"
   "Temporary Assist register $ta (i.e. $r15)")
 
+(define_register_constraint "e" "R8_REG"
+  "Function Entry register $r8)")
+
 (define_register_constraint "k" "STACK_REG"
   "Stack register $sp")
 
+(define_register_constraint "v" "R5_REG"
+  "Register $r5")
+
+(define_register_constraint "x" "FRAME_POINTER_REG"
+  "Frame pointer register $fp")
+
+(define_constraint "Iv00"
+  "Constant value 0"
+  (and (match_code "const_int")
+       (match_test "ival == 0")))
+
+(define_constraint "Iv01"
+  "Constant value 1"
+  (and (match_code "const_int")
+       (match_test "ival == 1")))
+
+(define_constraint "Iv02"
+  "Constant value 2"
+  (and (match_code "const_int")
+       (match_test "ival == 2")))
+
+(define_constraint "Iv04"
+  "Constant value 4"
+  (and (match_code "const_int")
+       (match_test "ival == 4")))
+
+(define_constraint "Iv08"
+  "Constant value 8"
+  (and (match_code "const_int")
+       (match_test "ival == 8")))
+
+(define_constraint "Iu01"
+  "Unsigned immediate 1-bit value"
+  (and (match_code "const_int")
+       (match_test "ival == 1 || ival == 0")))
+
+(define_constraint "Iu02"
+  "Unsigned immediate 2-bit value"
+  (and (match_code "const_int")
+       (match_test "ival < (1 << 2) && ival >= 0")))
 
 (define_constraint "Iu03"
   "Unsigned immediate 3-bit value"
@@ -103,6 +146,11 @@
        (match_test "ival < (1 << 9) && ival >= 0")))
 
 
+(define_constraint "Is08"
+  "Signed immediate 8-bit value"
+  (and (match_code "const_int")
+       (match_test "ival < (1 << 7) && ival >= -(1 << 7)")))
+
 (define_constraint "Is10"
   "Signed immediate 10-bit value"
   (and (match_code "const_int")
@@ -113,6 +161,10 @@
   (and (match_code "const_int")
        (match_test "ival < (1 << 10) && ival >= -(1 << 10)")))
 
+(define_constraint "Is14"
+  "Signed immediate 14-bit value"
+  (and (match_code "const_int")
+       (match_test "ival < (1 << 13) && ival >= -(1 << 13)")))
 
 (define_constraint "Is15"
   "Signed immediate 15-bit value"
@@ -213,12 +265,12 @@
 (define_constraint "Ixls"
   "The immediate value 0x01"
   (and (match_code "const_int")
-       (match_test "TARGET_PERF_EXT && (ival == 0x1)")))
+       (match_test "TARGET_EXT_PERF && (ival == 0x1)")))
 
 (define_constraint "Ix11"
   "The immediate value 0x7ff"
   (and (match_code "const_int")
-       (match_test "TARGET_PERF_EXT && (ival == 0x7ff)")))
+       (match_test "TARGET_EXT_PERF && (ival == 0x7ff)")))
 
 (define_constraint "Ibms"
   "The immediate value with power of 2"
@@ -250,5 +302,11 @@
        (match_test "(nds32_mem_format (op) == ADDRESS_SP_IMM7U
 		    || nds32_mem_format (op) == ADDRESS_FP_IMM7U)
 		    && (GET_MODE (op) == SImode)")))
+
+
+(define_memory_constraint "Umw"
+  "Memory constraint for lwm/smw"
+  (and (match_code "mem")
+       (match_test "nds32_valid_smw_lwm_base_p (op)")))
 
 ;; ------------------------------------------------------------------------

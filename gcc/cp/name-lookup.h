@@ -1,5 +1,5 @@
 /* Declarations for C++ name lookup routines.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -148,15 +148,6 @@ struct GTY(()) cp_class_binding {
   tree identifier;
 };
 
-
-struct GTY(()) cp_label_binding {
-  /* The bound LABEL_DECL.  */
-  tree label;
-  /* The previous IDENTIFIER_LABEL_VALUE.  */
-  tree prev_value;
-};
-
-
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
    Contours include:
@@ -177,9 +168,6 @@ struct GTY(()) cp_label_binding {
    the current scope, it is not enough to look in the
    CURRENT_BINDING_LEVEL.  You should use lookup_name_current_level
    instead.  */
-
-/* Note that the information in the `names' component of the global contour
-   is duplicated in the IDENTIFIER_GLOBAL_VALUEs of all identifiers.  */
 
 struct GTY(()) cp_binding_level {
   /* A chain of _DECL nodes for all variables, constants, functions,
@@ -204,10 +192,6 @@ struct GTY(()) cp_binding_level {
       the TREE_VALUE is the IDENTIFIER_TYPE_VALUE before we entered
       the class.  */
   tree type_shadowed;
-
-  /* Similar to class_shadowed, but for IDENTIFIER_LABEL_VALUE, and
-      used for all binding levels.  */
-  vec<cp_label_binding, va_gc> *shadowed_labels;
 
   /* For each level (except not the global one),
       a chain of BLOCK nodes for all the levels
@@ -303,7 +287,11 @@ extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
-extern void set_global_binding (tree id, tree val);
+extern void set_global_binding (tree decl);
+inline tree get_global_binding (tree id)
+{
+  return get_namespace_binding (NULL_TREE, id);
+}
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);
 extern bool is_local_extern (tree);
@@ -319,9 +307,11 @@ extern void pop_decl_namespace (void);
 extern void do_namespace_alias (tree, tree);
 extern tree do_class_using_decl (tree, tree);
 extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
+extern tree search_anon_aggr (tree, tree, bool = false);
 extern tree get_class_binding_direct (tree, tree, int type_or_fns = -1);
 extern tree get_class_binding (tree, tree, int type_or_fns = -1);
-extern tree *get_member_slot (tree klass, tree name);
+extern tree *find_member_slot (tree klass, tree name);
+extern tree *add_member_slot (tree klass, tree name);
 extern void resort_type_member_vec (void *, void *,
 				    gt_pointer_operator, void *);
 extern void set_class_bindings (tree, unsigned extra = 0);

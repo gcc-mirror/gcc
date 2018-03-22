@@ -1439,8 +1439,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	       the offset to the field.  Otherwise, do this the normal way.  */
 	  if (op_code == ATTR_ADDR_EXPR)
 	    {
-	      HOST_WIDE_INT bitsize;
-	      HOST_WIDE_INT bitpos;
+	      poly_int64 bitsize;
+	      poly_int64 bitpos;
 	      tree offset, inner;
 	      machine_mode mode;
 	      int unsignedp, reversep, volatilep;
@@ -1460,8 +1460,9 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      if (!offset)
 		offset = size_zero_node;
 
-	      offset = size_binop (PLUS_EXPR, offset,
-				   size_int (bitpos / BITS_PER_UNIT));
+	      offset
+		= size_binop (PLUS_EXPR, offset,
+			      size_int (bits_to_bytes_round_down (bitpos)));
 
 	      /* Take the address of INNER, convert it to a pointer to our type
 		 and add the offset.  */
@@ -1787,9 +1788,10 @@ build_call_n_expr (tree fndecl, int n, ...)
    MSG gives the exception's identity for the call to Local_Raise, if any.  */
 
 static tree
-build_goto_raise (tree label, int msg)
+build_goto_raise (Entity_Id gnat_label, int msg)
 {
-  tree gnu_result = build1 (GOTO_EXPR, void_type_node, label);
+  tree gnu_label = gnat_to_gnu_entity (gnat_label, NULL_TREE, false);
+  tree gnu_result = build1 (GOTO_EXPR, void_type_node, gnu_label);
   Entity_Id local_raise = Get_Local_Raise_Call_Entity ();
 
   /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
@@ -1807,6 +1809,7 @@ build_goto_raise (tree label, int msg)
 	= build2 (COMPOUND_EXPR, void_type_node, gnu_call, gnu_result);
     }
 
+  TREE_USED (gnu_label) = 1;
   return gnu_result;
 }
 
@@ -1859,13 +1862,13 @@ expand_sloc (Node_Id gnat_node, tree *filename, tree *line, tree *col)
 tree
 build_call_raise (int msg, Node_Id gnat_node, char kind)
 {
+  Entity_Id gnat_label = get_exception_label (kind);
   tree fndecl = gnat_raise_decls[msg];
-  tree label = get_exception_label (kind);
   tree filename, line;
 
   /* If this is to be done as a goto, handle that case.  */
-  if (label)
-    return build_goto_raise (label, msg);
+  if (Present (gnat_label))
+    return build_goto_raise (gnat_label, msg);
 
   expand_sloc (gnat_node, &filename, &line, NULL);
 
@@ -1883,13 +1886,13 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 tree
 build_call_raise_column (int msg, Node_Id gnat_node, char kind)
 {
+  Entity_Id gnat_label = get_exception_label (kind);
   tree fndecl = gnat_raise_decls_ext[msg];
-  tree label = get_exception_label (kind);
   tree filename, line, col;
 
   /* If this is to be done as a goto, handle that case.  */
-  if (label)
-    return build_goto_raise (label, msg);
+  if (Present (gnat_label))
+    return build_goto_raise (gnat_label, msg);
 
   expand_sloc (gnat_node, &filename, &line, &col);
 
@@ -1908,13 +1911,13 @@ tree
 build_call_raise_range (int msg, Node_Id gnat_node, char kind,
 			tree index, tree first, tree last)
 {
+  Entity_Id gnat_label = get_exception_label (kind);
   tree fndecl = gnat_raise_decls_ext[msg];
-  tree label = get_exception_label (kind);
   tree filename, line, col;
 
   /* If this is to be done as a goto, handle that case.  */
-  if (label)
-    return build_goto_raise (label, msg);
+  if (Present (gnat_label))
+    return build_goto_raise (gnat_label, msg);
 
   expand_sloc (gnat_node, &filename, &line, &col);
 

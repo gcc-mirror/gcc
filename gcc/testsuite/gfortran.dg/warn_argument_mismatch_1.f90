@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Wno-argument-mismatch" }
+! { dg-options "-std=legacy -Wno-argument-mismatch" }
 !
 ! No warnings should be output here with -Wno-argument-mismatch.
 !

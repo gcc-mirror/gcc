@@ -11,4 +11,4 @@ void foo(unsigned dst)
   } while (dst < end);
 }
 
-/* { dg-final { scan-tree-dump-times " zero if " 1 "ivcanon" } } */
+/* { dg-final { scan-tree-dump " zero if " "ivcanon" } } */

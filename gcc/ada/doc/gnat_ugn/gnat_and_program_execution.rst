@@ -3513,7 +3513,7 @@ However, incorrect assignments such as:
   .. code-block:: ada
 
        Distance := 5.0;
-       Distance := 5.0 * kg:
+       Distance := 5.0 * kg;
 
 are rejected with the following diagnoses:
 
@@ -3556,7 +3556,7 @@ aspect.
   .. index:: Dimension Vector (for a dimensioned subtype)
   .. index:: Dimension aspect
   .. index:: Dimension_System aspect
-  
+
 The ``Dimension`` aspect of a dimensioned subtype ``S`` defines a mapping
 from the base type's Unit_Names to integer (or, more generally, rational)
 values. This mapping is the *dimension vector* (also referred to as the
@@ -3575,8 +3575,8 @@ means that the unit is not used. For example:
       end;
 
 Here ``DV(Acc)`` = ``DV(Acceleration)`` =
-``(Meter=>1, Kilogram=>0, Second => -2, Ampere=>0, Kelvin=>0, Mole=>0, Candela => 0)``.
-Symbolically, we can express this as ``Meter / Second**2``. 
+``(Meter=>1, Kilogram=>0, Second=>-2, Ampere=>0, Kelvin=>0, Mole=>0, Candela=>0)``.
+Symbolically, we can express this as ``Meter / Second**2``.
 
 The dimension vector of an arithmetic expression is synthesized from the
 dimension vectors of its components, with compile-time dimensionality checks
@@ -3593,7 +3593,7 @@ mathematical definitions for the vector operations that are used:
 * :samp:`DV({op expr})`, where *op* is a unary operator, is :samp:`DV({expr})`
 
 * :samp:`DV({expr1 op expr2})` where *op* is "+" or "-" is :samp:`DV({expr1})`
-  provided that :samp:`DV({expr1})` = :samp:`DV({expr2})`. 
+  provided that :samp:`DV({expr1})` = :samp:`DV({expr2})`.
   If this condition is not met then the construct is illegal.
 
 * :samp:`DV({expr1} * {expr2})` is :samp:`DV({expr1})` + :samp:`DV({expr2})`,
@@ -3611,20 +3611,26 @@ combine a dimensioned and dimensionless value.  Thus an expression such as
 ``Acceleration``.
 
 The dimensionality checks for relationals use the same rules as
-for "+" and "-"; thus
+for "+" and "-", except when comparing to a literal; thus
 
   .. code-block:: ada
 
-        acc > 10.0
+        acc > len
 
 is equivalent to
 
   .. code-block:: ada
 
-       acc-10.0 > 0.0
+       acc-len > 0.0
 
-and is thus illegal. Analogously a conditional expression
-requires the same dimension vector for each branch.  
+and is thus illegal, but
+
+  .. code-block:: ada
+
+        acc > 10.0
+
+is accepted with a warning. Analogously a conditional expression requires the
+same dimension vector for each branch (with no exception for literals).
 
 The dimension vector of a type conversion :samp:`T({expr})` is defined
 as follows, based on the nature of ``T``:
@@ -3648,7 +3654,7 @@ as follows, based on the nature of ``T``:
   Thus, if *expr* is of a dimensioned subtype of ``T``, the conversion may
   be regarded as a "view conversion" that preserves dimensionality.
 
-  This rule makes it possible to write generic code that can be instantiated 
+  This rule makes it possible to write generic code that can be instantiated
   with compatible dimensioned subtypes.  The generic unit will contain
   conversions that will consequently be present in instantiations, but
   conversions to the base type will preserve dimensionality and make it
@@ -3663,10 +3669,10 @@ as follows, based on the nature of ``T``:
 The dimension vector for a type qualification :samp:`T'({expr})` is the same
 as for the type conversion :samp:`T({expr})`.
 
-An assignment statement 
+An assignment statement
 
    .. code-block:: ada
-   
+
          Source := Target;
 
 requires ``DV(Source)`` = ``DV(Target)``, and analogously for parameter
@@ -3716,33 +3722,14 @@ that any use of the stack (for procedure calls or for declaring local
 variables in declare blocks) does not exceed the available stack space.
 If the space is exceeded, then a ``Storage_Error`` exception is raised.
 
-For declared tasks, the stack size is controlled by the size
-given in an applicable ``Storage_Size`` pragma or by the value specified
-at bind time with ``-d`` (:ref:`Switches_for_gnatbind`) or is set to
-the default size as defined in the GNAT runtime otherwise.
+For declared tasks, the default stack size is defined by the GNAT runtime,
+whose size may be modified at bind time through the ``-d`` bind switch
+(:ref:`Switches_for_gnatbind`). Task specific stack sizes may be set using the
+``Storage_Size`` pragma.
 
-.. index:: GNAT_STACK_LIMIT
-
-For the environment task, the stack size depends on
-system defaults and is unknown to the compiler. Stack checking
-may still work correctly if a fixed
-size stack is allocated, but this cannot be guaranteed.
-To ensure that a clean exception is signalled for stack
-overflow, set the environment variable
-:envvar:`GNAT_STACK_LIMIT` to indicate the maximum
-stack area that can be used, as in:
-
-  ::
-
-     $ SET GNAT_STACK_LIMIT 1600
-
-The limit is given in kilobytes, so the above declaration would
-set the stack limit of the environment task to 1.6 megabytes.
-Note that the only purpose of this usage is to limit the amount
-of stack used by the environment task. If it is necessary to
-increase the amount of stack for the environment task, then this
-is an operating systems issue, and must be addressed with the
-appropriate operating systems commands.
+For the environment task, the stack size is determined by the operating system.
+Consequently, to modify the size of the environment task please refer to your
+operating system documentation.
 
 
 .. _Static_Stack_Usage_Analysis:
@@ -3830,11 +3817,20 @@ where:
   is not entirely analyzed, and it's not possible to know exactly how
   much has actually been used.
 
-The environment task stack, e.g., the stack that contains the main unit, is
-only processed when the environment variable GNAT_STACK_LIMIT is set.
+By default the environment task stack, the stack that contains the main unit,
+is not processed. To enable processing of the environment task stack, the
+environment variable GNAT_STACK_LIMIT needs to be set to the maximum size of
+the environment task stack. This amount is given in kilobytes. For example:
+
+  ::
+
+     $ set GNAT_STACK_LIMIT 1600
+
+would specify to the analyzer that the environment task stack has a limit
+of 1.6 megabytes. Any stack usage beyond this will be ignored by the analysis.
 
 The package ``GNAT.Task_Stack_Usage`` provides facilities to get
-stack usage reports at run-time. See its body for the details.
+stack-usage reports at run time. See its body for the details.
 
 
 
@@ -4093,9 +4089,8 @@ execution of this erroneous program:
   ``gnatmem`` makes use of the output created by the special version of
   allocation and deallocation routines that record call information. This allows
   it to obtain accurate dynamic memory usage history at a minimal cost to the
-  execution speed. Note however, that ``gnatmem`` is not supported on all
-  platforms (currently, it is supported on AIX, HP-UX, GNU/Linux, Solaris and
-  Windows).
+  execution speed. Note however, that ``gnatmem`` is only supported on
+  GNU/Linux and Windows.
 
   The ``gnatmem`` command has the form
 

@@ -1,6 +1,6 @@
 // wstring_convert implementation -*- C++ -*-
 
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -431,7 +431,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	streamsize __nbytes = sizeof(_M_get_buf) - _M_unconv;
 	__nbytes = std::min(__nbytes, _M_buf->in_avail());
 	if (__nbytes < 1)
-	  __nbytes == 1;
+	  __nbytes = 1;
 	__nbytes = _M_buf->sgetn(_M_get_buf + _M_unconv, __nbytes);
 	if (__nbytes < 1)
 	  return false;

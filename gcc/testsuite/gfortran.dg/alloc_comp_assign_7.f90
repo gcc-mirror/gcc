@@ -33,6 +33,6 @@ end module PrettyPix_module
   p = path ([spline([x(1)]),spline([x(2)]),spline([x(3)])])
   call scene_set_look_at_path(this,p)
   do i = 1, 3
-    if (this%look_at_path%r(i)%y2(1) .ne. x(i)) call abort
+    if (this%look_at_path%r(i)%y2(1) .ne. x(i)) STOP 1
   end do
 end

@@ -1,5 +1,5 @@
 /* Perform optimizations on tree structure.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
 This file is part of GCC.
@@ -261,8 +261,12 @@ maybe_thunk_body (tree fn, bool force)
 
   populate_clone_array (fn, fns);
 
+  /* Can happen during error recovery (c++/71464).  */
+  if (!fns[0] || !fns[1])
+    return 0;
+
   /* Don't use thunks if the base clone omits inherited parameters.  */
-  if (fns[0] && ctor_omit_inherited_parms (fns[0]))
+  if (ctor_omit_inherited_parms (fns[0]))
     return 0;
 
   DECL_ABSTRACT_P (fn) = false;
@@ -416,7 +420,7 @@ maybe_thunk_body (tree fn, bool force)
 	}
 
       DECL_ABSTRACT_ORIGIN (clone) = NULL;
-      expand_or_defer_fn (finish_function (0));
+      expand_or_defer_fn (finish_function (/*inline_p=*/false));
     }
   return 1;
 }
@@ -657,7 +661,7 @@ maybe_clone_body (tree fn)
       cp_function_chain->can_throw = !TREE_NOTHROW (fn);
 
       /* Now, expand this function into RTL, if appropriate.  */
-      finish_function (0);
+      finish_function (/*inline_p=*/false);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
       if (alias)
 	{

@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GCC
-   Copyright (C) 1990-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -118,7 +118,7 @@ print_node_brief (FILE *file, const char *prefix, const_tree node, int indent)
 	fprintf (file, " overflow");
 
       fprintf (file, " ");
-      print_dec (node, file, TYPE_SIGN (TREE_TYPE (node)));
+      print_dec (wi::to_wide (node), file, TYPE_SIGN (TREE_TYPE (node)));
     }
   if (TREE_CODE (node) == REAL_CST)
     {
@@ -377,6 +377,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	fputs (" function-specific-opt", file);
       if (code == FUNCTION_DECL && DECL_DECLARED_INLINE_P (node))
 	fputs (" autoinline", file);
+      if (code == FUNCTION_DECL && DECL_UNINLINABLE (node))
+	fputs (" uninlinable", file);
       if (code == FUNCTION_DECL && DECL_BUILT_IN (node))
 	fputs (" built-in", file);
       if (code == FUNCTION_DECL && DECL_STATIC_CHAIN (node))
@@ -630,7 +632,10 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
       else if (code == ARRAY_TYPE)
 	print_node (file, "domain", TYPE_DOMAIN (node), indent + 4);
       else if (code == VECTOR_TYPE)
-	fprintf (file, " nunits:%d", (int) TYPE_VECTOR_SUBPARTS (node));
+	{
+	  fprintf (file, " nunits:");
+	  print_dec (TYPE_VECTOR_SUBPARTS (node), file);
+	}
       else if (code == RECORD_TYPE
 	       || code == UNION_TYPE
 	       || code == QUAL_UNION_TYPE)
@@ -721,7 +726,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	    fprintf (file, " overflow");
 
 	  fprintf (file, " ");
-	  print_dec (node, file, TYPE_SIGN (TREE_TYPE (node)));
+	  print_dec (wi::to_wide (node), file, TYPE_SIGN (TREE_TYPE (node)));
 	  break;
 
 	case REAL_CST:
@@ -761,24 +766,18 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 
 	case VECTOR_CST:
 	  {
-	    /* Big enough for 2 UINT_MAX plus the string below.  */
+	    /* Big enough for UINT_MAX plus the string below.  */
 	    char buf[32];
-	    unsigned i;
 
-	    for (i = 0; i < VECTOR_CST_NELTS (node); ++i)
+	    fprintf (file, " npatterns:%u nelts-per-pattern:%u",
+		     VECTOR_CST_NPATTERNS (node),
+		     VECTOR_CST_NELTS_PER_PATTERN (node));
+	    unsigned int count = vector_cst_encoded_nelts (node);
+	    for (unsigned int i = 0; i < count; ++i)
 	      {
-		unsigned j;
-		/* Coalesce the output of identical consecutive elements.  */
-		for (j = i + 1; j < VECTOR_CST_NELTS (node); j++)
-		  if (VECTOR_CST_ELT (node, j) != VECTOR_CST_ELT (node, i))
-		    break;
-		j--;
-		if (i == j)
-		  sprintf (buf, "elt:%u: ", i);
-		else
-		  sprintf (buf, "elt:%u...%u: ", i, j);
-		print_node (file, buf, VECTOR_CST_ELT (node, i), indent + 4);
-		i = j;
+		sprintf (buf, "elt:%u: ", i);
+		print_node (file, buf, VECTOR_CST_ENCODED_ELT (node, i),
+			    indent + 4);
 	      }
 	  }
 	  break;
@@ -802,6 +801,18 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 		  fprintf (file, "\\%03o", ch & 0xFF);
 	      }
 	    fputc ('\"', file);
+	  }
+	  break;
+
+	case POLY_INT_CST:
+	  {
+	    char buf[10];
+	    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	      {
+		snprintf (buf, sizeof (buf), "elt%u: ", i);
+		print_node (file, buf, POLY_INT_CST_COEFF (node, i),
+			    indent + 4);
+	      }
 	  }
 	  break;
 
@@ -1095,32 +1106,6 @@ debug_raw (vec<tree, va_gc> &ref)
 }
 
 DEBUG_FUNCTION void
-debug (vec<tree, va_gc> &ref)
-{
-  tree elt;
-  unsigned ix;
-
-  /* Print the slot this node is in, and its code, and address.  */
-  fprintf (stderr, "<VEC");
-  dump_addr (stderr, " ", ref.address ());
-
-  FOR_EACH_VEC_ELT (ref, ix, elt)
-    {
-      fprintf (stderr, "elt:%d ", ix);
-      debug (elt);
-    }
-}
-
-DEBUG_FUNCTION void
-debug (vec<tree, va_gc> *ptr)
-{
-  if (ptr)
-    debug (*ptr);
-  else
-    fprintf (stderr, "<nil>\n");
-}
-
-DEBUG_FUNCTION void
 debug_raw (vec<tree, va_gc> *ptr)
 {
   if (ptr)
@@ -1129,8 +1114,11 @@ debug_raw (vec<tree, va_gc> *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
-DEBUG_FUNCTION void
-debug_vec_tree (vec<tree, va_gc> *vec)
+static void
+debug_slim (tree t)
 {
-  debug_raw (vec);
+  print_node_brief (stderr, "", t, 0);
 }
+
+DEFINE_DEBUG_VEC (tree)
+DEFINE_DEBUG_HASH_SET (tree)

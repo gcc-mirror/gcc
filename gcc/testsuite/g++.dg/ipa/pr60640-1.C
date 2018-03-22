@@ -25,7 +25,7 @@ class D : ASN1Object, public B
 };
 class G : public D
 {
-  unsigned m_fn1 (bool) const {}
+  unsigned m_fn1 (bool) const { return 0; }
 };
 class F : A
 {

@@ -2,7 +2,7 @@
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,7 @@
 #include <experimental/filesystem>
 #include <string_view>
 #include <string>
+#define USE_FILESYSTEM_TS
 #include <testsuite_fs.h>
 
 using std::experimental::filesystem::path;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 1998-2017, AdaCore                      --
+--                    Copyright (C) 1998-2018, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Ada.Task_Identification; use Ada.Task_Identification;
 with System.Task_Primitives.Operations;
 with System.Tasking;
 with System.Tasking.Stages;   use System.Tasking.Stages;
+with System.Tasking.Utilities;
 with System.OS_Interface;     use System.OS_Interface;
 with System.Soft_Links;       use System.Soft_Links;
 with Ada.Unchecked_Conversion;
@@ -171,6 +172,15 @@ package body GNAT.Threads is
    begin
       Thr.all := Task_Primitives.Operations.Get_Thread_Id (To_Id (Id));
    end Get_Thread;
+
+   ----------------------
+   -- Make_Independent --
+   ----------------------
+
+   function Make_Independent return Boolean is
+   begin
+      return System.Tasking.Utilities.Make_Independent;
+   end Make_Independent;
 
    ----------------
    -- To_Task_Id --

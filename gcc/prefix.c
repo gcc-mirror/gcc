@@ -1,5 +1,5 @@
 /* Utility to update paths from internal to external forms.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -199,7 +199,7 @@ translate_name (char *name)
 	;
 
       key = (char *) alloca (keylen + 1);
-      strncpy (key, &name[1], keylen);
+      memcpy (key, &name[1], keylen);
       key[keylen] = 0;
 
       if (code == '@')

@@ -16,6 +16,7 @@
 
 #include "sanitizer_common.h"
 #include "sanitizer_flags.h"
+#include "sanitizer_platform_limits_netbsd.h"
 #include "sanitizer_platform_limits_posix.h"
 #include "sanitizer_posix.h"
 #include "sanitizer_procmaps.h"
@@ -54,8 +55,12 @@ uptr GetThreadSelf() {
   return (uptr)pthread_self();
 }
 
-void ReleaseMemoryToOS(uptr addr, uptr size) {
-  madvise((void*)addr, size, MADV_DONTNEED);
+void ReleaseMemoryPagesToOS(uptr beg, uptr end) {
+  uptr page_size = GetPageSizeCached();
+  uptr beg_aligned = RoundUpTo(beg, page_size);
+  uptr end_aligned = RoundDownTo(end, page_size);
+  if (beg_aligned < end_aligned)
+    madvise((void*)beg_aligned, end_aligned - beg_aligned, MADV_DONTNEED);
 }
 
 void NoHugePagesInRegion(uptr addr, uptr size) {
@@ -128,7 +133,8 @@ void SleepForMillis(int millis) {
 void Abort() {
 #if !SANITIZER_GO
   // If we are handling SIGABRT, unhandle it first.
-  if (IsHandledDeadlySignal(SIGABRT)) {
+  // TODO(vitalybuka): Check if handler belongs to sanitizer.
+  if (GetHandleSignalMode(SIGABRT) != kHandleSignalNo) {
     struct sigaction sigact;
     internal_memset(&sigact, 0, sizeof(sigact));
     sigact.sa_sigaction = (sa_sigaction_t)SIG_DFL;
@@ -182,8 +188,8 @@ void UnsetAlternateSignalStack() {
 
 static void MaybeInstallSigaction(int signum,
                                   SignalHandlerType handler) {
-  if (!IsHandledDeadlySignal(signum))
-    return;
+  if (GetHandleSignalMode(signum) == kHandleSignalNo) return;
+
   struct sigaction sigact;
   internal_memset(&sigact, 0, sizeof(sigact));
   sigact.sa_sigaction = (sa_sigaction_t)handler;
@@ -206,6 +212,53 @@ void InstallDeadlySignalHandlers(SignalHandlerType handler) {
   MaybeInstallSigaction(SIGFPE, handler);
   MaybeInstallSigaction(SIGILL, handler);
 }
+
+bool SignalContext::IsStackOverflow() const {
+  // Access at a reasonable offset above SP, or slightly below it (to account
+  // for x86_64 or PowerPC redzone, ARM push of multiple registers, etc) is
+  // probably a stack overflow.
+#ifdef __s390__
+  // On s390, the fault address in siginfo points to start of the page, not
+  // to the precise word that was accessed.  Mask off the low bits of sp to
+  // take it into account.
+  bool IsStackAccess = addr >= (sp & ~0xFFF) && addr < sp + 0xFFFF;
+#else
+  bool IsStackAccess = addr + 512 > sp && addr < sp + 0xFFFF;
+#endif
+
+#if __powerpc__
+  // Large stack frames can be allocated with e.g.
+  //   lis r0,-10000
+  //   stdux r1,r1,r0 # store sp to [sp-10000] and update sp by -10000
+  // If the store faults then sp will not have been updated, so test above
+  // will not work, because the fault address will be more than just "slightly"
+  // below sp.
+  if (!IsStackAccess && IsAccessibleMemoryRange(pc, 4)) {
+    u32 inst = *(unsigned *)pc;
+    u32 ra = (inst >> 16) & 0x1F;
+    u32 opcd = inst >> 26;
+    u32 xo = (inst >> 1) & 0x3FF;
+    // Check for store-with-update to sp. The instructions we accept are:
+    //   stbu rs,d(ra)          stbux rs,ra,rb
+    //   sthu rs,d(ra)          sthux rs,ra,rb
+    //   stwu rs,d(ra)          stwux rs,ra,rb
+    //   stdu rs,ds(ra)         stdux rs,ra,rb
+    // where ra is r1 (the stack pointer).
+    if (ra == 1 &&
+        (opcd == 39 || opcd == 45 || opcd == 37 || opcd == 62 ||
+         (opcd == 31 && (xo == 247 || xo == 439 || xo == 183 || xo == 181))))
+      IsStackAccess = true;
+  }
+#endif  // __powerpc__
+
+  // We also check si_code to filter out SEGV caused by something else other
+  // then hitting the guard page or unmapped memory, like, for example,
+  // unaligned memory access.
+  auto si = static_cast<const siginfo_t *>(siginfo);
+  return IsStackAccess &&
+         (si->si_code == si_SEGV_MAPERR || si->si_code == si_SEGV_ACCERR);
+}
+
 #endif  // SANITIZER_GO
 
 bool IsAccessibleMemoryRange(uptr beg, uptr size) {
@@ -239,7 +292,6 @@ void PrepareForSandboxing(__sanitizer_sandbox_arguments *args) {
   // Same for /proc/self/exe in the symbolizer.
 #if !SANITIZER_GO
   Symbolizer::GetOrInit()->PrepareForSandboxing();
-  CovPrepareForSandboxing(args);
 #endif
 }
 
@@ -410,6 +462,10 @@ int WaitForProcess(pid_t pid) {
     return -1;
   }
   return process_status;
+}
+
+bool IsStateDetached(int state) {
+  return state == PTHREAD_CREATE_DETACHED;
 }
 
 } // namespace __sanitizer

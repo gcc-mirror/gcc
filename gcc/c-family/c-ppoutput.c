@@ -1,5 +1,5 @@
 /* Preprocess only, using cpplib.
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
    This program is free software; you can redistribute it and/or modify it
@@ -22,6 +22,7 @@
 #include "c-common.h"		/* For flags.  */
 #include "../libcpp/internal.h"
 #include "c-pragma.h"		/* For parse_in.  */
+#include "file-prefix-map.h"    /* remap_macro_filename()  */
 
 /* Encapsulates state used to convert a stream of tokens into a text
    file.  */
@@ -151,6 +152,7 @@ init_pp_output (FILE *out_stream)
 
   cb->has_attribute = c_common_has_attribute;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
+  cb->remap_filename = remap_macro_filename;
 
   /* Initialize the print structure.  */
   print.src_line = 1;
@@ -299,7 +301,7 @@ scan_translation_unit_directives_only (cpp_reader *pfile)
   struct _cpp_dir_only_callbacks cb;
 
   cb.print_lines = print_lines_directives_only;
-  cb.maybe_print_line = (void (*) (source_location)) maybe_print_line;
+  cb.maybe_print_line = maybe_print_line;
 
   _cpp_preprocess_dir_only (pfile, &cb);
 }

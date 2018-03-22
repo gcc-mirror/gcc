@@ -1,5 +1,5 @@
 /* Utility functions for finding files relative to GCC binaries.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -207,39 +207,4 @@ prefix_from_string (const char *p, struct path_prefix *pprefix)
 	endp++;
     }
   free (nstore);
-}
-
-void
-remove_prefix (const char *prefix, struct path_prefix *pprefix)
-{
-  struct prefix_list *remove, **prev, **remove_prev = NULL;
-  int max_len = 0;
-
-  if (pprefix->plist)
-    {
-      prev = &pprefix->plist;
-      for (struct prefix_list *pl = pprefix->plist; pl->next; pl = pl->next)
-	{
-	  if (strcmp (prefix, pl->prefix) == 0)
-	    {
-	      remove = pl;
-	      remove_prev = prev;
-	      continue;
-	    }
-
-	  int l = strlen (pl->prefix);
-	  if (l > max_len)
-	    max_len = l;
-
-	  prev = &pl;
-	}
-
-      if (remove_prev)
-	{
-	  *remove_prev = remove->next;
-	  free (remove);
-	}
-
-      pprefix->max_len = max_len;
-    }
 }

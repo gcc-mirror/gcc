@@ -1,5 +1,5 @@
 /* The lang_hooks data structure.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -307,10 +307,10 @@ struct lang_hooks
   /* Remove any parts of the tree that are used only by the FE. */
   void (*free_lang_data) (tree);
 
-  /* Determines the size of any language-specific tcc_constant or
-     tcc_exceptional nodes.  Since it is called from make_node, the
-     only information available is the tree code.  Expected to die
-     on unrecognized codes.  */
+  /* Determines the size of any language-specific tcc_constant,
+     tcc_exceptional or tcc_type nodes.  Since it is called from
+     make_node, the only information available is the tree code.
+     Expected to die on unrecognized codes.  */
   size_t (*tree_size) (enum tree_code);
 
   /* Return the language mask used for converting argv into a sequence
@@ -394,6 +394,10 @@ struct lang_hooks
      Otherwise, set it to the ERROR_MARK_NODE to ensure that the
      assembler does not talk about it.  */
   void (*set_decl_assembler_name) (tree);
+
+  /* Overwrite the DECL_ASSEMBLER_NAME for a node.  The name is being
+     changed (including to or from NULL_TREE).  */
+  void (*overwrite_decl_assembler_name) (tree, tree);
 
   /* The front end can add its own statistics to -fmem-report with
      this hook.  It should output to stderr.  */
@@ -527,6 +531,9 @@ struct lang_hooks
   /* True if this language may use custom descriptors for nested functions
      instead of trampolines.  */
   bool custom_function_descriptors;
+
+  /* True if this language emits begin stmt notes.  */
+  bool emits_begin_stmt;
 
   /* Run all lang-specific selftests.  */
   void (*run_lang_selftests) (void);

@@ -1,5 +1,5 @@
 /* Xstormy16 cpu description.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
    This file is part of GCC.
@@ -85,10 +85,6 @@
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
 #define STRICT_ALIGNMENT 1
@@ -220,8 +216,6 @@ enum reg_class
 
 #define ARGS_GROW_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET 0
-
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR)	\
@@ -234,6 +228,7 @@ enum reg_class
 
 #define INCOMING_FRAME_SP_OFFSET (xstormy16_interrupt_function_p () ? -6 : -4)
 
+#define DEFAULT_INCOMING_FRAME_SP_OFFSET -4
 
 /* Register That Address the Stack Frame.  */
 
@@ -261,7 +256,7 @@ enum reg_class
 
 /* Passing Function Arguments on the Stack.  */
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) xstormy16_push_rounding (BYTES)
 
 
 /* Function Arguments in Registers.  */
@@ -452,7 +447,7 @@ enum reg_class
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 
-/* Macros for SDB and Dwarf Output.  */
+/* Macros for Dwarf Output.  */
 
 /* Define this macro if addresses in Dwarf 2 debugging info should not
    be the same size as pointers on the target architecture.  The

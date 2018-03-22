@@ -1,10 +1,10 @@
+/* { dg-do run { target native } } */
 /* { dg-require-effective-target label_values } */
 
 /* Test Gcov with computed gotos.
    This is the same as test gcc.c-torture/execute/980526-1.c */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
 
 extern void abort (void);
 extern void exit (int);

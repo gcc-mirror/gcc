@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fsanitize=return" }
+// { dg-options "-fsanitize=return -Wno-return-type" }
 
 struct S { S (); ~S (); };
 

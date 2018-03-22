@@ -46,7 +46,7 @@ prog kernel &kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
 
 /* The generated function call should have the incoming arguments and three hidden arguments. */
 
-/* { dg-final { scan-tree-dump "_\[0-9\]+ = subfunction \\\(_kernel.float_arg.\[_0-9\]+, _kernel.double_arg.\[_0-9\]+, _kernel.half_arg.\[_0-9\]+, __context, __group_base_addr, __private_base_addr\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "_\[0-9\]+ = subfunction \\\(_kernel.float_arg.\[_0-9\]+, _kernel.double_arg.\[_0-9\]+, _kernel.half_arg.\[_0-9\]+, __context, __group_base_addr, group_local_offset.*, __private_base_addr\\\);" "gimple"} } */
 
 /* The callee should refer directly to the scalar arguments when it reads them. */
 /* { dg-final { scan-tree-dump "= float_arg;" "gimple"} } */

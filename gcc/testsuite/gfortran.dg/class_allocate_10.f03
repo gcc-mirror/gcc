@@ -39,14 +39,14 @@ program main
 
   allocate(kernel1(5), kernel2(5),mold=executive_producer%create_show_array (5))
   select type(kernel1)
-    type is (integrand);  if (any (kernel1%variable .ne. 1)) call abort
+    type is (integrand);  if (any (kernel1%variable .ne. 1)) STOP 1
   end select
 
   deallocate (kernel1)
 
   allocate(kernel1(3),mold=executive_producer%create_show ())
   select type(kernel1)
-    type is (integrand); if (any (kernel1%variable .ne. 1)) call abort
+    type is (integrand); if (any (kernel1%variable .ne. 1)) STOP 2
   end select
 
   deallocate (kernel1)
@@ -57,6 +57,6 @@ program main
 
   allocate(kernel1(3),source = kernel2(3:5))
   select type(kernel1)
-    type is (integrand); if (any (kernel1%variable .ne. [3,4,5])) call abort
+    type is (integrand); if (any (kernel1%variable .ne. [3,4,5])) STOP 3
   end select
 end program

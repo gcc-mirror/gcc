@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -19,6 +19,8 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -83,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "sched-int.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -355,6 +358,18 @@ static rtx_insn *last_scheduled_insn;
 #define MAX_SCHED_UNITS 3
 static int last_scheduled_unit_distance[MAX_SCHED_UNITS];
 
+#define NUM_SIDES 2
+static int current_side = 1;
+#define LONGRUNNING_THRESHOLD 5
+
+/* Estimate of number of cycles a long-running insn occupies an
+   execution unit.  */
+static unsigned fxu_longrunning[NUM_SIDES];
+static unsigned vfu_longrunning[NUM_SIDES];
+
+/* Factor to scale latencies by, determined by measurements.  */
+#define LATENCY_FACTOR 4
+
 /* The maximum score added for an instruction whose unit hasn't been
    in use for MAX_SCHED_MIX_DISTANCE steps.  Increase this value to
    give instruction mix scheduling more priority over instruction
@@ -382,84 +397,6 @@ struct s390_address
   rtx disp;
   bool pointer;
   bool literal_pool;
-};
-
-/* The following structure is embedded in the machine
-   specific part of struct function.  */
-
-struct GTY (()) s390_frame_layout
-{
-  /* Offset within stack frame.  */
-  HOST_WIDE_INT gprs_offset;
-  HOST_WIDE_INT f0_offset;
-  HOST_WIDE_INT f4_offset;
-  HOST_WIDE_INT f8_offset;
-  HOST_WIDE_INT backchain_offset;
-
-  /* Number of first and last gpr where slots in the register
-     save area are reserved for.  */
-  int first_save_gpr_slot;
-  int last_save_gpr_slot;
-
-  /* Location (FP register number) where GPRs (r0-r15) should
-     be saved to.
-      0 - does not need to be saved at all
-     -1 - stack slot  */
-#define SAVE_SLOT_NONE   0
-#define SAVE_SLOT_STACK -1
-  signed char gpr_save_slots[16];
-
-  /* Number of first and last gpr to be saved, restored.  */
-  int first_save_gpr;
-  int first_restore_gpr;
-  int last_save_gpr;
-  int last_restore_gpr;
-
-  /* Bits standing for floating point registers. Set, if the
-     respective register has to be saved. Starting with reg 16 (f0)
-     at the rightmost bit.
-     Bit 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
-     fpr 15 13 11  9 14 12 10  8  7  5  3  1  6  4  2  0
-     reg 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16  */
-  unsigned int fpr_bitmap;
-
-  /* Number of floating point registers f8-f15 which must be saved.  */
-  int high_fprs;
-
-  /* Set if return address needs to be saved.
-     This flag is set by s390_return_addr_rtx if it could not use
-     the initial value of r14 and therefore depends on r14 saved
-     to the stack.  */
-  bool save_return_addr_p;
-
-  /* Size of stack frame.  */
-  HOST_WIDE_INT frame_size;
-};
-
-/* Define the structure for the machine field in struct function.  */
-
-struct GTY(()) machine_function
-{
-  struct s390_frame_layout frame_layout;
-
-  /* Literal pool base register.  */
-  rtx base_reg;
-
-  /* True if we may need to perform branch splitting.  */
-  bool split_branches_pending_p;
-
-  bool has_landing_pad_p;
-
-  /* True if the current function may contain a tbegin clobbering
-     FPRs.  */
-  bool tbegin_p;
-
-  /* For -fsplit-stack support: A stack local which holds a pointer to
-     the stack arguments for a function with a variable number of
-     arguments.  This is set at the start of the function and is used
-     to initialize the overflow_arg_area field of the va_list
-     structure.  */
-  rtx split_stack_varargs_pointer;
 };
 
 /* Few accessor macros for struct cfun->machine->s390_frame_layout.  */
@@ -502,6 +439,33 @@ struct GTY(()) machine_function
    bytes on a z10 (or higher) CPU.  */
 #define PREDICT_DISTANCE (TARGET_Z10 ? 384 : 2048)
 
+/* Masks per jump target register indicating which thunk need to be
+   generated.  */
+static GTY(()) int indirect_branch_prez10thunk_mask = 0;
+static GTY(()) int indirect_branch_z10thunk_mask = 0;
+
+#define INDIRECT_BRANCH_NUM_OPTIONS 4
+
+enum s390_indirect_branch_option
+  {
+    s390_opt_indirect_branch_jump = 0,
+    s390_opt_indirect_branch_call,
+    s390_opt_function_return_reg,
+    s390_opt_function_return_mem
+  };
+
+static GTY(()) int indirect_branch_table_label_no[INDIRECT_BRANCH_NUM_OPTIONS] = { 0 };
+const char *indirect_branch_table_label[INDIRECT_BRANCH_NUM_OPTIONS] = \
+  { "LJUMP", "LCALL", "LRETREG", "LRETMEM" };
+const char *indirect_branch_table_name[INDIRECT_BRANCH_NUM_OPTIONS] =	\
+  { ".s390_indirect_jump", ".s390_indirect_call",
+    ".s390_return_reg", ".s390_return_mem" };
+
+bool
+s390_return_addr_from_memory ()
+{
+  return cfun_gpr_save_slot(RETURN_REGNUM) == SAVE_SLOT_STACK;
+}
 
 /* Indicate which ABI has been used for passing vector args.
    0 - no vector type arguments have been passed where the ABI is relevant
@@ -1102,11 +1066,11 @@ s390_handle_hotpatch_attribute (tree *node, tree name, tree args,
     err = 1;
   else if (TREE_CODE (expr) != INTEGER_CST
 	   || !INTEGRAL_TYPE_P (TREE_TYPE (expr))
-	   || wi::gtu_p (expr, s390_hotpatch_hw_max))
+	   || wi::gtu_p (wi::to_wide (expr), s390_hotpatch_hw_max))
     err = 1;
   else if (TREE_CODE (expr2) != INTEGER_CST
 	   || !INTEGRAL_TYPE_P (TREE_TYPE (expr2))
-	   || wi::gtu_p (expr2, s390_hotpatch_hw_max))
+	   || wi::gtu_p (wi::to_wide (expr2), s390_hotpatch_hw_max))
     err = 1;
   else
     err = 0;
@@ -1164,11 +1128,85 @@ s390_handle_vectorbool_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+/* Check syntax of function decl attributes having a string type value.  */
+
+static tree
+s390_handle_string_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
+			      tree args ATTRIBUTE_UNUSED,
+			      int flags ATTRIBUTE_UNUSED,
+			      bool *no_add_attrs)
+{
+  tree cst;
+
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      *no_add_attrs = true;
+    }
+
+  cst = TREE_VALUE (args);
+
+  if (TREE_CODE (cst) != STRING_CST)
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute requires a string constant argument",
+	       name);
+      *no_add_attrs = true;
+    }
+
+  if (is_attribute_p ("indirect_branch", name)
+      || is_attribute_p ("indirect_branch_call", name)
+      || is_attribute_p ("function_return", name)
+      || is_attribute_p ("function_return_reg", name)
+      || is_attribute_p ("function_return_mem", name))
+    {
+      if (strcmp (TREE_STRING_POINTER (cst), "keep") != 0
+	  && strcmp (TREE_STRING_POINTER (cst), "thunk") != 0
+	  && strcmp (TREE_STRING_POINTER (cst), "thunk-extern") != 0)
+      {
+	warning (OPT_Wattributes,
+		 "argument to %qE attribute is not "
+		 "(keep|thunk|thunk-extern)", name);
+	*no_add_attrs = true;
+      }
+    }
+
+  if (is_attribute_p ("indirect_branch_jump", name)
+      && strcmp (TREE_STRING_POINTER (cst), "keep") != 0
+      && strcmp (TREE_STRING_POINTER (cst), "thunk") != 0
+      && strcmp (TREE_STRING_POINTER (cst), "thunk-inline") != 0
+      && strcmp (TREE_STRING_POINTER (cst), "thunk-extern") != 0)
+    {
+      warning (OPT_Wattributes,
+	       "argument to %qE attribute is not "
+	       "(keep|thunk|thunk-inline|thunk-extern)", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 static const struct attribute_spec s390_attribute_table[] = {
-  { "hotpatch", 2, 2, true, false, false, s390_handle_hotpatch_attribute, false },
-  { "s390_vector_bool", 0, 0, false, true, false, s390_handle_vectorbool_attribute, true },
+  { "hotpatch", 2, 2, true, false, false, false,
+    s390_handle_hotpatch_attribute, NULL },
+  { "s390_vector_bool", 0, 0, false, true, false, true,
+    s390_handle_vectorbool_attribute, NULL },
+  { "indirect_branch", 1, 1, true, false, false, false,
+    s390_handle_string_attribute, NULL },
+  { "indirect_branch_jump", 1, 1, true, false, false, false,
+    s390_handle_string_attribute, NULL },
+  { "indirect_branch_call", 1, 1, true, false, false, false,
+    s390_handle_string_attribute, NULL },
+  { "function_return", 1, 1, true, false, false, false,
+    s390_handle_string_attribute, NULL },
+  { "function_return_reg", 1, 1, true, false, false, false,
+    s390_handle_string_attribute, NULL },
+  { "function_return_mem", 1, 1, true, false, false, false,
+    s390_handle_string_attribute, NULL },
+
   /* End element.  */
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Return the alignment for LABEL.  We default to the -falign-labels
@@ -3717,6 +3755,8 @@ s390_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case vector_stmt:
       case vector_load:
       case vector_store:
+      case vector_gather_load:
+      case vector_scatter_store:
       case vec_to_scalar:
       case scalar_to_vec:
       case cond_branch_not_taken:
@@ -6396,16 +6436,16 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 	  /* UNLT: a u< b -> !(a >= b) */
 	case UNLT: cond = GE; neg_p = true;                break;
 	case UNEQ:
-	  emit_insn (gen_vec_cmpuneqv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_cmpuneq (target, cmp_op1, cmp_op2));
 	  return;
 	case LTGT:
-	  emit_insn (gen_vec_cmpltgtv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_cmpltgt (target, cmp_op1, cmp_op2));
 	  return;
 	case ORDERED:
-	  emit_insn (gen_vec_orderedv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_ordered (target, cmp_op1, cmp_op2));
 	  return;
 	case UNORDERED:
-	  emit_insn (gen_vec_unorderedv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_unordered (target, cmp_op1, cmp_op2));
 	  return;
 	default: break;
 	}
@@ -8714,11 +8754,25 @@ s390_find_constant (struct constant_pool *pool, rtx val,
 static rtx
 s390_execute_label (rtx insn)
 {
-  if (NONJUMP_INSN_P (insn)
+  if (INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == PARALLEL
       && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC
-      && XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_EXECUTE)
-    return XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 2);
+      && (XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_EXECUTE
+	  || XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_EXECUTE_JUMP))
+    {
+      if (XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_EXECUTE)
+	return XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 2);
+      else
+	{
+	  gcc_assert (JUMP_P (insn));
+	  /* For jump insns as execute target:
+	     - There is one operand less in the parallel (the
+	       modification register of the execute is always 0).
+	     - The execute target label is wrapped into an
+	       if_then_else in order to hide it from jump analysis.  */
+	  return XEXP (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0), 0);
+	}
+    }
 
   return NULL_RTX;
 }
@@ -9205,7 +9259,6 @@ s390_chunkify_start (void)
 	    section_switch_p = true;
 	    break;
 	  case NOTE_INSN_VAR_LOCATION:
-	  case NOTE_INSN_CALL_ARG_LOCATION:
 	    continue;
 	  default:
 	    break;
@@ -9276,8 +9329,7 @@ s390_chunkify_start (void)
 		    }
 		  while (next
 			 && NOTE_P (next)
-			 && (NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION
-			     || NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION));
+			 && NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION);
 		}
 	      else
 		{
@@ -11155,6 +11207,183 @@ pass_s390_early_mach::execute (function *fun)
 
 } // anon namespace
 
+/* Calculate TARGET = REG + OFFSET as s390_emit_prologue would do it.
+   - push too big immediates to the literal pool and annotate the refs
+   - emit frame related notes for stack pointer changes.  */
+
+static rtx
+s390_prologue_plus_offset (rtx target, rtx reg, rtx offset, bool frame_related_p)
+{
+  rtx insn;
+  rtx orig_offset = offset;
+
+  gcc_assert (REG_P (target));
+  gcc_assert (REG_P (reg));
+  gcc_assert (CONST_INT_P (offset));
+
+  if (offset == const0_rtx)                               /* lr/lgr */
+    {
+      insn = emit_move_insn (target, reg);
+    }
+  else if (DISP_IN_RANGE (INTVAL (offset)))               /* la */
+    {
+      insn = emit_move_insn (target, gen_rtx_PLUS (Pmode, reg,
+						   offset));
+    }
+  else
+    {
+      if (!satisfies_constraint_K (offset)                /* ahi/aghi */
+	  && (!TARGET_EXTIMM
+	      || (!satisfies_constraint_Op (offset)       /* alfi/algfi */
+		  && !satisfies_constraint_On (offset)))) /* slfi/slgfi */
+	offset = force_const_mem (Pmode, offset);
+
+      if (target != reg)
+	{
+	  insn = emit_move_insn (target, reg);
+	  RTX_FRAME_RELATED_P (insn) = frame_related_p ? 1 : 0;
+	}
+
+      insn = emit_insn (gen_add2_insn (target, offset));
+
+      if (!CONST_INT_P (offset))
+	{
+	  annotate_constant_pool_refs (&PATTERN (insn));
+
+	  if (frame_related_p)
+	    add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			  gen_rtx_SET (target,
+				       gen_rtx_PLUS (Pmode, target,
+						     orig_offset)));
+	}
+    }
+
+  RTX_FRAME_RELATED_P (insn) = frame_related_p ? 1 : 0;
+
+  /* If this is a stack adjustment and we are generating a stack clash
+     prologue, then add a REG_STACK_CHECK note to signal that this insn
+     should be left alone.  */
+  if (flag_stack_clash_protection && target == stack_pointer_rtx)
+    add_reg_note (insn, REG_STACK_CHECK, const0_rtx);
+
+  return insn;
+}
+
+/* Emit a compare instruction with a volatile memory access as stack
+   probe.  It does not waste store tags and does not clobber any
+   registers apart from the condition code.  */
+static void
+s390_emit_stack_probe (rtx addr)
+{
+  rtx tmp = gen_rtx_MEM (Pmode, addr);
+  MEM_VOLATILE_P (tmp) = 1;
+  s390_emit_compare (EQ, gen_rtx_REG (Pmode, 0), tmp);
+  emit_insn (gen_blockage ());
+}
+
+/* Use a runtime loop if we have to emit more probes than this.  */
+#define MIN_UNROLL_PROBES 3
+
+/* Allocate SIZE bytes of stack space, using TEMP_REG as a temporary
+   if necessary.  LAST_PROBE_OFFSET contains the offset of the closest
+   probe relative to the stack pointer.
+
+   Note that SIZE is negative.
+
+   The return value is true if TEMP_REG has been clobbered.  */
+static bool
+allocate_stack_space (rtx size, HOST_WIDE_INT last_probe_offset,
+		      rtx temp_reg)
+{
+  bool temp_reg_clobbered_p = false;
+  HOST_WIDE_INT probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  HOST_WIDE_INT guard_size
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+
+  if (flag_stack_clash_protection)
+    {
+      if (last_probe_offset + -INTVAL (size) < guard_size)
+	dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+      else
+	{
+	  rtx offset = GEN_INT (probe_interval - UNITS_PER_LONG);
+	  HOST_WIDE_INT rounded_size = -INTVAL (size) & -probe_interval;
+	  HOST_WIDE_INT num_probes = rounded_size / probe_interval;
+	  HOST_WIDE_INT residual = -INTVAL (size) - rounded_size;
+
+	  if (num_probes < MIN_UNROLL_PROBES)
+	    {
+	      /* Emit unrolled probe statements.  */
+
+	      for (unsigned int i = 0; i < num_probes; i++)
+		{
+		  s390_prologue_plus_offset (stack_pointer_rtx,
+					     stack_pointer_rtx,
+					     GEN_INT (-probe_interval), true);
+		  s390_emit_stack_probe (gen_rtx_PLUS (Pmode,
+						       stack_pointer_rtx,
+						       offset));
+		}
+	      dump_stack_clash_frame_info (PROBE_INLINE, residual != 0);
+	    }
+	  else
+	    {
+	      /* Emit a loop probing the pages.  */
+
+	      rtx_code_label *loop_start_label = gen_label_rtx ();
+
+	      /* From now on temp_reg will be the CFA register.  */
+	      s390_prologue_plus_offset (temp_reg, stack_pointer_rtx,
+					 GEN_INT (-rounded_size), true);
+	      emit_label (loop_start_label);
+
+	      s390_prologue_plus_offset (stack_pointer_rtx,
+					 stack_pointer_rtx,
+					 GEN_INT (-probe_interval), false);
+	      s390_emit_stack_probe (gen_rtx_PLUS (Pmode,
+						   stack_pointer_rtx,
+						   offset));
+	      emit_cmp_and_jump_insns (stack_pointer_rtx, temp_reg,
+				       GT, NULL_RTX,
+				       Pmode, 1, loop_start_label);
+
+	      /* Without this make_edges ICEes.  */
+	      JUMP_LABEL (get_last_insn ()) = loop_start_label;
+	      LABEL_NUSES (loop_start_label) = 1;
+
+	      /* That's going to be a NOP since stack pointer and
+		 temp_reg are supposed to be the same here.  We just
+		 emit it to set the CFA reg back to r15.  */
+	      s390_prologue_plus_offset (stack_pointer_rtx, temp_reg,
+					 const0_rtx, true);
+	      temp_reg_clobbered_p = true;
+	      dump_stack_clash_frame_info (PROBE_LOOP, residual != 0);
+	    }
+
+	  /* Handle any residual allocation request.  */
+	  s390_prologue_plus_offset (stack_pointer_rtx,
+				     stack_pointer_rtx,
+				     GEN_INT (-residual), true);
+	  last_probe_offset += residual;
+	  if (last_probe_offset >= probe_interval)
+	    s390_emit_stack_probe (gen_rtx_PLUS (Pmode,
+						 stack_pointer_rtx,
+						 GEN_INT (residual
+							  - UNITS_PER_LONG)));
+
+	  return temp_reg_clobbered_p;
+	}
+    }
+
+  /* Subtract frame size from stack pointer.  */
+  s390_prologue_plus_offset (stack_pointer_rtx,
+			     stack_pointer_rtx,
+			     size, true);
+
+  return temp_reg_clobbered_p;
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -11179,6 +11408,19 @@ s390_emit_prologue (void)
   else
     temp_reg = gen_rtx_REG (Pmode, 1);
 
+  /* When probing for stack-clash mitigation, we have to track the distance
+     between the stack pointer and closest known reference.
+
+     Most of the time we have to make a worst case assumption.  The
+     only exception is when TARGET_BACKCHAIN is active, in which case
+     we know *sp (offset 0) was written.  */
+  HOST_WIDE_INT probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  HOST_WIDE_INT last_probe_offset
+    = (TARGET_BACKCHAIN
+       ? (TARGET_PACKED_STACK ? STACK_POINTER_OFFSET - UNITS_PER_LONG : 0)
+       : probe_interval - (STACK_BOUNDARY / UNITS_PER_WORD));
+
   s390_save_gprs_to_fprs ();
 
   /* Save call saved gprs.  */
@@ -11190,6 +11432,14 @@ s390_emit_prologue (void)
 					  - cfun_frame_layout.first_save_gpr_slot),
 			cfun_frame_layout.first_save_gpr,
 			cfun_frame_layout.last_save_gpr);
+
+      /* This is not 100% correct.  If we have more than one register saved,
+	 then LAST_PROBE_OFFSET can move even closer to sp.  */
+      last_probe_offset
+	= (cfun_frame_layout.gprs_offset +
+	   UNITS_PER_LONG * (cfun_frame_layout.first_save_gpr
+			     - cfun_frame_layout.first_save_gpr_slot));
+
       emit_insn (insn);
     }
 
@@ -11206,6 +11456,8 @@ s390_emit_prologue (void)
       if (cfun_fpr_save_p (i))
 	{
 	  save_fpr (stack_pointer_rtx, offset, i);
+	  if (offset < last_probe_offset)
+	    last_probe_offset = offset;
 	  offset += 8;
 	}
       else if (!TARGET_PACKED_STACK || cfun->stdarg)
@@ -11219,6 +11471,8 @@ s390_emit_prologue (void)
       if (cfun_fpr_save_p (i))
 	{
 	  insn = save_fpr (stack_pointer_rtx, offset, i);
+	  if (offset < last_probe_offset)
+	    last_probe_offset = offset;
 	  offset += 8;
 
 	  /* If f4 and f6 are call clobbered they are saved due to
@@ -11241,6 +11495,8 @@ s390_emit_prologue (void)
 	if (cfun_fpr_save_p (i))
 	  {
 	    insn = save_fpr (stack_pointer_rtx, offset, i);
+	    if (offset < last_probe_offset)
+	      last_probe_offset = offset;
 
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	    offset -= 8;
@@ -11260,10 +11516,11 @@ s390_emit_prologue (void)
   if (cfun_frame_layout.frame_size > 0)
     {
       rtx frame_off = GEN_INT (-cfun_frame_layout.frame_size);
-      rtx real_frame_off;
+      rtx_insn *stack_pointer_backup_loc;
+      bool temp_reg_clobbered_p;
 
       if (s390_stack_size)
-  	{
+	{
 	  HOST_WIDE_INT stack_guard;
 
 	  if (s390_stack_guard)
@@ -11329,34 +11586,35 @@ s390_emit_prologue (void)
       if (s390_warn_dynamicstack_p && cfun->calls_alloca)
 	warning (0, "%qs uses dynamic stack allocation", current_function_name ());
 
-      /* Save incoming stack pointer into temp reg.  */
+      /* Save the location where we could backup the incoming stack
+	 pointer.  */
+      stack_pointer_backup_loc = get_last_insn ();
+
+      temp_reg_clobbered_p = allocate_stack_space (frame_off, last_probe_offset,
+						   temp_reg);
+
       if (TARGET_BACKCHAIN || next_fpr)
-	insn = emit_insn (gen_move_insn (temp_reg, stack_pointer_rtx));
-
-      /* Subtract frame size from stack pointer.  */
-
-      if (DISP_IN_RANGE (INTVAL (frame_off)))
 	{
-	  insn = gen_rtx_SET (stack_pointer_rtx,
-			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					    frame_off));
-	  insn = emit_insn (insn);
+	  if (temp_reg_clobbered_p)
+	    {
+	      /* allocate_stack_space had to make use of temp_reg and
+		 we need it to hold a backup of the incoming stack
+		 pointer.  Calculate back that value from the current
+		 stack pointer.  */
+	      s390_prologue_plus_offset (temp_reg, stack_pointer_rtx,
+					 GEN_INT (cfun_frame_layout.frame_size),
+					 false);
+	    }
+	  else
+	    {
+	      /* allocate_stack_space didn't actually required
+		 temp_reg.  Insert the stack pointer backup insn
+		 before the stack pointer decrement code - knowing now
+		 that the value will survive.  */
+	      emit_insn_after (gen_move_insn (temp_reg, stack_pointer_rtx),
+			       stack_pointer_backup_loc);
+	    }
 	}
-      else
-	{
-	  if (!CONST_OK_FOR_K (INTVAL (frame_off)))
-	    frame_off = force_const_mem (Pmode, frame_off);
-
-          insn = emit_insn (gen_add2_insn (stack_pointer_rtx, frame_off));
-	  annotate_constant_pool_refs (&PATTERN (insn));
-	}
-
-      RTX_FRAME_RELATED_P (insn) = 1;
-      real_frame_off = GEN_INT (-cfun_frame_layout.frame_size);
-      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		    gen_rtx_SET (stack_pointer_rtx,
-				 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					       real_frame_off)));
 
       /* Set backchain.  */
 
@@ -11381,6 +11639,8 @@ s390_emit_prologue (void)
 	  emit_clobber (addr);
 	}
     }
+  else if (flag_stack_clash_protection)
+    dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
 
   /* Save fprs 8 - 15 (64 bit ABI).  */
 
@@ -11454,7 +11714,6 @@ s390_emit_epilogue (bool sibcall)
   rtx frame_pointer, return_reg, cfa_restores = NULL_RTX;
   int area_bottom, area_top, offset = 0;
   int next_offset;
-  rtvec p;
   int i;
 
   if (TARGET_TPF_PROFILING)
@@ -11610,8 +11869,14 @@ s390_emit_epilogue (bool sibcall)
 	  && s390_tune <= PROCESSOR_2097_Z10)
 	{
 	  int return_regnum = find_unused_clobbered_reg();
-	  if (!return_regnum)
-	    return_regnum = 4;
+	  if (!return_regnum
+	      || (TARGET_INDIRECT_BRANCH_NOBP_RET_OPTION
+		  && !TARGET_CPU_Z10
+		  && return_regnum == INDIRECT_BRANCH_THUNK_REGNUM))
+	    {
+	      gcc_assert (INDIRECT_BRANCH_THUNK_REGNUM != 4);
+	      return_regnum = 4;
+	    }
 	  return_reg = gen_rtx_REG (Pmode, return_regnum);
 
 	  addr = plus_constant (Pmode, frame_pointer,
@@ -11648,16 +11913,7 @@ s390_emit_epilogue (bool sibcall)
   s390_restore_gprs_from_fprs ();
 
   if (! sibcall)
-    {
-
-      /* Return to caller.  */
-
-      p = rtvec_alloc (2);
-
-      RTVEC_ELT (p, 0) = ret_rtx;
-      RTVEC_ELT (p, 1) = gen_rtx_USE (VOIDmode, return_reg);
-      emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
-    }
+    emit_jump_insn (gen_return_use (return_reg));
 }
 
 /* Implement TARGET_SET_UP_BY_PROLOGUE.  */
@@ -13248,6 +13504,112 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   final_end_function ();
 }
 
+/* Output either an indirect jump or a an indirect call
+   (RETURN_ADDR_REGNO != INVALID_REGNUM) with target register REGNO
+   using a branch trampoline disabling branch target prediction.  */
+
+void
+s390_indirect_branch_via_thunk (unsigned int regno,
+				unsigned int return_addr_regno,
+				rtx comparison_operator,
+				enum s390_indirect_branch_type type)
+{
+  enum s390_indirect_branch_option option;
+
+  if (type == s390_indirect_branch_type_return)
+    {
+      if (s390_return_addr_from_memory ())
+	option = s390_opt_function_return_mem;
+      else
+	option = s390_opt_function_return_reg;
+    }
+  else if (type == s390_indirect_branch_type_jump)
+    option = s390_opt_indirect_branch_jump;
+  else if (type == s390_indirect_branch_type_call)
+    option = s390_opt_indirect_branch_call;
+  else
+    gcc_unreachable ();
+
+  if (TARGET_INDIRECT_BRANCH_TABLE)
+    {
+      char label[32];
+
+      ASM_GENERATE_INTERNAL_LABEL (label,
+				   indirect_branch_table_label[option],
+				   indirect_branch_table_label_no[option]++);
+      ASM_OUTPUT_LABEL (asm_out_file, label);
+    }
+
+  if (return_addr_regno != INVALID_REGNUM)
+    {
+      gcc_assert (comparison_operator == NULL_RTX);
+      fprintf (asm_out_file, " \tbrasl\t%%r%d,", return_addr_regno);
+    }
+  else
+    {
+      fputs (" \tjg", asm_out_file);
+      if (comparison_operator != NULL_RTX)
+	print_operand (asm_out_file, comparison_operator, 'C');
+
+      fputs ("\t", asm_out_file);
+    }
+
+  if (TARGET_CPU_Z10)
+    fprintf (asm_out_file,
+	     TARGET_INDIRECT_BRANCH_THUNK_NAME_EXRL "\n",
+	     regno);
+  else
+    fprintf (asm_out_file,
+	     TARGET_INDIRECT_BRANCH_THUNK_NAME_EX "\n",
+	     INDIRECT_BRANCH_THUNK_REGNUM, regno);
+
+  if ((option == s390_opt_indirect_branch_jump
+       && cfun->machine->indirect_branch_jump == indirect_branch_thunk)
+      || (option == s390_opt_indirect_branch_call
+	  && cfun->machine->indirect_branch_call == indirect_branch_thunk)
+      || (option == s390_opt_function_return_reg
+	  && cfun->machine->function_return_reg == indirect_branch_thunk)
+      || (option == s390_opt_function_return_mem
+	  && cfun->machine->function_return_mem == indirect_branch_thunk))
+    {
+      if (TARGET_CPU_Z10)
+	indirect_branch_z10thunk_mask |= (1 << regno);
+      else
+	indirect_branch_prez10thunk_mask |= (1 << regno);
+    }
+}
+
+/* Output an inline thunk for indirect jumps.  EXECUTE_TARGET can
+   either be an address register or a label pointing to the location
+   of the jump instruction.  */
+
+void
+s390_indirect_branch_via_inline_thunk (rtx execute_target)
+{
+  if (TARGET_INDIRECT_BRANCH_TABLE)
+    {
+      char label[32];
+
+      ASM_GENERATE_INTERNAL_LABEL (label,
+				   indirect_branch_table_label[s390_opt_indirect_branch_jump],
+				   indirect_branch_table_label_no[s390_opt_indirect_branch_jump]++);
+      ASM_OUTPUT_LABEL (asm_out_file, label);
+    }
+
+  if (!TARGET_ZARCH)
+    fputs ("\t.machinemode zarch\n", asm_out_file);
+
+  if (REG_P (execute_target))
+    fprintf (asm_out_file, "\tex\t%%r0,0(%%r%d)\n", REGNO (execute_target));
+  else
+    output_asm_insn ("\texrl\t%%r0,%0", &execute_target);
+
+  if (!TARGET_ZARCH)
+    fputs ("\t.machinemode esa\n", asm_out_file);
+
+  fputs ("0:\tj\t0b\n", asm_out_file);
+}
+
 static bool
 s390_valid_pointer_mode (scalar_int_mode mode)
 {
@@ -13349,6 +13711,14 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
   if (!TARGET_64BIT && flag_pic && decl && !targetm.binds_local_p (decl))
     return false;
 
+  /* The thunks for indirect branches require r1 if no exrl is
+     available.  r1 might not be available when doing a sibling
+     call.  */
+  if (TARGET_INDIRECT_BRANCH_NOBP_CALL
+      && !TARGET_CPU_Z10
+      && !decl)
+    return false;
+
   /* Register 6 on s390 is available as an argument register but unfortunately
      "caller saved". This makes functions needing this register for arguments
      not suitable for sibcalls.  */
@@ -13382,9 +13752,13 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 {
   bool plt_call = false;
   rtx_insn *insn;
-  rtx call;
-  rtx clobber;
-  rtvec vec;
+  rtx vec[4] = { NULL_RTX };
+  int elts = 0;
+  rtx *call = &vec[0];
+  rtx *clobber_ret_reg = &vec[1];
+  rtx *use = &vec[2];
+  rtx *clobber_thunk_reg = &vec[3];
+  int i;
 
   /* Direct function calls need special treatment.  */
   if (GET_CODE (addr_location) == SYMBOL_REF)
@@ -13436,26 +13810,58 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
       addr_location = gen_rtx_REG (Pmode, SIBCALL_REGNUM);
     }
 
+  if (TARGET_INDIRECT_BRANCH_NOBP_CALL
+      && GET_CODE (addr_location) != SYMBOL_REF
+      && !plt_call)
+    {
+      /* Indirect branch thunks require the target to be a single GPR.  */
+      addr_location = force_reg (Pmode, addr_location);
+
+      /* Without exrl the indirect branch thunks need an additional
+	 register for larl;ex */
+      if (!TARGET_CPU_Z10)
+	{
+	  *clobber_thunk_reg = gen_rtx_REG (Pmode, INDIRECT_BRANCH_THUNK_REGNUM);
+	  *clobber_thunk_reg = gen_rtx_CLOBBER (VOIDmode, *clobber_thunk_reg);
+	}
+    }
+
   addr_location = gen_rtx_MEM (QImode, addr_location);
-  call = gen_rtx_CALL (VOIDmode, addr_location, const0_rtx);
+  *call = gen_rtx_CALL (VOIDmode, addr_location, const0_rtx);
 
   if (result_reg != NULL_RTX)
-    call = gen_rtx_SET (result_reg, call);
+    *call = gen_rtx_SET (result_reg, *call);
 
   if (retaddr_reg != NULL_RTX)
     {
-      clobber = gen_rtx_CLOBBER (VOIDmode, retaddr_reg);
+      *clobber_ret_reg = gen_rtx_CLOBBER (VOIDmode, retaddr_reg);
 
       if (tls_call != NULL_RTX)
-	vec = gen_rtvec (3, call, clobber,
-			 gen_rtx_USE (VOIDmode, tls_call));
-      else
-	vec = gen_rtvec (2, call, clobber);
-
-      call = gen_rtx_PARALLEL (VOIDmode, vec);
+	*use = gen_rtx_USE (VOIDmode, tls_call);
     }
 
-  insn = emit_call_insn (call);
+
+  for (i = 0; i < 4; i++)
+    if (vec[i] != NULL_RTX)
+      elts++;
+
+  if (elts > 1)
+    {
+      rtvec v;
+      int e = 0;
+
+      v = rtvec_alloc (elts);
+      for (i = 0; i < 4; i++)
+	if (vec[i] != NULL_RTX)
+	  {
+	    RTVEC_ELT (v, e) = vec[i];
+	    e++;
+	  }
+
+      *call = gen_rtx_PARALLEL (VOIDmode, v);
+    }
+
+  insn = emit_call_insn (*call);
 
   /* 31-bit PLT stubs and tls calls use the GOT register implicitly.  */
   if ((!TARGET_64BIT && plt_call) || tls_call != NULL_RTX)
@@ -14237,7 +14643,16 @@ s390_reorg (void)
 	  target = emit_label (XEXP (label, 0));
 	  INSN_ADDRESSES_NEW (target, -1);
 
-	  target = emit_insn (s390_execute_target (insn));
+	  if (JUMP_P (insn))
+	    {
+	      target = emit_jump_insn (s390_execute_target (insn));
+	      /* This is important in order to keep a table jump
+		 pointing at the jump table label.  Only this makes it
+		 being recognized as table jump.  */
+	      JUMP_LABEL (target) = JUMP_LABEL (insn);
+	    }
+	  else
+	    target = emit_insn (s390_execute_target (insn));
 	  INSN_ADDRESSES_NEW (target, -1);
 	}
     }
@@ -14396,6 +14811,28 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
   ready[0] = tmp;
 }
 
+/* Returns TRUE if BB is entered via a fallthru edge and all other
+   incoming edges are less than unlikely.  */
+static bool
+s390_bb_fallthru_entry_likely (basic_block bb)
+{
+  edge e, fallthru_edge;
+  edge_iterator ei;
+
+  if (!bb)
+    return false;
+
+  fallthru_edge = find_fallthru_edge (bb->preds);
+  if (!fallthru_edge)
+    return false;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e != fallthru_edge
+	&& e->probability >= profile_probability::unlikely ())
+      return false;
+
+  return true;
+}
 
 /* The s390_sched_state variable tracks the state of the current or
    the last instruction group.
@@ -14404,7 +14841,7 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
    3     the last group is complete - normal insns
    4     the last group was a cracked/expanded insn */
 
-static int s390_sched_state;
+static int s390_sched_state = 0;
 
 #define S390_SCHED_STATE_NORMAL  3
 #define S390_SCHED_STATE_CRACKED 4
@@ -14545,7 +14982,24 @@ s390_sched_score (rtx_insn *insn)
 	if (m & unit_mask)
 	  score += (last_scheduled_unit_distance[i] * MAX_SCHED_MIX_SCORE /
 		    MAX_SCHED_MIX_DISTANCE);
+
+      unsigned latency = insn_default_latency (insn);
+
+      int other_side = 1 - current_side;
+
+      /* Try to delay long-running insns when side is busy.  */
+      if (latency > LONGRUNNING_THRESHOLD)
+	{
+	  if (get_attr_z13_unit_fxu (insn) && fxu_longrunning[current_side]
+	      && fxu_longrunning[other_side] <= fxu_longrunning[current_side])
+	    score = MAX (0, score - 10);
+
+	  if (get_attr_z13_unit_vfu (insn) && vfu_longrunning[current_side]
+	      && vfu_longrunning[other_side] <= vfu_longrunning[current_side])
+	    score = MAX (0, score - 10);
+	}
     }
+
   return score;
 }
 
@@ -14664,11 +15118,18 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 {
   last_scheduled_insn = insn;
 
+  bool starts_group = false;
+
   if (s390_tune >= PROCESSOR_2827_ZEC12
       && reload_completed
       && recog_memoized (insn) >= 0)
     {
       unsigned int mask = s390_get_sched_attrmask (insn);
+
+      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
+	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0
+	  || (mask & S390_SCHED_ATTR_MASK_GROUPALONE) != 0)
+	starts_group = true;
 
       if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
 	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0)
@@ -14682,14 +15143,15 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	  switch (s390_sched_state)
 	    {
 	    case 0:
+	      starts_group = true;
+	      /* fallthrough */
 	    case 1:
 	    case 2:
+	      s390_sched_state++;
+	      break;
 	    case S390_SCHED_STATE_NORMAL:
-	      if (s390_sched_state == S390_SCHED_STATE_NORMAL)
-		s390_sched_state = 1;
-	      else
-		s390_sched_state++;
-
+	      starts_group = true;
+	      s390_sched_state = 1;
 	      break;
 	    case S390_SCHED_STATE_CRACKED:
 	      s390_sched_state = S390_SCHED_STATE_NORMAL;
@@ -14710,6 +15172,27 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	      last_scheduled_unit_distance[i] = 0;
 	    else if (last_scheduled_unit_distance[i] < MAX_SCHED_MIX_DISTANCE)
 	      last_scheduled_unit_distance[i]++;
+	}
+
+      /* If this insn started a new group, the side flipped.  */
+      if (starts_group)
+	current_side = current_side ? 0 : 1;
+
+      for (int i = 0; i < 2; i++)
+	{
+	  if (fxu_longrunning[i] >= 1)
+	    fxu_longrunning[i] -= 1;
+	  if (vfu_longrunning[i] >= 1)
+	    vfu_longrunning[i] -= 1;
+	}
+
+      unsigned latency = insn_default_latency (insn);
+      if (latency > LONGRUNNING_THRESHOLD)
+	{
+	  if (get_attr_z13_unit_fxu (insn))
+	    fxu_longrunning[current_side] = latency * LATENCY_FACTOR;
+	  else
+	    vfu_longrunning[current_side] = latency * LATENCY_FACTOR;
 	}
 
       if (verbose > 5)
@@ -14768,7 +15251,21 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
 {
   last_scheduled_insn = NULL;
   memset (last_scheduled_unit_distance, 0, MAX_SCHED_UNITS * sizeof (int));
-  s390_sched_state = 0;
+
+  /* If the next basic block is most likely entered via a fallthru edge
+     we keep the last sched state.  Otherwise we start a new group.
+     The scheduler traverses basic blocks in "instruction stream" ordering
+     so if we see a fallthru edge here, s390_sched_state will be of its
+     source block.
+
+     current_sched_info->prev_head is the insn before the first insn of the
+     block of insns to be scheduled.
+     */
+  rtx_insn *insn = current_sched_info->prev_head
+    ? NEXT_INSN (current_sched_info->prev_head) : NULL;
+  basic_block bb = insn ? BLOCK_FOR_INSN (insn) : NULL;
+  if (s390_tune < PROCESSOR_2964_Z13 || !s390_bb_fallthru_entry_likely (bb))
+    s390_sched_state = 0;
 }
 
 /* This target hook implementation for TARGET_LOOP_UNROLL_ADJUST calculates
@@ -14889,6 +15386,42 @@ s390_option_override_internal (bool main_args_p,
 	   processor_table[(int)opts->x_s390_arch].name);
   if (TARGET_64BIT && !TARGET_ZARCH_P (opts->x_target_flags))
     error ("64-bit ABI not supported in ESA/390 mode");
+
+  if (opts->x_s390_indirect_branch == indirect_branch_thunk_inline
+      || opts->x_s390_indirect_branch_call == indirect_branch_thunk_inline
+      || opts->x_s390_function_return == indirect_branch_thunk_inline
+      || opts->x_s390_function_return_reg == indirect_branch_thunk_inline
+      || opts->x_s390_function_return_mem == indirect_branch_thunk_inline)
+    error ("thunk-inline is only supported with -mindirect-branch-jump");
+
+  if (opts->x_s390_indirect_branch != indirect_branch_keep)
+    {
+      if (!opts_set->x_s390_indirect_branch_call)
+	opts->x_s390_indirect_branch_call = opts->x_s390_indirect_branch;
+
+      if (!opts_set->x_s390_indirect_branch_jump)
+	opts->x_s390_indirect_branch_jump = opts->x_s390_indirect_branch;
+    }
+
+  if (opts->x_s390_function_return != indirect_branch_keep)
+    {
+      if (!opts_set->x_s390_function_return_reg)
+	opts->x_s390_function_return_reg = opts->x_s390_function_return;
+
+      if (!opts_set->x_s390_function_return_mem)
+	opts->x_s390_function_return_mem = opts->x_s390_function_return;
+    }
+
+  if (!TARGET_CPU_ZARCH)
+    {
+      if (opts->x_s390_indirect_branch_call != indirect_branch_keep
+	  || opts->x_s390_indirect_branch_jump != indirect_branch_keep)
+	error ("-mindirect-branch* options require -march=z900 or higher");
+      if (opts->x_s390_function_return_reg != indirect_branch_keep
+	  || opts->x_s390_function_return_mem != indirect_branch_keep)
+	error ("-mfunction-return* options require -march=z900 or higher");
+    }
+
 
   /* Enable hardware transactions if available and not explicitly
      disabled by user.  E.g. with -m31 -march=zEC12 -mzarch */
@@ -15048,16 +15581,11 @@ s390_option_override (void)
 	    {
 	      int val1;
 	      int val2;
-	      char s[256];
-	      char *t;
+	      char *s = strtok (ASTRDUP (opt->arg), ",");
+	      char *t = strtok (NULL, "\0");
 
-	      strncpy (s, opt->arg, 256);
-	      s[255] = 0;
-	      t = strchr (s, ',');
 	      if (t != NULL)
 		{
-		  *t = 0;
-		  t++;
 		  val1 = integral_argument (s);
 		  val2 = integral_argument (t);
 		}
@@ -15507,6 +16035,78 @@ s390_can_inline_p (tree caller, tree callee)
   return ret;
 }
 
+/* Set VAL to correct enum value according to the indirect-branch or
+   function-return attribute in ATTR.  */
+
+static inline void
+s390_indirect_branch_attrvalue (tree attr, enum indirect_branch *val)
+{
+  const char *str = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
+  if (strcmp (str, "keep") == 0)
+    *val = indirect_branch_keep;
+  else if (strcmp (str, "thunk") == 0)
+    *val = indirect_branch_thunk;
+  else if (strcmp (str, "thunk-inline") == 0)
+    *val = indirect_branch_thunk_inline;
+  else if (strcmp (str, "thunk-extern") == 0)
+    *val = indirect_branch_thunk_extern;
+}
+
+/* Memorize the setting for -mindirect-branch* and -mfunction-return*
+   from either the cmdline or the function attributes in
+   cfun->machine.  */
+
+static void
+s390_indirect_branch_settings (tree fndecl)
+{
+  tree attr;
+
+  if (!fndecl)
+    return;
+
+  /* Initialize with the cmdline options and let the attributes
+     override it.  */
+  cfun->machine->indirect_branch_jump = s390_indirect_branch_jump;
+  cfun->machine->indirect_branch_call = s390_indirect_branch_call;
+
+  cfun->machine->function_return_reg = s390_function_return_reg;
+  cfun->machine->function_return_mem = s390_function_return_mem;
+
+  if ((attr = lookup_attribute ("indirect_branch",
+				DECL_ATTRIBUTES (fndecl))))
+    {
+      s390_indirect_branch_attrvalue (attr,
+				      &cfun->machine->indirect_branch_jump);
+      s390_indirect_branch_attrvalue (attr,
+				      &cfun->machine->indirect_branch_call);
+    }
+
+  if ((attr = lookup_attribute ("indirect_branch_jump",
+				DECL_ATTRIBUTES (fndecl))))
+    s390_indirect_branch_attrvalue (attr, &cfun->machine->indirect_branch_jump);
+
+  if ((attr = lookup_attribute ("indirect_branch_call",
+				DECL_ATTRIBUTES (fndecl))))
+    s390_indirect_branch_attrvalue (attr, &cfun->machine->indirect_branch_call);
+
+  if ((attr = lookup_attribute ("function_return",
+				DECL_ATTRIBUTES (fndecl))))
+    {
+      s390_indirect_branch_attrvalue (attr,
+				      &cfun->machine->function_return_reg);
+      s390_indirect_branch_attrvalue (attr,
+				      &cfun->machine->function_return_mem);
+    }
+
+  if ((attr = lookup_attribute ("function_return_reg",
+				DECL_ATTRIBUTES (fndecl))))
+    s390_indirect_branch_attrvalue (attr, &cfun->machine->function_return_reg);
+
+  if ((attr = lookup_attribute ("function_return_mem",
+				DECL_ATTRIBUTES (fndecl))))
+    s390_indirect_branch_attrvalue (attr, &cfun->machine->function_return_mem);
+}
+
 /* Restore targets globals from NEW_TREE and invalidate s390_previous_fndecl
    cache.  */
 
@@ -15533,7 +16133,10 @@ s390_set_current_function (tree fndecl)
      several times in the course of compiling a function, and we don't want to
      slow things down too much or call target_reinit when it isn't safe.  */
   if (fndecl == s390_previous_fndecl)
-    return;
+    {
+      s390_indirect_branch_settings (fndecl);
+      return;
+    }
 
   tree old_tree;
   if (s390_previous_fndecl == NULL_TREE)
@@ -15557,6 +16160,8 @@ s390_set_current_function (tree fndecl)
   if (old_tree != new_tree)
     s390_activate_target_options (new_tree);
   s390_previous_fndecl = fndecl;
+
+  s390_indirect_branch_settings (fndecl);
 }
 #endif
 
@@ -15651,6 +16256,14 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 static machine_mode
 s390_preferred_simd_mode (scalar_mode mode)
 {
+  if (TARGET_VXE)
+    switch (mode)
+      {
+      case E_SFmode:
+	return V4SFmode;
+      default:;
+      }
+
   if (TARGET_VX)
     switch (mode)
       {
@@ -15696,6 +16309,15 @@ s390_vector_alignment (const_tree type)
     return TYPE_ALIGN (type);
 
   return MIN (64, tree_to_shwi (TYPE_SIZE (type)));
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Alignment on even addresses for
+   LARL instruction.  */
+
+static HOST_WIDE_INT
+s390_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return MAX (align, 16);
 }
 
 #ifdef HAVE_AS_MACHINE_MACHINEMODE
@@ -15836,6 +16458,186 @@ static unsigned HOST_WIDE_INT
 s390_asan_shadow_offset (void)
 {
   return TARGET_64BIT ? HOST_WIDE_INT_1U << 52 : HOST_WIDE_INT_UC (0x20000000);
+}
+
+#ifdef HAVE_GAS_HIDDEN
+# define USE_HIDDEN_LINKONCE 1
+#else
+# define USE_HIDDEN_LINKONCE 0
+#endif
+
+/* Output an indirect branch trampoline for target register REGNO.  */
+
+static void
+s390_output_indirect_thunk_function (unsigned int regno, bool z10_p)
+{
+  tree decl;
+  char thunk_label[32];
+  int i;
+
+  if (z10_p)
+    sprintf (thunk_label, TARGET_INDIRECT_BRANCH_THUNK_NAME_EXRL, regno);
+  else
+    sprintf (thunk_label, TARGET_INDIRECT_BRANCH_THUNK_NAME_EX,
+	     INDIRECT_BRANCH_THUNK_REGNUM, regno);
+
+  decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+		     get_identifier (thunk_label),
+		     build_function_type_list (void_type_node, NULL_TREE));
+  DECL_RESULT (decl) = build_decl (BUILTINS_LOCATION, RESULT_DECL,
+				   NULL_TREE, void_type_node);
+  TREE_PUBLIC (decl) = 1;
+  TREE_STATIC (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+
+  if (USE_HIDDEN_LINKONCE)
+    {
+      cgraph_node::create (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
+
+      targetm.asm_out.unique_section (decl, 0);
+      switch_to_section (get_named_section (decl, NULL, 0));
+
+      targetm.asm_out.globalize_label (asm_out_file, thunk_label);
+      fputs ("\t.hidden\t", asm_out_file);
+      assemble_name (asm_out_file, thunk_label);
+      putc ('\n', asm_out_file);
+      ASM_DECLARE_FUNCTION_NAME (asm_out_file, thunk_label, decl);
+    }
+  else
+    {
+      switch_to_section (text_section);
+      ASM_OUTPUT_LABEL (asm_out_file, thunk_label);
+    }
+
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  current_function_decl = decl;
+  allocate_struct_function (decl, false);
+  init_function_start (decl);
+  cfun->is_thunk = true;
+  first_function_block_is_cold = false;
+  final_start_function (emit_barrier (), asm_out_file, 1);
+
+  /* This makes CFI at least usable for indirect jumps.
+
+     Stopping in the thunk: backtrace will point to the thunk target
+     is if it was interrupted by a signal.  For a call this means that
+     the call chain will be: caller->callee->thunk   */
+  if (flag_asynchronous_unwind_tables)
+    {
+      fputs ("\t.cfi_signal_frame\n", asm_out_file);
+      fprintf (asm_out_file, "\t.cfi_return_column %d\n", regno);
+      for (i = 0; i < FPR15_REGNUM; i++)
+	fprintf (asm_out_file, "\t.cfi_same_value %s\n", reg_names[i]);
+    }
+
+  if (z10_p)
+    {
+      /* exrl  0,1f  */
+
+      /* We generate a thunk for z10 compiled code although z10 is
+	 currently not enabled.  Tell the assembler to accept the
+	 instruction.  */
+      if (!TARGET_CPU_Z10)
+	{
+	  fputs ("\t.machine push\n", asm_out_file);
+	  fputs ("\t.machine z10\n", asm_out_file);
+	}
+      /* We use exrl even if -mzarch hasn't been specified on the
+	 command line so we have to tell the assembler to accept
+	 it.  */
+      if (!TARGET_ZARCH)
+	fputs ("\t.machinemode zarch\n", asm_out_file);
+
+      fputs ("\texrl\t0,1f\n", asm_out_file);
+
+      if (!TARGET_ZARCH)
+	fputs ("\t.machinemode esa\n", asm_out_file);
+
+      if (!TARGET_CPU_Z10)
+	fputs ("\t.machine pop\n", asm_out_file);
+    }
+  else if (TARGET_CPU_ZARCH)
+    {
+      /* larl %r1,1f  */
+      fprintf (asm_out_file, "\tlarl\t%%r%d,1f\n",
+	       INDIRECT_BRANCH_THUNK_REGNUM);
+
+      /* ex 0,0(%r1)  */
+      fprintf (asm_out_file, "\tex\t0,0(%%r%d)\n",
+	       INDIRECT_BRANCH_THUNK_REGNUM);
+    }
+  else
+    gcc_unreachable ();
+
+  /* 0:    j 0b  */
+  fputs ("0:\tj\t0b\n", asm_out_file);
+
+  /* 1:    br <regno>  */
+  fprintf (asm_out_file, "1:\tbr\t%%r%d\n", regno);
+
+  final_end_function ();
+  init_insn_lengths ();
+  free_after_compilation (cfun);
+  set_cfun (NULL);
+  current_function_decl = NULL;
+}
+
+/* Implement the asm.code_end target hook.  */
+
+static void
+s390_code_end (void)
+{
+  int i;
+
+  for (i = 1; i < 16; i++)
+    {
+      if (indirect_branch_z10thunk_mask & (1 << i))
+	s390_output_indirect_thunk_function (i, true);
+
+      if (indirect_branch_prez10thunk_mask & (1 << i))
+	s390_output_indirect_thunk_function (i, false);
+    }
+
+  if (TARGET_INDIRECT_BRANCH_TABLE)
+    {
+      int o;
+      int i;
+
+      for (o = 0; o < INDIRECT_BRANCH_NUM_OPTIONS; o++)
+	{
+	  if (indirect_branch_table_label_no[o] == 0)
+	    continue;
+
+	  switch_to_section (get_section (indirect_branch_table_name[o],
+					  0,
+					  NULL_TREE));
+	  for (i = 0; i < indirect_branch_table_label_no[o]; i++)
+	    {
+	      char label_start[32];
+
+	      ASM_GENERATE_INTERNAL_LABEL (label_start,
+					   indirect_branch_table_label[o], i);
+
+	      fputs ("\t.long\t", asm_out_file);
+	      assemble_name_raw (asm_out_file, label_start);
+	      fputs ("-.\n", asm_out_file);
+	    }
+	  switch_to_section (current_function_section ());
+	}
+    }
+}
+
+/* Implement the TARGET_CASE_VALUES_THRESHOLD target hook.  */
+
+unsigned int
+s390_case_values_threshold (void)
+{
+  /* Disabling branch prediction for indirect jumps makes jump tables
+     much more expensive.  */
+  if (TARGET_INDIRECT_BRANCH_NOBP_JUMP)
+    return 20;
+
+  return default_case_values_threshold ();
 }
 
 /* Initialize GCC target structure.  */
@@ -16116,6 +16918,15 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS s390_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT s390_constant_alignment
+
+#undef TARGET_ASM_CODE_END
+#define TARGET_ASM_CODE_END s390_code_end
+
+#undef TARGET_CASE_VALUES_THRESHOLD
+#define TARGET_CASE_VALUES_THRESHOLD s390_case_values_threshold
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

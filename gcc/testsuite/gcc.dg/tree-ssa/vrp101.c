@@ -10,4 +10,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "<bb 2> \\\[\[0-9.\]+%\\\] \\\[count: \[0-9INV\]*\\\]:\[\n\r \]*return 0;" "optimized" } } */
+/* { dg-final { scan-tree-dump "<bb 2> \\\[local count: \[0-9INV\]*\\\]:\[\n\r \]*return 0;" "optimized" } } */

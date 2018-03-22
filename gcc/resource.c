@@ -1,5 +1,5 @@
 /* Definitions for computing resource usage of specific insns.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -212,6 +212,7 @@ mark_referenced_resources (rtx x, struct resources *res,
     case PC:
     case SYMBOL_REF:
     case LABEL_REF:
+    case DEBUG_INSN:
       return;
 
     case SUBREG:
@@ -451,6 +452,7 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 
 	case BARRIER:
 	case NOTE:
+	case DEBUG_INSN:
 	  continue;
 
 	case INSN:
@@ -639,6 +641,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
     case SYMBOL_REF:
     case CONST:
     case PC:
+    case DEBUG_INSN:
       /* These don't set any resources.  */
       return;
 

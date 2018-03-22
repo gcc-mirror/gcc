@@ -1,5 +1,5 @@
 /* Pretty formatting of GIMPLE statements and expressions.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Diego Novillo <dnovillo@google.com>
 
@@ -82,21 +82,17 @@ debug_gimple_stmt (gimple *gs)
    by xstrdup_for_dump.  */
 
 static const char *
-dump_profile (int frequency, profile_count &count)
+dump_profile (profile_count &count)
 {
-  float minimum = 0.01f;
-
-  gcc_assert (0 <= frequency && frequency <= REG_BR_PROB_BASE);
-  float fvalue = frequency * 100.0f / REG_BR_PROB_BASE;
-  if (fvalue < minimum && frequency > 0)
-    return "[0.01%]";
-
-  char *buf;
-  if (count.initialized_p ())
-    buf = xasprintf ("[%.2f%%] [count: %" PRId64 "]", fvalue,
+  char *buf = NULL;
+  if (!count.initialized_p ())
+    return "";
+  if (count.ipa_p ())
+    buf = xasprintf ("[count: %" PRId64 "]",
 		     count.to_gcov_type ());
-  else
-    buf = xasprintf ("[%.2f%%] [count: INV]", fvalue);
+  else if (count.initialized_p ())
+    buf = xasprintf ("[local count: %" PRId64 "]",
+		     count.to_gcov_type ());
 
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
@@ -109,7 +105,7 @@ dump_profile (int frequency, profile_count &count)
    by xstrdup_for_dump.  */
 
 static const char *
-dump_probability (profile_probability probability, profile_count &count)
+dump_probability (profile_probability probability)
 {
   float minimum = 0.01f;
   float fvalue = -1;
@@ -122,13 +118,10 @@ dump_probability (profile_probability probability, profile_count &count)
     }
 
   char *buf;
-  if (count.initialized_p ())
-    buf = xasprintf ("[%.2f%%] [count: %" PRId64 "]", fvalue,
-		     count.to_gcov_type ());
-  else if (probability.initialized_p ())
-    buf = xasprintf ("[%.2f%%] [count: INV]", fvalue);
+  if (probability.initialized_p ())
+    buf = xasprintf ("[%.2f%%]", fvalue);
   else
-    buf = xasprintf ("[INV] [count: INV]");
+    buf = xasprintf ("[INV]");
 
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
@@ -141,7 +134,7 @@ dump_probability (profile_probability probability, profile_count &count)
 static void
 dump_edge_probability (pretty_printer *buffer, edge e)
 {
-  pp_scalar (buffer, " %s", dump_probability (e->probability, e->count));
+  pp_scalar (buffer, " %s", dump_probability (e->probability));
 }
 
 /* Print GIMPLE statement G to FILE using SPC indentation spaces and
@@ -438,6 +431,7 @@ dump_binary_rhs (pretty_printer *buffer, gassign *gs, int spc,
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
+    case VEC_SERIES_EXPR:
       for (p = get_tree_code_name (code); *p; p++)
 	pp_character (buffer, TOUPPER (*p));
       pp_string (buffer, " <");
@@ -1370,6 +1364,26 @@ dump_gimple_debug (pretty_printer *buffer, gdebug *gs, int spc,
 			 gimple_debug_source_bind_get_value (gs));
       break;
 
+    case GIMPLE_DEBUG_BEGIN_STMT:
+      if (flags & TDF_RAW)
+	dump_gimple_fmt (buffer, spc, flags, "%G BEGIN_STMT", gs);
+      else
+	dump_gimple_fmt (buffer, spc, flags, "# DEBUG BEGIN_STMT");
+      break;
+
+    case GIMPLE_DEBUG_INLINE_ENTRY:
+      if (flags & TDF_RAW)
+	dump_gimple_fmt (buffer, spc, flags, "%G INLINE_ENTRY %T", gs,
+			 gimple_block (gs)
+			 ? block_ultimate_origin (gimple_block (gs))
+			 : NULL_TREE);
+      else
+	dump_gimple_fmt (buffer, spc, flags, "# DEBUG INLINE_ENTRY %T",
+			 gimple_block (gs)
+			 ? block_ultimate_origin (gimple_block (gs))
+			 : NULL_TREE);
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -1396,17 +1410,11 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	case GF_OMP_FOR_KIND_TASKLOOP:
 	  kind = " taskloop";
 	  break;
-	case GF_OMP_FOR_KIND_CILKFOR:
-	  kind = " _Cilk_for";
-	  break;
 	case GF_OMP_FOR_KIND_OACC_LOOP:
 	  kind = " oacc_loop";
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  kind = " simd";
-	  break;
-	case GF_OMP_FOR_KIND_CILKSIMD:
-	  kind = " cilksimd";
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1439,16 +1447,11 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	case GF_OMP_FOR_KIND_TASKLOOP:
 	  pp_string (buffer, "#pragma omp taskloop");
 	  break;
-	case GF_OMP_FOR_KIND_CILKFOR:
-	  break;
 	case GF_OMP_FOR_KIND_OACC_LOOP:
 	  pp_string (buffer, "#pragma acc loop");
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  pp_string (buffer, "#pragma omp simd");
-	  break;
-	case GF_OMP_FOR_KIND_CILKSIMD:
-	  pp_string (buffer, "#pragma simd");
 	  break;
 	case GF_OMP_FOR_KIND_GRID_LOOP:
 	  pp_string (buffer, "#pragma omp for grid_loop");
@@ -1456,19 +1459,13 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	default:
 	  gcc_unreachable ();
 	}
-      if (gimple_omp_for_kind (gs) != GF_OMP_FOR_KIND_CILKFOR)
-	dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
+      dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
       for (i = 0; i < gimple_omp_for_collapse (gs); i++)
 	{
 	  if (i)
 	    spc += 2;
-	  if (gimple_omp_for_kind (gs) == GF_OMP_FOR_KIND_CILKFOR)
-	    pp_string (buffer, "_Cilk_for (");
-	  else
-	    {
-	      newline_and_indent (buffer, spc);
-	      pp_string (buffer, "for (");
-	    }
+	  newline_and_indent (buffer, spc);
+	  pp_string (buffer, "for (");
 	  dump_generic_node (buffer, gimple_omp_for_index (gs, i), spc,
 			     flags, false);
 	  pp_string (buffer, " = ");
@@ -1514,8 +1511,6 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
-	  if (gimple_omp_for_kind (gs) == GF_OMP_FOR_KIND_CILKFOR)
-	    dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
 	  newline_and_indent (buffer, spc + 2);
 	  pp_left_brace (buffer);
 	  pp_newline (buffer);
@@ -2693,8 +2688,7 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
       else
 	fprintf (outf, "%*s<bb %d> %s:\n",
-		 indent, "", bb->index, dump_profile (bb->frequency,
-						      bb->count));
+		 indent, "", bb->index, dump_profile (bb->count));
     }
 }
 

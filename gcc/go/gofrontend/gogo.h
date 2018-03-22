@@ -117,7 +117,7 @@ class Import_init
 // For sorting purposes.
 
 struct Import_init_lt {
-  bool operator()(const Import_init* i1, const Import_init* i2)
+  bool operator()(const Import_init* i1, const Import_init* i2) const
   {
     return i1->init_name() < i2->init_name();
   }
@@ -318,6 +318,30 @@ class Gogo
   set_debug_escape_level(int level)
   { this->debug_escape_level_ = level; }
 
+  // Return the hash for debug escape analysis.
+  std::string
+  debug_escape_hash() const
+  { return this->debug_escape_hash_; }
+
+  // Set the hash value for debug escape analysis.
+  void
+  set_debug_escape_hash(const std::string& s)
+  { this->debug_escape_hash_ = s; }
+
+  // Return the size threshold used to determine whether to issue
+  // a nil-check for a given pointer dereference. A threshold of -1
+  // implies that all potentially faulting dereference ops should
+  // be nil-checked. A positive threshold of N implies that a deref
+  // of *P where P has size less than N doesn't need a nil check.
+  int64_t
+  nil_check_size_threshold() const
+  { return this->nil_check_size_threshold_; }
+
+  // Set the nil-check size threshold, as described above.
+  void
+  set_nil_check_size_threshold(int64_t bytes)
+  { this->nil_check_size_threshold_ = bytes; }
+
   // Import a package.  FILENAME is the file name argument, LOCAL_NAME
   // is the local name to give to the package.  If LOCAL_NAME is empty
   // the declarations are added to the global scope.
@@ -506,26 +530,6 @@ class Gogo
   void
   mark_locals_used();
 
-  // Return a name to use for an error case.  This should only be used
-  // after reporting an error, and is used to avoid useless knockon
-  // errors.
-  static std::string
-  erroneous_name();
-
-  // Return whether the name indicates an error.
-  static bool
-  is_erroneous_name(const std::string&);
-
-  // Return a name to use for a thunk function.  A thunk function is
-  // one we create during the compilation, for a go statement or a
-  // defer statement or a method expression.
-  static std::string
-  thunk_name();
-
-  // Return whether an object is a thunk.
-  static bool
-  is_thunk(const Named_object*);
-
   // Note that we've seen an interface type.  This is used to build
   // all required interface method tables.
   void
@@ -678,6 +682,10 @@ class Gogo
   void
   tag_function(Escape_context*, Named_object*);
 
+  // Reclaim memory of escape analysis Nodes.
+  void
+  reclaim_escape_nodes();
+
   // Do all exports.
   void
   do_exports();
@@ -781,9 +789,109 @@ class Gogo
   Expression*
   allocate_memory(Type *type, Location);
 
+  // Return the assembler name to use for an exported function, a
+  // method, or a function/method declaration.
+  std::string
+  function_asm_name(const std::string& go_name, const Package*,
+		    const Type* receiver);
+
+  // Return the name to use for a function descriptor.
+  std::string
+  function_descriptor_name(Named_object*);
+
+  // Return the name to use for a generated stub method.
+  std::string
+  stub_method_name(const Package*, const std::string& method_name);
+
+  // Return the names of the hash and equality functions for TYPE.
+  void
+  specific_type_function_names(const Type*, const Named_type*,
+			       std::string* hash_name,
+			       std::string* equal_name);
+
+  // Return the assembler name to use for a global variable.
+  std::string
+  global_var_asm_name(const std::string& go_name, const Package*);
+
+  // Return a name to use for an error case.  This should only be used
+  // after reporting an error, and is used to avoid useless knockon
+  // errors.
+  static std::string
+  erroneous_name();
+
+  // Return whether the name indicates an error.
+  static bool
+  is_erroneous_name(const std::string&);
+
+  // Return a name to use for a thunk function.  A thunk function is
+  // one we create during the compilation, for a go statement or a
+  // defer statement or a method expression.
+  std::string
+  thunk_name();
+
+  // Return whether an object is a thunk.
+  static bool
+  is_thunk(const Named_object*);
+
+  // Return the name to use for an init function.
+  std::string
+  init_function_name();
+
+  // Return the name to use for a nested function.
+  std::string
+  nested_function_name(Named_object* enclosing);
+
+  // Return the name to use for a sink funciton.
+  std::string
+  sink_function_name();
+
+  // Return the name to use for an (erroneous) redefined function.
+  std::string
+  redefined_function_name();
+
+  // Return the name for use for a recover thunk.
+  std::string
+  recover_thunk_name(const std::string& name, const Type* rtype);
+
+  // Return the name to use for the GC root variable.
+  std::string
+  gc_root_name();
+
+  // Return the name to use for a composite literal or string
+  // initializer.
+  std::string
+  initializer_name();
+
+  // Return the name of the variable used to represent the zero value
+  // of a map.
+  std::string
+  map_zero_value_name();
+
   // Get the name of the magic initialization function.
   const std::string&
   get_init_fn_name();
+
+  // Return the name for a type descriptor symbol.
+  std::string
+  type_descriptor_name(Type*, Named_type*);
+
+  // Return the assembler name for the GC symbol for a type.
+  std::string
+  gc_symbol_name(Type*);
+
+  // Return the assembler name for a ptrmask variable.
+  std::string
+  ptrmask_symbol_name(const std::string& ptrmask_sym_name);
+
+  // Return the name to use for an interface method table.
+  std::string
+  interface_method_table_name(Interface_type*, Type*, bool is_pointer);
+
+  // Return whether NAME is a special name that can not be passed to
+  // unpack_hidden_name.  This is needed because various special names
+  // use "..SUFFIX", but unpack_hidden_name just looks for '.'.
+  static bool
+  is_special_name(const std::string& name);
 
  private:
   // During parsing, we keep a stack of functions.  Each function on
@@ -947,6 +1055,12 @@ class Gogo
   // The level of escape analysis debug information to emit, from the
   // -fgo-debug-escape option.
   int debug_escape_level_;
+  // A hash value for debug escape analysis, from the
+  // -fgo-debug-escape-hash option. The analysis is run only on
+  // functions with names that hash to the matching value.
+  std::string debug_escape_hash_;
+  // Nil-check size threshhold.
+  int64_t nil_check_size_threshold_;
   // A list of types to verify.
   std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.
@@ -1125,6 +1239,11 @@ class Function
   results_are_named() const
   { return this->results_are_named_; }
 
+  // Return the assembler name.
+  const std::string&
+  asm_name() const
+  { return this->asm_name_; }
+
   // Set the assembler name.
   void
   set_asm_name(const std::string& asm_name)
@@ -1140,6 +1259,14 @@ class Function
   set_pragmas(unsigned int pragmas)
   {
     this->pragmas_ = pragmas;
+  }
+
+  // Return the index to use for a nested function.
+  unsigned int
+  next_nested_function_index()
+  {
+    ++this->nested_functions_;
+    return this->nested_functions_;
   }
 
   // Whether this method should not be included in the type
@@ -1349,13 +1476,14 @@ class Function
   // Export a function with a type.
   static void
   export_func_with_type(Export*, const std::string& name,
-			const Function_type*);
+			const Function_type*, bool nointerface);
 
   // Import a function.
   static void
   import_func(Import*, std::string* pname, Typed_identifier** receiver,
 	      Typed_identifier_list** pparameters,
-	      Typed_identifier_list** presults, bool* is_varargs);
+	      Typed_identifier_list** presults, bool* is_varargs,
+	      bool* nointerface);
 
  private:
   // Type for mapping from label names to Label objects.
@@ -1402,6 +1530,8 @@ class Function
   Temporary_statement* defer_stack_;
   // Pragmas for this function.  This is a set of GOPRAGMA bits.
   unsigned int pragmas_;
+  // Number of nested functions defined within this function.
+  unsigned int nested_functions_;
   // True if this function is sink-named.  No code is generated.
   bool is_sink_ : 1;
   // True if the result variables are named.
@@ -1478,6 +1608,10 @@ class Function_declaration
   location() const
   { return this->location_; }
 
+  // Return whether this function declaration is a method.
+  bool
+  is_method() const;
+
   const std::string&
   asm_name() const
   { return this->asm_name_; }
@@ -1487,12 +1621,27 @@ class Function_declaration
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
 
+  // Return the pragmas for this function.
+  unsigned int
+  pragmas() const
+  { return this->pragmas_; }
+
   // Set the pragmas for this function.
   void
   set_pragmas(unsigned int pragmas)
   {
     this->pragmas_ = pragmas;
   }
+
+  // Whether this method should not be included in the type
+  // descriptor.
+  bool
+  nointerface() const;
+
+  // Record that this method should not be included in the type
+  // descriptor.
+  void
+  set_nointerface();
 
   // Return an expression for the function descriptor, given the named
   // object for this function.  This may only be called for functions
@@ -1518,7 +1667,10 @@ class Function_declaration
   // Export a function declaration.
   void
   export_func(Export* exp, const std::string& name) const
-  { Function::export_func_with_type(exp, name, this->fntype_); }
+  {
+    Function::export_func_with_type(exp, name, this->fntype_,
+				    this->is_method() && this->nointerface());
+  }
 
   // Check that the types used in this declaration's signature are defined.
   void
@@ -1775,6 +1927,20 @@ class Variable
     this->in_unique_section_ = true;
   }
 
+  // Return the top-level declaration for this variable.
+  Statement*
+  toplevel_decl()
+  { return this->toplevel_decl_; }
+
+  // Set the top-level declaration for this variable. Only used for local
+  // variables
+  void
+  set_toplevel_decl(Statement* s)
+  {
+    go_assert(!this->is_global_ && !this->is_parameter_ && !this->is_receiver_);
+    this->toplevel_decl_ = s;
+  }
+
   // Traverse the initializer expression.
   int
   traverse_expression(Traverse*, unsigned int traverse_mask);
@@ -1875,6 +2041,9 @@ class Variable
   // Whether this variable escapes the function it is created in.  This is
   // true until shown otherwise.
   bool escapes_ : 1;
+  // The top-level declaration for this variable. Only used for local
+  // variables. Must be a Temporary_statement if not NULL.
+  Statement* toplevel_decl_;
 };
 
 // A variable which is really the name for a function return value, or
@@ -1995,6 +2164,9 @@ class Named_constant
   Type*
   type() const
   { return this->type_; }
+
+  void
+  set_type(Type* t);
 
   Expression*
   expr() const
@@ -3145,13 +3317,14 @@ class Traverse
 {
  public:
   // These bitmasks say what to traverse.
-  static const unsigned int traverse_variables =    0x1;
-  static const unsigned int traverse_constants =    0x2;
-  static const unsigned int traverse_functions =    0x4;
-  static const unsigned int traverse_blocks =       0x8;
-  static const unsigned int traverse_statements =  0x10;
-  static const unsigned int traverse_expressions = 0x20;
-  static const unsigned int traverse_types =       0x40;
+  static const unsigned int traverse_variables =          0x1;
+  static const unsigned int traverse_constants =          0x2;
+  static const unsigned int traverse_functions =          0x4;
+  static const unsigned int traverse_blocks =             0x8;
+  static const unsigned int traverse_statements =        0x10;
+  static const unsigned int traverse_expressions =       0x20;
+  static const unsigned int traverse_types =             0x40;
+  static const unsigned int traverse_func_declarations = 0x80;
 
   Traverse(unsigned int traverse_mask)
     : traverse_mask_(traverse_mask), types_seen_(NULL), expressions_seen_(NULL)
@@ -3215,6 +3388,11 @@ class Traverse
   // type in the tree.
   virtual int
   type(Type*);
+
+  // If traverse_func_declarations is set in the mask, this is called
+  // for every function declarations in the tree.
+  virtual int
+  function_declaration(Named_object*);
 
  private:
   // A hash table for types we have seen during this traversal.  Note

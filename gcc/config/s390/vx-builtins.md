@@ -1,5 +1,5 @@
 ;;- Instruction patterns for the System z vector facility builtins.
-;;  Copyright (C) 2015-2017 Free Software Foundation, Inc.
+;;  Copyright (C) 2015-2018 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -91,12 +91,10 @@
    (match_operand:QI    2 "const_int_operand" "C")]
   "TARGET_VX"
 {
-  int nunits = GET_MODE_NUNITS (<VI_HW:MODE>mode);
   int bitlen = GET_MODE_UNIT_BITSIZE (<VI_HW:MODE>mode);
   /* To bit little endian style.  */
   int end = bitlen - 1 - INTVAL (operands[1]);
   int start = bitlen - 1 - INTVAL (operands[2]);
-  rtx const_vec[16];
   int i;
   unsigned HOST_WIDE_INT mask;
   bool swapped_p = false;
@@ -116,13 +114,11 @@
   if (swapped_p)
     mask = ~mask;
 
-  for (i = 0; i < nunits; i++)
-    const_vec[i] = GEN_INT (trunc_int_for_mode (mask,
-			      GET_MODE_INNER (<VI_HW:MODE>mode)));
+  rtx mask_rtx = gen_int_mode (mask, GET_MODE_INNER (<VI_HW:MODE>mode));
 
   emit_insn (gen_rtx_SET (operands[0],
-			  gen_rtx_CONST_VECTOR (<VI_HW:MODE>mode,
-						gen_rtvec_v (nunits, const_vec))));
+			  gen_const_vec_duplicate (<VI_HW:MODE>mode,
+						   mask_rtx)));
   DONE;
 })
 
@@ -211,9 +207,9 @@
 ; (vec_select op0) (vec_select op1)
 ; vmrhb, vmrhh, vmrhf, vmrhg
 (define_insn "vec_mergeh<mode>"
-  [(set (match_operand:VEC_HW                 0 "register_operand" "=v")
-	(unspec:VEC_HW [(match_operand:VEC_HW 1 "register_operand"  "v")
-			(match_operand:VEC_HW 2 "register_operand"  "v")]
+  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
+	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
+			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
 		       UNSPEC_VEC_MERGEH))]
   "TARGET_VX"
   "vmrh<bhfgq>\t%v0,%1,%2"
@@ -221,9 +217,9 @@
 
 ; vmrlb, vmrlh, vmrlf, vmrlg
 (define_insn "vec_mergel<mode>"
-  [(set (match_operand:VEC_HW                 0 "register_operand" "=v")
-	(unspec:VEC_HW [(match_operand:VEC_HW 1 "register_operand"  "v")
-			(match_operand:VEC_HW 2 "register_operand"  "v")]
+  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
+	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
+			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
 		     UNSPEC_VEC_MERGEL))]
   "TARGET_VX"
   "vmrl<bhfgq>\t%v0,%1,%2"
@@ -1005,15 +1001,16 @@
 
 ; Vector shift left by byte
 
-(define_insn "vec_slb<mode>"
-  [(set (match_operand:V_HW 0 "register_operand"                    "=v")
-	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "v")
-		      (match_operand:<tointvec> 2 "register_operand" "v")]
+; Pattern definition in vector.md, see vec_vslb
+(define_expand "vec_slb<mode>"
+  [(set (match_operand:V_HW 0 "register_operand"                     "")
+	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "")
+		      (match_operand:<tointvec> 2 "register_operand" "")]
 		     UNSPEC_VEC_SLB))]
   "TARGET_VX"
-  "vslb\t%v0,%v1,%v2"
-  [(set_attr "op_type" "VRR")])
-
+{
+  PUT_MODE (operands[2], V16QImode);
+})
 
 ; Vector shift left double by byte
 
@@ -1076,14 +1073,16 @@
 
 ; Vector shift right logical by byte
 
-; Pattern definition in vector.md
+; Pattern definition in vector.md, see vec_vsrb
 (define_expand "vec_srb<mode>"
   [(set (match_operand:V_HW 0 "register_operand"                     "")
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "")
 		      (match_operand:<tointvec> 2 "register_operand" "")]
 		     UNSPEC_VEC_SRLB))]
-  "TARGET_VX")
-
+  "TARGET_VX"
+{
+  PUT_MODE (operands[2], V16QImode);
+})
 
 ; Vector subtract
 
@@ -1187,7 +1186,7 @@
 		       (match_operand:QI    4 "const_mask_operand" "C")]
 		      UNSPEC_VEC_MSUM))]
   "TARGET_VXE"
-  "vmslg\t%v0,%v1,%v2,%v3"
+  "vmslg\t%v0,%v1,%v2,%v3,%4"
   [(set_attr "op_type" "VRR")])
 
 (define_insn "vmslg"
@@ -1198,7 +1197,7 @@
 		    (match_operand:QI    4 "const_mask_operand" "C")]
 		   UNSPEC_VEC_MSUM))]
   "TARGET_VXE"
-  "vmslg\t%v0,%v1,%v2,%v3"
+  "vmslg\t%v0,%v1,%v2,%v3,%4"
   [(set_attr "op_type" "VRR")])
 
 
@@ -1620,7 +1619,7 @@
   real_2expN (&f, -INTVAL (operands[2]), DFmode);
   c = const_double_from_real_value (f, DFmode);
 
-  operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
+  operands[3] = gen_const_vec_duplicate (V2DFmode, c);
   operands[3] = force_reg (V2DFmode, operands[3]);
 })
 
@@ -1651,7 +1650,7 @@
   real_2expN (&f, -INTVAL (operands[2]), DFmode);
   c = const_double_from_real_value (f, DFmode);
 
-  operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
+  operands[3] = gen_const_vec_duplicate (V2DFmode, c);
   operands[3] = force_reg (V2DFmode, operands[3]);
 })
 
@@ -1683,7 +1682,7 @@
   real_2expN (&f, INTVAL (operands[2]), DFmode);
   c = const_double_from_real_value (f, DFmode);
 
-  operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
+  operands[3] = gen_const_vec_duplicate (V2DFmode, c);
   operands[3] = force_reg (V2DFmode, operands[3]);
   operands[4] = gen_reg_rtx (V2DFmode);
 })
@@ -1716,7 +1715,7 @@
   real_2expN (&f, INTVAL (operands[2]), DFmode);
   c = const_double_from_real_value (f, DFmode);
 
-  operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
+  operands[3] = gen_const_vec_duplicate (V2DFmode, c);
   operands[3] = force_reg (V2DFmode, operands[3]);
   operands[4] = gen_reg_rtx (V2DFmode);
 })

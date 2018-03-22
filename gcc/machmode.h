@@ -1,5 +1,5 @@
 /* Machine mode definitions for GCC; included by rtl.h and tree.h.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,10 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef opt_mode<machine_mode> opt_machine_mode;
 
-extern CONST_MODE_SIZE unsigned short mode_size[NUM_MACHINE_MODES];
-extern const unsigned short mode_precision[NUM_MACHINE_MODES];
+extern CONST_MODE_SIZE poly_uint16_pod mode_size[NUM_MACHINE_MODES];
+extern CONST_MODE_PRECISION poly_uint16_pod mode_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_inner[NUM_MACHINE_MODES];
-extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
+extern CONST_MODE_NUNITS poly_uint16_pod mode_nunits[NUM_MACHINE_MODES];
 extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
 extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
@@ -76,6 +76,14 @@ struct mode_traits<machine_mode>
   typedef machine_mode from_int;
 };
 
+/* Always treat machine modes as fixed-size while compiling code specific
+   to targets that have no variable-size modes.  */
+#if defined (IN_TARGET_CODE) && NUM_POLY_INT_COEFFS == 1
+#define ONLY_FIXED_SIZE_MODES 1
+#else
+#define ONLY_FIXED_SIZE_MODES 0
+#endif
+
 /* Get the name of mode MODE as a string.  */
 
 extern const char * const mode_name[NUM_MACHINE_MODES];
@@ -100,6 +108,7 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
   (GET_MODE_CLASS (MODE) == MODE_INT		\
    || GET_MODE_CLASS (MODE) == MODE_PARTIAL_INT \
    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_INT \
+   || GET_MODE_CLASS (MODE) == MODE_VECTOR_BOOL \
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_INT)
 
 /* Nonzero if MODE is a floating-point mode.  */
@@ -115,8 +124,9 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)
 
 /* Nonzero if MODE is a vector mode.  */
-#define VECTOR_MODE_P(MODE)			\
-  (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT	\
+#define VECTOR_MODE_P(MODE)				\
+  (GET_MODE_CLASS (MODE) == MODE_VECTOR_BOOL		\
+   || GET_MODE_CLASS (MODE) == MODE_VECTOR_INT		\
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT	\
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_FRACT	\
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_UFRACT	\
@@ -313,6 +323,7 @@ template<typename T>
 struct pod_mode
 {
   typedef typename mode_traits<T>::from_int from_int;
+  typedef typename T::measurement_type measurement_type;
 
   machine_mode m_mode;
   ALWAYS_INLINE operator machine_mode () const { return m_mode; }
@@ -391,6 +402,7 @@ class scalar_int_mode
 {
 public:
   typedef mode_traits<scalar_int_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_int_mode () {}
   ALWAYS_INLINE scalar_int_mode (from_int m) : m_mode (machine_mode (m)) {}
@@ -415,6 +427,7 @@ class scalar_float_mode
 {
 public:
   typedef mode_traits<scalar_float_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_float_mode () {}
   ALWAYS_INLINE scalar_float_mode (from_int m) : m_mode (machine_mode (m)) {}
@@ -439,6 +452,7 @@ class scalar_mode
 {
 public:
   typedef mode_traits<scalar_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_mode () {}
   ALWAYS_INLINE scalar_mode (from_int m) : m_mode (machine_mode (m)) {}
@@ -480,6 +494,7 @@ class complex_mode
 {
 public:
   typedef mode_traits<complex_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE complex_mode () {}
   ALWAYS_INLINE complex_mode (from_int m) : m_mode (machine_mode (m)) {}
@@ -501,7 +516,7 @@ complex_mode::includes_p (machine_mode m)
 
 /* Return the base GET_MODE_SIZE value for MODE.  */
 
-ALWAYS_INLINE unsigned short
+ALWAYS_INLINE poly_uint16
 mode_to_bytes (machine_mode mode)
 {
 #if GCC_VERSION >= 4001
@@ -514,7 +529,7 @@ mode_to_bytes (machine_mode mode)
 
 /* Return the base GET_MODE_BITSIZE value for MODE.  */
 
-ALWAYS_INLINE unsigned short
+ALWAYS_INLINE poly_uint16
 mode_to_bits (machine_mode mode)
 {
   return mode_to_bytes (mode) * BITS_PER_UNIT;
@@ -522,7 +537,7 @@ mode_to_bits (machine_mode mode)
 
 /* Return the base GET_MODE_PRECISION value for MODE.  */
 
-ALWAYS_INLINE unsigned short
+ALWAYS_INLINE poly_uint16
 mode_to_precision (machine_mode mode)
 {
   return mode_precision[mode];
@@ -570,7 +585,7 @@ mode_to_unit_precision (machine_mode mode)
 
 /* Return the base GET_MODE_NUNITS value for MODE.  */
 
-ALWAYS_INLINE unsigned short
+ALWAYS_INLINE poly_uint16
 mode_to_nunits (machine_mode mode)
 {
 #if GCC_VERSION >= 4001
@@ -583,15 +598,82 @@ mode_to_nunits (machine_mode mode)
 
 /* Get the size in bytes of an object of mode MODE.  */
 
-#define GET_MODE_SIZE(MODE) (mode_to_bytes (MODE))
+#if ONLY_FIXED_SIZE_MODES
+#define GET_MODE_SIZE(MODE) ((unsigned short) mode_to_bytes (MODE).coeffs[0])
+#else
+ALWAYS_INLINE poly_uint16
+GET_MODE_SIZE (machine_mode mode)
+{
+  return mode_to_bytes (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_poly<typename T::measurement_type>::type
+GET_MODE_SIZE (const T &mode)
+{
+  return mode_to_bytes (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_nonpoly<typename T::measurement_type>::type
+GET_MODE_SIZE (const T &mode)
+{
+  return mode_to_bytes (mode).coeffs[0];
+}
+#endif
 
 /* Get the size in bits of an object of mode MODE.  */
 
-#define GET_MODE_BITSIZE(MODE) (mode_to_bits (MODE))
+#if ONLY_FIXED_SIZE_MODES
+#define GET_MODE_BITSIZE(MODE) ((unsigned short) mode_to_bits (MODE).coeffs[0])
+#else
+ALWAYS_INLINE poly_uint16
+GET_MODE_BITSIZE (machine_mode mode)
+{
+  return mode_to_bits (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_poly<typename T::measurement_type>::type
+GET_MODE_BITSIZE (const T &mode)
+{
+  return mode_to_bits (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_nonpoly<typename T::measurement_type>::type
+GET_MODE_BITSIZE (const T &mode)
+{
+  return mode_to_bits (mode).coeffs[0];
+}
+#endif
 
 /* Get the number of value bits of an object of mode MODE.  */
 
-#define GET_MODE_PRECISION(MODE) (mode_to_precision (MODE))
+#if ONLY_FIXED_SIZE_MODES
+#define GET_MODE_PRECISION(MODE) \
+  ((unsigned short) mode_to_precision (MODE).coeffs[0])
+#else
+ALWAYS_INLINE poly_uint16
+GET_MODE_PRECISION (machine_mode mode)
+{
+  return mode_to_precision (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_poly<typename T::measurement_type>::type
+GET_MODE_PRECISION (const T &mode)
+{
+  return mode_to_precision (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_nonpoly<typename T::measurement_type>::type
+GET_MODE_PRECISION (const T &mode)
+{
+  return mode_to_precision (mode).coeffs[0];
+}
+#endif
 
 /* Get the number of integral bits of an object of mode MODE.  */
 extern CONST_MODE_IBIT unsigned char mode_ibit[NUM_MACHINE_MODES];
@@ -627,7 +709,29 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 /* Get the number of units in an object of mode MODE.  This is 2 for
    complex modes and the number of elements for vector modes.  */
 
-#define GET_MODE_NUNITS(MODE) (mode_to_nunits (MODE))
+#if ONLY_FIXED_SIZE_MODES
+#define GET_MODE_NUNITS(MODE) (mode_to_nunits (MODE).coeffs[0])
+#else
+ALWAYS_INLINE poly_uint16
+GET_MODE_NUNITS (machine_mode mode)
+{
+  return mode_to_nunits (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_poly<typename T::measurement_type>::type
+GET_MODE_NUNITS (const T &mode)
+{
+  return mode_to_nunits (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_nonpoly<typename T::measurement_type>::type
+GET_MODE_NUNITS (const T &mode)
+{
+  return mode_to_nunits (mode).coeffs[0];
+}
+#endif
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
@@ -652,14 +756,59 @@ GET_MODE_2XWIDER_MODE (const T &m)
 extern const unsigned char mode_complex[NUM_MACHINE_MODES];
 #define GET_MODE_COMPLEX_MODE(MODE) ((machine_mode) mode_complex[MODE])
 
-extern opt_machine_mode mode_for_size (unsigned int, enum mode_class, int);
+/* Represents a machine mode that must have a fixed size.  The main
+   use of this class is to represent the modes of objects that always
+   have static storage duration, such as constant pool entries.
+   (No current target supports the concept of variable-size static data.)  */
+class fixed_size_mode
+{
+public:
+  typedef mode_traits<fixed_size_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
+
+  ALWAYS_INLINE fixed_size_mode () {}
+  ALWAYS_INLINE fixed_size_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_int_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_float_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_mode_pod &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const complex_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if MODE has a fixed size.  */
+
+inline bool
+fixed_size_mode::includes_p (machine_mode mode)
+{
+  return mode_to_bytes (mode).is_constant ();
+}
+
+/* Wrapper for mode arguments to target macros, so that if a target
+   doesn't need polynomial-sized modes, its header file can continue
+   to treat everything as fixed_size_mode.  This should go away once
+   macros are moved to target hooks.  It shouldn't be used in other
+   contexts.  */
+#if NUM_POLY_INT_COEFFS == 1
+#define MACRO_MODE(MODE) (as_a <fixed_size_mode> (MODE))
+#else
+#define MACRO_MODE(MODE) (MODE)
+#endif
+
+extern opt_machine_mode mode_for_size (poly_uint64, enum mode_class, int);
 
 /* Return the machine mode to use for a MODE_INT of SIZE bits, if one
    exists.  If LIMIT is nonzero, modes wider than MAX_FIXED_MODE_SIZE
    will not be used.  */
 
 inline opt_scalar_int_mode
-int_mode_for_size (unsigned int size, int limit)
+int_mode_for_size (poly_uint64 size, int limit)
 {
   return dyn_cast <scalar_int_mode> (mode_for_size (size, MODE_INT, limit));
 }
@@ -668,7 +817,7 @@ int_mode_for_size (unsigned int size, int limit)
    exists.  */
 
 inline opt_scalar_float_mode
-float_mode_for_size (unsigned int size)
+float_mode_for_size (poly_uint64 size)
 {
   return dyn_cast <scalar_float_mode> (mode_for_size (size, MODE_FLOAT, 0));
 }
@@ -682,21 +831,21 @@ decimal_float_mode_for_size (unsigned int size)
     (mode_for_size (size, MODE_DECIMAL_FLOAT, 0));
 }
 
-extern machine_mode smallest_mode_for_size (unsigned int, enum mode_class);
+extern machine_mode smallest_mode_for_size (poly_uint64, enum mode_class);
 
 /* Find the narrowest integer mode that contains at least SIZE bits.
    Such a mode must exist.  */
 
 inline scalar_int_mode
-smallest_int_mode_for_size (unsigned int size)
+smallest_int_mode_for_size (poly_uint64 size)
 {
   return as_a <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
 }
 
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
 extern opt_machine_mode bitwise_mode_for_mode (machine_mode);
-extern opt_machine_mode mode_for_vector (scalar_mode, unsigned);
-extern opt_machine_mode mode_for_int_vector (unsigned int, unsigned int);
+extern opt_machine_mode mode_for_vector (scalar_mode, poly_uint64);
+extern opt_machine_mode mode_for_int_vector (unsigned int, poly_uint64);
 
 /* Return the integer vector equivalent of MODE, if one exists.  In other
    words, return the mode for an integer vector that has the same number
@@ -716,7 +865,7 @@ class bit_field_mode_iterator
 {
 public:
   bit_field_mode_iterator (HOST_WIDE_INT, HOST_WIDE_INT,
-			   HOST_WIDE_INT, HOST_WIDE_INT,
+			   poly_int64, poly_int64,
 			   unsigned int, bool);
   bool next_mode (scalar_int_mode *);
   bool prefer_smaller_modes ();
@@ -727,8 +876,8 @@ private:
      for invalid input such as gcc.dg/pr48335-8.c.  */
   HOST_WIDE_INT m_bitsize;
   HOST_WIDE_INT m_bitpos;
-  HOST_WIDE_INT m_bitregion_start;
-  HOST_WIDE_INT m_bitregion_end;
+  poly_int64 m_bitregion_start;
+  poly_int64 m_bitregion_end;
   unsigned int m_align;
   bool m_volatilep;
   int m_count;
@@ -736,8 +885,7 @@ private:
 
 /* Find the best mode to use to access a bit field.  */
 
-extern bool get_best_mode (int, int, unsigned HOST_WIDE_INT,
-			   unsigned HOST_WIDE_INT, unsigned int,
+extern bool get_best_mode (int, int, poly_uint64, poly_uint64, unsigned int,
 			   unsigned HOST_WIDE_INT, bool, scalar_int_mode *);
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
@@ -784,9 +932,22 @@ extern void init_adjust_machine_modes (void);
   (targetm.truly_noop_truncation (GET_MODE_PRECISION (MODE1), \
 				  GET_MODE_PRECISION (MODE2)))
 
-#define HWI_COMPUTABLE_MODE_P(MODE) \
-  (SCALAR_INT_MODE_P (MODE) \
-   && GET_MODE_PRECISION (MODE) <= HOST_BITS_PER_WIDE_INT)
+/* Return true if MODE is a scalar integer mode that fits in a
+   HOST_WIDE_INT.  */
+
+inline bool
+HWI_COMPUTABLE_MODE_P (machine_mode mode)
+{
+  machine_mode mme = mode;
+  return (SCALAR_INT_MODE_P (mme)
+	  && mode_to_precision (mme).coeffs[0] <= HOST_BITS_PER_WIDE_INT);
+}
+
+inline bool
+HWI_COMPUTABLE_MODE_P (scalar_int_mode mode)
+{
+  return GET_MODE_PRECISION (mode) <= HOST_BITS_PER_WIDE_INT;
+}
 
 struct int_n_data_t {
   /* These parts are initailized by genmodes output */
@@ -858,6 +1019,17 @@ is_complex_float_mode (machine_mode mode, T *cmode)
       return true;
     }
   return false;
+}
+
+/* Return true if MODE is a scalar integer mode with a precision
+   smaller than LIMIT's precision.  */
+
+inline bool
+is_narrower_int_mode (machine_mode mode, scalar_int_mode limit)
+{
+  scalar_int_mode int_mode;
+  return (is_a <scalar_int_mode> (mode, &int_mode)
+	  && GET_MODE_PRECISION (int_mode) < GET_MODE_PRECISION (limit));
 }
 
 namespace mode_iterator

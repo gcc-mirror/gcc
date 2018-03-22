@@ -16,7 +16,7 @@ struct A
 };
 struct C : public A
 {
-  virtual int bar () { }
+  virtual int bar () { return 0; }
 };
 struct D : public C
 {
@@ -33,6 +33,7 @@ struct E
 static unsigned *
 fn2 ()
 {
+  return 0;
 }
 
 void

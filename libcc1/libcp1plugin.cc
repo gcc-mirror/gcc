@@ -1,5 +1,5 @@
 /* Library interface to C++ front end.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.  As it interacts with GDB through libcc1,
    they all become a single program as regards the GNU GPL's requirements.
@@ -422,12 +422,6 @@ supplement_binding (cxx_binding *binding, tree decl)
       region to refer only to the namespace to which it already
       refers.  */
     ok = false;
-  else if (maybe_remove_implicit_alias (bval))
-    {
-      /* There was a mangling compatibility alias using this mangled name,
-	 but now we have a real decl that wants to use it instead.  */
-      binding->value = decl;
-    }
   else
     {
       // _1: diagnose_name_conflict (decl, bval);
@@ -1352,12 +1346,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	    }
 
 	  if (opcode != ERROR_MARK)
-	    {
-	      if (assop)
-		identifier = cp_assignment_operator_id (opcode);
-	      else
-		identifier = cp_operator_id (opcode);
-	    }
+	    identifier = ovl_op_identifier (assop, opcode);
 	}
       decl = build_lang_decl_loc (loc, code, identifier, sym_type);
       /* FIXME: current_lang_name is lang_name_c while compiling an
@@ -1416,19 +1405,14 @@ plugin_build_decl (cc1_plugin::connection *self,
 	  DECL_DECLARED_INLINE_P (decl) = 1;
 	  DECL_INITIAL (decl) = error_mark_node;
 	}
-      if (ctor || dtor)
-	{
-	  if (ctor)
-	    DECL_CXX_CONSTRUCTOR_P (decl) = 1;
-	  if (dtor)
-	    DECL_CXX_DESTRUCTOR_P (decl) = 1;
-	}
-      else
-	{
-	  if ((sym_flags & GCC_CP_FLAG_SPECIAL_FUNCTION)
-	      && opcode != ERROR_MARK)
-	    SET_OVERLOADED_OPERATOR_CODE (decl, opcode);
-	}
+
+      if (ctor)
+	DECL_CXX_CONSTRUCTOR_P (decl) = 1;
+      else if (dtor)
+	DECL_CXX_DESTRUCTOR_P (decl) = 1;
+      else if ((sym_flags & GCC_CP_FLAG_SPECIAL_FUNCTION)
+	       && opcode != ERROR_MARK)
+	DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op_mapping[opcode];
     }
   else if (RECORD_OR_UNION_CODE_P (code))
     {
@@ -2655,12 +2639,7 @@ plugin_build_dependent_expr (cc1_plugin::connection *self,
       gcc_assert (convop || !conv_type);
 
       if (opcode != ERROR_MARK)
-	{
-	  if (assop)
-	    identifier = cp_assignment_operator_id (opcode);
-	  else
-	    identifier = cp_operator_id (opcode);
-	}
+	identifier = ovl_op_identifier (assop, opcode);
 
       gcc_assert (identifier);
     }

@@ -8,4 +8,4 @@ int foo(int a, int b, int* p, int *q)
   *p = a;
   return a;
 }
-/* { dg-final { scan-assembler "ldrd" } } */
+/* { dg-final { scan-assembler "ldrd\\t" } } */

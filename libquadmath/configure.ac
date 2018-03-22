@@ -341,6 +341,11 @@ if test x$quadmath_use_i18n_number_h = xyes; then
   AC_DEFINE([USE_I18N_NUMBER_H],[1],[whether i18n number rewriting can be supported])
 fi
 
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+XCFLAGS="$XCFLAGS $CET_FLAGS"
+AC_SUBST(XCFLAGS)
+
 AC_CACHE_SAVE
 
 if test ${multilib} = yes; then

@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1636,7 +1636,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
     return false;
 
   tree indirect_ref = TREE_OPERAND (component_ref, 0);
-  if (TREE_CODE (indirect_ref) != INDIRECT_REF)
+  if (!INDIRECT_REF_P (indirect_ref))
     return false;
 
   tree ptr = STRIP_NOPS (TREE_OPERAND (indirect_ref, 0));
@@ -2610,6 +2610,13 @@ bool
 any_dependent_bases_p (tree type)
 {
   if (!type || !CLASS_TYPE_P (type) || !processing_template_decl)
+    return false;
+
+  /* If we haven't set TYPE_BINFO yet, we don't know anything about the bases.
+     Return false because in this situation we aren't actually looking up names
+     in the scope of the class, so it doesn't matter whether it has dependent
+     bases.  */
+  if (!TYPE_BINFO (type))
     return false;
 
   unsigned i;

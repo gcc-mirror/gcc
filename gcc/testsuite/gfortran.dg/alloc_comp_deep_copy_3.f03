@@ -22,9 +22,9 @@ program p
     v(3)%c2%c1 = 11
     v(4)%c2%c1 = 13
 
-    if (v(1)%c2%c1 /=  3) call abort
-    if (v(2)%c2%c1 /=  7) call abort
-    if (v(3)%c2%c1 /= 11) call abort
-    if (v(4)%c2%c1 /= 13) call abort
+    if (v(1)%c2%c1 /=  3) STOP 1
+    if (v(2)%c2%c1 /=  7) STOP 2
+    if (v(3)%c2%c1 /= 11) STOP 3
+    if (v(4)%c2%c1 /= 13) STOP 4
   end block
 end program p

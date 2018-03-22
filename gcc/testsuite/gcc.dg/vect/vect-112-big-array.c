@@ -8,8 +8,6 @@
 char cb[N];
 char cc[N];
 
-volatile int y = 0;
-
 __attribute__ ((noinline)) int
 main1 (void)
 {
@@ -20,9 +18,7 @@ main1 (void)
     cb[i] = i + 2;
     cc[i] = i + 1;
     check_diff += (cb[i] - cc[i]);
-    /* Avoid vectorization.  */
-    if (y)
-      abort ();
+    asm volatile ("" ::: "memory");
   }
 
   /* Cross-iteration cycle.  */

@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"		/* For PLUGIN_INCLUDE_FILE event.  */
 #include "mkdeps.h"
 #include "dumpfile.h"
+#include "file-prefix-map.h"    /* add_*_prefix_map()  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -111,13 +112,15 @@ static void set_std_cxx98 (int);
 static void set_std_cxx11 (int);
 static void set_std_cxx14 (int);
 static void set_std_cxx17 (int);
+static void set_std_cxx2a (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
+static void set_std_c17 (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
-static void add_prefixed_path (const char *, size_t);
+static void add_prefixed_path (const char *, incpath_kind);
 static void push_command_line_include (void);
 static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_dir_change (cpp_reader *, const char *);
@@ -235,8 +238,8 @@ c_common_init_options (unsigned int decoded_options_count,
 
   if (c_language == clk_c)
     {
-      /* The default for C is gnu11.  */
-      set_std_c11 (false /* ISO */);
+      /* The default for C is gnu17.  */
+      set_std_c17 (false /* ISO */);
 
       /* If preprocessing assembly language, accept any of the C-family
 	 front end options since the driver may pass them through.  */
@@ -315,7 +318,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_I:
       if (strcmp (arg, "-"))
-	add_path (xstrdup (arg), BRACKET, 0, true);
+	add_path (xstrdup (arg), INC_BRACKET, 0, true);
       else
 	{
 	  if (quote_chain_split)
@@ -446,6 +449,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->dollars_in_ident = value;
       break;
 
+    case OPT_fmacro_prefix_map_:
+      add_macro_prefix_map (arg);
+      break;
+
     case OPT_ffreestanding:
       value = !value;
       /* Fall through.  */
@@ -549,7 +556,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_idirafter:
-      add_path (xstrdup (arg), AFTER, 0, true);
+      add_path (xstrdup (arg), INC_AFTER, 0, true);
       break;
 
     case OPT_imacros:
@@ -566,7 +573,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_iquote:
-      add_path (xstrdup (arg), QUOTE, 0, true);
+      add_path (xstrdup (arg), INC_QUOTE, 0, true);
       break;
 
     case OPT_isysroot:
@@ -574,15 +581,15 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_isystem:
-      add_path (xstrdup (arg), SYSTEM, 0, true);
+      add_path (xstrdup (arg), INC_SYSTEM, 0, true);
       break;
 
     case OPT_iwithprefix:
-      add_prefixed_path (arg, SYSTEM);
+      add_prefixed_path (arg, INC_SYSTEM);
       break;
 
     case OPT_iwithprefixbefore:
-      add_prefixed_path (arg, BRACKET);
+      add_prefixed_path (arg, INC_BRACKET);
       break;
 
     case OPT_lang_asm:
@@ -637,6 +644,12 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	set_std_cxx17 (code == OPT_std_c__17 /* ISO */);
       break;
 
+    case OPT_std_c__2a:
+    case OPT_std_gnu__2a:
+      if (!preprocessing_asm_p)
+	set_std_cxx2a (code == OPT_std_c__2a /* ISO */);
+      break;
+
     case OPT_std_c90:
     case OPT_std_iso9899_199409:
       if (!preprocessing_asm_p)
@@ -666,6 +679,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_std_gnu11:
       if (!preprocessing_asm_p)
 	set_std_c11 (false /* ISO */);
+      break;
+
+    case OPT_std_c17:
+      if (!preprocessing_asm_p)
+	set_std_c17 (true /* ISO */);
+      break;
+
+    case OPT_std_gnu17:
+      if (!preprocessing_asm_p)
+	set_std_c17 (false /* ISO */);
       break;
 
     case OPT_trigraphs:
@@ -938,7 +961,7 @@ c_common_post_options (const char **pfilename)
 	warn_narrowing = 1;
 
       /* Unless -f{,no-}ext-numeric-literals has been used explicitly,
-	 for -std=c++{11,14,17} default to -fno-ext-numeric-literals.  */
+	 for -std=c++{11,14,17,2a} default to -fno-ext-numeric-literals.  */
       if (flag_iso && !global_options_set.x_flag_ext_numeric_literals)
 	cpp_opts->ext_numeric_literals = 0;
     }
@@ -970,6 +993,9 @@ c_common_post_options (const char **pfilename)
       else
 	flag_extern_tls_init = 1;
     }
+
+  if (warn_return_type == -1)
+    warn_return_type = c_dialect_cxx ();
 
   if (num_in_fnames > 1)
     error ("too many filenames given.  Type %s --help for usage",
@@ -1319,7 +1345,7 @@ sanitize_cpp_opts (void)
 
 /* Add include path with a prefix at the front of its name.  */
 static void
-add_prefixed_path (const char *suffix, size_t chain)
+add_prefixed_path (const char *suffix, incpath_kind chain)
 {
   char *path;
   const char *prefix;
@@ -1552,6 +1578,21 @@ set_std_c11 (int iso)
   lang_hooks.name = "GNU C11";
 }
 
+/* Set the C 17 standard (without GNU extensions if ISO).  */
+static void
+set_std_c17 (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_STDC17: CLK_GNUC17);
+  flag_no_asm = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  flag_isoc11 = 1;
+  flag_isoc99 = 1;
+  flag_isoc94 = 1;
+  lang_hooks.name = "GNU C17";
+}
+
+
 /* Set the C++ 98 standard (without GNU extensions if ISO).  */
 static void
 set_std_cxx98 (int iso)
@@ -1589,7 +1630,7 @@ set_std_cxx14 (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  /* C++11 includes the C99 standard library.  */
+  /* C++14 includes the C99 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   cxx_dialect = cxx14;
@@ -1604,12 +1645,28 @@ set_std_cxx17 (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  /* C++11 includes the C99 standard library.  */
+  /* C++17 includes the C11 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
   cxx_dialect = cxx17;
   lang_hooks.name = "GNU C++17";
+}
+
+/* Set the C++ 202a draft standard (without GNU extensions if ISO).  */
+static void
+set_std_cxx2a (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_CXX2A: CLK_GNUCXX2A);
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  /* C++17 includes the C11 standard library.  */
+  flag_isoc94 = 1;
+  flag_isoc99 = 1;
+  flag_isoc11 = 1;
+  cxx_dialect = cxx2a;
+  lang_hooks.name = "GNU C++17"; /* Pretend C++17 until standardization.  */
 }
 
 /* Args to -d specify what to dump.  Silently ignore

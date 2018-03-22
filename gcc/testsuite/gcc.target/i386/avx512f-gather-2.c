@@ -1,5 +1,5 @@
 /* { dg-do compile } */ /* PR59617 */
-/* { dg-options "-O3 -mavx512f -fdump-tree-vect-details" } */
+/* { dg-options "-O3 -mavx512f -fdump-tree-vect-details -mtune=knl" } */
 
 #include "avx512f-gather-1.c"
 

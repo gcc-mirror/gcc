@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1324,7 +1324,7 @@ sel_insn_rtx_cost (rtx_insn *insn)
 }
 
 /* Return the cost of the VI.
-   !!! FIXME: Unify with haifa-sched.c: insn_cost ().  */
+   !!! FIXME: Unify with haifa-sched.c: insn_sched_cost ().  */
 int
 sel_vinsn_cost (vinsn_t vi)
 {

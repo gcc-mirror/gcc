@@ -122,6 +122,7 @@ void test_very_wide_line (void)
  6789012345678901234567890123456789012345678901234567890123456789012345
                                               float f = [01;35m[Kfoo * bar[m[K;
                                                         [01;35m[K~~~~^~~~~[m[K
+                                                        [32m[Kbar * foo[m[K
    { dg-end-multiline-output "" } */
 #endif
 }

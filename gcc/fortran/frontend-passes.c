@@ -1,5 +1,5 @@
 /* Pass manager for Fortran front end.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Thomas König.
 
 This file is part of GCC.
@@ -39,6 +39,8 @@ static bool optimize_lexical_comparison (gfc_expr *);
 static void optimize_minmaxloc (gfc_expr **);
 static bool is_empty_string (gfc_expr *e);
 static void doloop_warn (gfc_namespace *);
+static int do_intent (gfc_expr **);
+static int do_subscript (gfc_expr **);
 static void optimize_reduction (gfc_namespace *);
 static int callback_reduction (gfc_expr **, int *, void *);
 static void realloc_strings (gfc_namespace *);
@@ -53,6 +55,7 @@ static gfc_expr* check_conjg_transpose_variable (gfc_expr *, bool *,
 						 bool *);
 static bool has_dimen_vector_ref (gfc_expr *);
 static int matmul_temp_args (gfc_code **, int *,void *data);
+static int index_interchange (gfc_code **, int*, void *);
 
 #ifdef CHECKING_P
 static void check_locus (gfc_namespace *);
@@ -98,9 +101,19 @@ static int iterator_level;
 
 /* Keep track of DO loop levels.  */
 
-static vec<gfc_code *> doloop_list;
+typedef struct {
+  gfc_code *c;
+  int branch_level;
+  bool seen_goto;
+} do_t;
 
+static vec<do_t> doloop_list;
 static int doloop_level;
+
+/* Keep track of if and select case levels.  */
+
+static int if_level;
+static int select_level;
 
 /* Vector of gfc_expr * to keep track of DO loops.  */
 
@@ -133,6 +146,8 @@ gfc_run_passes (gfc_namespace *ns)
      change.  */
 
   doloop_level = 0;
+  if_level = 0;
+  select_level = 0;
   doloop_warn (ns);
   doloop_list.release ();
   int w, e;
@@ -141,9 +156,11 @@ gfc_run_passes (gfc_namespace *ns)
   check_locus (ns);
 #endif
 
+  if (flag_frontend_optimize || flag_frontend_loop_interchange)
+    optimize_namespace (ns);
+
   if (flag_frontend_optimize)
     {
-      optimize_namespace (ns);
       optimize_reduction (ns);
       if (flag_dump_fortran_optimized)
 	gfc_dump_parse_tree (ns, stdout);
@@ -232,7 +249,7 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   expr1 = co->expr1;
-  if (expr1->ts.type != BT_CHARACTER || expr1->rank != 0
+  if (expr1->ts.type != BT_CHARACTER
       || !gfc_expr_attr(expr1).allocatable
       || !expr1->ts.deferred)
     return 0;
@@ -253,8 +270,9 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (!found_substr)
 	return 0;
     }
-  else if (expr2->expr_type != EXPR_OP
-	   || expr2->value.op.op != INTRINSIC_CONCAT)
+  else if (expr2->expr_type != EXPR_ARRAY
+	   && (expr2->expr_type != EXPR_OP
+	       || expr2->value.op.op != INTRINSIC_CONCAT))
     return 0;
   
   if (!gfc_check_dependency (expr1, expr2, true))
@@ -702,6 +720,11 @@ create_var (gfc_expr * e, const char *vname)
   if (e->expr_type == EXPR_CONSTANT || is_fe_temp (e))
     return gfc_copy_expr (e);
 
+  /* Creation of an array of unknown size requires realloc on assignment.
+     If that is not possible, just return NULL.  */
+  if (flag_realloc_lhs == 0 && e->rank > 0 && e->shape == NULL)
+    return NULL;
+
   ns = insert_block ();
 
   if (vname)
@@ -749,7 +772,7 @@ create_var (gfc_expr * e, const char *vname)
     }
 
   deferred = 0;
-  if (e->ts.type == BT_CHARACTER && e->rank == 0)
+  if (e->ts.type == BT_CHARACTER)
     {
       gfc_expr *length;
 
@@ -760,6 +783,8 @@ create_var (gfc_expr * e, const char *vname)
       else
 	{
 	  symbol->attr.allocatable = 1;
+	  symbol->ts.u.cl->length = NULL;
+	  symbol->ts.deferred = 1;
 	  deferred = 1;
 	}
     }
@@ -772,7 +797,7 @@ create_var (gfc_expr * e, const char *vname)
 
   result = gfc_get_expr ();
   result->expr_type = EXPR_VARIABLE;
-  result->ts = e->ts;
+  result->ts = symbol->ts;
   result->ts.deferred = deferred;
   result->rank = e->rank;
   result->shape = gfc_copy_shape (e->shape, e->rank);
@@ -1137,14 +1162,7 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 
   gcc_assert (curr->op == EXEC_TRANSFER);
 
-  /* FIXME: Workaround for PR 80945 - array slices with deferred character
-     lenghts do not work.  Remove this section when the PR is fixed.  */
   e = curr->expr1;
-  if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_CHARACTER
-      && e->ts.deferred)
-    return false;
-  /* End of section to be removed.  */
-
   ref = e->ref;
   if (!ref || ref->type != REF_ARRAY || ref->u.ar.codimen != 0 || ref->next)
     return false;
@@ -1336,7 +1354,9 @@ simplify_io_impl_do (gfc_code **code, int *walk_subtrees,
   return 0;
 }
 
-/* Optimize a namespace, including all contained namespaces.  */
+/* Optimize a namespace, including all contained namespaces.
+  flag_frontend_optimize and flag_fronend_loop_interchange are
+  handled separately.  */
 
 static void
 optimize_namespace (gfc_namespace *ns)
@@ -1349,27 +1369,34 @@ optimize_namespace (gfc_namespace *ns)
   in_assoc_list = false;
   in_omp_workshare = false;
 
-  gfc_code_walker (&ns->code, simplify_io_impl_do, dummy_expr_callback, NULL);
-  gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
-  gfc_code_walker (&ns->code, convert_elseif, dummy_expr_callback, NULL);
-  gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
-  gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
-  if (flag_inline_matmul_limit != 0)
+  if (flag_frontend_optimize)
     {
-      bool found;
-      do
+      gfc_code_walker (&ns->code, simplify_io_impl_do, dummy_expr_callback, NULL);
+      gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
+      gfc_code_walker (&ns->code, convert_elseif, dummy_expr_callback, NULL);
+      gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
+      gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
+      if (flag_inline_matmul_limit != 0)
 	{
-	  found = false;
-	  gfc_code_walker (&ns->code, matmul_to_var_code, matmul_to_var_expr,
-			   (void *) &found);
-	}
-      while (found);
+	  bool found;
+	  do
+	    {
+	      found = false;
+	      gfc_code_walker (&ns->code, matmul_to_var_code, matmul_to_var_expr,
+			       (void *) &found);
+	    }
+	  while (found);
 
-      gfc_code_walker (&ns->code, matmul_temp_args, dummy_expr_callback,
-		       NULL);
-      gfc_code_walker (&ns->code, inline_matmul_assign, dummy_expr_callback,
-		       NULL);
+	  gfc_code_walker (&ns->code, matmul_temp_args, dummy_expr_callback,
+			   NULL);
+	  gfc_code_walker (&ns->code, inline_matmul_assign, dummy_expr_callback,
+			   NULL);
+	}
     }
+
+  if (flag_frontend_loop_interchange)
+    gfc_code_walker (&ns->code, index_interchange, dummy_expr_callback,
+		     NULL);
 
   /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)
@@ -1621,6 +1648,8 @@ combine_array_constructor (gfc_expr *e)
   gfc_constructor *c, *new_c;
   gfc_constructor_base oldbase, newbase;
   bool scalar_first;
+  int n_elem;
+  bool all_const;
 
   /* Array constructors have rank one.  */
   if (e->rank != 1)
@@ -1660,11 +1689,37 @@ combine_array_constructor (gfc_expr *e)
   if (op2->ts.type == BT_CHARACTER)
     return false;
 
-  scalar = create_var (gfc_copy_expr (op2), "constr");
+  /* This might be an expanded constructor with very many constant values. If
+     we perform the operation here, we might end up with a long compile time
+     and actually longer execution time, so a length bound is in order here.
+     If the constructor constains something which is not a constant, it did
+     not come from an expansion, so leave it alone.  */
+
+#define CONSTR_LEN_MAX 4
 
   oldbase = op1->value.constructor;
+
+  n_elem = 0;
+  all_const = true;
+  for (c = gfc_constructor_first (oldbase); c; c = gfc_constructor_next(c))
+    {
+      if (c->expr->expr_type != EXPR_CONSTANT)
+	{
+	  all_const = false;
+	  break;
+	}
+      n_elem += 1;
+    }
+
+  if (all_const && n_elem > CONSTR_LEN_MAX)
+    return false;
+
+#undef CONSTR_LEN_MAX
+
   newbase = NULL;
   e->expr_type = EXPR_ARRAY;
+
+  scalar = create_var (gfc_copy_expr (op2), "constr");
 
   for (c = gfc_constructor_first (oldbase); c;
        c = gfc_constructor_next (c))
@@ -2162,11 +2217,11 @@ optimize_trim (gfc_expr *e)
 
   /* Set the start of the reference.  */
 
-  ref->u.ss.start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+  ref->u.ss.start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
 
   /* Build the function call to len_trim(x, gfc_default_integer_kind).  */
 
-  fcn = get_len_trim_call (gfc_copy_expr (e), gfc_default_integer_kind);
+  fcn = get_len_trim_call (gfc_copy_expr (e), gfc_charlen_int_kind);
 
   /* Set the end of the reference to the call to len_trim.  */
 
@@ -2231,6 +2286,8 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   gfc_formal_arglist *f;
   gfc_actual_arglist *a;
   gfc_code *cl;
+  do_t loop, *lp;
+  bool seen_goto;
 
   co = *c;
 
@@ -2239,14 +2296,65 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   if ((unsigned) doloop_level < doloop_list.length())
     doloop_list.truncate (doloop_level);
 
+  seen_goto = false;
   switch (co->op)
     {
     case EXEC_DO:
 
       if (co->ext.iterator && co->ext.iterator->var)
-	doloop_list.safe_push (co);
+	loop.c = co;
       else
-	doloop_list.safe_push ((gfc_code *) NULL);
+	loop.c = NULL;
+
+      loop.branch_level = if_level + select_level;
+      loop.seen_goto = false;
+      doloop_list.safe_push (loop);
+      break;
+
+      /* If anything could transfer control away from a suspicious
+	 subscript, make sure to set seen_goto in the current DO loop
+	 (if any).  */
+    case EXEC_GOTO:
+    case EXEC_EXIT:
+    case EXEC_STOP:
+    case EXEC_ERROR_STOP:
+    case EXEC_CYCLE:
+      seen_goto = true;
+      break;
+
+    case EXEC_OPEN:
+      if (co->ext.open->err)
+	seen_goto = true;
+      break;
+
+    case EXEC_CLOSE:
+      if (co->ext.close->err)
+	seen_goto = true;
+      break;
+
+    case EXEC_BACKSPACE:
+    case EXEC_ENDFILE:
+    case EXEC_REWIND:
+    case EXEC_FLUSH:
+
+      if (co->ext.filepos->err)
+	seen_goto = true;
+      break;
+
+    case EXEC_INQUIRE:
+      if (co->ext.filepos->err)
+	seen_goto = true;
+      break;
+
+    case EXEC_READ:
+    case EXEC_WRITE:
+      if (co->ext.dt->err || co->ext.dt->end || co->ext.dt->eor)
+	seen_goto = true;
+      break;
+
+    case EXEC_WAIT:
+      if (co->ext.wait->err || co->ext.wait->end || co->ext.wait->eor)
+	loop.seen_goto = true;
       break;
 
     case EXEC_CALL:
@@ -2265,9 +2373,10 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 
       while (a && f)
 	{
-	  FOR_EACH_VEC_ELT (doloop_list, i, cl)
+	  FOR_EACH_VEC_ELT (doloop_list, i, lp)
 	    {
 	      gfc_symbol *do_sym;
+	      cl = lp->c;
 
 	      if (cl == NULL)
 		break;
@@ -2282,14 +2391,14 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 				   "value inside loop  beginning at %L as "
 				   "INTENT(OUT) argument to subroutine %qs",
 				   do_sym->name, &a->expr->where,
-				   &doloop_list[i]->loc,
+				   &(doloop_list[i].c->loc),
 				   co->symtree->n.sym->name);
 		  else if (f->sym->attr.intent == INTENT_INOUT)
 		    gfc_error_now ("Variable %qs at %L not definable inside "
 				   "loop beginning at %L as INTENT(INOUT) "
 				   "argument to subroutine %qs",
 				   do_sym->name, &a->expr->where,
-				   &doloop_list[i]->loc,
+				   &(doloop_list[i].c->loc),
 				   co->symtree->n.sym->name);
 		}
 	    }
@@ -2301,20 +2410,271 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     default:
       break;
     }
+  if (seen_goto && doloop_level > 0)
+    doloop_list[doloop_level-1].seen_goto = true;
+
   return 0;
 }
 
-/* Callback function for functions checking that we do not pass a DO variable
-   to an INTENT(OUT) or INTENT(INOUT) dummy variable.  */
+/* Callback function to warn about different things within DO loops.  */
 
 static int
 do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	     void *data ATTRIBUTE_UNUSED)
 {
+  do_t *last;
+
+  if (doloop_list.length () == 0)
+    return 0;
+
+  if ((*e)->expr_type == EXPR_FUNCTION)
+    do_intent (e);
+
+  last = &doloop_list.last();
+  if (last->seen_goto && !warn_do_subscript)
+    return 0;
+
+  if ((*e)->expr_type == EXPR_VARIABLE)
+    do_subscript (e);
+
+  return 0;
+}
+
+typedef struct
+{
+  gfc_symbol *sym;
+  mpz_t val;
+} insert_index_t;
+
+/* Callback function - if the expression is the variable in data->sym,
+   replace it with a constant from data->val.  */
+
+static int
+callback_insert_index (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+		       void *data)
+{
+  insert_index_t *d;
+  gfc_expr *ex, *n;
+
+  ex = (*e);
+  if (ex->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  d = (insert_index_t *) data;
+  if (ex->symtree->n.sym != d->sym)
+    return 0;
+
+  n = gfc_get_constant_expr (BT_INTEGER, ex->ts.kind, &ex->where);
+  mpz_set (n->value.integer, d->val);
+
+  gfc_free_expr (ex);
+  *e = n;
+  return 0;
+}
+
+/* In the expression e, replace occurrences of the variable sym with
+   val.  If this results in a constant expression, return true and
+   return the value in ret.  Return false if the expression already
+   is a constant.  Caller has to clear ret in that case.  */
+
+static bool
+insert_index (gfc_expr *e, gfc_symbol *sym, mpz_t val, mpz_t ret)
+{
+  gfc_expr *n;
+  insert_index_t data;
+  bool rc;
+
+  if (e->expr_type == EXPR_CONSTANT)
+    return false;
+
+  n = gfc_copy_expr (e);
+  data.sym = sym;
+  mpz_init_set (data.val, val);
+  gfc_expr_walker (&n, callback_insert_index, (void *) &data);
+  gfc_simplify_expr (n, 0);
+
+  if (n->expr_type == EXPR_CONSTANT)
+    {
+      rc = true;
+      mpz_init_set (ret, n->value.integer);
+    }
+  else
+    rc = false;
+
+  mpz_clear (data.val);
+  gfc_free_expr (n);
+  return rc;
+
+}
+
+/* Check array subscripts for possible out-of-bounds accesses in DO
+   loops with constant bounds.  */
+
+static int
+do_subscript (gfc_expr **e)
+{
+  gfc_expr *v;
+  gfc_array_ref *ar;
+  gfc_ref *ref;
+  int i,j;
+  gfc_code *dl;
+  do_t *lp;
+
+  v = *e;
+  /* Constants are already checked.  */
+  if (v->expr_type == EXPR_CONSTANT)
+    return 0;
+
+  /* Wrong warnings will be generated in an associate list.  */
+  if (in_assoc_list)
+    return 0;
+
+  for (ref = v->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT)
+	{
+	  ar = & ref->u.ar;
+	  FOR_EACH_VEC_ELT (doloop_list, j, lp)
+	    {
+	      gfc_symbol *do_sym;
+	      mpz_t do_start, do_step, do_end;
+	      bool have_do_start, have_do_end;
+	      bool error_not_proven;
+	      int warn;
+
+	      dl = lp->c;
+	      if (dl == NULL)
+		break;
+
+	      /* If we are within a branch, or a goto or equivalent
+		 was seen in the DO loop before, then we cannot prove that
+		 this expression is actually evaluated.  Don't do anything
+		 unless we want to see it all.  */
+	      error_not_proven = lp->seen_goto
+		|| lp->branch_level < if_level + select_level;
+
+	      if (error_not_proven && !warn_do_subscript)
+		break;
+
+	      if (error_not_proven)
+		warn = OPT_Wdo_subscript;
+	      else
+		warn = 0;
+
+	      do_sym = dl->ext.iterator->var->symtree->n.sym;
+	      if (do_sym->ts.type != BT_INTEGER)
+		continue;
+
+	      /* If we do not know about the stepsize, the loop may be zero trip.
+		 Do not warn in this case.  */
+	  
+	      if (dl->ext.iterator->step->expr_type == EXPR_CONSTANT)
+		mpz_init_set (do_step, dl->ext.iterator->step->value.integer);
+	      else
+		continue;
+
+	      if (dl->ext.iterator->start->expr_type == EXPR_CONSTANT)
+		{
+		  have_do_start = true;
+		  mpz_init_set (do_start, dl->ext.iterator->start->value.integer);
+		}
+	      else
+		have_do_start = false;
+
+	  
+	      if (dl->ext.iterator->end->expr_type == EXPR_CONSTANT)
+		{
+		  have_do_end = true;
+		  mpz_init_set (do_end, dl->ext.iterator->end->value.integer);
+		}
+	      else
+		have_do_end = false;
+
+	      if (!have_do_start && !have_do_end)
+		return 0;
+
+	      /* May have to correct the end value if the step does not equal
+		 one.  */
+	      if (have_do_start && have_do_end && mpz_cmp_ui (do_step, 1) != 0)
+		{
+		  mpz_t diff, rem;
+
+		  mpz_init (diff);
+		  mpz_init (rem);
+		  mpz_sub (diff, do_end, do_start);
+		  mpz_tdiv_r (rem, diff, do_step);
+		  mpz_sub (do_end, do_end, rem);
+		  mpz_clear (diff);
+		  mpz_clear (rem);
+		}
+
+	      for (i = 0; i< ar->dimen; i++)
+		{
+		  mpz_t val;
+		  if (ar->dimen_type[i] == DIMEN_ELEMENT && have_do_start
+		      && insert_index (ar->start[i], do_sym, do_start, val))
+		    {
+		      if (ar->as->lower[i]
+			  && ar->as->lower[i]->expr_type == EXPR_CONSTANT
+			  && mpz_cmp (val, ar->as->lower[i]->value.integer) < 0)
+			gfc_warning (warn, "Array reference at %L out of bounds "
+				     "(%ld < %ld) in loop beginning at %L",
+				     &ar->start[i]->where, mpz_get_si (val),
+				     mpz_get_si (ar->as->lower[i]->value.integer),
+				     &doloop_list[j].c->loc);
+
+		      if (ar->as->upper[i]
+			  && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+			  && mpz_cmp (val, ar->as->upper[i]->value.integer) > 0)
+			    gfc_warning (warn, "Array reference at %L out of bounds "
+					 "(%ld > %ld) in loop beginning at %L",
+					 &ar->start[i]->where, mpz_get_si (val),
+					 mpz_get_si (ar->as->upper[i]->value.integer),
+					 &doloop_list[j].c->loc);
+
+		      mpz_clear (val);
+		    }
+
+		  if (ar->dimen_type[i] == DIMEN_ELEMENT && have_do_end
+		      && insert_index (ar->start[i], do_sym, do_end, val))
+		    {
+		      if (ar->as->lower[i]
+			  && ar->as->lower[i]->expr_type == EXPR_CONSTANT
+			  && mpz_cmp (val, ar->as->lower[i]->value.integer) < 0)
+			gfc_warning (warn, "Array reference at %L out of bounds "
+				     "(%ld < %ld) in loop beginning at %L",
+				     &ar->start[i]->where, mpz_get_si (val),
+				     mpz_get_si (ar->as->lower[i]->value.integer),
+				     &doloop_list[j].c->loc);
+
+		      if (ar->as->upper[i]
+			  && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+			  && mpz_cmp (val, ar->as->upper[i]->value.integer) > 0)
+			gfc_warning (warn, "Array reference at %L out of bounds "
+				     "(%ld > %ld) in loop beginning at %L",
+				     &ar->start[i]->where, mpz_get_si (val),
+				     mpz_get_si (ar->as->upper[i]->value.integer),
+				     &doloop_list[j].c->loc);
+
+		      mpz_clear (val);
+		    }
+		}
+	    }
+	}
+    }
+  return 0;
+}
+/* Function for functions checking that we do not pass a DO variable
+   to an INTENT(OUT) or INTENT(INOUT) dummy variable.  */
+
+static int
+do_intent (gfc_expr **e)
+{
   gfc_formal_arglist *f;
   gfc_actual_arglist *a;
   gfc_expr *expr;
   gfc_code *dl;
+  do_t *lp;
   int i;
 
   expr = *e;
@@ -2337,10 +2697,10 @@ do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   while (a && f)
     {
-      FOR_EACH_VEC_ELT (doloop_list, i, dl)
+      FOR_EACH_VEC_ELT (doloop_list, i, lp)
 	{
 	  gfc_symbol *do_sym;
-
+	  dl = lp->c;
 	  if (dl == NULL)
 	    break;
 
@@ -2353,13 +2713,13 @@ do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 		gfc_error_now ("Variable %qs at %L set to undefined value "
 			       "inside loop beginning at %L as INTENT(OUT) "
 			       "argument to function %qs", do_sym->name,
-			       &a->expr->where, &doloop_list[i]->loc,
+			       &a->expr->where, &doloop_list[i].c->loc,
 			       expr->symtree->n.sym->name);
 	      else if (f->sym->attr.intent == INTENT_INOUT)
 		gfc_error_now ("Variable %qs at %L not definable inside loop"
 			       " beginning at %L as INTENT(INOUT) argument to"
 			       " function %qs", do_sym->name,
-			       &a->expr->where, &doloop_list[i]->loc,
+			       &a->expr->where, &doloop_list[i].c->loc,
 			       expr->symtree->n.sym->name);
 	    }
 	}
@@ -2396,7 +2756,7 @@ matmul_to_var_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   if (forall_level > 0 || iterator_level > 0 || in_omp_workshare
-      || in_where)
+      || in_where || in_assoc_list)
     return 0;
 
   /* Check if this is already in the form c = matmul(a,b).  */
@@ -3200,10 +3560,26 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 			 is the lbound of a full ref.  */
 		      int j;
 		      gfc_array_ref *ar;
+		      int to;
 
 		      ar = &ref->u.ar;
-		      ar->type = AR_FULL;
-		      for (j = 0; j < ar->dimen; j++)
+
+		      /* For assumed size, we need to keep around the final
+			 reference in order not to get an error on resolution
+			 below, and we cannot use AR_FULL.  */
+			 
+		      if (ar->as->type == AS_ASSUMED_SIZE)
+			{
+			  ar->type = AR_SECTION;
+			  to = ar->dimen - 1;
+			}
+		      else
+			{
+			  to = ar->dimen;
+			  ar->type = AR_FULL;
+			}
+
+		      for (j = 0; j < to; j++)
 			{
 			  gfc_free_expr (ar->start[j]);
 			  ar->start[j] = NULL;
@@ -3361,7 +3737,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (co->op != EXEC_ASSIGN)
     return 0;
 
-  if (in_where)
+  if (in_where || in_assoc_list)
     return 0;
 
   /* The BLOCKS generated for the temporary variables and FORALL don't
@@ -3878,6 +4254,170 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   return 0;
 }
 
+
+/* Code for index interchange for loops which are grouped together in DO
+   CONCURRENT or FORALL statements.  This is currently only applied if the
+   iterations are grouped together in a single statement.
+
+   For this transformation, it is assumed that memory access in strides is
+   expensive, and that loops which access later indices (which access memory
+   in bigger strides) should be moved to the first loops.
+
+   For this, a loop over all the statements is executed, counting the times
+   that the loop iteration values are accessed in each index.  The loop
+   indices are then sorted to minimize access to later indices from inner
+   loops.  */
+
+/* Type for holding index information.  */
+
+typedef struct {
+  gfc_symbol *sym;
+  gfc_forall_iterator *fa;
+  int num;
+  int n[GFC_MAX_DIMENSIONS];
+} ind_type;
+
+/* Callback function to determine if an expression is the 
+   corresponding variable.  */
+
+static int
+has_var (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+{
+  gfc_expr *expr = *e;
+  gfc_symbol *sym;
+
+  if (expr->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  sym = (gfc_symbol *) data;
+  return sym == expr->symtree->n.sym;
+}
+
+/* Callback function to calculate the cost of a certain index.  */
+
+static int
+index_cost (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+	    void *data)
+{
+  ind_type *ind;
+  gfc_expr *expr;
+  gfc_array_ref *ar;
+  gfc_ref *ref;
+  int i,j;
+
+  expr = *e;
+  if (expr->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  ar = NULL;
+  for (ref = expr->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY)
+	{
+	  ar = &ref->u.ar;
+	  break;
+	}
+    }
+  if (ar == NULL || ar->type != AR_ELEMENT)
+    return 0;
+
+  ind = (ind_type *) data;
+  for (i = 0; i < ar->dimen; i++)
+    {
+      for (j=0; ind[j].sym != NULL; j++)
+	{
+	  if (gfc_expr_walker (&ar->start[i], has_var, (void *) (ind[j].sym)))
+	      ind[j].n[i]++;
+	}
+    }
+  return 0;
+}
+
+/* Callback function for qsort, to sort the loop indices. */
+
+static int
+loop_comp (const void *e1, const void *e2)
+{
+  const ind_type *i1 = (const ind_type *) e1;
+  const ind_type *i2 = (const ind_type *) e2;
+  int i;
+
+  for (i=GFC_MAX_DIMENSIONS-1; i >= 0; i--)
+    {
+      if (i1->n[i] != i2->n[i])
+	return i1->n[i] - i2->n[i];
+    }
+  /* All other things being equal, let's not change the ordering.  */
+  return i2->num - i1->num;
+}
+
+/* Main function to do the index interchange.  */
+
+static int
+index_interchange (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		  void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code *co;
+  co = *c;
+  int n_iter;
+  gfc_forall_iterator *fa;
+  ind_type *ind;
+  int i, j;
+  
+  if (co->op != EXEC_FORALL && co->op != EXEC_DO_CONCURRENT)
+    return 0;
+
+  n_iter = 0;
+  for (fa = co->ext.forall_iterator; fa; fa = fa->next)
+    n_iter ++;
+
+  /* Nothing to reorder. */
+  if (n_iter < 2)
+    return 0;
+
+  ind = XALLOCAVEC (ind_type, n_iter + 1);
+
+  i = 0;
+  for (fa = co->ext.forall_iterator; fa; fa = fa->next)
+    {
+      ind[i].sym = fa->var->symtree->n.sym;
+      ind[i].fa = fa;
+      for (j=0; j<GFC_MAX_DIMENSIONS; j++)
+	ind[i].n[j] = 0;
+      ind[i].num = i;
+      i++;
+    }
+  ind[n_iter].sym = NULL;
+  ind[n_iter].fa = NULL;
+
+  gfc_code_walker (c, gfc_dummy_code_callback, index_cost, (void *) ind);
+  qsort ((void *) ind, n_iter, sizeof (ind_type), loop_comp);
+
+  /* Do the actual index interchange.  */
+  co->ext.forall_iterator = fa = ind[0].fa;
+  for (i=1; i<n_iter; i++)
+    {
+      fa->next = ind[i].fa;
+      fa = fa->next;
+    }
+  fa->next = NULL;
+
+  if (flag_warn_frontend_loop_interchange)
+    {
+      for (i=1; i<n_iter; i++)
+	{
+	  if (ind[i-1].num > ind[i].num)
+	    {
+	      gfc_warning (OPT_Wfrontend_loop_interchange,
+			   "Interchanging loops at %L", &co->loc);
+	      break;
+	    }
+	}
+    }
+
+  return 0;
+}
+
 #define WALK_SUBEXPR(NODE) \
   do							\
     {							\
@@ -4055,6 +4595,10 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (co->ext.iterator->step);
 	      break;
 
+	    case EXEC_IF:
+	      if_level ++;
+	      break;
+
 	    case EXEC_WHERE:
 	      in_where = true;
 	      break;
@@ -4073,6 +4617,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	    case EXEC_SELECT:
 	      WALK_SUBEXPR (co->expr1);
+	      select_level ++;
 	      for (b = co->block; b; b = b->block)
 		{
 		  gfc_case *cp;
@@ -4329,6 +4874,12 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  if (co->op == EXEC_DO)
 	    doloop_level --;
 
+	  if (co->op == EXEC_IF)
+	    if_level --;
+
+	  if (co->op == EXEC_SELECT)
+	    select_level --;
+  
 	  in_omp_workshare = saved_in_omp_workshare;
 	  in_where = saved_in_where;
 	}

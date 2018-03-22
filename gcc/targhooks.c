@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -81,7 +81,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "params.h"
 #include "real.h"
-
+#include "langhooks.h"
+#include "sbitmap.h"
 
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
@@ -170,10 +171,17 @@ default_legitimize_address (rtx x, rtx orig_x ATTRIBUTE_UNUSED,
 }
 
 bool
-default_legitimize_address_displacement (rtx *disp ATTRIBUTE_UNUSED,
-					 rtx *offset ATTRIBUTE_UNUSED,
-					 machine_mode mode ATTRIBUTE_UNUSED)
+default_legitimize_address_displacement (rtx *, rtx *, poly_int64,
+					 machine_mode)
 {
+  return false;
+}
+
+bool
+default_const_not_ok_for_debug_p (rtx x)
+{
+  if (GET_CODE (x) == UNSPEC)
+    return true;
   return false;
 }
 
@@ -245,7 +253,7 @@ default_unwind_word_mode (void)
 unsigned HOST_WIDE_INT
 default_shift_truncation_mask (machine_mode mode)
 {
-  return SHIFT_COUNT_TRUNCATED ? GET_MODE_BITSIZE (mode) - 1 : 0;
+  return SHIFT_COUNT_TRUNCATED ? GET_MODE_UNIT_BITSIZE (mode) - 1 : 0;
 }
 
 /* The default implementation of TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.  */
@@ -555,6 +563,28 @@ default_floatn_mode (int n, bool extended)
   return opt_scalar_float_mode ();
 }
 
+/* Define this to return true if the _Floatn and _Floatnx built-in functions
+   should implicitly enable the built-in function without the __builtin_ prefix
+   in addition to the normal built-in function with the __builtin_ prefix.  The
+   default is to only enable built-in functions without the __builtin_ prefix
+   for the GNU C langauge.  The argument FUNC is the enum builtin_in_function
+   id of the function to be enabled.  */
+
+bool
+default_floatn_builtin_p (int func ATTRIBUTE_UNUSED)
+{
+  static bool first_time_p = true;
+  static bool c_or_objective_c;
+
+  if (first_time_p)
+    {
+      first_time_p = false;
+      c_or_objective_c = lang_GNU_C () || lang_GNU_OBJC ();
+    }
+
+  return c_or_objective_c;
+}
+
 /* Make some target macros useable by target-independent code.  */
 bool
 targhook_words_big_endian (void)
@@ -683,7 +713,7 @@ default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 3;
 
       case vec_construct:
-	return TYPE_VECTOR_SUBPARTS (vectype) - 1;
+	return estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype)) - 1;
 
       default:
         gcc_unreachable ();
@@ -726,6 +756,12 @@ hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
 }
 
 void
+hook_void_CUMULATIVE_ARGS_tree (cumulative_args_t ca ATTRIBUTE_UNUSED,
+				tree ATTRIBUTE_UNUSED)
+{
+}
+
+void
 default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			      machine_mode mode ATTRIBUTE_UNUSED,
 			      const_tree type ATTRIBUTE_UNUSED,
@@ -759,7 +795,9 @@ default_function_arg_padding (machine_mode mode, const_tree type)
       size = int_size_in_bytes (type);
     }
   else
-    size = GET_MODE_SIZE (mode);
+    /* Targets with variable-sized modes must override this hook
+       and handle variable-sized modes explicitly.  */
+    size = GET_MODE_SIZE (mode).to_constant ();
 
   if (size < (PARM_BOUNDARY / BITS_PER_UNIT))
     return PAD_DOWNWARD;
@@ -941,7 +979,7 @@ default_libcall_value (machine_mode mode ATTRIBUTE_UNUSED,
 		       const_rtx fun ATTRIBUTE_UNUSED)
 {
 #ifdef LIBCALL_VALUE
-  return LIBCALL_VALUE (mode);
+  return LIBCALL_VALUE (MACRO_MODE (mode));
 #else
   gcc_unreachable ();
 #endif
@@ -1009,10 +1047,8 @@ default_trampoline_init (rtx ARG_UNUSED (m_tramp), tree ARG_UNUSED (t_func),
   sorry ("nested function trampolines not supported on this target");
 }
 
-int
-default_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
-			  tree funtype ATTRIBUTE_UNUSED,
-			  int size ATTRIBUTE_UNUSED)
+poly_int64
+default_return_pops_args (tree, tree, poly_int64)
 {
   return 0;
 }
@@ -1071,11 +1107,13 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
     }
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
   if (in_p)
-    rclass = SECONDARY_INPUT_RELOAD_CLASS (reload_class, reload_mode, x);
+    rclass = SECONDARY_INPUT_RELOAD_CLASS (reload_class,
+					   MACRO_MODE (reload_mode), x);
 #endif
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
   if (! in_p)
-    rclass = SECONDARY_OUTPUT_RELOAD_CLASS (reload_class, reload_mode, x);
+    rclass = SECONDARY_OUTPUT_RELOAD_CLASS (reload_class,
+					    MACRO_MODE (reload_mode), x);
 #endif
   if (rclass != NO_REGS)
     {
@@ -1143,7 +1181,7 @@ machine_mode
 default_secondary_memory_needed_mode (machine_mode mode)
 {
   if (!targetm.lra_p ()
-      && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+      && known_lt (GET_MODE_BITSIZE (mode), BITS_PER_WORD)
       && INTEGRAL_MODE_P (mode))
     return mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0).require ();
   return mode;
@@ -1165,6 +1203,33 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
    return id;
 }
 
+/* The default implementation of TARGET_STATIC_RTX_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_static_rtx_alignment (machine_mode mode)
+{
+  return GET_MODE_ALIGNMENT (mode);
+}
+
+/* The default implementation of TARGET_CONSTANT_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return align;
+}
+
+/* An implementation of TARGET_CONSTANT_ALIGNMENT that aligns strings
+   to at least BITS_PER_WORD but otherwise makes no changes.  */
+
+HOST_WIDE_INT
+constant_alignment_word_strings (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
 /* Default to natural alignment for vector types.  */
 HOST_WIDE_INT
 default_vector_alignment (const_tree type)
@@ -1173,6 +1238,15 @@ default_vector_alignment (const_tree type)
   if (align > MAX_OFILE_ALIGNMENT)
     align = MAX_OFILE_ALIGNMENT;
   return align;
+}
+
+/* The default implementation of
+   TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_preferred_vector_alignment (const_tree type)
+{
+  return TYPE_ALIGN (type);
 }
 
 /* By default assume vectors of element TYPE require a multiple of the natural
@@ -1209,26 +1283,33 @@ default_preferred_simd_mode (scalar_mode)
   return word_mode;
 }
 
+/* By default do not split reductions further.  */
+
+machine_mode
+default_split_reduction (machine_mode mode)
+{
+  return mode;
+}
+
 /* By default only the size derived from the preferred vector mode
    is tried.  */
 
-unsigned int
-default_autovectorize_vector_sizes (void)
+void
+default_autovectorize_vector_sizes (vector_sizes *)
 {
-  return 0;
 }
 
-/* By defaults a vector of integers is used as a mask.  */
+/* By default a vector of integers is used as a mask.  */
 
 opt_machine_mode
-default_get_mask_mode (unsigned nunits, unsigned vector_size)
+default_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
 {
-  unsigned elem_size = vector_size / nunits;
+  unsigned int elem_size = vector_element_size (vector_size, nunits);
   scalar_int_mode elem_mode
     = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT);
   machine_mode vector_mode;
 
-  gcc_assert (elem_size * nunits == vector_size);
+  gcc_assert (known_eq (elem_size * nunits, vector_size));
 
   if (mode_for_vector (elem_mode, nunits).exists (&vector_mode)
       && VECTOR_MODE_P (vector_mode)
@@ -1236,6 +1317,14 @@ default_get_mask_mode (unsigned nunits, unsigned vector_size)
     return vector_mode;
 
   return opt_machine_mode ();
+}
+
+/* By default consider masked stores to be expensive.  */
+
+bool
+default_empty_mask_is_expensive (unsigned ifn)
+{
+  return ifn == IFN_MASK_STORE;
 }
 
 /* By default, the cost model accumulates three separate costs (prologue,
@@ -1449,7 +1538,9 @@ default_addr_space_convert (rtx op ATTRIBUTE_UNUSED,
 unsigned int
 default_hard_regno_nregs (unsigned int, machine_mode mode)
 {
-  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+  /* Targets with variable-sized modes must provide their own definition
+     of this hook.  */
+  return CEIL (GET_MODE_SIZE (mode).to_constant (), UNITS_PER_WORD);
 }
 
 bool
@@ -1567,7 +1658,7 @@ default_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 #ifndef MEMORY_MOVE_COST
     return (4 + memory_move_secondary_cost (mode, (enum reg_class) rclass, in));
 #else
-    return MEMORY_MOVE_COST (mode, (enum reg_class) rclass, in);
+    return MEMORY_MOVE_COST (MACRO_MODE (mode), (enum reg_class) rclass, in);
 #endif
 }
 
@@ -1582,7 +1673,8 @@ default_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 #ifndef REGISTER_MOVE_COST
   return 2;
 #else
-  return REGISTER_MOVE_COST (mode, (enum reg_class) from, (enum reg_class) to);
+  return REGISTER_MOVE_COST (MACRO_MODE (mode),
+			     (enum reg_class) from, (enum reg_class) to);
 #endif
 }
 
@@ -1592,6 +1684,14 @@ bool
 default_slow_unaligned_access (machine_mode, unsigned int)
 {
   return STRICT_ALIGNMENT;
+}
+
+/* The default implementation of TARGET_ESTIMATED_POLY_VALUE.  */
+
+HOST_WIDE_INT
+default_estimated_poly_value (poly_int64 x)
+{
+  return x.coeffs[0];
 }
 
 /* For hooks which use the MOVE_RATIO macro, this gives the legacy default
@@ -1763,9 +1863,13 @@ default_class_max_nregs (reg_class_t rclass ATTRIBUTE_UNUSED,
 			 machine_mode mode ATTRIBUTE_UNUSED)
 {
 #ifdef CLASS_MAX_NREGS
-  return (unsigned char) CLASS_MAX_NREGS ((enum reg_class) rclass, mode);
+  return (unsigned char) CLASS_MAX_NREGS ((enum reg_class) rclass,
+					  MACRO_MODE (mode));
 #else
-  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
+  /* Targets with variable-sized modes must provide their own definition
+     of this hook.  */
+  unsigned int size = GET_MODE_SIZE (mode).to_constant ();
+  return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 #endif
 }
 
@@ -1790,6 +1894,15 @@ default_debug_unwind_info (void)
   return UI_NONE;
 }
 
+/* Targets that set NUM_POLY_INT_COEFFS to something greater than 1
+   must define this hook.  */
+
+unsigned int
+default_dwarf_poly_indeterminate_value (unsigned int, unsigned int *, int *)
+{
+  gcc_unreachable ();
+}
+
 /* Determine the correct mode for a Dwarf frame register that represents
    register REGNO.  */
 
@@ -1806,10 +1919,12 @@ default_dwarf_frame_reg_mode (int regno)
 /* To be used by targets where reg_raw_mode doesn't return the right
    mode for registers used in apply_builtin_return and apply_builtin_arg.  */
 
-machine_mode
+fixed_size_mode
 default_get_reg_raw_mode (int regno)
 {
-  return reg_raw_mode[regno];
+  /* Targets must override this hook if the underlying register is
+     variable-sized.  */
+  return as_a <fixed_size_mode> (reg_raw_mode[regno]);
 }
 
 /* Return true if a leaf function should stay leaf even with profiling
@@ -2040,6 +2155,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */
   if (boundary > align
+      && !TYPE_EMPTY_P (type)
       && !integer_zerop (TYPE_SIZE (type)))
     {
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
@@ -2066,7 +2182,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     }
 
   /* Compute the rounded size of the type.  */
-  type_size = size_in_bytes (type);
+  type_size = arg_size_in_bytes (type);
   rounded_size = round_up (type_size, align);
 
   /* Reduce rounded_size so it's sharable with the postqueue.  */
@@ -2205,6 +2321,19 @@ enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
 {
   return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+}
+
+bool
+default_stack_clash_protection_final_dynamic_probe (rtx residual ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+/* The default implementation of TARGET_EARLY_REMAT_MODES.  */
+
+void
+default_select_early_remat_modes (sbitmap)
+{
 }
 
 #include "gt-targhooks.h"

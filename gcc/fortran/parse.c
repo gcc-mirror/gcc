@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -132,7 +132,7 @@ use_modules (void)
 	return st;						\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 
 /* This is a specialist version of decode_statement that is used
@@ -451,6 +451,7 @@ decode_statement (void)
 
     case 'c':
       match ("call", gfc_match_call, ST_CALL);
+      match ("change team", gfc_match_change_team, ST_CHANGE_TEAM);
       match ("close", gfc_match_close, ST_CLOSE);
       match ("continue", gfc_match_continue, ST_CONTINUE);
       match ("contiguous", gfc_match_contiguous, ST_ATTR_DECL);
@@ -470,6 +471,7 @@ decode_statement (void)
 
     case 'e':
       match ("end file", gfc_match_endfile, ST_END_FILE);
+      match ("end team", gfc_match_end_team, ST_END_TEAM);
       match ("exit", gfc_match_exit, ST_EXIT);
       match ("else", gfc_match_else, ST_ELSE);
       match ("else where", gfc_match_elsewhere, ST_ELSEWHERE);
@@ -491,6 +493,7 @@ decode_statement (void)
       match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE);
       match ("final", gfc_match_final_decl, ST_FINAL);
       match ("flush", gfc_match_flush, ST_FLUSH);
+      match ("form team", gfc_match_form_team, ST_FORM_TEAM);
       match ("format", gfc_match_format, ST_FORMAT);
       break;
 
@@ -558,6 +561,7 @@ decode_statement (void)
       match ("sync all", gfc_match_sync_all, ST_SYNC_ALL);
       match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
       match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
+      match ("sync team", gfc_match_sync_team, ST_SYNC_TEAM);
       break;
 
     case 't':
@@ -606,7 +610,7 @@ decode_statement (void)
 	return st;						\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 static gfc_statement
 decode_oacc_directive (void)
@@ -728,7 +732,7 @@ decode_oacc_directive (void)
 	}							\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 /* Like match, but don't match anything if not -fopenmp
    and if spec_only, goto do_spec_only without actually matching.  */
@@ -746,7 +750,7 @@ decode_oacc_directive (void)
 	}							\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 /* Like match, but set a flag simd_matched if keyword matched.  */
 #define matchds(keyword, subr, st)				\
@@ -759,7 +763,7 @@ decode_oacc_directive (void)
 	}							\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 /* Like match, but don't match anything if not -fopenmp.  */
 #define matchdo(keyword, subr, st)				\
@@ -774,7 +778,7 @@ decode_oacc_directive (void)
 	}							\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 static gfc_statement
 decode_omp_directive (void)
@@ -1063,6 +1067,7 @@ decode_gcc_attribute (void)
   old_locus = gfc_current_locus;
 
   match ("attributes", gfc_match_gcc_attributes, ST_ATTR_DECL);
+  match ("unroll", gfc_match_gcc_unroll, ST_NONE);
 
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
@@ -1502,6 +1507,8 @@ next_statement (void)
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: \
   case ST_ERROR_STOP: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
+  case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
+  case ST_END_TEAM: case ST_SYNC_TEAM: \
   case ST_EVENT_POST: case ST_EVENT_WAIT: case ST_FAIL_IMAGE: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
   case ST_OACC_ENTER_DATA: case ST_OACC_EXIT_DATA
@@ -1832,6 +1839,18 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_FAIL_IMAGE:
       p = "FAIL IMAGE";
+      break;
+    case ST_CHANGE_TEAM:
+      p = "CHANGE TEAM";
+      break;
+    case ST_END_TEAM:
+      p = "END TEAM";
+      break;
+    case ST_FORM_TEAM:
+      p = "FORM TEAM";
+      break;
+    case ST_SYNC_TEAM:
+      p = "SYNC TEAM";
       break;
     case ST_END_ASSOCIATE:
       p = "END ASSOCIATE";
@@ -2737,6 +2756,9 @@ unexpected_eof (void)
   gfc_done_2 ();
 
   longjmp (eof_buf, 1);
+
+  /* Avoids build error on systems where longjmp is not declared noreturn.  */
+  gcc_unreachable ();
 }
 
 
@@ -3696,6 +3718,7 @@ loop:
 	case ST_EQUIVALENCE:
 	case ST_IMPLICIT:
 	case ST_IMPLICIT_NONE:
+	case ST_OMP_THREADPRIVATE:
 	case ST_PARAMETER:
 	case ST_STRUCTURE_DECL:
 	case ST_TYPE:
@@ -4631,7 +4654,14 @@ parse_do_block (void)
   s.ext.end_do_label = new_st.label1;
 
   if (new_st.ext.iterator != NULL)
-    stree = new_st.ext.iterator->var->symtree;
+    {
+      stree = new_st.ext.iterator->var->symtree;
+      if (directive_unroll != -1)
+	{
+	  new_st.ext.iterator->unroll = directive_unroll;
+	  directive_unroll = -1;
+	}
+    }
   else
     stree = NULL;
 
@@ -5389,6 +5419,9 @@ parse_executable (gfc_statement st)
 	  return st;
 	}
 
+      if (directive_unroll != -1)
+	gfc_error ("%<GCC unroll%> directive does not commence a loop at %C");
+
       st = next_statement ();
     }
 }
@@ -5742,16 +5775,28 @@ gfc_global_used (gfc_gsymbol *sym, locus *where)
       name = "MODULE";
       break;
     default:
-      gfc_internal_error ("gfc_global_used(): Bad type");
       name = NULL;
     }
 
-  if (sym->binding_label)
-    gfc_error ("Global binding name %qs at %L is already being used as a %s "
-	       "at %L", sym->binding_label, where, name, &sym->where);
+  if (name)
+    {
+      if (sym->binding_label)
+	gfc_error ("Global binding name %qs at %L is already being used "
+		   "as a %s at %L", sym->binding_label, where, name,
+		   &sym->where);
+      else
+	gfc_error ("Global name %qs at %L is already being used as "
+		   "a %s at %L", sym->name, where, name, &sym->where);
+    }
   else
-    gfc_error ("Global name %qs at %L is already being used as a %s at %L",
-	       sym->name, where, name, &sym->where);
+    {
+      if (sym->binding_label)
+	gfc_error ("Global binding name %qs at %L is already being used "
+		   "at %L", sym->binding_label, where, &sym->where);
+      else
+	gfc_error ("Global name %qs at %L is already being used at %L",
+		   sym->name, where, &sym->where);
+    }
 }
 
 

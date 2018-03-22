@@ -6,11 +6,11 @@ public:
     CVector<int> f() const
     {
        CVector<int> v();
-       return v;
+       return v;		// { dg-error "convert" }
     }
     CVector<long> g() const
     {
        CVector<long> v();
-       return v;
+       return v;		// { dg-error "convert" }
     }
 };

@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-options "-fopenmp" }
 !
 ! PR fortran/47886
 !

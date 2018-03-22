@@ -21,5 +21,5 @@
 # error		/* { dg-bogus "error" "empty macro" } */
 #endif
 
-#if f paren 6) /* { dg-error "missing binary" "macro-expanded parenthesis" } */
+#if f paren 6) /* { dg-error "-:missing binary" "macro-expanded parenthesis" } */
 #endif

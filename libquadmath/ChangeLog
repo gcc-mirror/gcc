@@ -1,3 +1,26 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.am: Update AM_CFLAGS.
+	* Makefile.in: Regenerate:
+	* acinclude.m4: Add enable.m4 and cet.m4.
+	* configure: Regenerate.
+	* configure.ac: Set CET_FLAGS. Update XCFLAGS.
+
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* printf/gmp-impl.h (MPN_MUL_N_RECURSE): Remove semicolon after
+	"do {} while (0)".
+
 2017-09-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR libquadmath/81848
@@ -834,7 +857,7 @@
 	PR fortran/32049
 	Initial implementation and checkin.
 
-Copyright (C) 2010-2017 Free Software Foundation, Inc.
+Copyright (C) 2010-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

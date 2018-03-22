@@ -1,7 +1,7 @@
 /* HAVE_AS_DWARF2_DEBUG_LINE macro needs to be defined to pass the unittest.
    However, dg cannot access it, so we restrict to GNU targets.  */
 /* { dg-do compile { target *-*-gnu* } } */
-/* { dg-options "-O0 -gdwarf" } */
+/* { dg-options "-O0 -gdwarf -gno-column-info" } */
 /* { dg-final { scan-assembler "loc \[0-9] 11 \[0-9]( is_stmt \[0-9])?\n" } } */
 /* { dg-final { scan-assembler "loc \[0-9] 11 \[0-9]( is_stmt \[0-9])? discriminator 2\n" } } */
 /* { dg-final { scan-assembler "loc \[0-9] 11 \[0-9]( is_stmt \[0-9])? discriminator 1\n" } } */

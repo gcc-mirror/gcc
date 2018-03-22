@@ -1,6 +1,6 @@
 // Debugging unordered_map/unordered_multimap implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -312,19 +312,20 @@ namespace __debug
       insert(const value_type& __obj)
       {
 	size_type __bucket_count = this->bucket_count();
-	std::pair<_Base_iterator, bool> __res = _Base::insert(__obj);
+	auto __res = _Base::insert(__obj);
 	_M_check_rehashed(__bucket_count);
-	return std::make_pair(iterator(__res.first, this), __res.second);
+	return { iterator(__res.first, this), __res.second };
       }
 
-      iterator
-      insert(const_iterator __hint, const value_type& __obj)
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      std::pair<iterator, bool>
+      insert(value_type&& __x)
       {
-	__glibcxx_check_insert(__hint);
 	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __it = _Base::insert(__hint.base(), __obj);
+	auto __res = _Base::insert(std::move(__x));
 	_M_check_rehashed(__bucket_count);
-	return iterator(__it, this);
+	return { iterator(__res.first, this), __res.second };
       }
 
       template<typename _Pair, typename = typename
@@ -339,6 +340,28 @@ namespace __debug
 	  _M_check_rehashed(__bucket_count);
 	  return std::make_pair(iterator(__res.first, this), __res.second);
 	}
+
+      iterator
+      insert(const_iterator __hint, const value_type& __obj)
+      {
+	__glibcxx_check_insert(__hint);
+	size_type __bucket_count = this->bucket_count();
+	_Base_iterator __it = _Base::insert(__hint.base(), __obj);
+	_M_check_rehashed(__bucket_count);
+	return iterator(__it, this);
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(const_iterator __hint, value_type&& __x)
+      {
+	__glibcxx_check_insert(__hint);
+	size_type __bucket_count = this->bucket_count();
+	auto __it = _Base::insert(__hint.base(), std::move(__x));
+	_M_check_rehashed(__bucket_count);
+	return iterator(__it, this);
+      }
 
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
@@ -462,13 +485,7 @@ namespace __debug
 
 #if __cplusplus > 201402L
       using node_type = typename _Base::node_type;
-
-      struct insert_return_type
-      {
-	bool inserted;
-	iterator position;
-	node_type node;
-      };
+      using insert_return_type = _Node_insert_return<iterator, node_type>;
 
       node_type
       extract(const_iterator __position)
@@ -499,7 +516,7 @@ namespace __debug
       {
 	auto __ret = _Base::insert(std::move(__nh));
 	iterator __pos = iterator(__ret.position, this);
-	return { __ret.inserted, __pos, std::move(__ret.node) };
+	return { __pos, __ret.inserted, std::move(__ret.node) };
       }
 
       iterator
@@ -615,6 +632,82 @@ namespace __debug
 	  this->_M_invalidate_locals();
       }
     };
+
+#if __cpp_deduction_guides >= 201606
+
+  template<typename _InputIterator,
+	   typename _Hash = hash<__iter_key_t<_InputIterator>>,
+	   typename _Pred = equal_to<__iter_key_t<_InputIterator>>,
+	   typename _Allocator = allocator<__iter_to_alloc_t<_InputIterator>>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_map(_InputIterator, _InputIterator,
+		  typename unordered_map<int, int>::size_type = {},
+		  _Hash = _Hash(), _Pred = _Pred(), _Allocator = _Allocator())
+    -> unordered_map<__iter_key_t<_InputIterator>,
+		     __iter_val_t<_InputIterator>,
+		     _Hash, _Pred, _Allocator>;
+
+  template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
+	   typename _Pred = equal_to<_Key>,
+	   typename _Allocator = allocator<pair<const _Key, _Tp>>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_map(initializer_list<pair<_Key, _Tp>>,
+		  typename unordered_map<int, int>::size_type = {},
+		  _Hash = _Hash(), _Pred = _Pred(), _Allocator = _Allocator())
+    -> unordered_map<_Key, _Tp, _Hash, _Pred, _Allocator>;
+
+  template<typename _InputIterator, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_map(_InputIterator, _InputIterator,
+		  typename unordered_map<int, int>::size_type, _Allocator)
+    -> unordered_map<__iter_key_t<_InputIterator>,
+		     __iter_val_t<_InputIterator>,
+		     hash<__iter_key_t<_InputIterator>>,
+		     equal_to<__iter_key_t<_InputIterator>>,
+		     _Allocator>;
+
+  template<typename _InputIterator, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_map(_InputIterator, _InputIterator, _Allocator)
+    -> unordered_map<__iter_key_t<_InputIterator>,
+		     __iter_val_t<_InputIterator>,
+		     hash<__iter_key_t<_InputIterator>>,
+		     equal_to<__iter_key_t<_InputIterator>>,
+		     _Allocator>;
+
+  template<typename _InputIterator, typename _Hash, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_map(_InputIterator, _InputIterator,
+		  typename unordered_map<int, int>::size_type,
+		  _Hash, _Allocator)
+    -> unordered_map<__iter_key_t<_InputIterator>,
+		     __iter_val_t<_InputIterator>, _Hash,
+		     equal_to<__iter_key_t<_InputIterator>>, _Allocator>;
+
+  template<typename _Key, typename _Tp, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_map(initializer_list<pair<_Key, _Tp>>,
+		  typename unordered_map<int, int>::size_type,
+		  _Allocator)
+    -> unordered_map<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
+
+  template<typename _Key, typename _Tp, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_map(initializer_list<pair<_Key, _Tp>>, _Allocator)
+    -> unordered_map<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
+
+  template<typename _Key, typename _Tp, typename _Hash, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_map(initializer_list<pair<_Key, _Tp>>,
+		  typename unordered_map<int, int>::size_type,
+		  _Hash, _Allocator)
+    -> unordered_map<_Key, _Tp, _Hash, equal_to<_Key>, _Allocator>;
+
+#endif
 
   template<typename _Key, typename _Tp, typename _Hash,
 	   typename _Pred, typename _Alloc>
@@ -907,12 +1000,35 @@ namespace __debug
 	return iterator(__it, this);
       }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(value_type&& __x)
+      {
+	size_type __bucket_count = this->bucket_count();
+	auto __it = _Base::insert(std::move(__x));
+	_M_check_rehashed(__bucket_count);
+	return { __it, this };
+      }
+
       iterator
       insert(const_iterator __hint, const value_type& __obj)
       {
 	__glibcxx_check_insert(__hint);
 	size_type __bucket_count = this->bucket_count();
 	_Base_iterator __it = _Base::insert(__hint.base(), __obj);
+	_M_check_rehashed(__bucket_count);
+	return iterator(__it, this);
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(const_iterator __hint, value_type&& __x)
+      {
+	__glibcxx_check_insert(__hint);
+	size_type __bucket_count = this->bucket_count();
+	auto __it = _Base::insert(__hint.base(), std::move(__x));
 	_M_check_rehashed(__bucket_count);
 	return iterator(__it, this);
       }
@@ -1109,6 +1225,82 @@ namespace __debug
 	  this->_M_invalidate_locals();
       }
     };
+
+#if __cpp_deduction_guides >= 201606
+
+  template<typename _InputIterator,
+	   typename _Hash = hash<__iter_key_t<_InputIterator>>,
+	   typename _Pred = equal_to<__iter_key_t<_InputIterator>>,
+	   typename _Allocator = allocator<__iter_to_alloc_t<_InputIterator>>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multimap(_InputIterator, _InputIterator,
+		       unordered_multimap<int, int>::size_type = {},
+		       _Hash = _Hash(), _Pred = _Pred(),
+		       _Allocator = _Allocator())
+    -> unordered_multimap<__iter_key_t<_InputIterator>,
+			  __iter_val_t<_InputIterator>, _Hash, _Pred,
+			  _Allocator>;
+
+  template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
+	   typename _Pred = equal_to<_Key>,
+	   typename _Allocator = allocator<pair<const _Key, _Tp>>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multimap(initializer_list<pair<_Key, _Tp>>,
+		       unordered_multimap<int, int>::size_type = {},
+		       _Hash = _Hash(), _Pred = _Pred(),
+		       _Allocator = _Allocator())
+    -> unordered_multimap<_Key, _Tp, _Hash, _Pred, _Allocator>;
+
+  template<typename _InputIterator, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multimap(_InputIterator, _InputIterator,
+		       unordered_multimap<int, int>::size_type, _Allocator)
+    -> unordered_multimap<__iter_key_t<_InputIterator>,
+			  __iter_val_t<_InputIterator>,
+			  hash<__iter_key_t<_InputIterator>>,
+			  equal_to<__iter_key_t<_InputIterator>>, _Allocator>;
+
+  template<typename _InputIterator, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multimap(_InputIterator, _InputIterator, _Allocator)
+    -> unordered_multimap<__iter_key_t<_InputIterator>,
+			  __iter_val_t<_InputIterator>,
+			  hash<__iter_key_t<_InputIterator>>,
+			  equal_to<__iter_key_t<_InputIterator>>, _Allocator>;
+
+  template<typename _InputIterator, typename _Hash, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multimap(_InputIterator, _InputIterator,
+		       unordered_multimap<int, int>::size_type, _Hash,
+		       _Allocator)
+    -> unordered_multimap<__iter_key_t<_InputIterator>,
+			  __iter_val_t<_InputIterator>, _Hash,
+			  equal_to<__iter_key_t<_InputIterator>>, _Allocator>;
+
+  template<typename _Key, typename _Tp, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multimap(initializer_list<pair<_Key, _Tp>>,
+		       unordered_multimap<int, int>::size_type,
+		       _Allocator)
+    -> unordered_multimap<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
+
+  template<typename _Key, typename _Tp, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multimap(initializer_list<pair<_Key, _Tp>>, _Allocator)
+    -> unordered_multimap<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
+
+  template<typename _Key, typename _Tp, typename _Hash, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multimap(initializer_list<pair<_Key, _Tp>>,
+		       unordered_multimap<int, int>::size_type,
+		       _Hash, _Allocator)
+    -> unordered_multimap<_Key, _Tp, _Hash, equal_to<_Key>, _Allocator>;
+
+#endif
 
   template<typename _Key, typename _Tp, typename _Hash,
 	   typename _Pred, typename _Alloc>

@@ -328,7 +328,7 @@ package Snames is
 
    --  Operator Symbol entries. The actual names have an upper case O at the
    --  start in place of the Op_ prefix (e.g. the actual name that corresponds
-   --  to Name_Op_Abs is "Oabs".
+   --  to Name_Op_Abs is "Oabs").
 
    First_Operator_Name                 : constant Name_Id := N + $;
    Name_Op_Abs                         : constant Name_Id := N + $; -- "abs"
@@ -760,6 +760,7 @@ package Snames is
    Name_Gcc                            : constant Name_Id := N + $;
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
+   Name_Gnat_Annotate                  : constant Name_Id := N + $;
    Name_Gnat_Extended_Ravenscar        : constant Name_Id := N + $;
    Name_Gnat_Ravenscar_EDF             : constant Name_Id := N + $;
    Name_Gnatprove                      : constant Name_Id := N + $;
@@ -1705,11 +1706,10 @@ package Snames is
 
       Attribute_CPU,
       Attribute_Dispatching_Domain,
-      Attribute_Interrupt_Priority,
-      Attribute_Secondary_Stack_Size);
+      Attribute_Interrupt_Priority);
 
    subtype Internal_Attribute_Id is Attribute_Id range
-     Attribute_CPU .. Attribute_Secondary_Stack_Size;
+     Attribute_CPU .. Attribute_Interrupt_Priority;
 
    type Attribute_Class_Array is array (Attribute_Id) of Boolean;
    --  Type used to build attribute classification flag arrays

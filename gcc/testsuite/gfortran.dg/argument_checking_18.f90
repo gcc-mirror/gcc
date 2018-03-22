@@ -14,8 +14,8 @@
 
  tt%j = i
 
- call sub1 (i)     ! { dg-warning "Actual argument contains too few elements" }
- call sub1 (tt%j)  ! { dg-warning "Actual argument contains too few elements" }
+ call sub1 (i)     ! { dg-error "Actual argument contains too few elements" }
+ call sub1 (tt%j)  ! { dg-error "Actual argument contains too few elements" }
  call sub2 (i)     ! { dg-error "Rank mismatch in argument" }
  call sub2 (tt%j)  ! { dg-error "Rank mismatch in argument" }
 

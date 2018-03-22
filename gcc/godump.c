@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -1159,7 +1159,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
 		      tree_to_uhwi (TREE_VALUE (element)));
 	  else
-	    print_hex (element, buf);
+	    print_hex (wi::to_wide (element), buf);
 
 	  mhval->value = xstrdup (buf);
 	  *slot = mhval;

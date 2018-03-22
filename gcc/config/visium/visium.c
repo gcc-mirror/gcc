@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -145,10 +147,11 @@ static inline bool current_function_has_lr_slot (void);
    interrupt -- specifies this function is an interrupt handler.   */
 static const struct attribute_spec visium_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  {"interrupt", 0, 0, true, false, false, visium_handle_interrupt_attr, false},
-  {NULL, 0, 0, false, false, false, NULL, false}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true, false, false, false, visium_handle_interrupt_attr,
+    NULL},
+  { NULL, 0, 0, false, false, false, false, NULL, NULL },
 };
 
 static struct machine_function *visium_init_machine_status (void);
@@ -236,6 +239,8 @@ static bool visium_modes_tieable_p (machine_mode, machine_mode);
 
 static bool visium_can_change_mode_class (machine_mode, machine_mode,
 					  reg_class_t);
+
+static HOST_WIDE_INT visium_constant_alignment (const_tree, HOST_WIDE_INT);
 
 /* Setup the global target hooks structure.  */
 
@@ -359,6 +364,9 @@ static bool visium_can_change_mode_class (machine_mode, machine_mode,
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS visium_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT visium_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -832,6 +840,14 @@ visium_data_alignment (tree type, unsigned int align)
     }
 
   return align;
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+visium_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  return visium_data_alignment (TREE_TYPE (exp), align);
 }
 
 /* Helper function for HARD_REGNO_RENAME_OK (FROM, TO).  Return non-zero if
@@ -1906,7 +1922,7 @@ visium_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (4 < size && 0x80 < size + offset - offset_base)
+      if (size > 4 && size + offset - offset_base > 0x80)
 	offset_base = offset & ~0x3f;
       if (offset_base != 0 && offset_base != offset && (offset & mask1) == 0)
 	{
@@ -1952,7 +1968,7 @@ visium_legitimize_reload_address (rtx x, machine_mode mode, int opnum,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (4 < size && 0x80 < size + offset - offset_base)
+      if (size > 4 && size + offset - offset_base > 0x80)
 	offset_base = offset & ~0x3f;
 
       if (offset_base && (offset & mask1) == 0)
@@ -2925,12 +2941,6 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
       /* This is a btst, the result is in C instead of Z.  */
       return CCCmode;
 
-    case CONST_INT:
-      /* This is a degenerate case, typically an uninitialized variable.  */
-      gcc_assert (op0 == constm1_rtx);
-
-      /* ... fall through ... */
-
     case REG:
     case AND:
     case IOR:
@@ -2945,6 +2955,17 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	 will set the C flag.  But the C flag is relevant only for
 	 the unsigned comparison operators and they are eliminated
 	 when applied to a comparison with zero.  */
+      return CCmode;
+
+    /* ??? Cater to the junk RTXes sent by try_merge_compare.  */
+    case ASM_OPERANDS:
+    case CALL:
+    case CONST_INT:
+    case LO_SUM:
+    case HIGH:
+    case MEM:
+    case UNSPEC:
+    case ZERO_EXTEND:
       return CCmode;
 
     default:
@@ -3073,10 +3094,9 @@ output_branch (rtx label, const char *cond, rtx_insn *insn)
 	  if (final_sequence)
 	    {
 	      rtx_insn *delay = NEXT_INSN (insn);
-	      int seen;
 	      gcc_assert (delay);
 
-	      final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	      final_scan_insn (delay, asm_out_file, optimize, 0, NULL);
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
 	    }

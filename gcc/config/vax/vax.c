@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for VAX.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -16,6 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -60,8 +62,9 @@ static rtx vax_struct_value_rtx (tree, int);
 static rtx vax_builtin_setjmp_frame_value (void);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
-static int vax_return_pops_args (tree, tree, int);
+static poly_int64 vax_return_pops_args (tree, tree, poly_int64);
 static bool vax_mode_dependent_address_p (const_rtx, addr_space_t);
+static HOST_WIDE_INT vax_starting_frame_offset (void);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -119,6 +122,9 @@ static bool vax_mode_dependent_address_p (const_rtx, addr_space_t);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE vax_option_override
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET vax_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -208,7 +214,7 @@ vax_expand_prologue (void)
 
   /* Allocate the local stack frame.  */
   size = get_frame_size ();
-  size -= STARTING_FRAME_OFFSET;
+  size -= vax_starting_frame_offset ();
   emit_insn (gen_addsi3 (stack_pointer_rtx,
 			 stack_pointer_rtx, GEN_INT (-size)));
 
@@ -2023,7 +2029,7 @@ adjacent_operands_p (rtx lo, rtx hi, machine_mode mode)
   if (REG_P (lo))
     return mode == SImode && REGNO (lo) + 1 == REGNO (hi);
   if (CONST_INT_P (lo))
-    return INTVAL (hi) == 0 && 0 <= INTVAL (lo) && INTVAL (lo) < 64;
+    return INTVAL (hi) == 0 && UINTVAL (lo) < 64;
   if (CONST_INT_P (lo))
     return mode != SImode;
 
@@ -2134,11 +2140,11 @@ vax_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
    On the VAX, the RET insn pops a maximum of 255 args for any function.  */
 
-static int
+static poly_int64
 vax_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
-		      tree funtype ATTRIBUTE_UNUSED, int size)
+		      tree funtype ATTRIBUTE_UNUSED, poly_int64 size)
 {
-  return size > 255 * 4 ? 0 : size;
+  return size > 255 * 4 ? 0 : (HOST_WIDE_INT) size;
 }
 
 /* Define where to put the arguments to a function.
@@ -2179,3 +2185,12 @@ vax_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   ? (GET_MODE_SIZE (mode) + 3) & ~3
 	   : (int_size_in_bytes (type) + 3) & ~3);
 }
+
+static HOST_WIDE_INT
+vax_starting_frame_offset (void)
+{
+  /* On ELF targets, reserve the top of the stack for exception handler
+     stackadj value.  */
+  return TARGET_ELF ? -4 : 0;
+}
+

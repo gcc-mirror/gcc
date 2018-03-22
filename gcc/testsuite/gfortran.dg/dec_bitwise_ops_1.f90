@@ -11,7 +11,7 @@ subroutine assert(expected, actual, str)
   integer, intent(in)      :: expected, actual
   if (actual .ne. expected) then
     write (*, '(A,I4,I4)') str, expected, actual
-    call abort()
+    STOP 1
   endif
 end subroutine
 

@@ -2,6 +2,7 @@
 ! { dg-require-effective-target vect_double }
 ! { dg-options "-O3 --param vect-max-peeling-for-alignment=0 -fpredictive-commoning -fdump-tree-pcom-details" }
 ! { dg-additional-options "-mprefer-avx128" { target { i?86-*-* x86_64-*-* } } }
+! { dg-additional-options "-mzarch" { target { s390*-*-* } } }
 
 ******* RESID COMPUTES THE RESIDUAL:  R = V - AU
 *
@@ -41,5 +42,5 @@ C
 ! vectorized loop.  If vector factor is 2, the vectorized loop can
 ! be predictive commoned, we check if predictive commoning PHI node
 ! is created with vector(2) type.
-! { dg-final { scan-tree-dump "Executing predictive commoning without unrolling" "pcom" } }
-! { dg-final { scan-tree-dump "vectp_u.*__lsm.* = PHI <.*vectp_u.*__lsm" "pcom" } }
+! { dg-final { scan-tree-dump "Executing predictive commoning without unrolling" "pcom" { xfail vect_variable_length } } }
+! { dg-final { scan-tree-dump "vectp_u.*__lsm.* = PHI <.*vectp_u.*__lsm" "pcom" { xfail vect_variable_length } } }

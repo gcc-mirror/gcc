@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fopenmp -fcray-pointer" }
+! { dg-options "-fcray-pointer" }
 ! { dg-require-effective-target tls_runtime }
 
   use omp_lib

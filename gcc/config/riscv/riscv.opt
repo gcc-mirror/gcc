@@ -1,6 +1,6 @@
 ; Options for the RISC-V port of the compiler
 ;
-; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -32,6 +32,10 @@ When generating -fpic code, allow the use of PLTs. Ignored for fno-pic.
 mabi=
 Target Report RejectNegative Joined Enum(abi_type) Var(riscv_abi) Init(ABI_ILP32)
 Specify integer and floating-point calling convention.
+
+mpreferred-stack-boundary=
+Target RejectNegative Joined UInteger Var(riscv_preferred_stack_boundary_arg)
+Attempt to keep stack aligned to this power of 2.
 
 Enum
 Name(abi_type) Type(enum riscv_abi_type)
@@ -101,6 +105,11 @@ Enum(code_model) String(medany) Value(CM_MEDANY)
 mexplicit-relocs
 Target Report Mask(EXPLICIT_RELOCS)
 Use %reloc() operators, rather than assembly macros, to load addresses.
+
+mrelax
+Target Bool Var(riscv_mrelax) Init(1)
+Take advantage of linker relaxations to reduce the number of instructions
+required to materialize symbol addresses.
 
 Mask(64BIT)
 

@@ -15,5 +15,6 @@ A *
 B::m_fn1 (int *) const
 {
   new B (m_fn2 (0)->m_fn1 (0), 0, m_fn2 (0)->m_fn1 (0));
+  return 0;
 }
 

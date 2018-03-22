@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2007-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides facilities for getting command line arguments
---  from a text file, called a "response file".
+--  This package provides facilities for getting command-line arguments from
+--  a text file, called a "response file".
 --
 --  Using a response file allow passing a set of arguments to an executable
 --  longer than the maximum allowed by the system on the command line.

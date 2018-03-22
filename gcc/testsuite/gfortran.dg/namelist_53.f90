@@ -5,5 +5,5 @@
   n = 123
   line = ""
   write(line,nml=stuff)
-  if (line.ne."&STUFF  N=        123,  /") call abort
+  if (line.ne."&STUFF  N=123        ,  /") print *, line
   end 

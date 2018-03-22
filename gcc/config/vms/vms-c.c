@@ -1,5 +1,5 @@
 /* VMS specific, C compiler specific functions.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Tristan Gingold (gingold@adacore.com).
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -418,7 +420,7 @@ vms_c_register_includes (const char *sysroot,
   if (!stdinc)
     return;
 
-  for (dir = get_added_cpp_dirs (SYSTEM); dir != NULL; dir = dir->next)
+  for (dir = get_added_cpp_dirs (INC_SYSTEM); dir != NULL; dir = dir->next)
     {
       const char * const *lib;
       for (lib = vms_std_modules; *lib != NULL; lib++)
@@ -441,7 +443,7 @@ vms_c_register_includes (const char *sysroot,
               p->sysp = 1;
               p->construct = vms_construct_include_filename;
               p->user_supplied_p = 0;
-              add_cpp_dir_path (p, SYSTEM);
+              add_cpp_dir_path (p, INC_SYSTEM);
             }
           else
             free (path);

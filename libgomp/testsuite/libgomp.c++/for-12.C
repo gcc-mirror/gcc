@@ -1,5 +1,3 @@
-/* { dg-options "-fopenmp" } */
-
 extern "C" void abort (void);
 
 #define M(x, y, z) O(x, y, z)

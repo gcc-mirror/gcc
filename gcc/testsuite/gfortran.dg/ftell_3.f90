@@ -16,11 +16,11 @@ program ftell_3
   call ftell(10, i)
 ! Expected: On '\n' systems: 7, on \r\n systems: 8
   if(i /= 7 .and. i /= 8) then
-    call abort
+    STOP 1
   end if
   read(10,'(a)') buffer
   if (trim(buffer) /= "789") then
-     call abort()
+     STOP 1
   end if
   call ftell(10,j)
   close(10)
@@ -28,15 +28,15 @@ program ftell_3
 ! Expected: On '\n' systems: 11, on \r\n systems: 13
   if (i == 7) then
     read(10, pos=7) ch
-    if (ch /= char(10)) call abort
-    if (j /= 11) call abort
+    if (ch /= char(10)) STOP 2
+    if (j /= 11) STOP 3
   end if
   if (i == 8) then
     read(10, pos=7) ch
-    if (ch /= char(13)) call abort
+    if (ch /= char(13)) STOP 4
     read(10) ch
-    if (ch /= char(10)) call abort
-    if (j /= 13) call abort
+    if (ch /= char(10)) STOP 5
+    if (j /= 13) STOP 6
   end if
   close(10, status="delete")
 end program ftell_3

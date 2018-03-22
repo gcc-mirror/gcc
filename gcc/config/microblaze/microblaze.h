@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Xilinx MicroBlaze.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -234,12 +234,6 @@ extern enum pipeline_type microblaze_pipe;
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD						\
-	? BITS_PER_WORD							\
-	: (ALIGN))
-
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
   ((((ALIGN) < BITS_PER_WORD)						\
     && (TREE_CODE (TYPE) == ARRAY_TYPE					\
@@ -407,10 +401,6 @@ extern enum reg_class microblaze_regno_to_class[];
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD 1
-
-/* Changed the starting frame offset to including the new link stuff */
-#define STARTING_FRAME_OFFSET						\
-   (crtl->outgoing_args_size + FIRST_PARM_OFFSET(FNDECL))
 
 /* The return address for the current frame is in r31 if this is a leaf
    function.  Otherwise, it is on the stack.  It is at a variable offset

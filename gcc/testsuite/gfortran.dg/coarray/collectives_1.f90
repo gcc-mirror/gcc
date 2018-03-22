@@ -17,7 +17,7 @@ contains
     call co_max (val, result_image=1)
     if (this_image() == 1) then
       !write(*,*) "Maximal value", val
-      if (val /= num_images()) call abort()
+      if (val /= num_images()) STOP 1
     end if
   end subroutine test_max
 
@@ -27,7 +27,7 @@ contains
     call co_min (val, result_image=1)
     if (this_image() == 1) then
       !write(*,*) "Minimal value", val
-      if (val /= 1) call abort()
+      if (val /= 1) STOP 2
     end if
   end subroutine test_min
 
@@ -38,7 +38,7 @@ contains
     if (this_image() == 1) then
       !write(*,*) "The sum is ", val
       n = num_images()
-      if (val /= (n**2 + n)/2) call abort()
+      if (val /= (n**2 + n)/2) STOP 3
     end if
   end subroutine test_sum
 end program test

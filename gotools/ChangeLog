@@ -1,3 +1,58 @@
+2018-02-09  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (GOTOOLS_TEST_TIMEOUT): Double value.
+
+2018-02-08  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-gccgo, check-gcc): Add options to pick up
+	target libstdc++, to permit tests that use C++.
+	* Makefile.in: Rebuild.
+
+2018-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (GOTOOLS_TEST_TIMEOUT): Define.
+	(check-go-tool): Pass -test.timeout with GOTOOLS_TEST_TIMEOUT.
+	(check-cgo-test, check-carchive-test, check-vet): Likewise.
+	* Makefile.in: Rebuild.
+
+2018-01-08  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (go_cmd_vet_files): New variable.
+	(go_cmd_buildid_files, go_cmd_test2json_files): New variables.
+	(s-zdefaultcc): Change from constants to functions.
+	(noinst_PROGRAMS): Add vet, buildid, and test2json.
+	(cgo$(EXEEXT)): Link against $(LIBGOTOOL).
+	(vet$(EXEEXT)): New target.
+	(buildid$(EXEEXT)): New target.
+	(test2json$(EXEEXT)): New target.
+	(install-exec-local): Install all $(noinst_PROGRAMS).
+	(uninstall-local): Uninstasll all $(noinst_PROGRAMS).
+	(check-go-tool): Depend on $(noinst_PROGRAMS).  Copy down
+	objabi.go.
+	(check-runtime): Depend on $(noinst_PROGRAMS).
+	(check-cgo-test, check-carchive-test): Likewise.
+	(check-vet): New target.
+	(check): Depend on check-vet.  Look at cmd_vet-testlog.
+	(.PHONY): Add check-vet.
+	* Makefile.in: Rebuild.
+
+2017-10-25  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-go-tool): Output colon after ${fl}.
+	(check-runtime, check-cgo-test, check-carchive-test): Likewise.
+	* Makefile.in: Rebuild.
+
+2017-09-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (GOTESTFLAGS): New variable.
+	(check-runtime): Pass it to gotest.
+	(check-go-tools): Sort summary.
+	(check-runtime): Likewise.
+	(check-cgo-test): Likewise.
+	(check-carchive-test): Likewise.
+	(check): Likewise.
+	* Makefile.in: Regenerate.
+
 2017-09-14  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (LIBGOTOOL): Define.

@@ -60,22 +60,22 @@ implicit none
 integer f, f2, g, g2
 
 ! Should return static value of a; accumulates y
-if ( f(3) .ne. 3 ) call abort ()
-if ( f(4) .ne. 7 ) call abort ()
-if ( f(2) .ne. 9 ) call abort ()
+if ( f(3) .ne. 3 ) STOP 1
+if ( f(4) .ne. 7 ) STOP 2
+if ( f(2) .ne. 9 ) STOP 3
 
-if ( f2(3) .ne. 3 ) call abort ()
-if ( f2(4) .ne. 7 ) call abort ()
-if ( f2(2) .ne. 9 ) call abort ()
+if ( f2(3) .ne. 3 ) STOP 4
+if ( f2(4) .ne. 7 ) STOP 5
+if ( f2(2) .ne. 9 ) STOP 6
 
 ! Should return automatic value of a; equal to y each time
-if ( g(3) .ne. 3 ) call abort ()
-if ( g(4) .ne. 4 ) call abort ()
-if ( g(2) .ne. 2 ) call abort ()
+if ( g(3) .ne. 3 ) STOP 7
+if ( g(4) .ne. 4 ) STOP 8
+if ( g(2) .ne. 2 ) STOP 9
 
-if ( g2(3) .ne. 3 ) call abort ()
-if ( g2(4) .ne. 4 ) call abort ()
-if ( g2(2) .ne. 2 ) call abort ()
+if ( g2(3) .ne. 3 ) STOP 10
+if ( g2(4) .ne. 4 ) STOP 11
+if ( g2(2) .ne. 2 ) STOP 12
 
 end
 

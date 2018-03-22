@@ -151,6 +151,9 @@ extern tree maybe_pad_type (tree type, tree size, unsigned int align,
 			    bool is_user_type, bool definition,
 			    bool set_rm_size);
 
+/* Return true if padded TYPE was built with an RM size.  */
+extern bool pad_type_has_rm_size (tree type);
+
 /* Return a copy of the padded TYPE but with reverse storage order.  */
 extern tree set_reverse_storage_order_on_pad_type (tree type);
 
@@ -312,9 +315,9 @@ extern void post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent,
 extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
                                   tree t, int num);
 
-/* Return a label to branch to for the exception type in KIND or NULL_TREE
+/* Return a label to branch to for the exception type in KIND or Empty
    if none.  */
-extern tree get_exception_label (char kind);
+extern Entity_Id get_exception_label (char kind);
 
 /* If nonzero, pretend we are allocating at global level.  */
 extern int force_global;

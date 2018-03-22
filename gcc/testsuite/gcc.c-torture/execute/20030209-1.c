@@ -1,12 +1,5 @@
-/* { dg-add-options stack_size } */
+/* { dg-require-stack-size "8*100*100" } */
 
-#ifdef STACK_SIZE
-#if STACK_SIZE < 8*100*100
-#define SKIP
-#endif
-#endif
-
-#ifndef SKIP
 double x[100][100];
 int main ()
 {
@@ -18,10 +11,3 @@ int main ()
     abort ();
   exit (0);
 }
-#else
-int
-main ()
-{
-  exit (0);
-}
-#endif

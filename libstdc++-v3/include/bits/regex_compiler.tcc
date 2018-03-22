@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,8 +30,9 @@
 
 // FIXME make comments doxygen format.
 
+/*
 // This compiler refers to "Regular Expression Matching Can Be Simple And Fast"
-// (http://swtch.com/~rsc/regexp/regexp1.html"),
+// (http://swtch.com/~rsc/regexp/regexp1.html),
 // but doesn't strictly follow it.
 //
 // When compiling, states are *chained* instead of tree- or graph-constructed.
@@ -51,7 +52,8 @@
 // article.
 //
 // That's why we introduced dummy node here ------ "end_tag" is a dummy node.
-// All dummy node will be eliminated at the end of compiling process.
+// All dummy nodes will be eliminated at the end of compilation.
+*/
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -292,18 +294,18 @@ namespace __detail
       return true;
     }
 
-#define __INSERT_REGEX_MATCHER(__func, args...)\
+#define __INSERT_REGEX_MATCHER(__func, ...)\
 	do\
 	  if (!(_M_flags & regex_constants::icase))\
 	    if (!(_M_flags & regex_constants::collate))\
-	      __func<false, false>(args);\
+	      __func<false, false>(__VA_ARGS__);\
 	    else\
-	      __func<false, true>(args);\
+	      __func<false, true>(__VA_ARGS__);\
 	  else\
 	    if (!(_M_flags & regex_constants::collate))\
-	      __func<true, false>(args);\
+	      __func<true, false>(__VA_ARGS__);\
 	    else\
-	      __func<true, true>(args);\
+	      __func<true, true>(__VA_ARGS__);\
 	while (false)
 
   template<typename _TraitsT>

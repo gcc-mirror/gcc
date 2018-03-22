@@ -11,7 +11,7 @@ C Derived from lapack
         DATA DY/0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0/
         CALL DAXPY (N,DA,DX,DY)
         DO 10 I = 1, N
-          if (DX(I).ne.DY(I)) call abort
+          if (DX(I).ne.DY(I)) STOP 1
 10      CONTINUE
         STOP
         END

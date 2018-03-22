@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -111,6 +111,37 @@ int_or_real_check (gfc_expr *e, int n)
       gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
 		 "or REAL", gfc_current_intrinsic_arg[n]->name,
 		 gfc_current_intrinsic, &e->where);
+      return false;
+    }
+
+  return true;
+}
+
+/* Check that an expression is integer or real; allow character for
+   F2003 or later.  */
+
+static bool
+int_or_real_or_char_check_f2003 (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL)
+    {
+      if (e->ts.type == BT_CHARACTER)
+	return gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Character for "
+			       "%qs argument of %qs intrinsic at %L",
+			       gfc_current_intrinsic_arg[n]->name,
+			       gfc_current_intrinsic, &e->where);
+      else
+	{
+	  if (gfc_option.allow_std & GFC_STD_F2003)
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL or CHARACTER",
+		       gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	  else
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL", gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	}
       return false;
     }
 
@@ -427,15 +458,22 @@ less_than_bitsize2 (const char *arg1, gfc_expr *expr1, const char *arg2,
 /* Make sure two expressions have the same type.  */
 
 static bool
-same_type_check (gfc_expr *e, int n, gfc_expr *f, int m)
+same_type_check (gfc_expr *e, int n, gfc_expr *f, int m, bool assoc = false)
 {
   gfc_typespec *ets = &e->ts;
   gfc_typespec *fts = &f->ts;
 
-  if (e->ts.type == BT_PROCEDURE && e->symtree->n.sym)
-    ets = &e->symtree->n.sym->ts;
-  if (f->ts.type == BT_PROCEDURE && f->symtree->n.sym)
-    fts = &f->symtree->n.sym->ts;
+  if (assoc)
+    {
+      /* Procedure pointer component expressions have the type of the interface
+	 procedure. If they are being tested for association with a procedure
+	 pointer (ie. not a component), the type of the procedure must be
+	 determined.  */
+      if (e->ts.type == BT_PROCEDURE && e->symtree->n.sym)
+	ets = &e->symtree->n.sym->ts;
+      if (f->ts.type == BT_PROCEDURE && f->symtree->n.sym)
+	fts = &f->symtree->n.sym->ts;
+    }
 
   if (gfc_compare_types (ets, fts))
     return true;
@@ -1002,7 +1040,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
     }
 
   t = true;
-  if (!same_type_check (pointer, 0, target, 1))
+  if (!same_type_check (pointer, 0, target, 1, true))
     t = false;
   if (!rank_check (target, 0, pointer->rank))
     t = false;
@@ -1209,6 +1247,20 @@ gfc_check_failed_or_stopped_images (gfc_expr *team, gfc_expr *kind)
 		     gfc_current_intrinsic, &kind->where);
 	  return false;
 	}
+    }
+  return true;
+}
+
+
+bool
+gfc_check_get_team (gfc_expr *level)
+{
+  if (level)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &level->where);
+      return false;
     }
   return true;
 }
@@ -1731,7 +1783,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (!gfc_compare_types (&a->ts, &sym->result->ts))
     {
-      gfc_error ("A argument at %L has type %s but the function passed as "
+      gfc_error ("The A argument at %L has type %s but the function passed as "
 		 "OPERATOR at %L returns %s",
 		 &a->where, gfc_typename (&a->ts), &op->where,
 		 gfc_typename (&sym->result->ts));
@@ -2147,6 +2199,8 @@ bool
 gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 		   gfc_expr *dim)
 {
+  int d;
+
   if (!array_check (array, 0))
     return false;
 
@@ -2159,6 +2213,13 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
   if (!dim_rank_check (dim, array, false))
     return false;
 
+  if (!dim)
+    d = 1;
+  else if (dim->expr_type == EXPR_CONSTANT)
+    gfc_extract_int (dim, &d);
+  else
+    d = -1;
+
   if (array->rank == 1 || shift->rank == 0)
     {
       if (!scalar_check (shift, 1))
@@ -2166,14 +2227,6 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
     }
   else if (shift->rank == array->rank - 1)
     {
-      int d;
-      if (!dim)
-	d = 1;
-      else if (dim->expr_type == EXPR_CONSTANT)
-	gfc_extract_int (dim, &d);
-      else
-	d = -1;
-
       if (d > 0)
 	{
 	  int i, j;
@@ -2208,6 +2261,24 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
       if (!same_type_check (array, 0, boundary, 2))
 	return false;
 
+      /* Reject unequal string lengths and emit a better error message than
+       gfc_check_same_strlen would.  */
+      if (array->ts.type == BT_CHARACTER)
+	{
+	  ssize_t len_a, len_b;
+
+	  len_a = gfc_var_strlen (array);
+	  len_b = gfc_var_strlen (boundary);
+	  if (len_a != -1 && len_b != -1 && len_a != len_b)
+	    {
+	      gfc_error ("%qs must be of same type and kind as %qs at %L in %qs",
+			 gfc_current_intrinsic_arg[2]->name,
+			 gfc_current_intrinsic_arg[0]->name,
+			 &boundary->where, gfc_current_intrinsic);
+	      return false;
+	    }
+	}
+
       if (array->rank == 1 || boundary->rank == 0)
 	{
 	  if (!scalar_check (boundary, 2))
@@ -2215,13 +2286,27 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	}
       else if (boundary->rank == array->rank - 1)
 	{
-	  if (!gfc_check_conformance (shift, boundary,
-				      "arguments '%s' and '%s' for "
-				      "intrinsic %s",
-				      gfc_current_intrinsic_arg[1]->name,
-				      gfc_current_intrinsic_arg[2]->name,
-				      gfc_current_intrinsic))
-	    return false;
+	  if (d > 0)
+	    {
+	      int i,j;
+	      for (i = 0, j = 0; i < array->rank; i++)
+		{
+		  if (i != d - 1)
+		    {
+		      if (!identical_dimen_shape (array, i, boundary, j))
+			{
+			  gfc_error ("%qs argument of %qs intrinsic at %L has "
+				     "invalid shape in dimension %d (%ld/%ld)",
+				     gfc_current_intrinsic_arg[2]->name,
+				     gfc_current_intrinsic, &shift->where, i+1,
+				     mpz_get_si (array->shape[i]),
+				     mpz_get_si (boundary->shape[j]));
+			  return false;
+			}
+		      j += 1;
+		    }
+		}
+	    }
 	}
       else
 	{
@@ -2229,6 +2314,26 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 		     "rank %d or be a scalar",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &shift->where, array->rank - 1);
+	  return false;
+	}
+    }
+  else
+    {
+      switch (array->ts.type)
+	{
+	case BT_INTEGER:
+	case BT_LOGICAL:
+	case BT_REAL:
+	case BT_COMPLEX:
+	case BT_CHARACTER:
+	  break;
+
+	default:
+	  gfc_error ("Missing %qs argument to %qs intrinsic at %L for %qs "
+		     "of type %qs", gfc_current_intrinsic_arg[2]->name,
+		     gfc_current_intrinsic, &array->where,
+		     gfc_current_intrinsic_arg[0]->name,
+		     gfc_typename (&array->ts));
 	  return false;
 	}
     }
@@ -2261,6 +2366,7 @@ gfc_check_fn_c (gfc_expr *a)
 
   return true;
 }
+
 
 /* A single real argument.  */
 
@@ -2649,7 +2755,13 @@ gfc_check_kill (gfc_expr *pid, gfc_expr *sig)
   if (!type_check (pid, 0, BT_INTEGER))
     return false;
 
+  if (!scalar_check (pid, 0))
+    return false;
+
   if (!type_check (sig, 1, BT_INTEGER))
+    return false;
+
+  if (!scalar_check (sig, 1))
     return false;
 
   return true;
@@ -2671,14 +2783,14 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
   if (!scalar_check (sig, 1))
     return false;
 
-  if (status == NULL)
-    return true;
+  if (status)
+    {
+      if (!type_check (status, 2, BT_INTEGER))
+	return false;
 
-  if (!type_check (status, 2, BT_INTEGER))
-    return false;
-
-  if (!scalar_check (status, 2))
-    return false;
+      if (!scalar_check (status, 2))
+	return false;
+    }
 
   return true;
 }
@@ -3173,19 +3285,41 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 	 DIM	MASK
 
    I.e. in the case of minloc(array,mask), mask will be in the second
-   position of the argument list and we'll have to fix that up.  */
+   position of the argument list and we'll have to fix that up.  Also,
+   add the BACK argument if that isn't present.  */
 
 bool
 gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 {
-  gfc_expr *a, *m, *d;
+  gfc_expr *a, *m, *d, *k, *b;
 
   a = ap->expr;
-  if (!int_or_real_check (a, 0) || !array_check (a, 0))
+  if (!int_or_real_or_char_check_f2003 (a, 0) || !array_check (a, 0))
     return false;
 
   d = ap->next->expr;
   m = ap->next->next->expr;
+  k = ap->next->next->next->expr;
+  b = ap->next->next->next->next->expr;
+
+  if (b)
+    {
+      if (!type_check (b, 4, BT_LOGICAL) || !scalar_check (b,4))
+	return false;
+
+      /* TODO: Remove this once BACK is actually implemented.  */
+      if (b->expr_type != EXPR_CONSTANT || b->value.logical != 0)
+	{
+	  gfc_error ("BACK argument to %qs intrinsic not yet "
+		     "implemented", gfc_current_intrinsic);
+	  return false;
+	}
+    }
+  else
+    {
+      b = gfc_get_logical_expr (gfc_default_logical_kind, NULL, 0);
+      ap->next->next->next->next->expr = b;
+    }
 
   if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
       && ap->next->name == NULL)
@@ -3211,6 +3345,9 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 				 gfc_current_intrinsic_arg[0]->name,
 				 gfc_current_intrinsic_arg[2]->name,
 				 gfc_current_intrinsic))
+    return false;
+
+  if (!kind_check (k, 1, BT_INTEGER))
     return false;
 
   return true;
@@ -3274,7 +3411,7 @@ check_reduction (gfc_actual_arglist *ap)
 bool
 gfc_check_minval_maxval (gfc_actual_arglist *ap)
 {
-  if (!int_or_real_check (ap->expr, 0)
+  if (!int_or_real_or_char_check_f2003 (ap->expr, 0)
       || !array_check (ap->expr, 0))
     return false;
 
@@ -5158,6 +5295,33 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
 
 
 bool
+gfc_check_team_number (gfc_expr *team)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return false;
+    }
+
+  if (team)
+    {
+      if (team->ts.type != BT_DERIVED
+	  || team->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+	  || team->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
+	 {
+	   gfc_error ("TEAM argument at %L to the intrinsic TEAM_NUMBER "
+	   	      "shall be of type TEAM_TYPE", &team->where);
+	   return false;
+	 }
+    }
+  else
+    return true;
+
+  return true;
+}
+
+
+bool
 gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim, gfc_expr *distance)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
@@ -5512,19 +5676,6 @@ gfc_check_ttynam (gfc_expr *unit)
 }
 
 
-/* Common check function for the half a dozen intrinsics that have a
-   single real argument.  */
-
-bool
-gfc_check_x (gfc_expr *x)
-{
-  if (!type_check (x, 0, BT_REAL))
-    return false;
-
-  return true;
-}
-
-
 /************* Check functions for intrinsic subroutines *************/
 
 bool
@@ -5756,7 +5907,7 @@ bool
 gfc_check_fe_runtime_error (gfc_actual_arglist *a)
 {
   gfc_expr *e;
-  int len, i;
+  size_t len, i;
   int num_percent, nargs;
 
   e = a->expr;

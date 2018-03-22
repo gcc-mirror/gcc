@@ -86,7 +86,7 @@ test:
 	for x in $(fp128_obj); do echo "    $$x"; done;
 
 clean-float128:
-	rm -rf $(fp128_softfp_src)
+	-rm -f $(fp128_softfp_src) $(fp128_hardfp_src)
 	@$(MULTICLEAN) multi-clean DO=clean-float128
 
 # For now, only put it in the static library

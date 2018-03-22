@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -462,19 +462,15 @@ extern const sh_atomic_model& selected_atomic_model (void);
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT (32)
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)	\
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-    ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* get_mode_alignment assumes complex values are always held in multiple
    registers, but that is not the case on the SH; CQImode and CHImode are
    held in a single integer register.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
     || GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_FLOAT) \
-   ? (unsigned) MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (TYPE))) \
+   ? (unsigned) MIN (BIGGEST_ALIGNMENT, \
+		     GET_MODE_BITSIZE (as_a <fixed_size_mode> \
+				       (TYPE_MODE (TYPE)))) \
    : (unsigned) DATA_ALIGNMENT(TYPE, ALIGN))
 
 /* Make arrays of chars word-aligned for the same reasons.  */
@@ -1114,10 +1110,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 /*  Define this macro to nonzero if the addresses of local variable slots
     are at negative offsets from the frame pointer.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET  0
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */
@@ -1764,12 +1756,13 @@ extern bool current_function_interrupt;
     }
 
 /* Output an absolute table element.  */
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  				\
-  if (! optimize || TARGET_BIGTABLE)					\
-    asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 		\
-  else									\
-    asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE));
-
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE) \
+  do {									\
+    if (! optimize || TARGET_BIGTABLE)					\
+      asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 		\
+    else								\
+      asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE));		\
+  } while (0)
 
 /* A C statement to be executed just prior to the output of
    assembler code for INSN, to modify the extracted operands so

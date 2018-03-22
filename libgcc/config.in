@@ -1,5 +1,15 @@
 /* config.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to the .hidden-like directive if it exists. */
+#undef AS_HIDDEN_DIRECTIVE
+
+/* Define to 1 if the assembler supports AVX. */
+#undef HAVE_AS_AVX
+
+/* Define to 1 if the assembler supports .cfi_sections .debug_frame directive.
+   */
+#undef HAVE_AS_CFI_SECTIONS
+
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 

@@ -1,5 +1,5 @@
 /* Alias analysis for GNU C
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GCC.
@@ -148,7 +148,6 @@ struct GTY(()) alias_set_entry {
 };
 
 static int rtx_equal_for_memref_p (const_rtx, const_rtx);
-static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
 static void record_set (rtx, const_rtx, void *);
 static int base_alias_check (rtx, rtx, rtx, rtx, machine_mode,
 			     machine_mode);
@@ -330,10 +329,10 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   /* If MEM_OFFSET/MEM_SIZE get us outside of ref->offset/ref->max_size
      drop ref->ref.  */
-  if (MEM_OFFSET (mem) < 0
-      || (ref->max_size != -1
-	  && ((MEM_OFFSET (mem) + MEM_SIZE (mem)) * BITS_PER_UNIT
-	      > ref->max_size)))
+  if (maybe_lt (MEM_OFFSET (mem), 0)
+      || (ref->max_size_known_p ()
+	  && maybe_gt ((MEM_OFFSET (mem) + MEM_SIZE (mem)) * BITS_PER_UNIT,
+		       ref->max_size)))
     ref->ref = NULL_TREE;
 
   /* Refine size and offset we got from analyzing MEM_EXPR by using
@@ -344,19 +343,18 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   /* The MEM may extend into adjacent fields, so adjust max_size if
      necessary.  */
-  if (ref->max_size != -1
-      && ref->size > ref->max_size)
-    ref->max_size = ref->size;
+  if (ref->max_size_known_p ())
+    ref->max_size = upper_bound (ref->max_size, ref->size);
 
-  /* If MEM_OFFSET and MEM_SIZE get us outside of the base object of
+  /* If MEM_OFFSET and MEM_SIZE might get us outside of the base object of
      the MEM_EXPR punt.  This happens for STRICT_ALIGNMENT targets a lot.  */
   if (MEM_EXPR (mem) != get_spill_slot_decl (false)
-      && (ref->offset < 0
+      && (maybe_lt (ref->offset, 0)
 	  || (DECL_P (ref->base)
 	      && (DECL_SIZE (ref->base) == NULL_TREE
-		  || TREE_CODE (DECL_SIZE (ref->base)) != INTEGER_CST
-		  || wi::ltu_p (wi::to_offset (DECL_SIZE (ref->base)),
-				ref->offset + ref->size)))))
+		  || !poly_int_tree_p (DECL_SIZE (ref->base))
+		  || maybe_lt (wi::to_poly_offset (DECL_SIZE (ref->base)),
+			       ref->offset + ref->size)))))
     return false;
 
   return true;
@@ -1349,6 +1347,7 @@ static rtx
 find_base_value (rtx src)
 {
   unsigned int regno;
+  scalar_int_mode int_mode;
 
 #if defined (FIND_BASE_TERM)
   /* Try machine-dependent ways to find the base term.  */
@@ -1475,7 +1474,8 @@ find_base_value (rtx src)
 	 address modes depending on the address space.  */
       if (!target_default_pointer_address_modes_p ())
 	break;
-      if (GET_MODE_SIZE (GET_MODE (src)) < GET_MODE_SIZE (Pmode))
+      if (!is_a <scalar_int_mode> (GET_MODE (src), &int_mode)
+	  || GET_MODE_PRECISION (int_mode) < GET_MODE_PRECISION (Pmode))
 	break;
       /* Fall through.  */
     case HIGH:
@@ -1832,6 +1832,11 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
 	    return 0;
 	  break;
 
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return 0;
+	  break;
+
 	case 'E':
 	  /* Two vectors must have the same length.  */
 	  if (XVECLEN (x, i) != XVECLEN (y, i))
@@ -1876,6 +1881,7 @@ find_base_term (rtx x)
   cselib_val *val;
   struct elt_loc_list *l, *f;
   rtx ret;
+  scalar_int_mode int_mode;
 
 #if defined (FIND_BASE_TERM)
   /* Try machine-dependent ways to find the base term.  */
@@ -1893,7 +1899,8 @@ find_base_term (rtx x)
 	 address modes depending on the address space.  */
       if (!target_default_pointer_address_modes_p ())
 	return 0;
-      if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (Pmode))
+      if (!is_a <scalar_int_mode> (GET_MODE (x), &int_mode)
+	  || GET_MODE_PRECISION (int_mode) < GET_MODE_PRECISION (Pmode))
 	return 0;
       /* Fall through.  */
     case HIGH:
@@ -2047,13 +2054,15 @@ compare_base_decls (tree base1, tree base2)
     return 1;
 
   /* If we have two register decls with register specification we
-     cannot decide unless their assembler name is the same.  */
+     cannot decide unless their assembler names are the same.  */
   if (DECL_REGISTER (base1)
       && DECL_REGISTER (base2)
+      && HAS_DECL_ASSEMBLER_NAME_P (base1)
+      && HAS_DECL_ASSEMBLER_NAME_P (base2)
       && DECL_ASSEMBLER_NAME_SET_P (base1)
       && DECL_ASSEMBLER_NAME_SET_P (base2))
     {
-      if (DECL_ASSEMBLER_NAME (base1) == DECL_ASSEMBLER_NAME (base2))
+      if (DECL_ASSEMBLER_NAME_RAW (base1) == DECL_ASSEMBLER_NAME_RAW (base2))
 	return 1;
       return -1;
     }
@@ -2287,9 +2296,9 @@ get_addr (rtx x)
     is not modified by the memory reference then ADDR is returned.  */
 
 static rtx
-addr_side_effect_eval (rtx addr, int size, int n_refs)
+addr_side_effect_eval (rtx addr, poly_int64 size, int n_refs)
 {
-  int offset = 0;
+  poly_int64 offset = 0;
 
   switch (GET_CODE (addr))
     {
@@ -2310,11 +2319,7 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
       return addr;
     }
 
-  if (offset)
-    addr = gen_rtx_PLUS (GET_MODE (addr), XEXP (addr, 0),
-			 gen_int_mode (offset, GET_MODE (addr)));
-  else
-    addr = XEXP (addr, 0);
+  addr = plus_constant (GET_MODE (addr), XEXP (addr, 0), offset);
   addr = canon_rtx (addr);
 
   return addr;
@@ -2326,12 +2331,15 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
    absolute value of the sizes as the actual sizes.  */
 
 static inline bool
-offset_overlap_p (HOST_WIDE_INT c, int xsize, int ysize)
+offset_overlap_p (poly_int64 c, poly_int64 xsize, poly_int64 ysize)
 {
-  return (xsize == 0 || ysize == 0
-	  || (c >= 0
-	      ? (abs (xsize) > c)
-	      : (abs (ysize) > -c)));
+  if (known_eq (xsize, 0) || known_eq (ysize, 0))
+    return true;
+
+  if (maybe_ge (c, 0))
+    return maybe_gt (maybe_lt (xsize, 0) ? -xsize : xsize, c);
+  else
+    return maybe_gt (maybe_lt (ysize, 0) ? -ysize : ysize, -c);
 }
 
 /* Return one if X and Y (memory addresses) reference the
@@ -2361,7 +2369,8 @@ offset_overlap_p (HOST_WIDE_INT c, int xsize, int ysize)
    If that is fixed the TBAA hack for union type-punning can be removed.  */
 
 static int
-memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
+memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
+		    poly_int64 c)
 {
   if (GET_CODE (x) == VALUE)
     {
@@ -2406,13 +2415,13 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
   else if (GET_CODE (x) == LO_SUM)
     x = XEXP (x, 1);
   else
-    x = addr_side_effect_eval (x, abs (xsize), 0);
+    x = addr_side_effect_eval (x, maybe_lt (xsize, 0) ? -xsize : xsize, 0);
   if (GET_CODE (y) == HIGH)
     y = XEXP (y, 0);
   else if (GET_CODE (y) == LO_SUM)
     y = XEXP (y, 1);
   else
-    y = addr_side_effect_eval (y, abs (ysize), 0);
+    y = addr_side_effect_eval (y, maybe_lt (ysize, 0) ? -ysize : ysize, 0);
 
   if (GET_CODE (x) == SYMBOL_REF && GET_CODE (y) == SYMBOL_REF)
     {
@@ -2425,7 +2434,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	 through alignment adjustments (i.e., that have negative
 	 sizes), because we can't know how far they are from each
 	 other.  */
-      if (xsize < 0 || ysize < 0)
+      if (maybe_lt (xsize, 0) || maybe_lt (ysize, 0))
 	return -1;
       /* If decls are different or we know by offsets that there is no overlap,
 	 we win.  */
@@ -2456,6 +2465,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       else if (x1 == y)
 	return memrefs_conflict_p (xsize, x0, ysize, const0_rtx, c);
 
+      poly_int64 cx1, cy1;
       if (GET_CODE (y) == PLUS)
 	{
 	  /* The fact that Y is canonicalized means that this
@@ -2472,22 +2482,21 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	    return memrefs_conflict_p (xsize, x0, ysize, y0, c);
 	  if (rtx_equal_for_memref_p (x0, y0))
 	    return memrefs_conflict_p (xsize, x1, ysize, y1, c);
-	  if (CONST_INT_P (x1))
+	  if (poly_int_rtx_p (x1, &cx1))
 	    {
-	      if (CONST_INT_P (y1))
+	      if (poly_int_rtx_p (y1, &cy1))
 		return memrefs_conflict_p (xsize, x0, ysize, y0,
-					   c - INTVAL (x1) + INTVAL (y1));
+					   c - cx1 + cy1);
 	      else
-		return memrefs_conflict_p (xsize, x0, ysize, y,
-					   c - INTVAL (x1));
+		return memrefs_conflict_p (xsize, x0, ysize, y, c - cx1);
 	    }
-	  else if (CONST_INT_P (y1))
-	    return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
+	  else if (poly_int_rtx_p (y1, &cy1))
+	    return memrefs_conflict_p (xsize, x, ysize, y0, c + cy1);
 
 	  return -1;
 	}
-      else if (CONST_INT_P (x1))
-	return memrefs_conflict_p (xsize, x0, ysize, y, c - INTVAL (x1));
+      else if (poly_int_rtx_p (x1, &cx1))
+	return memrefs_conflict_p (xsize, x0, ysize, y, c - cx1);
     }
   else if (GET_CODE (y) == PLUS)
     {
@@ -2501,8 +2510,9 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       if (x == y1)
 	return memrefs_conflict_p (xsize, const0_rtx, ysize, y0, c);
 
-      if (CONST_INT_P (y1))
-	return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
+      poly_int64 cy1;
+      if (poly_int_rtx_p (y1, &cy1))
+	return memrefs_conflict_p (xsize, x, ysize, y0, c + cy1);
       else
 	return -1;
     }
@@ -2526,11 +2536,11 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	    return offset_overlap_p (c, xsize, ysize);
 
 	  /* Can't properly adjust our sizes.  */
-	  if (!CONST_INT_P (x1))
+	  if (!CONST_INT_P (x1)
+	      || !can_div_trunc_p (xsize, INTVAL (x1), &xsize)
+	      || !can_div_trunc_p (ysize, INTVAL (x1), &ysize)
+	      || !can_div_trunc_p (c, INTVAL (x1), &c))
 	    return -1;
-	  xsize /= INTVAL (x1);
-	  ysize /= INTVAL (x1);
-	  c /= INTVAL (x1);
 	  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
 	}
 
@@ -2551,9 +2561,9 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       unsigned HOST_WIDE_INT uc = sc;
       if (sc < 0 && pow2_or_zerop (-uc))
 	{
-	  if (xsize > 0)
+	  if (maybe_gt (xsize, 0))
 	    xsize = -xsize;
-	  if (xsize)
+	  if (maybe_ne (xsize, 0))
 	    xsize += sc + 1;
 	  c -= sc + 1;
 	  return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
@@ -2566,9 +2576,9 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       unsigned HOST_WIDE_INT uc = sc;
       if (sc < 0 && pow2_or_zerop (-uc))
 	{
-	  if (ysize > 0)
+	  if (maybe_gt (ysize, 0))
 	    ysize = -ysize;
-	  if (ysize)
+	  if (maybe_ne (ysize, 0))
 	    ysize += sc + 1;
 	  c += sc + 1;
 	  return memrefs_conflict_p (xsize, x,
@@ -2578,9 +2588,10 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 
   if (CONSTANT_P (x))
     {
-      if (CONST_INT_P (x) && CONST_INT_P (y))
+      poly_int64 cx, cy;
+      if (poly_int_rtx_p (x, &cx) && poly_int_rtx_p (y, &cy))
 	{
-	  c += (INTVAL (y) - INTVAL (x));
+	  c += cy - cx;
 	  return offset_overlap_p (c, xsize, ysize);
 	}
 
@@ -2602,7 +2613,9 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	 sizes), because we can't know how far they are from each
 	 other.  */
       if (CONSTANT_P (y))
-	return (xsize < 0 || ysize < 0 || offset_overlap_p (c, xsize, ysize));
+	return (maybe_lt (xsize, 0)
+		|| maybe_lt (ysize, 0)
+		|| offset_overlap_p (c, xsize, ysize));
 
       return -1;
     }
@@ -2662,7 +2675,7 @@ decl_for_component_ref (tree x)
 
 static void
 adjust_offset_for_component_ref (tree x, bool *known_p,
-				 HOST_WIDE_INT *offset)
+				 poly_int64 *offset)
 {
   if (!*known_p)
     return;
@@ -2703,8 +2716,8 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   rtx rtlx, rtly;
   rtx basex, basey;
   bool moffsetx_known_p, moffsety_known_p;
-  HOST_WIDE_INT moffsetx = 0, moffsety = 0;
-  HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey;
+  poly_int64 moffsetx = 0, moffsety = 0;
+  poly_int64 offsetx = 0, offsety = 0, sizex, sizey;
 
   /* Unless both have exprs, we can't tell anything.  */
   if (exprx == 0 || expry == 0)
@@ -2806,12 +2819,10 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
      we can avoid overlap is if we can deduce that they are nonoverlapping
      pieces of that decl, which is very rare.  */
   basex = MEM_P (rtlx) ? XEXP (rtlx, 0) : rtlx;
-  if (GET_CODE (basex) == PLUS && CONST_INT_P (XEXP (basex, 1)))
-    offsetx = INTVAL (XEXP (basex, 1)), basex = XEXP (basex, 0);
+  basex = strip_offset_and_add (basex, &offsetx);
 
   basey = MEM_P (rtly) ? XEXP (rtly, 0) : rtly;
-  if (GET_CODE (basey) == PLUS && CONST_INT_P (XEXP (basey, 1)))
-    offsety = INTVAL (XEXP (basey, 1)), basey = XEXP (basey, 0);
+  basey = strip_offset_and_add (basey, &offsety);
 
   /* If the bases are different, we know they do not overlap if both
      are constants or if one is a constant and the other a pointer into the
@@ -2832,10 +2843,10 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
      declarations are necessarily different
     (i.e. compare_base_decls (exprx, expry) == -1)  */
 
-  sizex = (!MEM_P (rtlx) ? (int) GET_MODE_SIZE (GET_MODE (rtlx))
+  sizex = (!MEM_P (rtlx) ? poly_int64 (GET_MODE_SIZE (GET_MODE (rtlx)))
 	   : MEM_SIZE_KNOWN_P (rtlx) ? MEM_SIZE (rtlx)
 	   : -1);
-  sizey = (!MEM_P (rtly) ? (int) GET_MODE_SIZE (GET_MODE (rtly))
+  sizey = (!MEM_P (rtly) ? poly_int64 (GET_MODE_SIZE (GET_MODE (rtly)))
 	   : MEM_SIZE_KNOWN_P (rtly) ? MEM_SIZE (rtly)
 	   : -1);
 
@@ -2854,16 +2865,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   if (MEM_SIZE_KNOWN_P (y) && moffsety_known_p)
     sizey = MEM_SIZE (y);
 
-  /* Put the values of the memref with the lower offset in X's values.  */
-  if (offsetx > offsety)
-    {
-      std::swap (offsetx, offsety);
-      std::swap (sizex, sizey);
-    }
-
-  /* If we don't know the size of the lower-offset value, we can't tell
-     if they conflict.  Otherwise, we do the test.  */
-  return sizex >= 0 && offsety >= offsetx + sizex;
+  return !ranges_maybe_overlap_p (offsetx, sizex, offsety, sizey);
 }
 
 /* Helper for true_dependence and canon_true_dependence.
@@ -3189,12 +3191,21 @@ init_alias_target (void)
 	&& targetm.hard_regno_mode_ok (i, Pmode))
       static_reg_base_value[i] = arg_base_value;
 
+  /* RTL code is required to be consistent about whether it uses the
+     stack pointer, the frame pointer or the argument pointer to
+     access a given area of the frame.  We can therefore use the
+     base address to distinguish between the different areas.  */
   static_reg_base_value[STACK_POINTER_REGNUM]
     = unique_base_value (UNIQUE_BASE_VALUE_SP);
   static_reg_base_value[ARG_POINTER_REGNUM]
     = unique_base_value (UNIQUE_BASE_VALUE_ARGP);
   static_reg_base_value[FRAME_POINTER_REGNUM]
     = unique_base_value (UNIQUE_BASE_VALUE_FP);
+
+  /* The above rules extend post-reload, with eliminations applying
+     consistently to each of the three pointers.  Cope with cases in
+     which the frame pointer is eliminated to the hard frame pointer
+     rather than the stack pointer.  */
   if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
     static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
       = unique_base_value (UNIQUE_BASE_VALUE_HFP);
@@ -3327,7 +3338,14 @@ init_alias_analysis (void)
 
       /* Initialize the alias information for this pass.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (static_reg_base_value[i])
+	if (static_reg_base_value[i]
+	    /* Don't treat the hard frame pointer as special if we
+	       eliminated the frame pointer to the stack pointer instead.  */
+	    && !(i == HARD_FRAME_POINTER_REGNUM
+		 && reload_completed
+		 && !frame_pointer_needed
+		 && targetm.can_eliminate (FRAME_POINTER_REGNUM,
+					   STACK_POINTER_REGNUM)))
 	  {
 	    new_reg_base_value[i] = static_reg_base_value[i];
 	    bitmap_set_bit (reg_seen, i);

@@ -1,5 +1,5 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -1319,13 +1321,13 @@ darwin_mergeable_constant_section (tree exp,
 
       if (TREE_CODE (size) == INTEGER_CST)
 	{
-	  if (wi::eq_p (size, 4))
+	  if (wi::to_wide (size) == 4)
 	    return darwin_sections[literal4_section];
-	  else if (wi::eq_p (size, 8))
+	  else if (wi::to_wide (size) == 8)
 	    return darwin_sections[literal8_section];
 	  else if (HAVE_GAS_LITERAL16
 		   && TARGET_64BIT
-		   && wi::eq_p (size, 16))
+		   && wi::to_wide (size) == 16)
 	    return darwin_sections[literal16_section];
 	}
     }
@@ -1931,6 +1933,7 @@ static GTY (()) vec<darwin_lto_section_e, va_gc> *lto_section_names;
    in darwin_end_file.  */
 static FILE *lto_asm_out_file, *saved_asm_out_file;
 static char *lto_asm_out_name;
+static enum debug_info_levels saved_debug_info_level;
 
 /* Prepare asm_out_file for LTO output.  For darwin, this means hiding
    asm_out_file and switching to an alternative output file.  */
@@ -1939,6 +1942,8 @@ darwin_asm_lto_start (void)
 {
   gcc_assert (! saved_asm_out_file);
   saved_asm_out_file = asm_out_file;
+  saved_debug_info_level = debug_info_level;
+  debug_info_level = DINFO_LEVEL_NONE;
   if (! lto_asm_out_name)
     lto_asm_out_name = make_temp_file (".lto.s");
   lto_asm_out_file = fopen (lto_asm_out_name, "a");
@@ -1957,6 +1962,7 @@ darwin_asm_lto_end (void)
   fclose (lto_asm_out_file);
   asm_out_file = saved_asm_out_file;
   saved_asm_out_file = NULL;
+  debug_info_level = saved_debug_info_level;
 }
 
 static void

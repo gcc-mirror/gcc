@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,8 @@ package body Ch4 is
    function P_Aggregate_Or_Paren_Expr                 return Node_Id;
    function P_Allocator                               return Node_Id;
    function P_Case_Expression_Alternative             return Node_Id;
-   function P_Iterated_Component_Association          return Node_Id;
+   function P_Iterated_Component_Assoc_Or_Reduction   return Node_Id;
+   function P_Reduction_Expression (Lparen : Boolean) return Node_Id;
    function P_Record_Or_Array_Component_Association   return Node_Id;
    function P_Factor                                  return Node_Id;
    function P_Primary                                 return Node_Id;
@@ -644,6 +645,9 @@ package body Ch4 is
          --      case of a name which can be extended in the normal manner.
          --      This case is handled by LP_State_Name or LP_State_Expr.
 
+         --      (Ada 2020): the expression can be a reduction_expression_
+         --      parameter, i.e. a box or < Simple_Expression >.
+
          --      Note: if and case expressions (without an extra level of
          --      parentheses) are permitted in this context).
 
@@ -651,6 +655,10 @@ package body Ch4 is
 
          --      If there is at least one occurrence of identifier => (but
          --      none of the other cases apply), then we have a call.
+
+         --    < simple_expression >
+         --    In Ada 2020 this is a reduction expression parameter that
+         --    specifies the initial value of the reduction.
 
          --  Test for Id => case
 
@@ -670,9 +678,27 @@ package body Ch4 is
             end if;
          end if;
 
-         --  Here we have an expression after all
+         --  Here we have an expression after all, which may be a reduction
+         --  expression with a binary operator.
 
-         Expr_Node := P_Expression_Or_Range_Attribute_If_OK;
+         if Token = Tok_Less then
+            Scan; -- past <
+
+            Expr_Node :=
+              New_Node (N_Reduction_Expression_Parameter, Token_Ptr);
+            Set_Expression (Expr_Node, P_Simple_Expression);
+
+            if Token = Tok_Greater then
+               Scan;
+            else
+               Error_Msg_N
+                 ("malformed reduction expression parameter", Expr_Node);
+               raise Error_Resync;
+            end if;
+
+         else
+            Expr_Node := P_Expression_Or_Range_Attribute_If_OK;
+         end if;
 
          --  Check cases of discrete range for a slice
 
@@ -1399,8 +1425,13 @@ package body Ch4 is
 
          elsif Token = Tok_For then
             Aggregate_Node := New_Node (N_Aggregate, Lparen_Sloc);
-            Expr_Node := P_Iterated_Component_Association;
-            goto Aggregate;
+            Expr_Node := P_Iterated_Component_Assoc_Or_Reduction;
+
+            if Nkind (Expr_Node) = N_Reduction_Expression then
+               return Expr_Node;
+            else
+               goto Aggregate;
+            end if;
          end if;
 
          --  Scan expression, handling box appearing as positional argument
@@ -1431,6 +1462,15 @@ package body Ch4 is
                Aggregate_Node := New_Node (N_Delta_Aggregate, Lparen_Sloc);
                Set_Expression (Aggregate_Node, Expr_Node);
                Expr_Node := Empty;
+
+               if Nkind (Aggregate_Node) = N_Delta_Aggregate
+                 and then (Token = Tok_Arrow or else Token = Tok_Others)
+               then
+                  Error_Msg_SC
+                    ("expect record component association in delta aggregate");
+                  raise Error_Resync;
+               end if;
+
                goto Aggregate;
 
             else
@@ -1613,7 +1653,7 @@ package body Ch4 is
             Expr_Node := Empty;
 
          elsif Token = Tok_For then
-            Expr_Node := P_Iterated_Component_Association;
+            Expr_Node := P_Iterated_Component_Assoc_Or_Reduction;
 
          else
             Save_Scan_State (Scan_State); -- at start of expression
@@ -1666,7 +1706,7 @@ package body Ch4 is
 
    begin
       if Token = Tok_For then
-         return P_Iterated_Component_Association;
+         return P_Iterated_Component_Assoc_Or_Reduction;
       end if;
 
       Assoc_Node := New_Node (N_Component_Association, Token_Ptr);
@@ -2827,7 +2867,7 @@ package body Ch4 is
                      end if;
                   else
                      Restore_Scan_State (Scan_State);  -- To FOR
-                     Node1 := P_Iterated_Component_Association;
+                     Node1 := P_Iterated_Component_Assoc_Or_Reduction;
                   end if;
 
                   return Node1;
@@ -2852,6 +2892,18 @@ package body Ch4 is
                end if;
 
                Node1 := P_Name;
+               return Node1;
+
+            --  Ada 2020: reduction expression parameter
+
+            when Tok_Less =>
+               Scan; -- past <
+
+               Node1 :=
+                 New_Node (N_Reduction_Expression_Parameter, Token_Ptr);
+               Set_Expression (Node1, P_Simple_Expression);
+
+               Scan; -- past >
                return Node1;
 
             --  Anything else is illegal as the first token of a primary, but
@@ -3298,33 +3350,195 @@ package body Ch4 is
       return Case_Alt_Node;
    end P_Case_Expression_Alternative;
 
-   --------------------------------------
-   -- P_Iterated_Component_Association --
-   --------------------------------------
+   ---------------------------------------------
+   -- P_Iterated_Component_Assoc_Or_Reduction --
+   ---------------------------------------------
 
    --  ITERATED_COMPONENT_ASSOCIATION ::=
    --    for DEFINING_IDENTIFIER in DISCRETE_CHOICE_LIST => EXPRESSION
 
-   function P_Iterated_Component_Association return Node_Id is
+   function P_Iterated_Component_Assoc_Or_Reduction return Node_Id is
+      Expr : Node_Id;
+
+      function OK_Reduction_Expression_Parameter (L : List_Id) return Boolean;
+      --  Check that if a reduction_expression_Parameter appears, it is a
+      --  single one.
+
+      ---------------------------------------
+      -- OK_Reduction_Expression_Parameter --
+      ---------------------------------------
+
+      function OK_Reduction_Expression_Parameter
+        (L : List_Id) return Boolean
+      is
+         Actual : Node_Id;
+         Num    : Int := 0;
+         Seen   : Boolean;
+
+      begin
+         Seen := False;
+         Actual := First (L);
+         while Present (Actual) loop
+            if Nkind (Actual) = N_Reduction_Expression_Parameter then
+               if Seen then
+                  Error_Msg_N ("only one reduction parameter allowed", Expr);
+               else
+                  Seen := True;
+               end if;
+            end if;
+
+            Num := Num + 1;
+            Next (Actual);
+         end loop;
+
+         if Seen and then Num > 2 then
+            Error_Msg_N ("too many parameters in reduction function", Expr);
+         end if;
+
+         return Seen;
+      end OK_Reduction_Expression_Parameter;
+
+      --  Local variables
+
+      Lparen     : constant Boolean := Prev_Token = Tok_Left_Paren;
       Assoc_Node : Node_Id;
+      State      : Saved_Scan_State;
+
+   --  Start of processing for P_Iterated_Component_Assoc_Or_Reduction
 
    begin
       Scan;  --  past FOR
       Assoc_Node :=
         New_Node (N_Iterated_Component_Association, Prev_Token_Ptr);
+
+      Save_Scan_State (State);
       Set_Defining_Identifier (Assoc_Node, P_Defining_Identifier);
-      T_In;
-      Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
-      TF_Arrow;
-      Set_Expression (Assoc_Node, P_Expression);
+
+      if Token = Tok_In then
+         Scan; --  past in
+
+         Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
+         TF_Arrow;
+
+         if Token = Tok_Less then
+            Restore_Scan_State (State);
+            return P_Reduction_Expression (Lparen);
+         else
+            Expr := P_Expression;
+         end if;
+
+         if Nkind (Expr) = N_Function_Call
+           and then OK_Reduction_Expression_Parameter
+                      (Parameter_Associations (Expr))
+         then
+            Restore_Scan_State (State);
+            return P_Reduction_Expression (Lparen);
+
+         elsif Nkind (Expr) in N_Op
+           and then
+             Nkind (Right_Opnd (Expr)) = N_Reduction_Expression_Parameter
+         then
+            return P_Reduction_Expression (Lparen);
+
+         elsif Nkind (Expr) in N_Binary_Op
+           and then
+             Nkind (Left_Opnd (Expr)) = N_Reduction_Expression_Parameter
+         then
+            return P_Reduction_Expression (Lparen);
+
+         elsif Nkind (Expr) = N_Indexed_Component
+           and then OK_Reduction_Expression_Parameter (Expressions (Expr))
+         then
+            Restore_Scan_State (State);
+            return P_Reduction_Expression (Lparen);
+         end if;
+
+         Set_Expression (Assoc_Node, Expr);
+         if Ada_Version < Ada_2020 then
+            Error_Msg_SC ("iterated component is an Ada 2020 extension");
+            Error_Msg_SC ("\compile with -gnatX");
+         end if;
+
+         return Assoc_Node;
+
+      elsif Token = Tok_Of then
+         Restore_Scan_State (State);
+         return P_Reduction_Expression (Lparen);
+
+      else
+         raise Error_Resync;
+      end if;
+   end P_Iterated_Component_Assoc_Or_Reduction;
+
+   ----------------------------
+   -- P_Reduction_Expression --
+   ----------------------------
+
+   function P_Reduction_Expression (Lparen : Boolean) return Node_Id is
+      Expr           : Node_Id;
+      I_Spec         : Node_Id;
+      Left_Opnd      : Node_Id;
+      Reduction_Node : Node_Id;
+
+   begin
+      Reduction_Node := New_Node (N_Reduction_Expression, Prev_Token_Ptr);
+
+      I_Spec := P_Loop_Parameter_Specification;
+
+      if Nkind (I_Spec) = N_Loop_Parameter_Specification then
+         Set_Loop_Parameter_Specification (Reduction_Node, I_Spec);
+      else
+         Set_Iterator_Specification (Reduction_Node, I_Spec);
+      end if;
+
+      T_Arrow;
+      if Token = Tok_Less and then False then
+         Scan; -- past <
+
+         Left_Opnd := New_Node (N_Reduction_Expression_Parameter, Token_Ptr);
+         Set_Expression (Left_Opnd, P_Simple_Expression);
+
+         Scan; -- past >
+
+         if Token = Tok_Plus then
+            Set_Expression
+              (Reduction_Node, New_Op_Node (N_Op_Add, Token_Ptr));
+         else
+            Set_Expression
+              (Reduction_Node, New_Op_Node (N_Op_Concat, Token_Ptr));
+         end if;
+
+         Scan; -- past operstor
+         Set_Left_Opnd (Expression (Reduction_Node), Left_Opnd);
+         Set_Right_Opnd (Expression (Reduction_Node), P_Primary);
+
+      else
+         Expr := P_Expression;
+         Set_Expression (Reduction_Node, Expr);
+
+         --  if Nkind (Expr) = N_Indexed_Component
+         --    and then List_Length (Expressions (Expr)) /= 2
+         --  then
+         --     Error_Msg_N
+         --        ("combiner function call must have two arguments", Expr);
+         --  end if;
+      end if;
 
       if Ada_Version < Ada_2020 then
-         Error_Msg_SC ("iterated component is an Ada 2020 extension");
+         Error_Msg_SC ("Reduction_Expression is an Ada 2020 extension");
          Error_Msg_SC ("\compile with -gnatX");
       end if;
 
-      return Assoc_Node;
-   end P_Iterated_Component_Association;
+      if not (Lparen and then Token = Tok_Right_Paren) then
+         Error_Msg
+           ("reduction expression must be parenthesized",
+            Sloc (Reduction_Node));
+      else
+         Scan; -- past ???
+      end if;
+
+      return Reduction_Node;
+   end P_Reduction_Expression;
 
    ---------------------
    -- P_If_Expression --
@@ -3559,7 +3773,7 @@ package body Ch4 is
             --  an aggregate.
 
             Restore_Scan_State (Scan_State);
-            Result := P_Iterated_Component_Association;
+            Result := P_Iterated_Component_Assoc_Or_Reduction;
          end if;
 
       --  No other possibility should exist (caller was supposed to check)

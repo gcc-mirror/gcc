@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -711,11 +711,16 @@ package body Freeze is
             end;
          end if;
 
-         if Present (Init) then
+         --  Remove side effects from initial expression, except in the case
+         --  of a build-in-place call, which has its own later expansion.
 
-            --  Capture initialization value at point of declaration,
-            --  and make explicit assignment legal, because object may
-            --  be a constant.
+         if Present (Init)
+           and then (Nkind (Init) /= N_Function_Call
+             or else not Is_Expanded_Build_In_Place_Call (Init))
+         then
+
+            --  Capture initialization value at point of declaration, and make
+            --  explicit assignment legal, because object may be a constant.
 
             Remove_Side_Effects (Init);
             Lhs := New_Occurrence_Of (E, Sloc (Decl));
@@ -1173,8 +1178,7 @@ package body Freeze is
 
       Component_Aliased : Boolean;
 
-      Comp_Byte_Aligned : Boolean;
-      pragma Warnings (Off, Comp_Byte_Aligned);
+      Comp_Byte_Aligned : Boolean := False;
       --  Set for the record case, True if Comp is aligned on byte boundaries
       --  (in which case it is allowed to have different storage order).
 
@@ -2788,7 +2792,6 @@ package body Freeze is
                      elsif Csiz mod System_Storage_Unit = 0
                        and then Is_Composite_Type (Ctyp)
                      then
-
                         Set_Is_Packed            (Base_Type (Arr), True);
                         Set_Has_Non_Standard_Rep (Base_Type (Arr), True);
                         Set_Is_Bit_Packed_Array  (Base_Type (Arr), False);
@@ -5519,6 +5522,11 @@ package body Freeze is
       --  Case of a type or subtype being frozen
 
       else
+         --  Verify several SPARK legality rules related to Ghost types now
+         --  that the type is frozen.
+
+         Check_Ghost_Type (E);
+
          --  We used to check here that a full type must have preelaborable
          --  initialization if it completes a private type specified with
          --  pragma Preelaborable_Initialization, but that missed cases where
@@ -5568,21 +5576,6 @@ package body Freeze is
                  ("\can only be specified for a tagged type", Prag);
             end if;
          end;
-
-         if Is_Ghost_Entity (E) then
-
-            --  A Ghost type cannot be concurrent (SPARK RM 6.9(19)). Verify
-            --  this legality rule first to five a finer-grained diagnostic.
-
-            if Is_Concurrent_Type (E) then
-               Error_Msg_N ("ghost type & cannot be concurrent", E);
-
-            --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(7))
-
-            elsif Is_Effectively_Volatile (E) then
-               Error_Msg_N ("ghost type & cannot be volatile", E);
-            end if;
-         end if;
 
          --  Deal with special cases of freezing for subtype
 
@@ -8237,6 +8230,7 @@ package body Freeze is
          if No (Extra_Formals (E)) then
             Create_Extra_Formals (E);
          end if;
+
          Set_Mechanisms (E);
 
          --  If this is convention Ada and a Valued_Procedure, that's odd
@@ -8449,7 +8443,7 @@ package body Freeze is
             --  The analysis of the expression may generate insert actions,
             --  which of course must not be executed. We wrap those actions
             --  in a procedure that is not called, and later on eliminated.
-            --  The following cases have no side-effects, and are analyzed
+            --  The following cases have no side effects, and are analyzed
             --  directly.
 
             if Nkind (Dcopy) = N_Identifier

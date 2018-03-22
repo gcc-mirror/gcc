@@ -1,6 +1,6 @@
 /* Lower GIMPLE_SWITCH expressions to something more efficient than
    a jump table.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,6 +60,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 	  targetm.case_values_threshold(), or be its own param.  */
 #define MAX_CASE_BIT_TESTS  3
 
+/* Track whether or not we have altered the CFG and thus may need to
+   cleanup the CFG when complete.  */
+bool cfg_altered;
+
 /* Split the basic block at the statement pointed to by GSIP, and insert
    a branch to the target basic block of E_TRUE conditional on tree
    expression COND.
@@ -107,8 +111,7 @@ hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
   e_false->flags &= ~EDGE_FALLTHRU;
   e_false->flags |= EDGE_FALSE_VALUE;
   e_false->probability = e_true->probability.invert ();
-  e_false->count = split_bb->count - e_true->count;
-  new_bb->count = e_false->count;
+  new_bb->count = e_false->count ();
 
   if (update_dominators)
     {
@@ -239,9 +242,9 @@ case_bit_test_cmp (const void *p1, const void *p2)
   const struct case_bit_test *const d1 = (const struct case_bit_test *) p1;
   const struct case_bit_test *const d2 = (const struct case_bit_test *) p2;
 
-  if (d2->target_edge->count < d1->target_edge->count)
+  if (d2->target_edge->count () < d1->target_edge->count ())
     return -1;
-  if (d2->target_edge->count > d1->target_edge->count)
+  if (d2->target_edge->count () > d1->target_edge->count ())
     return 1;
   if (d2->bits != d1->bits)
     return d2->bits - d1->bits;
@@ -635,10 +638,10 @@ collect_switch_conv_info (gswitch *swtch, struct switch_conv_info *info)
     = label_to_block (CASE_LABEL (gimple_switch_default_label (swtch)));
   e_default = find_edge (info->switch_bb, info->default_bb);
   info->default_prob = e_default->probability;
-  info->default_count = e_default->count;
+  info->default_count = e_default->count ();
   FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
     if (e != e_default)
-      info->other_count += e->count;
+      info->other_count += e->count ();
 
   /* Get upper and lower bounds of case values, and the covered range.  */
   min_case = gimple_switch_label (swtch, 1);
@@ -655,8 +658,7 @@ collect_switch_conv_info (gswitch *swtch, struct switch_conv_info *info)
   for (i = 2; i < branch_num; i++)
     {
       tree elt = gimple_switch_label (swtch, i);
-      wide_int w = last;
-      if (w + 1 != CASE_LOW (elt))
+      if (wi::to_wide (last) + 1 != wi::to_wide (CASE_LOW (elt)))
 	{
 	  info->contiguous_range = false;
 	  break;
@@ -1065,7 +1067,7 @@ array_value_type (gswitch *swtch, tree type, int num,
       if (TREE_CODE (elt->value) != INTEGER_CST)
 	return type;
 
-      cst = elt->value;
+      cst = wi::to_wide (elt->value);
       while (1)
 	{
 	  unsigned int prec = GET_MODE_BITSIZE (mode);
@@ -1425,19 +1427,16 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
   if (!info->default_case_nonstandard)
     e01 = make_edge (bb0, bb1, EDGE_TRUE_VALUE);
   e01->probability = info->default_prob.invert ();
-  e01->count = info->other_count;
 
   /* flags and profiles of the edge taking care of out-of-range values */
   e02->flags &= ~EDGE_FALLTHRU;
   e02->flags |= EDGE_FALSE_VALUE;
   e02->probability = info->default_prob;
-  e02->count = info->default_count;
 
   bbf = info->final_bb;
 
   e1f = make_edge (bb1, bbf, EDGE_FALLTHRU);
   e1f->probability = profile_probability::always ();
-  e1f->count = info->other_count;
 
   if (info->default_case_nonstandard)
     e2f = NULL;
@@ -1445,14 +1444,13 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
     {
       e2f = make_edge (bb2, bbf, EDGE_FALLTHRU);
       e2f->probability = profile_probability::always ();
-      e2f->count = info->default_count;
     }
 
   /* frequencies of the new BBs */
-  bb1->frequency = EDGE_FREQUENCY (e01);
-  bb2->frequency = EDGE_FREQUENCY (e02);
+  bb1->count = e01->count ();
+  bb2->count = e02->count ();
   if (!info->default_case_nonstandard)
-    bbf->frequency = EDGE_FREQUENCY (e1f) + EDGE_FREQUENCY (e2f);
+    bbf->count = e1f->count () + e2f->count ();
 
   /* Tidy blocks that have become unreachable.  */
   prune_bbs (bbd, info->final_bb,
@@ -1498,7 +1496,7 @@ process_switch (gswitch *swtch)
 
   /* Group case labels so that we get the right results from the heuristics
      that decide on the code generation approach for this switch.  */
-  group_case_labels_stmt (swtch);
+  cfg_altered |= group_case_labels_stmt (swtch);
 
   /* If this switch is now a degenerate case with only a default label,
      there is nothing left for us to do.   */
@@ -1565,7 +1563,8 @@ process_switch (gswitch *swtch)
   gather_default_values (info.default_case_nonstandard
 			 ? gimple_switch_label (swtch, 1)
 			 : gimple_switch_default_label (swtch), &info);
-  build_constructors (swtch, &info);
+  if (info.phi_count)
+    build_constructors (swtch, &info);
 
   build_arrays (swtch, &info); /* Build the static arrays and assignments.   */
   gen_inbound_check (swtch, &info);	/* Build the bounds check.  */
@@ -1611,6 +1610,7 @@ pass_convert_switch::execute (function *fun)
 {
   basic_block bb;
 
+  cfg_altered = false;
   FOR_EACH_BB_FN (bb, fun)
   {
     const char *failure_reason;
@@ -1631,6 +1631,7 @@ pass_convert_switch::execute (function *fun)
 	failure_reason = process_switch (as_a <gswitch *> (stmt));
 	if (! failure_reason)
 	  {
+	    cfg_altered = true;
 	    if (dump_file)
 	      {
 		fputs ("Switch converted\n", dump_file);
@@ -1654,7 +1655,7 @@ pass_convert_switch::execute (function *fun)
       }
   }
 
-  return 0;
+  return cfg_altered ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace
@@ -1778,11 +1779,12 @@ dump_case_nodes (FILE *f, case_node *root, int indent_step, int indent_level)
 
   fputs (";; ", f);
   fprintf (f, "%*s", indent_step * indent_level, "");
-  print_dec (root->low, f, TYPE_SIGN (TREE_TYPE (root->low)));
+  print_dec (wi::to_wide (root->low), f, TYPE_SIGN (TREE_TYPE (root->low)));
   if (!tree_int_cst_equal (root->low, root->high))
     {
       fprintf (f, " ... ");
-      print_dec (root->high, f, TYPE_SIGN (TREE_TYPE (root->high)));
+      print_dec (wi::to_wide (root->high), f,
+		 TYPE_SIGN (TREE_TYPE (root->high)));
     }
   fputs ("\n", f);
 
@@ -2113,7 +2115,7 @@ try_switch_expansion (gswitch *stmt)
 	 original type.  Make sure to drop overflow flags.  */
       low = fold_convert (index_type, low);
       if (TREE_OVERFLOW (low))
-	low = wide_int_to_tree (index_type, low);
+	low = wide_int_to_tree (index_type, wi::to_wide (low));
 
       /* The canonical from of a case label in GIMPLE is that a simple case
 	 has an empty CASE_HIGH.  For the casesi and tablejump expanders,
@@ -2122,7 +2124,7 @@ try_switch_expansion (gswitch *stmt)
 	high = low;
       high = fold_convert (index_type, high);
       if (TREE_OVERFLOW (high))
-	high = wide_int_to_tree (index_type, high);
+	high = wide_int_to_tree (index_type, wi::to_wide (high));
 
       basic_block case_bb = label_to_block_fn (cfun, lab);
       edge case_edge = find_edge (bb, case_bb);

@@ -1,5 +1,5 @@
 /* Straight-line strength reduction.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 
 This file is part of GCC.
@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-address.h"
 #include "tree-affine.h"
+#include "tree-eh.h"
 #include "builtins.h"
 
 /* Information about a strength reduction candidate.  Each statement
@@ -488,7 +489,8 @@ find_phi_def (tree base)
 
   c = base_cand_from_table (base);
 
-  if (!c || c->kind != CAND_PHI)
+  if (!c || c->kind != CAND_PHI
+      || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (c->cand_stmt)))
     return 0;
 
   return c->cand_num;
@@ -555,6 +557,11 @@ find_basis_for_base_expr (slsr_cand_t c, tree base_expr)
 	  || !dominated_by_p (CDI_DOMINATORS,
 			      gimple_bb (c->cand_stmt),
 			      gimple_bb (one_basis->cand_stmt)))
+	continue;
+
+      tree lhs = gimple_assign_lhs (one_basis->cand_stmt);
+      if (lhs && TREE_CODE (lhs) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	continue;
 
       if (!basis || basis->cand_num < one_basis->cand_num)
@@ -964,17 +971,19 @@ restructure_reference (tree *pbase, tree *poffset, widest_int *pindex,
   widest_int index = *pindex;
   tree mult_op0, t1, t2, type;
   widest_int c1, c2, c3, c4, c5;
+  offset_int mem_offset;
 
   if (!base
       || !offset
       || TREE_CODE (base) != MEM_REF
+      || !mem_ref_offset (base).is_constant (&mem_offset)
       || TREE_CODE (offset) != MULT_EXPR
       || TREE_CODE (TREE_OPERAND (offset, 1)) != INTEGER_CST
       || wi::umod_floor (index, BITS_PER_UNIT) != 0)
     return false;
 
   t1 = TREE_OPERAND (base, 0);
-  c1 = widest_int::from (mem_ref_offset (base), SIGNED);
+  c1 = widest_int::from (mem_offset, SIGNED);
   type = TREE_TYPE (TREE_OPERAND (base, 1));
 
   mult_op0 = TREE_OPERAND (offset, 0);
@@ -1025,7 +1034,7 @@ static void
 slsr_process_ref (gimple *gs)
 {
   tree ref_expr, base, offset, type;
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   machine_mode mode;
   int unsignedp, reversep, volatilep;
   slsr_cand_t c;
@@ -1043,9 +1052,10 @@ slsr_process_ref (gimple *gs)
 
   base = get_inner_reference (ref_expr, &bitsize, &bitpos, &offset, &mode,
 			      &unsignedp, &reversep, &volatilep);
-  if (reversep)
+  HOST_WIDE_INT cbitpos;
+  if (reversep || !bitpos.is_constant (&cbitpos))
     return;
-  widest_int index = bitpos;
+  widest_int index = cbitpos;
 
   if (!restructure_reference (&base, &offset, &index, &type))
     return;
@@ -1252,7 +1262,7 @@ slsr_process_mul (gimple *gs, tree rhs1, tree rhs2, bool speed)
       c2 = create_mul_ssa_cand (gs, rhs2, rhs1, speed);
       c->next_interp = c2->cand_num;
     }
-  else
+  else if (TREE_CODE (rhs2) == INTEGER_CST)
     {
       /* Record an interpretation for the multiply-immediate.  */
       c = create_mul_imm_cand (gs, rhs1, rhs2, speed);
@@ -1493,7 +1503,7 @@ slsr_process_add (gimple *gs, tree rhs1, tree rhs2, bool speed)
 	    add_cand_for_stmt (gs, c2);
 	}
     }
-  else
+  else if (TREE_CODE (rhs2) == INTEGER_CST)
     {
       /* Record an interpretation for the add-immediate.  */
       widest_int index = wi::to_widest (rhs2);
@@ -1737,6 +1747,9 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
        gsi_next (&gsi))
     {
       gimple *gs = gsi_stmt (gsi);
+
+      if (stmt_could_throw_p (gs))
+	continue;
 
       if (gimple_vuse (gs) && gimple_assign_single_p (gs))
 	slsr_process_ref (gs);
@@ -3077,7 +3090,17 @@ analyze_increments (slsr_cand_t first_dep, machine_mode mode, bool speed)
       else if (first_dep->kind == CAND_MULT)
 	{
 	  int cost = mult_by_coeff_cost (incr, mode, speed);
-	  int repl_savings = mul_cost (speed, mode) - add_cost (speed, mode);
+	  int repl_savings;
+
+	  if (tree_fits_shwi_p (first_dep->stride))
+	    {
+	      HOST_WIDE_INT hwi_stride = tree_to_shwi (first_dep->stride);
+	      repl_savings = mult_by_coeff_cost (hwi_stride, mode, speed);
+	    }
+	  else
+	    repl_savings = mul_cost (speed, mode);
+	  repl_savings -= add_cost (speed, mode);
+
 	  if (speed)
 	    cost = lowest_cost_path (cost, repl_savings, first_dep,
 				     incr_vec[i].incr, COUNT_PHIS);
@@ -3412,7 +3435,7 @@ insert_initializers (slsr_cand_t c)
 		  gsi_insert_after (&gsi, cast_stmt, GSI_NEW_STMT);
 		  gimple_set_location (cast_stmt, loc);
 		}
-	      gsi_insert_after (&gsi, init_stmt, GSI_SAME_STMT);
+	      gsi_insert_after (&gsi, init_stmt, GSI_NEW_STMT);
 	    }
 
 	  gimple_set_location (init_stmt, gimple_location (basis_stmt));

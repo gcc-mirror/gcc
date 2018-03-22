@@ -4,7 +4,6 @@
 #include "tree-vect.h"
 
 #define N 64
-volatile int y = 0;
 
 int
 main1 ()
@@ -18,8 +17,7 @@ main1 ()
   for (i = 0; i < N*8; i++)
     {
       in[i] = in2[i] = i;
-      if (y) /* Avoid vectorization.  */
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* Induction is SLPable.  */
@@ -136,4 +134,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { { vect_interleave && vect_extract_even_odd } && { ! vect_pack_trunc } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { ! vect_pack_trunc } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { target { { vect_interleave && vect_extract_even_odd } && vect_pack_trunc } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" { target vect_pack_trunc } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" { target vect_pack_trunc xfail vect_variable_length } } } */

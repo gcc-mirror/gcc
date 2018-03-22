@@ -1,5 +1,5 @@
 // go-system.h -- Go frontend inclusion of gcc header files   -*- C++ -*-
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -21,6 +21,12 @@
 #define GO_SYSTEM_H
 
 #include "config.h"
+
+/* Define this so that inttypes.h defines the PRI?64 macros even
+   when compiling with a C++ compiler.  Define it here so in the
+   event inttypes.h gets pulled in by another header it is already
+   defined.  */
+#define __STDC_FORMAT_MACROS
 
 // These must be included before the #poison declarations in system.h.
 

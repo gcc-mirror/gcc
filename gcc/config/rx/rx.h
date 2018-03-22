@@ -1,5 +1,5 @@
 /* GCC backend definitions for the Renesas RX processor.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -169,7 +169,6 @@
 #define HAS_LONG_UNCOND_BRANCH		0
 
 #define MOVE_MAX 			4
-#define STARTING_FRAME_OFFSET		0
 
 #define HAVE_PRE_DECREMENT		1
 #define HAVE_POST_INCREMENT		1

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@ with ALI;         use ALI;
 with ALI.Util;    use ALI.Util;
 with Binderr;     use Binderr;
 with Butil;       use Butil;
-with Csets;       use Csets;
+with Csets;
 with Fname;       use Fname;
 with Gnatvsn;     use Gnatvsn;
 with Make_Util;   use Make_Util;
@@ -2097,6 +2097,7 @@ begin
 
    if RTS_Specified = null then
       declare
+         FD   : File_Descriptor;
          Text : Source_Buffer_Ptr;
          Hi   : Source_Ptr;
 
@@ -2104,7 +2105,7 @@ begin
          Name_Buffer (1 .. 10) := "system.ads";
          Name_Len := 10;
 
-         Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
+         Read_Source_File (Name_Find, 0, Hi, Text, FD);
 
          if Null_Source_Buffer_Ptr (Text) then
             No_Runtime := True;

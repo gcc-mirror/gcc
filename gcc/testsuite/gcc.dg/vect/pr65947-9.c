@@ -10,7 +10,7 @@ extern void abort (void) __attribute__ ((noreturn));
    vectorize because the vectorisation requires a slot for default values.  */
 
 signed char __attribute__((noinline,noclone))
-condition_reduction (char *a, char min_v)
+condition_reduction (signed char *a, signed char min_v)
 {
   signed char last = -72;
 
@@ -45,5 +45,8 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
-/* { dg-final { scan-tree-dump "loop size is greater than data size" "vect" } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_fold_extract_last } } } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" { target vect_fold_extract_last } } } */
+/* { dg-final { scan-tree-dump "loop size is greater than data size" "vect" { target { ! vect_fold_extract_last } } } } */
+/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 2 "vect" { target vect_fold_extract_last } } } */
+/* { dg-final { scan-tree-dump-not "condition expression based on integer induction." "vect" } } */

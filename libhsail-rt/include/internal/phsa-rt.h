@@ -1,7 +1,7 @@
 /* phsa-rt.h -- Data structures and functions of the PHSA device side runtime
    scheduler, and HSAIL built-ins.
 
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -42,7 +42,8 @@ typedef void (*gccbrigKernelLauncherFunc) (void *context, void *);
 /* Pointer type for kernel functions produced by gccbrig from the HSAIL.
    This is private from outside the device binary and only called by
    the launcher.  */
-typedef void (*gccbrigKernelFunc) (unsigned char *, void *, void *, void *);
+typedef void (*gccbrigKernelFunc) (unsigned char *, void *, void *, uint32_t,
+				   void *);
 
 /* Context data that is passed to the kernel function, initialized
    by the runtime to the current launch information.  The data is

@@ -1,5 +1,5 @@
 /* Header file for SSA jump threading.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,9 +30,11 @@ extern void threadedge_initialize_values (void);
 extern void threadedge_finalize_values (void);
 extern bool potentially_threadable_block (basic_block);
 extern void propagate_threaded_block_debug_into (basic_block, basic_block);
+class evrp_range_analyzer;
 extern void thread_outgoing_edges (basic_block, gcond *,
 				   const_and_copies *,
 				   avail_exprs_stack *,
+				   evrp_range_analyzer *,
 				   tree (*) (gimple *, gimple *,
 					     avail_exprs_stack *, basic_block));
 

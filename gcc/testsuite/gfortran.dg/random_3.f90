@@ -30,6 +30,6 @@ program random_3
      call random_number(r10)
      call random_number (r10(10))
 
-     if (any ((r8 - r10) .gt. delta)) call abort
+     if (any ((r8 - r10) .gt. delta)) STOP 1
   end if
 end program random_3

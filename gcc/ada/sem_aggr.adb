@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
+with Exp_Ch6;  use Exp_Ch6;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
@@ -416,6 +417,13 @@ package body Sem_Aggr is
    --  A string literal can appear in a context in which a one dimensional
    --  array of characters is expected. This procedure simply rewrites the
    --  string as an aggregate, prior to resolution.
+
+   ---------------------------------
+   --  Delta aggregate processing --
+   ---------------------------------
+
+   procedure Resolve_Delta_Array_Aggregate  (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Delta_Record_Aggregate (N : Node_Id; Typ : Entity_Id);
 
    ------------------------
    -- Array_Aggr_Subtype --
@@ -1593,7 +1601,7 @@ package body Sem_Aggr is
             --  unless the expression covers a single component, or the
             --  expander is inactive.
 
-            --  In SPARK mode, expressions that can perform side-effects will
+            --  In SPARK mode, expressions that can perform side effects will
             --  be recognized by the gnat2why back-end, and the whole
             --  subprogram will be ignored. So semantic analysis can be
             --  performed safely.
@@ -1649,12 +1657,13 @@ package body Sem_Aggr is
         (N         : Node_Id;
          Index_Typ : Entity_Id)
       is
-         Id  : constant Entity_Id  := Defining_Identifier (N);
          Loc : constant Source_Ptr := Sloc (N);
 
          Choice : Node_Id;
          Dummy  : Boolean;
          Ent    : Entity_Id;
+         Expr   : Node_Id;
+         Id     : Entity_Id;
 
       begin
          Choice := First (Discrete_Choices (N));
@@ -1689,25 +1698,42 @@ package body Sem_Aggr is
          Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
          Set_Etype  (Ent, Standard_Void_Type);
          Set_Parent (Ent, Parent (N));
+         Push_Scope (Ent);
+         Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => Chars (Defining_Identifier (N)));
 
-         --  Decorate the index variable in the current scope. The association
-         --  may have several choices, each one leading to a loop, so we create
-         --  this variable only once to prevent homonyms in this scope.
+         --  Insert and decorate the index variable in the current scope.
          --  The expression has to be analyzed once the index variable is
          --  directly visible. Mark the variable as referenced to prevent
          --  spurious warnings, given that subsequent uses of its name in the
          --  expression will reference the internal (synonym) loop variable.
 
-         if No (Scope (Id)) then
-            Enter_Name (Id);
-            Set_Etype (Id, Index_Typ);
-            Set_Ekind (Id, E_Variable);
-            Set_Scope (Id, Ent);
-            Set_Referenced (Id);
+         Enter_Name (Id);
+         Set_Etype (Id, Index_Typ);
+         Set_Ekind (Id, E_Variable);
+         Set_Scope (Id, Ent);
+         Set_Referenced (Id);
+
+         --  Analyze a copy of the expression, to verify legality. We use
+         --  a copy because the expression will be analyzed anew when the
+         --  enclosing aggregate is expanded, and the construct is rewritten
+         --  as a loop with a new index variable.
+
+         Expr := New_Copy_Tree (Expression (N));
+         Dummy := Resolve_Aggr_Expr (Expr, False);
+
+         --  An iterated_component_association may appear in a nested
+         --  aggregate for a multidimensional structure: preserve the bounds
+         --  computed for the expression, as well as the anonymous array
+         --  type generated for it; both are needed during array expansion.
+         --  This does not work for more than two levels of nesting. ???
+
+         if Nkind (Expr) = N_Aggregate then
+            Set_Aggregate_Bounds (Expression (N), Aggregate_Bounds (Expr));
+            Set_Etype (Expression (N), Etype (Expr));
          end if;
 
-         Push_Scope (Ent);
-         Dummy := Resolve_Aggr_Expr (Expression (N), False);
          End_Scope;
       end Resolve_Iterated_Component_Association;
 
@@ -2757,10 +2783,196 @@ package body Sem_Aggr is
    -----------------------------
 
    procedure Resolve_Delta_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      Base   : constant Node_Id := Expression (N);
+      Base : constant Node_Id := Expression (N);
+
+   begin
+      if not Is_Composite_Type (Typ) then
+         Error_Msg_N ("not a composite type", N);
+      end if;
+
+      Analyze_And_Resolve (Base, Typ);
+
+      if Is_Array_Type (Typ) then
+         Resolve_Delta_Array_Aggregate (N, Typ);
+      else
+         Resolve_Delta_Record_Aggregate (N, Typ);
+      end if;
+
+      Set_Etype (N, Typ);
+   end Resolve_Delta_Aggregate;
+
+   -----------------------------------
+   -- Resolve_Delta_Array_Aggregate --
+   -----------------------------------
+
+   procedure Resolve_Delta_Array_Aggregate (N : Node_Id; Typ : Entity_Id) is
       Deltas : constant List_Id := Component_Associations (N);
 
+      Assoc      : Node_Id;
+      Choice     : Node_Id;
+      Index_Type : Entity_Id;
+
+   begin
+      Index_Type := Etype (First_Index (Typ));
+
+      Assoc := First (Deltas);
+      while Present (Assoc) loop
+         if Nkind (Assoc) = N_Iterated_Component_Association then
+            Choice := First (Choice_List (Assoc));
+            while Present (Choice) loop
+               if Nkind (Choice) = N_Others_Choice then
+                  Error_Msg_N
+                    ("others not allowed in delta aggregate", Choice);
+
+               else
+                  Analyze_And_Resolve (Choice, Index_Type);
+               end if;
+
+               Next (Choice);
+            end loop;
+
+            declare
+               Id  : constant Entity_Id := Defining_Identifier (Assoc);
+               Ent : constant Entity_Id :=
+                       New_Internal_Entity
+                         (E_Loop, Current_Scope, Sloc (Assoc), 'L');
+
+            begin
+               Set_Etype  (Ent, Standard_Void_Type);
+               Set_Parent (Ent, Assoc);
+
+               if No (Scope (Id)) then
+                  Enter_Name (Id);
+                  Set_Etype (Id, Index_Type);
+                  Set_Ekind (Id, E_Variable);
+                  Set_Scope (Id, Ent);
+               end if;
+
+               Push_Scope (Ent);
+               Analyze_And_Resolve
+                 (New_Copy_Tree (Expression (Assoc)), Component_Type (Typ));
+               End_Scope;
+            end;
+
+         else
+            Choice := First (Choice_List (Assoc));
+            while Present (Choice) loop
+               if Nkind (Choice) = N_Others_Choice then
+                  Error_Msg_N
+                    ("others not allowed in delta aggregate", Choice);
+
+               else
+                  Analyze (Choice);
+
+                  if Is_Entity_Name (Choice)
+                    and then Is_Type (Entity (Choice))
+                  then
+                     --  Choice covers a range of values
+
+                     if Base_Type (Entity (Choice)) /=
+                        Base_Type (Index_Type)
+                     then
+                        Error_Msg_NE
+                          ("choice does mat match index type of",
+                           Choice, Typ);
+                     end if;
+                  else
+                     Resolve (Choice, Index_Type);
+                  end if;
+               end if;
+
+               Next (Choice);
+            end loop;
+
+            Analyze_And_Resolve (Expression (Assoc), Component_Type (Typ));
+         end if;
+
+         Next (Assoc);
+      end loop;
+   end Resolve_Delta_Array_Aggregate;
+
+   ------------------------------------
+   -- Resolve_Delta_Record_Aggregate --
+   ------------------------------------
+
+   procedure Resolve_Delta_Record_Aggregate (N : Node_Id; Typ : Entity_Id) is
+
+      --  Variables used to verify that discriminant-dependent components
+      --  appear in the same variant.
+
+      Comp_Ref : Entity_Id := Empty; -- init to avoid warning
+      Variant  : Node_Id;
+
+      procedure Check_Variant (Id : Entity_Id);
+      --  If a given component of the delta aggregate appears in a variant
+      --  part, verify that it is within the same variant as that of previous
+      --  specified variant components of the delta.
+
       function Get_Component_Type (Nam : Node_Id) return Entity_Id;
+      --  Locate component with a given name and return its type. If none found
+      --  report error.
+
+      function Nested_In (V1 : Node_Id; V2 : Node_Id) return Boolean;
+      --  Determine whether variant V1 is within variant V2
+
+      function Variant_Depth (N : Node_Id) return Integer;
+      --  Determine the distance of a variant to the enclosing type
+      --  declaration.
+
+      --------------------
+      --  Check_Variant --
+      --------------------
+
+      procedure Check_Variant (Id : Entity_Id) is
+         Comp         : Entity_Id;
+         Comp_Variant : Node_Id;
+
+      begin
+         if not Has_Discriminants (Typ) then
+            return;
+         end if;
+
+         Comp := First_Entity (Typ);
+         while Present (Comp) loop
+            exit when Chars (Comp) = Chars (Id);
+            Next_Component (Comp);
+         end loop;
+
+         --  Find the variant, if any, whose component list includes the
+         --  component declaration.
+
+         Comp_Variant := Parent (Parent (List_Containing (Parent (Comp))));
+         if Nkind (Comp_Variant) = N_Variant then
+            if No (Variant) then
+               Variant  := Comp_Variant;
+               Comp_Ref := Comp;
+
+            elsif Variant /= Comp_Variant then
+               declare
+                  D1 : constant Integer := Variant_Depth (Variant);
+                  D2 : constant Integer := Variant_Depth (Comp_Variant);
+
+               begin
+                  if D1 = D2
+                    or else
+                      (D1 > D2 and then not Nested_In (Variant, Comp_Variant))
+                    or else
+                      (D2 > D1 and then not Nested_In (Comp_Variant, Variant))
+                  then
+                     pragma Assert (Present (Comp_Ref));
+                     Error_Msg_Node_2 := Comp_Ref;
+                     Error_Msg_NE
+                       ("& and & appear in different variants", Id, Comp);
+
+                  --  Otherwise retain the deeper variant for subsequent tests
+
+                  elsif D2 > D1 then
+                     Variant := Comp_Variant;
+                  end if;
+               end;
+            end if;
+         end if;
+      end Check_Variant;
 
       ------------------------
       -- Get_Component_Type --
@@ -2771,7 +2983,6 @@ package body Sem_Aggr is
 
       begin
          Comp := First_Entity (Typ);
-
          while Present (Comp) loop
             if Chars (Comp) = Chars (Nam) then
                if Ekind (Comp) = E_Discriminant then
@@ -2788,113 +2999,76 @@ package body Sem_Aggr is
          return Any_Type;
       end Get_Component_Type;
 
-      --  Local variables
+      ---------------
+      -- Nested_In --
+      ---------------
 
-      Assoc      : Node_Id;
-      Choice     : Node_Id;
-      Comp_Type  : Entity_Id;
-      Index_Type : Entity_Id;
+      function Nested_In (V1, V2 : Node_Id) return Boolean is
+         Par : Node_Id;
 
-   --  Start of processing for Resolve_Delta_Aggregate
-
-   begin
-      if not Is_Composite_Type (Typ) then
-         Error_Msg_N ("not a composite type", N);
-      end if;
-
-      Analyze_And_Resolve (Base, Typ);
-
-      if Is_Array_Type (Typ) then
-         Index_Type := Etype (First_Index (Typ));
-         Assoc := First (Deltas);
-         while Present (Assoc) loop
-            if Nkind (Assoc) = N_Iterated_Component_Association then
-               Choice := First (Choice_List (Assoc));
-               while Present (Choice) loop
-                  if Nkind (Choice) = N_Others_Choice then
-                     Error_Msg_N
-                       ("others not allowed in delta aggregate", Choice);
-
-                  else
-                     Analyze_And_Resolve (Choice, Index_Type);
-                  end if;
-
-                  Next (Choice);
-               end loop;
-
-               declare
-                  Id  : constant Entity_Id := Defining_Identifier (Assoc);
-                  Ent : constant Entity_Id :=
-                          New_Internal_Entity
-                            (E_Loop, Current_Scope, Sloc (Assoc), 'L');
-
-               begin
-                  Set_Etype  (Ent, Standard_Void_Type);
-                  Set_Parent (Ent, Assoc);
-
-                  if No (Scope (Id)) then
-                     Enter_Name (Id);
-                     Set_Etype (Id, Index_Type);
-                     Set_Ekind (Id, E_Variable);
-                     Set_Scope (Id, Ent);
-                  end if;
-
-                  Push_Scope (Ent);
-                  Analyze_And_Resolve
-                    (New_Copy_Tree (Expression (Assoc)), Component_Type (Typ));
-                  End_Scope;
-               end;
-
-            else
-               Choice := First (Choice_List (Assoc));
-               while Present (Choice) loop
-                  if Nkind (Choice) = N_Others_Choice then
-                     Error_Msg_N
-                       ("others not allowed in delta aggregate", Choice);
-
-                  else
-                     Analyze (Choice);
-                     if Is_Entity_Name (Choice)
-                       and then Is_Type (Entity (Choice))
-                     then
-                        --  Choice covers a range of values.
-                        if Base_Type (Entity (Choice)) /=
-                           Base_Type (Index_Type)
-                        then
-                           Error_Msg_NE
-                             ("choice does mat match index type of",
-                              Choice, Typ);
-                        end if;
-                     else
-                        Resolve (Choice, Index_Type);
-                     end if;
-                  end if;
-
-                  Next (Choice);
-               end loop;
-
-               Analyze_And_Resolve (Expression (Assoc), Component_Type (Typ));
+      begin
+         Par := Parent (V1);
+         while Nkind (Par) /= N_Full_Type_Declaration loop
+            if Par = V2 then
+               return True;
             end if;
 
-            Next (Assoc);
+            Par := Parent (Par);
          end loop;
 
-      else
-         Assoc := First (Deltas);
-         while Present (Assoc) loop
-            Choice := First (Choice_List (Assoc));
-            while Present (Choice) loop
-               Comp_Type := Get_Component_Type (Choice);
-               Next (Choice);
-            end loop;
+         return False;
+      end Nested_In;
 
-            Analyze_And_Resolve (Expression (Assoc), Comp_Type);
-            Next (Assoc);
+      -------------------
+      -- Variant_Depth --
+      -------------------
+
+      function Variant_Depth (N : Node_Id) return Integer is
+         Depth : Integer;
+         Par   : Node_Id;
+
+      begin
+         Depth := 0;
+         Par   := Parent (N);
+         while Nkind (Par) /= N_Full_Type_Declaration loop
+            Depth := Depth + 1;
+            Par   := Parent (Par);
          end loop;
-      end if;
 
-      Set_Etype (N, Typ);
-   end Resolve_Delta_Aggregate;
+         return Depth;
+      end Variant_Depth;
+
+      --  Local variables
+
+      Deltas : constant List_Id := Component_Associations (N);
+
+      Assoc     : Node_Id;
+      Choice    : Node_Id;
+      Comp_Type : Entity_Id := Empty; -- init to avoid warning
+
+   --  Start of processing for Resolve_Delta_Record_Aggregate
+
+   begin
+      Variant := Empty;
+
+      Assoc := First (Deltas);
+      while Present (Assoc) loop
+         Choice := First (Choice_List (Assoc));
+         while Present (Choice) loop
+            Comp_Type := Get_Component_Type (Choice);
+
+            if Comp_Type /= Any_Type then
+               Check_Variant (Choice);
+            end if;
+
+            Next (Choice);
+         end loop;
+
+         pragma Assert (Present (Comp_Type));
+         Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+         Next (Assoc);
+      end loop;
+   end Resolve_Delta_Record_Aggregate;
 
    ---------------------------------
    -- Resolve_Extension_Aggregate --
@@ -2931,6 +3105,11 @@ package body Sem_Aggr is
       function Valid_Ancestor_Type return Boolean;
       --  Verify that the type of the ancestor part is a non-private ancestor
       --  of the expected type, which must be a type extension.
+
+      procedure Transform_BIP_Assignment (Typ : Entity_Id);
+      --  For an extension aggregate whose ancestor part is a build-in-place
+      --  call returning a nonlimited type, this is used to transform the
+      --  assignment to the ancestor part to use a temp.
 
       ----------------------------
       -- Valid_Limited_Ancestor --
@@ -3013,6 +3192,26 @@ package body Sem_Aggr is
          return False;
       end Valid_Ancestor_Type;
 
+      ------------------------------
+      -- Transform_BIP_Assignment --
+      ------------------------------
+
+      procedure Transform_BIP_Assignment (Typ : Entity_Id) is
+         Loc      : constant Source_Ptr := Sloc (N);
+         Def_Id   : constant Entity_Id  := Make_Temporary (Loc, 'Y', A);
+         Obj_Decl : constant Node_Id    :=
+                      Make_Object_Declaration (Loc,
+                        Defining_Identifier => Def_Id,
+                        Constant_Present    => True,
+                        Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                        Expression          => A,
+                        Has_Init_Expression => True);
+      begin
+         Set_Etype (Def_Id, Typ);
+         Set_Ancestor_Part (N, New_Occurrence_Of (Def_Id, Loc));
+         Insert_Action (N, Obj_Decl);
+      end Transform_BIP_Assignment;
+
    --  Start of processing for Resolve_Extension_Aggregate
 
    begin
@@ -3081,7 +3280,7 @@ package body Sem_Aggr is
             Get_First_Interp (A, I, It);
             while Present (It.Typ) loop
 
-               --  Only consider limited interpretations in the Ada 2005 case
+               --  Consider limited interpretations if Ada 2005 or higher
 
                if Is_Tagged_Type (It.Typ)
                  and then (Ada_Version >= Ada_2005
@@ -3177,6 +3376,18 @@ package body Sem_Aggr is
 
                Error_Msg_N ("ancestor part must be statically tagged", A);
             else
+               --  We are using the build-in-place protocol, but we can't build
+               --  in place, because we need to call the function before
+               --  allocating the aggregate. Could do better for null
+               --  extensions, and maybe for nondiscriminated types.
+               --  This is wrong for limited, but those were wrong already.
+
+               if not Is_Limited_View (A_Type)
+                 and then Is_Build_In_Place_Function_Call (A)
+               then
+                  Transform_BIP_Assignment (A_Type);
+               end if;
+
                Resolve_Record_Aggregate (N, Typ);
             end if;
          end if;
@@ -3567,7 +3778,7 @@ package body Sem_Aggr is
                      --  This is redundant if the others_choice covers only
                      --  one component (small optimization possible???), but
                      --  indispensable otherwise, because each one must be
-                     --  expanded individually to preserve side-effects.
+                     --  expanded individually to preserve side effects.
 
                      --  Ada 2005 (AI-287): In case of default initialization
                      --  of components, we duplicate the corresponding default
@@ -3843,7 +4054,7 @@ package body Sem_Aggr is
          --  expansion is delayed until the enclosing aggregate is expanded
          --  into assignments. In that case, do not generate checks on the
          --  expression, because they will be generated later, and will other-
-         --  wise force a copy (to remove side-effects) that would leave a
+         --  wise force a copy (to remove side effects) that would leave a
          --  dynamic-sized aggregate in the code, something that gigi cannot
          --  handle.
 
@@ -4108,15 +4319,23 @@ package body Sem_Aggr is
          begin
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
-               if List_Length (Choices (Assoc)) > 1 then
-                  Check_SPARK_05_Restriction
-                    ("component association in record aggregate must "
-                     & "contain a single choice", Assoc);
-               end if;
+               if Nkind (Assoc) = N_Iterated_Component_Association then
+                  Error_Msg_N
+                    ("iterated component association can only appear in an "
+                     & "array aggregate", N);
+                  raise Unrecoverable_Error;
 
-               if Nkind (First (Choices (Assoc))) = N_Others_Choice then
-                  Check_SPARK_05_Restriction
-                    ("record aggregate cannot contain OTHERS", Assoc);
+               else
+                  if List_Length (Choices (Assoc)) > 1 then
+                     Check_SPARK_05_Restriction
+                       ("component association in record aggregate must "
+                        & "contain a single choice", Assoc);
+                  end if;
+
+                  if Nkind (First (Choices (Assoc))) = N_Others_Choice then
+                     Check_SPARK_05_Restriction
+                       ("record aggregate cannot contain OTHERS", Assoc);
+                  end if;
                end if;
 
                Assoc := Next (Assoc);

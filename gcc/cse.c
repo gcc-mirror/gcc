@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -561,7 +561,7 @@ static struct table_elt *insert (rtx, struct table_elt *, unsigned,
 static void merge_equiv_classes (struct table_elt *, struct table_elt *);
 static void invalidate (rtx, machine_mode);
 static void remove_invalid_refs (unsigned int);
-static void remove_invalid_subreg_refs (unsigned int, unsigned int,
+static void remove_invalid_subreg_refs (unsigned int, poly_uint64,
 					machine_mode);
 static void rehash_using_reg (rtx);
 static void invalidate_memory (void);
@@ -1994,12 +1994,11 @@ remove_invalid_refs (unsigned int regno)
 /* Likewise for a subreg with subreg_reg REGNO, subreg_byte OFFSET,
    and mode MODE.  */
 static void
-remove_invalid_subreg_refs (unsigned int regno, unsigned int offset,
+remove_invalid_subreg_refs (unsigned int regno, poly_uint64 offset,
 			    machine_mode mode)
 {
   unsigned int i;
   struct table_elt *p, *next;
-  unsigned int end = offset + (GET_MODE_SIZE (mode) - 1);
 
   for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
@@ -2011,9 +2010,9 @@ remove_invalid_subreg_refs (unsigned int regno, unsigned int offset,
 	    && (GET_CODE (exp) != SUBREG
 		|| !REG_P (SUBREG_REG (exp))
 		|| REGNO (SUBREG_REG (exp)) != regno
-		|| (((SUBREG_BYTE (exp)
-		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1)) >= offset)
-		    && SUBREG_BYTE (exp) <= end))
+		|| ranges_maybe_overlap_p (SUBREG_BYTE (exp),
+					   GET_MODE_SIZE (GET_MODE (exp)),
+					   offset, GET_MODE_SIZE (mode)))
 	    && refers_to_regno_p (regno, p->exp))
 	  remove_from_table (p, i);
       }
@@ -2307,7 +2306,8 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	  {
 	    hash += (((unsigned int) SUBREG << 7)
 		     + REGNO (SUBREG_REG (x))
-		     + (SUBREG_BYTE (x) / UNITS_PER_WORD));
+		     + (constant_lower_bound (SUBREG_BYTE (x))
+			/ UNITS_PER_WORD));
 	    return hash;
 	  }
 	break;
@@ -2322,6 +2322,15 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
       for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
 	hash += CONST_WIDE_INT_ELT (x, i);
       return hash;
+
+    case CONST_POLY_INT:
+      {
+	inchash::hash h;
+	h.add_int (hash);
+	for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	  h.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+	return h.end ();
+      }
 
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
@@ -2344,11 +2353,11 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	int units;
 	rtx elt;
 
-	units = CONST_VECTOR_NUNITS (x);
+	units = const_vector_encoded_nelts (x);
 
 	for (i = 0; i < units; ++i)
 	  {
-	    elt = CONST_VECTOR_ELT (x, i);
+	    elt = CONST_VECTOR_ENCODED_ELT (x, i);
 	    hash += hash_rtx_cb (elt, GET_MODE (elt),
                                  do_not_record_p, hash_arg_in_memory_p,
                                  have_reg_qty, cb);
@@ -2515,6 +2524,10 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 
 	case 'i':
 	  hash += (unsigned int) XINT (x, i);
+	  break;
+
+	case 'p':
+	  hash += constant_lower_bound (SUBREG_BYTE (x));
 	  break;
 
 	case '0': case 't':
@@ -2764,6 +2777,11 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
 
 	case 'w':
 	  if (XWINT (x, i) != XWINT (y, i))
+	    return 0;
+	  break;
+
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
 	    return 0;
 	  break;
 
@@ -3607,13 +3625,13 @@ fold_rtx (rtx x, rtx_insn *insn)
 	      enum rtx_code associate_code;
 
 	      if (is_shift
-		  && (INTVAL (const_arg1) >= GET_MODE_PRECISION (mode)
+		  && (INTVAL (const_arg1) >= GET_MODE_UNIT_PRECISION (mode)
 		      || INTVAL (const_arg1) < 0))
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
-		    canon_const_arg1 = GEN_INT (INTVAL (const_arg1)
-						& (GET_MODE_BITSIZE (mode)
-						   - 1));
+		    canon_const_arg1 = gen_int_shift_amount
+		      (mode, (INTVAL (const_arg1)
+			      & (GET_MODE_UNIT_BITSIZE (mode) - 1)));
 		  else
 		    break;
 		}
@@ -3656,12 +3674,13 @@ fold_rtx (rtx x, rtx_insn *insn)
                 break;
 
 	      if (is_shift
-		  && (INTVAL (inner_const) >= GET_MODE_PRECISION (mode)
+		  && (INTVAL (inner_const) >= GET_MODE_UNIT_PRECISION (mode)
 		      || INTVAL (inner_const) < 0))
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
-		    inner_const = GEN_INT (INTVAL (inner_const)
-					   & (GET_MODE_BITSIZE (mode) - 1));
+		    inner_const = gen_int_shift_amount
+		      (mode, (INTVAL (inner_const)
+			      & (GET_MODE_UNIT_BITSIZE (mode) - 1)));
 		  else
 		    break;
 		}
@@ -3686,12 +3705,13 @@ fold_rtx (rtx x, rtx_insn *insn)
 
 	      if (is_shift
 		  && CONST_INT_P (new_const)
-		  && INTVAL (new_const) >= GET_MODE_PRECISION (mode))
+		  && INTVAL (new_const) >= GET_MODE_UNIT_PRECISION (mode))
 		{
 		  /* As an exception, we can turn an ASHIFTRT of this
 		     form into a shift of the number of bits - 1.  */
 		  if (code == ASHIFTRT)
-		    new_const = GEN_INT (GET_MODE_BITSIZE (mode) - 1);
+		    new_const = gen_int_shift_amount
+		      (mode, GET_MODE_UNIT_BITSIZE (mode) - 1);
 		  else if (!side_effects_p (XEXP (y, 0)))
 		    return CONST0_RTX (mode);
 		  else
@@ -3779,17 +3799,20 @@ equiv_constant (rtx x)
       /* See if we previously assigned a constant value to this SUBREG.  */
       if ((new_rtx = lookup_as_function (x, CONST_INT)) != 0
 	  || (new_rtx = lookup_as_function (x, CONST_WIDE_INT)) != 0
+	  || (NUM_POLY_INT_COEFFS > 1
+	      && (new_rtx = lookup_as_function (x, CONST_POLY_INT)) != 0)
           || (new_rtx = lookup_as_function (x, CONST_DOUBLE)) != 0
           || (new_rtx = lookup_as_function (x, CONST_FIXED)) != 0)
         return new_rtx;
 
       /* If we didn't and if doing so makes sense, see if we previously
 	 assigned a constant value to the enclosing word mode SUBREG.  */
-      if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (word_mode)
-	  && GET_MODE_SIZE (word_mode) < GET_MODE_SIZE (imode))
+      if (known_lt (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+	  && known_lt (UNITS_PER_WORD, GET_MODE_SIZE (imode)))
 	{
-	  int byte = SUBREG_BYTE (x) - subreg_lowpart_offset (mode, word_mode);
-	  if (byte >= 0 && (byte % UNITS_PER_WORD) == 0)
+	  poly_int64 byte = (SUBREG_BYTE (x)
+			     - subreg_lowpart_offset (mode, word_mode));
+	  if (known_ge (byte, 0) && multiple_p (byte, UNITS_PER_WORD))
 	    {
 	      rtx y = gen_rtx_SUBREG (word_mode, SUBREG_REG (x), byte);
 	      new_rtx = lookup_as_function (y, CONST_INT);
@@ -4233,6 +4256,15 @@ try_back_substitute_reg (rtx set, rtx_insn *insn)
 		  && (reg_mentioned_p (dest, XEXP (note, 0))
 		      || rtx_equal_p (src, XEXP (note, 0))))
 		remove_note (insn, note);
+
+	      /* If INSN has a REG_ARGS_SIZE note, move it to PREV.  */
+	      note = find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX);
+	      if (note != 0)
+		{
+		  remove_note (insn, note);
+		  gcc_assert (!find_reg_note (prev, REG_ARGS_SIZE, NULL_RTX));
+		  set_unique_reg_note (prev, REG_ARGS_SIZE, XEXP (note, 0));
+		}
 	    }
 	}
     }
@@ -5208,8 +5240,9 @@ cse_insn (rtx_insn *insn)
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 1))
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 2))
 	      && REG_P (XEXP (SET_DEST (sets[i].rtl), 0))
-	      && (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl)))
-		  >= INTVAL (XEXP (SET_DEST (sets[i].rtl), 1)))
+	      && (known_ge
+		  (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl))),
+		   INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))))
 	      && ((unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))
 		  + (unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 2))
 		  <= HOST_BITS_PER_WIDE_INT))
@@ -5962,9 +5995,10 @@ cse_insn (rtx_insn *insn)
 	   already entered SRC and DEST of the SET in the table.  */
 
 	if (GET_CODE (dest) == SUBREG
-	    && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1)
-		 / UNITS_PER_WORD)
-		== (GET_MODE_SIZE (GET_MODE (dest)) - 1) / UNITS_PER_WORD)
+	    && (known_equal_after_align_down
+		(GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1,
+		 GET_MODE_SIZE (GET_MODE (dest)) - 1,
+		 UNITS_PER_WORD))
 	    && !partial_subreg_p (dest)
 	    && sets[i].src_elt != 0)
 	  {
@@ -5977,7 +6011,6 @@ cse_insn (rtx_insn *insn)
 		rtx new_src = 0;
 		unsigned src_hash;
 		struct table_elt *src_elt;
-		int byte = 0;
 
 		/* Ignore invalid entries.  */
 		if (!REG_P (elt->exp)
@@ -5990,13 +6023,8 @@ cse_insn (rtx_insn *insn)
 		  new_src = elt->exp;
 		else
 		  {
-		    /* Calculate big endian correction for the SUBREG_BYTE.
-		       We have already checked that M1 (GET_MODE (dest))
-		       is not narrower than M2 (new_mode).  */
-		    if (BYTES_BIG_ENDIAN)
-		      byte = (GET_MODE_SIZE (GET_MODE (dest))
-			      - GET_MODE_SIZE (new_mode));
-
+		    poly_uint64 byte
+		      = subreg_lowpart_offset (new_mode, GET_MODE (dest));
 		    new_src = simplify_gen_subreg (new_mode, elt->exp,
 					           GET_MODE (dest), byte);
 		  }
@@ -6967,10 +6995,17 @@ insn_live_p (rtx_insn *insn, int *counts)
     {
       rtx_insn *next;
 
+      if (DEBUG_MARKER_INSN_P (insn))
+	return true;
+
       for (next = NEXT_INSN (insn); next; next = NEXT_INSN (next))
 	if (NOTE_P (next))
 	  continue;
 	else if (!DEBUG_INSN_P (next))
+	  return true;
+	/* If we find an inspection point, such as a debug begin stmt,
+	   we want to keep the earlier debug insn.  */
+	else if (DEBUG_MARKER_INSN_P (next))
 	  return true;
 	else if (INSN_VAR_LOCATION_DECL (insn) == INSN_VAR_LOCATION_DECL (next))
 	  return false;
@@ -7054,11 +7089,11 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 
   timevar_push (TV_DELETE_TRIVIALLY_DEAD);
   /* First count the number of times each register is used.  */
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       counts = XCNEWVEC (int, nreg * 3);
       for (insn = insns; insn; insn = NEXT_INSN (insn))
-	if (DEBUG_INSN_P (insn))
+	if (DEBUG_BIND_INSN_P (insn))
 	  count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
 			   NULL_RTX, 1);
 	else if (INSN_P (insn))
@@ -7116,12 +7151,15 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
       if (! live_insn && dbg_cnt (delete_trivial_dead))
 	{
 	  if (DEBUG_INSN_P (insn))
-	    count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
-			     NULL_RTX, -1);
+	    {
+	      if (DEBUG_BIND_INSN_P (insn))
+		count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
+				 NULL_RTX, -1);
+	    }
 	  else
 	    {
 	      rtx set;
-	      if (MAY_HAVE_DEBUG_INSNS
+	      if (MAY_HAVE_DEBUG_BIND_INSNS
 		  && (set = single_set (insn)) != NULL_RTX
 		  && is_dead_reg (SET_DEST (set), counts)
 		  /* Used at least once in some DEBUG_INSN.  */
@@ -7161,10 +7199,10 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 	}
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-	if (DEBUG_INSN_P (insn))
+	if (DEBUG_BIND_INSN_P (insn))
 	  {
 	    /* If this debug insn references a dead register that wasn't replaced
 	       with an DEBUG_EXPR, reset the DEBUG_INSN.  */

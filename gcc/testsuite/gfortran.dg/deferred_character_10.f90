@@ -47,6 +47,6 @@ end module
 
   str = "abcdefghij"//char(0)
   cptr = c_loc (str)
-  if (len (C2FChar (cptr)) .ne. 10) call abort
-  if (C2FChar (cptr) .ne. "abcdefghij") call abort
+  if (len (C2FChar (cptr)) .ne. 10) STOP 1
+  if (C2FChar (cptr) .ne. "abcdefghij") STOP 2
 end

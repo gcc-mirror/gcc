@@ -1,3 +1,29 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* cet.m4: Check if target support multi-byte NOPS (SSE).
+
+2018-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-plugin.m4 (GCC_ENABLE_PLUGINS): Remove -q option passed to grep.
+
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* gcc-plugin.m4: Add support for MinGW.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* cet.m4: New file.
+
+2017-11-15  Alexandre Oliva <aoliva@redhat.com>
+
+	* bootstrap-debug-lean.mk (do-compare): Use the
+	contrib/compare-debug script.
+
+2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bootstrap-cet.mk: New file.
+
 2017-06-19  Martin Liska  <mliska@suse.cz>
 
 	* bootstrap-lto-noplugin.mk: Enable -flto in all PGO stages.

@@ -33,7 +33,7 @@ C vvvv    CRASH HERE   vvvvv
       data a/441*1d0/
       N=10
       call sub(N,a)
-      if (a(-N,N) .ne. 0d0) call abort
+      if (a(-N,N) .ne. 0d0) STOP 1
       end
 * 
 * C --- PROGRAM END -------

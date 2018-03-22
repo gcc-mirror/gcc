@@ -21,4 +21,4 @@ constexpr bool f ()
 #endif
 }
 
-constexpr bool b = f<int>();   // { dg-error "not a constant expression" }
+constexpr bool b = f<int>();   // { dg-error "not a constant expression|in .constexpr. expansion of " }

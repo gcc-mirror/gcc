@@ -32,6 +32,8 @@ extern void *__splitstack_makecontext(size_t, void *context[10], size_t *);
 
 extern void * __splitstack_resetcontext(void *context[10], size_t *);
 
+extern void __splitstack_releasecontext(void *context[10]);
+
 extern void *__splitstack_find(void *, void *, size_t *, void **, void **,
 			       void **);
 
@@ -179,7 +181,7 @@ fixcontext(ucontext_t* c)
 // So we make the field larger in runtime2.go and pick an appropriate
 // offset within the field here.
 static ucontext_t*
-ucontext_arg(uintptr* go_ucontext)
+ucontext_arg(uintptr_t* go_ucontext)
 {
 	uintptr_t p = (uintptr_t)go_ucontext;
 	size_t align = __alignof__(ucontext_t);
@@ -269,6 +271,9 @@ runtime_newosproc(M *mp)
 		runtime_printf("pthread_create failed: %d\n", ret);
 		runtime_throw("pthread_create");
 	}
+
+	if(pthread_attr_destroy(&attr) != 0)
+		runtime_throw("pthread_attr_destroy");
 }
 
 // Switch context to a different goroutine.  This is like longjmp.
@@ -303,6 +308,7 @@ runtime_mcall(FuncVal *fv)
 	// Ensure that all registers are on the stack for the garbage
 	// collector.
 	__builtin_unwind_init();
+	flush_registers_to_secondary_stack();
 
 	gp = g;
 	mp = gp->m;
@@ -317,6 +323,7 @@ runtime_mcall(FuncVal *fv)
 		// We have to point to an address on the stack that is
 		// below the saved registers.
 		gp->gcnextsp = (uintptr)(&afterregs);
+		gp->gcnextsp2 = (uintptr)(secondary_stack_pointer());
 #endif
 		gp->fromgogo = false;
 		getcontext(ucontext_arg(&gp->context[0]));
@@ -364,8 +371,6 @@ runtime_mcall(FuncVal *fv)
 //
 // Design doc at http://golang.org/s/go11sched.
 
-extern bool* runtime_getCgoHasExtraM()
-  __asm__ (GOSYM_PREFIX "runtime.getCgoHasExtraM");
 extern G* allocg(void)
   __asm__ (GOSYM_PREFIX "runtime.allocg");
 
@@ -377,10 +382,12 @@ extern void kickoff(void)
   __asm__(GOSYM_PREFIX "runtime.kickoff");
 extern void minit(void)
   __asm__(GOSYM_PREFIX "runtime.minit");
-extern void mstart1(void)
+extern void mstart1(int32)
   __asm__(GOSYM_PREFIX "runtime.mstart1");
 extern void stopm(void)
   __asm__(GOSYM_PREFIX "runtime.stopm");
+extern void mexit(bool)
+  __asm__(GOSYM_PREFIX "runtime.mexit");
 extern void handoffp(P*)
   __asm__(GOSYM_PREFIX "runtime.handoffp");
 extern void wakep(void)
@@ -495,6 +502,8 @@ runtime_mstart(void *arg)
 	// is the top of the stack, not the bottom.
 	gp->gcstacksize = 0;
 	gp->gcnextsp = (uintptr)(&arg);
+	gp->gcinitialsp2 = secondary_stack_pointer();
+	gp->gcnextsp2 = (uintptr)(gp->gcinitialsp2);
 #endif
 
 	// Save the currently active context.  This will return
@@ -519,6 +528,11 @@ runtime_mstart(void *arg)
 		*(int*)0x21 = 0x21;
 	}
 
+	if(mp->exiting) {
+		mexit(true);
+		return nil;
+	}
+
 	// Initial call to getcontext--starting thread.
 
 #ifdef USING_SPLIT_STACK
@@ -528,7 +542,7 @@ runtime_mstart(void *arg)
 	}
 #endif
 
-	mstart1();
+	mstart1(0);
 
 	// mstart1 does not return, but we need a return statement
 	// here to avoid a compiler warning.
@@ -548,7 +562,7 @@ void setGContext(void) __asm__ (GOSYM_PREFIX "runtime.setGContext");
 
 // setGContext sets up a new goroutine context for the current g.
 void
-setGContext()
+setGContext(void)
 {
 	int val;
 	G *gp;
@@ -566,6 +580,8 @@ setGContext()
 	gp->gcstack = 0;
 	gp->gcstacksize = 0;
 	gp->gcnextsp = (uintptr)(&val);
+	gp->gcinitialsp2 = secondary_stack_pointer();
+	gp->gcnextsp2 = (uintptr)(gp->gcinitialsp2);
 #endif
 	getcontext(ucontext_arg(&gp->context[0]));
 
@@ -644,6 +660,7 @@ doentersyscall(uintptr pc, uintptr sp)
 		void *v;
 
 		g->gcnextsp = (uintptr)(&v);
+		g->gcnextsp2 = (uintptr)(secondary_stack_pointer());
 	}
 #endif
 
@@ -684,6 +701,7 @@ doentersyscallblock(uintptr pc, uintptr sp)
 		void *v;
 
 		g->gcnextsp = (uintptr)(&v);
+		g->gcnextsp2 = (uintptr)(secondary_stack_pointer());
 	}
 #endif
 
@@ -746,9 +764,34 @@ runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* re
 		*ret_stacksize = (uintptr)stacksize;
 		newg->gcinitialsp = *ret_stack;
 		newg->gcstacksize = (uintptr)stacksize;
+		newg->gcinitialsp2 = initial_secondary_stack_pointer(*ret_stack);
 #endif
 	}
 	return newg;
+}
+
+void stackfree(G*)
+  __asm__(GOSYM_PREFIX "runtime.stackfree");
+
+// stackfree frees the stack of a g.
+void
+stackfree(G* gp)
+{
+#if USING_SPLIT_STACK
+  __splitstack_releasecontext((void*)(&gp->stackcontext[0]));
+#else
+  // If gcstacksize is 0, the stack is allocated by libc and will be
+  // released when the thread exits. Otherwise, in 64-bit mode it was
+  // allocated using sysAlloc and in 32-bit mode it was allocated
+  // using garbage collected memory.
+  if (gp->gcstacksize != 0) {
+    if (sizeof(void*) == 8) {
+      runtime_sysFree(gp->gcinitialsp, gp->gcstacksize, &getMemstats()->stacks_sys);
+    }
+    gp->gcinitialsp = nil;
+    gp->gcstacksize = 0;
+  }
+#endif
 }
 
 void resetNewG(G*, void **, uintptr*)
@@ -773,6 +816,7 @@ resetNewG(G *newg, void **sp, uintptr *spsize)
   if(*spsize == 0)
     runtime_throw("bad spsize in resetNewG");
   newg->gcnextsp = (uintptr)(*sp);
+  newg->gcnextsp2 = (uintptr)(newg->gcinitialsp2);
 #endif
 }
 

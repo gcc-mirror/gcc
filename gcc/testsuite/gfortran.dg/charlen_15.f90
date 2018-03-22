@@ -8,5 +8,5 @@ module m
 end
 program foo
   use m
-  if (trim(x%c(1)) /= 'ab') call abort
+  if (trim(x%c(1)) /= 'ab') STOP 1
 end program foo

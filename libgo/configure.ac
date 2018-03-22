@@ -11,7 +11,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=12:0:0
+libtool_VERSION=13:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -207,42 +207,43 @@ AC_SUBST(USE_DEJAGNU)
 # All known GOARCH values.  This is the union of all architectures
 # supported by the gofrontend and all architectures supported by the
 # gc toolchain.
-# N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le s390 s390x sparc sparc64"
+# To add a new architecture:
+# - add it to this list
+# - if appropriate, add an entry to ALLGOARCHFAMILY below
+# - add an entry to the case on ${host} below to set GOARCH
+# - update goarchList in libgo/go/go/build/syslist.go
+# - update goarch.sh to report the values for this architecture
+# - update go-set-goarch in gcc/testsuite/go.test/go-test.exp
+# - update ptrSizeMap and intSizeMap in libgo/go/cmd/cgo/main.go
+# - update arch lists in libgo/match.sh
+# - update arch lists in libgo/testsuite/gotest
+# - update +build lines in several places
+#   - libgo/go/runtime/lfstack_NNbit.go
+#   - libgo/go/runtime/hashNN.go
+#   - libgo/go/runtime/unalignedN.go
+#   - libgo/go/syscall/endian_XX.go
+#   - possibly others
+# - possibly update files in libgo/go/internal/syscall/unix
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le riscv64 s390 s390x sh shbe sparc sparc64"
 
-# All known GOARCH_FAMILY values.
-ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SPARC SPARC64"
+# All known GOARCH family values.
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 RISCV64 S390 S390X SH SPARC SPARC64"
 
 GOARCH=unknown
-GOARCH_FAMILY=unknown
-GOARCH_BIGENDIAN=0
-GOARCH_CACHELINESIZE=64
-GOARCH_PHYSPAGESIZE=4096
-GOARCH_PCQUANTUM=1
-GOARCH_INT64ALIGN=8
-GOARCH_HUGEPAGESIZE=0
-GOARCH_MINFRAMESIZE=0
 case ${host} in
   alpha*-*-*)
     GOARCH=alpha
-    GOARCH_FAMILY=ALPHA
-    GOARCH_PHYSPAGESIZE=8192
-    GOARCH_PCQUANTUM=4
     ;;
   aarch64-*-*)
     GOARCH=arm64
-    GOARCH_FAMILY=ARM64
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PHYSPAGESIZE=65536
-    GOARCH_PCQUANTUM=4
-    GOARCH_MINFRAMESIZE=8
     ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     GOARCH=arm
-    GOARCH_FAMILY=ARM
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PCQUANTUM=4
-    GOARCH_MINFRAMESIZE=4
+    case ${host} in
+      arm*b*-*-*)
+	GOARCH=armbe
+	;;
+    esac
     ;;
 changequote(,)dnl
   i[34567]86-*-* | x86_64-*-*)
@@ -251,29 +252,14 @@ changequote([,])dnl
 #ifdef __x86_64__
 #error 64-bit
 #endif],
-[GOARCH=386
-GOARCH_FAMILY=I386
-GOARCH_INT64ALIGN=4
-GOARCH_HUGEPAGESIZE="1 << 21"
-],
-[GOARCH=amd64
-GOARCH_FAMILY=AMD64
-GOARCH_HUGEPAGESIZE="1 << 21"
-])
+[GOARCH=386],
+[GOARCH=amd64])
     ;;
   ia64-*-*)
     GOARCH=ia64
-    GOARCH_FAMILY=IA64
-    GOARCH_CACHELINESIZE=16384
-    GOARCH_PHYSPAGESIZE=65536
     ;;
   m68k*-*-*)
     GOARCH=m68k
-    GOARCH_FAMILY=M68K
-    GOARCH_BIGENDIAN=1
-    GOARCH_CACHELINESIZE=16
-    GOARCH_PCQUANTUM=4
-    GOARCH_INT64ALIGN=2
     ;;
   mips*-*-*)
     AC_COMPILE_IFELSE([
@@ -298,93 +284,53 @@ GOARCH_HUGEPAGESIZE="1 << 21"
     "n32") GOARCH=mips64p32 ;;
     "n64") GOARCH=mips64 ;;
     esac
-    case "$mips_abi" in
-    "o32" | "n32")
-        GOARCH_FAMILY=MIPS
-	GOARCH_MINFRAMESIZE=4
-        ;;
-    "n64")
-        GOARCH_FAMILY=MIPS64
-	GOARCH_MINFRAMESIZE=8
-        ;;
-    esac
     case "${host}" in
     mips*el-*-*)
         GOARCH="${GOARCH}le"
         ;;
-    *)
-	GOARCH_BIGENDIAN=1
-        ;;
     esac
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PHYSPAGESIZE=16384
-    GOARCH_PCQUANTUM=4
     ;;
   rs6000*-*-* | powerpc*-*-*)
     AC_COMPILE_IFELSE([
 #ifdef _ARCH_PPC64
 #error 64-bit
 #endif],
-[GOARCH=ppc
-GOARCH_FAMILY=PPC
-GOARCH_BIGENDIAN=1
-],
+[GOARCH=ppc],
     [
-GOARCH_FAMILY=PPC64
 AC_COMPILE_IFELSE([
 #if defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
 #error 64be
 #endif],
-[GOARCH=ppc64le
-],
-[GOARCH=ppc64
-GOARCH_BIGENDIAN=1
-])])
-    GOARCH_PHYSPAGESIZE=65536
-    GOARCH_PCQUANTUM=4
-    GOARCH_MINFRAMESIZE=32
+[GOARCH=ppc64le],
+[GOARCH=ppc64])])
+    ;;
+  riscv64-*-*)
+    GOARCH=riscv64
     ;;
   s390*-*-*)
     AC_COMPILE_IFELSE([
 #if defined(__s390x__)
 #error 64-bit
 #endif],
-[GOARCH=s390
-GOARCH_FAMILY=S390
-GOARCH_MINFRAMESIZE=4
-], [GOARCH=s390x
-GOARCH_FAMILY=S390X
-GOARCH_MINFRAMESIZE=8
-])
-    GOARCH_BIGENDIAN=1
-    GOARCH_CACHELINESIZE=256
-    GOARCH_PCQUANTUM=2
+[GOARCH=s390],
+[GOARCH=s390x])
+    ;;
+  sh3eb*-*-* | sh4eb*-*-*)
+    GOARCH=shbe
+    ;;
+  sh3*-*-* | sh4*-*-*)
+    GOARCH=sh
     ;;
   sparc*-*-*)
     AC_COMPILE_IFELSE([
 #if defined(__sparcv9) || defined(__arch64__)
 #error 64-bit
 #endif],
-[GOARCH=sparc
-GOARCH_FAMILY=SPARC
-],
-[GOARCH=sparc64
-GOARCH_FAMILY=SPARC64
-])
-    GOARCH_BIGENDIAN=1
-    GOARCH_PHYSPAGESIZE=8192
-    GOARCH_PCQUANTUM=4
+[GOARCH=sparc],
+[GOARCH=sparc64])
     ;;
 esac
 AC_SUBST(GOARCH)
-AC_SUBST(GOARCH_FAMILY)
-AC_SUBST(GOARCH_BIGENDIAN)
-AC_SUBST(GOARCH_CACHELINESIZE)
-AC_SUBST(GOARCH_PHYSPAGESIZE)
-AC_SUBST(GOARCH_PCQUANTUM)
-AC_SUBST(GOARCH_INT64ALIGN)
-AC_SUBST(GOARCH_HUGEPAGESIZE)
-AC_SUBST(GOARCH_MINFRAMESIZE)
 AC_SUBST(ALLGOARCH)
 AC_SUBST(ALLGOARCHFAMILY)
 
@@ -550,14 +496,15 @@ dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],
 [libgo_cv_lib_pthread],
 [CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -pthread"
+CFLAGS="$CFLAGS -pthread -L../libatomic/.libs"
 AC_COMPILE_IFELSE([[int i;]],
 [libgo_cv_lib_pthread=yes],
 [libgo_cv_lib_pthread=no])
 CFLAGS=$CFLAGS_hold])
 PTHREAD_CFLAGS=
 if test "$libgo_cv_lib_pthread" = yes; then
-  PTHREAD_CFLAGS=-pthread
+  # RISC-V apparently adds -latomic when using -pthread.
+  PTHREAD_CFLAGS="-pthread -L../libatomic/.libs"
 fi
 AC_SUBST(PTHREAD_CFLAGS)
 
@@ -706,8 +653,7 @@ fi
 AC_SUBST(STRINGOPS_FLAG)
 
 dnl For x86 we want to compile the math library with -mfancy-math-387
-dnl -funsafe-math-optimizations so that we can use the builtin
-dnl instructions directly.
+dnl so that we can use the builtin instructions directly.
 AC_CACHE_CHECK([whether compiler supports -mfancy-math-387],
 [libgo_cv_c_fancymath],
 [CFLAGS_hold=$CFLAGS
@@ -718,10 +664,9 @@ AC_COMPILE_IFELSE([int i;],
 CFLAGS=$CFLAGS_hold])
 MATH_FLAG=
 if test "$libgo_cv_c_fancymath" = yes; then
-  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations"
-else
-  MATH_FLAG="-ffp-contract=off"
+  MATH_FLAG="-mfancy-math-387"
 fi
+MATH_FLAG="${MATH_FLAG} -ffp-contract=off -fno-math-errno -fno-trapping-math"
 AC_SUBST(MATH_FLAG)
 
 CFLAGS_hold=$CFLAGS
@@ -752,7 +697,7 @@ STRUCT_EPOLL_EVENT_FD_OFFSET=${libgo_cv_c_epoll_event_fd_offset}
 AC_SUBST(STRUCT_EPOLL_EVENT_FD_OFFSET)
 
 dnl Check if <sys/stat.h> uses timespec_t for st_?tim members.  Introduced
-dnl in Solaris 12 for XPG7 compatibility.
+dnl in Solaris 11.4 for XPG7 compatibility.
 AC_EGREP_HEADER([timespec_t.*st_atim], [sys/stat.h],
 		[have_stat_timespec=yes], [have_stat_timespec=no])
 AM_CONDITIONAL(HAVE_STAT_TIMESPEC, test $have_stat_timespec = yes)

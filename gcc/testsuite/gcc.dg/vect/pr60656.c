@@ -43,4 +43,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_widen_mult_si_to_di_pattern } } } */
+/* P * P * P requires a widening multiplication first as well as a longxlong->long after that.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_widen_mult_si_to_di_pattern && vect_long_mult } } } } */

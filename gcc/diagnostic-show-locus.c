@@ -1,5 +1,5 @@
 /* Diagnostic subroutines for printing source-code
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "gcc-rich-location.h"
 #include "selftest.h"
+#include "selftest-diagnostic.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -114,7 +115,7 @@ class layout_point
   : m_line (exploc.line),
     m_column (exploc.column) {}
 
-  int m_line;
+  linenum_type m_line;
   int m_column;
 };
 
@@ -128,8 +129,8 @@ class layout_range
 		bool show_caret_p,
 		const expanded_location *caret_exploc);
 
-  bool contains_point (int row, int column) const;
-  bool intersects_line_p (int row) const;
+  bool contains_point (linenum_type row, int column) const;
+  bool intersects_line_p (linenum_type row) const;
 
   layout_point m_start;
   layout_point m_finish;
@@ -171,15 +172,51 @@ struct line_span
   {
     const line_span *ls1 = (const line_span *)p1;
     const line_span *ls2 = (const line_span *)p2;
-    int first_line_diff = (int)ls1->m_first_line - (int)ls2->m_first_line;
-    if (first_line_diff)
-      return first_line_diff;
-    return (int)ls1->m_last_line - (int)ls2->m_last_line;
+    int first_line_cmp = compare (ls1->m_first_line, ls2->m_first_line);
+    if (first_line_cmp)
+      return first_line_cmp;
+    return compare (ls1->m_last_line, ls2->m_last_line);
   }
 
   linenum_type m_first_line;
   linenum_type m_last_line;
 };
+
+#if CHECKING_P
+
+/* Selftests for line_span.  */
+
+static void
+test_line_span ()
+{
+  line_span line_one (1, 1);
+  ASSERT_EQ (1, line_one.get_first_line ());
+  ASSERT_EQ (1, line_one.get_last_line ());
+  ASSERT_FALSE (line_one.contains_line_p (0));
+  ASSERT_TRUE (line_one.contains_line_p (1));
+  ASSERT_FALSE (line_one.contains_line_p (2));
+
+  line_span lines_1_to_3 (1, 3);
+  ASSERT_EQ (1, lines_1_to_3.get_first_line ());
+  ASSERT_EQ (3, lines_1_to_3.get_last_line ());
+  ASSERT_TRUE (lines_1_to_3.contains_line_p (1));
+  ASSERT_TRUE (lines_1_to_3.contains_line_p (3));
+
+  ASSERT_EQ (0, line_span::comparator (&line_one, &line_one));
+  ASSERT_GT (line_span::comparator (&lines_1_to_3, &line_one), 0);
+  ASSERT_LT (line_span::comparator (&line_one, &lines_1_to_3), 0);
+
+  /* A linenum > 2^31.  */
+  const linenum_type LARGEST_LINE = 0xffffffff;
+  line_span largest_line (LARGEST_LINE, LARGEST_LINE);
+  ASSERT_EQ (LARGEST_LINE, largest_line.get_first_line ());
+  ASSERT_EQ (LARGEST_LINE, largest_line.get_last_line ());
+
+  ASSERT_GT (line_span::comparator (&largest_line, &line_one), 0);
+  ASSERT_LT (line_span::comparator (&line_one, &largest_line), 0);
+}
+
+#endif /* #if CHECKING_P */
 
 /* A class to control the overall layout when printing a diagnostic.
 
@@ -206,18 +243,18 @@ class layout
 
   expanded_location get_expanded_location (const line_span *) const;
 
-  void print_line (int row);
+  void print_line (linenum_type row);
 
  private:
-  bool will_show_line_p (int row) const;
-  void print_leading_fixits (int row);
-  void print_source_line (int row, const char *line, int line_width,
+  bool will_show_line_p (linenum_type row) const;
+  void print_leading_fixits (linenum_type row);
+  void print_source_line (linenum_type row, const char *line, int line_width,
 			  line_bounds *lbounds_out);
-  bool should_print_annotation_line_p (int row) const;
-  void print_annotation_line (int row, const line_bounds lbounds);
-  void print_trailing_fixits (int row);
+  bool should_print_annotation_line_p (linenum_type row) const;
+  void print_annotation_line (linenum_type row, const line_bounds lbounds);
+  void print_trailing_fixits (linenum_type row);
 
-  bool annotation_line_showed_range_p (int line, int start_column,
+  bool annotation_line_showed_range_p (linenum_type line, int start_column,
 				       int finish_column) const;
   void show_ruler (int max_column) const;
 
@@ -229,13 +266,13 @@ class layout
 
   bool
   get_state_at_point (/* Inputs.  */
-		      int row, int column,
+		      linenum_type row, int column,
 		      int first_non_ws, int last_non_ws,
 		      /* Outputs.  */
 		      point_state *out_state);
 
   int
-  get_x_bound_for_row (int row, int caret_column,
+  get_x_bound_for_row (linenum_type row, int caret_column,
 		       int last_non_ws);
 
   void
@@ -416,7 +453,7 @@ layout_range::layout_range (const expanded_location *start_exploc,
    - 'a' indicates a subsequent point *after* the range.  */
 
 bool
-layout_range::contains_point (int row, int column) const
+layout_range::contains_point (linenum_type row, int column) const
 {
   gcc_assert (m_start.m_line <= m_finish.m_line);
   /* ...but the equivalent isn't true for the columns;
@@ -477,7 +514,7 @@ layout_range::contains_point (int row, int column) const
 /* Does this layout_range contain any part of line ROW?  */
 
 bool
-layout_range::intersects_line_p (int row) const
+layout_range::intersects_line_p (linenum_type row) const
 {
   gcc_assert (m_start.m_line <= m_finish.m_line);
   if (row < m_start.m_line)
@@ -638,7 +675,7 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   while (result > 0)
     {
       char ch = line[result - 1];
-      if (ch == ' ' || ch == '\t')
+      if (ch == ' ' || ch == '\t' || ch == '\r')
 	result--;
       else
 	break;
@@ -647,7 +684,8 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   gcc_assert (result <= line_width);
   gcc_assert (result == 0 ||
 	      (line[result - 1] != ' '
-	       && line[result -1] != '\t'));
+	       && line[result -1] != '\t'
+	       && line[result -1] != '\r'));
   return result;
 }
 
@@ -672,9 +710,11 @@ test_get_line_width_without_trailing_whitespace ()
   assert_eq ("", 0);
   assert_eq (" ", 0);
   assert_eq ("\t", 0);
+  assert_eq ("\r", 0);
   assert_eq ("hello world", 11);
   assert_eq ("hello world     ", 11);
   assert_eq ("hello world     \t\t  ", 11);
+  assert_eq ("hello world\r", 11);
 }
 
 #endif /* #if CHECKING_P */
@@ -936,7 +976,7 @@ layout::maybe_add_location_range (const location_range *loc_range,
 /* Return true iff ROW is within one of the line spans for this layout.  */
 
 bool
-layout::will_show_line_p (int row) const
+layout::will_show_line_p (linenum_type row) const
 {
   for (int line_span_idx = 0; line_span_idx < get_num_line_spans ();
        line_span_idx++)
@@ -1134,7 +1174,7 @@ layout::calculate_line_spans ()
    is its width.  */
 
 void
-layout::print_source_line (int row, const char *line, int line_width,
+layout::print_source_line (linenum_type row, const char *line, int line_width,
 			   line_bounds *lbounds_out)
 {
   m_colorizer.set_normal_text ();
@@ -1175,8 +1215,8 @@ layout::print_source_line (int row, const char *line, int line_width,
 	  else
 	    m_colorizer.set_normal_text ();
 	}
-      char c = *line == '\t' ? ' ' : *line;
-      if (c == '\0')
+      char c = *line;
+      if (c == '\0' || c == '\t' || c == '\r')
 	c = ' ';
       if (c != ' ')
 	{
@@ -1197,7 +1237,7 @@ layout::print_source_line (int row, const char *line, int line_width,
    i.e. if any of m_layout_ranges contains ROW.  */
 
 bool
-layout::should_print_annotation_line_p (int row) const
+layout::should_print_annotation_line_p (linenum_type row) const
 {
   layout_range *range;
   int i;
@@ -1211,7 +1251,7 @@ layout::should_print_annotation_line_p (int row) const
    source line.  */
 
 void
-layout::print_annotation_line (int row, const line_bounds lbounds)
+layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
 {
   int x_bound = get_x_bound_for_row (row, m_exploc.column,
 				     lbounds.m_last_non_ws);
@@ -1259,7 +1299,7 @@ layout::print_annotation_line (int row, const line_bounds lbounds)
    itself, with a leading '+'.  */
 
 void
-layout::print_leading_fixits (int row)
+layout::print_leading_fixits (linenum_type row)
 {
   for (unsigned int i = 0; i < m_fixit_hints.length (); i++)
     {
@@ -1297,7 +1337,7 @@ layout::print_leading_fixits (int row)
    the exact range from START_COLUMN to FINISH_COLUMN.  */
 
 bool
-layout::annotation_line_showed_range_p (int line, int start_column,
+layout::annotation_line_showed_range_p (linenum_type line, int start_column,
 					int finish_column) const
 {
   layout_range *range;
@@ -1548,7 +1588,7 @@ correction::ensure_terminated ()
 
 struct line_corrections
 {
-  line_corrections (const char *filename, int row)
+  line_corrections (const char *filename, linenum_type row)
   : m_filename (filename), m_row (row)
   {}
   ~line_corrections ();
@@ -1556,7 +1596,7 @@ struct line_corrections
   void add_hint (const fixit_hint *hint);
 
   const char *m_filename;
-  int m_row;
+  linenum_type m_row;
   auto_vec <correction *> m_corrections;
 };
 
@@ -1670,7 +1710,7 @@ line_corrections::add_hint (const fixit_hint *hint)
    in layout::print_leading_fixits.  */
 
 void
-layout::print_trailing_fixits (int row)
+layout::print_trailing_fixits (linenum_type row)
 {
   /* Build a list of correction instances for the line,
      potentially consolidating hints (for the sake of readability).  */
@@ -1690,7 +1730,7 @@ layout::print_trailing_fixits (int row)
   /* Now print the corrections.  */
   unsigned i;
   correction *c;
-  int column = 0;
+  int column = m_x_offset;
 
   FOR_EACH_VEC_ELT (corrections.m_corrections, i, c)
     {
@@ -1757,7 +1797,7 @@ layout::print_newline ()
 
 bool
 layout::get_state_at_point (/* Inputs.  */
-			    int row, int column,
+			    linenum_type row, int column,
 			    int first_non_ws, int last_non_ws,
 			    /* Outputs.  */
 			    point_state *out_state)
@@ -1802,7 +1842,7 @@ layout::get_state_at_point (/* Inputs.  */
    character of source (as determined when printing the source line).  */
 
 int
-layout::get_x_bound_for_row (int row, int caret_column,
+layout::get_x_bound_for_row (linenum_type row, int caret_column,
 			     int last_non_ws_column)
 {
   int result = caret_column + 1;
@@ -1844,7 +1884,7 @@ layout::move_to_column (int *column, int dest_column)
   if (*column > dest_column)
     {
       print_newline ();
-      *column = 0;
+      *column = m_x_offset;
     }
 
   while (*column < dest_column)
@@ -1865,7 +1905,7 @@ layout::show_ruler (int max_column) const
     {
       pp_space (m_pp);
       for (int column = 1 + m_x_offset; column <= max_column; column++)
-	if (0 == column % 10)
+	if (column % 10 == 0)
 	  pp_character (m_pp, '0' + (column / 100) % 10);
 	else
 	  pp_space (m_pp);
@@ -1875,7 +1915,7 @@ layout::show_ruler (int max_column) const
   /* Tens.  */
   pp_space (m_pp);
   for (int column = 1 + m_x_offset; column <= max_column; column++)
-    if (0 == column % 10)
+    if (column % 10 == 0)
       pp_character (m_pp, '0' + (column / 10) % 10);
     else
       pp_space (m_pp);
@@ -1893,7 +1933,7 @@ layout::show_ruler (int max_column) const
    consisting of any caret/underlines, then any fixits.
    If the source line can't be read, print nothing.  */
 void
-layout::print_line (int row)
+layout::print_line (linenum_type row)
 {
   int line_width;
   const char *line = location_get_source_line (m_exploc.file, row,
@@ -1973,8 +2013,9 @@ diagnostic_show_locus (diagnostic_context * context,
 	  expanded_location exploc = layout.get_expanded_location (line_span);
 	  context->start_span (context, exploc);
 	}
-      int last_line = line_span->get_last_line ();
-      for (int row = line_span->get_first_line (); row <= last_line; row++)
+      linenum_type last_line = line_span->get_last_line ();
+      for (linenum_type row = line_span->get_first_line ();
+	   row <= last_line; row++)
 	layout.print_line (row);
     }
 
@@ -1986,34 +2027,6 @@ diagnostic_show_locus (diagnostic_context * context,
 namespace selftest {
 
 /* Selftests for diagnostic_show_locus.  */
-
-/* Convenience subclass of diagnostic_context for testing
-   diagnostic_show_locus.  */
-
-class test_diagnostic_context : public diagnostic_context
-{
- public:
-  test_diagnostic_context ()
-  {
-    diagnostic_initialize (this, 0);
-    show_caret = true;
-    show_column = true;
-    start_span = start_span_cb;
-  }
-  ~test_diagnostic_context ()
-  {
-    diagnostic_finish (this);
-  }
-
-  /* Implementation of diagnostic_start_span_fn, hiding the
-     real filename (to avoid printing the names of tempfiles).  */
-  static void
-  start_span_cb (diagnostic_context *context, expanded_location exploc)
-  {
-    exploc.file = "FILENAME";
-    default_diagnostic_start_span_fn (context, exploc);
-  }
-};
 
 /* Verify that diagnostic_show_locus works sanely on UNKNOWN_LOCATION.  */
 
@@ -3153,6 +3166,8 @@ test_fixit_deletion_affecting_newline (const line_table_case &case_)
 void
 diagnostic_show_locus_c_tests ()
 {
+  test_line_span ();
+
   test_layout_range_for_single_point ();
   test_layout_range_for_single_line ();
   test_layout_range_for_multiple_lines ();

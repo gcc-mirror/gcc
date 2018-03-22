@@ -1,5 +1,5 @@
 /* Read and annotate call graph profile from the auto profile data file.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Dehao Chen (dehao@google.com)
 
 This file is part of GCC.
@@ -477,7 +477,7 @@ string_table::get_index_by_decl (tree decl) const
   ret = get_index (lang_hooks.dwarf_name (decl, 0));
   if (ret != -1)
     return ret;
-  if (DECL_ABSTRACT_ORIGIN (decl))
+  if (DECL_ABSTRACT_ORIGIN (decl) && DECL_ABSTRACT_ORIGIN (decl) != decl)
     return get_index_by_decl (DECL_ABSTRACT_ORIGIN (decl));
 
   return -1;
@@ -852,7 +852,7 @@ autofdo_source_profile::read ()
 {
   if (gcov_read_unsigned () != GCOV_TAG_AFDO_FUNCTION)
     {
-      inform (0, "Not expected TAG.");
+      inform (UNKNOWN_LOCATION, "Not expected TAG.");
       return false;
     }
 
@@ -1061,7 +1061,7 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   /* FIXME: Count should be initialized.  */
   struct cgraph_edge *new_edge
       = indirect_edge->make_speculative (direct_call,
-					 profile_count::uninitialized (), 0);
+					 profile_count::uninitialized ());
   new_edge->redirect_call_stmt_to_callee ();
   gimple_remove_histogram_value (cfun, stmt, hist);
   inline_call (new_edge, true, NULL, NULL, false);
@@ -1234,7 +1234,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
       if (!is_edge_annotated (e, *annotated_edge))
 	num_unknown_edge++, unknown_edge = e;
       else
-	total_known_count += e->count;
+	total_known_count += e->count ();
 
     if (num_unknown_edge == 0)
       {
@@ -1251,7 +1251,8 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
       }
     else if (num_unknown_edge == 1 && is_bb_annotated (bb, *annotated_bb))
       {
-        unknown_edge->count = bb->count - total_known_count;
+        unknown_edge->probability
+	  = total_known_count.probability_in (bb->count);
         set_edge_annotated (unknown_edge, annotated_edge);
         changed = true;
       }
@@ -1349,15 +1350,13 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
           if (!e->probability.initialized_p ()
 	      && !is_edge_annotated (ep, *annotated_edge))
             {
-              ep->probability = profile_probability::never ();
-              ep->count = profile_count::zero ().afdo ();
+              ep->probability = profile_probability::never ().afdo ();
               set_edge_annotated (ep, annotated_edge);
             }
         }
       if (total == 1 && !is_edge_annotated (only_one, *annotated_edge))
         {
           only_one->probability = e->probability;
-          only_one->count = e->count;
           set_edge_annotated (only_one, annotated_edge);
         }
     }
@@ -1433,23 +1432,16 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
       if (!is_edge_annotated (e, *annotated_edge))
         num_unknown_succ++;
       else
-        total_count += e->count;
+        total_count += e->count ();
     }
     if (num_unknown_succ == 0 && total_count > profile_count::zero ())
       {
         FOR_EACH_EDGE (e, ei, bb->succs)
-        e->probability = e->count.probability_in (total_count);
+          e->probability = e->count ().probability_in (total_count);
       }
   }
   FOR_ALL_BB_FN (bb, cfun)
-  {
-    edge e;
-    edge_iterator ei;
-
-    FOR_EACH_EDGE (e, ei, bb->succs)
-      e->count = bb->count.apply_probability (e->probability);
     bb->aux = NULL;
-  }
 
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
@@ -1551,7 +1543,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
        counters are zero when not seen by autoFDO.  */
     bb->count = profile_count::zero ().afdo ();
     FOR_EACH_EDGE (e, ei, bb->succs)
-      e->count = profile_count::zero ().afdo ();
+      e->probability = profile_probability::uninitialized ();
 
     if (afdo_set_bb_count (bb, promoted_stmts))
       set_bb_annotated (bb, &annotated_bb);
@@ -1579,7 +1571,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
   if (max_count > profile_count::zero ())
     {
       afdo_calculate_branch_prob (&annotated_bb, &annotated_edge);
-      counts_to_freqs ();
+      update_max_bb_count ();
       profile_status_for_fn (cfun) = PROFILE_READ;
     }
   if (flag_value_profile_transformations)

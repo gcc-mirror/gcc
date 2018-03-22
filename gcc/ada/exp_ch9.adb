@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -339,6 +339,14 @@ package body Exp_Ch9 is
    --  access to subprogram itself, we need to create a new signature with the
    --  same parameter names and the same resolved types, but with new entities
    --  for the formals.
+
+   function Create_Secondary_Stack_For_Task (T : Node_Id) return Boolean;
+   --  Return whether a secondary stack for the task T should be created by the
+   --  expander. The secondary stack for a task will be created by the expander
+   --  if the size of the stack has been specified by the Secondary_Stack_Size
+   --  representation aspect and either the No_Implicit_Heap_Allocations or
+   --  No_Implicit_Task_Allocations restrictions are in effect and the
+   --  No_Secondary_Stack restriction is not.
 
    procedure Debug_Private_Data_Declarations (Decls : List_Id);
    --  Decls is a list which may contain the declarations created by Install_
@@ -3841,6 +3849,12 @@ package body Exp_Ch9 is
          Set_Original_Protected_Subprogram (New_Id, Def_Id);
       end if;
 
+      --  Link the protected or unprotected version to the original subprogram
+      --  it emulates.
+
+      Set_Ekind (New_Id, Ekind (Def_Id));
+      Set_Protected_Subprogram (New_Id, Def_Id);
+
       --  The unprotected operation carries the user code, and debugging
       --  information must be generated for it, even though this spec does
       --  not come from source. It is also convenient to allow gdb to step
@@ -4751,11 +4765,39 @@ package body Exp_Ch9 is
    --------------------------------
 
    procedure Build_Task_Activation_Call (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
+      function Activation_Call_Loc return Source_Ptr;
+      --  Find a suitable source location for the activation call
+
+      -------------------------
+      -- Activation_Call_Loc --
+      -------------------------
+
+      function Activation_Call_Loc return Source_Ptr is
+      begin
+         --  The activation call must carry the location of the "end" keyword
+         --  when the context is a package declaration.
+
+         if Nkind (N) = N_Package_Declaration then
+            return End_Keyword_Location (N);
+
+         --  Otherwise the activation call must carry the location of the
+         --  "begin" keyword.
+
+         else
+            return Begin_Keyword_Location (N);
+         end if;
+      end Activation_Call_Loc;
+
+      --  Local variables
+
       Chain : Entity_Id;
       Call  : Node_Id;
+      Loc   : Source_Ptr;
       Name  : Node_Id;
-      P     : Node_Id;
+      Owner : Node_Id;
+      Stmt  : Node_Id;
+
+   --  Start of processing for Build_Task_Activation_Call
 
    begin
       --  For sequential elaboration policy, all the tasks will be activated at
@@ -4763,103 +4805,109 @@ package body Exp_Ch9 is
 
       if Partition_Elaboration_Policy = 'S' then
          return;
+
+      --  Do not create an activation call for a package spec if the package
+      --  has a completing body. The activation call will be inserted after
+      --  the "begin" of the body.
+
+      elsif Nkind (N) = N_Package_Declaration
+        and then Present (Corresponding_Body (N))
+      then
+         return;
       end if;
 
-      --  Get the activation chain entity. Except in the case of a package
-      --  body, this is in the node that was passed. For a package body, we
-      --  have to find the corresponding package declaration node.
+      --  Obtain the activation chain entity. Block statements, entry bodies,
+      --  subprogram bodies, and task bodies keep the entity in their nodes.
+      --  Package bodies on the other hand store it in the declaration of the
+      --  corresponding package spec.
 
-      if Nkind (N) = N_Package_Body then
-         P := Corresponding_Spec (N);
-         loop
-            P := Parent (P);
-            exit when Nkind (P) = N_Package_Declaration;
-         end loop;
+      Owner := N;
 
-         Chain := Activation_Chain_Entity (P);
+      if Nkind (Owner) = N_Package_Body then
+         Owner := Unit_Declaration_Node (Corresponding_Spec (Owner));
+      end if;
+
+      Chain := Activation_Chain_Entity (Owner);
+
+      --  Nothing to do when there are no tasks to activate. This is indicated
+      --  by a missing activation chain entity.
+
+      if No (Chain) then
+         return;
+      end if;
+
+      --  The location of the activation call must be as close as possible to
+      --  the intended semantic location of the activation because the ABE
+      --  mechanism relies heavily on accurate locations.
+
+      Loc := Activation_Call_Loc;
+
+      if Restricted_Profile then
+         Name := New_Occurrence_Of (RTE (RE_Activate_Restricted_Tasks), Loc);
+      else
+         Name := New_Occurrence_Of (RTE (RE_Activate_Tasks), Loc);
+      end if;
+
+      Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name                   => Name,
+          Parameter_Associations =>
+            New_List (Make_Attribute_Reference (Loc,
+              Prefix         => New_Occurrence_Of (Chain, Loc),
+              Attribute_Name => Name_Unchecked_Access)));
+
+      if Nkind (N) = N_Package_Declaration then
+         if Present (Private_Declarations (Specification (N))) then
+            Append (Call, Private_Declarations (Specification (N)));
+         else
+            Append (Call, Visible_Declarations (Specification (N)));
+         end if;
 
       else
-         Chain := Activation_Chain_Entity (N);
+         --  The call goes at the start of the statement sequence after the
+         --  start of exception range label if one is present.
+
+         if Present (Handled_Statement_Sequence (N)) then
+            Stmt := First (Statements (Handled_Statement_Sequence (N)));
+
+            --  A special case, skip exception range label if one is present
+            --  (from front end zcx processing).
+
+            if Nkind (Stmt) = N_Label and then Exception_Junk (Stmt) then
+               Next (Stmt);
+            end if;
+
+            --  Another special case, if the first statement is a block from
+            --  optimization of a local raise to a goto, then the call goes
+            --  inside this block.
+
+            if Nkind (Stmt) = N_Block_Statement
+              and then Exception_Junk (Stmt)
+            then
+               Stmt := First (Statements (Handled_Statement_Sequence (Stmt)));
+            end if;
+
+            --  Insertion point is after any exception label pushes, since we
+            --  want it covered by any local handlers.
+
+            while Nkind (Stmt) in N_Push_xxx_Label loop
+               Next (Stmt);
+            end loop;
+
+            --  Now we have the proper insertion point
+
+            Insert_Before (Stmt, Call);
+
+         else
+            Set_Handled_Statement_Sequence (N,
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => New_List (Call)));
+         end if;
       end if;
 
-      if Present (Chain) then
-         if Restricted_Profile then
-            Name := New_Occurrence_Of
-                      (RTE (RE_Activate_Restricted_Tasks), Loc);
-         else
-            Name := New_Occurrence_Of
-                      (RTE (RE_Activate_Tasks), Loc);
-         end if;
+      Analyze (Call);
 
-         Call :=
-           Make_Procedure_Call_Statement (Loc,
-             Name                   => Name,
-             Parameter_Associations =>
-               New_List (Make_Attribute_Reference (Loc,
-                 Prefix         => New_Occurrence_Of (Chain, Loc),
-                 Attribute_Name => Name_Unchecked_Access)));
-
-         if Nkind (N) = N_Package_Declaration then
-            if Present (Corresponding_Body (N)) then
-               null;
-
-            elsif Present (Private_Declarations (Specification (N))) then
-               Append (Call, Private_Declarations (Specification (N)));
-
-            else
-               Append (Call, Visible_Declarations (Specification (N)));
-            end if;
-
-         else
-            if Present (Handled_Statement_Sequence (N)) then
-
-               --  The call goes at the start of the statement sequence after
-               --  the start of exception range label if one is present.
-
-               declare
-                  Stm : Node_Id;
-
-               begin
-                  Stm := First (Statements (Handled_Statement_Sequence (N)));
-
-                  --  A special case, skip exception range label if one is
-                  --  present (from front end zcx processing).
-
-                  if Nkind (Stm) = N_Label and then Exception_Junk (Stm) then
-                     Next (Stm);
-                  end if;
-
-                  --  Another special case, if the first statement is a block
-                  --  from optimization of a local raise to a goto, then the
-                  --  call goes inside this block.
-
-                  if Nkind (Stm) = N_Block_Statement
-                    and then Exception_Junk (Stm)
-                  then
-                     Stm :=
-                       First (Statements (Handled_Statement_Sequence (Stm)));
-                  end if;
-
-                  --  Insertion point is after any exception label pushes,
-                  --  since we want it covered by any local handlers.
-
-                  while Nkind (Stm) in N_Push_xxx_Label loop
-                     Next (Stm);
-                  end loop;
-
-                  --  Now we have the proper insertion point
-
-                  Insert_Before (Stm, Call);
-               end;
-
-            else
-               Set_Handled_Statement_Sequence (N,
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => New_List (Call)));
-            end if;
-         end if;
-
-         Analyze (Call);
+      if Legacy_Elaboration_Checks then
          Check_Task_Activation (N);
       end if;
    end Build_Task_Activation_Call;
@@ -5378,6 +5426,20 @@ package body Exp_Ch9 is
              (Corresponding_Record_Type (Typ), New_Copy_Tree (N));
       end if;
    end Convert_Concurrent;
+
+   -------------------------------------
+   -- Create_Secondary_Stack_For_Task --
+   -------------------------------------
+
+   function Create_Secondary_Stack_For_Task (T : Node_Id) return Boolean is
+   begin
+      return
+        (Restriction_Active (No_Implicit_Heap_Allocations)
+          or else Restriction_Active (No_Implicit_Task_Allocations))
+        and then not Restriction_Active (No_Secondary_Stack)
+        and then Has_Rep_Pragma
+                   (T, Name_Secondary_Stack_Size, Check_Parents => False);
+   end Create_Secondary_Stack_For_Task;
 
    -------------------------------------
    -- Debug_Private_Data_Declarations --
@@ -6000,11 +6062,22 @@ package body Exp_Ch9 is
 
       begin
          --  Check if the name is a component of the protected object. If
-         --  the expander is active, the component has been transformed into
-         --  a renaming of _object.all.component.
+         --  the expander is active, the component has been transformed into a
+         --  renaming of _object.all.component. Original_Node is needed in case
+         --  validity checking is enabled, in which case the simple object
+         --  reference will have been rewritten.
 
          if Expander_Active then
-            Renamed := Renamed_Object (Entity (N));
+
+            --  The expanded name may have been constant folded in which case
+            --  the original node is not necessarily an entity name (e.g. an
+            --  indexed component).
+
+            if not Is_Entity_Name (Original_Node (N)) then
+               return False;
+            end if;
+
+            Renamed := Renamed_Object (Entity (Original_Node (N)));
 
             return
               Present (Renamed)
@@ -6121,8 +6194,7 @@ package body Exp_Ch9 is
 
       Cond_Id    : Entity_Id;
       Entry_Body : Node_Id;
-      Func_Body  : Node_Id;
-      pragma Warnings (Off, Func_Body);
+      Func_Body  : Node_Id := Empty;
 
    --  Start of processing for Expand_Entry_Barrier
 
@@ -10517,6 +10589,11 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Eloc,
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
 
+            --  Link the acceptor to the original receiving entry
+
+            Set_Ekind           (PB_Ent, E_Procedure);
+            Set_Receiving_Entry (PB_Ent, Eent);
+
             if Comes_From_Source (Alt) then
                Set_Debug_Info_Needed (PB_Ent);
             end if;
@@ -11661,6 +11738,7 @@ package body Exp_Ch9 is
       Body_Decl  : Node_Id;
       Cdecls     : List_Id;
       Decl_Stack : Node_Id;
+      Decl_SS    : Node_Id;
       Elab_Decl  : Node_Id;
       Ent_Stack  : Entity_Id;
       Proc_Spec  : Node_Id;
@@ -11855,7 +11933,7 @@ package body Exp_Ch9 is
                   Set_Analyzed (Task_Size);
 
                else
-                  Task_Size := Relocate_Node (Expr_N);
+                  Task_Size := New_Copy_Tree (Expr_N);
                end if;
             end;
 
@@ -11886,6 +11964,63 @@ package body Exp_Ch9 is
          --  The appropriate alignment for the stack is ensured by the run-time
          --  code in charge of task creation.
 
+      end if;
+
+      --  Declare a static secondary stack if the conditions for a statically
+      --  generated stack are met.
+
+      if Create_Secondary_Stack_For_Task (TaskId) then
+         declare
+            Size_Expr : constant Node_Id :=
+                          Expression (First (
+                            Pragma_Argument_Associations (
+                              Get_Rep_Pragma (TaskId,
+                                Name_Secondary_Stack_Size))));
+
+            Stack_Size : Node_Id;
+
+         begin
+            --  The secondary stack is defined inside the corresponding
+            --  record. Therefore if the size of the stack is set by means
+            --  of a discriminant, we must reference the discriminant of the
+            --  corresponding record type.
+
+            if Nkind (Size_Expr) in N_Has_Entity
+              and then Present (Discriminal_Link (Entity (Size_Expr)))
+            then
+               Stack_Size :=
+                 New_Occurrence_Of
+                   (CR_Discriminant (Discriminal_Link (Entity (Size_Expr))),
+                    Loc);
+               Set_Parent   (Stack_Size, Parent (Size_Expr));
+               Set_Etype    (Stack_Size, Etype (Size_Expr));
+               Set_Analyzed (Stack_Size);
+
+            else
+               Stack_Size := New_Copy_Tree (Size_Expr);
+            end if;
+
+            --  Create the secondary stack for the task
+
+            Decl_SS :=
+              Make_Component_Declaration (Loc,
+                Defining_Identifier  =>
+                  Make_Defining_Identifier (Loc, Name_uSecondary_Stack),
+                Component_Definition =>
+                  Make_Component_Definition (Loc,
+                    Aliased_Present     => True,
+                    Subtype_Indication  =>
+                      Make_Subtype_Indication (Loc,
+                        Subtype_Mark =>
+                          New_Occurrence_Of (RTE (RE_SS_Stack), Loc),
+                        Constraint   =>
+                          Make_Index_Or_Discriminant_Constraint (Loc,
+                            Constraints  => New_List (
+                              Convert_To (RTE (RE_Size_Type),
+                                Stack_Size))))));
+
+            Append_To (Cdecls, Decl_SS);
+         end;
       end if;
 
       --  Add components for entry families
@@ -11923,16 +12058,16 @@ package body Exp_Ch9 is
 
              Expression =>
                Convert_To (RTE (RE_Size_Type),
-                 Relocate_Node (
+                 New_Copy_Tree (
                    Expression (First (
                      Pragma_Argument_Associations (
                        Get_Rep_Pragma (TaskId, Name_Storage_Size))))))));
       end if;
 
       --  Add the _Secondary_Stack_Size component if a Secondary_Stack_Size
-      --  rep item is present.
+      --  pragma is present.
 
-      if Has_Rep_Item
+      if Has_Rep_Pragma
            (TaskId, Name_Secondary_Stack_Size, Check_Parents => False)
       then
          Append_To (Cdecls,
@@ -12006,7 +12141,7 @@ package body Exp_Ch9 is
 
              Expression =>
                Convert_To (RTE (RE_Time_Span),
-                 Relocate_Node (
+                 New_Copy_Tree (
                    Expression (First (
                      Pragma_Argument_Associations (
                        Get_Relative_Deadline_Pragma (Taskdef))))))));
@@ -12231,7 +12366,7 @@ package body Exp_Ch9 is
       Call           : Node_Id;
       Call_Ent       : Entity_Id;
       Conc_Typ_Stmts : List_Id;
-      Concval        : Node_Id;
+      Concval        : Node_Id := Empty; -- init to avoid warning
       D_Alt          : constant Node_Id := Delay_Alternative (N);
       D_Conv         : Node_Id;
       D_Disc         : Node_Id;
@@ -12784,11 +12919,14 @@ package body Exp_Ch9 is
       end if;
 
       --  If the type of the dispatching object is an access type then return
-      --  an explicit dereference.
+      --  an explicit dereference  of a copy of the object, and note that this
+      --  is the controlling actual of the call.
 
       if Is_Access_Type (Etype (Object)) then
-         Object := Make_Explicit_Dereference (Sloc (N), Object);
+         Object :=
+           Make_Explicit_Dereference (Sloc (N), New_Copy_Tree (Object));
          Analyze (Object);
+         Set_Is_Controlling_Actual (Object);
       end if;
    end Extract_Dispatching_Call;
 
@@ -13317,6 +13455,12 @@ package body Exp_Ch9 is
                        Prefix        => New_Occurrence_Of (Obj_Ent, Loc),
                        Selector_Name => Make_Identifier (Loc, Chars (D))));
                Add (Decl);
+
+               --  Set debug info needed on this renaming declaration even
+               --  though it does not come from source, so that the debugger
+               --  will get the right information for these generated names.
+
+               Set_Debug_Info_Needed (Discriminal (D));
 
                Next_Discriminant (D);
             end loop;
@@ -14085,16 +14229,38 @@ package body Exp_Ch9 is
            New_Occurrence_Of (Storage_Size_Variable (Ttyp), Loc));
       end if;
 
-      --  Secondary_Stack_Size parameter. Set Default_Secondary_Stack_Size
-      --  unless there is a Secondary_Stack_Size rep item, in which case we
-      --  take the value from the rep item. If the restriction
-      --  No_Secondary_Stack is active then a size of 0 is passed regardless
-      --  to prevent the allocation of the unused stack.
+      --  Secondary_Stack parameter used for restricted profiles
+
+      if Restricted_Profile then
+
+         --  If the secondary stack has been allocated by the expander then
+         --  pass its access pointer. Otherwise, pass null.
+
+         if Create_Secondary_Stack_For_Task (Ttyp) then
+            Append_To (Args,
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => Make_Identifier (Loc, Name_uInit),
+                    Selector_Name =>
+                      Make_Identifier (Loc, Name_uSecondary_Stack)),
+                Attribute_Name => Name_Unrestricted_Access));
+
+         else
+            Append_To (Args, Make_Null (Loc));
+         end if;
+      end if;
+
+      --  Secondary_Stack_Size parameter. Set RE_Unspecified_Size unless there
+      --  is a Secondary_Stack_Size pragma, in which case take the value from
+      --  the pragma. If the restriction No_Secondary_Stack is active then a
+      --  size of 0 is passed regardless to prevent the allocation of the
+      --  unused stack.
 
       if Restriction_Active (No_Secondary_Stack) then
          Append_To (Args, Make_Integer_Literal (Loc, 0));
 
-      elsif Has_Rep_Item
+      elsif Has_Rep_Pragma
               (Ttyp, Name_Secondary_Stack_Size, Check_Parents => False)
       then
          Append_To (Args,
@@ -14414,6 +14580,12 @@ package body Exp_Ch9 is
                 Object_Definition   =>
                   New_Occurrence_Of (Etype (Formal), Loc)));
 
+            --  The object is initialized with an explicit assignment
+            --  later. Indicate that it does not need an initialization
+            --  to prevent spurious warnings if the type excludes null.
+
+            Set_No_Initialization (Last (Decls));
+
             if Ekind (Formal) /= E_Out_Parameter then
 
                --  Generate:
@@ -14430,15 +14602,22 @@ package body Exp_Ch9 is
                    Expression => New_Copy_Tree (Actual)));
             end if;
 
-            --  Generate:
+            --  If the actual is not controlling, generate:
+
             --    Jnn'unchecked_access
 
-            Append_To (Params,
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Unchecked_Access,
-                Prefix         => New_Occurrence_Of (Temp_Nam, Loc)));
+            --  and add it to aggegate for access to formals. Note that the
+            --  actual may be by-copy but still be a controlling actual if it
+            --  is an access to class-wide interface.
 
-            Has_Param := True;
+            if not Is_Controlling_Actual (Actual) then
+               Append_To (Params,
+                 Make_Attribute_Reference (Loc,
+                   Attribute_Name => Name_Unchecked_Access,
+                   Prefix         => New_Occurrence_Of (Temp_Nam, Loc)));
+
+               Has_Param := True;
+            end if;
 
          --  The controlling parameter is omitted
 

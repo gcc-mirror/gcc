@@ -15,15 +15,15 @@ integer, parameter :: dp = kind(1.0d0)
 real(sp) :: rsp
 real(dp) :: rdp
 
-if (abs(gamma(1.0_sp)  - 1.0_sp) > tiny(1.0_sp)) call abort()
-if (abs(gamma(1.0_dp)  - 1.0_dp) > tiny(1.0_dp)) call abort()
-if (abs(dgamma(1.0_dp) - 1.0_dp) > tiny(1.0_dp)) call abort()
+if (abs(gamma(1.0_sp)  - 1.0_sp) > tiny(1.0_sp)) STOP 1
+if (abs(gamma(1.0_dp)  - 1.0_dp) > tiny(1.0_dp)) STOP 2
+if (abs(dgamma(1.0_dp) - 1.0_dp) > tiny(1.0_dp)) STOP 3
 
-if (abs(lgamma(1.0_sp)) > tiny(1.0_sp)) call abort()
-if (abs(lgamma(1.0_dp)) > tiny(1.0_dp)) call abort()
-if (abs(log_gamma(1.0_sp)) > tiny(1.0_sp)) call abort()
-if (abs(log_gamma(1.0_dp)) > tiny(1.0_dp)) call abort()
-if (abs(algama(1.0_sp)) > tiny(1.0_sp)) call abort()
-if (abs(dlgama(1.0_dp)) > tiny(1.0_dp)) call abort()
+if (abs(lgamma(1.0_sp)) > tiny(1.0_sp)) STOP 4
+if (abs(lgamma(1.0_dp)) > tiny(1.0_dp)) STOP 5
+if (abs(log_gamma(1.0_sp)) > tiny(1.0_sp)) STOP 6
+if (abs(log_gamma(1.0_dp)) > tiny(1.0_dp)) STOP 7
+if (abs(algama(1.0_sp)) > tiny(1.0_sp)) STOP 8
+if (abs(dlgama(1.0_dp)) > tiny(1.0_dp)) STOP 9
 end program gamma_test
 

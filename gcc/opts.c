@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -37,7 +37,7 @@ static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 /* Indexed by enum debug_info_type.  */
 const char *const debug_type_names[] =
 {
-  "none", "stabs", "coff", "dwarf-2", "xcoff", "vms"
+  "none", "stabs", "dwarf-2", "xcoff", "vms"
 };
 
 /* Parse the -femit-struct-debug-detailed option value
@@ -476,6 +476,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_pta, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fssa_phiopt, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
 
     /* -O2 optimizations.  */
     { OPT_LEVELS_2_PLUS, OPT_finline_small_functions, NULL, 1 },
@@ -526,6 +527,7 @@ static const struct default_options default_options_table[] =
     /* -O3 optimizations.  */
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_floop_interchange, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
     /* Inlining of functions reducing size is a good idea with -Os
@@ -534,6 +536,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_finline_functions_called_once, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_floop_unroll_and_jam, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_slp_vectorize, NULL, 1 },
@@ -697,19 +700,27 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   enum unwind_info_type ui_except;
 
   if (opts->x_dump_base_name
-      && ! IS_ABSOLUTE_PATH (opts->x_dump_base_name)
       && ! opts->x_dump_base_name_prefixed)
     {
-      /* First try to make OPTS->X_DUMP_BASE_NAME relative to the
-	 OPTS->X_DUMP_DIR_NAME directory.  Then try to make
-	 OPTS->X_DUMP_BASE_NAME relative to the OPTS->X_AUX_BASE_NAME
-	 directory, typically the directory to contain the object
-	 file.  */
-      if (opts->x_dump_dir_name)
+      const char *sep = opts->x_dump_base_name;
+
+      for (; *sep; sep++)
+	if (IS_DIR_SEPARATOR (*sep))
+	  break;
+
+      if (*sep)
+	/* If dump_base_path contains subdirectories, don't prepend
+	   anything.  */;
+      else if (opts->x_dump_dir_name)
+	/* We have a DUMP_DIR_NAME, prepend that.  */
 	opts->x_dump_base_name = opts_concat (opts->x_dump_dir_name,
 					      opts->x_dump_base_name, NULL);
       else if (opts->x_aux_base_name
 	       && strcmp (opts->x_aux_base_name, HOST_BIT_BUCKET) != 0)
+	/* AUX_BASE_NAME is set and is not the bit bucket.  If it
+	   contains a directory component, prepend those directories.
+	   Typically this places things in the same directory as the
+	   object file.  */
 	{
 	  const char *aux_base;
 
@@ -728,7 +739,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	      opts->x_dump_base_name = new_dump_base_name;
 	    }
 	}
-	opts->x_dump_base_name_prefixed = true;
+
+      /* It is definitely prefixed now.  */
+      opts->x_dump_base_name_prefixed = true;
     }
 
   /* Handle related options for unit-at-a-time, toplevel-reorder, and
@@ -952,6 +965,19 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_dwarf_split_debug_info)
     opts->x_debug_generate_pub_sections = 2;
 
+  if ((opts->x_flag_sanitize
+       & (SANITIZE_USER_ADDRESS | SANITIZE_KERNEL_ADDRESS)) == 0)
+    {
+      if (opts->x_flag_sanitize & SANITIZE_POINTER_COMPARE)
+	error_at (loc,
+		  "%<-fsanitize=pointer-compare%> must be combined with "
+		  "%<-fsanitize=address%> or %<-fsanitize=kernel-address%>");
+      if (opts->x_flag_sanitize & SANITIZE_POINTER_SUBTRACT)
+	error_at (loc,
+		  "%<-fsanitize=pointer-subtract%> must be combined with "
+		  "%<-fsanitize=address%> or %<-fsanitize=kernel-address%>");
+    }
+
   /* Userspace and kernel ASan conflict with each other.  */
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
@@ -1013,6 +1039,26 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if ((opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS) && opts->x_flag_tm)
     sorry ("transactional memory is not supported with "
 	   "%<-fsanitize=kernel-address%>");
+
+  /* Comes from final.c -- no real reason to change it.  */
+#define MAX_CODE_ALIGN 16
+#define MAX_CODE_ALIGN_VALUE (1 << MAX_CODE_ALIGN)
+
+  if (opts->x_align_loops > MAX_CODE_ALIGN_VALUE)
+    error_at (loc, "-falign-loops=%d is not between 0 and %d",
+	      opts->x_align_loops, MAX_CODE_ALIGN_VALUE);
+
+  if (opts->x_align_jumps > MAX_CODE_ALIGN_VALUE)
+    error_at (loc, "-falign-jumps=%d is not between 0 and %d",
+	      opts->x_align_jumps, MAX_CODE_ALIGN_VALUE);
+
+  if (opts->x_align_functions > MAX_CODE_ALIGN_VALUE)
+    error_at (loc, "-falign-functions=%d is not between 0 and %d",
+	      opts->x_align_functions, MAX_CODE_ALIGN_VALUE);
+
+  if (opts->x_align_labels > MAX_CODE_ALIGN_VALUE)
+    error_at (loc, "-falign-labels=%d is not between 0 and %d",
+	      opts->x_align_labels, MAX_CODE_ALIGN_VALUE);
 }
 
 #define LEFT_COLUMN	27
@@ -1496,6 +1542,8 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (address, (SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS), true),
   SANITIZER_OPT (kernel-address, (SANITIZE_ADDRESS | SANITIZE_KERNEL_ADDRESS),
 		 true),
+  SANITIZER_OPT (pointer-compare, SANITIZE_POINTER_COMPARE, true),
+  SANITIZER_OPT (pointer-subtract, SANITIZE_POINTER_SUBTRACT, true),
   SANITIZER_OPT (thread, SANITIZE_THREAD, false),
   SANITIZER_OPT (leak, SANITIZE_LEAK, false),
   SANITIZER_OPT (shift, SANITIZE_SHIFT, true),
@@ -1521,6 +1569,7 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE, true),
   SANITIZER_OPT (vptr, SANITIZE_VPTR, true),
   SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true),
+  SANITIZER_OPT (builtin, SANITIZE_BUILTIN, true),
   SANITIZER_OPT (all, ~0U, true),
 #undef SANITIZER_OPT
   { NULL, 0U, 0UL, false }
@@ -1700,11 +1749,10 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 }
 
 /* Parse string values of no_sanitize attribute passed in VALUE.
-   Values are separated with comma.  Wrong argument is stored to
-   WRONG_ARGUMENT variable.  */
+   Values are separated with comma.  */
 
 unsigned int
-parse_no_sanitize_attribute (char *value, char **wrong_argument)
+parse_no_sanitize_attribute (char *value)
 {
   unsigned int flags = 0;
   unsigned int i;
@@ -1722,7 +1770,8 @@ parse_no_sanitize_attribute (char *value, char **wrong_argument)
 	  }
 
       if (sanitizer_opts[i].name == NULL)
-	*wrong_argument = q;
+	warning (OPT_Wattributes,
+		 "%<%s%> attribute directive ignored", q);
 
       q = strtok (NULL, ",");
     }
@@ -2074,6 +2123,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdebug_prefix_map_:
+    case OPT_ffile_prefix_map_:
       /* Deferred.  */
       break;
 
@@ -2350,10 +2400,6 @@ common_handle_option (struct gcc_options *opts,
                        loc);
       break;
 
-    case OPT_gcoff:
-      set_debug_level (SDB_DEBUG, false, arg, opts, opts_set, loc);
-      break;
-
     case OPT_gdwarf:
       if (arg && strlen (arg) != 0)
         {
@@ -2438,6 +2484,13 @@ common_handle_option (struct gcc_options *opts,
     case OPT_ftrapv:
       if (value)
 	opts->x_flag_wrapv = 0;
+      break;
+
+    case OPT_fstrict_overflow:
+      opts->x_flag_wrapv = !value;
+      opts->x_flag_wrapv_pointer = !value;
+      if (!value)
+	opts->x_flag_trapv = 0;
       break;
 
     case OPT_fipa_icf:

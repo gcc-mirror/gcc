@@ -1,5 +1,5 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -88,7 +88,7 @@ static void mark_set_regs (rtx, const_rtx, void *);
 static void mark_referenced_regs (rtx *, refmarker_fn *mark, void *mark_arg);
 static refmarker_fn mark_reg_as_referenced;
 static refmarker_fn replace_reg_with_saved_mem;
-static int insert_save (struct insn_chain *, int, int, HARD_REG_SET *,
+static int insert_save (struct insn_chain *, int, HARD_REG_SET *,
 			machine_mode *);
 static int insert_restore (struct insn_chain *, int, int, int,
 			   machine_mode *);
@@ -607,9 +607,9 @@ setup_save_areas (void)
 		    break;
 		}
 	      if (k < 0
-		  && (GET_MODE_SIZE (regno_save_mode[regno][1])
-		      <= GET_MODE_SIZE (regno_save_mode
-					[saved_reg2->hard_regno][1])))
+		  && known_le (GET_MODE_SIZE (regno_save_mode[regno][1]),
+			       GET_MODE_SIZE (regno_save_mode
+					      [saved_reg2->hard_regno][1])))
 		{
 		  saved_reg->slot
 		    = adjust_address_nv
@@ -631,8 +631,8 @@ setup_save_areas (void)
 		  slot = prev_save_slots[j];
 		  if (slot == NULL_RTX)
 		    continue;
-		  if (GET_MODE_SIZE (regno_save_mode[regno][1])
-		      <= GET_MODE_SIZE (GET_MODE (slot))
+		  if (known_le (GET_MODE_SIZE (regno_save_mode[regno][1]),
+				GET_MODE_SIZE (GET_MODE (slot)))
 		      && best_slot_num < 0)
 		    best_slot_num = j;
 		  if (GET_MODE (slot) == regno_save_mode[regno][1])
@@ -861,7 +861,8 @@ save_call_clobbered_regs (void)
 
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (TEST_HARD_REG_BIT (hard_regs_to_save, regno))
-		  regno += insert_save (chain, 1, regno, &hard_regs_to_save, save_mode);
+		  regno += insert_save (chain, regno,
+					&hard_regs_to_save, save_mode);
 
 	      /* Must recompute n_regs_saved.  */
 	      n_regs_saved = 0;
@@ -1034,10 +1035,7 @@ mark_referenced_regs (rtx *loc, refmarker_fn *mark, void *arg)
 	      /* If we're setting only part of a multi-word register,
 		 we shall mark it as referenced, because the words
 		 that are not being set should be restored.  */
-	      && ((GET_MODE_SIZE (GET_MODE (*loc))
-		   >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (*loc))))
-		  || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (*loc)))
-		      <= UNITS_PER_WORD))))
+	      && !read_modify_subreg_p (*loc)))
 	return;
     }
   if (code == MEM || code == SUBREG)
@@ -1132,17 +1130,7 @@ replace_reg_with_saved_mem (rtx *loc,
 	{
 	  /* This is gen_lowpart_if_possible(), but without validating
 	     the newly-formed address.  */
-	  int offset = 0;
-
-	  if (WORDS_BIG_ENDIAN)
-	    offset = (MAX (GET_MODE_SIZE (GET_MODE (mem)), UNITS_PER_WORD)
-		      - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
-	  if (BYTES_BIG_ENDIAN)
-	    /* Adjust the address so that the address-after-the-data is
-	       unchanged.  */
-	    offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
-		       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (mem))));
-
+	  poly_int64 offset = byte_lowpart_offset (mode, GET_MODE (mem));
 	  mem = adjust_address_nv (mem, mode, offset);
 	}
     }
@@ -1160,7 +1148,8 @@ replace_reg_with_saved_mem (rtx *loc,
 	    machine_mode smode = save_mode[regno];
 	    gcc_assert (smode != VOIDmode);
 	    if (hard_regno_nregs (regno, smode) > 1)
-	      smode = mode_for_size (GET_MODE_SIZE (mode) / nregs,
+	      smode = mode_for_size (exact_div (GET_MODE_BITSIZE (mode),
+						nregs),
 				     GET_MODE_CLASS (mode), 0).require ();
 	    XVECEXP (mem, 0, i) = gen_rtx_REG (smode, regno + i);
 	  }
@@ -1264,8 +1253,8 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
 /* Like insert_restore above, but save registers instead.  */
 
 static int
-insert_save (struct insn_chain *chain, int before_p, int regno,
-	     HARD_REG_SET (*to_save), machine_mode *save_mode)
+insert_save (struct insn_chain *chain, int regno,
+	     HARD_REG_SET *to_save, machine_mode *save_mode)
 {
   int i;
   unsigned int k;
@@ -1326,7 +1315,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
 
   pat = gen_rtx_SET (mem, gen_rtx_REG (GET_MODE (mem), regno));
   code = reg_save_code (regno, GET_MODE (mem));
-  new_chain = insert_one_insn (chain, before_p, code, pat);
+  new_chain = insert_one_insn (chain, 1, code, pat);
 
   /* Set hard_regs_saved and dead_or_set for all the registers we saved.  */
   for (k = 0; k < numregs; k++)

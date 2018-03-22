@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -39,12 +39,14 @@ typedef struct gtm_jmpbuf
   unsigned long long r13;
   unsigned long long r14;
   unsigned long long r15;
+  unsigned long long ssp;
   unsigned long long rip;
 #else
   unsigned long ebx;
   unsigned long esi;
   unsigned long edi;
   unsigned long ebp;
+  unsigned long ssp;
   unsigned long eip;
 #endif
 } gtm_jmpbuf;

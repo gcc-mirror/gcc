@@ -27,4 +27,5 @@ int f(void)
 {
   basic_ostream<char, char_traits<char> > os;
   copy(ostream_iterator<const int>(os, ","));
+  return 0;
 }

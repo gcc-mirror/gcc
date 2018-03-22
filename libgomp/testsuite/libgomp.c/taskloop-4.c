@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fopenmp" } */
+/* { dg-options "-O2" } */
 
 int u[64], v;
 

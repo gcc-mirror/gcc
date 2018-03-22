@@ -1569,7 +1569,7 @@ depend on a file that no longer exists. Such tools include
 If you are using project file, a separate mechanism is provided using
 project attributes.
 
-.. --Comment:
+.. --Comment
    See :ref:`Specifying_Configuration_Pragmas` for more details.
 
 
@@ -4356,7 +4356,7 @@ how to import these C++ declarations from the Ada side:
 
        type Dog is new Animal and Carnivore and Domestic with record
          Tooth_Count : Natural;
-         Owner       : String (1 .. 30);
+         Owner       : Chars_Ptr;
        end record;
        pragma Import (C_Plus_Plus, Dog);
 

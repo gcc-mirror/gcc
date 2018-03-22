@@ -1,5 +1,5 @@
 /* Data and functions related to line maps and input files.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1117,7 +1117,7 @@ dump_location_info (FILE *stream)
 	  expanded_location exploc
 	    = linemap_expand_location (line_table, map, loc);
 
-	  if (0 == exploc.column)
+	  if (exploc.column == 0)
 	    {
 	      /* Beginning of a new source line: draw the line.  */
 
@@ -1594,6 +1594,21 @@ get_num_source_ranges_for_substring (cpp_reader *pfile,
 }
 
 /* Selftests of location handling.  */
+
+/* Verify that compare() on linenum_type handles comparisons over the full
+   range of the type.  */
+
+static void
+test_linenum_comparisons ()
+{
+  linenum_type min_line (0);
+  linenum_type max_line (0xffffffff);
+  ASSERT_EQ (0, compare (min_line, min_line));
+  ASSERT_EQ (0, compare (max_line, max_line));
+
+  ASSERT_GT (compare (max_line, min_line), 0);
+  ASSERT_LT (compare (min_line, max_line), 0);
+}
 
 /* Helper function for verifying location data: when location_t
    values are > LINE_MAP_MAX_LOCATION_WITH_COLS, they are treated
@@ -3528,6 +3543,7 @@ for_each_line_table_case (void (*testcase) (const line_table_case &))
 void
 input_c_tests ()
 {
+  test_linenum_comparisons ();
   test_should_have_column_data_p ();
   test_unknown_location ();
   test_builtins ();

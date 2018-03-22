@@ -1,3 +1,39 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* configure: Regenerate.
+
+2017-11-16  Sergio Durigan Junior  <sergiodj@redhat.com>
+	    Pedro Alves  <palves@redhat.com>
+
+	* Makefile.am: Remove references to c-compiler-name.h and
+	cp-compiler-name.h
+	* Makefile.in: Regenerate.
+	* compiler-name.hh: New file.
+	* libcc1.cc: Don't include c-compiler-name.h.  Include
+	compiler-name.hh.
+	* libcp1.cc: Don't include cp-compiler-name.h.  Include
+	compiler-name.hh.
+
+2017-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use
+	DECL_OVERLOADED_OPERATOR_CODE_RAW.
+
+2017-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use ovl_op_identifier.
+	Directly set operator code.
+	(plugin_build_dependent_expr): Use ovl_op_identifier.
+
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (supplement_binding): Don't use
+	maybe_remove_implicit_alias.
+
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	Remove TYPE_METHODS.

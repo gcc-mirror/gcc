@@ -9,7 +9,7 @@ package runtime
 
 import (
 	"runtime/internal/sys"
-	_ "unsafe" // for go:linkname
+	"unsafe"
 )
 
 func printcreatedby(gp *g) {
@@ -46,13 +46,14 @@ type location struct {
 	lineno   int
 }
 
+//go:noescape
 //extern runtime_callers
 func c_callers(skip int32, locbuf *location, max int32, keepThunks bool) int32
 
 // callers returns a stack trace of the current goroutine.
 // The gc version of callers takes []uintptr, but we take []location.
 func callers(skip int, locbuf []location) int {
-	n := c_callers(int32(skip), &locbuf[0], int32(len(locbuf)), false)
+	n := c_callers(int32(skip)+1, &locbuf[0], int32(len(locbuf)), false)
 	return int(n)
 }
 
@@ -156,7 +157,7 @@ func goroutineheader(gp *g) {
 	if waitfor >= 1 {
 		print(", ", waitfor, " minutes")
 	}
-	if gp.lockedm != nil {
+	if gp.lockedm != 0 {
 		print(", locked to thread")
 	}
 	print("]:\n")
@@ -185,7 +186,7 @@ func tracebackothers(me *g) {
 	if gp != nil && gp != me {
 		print("\n")
 		goroutineheader(gp)
-		gp.traceback = &tb
+		gp.traceback = (*tracebackg)(noescape(unsafe.Pointer(&tb)))
 		getTraceback(me, gp)
 		printtrace(tb.locbuf[:tb.c], nil)
 		printcreatedby(gp)
@@ -216,10 +217,10 @@ func tracebackothers(me *g) {
 			print("\tgoroutine running on other thread; stack unavailable\n")
 			printcreatedby(gp)
 		} else if readgstatus(gp)&^_Gscan == _Gsyscall {
-			print("\tin C code; stack unavailable\n")
+			print("\tgoroutine in C code; stack unavailable\n")
 			printcreatedby(gp)
 		} else {
-			gp.traceback = &tb
+			gp.traceback = (*tracebackg)(noescape(unsafe.Pointer(&tb)))
 			getTraceback(me, gp)
 			printtrace(tb.locbuf[:tb.c], nil)
 			printcreatedby(gp)

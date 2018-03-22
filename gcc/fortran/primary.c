@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -862,7 +862,7 @@ match_substring (gfc_charlen *cl, int init, gfc_ref **result, bool deferred)
 
       ref->type = REF_SUBSTRING;
       if (start == NULL)
-	start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+	start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
       ref->u.ss.start = start;
       if (end == NULL && cl)
 	end = gfc_copy_expr (cl->length);
@@ -1006,7 +1006,8 @@ static match
 match_string_constant (gfc_expr **result)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1], peek;
-  int i, kind, length, save_warn_ampersand, ret;
+  size_t length;
+  int kind,save_warn_ampersand, ret;
   locus old_locus, start_locus;
   gfc_symbol *sym;
   gfc_expr *e;
@@ -1125,7 +1126,7 @@ got_delim:
   warn_ampersand = false;
 
   p = e->value.character.string;
-  for (i = 0; i < length; i++)
+  for (size_t i = 0; i < length; i++)
     {
       c = next_string_char (delimiter, &ret);
 
@@ -1247,8 +1248,22 @@ match_sym_complex_part (gfc_expr **result)
 
   if (sym->attr.flavor != FL_PARAMETER)
     {
-      gfc_error ("Expected PARAMETER symbol in complex constant at %C");
-      return MATCH_ERROR;
+      /* Give the matcher for implied do-loops a chance to run.  This yields
+	 a much saner error message for "write(*,*) (i, i=1, 6" where the 
+	 right parenthesis is missing.  */
+      char c;
+      gfc_gobble_whitespace ();
+      c = gfc_peek_ascii_char ();
+      if (c == '=' || c == ',')
+	{
+	  m = MATCH_NO;
+	}
+      else
+	{
+	  gfc_error ("Expected PARAMETER symbol in complex constant at %C");
+	  m = MATCH_ERROR;
+	}
+      return m;
     }
 
   if (!sym->value)
@@ -1937,6 +1952,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   gfc_ref *substring, *tail, *tmp;
   gfc_component *component;
   gfc_symbol *sym = primary->symtree->n.sym;
+  gfc_expr *tgt_expr = NULL;
   match m;
   bool unknown;
   char sep;
@@ -1965,6 +1981,9 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	}
     }
 
+  if (sym->assoc && sym->assoc->target)
+    tgt_expr = sym->assoc->target;
+
   /* For associate names, we may not yet know whether they are arrays or not.
      If the selector expression is unambiguously an array; eg. a full array
      or an array section, then the associate name must be an array and we can
@@ -1976,25 +1995,42 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       && sym->ts.type != BT_CLASS
       && !sym->attr.dimension)
     {
-      if ((!sym->assoc->dangling
-	   && sym->assoc->target
-	   && sym->assoc->target->ref
-	   && sym->assoc->target->ref->type == REF_ARRAY
-	   && (sym->assoc->target->ref->u.ar.type == AR_FULL
-	       || sym->assoc->target->ref->u.ar.type == AR_SECTION))
-	  ||
-	   (!(sym->assoc->dangling || sym->ts.type == BT_CHARACTER)
-	    && sym->assoc->st
-	   && sym->assoc->st->n.sym
-	    && sym->assoc->st->n.sym->attr.dimension == 0))
+      gfc_ref *ref = NULL;
+
+      if (!sym->assoc->dangling && tgt_expr)
 	{
-    sym->attr.dimension = 1;
-	  if (sym->as == NULL && sym->assoc
+	   if (tgt_expr->expr_type == EXPR_VARIABLE)
+	     gfc_resolve_expr (tgt_expr);
+
+	   ref = tgt_expr->ref;
+	   for (; ref; ref = ref->next)
+	      if (ref->type == REF_ARRAY
+		  && (ref->u.ar.type == AR_FULL
+		      || ref->u.ar.type == AR_SECTION))
+		break;
+	}
+
+      if (ref || (!(sym->assoc->dangling || sym->ts.type == BT_CHARACTER)
+		  && sym->assoc->st
+		  && sym->assoc->st->n.sym
+		  && sym->assoc->st->n.sym->attr.dimension == 0))
+	{
+	  sym->attr.dimension = 1;
+	  if (sym->as == NULL
 	      && sym->assoc->st
 	      && sym->assoc->st->n.sym
 	      && sym->assoc->st->n.sym->as)
 	    sym->as = gfc_copy_array_spec (sym->assoc->st->n.sym->as);
 	}
+    }
+  else if (sym->ts.type == BT_CLASS
+	   && tgt_expr
+	   && tgt_expr->expr_type == EXPR_VARIABLE
+	   && sym->ts.u.derived != tgt_expr->ts.u.derived)
+    {
+      gfc_resolve_expr (tgt_expr);
+      if (tgt_expr->rank)
+	sym->ts.u.derived = tgt_expr->ts.u.derived;
     }
 
   if ((equiv_flag && gfc_peek_ascii_char () == '(')
@@ -2055,10 +2091,31 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
     gfc_set_default_type (sym, 0, sym->ns);
 
+  /* See if there is a usable typespec in the "no IMPLICIT type" error.  */
   if (sym->ts.type == BT_UNKNOWN && m == MATCH_YES)
     {
-      gfc_error ("Symbol %qs at %C has no IMPLICIT type", sym->name);
-      return MATCH_ERROR;
+      bool permissible;
+
+      /* These target expressions can be resolved at any time.  */
+      permissible = tgt_expr && tgt_expr->symtree && tgt_expr->symtree->n.sym
+		    && (tgt_expr->symtree->n.sym->attr.use_assoc
+			|| tgt_expr->symtree->n.sym->attr.host_assoc
+			|| tgt_expr->symtree->n.sym->attr.if_source
+								== IFSRC_DECL);
+      permissible = permissible
+		    || (tgt_expr && tgt_expr->expr_type == EXPR_OP);
+
+      if (permissible)
+	{
+	  gfc_resolve_expr (tgt_expr);
+	  sym->ts = tgt_expr->ts;
+	}
+
+      if (sym->ts.type == BT_UNKNOWN)
+	{
+	  gfc_error ("Symbol %qs at %C has no IMPLICIT type", sym->name);
+	  return MATCH_ERROR;
+	}
     }
   else if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
            && m == MATCH_YES)
@@ -2835,6 +2892,38 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	 correspond to any component of the defined structure.  */
       if (!this_comp)
 	goto cleanup;
+
+      /* For a constant string constructor, make sure the length is
+	 correct; truncate of fill with blanks if needed.  */
+      if (this_comp->ts.type == BT_CHARACTER && !this_comp->attr.allocatable
+	  && this_comp->ts.u.cl && this_comp->ts.u.cl->length
+	  && this_comp->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && actual->expr->expr_type == EXPR_CONSTANT)
+	{
+	  ptrdiff_t c, e;
+	  c = gfc_mpz_get_hwi (this_comp->ts.u.cl->length->value.integer);
+	  e = actual->expr->value.character.length;
+
+	  if (c != e)
+	    {
+	      ptrdiff_t i, to;
+	      gfc_char_t *dest;
+	      dest = gfc_get_wide_string (c + 1);
+
+	      to = e < c ? e : c;
+	      for (i = 0; i < to; i++)
+		dest[i] = actual->expr->value.character.string[i];
+	      
+	      for (i = e; i < c; i++)
+		dest[i] = ' ';
+
+	      dest[c] = '\0';
+	      free (actual->expr->value.character.string);
+
+	      actual->expr->value.character.length = c;
+	      actual->expr->value.character.string = dest;
+	    }
+	}
 
       comp_tail->val = actual->expr;
       if (actual->expr != NULL)

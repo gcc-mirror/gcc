@@ -8,8 +8,8 @@ program test
 
 #define TEST_LOOP(var,from,to,step,total,test,final) \
   count = 0 ; do var = from, to, step ; count = count + 1 ; end do ; \
-  if (count /= total) call abort ; \
-  if (test (from, to, step, final) /= total) call abort
+  if (count /= total) STOP 1; \
+  if (test (from, to, step, final) /= total) STOP 2
 
   ! Integer loops
   TEST_LOOP(i, 0, 0, 1, 1, test_i, 1)
@@ -81,7 +81,7 @@ contains
     do i = from, to, step
       res = res + 1
     end do
-    if (i /= final) call abort
+    if (i /= final) STOP 3
   end function test_i1
 
   function test_i (from, to, step, final) result(res)
@@ -93,7 +93,7 @@ contains
     do i = from, to, step
       res = res + 1
     end do
-    if (i /= final) call abort
+    if (i /= final) STOP 4
   end function test_i
 
   function test_r (from, to, step, final) result(res)

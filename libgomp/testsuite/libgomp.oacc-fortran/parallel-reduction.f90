@@ -15,7 +15,7 @@ program reduction
   s2 = s2 + 1
   !$acc end parallel
 
-  if (acc_get_device_type () .eq. acc_device_nvidia) then
+  if (acc_get_device_type () .ne. acc_device_host) then
      if (s1 .ne. n) call abort
      if (s2 .ne. n) call abort
   else
@@ -29,7 +29,7 @@ program reduction
   s2 = 0
   call redsub (s1, s2, n)
 
-  if (acc_get_device_type () .eq. acc_device_nvidia) then
+  if (acc_get_device_type () .ne. acc_device_host) then
      if (s1 .ne. n) call abort
   else
      if (s2 .ne. 1) call abort

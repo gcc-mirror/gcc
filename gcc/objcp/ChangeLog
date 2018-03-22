@@ -1,3 +1,7 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2017-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	* config-lang.in: Source cp/config-lang.in, sort objc++ gtfiles list.
@@ -530,7 +534,7 @@
 	* objcp-lang.c: Likewise.
 
 
-Copyright (C) 2005-2017 Free Software Foundation, Inc.
+Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

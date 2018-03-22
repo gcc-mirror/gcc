@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -63,7 +65,7 @@
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
 
 /* Return true if STR starts with PREFIX and false, otherwise.  */
-#define STR_PREFIX_P(STR,PREFIX) (0 == strncmp (STR, PREFIX, strlen (PREFIX)))
+#define STR_PREFIX_P(STR,PREFIX) (strncmp (STR, PREFIX, strlen (PREFIX)) == 0)
 
 /* The 4 bits starting at SECTION_MACH_DEP are reserved to store the
    address space where data is to be located.
@@ -267,7 +269,7 @@ avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
       rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
       unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
 
-      if (0 == (pop_mask & (1 << popcount_hwi (val8))))
+      if ((pop_mask & (1 << popcount_hwi (val8))) == 0)
         return false;
     }
 
@@ -459,8 +461,8 @@ avr_is_casesi_sequence (basic_block bb, rtx_insn *insn, rtx_insn *insns[6])
 
   // Assert on the anatomy of xinsn's operands we are going to work with.
 
-  gcc_assert (11 == recog_data.n_operands);
-  gcc_assert (4 == recog_data.n_dups);
+  gcc_assert (recog_data.n_operands == 11);
+  gcc_assert (recog_data.n_dups == 4);
 
   if (dump_file)
     {
@@ -507,7 +509,7 @@ avr_casei_sequence_check_operands (rtx *xop)
 
   if (sub_5
       && SUBREG_P (sub_5)
-      && 0 == SUBREG_BYTE (sub_5)
+      && SUBREG_BYTE (sub_5) == 0
       && rtx_equal_p (xop[5], SUBREG_REG (sub_5)))
     return true;
 
@@ -695,7 +697,7 @@ avr_set_core_architecture (void)
 
   for (const avr_mcu_t *mcu = avr_mcu_types; ; mcu++)
     {
-      if (NULL == mcu->name)
+      if (mcu->name == NULL)
         {
           /* Reached the end of `avr_mcu_types'.  This should actually never
              happen as options are provided by device-specs.  It could be a
@@ -707,9 +709,9 @@ avr_set_core_architecture (void)
           avr_inform_core_architectures ();
           break;
         }
-      else if (0 == strcmp (mcu->name, avr_mmcu)
+      else if (strcmp (mcu->name, avr_mmcu) == 0
                // Is this a proper architecture ?
-               && NULL == mcu->macro)
+	       && mcu->macro == NULL)
         {
           avr_arch = &avr_arch_types[mcu->arch_id];
           if (avr_n_flash < 0)
@@ -728,14 +730,6 @@ avr_set_core_architecture (void)
 static void
 avr_option_override (void)
 {
-  /* Disable -fdelete-null-pointer-checks option for AVR target.
-     This option compiler assumes that dereferencing of a null pointer
-     would halt the program.  For AVR this assumption is not true and
-     programs can safely dereference null pointers.  Changes made by this
-     option may not work properly for AVR.  So disable this option. */
-
-  flag_delete_null_pointer_checks = 0;
-
   /* caller-save.c looks for call-clobbered hard registers that are assigned
      to pseudos that cross calls and tries so save-restore them around calls
      in order to reduce the number of stack slots needed.
@@ -1028,9 +1022,6 @@ avr_no_gccisr_function_p (tree func)
 static void
 avr_set_current_function (tree decl)
 {
-  location_t loc;
-  const char *isr;
-
   if (decl == NULL_TREE
       || current_function_decl == NULL_TREE
       || current_function_decl == error_mark_node
@@ -1038,7 +1029,7 @@ avr_set_current_function (tree decl)
       || cfun->machine->attributes_checked_p)
     return;
 
-  loc = DECL_SOURCE_LOCATION (decl);
+  location_t loc = DECL_SOURCE_LOCATION (decl);
 
   cfun->machine->is_naked = avr_naked_function_p (decl);
   cfun->machine->is_signal = avr_signal_function_p (decl);
@@ -1047,21 +1038,19 @@ avr_set_current_function (tree decl)
   cfun->machine->is_OS_main = avr_OS_main_function_p (decl);
   cfun->machine->is_no_gccisr = avr_no_gccisr_function_p (decl);
 
-  isr = cfun->machine->is_interrupt ? "interrupt" : "signal";
+  const char *isr = cfun->machine->is_interrupt ? "interrupt" : "signal";
 
   /* Too much attributes make no sense as they request conflicting features. */
 
-  if (cfun->machine->is_OS_task + cfun->machine->is_OS_main
-      + (cfun->machine->is_signal || cfun->machine->is_interrupt) > 1)
-    error_at (loc, "function attributes %qs, %qs and %qs are mutually"
-              " exclusive", "OS_task", "OS_main", isr);
+  if (cfun->machine->is_OS_task
+      && (cfun->machine->is_signal || cfun->machine->is_interrupt))
+    error_at (loc, "function attributes %qs and %qs are mutually exclusive",
+              "OS_task", isr);
 
-  /* 'naked' will hide effects of 'OS_task' and 'OS_main'.  */
-
-  if (cfun->machine->is_naked
-      && (cfun->machine->is_OS_task || cfun->machine->is_OS_main))
-    warning_at (loc, OPT_Wattributes, "function attributes %qs and %qs have"
-                " no effect on %qs function", "OS_task", "OS_main", "naked");
+  if (cfun->machine->is_OS_main
+      && (cfun->machine->is_signal || cfun->machine->is_interrupt))
+    error_at (loc, "function attributes %qs and %qs are mutually exclusive",
+              "OS_main", isr);
 
   if (cfun->machine->is_interrupt || cfun->machine->is_signal)
     {
@@ -1107,9 +1096,9 @@ avr_set_current_function (tree decl)
   // Common problem is using "ISR" without first including avr/interrupt.h.
   const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
   name = default_strip_name_encoding (name);
-  if (0 == strcmp ("ISR", name)
-      || 0 == strcmp ("INTERRUPT", name)
-      || 0 == strcmp ("SIGNAL", name))
+  if (strcmp ("ISR", name) == 0
+      || strcmp ("INTERRUPT", name) == 0
+      || strcmp ("SIGNAL", name) == 0)
     {
       warning_at (loc, OPT_Wmisspelled_isr, "%qs is a reserved identifier"
                   " in AVR-LibC.  Consider %<#include <avr/interrupt.h>%>"
@@ -1149,15 +1138,16 @@ avr_accumulate_outgoing_args (void)
 static inline int
 avr_outgoing_args_size (void)
 {
-  return ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0;
+  return (ACCUMULATE_OUTGOING_ARGS
+	  ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0);
 }
 
 
-/* Implement `STARTING_FRAME_OFFSET'.  */
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
 /* This is the offset from the frame pointer register to the first stack slot
    that contains a variable living in the frame.  */
 
-int
+static HOST_WIDE_INT
 avr_starting_frame_offset (void)
 {
   return 1 + avr_outgoing_args_size ();
@@ -1314,8 +1304,8 @@ avr_build_builtin_va_list (void)
 
 /* Implement `TARGET_BUILTIN_SETJMP_FRAME_VALUE'.  */
 /* Actual start of frame is virtual_stack_vars_rtx this is offset from
-   frame pointer by +STARTING_FRAME_OFFSET.
-   Using saved frame = virtual_stack_vars_rtx - STARTING_FRAME_OFFSET
+   frame pointer by +TARGET_STARTING_FRAME_OFFSET.
+   Using saved frame = virtual_stack_vars_rtx - TARGET_STARTING_FRAME_OFFSET
    avoids creating add/sub of offset in nonlocal goto and setjmp.  */
 
 static rtx
@@ -1323,7 +1313,7 @@ avr_builtin_setjmp_frame_value (void)
 {
   rtx xval = gen_reg_rtx (Pmode);
   emit_insn (gen_subhi3 (xval, virtual_stack_vars_rtx,
-                         gen_int_mode (STARTING_FRAME_OFFSET, Pmode)));
+                         gen_int_mode (avr_starting_frame_offset (), Pmode)));
   return xval;
 }
 
@@ -2042,7 +2032,7 @@ avr_asm_function_end_prologue (FILE *file)
              avr_outgoing_args_size());
 
   fprintf (file, "/* frame size = " HOST_WIDE_INT_PRINT_DEC " */\n",
-           get_frame_size());
+           (HOST_WIDE_INT) get_frame_size());
 
   if (!cfun->machine->gasisr.yes)
     {
@@ -2570,7 +2560,7 @@ avr_legitimize_reload_address (rtx *px, machine_mode mode,
 
   if (GET_CODE (x) == PLUS
       && REG_P (XEXP (x, 0))
-      && 0 == reg_equiv_constant (REGNO (XEXP (x, 0)))
+      && reg_equiv_constant (REGNO (XEXP (x, 0))) == 0
       && CONST_INT_P (XEXP (x, 1))
       && INTVAL (XEXP (x, 1)) >= 1)
     {
@@ -2637,10 +2627,8 @@ avr_legitimize_reload_address (rtx *px, machine_mode mode,
 static const char*
 avr_asm_len (const char* tpl, rtx* operands, int* plen, int n_words)
 {
-  if (NULL == plen)
-    {
-      output_asm_insn (tpl, operands);
-    }
+  if (plen == NULL)
+    output_asm_insn (tpl, operands);
   else
     {
       if (n_words < 0)
@@ -2967,7 +2955,7 @@ avr_print_operand (FILE *file, rtx x, int code)
   else if (code == 'x')
     {
       /* Constant progmem address - like used in jmp or call */
-      if (0 == text_segment_operand (x, VOIDmode))
+      if (text_segment_operand (x, VOIDmode) == 0)
         if (warning (0, "accessing program memory"
                      " with data memory address"))
           {
@@ -3525,12 +3513,7 @@ avr_function_ok_for_sibcall (tree decl_callee, tree exp_callee)
   if (cfun->machine->is_interrupt
       || cfun->machine->is_signal
       || cfun->machine->is_naked
-      || avr_naked_function_p (decl_callee)
-      /* FIXME: For OS_task and OS_main, this might be over-conservative.  */
-      || (avr_OS_task_function_p (decl_callee)
-          != cfun->machine->is_OS_task)
-      || (avr_OS_main_function_p (decl_callee)
-          != cfun->machine->is_OS_main))
+      || avr_naked_function_p (decl_callee))
     {
       return false;
     }
@@ -3928,7 +3911,7 @@ output_movqi (rtx_insn *insn, rtx operands[], int *plen)
       return avr_out_lpm (insn, operands, plen);
     }
 
-  gcc_assert (1 == GET_MODE_SIZE (GET_MODE (dest)));
+  gcc_assert (GET_MODE_SIZE (GET_MODE (dest)) == 1);
 
   if (REG_P (dest))
     {
@@ -4923,7 +4906,7 @@ output_movsisf (rtx_insn *insn, rtx operands[], int *l)
   if (!l)
     l = &dummy;
 
-  gcc_assert (4 == GET_MODE_SIZE (GET_MODE (dest)));
+  gcc_assert (GET_MODE_SIZE (GET_MODE (dest)) == 4);
 
   if (REG_P (dest))
     {
@@ -8263,7 +8246,7 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc, bool out_label)
       return "";
     }
 
-  if (8 == n_bytes)
+  if (n_bytes == 8)
     {
       op[0] = gen_rtx_REG (DImode, ACC_A);
       op[1] = gen_rtx_REG (DImode, ACC_A);
@@ -8381,11 +8364,11 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
         {
         case IOR:
 
-          if (0 == pop8)
+	  if (pop8 == 0)
             continue;
           else if (ld_reg_p)
             avr_asm_len ("ori %0,%1", op, plen, 1);
-          else if (1 == pop8)
+	  else if (pop8 == 1)
             {
               if (set_t != 1)
                 avr_asm_len ("set", op, plen, 1);
@@ -8394,7 +8377,7 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
               op[1] = GEN_INT (exact_log2 (val8));
               avr_asm_len ("bld %0,%1", op, plen, 1);
             }
-          else if (8 == pop8)
+	  else if (pop8 == 8)
             {
               if (op[3] != NULL_RTX)
                 avr_asm_len ("mov %0,%3", op, plen, 1);
@@ -8417,13 +8400,13 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
 
         case AND:
 
-          if (8 == pop8)
+	  if (pop8 == 8)
             continue;
-          else if (0 == pop8)
+	  else if (pop8 == 0)
             avr_asm_len ("clr %0", op, plen, 1);
           else if (ld_reg_p)
             avr_asm_len ("andi %0,%1", op, plen, 1);
-          else if (7 == pop8)
+	  else if (pop8 == 7)
             {
               if (set_t != 0)
                 avr_asm_len ("clt", op, plen, 1);
@@ -8445,9 +8428,9 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
 
         case XOR:
 
-          if (0 == pop8)
+	  if (pop8 == 0)
             continue;
-          else if (8 == pop8)
+	  else if (pop8 == 8)
             avr_asm_len ("com %0", op, plen, 1);
           else if (ld_reg_p && val8 == (1 << 7))
             avr_asm_len ("subi %0,%1", op, plen, 1);
@@ -8725,9 +8708,9 @@ avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
 
   bool sign_extend = src.sbit && sign_bytes;
 
-  if (0 == dest.fbit % 8 && 7 == src.fbit % 8)
+  if (dest.fbit % 8 == 0 && src.fbit % 8 == 7)
     shift = ASHIFT;
-  else if (7 == dest.fbit % 8 && 0 == src.fbit % 8)
+  else if (dest.fbit % 8 == 7 && src.fbit % 8 == 0)
     shift = ASHIFTRT;
   else if (dest.fbit % 8 == src.fbit % 8)
     shift = UNKNOWN;
@@ -9399,8 +9382,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
      It is easier to state this in an insn attribute "adjust_len" than
      to clutter up code here...  */
 
-  if (!NONDEBUG_INSN_P (insn)
-      || -1 == recog_memoized (insn))
+  if (!NONDEBUG_INSN_P (insn) || recog_memoized (insn) == -1)
     {
       return len;
     }
@@ -9871,34 +9853,33 @@ avr_eval_addr_attrib (rtx x)
 
 
 /* AVR attributes.  */
-static const struct attribute_spec
-avr_attribute_table[] =
+static const struct attribute_spec avr_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute,
-    false },
-  { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute,
-    false },
-  { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
-    false },
-  { "no_gccisr", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
-    false },
-  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false },
-  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false },
-  { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false },
-  { "io",        0, 1, true, false, false,  avr_handle_addr_attribute,
-    false },
-  { "io_low",    0, 1, true, false, false,  avr_handle_addr_attribute,
-    false },
-  { "address",   1, 1, true, false, false,  avr_handle_addr_attribute,
-    false },
-  { "absdata",   0, 0, true, false, false,  avr_handle_absdata_attribute,
-    false },
-  { NULL,        0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "progmem",   0, 0, false, false, false, false,
+    avr_handle_progmem_attribute, NULL },
+  { "signal",    0, 0, true,  false, false, false,
+    avr_handle_fndecl_attribute, NULL },
+  { "interrupt", 0, 0, true,  false, false, false,
+    avr_handle_fndecl_attribute, NULL },
+  { "no_gccisr", 0, 0, true,  false, false, false,
+    avr_handle_fndecl_attribute, NULL },
+  { "naked",     0, 0, false, true,  true,  false,
+    avr_handle_fntype_attribute, NULL },
+  { "OS_task",   0, 0, false, true,  true,  false,
+    avr_handle_fntype_attribute, NULL },
+  { "OS_main",   0, 0, false, true,  true,  false,
+    avr_handle_fntype_attribute, NULL },
+  { "io",        0, 1, true, false, false,  false,
+    avr_handle_addr_attribute, NULL },
+  { "io_low",    0, 1, true, false, false,  false,
+    avr_handle_addr_attribute, NULL },
+  { "address",   1, 1, true, false, false,  false,
+    avr_handle_addr_attribute, NULL },
+  { "absdata",   0, 0, true, false, false,  false,
+    avr_handle_absdata_attribute, NULL },
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 
@@ -10102,12 +10083,28 @@ avr_pgm_check_var_decl (tree node)
 }
 
 
-/* Add the section attribute if the variable is in progmem.  */
+/* Implement `TARGET_INSERT_ATTRIBUTES'.  */
 
 static void
 avr_insert_attributes (tree node, tree *attributes)
 {
   avr_pgm_check_var_decl (node);
+
+  if (TARGET_MAIN_IS_OS_TASK
+      && TREE_CODE (node) == FUNCTION_DECL
+      && MAIN_NAME_P (DECL_NAME (node))
+      // FIXME:  We'd like to also test `flag_hosted' which is only
+      // available in the C-ish fronts, hence no such test for now.
+      // Instead, we test the return type of "main" which is not exactly
+      // the same but good enough.
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (node)))
+      && NULL == lookup_attribute ("OS_task", *attributes))
+    {
+      *attributes = tree_cons (get_identifier ("OS_task"),
+                               NULL, *attributes);
+    }
+
+  /* Add the section attribute if the variable is in progmem.  */
 
   if (TREE_CODE (node) == VAR_DECL
       && (TREE_STATIC (node) || DECL_EXTERNAL (node))
@@ -10264,7 +10261,7 @@ avr_asm_init_sections (void)
      we have also to track .rodata because it is located in RAM then.  */
 
 #if defined HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
-  if (0 == avr_arch->flash_pm_offset)
+  if (avr_arch->flash_pm_offset == 0)
 #endif
     readonly_data_section->unnamed.callback = avr_output_data_section_asm_op;
   data_section->unnamed.callback = avr_output_data_section_asm_op;
@@ -10302,7 +10299,7 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
 
   if (!avr_need_copy_data_p
 #if defined HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
-      && 0 == avr_arch->flash_pm_offset
+      && avr_arch->flash_pm_offset == 0
 #endif
       )
     avr_need_copy_data_p = (STR_PREFIX_P (name, ".rodata")
@@ -10438,8 +10435,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       /* PSTR strings are in generic space but located in flash:
          patch address space.  */
 
-      if (!AVR_TINY
-          && -1 == avr_progmem_p (decl, attr))
+      if (!AVR_TINY && avr_progmem_p (decl, attr) == -1)
         as = ADDR_SPACE_FLASH;
 
       AVR_SYMBOL_SET_ADDR_SPACE (sym, as);
@@ -10478,7 +10474,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       && SYMBOL_REF_P (XEXP (rtl, 0)))
     {
       rtx sym = XEXP (rtl, 0);
-      bool progmem_p = -1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl));
+      bool progmem_p = avr_progmem_p (decl, DECL_ATTRIBUTES (decl)) == -1;
 
       if (progmem_p)
         {
@@ -12090,9 +12086,7 @@ test_hard_reg_class (enum reg_class rclass, rtx x)
 static bool
 avr_2word_insn_p (rtx_insn *insn)
 {
-  if (TARGET_SKIP_BUG
-      || !insn
-      || 2 != get_attr_length (insn))
+  if (TARGET_SKIP_BUG || !insn || get_attr_length (insn) != 2)
     {
       return false;
     }
@@ -12401,11 +12395,8 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
           if (INTVAL (lo16) == INTVAL (hi16))
             {
-              if (0 != INTVAL (lo16)
-                  || !clear_p)
-                {
-                  avr_asm_len ("movw %C0,%A0", &op[0], len, 1);
-                }
+	      if (INTVAL (lo16) != 0 || !clear_p)
+		avr_asm_len ("movw %C0,%A0", &op[0], len, 1);
 
               break;
             }
@@ -12457,7 +12448,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
       /* Need no clobber reg for -1: Use CLR/DEC */
 
-      if (-1 == ival[n])
+      if (ival[n] == -1)
         {
           if (!clear_p)
             avr_asm_len ("clr %0", &xdest[n], len, 1);
@@ -12465,7 +12456,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
           avr_asm_len ("dec %0", &xdest[n], len, 1);
           continue;
         }
-      else if (1 == ival[n])
+      else if (ival[n] == 1)
         {
           if (!clear_p)
             avr_asm_len ("clr %0", &xdest[n], len, 1);
@@ -13689,7 +13680,7 @@ bool
 avr_has_nibble_0xf (rtx ival)
 {
   unsigned int map = UINTVAL (ival) & GET_MODE_MASK (SImode);
-  return 0 != avr_map_metric (map, MAP_MASK_PREIMAGE_F);
+  return avr_map_metric (map, MAP_MASK_PREIMAGE_F) != 0;
 }
 
 
@@ -13756,7 +13747,7 @@ static const avr_map_op_t avr_map_op[] =
 static avr_map_op_t
 avr_map_decompose (unsigned int f, const avr_map_op_t *g, bool val_const_p)
 {
-  bool val_used_p = 0 != avr_map_metric (f, MAP_MASK_PREIMAGE_F);
+  bool val_used_p = avr_map_metric (f, MAP_MASK_PREIMAGE_F) != 0;
   avr_map_op_t f_ginv = *g;
   unsigned int ginv = g->ginv;
 
@@ -13787,13 +13778,10 @@ avr_map_decompose (unsigned int f, const avr_map_op_t *g, bool val_const_p)
 
   /* Step 2a:  Compute cost of F o G^-1  */
 
-  if (0 == avr_map_metric (f_ginv.map, MAP_NONFIXED_0_7))
-    {
-      /* The mapping consists only of fixed points and can be folded
-         to AND/OR logic in the remainder.  Reasonable cost is 3. */
-
-      f_ginv.cost = 2 + (val_used_p && !val_const_p);
-    }
+  if (avr_map_metric (f_ginv.map, MAP_NONFIXED_0_7) == 0)
+    /* The mapping consists only of fixed points and can be folded
+       to AND/OR logic in the remainder.  Reasonable cost is 3. */
+    f_ginv.cost = 2 + (val_used_p && !val_const_p);
   else
     {
       rtx xop[4];
@@ -14495,11 +14483,11 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             break;
           }
 
-        tmap = wide_int_to_tree (map_type, arg[0]);
+        tmap = wide_int_to_tree (map_type, wi::to_wide (arg[0]));
         map = TREE_INT_CST_LOW (tmap);
 
         if (TREE_CODE (tval) != INTEGER_CST
-            && 0 == avr_map_metric (map, MAP_MASK_PREIMAGE_F))
+	    && avr_map_metric (map, MAP_MASK_PREIMAGE_F) == 0)
           {
             /* There are no F in the map, i.e. 3rd operand is unused.
                Replace that argument with some constant to render
@@ -14510,7 +14498,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
           }
 
         if (TREE_CODE (tbits) != INTEGER_CST
-            && 0 == avr_map_metric (map, MAP_PREIMAGE_0_7))
+	    && avr_map_metric (map, MAP_PREIMAGE_0_7) == 0)
           {
             /* Similar for the bits to be inserted. If they are unused,
                we can just as well pass 0.  */
@@ -14549,7 +14537,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         /* If bits don't change their position we can use vanilla logic
            to merge the two arguments.  */
 
-        if (0 == avr_map_metric (map, MAP_NONFIXED_0_7))
+	if (avr_map_metric (map, MAP_NONFIXED_0_7) == 0)
           {
             int mask_f = avr_map_metric (map, MAP_MASK_PREIMAGE_F);
             tree tres, tmask = build_int_cst (val_type, mask_f ^ 0xff);
@@ -14788,6 +14776,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_LEGITIMATE_COMBINED_INSN
 #define TARGET_LEGITIMATE_COMBINED_INSN avr_legitimate_combined_insn
+
+#undef  TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET avr_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

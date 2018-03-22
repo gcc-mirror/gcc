@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2017 Free Software Foundation, Inc.
+; Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -304,7 +304,7 @@ C ObjC C++ ObjC++ Var(warn_alloca) Warning
 Warn on any use of alloca.
 
 Walloc-size-larger-than=
-C ObjC C++ ObjC++ Var(warn_alloc_size_limit) Warning Joined LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ LTO ObjC++ Var(warn_alloc_size_limit) Warning Joined LangEnabledBy(C ObjC C++ LTO ObjC++,Wall)
 -Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that
 attempt to allocate objects larger than the specified number of bytes.
 
@@ -319,11 +319,11 @@ alloca, and on bounded uses of alloca whose bound can be larger than
 <number> bytes.
 
 Warray-bounds
-LangEnabledBy(C ObjC C++ ObjC++,Wall)
+LangEnabledBy(C ObjC C++ LTO ObjC++,Wall)
 ; in common.opt
 
 Warray-bounds=
-LangEnabledBy(C ObjC C++ ObjC++,Wall,1,0)
+LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
 
 Wassign-intercept
@@ -384,6 +384,10 @@ Wc++17-compat
 C++ ObjC++ Var(warn_cxx17_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017.
 
+Wcast-function-type
+C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
+Warn about casts between incompatible function types.
+
 Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
 Warn about casts which discard qualifiers.
@@ -393,7 +397,7 @@ C++ ObjC++ Warning Alias(Wcatch-value=, 1, 0)
 Warn about catch handlers of non-reference type.
 
 Wcatch-value=
-C++ ObjC++ Var(warn_catch_value) Warning Joined RejectNegative UInteger LangEnabledBy(C++ ObjC++,Wall, 1, 0)
+C++ ObjC++ Var(warn_catch_value) Warning Joined RejectNegative UInteger LangEnabledBy(C++ ObjC++,Wall, 1, 0) IntegerRange(0, 3)
 Warn about catch handlers of non-reference type.
 
 Wchar-subscripts
@@ -571,12 +575,12 @@ C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format) Warning LangEn
 Warn about printf/scanf/strftime/strfmon format string anomalies.
 
 Wformat-overflow=
-C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_overflow) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
+C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_overflow) Warning LangEnabledBy(C ObjC C++ LTO ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
 Warn about function calls with format strings that write past the end
 of the destination region.
 
 Wformat-truncation=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
+C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ LTO ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
 Warn about calls to snprintf and similar functions that truncate output.
 
 Wif-not-aligned
@@ -735,14 +739,18 @@ C ObjC C++ ObjC++ Var(warn_sizeof_array_argument) Warning Init(1)
 Warn when sizeof is applied on a parameter declared as an array.
 
 Wstringop-overflow
-C ObjC C++ ObjC++ Warning Alias(Wstringop-overflow=, 2, 0)
+C ObjC C++ LTO ObjC++ Warning Alias(Wstringop-overflow=, 2, 0)
 Warn about buffer overflow in string manipulation functions like memcpy
 and strcpy.
 
 Wstringop-overflow=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall, 2, 0) IntegerRange(0, 4)
+C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall, 2, 0) IntegerRange(0, 4)
 Under the control of Object Size type, warn about buffer overflow in string
 manipulation functions like memcpy and strcpy.
+
+Wstringop-truncation
+C ObjC C++ LTO ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
+Warn about truncation in string manipulation functions like strncat and strncpy.
 
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
@@ -772,6 +780,11 @@ Warn about switches with boolean controlling expression.
 Wtemplates
 C++ ObjC++ Var(warn_templates) Warning
 Warn on primary template declaration.
+
+Wmissing-attributes
+C ObjC C++ ObjC++ Var(warn_missing_attributes) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about declarations of entities that may be missing attributes
+that related entities have been declared with it.
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Warning Alias(Wsuggest-attribute=format)
@@ -825,11 +838,11 @@ C++ ObjC++ Var(warn_nonvdtor) Warning LangEnabledBy(C++ ObjC++,Weffc++)
 Warn about non-virtual destructors.
 
 Wnonnull
-C ObjC C++ ObjC++ Var(warn_nonnull) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 1,0)
+C ObjC C++ LTO ObjC++ Var(warn_nonnull) Warning LangEnabledBy(C ObjC C++ LTO ObjC++,Wformat=,warn_format >= 1,0)
 Warn about NULL being passed to argument slots marked as requiring non-NULL.
 
 Wnonnull
-C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ LTO ObjC++ LangEnabledBy(C ObjC C++ LTO ObjC++,Wall)
 ;
 
 Wnonnull-compare
@@ -960,7 +973,7 @@ C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code.
 
 Wreturn-type
-C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall) Init(-1)
 Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++).
 
 Wscalar-storage-order
@@ -1076,11 +1089,11 @@ C ObjC C++ ObjC++ CPP(warn_undef) CppReason(CPP_W_UNDEF) Var(cpp_warn_undef) Ini
 Warn if an undefined macro is used in an #if directive.
 
 Wuninitialized
-C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ ObjC++ LTO LangEnabledBy(C ObjC C++ ObjC++ LTO,Wall)
 ;
 
 Wmaybe-uninitialized
-C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ ObjC++ LTO LangEnabledBy(C ObjC C++ ObjC++ LTO,Wall)
 ;
 
 Wunknown-pragmas
@@ -1170,7 +1183,7 @@ C ObjC Var(warn_duplicate_decl_specifier) Warning LangEnabledBy(C ObjC,Wall)
 Warn when a declaration has duplicate const, volatile, restrict or _Atomic specifier.
 
 Wrestrict
-C ObjC C++ ObjC++ Var(warn_restrict) Warning LangEnabledBy(C ObjC C++ ObjC++)
+C ObjC C++ ObjC++ Var(warn_restrict) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall)
 Warn when an argument passed to a restrict-qualified parameter aliases with
 another argument.
 
@@ -1326,9 +1339,9 @@ Driver
 static-libmpxwrappers
 Driver
 
-fcilkplus
+fcilkplus Undocumented
 C ObjC C++ ObjC++ LTO Report Var(flag_cilkplus) Init(0)
-Enable Cilk Plus.
+Deprecated in GCC 8.  This switch has no effect.
 
 fconcepts
 C++ ObjC++ Var(flag_concepts)
@@ -1381,6 +1394,10 @@ Preprocess directives only.
 fdollars-in-identifiers
 C ObjC C++ ObjC++
 Permit '$' as an identifier character.
+
+fmacro-prefix-map=
+C ObjC C++ ObjC++ Joined RejectNegative
+-fmacro-prefix-map=<old>=<new> Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE().
 
 fdump-ada-spec
 C ObjC C++ ObjC++ RejectNegative Var(flag_dump_ada_spec)
@@ -1810,7 +1827,7 @@ ObjC ObjC++ Var(flag_zero_link)
 Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode.
 
 gen-decls
-ObjC ObjC++ Driver Var(flag_gen_declaration)
+ObjC ObjC++ Driver Var(flag_gen_declaration) RejectNegative
 Dump declarations to a .decl file.
 
 femit-struct-debug-baseonly
@@ -1932,6 +1949,10 @@ std=c++17
 C++ ObjC++
 Conform to the ISO 2017 C++ standard.
 
+std=c++2a
+C++ ObjC++
+Conform to the ISO 2020(?) C++ draft standard (experimental and incomplete support).
+
 std=c11
 C ObjC
 Conform to the ISO 2011 C standard.
@@ -1939,6 +1960,14 @@ Conform to the ISO 2011 C standard.
 std=c1x
 C ObjC Alias(std=c11)
 Deprecated in favor of -std=c11.
+
+std=c17
+C ObjC
+Conform to the ISO 2017 C standard (expected to be published in 2018).
+
+std=c18
+C ObjC Alias(std=c17)
+Conform to the ISO 2017 C standard (expected to be published in 2018).
 
 std=c89
 C ObjC Alias(std=c90)
@@ -1990,6 +2019,10 @@ std=gnu++17
 C++ ObjC++
 Conform to the ISO 2017 C++ standard with GNU extensions.
 
+std=gnu++2a
+C++ ObjC++
+Conform to the ISO 2020(?) C++ draft standard with GNU extensions (experimental and incomplete support).
+
 std=gnu11
 C ObjC
 Conform to the ISO 2011 C standard with GNU extensions.
@@ -1997,6 +2030,14 @@ Conform to the ISO 2011 C standard with GNU extensions.
 std=gnu1x
 C ObjC Alias(std=gnu11)
 Deprecated in favor of -std=gnu11.
+
+std=gnu17
+C ObjC
+Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
+
+std=gnu18
+C ObjC Alias(std=gnu17)
+Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
 
 std=gnu89
 C ObjC Alias(std=gnu90)
@@ -2033,6 +2074,14 @@ Deprecated in favor of -std=iso9899:1999.
 std=iso9899:2011
 C ObjC Alias(std=c11)
 Conform to the ISO 2011 C standard.
+
+std=iso9899:2017
+C ObjC Alias(std=c17)
+Conform to the ISO 2017 C standard (expected to be published in 2018).
+
+std=iso9899:2018
+C ObjC Alias(std=c17)
+Conform to the ISO 2017 C standard (expected to be published in 2018).
 
 traditional
 Driver

@@ -1,5 +1,5 @@
 /* Description of builtins used by the ARM backend.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -105,6 +107,13 @@ arm_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
 #define TERNOP_QUALIFIERS (arm_ternop_qualifiers)
 
+/* unsigned T (unsigned T, unsigned T, unsigned T).  */
+static enum arm_type_qualifiers
+arm_unsigned_uternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned };
+#define UTERNOP_QUALIFIERS (arm_unsigned_uternop_qualifiers)
+
 /* T (T, immediate).  */
 static enum arm_type_qualifiers
 arm_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -130,6 +139,13 @@ arm_mac_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
       qualifier_none, qualifier_lane_index };
 #define MAC_LANE_QUALIFIERS (arm_mac_lane_qualifiers)
+
+/* unsigned T (unsigned T, unsigned T, unsigend T, lane index).  */
+static enum arm_type_qualifiers
+arm_umac_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_lane_index };
+#define UMAC_LANE_QUALIFIERS (arm_umac_lane_qualifiers)
 
 /* T (T, T, immediate).  */
 static enum arm_type_qualifiers

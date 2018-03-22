@@ -8,8 +8,8 @@ program test
   data io, jo /o'234', '234'o/
   data iz, jz /z'abc', 'abc'z/
   data ix, jx /x'abc', 'abc'x/
-  if (ib /= jb) call abort
-  if (io /= jo) call abort
-  if (iz /= jz) call abort
-  if (ix /= jx) call abort
+  if (ib /= jb) STOP 1
+  if (io /= jo) STOP 2
+  if (iz /= jz) STOP 3
+  if (ix /= jx) STOP 4
 end program test

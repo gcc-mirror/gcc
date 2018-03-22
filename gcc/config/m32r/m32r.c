@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Renesas M32R cpu.
-   Copyright (C) 1996-2017 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -104,17 +106,18 @@ static bool m32r_legitimate_constant_p (machine_mode, rtx);
 static bool m32r_attribute_identifier (const_tree);
 static bool m32r_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool m32r_modes_tieable_p (machine_mode, machine_mode);
+static HOST_WIDE_INT m32r_starting_frame_offset (void);
 
 /* M32R specific attributes.  */
 
 static const struct attribute_spec m32r_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "interrupt", 0, 0, true,  false, false, NULL, false },
-  { "model",     1, 1, true,  false, false, m32r_handle_model_attribute,
-    false },
-  { NULL,        0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true,  false, false, false, NULL, NULL },
+  { "model",     1, 1, true,  false, false, false, m32r_handle_model_attribute,
+    NULL },
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Initialize the GCC target structure.  */
@@ -216,6 +219,12 @@ static const struct attribute_spec m32r_attribute_table[] =
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P m32r_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET m32r_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1546,7 +1555,7 @@ static struct m32r_frame_info zero_frame_info;
    SIZE is the size needed for local variables.  */
 
 unsigned int
-m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
+m32r_compute_frame_size (poly_int64 size)   /* # of var. bytes allocated.  */
 {
   unsigned int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
@@ -2955,4 +2964,13 @@ m32r_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	       || GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF)
 	   && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	   && UINTVAL (XEXP (XEXP (x, 0), 1)) > 32767);
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  The frame pointer points at
+   the same place as the stack pointer, except if alloca has been called.  */
+
+static HOST_WIDE_INT
+m32r_starting_frame_offset (void)
+{
+  return M32R_STACK_ALIGN (crtl->outgoing_args_size);
 }

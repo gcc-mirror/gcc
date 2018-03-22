@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -289,7 +289,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 /* ??? Only if block-move stuff knows about different source/destination
    alignment.  */
 #if 0
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
 #define DATA_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
 #endif
 
@@ -493,13 +492,6 @@ enum reg_class {
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 /* #define FRAME_GROWS_DOWNWARD 0 */
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-
-#define STARTING_FRAME_OFFSET 0
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.

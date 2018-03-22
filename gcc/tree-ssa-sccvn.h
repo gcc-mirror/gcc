@@ -1,5 +1,5 @@
 /* Tree SCC value numbering
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -93,7 +93,7 @@ typedef struct vn_reference_op_struct
   /* For storing TYPE_ALIGN for array ref element size computation.  */
   unsigned align : 6;
   /* Constant offset this op adds or -1 if it is variable.  */
-  HOST_WIDE_INT off;
+  poly_int64_pod off;
   tree type;
   tree op0;
   tree op1;
@@ -211,6 +211,7 @@ extern vn_ssa_aux_t VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO_GET (tree);
 tree vn_get_expr_for (tree);
 void run_scc_vn (vn_lookup_kind);
+unsigned int vn_eliminate (bitmap);
 void free_scc_vn (void);
 void scc_vn_restore_ssa_info (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);

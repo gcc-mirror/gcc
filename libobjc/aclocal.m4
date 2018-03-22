@@ -197,6 +197,7 @@ AC_DEFUN([_AM_SUBST_NOTMAKE])
 # Public sister of _AM_SUBST_NOTMAKE.
 AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
 
+m4_include([../config/cet.m4])
 m4_include([../config/lthostflags.m4])
 m4_include([../config/multi.m4])
 m4_include([../config/override.m4])

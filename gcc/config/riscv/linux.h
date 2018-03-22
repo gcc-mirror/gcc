@@ -1,5 +1,5 @@
 /* Definitions for RISC-V GNU/Linux systems with ELF format.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,17 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-riscv" XLEN_SPEC "-" ABI_SPEC ".so.1"
 
+#define MUSL_ABI_SUFFIX \
+  "%{mabi=ilp32:-sf}" \
+  "%{mabi=ilp32f:-sp}" \
+  "%{mabi=ilp32d:}" \
+  "%{mabi=lp64:-sf}" \
+  "%{mabi=lp64f:-sp}" \
+  "%{mabi=lp64d:}" \
+
+#undef MUSL_DYNAMIC_LINKER
+#define MUSL_DYNAMIC_LINKER "/lib/ld-musl-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so.1"
+
 /* Because RISC-V only has word-sized atomics, it requries libatomic where
    others do not.  So link libatomic by default, as needed.  */
 #undef LIB_SPEC
@@ -33,6 +44,10 @@ along with GCC; see the file COPYING3.  If not see
 #else
 #define LIB_SPEC GNU_USER_TARGET_LIB_SPEC " -latomic "
 #endif
+
+#define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
+
+#define CPP_SPEC "%{pthread:-D_REENTRANT}"
 
 #define LINK_SPEC "\
 -melf" XLEN_SPEC "lriscv \

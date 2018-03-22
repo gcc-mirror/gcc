@@ -632,14 +632,6 @@ GO_LIBCALL_OS_ARCH_FILE
 GO_LIBCALL_OS_FILE
 ALLGOARCHFAMILY
 ALLGOARCH
-GOARCH_MINFRAMESIZE
-GOARCH_HUGEPAGESIZE
-GOARCH_INT64ALIGN
-GOARCH_PCQUANTUM
-GOARCH_PHYSPAGESIZE
-GOARCH_CACHELINESIZE
-GOARCH_BIGENDIAN
-GOARCH_FAMILY
 GOARCH
 USE_DEJAGNU
 ALLGOOS
@@ -2494,7 +2486,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-libtool_VERSION=12:0:0
+libtool_VERSION=13:0:0
 
 
 # Default to --enable-multilib
@@ -11114,7 +11106,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11117 "configure"
+#line 11109 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11220,7 +11212,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11223 "configure"
+#line 11215 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13644,42 +13636,43 @@ esac
 # All known GOARCH values.  This is the union of all architectures
 # supported by the gofrontend and all architectures supported by the
 # gc toolchain.
-# N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le s390 s390x sparc sparc64"
+# To add a new architecture:
+# - add it to this list
+# - if appropriate, add an entry to ALLGOARCHFAMILY below
+# - add an entry to the case on ${host} below to set GOARCH
+# - update goarchList in libgo/go/go/build/syslist.go
+# - update goarch.sh to report the values for this architecture
+# - update go-set-goarch in gcc/testsuite/go.test/go-test.exp
+# - update ptrSizeMap and intSizeMap in libgo/go/cmd/cgo/main.go
+# - update arch lists in libgo/match.sh
+# - update arch lists in libgo/testsuite/gotest
+# - update +build lines in several places
+#   - libgo/go/runtime/lfstack_NNbit.go
+#   - libgo/go/runtime/hashNN.go
+#   - libgo/go/runtime/unalignedN.go
+#   - libgo/go/syscall/endian_XX.go
+#   - possibly others
+# - possibly update files in libgo/go/internal/syscall/unix
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le riscv64 s390 s390x sh shbe sparc sparc64"
 
-# All known GOARCH_FAMILY values.
-ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SPARC SPARC64"
+# All known GOARCH family values.
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 RISCV64 S390 S390X SH SPARC SPARC64"
 
 GOARCH=unknown
-GOARCH_FAMILY=unknown
-GOARCH_BIGENDIAN=0
-GOARCH_CACHELINESIZE=64
-GOARCH_PHYSPAGESIZE=4096
-GOARCH_PCQUANTUM=1
-GOARCH_INT64ALIGN=8
-GOARCH_HUGEPAGESIZE=0
-GOARCH_MINFRAMESIZE=0
 case ${host} in
   alpha*-*-*)
     GOARCH=alpha
-    GOARCH_FAMILY=ALPHA
-    GOARCH_PHYSPAGESIZE=8192
-    GOARCH_PCQUANTUM=4
     ;;
   aarch64-*-*)
     GOARCH=arm64
-    GOARCH_FAMILY=ARM64
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PHYSPAGESIZE=65536
-    GOARCH_PCQUANTUM=4
-    GOARCH_MINFRAMESIZE=8
     ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     GOARCH=arm
-    GOARCH_FAMILY=ARM
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PCQUANTUM=4
-    GOARCH_MINFRAMESIZE=4
+    case ${host} in
+      arm*b*-*-*)
+	GOARCH=armbe
+	;;
+    esac
     ;;
   i[34567]86-*-* | x86_64-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13691,31 +13684,16 @@ case ${host} in
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=386
-GOARCH_FAMILY=I386
-GOARCH_INT64ALIGN=4
-GOARCH_HUGEPAGESIZE="1 << 21"
-
 else
   GOARCH=amd64
-GOARCH_FAMILY=AMD64
-GOARCH_HUGEPAGESIZE="1 << 21"
-
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     ;;
   ia64-*-*)
     GOARCH=ia64
-    GOARCH_FAMILY=IA64
-    GOARCH_CACHELINESIZE=16384
-    GOARCH_PHYSPAGESIZE=65536
     ;;
   m68k*-*-*)
     GOARCH=m68k
-    GOARCH_FAMILY=M68K
-    GOARCH_BIGENDIAN=1
-    GOARCH_CACHELINESIZE=16
-    GOARCH_PCQUANTUM=4
-    GOARCH_INT64ALIGN=2
     ;;
   mips*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13761,27 +13739,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     "n32") GOARCH=mips64p32 ;;
     "n64") GOARCH=mips64 ;;
     esac
-    case "$mips_abi" in
-    "o32" | "n32")
-        GOARCH_FAMILY=MIPS
-	GOARCH_MINFRAMESIZE=4
-        ;;
-    "n64")
-        GOARCH_FAMILY=MIPS64
-	GOARCH_MINFRAMESIZE=8
-        ;;
-    esac
     case "${host}" in
     mips*el-*-*)
         GOARCH="${GOARCH}le"
         ;;
-    *)
-	GOARCH_BIGENDIAN=1
-        ;;
     esac
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PHYSPAGESIZE=16384
-    GOARCH_PCQUANTUM=4
     ;;
   rs6000*-*-* | powerpc*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13793,12 +13755,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=ppc
-GOARCH_FAMILY=PPC
-GOARCH_BIGENDIAN=1
-
 else
 
-GOARCH_FAMILY=PPC64
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -13808,18 +13766,15 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=ppc64le
-
 else
   GOARCH=ppc64
-GOARCH_BIGENDIAN=1
-
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    GOARCH_PHYSPAGESIZE=65536
-    GOARCH_PCQUANTUM=4
-    GOARCH_MINFRAMESIZE=32
+    ;;
+  riscv64-*-*)
+    GOARCH=riscv64
     ;;
   s390*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13831,19 +13786,16 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=s390
-GOARCH_FAMILY=S390
-GOARCH_MINFRAMESIZE=4
-
 else
   GOARCH=s390x
-GOARCH_FAMILY=S390X
-GOARCH_MINFRAMESIZE=8
-
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    GOARCH_BIGENDIAN=1
-    GOARCH_CACHELINESIZE=256
-    GOARCH_PCQUANTUM=2
+    ;;
+  sh3eb*-*-* | sh4eb*-*-*)
+    GOARCH=shbe
+    ;;
+  sh3*-*-* | sh4*-*-*)
+    GOARCH=sh
     ;;
   sparc*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13855,27 +13807,12 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=sparc
-GOARCH_FAMILY=SPARC
-
 else
   GOARCH=sparc64
-GOARCH_FAMILY=SPARC64
-
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    GOARCH_BIGENDIAN=1
-    GOARCH_PHYSPAGESIZE=8192
-    GOARCH_PCQUANTUM=4
     ;;
 esac
-
-
-
-
-
-
-
-
 
 
 
@@ -14275,7 +14212,7 @@ if test "${libgo_cv_lib_pthread+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -pthread"
+CFLAGS="$CFLAGS -pthread -L../libatomic/.libs"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 int i;
@@ -14292,7 +14229,8 @@ fi
 $as_echo "$libgo_cv_lib_pthread" >&6; }
 PTHREAD_CFLAGS=
 if test "$libgo_cv_lib_pthread" = yes; then
-  PTHREAD_CFLAGS=-pthread
+  # RISC-V apparently adds -latomic when using -pthread.
+  PTHREAD_CFLAGS="-pthread -L../libatomic/.libs"
 fi
 
 
@@ -15142,10 +15080,9 @@ fi
 $as_echo "$libgo_cv_c_fancymath" >&6; }
 MATH_FLAG=
 if test "$libgo_cv_c_fancymath" = yes; then
-  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations"
-else
-  MATH_FLAG="-ffp-contract=off"
+  MATH_FLAG="-mfancy-math-387"
 fi
+MATH_FLAG="${MATH_FLAG} -ffp-contract=off -fno-math-errno -fno-trapping-math"
 
 
 CFLAGS_hold=$CFLAGS

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Tilera TILE-Gx.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -5564,7 +5566,7 @@ tilegx_file_end (void)
    as sign-extended DI values in registers.  */
 
 static bool
-tilegx_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+tilegx_truly_noop_truncation (poly_uint64 outprec, poly_uint64 inprec)
 {
   return inprec <= 32 || outprec > 32;
 }
@@ -5733,6 +5735,9 @@ tilegx_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
 
 #undef  TARGET_TRULY_NOOP_TRUNCATION
 #define TARGET_TRULY_NOOP_TRUNCATION tilegx_truly_noop_truncation
+
+#undef  TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -5,7 +5,7 @@
 constexpr int square(int x);	// { dg-message "never defined" }
 
 // error: pixel is a type
-constexpr struct pixel {        // { dg-error "constexpr" }
+constexpr struct pixel {        // { dg-error ".constexpr." }
   int x;
   int y;
   // OK: declaration
@@ -18,7 +18,7 @@ constexpr pixel::pixel(int a)
 
 // error: square not defined, so small(2) not constant (5.19), so constexpr
 // not satisfied
-constexpr pixel small(2);	// { dg-message "in constexpr expansion" }
+constexpr pixel small(2);	// { dg-message "in .constexpr. expansion of " }
 
 // error: not for parameters
 int next(constexpr int x) {	// { dg-error "parameter" }
@@ -40,7 +40,7 @@ constexpr int g(int x, int n) {
   int r = 1;
   while (--n > 0) r *= x;
   return r;
-} // { dg-error "body of constexpr function" "" { target c++11_only } }
+} // { dg-error "body of .constexpr. function" "" { target c++11_only } }
 
 class debug_flag {
 public:

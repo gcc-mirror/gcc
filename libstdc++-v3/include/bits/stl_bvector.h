@@ -1,6 +1,6 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,6 +58,7 @@
 
 #if __cplusplus >= 201103L
 #include <initializer_list>
+#include <bits/functional_hash.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -417,7 +418,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (__last._M_offset != 0)
 	  __fill_bvector(__last._M_p, 0, __last._M_offset, __x);
       }
-    else
+    else if (__first._M_offset != __last._M_offset)
       __fill_bvector(__first._M_p, __first._M_offset, __last._M_offset, __x);
   }
 
@@ -591,7 +592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Base::_Bit_alloc_traits		_Bit_alloc_traits;
 
 #if __cplusplus >= 201103L
-      template<typename> friend struct hash;
+      friend struct std::hash<vector>;
 #endif
 
     public:
@@ -1312,8 +1313,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #if __cplusplus >= 201103L
-
-#include <bits/functional_hash.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -126,7 +126,7 @@ verify_aligned_code (gcc_jit_context *ctxt,
                      gcc_jit_result *result,
                      const char *writer_fn_name)
 {
-  typedef int (*fn_type) (T *);
+  typedef char (*fn_type) (T *);
   CHECK_NON_NULL (result);
 
   T tmp;

@@ -1,5 +1,5 @@
 ;; ARM Thumb-2 Machine Description
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.
@@ -34,7 +34,6 @@
   "TARGET_THUMB2"
   "bic%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "shift" "2")
    (set_attr "type" "alu_shift_imm")]
 )
@@ -57,7 +56,7 @@
                    (match_dup 2)))]
   ""
   [(set_attr "conds" "clob")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "length" "6,6,10")
    (set_attr "type" "multiple")]
 )
@@ -78,7 +77,7 @@
                    (match_dup 2)))]
   ""
   [(set_attr "conds" "clob")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "length" "6,6,10")
    (set_attr "type" "multiple")]
 )
@@ -100,7 +99,7 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "length" "6,6,10")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "type" "multiple")]
 )
 
@@ -121,7 +120,7 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "length" "6,6,10")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "type" "multiple")]
 )
 
@@ -172,8 +171,7 @@
   [(set_attr "conds" "*,clob,clob")
    (set_attr "shift" "1")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "predicable_short_it" "no")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "ce_count" "2")
    (set_attr "length" "8,6,10")
    (set_attr "type" "multiple")]
@@ -226,8 +224,7 @@
   [(set_attr "conds" "*,clob,clob")
    (set_attr "shift" "1")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
-   (set_attr "predicable_short_it" "no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "ce_count" "2")
    (set_attr "length" "8,6,10")
    (set_attr "type" "multiple")]
@@ -354,7 +351,7 @@
                          (const_int 0)))]
   ""
   [(set_attr "conds" "use")
-   (set_attr "enabled_for_depr_it" "yes,no")
+   (set_attr "enabled_for_short_it" "yes,no")
    (set_attr "length" "8,10")
    (set_attr "type" "multiple")]
 )
@@ -365,7 +362,7 @@
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_THUMB2 && !arm_restrict_it"
   "#"   ; "ite\\t%D1\;mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
-  "TARGET_THUMB2"
+  "&& true"
   [(set (match_dup 0)
         (if_then_else:SI (match_dup 1)
                          (match_dup 3)
@@ -413,7 +410,7 @@
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_THUMB2 && !arm_restrict_it"
   "#"   ; "ite\\t%D1\;mvn%D1\\t%0, #0\;mvn%d1\\t%0, #1"
-  "TARGET_THUMB2"
+  "&& true"
   [(set (match_dup 0)
         (if_then_else:SI (match_dup 1)
                          (match_dup 3)
@@ -504,7 +501,7 @@
     DONE;
   }
   [(set_attr "length" "4,4,6,6,6,6,10,8,10,10,10,6")
-   (set_attr "enabled_for_depr_it" "yes,yes,no,no,no,no,no,no,no,no,no,yes")
+   (set_attr "enabled_for_short_it" "yes,yes,no,no,no,no,no,no,no,no,no,yes")
    (set_attr "conds" "use")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 2 "const_int_operand" "")
@@ -555,12 +552,11 @@
 )
 
 (define_insn "*nonsecure_call_reg_thumb2"
-  [(call (unspec:SI [(mem:SI (match_operand:SI 0 "s_register_operand" "r"))]
+  [(call (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
 		    UNSPEC_NONSECURE_MEM)
-	 (match_operand 1 "" ""))
-   (use (match_operand 2 "" ""))
-   (clobber (reg:SI LR_REGNUM))
-   (clobber (match_dup 0))]
+	 (match_operand 0 "" ""))
+   (use (match_operand 1 "" ""))
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB2 && use_cmse"
   "bl\\t__gnu_cmse_nonsecure_call"
   [(set_attr "length" "4")
@@ -581,12 +577,11 @@
 (define_insn "*nonsecure_call_value_reg_thumb2"
   [(set (match_operand 0 "" "")
 	(call
-	 (unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "l*r"))]
+	 (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
 		    UNSPEC_NONSECURE_MEM)
-	 (match_operand 2 "" "")))
-   (use (match_operand 3 "" ""))
-   (clobber (reg:SI LR_REGNUM))
-   (clobber (match_dup 1))]
+	 (match_operand 1 "" "")))
+   (use (match_operand 2 "" ""))
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB2 && use_cmse"
   "bl\t__gnu_cmse_nonsecure_call"
   [(set_attr "length" "4")
@@ -1044,7 +1039,6 @@
    ldrsb%?\\t%0, %1"
   [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
@@ -1058,7 +1052,6 @@
    ldrh%?\\t%0, %1"
   [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
@@ -1072,7 +1065,6 @@
    ldrb%?\\t%0, %1\\t%@ zero_extendqisi2"
   [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
@@ -1132,7 +1124,7 @@
    ; we adapt the length accordingly.
    (set (attr "length")
      (if_then_else (match_test "TARGET_HARD_FLOAT")
-      (const_int 12)
+      (const_int 34)
       (const_int 8)))
    ; We do not support predicate execution of returns from cmse_nonsecure_entry
    ; functions because we need to clear the APSR.  Since predicable has to be
@@ -1428,7 +1420,7 @@
 	(neg:SI (match_operand:SI 1 "low_register_operand" "l")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2 && reload_completed"
-  "neg%!\t%0, %1"
+  "rsb%!\t%0, %1, #0"
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")
    (set_attr "type" "alu_sreg")]
@@ -1538,7 +1530,6 @@
   "TARGET_THUMB2"
   "orn%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "type" "logic_reg")]
 )
 
@@ -1551,7 +1542,6 @@
   "TARGET_THUMB2"
   "orn%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "shift" "2")
    (set_attr "type" "alu_shift_imm")]
 )

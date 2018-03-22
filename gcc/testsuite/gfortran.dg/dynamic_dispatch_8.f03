@@ -95,11 +95,11 @@ program testd10
   allocate(foo :: a%a)
   call a%doit()
 !  write(*,*) 'Getit value : ', a%getit()
-  if (a%getit() .ne. 1) call abort
+  if (a%getit() .ne. 1) STOP 1
   deallocate(a%a)
   allocate(foo2 :: a%a)
   call a%doit()
 !  write(*,*) 'Getit value : ', a%getit()
-  if (a%getit() .ne. 3) call abort
+  if (a%getit() .ne. 3) STOP 2
 
 end program testd10

@@ -4,7 +4,11 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 256
+#define N (VECTOR_BITS / 16)
+#else
 #define N 16
+#endif
 
 unsigned short in[N];
 unsigned short coef[N];

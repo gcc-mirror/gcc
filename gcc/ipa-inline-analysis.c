@@ -1,5 +1,5 @@
 /* Analysis used by inlining decision heuristics.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
-#include "cilk.h"
 #include "cfgexpand.h"
 #include "gimplify.h"
 
@@ -175,11 +174,11 @@ do_estimate_edge_time (struct cgraph_edge *edge)
      edges and for those we disable size limits.  Don't do that when
      probability that caller will call the callee is low however, since it
      may hurt optimization of the caller's hot path.  */
-  if (edge->count.initialized_p () && edge->maybe_hot_p ()
-      && (edge->count.apply_scale (2, 1)
+  if (edge->count.ipa ().initialized_p () && edge->maybe_hot_p ()
+      && (edge->count.ipa ().apply_scale (2, 1)
           > (edge->caller->global.inlined_to
-	     ? edge->caller->global.inlined_to->count
-	     : edge->caller->count)))
+	     ? edge->caller->global.inlined_to->count.ipa ()
+	     : edge->caller->count.ipa ())))
     hints |= INLINE_HINT_known_hot;
 
   known_vals.release ();

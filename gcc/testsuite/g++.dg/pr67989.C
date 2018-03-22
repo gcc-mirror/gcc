@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-std=c++11 -O2" } */
+/* { dg-additional-options "-Wno-return-type" } */
 
 __extension__ typedef unsigned long long int uint64_t;
 namespace std __attribute__ ((__visibility__ ("default")))

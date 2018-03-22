@@ -13,6 +13,4 @@ test3 (vector signed long long x)
   return vec_abs (x);
 }
 
-/* { dg-final { scan-assembler-times "vspltisw|vxor" 1 } } */
-/* { dg-final { scan-assembler-times "vsubudm" 1 } } */
-/* { dg-final { scan-assembler-times "vmaxsd" 1 } } */
+/* scan-assembler stanzas moved to fold-vec-abs-longlong.p*.c . */

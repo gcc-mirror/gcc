@@ -64,7 +64,7 @@ values are as follows:
 
 * *Records*.
 
-  For the normal non-packed case, the alignment of a record is equal to
+  For the normal unpacked case, the alignment of a record is equal to
   the maximum alignment of any of its components.  For tagged records, this
   includes the implicit access type used for the tag.  If a pragma ``Pack``
   is used and all components are packable (see separate section on pragma

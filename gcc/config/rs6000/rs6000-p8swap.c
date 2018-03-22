@@ -1,6 +1,6 @@
 /* Subroutines used to remove unnecessary doubleword swaps
    for p8 little-endian VSX code.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -34,6 +36,7 @@
 #include "expr.h"
 #include "output.h"
 #include "tree-pass.h"
+#include "rtx-vector-builder.h"
 
 /* Analyze vector computations and remove unnecessary doubleword
    swaps (xxswapdi instructions).  This pass is performed only
@@ -325,6 +328,174 @@ insn_is_swap_p (rtx insn)
   return 1;
 }
 
+/* Return true iff EXPR represents the sum of two registers.  */
+bool
+rs6000_sum_of_two_registers_p (const_rtx expr)
+{
+  if (GET_CODE (expr) == PLUS)
+    {
+      const_rtx operand1 = XEXP (expr, 0);
+      const_rtx operand2 = XEXP (expr, 1);
+      return (REG_P (operand1) && REG_P (operand2));
+    }
+  return false;
+}
+
+/* Return true iff EXPR represents an address expression that masks off
+   the low-order 4 bits in the style of an lvx or stvx rtl pattern.  */
+bool
+rs6000_quadword_masked_address_p (const_rtx expr)
+{
+  if (GET_CODE (expr) == AND)
+    {
+      const_rtx operand1 = XEXP (expr, 0);
+      const_rtx operand2 = XEXP (expr, 1);
+      if ((REG_P (operand1) || rs6000_sum_of_two_registers_p (operand1))
+	  && CONST_SCALAR_INT_P (operand2) && INTVAL (operand2) == -16)
+	return true;
+    }
+  return false;
+}
+
+/* Return TRUE if INSN represents a swap of a swapped load from memory
+   and the memory address is quad-word aligned.  */
+static bool
+quad_aligned_load_p (swap_web_entry *insn_entry, rtx_insn *insn)
+{
+  unsigned uid = INSN_UID (insn);
+  if (!insn_entry[uid].is_swap || insn_entry[uid].is_load)
+    return false;
+
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+
+  /* Since insn is known to represent a swap instruction, we know it
+     "uses" only one input variable.  */
+  df_ref use = DF_INSN_INFO_USES (insn_info);
+
+  /* Figure out where this input variable is defined.  */
+  struct df_link *def_link = DF_REF_CHAIN (use);
+
+  /* If there is no definition or the definition is artificial or there are
+     multiple definitions, punt.  */
+  if (!def_link || !def_link->ref || DF_REF_IS_ARTIFICIAL (def_link->ref)
+      || def_link->next)
+    return false;
+
+  rtx def_insn = DF_REF_INSN (def_link->ref);
+  unsigned uid2 = INSN_UID (def_insn);
+  /* We're looking for a load-with-swap insn.  If this is not that,
+     return false.  */
+  if (!insn_entry[uid2].is_load || !insn_entry[uid2].is_swap)
+    return false;
+
+  /* If the source of the rtl def is not a set from memory, return
+     false.  */
+  rtx body = PATTERN (def_insn);
+  if (GET_CODE (body) != SET
+      || GET_CODE (SET_SRC (body)) != VEC_SELECT
+      || GET_CODE (XEXP (SET_SRC (body), 0)) != MEM)
+    return false;
+
+  rtx mem = XEXP (SET_SRC (body), 0);
+  rtx base_reg = XEXP (mem, 0);
+  return ((REG_P (base_reg) || rs6000_sum_of_two_registers_p (base_reg))
+	  && MEM_ALIGN (mem) >= 128) ? true : false;
+}
+
+/* Return TRUE if INSN represents a store-with-swap of a swapped value
+   and the memory address is quad-word aligned.  */
+static bool
+quad_aligned_store_p (swap_web_entry *insn_entry, rtx_insn *insn)
+{
+  unsigned uid = INSN_UID (insn);
+  if (!insn_entry[uid].is_swap || !insn_entry[uid].is_store)
+    return false;
+
+  rtx body = PATTERN (insn);
+  rtx dest_address = XEXP (SET_DEST (body), 0);
+  rtx swap_reg = XEXP (SET_SRC (body), 0);
+
+  /* If the base address for the memory expression is not represented
+     by a single register and is not the sum of two registers, punt.  */
+  if (!REG_P (dest_address) && !rs6000_sum_of_two_registers_p (dest_address))
+    return false;
+
+  /* Confirm that the value to be stored is produced by a swap
+     instruction.  */
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref use;
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    {
+      struct df_link *def_link = DF_REF_CHAIN (use);
+
+      /* If this is not the definition of the candidate swap register,
+	 then skip it.  I am interested in a different definition.  */
+      if (!rtx_equal_p (DF_REF_REG (use), swap_reg))
+	continue;
+
+      /* If there is no def or the def is artifical or there are
+	 multiple defs, punt.  */
+      if (!def_link || !def_link->ref || DF_REF_IS_ARTIFICIAL (def_link->ref)
+	  || def_link->next)
+	return false;
+
+      rtx def_insn = DF_REF_INSN (def_link->ref);
+      unsigned uid2 = INSN_UID (def_insn);
+
+      /* If this source value is not a simple swap, return false */
+      if (!insn_entry[uid2].is_swap || insn_entry[uid2].is_load
+	  || insn_entry[uid2].is_store)
+	return false;
+
+      /* I've processed the use that I care about, so break out of
+	 this loop.  */
+      break;
+    }
+
+  /* At this point, we know the source data comes from a swap.  The
+     remaining question is whether the memory address is aligned.  */
+  rtx set = single_set (insn);
+  if (set)
+    {
+      rtx dest = SET_DEST (set);
+      if (MEM_P (dest))
+	return (MEM_ALIGN (dest) >= 128);
+    }
+  return false;
+}
+
+/* Return 1 iff UID, known to reference a swap, is both fed by a load
+   and a feeder of a store.  */
+static unsigned int
+swap_feeds_both_load_and_store (swap_web_entry *insn_entry)
+{
+  rtx insn = insn_entry->insn;
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref def, use;
+  struct df_link *link = 0;
+  rtx_insn *load = 0, *store = 0;
+  bool fed_by_load = 0;
+  bool feeds_store = 0;
+
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    {
+      link = DF_REF_CHAIN (use);
+      load = DF_REF_INSN (link->ref);
+      if (insn_is_load_p (load) && insn_is_swap_p (load))
+	fed_by_load = 1;
+    }
+
+  FOR_EACH_INSN_INFO_DEF (def, insn_info)
+    {
+      link = DF_REF_CHAIN (def);
+      store = DF_REF_INSN (link->ref);
+      if (insn_is_store_p (store) && insn_is_swap_p (store))
+	feeds_store = 1;
+    }
+
+  return fed_by_load && feeds_store;
+}
+
 /* Return TRUE if insn is a swap fed by a load from the constant pool.  */
 static bool
 const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
@@ -335,21 +506,29 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 
   const_rtx tocrel_base;
 
-  /* Find the unique use in the swap and locate its def.  If the def
-     isn't unique, punt.  */
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
   df_ref use;
+
+  /* Iterate over the definitions that are used by this insn.  Since
+     this is known to be a swap insn, expect only one used definnition.  */
   FOR_EACH_INSN_INFO_USE (use, insn_info)
     {
       struct df_link *def_link = DF_REF_CHAIN (use);
-      if (!def_link || def_link->next)
+
+      /* If there is no def or the def is artificial or there are
+	 multiple defs, punt.  */
+      if (!def_link || !def_link->ref || DF_REF_IS_ARTIFICIAL (def_link->ref)
+	  || def_link->next)
 	return false;
 
       rtx def_insn = DF_REF_INSN (def_link->ref);
       unsigned uid2 = INSN_UID (def_insn);
+      /* If this is not a load or is not a swap, return false.  */
       if (!insn_entry[uid2].is_load || !insn_entry[uid2].is_swap)
 	return false;
 
+      /* If the source of the rtl def is not a set from memory, return
+	 false.  */
       rtx body = PATTERN (def_insn);
       if (GET_CODE (body) != SET
 	  || GET_CODE (SET_SRC (body)) != VEC_SELECT
@@ -358,16 +537,30 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 
       rtx mem = XEXP (SET_SRC (body), 0);
       rtx base_reg = XEXP (mem, 0);
+      /* If the base address for the memory expression is not
+	 represented by a register, punt.  */
+      if (!REG_P (base_reg))
+	return false;
 
       df_ref base_use;
       insn_info = DF_INSN_INFO_GET (def_insn);
       FOR_EACH_INSN_INFO_USE (base_use, insn_info)
 	{
+	  /* If base_use does not represent base_reg, look for another
+	     use.  */
 	  if (!rtx_equal_p (DF_REF_REG (base_use), base_reg))
 	    continue;
 
 	  struct df_link *base_def_link = DF_REF_CHAIN (base_use);
 	  if (!base_def_link || base_def_link->next)
+	    return false;
+
+	  /* Constants held on the stack are not "true" constants
+	     because their values are not part of the static load
+	     image.  If this constant's base reference is a stack
+	     or frame pointer, it is seen as an artificial
+	     reference.  */
+	  if (DF_REF_IS_ARTIFICIAL (base_def_link->ref))
 	    return false;
 
 	  rtx tocrel_insn = DF_REF_INSN (base_def_link->ref);
@@ -383,8 +576,26 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	  if (!toc_relative_expr_p (tocrel_expr, false, &tocrel_base, NULL))
 	    return false;
 	  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
+
 	  if (GET_CODE (base) != SYMBOL_REF || !CONSTANT_POOL_ADDRESS_P (base))
 	    return false;
+	  else
+	    {
+	      /* FIXME: The conditions under which
+	          ((GET_CODE (const_vector) == SYMBOL_REF) &&
+	           !CONSTANT_POOL_ADDRESS_P (const_vector))
+	         are not well understood.  This code prevents
+	         an internal compiler error which will occur in
+	         replace_swapped_load_constant () if we were to return
+	         true.  Some day, we should figure out how to properly
+	         handle this condition in
+	         replace_swapped_load_constant () and then we can
+	         remove this special test.  */
+	      rtx const_vector = get_pool_constant (base);
+	      if (GET_CODE (const_vector) == SYMBOL_REF
+		  && !CONSTANT_POOL_ADDRESS_P (const_vector))
+		    return false;
+	    }
 	}
     }
   return true;
@@ -530,6 +741,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  {
 	  default:
 	    break;
+	  case UNSPEC_VBPERMQ:
 	  case UNSPEC_VMRGH_DIRECT:
 	  case UNSPEC_VMRGL_DIRECT:
 	  case UNSPEC_VPACK_SIGN_SIGN_SAT:
@@ -541,6 +753,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VPERM_UNS:
 	  case UNSPEC_VPERMHI:
 	  case UNSPEC_VPERMSI:
+	  case UNSPEC_VPERMXOR:
 	  case UNSPEC_VPKPX:
 	  case UNSPEC_VSLDOI:
 	  case UNSPEC_VSLO:
@@ -551,8 +764,14 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VSUMSWS:
 	  case UNSPEC_VSUMSWS_DIRECT:
 	  case UNSPEC_VSX_CONCAT:
+	  case UNSPEC_VSX_CVDPSPN:
+	  case UNSPEC_VSX_CVSPDP:
+	  case UNSPEC_VSX_CVSPDPN:
+	  case UNSPEC_VSX_EXTRACT:
 	  case UNSPEC_VSX_SET:
 	  case UNSPEC_VSX_SLDWI:
+	  case UNSPEC_VSX_VEC_INIT:
+	  case UNSPEC_VSX_VSLO:
 	  case UNSPEC_VUNPACK_HI_SIGN:
 	  case UNSPEC_VUNPACK_HI_SIGN_DIRECT:
 	  case UNSPEC_VUNPACK_LO_SIGN:
@@ -563,12 +782,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VUPKLPX:
 	  case UNSPEC_VUPKLS_V4SF:
 	  case UNSPEC_VUPKLU_V4SF:
-	  case UNSPEC_VSX_CVDPSPN:
-	  case UNSPEC_VSX_CVSPDP:
-	  case UNSPEC_VSX_CVSPDPN:
-	  case UNSPEC_VSX_EXTRACT:
-	  case UNSPEC_VSX_VSLO:
-	  case UNSPEC_VSX_VEC_INIT:
 	    return 0;
 	  case UNSPEC_VSPLT_DIRECT:
 	  case UNSPEC_VSX_XXSPLTD:
@@ -662,10 +875,11 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
   if (insn_entry[i].is_store)
     {
       if (GET_CODE (body) == SET
-	  && GET_CODE (SET_SRC (body)) != UNSPEC)
+	  && GET_CODE (SET_SRC (body)) != UNSPEC
+	  && GET_CODE (SET_SRC (body)) != VEC_SELECT)
 	{
 	  rtx lhs = SET_DEST (body);
-	  /* Even without a swap, the LHS might be a vec_select for, say,
+	  /* Even without a swap, the RHS might be a vec_select for, say,
 	     a byte-reversing store.  */
 	  if (GET_CODE (lhs) != MEM)
 	    return 0;
@@ -892,23 +1106,24 @@ mark_swaps_for_removal (swap_web_entry *insn_entry, unsigned int i)
     }
 }
 
-/* OP is either a CONST_VECTOR or an expression containing one.
+/* *OP_PTR is either a CONST_VECTOR or an expression containing one.
    Swap the first half of the vector with the second in the first
    case.  Recurse to find it in the second.  */
 static void
-swap_const_vector_halves (rtx op)
+swap_const_vector_halves (rtx *op_ptr)
 {
   int i;
+  rtx op = *op_ptr;
   enum rtx_code code = GET_CODE (op);
   if (GET_CODE (op) == CONST_VECTOR)
     {
-      int half_units = GET_MODE_NUNITS (GET_MODE (op)) / 2;
-      for (i = 0; i < half_units; ++i)
-	{
-	  rtx temp = CONST_VECTOR_ELT (op, i);
-	  CONST_VECTOR_ELT (op, i) = CONST_VECTOR_ELT (op, i + half_units);
-	  CONST_VECTOR_ELT (op, i + half_units) = temp;
-	}
+      int units = GET_MODE_NUNITS (GET_MODE (op));
+      rtx_vector_builder builder (GET_MODE (op), units, 1);
+      for (i = 0; i < units / 2; ++i)
+	builder.quick_push (CONST_VECTOR_ELT (op, i + units / 2));
+      for (i = 0; i < units / 2; ++i)
+	builder.quick_push (CONST_VECTOR_ELT (op, i));
+      *op_ptr = builder.build ();
     }
   else
     {
@@ -916,10 +1131,10 @@ swap_const_vector_halves (rtx op)
       const char *fmt = GET_RTX_FORMAT (code);
       for (i = 0; i < GET_RTX_LENGTH (code); ++i)
 	if (fmt[i] == 'e' || fmt[i] == 'u')
-	  swap_const_vector_halves (XEXP (op, i));
+	  swap_const_vector_halves (&XEXP (op, i));
 	else if (fmt[i] == 'E')
 	  for (j = 0; j < XVECLEN (op, i); ++j)
-	    swap_const_vector_halves (XVECEXP (op, i, j));
+	    swap_const_vector_halves (&XVECEXP (op, i, j));
     }
 }
 
@@ -1212,8 +1427,7 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
       {
 	/* A CONST_VECTOR will only show up somewhere in the RHS of a SET.  */
 	gcc_assert (GET_CODE (body) == SET);
-	rtx rhs = SET_SRC (body);
-	swap_const_vector_halves (rhs);
+	swap_const_vector_halves (&SET_SRC (body));
 	if (dump_file)
 	  fprintf (dump_file, "Swapping constant halves in insn %d\n", i);
 	break;
@@ -1279,6 +1493,451 @@ replace_swap_with_copy (swap_web_entry *insn_entry, unsigned i)
   df_insn_delete (insn);
   remove_insn (insn);
   insn->set_deleted ();
+}
+
+/* Make NEW_MEM_EXP's attributes and flags resemble those of
+   ORIGINAL_MEM_EXP.  */
+static void
+mimic_memory_attributes_and_flags (rtx new_mem_exp, const_rtx original_mem_exp)
+{
+  RTX_FLAG (new_mem_exp, jump) = RTX_FLAG (original_mem_exp, jump);
+  RTX_FLAG (new_mem_exp, call) = RTX_FLAG (original_mem_exp, call);
+  RTX_FLAG (new_mem_exp, unchanging) = RTX_FLAG (original_mem_exp, unchanging);
+  RTX_FLAG (new_mem_exp, volatil) = RTX_FLAG (original_mem_exp, volatil);
+  RTX_FLAG (new_mem_exp, frame_related) =
+    RTX_FLAG (original_mem_exp, frame_related);
+
+  /* The following fields may not be used with MEM subexpressions */
+  RTX_FLAG (new_mem_exp, in_struct) = RTX_FLAG (original_mem_exp, in_struct);
+  RTX_FLAG (new_mem_exp, return_val) = RTX_FLAG (original_mem_exp, return_val);
+
+  struct mem_attrs original_attrs = *get_mem_attrs(original_mem_exp);
+
+  alias_set_type set = original_attrs.alias;
+  set_mem_alias_set (new_mem_exp, set);
+
+  addr_space_t addrspace = original_attrs.addrspace;
+  set_mem_addr_space (new_mem_exp, addrspace);
+
+  unsigned int align = original_attrs.align;
+  set_mem_align (new_mem_exp, align);
+
+  tree expr = original_attrs.expr;
+  set_mem_expr (new_mem_exp, expr);
+
+  if (original_attrs.offset_known_p)
+    {
+      HOST_WIDE_INT offset = original_attrs.offset;
+      set_mem_offset (new_mem_exp, offset);
+    }
+  else
+    clear_mem_offset (new_mem_exp);
+
+  if (original_attrs.size_known_p)
+    {
+      HOST_WIDE_INT size = original_attrs.size;
+      set_mem_size (new_mem_exp, size);
+    }
+  else
+    clear_mem_size (new_mem_exp);
+}
+
+/* Generate an rtx expression to represent use of the stvx insn to store
+   the value represented by register SRC_EXP into the memory at address
+   DEST_EXP, with vector mode MODE.  */
+rtx
+rs6000_gen_stvx (enum machine_mode mode, rtx dest_exp, rtx src_exp)
+{
+  rtx stvx;
+
+  if (mode == V16QImode)
+    stvx = gen_altivec_stvx_v16qi (src_exp, dest_exp);
+  else if (mode == V8HImode)
+    stvx = gen_altivec_stvx_v8hi (src_exp, dest_exp);
+#ifdef HAVE_V8HFmode
+  else if (mode == V8HFmode)
+    stvx = gen_altivec_stvx_v8hf (src_exp, dest_exp);
+#endif
+  else if (mode == V4SImode)
+    stvx = gen_altivec_stvx_v4si (src_exp, dest_exp);
+  else if (mode == V4SFmode)
+    stvx = gen_altivec_stvx_v4sf (src_exp, dest_exp);
+  else if (mode == V2DImode)
+    stvx = gen_altivec_stvx_v2di (src_exp, dest_exp);
+  else if (mode == V2DFmode)
+    stvx = gen_altivec_stvx_v2df (src_exp, dest_exp);
+  else if (mode == V1TImode)
+    stvx = gen_altivec_stvx_v1ti (src_exp, dest_exp);
+  else
+    /* KFmode, TFmode, other modes not expected in this context.  */
+    gcc_unreachable ();
+
+  rtx new_mem_exp = SET_DEST (PATTERN (stvx));
+  mimic_memory_attributes_and_flags (new_mem_exp, dest_exp);
+  return stvx;
+}
+
+/* Given that STORE_INSN represents an aligned store-with-swap of a
+   swapped value, replace the store with an aligned store (without
+   swap) and replace the swap with a copy insn.  */
+static void
+replace_swapped_aligned_store (swap_web_entry *insn_entry,
+			       rtx_insn *store_insn)
+{
+  unsigned uid = INSN_UID (store_insn);
+  gcc_assert (insn_entry[uid].is_swap && insn_entry[uid].is_store);
+
+  rtx body = PATTERN (store_insn);
+  rtx dest_address = XEXP (SET_DEST (body), 0);
+  rtx swap_reg = XEXP (SET_SRC (body), 0);
+  gcc_assert (REG_P (dest_address)
+	      || rs6000_sum_of_two_registers_p (dest_address));
+
+  /* Find the swap instruction that provides the value to be stored by
+   * this store-with-swap instruction. */
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (store_insn);
+  df_ref use;
+  rtx_insn *swap_insn = NULL;
+  unsigned uid2 = 0;
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    {
+      struct df_link *def_link = DF_REF_CHAIN (use);
+
+      /* if this is not the definition of the candidate swap register,
+	 then skip it.  I am only interested in the swap insnd.  */
+      if (!rtx_equal_p (DF_REF_REG (use), swap_reg))
+	continue;
+
+      /* If there is no def or the def is artifical or there are
+	 multiple defs, we should not be here.  */
+      gcc_assert (def_link && def_link->ref && !def_link->next
+		  && !DF_REF_IS_ARTIFICIAL (def_link->ref));
+
+      swap_insn = DF_REF_INSN (def_link->ref);
+      uid2 = INSN_UID (swap_insn);
+
+      /* If this source value is not a simple swap, we should not be here.  */
+      gcc_assert (insn_entry[uid2].is_swap && !insn_entry[uid2].is_load
+		  && !insn_entry[uid2].is_store);
+
+      /* We've processed the use we care about, so break out of
+	 this loop.  */
+      break;
+    }
+
+  /* At this point, swap_insn and uid2 represent the swap instruction
+     that feeds the store.  */
+  gcc_assert (swap_insn);
+  rtx set = single_set (store_insn);
+  gcc_assert (set);
+  rtx dest_exp = SET_DEST (set);
+  rtx src_exp = XEXP (SET_SRC (body), 0);
+  enum machine_mode mode = GET_MODE (dest_exp);
+  gcc_assert (MEM_P (dest_exp));
+  gcc_assert (MEM_ALIGN (dest_exp) >= 128);
+
+  /* Replace the copy with a new insn.  */
+  rtx stvx;
+  stvx = rs6000_gen_stvx (mode, dest_exp, src_exp);
+
+  rtx_insn *new_insn = emit_insn_before (stvx, store_insn);
+  rtx new_body = PATTERN (new_insn);
+
+  gcc_assert ((GET_CODE (new_body) == SET)
+	      && (GET_CODE (SET_DEST (new_body)) == MEM));
+
+  set_block_for_insn (new_insn, BLOCK_FOR_INSN (store_insn));
+  df_insn_rescan (new_insn);
+
+  df_insn_delete (store_insn);
+  remove_insn (store_insn);
+  store_insn->set_deleted ();
+
+  /* Replace the swap with a copy.  */
+  uid2 = INSN_UID (swap_insn);
+  mark_swaps_for_removal (insn_entry, uid2);
+  replace_swap_with_copy (insn_entry, uid2);
+}
+
+/* Generate an rtx expression to represent use of the lvx insn to load
+   from memory SRC_EXP into register DEST_EXP with vector mode MODE. */
+rtx
+rs6000_gen_lvx (enum machine_mode mode, rtx dest_exp, rtx src_exp)
+{
+  rtx lvx;
+
+  if (mode == V16QImode)
+    lvx = gen_altivec_lvx_v16qi (dest_exp, src_exp);
+  else if (mode == V8HImode)
+    lvx = gen_altivec_lvx_v8hi (dest_exp, src_exp);
+#ifdef HAVE_V8HFmode
+  else if (mode == V8HFmode)
+    lvx = gen_altivec_lvx_v8hf (dest_exp, src_exp);
+#endif
+  else if (mode == V4SImode)
+    lvx = gen_altivec_lvx_v4si (dest_exp, src_exp);
+  else if (mode == V4SFmode)
+    lvx = gen_altivec_lvx_v4sf (dest_exp, src_exp);
+  else if (mode == V2DImode)
+    lvx = gen_altivec_lvx_v2di (dest_exp, src_exp);
+  else if (mode == V2DFmode)
+    lvx = gen_altivec_lvx_v2df (dest_exp, src_exp);
+  else if (mode == V1TImode)
+    lvx = gen_altivec_lvx_v1ti (dest_exp, src_exp);
+  else
+    /* KFmode, TFmode, other modes not expected in this context.  */
+    gcc_unreachable ();
+
+  rtx new_mem_exp = SET_SRC (PATTERN (lvx));
+  mimic_memory_attributes_and_flags (new_mem_exp, src_exp);
+
+  return lvx;
+}
+
+/* Given that SWAP_INSN represents a swap of an aligned
+   load-with-swap, replace the load with an aligned load (without
+   swap) and replace the swap with a copy insn.  */
+static void
+replace_swapped_aligned_load (swap_web_entry *insn_entry, rtx swap_insn)
+{
+  /* Find the load.  */
+  unsigned uid = INSN_UID (swap_insn);
+  /* Only call this if quad_aligned_load_p (swap_insn).  */
+  gcc_assert (insn_entry[uid].is_swap && !insn_entry[uid].is_load);
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (swap_insn);
+
+  /* Since insn is known to represent a swap instruction, we know it
+     "uses" only one input variable.  */
+  df_ref use = DF_INSN_INFO_USES (insn_info);
+
+  /* Figure out where this input variable is defined.  */
+  struct df_link *def_link = DF_REF_CHAIN (use);
+  gcc_assert (def_link && !def_link->next);
+  gcc_assert (def_link && def_link->ref &&
+	      !DF_REF_IS_ARTIFICIAL (def_link->ref) && !def_link->next);
+
+  rtx_insn *def_insn = DF_REF_INSN (def_link->ref);
+  unsigned uid2 = INSN_UID (def_insn);
+
+  /* We're expecting a load-with-swap insn.  */
+  gcc_assert (insn_entry[uid2].is_load && insn_entry[uid2].is_swap);
+
+  /* We expect this to be a set to memory, with source representing a
+     swap (indicated by code VEC_SELECT).  */
+  rtx body = PATTERN (def_insn);
+  gcc_assert ((GET_CODE (body) == SET)
+	      && (GET_CODE (SET_SRC (body)) == VEC_SELECT)
+	      && (GET_CODE (XEXP (SET_SRC (body), 0)) == MEM));
+
+  rtx src_exp = XEXP (SET_SRC (body), 0);
+  enum machine_mode mode = GET_MODE (src_exp);
+  rtx lvx = rs6000_gen_lvx (mode, SET_DEST (body), src_exp);
+
+  rtx_insn *new_insn = emit_insn_before (lvx, def_insn);
+  rtx new_body = PATTERN (new_insn);
+
+  gcc_assert ((GET_CODE (new_body) == SET)
+	      && (GET_CODE (SET_SRC (new_body)) == MEM));
+
+  set_block_for_insn (new_insn, BLOCK_FOR_INSN (def_insn));
+  df_insn_rescan (new_insn);
+
+  df_insn_delete (def_insn);
+  remove_insn (def_insn);
+  def_insn->set_deleted ();
+
+  /* Replace the swap with a copy.  */
+  mark_swaps_for_removal (insn_entry, uid);
+  replace_swap_with_copy (insn_entry, uid);
+}
+
+/* Given that SWAP_INSN represents a swap of a load of a constant
+   vector value, replace with a single instruction that loads a
+   swapped variant of the original constant.
+
+   The "natural" representation of a byte array in memory is the same
+   for big endian and little endian.
+
+   unsigned char byte_array[] =
+     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f };
+
+   However, when loaded into a vector register, the representation
+   depends on endian conventions.
+
+   In big-endian mode, the register holds:
+
+     MSB                                            LSB
+     [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f ]
+
+   In little-endian mode, the register holds:
+
+     MSB                                            LSB
+     [ f, e, d, c, b, a, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 ]
+
+   Word arrays require different handling.  Consider the word array:
+
+   unsigned int word_array[] =
+     { 0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f };
+
+   The in-memory representation depends on endian configuration.  The
+   equivalent array, declared as a byte array, in memory would be:
+
+   unsigned char big_endian_word_array_data[] =
+     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f }
+
+   unsigned char little_endian_word_array_data[] =
+     { 3, 2, 1, 0, 7, 6, 5, 4, b, a, 9, 8, f, e, d, c }
+
+   In big-endian mode, the register holds:
+
+     MSB                                            LSB
+     [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f ]
+
+   In little-endian mode, the register holds:
+
+     MSB                                            LSB
+     [ c, d, e, f, 8, 9, a, b, 4, 5, 6, 7, 0, 1, 2, 3 ]
+
+
+  Similar transformations apply to the vector of half-word and vector
+  of double-word representations.
+
+  For now, don't handle vectors of quad-precision values.  Just return.
+  A better solution is to fix the code generator to emit lvx/stvx for
+  those.  */
+static void
+replace_swapped_load_constant (swap_web_entry *insn_entry, rtx swap_insn)
+{
+  /* Find the load.  */
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (swap_insn);
+  rtx_insn *load_insn;
+  df_ref use  = DF_INSN_INFO_USES (insn_info);
+  struct df_link *def_link = DF_REF_CHAIN (use);
+  gcc_assert (def_link && !def_link->next);
+
+  load_insn = DF_REF_INSN (def_link->ref);
+  gcc_assert (load_insn);
+
+  /* Find the TOC-relative symbol access.  */
+  insn_info = DF_INSN_INFO_GET (load_insn);
+  use = DF_INSN_INFO_USES (insn_info);
+
+  def_link = DF_REF_CHAIN (use);
+  gcc_assert (def_link && !def_link->next);
+
+  rtx_insn *tocrel_insn = DF_REF_INSN (def_link->ref);
+  gcc_assert (tocrel_insn);
+
+  /* Find the embedded CONST_VECTOR.  We have to call toc_relative_expr_p
+     to set tocrel_base; otherwise it would be unnecessary as we've
+     already established it will return true.  */
+  rtx base, offset;
+  rtx tocrel_expr = SET_SRC (PATTERN (tocrel_insn));
+  const_rtx tocrel_base;
+
+  /* There is an extra level of indirection for small/large code models.  */
+  if (GET_CODE (tocrel_expr) == MEM)
+    tocrel_expr = XEXP (tocrel_expr, 0);
+
+  if (!toc_relative_expr_p (tocrel_expr, false, &tocrel_base, NULL))
+    gcc_unreachable ();
+
+  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
+  rtx const_vector = get_pool_constant (base);
+
+  /* With the extra indirection, get_pool_constant will produce the
+     real constant from the reg_equal expression, so get the real
+     constant.  */
+  if (GET_CODE (const_vector) == SYMBOL_REF)
+    const_vector = get_pool_constant (const_vector);
+  gcc_assert (GET_CODE (const_vector) == CONST_VECTOR);
+
+  rtx new_mem;
+  enum machine_mode mode = GET_MODE (const_vector);
+
+  /* Create an adjusted constant from the original constant.  */
+  if (mode == V1TImode)
+    /* Leave this code as is.  */
+    return;
+  else if (mode == V16QImode)
+    {
+      rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (16));
+      int i;
+
+      for (i = 0; i < 16; i++)
+	XVECEXP (vals, 0, ((i+8) % 16)) = XVECEXP (const_vector, 0, i);
+      rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      new_mem = force_const_mem (mode, new_const_vector);
+    }
+  else if ((mode == V8HImode)
+#ifdef HAVE_V8HFmode
+	   || (mode == V8HFmode)
+#endif
+	   )
+    {
+      rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (8));
+      int i;
+
+      for (i = 0; i < 8; i++)
+	XVECEXP (vals, 0, ((i+4) % 8)) = XVECEXP (const_vector, 0, i);
+      rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      new_mem = force_const_mem (mode, new_const_vector);
+    }
+  else if ((mode == V4SImode) || (mode == V4SFmode))
+    {
+      rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (4));
+      int i;
+
+      for (i = 0; i < 4; i++)
+	XVECEXP (vals, 0, ((i+2) % 4)) = XVECEXP (const_vector, 0, i);
+      rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      new_mem = force_const_mem (mode, new_const_vector);
+    }
+  else if ((mode == V2DImode) || (mode == V2DFmode))
+    {
+      rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (2));
+      int i;
+
+      for (i = 0; i < 2; i++)
+	XVECEXP (vals, 0, ((i+1) % 2)) = XVECEXP (const_vector, 0, i);
+      rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      new_mem = force_const_mem (mode, new_const_vector);
+    }
+  else
+    {
+      /* We do not expect other modes to be constant-load-swapped.  */
+      gcc_unreachable ();
+    }
+
+  /* This gives us a MEM whose base operand is a SYMBOL_REF, which we
+     can't recognize.  Force the SYMBOL_REF into a register.  */
+  if (!REG_P (XEXP (new_mem, 0))) {
+    rtx base_reg = force_reg (Pmode, XEXP (new_mem, 0));
+    XEXP (new_mem, 0) = base_reg;
+
+    /* Move the newly created insn ahead of the load insn.  */
+    /* The last insn is the the insn that forced new_mem into a register.  */
+    rtx_insn *force_insn = get_last_insn ();
+    /* Remove this insn from the end of the instruction sequence.  */
+    remove_insn (force_insn);
+    rtx_insn *before_load_insn = PREV_INSN (load_insn);
+
+    /* And insert this insn back into the sequence before the previous
+       load insn so this new expression will be available when the
+       existing load is modified to load the swapped constant.  */
+    add_insn_after (force_insn, before_load_insn, BLOCK_FOR_INSN (load_insn));
+    df_insn_rescan (before_load_insn);
+    df_insn_rescan (force_insn);
+  }
+
+  /* Replace the MEM in the load instruction and rescan it.  */
+  XEXP (SET_SRC (PATTERN (load_insn)), 0) = new_mem;
+  INSN_CODE (load_insn) = -1; /* Force re-recognition.  */
+  df_insn_rescan (load_insn);
+
+  unsigned int uid = INSN_UID (swap_insn);
+  mark_swaps_for_removal (insn_entry, uid);
+  replace_swap_with_copy (insn_entry, uid);
 }
 
 /* Dump the swap table to DUMP_FILE.  */
@@ -1656,6 +2315,7 @@ rs6000_analyze_swaps (function *fun)
 
   /* Pre-pass to recombine lvx and stvx patterns so we don't lose info.  */
   recombine_lvx_stvx_patterns (fun);
+  df_process_deferred_rescans ();
 
   /* Allocate structure to represent webs of insns.  */
   insn_entry = XCNEWVEC (swap_web_entry, get_max_uid ());
@@ -1800,6 +2460,14 @@ rs6000_analyze_swaps (function *fun)
 	  && !insn_entry[i].is_swap && !insn_entry[i].is_swappable)
 	root->web_not_optimizable = 1;
 
+      /* If we have a swap that is both fed by a permuting load
+	 and a feeder of a permuting store, then the optimization
+	 isn't appropriate.  (Consider vec_xl followed by vec_xst_be.)  */
+      else if (insn_entry[i].is_swap && !insn_entry[i].is_load
+	       && !insn_entry[i].is_store
+	       && swap_feeds_both_load_and_store (&insn_entry[i]))
+	root->web_not_optimizable = 1;
+
       /* If we have permuting loads or stores that are not accompanied
 	 by a register swap, the optimization isn't appropriate.  */
       else if (insn_entry[i].is_load && insn_entry[i].is_swap)
@@ -1873,6 +2541,109 @@ rs6000_analyze_swaps (function *fun)
 
   /* Clean up.  */
   free (insn_entry);
+
+  /* Use a second pass over rtl to detect that certain vector values
+     fetched from or stored to memory on quad-word aligned addresses
+     can use lvx/stvx without swaps.  */
+
+  /* First, rebuild ud chains.  */
+  df_remove_problem (df_chain);
+  df_process_deferred_rescans ();
+  df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
+  df_chain_add_problem (DF_UD_CHAIN);
+  df_analyze ();
+
+  swap_web_entry *pass2_insn_entry;
+  pass2_insn_entry = XCNEWVEC (swap_web_entry, get_max_uid ());
+
+  /* Walk the insns to gather basic data.  */
+  FOR_ALL_BB_FN (bb, fun)
+    FOR_BB_INSNS_SAFE (bb, insn, curr_insn)
+    {
+      unsigned int uid = INSN_UID (insn);
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  pass2_insn_entry[uid].insn = insn;
+
+	  pass2_insn_entry[uid].is_relevant = 1;
+	  pass2_insn_entry[uid].is_load = insn_is_load_p (insn);
+	  pass2_insn_entry[uid].is_store = insn_is_store_p (insn);
+
+	  /* Determine if this is a doubleword swap.  If not,
+	     determine whether it can legally be swapped.  */
+	  if (insn_is_swap_p (insn))
+	    pass2_insn_entry[uid].is_swap = 1;
+	}
+    }
+
+  e = get_max_uid ();
+  for (unsigned i = 0; i < e; ++i)
+    if (pass2_insn_entry[i].is_swap && !pass2_insn_entry[i].is_load
+	&& !pass2_insn_entry[i].is_store)
+      {
+	/* Replace swap of aligned load-swap with aligned unswapped
+	   load.  */
+	rtx_insn *rtx_insn = pass2_insn_entry[i].insn;
+	if (quad_aligned_load_p (pass2_insn_entry, rtx_insn))
+	  replace_swapped_aligned_load (pass2_insn_entry, rtx_insn);
+      }
+    else if (pass2_insn_entry[i].is_swap && pass2_insn_entry[i].is_store)
+      {
+	/* Replace aligned store-swap of swapped value with aligned
+	   unswapped store.  */
+	rtx_insn *rtx_insn = pass2_insn_entry[i].insn;
+	if (quad_aligned_store_p (pass2_insn_entry, rtx_insn))
+	  replace_swapped_aligned_store (pass2_insn_entry, rtx_insn);
+      }
+
+  /* Clean up.  */
+  free (pass2_insn_entry);
+
+  /* Use a third pass over rtl to replace swap(load(vector constant))
+     with load(swapped vector constant).  */
+
+  /* First, rebuild ud chains.  */
+  df_remove_problem (df_chain);
+  df_process_deferred_rescans ();
+  df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
+  df_chain_add_problem (DF_UD_CHAIN);
+  df_analyze ();
+
+  swap_web_entry *pass3_insn_entry;
+  pass3_insn_entry = XCNEWVEC (swap_web_entry, get_max_uid ());
+
+  /* Walk the insns to gather basic data.  */
+  FOR_ALL_BB_FN (bb, fun)
+    FOR_BB_INSNS_SAFE (bb, insn, curr_insn)
+    {
+      unsigned int uid = INSN_UID (insn);
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  pass3_insn_entry[uid].insn = insn;
+
+	  pass3_insn_entry[uid].is_relevant = 1;
+	  pass3_insn_entry[uid].is_load = insn_is_load_p (insn);
+	  pass3_insn_entry[uid].is_store = insn_is_store_p (insn);
+
+	  /* Determine if this is a doubleword swap.  If not,
+	     determine whether it can legally be swapped.  */
+	  if (insn_is_swap_p (insn))
+	    pass3_insn_entry[uid].is_swap = 1;
+	}
+    }
+
+  e = get_max_uid ();
+  for (unsigned i = 0; i < e; ++i)
+    if (pass3_insn_entry[i].is_swap && !pass3_insn_entry[i].is_load
+	&& !pass3_insn_entry[i].is_store)
+      {
+	insn = pass3_insn_entry[i].insn;
+	if (const_load_sequence_p (pass3_insn_entry, insn))
+	  replace_swapped_load_constant (pass3_insn_entry, insn);
+      }
+
+  /* Clean up.  */
+  free (pass3_insn_entry);
   return 0;
 }
 

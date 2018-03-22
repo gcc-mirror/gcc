@@ -1,6 +1,8 @@
 /* { dg-require-ifunc "" } */
 
-static void *resolver ()
+typedef int F (void);
+
+static F *resolver ()
 {
   return 0;
 }

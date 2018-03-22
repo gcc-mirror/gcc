@@ -611,6 +611,7 @@ glibcxx_toolexeclibdir
 glibcxx_toolexecdir
 gxx_include_dir
 glibcxx_prefixdir
+EXTRA_CFLAGS
 CPU_OPT_BITS_RANDOM
 CPU_OPT_EXT_RANDOM
 ERROR_CONSTANTS_SRCDIR
@@ -620,6 +621,8 @@ CPU_DEFINES_SRCDIR
 ATOMIC_FLAGS
 ATOMIC_WORD_SRCDIR
 ATOMICITY_SRCDIR
+INCLUDE_DIR_NOTPARALLEL_FALSE
+INCLUDE_DIR_NOTPARALLEL_TRUE
 BUILD_PDF_FALSE
 BUILD_PDF_TRUE
 PDFLATEX
@@ -896,6 +899,7 @@ enable_libstdcxx_dual_abi
 with_default_libstdcxx_abi
 enable_libstdcxx_threads
 enable_libstdcxx_filesystem_ts
+enable_cet
 with_gxx_include_dir
 enable_version_specific_runtime_libs
 with_gcc_major_version_only
@@ -1594,6 +1598,8 @@ Optional Features:
                           enable C++11 threads support [default=auto]
   --enable-libstdcxx-filesystem-ts
                           turns on ISO/IEC TS 18822 support [default=auto]
+  --enable-cet            enable Intel CET in target libraries
+                          [default=default]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -11601,7 +11607,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11604 "configure"
+#line 11610 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11707,7 +11713,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11710 "configure"
+#line 11716 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15393,7 +15399,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15396 "configure"
+#line 15402 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15428,7 +15434,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15431 "configure"
+#line 15437 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15463,7 +15469,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15466 "configure"
+#line 15472 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15499,7 +15505,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15502 "configure"
+#line 15508 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15580,7 +15586,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15583 "configure"
+#line 15589 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15622,7 +15628,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15625 "configure"
+#line 15631 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15656,7 +15662,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15659 "configure"
+#line 15665 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -20564,7 +20570,7 @@ $as_echo "$glibcxx_glibc217" >&6; }
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
-      freebsd*|netbsd*|dragonfly*)
+      freebsd*|netbsd*|dragonfly*|rtems*)
         ac_has_clock_monotonic=yes
         ac_has_clock_realtime=yes
         ac_has_nanosleep=yes
@@ -21795,7 +21801,7 @@ for ac_header in endian.h execinfo.h float.h fp.h ieeefp.h inttypes.h \
 locale.h machine/endian.h machine/param.h nan.h stdint.h stdlib.h string.h \
 strings.h sys/ipc.h sys/isa_defs.h sys/machine.h sys/param.h \
 sys/resource.h sys/sem.h sys/stat.h sys/time.h sys/types.h unistd.h \
-wchar.h wctype.h linux/random.h
+wchar.h wctype.h linux/types.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -21803,6 +21809,23 @@ eval as_val=\$$as_ac_Header
    if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+for ac_header in linux/random.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "linux/random.h" "ac_cv_header_linux_random_h" "#ifdef HAVE_LINUX_TYPES_H
+# include <linux/types.h>
+#endif
+
+"
+if test "x$ac_cv_header_linux_random_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LINUX_RANDOM_H 1
 _ACEOF
 
 fi
@@ -53327,6 +53350,19 @@ _ACEOF
 fi
 done
 
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
     ;;
 
   *-fuchsia*)
@@ -66076,6 +66112,19 @@ done
 
 
   CXXFLAGS="$ac_save_CXXFLAGS"
+
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
 
     ;;
   *-netbsd*)
@@ -79994,6 +80043,9 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
         enable_libstdcxx_filesystem_ts=yes
         ;;
+      rtems*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
       solaris*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
@@ -81055,6 +81107,18 @@ else
 fi
 
 
+case "$build" in
+ *-*-darwin* ) glibcxx_include_dir_notparallel=yes ;;
+ * ) glibcxx_include_dir_notparallel=no ;;
+esac
+ if test $glibcxx_include_dir_notparallel = "yes"; then
+  INCLUDE_DIR_NOTPARALLEL_TRUE=
+  INCLUDE_DIR_NOTPARALLEL_FALSE='#'
+else
+  INCLUDE_DIR_NOTPARALLEL_TRUE='#'
+  INCLUDE_DIR_NOTPARALLEL_FALSE=
+fi
+
 
 # Propagate the target-specific source directories through the build chain.
 ATOMICITY_SRCDIR=config/${atomicity_dir}
@@ -81074,6 +81138,93 @@ CPU_OPT_BITS_RANDOM=config/${cpu_opt_bits_random}
 
 
 
+
+
+
+# Add CET specific flags if Intel CET is enabled.
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|default) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=default
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      default)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mcet"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+EXTRA_CXX_FLAGS="$EXTRA_CXX_FLAGS $CET_FLAGS"
+EXTRA_CFLAGS="$EXTRA_CFLAGS $CET_FLAGS"
 
 
 
@@ -81747,6 +81898,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_PDF_TRUE}" && test -z "${BUILD_PDF_FALSE}"; then
   as_fn_error "conditional \"BUILD_PDF\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${INCLUDE_DIR_NOTPARALLEL_TRUE}" && test -z "${INCLUDE_DIR_NOTPARALLEL_FALSE}"; then
+  as_fn_error "conditional \"INCLUDE_DIR_NOTPARALLEL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

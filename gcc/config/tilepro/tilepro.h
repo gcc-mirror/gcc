@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for TILEPro.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is part of GCC.
@@ -57,13 +57,6 @@
 #define PCC_BITFIELD_TYPE_MATTERS 1
 #define FASTEST_ALIGNMENT 32
 #define BIGGEST_FIELD_ALIGNMENT 64
-
-/* Make strings word-aligned so strcpy from constants will be
-   faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
@@ -212,7 +205,6 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
-#define STARTING_FRAME_OFFSET 0
 
 #define DYNAMIC_CHAIN_ADDRESS(FRAME) \
   plus_constant (Pmode, (FRAME), UNITS_PER_WORD)

@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
   /**
-   * @ingroup filesystem
+   * @ingroup filesystem-ts
    * @{
    */
 
@@ -725,10 +725,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     pointer   operator->() const { return std::__addressof(**this); }
 
     iterator& operator++();
-    iterator  operator++(int) { auto __tmp = *this; ++_M_cur; return __tmp; }
+    iterator  operator++(int) { auto __tmp = *this; ++*this; return __tmp; }
 
     iterator& operator--();
-    iterator  operator--(int) { auto __tmp = *this; --_M_cur; return __tmp; }
+    iterator  operator--(int) { auto __tmp = *this; --*this; return __tmp; }
 
     friend bool operator==(const iterator& __lhs, const iterator& __rhs)
     { return __lhs._M_equals(__rhs); }
@@ -1079,7 +1079,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return _M_at_end == __rhs._M_at_end;
   }
 
-  // @} group filesystem
+  // @} group filesystem-ts
 _GLIBCXX_END_NAMESPACE_CXX11
 } // namespace v1
 } // namespace filesystem

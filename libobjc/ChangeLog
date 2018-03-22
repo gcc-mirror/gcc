@@ -1,3 +1,23 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-11-23  Tom de Vries  <tom@codesourcery.com>
+
+	* class.c (CLASS_TABLE_HASH): Wrap in "do {} while (0)".
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Likeiwse.
+	* configure: Likewise.
+	* configure.ac: Set CET_FLAGS. Update XCFLAGS.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
@@ -3474,7 +3494,7 @@ Mon Sep 21 23:27:10 1998  Ovidiu Predescu <ovidiu@slip.net>
 
 	* New directory.  Moved files from ../gcc/objc.
 
-Copyright (C) 1998-2017 Free Software Foundation, Inc.
+Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

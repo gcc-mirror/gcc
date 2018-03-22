@@ -573,6 +573,7 @@ vis_hide
 real_host_noncanonical
 accel_dir_suffix
 force_explicit_eh_registry
+CET_FLAGS
 fixed_point
 enable_decimal_float
 decimal_float
@@ -675,6 +676,7 @@ with_build_libsubdir
 enable_largefile
 enable_decimal_float
 with_system_libunwind
+enable_cet
 enable_explicit_exception_frame_registration
 with_glibc_version
 enable_tls
@@ -1314,6 +1316,8 @@ Optional Features:
 			enable decimal float extension to C.  Selecting 'bid'
 			or 'dpd' choses which decimal floating point format
 			to use
+  --enable-cet            enable Intel CET in target libraries
+                          [default=default]
   --enable-explicit-exception-frame-registration
                           register exception tables explicitly at module
                           start, for use e.g. for compatibility with
@@ -4773,6 +4777,89 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sjlj_exceptions" >&5
 $as_echo "$ac_cv_sjlj_exceptions" >&6; }
 
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|default) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=default
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      default)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mcet"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
 # Check whether --enable-explicit-exception-frame-registration was given.
 if test "${enable_explicit_exception_frame_registration+set}" = set; then :
   enableval=$enable_explicit_exception_frame_registration;
@@ -4875,7 +4962,7 @@ esac
 
 case ${host} in
 *-*-solaris2*)
-  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  # Check for system-provided CRTs on Solaris 11.4.
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking system-provided CRTs on Solaris" >&5
 $as_echo_n "checking system-provided CRTs on Solaris... " >&6; }
 if test "${libgcc_cv_solaris_crts+set}" = set; then :
@@ -5127,10 +5214,46 @@ $as_echo "$libgcc_cv_hidden_visibility_attribute" >&6; }
 
 if test $libgcc_cv_hidden_visibility_attribute = yes; then
     vis_hide='-fvisibility=hidden -DHIDE_EXPORTS'
+
+cat >>confdefs.h <<_ACEOF
+#define AS_HIDDEN_DIRECTIVE $asm_hidden_op
+_ACEOF
+
 else
     vis_hide=
 fi
 
+
+# Check for .cfi_sections .debug_frame support.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for .cfi_sections .debug_frame" >&5
+$as_echo_n "checking for .cfi_sections .debug_frame... " >&6; }
+if test "${libgcc_cv_cfi_sections_directive+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	echo 'int foo (int, char *);' > conftest.c
+	echo 'int bar (int x) { char *y = __builtin_alloca (x); return foo (x + 1, y) + 1; }' >> conftest.c
+	libgcc_cv_cfi_sections_directive=no
+	if { ac_try='${CC-cc} -Werror -g -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions -S conftest.c -o conftest.s 1>&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }; then
+	    if grep "\\.cfi_sections.*\\.debug_frame" conftest.s >/dev/null; then
+		libgcc_cv_cfi_sections_directive=yes
+	    fi
+	fi
+	rm -f conftest.*
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_cfi_sections_directive" >&5
+$as_echo "$libgcc_cv_cfi_sections_directive" >&6; }
+if test $libgcc_cv_cfi_sections_directive = yes; then
+
+$as_echo "#define HAVE_AS_CFI_SECTIONS 1" >>confdefs.h
+
+fi
 
 # See if we have thread-local storage.  We can only test assembler
 # since link-time and run-time tests require the newly built
@@ -5211,6 +5334,45 @@ if test "$enable_tls $gcc_cv_use_emutls" = "yes yes"; then
   set_use_emutls="-DUSE_EMUTLS"
 fi
 
+
+
+
+case "${target}" in
+i[34567]86-*-* | x86_64-*-*)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the assembler supports AVX" >&5
+$as_echo_n "checking if the assembler supports AVX... " >&6; }
+if test "${libgcc_cv_as_avx+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm("vzeroupper");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgcc_cv_as_avx=yes
+else
+  libgcc_cv_as_avx=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_as_avx" >&5
+$as_echo "$libgcc_cv_as_avx" >&6; }
+  if test x$libgcc_cv_as_avx = xyes; then
+
+$as_echo "#define HAVE_AS_AVX 1" >>confdefs.h
+
+  fi
+  ;;
+esac
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for init priority support" >&5
 $as_echo_n "checking for init priority support... " >&6; }

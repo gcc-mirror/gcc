@@ -1,5 +1,6 @@
-// { dg-do run }
-// PR C++/29295
+// PR c++/29295
+// { dg-do run { target c++14_down } }
+// { dg-do compile { target c++17 } }
 // make sure that a typedef for a bool will have the
 //  the same results as a bool itself.
 

@@ -1,3 +1,43 @@
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* update-copyright.py: Remove "libcilkrts" reference.
+
+2018-02-19  Yury Gribov  <tetra2005@gmail.com>
+
+	* compare_tests: Use TMPDIR when set.
+	* dg-cmp-results.sh: Ditto.
+	* warn_summary: Ditto.
+
+2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* download_prerequisites: Use shasum for FreeBSD and DragonFly.
+
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Support new format that can be easily
+	parsed. Add new column to report.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Skip pdt-5.f03 in gfortran.dg subdir.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* contrib/gcc_update: Ditto.
+
+2017-11-08  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Fix abbreviations for SI units.
+
+2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Handle libbacktrace.
+
+2017-09-18  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites (isl): Bump version to 0.18.
+
 2017-08-02  Yury Gribov  <tetra2005@gmail.com>
 
 	* mklog: Added new implementation.

@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -25,11 +25,6 @@ along with this program; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "internal.h"
 #include "hashtab.h"
-
-/* Do not track column numbers higher than this one.  As a result, the
-   range of column_bits is [12, 18] (or 0 if column numbers are
-   disabled).  */
-const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
 
 /* Highest possible source location encoded within an ordinary or
    macro map.  */
@@ -349,7 +344,12 @@ void
 linemap_init (struct line_maps *set,
 	      source_location builtin_location)
 {
+#if __GNUC__ == 4 && __GNUC_MINOR__ == 2 && !defined (__clang__)
+  /* PR33916, needed to fix PR82939.  */
+  memset (set, 0, sizeof (struct line_maps));
+#else
   *set = line_maps ();
+#endif
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =
@@ -2348,6 +2348,14 @@ rich_location::maybe_add_fixit (source_location start,
     }
   /* ...and on the same line.  */
   if (exploc_start.line != exploc_next_loc.line)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+  /* The columns must be in the correct order.  This can fail if the
+     endpoints straddle the boundary for which the linemap can represent
+     columns (PR c/82050).  */
+  if (exploc_start.column > exploc_next_loc.column)
     {
       stop_supporting_fixits ();
       return;

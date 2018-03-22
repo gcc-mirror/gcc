@@ -1,7 +1,8 @@
 /* { dg-do compile { target { ! nvptx*-*-* } } } */
 /* { dg-options "-O2 -fpatchable-function-entry=3,1" } */
-/* { dg-final { scan-assembler-times "nop" 1 { target { ! alpha*-*-* } } } } */
+/* { dg-final { scan-assembler-times "nop" 1 { target { ! { alpha*-*-* visium-*-* } } } } } */
 /* { dg-final { scan-assembler-times "bis" 1 { target alpha*-*-* } } } */
+/* { dg-final { scan-assembler-times "nop" 2 { target visium-*-* } } } */
 
 extern int a;
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -122,7 +122,7 @@ extern tree arm_fp16_type_node;
 /* Use hardware floating point instructions. */
 #define TARGET_HARD_FLOAT	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
 				 && bitmap_bit_p (arm_active_target.isa, \
-						  isa_bit_VFPv2))
+						  isa_bit_vfpv2))
 #define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT)
 /* User has permitted use of FP instructions, if they exist for this
    target.  */
@@ -169,10 +169,10 @@ extern tree arm_fp16_type_node;
 #define TARGET_VFPD32 (bitmap_bit_p (arm_active_target.isa, isa_bit_fp_d32))
 
 /* FPU supports VFPv3 instructions.  */
-#define TARGET_VFP3 (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv3))
+#define TARGET_VFP3 (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv3))
 
 /* FPU supports FPv5 instructions.  */
-#define TARGET_VFP5 (bitmap_bit_p (arm_active_target.isa, isa_bit_FPv5))
+#define TARGET_VFP5 (bitmap_bit_p (arm_active_target.isa, isa_bit_fpv5))
 
 /* FPU only supports VFP single-precision instructions.  */
 #define TARGET_VFP_SINGLE (!TARGET_VFP_DOUBLE)
@@ -194,7 +194,7 @@ extern tree arm_fp16_type_node;
   (TARGET_HARD_FLOAT && (TARGET_FP16 && TARGET_VFP5))
 
 /* FPU supports fused-multiply-add operations.  */
-#define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv4))
+#define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv4))
 
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO (bitmap_bit_p (arm_active_target.isa, isa_bit_crypto))
@@ -210,9 +210,23 @@ extern tree arm_fp16_type_node;
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
-/* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
+/* Supports the Dot Product AdvSIMD extensions.  */
+#define TARGET_DOTPROD (TARGET_NEON					\
+			&& bitmap_bit_p (arm_active_target.isa,		\
+					isa_bit_dotprod)		\
+			&& arm_arch8_2)
+
+/* FPU supports the floating point FP16 instructions for ARMv8.2-A
+   and later.  */
 #define TARGET_VFP_FP16INST \
   (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 && arm_fp16_inst)
+
+/* Target supports the floating point FP16 instructions from ARMv8.2-A
+   and later.  */
+#define TARGET_FP16FML (TARGET_NEON					\
+			&& bitmap_bit_p (arm_active_target.isa,	\
+					isa_bit_fp16fml)		\
+			&& arm_arch8_2)
 
 /* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
@@ -591,15 +605,6 @@ extern int arm_arch_cmse;
 #ifdef IN_TARGET_LIBS
 #define BIGGEST_FIELD_ALIGNMENT 64
 #endif
-
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_tune_xscale ? 1 : 2)
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
-   ((TREE_CODE (EXP) == STRING_CST				\
-     && !optimize_size						\
-     && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
-    ? BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR : (ALIGN))
 
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
@@ -1257,14 +1262,8 @@ enum reg_class
    couldn't convert a direct call into an indirect one.  */
 #define CALLER_INTERWORKING_SLOT_SIZE			\
   (TARGET_CALLER_INTERWORKING				\
-   && crtl->outgoing_args_size != 0		\
+   && maybe_ne (crtl->outgoing_args_size, 0)		\
    ? UNITS_PER_WORD : 0)
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET  0
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */
@@ -1624,12 +1623,10 @@ enum arm_auto_incmodes
 
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
-   or a pseudo reg currently allocated to a suitable hard reg.
-   Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
-   allocation.  */
+   or a pseudo reg currently allocated to a suitable hard reg.  */
 #define TEST_REGNO(R, TEST, VALUE) \
-  ((R TEST VALUE) || ((unsigned) reg_renumber[R] TEST VALUE))
+  ((R TEST VALUE)	\
+    || (reg_renumber && ((unsigned) reg_renumber[R] TEST VALUE)))
 
 /* Don't allow the pc to be used.  */
 #define ARM_REGNO_OK_FOR_BASE_P(REGNO)			\
@@ -1910,8 +1907,9 @@ enum arm_auto_incmodes
 
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions.  */
-#define BRANCH_COST(speed_p, predictable_p) \
-  (current_tune->branch_cost (speed_p, predictable_p))
+#define BRANCH_COST(speed_p, predictable_p)			\
+  ((arm_branch_cost != -1) ? arm_branch_cost :			\
+   (current_tune->branch_cost (speed_p, predictable_p)))
 
 /* False if short circuit operation is preferred.  */
 #define LOGICAL_OP_NON_SHORT_CIRCUIT					\
@@ -2175,13 +2173,16 @@ extern int making_const_table;
 
 extern const char *arm_rewrite_mcpu (int argc, const char **argv);
 extern const char *arm_rewrite_march (int argc, const char **argv);
+extern const char *arm_asm_auto_mfpu (int argc, const char **argv);
 #define ASM_CPU_SPEC_FUNCTIONS			\
   { "rewrite_mcpu", arm_rewrite_mcpu },	\
-  { "rewrite_march", arm_rewrite_march },
+  { "rewrite_march", arm_rewrite_march },	\
+  { "asm_auto_mfpu", arm_asm_auto_mfpu },
 
 #define ASM_CPU_SPEC							\
+  " %{mfpu=auto:%<mfpu=auto %:asm_auto_mfpu(%{march=*: arch %*})}"	\
   " %{mcpu=generic-*:-march=%:rewrite_march(%{mcpu=generic-*:%*});"	\
-  "   march=*:-march=%:rewrite_march(%{march=*:%*});"		\
+  "   march=*:-march=%:rewrite_march(%{march=*:%*});"			\
   "   mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})"			\
   " }"
 
@@ -2193,6 +2194,7 @@ extern const char *arm_target_thumb_only (int argc, const char **argv);
    an ARM chip.  */
 #if defined(__arm__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
+#define HAVE_LOCAL_CPU_DETECT
 # define MCPU_MTUNE_NATIVE_FUNCTIONS			\
   { "local_cpu_detect", host_detect_local_cpu },
 # define MCPU_MTUNE_NATIVE_SPECS				\
@@ -2237,9 +2239,12 @@ const char *arm_be8_option (int argc, const char **argv);
   "                     %{mfloat-abi=*: abi %*}"	\
   "                     %<march=*) "
 
+/* Complete set of specs for the driver.  Commas separate the
+   individual rules so that any option suppression (%<opt...)is
+   completed before starting subsequent rules.  */
 #define DRIVER_SELF_SPECS			\
-  MCPU_MTUNE_NATIVE_SPECS			\
-  TARGET_MODE_SPECS				\
+  MCPU_MTUNE_NATIVE_SPECS,			\
+  TARGET_MODE_SPECS,				\
   ARCH_CANONICAL_SPECS
 
 #define TARGET_SUPPORTS_WIDE_INT 1

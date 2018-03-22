@@ -44,7 +44,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -69,7 +69,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2017 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2018 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -324,7 +324,7 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
-@item Perl version 5.6.1 (or later)
+@item Perl version between 5.6.1 and 5.6.24
 
 Necessary when targeting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
@@ -337,6 +337,8 @@ Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
 Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
+
+Used by @command{automake}.
 
 @end table
 
@@ -419,6 +421,9 @@ For directories that use automake, GCC requires the latest release in
 the 1.11 series, which is currently 1.11.6.  When regenerating a directory
 to a newer version, please update all the directories using an older 1.11
 to the latest released version.
+
+Note that @command{automake} 1.11.6 is incompatible with
+@command{perl} version 5.6.26.
 
 @item gettext version 0.14.5 (or later)
 
@@ -1006,31 +1011,6 @@ but for the linker.
 Specify that stabs debugging
 information should be used instead of whatever format the host normally
 uses.  Normally GCC uses the same debug format as the host system.
-
-On MIPS based systems and on Alphas, you must specify whether you want
-GCC to create the normal ECOFF debugging format, or to use BSD-style
-stabs passed through the ECOFF symbol table.  The normal ECOFF debug
-format cannot fully handle languages other than C@.  BSD stabs format can
-handle other languages, but it only works with the GNU debugger GDB@.
-
-Normally, GCC uses the ECOFF debugging format by default; if you
-prefer BSD stabs, specify @option{--with-stabs} when you configure GCC@.
-
-No matter which default you choose when you configure GCC, the user
-can use the @option{-gcoff} and @option{-gstabs+} options to specify explicitly
-the debug format for a particular compilation.
-
-@option{--with-stabs} is meaningful on the ISC system on the 386, also, if
-@option{--with-gas} is used.  It selects use of stabs debugging
-information embedded in COFF output.  This kind of debugging information
-supports C++ well; ordinary COFF debugging information does not.
-
-@option{--with-stabs} is also meaningful on 386 systems running SVR4.  It
-selects use of stabs debugging information embedded in ELF output.  The
-C++ compiler currently (2.6.0) does not support the DWARF debugging
-information normally used on 386 SVR4 platforms; stabs provide a
-workable alternative.  This requires gas and gdb, as the normal SVR4
-tools can not generate or interpret stabs.
 
 @item --with-tls=@var{dialect}
 Specify the default TLS dialect, for systems were there is a choice.
@@ -1665,7 +1645,8 @@ not be built.
 
 @item --disable-libssp
 Specify that the run-time libraries for stack smashing protection
-should not be built.
+should not be built or linked against.  On many targets library support
+is provided by the C library instead.
 
 @item --disable-libquadmath
 Specify that the GCC quad-precision math library should not be built.
@@ -1896,6 +1877,35 @@ When neither of these configure options are used, the default will be
 128-bit @code{long double} when built against GNU C Library 2.4 and later,
 64-bit @code{long double} otherwise.
 
+@item --with-long-double-format=ibm
+@itemx --with-long-double-format=ieee
+Specify whether @code{long double} uses the IBM extended double format
+or the IEEE 128-bit floating point format on PowerPC Linux systems.
+This configuration switch will only work on little endian PowerPC
+Linux systems and on big endian 64-bit systems where the default cpu
+is at least power7 (i.e. @option{--with-cpu=power7},
+@option{--with-cpu=power8}, or @option{--with-cpu=power9} is used).
+
+If you use the @option{--with-long-double-64} configuration option,
+the @option{--with-long-double-format=ibm} and
+@option{--with-long-double-format=ieee} options are ignored.
+
+The default @code{long double} format is to use IBM extended double.
+Until all of the libraries are converted to use IEEE 128-bit floating
+point, it is not recommended to use
+@option{--with-long-double-format=ieee}.
+
+On little endian PowerPC Linux systems, if you explicitly set the
+@code{long double} type, it will build multilibs to allow you to
+select either @code{long double} format, unless you disable multilibs
+with the @code{--disable-multilib} option.  At present,
+@code{long double} multilibs are not built on big endian PowerPC Linux
+systems.  If you are building multilibs, you will need to configure
+the compiler using the @option{--with-system-zlib} option.
+
+If you do not set the @code{long double} type explicitly, no multilibs
+will be generated.
+
 @item --enable-fdpic
 On SH Linux systems, generate ELF FDPIC code.
 
@@ -2084,6 +2094,19 @@ explicitly specify the directory where they are installed.  The
 shorthand for
 @option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
 @option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
+
+@item --enable-cet
+@itemx --disable-cet
+Enable building target run-time libraries with control-flow
+instrumentation, see @option{-fcf-protection} option.  When
+@code{--enable-cet} is specified target libraries are configured
+to add @option{-fcf-protection} and, if needed, other target
+specific options to a set of building options.
+
+The option is enabled by default on Linux/x86 if target binutils
+supports @code{Intel CET} instructions.  In this case the target
+libraries are configured to get additional @option{-fcf-protection}
+and @option{-mcet} options.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2491,6 +2514,13 @@ stage is run without the option @option{-fcompare-debug}.  This is
 useful to verify the full @option{-fcompare-debug} testing coverage.  It
 must be used along with @code{bootstrap-debug-lean} and
 @code{bootstrap-debug-lib}.
+
+@item @samp{bootstrap-cet}
+This option enables Intel CET for host tools during bootstrapping.
+@samp{BUILD_CONFIG=bootstrap-cet} is equivalent to adding
+@option{-fcf-protection -mcet} to @samp{BOOT_CFLAGS}.  This option
+assumes that the host supports Intel CET (e.g. GNU assembler version
+2.30 or later).
 
 @item @samp{bootstrap-time}
 Arranges for the run time of each program started by the GCC driver,
@@ -3161,8 +3191,6 @@ information have to.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
-@uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
-@item
 @uref{#amd64-x-solaris210,,amd64-*-solaris2.10}
 @item
 @uref{#arm-x-eabi,,arm-*-eabi}
@@ -3212,10 +3240,6 @@ information have to.
 @uref{#microblaze-x-elf,,microblaze-*-elf}
 @item
 @uref{#mips-x-x,,mips-*-*}
-@item
-@uref{#mips-sgi-irix5,,mips-sgi-irix5}
-@item
-@uref{#mips-sgi-irix6,,mips-sgi-irix6}
 @item
 @uref{#nds32le-x-elf,,nds32le-*-elf}
 @item
@@ -3346,28 +3370,13 @@ The workaround is disabled by default if neither of
 @anchor{alpha-x-x}
 @heading alpha*-*-*
 This section contains general configuration information for all
-alpha-based platforms using ELF (in particular, ignore this section for
-DEC OSF/1, Digital UNIX and Tru64 UNIX)@.  In addition to reading this
+Alpha-based platforms using ELF@.  In addition to reading this
 section, please read all other sections that match your target.
 
 We require binutils 2.11.2 or newer.
 Previous binutils releases had a number of problems with DWARF 2
 debugging information, not the least of which is incorrect linking of
 shared libraries.
-
-@html
-<hr />
-@end html
-@anchor{alpha-dec-osf51}
-@heading alpha*-dec-osf5.1
-Systems using processors that implement the DEC Alpha architecture and
-are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
-Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
-
-Support for Tru64 UNIX V5.1 has been removed in GCC 4.8.  As of GCC 4.6,
-support for Tru64 UNIX V4.0 and V5.0 has been removed.  As of GCC 3.2,
-versions before @code{alpha*-dec-osf4} are no longer supported.  (These
-are the versions which identify themselves as DEC OSF/1.)
 
 @html
 <hr />
@@ -3799,12 +3808,10 @@ It is recommended that you configure GCC to use the GNU assembler.  The
 versions included in Solaris 10, from GNU binutils 2.15 (in
 @file{/usr/sfw/bin/gas}), and Solaris 11, from GNU binutils 2.19 or
 newer (also available as @file{/usr/bin/gas} and
-@file{/usr/gnu/bin/as}), work fine.  Please note that the current
-version, from GNU binutils 2.26, only works on Solaris 12 when using the
-Solaris linker.  On Solaris 10 and 11, you either have to wait for GNU
-binutils 2.26.1 or newer, or stay with GNU binutils 2.25.1.  Recent
-versions of the Solaris assembler in @file{/usr/ccs/bin/as} work almost
-as well, though.
+@file{/usr/gnu/bin/as}), work fine.  The current version, from GNU
+binutils 2.29, is known to work, but the version from GNU binutils 2.26
+must be avoided.  Recent versions of the Solaris assembler in
+@file{/usr/ccs/bin/as} work almost as well, though.
 @c FIXME: as patch requirements?
 
 For linking, the Solaris linker, is preferred.  If you want to use the GNU
@@ -3812,7 +3819,7 @@ linker instead, note that due to a packaging bug the version in Solaris
 10, from GNU binutils 2.15 (in @file{/usr/sfw/bin/gld}), cannot be used,
 while the version in Solaris 11, from GNU binutils 2.19 or newer (also
 in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}), works, as does the
-latest version, from GNU binutils 2.26.
+latest version, from GNU binutils 2.29.
 
 To use GNU @command{as}, configure with the options
 @option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
@@ -4160,22 +4167,6 @@ use traps on systems that support them.
 @html
 <hr />
 @end html
-@anchor{mips-sgi-irix5}
-@heading mips-sgi-irix5
-Support for IRIX 5 has been removed in GCC 4.6.
-
-@html
-<hr />
-@end html
-@anchor{mips-sgi-irix6}
-@heading mips-sgi-irix6
-Support for IRIX 6.5 has been removed in GCC 4.8.  Support for IRIX 6
-releases before 6.5 has been removed in GCC 4.6, as well as support for
-the O32 ABI.
-
-@html
-<hr />
-@end html
 @anchor{moxie-x-elf}
 @heading moxie-*-elf
 The moxie processor.
@@ -4449,9 +4440,8 @@ versions included in Solaris 10, from GNU binutils 2.15 (in
 @file{/usr/sfw/bin/gas}), and Solaris 11,
 from GNU binutils 2.19 or newer (also in @file{/usr/bin/gas} and
 @file{/usr/gnu/bin/as}), are known to work.
-Current versions of GNU binutils (2.26)
-are known to work as well, with the caveat mentioned in
-@uref{#ix86-x-solaris210,,i?86-*-solaris2.10} .  Note that your mileage may vary
+The current version, from GNU binutils 2.29,
+is known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Solaris tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
 the reverse combination Sun @command{as} + GNU @command{ld} may fail to
@@ -4459,7 +4449,7 @@ build or cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
 GNU @command{ld} usually works as well, although the version included in
 Solaris 10 cannot be used due to several bugs.  Again, the current
-version (2.26) is known to work, but generally lacks platform specific
+version (2.29) is known to work, but generally lacks platform specific
 features, so better stay with Solaris @command{ld}.  To use the LTO linker
 plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
 binutils @emph{must} be configured with @option{--enable-largefile}.
@@ -4719,7 +4709,7 @@ Linux API emulation layer in the Win32 subsystem.
 @item MinGW @uref{#x-x-mingw32,,*-*-mingw32}: MinGW is a native GCC port for
 the Win32 subsystem that provides a subset of POSIX.
 @item MKS i386-pc-mks: NuTCracker from MKS.  See
-@uref{http://www.mkssoftware.com/} for more information.
+@uref{https://www.mkssoftware.com} for more information.
 @end itemize
 
 @subheading Intel 64-bit versions

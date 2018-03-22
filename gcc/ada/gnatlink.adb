@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ with Snames;
 with Switch;   use Switch;
 with System;   use System;
 with Table;
-with Targparm; use Targparm;
+with Targparm;
 with Types;
 
 with Ada.Command_Line; use Ada.Command_Line;
@@ -529,15 +529,35 @@ procedure Gnatlink is
                      Exit_With_Error ("Missing argument for --LINK=");
                   end if;
 
-                  Linker_Path :=
-                    System.OS_Lib.Locate_Exec_On_Path (Arg (8 .. Arg'Last));
+                  declare
+                     L_Args : constant Argument_List_Access :=
+                               Argument_String_To_List (Arg (8 .. Arg'Last));
+                  begin
+                     --  The linker program is the first argument
 
-                  if Linker_Path = null then
-                     Exit_With_Error
-                       ("Could not locate linker: " & Arg (8 .. Arg'Last));
+                     Linker_Path :=
+                      System.OS_Lib.Locate_Exec_On_Path (L_Args.all (1).all);
+
+                     if Linker_Path = null then
+                        Exit_With_Error
+                          ("Could not locate linker: " & L_Args.all (1).all);
+                     end if;
+
+                     --  The other arguments are passed as-is to the linker
+
+                     for J in 2 .. L_Args.all'Last loop
+                        Gcc_Linker_Options.Increment_Last;
+                        Gcc_Linker_Options.Table
+                          (Gcc_Linker_Options.Last) :=
+                                             new String'(L_Args.all (J).all);
+                     end loop;
+                  end;
+
+               elsif Arg'Length >= 6 and then Arg (1 .. 6) = "--GCC=" then
+                  if Arg'Length = 6 then
+                     Exit_With_Error ("Missing argument for --GCC=");
                   end if;
 
-               elsif Arg'Length > 6 and then Arg (1 .. 6) = "--GCC=" then
                   declare
                      Program_Args : constant Argument_List_Access :=
                                       Argument_String_To_List
@@ -1413,8 +1433,8 @@ procedure Gnatlink is
          Write_Line ("  -M         Create map file mainprog.map");
       end if;
 
-      Write_Line ("  --GCC=comp Use comp as the compiler");
-      Write_Line ("  --LINK=nam Use 'nam' for the linking rather than 'gcc'");
+      Write_Line ("  --GCC=comp Use 'comp' as the compiler rather than 'gcc'");
+      Write_Line ("  --LINK=lnk Use 'lnk' as the linker rather than 'gcc'");
       Write_Eol;
       Write_Line ("  [non-Ada-objects]  list of non Ada object files");
       Write_Line ("  [linker-options]   other options for the linker");

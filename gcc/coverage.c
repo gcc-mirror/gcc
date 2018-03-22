@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-2018 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -663,8 +663,15 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (cfg_checksum);
   gcov_write_string (IDENTIFIER_POINTER
 		     (DECL_ASSEMBLER_NAME (current_function_decl)));
+  gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl));
   gcov_write_filename (xloc.file);
   gcov_write_unsigned (xloc.line);
+  gcov_write_unsigned (xloc.column);
+
+  expanded_location endloc = expand_location (cfun->function_end_locus);
+
+  /* Function can start in a single file and end in another one.  */
+  gcov_write_unsigned (endloc.file == xloc.file ? endloc.line : xloc.line);
   gcov_write_length (offset);
 
   return !gcov_is_error ();
@@ -1262,6 +1269,9 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (GCOV_NOTE_MAGIC);
 	  gcov_write_unsigned (GCOV_VERSION);
 	  gcov_write_unsigned (bbg_file_stamp);
+
+	  /* Do not support has_unexecuted_blocks for Ada.  */
+	  gcov_write_unsigned (strcmp (lang_hooks.name, "GNU Ada") != 0);
 	}
     }
 

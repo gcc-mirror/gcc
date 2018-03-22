@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 2002-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,16 +29,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Task_Info;
---  Use for Unspecified_Task_Info
-
-with System.Soft_Links;
---  used to initialize TSD for a C thread, in function Self
-
 with System.Multiprocessors;
+with System.Soft_Links;
+with System.Task_Info;
 
 separate (System.Task_Primitives.Operations)
-function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id is
+function Register_Foreign_Thread
+  (Thread         : Thread_Id;
+   Sec_Stack_Size : Size_Type := Unspecified_Size)
+   return Task_Id
+is
    Local_ATCB : aliased Ada_Task_Control_Block (0);
    Self_Id    : Task_Id;
    Succeeded  : Boolean;
@@ -66,12 +66,12 @@ begin
      (Self_Id, null, Null_Address, Null_Task,
       Foreign_Task_Elaborated'Access,
       System.Priority'First, System.Multiprocessors.Not_A_Specific_CPU, null,
-      Task_Info.Unspecified_Task_Info, 0, 0, Self_Id, Succeeded);
+      Task_Info.Unspecified_Task_Info, 0, Self_Id, Succeeded);
    Unlock_RTS;
    pragma Assert (Succeeded);
 
-   Self_Id.Master_of_Task := 0;
-   Self_Id.Master_Within := Self_Id.Master_of_Task + 1;
+   Self_Id.Master_Of_Task := 0;
+   Self_Id.Master_Within := Self_Id.Master_Of_Task + 1;
 
    for L in Self_Id.Entry_Calls'Range loop
       Self_Id.Entry_Calls (L).Self := Self_Id;
@@ -92,7 +92,10 @@ begin
 
    Self_Id.Common.Task_Alternate_Stack := Null_Address;
 
-   System.Soft_Links.Create_TSD (Self_Id.Common.Compiler_Data);
+   --  Create the TSD for the task
+
+   System.Soft_Links.Create_TSD
+     (Self_Id.Common.Compiler_Data, null, Sec_Stack_Size);
 
    Enter_Task (Self_Id);
 

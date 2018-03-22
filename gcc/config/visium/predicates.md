@@ -1,5 +1,5 @@
 ;; Predicate definitions for Visium.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -25,7 +25,7 @@
 ;; Return true if OP is a constant in the range 1 .. 31.
 (define_predicate "const_shift_operand"
   (and (match_code "const_int")
-       (match_test "1 <= INTVAL (op) && INTVAL (op) <= 31")))
+       (match_test "IN_RANGE (INTVAL (op), 1, 31)")))
 
 ;; Return true if OP is either a register or the constant 0.
 (define_predicate "reg_or_0_operand"

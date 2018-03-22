@@ -1,5 +1,5 @@
 /* Exception Handling interface routines.
-   Copyright (C) 1996-2017 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -229,7 +229,7 @@ extern void remove_eh_handler (eh_region);
 extern void remove_unreachable_eh_regions (sbitmap);
 
 extern bool current_function_has_exception_handlers (void);
-extern void output_function_exception_table (const char *);
+extern void output_function_exception_table (int);
 
 extern rtx expand_builtin_eh_pointer (tree);
 extern rtx expand_builtin_eh_filter (tree);

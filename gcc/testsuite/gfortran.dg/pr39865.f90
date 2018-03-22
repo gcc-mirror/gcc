@@ -6,11 +6,11 @@ subroutine f1 (a)
   character(len=12) :: b
   character(len=1) :: c(2:10)
   write (b, a) 'Hell', 'o wo', 'rld!'
-  if (b .ne. 'Hello world!') call abort
+  if (b .ne. 'Hello world!') STOP 1
   write (b, a(:)) 'hell', 'o Wo', 'rld!'
-  if (b .ne. 'hello World!') call abort
+  if (b .ne. 'hello World!') STOP 2
   write (b, a(8:)) 'Hell', 'o wo', 'rld!'
-  if (b .ne. 'Hello world!') call abort
+  if (b .ne. 'Hello world!') STOP 3
   c(2) = ' '
   c(3) = '('
   c(4) = '3'
@@ -18,20 +18,20 @@ subroutine f1 (a)
   c(6) = '4'
   c(7) = ')'
   write (b, c) 'hell', 'o Wo', 'rld!'
-  if (b .ne. 'hello World!') call abort
+  if (b .ne. 'hello World!') STOP 4
   write (b, c(:)) 'Hell', 'o wo', 'rld!'
-  if (b .ne. 'Hello world!') call abort
+  if (b .ne. 'Hello world!') STOP 5
   write (b, c(3:)) 'hell', 'o Wo', 'rld!'
-  if (b .ne. 'hello World!') call abort
+  if (b .ne. 'hello World!') STOP 6
 end subroutine f1
 
 subroutine f2 (a)
   character(len=1) :: a(10:,20:)
   character(len=12) :: b
   write (b, a) 'Hell', 'o wo', 'rld!'
-  if (b .ne. 'Hello world!') call abort
+  if (b .ne. 'Hello world!') STOP 7
   write (b, a) 'hell', 'o Wo', 'rld!'
-  if (b .ne. 'hello World!') call abort
+  if (b .ne. 'hello World!') STOP 8
 end subroutine f2
 
 function f3 ()
@@ -80,5 +80,5 @@ end function f3
   call f2 (f)
   call f2 (e(2:4,8:9))
   write (b, f3 ()) 'Hell', 'o wo', 'rld!'
-  if (b .ne. 'Hello world!') call abort
+  if (b .ne. 'Hello world!') STOP 9
 end

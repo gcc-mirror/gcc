@@ -11,6 +11,6 @@ END MODULE
 USE TEST
 character(len=12) :: line
 write(line,'(3A4)') s2a_3("a","bb","ccc")
-IF (line.NE."a   bb  ccc") CALL ABORT()
+IF (line.NE."a   bb  ccc") STOP 1
 END
 

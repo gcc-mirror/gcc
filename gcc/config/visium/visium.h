@@ -1,5 +1,5 @@
 /* Definitions of target machine for Visium.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -235,16 +235,6 @@
    the alignment that the object would ordinarily have.  The value of
    this macro is used instead of that alignment to align the object. */
 #define DATA_ALIGNMENT(TYPE,ALIGN) visium_data_alignment (TYPE, ALIGN)
-
-/* `CONSTANT_ALIGNMENT (CONSTANT, BASIC-ALIGN)`
-
-   If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  CONSTANT is the constant
-   and BASIC-ALIGN is the alignment that the object would ordinarily
-   have.  The value of this macro is used instead of that alignment to
-   align the object. */
-#define CONSTANT_ALIGNMENT(EXP,ALIGN) \
-  visium_data_alignment (TREE_TYPE (EXP), ALIGN)
 
 /* `LOCAL_ALIGNMENT (TYPE, BASIC-ALIGN)`
 
@@ -736,17 +726,6 @@ enum reg_class
    Define this macro if pushing a word onto the stack moves the stack
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
-
-/* `STARTING_FRAME_OFFSET'
-
-   Offset from the frame pointer to the first local variable slot to
-   be allocated.
-
-   If `FRAME_GROWS_DOWNWARD', find the next slot's offset by
-   subtracting the first slot's length from `STARTING_FRAME_OFFSET'.
-   Otherwise, it is found by adding the length of the first slot to
-   the value `STARTING_FRAME_OFFSET'. */
-#define STARTING_FRAME_OFFSET 0
 
 /* `FIRST_PARM_OFFSET (FUNDECL)'
 
@@ -1477,7 +1456,7 @@ do									\
    Here we output a word of zero so that jump-tables can be seperated
    in reverse assembly. */
 #define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE) \
-  asm_fprintf (STREAM, "\t.long   0\n");
+  asm_fprintf (STREAM, "\t.long   0\n")
 
 /* Assembler Commands for Alignment
 
@@ -1548,9 +1527,8 @@ do									\
    automatic variable having address X (an RTL expression).  The
    default computation assumes that X is based on the frame-pointer
    and gives the offset from the frame-pointer.  This is required for
-   targets that produce debugging output for DBX or COFF-style
-   debugging output for SDB and allow the frame-pointer to be
-   eliminated when the `-g' options is used. */
+   targets that produce debugging output for DBX and allow the frame-pointer
+   to be eliminated when the `-g' options is used. */
 #define DEBUGGER_AUTO_OFFSET(X) \
   (GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0)
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -166,9 +166,6 @@ struct GTY(()) machine_function
 
 #define DATA_ABI_ALIGNMENT(TYPE, BASIC_ALIGN) \
  mmix_data_alignment (TYPE, BASIC_ALIGN)
-
-#define CONSTANT_ALIGNMENT(CONSTANT, BASIC_ALIGN) \
- mmix_constant_alignment (CONSTANT, BASIC_ALIGN)
 
 #define LOCAL_ALIGNMENT(TYPE, BASIC_ALIGN) \
  mmix_local_alignment (TYPE, BASIC_ALIGN)
@@ -439,9 +436,6 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
-
-#define STARTING_FRAME_OFFSET \
-  mmix_starting_frame_offset ()
 
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
@@ -767,7 +761,7 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 /* (empty) */
 
 
-/* Node: SDB and DWARF */
+/* Node: DWARF */
 #define DWARF2_DEBUGGING_INFO 1
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 

@@ -1,5 +1,5 @@
 /* LTO partitioning logic routines.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -587,7 +587,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	      for (edge = node->callees; edge; edge = edge->next_callee)
 		if (edge->callee->definition)
 		  {
-		    int edge_cost = edge->frequency;
+		    int edge_cost = edge->frequency ();
 		    int index;
 
 		    if (!edge_cost)
@@ -603,7 +603,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		  }
 	      for (edge = node->callers; edge; edge = edge->next_caller)
 		{
-		  int edge_cost = edge->frequency;
+		  int edge_cost = edge->frequency ();
 		  int index;
 
 		  gcc_assert (edge->caller->definition);
@@ -757,7 +757,8 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	  if (npartitions < n_lto_partitions)
 	    partition_size = total_size / (n_lto_partitions - npartitions);
 	  else
-	    partition_size = INT_MAX;
+	    /* Watch for overflow.  */
+	    partition_size = INT_MAX / 16;
 
 	  if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
 	    partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);

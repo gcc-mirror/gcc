@@ -1,5 +1,5 @@
 /* Header file for gimplification.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -84,24 +84,5 @@ extern void gimplify_function_tree (tree);
 extern enum gimplify_status gimplify_va_arg_expr (tree *, gimple_seq *,
 						  gimple_seq *);
 gimple *gimplify_assign (tree, tree, gimple_seq *);
-
-/* Return true if gimplify_one_sizepos doesn't need to gimplify
-   expr (when in TYPE_SIZE{,_UNIT} and similar type/decl size/bitsize
-   fields).  */
-
-static inline bool
-is_gimple_sizepos (tree expr)
-{
-  /* gimplify_one_sizepos doesn't need to do anything if the value isn't there,
-     is constant, or contains A PLACEHOLDER_EXPR.  We also don't want to do
-     anything if it's already a VAR_DECL.  If it's a VAR_DECL from another
-     function, the gimplifier will want to replace it with a new variable,
-     but that will cause problems if this type is from outside the function.
-     It's OK to have that here.  */
-  return (expr == NULL_TREE
-	  || TREE_CODE (expr) == INTEGER_CST
-	  || TREE_CODE (expr) == VAR_DECL
-	  || CONTAINS_PLACEHOLDER_P (expr));
-}                                        
 
 #endif /* GCC_GIMPLIFY_H */

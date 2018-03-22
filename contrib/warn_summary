@@ -138,7 +138,7 @@ s%^[^ ]*/\(lib[a-z23+-]*/\)%\1%;'
 
 usage="usage: `basename $0` [-llf] [-s stage] [-nosub|-ch|-cp|-f|-fortran|-ada|-intl|-fixinc] [-pass|-wpass] [file(s)]"
 stageN=3
-tmpfile=/tmp/tmp-warn.$$
+tmpfile=${TMPDIR:-/tmp}/tmp-warn.$$
 
 # Remove $tmpfile on exit and various signals.
 trap "rm -f $tmpfile" 0

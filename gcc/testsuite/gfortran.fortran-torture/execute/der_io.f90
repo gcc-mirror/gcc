@@ -39,14 +39,14 @@ program derived_io
   write (buf1, *), xyz(1)%x, xyz(1)%y, xyz(1)%z
   ! Use function call to ensure it is only evaluated once
   write (buf2, *), xyz(bar())
-  if (buf1.ne.buf2) call abort
+  if (buf1.ne.buf2) STOP 1
 
   write (buf1, *), abcdef
   write (buf2, *), abcdef%a, abcdef%b, abcdef%c, abcdef%d, abcdef%e, abcdef%f
   write (buf3, *), abcdef%a, abcdef%b, abcdef%c%x, abcdef%c%y, &
                    abcdef%c%z, abcdef%d, abcdef%e, abcdef%f
-  if (buf1.ne.buf2) call abort
-  if (buf1.ne.buf3) call abort
+  if (buf1.ne.buf2) STOP 2
+  if (buf1.ne.buf3) STOP 3
 
   call foo(xyz(1))
 
@@ -56,7 +56,7 @@ program derived_io
       type (xyz_type) t
       write (buf1, *), t%x, t%y, t%z
       write (buf2, *), t
-      if (buf1.ne.buf2) call abort
+      if (buf1.ne.buf2) STOP 4
     end subroutine foo
 
     integer function bar()

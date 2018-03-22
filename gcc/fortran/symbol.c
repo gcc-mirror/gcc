@@ -1,5 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -245,6 +245,44 @@ gfc_get_default_type (const char *name, gfc_namespace *ns)
 }
 
 
+/* Recursively append candidate SYM to CANDIDATES.  Store the number of
+   candidates in CANDIDATES_LEN.  */
+
+static void
+lookup_symbol_fuzzy_find_candidates (gfc_symtree *sym,
+				     char **&candidates,
+				     size_t &candidates_len)
+{
+  gfc_symtree *p;
+
+  if (sym == NULL)
+    return;
+
+  if (sym->n.sym->ts.type != BT_UNKNOWN && sym->n.sym->ts.type != BT_PROCEDURE)
+    vec_push (candidates, candidates_len, sym->name);
+  p = sym->left;
+  if (p)
+    lookup_symbol_fuzzy_find_candidates (p, candidates, candidates_len);
+
+  p = sym->right;
+  if (p)
+    lookup_symbol_fuzzy_find_candidates (p, candidates, candidates_len);
+}
+
+
+/* Lookup symbol SYM_NAME fuzzily, taking names in SYMBOL into account.  */
+
+static const char*
+lookup_symbol_fuzzy (const char *sym_name, gfc_symbol *symbol)
+{
+  char **candidates = NULL;
+  size_t candidates_len = 0;
+  lookup_symbol_fuzzy_find_candidates (symbol->ns->sym_root, candidates,
+				       candidates_len);
+  return gfc_closest_fuzzy_match (sym_name, candidates);
+}
+
+
 /* Given a pointer to a symbol, set its type according to the first
    letter of its name.  Fails if the letter in question has no default
    type.  */
@@ -263,8 +301,14 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
     {
       if (error_flag && !sym->attr.untyped)
 	{
-	  gfc_error ("Symbol %qs at %L has no IMPLICIT type",
-		     sym->name, &sym->declared_at);
+	  const char *guessed = lookup_symbol_fuzzy (sym->name, sym);
+	  if (guessed)
+	    gfc_error ("Symbol %qs at %L has no IMPLICIT type"
+		       "; did you mean %qs?",
+		       sym->name, &sym->declared_at, guessed);
+	  else
+	    gfc_error ("Symbol %qs at %L has no IMPLICIT type",
+		       sym->name, &sym->declared_at);
 	  sym->attr.untyped = 1; /* Ensure we only give an error once.  */
 	}
 
@@ -382,7 +426,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *is_bind_c = "BIND(C)", *procedure = "PROCEDURE",
     *proc_pointer = "PROCEDURE POINTER", *abstract = "ABSTRACT",
     *asynchronous = "ASYNCHRONOUS", *codimension = "CODIMENSION",
-    *contiguous = "CONTIGUOUS", *generic = "GENERIC", *automatic = "AUTOMATIC";
+    *contiguous = "CONTIGUOUS", *generic = "GENERIC", *automatic = "AUTOMATIC",
+    *pdt_len = "LEN", *pdt_kind = "KIND";
   static const char *threadprivate = "THREADPRIVATE";
   static const char *omp_declare_target = "OMP DECLARE TARGET";
   static const char *omp_declare_target_link = "OMP DECLARE TARGET LINK";
@@ -663,6 +708,23 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (entry, oacc_declare_deviceptr)
   conf (entry, oacc_declare_device_resident)
 
+  conf (pdt_kind, allocatable)
+  conf (pdt_kind, pointer)
+  conf (pdt_kind, dimension)
+  conf (pdt_kind, codimension)
+
+  conf (pdt_len, allocatable)
+  conf (pdt_len, pointer)
+  conf (pdt_len, dimension)
+  conf (pdt_len, codimension)
+
+  if (attr->access == ACCESS_PRIVATE)
+    {
+      a1 = privat;
+      conf2 (pdt_kind);
+      conf2 (pdt_len);
+    }
+
   a1 = gfc_code2string (flavors, attr->flavor);
 
   if (attr->in_namelist
@@ -747,7 +809,9 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	    conf2 (threadprivate);
 	}
 
-      if (!attr->proc_pointer)
+      /* Procedure pointers in COMMON blocks are allowed in F03,
+       * but forbidden per F08:C5100.  */
+      if (!attr->proc_pointer || (gfc_option.allow_std & GFC_STD_F2008))
 	conf2 (in_common);
 
       conf2 (omp_declare_target_link);
@@ -2336,6 +2400,32 @@ find_union_component (gfc_symbol *un, const char *name,
 }
 
 
+/* Recursively append candidate COMPONENT structures to CANDIDATES.  Store
+   the number of total candidates in CANDIDATES_LEN.  */
+
+static void
+lookup_component_fuzzy_find_candidates (gfc_component *component,
+					char **&candidates,
+					size_t &candidates_len)
+{
+  for (gfc_component *p = component; p; p = p->next)
+    vec_push (candidates, candidates_len, p->name);
+}
+
+
+/* Lookup component MEMBER fuzzily, taking names in COMPONENT into account.  */
+
+static const char*
+lookup_component_fuzzy (const char *member, gfc_component *component)
+{
+  char **candidates = NULL;
+  size_t candidates_len = 0;
+  lookup_component_fuzzy_find_candidates (component, candidates,
+					  candidates_len);
+  return gfc_closest_fuzzy_match (member, candidates);
+}
+
+
 /* Given a derived type node and a component name, try to locate the
    component structure.  Returns the NULL pointer if the component is
    not found or the components are private.  If noaccess is set, no access
@@ -2433,8 +2523,16 @@ gfc_find_component (gfc_symbol *sym, const char *name,
     }
 
   if (p == NULL && !silent)
-    gfc_error ("%qs at %C is not a member of the %qs structure",
-	       name, sym->name);
+    {
+      const char *guessed = lookup_component_fuzzy (name, sym->components);
+      if (guessed)
+	gfc_error ("%qs at %C is not a member of the %qs structure"
+		   "; did you mean %qs?",
+		   name, sym->name, guessed);
+      else
+	gfc_error ("%qs at %C is not a member of the %qs structure",
+		   name, sym->name);
+    }
 
   /* Component was found; build the ultimate component reference. */
   if (p != NULL && ref)
@@ -4195,6 +4293,29 @@ gfc_find_gsymbol (gfc_gsymbol *symbol, const char *name)
 }
 
 
+/* Case insensitive search a tree for the global symbol.  */
+
+gfc_gsymbol *
+gfc_find_case_gsymbol (gfc_gsymbol *symbol, const char *name)
+{
+  int c;
+
+  if (symbol == NULL)
+    return NULL;
+
+  while (symbol)
+    {
+      c = strcasecmp (name, symbol->name);
+      if (!c)
+	return symbol;
+
+      symbol = (c < 0) ? symbol->left : symbol->right;
+    }
+
+  return NULL;
+}
+
+
 /* Compare two global symbols. Used for managing the BB tree.  */
 
 static int
@@ -4737,7 +4858,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	tmp_sym->value->value.character.string[0]
 	  = (gfc_char_t) c_interop_kinds_table[s].value;
 	tmp_sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						     NULL, 1);
 
 	/* May not need this in both attr and ts, but do need in
@@ -5052,6 +5173,12 @@ gfc_is_associate_pointer (gfc_symbol* sym)
     return false;
 
   if (sym->ts.type == BT_CLASS)
+    return true;
+
+  if (sym->ts.type == BT_CHARACTER
+      && sym->ts.deferred
+      && sym->assoc->target
+      && sym->assoc->target->expr_type == EXPR_FUNCTION)
     return true;
 
   if (!sym->assoc->variable)

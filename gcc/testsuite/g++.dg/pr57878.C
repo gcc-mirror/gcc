@@ -95,6 +95,8 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     }
     __sso_string_base(const __sso_string_base& __rcs);
     const _CharT_alloc_type& _M_get_allocator() const {
+      static _CharT_alloc_type c;
+      return c;
     }
   };
   template<typename _CharT, typename _Traits, typename _Alloc>

@@ -1,6 +1,6 @@
 // <forward_list> -*- C++ -*-
 
-// Copyright (C) 2010-2017 Free Software Foundation, Inc.
+// Copyright (C) 2010-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -771,6 +771,16 @@ namespace __debug
       const _Base&
       _M_base() const noexcept { return *this; }
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _InputIterator, typename _ValT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_ValT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    forward_list(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> forward_list<_ValT, _Allocator>;
+#endif
 
   template<typename _Tp, typename _Alloc>
     bool

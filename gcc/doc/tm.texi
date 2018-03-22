@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1078,6 +1078,13 @@ On 32-bit ELF the largest supported section alignment in bits is
 @samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac
 
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_STATIC_RTX_ALIGNMENT (machine_mode @var{mode})
+This hook returns the preferred alignment in bits for a
+statically-allocated rtx, such as a constant pool entry.  @var{mode}
+is the mode of the rtx.  The default implementation returns
+@samp{GET_MODE_ALIGNMENT (@var{mode})}.
+@end deftypefn
+
 @defmac DATA_ALIGNMENT (@var{type}, @var{basic-align})
 If defined, a C expression to compute the alignment for a variable in
 the static store.  @var{type} is the data type, and @var{basic-align} is
@@ -1102,19 +1109,18 @@ must be aligned to 16 byte boundaries.
 If this macro is not defined, then @var{basic-align} is used.
 @end defmac
 
-@defmac CONSTANT_ALIGNMENT (@var{constant}, @var{basic-align})
-If defined, a C expression to compute the alignment given to a constant
-that is being placed in memory.  @var{constant} is the constant and
-@var{basic-align} is the alignment that the object would ordinarily
-have.  The value of this macro is used instead of that alignment to
-align the object.
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_CONSTANT_ALIGNMENT (const_tree @var{constant}, HOST_WIDE_INT @var{basic_align})
+This hook returns the alignment in bits of a constant that is being
+placed in memory.  @var{constant} is the constant and @var{basic_align}
+is the alignment that the object would ordinarily have.
 
-The default definition just returns @var{basic-align}.
+The default definition just returns @var{basic_align}.
 
-The typical use of this macro is to increase alignment for string
+The typical use of this hook is to increase alignment for string
 constants to be word aligned so that @code{strcpy} calls that copy
-constants can be done inline.
-@end defmac
+constants can be done inline.  The function
+@code{constant_alignment_word_strings} provides such a definition.
+@end deftypefn
 
 @defmac LOCAL_ALIGNMENT (@var{type}, @var{basic-align})
 If defined, a C expression to compute the alignment for a variable in
@@ -2768,6 +2774,17 @@ details.
 With LRA, the default is to use @var{mode} unmodified.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SELECT_EARLY_REMAT_MODES (sbitmap @var{modes})
+On some targets, certain modes cannot be held in registers around a
+standard ABI call and are relatively expensive to spill to the stack.
+The early rematerialization pass can help in such cases by aggressively
+recomputing values after calls, so that they don't need to be spilled.
+
+This hook returns the set of such modes by setting the associated bits
+in @var{modes}.  The default implementation selects no modes, which has
+the effect of disabling the early rematerialization pass.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_CLASS_LIKELY_SPILLED_P (reg_class_t @var{rclass})
 A target hook which returns @code{true} if pseudos that have been assigned
 to registers of class @var{rclass} would likely be spilled because
@@ -2877,13 +2894,16 @@ machines with non orthogonal register usage for addressing, such
 as SH, this hook can be used to avoid excessive spilling.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT (rtx *@var{disp}, rtx *@var{offset}, machine_mode @var{mode})
-A target hook which returns @code{true} if *@var{disp} is
-legitimezed to valid address displacement with subtracting *@var{offset}
-at memory mode @var{mode}.
-The default version of this target hook returns @code{false}.
-This hook will benefit machines with limited base plus displacement
-addressing.
+@deftypefn {Target Hook} bool TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT (rtx *@var{offset1}, rtx *@var{offset2}, poly_int64 @var{orig_offset}, machine_mode @var{mode})
+This hook tries to split address offset @var{orig_offset} into
+two parts: one that should be added to the base address to create
+a local anchor point, and an additional offset that can be applied
+to the anchor to address a value of mode @var{mode}.  The idea is that
+the local anchor could be shared by other accesses to nearby locations.
+
+The hook returns true if it succeeds, storing the offset of the
+anchor from the base in @var{offset1} and the offset of the final address
+from the anchor in @var{offset2}.  The default implementation returns false.
 @end deftypefn
 
 @deftypefn {Target Hook} reg_class_t TARGET_SPILL_CLASS (reg_class_t, @var{machine_mode})
@@ -2967,22 +2987,19 @@ Define this macro if successive arguments to a function occupy decreasing
 addresses on the stack.
 @end defmac
 
-@defmac STARTING_FRAME_OFFSET
-Offset from the frame pointer to the first local variable slot to be allocated.
-
-If @code{FRAME_GROWS_DOWNWARD}, find the next slot's offset by
-subtracting the first slot's length from @code{STARTING_FRAME_OFFSET}.
-Otherwise, it is found by adding the length of the first slot to the
-value @code{STARTING_FRAME_OFFSET}.
-@c i'm not sure if the above is still correct.. had to change it to get
-@c rid of an overfull.  --mew 2feb93
-@end defmac
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_STARTING_FRAME_OFFSET (void)
+This hook returns the offset from the frame pointer to the first local
+variable slot to be allocated.  If @code{FRAME_GROWS_DOWNWARD}, it is the
+offset to @emph{end} of the first slot allocated, otherwise it is the
+offset to @emph{beginning} of the first slot allocated.  The default
+implementation returns 0.
+@end deftypefn
 
 @defmac STACK_ALIGNMENT_NEEDED
 Define to zero to disable final alignment of the stack during reload.
 The nonzero default for this macro is suitable for most ports.
 
-On ports where @code{STARTING_FRAME_OFFSET} is nonzero or where there
+On ports where @code{TARGET_STARTING_FRAME_OFFSET} is nonzero or where there
 is a register save block following the local block that doesn't require
 alignment to @code{STACK_BOUNDARY}, it may be beneficial to disable
 stack alignment and do it in the backend.
@@ -3127,6 +3144,19 @@ the CFI label attached to the insn, @var{pattern} is the pattern of
 the insn and @var{index} is @code{UNSPEC_INDEX} or @code{UNSPECV_INDEX}.
 @end deftypefn
 
+@deftypefn {Target Hook} {unsigned int} TARGET_DWARF_POLY_INDETERMINATE_VALUE (unsigned int @var{i}, unsigned int *@var{factor}, int *@var{offset})
+Express the value of @code{poly_int} indeterminate @var{i} as a DWARF
+expression, with @var{i} counting from 1.  Return the number of a DWARF
+register @var{R} and set @samp{*@var{factor}} and @samp{*@var{offset}} such
+that the value of the indeterminate is:
+@smallexample
+value_of(@var{R}) / @var{factor} - @var{offset}
+@end smallexample
+
+A target only needs to define this hook if it sets
+@samp{NUM_POLY_INT_COEFFS} to a value greater than 1.
+@end deftypefn
+
 @defmac INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
 from the value of the stack pointer register to the top of the stack
@@ -3136,6 +3166,15 @@ previous frame, just before the call instruction.
 
 You only need to define this macro if you want to support call frame
 debugging information like that provided by DWARF 2.
+@end defmac
+
+@defmac DEFAULT_INCOMING_FRAME_SP_OFFSET
+Like @code{INCOMING_FRAME_SP_OFFSET}, but must be the same for all
+functions of the same ABI, and when using GAS @code{.cfi_*} directives
+must also agree with the default CFI GAS emits.  Define this macro
+only if @code{INCOMING_FRAME_SP_OFFSET} can have different values
+between different functions of the same ABI or when
+@code{INCOMING_FRAME_SP_OFFSET} does not agree with GAS default CFI.
 @end defmac
 
 @defmac ARG_POINTER_CFA_OFFSET (@var{fundecl})
@@ -3411,6 +3450,10 @@ GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE (rtx @var{residual})
+Some targets make optimistic assumptions about the state of stack probing when they emit their prologues.  On such targets a probe into the end of any dynamically allocated space is likely required for safety against stack clash style attacks.  Define this variable to return nonzero if such a probe is required or zero otherwise.  You need not define this macro if it would always have the value zero.
+@end deftypefn
+
 @need 2000
 @node Frame Registers
 @subsection Registers That Address the Stack Frame
@@ -3599,6 +3642,13 @@ context with version, args_size and by_value fields.  If it is undefined,
 it will be defined to 1 when @code{REG_VALUE_IN_UNWIND_CONTEXT} is
 defined and 0 otherwise.
 
+@end defmac
+
+@defmac DWARF_LAZY_REGISTER_VALUE (@var{regno}, @var{value})
+Define this macro if the target has pseudo DWARF registers whose
+values need to be computed lazily on demand by the unwinder (such as when
+referenced in a CFA expression).  The macro returns true if @var{regno}
+is such a register and stores its value in @samp{*@var{value}} if so.
 @end defmac
 
 @node Elimination
@@ -3799,7 +3849,7 @@ suppresses this behavior and causes the parameter to be passed on the
 stack in its natural location.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_RETURN_POPS_ARGS (tree @var{fundecl}, tree @var{funtype}, int @var{size})
+@deftypefn {Target Hook} poly_int64 TARGET_RETURN_POPS_ARGS (tree @var{fundecl}, tree @var{funtype}, poly_int64 @var{size})
 This target hook returns the number of bytes of its own arguments that
 a function pops on returning, or 0 if the function pops no arguments
 and the caller must therefore pop them all after the function returns.
@@ -4223,6 +4273,20 @@ insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
 @end deftypefn
 
+@deftypefn {Target Hook} opt_machine_mode TARGET_ARRAY_MODE (machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
+Return the mode that GCC should use for an array that has
+@var{nelems} elements, with each element having mode @var{mode}.
+Return no mode if the target has no special requirements.  In the
+latter case, GCC looks for an integer mode of the appropriate size
+if available and uses BLKmode otherwise.  Usually the search for the
+integer mode is limited to @code{MAX_FIXED_MODE_SIZE}, but the
+@code{TARGET_ARRAY_MODE_SUPPORTED_P} hook allows a larger mode to be
+used in specific cases.
+
+The main use of this hook is to specify that an array of vectors should
+also have a vector mode.  The default implementation returns no mode.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_ARRAY_MODE_SUPPORTED_P (machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
 Return true if GCC should try to use a scalar mode to store an array
 of @var{nelems} elements, given that each element has mode @var{mode}.
@@ -4275,6 +4339,17 @@ satisfies the same requirements; for other types, it returns
 of @var{n} and @var{extended} that are valid according to
 ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,
 if @var{extended} is false, 16 or greater than 128 and a multiple of 32.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_FLOATN_BUILTIN_P (int @var{func})
+Define this to return true if the @code{_Float@var{n}} and
+@code{_Float@var{n}x} built-in functions should implicitly enable the
+built-in function without the @code{__builtin_} prefix in addition to the
+normal built-in function with the @code{__builtin_} prefix.  The default is
+to only enable built-in functions without the @code{__builtin_} prefix for
+the GNU C langauge.  In strict ANSI/ISO mode, the built-in function without
+the @code{__builtin_} prefix is not enabled.  The argument @code{FUNC} is the
+@code{enum built_in_function} id of the function to be enabled.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (machine_mode @var{mode})
@@ -4533,12 +4608,22 @@ This macro has effect in @option{-fpcc-struct-return} mode, but it does
 nothing when you use @option{-freg-struct-return} mode.
 @end defmac
 
-@deftypefn {Target Hook} machine_mode TARGET_GET_RAW_RESULT_MODE (int @var{regno})
+@deftypefn {Target Hook} fixed_size_mode TARGET_GET_RAW_RESULT_MODE (int @var{regno})
 This target hook returns the mode to be used when accessing raw return registers in @code{__builtin_return}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_GET_RAW_ARG_MODE (int @var{regno})
+@deftypefn {Target Hook} fixed_size_mode TARGET_GET_RAW_ARG_MODE (int @var{regno})
 This target hook returns the mode to be used when accessing raw argument registers in @code{__builtin_apply_args}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_EMPTY_RECORD_P (const_tree @var{type})
+This target hook returns true if the type is an empty record.  The default
+is to return @code{false}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_WARN_PARAMETER_PASSING_ABI (cumulative_args_t @var{ca}, tree @var{type})
+This target hook warns about the change in empty class parameter passing
+ABI.
 @end deftypefn
 
 @node Caller Saves
@@ -5754,12 +5839,40 @@ For vector memory operations the cost may depend on type (@var{vectype}) and
 misalignment value (@var{misalign}).
 @end deftypefn
 
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT (const_tree @var{type})
+This hook returns the preferred alignment in bits for accesses to
+vectors of type @var{type} in vectorized code.  This might be less than
+or greater than the ABI-defined value returned by
+@code{TARGET_VECTOR_ALIGNMENT}.  It can be equal to the alignment of
+a single element, in which case the vectorizer will not try to optimize
+for alignment.
+
+The default hook returns @code{TYPE_ALIGN (@var{type})}, which is
+correct for most targets.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE (const_tree @var{type}, bool @var{is_packed})
 Return true if vector alignment is reachable (by peeling N iterations) for the given scalar type @var{type}.  @var{is_packed} is false if the scalar access using @var{type} is known to be naturally aligned.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (machine_mode, const unsigned char *@var{sel})
-Return true if a vector created for @code{vec_perm_const} is valid.
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
+This hook is used to test whether the target can permute up to two
+vectors of mode @var{mode} using the permutation vector @code{sel}, and
+also to emit such a permutation.  In the former case @var{in0}, @var{in1}
+and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are
+the source vectors and @var{out} is the destination vector; all three are
+registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if
+@var{sel} describes a permutation on one vector instead of two.
+
+Return true if the operation is possible, emitting instructions for it
+if rtxes are provided.
+
+@cindex @code{vec_perm@var{m}} instruction pattern
+If the hook returns false for a mode with multibyte elements, GCC will
+try the equivalent byte operation.  If that also fails, it will try forcing
+the selector into a register and using the @var{vec_perm@var{mode}}
+instruction pattern.  There is no need for the hook to handle these two
+implementation approaches itself.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (unsigned @var{code}, tree @var{dest_type}, tree @var{src_type})
@@ -5804,14 +5917,25 @@ equal to @code{word_mode}, because the vectorizer can do some
 transformations even in absence of specialized @acronym{SIMD} hardware.
 @end deftypefn
 
-@deftypefn {Target Hook} {unsigned int} TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (void)
-This hook should return a mask of sizes that should be iterated over
-after trying to autovectorize using the vector size derived from the
-mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
-The default is zero which means to not iterate over other vector sizes.
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_SPLIT_REDUCTION (machine_mode)
+This hook should return the preferred mode to split the final reduction
+step on @var{mode} to.  The reduction is then carried out reducing upper
+against lower halves of vectors recursively until the specified mode is
+reached.  The default is @var{mode} which means no splitting.
 @end deftypefn
 
-@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (unsigned @var{nunits}, unsigned @var{length})
+@deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (vector_sizes *@var{sizes})
+If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not
+the only one that is worth considering, this hook should add all suitable
+vector sizes to @var{sizes}, in order of decreasing preference.  The first
+one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
+
+The hook does not need to do anything if the vector returned by
+@code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant
+for autovectorization.  The default implementation does nothing.
+@end deftypefn
+
+@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (poly_uint64 @var{nunits}, poly_uint64 @var{length})
 A vector mask is a value that holds one boolean result for every element
 in a vector.  This hook returns the machine mode that should be used to
 represent such a mask when the vector in question is @var{length} bytes
@@ -5821,6 +5945,12 @@ long and contains @var{nunits} elements.  The hook returns an empty
 The default implementation returns the mode of an integer vector that
 is @var{length} bytes long and that contains @var{nunits} elements,
 if such a mode exists.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE (unsigned @var{ifn})
+This hook returns true if masked internal function @var{ifn} (really of
+type @code{internal_fn}) should be considered expensive when the mask is
+all zeros.  GCC can then try to branch around the instruction instead.
 @end deftypefn
 
 @deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (struct loop *@var{loop_info})
@@ -6637,6 +6767,18 @@ should probably only be given to addresses with different numbers of
 registers on machines with lots of registers.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_INSN_COST (rtx_insn *@var{insn}, bool @var{speed})
+This target hook describes the relative costs of RTL instructions.
+
+In implementing this hook, you can use the construct
+@code{COSTS_N_INSNS (@var{n})} to specify a cost equal to @var{n} fast
+instructions.
+
+When optimizing for code size, i.e.@: when @code{speed} is
+false, this target hook should be used to estimate the relative
+size cost of an expression, again relative to @code{COSTS_N_INSNS}.
+@end deftypefn
+
 @deftypefn {Target Hook} {unsigned int} TARGET_MAX_NOCE_IFCVT_SEQ_COST (edge @var{e})
 This hook returns a value in the same units as @code{TARGET_RTX_COSTS},
 giving the maximum acceptable cost for a sequence generated by the RTL
@@ -6671,6 +6813,12 @@ delay slots.  As the eager delay slot filler can decrease performance,
 disabling it is beneficial when ordinary branches are available.  Use of
 delay slot branches filled using the basic filler is often still desirable
 as the delay slot can hide a pipeline bubble.
+@end deftypefn
+
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val})
+Return an estimate of the runtime value of @var{val}, for use in
+things like cost calculations or profiling frequencies.  The default
+implementation returns the lowest possible value of @var{val}.
 @end deftypefn
 
 @node Scheduling
@@ -7668,7 +7816,7 @@ for the file format in use is appropriate.
 @end defmac
 
 @deftypefn {Target Hook} void TARGET_ASM_OUTPUT_SOURCE_FILENAME (FILE *@var{file}, const char *@var{name})
-Output COFF information or DWARF debugging information which indicates that filename @var{name} is the current source file to the stdio stream @var{file}.
+Output DWARF debugging information which indicates that filename @var{name} is the current source file to the stdio stream @var{file}.
  
  This target hook need not be defined if the standard form of output for the file format in use is appropriate.
 @end deftypefn
@@ -9316,7 +9464,7 @@ This macro need only be defined if the target might save registers in the
 function prologue at an offset to the stack pointer that is not aligned to
 @code{UNITS_PER_WORD}.  The definition should be the negative minimum
 alignment if @code{STACK_GROWS_DOWNWARD} is true, and the positive
-minimum alignment otherwise.  @xref{SDB and DWARF}.  Only applicable if
+minimum alignment otherwise.  @xref{DWARF}.  Only applicable if
 the target supports DWARF 2 frame unwind information.
 @end defmac
 
@@ -9490,7 +9638,7 @@ This describes how to specify debugging information.
 * DBX Options::        Macros enabling specific options in DBX format.
 * DBX Hooks::          Hook macros for varying DBX format.
 * File Names and DBX:: Macros controlling output of file names in DBX format.
-* SDB and DWARF::      Macros for SDB (COFF) and DWARF formats.
+* DWARF::              Macros for DWARF format.
 * VMS Debug::          Macros for VMS debug format.
 @end menu
 
@@ -9524,9 +9672,8 @@ A C expression that returns the integer offset value for an automatic
 variable having address @var{x} (an RTL expression).  The default
 computation assumes that @var{x} is based on the frame-pointer and
 gives the offset from the frame-pointer.  This is required for targets
-that produce debugging output for DBX or COFF-style debugging output
-for SDB and allow the frame-pointer to be eliminated when the
-@option{-g} options is used.
+that produce debugging output for DBX and allow the frame-pointer to be
+eliminated when the @option{-g} option is used.
 @end defmac
 
 @defmac DEBUGGER_ARG_OFFSET (@var{offset}, @var{x})
@@ -9540,8 +9687,8 @@ A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
 debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{SDB_DEBUG}, @code{DWARF_DEBUG}, @code{DWARF2_DEBUG},
-@code{XCOFF_DEBUG}, @code{VMS_DEBUG}, and @code{VMS_AND_DWARF2_DEBUG}.
+@code{DWARF2_DEBUG}, @code{XCOFF_DEBUG}, @code{VMS_DEBUG},
+and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
@@ -9551,7 +9698,7 @@ defined, GCC uses @code{DBX_DEBUG}.
 
 The value of this macro only affects the default debugging output; the
 user can always get a specific type of output by using @option{-gstabs},
-@option{-gcoff}, @option{-gdwarf-2}, @option{-gxcoff}, or @option{-gvms}.
+@option{-gdwarf-2}, @option{-gxcoff}, or @option{-gvms}.
 @end defmac
 
 @node DBX Options
@@ -9769,16 +9916,11 @@ whose value is the highest absolute text address in the file.
 @end defmac
 
 @need 2000
-@node SDB and DWARF
-@subsection Macros for SDB and DWARF Output
+@node DWARF
+@subsection Macros for DWARF Output
 
 @c prevent bad page break with this line
-Here are macros for SDB and DWARF output.
-
-@defmac SDB_DEBUGGING_INFO
-Define this macro to 1 if GCC should produce COFF-style debugging output
-for SDB in response to the @option{-g} option.
-@end defmac
+Here are macros for DWARF output.
 
 @defmac DWARF2_DEBUGGING_INFO
 Define this macro if GCC should produce dwarf version 2 format
@@ -9823,6 +9965,29 @@ Define this macro to be a nonzero value if the assembler can generate Dwarf 2
 line debug info sections.  This will result in much more compact line number
 tables, and hence is desirable if it works.
 @end defmac
+
+@defmac DWARF2_ASM_VIEW_DEBUG_INFO
+Define this macro to be a nonzero value if the assembler supports view
+assignment and verification in @code{.loc}.  If it does not, but the
+user enables location views, the compiler may have to fallback to
+internal line number tables.
+@end defmac
+
+@deftypefn {Target Hook} int TARGET_RESET_LOCATION_VIEW (rtx_insn *@var{})
+This hook, if defined, enables -ginternal-reset-location-views, and
+uses its result to override cases in which the estimated min insn
+length might be nonzero even when a PC advance (i.e., a view reset)
+cannot be taken for granted.
+
+If the hook is defined, it must return a positive value to indicate
+the insn definitely advances the PC, and so the view number can be
+safely assumed to be reset; a negative value to mean the insn
+definitely does not advance the PC, and os the view number must not
+be reset; or zero to decide based on the estimated insn length.
+
+If insn length is to be regarded as reliable, set the hook to
+@code{hook_int_rtx_insn_0}.
+@end deftypefn
 
 @deftypevr {Target Hook} bool TARGET_WANT_DEBUG_PUB_SECTIONS
 True if the @code{.debug_pubtypes} and @code{.debug_pubnames} sections should be emitted.  These sections are not used on most platforms, and in particular GDB does not use them.
@@ -9883,40 +10048,6 @@ is referenced by a function.
 If defined, this target hook is a function which outputs a DTP-relative
 reference to the given TLS symbol of the specified size.
 @end deftypefn
-
-@defmac PUT_SDB_@dots{}
-Define these macros to override the assembler syntax for the special
-SDB assembler directives.  See @file{sdbout.c} for a list of these
-macros and their arguments.  If the standard syntax is used, you need
-not define them yourself.
-@end defmac
-
-@defmac SDB_DELIM
-Some assemblers do not support a semicolon as a delimiter, even between
-SDB assembler directives.  In that case, define this macro to be the
-delimiter to use (usually @samp{\n}).  It is not necessary to define
-a new set of @code{PUT_SDB_@var{op}} macros if this is the only change
-required.
-@end defmac
-
-@defmac SDB_ALLOW_UNKNOWN_REFERENCES
-Define this macro to allow references to unknown structure,
-union, or enumeration tags to be emitted.  Standard COFF does not
-allow handling of unknown references, MIPS ECOFF has support for
-it.
-@end defmac
-
-@defmac SDB_ALLOW_FORWARD_REFERENCES
-Define this macro to allow references to structure, union, or
-enumeration tags that have not yet been seen to be handled.  Some
-assemblers choke if forward tags are used, while some require it.
-@end defmac
-
-@defmac SDB_OUTPUT_SOURCE_LINE (@var{stream}, @var{line})
-A C statement to output SDB debugging information before code for line
-number @var{line} of the current source file to the stdio stream
-@var{stream}.  The default is to emit an @code{.ln} directive.
-@end defmac
 
 @need 2000
 @node VMS Debug
@@ -10658,8 +10789,12 @@ five otherwise.  This is best for most machines.
 
 @defmac WORD_REGISTER_OPERATIONS
 Define this macro to 1 if operations between registers with integral mode
-smaller than a word are always performed on the entire register.
-Most RISC machines have this property and most CISC machines do not.
+smaller than a word are always performed on the entire register.  To be
+more explicit, if you start with a pair of @code{word_mode} registers with
+known values and you do a subword, for example @code{QImode}, addition on
+the low part of the registers, then the compiler may consider that the
+result has a known value in @code{word_mode} too if the macro is defined
+to 1.  Most RISC machines have this property and most CISC machines do not.
 @end defmac
 
 @deftypefn {Target Hook} {unsigned int} TARGET_MIN_ARITHMETIC_PRECISION (void)
@@ -10783,7 +10918,7 @@ nevertheless truncate the shift count, you may get better code
 by overriding it.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_TRULY_NOOP_TRUNCATION (unsigned int @var{outprec}, unsigned int @var{inprec})
+@deftypefn {Target Hook} bool TARGET_TRULY_NOOP_TRUNCATION (poly_uint64 @var{outprec}, poly_uint64 @var{inprec})
 This hook returns true if it is safe to ``convert'' a value of
 @var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is
 smaller than @var{inprec}) by merely operating on it as if it had only

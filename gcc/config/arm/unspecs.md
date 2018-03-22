@@ -1,5 +1,5 @@
 ;; Unspec defintions.
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -410,4 +410,8 @@
   UNSPEC_VRNDN
   UNSPEC_VRNDP
   UNSPEC_VRNDX
+  UNSPEC_DOT_S
+  UNSPEC_DOT_U
+  UNSPEC_VFML_LO
+  UNSPEC_VFML_HI
 ])

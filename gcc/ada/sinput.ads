@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -754,6 +754,8 @@ private
    pragma Inline (Last_Source_File);
    pragma Inline (Num_Source_Files);
    pragma Inline (Num_Source_Lines);
+
+   pragma Inline (Line_Start);
 
    No_Instance_Id : constant Instance_Id := 0;
 

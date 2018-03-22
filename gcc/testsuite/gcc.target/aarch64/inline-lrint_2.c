@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O3 -fno-math-errno" } */
+/* { dg-options "-O3 -fno-math-errno -fno-trapping-math" } */
 
 #include "lrint-matherr.h"
 

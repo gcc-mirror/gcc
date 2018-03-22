@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,7 @@ extern bool ix86_handle_option (struct gcc_options *opts,
 extern bool ix86_target_stack_probe (void);
 extern bool ix86_can_use_return_insn_p (void);
 extern void ix86_setup_frame_addresses (void);
+extern bool ix86_rip_relative_addr_p (struct ix86_address *parts);
 
 extern HOST_WIDE_INT ix86_initial_elimination_offset (int, int);
 extern void ix86_expand_prologue (void);
@@ -51,7 +52,7 @@ extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
 extern rtx standard_80387_constant_rtx (int);
 extern int standard_sse_constant_p (rtx, machine_mode);
-extern const char *standard_sse_constant_opcode (rtx_insn *, rtx);
+extern const char *standard_sse_constant_opcode (rtx_insn *, rtx *);
 extern bool ix86_standard_x87sse_constant_load_p (const rtx_insn *, rtx);
 extern bool symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
@@ -132,7 +133,6 @@ extern bool ix86_expand_fp_movcc (rtx[]);
 extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_vec_perm (rtx[]);
-extern bool ix86_expand_vec_perm_const (rtx[]);
 extern bool ix86_expand_mask_vec_cmp (rtx[]);
 extern bool ix86_expand_int_vec_cmp (rtx[]);
 extern bool ix86_expand_fp_vec_cmp (rtx[]);
@@ -157,16 +157,11 @@ extern int ix86_attr_length_immediate_default (rtx_insn *, bool);
 extern int ix86_attr_length_address_default (rtx_insn *);
 extern int ix86_attr_length_vex_default (rtx_insn *, bool, bool);
 
-extern machine_mode ix86_fp_compare_mode (enum rtx_code);
-
 extern rtx ix86_libcall_value (machine_mode);
 extern bool ix86_function_arg_regno_p (int);
 extern void ix86_asm_output_function_label (FILE *, const char *, tree);
 extern void ix86_call_abi_override (const_tree);
 extern int ix86_reg_parm_stack_space (const_tree);
-
-extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
-				  rtx, rtx, rtx);
 
 extern bool ix86_libc_has_function (enum function_class fn_class);
 
@@ -209,7 +204,6 @@ extern unsigned int ix86_local_alignment (tree, machine_mode,
 					  unsigned int);
 extern unsigned int ix86_minimum_alignment (tree, machine_mode,
 					    unsigned int);
-extern int ix86_constant_alignment (tree, int);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);
 extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *);
 extern int x86_field_alignment (tree, int);
@@ -262,6 +256,7 @@ extern void i386_pe_asm_output_aligned_decl_common (FILE *, tree,
 extern void i386_pe_file_end (void);
 extern void i386_pe_start_function (FILE *, const char *, tree);
 extern void i386_pe_end_function (FILE *, const char *, tree);
+extern void i386_pe_end_cold_function (FILE *, const char *, tree);
 extern void i386_pe_assemble_visibility (tree, int);
 extern tree i386_pe_mangle_decl_assembler_name (tree, tree);
 extern tree i386_pe_mangle_assembler_name (const char *);
@@ -269,6 +264,7 @@ extern void i386_pe_record_stub (const char *);
 
 extern void i386_pe_seh_init (FILE *);
 extern void i386_pe_seh_end_prologue (FILE *);
+extern void i386_pe_seh_cold_init (FILE *, const char *);
 extern void i386_pe_seh_unwind_emit (FILE *, rtx_insn *);
 extern void i386_pe_seh_emit_except_personality (rtx);
 extern void i386_pe_seh_init_sections (void);
@@ -279,8 +275,6 @@ extern bool i386_pe_type_dllimport_p (tree);
 extern bool i386_pe_type_dllexport_p (tree);
 
 extern int i386_pe_reloc_rw_mask (void);
-
-extern rtx maybe_get_pool_constant (rtx);
 
 extern char internal_label_prefix[16];
 extern int internal_label_prefix_len;
@@ -313,8 +307,29 @@ extern enum attr_cpu ix86_schedule;
 #endif
 
 extern const char * ix86_output_call_insn (rtx_insn *insn, rtx call_op);
+extern const char * ix86_output_indirect_jmp (rtx call_op);
+extern const char * ix86_output_function_return (bool long_p);
+extern const char * ix86_output_indirect_function_return (rtx ret_op);
+extern void ix86_split_simple_return_pop_internal (rtx);
 extern bool ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
 						machine_mode mode);
+extern int ix86_min_insn_size (rtx_insn *);
+
+extern int ix86_issue_rate (void);
+extern int ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+			     int cost, unsigned int);
+extern int ia32_multipass_dfa_lookahead (void);
+extern bool ix86_macro_fusion_p (void);
+extern bool ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp);
+
+extern bool ix86_bd_has_dispatch (rtx_insn *insn, int action);
+extern void ix86_bd_do_dispatch (rtx_insn *insn, int mode);
+
+extern void ix86_core2i7_init_hooks (void);
+
+extern int ix86_atom_sched_reorder (FILE *, int, rtx_insn **, int *, int);
+
+extern poly_int64 ix86_push_rounding (poly_int64);
 
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.
@@ -342,3 +357,4 @@ class rtl_opt_pass;
 
 extern rtl_opt_pass *make_pass_insert_vzeroupper (gcc::context *);
 extern rtl_opt_pass *make_pass_stv (gcc::context *);
+extern rtl_opt_pass *make_pass_insert_endbranch (gcc::context *);

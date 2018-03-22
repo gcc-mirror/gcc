@@ -20,6 +20,7 @@ ConstructedObject FrameworkObject::action() {
   if (this != r33) {
     abort ();
   }
+  return ConstructedObject();
 }
 
 int main()

@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "" }
+// { dg-options "-Wno-builtin-declaration-mismatch" }
 // This test case caused the compiler to abort at one point in time.
 // prms-id: 811
 
@@ -535,6 +535,7 @@ X::stringify2()   // { dg-error "no declaration matches" }
     return "stringify2";
 }
 
+int
 main()
 {
     X x;
@@ -547,4 +548,6 @@ main()
     cout << "y\n";
     cout << y.stringify() << '\n';
     cout << y.stringify2() << '\n';
+
+    return 0;
 }

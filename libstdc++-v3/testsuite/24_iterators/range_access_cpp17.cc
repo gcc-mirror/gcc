@@ -1,7 +1,7 @@
-// { dg-do compile { target c++17 } }
 // { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
-// Copyright (C) 2017 Free Software Foundation, Inc.
+// Copyright (C) 2017-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,7 @@ void
 test03()
 {
   using std::reverse_iterator;
-  static std::initializer_list<int> il{1};
+  static constexpr std::initializer_list<int> il{1};
   static_assert(std::cbegin(il) == il.begin());
   static_assert(std::cend(il) == il.end());
   static_assert(std::rbegin(il) == reverse_iterator<const int*>(il.end()));

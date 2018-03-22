@@ -1,5 +1,5 @@
 /* Separate lexical analyzer for GNU C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -77,17 +77,20 @@ cxx_finish (void)
   c_common_finish ();
 }
 
-/* A mapping from tree codes to operator name information.  */
-operator_name_info_t operator_name_info[(int) MAX_TREE_CODES];
-/* Similar, but for assignment operators.  */
-operator_name_info_t assignment_operator_name_info[(int) MAX_TREE_CODES];
-
-/* Initialize data structures that keep track of operator names.  */
-
-#define DEF_OPERATOR(NAME, C, M, AR, AP) \
- CONSTRAINT (C, sizeof "operator " + sizeof NAME <= 256);
+ovl_op_info_t ovl_op_info[2][OVL_OP_MAX] = 
+  {
+    {
+      {NULL_TREE, NULL, NULL, ERROR_MARK, OVL_OP_ERROR_MARK, 0},
+      {NULL_TREE, NULL, NULL, NOP_EXPR, OVL_OP_NOP_EXPR, 0},
+#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS) \
+      {NULL_TREE, NAME, MANGLING, CODE, OVL_OP_##CODE, FLAGS},
+#define OPERATOR_TRANSITION }, {			\
+      {NULL_TREE, NULL, NULL, ERROR_MARK, OVL_OP_ERROR_MARK, 0},
 #include "operators.def"
-#undef DEF_OPERATOR
+    }
+  };
+unsigned char ovl_op_mapping[MAX_TREE_CODES];
+unsigned char ovl_op_alternate[OVL_OP_MAX];
 
 /* Get the name of the kind of identifier T.  */
 
@@ -97,7 +100,8 @@ get_identifier_kind_name (tree id)
   /* Keep in sync with cp_id_kind enumeration.  */
   static const char *const names[cik_max] = {
     "normal", "keyword", "constructor", "destructor",
-    "assign-op", "op-assign-op", "simple-op", "conv-op", };
+    "simple-op", "assign-op", "conv-op", "<reserved>udlit-op"
+  };
 
   unsigned kind = 0;
   kind |= IDENTIFIER_KIND_BIT_2 (id) << 2;
@@ -120,66 +124,94 @@ set_identifier_kind (tree id, cp_identifier_kind kind)
   IDENTIFIER_KIND_BIT_0 (id) |= (kind >> 0) & 1;
 }
 
+/* Create and tag the internal operator name for the overloaded
+   operator PTR describes.  */
+
+static tree
+set_operator_ident (ovl_op_info_t *ptr)
+{
+  char buffer[32];
+  size_t len = snprintf (buffer, sizeof (buffer), "operator%s%s",
+			 &" "[ptr->name[0] && ptr->name[0] != '_'
+			      && !ISALPHA (ptr->name[0])],
+			 ptr->name);
+  gcc_checking_assert (len < sizeof (buffer));
+
+  tree ident = get_identifier_with_length (buffer, len);
+  ptr->identifier = ident;
+
+  return ident;
+}
+
+/* Initialize data structures that keep track of operator names.  */
+
 static void
 init_operators (void)
 {
-  tree identifier;
-  char buffer[256];
-  struct operator_name_info_t *oni;
+  /* We rely on both these being zero.  */
+  gcc_checking_assert (!OVL_OP_ERROR_MARK && !ERROR_MARK);
 
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND)			\
-  sprintf (buffer, "operator%s%s", !NAME[0]				\
-	   || NAME[0] == '_' || ISALPHA (NAME[0]) ? " " : "", NAME);	\
-  identifier = get_identifier (buffer);					\
-									\
-  if (KIND != cik_simple_op || !IDENTIFIER_ANY_OP_P (identifier))	\
-    set_identifier_kind (identifier, KIND);				\
-  									\
-  oni = (KIND == cik_assign_op						\
-	 ? &assignment_operator_name_info[(int) CODE]			\
-	 : &operator_name_info[(int) CODE]);				\
-  oni->identifier = identifier;						\
-  oni->name = NAME;							\
-  oni->mangled_name = MANGLING;						\
-  oni->arity = ARITY;
+  /* This loop iterates backwards because we need to move the
+     assignment operators down to their correct slots.  I.e. morally
+     equivalent to an overlapping memmove where dest > src.  Slot
+     zero is for error_mark, so hae no operator. */
+  for (unsigned ix = OVL_OP_MAX; --ix;)
+    {
+      ovl_op_info_t *op_ptr = &ovl_op_info[false][ix];
 
-#include "operators.def"
-#undef DEF_OPERATOR
+      if (op_ptr->name)
+	{
+	  /* Make sure it fits in lang_decl_fn::operator_code. */
+	  gcc_checking_assert (op_ptr->ovl_op_code < (1 << 6));
+	  tree ident = set_operator_ident (op_ptr);
+	  if (unsigned index = IDENTIFIER_CP_INDEX (ident))
+	    {
+	      ovl_op_info_t *bin_ptr = &ovl_op_info[false][index];
 
-  operator_name_info[(int) TYPE_EXPR] = operator_name_info[(int) CAST_EXPR];
-  operator_name_info[(int) ERROR_MARK].identifier
-    = get_identifier ("<invalid operator>");
+	      /* They should only differ in unary/binary ness.  */
+	      gcc_checking_assert ((op_ptr->flags ^ bin_ptr->flags)
+				   == OVL_OP_FLAG_AMBIARY);
+	      bin_ptr->flags |= op_ptr->flags;
+	      ovl_op_alternate[index] = ix;
+	    }
+	  else
+	    {
+	      IDENTIFIER_CP_INDEX (ident) = ix;
+	      set_identifier_kind (ident, cik_simple_op);
+	    }
+	}
+      if (op_ptr->tree_code)
+	{
+	  gcc_checking_assert (op_ptr->ovl_op_code == ix
+			       && !ovl_op_mapping[op_ptr->tree_code]);
+	  ovl_op_mapping[op_ptr->tree_code] = op_ptr->ovl_op_code;
+	}
 
-  /* Handle some special cases.  These operators are not defined in
-     the language, but can be produced internally.  We may need them
-     for error-reporting.  (Eventually, we should ensure that this
-     does not happen.  Error messages involving these operators will
-     be confusing to users.)  */
+      ovl_op_info_t *as_ptr = &ovl_op_info[true][ix];
+      if (as_ptr->name)
+	{
+	  /* These will be placed at the start of the array, move to
+	     the correct slot and initialize.  */
+	  if (as_ptr->ovl_op_code != ix)
+	    {
+	      ovl_op_info_t *dst_ptr = &ovl_op_info[true][as_ptr->ovl_op_code];
+	      gcc_assert (as_ptr->ovl_op_code > ix && !dst_ptr->tree_code);
+	      memcpy (dst_ptr, as_ptr, sizeof (*dst_ptr));
+	      memset (as_ptr, 0, sizeof (*as_ptr));
+	      as_ptr = dst_ptr;
+	    }
 
-  operator_name_info [(int) INIT_EXPR].name
-    = operator_name_info [(int) MODIFY_EXPR].name;
+	  tree ident = set_operator_ident (as_ptr);
+	  gcc_checking_assert (!IDENTIFIER_CP_INDEX (ident));
+	  IDENTIFIER_CP_INDEX (ident) = as_ptr->ovl_op_code;
+	  set_identifier_kind (ident, cik_assign_op);
 
-  operator_name_info [(int) EXACT_DIV_EXPR].name = "(ceiling /)";
-  operator_name_info [(int) CEIL_DIV_EXPR].name = "(ceiling /)";
-  operator_name_info [(int) FLOOR_DIV_EXPR].name = "(floor /)";
-  operator_name_info [(int) ROUND_DIV_EXPR].name = "(round /)";
-  operator_name_info [(int) CEIL_MOD_EXPR].name = "(ceiling %)";
-  operator_name_info [(int) FLOOR_MOD_EXPR].name = "(floor %)";
-  operator_name_info [(int) ROUND_MOD_EXPR].name = "(round %)";
-
-  operator_name_info [(int) ABS_EXPR].name = "abs";
-  operator_name_info [(int) TRUTH_AND_EXPR].name = "strict &&";
-  operator_name_info [(int) TRUTH_OR_EXPR].name = "strict ||";
-  operator_name_info [(int) RANGE_EXPR].name = "...";
-  operator_name_info [(int) UNARY_PLUS_EXPR].name = "+";
-
-  assignment_operator_name_info [(int) EXACT_DIV_EXPR].name = "(exact /=)";
-  assignment_operator_name_info [(int) CEIL_DIV_EXPR].name = "(ceiling /=)";
-  assignment_operator_name_info [(int) FLOOR_DIV_EXPR].name = "(floor /=)";
-  assignment_operator_name_info [(int) ROUND_DIV_EXPR].name = "(round /=)";
-  assignment_operator_name_info [(int) CEIL_MOD_EXPR].name = "(ceiling %=)";
-  assignment_operator_name_info [(int) FLOOR_MOD_EXPR].name = "(floor %=)";
-  assignment_operator_name_info [(int) ROUND_MOD_EXPR].name = "(round %=)";
+	  gcc_checking_assert (!ovl_op_mapping[as_ptr->tree_code]
+			       || (ovl_op_mapping[as_ptr->tree_code]
+				   == as_ptr->ovl_op_code));
+	  ovl_op_mapping[as_ptr->tree_code] = as_ptr->ovl_op_code;
+	}
+    }
 }
 
 /* Initialize the reserved words.  */
@@ -462,10 +494,7 @@ unqualified_name_lookup_error (tree name, location_t loc)
     loc = EXPR_LOC_OR_LOC (name, input_location);
 
   if (IDENTIFIER_ANY_OP_P (name))
-    {
-      if (name != cp_operator_id (ERROR_MARK))
-	error_at (loc, "%qD not defined", name);
-    }
+    error_at (loc, "%qD not defined", name);
   else
     {
       if (!objc_diagnose_private_ivar (name))
@@ -585,7 +614,6 @@ make_conv_op_name (tree type)
 
       /* Just in case something managed to bind.  */
       IDENTIFIER_BINDING (identifier) = NULL;
-      IDENTIFIER_LABEL_VALUE (identifier) = NULL_TREE;
 
       /* Hang TYPE off the identifier so it can be found easily later
 	 when performing conversions.  */
@@ -651,7 +679,7 @@ maybe_add_lang_decl_raw (tree t, bool decomp_p)
 
   if (sel == lds_ns)
     /* Who'd create a namespace, only to put nothing in it?  */
-    ld->u.ns.bindings = hash_map<lang_identifier *, tree>::create_ggc (499);
+    ld->u.ns.bindings = hash_table<named_decl_hash>::create_ggc (499);
 
   if (GATHER_STATISTICS)
     {

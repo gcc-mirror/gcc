@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2007-2017, Free Software Foundation, Inc.          --
+--         Copyright (C) 2007-2018, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -153,7 +153,6 @@ is
       SC : out Ada.Real_Time.Seconds_Count;
       TS : out Ada.Real_Time.Time_Span)
    is
-      use type Ada.Real_Time.Time;
    begin
       Ada.Real_Time.Split (Ada.Real_Time.Time (T), SC, TS);
    end Split;

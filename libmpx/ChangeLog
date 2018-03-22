@@ -1,3 +1,20 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	 * Makefile.in: Regenerate.
+	 * acinclude.m4: Add enable.m4 and cet.m4.
+	 * configure: Regenerate.
+	 * configure.ac: Set CET_FLAGS. Update XCFLAGS.
+	 * mpxrt/Makefile.am: Update libmpx_la_CFLAGS.
+	 * mpxrt/Makefile.in: Regenerate.
+	 * mpxwrap/Makefile.am: Add AM_CFLAGS. Update
+	 libmpxwrappers_la_CFLAGS.
+	 * mpxwrap/Makefile.in: Regenerate.
+
 2017-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* mpxrt/mpxrt-utils.h (__mpxrt_stop): New prototype.

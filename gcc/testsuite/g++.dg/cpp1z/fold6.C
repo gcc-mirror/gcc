@@ -6,7 +6,7 @@
 int i;
 
 template <int... Is>
-int f()
+void f()
 {
   (i ? i : Is + ...);		// { dg-error "" }
   (i + Is + ...);		// { dg-error "" }

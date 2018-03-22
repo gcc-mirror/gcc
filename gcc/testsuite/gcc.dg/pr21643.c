@@ -1,6 +1,7 @@
 /* PR tree-optimization/21643 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-reassoc1-details" } */
+/* { dg-additional-options "-mbranch-cost=2" { target branch_cost } } */
 
 int
 f1 (unsigned char c)
@@ -86,4 +87,5 @@ f9 (unsigned char c)
   return 1;
 }
 
-/* { dg-final { scan-tree-dump-times "Optimizing range tests c_\[0-9\]*.D. -.0, 31. and -.32, 32.\[\n\r\]* into" 6 "reassoc1" } } */
+/* { dg-final { scan-tree-dump-times "Optimizing range tests c_\[0-9\]*.D. -.0, 31. and -.32, 32.\[\n\r\]* into" 6 "reassoc1" { target { ! logical_op_short_circuit } } } }  */
+/* { dg-final { scan-tree-dump-times "Optimizing range tests c_\[0-9\]*.D. -.0, 31. and -.32, 32.\[\n\r\]* into" 5 "reassoc1" { target logical_op_short_circuit } } } */

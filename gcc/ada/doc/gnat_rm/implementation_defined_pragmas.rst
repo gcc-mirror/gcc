@@ -419,6 +419,7 @@ Syntax::
                         Assume               |
                         Contract_Cases       |
                         Debug                |
+                        Ghost                |
                         Invariant            |
                         Invariant'Class      |
                         Loop_Invariant       |
@@ -4119,6 +4120,9 @@ pragma is ignored in this case (with a warning).
 Specifying SPACE also disables alignment promotions for standalone objects,
 which occur when the compiler increases the alignment of a specific object
 without changing the alignment of its type.
+
+Specifying SPACE also disables component reordering in unpacked record types,
+which can result in larger sizes in order to meet alignment requirements.
 
 Specifying TIME causes larger default alignments to be chosen in the case of
 small types with sizes that are not a power of 2. For example, consider:

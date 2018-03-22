@@ -27,6 +27,8 @@ case "${target}" in
 		TSAN_SUPPORTED=yes
 		LSAN_SUPPORTED=yes
 		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_amd64.lo
+	fi
+	if echo "int x = __x86_64__;" | $CC -c -x c -o /dev/null - > /dev/null 2>&1; then
 		SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS=sanitizer_linux_x86_64.lo
 	fi
 	;;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -542,6 +542,7 @@ package Rtsfind is
 
      RE_Null,
 
+     RO_CA_Clock_Time,                   -- Ada.Calendar
      RO_CA_Time,                         -- Ada.Calendar
 
      RO_CA_Delay_For,                    -- Ada.Calendar.Delays
@@ -582,6 +583,7 @@ package Rtsfind is
      RE_Names,                           -- Ada.Interrupts.Names
 
      RE_Clock,                           -- Ada.Real_Time
+     RE_Clock_Time,                      -- Ada.Real_Time
      RE_Time_Span,                       -- Ada.Real_Time
      RE_Time_Span_Zero,                  -- Ada.Real_Time
      RO_RT_Time,                         -- Ada.Real_Time
@@ -631,6 +633,7 @@ package Rtsfind is
      RE_Get_Offset_Index,                -- Ada.Tags
      RE_Get_Prim_Op_Kind,                -- Ada.Tags
      RE_Get_Tagged_Kind,                 -- Ada.Tags
+     RE_HT_Link,                         -- Ada.Tags
      RE_Idepth,                          -- Ada.Tags
      RE_Interfaces_Array,                -- Ada.Tags
      RE_Interfaces_Table,                -- Ada.Tags
@@ -1249,6 +1252,7 @@ package Rtsfind is
      RE_Set_63,                          -- System.Pack_63
 
      RE_Adjust_Storage_Size,             -- System.Parameters
+     RE_Default_Secondary_Stack_Size,    -- System.Parameters
      RE_Default_Stack_Size,              -- System.Parameters
      RE_Garbage_Collected,               -- System.Parameters
      RE_Size_Type,                       -- System.Parameters
@@ -1424,12 +1428,12 @@ package Rtsfind is
      RE_IS_Ilf,                          -- System.Scalar_Values
      RE_IS_Ill,                          -- System.Scalar_Values
 
-     RE_Default_Secondary_Stack_Size,    -- System.Secondary_Stack
      RE_Mark_Id,                         -- System.Secondary_Stack
      RE_SS_Allocate,                     -- System.Secondary_Stack
      RE_SS_Pool,                         -- System.Secondary_Stack
      RE_SS_Mark,                         -- System.Secondary_Stack
      RE_SS_Release,                      -- System.Secondary_Stack
+     RE_SS_Stack,                        -- System.Secondary_Stack
 
      RE_Shared_Var_Lock,                 -- System.Shared_Storage
      RE_Shared_Var_Unlock,               -- System.Shared_Storage
@@ -1776,6 +1780,7 @@ package Rtsfind is
 
      RE_Null                             => RTU_Null,
 
+     RO_CA_Clock_Time                    => Ada_Calendar,
      RO_CA_Time                          => Ada_Calendar,
 
      RO_CA_Delay_For                     => Ada_Calendar_Delays,
@@ -1816,6 +1821,7 @@ package Rtsfind is
      RE_Names                            => Ada_Interrupts_Names,
 
      RE_Clock                            => Ada_Real_Time,
+     RE_Clock_Time                       => Ada_Real_Time,
      RE_Time_Span                        => Ada_Real_Time,
      RE_Time_Span_Zero                   => Ada_Real_Time,
      RO_RT_Time                          => Ada_Real_Time,
@@ -1865,6 +1871,7 @@ package Rtsfind is
      RE_Get_Offset_Index                 => Ada_Tags,
      RE_Get_Prim_Op_Kind                 => Ada_Tags,
      RE_Get_Tagged_Kind                  => Ada_Tags,
+     RE_HT_Link                          => Ada_Tags,
      RE_Idepth                           => Ada_Tags,
      RE_Interfaces_Array                 => Ada_Tags,
      RE_Interfaces_Table                 => Ada_Tags,
@@ -2487,6 +2494,7 @@ package Rtsfind is
      RE_Set_63                           => System_Pack_63,
 
      RE_Adjust_Storage_Size              => System_Parameters,
+     RE_Default_Secondary_Stack_Size     => System_Parameters,
      RE_Default_Stack_Size               => System_Parameters,
      RE_Garbage_Collected                => System_Parameters,
      RE_Size_Type                        => System_Parameters,
@@ -2662,12 +2670,12 @@ package Rtsfind is
      RE_IS_Ilf                           => System_Scalar_Values,
      RE_IS_Ill                           => System_Scalar_Values,
 
-     RE_Default_Secondary_Stack_Size     => System_Secondary_Stack,
      RE_Mark_Id                          => System_Secondary_Stack,
      RE_SS_Allocate                      => System_Secondary_Stack,
      RE_SS_Mark                          => System_Secondary_Stack,
      RE_SS_Pool                          => System_Secondary_Stack,
      RE_SS_Release                       => System_Secondary_Stack,
+     RE_SS_Stack                         => System_Secondary_Stack,
 
      RE_Shared_Var_Lock                  => System_Shared_Storage,
      RE_Shared_Var_Unlock                => System_Shared_Storage,

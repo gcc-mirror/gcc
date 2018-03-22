@@ -5813,7 +5813,7 @@ $as_echo "$nls_cv_force_use_gnu_gettext" >&6; }
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GNU gettext in libc" >&5
 $as_echo_n "checking for GNU gettext in libc... " >&6; }
-if test "${gt_cv_func_gnugettext1_libc+set}" = set; then :
+if test "${gt_cv_func_gnugettext2_libc+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -5825,23 +5825,23 @@ int
 main ()
 {
 bindtextdomain ("", "");
-return (int) gettext ("") + _nl_msg_cat_cntr + *_nl_domain_bindings
+return (int) gettext ("") + (int) ngettext ("", "", 0) + _nl_msg_cat_cntr + *_nl_domain_bindings
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  gt_cv_func_gnugettext1_libc=yes
+  gt_cv_func_gnugettext2_libc=yes
 else
-  gt_cv_func_gnugettext1_libc=no
+  gt_cv_func_gnugettext2_libc=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gt_cv_func_gnugettext1_libc" >&5
-$as_echo "$gt_cv_func_gnugettext1_libc" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gt_cv_func_gnugettext2_libc" >&5
+$as_echo "$gt_cv_func_gnugettext2_libc" >&6; }
 
-        if test "$gt_cv_func_gnugettext1_libc" != "yes"; then
+        if test "$gt_cv_func_gnugettext2_libc" != "yes"; then
 
 
 
@@ -6223,7 +6223,7 @@ fi
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GNU gettext in libintl" >&5
 $as_echo_n "checking for GNU gettext in libintl... " >&6; }
-if test "${gt_cv_func_gnugettext1_libintl+set}" = set; then :
+if test "${gt_cv_func_gnugettext2_libintl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   gt_save_CPPFLAGS="$CPPFLAGS"
@@ -6243,19 +6243,19 @@ int
 main ()
 {
 bindtextdomain ("", "");
-return (int) gettext ("") + _nl_msg_cat_cntr + *_nl_expand_alias (0)
+return (int) gettext ("") + (int) ngettext ("", "", 0) + _nl_msg_cat_cntr + *_nl_expand_alias (0)
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  gt_cv_func_gnugettext1_libintl=yes
+  gt_cv_func_gnugettext2_libintl=yes
 else
-  gt_cv_func_gnugettext1_libintl=no
+  gt_cv_func_gnugettext2_libintl=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-                        if test "$gt_cv_func_gnugettext1_libintl" != yes && test -n "$LIBICONV"; then
+                        if test "$gt_cv_func_gnugettext2_libintl" != yes && test -n "$LIBICONV"; then
               LIBS="$LIBS $LIBICONV"
               cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -6270,7 +6270,7 @@ int
 main ()
 {
 bindtextdomain ("", "");
-return (int) gettext ("") + _nl_msg_cat_cntr + *_nl_expand_alias (0)
+return (int) gettext ("") + (int) ngettext ("", "", 0) + _nl_msg_cat_cntr + *_nl_expand_alias (0)
   ;
   return 0;
 }
@@ -6278,7 +6278,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   LIBINTL="$LIBINTL $LIBICONV"
                 LTLIBINTL="$LTLIBINTL $LTLIBICONV"
-                gt_cv_func_gnugettext1_libintl=yes
+                gt_cv_func_gnugettext2_libintl=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext \
@@ -6287,12 +6287,12 @@ rm -f core conftest.err conftest.$ac_objext \
             CPPFLAGS="$gt_save_CPPFLAGS"
             LIBS="$gt_save_LIBS"
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gt_cv_func_gnugettext1_libintl" >&5
-$as_echo "$gt_cv_func_gnugettext1_libintl" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gt_cv_func_gnugettext2_libintl" >&5
+$as_echo "$gt_cv_func_gnugettext2_libintl" >&6; }
         fi
 
-                                        if test "$gt_cv_func_gnugettext1_libc" = "yes" \
-           || { test "$gt_cv_func_gnugettext1_libintl" = "yes" \
+                                        if test "$gt_cv_func_gnugettext2_libc" = "yes" \
+           || { test "$gt_cv_func_gnugettext2_libintl" = "yes" \
                 && test "$PACKAGE" != gettext-runtime \
                 && test "$PACKAGE" != gettext-tools; }; then
           gt_use_preinstalled_gnugettext=yes
@@ -6340,7 +6340,7 @@ $as_echo "$USE_NLS" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking where the gettext function comes from" >&5
 $as_echo_n "checking where the gettext function comes from... " >&6; }
     if test "$gt_use_preinstalled_gnugettext" = "yes"; then
-      if test "$gt_cv_func_gnugettext1_libintl" = "yes"; then
+      if test "$gt_cv_func_gnugettext2_libintl" = "yes"; then
         gt_source="external libintl"
       else
         gt_source="libc"
@@ -6355,7 +6355,7 @@ $as_echo "$gt_source" >&6; }
   if test "$USE_NLS" = "yes"; then
 
     if test "$gt_use_preinstalled_gnugettext" = "yes"; then
-      if test "$gt_cv_func_gnugettext1_libintl" = "yes"; then
+      if test "$gt_cv_func_gnugettext2_libintl" = "yes"; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libintl" >&5
 $as_echo_n "checking how to link with libintl... " >&6; }
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBINTL" >&5

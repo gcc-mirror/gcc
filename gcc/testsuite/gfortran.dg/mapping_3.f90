@@ -26,7 +26,7 @@ contains
   subroutine process (strings)
     character(*), intent(in) :: strings(:)
 
-    if (any (strings .ne. indata)) call abort ()
+    if (any (strings .ne. indata)) STOP 1
 
   end subroutine
 

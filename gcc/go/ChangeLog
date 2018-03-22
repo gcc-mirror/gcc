@@ -1,3 +1,110 @@
+2018-02-03  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::fill_in_struct): Mark struct types as
+	using structural equality.
+
+2018-02-02  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::type_size): Return 0 for
+	void_type_node.
+	(Gcc_backend::convert_expression): Don't convert if the type of
+	expr_tree is void_type_node.
+	(Gcc_backend::array_index_expression): Don't index if the type of
+	the array expression is void_type_node.
+	(Gcc_backend::init_statement): Don't initialize if the type of the
+	initializer expression is void_type_node.
+	(Gcc_backend::assignment_statement): Don't assign if the type of
+	either the left or right hand side is void_type_node.
+	(Gcc_backend::temporary_variable): Don't initialize if the type of
+	the initializer expression is void_type_node.
+
+2018-02-01  Cherry Zhang  <cherryyz@google.com>
+
+	* lang.opt (fgo-optimize): Remove RejectNegative.
+	* go-c.h (go_enable_optimize): Update declaration to take value
+	argument.
+	* go-lang.c (go_langhook_handle_option): Pass value to
+	go_enable_optimize.
+	* gccgo.texi (Invoking gccgo): Update -fgo-optimize-allocs doc.
+
+2018-01-30  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::convert_tree): New private method.
+	(Gcc_backend::constructor_expression): Call it.
+	(Gcc_backend::assignment_statement): Likewise.
+	(Gcc_backend::temporary_variable): Likewise.
+
+2018-01-09  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (local_variable): Add decl_var parameter.
+
+2018-01-09  Cherry Zhang  <cherryyz@google.com>
+
+	* lang.opt (fgo-debug-escape-hash): New option.
+	* go-c.h (struct go_create_gogo_args): Add debug_escape_hash
+	field.
+	* go-lang.c (go_langhook_init): Set debug_escape_hash field.
+	* gccgo.texi (Invoking gccgo): Document -fgo-debug-escape-hash.
+
+2018-01-05  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Correct
+	math_function_type_long to take one argument.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Handle MODE_VECTOR_BOOL.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Check valid_vector_subparts_p.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2017-12-12  Tony Reix  <tony.reix@atos.net>
+	    Ian Lance Taylor  <iant@golang.org>
+
+	* go-lang.c (TARGET_AIX): Define if not defined.
+	(go_langhook_init): Set nil_check_size_threshold to -1 on AIX.
+
+2017-12-01  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define
+	__builtin_unreachable.
+	(Gcc_backend::function): Add does_not_return parameter.
+
+2017-12-01  Than McIntosh  <thanm@google.com>
+
+	* go-c.h (go_create_gogo_args): Add nil_check_size_threshold
+	field.
+	* go-lang.c (go_langhook_init): Set nil_check_size_threshold.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* go-gcc.cc (Gcc_backend::switch_statement): Build SWITCH_EXPR using
+	build2_loc instead of build3_loc.
+
+2017-11-14  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (var_expression): Remove Varexpr_context parameter.
+
+2017-10-11  Tony Reix  <tony.reix@atos.net>
+
+	* go-system.h (__STDC_FORMAT_MACROS): Define before including any
+	system header files, as is done in ../system.h.
+
+2017-10-05  Ian Lance Taylor  <iant@golang.org>
+
+	* Make-lang.in (GO_OBJS): Add go/names.o.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
@@ -1421,7 +1528,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2017 Free Software Foundation, Inc.
+Copyright (C) 2010-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

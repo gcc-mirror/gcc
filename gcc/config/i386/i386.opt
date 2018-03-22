@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -181,6 +181,10 @@ int x_ix86_tune_no_default
 ;; -mveclibabi=
 TargetSave
 enum ix86_veclibabi x_ix86_veclibabi_type
+
+;; -mprefer-vector-width=
+TargetSave
+enum prefer_vector_width x_prefer_vector_width_type
 
 ;; x86 options
 m128bit-long-double
@@ -588,8 +592,28 @@ Do dispatch scheduling if processor is bdver1, bdver2, bdver3, bdver4
 or znver1 and Haifa scheduling is selected.
 
 mprefer-avx128
-Target Report Mask(PREFER_AVX128) SAVE
+Target Alias(mprefer-vector-width=, 128, 256)
 Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer.
+
+mprefer-vector-width=
+Target Report RejectNegative Joined Var(prefer_vector_width_type) Enum(prefer_vector_width) Init(PVW_NONE)
+Use given register vector width instructions instead of maximum register width in the auto-vectorizer.
+
+Enum
+Name(prefer_vector_width) Type(enum prefer_vector_width)
+Known preferred register vector length (to use with the -mprefer-vector-width= option)
+
+EnumValue
+Enum(prefer_vector_width) String(none) Value(PVW_NONE)
+
+EnumValue
+Enum(prefer_vector_width) String(128) Value(PVW_AVX128)
+
+EnumValue
+Enum(prefer_vector_width) String(256) Value(PVW_AVX256)
+
+EnumValue
+Enum(prefer_vector_width) String(512) Value(PVW_AVX512)
 
 ;; ISA support
 
@@ -710,8 +734,20 @@ Target Report Mask(ISA_AVX5124VNNIW) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation.
 
 mavx512vpopcntdq
-Target Report Mask(ISA_AVX512VPOPCNTDQ) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA_AVX512VPOPCNTDQ) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VPOPCNTDQ built-in functions and code generation.
+
+mavx512vbmi2
+Target Report Mask(ISA_AVX512VBMI2) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation.
+
+mavx512vnni
+Target Report Mask(ISA_AVX512VNNI) Var(ix86_isa_flags) Save
+Support AVX512VNNI built-in functions and code generation.
+
+mavx512bitalg
+Target Report Mask(ISA_AVX512BITALG) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BITALG built-in functions and code generation.
 
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
@@ -741,6 +777,14 @@ mpopcnt
 Target Report Mask(ISA_POPCNT) Var(ix86_isa_flags) Save
 Support code generation of popcnt instruction.
 
+mpconfig
+Target Report Mask(ISA_PCONFIG) Var(ix86_isa_flags2) Save
+Support PCONFIG built-in functions and code generation.
+
+mwbnoinvd
+Target Report Mask(ISA_WBNOINVD) Var(ix86_isa_flags2) Save
+Support WBNOINVD built-in functions and code generation.
+
 msgx
 Target Report Mask(ISA_SGX) Var(ix86_isa_flags2) Save
 Support SGX built-in functions and code generation.
@@ -748,6 +792,18 @@ Support SGX built-in functions and code generation.
 mrdpid
 Target Report Mask(ISA_RDPID) Var(ix86_isa_flags2) Save
 Support RDPID built-in functions and code generation.
+
+mgfni
+Target Report Mask(ISA_GFNI) Var(ix86_isa_flags) Save
+Support GFNI built-in functions and code generation.
+
+mvaes
+Target Report Mask(ISA_VAES) Var(ix86_isa_flags2) Save
+Support VAES built-in functions and code generation.
+
+mvpclmulqdq
+Target Report Mask(ISA_VPCLMULQDQ) Var(ix86_isa_flags) Save
+Support VPCLMULQDQ built-in functions and code generation.
 
 mbmi
 Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save
@@ -762,7 +818,7 @@ Target Report Mask(ISA_LZCNT) Var(ix86_isa_flags) Save
 Support LZCNT built-in function and code generation.
 
 mhle
-Target Report Mask(ISA_HLE) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_HLE) Var(ix86_isa_flags2) Save
 Support Hardware Lock Elision prefixes.
 
 mrdseed
@@ -814,7 +870,7 @@ Target Report Mask(ISA_TBM) Var(ix86_isa_flags) Save
 Support TBM built-in functions and code generation.
 
 mcx16
-Target Report Mask(ISA_CX16) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_CX16) Var(ix86_isa_flags2) Save
 Support code generation of cmpxchg16b instruction.
 
 msahf
@@ -822,7 +878,7 @@ Target Report Mask(ISA_SAHF) Var(ix86_isa_flags) Save
 Support code generation of sahf instruction in 64bit x86-64 code.
 
 mmovbe
-Target Report Mask(ISA_MOVBE) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_MOVBE) Var(ix86_isa_flags2) Save
 Support code generation of movbe instruction.
 
 mcrc32
@@ -895,15 +951,15 @@ Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation.
 
 mmpx
-Target Report Mask(ISA_MPX) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_MPX) Var(ix86_isa_flags2) Save
 Support MPX code generation.
 
 mmwaitx
-Target Report Mask(ISA_MWAITX) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_MWAITX) Var(ix86_isa_flags2) Save
 Support MWAITX and MONITORX built-in functions and code generation.
 
 mclzero
-Target Report Mask(ISA_CLZERO) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_CLZERO) Var(ix86_isa_flags2) Save
 Support CLZERO built-in functions and code generation.
 
 mpku
@@ -949,3 +1005,55 @@ Attempt to avoid generating instruction sequences containing ret bytes.
 mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save
 Generate code which uses only the general registers.
+
+mcet
+Target Report Var(flag_cet) Init(0)
+Support Control-flow Enforcement Technology (CET) built-in functions
+and code generation.
+
+mibt
+Target Report Mask(ISA_IBT) Var(ix86_isa_flags2) Save
+Specifically enables an indirect branch tracking feature from Control-flow
+Enforcement Technology (CET).
+
+mshstk
+Target Report Mask(ISA_SHSTK) Var(ix86_isa_flags) Save
+Specifically enables an shadow stack support feature from Control-flow
+Enforcement Technology (CET).
+
+mcet-switch
+Target Report Undocumented Var(flag_cet_switch) Init(0)
+Turn on CET instrumentation for switch statements, which use jump table and
+indirect jump.
+
+mforce-indirect-call
+Target Report Var(flag_force_indirect_call) Init(0)
+Make all function calls indirect.
+
+mindirect-branch=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(ix86_indirect_branch) Init(indirect_branch_keep)
+Convert indirect call and jump to call and return thunks.
+
+mfunction-return=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(ix86_function_return) Init(indirect_branch_keep)
+Convert function return to call and return thunk.
+
+Enum
+Name(indirect_branch) Type(enum indirect_branch)
+Known indirect branch choices (for use with the -mindirect-branch=/-mfunction-return= options):
+
+EnumValue
+Enum(indirect_branch) String(keep) Value(indirect_branch_keep)
+
+EnumValue
+Enum(indirect_branch) String(thunk) Value(indirect_branch_thunk)
+
+EnumValue
+Enum(indirect_branch) String(thunk-inline) Value(indirect_branch_thunk_inline)
+
+EnumValue
+Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
+
+mindirect-branch-register
+Target Report Var(ix86_indirect_branch_register) Init(0)
+Force indirect call and jump via register.

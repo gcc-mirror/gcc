@@ -40,5 +40,7 @@ add_float_n (vector float *p, long n)
 /* { dg-final { scan-assembler-not "lxvw4x"   } } */
 /* { dg-final { scan-assembler-not "lxvx"     } } */
 /* { dg-final { scan-assembler-not "lxv"      } } */
-/* { dg-final { scan-assembler-not "lvx"      } } */
-/* { dg-final { scan-assembler-not "xxpermdi" } } */
+
+/* With recent enhancements to the code generator, it is considered
+ * legal to implement vec_extract with lvx and xxpermdi.  Previous
+ * versions of this test forbid both instructions.  */

@@ -11,7 +11,7 @@ program test
   pre = 3.0
   call EOS(N, rho, pre, cs, gamma)
   if (abs(CS(1) - sqrt(gamma*pre(1)/rho(1))) > epsilon(cs)) &
-     call abort()
+     STOP 1
 contains
       SUBROUTINE EOS(NODES, DENS, PRES, CS, CGAMMA)
       IMPLICIT NONE

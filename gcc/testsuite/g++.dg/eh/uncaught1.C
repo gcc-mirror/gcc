@@ -1,6 +1,7 @@
 // PR libstdc++/10606
 // { dg-do run }
-// { dg-options "-fuse-cxa-get-exception-ptr" { target powerpc*-*-darwin* } }
+// { dg-options "-Wno-deprecated" }
+// { dg-options "-fuse-cxa-get-exception-ptr -Wno-deprecated" { target powerpc*-*-darwin* } }
 
 #include <exception>
 #include <cstdlib>

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1735,7 +1735,13 @@ the meanings of that architecture's constraints.
 The stack pointer register (@code{SP})
 
 @item w
-Floating point or SIMD vector register
+Floating point register, Advanced SIMD vector register or SVE vector register
+
+@item Upl
+One of the low eight SVE predicate registers (@code{P0} to @code{P7})
+
+@item Upa
+Any of the SVE predicate registers (@code{P0} to @code{P15})
 
 @item I
 Integer constant that is valid as an immediate operand in an @code{ADD}
@@ -4849,6 +4855,26 @@ loads for vectors of mode @var{n}.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{vec_mask_load_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_load_lanes@var{m}@var{n}}
+Like @samp{vec_load_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2) that specifies which elements of the destination
+vectors should be loaded.  Other elements of the destination
+vectors are set to zero.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[i][j] = operand1[j * c + i];
+  else
+    for (i = 0; i < c; i++)
+      operand0[i][j] = 0;
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_store_lanes@var{m}@var{n}} instruction pattern
 @item @samp{vec_store_lanes@var{m}@var{n}}
 Equivalent to @samp{vec_load_lanes@var{m}@var{n}}, with the memory
@@ -4865,6 +4891,80 @@ for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
 for a memory operand 0 and register operand 1.
 
 This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{vec_mask_store_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_store_lanes@var{m}@var{n}}
+Like @samp{vec_store_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2) that specifies which elements of the source
+vectors should be stored.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[j * c + i] = operand1[i][j];
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{gather_load@var{m}} instruction pattern
+@item @samp{gather_load@var{m}}
+Load several separate memory locations into a vector of mode @var{m}.
+Operand 1 is a scalar base address and operand 2 is a vector of
+offsets from that base.  Operand 0 is a destination vector with the
+same number of elements as the offset.  For each element index @var{i}:
+
+@itemize @bullet
+@item
+extend the offset element @var{i} to address width, using zero
+extension if operand 3 is 1 and sign extension if operand 3 is zero;
+@item
+multiply the extended offset by operand 4;
+@item
+add the result to the base; and
+@item
+load the value at that address into element @var{i} of operand 0.
+@end itemize
+
+The value of operand 3 does not matter if the offsets are already
+address width.
+
+@cindex @code{mask_gather_load@var{m}} instruction pattern
+@item @samp{mask_gather_load@var{m}}
+Like @samp{gather_load@var{m}}, but takes an extra mask operand as
+operand 5.  Bit @var{i} of the mask is set if element @var{i}
+of the result should be loaded from memory and clear if element @var{i}
+of the result should be set to zero.
+
+@cindex @code{scatter_store@var{m}} instruction pattern
+@item @samp{scatter_store@var{m}}
+Store a vector of mode @var{m} into several distinct memory locations.
+Operand 0 is a scalar base address and operand 1 is a vector of offsets
+from that base.  Operand 4 is the vector of values that should be stored,
+which has the same number of elements as the offset.  For each element
+index @var{i}:
+
+@itemize @bullet
+@item
+extend the offset element @var{i} to address width, using zero
+extension if operand 2 is 1 and sign extension if operand 2 is zero;
+@item
+multiply the extended offset by operand 3;
+@item
+add the result to the base; and
+@item
+store element @var{i} of operand 4 to that address.
+@end itemize
+
+The value of operand 2 does not matter if the offsets are already
+address width.
+
+@cindex @code{mask_scatter_store@var{m}} instruction pattern
+@item @samp{mask_scatter_store@var{m}}
+Like @samp{scatter_store@var{m}}, but takes an extra mask operand as
+operand 5.  Bit @var{i} of the mask is set if element @var{i}
+of the result should be stored to memory.
 
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
@@ -4887,6 +4987,43 @@ and operand 1 is parallel containing values for individual fields.  The
 @var{n} mode is the mode of the elements, should be either element mode of
 the vector mode @var{m}, or a vector mode with the same element mode and
 smaller number of elements.
+
+@cindex @code{vec_duplicate@var{m}} instruction pattern
+@item @samp{vec_duplicate@var{m}}
+Initialize vector output operand 0 so that each element has the value given
+by scalar input operand 1.  The vector has mode @var{m} and the scalar has
+the mode appropriate for one element of @var{m}.
+
+This pattern only handles duplicates of non-constant inputs.  Constant
+vectors go through the @code{mov@var{m}} pattern instead.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{vec_series@var{m}} instruction pattern
+@item @samp{vec_series@var{m}}
+Initialize vector output operand 0 so that element @var{i} is equal to
+operand 1 plus @var{i} times operand 2.  In other words, create a linear
+series whose base value is operand 1 and whose step is operand 2.
+
+The vector output has mode @var{m} and the scalar inputs have the mode
+appropriate for one element of @var{m}.  This pattern is not used for
+floating-point vectors, in order to avoid having to specify the
+rounding behavior for @var{i} > 1.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{while_ult@var{m}@var{n}} instruction pattern
+@item @code{while_ult@var{m}@var{n}}
+Set operand 0 to a mask that is true while incrementing operand 1
+gives a value that is less than operand 2.  Operand 0 has mode @var{n}
+and operands 1 and 2 are scalar integers of mode @var{m}.
+The operation is equivalent to:
+
+@smallexample
+operand0[0] = operand1 < operand2;
+for (i = 1; i < GET_MODE_NUNITS (@var{n}); i++)
+  operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
+@end smallexample
 
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
@@ -4972,20 +5109,8 @@ where @var{q} is a vector of @code{QImode} of the same width as @var{m},
 the middle-end will lower the mode @var{m} @code{VEC_PERM_EXPR} to
 mode @var{q}.
 
-@cindex @code{vec_perm_const@var{m}} instruction pattern
-@item @samp{vec_perm_const@var{m}}
-Like @samp{vec_perm} except that the permutation is a compile-time
-constant.  That is, operand 3, the @dfn{selector}, is a @code{CONST_VECTOR}.
-
-Some targets cannot perform a permutation with a variable selector,
-but can efficiently perform a constant permutation.  Further, the
-target hook @code{vec_perm_ok} is queried to determine if the 
-specific constant permutation is available efficiently; the named
-pattern is never expanded without @code{vec_perm_ok} returning true.
-
-There is no need for a target to supply both @samp{vec_perm@var{m}}
-and @samp{vec_perm_const@var{m}} if the former can trivially implement
-the operation with, say, the vector constant loaded into a register.
+See also @code{TARGET_VECTORIZER_VEC_PERM_CONST}, which performs
+the analogous operation for constant selectors.
 
 @cindex @code{push@var{m}1} instruction pattern
 @item @samp{push@var{m}1}
@@ -5141,6 +5266,42 @@ Compute the sum of the elements of a vector. The vector is operand 1, and
 operand 0 is the scalar result, with mode equal to the mode of the elements of
 the input vector.
 
+@cindex @code{reduc_and_scal_@var{m}} instruction pattern
+@item @samp{reduc_and_scal_@var{m}}
+@cindex @code{reduc_ior_scal_@var{m}} instruction pattern
+@itemx @samp{reduc_ior_scal_@var{m}}
+@cindex @code{reduc_xor_scal_@var{m}} instruction pattern
+@itemx @samp{reduc_xor_scal_@var{m}}
+Compute the bitwise @code{AND}/@code{IOR}/@code{XOR} reduction of the elements
+of a vector of mode @var{m}.  Operand 1 is the vector input and operand 0
+is the scalar result.  The mode of the scalar result is the same as one
+element of @var{m}.
+
+@cindex @code{extract_last_@var{m}} instruction pattern
+@item @code{extract_last_@var{m}}
+Find the last set bit in mask operand 1 and extract the associated element
+of vector operand 2.  Store the result in scalar operand 0.  Operand 2
+has vector mode @var{m} while operand 0 has the mode appropriate for one
+element of @var{m}.  Operand 1 has the usual mask mode for vectors of mode
+@var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@cindex @code{fold_extract_last_@var{m}} instruction pattern
+@item @code{fold_extract_last_@var{m}}
+If any bits of mask operand 2 are set, find the last set bit, extract
+the associated element from vector operand 3, and store the result
+in operand 0.  Store operand 1 in operand 0 otherwise.  Operand 3
+has mode @var{m} and operands 0 and 1 have the mode appropriate for
+one element of @var{m}.  Operand 2 has the usual mask mode for vectors
+of mode @var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@cindex @code{fold_left_plus_@var{m}} instruction pattern
+@item @code{fold_left_plus_@var{m}}
+Take scalar operand 1 and successively add each element from vector
+operand 2.  Store the result in scalar operand 0.  The vector has
+mode @var{m} and the scalars have the mode appropriate for one
+element of @var{m}.  The operation is strictly in-order: there is
+no reassociation.
+
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern
@@ -5169,6 +5330,14 @@ Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
+
+@cindex @code{vec_shl_insert_@var{m}} instruction pattern
+@item @samp{vec_shl_insert_@var{m}}
+Shift the elements in vector input operand 1 left one element (i.e.
+away from element 0) and fill the vacated element 0 with the scalar
+in operand 2.  Store the result in vector output operand 0.  Operands
+0 and 1 have mode @var{m} and operand 2 has the mode appropriate for
+one element of @var{m}.
 
 @cindex @code{vec_shr_@var{m}} instruction pattern
 @item @samp{vec_shr_@var{m}}
@@ -6162,6 +6331,42 @@ move operand 2 or (operands 2 + operand 3) into operand 0 according to the
 comparison in operand 1.  If the comparison is false, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
+@cindex @code{cond_add@var{mode}} instruction pattern
+@cindex @code{cond_sub@var{mode}} instruction pattern
+@cindex @code{cond_and@var{mode}} instruction pattern
+@cindex @code{cond_ior@var{mode}} instruction pattern
+@cindex @code{cond_xor@var{mode}} instruction pattern
+@cindex @code{cond_smin@var{mode}} instruction pattern
+@cindex @code{cond_smax@var{mode}} instruction pattern
+@cindex @code{cond_umin@var{mode}} instruction pattern
+@cindex @code{cond_umax@var{mode}} instruction pattern
+@item @samp{cond_add@var{mode}}
+@itemx @samp{cond_sub@var{mode}}
+@itemx @samp{cond_and@var{mode}}
+@itemx @samp{cond_ior@var{mode}}
+@itemx @samp{cond_xor@var{mode}}
+@itemx @samp{cond_smin@var{mode}}
+@itemx @samp{cond_smax@var{mode}}
+@itemx @samp{cond_umin@var{mode}}
+@itemx @samp{cond_umax@var{mode}}
+Perform an elementwise operation on vector operands 2 and 3,
+under the control of the vector mask in operand 1, and store the result
+in operand 0.  This is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{n}); i++)
+  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op2[i];
+@end smallexample
+
+where, for example, @var{op} is @code{+} for @samp{cond_add@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op3[i]}
+are not interpreted if @var{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2 and 3 all have mode @var{m}, while operand 1 has the mode
+returned by @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
 @cindex @code{neg@var{mode}cc} instruction pattern
 @item @samp{neg@var{mode}cc}
 Similar to @samp{mov@var{mode}cc} but for conditional negation.  Conditionally
@@ -6733,6 +6938,15 @@ This pattern defines a pseudo insn that prevents the instruction
 scheduler and other passes from moving instructions and using register
 equivalences across the boundary defined by the blockage insn.
 This needs to be an UNSPEC_VOLATILE pattern or a volatile ASM.
+
+@cindex @code{memory_blockage} instruction pattern
+@item @samp{memory_blockage}
+This pattern, if defined, represents a compiler memory barrier, and will be
+placed at points across which RTL passes may not propagate memory accesses.
+This instruction needs to read and write volatile BLKmode memory.  It does
+not need to generate any machine instruction.  If this pattern is not defined,
+the compiler falls back to emitting an instruction corresponding
+to @code{asm volatile ("" ::: "memory")}.
 
 @cindex @code{memory_barrier} instruction pattern
 @item @samp{memory_barrier}
@@ -7881,7 +8095,7 @@ are not valid.
 
 The splitter is allowed to split jump instructions into sequence of
 jumps or create new jumps in while splitting non-jump instructions.  As
-the central flowgraph and branch prediction information needs to be updated,
+the control flow graph and branch prediction information needs to be updated,
 several restriction apply.
 
 Splitting of jump instruction into sequence that over by another jump
@@ -9608,7 +9822,7 @@ their result is ready in two cycles.  The simple integer insns are
 issued into the first pipeline unless it is reserved, otherwise they
 are issued into the second pipeline.  Integer division and
 multiplication insns can be executed only in the second integer
-pipeline and their results are ready correspondingly in 8 and 4
+pipeline and their results are ready correspondingly in 9 and 4
 cycles.  The integer division is not pipelined, i.e.@: the subsequent
 integer division insn can not be issued until the current division
 insn finished.  Floating point insns are fully pipelined and their
@@ -9625,7 +9839,7 @@ incurred.  To describe all of this we could specify
 (define_insn_reservation "mult" 4 (eq_attr "type" "mult")
                          "i1_pipeline, nothing*2, (port0 | port1)")
 
-(define_insn_reservation "div" 8 (eq_attr "type" "div")
+(define_insn_reservation "div" 9 (eq_attr "type" "div")
                          "i1_pipeline, div*7, div + (port0 | port1)")
 
 (define_insn_reservation "float" 3 (eq_attr "type" "float")

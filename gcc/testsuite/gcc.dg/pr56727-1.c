@@ -1,6 +1,5 @@
 /* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fPIC" } */
-/* { dg-final { scan-assembler-not "@(PLT|plt)" { target i?86-*-* x86_64-*-* powerpc*-*-* } } } */
 
 #define define_func(type) \
   void f_ ## type (type b) { f_ ## type (0); } \
@@ -21,3 +20,7 @@ int __attribute__((noinline, noclone)) foo_noinline(int n)
 {
   return (n == 1 || n == 2) ? 1 : foo_noinline(n-1) * foo_noinline(n-2);
 }
+
+/* { dg-final { scan-assembler-not "@(PLT|plt)" { target i?86-*-* x86_64-*-* } } } */
+/* { dg-final { scan-assembler-not "@(PLT|plt)" { target { powerpc*-*-* && ilp32 } } } } */
+/* { dg-final { scan-assembler-not "bl \[a-z_\]*\n\\s*nop" { target { powerpc*-*-* && lp64 } } } } */

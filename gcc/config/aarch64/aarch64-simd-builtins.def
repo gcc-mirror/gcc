@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -86,6 +86,10 @@
   VAR1 (SETREGP, set_qregoi, 0, v2di)
   VAR1 (SETREGP, set_qregci, 0, v2di)
   VAR1 (SETREGP, set_qregxi, 0, v2di)
+  /* Implemented by aarch64_ld1x2<VQ:mode>. */
+  BUILTIN_VQ (LOADSTRUCT, ld1x2, 0)
+  /* Implemented by aarch64_ld1x2<VDC:mode>. */
+  BUILTIN_VDC (LOADSTRUCT, ld1x2, 0)
   /* Implemented by aarch64_ld<VSTRUCT:nregs><VDC:mode>.  */
   BUILTIN_VDC (LOADSTRUCT, ld2, 0)
   BUILTIN_VDC (LOADSTRUCT, ld3, 0)
@@ -204,6 +208,14 @@
   BUILTIN_VSDQ_I_DI (BINOP_UUS, ushl, 0)
   BUILTIN_VSDQ_I_DI (BINOP, srshl, 0)
   BUILTIN_VSDQ_I_DI (BINOP_UUS, urshl, 0)
+
+  /* Implemented by aarch64_<sur><dotprod>{_lane}{q}<dot_mode>.  */
+  BUILTIN_VB (TERNOP, sdot, 0)
+  BUILTIN_VB (TERNOPU, udot, 0)
+  BUILTIN_VB (QUADOP_LANE, sdot_lane, 0)
+  BUILTIN_VB (QUADOPU_LANE, udot_lane, 0)
+  BUILTIN_VB (QUADOP_LANE, sdot_laneq, 0)
+  BUILTIN_VB (QUADOPU_LANE, udot_laneq, 0)
 
   BUILTIN_VDQ_I (SHIFTIMM, ashr, 3)
   VAR1 (SHIFTIMM, ashr_simd, 0, di)
@@ -564,3 +576,69 @@
   BUILTIN_GPI_I16 (UNOPUS, fixuns_trunchf, 2)
   BUILTIN_GPI (UNOPUS, fixuns_truncsf, 2)
   BUILTIN_GPI (UNOPUS, fixuns_truncdf, 2)
+
+  /* Implemented by aarch64_sm3ss1qv4si.  */
+  VAR1 (TERNOPU, sm3ss1q, 0, v4si)
+  /* Implemented by aarch64_sm3tt<sm3tt_op>qv4si.  */
+  VAR1 (QUADOPUI, sm3tt1aq, 0, v4si)
+  VAR1 (QUADOPUI, sm3tt1bq, 0, v4si)
+  VAR1 (QUADOPUI, sm3tt2aq, 0, v4si)
+  VAR1 (QUADOPUI, sm3tt2bq, 0, v4si)
+  /* Implemented by aarch64_sm3partw<sm3part_op>qv4si.  */
+  VAR1 (TERNOPU, sm3partw1q, 0, v4si)
+  VAR1 (TERNOPU, sm3partw2q, 0, v4si)
+  /* Implemented by aarch64_sm4eqv4si.  */
+  VAR1 (BINOPU, sm4eq, 0, v4si)
+  /* Implemented by aarch64_sm4ekeyqv4si.  */
+  VAR1 (BINOPU, sm4ekeyq, 0, v4si)
+  /* Implemented by aarch64_crypto_sha512hqv2di.  */
+  VAR1 (TERNOPU, crypto_sha512hq, 0, v2di)
+  /* Implemented by aarch64_sha512h2qv2di.  */
+  VAR1 (TERNOPU, crypto_sha512h2q, 0, v2di)
+  /* Implemented by aarch64_crypto_sha512su0qv2di.  */
+  VAR1 (BINOPU, crypto_sha512su0q, 0, v2di)
+  /* Implemented by aarch64_crypto_sha512su1qv2di.  */
+  VAR1 (TERNOPU, crypto_sha512su1q, 0, v2di)
+  /* Implemented by aarch64_eor3qv8hi.  */
+  VAR1 (TERNOPU, eor3q, 0, v8hi)
+  /* Implemented by aarch64_rax1qv2di.  */
+  VAR1 (BINOPU, rax1q, 0, v2di)
+  /* Implemented by aarch64_xarqv2di.  */
+  VAR1 (TERNOPUI, xarq, 0, v2di)
+  /* Implemented by aarch64_bcaxqv8hi.  */
+  VAR1 (TERNOPU, bcaxq, 0, v8hi)
+
+  /* Implemented by aarch64_fml<f16mac1>l<f16quad>_low<mode>.  */
+  VAR1 (TERNOP, fmlal_low, 0, v2sf)
+  VAR1 (TERNOP, fmlsl_low, 0, v2sf)
+  VAR1 (TERNOP, fmlalq_low, 0, v4sf)
+  VAR1 (TERNOP, fmlslq_low, 0, v4sf)
+  /* Implemented by aarch64_fml<f16mac1>l<f16quad>_high<mode>.  */
+  VAR1 (TERNOP, fmlal_high, 0, v2sf)
+  VAR1 (TERNOP, fmlsl_high, 0, v2sf)
+  VAR1 (TERNOP, fmlalq_high, 0, v4sf)
+  VAR1 (TERNOP, fmlslq_high, 0, v4sf)
+  /* Implemented by aarch64_fml<f16mac1>l_lane_lowv2sf.  */
+  VAR1 (QUADOP_LANE, fmlal_lane_low, 0, v2sf)
+  VAR1 (QUADOP_LANE, fmlsl_lane_low, 0, v2sf)
+  /* Implemented by aarch64_fml<f16mac1>l_laneq_lowv2sf.  */
+  VAR1 (QUADOP_LANE, fmlal_laneq_low, 0, v2sf)
+  VAR1 (QUADOP_LANE, fmlsl_laneq_low, 0, v2sf)
+  /* Implemented by aarch64_fml<f16mac1>lq_lane_lowv4sf.  */
+  VAR1 (QUADOP_LANE, fmlalq_lane_low, 0, v4sf)
+  VAR1 (QUADOP_LANE, fmlslq_lane_low, 0, v4sf)
+  /* Implemented by aarch64_fml<f16mac1>lq_laneq_lowv4sf.  */
+  VAR1 (QUADOP_LANE, fmlalq_laneq_low, 0, v4sf)
+  VAR1 (QUADOP_LANE, fmlslq_laneq_low, 0, v4sf)
+  /* Implemented by aarch64_fml<f16mac1>l_lane_highv2sf.  */
+  VAR1 (QUADOP_LANE, fmlal_lane_high, 0, v2sf)
+  VAR1 (QUADOP_LANE, fmlsl_lane_high, 0, v2sf)
+  /* Implemented by aarch64_fml<f16mac1>l_laneq_highv2sf.  */
+  VAR1 (QUADOP_LANE, fmlal_laneq_high, 0, v2sf)
+  VAR1 (QUADOP_LANE, fmlsl_laneq_high, 0, v2sf)
+  /* Implemented by aarch64_fml<f16mac1>lq_lane_highv4sf.  */
+  VAR1 (QUADOP_LANE, fmlalq_lane_high, 0, v4sf)
+  VAR1 (QUADOP_LANE, fmlslq_lane_high, 0, v4sf)
+  /* Implemented by aarch64_fml<f16mac1>lq_laneq_highv4sf.  */
+  VAR1 (QUADOP_LANE, fmlalq_laneq_high, 0, v4sf)
+  VAR1 (QUADOP_LANE, fmlslq_laneq_high, 0, v4sf)

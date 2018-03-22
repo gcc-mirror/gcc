@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -330,9 +330,7 @@ procedure Gnatbind is
       then
          Output_File_Name_Seen := True;
 
-         if Argv'Length = 0
-           or else (Argv'Length >= 1 and then Argv (1) = '-')
-         then
+         if Argv'Length = 0 or else Argv (1) = '-' then
             Fail ("output File_Name missing after -o");
 
          else

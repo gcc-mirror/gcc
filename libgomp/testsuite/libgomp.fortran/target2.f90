@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fopenmp -ffree-line-length-160" }
+! { dg-options "-ffree-line-length-160" }
 
 module target2
 contains

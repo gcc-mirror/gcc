@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2017, AdaCore                     --
+--                     Copyright (C) 2001-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,8 +47,6 @@ package GNAT.Sockets.Thin is
    use Thin_Common;
 
    package C renames Interfaces.C;
-
-   use type System.CRTL.ssize_t;
 
    function Socket_Errno return Integer;
    --  Returns last socket error number

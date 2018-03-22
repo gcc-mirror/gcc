@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-std=f2003 -fall-intrinsics" }
 ! { dg-require-effective-target tls_runtime }
 
 module threadprivate4

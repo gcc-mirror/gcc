@@ -5,7 +5,7 @@ subroutine foo (a)
   integer(kind=4) :: a(1, 3)
   character(len=40) :: t
   write (t, fmt=a(1,2)) 1, 2, 3, 4, 5, 6, 7, 8
-  if (t .ne. '   1   2   3   4   5   6   7   8') call abort
+  if (t .ne. '   1   2   3   4   5   6   7   8') STOP 1
 end subroutine foo
   interface
     subroutine foo (a)
@@ -18,7 +18,7 @@ end subroutine foo
   b(1,2) = 4H (8I
   b(1,3) = 2H4)
   write (t, fmt=b(1,2)) 1, 2, 3, 4, 5, 6, 7, 8
-  if (t .ne. '   1   2   3   4   5   6   7   8') call abort
+  if (t .ne. '   1   2   3   4   5   6   7   8') STOP 2
   call foo (b)
 end
 

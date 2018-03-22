@@ -15,11 +15,11 @@ program test
   forall(iTime=1:2)
      timeSteps(iTime)=ratio**(dble(iTime)-0.5d0)-ratio**(dble(iTime)-1.5d0)
   end forall
-  if (any(abs(timesteps - control) > 1d-10)) call abort
+  if (any(abs(timesteps - control) > 1d-10)) STOP 1
 
   ! Make sure we still do the front-end optimization after a forall
   a = cos(ratio)*cos(ratio) + sin(ratio)*sin(ratio)
-  if (abs(a-1.d0) > 1d-10) call abort
+  if (abs(a-1.d0) > 1d-10) STOP 2
 end program test
 ! { dg-final { scan-tree-dump-times "__builtin_cos" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_sin" 1 "original" } }

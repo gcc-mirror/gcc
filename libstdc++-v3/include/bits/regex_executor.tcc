@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -170,7 +170,7 @@ namespace __detail
   // visited more than twice. It's `twice` instead of `once` because
   // we need to spare one more time for potential group capture.
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
-    bool __dfs_mode>
+	   bool __dfs_mode>
     void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_rep_once_more(_Match_mode __match_mode, _StateIdT __i)
     {
@@ -193,7 +193,7 @@ namespace __detail
 	      __rep_count.second--;
 	    }
 	}
-    };
+    }
 
   // _M_alt branch is "match once more", while _M_next is "get me out
   // of this quantifier". Executing _M_next first or _M_alt first don't
@@ -366,17 +366,17 @@ namespace __detail
 	       _BiIter __actual_end)
       {
 	if (!_M_icase)
-	  return std::equal(__expected_begin, __expected_end,
-			    __actual_begin, __actual_end);
+	  return std::__equal4(__expected_begin, __expected_end,
+			       __actual_begin, __actual_end);
 	typedef std::ctype<_CharT> __ctype_type;
 	const auto& __fctyp = use_facet<__ctype_type>(_M_traits.getloc());
-	return std::equal(__expected_begin, __expected_end,
-			  __actual_begin, __actual_end,
-			  [this, &__fctyp](_CharT __lhs, _CharT __rhs)
-			  {
-			    return __fctyp.tolower(__lhs)
-				== __fctyp.tolower(__rhs);
-			  });
+	return std::__equal4(__expected_begin, __expected_end,
+			     __actual_begin, __actual_end,
+			     [this, &__fctyp](_CharT __lhs, _CharT __rhs)
+			     {
+			       return __fctyp.tolower(__lhs)
+				 == __fctyp.tolower(__rhs);
+			     });
       }
 
       bool _M_icase;

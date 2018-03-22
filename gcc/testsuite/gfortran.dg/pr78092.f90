@@ -8,7 +8,7 @@ program test_stuff
   ivar1 = 6
   call poly_sizeof(ivar1, ivar2)
 
-  if (ivar2 /= 4) call abort
+  if (ivar2 /= 4) STOP 1
 
   contains
   

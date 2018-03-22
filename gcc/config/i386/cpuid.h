@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2017 Free Software Foundation, Inc.
+ * Copyright (C) 2007-2018 Free Software Foundation, Inc.
  *
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -67,6 +67,7 @@
 
 /* %ebx  */
 #define bit_CLZERO	(1 << 0)
+#define bit_WBNOINVD	(1 << 9)
 
 /* Extended Features (%eax == 7) */
 /* %ebx */
@@ -97,13 +98,21 @@
 #define bit_AVX512VBMI	(1 << 1)
 #define bit_PKU	(1 << 3)
 #define bit_OSPKE	(1 << 4)
+#define bit_AVX512VBMI2	(1 << 6)
+#define bit_SHSTK	(1 << 7)
+#define bit_GFNI	(1 << 8)
+#define bit_VAES	(1 << 9)
+#define bit_AVX512VNNI	(1 << 11)
+#define bit_VPCLMULQDQ	(1 << 10)
+#define bit_AVX512BITALG	(1 << 12)
 #define bit_AVX512VPOPCNTDQ	(1 << 14)
 #define bit_RDPID	(1 << 22)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)
 #define bit_AVX5124FMAPS (1 << 3)
-
+#define bit_IBT	(1 << 20)
+#define bit_PCONFIG	(1 << 18)
 /* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)
 #define bit_BNDCSR      (1 << 4)

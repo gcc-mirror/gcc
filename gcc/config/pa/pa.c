@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -159,9 +161,7 @@ static void pa_hpux64_gas_file_start (void) ATTRIBUTE_UNUSED;
 static void pa_hpux64_hpas_file_start (void) ATTRIBUTE_UNUSED;
 static void output_deferred_plabels (void);
 static void output_deferred_profile_counters (void) ATTRIBUTE_UNUSED;
-#ifdef ASM_OUTPUT_EXTERNAL_REAL
-static void pa_hpux_file_end (void);
-#endif
+static void pa_file_end (void);
 static void pa_init_libfuncs (void);
 static rtx pa_struct_value_rtx (tree, int);
 static bool pa_pass_by_reference (cumulative_args_t, machine_mode,
@@ -205,6 +205,7 @@ static unsigned int pa_hard_regno_nregs (unsigned int, machine_mode);
 static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool pa_modes_tieable_p (machine_mode, machine_mode);
 static bool pa_can_change_mode_class (machine_mode, machine_mode, reg_class_t);
+static HOST_WIDE_INT pa_starting_frame_offset (void);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -301,11 +302,7 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 #undef TARGET_ASM_FILE_END
-#ifdef ASM_OUTPUT_EXTERNAL_REAL
-#define TARGET_ASM_FILE_END pa_hpux_file_end
-#else
-#define TARGET_ASM_FILE_END output_deferred_plabels
-#endif
+#define TARGET_ASM_FILE_END pa_file_end
 
 #undef TARGET_ASM_RELOC_RW_MASK
 #define TARGET_ASM_RELOC_RW_MASK pa_reloc_rw_mask
@@ -424,6 +421,12 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS pa_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET pa_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1747,9 +1750,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 		}
 	      else
 		emit_move_insn (scratch_reg, XEXP (op1, 0));
-	      emit_insn (gen_rtx_SET (operand0,
-				  replace_equiv_address (op1, scratch_reg)));
-	      return 1;
+	      op1 = replace_equiv_address (op1, scratch_reg);
 	    }
 	}
       else if ((!INT14_OK_STRICT && symbolic_memory_operand (op1, VOIDmode))
@@ -1759,10 +1760,10 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	  /* Load memory address into SCRATCH_REG.  */
 	  scratch_reg = force_mode (word_mode, scratch_reg);
 	  emit_move_insn (scratch_reg, XEXP (op1, 0));
-	  emit_insn (gen_rtx_SET (operand0,
-				  replace_equiv_address (op1, scratch_reg)));
-	  return 1;
+	  op1 = replace_equiv_address (op1, scratch_reg);
 	}
+      emit_insn (gen_rtx_SET (operand0, op1));
+      return 1;
     }
   else if (scratch_reg
 	   && FP_REG_P (operand1)
@@ -1800,9 +1801,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 		}
 	      else
 		emit_move_insn (scratch_reg, XEXP (op0, 0));
-	      emit_insn (gen_rtx_SET (replace_equiv_address (op0, scratch_reg),
-				      operand1));
-	      return 1;
+	      op0 = replace_equiv_address (op0, scratch_reg);
 	    }
 	}
       else if ((!INT14_OK_STRICT && symbolic_memory_operand (op0, VOIDmode))
@@ -1812,10 +1811,10 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	  /* Load memory address into SCRATCH_REG.  */
 	  scratch_reg = force_mode (word_mode, scratch_reg);
 	  emit_move_insn (scratch_reg, XEXP (op0, 0));
-	  emit_insn (gen_rtx_SET (replace_equiv_address (op0, scratch_reg),
-				  operand1));
-	  return 1;
+	  op0 = replace_equiv_address (op0, scratch_reg);
 	}
+      emit_insn (gen_rtx_SET (op0, operand1));
+      return 1;
     }
   /* Handle secondary reloads for loads of FP registers from constant
      expressions by forcing the constant into memory.  For the most part,
@@ -3768,7 +3767,7 @@ set_reg_plus_d (int reg, int base, HOST_WIDE_INT disp, int note)
 }
 
 HOST_WIDE_INT
-pa_compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
+pa_compute_frame_size (poly_int64 size, int *fregs_live)
 {
   int freg_saved = 0;
   int i, j;
@@ -3782,11 +3781,11 @@ pa_compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
   size = (size + UNITS_PER_WORD - 1) & ~(UNITS_PER_WORD - 1);
 
   /* Space for previous frame pointer + filler.  If any frame is
-     allocated, we need to add in the STARTING_FRAME_OFFSET.  We
+     allocated, we need to add in the TARGET_STARTING_FRAME_OFFSET.  We
      waste some space here for the sake of HP compatibility.  The
      first slot is only used when the frame pointer is needed.  */
   if (size || frame_pointer_needed)
-    size += STARTING_FRAME_OFFSET;
+    size += pa_starting_frame_offset ();
   
   /* If the current function calls __builtin_eh_return, then we need
      to allocate stack space for registers that will hold data for
@@ -3921,7 +3920,7 @@ pa_expand_prologue (void)
      and must be changed in tandem with this code.  */
   local_fsize = (size + UNITS_PER_WORD - 1) & ~(UNITS_PER_WORD - 1);
   if (local_fsize || frame_pointer_needed)
-    local_fsize += STARTING_FRAME_OFFSET;
+    local_fsize += pa_starting_frame_offset ();
 
   actual_fsize = pa_compute_frame_size (size, &save_fregs);
   if (flag_stack_usage_info)
@@ -4575,12 +4574,16 @@ hppa_profile_hook (int label_no)
      lcla2 and load_offset_label_address insn patterns.  */
   rtx reg = gen_reg_rtx (SImode);
   rtx_code_label *label_rtx = gen_label_rtx ();
-  rtx mcount = gen_rtx_MEM (Pmode, gen_rtx_SYMBOL_REF (Pmode, "_mcount"));
   int reg_parm_stack_space = REG_PARM_STACK_SPACE (NULL_TREE);
-  rtx arg_bytes, begin_label_rtx;
+  rtx arg_bytes, begin_label_rtx, mcount, sym;
   rtx_insn *call_insn;
   char begin_label_name[16];
   bool use_mcount_pcrel_call;
+
+  /* Set up call destination.  */
+  sym = gen_rtx_SYMBOL_REF (Pmode, "_mcount");
+  pa_encode_label (sym);
+  mcount = gen_rtx_MEM (Pmode, sym);
 
   /* If we can reach _mcount with a pc-relative call, we can optimize
      loading the address of the current function.  This requires linker
@@ -8652,9 +8655,6 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 static bool
 pa_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
-  if (TARGET_PORTABLE_RUNTIME)
-    return false;
-
   /* Sibcalls are not ok because the arg pointer register is not a fixed
      register.  This prevents the sibcall optimization from occurring.  In
      addition, there are problems with stub placement using GNU ld.  This
@@ -8664,8 +8664,11 @@ pa_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   if (TARGET_64BIT)
     return false;
 
+  if (TARGET_PORTABLE_RUNTIME)
+    return false;
+
   /* Sibcalls are only ok within a translation unit.  */
-  return (decl && !TREE_PUBLIC (decl));
+  return decl && targetm.binds_local_p (decl);
 }
 
 /* ??? Addition is not commutative on the PA due to the weird implicit
@@ -9482,7 +9485,7 @@ pa_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int arg_size = FUNCTION_ARG_SIZE (mode, type);
+  int arg_size = pa_function_arg_size (mode, type);
 
   cum->nargs_prototype--;
   cum->words += (arg_size
@@ -9514,7 +9517,7 @@ pa_function_arg (cumulative_args_t cum_v, machine_mode mode,
   if (mode == VOIDmode)
     return NULL_RTX;
 
-  arg_size = FUNCTION_ARG_SIZE (mode, type);
+  arg_size = pa_function_arg_size (mode, type);
 
   /* If this arg would be passed partially or totally on the stack, then
      this routine should return zero.  pa_arg_partial_bytes will
@@ -9721,10 +9724,10 @@ pa_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   if (!TARGET_64BIT)
     return 0;
 
-  if (FUNCTION_ARG_SIZE (mode, type) > 1 && (cum->words & 1))
+  if (pa_function_arg_size (mode, type) > 1 && (cum->words & 1))
     offset = 1;
 
-  if (cum->words + offset + FUNCTION_ARG_SIZE (mode, type) <= max_arg_words)
+  if (cum->words + offset + pa_function_arg_size (mode, type) <= max_arg_words)
     /* Arg fits fully into registers.  */
     return 0;
   else if (cum->words + offset >= max_arg_words)
@@ -9793,7 +9796,7 @@ som_output_comdat_data_section_asm_op (const void *data)
   output_section_asm_op (data);
 }
 
-/* Implement TARGET_ASM_INITIALIZE_SECTIONS  */
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
 
 static void
 pa_som_asm_init_sections (void)
@@ -9976,22 +9979,26 @@ pa_hpux_asm_output_external (FILE *file, tree decl, const char *name)
   extern_symbol p = {decl, name};
   vec_safe_push (extern_symbols, p);
 }
+#endif
 
 /* Output text required at the end of an assembler file.
    This includes deferred plabels and .import directives for
    all external symbols that were actually referenced.  */
 
 static void
-pa_hpux_file_end (void)
+pa_file_end (void)
 {
+#ifdef ASM_OUTPUT_EXTERNAL_REAL
   unsigned int i;
   extern_symbol *p;
 
   if (!NO_DEFERRED_PROFILE_COUNTERS)
     output_deferred_profile_counters ();
+#endif
 
   output_deferred_plabels ();
 
+#ifdef ASM_OUTPUT_EXTERNAL_REAL
   for (i = 0; vec_safe_iterate (extern_symbols, i, &p); i++)
     {
       tree decl = p->decl;
@@ -10002,8 +10009,11 @@ pa_hpux_file_end (void)
     }
 
   vec_free (extern_symbols);
-}
 #endif
+
+  if (NEED_INDICATE_EXEC_STACK)
+    file_end_indicate_exec_stack ();
+}
 
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
@@ -10536,9 +10546,16 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
       if (!TARGET_DISABLE_INDEXING
 	  && GET_CODE (index) == MULT
-	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
+	  /* Only accept base operands with the REG_POINTER flag prior to
+	     reload on targets with non-equivalent space registers.  */
+	  && (TARGET_NO_SPACE_REGS
+	      || (base == XEXP (x, 1)
+		  && (reload_completed
+		      || (reload_in_progress && HARD_REGISTER_P (base))
+		      || REG_POINTER (base))))
 	  && REG_P (XEXP (index, 0))
 	  && GET_MODE (XEXP (index, 0)) == Pmode
+	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
 	  && (strict ? STRICT_REG_OK_FOR_INDEX_P (XEXP (index, 0))
 		     : REG_OK_FOR_INDEX_P (XEXP (index, 0)))
 	  && GET_CODE (XEXP (index, 1)) == CONST_INT
@@ -10803,6 +10820,32 @@ static bool
 pa_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return PA_HARD_REGNO_MODE_OK (regno, mode);
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.
+
+   On the 32-bit ports, we reserve one slot for the previous frame
+   pointer and one fill slot.  The fill slot is for compatibility
+   with HP compiled programs.  On the 64-bit ports, we reserve one
+   slot for the previous frame pointer.  */
+
+static HOST_WIDE_INT
+pa_starting_frame_offset (void)
+{
+  return 8;
+}
+
+/* Figure out the size in words of the function argument.  The size
+   returned by this function should always be greater than zero because
+   we pass variable and zero sized objects by reference.  */
+
+HOST_WIDE_INT
+pa_function_arg_size (machine_mode mode, const_tree type)
+{
+  HOST_WIDE_INT size;
+
+  size = mode != BLKmode ? GET_MODE_SIZE (mode) : int_size_in_bytes (type); 
+  return CEIL (size, UNITS_PER_WORD);
 }
 
 #include "gt-pa.h"

@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SPARC Solaris.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

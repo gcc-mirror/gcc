@@ -1,3 +1,137 @@
+2018-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/84761
+	* sanitizer_common/sanitizer_linux_libcdep.cc (__GLIBC_PREREQ):
+	Define if not defined.
+	(DL_INTERNAL_FUNCTION): Don't define.
+	(InitTlsSize): For __i386__ if not compiled against glibc 2.27+
+	determine at runtime whether to use regparm(3), stdcall calling
+	convention for older glibcs or normal calling convention for
+	newer glibcs for call to _dl_get_tls_static_info.
+
+2018-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* sanitizer_common/sanitizer_stacktrace.cc
+	(BufferedStackTrace::FastUnwindStack): Use the correct frame offset
+	for PowerPC SYSV ABI.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-05  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_flags.inc: Cherry-pick upstream r323995.
+	* asan/asan_report.cc (CheckForInvalidPointerPair):
+	Cherry-pick upstream r323995.
+
+2018-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/82825
+	* sanitizer_common/sanitizer_internal_defs.h: Cherry-pick upstream
+	r324284.
+
+2018-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/82824
+	* lsan/lsan_common_mac.cc: Cherry-pick upstream r322437.
+
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_descriptions.cc: Cherry-pick upstream r319668.
+	* asan/asan_descriptions.h: Likewise.
+	* asan/asan_report.cc: Likewise.
+	* asan/asan_thread.cc: Likewise.
+	* asan/asan_thread.h: Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* acinclude.m4: Add enable.m4 and cet.m4.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.am: Update AM_CXXFLAGS.
+	* asan/Makefile.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Set CET_FLAGS. Update EXTRA_CFLAGS,
+	EXTRA_CXXFLAGS, EXTRA_ASFLAGS.
+	* interception/Makefile.am: Update AM_CXXFLAGS.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.am: Update AM_CFLAGS, AM_CXXFLAGS.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.am: Update AM_CXXFLAGS.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am: Update AM_CXXFLAGS,
+	AM_CCASFLAGS.
+	* sanitizer_common/sanitizer_linux_x86_64.S: Include cet.h.
+	Add _CET_ENDBR macro.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.am: Update AM_CXXFLAGS.
+	* tsan/Makefile.in: Regenerate.
+	* tsan/tsan_rtl_amd64.S Include cet.h. Add _CET_ENDBR macro.
+	* ubsan/Makefile.am: Update AM_CXXFLAGS.
+	* ubsan/Makefile.in: Regenerate.
+
+2017-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/82670
+	* ubsan/Makefile.am (ubsan_files): Remove ubsan_init_standalone.cc
+	and ubsan_signals_standalone.cc.
+	* ubsan/Makefile.in: Regenerated.
+
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* asan/asan_poisoning.cc (CHECK_SMALL_REGION): Remove semicolon after
+	"do {} while (0)".
+	* lsan/lsan_common.cc (LOG_POINTERS, LOG_THREADS): Same.
+
+2017-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/82595
+	* lsan/lsan.h (__lsan_init): Add SANITIZER_INTERFACE_ATTRIBUTE.
+	* lsan/Makefile.am (nodist_toolexeclib_HEADERS): Add
+	liblsan_preinit.o.
+	(lsan_files): Remove lsan_preinit.cc.
+	(liblsan_preinit.o): New rule.
+	* lsan/Makefile.in: Regenerated.
+
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* All source files: Merge from upstream 315899.
+        * asan/Makefile.am (nodist_saninclude_HEADERS): Add
+	include/sanitizer/tsan_interface.h.
+        * asan/libtool-version: Bump the libasan SONAME.
+	* lsan/Makefile.am (sanitizer_lsan_files): Add lsan_common_mac.cc.
+	(lsan_files): Add lsan_linux.cc, lsan_mac.cc and lsan_malloc_mac.cc.
+        * sanitizer_common/Makefile.am (sanitizer_common_files): Add
+	sancov_flags.cc, sanitizer_allocator_checks.cc,
+	sanitizer_coverage_libcdep_new.cc, sanitizer_errno.cc,
+	sanitizer_file.cc, sanitizer_mac_libcdep.cc and
+	sanitizer_stoptheworld_mac.cc.  Remove sanitizer_coverage_libcdep.cc
+	and sanitizer_coverage_mapping_libcdep.cc.
+        * tsan/Makefile.am (tsan_files): Add tsan_external.cc.
+	* ubsan/Makefile.am (DEFS): Add -DUBSAN_CAN_USE_CXXABI=1.
+	(ubsan_files): Add ubsan_init_standalone.cc and
+	ubsan_signals_standalone.cc.
+	* ubsan/libtool-version: Bump the libubsan SONAME.
+        * asan/Makefile.in: Regenerate.
+        * lsan/Makefile.in: Regenerate.
+        * sanitizer_common/Makefile.in: Regenerate.
+        * tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
+2017-10-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/82379
+	* configure.tgt (SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS): Set
+	to sanitizer_linux_x86_64.lo if __x86_64__ is defined by $CC.
+
+2017-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libbacktrace/backtrace-rename.h (backtrace_uncompress_zdebug):
+	Define.
+
 2017-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/system/sys/ptrace.h: New file.

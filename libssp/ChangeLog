@@ -1,3 +1,21 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.am: Update AM_CFLAGS, update
+	libssp_nonshared_la_CFLAGS.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* aclocal.m4: Likewise.
+	* configure.ac: Set CET_FLAGS. Update XCFLAGS.
+
 2017-04-01  Jonathan Yong  <10walls@gmail.com>
 
 	* ssp.c (__guard_setup): Suppress unused variable warning.

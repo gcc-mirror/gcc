@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc64*-*-* } } } */
+/* { dg-do compile { target { powerpc*-*-* && { lp64 && p9vector_hw } } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-mcpu=power9 -O3" } */
@@ -10,25 +10,25 @@
 vector char
 rev_char (vector char a)
 {
-  return vec_revb (a);		/* XXBRQ.  */
+  return vec_revb (a);		/* Is a NOP, maps to move inst  */
 }
 
 vector bool char
 rev_bool_char (vector bool char a)
 {
-  return vec_revb (a);		/* XXBRQ.  */
+  return vec_revb (a);		/* Is a NOP, maps to move inst  */
 }
 
 vector signed char
 rev_schar (vector signed char a)
 {
-  return vec_revb (a);		/* XXBRQ.  */
+  return vec_revb (a);		/* Is a NOP, maps to move inst  */
 }
 
 vector unsigned char
 rev_uchar (vector unsigned char a)
 {
-  return vec_revb (a);		/* XXBRQ.  */
+  return vec_revb (a);		/* Is a NOP, maps to move inst  */
 }
 
 vector short
@@ -81,5 +81,4 @@ rev_double (vector double a)
 
 /* { dg-final { scan-assembler-times "xxbrd" 1 } } */
 /* { dg-final { scan-assembler-times "xxbrh" 3 } } */
-/* { dg-final { scan-assembler-times "xxbrq" 4 } } */
 /* { dg-final { scan-assembler-times "xxbrw" 4 } } */

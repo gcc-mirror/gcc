@@ -8,9 +8,9 @@ logical :: ll(2)
 
 ll = (/ .TRUE., .FALSE. /)
 c = merge( (/ "AA", "BB" /), (/ "CC", "DD" /), ll )
-if (c(1).ne."AA" .or. c(2).ne."DD") call abort ()
+if (c(1).ne."AA" .or. c(2).ne."DD") STOP 1
 
 c = ""
 c = merge( (/ "AA", "BB" /), (/ "CC", "DD" /), (/ .TRUE., .FALSE. /) )
-if (c(1).ne."AA" .or. c(2).ne."DD") call abort ()
+if (c(1).ne."AA" .or. c(2).ne."DD") STOP 2
 end

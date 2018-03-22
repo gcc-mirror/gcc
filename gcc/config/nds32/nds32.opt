@@ -1,5 +1,5 @@
 ; Options of Andes NDS32 cpu for GNU compiler
-; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ; Contributed by Andes Technology Corporation.
 ;
 ; This file is part of GCC.
@@ -21,13 +21,18 @@
 HeaderInclude
 config/nds32/nds32-opts.h
 
-mbig-endian
-Target Report RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
+; ---------------------------------------------------------------
+; The following options are designed for aliasing and compatibility options.
+
+EB
+Target RejectNegative Alias(mbig-endian)
 Generate code in big-endian mode.
 
-mlittle-endian
-Target Report RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
+EL
+Target RejectNegative Alias(mlittle-endian)
 Generate code in little-endian mode.
+
+; ---------------------------------------------------------------
 
 mreduced-regs
 Target Report RejectNegative Negative(mfull-regs) Mask(REDUCED_REGS)
@@ -37,13 +42,32 @@ mfull-regs
 Target Report RejectNegative Negative(mreduced-regs) InverseMask(REDUCED_REGS)
 Use full-set registers for register allocation.
 
+; ---------------------------------------------------------------
+
+mbig-endian
+Target Undocumented RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
+Generate code in big-endian mode.
+
+mlittle-endian
+Target Undocumented RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
+Generate code in little-endian mode.
+
+
 mcmov
 Target Report Mask(CMOV)
 Generate conditional move instructions.
 
-mperf-ext
-Target Report Mask(PERF_EXT)
+mext-perf
+Target Report Mask(EXT_PERF)
 Generate performance extension instructions.
+
+mext-perf2
+Target Report Mask(EXT_PERF2)
+Generate performance extension version 2 instructions.
+
+mext-string
+Target Report Mask(EXT_STRING)
+Generate string extension instructions.
 
 mv3push
 Target Report Mask(V3PUSH)
@@ -52,6 +76,10 @@ Generate v3 push25/pop25 instructions.
 m16-bit
 Target Report Mask(16_BIT)
 Generate 16-bit instructions.
+
+mvh
+Target Report Mask(VH)
+Enable Virtual Hosting support.
 
 misr-vector-size=
 Target RejectNegative Joined UInteger Var(nds32_isr_vector_size) Init(NDS32_DEFAULT_ISR_VECTOR_SIZE)
@@ -79,7 +107,7 @@ EnumValue
 Enum(nds32_arch_type) String(v3m) Value(ARCH_V3M)
 
 mcmodel=
-Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_MEDIUM)
+Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_LARGE)
 Specify the address generation strategy for code model.
 
 Enum
@@ -94,6 +122,17 @@ Enum(nds32_cmodel_type) String(medium) Value(CMODEL_MEDIUM)
 
 EnumValue
 Enum(nds32_cmodel_type) String(large) Value(CMODEL_LARGE)
+
+mcpu=
+Target RejectNegative Joined Enum(nds32_cpu_type) Var(nds32_cpu_option) Init(CPU_N9)
+Specify the cpu for pipeline model.
+
+Enum
+Name(nds32_cpu_type) Type(enum nds32_cpu_type)
+Known cpu types (for use with the -mcpu= option):
+
+EnumValue
+Enum(nds32_cpu_type) String(n9) Value(CPU_N9)
 
 mctor-dtor
 Target Report

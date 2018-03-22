@@ -74,13 +74,13 @@ merge() {
       if ! cmp -s ${old} ${new}; then
         echo "merge.sh: $name: skipping: exists in old and new git, but not in libgo"
       fi
-      continue
+      return
     fi
     if cmp -s ${old} ${libgo}; then
       # The libgo file is unchanged from the old version.
       if cmp -s ${new} ${libgo}; then
         # File is unchanged from old to new version.
-        continue
+	return
       fi
       # Update file in libgo.
       echo "merge.sh: $name: updating"
@@ -128,7 +128,7 @@ echo ${rev} > VERSION
 (cd ${NEWDIR}/src && find . -name '*.go' -print) | while read f; do
   skip=false
   case "$f" in
-  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/* | ./cmd/internal/objabi/*)
+  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/* | ./cmd/internal/objabi/* | ./cmd/internal/buildid/*)
     ;;
   ./cmd/*)
     skip=true
@@ -155,7 +155,7 @@ done
   ./cmd/*)
     skip=true
     ;;
-  ./runtime/race/*)
+  ./runtime/race/* | ./runtime/cgo/*)
     skip=true
     ;;
   esac

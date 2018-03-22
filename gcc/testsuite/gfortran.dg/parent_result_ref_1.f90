@@ -15,5 +15,5 @@ contains
 end function f
 
   integer, external :: f
-  if (f ().ne.2) call abort ()
+  if (f ().ne.2) STOP 1
 end

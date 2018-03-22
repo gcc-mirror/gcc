@@ -182,7 +182,10 @@ func (fd *netFD) listenStream(laddr sockaddr, backlog int) error {
 	if err := fd.init(); err != nil {
 		return err
 	}
-	lsa, _ := syscall.Getsockname(fd.pfd.Sysfd)
+	lsa, err := syscall.Getsockname(fd.pfd.Sysfd)
+	if err != nil {
+		return os.NewSyscallError("getsockname", err)
+	}
 	fd.setAddr(fd.addrFunc()(lsa), nil)
 	return nil
 }
@@ -221,7 +224,10 @@ func (fd *netFD) listenDatagram(laddr sockaddr) error {
 	if err := fd.init(); err != nil {
 		return err
 	}
-	lsa, _ := syscall.Getsockname(fd.pfd.Sysfd)
+	lsa, err := syscall.Getsockname(fd.pfd.Sysfd)
+	if err != nil {
+		return os.NewSyscallError("getsockname", err)
+	}
 	fd.setAddr(fd.addrFunc()(lsa), nil)
 	return nil
 }

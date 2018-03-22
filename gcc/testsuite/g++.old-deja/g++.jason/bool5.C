@@ -1,4 +1,5 @@
-// { dg-do run  }
+// { dg-do run { target c++14_down } }
+// { dg-do compile { target c++17 } }
 int main ()
 {
   bool b = false;

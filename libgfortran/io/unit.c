@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -89,14 +89,16 @@ static int newunit_size; /* Total number of elements in the newunits array.  */
    units are allocated, above and equal to the LWI there may be both
    allocated and free units. */
 static int newunit_lwi;
-static void newunit_free (int);
 
 /* Unit numbers assigned with NEWUNIT start from here.  */
 #define NEWUNIT_START -10
 
 #define CACHE_SIZE 3
 static gfc_unit *unit_cache[CACHE_SIZE];
+
 gfc_offset max_offset;
+gfc_offset default_recl;
+
 gfc_unit *unit_root;
 #ifdef __GTHREAD_MUTEX_INIT
 __gthread_mutex_t unit_lock = __GTHREAD_MUTEX_INIT;
@@ -229,6 +231,7 @@ insert_unit (int n)
 {
   gfc_unit *u = xcalloc (1, sizeof (gfc_unit));
   u->unit_number = n;
+  u->internal_unit_kind = 0;
 #ifdef __GTHREAD_MUTEX_INIT
   {
     __gthread_mutex_t tmp = __GTHREAD_MUTEX_INIT;
@@ -429,10 +432,9 @@ is_trim_ok (st_parameter_dt *dtp)
   if (dtp->common.flags & IOPARM_DT_HAS_FORMAT)
     {
       char *p = dtp->format;
-      off_t i;
       if (dtp->common.flags & IOPARM_DT_HAS_BLANK)
 	return false;
-      for (i = 0; i < dtp->format_len; i++)
+      for (gfc_charlen_type i = 0; i < dtp->format_len; i++)
 	{
 	  if (p[i] == '/') return false;
 	  if (p[i] == 'b' || p[i] == 'B')
@@ -563,7 +565,11 @@ get_unit (st_parameter_dt *dtp, int do_create)
      is not allowed, such units must be created with
      OPEN(NEWUNIT=...).  */
   if (dtp->common.unit < 0)
-    return get_gfc_unit (dtp->common.unit, 0);
+    {
+      if (dtp->common.unit > NEWUNIT_START) /* Reserved units.  */
+	return NULL;
+      return get_gfc_unit (dtp->common.unit, 0);
+    }
 
   return get_gfc_unit (dtp->common.unit, do_create);
 }
@@ -576,7 +582,6 @@ void
 init_units (void)
 {
   gfc_unit *u;
-  unsigned int i;
 
 #ifdef HAVE_NEWLOCALE
   c_locale = newlocale (0, "C", 0);
@@ -589,6 +594,22 @@ init_units (void)
 #ifndef __GTHREAD_MUTEX_INIT
   __GTHREAD_MUTEX_INIT_FUNCTION (&unit_lock);
 #endif
+
+  if (sizeof (max_offset) == 8)
+    {
+      max_offset = GFC_INTEGER_8_HUGE;
+      /* Why this weird value? Because if the recl specifier in the
+	 inquire statement is a 4 byte value, u->recl is truncated,
+	 and this trick ensures it becomes HUGE(0) rather than -1.
+	 The full 8 byte value of default_recl is still 0.99999999 *
+	 max_offset which is large enough for all practical
+	 purposes.  */
+      default_recl = max_offset & ~(1LL<<31);
+    }
+  else if (sizeof (max_offset) == 4)
+    max_offset = default_recl = GFC_INTEGER_4_HUGE;
+  else
+    internal_error (NULL, "sizeof (max_offset) must be 4 or 8");
 
   if (options.stdin_unit >= 0)
     {				/* STDIN */
@@ -612,7 +633,7 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = NO_ENDFILE;
 
       u->filename = strdup (stdin_name);
@@ -643,7 +664,7 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = AT_ENDFILE;
 
       u->filename = strdup (stdout_name);
@@ -673,7 +694,7 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = AT_ENDFILE;
 
       u->filename = strdup (stderr_name);
@@ -683,13 +704,11 @@ init_units (void)
 
       __gthread_mutex_unlock (&u->lock);
     }
-
-  /* Calculate the maximum file offset in a portable manner.
-     max will be the largest signed number for the type gfc_offset.
-     set a 1 in the LSB and keep a running sum, stopping at MSB-1 bit.  */
-  max_offset = 0;
-  for (i = 0; i < sizeof (max_offset) * 8 - 1; i++)
-    max_offset = max_offset + ((gfc_offset) 1 << i);
+  /* The default internal units.  */
+  u = insert_unit (GFC_INTERNAL_UNIT);
+  __gthread_mutex_unlock (&u->lock);
+  u = insert_unit (GFC_INTERNAL_UNIT4);
+  __gthread_mutex_unlock (&u->lock);
 }
 
 
@@ -911,7 +930,7 @@ newunit_alloc (void)
 /* Free a previously allocated newunit= unit number.  unit_lock must
    be held when calling.  */
 
-static void
+void
 newunit_free (int unit)
 {
   int ind = -unit + NEWUNIT_START;

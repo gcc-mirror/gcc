@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -147,7 +147,7 @@ declare_library_fn (const char *name, tree rtype, tree ptype,
 		    int ecf, int tm_ecf)
 {
   tree ident = get_identifier (name);
-  tree res = IDENTIFIER_GLOBAL_VALUE (ident);
+  tree res = get_global_binding (ident);
   if (!res)
     {
       tree type = build_function_type_list (rtype, ptype, NULL_TREE);
@@ -158,7 +158,7 @@ declare_library_fn (const char *name, tree rtype, tree ptype,
 	  char *tm_name = concat ("_ITM_", name + 2, NULL_TREE);
 	  tree tm_ident = get_identifier (tm_name);
 	  free (tm_name);
-	  tree tm_fn = IDENTIFIER_GLOBAL_VALUE (tm_ident);
+	  tree tm_fn = get_global_binding (tm_ident);
 	  if (!tm_fn)
 	    tm_fn = push_library_fn (tm_ident, type, except, ecf | tm_ecf);
 	  record_tm_replacement (res, tm_fn);
@@ -577,7 +577,7 @@ build_throw (tree exp)
       return exp;
     }
 
-  if (exp == null_node)
+  if (exp && null_node_p (exp))
     warning (0, "throwing NULL, which has integral, not pointer type");
 
   if (exp != NULL_TREE)
@@ -609,7 +609,7 @@ build_throw (tree exp)
       if (!throw_fn)
 	{
 	  tree name = get_identifier ("__cxa_throw");
-	  throw_fn = IDENTIFIER_GLOBAL_VALUE (name);
+	  throw_fn = get_global_binding (name);
 	  if (!throw_fn)
 	    {
 	      /* Declare void __cxa_throw (void*, void*, void (*)(void*)).  */
@@ -622,7 +622,7 @@ build_throw (tree exp)
 	      if (flag_tm)
 		{
 		  tree itm_name = get_identifier ("_ITM_cxa_throw");
-		  tree itm_fn = IDENTIFIER_GLOBAL_VALUE (itm_name);
+		  tree itm_fn = get_global_binding (itm_name);
 		  if (!itm_fn)
 		    itm_fn = push_throw_library_fn (itm_name, tmp);
 		  apply_tm_attr (itm_fn, get_identifier ("transaction_pure"));
@@ -664,7 +664,7 @@ build_throw (tree exp)
       CLEANUP_EH_ONLY (allocate_expr) = 1;
 
       object = build_nop (build_pointer_type (temp_type), ptr);
-      object = cp_build_indirect_ref (object, RO_NULL, tf_warning_or_error);
+      object = cp_build_fold_indirect_ref (object);
 
       /* And initialize the exception object.  */
       if (CLASS_TYPE_P (temp_type))
@@ -764,7 +764,7 @@ build_throw (tree exp)
       if (!rethrow_fn)
 	{
 	  tree name = get_identifier ("__cxa_rethrow");
-	  rethrow_fn = IDENTIFIER_GLOBAL_VALUE (name);
+	  rethrow_fn = get_global_binding (name);
 	  if (!rethrow_fn)
 	    /* Declare void __cxa_rethrow (void).  */
 	    rethrow_fn = push_throw_library_fn
@@ -1217,6 +1217,10 @@ build_noexcept_spec (tree expr, int complain)
     {
       gcc_assert (processing_template_decl
 		  || TREE_CODE (expr) == DEFERRED_NOEXCEPT);
+      if (TREE_CODE (expr) != DEFERRED_NOEXCEPT)
+	/* Avoid problems with a function type built with a dependent typedef
+	   being reused in another scope (c++/84045).  */
+	expr = strip_typedefs_expr (expr);
       return build_tree_list (expr, NULL_TREE);
     }
 }

@@ -1,5 +1,5 @@
 /* A pure C API to enable client code to embed GCC as a JIT-compiler.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1417,6 +1417,38 @@ gcc_jit_type_get_aligned (gcc_jit_type *type,
 */
 extern gcc_jit_type *
 gcc_jit_type_get_vector (gcc_jit_type *type, size_t num_units);
+
+
+#define LIBGCCJIT_HAVE_gcc_jit_function_get_address
+
+/* Get the address of a function as an rvalue, of function pointer
+   type.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_9; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_function_get_address
+*/
+extern gcc_jit_rvalue *
+gcc_jit_function_get_address (gcc_jit_function *fn,
+			      gcc_jit_location *loc);
+
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_new_rvalue_from_vector
+
+/* Build a vector rvalue from an array of elements.
+
+   "vec_type" should be a vector type, created using gcc_jit_type_get_vector.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_10; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_rvalue_from_vector
+*/
+extern gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_type *vec_type,
+					size_t num_elements,
+					gcc_jit_rvalue **elements);
 
 #ifdef __cplusplus
 }

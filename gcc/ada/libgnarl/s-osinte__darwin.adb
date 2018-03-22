@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,6 @@ with Interfaces.C.Extensions;
 
 package body System.OS_Interface is
    use Interfaces.C;
-   use Interfaces.C.Extensions;
 
    -----------------
    -- To_Duration --

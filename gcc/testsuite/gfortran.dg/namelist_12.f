@@ -38,20 +38,20 @@ c set debug = 0 or 1 in the namelist! (line 33)
       rewind (10)
 
       read (10, nml=mynml, IOSTAT=ier)
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 1
       rewind (10)
 
       write (10, nml=mynml, iostat=ier)
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 2
       rewind (10)
 
       read (10, NML=mynml, IOSTAT=ier)
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 3
       close (10)
 
       do i = 1 , 10
-        if ( abs( x(i) - i ) .ne. 0 ) call abort ()
-        if ( ch(i:i).ne.check(I:I) ) call abort
+        if ( abs( x(i) - i ) .ne. 0 ) STOP 1
+        if ( ch(i:i).ne.check(I:I) ) STOP 4
       end do
-      if (xx.ne.42) call abort ()
+      if (xx.ne.42) STOP 2
       end program

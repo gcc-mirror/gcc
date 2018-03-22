@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -467,11 +467,8 @@ extern enum reg_class regno_reg_class[];
 
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
-#define STARTING_FRAME_OFFSET 0
 
-/* On the 680x0, sp@- in a byte insn really pushes a word.
-   On the ColdFire, sp@- in a byte insn pushes just a byte.  */
-#define PUSH_ROUNDING(BYTES) (TARGET_COLDFIRE ? BYTES : ((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) m68k_push_rounding (BYTES)
 
 #define FIRST_PARM_OFFSET(FNDECL) 8
 

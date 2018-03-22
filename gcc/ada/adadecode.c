@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2015, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2018, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -330,7 +330,7 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
 	      }
 
 	    /* Write symbol in the space.  */
-	    strncpy (optoken, trans_table[k][1], oplen);
+	    memcpy (optoken, trans_table[k][1], oplen);
 	  }
 	else
 	  k++;

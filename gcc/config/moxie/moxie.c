@@ -1,5 +1,5 @@
 /* Target Code for moxie
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Anthony Green.
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -268,7 +270,8 @@ moxie_compute_frame (void)
   cfun->machine->size_for_adjusting_sp = 
     crtl->args.pretend_args_size
     + cfun->machine->local_vars_size 
-    + (ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0);
+    + (ACCUMULATE_OUTGOING_ARGS
+       ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0);
 }
 
 void
@@ -666,6 +669,9 @@ moxie_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 #define TARGET_PRINT_OPERAND moxie_print_operand
 #undef  TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS moxie_print_operand_address
+
+#undef  TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

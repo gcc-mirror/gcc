@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -373,7 +373,7 @@ hash_odr_vtable (const_tree t)
       v = TREE_OPERAND (TREE_OPERAND (v, 0), 0);
     }
 
-  hstate.add_wide_int (IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (v)));
+  hstate.add_hwi (IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (v)));
   return hstate.end ();
 }
 
@@ -656,7 +656,7 @@ set_type_binfo (tree type, tree binfo)
       gcc_assert (!TYPE_BINFO (type));
 }
 
-/* Compare T2 and T2 based on name or structure.  */
+/* Compare T1 and T2 based on name or structure.  */
 
 static bool
 odr_subtypes_equivalent_p (tree t1, tree t2,
@@ -678,15 +678,22 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
     return false;
 
   /* For ODR types be sure to compare their names.
-     To support -wno-odr-type-merging we allow one type to be non-ODR
+     To support -Wno-odr-type-merging we allow one type to be non-ODR
      and other ODR even though it is a violation.  */
   if (types_odr_comparable (t1, t2, true))
     {
       if (!types_same_for_odr (t1, t2, true))
         return false;
-      /* Limit recursion: If subtypes are ODR types and we know
-         that they are same, be happy.  */
-      if (!odr_type_p (t1) || !get_odr_type (t1, true)->odr_violated)
+      /* Limit recursion: if subtypes are ODR types and we know that they are
+	 same, be happy.  We need to call get_odr_type on both subtypes since
+	 we don't know which among t1 and t2 defines the common ODR type and
+	 therefore which call will report the ODR violation, if any.  */
+	 if (!odr_type_p (t1)
+	     || !odr_type_p (t2)
+	     || !COMPLETE_TYPE_P (t1)
+	     || !COMPLETE_TYPE_P (t2)
+	     || (!get_odr_type (t1, true)->odr_violated
+		 && !get_odr_type (t2, true)->odr_violated))
         return true;
     }
 
@@ -1844,7 +1851,12 @@ add_type_duplicate (odr_type val, tree type)
 	}
     }
 
-  /* Next compare memory layout.  */
+  /* Next compare memory layout.
+     The DECL_SOURCE_LOCATIONs in this invocation came from LTO streaming.
+     We must apply the location cache to ensure that they are valid
+     before we can pass them to odr_types_equivalent_p (PR lto/83121).  */
+  if (lto_location_cache::current_cache)
+    lto_location_cache::current_cache->apply_location_cache ();
   if (!odr_types_equivalent_p (val->type, type,
 			       !flag_ltrans && !val->odr_violated && !warned,
 			       &warned, &visited,
@@ -2625,14 +2637,14 @@ polymorphic_call_target_hasher::hash (const polymorphic_call_target_d *odr_query
 {
   inchash::hash hstate (odr_query->otr_token);
 
-  hstate.add_wide_int (odr_query->type->id);
+  hstate.add_hwi (odr_query->type->id);
   hstate.merge_hash (TYPE_UID (odr_query->context.outer_type));
-  hstate.add_wide_int (odr_query->context.offset);
+  hstate.add_hwi (odr_query->context.offset);
 
   if (odr_query->context.speculative_outer_type)
     {
       hstate.merge_hash (TYPE_UID (odr_query->context.speculative_outer_type));
-      hstate.add_wide_int (odr_query->context.speculative_offset);
+      hstate.add_hwi (odr_query->context.speculative_offset);
     }
   hstate.add_flag (odr_query->speculative);
   hstate.add_flag (odr_query->context.maybe_in_construction);
@@ -2901,10 +2913,27 @@ struct decl_warn_count
 
 struct final_warning_record
 {
+  /* If needed grow type_warnings vector and initialize new decl_warn_count
+     to have dyn_count set to profile_count::zero ().  */
+  void grow_type_warnings (unsigned newlen);
+
   profile_count dyn_count;
   auto_vec<odr_type_warn_count> type_warnings;
   hash_map<tree, decl_warn_count> decl_warnings;
 };
+
+void
+final_warning_record::grow_type_warnings (unsigned newlen)
+{
+  unsigned len = type_warnings.length ();
+  if (newlen > len)
+    {
+      type_warnings.safe_grow_cleared (newlen);
+      for (unsigned i = len; i < newlen; i++)
+	type_warnings[i].dyn_count = profile_count::zero ();
+    }
+}
+
 struct final_warning_record *final_warning_records;
 
 /* Return vector containing possible targets of polymorphic call of type
@@ -3176,9 +3205,8 @@ possible_polymorphic_call_targets (tree otr_type,
 		      && warn_suggest_final_types
 		      && !outer_type->derived_types.length ())
 		    {
-		      if (outer_type->id >= (int)final_warning_records->type_warnings.length ())
-			final_warning_records->type_warnings.safe_grow_cleared
-			  (odr_types.length ());
+		      final_warning_records->grow_type_warnings
+			(outer_type->id);
 		      final_warning_records->type_warnings[outer_type->id].count++;
 		      if (!final_warning_records->type_warnings
 				[outer_type->id].dyn_count.initialized_p ())
@@ -3545,8 +3573,7 @@ ipa_devirt (void)
     {
       final_warning_records = new (final_warning_record);
       final_warning_records->dyn_count = profile_count::zero ();
-      final_warning_records->type_warnings.safe_grow_cleared
-						 (odr_types.length ());
+      final_warning_records->grow_type_warnings (odr_types.length ());
       free_polymorphic_call_targets_hash ();
     }
 
@@ -3566,7 +3593,7 @@ ipa_devirt (void)
 	    bool final;
 
 	    if (final_warning_records)
-	      final_warning_records->dyn_count = e->count;
+	      final_warning_records->dyn_count = e->count.ipa ();
 
 	    vec <cgraph_node *>targets
 	       = possible_polymorphic_call_targets
@@ -3727,8 +3754,7 @@ ipa_devirt (void)
 		nconverted++;
 		update = true;
 		e->make_speculative
-		  (likely_target, e->count.apply_scale (8, 10),
-		   e->frequency * 8 / 10);
+		  (likely_target, e->count.apply_scale (8, 10));
 	      }
 	  }
       if (update)

@@ -7,7 +7,7 @@ void foo (int j)
   int i3 = 1 + INT_MAX; /* { dg-warning "integer overflow" } */
   int i4 = +1 + INT_MAX; /* { dg-warning "integer overflow" } */
   int i5 = (int)((double)1.0 + INT_MAX);
-  int i6 = (double)1.0 + INT_MAX; /* { dg-warning "overflow in conversion from .double. to .int. chages value" } */
+  int i6 = (double)1.0 + INT_MAX; /* { dg-warning "overflow in conversion from .double. to .int. changes value" } */
   int i7 = 0 ? (int)(double)1.0 + INT_MAX : 1;
   int i8 = 1 ? 1 : (int)(double)1.0 + INT_MAX;
   int i9 = j ? (int)(double)1.0 + INT_MAX : 1; /* { dg-warning "integer overflow" } */

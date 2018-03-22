@@ -31,7 +31,7 @@ program main
         l2 = reshape(laux,shape(l2))
         m2 = ltoi(l2)
         if (any(matmul(l1,l2) .neqv. (matmul(m1,m2) /= 0))) then
-          call abort
+          STOP 1
         end if
      end do
 
@@ -42,10 +42,10 @@ program main
         end forall
         iv = ltoi(lv)
         if (any(matmul(lv,l1) .neqv. (matmul(iv,m1) /=0))) then
-          call abort
+          STOP 2
         end if
         if (any(matmul(l1,lv) .neqv. (matmul(m1,iv) /= 0))) then
-          call abort
+          STOP 3
         end if
      end do
   end do

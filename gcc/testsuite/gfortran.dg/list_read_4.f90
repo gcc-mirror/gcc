@@ -24,21 +24,21 @@
         x(k) = -1.0
       enddo
       read (10,*,iostat=ier) x
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 1
       do k = 1,10
-         if (x(k).ne.y(k)) call abort
+         if (x(k).ne.y(k)) STOP 2
          x(k) = -1
       end do
       READ(10,*,iostat=ier) x
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 3
       do k = 1,10
-         if (x(k).ne.y(k)) call abort
+         if (x(k).ne.y(k)) STOP 4
          x(k) = -1
       end do
       READ(10,*,iostat=ier) x
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 5
       do k = 1,10
-         if (x(k).ne.y(k)) call abort
+         if (x(k).ne.y(k)) STOP 6
          x(k) = -1
       end do
 ! integer
@@ -46,9 +46,9 @@
         i(k) = -1
       end do 
       READ(10,*,iostat=ier) (i(j),j=1,10)
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 7
       do k = 1,10
-         if (i(k).ne.y(k)) call abort
+         if (i(k).ne.y(k)) STOP 8
          i(k) = -1
       end do
       end

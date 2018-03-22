@@ -13,6 +13,8 @@
 #ifndef SANITIZER_PLATFORM_LIMITS_POSIX_H
 #define SANITIZER_PLATFORM_LIMITS_POSIX_H
 
+#if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_MAC
+
 #include "sanitizer_internal_defs.h"
 #include "sanitizer_platform.h"
 
@@ -21,6 +23,9 @@
 // incorporates the map structure.
 # define GET_LINK_MAP_BY_DLOPEN_HANDLE(handle) \
     ((link_map*)((handle) == nullptr ? nullptr : ((char*)(handle) + 544)))
+// Get sys/_types.h, because that tells us whether 64-bit inodes are
+// used in struct dirent below.
+#include <sys/_types.h>
 #else
 # define GET_LINK_MAP_BY_DLOPEN_HANDLE(handle) ((link_map*)(handle))
 #endif  // !SANITIZER_FREEBSD
@@ -81,7 +86,7 @@ namespace __sanitizer {
 #elif defined(__mips__)
   const unsigned struct_kernel_stat_sz =
                  SANITIZER_ANDROID ? FIRST_32_SECOND_64(104, 128) :
-                                     FIRST_32_SECOND_64(144, 216);
+                                     FIRST_32_SECOND_64(160, 216);
   const unsigned struct_kernel_stat64_sz = 104;
 #elif defined(__s390__) && !defined(__s390x__)
   const unsigned struct_kernel_stat_sz = 64;
@@ -204,24 +209,24 @@ namespace __sanitizer {
     unsigned __seq;
     u64 __unused1;
     u64 __unused2;
+#elif defined(__sparc__)
+#if defined(__arch64__)
+    unsigned mode;
+    unsigned short __pad1;
+#else
+    unsigned short __pad1;
+    unsigned short mode;
+    unsigned short __pad2;
+#endif
+    unsigned short __seq;
+    unsigned long long __unused1;
+    unsigned long long __unused2;
 #elif defined(__mips__) || defined(__aarch64__) || defined(__s390x__)
     unsigned int mode;
     unsigned short __seq;
     unsigned short __pad1;
     unsigned long __unused1;
     unsigned long __unused2;
-#elif defined(__sparc__)
-# if defined(__arch64__)
-    unsigned mode;
-    unsigned short __pad1;
-# else
-    unsigned short __pad1;
-    unsigned short mode;
-    unsigned short __pad2;
-# endif
-    unsigned short __seq;
-    unsigned long long __unused1;
-    unsigned long long __unused2;
 #else
     unsigned short mode;
     unsigned short __pad1;
@@ -240,17 +245,17 @@ namespace __sanitizer {
   struct __sanitizer_shmid_ds {
     __sanitizer_ipc_perm shm_perm;
   #if defined(__sparc__)
-  # if !defined(__arch64__)
+  #if !defined(__arch64__)
     u32 __pad1;
-  # endif
+  #endif
     long shm_atime;
-  # if !defined(__arch64__)
+  #if !defined(__arch64__)
     u32 __pad2;
-  # endif
+  #endif
     long shm_dtime;
-  # if !defined(__arch64__)
+  #if !defined(__arch64__)
     u32 __pad3;
-  # endif
+  #endif
     long shm_ctime;
     uptr shm_segsz;
     int shm_cpid;
@@ -483,7 +488,12 @@ namespace __sanitizer {
   };
 #elif SANITIZER_FREEBSD
   struct __sanitizer_dirent {
+#if defined(__INO64)
+    unsigned long long d_fileno;
+    unsigned long long d_off;
+#else
     unsigned int d_fileno;
+#endif
     unsigned short d_reclen;
     // more fields that we don't care about
   };
@@ -863,6 +873,13 @@ namespace __sanitizer {
   extern int shmctl_shm_stat;
 #endif
 
+#if !SANITIZER_MAC && !SANITIZER_FREEBSD
+  extern unsigned struct_utmp_sz;
+#endif
+#if !SANITIZER_ANDROID
+  extern unsigned struct_utmpx_sz;
+#endif
+
   extern int map_fixed;
 
   // ioctl arguments
@@ -908,7 +925,8 @@ struct __sanitizer_cookie_io_functions_t {
 
 #define IOC_NRBITS 8
 #define IOC_TYPEBITS 8
-#if defined(__powerpc__) || defined(__powerpc64__) || defined(__mips__) || defined(__sparc__)
+#if defined(__powerpc__) || defined(__powerpc64__) || defined(__mips__) || \
+    defined(__sparc__)
 #define IOC_SIZEBITS 13
 #define IOC_DIRBITS 3
 #define IOC_NONE 1U
@@ -943,9 +961,8 @@ struct __sanitizer_cookie_io_functions_t {
 // In sparc the 14 bits SIZE field overlaps with the
 // least significant bit of DIR, so either IOC_READ or
 // IOC_WRITE shall be 1 in order to get a non-zero SIZE.
-# define IOC_SIZE(nr)                       \
-  ((((((nr) >> 29) & 0x7) & (4U|2U)) == 0)? \
-   0 : (((nr) >> 16) & 0x3fff))
+#define IOC_SIZE(nr) \
+  ((((((nr) >> 29) & 0x7) & (4U | 2U)) == 0) ? 0 : (((nr) >> 16) & 0x3fff))
 #else
 #define IOC_SIZE(nr) (((nr) >> IOC_SIZESHIFT) & IOC_SIZEMASK)
 #endif
@@ -1447,9 +1464,6 @@ struct __sanitizer_cookie_io_functions_t {
   extern unsigned IOCTL_PIO_SCRNMAP;
 #endif
 
-  extern const int errno_EINVAL;
-  extern const int errno_EOWNERDEAD;
-
   extern const int si_SEGV_MAPERR;
   extern const int si_SEGV_ACCERR;
 }  // namespace __sanitizer
@@ -1470,5 +1484,7 @@ struct __sanitizer_cookie_io_functions_t {
                  sizeof(((struct CLASS *) NULL)->MEMBER));                \
   COMPILER_CHECK(offsetof(struct __sanitizer_##CLASS, MEMBER) ==          \
                  offsetof(struct CLASS, MEMBER))
+
+#endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_MAC
 
 #endif

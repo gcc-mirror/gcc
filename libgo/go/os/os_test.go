@@ -719,6 +719,27 @@ func TestHardLink(t *testing.T) {
 	if !SameFile(tostat, fromstat) {
 		t.Errorf("link %q, %q did not create hard link", to, from)
 	}
+	// We should not be able to perform the same Link() a second time
+	err = Link(to, from)
+	switch err := err.(type) {
+	case *LinkError:
+		if err.Op != "link" {
+			t.Errorf("Link(%q, %q) err.Op = %q; want %q", to, from, err.Op, "link")
+		}
+		if err.Old != to {
+			t.Errorf("Link(%q, %q) err.Old = %q; want %q", to, from, err.Old, to)
+		}
+		if err.New != from {
+			t.Errorf("Link(%q, %q) err.New = %q; want %q", to, from, err.New, from)
+		}
+		if !IsExist(err.Err) {
+			t.Errorf("Link(%q, %q) err.Err = %q; want %q", to, from, err.Err, "file exists error")
+		}
+	case nil:
+		t.Errorf("link %q, %q: expected error, got nil", from, to)
+	default:
+		t.Errorf("link %q, %q: expected %T, got %T %v", from, to, new(LinkError), err, err)
+	}
 }
 
 // chtmpdir changes the working directory to a new temporary directory and
@@ -1012,9 +1033,14 @@ func TestStartProcess(t *testing.T) {
 		dir = Getenv("SystemRoot")
 		args = []string{"/c", "cd"}
 	default:
-		cmd = "/bin/pwd"
+		var err error
+		cmd, err = osexec.LookPath("pwd")
+		if err != nil {
+			t.Fatalf("Can't find pwd: %v", err)
+		}
 		dir = "/"
 		args = []string{}
+		t.Logf("Testing with %v", cmd)
 	}
 	cmddir, cmdbase := filepath.Split(cmd)
 	args = append([]string{cmdbase}, args...)
@@ -1162,9 +1188,14 @@ func testChtimes(t *testing.T, name string) {
 			// the contents are accessed; also, it is set
 			// whenever mtime is set.
 		case "netbsd":
-			t.Logf("AccessTime didn't go backwards; was=%d, after=%d (Ignoring. See NetBSD issue golang.org/issue/19293)", at, pat)
+			mounts, _ := ioutil.ReadFile("/proc/mounts")
+			if strings.Contains(string(mounts), "noatime") {
+				t.Logf("AccessTime didn't go backwards, but see a filesystem mounted noatime; ignoring. Issue 19293.")
+			} else {
+				t.Logf("AccessTime didn't go backwards; was=%v, after=%v (Ignoring on NetBSD, assuming noatime, Issue 19293)", at, pat)
+			}
 		default:
-			t.Errorf("AccessTime didn't go backwards; was=%d, after=%d", at, pat)
+			t.Errorf("AccessTime didn't go backwards; was=%v, after=%v", at, pat)
 		}
 	}
 
@@ -1211,9 +1242,9 @@ func TestChdirAndGetwd(t *testing.T) {
 			if mode == 0 {
 				err = Chdir(d)
 			} else {
-				fd1, err := Open(d)
-				if err != nil {
-					t.Errorf("Open %s: %s", d, err)
+				fd1, err1 := Open(d)
+				if err1 != nil {
+					t.Errorf("Open %s: %s", d, err1)
 					continue
 				}
 				err = fd1.Chdir()
@@ -1329,14 +1360,26 @@ func TestSeek(t *testing.T) {
 		{-1, io.SeekEnd, int64(len(data)) - 1},
 		{1 << 33, io.SeekStart, 1 << 33},
 		{1 << 33, io.SeekEnd, 1<<33 + int64(len(data))},
+
+		// Issue 21681, Windows 4G-1, etc:
+		{1<<32 - 1, io.SeekStart, 1<<32 - 1},
+		{0, io.SeekCurrent, 1<<32 - 1},
+		{2<<32 - 1, io.SeekStart, 2<<32 - 1},
+		{0, io.SeekCurrent, 2<<32 - 1},
 	}
 	for i, tt := range tests {
+		if runtime.GOOS == "nacl" && tt.out > 1<<30 {
+			t.Logf("skipping test case #%d on nacl; https://golang.org/issue/21728", i)
+			continue
+		}
 		off, err := f.Seek(tt.in, tt.whence)
 		if off != tt.out || err != nil {
-			if e, ok := err.(*PathError); ok && e.Err == syscall.EINVAL && tt.out > 1<<32 {
-				// Reiserfs rejects the big seeks.
-				// https://golang.org/issue/91
-				break
+			if e, ok := err.(*PathError); ok && e.Err == syscall.EINVAL && tt.out > 1<<32 && runtime.GOOS == "linux" {
+				mounts, _ := ioutil.ReadFile("/proc/mounts")
+				if strings.Contains(string(mounts), "reiserfs") {
+					// Reiserfs rejects the big seeks.
+					t.Skipf("skipping test known to fail on reiserfs; https://golang.org/issue/91")
+				}
 			}
 			t.Errorf("#%d: Seek(%v, %v) = %v, %v want %v, nil", i, tt.in, tt.whence, off, err, tt.out)
 		}
@@ -1440,7 +1483,7 @@ func TestOpenNoName(t *testing.T) {
 	}
 }
 
-func runBinHostname(t *testing.T) string {
+func runBinHostname(t *testing.T, argv []string) string {
 	// Run /bin/hostname and collect output.
 	r, w, err := Pipe()
 	if err != nil {
@@ -1448,7 +1491,7 @@ func runBinHostname(t *testing.T) string {
 	}
 	defer r.Close()
 	const path = "/bin/hostname"
-	p, err := StartProcess(path, []string{"hostname"}, &ProcAttr{Files: []*File{nil, w, Stderr}})
+	p, err := StartProcess(path, argv, &ProcAttr{Files: []*File{nil, w, Stderr}})
 	if err != nil {
 		if _, err := Stat(path); IsNotExist(err) {
 			t.Skipf("skipping test; test requires %s but it does not exist", path)
@@ -1514,7 +1557,13 @@ func TestHostname(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	want := runBinHostname(t)
+
+	var want string
+	if runtime.GOOS == "aix" {
+		want = runBinHostname(t, []string{"hostname", "-s"})
+	} else {
+		want = runBinHostname(t, []string{"hostname"})
+	}
 	if hostname != want {
 		i := strings.Index(hostname, ".")
 		if i < 0 || hostname[0:i] != want {
@@ -2198,22 +2247,24 @@ func TestPipeThreads(t *testing.T) {
 
 	defer debug.SetMaxThreads(debug.SetMaxThreads(threads / 2))
 
-	var wg sync.WaitGroup
-	wg.Add(threads)
-	c := make(chan bool, threads)
+	creading := make(chan bool, threads)
+	cdone := make(chan bool, threads)
 	for i := 0; i < threads; i++ {
 		go func(i int) {
-			defer wg.Done()
 			var b [1]byte
-			c <- true
+			creading <- true
 			if _, err := r[i].Read(b[:]); err != nil {
 				t.Error(err)
 			}
+			if err := r[i].Close(); err != nil {
+				t.Error(err)
+			}
+			cdone <- true
 		}(i)
 	}
 
 	for i := 0; i < threads; i++ {
-		<-c
+		<-creading
 	}
 
 	// If we are still alive, it means that the 100 goroutines did
@@ -2226,14 +2277,7 @@ func TestPipeThreads(t *testing.T) {
 		if err := w[i].Close(); err != nil {
 			t.Error(err)
 		}
-	}
-
-	wg.Wait()
-
-	for i := 0; i < threads; i++ {
-		if err := r[i].Close(); err != nil {
-			t.Error(err)
-		}
+		<-cdone
 	}
 }
 

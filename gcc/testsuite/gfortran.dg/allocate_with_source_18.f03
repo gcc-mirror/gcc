@@ -22,8 +22,8 @@ contains
         select type (copyofvar)
             type is (character(len=*))
 !                print*, len(copyofvar), copyofvar
-                if (len(copyofvar) /= 11) call abort ()
-                if (copyofvar /= "A test case") call abort ()
+                if (len(copyofvar) /= 11) STOP 1
+                if (copyofvar /= "A test case") STOP 2
         end select
         deallocate(copyofvar)
     end subroutine

@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=f2008 -fall-intrinsics" }
+! { dg-options "-std=f2008 " }
 !
 ! PR fortran/46100
 !
@@ -8,11 +8,11 @@
 !
 integer, target :: tgt
 call one (two ())
-if (tgt /= 774) call abort ()
+if (tgt /= 774) STOP 1
 contains
   subroutine one (x)
     integer, intent(inout) :: x
-    if (x /= 34) call abort ()
+    if (x /= 34) STOP 2
     x = 774
   end subroutine one
   function two ()

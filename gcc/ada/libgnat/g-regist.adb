@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2017, Free Software Foundation, Inc.        --
+--           Copyright (C) 2001-2018, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -184,9 +184,6 @@ package body GNAT.Registry is
       Sub_Key  : String;
       Mode     : Key_Mode := Read_Write) return HKEY
    is
-      use type REGSAM;
-      use type DWORD;
-
       REG_OPTION_NON_VOLATILE : constant := 16#0#;
 
       C_Sub_Key : constant String := Sub_Key & ASCII.NUL;
@@ -425,8 +422,6 @@ package body GNAT.Registry is
       Sub_Key  : String;
       Mode     : Key_Mode := Read_Only) return HKEY
    is
-      use type REGSAM;
-
       C_Sub_Key : constant String := Sub_Key & ASCII.NUL;
       C_Mode    : constant REGSAM := To_C_Mode (Mode);
 
@@ -456,7 +451,6 @@ package body GNAT.Registry is
       Expand   : Boolean := False) return String
    is
       use GNAT.Directory_Operations;
-      use type LONG;
       use type ULONG;
 
       Value : String (1 .. Max_Value_Size);

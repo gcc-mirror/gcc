@@ -8,7 +8,7 @@ int foo(T a, T2& b, T2 c) {return a + b;}  // { dg-message "template" }
 int foo(char*, S&); // { dg-message "foo" }
 // { dg-message "candidate expects 2 arguments, 3 provided" "arity" { target *-*-* } .-1 }
 
-int foo2(int x)
+void foo2(int x)
 {
   S s={1,2};
   char c;

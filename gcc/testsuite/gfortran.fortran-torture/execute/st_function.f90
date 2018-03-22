@@ -14,16 +14,16 @@ contains
       st1 (i, j) = i + j
       st2 (i, j) = c(i, j)
 
-      if (st1 (1, 2) .ne. 3) call abort
+      if (st1 (1, 2) .ne. 3) STOP 1
       c = 3
-      if (st2 (1, 2) .ne. 3 .or. st2 (2, 3) .ne. 3) call abort
+      if (st2 (1, 2) .ne. 3 .or. st2 (2, 3) .ne. 3) STOP 2
    end subroutine
 
    subroutine with_function_call
       integer fun, st3
       st3 (i, j) = fun (i) + fun (j)
 
-      if (st3 (fun (2), 4) .ne. 16) call abort
+      if (st3 (fun (2), 4) .ne. 16) STOP 3
    end subroutine
 
    subroutine with_character_dummy
@@ -32,8 +32,8 @@ contains
       st4 (i, j) = "0123456789"(i:j)
       st5 (s1, s2) = s1 // s2
 
-      if (st4 (1, 4) .ne. "0123" ) call abort
-      if (st5 ("01", "02") .ne. "01  02    ") call abort ! { dg-warning "Character length of actual argument shorter" }
+      if (st4 (1, 4) .ne. "0123" ) STOP 4
+      if (st5 ("01", "02") .ne. "01  02    ") STOP 5! { dg-warning "Character length of actual argument shorter" }
    end subroutine
 
    subroutine with_derived_type_dummy
@@ -48,8 +48,8 @@ contains
       me%age = 5
       me%name = "Tom"
       tom = st6 (me)
-      if (tom%age .ne. 5) call abort
-      if (tom%name .gt. "Tom") call abort
+      if (tom%age .ne. 5) STOP 6
+      if (tom%name .gt. "Tom") STOP 7
    end subroutine
 
    subroutine with_pointer_dummy
@@ -60,7 +60,7 @@ contains
 
       p1 => i
       i = '1234'
-      if (a (p1) .ne. '123410') call abort
+      if (a (p1) .ne. '123410') STOP 8
    end subroutine
 
    subroutine multiple_eval
@@ -68,7 +68,7 @@ contains
 
       st7(i) = i + fun(i)
 
-      if (st7(fun2(10)) .ne. 3) call abort
+      if (st7(fun2(10)) .ne. 3) STOP 9
    end subroutine
 end
 

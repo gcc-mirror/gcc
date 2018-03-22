@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -190,11 +190,16 @@ package body System.Task_Primitives.Operations is
    -- Support for foreign threads --
    ---------------------------------
 
-   function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id;
-   --  Allocate and Initialize a new ATCB for the current Thread
+   function Register_Foreign_Thread
+     (Thread         : Thread_Id;
+      Sec_Stack_Size : Size_Type := Unspecified_Size) return Task_Id;
+   --  Allocate and initialize a new ATCB for the current Thread. The size of
+   --  the secondary stack can be optionally specified.
 
    function Register_Foreign_Thread
-     (Thread : Thread_Id) return Task_Id is separate;
+     (Thread         : Thread_Id;
+      Sec_Stack_Size : Size_Type := Unspecified_Size)
+     return Task_Id is separate;
 
    ----------------------------------
    -- Condition Variable Functions --
@@ -791,7 +796,17 @@ package body System.Task_Primitives.Operations is
          raise Invalid_CPU_Number;
       end if;
 
-      Self_ID.Common.LL.Thread    := GetCurrentThread;
+      --  Initialize the thread here only if not set. This is done for a
+      --  foreign task but is not needed when a real thread-id is already
+      --  set in Create_Task. Note that we do want to keep the real thread-id
+      --  as it is the only way to free the associated resource. Another way
+      --  to say this is that a pseudo thread-id from a foreign thread won't
+      --  allow for freeing resources.
+
+      if Self_ID.Common.LL.Thread = Null_Thread_Id then
+         Self_ID.Common.LL.Thread := GetCurrentThread;
+      end if;
+
       Self_ID.Common.LL.Thread_Id := GetCurrentThreadId;
 
       Get_Stack_Bounds
@@ -971,7 +986,7 @@ package body System.Task_Primitives.Operations is
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
 
-      if T.Common.LL.Thread /= 0 then
+      if T.Common.LL.Thread /= Null_Thread_Id then
 
          --  This task has been activated. Close the thread handle. This
          --  is needed to release system resources.

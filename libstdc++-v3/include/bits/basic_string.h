@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -115,6 +115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Tp, typename _Res>
 	using _If_sv = enable_if_t<
 	  __and_<is_convertible<const _Tp&, __sv_type>,
+		 __not_<is_convertible<const _Tp*, const basic_string*>>,
 		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
 	  _Res>;
 
@@ -3438,6 +3439,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       template<typename _Tp, typename _Res>
 	using _If_sv = enable_if_t<
 	  __and_<is_convertible<const _Tp&, __sv_type>,
+		 __not_<is_convertible<const _Tp*, const basic_string*>>,
 		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
 	  _Res>;
 
@@ -6663,6 +6665,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   inline namespace string_literals
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char>
     operator""s(const char* __str, size_t __len)
@@ -6687,6 +6691,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<char32_t>{__str, __len}; }
 #endif
 
+#pragma GCC diagnostic pop
   } // inline namespace string_literals
   } // inline namespace literals
 

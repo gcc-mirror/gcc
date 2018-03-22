@@ -1,6 +1,6 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for gcc Go frontend.
 
-# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+# Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -68,6 +68,7 @@ GO_OBJS = \
 	go/import.o \
 	go/import-archive.o \
 	go/lex.o \
+	go/names.o \
 	go/parse.o \
 	go/runtime.o \
 	go/statements.o \

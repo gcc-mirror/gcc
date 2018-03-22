@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd !android,linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd !android,linux netbsd openbsd solaris
 // +build cgo
 
 package user
@@ -18,6 +18,9 @@ import (
 // bytePtrToString takes a NUL-terminated array of bytes and convert
 // it to a Go string.
 func bytePtrToString(p *byte) string {
+	if p == nil {
+		return ""
+	}
 	a := (*[10000]byte)(unsafe.Pointer(p))
 	i := 0
 	for a[i] != 0 {
@@ -99,8 +102,8 @@ func lookupUnixUid(uid int) (*User, error) {
 
 func buildUser(pwd *syscall.Passwd) *User {
 	u := &User{
-		Uid:      strconv.Itoa(int(pwd.Pw_uid)),
-		Gid:      strconv.Itoa(int(pwd.Pw_gid)),
+		Uid:      strconv.FormatUint(uint64(pwd.Pw_uid), 10),
+		Gid:      strconv.FormatUint(uint64(pwd.Pw_gid), 10),
 		Username: bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_name))),
 		Name:     bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_gecos))),
 		HomeDir:  bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_dir))),
@@ -263,4 +266,12 @@ const maxBufferSize = 1 << 20
 
 func isSizeReasonable(sz int64) bool {
 	return sz > 0 && sz <= maxBufferSize
+}
+
+// Because we can't use cgo in tests:
+func structPasswdForNegativeTest() syscall.Passwd {
+	sp := syscall.Passwd{}
+	sp.Pw_uid = 1<<32 - 2
+	sp.Pw_gid = 1<<32 - 3
+	return sp
 }

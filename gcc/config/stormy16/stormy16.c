@@ -1,5 +1,5 @@
 /* Xstormy16 target functions.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -2189,15 +2191,15 @@ static tree xstormy16_handle_below100_attribute
 
 static const struct attribute_spec xstormy16_attribute_table[] =
 {
-  /* name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-     affects_type_identity.  */
-  { "interrupt", 0, 0, false, true,  true,
-    xstormy16_handle_interrupt_attribute , false },
-  { "BELOW100",  0, 0, false, false, false,
-    xstormy16_handle_below100_attribute, false },
-  { "below100",  0, 0, false, false, false,
-    xstormy16_handle_below100_attribute, false },
-  { NULL,        0, 0, false, false, false, NULL, false }
+  /* name, min_len, max_len, decl_req, type_req, fn_type_req,
+     affects_type_identity, handler, exclude.  */
+  { "interrupt", 0, 0, false, true,  true, false,
+    xstormy16_handle_interrupt_attribute, NULL },
+  { "BELOW100",  0, 0, false, false, false, false,
+    xstormy16_handle_below100_attribute, NULL },
+  { "below100",  0, 0, false, false, false, false,
+    xstormy16_handle_below100_attribute, NULL },
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Handle an "interrupt" attribute;
@@ -2633,6 +2635,14 @@ xstormy16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   return mode1 != BImode && mode2 != BImode;
 }
+
+/* Implement PUSH_ROUNDING.  */
+
+poly_int64
+xstormy16_push_rounding (poly_int64 bytes)
+{
+  return (bytes + 1) & ~1;
+}
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
@@ -2714,6 +2724,9 @@ xstormy16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 #define TARGET_HARD_REGNO_MODE_OK xstormy16_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P xstormy16_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

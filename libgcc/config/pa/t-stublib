@@ -3,7 +3,8 @@ LIBGCCSTUB_OBJS = rfi-stub.o dfi-stub.o ritm-stub.o ditm-stub.o \
 	pthread_default_stacksize_np-stub.o \
 	pthread_mutex_lock-stub.o \
 	pthread_mutex_unlock-stub.o \
-	pthread_once-stub.o
+	pthread_once-stub.o \
+	gnu_lto_v1-stub.o
 
 rfi-stub.o: $(srcdir)/config/pa/stublib.c
 	$(gcc_compile) -c -O2 -DL_register_frame_info $<
@@ -34,6 +35,9 @@ pthread_mutex_unlock-stub.o: $(srcdir)/config/pa/stublib.c
 
 pthread_once-stub.o: $(srcdir)/config/pa/stublib.c
 	$(gcc_compile) -c -O2 -DL_pthread_once $<
+
+gnu_lto_v1-stub.o: $(srcdir)/config/pa/stublib.c
+	$(gcc_compile) -c -O2 -DL_gnu_lto_v1 $<
 
 libgcc_stub.a: $(LIBGCCSTUB_OBJS)
 	-rm -rf $@

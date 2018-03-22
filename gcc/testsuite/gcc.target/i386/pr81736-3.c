@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-omit-frame-pointer" } */
+/* { dg-options "-O2 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer" } */
 
 void
 foo (void)

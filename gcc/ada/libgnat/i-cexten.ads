@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,15 @@ package Interfaces.C.Extensions is
    end record;
    pragma Convention (C_Pass_By_Copy, Signed_128);
    for Signed_128'Alignment use unsigned_long_long'Alignment * 2;
+
+   --  128-bit floating-point type available on x86:
+   --  typedef long_double float_128 __attribute__ ((mode (TF)));
+
+   type Float_128 is record
+      low, high : unsigned_long_long;
+   end record;
+   pragma Convention (C_Pass_By_Copy, Float_128);
+   for Float_128'Alignment use unsigned_long_long'Alignment * 2;
 
    --  Types for bitfields
 

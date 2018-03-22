@@ -1,6 +1,6 @@
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (chertykov@gmail.com)
 
 ;; This file is part of GCC.
@@ -334,10 +334,9 @@
         (unspec_volatile:HI [(const_int 0)] UNSPECV_GOTO_RECEIVER))]
   ""
   {
+    rtx offset = gen_int_mode (targetm.starting_frame_offset (), Pmode);
     emit_move_insn (virtual_stack_vars_rtx,
-                    gen_rtx_PLUS (Pmode, hard_frame_pointer_rtx,
-                                  gen_int_mode (STARTING_FRAME_OFFSET,
-                                                Pmode)));
+                    gen_rtx_PLUS (Pmode, hard_frame_pointer_rtx, offset));
     /* ; This might change the hard frame pointer in ways that aren't
        ; apparent to early optimization passes, so force a clobber.  */
     emit_clobber (hard_frame_pointer_rtx);
@@ -3369,6 +3368,8 @@
         (match_operand:HI 1 "reg_or_0_operand"))]
   "optimize
    && reload_completed
+   && GENERAL_REG_P (operands[0])
+   && (operands[1] == const0_rtx || GENERAL_REG_P (operands[1]))
    && (!AVR_HAVE_MOVW
        || const0_rtx == operands[1])"
   [(set (match_dup 2) (match_dup 3))
@@ -6804,11 +6805,11 @@
 
 
 (define_insn_and_split "*iorhi3.ashift8-ext.zerox"
-  [(set (match_operand:HI 0 "register_operand"                        "=r")
+  [(set (match_operand:HI 0 "register_operand"                        "=r,r")
         (ior:HI (ashift:HI (any_extend:HI
-                            (match_operand:QI 1 "register_operand"     "r"))
+                            (match_operand:QI 1 "register_operand"     "r,r"))
                            (const_int 8))
-                (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
+                (zero_extend:HI (match_operand:QI 2 "register_operand" "0,r"))))]
   "optimize"
   { gcc_unreachable(); }
   "&& reload_completed"

@@ -34,6 +34,6 @@ program where_16
      endwhere
    endwhere
    if (any (c .ne. (/1, 2, 3, 4, 5, 6, 7, 8, 9/))) &
-     call abort
+     STOP 1
 end program
 

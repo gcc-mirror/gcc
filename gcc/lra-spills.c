@@ -1,5 +1,5 @@
 /* Change pseudos by memory.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -107,7 +107,7 @@ struct slot
   /* Maximum alignment required by all users of the slot.  */
   unsigned int align;
   /* Maximum size required by all users of the slot.  */
-  HOST_WIDE_INT size;
+  poly_int64 size;
   /* Memory representing the all stack slot.  It can be different from
      memory representing a pseudo belonging to give stack slot because
      pseudo can be placed in a part of the corresponding stack slot.
@@ -132,12 +132,11 @@ assign_mem_slot (int i)
 {
   rtx x = NULL_RTX;
   machine_mode mode = GET_MODE (regno_reg_rtx[i]);
-  HOST_WIDE_INT inherent_size = PSEUDO_REGNO_BYTES (i);
+  poly_int64 inherent_size = PSEUDO_REGNO_BYTES (i);
   machine_mode wider_mode
-    = (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
-       ? mode : lra_reg_info[i].biggest_mode);
-  HOST_WIDE_INT total_size = GET_MODE_SIZE (wider_mode);
-  HOST_WIDE_INT adjust = 0;
+    = wider_subreg_mode (mode, lra_reg_info[i].biggest_mode);
+  poly_int64 total_size = GET_MODE_SIZE (wider_mode);
+  poly_int64 adjust = 0;
 
   lra_assert (regno_reg_rtx[i] != NULL_RTX && REG_P (regno_reg_rtx[i])
 	      && lra_reg_info[i].nrefs != 0 && reg_renumber[i] < 0);
@@ -153,9 +152,7 @@ assign_mem_slot (int i)
 
   /* On a big endian machine, the "address" of the slot is the address
      of the low part that fits its inherent mode.  */
-  if (BYTES_BIG_ENDIAN && inherent_size < total_size)
-    adjust += (total_size - inherent_size);
-
+  adjust += subreg_size_lowpart_offset (inherent_size, total_size);
   x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
 
   /* Set all of the memory attributes as appropriate for a spill.  */
@@ -177,9 +174,17 @@ regno_freq_compare (const void *v1p, const void *v2p)
 }
 
 /* Sort pseudos according to their slots, putting the slots in the order
-   that they should be allocated.  Slots with lower numbers have the highest
-   priority and should get the smallest displacement from the stack or
-   frame pointer (whichever is being used).
+   that they should be allocated.
+
+   First prefer to group slots with variable sizes together and slots
+   with constant sizes together, since that usually makes them easier
+   to address from a common anchor point.  E.g. loads of polynomial-sized
+   registers tend to take polynomial offsets while loads of constant-sized
+   registers tend to take constant (non-polynomial) offsets.
+
+   Next, slots with lower numbers have the highest priority and should
+   get the smallest displacement from the stack or frame pointer
+   (whichever is being used).
 
    The first allocated slot is always closest to the frame pointer,
    so prefer lower slot numbers when frame_pointer_needed.  If the stack
@@ -194,16 +199,19 @@ pseudo_reg_slot_compare (const void *v1p, const void *v2p)
   const int regno1 = *(const int *) v1p;
   const int regno2 = *(const int *) v2p;
   int diff, slot_num1, slot_num2;
-  int total_size1, total_size2;
 
   slot_num1 = pseudo_slots[regno1].slot_num;
   slot_num2 = pseudo_slots[regno2].slot_num;
+  diff = (int (slots[slot_num1].size.is_constant ())
+	  - int (slots[slot_num2].size.is_constant ()));
+  if (diff != 0)
+    return diff;
   if ((diff = slot_num1 - slot_num2) != 0)
     return (frame_pointer_needed
 	    || (!FRAME_GROWS_DOWNWARD) == STACK_GROWS_DOWNWARD ? diff : -diff);
-  total_size1 = GET_MODE_SIZE (lra_reg_info[regno1].biggest_mode);
-  total_size2 = GET_MODE_SIZE (lra_reg_info[regno2].biggest_mode);
-  if ((diff = total_size2 - total_size1) != 0)
+  poly_int64 total_size1 = GET_MODE_SIZE (lra_reg_info[regno1].biggest_mode);
+  poly_int64 total_size2 = GET_MODE_SIZE (lra_reg_info[regno2].biggest_mode);
+  if ((diff = compare_sizes_for_sort (total_size2, total_size1)) != 0)
     return diff;
   return regno1 - regno2;
 }
@@ -286,6 +294,8 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
 	}
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "  Spill r%d into hr%d\n", regno, hard_regno);
+      add_to_hard_reg_set (&hard_regs_spilled_into,
+			   lra_reg_info[regno].biggest_mode, hard_regno);
       /* Update reserved_hard_regs.  */
       for (r = lra_reg_info[regno].live_ranges; r != NULL; r = r->next)
 	for (p = r->start; p <= r->finish; p++)
@@ -314,13 +324,12 @@ add_pseudo_to_slot (int regno, int slot_num)
      and a total size which provides room for paradoxical subregs.
      We need to make sure the size and alignment of the slot are
      sufficient for both.  */
-  machine_mode mode = (GET_MODE_SIZE (PSEUDO_REGNO_MODE (regno))
-		       >= GET_MODE_SIZE (lra_reg_info[regno].biggest_mode)
-		       ? PSEUDO_REGNO_MODE (regno)
-		       : lra_reg_info[regno].biggest_mode);
+  machine_mode mode = wider_subreg_mode (PSEUDO_REGNO_MODE (regno),
+					 lra_reg_info[regno].biggest_mode);
   unsigned int align = spill_slot_alignment (mode);
   slots[slot_num].align = MAX (slots[slot_num].align, align);
-  slots[slot_num].size = MAX (slots[slot_num].size, GET_MODE_SIZE (mode));
+  slots[slot_num].size = upper_bound (slots[slot_num].size,
+				      GET_MODE_SIZE (mode));
 
   if (slots[slot_num].regno < 0)
     {
@@ -361,8 +370,17 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
 	j = slots_num;
       else
 	{
+	  machine_mode mode
+	    = wider_subreg_mode (PSEUDO_REGNO_MODE (regno),
+				 lra_reg_info[regno].biggest_mode);
 	  for (j = 0; j < slots_num; j++)
 	    if (slots[j].hard_regno < 0
+		/* Although it's possible to share slots between modes
+		   with constant and non-constant widths, we usually
+		   get better spill code by keeping the constant and
+		   non-constant areas separate.  */
+		&& (GET_MODE_SIZE (mode).is_constant ()
+		    == slots[j].size.is_constant ())
 		&& ! (lra_intersected_live_ranges_p
 		      (slots[j].live_ranges,
 		       lra_reg_info[regno].live_ranges)))
@@ -501,7 +519,7 @@ spill_pseudos (void)
 			 INSN_UID (insn));
 	      lra_push_insn (insn);
 	      if (lra_reg_spill_p || targetm.different_addr_displacement_p ())
-		lra_set_used_insn_alternative (insn, -1);
+		lra_set_used_insn_alternative (insn, LRA_UNKNOWN_ALT);
 	    }
 	  else if (CALL_P (insn)
 		   /* Presence of any pseudo in CALL_INSN_FUNCTION_USAGE
@@ -585,8 +603,10 @@ lra_spill (void)
     {
       for (i = 0; i < slots_num; i++)
 	{
-	  fprintf (lra_dump_file, "  Slot %d regnos (width = %d):", i,
-		   GET_MODE_SIZE (GET_MODE (slots[i].mem)));
+	  fprintf (lra_dump_file, "  Slot %d regnos (width = ", i);
+	  print_dec (GET_MODE_SIZE (GET_MODE (slots[i].mem)),
+		     lra_dump_file, SIGNED);
+	  fprintf (lra_dump_file, "):");
 	  for (curr_regno = slots[i].regno;;
 	       curr_regno = pseudo_slots[curr_regno].next - pseudo_slots)
 	    {

@@ -7,4 +7,4 @@ int f() {
         if (a == 5)
             return 1;
     }
-}
+}	// { dg-warning "control reaches end of non-void function" }

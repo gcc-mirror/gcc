@@ -1,5 +1,5 @@
 /* Const/Copy propagation originating from degenerate PHIs
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -298,7 +298,6 @@ propagate_rhs_into_lhs (gimple *stmt, tree lhs, tree rhs,
 
 			  te->probability += e->probability;
 
-			  te->count += e->count;
 			  remove_edge (e);
 			  cfg_altered = true;
 			}

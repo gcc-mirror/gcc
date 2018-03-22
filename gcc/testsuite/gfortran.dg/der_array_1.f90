@@ -26,7 +26,7 @@ program der_array_1
   v = t((/1, 2/), reshape (f, (/m/)), d, e);
   if (any (v%a .ne. (/1, 2/)) .or. any (v%b .ne. (/3, 4/)) &
       .or. any (v%c .ne. d) .or. .not. associated (v%p, e)) &
-    call abort ()
+    STOP 1
 
   deallocate(e)
 end program

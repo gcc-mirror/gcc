@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -924,7 +924,8 @@ package body Exp_Intr is
       Arg       : constant Node_Id    := First_Actual (N);
       Loc       : constant Source_Ptr := Sloc (N);
       Typ       : constant Entity_Id  := Etype (Arg);
-      Desig_Typ : constant Entity_Id  := Designated_Type (Typ);
+      Desig_Typ : constant Entity_Id  :=
+                    Available_View (Designated_Type (Typ));
       Needs_Fin : constant Boolean    := Needs_Finalization (Desig_Typ);
       Root_Typ  : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
       Pool      : constant Entity_Id  := Associated_Storage_Pool (Root_Typ);

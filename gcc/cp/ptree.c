@@ -1,5 +1,5 @@
 /* Prints out trees in human readable form.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -177,7 +177,6 @@ cxx_print_identifier (FILE *file, tree node, int indent)
     indent_to (file, indent + 4);
   fprintf (file, "%s local bindings <%p>", get_identifier_kind_name (node),
 	   (void *) IDENTIFIER_BINDING (node));
-  print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
 }
 
 void
@@ -216,6 +215,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "binfo", BASELINK_BINFO (node), indent + 4);
       print_node (file, "access_binfo", BASELINK_ACCESS_BINFO (node),
 		  indent + 4);
+      print_node (file, "optype", BASELINK_OPTYPE (node), indent + 4);
       break;
     case OVERLOAD:
       print_node (file, "function", OVL_FUNCTION (node), indent+4);

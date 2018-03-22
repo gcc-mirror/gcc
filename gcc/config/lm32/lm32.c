@@ -1,7 +1,7 @@
 /* Subroutines used for code generation on the Lattice Mico32 architecture.
    Contributed by Jon Beniston <jon@beniston.com>
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -18,6 +18,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -79,6 +81,7 @@ static void lm32_function_arg_advance (cumulative_args_t cum,
 				       const_tree type, bool named);
 static bool lm32_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool lm32_modes_tieable_p (machine_mode, machine_mode);
+static HOST_WIDE_INT lm32_starting_frame_offset (void);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE lm32_option_override
@@ -112,6 +115,12 @@ static bool lm32_modes_tieable_p (machine_mode, machine_mode);
 #define TARGET_HARD_REGNO_MODE_OK lm32_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P lm32_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET lm32_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1245,4 +1254,12 @@ lm32_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	  && GET_MODE_CLASS (mode2) == MODE_INT
 	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
 	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+lm32_starting_frame_offset (void)
+{
+  return UNITS_PER_WORD;
 }

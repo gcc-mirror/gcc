@@ -1,6 +1,6 @@
-/* { dg-add-options stack_size } */
+/* { dg-require-stack-size "0x12000" } */
 
-#if __INT_MAX__ < 32768 || (defined(STACK_SIZE) && STACK_SIZE < 0x12000)
+#if __INT_MAX__ < 32768
 int main () { exit (0); }
 #else
 int a[2] = { 2, 3 };

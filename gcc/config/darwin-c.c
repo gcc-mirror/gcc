@@ -1,5 +1,5 @@
 /* Darwin support needed only by C/C++ frontends.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -284,13 +284,13 @@ framework_construct_pathname (const char *fname, cpp_dir *dir)
 
   frname = XNEWVEC (char, strlen (fname) + dir->len + 2
 		    + strlen(".framework/") + strlen("PrivateHeaders"));
-  strncpy (&frname[0], dir->name, dir->len);
+  memcpy (&frname[0], dir->name, dir->len);
   frname_len = dir->len;
   if (frname_len && frname[frname_len-1] != '/')
     frname[frname_len++] = '/';
-  strncpy (&frname[frname_len], fname, fname_len);
+  memcpy (&frname[frname_len], fname, fname_len);
   frname_len += fname_len;
-  strncpy (&frname[frname_len], ".framework/", strlen (".framework/"));
+  memcpy (&frname[frname_len], ".framework/", strlen (".framework/"));
   frname_len += strlen (".framework/");
 
   if (fast_dir == 0)
@@ -316,7 +316,7 @@ framework_construct_pathname (const char *fname, cpp_dir *dir)
   /* Append framework_header_dirs and header file name */
   for (i = 0; framework_header_dirs[i].dirName; i++)
     {
-      strncpy (&frname[frname_len],
+      memcpy (&frname[frname_len],
 	       framework_header_dirs[i].dirName,
 	       framework_header_dirs[i].dirNameLen);
       strcpy (&frname[frname_len + framework_header_dirs[i].dirNameLen],
@@ -378,23 +378,23 @@ find_subframework_file (const char *fname, const char *pname)
 
   sfrname_len = bufptr - pname;
 
-  strncpy (&sfrname[0], pname, sfrname_len);
+  memcpy (&sfrname[0], pname, sfrname_len);
 
-  strncpy (&sfrname[sfrname_len], "Frameworks/", strlen ("Frameworks/"));
+  memcpy (&sfrname[sfrname_len], "Frameworks/", strlen ("Frameworks/"));
   sfrname_len += strlen("Frameworks/");
 
-  strncpy (&sfrname[sfrname_len], fname, fname_len);
+  memcpy (&sfrname[sfrname_len], fname, fname_len);
   sfrname_len += fname_len;
 
-  strncpy (&sfrname[sfrname_len], ".framework/", strlen (".framework/"));
+  memcpy (&sfrname[sfrname_len], ".framework/", strlen (".framework/"));
   sfrname_len += strlen (".framework/");
 
   /* Append framework_header_dirs and header file name */
   for (i = 0; framework_header_dirs[i].dirName; i++)
     {
-      strncpy (&sfrname[sfrname_len],
-	       framework_header_dirs[i].dirName,
-	       framework_header_dirs[i].dirNameLen);
+      memcpy (&sfrname[sfrname_len],
+	      framework_header_dirs[i].dirName,
+	      framework_header_dirs[i].dirNameLen);
       strcpy (&sfrname[sfrname_len + framework_header_dirs[i].dirNameLen],
 	      &fname[fname_len]);
 
@@ -433,7 +433,7 @@ add_system_framework_path (char *path)
   p->construct = framework_construct_pathname;
   using_frameworks = 1;
 
-  add_cpp_dir_path (p, SYSTEM);
+  add_cpp_dir_path (p, INC_SYSTEM);
 }
 
 /* Add PATH to the bracket includes. PATH must be malloc-ed and
@@ -451,7 +451,7 @@ add_framework_path (char *path)
   p->construct = framework_construct_pathname;
   using_frameworks = 1;
 
-  add_cpp_dir_path (p, BRACKET);
+  add_cpp_dir_path (p, INC_BRACKET);
 }
 
 static const char *framework_defaults [] =
@@ -488,7 +488,7 @@ darwin_register_objc_includes (const char *sysroot, const char *iprefix,
 	{
 	  str = concat (iprefix, fname + len, NULL);
           /* FIXME: wrap the headers for C++awareness.  */
-	  add_path (str, SYSTEM, /*c++aware=*/false, false);
+	  add_path (str, INC_SYSTEM, /*c++aware=*/false, false);
 	}
 
       /* Should this directory start with the sysroot?  */
@@ -497,7 +497,7 @@ darwin_register_objc_includes (const char *sysroot, const char *iprefix,
       else
 	str = update_path (fname, "");
 
-      add_path (str, SYSTEM, /*c++aware=*/false, false);
+      add_path (str, INC_SYSTEM, /*c++aware=*/false, false);
     }
 }
 

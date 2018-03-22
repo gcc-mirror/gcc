@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2017 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -177,6 +177,9 @@ Vector types
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_type_get_vector
 
+   Vector rvalues can be generated using
+   :func:`gcc_jit_context_new_rvalue_from_vector`.
+
 
 Structures and unions
 ---------------------
@@ -309,3 +312,9 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
        :start-after: /* Quote from here in docs/topics/types.rst.  */
        :end-before: /* Quote up to here in docs/topics/types.rst.  */
        :language: c
+
+Function pointer types
+----------------------
+
+Function pointer types can be created using
+:c:func:`gcc_jit_context_new_function_ptr_type`.

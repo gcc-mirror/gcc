@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -168,17 +168,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Imitate the way many other C compilers handle alignment of
    bitfields and the structures that contain them.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
-
-/* Align string constants and constructors to at least a word boundary.
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that 'strcpy' calls that copy
-   constants can be done inline.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  (!optimize_size &&							\
-   (TREE_CODE (EXP) == STRING_CST || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD						\
-	? BITS_PER_WORD							\
-	: (ALIGN))
 
 /* Align arrays, unions and records to at least a word boundary.
    One use of this macro is to increase alignment of medium-size
@@ -441,11 +430,8 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 
-#define FRAME_GROWS_DOWNWARD flag_stack_protect
-
-/* Offset within stack frame to start allocating local variables at.  */
-#define STARTING_FRAME_OFFSET						\
-  (FRAME_GROWS_DOWNWARD ? 0 : crtl->outgoing_args_size)
+#define FRAME_GROWS_DOWNWARD (flag_stack_protect \
+			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
 /* The ARG_POINTER and FRAME_POINTER are not real Xtensa registers, so
    they are eliminated to either the stack pointer or hard frame pointer.  */

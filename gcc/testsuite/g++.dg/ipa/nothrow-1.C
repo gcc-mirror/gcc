@@ -11,7 +11,7 @@ int a(void)
 {
   return *ptr == *ptr;
 }
-main()
+int main()
 {
   int aa;
   ptr = &barvar;

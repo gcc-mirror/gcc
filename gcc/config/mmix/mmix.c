@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -168,6 +170,9 @@ static void mmix_print_operand (FILE *, rtx, int);
 static void mmix_print_operand_address (FILE *, machine_mode, rtx);
 static bool mmix_print_operand_punct_valid_p (unsigned char);
 static void mmix_conditional_register_usage (void);
+static HOST_WIDE_INT mmix_static_rtx_alignment (machine_mode);
+static HOST_WIDE_INT mmix_constant_alignment (const_tree, HOST_WIDE_INT);
+static HOST_WIDE_INT mmix_starting_frame_offset (void);
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
    for a general description.  */
@@ -282,6 +287,14 @@ static void mmix_conditional_register_usage (void);
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mmix_option_override
 
+#undef TARGET_STATIC_RTX_ALIGNMENT
+#define TARGET_STATIC_RTX_ALIGNMENT mmix_static_rtx_alignment
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT mmix_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET mmix_starting_frame_offset
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Functions that are expansions for target macros.
@@ -334,10 +347,18 @@ mmix_data_alignment (tree type ATTRIBUTE_UNUSED, int basic_align)
   return basic_align;
 }
 
-/* CONSTANT_ALIGNMENT.  */
+/* Implement TARGET_STATIC_RTX_ALIGNMENT.  */
 
-int
-mmix_constant_alignment (tree constant ATTRIBUTE_UNUSED, int basic_align)
+static HOST_WIDE_INT
+mmix_static_rtx_alignment (machine_mode mode)
+{
+  return MAX (GET_MODE_ALIGNMENT (mode), 32);
+}
+
+/* Implement tARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+mmix_constant_alignment (const_tree, HOST_WIDE_INT basic_align)
 {
   if (basic_align < 32)
     return 32;
@@ -494,9 +515,9 @@ mmix_dynamic_chain_address (rtx frame)
   return plus_constant (Pmode, frame, -8);
 }
 
-/* STARTING_FRAME_OFFSET.  */
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
 
-int
+static HOST_WIDE_INT
 mmix_starting_frame_offset (void)
 {
   /* The old frame pointer is in the slot below the new one, so
@@ -562,7 +583,7 @@ mmix_initial_elimination_offset (int fromreg, int toreg)
      counted; the others go on the register stack.
 
      The frame-pointer is counted too if it is what is eliminated, as we
-     need to balance the offset for it from STARTING_FRAME_OFFSET.
+     need to balance the offset for it from TARGET_STARTING_FRAME_OFFSET.
 
      Also add in the slot for the register stack pointer we save if we
      have a landing pad.

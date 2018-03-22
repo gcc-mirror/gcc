@@ -1,11 +1,8 @@
-/* { dg-add-options stack_size } */
+/* { dg-require-stack-size "0x80100" } */
 
 /* Like pr28982a.c, but with the spill slots outside the range of
    a single sp-based load on ARM.  This test tests for cases where
    the addresses in the base and index reloads require further reloads.  */
-#if defined(STACK_SIZE) && STACK_SIZE <= 0x80100
-int main (void) { return 0; }
-#else
 #define NITER 4
 #define NVARS 20
 #define MULTI(X) \
@@ -57,4 +54,3 @@ main (void)
       return 1;
   return 0;
 }
-#endif

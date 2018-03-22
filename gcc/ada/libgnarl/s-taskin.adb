@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,7 +96,6 @@ package body System.Tasking is
       Domain               : Dispatching_Domain_Access;
       Task_Info            : System.Task_Info.Task_Info_Type;
       Stack_Size           : System.Parameters.Size_Type;
-      Secondary_Stack_Size : System.Parameters.Size_Type;
       T                    : Task_Id;
       Success              : out Boolean)
    is
@@ -147,7 +146,6 @@ package body System.Tasking is
       T.Common.Specific_Handler         := null;
       T.Common.Debug_Events             := (others => False);
       T.Common.Task_Image_Len           := 0;
-      T.Common.Secondary_Stack_Size     := Secondary_Stack_Size;
 
       if T.Common.Parent = null then
 
@@ -244,7 +242,6 @@ package body System.Tasking is
          Domain               => System_Domain,
          Task_Info            => Task_Info.Unspecified_Task_Info,
          Stack_Size           => 0,
-         Secondary_Stack_Size => Parameters.Unspecified_Size,
          T                    => T,
          Success              => Success);
       pragma Assert (Success);

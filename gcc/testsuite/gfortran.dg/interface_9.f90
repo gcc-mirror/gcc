@@ -33,12 +33,12 @@ end module module2
 program gfcbug48
   use module1, only : inverse
   call sub ()
-  if (inverse(1.0_4) /= 1.0_4) call abort ()
-  if (inverse(1_4) /= 3_4) call abort ()
+  if (inverse(1.0_4) /= 1.0_4) STOP 1
+  if (inverse(1_4) /= 3_4) STOP 2
 contains
   subroutine sub ()
     use module2, only : inverse
-    if (inverse(1.0_4) /= 2.0_4) call abort ()
-    if (inverse(1_4) /= 3_4) call abort ()
+    if (inverse(1.0_4) /= 2.0_4) STOP 3
+    if (inverse(1_4) /= 3_4) STOP 4
   end subroutine sub
 end program gfcbug48

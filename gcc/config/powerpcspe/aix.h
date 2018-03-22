@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -54,13 +54,11 @@
    sizes of the fixed area and the parameter area must be a multiple of
    STACK_BOUNDARY.  */
 
-#undef STARTING_FRAME_OFFSET
-#define STARTING_FRAME_OFFSET						\
-  (FRAME_GROWS_DOWNWARD							\
-   ? 0									\
-   : (cfun->calls_alloca						\
-      ? RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA, 16)	\
-      : (RS6000_ALIGN (crtl->outgoing_args_size, 16) + RS6000_SAVE_AREA)))
+#undef RS6000_STARTING_FRAME_OFFSET
+#define RS6000_STARTING_FRAME_OFFSET					\
+  (cfun->calls_alloca							\
+   ? RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA, 16)	\
+   : (RS6000_ALIGN (crtl->outgoing_args_size, 16) + RS6000_SAVE_AREA))
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.
@@ -73,7 +71,8 @@
    `emit-rtl.c').  */
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-   RS6000_ALIGN (crtl->outgoing_args_size + STACK_POINTER_OFFSET, 16)
+  RS6000_ALIGN (crtl->outgoing_args_size.to_constant () \
+		+ STACK_POINTER_OFFSET, 16)
 
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0

@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001-2017 Free Software Foundation, Inc.
+## Copyright (C) 2001-2018 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -31,11 +31,13 @@ std_headers = \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
 	${std_srcdir}/bitset \
+	${std_srcdir}/charconv \
 	${std_srcdir}/chrono \
 	${std_srcdir}/codecvt \
 	${std_srcdir}/complex \
 	${std_srcdir}/condition_variable \
 	${std_srcdir}/deque \
+	${std_srcdir}/filesystem \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
 	${std_srcdir}/functional \
@@ -103,6 +105,10 @@ bits_headers = \
 	${bits_srcdir}/enable_special_members.h \
 	${bits_srcdir}/forward_list.h \
 	${bits_srcdir}/forward_list.tcc \
+	${bits_srcdir}/fs_dir.h \
+	${bits_srcdir}/fs_fwd.h \
+	${bits_srcdir}/fs_ops.h \
+	${bits_srcdir}/fs_path.h \
 	${bits_srcdir}/fstream.tcc \
 	${bits_srcdir}/functexcept.h \
 	${bits_srcdir}/functional_hash.h \
@@ -124,7 +130,6 @@ bits_headers = \
 	${bits_srcdir}/locale_facets_nonio.tcc \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
-	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/move.h \
 	${bits_srcdir}/node_handle.h \
@@ -155,6 +160,7 @@ bits_headers = \
 	${bits_srcdir}/shared_ptr_atomic.h \
 	${bits_srcdir}/shared_ptr_base.h \
 	${bits_srcdir}/slice_array.h \
+	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/sstream.tcc \
 	${bits_srcdir}/std_abs.h \
 	${bits_srcdir}/std_function.h \
@@ -1025,7 +1031,7 @@ stamp-bits: ${bits_headers}
 	@$(STAMP) stamp-bits
 
 stamp-bits-sup: stamp-bits ${bits_sup_headers}
-	@-cd ${bits_builddir} && $(LN_S) $? . 2>/dev/null
+	@-cd ${bits_builddir} && $(LN_S) ${bits_sup_headers} . 2>/dev/null
 	@$(STAMP) stamp-bits-sup
 
 stamp-c_base: ${c_base_headers}
@@ -1473,3 +1479,8 @@ $(decimal_headers): ; @:
 $(ext_headers): ; @:
 $(experimental_headers): ; @:
 $(experimental_bits_headers): ; @:
+
+if INCLUDE_DIR_NOTPARALLEL
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81797
+.NOTPARALLEL:
+endif

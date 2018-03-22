@@ -1,5 +1,5 @@
 /* Graphite polyhedral representation.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Tobias Grosser <grosser@fim.uni-passau.de>.
 
@@ -378,6 +378,9 @@ struct scop
 
   /* Number of parameters in SCoP.  */
   graphite_dim_t nb_params;
+
+  /* The maximum alias set as assigned to drs by build_alias_sets.  */
+  unsigned max_alias_set;
 
   /* All the basic blocks in this scop that contain memory references
      and that will be represented as statements in the polyhedral

@@ -1,5 +1,5 @@
 /* Natural loop functions
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -221,6 +221,12 @@ struct GTY ((chain_next ("%h.next"))) loop {
   /* True if the loop is part of an oacc kernels region.  */
   unsigned in_oacc_kernels_region : 1;
 
+  /* The number of times to unroll the loop.  0 means no information given,
+     just do what we always do.  A value of 1 means do not unroll the loop.
+     A value of USHRT_MAX means unroll with no specific unrolling factor.
+     Other values means unroll with the given unrolling factor.  */
+  unsigned short unroll;
+
   /* For SIMD loops, this is a unique identifier of the loop, referenced
      by IFN_GOMP_SIMD_VF, IFN_GOMP_SIMD_LANE and IFN_GOMP_SIMD_LAST_LANE
      builtins.  */
@@ -333,9 +339,11 @@ bool mark_irreducible_loops (void);
 void release_recorded_exits (function *);
 void record_loop_exits (void);
 void rescan_loop_exit (edge, bool, bool);
+void sort_sibling_loops (function *);
 
 /* Loop data structure manipulation/querying.  */
-extern void flow_loop_tree_node_add (struct loop *, struct loop *);
+extern void flow_loop_tree_node_add (struct loop *, struct loop *,
+				     struct loop * = NULL);
 extern void flow_loop_tree_node_remove (struct loop *);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
 extern bool flow_bb_inside_loop_p (const struct loop *, const_basic_block);
@@ -759,7 +767,7 @@ loop_iterator::~loop_iterator ()
        (LOOP) = li.next ())
 
 #define FOR_EACH_LOOP_FN(FN, LOOP, FLAGS) \
-  for (loop_iterator li(fn, &(LOOP), FLAGS); \
+  for (loop_iterator li(FN, &(LOOP), FLAGS); \
        (LOOP); \
        (LOOP) = li.next ())
 

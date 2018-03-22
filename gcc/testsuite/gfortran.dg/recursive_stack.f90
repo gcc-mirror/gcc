@@ -10,7 +10,7 @@ subroutine foo (recurse)
   if (recurse) then
      iarray(49,49) = 17
      call bar
-     if (iarray(49,49) .ne. 17) call abort
+     if (iarray(49,49) .ne. 17) STOP 1
   else
      iarray(49,49) = 21
   end if

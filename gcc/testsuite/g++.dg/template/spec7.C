@@ -20,7 +20,7 @@ template<> template<> template <class V> void A<int>::B<char>::g(V)
 
 A<int>::B<char> b;
 
-int h()
+void h()
 {
   b.f();
   b.g(0);

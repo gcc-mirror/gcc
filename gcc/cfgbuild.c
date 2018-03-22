@@ -1,5 +1,5 @@
 /* Control flow graph building code for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -444,9 +444,42 @@ find_bb_boundaries (basic_block bb)
   rtx_insn *flow_transfer_insn = NULL;
   rtx_insn *debug_insn = NULL;
   edge fallthru = NULL;
+  bool skip_purge;
 
   if (insn == end)
     return;
+
+  if (DEBUG_INSN_P (insn) || DEBUG_INSN_P (end))
+    {
+      /* Check whether, without debug insns, the insn==end test above
+	 would have caused us to return immediately, and behave the
+	 same way even with debug insns.  If we don't do this, debug
+	 insns could cause us to purge dead edges at different times,
+	 which could in turn change the cfg and affect codegen
+	 decisions in subtle but undesirable ways.  */
+      while (insn != end && DEBUG_INSN_P (insn))
+	insn = NEXT_INSN (insn);
+      rtx_insn *e = end;
+      while (insn != e && DEBUG_INSN_P (e))
+	e = PREV_INSN (e);
+      if (insn == e)
+	{
+	  /* If there are debug insns after a single insn that is a
+	     control flow insn in the block, we'd have left right
+	     away, but we should clean up the debug insns after the
+	     control flow insn, because they can't remain in the same
+	     block.  So, do the debug insn cleaning up, but then bail
+	     out without purging dead edges as we would if the debug
+	     insns hadn't been there.  */
+	  if (e != end && !DEBUG_INSN_P (e) && control_flow_insn_p (e))
+	    {
+	      skip_purge = true;
+	      flow_transfer_insn = e;
+	      goto clean_up_debug_after_control_flow;
+	    }
+	  return;
+	}
+    }
 
   if (LABEL_P (insn))
     insn = NEXT_INSN (insn);
@@ -499,7 +532,6 @@ find_bb_boundaries (basic_block bb)
 	  remove_edge (fallthru);
 	  /* BB is unreachable at this point - we need to determine its profile
 	     once edges are built.  */
-	  bb->frequency = 0;
 	  bb->count = profile_count::uninitialized ();
 	  flow_transfer_insn = NULL;
 	  debug_insn = NULL;
@@ -512,7 +544,7 @@ find_bb_boundaries (basic_block bb)
 	     the middle of a BB.  We need to split it in the same manner as
 	     if the barrier were preceded by a control_flow_insn_p insn.  */
 	  if (!flow_transfer_insn)
-	    flow_transfer_insn = prev_nonnote_insn_bb (insn);
+	    flow_transfer_insn = prev_nonnote_nondebug_insn_bb (insn);
 	}
 
       if (control_flow_insn_p (insn))
@@ -527,6 +559,9 @@ find_bb_boundaries (basic_block bb)
      ordinary jump, we need to take care and move basic block boundary.  */
   if (flow_transfer_insn && flow_transfer_insn != end)
     {
+      skip_purge = false;
+
+    clean_up_debug_after_control_flow:
       BB_END (bb) = flow_transfer_insn;
 
       /* Clean up the bb field for the insns that do not belong to BB.  */
@@ -543,6 +578,9 @@ find_bb_boundaries (basic_block bb)
 	  if (x == end)
 	    break;
 	}
+
+      if (skip_purge)
+	return;
     }
 
   /* We've possibly replaced the conditional jump by conditional jump
@@ -576,10 +614,8 @@ compute_outgoing_frequencies (basic_block b)
 	  e = BRANCH_EDGE (b);
 	  e->probability
 		 = profile_probability::from_reg_br_prob_note (probability);
-	  e->count = b->count.apply_probability (e->probability);
 	  f = FALLTHRU_EDGE (b);
 	  f->probability = e->probability.invert ();
-	  f->count = b->count - e->count;
 	  return;
 	}
       else
@@ -591,7 +627,6 @@ compute_outgoing_frequencies (basic_block b)
     {
       e = single_succ_edge (b);
       e->probability = profile_probability::always ();
-      e->count = b->count;
       return;
     }
   else
@@ -610,10 +645,6 @@ compute_outgoing_frequencies (basic_block b)
       if (complex_edge)
         guess_outgoing_edge_probabilities (b);
     }
-
-  if (b->count.initialized_p ())
-    FOR_EACH_EDGE (e, ei, b->succs)
-      e->count = b->count.apply_probability (e->probability);
 }
 
 /* Assume that some pass has inserted labels or control flow
@@ -676,18 +707,15 @@ find_many_sub_basic_blocks (sbitmap blocks)
 	  {
 	    bool initialized_src = false, uninitialized_src = false;
 	    bb->count = profile_count::zero ();
-	    bb->frequency = 0;
 	    FOR_EACH_EDGE (e, ei, bb->preds)
 	      {
-		if (e->count.initialized_p ())
+		if (e->count ().initialized_p ())
 		  {
-		    bb->count += e->count;
+		    bb->count += e->count ();
 		    initialized_src = true;
 		  }
 		else
 		  uninitialized_src = true;
-		if (e->probability.initialized_p ())
-		  bb->frequency += EDGE_FREQUENCY (e);
 	      }
 	    /* When some edges are missing with read profile, this is
 	       most likely because RTL expansion introduced loop.
@@ -699,7 +727,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
 	       precisely once.  */
 	    if (!initialized_src
 		|| (uninitialized_src
-		     && profile_status_for_fn (cfun) != PROFILE_READ))
+		     && profile_status_for_fn (cfun) < PROFILE_GUESSED))
 	      bb->count = profile_count::uninitialized ();
 	  }
  	/* If nothing changed, there is no need to create new BBs.  */

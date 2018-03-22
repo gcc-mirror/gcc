@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GCC
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -147,6 +147,8 @@ struct addr_diff_vec_flags
    they cannot be modified in place.  */
 struct GTY(()) mem_attrs
 {
+  mem_attrs ();
+
   /* The expression that the MEM accesses, or null if not known.
      This expression might be larger than the memory reference itself.
      (In other words, the MEM might access only part of the object.)  */
@@ -154,11 +156,11 @@ struct GTY(()) mem_attrs
 
   /* The offset of the memory reference from the start of EXPR.
      Only valid if OFFSET_KNOWN_P.  */
-  HOST_WIDE_INT offset;
+  poly_int64 offset;
 
   /* The size of the memory reference in bytes.  Only valid if
      SIZE_KNOWN_P.  */
-  HOST_WIDE_INT size;
+  poly_int64 size;
 
   /* The alias set of the memory reference.  */
   alias_set_type alias;
@@ -187,7 +189,7 @@ struct GTY(()) mem_attrs
 
 struct GTY((for_user)) reg_attrs {
   tree decl;			/* decl corresponding to REG.  */
-  HOST_WIDE_INT offset;		/* Offset from start of DECL.  */
+  poly_int64 offset;		/* Offset from start of DECL.  */
 };
 
 /* Common union for an element of an rtx.  */
@@ -196,6 +198,7 @@ union rtunion
 {
   int rt_int;
   unsigned int rt_uint;
+  poly_uint16_pod rt_subreg;
   const char *rt_str;
   rtx rt_rtx;
   rtvec rt_rtvec;
@@ -279,6 +282,10 @@ struct GTY((variable_size)) hwivec_def {
   ((int)RTL_FLAG_CHECK1("CWI_GET_NUM_ELEM", (RTX), CONST_WIDE_INT)->u2.num_elem)
 #define CWI_PUT_NUM_ELEM(RTX, NUM)					\
   (RTL_FLAG_CHECK1("CWI_PUT_NUM_ELEM", (RTX), CONST_WIDE_INT)->u2.num_elem = (NUM))
+
+struct GTY((variable_size)) const_poly_int_def {
+  trailing_wide_ints<NUM_POLY_INT_COEFFS> coeffs;
+};
 
 /* RTL expression ("rtx").  */
 
@@ -411,6 +418,19 @@ struct GTY((desc("0"), tag("0"),
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */
     unsigned int num_elem;
+
+    /* Information about a CONST_VECTOR.  */
+    struct
+    {
+      /* The value of CONST_VECTOR_NPATTERNS.  */
+      unsigned int npatterns : 16;
+
+      /* The value of CONST_VECTOR_NELTS_PER_PATTERN.  */
+      unsigned int nelts_per_pattern : 8;
+
+      /* For future expansion.  */
+      unsigned int unused : 8;
+    } const_vector;
   } GTY ((skip)) u2;
 
   /* The first element of the operands of this rtx.
@@ -424,6 +444,7 @@ struct GTY((desc("0"), tag("0"),
     struct real_value rv;
     struct fixed_value fv;
     struct hwivec_def hwiv;
+    struct const_poly_int_def cpi;
   } GTY ((special ("rtx_def"), desc ("GET_CODE (&%0)"))) u;
 };
 
@@ -734,6 +755,7 @@ struct GTY(()) rtvec_def {
 #define CASE_CONST_UNIQUE \
    case CONST_INT: \
    case CONST_WIDE_INT: \
+   case CONST_POLY_INT: \
    case CONST_DOUBLE: \
    case CONST_FIXED
 
@@ -741,6 +763,7 @@ struct GTY(()) rtvec_def {
 #define CASE_CONST_ANY \
    case CONST_INT: \
    case CONST_WIDE_INT: \
+   case CONST_POLY_INT: \
    case CONST_DOUBLE: \
    case CONST_FIXED: \
    case CONST_VECTOR
@@ -772,6 +795,11 @@ struct GTY(()) rtvec_def {
 
 /* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
 #define CONST_WIDE_INT_P(X) (GET_CODE (X) == CONST_WIDE_INT)
+
+/* Predicate yielding nonzero iff X is an rtx for a polynomial constant
+   integer.  */
+#define CONST_POLY_INT_P(X) \
+  (NUM_POLY_INT_COEFFS > 1 && GET_CODE (X) == CONST_POLY_INT)
 
 /* Predicate yielding nonzero iff X is an rtx for a constant fixed-point.  */
 #define CONST_FIXED_P(X) (GET_CODE (X) == CONST_FIXED)
@@ -815,8 +843,13 @@ struct GTY(()) rtvec_def {
 /* Predicate yielding nonzero iff X is an insn that is not a debug insn.  */
 #define NONDEBUG_INSN_P(X) (INSN_P (X) && !DEBUG_INSN_P (X))
 
+/* Nonzero if DEBUG_MARKER_INSN_P may possibly hold.  */
+#define MAY_HAVE_DEBUG_MARKER_INSNS debug_nonbind_markers_p
+/* Nonzero if DEBUG_BIND_INSN_P may possibly hold.  */
+#define MAY_HAVE_DEBUG_BIND_INSNS flag_var_tracking_assignments
 /* Nonzero if DEBUG_INSN_P may possibly hold.  */
-#define MAY_HAVE_DEBUG_INSNS (flag_var_tracking_assignments)
+#define MAY_HAVE_DEBUG_INSNS					\
+  (MAY_HAVE_DEBUG_MARKER_INSNS || MAY_HAVE_DEBUG_BIND_INSNS)
 
 /* Predicate yielding nonzero iff X is a real insn.  */
 #define INSN_P(X) \
@@ -1316,6 +1349,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 #define XCINT(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_int)
 #define XCUINT(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_uint)
+#define XCSUBREG(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_subreg)
 #define XCSTR(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_str)
 #define XCEXP(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_rtx)
 #define XCVEC(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_rtvec)
@@ -1604,6 +1638,7 @@ extern const char * const reg_note_name[];
 #define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 3, NOTE)
 #define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 3, NOTE)
 #define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 3, NOTE)
+#define NOTE_MARKER_LOCATION(INSN) XCUINT (INSN, 3, NOTE)
 #define NOTE_CFI(INSN)		XCCFI (INSN, 3, NOTE)
 #define NOTE_LABEL_NUMBER(INSN)	XCINT (INSN, 3, NOTE)
 
@@ -1614,6 +1649,13 @@ extern const char * const reg_note_name[];
 /* Nonzero if INSN is a note marking the beginning of a basic block.  */
 #define NOTE_INSN_BASIC_BLOCK_P(INSN) \
   (NOTE_P (INSN) && NOTE_KIND (INSN) == NOTE_INSN_BASIC_BLOCK)
+
+/* Nonzero if INSN is a debug nonbind marker note,
+   for which NOTE_MARKER_LOCATION can be used.  */
+#define NOTE_MARKER_P(INSN)				\
+  (NOTE_P (INSN) &&					\
+   (NOTE_KIND (INSN) == NOTE_INSN_BEGIN_STMT		\
+    || NOTE_KIND (INSN) == NOTE_INSN_INLINE_ENTRY))
 
 /* Variable declaration and the location of a variable.  */
 #define PAT_VAR_LOCATION_DECL(PAT) (XCTREE ((PAT), 0, VAR_LOCATION))
@@ -1634,8 +1676,43 @@ extern const char * const reg_note_name[];
 #define NOTE_VAR_LOCATION_STATUS(NOTE) \
   PAT_VAR_LOCATION_STATUS (NOTE_VAR_LOCATION (NOTE))
 
+/* Evaluate to TRUE if INSN is a debug insn that denotes a variable
+   location/value tracking annotation.  */
+#define DEBUG_BIND_INSN_P(INSN)			\
+  (DEBUG_INSN_P (INSN)				\
+   && (GET_CODE (PATTERN (INSN))		\
+       == VAR_LOCATION))
+/* Evaluate to TRUE if INSN is a debug insn that denotes a program
+   source location marker.  */
+#define DEBUG_MARKER_INSN_P(INSN)		\
+  (DEBUG_INSN_P (INSN)				\
+   && (GET_CODE (PATTERN (INSN))		\
+       != VAR_LOCATION))
+/* Evaluate to the marker kind.  */
+#define INSN_DEBUG_MARKER_KIND(INSN)		  \
+  (GET_CODE (PATTERN (INSN)) == DEBUG_MARKER	  \
+   ? (GET_MODE (PATTERN (INSN)) == VOIDmode	  \
+      ? NOTE_INSN_BEGIN_STMT			  \
+      : GET_MODE (PATTERN (INSN)) == BLKmode	  \
+      ? NOTE_INSN_INLINE_ENTRY			  \
+      : (enum insn_note)-1) 			  \
+   : (enum insn_note)-1)
+/* Create patterns for debug markers.  These and the above abstract
+   the representation, so that it's easier to get rid of the abuse of
+   the mode to hold the marker kind.  Other marker types are
+   envisioned, so a single bit flag won't do; maybe separate RTL codes
+   wouldn't be a problem.  */
+#define GEN_RTX_DEBUG_MARKER_BEGIN_STMT_PAT() \
+  gen_rtx_DEBUG_MARKER (VOIDmode)
+#define GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT() \
+  gen_rtx_DEBUG_MARKER (BLKmode)
+
 /* The VAR_LOCATION rtx in a DEBUG_INSN.  */
-#define INSN_VAR_LOCATION(INSN) PATTERN (INSN)
+#define INSN_VAR_LOCATION(INSN) \
+  (RTL_FLAG_CHECK1 ("INSN_VAR_LOCATION", PATTERN (INSN), VAR_LOCATION))
+/* A pointer to the VAR_LOCATION rtx in a DEBUG_INSN.  */
+#define INSN_VAR_LOCATION_PTR(INSN) \
+  (&PATTERN (INSN))
 
 /* Accessors for a tree-expanded var location debug insn.  */
 #define INSN_VAR_LOCATION_DECL(INSN) \
@@ -1871,6 +1948,12 @@ set_regno_raw (rtx x, unsigned int regno, unsigned int nregs)
 #define CONST_WIDE_INT_NUNITS(RTX) CWI_GET_NUM_ELEM (RTX)
 #define CONST_WIDE_INT_ELT(RTX, N) CWI_ELT (RTX, N)
 
+/* For a CONST_POLY_INT, CONST_POLY_INT_COEFFS gives access to the
+   individual coefficients, in the form of a trailing_wide_ints structure.  */
+#define CONST_POLY_INT_COEFFS(RTX) \
+  (RTL_FLAG_CHECK1("CONST_POLY_INT_COEFFS", (RTX), \
+		   CONST_POLY_INT)->u.cpi.coeffs)
+
 /* For a CONST_DOUBLE:
 #if TARGET_SUPPORTS_WIDE_INT == 0
    For a VOIDmode, there are two integers CONST_DOUBLE_LOW is the
@@ -1891,16 +1974,41 @@ set_regno_raw (rtx x, unsigned int regno, unsigned int nregs)
   ((HOST_WIDE_INT) (CONST_FIXED_VALUE (r)->data.low))
 
 /* For a CONST_VECTOR, return element #n.  */
-#define CONST_VECTOR_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)
+#define CONST_VECTOR_ELT(RTX, N) const_vector_elt (RTX, N)
+
+/* See rtl.texi for a description of these macros.  */
+#define CONST_VECTOR_NPATTERNS(RTX) \
+ (RTL_FLAG_CHECK1 ("CONST_VECTOR_NPATTERNS", (RTX), CONST_VECTOR) \
+  ->u2.const_vector.npatterns)
+
+#define CONST_VECTOR_NELTS_PER_PATTERN(RTX) \
+ (RTL_FLAG_CHECK1 ("CONST_VECTOR_NELTS_PER_PATTERN", (RTX), CONST_VECTOR) \
+  ->u2.const_vector.nelts_per_pattern)
+
+#define CONST_VECTOR_DUPLICATE_P(RTX) \
+  (CONST_VECTOR_NELTS_PER_PATTERN (RTX) == 1)
+
+#define CONST_VECTOR_STEPPED_P(RTX) \
+  (CONST_VECTOR_NELTS_PER_PATTERN (RTX) == 3)
+
+#define CONST_VECTOR_ENCODED_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)
+
+/* Return the number of elements encoded directly in a CONST_VECTOR.  */
+
+inline unsigned int
+const_vector_encoded_nelts (const_rtx x)
+{
+  return CONST_VECTOR_NPATTERNS (x) * CONST_VECTOR_NELTS_PER_PATTERN (x);
+}
 
 /* For a CONST_VECTOR, return the number of elements in a vector.  */
-#define CONST_VECTOR_NUNITS(RTX) XCVECLEN (RTX, 0, CONST_VECTOR)
+#define CONST_VECTOR_NUNITS(RTX) GET_MODE_NUNITS (GET_MODE (RTX))
 
 /* For a SUBREG rtx, SUBREG_REG extracts the value we want a subreg of.
    SUBREG_BYTE extracts the byte-number.  */
 
 #define SUBREG_REG(RTX) XCEXP (RTX, 0, SUBREG)
-#define SUBREG_BYTE(RTX) XCUINT (RTX, 1, SUBREG)
+#define SUBREG_BYTE(RTX) XCSUBREG (RTX, 1, SUBREG)
 
 /* in rtlanal.c */
 /* Return the right cost to give to an operation
@@ -1973,19 +2081,19 @@ costs_add_n_insns (struct full_rtx_costs *c, int n)
    offset     == the SUBREG_BYTE
    outer_mode == the mode of the SUBREG itself.  */
 struct subreg_shape {
-  subreg_shape (machine_mode, unsigned int, machine_mode);
+  subreg_shape (machine_mode, poly_uint16, machine_mode);
   bool operator == (const subreg_shape &) const;
   bool operator != (const subreg_shape &) const;
-  unsigned int unique_id () const;
+  unsigned HOST_WIDE_INT unique_id () const;
 
   machine_mode inner_mode;
-  unsigned int offset;
+  poly_uint16 offset;
   machine_mode outer_mode;
 };
 
 inline
 subreg_shape::subreg_shape (machine_mode inner_mode_in,
-			    unsigned int offset_in,
+			    poly_uint16 offset_in,
 			    machine_mode outer_mode_in)
   : inner_mode (inner_mode_in), offset (offset_in), outer_mode (outer_mode_in)
 {}
@@ -1994,7 +2102,7 @@ inline bool
 subreg_shape::operator == (const subreg_shape &other) const
 {
   return (inner_mode == other.inner_mode
-	  && offset == other.offset
+	  && known_eq (offset, other.offset)
 	  && outer_mode == other.outer_mode);
 }
 
@@ -2009,11 +2117,16 @@ subreg_shape::operator != (const subreg_shape &other) const
    current mode is anywhere near being 65536 bytes in size, so the
    id comfortably fits in an int.  */
 
-inline unsigned int
+inline unsigned HOST_WIDE_INT
 subreg_shape::unique_id () const
 {
-  STATIC_ASSERT (MAX_MACHINE_MODE <= 256);
-  return (int) inner_mode + ((int) outer_mode << 8) + (offset << 16);
+  { STATIC_ASSERT (MAX_MACHINE_MODE <= 256); }
+  { STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 3); }
+  { STATIC_ASSERT (sizeof (offset.coeffs[0]) <= 2); }
+  int res = (int) inner_mode + ((int) outer_mode << 8);
+  for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    res += (HOST_WIDE_INT) offset.coeffs[i] << ((1 + i) * 16);
+  return res;
 }
 
 /* Return the shape of a SUBREG rtx.  */
@@ -2184,16 +2297,93 @@ wi::max_value (machine_mode mode, signop sgn)
   return max_value (GET_MODE_PRECISION (as_a <scalar_mode> (mode)), sgn);
 }
 
+namespace wi
+{
+  typedef poly_int<NUM_POLY_INT_COEFFS,
+		   generic_wide_int <wide_int_ref_storage <false, false> > >
+    rtx_to_poly_wide_ref;
+  rtx_to_poly_wide_ref to_poly_wide (const_rtx, machine_mode);
+}
+
+/* Return the value of a CONST_POLY_INT in its native precision.  */
+
+inline wi::rtx_to_poly_wide_ref
+const_poly_int_value (const_rtx x)
+{
+  poly_int<NUM_POLY_INT_COEFFS, WIDE_INT_REF_FOR (wide_int)> res;
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    res.coeffs[i] = CONST_POLY_INT_COEFFS (x)[i];
+  return res;
+}
+
+/* Return true if X is a scalar integer or a CONST_POLY_INT.  The value
+   can then be extracted using wi::to_poly_wide.  */
+
+inline bool
+poly_int_rtx_p (const_rtx x)
+{
+  return CONST_SCALAR_INT_P (x) || CONST_POLY_INT_P (x);
+}
+
+/* Access X (which satisfies poly_int_rtx_p) as a poly_wide_int.
+   MODE is the mode of X.  */
+
+inline wi::rtx_to_poly_wide_ref
+wi::to_poly_wide (const_rtx x, machine_mode mode)
+{
+  if (CONST_POLY_INT_P (x))
+    return const_poly_int_value (x);
+  return rtx_mode_t (const_cast<rtx> (x), mode);
+}
+
+/* Return the value of X as a poly_int64.  */
+
+inline poly_int64
+rtx_to_poly_int64 (const_rtx x)
+{
+  if (CONST_POLY_INT_P (x))
+    {
+      poly_int64 res;
+      for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	res.coeffs[i] = CONST_POLY_INT_COEFFS (x)[i].to_shwi ();
+      return res;
+    }
+  return INTVAL (x);
+}
+
+/* Return true if arbitrary value X is an integer constant that can
+   be represented as a poly_int64.  Store the value in *RES if so,
+   otherwise leave it unmodified.  */
+
+inline bool
+poly_int_rtx_p (const_rtx x, poly_int64_pod *res)
+{
+  if (CONST_INT_P (x))
+    {
+      *res = INTVAL (x);
+      return true;
+    }
+  if (CONST_POLY_INT_P (x))
+    {
+      for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	if (!wi::fits_shwi_p (CONST_POLY_INT_COEFFS (x)[i]))
+	  return false;
+      for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	res->coeffs[i] = CONST_POLY_INT_COEFFS (x)[i].to_shwi ();
+      return true;
+    }
+  return false;
+}
+
 extern void init_rtlanal (void);
 extern int rtx_cost (rtx, machine_mode, enum rtx_code, int, bool);
 extern int address_cost (rtx, machine_mode, addr_space_t, bool);
 extern void get_full_rtx_cost (rtx, machine_mode, enum rtx_code, int,
 			       struct full_rtx_costs *);
-extern unsigned int subreg_lsb (const_rtx);
-extern unsigned int subreg_lsb_1 (machine_mode, machine_mode,
-				  unsigned int);
-extern unsigned int subreg_size_offset_from_lsb (unsigned int, unsigned int,
-						 unsigned int);
+extern poly_uint64 subreg_lsb (const_rtx);
+extern poly_uint64 subreg_lsb_1 (machine_mode, machine_mode, poly_uint64);
+extern poly_uint64 subreg_size_offset_from_lsb (poly_uint64, poly_uint64,
+						poly_uint64);
 extern bool read_modify_subreg_p (const_rtx);
 
 /* Return the subreg byte offset for a subreg whose outer mode is
@@ -2202,22 +2392,22 @@ extern bool read_modify_subreg_p (const_rtx);
    the inner value.  This is the inverse of subreg_lsb_1 (which converts
    byte offsets to bit shifts).  */
 
-inline unsigned int
+inline poly_uint64
 subreg_offset_from_lsb (machine_mode outer_mode,
 			machine_mode inner_mode,
-			unsigned int lsb_shift)
+			poly_uint64 lsb_shift)
 {
   return subreg_size_offset_from_lsb (GET_MODE_SIZE (outer_mode),
 				      GET_MODE_SIZE (inner_mode), lsb_shift);
 }
 
-extern unsigned int subreg_regno_offset	(unsigned int, machine_mode,
-					 unsigned int, machine_mode);
+extern unsigned int subreg_regno_offset (unsigned int, machine_mode,
+					 poly_uint64, machine_mode);
 extern bool subreg_offset_representable_p (unsigned int, machine_mode,
-					   unsigned int, machine_mode);
+					   poly_uint64, machine_mode);
 extern unsigned int subreg_regno (const_rtx);
 extern int simplify_subreg_regno (unsigned int, machine_mode,
-				  unsigned int, machine_mode);
+				  poly_uint64, machine_mode);
 extern unsigned int subreg_nregs (const_rtx);
 extern unsigned int subreg_nregs_with_regno (unsigned int, const_rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (const_rtx, machine_mode);
@@ -2721,7 +2911,9 @@ get_full_set_src_cost (rtx x, machine_mode mode, struct full_rtx_costs *c)
 
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, machine_mode);
-extern rtx plus_constant (machine_mode, rtx, HOST_WIDE_INT, bool = false);
+extern poly_int64 trunc_int_for_mode (poly_int64, machine_mode);
+extern rtx plus_constant (machine_mode, rtx, poly_int64, bool = false);
+extern HOST_WIDE_INT get_stack_check_protect (void);
 
 /* In rtl.c */
 extern rtx rtx_alloc (RTX_CODE CXX_MEM_STAT_INFO);
@@ -2753,7 +2945,9 @@ extern bool rtvec_all_equal_p (const_rtvec);
 inline bool
 const_vec_duplicate_p (const_rtx x)
 {
-  return GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0));
+  return (GET_CODE (x) == CONST_VECTOR
+	  && CONST_VECTOR_NPATTERNS (x) == 1
+	  && CONST_VECTOR_DUPLICATE_P (x));
 }
 
 /* Return true if X is a vector constant with a duplicated element value.
@@ -2765,10 +2959,26 @@ const_vec_duplicate_p (T x, T *elt)
 {
   if (const_vec_duplicate_p (x))
     {
-      *elt = CONST_VECTOR_ELT (x, 0);
+      *elt = CONST_VECTOR_ENCODED_ELT (x, 0);
       return true;
     }
   return false;
+}
+
+/* Return true if X is a vector with a duplicated element value, either
+   constant or nonconstant.  Store the duplicated element in *ELT if so.  */
+
+template <typename T>
+inline bool
+vec_duplicate_p (T x, T *elt)
+{
+  if (GET_CODE (x) == VEC_DUPLICATE
+      && !VECTOR_MODE_P (GET_MODE (XEXP (x, 0))))
+    {
+      *elt = XEXP (x, 0);
+      return true;
+    }
+  return const_vec_duplicate_p (x, elt);
 }
 
 /* If X is a vector constant with a duplicated element value, return that
@@ -2781,6 +2991,48 @@ unwrap_const_vec_duplicate (T x)
   if (const_vec_duplicate_p (x))
     x = CONST_VECTOR_ELT (x, 0);
   return x;
+}
+
+/* In emit-rtl.c.  */
+extern wide_int const_vector_int_elt (const_rtx, unsigned int);
+extern rtx const_vector_elt (const_rtx, unsigned int);
+extern bool const_vec_series_p_1 (const_rtx, rtx *, rtx *);
+
+/* Return true if X is an integer constant vector that contains a linear
+   series of the form:
+
+   { B, B + S, B + 2 * S, B + 3 * S, ... }
+
+   for a nonzero S.  Store B and S in *BASE_OUT and *STEP_OUT on sucess.  */
+
+inline bool
+const_vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  if (GET_CODE (x) == CONST_VECTOR
+      && CONST_VECTOR_NPATTERNS (x) == 1
+      && !CONST_VECTOR_DUPLICATE_P (x))
+    return const_vec_series_p_1 (x, base_out, step_out);
+  return false;
+}
+
+/* Return true if X is a vector that contains a linear series of the
+   form:
+
+   { B, B + S, B + 2 * S, B + 3 * S, ... }
+
+   where B and S are constant or nonconstant.  Store B and S in
+   *BASE_OUT and *STEP_OUT on sucess.  */
+
+inline bool
+vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  if (GET_CODE (x) == VEC_SERIES)
+    {
+      *base_out = XEXP (x, 0);
+      *step_out = XEXP (x, 1);
+      return true;
+    }
+  return const_vec_series_p (x, base_out, step_out);
 }
 
 /* Return the unpromoted (outer) mode of SUBREG_PROMOTED_VAR_P subreg X.  */
@@ -2805,7 +3057,7 @@ subreg_promoted_mode (rtx x)
 extern rtvec gen_rtvec_v (int, rtx *);
 extern rtvec gen_rtvec_v (int, rtx_insn **);
 extern rtx gen_reg_rtx (machine_mode);
-extern rtx gen_rtx_REG_offset (rtx, machine_mode, unsigned int, int);
+extern rtx gen_rtx_REG_offset (rtx, machine_mode, unsigned int, poly_int64);
 extern rtx gen_reg_rtx_offset (rtx, machine_mode, int);
 extern rtx gen_reg_rtx_and_attrs (rtx);
 extern rtx_code_label *gen_label_rtx (void);
@@ -2817,12 +3069,12 @@ extern rtx gen_lowpart_if_possible (machine_mode, rtx);
 /* In emit-rtl.c */
 extern rtx gen_highpart (machine_mode, rtx);
 extern rtx gen_highpart_mode (machine_mode, machine_mode, rtx);
-extern rtx operand_subword (rtx, unsigned int, int, machine_mode);
+extern rtx operand_subword (rtx, poly_uint64, int, machine_mode);
 
 /* In emit-rtl.c */
-extern rtx operand_subword_force (rtx, unsigned int, machine_mode);
+extern rtx operand_subword_force (rtx, poly_uint64, machine_mode);
 extern int subreg_lowpart_p (const_rtx);
-extern unsigned int subreg_size_lowpart_offset (unsigned int, unsigned int);
+extern poly_uint64 subreg_size_lowpart_offset (poly_uint64, poly_uint64);
 
 /* Return true if a subreg of mode OUTERMODE would only access part of
    an inner register with mode INNERMODE.  The other bits of the inner
@@ -2833,7 +3085,12 @@ extern unsigned int subreg_size_lowpart_offset (unsigned int, unsigned int);
 inline bool
 partial_subreg_p (machine_mode outermode, machine_mode innermode)
 {
-  return GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode);
+  /* Modes involved in a subreg must be ordered.  In particular, we must
+     always know at compile time whether the subreg is paradoxical.  */
+  poly_int64 outer_prec = GET_MODE_PRECISION (outermode);
+  poly_int64 inner_prec = GET_MODE_PRECISION (innermode);
+  gcc_checking_assert (ordered_p (outer_prec, inner_prec));
+  return maybe_lt (outer_prec, inner_prec);
 }
 
 /* Likewise return true if X is a subreg that is smaller than the inner
@@ -2854,7 +3111,12 @@ partial_subreg_p (const_rtx x)
 inline bool
 paradoxical_subreg_p (machine_mode outermode, machine_mode innermode)
 {
-  return GET_MODE_PRECISION (outermode) > GET_MODE_PRECISION (innermode);
+  /* Modes involved in a subreg must be ordered.  In particular, we must
+     always know at compile time whether the subreg is paradoxical.  */
+  poly_int64 outer_prec = GET_MODE_PRECISION (outermode);
+  poly_int64 inner_prec = GET_MODE_PRECISION (innermode);
+  gcc_checking_assert (ordered_p (outer_prec, inner_prec));
+  return maybe_gt (outer_prec, inner_prec);
 }
 
 /* Return true if X is a paradoxical subreg, false otherwise.  */
@@ -2869,27 +3131,56 @@ paradoxical_subreg_p (const_rtx x)
 
 /* Return the SUBREG_BYTE for an OUTERMODE lowpart of an INNERMODE value.  */
 
-inline unsigned int
+inline poly_uint64
 subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
 {
   return subreg_size_lowpart_offset (GET_MODE_SIZE (outermode),
 				     GET_MODE_SIZE (innermode));
 }
 
-extern unsigned int subreg_size_highpart_offset (unsigned int, unsigned int);
+/* Given that a subreg has outer mode OUTERMODE and inner mode INNERMODE,
+   return the smaller of the two modes if they are different sizes,
+   otherwise return the outer mode.  */
+
+inline machine_mode
+narrower_subreg_mode (machine_mode outermode, machine_mode innermode)
+{
+  return paradoxical_subreg_p (outermode, innermode) ? innermode : outermode;
+}
+
+/* Given that a subreg has outer mode OUTERMODE and inner mode INNERMODE,
+   return the mode that is big enough to hold both the outer and inner
+   values.  Prefer the outer mode in the event of a tie.  */
+
+inline machine_mode
+wider_subreg_mode (machine_mode outermode, machine_mode innermode)
+{
+  return partial_subreg_p (outermode, innermode) ? innermode : outermode;
+}
+
+/* Likewise for subreg X.  */
+
+inline machine_mode
+wider_subreg_mode (const_rtx x)
+{
+  return wider_subreg_mode (GET_MODE (x), GET_MODE (SUBREG_REG (x)));
+}
+
+extern poly_uint64 subreg_size_highpart_offset (poly_uint64, poly_uint64);
 
 /* Return the SUBREG_BYTE for an OUTERMODE highpart of an INNERMODE value.  */
 
-inline unsigned int
+inline poly_uint64
 subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
 {
   return subreg_size_highpart_offset (GET_MODE_SIZE (outermode),
 				      GET_MODE_SIZE (innermode));
 }
 
-extern int byte_lowpart_offset (machine_mode, machine_mode);
-extern int subreg_memory_offset (machine_mode, machine_mode, unsigned int);
-extern int subreg_memory_offset (const_rtx);
+extern poly_int64 byte_lowpart_offset (machine_mode, machine_mode);
+extern poly_int64 subreg_memory_offset (machine_mode, machine_mode,
+					poly_uint64);
+extern poly_int64 subreg_memory_offset (const_rtx);
 extern rtx make_safe_from (rtx, rtx);
 extern rtx convert_memory_address_addr_space_1 (scalar_int_mode, rtx,
 						addr_space_t, bool, bool);
@@ -2909,13 +3200,11 @@ extern void end_sequence (void);
 extern double_int rtx_to_double_int (const_rtx);
 #endif
 extern void cwi_output_hex (FILE *, const_rtx);
-#ifndef GENERATOR_FILE
-extern rtx immed_wide_int_const (const wide_int_ref &, machine_mode);
-#endif
 #if TARGET_SUPPORTS_WIDE_INT == 0
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       machine_mode);
 #endif
+extern rtx immed_wide_int_const (const poly_wide_int_ref &, machine_mode);
 
 /* In varasm.c  */
 extern rtx force_const_mem (machine_mode, rtx);
@@ -2925,7 +3214,7 @@ extern rtx force_const_mem (machine_mode, rtx);
 struct function;
 extern rtx get_pool_constant (const_rtx);
 extern rtx get_pool_constant_mark (rtx, bool *);
-extern machine_mode get_pool_mode (const_rtx);
+extern fixed_size_mode get_pool_mode (const_rtx);
 extern rtx simplify_subtraction (rtx);
 extern void decide_function_section (tree);
 
@@ -2979,15 +3268,17 @@ extern rtx_call_insn *last_call_insn (void);
 extern rtx_insn *previous_insn (rtx_insn *);
 extern rtx_insn *next_insn (rtx_insn *);
 extern rtx_insn *prev_nonnote_insn (rtx_insn *);
-extern rtx_insn *prev_nonnote_insn_bb (rtx_insn *);
 extern rtx_insn *next_nonnote_insn (rtx_insn *);
-extern rtx_insn *next_nonnote_insn_bb (rtx_insn *);
 extern rtx_insn *prev_nondebug_insn (rtx_insn *);
 extern rtx_insn *next_nondebug_insn (rtx_insn *);
 extern rtx_insn *prev_nonnote_nondebug_insn (rtx_insn *);
+extern rtx_insn *prev_nonnote_nondebug_insn_bb (rtx_insn *);
 extern rtx_insn *next_nonnote_nondebug_insn (rtx_insn *);
+extern rtx_insn *next_nonnote_nondebug_insn_bb (rtx_insn *);
 extern rtx_insn *prev_real_insn (rtx_insn *);
 extern rtx_insn *next_real_insn (rtx);
+extern rtx_insn *prev_real_nondebug_insn (rtx_insn *);
+extern rtx_insn *next_real_nondebug_insn (rtx);
 extern rtx_insn *prev_active_insn (rtx_insn *);
 extern rtx_insn *next_active_insn (rtx_insn *);
 extern int active_insn_p (const rtx_insn *);
@@ -3043,10 +3334,8 @@ extern rtx simplify_gen_ternary (enum rtx_code, machine_mode,
 				 machine_mode, rtx, rtx, rtx);
 extern rtx simplify_gen_relational (enum rtx_code, machine_mode,
 				    machine_mode, rtx, rtx);
-extern rtx simplify_subreg (machine_mode, rtx, machine_mode,
-			    unsigned int);
-extern rtx simplify_gen_subreg (machine_mode, rtx, machine_mode,
-				unsigned int);
+extern rtx simplify_subreg (machine_mode, rtx, machine_mode, poly_uint64);
+extern rtx simplify_gen_subreg (machine_mode, rtx, machine_mode, poly_uint64);
 extern rtx lowpart_subreg (machine_mode, rtx, machine_mode);
 extern rtx simplify_replace_fn_rtx (rtx, const_rtx,
 				    rtx (*fn) (rtx, const_rtx, void *), void *);
@@ -3103,6 +3392,8 @@ extern HOST_WIDE_INT get_integer_term (const_rtx);
 extern rtx get_related_value (const_rtx);
 extern bool offset_within_block_p (const_rtx, HOST_WIDE_INT);
 extern void split_const (rtx, rtx *, rtx *);
+extern rtx strip_offset (rtx, poly_int64_pod *);
+extern poly_int64 get_args_size (const_rtx);
 extern bool unsigned_reg_p (rtx);
 extern int reg_mentioned_p (const_rtx, const_rtx);
 extern int count_occurrences (const_rtx, const_rtx, int);
@@ -3138,6 +3429,7 @@ extern int find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
 extern rtx alloc_reg_note (enum reg_note, rtx, rtx);
 extern void add_reg_note (rtx, enum reg_note, rtx);
 extern void add_int_reg_note (rtx_insn *, enum reg_note, int);
+extern void add_args_size_note (rtx_insn *, poly_int64);
 extern void add_shallow_copy_of_reg_note (rtx_insn *, rtx);
 extern rtx duplicate_reg_note (rtx);
 extern void remove_note (rtx_insn *, const_rtx);
@@ -3202,7 +3494,8 @@ extern int loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx_insn *find_first_parameter_load (rtx_insn *, rtx_insn *);
 extern bool keep_with_call_p (const rtx_insn *);
 extern bool label_is_jump_target_p (const_rtx, const rtx_insn *);
-extern int insn_rtx_cost (rtx, bool);
+extern int pattern_cost (rtx, bool);
+extern int insn_cost (rtx_insn *, bool);
 extern unsigned seq_cost (const rtx_insn *, bool);
 
 /* Given an insn and condition, return a canonical description of
@@ -3230,7 +3523,7 @@ struct subreg_info
 };
 
 extern void subreg_get_info (unsigned int, machine_mode,
-			     unsigned int, machine_mode,
+			     poly_uint64, machine_mode,
 			     struct subreg_info *);
 
 /* lists.c */
@@ -3468,7 +3761,7 @@ extern rtx gen_rtx_CONST_VECTOR (machine_mode, rtvec);
 extern void set_mode_and_regno (rtx, machine_mode, unsigned int);
 extern rtx gen_raw_REG (machine_mode, unsigned int);
 extern rtx gen_rtx_REG (machine_mode, unsigned int);
-extern rtx gen_rtx_SUBREG (machine_mode, rtx, int);
+extern rtx gen_rtx_SUBREG (machine_mode, rtx, poly_uint64);
 extern rtx gen_rtx_MEM (machine_mode, rtx);
 extern rtx gen_rtx_VAR_LOCATION (machine_mode, tree, rtx,
 				 enum var_init_status);
@@ -3685,7 +3978,7 @@ extern rtx gen_const_mem (machine_mode, rtx);
 extern rtx gen_frame_mem (machine_mode, rtx);
 extern rtx gen_tmp_stack_mem (machine_mode, rtx);
 extern bool validate_subreg (machine_mode, machine_mode,
-			     const_rtx, unsigned int);
+			     const_rtx, poly_uint64);
 
 /* In combine.c  */
 extern unsigned int extended_count (const_rtx, machine_mode, int);
@@ -3726,8 +4019,8 @@ extern void emit_jump (rtx);
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
-extern HOST_WIDE_INT find_args_size_adjust (rtx_insn *);
-extern int fixup_args_size_notes (rtx_insn *, rtx_insn *, int);
+extern poly_int64 find_args_size_adjust (rtx_insn *);
+extern poly_int64 fixup_args_size_notes (rtx_insn *, rtx_insn *, poly_int64);
 
 /* In expmed.c */
 extern void init_expmed (void);
@@ -3952,6 +4245,7 @@ extern GTY(()) rtx stack_limit_rtx;
 
 /* In var-tracking.c */
 extern unsigned int variable_tracking_main (void);
+extern void delete_vta_debug_insns (bool);
 
 /* In stor-layout.c.  */
 extern void get_mode_bounds (scalar_int_mode, int,
@@ -4033,6 +4327,21 @@ load_extend_op (machine_mode mode)
       && GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
     return LOAD_EXTEND_OP (int_mode);
   return UNKNOWN;
+}
+
+/* If X is a PLUS of a base and a constant offset, add the constant to *OFFSET
+   and return the base.  Return X otherwise.  */
+
+inline rtx
+strip_offset_and_add (rtx x, poly_int64_pod *offset)
+{
+  if (GET_CODE (x) == PLUS)
+    {
+      poly_int64 suboffset;
+      x = strip_offset (x, &suboffset);
+      *offset += suboffset;
+    }
+  return x;
 }
 
 /* gtype-desc.c.  */

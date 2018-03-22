@@ -1,9 +1,4 @@
-/* { dg-add-options stack_size } */
-
-#define STACK_REQUIREMENT (128 * 128 * 4 + 1024)
-#if defined (STACK_SIZE) && STACK_SIZE < STACK_REQUIREMENT
-main () { exit (0); }
-#else
+/* { dg-require-stack-size "128 * 128 * 4 + 1024" } */
 
 typedef struct {
   float wsx;
@@ -62,4 +57,3 @@ main()
   exit(0);
 }
 
-#endif

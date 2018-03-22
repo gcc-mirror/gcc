@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts.
-   Copyright (C) 1990-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-2018 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -476,38 +476,6 @@ read_profile_edge_counts (gcov_type *exec_counts)
     return num_edges;
 }
 
-#define OVERLAP_BASE 10000
-
-/* Compare the static estimated profile to the actual profile, and
-   return the "degree of overlap" measure between them.
-
-   Degree of overlap is a number between 0 and OVERLAP_BASE. It is
-   the sum of each basic block's minimum relative weights between
-   two profiles. And overlap of OVERLAP_BASE means two profiles are
-   identical.  */
-
-static int
-compute_frequency_overlap (void)
-{
-  gcov_type count_total = 0, freq_total = 0;
-  int overlap = 0;
-  basic_block bb;
-
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    {
-      count_total += bb_gcov_count (bb);
-      freq_total += bb->frequency;
-    }
-
-  if (count_total == 0 || freq_total == 0)
-    return 0;
-
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    overlap += MIN (bb_gcov_count (bb) * OVERLAP_BASE / count_total,
-		    bb->frequency * OVERLAP_BASE / freq_total);
-
-  return overlap;
-}
 
 /* Compute the branch probabilities for the various branches.
    Annotate them accordingly.  
@@ -529,7 +497,11 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 
   /* Very simple sanity checks so we catch bugs in our profiling code.  */
   if (!profile_info)
-    return;
+    {
+      if (dump_file)
+	fprintf (dump_file, "Profile info is missing; giving up\n");
+      return;
+    }
 
   bb_gcov_counts.safe_grow_cleared (last_basic_block_for_fn (cfun));
   edge_gcov_counts = new hash_map<edge,gcov_type>;
@@ -676,14 +648,6 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	    }
 	}
     }
-  if (dump_file)
-    {
-      int overlap = compute_frequency_overlap ();
-      gimple_dump_cfg (dump_file, dump_flags);
-      fprintf (dump_file, "Static profile overlap: %d.%d%%\n",
-	       overlap / (OVERLAP_BASE / 100),
-	       overlap % (OVERLAP_BASE / 100));
-    }
 
   total_num_passes += passes;
   if (dump_file)
@@ -829,20 +793,23 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
     }
 
-  FOR_ALL_BB_FN (bb, cfun)
-    {
-      edge e;
-      edge_iterator ei;
-
+  /* If we have real data, use them!  */
+  if (bb_gcov_count (ENTRY_BLOCK_PTR_FOR_FN (cfun))
+      || !flag_guess_branch_prob)
+    FOR_ALL_BB_FN (bb, cfun)
       bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
-      FOR_EACH_EDGE (e, ei, bb->succs)
-        e->count = profile_count::from_gcov_type (edge_gcov_count (e));
-    }
+  /* If function was not trained, preserve local estimates including statically
+     determined zero counts.  */
+  else
+    FOR_ALL_BB_FN (bb, cfun)
+      if (!(bb->count == profile_count::zero ()))
+        bb->count = bb->count.global0 ();
+
   bb_gcov_counts.release ();
   delete edge_gcov_counts;
   edge_gcov_counts = NULL;
 
-  counts_to_freqs ();
+  update_max_bb_count ();
 
   if (dump_file)
     {

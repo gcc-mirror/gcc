@@ -1,5 +1,5 @@
 /* fileline.c -- Get file and line number information in a backtrace.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@ fileline_initialize (struct backtrace_state *state,
   int pass;
   int called_error_callback;
   int descriptor;
+  const char *filename;
   char buf[64];
 
   if (!state->threaded)
@@ -84,7 +85,6 @@ fileline_initialize (struct backtrace_state *state,
   called_error_callback = 0;
   for (pass = 0; pass < 5; ++pass)
     {
-      const char *filename;
       int does_not_exist;
 
       switch (pass)
@@ -140,8 +140,8 @@ fileline_initialize (struct backtrace_state *state,
 
   if (!failed)
     {
-      if (!backtrace_initialize (state, descriptor, error_callback, data,
-				 &fileline_fn))
+      if (!backtrace_initialize (state, filename, descriptor, error_callback,
+				 data, &fileline_fn))
 	failed = 1;
     }
 

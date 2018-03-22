@@ -14,11 +14,11 @@ program real_const_2
   data rp /+ 1.0, + 1d0, + 1.d0, + 10.d-1/
   real, parameter :: del = 1.e-5
 
-  if (abs(c0 - cmplx(-0.5,-0.5)) > del) call abort
-  if (abs(c1 - cmplx(-0.5,+0.5)) > del) call abort
-  if (abs(c2 - cmplx(-0.5E2,+0.5)) > del) call abort
-  if (abs(c3 - cmplx(-0.5,+0.5E-2)) > del) call abort
-  if (abs(c4 - cmplx(-1.0,+1.0)) > del) call abort
-  if (any (abs (rp - 1.0) > del)) call abort
-  if (any (abs (rn + 1.0) > del)) call abort
+  if (abs(c0 - cmplx(-0.5,-0.5)) > del) STOP 1
+  if (abs(c1 - cmplx(-0.5,+0.5)) > del) STOP 2
+  if (abs(c2 - cmplx(-0.5E2,+0.5)) > del) STOP 3
+  if (abs(c3 - cmplx(-0.5,+0.5E-2)) > del) STOP 4
+  if (abs(c4 - cmplx(-1.0,+1.0)) > del) STOP 5
+  if (any (abs (rp - 1.0) > del)) STOP 6
+  if (any (abs (rn + 1.0) > del)) STOP 7
 end program

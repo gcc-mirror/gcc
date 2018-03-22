@@ -10,7 +10,7 @@
 
 @copying
 @c man begin COPYRIGHT
-Copyright @copyright{} 1987-2017 Free Software Foundation, Inc.
+Copyright @copyright{} 1987-2018 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -211,8 +211,8 @@ Standard C@.  In its default mode, the GNU C preprocessor does not do a
 few things required by the standard.  These are features which are
 rarely, if ever, used, and may cause surprising changes to the meaning
 of a program which does not expect them.  To get strict ISO Standard C,
-you should use the @option{-std=c90}, @option{-std=c99} or
-@option{-std=c11} options, depending
+you should use the @option{-std=c90}, @option{-std=c99},
+@option{-std=c11} or @option{-std=c17} options, depending
 on which version of the standard you want.  To get all the mandatory
 diagnostics, you must also use @option{-pedantic}.  @xref{Invocation}.
 
@@ -1675,20 +1675,27 @@ macro.  We could define @code{eprintf} like this, instead:
 @end smallexample
 
 @noindent
-This formulation looks more descriptive, but unfortunately it is less
-flexible: you must now supply at least one argument after the format
-string.  In standard C, you cannot omit the comma separating the named
-argument from the variable arguments.  Furthermore, if you leave the
-variable argument empty, you will get a syntax error, because
-there will be an extra comma after the format string.
+This formulation looks more descriptive, but historically it was less
+flexible: you had to supply at least one argument after the format
+string.  In standard C, you could not omit the comma separating the
+named argument from the variable arguments.  (Note that this
+restriction has been lifted in C++2a, and never existed in GNU C; see
+below.)
+
+Furthermore, if you left the variable argument empty, you would have
+gotten a syntax error, because there would have been an extra comma
+after the format string.
 
 @smallexample
 eprintf("success!\n", );
      @expansion{} fprintf(stderr, "success!\n", );
 @end smallexample
 
-GNU CPP has a pair of extensions which deal with this problem.  First,
-you are allowed to leave the variable argument out entirely:
+This has been fixed in C++2a, and GNU CPP also has a pair of
+extensions which deal with this problem.
+
+First, in GNU CPP, and in C++ beginning in C++2a, you are allowed to
+leave the variable argument out entirely:
 
 @smallexample
 eprintf ("success!\n")
@@ -1696,8 +1703,24 @@ eprintf ("success!\n")
 @end smallexample
 
 @noindent
-Second, the @samp{##} token paste operator has a special meaning when
-placed between a comma and a variable argument.  If you write
+Second, C++2a introduces the @code{@w{__VA_OPT__}} function macro.
+This macro may only appear in the definition of a variadic macro.  If
+the variable argument has any tokens, then a @code{@w{__VA_OPT__}}
+invocation expands to its argument; but if the variable argument does
+not have any tokens, the @code{@w{__VA_OPT__}} expands to nothing:
+
+@smallexample
+#define eprintf(format, @dots{}) \\
+  fprintf (stderr, format __VA_OPT__(,) __VA_ARGS__)
+@end smallexample
+
+@code{@w{__VA_OPT__}} is also available in GNU C and GNU C++.
+
+Historically, GNU CPP has also had another extension to handle the
+trailing comma: the @samp{##} token paste operator has a special
+meaning when placed between a comma and a variable argument.  Despite
+the introduction of @code{@w{__VA_OPT__}}, this extension remains
+supported in GNU CPP, for backward compatibility.  If you write
 
 @smallexample
 #define eprintf(format, @dots{}) fprintf (stderr, format, ##__VA_ARGS__)
@@ -1729,6 +1752,9 @@ be used as a macro name, macro argument name, or within a different type
 of macro.  It may also be forbidden in open text; the standard is
 ambiguous.  We recommend you avoid using it except for its defined
 purpose.
+
+Likewise, C++ forbids @code{@w{__VA_OPT__}} anywhere outside the
+replacement list of a variadic macro.
 
 Variadic macros became a standard part of the C language with C99.  
 GNU CPP previously supported them
@@ -1857,8 +1883,11 @@ implementation, unless GNU CPP is being used with GCC@.
 
 The value @code{199409L} signifies the 1989 C standard as amended in
 1994, which is the current default; the value @code{199901L} signifies
-the 1999 revision of the C standard.  Support for the 1999 revision is
-not yet complete.
+the 1999 revision of the C standard; the value @code{201112L}
+signifies the 2011 revision of the C standard; the value
+@code{201710L} signifies the 2017 revision of the C standard (which is
+otherwise identical to the 2011 version apart from correction of
+defects).
 
 This macro is not defined if the @option{-traditional-cpp} option is
 used, nor when compiling C++ or Objective-C@.
@@ -1877,7 +1906,10 @@ selected, the value of the macro is
 @code{199711L} for the 1998 C++ standard,
 @code{201103L} for the 2011 C++ standard,
 @code{201402L} for the 2014 C++ standard,
-@code{201703L} for the 2017 C++ standard.
+@code{201703L} for the 2017 C++ standard,
+or an unspecified value strictly larger than @code{201703L} for the
+experimental languages enabled by @option{-std=c++2a} and
+@option{-std=gnu++2a}.
 
 @item __OBJC__
 This macro is defined, with value 1, when the Objective-C compiler is in
@@ -2362,6 +2394,21 @@ These macros are defined with value 1 if the backend supports the
 the include file @file{math.h} can define the macros
 @code{FP_FAST_FMA}, @code{FP_FAST_FMAF}, and @code{FP_FAST_FMAL}
 for compatibility with the 1999 C standard.
+
+@item __FP_FAST_FMAF16
+@itemx __FP_FAST_FMAF32
+@itemx __FP_FAST_FMAF64
+@itemx __FP_FAST_FMAF128
+@itemx __FP_FAST_FMAF32X
+@itemx __FP_FAST_FMAF64X
+@itemx __FP_FAST_FMAF128X
+These macros are defined with the value 1 if the backend supports the
+@code{fma} functions using the additional @code{_Float@var{n}} and
+@code{_Float@var{n}x} types that are defined in ISO/IEC TS
+18661-3:2015.  The include file @file{math.h} can define the
+@code{FP_FAST_FMAF@var{n}} and @code{FP_FAST_FMAF@var{n}x} macros if
+the user defined @code{__STDC_WANT_IEC_60559_TYPES_EXT__} before
+including @file{math.h}.
 
 @item __GCC_IEC_559
 This macro is defined to indicate the intended level of support for

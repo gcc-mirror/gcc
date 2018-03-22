@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { ! avr_tiny } } } */
 /* { dg-options "-std=gnu99 -fwrapv" } */
 
 #include "fix-types.h"

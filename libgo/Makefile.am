@@ -40,7 +40,7 @@ AM_CPPFLAGS = -I $(srcdir)/runtime $(LIBFFIINCS) $(PTHREAD_CFLAGS)
 
 ACLOCAL_AMFLAGS = -I ./config -I ../config
 
-AM_CFLAGS = -fexceptions -fnon-call-exceptions -fplan9-extensions \
+AM_CFLAGS = -fexceptions -fnon-call-exceptions \
 	$(SPLIT_STACK) $(WARN_CFLAGS) \
 	$(STRINGOPS_FLAG) $(HWCAP_CFLAGS) $(OSCFLAGS) \
 	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
@@ -217,7 +217,8 @@ toolexeclibgodebug_DATA = \
 	debug/gosym.gox \
 	debug/macho.gox \
 	debug/pe.gox \
-	debug/plan9obj.gox
+	debug/plan9obj.gox \
+	debug/xcoff.gox
 
 toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 
@@ -233,12 +234,6 @@ toolexeclibgoencoding_DATA = \
 	encoding/json.gox \
 	encoding/pem.gox \
 	encoding/xml.gox
-
-toolexeclibgoexpdir = $(toolexeclibgodir)/exp
-
-toolexeclibgoexp_DATA = \
-	exp/proxy.gox \
-	exp/terminal.gox
 
 toolexeclibgogodir = $(toolexeclibgodir)/go
 
@@ -395,6 +390,18 @@ toolexeclibgounicode_DATA = \
 	unicode/utf16.gox \
 	unicode/utf8.gox
 
+# Some packages are only needed for tests, so unlike the other
+# internal packages nothing will explicitly depend on them.
+# Force them to be built.
+noinst_DATA = \
+	golang_org/x/net/internal/nettest.gox \
+	golang_org/x/net/nettest.gox \
+	internal/testenv.gox \
+	internal/trace.gox \
+	net/internal/socktest.gox \
+	os/signal/internal/pty.gox \
+	runtime/pprof/internal/profile.gox
+
 if LIBGO_IS_RTEMS
 rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
 else
@@ -474,7 +481,7 @@ version.go: s-version; @true
 s-version: Makefile
 	rm -f version.go.tmp
 	echo "package sys" > version.go.tmp
-	echo 'const DefaultGoroot = "$(prefix)"' >> version.go.tmp
+	echo 'func init() { DefaultGoroot = "$(prefix)" }' >> version.go.tmp
 	echo 'const TheVersion = "'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'"' >> version.go.tmp
 	echo 'const Goexperiment = ``' >> version.go.tmp
 	echo 'const GOARCH = "'$(GOARCH)'"' >> version.go.tmp
@@ -501,14 +508,14 @@ s-version: Makefile
 	done
 	echo >> version.go.tmp
 	echo "const (" >> version.go.tmp
-	echo "	ArchFamily = $(GOARCH_FAMILY)" >> version.go.tmp
-	echo "	BigEndian = $(GOARCH_BIGENDIAN)" >> version.go.tmp
-	echo "	CacheLineSize = $(GOARCH_CACHELINESIZE)" >> version.go.tmp
-	echo "	PhysPageSize = $(GOARCH_PHYSPAGESIZE)" >> version.go.tmp
-	echo "	PCQuantum = $(GOARCH_PCQUANTUM)" >> version.go.tmp
-	echo "	Int64Align = $(GOARCH_INT64ALIGN)" >> version.go.tmp
-	echo "	HugePageSize = $(GOARCH_HUGEPAGESIZE)" >> version.go.tmp
-	echo "	MinFrameSize = $(GOARCH_MINFRAMESIZE)" >> version.go.tmp
+	echo "  ArchFamily = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) family`" >> version.go.tmp
+	echo "  BigEndian = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) bigendian`" >> version.go.tmp
+	echo "  CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> version.go.tmp
+	echo "  DefaultPhysPageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) defaultphyspagesize`" >> version.go.tmp
+	echo "  HugePageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) hugepagesize`" >> version.go.tmp
+	echo "  Int64Align = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) int64align`" >> version.go.tmp
+	echo "  MinFrameSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) minframesize`" >> version.go.tmp
+	echo "  PCQuantum = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) pcquantum`" >> version.go.tmp
 	echo ")" >> version.go.tmp
 	echo >> version.go.tmp
 	for a in $(ALLGOOS); do \
@@ -523,6 +530,39 @@ s-version: Makefile
 	echo >> version.go.tmp
 	echo "type Uintreg uintptr" >> version.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
+	$(STAMP) $@
+
+objabi.go: s-objabi; @true
+s-objabi: Makefile
+	rm -f objabi.go.tmp
+	echo "package objabi" > objabi.go.tmp
+	echo "import \"runtime\"" >> objabi.go.tmp
+	echo 'func init() { defaultGOROOT = `$(prefix)` }' >> objabi.go.tmp
+	echo 'const defaultGO386 = `sse2`' >> objabi.go.tmp
+	echo 'const defaultGOARM = `5`' >> objabi.go.tmp
+	echo 'const defaultGOMIPS = `hardfloat`' >> objabi.go.tmp
+	echo 'const defaultGOOS = runtime.GOOS' >> objabi.go.tmp
+	echo 'const defaultGOARCH = runtime.GOARCH' >> objabi.go.tmp
+	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> objabi.go.tmp
+	echo 'const version = `'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'`' >> objabi.go.tmp
+	echo 'const stackGuardMultiplier = 1' >> objabi.go.tmp
+	echo 'const goexperiment = ``' >> objabi.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh objabi.go.tmp objabi.go
+	$(STAMP) $@
+
+gccgosizes.go: s-gccgosizes; @true
+s-gccgosizes: Makefile goarch.sh
+	rm -f gccgosizes.go.tmp
+	echo "package types" > gccgosizes.go.tmp
+	echo >> gccgosizes.go.tmp
+	echo "var gccgoArchSizes = map[string]*StdSizes{" >> gccgosizes.go.tmp
+	for a in $(ALLGOARCH); do \
+	  ptrsize=`$(SHELL) $(srcdir)/goarch.sh $$a ptrsize`; \
+	  maxalign=`$(SHELL) $(srcdir)/goarch.sh $$a maxalign`; \
+	  echo "	\"$$a\": {$${ptrsize}, $${maxalign}}," >> gccgosizes.go.tmp; \
+	done
+	echo "}" >> gccgosizes.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh gccgosizes.go.tmp gccgosizes.go
 	$(STAMP) $@
 
 runtime_sysinfo.go: s-runtime_sysinfo; @true
@@ -545,10 +585,11 @@ zdefaultcc.go: s-zdefaultcc; @true
 s-zdefaultcc: Makefile
 	echo 'package cfg' > zdefaultcc.go.tmp
 	echo >> zdefaultcc.go.tmp
-	echo 'const DefaultGCCGO = "$(bindir)/$(GCCGO_INSTALL_NAME)"' >> zdefaultcc.go.tmp
-	echo 'const DefaultCC = "$(GCC_INSTALL_NAME)"' >> zdefaultcc.go.tmp
-	echo 'const DefaultCXX = "$(GXX_INSTALL_NAME)"' >> zdefaultcc.go.tmp
+	echo 'func DefaultGCCGO(goos, goarch string) string { return "$(bindir)/$(GCCGO_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
+	echo 'func DefaultCC(goos, goarch string) string { return "$(GCC_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
+	echo 'func DefaultCXX(goos, goarch string) string { return "$(GXX_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
 	echo 'const DefaultPkgConfig = "pkg-config"' >> zdefaultcc.go.tmp
+	echo 'var OSArchSupportsCgo = map[string]bool{}' >> zdefaultcc.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change zdefaultcc.go.tmp zdefaultcc.go
 	$(STAMP) $@ 
 
@@ -573,7 +614,7 @@ s-runtime-inc: runtime.lo Makefile
 	rm -f runtime.inc.tmp2 runtime.inc.tmp3
 	$(STAMP) $@
 
-noinst_DATA = zstdpkglist.go zdefaultcc.go
+noinst_DATA += zstdpkglist.go zdefaultcc.go
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
@@ -635,7 +676,7 @@ s-errno:
 
 sysinfo.go: s-sysinfo; @true
 s-sysinfo: $(srcdir)/mksysinfo.sh gen-sysinfo.go errno.i
-	GOOS=$(GOOS) $(SHELL) $(srcdir)/mksysinfo.sh
+	GOARCH=$(GOARCH) GOOS=$(GOOS) $(SHELL) $(srcdir)/mksysinfo.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-sysinfo.go sysinfo.go
 	$(STAMP) $@
 
@@ -715,6 +756,7 @@ PACKAGES = \
 	debug/macho \
 	debug/pe \
 	debug/plan9obj \
+	debug/xcoff \
 	encoding \
 	encoding/ascii85 \
 	encoding/asn1 \
@@ -728,8 +770,6 @@ PACKAGES = \
 	encoding/pem \
 	encoding/xml \
 	errors \
-	exp/proxy \
-	exp/terminal \
 	expvar \
 	flag \
 	fmt \
@@ -749,11 +789,15 @@ PACKAGES = \
 	go/types \
 	golang_org/x/crypto/chacha20poly1305 \
 	golang_org/x/crypto/chacha20poly1305/internal/chacha20 \
+	golang_org/x/crypto/cryptobyte \
+	golang_org/x/crypto/cryptobyte/asn1 \
 	golang_org/x/crypto/curve25519 \
 	golang_org/x/crypto/poly1305 \
 	golang_org/x/net/http2/hpack \
 	golang_org/x/net/idna \
+	golang_org/x/net/internal/nettest \
 	golang_org/x/net/lex/httplex \
+	golang_org/x/net/nettest \
 	golang_org/x/net/proxy \
 	golang_org/x/text/secure/bidirule \
 	golang_org/x/text/transform \
@@ -782,6 +826,7 @@ PACKAGES = \
 	internal/singleflight \
 	internal/syscall/unix \
 	internal/testenv \
+	internal/testlog \
 	internal/trace \
 	io \
 	io/ioutil \
@@ -815,6 +860,7 @@ PACKAGES = \
 	os \
 	os/exec \
 	os/signal \
+	os/signal/internal/pty \
 	os/user \
 	path \
 	path/filepath \
@@ -896,7 +942,7 @@ libgolibbegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
 GOTOOL_PACKAGES = \
 	cmd/go/internal/base \
 	cmd/go/internal/bug \
-	cmd/go/internal/buildid \
+	cmd/go/internal/cache \
 	cmd/go/internal/cfg \
 	cmd/go/internal/clean \
 	cmd/go/internal/cmdflag \
@@ -918,11 +964,22 @@ GOTOOL_PACKAGES = \
 	cmd/go/internal/web \
 	cmd/go/internal/work \
 	cmd/internal/browser \
-	cmd/internal/objabi
+	cmd/internal/buildid \
+	cmd/internal/edit \
+	cmd/internal/objabi \
+	cmd/internal/test2json \
+	cmd/vet/internal/cfg \
+	cmd/vet/internal/whitelist
 
 libgotool_a_SOURCES =
 libgotool_a_DEPENDENCIES = $(addsuffix .lo,$(GOTOOL_PACKAGES))
 libgotool_a_LIBADD = $(addsuffix .o,$(GOTOOL_PACKAGES))
+
+define STATIC_template
+$(subst -,_,$(subst .,_,$(subst /,_,$(1))))_GOCFLAGS = -static
+endef
+
+$(foreach package,$(GOTOOL_PACKAGES),$(eval $(call STATIC_template,$(package).lo)))
 
 # Make sure runtime.inc is built before compiling any .c file.
 $(libgo_la_OBJECTS): runtime.inc
@@ -986,7 +1043,7 @@ CHECK = \
 	export MAKE; \
 	NM="$(NM)"; \
 	export NM; \
-	libgccdir=`${GOC} -print-libgcc-file-name | sed -e 's|/[^/]*$$||'`; \
+	libgccdir=`${GOC} ${GOCFLAGS} -print-libgcc-file-name | sed -e 's|/[^/]*$$||'`; \
 	LD_LIBRARY_PATH="`${PWD_COMMAND}`/.libs:$${libgccdir}:${LD_LIBRARY_PATH}"; \
 	LD_LIBRARY_PATH=`echo $${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LD_LIBRARY_PATH; \
@@ -1019,7 +1076,6 @@ CHECK_DEPS = \
 	$(toolexeclibgocrypto_DATA) \
 	$(toolexeclibgodebug_DATA) \
 	$(toolexeclibgoencoding_DATA) \
-	$(toolexeclibgoexp_DATA) \
 	$(toolexeclibgogo_DATA) \
 	$(toolexeclibgohash_DATA) \
 	$(toolexeclibgoimage_DATA) \
@@ -1039,6 +1095,7 @@ CHECK_DEPS = \
 	$(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) \
 	$(toolexeclibgounicode_DATA) \
+	$(noinst_DATA) \
 	$(noinst_LIBRARIES)
 
 if GOC_IS_LLGO
@@ -1084,6 +1141,7 @@ $(foreach package,$(GOTOOL_PACKAGES),$(eval $(call PACKAGE_template,$(package)))
 # Pass -ffp-contract=off, or 386-specific options, when building the
 # math package.  MATH_FLAG is defined in configure.ac.
 math_lo_GOCFLAGS = $(MATH_FLAG)
+math_check_GOCFLAGS = $(MATH_FLAG)
 
 # Add the generated file runtime_sysinfo.go to the runtime package.
 extra_go_files_runtime = runtime_sysinfo.go sigtab.go
@@ -1121,16 +1179,25 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 
+extra_go_files_go_types = gccgosizes.go
+go/types.lo.dep: $(extra_go_files_go_types)
+
+extra_go_files_cmd_internal_objabi = objabi.go
+cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)
+
 extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
 cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
 
 extra_go_files_cmd_go_internal_load = zstdpkglist.go
 cmd/go/internal/load.lo.dep: $(extra_go_files_cmd_go_internal_load)
 
+extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
+
+extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 
 # FIXME: The following C files may as well move to the runtime
 # directory and be treated like other C files.
@@ -1176,7 +1243,7 @@ syscall/wait.lo: go/syscall/wait.c runtime.inc
 	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syscall/wait.c
 
-# Solaris 12 changed the type of fields in struct stat.
+# Solaris 11.4 changed the type of fields in struct stat.
 # Use a build tag, based on a configure check, to cope.
 if LIBGO_IS_SOLARIS
 if HAVE_STAT_TIMESPEC
@@ -1218,10 +1285,12 @@ TEST_PACKAGES = \
 	bufio/check \
 	bytes/check \
 	context/check \
+	crypto/check \
 	errors/check \
 	expvar/check \
 	flag/check \
 	fmt/check \
+	hash/check \
 	html/check \
 	image/check \
 	io/check \
@@ -1243,11 +1312,16 @@ TEST_PACKAGES = \
 	unicode/check \
 	archive/tar/check \
 	archive/zip/check \
+	cmd/go/internal/cache/check \
 	cmd/go/internal/generate/check \
 	cmd/go/internal/get/check \
 	cmd/go/internal/load/check \
 	cmd/go/internal/work/check \
+	cmd/internal/buildid/check \
+	cmd/internal/edit/check \
 	cmd/internal/objabi/check \
+	cmd/internal/test2json/check \
+	cmd/vet/internal/cfg/check \
 	compress/bzip2/check \
 	compress/flate/check \
 	compress/gzip/check \
@@ -1280,6 +1354,7 @@ TEST_PACKAGES = \
 	debug/macho/check \
 	debug/pe/check \
 	debug/plan9obj/check \
+	debug/xcoff/check \
 	encoding/ascii85/check \
 	encoding/asn1/check \
 	encoding/base32/check \
@@ -1291,14 +1366,13 @@ TEST_PACKAGES = \
 	encoding/json/check \
 	encoding/pem/check \
 	encoding/xml/check \
-	exp/proxy/check \
-	exp/terminal/check \
 	html/template/check \
 	go/ast/check \
 	go/build/check \
 	go/constant/check \
 	go/doc/check \
 	go/format/check \
+	go/importer/check \
 	go/internal/gcimporter/check \
 	go/internal/gccgoimporter/check \
 	go/internal/srcimporter/check \
@@ -1309,6 +1383,7 @@ TEST_PACKAGES = \
 	go/types/check \
 	golang_org/x/crypto/chacha20poly1305/check \
 	golang_org/x/crypto/chacha20poly1305/internal/chacha20/check \
+	golang_org/x/crypto/cryptobyte/check \
 	golang_org/x/crypto/curve25519/check \
 	golang_org/x/crypto/poly1305/check \
 	golang_org/x/net/http2/hpack/check \
@@ -1458,7 +1533,7 @@ check-am:
 	@for f in $(TEST_PACKAGES); do \
 	   rm -f $$f-testsum $$f-testlog; \
 	 done
-	-@$(MAKE) -k $(TEST_PACKAGES)
+	-@$(MAKE) $(AM_MAKEFLAGS) -k $(TEST_PACKAGES)
 	@for f in $(TEST_PACKAGES); do \
 	  if test -f $$f-testsum; then \
 	    cat $$f-testsum >> libgo.sum; \
@@ -1472,7 +1547,7 @@ check-multi:
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=check-am multi-do # $(MAKE)
 
 bench:
-	-@$(MAKE) -k $(TEST_PACKAGES) GOBENCH=.
+	-@$(MAKE) $(AM_MAKEFLAGS) -k $(TEST_PACKAGES) GOBENCH=.
 
 MOSTLYCLEANFILES = \
 	s-runtime_sysinfo s-sigtab s-runtime-inc s-zstdpkglist \

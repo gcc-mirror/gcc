@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RL78 processors.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -77,6 +79,9 @@ static const char * const word_regnames[] =
   "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31",
   "sp", "ap", "psw", "es", "cs"
 };
+
+/* used by rl78_addsi3_internal for formatting insns output */
+static char fmt_buffer[1024];
 
 /* Structure for G13 MDUC registers.  */
 struct mduc_reg_type
@@ -360,6 +365,7 @@ rl78_option_override (void)
   if (TARGET_ES0
       && strcmp (lang_hooks.name, "GNU C")
       && strcmp (lang_hooks.name, "GNU C11")
+      && strcmp (lang_hooks.name, "GNU C17")
       && strcmp (lang_hooks.name, "GNU C89")
       && strcmp (lang_hooks.name, "GNU C99")
       /* Compiling with -flto results in a language of GNU GIMPLE being used... */
@@ -595,6 +601,18 @@ rl78_split_movsi (rtx *operands, machine_mode omode)
     }
 }
 
+void
+rl78_split_movdi (rtx *operands, enum machine_mode omode)
+{
+    rtx op00, op04, op10, op14;
+    op00 = rl78_subreg (SImode, operands[0], omode, 0);
+    op04 = rl78_subreg (SImode, operands[0], omode, 4);
+    op10 = rl78_subreg (SImode, operands[1], omode, 0);
+    op14 = rl78_subreg (SImode, operands[1], omode, 4);
+    emit_insn (gen_movsi (op00, op10));
+    emit_insn (gen_movsi (op04, op14));
+}
+
 /* Used by various two-operand expanders which cannot accept all
    operands in the "far" namespace.  Force some such operands into
    registers so that each pattern has at most one far operand.  */
@@ -786,12 +804,11 @@ is_brk_interrupt_func (const_tree decl)
 static tree
 rl78_handle_func_attribute (tree * node,
 			    tree   name,
-			    tree   args,
+			    tree   args ATTRIBUTE_UNUSED,
 			    int    flags ATTRIBUTE_UNUSED,
 			    bool * no_add_attrs)
 {
   gcc_assert (DECL_P (* node));
-  gcc_assert (args == NULL_TREE);
 
   if (TREE_CODE (* node) != FUNCTION_DECL)
     {
@@ -850,23 +867,47 @@ rl78_handle_saddr_attribute (tree * node,
   return NULL_TREE;
 }
 
+/* Check "vector" attribute.  */
+
+static tree
+rl78_handle_vector_attribute (tree * node,
+			    tree   name,
+			    tree   args,
+			    int    flags ATTRIBUTE_UNUSED,
+			    bool * no_add_attrs)
+{
+  gcc_assert (DECL_P (* node));
+  gcc_assert (args != NULL_TREE);
+
+  if (TREE_CODE (* node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      * no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE		rl78_attribute_table
 
 /* Table of RL78-specific attributes.  */
 const struct attribute_spec rl78_attribute_table[] =
 {
-  /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-     affects_type_identity.  */
-  { "interrupt",      0, 0, true, false, false, rl78_handle_func_attribute,
-    false },
-  { "brk_interrupt",  0, 0, true, false, false, rl78_handle_func_attribute,
-    false },
-  { "naked",          0, 0, true, false, false, rl78_handle_naked_attribute,
-    false },
-  { "saddr",          0, 0, true, false, false, rl78_handle_saddr_attribute,
-    false },
-  { NULL,             0, 0, false, false, false, NULL, false }
+  /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
+     affects_type_identity, handler, exclude.  */
+  { "interrupt",      0, -1, true, false, false, false,
+    rl78_handle_func_attribute, NULL },
+  { "brk_interrupt",  0, 0, true, false, false, false,
+    rl78_handle_func_attribute, NULL },
+  { "naked",          0, 0, true, false, false, false,
+    rl78_handle_naked_attribute, NULL },
+  { "saddr",          0, 0, true, false, false, false,
+    rl78_handle_saddr_attribute, NULL },
+  { "vector",         1, -1, true, false, false, false,
+	rl78_handle_vector_attribute, NULL },
+  { NULL,             0, 0, false, false, false, false, NULL, NULL }
 };
 
 
@@ -1565,6 +1606,62 @@ rl78_expand_eh_epilogue (rtx x ATTRIBUTE_UNUSED)
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE	rl78_start_function
 
+static void
+add_vector_labels (FILE *file, const char *aname)
+{
+  tree vec_attr;
+  tree val_attr;
+  const char *vname = "vect";
+  const char *s;
+  int vnum;
+
+  /* This node is for the vector/interrupt tag itself */
+  vec_attr = lookup_attribute (aname, DECL_ATTRIBUTES (current_function_decl));
+  if (!vec_attr)
+    return;
+
+  /* Now point it at the first argument */
+  vec_attr = TREE_VALUE (vec_attr);
+
+  /* Iterate through the arguments.  */
+  while (vec_attr)
+    {
+      val_attr = TREE_VALUE (vec_attr);
+      switch (TREE_CODE (val_attr))
+	{
+	case STRING_CST:
+	  s = TREE_STRING_POINTER (val_attr);
+	  goto string_id_common;
+
+	case IDENTIFIER_NODE:
+	  s = IDENTIFIER_POINTER (val_attr);
+
+	string_id_common:
+	  if (strcmp (s, "$default") == 0)
+	    {
+	      fprintf (file, "\t.global\t$tableentry$default$%s\n", vname);
+	      fprintf (file, "$tableentry$default$%s:\n", vname);
+	    }
+	  else
+	    vname = s;
+	  break;
+
+	case INTEGER_CST:
+	  vnum = TREE_INT_CST_LOW (val_attr);
+
+	  fprintf (file, "\t.global\t$tableentry$%d$%s\n", vnum, vname);
+	  fprintf (file, "$tableentry$%d$%s:\n", vnum, vname);
+	  break;
+
+	default:
+	  ;
+	}
+
+      vec_attr = TREE_CHAIN (vec_attr);
+    }
+
+}
+
 /* We don't use this to actually emit the function prologue.  We use
    this to insert a comment in the asm file describing the
    function.  */
@@ -1572,6 +1669,9 @@ static void
 rl78_start_function (FILE *file)
 {
   int i;
+  
+  add_vector_labels (file, "interrupt");
+  add_vector_labels (file, "vector");
 
   if (cfun->machine->framesize == 0)
     return;
@@ -3789,16 +3889,21 @@ static void
 rl78_note_reg_set (char *dead, rtx d, rtx insn)
 {
   int r, i;
-
+  bool is_dead;
   if (GET_CODE (d) == MEM)
     rl78_note_reg_uses (dead, XEXP (d, 0), insn);
 
   if (GET_CODE (d) != REG)
     return;
 
+  /* Do not mark the reg unused unless all QImode parts of it are dead.  */
   r = REGNO (d);
-  if (dead [r])
-    add_reg_note (insn, REG_UNUSED, gen_rtx_REG (GET_MODE (d), r));
+  is_dead = true;
+  for (i = 0; i < GET_MODE_SIZE (GET_MODE (d)); i ++)
+	  if (!dead [r + i])
+		  is_dead = false;
+  if(is_dead)
+	add_reg_note (insn, REG_UNUSED, gen_rtx_REG (GET_MODE (d), r));
   if (dump_file)
     fprintf (dump_file, "note set reg %d size %d\n", r, GET_MODE_SIZE (GET_MODE (d)));
   for (i = 0; i < GET_MODE_SIZE (GET_MODE (d)); i ++)
@@ -4768,6 +4873,8 @@ rl78_flags_already_set (rtx op, rtx operand)
 const char *
 rl78_addsi3_internal (rtx * operands, unsigned int alternative)
 {
+  const char *addH2 = "addw ax, %H2\n\t";
+
   /* If we are adding in a constant symbolic address when -mes0
      is active then we know that the address must be <64K and
      that it is invalid to access anything above 64K relative to
@@ -4779,16 +4886,77 @@ rl78_addsi3_internal (rtx * operands, unsigned int alternative)
       && ! TREE_SIDE_EFFECTS (SYMBOL_REF_DECL (operands[2])))
     return "movw ax, %h1\n\taddw ax, %h2\n\tmovw %h0, ax";
 
+  if(CONST_INT_P(operands[2]))
+  {
+    if((INTVAL(operands[2]) & 0xFFFF0000) == 0)
+    {
+        addH2 = "";
+    }
+    else if((INTVAL(operands[2]) & 0xFFFF0000) == 0x00010000)
+    {
+        addH2 = "incw ax\n\t";
+    }
+    else if((INTVAL(operands[2]) & 0xFFFF0000) == 0xFFFF0000)
+    {
+        addH2 = "decw ax\n\t";
+    }
+  }
+
   switch (alternative)
     {
     case 0:
     case 1:
-      return "movw ax, %h1\n\taddw ax, %h2\n\tmovw %h0, ax\n\tmovw ax, %H1\n\tsknc\n\tincw ax\n\taddw ax, %H2\n\tmovw %H0, ax";
+	  snprintf(fmt_buffer, sizeof(fmt_buffer),
+               "movw ax, %%h1\n\taddw ax, %%h2\n\tmovw %%h0, ax\n\tmovw ax, %%H1\n\tsknc\n\tincw ax\n\t%smovw %%H0,ax", addH2);
+	  break;
     case 2:
-      return "movw ax, %h1\n\taddw ax,%h2\n\tmovw bc, ax\n\tmovw ax, %H1\n\tsknc\n\tincw ax\n\taddw ax, %H2\n\tmovw %H0, ax\n\tmovw ax, bc\n\tmovw %h0, ax";
+	  snprintf(fmt_buffer, sizeof(fmt_buffer),
+               "movw ax, %%h1\n\taddw ax, %%h2\n\tmovw bc, ax\n\tmovw ax, %%H1\n\tsknc\n\tincw ax\n\t%smovw %%H0, ax\n\tmovw ax, bc\n\tmovw %%h0, ax", addH2);
+ 	  break;
     default:
       gcc_unreachable ();
     }
+
+  return fmt_buffer;
+}
+
+rtx
+rl78_emit_libcall (const char *name, enum rtx_code code,
+                   enum machine_mode dmode, enum machine_mode smode,
+                   int noperands, rtx *operands)
+{
+  rtx ret;
+  rtx_insn *insns;
+  rtx libcall;
+  rtx equiv;
+
+  start_sequence ();
+  libcall = gen_rtx_SYMBOL_REF (Pmode, name);
+
+  switch (noperands)
+    {
+    case 2:
+      ret = emit_library_call_value (libcall, NULL_RTX, LCT_CONST,
+                                     dmode, operands[1], smode);
+      equiv = gen_rtx_fmt_e (code, dmode, operands[1]);
+      break;
+
+    case 3:
+      ret = emit_library_call_value (libcall, NULL_RTX,
+                                     LCT_CONST, dmode,
+                                     operands[1], smode, operands[2],
+                                     smode);
+      equiv = gen_rtx_fmt_ee (code, dmode, operands[1], operands[2]);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  insns = get_insns ();
+  end_sequence ();
+  emit_libcall_block (insns, operands[0], ret, equiv);
+  return ret;
 }
 
 

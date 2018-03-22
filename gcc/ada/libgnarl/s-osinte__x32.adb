@@ -7,7 +7,7 @@
 --                                   B o d y                                --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---                     Copyright (C) 1995-2017, AdaCore                     --
+--                     Copyright (C) 1995-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,6 @@ package body System.OS_Interface is
       S : time_t;
       F : Duration;
 
-      use type System.Linux.time_t;
    begin
       S := time_t (Long_Long_Integer (D));
       F := D - Duration (S);

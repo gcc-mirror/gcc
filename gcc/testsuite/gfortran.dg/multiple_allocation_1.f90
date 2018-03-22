@@ -12,9 +12,9 @@ program alloc_test
   allocate(a(4))
   ! This should set the stat code but not change the size.
   allocate(a(3),stat=i)
-  if (i == 0) call abort
-  if (.not. allocated(a)) call abort
-  if (size(a) /= 4) call abort
+  if (i == 0) STOP 1
+  if (.not. allocated(a)) STOP 2
+  if (size(a) /= 4) STOP 3
 
   ! It's OK to allocate pointers twice (even though this causes
   ! a memory leak)

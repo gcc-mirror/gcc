@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -447,6 +447,9 @@ package System.OS_Interface is
       mutex   : access pthread_mutex_t;
       abstime : access timespec) return int;
    pragma Import (C, pthread_cond_timedwait, "pthread_cond_timedwait");
+
+   Relative_Timed_Wait : constant Boolean := False;
+   --  pthread_cond_timedwait requires an absolute delay time
 
    --------------------------
    -- POSIX.1c  Section 13 --

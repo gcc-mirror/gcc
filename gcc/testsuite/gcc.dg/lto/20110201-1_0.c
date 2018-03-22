@@ -1,6 +1,7 @@
 /* { dg-lto-do run } */
 /* { dg-lto-options { { -O0 -flto -fno-math-errno } } } */
-/* { dg-lto-options { "-O0 -flto -fno-math-errno -mfloat-abi=softfp -mfpu=neon-vfpv4" } { target arm*-*-* } } */
+/* { dg-lto-options { "-O0 -flto -fno-math-errno -mfpu=neon-vfpv4" } { target arm*-*-* } } */
+/* { dg-require-effective-target arm_neon_ok_no_float_abi { target arm*-*-* } } */
 /* { dg-require-linker-plugin "" } */
 /* { dg-require-effective-target sqrt_insn } */
 

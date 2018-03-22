@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -84,7 +84,6 @@ extern void avr_expand_prologue (void);
 extern void avr_expand_epilogue (bool);
 extern bool avr_emit_movmemhi (rtx*);
 extern int avr_epilogue_uses (int regno);
-extern int avr_starting_frame_offset (void);
 
 extern void avr_output_addr_vec (rtx_insn*, rtx);
 extern const char *avr_out_sbxx_branch (rtx_insn *insn, rtx operands[]);
@@ -132,7 +131,7 @@ extern bool avr_casei_sequence_check_operands (rtx *xop);
 static inline unsigned
 regmask (machine_mode mode, unsigned regno)
 {
-  return ((1u << GET_MODE_SIZE (mode)) - 1) << regno;
+  return ((1u << GET_MODE_SIZE (as_a <fixed_size_mode> (mode))) - 1) << regno;
 }
 
 extern void avr_fix_inputs (rtx*, unsigned, unsigned);

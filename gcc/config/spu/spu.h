@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -96,7 +96,6 @@ extern GTY(()) int spu_tune;
    on the stack.  (Except a bug (?) allows some stack objects to be
    unaligned.)  */
 #define DATA_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
-#define CONSTANT_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
 #define LOCAL_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
 
 #define EMPTY_FIELD_BOUNDARY 32
@@ -214,7 +213,7 @@ enum reg_class {
 #define REGISTER_TARGET_PRAGMAS() do {					\
 c_register_addr_space ("__ea", ADDR_SPACE_EA);				\
 targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
-}while (0);
+}while (0)
 
 
 /* Frame Layout */
@@ -222,8 +221,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 #define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 1
-
-#define STARTING_FRAME_OFFSET (0)
 
 #define STACK_POINTER_OFFSET 32
 

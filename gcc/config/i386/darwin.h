@@ -1,5 +1,5 @@
 /* Target definitions for x86 running Darwin.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -38,6 +38,32 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_64BIT 0
 #endif
 #endif
+
+/* WORKAROUND pr80556:
+   For x86_64 Darwin10 and later, the unwinder is in libunwind (redirected
+   from libSystem).  This doesn't use the keymgr (see keymgr.c) and therefore
+   the calls that libgcc makes to obtain the KEYMGR_GCC3_DW2_OBJ_LIST are not
+   updated to include new images, and might not even be valid for a single
+   image.
+   Therefore, for 64b exes at least, we must use the libunwind implementation,
+   even when static-libgcc is specified.  We put libSystem first so that
+   unwinder symbols are satisfied from there. */
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC						   \
+   "%{static-libgcc|static: 						   \
+      %{m64:%:version-compare(>= 10.6 mmacosx-version-min= -lSystem)}	   \
+        -lgcc_eh -lgcc;							   \
+      shared-libgcc|fexceptions|fgnu-runtime:				   \
+       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	   \
+       %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
+       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_ext.10.4)	   \
+       %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
+       -lgcc ;								   \
+      :%:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
+       %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
+       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_ext.10.4)	   \
+       %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
+       -lgcc }"
 
 /* Size of the Obj-C jump buffer.  */
 #define OBJC_JBLEN ((TARGET_64BIT) ? ((9 * 2) + 3 + 16) : (18))

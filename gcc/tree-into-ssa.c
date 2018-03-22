@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1226,6 +1226,8 @@ get_reaching_def (tree var)
   if (currdef == NULL_TREE)
     {
       tree sym = DECL_P (var) ? var : SSA_NAME_VAR (var);
+      if (! sym)
+	sym = create_tmp_reg (TREE_TYPE (var));
       currdef = get_or_create_ssa_default_def (cfun, sym);
     }
 
@@ -1461,7 +1463,8 @@ rewrite_add_phi_arguments (basic_block bb)
 class rewrite_dom_walker : public dom_walker
 {
 public:
-  rewrite_dom_walker (cdi_direction direction) : dom_walker (direction) {}
+  rewrite_dom_walker (cdi_direction direction)
+    : dom_walker (direction, ALL_BLOCKS, NULL) {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -2151,7 +2154,8 @@ rewrite_update_phi_arguments (basic_block bb)
 class rewrite_update_dom_walker : public dom_walker
 {
 public:
-  rewrite_update_dom_walker (cdi_direction direction) : dom_walker (direction) {}
+  rewrite_update_dom_walker (cdi_direction direction)
+    : dom_walker (direction, ALL_BLOCKS, NULL) {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -2320,7 +2324,7 @@ private:
 };
 
 mark_def_dom_walker::mark_def_dom_walker (cdi_direction direction)
-  : dom_walker (direction), m_kills (BITMAP_ALLOC (NULL))
+  : dom_walker (direction, ALL_BLOCKS, NULL), m_kills (BITMAP_ALLOC (NULL))
 {
 }
 

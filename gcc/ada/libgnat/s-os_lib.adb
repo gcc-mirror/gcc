@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2017, AdaCore                     --
+--                     Copyright (C) 1995-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2085,12 +2085,6 @@ package body System.OS_Lib is
          Bufsiz : size_t) return Integer;
       pragma Import (C, Readlink, "__gnat_readlink");
 
-      function To_Canonical_File_Spec
-        (Host_File : System.Address) return System.Address;
-      pragma Import
-        (C, To_Canonical_File_Spec, "__gnat_to_canonical_file_spec");
-      --  Convert possible foreign file syntax to canonical form
-
       Fold_To_Lower_Case : constant Boolean :=
                              not Case_Sensitive
                                and then Get_File_Names_Case_Sensitive = 0;
@@ -2142,7 +2136,18 @@ package body System.OS_Lib is
             end if;
          end if;
 
-         return S1 (1 .. Last);
+         --  And ensure that there is a trailing directory separator if the
+         --  path contains only a drive letter.
+
+         if On_Windows
+           and then Last = 2
+           and then S1 (1) /= Directory_Separator
+           and then S1 (2) = ':'
+         then
+            return S1 (1 .. Last) & Directory_Separator;
+         else
+            return S1 (1 .. Last);
+         end if;
       end Final_Value;
 
       -------------------
@@ -2157,8 +2162,8 @@ package body System.OS_Lib is
             declare
                Result : String   :=
                           Normalize_Pathname
-                            (Dir, "", Resolve_Links, Case_Sensitive) &
-                             Directory_Separator;
+                            (Dir, "", Resolve_Links, Case_Sensitive)
+                             & Directory_Separator;
                Last   : Positive := Result'Last - 1;
 
             begin
@@ -2218,112 +2223,85 @@ package body System.OS_Lib is
 
       Max_Iterations : constant := 500;
 
-      Canonical_File_Addr : System.Address;
-      Canonical_File_Len  : Integer;
+      Cur_Dir     : constant String  := Get_Directory (Directory);
+      Cur_Dir_Len : constant Natural := Cur_Dir'Length;
 
-      End_Path    : Natural := 0;
-      Finish      : Positive;
-      Last        : Positive;
+      End_Path    : Natural := Name'Length;
+      Last        : Positive := 1;
       Link_Buffer : String (1 .. Max_Path + 2);
-      Path_Buffer : String (1 .. Max_Path + Max_Path + 2);
-      Start       : Natural;
-      Status      : Integer;
-      The_Name    : String (1 .. Name'Length + 1);
+      Path_Buffer : String (1 .. End_Path + Cur_Dir_Len + Max_Path + 2);
+      --  We need to potentially store in this buffer the following elements:
+      --  the path itself, the current directory if the path is relative,
+      --  and additional fragments up to Max_Path in length in case
+      --  there are any symlinks.
+      Start, Finish : Positive;
+      Status : Integer;
 
    --  Start of processing for Normalize_Pathname
 
    begin
-      --  Special case, return null if name is null, or if it is bigger than
-      --  the biggest name allowed.
+      --  Special case, return null if name is null
 
-      if Name'Length = 0 or else Name'Length > Max_Path then
+      if End_Path = 0 then
          return "";
       end if;
 
-      --  First, convert possible foreign file spec to Unix file spec. If no
-      --  conversion is required, all this does is put Name at the beginning
-      --  of Path_Buffer unchanged.
+      if Is_Absolute_Path (Name) then
+         Path_Buffer (1 .. End_Path) := Name;
 
-      File_Name_Conversion : begin
-         The_Name (1 .. Name'Length) := Name;
-         The_Name (The_Name'Last) := ASCII.NUL;
+      else
+         --  If this is a relative pathname, prepend current directory
+         Path_Buffer (1 .. Cur_Dir_Len) := Cur_Dir;
+         Path_Buffer (Cur_Dir_Len + 1 .. Cur_Dir_Len + End_Path) := Name;
+         End_Path := Cur_Dir_Len + End_Path;
+         Last := Cur_Dir_Len;
+      end if;
 
-         Canonical_File_Addr := To_Canonical_File_Spec (The_Name'Address);
-         Canonical_File_Len  := Integer (CRTL.strlen (Canonical_File_Addr));
+      --  Special handling for Windows:
+      --    * Replace all '/' by '\'
+      --    * Check the drive letter
+      --    * Remove all double-quotes
 
-         --  If syntax conversion has failed, return an empty string to
-         --  indicate the failure.
+      if On_Windows then
 
-         if Canonical_File_Len = 0 then
-            return "";
-         end if;
+         --  Replace all '/' by '\'
 
-         declare
-            subtype Path_String is String (1 .. Canonical_File_Len);
-            Canonical_File : Path_String;
-            for Canonical_File'Address use Canonical_File_Addr;
-            pragma Import (Ada, Canonical_File);
-
-         begin
-            Path_Buffer (1 .. Canonical_File_Len) := Canonical_File;
-            End_Path := Canonical_File_Len;
-            Last := 1;
-         end;
-      end File_Name_Conversion;
-
-      --  Replace all '/' by Directory Separators (this is for Windows)
-
-      if Directory_Separator /= '/' then
          for Index in 1 .. End_Path loop
             if Path_Buffer (Index) = '/' then
                Path_Buffer (Index) := Directory_Separator;
             end if;
          end loop;
-      end if;
 
-      --  Resolve directory names for Windows
-
-      if On_Windows then
-
-         --  On Windows, if we have an absolute path starting with a directory
-         --  separator, we need to have the drive letter appended in front.
-
-         --  On Windows, Get_Current_Dir will return a suitable directory name
-         --  (path starting with a drive letter on Windows). So we take this
-         --  drive letter and prepend it to the current path.
+         --  If we have an absolute path starting with a directory
+         --  separator (but not a UNC path), we need to have the drive letter
+         --  in front of the path. Get_Current_Dir returns a path starting
+         --  with a drive letter. So we take this drive letter and prepend it
+         --  to the current path.
 
          if Path_Buffer (1) = Directory_Separator
            and then Path_Buffer (2) /= Directory_Separator
          then
-            declare
-               Cur_Dir : constant String := Get_Directory ("");
-               --  Get the current directory to get the drive letter
+            if Cur_Dir'Length > 2
+              and then Cur_Dir (Cur_Dir'First + 1) = ':'
+            then
+               Path_Buffer (3 .. End_Path + 2) :=
+                 Path_Buffer (1 .. End_Path);
+               Path_Buffer (1 .. 2) :=
+                 Cur_Dir (Cur_Dir'First .. Cur_Dir'First + 1);
+               End_Path := End_Path + 2;
+            end if;
 
-            begin
-               if Cur_Dir'Length > 2
-                 and then Cur_Dir (Cur_Dir'First + 1) = ':'
-               then
-                  Path_Buffer (3 .. End_Path + 2) :=
-                    Path_Buffer (1 .. End_Path);
-                  Path_Buffer (1 .. 2) :=
-                    Cur_Dir (Cur_Dir'First .. Cur_Dir'First + 1);
-                  End_Path := End_Path + 2;
-               end if;
-            end;
-
-         --  We have a drive letter, ensure it is upper-case
+         --  We have a drive letter already, ensure it is upper-case
 
          elsif Path_Buffer (1) in 'a' .. 'z'
            and then Path_Buffer (2) = ':'
          then
             System.Case_Util.To_Upper (Path_Buffer (1 .. 1));
          end if;
-      end if;
 
-      --  On Windows, remove all double-quotes that are possibly part of the
-      --  path but can cause problems with other methods.
+         --  Remove all double-quotes that are possibly part of the
+         --  path but can cause problems with other methods.
 
-      if On_Windows then
          declare
             Index : Natural;
 
@@ -2347,30 +2325,10 @@ package body System.OS_Lib is
 
       for J in 1 .. Max_Iterations loop
 
-         --  If we don't have an absolute pathname, prepend the directory
-         --  Reference_Dir.
-
-         if Last = 1
-           and then not Is_Absolute_Path (Path_Buffer (1 .. End_Path))
-         then
-            declare
-               Reference_Dir : constant String  := Get_Directory (Directory);
-               Ref_Dir_Len   : constant Natural := Reference_Dir'Length;
-               --  Current directory name specified and its length
-
-            begin
-               Path_Buffer (Ref_Dir_Len + 1 .. Ref_Dir_Len + End_Path) :=
-                 Path_Buffer (1 .. End_Path);
-               End_Path := Ref_Dir_Len + End_Path;
-               Path_Buffer (1 .. Ref_Dir_Len) := Reference_Dir;
-               Last := Ref_Dir_Len;
-            end;
-         end if;
-
          Start  := Last + 1;
          Finish := Last;
 
-         --  Ensure that Windows network drives are kept, e.g: \\server\drive-c
+         --  Ensure that Windows UNC path is preserved, e.g: \\server\drive-c
 
          if Start = 2
            and then Directory_Separator = '\'
@@ -2434,11 +2392,11 @@ package body System.OS_Lib is
             Start := Last;
             loop
                Start := Start - 1;
-               exit when Start < 1
+               exit when Start = 1
                  or else Path_Buffer (Start) = Directory_Separator;
             end loop;
 
-            if Start <= 1 then
+            if Start = 1 then
                if Finish = End_Path then
                   return (1 => Directory_Separator);
 

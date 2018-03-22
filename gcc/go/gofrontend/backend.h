@@ -254,7 +254,7 @@ class Backend
 
   // Create a reference to a variable.
   virtual Bexpression*
-  var_expression(Bvariable* var, Varexpr_context in_lvalue_pos, Location) = 0;
+  var_expression(Bvariable* var, Location) = 0;
 
   // Create an expression that indirects through the pointer expression EXPR
   // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer
@@ -516,15 +516,18 @@ class Backend
   // Create a local variable.  The frontend will create the local
   // variables first, and then create the block which contains them.
   // FUNCTION is the function in which the variable is defined.  NAME
-  // is the name of the variable.  TYPE is the type.  IS_ADDRESS_TAKEN
-  // is true if the address of this variable is taken (this implies
-  // that the address does not escape the function, as otherwise the
-  // variable would be on the heap).  LOCATION is where the variable
-  // is defined.  For each local variable the frontend will call
-  // init_statement to set the initial value.
+  // is the name of the variable.  TYPE is the type.  DECL_VAR, if not
+  // null, gives the location at which the value of this variable may
+  // be found, typically used to create an inner-scope reference to an
+  // outer-scope variable, to extend the lifetime of the variable beyond
+  // the inner scope.  IS_ADDRESS_TAKEN is true if the address of this
+  // variable is taken (this implies that the address does not escape
+  // the function, as otherwise the variable would be on the heap).
+  // LOCATION is where the variable is defined.  For each local variable
+  // the frontend will call init_statement to set the initial value.
   virtual Bvariable*
   local_variable(Bfunction* function, const std::string& name, Btype* type,
-		 bool is_address_taken, Location location) = 0;
+		 Bvariable* decl_var, bool is_address_taken, Location location) = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
@@ -711,12 +714,15 @@ class Backend
   // IS_INLINABLE is true if the function can be inlined.
   // DISABLE_SPLIT_STACK is true if this function may not split the stack; this
   // is used for the implementation of recover.
+  // DOES_NOT_RETURN is true for a function that does not return; this is used
+  // for the implementation of panic.
   // IN_UNIQUE_SECTION is true if this function should be put into a unique
   // location if possible; this is used for field tracking.
   virtual Bfunction*
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
            bool is_visible, bool is_declaration, bool is_inlinable,
-           bool disable_split_stack, bool in_unique_section, Location) = 0;
+           bool disable_split_stack, bool does_not_return,
+	   bool in_unique_section, Location) = 0;
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:

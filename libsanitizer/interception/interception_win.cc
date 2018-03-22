@@ -146,10 +146,16 @@ static void InterceptionFailed() {
 }
 
 static bool DistanceIsWithin2Gig(uptr from, uptr target) {
+#if SANITIZER_WINDOWS64
   if (from < target)
     return target - from <= (uptr)0x7FFFFFFFU;
   else
     return from - target <= (uptr)0x80000000U;
+#else
+  // In a 32-bit address space, the address calculation will wrap, so this check
+  // is unnecessary.
+  return true;
+#endif
 }
 
 static uptr GetMmapGranularity() {
@@ -215,9 +221,8 @@ static bool IsMemoryPadding(uptr address, uptr size) {
   return true;
 }
 
-static const u8 kHintNop10Bytes[] = {
-  0x66, 0x66, 0x0F, 0x1F, 0x84,
-  0x00, 0x00, 0x00, 0x00, 0x00
+static const u8 kHintNop9Bytes[] = {
+  0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
 template<class T>
@@ -232,8 +237,8 @@ static bool FunctionHasPrefix(uptr address, const T &pattern) {
 static bool FunctionHasPadding(uptr address, uptr size) {
   if (IsMemoryPadding(address - size, size))
     return true;
-  if (size <= sizeof(kHintNop10Bytes) &&
-      FunctionHasPrefix(address, kHintNop10Bytes))
+  if (size <= sizeof(kHintNop9Bytes) &&
+      FunctionHasPrefix(address, kHintNop9Bytes))
     return true;
   return false;
 }
@@ -469,7 +474,7 @@ static size_t GetInstructionSize(uptr address, size_t* rel_offset = nullptr) {
   switch (*(u8*)address) {
     case 0xA1:  // A1 XX XX XX XX XX XX XX XX :
                 //   movabs eax, dword ptr ds:[XXXXXXXX]
-      return 8;
+      return 9;
   }
 
   switch (*(u16*)address) {
@@ -487,6 +492,11 @@ static size_t GetInstructionSize(uptr address, size_t* rel_offset = nullptr) {
     case 0x5741:  // push r15
     case 0x9066:  // Two-byte NOP
       return 2;
+
+    case 0x058B:  // 8B 05 XX XX XX XX : mov eax, dword ptr [XX XX XX XX]
+      if (rel_offset)
+        *rel_offset = 2;
+      return 6;
   }
 
   switch (0x00FFFFFF & *(u32*)address) {
@@ -870,6 +880,8 @@ uptr InternalGetProcAddress(void *module, const char *func_name) {
 
   IMAGE_DATA_DIRECTORY *export_directory =
       &headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+  if (export_directory->Size == 0)
+    return 0;
   RVAPtr<IMAGE_EXPORT_DIRECTORY> exports(module,
                                          export_directory->VirtualAddress);
   RVAPtr<DWORD> functions(module, exports->AddressOfFunctions);

@@ -1,5 +1,6 @@
 // PR tree-optimization/56029
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 template <class T>
 struct DefaultDeleter

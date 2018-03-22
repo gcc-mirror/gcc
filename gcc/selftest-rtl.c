@@ -1,5 +1,5 @@
 /* Selftest support for RTL.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +34,29 @@ along with GCC; see the file COPYING3.  If not see
 #if CHECKING_P
 
 namespace selftest {
+
+/* Compare rtx EXPECTED and ACTUAL using rtx_equal_p, calling
+   ::selftest::pass if they are equal, aborting if they are non-equal.
+   LOC is the effective location of the assertion, MSG describes it.  */
+
+void
+assert_rtx_eq_at (const location &loc, const char *msg,
+		  rtx expected, rtx actual)
+{
+  if (rtx_equal_p (expected, actual))
+    ::selftest::pass (loc, msg);
+  else
+    {
+      fprintf (stderr, "%s:%i: %s: FAIL: %s\n", loc.m_file, loc.m_line,
+	       loc.m_function, msg);
+      fprintf (stderr, "  expected: ");
+      print_rtl (stderr, expected);
+      fprintf (stderr, "\n  actual: ");
+      print_rtl (stderr, actual);
+      fprintf (stderr, "\n");
+      abort ();
+    }
+}
 
 /* Compare rtx EXPECTED and ACTUAL by pointer equality, calling
    ::selftest::pass if they are equal, aborting if they are non-equal.

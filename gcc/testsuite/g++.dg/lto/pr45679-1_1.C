@@ -1,4 +1,4 @@
-    extern "C" {
+  extern "C" {
     typedef struct _IO_FILE FILE;
     extern struct _IO_FILE *stderr;
     extern int fprintf (FILE *__restrict __stream,       __const char *__restrict __format, ...);

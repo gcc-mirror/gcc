@@ -19,10 +19,10 @@ struct A
   int *a;
   A ();
   ~A () { a3 (); }
-  int a1 (int * p) { if (!p) f3 (); f2 (p); }
+  int a1 (int * p) { if (!p) f3 (); f2 (p); return 0; }
   int *a2 ();
   void a3 () { if (*a) a1 (a); }
-  int a4 (int x) { if (*a) f4 (); *a2 () += x; }
+  int a4 (int x) { if (*a) f4 (); *a2 () += x; return 0; }
 };
 
 struct B : A

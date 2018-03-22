@@ -6,5 +6,6 @@ struct A
   int foo()
   {
     [this]{ return foo; }; // { dg-error "invalid use of member function|cannot convert" }
+    return 0;
   }
 };
