@@ -1,3 +1,11 @@
+2018-03-22  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2018-03-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/84956
+	* gcc.dg/pr84956.c: New test.
+
 2018-03-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85001
