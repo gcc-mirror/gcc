@@ -162,7 +162,6 @@ extern void rs6000_emit_parity (rtx, rtx);
 extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 						   rtx);
 extern rtx rs6000_address_for_fpconvert (rtx);
-extern rtx rs6000_address_for_altivec (rtx);
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
 extern int rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
