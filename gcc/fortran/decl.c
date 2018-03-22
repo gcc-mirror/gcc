@@ -1245,15 +1245,26 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 		       "from a previous declaration",  name);
     }
 
-    if (sym && !sym->gfc_new
-	&& sym->attr.flavor != FL_UNKNOWN
-	&& sym->attr.referenced == 0 && sym->attr.subroutine == 1
-	&& gfc_state_stack->state == COMP_CONTAINS
-	&& gfc_state_stack->previous->state == COMP_SUBROUTINE)
-    {
-	gfc_error_now ("Procedure %qs at %C is already defined at %L",
-		       name, &sym->declared_at);
-    }
+  /* C1246 (R1225) MODULE shall appear only in the function-stmt or
+     subroutine-stmt of a module subprogram or of a nonabstract interface
+     body that is declared in the scoping unit of a module or submodule.  */
+  if (sym->attr.external
+      && (sym->attr.subroutine || sym->attr.function)
+      && sym->attr.if_source == IFSRC_IFBODY
+      && !current_attr.module_procedure
+      && sym->attr.proc == PROC_MODULE
+      && gfc_state_stack->state == COMP_CONTAINS)
+    gfc_error_now ("Procedure %qs defined in interface body at %L "
+		   "clashes with internal procedure defined at %C",
+		    name, &sym->declared_at);
+
+  if (sym && !sym->gfc_new
+      && sym->attr.flavor != FL_UNKNOWN
+      && sym->attr.referenced == 0 && sym->attr.subroutine == 1
+      && gfc_state_stack->state == COMP_CONTAINS
+      && gfc_state_stack->previous->state == COMP_SUBROUTINE)
+    gfc_error_now ("Procedure %qs at %C is already defined at %L",
+		    name, &sym->declared_at);
 
   if (gfc_current_ns->parent == NULL || *result == NULL)
     return rc;

@@ -1,3 +1,10 @@
+2018-03-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/84922
+	* decl.c (get_proc_name): If the MODULE prefix appears in interface
+	body, then it must appear on the contained subroutine or function.
+	While here, fix nearby mis-indented code.
+
 2018-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Harald Anlauf  <anlauf@gmx.de>
 
