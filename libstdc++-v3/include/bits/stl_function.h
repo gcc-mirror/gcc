@@ -523,15 +523,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
 	}
 
-      template<typename _Tp, typename _Up, typename = void>
-	struct __not_overloaded;
-
-      // False if we can call operator>(T,U)
-      template<typename _Tp, typename _Up>
-	struct __not_overloaded<_Tp, _Up, __void_t<
-	  decltype(operator>(std::declval<_Tp>(), std::declval<_Up>()))>>
-	: false_type { };
-
+      // True if there is no viable operator> member function.
       template<typename _Tp, typename _Up, typename = void>
 	struct __not_overloaded2 : true_type { };
 
@@ -541,8 +533,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  decltype(std::declval<_Tp>().operator>(std::declval<_Up>()))>>
 	: false_type { };
 
+      // True if there is no overloaded operator> for these operands.
+      template<typename _Tp, typename _Up, typename = void>
+	struct __not_overloaded : __not_overloaded2<_Tp, _Up> { };
+
+      // False if we can call operator>(T,U)
       template<typename _Tp, typename _Up>
-	struct __not_overloaded<_Tp, _Up> : __not_overloaded2<_Tp, _Up> { };
+	struct __not_overloaded<_Tp, _Up, __void_t<
+	  decltype(operator>(std::declval<_Tp>(), std::declval<_Up>()))>>
+	: false_type { };
 
       template<typename _Tp, typename _Up>
 	using __ptr_cmp = __and_<__not_overloaded<_Tp, _Up>,
@@ -586,15 +585,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
 	}
 
-      template<typename _Tp, typename _Up, typename = void>
-	struct __not_overloaded;
-
-      // False if we can call operator<(T,U)
-      template<typename _Tp, typename _Up>
-	struct __not_overloaded<_Tp, _Up, __void_t<
-	  decltype(operator<(std::declval<_Tp>(), std::declval<_Up>()))>>
-	: false_type { };
-
+      // True if there is no viable operator< member function.
       template<typename _Tp, typename _Up, typename = void>
 	struct __not_overloaded2 : true_type { };
 
@@ -604,8 +595,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  decltype(std::declval<_Tp>().operator<(std::declval<_Up>()))>>
 	: false_type { };
 
+      // True if there is no overloaded operator< for these operands.
+      template<typename _Tp, typename _Up, typename = void>
+	struct __not_overloaded : __not_overloaded2<_Tp, _Up> { };
+
+      // False if we can call operator<(T,U)
       template<typename _Tp, typename _Up>
-	struct __not_overloaded<_Tp, _Up> : __not_overloaded2<_Tp, _Up> { };
+	struct __not_overloaded<_Tp, _Up, __void_t<
+	  decltype(operator<(std::declval<_Tp>(), std::declval<_Up>()))>>
+	: false_type { };
 
       template<typename _Tp, typename _Up>
 	using __ptr_cmp = __and_<__not_overloaded<_Tp, _Up>,
@@ -649,15 +647,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
 	}
 
-      template<typename _Tp, typename _Up, typename = void>
-	struct __not_overloaded;
-
-      // False if we can call operator>=(T,U)
-      template<typename _Tp, typename _Up>
-	struct __not_overloaded<_Tp, _Up, __void_t<
-	  decltype(operator>=(std::declval<_Tp>(), std::declval<_Up>()))>>
-	: false_type { };
-
+      // True if there is no viable operator>= member function.
       template<typename _Tp, typename _Up, typename = void>
 	struct __not_overloaded2 : true_type { };
 
@@ -667,8 +657,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  decltype(std::declval<_Tp>().operator>=(std::declval<_Up>()))>>
 	: false_type { };
 
+      // True if there is no overloaded operator>= for these operands.
+      template<typename _Tp, typename _Up, typename = void>
+	struct __not_overloaded : __not_overloaded2<_Tp, _Up> { };
+
+      // False if we can call operator>=(T,U)
       template<typename _Tp, typename _Up>
-	struct __not_overloaded<_Tp, _Up> : __not_overloaded2<_Tp, _Up> { };
+	struct __not_overloaded<_Tp, _Up, __void_t<
+	  decltype(operator>=(std::declval<_Tp>(), std::declval<_Up>()))>>
+	: false_type { };
 
       template<typename _Tp, typename _Up>
 	using __ptr_cmp = __and_<__not_overloaded<_Tp, _Up>,
@@ -712,15 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
 	}
 
-      template<typename _Tp, typename _Up, typename = void>
-	struct __not_overloaded;
-
-      // False if we can call operator<=(T,U)
-      template<typename _Tp, typename _Up>
-	struct __not_overloaded<_Tp, _Up, __void_t<
-	  decltype(operator<=(std::declval<_Tp>(), std::declval<_Up>()))>>
-	: false_type { };
-
+      // True if there is no viable operator<= member function.
       template<typename _Tp, typename _Up, typename = void>
 	struct __not_overloaded2 : true_type { };
 
@@ -730,8 +719,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  decltype(std::declval<_Tp>().operator<=(std::declval<_Up>()))>>
 	: false_type { };
 
+      // True if there is no overloaded operator<= for these operands.
+      template<typename _Tp, typename _Up, typename = void>
+	struct __not_overloaded : __not_overloaded2<_Tp, _Up> { };
+
+      // False if we can call operator<=(T,U)
       template<typename _Tp, typename _Up>
-	struct __not_overloaded<_Tp, _Up> : __not_overloaded2<_Tp, _Up> { };
+	struct __not_overloaded<_Tp, _Up, __void_t<
+	  decltype(operator<=(std::declval<_Tp>(), std::declval<_Up>()))>>
+	: false_type { };
 
       template<typename _Tp, typename _Up>
 	using __ptr_cmp = __and_<__not_overloaded<_Tp, _Up>,
