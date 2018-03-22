@@ -1,12 +1,3 @@
-2017-03-27  Tom de Vries  <tom@codesourcery.com>
-
-	backport from trunk:
-	2017-03-24  Tom de Vries  <tom@codesourcery.com>
-
-	PR testsuite/80092
-	* gcc.dg/tls/emutls-2.c:  Add dg-require-effective-target
-	global_constructor.
-
 2018-03-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	ChangeLog entry for r258698
