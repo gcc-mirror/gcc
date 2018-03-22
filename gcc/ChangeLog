@@ -1,3 +1,18 @@
+2018-03-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/84760
+	* doc/extend.texi: Add four new prototypes for vec_ld.
+	* config/rs6000/rs6000-builtin.def (LVX_V1TI): Reorder symbol
+	definitions for more logical presentation.
+	* config/rs6000/rs6000-c.c: (altivec_overloaded_builtins): Add
+	entries for V1TI variants of __builtin_altivec_ld builtin.
+	* config/rs6000/rs6000.c: (altivec_expand_lv_builtin): Add test and
+	handling of V1TI variant of LVX icode pattern.
+	(altivec_expand_builtin): Add case for ALTIVEC_BUILTIN_LVX_V1TI.
+	(rs6000_gimple_fold_builtin): Likewise.
+	(altivec_init_builtins): Add code to define
+	__builtin_altivec_lvx_v1ti function.
+
 2018-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/84941

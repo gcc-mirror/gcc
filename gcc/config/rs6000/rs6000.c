@@ -14451,7 +14451,8 @@ altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
   /* For LVX, express the RTL accurately by ANDing the address with -16.
      LVXL and LVE*X expand to use UNSPECs to hide their special behavior,
      so the raw address is fine.  */
-  if (icode == CODE_FOR_altivec_lvx_v2df
+  if (icode == CODE_FOR_altivec_lvx_v1ti
+      || icode == CODE_FOR_altivec_lvx_v2df
       || icode == CODE_FOR_altivec_lvx_v2di
       || icode == CODE_FOR_altivec_lvx_v4sf
       || icode == CODE_FOR_altivec_lvx_v4si
@@ -15805,6 +15806,9 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     case ALTIVEC_BUILTIN_LVXL_V16QI:
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v16qi,
 					exp, target, false);
+    case ALTIVEC_BUILTIN_LVX_V1TI:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v1ti,
+					exp, target, false);
     case ALTIVEC_BUILTIN_LVX_V2DF:
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v2df,
 					exp, target, false);
@@ -16542,6 +16546,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_LVX_V4SF:
     case ALTIVEC_BUILTIN_LVX_V2DI:
     case ALTIVEC_BUILTIN_LVX_V2DF:
+    case ALTIVEC_BUILTIN_LVX_V1TI:
       {
 	arg0 = gimple_call_arg (stmt, 0);  // offset
 	arg1 = gimple_call_arg (stmt, 1);  // address
@@ -17443,6 +17448,10 @@ altivec_init_builtins (void)
     = build_function_type_list (V2DI_type_node,
 				long_integer_type_node, pcvoid_type_node,
 				NULL_TREE);
+  tree v1ti_ftype_long_pcvoid
+    = build_function_type_list (V1TI_type_node,
+				long_integer_type_node, pcvoid_type_node,
+				NULL_TREE);
 
   tree void_ftype_opaque_long_pvoid
     = build_function_type_list (void_type_node,
@@ -17538,6 +17547,8 @@ altivec_init_builtins (void)
   def_builtin ("__builtin_altivec_lvxl_v16qi", v16qi_ftype_long_pcvoid,
 	       ALTIVEC_BUILTIN_LVXL_V16QI);
   def_builtin ("__builtin_altivec_lvx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVX);
+  def_builtin ("__builtin_altivec_lvx_v1ti", v1ti_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVX_V1TI);
   def_builtin ("__builtin_altivec_lvx_v2df", v2df_ftype_long_pcvoid,
 	       ALTIVEC_BUILTIN_LVX_V2DF);
   def_builtin ("__builtin_altivec_lvx_v2di", v2di_ftype_long_pcvoid,
