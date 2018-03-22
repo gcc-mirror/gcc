@@ -1,3 +1,9 @@
+2018-03-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/84956
+	* tree-ssa-tail-merge.c (find_clusters_1): Skip bbs with
+	bb_has_abnormal_pred.
+
 2018-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/85018
