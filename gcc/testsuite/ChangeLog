@@ -1,3 +1,9 @@
+2018-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84854
+	* g++.dg/cpp1z/constexpr-if15.C: New test.
+	* g++.dg/cpp1z/constexpr-if16.C: New test.
+
 2018-03-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/builtin-tgmath-3.c: New test.
