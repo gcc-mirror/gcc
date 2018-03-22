@@ -1,3 +1,12 @@
+2018-03-22  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2018-03-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/84956
+	* tree-ssa-tail-merge.c (find_clusters_1): Skip bbs with
+	bb_has_abnormal_pred.
+
 2018-03-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
