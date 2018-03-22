@@ -1253,6 +1253,12 @@ use_blocks_for_decl_p (tree decl)
   if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
     return false;
 
+  /* DECL_INITIAL (decl) set to decl is a hack used for some decls that
+     are never used from code directly and we never want object block handling
+     for those.  */
+  if (DECL_INITIAL (decl) == decl)
+    return false;
+
   /* If this decl is an alias, then we don't want to emit a
      definition.  */
   if (VAR_P (decl)

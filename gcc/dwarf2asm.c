@@ -982,6 +982,9 @@ dw2_output_indirect_constant_1 (const char *sym, tree id)
   flag_section_anchors = save_flag_section_anchors;
   flag_sanitize = save_flag_sanitize;
   assemble_integer (sym_ref, POINTER_SIZE_UNITS, POINTER_SIZE, 1);
+  /* The following is a hack recognized by use_blocks_for_decl_p to disable
+     section anchor handling of the decl.  */
+  DECL_INITIAL (decl) = decl;
 
   return 0;
 }
