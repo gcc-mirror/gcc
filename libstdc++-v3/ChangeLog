@@ -1,3 +1,9 @@
+2018-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/77691
+	* testsuite/experimental/memory_resource/resource_adaptor.cc:
+	xfail execution on 32-bit Solaris/x86.
+
 2018-03-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/function_objects/comparisons_pointer.cc: Use
