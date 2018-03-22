@@ -3748,14 +3748,6 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
        creating a garbage BASELINK; constructors can't be inherited.  */
     ctors = get_class_binding (totype, complete_ctor_identifier);
 
-  /* FIXME P0135 doesn't say what to do in C++17 about list-initialization from
-     a single element.  For now, let's handle constructors as before and also
-     consider conversion operators from the element.  */
-  if (cxx_dialect >= cxx17
-      && BRACE_ENCLOSED_INITIALIZER_P (expr)
-      && CONSTRUCTOR_NELTS (expr) == 1)
-    fromtype = TREE_TYPE (CONSTRUCTOR_ELT (expr, 0)->value);
-
   if (MAYBE_CLASS_TYPE_P (fromtype))
     {
       tree to_nonref = non_reference (totype);
@@ -3832,7 +3824,6 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   if (conv_fns)
     {
       if (BRACE_ENCLOSED_INITIALIZER_P (expr))
-	/* FIXME see above about C++17.  */
 	first_arg = CONSTRUCTOR_ELT (expr, 0)->value;
       else
 	first_arg = expr;
@@ -7604,6 +7595,26 @@ unsafe_copy_elision_p (tree target, tree exp)
 	  && !AGGR_INIT_VIA_CTOR_P (init));
 }
 
+/* True iff C is a conversion that binds a reference to a prvalue.  */
+
+static bool
+conv_binds_ref_to_prvalue (conversion *c)
+{
+  if (c->kind != ck_ref_bind)
+    return false;
+  if (c->need_temporary_p)
+    return true;
+
+  c = next_conversion (c);
+
+  if (c->kind == ck_rvalue)
+    return true;
+  if (c->kind == ck_user && TREE_CODE (c->type) != REFERENCE_TYPE)
+    return true;
+
+  return false;
+}
+
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
    ARGS is a TREE_LIST of the unconverted arguments to the call.  FLAGS is a
@@ -7682,6 +7693,22 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	joust (cand, w->loser, 1, complain);
     }
 
+  /* Core issue 2327: P0135 doesn't say how to handle the case where the
+     argument to the copy constructor ends up being a prvalue after
+     conversion.  Let's do the normal processing, but pretend we aren't
+     actually using the copy constructor.  */
+  bool force_elide = false;
+  if (cxx_dialect >= cxx17
+      && cand->num_convs == 1
+      && DECL_COMPLETE_CONSTRUCTOR_P (fn)
+      && (DECL_COPY_CONSTRUCTOR_P (fn)
+	  || DECL_MOVE_CONSTRUCTOR_P (fn))
+      && conv_binds_ref_to_prvalue (convs[0]))
+    {
+      force_elide = true;
+      goto not_really_used;
+    }
+
   /* OK, we're actually calling this inherited constructor; set its deletedness
      appropriately.  We can get away with doing this here because calling is
      the only way to refer to a constructor.  */
@@ -7745,6 +7772,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	return error_mark_node;
       /* else continue to get conversion error.  */
     }
+
+ not_really_used:
 
   /* N3276 magic doesn't apply to nested calls.  */
   tsubst_flags_t decltype_flag = (complain & tf_decltype);
@@ -8066,7 +8095,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */
 
-  if (! flag_elide_constructors)
+  if (! flag_elide_constructors && !force_elide)
     /* Do things the hard way.  */;
   else if (cand->num_convs == 1 
            && (DECL_COPY_CONSTRUCTOR_P (fn) 
@@ -8074,7 +8103,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	   /* It's unsafe to elide the constructor when handling
 	      a noexcept-expression, it may evaluate to the wrong
 	      value (c++/53025).  */
-	   && cp_noexcept_operand == 0)
+	   && (force_elide || cp_noexcept_operand == 0))
     {
       tree targ;
       tree arg = argarray[num_artificial_parms_for (fn)];
@@ -8112,6 +8141,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 subobject.  */
       if (CHECKING_P && cxx_dialect >= cxx17)
 	gcc_assert (TREE_CODE (arg) != TARGET_EXPR
+		    || force_elide
 		    /* It's from binding the ref parm to a packed field. */
 		    || convs[0]->need_temporary_p
 		    || seen_error ()
@@ -8120,7 +8150,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
-      if (!trivial)
+      if (!trivial && !force_elide)
 	{
 	  if (!mark_used (fn, complain) && !(complain & tf_error))
 	    return error_mark_node;
@@ -8206,6 +8236,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return cp_build_fold_indirect_ref (argarray[0]);
 	}
     }
+
+  gcc_assert (!force_elide);
 
   if (!already_used
       && !mark_used (fn, complain))
@@ -8873,23 +8905,11 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
     {
       tree arg = (**args)[0];
 
-      /* FIXME P0135 doesn't say how to handle direct initialization from a
-	 type with a suitable conversion operator.  Let's handle it like
-	 copy-initialization, but allowing explict conversions.  */
-      tsubst_flags_t sub_complain = tf_warning;
-      if (!is_dummy_object (instance))
-	/* If we're using this to initialize a non-temporary object, don't
-	   require the destructor to be accessible.  */
-	sub_complain |= tf_no_cleanup;
       if (BRACE_ENCLOSED_INITIALIZER_P (arg)
-	  && !CONSTRUCTOR_IS_DIRECT_INIT (arg))
-	/* An init-list arg needs to convert to the parm type (83937), so fall
-	   through to normal processing.  */
-	arg = error_mark_node;
-      else if (!reference_related_p (class_type, TREE_TYPE (arg)))
-	arg = perform_implicit_conversion_flags (class_type, arg,
-						 sub_complain,
-						 flags);
+	  && !TYPE_HAS_LIST_CTOR (class_type)
+	  && CONSTRUCTOR_NELTS (arg) == 1)
+	arg = CONSTRUCTOR_ELT (arg, 0)->value;
+
       if ((TREE_CODE (arg) == TARGET_EXPR
 	   || TREE_CODE (arg) == CONSTRUCTOR)
 	  && (same_type_ignoring_top_level_qualifiers_p
