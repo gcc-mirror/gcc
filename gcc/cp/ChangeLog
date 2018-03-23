@@ -1,5 +1,9 @@
 2018-03-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84839 - ICE with decltype of parameter pack.
+	* pt.c (tsubst_pack_expansion): Set cp_unevaluated_operand while
+	instantiating dummy parms.
+
 	PR c++/84798 - ICE with auto in abstract function declarator.
 	* parser.c (cp_parser_parameter_declaration_clause): Check
 	parser->default_arg_ok_p.
