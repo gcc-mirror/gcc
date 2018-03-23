@@ -1657,6 +1657,25 @@ struct warning_sentinel
   ~warning_sentinel() { flag = val; }
 };
 
+/* RAII sentinel that saves the value of a variable, optionally
+   overrides it right away, and restores its value when the sentinel
+   id destructed.  */
+
+template <typename T>
+class temp_override
+{
+  T& overridden_variable;
+  T saved_value;
+public:
+  temp_override(T& var) : overridden_variable (var), saved_value (var) {}
+  temp_override(T& var, T overrider)
+    : overridden_variable (var), saved_value (var)
+  {
+    overridden_variable = overrider;
+  }
+  ~temp_override() { overridden_variable = saved_value; }
+};
+
 /* The cached class binding level, from the most recently exited
    class, or NULL if none.  */
 
