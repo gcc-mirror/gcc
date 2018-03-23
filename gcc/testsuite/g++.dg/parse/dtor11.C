@@ -8,5 +8,5 @@ struct A
 
 struct B
 {
-  A::~B B();  // { dg-error "as member of" }
+  A::~B B();  // { dg-error "as member of|as a type" }
 };

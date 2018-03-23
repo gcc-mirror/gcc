@@ -3455,7 +3455,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
 				/*template_keyword_p=*/false,
 				/*check_dependency_p=*/true,
 				/*template_p=*/NULL,
-				/*declarator_p=*/true,
+				/*declarator_p=*/false,
 				/*optional_p=*/false);
   /* If the next token is a (, this is a function with no explicit return
      type, i.e. constructor, destructor or conversion op.  */

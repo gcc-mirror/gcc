@@ -1,5 +1,11 @@
 2018-03-22  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/84789
+	* g++.dg/template/pr84789.C: New.
+	* g++.dg/template/pr84789-2.C: New.
+	* g++.dg/template/pr84789-3.C: New.
+	* g++.dg/parse/dtor11.C: Accept alternate error message.
+
 	PR c++/84729
 	* g++.dg/pr84729.C: New.
 	* g++.old-deja/g++.ext/arrnew2.C: Require error.

@@ -25249,6 +25249,9 @@ resolve_typename_type (tree type, bool only_current_p)
   gcc_assert (TREE_CODE (type) == TYPENAME_TYPE);
 
   scope = TYPE_CONTEXT (type);
+  /* We shouldn't have built a TYPENAME_TYPE with a non-dependent scope.  */
+  gcc_checking_assert (uses_template_parms (scope));
+
   /* Usually the non-qualified identifier of a TYPENAME_TYPE is
      TYPE_IDENTIFIER (type). But when 'type' is a typedef variant of
      a TYPENAME_TYPE node, then TYPE_NAME (type) is set to the TYPE_DECL representing
@@ -25285,8 +25288,6 @@ resolve_typename_type (tree type, bool only_current_p)
     /* scope is either the template itself or a compatible instantiation
        like X<T>, so look up the name in the original template.  */
     scope = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope);
-  /* We shouldn't have built a TYPENAME_TYPE with a non-dependent scope.  */
-  gcc_checking_assert (uses_template_parms (scope));
   /* If scope has no fields, it can't be a current instantiation.  Check this
      before currently_open_class to avoid infinite recursion (71515).  */
   if (!TYPE_FIELDS (scope))
