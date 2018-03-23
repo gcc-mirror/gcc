@@ -1,5 +1,11 @@
 2018-03-23  Peter Bergner  <bergner@vnet.ibm.com>
 
+	* gcc.target/powerpc/builtins-1-le.c <vclzb>: Rename duplicate test
+	from this to...
+	<vclzd>: ...this.
+
+2018-03-23  Peter Bergner  <bergner@vnet.ibm.com>
+
 	* gcc.target/powerpc/builtins-1-le.c: Filter out gimple folding disabled
 	message.  Fix scan-assembler patterns.
 
