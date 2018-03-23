@@ -425,36 +425,6 @@ procedure Gnatlink is
 
                elsif Arg'Length = 2 then
                   case Arg (2) is
-                     when 'b' =>
-                        Linker_Options.Increment_Last;
-                        Linker_Options.Table (Linker_Options.Last) :=
-                          new String'(Arg);
-
-                        Binder_Options.Increment_Last;
-                        Binder_Options.Table (Binder_Options.Last) :=
-                          Linker_Options.Table (Linker_Options.Last);
-
-                        Next_Arg := Next_Arg + 1;
-
-                        if Next_Arg > Argument_Count then
-                           Exit_With_Error ("Missing argument for -b");
-                        end if;
-
-                        Get_Machine_Name : declare
-                           Name_Arg : constant String_Access :=
-                                        new String'(Argument (Next_Arg));
-
-                        begin
-                           Linker_Options.Increment_Last;
-                           Linker_Options.Table (Linker_Options.Last) :=
-                             Name_Arg;
-
-                           Binder_Options.Increment_Last;
-                           Binder_Options.Table (Binder_Options.Last) :=
-                             Name_Arg;
-
-                        end Get_Machine_Name;
-
                      when 'f' =>
                         if Object_List_File_Supported then
                            Object_List_File_Required := True;
@@ -1430,7 +1400,6 @@ procedure Gnatlink is
       Write_Line ("  -v -v Very verbose mode");
       Write_Eol;
       Write_Line ("  -o nam     Use 'nam' as the name of the executable");
-      Write_Line ("  -b target  Compile the binder source to run on target");
       Write_Line ("  -Bdir      Load compiler executables from dir");
 
       if Is_Supported (Map_File) then
