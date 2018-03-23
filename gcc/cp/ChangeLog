@@ -1,5 +1,9 @@
 2018-03-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78489 - Substitution in wrong order
+	PR c++/84489
+	* pt.c (type_unification_real): Revert last two changes.
+
 	PR c++/71834 - template-id with too few arguments.
 	* pt.c (coerce_template_parms): Make sure we gave an error.
 
