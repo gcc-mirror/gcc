@@ -1,3 +1,7 @@
+2018-03-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/pr84704.C: XFAIL AIX.
+
 2018-03-23  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/84826
