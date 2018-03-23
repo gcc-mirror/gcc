@@ -1,3 +1,9 @@
+2018-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/85026
+	* config/arm/arm.md (unaligned_loadhis): Remove first alternative.
+	Clean up attributes.
+
 2018-03-23  Richard Biener  <rguenther@suse.de>
 
 	PR debug/85020
