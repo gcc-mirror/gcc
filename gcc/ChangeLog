@@ -1,3 +1,10 @@
+2018-03-23  Carl Love  <cel@us.ibm.com>
+
+	Backport from mainline:
+	2018-03-14  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/r6000.c (rtx_is_swappable_p): Add case UNSPEC_VPERMXOR.
+
 2018-03-22  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
