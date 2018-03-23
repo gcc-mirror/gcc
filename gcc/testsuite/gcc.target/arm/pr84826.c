@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-Ofast -fstack-clash-protection" } */
 
 void d (void *);
