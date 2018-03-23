@@ -1,3 +1,9 @@
+2018-03-23  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement P0962
+	* parser.c (cp_parser_perform_range_for_lookup): Change
+	the condition for deciding whether to use members.
+
 2018-03-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85033
