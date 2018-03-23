@@ -1,3 +1,10 @@
+2018-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/85020
+	* gnat.dg/lto22.adb: New test.
+	* gnat.dg/lto22_pkg1.ad[sb]: New helper.
+	* gnat.dg/lto22_pkg2.ads: Likewise.
+
 2018-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/80778
