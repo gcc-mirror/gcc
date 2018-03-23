@@ -132,7 +132,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv mpich"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -1783,6 +1783,56 @@ if test -d ${srcdir}/gcc; then
       echo configure.ac: warning: 'f95' as language name is deprecated, use 'fortran' instead 1>&2
       enable_languages=`echo "${enable_languages}" | sed -e 's/f95/fortran/g'`
       ;;
+  esac
+
+  # Check if fortran is enabled. Support for coarrays requires a MPI.
+  case ,${enable_languages}, in
+    *,fortran,*)
+    # Check for MPI. Default is MPICH.
+    mpilibs="-lmpich"
+    mpiinc=
+    have_mpi=no
+    # Specify a location for MPI package
+    AC_ARG_WITH(mpi,
+    [AS_HELP_STRING([--with-mpi=PATH],
+             [specify prefix directory for installed MPI package.
+              Equivalent to --with-mpi-include=PATH/include
+	      plus --with-mpi-lib=PATH/lib])])
+    AC_ARG_WITH(mpi-include,
+    [AS_HELP_STRING([--with-mpi-include=PATH],
+                    [specify directory for installed MPI include files])])
+    AC_ARG_WITH(mpi-lib,
+    [AS_HELP_STRING([--with-mpi-lib=PATH],
+		    [specify directory for the installed MPI library])])
+    # Test if MPI exists.
+    if test "x$with_mpi" != x; then
+      mpilibs="-L$with_mpi/lib $mpilibs"
+      mpiinc="-I$with_mpi/include $mpiinc"
+    fi
+    if test "x$with_mpi_include" != x; then
+      mpiinc="-I$with_mpi_include $with_mpiinc"
+    fi
+    if test "x$with_mpi_lib" != x; then
+      mpilibs="-L$with_mpi_lib $mpilibs"
+    fi
+    if test "x$with_mpi$with_mpi_include$with_mpi_lib" = x && test -d ${srcdir}/mpi; then
+      mpilibs='-L$$r/$(HOST_SUBDIR)/mpi/src/'"$lt_cv_objdir $mpilibs"
+      mpiinc='-I$$s/mpi/src '"$mpiinc"
+      have_mpi=yes
+    fi
+    # Coarray support in gfortran requires an MPI installation.
+    if test x$have_mpi != xyes; then
+      AC_MSG_ERROR([Building gfortran requires an MPI installation to support coarrays.
+Try the --with-mpi, or --with-mpi-include and --with-mpi-lib options 
+to specify its location. Source code for the default GCC MPI library, MPICH,
+can be found at its hosting site as well as at 
+ftp://gcc.gnu.org/pub/gcc/infrastructure/. See also 
+http://gcc.gnu.org/install/prerequisites.html for additional info. If
+you obtained a different MPI from a vendor distribution package,
+make sure that you have installed both the libraries and the header
+files. They may be located in separate packages.])
+    fi
+    ;;
   esac
 
   # If bootstrapping, C++ must be enabled.
