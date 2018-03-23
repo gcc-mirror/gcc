@@ -1,4 +1,7 @@
-2018-03-22  Alexandre Oliva <aoliva@redhat.com>
+2018-03-23  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/71251
+	* g++.dg/cpp0x/pr71251.C: New.
 
 	PR c++/84789
 	* g++.dg/template/pr84789.C: New.
