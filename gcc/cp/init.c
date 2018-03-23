@@ -3370,11 +3370,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  else if (*init)
             {
               if (complain & tf_error)
-                permerror (input_location,
-			   "parenthesized initializer in array new");
-              else
-                return error_mark_node;
-	      vecinit = build_tree_list_vec (*init);
+                error ("parenthesized initializer in array new");
+	      return error_mark_node;
             }
 	  init_expr
 	    = build_vec_init (data_addr,
