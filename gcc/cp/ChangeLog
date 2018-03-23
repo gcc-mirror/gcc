@@ -1,3 +1,10 @@
+2018-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85045
+	* cxx-pretty-print.c (cxx_pretty_printer::multiplicative_expression):
+	Handle EXACT_DIV_EXPR and RDIV_EXPR.  Tweak condition.
+	(cxx_pretty_printer::expression): Handle EXACT_DIV_EXPR and RDIV_EXPR.
+
 2018-03-23  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0962

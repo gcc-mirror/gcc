@@ -3,6 +3,10 @@
 	PR c++/85033
 	* g++.dg/ext/builtin-offsetof2.C: New test.
 
+	PR c++/85045
+	* g++.dg/cpp0x/Wnarrowing5.C: New test.
+	* gcc.dg/pr85045.c: New test.
+
 2018-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/85020

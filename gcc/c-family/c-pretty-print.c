@@ -1841,7 +1841,7 @@ c_pretty_printer::multiplicative_expression (tree e)
       pp_c_whitespace (this);
       if (code == MULT_EXPR)
 	pp_c_star (this);
-      else if (code == TRUNC_DIV_EXPR)
+      else if (code != TRUNC_MOD_EXPR)
 	pp_slash (this);
       else
 	pp_modulo (this);
