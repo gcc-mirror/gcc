@@ -1,3 +1,8 @@
+2018-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85033
+	* semantics.c (finish_offsetof): Don't allow CONST_DECLs.
+
 2018-03-23  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/71251
