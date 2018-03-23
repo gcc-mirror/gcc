@@ -1,3 +1,12 @@
+2018-03-23  Nathan Sidwell  <nathan@acm.org>
+
+	Allow dump '-'
+	gcc/
+	* dumpfile.c (dump_open): New. Allow '-' for stdout.
+	(dump_open_alternate_stream, dump_start, dump_begin): Call it.
+	(dump_finish): Identify std{out,err} by stream.
+	* doc/invoke.texi (fdump-rtl): Document stdout/stderr.
+
 2018-03-16  Nathan Sidwell  <nathan@acm.org>
 
 	Remove -fmodules, forcing -fmodules-{ts,atom}

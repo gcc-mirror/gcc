@@ -312,6 +312,28 @@ get_dump_file_name (struct dump_file_info *dfi) const
   return concat (dump_base_name, dump_id, dfi->suffix, NULL);
 }
 
+/* Open a dump file called FILENAME.  Some filenames are special and
+   refer to the standard streams.  TRUNC indicates whether this is the
+   first open (so the file should be truncated, rather than appended).
+   An error message is emitted in the event of failure.  */
+
+static FILE *
+dump_open (const char *filename, bool trunc)
+{
+  if (strcmp ("stderr", filename) == 0)
+    return stderr;
+
+  if (strcmp ("stdout", filename) == 0
+      || strcmp ("-", filename) == 0)
+    return stdout;
+
+  FILE *stream = fopen (filename, trunc ? "w" : "a");
+
+  if (!stream)
+    error ("could not open dump file %qs: %m", filename);
+  return stream;
+}
+
 /* For a given DFI, open an alternate dump filename (which could also
    be a standard stream such as stdout/stderr). If the alternate dump
    file cannot be opened, return NULL.  */
@@ -319,22 +341,15 @@ get_dump_file_name (struct dump_file_info *dfi) const
 static FILE *
 dump_open_alternate_stream (struct dump_file_info *dfi)
 {
-  FILE *stream ;
   if (!dfi->alt_filename)
     return NULL;
 
   if (dfi->alt_stream)
     return dfi->alt_stream;
 
-  stream = strcmp ("stderr", dfi->alt_filename) == 0
-    ? stderr
-    : strcmp ("stdout", dfi->alt_filename) == 0
-    ? stdout
-    : fopen (dfi->alt_filename, dfi->alt_state < 0 ? "w" : "a");
+  FILE *stream = dump_open (dfi->alt_filename, dfi->alt_state < 0);
 
-  if (!stream)
-    error ("could not open dump file %qs: %m", dfi->alt_filename);
-  else
+  if (stream)
     dfi->alt_state = 1;
 
   return stream;
@@ -515,14 +530,8 @@ dump_start (int phase, dump_flags_t *flag_ptr)
   name = get_dump_file_name (phase);
   if (name)
     {
-      stream = strcmp ("stderr", name) == 0
-          ? stderr
-          : strcmp ("stdout", name) == 0
-          ? stdout
-          : fopen (name, dfi->pstate < 0 ? "w" : "a");
-      if (!stream)
-        error ("could not open dump file %qs: %m", name);
-      else
+      stream = dump_open (name, dfi->pstate < 0);
+      if (stream)
         {
           dfi->pstate = 1;
           count++;
@@ -562,13 +571,10 @@ dump_finish (int phase)
   if (phase < 0)
     return;
   dfi = get_dump_file_info (phase);
-  if (dfi->pstream && (!dfi->pfilename
-                       || (strcmp ("stderr", dfi->pfilename) != 0
-                           && strcmp ("stdout", dfi->pfilename) != 0)))
+  if (dfi->pstream && dfi->pstream != stdout && dfi->pstream != stderr)
     fclose (dfi->pstream);
 
-  if (dfi->alt_stream && strcmp ("stderr", dfi->alt_filename) != 0
-      && strcmp ("stdout", dfi->alt_filename) != 0)
+  if (dfi->alt_stream && dfi->alt_stream != stdout && dfi->alt_stream != stderr)
     fclose (dfi->alt_stream);
 
   dfi->alt_stream = NULL;
@@ -607,15 +613,8 @@ dump_begin (int phase, dump_flags_t *flag_ptr)
     return NULL;
   dfi = get_dump_file_info (phase);
 
-  stream = strcmp ("stderr", name) == 0
-    ? stderr
-    : strcmp ("stdout", name) == 0
-    ? stdout
-    : fopen (name, dfi->pstate < 0 ? "w" : "a");
-
-  if (!stream)
-    error ("could not open dump file %qs: %m", name);
-  else
+  stream = dump_open (name, dfi->pstate < 0);
+  if (stream)
     dfi->pstate = 1;
   free (name);
 
