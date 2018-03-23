@@ -1,3 +1,9 @@
+2018-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/85036
+	* gnatlink.adb (Process_Args): Drop existing link switches if multiple
+	switches are passed for --LINK.
+
 2018-03-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/82813

@@ -544,6 +544,11 @@ procedure Gnatlink is
                      end if;
 
                      --  The other arguments are passed as-is to the linker
+                     --  and override those coming from --GCC= if any.
+
+                     if L_Args.all'Last >= 2 then
+                        Gcc_Linker_Options.Set_Last (0);
+                     end if;
 
                      for J in 2 .. L_Args.all'Last loop
                         Gcc_Linker_Options.Increment_Last;
