@@ -1,5 +1,9 @@
 2018-03-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/85034
+	* function.c (match_asm_constraints_1): Don't optimize if input
+	doesn't satisfy general_operand predicate for output's mode.
+
 	PR inline-asm/85022
 	* alias.c (write_dependence_p): Don't require for x_canonicalized
 	non-VOIDmode if x has VOIDmode.
