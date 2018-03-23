@@ -4072,6 +4072,11 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
 	}
       return error_mark_node;
     }
+  if (TREE_CODE (expr) == CONST_DECL)
+    {
+      error ("cannot apply %<offsetof%> to an enumerator %qD", expr);
+      return error_mark_node;
+    }
   if (REFERENCE_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
   if (!complete_type_or_else (TREE_TYPE (TREE_TYPE (object_ptr)), object_ptr))

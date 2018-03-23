@@ -1,3 +1,8 @@
+2018-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85033
+	* g++.dg/ext/builtin-offsetof2.C: New test.
+
 2018-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/85020
