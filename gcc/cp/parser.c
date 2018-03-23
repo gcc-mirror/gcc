@@ -18965,6 +18965,13 @@ cp_parser_alias_declaration (cp_parser* parser)
 			       ds_alias,
 			       using_token);
 
+  if (parser->num_template_parameter_lists
+      && !cp_parser_check_template_parameters (parser,
+					       /*num_templates=*/0,
+					       id_location,
+					       /*declarator=*/NULL))
+    return error_mark_node;
+
   declarator = make_id_declarator (NULL_TREE, id, sfk_none);
   declarator->id_loc = id_location;
 

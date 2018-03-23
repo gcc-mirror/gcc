@@ -1,4 +1,8 @@
-2018-03-22  Alexandre Oliva <aoliva@redhat.com>
+2018-03-23  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/71251
+	* parser.c (cp_parser_alias_declaration): Call
+	parser_check_template_parameters.
 
 	PR c++/84789
 	* pt.c (resolve_typename_type): Drop assert that stopped
