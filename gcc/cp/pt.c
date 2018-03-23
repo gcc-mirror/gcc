@@ -19995,41 +19995,49 @@ type_unification_real (tree tparms,
 	  if (targ || tparm == error_mark_node)
 	    continue;
 	  tree parm = TREE_VALUE (tparm);
-
-	  tsubst_flags_t fcomplain = complain;
-	  if (saw_undeduced == 1)
-	    {
-	      /* When saw_undeduced == 1, substitution into parm and arg might
-		 fail or not replace all template parameters, and that's
-		 fine.  */
-	      fcomplain = tf_none;
-	      if (TREE_CODE (parm) == PARM_DECL
-		  && uses_template_parms (TREE_TYPE (parm)))
-		continue;
-	    }
-
 	  tree arg = TREE_PURPOSE (tparm);
 	  reopen_deferring_access_checks (*checks);
 	  location_t save_loc = input_location;
 	  if (DECL_P (parm))
 	    input_location = DECL_SOURCE_LOCATION (parm);
-
 	  if (saw_undeduced == 1)
 	    ++processing_template_decl;
-	  arg = tsubst_template_arg (arg, full_targs, fcomplain, NULL_TREE);
+
+	  if (saw_undeduced == 1
+	      && TREE_CODE (parm) == PARM_DECL
+	      && uses_template_parms (TREE_TYPE (parm)))
+	    {
+	      /* The type of this non-type parameter depends on undeduced
+		 parameters.  Don't try to use its default argument yet,
+		 but do check whether the arguments we already have cause
+		 substitution failure, so that that happens before we try
+		 later default arguments (78489).  */
+	      tree type = tsubst (TREE_TYPE (parm), full_targs, complain,
+				  NULL_TREE);
+	      if (type == error_mark_node)
+		arg = error_mark_node;
+	      else
+		arg = NULL_TREE;
+	    }
+	  else
+	    {
+	      arg = tsubst_template_arg (arg, full_targs, complain, NULL_TREE);
+
+	      if (!uses_template_parms (arg))
+		arg = convert_template_argument (parm, arg, full_targs,
+						 complain, i, NULL_TREE);
+	      else if (saw_undeduced == 1)
+		arg = NULL_TREE;
+	      else
+		arg = error_mark_node;
+	    }
+
 	  if (saw_undeduced == 1)
 	    --processing_template_decl;
-
-	  if (arg != error_mark_node && !uses_template_parms (arg))
-	    arg = convert_template_argument (parm, arg, full_targs, complain,
-					     i, NULL_TREE);
-	  else if (saw_undeduced == 1)
-	    arg = NULL_TREE;
-	  else
-	    arg = error_mark_node;
 	  input_location = save_loc;
 	  *checks = get_deferred_access_checks ();
 	  pop_deferring_access_checks ();
+
 	  if (arg == error_mark_node)
 	    return 1;
 	  else if (arg)
