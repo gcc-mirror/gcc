@@ -1,5 +1,12 @@
 2018-03-22  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/84789
+	* pt.c (resolve_typename_type): Drop assert that stopped
+	simplification to template-independent types.  Add assert to
+	verify the initial scope is template dependent.
+	* parser.c (cp_parser_parse_and_diagnose_invalid_type_name):
+	Reparse the id expression as a type-name, not a declarator.
+
 	PR c++/84729
 	* init.c (build_vec_init): Error at parenthesized array init.
 
