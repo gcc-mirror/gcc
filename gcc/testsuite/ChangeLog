@@ -1,3 +1,8 @@
+2018-03-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/85030
+	* testsuite/gcc.target/i386/pr85030.c: New.
+
 2018-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/85026
