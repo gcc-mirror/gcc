@@ -9524,7 +9524,8 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       constant_expression_error (size);
 
       /* An array must have a positive number of elements.  */
-      if (tree_int_cst_lt (size, integer_zero_node))
+      tree signed_size = fold_convert (ssizetype, size);
+      if (tree_int_cst_lt (signed_size, integer_zero_node))
 	{
 	  if (!(complain & tf_error))
 	    return error_mark_node;
