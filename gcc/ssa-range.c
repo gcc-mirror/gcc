@@ -512,6 +512,8 @@ path_ranger::path_range_of_def (irange &r, gimple *g)
       unsigned x;
       edge e;
 
+      if (!valid_irange_ssa (phi_def))
+        return false;
       if (get_global_ssa_range (r, phi_def))
         return true;
 
