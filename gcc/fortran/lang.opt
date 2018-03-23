@@ -1,5 +1,5 @@
-; Options for the Fortran 95 front end.
-; Copyright (C) 2003-2017 Free Software Foundation, Inc.
+; Options for the Fortran front end.
+; Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -801,6 +801,10 @@ Conform to the ISO Fortran 2008 standard.
 std=f2008ts
 Fortran
 Conform to the ISO Fortran 2008 standard including TS 29113.
+
+std=f2018
+Fortran
+Conform to the ISO Fortran 2018 standard.
 
 std=f95
 Fortran

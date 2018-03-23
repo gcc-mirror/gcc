@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6812,8 +6812,16 @@ package body Checks is
       --  evaluation is always a potential source of inefficiency, and is
       --  functionally incorrect in the volatile case.
 
-      if not Is_Entity_Name (N) or else Treat_As_Volatile (Entity (N)) then
-         Force_Evaluation (N);
+      --  We skip the evaluation of attribute references because, after these
+      --  runtime checks are generated, the expander may need to rewrite this
+      --  node (for example, see Attribute_Max_Size_In_Storage_Elements in
+      --  Expand_N_Attribute_Reference).
+
+      if Nkind (N) /= N_Attribute_Reference
+        and then (not Is_Entity_Name (N)
+                   or else Treat_As_Volatile (Entity (N)))
+      then
+         Force_Evaluation (N, Mode => Strict);
       end if;
 
       --  The easiest case is when Source_Base_Type and Target_Base_Type are

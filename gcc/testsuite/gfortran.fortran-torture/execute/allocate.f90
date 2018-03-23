@@ -12,11 +12,11 @@ subroutine t1(first)
   logical first
 
   if (first) then
-    if (allocated (p)) call abort ()
+    if (allocated (p)) STOP 1
   else
-    if (.not. allocated (p)) call abort ()
+    if (.not. allocated (p)) STOP 2
   end if
-  if (allocated (q)) call abort ()
+  if (allocated (q)) STOP 3
 
   if (first) then
     allocate (p(5))
@@ -33,6 +33,6 @@ subroutine t2()
   allocate (r(5))
   pr = 1.0
   deallocate (r)
-  if (allocated(r)) call abort ()
+  if (allocated(r)) STOP 4
 end subroutine
 end program

@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"		/* For PLUGIN_INCLUDE_FILE event.  */
 #include "mkdeps.h"
 #include "dumpfile.h"
+#include "file-prefix-map.h"    /* add_*_prefix_map()  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -446,6 +447,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fdollars_in_identifiers:
       cpp_opts->dollars_in_ident = value;
+      break;
+
+    case OPT_fmacro_prefix_map_:
+      add_macro_prefix_map (arg);
       break;
 
     case OPT_ffreestanding:

@@ -1,5 +1,5 @@
 // PR c++/35652
-// { dg-options "-O" }
+// { dg-options "-O -Wall" }
 
 #include <string>
 int test() {

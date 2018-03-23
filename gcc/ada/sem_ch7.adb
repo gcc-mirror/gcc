@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1148,6 +1148,10 @@ package body Sem_Ch7 is
 
       if Is_Comp_Unit then
          Set_Body_Required (Parent (N), Body_Required);
+
+         if Legacy_Elaboration_Checks and not Body_Required then
+            Set_Suppress_Elaboration_Warnings (Id);
+         end if;
       end if;
 
       End_Package_Scope (Id);

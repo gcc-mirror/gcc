@@ -1,5 +1,5 @@
 /* Builtin functions for rs6000/powerpc.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
    This file is part of GCC.
@@ -403,6 +403,14 @@
 		     | RS6000_BTC_UNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_P8V_VSX_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #define BU_P8V_OVERLOAD_1(ENUM, NAME)					\
   RS6000_BUILTIN_1 (P8V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
 		    "__builtin_vec_" NAME,		/* NAME */	\
@@ -637,6 +645,14 @@
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P7_MISC_X(ENUM, NAME, ATTR)					\
+  RS6000_BUILTIN_X (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_POPCNTD,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_nothing)			/* ICODE */
 
 
 /* Miscellaneous builtins for instructions added in ISA 2.07.  These
@@ -999,6 +1015,7 @@ BU_ALTIVEC_3 (VSEL_1TI_UNS,   "vsel_1ti_uns",   CONST, 	vector_select_v1ti_uns)
 BU_ALTIVEC_3 (VSLDOI_16QI,    "vsldoi_16qi",    CONST, 	altivec_vsldoi_v16qi)
 BU_ALTIVEC_3 (VSLDOI_8HI,     "vsldoi_8hi",     CONST, 	altivec_vsldoi_v8hi)
 BU_ALTIVEC_3 (VSLDOI_4SI,     "vsldoi_4si",     CONST, 	altivec_vsldoi_v4si)
+BU_ALTIVEC_3 (VSLDOI_2DI,     "vsldoi_2di",     CONST, 	altivec_vsldoi_v2di)
 BU_ALTIVEC_3 (VSLDOI_4SF,     "vsldoi_4sf",     CONST, 	altivec_vsldoi_v4sf)
 BU_ALTIVEC_3 (VSLDOI_2DF,     "vsldoi_2df",     CONST, 	altivec_vsldoi_v2df)
 
@@ -1069,14 +1086,14 @@ BU_ALTIVEC_2 (VMULEUB,	      "vmuleub",	CONST,	vec_widen_umult_even_v16qi)
 BU_ALTIVEC_2 (VMULESB,	      "vmulesb",	CONST,	vec_widen_smult_even_v16qi)
 BU_ALTIVEC_2 (VMULEUH,	      "vmuleuh",	CONST,	vec_widen_umult_even_v8hi)
 BU_ALTIVEC_2 (VMULESH,	      "vmulesh",	CONST,	vec_widen_smult_even_v8hi)
-BU_ALTIVEC_2 (VMULEUW,	      "vmuleuw",	CONST,	vec_widen_umult_even_v4si)
-BU_ALTIVEC_2 (VMULESW,	      "vmulesw",	CONST,	vec_widen_smult_even_v4si)
+BU_P8V_AV_2 (VMULEUW,	      "vmuleuw",	CONST,	vec_widen_umult_even_v4si)
+BU_P8V_AV_2 (VMULESW,	      "vmulesw",	CONST,	vec_widen_smult_even_v4si)
 BU_ALTIVEC_2 (VMULOUB,	      "vmuloub",	CONST,	vec_widen_umult_odd_v16qi)
 BU_ALTIVEC_2 (VMULOSB,	      "vmulosb",	CONST,	vec_widen_smult_odd_v16qi)
 BU_ALTIVEC_2 (VMULOUH,	      "vmulouh",	CONST,	vec_widen_umult_odd_v8hi)
 BU_ALTIVEC_2 (VMULOSH,	      "vmulosh",	CONST,	vec_widen_smult_odd_v8hi)
-BU_ALTIVEC_2 (VMULOUW,	      "vmulouw",	CONST,	vec_widen_umult_odd_v4si)
-BU_ALTIVEC_2 (VMULOSW,	      "vmulosw",	CONST,	vec_widen_smult_odd_v4si)
+BU_P8V_AV_2 (VMULOUW,	      "vmulouw",	CONST,	vec_widen_umult_odd_v4si)
+BU_P8V_AV_2 (VMULOSW,	      "vmulosw",	CONST,	vec_widen_smult_odd_v4si)
 BU_ALTIVEC_2 (VNOR,	      "vnor",		CONST,	norv4si3)
 BU_ALTIVEC_2 (VOR,	      "vor",		CONST,	iorv4si3)
 BU_ALTIVEC_2 (VPKUHUM,	      "vpkuhum",	CONST,	altivec_vpkuhum)
@@ -1145,14 +1162,6 @@ BU_ALTIVEC_A (NABS_V16QI,     "nabs_v16qi",	CONST,	nabsv16qi2)
 BU_ALTIVEC_A (NABS_V4SF,      "nabs_v4sf",	CONST,	vsx_nabsv4sf2)
 BU_ALTIVEC_A (NABS_V2DF,      "nabs_v2df",	CONST,	vsx_nabsv2df2)
 
-/* Altivec NEG functions.  */
-BU_ALTIVEC_A (NEG_V2DI,      "neg_v2di",	CONST,	negv2di2)
-BU_ALTIVEC_A (NEG_V4SI,      "neg_v4si",	CONST,	negv4si2)
-BU_ALTIVEC_A (NEG_V8HI,      "neg_v8hi",	CONST,	negv8hi2)
-BU_ALTIVEC_A (NEG_V16QI,     "neg_v16qi",	CONST,	negv16qi2)
-BU_ALTIVEC_A (NEG_V4SF,      "neg_v4sf",	CONST,	negv4sf2)
-BU_ALTIVEC_A (NEG_V2DF,      "neg_v2df",	CONST,	negv2df2)
-
 /* 1 argument Altivec builtin functions.  */
 BU_ALTIVEC_1 (VEXPTEFP,	      "vexptefp",	FP,	altivec_vexptefp)
 BU_ALTIVEC_1 (VLOGEFP,	      "vlogefp",	FP,	altivec_vlogefp)
@@ -1201,20 +1210,6 @@ BU_ALTIVEC_P (VCMPGTSB_P,     "vcmpgtsb_p",	CONST,	vector_gt_v16qi_p)
 BU_ALTIVEC_P (VCMPGTUB_P,     "vcmpgtub_p",	CONST,	vector_gtu_v16qi_p)
 
 /* AltiVec builtins that are handled as special cases.  */
-BU_ALTIVEC_X (ST_INTERNAL_4si,  "st_internal_4si",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_4si,  "ld_internal_4si",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_8hi,	"st_internal_8hi",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_8hi,	"ld_internal_8hi",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_16qi,	"st_internal_16qi", MEM)
-BU_ALTIVEC_X (LD_INTERNAL_16qi,	"ld_internal_16qi", MEM)
-BU_ALTIVEC_X (ST_INTERNAL_4sf,	"st_internal_16qi", MEM)
-BU_ALTIVEC_X (LD_INTERNAL_4sf,	"ld_internal_4sf",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_2df,	"st_internal_4sf",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_2df,	"ld_internal_2df",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_2di,	"st_internal_2di",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_2di,	"ld_internal_2di",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_1ti,	"st_internal_1ti",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_1ti,	"ld_internal_1ti",  MEM)
 BU_ALTIVEC_X (MTVSCR,		"mtvscr",	    MISC)
 BU_ALTIVEC_X (MFVSCR,		"mfvscr",	    MISC)
 BU_ALTIVEC_X (DSSALL,		"dssall",	    MISC)
@@ -1232,6 +1227,7 @@ BU_ALTIVEC_X (LVXL_V4SI,	"lvxl_v4si",	    MEM)
 BU_ALTIVEC_X (LVXL_V8HI,	"lvxl_v8hi",	    MEM)
 BU_ALTIVEC_X (LVXL_V16QI,	"lvxl_v16qi",	    MEM)
 BU_ALTIVEC_X (LVX,		"lvx",		    MEM)
+BU_ALTIVEC_X (LVX_V1TI,		"lvx_v1ti",	    MEM)
 BU_ALTIVEC_X (LVX_V2DF,		"lvx_v2df",	    MEM)
 BU_ALTIVEC_X (LVX_V2DI,		"lvx_v2di",	    MEM)
 BU_ALTIVEC_X (LVX_V4SF,		"lvx_v4sf",	    MEM)
@@ -1451,7 +1447,6 @@ BU_ALTIVEC_OVERLOAD_1 (FLOOR,	   "floor")
 BU_ALTIVEC_OVERLOAD_1 (LOGE,	   "loge")
 BU_ALTIVEC_OVERLOAD_1 (MTVSCR,	   "mtvscr")
 BU_ALTIVEC_OVERLOAD_1 (NEARBYINT,  "nearbyint")
-BU_ALTIVEC_OVERLOAD_1 (NEG,	   "neg")
 BU_ALTIVEC_OVERLOAD_1 (RE,	   "re")
 BU_ALTIVEC_OVERLOAD_1 (RINT,       "rint")
 BU_ALTIVEC_OVERLOAD_1 (ROUND,	   "round")
@@ -1649,11 +1644,6 @@ BU_VSX_2 (CMPLE_U16QI,        "cmple_u16qi",    CONST,  vector_ngtuv16qi)
 BU_VSX_2 (CMPLE_U8HI,         "cmple_u8hi",     CONST,  vector_ngtuv8hi)
 BU_VSX_2 (CMPLE_U4SI,         "cmple_u4si",     CONST,  vector_ngtuv4si)
 BU_VSX_2 (CMPLE_U2DI,         "cmple_u2di",     CONST,  vector_ngtuv2di)
-BU_VSX_2 (FLOAT2_V2DI,        "float2_v2di",    CONST,  float2_v2di)
-BU_VSX_2 (UNS_FLOAT2_V2DI,    "uns_float2_v2di",    CONST,  uns_float2_v2di)
-
-BU_VSX_2 (VEC_VSIGNED2_V2DF,      "vsigned2_v2df",    CONST,  vsigned2_v2df)
-BU_VSX_2 (VEC_VUNSIGNED2_V2DF,    "vunsigned2_v2df",  CONST,  vunsigned2_v2df)
 
 /* VSX abs builtin functions.  */
 BU_VSX_A (XVABSDP,	      "xvabsdp",	CONST,	absv2df2)
@@ -1782,12 +1772,14 @@ BU_VSX_X (STXVW4X_V4SF,	      "stxvw4x_v4sf",	MEM)
 BU_VSX_X (STXVW4X_V4SI,	      "stxvw4x_v4si",	MEM)
 BU_VSX_X (STXVW4X_V8HI,	      "stxvw4x_v8hi",	MEM)
 BU_VSX_X (STXVW4X_V16QI,      "stxvw4x_v16qi",	MEM)
+BU_VSX_X (LD_ELEMREV_V1TI,    "ld_elemrev_v1ti",  MEM)
 BU_VSX_X (LD_ELEMREV_V2DF,    "ld_elemrev_v2df",  MEM)
 BU_VSX_X (LD_ELEMREV_V2DI,    "ld_elemrev_v2di",  MEM)
 BU_VSX_X (LD_ELEMREV_V4SF,    "ld_elemrev_v4sf",  MEM)
 BU_VSX_X (LD_ELEMREV_V4SI,    "ld_elemrev_v4si",  MEM)
 BU_VSX_X (LD_ELEMREV_V8HI,    "ld_elemrev_v8hi",  MEM)
 BU_VSX_X (LD_ELEMREV_V16QI,   "ld_elemrev_v16qi", MEM)
+BU_VSX_X (ST_ELEMREV_V1TI,    "st_elemrev_v1ti",  MEM)
 BU_VSX_X (ST_ELEMREV_V2DF,    "st_elemrev_v2df",  MEM)
 BU_VSX_X (ST_ELEMREV_V2DI,    "st_elemrev_v2di",  MEM)
 BU_VSX_X (ST_ELEMREV_V4SF,    "st_elemrev_v4sf",  MEM)
@@ -1843,10 +1835,6 @@ BU_VSX_OVERLOAD_2 (XXMRGHW,  "xxmrghw")
 BU_VSX_OVERLOAD_2 (XXMRGLW,  "xxmrglw")
 BU_VSX_OVERLOAD_2 (XXSPLTD,  "xxspltd")
 BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
-BU_VSX_OVERLOAD_2 (FLOAT2,   "float2")
-BU_VSX_OVERLOAD_2 (UNS_FLOAT2,   "uns_float2")
-BU_VSX_OVERLOAD_2 (VSIGNED2,     "vsigned2")
-BU_VSX_OVERLOAD_2 (VUNSIGNED2,   "vunsigned2")
 
 /* 1 argument VSX overloaded builtin functions.  */
 BU_VSX_OVERLOAD_1 (DOUBLE,   "double")
@@ -1897,6 +1885,23 @@ BU_P8V_VSX_1 (REVB_V16QI,     "revb_v16qi",	CONST,	revb_v16qi)
 BU_P8V_VSX_1 (REVB_V2DF,      "revb_v2df",	CONST,	revb_v2df)
 BU_P8V_VSX_1 (REVB_V4SF,      "revb_v4sf",	CONST,	revb_v4sf)
 
+/* Power 8 Altivec NEG functions.  */
+BU_P8V_AV_1 (NEG_V2DI,      "neg_v2di",	CONST,	negv2di2)
+BU_P8V_AV_1 (NEG_V4SI,      "neg_v4si",	CONST,	negv4si2)
+BU_P8V_AV_1 (NEG_V8HI,      "neg_v8hi",	CONST,	negv8hi2)
+BU_P8V_AV_1 (NEG_V16QI,     "neg_v16qi",	CONST,	negv16qi2)
+BU_P8V_AV_1 (NEG_V4SF,      "neg_v4sf",	CONST,	negv4sf2)
+BU_P8V_AV_1 (NEG_V2DF,      "neg_v2df",	CONST,	negv2df2)
+
+
+/* 2 argument VSX instructions added in ISA 2.07.  */
+BU_P8V_VSX_2 (FLOAT2_V2DF,        "float2_v2df",	CONST,  float2_v2df)
+BU_P8V_VSX_2 (FLOAT2_V2DI,        "float2_v2di",	CONST,  float2_v2di)
+BU_P8V_VSX_2 (UNS_FLOAT2_V2DI,    "uns_float2_v2di",    CONST,  uns_float2_v2di)
+BU_P8V_VSX_2 (VEC_VSIGNED2_V2DF,   "vsigned2_v2df",    CONST,  vsigned2_v2df)
+BU_P8V_VSX_2 (VEC_VUNSIGNED2_V2DF, "vunsigned2_v2df",  CONST,  vunsigned2_v2df)
+
+
 /* 1 argument altivec instructions added in ISA 2.07.  */
 BU_P8V_AV_1 (ABS_V2DI,	      "abs_v2di",	CONST,	absv2di2)
 BU_P8V_AV_1 (VUPKHSW,	      "vupkhsw",	CONST,	altivec_vupkhsw)
@@ -1923,8 +1928,14 @@ BU_P8V_AV_2 (VMINSD,		"vminsd",	CONST,	sminv2di3)
 BU_P8V_AV_2 (VMAXSD,		"vmaxsd",	CONST,	smaxv2di3)
 BU_P8V_AV_2 (VMINUD,		"vminud",	CONST,	uminv2di3)
 BU_P8V_AV_2 (VMAXUD,		"vmaxud",	CONST,	umaxv2di3)
+BU_P8V_AV_2 (VMRGEW_V2DI,	"vmrgew_v2di",	CONST,	p8_vmrgew_v2di)
+BU_P8V_AV_2 (VMRGEW_V2DF,	"vmrgew_v2df",	CONST,	p8_vmrgew_v2df)
 BU_P8V_AV_2 (VMRGEW_V4SI,	"vmrgew_v4si",	CONST,	p8_vmrgew_v4si)
-BU_P8V_AV_2 (VMRGOW,		"vmrgow",	CONST,	p8_vmrgow)
+BU_P8V_AV_2 (VMRGEW_V4SF,	"vmrgew_v4sf",	CONST,	p8_vmrgew_v4sf)
+BU_P8V_AV_2 (VMRGOW_V4SI,	"vmrgow_v4si",	CONST,	p8_vmrgow_v4si)
+BU_P8V_AV_2 (VMRGOW_V4SF,	"vmrgow_v4sf",	CONST,	p8_vmrgow_v4sf)
+BU_P8V_AV_2 (VMRGOW_V2DI,	"vmrgow_v2di",	CONST,	p8_vmrgow_v2di)
+BU_P8V_AV_2 (VMRGOW_V2DF,	"vmrgow_v2df",	CONST,	p8_vmrgow_v2df)
 BU_P8V_AV_2 (VBPERMQ,		"vbpermq",	CONST,	altivec_vbpermq)
 BU_P8V_AV_2 (VBPERMQ2,		"vbpermq2",	CONST,	altivec_vbpermq2)
 BU_P8V_AV_2 (VPKUDUM,		"vpkudum",	CONST,	altivec_vpkudum)
@@ -1983,6 +1994,8 @@ BU_P8V_AV_P (VCMPEQUD_P,	"vcmpequd_p",	CONST,	vector_eq_v2di_p)
 BU_P8V_AV_P (VCMPGTSD_P,	"vcmpgtsd_p",	CONST,	vector_gt_v2di_p)
 BU_P8V_AV_P (VCMPGTUD_P,	"vcmpgtud_p",	CONST,	vector_gtu_v2di_p)
 
+BU_P8V_AV_3 (VPERMXOR,		"vpermxor",	CONST, 	altivec_vpermxor)
+
 /* ISA 2.05 overloaded 2 argument functions.  */
 BU_P6_OVERLOAD_2 (CMPB, "cmpb")
 
@@ -2006,6 +2019,7 @@ BU_P8V_OVERLOAD_1 (VPOPCNTUW,	"vpopcntuw")
 BU_P8V_OVERLOAD_1 (VPOPCNTUD,	"vpopcntud")
 BU_P8V_OVERLOAD_1 (VGBBD,	"vgbbd")
 BU_P8V_OVERLOAD_1 (REVB,	"revb")
+BU_P8V_OVERLOAD_1 (NEG, 	"neg")
 
 /* ISA 2.07 vector overloaded 2 argument functions.  */
 BU_P8V_OVERLOAD_2 (EQV,		"eqv")
@@ -2033,12 +2047,17 @@ BU_P8V_OVERLOAD_2 (VSRD,	"vsrd")
 BU_P8V_OVERLOAD_2 (VSUBCUQ,	"vsubcuq")
 BU_P8V_OVERLOAD_2 (VSUBUDM,	"vsubudm")
 BU_P8V_OVERLOAD_2 (VSUBUQM,	"vsubuqm")
+BU_P8V_OVERLOAD_2 (FLOAT2,   "float2")
+BU_P8V_OVERLOAD_2 (UNS_FLOAT2,   "uns_float2")
+BU_P8V_OVERLOAD_2 (VSIGNED2,     "vsigned2")
+BU_P8V_OVERLOAD_2 (VUNSIGNED2,   "vunsigned2")
 
 /* ISA 2.07 vector overloaded 3 argument functions.  */
 BU_P8V_OVERLOAD_3 (VADDECUQ,	"vaddecuq")
 BU_P8V_OVERLOAD_3 (VADDEUQM,	"vaddeuqm")
 BU_P8V_OVERLOAD_3 (VSUBECUQ,	"vsubecuq")
 BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
+BU_P8V_OVERLOAD_3 (VPERMXOR,   "vpermxor")
 
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
@@ -2196,8 +2215,8 @@ BU_P9V_OVERLOAD_2 (VIEDP,	"insert_exp_dp")
 BU_P9V_OVERLOAD_2 (VIESP,	"insert_exp_sp")
 
 /* 2 argument vector functions added in ISA 3.0 (power9).  */
-BU_P9V_64BIT_VSX_2 (LXVL,	"lxvl",		CONST,	lxvl)
-BU_P9V_64BIT_VSX_2 (XL_LEN_R,	"xl_len_r",	CONST,  xl_len_r)
+BU_P9V_64BIT_VSX_2 (LXVL,	"lxvl",		PURE,	lxvl)
+BU_P9V_64BIT_VSX_2 (XL_LEN_R,	"xl_len_r",	PURE,	xl_len_r)
 
 BU_P9V_AV_2 (VEXTUBLX, "vextublx",		CONST,	vextublx)
 BU_P9V_AV_2 (VEXTUBRX, "vextubrx",		CONST,	vextubrx)
@@ -2207,9 +2226,8 @@ BU_P9V_AV_2 (VEXTUWLX, "vextuwlx",		CONST,	vextuwlx)
 BU_P9V_AV_2 (VEXTUWRX, "vextuwrx",		CONST,	vextuwrx)
 
 /* Insert/extract 4 byte word into a vector.  */
-BU_P9V_VSX_2 (VEXTRACT4B,   "vextract4b",	CONST,	vextract4b)
-BU_P9V_VSX_3 (VINSERT4B,    "vinsert4b",	CONST,	vinsert4b)
-BU_P9V_VSX_3 (VINSERT4B_DI, "vinsert4b_di",	CONST,	vinsert4b_di)
+BU_P9V_VSX_3 (INSERT4B,    "insert4b",		CONST,  insert4b)
+BU_P9V_VSX_2 (EXTRACT4B,   "extract4b", 	CONST,  extract4b)
 
 /* Hardware IEEE 128-bit floating point round to odd instrucitons added in ISA
    3.0 (power9).  */
@@ -2271,12 +2289,12 @@ BU_P9V_OVERLOAD_2 (LXVL,	"lxvl")
 BU_P9V_OVERLOAD_2 (XL_LEN_R,	"xl_len_r")
 BU_P9V_OVERLOAD_2 (VEXTULX,	"vextulx")
 BU_P9V_OVERLOAD_2 (VEXTURX,	"vexturx")
-BU_P9V_OVERLOAD_2 (VEXTRACT4B,	"vextract4b")
+BU_P9V_OVERLOAD_2 (EXTRACT4B,  "extract4b")
 
 /* ISA 3.0 Vector scalar overloaded 3 argument functions */
 BU_P9V_OVERLOAD_3 (STXVL,	"stxvl")
 BU_P9V_OVERLOAD_3 (XST_LEN_R,	"xst_len_r")
-BU_P9V_OVERLOAD_3 (VINSERT4B,	"vinsert4b")
+BU_P9V_OVERLOAD_3 (INSERT4B,    "insert4b")
 
 /* Overloaded CMPNE support was implemented prior to Power 9,
    so is not mentioned here.  */
@@ -2315,6 +2333,11 @@ BU_DFP_MISC_2 (DSCLI,		"dscli",	CONST,	dfp_dscli_dd)
 BU_DFP_MISC_2 (DSCLIQ,		"dscliq",	CONST,	dfp_dscli_td)
 BU_DFP_MISC_2 (DSCRI,		"dscri",	CONST,	dfp_dscri_dd)
 BU_DFP_MISC_2 (DSCRIQ,		"dscriq",	CONST,	dfp_dscri_td)
+
+/* 0 argument void function that we pretend was added in ISA 2.06.
+   It's a special nop recognized by 2018+ firmware for P7 and up,
+   with speculation barrier semantics.  */
+BU_P7_MISC_X (SPEC_BARRIER,	"ppc_speculation_barrier",	MISC)
 
 /* 1 argument BCD functions added in ISA 2.06.  */
 BU_P7_MISC_1 (CDTBCD,		"cdtbcd",	CONST,	cdtbcd)

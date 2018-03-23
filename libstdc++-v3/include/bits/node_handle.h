@@ -1,6 +1,6 @@
 // Node handles for containers -*- C++ -*-
 
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,10 +87,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		|| !this->_M_alloc)
 	      this->_M_alloc = std::move(__nh._M_alloc);
 	    else
-	      __glibcxx_assert(this->_M_alloc == __nh._M_alloc);
+	      {
+		__glibcxx_assert(this->_M_alloc == __nh._M_alloc);
+	      }
 	  }
 	else
-	  __glibcxx_assert(_M_alloc);
+	  {
+	    __glibcxx_assert(_M_alloc);
+	  }
 	__nh._M_ptr = nullptr;
 	__nh._M_alloc = nullopt;
 	return *this;
@@ -109,7 +113,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    || !_M_alloc || !__nh._M_alloc)
 	  _M_alloc.swap(__nh._M_alloc);
 	else
-	  __glibcxx_assert(_M_alloc == __nh._M_alloc);
+	  {
+	    __glibcxx_assert(_M_alloc == __nh._M_alloc);
+	  }
       }
 
     private:
@@ -199,7 +205,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Tp>
-	using __pointer = __ptr_rebind<typename _AllocTraits::pointer, _Tp>;
+	using __pointer
+	  = __ptr_rebind<typename _AllocTraits::pointer,
+			 remove_reference_t<_Tp>>;
 
       __pointer<_Key>				_M_pkey = nullptr;
       __pointer<typename _Value::second_type>	_M_pmapped = nullptr;

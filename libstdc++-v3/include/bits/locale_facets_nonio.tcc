@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -282,6 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 		  ++__beg;
 		else
 		  __testvalid = false;
+		// fallthrough
 	      case money_base::none:
 		// Only if not at the end of the pattern.
 		if (__i != 3)
@@ -1095,7 +1096,6 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     {
       const locale& __loc = __io._M_getloc();
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const char_type* __days[14];
       __tp._M_days_abbreviated(__days);
       __tp._M_days(__days + 7);
@@ -1122,7 +1122,6 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     {
       const locale& __loc = __io._M_getloc();
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const char_type*  __months[24];
       __tp._M_months_abbreviated(__months);
       __tp._M_months(__months + 12);
@@ -1147,8 +1146,6 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     do_get_year(iter_type __beg, iter_type __end, ios_base& __io,
 		ios_base::iostate& __err, tm* __tm) const
     {
-      const locale& __loc = __io._M_getloc();
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       int __tmpyear;
       ios_base::iostate __tmperr = ios_base::goodbit;
 

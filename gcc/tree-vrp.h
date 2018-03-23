@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -61,6 +61,8 @@ extern void extract_range_from_unary_expr (value_range *vr,
 					   tree op0_type);
 
 extern bool vrp_operand_equal_p (const_tree, const_tree);
+extern enum value_range_type intersect_range_with_nonzero_bits
+  (enum value_range_type, wide_int *, wide_int *, const wide_int &, signop);
 
 struct assert_info
 {
@@ -116,6 +118,7 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern bool range_int_cst_singleton_p (value_range *);
 extern int value_inside_range (tree, tree, tree);
 extern tree get_single_symbol (tree, bool *, tree *);
+extern void maybe_set_nonzero_bits (edge, tree);
 
 
 struct switch_update {

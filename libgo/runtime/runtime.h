@@ -265,11 +265,12 @@ void*	runtime_mallocgc(uintptr, const Type*, bool)
   __asm__ (GOSYM_PREFIX "runtime.mallocgc");
 void*	runtime_sysAlloc(uintptr, uint64*)
   __asm__ (GOSYM_PREFIX "runtime.sysAlloc");
+void	runtime_sysFree(void*, uintptr, uint64*)
+  __asm__ (GOSYM_PREFIX "runtime.sysFree");
 void	runtime_mprofinit(void);
 #define runtime_getcallersp(p) __builtin_frame_address(0)
 void	runtime_mcall(FuncVal*)
   __asm__ (GOSYM_PREFIX "runtime.mcall");
-uint32	runtime_fastrand(void) __asm__ (GOSYM_PREFIX "runtime.fastrand");
 int32	runtime_timediv(int64, int32, int32*)
   __asm__ (GOSYM_PREFIX "runtime.timediv");
 int32	runtime_round2(int32 x); // round x up to a power of 2.
@@ -436,9 +437,27 @@ void	runtime_check(void)
 // the stacks are allocated by the splitstack library.
 extern uintptr runtime_stacks_sys;
 
+/*
+ * ia64's register file is spilled to a separate stack, the register backing
+ * store, on window overflow, and must also be scanned. This occupies the other
+ * end of the normal stack allocation, growing upwards.
+ * We also need to ensure all register windows are flushed to the backing
+ * store, as unlike SPARC, __builtin_unwind_init doesn't do this on ia64.
+ */
+#ifdef __ia64__
+# define secondary_stack_pointer() __builtin_ia64_bsp()
+# define initial_secondary_stack_pointer(stack_alloc) (stack_alloc)
+# define flush_registers_to_secondary_stack() __builtin_ia64_flushrs()
+#else
+# define secondary_stack_pointer() nil
+# define initial_secondary_stack_pointer(stack_alloc) nil
+# define flush_registers_to_secondary_stack()
+#endif
+
 struct backtrace_state;
 extern struct backtrace_state *__go_get_backtrace_state(void);
-extern _Bool __go_file_line(uintptr, int, String*, String*, intgo *);
+extern void __go_syminfo_fnname_callback(void*, uintptr_t, const char*,
+					 uintptr_t, uintptr_t);
 extern void runtime_main(void*)
   __asm__(GOSYM_PREFIX "runtime.main");
 
@@ -472,9 +491,7 @@ extern void typedmemmove(const Type *, void *, const void *)
   __asm__ (GOSYM_PREFIX "runtime.typedmemmove");
 extern void setncpu(int32)
   __asm__(GOSYM_PREFIX "runtime.setncpu");
-extern P** runtime_getAllP()
-  __asm__ (GOSYM_PREFIX "runtime.getAllP");
-extern Sched* runtime_getsched()
+extern Sched* runtime_getsched(void)
   __asm__ (GOSYM_PREFIX "runtime.getsched");
 extern void setpagesize(uintptr_t)
   __asm__(GOSYM_PREFIX "runtime.setpagesize");

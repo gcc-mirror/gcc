@@ -1,7 +1,7 @@
 /* Write and read the cgraph to the memory mapped representation of a
    .o file.
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -1958,7 +1958,7 @@ input_offload_tables (bool do_force_output)
 static int
 output_cgraph_opt_summary_p (struct cgraph_node *node)
 {
-  return (node->clone_of
+  return ((node->clone_of || node->former_clone_of)
 	  && (node->clone.tree_map
 	      || node->clone.args_to_skip
 	      || node->clone.combined_args_to_skip));

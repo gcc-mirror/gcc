@@ -1,5 +1,5 @@
 /* A self-testing framework, for use by -fself-test.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,8 +49,8 @@ assert_rtl_dump_eq (const location &loc, const char *expected_dump, rtx x,
 
 #define ASSERT_RTX_EQ(EXPECTED, ACTUAL) 				\
   SELFTEST_BEGIN_STMT							\
-  const char *desc = "ASSERT_RTX_EQ (" #EXPECTED ", " #ACTUAL ")";	\
-  ::selftest::assert_rtx_eq_at (SELFTEST_LOCATION, desc, (EXPECTED),	\
+  const char *desc_ = "ASSERT_RTX_EQ (" #EXPECTED ", " #ACTUAL ")";	\
+  ::selftest::assert_rtx_eq_at (SELFTEST_LOCATION, desc_, (EXPECTED),	\
 				(ACTUAL));				\
   SELFTEST_END_STMT
 
@@ -62,8 +62,8 @@ extern void assert_rtx_eq_at (const location &, const char *, rtx, rtx);
 
 #define ASSERT_RTX_PTR_EQ(EXPECTED, ACTUAL) \
   SELFTEST_BEGIN_STMT							\
-  const char *desc = "ASSERT_RTX_PTR_EQ (" #EXPECTED ", " #ACTUAL ")";  \
-  ::selftest::assert_rtx_ptr_eq_at (SELFTEST_LOCATION, desc, (EXPECTED), \
+  const char *desc_ = "ASSERT_RTX_PTR_EQ (" #EXPECTED ", " #ACTUAL ")";  \
+  ::selftest::assert_rtx_ptr_eq_at (SELFTEST_LOCATION, desc_, (EXPECTED), \
 				    (ACTUAL));				\
   SELFTEST_END_STMT
 

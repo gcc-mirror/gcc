@@ -405,7 +405,7 @@ c     Rather than assume integer sizes, mask off high bits
       call c_i1(IAND(NOT(k),k2),ka,'NOT(integer(1))')
       call c_i8(IAND(NOT(m),m2),ma,'NOT(integer(8))')
 
-      if ( fail ) call abort()
+      if ( fail ) STOP 1
       end
 
       subroutine failure(label)

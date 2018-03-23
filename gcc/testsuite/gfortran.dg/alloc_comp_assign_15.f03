@@ -26,7 +26,7 @@ program Test1
   allocate(X%P)
 
   X%P%Source = 'test string'
-  if (.not.allocated (X%P%Source)) call abort
-  if (X%P%Source .ne. 'test string') call abort
+  if (.not.allocated (X%P%Source)) STOP 1
+  if (X%P%Source .ne. 'test string') STOP 2
 
 end program Test1

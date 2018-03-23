@@ -1,5 +1,5 @@
 /* Pass manager for Fortran front end.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Thomas König.
 
 This file is part of GCC.
@@ -249,7 +249,7 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   expr1 = co->expr1;
-  if (expr1->ts.type != BT_CHARACTER || expr1->rank != 0
+  if (expr1->ts.type != BT_CHARACTER
       || !gfc_expr_attr(expr1).allocatable
       || !expr1->ts.deferred)
     return 0;
@@ -270,8 +270,9 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (!found_substr)
 	return 0;
     }
-  else if (expr2->expr_type != EXPR_OP
-	   || expr2->value.op.op != INTRINSIC_CONCAT)
+  else if (expr2->expr_type != EXPR_ARRAY
+	   && (expr2->expr_type != EXPR_OP
+	       || expr2->value.op.op != INTRINSIC_CONCAT))
     return 0;
   
   if (!gfc_check_dependency (expr1, expr2, true))
@@ -719,6 +720,11 @@ create_var (gfc_expr * e, const char *vname)
   if (e->expr_type == EXPR_CONSTANT || is_fe_temp (e))
     return gfc_copy_expr (e);
 
+  /* Creation of an array of unknown size requires realloc on assignment.
+     If that is not possible, just return NULL.  */
+  if (flag_realloc_lhs == 0 && e->rank > 0 && e->shape == NULL)
+    return NULL;
+
   ns = insert_block ();
 
   if (vname)
@@ -766,7 +772,7 @@ create_var (gfc_expr * e, const char *vname)
     }
 
   deferred = 0;
-  if (e->ts.type == BT_CHARACTER && e->rank == 0)
+  if (e->ts.type == BT_CHARACTER)
     {
       gfc_expr *length;
 
@@ -777,6 +783,8 @@ create_var (gfc_expr * e, const char *vname)
       else
 	{
 	  symbol->attr.allocatable = 1;
+	  symbol->ts.u.cl->length = NULL;
+	  symbol->ts.deferred = 1;
 	  deferred = 1;
 	}
     }
@@ -789,7 +797,7 @@ create_var (gfc_expr * e, const char *vname)
 
   result = gfc_get_expr ();
   result->expr_type = EXPR_VARIABLE;
-  result->ts = e->ts;
+  result->ts = symbol->ts;
   result->ts.deferred = deferred;
   result->rank = e->rank;
   result->shape = gfc_copy_shape (e->shape, e->rank);
@@ -1154,14 +1162,7 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 
   gcc_assert (curr->op == EXEC_TRANSFER);
 
-  /* FIXME: Workaround for PR 80945 - array slices with deferred character
-     lenghts do not work.  Remove this section when the PR is fixed.  */
   e = curr->expr1;
-  if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_CHARACTER
-      && e->ts.deferred)
-    return false;
-  /* End of section to be removed.  */
-
   ref = e->ref;
   if (!ref || ref->type != REF_ARRAY || ref->u.ar.codimen != 0 || ref->next)
     return false;
@@ -2216,11 +2217,11 @@ optimize_trim (gfc_expr *e)
 
   /* Set the start of the reference.  */
 
-  ref->u.ss.start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+  ref->u.ss.start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
 
   /* Build the function call to len_trim(x, gfc_default_integer_kind).  */
 
-  fcn = get_len_trim_call (gfc_copy_expr (e), gfc_default_integer_kind);
+  fcn = get_len_trim_call (gfc_copy_expr (e), gfc_charlen_int_kind);
 
   /* Set the end of the reference to the call to len_trim.  */
 
@@ -2755,7 +2756,7 @@ matmul_to_var_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   if (forall_level > 0 || iterator_level > 0 || in_omp_workshare
-      || in_where)
+      || in_where || in_assoc_list)
     return 0;
 
   /* Check if this is already in the form c = matmul(a,b).  */
@@ -3559,10 +3560,26 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 			 is the lbound of a full ref.  */
 		      int j;
 		      gfc_array_ref *ar;
+		      int to;
 
 		      ar = &ref->u.ar;
-		      ar->type = AR_FULL;
-		      for (j = 0; j < ar->dimen; j++)
+
+		      /* For assumed size, we need to keep around the final
+			 reference in order not to get an error on resolution
+			 below, and we cannot use AR_FULL.  */
+			 
+		      if (ar->as->type == AS_ASSUMED_SIZE)
+			{
+			  ar->type = AR_SECTION;
+			  to = ar->dimen - 1;
+			}
+		      else
+			{
+			  to = ar->dimen;
+			  ar->type = AR_FULL;
+			}
+
+		      for (j = 0; j < to; j++)
 			{
 			  gfc_free_expr (ar->start[j]);
 			  ar->start[j] = NULL;
@@ -3720,7 +3737,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (co->op != EXEC_ASSIGN)
     return 0;
 
-  if (in_where)
+  if (in_where || in_assoc_list)
     return 0;
 
   /* The BLOCKS generated for the temporary variables and FORALL don't

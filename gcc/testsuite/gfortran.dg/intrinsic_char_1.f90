@@ -11,7 +11,7 @@ program FA0005
   INTEGER :: IDA(10) = [(i, i = 97,106)]
 
   CDA1 = CHAR (  IDA, KIND("A" ))     !failed
-  if (transfer (CDA1, CDA10) /= "abcdefghij") call abort ()
+  if (transfer (CDA1, CDA10) /= "abcdefghij") STOP 1
   CDA1 = CHAR (  IDA  )               !worked
-  if (transfer (CDA1, CDA10) /= "abcdefghij") call abort ()
+  if (transfer (CDA1, CDA10) /= "abcdefghij") STOP 2
 END 

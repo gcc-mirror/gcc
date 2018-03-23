@@ -1,5 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "opts.h"
 #include "predict.h"
+#include "rtx-vector-builder.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -148,6 +149,16 @@ struct const_wide_int_hasher : ggc_cache_ptr_hash<rtx_def>
 
 static GTY ((cache)) hash_table<const_wide_int_hasher> *const_wide_int_htab;
 
+struct const_poly_int_hasher : ggc_cache_ptr_hash<rtx_def>
+{
+  typedef std::pair<machine_mode, poly_wide_int_ref> compare_type;
+
+  static hashval_t hash (rtx x);
+  static bool equal (rtx x, const compare_type &y);
+};
+
+static GTY ((cache)) hash_table<const_poly_int_hasher> *const_poly_int_htab;
+
 /* A hash table storing register attribute structures.  */
 struct reg_attr_hasher : ggc_cache_ptr_hash<reg_attrs>
 {
@@ -186,7 +197,6 @@ static rtx lookup_const_wide_int (rtx);
 #endif
 static rtx lookup_const_double (rtx);
 static rtx lookup_const_fixed (rtx);
-static reg_attrs *get_reg_attrs (tree, int);
 static rtx gen_const_vector (machine_mode, int);
 static void copy_rtx_if_shared_1 (rtx *orig);
 
@@ -247,6 +257,31 @@ const_wide_int_hasher::equal (rtx x, rtx y)
   return true;
 }
 #endif
+
+/* Returns a hash code for CONST_POLY_INT X.  */
+
+hashval_t
+const_poly_int_hasher::hash (rtx x)
+{
+  inchash::hash h;
+  h.add_int (GET_MODE (x));
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    h.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+  return h.end ();
+}
+
+/* Returns nonzero if CONST_POLY_INT X is an rtx representation of Y.  */
+
+bool
+const_poly_int_hasher::equal (rtx x, const compare_type &y)
+{
+  if (GET_MODE (x) != y.first)
+    return false;
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    if (CONST_POLY_INT_COEFFS (x)[i] != y.second.coeffs[i])
+      return false;
+  return true;
+}
 
 /* Returns a hash code for X (which is really a CONST_DOUBLE).  */
 hashval_t
@@ -321,9 +356,9 @@ mem_attrs_eq_p (const struct mem_attrs *p, const struct mem_attrs *q)
     return false;
   return (p->alias == q->alias
 	  && p->offset_known_p == q->offset_known_p
-	  && (!p->offset_known_p || p->offset == q->offset)
+	  && (!p->offset_known_p || known_eq (p->offset, q->offset))
 	  && p->size_known_p == q->size_known_p
-	  && (!p->size_known_p || p->size == q->size)
+	  && (!p->size_known_p || known_eq (p->size, q->size))
 	  && p->align == q->align
 	  && p->addrspace == q->addrspace
 	  && (p->expr == q->expr
@@ -358,7 +393,10 @@ reg_attr_hasher::hash (reg_attrs *x)
 {
   const reg_attrs *const p = x;
 
-  return ((p->offset * 1000) ^ (intptr_t) p->decl);
+  inchash::hash h;
+  h.add_ptr (p->decl);
+  h.add_poly_hwi (p->offset);
+  return h.end ();
 }
 
 /* Returns nonzero if the value represented by X  is the same as that given by
@@ -370,19 +408,19 @@ reg_attr_hasher::equal (reg_attrs *x, reg_attrs *y)
   const reg_attrs *const p = x;
   const reg_attrs *const q = y;
 
-  return (p->decl == q->decl && p->offset == q->offset);
+  return (p->decl == q->decl && known_eq (p->offset, q->offset));
 }
 /* Allocate a new reg_attrs structure and insert it into the hash table if
    one identical to it is not already in the table.  We are doing this for
    MEM of mode MODE.  */
 
 static reg_attrs *
-get_reg_attrs (tree decl, int offset)
+get_reg_attrs (tree decl, poly_int64 offset)
 {
   reg_attrs attrs;
 
   /* If everything is the default, we can just return zero.  */
-  if (decl == 0 && offset == 0)
+  if (decl == 0 && known_eq (offset, 0))
     return 0;
 
   attrs.decl = decl;
@@ -489,9 +527,13 @@ gen_rtx_CONST_INT (machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 }
 
 rtx
-gen_int_mode (HOST_WIDE_INT c, machine_mode mode)
+gen_int_mode (poly_int64 c, machine_mode mode)
 {
-  return GEN_INT (trunc_int_for_mode (c, mode));
+  c = trunc_int_for_mode (c, mode);
+  if (c.is_constant ())
+    return GEN_INT (c.coeffs[0]);
+  unsigned int prec = GET_MODE_PRECISION (as_a <scalar_mode> (mode));
+  return immed_wide_int_const (poly_wide_int::from (c, prec, SIGNED), mode);
 }
 
 /* CONST_DOUBLEs might be created from pairs of integers, or from
@@ -595,8 +637,8 @@ lookup_const_wide_int (rtx wint)
    a CONST_DOUBLE (if !TARGET_SUPPORTS_WIDE_INT) or a CONST_WIDE_INT
    (if TARGET_SUPPORTS_WIDE_INT).  */
 
-rtx
-immed_wide_int_const (const wide_int_ref &v, machine_mode mode)
+static rtx
+immed_wide_int_const_1 (const wide_int_ref &v, machine_mode mode)
 {
   unsigned int len = v.get_len ();
   /* Not scalar_int_mode because we also allow pointer bound modes.  */
@@ -682,6 +724,53 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, machine_mode mode)
   return lookup_const_double (value);
 }
 #endif
+
+/* Return an rtx representation of C in mode MODE.  */
+
+rtx
+immed_wide_int_const (const poly_wide_int_ref &c, machine_mode mode)
+{
+  if (c.is_constant ())
+    return immed_wide_int_const_1 (c.coeffs[0], mode);
+
+  /* Not scalar_int_mode because we also allow pointer bound modes.  */
+  unsigned int prec = GET_MODE_PRECISION (as_a <scalar_mode> (mode));
+
+  /* Allow truncation but not extension since we do not know if the
+     number is signed or unsigned.  */
+  gcc_assert (prec <= c.coeffs[0].get_precision ());
+  poly_wide_int newc = poly_wide_int::from (c, prec, SIGNED);
+
+  /* See whether we already have an rtx for this constant.  */
+  inchash::hash h;
+  h.add_int (mode);
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    h.add_wide_int (newc.coeffs[i]);
+  const_poly_int_hasher::compare_type typed_value (mode, newc);
+  rtx *slot = const_poly_int_htab->find_slot_with_hash (typed_value,
+							h.end (), INSERT);
+  rtx x = *slot;
+  if (x)
+    return x;
+
+  /* Create a new rtx.  There's a choice to be made here between installing
+     the actual mode of the rtx or leaving it as VOIDmode (for consistency
+     with CONST_INT).  In practice the handling of the codes is different
+     enough that we get no benefit from using VOIDmode, and various places
+     assume that VOIDmode implies CONST_INT.  Using the real mode seems like
+     the right long-term direction anyway.  */
+  typedef trailing_wide_ints<NUM_POLY_INT_COEFFS> twi;
+  size_t extra_size = twi::extra_size (prec);
+  x = rtx_alloc_v (CONST_POLY_INT,
+		   sizeof (struct const_poly_int_def) + extra_size);
+  PUT_MODE (x, mode);
+  CONST_POLY_INT_COEFFS (x).set_precision (prec);
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    CONST_POLY_INT_COEFFS (x)[i] = newc.coeffs[i];
+
+  *slot = x;
+  return x;
+}
 
 rtx
 gen_rtx_REG (machine_mode mode, unsigned int regno)
@@ -803,20 +892,25 @@ gen_tmp_stack_mem (machine_mode mode, rtx addr)
 
 bool
 validate_subreg (machine_mode omode, machine_mode imode,
-		 const_rtx reg, unsigned int offset)
+		 const_rtx reg, poly_uint64 offset)
 {
-  unsigned int isize = GET_MODE_SIZE (imode);
-  unsigned int osize = GET_MODE_SIZE (omode);
+  poly_uint64 isize = GET_MODE_SIZE (imode);
+  poly_uint64 osize = GET_MODE_SIZE (omode);
+
+  /* The sizes must be ordered, so that we know whether the subreg
+     is partial, paradoxical or complete.  */
+  if (!ordered_p (isize, osize))
+    return false;
 
   /* All subregs must be aligned.  */
-  if (offset % osize != 0)
+  if (!multiple_p (offset, osize))
     return false;
 
   /* The subreg offset cannot be outside the inner object.  */
-  if (offset >= isize)
+  if (maybe_ge (offset, isize))
     return false;
 
-  unsigned int regsize = REGMODE_NATURAL_SIZE (imode);
+  poly_uint64 regsize = REGMODE_NATURAL_SIZE (imode);
 
   /* ??? This should not be here.  Temporarily continue to allow word_mode
      subregs of anything.  The most common offender is (subreg:SI (reg:DF)).
@@ -826,7 +920,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
     ;
   /* ??? Similarly, e.g. with (subreg:DF (reg:TI)).  Though store_bit_field
      is the culprit here, and not the backends.  */
-  else if (osize >= regsize && isize >= osize)
+  else if (known_ge (osize, regsize) && known_ge (isize, osize))
     ;
   /* Allow component subregs of complex and vector.  Though given the below
      extraction rules, it's not always clear what that means.  */
@@ -845,7 +939,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
      (subreg:SI (reg:DF) 0) isn't.  */
   else if (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
     {
-      if (! (isize == osize
+      if (! (known_eq (isize, osize)
 	     /* LRA can use subreg to store a floating point value in
 		an integer mode.  Although the floating point and the
 		integer modes need the same number of hard registers,
@@ -857,8 +951,8 @@ validate_subreg (machine_mode omode, machine_mode imode,
     }
 
   /* Paradoxical subregs must have offset zero.  */
-  if (osize > isize)
-    return offset == 0;
+  if (maybe_gt (osize, isize))
+    return known_eq (offset, 0U);
 
   /* This is a normal subreg.  Verify that the offset is representable.  */
 
@@ -877,6 +971,12 @@ validate_subreg (machine_mode omode, machine_mode imode,
       return subreg_offset_representable_p (regno, imode, offset, omode);
     }
 
+  /* The outer size must be ordered wrt the register size, otherwise
+     we wouldn't know at compile time how many registers the outer
+     mode occupies.  */
+  if (!ordered_p (osize, regsize))
+    return false;
+
   /* For pseudo registers, we want most of the same checks.  Namely:
 
      Assume that the pseudo register will be allocated to hard registers
@@ -887,21 +987,25 @@ validate_subreg (machine_mode omode, machine_mode imode,
 
      Given that we've already checked the mode and offset alignment,
      we only have to check subblock subregs here.  */
-  if (osize < regsize
+  if (maybe_lt (osize, regsize)
       && ! (lra_in_progress && (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))))
     {
-      unsigned int block_size = MIN (isize, regsize);
-      unsigned int offset_within_block = offset % block_size;
-      if (BYTES_BIG_ENDIAN
-	  ? offset_within_block != block_size - osize
-	  : offset_within_block != 0)
+      /* It is invalid for the target to pick a register size for a mode
+	 that isn't ordered wrt to the size of that mode.  */
+      poly_uint64 block_size = ordered_min (isize, regsize);
+      unsigned int start_reg;
+      poly_uint64 offset_within_reg;
+      if (!can_div_trunc_p (offset, block_size, &start_reg, &offset_within_reg)
+	  || (BYTES_BIG_ENDIAN
+	      ? maybe_ne (offset_within_reg, block_size - osize)
+	      : maybe_ne (offset_within_reg, 0U)))
 	return false;
     }
   return true;
 }
 
 rtx
-gen_rtx_SUBREG (machine_mode mode, rtx reg, int offset)
+gen_rtx_SUBREG (machine_mode mode, rtx reg, poly_uint64 offset)
 {
   gcc_assert (validate_subreg (mode, GET_MODE (reg), reg, offset));
   return gen_rtx_raw_SUBREG (mode, reg, offset);
@@ -1002,7 +1106,7 @@ gen_rtvec_v (int n, rtx_insn **argp)
    paradoxical lowpart, in which case the offset will be negative
    on big-endian targets.  */
 
-int
+poly_int64
 byte_lowpart_offset (machine_mode outer_mode,
 		     machine_mode inner_mode)
 {
@@ -1016,13 +1120,13 @@ byte_lowpart_offset (machine_mode outer_mode,
    from address X.  For paradoxical big-endian subregs this is a
    negative value, otherwise it's the same as OFFSET.  */
 
-int
+poly_int64
 subreg_memory_offset (machine_mode outer_mode, machine_mode inner_mode,
-		      unsigned int offset)
+		      poly_uint64 offset)
 {
   if (paradoxical_subreg_p (outer_mode, inner_mode))
     {
-      gcc_assert (offset == 0);
+      gcc_assert (known_eq (offset, 0U));
       return -subreg_lowpart_offset (inner_mode, outer_mode);
     }
   return offset;
@@ -1032,7 +1136,7 @@ subreg_memory_offset (machine_mode outer_mode, machine_mode inner_mode,
    if SUBREG_REG (X) were stored in memory.  The only significant thing
    about the current SUBREG_REG is its mode.  */
 
-int
+poly_int64
 subreg_memory_offset (const_rtx x)
 {
   return subreg_memory_offset (GET_MODE (x), GET_MODE (SUBREG_REG (x)),
@@ -1132,10 +1236,10 @@ reg_is_parm_p (rtx reg)
    to the REG_OFFSET.  */
 
 static void
-update_reg_offset (rtx new_rtx, rtx reg, int offset)
+update_reg_offset (rtx new_rtx, rtx reg, poly_int64 offset)
 {
   REG_ATTRS (new_rtx) = get_reg_attrs (REG_EXPR (reg),
-				   REG_OFFSET (reg) + offset);
+				       REG_OFFSET (reg) + offset);
 }
 
 /* Generate a register with same attributes as REG, but with OFFSET
@@ -1143,7 +1247,7 @@ update_reg_offset (rtx new_rtx, rtx reg, int offset)
 
 rtx
 gen_rtx_REG_offset (rtx reg, machine_mode mode, unsigned int regno,
-		    int offset)
+		    poly_int64 offset)
 {
   rtx new_rtx = gen_rtx_REG (mode, regno);
 
@@ -1179,7 +1283,7 @@ adjust_reg_mode (rtx reg, machine_mode mode)
 void
 set_reg_attrs_from_value (rtx reg, rtx x)
 {
-  int offset;
+  poly_int64 offset;
   bool can_be_reg_pointer = true;
 
   /* Don't call mark_reg_pointer for incompatible pointer sign
@@ -1427,39 +1531,43 @@ maybe_set_max_label_num (rtx_code_label *x)
 rtx
 gen_lowpart_common (machine_mode mode, rtx x)
 {
-  int msize = GET_MODE_SIZE (mode);
-  int xsize;
+  poly_uint64 msize = GET_MODE_SIZE (mode);
   machine_mode innermode;
 
   /* Unfortunately, this routine doesn't take a parameter for the mode of X,
      so we have to make one up.  Yuk.  */
   innermode = GET_MODE (x);
   if (CONST_INT_P (x)
-      && msize * BITS_PER_UNIT <= HOST_BITS_PER_WIDE_INT)
+      && known_le (msize * BITS_PER_UNIT,
+		   (unsigned HOST_WIDE_INT) HOST_BITS_PER_WIDE_INT))
     innermode = int_mode_for_size (HOST_BITS_PER_WIDE_INT, 0).require ();
   else if (innermode == VOIDmode)
     innermode = int_mode_for_size (HOST_BITS_PER_DOUBLE_INT, 0).require ();
-
-  xsize = GET_MODE_SIZE (innermode);
 
   gcc_assert (innermode != VOIDmode && innermode != BLKmode);
 
   if (innermode == mode)
     return x;
 
+  /* The size of the outer and inner modes must be ordered.  */
+  poly_uint64 xsize = GET_MODE_SIZE (innermode);
+  if (!ordered_p (msize, xsize))
+    return 0;
+
   if (SCALAR_FLOAT_MODE_P (mode))
     {
       /* Don't allow paradoxical FLOAT_MODE subregs.  */
-      if (msize > xsize)
+      if (maybe_gt (msize, xsize))
 	return 0;
     }
   else
     {
       /* MODE must occupy no more of the underlying registers than X.  */
-      unsigned int regsize = REGMODE_NATURAL_SIZE (innermode);
-      unsigned int mregs = CEIL (msize, regsize);
-      unsigned int xregs = CEIL (xsize, regsize);
-      if (mregs > xregs)
+      poly_uint64 regsize = REGMODE_NATURAL_SIZE (innermode);
+      unsigned int mregs, xregs;
+      if (!can_div_away_from_zero_p (msize, regsize, &mregs)
+	  || !can_div_away_from_zero_p (xsize, regsize, &xregs)
+	  || mregs > xregs)
 	return 0;
     }
 
@@ -1485,8 +1593,9 @@ gen_lowpart_common (machine_mode mode, rtx x)
 	return gen_rtx_fmt_e (GET_CODE (x), int_mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
-	   || GET_CODE (x) == CONCAT || const_vec_p (x)
-	   || CONST_DOUBLE_AS_FLOAT_P (x) || CONST_SCALAR_INT_P (x))
+	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
+	   || CONST_DOUBLE_AS_FLOAT_P (x) || CONST_SCALAR_INT_P (x)
+	   || CONST_POLY_INT_P (x))
     return lowpart_subreg (mode, x, innermode);
 
   /* Otherwise, we can't do this.  */
@@ -1496,13 +1605,13 @@ gen_lowpart_common (machine_mode mode, rtx x)
 rtx
 gen_highpart (machine_mode mode, rtx x)
 {
-  unsigned int msize = GET_MODE_SIZE (mode);
+  poly_uint64 msize = GET_MODE_SIZE (mode);
   rtx result;
 
   /* This case loses if X is a subreg.  To catch bugs early,
      complain if an invalid MODE is used even in other cases.  */
-  gcc_assert (msize <= UNITS_PER_WORD
-	      || msize == (unsigned int) GET_MODE_UNIT_SIZE (GET_MODE (x)));
+  gcc_assert (known_le (msize, (unsigned int) UNITS_PER_WORD)
+	      || known_eq (msize, GET_MODE_UNIT_SIZE (GET_MODE (x))));
 
   result = simplify_gen_subreg (mode, x, GET_MODE (x),
 				subreg_highpart_offset (mode, GET_MODE (x)));
@@ -1537,10 +1646,11 @@ gen_highpart_mode (machine_mode outermode, machine_mode innermode, rtx exp)
 /* Return the SUBREG_BYTE for a lowpart subreg whose outer mode has
    OUTER_BYTES bytes and whose inner mode has INNER_BYTES bytes.  */
 
-unsigned int
-subreg_size_lowpart_offset (unsigned int outer_bytes, unsigned int inner_bytes)
+poly_uint64
+subreg_size_lowpart_offset (poly_uint64 outer_bytes, poly_uint64 inner_bytes)
 {
-  if (outer_bytes > inner_bytes)
+  gcc_checking_assert (ordered_p (outer_bytes, inner_bytes));
+  if (maybe_gt (outer_bytes, inner_bytes))
     /* Paradoxical subregs always have a SUBREG_BYTE of 0.  */
     return 0;
 
@@ -1555,11 +1665,10 @@ subreg_size_lowpart_offset (unsigned int outer_bytes, unsigned int inner_bytes)
 /* Return the SUBREG_BYTE for a highpart subreg whose outer mode has
    OUTER_BYTES bytes and whose inner mode has INNER_BYTES bytes.  */
 
-unsigned int
-subreg_size_highpart_offset (unsigned int outer_bytes,
-			     unsigned int inner_bytes)
+poly_uint64
+subreg_size_highpart_offset (poly_uint64 outer_bytes, poly_uint64 inner_bytes)
 {
-  gcc_assert (inner_bytes >= outer_bytes);
+  gcc_assert (known_ge (inner_bytes, outer_bytes));
 
   if (BYTES_BIG_ENDIAN && WORDS_BIG_ENDIAN)
     return 0;
@@ -1583,8 +1692,9 @@ subreg_lowpart_p (const_rtx x)
   else if (GET_MODE (SUBREG_REG (x)) == VOIDmode)
     return 0;
 
-  return (subreg_lowpart_offset (GET_MODE (x), GET_MODE (SUBREG_REG (x)))
-	  == SUBREG_BYTE (x));
+  return known_eq (subreg_lowpart_offset (GET_MODE (x),
+					  GET_MODE (SUBREG_REG (x))),
+		   SUBREG_BYTE (x));
 }
 
 /* Return subword OFFSET of operand OP.
@@ -1613,7 +1723,8 @@ subreg_lowpart_p (const_rtx x)
  */
 
 rtx
-operand_subword (rtx op, unsigned int offset, int validate_address, machine_mode mode)
+operand_subword (rtx op, poly_uint64 offset, int validate_address,
+		 machine_mode mode)
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -1622,12 +1733,12 @@ operand_subword (rtx op, unsigned int offset, int validate_address, machine_mode
 
   /* If OP is narrower than a word, fail.  */
   if (mode != BLKmode
-      && (GET_MODE_SIZE (mode) < UNITS_PER_WORD))
+      && maybe_lt (GET_MODE_SIZE (mode), UNITS_PER_WORD))
     return 0;
 
   /* If we want a word outside OP, return zero.  */
   if (mode != BLKmode
-      && (offset + 1) * UNITS_PER_WORD > GET_MODE_SIZE (mode))
+      && maybe_gt ((offset + 1) * UNITS_PER_WORD, GET_MODE_SIZE (mode)))
     return const0_rtx;
 
   /* Form a new MEM at the requested address.  */
@@ -1661,7 +1772,7 @@ operand_subword (rtx op, unsigned int offset, int validate_address, machine_mode
    MODE is the mode of OP, in case it is CONST_INT.  */
 
 rtx
-operand_subword_force (rtx op, unsigned int offset, machine_mode mode)
+operand_subword_force (rtx op, poly_uint64 offset, machine_mode mode)
 {
   rtx result = operand_subword (op, offset, 1, mode);
 
@@ -1684,6 +1795,17 @@ operand_subword_force (rtx op, unsigned int offset, machine_mode mode)
   return result;
 }
 
+mem_attrs::mem_attrs ()
+  : expr (NULL_TREE),
+    offset (0),
+    size (0),
+    alias (0),
+    align (0),
+    addrspace (ADDR_SPACE_GENERIC),
+    offset_known_p (false),
+    size_known_p (false)
+{}
+
 /* Returns 1 if both MEM_EXPR can be considered equal
    and 0 otherwise.  */
 
@@ -1710,7 +1832,7 @@ int
 get_mem_align_offset (rtx mem, unsigned int align)
 {
   tree expr;
-  unsigned HOST_WIDE_INT offset;
+  poly_uint64 offset;
 
   /* This function can't use
      if (!MEM_EXPR (mem) || !MEM_OFFSET_KNOWN_P (mem)
@@ -1752,12 +1874,13 @@ get_mem_align_offset (rtx mem, unsigned int align)
 	  tree byte_offset = component_ref_field_offset (expr);
 	  tree bit_offset = DECL_FIELD_BIT_OFFSET (field);
 
+	  poly_uint64 suboffset;
 	  if (!byte_offset
-	      || !tree_fits_uhwi_p (byte_offset)
+	      || !poly_int_tree_p (byte_offset, &suboffset)
 	      || !tree_fits_uhwi_p (bit_offset))
 	    return -1;
 
-	  offset += tree_to_uhwi (byte_offset);
+	  offset += suboffset;
 	  offset += tree_to_uhwi (bit_offset) / BITS_PER_UNIT;
 
 	  if (inner == NULL_TREE)
@@ -1781,7 +1904,10 @@ get_mem_align_offset (rtx mem, unsigned int align)
   else
     return -1;
 
-  return offset & ((align / BITS_PER_UNIT) - 1);
+  HOST_WIDE_INT misalign;
+  if (!known_misalignment (offset, align / BITS_PER_UNIT, &misalign))
+    return -1;
+  return misalign;
 }
 
 /* Given REF (a MEM) and T, either the type of X or the expression
@@ -1791,9 +1917,9 @@ get_mem_align_offset (rtx mem, unsigned int align)
 
 void
 set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
-				 HOST_WIDE_INT bitpos)
+				 poly_int64 bitpos)
 {
-  HOST_WIDE_INT apply_bitpos = 0;
+  poly_int64 apply_bitpos = 0;
   tree type;
   struct mem_attrs attrs, *defattrs, *refattrs;
   addr_space_t as;
@@ -1813,8 +1939,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
      info.  Callers should not set DECL_RTL until after the call to
      set_mem_attributes.  */
   gcc_assert (!DECL_P (t) || ref != DECL_RTL_IF_SET (t));
-
-  memset (&attrs, 0, sizeof (attrs));
 
   /* Get the alias set from the expression or type (perhaps using a
      front-end routine) and use it.  */
@@ -1985,10 +2109,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	    {
 	      attrs.expr = t2;
 	      attrs.offset_known_p = false;
-	      if (tree_fits_uhwi_p (off_tree))
+	      if (poly_int_tree_p (off_tree, &attrs.offset))
 		{
 		  attrs.offset_known_p = true;
-		  attrs.offset = tree_to_uhwi (off_tree);
 		  apply_bitpos = bitpos;
 		}
 	    }
@@ -2009,27 +2132,29 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       unsigned int obj_align;
       unsigned HOST_WIDE_INT obj_bitpos;
       get_object_alignment_1 (t, &obj_align, &obj_bitpos);
-      obj_bitpos = (obj_bitpos - bitpos) & (obj_align - 1);
-      if (obj_bitpos != 0)
-	obj_align = least_bit_hwi (obj_bitpos);
+      unsigned int diff_align = known_alignment (obj_bitpos - bitpos);
+      if (diff_align != 0)
+	obj_align = MIN (obj_align, diff_align);
       attrs.align = MAX (attrs.align, obj_align);
     }
 
-  if (tree_fits_uhwi_p (new_size))
+  poly_uint64 const_size;
+  if (poly_int_tree_p (new_size, &const_size))
     {
       attrs.size_known_p = true;
-      attrs.size = tree_to_uhwi (new_size);
+      attrs.size = const_size;
     }
 
   /* If we modified OFFSET based on T, then subtract the outstanding
      bit position offset.  Similarly, increase the size of the accessed
      object to contain the negative offset.  */
-  if (apply_bitpos)
+  if (maybe_ne (apply_bitpos, 0))
     {
       gcc_assert (attrs.offset_known_p);
-      attrs.offset -= apply_bitpos / BITS_PER_UNIT;
+      poly_int64 bytepos = bits_to_bytes_round_down (apply_bitpos);
+      attrs.offset -= bytepos;
       if (attrs.size_known_p)
-	attrs.size += apply_bitpos / BITS_PER_UNIT;
+	attrs.size += bytepos;
     }
 
   /* Now set the attributes we computed above.  */
@@ -2048,11 +2173,9 @@ set_mem_attributes (rtx ref, tree t, int objectp)
 void
 set_mem_alias_set (rtx mem, alias_set_type set)
 {
-  struct mem_attrs attrs;
-
   /* If the new and old alias sets don't conflict, something is wrong.  */
   gcc_checking_assert (alias_sets_conflict_p (set, MEM_ALIAS_SET (mem)));
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.alias = set;
   set_mem_attrs (mem, &attrs);
 }
@@ -2062,9 +2185,7 @@ set_mem_alias_set (rtx mem, alias_set_type set)
 void
 set_mem_addr_space (rtx mem, addr_space_t addrspace)
 {
-  struct mem_attrs attrs;
-
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.addrspace = addrspace;
   set_mem_attrs (mem, &attrs);
 }
@@ -2074,9 +2195,7 @@ set_mem_addr_space (rtx mem, addr_space_t addrspace)
 void
 set_mem_align (rtx mem, unsigned int align)
 {
-  struct mem_attrs attrs;
-
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.align = align;
   set_mem_attrs (mem, &attrs);
 }
@@ -2086,9 +2205,7 @@ set_mem_align (rtx mem, unsigned int align)
 void
 set_mem_expr (rtx mem, tree expr)
 {
-  struct mem_attrs attrs;
-
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.expr = expr;
   set_mem_attrs (mem, &attrs);
 }
@@ -2096,11 +2213,9 @@ set_mem_expr (rtx mem, tree expr)
 /* Set the offset of MEM to OFFSET.  */
 
 void
-set_mem_offset (rtx mem, HOST_WIDE_INT offset)
+set_mem_offset (rtx mem, poly_int64 offset)
 {
-  struct mem_attrs attrs;
-
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.offset_known_p = true;
   attrs.offset = offset;
   set_mem_attrs (mem, &attrs);
@@ -2111,9 +2226,7 @@ set_mem_offset (rtx mem, HOST_WIDE_INT offset)
 void
 clear_mem_offset (rtx mem)
 {
-  struct mem_attrs attrs;
-
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.offset_known_p = false;
   set_mem_attrs (mem, &attrs);
 }
@@ -2121,11 +2234,9 @@ clear_mem_offset (rtx mem)
 /* Set the size of MEM to SIZE.  */
 
 void
-set_mem_size (rtx mem, HOST_WIDE_INT size)
+set_mem_size (rtx mem, poly_int64 size)
 {
-  struct mem_attrs attrs;
-
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.size_known_p = true;
   attrs.size = size;
   set_mem_attrs (mem, &attrs);
@@ -2136,9 +2247,7 @@ set_mem_size (rtx mem, HOST_WIDE_INT size)
 void
 clear_mem_size (rtx mem)
 {
-  struct mem_attrs attrs;
-
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.size_known_p = false;
   set_mem_attrs (mem, &attrs);
 }
@@ -2201,9 +2310,9 @@ change_address (rtx memref, machine_mode mode, rtx addr)
 {
   rtx new_rtx = change_address_1 (memref, mode, addr, 1, false);
   machine_mode mmode = GET_MODE (new_rtx);
-  struct mem_attrs attrs, *defattrs;
+  struct mem_attrs *defattrs;
 
-  attrs = *get_mem_attrs (memref);
+  mem_attrs attrs (*get_mem_attrs (memref));
   defattrs = mode_mem_attrs[(int) mmode];
   attrs.expr = NULL_TREE;
   attrs.offset_known_p = false;
@@ -2238,15 +2347,14 @@ change_address (rtx memref, machine_mode mode, rtx addr)
    has no inherent size.  */
 
 rtx
-adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
+adjust_address_1 (rtx memref, machine_mode mode, poly_int64 offset,
 		  int validate, int adjust_address, int adjust_object,
-		  HOST_WIDE_INT size)
+		  poly_int64 size)
 {
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
   scalar_int_mode address_mode;
-  int pbits;
-  struct mem_attrs attrs = *get_mem_attrs (memref), *defattrs;
+  struct mem_attrs attrs (*get_mem_attrs (memref)), *defattrs;
   unsigned HOST_WIDE_INT max_align;
 #ifdef POINTERS_EXTEND_UNSIGNED
   scalar_int_mode pointer_mode
@@ -2263,8 +2371,10 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
     size = defattrs->size;
 
   /* If there are no changes, just return the original memory reference.  */
-  if (mode == GET_MODE (memref) && !offset
-      && (size == 0 || (attrs.size_known_p && attrs.size == size))
+  if (mode == GET_MODE (memref)
+      && known_eq (offset, 0)
+      && (known_eq (size, 0)
+	  || (attrs.size_known_p && known_eq (attrs.size, size)))
       && (!validate || memory_address_addr_space_p (mode, addr,
 						    attrs.addrspace)))
     return memref;
@@ -2277,22 +2387,17 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
   /* Convert a possibly large offset to a signed value within the
      range of the target address space.  */
   address_mode = get_address_mode (memref);
-  pbits = GET_MODE_BITSIZE (address_mode);
-  if (HOST_BITS_PER_WIDE_INT > pbits)
-    {
-      int shift = HOST_BITS_PER_WIDE_INT - pbits;
-      offset = (((HOST_WIDE_INT) ((unsigned HOST_WIDE_INT) offset << shift))
-		>> shift);
-    }
+  offset = trunc_int_for_mode (offset, address_mode);
 
   if (adjust_address)
     {
       /* If MEMREF is a LO_SUM and the offset is within the alignment of the
 	 object, we can merge it into the LO_SUM.  */
-      if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
-	  && offset >= 0
-	  && (unsigned HOST_WIDE_INT) offset
-	      < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
+      if (GET_MODE (memref) != BLKmode
+	  && GET_CODE (addr) == LO_SUM
+	  && known_in_range_p (offset,
+			       0, (GET_MODE_ALIGNMENT (GET_MODE (memref))
+				   / BITS_PER_UNIT)))
 	addr = gen_rtx_LO_SUM (address_mode, XEXP (addr, 0),
 			       plus_constant (address_mode,
 					      XEXP (addr, 1), offset));
@@ -2303,7 +2408,7 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
       else if (POINTERS_EXTEND_UNSIGNED > 0
 	       && GET_CODE (addr) == ZERO_EXTEND
 	       && GET_MODE (XEXP (addr, 0)) == pointer_mode
-	       && trunc_int_for_mode (offset, pointer_mode) == offset)
+	       && known_eq (trunc_int_for_mode (offset, pointer_mode), offset))
 	addr = gen_rtx_ZERO_EXTEND (address_mode,
 				    plus_constant (pointer_mode,
 						   XEXP (addr, 0), offset));
@@ -2316,7 +2421,7 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
 
   /* If the address is a REG, change_address_1 rightfully returns memref,
      but this would destroy memref's MEM_ATTRS.  */
-  if (new_rtx == memref && offset != 0)
+  if (new_rtx == memref && maybe_ne (offset, 0))
     new_rtx = copy_rtx (new_rtx);
 
   /* Conservatively drop the object if we don't know where we start from.  */
@@ -2333,7 +2438,7 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
       attrs.offset += offset;
 
       /* Drop the object if the new left end is not within its bounds.  */
-      if (adjust_object && attrs.offset < 0)
+      if (adjust_object && maybe_lt (attrs.offset, 0))
 	{
 	  attrs.expr = NULL_TREE;
 	  attrs.alias = 0;
@@ -2343,16 +2448,16 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
   /* Compute the new alignment by taking the MIN of the alignment and the
      lowest-order set bit in OFFSET, but don't change the alignment if OFFSET
      if zero.  */
-  if (offset != 0)
+  if (maybe_ne (offset, 0))
     {
-      max_align = least_bit_hwi (offset) * BITS_PER_UNIT;
+      max_align = known_alignment (offset) * BITS_PER_UNIT;
       attrs.align = MIN (attrs.align, max_align);
     }
 
-  if (size)
+  if (maybe_ne (size, 0))
     {
       /* Drop the object if the new right end is not within its bounds.  */
-      if (adjust_object && (offset + size) > attrs.size)
+      if (adjust_object && maybe_gt (offset + size, attrs.size))
 	{
 	  attrs.expr = NULL_TREE;
 	  attrs.alias = 0;
@@ -2380,7 +2485,7 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
 
 rtx
 adjust_automodify_address_1 (rtx memref, machine_mode mode, rtx addr,
-			     HOST_WIDE_INT offset, int validate)
+			     poly_int64 offset, int validate)
 {
   memref = change_address_1 (memref, VOIDmode, addr, validate, false);
   return adjust_address_1 (memref, mode, offset, validate, 0, 0, 0);
@@ -2395,9 +2500,9 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 {
   rtx new_rtx, addr = XEXP (memref, 0);
   machine_mode address_mode;
-  struct mem_attrs attrs, *defattrs;
+  struct mem_attrs *defattrs;
 
-  attrs = *get_mem_attrs (memref);
+  mem_attrs attrs (*get_mem_attrs (memref));
   address_mode = get_address_mode (memref);
   new_rtx = simplify_gen_binary (PLUS, address_mode, addr, offset);
 
@@ -2465,17 +2570,16 @@ replace_equiv_address_nv (rtx memref, rtx addr, bool inplace)
    operations plus masking logic.  */
 
 rtx
-widen_memory_access (rtx memref, machine_mode mode, HOST_WIDE_INT offset)
+widen_memory_access (rtx memref, machine_mode mode, poly_int64 offset)
 {
   rtx new_rtx = adjust_address_1 (memref, mode, offset, 1, 1, 0, 0);
-  struct mem_attrs attrs;
-  unsigned int size = GET_MODE_SIZE (mode);
+  poly_uint64 size = GET_MODE_SIZE (mode);
 
   /* If there are no changes, just return the original memory reference.  */
   if (new_rtx == memref)
     return new_rtx;
 
-  attrs = *get_mem_attrs (new_rtx);
+  mem_attrs attrs (*get_mem_attrs (new_rtx));
 
   /* If we don't know what offset we were at within the expression, then
      we can't know if we've overstepped the bounds.  */
@@ -2497,28 +2601,30 @@ widen_memory_access (rtx memref, machine_mode mode, HOST_WIDE_INT offset)
 
 	  /* Is the field at least as large as the access?  If so, ok,
 	     otherwise strip back to the containing structure.  */
-	  if (TREE_CODE (DECL_SIZE_UNIT (field)) == INTEGER_CST
-	      && compare_tree_int (DECL_SIZE_UNIT (field), size) >= 0
-	      && attrs.offset >= 0)
+	  if (poly_int_tree_p (DECL_SIZE_UNIT (field))
+	      && known_ge (wi::to_poly_offset (DECL_SIZE_UNIT (field)), size)
+	      && known_ge (attrs.offset, 0))
 	    break;
 
-	  if (! tree_fits_uhwi_p (offset))
+	  poly_uint64 suboffset;
+	  if (!poly_int_tree_p (offset, &suboffset))
 	    {
 	      attrs.expr = NULL_TREE;
 	      break;
 	    }
 
 	  attrs.expr = TREE_OPERAND (attrs.expr, 0);
-	  attrs.offset += tree_to_uhwi (offset);
+	  attrs.offset += suboffset;
 	  attrs.offset += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
 			   / BITS_PER_UNIT);
 	}
       /* Similarly for the decl.  */
       else if (DECL_P (attrs.expr)
 	       && DECL_SIZE_UNIT (attrs.expr)
-	       && TREE_CODE (DECL_SIZE_UNIT (attrs.expr)) == INTEGER_CST
-	       && compare_tree_int (DECL_SIZE_UNIT (attrs.expr), size) >= 0
-	       && (! attrs.offset_known_p || attrs.offset >= 0))
+	       && poly_int_tree_p (DECL_SIZE_UNIT (attrs.expr))
+	       && known_ge (wi::to_poly_offset (DECL_SIZE_UNIT (attrs.expr)),
+			   size)
+	       && known_ge (attrs.offset, 0))
 	break;
       else
 	{
@@ -2549,7 +2655,6 @@ get_spill_slot_decl (bool force_build_p)
 {
   tree d = spill_slot_decl;
   rtx rd;
-  struct mem_attrs attrs;
 
   if (d || !force_build_p)
     return d;
@@ -2563,7 +2668,7 @@ get_spill_slot_decl (bool force_build_p)
 
   rd = gen_rtx_MEM (BLKmode, frame_pointer_rtx);
   MEM_NOTRAP_P (rd) = 1;
-  attrs = *mode_mem_attrs[(int) BLKmode];
+  mem_attrs attrs (*mode_mem_attrs[(int) BLKmode]);
   attrs.alias = new_alias_set ();
   attrs.expr = d;
   set_mem_attrs (rd, &attrs);
@@ -2581,10 +2686,9 @@ get_spill_slot_decl (bool force_build_p)
 void
 set_mem_attrs_for_spill (rtx mem)
 {
-  struct mem_attrs attrs;
   rtx addr;
 
-  attrs = *get_mem_attrs (mem);
+  mem_attrs attrs (*get_mem_attrs (mem));
   attrs.expr = get_spill_slot_decl (true);
   attrs.alias = MEM_ALIAS_SET (DECL_RTL (attrs.expr));
   attrs.addrspace = ADDR_SPACE_GENERIC;
@@ -2594,10 +2698,7 @@ set_mem_attrs_for_spill (rtx mem)
      with perhaps the plus missing for offset = 0.  */
   addr = XEXP (mem, 0);
   attrs.offset_known_p = true;
-  attrs.offset = 0;
-  if (GET_CODE (addr) == PLUS
-      && CONST_INT_P (XEXP (addr, 1)))
-    attrs.offset = INTVAL (XEXP (addr, 1));
+  strip_offset (addr, &attrs.offset);
 
   set_mem_attrs (mem, &attrs);
   MEM_NOTRAP_P (mem) = 1;
@@ -3370,20 +3471,17 @@ next_nonnote_insn (rtx_insn *insn)
   return insn;
 }
 
-/* Return the next insn after INSN that is not a NOTE, but stop the
-   search before we enter another basic block.  This routine does not
-   look inside SEQUENCEs.  */
+/* Return the next insn after INSN that is not a DEBUG_INSN.  This
+   routine does not look inside SEQUENCEs.  */
 
 rtx_insn *
-next_nonnote_insn_bb (rtx_insn *insn)
+next_nondebug_insn (rtx_insn *insn)
 {
   while (insn)
     {
       insn = NEXT_INSN (insn);
-      if (insn == 0 || !NOTE_P (insn))
+      if (insn == 0 || !DEBUG_INSN_P (insn))
 	break;
-      if (NOTE_INSN_BASIC_BLOCK_P (insn))
-	return NULL;
     }
 
   return insn;
@@ -3399,42 +3497,6 @@ prev_nonnote_insn (rtx_insn *insn)
     {
       insn = PREV_INSN (insn);
       if (insn == 0 || !NOTE_P (insn))
-	break;
-    }
-
-  return insn;
-}
-
-/* Return the previous insn before INSN that is not a NOTE, but stop
-   the search before we enter another basic block.  This routine does
-   not look inside SEQUENCEs.  */
-
-rtx_insn *
-prev_nonnote_insn_bb (rtx_insn *insn)
-{
-
-  while (insn)
-    {
-      insn = PREV_INSN (insn);
-      if (insn == 0 || !NOTE_P (insn))
-	break;
-      if (NOTE_INSN_BASIC_BLOCK_P (insn))
-	return NULL;
-    }
-
-  return insn;
-}
-
-/* Return the next insn after INSN that is not a DEBUG_INSN.  This
-   routine does not look inside SEQUENCEs.  */
-
-rtx_insn *
-next_nondebug_insn (rtx_insn *insn)
-{
-  while (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn == 0 || !DEBUG_INSN_P (insn))
 	break;
     }
 
@@ -3473,6 +3535,29 @@ next_nonnote_nondebug_insn (rtx_insn *insn)
   return insn;
 }
 
+/* Return the next insn after INSN that is not a NOTE nor DEBUG_INSN,
+   but stop the search before we enter another basic block.  This
+   routine does not look inside SEQUENCEs.  */
+
+rtx_insn *
+next_nonnote_nondebug_insn_bb (rtx_insn *insn)
+{
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0)
+	break;
+      if (DEBUG_INSN_P (insn))
+	continue;
+      if (!NOTE_P (insn))
+	break;
+      if (NOTE_INSN_BASIC_BLOCK_P (insn))
+	return NULL;
+    }
+
+  return insn;
+}
+
 /* Return the previous insn before INSN that is not a NOTE nor DEBUG_INSN.
    This routine does not look inside SEQUENCEs.  */
 
@@ -3489,7 +3574,30 @@ prev_nonnote_nondebug_insn (rtx_insn *insn)
   return insn;
 }
 
-/* Return the next INSN, CALL_INSN or JUMP_INSN after INSN;
+/* Return the previous insn before INSN that is not a NOTE nor
+   DEBUG_INSN, but stop the search before we enter another basic
+   block.  This routine does not look inside SEQUENCEs.  */
+
+rtx_insn *
+prev_nonnote_nondebug_insn_bb (rtx_insn *insn)
+{
+  while (insn)
+    {
+      insn = PREV_INSN (insn);
+      if (insn == 0)
+	break;
+      if (DEBUG_INSN_P (insn))
+	continue;
+      if (!NOTE_P (insn))
+	break;
+      if (NOTE_INSN_BASIC_BLOCK_P (insn))
+	return NULL;
+    }
+
+  return insn;
+}
+
+/* Return the next INSN, CALL_INSN, JUMP_INSN or DEBUG_INSN after INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
@@ -3508,7 +3616,7 @@ next_real_insn (rtx uncast_insn)
   return insn;
 }
 
-/* Return the last INSN, CALL_INSN or JUMP_INSN before INSN;
+/* Return the last INSN, CALL_INSN, JUMP_INSN or DEBUG_INSN before INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
@@ -3519,6 +3627,42 @@ prev_real_insn (rtx_insn *insn)
     {
       insn = PREV_INSN (insn);
       if (insn == 0 || INSN_P (insn))
+	break;
+    }
+
+  return insn;
+}
+
+/* Return the next INSN, CALL_INSN or JUMP_INSN after INSN;
+   or 0, if there is none.  This routine does not look inside
+   SEQUENCEs.  */
+
+rtx_insn *
+next_real_nondebug_insn (rtx uncast_insn)
+{
+  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
+
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0 || NONDEBUG_INSN_P (insn))
+	break;
+    }
+
+  return insn;
+}
+
+/* Return the last INSN, CALL_INSN or JUMP_INSN before INSN;
+   or 0, if there is none.  This routine does not look inside
+   SEQUENCEs.  */
+
+rtx_insn *
+prev_real_nondebug_insn (rtx_insn *insn)
+{
+  while (insn)
+    {
+      insn = PREV_INSN (insn);
+      if (insn == 0 || NONDEBUG_INSN_P (insn))
 	break;
     }
 
@@ -3758,15 +3902,12 @@ try_split (rtx pat, rtx_insn *trial, int last)
       for (insn = insn_last; insn ; insn = PREV_INSN (insn))
 	if (CALL_P (insn))
 	  {
-	    rtx_insn *next;
-	    rtx *p;
-
 	    gcc_assert (call_insn == NULL_RTX);
 	    call_insn = insn;
 
 	    /* Add the old CALL_INSN_FUNCTION_USAGE to whatever the
 	       target may have explicitly specified.  */
-	    p = &CALL_INSN_FUNCTION_USAGE (insn);
+	    rtx *p = &CALL_INSN_FUNCTION_USAGE (insn);
 	    while (*p)
 	      p = &XEXP (*p, 1);
 	    *p = CALL_INSN_FUNCTION_USAGE (trial);
@@ -3774,21 +3915,6 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	    /* If the old call was a sibling call, the new one must
 	       be too.  */
 	    SIBLING_CALL_P (insn) = SIBLING_CALL_P (trial);
-
-	    /* If the new call is the last instruction in the sequence,
-	       it will effectively replace the old call in-situ.  Otherwise
-	       we must move any following NOTE_INSN_CALL_ARG_LOCATION note
-	       so that it comes immediately after the new call.  */
-	    if (NEXT_INSN (insn))
-	      for (next = NEXT_INSN (trial);
-		   next && NOTE_P (next);
-		   next = NEXT_INSN (next))
-		if (NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-		  {
-		    remove_insn (next);
-		    add_insn_after (next, insn, NULL);
-		    break;
-		  }
 	  }
     }
 
@@ -3805,6 +3931,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	case REG_SETJMP:
 	case REG_TM:
 	case REG_CALL_NOCF_CHECK:
+	case REG_CALL_ARG_LOCATION:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (CALL_P (insn))
@@ -3834,7 +3961,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	  break;
 
 	case REG_ARGS_SIZE:
-	  fixup_args_size_notes (NULL, insn_last, INTVAL (XEXP (note, 0)));
+	  fixup_args_size_notes (NULL, insn_last, get_args_size (note));
 	  break;
 
 	case REG_CALL_DECL:
@@ -4040,7 +4167,7 @@ add_insn (rtx_insn *insn)
 {
   rtx_insn *prev = get_last_insn ();
   link_insn_into_chain (insn, prev, NULL);
-  if (NULL == get_insns ())
+  if (get_insns () == NULL)
     set_first_insn (insn);
   set_last_insn (insn);
 }
@@ -4669,7 +4796,6 @@ note_outside_basic_block_p (enum insn_note subtype, bool on_bb_boundary_p)
 	 inside basic blocks.  If the caller is emitting on the basic block
 	 boundary, do not set BLOCK_FOR_INSN on the new note.  */
       case NOTE_INSN_VAR_LOCATION:
-      case NOTE_INSN_CALL_ARG_LOCATION:
       case NOTE_INSN_EH_REGION_BEG:
       case NOTE_INSN_EH_REGION_END:
 	return on_bb_boundary_p;
@@ -5646,6 +5772,7 @@ copy_insn_1 (rtx orig)
       case 't':
       case 'w':
       case 'i':
+      case 'p':
       case 's':
       case 'S':
       case 'u':
@@ -5757,8 +5884,6 @@ init_emit (void)
   REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = STACK_BOUNDARY;
   REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) = STACK_BOUNDARY;
 
-  /* ??? These are problematic (for example, 3 out of 4 are wrong on
-     32-bit SPARC and cannot be all fixed because of the ABI).  */
   REGNO_POINTER_ALIGN (VIRTUAL_INCOMING_ARGS_REGNUM) = STACK_BOUNDARY;
   REGNO_POINTER_ALIGN (VIRTUAL_STACK_VARS_REGNUM) = STACK_BOUNDARY;
   REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM) = STACK_BOUNDARY;
@@ -5772,27 +5897,71 @@ init_emit (void)
 #endif
 }
 
-/* Return true if X is a valid element for a duplicated vector constant
-   of the given mode.  */
+/* Return the value of element I of CONST_VECTOR X as a wide_int.  */
+
+wide_int
+const_vector_int_elt (const_rtx x, unsigned int i)
+{
+  /* First handle elements that are directly encoded.  */
+  machine_mode elt_mode = GET_MODE_INNER (GET_MODE (x));
+  if (i < (unsigned int) XVECLEN (x, 0))
+    return rtx_mode_t (CONST_VECTOR_ENCODED_ELT (x, i), elt_mode);
+
+  /* Identify the pattern that contains element I and work out the index of
+     the last encoded element for that pattern.  */
+  unsigned int encoded_nelts = const_vector_encoded_nelts (x);
+  unsigned int npatterns = CONST_VECTOR_NPATTERNS (x);
+  unsigned int count = i / npatterns;
+  unsigned int pattern = i % npatterns;
+  unsigned int final_i = encoded_nelts - npatterns + pattern;
+
+  /* If there are no steps, the final encoded value is the right one.  */
+  if (!CONST_VECTOR_STEPPED_P (x))
+    return rtx_mode_t (CONST_VECTOR_ENCODED_ELT (x, final_i), elt_mode);
+
+  /* Otherwise work out the value from the last two encoded elements.  */
+  rtx v1 = CONST_VECTOR_ENCODED_ELT (x, final_i - npatterns);
+  rtx v2 = CONST_VECTOR_ENCODED_ELT (x, final_i);
+  wide_int diff = wi::sub (rtx_mode_t (v2, elt_mode),
+			   rtx_mode_t (v1, elt_mode));
+  return wi::add (rtx_mode_t (v2, elt_mode), (count - 2) * diff);
+}
+
+/* Return the value of element I of CONST_VECTOR X.  */
+
+rtx
+const_vector_elt (const_rtx x, unsigned int i)
+{
+  /* First handle elements that are directly encoded.  */
+  if (i < (unsigned int) XVECLEN (x, 0))
+    return CONST_VECTOR_ENCODED_ELT (x, i);
+
+  /* If there are no steps, the final encoded value is the right one.  */
+  if (!CONST_VECTOR_STEPPED_P (x))
+    {
+      /* Identify the pattern that contains element I and work out the index of
+	 the last encoded element for that pattern.  */
+      unsigned int encoded_nelts = const_vector_encoded_nelts (x);
+      unsigned int npatterns = CONST_VECTOR_NPATTERNS (x);
+      unsigned int pattern = i % npatterns;
+      unsigned int final_i = encoded_nelts - npatterns + pattern;
+      return CONST_VECTOR_ENCODED_ELT (x, final_i);
+    }
+
+  /* Otherwise work out the value from the last two encoded elements.  */
+  return immed_wide_int_const (const_vector_int_elt (x, i),
+			       GET_MODE_INNER (GET_MODE (x)));
+}
+
+/* Return true if X is a valid element for a CONST_VECTOR of the given
+  mode.  */
 
 bool
-valid_for_const_vec_duplicate_p (machine_mode, rtx x)
+valid_for_const_vector_p (machine_mode, rtx x)
 {
   return (CONST_SCALAR_INT_P (x)
 	  || CONST_DOUBLE_AS_FLOAT_P (x)
 	  || CONST_FIXED_P (x));
-}
-
-/* Like gen_const_vec_duplicate, but ignore const_tiny_rtx.  */
-
-static rtx
-gen_const_vec_duplicate_1 (machine_mode mode, rtx el)
-{
-  int nunits = GET_MODE_NUNITS (mode);
-  rtvec v = rtvec_alloc (nunits);
-  for (int i = 0; i < nunits; ++i)
-    RTVEC_ELT (v, i) = el;
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
 }
 
 /* Generate a vector constant of mode MODE in which every element has
@@ -5801,15 +5970,9 @@ gen_const_vec_duplicate_1 (machine_mode mode, rtx el)
 rtx
 gen_const_vec_duplicate (machine_mode mode, rtx elt)
 {
-  scalar_mode inner_mode = GET_MODE_INNER (mode);
-  if (elt == CONST0_RTX (inner_mode))
-    return CONST0_RTX (mode);
-  else if (elt == CONST1_RTX (inner_mode))
-    return CONST1_RTX (mode);
-  else if (elt == CONSTM1_RTX (inner_mode))
-    return CONSTM1_RTX (mode);
-
-  return gen_const_vec_duplicate_1 (mode, elt);
+  rtx_vector_builder builder (mode, 1, 1);
+  builder.quick_push (elt);
+  return builder.build ();
 }
 
 /* Return a vector rtx of mode MODE in which every element has value X.
@@ -5818,33 +5981,49 @@ gen_const_vec_duplicate (machine_mode mode, rtx elt)
 rtx
 gen_vec_duplicate (machine_mode mode, rtx x)
 {
-  if (valid_for_const_vec_duplicate_p (mode, x))
+  if (valid_for_const_vector_p (mode, x))
     return gen_const_vec_duplicate (mode, x);
   return gen_rtx_VEC_DUPLICATE (mode, x);
 }
 
-/* A subroutine of const_vec_series_p that handles the case in which
-   X is known to be an integer CONST_VECTOR.  */
+/* A subroutine of const_vec_series_p that handles the case in which:
+
+     (GET_CODE (X) == CONST_VECTOR
+      && CONST_VECTOR_NPATTERNS (X) == 1
+      && !CONST_VECTOR_DUPLICATE_P (X))
+
+   is known to hold.  */
 
 bool
 const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
 {
-  unsigned int nelts = CONST_VECTOR_NUNITS (x);
-  if (nelts < 2)
+  /* Stepped sequences are only defined for integers, to avoid specifying
+     rounding behavior.  */
+  if (GET_MODE_CLASS (GET_MODE (x)) != MODE_VECTOR_INT)
     return false;
 
+  /* A non-duplicated vector with two elements can always be seen as a
+     series with a nonzero step.  Longer vectors must have a stepped
+     encoding.  */
+  if (maybe_ne (CONST_VECTOR_NUNITS (x), 2)
+      && !CONST_VECTOR_STEPPED_P (x))
+    return false;
+
+  /* Calculate the step between the first and second elements.  */
   scalar_mode inner = GET_MODE_INNER (GET_MODE (x));
   rtx base = CONST_VECTOR_ELT (x, 0);
   rtx step = simplify_binary_operation (MINUS, inner,
-					CONST_VECTOR_ELT (x, 1), base);
+					CONST_VECTOR_ENCODED_ELT (x, 1), base);
   if (rtx_equal_p (step, CONST0_RTX (inner)))
     return false;
 
-  for (unsigned int i = 2; i < nelts; ++i)
+  /* If we have a stepped encoding, check that the step between the
+     second and third elements is the same as STEP.  */
+  if (CONST_VECTOR_STEPPED_P (x))
     {
       rtx diff = simplify_binary_operation (MINUS, inner,
-					    CONST_VECTOR_ELT (x, i),
-					    CONST_VECTOR_ELT (x, i - 1));
+					    CONST_VECTOR_ENCODED_ELT (x, 2),
+					    CONST_VECTOR_ENCODED_ELT (x, 1));
       if (!rtx_equal_p (step, diff))
 	return false;
     }
@@ -5860,16 +6039,15 @@ const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
 rtx
 gen_const_vec_series (machine_mode mode, rtx base, rtx step)
 {
-  gcc_assert (CONSTANT_P (base) && CONSTANT_P (step));
+  gcc_assert (valid_for_const_vector_p (mode, base)
+	      && valid_for_const_vector_p (mode, step));
 
-  int nunits = GET_MODE_NUNITS (mode);
-  rtvec v = rtvec_alloc (nunits);
-  scalar_mode inner_mode = GET_MODE_INNER (mode);
-  RTVEC_ELT (v, 0) = base;
-  for (int i = 1; i < nunits; ++i)
-    RTVEC_ELT (v, i) = simplify_gen_binary (PLUS, inner_mode,
-					    RTVEC_ELT (v, i - 1), step);
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
+  rtx_vector_builder builder (mode, 1, 3);
+  builder.quick_push (base);
+  for (int i = 1; i < 3; ++i)
+    builder.quick_push (simplify_gen_binary (PLUS, GET_MODE_INNER (mode),
+					     builder[i - 1], step));
+  return builder.build ();
 }
 
 /* Generate a vector of mode MODE in which element I has the value
@@ -5881,7 +6059,8 @@ gen_vec_series (machine_mode mode, rtx base, rtx step)
 {
   if (step == const0_rtx)
     return gen_vec_duplicate (mode, base);
-  if (CONSTANT_P (base) && CONSTANT_P (step))
+  if (valid_for_const_vector_p (mode, base)
+      && valid_for_const_vector_p (mode, step))
     return gen_const_vec_series (mode, base, step);
   return gen_rtx_VEC_SERIES (mode, base, step);
 }
@@ -5899,7 +6078,7 @@ gen_const_vector (machine_mode mode, int constant)
   rtx el = const_tiny_rtx[constant][(int) inner];
   gcc_assert (el);
 
-  return gen_const_vec_duplicate_1 (mode, el);
+  return gen_const_vec_duplicate (mode, el);
 }
 
 /* Generate a vector like gen_rtx_raw_CONST_VEC, but use the zero vector when
@@ -5907,14 +6086,18 @@ gen_const_vector (machine_mode mode, int constant)
 rtx
 gen_rtx_CONST_VECTOR (machine_mode mode, rtvec v)
 {
-  gcc_assert (GET_MODE_NUNITS (mode) == GET_NUM_ELEM (v));
+  gcc_assert (known_eq (GET_MODE_NUNITS (mode), GET_NUM_ELEM (v)));
 
   /* If the values are all the same, check to see if we can use one of the
      standard constant vectors.  */
   if (rtvec_all_equal_p (v))
     return gen_const_vec_duplicate (mode, RTVEC_ELT (v, 0));
 
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
+  unsigned int nunits = GET_NUM_ELEM (v);
+  rtx_vector_builder builder (mode, nunits, 1);
+  for (unsigned int i = 0; i < nunits; ++i)
+    builder.quick_push (RTVEC_ELT (v, i));
+  return builder.build (v);
 }
 
 /* Initialise global register information required by all functions.  */
@@ -6026,6 +6209,9 @@ init_emit_once (void)
 #endif
   const_double_htab = hash_table<const_double_hasher>::create_ggc (37);
 
+  if (NUM_POLY_INT_COEFFS > 1)
+    const_poly_int_htab = hash_table<const_poly_int_hasher>::create_ggc (37);
+
   const_fixed_htab = hash_table<const_fixed_hasher>::create_ggc (37);
 
   reg_attrs_htab = hash_table<reg_attr_hasher>::create_ggc (37);
@@ -6100,6 +6286,12 @@ init_emit_once (void)
   FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
 
+  /* For BImode, 1 and -1 are unsigned and signed interpretations
+     of the same value.  */
+  const_tiny_rtx[0][(int) BImode] = const0_rtx;
+  const_tiny_rtx[1][(int) BImode] = const_true_rtx;
+  const_tiny_rtx[3][(int) BImode] = const_true_rtx;
+
   for (mode = MIN_MODE_PARTIAL_INT;
        mode <= MAX_MODE_PARTIAL_INT;
        mode = (machine_mode)((int)(mode) + 1))
@@ -6115,6 +6307,15 @@ init_emit_once (void)
     {
       rtx inner = const_tiny_rtx[0][(int)GET_MODE_INNER (mode)];
       const_tiny_rtx[0][(int) mode] = gen_rtx_CONCAT (mode, inner, inner);
+    }
+
+  /* As for BImode, "all 1" and "all -1" are unsigned and signed
+     interpretations of the same value.  */
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_BOOL)
+    {
+      const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
+      const_tiny_rtx[3][(int) mode] = gen_const_vector (mode, 3);
+      const_tiny_rtx[1][(int) mode] = const_tiny_rtx[3][(int) mode];
     }
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
@@ -6217,10 +6418,6 @@ init_emit_once (void)
   for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)
     if (GET_MODE_CLASS ((machine_mode) i) == MODE_CC)
       const_tiny_rtx[0][i] = const0_rtx;
-
-  const_tiny_rtx[0][(int) BImode] = const0_rtx;
-  if (STORE_FLAG_VALUE == 1)
-    const_tiny_rtx[1][(int) BImode] = const1_rtx;
 
   FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_POINTER_BOUNDS)
     {
@@ -6411,6 +6608,22 @@ need_atomic_barrier_p (enum memmodel model, bool pre)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Return a constant shift amount for shifting a value of mode MODE
+   by VALUE bits.  */
+
+rtx
+gen_int_shift_amount (machine_mode, poly_int64 value)
+{
+  /* Use a 64-bit mode, to avoid any truncation.
+
+     ??? Perhaps this should be automatically derived from the .md files
+     instead, or perhaps have a target hook.  */
+  scalar_int_mode shift_mode = (BITS_PER_UNIT == 8
+				? DImode
+				: int_mode_for_size (64, 0).require ());
+  return gen_int_mode (value, shift_mode);
 }
 
 /* Initialize fields of rtl_data related to stack alignment.  */

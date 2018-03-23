@@ -1,4 +1,4 @@
-@c Copyright (C) 1999-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1999-2018 Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
 
@@ -287,6 +287,17 @@ When this option is given no argument, the default parameter value is
 
 Note that @code{-ftrack-macro-expansion=2} is activated by default.
 
+@item -fmacro-prefix-map=@var{old}=@var{new}
+@opindex fmacro-prefix-map
+When preprocessing files residing in directory @file{@var{old}},
+expand the @code{__FILE__} and @code{__BASE_FILE__} macros as if the
+files resided in directory @file{@var{new}} instead.  This can be used
+to change an absolute path to a relative path by using @file{.} for
+@var{new} which can result in more reproducible builds that are
+location independent.  This option also affects
+@code{__builtin_FILE()} during compilation.  See also
+@option{-ffile-prefix-map}.
+
 @item -fexec-charset=@var{charset}
 @opindex fexec-charset
 @cindex character set, execution
@@ -534,4 +545,3 @@ token in the output is preceded by the dump of the map its location
 belongs to.
 
 When used from GCC without @option{-E}, this option has no effect.
-

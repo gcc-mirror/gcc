@@ -1,5 +1,5 @@
 /* Subroutines used for MIPS code generation.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -20,6 +20,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -595,29 +597,29 @@ static tree mips_handle_use_shadow_register_set_attr (tree *, tree, tree, int,
 
 /* The value of TARGET_ATTRIBUTE_TABLE.  */
 static const struct attribute_spec mips_attribute_table[] = {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       om_diagnostic } */
-  { "long_call",   0, 0, false, true,  true,  NULL, false },
-  { "short_call",  0, 0, false, true,  true,  NULL, false },
-  { "far",     	   0, 0, false, true,  true,  NULL, false },
-  { "near",        0, 0, false, true,  true,  NULL, false },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "long_call",   0, 0, false, true,  true,  false, NULL, NULL },
+  { "short_call",  0, 0, false, true,  true,  false, NULL, NULL },
+  { "far",     	   0, 0, false, true,  true,  false, NULL, NULL },
+  { "near",        0, 0, false, true,  true,  false, NULL, NULL },
   /* We would really like to treat "mips16" and "nomips16" as type
      attributes, but GCC doesn't provide the hooks we need to support
      the right conversion rules.  As declaration attributes, they affect
      code generation but don't carry other semantics.  */
-  { "mips16", 	   0, 0, true,  false, false, NULL, false },
-  { "nomips16",    0, 0, true,  false, false, NULL, false },
-  { "micromips",   0, 0, true,  false, false, NULL, false },
-  { "nomicromips", 0, 0, true,  false, false, NULL, false },
-  { "nocompression", 0, 0, true,  false, false, NULL, false },
+  { "mips16", 	   0, 0, true,  false, false, false, NULL, NULL },
+  { "nomips16",    0, 0, true,  false, false, false, NULL, NULL },
+  { "micromips",   0, 0, true,  false, false, false, NULL, NULL },
+  { "nomicromips", 0, 0, true,  false, false, false, NULL, NULL },
+  { "nocompression", 0, 0, true,  false, false, false, NULL, NULL },
   /* Allow functions to be specified as interrupt handlers */
-  { "interrupt",   0, 1, false, true,  true, mips_handle_interrupt_attr,
-    false },
-  { "use_shadow_register_set",	0, 1, false, true,  true,
-    mips_handle_use_shadow_register_set_attr, false },
-  { "keep_interrupts_masked",	0, 0, false, true,  true, NULL, false },
-  { "use_debug_exception_return", 0, 0, false, true,  true, NULL, false },
-  { NULL,	   0, 0, false, false, false, NULL, false }
+  { "interrupt",   0, 1, false, true,  true, false, mips_handle_interrupt_attr,
+    NULL },
+  { "use_shadow_register_set",	0, 1, false, true,  true, false,
+    mips_handle_use_shadow_register_set_attr, NULL },
+  { "keep_interrupts_masked",	0, 0, false, true,  true, false, NULL, NULL },
+  { "use_debug_exception_return", 0, 0, false, true, true, false, NULL, NULL },
+  { NULL,	   0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* A table describing all the processors GCC knows about; see
@@ -13399,10 +13401,11 @@ mips_preferred_simd_mode (scalar_mode mode)
 
 /* Implement TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
 
-static unsigned int
-mips_autovectorize_vector_sizes (void)
+static void
+mips_autovectorize_vector_sizes (vector_sizes *sizes)
 {
-  return ISA_HAS_MSA ? 16 : 0;
+  if (ISA_HAS_MSA)
+    sizes->safe_push (16);
 }
 
 /* Implement TARGET_INIT_LIBFUNCS.  */
@@ -17611,7 +17614,7 @@ r10k_safe_address_p (rtx x, rtx_insn *insn)
 static bool
 r10k_safe_mem_expr_p (tree expr, unsigned HOST_WIDE_INT offset)
 {
-  HOST_WIDE_INT bitoffset, bitsize;
+  poly_int64 bitoffset, bitsize;
   tree inner, var_offset;
   machine_mode mode;
   int unsigned_p, reverse_p, volatile_p;
@@ -20423,7 +20426,7 @@ mips_final_prescan_insn (rtx_insn *insn, rtx *opvec, int noperands)
       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
       && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE)
     mips_set_text_contents_type (asm_out_file, "__pool_",
-				 XINT (XVECEXP (PATTERN (insn), 0, 0), 0),
+				 INTVAL (XVECEXP (PATTERN (insn), 0, 0)),
 				 FALSE);
 
   if (mips_need_noat_wrapper_p (insn, opvec, noperands))
@@ -20447,7 +20450,7 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx_insn *insn,
       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
       && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE_END)
     mips_set_text_contents_type (asm_out_file, "__pend_",
-				 XINT (XVECEXP (PATTERN (insn), 0, 0), 0),
+				 INTVAL (XVECEXP (PATTERN (insn), 0, 0)),
 				 TRUE);
 }
 
@@ -21377,34 +21380,32 @@ mips_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
-/* Expand a vec_perm_const pattern.  */
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
-bool
-mips_expand_vec_perm_const (rtx operands[4])
+static bool
+mips_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
+			       rtx op1, const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
   int i, nelt, which;
   unsigned char orig_perm[MAX_VECT_LEN];
-  rtx sel;
   bool ok;
 
-  d.target = operands[0];
-  d.op0 = operands[1];
-  d.op1 = operands[2];
-  sel = operands[3];
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
 
-  d.vmode = GET_MODE (d.target);
-  gcc_assert (VECTOR_MODE_P (d.vmode));
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = false;
+  d.vmode = vmode;
+  gcc_assert (VECTOR_MODE_P (vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (vmode);
+  d.testing_p = !target;
 
   /* This is overly conservative, but ensures we don't get an
      uninitialized warning on ORIG_PERM.  */
   memset (orig_perm, 0, MAX_VECT_LEN);
   for (i = which = 0; i < nelt; ++i)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      int ei = INTVAL (e) & (2 * nelt - 1);
+      int ei = sel[i] & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
       orig_perm[i] = ei;
     }
@@ -21417,7 +21418,7 @@ mips_expand_vec_perm_const (rtx operands[4])
 
     case 3:
       d.one_vector_p = false;
-      if (!rtx_equal_p (d.op0, d.op1))
+      if (d.testing_p || !rtx_equal_p (d.op0, d.op1))
 	break;
       /* FALLTHRU */
 
@@ -21434,6 +21435,19 @@ mips_expand_vec_perm_const (rtx operands[4])
       break;
     }
 
+  if (d.testing_p)
+    {
+      d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+      d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+      if (!d.one_vector_p)
+	d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+      start_sequence ();
+      ok = mips_expand_vec_perm_const_1 (&d);
+      end_sequence ();
+      return ok;
+    }
+
   ok = mips_expand_vec_perm_const_1 (&d);
 
   /* If we were given a two-vector permutation which just happened to
@@ -21445,8 +21459,8 @@ mips_expand_vec_perm_const (rtx operands[4])
      the original permutation.  */
   if (!ok && which == 3)
     {
-      d.op0 = operands[1];
-      d.op1 = operands[2];
+      d.op0 = op0;
+      d.op1 = op1;
       d.one_vector_p = false;
       memcpy (d.perm, orig_perm, MAX_VECT_LEN);
       ok = mips_expand_vec_perm_const_1 (&d);
@@ -21464,48 +21478,6 @@ mips_sched_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
   if (MSA_SUPPORTED_MODE_P (mode))
     return 2;
   return 1;
-}
-
-/* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
-
-static bool
-mips_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
-{
-  struct expand_vec_perm_d d;
-  unsigned int i, nelt, which;
-  bool ret;
-
-  d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = true;
-
-  /* Categorize the set of elements in the selector.  */
-  for (i = which = 0; i < nelt; ++i)
-    {
-      unsigned char e = sel[i];
-      d.perm[i] = e;
-      gcc_assert (e < 2 * nelt);
-      which |= (e < nelt ? 1 : 2);
-    }
-
-  /* For all elements from second vector, fold the elements to first.  */
-  if (which == 2)
-    for (i = 0; i < nelt; ++i)
-      d.perm[i] -= nelt;
-
-  /* Check whether the mask can be applied to the vector type.  */
-  d.one_vector_p = (which != 3);
-
-  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
-  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
-  if (!d.one_vector_p)
-    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
-
-  start_sequence ();
-  ret = mips_expand_vec_perm_const_1 (&d);
-  end_sequence ();
-
-  return ret;
 }
 
 /* Expand an integral vector unpack operation.  */
@@ -22320,7 +22292,7 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
 
 static bool
-mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+mips_truly_noop_truncation (poly_uint64 outprec, poly_uint64 inprec)
 {
   return !TARGET_64BIT || inprec <= 32 || outprec > 32;
 }
@@ -22589,8 +22561,8 @@ mips_starting_frame_offset (void)
 #undef TARGET_PREPARE_PCH_SAVE
 #define TARGET_PREPARE_PCH_SAVE mips_prepare_pch_save
 
-#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
-#define TARGET_VECTORIZE_VEC_PERM_CONST_OK mips_vectorize_vec_perm_const_ok
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST mips_vectorize_vec_perm_const
 
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH mips_sched_reassociation_width

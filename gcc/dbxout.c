@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -91,6 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "expr.h"
+#include "file-prefix-map.h" /* remap_debug_filename()  */
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -384,6 +385,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_rtx_code_label,	         /* label */
   dbxout_handle_pch,		         /* handle_pch */
   debug_nothing_rtx_insn,	         /* var_location */
+  debug_nothing_tree,	         	 /* inline_entry */
   debug_nothing_tree,			 /* size_function */
   dbxout_switch_text_section,            /* switch_text_section */
   debug_nothing_tree_tree,		 /* set_name */
@@ -426,6 +428,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   debug_nothing_rtx_code_label,	         /* label */
   dbxout_handle_pch,		         /* handle_pch */
   debug_nothing_rtx_insn,	         /* var_location */
+  debug_nothing_tree,	         	 /* inline_entry */
   debug_nothing_tree,			 /* size_function */
   debug_nothing_void,                    /* switch_text_section */
   debug_nothing_tree_tree,	         /* set_name */
@@ -2529,7 +2532,7 @@ dbxout_expand_expr (tree expr)
     case BIT_FIELD_REF:
       {
 	machine_mode mode;
-	HOST_WIDE_INT bitsize, bitpos;
+	poly_int64 bitsize, bitpos;
 	tree offset, tem;
 	int unsignedp, reversep, volatilep = 0;
 	rtx x;
@@ -2546,8 +2549,8 @@ dbxout_expand_expr (tree expr)
 	      return NULL;
 	    x = adjust_address_nv (x, mode, tree_to_shwi (offset));
 	  }
-	if (bitpos != 0)
-	  x = adjust_address_nv (x, mode, bitpos / BITS_PER_UNIT);
+	if (maybe_ne (bitpos, 0))
+	  x = adjust_address_nv (x, mode, bits_to_bytes_round_down (bitpos));
 
 	return x;
       }
@@ -3041,7 +3044,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	  int offs;
 	  letter = 'G';
 	  code = N_GSYM;
-	  if (NULL != dbxout_common_check (decl, &offs))
+	  if (dbxout_common_check (decl, &offs) != NULL)
 	    {
 	      letter = 'V';
 	      addr = 0;
@@ -3095,7 +3098,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	    {
 	      int offs;
 	      code = N_LCSYM;
-	      if (NULL != dbxout_common_check (decl, &offs))
+	      if (dbxout_common_check (decl, &offs) != NULL)
 	        {
 		  addr = 0;
 		  number = offs;
@@ -3194,7 +3197,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
       int offs;
       code = N_LCSYM;
       letter = 'V';
-      if (NULL == dbxout_common_check (decl, &offs))
+      if (dbxout_common_check (decl, &offs) == NULL)
         addr = XEXP (XEXP (home, 0), 0);
       else
         {
@@ -3724,8 +3727,8 @@ dbx_output_rbrac (const char *label,
     dbxout_stab_value_label (label);
 }
 
-/* Return true is at least one block among BLOCK, its children or siblings
-   which has TREE_USED, TREE_ASM_WRITTEN and BLOCK_IN_COLD_SECTION_P
+/* Return true if at least one block among BLOCK, its children or siblings
+   has TREE_USED, TREE_ASM_WRITTEN and BLOCK_IN_COLD_SECTION_P
    set.  If there is none, clear TREE_USED bit on such blocks.  */
 
 static bool
@@ -3844,7 +3847,7 @@ dbxout_block (tree block, int depth, tree args, int parent_blocknum)
 	      /* If we emitted any vars and didn't output any LBRAC/RBRAC,
 		 either at this level or any lower level, we need to emit
 		 an empty LBRAC/RBRAC pair now.  */
-	      char buf[20];
+	      char buf[30];
 	      const char *scope_start;
 
 	      ret = true;

@@ -15,26 +15,26 @@ if (.not.there) then
 endif
 msg=""
 open(77,file=n,status="new", iomsg=msg, iostat=i)
-if (i == 0) call abort()
-if (msg(1:33) /= "Cannot open file 'temptestfile': ") call abort()
+if (i == 0) STOP 1
+if (msg(1:33) /= "Cannot open file 'temptestfile': ") STOP 2
 
 open(77,file=n,status="old")
 close(77, status="delete")
 open(77,file=n,status="old", iomsg=msg, iostat=i)
-if (i == 0) call abort()
-if (msg(1:33) /= "Cannot open file 'temptestfile': ") call abort()
+if (i == 0) STOP 3
+if (msg(1:33) /= "Cannot open file 'temptestfile': ") STOP 4
 
 open(77,file="./", iomsg=msg, iostat=i)
 if (msg(1:23) /= "Cannot open file './': " &
-     .and. msg /= "Invalid argument") call abort()
+     .and. msg /= "Invalid argument") STOP 5
 
 open(77,file=n,status="new")
 i = chmod(n, "-w")
 if (i == 0 .and. getuid() /= 0) then
  close(77, status="keep")
  open(77,file=n, iomsg=msg, iostat=i, action="write")
- if (i == 0) call abort()
- if (msg(1:33) /= "Cannot open file 'temptestfile': ") call abort()
+ if (i == 0) STOP 6
+ if (msg(1:33) /= "Cannot open file 'temptestfile': ") STOP 7
 endif
 
 i = chmod(n,"+w")

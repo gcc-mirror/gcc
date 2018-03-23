@@ -76,6 +76,6 @@ PROGRAM test
   !print *, chairman
   read(28, '(i10,i10,DT,i15,DT,i12)', advance='no', size=thesize) rl, &
                           & kl, chairman, rl, chairman, tl
-  if (thesize.ne.91) call abort
+  if (thesize.ne.91) STOP 1
   close(28)
 END PROGRAM test

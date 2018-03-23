@@ -163,18 +163,23 @@ func shouldEscape(c byte, mode encoding) bool {
 	return true
 }
 
-// QueryUnescape does the inverse transformation of QueryEscape, converting
-// %AB into the byte 0xAB and '+' into ' ' (space). It returns an error if
-// any % is not followed by two hexadecimal digits.
+// QueryUnescape does the inverse transformation of QueryEscape,
+// converting each 3-byte encoded substring of the form "%AB" into the
+// hex-decoded byte 0xAB. It also converts '+' into ' ' (space).
+// It returns an error if any % is not followed by two hexadecimal
+// digits.
 func QueryUnescape(s string) (string, error) {
 	return unescape(s, encodeQueryComponent)
 }
 
-// PathUnescape does the inverse transformation of PathEscape, converting
-// %AB into the byte 0xAB. It returns an error if any % is not followed by
-// two hexadecimal digits.
+// PathUnescape does the inverse transformation of PathEscape,
+// converting each 3-byte encoded substring of the form "%AB" into the
+// hex-decoded byte 0xAB. It also converts '+' into ' ' (space).
+// It returns an error if any % is not followed by two hexadecimal
+// digits.
 //
-// PathUnescape is identical to QueryUnescape except that it does not unescape '+' to ' ' (space).
+// PathUnescape is identical to QueryUnescape except that it does not
+// unescape '+' to ' ' (space).
 func PathUnescape(s string) (string, error) {
 	return unescape(s, encodePathSegment)
 }
@@ -367,17 +372,26 @@ type Userinfo struct {
 
 // Username returns the username.
 func (u *Userinfo) Username() string {
+	if u == nil {
+		return ""
+	}
 	return u.username
 }
 
 // Password returns the password in case it is set, and whether it is set.
 func (u *Userinfo) Password() (string, bool) {
+	if u == nil {
+		return "", false
+	}
 	return u.password, u.passwordSet
 }
 
 // String returns the encoded userinfo information in the standard form
 // of "username[:password]".
 func (u *Userinfo) String() string {
+	if u == nil {
+		return ""
+	}
 	s := escape(u.username, encodeUserPassword)
 	if u.passwordSet {
 		s += ":" + escape(u.password, encodeUserPassword)
@@ -427,7 +441,11 @@ func split(s string, c string, cutc bool) (string, string) {
 }
 
 // Parse parses rawurl into a URL structure.
-// The rawurl may be relative or absolute.
+//
+// The rawurl may be relative (a path, without a host) or absolute
+// (starting with a scheme). Trying to parse a hostname and path
+// without a scheme is invalid but may not necessarily return an
+// error, due to parsing ambiguities.
 func Parse(rawurl string) (*URL, error) {
 	// Cut off #frag
 	u, frag := split(rawurl, "#", true)
@@ -545,6 +563,9 @@ func parseAuthority(authority string) (user *Userinfo, host string, err error) {
 		return nil, host, nil
 	}
 	userinfo := authority[:i]
+	if !validUserinfo(userinfo) {
+		return nil, "", errors.New("net/url: invalid userinfo")
+	}
 	if !strings.Contains(userinfo, ":") {
 		if userinfo, err = unescape(userinfo, encodeUserPassword); err != nil {
 			return nil, "", err
@@ -726,7 +747,9 @@ func (u *URL) String() string {
 		buf.WriteString(u.Opaque)
 	} else {
 		if u.Scheme != "" || u.Host != "" || u.User != nil {
-			buf.WriteString("//")
+			if u.Host != "" || u.Path != "" || u.User != nil {
+				buf.WriteString("//")
+			}
 			if ui := u.User; ui != nil {
 				buf.WriteString(ui.String())
 				buf.WriteByte('@')
@@ -909,7 +932,7 @@ func resolvePath(base, ref string) string {
 		// Add final slash to the joined path.
 		dst = append(dst, "")
 	}
-	return "/" + strings.TrimLeft(strings.Join(dst, "/"), "/")
+	return "/" + strings.TrimPrefix(strings.Join(dst, "/"), "/")
 }
 
 // IsAbs reports whether the URL is absolute.
@@ -953,12 +976,10 @@ func (u *URL) ResolveReference(ref *URL) *URL {
 		url.Path = ""
 		return &url
 	}
-	if ref.Path == "" {
-		if ref.RawQuery == "" {
-			url.RawQuery = u.RawQuery
-			if ref.Fragment == "" {
-				url.Fragment = u.Fragment
-			}
+	if ref.Path == "" && ref.RawQuery == "" {
+		url.RawQuery = u.RawQuery
+		if ref.Fragment == "" {
+			url.Fragment = u.Fragment
 		}
 	}
 	// The "abs_path" or "rel_path" cases.
@@ -1050,4 +1071,34 @@ func (u *URL) UnmarshalBinary(text []byte) error {
 	}
 	*u = *u1
 	return nil
+}
+
+// validUserinfo reports whether s is a valid userinfo string per RFC 3986
+// Section 3.2.1:
+//     userinfo    = *( unreserved / pct-encoded / sub-delims / ":" )
+//     unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~"
+//     sub-delims  = "!" / "$" / "&" / "'" / "(" / ")"
+//                   / "*" / "+" / "," / ";" / "="
+//
+// It doesn't validate pct-encoded. The caller does that via func unescape.
+func validUserinfo(s string) bool {
+	for _, r := range s {
+		if 'A' <= r && r <= 'Z' {
+			continue
+		}
+		if 'a' <= r && r <= 'z' {
+			continue
+		}
+		if '0' <= r && r <= '9' {
+			continue
+		}
+		switch r {
+		case '-', '.', '_', ':', '~', '!', '$', '&', '\'',
+			'(', ')', '*', '+', ',', ';', '=', '%', '@':
+			continue
+		default:
+			return false
+		}
+	}
+	return true
 }

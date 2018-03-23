@@ -1,5 +1,5 @@
 /* Perform optimizations on tree structure.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
 This file is part of GCC.
@@ -261,8 +261,12 @@ maybe_thunk_body (tree fn, bool force)
 
   populate_clone_array (fn, fns);
 
+  /* Can happen during error recovery (c++/71464).  */
+  if (!fns[0] || !fns[1])
+    return 0;
+
   /* Don't use thunks if the base clone omits inherited parameters.  */
-  if (fns[0] && ctor_omit_inherited_parms (fns[0]))
+  if (ctor_omit_inherited_parms (fns[0]))
     return 0;
 
   DECL_ABSTRACT_P (fn) = false;

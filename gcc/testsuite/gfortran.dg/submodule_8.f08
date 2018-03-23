@@ -21,7 +21,7 @@ submodule (mod_a) mod_s
 contains
   module procedure p
     if (i .ne. -2) then
-      call abort
+      STOP 1
     end if
   end procedure
 end submodule
@@ -38,6 +38,6 @@ program a_s
   if (i==2) then
     call p()
   else
-    call abort
+    STOP 2
   end if
 end program

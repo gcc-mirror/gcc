@@ -1,5 +1,5 @@
 /* Function summary pass.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -79,7 +79,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
-#include "cilk.h"
 #include "cfgexpand.h"
 #include "gimplify.h"
 #include "stringpool.h"
@@ -444,15 +443,16 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
       && !e->call_stmt_cannot_inline_p
       && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr))
     {
-      struct ipa_node_params *parms_info;
+      struct ipa_node_params *caller_parms_info, *callee_pi;
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       struct ipa_call_summary *es = ipa_call_summaries->get (e);
       int i, count = ipa_get_cs_argument_count (args);
 
       if (e->caller->global.inlined_to)
-	parms_info = IPA_NODE_REF (e->caller->global.inlined_to);
+	caller_parms_info = IPA_NODE_REF (e->caller->global.inlined_to);
       else
-	parms_info = IPA_NODE_REF (e->caller);
+	caller_parms_info = IPA_NODE_REF (e->caller);
+      callee_pi = IPA_NODE_REF (e->callee);
 
       if (count && (info->conds || known_vals_ptr))
 	known_vals.safe_grow_cleared (count);
@@ -464,7 +464,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
       for (i = 0; i < count; i++)
 	{
 	  struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
-	  tree cst = ipa_value_from_jfunc (parms_info, jf);
+	  tree cst = ipa_value_from_jfunc (caller_parms_info, jf,
+					   ipa_get_type (callee_pi, i));
 
 	  if (!cst && e->call_stmt
 	      && i < (int)gimple_call_num_args (e->call_stmt))
@@ -483,8 +484,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	    known_vals[i] = error_mark_node;
 
 	  if (known_contexts_ptr)
-	    (*known_contexts_ptr)[i] = ipa_context_from_jfunc (parms_info, e,
-							       i, jf);
+	    (*known_contexts_ptr)[i]
+	      = ipa_context_from_jfunc (caller_parms_info, e, i, jf);
 	  /* TODO: When IPA-CP starts propagating and merging aggregate jump
 	     functions, use its knowledge of the caller too, just like the
 	     scalar case above.  */
@@ -891,8 +892,6 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	fprintf (f, " always_inline");
       if (s->inlinable)
 	fprintf (f, " inlinable");
-      if (s->contains_cilk_spawn)
-	fprintf (f, " contains_cilk_spawn");
       if (s->fp_expressions)
 	fprintf (f, " fp_expression");
       fprintf (f, "\n  global time:     %f\n", s->time.to_double ());
@@ -1592,13 +1591,14 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 
 struct record_modified_bb_info
 {
+  tree op;
   bitmap bb_set;
   gimple *stmt;
 };
 
 /* Value is initialized in INIT_BB and used in USE_BB.  We want to copute
    probability how often it changes between USE_BB.
-   INIT_BB->frequency/USE_BB->frequency is an estimate, but if INIT_BB
+   INIT_BB->count/USE_BB->count is an estimate, but if INIT_BB
    is in different loop nest, we can do better.
    This is all just estimate.  In theory we look for minimal cut separating
    INIT_BB and USE_BB, but we only want to anticipate loop invariant motion
@@ -1623,12 +1623,25 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
     (struct record_modified_bb_info *) data;
   if (SSA_NAME_DEF_STMT (vdef) == info->stmt)
     return false;
+  if (gimple_clobber_p (SSA_NAME_DEF_STMT (vdef)))
+    return false;
   bitmap_set_bit (info->bb_set,
 		  SSA_NAME_IS_DEFAULT_DEF (vdef)
 		  ? ENTRY_BLOCK_PTR_FOR_FN (cfun)->index
 		  : get_minimal_bb
 			 (gimple_bb (SSA_NAME_DEF_STMT (vdef)),
 			  gimple_bb (info->stmt))->index);
+  if (dump_file)
+    {
+      fprintf (dump_file, "     Param ");
+      print_generic_expr (dump_file, info->op, TDF_SLIM);
+      fprintf (dump_file, " changed at bb %i, minimal: %i stmt: ",
+	       gimple_bb (SSA_NAME_DEF_STMT (vdef))->index,
+	       get_minimal_bb
+			 (gimple_bb (SSA_NAME_DEF_STMT (vdef)),
+			  gimple_bb (info->stmt))->index);
+      print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (vdef), 0);
+    }
   return false;
 }
 
@@ -1662,66 +1675,75 @@ param_change_prob (gimple *stmt, int i)
      than the statement defining value, we take the frequency 1/N.  */
   if (TREE_CODE (base) == SSA_NAME)
     {
-      int init_freq;
+      profile_count init_count;
 
-      if (!bb->count.to_frequency (cfun))
+      if (!bb->count.nonzero_p ())
 	return REG_BR_PROB_BASE;
 
       if (SSA_NAME_IS_DEFAULT_DEF (base))
-	init_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun);
+	init_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
       else
-	init_freq = get_minimal_bb
+	init_count = get_minimal_bb
 		      (gimple_bb (SSA_NAME_DEF_STMT (base)),
-		       gimple_bb (stmt))->count.to_frequency (cfun);
+		       gimple_bb (stmt))->count;
 
-      if (!init_freq)
-	init_freq = 1;
-      if (init_freq < bb->count.to_frequency (cfun))
-	return MAX (GCOV_COMPUTE_SCALE (init_freq,
-					bb->count.to_frequency (cfun)), 1);
-      else
-	return REG_BR_PROB_BASE;
+      if (init_count < bb->count)
+        return MAX ((init_count.to_sreal_scale (bb->count)
+		     * REG_BR_PROB_BASE).to_int (), 1);
+      return REG_BR_PROB_BASE;
     }
   else
     {
       ao_ref refd;
-      int max;
+      profile_count max = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
       struct record_modified_bb_info info;
-      bitmap_iterator bi;
-      unsigned index;
       tree init = ctor_for_folding (base);
 
       if (init != error_mark_node)
 	return 0;
-      if (!bb->count.to_frequency (cfun))
+      if (!bb->count.nonzero_p ())
 	return REG_BR_PROB_BASE;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "     Analyzing param change probablity of ");
+          print_generic_expr (dump_file, op, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
       ao_ref_init (&refd, op);
+      info.op = op;
       info.stmt = stmt;
       info.bb_set = BITMAP_ALLOC (NULL);
       walk_aliased_vdefs (&refd, gimple_vuse (stmt), record_modified, &info,
 			  NULL);
       if (bitmap_bit_p (info.bb_set, bb->index))
 	{
+	  if (dump_file)
+	    fprintf (dump_file, "     Set in same BB as used.\n");
 	  BITMAP_FREE (info.bb_set);
 	  return REG_BR_PROB_BASE;
 	}
 
-      /* Assume that every memory is initialized at entry.
-         TODO: Can we easilly determine if value is always defined
-         and thus we may skip entry block?  */
-      if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun))
-	max = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun);
-      else
-	max = 1;
-
+      bitmap_iterator bi;
+      unsigned index;
+      /* Lookup the most frequent update of the value and believe that
+	 it dominates all the other; precise analysis here is difficult.  */
       EXECUTE_IF_SET_IN_BITMAP (info.bb_set, 0, index, bi)
-	max = MIN (max, BASIC_BLOCK_FOR_FN (cfun, index)->count.to_frequency (cfun));
+	max = max.max (BASIC_BLOCK_FOR_FN (cfun, index)->count);
+      if (dump_file)
+	{
+          fprintf (dump_file, "     Set with count ");	
+	  max.dump (dump_file);
+          fprintf (dump_file, " and used with count ");	
+	  bb->count.dump (dump_file);
+          fprintf (dump_file, " freq %f\n",
+		   max.to_sreal_scale (bb->count).to_double ());	
+	}
 
       BITMAP_FREE (info.bb_set);
-      if (max < bb->count.to_frequency (cfun))
-	return MAX (GCOV_COMPUTE_SCALE (max, bb->count.to_frequency (cfun)), 1);
-      else
-	return REG_BR_PROB_BASE;
+      if (max < bb->count)
+        return MAX ((max.to_sreal_scale (bb->count)
+		     * REG_BR_PROB_BASE).to_int (), 1);
+      return REG_BR_PROB_BASE;
     }
 }
 
@@ -2423,6 +2445,11 @@ compute_fn_summary (struct cgraph_node *node, bool early)
           info->inlinable = false;
           node->callees->inline_failed = CIF_CHKP;
 	}
+      else if (stdarg_p (TREE_TYPE (node->decl)))
+	{
+	  info->inlinable = false;
+	  node->callees->inline_failed = CIF_VARIADIC_THUNK;
+	}
       else
         info->inlinable = true;
     }
@@ -2439,10 +2466,12 @@ compute_fn_summary (struct cgraph_node *node, bool early)
        else
 	 info->inlinable = tree_inlinable_function_p (node->decl);
 
-       info->contains_cilk_spawn = fn_contains_cilk_spawn_p (cfun);
-
        /* Type attributes can use parameter indices to describe them.  */
-       if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
+       if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl))
+	   /* Likewise for #pragma omp declare simd functions or functions
+	      with simd attribute.  */
+	   || lookup_attribute ("omp declare simd",
+				DECL_ATTRIBUTES (node->decl)))
 	 node->local.can_change_signature = false;
        else
 	 {
@@ -3263,7 +3292,6 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 
       bp = streamer_read_bitpack (&ib);
       info->inlinable = bp_unpack_value (&bp, 1);
-      info->contains_cilk_spawn = bp_unpack_value (&bp, 1);
       info->fp_expressions = bp_unpack_value (&bp, 1);
 
       count2 = streamer_read_uhwi (&ib);
@@ -3417,7 +3445,7 @@ ipa_fn_summary_write (void)
 	  info->time.stream_out (ob);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
-	  bp_pack_value (&bp, info->contains_cilk_spawn, 1);
+	  bp_pack_value (&bp, false, 1);
 	  bp_pack_value (&bp, info->fp_expressions, 1);
 	  streamer_write_bitpack (&bp);
 	  streamer_write_uhwi (ob, vec_safe_length (info->conds));
@@ -3542,26 +3570,36 @@ const pass_data pass_data_ipa_free_fn_summary =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  /* Early optimizations may make function unreachable.  We can not
-     remove unreachable functions as part of the ealry opts pass because
-     TODOs are run before subpasses.  Do it here.  */
-  ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_ipa_free_fn_summary : public simple_ipa_opt_pass
 {
 public:
   pass_ipa_free_fn_summary (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_ipa_free_fn_summary, ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_free_fn_summary, ctxt),
+      small_p (false)
   {}
 
   /* opt_pass methods: */
+  opt_pass *clone () { return new pass_ipa_free_fn_summary (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      small_p = param;
+    }
+  virtual bool gate (function *) { return small_p || !flag_wpa; }
   virtual unsigned int execute (function *)
     {
       ipa_free_fn_summary ();
-      return 0;
+      /* Early optimizations may make function unreachable.  We can not
+	 remove unreachable functions as part of the early opts pass because
+	 TODOs are run before subpasses.  Do it here.  */
+      return small_p ? TODO_remove_functions | TODO_dump_symtab : 0;
     }
 
+private:
+  bool small_p;
 }; // class pass_ipa_free_fn_summary
 
 } // anon namespace

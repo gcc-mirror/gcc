@@ -1,5 +1,5 @@
 /* A type-safe hash table template.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Lawrence Crowl <crowl@google.com>
 
 This file is part of GCC.
@@ -804,8 +804,12 @@ hash_table<Descriptor, Allocator>::empty_slow ()
     }
   else
     {
+#ifndef BROKEN_VALUE_INITIALIZATION
       for ( ; size; ++entries, --size)
 	*entries = value_type ();
+#else
+      memset (entries, 0, size * sizeof (value_type));
+#endif
     }
   m_n_deleted = 0;
   m_n_elements = 0;

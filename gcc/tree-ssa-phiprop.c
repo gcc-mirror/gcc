@@ -1,5 +1,5 @@
 /* Backward propagation of indirect loads through PHIs.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -270,6 +270,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
   use_operand_p arg_p, use;
   ssa_op_iter i;
   bool phi_inserted;
+  bool changed;
   tree type = NULL_TREE;
 
   if (!POINTER_TYPE_P (TREE_TYPE (ptr))
@@ -317,6 +318,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
   /* Replace the first dereference of *ptr if there is one and if we
      can move the loads to the place of the ptr phi node.  */
   phi_inserted = false;
+  changed = false;
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
     {
       gimple *def_stmt;
@@ -403,7 +405,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	  unlink_stmt_vdef (use_stmt);
 	  gsi_remove (&gsi, true);
 
-	  phi_inserted = true;
+	  changed = true;
 	}
 
       /* Found a proper dereference.  Insert a phi node if this
@@ -424,6 +426,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	  gsi_remove (&gsi, true);
 
 	  phi_inserted = true;
+	  changed = true;
 	}
       else
 	{
@@ -431,13 +434,14 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	     load.  */
 	  gimple_assign_set_rhs1 (use_stmt, res);
 	  update_stmt (use_stmt);
+	  changed = true;
 	}
 
 next:;
       /* Continue searching for a proper dereference.  */
     }
 
-  return phi_inserted;
+  return changed;
 }
 
 /* Main entry for phiprop pass.  */

@@ -12,5 +12,5 @@
 
       i = (/(j,j=1,6)/)
       write(r,'(3(2x,i4/)/3(4x,i9/))', iostat=ierr) i
-      if (ierr.ne.-2) call abort()
+      if (ierr.ne.-2) STOP 1
       end program arrayio_3

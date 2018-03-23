@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -993,6 +993,20 @@
   [(const_int 0)]
   ""
   "")
+
+(define_insn "exit"
+  [(const_int 1)]
+  ""
+  "exit;")
+
+(define_insn "fake_nop"
+  [(const_int 2)]
+  ""
+  "{
+     .reg .u32 %%nop_src;
+     .reg .u32 %%nop_dst;
+     mov.u32 %%nop_dst, %%nop_src;
+   }")
 
 (define_insn "return"
   [(return)]

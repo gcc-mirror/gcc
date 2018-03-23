@@ -1,5 +1,5 @@
 ;; Common GCC machine description file, shared by all targets.
-;; Copyright (C) 2014-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -80,14 +80,14 @@
 (define_constraint "E"
   "Matches a floating-point constant."
   (ior (match_test "CONST_DOUBLE_AS_FLOAT_P (op)")
-       (match_test "CONSTANT_P (op)
+       (match_test "GET_CODE (op) == CONST_VECTOR
 		    && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT")))
 
 ;; There is no longer a distinction between "E" and "F".
 (define_constraint "F"
   "Matches a floating-point constant."
   (ior (match_test "CONST_DOUBLE_AS_FLOAT_P (op)")
-       (match_test "CONSTANT_P (op)
+       (match_test "GET_CODE (op) == CONST_VECTOR
 		    && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT")))
 
 (define_constraint "X"

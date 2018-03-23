@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -327,6 +327,9 @@ public:
   /* Return true when the symbol is real symbol, i.e. it is not inline clone
      or abstract function kept for debug info purposes only.  */
   bool real_symbol_p (void);
+
+  /* Return true when the symbol needs to be output to the LTO symbol table.  */
+  bool output_to_lto_symbol_table_p (void);
 
   /* Determine if symbol declaration is needed.  That is, visible to something
      either outside this translation unit, something magic in the system
@@ -822,9 +825,6 @@ struct GTY(()) cgraph_simd_clone {
   /* True if this is the masked, in-branch version of the clone,
      otherwise false.  */
   unsigned int inbranch : 1;
-
-  /* True if this is a Cilk Plus variant.  */
-  unsigned int cilk_elemental : 1;
 
   /* Doubly linked list of SIMD clones.  */
   cgraph_node *prev_clone, *next_clone;

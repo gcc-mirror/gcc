@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2405,7 +2405,10 @@ reorder_basic_blocks_simple (void)
 
   basic_block last_tail = (basic_block) ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux;
 
-  int current_partition = BB_PARTITION (last_tail);
+  int current_partition
+    = BB_PARTITION (last_tail == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+		    ? EDGE_SUCC (ENTRY_BLOCK_PTR_FOR_FN (cfun), 0)->dest
+		    : last_tail);
   bool need_another_pass = true;
 
   for (int pass = 0; pass < 2 && need_another_pass; pass++)
@@ -2446,7 +2449,6 @@ reorder_basic_blocks_simple (void)
     {
       force_nonfallthru (e);
       e->src->aux = ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux;
-      BB_COPY_PARTITION (e->src, e->dest);
     }
 }
 
@@ -2521,6 +2523,11 @@ insert_section_boundary_note (void)
           current_partition = BB_PARTITION (bb);
 	}
     }
+
+  /* Make sure crtl->has_bb_partition matches reality even if bbpart finds
+     some hot and some cold basic blocks, but later one of those kinds is
+     optimized away.  */
+  crtl->has_bb_partition = switched_sections;
 }
 
 namespace {
@@ -2568,7 +2575,7 @@ pass_reorder_blocks::execute (function *fun)
   cfg_layout_initialize (CLEANUP_EXPENSIVE);
 
   reorder_basic_blocks ();
-  cleanup_cfg (CLEANUP_EXPENSIVE);
+  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_NO_PARTITIONING);
 
   FOR_EACH_BB_FN (bb, fun)
     if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (fun))
@@ -2866,7 +2873,10 @@ pass_partition_blocks::gate (function *fun)
 	     we are going to omit the reordering.  */
 	  && optimize_function_for_speed_p (fun)
 	  && !DECL_COMDAT_GROUP (current_function_decl)
-	  && !lookup_attribute ("section", DECL_ATTRIBUTES (fun->decl)));
+	  && !lookup_attribute ("section", DECL_ATTRIBUTES (fun->decl))
+	  /* Workaround a bug in GDB where read_partial_die doesn't cope
+	     with DIEs with DW_AT_ranges, see PR81115.  */
+	  && !(in_lto_p && MAIN_NAME_P (DECL_NAME (fun->decl))));
 }
 
 unsigned

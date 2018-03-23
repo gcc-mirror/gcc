@@ -1,5 +1,4 @@
-/* { dg-do run { target { powerpc*-*-linux* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
+/* { dg-do run { target { vsx_hw } } } */
 /* { dg-options "-O2 -mvsx -mcpu=power7" } */
 
 #include <altivec.h> // vector

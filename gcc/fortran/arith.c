@@ -1,5 +1,5 @@
 /* Compiler arithmetic
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -555,10 +555,10 @@ check_result (arith rc, gfc_expr *x, gfc_expr *r, gfc_expr **rp)
       val = ARITH_OK;
     }
 
-  if (val != ARITH_OK)
-    gfc_free_expr (r);
-  else
+  if (val == ARITH_OK || val == ARITH_OVERFLOW)
     *rp = r;
+  else
+    gfc_free_expr (r);
 
   return val;
 }
@@ -980,7 +980,7 @@ static arith
 gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
-  int len;
+  size_t len;
 
   gcc_assert (op1->ts.kind == op2->ts.kind);
   result = gfc_get_constant_expr (BT_CHARACTER, op1->ts.kind,
@@ -1089,7 +1089,7 @@ compare_complex (gfc_expr *op1, gfc_expr *op2)
 int
 gfc_compare_string (gfc_expr *a, gfc_expr *b)
 {
-  int len, alen, blen, i;
+  size_t len, alen, blen, i;
   gfc_char_t ac, bc;
 
   alen = a->value.character.length;
@@ -1116,7 +1116,7 @@ gfc_compare_string (gfc_expr *a, gfc_expr *b)
 int
 gfc_compare_with_Cstring (gfc_expr *a, const char *b, bool case_sensitive)
 {
-  int len, alen, blen, i;
+  size_t len, alen, blen, i;
   gfc_char_t ac, bc;
 
   alen = a->value.character.length;
@@ -1603,8 +1603,12 @@ eval_intrinsic (gfc_intrinsic_op op,
   if (rc != ARITH_OK)
     {
       gfc_error (gfc_arith_error (rc), &op1->where);
+      if (rc == ARITH_OVERFLOW)
+	goto done;
       return NULL;
     }
+
+done:
 
   gfc_free_expr (op1);
   gfc_free_expr (op2);
@@ -2514,6 +2518,18 @@ gfc_int2log (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert character to character. We only use wide strings internally,
+   so we only set the kind.  */
+
+gfc_expr *
+gfc_character2character (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_copy_expr (src);
+  result->ts.kind = kind;
+
+  return result;
+}
 
 /* Helper function to set the representation in a Hollerith conversion.  
    This assumes that the ts.type and ts.kind of the result have already

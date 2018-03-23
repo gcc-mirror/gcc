@@ -1,6 +1,7 @@
 /* PR c/53037.  */
 /* { dg-do compile } */
 /* { dg-options "-O0 -Wpacked-not-aligned" } */
+/* { dg-skip-if "" { avr-*-* } } */
 
 struct __attribute__ ((aligned (8))) S8 { char a[8]; };
 struct __attribute__ ((packed)) S1 {

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2017, AdaCore                     *
+ *                     Copyright (C) 2008-2018, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1458,7 +1458,7 @@ __gnat_setup_child_communication
 #ifdef TIOCSCTTY
   /* make the tty the controlling terminal */
   if ((status = ioctl (desc->slave_fd, TIOCSCTTY, 0)) == -1)
-    return -1;
+    _exit (1);
 #endif
 
   /* adjust tty settings */
@@ -1480,8 +1480,7 @@ __gnat_setup_child_communication
   /* launch the program */
   execvp (new_argv[0], new_argv);
 
-  /* return the pid */
-  return pid;
+  _exit (1);
 }
 
 /* send_signal_via_characters - Send a characters that will trigger a signal

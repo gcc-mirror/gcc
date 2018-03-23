@@ -8,7 +8,7 @@ program contained_equiv
   real a
   a = 1.0
   call foo ()
-  if (a.ne.1.0) call abort ()
+  if (a.ne.1.0) STOP 1
 contains
   subroutine foo ()
     real b

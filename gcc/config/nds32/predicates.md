@@ -1,5 +1,5 @@
 ;; Predicate definitions of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -57,12 +57,25 @@
   return true;
 })
 
+(define_predicate "nds32_lmw_smw_base_operand"
+  (and (match_code "mem")
+       (match_test "nds32_valid_smw_lwm_base_p (op)")))
+
 (define_special_predicate "nds32_load_multiple_operation"
   (match_code "parallel")
 {
   /* To verify 'load' operation, pass 'true' for the second argument.
      See the implementation in nds32.c for details.  */
-  return nds32_valid_multiple_load_store (op, true);
+  return nds32_valid_multiple_load_store_p (op, true, false);
+})
+
+(define_special_predicate "nds32_load_multiple_and_update_address_operation"
+  (match_code "parallel")
+{
+  /* To verify 'load' operation, pass 'true' for the second argument.
+     to verify 'update address' operation, pass 'true' for the third argument
+     See the implementation in nds32.c for details.  */
+  return nds32_valid_multiple_load_store_p (op, true, true);
 })
 
 (define_special_predicate "nds32_store_multiple_operation"
@@ -70,7 +83,16 @@
 {
   /* To verify 'store' operation, pass 'false' for the second argument.
      See the implementation in nds32.c for details.  */
-  return nds32_valid_multiple_load_store (op, false);
+  return nds32_valid_multiple_load_store_p (op, false, false);
+})
+
+(define_special_predicate "nds32_store_multiple_and_update_address_operation"
+  (match_code "parallel")
+{
+  /* To verify 'store' operation, pass 'false' for the second argument,
+     to verify 'update address' operation, pass 'true' for the third argument
+     See the implementation in nds32.c for details.  */
+  return nds32_valid_multiple_load_store_p (op, false, true);
 })
 
 (define_special_predicate "nds32_stack_push_operation"

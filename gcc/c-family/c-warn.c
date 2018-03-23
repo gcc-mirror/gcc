@@ -1,5 +1,5 @@
 /* Diagnostic routines shared by all languages that are variants of C.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -179,6 +179,9 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   int in0_p, in1_p, in_p;
   tree low0, low1, low, high0, high1, high, lhs, rhs, tem;
   bool strict_overflow_p = false;
+
+  if (!warn_logical_op)
+    return;
 
   if (code != TRUTH_ANDIF_EXPR
       && code != TRUTH_AND_EXPR
@@ -596,17 +599,21 @@ warn_if_unused_value (const_tree exp, location_t locus)
     }
 }
 
-/* Print a warning about casts that might indicate violation
-   of strict aliasing rules if -Wstrict-aliasing is used and
-   strict aliasing mode is in effect. OTYPE is the original
-   TREE_TYPE of EXPR, and TYPE the type we're casting to. */
+/* Print a warning about casts that might indicate violation of strict
+   aliasing rules if -Wstrict-aliasing is used and strict aliasing
+   mode is in effect.  LOC is the location of the expression being
+   cast, EXPR might be from inside it.  TYPE is the type we're casting
+   to.  */
 
 bool
-strict_aliasing_warning (tree otype, tree type, tree expr)
+strict_aliasing_warning (location_t loc, tree type, tree expr)
 {
+  if (loc == UNKNOWN_LOCATION)
+    loc = input_location;
+
   /* Strip pointer conversion chains and get to the correct original type.  */
   STRIP_NOPS (expr);
-  otype = TREE_TYPE (expr);
+  tree otype = TREE_TYPE (expr);
 
   if (!(flag_strict_aliasing
 	&& POINTER_TYPE_P (type)
@@ -625,8 +632,9 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
 	 if the cast breaks type based aliasing.  */
       if (!COMPLETE_TYPE_P (TREE_TYPE (type)) && warn_strict_aliasing == 2)
 	{
-	  warning (OPT_Wstrict_aliasing, "type-punning to incomplete type "
-		   "might break strict-aliasing rules");
+	  warning_at (loc, OPT_Wstrict_aliasing,
+		      "type-punning to incomplete type "
+		      "might break strict-aliasing rules");
 	  return true;
 	}
       else
@@ -642,15 +650,17 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
 	      && !alias_set_subset_of (set2, set1)
 	      && !alias_sets_conflict_p (set1, set2))
 	    {
-	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
-		       "pointer will break strict-aliasing rules");
+	      warning_at (loc, OPT_Wstrict_aliasing,
+			  "dereferencing type-punned "
+			  "pointer will break strict-aliasing rules");
 	      return true;
 	    }
 	  else if (warn_strict_aliasing == 2
 		   && !alias_sets_must_conflict_p (set1, set2))
 	    {
-	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
-		       "pointer might break strict-aliasing rules");
+	      warning_at (loc, OPT_Wstrict_aliasing,
+			  "dereferencing type-punned "
+			  "pointer might break strict-aliasing rules");
 	      return true;
 	    }
 	}
@@ -666,8 +676,9 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
       if (!COMPLETE_TYPE_P (type)
 	  || !alias_sets_must_conflict_p (set1, set2))
 	{
-	  warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
-		   "pointer might break strict-aliasing rules");
+	  warning_at (loc, OPT_Wstrict_aliasing,
+		      "dereferencing type-punned "
+		      "pointer might break strict-aliasing rules");
 	  return true;
 	}
     }
@@ -1127,8 +1138,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
       conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
       if (conversion_kind == UNSAFE_IMAGINARY)
 	warning_at (loc, OPT_Wconversion,
-		    "conversion from %qT to to %qT discards imaginary "
-		    "component",
+		    "conversion from %qT to %qT discards imaginary component",
 		    expr_type, type);
       else
 	{
@@ -1865,6 +1875,9 @@ void
 warn_for_memset (location_t loc, tree arg0, tree arg2,
 		 int literal_zero_mask)
 {
+  arg0 = fold_for_warn (arg0);
+  arg2 = fold_for_warn (arg2);
+
   if (warn_memset_transposed_args
       && integer_zerop (arg2)
       && (literal_zero_mask & (1 << 2)) != 0
@@ -1917,6 +1930,9 @@ warn_for_sign_compare (location_t location,
 		       tree op0, tree op1,
 		       tree result_type, enum tree_code resultcode)
 {
+  if (error_operand_p (orig_op0) || error_operand_p (orig_op1))
+    return;
+
   int op0_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op0));
   int op1_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op1));
   int unsignedp0, unsignedp1;
@@ -2230,36 +2246,19 @@ diagnose_mismatched_attributes (tree olddecl, tree newdecl)
 		       newdecl);
 
   /* Diagnose inline __attribute__ ((noinline)) which is silly.  */
+  const char *noinline = "noinline";
+
   if (DECL_DECLARED_INLINE_P (newdecl)
       && DECL_UNINLINABLE (olddecl)
-      && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
+      && lookup_attribute (noinline, DECL_ATTRIBUTES (olddecl)))
     warned |= warning (OPT_Wattributes, "inline declaration of %qD follows "
-		       "declaration with attribute noinline", newdecl);
+		       "declaration with attribute %qs", newdecl, noinline);
   else if (DECL_DECLARED_INLINE_P (olddecl)
 	   && DECL_UNINLINABLE (newdecl)
 	   && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
     warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "noinline follows inline declaration ", newdecl);
-  else if (lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl))
-	   && lookup_attribute ("always_inline", DECL_ATTRIBUTES (olddecl)))
-    warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows declaration with attribute %qs",
-		       newdecl, "noinline", "always_inline");
-  else if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (newdecl))
-	   && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
-    warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows declaration with attribute %qs",
-		       newdecl, "always_inline", "noinline");
-  else if (lookup_attribute ("cold", DECL_ATTRIBUTES (newdecl))
-	   && lookup_attribute ("hot", DECL_ATTRIBUTES (olddecl)))
-    warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows declaration with attribute %qs",
-		       newdecl, "cold", "hot");
-  else if (lookup_attribute ("hot", DECL_ATTRIBUTES (newdecl))
-	   && lookup_attribute ("cold", DECL_ATTRIBUTES (olddecl)))
-    warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows declaration with attribute %qs",
-		       newdecl, "hot", "cold");
+		       "%qs follows inline declaration", newdecl, noinline);
+
   return warned;
 }
 
@@ -2372,14 +2371,15 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
 }
 
 /* Warn if an argument at position param_pos is passed to a
-   restrict-qualified param, and it aliases with another argument.  */
+   restrict-qualified param, and it aliases with another argument.
+   Return true if a warning has been issued.  */
 
-void
+bool
 warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
 {
   tree arg = argarray[param_pos];
   if (TREE_VISITED (arg) || integer_zerop (arg))
-    return;
+    return false;
 
   location_t loc = EXPR_LOC_OR_LOC (arg, input_location);
   gcc_rich_location richloc (loc);
@@ -2395,13 +2395,13 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
       tree current_arg = argarray[i];
       if (operand_equal_p (arg, current_arg, 0))
 	{
-	  TREE_VISITED (current_arg) = 1; 
+	  TREE_VISITED (current_arg) = 1;
 	  arg_positions.safe_push (i + 1);
 	}
     }
 
   if (arg_positions.is_empty ())
-    return;
+    return false;
 
   int pos;
   FOR_EACH_VEC_ELT (arg_positions, i, pos)
@@ -2411,13 +2411,13 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
 	richloc.add_range (EXPR_LOCATION (arg), false);
     }
 
-  warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
-	     "passing argument %i to restrict-qualified parameter"
-	     " aliases with argument %Z",
-	     "passing argument %i to restrict-qualified parameter"
-	     " aliases with arguments %Z",
-	     param_pos + 1, arg_positions.address (),
-	     arg_positions.length ());
+  return warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
+		    "passing argument %i to restrict-qualified parameter"
+		    " aliases with argument %Z",
+		    "passing argument %i to restrict-qualified parameter"
+		    " aliases with arguments %Z",
+		    param_pos + 1, arg_positions.address (),
+		    arg_positions.length ());
 }
 
 /* Callback function to determine whether an expression TP or one of its

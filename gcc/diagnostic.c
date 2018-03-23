@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -51,8 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Prototypes.  */
 static bool diagnostic_impl (rich_location *, int, const char *,
 			     va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(3,0);
-static bool diagnostic_n_impl (rich_location *, int, int, const char *,
-			       const char *, va_list *,
+static bool diagnostic_n_impl (rich_location *, int, unsigned HOST_WIDE_INT,
+			       const char *, const char *, va_list *,
 			       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
 
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
@@ -1111,15 +1111,24 @@ diagnostic_impl (rich_location *richloc, int opt,
 /* Implement inform_n, warning_n, and error_n, as documented and
    defined below.  */
 static bool
-diagnostic_n_impl (rich_location *richloc, int opt, int n,
+diagnostic_n_impl (rich_location *richloc, int opt, unsigned HOST_WIDE_INT n,
 		   const char *singular_gmsgid,
 		   const char *plural_gmsgid,
 		   va_list *ap, diagnostic_t kind)
 {
   diagnostic_info diagnostic;
-  diagnostic_set_info_translated (&diagnostic,
-                                  ngettext (singular_gmsgid, plural_gmsgid, n),
-                                  ap, richloc, kind);
+  unsigned long gtn;
+
+  if (sizeof n <= sizeof gtn)
+    gtn = n;
+  else
+    /* Use the largest number ngettext can handle, otherwise
+       preserve the six least significant decimal digits for
+       languages where the plural form depends on them.  */
+    gtn = n <= ULONG_MAX ? n : n % 1000000LU + 1000000LU;
+
+  const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
+  diagnostic_set_info_translated (&diagnostic, text, ap, richloc, kind);
   if (kind == DK_WARNING)
     diagnostic.option_index = opt;
   return diagnostic_report_diagnostic (global_dc, &diagnostic);
@@ -1176,8 +1185,8 @@ inform (rich_location *richloc, const char *gmsgid, ...)
 /* An informative note at LOCATION.  Use this for additional details on an
    error message.  */
 void
-inform_n (location_t location, int n, const char *singular_gmsgid,
-          const char *plural_gmsgid, ...)
+inform_n (location_t location, unsigned HOST_WIDE_INT n,
+	  const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
@@ -1233,7 +1242,7 @@ warning_at (rich_location *richloc, int opt, const char *gmsgid, ...)
 /* Same as warning_n plural variant below, but using RICHLOC.  */
 
 bool
-warning_n (rich_location *richloc, int opt, int n,
+warning_n (rich_location *richloc, int opt, unsigned HOST_WIDE_INT n,
 	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   gcc_assert (richloc);
@@ -1252,8 +1261,8 @@ warning_n (rich_location *richloc, int opt, int n,
    Returns true if the warning was printed, false if it was inhibited.  */
 
 bool
-warning_n (location_t location, int opt, int n, const char *singular_gmsgid,
-	   const char *plural_gmsgid, ...)
+warning_n (location_t location, int opt, unsigned HOST_WIDE_INT n,
+	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
@@ -1350,8 +1359,8 @@ error (const char *gmsgid, ...)
 /* A hard error: the code is definitely ill-formed, and an object file
    will not be produced.  */
 void
-error_n (location_t location, int n, const char *singular_gmsgid,
-         const char *plural_gmsgid, ...)
+error_n (location_t location, unsigned HOST_WIDE_INT n,
+	 const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   va_list ap;
   va_start (ap, plural_gmsgid);

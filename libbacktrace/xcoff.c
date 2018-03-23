@@ -1,5 +1,5 @@
 /* xcoff.c -- Get debug data from an XCOFF file for backtraces.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Adapted from elf.c.
 
 Redistribution and use in source and binary forms, with or without
@@ -760,6 +760,40 @@ xcoff_fileline (struct backtrace_state *state, uintptr_t pc,
   return callback (data, pc, NULL, 0, NULL);
 }
 
+/* Compare struct xcoff_incl for qsort.  */
+
+static int
+xcoff_incl_compare (const void *v1, const void *v2)
+{
+  const struct xcoff_incl *in1 = (const struct xcoff_incl *) v1;
+  const struct xcoff_incl *in2 = (const struct xcoff_incl *) v2;
+
+  if (in1->begin < in2->begin)
+    return -1;
+  else if (in1->begin > in2->begin)
+    return 1;
+  else
+    return 0;
+}
+
+/* Find a lnnoptr in an include file.  */
+
+static int
+xcoff_incl_search (const void *vkey, const void *ventry)
+{
+  const uintptr_t *key = (const uintptr_t *) vkey;
+  const struct xcoff_incl *entry = (const struct xcoff_incl *) ventry;
+  uintptr_t lnno;
+
+  lnno = *key;
+  if (lnno < entry->begin)
+    return -1;
+  else if (lnno > entry->end)
+    return 1;
+  else
+    return 0;
+}
+
 /* Add a new mapping to the vector of line mappings that we are
    building.  Returns 1 on success, 0 on failure.  */
 
@@ -809,7 +843,6 @@ xcoff_process_linenos (struct backtrace_state *state, uintptr_t base_address,
   uintptr_t pc;
   uint32_t lnno;
   int begincl;
-  size_t i;
 
   aux = (const b_xcoff_auxent *) (fsym + 1);
   lnnoptr = aux->x_fcn.x_lnnoptr;
@@ -839,15 +872,13 @@ xcoff_process_linenos (struct backtrace_state *state, uintptr_t base_address,
       /* If part of a function other than the beginning comes from an
 	 include file, the line numbers are absolute, rather than
 	 relative to the beginning of the function.  */
-      for (i = 0; i < vec->count; ++i)
-	{
-	  incl = (struct xcoff_incl *) vec->vec.base + i;
-	  if (incl->begin <= lnnoptr && lnnoptr <= incl->end)
-	    break;
-	}
+      incl = (struct xcoff_incl *) bsearch (&lnnoptr, vec->vec.base,
+					    vec->count,
+					    sizeof (struct xcoff_incl),
+					    xcoff_incl_search);
       if (begincl == -1)
-	begincl = (i < vec->count);
-      if (i < vec->count)
+	begincl = incl != NULL;
+      if (incl != NULL)
 	{
 	  filename = incl->filename;
 	  if (begincl == 1)
@@ -934,6 +965,9 @@ xcoff_initialize_fileline (struct backtrace_state *state,
 
       i += asym->n_numaux;
     }
+
+  backtrace_qsort (vec.vec.base, vec.count,
+		   sizeof (struct xcoff_incl), xcoff_incl_compare);
 
   filename = NULL;
   fsym = NULL;

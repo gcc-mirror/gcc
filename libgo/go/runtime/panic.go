@@ -170,7 +170,18 @@ func freedefer(d *_defer) {
 			unlock(&sched.deferlock)
 		})
 	}
-	*d = _defer{}
+
+	// These lines used to be simply `*d = _defer{}` but that
+	// started causing a nosplit stack overflow via typedmemmove.
+	d.link = nil
+	d.frame = nil
+	d.panicStack = nil
+	d._panic = nil
+	d.pfn = 0
+	d.arg = nil
+	d.retaddr = 0
+	d.makefunccanrecover = false
+
 	pp.deferpool = append(pp.deferpool, d)
 }
 
@@ -190,7 +201,7 @@ func deferreturn(frame *bool) {
 			// The gc compiler does this using assembler
 			// code in jmpdefer.
 			var fn func(unsafe.Pointer)
-			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
 			fn(d.arg)
 		}
 
@@ -253,7 +264,7 @@ func checkdefer(frame *bool) {
 		var p _panic
 		p.isforeign = true
 		p.link = gp._panic
-		gp._panic = &p
+		gp._panic = (*_panic)(noescape(unsafe.Pointer(&p)))
 		for {
 			d := gp._defer
 			if d == nil || d.frame != frame || d.pfn == 0 {
@@ -264,7 +275,7 @@ func checkdefer(frame *bool) {
 			gp._defer = d.link
 
 			var fn func(unsafe.Pointer)
-			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
 			fn(d.arg)
 
 			freedefer(d)
@@ -327,7 +338,7 @@ func unwindStack() {
 
 // Goexit terminates the goroutine that calls it. No other goroutine is affected.
 // Goexit runs all deferred calls before terminating the goroutine. Because Goexit
-// is not panic, however, any recover calls in those deferred functions will return nil.
+// is not a panic, any recover calls in those deferred functions will return nil.
 //
 // Calling Goexit from the main goroutine terminates that goroutine
 // without func main returning. Since func main has not returned,
@@ -357,7 +368,7 @@ func Goexit() {
 		d.pfn = 0
 
 		var fn func(unsafe.Pointer)
-		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
 		fn(d.arg)
 
 		if gp._defer != d {
@@ -392,12 +403,15 @@ func preprintpanics(p *_panic) {
 }
 
 // Print all currently active panics. Used when crashing.
+// Should only be called after preprintpanics.
 func printpanics(p *_panic) {
 	if p.link != nil {
 		printpanics(p.link)
 		print("\t")
 	}
 	print("panic: ")
+	// Because of preprintpanics, p.arg cannot be an error or
+	// stringer, so this won't call into user code.
 	printany(p.arg)
 	if p.recovered {
 		print(" [recovered]")
@@ -480,7 +494,7 @@ func gopanic(e interface{}) {
 		d._panic = p
 
 		var fn func(unsafe.Pointer)
-		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
 		fn(d.arg)
 
 		if gp._defer != d {
@@ -599,7 +613,7 @@ func canrecover(retaddr uintptr) bool {
 	// caller starts with "runtime.", then we are permitted to
 	// call recover.
 	var locs [16]location
-	if callers(2, locs[:2]) < 2 {
+	if callers(1, locs[:2]) < 2 {
 		return false
 	}
 
@@ -619,7 +633,7 @@ func canrecover(retaddr uintptr) bool {
 	// reflect.makeFuncStub or reflect.ffi_callback called by FFI
 	// functions.  Then we check the caller of that function.
 
-	n := callers(3, locs[:])
+	n := callers(2, locs[:])
 	foundFFICallback := false
 	i := 0
 	for ; i < n; i++ {
@@ -645,7 +659,7 @@ func canrecover(retaddr uintptr) bool {
 		}
 
 		// Ignore other functions in the reflect package.
-		if hasprefix(name, "reflect.") {
+		if hasprefix(name, "reflect.") || hasprefix(name, ".1reflect.") {
 			continue
 		}
 
@@ -822,16 +836,22 @@ var panicking uint32
 // so that two concurrent panics don't overlap their output.
 var paniclk mutex
 
+// startpanic_m prepares for an unrecoverable panic.
+//
+// It can have write barriers because the write barrier explicitly
+// ignores writes once dying > 0.
+//
+//go:yeswritebarrierrec
 func startpanic() {
 	_g_ := getg()
-	// Uncomment when mheap_ is in Go.
-	// if mheap_.cachealloc.size == 0 { // very early
-	//	print("runtime: panic before malloc heap initialized\n")
-	//	_g_.m.mallocing = 1 // tell rest of panic not to try to malloc
-	// } else
-	if _g_.m.mcache == nil { // can happen if called from signal handler or throw
-		_g_.m.mcache = allocmcache()
+	if mheap_.cachealloc.size == 0 { // very early
+		print("runtime: panic before malloc heap initialized\n")
 	}
+	// Disallow malloc during an unrecoverable panic. A panic
+	// could happen in a signal handler, or in a throw, or inside
+	// malloc itself. We want to catch if an allocation ever does
+	// happen (even if we're not in one of these situations).
+	_g_.m.mallocing++
 
 	switch _g_.m.dying {
 	case 0:
@@ -860,7 +880,7 @@ func startpanic() {
 		exit(4)
 		fallthrough
 	default:
-		// Can't even print!  Just exit.
+		// Can't even print! Just exit.
 		exit(5)
 	}
 }
@@ -917,6 +937,9 @@ func dopanic(unused int) {
 	exit(2)
 }
 
+// canpanic returns false if a signal should throw instead of
+// panicking.
+//
 //go:nosplit
 func canpanic(gp *g) bool {
 	// Note that g is m->gsignal, different from gp.

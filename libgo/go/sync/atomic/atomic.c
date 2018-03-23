@@ -62,16 +62,6 @@ SwapUintptr (uintptr_t *addr, uintptr_t new)
   return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
 }
 
-void *SwapPointer (void **, void *)
-  __asm__ (GOSYM_PREFIX "sync_atomic.SwapPointer")
-  __attribute__ ((no_split_stack));
-
-void *
-SwapPointer (void **addr, void *new)
-{
-  return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
-}
-
 _Bool CompareAndSwapInt32 (int32_t *, int32_t, int32_t)
   __asm__ (GOSYM_PREFIX "sync_atomic.CompareAndSwapInt32")
   __attribute__ ((no_split_stack));
@@ -122,16 +112,6 @@ _Bool CompareAndSwapUintptr (uintptr_t *, uintptr_t, uintptr_t)
 
 _Bool
 CompareAndSwapUintptr (uintptr_t *val, uintptr_t old, uintptr_t new)
-{
-  return __sync_bool_compare_and_swap (val, old, new);
-}
-
-_Bool CompareAndSwapPointer (void **, void *, void *)
-  __asm__ (GOSYM_PREFIX "sync_atomic.CompareAndSwapPointer")
-  __attribute__ ((no_split_stack));
-
-_Bool
-CompareAndSwapPointer (void **val, void *old, void *new)
 {
   return __sync_bool_compare_and_swap (val, old, new);
 }
@@ -352,20 +332,6 @@ void
 StoreUintptr (uintptr_t *addr, uintptr_t val)
 {
   uintptr_t v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, val))
-    v = *addr;
-}
-
-void StorePointer (void **addr, void *val)
-  __asm__ (GOSYM_PREFIX "sync_atomic.StorePointer")
-  __attribute__ ((no_split_stack));
-
-void
-StorePointer (void **addr, void *val)
-{
-  void *v;
 
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, val))

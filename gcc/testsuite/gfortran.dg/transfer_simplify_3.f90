@@ -28,26 +28,26 @@ PROGRAM TestInfinite
   ! not portable, replaced by:
   bit_pattern_NegInf_i8_hex = ibset(bit_pattern_PosInf_i8_hex,63)
 
-  if (bit_pattern_NegInf_i8_hex /= bit_pattern_NegInf_i8) call abort()
-  if (bit_pattern_PosInf_i8_hex /= bit_pattern_PosInf_i8) call abort()
+  if (bit_pattern_NegInf_i8_hex /= bit_pattern_NegInf_i8) STOP 1
+  if (bit_pattern_PosInf_i8_hex /= bit_pattern_PosInf_i8) STOP 2
 
   r = transfer(bit_pattern_PosInf_i8,r)
-  if (r /= 1.0_r8_/0.0_r8_) call abort()
+  if (r /= 1.0_r8_/0.0_r8_) STOP 3
   i = transfer(r,i)
-  if (bit_pattern_PosInf_i8 /= i) call abort()  
+  if (bit_pattern_PosInf_i8 /= i) STOP 4  
 
   r = transfer(bit_pattern_NegInf_i8,r)
-  if (r /= -1.0_r8_/0.0_r8_) call abort()
+  if (r /= -1.0_r8_/0.0_r8_) STOP 5
   i = transfer(r,i)
-  if (bit_pattern_NegInf_i8 /= i) call abort()
+  if (bit_pattern_NegInf_i8 /= i) STOP 6
 
   r = transfer(bit_pattern_PosInf_i8_p,r)
-  if (r /= 1.0_r8_/0.0_r8_) call abort()
+  if (r /= 1.0_r8_/0.0_r8_) STOP 7
   i = transfer(r,i)
-  if (bit_pattern_PosInf_i8_p /= i) call abort()
+  if (bit_pattern_PosInf_i8_p /= i) STOP 8
 
   r = transfer(bit_pattern_NegInf_i8_p,r)
-  if (r /= -1.0_r8_/0.0_r8_) call abort()
+  if (r /= -1.0_r8_/0.0_r8_) STOP 9
   i = transfer(r,i)
-  if (bit_pattern_NegInf_i8_p /= i) call abort()
+  if (bit_pattern_NegInf_i8_p /= i) STOP 10
 END PROGRAM TestInfinite

@@ -16,9 +16,9 @@ contains
     character(len=*), intent(in) :: uri, localname
     integer, intent(in) :: n
     if ((n .lt. 2) .and. (len (uri) .ne. 0)) then
-      call abort
+      STOP 1
     else IF ((n .ge. 2) .and. (len (uri) .ne. n - 1)) then 
-      call abort
+      STOP 2
     end if
   end subroutine
 end module m

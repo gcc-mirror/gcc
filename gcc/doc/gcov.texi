@@ -1,10 +1,10 @@
-@c Copyright (C) 1996-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1996-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996-2017 Free Software Foundation, Inc.
+Copyright @copyright{} 1996-2018 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -187,11 +187,8 @@ be used by @command{lcov} or other tools. The output is a single
 The format of the intermediate @file{.gcov} file is plain text with
 one entry per line
 
-@item -j
-@itemx --human-readable
-Write counts in human readable format (like 24k).
-
 @smallexample
+version:@var{gcc_version}
 file:@var{source_file_name}
 function:@var{start_line_number},@var{end_line_number},@var{execution_count},@var{function_name}
 lcount:@var{line number},@var{execution_count},@var{has_unexecuted_block}
@@ -212,6 +209,7 @@ times.
 Here is a sample when @option{-i} is used in conjunction with @option{-b} option:
 
 @smallexample
+version: 8.1.0 20180103
 file:tmp.cpp
 function:7,7,0,_ZN3FooIcEC2Ev
 function:7,7,1,_ZN3FooIiEC2Ev
@@ -251,6 +249,10 @@ branch:35,taken
 branch:35,nottaken
 lcount:36,1,0
 @end smallexample
+
+@item -j
+@itemx --human-readable
+Write counts in human readable format (like 24k).
 
 @item -k
 @itemx --use-colors
@@ -367,7 +369,7 @@ program source code.  The format is
 Additional block information may succeed each line, when requested by
 command line option.  The @var{execution_count} is @samp{-} for lines
 containing no code.  Unexecuted lines are marked @samp{#####} or
-@samp{====}, depending on whether they are reachable by
+@samp{=====}, depending on whether they are reachable by
 non-exceptional paths or only exceptional paths such as C++ exception
 handlers, respectively. Given @samp{-a} option, unexecuted blocks are
 marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
@@ -786,6 +788,8 @@ Instrumented applications use a static destructor with priority 99
 to invoke the @code{__gcov_dump} function. Thus @code{__gcov_dump}
 is executed after all user defined static destructors,
 as well as handlers registered with @code{atexit}.
+If an executable loads a dynamic shared object via dlopen functionality,
+@option{-Wl,--dynamic-list-data} is needed to dump all profile data.
 
 @c man end
 
@@ -812,9 +816,9 @@ A separate @file{.gcda} file is created for each object file compiled with
 this option.  It contains arc transition counts, value profile counts, and
 some summary information.
 
-The full details of the file format is specified in @file{gcov-io.h},
-and functions provided in that header file should be used to access the
-coverage files.
+It is not recommended to access the coverage files directly.
+Consumers should use the intermediate format that is provided
+by @command{gcov} tool via @option{--intermediate-format} option.
 
 @node Cross-profiling
 @section Data File Relocation to Support Cross-Profiling

@@ -1,3 +1,104 @@
+2018-03-20  Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libgomp.graphite/force-parallel-4.c: XFAIL one
+	parallelizable loop.
+
+2018-02-19  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84418
+	* libgomp.fortran/pr84418-1.f90: New test.
+	* libgomp.fortran/pr84418-2.f90: New test.
+
+2018-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84313
+	* testsuite/libgomp.fortran/threadprivate4.f90: Add
+	-std=f2003 -fall-intrinsics into dg-additional-options.
+
+2018-02-08  Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/libgomp.hsa.c/pr82416.c: Make the function with target
+	clonable.
+
+2018-02-08  Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/libgomp.hsa.c/staticvar.c: New test.
+
+2018-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr84217.c (abort)
+	[__cplusplus]: Declare extern "C".
+
+2018-02-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/84217
+	* testsuite/libgomp.oacc-c-c++-common/pr84217.c: New test.
+
+2018-01-29  Christoph Spiel  <cspiel@freenet.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/84096
+	* omp.h.in (omp_init_nest_lock_with_hint): Use omp_nest_lock_t
+	instead of omp_lock_t.
+
+2018-01-25  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/84028
+	* testsuite/libgomp.oacc-fortran/pr84028.f90: New test.
+
+2018-01-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/83589
+	* testsuite/libgomp.oacc-c-c++-common/pr83589.c: New test.
+
+2018-01-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/81352
+	* testsuite/libgomp.oacc-fortran/pr81352.f90: New test.
+
+2018-01-19  Tom de Vries  <tom@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR target/83920
+	* testsuite/libgomp.oacc-c-c++-common/pr83920.c: New test.
+	* testsuite/libgomp.oacc-fortran/pr83920.f90: New test.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libgomp.texi: Bump @copying's copyright year.
+
+2017-12-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/83046
+	* testsuite/libgomp.oacc-c-c++-common/pr83046.c: New test.
+	* testsuite/libgomp.c-c++-common/pr83046.c: New test.
+
+2017-12-27  Tom de Vries  <tom@codesourcery.com>
+
+	PR c++/83046
+	* testsuite/libgomp.oacc-c-c++-common/gang-static-2.c (test_static)
+	(test_nonstatic): Fix return type to workaround PR83046.
+
+2017-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/83281
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-flt.c (main): Use
+	j suffix instead of i.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-dbl.c (main):
+	Likewise.
+
+2017-12-01  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c: Add missing
+	call to acc_wait (1).
+
 2017-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/81304
@@ -8924,7 +9025,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2017 Free Software Foundation, Inc.
+Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

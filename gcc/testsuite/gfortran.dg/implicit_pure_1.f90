@@ -37,16 +37,16 @@ program gfcbug114a
   use b
   implicit none
   real :: x = 1, y = 1, t, u, v, w
-  if (neval /= 0) call abort ()
+  if (neval /= 0) STOP 1
   t = f(x)*f(y)
-  if (neval /= 0) call abort ()
+  if (neval /= 0) STOP 2
   u = f(x)*f(y) + f(x)*f(y)
-  if (neval /= 0) call abort ()
+  if (neval /= 0) STOP 3
   v = g(x)*g(y)
-  if (neval /= 2) call abort ()
+  if (neval /= 2) STOP 4
   w = g(x)*g(y) + g(x)*g(y)
-  if (neval /= 6) call abort ()
-  if (t /= 1.0 .or. u /= 2.0 .or. v /= 1.0 .or. w /= 2) call abort ()
+  if (neval /= 6) STOP 5
+  if (t /= 1.0 .or. u /= 2.0 .or. v /= 1.0 .or. w /= 2) STOP 6
 end program gfcbug114a
 
 ! { dg-final { scan-module "b" "IMPLICIT_PURE" } }

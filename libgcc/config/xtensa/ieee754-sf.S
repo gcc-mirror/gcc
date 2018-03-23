@@ -1,5 +1,5 @@
 /* IEEE-754 single-precision functions for Xtensa
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
    This file is part of GCC.
@@ -55,6 +55,7 @@ __negsf2:
 
 #ifdef L_addsubsf3
 
+	.literal_position
 	/* Addition */
 __addsf3_aux:
 
@@ -64,15 +65,23 @@ __addsf3_aux:
 
 .Ladd_xnan_or_inf:
 	/* If y is neither Infinity nor NaN, return x.  */
-	bnall	a3, a6, 1f
+	bnall	a3, a6, .Ladd_return_nan_or_inf
 	/* If x is a NaN, return it.  Otherwise, return y.  */
 	slli	a7, a2, 9
-	beqz	a7, .Ladd_ynan_or_inf
-1:	leaf_return
+	bnez	a7, .Ladd_return_nan
 
 .Ladd_ynan_or_inf:
 	/* Return y.  */
 	mov	a2, a3
+
+.Ladd_return_nan_or_inf:
+	slli	a7, a2, 9
+	bnez	a7, .Ladd_return_nan
+	leaf_return
+
+.Ladd_return_nan:
+	movi	a6, 0x400000	/* make it a quiet NaN */
+	or	a2, a2, a6
 	leaf_return
 
 .Ladd_opposite_signs:
@@ -265,16 +274,22 @@ __subsf3_aux:
 
 .Lsub_xnan_or_inf:
 	/* If y is neither Infinity nor NaN, return x.  */
-	bnall	a3, a6, 1f
+	bnall	a3, a6, .Lsub_return_nan_or_inf
 	/* Both x and y are either NaN or Inf, so the result is NaN.  */
+
+.Lsub_return_nan:
 	movi	a4, 0x400000	/* make it a quiet NaN */
 	or	a2, a2, a4
-1:	leaf_return
+	leaf_return
 
 .Lsub_ynan_or_inf:
 	/* Negate y and return it.  */
 	slli	a7, a6, 8
 	xor	a2, a3, a7
+
+.Lsub_return_nan_or_inf:
+	slli	a7, a2, 9
+	bnez	a7, .Lsub_return_nan
 	leaf_return
 
 .Lsub_opposite_signs:
@@ -537,11 +552,7 @@ __mulsf3_aux:
 .Lmul_xnan_or_inf:
 	/* If y is zero, return NaN.  */
 	slli	a8, a3, 1
-	bnez	a8, 1f
-	movi	a4, 0x400000	/* make it a quiet NaN */
-	or	a2, a2, a4
-	j	.Lmul_done
-1:
+	beqz	a8, .Lmul_return_nan
 	/* If y is NaN, return y.  */
 	bnall	a3, a6, .Lmul_returnx
 	slli	a8, a3, 9
@@ -551,6 +562,8 @@ __mulsf3_aux:
 	mov	a2, a3
 
 .Lmul_returnx:
+	slli	a8, a2, 9
+	bnez	a8, .Lmul_return_nan
 	/* Set the sign bit and return.  */
 	extui	a7, a7, 31, 1
 	slli	a2, a2, 1
@@ -562,8 +575,11 @@ __mulsf3_aux:
 	/* If x is zero, return NaN.  */
 	slli	a8, a2, 1
 	bnez	a8, .Lmul_returny
-	movi	a7, 0x400000	/* make it a quiet NaN */
-	or	a2, a3, a7
+	mov	a2, a3
+
+.Lmul_return_nan:
+	movi	a4, 0x400000	/* make it a quiet NaN */
+	or	a2, a2, a4
 	j	.Lmul_done
 
 	.align	4
@@ -995,10 +1011,10 @@ __divsf3_aux:
 	slli	a7, a7, 31
 	xor	a2, a2, a7
 	/* If y is NaN or Inf, return NaN.  */
-	bnall	a3, a6, 1f
-	movi	a4, 0x400000	/* make it a quiet NaN */
-	or	a2, a2, a4
-1:	leaf_return
+	ball	a3, a6, .Ldiv_return_nan
+	slli	a7, a2, 9
+	bnez	a7, .Ldiv_return_nan
+	leaf_return
 
 .Ldiv_ynan_or_inf:
 	/* If y is Infinity, return zero.  */
@@ -1006,6 +1022,10 @@ __divsf3_aux:
 	beqz	a8, .Ldiv_return_zero
 	/* y is NaN; return it.  */
 	mov	a2, a3
+
+.Ldiv_return_nan:
+	movi	a4, 0x400000	/* make it a quiet NaN */
+	or	a2, a2, a4
 	leaf_return
 
 	.align	4

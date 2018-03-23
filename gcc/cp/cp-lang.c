@@ -1,5 +1,5 @@
 /* Language-dependent hooks for C++.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -247,6 +247,8 @@ run_cp_tests (void)
   c_family_tests ();
 
   /* Additional C++-specific tests.  */
+  cp_pt_c_tests ();
+  cp_tree_c_tests ();
 }
 
 } // namespace selftest

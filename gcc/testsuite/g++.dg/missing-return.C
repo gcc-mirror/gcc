@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wreturn-type -fdump-tree-optimized" } */
+/* { dg-options "-Wreturn-type -fdump-tree-optimized -O" } */
 
 int foo(int a)
 {

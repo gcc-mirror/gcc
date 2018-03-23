@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-optimized-details-blocks" } */
-/* { dg-additional-options "-mbranch-cost=2" { target { i?86-*-* x86_64-*-* s390*-*-* avr*-*-* } } } */
+/* { dg-additional-options "-mbranch-cost=2" { target branch_cost } } */
 
 _Bool f1(_Bool a, _Bool b)
 {

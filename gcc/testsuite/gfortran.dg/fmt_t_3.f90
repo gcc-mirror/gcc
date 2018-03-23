@@ -11,5 +11,5 @@ program t
    write(10, fmt) 'xxxx', (y(i), i = 1,n)
    rewind(10)
    read(10, '(a)') fmt
-   if (fmt.ne."xxxx  a a a") call abort()
+   if (fmt.ne."xxxx  a a a") STOP 1
 end program t

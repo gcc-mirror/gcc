@@ -1,5 +1,5 @@
 /* Define control flow data structures for the CFG.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -506,6 +506,7 @@ ei_cond (edge_iterator ei, edge *p)
 					   insns.  */
 #define CLEANUP_CFGLAYOUT	32	/* Do cleanup in cfglayout mode.  */
 #define CLEANUP_CFG_CHANGED	64      /* The caller changed the CFG.  */
+#define CLEANUP_NO_PARTITIONING	128     /* Do not try to fix partitions.  */
 
 /* Return true if BB is in a transaction.  */
 

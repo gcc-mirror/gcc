@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1327,6 +1327,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	  e->speculative = false;
 	  e->caller->set_call_stmt_including_clones (e->call_stmt, new_stmt,
 						     false);
+	  e->count = gimple_bb (e->call_stmt)->count;
 
 	  /* Fix edges for BUILT_IN_CHKP_BNDRET calls attached to the
 	     processed call stmt.  */
@@ -1346,6 +1347,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	    }
 
 	  e2->speculative = false;
+	  e2->count = gimple_bb (e2->call_stmt)->count;
 	  ref->speculative = false;
 	  ref->stmt = NULL;
 	  /* Indirect edges are not both in the call site hash.
@@ -1431,7 +1433,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	 stmts and associate D#X with parm in decl_debug_args_lookup
 	 vector to say for debug info that if parameter parm had been passed,
 	 it would have value parm_Y(D).  */
-      if (e->callee->clone.combined_args_to_skip && MAY_HAVE_DEBUG_STMTS)
+      if (e->callee->clone.combined_args_to_skip && MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  vec<tree, va_gc> **debug_args
 	    = decl_debug_args_lookup (e->callee->decl);

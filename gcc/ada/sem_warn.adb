@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1742,21 +1742,16 @@ package body Sem_Warn is
       -----------------------------
 
       function Is_OK_Fully_Initialized return Boolean is
-         Prag : Node_Id;
-
       begin
          if Is_Access_Type (Typ) and then Is_Dereferenced (N) then
             return False;
 
-         --  A type subject to pragma Default_Initial_Condition is fully
-         --  default initialized when the pragma appears with a non-null
-         --  argument (SPARK RM 3.1 and SPARK RM 7.3.3).
+         --  A type subject to pragma Default_Initial_Condition may be fully
+         --  default initialized depending on inheritance and the argument of
+         --  the pragma (SPARK RM 3.1 and SPARK RM 7.3.3).
 
-         elsif Has_DIC (Typ) then
-            Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
-            pragma Assert (Present (Prag));
-
-            return Is_Verifiable_DIC_Pragma (Prag);
+         elsif Has_Fully_Default_Initializing_DIC_Pragma (Typ) then
+            return True;
 
          else
             return Is_Fully_Initialized_Type (Typ);

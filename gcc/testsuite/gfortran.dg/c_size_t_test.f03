@@ -10,7 +10,7 @@ contains
     ! if the value of c_size_t isn't equal to the value of C's sizeof(size_t) 
     ! we call abort.
     if(c_size_t .ne. my_c_size) then
-       call abort ()
+       STOP 1
     end if
   end subroutine sub0
 end module c_size_t_test

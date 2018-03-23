@@ -9,12 +9,12 @@ program emptyif
   else
     i = 2
   endif
-  if (i .ne. 2) call abort()
+  if (i .ne. 2) STOP 1
 
   if (i .eq. 0) then
   elseif (i .eq. 2) then
     i = 3
   end if
-  if (i .ne. 3) call abort()
+  if (i .ne. 3) STOP 2
 end
 

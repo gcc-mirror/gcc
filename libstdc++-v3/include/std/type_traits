@@ -1,6 +1,6 @@
 // C++11 <type_traits> -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,12 +71,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr _Tp                  value = __v;
       typedef _Tp                           value_type;
       typedef integral_constant<_Tp, __v>   type;
-      constexpr operator value_type() const { return value; }
+      constexpr operator value_type() const noexcept { return value; }
 #if __cplusplus > 201103L
 
 #define __cpp_lib_integral_constant_callable 201304
 
-      constexpr value_type operator()() const { return value; }
+      constexpr value_type operator()() const noexcept { return value; }
 #endif
     };
 
@@ -2589,12 +2589,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Result, typename _Ret>
     struct __is_invocable_impl<_Result, _Ret, __void_t<typename _Result::type>>
-    : is_convertible<typename _Result::type, _Ret>::type
-    { };
-
-  template<typename _Result>
-    struct __is_invocable_impl<_Result, void, __void_t<typename _Result::type>>
-    : true_type
+    : __or_<is_void<_Ret>, is_convertible<typename _Result::type, _Ret>>::type
     { };
 
   template<typename _Fn, typename... _ArgTypes>
@@ -2699,14 +2694,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Result, typename _Ret>
     struct __is_nt_invocable_impl<_Result, _Ret,
 				  __void_t<typename _Result::type>>
-    : __and_<is_convertible<typename _Result::type, _Ret>,
-	     is_nothrow_constructible<_Ret, typename _Result::type>>
-    { };
-
-  template<typename _Result>
-    struct __is_nt_invocable_impl<_Result, void,
-				  __void_t<typename _Result::type>>
-    : true_type
+    : __or_<is_void<_Ret>,
+	    __and_<is_convertible<typename _Result::type, _Ret>,
+		   is_nothrow_constructible<_Ret, typename _Result::type>>>
     { };
 
   /// std::is_nothrow_invocable_r
@@ -2913,6 +2903,10 @@ template <typename _From, typename _To>
       remove_cv_t<remove_all_extents_t<_Tp>>
       )>
     { };
+
+  template<typename _Tp>
+    inline constexpr bool has_unique_object_representations_v
+      = has_unique_object_representations<_Tp>::value;
 #endif
 #undef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 

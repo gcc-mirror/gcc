@@ -9,7 +9,7 @@ subroutine test (proc)
    b = sin (a)
    c = proc (a)
    
-   if (abs (b - c) .gt. 0.001) call abort
+   if (abs (b - c) .gt. 0.001) STOP 1
    
 end subroutine
 

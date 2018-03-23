@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -711,11 +711,16 @@ package body Freeze is
             end;
          end if;
 
-         if Present (Init) then
+         --  Remove side effects from initial expression, except in the case
+         --  of a build-in-place call, which has its own later expansion.
 
-            --  Capture initialization value at point of declaration,
-            --  and make explicit assignment legal, because object may
-            --  be a constant.
+         if Present (Init)
+           and then (Nkind (Init) /= N_Function_Call
+             or else not Is_Expanded_Build_In_Place_Call (Init))
+         then
+
+            --  Capture initialization value at point of declaration, and make
+            --  explicit assignment legal, because object may be a constant.
 
             Remove_Side_Effects (Init);
             Lhs := New_Occurrence_Of (E, Sloc (Decl));
@@ -5517,6 +5522,11 @@ package body Freeze is
       --  Case of a type or subtype being frozen
 
       else
+         --  Verify several SPARK legality rules related to Ghost types now
+         --  that the type is frozen.
+
+         Check_Ghost_Type (E);
+
          --  We used to check here that a full type must have preelaborable
          --  initialization if it completes a private type specified with
          --  pragma Preelaborable_Initialization, but that missed cases where
@@ -5566,21 +5576,6 @@ package body Freeze is
                  ("\can only be specified for a tagged type", Prag);
             end if;
          end;
-
-         if Is_Ghost_Entity (E) then
-
-            --  A Ghost type cannot be concurrent (SPARK RM 6.9(19)). Verify
-            --  this legality rule first to five a finer-grained diagnostic.
-
-            if Is_Concurrent_Type (E) then
-               Error_Msg_N ("ghost type & cannot be concurrent", E);
-
-            --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(7))
-
-            elsif Is_Effectively_Volatile (E) then
-               Error_Msg_N ("ghost type & cannot be volatile", E);
-            end if;
-         end if;
 
          --  Deal with special cases of freezing for subtype
 

@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -158,6 +158,7 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
   bool matched_bracket = false;
   gfc_expr *tmp;
   bool stat_just_seen = false;
+  bool team_just_seen = false;
 
   memset (ar, '\0', sizeof (*ar));
 
@@ -197,6 +198,11 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
 	}
     }
 
+  if (ar->dimen >= 7
+      && !gfc_notify_std (GFC_STD_F2008,
+			  "Array reference at %C has more than 7 dimensions"))
+    return MATCH_ERROR;
+
   gfc_error ("Array reference at %C cannot have more than %d dimensions",
 	     GFC_MAX_DIMENSIONS);
   return MATCH_ERROR;
@@ -230,8 +236,21 @@ coarray:
       if (m == MATCH_ERROR)
 	return MATCH_ERROR;
 
+      team_just_seen = false;
       stat_just_seen = false;
-      if (gfc_match(" , stat = %e",&tmp) == MATCH_YES && ar->stat == NULL)
+      if (gfc_match (" , team = %e", &tmp) == MATCH_YES && ar->team == NULL)
+	{
+	  ar->team = tmp;
+	  team_just_seen = true;
+	}
+
+      if (ar->team && !team_just_seen)
+	{
+	  gfc_error ("TEAM= attribute in %C misplaced");
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_match (" , stat = %e",&tmp) == MATCH_YES && ar->stat == NULL)
 	{
 	  ar->stat = tmp;
 	  stat_just_seen = true;
@@ -1962,7 +1981,7 @@ bool
 gfc_resolve_character_array_constructor (gfc_expr *expr)
 {
   gfc_constructor *p;
-  int found_length;
+  HOST_WIDE_INT found_length;
 
   gcc_assert (expr->expr_type == EXPR_ARRAY);
   gcc_assert (expr->ts.type == BT_CHARACTER);
@@ -1994,7 +2013,7 @@ got_charlen:
       for (p = gfc_constructor_first (expr->value.constructor);
 	   p; p = gfc_constructor_next (p))
 	{
-	  int current_length = -1;
+	  HOST_WIDE_INT current_length = -1;
 	  gfc_ref *ref;
 	  for (ref = p->expr->ref; ref; ref = ref->next)
 	    if (ref->type == REF_SUBSTRING
@@ -2005,19 +2024,11 @@ got_charlen:
 	  if (p->expr->expr_type == EXPR_CONSTANT)
 	    current_length = p->expr->value.character.length;
 	  else if (ref)
-	    {
-	      long j;
-	      j = mpz_get_ui (ref->u.ss.end->value.integer)
-		- mpz_get_ui (ref->u.ss.start->value.integer) + 1;
-	      current_length = (int) j;
-	    }
+	    current_length = gfc_mpz_get_hwi (ref->u.ss.end->value.integer)
+	      - gfc_mpz_get_hwi (ref->u.ss.start->value.integer) + 1;
 	  else if (p->expr->ts.u.cl && p->expr->ts.u.cl->length
 		   && p->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	    {
-	      long j;
-	      j = mpz_get_si (p->expr->ts.u.cl->length->value.integer);
-	      current_length = (int) j;
-	    }
+	    current_length = gfc_mpz_get_hwi (p->expr->ts.u.cl->length->value.integer);
 	  else
 	    return true;
 
@@ -2027,9 +2038,9 @@ got_charlen:
 	    found_length = current_length;
 	  else if (found_length != current_length)
 	    {
-	      gfc_error ("Different CHARACTER lengths (%d/%d) in array"
-			 " constructor at %L", found_length, current_length,
-			 &p->expr->where);
+	      gfc_error ("Different CHARACTER lengths (%ld/%ld) in array"
+			 " constructor at %L", (long) found_length,
+			 (long) current_length, &p->expr->where);
 	      return false;
 	    }
 
@@ -2039,7 +2050,7 @@ got_charlen:
       gcc_assert (found_length != -1);
 
       /* Update the character length of the array constructor.  */
-      expr->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+      expr->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						NULL, found_length);
     }
   else
@@ -2051,7 +2062,7 @@ got_charlen:
       /* If we've got a constant character length, pad according to this.
 	 gfc_extract_int does check for BT_INTEGER and EXPR_CONSTANT and sets
 	 max_length only if they pass.  */
-      gfc_extract_int (expr->ts.u.cl->length, &found_length);
+      gfc_extract_hwi (expr->ts.u.cl->length, &found_length);
 
       /* Now pad/truncate the elements accordingly to the specified character
 	 length.  This is ok inside this conditional, as in the case above
@@ -2063,13 +2074,13 @@ got_charlen:
 	  if (p->expr->expr_type == EXPR_CONSTANT)
 	    {
 	      gfc_expr *cl = NULL;
-	      int current_length = -1;
+	      HOST_WIDE_INT current_length = -1;
 	      bool has_ts;
 
 	      if (p->expr->ts.u.cl && p->expr->ts.u.cl->length)
 	      {
 		cl = p->expr->ts.u.cl->length;
-		gfc_extract_int (cl, &current_length);
+		gfc_extract_hwi (cl, &current_length);
 	      }
 
 	      /* If gfc_extract_int above set current_length, we implicitly
@@ -2123,6 +2134,7 @@ gfc_copy_iterator (gfc_iterator *src)
   dest->start = gfc_copy_expr (src->start);
   dest->end = gfc_copy_expr (src->end);
   dest->step = gfc_copy_expr (src->step);
+  dest->unroll = src->unroll;
 
   return dest;
 }
@@ -2233,9 +2245,12 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
       else
 	{
 	  stride_expr = gfc_copy_expr(ar->stride[dimen]); 
+
 	  if(!gfc_simplify_expr(stride_expr, 1))
 	    gfc_internal_error("Simplification error");
-	  if (stride_expr->expr_type != EXPR_CONSTANT)
+
+	  if (stride_expr->expr_type != EXPR_CONSTANT
+	      || mpz_cmp_ui (stride_expr->value.integer, 0) == 0)
 	    {
 	      mpz_clear (stride);
 	      return false;

@@ -13,6 +13,4 @@ test1 (vector signed int x)
   return vec_neg (x);
 }
 
-/* { dg-final { scan-assembler-times "xxspltib|vspltisw|vxor" 1 } } */
-/* { dg-final { scan-assembler-times "vsubuwm" 1 } } */
-/* { dg-final { scan-assembler-times "vmaxsw" 0 } } */
+/* Scan-assembler stanzas have been moved to fold-vec-neg-int.p*.c tests. */

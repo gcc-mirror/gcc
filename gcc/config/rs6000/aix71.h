@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.1.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -126,6 +126,10 @@ do {									\
    %{maix64: -D__64BIT__}			\
    %{mpe: -I%R/usr/lpp/ppe.poe/include}		\
    %{pthread: -D_THREAD_SAFE}"
+
+#define RS6000_CPU(NAME, CPU, FLAGS)
+#include "rs6000-cpus.def"
+#undef RS6000_CPU
 
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_PPC_GPOPT | MASK_PPC_GFXOPT | MASK_MFCRF)

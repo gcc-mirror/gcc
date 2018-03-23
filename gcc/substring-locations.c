@@ -1,5 +1,5 @@
 /* Source locations within string literals.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,14 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "intl.h"
 #include "diagnostic.h"
 #include "cpplib.h"
 #include "tree.h"
 #include "langhooks.h"
 #include "substring-locations.h"
 
-/* Emit a warning governed by option OPT, using GMSGID as the format
-   string and AP as its arguments.
+/* Emit a warning governed by option OPT, using SINGULAR_GMSGID as the
+   format string (or if PLURAL_GMSGID is different from SINGULAR_GMSGID,
+   using SINGULAR_GMSGID, PLURAL_GMSGID and N as arguments to ngettext)
+   and AP as its arguments.
 
    Attempt to obtain precise location information within a string
    literal from FMT_LOC.
@@ -97,12 +100,13 @@ along with GCC; see the file COPYING3.  If not see
 
    Return true if a warning was emitted, false otherwise.  */
 
-ATTRIBUTE_GCC_DIAG (5,0)
 bool
-format_warning_va (const substring_loc &fmt_loc,
-		   location_t param_loc,
-		   const char *corrected_substring,
-		   int opt, const char *gmsgid, va_list *ap)
+format_warning_n_va (const substring_loc &fmt_loc,
+		     location_t param_loc,
+		     const char *corrected_substring,
+		     int opt, unsigned HOST_WIDE_INT n,
+		     const char *singular_gmsgid,
+		     const char *plural_gmsgid, va_list *ap)
 {
   bool substring_within_range = false;
   location_t primary_loc;
@@ -143,7 +147,25 @@ format_warning_va (const substring_loc &fmt_loc,
     richloc.add_fixit_replace (fmt_substring_range, corrected_substring);
 
   diagnostic_info diagnostic;
-  diagnostic_set_info (&diagnostic, gmsgid, ap, &richloc, DK_WARNING);
+  if (singular_gmsgid != plural_gmsgid)
+    {
+      unsigned long gtn;
+
+      if (sizeof n <= sizeof gtn)
+	gtn = n;
+      else
+	/* Use the largest number ngettext can handle, otherwise
+	   preserve the six least significant decimal digits for
+	   languages where the plural form depends on them.  */
+	gtn = n <= ULONG_MAX ? n : n % 1000000LU + 1000000LU;
+
+      const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
+      diagnostic_set_info_translated (&diagnostic, text, ap, &richloc,
+				      DK_WARNING);
+    }
+  else
+    diagnostic_set_info (&diagnostic, singular_gmsgid, ap, &richloc,
+			 DK_WARNING);
   diagnostic.option_index = opt;
   bool warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
 
@@ -162,6 +184,18 @@ format_warning_va (const substring_loc &fmt_loc,
   return warned;
 }
 
+/* Singular-only version of the above.  */
+
+bool
+format_warning_va (const substring_loc &fmt_loc,
+		   location_t param_loc,
+		   const char *corrected_substring,
+		   int opt, const char *gmsgid, va_list *ap)
+{
+  return format_warning_n_va (fmt_loc, param_loc, corrected_substring, opt,
+			      0, gmsgid, gmsgid, ap);
+}
+
 /* Variadic call to format_warning_va.  */
 
 bool
@@ -174,6 +208,26 @@ format_warning_at_substring (const substring_loc &fmt_loc,
   va_start (ap, gmsgid);
   bool warned = format_warning_va (fmt_loc, param_loc, corrected_substring,
 				   opt, gmsgid, &ap);
+  va_end (ap);
+
+  return warned;
+}
+
+/* Variadic call to format_warning_n_va.  */
+
+bool
+format_warning_at_substring_n (const substring_loc &fmt_loc,
+			       location_t param_loc,
+			       const char *corrected_substring,
+			       int opt, unsigned HOST_WIDE_INT n,
+			       const char *singular_gmsgid,
+			       const char *plural_gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, plural_gmsgid);
+  bool warned = format_warning_n_va (fmt_loc, param_loc, corrected_substring,
+				     opt, n, singular_gmsgid, plural_gmsgid,
+				     &ap);
   va_end (ap);
 
   return warned;

@@ -1,5 +1,5 @@
 /* Dynamic testing for abstract is-a relationships.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Lawrence Crowl.
 
 This file is part of GCC.

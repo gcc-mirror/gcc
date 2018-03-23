@@ -1,6 +1,6 @@
 /* Write the GIMPLE representation to a file stream.
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gomp-constants.h"
 #include "debug.h"
+#include "omp-offload.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -747,9 +748,14 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
     {
-      for (unsigned i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-	DFS_follow_tree_edge (VECTOR_CST_ELT (expr, i));
+      unsigned int count = vector_cst_encoded_nelts (expr);
+      for (unsigned int i = 0; i < count; ++i)
+	DFS_follow_tree_edge (VECTOR_CST_ENCODED_ELT (expr, i));
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_POLY_INT_CST))
+    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+      DFS_follow_tree_edge (POLY_INT_CST_COEFF (expr, i));
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {
@@ -796,7 +802,8 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	   || TREE_CODE (expr) == PARM_DECL)
 	  && DECL_HAS_VALUE_EXPR_P (expr))
 	DFS_follow_tree_edge (DECL_VALUE_EXPR (expr));
-      if (VAR_P (expr))
+      if (VAR_P (expr)
+	  && DECL_HAS_DEBUG_EXPR_P (expr))
 	DFS_follow_tree_edge (DECL_DEBUG_EXPR (expr));
     }
 
@@ -1195,8 +1202,15 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    for (unsigned i = 0; i < VECTOR_CST_NELTS (t); ++i)
-      visit (VECTOR_CST_ELT (t, i));
+    {
+      unsigned int count = vector_cst_encoded_nelts (t);
+      for (unsigned int i = 0; i < count; ++i)
+	visit (VECTOR_CST_ENCODED_ELT (t, i));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_POLY_INT_CST))
+    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+      visit (POLY_INT_CST_COEFF (t, i));
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {
@@ -2333,6 +2347,35 @@ wrap_refs (tree *tp, int *ws, void *)
   return NULL_TREE;
 }
 
+/* Remove functions that are no longer used from offload_funcs, and mark the
+   remaining ones with DECL_PRESERVE_P.  */
+
+static void
+prune_offload_funcs (void)
+{
+  if (!offload_funcs)
+    return;
+
+  unsigned int write_index = 0;
+  for (unsigned read_index = 0; read_index < vec_safe_length (offload_funcs);
+       read_index++)
+    {
+      tree fn_decl = (*offload_funcs)[read_index];
+      bool remove_p = cgraph_node::get (fn_decl) == NULL;
+      if (remove_p)
+	continue;
+
+      DECL_PRESERVE_P (fn_decl) = 1;
+
+      if (write_index != read_index)
+	(*offload_funcs)[write_index] = (*offload_funcs)[read_index];
+
+      write_index++;
+    }
+
+  offload_funcs->truncate (write_index);
+}
+
 /* Main entry point from the pass manager.  */
 
 void
@@ -2342,6 +2385,8 @@ lto_output (void)
   bitmap output = NULL;
   int i, n_nodes;
   lto_symtab_encoder_t encoder = lto_get_out_decl_state ()->symtab_node_encoder;
+
+  prune_offload_funcs ();
 
   if (flag_checking)
     output = lto_bitmap_alloc ();
@@ -2553,13 +2598,10 @@ write_symbol (struct streamer_tree_cache_d *cache,
   const char *comdat;
   unsigned char c;
 
-  /* None of the following kinds of symbols are needed in the
-     symbol table.  */
-  if (!TREE_PUBLIC (t)
-      || is_builtin_fn (t)
-      || DECL_ABSTRACT_P (t)
-      || (VAR_P (t) && DECL_HARD_REGISTER (t)))
-    return;
+  gcc_checking_assert (TREE_PUBLIC (t)
+		       && !is_builtin_fn (t)
+		       && !DECL_ABSTRACT_P (t)
+		       && (!VAR_P (t) || !DECL_HARD_REGISTER (t)));
 
   gcc_assert (VAR_OR_FUNCTION_DECL_P (t));
 
@@ -2647,45 +2689,6 @@ write_symbol (struct streamer_tree_cache_d *cache,
   lto_write_data (&slot_num, 4);
 }
 
-/* Return true if NODE should appear in the plugin symbol table.  */
-
-bool
-output_symbol_p (symtab_node *node)
-{
-  struct cgraph_node *cnode;
-  if (!node->real_symbol_p ())
-    return false;
-  /* We keep external functions in symtab for sake of inlining
-     and devirtualization.  We do not want to see them in symbol table as
-     references unless they are really used.  */
-  cnode = dyn_cast <cgraph_node *> (node);
-  if (cnode && (!node->definition || DECL_EXTERNAL (cnode->decl))
-      && cnode->callers)
-    return true;
-
- /* Ignore all references from external vars initializers - they are not really
-    part of the compilation unit until they are used by folding.  Some symbols,
-    like references to external construction vtables can not be referred to at all.
-    We decide this at can_refer_decl_in_current_unit_p.  */
- if (!node->definition || DECL_EXTERNAL (node->decl))
-    {
-      int i;
-      struct ipa_ref *ref;
-      for (i = 0; node->iterate_referring (i, ref); i++)
-	{
-	  if (ref->use == IPA_REF_ALIAS)
-	    continue;
-          if (is_a <cgraph_node *> (ref->referring))
-	    return true;
-	  if (!DECL_EXTERNAL (ref->referring->decl))
-	    return true;
-	}
-      return false;
-    }
-  return true;
-}
-
-
 /* Write an IL symbol table to OB.
    SET and VSET are cgraph/varpool node sets we are outputting.  */
 
@@ -2710,7 +2713,7 @@ produce_symtab (struct output_block *ob)
     {
       symtab_node *node = lsei_node (lsei);
 
-      if (!output_symbol_p (node) || DECL_EXTERNAL (node->decl))
+      if (DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
       write_symbol (cache, node->decl, &seen, false);
     }
@@ -2719,7 +2722,7 @@ produce_symtab (struct output_block *ob)
     {
       symtab_node *node = lsei_node (lsei);
 
-      if (!output_symbol_p (node) || !DECL_EXTERNAL (node->decl))
+      if (!DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
       write_symbol (cache, node->decl, &seen, false);
     }
@@ -2766,10 +2769,10 @@ lto_write_mode_table (void)
 	    continue;
 	  bp_pack_value (&bp, m, 8);
 	  bp_pack_enum (&bp, mode_class, MAX_MODE_CLASS, GET_MODE_CLASS (m));
-	  bp_pack_value (&bp, GET_MODE_SIZE (m), 8);
-	  bp_pack_value (&bp, GET_MODE_PRECISION (m), 16);
+	  bp_pack_poly_value (&bp, GET_MODE_SIZE (m), 16);
+	  bp_pack_poly_value (&bp, GET_MODE_PRECISION (m), 16);
 	  bp_pack_value (&bp, GET_MODE_INNER (m), 8);
-	  bp_pack_value (&bp, GET_MODE_NUNITS (m), 8);
+	  bp_pack_poly_value (&bp, GET_MODE_NUNITS (m), 16);
 	  switch (GET_MODE_CLASS (m))
 	    {
 	    case MODE_FRACT:

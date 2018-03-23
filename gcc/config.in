@@ -358,6 +358,12 @@
 #endif
 
 
+/* Define if your assembler supports views in dwarf2 .loc directives. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_DWARF2_DEBUG_VIEW
+#endif
+
+
 /* Define if your assembler supports the R_PPC64_ENTRY relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_ENTRY_MARKERS
@@ -2204,6 +2210,12 @@
    DLL exports wrappers to support libstdc++ function replacement. */
 #ifndef USED_FOR_TARGET
 #undef USE_CYGWIN_LIBSTDCXX_WRAPPERS
+#endif
+
+
+/* Define 0/1 if your linker supports hidden thunks in linkonce sections. */
+#ifndef USED_FOR_TARGET
+#undef USE_HIDDEN_LINKONCE
 #endif
 
 

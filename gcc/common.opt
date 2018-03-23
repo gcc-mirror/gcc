@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2017 Free Software Foundation, Inc.
+; Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -137,7 +137,7 @@ enum debug_info_levels debug_info_level = DINFO_LEVEL_NONE
 
 ; Nonzero means use GNU-only extensions in the generated symbolic
 ; debugging information.  Currently, this only has an effect when
-; write_symbols is set to DBX_DEBUG, XCOFF_DEBUG, or DWARF_DEBUG.
+; write_symbols is set to DBX_DEBUG or XCOFF_DEBUG.
 Variable
 bool use_gnu_debug_info_extensions
 
@@ -954,7 +954,7 @@ Common Report Var(align_functions,0) Optimization UInteger
 Align the start of functions.
 
 falign-functions=
-Common RejectNegative Joined UInteger Var(align_functions)
+Common RejectNegative Joined UInteger Var(align_functions) Optimization
 
 flimit-function-alignment
 Common Report Var(flag_limit_function_alignment) Optimization Init(0)
@@ -964,21 +964,21 @@ Common Report Var(align_jumps,0) Optimization UInteger
 Align labels which are only reached by jumping.
 
 falign-jumps=
-Common RejectNegative Joined UInteger Var(align_jumps)
+Common RejectNegative Joined UInteger Var(align_jumps) Optimization
 
 falign-labels
 Common Report Var(align_labels,0) Optimization UInteger
 Align all labels.
 
 falign-labels=
-Common RejectNegative Joined UInteger Var(align_labels)
+Common RejectNegative Joined UInteger Var(align_labels) Optimization
 
 falign-loops
 Common Report Var(align_loops,0) Optimization UInteger
 Align the start of loops.
 
 falign-loops=
-Common RejectNegative Joined UInteger Var(align_loops)
+Common RejectNegative Joined UInteger Var(align_loops) Optimization
 
 fargument-alias
 Common Ignore
@@ -1175,7 +1175,11 @@ Common RejectNegative Joined Var(common_deferred_options) Defer
 
 fdebug-prefix-map=
 Common Joined RejectNegative Var(common_deferred_options) Defer
-Map one directory name to another in debug information.
+-fdebug-prefix-map=<old>=<new> Map one directory name to another in debug information.
+
+ffile-prefix-map=
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-ffile-prefix-map=<old>=<new> Map one directory name to another in compilation result.
 
 fdebug-types-section
 Common Report Var(flag_debug_types_section) Init(0)
@@ -1504,16 +1508,16 @@ Common Alias(floop-nest-optimize)
 Enable loop nest transforms.  Same as -floop-nest-optimize.
 
 floop-interchange
-Common Alias(floop-nest-optimize)
-Enable loop nest transforms.  Same as -floop-nest-optimize.
+Common Report Var(flag_loop_interchange) Optimization
+Enable loop interchange on trees.
 
 floop-block
 Common Alias(floop-nest-optimize)
 Enable loop nest transforms.  Same as -floop-nest-optimize.
 
 floop-unroll-and-jam
-Common Alias(floop-nest-optimize)
-Enable loop nest transforms.  Same as -floop-nest-optimize.
+Common Report Var(flag_unroll_jam) Optimization
+Perform unroll-and-jam on loops.
 
 fgnu-tm
 Common Report Var(flag_tm)
@@ -2411,8 +2415,8 @@ Common Report Var(flag_strict_aliasing) Optimization
 Assume strict aliasing rules apply.
 
 fstrict-overflow
-Common NegativeAlias Alias(fwrapv)
-Treat signed overflow as undefined.  Negated as -fwrapv.
+Common Report
+Treat signed overflow as undefined.  Negated as -fwrapv -fwrapv-pointer.
 
 fsync-libcalls
 Common Report Var(flag_sync_libcalls) Init(1)
@@ -2860,6 +2864,10 @@ fwhole-program
 Common Report Var(flag_whole_program) Init(0)
 Perform whole program optimizations.
 
+fwrapv-pointer
+Common Report Var(flag_wrapv_pointer) Optimization
+Assume pointer overflow wraps around.
+
 fwrapv
 Common Report Var(flag_wrapv) Optimization
 Assume signed arithmetic overflow wraps around.
@@ -2871,6 +2879,14 @@ Put zero initialized data in the bss section.
 g
 Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
+
+gas-loc-support
+Common Driver Var(dwarf2out_as_loc_support) Init(2)
+Assume assembler support for (DWARF2+) .loc directives
+
+gas-locview-support
+Common Driver Var(dwarf2out_as_locview_support) Init(2)
+Assume assembler support for view in (DWARF2+) .loc directives
 
 gcoff
 Common Driver Ignore Warn(switch %qs no longer supported)
@@ -2904,6 +2920,14 @@ ggdb
 Common Driver JoinedOrMissing
 Generate debug information in default extended format.
 
+ginline-points
+Common Driver Var(debug_inline_points) Init(2)
+Generate extended entry point information for inlined functions
+
+ginternal-reset-location-views
+Common Driver Var(debug_internal_reset_location_views) Init(2)
+Compute locview reset points based on insn length estimates
+
 gno-
 RejectNegative Joined Undocumented
 ; Catch the gno- prefix, so it doesn't backtrack to g<level>.
@@ -2936,6 +2960,10 @@ gstabs+
 Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
 
+gstatement-frontiers
+Common Driver Var(debug_nonbind_markers_p) Init(2)
+Emit progressive recommended breakpoint locations.
+
 gstrict-dwarf
 Common Driver Report Var(dwarf_strict) Init(0)
 Don't emit DWARF additions beyond selected version.
@@ -2943,6 +2971,13 @@ Don't emit DWARF additions beyond selected version.
 gtoggle
 Common Driver Report Var(flag_gtoggle)
 Toggle debug information generation.
+
+gvariable-location-views
+Common Driver Var(debug_variable_location_views, 1) Init(2)
+Augment variable location lists with progressive views.
+
+gvariable-location-views=incompat5
+Common Driver RejectNegative Var(debug_variable_location_views, -1) Init(2)
 
 gvms
 Common Driver JoinedOrMissing Negative(gxcoff)

@@ -1,4 +1,4 @@
-##  Copyright (C) 2012-2017 Free Software Foundation, Inc.
+##  Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ##  Contributed by Richard Henderson <rth@redhat.com>.
 ##
 ##  This file is part of the GNU Atomic Library (libatomic).
@@ -122,6 +122,10 @@ libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix _$(s)_.lo,$(SIZEOBJS)))
 
 ## On a target-specific basis, include alternates to be selected by IFUNC.
 if HAVE_IFUNC
+if ARCH_AARCH64_LINUX
+IFUNC_OPTIONS	     = -march=armv8-a+lse
+libatomic_la_LIBADD += $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))
+endif
 if ARCH_ARM_LINUX
 IFUNC_OPTIONS	     = -march=armv7-a+fp -DHAVE_KERNEL64
 libatomic_la_LIBADD += $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))

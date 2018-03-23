@@ -16,5 +16,5 @@
   if (any (b .ne. (/"1","1","2","3"/))) i = 2
   print *, b
   print *, b .ne. (/"1","1","2","3"/)
-  if (i == 2) call abort
+  if (i == 2) STOP 1
 end

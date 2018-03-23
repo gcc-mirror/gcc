@@ -1,5 +1,5 @@
 /* A memory statistics tracking infrastructure.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
    Contributed by Martin Liska  <mliska@suse.cz>
 
 This file is part of GCC.
@@ -163,10 +163,22 @@ struct mem_usage
 		      m_instances + second.m_instances);
   }
 
+  /* Equality operator.  */
+  inline bool
+  operator== (const mem_usage &second) const
+  {
+    return (m_allocated == second.m_allocated
+	    && m_peak == second.m_peak
+	    && m_allocated == second.m_allocated);
+  }
+
   /* Comparison operator.  */
   inline bool
   operator< (const mem_usage &second) const
   {
+    if (*this == second)
+      return false;
+
     return (m_allocated == second.m_allocated ?
 	    (m_peak == second.m_peak ? m_times < second.m_times
 	     : m_peak < second.m_peak) : m_allocated < second.m_allocated);
@@ -181,7 +193,10 @@ struct mem_usage
     const mem_pair_t f = *(const mem_pair_t *)first;
     const mem_pair_t s = *(const mem_pair_t *)second;
 
-    return (*f.second) < (*s.second);
+    if (*f.second == *s.second)
+      return 0;
+
+    return *f.second < *s.second ? 1 : -1;
   }
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */

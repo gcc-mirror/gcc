@@ -1,3 +1,11 @@
+2018-02-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_stdlib_vec_malloc): New.
+	(aix_stdlib_vec_calloc): New.
+	* fixincl.x: Regenerate.
+	* tests/base/stdlib.h [AIX_STDLIB_VEC_MALLOC]: New test.
+	[AIX_STDLIB_VEC_CALLOC]: New test.
+
 2017-10-13  Mike Frysinger  <vapier@chromium.org>
 
 	* fixinc.in (dirname): Change sed from 's|[^/]*/||' to

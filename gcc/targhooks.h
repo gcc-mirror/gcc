@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,7 +25,7 @@ extern bool default_legitimate_address_p (machine_mode, rtx, bool);
 extern void default_external_libcall (rtx);
 extern rtx default_legitimize_address (rtx, rtx, machine_mode);
 extern bool default_legitimize_address_displacement (rtx *, rtx *,
-						     machine_mode);
+						     poly_int64, machine_mode);
 extern bool default_const_not_ok_for_debug_p (rtx);
 
 extern int default_unspec_may_trap_p (const_rtx, unsigned);
@@ -108,8 +108,10 @@ default_builtin_support_vector_misalignment (machine_mode mode,
 					     const_tree,
 					     int, bool);
 extern machine_mode default_preferred_simd_mode (scalar_mode mode);
-extern unsigned int default_autovectorize_vector_sizes (void);
-extern opt_machine_mode default_get_mask_mode (unsigned, unsigned);
+extern machine_mode default_split_reduction (machine_mode);
+extern void default_autovectorize_vector_sizes (vector_sizes *);
+extern opt_machine_mode default_get_mask_mode (poly_uint64, poly_uint64);
+extern bool default_empty_mask_is_expensive (unsigned);
 extern void *default_init_cost (struct loop *);
 extern unsigned default_add_stmt_cost (void *, int, enum vect_cost_for_stmt,
 				       struct _stmt_vec_info *, int,
@@ -158,7 +160,7 @@ extern bool default_function_value_regno_p (const unsigned int);
 extern rtx default_internal_arg_pointer (void);
 extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
-extern int default_return_pops_args (tree, tree, int);
+extern poly_int64 default_return_pops_args (tree, tree, poly_int64);
 extern reg_class_t default_branch_target_register_class (void);
 extern reg_class_t default_ira_change_pseudo_allocno_class (int, reg_class_t,
 							    reg_class_t);
@@ -210,6 +212,7 @@ extern int default_memory_move_cost (machine_mode, reg_class_t, bool);
 extern int default_register_move_cost (machine_mode, reg_class_t,
 				       reg_class_t);
 extern bool default_slow_unaligned_access (machine_mode, unsigned int);
+extern HOST_WIDE_INT default_estimated_poly_value (poly_int64);
 
 extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    unsigned int,
@@ -237,6 +240,9 @@ extern int default_label_align_max_skip (rtx_insn *);
 extern int default_jump_align_max_skip (rtx_insn *);
 extern section * default_function_section(tree decl, enum node_frequency freq,
 					  bool startup, bool exit);
+extern unsigned int default_dwarf_poly_indeterminate_value (unsigned int,
+							    unsigned int *,
+							    int *);
 extern machine_mode default_dwarf_frame_reg_mode (int);
 extern fixed_size_mode default_get_reg_raw_mode (int);
 extern bool default_keep_leaf_when_profiled ();
@@ -281,5 +287,6 @@ extern unsigned int default_min_arithmetic_precision (void);
 extern enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED);
 extern bool default_stack_clash_protection_final_dynamic_probe (rtx);
+extern void default_select_early_remat_modes (sbitmap);
 
 #endif /* GCC_TARGHOOKS_H */

@@ -1,6 +1,6 @@
 // unordered_map implementation -*- C++ -*-
 
-// Copyright (C) 2010-2017 Free Software Foundation, Inc.
+// Copyright (C) 2010-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -862,7 +862,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus > 201402L
       template<typename, typename, typename>
-	friend class _Hash_merge_helper;
+	friend class std::_Hash_merge_helper;
 
       template<typename _H2, typename _P2>
 	void
@@ -1742,7 +1742,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus > 201402L
       template<typename, typename, typename>
-	friend class _Hash_merge_helper;
+	friend class std::_Hash_merge_helper;
 
       template<typename _H2, typename _P2>
 	void

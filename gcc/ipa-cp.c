@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com> and Martin Jambor
    <mjambor@suse.cz>
@@ -497,8 +497,8 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
 
 	  fprintf (f, " [from:");
 	  for (s = val->sources; s; s = s->next)
-	    fprintf (f, " %i(%i)", s->cs->caller->order,
-		     s->cs->frequency ());
+	    fprintf (f, " %i(%f)", s->cs->caller->order,
+		     s->cs->sreal_frequency ().to_double ());
 	  fprintf (f, "]");
 	}
 
@@ -629,6 +629,24 @@ determine_versionability (struct cgraph_node *node,
 	 callers are inside of a comdat group.  */
       reason = "calls comdat-local function";
     }
+
+  /* Functions calling BUILT_IN_VA_ARG_PACK and BUILT_IN_VA_ARG_PACK_LEN
+     work only when inlined.  Cloning them may still lead to better code
+     because ipa-cp will not give up on cloning further.  If the function is
+     external this however leads to wrong code because we may end up producing
+     offline copy of the function.  */
+  if (DECL_EXTERNAL (node->decl))
+    for (cgraph_edge *edge = node->callees; !reason && edge;
+	 edge = edge->next_callee)
+      if (DECL_BUILT_IN (edge->callee->decl)
+	  && DECL_BUILT_IN_CLASS (edge->callee->decl) == BUILT_IN_NORMAL)
+        {
+	  if (DECL_FUNCTION_CODE (edge->callee->decl) == BUILT_IN_VA_ARG_PACK)
+	    reason = "external function which calls va_arg_pack";
+	  if (DECL_FUNCTION_CODE (edge->callee->decl)
+	      == BUILT_IN_VA_ARG_PACK_LEN)
+	    reason = "external function which calls va_arg_pack_len";
+        }
 
   if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
     fprintf (dump_file, "Function %s is not versionable, reason: %s.\n",
@@ -1220,33 +1238,38 @@ initialize_node_lattices (struct cgraph_node *node)
 }
 
 /* Return the result of a (possibly arithmetic) pass through jump function
-   JFUNC on the constant value INPUT.  Return NULL_TREE if that cannot be
+   JFUNC on the constant value INPUT.  RES_TYPE is the type of the parameter
+   to which the result is passed.  Return NULL_TREE if that cannot be
    determined or be considered an interprocedural invariant.  */
 
 static tree
-ipa_get_jf_pass_through_result (struct ipa_jump_func *jfunc, tree input)
+ipa_get_jf_pass_through_result (struct ipa_jump_func *jfunc, tree input,
+				tree res_type)
 {
-  tree restype, res;
+  tree res;
 
   if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
     return input;
   if (!is_gimple_ip_invariant (input))
     return NULL_TREE;
 
-  if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
-      == tcc_unary)
-    res = fold_unary (ipa_get_jf_pass_through_operation (jfunc),
-		      TREE_TYPE (input), input);
-  else
+  tree_code opcode = ipa_get_jf_pass_through_operation (jfunc);
+  if (!res_type)
     {
-      if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
-	  == tcc_comparison)
-	restype = boolean_type_node;
+      if (TREE_CODE_CLASS (opcode) == tcc_comparison)
+	res_type = boolean_type_node;
+      else if (expr_type_first_operand_type_p (opcode))
+	res_type = TREE_TYPE (input);
       else
-	restype = TREE_TYPE (input);
-      res = fold_binary (ipa_get_jf_pass_through_operation (jfunc), restype,
-			 input, ipa_get_jf_pass_through_operand (jfunc));
+	return NULL_TREE;
     }
+
+  if (TREE_CODE_CLASS (opcode) == tcc_unary)
+    res = fold_unary (opcode, res_type, input);
+  else
+    res = fold_binary (opcode, res_type, input,
+		       ipa_get_jf_pass_through_operand (jfunc));
+
   if (res && !is_gimple_ip_invariant (res))
     return NULL_TREE;
 
@@ -1275,10 +1298,12 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
 /* Determine whether JFUNC evaluates to a single known constant value and if
    so, return it.  Otherwise return NULL.  INFO describes the caller node or
    the one it is inlined to, so that pass-through jump functions can be
-   evaluated.  */
+   evaluated.  PARM_TYPE is the type of the parameter to which the result is
+   passed.  */
 
 tree
-ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
+ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc,
+		      tree parm_type)
 {
   if (jfunc->type == IPA_JF_CONST)
     return ipa_get_jf_constant (jfunc);
@@ -1312,7 +1337,7 @@ ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
 	return NULL_TREE;
 
       if (jfunc->type == IPA_JF_PASS_THROUGH)
-	return ipa_get_jf_pass_through_result (jfunc, input);
+	return ipa_get_jf_pass_through_result (jfunc, input, parm_type);
       else
 	return ipa_get_jf_ancestor_result (jfunc, input);
     }
@@ -1562,12 +1587,14 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 
 /* Propagate values through a pass-through jump function JFUNC associated with
    edge CS, taking values from SRC_LAT and putting them into DEST_LAT.  SRC_IDX
-   is the index of the source parameter.  */
+   is the index of the source parameter.  PARM_TYPE is the type of the
+   parameter to which the result is passed.  */
 
 static bool
 propagate_vals_across_pass_through (cgraph_edge *cs, ipa_jump_func *jfunc,
 				    ipcp_lattice<tree> *src_lat,
-				    ipcp_lattice<tree> *dest_lat, int src_idx)
+				    ipcp_lattice<tree> *dest_lat, int src_idx,
+				    tree parm_type)
 {
   ipcp_value<tree> *src_val;
   bool ret = false;
@@ -1581,7 +1608,8 @@ propagate_vals_across_pass_through (cgraph_edge *cs, ipa_jump_func *jfunc,
   else
     for (src_val = src_lat->values; src_val; src_val = src_val->next)
       {
-	tree cstval = ipa_get_jf_pass_through_result (jfunc, src_val->value);
+	tree cstval = ipa_get_jf_pass_through_result (jfunc, src_val->value,
+						      parm_type);
 
 	if (cstval)
 	  ret |= dest_lat->add_value (cstval, cs, src_val, src_idx);
@@ -1622,12 +1650,14 @@ propagate_vals_across_ancestor (struct cgraph_edge *cs,
 }
 
 /* Propagate scalar values across jump function JFUNC that is associated with
-   edge CS and put the values into DEST_LAT.  */
+   edge CS and put the values into DEST_LAT.  PARM_TYPE is the type of the
+   parameter to which the result is passed.  */
 
 static bool
 propagate_scalar_across_jump_function (struct cgraph_edge *cs,
 				       struct ipa_jump_func *jfunc,
-				       ipcp_lattice<tree> *dest_lat)
+				       ipcp_lattice<tree> *dest_lat,
+				       tree param_type)
 {
   if (dest_lat->bottom)
     return false;
@@ -1662,7 +1692,7 @@ propagate_scalar_across_jump_function (struct cgraph_edge *cs,
 
       if (jfunc->type == IPA_JF_PASS_THROUGH)
 	ret = propagate_vals_across_pass_through (cs, jfunc, src_lat,
-						  dest_lat, src_idx);
+						  dest_lat, src_idx, param_type);
       else
 	ret = propagate_vals_across_ancestor (cs, jfunc, src_lat, dest_lat,
 					      src_idx);
@@ -2279,7 +2309,8 @@ propagate_constants_across_call (struct cgraph_edge *cs)
       else
 	{
 	  ret |= propagate_scalar_across_jump_function (cs, jump_func,
-							&dest_plats->itself);
+							&dest_plats->itself,
+							param_type);
 	  ret |= propagate_context_across_jump_function (cs, jump_func, i,
 							 &dest_plats->ctxlat);
 	  ret
@@ -3738,10 +3769,7 @@ update_specialized_profile (struct cgraph_node *new_node,
   orig_node->count -= redirected_sum;
 
   for (cs = new_node->callees; cs; cs = cs->next_callee)
-    if (cs->frequency ())
-      cs->count += cs->count.apply_scale (redirected_sum, new_node_count);
-    else
-      cs->count = profile_count::zero ();
+    cs->count += cs->count.apply_scale (redirected_sum, new_node_count);
 
   for (cs = orig_node->callees; cs; cs = cs->next_callee)
     {
@@ -3857,6 +3885,7 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
       tree newval = NULL_TREE;
       int j;
       bool first = true;
+      tree type = ipa_get_type (info, i);
 
       if (ipa_get_scalar_lat (info, i)->bottom || known_csts[i])
 	continue;
@@ -3876,7 +3905,7 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	      break;
 	    }
 	  jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
-	  t = ipa_value_from_jfunc (IPA_NODE_REF (cs->caller), jump_func);
+	  t = ipa_value_from_jfunc (IPA_NODE_REF (cs->caller), jump_func, type);
 	  if (!t
 	      || (newval
 		  && !values_equal_for_ipcp_p (t, newval))
@@ -4178,7 +4207,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 	}
       else
 	{
-	  src_plats = ipa_get_parm_lattices (caller_info, src_idx);;
+	  src_plats = ipa_get_parm_lattices (caller_info, src_idx);
 	  /* Currently we do not produce clobber aggregate jump
 	     functions, adjust when we do.  */
 	  gcc_checking_assert (!src_plats->aggs || !jfunc->agg.items);
@@ -4200,7 +4229,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 	FOR_EACH_VEC_ELT (inter, k, item)
 	  {
 	    int l = 0;
-	    bool found = false;;
+	    bool found = false;
 
 	    if (!item->value)
 	      continue;
@@ -4352,7 +4381,8 @@ cgraph_edge_brings_all_scalars_for_node (struct cgraph_edge *cs,
       if (i >= ipa_get_cs_argument_count (args))
 	return false;
       jump_func = ipa_get_ith_jump_func (args, i);
-      t = ipa_value_from_jfunc (caller_info, jump_func);
+      t = ipa_value_from_jfunc (caller_info, jump_func,
+				ipa_get_type (dest_info, i));
       if (!t || !values_equal_for_ipcp_p (val, t))
 	return false;
     }
@@ -4467,7 +4497,7 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
 	}
     }
 
-  if (redirected_sum > profile_count::zero ())
+  if (redirected_sum.nonzero_p ())
     update_specialized_profile (val->spec_node, node, redirected_sum);
 }
 

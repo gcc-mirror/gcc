@@ -1,5 +1,5 @@
 /* Generic dominator tree walker
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -169,22 +169,63 @@ sort_bbs_postorder (basic_block *bbs, int n)
     qsort (bbs, n, sizeof *bbs, cmp_bb_postorder);
 }
 
-/* Constructor for a dom walker.
+/* Set EDGE_EXECUTABLE on every edge within FN's CFG.  */
 
-   If SKIP_UNREACHBLE_BLOCKS is true, then we need to set
-   EDGE_EXECUTABLE on every edge in the CFG. */
+void
+set_all_edges_as_executable (function *fn)
+{
+  basic_block bb;
+  FOR_ALL_BB_FN (bb, fn)
+    {
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	e->flags |= EDGE_EXECUTABLE;
+    }
+}
+
+/* Constructor for a dom walker.  */
+
 dom_walker::dom_walker (cdi_direction direction,
-			bool skip_unreachable_blocks,
+			enum reachability reachability,
 			int *bb_index_to_rpo)
   : m_dom_direction (direction),
-    m_skip_unreachable_blocks (skip_unreachable_blocks),
-    m_user_bb_to_rpo (bb_index_to_rpo != NULL),
+    m_skip_unreachable_blocks (reachability != ALL_BLOCKS),
+    m_user_bb_to_rpo (true),
     m_unreachable_dom (NULL),
     m_bb_to_rpo (bb_index_to_rpo)
 {
-  /* Compute the basic-block index to RPO mapping if not provided by
-     the user.  */
-  if (! m_bb_to_rpo && direction == CDI_DOMINATORS)
+  /* Set up edge flags if need be.  */
+  switch (reachability)
+    {
+    default:
+      gcc_unreachable ();
+    case ALL_BLOCKS:
+      /* No need to touch edge flags.  */
+      break;
+
+    case REACHABLE_BLOCKS:
+      set_all_edges_as_executable (cfun);
+      break;
+
+    case REACHABLE_BLOCKS_PRESERVING_FLAGS:
+      /* Preserve the edge flags.  */
+      break;
+    }
+}
+
+/* Constructor for a dom walker.  */
+
+dom_walker::dom_walker (cdi_direction direction,
+			enum reachability reachability)
+  : m_dom_direction (direction),
+    m_skip_unreachable_blocks (reachability != ALL_BLOCKS),
+    m_user_bb_to_rpo (false),
+    m_unreachable_dom (NULL),
+    m_bb_to_rpo (NULL)
+{
+  /* Compute the basic-block index to RPO mapping.  */
+  if (direction == CDI_DOMINATORS)
     {
       int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
       int postorder_num = pre_and_rev_post_order_compute (NULL, postorder,
@@ -195,18 +236,22 @@ dom_walker::dom_walker (cdi_direction direction,
       free (postorder);
     }
 
-  /* If we are not skipping unreachable blocks, then there is nothing
-     further to do.  */
-  if (!m_skip_unreachable_blocks)
-    return;
-
-  basic_block bb;
-  FOR_ALL_BB_FN (bb, cfun)
+  /* Set up edge flags if need be.  */
+  switch (reachability)
     {
-      edge_iterator ei;
-      edge e;
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	e->flags |= EDGE_EXECUTABLE;
+    default:
+      gcc_unreachable ();
+    case ALL_BLOCKS:
+      /* No need to touch edge flags.  */
+      break;
+
+    case REACHABLE_BLOCKS:
+      set_all_edges_as_executable (cfun);
+      break;
+
+    case REACHABLE_BLOCKS_PRESERVING_FLAGS:
+      /* Preserve the edge flags.  */
+      break;
     }
 }
 
@@ -331,7 +376,10 @@ dom_walker::walk (basic_block bb)
 	      for (dest = first_dom_son (m_dom_direction, bb);
 		   dest; dest = next_dom_son (m_dom_direction, dest))
 		worklist[sp++] = dest;
-	      if (sp - saved_sp > 1 && m_dom_direction == CDI_DOMINATORS)
+	      /* Sort worklist after RPO order if requested.  */
+	      if (sp - saved_sp > 1
+		  && m_dom_direction == CDI_DOMINATORS
+		  && m_bb_to_rpo)
 		sort_bbs_postorder (&worklist[saved_sp], sp - saved_sp);
 	    }
 	}

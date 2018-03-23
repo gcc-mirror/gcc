@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -577,7 +577,7 @@ build_throw (tree exp)
       return exp;
     }
 
-  if (exp == null_node)
+  if (exp && null_node_p (exp))
     warning (0, "throwing NULL, which has integral, not pointer type");
 
   if (exp != NULL_TREE)
@@ -1217,6 +1217,10 @@ build_noexcept_spec (tree expr, int complain)
     {
       gcc_assert (processing_template_decl
 		  || TREE_CODE (expr) == DEFERRED_NOEXCEPT);
+      if (TREE_CODE (expr) != DEFERRED_NOEXCEPT)
+	/* Avoid problems with a function type built with a dependent typedef
+	   being reused in another scope (c++/84045).  */
+	expr = strip_typedefs_expr (expr);
       return build_tree_list (expr, NULL_TREE);
     }
 }

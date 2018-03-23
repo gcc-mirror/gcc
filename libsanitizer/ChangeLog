@@ -1,3 +1,51 @@
+2018-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/84761
+	* sanitizer_common/sanitizer_linux_libcdep.cc (__GLIBC_PREREQ):
+	Define if not defined.
+	(DL_INTERNAL_FUNCTION): Don't define.
+	(InitTlsSize): For __i386__ if not compiled against glibc 2.27+
+	determine at runtime whether to use regparm(3), stdcall calling
+	convention for older glibcs or normal calling convention for
+	newer glibcs for call to _dl_get_tls_static_info.
+
+2018-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* sanitizer_common/sanitizer_stacktrace.cc
+	(BufferedStackTrace::FastUnwindStack): Use the correct frame offset
+	for PowerPC SYSV ABI.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-05  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_flags.inc: Cherry-pick upstream r323995.
+	* asan/asan_report.cc (CheckForInvalidPointerPair):
+	Cherry-pick upstream r323995.
+
+2018-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/82825
+	* sanitizer_common/sanitizer_internal_defs.h: Cherry-pick upstream
+	r324284.
+
+2018-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/82824
+	* lsan/lsan_common_mac.cc: Cherry-pick upstream r322437.
+
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_descriptions.cc: Cherry-pick upstream r319668.
+	* asan/asan_descriptions.h: Likewise.
+	* asan/asan_report.cc: Likewise.
+	* asan/asan_thread.cc: Likewise.
+	* asan/asan_thread.h: Likewise.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* acinclude.m4: Add enable.m4 and cet.m4.

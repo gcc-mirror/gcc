@@ -21,11 +21,11 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 09, 2017
+GNAT Reference Manual , Jan 10, 2018
 
 AdaCore
 
-Copyright @copyright{} 2008-2017, Free Software Foundation
+Copyright @copyright{} 2008-2018, Free Software Foundation
 @end quotation
 
 @end copying
@@ -1784,6 +1784,7 @@ ID_ASSERTION_KIND ::= Assertions           |
                       Assume               |
                       Contract_Cases       |
                       Debug                |
+                      Ghost                |
                       Invariant            |
                       Invariant'Class      |
                       Loop_Invariant       |
@@ -9414,19 +9415,14 @@ that it is separately controllable using pragma @code{Assertion_Policy}.
 This aspect provides a light-weight mechanism for loops and quantified
 expressions over container types, without the overhead imposed by the tampering
 checks of standard Ada 2012 iterators. The value of the aspect is an aggregate
-with six named components, or which the last three are optional: @code{First},
-
-@quotation
-
-@code{Next}, @code{Has_Element},`@w{`}Element`@w{`}, @code{Last}, and @code{Previous}.
-@end quotation
-
+with six named components, of which the last three are optional: @code{First},
+@code{Next}, @code{Has_Element}, @code{Element}, @code{Last}, and @code{Previous}.
 When only the first three components are specified, only the
 @code{for .. in} form of iteration over cursors is available. When @code{Element}
 is specified, both this form and the @code{for .. of} form of iteration over
 elements are available. If the last two components are specified, reverse
 iterations over the container can be specified (analogous to what can be done
-over predefined containers that support the Reverse_Iterator interface).
+over predefined containers that support the @code{Reverse_Iterator} interface).
 The following is a typical example of use:
 
 @example
@@ -13151,9 +13147,25 @@ associated with dispatch tables can be placed in read-only memory.
 
 @geindex SPARK_05
 
-[GNAT] This restriction checks at compile time that some constructs
-forbidden in SPARK 2005 are not present. Error messages related to
-SPARK restriction have the form:
+[GNAT] This restriction checks at compile time that some constructs forbidden
+in SPARK 2005 are not present. Note that SPARK 2005 has been superseded by
+SPARK 2014, whose restrictions are checked by the tool GNATprove. To check that
+a codebase respects SPARK 2014 restrictions, mark the code with pragma or
+aspect @code{SPARK_Mode}, and run the tool GNATprove at Stone assurance level, as
+follows:
+
+@example
+gnatprove -P project.gpr --mode=stone
+@end example
+
+or equivalently:
+
+@example
+gnatprove -P project.gpr --mode=check_all
+@end example
+
+With restriction @code{SPARK_05}, error messages related to SPARK 2005 restriction
+have the form:
 
 @example
 violation of restriction "SPARK_05" at <source-location>
@@ -13162,10 +13174,9 @@ violation of restriction "SPARK_05" at <source-location>
 
 @geindex SPARK
 
-The restriction @code{SPARK} is recognized as a
-synonym for @code{SPARK_05}. This is retained for historical
-compatibility purposes (and an unconditional warning will be generated
-for its use, advising replacement by @code{SPARK}).
+The restriction @code{SPARK} is recognized as a synonym for @code{SPARK_05}. This is
+retained for historical compatibility purposes (and an unconditional warning
+will be generated for its use, advising replacement by @code{SPARK_05}).
 
 This is not a replacement for the semantic checks performed by the
 SPARK Examiner tool, as the compiler currently only deals with code,
@@ -13173,13 +13184,13 @@ not SPARK 2005 annotations, and does not guarantee catching all
 cases of constructs forbidden by SPARK 2005.
 
 Thus it may well be the case that code which passes the compiler with
-the SPARK restriction is rejected by the SPARK Examiner, e.g. due to
+the SPARK 2005 restriction is rejected by the SPARK Examiner, e.g. due to
 the different visibility rules of the Examiner based on SPARK 2005
 @code{inherit} annotations.
 
 This restriction can be useful in providing an initial filter for code
 developed using SPARK 2005, or in examining legacy code to see how far
-it is from meeting SPARK restrictions.
+it is from meeting SPARK 2005 restrictions.
 
 The list below summarizes the checks that are performed when this
 restriction is in force:
@@ -13338,7 +13349,7 @@ Access types not allowed
 Incomplete type declaration not allowed
 
 @item 
-Object and subtype declarations must respect SPARK restrictions
+Object and subtype declarations must respect SPARK 2005 restrictions
 
 @item 
 Digits or delta constraint not allowed
@@ -13365,7 +13376,7 @@ Untagged record cannot be null
 No class-wide operations
 
 @item 
-Initialization expressions must respect SPARK restrictions
+Initialization expressions must respect SPARK 2005 restrictions
 
 @item 
 Nonstatic ranges not allowed except in iteration schemes
@@ -13427,7 +13438,7 @@ currently checked by the SPARK_05 restriction:
 @itemize *
 
 @item 
-SPARK annotations are treated as comments so are not checked at all
+SPARK 2005 annotations are treated as comments so are not checked at all
 
 @item 
 Based real literals not allowed
@@ -13499,7 +13510,7 @@ Pragma import must be immediately after entity it names
 No mutual recursion between multiple units (this can be checked with gnatcheck)
 @end itemize
 
-Note that if a unit is compiled in Ada 95 mode with the SPARK restriction,
+Note that if a unit is compiled in Ada 95 mode with the SPARK 2005 restriction,
 violations will be reported for constructs forbidden in SPARK 95,
 instead of SPARK 2005.
 

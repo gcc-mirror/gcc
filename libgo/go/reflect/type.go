@@ -31,7 +31,8 @@ import (
 // calling kind-specific methods. Calling a method
 // inappropriate to the kind of type causes a run-time panic.
 //
-// Type values are comparable, such as with the == operator.
+// Type values are comparable, such as with the == operator,
+// so they can be used as map keys.
 // Two Type values are equal if they represent identical types.
 type Type interface {
 	// Methods applicable to all types.
@@ -214,7 +215,7 @@ type Type interface {
 // t.FieldByName("x") is not well defined if the struct type t contains
 // multiple fields named x (embedded from different packages).
 // FieldByName may return one of the fields named x or may report that there are none.
-// See golang.org/issue/4876 for more details.
+// See https://golang.org/issue/4876 for more details.
 
 /*
  * These data structures are known to the compiler (../../cmd/internal/gc/reflect.go).
@@ -600,10 +601,15 @@ func (t *rtype) MethodByName(name string) (m Method, ok bool) {
 	if ut == nil {
 		return Method{}, false
 	}
-	for i := range ut.methods {
-		p := &ut.methods[i]
-		if p.pkgPath == nil && p.name != nil && *p.name == name {
-			return t.Method(i), true
+	utmethods := ut.methods
+	var eidx int
+	for i := 0; i < len(utmethods); i++ {
+		p := utmethods[i]
+		if p.pkgPath == nil {
+			if p.name != nil && *p.name == name {
+				return t.Method(eidx), true
+			}
+			eidx++
 		}
 	}
 	return Method{}, false
@@ -740,6 +746,17 @@ func (t *rtype) Out(i int) Type {
 	}
 	tt := (*funcType)(unsafe.Pointer(t))
 	return toType(tt.out[i])
+}
+
+// add returns p+x.
+//
+// The whySafe string is ignored, so that the function still inlines
+// as efficiently as p+x, but all call sites should use the string to
+// record why the addition is safe, which is to say why the addition
+// does not cause x to advance to the very end of p's allocation
+// and therefore point incorrectly at the next block in memory.
+func add(p unsafe.Pointer, x uintptr, whySafe string) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(p) + x)
 }
 
 func (d ChanDir) String() string {
@@ -2127,7 +2144,7 @@ func StructOf(fields []StructField) Type {
 		typ.hashfn = func(p unsafe.Pointer, seed uintptr) uintptr {
 			o := seed
 			for _, ft := range typ.fields {
-				pi := unsafe.Pointer(uintptr(p) + ft.offset())
+				pi := add(p, ft.offset(), "&x.field safe")
 				o = ft.typ.hashfn(pi, o)
 			}
 			return o
@@ -2139,8 +2156,8 @@ func StructOf(fields []StructField) Type {
 	if comparable {
 		typ.equalfn = func(p, q unsafe.Pointer) bool {
 			for _, ft := range typ.fields {
-				pi := unsafe.Pointer(uintptr(p) + ft.offset())
-				qi := unsafe.Pointer(uintptr(q) + ft.offset())
+				pi := add(p, ft.offset(), "&x.field safe")
+				qi := add(q, ft.offset(), "&x.field safe")
 				if !ft.typ.equalfn(pi, qi) {
 					return false
 				}
@@ -2360,8 +2377,8 @@ func ArrayOf(count int, elem Type) Type {
 		eequal := typ.equalfn
 		array.equalfn = func(p, q unsafe.Pointer) bool {
 			for i := 0; i < count; i++ {
-				pi := arrayAt(p, i, esize)
-				qi := arrayAt(q, i, esize)
+				pi := arrayAt(p, i, esize, "i < count")
+				qi := arrayAt(q, i, esize, "i < count")
 				if !eequal(pi, qi) {
 					return false
 				}
@@ -2377,7 +2394,7 @@ func ArrayOf(count int, elem Type) Type {
 		array.hashfn = func(ptr unsafe.Pointer, seed uintptr) uintptr {
 			o := seed
 			for i := 0; i < count; i++ {
-				o = ehash(arrayAt(ptr, i, esize), o)
+				o = ehash(arrayAt(ptr, i, esize, "i < count"), o)
 			}
 			return o
 		}

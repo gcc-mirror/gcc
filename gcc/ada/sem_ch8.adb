@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4228,6 +4228,16 @@ package body Sem_Ch8 is
       if Is_Compilation_Unit (New_S) then
          Error_Msg_N
            ("a library unit can only rename another library unit", N);
+      end if;
+
+      --  We suppress elaboration warnings for the resulting entity, since
+      --  clearly they are not needed, and more particularly, in the case
+      --  of a generic formal subprogram, the resulting entity can appear
+      --  after the instantiation itself, and thus look like a bogus case
+      --  of access before elaboration.
+
+      if Legacy_Elaboration_Checks then
+         Set_Suppress_Elaboration_Warnings (New_S);
       end if;
    end Attribute_Renaming;
 
@@ -8925,16 +8935,17 @@ package body Sem_Ch8 is
               Make_With_Clause (Loc,
                 Name =>
                   Make_Expanded_Name (Loc,
-                    Chars  => Chars (System_Aux_Id),
-                    Prefix => New_Occurrence_Of (Scope (System_Aux_Id), Loc),
+                    Chars         => Chars (System_Aux_Id),
+                    Prefix        =>
+                      New_Occurrence_Of (Scope (System_Aux_Id), Loc),
                     Selector_Name => New_Occurrence_Of (System_Aux_Id, Loc)));
 
             Set_Entity (Name (Withn), System_Aux_Id);
 
-            Set_Library_Unit       (Withn, Cunit (Unum));
             Set_Corresponding_Spec (Withn, System_Aux_Id);
-            Set_First_Name         (Withn, True);
-            Set_Implicit_With      (Withn, True);
+            Set_First_Name         (Withn);
+            Set_Implicit_With      (Withn);
+            Set_Library_Unit       (Withn, Cunit (Unum));
 
             Insert_After (With_Sys, Withn);
             Mark_Rewrite_Insertion (Withn);
@@ -9108,6 +9119,7 @@ package body Sem_Ch8 is
    -----------------------------
 
    procedure Update_Use_Clause_Chain is
+
       procedure Update_Chain_In_Scope (Level : Int);
       --  Iterate through one level in the scope stack verifying each use-type
       --  clause within said level is used then reset the Current_Use_Clause
@@ -9151,7 +9163,7 @@ package body Sem_Ch8 is
                if Nkind (Curr) = N_Use_Package_Clause then
 
                   --  Renamings and formal subprograms may cause the associated
-                  --  to be marked as effective instead of the original.
+                  --  node to be marked as effective instead of the original.
 
                   if not (Present (Associated_Node (N))
                            and then Present

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -514,6 +514,12 @@ package body Sem is
 
          when N_Record_Representation_Clause =>
             Analyze_Record_Representation_Clause (N);
+
+         when N_Reduction_Expression =>
+            Analyze_Reduction_Expression (N);
+
+         when N_Reduction_Expression_Parameter =>
+            Analyze_Reduction_Expression_Parameter (N);
 
          when N_Reference =>
             Analyze_Reference (N);

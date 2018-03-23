@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -111,12 +111,13 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   typedef value_range *compare_type;
   static hashval_t
   hash (const value_range *p)
-  {
-    gcc_checking_assert (!p->equiv);
-    hashval_t t = (hashval_t) p->type;
-    t = iterative_hash_expr (p->min, t);
-    return iterative_hash_expr (p->max, t);
-  }
+    {
+      gcc_checking_assert (!p->equiv);
+      inchash::hash hstate (p->type);
+      hstate.add_ptr (p->min);
+      hstate.add_ptr (p->max);
+      return hstate.end ();
+    }
   static bool
   equal (const value_range *a, const value_range *b)
     {
@@ -652,7 +653,7 @@ stmt_may_be_vtbl_ptr_store (gimple *stmt)
 	  if (TREE_CODE (lhs) == COMPONENT_REF
 	      && !DECL_VIRTUAL_P (TREE_OPERAND (lhs, 1)))
 	    return false;
-	  /* In the future we might want to use get_base_ref_and_offset to find
+	  /* In the future we might want to use get_ref_base_and_extent to find
 	     if there is a field corresponding to the offset and if so, proceed
 	     almost like if it was a component ref.  */
 	}
@@ -1071,12 +1072,11 @@ ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 			bool *by_ref_p, bool *guaranteed_unmodified)
 {
   int index;
-  HOST_WIDE_INT size, max_size;
+  HOST_WIDE_INT size;
   bool reverse;
-  tree base
-    = get_ref_base_and_extent (op, offset_p, &size, &max_size, &reverse);
+  tree base = get_ref_base_and_extent_hwi (op, offset_p, &size, &reverse);
 
-  if (max_size == -1 || max_size != size || *offset_p < 0)
+  if (!base)
     return false;
 
   if (DECL_P (base))
@@ -1204,7 +1204,7 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 				  gcall *call, gimple *stmt, tree name,
 				  tree param_type)
 {
-  HOST_WIDE_INT offset, size, max_size;
+  HOST_WIDE_INT offset, size;
   tree op1, tc_ssa, base, ssa;
   bool reverse;
   int index;
@@ -1267,13 +1267,13 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
   op1 = TREE_OPERAND (op1, 0);
   if (TREE_CODE (TREE_TYPE (op1)) != RECORD_TYPE)
     return;
-  base = get_ref_base_and_extent (op1, &offset, &size, &max_size, &reverse);
-  if (TREE_CODE (base) != MEM_REF
-      /* If this is a varying address, punt.  */
-      || max_size == -1
-      || max_size != size)
+  base = get_ref_base_and_extent_hwi (op1, &offset, &size, &reverse);
+  offset_int mem_offset;
+  if (!base
+      || TREE_CODE (base) != MEM_REF
+      || !mem_ref_offset (base).is_constant (&mem_offset))
     return;
-  offset += mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
+  offset += mem_offset.to_short_addr () * BITS_PER_UNIT;
   ssa = TREE_OPERAND (base, 0);
   if (TREE_CODE (ssa) != SSA_NAME
       || !SSA_NAME_IS_DEFAULT_DEF (ssa)
@@ -1301,7 +1301,7 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 static tree
 get_ancestor_addr_info (gimple *assign, tree *obj_p, HOST_WIDE_INT *offset)
 {
-  HOST_WIDE_INT size, max_size;
+  HOST_WIDE_INT size;
   tree expr, parm, obj;
   bool reverse;
 
@@ -1313,13 +1313,12 @@ get_ancestor_addr_info (gimple *assign, tree *obj_p, HOST_WIDE_INT *offset)
     return NULL_TREE;
   expr = TREE_OPERAND (expr, 0);
   obj = expr;
-  expr = get_ref_base_and_extent (expr, offset, &size, &max_size, &reverse);
+  expr = get_ref_base_and_extent_hwi (expr, offset, &size, &reverse);
 
-  if (TREE_CODE (expr) != MEM_REF
-      /* If this is a varying address, punt.  */
-      || max_size == -1
-      || max_size != size
-      || *offset < 0)
+  offset_int mem_offset;
+  if (!expr
+      || TREE_CODE (expr) != MEM_REF
+      || !mem_ref_offset (expr).is_constant (&mem_offset))
     return NULL_TREE;
   parm = TREE_OPERAND (expr, 0);
   if (TREE_CODE (parm) != SSA_NAME
@@ -1327,7 +1326,7 @@ get_ancestor_addr_info (gimple *assign, tree *obj_p, HOST_WIDE_INT *offset)
       || TREE_CODE (SSA_NAME_VAR (parm)) != PARM_DECL)
     return NULL_TREE;
 
-  *offset += mem_ref_offset (expr).to_short_addr () * BITS_PER_UNIT;
+  *offset += mem_offset.to_short_addr () * BITS_PER_UNIT;
   *obj_p = obj;
   return expr;
 }
@@ -1581,15 +1580,12 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
 	}
       else if (TREE_CODE (arg) == ADDR_EXPR)
 	{
-	  HOST_WIDE_INT arg_max_size;
 	  bool reverse;
 
 	  arg = TREE_OPERAND (arg, 0);
-	  arg_base = get_ref_base_and_extent (arg, &arg_offset, &arg_size,
-					      &arg_max_size, &reverse);
-	  if (arg_max_size == -1
-	      || arg_max_size != arg_size
-	      || arg_offset < 0)
+	  arg_base = get_ref_base_and_extent_hwi (arg, &arg_offset,
+						  &arg_size, &reverse);
+	  if (!arg_base)
 	    return;
 	  if (DECL_P (arg_base))
 	    {
@@ -1604,18 +1600,15 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
     }
   else
     {
-      HOST_WIDE_INT arg_max_size;
       bool reverse;
 
       gcc_checking_assert (AGGREGATE_TYPE_P (TREE_TYPE (arg)));
 
       by_ref = false;
       check_ref = false;
-      arg_base = get_ref_base_and_extent (arg, &arg_offset, &arg_size,
-					  &arg_max_size, &reverse);
-      if (arg_max_size == -1
-	  || arg_max_size != arg_size
-	  || arg_offset < 0)
+      arg_base = get_ref_base_and_extent_hwi (arg, &arg_offset,
+					      &arg_size, &reverse);
+      if (!arg_base)
 	return;
 
       ao_ref_init (&r, arg);
@@ -1631,7 +1624,7 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
     {
       struct ipa_known_agg_contents_list *n, **p;
       gimple *stmt = gsi_stmt (gsi);
-      HOST_WIDE_INT lhs_offset, lhs_size, lhs_max_size;
+      HOST_WIDE_INT lhs_offset, lhs_size;
       tree lhs, rhs, lhs_base;
       bool reverse;
 
@@ -1647,10 +1640,9 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
 	  || contains_bitfld_component_ref_p (lhs))
 	break;
 
-      lhs_base = get_ref_base_and_extent (lhs, &lhs_offset, &lhs_size,
-					  &lhs_max_size, &reverse);
-      if (lhs_max_size == -1
-	  || lhs_max_size != lhs_size)
+      lhs_base = get_ref_base_and_extent_hwi (lhs, &lhs_offset,
+					      &lhs_size, &reverse);
+      if (!lhs_base)
 	break;
 
       if (check_ref)
@@ -3207,19 +3199,20 @@ try_decrement_rdesc_refcount (struct ipa_jump_func *jfunc)
 
 /* Try to find a destination for indirect edge IE that corresponds to a simple
    call or a call of a member function pointer and where the destination is a
-   pointer formal parameter described by jump function JFUNC.  If it can be
-   determined, return the newly direct edge, otherwise return NULL.
+   pointer formal parameter described by jump function JFUNC.  TARGET_TYPE is
+   the type of the parameter to which the result of JFUNC is passed.  If it can
+   be determined, return the newly direct edge, otherwise return NULL.
    NEW_ROOT_INFO is the node info that JFUNC lattices are relative to.  */
 
 static struct cgraph_edge *
 try_make_edge_direct_simple_call (struct cgraph_edge *ie,
-				  struct ipa_jump_func *jfunc,
+				  struct ipa_jump_func *jfunc, tree target_type,
 				  struct ipa_node_params *new_root_info)
 {
   struct cgraph_edge *cs;
   tree target;
   bool agg_contents = ie->indirect_info->agg_contents;
-  tree scalar = ipa_value_from_jfunc (new_root_info, jfunc);
+  tree scalar = ipa_value_from_jfunc (new_root_info, jfunc, target_type);
   if (agg_contents)
     {
       bool from_global_constant;
@@ -3397,7 +3390,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 {
   struct ipa_edge_args *top;
   struct cgraph_edge *ie, *next_ie, *new_direct_edge;
-  struct ipa_node_params *new_root_info;
+  struct ipa_node_params *new_root_info, *inlined_node_info;
   bool res = false;
 
   ipa_check_create_edge_args ();
@@ -3405,6 +3398,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
   new_root_info = IPA_NODE_REF (cs->caller->global.inlined_to
 				? cs->caller->global.inlined_to
 				: cs->caller);
+  inlined_node_info = IPA_NODE_REF (cs->callee->function_symbol ());
 
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
@@ -3445,8 +3439,13 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	  new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc, ctx);
 	}
       else
-	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
-							    new_root_info);
+	{
+	  tree target_type =  ipa_get_type (inlined_node_info, param_index);
+	  new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
+							      target_type,
+							      new_root_info);
+	}
+
       /* If speculation was removed, then we need to do nothing.  */
       if (new_direct_edge && new_direct_edge != ie
 	  && new_direct_edge->callee == spec_target)

@@ -1,5 +1,5 @@
 /* The lang_hooks data structure.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -531,6 +531,9 @@ struct lang_hooks
   /* True if this language may use custom descriptors for nested functions
      instead of trampolines.  */
   bool custom_function_descriptors;
+
+  /* True if this language emits begin stmt notes.  */
+  bool emits_begin_stmt;
 
   /* Run all lang-specific selftests.  */
   void (*run_lang_selftests) (void);

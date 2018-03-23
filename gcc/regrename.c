@@ -1,5 +1,5 @@
 /* Register renaming for the GNU compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -963,6 +963,7 @@ regrename_do_replace (struct du_head *head, int reg)
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
   machine_mode mode;
+  rtx last_reg = NULL_RTX, last_repl = NULL_RTX;
 
   for (chain = head->first; chain; chain = chain->next_use)
     {
@@ -975,12 +976,16 @@ regrename_do_replace (struct du_head *head, int reg)
 			 gen_rtx_UNKNOWN_VAR_LOC (), true);
       else
 	{
-	  validate_change (chain->insn, chain->loc, 
-			   gen_raw_REG (GET_MODE (*chain->loc), reg), true);
-	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    ORIGINAL_REGNO (*chain->loc) = regno;
-	  REG_ATTRS (*chain->loc) = attr;
-	  REG_POINTER (*chain->loc) = reg_ptr;
+	  if (*chain->loc != last_reg)
+	    {
+	      last_repl = gen_raw_REG (GET_MODE (*chain->loc), reg);
+	      if (regno >= FIRST_PSEUDO_REGISTER)
+		ORIGINAL_REGNO (last_repl) = regno;
+	      REG_ATTRS (last_repl) = attr;
+	      REG_POINTER (last_repl) = reg_ptr;
+	      last_reg = *chain->loc;
+	    }
+	  validate_change (chain->insn, chain->loc, last_repl, true);
 	}
     }
 
@@ -1697,13 +1702,19 @@ build_def_use (basic_block bb)
 		     not already tracking such a reg, we won't start here,
 		     and we must instead make sure to make the operand visible
 		     to the machinery that tracks hard registers.  */
-		  if (matches >= 0
-		      && (GET_MODE_SIZE (recog_data.operand_mode[i])
-			  != GET_MODE_SIZE (recog_data.operand_mode[matches]))
-		      && !verify_reg_in_set (op, &live_in_chains))
+		  machine_mode i_mode = recog_data.operand_mode[i];
+		  if (matches >= 0)
 		    {
-		      untracked_operands |= 1 << i;
-		      untracked_operands |= 1 << matches;
+		      machine_mode matches_mode
+			= recog_data.operand_mode[matches];
+
+		      if (maybe_ne (GET_MODE_SIZE (i_mode),
+				    GET_MODE_SIZE (matches_mode))
+			  && !verify_reg_in_set (op, &live_in_chains))
+			{
+			  untracked_operands |= 1 << i;
+			  untracked_operands |= 1 << matches;
+			}
 		    }
 		}
 #ifdef STACK_REGS
@@ -1876,7 +1887,7 @@ build_def_use (basic_block bb)
 	    if (REG_NOTE_KIND (note) == REG_CFA_RESTORE)
 	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, mark_all_read, OP_IN);
 	}
-      else if (DEBUG_INSN_P (insn)
+      else if (DEBUG_BIND_INSN_P (insn)
 	       && !VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)))
 	{
 	  scan_rtx (insn, &INSN_VAR_LOCATION_LOC (insn),

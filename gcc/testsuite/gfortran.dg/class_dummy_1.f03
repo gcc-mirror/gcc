@@ -19,12 +19,12 @@
   y%a = 44
   y%b = 55
   call intent_out (y)
-  if (y%a/=1 .or. y%b/=3) call abort()
+  if (y%a/=1 .or. y%b/=3) STOP 1
 
   y%a = 66
   y%b = 77
   call intent_out_unused (y)
-  if (y%a/=1 .or. y%b/=3) call abort()
+  if (y%a/=1 .or. y%b/=3) STOP 2
 
 contains
 
@@ -32,7 +32,7 @@ contains
     class(t), intent(out) :: x
     select type (x)
       type is (t2)
-      if (x%a/=1 .or. x%b/=3) call abort()
+      if (x%a/=1 .or. x%b/=3) STOP 3
     end select
   end subroutine
 

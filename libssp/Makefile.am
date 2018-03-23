@@ -1,6 +1,6 @@
 ## Makefile for the toplevel directory of the libssp library.
 ##
-## Copyright (C) 2005-2017 Free Software Foundation, Inc.
+## Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ##
 
 AUTOMAKE_OPTIONS = 1.9.5 foreign

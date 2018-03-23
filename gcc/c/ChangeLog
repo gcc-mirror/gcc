@@ -1,3 +1,269 @@
+2018-03-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression): For __builtin_tgmath
+	where all functions return the same _FloatN or _FloatNx type,
+	treat integer types as _Float64 instead of double.
+
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84999
+	* c-typeck.c (build_binary_op): If c_common_type_for_size fails when
+	building vector comparison, diagnose it and return error_mark_node.
+
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84853
+	* c-typeck.c (build_binary_op) <case RSHIFT_EXPR, case LSHIFT_EXPR>:
+	If code1 is INTEGER_TYPE, only allow code0 VECTOR_TYPE if it has
+	INTEGER_TYPE element type.
+
+2018-03-13  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/46921
+	* c-typeck.c (output_init_element): Ensure field initializer
+	expression is always evaluated if there are side effects.
+
+2018-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84721
+	* c-parser.c (add_debug_begin_stmt): Don't add DEBUG_BEGIN_STMT if
+	!building_stmt_list_p ().
+
+2018-02-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR c/84305
+	* c-decl.c (grokdeclarator): Create an anonymous TYPE_DECL
+	in PARM and TYPENAME contexts too, but attach it to a BIND_EXPR
+	and include the BIND_EXPR in the list of things that need to be
+	pre-evaluated.
+
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* c-typeck.c (build_indirect_ref, build_c_cast): Pass expr location
+	to strict_aliasing_warning.
+
+2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-typeck.c (really_start_incremental_init, push_init_level,
+	set_nonincremental_init, output_init_element, process_init_element):
+	Use DECL_UNNAMED_BIT_FIELD.
+
+2018-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81779
+	* c-parser.c (c_parser_compound_statement_nostart): Call
+	expansion_point_location_if_in_system_header.
+
+2018-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83814
+	* c-fold.c (fold_for_warn): Move from c-common.c, reducing to just
+	the C part.
+
+2018-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83801
+	* c-tree.h (decl_constant_value_1): Add a bool argument.
+	* c-typeck.c (decl_constant_value_1): Add IN_INIT argument, allow
+	returning a CONSTRUCTOR if it is true.  Use error_operand_p.
+	(decl_constant_value): Adjust caller.
+	* c-fold.c (c_fully_fold_internal): If in_init, pass true to
+	decl_constant_value_1 as IN_INIT.  Otherwise, punt if
+	decl_constant_value returns initializer that has BLKmode or
+	array type.
+	(c_fully_fold_internal) <case COMPONENT_REF>: Fold if !lval.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-typeck.c (comptypes_internal, build_binary_op): Handle polynomial
+	TYPE_VECTOR_SUBPARTS.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83595
+	* c-parser.c (c_parser_braced_init, c_parser_initelt,
+	c_parser_conditional_expression, c_parser_cast_expression,
+	c_parser_sizeof_expression, c_parser_alignof_expression,
+	c_parser_postfix_expression, c_parser_omp_declare_reduction,
+	c_parser_transaction_expression): Use set_error () method instead
+	of setting value member to error_mark_node.
+
+2017-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* c-decl.c (header_for_builtin_fn): Add integer rounding _Float<N>
+	and _Float<N>X built-in functions.
+
+2017-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83550
+	* c-decl.c (finish_struct): Set DECL_SOURCE_LOCATION on
+	TYPE_STUB_DECL and call rest_of_type_compilation before processing
+	incomplete vars rather than after it.
+
+	PR debug/83547
+	* c-typeck.c (c_finish_stmt_expr): Ignore !TREE_SIDE_EFFECTS as
+	indicator of ({ }), instead skip all trailing DEBUG_BEGIN_STMTs first,
+	and consider empty ones if there are no other stmts.  For
+	-Wunused-value walk all statements before the one only followed by
+	DEBUG_BEGIN_STMTs.
+
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-parser.c (c_parser_while_statement): Add unroll parameter and
+	build ANNOTATE_EXPR if present.  Add 3rd operand to ANNOTATE_EXPR.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_statement_after_labels): Adjust calls to above.
+	(c_parse_pragma_ivdep): New static function.
+	(c_parser_pragma_unroll): Likewise.
+	(c_parser_pragma) <PRAGMA_IVDEP>: Add support for pragma Unroll.
+	<PRAGMA_UNROLL>: New case.
+
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (comptypes_internal, function_types_compatible_p,
+	perform_integral_promotions, digest_init): Replace Yoda conditions
+	with typical order conditions.
+	* c-decl.c (check_bitfield_type_and_width): Likewise.
+
+2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-typeck.c (c_safe_arg_type_equiv_p,
+	c_safe_function_type_cast_p): New function.
+	(build_c_cast): Implement -Wcast-function-type.
+
+2017-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR c/83415
+	* c-fold.c (c_fully_fold_internal): Treat VIEW_CONVERT_EXPR
+	like REALPART_EXPR for the behavior of whether its operand
+	is an lvalue.
+
+2017-12-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82679
+	* c-decl.c (grokdeclarator): Check declspecs insted of atomicp.
+
+2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+
+	* c-objc-common.h (LANG_HOOKS_EMITS_BEGIN_STMT): Redefine as true.
+	* c-parser.c (add_debug_begin_stmt): New.
+	(c_parser_declaration_or_fndef): Call it.
+	(c_parser_compound_statement_nostart): Likewise.
+	(c_parser_statement_after_labels): Likewise.
+	* c-typeck (c_finish_stmt_expr): Skip begin stmts markers.
+
+2017-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (build_compound_literal): Add parameter alignas_align
+	and set alignment of decl if nonzero.
+	* c-parser.c (c_keyword_starts_typename): Allow RID_ALIGNAS.
+	(c_parser_declspecs): Allow RID_ALIGNAS to follow a type, like a
+	qualifier.
+	(c_parser_struct_declaration): Update syntax comment.
+	(c_parser_type_name): Add alignas_ok argument and pass it to
+	c_parser_declspecs.
+	(c_parser_cast_expression): Pass true to c_parser_type_name and
+	give error if a cast used an _Alignas specifier.
+	(c_parser_sizeof_expression): Pass true to c_parser_type_name and
+	give error if sizeof (type-name) used an _Alignas specifier.
+	(c_parser_alignof_expression): Pass true to c_parser_type_name and
+	give error if _Alignof (type-name) used an _Alignas specifier.
+	(c_parser_postfix_expression_after_paren_type): Check specified
+	alignment for a compound literal and pass it to
+	build_compound_literal.
+	* c-parser.h (c_parser_type_name): Update prototype.
+	* c-tree.h (build_compound_literal): Update prototype.
+
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* c-decl.c (c_decl_attributes): Look up existing declaration and
+	pass it to decl_attributes.
+
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83236
+	* c-decl.c (lookup_name_fuzzy): Don't suggest names that are
+	reserved for use by the implementation.
+
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c: Include "c-family/c-spellcheck.h".
+
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (pointer_diff): Add new argument and instrument
+	pointer subtraction.
+	(build_binary_op): Similar for pointer comparison.
+
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79153
+	* c-parser.c: Include tree-iterator.h.
+	(c_parser_switch_statement): Emit LABEL_EXPR for the break label
+	into SWITCH_BODY instead of after it and set SWITCH_BREAK_LABEL_P
+	on it.
+
+	PR c/83222
+	* c-tree.h (decl_constant_value_1): Declare.
+	* c-typeck.c (decl_constant_value_1): New function.
+	(decl_constant_value): Use it.
+	* c-fold.c (c_fully_fold_internal): If in_init, use
+	decl_constant_value_1 instead of decl_constant_value.
+
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_postfix_expression): Use ; instead of ;;.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81275
+	* c-typeck.c (c_finish_case): Set SWITCH_ALL_CASES_P if
+	c_switch_covers_all_cases_p returns true.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* Make-lang.in (c/c-array-notation.o): Remove.
+	* c-array-notation.c: Delete.
+	* c-decl.c: Remove cilkplus condition.
+	* c-parser.c (c_parser_cilk_simd, c_parser_cilk_for,
+	c_parser_cilk_verify_simd, c_parser_array_notation,
+	c_parser_cilk_clause_vectorlength, c_parser_cilk_grainsize,
+	c_parser_cilk_simd_fn_vector_attrs,
+	c_finish_cilk_simd_fn_tokens): Delete.
+	(c_parser_declaration_or_fndef): Remove cilkplus condition.
+	(c_parser_direct_declarator_inner): Ditto.
+	(CILK_SIMD_FN_CLAUSE_MASK): Delete.
+	(c_parser_attributes, c_parser_compound_statement,
+	c_parser_statement_after_labels, c_parser_if_statement,
+	c_parser_switch_statement, c_parser_while_statement,
+	c_parser_do_statement, c_parser_for_statement,
+	c_parser_unary_expression, c_parser_postfix_expression,
+	c_parser_postfix_expression_after_primary,
+	c_parser_pragma, c_parser_omp_clause_name, c_parser_omp_all_clauses,
+	c_parser_omp_for_loop, c_finish_omp_declare_simd): Remove cilkplus
+	support.
+	* c-typeck.c (build_array_ref, build_function_call_vec,
+	convert_arguments,
+	lvalue_p, build_compound_expr, c_finish_return, c_finish_if_stmt,
+	c_finish_loop, build_binary_op): Remove cilkplus support.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_start_case): Build SWITCH_EXPR using build2 instead
+	of build3.
+
 2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
 
 	* Make-lang.in (c.install-plugin): Install backend import library.
@@ -5142,7 +5408,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2017 Free Software Foundation, Inc.
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

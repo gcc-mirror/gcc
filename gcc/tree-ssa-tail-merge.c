@@ -1,5 +1,5 @@
 /* Tail merging for gimple.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Tom de Vries (tom@codesourcery.com)
 
 This file is part of GCC.
@@ -1455,7 +1455,8 @@ find_clusters_1 (same_succ *same_succ)
       /* TODO: handle blocks with phi-nodes.  We'll have to find corresponding
 	 phi-nodes in bb1 and bb2, with the same alternatives for the same
 	 preds.  */
-      if (bb_has_non_vop_phi (bb1) || bb_has_eh_pred (bb1))
+      if (bb_has_non_vop_phi (bb1) || bb_has_eh_pred (bb1)
+	  || bb_has_abnormal_pred (bb1))
 	continue;
 
       nr_comparisons = 0;
@@ -1463,7 +1464,8 @@ find_clusters_1 (same_succ *same_succ)
 	{
 	  bb2 = BASIC_BLOCK_FOR_FN (cfun, j);
 
-	  if (bb_has_non_vop_phi (bb2) || bb_has_eh_pred (bb2))
+	  if (bb_has_non_vop_phi (bb2) || bb_has_eh_pred (bb2)
+	      || bb_has_abnormal_pred (bb2))
 	    continue;
 
 	  if (BB_CLUSTER (bb1) != NULL && BB_CLUSTER (bb1) == BB_CLUSTER (bb2))
@@ -1570,17 +1572,8 @@ replace_block_by (basic_block bb1, basic_block bb2)
 	/* If probabilities are same, we are done.
 	   If counts are nonzero we can distribute accordingly. In remaining
 	   cases just avreage the values and hope for the best.  */
-	if (e1->probability == e2->probability)
-	  ;
-	else if (bb1->count.nonzero_p () || bb2->count.nonzero_p ())
-	  e2->probability
-	     = e2->probability
-		 * bb2->count.probability_in (bb1->count + bb2->count)
-	       + e1->probability
-		 * bb1->count.probability_in (bb1->count + bb2->count);
-	else
-	  e2->probability = e2->probability * profile_probability::even ()
-			    + e1->probability * profile_probability::even ();
+	e2->probability = e1->probability.combine_with_count
+	                     (bb1->count, e2->probability, bb2->count);
       }
   bb2->count += bb1->count;
 
@@ -1781,7 +1774,7 @@ tail_merge_optimize (unsigned int todo)
 
   if (nr_bbs_removed_total > 0)
     {
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  calculate_dominance_info (CDI_DOMINATORS);
 	  update_debug_stmts ();

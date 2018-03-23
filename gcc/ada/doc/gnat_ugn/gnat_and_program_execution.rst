@@ -3722,33 +3722,14 @@ that any use of the stack (for procedure calls or for declaring local
 variables in declare blocks) does not exceed the available stack space.
 If the space is exceeded, then a ``Storage_Error`` exception is raised.
 
-For declared tasks, the stack size is controlled by the size
-given in an applicable ``Storage_Size`` pragma or by the value specified
-at bind time with ``-d`` (:ref:`Switches_for_gnatbind`) or is set to
-the default size as defined in the GNAT runtime otherwise.
+For declared tasks, the default stack size is defined by the GNAT runtime,
+whose size may be modified at bind time through the ``-d`` bind switch
+(:ref:`Switches_for_gnatbind`). Task specific stack sizes may be set using the
+``Storage_Size`` pragma.
 
-.. index:: GNAT_STACK_LIMIT
-
-For the environment task, the stack size depends on
-system defaults and is unknown to the compiler. Stack checking
-may still work correctly if a fixed
-size stack is allocated, but this cannot be guaranteed.
-To ensure that a clean exception is signalled for stack
-overflow, set the environment variable
-:envvar:`GNAT_STACK_LIMIT` to indicate the maximum
-stack area that can be used, as in:
-
-  ::
-
-     $ SET GNAT_STACK_LIMIT 1600
-
-The limit is given in kilobytes, so the above declaration would
-set the stack limit of the environment task to 1.6 megabytes.
-Note that the only purpose of this usage is to limit the amount
-of stack used by the environment task. If it is necessary to
-increase the amount of stack for the environment task, then this
-is an operating systems issue, and must be addressed with the
-appropriate operating systems commands.
+For the environment task, the stack size is determined by the operating system.
+Consequently, to modify the size of the environment task please refer to your
+operating system documentation.
 
 
 .. _Static_Stack_Usage_Analysis:
@@ -3836,11 +3817,20 @@ where:
   is not entirely analyzed, and it's not possible to know exactly how
   much has actually been used.
 
-The environment task stack, e.g., the stack that contains the main unit, is
-only processed when the environment variable GNAT_STACK_LIMIT is set.
+By default the environment task stack, the stack that contains the main unit,
+is not processed. To enable processing of the environment task stack, the
+environment variable GNAT_STACK_LIMIT needs to be set to the maximum size of
+the environment task stack. This amount is given in kilobytes. For example:
+
+  ::
+
+     $ set GNAT_STACK_LIMIT 1600
+
+would specify to the analyzer that the environment task stack has a limit
+of 1.6 megabytes. Any stack usage beyond this will be ignored by the analysis.
 
 The package ``GNAT.Task_Stack_Usage`` provides facilities to get
-stack usage reports at run-time. See its body for the details.
+stack-usage reports at run time. See its body for the details.
 
 
 

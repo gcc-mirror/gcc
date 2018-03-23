@@ -9,7 +9,7 @@ END TYPE data_type
 INTEGER :: J = 7
 TYPE(data_type) :: dd
 EQUIVALENCE(dd,J)
-if (dd%i.ne.7) call abort ()
+if (dd%i.ne.7) STOP 1
 END
 
 

@@ -1,5 +1,5 @@
 /* Induction variable canonicalization and loop peeling.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -76,10 +76,13 @@ enum unroll_level
 };
 
 /* Adds a canonical induction variable to LOOP iterating NITER times.  EXIT
-   is the exit edge whose condition is replaced.  */
+   is the exit edge whose condition is replaced.  The ssa versions of the new
+   IV before and after increment will be stored in VAR_BEFORE and VAR_AFTER
+   if they are not NULL.  */
 
-static void
-create_canonical_iv (struct loop *loop, edge exit, tree niter)
+void
+create_canonical_iv (struct loop *loop, edge exit, tree niter,
+		     tree *var_before = NULL, tree *var_after = NULL)
 {
   edge in;
   tree type, var;
@@ -112,7 +115,9 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
   create_iv (niter,
 	     build_int_cst (type, -1),
 	     NULL_TREE, loop,
-	     &incr_at, false, NULL, &var);
+	     &incr_at, false, var_before, &var);
+  if (var_after)
+    *var_after = var;
 
   cmp = (exit->flags & EDGE_TRUE_VALUE) ? EQ_EXPR : NE_EXPR;
   gimple_cond_set_code (cond, cmp);
@@ -655,14 +660,21 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
   loops_to_unloop.release ();
   loops_to_unloop_nunroll.release ();
 
-  /* Remove edges in peeled copies.  */
+  /* Remove edges in peeled copies.  Given remove_path removes dominated
+     regions we need to cope with removal of already removed paths.  */
   unsigned i;
   edge e;
+  auto_vec<int, 20> src_bbs;
+  src_bbs.reserve_exact (edges_to_remove.length ());
   FOR_EACH_VEC_ELT (edges_to_remove, i, e)
-    {
-      bool ok = remove_path (e, irred_invalidated, loop_closed_ssa_invalidated);
-      gcc_assert (ok);
-    }
+    src_bbs.quick_push (e->src->index);
+  FOR_EACH_VEC_ELT (edges_to_remove, i, e)
+    if (BASIC_BLOCK_FOR_FN (cfun, src_bbs[i]))
+      {
+	bool ok = remove_path (e, irred_invalidated,
+			       loop_closed_ssa_invalidated);
+	gcc_assert (ok);
+      }
   edges_to_remove.release ();
 }
 
@@ -676,10 +688,10 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
 
 static bool
 try_unroll_loop_completely (struct loop *loop,
-			    edge exit, tree niter,
+			    edge exit, tree niter, bool may_be_zero,
 			    enum unroll_level ul,
 			    HOST_WIDE_INT maxiter,
-			    location_t locus)
+			    location_t locus, bool allow_peel)
 {
   unsigned HOST_WIDE_INT n_unroll = 0;
   bool n_unroll_found = false;
@@ -711,7 +723,8 @@ try_unroll_loop_completely (struct loop *loop,
     exit = NULL;
 
   /* See if we can improve our estimate by using recorded loop bounds.  */
-  if (maxiter >= 0
+  if ((allow_peel || maxiter == 0 || ul == UL_NO_GROWTH)
+      && maxiter >= 0
       && (!n_unroll_found || (unsigned HOST_WIDE_INT)maxiter < n_unroll))
     {
       n_unroll = maxiter;
@@ -887,6 +900,8 @@ try_unroll_loop_completely (struct loop *loop,
 	  exit = NULL;
 	  bitmap_clear (wont_exit);
 	}
+      if (may_be_zero)
+	bitmap_clear_bit (wont_exit, 1);
 
       if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 						 n_unroll, wont_exit,
@@ -971,7 +986,7 @@ estimated_peeled_sequence_size (struct loop_size *size,
 
 static bool
 try_peel_loop (struct loop *loop,
-	       edge exit, tree niter,
+	       edge exit, tree niter, bool may_be_zero,
 	       HOST_WIDE_INT maxiter)
 {
   HOST_WIDE_INT npeel;
@@ -1074,6 +1089,8 @@ try_peel_loop (struct loop *loop,
       exit = NULL;
       bitmap_clear (wont_exit);
     }
+  if (may_be_zero)
+    bitmap_clear_bit (wont_exit, 1);
   if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					     npeel, wont_exit,
 					     exit, &edges_to_remove,
@@ -1139,20 +1156,42 @@ try_peel_loop (struct loop *loop,
 static bool
 canonicalize_loop_induction_variables (struct loop *loop,
 				       bool create_iv, enum unroll_level ul,
-				       bool try_eval)
+				       bool try_eval, bool allow_peel)
 {
   edge exit = NULL;
   tree niter;
   HOST_WIDE_INT maxiter;
   bool modified = false;
   location_t locus = UNKNOWN_LOCATION;
+  struct tree_niter_desc niter_desc;
+  bool may_be_zero = false;
 
-  niter = number_of_latch_executions (loop);
+  /* For unrolling allow conditional constant or zero iterations, thus
+     perform loop-header copying on-the-fly.  */
   exit = single_exit (loop);
+  niter = chrec_dont_know;
+  if (exit && number_of_iterations_exit (loop, exit, &niter_desc, false))
+    {
+      niter = niter_desc.niter;
+      may_be_zero
+	= niter_desc.may_be_zero && !integer_zerop (niter_desc.may_be_zero);
+    }
   if (TREE_CODE (niter) == INTEGER_CST)
     locus = gimple_location (last_stmt (exit->src));
   else
     {
+      /* For non-constant niter fold may_be_zero into niter again.  */
+      if (may_be_zero)
+	{
+	  if (COMPARISON_CLASS_P (niter_desc.may_be_zero))
+	    niter = fold_build3 (COND_EXPR, TREE_TYPE (niter),
+				 niter_desc.may_be_zero,
+				 build_int_cst (TREE_TYPE (niter), 0), niter);
+	  else
+	    niter = chrec_dont_know;
+	  may_be_zero = false;
+	}
+
       /* If the loop has more than one exit, try checking all of them
 	 for # of iterations determinable through scev.  */
       if (!exit)
@@ -1207,16 +1246,31 @@ canonicalize_loop_induction_variables (struct loop *loop,
      populates the loop bounds.  */
   modified |= remove_redundant_iv_tests (loop);
 
-  if (try_unroll_loop_completely (loop, exit, niter, ul, maxiter, locus))
+  if (try_unroll_loop_completely (loop, exit, niter, may_be_zero, ul,
+				  maxiter, locus, allow_peel))
     return true;
 
   if (create_iv
       && niter && !chrec_contains_undetermined (niter)
       && exit && just_once_each_iteration_p (loop, exit->src))
-    create_canonical_iv (loop, exit, niter);
+    {
+      tree iv_niter = niter;
+      if (may_be_zero)
+	{
+	  if (COMPARISON_CLASS_P (niter_desc.may_be_zero))
+	    iv_niter = fold_build3 (COND_EXPR, TREE_TYPE (iv_niter),
+				    niter_desc.may_be_zero,
+				    build_int_cst (TREE_TYPE (iv_niter), 0),
+				    iv_niter);
+	  else
+	    iv_niter = NULL_TREE;
+	}
+      if (iv_niter)
+	create_canonical_iv (loop, exit, iv_niter);
+    }
 
   if (ul == UL_ALL)
-    modified |= try_peel_loop (loop, exit, niter, maxiter);
+    modified |= try_peel_loop (loop, exit, niter, may_be_zero, maxiter);
 
   return modified;
 }
@@ -1238,7 +1292,7 @@ canonicalize_induction_variables (void)
     {
       changed |= canonicalize_loop_induction_variables (loop,
 							true, UL_SINGLE_ITER,
-							true);
+							true, false);
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
@@ -1319,13 +1373,17 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
   bool changed = false;
   struct loop *inner;
   enum unroll_level ul;
+  unsigned num = number_of_loops (cfun);
 
-  /* Process inner loops first.  */
+  /* Process inner loops first.  Don't walk loops added by the recursive
+     calls because SSA form is not up-to-date.  They can be handled in the
+     next iteration.  */
   for (inner = loop->inner; inner != NULL; inner = inner->next)
-    changed |= tree_unroll_loops_completely_1 (may_increase_size,
-					       unroll_outer, father_bbs,
-					       inner);
- 
+    if ((unsigned) inner->num < num)
+      changed |= tree_unroll_loops_completely_1 (may_increase_size,
+						 unroll_outer, father_bbs,
+						 inner);
+
   /* If we changed an inner loop we cannot process outer loops in this
      iteration because SSA form is not up-to-date.  Continue with
      siblings of outer loops instead.  */
@@ -1353,7 +1411,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
     ul = UL_NO_GROWTH;
 
   if (canonicalize_loop_induction_variables
-        (loop, false, ul, !flag_tree_loop_ivcanon))
+        (loop, false, ul, !flag_tree_loop_ivcanon, unroll_outer))
     {
       /* If we'll continue unrolling, we need to propagate constants
 	 within the new basic blocks to fold away induction variable

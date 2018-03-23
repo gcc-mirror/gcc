@@ -156,18 +156,19 @@ func (p *cpuProfile) addExtra() {
 	if p.lostExtra > 0 {
 		hdr := [1]uint64{p.lostExtra}
 		lostStk := [2]uintptr{
-			funcPC(_LostExternalCode) + sys.PCQuantum,
-			funcPC(_ExternalCode) + sys.PCQuantum,
+			_LostExternalCodePC + sys.PCQuantum,
+			_ExternalCodePC + sys.PCQuantum,
 		}
 		cpuprof.log.write(nil, 0, hdr[:], lostStk[:])
+		p.lostExtra = 0
 	}
 }
 
 func (p *cpuProfile) addLostAtomic64(count uint64) {
 	hdr := [1]uint64{count}
 	lostStk := [2]uintptr{
-		funcPC(_LostSIGPROFDuringAtomic64) + sys.PCQuantum,
-		funcPC(_System) + sys.PCQuantum,
+		_LostSIGPROFDuringAtomic64PC + sys.PCQuantum,
+		_SystemPC + sys.PCQuantum,
 	}
 	cpuprof.log.write(nil, 0, hdr[:], lostStk[:])
 }

@@ -14,3 +14,5 @@ foo (void)
 }
 
 /* { dg-final { scan-assembler-times {\tmovi\tv[0-9]+\.4s,} 2 } } */
+/* { dg-final { scan-assembler-not {\tldr\t} } } */
+/* { dg-final { scan-assembler-not {\tstr\t} } } */

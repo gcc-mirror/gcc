@@ -19,7 +19,7 @@ program entry_4_prog
   integer :: a(2)
   a = 0
   call foo(a)
-  if (any (a .ne. (/1, 2/))) call abort
+  if (any (a .ne. (/1, 2/))) STOP 1
   call bar(a)
-  if (any (a .ne. (/3, 4/))) call abort
+  if (any (a .ne. (/3, 4/))) STOP 2
 end program

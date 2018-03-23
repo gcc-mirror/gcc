@@ -32,9 +32,9 @@ CONTAINS
  SUBROUTINE sub(i,arg2,arg3)
    INTEGER, INTENT(in) :: i
    INTEGER, INTENT(in), OPTIONAL :: arg2, arg3
-   if (present(arg2)) call abort()
-   if (.not. present(arg3)) call abort()
-   if (2*i/=arg3) call abort()
+   if (present(arg2)) STOP 1
+   if (.not. present(arg3)) STOP 2
+   if (2*i/=arg3) STOP 3
  END SUBROUTINE sub
 
 END PROGRAM prog

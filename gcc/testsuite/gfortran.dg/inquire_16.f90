@@ -12,18 +12,18 @@ program test_inquire
   inquire(unit=input_unit, read=s_read, write=s_write, &
           readwrite=s_readwrite)
   if (s_read /= "YES" .or. s_write /= "NO" .or. s_readwrite /="NO") then
-    call abort()
+    STOP 1
   endif
 
   inquire(unit=output_unit, read=s_read, write=s_write, &
           readwrite=s_readwrite)
   if (s_read /= "NO" .or. s_write /= "YES" .or. s_readwrite /="NO") then
-    call abort()
+    STOP 2
   endif
 
   inquire(unit=error_unit, read=s_read, write=s_write, &
           readwrite=s_readwrite)
   if (s_read /= "NO" .or. s_write /= "YES" .or. s_readwrite /="NO") then
-    call abort()
+    STOP 3
   endif
 end program test_inquire

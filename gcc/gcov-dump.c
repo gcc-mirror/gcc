@@ -1,5 +1,5 @@
 /* Dump a gcov file, for debugging use.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
 
 Gcov is free software; you can redistribute it and/or modify
@@ -148,7 +148,7 @@ static void
 print_version (void)
 {
   printf ("gcov-dump %s%s\n", pkgversion_string, version_string);
-  printf ("Copyright (C) 2017 Free Software Foundation, Inc.\n");
+  printf ("Copyright (C) 2018 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.\n"
   	  "There is NO warranty; not even for MERCHANTABILITY or \n"
 	  "FITNESS FOR A PARTICULAR PURPOSE.\n\n");
@@ -170,6 +170,7 @@ dump_gcov_file (const char *filename)
 {
   unsigned tags[4];
   unsigned depth = 0;
+  bool is_data_type;
 
   if (!gcov_open (filename, 1))
     {
@@ -181,14 +182,13 @@ dump_gcov_file (const char *filename)
   {
     unsigned magic = gcov_read_unsigned ();
     unsigned version;
-    const char *type = NULL;
     int endianness = 0;
     char m[4], v[4];
 
     if ((endianness = gcov_magic (magic, GCOV_DATA_MAGIC)))
-      type = "data";
+      is_data_type = true;
     else if ((endianness = gcov_magic (magic, GCOV_NOTE_MAGIC)))
-      type = "note";
+      is_data_type = false;
     else
       {
 	printf ("%s:not a gcov file\n", filename);
@@ -199,7 +199,8 @@ dump_gcov_file (const char *filename)
     GCOV_UNSIGNED2STRING (v, version);
     GCOV_UNSIGNED2STRING (m, magic);
 
-    printf ("%s:%s:magic `%.4s':version `%.4s'%s\n", filename, type,
+    printf ("%s:%s:magic `%.4s':version `%.4s'%s\n", filename,
+	    is_data_type ? "data" : "note",
  	    m, v, endianness < 0 ? " (swapped endianness)" : "");
     if (version != GCOV_VERSION)
       {
@@ -217,10 +218,13 @@ dump_gcov_file (const char *filename)
     printf ("%s:stamp %lu\n", filename, (unsigned long)stamp);
   }
 
-  /* Support for unexecuted basic blocks.  */
-  unsigned support_unexecuted_blocks = gcov_read_unsigned ();
-  if (!support_unexecuted_blocks)
-    printf ("%s: has_unexecuted_block is not supported\n", filename);
+  if (!is_data_type)
+    {
+      /* Support for unexecuted basic blocks.  */
+      unsigned support_unexecuted_blocks = gcov_read_unsigned ();
+      if (!support_unexecuted_blocks)
+	printf ("%s: has_unexecuted_block is not supported\n", filename);
+    }
 
   while (1)
     {

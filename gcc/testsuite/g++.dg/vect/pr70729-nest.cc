@@ -76,4 +76,4 @@ void Ss::foo (int n)
     }
 }
  
-// { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target x86_64-*-* i?86-*-* } } }
+// { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { xfail *-*-* } } }

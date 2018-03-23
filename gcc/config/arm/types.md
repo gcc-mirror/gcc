@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2017 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2018 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -1084,6 +1084,10 @@
   crypto_sha256_fast,\
   crypto_sha256_slow,\
   crypto_pmull,\
+  crypto_sha512,\
+  crypto_sha3,\
+  crypto_sm3,\
+  crypto_sm4,\
   coproc"
    (const_string "untyped"))
 

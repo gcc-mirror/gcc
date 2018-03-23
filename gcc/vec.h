@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -490,6 +490,21 @@ template <typename T>
 inline void
 vec_default_construct (T *dst, unsigned n)
 {
+#ifdef BROKEN_VALUE_INITIALIZATION
+  /* Versions of GCC before 4.4 sometimes leave certain objects
+     uninitialized when value initialized, though if the type has
+     user defined default ctor, that ctor is invoked.  As a workaround
+     perform clearing first and then the value initialization, which
+     fixes the case when value initialization doesn't initialize due to
+     the bugs and should initialize to all zeros, but still allows
+     vectors for types with user defined default ctor that initializes
+     some or all elements to non-zero.  If T has no user defined
+     default ctor and some non-static data members have user defined
+     default ctors that initialize to non-zero the workaround will
+     still not work properly; in that case we just need to provide
+     user defined default ctor.  */
+  memset (dst, '\0', sizeof (T) * n);
+#endif
   for ( ; n; ++dst, --n)
     ::new (static_cast<void*>(dst)) T ();
 }

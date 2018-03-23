@@ -402,9 +402,10 @@ func (check *Checker) updateExprType(x ast.Expr, typ Type, final bool) {
 
 	case *ast.UnaryExpr:
 		// If x is a constant, the operands were constants.
-		// They don't need to be updated since they never
-		// get "materialized" into a typed value; and they
-		// will be processed at the end of the type check.
+		// The operands don't need to be updated since they
+		// never get "materialized" into a typed value. If
+		// left in the untyped map, they will be processed
+		// at the end of the type check.
 		if old.val != nil {
 			break
 		}
@@ -443,12 +444,21 @@ func (check *Checker) updateExprType(x ast.Expr, typ Type, final bool) {
 	// Remove it from the map of yet untyped expressions.
 	delete(check.untyped, x)
 
-	// If x is the lhs of a shift, its final type must be integer.
-	// We already know from the shift check that it is representable
-	// as an integer if it is a constant.
-	if old.isLhs && !isInteger(typ) {
-		check.invalidOp(x.Pos(), "shifted operand %s (type %s) must be integer", x, typ)
-		return
+	if old.isLhs {
+		// If x is the lhs of a shift, its final type must be integer.
+		// We already know from the shift check that it is representable
+		// as an integer if it is a constant.
+		if !isInteger(typ) {
+			check.invalidOp(x.Pos(), "shifted operand %s (type %s) must be integer", x, typ)
+			return
+		}
+	} else if old.val != nil {
+		// If x is a constant, it must be representable as a value of typ.
+		c := operand{old.mode, x, old.typ, old.val, 0}
+		check.convertUntyped(&c, typ)
+		if c.mode == invalid {
+			return
+		}
 	}
 
 	// Everything's fine, record final type and value for x.
@@ -1020,6 +1030,15 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 			// Anonymous functions are considered part of the
 			// init expression/func declaration which contains
 			// them: use existing package-level declaration info.
+			//
+			// TODO(gri) We delay type-checking of regular (top-level)
+			//           function bodies until later. Why don't we do
+			//           it for closures of top-level expressions?
+			//           (We can't easily do it for local closures
+			//           because the surrounding scopes must reflect
+			//           the exact position where the closure appears
+			//           in the source; e.g., variables declared below
+			//           must not be visible).
 			check.funcBody(check.decl, "", sig, e.Body)
 			x.mode = value
 			x.typ = sig
@@ -1175,17 +1194,18 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 				if x.mode == constant_ {
 					duplicate := false
 					// if the key is of interface type, the type is also significant when checking for duplicates
+					xkey := keyVal(x.val)
 					if _, ok := utyp.key.Underlying().(*Interface); ok {
-						for _, vtyp := range visited[x.val] {
+						for _, vtyp := range visited[xkey] {
 							if Identical(vtyp, x.typ) {
 								duplicate = true
 								break
 							}
 						}
-						visited[x.val] = append(visited[x.val], x.typ)
+						visited[xkey] = append(visited[xkey], x.typ)
 					} else {
-						_, duplicate = visited[x.val]
-						visited[x.val] = nil
+						_, duplicate = visited[xkey]
+						visited[xkey] = nil
 					}
 					if duplicate {
 						check.errorf(x.pos(), "duplicate key %s in map literal", x.val)
@@ -1487,6 +1507,30 @@ Error:
 	x.mode = invalid
 	x.expr = e
 	return statement // avoid follow-up errors
+}
+
+func keyVal(x constant.Value) interface{} {
+	switch x.Kind() {
+	case constant.Bool:
+		return constant.BoolVal(x)
+	case constant.String:
+		return constant.StringVal(x)
+	case constant.Int:
+		if v, ok := constant.Int64Val(x); ok {
+			return v
+		}
+		if v, ok := constant.Uint64Val(x); ok {
+			return v
+		}
+	case constant.Float:
+		v, _ := constant.Float64Val(x)
+		return v
+	case constant.Complex:
+		r, _ := constant.Float64Val(constant.Real(x))
+		i, _ := constant.Float64Val(constant.Imag(x))
+		return complex(r, i)
+	}
+	return x
 }
 
 // typeAssertion checks that x.(T) is legal; xtyp must be the type of x.

@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-icf.h"
 #include "stor-layout.h"
 #include "dbgcnt.h"
+#include "tree-vector-builder.h"
 
 using namespace ipa_icf_gimple;
 
@@ -1112,6 +1113,17 @@ sem_function::merge (sem_item *alias_item)
       return false;
     }
 
+  if (!original->in_same_comdat_group_p (alias)
+      || original->comdat_local_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Not unifying; alias nor wrapper cannot be created; "
+		 "across comdat group boundary\n\n");
+
+      return false;
+    }
+
   /* See if original is in a section that can be discarded if the main
      symbol is not used.  */
 
@@ -2024,17 +2036,17 @@ sem_variable::equals (tree t1, tree t2)
 						&TREE_REAL_CST (t2)));
     case VECTOR_CST:
       {
-	unsigned i;
+	if (maybe_ne (VECTOR_CST_NELTS (t1), VECTOR_CST_NELTS (t2)))
+	  return return_false_with_msg ("VECTOR_CST nelts mismatch");
 
-        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
-          return return_false_with_msg ("VECTOR_CST nelts mismatch");
+	unsigned int count
+	  = tree_vector_builder::binary_encoded_nelts (t1, t2);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (!sem_variable::equals (VECTOR_CST_ENCODED_ELT (t1, i),
+				     VECTOR_CST_ENCODED_ELT (t2, i)))
+	    return false;
 
-	for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
-	  if (!sem_variable::equals (VECTOR_CST_ELT (t1, i),
-				     VECTOR_CST_ELT (t2, i)))
-	    return 0;
-
-	return 1;
+	return true;
       }
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
@@ -2119,23 +2131,6 @@ sem_variable::get_hash (void)
   set_hash (hstate.end ());
 
   return m_hash;
-}
-
-/* Set all points-to UIDs of aliases pointing to node N as UID.  */
-
-static void
-set_alias_uids (symtab_node *n, int uid)
-{
-  ipa_ref *ref;
-  FOR_EACH_ALIAS (n, ref)
-    {
-      if (dump_file)
-	fprintf (dump_file, "  Setting points-to UID of [%s] as %d\n",
-		 xstrdup_for_dump (ref->referring->asm_name ()), uid);
-
-      SET_DECL_PT_UID (ref->referring->decl, uid);
-      set_alias_uids (ref->referring, uid);
-    }
 }
 
 /* Merges instance with an ALIAS_ITEM, where alias, thunk or redirection can
@@ -2264,7 +2259,6 @@ sem_variable::merge (sem_item *alias_item)
       if (dump_file)
 	fprintf (dump_file, "Unified; Variable alias has been created.\n");
 
-      set_alias_uids (original, DECL_UID (original->decl));
       return true;
     }
 }
@@ -2284,7 +2278,7 @@ unsigned int sem_item_optimizer::class_id = 0;
 
 sem_item_optimizer::sem_item_optimizer ()
 : worklist (0), m_classes (0), m_classes_count (0), m_cgraph_node_hooks (NULL),
-  m_varpool_node_hooks (NULL)
+  m_varpool_node_hooks (NULL), m_merged_variables ()
 {
   m_items.create (0);
   bitmap_obstack_initialize (&m_bmstack);
@@ -2309,6 +2303,7 @@ sem_item_optimizer::~sem_item_optimizer ()
   m_items.release ();
 
   bitmap_obstack_release (&m_bmstack);
+  m_merged_variables.release ();
 }
 
 /* Write IPA ICF summary for symbols.  */
@@ -3560,11 +3555,101 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	      }
 
 	    if (dbg_cnt (merged_ipa_icf))
-	      merged_p |= source->merge (alias);
+	      {
+		bool merged = source->merge (alias);
+		merged_p |= merged;
+
+		if (merged && alias->type == VAR)
+		  {
+		    symtab_pair p = symtab_pair (source->node, alias->node);
+		    m_merged_variables.safe_push (p);
+		  }
+	      }
 	  }
       }
 
+  if (!m_merged_variables.is_empty ())
+    fixup_points_to_sets ();
+
   return merged_p;
+}
+
+/* Fixup points to set PT.  */
+
+void
+sem_item_optimizer::fixup_pt_set (struct pt_solution *pt)
+{
+  if (pt->vars == NULL)
+    return;
+
+  unsigned i;
+  symtab_pair *item;
+  FOR_EACH_VEC_ELT (m_merged_variables, i, item)
+    if (bitmap_bit_p (pt->vars, DECL_UID (item->second->decl)))
+      bitmap_set_bit (pt->vars, DECL_UID (item->first->decl));
+}
+
+/* Set all points-to UIDs of aliases pointing to node N as UID.  */
+
+static void
+set_alias_uids (symtab_node *n, int uid)
+{
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (n, ref)
+    {
+      if (dump_file)
+	fprintf (dump_file, "  Setting points-to UID of [%s] as %d\n",
+		 xstrdup_for_dump (ref->referring->asm_name ()), uid);
+
+      SET_DECL_PT_UID (ref->referring->decl, uid);
+      set_alias_uids (ref->referring, uid);
+    }
+}
+
+/* Fixup points to analysis info.  */
+
+void
+sem_item_optimizer::fixup_points_to_sets (void)
+{
+  /* TODO: remove in GCC 9 and trigger PTA re-creation after IPA passes.  */
+  cgraph_node *cnode;
+
+  FOR_EACH_DEFINED_FUNCTION (cnode)
+    {
+      tree name;
+      unsigned i;
+      function *fn = DECL_STRUCT_FUNCTION (cnode->decl);
+      if (!gimple_in_ssa_p (fn))
+	continue;
+
+      FOR_EACH_SSA_NAME (i, name, fn)
+	if (POINTER_TYPE_P (TREE_TYPE (name))
+	    && SSA_NAME_PTR_INFO (name))
+	  fixup_pt_set (&SSA_NAME_PTR_INFO (name)->pt);
+      fixup_pt_set (&fn->gimple_df->escaped);
+
+       /* The above get's us to 99% I guess, at least catching the
+	  address compares.  Below also gets us aliasing correct
+	  but as said we're giving leeway to the situation with
+	  readonly vars anyway, so ... */
+       basic_block bb;
+       FOR_EACH_BB_FN (bb, fn)
+	for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	     gsi_next (&gsi))
+	  {
+	    gcall *call = dyn_cast<gcall *> (gsi_stmt (gsi));
+	    if (call)
+	      {
+		fixup_pt_set (gimple_call_use_set (call));
+		fixup_pt_set (gimple_call_clobber_set (call));
+	      }
+	  }
+    }
+
+  unsigned i;
+  symtab_pair *item;
+  FOR_EACH_VEC_ELT (m_merged_variables, i, item)
+    set_alias_uids (item->first, DECL_UID (item->first->decl));
 }
 
 /* Dump function prints all class members to a FILE with an INDENT.  */

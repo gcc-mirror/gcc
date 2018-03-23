@@ -17,15 +17,15 @@ contains
     integer(ik4), allocatable :: ia(:)
     type(struct) :: x
     allocate(ia(from:to))
-    if (any(lbound(ia) .ne. -1) .or. any(ubound(ia) .ne. 2)) call abort
-    if (any(lbound(ia(:)) .ne. 1) .or. any(ubound(ia(:)) .ne. 4)) call abort
-    if (any(lbound(ia(from:to)) .ne. 1) .or. any(ubound(ia(from:to)) .ne. 4)) call abort
+    if (any(lbound(ia) .ne. -1) .or. any(ubound(ia) .ne. 2)) STOP 1
+    if (any(lbound(ia(:)) .ne. 1) .or. any(ubound(ia(:)) .ne. 4)) STOP 2
+    if (any(lbound(ia(from:to)) .ne. 1) .or. any(ubound(ia(from:to)) .ne. 4)) STOP 3
     x=struct(ia)
-    if (any(lbound(x%ib) .ne. -1) .or. any(ubound(x%ib) .ne. 2)) call abort
+    if (any(lbound(x%ib) .ne. -1) .or. any(ubound(x%ib) .ne. 2)) STOP 4
     x=struct(ia(:))
-    if (any(lbound(x%ib) .ne. 1) .or. any(ubound(x%ib) .ne. 4)) call abort
+    if (any(lbound(x%ib) .ne. 1) .or. any(ubound(x%ib) .ne. 4)) STOP 5
     x=struct(ia(from:to))
-    if (any(lbound(x%ib) .ne. 1) .or. any(ubound(x%ib) .ne. 4)) call abort
+    if (any(lbound(x%ib) .ne. 1) .or. any(ubound(x%ib) .ne. 4)) STOP 6
     deallocate(ia)
   end subroutine
   subroutine bar
@@ -35,15 +35,15 @@ contains
     integer(ik8), allocatable :: ia(:)
     type(struct) :: x
     allocate(ia(from:to))
-    if (any(lbound(ia) .ne. -1) .or. any(ubound(ia) .ne. 2)) call abort
-    if (any(lbound(ia(:)) .ne. 1) .or. any(ubound(ia(:)) .ne. 4)) call abort
-    if (any(lbound(ia(from:to)) .ne. 1) .or. any(ubound(ia(from:to)) .ne. 4)) call abort
+    if (any(lbound(ia) .ne. -1) .or. any(ubound(ia) .ne. 2)) STOP 7
+    if (any(lbound(ia(:)) .ne. 1) .or. any(ubound(ia(:)) .ne. 4)) STOP 8
+    if (any(lbound(ia(from:to)) .ne. 1) .or. any(ubound(ia(from:to)) .ne. 4)) STOP 9
     x=struct(ia)
-    if (any(lbound(x%ib) .ne. -1) .or. any(ubound(x%ib) .ne. 2)) call abort
+    if (any(lbound(x%ib) .ne. -1) .or. any(ubound(x%ib) .ne. 2)) STOP 10
     x=struct(ia(:))
-    if (any(lbound(x%ib) .ne. 1) .or. any(ubound(x%ib) .ne. 4)) call abort
+    if (any(lbound(x%ib) .ne. 1) .or. any(ubound(x%ib) .ne. 4)) STOP 11
     x=struct(ia(from:to))
-    if (any(lbound(x%ib) .ne. 1) .or. any(ubound(x%ib) .ne. 4)) call abort
+    if (any(lbound(x%ib) .ne. 1) .or. any(ubound(x%ib) .ne. 4)) STOP 12
     deallocate(ia)
   end subroutine
 end

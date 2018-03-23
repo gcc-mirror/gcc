@@ -20,5 +20,5 @@
       if (l) if (i) 999,999,30 ! { dg-warning "Obsolescent feature" }
       go to 999
 
-  999 call abort
+  999 STOP 1
    30 end

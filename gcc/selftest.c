@@ -1,5 +1,5 @@
 /* A self-testing framework, for use by -fself-test.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -79,7 +79,7 @@ assert_streq (const location &loc,
   if (val_actual == NULL)
     fail_formatted (loc, "ASSERT_STREQ (%s, %s) expected=\"%s\" actual=NULL",
 		    desc_expected, desc_actual, val_expected);
-  if (0 == strcmp (val_expected, val_actual))
+  if (strcmp (val_expected, val_actual) == 0)
     pass (loc, "ASSERT_STREQ");
   else
     fail_formatted (loc, "ASSERT_STREQ (%s, %s) expected=\"%s\" actual=\"%s\"",
@@ -213,6 +213,28 @@ locate_file (const char *name)
   return concat (path_to_selftest_files, "/", name, NULL);
 }
 
+/* selftest::test_runner's ctor.  */
+
+test_runner::test_runner (const char *name)
+: m_name (name),
+  m_start_time (get_run_time ())
+{
+}
+
+/* selftest::test_runner's dtor.  Print a summary line to stderr.  */
+
+test_runner::~test_runner ()
+{
+  /* Finished running tests.  */
+  long finish_time = get_run_time ();
+  long elapsed_time = finish_time - m_start_time;
+
+  fprintf (stderr,
+	   "%s: %i pass(es) in %ld.%06ld seconds\n",
+	   m_name, num_passes,
+	   elapsed_time / 1000000, elapsed_time % 1000000);
+}
+
 /* Selftests for libiberty.  */
 
 /* Verify that xstrndup generates EXPECTED when called on SRC and N.  */
@@ -266,6 +288,10 @@ test_assertions ()
   ASSERT_EQ (1, 1);
   ASSERT_EQ_AT (SELFTEST_LOCATION, 1, 1);
   ASSERT_NE (1, 2);
+  ASSERT_GT (2, 1);
+  ASSERT_GT_AT (SELFTEST_LOCATION, 2, 1);
+  ASSERT_LT (1, 2);
+  ASSERT_LT_AT (SELFTEST_LOCATION, 1, 2);
   ASSERT_STREQ ("test", "test");
   ASSERT_STREQ_AT (SELFTEST_LOCATION, "test", "test");
   ASSERT_STR_CONTAINS ("foo bar baz", "bar");

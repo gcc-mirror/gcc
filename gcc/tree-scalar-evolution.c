@@ -1,5 +1,5 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -280,6 +280,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
+#include "tree-into-ssa.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
@@ -1540,7 +1541,10 @@ static tree
 follow_copies_to_constant (tree var)
 {
   tree res = var;
-  while (TREE_CODE (res) == SSA_NAME)
+  while (TREE_CODE (res) == SSA_NAME
+	 /* We face not updated SSA form in multiple places and this walk
+	    may end up in sibling loops so we have to guard it.  */
+	 && !name_registered_for_update_p (res))
     {
       gimple *def = SSA_NAME_DEF_STMT (res);
       if (gphi *phi = dyn_cast <gphi *> (def))
@@ -1731,7 +1735,7 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
 	  || handled_component_p (TREE_OPERAND (rhs1, 0)))
         {
 	  machine_mode mode;
-	  HOST_WIDE_INT bitsize, bitpos;
+	  poly_int64 bitsize, bitpos;
 	  int unsignedp, reversep;
 	  int volatilep = 0;
 	  tree base, offset;
@@ -1770,11 +1774,9 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
 	      res = chrec_fold_plus (type, res, chrec2);
 	    }
 
-	  if (bitpos != 0)
+	  if (maybe_ne (bitpos, 0))
 	    {
-	      gcc_assert ((bitpos % BITS_PER_UNIT) == 0);
-
-	      unitpos = size_int (bitpos / BITS_PER_UNIT);
+	      unitpos = size_int (exact_div (bitpos, BITS_PER_UNIT));
 	      chrec3 = analyze_scalar_evolution (loop, unitpos);
 	      chrec3 = chrec_convert (TREE_TYPE (unitpos), chrec3, at_stmt);
 	      chrec3 = instantiate_parameters (loop, chrec3);

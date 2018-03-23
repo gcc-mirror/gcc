@@ -5,6 +5,7 @@
 
 // { dg-do run }
 // { dg-options "-O2" }
+// { dg-require-effective-target indirect_jumps }
 
 extern "C" int printf (const char *, ...);
 

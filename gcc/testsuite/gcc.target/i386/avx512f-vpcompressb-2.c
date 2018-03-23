@@ -4,7 +4,7 @@
 /* { dg-require-effective-target avx512vbmi2 } */
 
 #define AVX512F
-
+#include <stdio.h>
 #define AVX512VBMI2
 #include "avx512f-helper.h"
 
@@ -47,7 +47,8 @@ TEST (void)
 
   // Swt
   if (AVX512F_LEN == 512)
-    mask_bit_count = __popcntq(mask);
+    mask_bit_count = _popcnt32((int)(mask & (((long long)1 << 32) - 1)))
+		     + _popcnt32((int)((long long)mask >> 32));
   else
     mask_bit_count = __popcntd(mask);
   compressed_mask = ((long long)1 << mask_bit_count) - 1;

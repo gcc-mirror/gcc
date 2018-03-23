@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts.
-   Copyright (C) 1990-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-2018 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-pretty-print.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
@@ -670,6 +671,9 @@ tree_profiling (void)
 	continue;
 
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+
+      if (dump_file)
+	dump_function_header (dump_file, cfun->decl, dump_flags);
 
       /* Local pure-const may imply need to fixup the cfg.  */
       if (execute_fixup_cfg () & TODO_cleanup_cfg)

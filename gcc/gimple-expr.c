@@ -1,6 +1,6 @@
 /* Gimple decl, type, and expression support functions.
 
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -446,6 +446,9 @@ create_tmp_var_raw (tree type, const char *prefix)
   DECL_ARTIFICIAL (tmp_var) = 1;
   /* And we don't want debug info for it.  */
   DECL_IGNORED_P (tmp_var) = 1;
+  /* And we don't want even the fancy names of those printed in
+     -fdump-final-insns= dumps.  */
+  DECL_NAMELESS (tmp_var) = 1;
 
   /* Make the variable writable.  */
   TREE_READONLY (tmp_var) = 0;
@@ -631,7 +634,9 @@ is_gimple_address (const_tree t)
       op = TREE_OPERAND (op, 0);
     }
 
-  if (CONSTANT_CLASS_P (op) || TREE_CODE (op) == MEM_REF)
+  if (CONSTANT_CLASS_P (op)
+      || TREE_CODE (op) == TARGET_MEM_REF
+      || TREE_CODE (op) == MEM_REF)
     return true;
 
   switch (TREE_CODE (op))

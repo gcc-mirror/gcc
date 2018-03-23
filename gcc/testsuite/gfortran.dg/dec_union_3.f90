@@ -7,7 +7,7 @@
 subroutine aborts (s)
   character(*), intent(in) :: s
   print *, s
-  call abort()
+  STOP 1
 end subroutine
 
 ! Initialization expressions

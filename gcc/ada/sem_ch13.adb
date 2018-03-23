@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2210,7 +2210,6 @@ package body Sem_Ch13 is
                   | Aspect_Output
                   | Aspect_Read
                   | Aspect_Scalar_Storage_Order
-                  | Aspect_Secondary_Stack_Size
                   | Aspect_Simple_Storage_Pool
                   | Aspect_Size
                   | Aspect_Small
@@ -2389,6 +2388,10 @@ package body Sem_Ch13 is
                   elsif Is_Incomplete_Type (E) then
                      Error_Msg_N
                        ("predicate cannot apply to incomplete view", Aspect);
+
+                  elsif Is_Generic_Type (E) then
+                     Error_Msg_N
+                       ("predicate cannot apply to formal type", Aspect);
                      goto Continue;
                   end if;
 
@@ -3200,6 +3203,27 @@ package body Sem_Ch13 is
                         goto Continue;
                      end;
                   end if;
+
+               --  Secondary_Stack_Size
+
+               --  Aspect Secondary_Stack_Size needs to be converted into a
+               --  pragma for two reasons: the attribute is not analyzed until
+               --  after the expansion of the task type declaration and the
+               --  attribute does not have visibility on the discriminant.
+
+               when Aspect_Secondary_Stack_Size =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  =>
+                       Name_Secondary_Stack_Size);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Volatile_Function
 
                --  Aspect Volatile_Function is never delayed because it is
                --  equivalent to a source pragma which appears after the
@@ -5847,46 +5871,6 @@ package body Sem_Ch13 is
                Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
             end if;
 
-         --------------------------
-         -- Secondary_Stack_Size --
-         --------------------------
-
-         when Attribute_Secondary_Stack_Size =>
-
-            --  Secondary_Stack_Size attribute definition clause not allowed
-            --  except from aspect specification.
-
-            if From_Aspect_Specification (N) then
-               if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N
-                    ("Secondary Stack Size can only be defined for task", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  Check_Restriction (No_Secondary_Stack, Expr);
-
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the discriminants must be restored
-
-                  Push_Scope_And_Install_Discriminants (U_Ent);
-                  Preanalyze_Spec_Expression (Expr, Any_Integer);
-                  Uninstall_Discriminants_And_Pop_Scope (U_Ent);
-
-                  if not Is_OK_Static_Expression (Expr) then
-                     Check_Restriction (Static_Storage_Size, Expr);
-                  end if;
-               end if;
-
-            else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
-            end if;
-
          ----------
          -- Size --
          ----------
@@ -8355,15 +8339,15 @@ package body Sem_Ch13 is
    -- Build_Predicate_Functions --
    -------------------------------
 
-   --  The procedures that are constructed here have the form:
+   --  The functions that are constructed here have the form:
 
    --    function typPredicate (Ixxx : typ) return Boolean is
    --    begin
    --       return
    --          typ1Predicate (typ1 (Ixxx))
    --          and then typ2Predicate (typ2 (Ixxx))
-   --          and then ...;
-   --          exp1 and then exp2 and then ...
+   --          and then ...
+   --          and then exp1 and then exp2 and then ...;
    --    end typPredicate;
 
    --  Here exp1, and exp2 are expressions from Predicate pragmas. Note that
@@ -11915,6 +11899,12 @@ package body Sem_Ch13 is
       then
          return True;
 
+      elsif Is_Entity_Name (Expr)
+        and then Entity (Expr) = Standard_True
+      then
+         Error_Msg_N ("predicate is redundant (always True)?", Expr);
+         return True;
+
       --  That's an exhaustive list of tests, all other cases are not
       --  predicate-static, so we return False.
 
@@ -12694,17 +12684,26 @@ package body Sem_Ch13 is
                return Skip;
             end if;
 
-         --  Case of selected component (which is what a qualification looks
-         --  like in the unanalyzed tree, which is what we have.
+         --  Case of selected component, which may be a subcomponent of the
+         --  current instance, or an expanded name which is still unanalyzed.
 
          elsif Nkind (N) = N_Selected_Component then
 
             --  If selector name is not our type, keep going (we might still
-            --  have an occurrence of the type in the prefix).
+            --  have an occurrence of the type in the prefix). If it is a
+            --  subcomponent of the current entity, add prefix.
 
             if Nkind (Selector_Name (N)) /= N_Identifier
               or else Chars (Selector_Name (N)) /= TName
             then
+               if Nkind (Prefix (N)) = N_Identifier then
+                  Comp := Visible_Component (Chars (Prefix (N)));
+
+                  if Present (Comp) then
+                     Add_Prefix (Prefix (N), Comp);
+                  end if;
+               end if;
+
                return OK;
 
             --  Selector name is our type, check qualification

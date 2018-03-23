@@ -13,6 +13,4 @@ test1 (vector signed int x)
   return vec_abs (x);
 }
 
-/* { dg-final { scan-assembler-times "vspltisw|vxor" 1 } } */
-/* { dg-final { scan-assembler-times "vsubuwm" 1 } } */
-/* { dg-final { scan-assembler-times "vmaxsw" 1 } } */
+/* scan-assembler stanzas moved to fold-vec-abs-int-fwrapv.p*.c tests.  */

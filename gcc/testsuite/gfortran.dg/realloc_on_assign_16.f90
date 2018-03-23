@@ -20,8 +20,8 @@ PROGRAM main
 
     conc = [ xx, yy ]
 
-    if (any (int (10.0*conc(1)%a) .ne. [10,20])) call abort
-    if (any (int (10.0*conc(2)%a) .ne. [40,49])) call abort
+    if (any (int (10.0*conc(1)%a) .ne. [10,20])) STOP 1
+    if (any (int (10.0*conc(2)%a) .ne. [40,49])) STOP 2
 
     !CALL MPI_FINALIZE(i)
 

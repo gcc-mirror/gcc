@@ -1,5 +1,5 @@
 /* Handle errors.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -864,6 +864,15 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 
   switch (std)
   {
+    case GFC_STD_F2018_DEL:
+      msg = _("Fortran 2018 deleted feature:");
+      break;
+    case GFC_STD_F2018_OBS:
+      msg = _("Fortran 2018 obsolescent feature:");
+      break;
+    case GFC_STD_F2018:
+      msg = _("Fortran 2018:");
+      break;
     case GFC_STD_F2008_TS:
       msg = "TS 29113/TS 18508:";
       break;

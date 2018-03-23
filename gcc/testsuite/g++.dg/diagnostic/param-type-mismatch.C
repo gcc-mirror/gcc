@@ -1,9 +1,6 @@
 // { dg-options "-fdiagnostics-show-caret" }
 
-/* A collection of calls where argument 2 is of the wrong type.
-
-   TODO: we should put the caret and underline for the diagnostic
-   at the second argument, rather than the close paren.  */
+/* A collection of calls where argument 2 is of the wrong type.  */
 
 /* decl, with argname.  */
 
@@ -14,7 +11,7 @@ int test_1 (int first, int second, float third)
   return callee_1 (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return callee_1 (first, second, third);
-                                        ^
+                           ^~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_1\\(int, const char\\*, float\\)'" "" { target *-*-* } callee_1 }
   /* { dg-begin-multiline-output "" }
@@ -32,7 +29,7 @@ int test_2 (int first, int second, float third)
   return callee_2 (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return callee_2 (first, second, third);
-                                        ^
+                           ^~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_2\\(int, const char\\*, float\\)'" "" { target *-*-* } callee_2 }
   /* { dg-begin-multiline-output "" }
@@ -53,7 +50,7 @@ int test_3 (int first, int second, float third)
   return callee_3 (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return callee_3 (first, second, third);
-                                        ^
+                           ^~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_3\\(int, const char\\*, float\\)'" "" { target *-*-* } callee_3 }
   /* { dg-begin-multiline-output "" }
@@ -71,7 +68,7 @@ int test_4 (int first, int second, float third)
   return s4::member_1 (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return s4::member_1 (first, second, third);
-                                            ^
+                               ^~~~~~
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
  struct s4 { static int member_1 (int one, const char *two, float three); };
@@ -89,7 +86,7 @@ int test_5 (int first, int second, float third)
   return inst.member_1 (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return inst.member_1 (first, second, third);
-                                             ^
+                                ^~~~~~
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
  struct s5 { int member_1 (int one, const char *two, float three); };
@@ -106,7 +103,7 @@ int test_6 (int first, int second, float third, s6 *ptr)
   return ptr->member_1 (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return ptr->member_1 (first, second, third);
-                                             ^
+                                ^~~~~~
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
  struct s6 { int member_1 (int one, const char *two, float three); };
@@ -128,7 +125,7 @@ int test_7 (int first, int second, float third)
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
    return test_7 <const char *> (first, second, third);
-                                                     ^
+                                        ^~~~~~
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
  int test_7 (int one, T two, float three);
@@ -146,7 +143,7 @@ int test_8 (int first, int second, float third)
   return s8 <const char *>::member_1 (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return s8 <const char *>::member_1 (first, second, third);
-                                                           ^
+                                              ^~~~~~
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
  struct s8 { static int member_1 (int one, T two, float three); };
@@ -165,7 +162,7 @@ int test_9 (int first, int second, float third)
   return inst.member_1 (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return inst.member_1 (first, second, third);
-                                             ^
+                                ^~~~~~
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
  struct s9 { int member_1 (int one, T two, float three); };
@@ -182,7 +179,7 @@ int test_10 (int first, int second, float third)
   return callee_10 (first, second, third); // { dg-error "invalid conversion from 'int' to 'int \\(\\*\\)\\(int, int\\)'" }
   /* { dg-begin-multiline-output "" }
    return callee_10 (first, second, third);
-                                         ^
+                            ^~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_10\\(int, int \\(\\*\\)\\(int, int\\), float\\)'" "" { target *-*-* } callee_10 }
   /* { dg-begin-multiline-output "" }
@@ -200,7 +197,7 @@ int test_11 (int first, int second, float third)
   return callee_11 (first, second, third); // { dg-error "invalid conversion from 'int' to 'int \\(\\*\\)\\(int, int\\)'" }
   /* { dg-begin-multiline-output "" }
    return callee_11 (first, second, third);
-                                         ^
+                            ^~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_11\\(int, int \\(\\*\\)\\(int, int\\), float\\)'" "" { target *-*-* } callee_11 }
   /* { dg-begin-multiline-output "" }

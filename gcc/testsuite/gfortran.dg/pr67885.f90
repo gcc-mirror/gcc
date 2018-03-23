@@ -7,6 +7,6 @@ program p
       integer, parameter :: a(2) = [1, 2]
       integer :: x(2)
       x = a
-      if (x(1) /= 1) call abort
+      if (x(1) /= 1) STOP 1
    end block
 end

@@ -16,10 +16,10 @@ subroutine dummy(i1,r1,c1,l1,i2,r2,c2,l2)
   character, intent(inout) :: c2
   logical, intent(inout) :: l2
   print *, i1, i2, l1, l2, ichar(c1), ichar(c2), r1, r2
-  if ( i1 .ne. 42 .or. i2 .ne. 42 ) call abort()
-  if ( (.not. l1) .or. (.not. l2) ) call abort()
-  if ( c1 .ne. achar(32) .or. c2 .ne. achar(32) ) call abort()
-  if ( (.not. isnan(r1)) .or. (.not. isnan(r2)) ) call abort()
+  if ( i1 .ne. 42 .or. i2 .ne. 42 ) STOP 1
+  if ( (.not. l1) .or. (.not. l2) ) STOP 2
+  if ( c1 .ne. achar(32) .or. c2 .ne. achar(32) ) STOP 3
+  if ( (.not. isnan(r1)) .or. (.not. isnan(r2)) ) STOP 4
 end subroutine
 
 ! Nb. the current implementation decides the -finit-* flags are meaningless

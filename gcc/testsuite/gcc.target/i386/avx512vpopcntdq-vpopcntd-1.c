@@ -3,16 +3,15 @@
 /* { dg-require-effective-target avx512vpopcntdq } */
 
 #define AVX512VPOPCNTDQ
-#include "avx512f-helper.h"
-
 #define SIZE (AVX512F_LEN / 32)
 
+#include "avx512f-helper.h"
 #include "avx512f-mask-type.h"
 
 #define TYPE int
 
-static int
-compute_popcnt (TYPE v)
+int
+CALC (TYPE v)
 {
   int ret;
   int i;
@@ -31,12 +30,12 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN, i_d) res1, res2, res3, src, src0;
   MASK_TYPE mask = MASK_VALUE;
   TYPE res_ref[SIZE];
-  src.x = _mm512_set1_epi8 (0x3D);
+  src.x = INTRINSIC (_set1_epi8) (0x3D);
   int i;
 
   for (i = 0; i < SIZE; i++)
   {
-    res_ref[i] = compute_popcnt (src.a[i]);
+    res_ref[i] = CALC (src.a[i]);
     src0.a[i] = DEFAULT_VALUE;
   }
 

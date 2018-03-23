@@ -31,5 +31,5 @@ program p
   use m
   integer :: i
   i = bar()
-  if (i /= -10) call abort
+  if (i /= -10) STOP 1
 end program p

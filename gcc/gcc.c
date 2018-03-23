@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -684,7 +684,7 @@ proper position among the other output files.  */
 
 #ifndef LIBASAN_SPEC
 #define STATIC_LIBASAN_LIBS \
-  " %{static-libasan:%:include(libsanitizer.spec)%(link_libasan)}"
+  " %{static-libasan|static:%:include(libsanitizer.spec)%(link_libasan)}"
 #ifdef LIBASAN_EARLY_SPEC
 #define LIBASAN_SPEC STATIC_LIBASAN_LIBS
 #elif defined(HAVE_LD_STATIC_DYNAMIC)
@@ -702,7 +702,7 @@ proper position among the other output files.  */
 
 #ifndef LIBTSAN_SPEC
 #define STATIC_LIBTSAN_LIBS \
-  " %{static-libtsan:%:include(libsanitizer.spec)%(link_libtsan)}"
+  " %{static-libtsan|static:%:include(libsanitizer.spec)%(link_libtsan)}"
 #ifdef LIBTSAN_EARLY_SPEC
 #define LIBTSAN_SPEC STATIC_LIBTSAN_LIBS
 #elif defined(HAVE_LD_STATIC_DYNAMIC)
@@ -720,7 +720,7 @@ proper position among the other output files.  */
 
 #ifndef LIBLSAN_SPEC
 #define STATIC_LIBLSAN_LIBS \
-  " %{static-liblsan:%:include(libsanitizer.spec)%(link_liblsan)}"
+  " %{static-liblsan|static:%:include(libsanitizer.spec)%(link_liblsan)}"
 #ifdef LIBLSAN_EARLY_SPEC
 #define LIBLSAN_SPEC STATIC_LIBLSAN_LIBS
 #elif defined(HAVE_LD_STATIC_DYNAMIC)
@@ -738,7 +738,7 @@ proper position among the other output files.  */
 
 #ifndef LIBUBSAN_SPEC
 #define STATIC_LIBUBSAN_LIBS \
-  " %{static-libubsan:%:include(libsanitizer.spec)%(link_libubsan)}"
+  " %{static-libubsan|static:%:include(libsanitizer.spec)%(link_libubsan)}"
 #ifdef HAVE_LD_STATIC_DYNAMIC
 #define LIBUBSAN_SPEC "%{static-libubsan:" LD_STATIC_OPTION \
 		     "} -lubsan %{static-libubsan:" LD_DYNAMIC_OPTION "}" \
@@ -1041,7 +1041,6 @@ proper position among the other output files.  */
     VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o " CHKP_SPEC " \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
 	%:include(libgomp.spec)%(link_gomp)}\
-    %{fcilkplus:%:include(libcilkrts.spec)%(link_cilkrts)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} " SANITIZER_SPEC " \
@@ -1216,15 +1215,9 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 #define GTM_SELF_SPECS "%{fgnu-tm: -pthread}"
 #endif
 
-/* Likewise for -fcilkplus.  */
-#ifndef CILK_SELF_SPECS
-#define CILK_SELF_SPECS "%{fcilkplus: -pthread}"
-#endif
-
 static const char *const driver_self_specs[] = {
   "%{fdump-final-insns:-fdump-final-insns=.} %<fdump-final-insns",
-  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS,
-  CILK_SELF_SPECS
+  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS
 };
 
 #ifndef OPTION_DEFAULT_SPECS
@@ -7042,8 +7035,8 @@ try_generate_repro (const char **argv)
 
     /* In final attempt we append compiler options and preprocesssed code to last
        generated .out file with configuration and backtrace.  */
-    char **output = &temp_stdout_files[RETRY_ICE_ATTEMPTS - 1];
-    do_report_bug (new_argv, nargs, stderr_commented, output);
+    char **err = &temp_stderr_files[RETRY_ICE_ATTEMPTS - 1];
+    do_report_bug (new_argv, nargs, stderr_commented, err);
   }
 
 out:
@@ -8042,7 +8035,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2017 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2018 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),

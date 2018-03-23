@@ -10,6 +10,6 @@ program der_init_2
 
   type (foo) :: v
 
-  if ((v%b .ne. 123) .or. any (v%a .ne. 42)) call abort ();
+  if ((v%b .ne. 123) .or. any (v%a .ne. 42)) STOP 1;
 end program
 

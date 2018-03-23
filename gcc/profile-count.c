@@ -1,5 +1,5 @@
 /* Profile counter container type.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -321,9 +321,53 @@ profile_count::combine_with_ipa_count (profile_count ipa)
   ipa = ipa.ipa ();
   if (ipa.nonzero_p ())
     return ipa;
-  if (!ipa.initialized_p ())
+  if (!ipa.initialized_p () || *this == profile_count::zero ())
     return *this;
   if (ipa == profile_count::zero ())
     return this->global0 ();
   return this->global0adjusted ();
+}
+
+/* The profiling runtime uses gcov_type, which is usually 64bit integer.
+   Conversions back and forth are used to read the coverage and get it
+   into internal representation.  */
+profile_count
+profile_count::from_gcov_type (gcov_type v)
+  {
+    profile_count ret;
+    gcc_checking_assert (v >= 0);
+    if (dump_file && v >= (gcov_type)max_count)
+      fprintf (dump_file,
+	       "Capping gcov count %" PRId64 " to max_count %" PRId64 "\n",
+	       (int64_t) v, (int64_t) max_count);
+    ret.m_val = MIN (v, (gcov_type)max_count);
+    ret.m_quality = profile_precise;
+    return ret;
+  }
+
+
+/* COUNT1 times event happens with *THIS probability, COUNT2 times OTHER
+   happens with COUNT2 probablity. Return probablity that either *THIS or
+   OTHER happens.  */
+
+profile_probability
+profile_probability::combine_with_count (profile_count count1,
+					 profile_probability other,
+					 profile_count count2) const
+{
+  /* If probabilities are same, we are done.
+     If counts are nonzero we can distribute accordingly. In remaining
+     cases just avreage the values and hope for the best.  */
+  if (*this == other || count1 == count2
+      || (count2 == profile_count::zero ()
+	  && !(count1 == profile_count::zero ())))
+    return *this;
+  if (count1 == profile_count::zero () && !(count2 == profile_count::zero ()))
+    return other;
+  else if (count1.nonzero_p () || count2.nonzero_p ())
+    return *this * count1.probability_in (count1 + count2)
+	   + other * count2.probability_in (count1 + count2);
+  else
+    return *this * profile_probability::even ()
+	   + other * profile_probability::even ();
 }

@@ -4,5 +4,5 @@
 PROGRAM test
   character(len=10) :: u
   WRITE(unit=u,fmt='(3A)') PACK(ADJUSTL([" a", " b"]), [.TRUE., .FALSE.])
-  if (u .ne. 'a    ') call abort
+  if (u .ne. 'a    ') STOP 1
 END PROGRAM test

@@ -1,5 +1,5 @@
 ;; Machine description of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -52,13 +52,17 @@
 
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
-  "unknown,move,load,store,alu,compare,branch,call,misc"
+  "unknown,move,load,store,load_multiple,store_multiple,alu,compare,branch,call,misc"
   (const_string "unknown"))
 
 
 ;; Length, in bytes, default is 4-bytes.
 (define_attr "length" "" (const_int 4))
 
+;; Indicate the amount of micro instructions.
+(define_attr "combo"
+  "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25"
+  (const_string "1"))
 
 ;; Enabled, which is used to enable/disable insn alternatives.
 ;; Note that we use length and TARGET_16_BIT here as criteria.
@@ -2089,11 +2093,8 @@ create_template:
   ""
 {
   /* Note that only under V3/V3M ISA, we could use v3push prologue.
-     In addition, we do not want to use v3push for isr function
-     and variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+     In addition, we need to check if v3push is indeed available.  */
+  if (NDS32_V3PUSH_AVAILABLE_P)
     nds32_expand_prologue_v3push ();
   else
     nds32_expand_prologue ();
@@ -2104,11 +2105,8 @@ create_template:
   ""
 {
   /* Note that only under V3/V3M ISA, we could use v3pop epilogue.
-     In addition, we do not want to use v3pop for isr function
-     and variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+     In addition, we need to check if v3push is indeed available.  */
+  if (NDS32_V3PUSH_AVAILABLE_P)
     nds32_expand_epilogue_v3pop (false);
   else
     nds32_expand_epilogue (false);
@@ -2121,10 +2119,7 @@ create_template:
   /* Pass true to indicate that this is sibcall epilogue and
      exit from a function without the final branch back to the
      calling function.  */
-  if (TARGET_V3PUSH && !nds32_isr_function_p (current_function_decl))
-    nds32_expand_epilogue_v3pop (true);
-  else
-    nds32_expand_epilogue (true);
+  nds32_expand_epilogue (true);
 
   DONE;
 })
@@ -2166,7 +2161,8 @@ create_template:
 {
   return nds32_output_stack_push (operands[0]);
 }
-  [(set_attr "type" "misc")
+  [(set_attr "type" "store_multiple")
+   (set_attr "combo" "12")
    (set_attr "enabled" "1")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_V3PUSH
@@ -2188,7 +2184,8 @@ create_template:
 {
   return nds32_output_stack_pop (operands[0]);
 }
-  [(set_attr "type" "misc")
+  [(set_attr "type" "load_multiple")
+   (set_attr "combo" "12")
    (set_attr "enabled" "1")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_V3PUSH

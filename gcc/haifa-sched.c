@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -2783,12 +2783,11 @@ rank_for_schedule (const void *x, const void *y)
     }
 
   /* Prefer instructions that occur earlier in the model schedule.  */
-  if (sched_pressure == SCHED_PRESSURE_MODEL
-      && INSN_BB (tmp) == target_bb && INSN_BB (tmp2) == target_bb)
+  if (sched_pressure == SCHED_PRESSURE_MODEL)
     {
       diff = model_index (tmp) - model_index (tmp2);
-      gcc_assert (diff != 0);
-      return rfs_result (RFS_PRESSURE_INDEX, diff, tmp, tmp2);
+      if (diff != 0)
+	return rfs_result (RFS_PRESSURE_INDEX, diff, tmp, tmp2);
     }
 
   /* Prefer the insn which has more later insns that depend on it.
@@ -4010,7 +4009,7 @@ schedule_insn (rtx_insn *insn)
   gcc_assert (sd_lists_empty_p (insn, SD_LIST_HARD_BACK));
 
   /* Reset debug insns invalidated by moving this insn.  */
-  if (MAY_HAVE_DEBUG_INSNS && !DEBUG_INSN_P (insn))
+  if (MAY_HAVE_DEBUG_BIND_INSNS && !DEBUG_INSN_P (insn))
     for (sd_it = sd_iterator_start (insn, SD_LIST_BACK);
 	 sd_iterator_cond (&sd_it, &dep);)
       {
@@ -4023,7 +4022,7 @@ schedule_insn (rtx_insn *insn)
 	    continue;
 	  }
 
-	gcc_assert (DEBUG_INSN_P (dbg));
+	gcc_assert (DEBUG_BIND_INSN_P (dbg));
 
 	if (sched_verbose >= 6)
 	  fprintf (sched_dump, ";;\t\tresetting: debug insn %d\n",
@@ -8086,7 +8085,7 @@ sched_extend_bb (void)
       || (!NOTE_P (insn)
 	  && !LABEL_P (insn)
 	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
-	  && !BARRIER_P (NEXT_INSN (end))))
+	  && !BARRIER_P (next_nondebug_insn (end))))
     {
       rtx_note *note = emit_note_after (NOTE_INSN_DELETED, end);
       /* Make note appear outside BB.  */

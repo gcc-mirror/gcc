@@ -1,5 +1,5 @@
-/* { dg-require-effective-target tls } */
 /* { dg-do compile } */
+/* { dg-require-effective-target tls } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-not "ldw\tr., %lo" } } */
 /* { dg-final { scan-assembler-not "stw\tr., %lo" } } */

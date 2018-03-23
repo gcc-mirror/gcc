@@ -157,10 +157,6 @@ package runtime
 
 import "runtime/internal/sys"
 
-// Gosched yields the processor, allowing other goroutines to run.  It does not
-// suspend the current goroutine, so execution resumes automatically.
-func Gosched()
-
 // Caller reports file and line number information about function invocations on
 // the calling goroutine's stack. The argument skip is the number of stack frames
 // to ascend, with 0 identifying the caller of Caller.  (For historical reasons the
@@ -184,8 +180,8 @@ func Caller(skip int) (pc uintptr, file string, line int, ok bool)
 // program counter adjustment.
 func Callers(skip int, pc []uintptr) int
 
-// GOROOT returns the root of the Go tree.
-// It uses the GOROOT environment variable, if set,
+// GOROOT returns the root of the Go tree. It uses the
+// GOROOT environment variable, if set at process start,
 // or else the root used during the Go build.
 func GOROOT() string {
 	s := gogetenv("GOROOT")

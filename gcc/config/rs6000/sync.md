@@ -1,5 +1,5 @@
 ;; Machine description for PowerPC synchronization instructions.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;; Contributed by Geoffrey Keating.
 
 ;; This file is part of GCC.
@@ -38,7 +38,7 @@
    (ior "logical_operand") (xor "logical_operand") (and "and_operand")])
 
 (define_expand "mem_thread_fence"
-  [(match_operand:SI 0 "const_int_operand" "")]		;; model
+  [(match_operand:SI 0 "const_int_operand")]		;; model
   ""
 {
   enum memmodel model = memmodel_base (INTVAL (operands[0]));
@@ -136,9 +136,9 @@
    (set_attr "length" "4")])
 
 (define_expand "atomic_load<mode>"
-  [(set (match_operand:AINT 0 "register_operand" "")		;; output
-	(match_operand:AINT 1 "memory_operand" ""))		;; memory
-   (use (match_operand:SI 2 "const_int_operand" ""))]		;; model
+  [(set (match_operand:AINT 0 "register_operand")		;; output
+	(match_operand:AINT 1 "memory_operand"))		;; memory
+   (use (match_operand:SI 2 "const_int_operand"))]		;; model
   ""
 {
   if (<MODE>mode == TImode && !TARGET_SYNC_TI)
@@ -200,9 +200,9 @@
    (set_attr "length" "4")])
 
 (define_expand "atomic_store<mode>"
-  [(set (match_operand:AINT 0 "memory_operand" "")		;; memory
-	(match_operand:AINT 1 "register_operand" ""))		;; input
-   (use (match_operand:SI 2 "const_int_operand" ""))]		;; model
+  [(set (match_operand:AINT 0 "memory_operand")		;; memory
+	(match_operand:AINT 1 "register_operand"))	;; input
+   (use (match_operand:SI 2 "const_int_operand"))]	;; model
   ""
 {
   if (<MODE>mode == TImode && !TARGET_SYNC_TI)
@@ -287,8 +287,8 @@
 ;; is indexed or indirect before register allocation.
 
 (define_expand "load_lockedti"
-  [(use (match_operand:TI 0 "quad_int_reg_operand" ""))
-   (use (match_operand:TI 1 "memory_operand" ""))]
+  [(use (match_operand:TI 0 "quad_int_reg_operand"))
+   (use (match_operand:TI 1 "memory_operand"))]
   "TARGET_SYNC_TI"
 {
   rtx op0 = operands[0];
@@ -341,9 +341,9 @@
 ;; is indexed or indirect before register allocation.
 
 (define_expand "store_conditionalti"
-  [(use (match_operand:CC 0 "cc_reg_operand" ""))
-   (use (match_operand:TI 1 "memory_operand" ""))
-   (use (match_operand:TI 2 "quad_int_reg_operand" ""))]
+  [(use (match_operand:CC 0 "cc_reg_operand"))
+   (use (match_operand:TI 1 "memory_operand"))
+   (use (match_operand:TI 2 "quad_int_reg_operand"))]
   "TARGET_SYNC_TI"
 {
   rtx op0 = operands[0];
@@ -385,14 +385,14 @@
   [(set_attr "type" "store_c")])
 
 (define_expand "atomic_compare_and_swap<mode>"
-  [(match_operand:SI 0 "int_reg_operand" "")		;; bool out
-   (match_operand:AINT 1 "int_reg_operand" "")		;; val out
-   (match_operand:AINT 2 "memory_operand" "")		;; memory
-   (match_operand:AINT 3 "reg_or_short_operand" "")	;; expected
-   (match_operand:AINT 4 "int_reg_operand" "")		;; desired
-   (match_operand:SI 5 "const_int_operand" "")		;; is_weak
-   (match_operand:SI 6 "const_int_operand" "")		;; model succ
-   (match_operand:SI 7 "const_int_operand" "")]		;; model fail
+  [(match_operand:SI 0 "int_reg_operand")		;; bool out
+   (match_operand:AINT 1 "int_reg_operand")		;; val out
+   (match_operand:AINT 2 "memory_operand")		;; memory
+   (match_operand:AINT 3 "reg_or_short_operand")	;; expected
+   (match_operand:AINT 4 "int_reg_operand")		;; desired
+   (match_operand:SI 5 "const_int_operand")		;; is_weak
+   (match_operand:SI 6 "const_int_operand")		;; model succ
+   (match_operand:SI 7 "const_int_operand")]		;; model fail
   ""
 {
   rs6000_expand_atomic_compare_and_swap (operands);
@@ -400,10 +400,10 @@
 })
 
 (define_expand "atomic_exchange<mode>"
-  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
-   (match_operand:AINT 1 "memory_operand" "")		;; memory
-   (match_operand:AINT 2 "int_reg_operand" "")		;; input
-   (match_operand:SI 3 "const_int_operand" "")]		;; model
+  [(match_operand:AINT 0 "int_reg_operand")		;; output
+   (match_operand:AINT 1 "memory_operand")		;; memory
+   (match_operand:AINT 2 "int_reg_operand")		;; input
+   (match_operand:SI 3 "const_int_operand")]		;; model
   ""
 {
   rs6000_expand_atomic_exchange (operands);
@@ -411,10 +411,10 @@
 })
 
 (define_expand "atomic_<fetchop_name><mode>"
-  [(match_operand:AINT 0 "memory_operand" "")		;; memory
+  [(match_operand:AINT 0 "memory_operand")		;; memory
    (FETCHOP:AINT (match_dup 0)
-     (match_operand:AINT 1 "<fetchop_pred>" ""))	;; operand
-   (match_operand:SI 2 "const_int_operand" "")]		;; model
+     (match_operand:AINT 1 "<fetchop_pred>"))		;; operand
+   (match_operand:SI 2 "const_int_operand")]		;; model
   ""
 {
   rs6000_expand_atomic_op (<CODE>, operands[0], operands[1],
@@ -423,9 +423,9 @@
 })
 
 (define_expand "atomic_nand<mode>"
-  [(match_operand:AINT 0 "memory_operand" "")		;; memory
-   (match_operand:AINT 1 "int_reg_operand" "")		;; operand
-   (match_operand:SI 2 "const_int_operand" "")]		;; model
+  [(match_operand:AINT 0 "memory_operand")		;; memory
+   (match_operand:AINT 1 "int_reg_operand")		;; operand
+   (match_operand:SI 2 "const_int_operand")]		;; model
   ""
 {
   rs6000_expand_atomic_op (NOT, operands[0], operands[1],
@@ -434,11 +434,11 @@
 })
 
 (define_expand "atomic_fetch_<fetchop_name><mode>"
-  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
-   (match_operand:AINT 1 "memory_operand" "")		;; memory
+  [(match_operand:AINT 0 "int_reg_operand")		;; output
+   (match_operand:AINT 1 "memory_operand")		;; memory
    (FETCHOP:AINT (match_dup 1)
-     (match_operand:AINT 2 "<fetchop_pred>" ""))	;; operand
-   (match_operand:SI 3 "const_int_operand" "")]		;; model
+     (match_operand:AINT 2 "<fetchop_pred>"))		;; operand
+   (match_operand:SI 3 "const_int_operand")]		;; model
   ""
 { 
   rs6000_expand_atomic_op (<CODE>, operands[1], operands[2],
@@ -447,10 +447,10 @@
 })
 
 (define_expand "atomic_fetch_nand<mode>"
-  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
-   (match_operand:AINT 1 "memory_operand" "")		;; memory
-   (match_operand:AINT 2 "int_reg_operand" "")		;; operand
-   (match_operand:SI 3 "const_int_operand" "")]		;; model
+  [(match_operand:AINT 0 "int_reg_operand")		;; output
+   (match_operand:AINT 1 "memory_operand")		;; memory
+   (match_operand:AINT 2 "int_reg_operand")		;; operand
+   (match_operand:SI 3 "const_int_operand")]		;; model
   ""
 {
   rs6000_expand_atomic_op (NOT, operands[1], operands[2],
@@ -459,11 +459,11 @@
 })
 
 (define_expand "atomic_<fetchop_name>_fetch<mode>"
-  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
-   (match_operand:AINT 1 "memory_operand" "")		;; memory
+  [(match_operand:AINT 0 "int_reg_operand")		;; output
+   (match_operand:AINT 1 "memory_operand")		;; memory
    (FETCHOP:AINT (match_dup 1)
-     (match_operand:AINT 2 "<fetchop_pred>" ""))	;; operand
-   (match_operand:SI 3 "const_int_operand" "")]		;; model
+     (match_operand:AINT 2 "<fetchop_pred>"))		;; operand
+   (match_operand:SI 3 "const_int_operand")]		;; model
   ""
 {
   rs6000_expand_atomic_op (<CODE>, operands[1], operands[2],
@@ -472,10 +472,10 @@
 })
 
 (define_expand "atomic_nand_fetch<mode>"
-  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
-   (match_operand:AINT 1 "memory_operand" "")		;; memory
-   (match_operand:AINT 2 "int_reg_operand" "")		;; operand
-   (match_operand:SI 3 "const_int_operand" "")]		;; model
+  [(match_operand:AINT 0 "int_reg_operand")		;; output
+   (match_operand:AINT 1 "memory_operand")		;; memory
+   (match_operand:AINT 2 "int_reg_operand")		;; operand
+   (match_operand:SI 3 "const_int_operand")]		;; model
   ""
 {
   rs6000_expand_atomic_op (NOT, operands[1], operands[2],

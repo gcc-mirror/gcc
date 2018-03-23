@@ -8,6 +8,6 @@
   character*1 :: c, d
   if (any( (/ kind(i .and. j), kind(.not. (i .and. j)), kind((a + b)), &
               kind((42_1)), kind((j .and. i)), kind((.true._1)), &
-              kind(c // d), kind((c) // d), kind((c//d)) /) /= 1 )) call abort()
-  if (any( (/ len(c // d), len((c) // d), len ((c // d)) /) /= 2)) call abort()
+              kind(c // d), kind((c) // d), kind((c//d)) /) /= 1 )) STOP 1
+  if (any( (/ len(c // d), len((c) // d), len ((c // d)) /) /= 2)) STOP 2
 end

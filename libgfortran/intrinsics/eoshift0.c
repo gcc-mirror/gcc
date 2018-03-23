@@ -1,5 +1,5 @@
 /* Generic implementation of the EOSHIFT intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -66,7 +66,7 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
       int i;
 
       ret->offset = 0;
-      ret->dtype = array->dtype;
+      GFC_DTYPE_COPY(ret,array);
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;

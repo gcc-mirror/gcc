@@ -1,5 +1,5 @@
 ;; ARM VFP instruction patterns
-;; Copyright (C) 2003-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -410,7 +410,10 @@
       gcc_unreachable ();
     }
  }
-  [(set_attr "predicable" "yes, yes, no, yes, no, no, no, no, no, no")
+  [(set_attr "conds" "*, *, unconditional, *, unconditional, unconditional,\
+		      unconditional, unconditional, unconditional,\
+		      unconditional")
+   (set_attr "predicable" "yes, yes, no, yes, no, no, no, no, no, no")
    (set_attr "predicable_short_it" "no, no, no, yes,\
 				    no, no, no, no,\
 				    no, no")

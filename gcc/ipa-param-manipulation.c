@@ -1,6 +1,6 @@
 /* Manipulation of formal and actual parameters of functions and function
    calls.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -293,18 +293,16 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	     simply taking the address of a reference inside the original
 	     aggregate.  */
 
-	  gcc_checking_assert (adj->offset % BITS_PER_UNIT == 0);
+	  poly_int64 byte_offset = exact_div (adj->offset, BITS_PER_UNIT);
 	  base = gimple_call_arg (stmt, adj->base_index);
-	  loc = DECL_P (base) ? DECL_SOURCE_LOCATION (base)
-			      : EXPR_LOCATION (base);
+	  loc = gimple_location (stmt);
 
 	  if (TREE_CODE (base) != ADDR_EXPR
 	      && POINTER_TYPE_P (TREE_TYPE (base)))
-	    off = build_int_cst (adj->alias_ptr_type,
-				 adj->offset / BITS_PER_UNIT);
+	    off = build_int_cst (adj->alias_ptr_type, byte_offset);
 	  else
 	    {
-	      HOST_WIDE_INT base_offset;
+	      poly_int64 base_offset;
 	      tree prev_base;
 	      bool addrof;
 
@@ -321,8 +319,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	      if (!base)
 		{
 		  base = build_fold_addr_expr (prev_base);
-		  off = build_int_cst (adj->alias_ptr_type,
-				       adj->offset / BITS_PER_UNIT);
+		  off = build_int_cst (adj->alias_ptr_type, byte_offset);
 		}
 	      else if (TREE_CODE (base) == MEM_REF)
 		{
@@ -332,8 +329,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 		      deref_align = TYPE_ALIGN (TREE_TYPE (base));
 		    }
 		  off = build_int_cst (adj->alias_ptr_type,
-				       base_offset
-				       + adj->offset / BITS_PER_UNIT);
+				       base_offset + byte_offset);
 		  off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1),
 					 off);
 		  base = TREE_OPERAND (base, 0);
@@ -341,8 +337,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	      else
 		{
 		  off = build_int_cst (adj->alias_ptr_type,
-				       base_offset
-				       + adj->offset / BITS_PER_UNIT);
+				       base_offset + byte_offset);
 		  base = build_fold_addr_expr (base);
 		}
 	    }
@@ -389,6 +384,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 		  else
 		    expr = create_tmp_reg (TREE_TYPE (expr));
 		  gimple_assign_set_lhs (tem, expr);
+		  gimple_set_location (tem, loc);
 		  gsi_insert_before (&gsi, tem, GSI_SAME_STMT);
 		}
 	    }
@@ -402,7 +398,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	    }
 	  vargs.quick_push (expr);
 	}
-      if (adj->op != IPA_PARM_OP_COPY && MAY_HAVE_DEBUG_STMTS)
+      if (adj->op != IPA_PARM_OP_COPY && MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  unsigned int ix;
 	  tree ddecl = NULL_TREE, origin = DECL_ORIGIN (adj->base), arg;
@@ -631,16 +627,16 @@ ipa_get_adjustment_candidate (tree **expr, bool *convert,
 	*convert = true;
     }
 
-  HOST_WIDE_INT offset, size, max_size;
+  poly_int64 offset, size, max_size;
   bool reverse;
   tree base
     = get_ref_base_and_extent (**expr, &offset, &size, &max_size, &reverse);
-  if (!base || size == -1 || max_size == -1)
+  if (!base || !known_size_p (size) || !known_size_p (max_size))
     return NULL;
 
   if (TREE_CODE (base) == MEM_REF)
     {
-      offset += mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
+      offset += mem_ref_offset (base).force_shwi () * BITS_PER_UNIT;
       base = TREE_OPERAND (base, 0);
     }
 
@@ -655,7 +651,7 @@ ipa_get_adjustment_candidate (tree **expr, bool *convert,
       struct ipa_parm_adjustment *adj = &adjustments[i];
 
       if (adj->base == base
-	  && (adj->offset == offset || adj->op == IPA_PARM_OP_REMOVE))
+	  && (known_eq (adj->offset, offset) || adj->op == IPA_PARM_OP_REMOVE))
 	{
 	  cand = adj;
 	  break;
@@ -756,7 +752,10 @@ ipa_dump_param_adjustments (FILE *file, ipa_parm_adjustment_vec adjustments,
       else if (adj->op == IPA_PARM_OP_REMOVE)
 	fprintf (file, ", remove_param");
       else
-	fprintf (file, ", offset %li", (long) adj->offset);
+	{
+	  fprintf (file, ", offset ");
+	  print_dec (adj->offset, file);
+	}
       if (adj->by_ref)
 	fprintf (file, ", by_ref");
       print_node_brief (file, ", type: ", adj->type, 0);

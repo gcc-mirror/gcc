@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4155,7 +4155,7 @@ package body Sem_Ch4 is
               and then Parent (Loop_Par) /= N
             then
                --  The parser cannot distinguish between a loop specification
-               --  and an iterator specification. If after pre-analysis the
+               --  and an iterator specification. If after preanalysis the
                --  proper form has been recognized, rewrite the expression to
                --  reflect the right kind. This is needed for proper ASIS
                --  navigation. If expansion is enabled, the transformation is
@@ -4342,6 +4342,79 @@ package body Sem_Ch4 is
 
       Check_Function_Writable_Actuals (N);
    end Analyze_Range;
+
+   -----------------------------------
+   -- Analyze_Reduction_Expression --
+   -----------------------------------
+
+   procedure Analyze_Reduction_Expression (N : Node_Id) is
+      Expr    : constant Node_Id := Expression (N);
+      QE_Scop : Entity_Id;
+
+   begin
+      QE_Scop := New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
+      Set_Etype  (QE_Scop, Standard_Void_Type);
+      Set_Scope  (QE_Scop, Current_Scope);
+      Set_Parent (QE_Scop, N);
+
+      Push_Scope (QE_Scop);
+
+      --  All constituents are preanalyzed and resolved to avoid untimely
+      --  generation of various temporaries and types. Full analysis and
+      --  expansion is carried out when the reduction expression is
+      --  transformed into an expression with actions.
+
+      if Present (Iterator_Specification (N)) then
+         Preanalyze (Iterator_Specification (N));
+
+      else pragma Assert (Present (Loop_Parameter_Specification (N)));
+         declare
+            Loop_Par : constant Node_Id := Loop_Parameter_Specification (N);
+
+         begin
+            Preanalyze (Loop_Par);
+
+            if Nkind (Discrete_Subtype_Definition (Loop_Par)) = N_Function_Call
+              and then Parent (Loop_Par) /= N
+            then
+               --  The parser cannot distinguish between a loop specification
+               --  and an iterator specification. If after preanalysis the
+               --  proper form has been recognized, rewrite the expression to
+               --  reflect the right kind. This is needed for proper ASIS
+               --  navigation. If expansion is enabled, the transformation is
+               --  performed when the expression is rewritten as a loop.
+
+               Set_Iterator_Specification (N,
+                 New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
+
+               Set_Defining_Identifier (Iterator_Specification (N),
+                 Relocate_Node (Defining_Identifier (Loop_Par)));
+               Set_Name (Iterator_Specification (N),
+                 Relocate_Node (Discrete_Subtype_Definition (Loop_Par)));
+               Set_Comes_From_Source (Iterator_Specification (N),
+                 Comes_From_Source (Loop_Parameter_Specification (N)));
+               Set_Loop_Parameter_Specification (N, Empty);
+            end if;
+         end;
+      end if;
+
+      Preanalyze (Expr);
+      End_Scope;
+
+      Set_Etype (N, Etype (Expr));
+   end Analyze_Reduction_Expression;
+
+   --------------------------------------------
+   -- Analyze_Reduction_Expression_Parameter --
+   --------------------------------------------
+
+   procedure Analyze_Reduction_Expression_Parameter (N : Node_Id) is
+      Expr : constant Node_Id := Expression (N);
+
+   begin
+      Analyze (Expr);
+      Set_Etype (N, Etype (Expr));
+   end Analyze_Reduction_Expression_Parameter;
 
    -----------------------
    -- Analyze_Reference --
@@ -9411,14 +9484,31 @@ package body Sem_Ch4 is
          ---------------------------
 
          function Is_Private_Overriding (Op : Entity_Id) return Boolean is
-            Visible_Op : constant Entity_Id := Homonym (Op);
+            Visible_Op : Entity_Id;
 
          begin
-            return Present (Visible_Op)
-              and then Scope (Op) = Scope (Visible_Op)
-              and then not Comes_From_Source (Visible_Op)
-              and then Alias (Visible_Op) = Op
-              and then not Is_Hidden (Visible_Op);
+            --  The subprogram may be overloaded with both visible and private
+            --  entities with the same name. We have to scan the chain of
+            --  homonyms to determine whether there is a previous implicit
+            --  declaration in the same scope that is overridden by the
+            --  private candidate.
+
+            Visible_Op := Homonym (Op);
+            while Present (Visible_Op) loop
+               if Scope (Op) /= Scope (Visible_Op) then
+                  return False;
+
+               elsif not Comes_From_Source (Visible_Op)
+                 and then Alias (Visible_Op) = Op
+                 and then not Is_Hidden (Visible_Op)
+               then
+                  return True;
+               end if;
+
+               Visible_Op := Homonym (Visible_Op);
+            end loop;
+
+            return False;
          end Is_Private_Overriding;
 
          -----------------

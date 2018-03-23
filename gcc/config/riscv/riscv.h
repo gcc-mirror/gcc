@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -123,6 +123,12 @@ along with GCC; see the file COPYING3.  If not see
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY (TARGET_RVC ? 16 : 32)
 
+/* The smallest supported stack boundary the calling convention supports.  */
+#define STACK_BOUNDARY (2 * BITS_PER_WORD)
+
+/* The ABI stack alignment.  */
+#define ABI_STACK_BOUNDARY 128
+
 /* There is no point aligning anything to a rounder boundary than this.  */
 #define BIGGEST_ALIGNMENT 128
 
@@ -151,6 +157,10 @@ along with GCC; see the file COPYING3.  If not see
    a nonzero value for the expression enables this behavior.  */
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
+
+/* An integer expression for the size in bits of the largest integer machine
+   mode that should actually be used.  We allow pairs of registers.  */
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)
 
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
@@ -233,7 +243,7 @@ along with GCC; see the file COPYING3.  If not see
   1, 1									\
 }
 
-/* a0-a7, t0-a6, fa0-fa7, and ft0-ft11 are volatile across calls.
+/* a0-a7, t0-t6, fa0-fa7, and ft0-ft11 are volatile across calls.
    The call RTLs themselves clobber ra.  */
 
 #define CALL_USED_REGISTERS						\
@@ -472,8 +482,8 @@ enum reg_class
    `crtl->outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
-#define STACK_BOUNDARY 128
-
+#define PREFERRED_STACK_BOUNDARY riscv_stack_boundary
+
 /* Symbolic macros for the registers used to return integer and floating
    point values.  */
 
@@ -528,8 +538,9 @@ typedef struct {
 
 #define EPILOGUE_USES(REGNO)	((REGNO) == RETURN_ADDR_REGNUM)
 
-/* ABI requires 16-byte alignment, even on RV32. */
-#define RISCV_STACK_ALIGN(LOC) (((LOC) + 15) & -16)
+/* Align based on stack boundary, which might have been set by the user.  */
+#define RISCV_STACK_ALIGN(LOC) \
+  (((LOC) + ((PREFERRED_STACK_BOUNDARY/8)-1)) & -(PREFERRED_STACK_BOUNDARY/8))
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -880,9 +891,13 @@ extern unsigned riscv_stack_boundary;
 #define SHIFT_RS1 15
 #define SHIFT_IMM 20
 #define IMM_BITS 12
+#define C_SxSP_BITS 6
 
 #define IMM_REACH (1LL << IMM_BITS)
 #define CONST_HIGH_PART(VALUE) (((VALUE) + (IMM_REACH/2)) & ~(IMM_REACH-1))
 #define CONST_LOW_PART(VALUE) ((VALUE) - CONST_HIGH_PART (VALUE))
+
+#define SWSP_REACH (4LL << C_SxSP_BITS)
+#define SDSP_REACH (8LL << C_SxSP_BITS)
 
 #endif /* ! GCC_RISCV_H */

@@ -17,6 +17,6 @@ PROGRAM main
   j = 5
 
   IF (i /= j) THEN
-    CALL abort ()
+    STOP 1
   END IF
 END PROGRAM main

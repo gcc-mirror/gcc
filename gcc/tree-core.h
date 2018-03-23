@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -445,10 +445,6 @@ enum omp_clause_code {
      loop or not.  */
   OMP_CLAUSE__SIMT_,
 
-  /* Internally used only clause, holding _Cilk_for # of iterations
-     on OMP_PARALLEL.  */
-  OMP_CLAUSE__CILK_FOR_COUNT_,
-
   /* OpenACC clause: independent.  */
   OMP_CLAUSE_INDEPENDENT,
 
@@ -489,7 +485,6 @@ enum omp_clause_schedule_kind {
   OMP_CLAUSE_SCHEDULE_GUIDED,
   OMP_CLAUSE_SCHEDULE_AUTO,
   OMP_CLAUSE_SCHEDULE_RUNTIME,
-  OMP_CLAUSE_SCHEDULE_CILKFOR,
   OMP_CLAUSE_SCHEDULE_MASK = (1 << 3) - 1,
   OMP_CLAUSE_SCHEDULE_MONOTONIC = (1 << 3),
   OMP_CLAUSE_SCHEDULE_NONMONOTONIC = (1 << 4),
@@ -977,8 +972,17 @@ struct GTY(()) tree_base {
     /* VEC length.  This field is only used with TREE_VEC.  */
     int length;
 
-    /* Number of elements.  This field is only used with VECTOR_CST.  */
-    unsigned int nelts;
+    /* This field is only used with VECTOR_CST.  */
+    struct {
+      /* The value of VECTOR_CST_LOG2_NPATTERNS.  */
+      unsigned int log2_npatterns : 8;
+
+      /* The value of VECTOR_CST_NELTS_PER_PATTERN.  */
+      unsigned int nelts_per_pattern : 8;
+
+      /* For future expansion.  */
+      unsigned int unused : 16;
+    } vector_cst;
 
     /* SSA version number.  This field is only used with SSA_NAME.  */
     unsigned int version;
@@ -1112,6 +1116,9 @@ struct GTY(()) tree_base {
        SSA_NAME_IS_VIRTUAL_OPERAND in
 	   SSA_NAME
 
+       EXPR_LOCATION_WRAPPER_P in
+	   NON_LVALUE_EXPR, VIEW_CONVERT_EXPR
+
    private_flag:
 
        TREE_PRIVATE in
@@ -1209,10 +1216,6 @@ struct GTY(()) tree_base {
 
        SSA_NAME_OCCURS_IN_ABNORMAL_PHI in
            SSA_NAME
-
-       EXPR_CILK_SPAWN in
-           CALL_EXPR
-           AGGR_INIT_EXPR
 
    used_flag:
 
@@ -1334,7 +1337,12 @@ struct GTY(()) tree_complex {
 
 struct GTY(()) tree_vector {
   struct tree_typed typed;
-  tree GTY ((length ("VECTOR_CST_NELTS ((tree) &%h)"))) elts[1];
+  tree GTY ((length ("vector_cst_encoded_nelts ((tree) &%h)"))) elts[1];
+};
+
+struct GTY(()) tree_poly_int_cst {
+  struct tree_typed typed;
+  tree coeffs[NUM_POLY_INT_COEFFS];
 };
 
 struct GTY(()) tree_identifier {
@@ -1863,6 +1871,7 @@ union GTY ((ptr_alias (union lang_tree_node),
   struct tree_typed GTY ((tag ("TS_TYPED"))) typed;
   struct tree_common GTY ((tag ("TS_COMMON"))) common;
   struct tree_int_cst GTY ((tag ("TS_INT_CST"))) int_cst;
+  struct tree_poly_int_cst GTY ((tag ("TS_POLY_INT_CST"))) poly_int_cst;
   struct tree_real_cst GTY ((tag ("TS_REAL_CST"))) real_cst;
   struct tree_fixed_cst GTY ((tag ("TS_FIXED_CST"))) fixed_cst;
   struct tree_vector GTY ((tag ("TS_VECTOR"))) vector;
@@ -1929,6 +1938,8 @@ struct attribute_spec {
      and from a function return type (which is not itself a function
      pointer type) to the function type.  */
   bool function_type_required;
+  /* Specifies if attribute affects type's identity.  */
+  bool affects_type_identity;
   /* Function to handle this attribute.  NODE points to the node to which
      the attribute is to be applied.  If a DECL, it should be modified in
      place; if a TYPE, a copy should be created.  NAME is the name of the
@@ -1945,8 +1956,20 @@ struct attribute_spec {
      by the rest of this structure.  */
   tree (*handler) (tree *node, tree name, tree args,
 		   int flags, bool *no_add_attrs);
-  /* Specifies if attribute affects type's identity.  */
-  bool affects_type_identity;
+
+  /* Specifies the name of an attribute that's mutually exclusive with
+     this one, and whether the relationship applies to the function,
+     variable, or type form of the attribute.  */
+  struct exclusions {
+    const char *name;
+    bool function;
+    bool variable;
+    bool type;
+  };
+
+  /* An array of attribute exclusions describing names of other attributes
+     that this attribute is mutually exclusive with.  */
+  const exclusions *exclude;
 };
 
 /* These functions allow a front-end to perform a manual layout of a
@@ -2100,8 +2123,8 @@ extern GTY(()) tree integer_types[itk_none];
 extern GTY(()) tree sizetype_tab[(int) stk_type_kind_last];
 
 /* Arrays for keeping track of tree node statistics.  */
-extern int tree_node_counts[];
-extern int tree_node_sizes[];
+extern uint64_t tree_node_counts[];
+extern uint64_t tree_node_sizes[];
 
 /* True if we are in gimple form and the actions of the folders need to
    be restricted.  False if we are not in gimple form and folding is not

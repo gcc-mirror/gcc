@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
 
@@ -147,6 +147,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-vector-builder.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -465,11 +466,14 @@ valid_lattice_transition (ccp_prop_value_t old_val, ccp_prop_value_t new_val)
   else if (VECTOR_FLOAT_TYPE_P (type)
 	   && !HONOR_NANS (type))
     {
-      for (unsigned i = 0; i < VECTOR_CST_NELTS (old_val.value); ++i)
+      unsigned int count
+	= tree_vector_builder::binary_encoded_nelts (old_val.value,
+						     new_val.value);
+      for (unsigned int i = 0; i < count; ++i)
 	if (!REAL_VALUE_ISNAN
-	       (TREE_REAL_CST (VECTOR_CST_ELT (old_val.value, i)))
-	    && !operand_equal_p (VECTOR_CST_ELT (old_val.value, i),
-				 VECTOR_CST_ELT (new_val.value, i), 0))
+	       (TREE_REAL_CST (VECTOR_CST_ENCODED_ELT (old_val.value, i)))
+	    && !operand_equal_p (VECTOR_CST_ENCODED_ELT (old_val.value, i),
+				 VECTOR_CST_ENCODED_ELT (new_val.value, i), 0))
 	  return false;
       return true;
     }
@@ -989,7 +993,7 @@ ccp_finalize (bool nonzero_p)
 
   free (const_val);
   const_val = NULL;
-  return something_changed;;
+  return something_changed;
 }
 
 
@@ -3028,7 +3032,7 @@ optimize_memcpy (gimple_stmt_iterator *gsip, tree dest, tree src, tree len)
 
   gimple *defstmt = SSA_NAME_DEF_STMT (vuse);
   tree src2 = NULL_TREE, len2 = NULL_TREE;
-  HOST_WIDE_INT offset, offset2;
+  poly_int64 offset, offset2;
   tree val = integer_zero_node;
   if (gimple_store_p (defstmt)
       && gimple_assign_single_p (defstmt)
@@ -3060,16 +3064,16 @@ optimize_memcpy (gimple_stmt_iterator *gsip, tree dest, tree src, tree len)
 	    ? DECL_SIZE_UNIT (TREE_OPERAND (src2, 1))
 	    : TYPE_SIZE_UNIT (TREE_TYPE (src2)));
   if (len == NULL_TREE
-      || TREE_CODE (len) != INTEGER_CST
+      || !poly_int_tree_p (len)
       || len2 == NULL_TREE
-      || TREE_CODE (len2) != INTEGER_CST)
+      || !poly_int_tree_p (len2))
     return;
 
   src = get_addr_base_and_unit_offset (src, &offset);
   src2 = get_addr_base_and_unit_offset (src2, &offset2);
   if (src == NULL_TREE
       || src2 == NULL_TREE
-      || offset < offset2)
+      || maybe_lt (offset, offset2))
     return;
 
   if (!operand_equal_p (src, src2, 0))
@@ -3078,7 +3082,8 @@ optimize_memcpy (gimple_stmt_iterator *gsip, tree dest, tree src, tree len)
   /* [ src + offset2, src + offset2 + len2 - 1 ] is set to val.
      Make sure that
      [ src + offset, src + offset + len - 1 ] is a subset of that.  */
-  if (wi::to_offset (len) + (offset - offset2) > wi::to_offset (len2))
+  if (maybe_gt (wi::to_poly_offset (len) + (offset - offset2),
+		wi::to_poly_offset (len2)))
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3453,8 +3458,8 @@ pass_post_ipa_warn::execute (function *fun)
 
 		      location_t loc = gimple_location (stmt);
 		      if (warning_at (loc, OPT_Wnonnull,
-				      "argument %u null where non-null "
-				      "expected", i + 1))
+				      "%Gargument %u null where non-null "
+				      "expected", as_a <gcall *>(stmt), i + 1))
 			{
 			  tree fndecl = gimple_call_fndecl (stmt);
 			  if (fndecl && DECL_IS_BUILTIN (fndecl))

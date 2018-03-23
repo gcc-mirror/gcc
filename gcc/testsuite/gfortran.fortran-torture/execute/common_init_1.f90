@@ -6,8 +6,8 @@ subroutine test()
   common /block2/ c
   common /block/ d, e, f
 
-  if ((d .ne. 42) .or. (e .ne. 43) .or. (f .ne. 2.0)) call abort ()
-  if (c .ne. "Hello World    ") call abort ()
+  if ((d .ne. 42) .or. (e .ne. 43) .or. (f .ne. 2.0)) STOP 1
+  if (c .ne. "Hello World    ") STOP 2
 end subroutine
 
 program prog

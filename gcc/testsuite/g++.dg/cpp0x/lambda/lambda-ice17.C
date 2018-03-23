@@ -5,7 +5,7 @@ void foo (int);
 
 void foo (void)
 {
-  [&foo] // { dg-error "cannot capture" }
+  [&foo] // { dg-error "5:capture of non-variable" }
   {
     foo (0);
   };

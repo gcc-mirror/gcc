@@ -1,5 +1,5 @@
 ;; Cavium ThunderX 2 CN99xx pipeline description
-;; Copyright (C) 2016-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2018 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Cavium, Broadcom and Mentor Embedded.
 
@@ -69,8 +69,29 @@
 
 (define_insn_reservation "thunderx2t99_branch" 1
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "call,branch"))
+       (eq_attr "type" "call,branch,trap"))
   "thunderx2t99_i2")
+
+;; Misc instructions.
+
+(define_insn_reservation "thunderx2t99_nothing" 0
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "no_insn,block"))
+  "nothing")
+
+(define_insn_reservation "thunderx2t99_mrs" 0
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "mrs"))
+  "thunderx2t99_i2")
+
+(define_insn_reservation "thunderx2t99_multiple" 1
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "multiple"))
+  "thunderx2t99_i0+thunderx2t99_i1+thunderx2t99_i2+thunderx2t99_ls0+\
+   thunderx2t99_ls1+thunderx2t99_sd+thunderx2t99_i1m1+thunderx2t99_i1m2+\
+   thunderx2t99_i1m3+thunderx2t99_ls0d1+thunderx2t99_ls0d2+thunderx2t99_ls0d3+\
+   thunderx2t99_ls1d1+thunderx2t99_ls1d2+thunderx2t99_ls1d3+thunderx2t99_f0+\
+   thunderx2t99_f1")
 
 ;; Integer arithmetic/logic instructions.
 
@@ -87,7 +108,7 @@
 			adc_reg,adc_imm,adcs_reg,adcs_imm,\
 			logic_reg,logic_imm,logics_reg,logics_imm,\
 			csel,adr,mov_imm,shift_reg,shift_imm,bfm,\
-			rbit,rev,extend,rotate_imm"))
+			bfx,rbit,rev,extend,rotate_imm"))
   "thunderx2t99_i012")
 
 (define_insn_reservation "thunderx2t99_alu_shift" 2
@@ -155,7 +176,7 @@
 
 (define_insn_reservation "thunderx2t99_fp_cmp" 5
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "fcmps,fcmpd"))
+       (eq_attr "type" "fcmps,fcmpd,fccmps,fccmpd"))
   "thunderx2t99_f01")
 
 (define_insn_reservation "thunderx2t99_fp_divsqrt_s" 16

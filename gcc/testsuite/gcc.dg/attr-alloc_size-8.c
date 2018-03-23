@@ -6,23 +6,21 @@
 /* { dg-require-effective-target alloca } */
 /* { dg-options "-O2 -Walloc-size-larger-than=123 -Walloca-larger-than=234 -Wvla-larger-than=345" } */
 
-#define SIZE_MAX   __SIZE_MAX__
-
 typedef __SIZE_TYPE__ size_t;
 
 void sink (void*);
 
-size_t alloc_size_limit (void)
+static size_t alloc_size_limit (void)
 {
   return 123;
 }
 
-size_t alloca_limit (void)
+static size_t alloca_limit (void)
 {
   return 234;
 }
 
-size_t vla_limit (void)
+static size_t vla_limit (void)
 {
   return 345;
 }

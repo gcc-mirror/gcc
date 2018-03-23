@@ -32,19 +32,19 @@ program test
    type(mytype) :: z(2, 3)
 ! The original case - dependency between lhs and rhs. 
    x = x((/2,3,1,4,5,6/))
-   if (any(x%x .ne. (/40, 600, 2, 8000, 100000, 2000000/))) call abort ()
+   if (any(x%x .ne. (/40, 600, 2, 8000, 100000, 2000000/))) STOP 1
 ! Slightly more elborate case with non-trivial array ref on lhs.
    x(4:1:-1) = x((/1,3,2,4/))
-   if (any(x%x .ne. (/16000, 1200, 4, 80, 100000, 2000000/))) call abort ()
+   if (any(x%x .ne. (/16000, 1200, 4, 80, 100000, 2000000/))) STOP 2
 ! Check that no-dependence case works....
    y = x
-   if (any(y%x .ne. (/32000, 2400, 8, 160, 200000, 4000000/))) call abort ()
+   if (any(y%x .ne. (/32000, 2400, 8, 160, 200000, 4000000/))) STOP 3
 ! ...and now a case that caused headaches during the preparation of the patch
    x(2:5) = x(1:4)
-   if (any(x%x .ne. (/16000, 32000, 2400, 8, 160, 2000000/))) call abort ()
+   if (any(x%x .ne. (/16000, 32000, 2400, 8, 160, 2000000/))) STOP 4
 ! Check offsets are done correctly in multi-dimensional cases
    z = reshape (x, (/2,3/))
    z(:, 3:2:-1) = z(:, 1:2)
    y = reshape (z, (/6/))
-   if (any(y%x .ne. (/ 64000, 128000, 19200, 64, 128000, 256000/))) call abort ()
+   if (any(y%x .ne. (/ 64000, 128000, 19200, 64, 128000, 256000/))) STOP 5
 end program test

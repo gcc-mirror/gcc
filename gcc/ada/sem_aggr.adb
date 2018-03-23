@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1657,12 +1657,13 @@ package body Sem_Aggr is
         (N         : Node_Id;
          Index_Typ : Entity_Id)
       is
-         Id  : constant Entity_Id  := Defining_Identifier (N);
          Loc : constant Source_Ptr := Sloc (N);
 
          Choice : Node_Id;
          Dummy  : Boolean;
          Ent    : Entity_Id;
+         Expr   : Node_Id;
+         Id     : Entity_Id;
 
       begin
          Choice := First (Discrete_Choices (N));
@@ -1697,25 +1698,42 @@ package body Sem_Aggr is
          Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
          Set_Etype  (Ent, Standard_Void_Type);
          Set_Parent (Ent, Parent (N));
+         Push_Scope (Ent);
+         Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => Chars (Defining_Identifier (N)));
 
-         --  Decorate the index variable in the current scope. The association
-         --  may have several choices, each one leading to a loop, so we create
-         --  this variable only once to prevent homonyms in this scope.
+         --  Insert and decorate the index variable in the current scope.
          --  The expression has to be analyzed once the index variable is
          --  directly visible. Mark the variable as referenced to prevent
          --  spurious warnings, given that subsequent uses of its name in the
          --  expression will reference the internal (synonym) loop variable.
 
-         if No (Scope (Id)) then
-            Enter_Name (Id);
-            Set_Etype (Id, Index_Typ);
-            Set_Ekind (Id, E_Variable);
-            Set_Scope (Id, Ent);
-            Set_Referenced (Id);
+         Enter_Name (Id);
+         Set_Etype (Id, Index_Typ);
+         Set_Ekind (Id, E_Variable);
+         Set_Scope (Id, Ent);
+         Set_Referenced (Id);
+
+         --  Analyze a copy of the expression, to verify legality. We use
+         --  a copy because the expression will be analyzed anew when the
+         --  enclosing aggregate is expanded, and the construct is rewritten
+         --  as a loop with a new index variable.
+
+         Expr := New_Copy_Tree (Expression (N));
+         Dummy := Resolve_Aggr_Expr (Expr, False);
+
+         --  An iterated_component_association may appear in a nested
+         --  aggregate for a multidimensional structure: preserve the bounds
+         --  computed for the expression, as well as the anonymous array
+         --  type generated for it; both are needed during array expansion.
+         --  This does not work for more than two levels of nesting. ???
+
+         if Nkind (Expr) = N_Aggregate then
+            Set_Aggregate_Bounds (Expression (N), Aggregate_Bounds (Expr));
+            Set_Etype (Expression (N), Etype (Expr));
          end if;
 
-         Push_Scope (Ent);
-         Dummy := Resolve_Aggr_Expr (Expression (N), False);
          End_Scope;
       end Resolve_Iterated_Component_Association;
 

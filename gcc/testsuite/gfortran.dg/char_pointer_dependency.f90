@@ -10,8 +10,8 @@ program char_pointer_dependency
   allocate (c2(2))
   c2 = (/"abcd","efgh"/)
   c2 = afoo (c2)
-  if (c2(1) /= "efgh") call abort ()
-  if (c2(2) /= "abcd") call abort ()
+  if (c2(1) /= "efgh") STOP 1
+  if (c2(2) /= "abcd") STOP 2
   deallocate (c2)
 contains
   function afoo (ac0) result (ac1)

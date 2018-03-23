@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -284,7 +284,10 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
   else if (VECTOR_TYPE_P (type))
     init = build_zero_cst (type);
   else
-    gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+    {
+      gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+      init = build_zero_cst (type);
+    }
 
   /* In all cases, the initializer is a constant.  */
   if (init)
@@ -2325,7 +2328,12 @@ build_raw_new_expr (vec<tree, va_gc> *placement, tree type, tree nelts,
   else if (init->is_empty ())
     init_list = void_node;
   else
-    init_list = build_tree_list_vec (init);
+    {
+      init_list = build_tree_list_vec (init);
+      for (tree v = init_list; v; v = TREE_CHAIN (v))
+	if (TREE_CODE (TREE_VALUE (v)) == OVERLOAD)
+	  lookup_keep (TREE_VALUE (v), true);
+    }
 
   new_expr = build4 (NEW_EXPR, build_pointer_type (type),
 		     build_tree_list_vec (placement), type, nelts,
@@ -2453,13 +2461,13 @@ throw_bad_array_new_length (void)
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
 
-/* Attempt to find the initializer for field T in the initializer INIT,
-   when non-null.  Returns the initializer when successful and NULL
-   otherwise.  */
+/* Attempt to find the initializer for flexible array field T in the
+   initializer INIT, when non-null.  Returns the initializer when
+   successful and NULL otherwise.  */
 static tree
-find_field_init (tree t, tree init)
+find_flexarray_init (tree t, tree init)
 {
-  if (!init)
+  if (!init || init == error_mark_node)
     return NULL_TREE;
 
   unsigned HOST_WIDE_INT idx;
@@ -2467,16 +2475,10 @@ find_field_init (tree t, tree init)
 
   /* Iterate over all top-level initializer elements.  */
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx, field, elt)
-    {
-      /* If the member T is found, return it.  */
-      if (field == t)
-	return elt;
+    /* If the member T is found, return it.  */
+    if (field == t)
+      return elt;
 
-      /* Otherwise continue and/or recurse into nested initializers.  */
-      if (TREE_CODE (elt) == CONSTRUCTOR
-	  && (init = find_field_init (t, elt)))
-	return init;
-    }
   return NULL_TREE;
 }
 
@@ -2645,7 +2647,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 		 extension).  If the array member has been initialized,
 		 determine its size from the initializer.  Otherwise,
 		 the array size is zero.  */
-	      if (tree init = find_field_init (oper, DECL_INITIAL (var_decl)))
+	      if (tree init = find_flexarray_init (oper,
+						   DECL_INITIAL (var_decl)))
 		bytes_avail = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (init)));
 	    }
 	  else
@@ -3367,11 +3370,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  else if (*init)
             {
               if (complain & tf_error)
-                permerror (input_location,
-			   "parenthesized initializer in array new");
-              else
-                return error_mark_node;
-	      vecinit = build_tree_list_vec (*init);
+                error ("parenthesized initializer in array new");
+	      return error_mark_node;
             }
 	  init_expr
 	    = build_vec_init (data_addr,
@@ -3593,7 +3593,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      d_init = (**init)[0];
 	      d_init = resolve_nondeduced_context (d_init, complain);
 	    }
-	  type = do_auto_deduction (type, d_init, auto_node);
+	  type = do_auto_deduction (type, d_init, auto_node, complain);
 	}
     }
 
@@ -4328,7 +4328,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       finish_init_stmt (for_stmt);
       finish_for_cond (build2 (GT_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),
-		       for_stmt, false);
+		       for_stmt, false, 0);
       elt_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, false,
 				    complain);
       if (elt_init == error_mark_node)
@@ -4381,12 +4381,17 @@ build_vec_init (tree base, tree maxindex, tree init,
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init))
-	    sorry
-	      ("cannot initialize multi-dimensional array with initializer");
-	  elt_init = build_vec_init (build1 (INDIRECT_REF, type, base),
-				     0, init,
-				     explicit_value_init_p,
-				     0, complain);
+	    {
+	      if ((complain & tf_error))
+		error_at (loc, "array must be initialized "
+			  "with a brace-enclosed initializer");
+	      elt_init = error_mark_node;
+	    }
+	  else
+	    elt_init = build_vec_init (build1 (INDIRECT_REF, type, base),
+				       0, init,
+				       explicit_value_init_p,
+				       0, complain);
 	}
       else if (explicit_value_init_p)
 	{
@@ -4404,7 +4409,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      if (TREE_CODE (init) == TREE_LIST)
 		init = build_x_compound_expr_from_list (init, ELK_INIT,
 							complain);
-	      elt_init = build2 (INIT_EXPR, type, to, init);
+	      elt_init = (init == error_mark_node
+			  ? error_mark_node
+			  : build2 (INIT_EXPR, type, to, init));
 	    }
 	}
 
@@ -4444,7 +4451,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
 
       current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-      if (elt_init)
+      if (elt_init && !errors)
 	finish_expr_stmt (elt_init);
       current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 

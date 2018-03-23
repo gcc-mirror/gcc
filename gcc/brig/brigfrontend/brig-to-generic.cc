@@ -1,5 +1,5 @@
 /* brig2tree.cc -- brig to gcc generic/gimple tree conversion
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -913,7 +913,7 @@ get_unsigned_int_type (tree original_type)
     {
       size_t esize
 	= int_size_in_bytes (TREE_TYPE (original_type)) * BITS_PER_UNIT;
-      size_t ecount = TYPE_VECTOR_SUBPARTS (original_type);
+      poly_uint64 ecount = TYPE_VECTOR_SUBPARTS (original_type);
       return build_vector_type (build_nonstandard_integer_type (esize, true),
 				ecount);
     }

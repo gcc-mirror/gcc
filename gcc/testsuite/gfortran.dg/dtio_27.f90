@@ -51,7 +51,7 @@ contains
     namelist /n1/ x
     x = t('a')
     write (buffer, n1)
-    if (buffer(2) /= " X=a") call abort()
+    if (buffer(2) /= " X=a") STOP 1
   end subroutine
 
   subroutine test_class
@@ -59,7 +59,7 @@ contains
     namelist /n2/ y
     y = t('b')
     write (buffer, n2)
-    if (buffer(2) /= " Y=b") call abort()
+    if (buffer(2) /= " Y=b") STOP 2
   end subroutine
 
 END

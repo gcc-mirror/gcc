@@ -1,5 +1,5 @@
 /* Stub functions.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -114,4 +114,8 @@ pthread_once (void)
 {
   return 0;
 }
+#endif
+
+#ifdef L_gnu_lto_v1
+char gnu_lto_v1;
 #endif

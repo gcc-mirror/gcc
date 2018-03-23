@@ -1,5 +1,5 @@
 /* Building internal representation for IRA.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -566,7 +566,7 @@ ira_create_allocno_objects (ira_allocno_t a)
   int n = ira_reg_class_max_nregs[aclass][mode];
   int i;
 
-  if (GET_MODE_SIZE (mode) != 2 * UNITS_PER_WORD || n != 2)
+  if (n != 2 || maybe_ne (GET_MODE_SIZE (mode), n * UNITS_PER_WORD))
     n = 1;
 
   ALLOCNO_NUM_OBJECTS (a) = n;
@@ -2728,7 +2728,13 @@ setup_min_max_allocno_live_range_point (void)
 	    ira_object_t parent_obj;
 
 	    if (OBJECT_MAX (obj) < 0)
-	      continue;
+	      {
+		/* The object is not used and hence does not live.  */
+		ira_assert (OBJECT_LIVE_RANGES (obj) == NULL);
+		OBJECT_MAX (obj) = 0;
+		OBJECT_MIN (obj) = 1;
+		continue;
+	      }
 	    ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
 	    /* Accumulation of range info.  */
 	    if (ALLOCNO_CAP (a) != NULL)
@@ -2756,8 +2762,8 @@ setup_min_max_allocno_live_range_point (void)
 #ifdef ENABLE_IRA_CHECKING
   FOR_EACH_OBJECT (obj, oi)
     {
-      if ((0 <= OBJECT_MIN (obj) && OBJECT_MIN (obj) <= ira_max_point)
-	  && (0 <= OBJECT_MAX (obj) && OBJECT_MAX (obj) <= ira_max_point))
+      if ((OBJECT_MIN (obj) >= 0 && OBJECT_MIN (obj) <= ira_max_point)
+	  && (OBJECT_MAX (obj) >= 0 && OBJECT_MAX (obj) <= ira_max_point))
 	continue;
       gcc_unreachable ();
     }

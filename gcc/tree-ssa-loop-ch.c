@@ -1,5 +1,5 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -57,7 +57,8 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
      be true, since quite often it is possible to verify that the condition is
      satisfied in the first iteration and therefore to eliminate it.  Jump
      threading handles these cases now.  */
-  if (optimize_loop_for_size_p (loop))
+  if (optimize_loop_for_size_p (loop)
+      && !loop->force_vectorize)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,

@@ -1,6 +1,6 @@
 /* PR tree-optimization/80669 - Bad -Wstringop-overflow warnings for stpncpy
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-stringop-truncation" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds -Wno-restrict -Wno-stringop-truncation" } */
 
 #define SIZE_MAX __SIZE_MAX__
 
@@ -12,7 +12,7 @@ void sink (char*);
 
 size_t value (void);
 
-size_t range (size_t min, size_t max)
+static size_t range (size_t min, size_t max)
 {
   size_t val = value ();
   return val < min || max < val ? min : val;

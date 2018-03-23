@@ -1,5 +1,5 @@
 /* Header for Fortran 95 types backend support.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GFC_BACKEND_H
 #define GFC_BACKEND_H
+
 
 extern GTY(()) tree gfc_array_index_type;
 extern GTY(()) tree gfc_array_range_type;
@@ -49,9 +50,8 @@ extern GTY(()) tree logical_false_node;
 
 /* This is the type used to hold the lengths of character variables.
    It must be the same as the corresponding definition in gfortran.h.  */
-/* TODO: This is still hardcoded as kind=4 in some bits of the compiler
-   and runtime library.  */
 extern GTY(()) tree gfc_charlen_type_node;
+
 
 /* The following flags give us information on the correspondence of
    real (and complex) kinds with C floating-point types long double
@@ -73,6 +73,7 @@ void gfc_init_kinds (void);
 void gfc_init_types (void);
 void gfc_init_c_interop_kinds (void);
 
+tree get_dtype_type_node (void);
 tree gfc_get_int_type (int);
 tree gfc_get_real_type (int);
 tree gfc_get_complex_type (int);

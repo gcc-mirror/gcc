@@ -19,7 +19,7 @@ test (void)
   struct s { int n; };
   __builtin_offsetof (struct s _Alignas (int), n); /* { dg-error "expected" } */
   __typeof (long double _Alignas (0)) e; /* { dg-error "expected" } */
-  sizeof (int _Alignas (int)); /* { dg-error "expected" } */
+  sizeof (int _Alignas (int)); /* { dg-error "specified for type name" } */
   _Alignas (int _Alignas (float)) int t; /* { dg-error "expected" } */
   __builtin_types_compatible_p (signed _Alignas (0), unsigned); /* { dg-error "expected" } */
   int a[_Alignas (int) 10]; /* { dg-error "expected expression before" } */

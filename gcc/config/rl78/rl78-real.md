@@ -1,5 +1,5 @@
 ;;  Machine Description for Renesas RL78 processors
-;;  Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;;  Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;;  Contributed by Red Hat.
 
 ;; This file is part of GCC.
@@ -88,6 +88,15 @@
    movw\t%0, %S1
    movw\t%0, %1
    movw\t%0, %1"
+)
+
+(define_insn "*bswaphi2_real"
+  [(set (match_operand:HI           0 "rl78_nonfar_nonimm_operand" "=A,A")
+        (bswap:HI (match_operand:HI 1 "general_operand"  "0,viU")))]
+  "rl78_real_insns_ok ()"
+  "@
+   xch\ta, x
+   movw\tax, %1\n\txch\ta, x"
 )
 
 ;;---------- Conversions ------------------------

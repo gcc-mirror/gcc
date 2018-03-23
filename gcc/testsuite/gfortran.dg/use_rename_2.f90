@@ -18,7 +18,7 @@ contains
     integer a, b
     a = max (1,5)
     b = min (1,5)
-    if (a .ne. 1) call abort ()
-    if (b .ne. 5) call abort ()
+    if (a .ne. 1) STOP 1
+    if (b .ne. 5) STOP 2
   end subroutine test2
 end

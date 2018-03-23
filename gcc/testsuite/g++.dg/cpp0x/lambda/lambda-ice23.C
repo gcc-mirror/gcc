@@ -3,7 +3,7 @@
 
 template <typename T>
 constexpr int r(T x) {
-  auto f = [r,x]() { return r(x); }; // { dg-error "incomplete type" }
+  auto f = [r,x]() { return r(x); }; // { dg-error "13:capture of non-variable" }
   return 0;
 }
 

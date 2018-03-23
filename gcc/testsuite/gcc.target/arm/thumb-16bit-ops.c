@@ -200,4 +200,4 @@ s (int a, int b)
   return -b;
 }
 
-/* { dg-final { scan-assembler "negs	r0, r1" } } */
+/* { dg-final { scan-assembler "rsbs	r0, r1, #0" } } */

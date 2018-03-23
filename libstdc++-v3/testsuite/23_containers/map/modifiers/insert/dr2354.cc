@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Free Software Foundation, Inc.
+// Copyright (C) 2017-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,4 +29,11 @@ test01()
 {
   std::map<int, MoveOnly> m;
   m.insert({1, 2});  // PR libstdc++/82522  - LWG 2354
+}
+
+void
+test02()
+{
+  std::map<int, MoveOnly> m;
+  m.insert(m.begin(), {1, 2});  // PR libstdc++/82522  - LWG 2354
 }

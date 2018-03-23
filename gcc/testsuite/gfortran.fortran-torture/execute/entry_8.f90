@@ -18,7 +18,7 @@ use entry_8_m
 type (t) :: f, g, res
 
 res = f (42)
-if (res%i /= 42) call abort ()
+if (res%i /= 42) STOP 1
 res = g (1.)
-if (any (res%x /= 1.)) call abort ()
+if (any (res%x /= 1.)) STOP 2
 end

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -276,10 +276,12 @@ package Exp_Ch7 is
    --  a "scope node" that is to say one of the following: N_Block_Statement,
    --  N_Subprogram_Body, N_Task_Body, N_Entry_Body.
 
-   procedure Establish_Transient_Scope (N : Node_Id; Sec_Stack : Boolean);
-   --  Push a new transient scope on the scope stack. N is the node responsible
-   --  for the need of a transient scope. If Sec_Stack is True then the
-   --  secondary stack is brought in, otherwise it isn't.
+   procedure Establish_Transient_Scope
+     (N                : Node_Id;
+      Manage_Sec_Stack : Boolean);
+   --  Push a new transient scope on the scope stack. N is the node which must
+   --  be serviced by the transient scope. Set Manage_Sec_Stack when the scope
+   --  must mark and release the secondary stack.
 
    function Node_To_Be_Wrapped return Node_Id;
    --  Return the node to be wrapped if the current scope is transient

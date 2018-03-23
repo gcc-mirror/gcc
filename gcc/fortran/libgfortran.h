@@ -1,5 +1,5 @@
 /* Header file to the Fortran front-end and runtime library
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,8 +22,9 @@ along with GCC; see the file COPYING3.  If not see
    Note that no features were obsoleted nor deleted in F2003.
    Please remember to keep those definitions in sync with
    gfortran.texi.  */
-/* For now, use F2015 = GFC_STD_GNU.  */
-#define GFC_STD_F2015	        (1<<5)	/* PLACEHOLDER for Fortran 2015.  */
+#define GFC_STD_F2018_DEL      (1<<12)  /* Deleted in F2018.  */
+#define GFC_STD_F2018_OBS      (1<<11)  /* Obsolescent in F2018.  */
+#define GFC_STD_F2018          (1<<10)  /* New in F2018.  */
 #define GFC_STD_F2008_TS	(1<<9)	/* POST-F2008 technical reports.  */
 #define GFC_STD_F2008_OBS	(1<<8)	/* Obsolescent in F2008.  */
 #define GFC_STD_F2008		(1<<7)	/* New in F2008.  */
@@ -149,15 +150,13 @@ typedef enum
 #define GFC_STDOUT_UNIT_NUMBER 6
 #define GFC_STDERR_UNIT_NUMBER 0
 
+/* F2003 onward. For std < F2003, error caught in array.c(gfc_match_array_ref).  */
+#define GFC_MAX_DIMENSIONS 15
 
-/* FIXME: Increase to 15 for Fortran 2008. Also needs changes to
-   GFC_DTYPE_RANK_MASK. See PR 36825.  */
-#define GFC_MAX_DIMENSIONS 7
-
-#define GFC_DTYPE_RANK_MASK 0x07
-#define GFC_DTYPE_TYPE_SHIFT 3
-#define GFC_DTYPE_TYPE_MASK 0x38
-#define GFC_DTYPE_SIZE_SHIFT 6
+#define GFC_DTYPE_RANK_MASK 0x0F
+#define GFC_DTYPE_TYPE_SHIFT 4
+#define GFC_DTYPE_TYPE_MASK 0x70
+#define GFC_DTYPE_SIZE_SHIFT 7
 
 /* Basic types.  BT_VOID is used by ISO C Binding so funcs like c_f_pointer
    can take any arg with the pointer attribute as a param.  These are also

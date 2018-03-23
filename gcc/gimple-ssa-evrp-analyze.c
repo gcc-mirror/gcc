@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -56,10 +56,22 @@ evrp_range_analyzer::evrp_range_analyzer () : stack (10)
   vr_values = new class vr_values;
 }
 
+/* Push an unwinding marker onto the unwinding stack.  */
+
+void
+evrp_range_analyzer::push_marker ()
+{
+  stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
+}
+
+/* Analyze ranges as we enter basic block BB.  */
+
 void
 evrp_range_analyzer::enter (basic_block bb)
 {
-  stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
+  if (!optimize)
+    return;
+  push_marker ();
   record_ranges_from_incoming_edge (bb);
   record_ranges_from_phis (bb);
   bb->flags |= BB_VISITED;
@@ -89,6 +101,62 @@ evrp_range_analyzer::try_find_new_range (tree name,
       return new_vr;
     }
   return NULL;
+}
+
+/* For LHS record VR in the SSA info.  */
+void
+evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range *vr)
+{
+  /* Set the SSA with the value range.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+    {
+      if ((vr->type == VR_RANGE
+	   || vr->type == VR_ANTI_RANGE)
+	  && (TREE_CODE (vr->min) == INTEGER_CST)
+	  && (TREE_CODE (vr->max) == INTEGER_CST))
+	set_range_info (lhs, vr->type,
+			wi::to_wide (vr->min),
+			wi::to_wide (vr->max));
+    }
+  else if (POINTER_TYPE_P (TREE_TYPE (lhs))
+	   && ((vr->type == VR_RANGE
+		&& range_includes_zero_p (vr->min,
+					  vr->max) == 0)
+	       || (vr->type == VR_ANTI_RANGE
+		   && range_includes_zero_p (vr->min,
+					     vr->max) == 1)))
+    set_ptr_nonnull (lhs);
+}
+
+/* Return true if all uses of NAME are dominated by STMT or feed STMT
+   via a chain of single immediate uses.  */
+
+static bool
+all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
+{
+  use_operand_p use_p, use2_p;
+  imm_use_iterator iter;
+  basic_block stmt_bb = gimple_bb (stmt);
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+    {
+      gimple *use_stmt = USE_STMT (use_p), *use_stmt2;
+      if (use_stmt == stmt
+	  || is_gimple_debug (use_stmt)
+	  || (gimple_bb (use_stmt) != stmt_bb
+	      && dominated_by_p (CDI_DOMINATORS,
+				 gimple_bb (use_stmt), stmt_bb)))
+	continue;
+      while (use_stmt != stmt
+	     && is_gimple_assign (use_stmt)
+	     && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
+	     && single_imm_use (gimple_assign_lhs (use_stmt),
+				&use2_p, &use_stmt2))
+	use_stmt = use_stmt2;
+      if (use_stmt != stmt)
+	return false;
+    }
+  return true;
 }
 
 void
@@ -134,10 +202,23 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      if (vr)
 		vrs.safe_push (std::make_pair (asserts[i].name, vr));
 	    }
+
+	  /* If pred_e is really a fallthru we can record value ranges
+	     in SSA names as well.  */
+	  bool is_fallthru = assert_unreachable_fallthru_edge_p (pred_e);
+
 	  /* Push updated ranges only after finding all of them to avoid
 	     ordering issues that can lead to worse ranges.  */
 	  for (unsigned i = 0; i < vrs.length (); ++i)
-	    push_value_range (vrs[i].first, vrs[i].second);
+	    {
+	      push_value_range (vrs[i].first, vrs[i].second);
+	      if (is_fallthru
+		  && all_uses_feed_or_dominated_by_stmt (vrs[i].first, stmt))
+		{
+		  set_ssa_range_info (vrs[i].first, vrs[i].second);
+		  maybe_set_nonzero_bits (pred_e, vrs[i].first);
+		}
+	    }
 	}
     }
 }
@@ -177,7 +258,8 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 	     to use VARYING for them.  But we can still resort to
 	     SCEV for loop header PHIs.  */
 	  struct loop *l;
-	  if (interesting
+	  if (scev_initialized_p ()
+	      && interesting
 	      && (l = loop_containing_stmt (phi))
 	      && l->header == gimple_bb (phi))
 	  vr_values->adjust_range_with_scev (&vr_result, l, phi, lhs);
@@ -185,31 +267,22 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       vr_values->update_value_range (lhs, &vr_result);
 
       /* Set the SSA with the value range.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
-	{
-	  if ((vr_result.type == VR_RANGE
-	       || vr_result.type == VR_ANTI_RANGE)
-	      && (TREE_CODE (vr_result.min) == INTEGER_CST)
-	      && (TREE_CODE (vr_result.max) == INTEGER_CST))
-	    set_range_info (lhs, vr_result.type,
-			    wi::to_wide (vr_result.min),
-			    wi::to_wide (vr_result.max));
-	}
-      else if (POINTER_TYPE_P (TREE_TYPE (lhs))
-	       && ((vr_result.type == VR_RANGE
-		    && range_includes_zero_p (vr_result.min,
-					      vr_result.max) == 0)
-		   || (vr_result.type == VR_ANTI_RANGE
-		       && range_includes_zero_p (vr_result.min,
-						 vr_result.max) == 1)))
-	set_ptr_nonnull (lhs);
+      set_ssa_range_info (lhs, &vr_result);
     }
 }
 
+/* Record ranges from STMT into our VR_VALUES class.  If TEMPORARY is
+   true, then this is a temporary equivalence and should be recorded
+   into the unwind table.  Othewise record the equivalence into the
+   global table.  */
+
 void
-evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
+evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 {
   tree output = NULL_TREE;
+
+  if (!optimize)
+    return;
 
   if (dyn_cast <gcond *> (stmt))
     ;
@@ -218,27 +291,38 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
       edge taken_edge;
       value_range vr = VR_INITIALIZER;
       vr_values->extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
-      if (output
-	  && (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE))
+      if (output)
 	{
-	  vr_values->update_value_range (output, &vr);
+	  /* Set the SSA with the value range.  There are two cases to
+	     consider.  First (the the most common) is we are processing
+	     STMT in a context where its resulting range globally holds
+	     and thus it can be reflected into the global ranges and need
+	     not be unwound as we leave scope.
 
-	  /* Set the SSA with the value range.  */
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
+	     The second case occurs if we are processing a statement in
+	     a context where the resulting range must not be reflected
+	     into the global tables and must be unwound as we leave
+	     the current context.  This happens in jump threading for
+	     example.  */
+	  if (!temporary)
 	    {
-	      if ((vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
-		  && (TREE_CODE (vr.min) == INTEGER_CST)
-		  && (TREE_CODE (vr.max) == INTEGER_CST))
-		set_range_info (output, vr.type,
-				wi::to_wide (vr.min),
-				wi::to_wide (vr.max));
+	      /* Case one.  We can just update the underlying range
+		 information as well as the global information.  */
+	      vr_values->update_value_range (output, &vr);
+	      set_ssa_range_info (output, &vr);
 	    }
-	  else if (POINTER_TYPE_P (TREE_TYPE (output))
-		   && ((vr.type == VR_RANGE
-			&& range_includes_zero_p (vr.min, vr.max) == 0)
-		       || (vr.type == VR_ANTI_RANGE
-			   && range_includes_zero_p (vr.min, vr.max) == 1)))
-	    set_ptr_nonnull (output);
+	  else
+	    {
+	      /* We're going to need to unwind this range.  We can
+		 not use VR as that's a stack object.  We have to allocate
+		 a new range and push the old range onto the stack.  We
+		 also have to be very careful about sharing the underlying
+		 bitmaps.  Ugh.  */
+	      value_range *new_vr = vr_values->allocate_value_range ();
+	      *new_vr = vr;
+	      new_vr->equiv = NULL;
+	      push_value_range (output, new_vr);
+	    }
 	}
       else
 	vr_values->set_defs_to_varying (stmt);
@@ -295,16 +379,27 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
     }
 }
 
-/* Restore/pop VRs valid only for BB when we leave BB.  */
+/* Unwind recorded ranges to their most recent state.  */
 
 void
-evrp_range_analyzer::leave (basic_block bb ATTRIBUTE_UNUSED)
+evrp_range_analyzer::pop_to_marker (void)
 {
   gcc_checking_assert (!stack.is_empty ());
   while (stack.last ().first != NULL_TREE)
     pop_value_range (stack.last ().first);
   stack.pop ();
 }
+
+/* Restore/pop VRs valid only for BB when we leave BB.  */
+
+void
+evrp_range_analyzer::leave (basic_block bb ATTRIBUTE_UNUSED)
+{
+  if (!optimize)
+    return;
+  pop_to_marker ();
+}
+
 
 /* Push the Value Range of VAR to the stack and update it with new VR.  */
 

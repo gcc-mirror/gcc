@@ -1,5 +1,5 @@
 ;; Constraint definitions of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -302,5 +302,11 @@
        (match_test "(nds32_mem_format (op) == ADDRESS_SP_IMM7U
 		    || nds32_mem_format (op) == ADDRESS_FP_IMM7U)
 		    && (GET_MODE (op) == SImode)")))
+
+
+(define_memory_constraint "Umw"
+  "Memory constraint for lwm/smw"
+  (and (match_code "mem")
+       (match_test "nds32_valid_smw_lwm_base_p (op)")))
 
 ;; ------------------------------------------------------------------------

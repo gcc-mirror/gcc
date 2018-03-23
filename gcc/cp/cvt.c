@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -238,6 +238,11 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
 	 as a pointer.  */
       gcc_assert (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (expr)))
 		  == GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)));
+
+      /* FIXME needed because convert_to_pointer_maybe_fold still folds
+	 conversion of constants.  */
+      if (!dofold)
+	return build1 (CONVERT_EXPR, type, expr);
 
       return convert_to_pointer_maybe_fold (type, expr, dofold);
     }
@@ -691,7 +696,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 
   /* FIXME remove when moving to c_fully_fold model.  */
   if (!CLASS_TYPE_P (type))
-    e = scalar_constant_value (e);
+    {
+      e = mark_rvalue_use (e);
+      e = scalar_constant_value (e);
+    }
   if (error_operand_p (e))
     return error_mark_node;
 
@@ -933,7 +941,7 @@ cp_get_callee (tree call)
    if we can.  */
 
 tree
-cp_get_fndecl_from_callee (tree fn)
+cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
 {
   if (fn == NULL_TREE)
     return fn;
@@ -943,7 +951,8 @@ cp_get_fndecl_from_callee (tree fn)
   if (type == unknown_type_node)
     return NULL_TREE;
   gcc_assert (POINTER_TYPE_P (type));
-  fn = maybe_constant_init (fn);
+  if (fold)
+    fn = maybe_constant_init (fn);
   STRIP_NOPS (fn);
   if (TREE_CODE (fn) == ADDR_EXPR)
     {
@@ -961,6 +970,14 @@ tree
 cp_get_callee_fndecl (tree call)
 {
   return cp_get_fndecl_from_callee (cp_get_callee (call));
+}
+
+/* As above, but not using the constexpr machinery.  */
+
+tree
+cp_get_callee_fndecl_nofold (tree call)
+{
+  return cp_get_fndecl_from_callee (cp_get_callee (call), false);
 }
 
 /* Subroutine of convert_to_void.  Warn if we're discarding something with
@@ -1054,6 +1071,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
   if (expr == error_mark_node
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
+
+  expr = maybe_undo_parenthesized_ref (expr);
 
   expr = mark_discarded_use (expr);
   if (implicit == ICV_CAST)
@@ -1642,7 +1661,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   tree conv = NULL_TREE;
   tree winner = NULL_TREE;
 
-  if (expr == null_node
+  if (null_node_p (expr)
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
     {

@@ -16,6 +16,6 @@
   a%comp = 3
   x => a
   print *,x%comp
-  if (x%comp/=3) call abort()
+  if (x%comp/=3) STOP 1
 
 end

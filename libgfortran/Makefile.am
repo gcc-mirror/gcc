@@ -357,6 +357,14 @@ $(srcdir)/generated/maxval_r8.c \
 $(srcdir)/generated/maxval_r10.c \
 $(srcdir)/generated/maxval_r16.c
 
+i_maxval0s_c=\
+$(srcdir)/generated/maxval0_s1.c \
+$(srcdir)/generated/maxval0_s4.c
+
+i_maxval1s_c=\
+$(srcdir)/generated/maxval1_s1.c \
+$(srcdir)/generated/maxval1_s4.c
+
 i_minloc0_c= \
 $(srcdir)/generated/minloc0_4_i1.c \
 $(srcdir)/generated/minloc0_8_i1.c \
@@ -449,6 +457,14 @@ $(srcdir)/generated/minval_r4.c \
 $(srcdir)/generated/minval_r8.c \
 $(srcdir)/generated/minval_r10.c \
 $(srcdir)/generated/minval_r16.c
+
+i_minval0s_c=\
+$(srcdir)/generated/minval0_s1.c \
+$(srcdir)/generated/minval0_s4.c
+
+i_minval1s_c=\
+$(srcdir)/generated/minval1_s1.c \
+$(srcdir)/generated/minval1_s4.c
 
 i_norm2_c= \
 $(srcdir)/generated/norm2_r4.c \
@@ -748,7 +764,8 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
     $(i_cshift1a_c) $(i_maxloc0s_c) $(i_minloc0s_c) $(i_maxloc1s_c) \
-    $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c)
+    $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
+    $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c)
 
 # Machine generated specifics
 gfor_built_specific_src= \
@@ -973,6 +990,8 @@ I_M4_DEPS1=$(I_M4_DEPS) m4/ifunction.m4
 I_M4_DEPS2=$(I_M4_DEPS) m4/ifunction_logical.m4
 I_M4_DEPS3=$(I_M4_DEPS) m4/iforeach-s.m4
 I_M4_DEPS4=$(I_M4_DEPS) m4/ifunction-s.m4
+I_M4_DEPS5=$(I_M4_DEPS) m4/iforeach-s2.m4
+I_M4_DEPS6=$(I_M4_DEPS) m4/ifunction-s2.m4
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
 	$(SHELL) $(srcdir)/mk-kinds-h.sh '$(FCCOMPILE)' > $@ || rm $@
@@ -1039,6 +1058,12 @@ $(i_maxloc2s_c): m4/maxloc2s.m4 $(I_M4_DEPS)
 $(i_maxval_c): m4/maxval.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval.m4 > $@
 
+$(i_maxval0s_c): m4/maxval0s.m4 $(I_M4_DEPS5)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval0s.m4 > $@
+
+$(i_maxval1s_c): m4/maxval1s.m4 $(I_M4_DEPS6)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval1s.m4 > $@
+
 $(i_minloc0_c): m4/minloc0.m4 $(I_M4_DEPS0)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc0.m4 > $@
 
@@ -1056,6 +1081,12 @@ $(i_minloc2s_c): m4/minloc2s.m4 $(I_M4_DEPS)
 
 $(i_minval_c): m4/minval.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval.m4 > $@
+
+$(i_minval0s_c): m4/minval0s.m4 $(I_M4_DEPS5)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval0s.m4 > $@
+
+$(i_minval1s_c): m4/minval1s.m4 $(I_M4_DEPS6)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval1s.m4 > $@
 
 $(i_product_c): m4/product.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 product.m4 > $@

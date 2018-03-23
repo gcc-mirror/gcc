@@ -14,6 +14,10 @@
 extern _Float128 copysignf128 (_Float128, _Float128);
 extern _Float128 sqrtf128 (_Float128);
 extern _Float128 fmaf128 (_Float128, _Float128, _Float128);
+extern _Float128 ceilf128 (_Float128);
+extern _Float128 floorf128 (_Float128);
+extern _Float128 truncf128 (_Float128);
+extern _Float128 roundf128 (_Float128);
 
 _Float128
 do_copysign (_Float128 a, _Float128 b)
@@ -51,10 +55,35 @@ do_nfms (_Float128 a, _Float128 b, _Float128 c)
   return -fmaf128 (a, b, -c);
 }
 
+_Float128
+do_ceil (_Float128 a)
+{
+  return ceilf128 (a);
+}
+
+_Float128
+do_floor (_Float128 a)
+{
+  return floorf128 (a);
+}
+
+_Float128
+do_trunc (_Float128 a)
+{
+  return truncf128 (a);
+}
+
+_Float128
+do_round (_Float128 a)
+{
+  return roundf128 (a);
+}
+
 /* { dg-final { scan-assembler     {\mxscpsgnqp\M} } } */
 /* { dg-final { scan-assembler     {\mxssqrtqp\M}  } } */
 /* { dg-final { scan-assembler     {\mxsmaddqp\M}  } } */
 /* { dg-final { scan-assembler     {\mxsmsubqp\M}  } } */
 /* { dg-final { scan-assembler     {\mxsnmaddqp\M} } } */
 /* { dg-final { scan-assembler     {\mxsnmsubqp\M} } } */
+/* { dg-final { scan-assembler     {\mxsrqpi\M}    } } */
 /* { dg-final { scan-assembler-not {\mbl\M}        } } */

@@ -47,5 +47,5 @@ end module mod1
 use mod1
 character(len=:), allocatable :: str
 str = c2fstring("ABCDEF"//c_null_char//"GHI")
-if (len(str) /= 6 .or. str /= "ABCDEF") call abort()
+if (len(str) /= 6 .or. str /= "ABCDEF") STOP 1
 end

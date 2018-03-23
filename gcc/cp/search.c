@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1636,7 +1636,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
     return false;
 
   tree indirect_ref = TREE_OPERAND (component_ref, 0);
-  if (TREE_CODE (indirect_ref) != INDIRECT_REF)
+  if (!INDIRECT_REF_P (indirect_ref))
     return false;
 
   tree ptr = STRIP_NOPS (TREE_OPERAND (indirect_ref, 0));
@@ -1657,8 +1657,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
 
    Specifically, a simple accessor within struct S of the form:
        T get_field () { return m_field; }
-   should have a DECL_SAVED_TREE of the form:
-       <return_expr
+   should have a constexpr_fn_retval (saved_tree) of the form:
 	 <init_expr:T
 	   <result_decl:T
 	   <nop_expr:T
@@ -1666,7 +1665,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
 	       <indirect_ref:S>
 		 <nop_expr:P*
 		   <parm_decl (this)>
-		 <field_decl (FIELD_DECL)>>>.  */
+		 <field_decl (FIELD_DECL)>>>>>.  */
 
 static bool
 direct_accessor_p (tree init_expr, tree field_decl, tree field_type)
@@ -1690,8 +1689,7 @@ direct_accessor_p (tree init_expr, tree field_decl, tree field_type)
 
    Specifically, a simple accessor within struct S of the form:
        T& get_field () { return m_field; }
-   should have a DECL_SAVED_TREE of the form:
-       <return_expr
+   should have a constexpr_fn_retval (saved_tree) of the form:
 	 <init_expr:T&
 	   <result_decl:T&
 	   <nop_expr: T&
@@ -1747,8 +1745,8 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
      that the "this" parameter is const.  */
   if (const_p)
     {
-      tree this_type = type_of_this_parm (fntype);
-      if (!TYPE_READONLY (this_type))
+      tree this_class = class_of_this_parm (fntype);
+      if (!TYPE_READONLY (this_class))
 	return false;
     }
 
@@ -1757,16 +1755,19 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
   if (saved_tree == NULL_TREE)
     return false;
 
-  if (TREE_CODE (saved_tree) != RETURN_EXPR)
+  /* Attempt to extract a single return value from the function,
+     if it has one.  */
+  tree retval = constexpr_fn_retval (saved_tree);
+  if (retval == NULL_TREE || retval == error_mark_node)
     return false;
-
-  tree init_expr = TREE_OPERAND (saved_tree, 0);
-  if (TREE_CODE (init_expr) != INIT_EXPR)
+  /* Require an INIT_EXPR.  */
+  if (TREE_CODE (retval) != INIT_EXPR)
     return false;
+  tree init_expr = retval;
 
   /* Determine if this is a simple accessor within struct S of the form:
        T get_field () { return m_field; }.  */
-   tree field_type = TREE_TYPE (field_decl);
+  tree field_type = TREE_TYPE (field_decl);
   if (cxx_types_compatible_p (TREE_TYPE (init_expr), field_type))
     return direct_accessor_p (init_expr, field_decl, field_type);
 
@@ -2610,6 +2611,13 @@ bool
 any_dependent_bases_p (tree type)
 {
   if (!type || !CLASS_TYPE_P (type) || !processing_template_decl)
+    return false;
+
+  /* If we haven't set TYPE_BINFO yet, we don't know anything about the bases.
+     Return false because in this situation we aren't actually looking up names
+     in the scope of the class, so it doesn't matter whether it has dependent
+     bases.  */
+  if (!TYPE_BINFO (type))
     return false;
 
   unsigned i;

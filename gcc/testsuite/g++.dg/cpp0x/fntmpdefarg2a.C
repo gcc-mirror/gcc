@@ -5,11 +5,11 @@
 struct B { };
 struct D : B { };
 struct A {
-  template<typename T = void> operator D&(); // { dg-message "template conversion" }
+  template<typename T = void> operator D&();
   operator long();
 };
 
-template <> A::operator D&();
+template <> A::operator D&(); // { dg-message "template conversion" }
 
 void f(long);
 void f(B&);

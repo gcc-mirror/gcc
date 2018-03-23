@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2731,7 +2731,8 @@ package body Exp_Ch3 is
            and then not Restriction_Active (No_Exception_Propagation)
          then
             declare
-               DF_Id : Entity_Id;
+               DF_Call : Node_Id;
+               DF_Id   : Entity_Id;
 
             begin
                --  Create a local version of Deep_Finalize which has indication
@@ -2743,18 +2744,27 @@ package body Exp_Ch3 is
 
                Append_To (Decls, Make_Local_Deep_Finalize (Rec_Type, DF_Id));
 
+               DF_Call :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   => New_Occurrence_Of (DF_Id, Loc),
+                   Parameter_Associations => New_List (
+                     Make_Identifier (Loc, Name_uInit),
+                     New_Occurrence_Of (Standard_False, Loc)));
+
+               --  Do not emit warnings related to the elaboration order when a
+               --  controlled object is declared before the body of Finalize is
+               --  seen.
+
+               if Legacy_Elaboration_Checks then
+                  Set_No_Elaboration_Check (DF_Call);
+               end if;
+
                Set_Exception_Handlers (Handled_Stmt_Node, New_List (
                  Make_Exception_Handler (Loc,
                    Exception_Choices => New_List (
                      Make_Others_Choice (Loc)),
                    Statements        => New_List (
-                     Make_Procedure_Call_Statement (Loc,
-                       Name                   =>
-                         New_Occurrence_Of (DF_Id, Loc),
-                       Parameter_Associations => New_List (
-                         Make_Identifier (Loc, Name_uInit),
-                         New_Occurrence_Of (Standard_False, Loc))),
-
+                     DF_Call,
                      Make_Raise_Statement (Loc)))));
             end;
          else
@@ -6042,7 +6052,10 @@ package body Exp_Ch3 is
            and then not Has_Init_Expression (N)
          then
             Set_No_Initialization (N, False);
-            Set_Expression (N, Get_Simple_Init_Val (Typ, N, Esize (Def_Id)));
+            Set_Expression
+              (N, New_Copy_Tree
+                    (Get_Simple_Init_Val (Typ, N, Esize (Def_Id)),
+                     New_Sloc => Sloc (Obj_Def)));
             Analyze_And_Resolve (Expression (N), Typ);
          end if;
 
@@ -6083,6 +6096,15 @@ package body Exp_Ch3 is
                  Skip_Self => True);
 
             if Present (Fin_Call) then
+
+               --  Do not emit warnings related to the elaboration order when a
+               --  controlled object is declared before the body of Finalize is
+               --  seen.
+
+               if Legacy_Elaboration_Checks then
+                  Set_No_Elaboration_Check (Fin_Call);
+               end if;
+
                Fin_Block :=
                  Make_Block_Statement (Loc,
                    Declarations               => No_List,

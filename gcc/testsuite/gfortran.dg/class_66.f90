@@ -14,7 +14,7 @@
 
   allocate(barfoo,source = f(11))
   bar = [f(33), [f(22), barfoo], f(1)]
-  if (any (bar%i .ne. [33, 22, 11, 1])) call abort
+  if (any (bar%i .ne. [33, 22, 11, 1])) STOP 1
   deallocate (barfoo)
 
 contains

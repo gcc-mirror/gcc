@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GCC
-   Copyright (C) 1990-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -377,6 +377,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	fputs (" function-specific-opt", file);
       if (code == FUNCTION_DECL && DECL_DECLARED_INLINE_P (node))
 	fputs (" autoinline", file);
+      if (code == FUNCTION_DECL && DECL_UNINLINABLE (node))
+	fputs (" uninlinable", file);
       if (code == FUNCTION_DECL && DECL_BUILT_IN (node))
 	fputs (" built-in", file);
       if (code == FUNCTION_DECL && DECL_STATIC_CHAIN (node))
@@ -630,7 +632,10 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
       else if (code == ARRAY_TYPE)
 	print_node (file, "domain", TYPE_DOMAIN (node), indent + 4);
       else if (code == VECTOR_TYPE)
-	fprintf (file, " nunits:%d", (int) TYPE_VECTOR_SUBPARTS (node));
+	{
+	  fprintf (file, " nunits:");
+	  print_dec (TYPE_VECTOR_SUBPARTS (node), file);
+	}
       else if (code == RECORD_TYPE
 	       || code == UNION_TYPE
 	       || code == QUAL_UNION_TYPE)
@@ -761,24 +766,18 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 
 	case VECTOR_CST:
 	  {
-	    /* Big enough for 2 UINT_MAX plus the string below.  */
+	    /* Big enough for UINT_MAX plus the string below.  */
 	    char buf[32];
-	    unsigned i;
 
-	    for (i = 0; i < VECTOR_CST_NELTS (node); ++i)
+	    fprintf (file, " npatterns:%u nelts-per-pattern:%u",
+		     VECTOR_CST_NPATTERNS (node),
+		     VECTOR_CST_NELTS_PER_PATTERN (node));
+	    unsigned int count = vector_cst_encoded_nelts (node);
+	    for (unsigned int i = 0; i < count; ++i)
 	      {
-		unsigned j;
-		/* Coalesce the output of identical consecutive elements.  */
-		for (j = i + 1; j < VECTOR_CST_NELTS (node); j++)
-		  if (VECTOR_CST_ELT (node, j) != VECTOR_CST_ELT (node, i))
-		    break;
-		j--;
-		if (i == j)
-		  sprintf (buf, "elt:%u: ", i);
-		else
-		  sprintf (buf, "elt:%u...%u: ", i, j);
-		print_node (file, buf, VECTOR_CST_ELT (node, i), indent + 4);
-		i = j;
+		sprintf (buf, "elt:%u: ", i);
+		print_node (file, buf, VECTOR_CST_ENCODED_ELT (node, i),
+			    indent + 4);
 	      }
 	  }
 	  break;
@@ -802,6 +801,18 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 		  fprintf (file, "\\%03o", ch & 0xFF);
 	      }
 	    fputc ('\"', file);
+	  }
+	  break;
+
+	case POLY_INT_CST:
+	  {
+	    char buf[10];
+	    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	      {
+		snprintf (buf, sizeof (buf), "elt%u: ", i);
+		print_node (file, buf, POLY_INT_CST_COEFF (node, i),
+			    indent + 4);
+	      }
 	  }
 	  break;
 

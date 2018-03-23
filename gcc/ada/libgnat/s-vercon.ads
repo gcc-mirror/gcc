@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,10 +39,10 @@ package System.Version_Control is
    pragma Pure;
 
    subtype Version_String is String (1 .. 8);
-   --  Eight character string returned by Get_version_String;
+   --  Eight character string returned by Get_version_String
 
    function Get_Version_String
-     (V    : System.Unsigned_Types.Unsigned)
+     (V : System.Unsigned_Types.Unsigned)
       return Version_String;
    --  The version information in the executable file is stored as unsigned
    --  integers. This routine converts the unsigned integer into an eight

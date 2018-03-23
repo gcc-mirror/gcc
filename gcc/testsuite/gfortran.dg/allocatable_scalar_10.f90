@@ -10,5 +10,5 @@ end type t
 type(t), allocatable :: a
 
 deallocate(a,stat=istat)
-if (istat == 0) call abort()
+if (istat == 0) STOP 1
 end 

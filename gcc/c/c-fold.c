@@ -1,5 +1,5 @@
 /* Support for fully folding sub-trees of an expression for C compiler.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -167,7 +167,16 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       /* Except for variables which we can optimize to its initializer.  */
       if (VAR_P (expr) && !lval && (optimize || in_init))
 	{
-	  ret = decl_constant_value (expr);
+	  if (in_init)
+	    ret = decl_constant_value_1 (expr, true);
+	  else
+	    {
+	      ret = decl_constant_value (expr);
+	      if (ret != expr
+		  && (TYPE_MODE (TREE_TYPE (ret)) == BLKmode
+		      || TREE_CODE (TREE_TYPE (ret)) == ARRAY_TYPE))
+		return expr;
+	    }
 	  /* Avoid unwanted tree sharing between the initializer and current
 	     function's body where the tree can be modified e.g. by the
 	     gimplifier.  */
@@ -261,6 +270,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  TREE_READONLY (ret) = TREE_READONLY (expr);
 	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
 	}
+      if (!lval)
+	ret = fold (ret);
       goto out;
 
     case ARRAY_REF:
@@ -431,6 +442,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       goto unary;
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
       op0_lval = lval;
       /* FALLTHRU */
     case INDIRECT_REF:
@@ -438,7 +450,6 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     case FLOAT_EXPR:
     CASE_CONVERT:
     case ADDR_SPACE_CONVERT_EXPR:
-    case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
@@ -664,4 +675,14 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	set_source_range (ret, old_range.m_start, old_range.m_finish);
     }
   return ret;
+}
+
+/* Fold X for consideration by one of the warning functions when checking
+   whether an expression has a constant value.  */
+
+tree
+fold_for_warn (tree x)
+{
+  /* The C front-end has already folded X appropriately.  */
+  return x;
 }

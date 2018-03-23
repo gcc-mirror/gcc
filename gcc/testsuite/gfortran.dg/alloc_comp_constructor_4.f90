@@ -12,5 +12,5 @@
   type(a) :: x, y
   x = a ([1, 2, 3])
   y = a (x%i(:))  ! used to cause a memory leak and wrong result
-  if (any (x%i .ne. [1, 2, 3])) call abort
+  if (any (x%i .ne. [1, 2, 3])) STOP 1
 end

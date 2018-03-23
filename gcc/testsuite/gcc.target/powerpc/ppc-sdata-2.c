@@ -5,6 +5,7 @@
 /* { dg-final { scan-assembler-not "\\.section\[ \t\]\\.sdata2," } } */
 /* { dg-final { scan-assembler "sdat@sdarel\\(13\\)" } } */
 /* { dg-final { scan-assembler "sdat2@sdarel\\(13\\)" } } */
+/* { dg-skip-if "" { *-*-* } { "-mno-readonly-in-sdata" } { "" } } */
 
 
 int sdat = 2;

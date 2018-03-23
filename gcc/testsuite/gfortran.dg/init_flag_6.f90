@@ -11,10 +11,10 @@ subroutine char_test
   character*1 c1
   character*8 c2, c3(5)
   character c4(10)
-  if (c1 /= ' ') call abort
-  if (c2 /= '        ') call abort
-  if (c3(1) /= '        ') call abort
-  if (c3(5) /= '        ') call abort
-  if (c4(5) /= ' ') call abort
+  if (c1 /= ' ') STOP 1
+  if (c2 /= '        ') STOP 2
+  if (c3(1) /= '        ') STOP 3
+  if (c3(5) /= '        ') STOP 4
+  if (c4(5) /= ' ') STOP 5
 end subroutine char_test
         

@@ -1,5 +1,5 @@
 /* RTL simplification functions for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -263,7 +263,7 @@ avoid_constant_pool_reference (rtx x)
          If that fails we have no choice but to return the original memory.  */
       if (offset == 0 && cmode == GET_MODE (x))
 	return c;
-      else if (offset >= 0 && offset < GET_MODE_SIZE (cmode))
+      else if (known_in_range_p (offset, 0, GET_MODE_SIZE (cmode)))
         {
           rtx tem = simplify_subreg (GET_MODE (x), c, cmode, offset);
           if (tem && CONSTANT_P (tem))
@@ -289,7 +289,7 @@ delegitimize_mem_from_attrs (rtx x)
     {
       tree decl = MEM_EXPR (x);
       machine_mode mode = GET_MODE (x);
-      HOST_WIDE_INT offset = 0;
+      poly_int64 offset = 0;
 
       switch (TREE_CODE (decl))
 	{
@@ -308,23 +308,19 @@ delegitimize_mem_from_attrs (rtx x)
 	case IMAGPART_EXPR:
 	case VIEW_CONVERT_EXPR:
 	  {
-	    HOST_WIDE_INT bitsize, bitpos;
+	    poly_int64 bitsize, bitpos, bytepos, toffset_val = 0;
 	    tree toffset;
 	    int unsignedp, reversep, volatilep = 0;
 
 	    decl
 	      = get_inner_reference (decl, &bitsize, &bitpos, &toffset, &mode,
 				     &unsignedp, &reversep, &volatilep);
-	    if (bitsize != GET_MODE_BITSIZE (mode)
-		|| (bitpos % BITS_PER_UNIT)
-		|| (toffset && !tree_fits_shwi_p (toffset)))
+	    if (maybe_ne (bitsize, GET_MODE_BITSIZE (mode))
+		|| !multiple_p (bitpos, BITS_PER_UNIT, &bytepos)
+		|| (toffset && !poly_int_tree_p (toffset, &toffset_val)))
 	      decl = NULL;
 	    else
-	      {
-		offset += bitpos / BITS_PER_UNIT;
-		if (toffset)
-		  offset += tree_to_shwi (toffset);
-	      }
+	      offset += bytepos + toffset_val;
 	    break;
 	  }
 	}
@@ -346,6 +342,7 @@ delegitimize_mem_from_attrs (rtx x)
 	  if (MEM_P (newx))
 	    {
 	      rtx n = XEXP (newx, 0), o = XEXP (x, 0);
+	      poly_int64 n_offset, o_offset;
 
 	      /* Avoid creating a new MEM needlessly if we already had
 		 the same address.  We do if there's no OFFSET and the
@@ -353,21 +350,14 @@ delegitimize_mem_from_attrs (rtx x)
 		 form (plus NEWX OFFSET), or the NEWX is of the form
 		 (plus Y (const_int Z)) and X is that with the offset
 		 added: (plus Y (const_int Z+OFFSET)).  */
-	      if (!((offset == 0
-		     || (GET_CODE (o) == PLUS
-			 && GET_CODE (XEXP (o, 1)) == CONST_INT
-			 && (offset == INTVAL (XEXP (o, 1))
-			     || (GET_CODE (n) == PLUS
-				 && GET_CODE (XEXP (n, 1)) == CONST_INT
-				 && (INTVAL (XEXP (n, 1)) + offset
-				     == INTVAL (XEXP (o, 1)))
-				 && (n = XEXP (n, 0))))
-			 && (o = XEXP (o, 0))))
+	      n = strip_offset (n, &n_offset);
+	      o = strip_offset (o, &o_offset);
+	      if (!(known_eq (o_offset, n_offset + offset)
 		    && rtx_equal_p (o, n)))
 		x = adjust_address_nv (newx, mode, offset);
 	    }
 	  else if (GET_MODE (x) == GET_MODE (newx)
-		   && offset == 0)
+		   && known_eq (offset, 0))
 	    x = newx;
 	}
     }
@@ -400,8 +390,8 @@ simplify_gen_ternary (enum rtx_code code, machine_mode mode,
   rtx tem;
 
   /* If this simplifies, use it.  */
-  if (0 != (tem = simplify_ternary_operation (code, mode, op0_mode,
-					      op0, op1, op2)))
+  if ((tem = simplify_ternary_operation (code, mode, op0_mode,
+					 op0, op1, op2)) != 0)
     return tem;
 
   return gen_rtx_fmt_eee (code, mode, op0, op1, op2);
@@ -416,8 +406,8 @@ simplify_gen_relational (enum rtx_code code, machine_mode mode,
 {
   rtx tem;
 
-  if (0 != (tem = simplify_relational_operation (code, mode, cmp_mode,
-						 op0, op1)))
+  if ((tem = simplify_relational_operation (code, mode, cmp_mode,
+					    op0, op1)) != 0)
     return tem;
 
   return gen_rtx_fmt_ee (code, mode, op0, op1);
@@ -795,7 +785,7 @@ simplify_truncation (machine_mode mode, rtx op,
       && (INTVAL (XEXP (op, 1)) & (precision - 1)) == 0
       && UINTVAL (XEXP (op, 1)) < op_precision)
     {
-      int byte = subreg_lowpart_offset (mode, op_mode);
+      poly_int64 byte = subreg_lowpart_offset (mode, op_mode);
       int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
       return simplify_gen_subreg (mode, XEXP (op, 0), op_mode,
 				  (WORDS_BIG_ENDIAN
@@ -821,7 +811,7 @@ simplify_truncation (machine_mode mode, rtx op,
       && (GET_MODE_SIZE (int_mode) >= UNITS_PER_WORD
 	  || WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN))
     {
-      int byte = subreg_lowpart_offset (int_mode, int_op_mode);
+      poly_int64 byte = subreg_lowpart_offset (int_mode, int_op_mode);
       int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
       return adjust_address_nv (XEXP (op, 0), int_mode,
 				(WORDS_BIG_ENDIAN
@@ -1165,7 +1155,8 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  if (STORE_FLAG_VALUE == 1)
 	    {
 	      temp = simplify_gen_binary (ASHIFTRT, inner, XEXP (op, 0),
-					  GEN_INT (isize - 1));
+					  gen_int_shift_amount (inner,
+								isize - 1));
 	      if (int_mode == inner)
 		return temp;
 	      if (GET_MODE_PRECISION (int_mode) > isize)
@@ -1175,7 +1166,8 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  else if (STORE_FLAG_VALUE == -1)
 	    {
 	      temp = simplify_gen_binary (LSHIFTRT, inner, XEXP (op, 0),
-					  GEN_INT (isize - 1));
+					  gen_int_shift_amount (inner,
+								isize - 1));
 	      if (int_mode == inner)
 		return temp;
 	      if (GET_MODE_PRECISION (int_mode) > isize)
@@ -1231,7 +1223,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 
       /* If we know that the value is already truncated, we can
 	 replace the TRUNCATE with a SUBREG.  */
-      if (GET_MODE_NUNITS (mode) == 1
+      if (known_eq (GET_MODE_NUNITS (mode), 1)
 	  && (TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op))
 	      || truncated_to_mode (mode, op)))
 	{
@@ -1700,7 +1692,9 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
       break;
     }
 
-  if (VECTOR_MODE_P (mode) && vec_duplicate_p (op, &elt))
+  if (VECTOR_MODE_P (mode)
+      && vec_duplicate_p (op, &elt)
+      && code != VEC_DUPLICATE)
     {
       /* Try applying the operator to ELT and see if that simplifies.
 	 We can duplicate the result if so.
@@ -1747,10 +1741,13 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
       }
       if (CONST_SCALAR_INT_P (op) || CONST_DOUBLE_AS_FLOAT_P (op))
 	return gen_const_vec_duplicate (mode, op);
-      if (GET_CODE (op) == CONST_VECTOR)
+      unsigned int n_elts;
+      if (GET_CODE (op) == CONST_VECTOR
+	  && GET_MODE_NUNITS (mode).is_constant (&n_elts))
 	{
-	  unsigned int n_elts = GET_MODE_NUNITS (mode);
-	  unsigned int in_n_elts = CONST_VECTOR_NUNITS (op);
+	  /* This must be constant if we're duplicating it to a constant
+	     number of elements.  */
+	  unsigned int in_n_elts = CONST_VECTOR_NUNITS (op).to_constant ();
 	  gcc_assert (in_n_elts < n_elts);
 	  gcc_assert ((n_elts % in_n_elts) == 0);
 	  rtvec v = rtvec_alloc (n_elts);
@@ -1762,21 +1759,23 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 
   if (VECTOR_MODE_P (mode) && GET_CODE (op) == CONST_VECTOR)
     {
-      int elt_size = GET_MODE_UNIT_SIZE (mode);
-      unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
+      unsigned int n_elts;
+      if (!CONST_VECTOR_NUNITS (op).is_constant (&n_elts))
+	return NULL_RTX;
+
       machine_mode opmode = GET_MODE (op);
-      int op_elt_size = GET_MODE_UNIT_SIZE (opmode);
-      unsigned op_n_elts = (GET_MODE_SIZE (opmode) / op_elt_size);
+      gcc_assert (known_eq (GET_MODE_NUNITS (mode), n_elts));
+      gcc_assert (known_eq (GET_MODE_NUNITS (opmode), n_elts));
+
       rtvec v = rtvec_alloc (n_elts);
       unsigned int i;
 
-      gcc_assert (op_n_elts == n_elts);
       for (i = 0; i < n_elts; i++)
 	{
 	  rtx x = simplify_unary_operation (code, GET_MODE_INNER (mode),
 					    CONST_VECTOR_ELT (op, i),
 					    GET_MODE_INNER (opmode));
-	  if (!x)
+	  if (!x || !valid_for_const_vector_p (mode, x))
 	    return 0;
 	  RTVEC_ELT (v, i) = x;
 	}
@@ -2036,6 +2035,26 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	}
     }
 
+  /* Handle polynomial integers.  */
+  else if (CONST_POLY_INT_P (op))
+    {
+      poly_wide_int result;
+      switch (code)
+	{
+	case NEG:
+	  result = -const_poly_int_value (op);
+	  break;
+
+	case NOT:
+	  result = ~const_poly_int_value (op);
+	  break;
+
+	default:
+	  return NULL_RTX;
+	}
+      return immed_wide_int_const (result, mode);
+    }
+
   return NULL_RTX;
 }
 
@@ -2216,6 +2235,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
   rtx tem, reversed, opleft, opright, elt0, elt1;
   HOST_WIDE_INT val;
   scalar_int_mode int_mode, inner_mode;
+  poly_int64 offset;
 
   /* Even if we can't compute a constant result,
      there are some cases worth simplifying.  */
@@ -2528,6 +2548,12 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	    return simplify_gen_binary (MINUS, mode, tem, XEXP (op0, 0));
 	}
 
+      if ((GET_CODE (op0) == CONST
+	   || GET_CODE (op0) == SYMBOL_REF
+	   || GET_CODE (op0) == LABEL_REF)
+	  && poly_int_rtx_p (op1, &offset))
+	return plus_constant (mode, op0, trunc_int_for_mode (-offset, mode));
+
       /* Don't let a relocatable value get a negative coeff.  */
       if (CONST_INT_P (op1) && GET_MODE (op0) != VOIDmode)
 	return simplify_gen_binary (PLUS, mode,
@@ -2672,7 +2698,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	{
 	  val = wi::exact_log2 (rtx_mode_t (trueop1, mode));
 	  if (val >= 0)
-	    return simplify_gen_binary (ASHIFT, mode, op0, GEN_INT (val));
+	    return simplify_gen_binary (ASHIFT, mode, op0,
+					gen_int_shift_amount (mode, val));
 	}
 
       /* x*2 is x+x and x*(-1) is -x */
@@ -2801,7 +2828,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
           && GET_CODE (SUBREG_REG (opleft)) == ASHIFT
           && GET_CODE (opright) == LSHIFTRT
           && GET_CODE (XEXP (opright, 0)) == SUBREG
-          && SUBREG_BYTE (opleft) == SUBREG_BYTE (XEXP (opright, 0))
+	  && known_eq (SUBREG_BYTE (opleft), SUBREG_BYTE (XEXP (opright, 0)))
 	  && GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (inner_mode)
           && rtx_equal_p (XEXP (SUBREG_REG (opleft), 0),
                           SUBREG_REG (XEXP (opright, 0)))
@@ -3296,7 +3323,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       /* Convert divide by power of two into shift.  */
       if (CONST_INT_P (trueop1)
 	  && (val = exact_log2 (UINTVAL (trueop1))) > 0)
-	return simplify_gen_binary (LSHIFTRT, mode, op0, GEN_INT (val));
+	return simplify_gen_binary (LSHIFTRT, mode, op0,
+				    gen_int_shift_amount (mode, val));
       break;
 
     case DIV:
@@ -3385,7 +3413,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       if (CONST_INT_P (trueop1)
 	  && exact_log2 (UINTVAL (trueop1)) > 0)
 	return simplify_gen_binary (AND, mode, op0,
-				    gen_int_mode (INTVAL (op1) - 1, mode));
+				    gen_int_mode (UINTVAL (trueop1) - 1,
+						  mode));
       break;
 
     case MOD:
@@ -3416,10 +3445,12 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && IN_RANGE (INTVAL (trueop1),
 		       GET_MODE_UNIT_PRECISION (mode) / 2 + (code == ROTATE),
 		       GET_MODE_UNIT_PRECISION (mode) - 1))
-	return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
-				    mode, op0,
-				    GEN_INT (GET_MODE_UNIT_PRECISION (mode)
-					     - INTVAL (trueop1)));
+	{
+	  int new_amount = GET_MODE_UNIT_PRECISION (mode) - INTVAL (trueop1);
+	  rtx new_amount_rtx = gen_int_shift_amount (mode, new_amount);
+	  return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
+				      mode, op0, new_amount_rtx);
+	}
 #endif
       /* FALLTHRU */
     case ASHIFTRT:
@@ -3460,8 +3491,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      == GET_MODE_BITSIZE (inner_mode) - GET_MODE_BITSIZE (int_mode))
 	  && subreg_lowpart_p (op0))
 	{
-	  rtx tmp = GEN_INT (INTVAL (XEXP (SUBREG_REG (op0), 1))
-			     + INTVAL (op1));
+	  rtx tmp = gen_int_shift_amount
+	    (inner_mode, INTVAL (XEXP (SUBREG_REG (op0), 1)) + INTVAL (op1));
 	  tmp = simplify_gen_binary (code, inner_mode,
 				     XEXP (SUBREG_REG (op0), 0),
 				     tmp);
@@ -3472,7 +3503,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	{
 	  val = INTVAL (op1) & (GET_MODE_UNIT_PRECISION (mode) - 1);
 	  if (val != INTVAL (op1))
-	    return simplify_gen_binary (code, mode, op0, GEN_INT (val));
+	    return simplify_gen_binary (code, mode, op0,
+					gen_int_shift_amount (mode, val));
 	}
       break;
 
@@ -3566,7 +3598,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
     case VEC_SERIES:
       if (op1 == CONST0_RTX (GET_MODE_INNER (mode)))
 	return gen_vec_duplicate (mode, op0);
-      if (CONSTANT_P (op0) && CONSTANT_P (op1))
+      if (valid_for_const_vector_p (mode, op0)
+	  && valid_for_const_vector_p (mode, op1))
 	return gen_const_vec_series (mode, op0, op1);
       return 0;
 
@@ -3592,12 +3625,13 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	     nested VEC_SELECT expressions.  When input operand is a memory
 	     operand, this operation can be simplified to a simple scalar
 	     load from an offseted memory address.  */
-	  if (GET_CODE (trueop0) == VEC_SELECT)
+	  int n_elts;
+	  if (GET_CODE (trueop0) == VEC_SELECT
+	      && (GET_MODE_NUNITS (GET_MODE (XEXP (trueop0, 0)))
+		  .is_constant (&n_elts)))
 	    {
 	      rtx op0 = XEXP (trueop0, 0);
 	      rtx op1 = XEXP (trueop0, 1);
-
-	      int n_elts = GET_MODE_NUNITS (GET_MODE (op0));
 
 	      int i = INTVAL (XVECEXP (trueop1, 0, 0));
 	      int elem;
@@ -3623,9 +3657,11 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		  mode00 = GET_MODE (op00);
 		  mode01 = GET_MODE (op01);
 
-		  /* Find out number of elements of each operand.  */
-		  n_elts00 = GET_MODE_NUNITS (mode00);
-		  n_elts01 = GET_MODE_NUNITS (mode01);
+		  /* Find out the number of elements of each operand.
+		     Since the concatenated result has a constant number
+		     of elements, the operands must too.  */
+		  n_elts00 = GET_MODE_NUNITS (mode00).to_constant ();
+		  n_elts01 = GET_MODE_NUNITS (mode01).to_constant ();
 
 		  gcc_assert (n_elts == n_elts00 + n_elts01);
 
@@ -3664,12 +3700,11 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 
 	  if (GET_CODE (trueop0) == CONST_VECTOR)
 	    {
-	      int elt_size = GET_MODE_UNIT_SIZE (mode);
-	      unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
+	      unsigned n_elts = XVECLEN (trueop1, 0);
 	      rtvec v = rtvec_alloc (n_elts);
 	      unsigned int i;
 
-	      gcc_assert (XVECLEN (trueop1, 0) == (int) n_elts);
+	      gcc_assert (known_eq (n_elts, GET_MODE_NUNITS (mode)));
 	      for (i = 0; i < n_elts; i++)
 		{
 		  rtx x = XVECEXP (trueop1, 0, i);
@@ -3738,15 +3773,18 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	    }
 
 	  /* If we select one half of a vec_concat, return that.  */
+	  int l0, l1;
 	  if (GET_CODE (trueop0) == VEC_CONCAT
+	      && (GET_MODE_NUNITS (GET_MODE (XEXP (trueop0, 0)))
+		  .is_constant (&l0))
+	      && (GET_MODE_NUNITS (GET_MODE (XEXP (trueop0, 1)))
+		  .is_constant (&l1))
 	      && CONST_INT_P (XVECEXP (trueop1, 0, 0)))
 	    {
 	      rtx subop0 = XEXP (trueop0, 0);
 	      rtx subop1 = XEXP (trueop0, 1);
 	      machine_mode mode0 = GET_MODE (subop0);
 	      machine_mode mode1 = GET_MODE (subop1);
-	      int l0 = GET_MODE_NUNITS (mode0);
-	      int l1 = GET_MODE_NUNITS (mode1);
 	      int i0 = INTVAL (XVECEXP (trueop1, 0, 0));
 	      if (i0 == 0 && !side_effects_p (op1) && mode == mode0)
 		{
@@ -3786,13 +3824,13 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && GET_CODE (trueop0) == VEC_CONCAT)
 	{
 	  rtx vec = trueop0;
-	  int offset = INTVAL (XVECEXP (trueop1, 0, 0)) * GET_MODE_SIZE (mode);
+	  offset = INTVAL (XVECEXP (trueop1, 0, 0)) * GET_MODE_SIZE (mode);
 
 	  /* Try to find the element in the VEC_CONCAT.  */
 	  while (GET_MODE (vec) != mode
 		 && GET_CODE (vec) == VEC_CONCAT)
 	    {
-	      HOST_WIDE_INT vec_size;
+	      poly_int64 vec_size;
 
 	      if (CONST_INT_P (XEXP (vec, 0)))
 	        {
@@ -3807,13 +3845,15 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      else
 	        vec_size = GET_MODE_SIZE (GET_MODE (XEXP (vec, 0)));
 
-	      if (offset < vec_size)
+	      if (known_lt (offset, vec_size))
 		vec = XEXP (vec, 0);
-	      else
+	      else if (known_ge (offset, vec_size))
 		{
 		  offset -= vec_size;
 		  vec = XEXP (vec, 1);
 		}
+	      else
+		break;
 	      vec = avoid_constant_pool_reference (vec);
 	    }
 
@@ -3853,7 +3893,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	{
 	  rtx op0_subop1 = XEXP (trueop0, 1);
 	  gcc_assert (GET_CODE (op0_subop1) == PARALLEL);
-	  gcc_assert (XVECLEN (trueop1, 0) == GET_MODE_NUNITS (mode));
+	  gcc_assert (known_eq (XVECLEN (trueop1, 0), GET_MODE_NUNITS (mode)));
 
 	  /* Apply the outer ordering vector to the inner one.  (The inner
 	     ordering vector is expressly permitted to be of a different
@@ -3882,8 +3922,9 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 				      : GET_MODE_INNER (mode));
 
 	gcc_assert (VECTOR_MODE_P (mode));
-	gcc_assert (GET_MODE_SIZE (op0_mode) + GET_MODE_SIZE (op1_mode)
-		    == GET_MODE_SIZE (mode));
+	gcc_assert (known_eq (GET_MODE_SIZE (op0_mode)
+			      + GET_MODE_SIZE (op1_mode),
+			      GET_MODE_SIZE (mode)));
 
 	if (VECTOR_MODE_P (op0_mode))
 	  gcc_assert (GET_MODE_INNER (mode)
@@ -3897,15 +3938,16 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	else
 	  gcc_assert (GET_MODE_INNER (mode) == op1_mode);
 
+	unsigned int n_elts, in_n_elts;
 	if ((GET_CODE (trueop0) == CONST_VECTOR
 	     || CONST_SCALAR_INT_P (trueop0) 
 	     || CONST_DOUBLE_AS_FLOAT_P (trueop0))
 	    && (GET_CODE (trueop1) == CONST_VECTOR
 		|| CONST_SCALAR_INT_P (trueop1) 
-		|| CONST_DOUBLE_AS_FLOAT_P (trueop1)))
+		|| CONST_DOUBLE_AS_FLOAT_P (trueop1))
+	    && GET_MODE_NUNITS (mode).is_constant (&n_elts)
+	    && GET_MODE_NUNITS (op0_mode).is_constant (&in_n_elts))
 	  {
-	    unsigned n_elts = GET_MODE_NUNITS (mode);
-	    unsigned in_n_elts = GET_MODE_NUNITS (op0_mode);
 	    rtvec v = rtvec_alloc (n_elts);
 	    unsigned int i;
 	    for (i = 0; i < n_elts; i++)
@@ -3995,9 +4037,12 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
       && GET_CODE (op0) == CONST_VECTOR
       && GET_CODE (op1) == CONST_VECTOR)
     {
-      unsigned int n_elts = CONST_VECTOR_NUNITS (op0);
-      gcc_assert (n_elts == (unsigned int) CONST_VECTOR_NUNITS (op1));
-      gcc_assert (n_elts == GET_MODE_NUNITS (mode));
+      unsigned int n_elts;
+      if (!CONST_VECTOR_NUNITS (op0).is_constant (&n_elts))
+	return NULL_RTX;
+
+      gcc_assert (known_eq (n_elts, CONST_VECTOR_NUNITS (op1)));
+      gcc_assert (known_eq (n_elts, GET_MODE_NUNITS (mode)));
       rtvec v = rtvec_alloc (n_elts);
       unsigned int i;
 
@@ -4006,7 +4051,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	  rtx x = simplify_binary_operation (code, GET_MODE_INNER (mode),
 					     CONST_VECTOR_ELT (op0, i),
 					     CONST_VECTOR_ELT (op1, i));
-	  if (!x)
+	  if (!x || !valid_for_const_vector_p (mode, x))
 	    return 0;
 	  RTVEC_ELT (v, i) = x;
 	}
@@ -4017,13 +4062,15 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
   if (VECTOR_MODE_P (mode)
       && code == VEC_CONCAT
       && (CONST_SCALAR_INT_P (op0)
-	  || GET_CODE (op0) == CONST_FIXED
+	  || CONST_FIXED_P (op0)
 	  || CONST_DOUBLE_AS_FLOAT_P (op0))
       && (CONST_SCALAR_INT_P (op1)
 	  || CONST_DOUBLE_AS_FLOAT_P (op1)
-	  || GET_CODE (op1) == CONST_FIXED))
+	  || CONST_FIXED_P (op1)))
     {
-      unsigned n_elts = GET_MODE_NUNITS (mode);
+      /* Both inputs have a constant number of elements, so the result
+	 must too.  */
+      unsigned n_elts = GET_MODE_NUNITS (mode).to_constant ();
       rtvec v = rtvec_alloc (n_elts);
 
       gcc_assert (n_elts >= 2);
@@ -4037,8 +4084,8 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	}
       else
 	{
-	  unsigned op0_n_elts = GET_MODE_NUNITS (GET_MODE (op0));
-	  unsigned op1_n_elts = GET_MODE_NUNITS (GET_MODE (op1));
+	  unsigned op0_n_elts = GET_MODE_NUNITS (GET_MODE (op0)).to_constant ();
+	  unsigned op1_n_elts = GET_MODE_NUNITS (GET_MODE (op1)).to_constant ();
 	  unsigned i;
 
 	  gcc_assert (GET_CODE (op0) == CONST_VECTOR);
@@ -4046,9 +4093,9 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	  gcc_assert (op0_n_elts + op1_n_elts == n_elts);
 
 	  for (i = 0; i < op0_n_elts; ++i)
-	    RTVEC_ELT (v, i) = XVECEXP (op0, 0, i);
+	    RTVEC_ELT (v, i) = CONST_VECTOR_ELT (op0, i);
 	  for (i = 0; i < op1_n_elts; ++i)
-	    RTVEC_ELT (v, op0_n_elts+i) = XVECEXP (op1, 0, i);
+	    RTVEC_ELT (v, op0_n_elts+i) = CONST_VECTOR_ELT (op1, i);
 	}
 
       return gen_rtx_CONST_VECTOR (mode, v);
@@ -4314,6 +4361,57 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	      }
 	    break;
 	  }
+	default:
+	  return NULL_RTX;
+	}
+      return immed_wide_int_const (result, int_mode);
+    }
+
+  /* Handle polynomial integers.  */
+  if (NUM_POLY_INT_COEFFS > 1
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && poly_int_rtx_p (op0)
+      && poly_int_rtx_p (op1))
+    {
+      poly_wide_int result;
+      switch (code)
+	{
+	case PLUS:
+	  result = wi::to_poly_wide (op0, mode) + wi::to_poly_wide (op1, mode);
+	  break;
+
+	case MINUS:
+	  result = wi::to_poly_wide (op0, mode) - wi::to_poly_wide (op1, mode);
+	  break;
+
+	case MULT:
+	  if (CONST_SCALAR_INT_P (op1))
+	    result = wi::to_poly_wide (op0, mode) * rtx_mode_t (op1, mode);
+	  else
+	    return NULL_RTX;
+	  break;
+
+	case ASHIFT:
+	  if (CONST_SCALAR_INT_P (op1))
+	    {
+	      wide_int shift = rtx_mode_t (op1, mode);
+	      if (SHIFT_COUNT_TRUNCATED)
+		shift = wi::umod_trunc (shift, GET_MODE_PRECISION (int_mode));
+	      else if (wi::geu_p (shift, GET_MODE_PRECISION (int_mode)))
+		return NULL_RTX;
+	      result = wi::to_poly_wide (op0, mode) << shift;
+	    }
+	  else
+	    return NULL_RTX;
+	  break;
+
+	case IOR:
+	  if (!CONST_SCALAR_INT_P (op1)
+	      || !can_ior_p (wi::to_poly_wide (op0, mode),
+			     rtx_mode_t (op1, mode), &result))
+	    return NULL_RTX;
+	  break;
+
 	default:
 	  return NULL_RTX;
 	}
@@ -4956,34 +5054,38 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
 				    simplify_gen_binary (XOR, cmp_mode,
 							 XEXP (op0, 1), op1));
 
-  /* (eq/ne (and x y) x) simplifies to (eq/ne (and (not y) x) 0), which
-     can be implemented with a BICS instruction on some targets, or
-     constant-folded if y is a constant.  */
+  /* Simplify eq/ne (and/ior x y) x/y) for targets with a BICS instruction or
+     constant folding if x/y is a constant.  */
   if ((code == EQ || code == NE)
-      && op0code == AND
-      && rtx_equal_p (XEXP (op0, 0), op1)
+      && (op0code == AND || op0code == IOR)
       && !side_effects_p (op1)
       && op1 != CONST0_RTX (cmp_mode))
     {
-      rtx not_y = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 1), cmp_mode);
-      rtx lhs = simplify_gen_binary (AND, cmp_mode, not_y, XEXP (op0, 0));
+      /* Both (eq/ne (and x y) x) and (eq/ne (ior x y) y) simplify to
+	 (eq/ne (and (not y) x) 0).  */
+      if ((op0code == AND && rtx_equal_p (XEXP (op0, 0), op1))
+	  || (op0code == IOR && rtx_equal_p (XEXP (op0, 1), op1)))
+	{
+	  rtx not_y = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 1),
+					  cmp_mode);
+	  rtx lhs = simplify_gen_binary (AND, cmp_mode, not_y, XEXP (op0, 0));
 
-      return simplify_gen_relational (code, mode, cmp_mode, lhs,
-				      CONST0_RTX (cmp_mode));
-    }
+	  return simplify_gen_relational (code, mode, cmp_mode, lhs,
+					  CONST0_RTX (cmp_mode));
+	}
 
-  /* Likewise for (eq/ne (and x y) y).  */
-  if ((code == EQ || code == NE)
-      && op0code == AND
-      && rtx_equal_p (XEXP (op0, 1), op1)
-      && !side_effects_p (op1)
-      && op1 != CONST0_RTX (cmp_mode))
-    {
-      rtx not_x = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 0), cmp_mode);
-      rtx lhs = simplify_gen_binary (AND, cmp_mode, not_x, XEXP (op0, 1));
+      /* Both (eq/ne (and x y) y) and (eq/ne (ior x y) x) simplify to
+	 (eq/ne (and (not x) y) 0).  */
+      if ((op0code == AND && rtx_equal_p (XEXP (op0, 1), op1))
+	  || (op0code == IOR && rtx_equal_p (XEXP (op0, 0), op1)))
+	{
+	  rtx not_x = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 0),
+					  cmp_mode);
+	  rtx lhs = simplify_gen_binary (AND, cmp_mode, not_x, XEXP (op0, 1));
 
-      return simplify_gen_relational (code, mode, cmp_mode, lhs,
-				      CONST0_RTX (cmp_mode));
+	  return simplify_gen_relational (code, mode, cmp_mode, lhs,
+					  CONST0_RTX (cmp_mode));
+	}
     }
 
   /* (eq/ne (bswap x) C1) simplifies to (eq/ne x C2) with C2 swapped.  */
@@ -5148,7 +5250,7 @@ simplify_const_relational_operation (enum rtx_code code,
       && (code == EQ || code == NE)
       && ! ((REG_P (op0) || CONST_INT_P (trueop0))
 	    && (REG_P (op1) || CONST_INT_P (trueop1)))
-      && 0 != (tem = simplify_binary_operation (MINUS, mode, op0, op1))
+      && (tem = simplify_binary_operation (MINUS, mode, op0, op1)) != 0
       /* We cannot do this if tem is a nonzero address.  */
       && ! nonzero_address_p (tem))
     return simplify_const_relational_operation (signed_condition (code),
@@ -5490,6 +5592,7 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
   bool any_change = false;
   rtx tem, trueop2;
   scalar_int_mode int_mode, int_op0_mode;
+  unsigned int n_elts;
 
   switch (code)
     {
@@ -5592,14 +5695,17 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	  && GET_CODE (XEXP (op0, 1)) == CONST_VECTOR)
 	{
 	  rtx cv = XEXP (op0, 1);
-	  int nunits = CONST_VECTOR_NUNITS (cv);
+	  int nunits;
 	  bool ok = true;
-	  for (int i = 0; i < nunits; ++i)
-	    if (CONST_VECTOR_ELT (cv, i) != const0_rtx)
-	      {
-		ok = false;
-		break;
-	      }
+	  if (!CONST_VECTOR_NUNITS (cv).is_constant (&nunits))
+	    ok = false;
+	  else
+	    for (int i = 0; i < nunits; ++i)
+	      if (CONST_VECTOR_ELT (cv, i) != const0_rtx)
+		{
+		  ok = false;
+		  break;
+		}
 	  if (ok)
 	    {
 	      rtx new_op0 = gen_rtx_NE (GET_MODE (op0),
@@ -5673,9 +5779,9 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
       gcc_assert (GET_MODE (op1) == mode);
       gcc_assert (VECTOR_MODE_P (mode));
       trueop2 = avoid_constant_pool_reference (op2);
-      if (CONST_INT_P (trueop2))
+      if (CONST_INT_P (trueop2)
+	  && GET_MODE_NUNITS (mode).is_constant (&n_elts))
 	{
-	  unsigned n_elts = GET_MODE_NUNITS (mode);
 	  unsigned HOST_WIDE_INT sel = UINTVAL (trueop2);
 	  unsigned HOST_WIDE_INT mask;
 	  if (n_elts == HOST_BITS_PER_WIDE_INT)
@@ -5739,7 +5845,7 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	  if (GET_CODE (op0) == VEC_DUPLICATE
 	      && GET_CODE (XEXP (op0, 0)) == VEC_SELECT
 	      && GET_CODE (XEXP (XEXP (op0, 0), 1)) == PARALLEL
-	      && mode_nunits[GET_MODE (XEXP (op0, 0))] == 1)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (XEXP (op0, 0))), 1))
 	    {
 	      tem = XVECEXP ((XEXP (XEXP (op0, 0), 1)), 0, 0);
 	      if (CONST_INT_P (tem) && CONST_INT_P (op2))
@@ -5755,8 +5861,8 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	     (vec_concat (A) (X)) if N == 2.  */
 	  if (GET_CODE (op0) == VEC_DUPLICATE
 	      && GET_CODE (op1) == CONST_VECTOR
-	      && CONST_VECTOR_NUNITS (op1) == 2
-	      && GET_MODE_NUNITS (GET_MODE (op0)) == 2
+	      && known_eq (CONST_VECTOR_NUNITS (op1), 2)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op0)), 2)
 	      && IN_RANGE (sel, 1, 2))
 	    {
 	      rtx newop0 = XEXP (op0, 0);
@@ -5770,8 +5876,8 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	     Only applies for vectors of two elements.  */
 	  if (GET_CODE (op0) == VEC_DUPLICATE
 	      && GET_CODE (op1) == VEC_CONCAT
-	      && GET_MODE_NUNITS (GET_MODE (op0)) == 2
-	      && GET_MODE_NUNITS (GET_MODE (op1)) == 2
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op0)), 2)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op1)), 2)
 	      && IN_RANGE (sel, 1, 2))
 	    {
 	      rtx newop0 = XEXP (op0, 0);
@@ -5791,8 +5897,8 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	     of N.  */
 	  if (GET_CODE (op0) == VEC_DUPLICATE
 	      && GET_CODE (op1) == VEC_DUPLICATE
-	      && GET_MODE_NUNITS (GET_MODE (op0)) == 2
-	      && GET_MODE_NUNITS (GET_MODE (op1)) == 2
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op0)), 2)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op1)), 2)
 	      && IN_RANGE (sel, 1, 2))
 	    {
 	      rtx newop0 = XEXP (op0, 0);
@@ -5821,13 +5927,16 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
    or CONST_FIXED or CONST_VECTOR, returning another CONST_INT or
    CONST_WIDE_INT or CONST_DOUBLE or CONST_FIXED or CONST_VECTOR.
 
-   Works by unpacking OP into a collection of 8-bit values
+   Works by unpacking INNER_BYTES bytes of OP into a collection of 8-bit values
    represented as a little-endian array of 'unsigned char', selecting by BYTE,
-   and then repacking them again for OUTERMODE.  */
+   and then repacking them again for OUTERMODE.  If OP is a CONST_VECTOR,
+   FIRST_ELEM is the number of the first element to extract, otherwise
+   FIRST_ELEM is ignored.  */
 
 static rtx
 simplify_immed_subreg (fixed_size_mode outermode, rtx op,
-		       fixed_size_mode innermode, unsigned int byte)
+		       machine_mode innermode, unsigned int byte,
+		       unsigned int first_elem, unsigned int inner_bytes)
 {
   enum {
     value_bit = 8,
@@ -5857,20 +5966,18 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
 
   /* We support any size mode.  */
   max_bitsize = MAX (GET_MODE_BITSIZE (outermode),
-		     GET_MODE_BITSIZE (innermode));
+		     inner_bytes * BITS_PER_UNIT);
 
   /* Unpack the value.  */
 
   if (GET_CODE (op) == CONST_VECTOR)
     {
-      num_elem = CONST_VECTOR_NUNITS (op);
-      elems = &CONST_VECTOR_ELT (op, 0);
+      num_elem = CEIL (inner_bytes, GET_MODE_UNIT_SIZE (innermode));
       elem_bitsize = GET_MODE_UNIT_BITSIZE (innermode);
     }
   else
     {
       num_elem = 1;
-      elems = &op;
       elem_bitsize = max_bitsize;
     }
   /* If this asserts, it is too complicated; reducing value_bit may help.  */
@@ -5881,7 +5988,9 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
   for (elem = 0; elem < num_elem; elem++)
     {
       unsigned char * vp;
-      rtx el = elems[elem];
+      rtx el = (GET_CODE (op) == CONST_VECTOR
+		? CONST_VECTOR_ELT (op, first_elem + elem)
+		: op);
 
       /* Vectors are kept in target memory order.  (This is probably
 	 a mistake.)  */
@@ -6007,10 +6116,9 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
   /* Renumber BYTE so that the least-significant byte is byte 0.  A special
      case is paradoxical SUBREGs, which shouldn't be adjusted since they
      will already have offset 0.  */
-  if (GET_MODE_SIZE (innermode) >= GET_MODE_SIZE (outermode))
+  if (inner_bytes >= GET_MODE_SIZE (outermode))
     {
-      unsigned ibyte = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode)
-			- byte);
+      unsigned ibyte = inner_bytes - GET_MODE_SIZE (outermode) - byte;
       unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
       unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
       byte = (subword_byte % UNITS_PER_WORD
@@ -6019,7 +6127,7 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
 
   /* BYTE should still be inside OP.  (Note that BYTE is unsigned,
      so if it's become negative it will instead be very large.)  */
-  gcc_assert (byte < GET_MODE_SIZE (innermode));
+  gcc_assert (byte < inner_bytes);
 
   /* Convert from bytes to chunks of size value_bit.  */
   value_start = byte * (BITS_PER_UNIT / value_bit);
@@ -6157,7 +6265,7 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
    Return 0 if no simplifications are possible.  */
 rtx
 simplify_subreg (machine_mode outermode, rtx op,
-		 machine_mode innermode, unsigned int byte)
+		 machine_mode innermode, poly_uint64 byte)
 {
   /* Little bit of sanity checking.  */
   gcc_assert (innermode != VOIDmode);
@@ -6168,16 +6276,18 @@ simplify_subreg (machine_mode outermode, rtx op,
   gcc_assert (GET_MODE (op) == innermode
 	      || GET_MODE (op) == VOIDmode);
 
-  if ((byte % GET_MODE_SIZE (outermode)) != 0)
+  poly_uint64 outersize = GET_MODE_SIZE (outermode);
+  if (!multiple_p (byte, outersize))
     return NULL_RTX;
 
-  if (byte >= GET_MODE_SIZE (innermode))
+  poly_uint64 innersize = GET_MODE_SIZE (innermode);
+  if (maybe_ge (byte, innersize))
     return NULL_RTX;
 
-  if (outermode == innermode && !byte)
+  if (outermode == innermode && known_eq (byte, 0U))
     return op;
 
-  if (byte % GET_MODE_UNIT_SIZE (innermode) == 0)
+  if (multiple_p (byte, GET_MODE_UNIT_SIZE (innermode)))
     {
       rtx elt;
 
@@ -6193,17 +6303,31 @@ simplify_subreg (machine_mode outermode, rtx op,
 
   if (CONST_SCALAR_INT_P (op)
       || CONST_DOUBLE_AS_FLOAT_P (op)
-      || GET_CODE (op) == CONST_FIXED
+      || CONST_FIXED_P (op)
       || GET_CODE (op) == CONST_VECTOR)
     {
       /* simplify_immed_subreg deconstructs OP into bytes and constructs
 	 the result from bytes, so it only works if the sizes of the modes
-	 are known at compile time.  Cases that apply to general modes
-	 should be handled here before calling simplify_immed_subreg.  */
+	 and the value of the offset are known at compile time.  Cases that
+	 that apply to general modes and offsets should be handled here
+	 before calling simplify_immed_subreg.  */
       fixed_size_mode fs_outermode, fs_innermode;
+      unsigned HOST_WIDE_INT cbyte;
       if (is_a <fixed_size_mode> (outermode, &fs_outermode)
-	  && is_a <fixed_size_mode> (innermode, &fs_innermode))
-	return simplify_immed_subreg (fs_outermode, op, fs_innermode, byte);
+	  && is_a <fixed_size_mode> (innermode, &fs_innermode)
+	  && byte.is_constant (&cbyte))
+	return simplify_immed_subreg (fs_outermode, op, fs_innermode, cbyte,
+				      0, GET_MODE_SIZE (fs_innermode));
+
+      /* Handle constant-sized outer modes and variable-sized inner modes.  */
+      unsigned HOST_WIDE_INT first_elem;
+      if (GET_CODE (op) == CONST_VECTOR
+	  && is_a <fixed_size_mode> (outermode, &fs_outermode)
+	  && constant_multiple_p (byte, GET_MODE_UNIT_SIZE (innermode),
+				  &first_elem))
+	return simplify_immed_subreg (fs_outermode, op, innermode, 0,
+				      first_elem,
+				      GET_MODE_SIZE (fs_outermode));
 
       return NULL_RTX;
     }
@@ -6213,35 +6337,35 @@ simplify_subreg (machine_mode outermode, rtx op,
   if (GET_CODE (op) == SUBREG)
     {
       machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
+      poly_uint64 innermostsize = GET_MODE_SIZE (innermostmode);
       rtx newx;
 
       if (outermode == innermostmode
-	  && byte == 0 && SUBREG_BYTE (op) == 0)
+	  && known_eq (byte, 0U)
+	  && known_eq (SUBREG_BYTE (op), 0))
 	return SUBREG_REG (op);
 
       /* Work out the memory offset of the final OUTERMODE value relative
 	 to the inner value of OP.  */
-      HOST_WIDE_INT mem_offset = subreg_memory_offset (outermode,
-						       innermode, byte);
-      HOST_WIDE_INT op_mem_offset = subreg_memory_offset (op);
-      HOST_WIDE_INT final_offset = mem_offset + op_mem_offset;
+      poly_int64 mem_offset = subreg_memory_offset (outermode,
+						    innermode, byte);
+      poly_int64 op_mem_offset = subreg_memory_offset (op);
+      poly_int64 final_offset = mem_offset + op_mem_offset;
 
       /* See whether resulting subreg will be paradoxical.  */
       if (!paradoxical_subreg_p (outermode, innermostmode))
 	{
-	  /* In nonparadoxical subregs we can't handle negative offsets.  */
-	  if (final_offset < 0)
-	    return NULL_RTX;
 	  /* Bail out in case resulting subreg would be incorrect.  */
-	  if (final_offset % GET_MODE_SIZE (outermode)
-	      || (unsigned) final_offset >= GET_MODE_SIZE (innermostmode))
+	  if (maybe_lt (final_offset, 0)
+	      || maybe_ge (poly_uint64 (final_offset), innermostsize)
+	      || !multiple_p (final_offset, outersize))
 	    return NULL_RTX;
 	}
       else
 	{
-	  HOST_WIDE_INT required_offset
-	    = subreg_memory_offset (outermode, innermostmode, 0);
-	  if (final_offset != required_offset)
+	  poly_int64 required_offset = subreg_memory_offset (outermode,
+							     innermostmode, 0);
+	  if (maybe_ne (final_offset, required_offset))
 	    return NULL_RTX;
 	  /* Paradoxical subregs always have byte offset 0.  */
 	  final_offset = 0;
@@ -6259,9 +6383,8 @@ simplify_subreg (machine_mode outermode, rtx op,
 	  if (SUBREG_PROMOTED_VAR_P (op)
 	      && SUBREG_PROMOTED_SIGN (op) >= 0
 	      && GET_MODE_CLASS (outermode) == MODE_INT
-	      && IN_RANGE (GET_MODE_SIZE (outermode),
-			   GET_MODE_SIZE (innermode),
-			   GET_MODE_SIZE (innermostmode))
+	      && known_ge (outersize, innersize)
+	      && known_le (outersize, innermostsize)
 	      && subreg_lowpart_p (newx))
 	    {
 	      SUBREG_PROMOTED_VAR_P (newx) = 1;
@@ -6294,7 +6417,7 @@ simplify_subreg (machine_mode outermode, rtx op,
 	     The information is used only by alias analysis that can not
 	     grog partial register anyway.  */
 
-	  if (subreg_lowpart_offset (outermode, innermode) == byte)
+	  if (known_eq (subreg_lowpart_offset (outermode, innermode), byte))
 	    ORIGINAL_REGNO (x) = ORIGINAL_REGNO (op);
 	  return x;
 	}
@@ -6311,7 +6434,7 @@ simplify_subreg (machine_mode outermode, rtx op,
          have instruction to move the whole thing.  */
       && (! MEM_VOLATILE_P (op)
 	  || ! have_insn_for (SET, innermode))
-      && GET_MODE_SIZE (outermode) <= GET_MODE_SIZE (GET_MODE (op)))
+      && known_le (outersize, innersize))
     return adjust_address_nv (op, outermode, byte);
 
   /* Handle complex or vector values represented as CONCAT or VEC_CONCAT
@@ -6319,25 +6442,27 @@ simplify_subreg (machine_mode outermode, rtx op,
   if (GET_CODE (op) == CONCAT
       || GET_CODE (op) == VEC_CONCAT)
     {
-      unsigned int part_size, final_offset;
+      poly_uint64 final_offset;
       rtx part, res;
 
       machine_mode part_mode = GET_MODE (XEXP (op, 0));
       if (part_mode == VOIDmode)
 	part_mode = GET_MODE_INNER (GET_MODE (op));
-      part_size = GET_MODE_SIZE (part_mode);
-      if (byte < part_size)
+      poly_uint64 part_size = GET_MODE_SIZE (part_mode);
+      if (known_lt (byte, part_size))
 	{
 	  part = XEXP (op, 0);
 	  final_offset = byte;
 	}
-      else
+      else if (known_ge (byte, part_size))
 	{
 	  part = XEXP (op, 1);
 	  final_offset = byte - part_size;
 	}
+      else
+	return NULL_RTX;
 
-      if (final_offset + GET_MODE_SIZE (outermode) > part_size)
+      if (maybe_gt (final_offset + outersize, part_size))
 	return NULL_RTX;
 
       part_mode = GET_MODE (part);
@@ -6355,21 +6480,35 @@ simplify_subreg (machine_mode outermode, rtx op,
      it extracts higher bits that the ZERO_EXTEND's source bits.  */
   if (GET_CODE (op) == ZERO_EXTEND && SCALAR_INT_MODE_P (innermode))
     {
-      unsigned int bitpos = subreg_lsb_1 (outermode, innermode, byte);
-      if (bitpos >= GET_MODE_PRECISION (GET_MODE (XEXP (op, 0))))
+      poly_uint64 bitpos = subreg_lsb_1 (outermode, innermode, byte);
+      if (known_ge (bitpos, GET_MODE_PRECISION (GET_MODE (XEXP (op, 0)))))
 	return CONST0_RTX (outermode);
     }
 
   scalar_int_mode int_outermode, int_innermode;
   if (is_a <scalar_int_mode> (outermode, &int_outermode)
       && is_a <scalar_int_mode> (innermode, &int_innermode)
-      && (GET_MODE_PRECISION (int_outermode)
-	  < GET_MODE_PRECISION (int_innermode))
-      && byte == subreg_lowpart_offset (int_outermode, int_innermode))
+      && known_eq (byte, subreg_lowpart_offset (int_outermode, int_innermode)))
     {
-      rtx tem = simplify_truncation (int_outermode, op, int_innermode);
-      if (tem)
-	return tem;
+      /* Handle polynomial integers.  The upper bits of a paradoxical
+	 subreg are undefined, so this is safe regardless of whether
+	 we're truncating or extending.  */
+      if (CONST_POLY_INT_P (op))
+	{
+	  poly_wide_int val
+	    = poly_wide_int::from (const_poly_int_value (op),
+				   GET_MODE_PRECISION (int_outermode),
+				   SIGNED);
+	  return immed_wide_int_const (val, int_outermode);
+	}
+
+      if (GET_MODE_PRECISION (int_outermode)
+	  < GET_MODE_PRECISION (int_innermode))
+	{
+	  rtx tem = simplify_truncation (int_outermode, op, int_innermode);
+	  if (tem)
+	    return tem;
+	}
     }
 
   return NULL_RTX;
@@ -6379,7 +6518,7 @@ simplify_subreg (machine_mode outermode, rtx op,
 
 rtx
 simplify_gen_subreg (machine_mode outermode, rtx op,
-		     machine_mode innermode, unsigned int byte)
+		     machine_mode innermode, poly_uint64 byte)
 {
   rtx newx;
 
@@ -6531,7 +6670,7 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 {
   scalar_mode inner_mode = GET_MODE_INNER (mode);
   rtx duplicate = gen_rtx_VEC_DUPLICATE (mode, scalar_reg);
-  unsigned int nunits = GET_MODE_NUNITS (mode);
+  poly_uint64 nunits = GET_MODE_NUNITS (mode);
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
     {
       /* Test some simple unary cases with VEC_DUPLICATE arguments.  */
@@ -6568,20 +6707,25 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 						duplicate, zero_par));
 
   /* And again with the final element.  */
-  rtx last_index = gen_int_mode (GET_MODE_NUNITS (mode) - 1, word_mode);
-  rtx last_par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, last_index));
-  ASSERT_RTX_PTR_EQ (scalar_reg,
-		     simplify_binary_operation (VEC_SELECT, inner_mode,
-						duplicate, last_par));
+  unsigned HOST_WIDE_INT const_nunits;
+  if (nunits.is_constant (&const_nunits))
+    {
+      rtx last_index = gen_int_mode (const_nunits - 1, word_mode);
+      rtx last_par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, last_index));
+      ASSERT_RTX_PTR_EQ (scalar_reg,
+			 simplify_binary_operation (VEC_SELECT, inner_mode,
+						    duplicate, last_par));
+    }
 
   /* Test a scalar subreg of a VEC_DUPLICATE.  */
-  unsigned int offset = subreg_lowpart_offset (inner_mode, mode);
+  poly_uint64 offset = subreg_lowpart_offset (inner_mode, mode);
   ASSERT_RTX_EQ (scalar_reg,
 		 simplify_gen_subreg (inner_mode, duplicate,
 				      mode, offset));
 
   machine_mode narrower_mode;
-  if (nunits > 2
+  if (maybe_ne (nunits, 2U)
+      && multiple_p (nunits, 2)
       && mode_for_vector (inner_mode, 2).exists (&narrower_mode)
       && VECTOR_MODE_P (narrower_mode))
     {
@@ -6595,7 +6739,7 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 						duplicate, vec_par));
 
       /* Test a vector subreg of a VEC_DUPLICATE.  */
-      unsigned int offset = subreg_lowpart_offset (narrower_mode, mode);
+      poly_uint64 offset = subreg_lowpart_offset (narrower_mode, mode);
       ASSERT_RTX_EQ (narrower_duplicate,
 		     simplify_gen_subreg (narrower_mode, duplicate,
 					  mode, offset));
@@ -6672,10 +6816,57 @@ test_vector_ops ()
 	  rtx scalar_reg = make_test_reg (GET_MODE_INNER (mode));
 	  test_vector_ops_duplicate (mode, scalar_reg);
 	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	      && GET_MODE_NUNITS (mode) > 2)
+	      && maybe_gt (GET_MODE_NUNITS (mode), 2))
 	    test_vector_ops_series (mode, scalar_reg);
 	}
     }
+}
+
+template<unsigned int N>
+struct simplify_const_poly_int_tests
+{
+  static void run ();
+};
+
+template<>
+struct simplify_const_poly_int_tests<1>
+{
+  static void run () {}
+};
+
+/* Test various CONST_POLY_INT properties.  */
+
+template<unsigned int N>
+void
+simplify_const_poly_int_tests<N>::run ()
+{
+  rtx x1 = gen_int_mode (poly_int64 (1, 1), QImode);
+  rtx x2 = gen_int_mode (poly_int64 (-80, 127), QImode);
+  rtx x3 = gen_int_mode (poly_int64 (-79, -128), QImode);
+  rtx x4 = gen_int_mode (poly_int64 (5, 4), QImode);
+  rtx x5 = gen_int_mode (poly_int64 (30, 24), QImode);
+  rtx x6 = gen_int_mode (poly_int64 (20, 16), QImode);
+  rtx x7 = gen_int_mode (poly_int64 (7, 4), QImode);
+  rtx x8 = gen_int_mode (poly_int64 (30, 24), HImode);
+  rtx x9 = gen_int_mode (poly_int64 (-30, -24), HImode);
+  rtx x10 = gen_int_mode (poly_int64 (-31, -24), HImode);
+  rtx two = GEN_INT (2);
+  rtx six = GEN_INT (6);
+  poly_uint64 offset = subreg_lowpart_offset (QImode, HImode);
+
+  /* These tests only try limited operation combinations.  Fuller arithmetic
+     testing is done directly on poly_ints.  */
+  ASSERT_EQ (simplify_unary_operation (NEG, HImode, x8, HImode), x9);
+  ASSERT_EQ (simplify_unary_operation (NOT, HImode, x8, HImode), x10);
+  ASSERT_EQ (simplify_unary_operation (TRUNCATE, QImode, x8, HImode), x5);
+  ASSERT_EQ (simplify_binary_operation (PLUS, QImode, x1, x2), x3);
+  ASSERT_EQ (simplify_binary_operation (MINUS, QImode, x3, x1), x2);
+  ASSERT_EQ (simplify_binary_operation (MULT, QImode, x4, six), x5);
+  ASSERT_EQ (simplify_binary_operation (MULT, QImode, six, x4), x5);
+  ASSERT_EQ (simplify_binary_operation (ASHIFT, QImode, x4, two), x6);
+  ASSERT_EQ (simplify_binary_operation (IOR, QImode, x4, two), x7);
+  ASSERT_EQ (simplify_subreg (HImode, x5, QImode, 0), x8);
+  ASSERT_EQ (simplify_subreg (QImode, x8, HImode, offset), x5);
 }
 
 /* Run all of the selftests within this file.  */
@@ -6684,6 +6875,7 @@ void
 simplify_rtx_c_tests ()
 {
   test_vector_ops ();
+  simplify_const_poly_int_tests<NUM_POLY_INT_COEFFS>::run ();
 }
 
 } // namespace selftest

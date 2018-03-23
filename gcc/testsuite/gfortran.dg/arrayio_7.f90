@@ -11,5 +11,5 @@ program arrayio_7
   character*8 :: a
   equivalence (buf,abuf)
   read(buf(2, 1:3:2), '(a8)') a
-  if (a.ne."4567") call abort()
+  if (a.ne."4567") STOP 1
 end program arrayio_7

@@ -1,5 +1,5 @@
 /* Basic IPA optimizations based on profile.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -331,16 +331,14 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 	 it is executed by the train run.  Transfer the function only if all
 	 callers are unlikely executed.  */
       if (profile_info
-	  && edge->callee->count.initialized_p ()
-	  /* Thunks are not profiled.  This is more or less implementation
-	     bug.  */
-	  && !d->function_symbol->thunk.thunk_p
+	  && !(edge->callee->count.ipa () == profile_count::zero ())
 	  && (edge->caller->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED
 	      || (edge->caller->global.inlined_to
 		  && edge->caller->global.inlined_to->frequency
 		     != NODE_FREQUENCY_UNLIKELY_EXECUTED)))
 	  d->maybe_unlikely_executed = false;
-      if (edge->count.initialized_p () && !edge->count.nonzero_p ())
+      if (edge->count.ipa ().initialized_p ()
+	  && !edge->count.ipa ().nonzero_p ())
 	continue;
       switch (edge->caller->frequency)
         {

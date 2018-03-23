@@ -1,6 +1,6 @@
 /* Lowering and expansion of OpenMP directives for HSA GPU agents.
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1237,7 +1237,7 @@ grid_process_kernel_body_copy (grid_prop *grid, gimple_seq seq,
 
       if (gimple_omp_for_combined_p (inner_loop))
 	grid_eliminate_combined_simd_part (inner_loop);
-      struct walk_stmt_info body_wi;;
+      struct walk_stmt_info body_wi;
       memset (&body_wi, 0, sizeof (body_wi));
       walk_gimple_seq_mod (gimple_omp_body_ptr (inner_loop),
 			   grid_process_grid_body, NULL, &body_wi);

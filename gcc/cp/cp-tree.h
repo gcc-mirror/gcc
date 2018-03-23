@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -91,6 +91,12 @@ public:
   void set_range (location_t start, location_t finish)
   {
     set_location (make_location (m_loc, start, finish));
+  }
+
+  cp_expr& maybe_add_location_wrapper ()
+  {
+    m_value = maybe_wrap_with_location (m_value, m_loc);
+    return *this;
   }
 
  private:
@@ -346,6 +352,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TEMPLATE_PARM_PARAMETER_PACK (in TEMPLATE_PARM_INDEX)
       ATTR_IS_DEPENDENT (in the TREE_LIST for an attribute)
       ABI_TAG_IMPLICIT (in the TREE_LIST for the argument of abi_tag)
+      LAMBDA_CAPTURE_EXPLICIT_P (in a TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST)
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
       LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
@@ -364,6 +371,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IF_STMT_CONSTEXPR_P (IF_STMT)
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
       DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
+      SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -395,14 +403,16 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
       OVL_HIDDEN_P (in OVERLOAD)
+      SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
+      LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
-      DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
+      DECL_NONTRIVIALLY_INITIALIZED_P (in VAR_DECL)
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
-      CONSTUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
+      CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
@@ -415,6 +425,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
+      CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       DECL_CONSTRUCTION_VTABLE_P (in VAR_DECL)
       TYPE_MARKED_P (in _TYPE)
@@ -1250,6 +1261,15 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_MUTABLE_P(NODE) \
   TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
 
+/* True iff uses of a const variable capture were optimized away.  */
+#define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
+  TREE_LANG_FLAG_2 (LAMBDA_EXPR_CHECK (NODE))
+
+/* True if this TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST is for an explicit
+   capture.  */
+#define LAMBDA_CAPTURE_EXPLICIT_P(NODE) \
+  TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
+
 /* The source location of the lambda.  */
 #define LAMBDA_EXPR_LOCATION(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->locus)
@@ -1635,6 +1655,25 @@ struct warning_sentinel
   warning_sentinel(int& flag, bool suppress=true)
     : flag(flag), val(flag) { if (suppress) flag = 0; }
   ~warning_sentinel() { flag = val; }
+};
+
+/* RAII sentinel that saves the value of a variable, optionally
+   overrides it right away, and restores its value when the sentinel
+   id destructed.  */
+
+template <typename T>
+class temp_override
+{
+  T& overridden_variable;
+  T saved_value;
+public:
+  temp_override(T& var) : overridden_variable (var), saved_value (var) {}
+  temp_override(T& var, T overrider)
+    : overridden_variable (var), saved_value (var)
+  {
+    overridden_variable = overrider;
+  }
+  ~temp_override() { overridden_variable = saved_value; }
 };
 
 /* The cached class binding level, from the most recently exited
@@ -2447,7 +2486,8 @@ struct GTY(()) lang_decl_base {
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
-  /* 2 spare bits */
+  unsigned dependent_init_p : 1;	   /* var */
+  /* 1 spare bit */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -3051,7 +3091,7 @@ struct GTY(()) lang_decl {
 /* For a non-member friend function, the class (if any) in which this
    friend was defined.  For example, given:
 
-     struct S { friend void f (); };
+     struct S { friend void f () { ... } };
 
    the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
 #define DECL_FRIEND_CONTEXT(NODE)				\
@@ -3487,7 +3527,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
     : &TYPE_MIN_VALUE_RAW (TYPE_PACK_EXPANSION_CHECK (NODE)))
 
 /* Any additional template args to be applied when substituting into
-   the pattern, set by tsubst_pack_expansion for partial instantiations.  */
+   the pattern, set by tsubst_pack_expansion for partial instantiations.
+   If this is a TREE_LIST, the TREE_VALUE of the first element is the
+   usual template argument TREE_VEC, and the TREE_PURPOSE of later elements
+   are enclosing functions that provided function parameter packs we'll need
+   to map appropriately.  */
 #define PACK_EXPANSION_EXTRA_ARGS(NODE)		\
   *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
     ? &TYPE_MAX_VALUE_RAW (NODE)			\
@@ -3545,12 +3589,6 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define ARGUMENT_PACK_SELECT_INDEX(NODE)				\
   (((struct tree_argument_pack_select *)ARGUMENT_PACK_SELECT_CHECK (NODE))->index)
   
-/* In an ARGUMENT_PACK_SELECT, the actual underlying argument that the
-   ARGUMENT_PACK_SELECT represents. */
-#define ARGUMENT_PACK_SELECT_ARG(NODE)					\
-  TREE_VEC_ELT (ARGUMENT_PACK_ARGS (ARGUMENT_PACK_SELECT_FROM_PACK (NODE)), \
-	        ARGUMENT_PACK_SELECT_INDEX (NODE))
-
 #define FOLD_EXPR_CHECK(NODE)						\
   TREE_CHECK4 (NODE, UNARY_LEFT_FOLD_EXPR, UNARY_RIGHT_FOLD_EXPR,	\
 	       BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR)
@@ -3877,6 +3915,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.var_declared_inline_p \
    = true)
 
+/* True if NODE is a constant variable with a value-dependent initializer.  */
+#define DECL_DEPENDENT_INIT_P(NODE)				\
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))			\
+   && DECL_LANG_SPECIFIC (NODE)->u.base.dependent_init_p)
+#define SET_DECL_DEPENDENT_INIT_P(NODE, X) \
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.dependent_init_p = (X))
+
 /* Nonzero if NODE is an artificial VAR_DECL for a C++17 structured binding
    declaration or one of VAR_DECLs for the user identifiers in it.  */
 #define DECL_DECOMPOSITION_P(NODE) \
@@ -4118,6 +4163,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    than C++11 functional cast syntax.  */
 #define CONSTRUCTOR_C99_COMPOUND_LITERAL(NODE) \
   (TREE_LANG_FLAG_3 (CONSTRUCTOR_CHECK (NODE)))
+
+/* True if this CONSTRUCTOR contains PLACEHOLDER_EXPRs referencing the
+   CONSTRUCTOR's type not nested inside another CONSTRUCTOR marked with
+   CONSTRUCTOR_PLACEHOLDER_BOUNDARY.  */
+#define CONSTRUCTOR_PLACEHOLDER_BOUNDARY(NODE) \
+  (TREE_LANG_FLAG_5 (CONSTRUCTOR_CHECK (NODE)))
 
 #define DIRECT_LIST_INIT_P(NODE) \
    (BRACE_ENCLOSED_INITIALIZER_P (NODE) && CONSTRUCTOR_IS_DIRECT_INIT (NODE))
@@ -4834,12 +4885,21 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define RANGE_FOR_EXPR(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 1)
 #define RANGE_FOR_BODY(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 2)
 #define RANGE_FOR_SCOPE(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 3)
+#define RANGE_FOR_UNROLL(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 4)
 #define RANGE_FOR_IVDEP(NODE)	TREE_LANG_FLAG_6 (RANGE_FOR_STMT_CHECK (NODE))
 
 #define SWITCH_STMT_COND(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
 #define SWITCH_STMT_BODY(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
 #define SWITCH_STMT_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
 #define SWITCH_STMT_SCOPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 3)
+/* True if there are case labels for all possible values of switch cond, either
+   because there is a default: case label or because the case label ranges cover
+   all values.  */
+#define SWITCH_STMT_ALL_CASES_P(NODE) \
+  TREE_LANG_FLAG_0 (SWITCH_STMT_CHECK (NODE))
+/* True if the body of a switch stmt contains no BREAK_STMTs.  */
+#define SWITCH_STMT_NO_BREAK_P(NODE) \
+  TREE_LANG_FLAG_2 (SWITCH_STMT_CHECK (NODE))
 
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)	TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
@@ -6011,7 +6071,6 @@ extern int current_lang_depth			(void);
 extern void push_lang_context			(tree);
 extern void pop_lang_context			(void);
 extern tree instantiate_type			(tree, tree, tsubst_flags_t);
-extern void print_class_statistics		(void);
 extern void build_self_reference		(void);
 extern int same_signature_p			(const_tree, const_tree);
 extern void maybe_add_class_template_decl_list	(tree, tree, int);
@@ -6070,7 +6129,8 @@ extern tree cp_convert_and_check                (tree, tree, tsubst_flags_t);
 extern tree cp_fold_convert			(tree, tree);
 extern tree cp_get_callee			(tree);
 extern tree cp_get_callee_fndecl		(tree);
-extern tree cp_get_fndecl_from_callee		(tree);
+extern tree cp_get_callee_fndecl_nofold		(tree);
+extern tree cp_get_fndecl_from_callee		(tree, bool fold = true);
 extern tree convert_to_void			(tree, impl_conv_void,
                                  		 tsubst_flags_t);
 extern tree convert_force			(tree, tree, int,
@@ -6102,9 +6162,12 @@ enum cp_tree_node_structure_enum cp_tree_node_structure
 extern void finish_scope			(void);
 extern void push_switch				(tree);
 extern void pop_switch				(void);
+extern void note_break_stmt			(void);
+extern bool note_iteration_stmt_body_start	(void);
+extern void note_iteration_stmt_body_end	(bool);
 extern tree make_lambda_name			(void);
-extern int decls_match				(tree, tree);
-extern bool maybe_version_functions		(tree, tree);
+extern int decls_match				(tree, tree, bool = true);
+extern bool maybe_version_functions		(tree, tree, bool);
 extern tree duplicate_decls			(tree, tree, bool);
 extern tree declare_local_label			(tree);
 extern tree define_label			(location_t, tree);
@@ -6128,6 +6191,7 @@ extern void start_decl_1			(tree, bool);
 extern bool check_array_initializer		(tree, tree, tree);
 extern void cp_finish_decl			(tree, tree, bool, tree, int);
 extern tree lookup_decomp_type			(tree);
+extern void cp_maybe_mangle_decomp		(tree, tree, unsigned int);
 extern void cp_finish_decomp			(tree, tree, unsigned int);
 extern int cp_complete_array_type		(tree *, tree, bool);
 extern int cp_complete_array_type_or_error	(tree *, tree, bool, tsubst_flags_t);
@@ -6190,6 +6254,9 @@ extern bool require_deduced_type		(tree, tsubst_flags_t = tf_warning_or_error);
 
 extern tree finish_case_label			(location_t, tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
+extern bool check_array_designated_initializer  (constructor_elt *,
+						 unsigned HOST_WIDE_INT);
+extern bool check_for_uninitialized_const_var   (tree, bool, tsubst_flags_t);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
@@ -6297,9 +6364,12 @@ extern tree create_try_catch_expr               (tree, tree);
 
 /* in expr.c */
 extern tree cplus_expand_constant		(tree);
+extern tree mark_use (tree expr, bool rvalue_p, bool read_p,
+		      location_t = UNKNOWN_LOCATION,
+		      bool reject_builtin = true);
 extern tree mark_rvalue_use			(tree,
                                                  location_t = UNKNOWN_LOCATION,
-                                                 bool = true);
+                                                 bool reject_builtin = true);
 extern tree mark_lvalue_use			(tree);
 extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
@@ -6310,7 +6380,8 @@ extern void mark_exp_read			(tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend				(tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, bool);
+extern tree do_friend				(tree, tree, tree, tree,
+						 enum overload_flags, bool);
 
 extern void set_global_friend			(tree);
 extern bool is_global_friend			(tree);
@@ -6409,7 +6480,8 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 extern bool maybe_clone_body			(tree);
 
 /* In parser.c */
-extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool);
+extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool,
+				  unsigned short);
 extern bool parsing_nsdmi (void);
 extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
@@ -6429,17 +6501,19 @@ extern void end_specialization			(void);
 extern void begin_explicit_instantiation	(void);
 extern void end_explicit_instantiation		(void);
 extern void check_unqualified_spec_or_inst	(tree, location_t);
-extern tree check_explicit_specialization	(tree, tree, int, int);
+extern tree check_explicit_specialization	(tree, tree, int, int,
+						 tree = NULL_TREE);
 extern int num_template_headers_for_class	(tree);
 extern void check_template_variable		(tree);
 extern tree make_auto				(void);
 extern tree make_decltype_auto			(void);
 extern tree make_template_placeholder		(tree);
 extern bool template_placeholder_p		(tree);
-extern tree do_auto_deduction                   (tree, tree, tree);
 extern tree do_auto_deduction                   (tree, tree, tree,
-                                                 tsubst_flags_t,
-                                                 auto_deduction_context,
+                                                 tsubst_flags_t
+						 = tf_warning_or_error,
+                                                 auto_deduction_context
+						 = adc_unspecified,
 						 tree = NULL_TREE,
 						 int = LOOKUP_NORMAL);
 extern tree type_uses_auto			(tree);
@@ -6522,6 +6596,7 @@ extern int processing_template_parmlist;
 extern bool dependent_type_p			(tree);
 extern bool dependent_scope_p			(tree);
 extern bool any_dependent_template_arguments_p  (const_tree);
+extern bool any_erroneous_template_args_p       (const_tree);
 extern bool dependent_template_p		(tree);
 extern bool dependent_template_id_p		(tree, tree);
 extern bool type_dependent_expression_p		(tree);
@@ -6694,16 +6769,16 @@ extern void begin_else_clause			(tree);
 extern void finish_else_clause			(tree);
 extern void finish_if_stmt			(tree);
 extern tree begin_while_stmt			(void);
-extern void finish_while_stmt_cond		(tree, tree, bool);
+extern void finish_while_stmt_cond	(tree, tree, bool, unsigned short);
 extern void finish_while_stmt			(tree);
 extern tree begin_do_stmt			(void);
 extern void finish_do_body			(tree);
-extern void finish_do_stmt			(tree, tree, bool);
+extern void finish_do_stmt		(tree, tree, bool, unsigned short);
 extern tree finish_return_stmt			(tree);
 extern tree begin_for_scope			(tree *);
 extern tree begin_for_stmt			(tree, tree);
 extern void finish_init_stmt			(tree);
-extern void finish_for_cond			(tree, tree, bool);
+extern void finish_for_cond		(tree, tree, bool, unsigned short);
 extern void finish_for_expr			(tree, tree);
 extern void finish_for_stmt			(tree);
 extern tree begin_range_for_stmt		(tree, tree);
@@ -6855,11 +6930,11 @@ extern tree lambda_function			(tree);
 extern void apply_deduced_return_type           (tree, tree);
 extern tree add_capture                         (tree, tree, tree, bool, bool);
 extern tree add_default_capture                 (tree, tree, tree);
-extern tree build_capture_proxy			(tree, tree);
 extern void insert_capture_proxy		(tree);
 extern void insert_pending_capture_proxies	(void);
 extern bool is_capture_proxy			(tree);
 extern bool is_normal_capture_proxy             (tree);
+extern bool is_constant_capture_proxy           (tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree, bool);
 extern void maybe_generic_this_capture		(tree, tree);
@@ -6867,6 +6942,7 @@ extern tree maybe_resolve_dummy			(tree, bool);
 extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(void);
+extern tree current_lambda_expr			(void);
 extern bool generic_lambda_fn_p			(tree);
 extern tree do_dependent_capture		(tree, bool = false);
 extern bool lambda_fn_in_template_p		(tree);
@@ -6956,6 +7032,7 @@ extern tree lookup_add				(tree fns, tree lookup);
 extern tree lookup_maybe_add			(tree fns, tree lookup,
 						 bool deduping);
 extern void lookup_keep				(tree lookup, bool keep);
+extern void lookup_list_keep			(tree list, bool keep);
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
 extern tree dependent_name			(tree);
@@ -6972,6 +7049,7 @@ extern tree array_type_nelts_top		(tree);
 extern tree break_out_target_exprs		(tree);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
 extern tree replace_placeholders		(tree, tree, bool * = NULL);
+extern bool find_placeholders			(tree);
 extern tree get_type_decl			(tree);
 extern tree decl_namespace_context		(tree);
 extern bool decl_anon_ns_mem_p			(const_tree);
@@ -7015,6 +7093,7 @@ extern tree cxx_copy_lang_qualifiers		(const_tree, const_tree);
 
 extern void cxx_print_statistics		(void);
 extern bool maybe_warn_zero_as_null_pointer_constant (tree, location_t);
+extern void cp_warn_deprecated_use		(tree);
 
 /* in ptree.c */
 extern void cxx_print_xnode			(FILE *, tree, int);
@@ -7085,6 +7164,7 @@ extern tree cp_build_addressof			(location_t, tree,
 extern tree cp_build_addr_expr			(tree, tsubst_flags_t);
 extern tree cp_build_unary_op                   (enum tree_code, tree, bool,
                                                  tsubst_flags_t);
+extern tree genericize_compound_lvalue		(tree);
 extern tree unary_complex_lvalue		(enum tree_code, tree);
 extern tree build_x_conditional_expr		(location_t, tree, tree, tree, 
                                                  tsubst_flags_t);
@@ -7358,17 +7438,13 @@ extern void vtv_save_class_info                 (tree);
 extern void vtv_recover_class_info              (void);
 extern void vtv_build_vtable_verify_fndecl      (void);
 
-/* In cp/cp-array-notations.c */
-extern tree expand_array_notation_exprs         (tree);
-bool cilkplus_an_triplet_types_ok_p             (location_t, tree, tree, tree,
-						 tree);
-
 /* In constexpr.c */
 extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);
 extern tree register_constexpr_fundef           (tree, tree);
 extern bool is_valid_constexpr_fn		(tree, bool);
 extern bool check_constexpr_ctor_body           (tree, tree, bool);
+extern tree constexpr_fn_retval		(tree);
 extern tree ensure_literal_type_for_constexpr_object (tree);
 extern bool potential_constant_expression       (tree);
 extern bool is_constant_expression (tree);
@@ -7378,8 +7454,10 @@ extern bool is_static_init_expression    (tree);
 extern bool potential_rvalue_constant_expression (tree);
 extern bool require_potential_constant_expression (tree);
 extern bool require_constant_expression (tree);
+extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
+extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE);
 extern tree fold_non_dependent_expr		(tree);
@@ -7394,21 +7472,12 @@ extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
 
-/* In c-family/cilk.c */
-extern bool cilk_valid_spawn                    (tree);
-
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);
 extern void cp_ubsan_instrument_member_accesses (tree *);
 extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
-
-#if CHECKING_P
-namespace selftest {
-  extern void run_cp_tests (void);
-} // namespace selftest
-#endif /* #if CHECKING_P */
 
 /* Inline bodies.  */
 
@@ -7439,6 +7508,24 @@ named_decl_hash::equal (const value_type existing, compare_type candidate)
   tree name = OVL_NAME (existing);
   return candidate == name;
 }
+
+inline bool
+null_node_p (const_tree expr)
+{
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+  return expr == null_node;
+}
+
+#if CHECKING_P
+namespace selftest {
+  extern void run_cp_tests (void);
+
+  /* Declarations for specific families of tests within cp,
+     by source file, in alphabetical order.  */
+  extern void cp_pt_c_tests ();
+  extern void cp_tree_c_tests (void);
+} // namespace selftest
+#endif /* #if CHECKING_P */
 
 /* -- end of C++ */
 

@@ -5,9 +5,9 @@
       logical :: l
       character(len=60) :: s
       open(2_8*huge(0)+20_8,file="foo",iostat=i)
-      if (i == 0) call abort
+      if (i == 0) STOP 1
       open(2_8*huge(0)+20_8,file="foo",err=99)
-      call abort
+      STOP 2
  99   inquire(unit=18,opened=l)
-      if (l) call abort
+      if (l) STOP 3
       end

@@ -51,23 +51,23 @@ c { dg-do run }
       double precision d1, d2, d3
       integer i1, i2, i3
 
-      if (s1(1) .ne. 1.) call abort
-      if (r1(1) .ne. 1.) call abort
-      if (d1 .ne. 10.) call abort
-      if (r1(4) .ne. 1.) call abort
-      if (r1(5) .ne. 1.) call abort
-      if (i1 .ne. 1) call abort
-      if (s2(1) .ne. 2.) call abort
-      if (r2(1) .ne. 2.) call abort
-      if (d2 .ne. 20.) call abort
-      if (r2(4) .ne. 2.) call abort
-      if (r2(5) .ne. 2.) call abort
-      if (i2 .ne. 2) call abort
-      if (s3(1) .ne. 3.) call abort
-      if (r3(1) .ne. 3.) call abort
-      if (d3 .ne. 30.) call abort
-      if (r3(4) .ne. 3.) call abort
-      if (r3(5) .ne. 3.) call abort
-      if (i3 .ne. 3) call abort
+      if (s1(1) .ne. 1.) STOP 1
+      if (r1(1) .ne. 1.) STOP 2
+      if (d1 .ne. 10.) STOP 3
+      if (r1(4) .ne. 1.) STOP 4
+      if (r1(5) .ne. 1.) STOP 5
+      if (i1 .ne. 1) STOP 6
+      if (s2(1) .ne. 2.) STOP 7
+      if (r2(1) .ne. 2.) STOP 8
+      if (d2 .ne. 20.) STOP 9
+      if (r2(4) .ne. 2.) STOP 10
+      if (r2(5) .ne. 2.) STOP 11
+      if (i2 .ne. 2) STOP 12
+      if (s3(1) .ne. 3.) STOP 13
+      if (r3(1) .ne. 3.) STOP 14
+      if (d3 .ne. 30.) STOP 15
+      if (r3(4) .ne. 3.) STOP 16
+      if (r3(5) .ne. 3.) STOP 17
+      if (i3 .ne. 3) STOP 18
 
       end

@@ -13,7 +13,7 @@ function foo(string)
   foo => string
   select type (foo)
     type is (character(*))
-      if (foo .ne. 'foo') call abort
+      if (foo .ne. 'foo') STOP 1
       foo = 'bar'
   end select
 end function
@@ -32,7 +32,7 @@ end function
 
   select type (res)
     type is (character(*))
-      if (res .ne. 'bar') call abort
+      if (res .ne. 'bar') STOP 2
   end select
-  if (string .ne. 'bar') call abort
+  if (string .ne. 'bar') STOP 3
 end

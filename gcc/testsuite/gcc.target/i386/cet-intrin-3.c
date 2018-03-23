@@ -10,24 +10,22 @@
 
 unsigned int f1 ()
 {
-  unsigned int x = 0;
-  return _rdsspd (x);
+  return _get_ssp ();
 }
 
 void f3 (unsigned int _a)
 {
-  _incsspd (_a);
+  _inc_ssp (_a);
 }
 
 #ifdef __x86_64__
 unsigned long long f2 ()
 {
-  unsigned long long x = 0;
-  return _rdsspq (x);
+  return _get_ssp ();
 }
 
 void f4 (unsigned int _a)
 {
-  _incsspq (_a);
+  _inc_ssp (_a);
 }
 #endif

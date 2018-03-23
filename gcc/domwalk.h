@@ -1,5 +1,5 @@
 /* Generic dominator tree walker
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -32,18 +32,41 @@ class dom_walker
 public:
   static const edge STOP;
 
-  /* Use SKIP_UNREACHBLE_BLOCKS = true when your client can discover
-     that some edges are not executable.
+  /* An enum for determining whether the dom walk should be constrained to
+     blocks reachable by executable edges.  */
 
-     If a client can discover that a COND, SWITCH or GOTO has a static
-     target in the before_dom_children callback, the taken edge should
-     be returned.  The generic walker will clear EDGE_EXECUTABLE on all
-     edges it can determine are not executable.
-     
-     You can provide a mapping of basic-block index to RPO if you
-     have that readily available or you do multiple walks.  */
-  dom_walker (cdi_direction direction, bool skip_unreachable_blocks = false,
-	      int *bb_index_to_rpo = NULL);
+  enum reachability
+  {
+    /* Walk all blocks within the CFG.  */
+    ALL_BLOCKS,
+
+    /* Use REACHABLE_BLOCKS when your subclass can discover that some edges
+       are not executable.
+
+       If a subclass can discover that a COND, SWITCH or GOTO has a static
+       target in the before_dom_children callback, the taken edge should
+       be returned.  The generic walker will clear EDGE_EXECUTABLE on all
+       edges it can determine are not executable.
+
+       With REACHABLE_BLOCKS, EDGE_EXECUTABLE will be set on every edge in
+       the dom_walker ctor; the flag will then be cleared on edges that are
+       determined to be not executable.  */
+    REACHABLE_BLOCKS,
+
+    /* Identical to REACHABLE_BLOCKS, but the initial state of EDGE_EXECUTABLE
+       will instead be preserved in the ctor, allowing for information about
+       non-executable edges to be merged in from an earlier analysis (and
+       potentially for additional edges to be marked as non-executable).  */
+    REACHABLE_BLOCKS_PRESERVING_FLAGS
+  };
+
+  dom_walker (cdi_direction direction, enum reachability = ALL_BLOCKS);
+
+  /* You can provide a mapping of basic-block index to RPO if you
+     have that readily available or you do multiple walks.  If you
+     specify NULL as BB_INDEX_TO_RPO dominator children will not be
+     walked in RPO order.  */
+  dom_walker (cdi_direction direction, enum reachability, int *bb_index_to_rpo);
 
   ~dom_walker ();
 
@@ -86,5 +109,7 @@ private:
   void propagate_unreachable_to_edges (basic_block, FILE *, dump_flags_t);
 
 };
+
+extern void set_all_edges_as_executable (function *fn);
 
 #endif

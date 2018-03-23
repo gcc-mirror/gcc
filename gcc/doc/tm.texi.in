@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2307,6 +2307,8 @@ Do not define this macro if you do not define
 
 @hook TARGET_SECONDARY_MEMORY_NEEDED_MODE
 
+@hook TARGET_SELECT_EARLY_REMAT_MODES
+
 @hook TARGET_CLASS_LIKELY_SPILLED_P
 
 @hook TARGET_CLASS_MAX_NREGS
@@ -2544,6 +2546,8 @@ terminate the stack backtrace.  New ports should avoid this.
 
 @hook TARGET_DWARF_HANDLE_FRAME_UNSPEC
 
+@hook TARGET_DWARF_POLY_INDETERMINATE_VALUE
+
 @defmac INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
 from the value of the stack pointer register to the top of the stack
@@ -2553,6 +2557,15 @@ previous frame, just before the call instruction.
 
 You only need to define this macro if you want to support call frame
 debugging information like that provided by DWARF 2.
+@end defmac
+
+@defmac DEFAULT_INCOMING_FRAME_SP_OFFSET
+Like @code{INCOMING_FRAME_SP_OFFSET}, but must be the same for all
+functions of the same ABI, and when using GAS @code{.cfi_*} directives
+must also agree with the default CFI GAS emits.  Define this macro
+only if @code{INCOMING_FRAME_SP_OFFSET} can have different values
+between different functions of the same ABI or when
+@code{INCOMING_FRAME_SP_OFFSET} does not agree with GAS default CFI.
 @end defmac
 
 @defmac ARG_POINTER_CFA_OFFSET (@var{fundecl})
@@ -3000,6 +3013,13 @@ defined and 0 otherwise.
 
 @end defmac
 
+@defmac DWARF_LAZY_REGISTER_VALUE (@var{regno}, @var{value})
+Define this macro if the target has pseudo DWARF registers whose
+values need to be computed lazily on demand by the unwinder (such as when
+referenced in a CFA expression).  The macro returns true if @var{regno}
+is such a register and stores its value in @samp{*@var{value}} if so.
+@end defmac
+
 @node Elimination
 @subsection Eliminating Frame Pointer and Arg Pointer
 
@@ -3319,6 +3339,8 @@ stack.
 @hook TARGET_SCALAR_MODE_SUPPORTED_P
 
 @hook TARGET_VECTOR_MODE_SUPPORTED_P
+
+@hook TARGET_ARRAY_MODE
 
 @hook TARGET_ARRAY_MODE_SUPPORTED_P
 
@@ -4079,7 +4101,7 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 
-@hook TARGET_VECTORIZE_VEC_PERM_CONST_OK
+@hook TARGET_VECTORIZE_VEC_PERM_CONST
 
 @hook TARGET_VECTORIZE_BUILTIN_CONVERSION
 
@@ -4091,9 +4113,13 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 
+@hook TARGET_VECTORIZE_SPLIT_REDUCTION
+
 @hook TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
 
 @hook TARGET_VECTORIZE_GET_MASK_MODE
+
+@hook TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
 
 @hook TARGET_VECTORIZE_INIT_COST
 
@@ -4606,6 +4632,8 @@ Define this macro if a non-short-circuit operation produced by
 @hook TARGET_NOCE_CONVERSION_PROFITABLE_P
 
 @hook TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
+
+@hook TARGET_ESTIMATED_POLY_VALUE
 
 @node Scheduling
 @section Adjusting the Instruction Scheduler
@@ -6629,8 +6657,8 @@ A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
 debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{DWARF_DEBUG}, @code{DWARF2_DEBUG},
-@code{XCOFF_DEBUG}, @code{VMS_DEBUG}, and @code{VMS_AND_DWARF2_DEBUG}.
+@code{DWARF2_DEBUG}, @code{XCOFF_DEBUG}, @code{VMS_DEBUG},
+and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
@@ -6892,6 +6920,15 @@ Define this macro to be a nonzero value if the assembler can generate Dwarf 2
 line debug info sections.  This will result in much more compact line number
 tables, and hence is desirable if it works.
 @end defmac
+
+@defmac DWARF2_ASM_VIEW_DEBUG_INFO
+Define this macro to be a nonzero value if the assembler supports view
+assignment and verification in @code{.loc}.  If it does not, but the
+user enables location views, the compiler may have to fallback to
+internal line number tables.
+@end defmac
+
+@hook TARGET_RESET_LOCATION_VIEW
 
 @hook TARGET_WANT_DEBUG_PUB_SECTIONS
 
@@ -7348,8 +7385,12 @@ is in effect.
 
 @defmac WORD_REGISTER_OPERATIONS
 Define this macro to 1 if operations between registers with integral mode
-smaller than a word are always performed on the entire register.
-Most RISC machines have this property and most CISC machines do not.
+smaller than a word are always performed on the entire register.  To be
+more explicit, if you start with a pair of @code{word_mode} registers with
+known values and you do a subword, for example @code{QImode}, addition on
+the low part of the registers, then the compiler may consider that the
+result has a known value in @code{word_mode} too if the macro is defined
+to 1.  Most RISC machines have this property and most CISC machines do not.
 @end defmac
 
 @hook TARGET_MIN_ARITHMETIC_PRECISION

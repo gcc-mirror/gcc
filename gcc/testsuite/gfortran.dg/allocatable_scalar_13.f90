@@ -21,17 +21,17 @@ contains
     allocate(d,source=subdata(1)) ! memory was lost, now OK
     allocate(e,source=d) ! OK
     allocate(f,source=create (99)) ! memory was lost, now OK
-    if (d%b .ne. 1) call abort
-    if (e%b .ne. 1) call abort
-    if (f%b .ne. 99) call abort
+    if (d%b .ne. 1) STOP 1
+    if (e%b .ne. 1) STOP 2
+    if (f%b .ne. 99) STOP 3
     allocate (g, source = greeting1("good day"))
-    if (g .ne. "good day") call abort
+    if (g .ne. "good day") STOP 4
     allocate (h, source = greeting2("hello"))
-    if (h .ne. "hello") call abort
+    if (h .ne. "hello") STOP 5
     allocate (i, source = greeting3("hiya!"))
-    if (i .ne. "hiya!") call abort
+    if (i .ne. "hiya!") STOP 6
     call greeting4 (j, "Goodbye ") ! Test that dummy arguments are OK
-    if (j .ne. "Goodbye ") call abort
+    if (j .ne. "Goodbye ") STOP 7
   end subroutine
 
   function create (arg) result(res)
@@ -56,7 +56,7 @@ contains
     character(5) :: arg
     Character(5), allocatable :: res, res1
     allocate(res, res1, source = arg) ! Caused an ICE
-    if (res1 .ne. res) call abort
+    if (res1 .ne. res) STOP 8
   end function
 
   subroutine greeting4 (res, arg)

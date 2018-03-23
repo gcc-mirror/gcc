@@ -16,7 +16,7 @@ program elastic2
   allocate(a(2*nno))
   call two()
   coor = transpose ( reshape ( a, (/2,nno/) ) )
-  if (any(coor /= 12)) call abort
+  if (any(coor /= 12)) STOP 1
 contains
   subroutine two()
     allocate(coor(3,2))

@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -680,7 +680,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
   tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset,
 				  &name_expansions);
-  aff_combination_const (&delta, type, wi::to_widest (DR_INIT (dr)));
+  aff_combination_const (&delta, type, wi::to_poly_widest (DR_INIT (dr)));
   aff_combination_add (offset, &delta);
 }
 
@@ -692,7 +692,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
 static bool
 determine_offset (struct data_reference *a, struct data_reference *b,
-		  widest_int *off)
+		  poly_widest_int *off)
 {
   aff_tree diff, baseb, step;
   tree typea, typeb;
@@ -801,7 +801,7 @@ split_data_refs_to_components (struct loop *loop,
 
   FOR_EACH_VEC_ELT (depends, i, ddr)
     {
-      widest_int dummy_off;
+      poly_widest_int dummy_off;
 
       if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
 	continue;
@@ -958,7 +958,11 @@ suitable_component_p (struct loop *loop, struct component *comp)
 
   for (i = 1; comp->refs.iterate (i, &a); i++)
     {
-      if (!determine_offset (first->ref, a->ref, &a->offset))
+      /* Polynomial offsets are no use, since we need to know the
+	 gap between iteration numbers at compile time.  */
+      poly_widest_int offset;
+      if (!determine_offset (first->ref, a->ref, &offset)
+	  || !offset.is_constant (&a->offset))
 	return false;
 
       enum ref_step_type a_step;
@@ -1187,7 +1191,7 @@ valid_initializer_p (struct data_reference *ref,
 		     unsigned distance, struct data_reference *root)
 {
   aff_tree diff, base, step;
-  widest_int off;
+  poly_widest_int off;
 
   /* Both REF and ROOT must be accessing the same object.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (ref), DR_BASE_ADDRESS (root), 0))
@@ -1215,7 +1219,7 @@ valid_initializer_p (struct data_reference *ref,
   if (!aff_combination_constant_multiple_p (&diff, &step, &off))
     return false;
 
-  if (off != distance)
+  if (maybe_ne (off, distance))
     return false;
 
   return true;

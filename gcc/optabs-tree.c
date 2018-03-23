@@ -1,5 +1,5 @@
 /* Tree-based target query functions relating to optabs
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -199,6 +199,12 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ?
 	vec_pack_ufix_trunc_optab : vec_pack_sfix_trunc_optab;
 
+    case VEC_DUPLICATE_EXPR:
+      return vec_duplicate_optab;
+
+    case VEC_SERIES_EXPR:
+      return vec_series_optab;
+
     default:
       break;
     }
@@ -321,8 +327,8 @@ expand_vec_cond_expr_p (tree value_type, tree cmp_op_type, enum tree_code code)
 			       TYPE_MODE (cmp_op_type)) != CODE_FOR_nothing)
     return true;
 
-  if (GET_MODE_SIZE (value_mode) != GET_MODE_SIZE (cmp_op_mode)
-      || GET_MODE_NUNITS (value_mode) != GET_MODE_NUNITS (cmp_op_mode))
+  if (maybe_ne (GET_MODE_SIZE (value_mode), GET_MODE_SIZE (cmp_op_mode))
+      || maybe_ne (GET_MODE_NUNITS (value_mode), GET_MODE_NUNITS (cmp_op_mode)))
     return false;
 
   if (get_vcond_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type),
@@ -352,7 +358,7 @@ init_tree_optimization_optabs (tree optnode)
   if (tmp_optabs)
     memset (tmp_optabs, 0, sizeof (struct target_optabs));
   else
-    tmp_optabs = ggc_alloc<target_optabs> ();
+    tmp_optabs = ggc_cleared_alloc<target_optabs> ();
 
   /* Generate a new set of optabs into tmp_optabs.  */
   init_all_optabs (tmp_optabs);

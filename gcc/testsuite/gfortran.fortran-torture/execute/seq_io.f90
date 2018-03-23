@@ -43,7 +43,7 @@
          if (debug) then
             print '(A,Z8)','m(1) incorrect.  m(1) = ',m(1)
          else
-            call abort
+            STOP 1
          endif
        endif
 
@@ -51,7 +51,7 @@
          if (debug) then
             print '(A,Z8)','m(2) incorrect.  m(2) = ',m(2)
          else
-            call abort
+            STOP 2
          endif
        endif
 
@@ -59,7 +59,7 @@
          if (debug) then
             print '(A,Z8)','n incorrect.  n = ',n
          else
-            call abort
+            STOP 3
          endif
        endif
 
@@ -68,7 +68,7 @@
             if (debug) then
               print*,'element ',i,' was ',r(i),' should be ',i
             else
-              call abort
+              STOP 4
             endif
           endif
        end do

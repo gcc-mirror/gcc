@@ -1,5 +1,5 @@
 ;; ARM NEON coprocessor Machine Description
-;; Copyright (C) 2006-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2018 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -1180,12 +1180,12 @@
 )
 
 (define_insn_and_split "ashldi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand"	    "= w, w,?&r,?r,?&r, ?w,w")
-	(ashift:DI (match_operand:DI 1 "s_register_operand" " 0w, w, 0r, 0,  r, 0w,w")
-		   (match_operand:SI 2 "general_operand"    "rUm, i,  r, i,  i,rUm,i")))
-   (clobber (match_scratch:SI 3				    "= X, X,?&r, X,  X,  X,X"))
-   (clobber (match_scratch:SI 4				    "= X, X,?&r, X,  X,  X,X"))
-   (clobber (match_scratch:DI 5				    "=&w, X,  X, X,  X, &w,X"))
+  [(set (match_operand:DI 0 "s_register_operand"	    "= w, w, &r, r, &r, ?w,?w")
+	(ashift:DI (match_operand:DI 1 "s_register_operand" " 0w, w, 0r, 0,  r, 0w, w")
+		   (match_operand:SI 2 "general_operand"    "rUm, i,  r, i,  i,rUm, i")))
+   (clobber (match_scratch:SI 3				    "= X, X, &r, X,  X,  X, X"))
+   (clobber (match_scratch:SI 4				    "= X, X, &r, X,  X,  X, X"))
+   (clobber (match_scratch:DI 5				    "=&w, X,  X, X,  X, &w, X"))
    (clobber (reg:CC_C CC_REGNUM))]
   "TARGET_NEON"
   "#"
@@ -1276,7 +1276,7 @@
 ;; ashrdi3_neon
 ;; lshrdi3_neon
 (define_insn_and_split "<shift>di3_neon"
-  [(set (match_operand:DI 0 "s_register_operand"	     "= w, w,?&r,?r,?&r,?w,?w")
+  [(set (match_operand:DI 0 "s_register_operand"	     "= w, w, &r, r, &r,?w,?w")
 	(RSHIFTS:DI (match_operand:DI 1 "s_register_operand" " 0w, w, 0r, 0,  r,0w, w")
 		    (match_operand:SI 2 "reg_or_int_operand" "  r, i,  r, i,  i, r, i")))
    (clobber (match_scratch:SI 3				     "=2r, X, &r, X,  X,2r, X"))
@@ -2289,6 +2289,406 @@
 					 operands[1]));
   DONE;
 })
+
+;; The expand RTL structure here is not important.
+;; We use the gen_* functions anyway.
+;; We just need something to wrap the iterators around.
+
+(define_expand "neon_vfm<vfml_op>l_<vfml_half><mode>"
+  [(set (match_operand:VCVTF 0 "s_register_operand")
+     (unspec:VCVTF
+	[(match_operand:VCVTF 1 "s_register_operand")
+	   (PLUSMINUS:<VFML>
+	     (match_operand:<VFML> 2 "s_register_operand")
+	     (match_operand:<VFML> 3 "s_register_operand"))] VFMLHALVES))]
+  "TARGET_FP16FML"
+{
+  rtx half = arm_simd_vect_par_cnst_half (<VFML>mode, <vfml_half_selector>);
+  emit_insn (gen_vfm<vfml_op>l_<vfml_half><mode>_intrinsic (operands[0],
+							     operands[1],
+							     operands[2],
+							     operands[3],
+							     half, half));
+  DONE;
+})
+
+(define_insn "vfmal_low<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 4 "vect_par_constant_low" "")))
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 3 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 5 "vect_par_constant_low" "")))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ "vfmal.f16\\t%<V_reg>0, %<V_lo>2, %<V_lo>3"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmsl_high<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (neg:<VFMLSEL>
+	    (vec_select:<VFMLSEL>
+	      (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	      (match_operand:<VFML> 4 "vect_par_constant_high" ""))))
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 3 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 5 "vect_par_constant_high" "")))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ "vfmsl.f16\\t%<V_reg>0, %<V_hi>2, %<V_hi>3"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmal_high<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 4 "vect_par_constant_high" "")))
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 3 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 5 "vect_par_constant_high" "")))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ "vfmal.f16\\t%<V_reg>0, %<V_hi>2, %<V_hi>3"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmsl_low<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (neg:<VFMLSEL>
+	    (vec_select:<VFMLSEL>
+	      (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	      (match_operand:<VFML> 4 "vect_par_constant_low" ""))))
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 3 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 5 "vect_par_constant_low" "")))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ "vfmsl.f16\\t%<V_reg>0, %<V_lo>2, %<V_lo>3"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_expand "neon_vfm<vfml_op>l_lane_<vfml_half><VCVTF:mode>"
+  [(set:VCVTF (match_operand:VCVTF 0 "s_register_operand")
+     (unspec:VCVTF
+	[(match_operand:VCVTF 1 "s_register_operand")
+	 (PLUSMINUS:<VFML>
+	   (match_operand:<VFML> 2 "s_register_operand")
+	   (match_operand:<VFML> 3 "s_register_operand"))
+	 (match_operand:SI 4 "const_int_operand")] VFMLHALVES))]
+  "TARGET_FP16FML"
+{
+  rtx lane = GEN_INT (NEON_ENDIAN_LANE_N (<VFML>mode, INTVAL (operands[4])));
+  rtx half = arm_simd_vect_par_cnst_half (<VFML>mode, <vfml_half_selector>);
+  emit_insn (gen_vfm<vfml_op>l_lane_<vfml_half><mode>_intrinsic
+					       (operands[0], operands[1],
+						operands[2], operands[3],
+						half, lane));
+  DONE;
+})
+
+(define_insn "vfmal_lane_low<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 4 "vect_par_constant_low" "")))
+	 (float_extend:VCVTF
+	   (vec_duplicate:<VFMLSEL>
+	     (vec_select:HF
+	       (match_operand:<VFML> 3 "s_register_operand" "x")
+	       (parallel [(match_operand:SI 5 "const_int_operand" "n")]))))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ {
+    int lane = NEON_ENDIAN_LANE_N (<VFML>mode, INTVAL (operands[5]));
+    if (lane > GET_MODE_NUNITS (<VFMLSEL>mode) - 1)
+      {
+	operands[5] = GEN_INT (lane - GET_MODE_NUNITS (<VFMLSEL>mode));
+	return "vfmal.f16\\t%<V_reg>0, %<V_lo>2, %<V_hi>3[%c5]";
+      }
+    else
+      {
+	operands[5] = GEN_INT (lane);
+	return "vfmal.f16\\t%<V_reg>0, %<V_lo>2, %<V_lo>3[%c5]";
+      }
+  }
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_expand "neon_vfm<vfml_op>l_lane_<vfml_half><vfmlsel2><mode>"
+  [(set:VCVTF (match_operand:VCVTF 0 "s_register_operand")
+     (unspec:VCVTF
+	[(match_operand:VCVTF 1 "s_register_operand")
+	 (PLUSMINUS:<VFML>
+	   (match_operand:<VFML> 2 "s_register_operand")
+	   (match_operand:<VFMLSEL2> 3 "s_register_operand"))
+	 (match_operand:SI 4 "const_int_operand")] VFMLHALVES))]
+  "TARGET_FP16FML"
+{
+  rtx lane
+    = GEN_INT (NEON_ENDIAN_LANE_N (<VFMLSEL2>mode, INTVAL (operands[4])));
+  rtx half = arm_simd_vect_par_cnst_half (<VFML>mode, <vfml_half_selector>);
+  emit_insn (gen_vfm<vfml_op>l_lane_<vfml_half><vfmlsel2><mode>_intrinsic
+		(operands[0], operands[1], operands[2], operands[3],
+		 half, lane));
+  DONE;
+})
+
+;; Used to implement the intrinsics:
+;; float32x4_t vfmlalq_lane_low_u32 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
+;; float32x2_t vfmlal_laneq_low_u32 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
+;; Needs a bit of care to get the modes of the different sub-expressions right
+;; due to 'a' and 'b' having different sizes and make sure we use the right
+;; S or D subregister to select the appropriate lane from.
+
+(define_insn "vfmal_lane_low<vfmlsel2><mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 4 "vect_par_constant_low" "")))
+	 (float_extend:VCVTF
+	   (vec_duplicate:<VFMLSEL>
+	     (vec_select:HF
+	       (match_operand:<VFMLSEL2> 3 "s_register_operand" "x")
+	       (parallel [(match_operand:SI 5 "const_int_operand" "n")]))))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ {
+   int lane = NEON_ENDIAN_LANE_N (<VFMLSEL2>mode, INTVAL (operands[5]));
+   int elts_per_reg = GET_MODE_NUNITS (<VFMLSEL>mode);
+   int new_lane = lane % elts_per_reg;
+   int regdiff = lane / elts_per_reg;
+   operands[5] = GEN_INT (new_lane);
+   /* We re-create operands[2] and operands[3] in the halved VFMLSEL modes
+      because we want the print_operand code to print the appropriate
+      S or D register prefix.  */
+   operands[3] = gen_rtx_REG (<VFMLSEL>mode, REGNO (operands[3]) + regdiff);
+   operands[2] = gen_rtx_REG (<VFMLSEL>mode, REGNO (operands[2]));
+   return "vfmal.f16\\t%<V_reg>0, %<V_lane_reg>2, %<V_lane_reg>3[%c5]";
+ }
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+;; Used to implement the intrinsics:
+;; float32x4_t vfmlalq_lane_high_u32 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
+;; float32x2_t vfmlal_laneq_high_u32 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
+;; Needs a bit of care to get the modes of the different sub-expressions right
+;; due to 'a' and 'b' having different sizes and make sure we use the right
+;; S or D subregister to select the appropriate lane from.
+
+(define_insn "vfmal_lane_high<vfmlsel2><mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 4 "vect_par_constant_high" "")))
+	 (float_extend:VCVTF
+	   (vec_duplicate:<VFMLSEL>
+	     (vec_select:HF
+	       (match_operand:<VFMLSEL2> 3 "s_register_operand" "x")
+	       (parallel [(match_operand:SI 5 "const_int_operand" "n")]))))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ {
+   int lane = NEON_ENDIAN_LANE_N (<VFMLSEL2>mode, INTVAL (operands[5]));
+   int elts_per_reg = GET_MODE_NUNITS (<VFMLSEL>mode);
+   int new_lane = lane % elts_per_reg;
+   int regdiff = lane / elts_per_reg;
+   operands[5] = GEN_INT (new_lane);
+   /* We re-create operands[3] in the halved VFMLSEL mode
+      because we've calculated the correct half-width subreg to extract
+      the lane from and we want to print *that* subreg instead.  */
+   operands[3] = gen_rtx_REG (<VFMLSEL>mode, REGNO (operands[3]) + regdiff);
+   return "vfmal.f16\\t%<V_reg>0, %<V_hi>2, %<V_lane_reg>3[%c5]";
+ }
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmal_lane_high<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 4 "vect_par_constant_high" "")))
+	 (float_extend:VCVTF
+	   (vec_duplicate:<VFMLSEL>
+	     (vec_select:HF
+	       (match_operand:<VFML> 3 "s_register_operand" "x")
+	       (parallel [(match_operand:SI 5 "const_int_operand" "n")]))))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+  {
+    int lane = NEON_ENDIAN_LANE_N (<VFML>mode, INTVAL (operands[5]));
+    if (lane > GET_MODE_NUNITS (<VFMLSEL>mode) - 1)
+      {
+	operands[5] = GEN_INT (lane - GET_MODE_NUNITS (<VFMLSEL>mode));
+	return "vfmal.f16\\t%<V_reg>0, %<V_hi>2, %<V_hi>3[%c5]";
+      }
+    else
+      {
+	operands[5] = GEN_INT (lane);
+	return "vfmal.f16\\t%<V_reg>0, %<V_hi>2, %<V_lo>3[%c5]";
+      }
+  }
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmsl_lane_low<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (neg:<VFMLSEL>
+	    (vec_select:<VFMLSEL>
+	      (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	      (match_operand:<VFML> 4 "vect_par_constant_low" ""))))
+	 (float_extend:VCVTF
+	   (vec_duplicate:<VFMLSEL>
+	     (vec_select:HF
+	       (match_operand:<VFML> 3 "s_register_operand" "x")
+	       (parallel [(match_operand:SI 5 "const_int_operand" "n")]))))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ {
+    int lane = NEON_ENDIAN_LANE_N (<VFML>mode, INTVAL (operands[5]));
+    if (lane > GET_MODE_NUNITS (<VFMLSEL>mode) - 1)
+      {
+	operands[5] = GEN_INT (lane - GET_MODE_NUNITS (<VFMLSEL>mode));
+	return "vfmsl.f16\\t%<V_reg>0, %<V_lo>2, %<V_hi>3[%c5]";
+      }
+    else
+      {
+	operands[5] = GEN_INT (lane);
+	return "vfmsl.f16\\t%<V_reg>0, %<V_lo>2, %<V_lo>3[%c5]";
+      }
+  }
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+;; Used to implement the intrinsics:
+;; float32x4_t vfmlslq_lane_low_u32 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
+;; float32x2_t vfmlsl_laneq_low_u32 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
+;; Needs a bit of care to get the modes of the different sub-expressions right
+;; due to 'a' and 'b' having different sizes and make sure we use the right
+;; S or D subregister to select the appropriate lane from.
+
+(define_insn "vfmsl_lane_low<vfmlsel2><mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (neg:<VFMLSEL>
+	    (vec_select:<VFMLSEL>
+	      (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	      (match_operand:<VFML> 4 "vect_par_constant_low" ""))))
+	 (float_extend:VCVTF
+	   (vec_duplicate:<VFMLSEL>
+	     (vec_select:HF
+	       (match_operand:<VFMLSEL2> 3 "s_register_operand" "x")
+	       (parallel [(match_operand:SI 5 "const_int_operand" "n")]))))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ {
+   int lane = NEON_ENDIAN_LANE_N (<VFMLSEL2>mode, INTVAL (operands[5]));
+   int elts_per_reg = GET_MODE_NUNITS (<VFMLSEL>mode);
+   int new_lane = lane % elts_per_reg;
+   int regdiff = lane / elts_per_reg;
+   operands[5] = GEN_INT (new_lane);
+   /* We re-create operands[2] and operands[3] in the halved VFMLSEL modes
+      because we want the print_operand code to print the appropriate
+      S or D register prefix.  */
+   operands[3] = gen_rtx_REG (<VFMLSEL>mode, REGNO (operands[3]) + regdiff);
+   operands[2] = gen_rtx_REG (<VFMLSEL>mode, REGNO (operands[2]));
+   return "vfmsl.f16\\t%<V_reg>0, %<V_lane_reg>2, %<V_lane_reg>3[%c5]";
+ }
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+;; Used to implement the intrinsics:
+;; float32x4_t vfmlslq_lane_high_u32 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
+;; float32x2_t vfmlsl_laneq_high_u32 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
+;; Needs a bit of care to get the modes of the different sub-expressions right
+;; due to 'a' and 'b' having different sizes and make sure we use the right
+;; S or D subregister to select the appropriate lane from.
+
+(define_insn "vfmsl_lane_high<vfmlsel2><mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (neg:<VFMLSEL>
+	    (vec_select:<VFMLSEL>
+	     (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	     (match_operand:<VFML> 4 "vect_par_constant_high" ""))))
+	 (float_extend:VCVTF
+	   (vec_duplicate:<VFMLSEL>
+	     (vec_select:HF
+	       (match_operand:<VFMLSEL2> 3 "s_register_operand" "x")
+	       (parallel [(match_operand:SI 5 "const_int_operand" "n")]))))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ {
+   int lane = NEON_ENDIAN_LANE_N (<VFMLSEL2>mode, INTVAL (operands[5]));
+   int elts_per_reg = GET_MODE_NUNITS (<VFMLSEL>mode);
+   int new_lane = lane % elts_per_reg;
+   int regdiff = lane / elts_per_reg;
+   operands[5] = GEN_INT (new_lane);
+   /* We re-create operands[3] in the halved VFMLSEL mode
+      because we've calculated the correct half-width subreg to extract
+      the lane from and we want to print *that* subreg instead.  */
+   operands[3] = gen_rtx_REG (<VFMLSEL>mode, REGNO (operands[3]) + regdiff);
+   return "vfmsl.f16\\t%<V_reg>0, %<V_hi>2, %<V_lane_reg>3[%c5]";
+ }
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmsl_lane_high<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (neg:<VFMLSEL>
+	    (vec_select:<VFMLSEL>
+	     (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	     (match_operand:<VFML> 4 "vect_par_constant_high" ""))))
+	 (float_extend:VCVTF
+	   (vec_duplicate:<VFMLSEL>
+	     (vec_select:HF
+	       (match_operand:<VFML> 3 "s_register_operand" "x")
+	       (parallel [(match_operand:SI 5 "const_int_operand" "n")]))))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+  {
+    int lane = NEON_ENDIAN_LANE_N (<VFML>mode, INTVAL (operands[5]));
+    if (lane > GET_MODE_NUNITS (<VFMLSEL>mode) - 1)
+      {
+	operands[5] = GEN_INT (lane - GET_MODE_NUNITS (<VFMLSEL>mode));
+	return "vfmsl.f16\\t%<V_reg>0, %<V_hi>2, %<V_hi>3[%c5]";
+      }
+    else
+      {
+	operands[5] = GEN_INT (lane);
+	return "vfmsl.f16\\t%<V_reg>0, %<V_hi>2, %<V_lo>3[%c5]";
+      }
+  }
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
 
 ; Used for intrinsics when flag_unsafe_math_optimizations is false.
 
@@ -6306,28 +6706,22 @@ if (BYTES_BIG_ENDIAN)
 })
 
 (define_insn "neon_vabd<mode>_2"
- [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-       (abs:VDQ (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
-                           (match_operand:VDQ 2 "s_register_operand" "w"))))]
- "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+ [(set (match_operand:VF 0 "s_register_operand" "=w")
+       (abs:VF (minus:VF (match_operand:VF 1 "s_register_operand" "w")
+			 (match_operand:VF 2 "s_register_operand" "w"))))]
+ "TARGET_NEON && flag_unsafe_math_optimizations"
  "vabd.<V_s_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set (attr "type")
-       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                     (const_string "neon_fp_abd_s<q>")
-                     (const_string "neon_abd<q>")))]
+ [(set_attr "type" "neon_fp_abd_s<q>")]
 )
 
 (define_insn "neon_vabd<mode>_3"
- [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-       (abs:VDQ (unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "w")
-                             (match_operand:VDQ 2 "s_register_operand" "w")]
-                 UNSPEC_VSUB)))]
- "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+ [(set (match_operand:VF 0 "s_register_operand" "=w")
+       (abs:VF (unspec:VF [(match_operand:VF 1 "s_register_operand" "w")
+			    (match_operand:VF 2 "s_register_operand" "w")]
+		UNSPEC_VSUB)))]
+ "TARGET_NEON && flag_unsafe_math_optimizations"
  "vabd.<V_if_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set (attr "type")
-       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                     (const_string "neon_fp_abd_s<q>")
-                     (const_string "neon_abd<q>")))]
+ [(set_attr "type" "neon_fp_abd_s<q>")]
 )
 
 ;; Copy from core-to-neon regs, then extend, not vice-versa

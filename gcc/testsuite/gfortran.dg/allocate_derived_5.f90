@@ -16,5 +16,5 @@ program fail1
    type(b), allocatable :: c(:)
 
    allocate(c(1))
-   if (c(1) % acomp % i /= 5) call abort()
+   if (c(1) % acomp % i /= 5) STOP 1
 end program fail1

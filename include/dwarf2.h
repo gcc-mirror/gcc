@@ -1,6 +1,6 @@
 /* Declarations and definitions of codes relating to the DWARF2 and
    DWARF3 symbolic debugging information formats.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -297,6 +297,14 @@ enum dwarf_location_list_entry_type
     DW_LLE_base_address = 0x06,
     DW_LLE_start_end = 0x07,
     DW_LLE_start_length = 0x08,
+
+    /* <http://lists.dwarfstd.org/private.cgi/dwarf-discuss-dwarfstd.org/2017-April/004347.html>
+       has the proposal for now; only available to list members.
+
+       A (possibly updated) copy of the proposal is available at
+       <http://people.redhat.com/aoliva/papers/sfn/dwarf6-sfn-lvu.txt>.  */
+    DW_LLE_GNU_view_pair = 0x09,
+#define DW_LLE_view_pair DW_LLE_GNU_view_pair
 
     /* Former extension for Fission.
        See http://gcc.gnu.org/wiki/DebugFission.  */

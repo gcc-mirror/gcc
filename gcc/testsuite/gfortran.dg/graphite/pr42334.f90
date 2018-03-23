@@ -1,4 +1,4 @@
-! { dg-options "-O2 -floop-interchange -ftree-loop-distribution" }
+! { dg-options "-O2 -floop-nest-optimize -ftree-loop-distribution" }
 
 subroutine blockdis(bl1eg,bl2eg)
   implicit real*8 (a-h,o-z)

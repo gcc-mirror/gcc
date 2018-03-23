@@ -23,7 +23,7 @@ program test_nearest
   s = 0
   x = nearest(s, r)
   y = nearest(s, -r)
-  if (.not. (x .gt. s .and. y .lt. s )) call abort()
+  if (.not. (x .gt. s .and. y .lt. s )) STOP 1
 
 ! ??? This is pretty sketchy, but passes on most targets.
   infi = z'7f800000'
@@ -51,27 +51,27 @@ subroutine test_up(s, e)
   real s, e, x
 
   x = nearest(s, 1.0)
-  if (x .ne. e) call abort()
+  if (x .ne. e) STOP 2
 end
 
 subroutine test_down(s, e)
   real s, e, x
 
   x = nearest(s, -1.0)
-  if (x .ne. e) call abort()
+  if (x .ne. e) STOP 3
 end
 
 subroutine test_n(s1, r)
   real r, s1, x
 
   x = nearest(s1, r)
-  if (nearest(x, -r) .ne. s1) call abort()
+  if (nearest(x, -r) .ne. s1) STOP 4
   x = nearest(s1, -r)
-  if (nearest(x, r) .ne. s1) call abort()
+  if (nearest(x, r) .ne. s1) STOP 5
 
   s1 = -s1
   x = nearest(s1, r)
-  if (nearest(x, -r) .ne. s1) call abort()
+  if (nearest(x, -r) .ne. s1) STOP 6
   x = nearest(s1, -r)
-  if (nearest(x, r) .ne. s1) call abort()
+  if (nearest(x, r) .ne. s1) STOP 7
 end

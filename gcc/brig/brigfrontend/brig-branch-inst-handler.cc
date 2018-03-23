@@ -1,5 +1,5 @@
 /* brig-branch-inst-handler.cc -- brig branch instruction handling
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -167,8 +167,8 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
       tree select = operands[0];
       tree cases = operands[1];
 
-      tree switch_expr = build3 (SWITCH_EXPR, TREE_TYPE (select), select,
-				 NULL_TREE, NULL_TREE);
+      tree switch_expr = build2 (SWITCH_EXPR, TREE_TYPE (select), select,
+				 NULL_TREE);
 
       tree default_case
 	= build_case_label (NULL_TREE, NULL_TREE,

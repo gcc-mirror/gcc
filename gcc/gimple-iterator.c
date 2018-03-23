@@ -1,5 +1,5 @@
 /* Iterator routines for GIMPLE statements.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez  <aldy@quesejoda.com>
 
 This file is part of GCC.
@@ -568,6 +568,10 @@ gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
 
   if (remove_permanently)
     {
+      if (gimple_debug_nonbind_marker_p (stmt))
+	/* We don't need this to be exact, but try to keep it at least
+	   close.  */
+	cfun->debug_marker_count--;
       require_eh_edge_purge = remove_stmt_from_eh_lp (stmt);
       gimple_remove_stmt_histograms (cfun, stmt);
     }
@@ -776,7 +780,21 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
 	return true;
 
       tmp = gsi_stmt (*gsi);
-      if (!stmt_ends_bb_p (tmp))
+      if (is_gimple_debug (tmp))
+	{
+	  gimple_stmt_iterator si = *gsi;
+	  gsi_prev_nondebug (&si);
+	  if (!gsi_end_p (si))
+	    tmp = gsi_stmt (si);
+	  /* If we don't have a BB-ending nondebug stmt, we want to
+	     insert after the trailing debug stmts.  Otherwise, we may
+	     insert before the BB-ending nondebug stmt, or split the
+	     edge.  */
+	  if (!stmt_ends_bb_p (tmp))
+	    return true;
+	  *gsi = si;
+	}
+      else if (!stmt_ends_bb_p (tmp))
 	return true;
 
       switch (gimple_code (tmp))

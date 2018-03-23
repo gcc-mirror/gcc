@@ -1,5 +1,5 @@
 /* Routines for manipulation of expression nodes.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "target-memory.h" /* for gfc_convert_boz */
 #include "constructor.h"
+#include "tree.h"
 
 
 /* The following set of functions provide access to gfc_expr* of
@@ -184,7 +185,7 @@ gfc_get_constant_expr (bt type, int kind, locus *where)
    blanked and null-terminated.  */
 
 gfc_expr *
-gfc_get_character_expr (int kind, locus *where, const char *src, int len)
+gfc_get_character_expr (int kind, locus *where, const char *src, gfc_charlen_t len)
 {
   gfc_expr *e;
   gfc_char_t *dest;
@@ -210,13 +211,14 @@ gfc_get_character_expr (int kind, locus *where, const char *src, int len)
 /* Get a new expression node that is an integer constant.  */
 
 gfc_expr *
-gfc_get_int_expr (int kind, locus *where, int value)
+gfc_get_int_expr (int kind, locus *where, HOST_WIDE_INT value)
 {
   gfc_expr *p;
   p = gfc_get_constant_expr (BT_INTEGER, kind,
 			     where ? where : &gfc_current_locus);
 
-  mpz_set_si (p->value.integer, value);
+  const wide_int w = wi::shwi (value, kind * BITS_PER_UNIT);
+  wi::to_mpz (w, p->value.integer, SIGNED);
 
   return p;
 }
@@ -667,6 +669,62 @@ gfc_extract_int (gfc_expr *expr, int *result, int report_error)
     }
 
   *result = (int) mpz_get_si (expr->value.integer);
+
+  return false;
+}
+
+
+/* Same as gfc_extract_int, but use a HWI.  */
+
+bool
+gfc_extract_hwi (gfc_expr *expr, HOST_WIDE_INT *result, int report_error)
+{
+  gfc_ref *ref;
+
+  /* A KIND component is a parameter too. The expression for it is
+     stored in the initializer and should be consistent with the tests
+     below.  */
+  if (gfc_expr_attr(expr).pdt_kind)
+    {
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	  if (ref->u.c.component->attr.pdt_kind)
+	    expr = ref->u.c.component->initializer;
+	}
+    }
+
+  if (expr->expr_type != EXPR_CONSTANT)
+    {
+      if (report_error > 0)
+	gfc_error ("Constant expression required at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Constant expression required at %C");
+      return true;
+    }
+
+  if (expr->ts.type != BT_INTEGER)
+    {
+      if (report_error > 0)
+	gfc_error ("Integer expression required at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Integer expression required at %C");
+      return true;
+    }
+
+  /* Use long_long_integer_type_node to determine when to saturate.  */
+  const wide_int val = wi::from_mpz (long_long_integer_type_node,
+				     expr->value.integer, false);
+
+  if (!wi::fits_shwi_p (val))
+    {
+      if (report_error > 0)
+	gfc_error ("Integer value too large in expression at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Integer value too large in expression at %C");
+      return true;
+    }
+
+  *result = val.to_shwi ();
 
   return false;
 }
@@ -1701,7 +1759,7 @@ simplify_const_ref (gfc_expr *p)
 			 a substring out of it, update the type-spec's
 			 character length according to the first element
 			 (as all should have the same length).  */
-		      int string_len;
+		      gfc_charlen_t string_len;
 		      if ((c = gfc_constructor_first (p->value.constructor)))
 			{
 			  const gfc_expr* first = c->expr;
@@ -1719,7 +1777,7 @@ simplify_const_ref (gfc_expr *p)
 			gfc_free_expr (p->ts.u.cl->length);
 
 		      p->ts.u.cl->length
-			= gfc_get_int_expr (gfc_default_integer_kind,
+			= gfc_get_int_expr (gfc_charlen_int_kind,
 					    NULL, string_len);
 		    }
 		}
@@ -1799,6 +1857,22 @@ simplify_parameter_variable (gfc_expr *p, int type)
   gfc_expr *e;
   bool t;
 
+  if (gfc_is_size_zero_array (p))
+    {
+      if (p->expr_type == EXPR_ARRAY)
+	return true;
+
+      e = gfc_get_expr ();
+      e->expr_type = EXPR_ARRAY;
+      e->ts = p->ts;
+      e->rank = p->rank;
+      e->value.constructor = NULL;
+      e->shape = gfc_copy_shape (p->shape, p->rank);
+      e->where = p->where;
+      gfc_replace_expr (p, e);
+      return true;
+    }
+
   e = gfc_copy_expr (p->symtree->n.sym->value);
   if (e == NULL)
     return false;
@@ -1870,18 +1944,18 @@ gfc_simplify_expr (gfc_expr *p, int type)
       if (gfc_is_constant_expr (p))
 	{
 	  gfc_char_t *s;
-	  int start, end;
+	  HOST_WIDE_INT start, end;
 
 	  start = 0;
 	  if (p->ref && p->ref->u.ss.start)
 	    {
-	      gfc_extract_int (p->ref->u.ss.start, &start);
+	      gfc_extract_hwi (p->ref->u.ss.start, &start);
 	      start--;  /* Convert from one-based to zero-based.  */
 	    }
 
 	  end = p->value.character.length;
 	  if (p->ref && p->ref->u.ss.end)
-	    gfc_extract_int (p->ref->u.ss.end, &end);
+	    gfc_extract_hwi (p->ref->u.ss.end, &end);
 
 	  if (end < start)
 	    end = start;
@@ -1894,7 +1968,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  p->value.character.string = s;
 	  p->value.character.length = end - start;
 	  p->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-	  p->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+	  p->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						 NULL,
 						 p->value.character.length);
 	  gfc_free_ref_list (p->ref);
@@ -3853,7 +3927,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
   /* Error for assignments of contiguous pointers to targets which is not
      contiguous.  Be lenient in the definition of what counts as
-     congiguous.  */
+     contiguous.  */
 
   if (lhs_attr.contiguous && !gfc_is_simply_contiguous (rvalue, false, true))
     gfc_error ("Assignment to contiguous pointer from non-contiguous "
@@ -4030,9 +4104,7 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
 gfc_expr *
 gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
 {
-  int char_len;
   gfc_expr *init_expr;
-  int i;
 
   /* Try to build an initializer expression.  */
   init_expr = gfc_get_constant_expr (ts->type, ts->kind, where);
@@ -4144,10 +4216,10 @@ gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
           && ts->u.cl->length
           && ts->u.cl->length->expr_type == EXPR_CONSTANT)
         {
-          char_len = mpz_get_si (ts->u.cl->length->value.integer);
+          HOST_WIDE_INT char_len = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
           init_expr->value.character.length = char_len;
           init_expr->value.character.string = gfc_get_wide_string (char_len+1);
-          for (i = 0; i < char_len; i++)
+          for (size_t i = 0; i < (size_t) char_len; i++)
             init_expr->value.character.string[i]
               = (unsigned char) gfc_option.flag_init_character_value;
         }
@@ -4197,18 +4269,17 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
       && ts->u.cl
       && ts->u.cl->length && ts->u.cl->length->expr_type == EXPR_CONSTANT)
     {
-      int len;
-
       gcc_assert (ts->u.cl && ts->u.cl->length);
       gcc_assert (ts->u.cl->length->expr_type == EXPR_CONSTANT);
       gcc_assert (ts->u.cl->length->ts.type == BT_INTEGER);
 
-      len = mpz_get_si (ts->u.cl->length->value.integer);
+      HOST_WIDE_INT len = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
 
       if (init->expr_type == EXPR_CONSTANT)
         gfc_set_constant_character_len (len, init, -1);
       else if (init
-               && init->ts.u.cl
+	       && init->ts.type == BT_CHARACTER
+               && init->ts.u.cl && init->ts.u.cl->length
                && mpz_cmp (ts->u.cl->length->value.integer,
                            init->ts.u.cl->length->value.integer))
         {
@@ -4217,7 +4288,6 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
 
           if (ctor)
             {
-              int first_len;
               bool has_ts = (init->ts.u.cl
                              && init->ts.u.cl->length_from_typespec);
 
@@ -4226,7 +4296,7 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
                  length.  This need not be the length of the LHS!  */
               gcc_assert (ctor->expr->expr_type == EXPR_CONSTANT);
               gcc_assert (ctor->expr->ts.type == BT_CHARACTER);
-              first_len = ctor->expr->value.character.length;
+              gfc_charlen_t first_len = ctor->expr->value.character.length;
 
               for ( ; ctor; ctor = gfc_constructor_next (ctor))
                 if (ctor->expr->expr_type == EXPR_CONSTANT)
@@ -5006,7 +5076,25 @@ gfc_ref_this_image (gfc_ref *ref)
 }
 
 gfc_expr *
-gfc_find_stat_co(gfc_expr *e)
+gfc_find_team_co (gfc_expr *e)
+{
+  gfc_ref *ref;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+      return ref->u.ar.team;
+
+  if (e->value.function.actual->expr)
+    for (ref = e->value.function.actual->expr->ref; ref;
+	 ref = ref->next)
+      if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+	return ref->u.ar.team;
+
+  return NULL;
+}
+
+gfc_expr *
+gfc_find_stat_co (gfc_expr *e)
 {
   gfc_ref *ref;
 
@@ -5254,14 +5342,14 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 
   sym = expr->symtree->n.sym;
   if (expr->ts.type != BT_CLASS
-	&& ((part_ref
-		&& !part_ref->u.c.component->attr.contiguous
-		&& part_ref->u.c.component->attr.pointer)
-	    || (!part_ref
-		&& !sym->attr.contiguous
-		&& (sym->attr.pointer
-		    || sym->as->type == AS_ASSUMED_RANK
-		    || sym->as->type == AS_ASSUMED_SHAPE))))
+      && ((part_ref
+	   && !part_ref->u.c.component->attr.contiguous
+	   && part_ref->u.c.component->attr.pointer)
+	  || (!part_ref
+	      && !sym->attr.contiguous
+	      && (sym->attr.pointer
+		  || (sym->as && sym->as->type == AS_ASSUMED_RANK)
+		  || (sym->as && sym->as->type == AS_ASSUMED_SHAPE)))))
     return false;
 
   if (!ar || ar->type == AR_FULL)

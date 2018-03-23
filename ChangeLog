@@ -1,3 +1,59 @@
+2018-03-21  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Move maintainers of now-removed picochip and score
+	ports to write after approval.
+
+2018-03-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS: Add entry for SVE maintainership.
+
+2018-02-13  Maciej W. Rozycki  <macro@mips.com>
+
+	* configure.ac <wasm32-*-*> (noconfigdirs): Add `ld'.
+	* configure: Regenerate.
+
+2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
+
+	* MAINTAINERS (write after approval): Add myself.
+
+2018-01-18  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+
+	* MAINTAINERS (write after approval): Add myself.
+
+2018-01-16  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* MAINTAINERS (write after approval): Add myself.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-01-03  Ben Elliston  <bje@gnu.org>
+
+	* config.guess: Import latest version.
+	* config.sub: Likewise.
+
+2017-12-12  Stafford Horne  <shorne@gmail.com>
+
+	* configure.ac: Remove logic adding gdb to noconfigsdirs for or1k.
+	* configure: Regenerate.
+
+2017-11-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* Makefile.def (target_modules): Remove libcilkrts.
+	* Makefile.in: Ditto.
+	* configure: Ditto.
+	* configure.ac: Ditto.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2017-11-22  Sudakshina Das  <sudi.das@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
@@ -19,7 +75,7 @@
 
 2017-10-16  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
-        * MAINTAINERS (write after approval): Add myself.
+	* MAINTAINERS (write after approval): Add myself.
 
 2017-10-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -53,7 +109,7 @@
 
 2017-07-31  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
-        * MAINTAINERS (write after approval): Add myself.
+	* MAINTAINERS (write after approval): Add myself.
 
 2017-07-28  Tony Reix  <tony.reix@atos.net>
 
@@ -93,7 +149,7 @@
 
 2017-06-26  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
-        * MAINTAINERS: Add myself to Write After Approval
+	* MAINTAINERS: Add myself to Write After Approval
 
 2017-06-21  Andrew Jenner  <andrew@codesourcery.com>
 
@@ -295,9 +351,9 @@
 
 2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
 
-        * configure.ac: Add gcc/function-tests.o to compare_exclusions for
+	* configure.ac: Add gcc/function-tests.o to compare_exclusions for
 	32-bit hppa*-*-hpux*.
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 

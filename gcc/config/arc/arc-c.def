@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,6 +28,8 @@ ARC_C_DEF ("__ARC_NORM__",	TARGET_NORM)
 ARC_C_DEF ("__ARC_MUL64__",	TARGET_MUL64_SET)
 ARC_C_DEF ("__ARC_MUL32BY16__", TARGET_MULMAC_32BY16_SET)
 ARC_C_DEF ("__ARC_SIMD__",	TARGET_SIMD_SET)
+ARC_C_DEF ("__ARC_RF16__",	TARGET_RF16)
+ARC_C_DEF ("__ARC_UNALIGNED__", !STRICT_ALIGNMENT)
 
 ARC_C_DEF ("__ARC_BARREL_SHIFTER__", TARGET_BARREL_SHIFTER)
 

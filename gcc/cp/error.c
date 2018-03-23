@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -1201,17 +1201,6 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_right_bracket (pp);
       break;
 
-    case ARRAY_NOTATION_REF:
-      dump_decl (pp, ARRAY_NOTATION_ARRAY (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_left_bracket (pp);
-      dump_decl (pp, ARRAY_NOTATION_START (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_decl (pp, ARRAY_NOTATION_LENGTH (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_decl (pp, ARRAY_NOTATION_STRIDE (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_right_bracket (pp);
-      break;
-
       /* So that we can do dump_decl on an aggr type.  */
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -1483,7 +1472,7 @@ find_typenames_r (tree *tp, int *walk_subtrees, void *data)
     /* Add the typename without any cv-qualifiers.  */
     mv = TYPE_MAIN_VARIANT (*tp);
 
-  if (TREE_CODE (*tp) == TYPE_PACK_EXPANSION)
+  if (PACK_EXPANSION_P (*tp))
     {
       /* Don't mess with parameter packs since we don't remember
 	 the pack expansion context for a particular typename.  */
@@ -2302,17 +2291,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_left_bracket (pp);
       dump_expr (pp, TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_right_bracket (pp);
-      break;
-
-    case ARRAY_NOTATION_REF:
-      dump_expr (pp, ARRAY_NOTATION_ARRAY (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_left_bracket (pp);
-      dump_expr (pp, ARRAY_NOTATION_START (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_expr (pp, ARRAY_NOTATION_LENGTH (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_expr (pp, ARRAY_NOTATION_STRIDE (t), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_right_bracket (pp);
       break;
 
@@ -3252,7 +3230,7 @@ args_to_string (tree p, int verbose)
   reinit_cxx_pp ();
   for (; p; p = TREE_CHAIN (p))
     {
-      if (TREE_VALUE (p) == null_node)
+      if (null_node_p (TREE_VALUE (p)))
 	pp_cxx_ws_string (cxx_pp, "NULL");
       else
 	dump_type (cxx_pp, error_type (TREE_VALUE (p)), flags);

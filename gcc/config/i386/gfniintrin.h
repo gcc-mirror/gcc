@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,9 +28,9 @@
 #ifndef _GFNIINTRIN_H_INCLUDED
 #define _GFNIINTRIN_H_INCLUDED
 
-#if !defined(__GFNI__) || !defined(__SSE__)
+#if !defined(__GFNI__) || !defined(__SSE2__)
 #pragma GCC push_options
-#pragma GCC target("gfni,sse")
+#pragma GCC target("gfni,sse2")
 #define __DISABLE_GFNI__
 #endif /* __GFNI__ */
 

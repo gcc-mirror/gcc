@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "recog.h"
 #include "diagnostic-core.h"
+#include "rtx-vector-builder.h"
 
 /* Include insn-config.h before expr.h so that HAVE_conditional_move
    is properly defined.  */
@@ -367,18 +368,29 @@ force_expand_binop (machine_mode mode, optab binoptab,
    mode of OP must be the element mode of VMODE.  If OP is a constant,
    then the return value will be a constant.  */
 
-static rtx
+rtx
 expand_vector_broadcast (machine_mode vmode, rtx op)
 {
-  enum insn_code icode;
+  int n;
   rtvec vec;
-  rtx ret;
-  int i, n;
 
   gcc_checking_assert (VECTOR_MODE_P (vmode));
 
-  if (valid_for_const_vec_duplicate_p (vmode, op))
+  if (valid_for_const_vector_p (vmode, op))
     return gen_const_vec_duplicate (vmode, op);
+
+  insn_code icode = optab_handler (vec_duplicate_optab, vmode);
+  if (icode != CODE_FOR_nothing)
+    {
+      struct expand_operand ops[2];
+      create_output_operand (&ops[0], NULL_RTX, vmode);
+      create_input_operand (&ops[1], op, GET_MODE (op));
+      expand_insn (icode, 2, ops);
+      return ops[0].value;
+    }
+
+  if (!GET_MODE_NUNITS (vmode).is_constant (&n))
+    return NULL;
 
   /* ??? If the target doesn't have a vec_init, then we have no easy way
      of performing this operation.  Most of this sort of generic support
@@ -388,11 +400,10 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
   if (icode == CODE_FOR_nothing)
     return NULL;
 
-  n = GET_MODE_NUNITS (vmode);
   vec = rtvec_alloc (n);
-  for (i = 0; i < n; ++i)
+  for (int i = 0; i < n; ++i)
     RTVEC_ELT (vec, i) = op;
-  ret = gen_reg_rtx (vmode);
+  rtx ret = gen_reg_rtx (vmode);
   emit_insn (GEN_FCN (icode) (ret, gen_rtx_PARALLEL (vmode, vec)));
 
   return ret;
@@ -421,8 +432,9 @@ expand_superword_shift (optab binoptab, rtx outof_input, rtx superword_op1,
       if (binoptab != ashr_optab)
 	emit_move_insn (outof_target, CONST0_RTX (word_mode));
       else
-	if (!force_expand_binop (word_mode, binoptab,
-				 outof_input, GEN_INT (BITS_PER_WORD - 1),
+	if (!force_expand_binop (word_mode, binoptab, outof_input,
+				 gen_int_shift_amount (word_mode,
+						       BITS_PER_WORD - 1),
 				 outof_target, unsignedp, methods))
 	  return false;
     }
@@ -779,7 +791,8 @@ expand_doubleword_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
 {
   int low = (WORDS_BIG_ENDIAN ? 1 : 0);
   int high = (WORDS_BIG_ENDIAN ? 0 : 1);
-  rtx wordm1 = umulp ? NULL_RTX : GEN_INT (BITS_PER_WORD - 1);
+  rtx wordm1 = (umulp ? NULL_RTX
+		: gen_int_shift_amount (word_mode, BITS_PER_WORD - 1));
   rtx product, adjust, product_high, temp;
 
   rtx op0_high = operand_subword_force (op0, high, mode);
@@ -1061,7 +1074,7 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
 	 arguments.  */
       tmp_mode = insn_data[(int) icode].operand[0].mode;
       if (VECTOR_MODE_P (mode)
-	  && GET_MODE_NUNITS (tmp_mode) != 2 * GET_MODE_NUNITS (mode))
+	  && maybe_ne (GET_MODE_NUNITS (tmp_mode), 2 * GET_MODE_NUNITS (mode)))
 	{
 	  delete_insns_since (last);
 	  return NULL_RTX;
@@ -1180,7 +1193,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       unsigned int bits = GET_MODE_PRECISION (int_mode);
 
       if (CONST_INT_P (op1))
-        newop1 = GEN_INT (bits - INTVAL (op1));
+	newop1 = gen_int_shift_amount (int_mode, bits - INTVAL (op1));
       else if (targetm.shift_truncation_mask (int_mode) == bits - 1)
         newop1 = negate_rtx (GET_MODE (op1), op1);
       else
@@ -1402,7 +1415,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       /* Apply the truncation to constant shifts.  */
       if (double_shift_mask > 0 && CONST_INT_P (op1))
-	op1 = GEN_INT (INTVAL (op1) & double_shift_mask);
+	op1 = gen_int_mode (INTVAL (op1) & double_shift_mask, op1_mode);
 
       if (op1 == CONST0_RTX (op1_mode))
 	return op0;
@@ -1512,7 +1525,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       else
 	{
 	  rtx into_temp1, into_temp2, outof_temp1, outof_temp2;
-	  rtx first_shift_count, second_shift_count;
+	  HOST_WIDE_INT first_shift_count, second_shift_count;
 	  optab reverse_unsigned_shift, unsigned_shift;
 
 	  reverse_unsigned_shift = (left_shift ^ (shift_count < BITS_PER_WORD)
@@ -1523,20 +1536,24 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
 	  if (shift_count > BITS_PER_WORD)
 	    {
-	      first_shift_count = GEN_INT (shift_count - BITS_PER_WORD);
-	      second_shift_count = GEN_INT (2 * BITS_PER_WORD - shift_count);
+	      first_shift_count = shift_count - BITS_PER_WORD;
+	      second_shift_count = 2 * BITS_PER_WORD - shift_count;
 	    }
 	  else
 	    {
-	      first_shift_count = GEN_INT (BITS_PER_WORD - shift_count);
-	      second_shift_count = GEN_INT (shift_count);
+	      first_shift_count = BITS_PER_WORD - shift_count;
+	      second_shift_count = shift_count;
 	    }
+	  rtx first_shift_count_rtx
+	    = gen_int_shift_amount (word_mode, first_shift_count);
+	  rtx second_shift_count_rtx
+	    = gen_int_shift_amount (word_mode, second_shift_count);
 
 	  into_temp1 = expand_binop (word_mode, unsigned_shift,
-				     outof_input, first_shift_count,
+				     outof_input, first_shift_count_rtx,
 				     NULL_RTX, unsignedp, next_methods);
 	  into_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
-				     into_input, second_shift_count,
+				     into_input, second_shift_count_rtx,
 				     NULL_RTX, unsignedp, next_methods);
 
 	  if (into_temp1 != 0 && into_temp2 != 0)
@@ -1549,10 +1566,10 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	    emit_move_insn (into_target, inter);
 
 	  outof_temp1 = expand_binop (word_mode, unsigned_shift,
-				      into_input, first_shift_count,
+				      into_input, first_shift_count_rtx,
 				      NULL_RTX, unsignedp, next_methods);
 	  outof_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
-				      outof_input, second_shift_count,
+				      outof_input, second_shift_count_rtx,
 				      NULL_RTX, unsignedp, next_methods);
 
 	  if (inter != 0 && outof_temp1 != 0 && outof_temp2 != 0)
@@ -2792,25 +2809,29 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 
 	  if (optab_handler (rotl_optab, mode) != CODE_FOR_nothing)
 	    {
-	      temp = expand_binop (mode, rotl_optab, op0, GEN_INT (8), target,
-				   unsignedp, OPTAB_DIRECT);
+	      temp = expand_binop (mode, rotl_optab, op0,
+				   gen_int_shift_amount (mode, 8),
+				   target, unsignedp, OPTAB_DIRECT);
 	      if (temp)
 		return temp;
 	     }
 
 	  if (optab_handler (rotr_optab, mode) != CODE_FOR_nothing)
 	    {
-	      temp = expand_binop (mode, rotr_optab, op0, GEN_INT (8), target,
-				   unsignedp, OPTAB_DIRECT);
+	      temp = expand_binop (mode, rotr_optab, op0,
+				   gen_int_shift_amount (mode, 8),
+				   target, unsignedp, OPTAB_DIRECT);
 	      if (temp)
 		return temp;
 	    }
 
 	  last = get_last_insn ();
 
-	  temp1 = expand_binop (mode, ashl_optab, op0, GEN_INT (8), NULL_RTX,
+	  temp1 = expand_binop (mode, ashl_optab, op0,
+				gen_int_shift_amount (mode, 8), NULL_RTX,
 			        unsignedp, OPTAB_WIDEN);
-	  temp2 = expand_binop (mode, lshr_optab, op0, GEN_INT (8), NULL_RTX,
+	  temp2 = expand_binop (mode, lshr_optab, op0,
+				gen_int_shift_amount (mode, 8), NULL_RTX,
 			        unsignedp, OPTAB_WIDEN);
 	  if (temp1 && temp2)
 	    {
@@ -3914,7 +3935,20 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   if (methods != OPTAB_LIB_WIDEN)
     goto fail;
 
-  if (!SCALAR_FLOAT_MODE_P (mode))
+  if (SCALAR_FLOAT_MODE_P (mode))
+    {
+      /* Small trick if UNORDERED isn't implemented by the hardware.  */
+      if (comparison == UNORDERED && rtx_equal_p (x, y))
+	{
+	  prepare_cmp_insn (x, y, UNLT, NULL_RTX, unsignedp, OPTAB_WIDEN,
+			    ptest, pmode);
+	  if (*ptest)
+	    return;
+	}
+
+      prepare_float_lib_cmp (x, y, comparison, ptest, pmode);
+    }
+  else
     {
       rtx result;
       machine_mode ret_mode;
@@ -3961,8 +3995,6 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       prepare_cmp_insn (x, y, comparison, NULL_RTX, unsignedp, methods,
 			ptest, pmode);
     }
-  else
-    prepare_float_lib_cmp (x, y, comparison, ptest, pmode);
 
   return;
 
@@ -4313,9 +4345,10 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  save_pending_stack_adjust (&save);
 	  last = get_last_insn ();
 	  do_pending_stack_adjust ();
+	  machine_mode cmpmode = cmode;
 	  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
 			    GET_CODE (comparison), NULL_RTX, unsignedp,
-			    OPTAB_WIDEN, &comparison, &cmode);
+			    OPTAB_WIDEN, &comparison, &cmpmode);
 	  if (comparison)
 	    {
 	      struct expand_operand ops[4];
@@ -5367,35 +5400,39 @@ vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
   return gen_rtx_fmt_ee (rcode, cmp_mode, ops[0].value, ops[1].value);
 }
 
-/* Checks if vec_perm mask SEL is a constant equivalent to a shift of the first
-   vec_perm operand, assuming the second operand is a constant vector of zeroes.
-   Return the shift distance in bits if so, or NULL_RTX if the vec_perm is not a
-   shift.  */
+/* Check if vec_perm mask SEL is a constant equivalent to a shift of
+   the first vec_perm operand, assuming the second operand is a constant
+   vector of zeros.  Return the shift distance in bits if so, or NULL_RTX
+   if the vec_perm is not a shift.  MODE is the mode of the value being
+   shifted.  */
 static rtx
-shift_amt_for_vec_perm_mask (rtx sel)
+shift_amt_for_vec_perm_mask (machine_mode mode, const vec_perm_indices &sel)
 {
-  unsigned int i, first, nelt = GET_MODE_NUNITS (GET_MODE (sel));
-  unsigned int bitsize = GET_MODE_UNIT_BITSIZE (GET_MODE (sel));
-
-  if (GET_CODE (sel) != CONST_VECTOR)
+  unsigned int bitsize = GET_MODE_UNIT_BITSIZE (mode);
+  poly_int64 first = sel[0];
+  if (maybe_ge (sel[0], GET_MODE_NUNITS (mode)))
     return NULL_RTX;
 
-  first = INTVAL (CONST_VECTOR_ELT (sel, 0));
-  if (first >= nelt)
-    return NULL_RTX;
-  for (i = 1; i < nelt; i++)
+  if (!sel.series_p (0, 1, first, 1))
     {
-      int idx = INTVAL (CONST_VECTOR_ELT (sel, i));
-      unsigned int expected = i + first;
-      /* Indices into the second vector are all equivalent.  */
-      if (idx < 0 || (MIN (nelt, (unsigned) idx) != MIN (nelt, expected)))
+      unsigned int nelt;
+      if (!GET_MODE_NUNITS (mode).is_constant (&nelt))
 	return NULL_RTX;
+      for (unsigned int i = 1; i < nelt; i++)
+	{
+	  poly_int64 expected = i + first;
+	  /* Indices into the second vector are all equivalent.  */
+	  if (maybe_lt (sel[i], nelt)
+	      ? maybe_ne (sel[i], expected)
+	      : maybe_lt (expected, nelt))
+	    return NULL_RTX;
+	}
     }
 
-  return GEN_INT (first * bitsize);
+  return gen_int_shift_amount (mode, first * bitsize);
 }
 
-/* A subroutine of expand_vec_perm for expanding one vec_perm insn.  */
+/* A subroutine of expand_vec_perm_var for expanding one vec_perm insn.  */
 
 static rtx
 expand_vec_perm_1 (enum insn_code icode, rtx target,
@@ -5405,6 +5442,8 @@ expand_vec_perm_1 (enum insn_code icode, rtx target,
   machine_mode smode = GET_MODE (sel);
   struct expand_operand ops[4];
 
+  gcc_assert (GET_MODE_CLASS (smode) == MODE_VECTOR_INT
+	      || mode_for_int_vector (tmode).require () == smode);
   create_output_operand (&ops[0], target, tmode);
   create_input_operand (&ops[3], sel, smode);
 
@@ -5431,112 +5470,170 @@ expand_vec_perm_1 (enum insn_code icode, rtx target,
   return NULL_RTX;
 }
 
-/* Generate instructions for vec_perm optab given its mode
-   and three operands.  */
+/* Implement a permutation of vectors v0 and v1 using the permutation
+   vector in SEL and return the result.  Use TARGET to hold the result
+   if nonnull and convenient.
+
+   MODE is the mode of the vectors being permuted (V0 and V1).  SEL_MODE
+   is the TYPE_MODE associated with SEL, or BLKmode if SEL isn't known
+   to have a particular mode.  */
 
 rtx
-expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
+expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
+		       const vec_perm_builder &sel, machine_mode sel_mode,
+		       rtx target)
 {
-  enum insn_code icode;
-  machine_mode qimode;
-  unsigned int i, w, e, u;
-  rtx tmp, sel_qi = NULL;
-  rtvec vec;
-
-  if (!target || GET_MODE (target) != mode)
+  if (!target || !register_operand (target, mode))
     target = gen_reg_rtx (mode);
-
-  w = GET_MODE_SIZE (mode);
-  e = GET_MODE_NUNITS (mode);
-  u = GET_MODE_UNIT_SIZE (mode);
 
   /* Set QIMODE to a different vector mode with byte elements.
      If no such mode, or if MODE already has byte elements, use VOIDmode.  */
-  if (GET_MODE_INNER (mode) == QImode
-      || !mode_for_vector (QImode, w).exists (&qimode)
-      || !VECTOR_MODE_P (qimode))
+  machine_mode qimode;
+  if (!qimode_for_vec_perm (mode).exists (&qimode))
     qimode = VOIDmode;
 
-  /* If the input is a constant, expand it specially.  */
-  gcc_assert (GET_MODE_CLASS (GET_MODE (sel)) == MODE_VECTOR_INT);
-  if (GET_CODE (sel) == CONST_VECTOR)
+  rtx_insn *last = get_last_insn ();
+
+  bool single_arg_p = rtx_equal_p (v0, v1);
+  /* Always specify two input vectors here and leave the target to handle
+     cases in which the inputs are equal.  Not all backends can cope with
+     the single-input representation when testing for a double-input
+     target instruction.  */
+  vec_perm_indices indices (sel, 2, GET_MODE_NUNITS (mode));
+
+  /* See if this can be handled with a vec_shr.  We only do this if the
+     second vector is all zeroes.  */
+  insn_code shift_code = optab_handler (vec_shr_optab, mode);
+  insn_code shift_code_qi = ((qimode != VOIDmode && qimode != mode)
+			     ? optab_handler (vec_shr_optab, qimode)
+			     : CODE_FOR_nothing);
+
+  if (v1 == CONST0_RTX (GET_MODE (v1))
+      && (shift_code != CODE_FOR_nothing
+	  || shift_code_qi != CODE_FOR_nothing))
     {
-      /* See if this can be handled with a vec_shr.  We only do this if the
-	 second vector is all zeroes.  */
-      enum insn_code shift_code = optab_handler (vec_shr_optab, mode);
-      enum insn_code shift_code_qi = ((qimode != VOIDmode && qimode != mode)
-				      ? optab_handler (vec_shr_optab, qimode)
-				      : CODE_FOR_nothing);
-      rtx shift_amt = NULL_RTX;
-      if (v1 == CONST0_RTX (GET_MODE (v1))
-	  && (shift_code != CODE_FOR_nothing
-	      || shift_code_qi != CODE_FOR_nothing))
+      rtx shift_amt = shift_amt_for_vec_perm_mask (mode, indices);
+      if (shift_amt)
 	{
-	  shift_amt = shift_amt_for_vec_perm_mask (sel);
-	  if (shift_amt)
+	  struct expand_operand ops[3];
+	  if (shift_code != CODE_FOR_nothing)
 	    {
-	      struct expand_operand ops[3];
-	      if (shift_code != CODE_FOR_nothing)
-		{
-		  create_output_operand (&ops[0], target, mode);
-		  create_input_operand (&ops[1], v0, mode);
-		  create_convert_operand_from_type (&ops[2], shift_amt,
-						    sizetype);
-		  if (maybe_expand_insn (shift_code, 3, ops))
-		    return ops[0].value;
-		}
-	      if (shift_code_qi != CODE_FOR_nothing)
-		{
-		  tmp = gen_reg_rtx (qimode);
-		  create_output_operand (&ops[0], tmp, qimode);
-		  create_input_operand (&ops[1], gen_lowpart (qimode, v0),
-					qimode);
-		  create_convert_operand_from_type (&ops[2], shift_amt,
-						    sizetype);
-		  if (maybe_expand_insn (shift_code_qi, 3, ops))
-		    return gen_lowpart (mode, ops[0].value);
-		}
+	      create_output_operand (&ops[0], target, mode);
+	      create_input_operand (&ops[1], v0, mode);
+	      create_convert_operand_from_type (&ops[2], shift_amt, sizetype);
+	      if (maybe_expand_insn (shift_code, 3, ops))
+		return ops[0].value;
 	    }
-	}
-
-      icode = direct_optab_handler (vec_perm_const_optab, mode);
-      if (icode != CODE_FOR_nothing)
-	{
-	  tmp = expand_vec_perm_1 (icode, target, v0, v1, sel);
-	  if (tmp)
-	    return tmp;
-	}
-
-      /* Fall back to a constant byte-based permutation.  */
-      if (qimode != VOIDmode)
-	{
-	  vec = rtvec_alloc (w);
-	  for (i = 0; i < e; ++i)
+	  if (shift_code_qi != CODE_FOR_nothing)
 	    {
-	      unsigned int j, this_e;
-
-	      this_e = INTVAL (CONST_VECTOR_ELT (sel, i));
-	      this_e &= 2 * e - 1;
-	      this_e *= u;
-
-	      for (j = 0; j < u; ++j)
-		RTVEC_ELT (vec, i * u + j) = GEN_INT (this_e + j);
-	    }
-	  sel_qi = gen_rtx_CONST_VECTOR (qimode, vec);
-
-	  icode = direct_optab_handler (vec_perm_const_optab, qimode);
-	  if (icode != CODE_FOR_nothing)
-	    {
-	      tmp = mode != qimode ? gen_reg_rtx (qimode) : target;
-	      tmp = expand_vec_perm_1 (icode, tmp, gen_lowpart (qimode, v0),
-				       gen_lowpart (qimode, v1), sel_qi);
-	      if (tmp)
-		return gen_lowpart (mode, tmp);
+	      rtx tmp = gen_reg_rtx (qimode);
+	      create_output_operand (&ops[0], tmp, qimode);
+	      create_input_operand (&ops[1], gen_lowpart (qimode, v0), qimode);
+	      create_convert_operand_from_type (&ops[2], shift_amt, sizetype);
+	      if (maybe_expand_insn (shift_code_qi, 3, ops))
+		return gen_lowpart (mode, ops[0].value);
 	    }
 	}
     }
 
+  if (targetm.vectorize.vec_perm_const != NULL)
+    {
+      v0 = force_reg (mode, v0);
+      if (single_arg_p)
+	v1 = v0;
+      else
+	v1 = force_reg (mode, v1);
+
+      if (targetm.vectorize.vec_perm_const (mode, target, v0, v1, indices))
+	return target;
+    }
+
+  /* Fall back to a constant byte-based permutation.  */
+  vec_perm_indices qimode_indices;
+  rtx target_qi = NULL_RTX, v0_qi = NULL_RTX, v1_qi = NULL_RTX;
+  if (qimode != VOIDmode)
+    {
+      qimode_indices.new_expanded_vector (indices, GET_MODE_UNIT_SIZE (mode));
+      target_qi = gen_reg_rtx (qimode);
+      v0_qi = gen_lowpart (qimode, v0);
+      v1_qi = gen_lowpart (qimode, v1);
+      if (targetm.vectorize.vec_perm_const != NULL
+	  && targetm.vectorize.vec_perm_const (qimode, target_qi, v0_qi,
+					       v1_qi, qimode_indices))
+	return gen_lowpart (mode, target_qi);
+    }
+
   /* Otherwise expand as a fully variable permuation.  */
+
+  /* The optabs are only defined for selectors with the same width
+     as the values being permuted.  */
+  machine_mode required_sel_mode;
+  if (!mode_for_int_vector (mode).exists (&required_sel_mode)
+      || !VECTOR_MODE_P (required_sel_mode))
+    {
+      delete_insns_since (last);
+      return NULL_RTX;
+    }
+
+  /* We know that it is semantically valid to treat SEL as having SEL_MODE.
+     If that isn't the mode we want then we need to prove that using
+     REQUIRED_SEL_MODE is OK.  */
+  if (sel_mode != required_sel_mode)
+    {
+      if (!selector_fits_mode_p (required_sel_mode, indices))
+	{
+	  delete_insns_since (last);
+	  return NULL_RTX;
+	}
+      sel_mode = required_sel_mode;
+    }
+
+  insn_code icode = direct_optab_handler (vec_perm_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    {
+      rtx sel_rtx = vec_perm_indices_to_rtx (sel_mode, indices);
+      rtx tmp = expand_vec_perm_1 (icode, target, v0, v1, sel_rtx);
+      if (tmp)
+	return tmp;
+    }
+
+  if (qimode != VOIDmode
+      && selector_fits_mode_p (qimode, qimode_indices))
+    {
+      icode = direct_optab_handler (vec_perm_optab, qimode);
+      if (icode != CODE_FOR_nothing)
+	{
+	  rtx sel_qi = vec_perm_indices_to_rtx (qimode, qimode_indices);
+	  rtx tmp = expand_vec_perm_1 (icode, target_qi, v0_qi, v1_qi, sel_qi);
+	  if (tmp)
+	    return gen_lowpart (mode, tmp);
+	}
+    }
+
+  delete_insns_since (last);
+  return NULL_RTX;
+}
+
+/* Implement a permutation of vectors v0 and v1 using the permutation
+   vector in SEL and return the result.  Use TARGET to hold the result
+   if nonnull and convenient.
+
+   MODE is the mode of the vectors being permuted (V0 and V1).
+   SEL must have the integer equivalent of MODE and is known to be
+   unsuitable for permutes with a constant permutation vector.  */
+
+rtx
+expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
+{
+  enum insn_code icode;
+  unsigned int i, u;
+  rtx tmp, sel_qi;
+
+  u = GET_MODE_UNIT_SIZE (mode);
+
+  if (!target || GET_MODE (target) != mode)
+    target = gen_reg_rtx (mode);
+
   icode = direct_optab_handler (vec_perm_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
@@ -5547,50 +5644,47 @@ expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 
   /* As a special case to aid several targets, lower the element-based
      permutation to a byte-based permutation and try again.  */
-  if (qimode == VOIDmode)
+  machine_mode qimode;
+  if (!qimode_for_vec_perm (mode).exists (&qimode)
+      || maybe_gt (GET_MODE_NUNITS (qimode), GET_MODE_MASK (QImode) + 1))
     return NULL_RTX;
   icode = direct_optab_handler (vec_perm_optab, qimode);
   if (icode == CODE_FOR_nothing)
     return NULL_RTX;
 
-  if (sel_qi == NULL)
-    {
-      /* Multiply each element by its byte size.  */
-      machine_mode selmode = GET_MODE (sel);
-      if (u == 2)
-	sel = expand_simple_binop (selmode, PLUS, sel, sel,
-				   NULL, 0, OPTAB_DIRECT);
-      else
-	sel = expand_simple_binop (selmode, ASHIFT, sel,
-				   GEN_INT (exact_log2 (u)),
-				   NULL, 0, OPTAB_DIRECT);
-      gcc_assert (sel != NULL);
+  /* Multiply each element by its byte size.  */
+  machine_mode selmode = GET_MODE (sel);
+  if (u == 2)
+    sel = expand_simple_binop (selmode, PLUS, sel, sel,
+			       NULL, 0, OPTAB_DIRECT);
+  else
+    sel = expand_simple_binop (selmode, ASHIFT, sel,
+			       gen_int_shift_amount (selmode, exact_log2 (u)),
+			       NULL, 0, OPTAB_DIRECT);
+  gcc_assert (sel != NULL);
 
-      /* Broadcast the low byte each element into each of its bytes.  */
-      vec = rtvec_alloc (w);
-      for (i = 0; i < w; ++i)
-	{
-	  int this_e = i / u * u;
-	  if (BYTES_BIG_ENDIAN)
-	    this_e += u - 1;
-	  RTVEC_ELT (vec, i) = GEN_INT (this_e);
-	}
-      tmp = gen_rtx_CONST_VECTOR (qimode, vec);
-      sel = gen_lowpart (qimode, sel);
-      sel = expand_vec_perm (qimode, sel, sel, tmp, NULL);
-      gcc_assert (sel != NULL);
+  /* Broadcast the low byte each element into each of its bytes.
+     The encoding has U interleaved stepped patterns, one for each
+     byte of an element.  */
+  vec_perm_builder const_sel (GET_MODE_SIZE (mode), u, 3);
+  unsigned int low_byte_in_u = BYTES_BIG_ENDIAN ? u - 1 : 0;
+  for (i = 0; i < 3; ++i)
+    for (unsigned int j = 0; j < u; ++j)
+      const_sel.quick_push (i * u + low_byte_in_u);
+  sel = gen_lowpart (qimode, sel);
+  sel = expand_vec_perm_const (qimode, sel, sel, const_sel, qimode, NULL);
+  gcc_assert (sel != NULL);
 
-      /* Add the byte offset to each byte element.  */
-      /* Note that the definition of the indicies here is memory ordering,
-	 so there should be no difference between big and little endian.  */
-      vec = rtvec_alloc (w);
-      for (i = 0; i < w; ++i)
-	RTVEC_ELT (vec, i) = GEN_INT (i % u);
-      tmp = gen_rtx_CONST_VECTOR (qimode, vec);
-      sel_qi = expand_simple_binop (qimode, PLUS, sel, tmp,
-				    sel, 0, OPTAB_DIRECT);
-      gcc_assert (sel_qi != NULL);
-    }
+  /* Add the byte offset to each byte element.  */
+  /* Note that the definition of the indicies here is memory ordering,
+     so there should be no difference between big and little endian.  */
+  rtx_vector_builder byte_indices (qimode, u, 1);
+  for (i = 0; i < u; ++i)
+    byte_indices.quick_push (GEN_INT (i));
+  tmp = byte_indices.build ();
+  sel_qi = expand_simple_binop (qimode, PLUS, sel, tmp,
+				sel, 0, OPTAB_DIRECT);
+  gcc_assert (sel_qi != NULL);
 
   tmp = mode != qimode ? gen_reg_rtx (qimode) : target;
   tmp = expand_vec_perm_1 (icode, tmp, gen_lowpart (qimode, v0),
@@ -5675,8 +5769,9 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
 
 
-  gcc_assert (GET_MODE_SIZE (mode) == GET_MODE_SIZE (cmp_op_mode)
-	      && GET_MODE_NUNITS (mode) == GET_MODE_NUNITS (cmp_op_mode));
+  gcc_assert (known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (cmp_op_mode))
+	      && known_eq (GET_MODE_NUNITS (mode),
+			   GET_MODE_NUNITS (cmp_op_mode)));
 
   icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
@@ -5699,6 +5794,27 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   create_fixed_operand (&ops[4], XEXP (comparison, 0));
   create_fixed_operand (&ops[5], XEXP (comparison, 1));
   expand_insn (icode, 6, ops);
+  return ops[0].value;
+}
+
+/* Generate VEC_SERIES_EXPR <OP0, OP1>, returning a value of mode VMODE.
+   Use TARGET for the result if nonnull and convenient.  */
+
+rtx
+expand_vec_series_expr (machine_mode vmode, rtx op0, rtx op1, rtx target)
+{
+  struct expand_operand ops[3];
+  enum insn_code icode;
+  machine_mode emode = GET_MODE_INNER (vmode);
+
+  icode = direct_optab_handler (vec_series_optab, vmode);
+  gcc_assert (icode != CODE_FOR_nothing);
+
+  create_output_operand (&ops[0], target, vmode);
+  create_input_operand (&ops[1], op0, emode);
+  create_input_operand (&ops[2], op1, emode);
+
+  expand_insn (icode, 3, ops);
   return ops[0].value;
 }
 
@@ -5750,11 +5866,10 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
 {
   struct expand_operand eops[3];
   enum insn_code icode;
-  int method, i, nunits;
+  int method, i;
   machine_mode wmode;
-  rtx m1, m2, perm;
+  rtx m1, m2;
   optab tab1, tab2;
-  rtvec v;
 
   method = can_mult_highpart_p (mode, uns_p);
   switch (method)
@@ -5780,10 +5895,10 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
     }
 
   icode = optab_handler (tab1, mode);
-  nunits = GET_MODE_NUNITS (mode);
   wmode = insn_data[icode].operand[0].mode;
-  gcc_checking_assert (2 * GET_MODE_NUNITS (wmode) == nunits);
-  gcc_checking_assert (GET_MODE_SIZE (wmode) == GET_MODE_SIZE (mode));
+  gcc_checking_assert (known_eq (2 * GET_MODE_NUNITS (wmode),
+				 GET_MODE_NUNITS (mode)));
+  gcc_checking_assert (known_eq (GET_MODE_SIZE (wmode), GET_MODE_SIZE (mode)));
 
   create_output_operand (&eops[0], gen_reg_rtx (wmode), wmode);
   create_input_operand (&eops[1], op0, mode);
@@ -5797,21 +5912,24 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
   expand_insn (optab_handler (tab2, mode), 3, eops);
   m2 = gen_lowpart (mode, eops[0].value);
 
-  v = rtvec_alloc (nunits);
+  vec_perm_builder sel;
   if (method == 2)
     {
-      for (i = 0; i < nunits; ++i)
-	RTVEC_ELT (v, i) = GEN_INT (!BYTES_BIG_ENDIAN + (i & ~1)
-				    + ((i & 1) ? nunits : 0));
-      perm = gen_rtx_CONST_VECTOR (mode, v);
+      /* The encoding has 2 interleaved stepped patterns.  */
+      sel.new_vector (GET_MODE_NUNITS (mode), 2, 3);
+      for (i = 0; i < 6; ++i)
+	sel.quick_push (!BYTES_BIG_ENDIAN + (i & ~1)
+			+ ((i & 1) ? GET_MODE_NUNITS (mode) : 0));
     }
   else
     {
-      int base = BYTES_BIG_ENDIAN ? 0 : 1;
-      perm = gen_const_vec_series (mode, GEN_INT (base), GEN_INT (2));
+      /* The encoding has a single interleaved stepped pattern.  */
+      sel.new_vector (GET_MODE_NUNITS (mode), 1, 3);
+      for (i = 0; i < 3; ++i)
+	sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
     }
 
-  return expand_vec_perm (mode, m1, m2, perm, target);
+  return expand_vec_perm_const (mode, m1, m2, sel, BLKmode, target);
 }
 
 /* Helper function to find the MODE_CC set in a sync_compare_and_swap
@@ -6391,7 +6509,7 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
      emulate a load with a compare-and-swap operation, but the store that
      doing this could result in would be incorrect if this is a volatile
      atomic load or targetting read-only-mapped memory.  */
-  if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
+  if (maybe_gt (GET_MODE_PRECISION (mode), BITS_PER_WORD))
     /* If there is no atomic load, leave the library call.  */
     return NULL_RTX;
 
@@ -6465,7 +6583,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 
   /* If the size of the object is greater than word size on this target,
      a default store will not be atomic.  */
-  if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
+  if (maybe_gt (GET_MODE_PRECISION (mode), BITS_PER_WORD))
     {
       /* If loads are atomic or we are called to provide a __sync builtin,
 	 we can try a atomic_exchange and throw away the result.  Otherwise,
@@ -6928,13 +7046,29 @@ bool
 valid_multiword_target_p (rtx target)
 {
   machine_mode mode;
-  int i;
+  int i, size;
 
   mode = GET_MODE (target);
-  for (i = 0; i < GET_MODE_SIZE (mode); i += UNITS_PER_WORD)
+  if (!GET_MODE_SIZE (mode).is_constant (&size))
+    return false;
+  for (i = 0; i < size; i += UNITS_PER_WORD)
     if (!validate_subreg (word_mode, mode, target, i))
       return false;
   return true;
+}
+
+/* Make OP describe an input operand that has value INTVAL and that has
+   no inherent mode.  This function should only be used for operands that
+   are always expand-time constants.  The backend may request that INTVAL
+   be copied into a different kind of rtx, but it must specify the mode
+   of that rtx if so.  */
+
+void
+create_integer_operand (struct expand_operand *op, poly_int64 intval)
+{
+  create_expand_operand (op, EXPAND_INTEGER,
+			 gen_int_mode (intval, MAX_MODE_INT),
+			 VOIDmode, false, intval);
 }
 
 /* Like maybe_legitimize_operand, but do not change the code of the
@@ -7049,8 +7183,13 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
 
     case EXPAND_INTEGER:
       mode = insn_data[(int) icode].operand[opno].mode;
-      if (mode != VOIDmode && const_int_operand (op->value, mode))
-	goto input;
+      if (mode != VOIDmode
+	  && known_eq (trunc_int_for_mode (op->int_value, mode),
+		       op->int_value))
+	{
+	  op->value = gen_int_mode (op->int_value, mode);
+	  goto input;
+	}
       break;
     }
   return insn_operand_matches (icode, opno, op->value);

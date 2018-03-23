@@ -1,5 +1,5 @@
 /* Code translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -1970,6 +1970,22 @@ trans_code (gfc_code * code, tree cond)
 
 	case EXEC_FORALL:
 	  res = gfc_trans_forall (code);
+	  break;
+
+	case EXEC_FORM_TEAM:
+	  res = gfc_trans_form_team (code);
+	  break;
+
+	case EXEC_CHANGE_TEAM:
+	  res = gfc_trans_change_team (code);
+	  break;
+
+	case EXEC_END_TEAM:
+	  res = gfc_trans_end_team (code);
+	  break;
+
+	case EXEC_SYNC_TEAM:
+	  res = gfc_trans_sync_team (code);
 	  break;
 
 	case EXEC_WHERE:

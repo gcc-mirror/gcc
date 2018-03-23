@@ -1,5 +1,5 @@
 /* Processing rules for constraints.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Andrew Sutton (andrew.n.sutton@gmail.com)
 
 This file is part of GCC.
@@ -1918,7 +1918,7 @@ tsubst_constraint_info (tree t, tree args,
 tree
 tsubst_constraint (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
-  if (t == NULL_TREE)
+  if (t == NULL_TREE || t == error_mark_node)
     return t;
   switch (TREE_CODE (t))
   {

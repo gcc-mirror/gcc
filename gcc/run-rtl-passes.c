@@ -1,5 +1,5 @@
 /* run-rtl-passes.c - Run RTL passes directly from frontend
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "df.h"
 #include "regs.h"
+#include "output.h"
 #include "debug.h" /* for debug_hooks.  */
 #include "insn-attr-common.h" /* for INSN_SCHEDULING.  */
 #include "insn-attr.h" /* for init_sched_attrs.  */
@@ -45,6 +46,7 @@ run_rtl_passes (char *initial_pass_name)
   max_regno = max_reg_num ();
 
   /* cgraphunit.c normally handles this.  */
+  switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();
 
   /* Pass "expand" normally sets this up.  */

@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -349,6 +349,16 @@ cxx_block_may_fallthru (const_tree stmt)
     case THROW_EXPR:
       return false;
 
+    case IF_STMT:
+      if (block_may_fallthru (THEN_CLAUSE (stmt)))
+	return true;
+      return block_may_fallthru (ELSE_CLAUSE (stmt));
+
+    case SWITCH_STMT:
+      return (!SWITCH_STMT_ALL_CASES_P (stmt)
+	      || !SWITCH_STMT_NO_BREAK_P (stmt)
+	      || block_may_fallthru (SWITCH_STMT_BODY (stmt)));
+
     default:
       return true;
     }
@@ -468,7 +478,6 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (USING_STMT);
   MARK_TS_TYPED (LAMBDA_EXPR);
   MARK_TS_TYPED (CTOR_INITIALIZER);
-  MARK_TS_TYPED (ARRAY_NOTATION_REF);
   MARK_TS_TYPED (REQUIRES_EXPR);
   MARK_TS_TYPED (UNARY_LEFT_FOLD_EXPR);
   MARK_TS_TYPED (UNARY_RIGHT_FOLD_EXPR);

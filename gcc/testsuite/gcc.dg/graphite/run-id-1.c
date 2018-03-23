@@ -1,5 +1,6 @@
 /* { dg-options "-Wl,--stack,12582912" { target *-*-mingw* *-*-cygwin* } } */
 /* { dg-require-effective-target size32plus } */
+/* { dg-require-stack-size "4*1000*1000" } */
 
 void abort (void);
 

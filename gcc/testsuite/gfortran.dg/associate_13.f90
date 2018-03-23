@@ -17,5 +17,5 @@
   associate (template => initial(1)%variant_def)
     template%i = 77
   end associate
-  if (initial(1)%variant_def%i .ne. 77) call abort
+  if (initial(1)%variant_def%i .ne. 77) STOP 1
 end

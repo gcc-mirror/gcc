@@ -1,5 +1,5 @@
 /* Functions dealing with attribute handling, used by most front ends.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "langhooks.h"
 #include "plugin.h"
+#include "selftest.h"
+#include "hash-set.h"
 
 /* Table of the tables of attributes (common, language, format, machine)
    searched.  */
@@ -94,7 +96,7 @@ static bool attributes_initialized = false;
 
 static const struct attribute_spec empty_attribute_table[] =
 {
-  { NULL, 0, 0, false, false, false, NULL, false }
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Return base name of the attribute.  Ie '__attr__' is turned into 'attr'.
@@ -116,9 +118,9 @@ extract_attribute_substring (struct substring *str)
    namespace.  The function returns the namespace into which the
    attributes have been registered.  */
 
-scoped_attributes*
-register_scoped_attributes (const struct attribute_spec * attributes,
-			    const char* ns)
+scoped_attributes *
+register_scoped_attributes (const struct attribute_spec *attributes,
+			    const char *ns)
 {
   scoped_attributes *result = NULL;
 
@@ -343,6 +345,113 @@ get_attribute_namespace (const_tree attr)
   return get_identifier ("gnu");
 }
 
+/* Check LAST_DECL and NODE of the same symbol for attributes that are
+   recorded in SPEC to be mutually exclusive with ATTRNAME, diagnose
+   them, and return true if any have been found.  NODE can be a DECL
+   or a TYPE.  */
+
+static bool
+diag_attr_exclusions (tree last_decl, tree node, tree attrname,
+		      const attribute_spec *spec)
+{
+  const attribute_spec::exclusions *excl = spec->exclude;
+
+  tree_code code = TREE_CODE (node);
+
+  if ((code == FUNCTION_DECL && !excl->function
+       && (!excl->type || !spec->affects_type_identity))
+      || (code == VAR_DECL && !excl->variable
+	  && (!excl->type || !spec->affects_type_identity))
+      || (((code == TYPE_DECL || RECORD_OR_UNION_TYPE_P (node)) && !excl->type)))
+    return false;
+
+  /* True if an attribute that's mutually exclusive with ATTRNAME
+     has been found.  */
+  bool found = false;
+
+  if (last_decl && last_decl != node && TREE_TYPE (last_decl) != node)
+    {
+      /* Check both the last DECL and its type for conflicts with
+	 the attribute being added to the current decl or type.  */
+      found |= diag_attr_exclusions (last_decl, last_decl, attrname, spec);
+      tree decl_type = TREE_TYPE (last_decl);
+      found |= diag_attr_exclusions (last_decl, decl_type, attrname, spec);
+    }
+
+  /* NODE is either the current DECL to which the attribute is being
+     applied or its TYPE.  For the former, consider the attributes on
+     both the DECL and its type.  */
+  tree attrs[2];
+
+  if (DECL_P (node))
+    {
+      attrs[0] = DECL_ATTRIBUTES (node);
+      attrs[1] = TYPE_ATTRIBUTES (TREE_TYPE (node));
+    }
+  else
+    {
+      attrs[0] = TYPE_ATTRIBUTES (node);
+      attrs[1] = NULL_TREE;
+    }
+
+  /* Iterate over the mutually exclusive attribute names and verify
+     that the symbol doesn't contain it.  */
+  for (unsigned i = 0; i != sizeof attrs / sizeof *attrs; ++i)
+    {
+      if (!attrs[i])
+	continue;
+
+      for ( ; excl->name; ++excl)
+	{
+	  /* Avoid checking the attribute against itself.  */
+	  if (is_attribute_p (excl->name, attrname))
+	    continue;
+
+	  if (!lookup_attribute (excl->name, attrs[i]))
+	    continue;
+
+	  /* An exclusion may apply either to a function declaration,
+	     type declaration, or a field/variable declaration, or
+	     any subset of the three.  */
+	  if (TREE_CODE (node) == FUNCTION_DECL
+	      && !excl->function)
+	    continue;
+
+	  if (TREE_CODE (node) == TYPE_DECL
+	      && !excl->type)
+	    continue;
+
+	  if ((TREE_CODE (node) == FIELD_DECL
+	       || TREE_CODE (node) == VAR_DECL)
+	      && !excl->variable)
+	    continue;
+
+	  found = true;
+
+	  /* Print a note?  */
+	  bool note = last_decl != NULL_TREE;
+
+	  if (TREE_CODE (node) == FUNCTION_DECL
+	      && DECL_BUILT_IN (node))
+	    note &= warning (OPT_Wattributes,
+			     "ignoring attribute %qE in declaration of "
+			     "a built-in function %qD because it conflicts "
+			     "with attribute %qs",
+			     attrname, node, excl->name);
+	  else
+	    note &= warning (OPT_Wattributes,
+			     "ignoring attribute %qE because "
+			     "it conflicts with attribute %qs",
+			     attrname, excl->name);
+
+	  if (note)
+	    inform (DECL_SOURCE_LOCATION (last_decl),
+		    "previous declaration here");
+	}
+    }
+
+  return found;
+}
 
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
    which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,
@@ -354,7 +463,8 @@ get_attribute_namespace (const_tree attr)
    a decl attribute to the declaration rather than to its type).  */
 
 tree
-decl_attributes (tree *node, tree attributes, int flags)
+decl_attributes (tree *node, tree attributes, int flags,
+		 tree last_decl /* = NULL_TREE */)
 {
   tree a;
   tree returned_attrs = NULL_TREE;
@@ -433,15 +543,16 @@ decl_attributes (tree *node, tree attributes, int flags)
 
   targetm.insert_attributes (*node, &attributes);
 
+  /* Note that attributes on the same declaration are not necessarily
+     in the same order as in the source.  */
   for (a = attributes; a; a = TREE_CHAIN (a))
     {
       tree ns = get_attribute_namespace (a);
       tree name = get_attribute_name (a);
       tree args = TREE_VALUE (a);
       tree *anode = node;
-      const struct attribute_spec *spec =
-	lookup_scoped_attribute_spec (ns, name);
-      bool no_add_attrs = 0;
+      const struct attribute_spec *spec
+	= lookup_scoped_attribute_spec (ns, name);
       int fn_ptr_quals = 0;
       tree fn_ptr_tmp = NULL_TREE;
 
@@ -490,7 +601,8 @@ decl_attributes (tree *node, tree attributes, int flags)
 		       | (int) ATTR_FLAG_ARRAY_NEXT))
 	    {
 	      /* Pass on this attribute to be tried again.  */
-	      returned_attrs = tree_cons (name, args, returned_attrs);
+	      tree attr = tree_cons (name, args, NULL_TREE);
+	      returned_attrs = chainon (returned_attrs, attr);
 	      continue;
 	    }
 	  else
@@ -535,7 +647,8 @@ decl_attributes (tree *node, tree attributes, int flags)
 	  else if (flags & (int) ATTR_FLAG_FUNCTION_NEXT)
 	    {
 	      /* Pass on this attribute to be tried again.  */
-	      returned_attrs = tree_cons (name, args, returned_attrs);
+	      tree attr = tree_cons (name, args, NULL_TREE);
+	      returned_attrs = chainon (returned_attrs, attr);
 	      continue;
 	    }
 
@@ -557,15 +670,56 @@ decl_attributes (tree *node, tree attributes, int flags)
 	  continue;
 	}
 
+      bool no_add_attrs = false;
+
       if (spec->handler != NULL)
 	{
 	  int cxx11_flag =
 	    cxx11_attribute_p (a) ? ATTR_FLAG_CXX11 : 0;
 
-	  returned_attrs = chainon ((*spec->handler) (anode, name, args,
-						      flags|cxx11_flag,
-						      &no_add_attrs),
-				    returned_attrs);
+	  /* Pass in an array of the current declaration followed
+	     by the last pushed/merged declaration if  one exists.
+	     If the handler changes CUR_AND_LAST_DECL[0] replace
+	     *ANODE with its value.  */
+	  tree cur_and_last_decl[] = { *anode, last_decl };
+	  tree ret = (spec->handler) (cur_and_last_decl, name, args,
+				      flags|cxx11_flag, &no_add_attrs);
+
+	  *anode = cur_and_last_decl[0];
+	  if (ret == error_mark_node)
+	    {
+	      warning (OPT_Wattributes, "%qE attribute ignored", name);
+	      no_add_attrs = true;
+	    }
+	  else
+	    returned_attrs = chainon (ret, returned_attrs);
+	}
+
+      /* If the attribute was successfully handled on its own and is
+	 about to be added check for exclusions with other attributes
+	 on the current declation as well as the last declaration of
+	 the same symbol already processed (if one exists).  */
+      bool built_in = flags & ATTR_FLAG_BUILT_IN;
+      if (spec->exclude
+	  && !no_add_attrs
+	  && (flag_checking || !built_in))
+	{
+	  /* Always check attributes on user-defined functions.
+	     Check them on built-ins only when -fchecking is set.
+	     Ignore __builtin_unreachable -- it's both const and
+	     noreturn.  */
+
+	  if (!built_in
+	      || !DECL_P (*anode)
+	      || (DECL_FUNCTION_CODE (*anode) != BUILT_IN_UNREACHABLE
+		  && (DECL_FUNCTION_CODE (*anode)
+		      != BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE)))
+	    {
+	      bool no_add = diag_attr_exclusions (last_decl, *anode, name, spec);
+	      if (!no_add && anode != node)
+		no_add = diag_attr_exclusions (last_decl, *node, name, spec);
+	      no_add_attrs |= no_add;
+	    }
 	}
 
       /* Layout the decl in case anything changed.  */
@@ -989,18 +1143,25 @@ build_type_attribute_qual_variant (tree otype, tree attribute, int quals)
 	ttype = (lang_hooks.types.copy_lang_qualifiers
 		 (ttype, TYPE_MAIN_VARIANT (otype)));
 
-      ntype = build_distinct_type_copy (ttype);
+      tree dtype = ntype = build_distinct_type_copy (ttype);
 
       TYPE_ATTRIBUTES (ntype) = attribute;
 
       hashval_t hash = type_hash_canon_hash (ntype);
       ntype = type_hash_canon (hash, ntype);
 
-      /* If the target-dependent attributes make NTYPE different from
-	 its canonical type, we will need to use structural equality
-	 checks for this type.  */
-      if (TYPE_STRUCTURAL_EQUALITY_P (ttype)
-	  || !comp_type_attributes (ntype, ttype))
+      if (ntype != dtype)
+	/* This variant was already in the hash table, don't mess with
+	   TYPE_CANONICAL.  */;
+      else if (TYPE_STRUCTURAL_EQUALITY_P (ttype)
+	       || !comp_type_attributes (ntype, ttype))
+	/* If the target-dependent attributes make NTYPE different from
+	   its canonical type, we will need to use structural equality
+	   checks for this type.
+
+	   We shouldn't get here for stripping attributes from a type;
+	   the no-attribute type might not need structural comparison.  But
+	   we can if was discarded from type_hash_table.  */
 	SET_TYPE_STRUCTURAL_EQUALITY (ntype);
       else if (TYPE_CANONICAL (ntype) == ntype)
 	TYPE_CANONICAL (ntype) = TYPE_CANONICAL (ttype);
@@ -1647,3 +1808,124 @@ private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
 
   return list;
 }
+
+#if CHECKING_P
+
+namespace selftest
+{
+
+/* Helper types to verify the consistency attribute exclusions.  */
+
+typedef std::pair<const char *, const char *> excl_pair;
+
+struct excl_hash_traits: typed_noop_remove<excl_pair>
+{
+  typedef excl_pair  value_type;
+  typedef value_type compare_type;
+
+  static hashval_t hash (const value_type &x)
+  {
+    hashval_t h1 = htab_hash_string (x.first);
+    hashval_t h2 = htab_hash_string (x.second);
+    return h1 ^ h2;
+  }
+
+  static bool equal (const value_type &x, const value_type &y)
+  {
+    return !strcmp (x.first, y.first) && !strcmp (x.second, y.second);
+  }
+
+  static void mark_deleted (value_type &x)
+  {
+    x = value_type (NULL, NULL);
+  }
+
+  static void mark_empty (value_type &x)
+  {
+    x = value_type ("", "");
+  }
+
+  static bool is_deleted (const value_type &x)
+  {
+    return !x.first && !x.second;
+  }
+
+  static bool is_empty (const value_type &x)
+  {
+    return !*x.first && !*x.second;
+  }
+};
+
+
+/* Self-test to verify that each attribute exclusion is symmetric,
+   meaning that if attribute A is encoded as incompatible with
+   attribute B then the opposite relationship is also encoded.
+   This test also detects most cases of misspelled attribute names
+   in exclusions.  */
+
+static void
+test_attribute_exclusions ()
+{
+  /* Iterate over the array of attribute tables first (with TI0 as
+     the index) and over the array of attribute_spec in each table
+     (with SI0 as the index).  */
+  const size_t ntables = ARRAY_SIZE (attribute_tables);
+
+  /* Set of pairs of mutually exclusive attributes.  */
+  typedef hash_set<excl_pair, excl_hash_traits> exclusion_set;
+  exclusion_set excl_set;
+
+  for (size_t ti0 = 0; ti0 != ntables; ++ti0)
+    for (size_t s0 = 0; attribute_tables[ti0][s0].name; ++s0)
+      {
+	const attribute_spec::exclusions *excl
+	  = attribute_tables[ti0][s0].exclude;
+
+	/* Skip each attribute that doesn't define exclusions.  */
+	if (!excl)
+	  continue;
+
+	const char *attr_name = attribute_tables[ti0][s0].name;
+
+	/* Iterate over the set of exclusions for every attribute
+	   (with EI0 as the index) adding the exclusions defined
+	   for each to the set.  */
+	for (size_t ei0 = 0; excl[ei0].name; ++ei0)
+	  {
+	    const char *excl_name = excl[ei0].name;
+
+	    if (!strcmp (attr_name, excl_name))
+	      continue;
+
+	    excl_set.add (excl_pair (attr_name, excl_name));
+	  }
+      }
+
+  /* Traverse the set of mutually exclusive pairs of attributes
+     and verify that they are symmetric.  */
+  for (exclusion_set::iterator it = excl_set.begin ();
+       it != excl_set.end ();
+       ++it)
+    {
+      if (!excl_set.contains (excl_pair ((*it).second, (*it).first)))
+	{
+	  /* An exclusion for an attribute has been found that
+	     doesn't have a corresponding exclusion in the opposite
+	     direction.  */
+	  char desc[120];
+	  sprintf (desc, "'%s' attribute exclusion '%s' must be symmetric",
+		   (*it).first, (*it).second);
+	  fail (SELFTEST_LOCATION, desc);
+	}
+    }
+}
+
+void
+attribute_c_tests ()
+{
+  test_attribute_exclusions ();
+}
+
+} /* namespace selftest */
+
+#endif /* CHECKING_P */

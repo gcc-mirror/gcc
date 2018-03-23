@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O3 -floop-interchange -Wno-conversion-null -Wno-return-type" }
+// { dg-options "-O3 -floop-nest-optimize -Wno-conversion-null -Wno-return-type" }
 
 void __throw_bad_alloc ();
 

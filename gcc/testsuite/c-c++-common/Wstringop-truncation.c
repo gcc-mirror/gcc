@@ -18,13 +18,13 @@ char* strncpy (char*, const char*, size_t);
 }
 #endif
 
-extern size_t unsigned_value (void)
+static size_t unsigned_value (void)
 {
   extern volatile size_t unsigned_value_source;
   return unsigned_value_source;
 }
 
-size_t unsigned_range (size_t min, size_t max)
+static size_t unsigned_range (size_t min, size_t max)
 {
   size_t val = unsigned_value ();
   return val < min || max < val ? min : val;
@@ -188,7 +188,7 @@ void test_strncpy_ptr (char *d, const char* s, const char *t, int i)
   CPY (d, CHOOSE (s, t), 2);
 
   CPY (d, CHOOSE ("", "123"), 1);   /* { dg-warning ".strncpy\[^\n\r\]* output may be truncated copying 1 byte from a string of length 3" } */
-  CPY (d, CHOOSE ("1", "123"), 1);  /* { dg-warning ".strncpy\[^\n\r\]* output truncated copying 1 byte from a string of length 1" } */
+  CPY (d, CHOOSE ("1", "123"), 1);  /* { dg-warning ".strncpy\[^\n\r\]* output truncated before terminating nul copying 1 byte from a string of the same length" } */
   CPY (d, CHOOSE ("12", "123"), 1); /* { dg-warning ".strncpy\[^\n\r\]* output truncated copying 1 byte from a string of length 2" } */
   CPY (d, CHOOSE ("123", "12"), 1); /* { dg-warning ".strncpy\[^\n\r\]* output truncated copying 1 byte from a string of length 2" } */
 
@@ -331,7 +331,7 @@ void test_strncpy_array (Dest *pd, int i, const char* s)
     /* This might be better written using memcpy() but it's safe so
        it probably shouldn't be diagnosed.  It currently triggers
        a warning because of bug 81704.  */
-    strncpy (dst7, "0123456", sizeof dst7);   /* { dg-bogus "truncated" "bug 81704" { xfail *-*-* } } */
+    strncpy (dst7, "0123456", sizeof dst7);   /* { dg-bogus "\\\[-Wstringop-truncation]" "bug 81704" { xfail *-*-* } } */
     dst7[sizeof dst7 - 1] = '\0';
     sink (dst7);
   }
@@ -350,7 +350,7 @@ void test_strncpy_array (Dest *pd, int i, const char* s)
   }
 
   {
-    strncpy (pd->a5, "01234", sizeof pd->a5);   /* { dg-bogus "truncated" "bug 81704" { xfail *-*-* } } */
+    strncpy (pd->a5, "01234", sizeof pd->a5);   /* { dg-bogus "\\\[-Wstringop-truncation]" "bug 81704" { xfail *-*-* } } */
     pd->a5[sizeof pd->a5 - 1] = '\0';
     sink (pd);
   }

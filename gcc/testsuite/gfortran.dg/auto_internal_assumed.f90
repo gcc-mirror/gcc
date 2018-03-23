@@ -4,7 +4,7 @@
 !
 character (6) :: c
   c = f1 ()
-  if (c .ne. 'abcdef') call abort
+  if (c .ne. 'abcdef') STOP 1
 contains
   function f1 () ! { dg-error "must not be assumed length" }
     character (*) :: f1
