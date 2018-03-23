@@ -488,9 +488,9 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
 				  &unsignedp, &reversep, &volatilep);
       if ((offset == NULL_TREE || TREE_CODE (offset) == INTEGER_CST)
 	  && DECL_P (base)
+	  && !DECL_REGISTER (base)
 	  && pbitpos.is_constant (&bitpos))
 	{
-	  gcc_assert (!DECL_REGISTER (base));
 	  offset_int expr_offset;
 	  if (offset)
 	    expr_offset = wi::to_offset (offset) + bitpos / BITS_PER_UNIT;

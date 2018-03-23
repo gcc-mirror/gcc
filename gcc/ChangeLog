@@ -1,3 +1,9 @@
+2018-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/85029
+	* sanopt.c (maybe_optimize_ubsan_ptr_ifn): If DECL_REGISTER (base),
+	just don't try to optimize it rather than assert it never happens.
+
 2018-03-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-builtin.def: Remove various BU_ALTIVEC_X
