@@ -21196,16 +21196,8 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
   bool ellipsis_p;
   bool is_error;
 
-  struct cleanup {
-    cp_parser* parser;
-    int auto_is_implicit_function_template_parm_p;
-    ~cleanup() {
-      parser->auto_is_implicit_function_template_parm_p
-	= auto_is_implicit_function_template_parm_p;
-    }
-  } cleanup = { parser, parser->auto_is_implicit_function_template_parm_p };
-
-  (void) cleanup;
+  temp_override<bool> cleanup
+    (parser->auto_is_implicit_function_template_parm_p);
 
   if (!processing_specialization
       && !processing_template_parmlist
@@ -24968,6 +24960,9 @@ cp_parser_gnu_attributes_opt (cp_parser* parser)
 {
   tree attributes = NULL_TREE;
 
+  temp_override<bool> cleanup
+    (parser->auto_is_implicit_function_template_parm_p, false);
+
   while (true)
     {
       cp_token *token;
@@ -25158,6 +25153,9 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 {
   tree attribute, attr_id = NULL_TREE, arguments;
   cp_token *token;
+
+  temp_override<bool> cleanup
+    (parser->auto_is_implicit_function_template_parm_p, false);
 
   /* First, parse name of the attribute, a.k.a attribute-token.  */
 

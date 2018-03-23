@@ -1,3 +1,15 @@
+2018-03-22  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84610
+	PR c++/84642
+	PR c++/84942
+	* cp-tree.h (temp_override): New template class, generalizing
+	a cleanup that was only used...
+	* parser.c (cp_parser_parameter_declaration_clause):
+	... here for auto_is_implicit_function_template_parm_p.
+	(cp_parser_gnu_attributes_opt): Use it here as well.
+	(cp_parser_std_attribute): Likewise.
+
 2018-03-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84854
