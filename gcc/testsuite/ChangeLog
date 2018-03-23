@@ -1,3 +1,8 @@
+2018-03-23  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-1-le.c: Filter out gimple folding disabled
+	message.  Fix scan-assembler patterns.
+
 2018-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85015
