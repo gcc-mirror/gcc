@@ -1,5 +1,8 @@
 2018-03-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84937 - ICE with class deduction and auto.
+	* pt.c (rewrite_template_parm): Fix auto handling.
+
 	PR c++/80227 - SFINAE and negative array size.
 	* decl.c (compute_array_index_type): Convert to signed for negative
 	check.
