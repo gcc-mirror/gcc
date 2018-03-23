@@ -1,3 +1,8 @@
+2018-03-23  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/84826
+	* gcc.target/arm/pr84826.c: Add dg directive.
+
 2018-03-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85033
