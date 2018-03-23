@@ -1,5 +1,8 @@
 2018-03-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71834 - template-id with too few arguments.
+	* pt.c (coerce_template_parms): Make sure we gave an error.
+
 	PR c++/84937 - ICE with class deduction and auto.
 	* pt.c (rewrite_template_parm): Fix auto handling.
 

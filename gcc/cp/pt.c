@@ -8265,7 +8265,11 @@ coerce_template_parms (tree parms,
     }
 
   if (lost)
-    return error_mark_node;
+    {
+      if ((complain & tf_error) && !seen_error())
+	error ("wrong number of template arguments");
+      return error_mark_node;
+    }
 
   if (CHECKING_P && !NON_DEFAULT_TEMPLATE_ARGS_COUNT (new_inner_args))
     SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (new_inner_args,
