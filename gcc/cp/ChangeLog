@@ -1,3 +1,9 @@
+2018-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/78489 - Substitution in wrong order
+	PR c++/84489
+	* pt.c (type_unification_real): Revert last two changes.
+
 2018-03-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84785 - ICE with alias template and default targs.
