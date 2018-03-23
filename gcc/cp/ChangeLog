@@ -1,5 +1,8 @@
 2018-03-22  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/84729
+	* init.c (build_vec_init): Error at parenthesized array init.
+
 	PR c++/84610
 	PR c++/84642
 	PR c++/84942

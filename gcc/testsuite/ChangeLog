@@ -1,3 +1,11 @@
+2018-03-22  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84729
+	* g++.dg/pr84729.C: New.
+	* g++.old-deja/g++.ext/arrnew2.C: Require error.
+	* g++.old-deja/g++.robertl/eb58.C: Likewise.
+	* g++.old-deja/g++.robertl/eb63.C: Likewise.
+
 2018-03-22  Steven G. Kargl  <kargl@gcc.gnu.org
 
 	PR fortran/84922
