@@ -1,3 +1,9 @@
+2018-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84355 - ICE with deduction for member class template.
+	* pt.c (tsubst) [TEMPLATE_TYPE_PARM]: Always substitute into
+	CLASS_PLACEHOLDER_TEMPLATE.
+
 2018-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
