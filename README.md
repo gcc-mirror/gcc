@@ -7,12 +7,11 @@ Candidate features currently on this site are listed below.  The checked items i
 that are deemed sufficiently functional submitted to the relevant GCC developer mailing list for review.
 We welcome user feedback from testing these features.  Unchecked itmes are insufficiently mature to 
 submit to GCC.  We welcome code via [pull request] for any listed features or other unsupported
-features of the draft Fortran 2015 standard:
+features of the draft Fortran 2018 standard:
 
-- [X] The [teams branch] with experimental support for Fortran 2015 teams. 
-- [X] The [download-opencoarrays-mpich branch] modifying GCC's prequisites download script
-  to add [OpenCoarrays] and [MPICH] to the list of downloade software.
-- [ ] The [issue-#6-iso-fortran-binding-h branch] providing gthe Fortran 2015 `iso_fortran_binding.h` file.
+- [X] The [teams branch] with experimental support for Fortran 2018 teams (committed to the GCC trunk and will appear in GCC 8). 
+- [X] The [download-opencoarrays-mpich branch] adds [OpenCoarrays] & [MPICH] download to GCC's download_prerequisites script.
+- [ ] The [issue-#6-iso-fortran-binding-h branch] providing the Fortran 2018 `ISO_Fortran_binding.h` file.
 
 Installation
 ============
@@ -34,7 +33,7 @@ add `--yes-to-all` to instruct the installer to assume affirmative answers to an
 the above steps will install GCC in the prerequisites/installations subdirectory.  To see additional
 installation options, including choosing another installation path, execute `./install.sh --help`.
 
-For access to any Fortran 2015 parallel features, including teams and failed images, build the [MPICH] 
+For access to any Fortran 2018 parallel features, including teams and failed images, build the [MPICH] 
 and the [opencoarrays-teams branch]:
 of OpenCoarrays:
 ```bash
