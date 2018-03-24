@@ -1,3 +1,9 @@
+2018-03-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/42651
+	* decl.c (check_function_name): Improved error message
+	(gfc_match_volatile, gfc_match_asynchronous) Use check_function_name.
+
 2018-03-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/84922
