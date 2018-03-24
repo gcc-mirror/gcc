@@ -1,3 +1,10 @@
+2018-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/70068
+	* expr.c (find_substring_ref): Change types of start, end
+	and length variables to gfc_charlen_t. Set length to zero
+	for empty substring.
+
 2018-03-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/42651
