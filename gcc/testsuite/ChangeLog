@@ -1,3 +1,9 @@
+2018-03-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/42651
+	* gfortran.dg/pr42651.f90: New test.
+	* gfortran.dg/func_result_7.f90: Update error message.
+
 2018-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84005
