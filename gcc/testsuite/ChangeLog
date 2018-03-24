@@ -1,3 +1,8 @@
+2018-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/70068
+	* gfortran.dg/substr_7.f90: New test.
+
 2018-03-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/42651
