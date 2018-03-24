@@ -957,11 +957,11 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
   if (base_alignment < vector_alignment)
     {
-      tree base = drb->base_address;
-      if (TREE_CODE (base) == ADDR_EXPR)
-	base = TREE_OPERAND (base, 0);
-      if (!vect_can_force_dr_alignment_p (base,
-					  vector_alignment * BITS_PER_UNIT))
+      unsigned int max_alignment;
+      tree base = get_base_for_alignment (drb->base_address, &max_alignment);
+      if (max_alignment < vector_alignment
+	  || !vect_can_force_dr_alignment_p (base,
+					     vector_alignment * BITS_PER_UNIT))
 	{
 	  if (dump_enabled_p ())
 	    {

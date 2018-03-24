@@ -1,3 +1,13 @@
+2018-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84005
+	* tree-data-ref.h (get_base_for_alignment): Declare.
+	* tree-data-ref.c (get_base_for_alignment_1): New function.
+	(get_base_for_alignment): Likewise.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Use
+	get_base_for_alignment to find a suitable base object, instead
+	of always using drb->base_address.
+
 2018-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/85022

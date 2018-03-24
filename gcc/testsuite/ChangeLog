@@ -1,3 +1,9 @@
+2018-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84005
+	* gcc.dg/vect/bb-slp-1.c: Make sure there is no message about
+	failing to force the alignment.
+
 2018-03-23  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/builtins-1-le.c <vclzb>: Rename duplicate test
