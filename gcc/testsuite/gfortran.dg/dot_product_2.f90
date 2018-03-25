@@ -34,4 +34,4 @@ if (ANY (MATMUL ((/ (1.0, 2.0), (2.0, 3.0) /),                                &
 end
 
 
-! { dg-final { scan-tree-dump-not "abort" "original" } }
+! { dg-final { scan-tree-dump-not "_gfortran_stop" "original" } }
