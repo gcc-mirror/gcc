@@ -4037,10 +4037,9 @@ gfc_free_namespace (gfc_namespace *ns)
     return;
 
   ns->refs--;
-  if (ns->refs > 0)
-    return;
 
-  gcc_assert (ns->refs == 0);
+  if (ns->refs != 0)
+    return;
 
   gfc_free_statements (ns->code);
 
