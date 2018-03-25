@@ -71,4 +71,4 @@ contains
 
   end subroutine
 end
-! { dg-final { scan-tree-dump-not "abort" "original" } }
+! { dg-final { scan-tree-dump-not "_gfortran_stop" "original" } }
