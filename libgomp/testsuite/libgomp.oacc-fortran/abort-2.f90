@@ -6,7 +6,7 @@ program main
 
   !$acc parallel copyin(argc)
   if (argc .ne. 0) then
-     call abort
+     STOP 1
   end if
   !$acc end parallel
 

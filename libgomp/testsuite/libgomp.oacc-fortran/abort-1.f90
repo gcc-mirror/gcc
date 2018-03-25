@@ -3,7 +3,7 @@ program main
 
   print *, "CheCKpOInT"
   !$acc parallel
-  call abort
+  STOP 1
   !$acc end parallel
 
 end program main

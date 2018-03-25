@@ -21,7 +21,7 @@ subroutine t1()
   !$acc end parallel
 
   do i = 1, 32
-     if (arr(i) .ne. i * 3) call abort
+     if (arr(i) .ne. i * 3) STOP 1
   end do
 end subroutine t1
 
@@ -49,7 +49,7 @@ subroutine t2()
   !$acc end parallel
 
   do i = 0, 32 * 32 - 1
-     if (arr(i) .ne. i + (i / 32) * 2) call abort
+     if (arr(i) .ne. i + (i / 32) * 2) STOP 2
   end do
 end subroutine t2
 
@@ -77,7 +77,7 @@ subroutine t3()
   !$acc end parallel
 
   do i = 0, 32 * 32 - 1
-     if (arr(i) .ne. i + (i / 32) * 2) call abort
+     if (arr(i) .ne. i + (i / 32) * 2) STOP 3
   end do
 end subroutine t3
 
@@ -113,7 +113,7 @@ subroutine t4()
   !$acc end parallel
 
   do i = 0, 32 * 32 - 1
-     if (arr(i) .ne. i + (i / 32) * 13) call abort
+     if (arr(i) .ne. i + (i / 32) * 13) STOP 4
   end do
 end subroutine t4
 
@@ -151,7 +151,7 @@ subroutine t5()
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
            if (arr(idx) .ne. idx + ieor(i, j * 3) * k + ior(i, j * 5) * k) then
-              call abort
+              STOP 5
            end if
         end do
      end do
@@ -189,7 +189,7 @@ subroutine t6()
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
            if (arr(idx) .ne. idx + ieor(i, j * 3) * k + ior(i, j * 5) * k) then
-              call abort
+              STOP 6
            end if
         end do
      end do
@@ -219,7 +219,7 @@ subroutine t7()
   !$acc end parallel
 
   do i = 0, 32 * 32 - 1
-     if (arr(i) .ne. i + ieor(i / 32, mod(i, 32) * 3)) call abort
+     if (arr(i) .ne. i + ieor(i / 32, mod(i, 32) * 3)) STOP 7
   end do
 end subroutine t7
 
@@ -253,7 +253,7 @@ subroutine t8()
      do j = 0, 32 -1
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
-           if (arr(idx) .ne. idx + ieor(i, j * 3) * k) call abort
+           if (arr(idx) .ne. idx + ieor(i, j * 3) * k) STOP 8
         end do
      end do
   end do
@@ -300,7 +300,7 @@ subroutine t9()
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
            if (arr(idx) .ne. idx + ieor(i, j * 3) * k + ior(i, j * 5) * k) then
-              call abort
+              STOP 9
            end if
         end do
      end do
@@ -345,7 +345,7 @@ subroutine t10()
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
            if (arr(idx) .ne. idx + ieor(i, j * 3) * k + ior(i, j * 5) * k) then
-              call abort
+              STOP 10
            end if
         end do
      end do
@@ -393,7 +393,7 @@ subroutine t11()
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
            if (arr(idx) .ne. idx + ieor(i, j * 3) * k + ior(i, j * 5) * k) then
-              call abort
+              STOP 11
            end if
         end do
      end do
@@ -442,7 +442,7 @@ subroutine t12()
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
            if (arr(idx) .ne. idx + ieor(i, j * 3) * k + ior(i, j * 5) * k) then
-              call abort
+              STOP 12
            end if
         end do
      end do
@@ -486,7 +486,7 @@ subroutine t13()
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
            if (arr(idx) .ne. idx + ieor(i, j * 3) * k + ior(i, j * 5) * k) then
-              call abort
+              STOP 13
            end if
         end do
      end do
@@ -520,7 +520,7 @@ subroutine t14()
   !$acc end parallel
 
   do i = 1, n
-    if (arr(i) .ne. (3 + i * 2)) call abort
+    if (arr(i) .ne. (3 + i * 2)) STOP 14
   end do
 
 end subroutine t14

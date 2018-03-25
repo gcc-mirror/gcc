@@ -11,6 +11,6 @@ program test
   use openacc
   implicit none
 
-  if (acc_is_present (a) .neqv. .true.) call abort
+  if (acc_is_present (a) .neqv. .true.) STOP 1
 
 end program test

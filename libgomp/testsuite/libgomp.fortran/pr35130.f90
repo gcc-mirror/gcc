@@ -10,7 +10,7 @@ program pr35130
     call inner(k)
   end do
 !$omp end parallel do
-  if (any (a.ne.42)) call abort
+  if (any (a.ne.42)) STOP 1
 contains
  subroutine inner(i)
    implicit none

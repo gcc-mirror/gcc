@@ -24,5 +24,5 @@ program test_foo
   beta = 0.0
   c(:,:) = 1.0
   call foo (beta, c)
-  if (c(1,1) /= 0.0) call abort ()
+  if (c(1,1) /= 0.0) STOP 1
 end program test_foo
