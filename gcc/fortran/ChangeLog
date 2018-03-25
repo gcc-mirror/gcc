@@ -1,3 +1,11 @@
+2018-03-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/84506
+	* symbol.c (gfc_free_namespace): Delete the assert and only if
+	refs count is equals zero, free the namespace. Otherwise,
+	something is halfway and other errors will resound.
+
 2018-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/70068
