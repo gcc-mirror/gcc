@@ -25,12 +25,12 @@ program update
   !$acc update host (a, b)
 
   do i = 1, N
-    if (a(i) .ne. 3.0) call abort
-    if (b(i) .ne. 3.0) call abort
+    if (a(i) .ne. 3.0) STOP 1
+    if (b(i) .ne. 3.0) STOP 2
   end do
 
-  if (acc_is_present (a) .neqv. .TRUE.) call abort
-  if (acc_is_present (b) .neqv. .TRUE.) call abort
+  if (acc_is_present (a) .neqv. .TRUE.) STOP 3
+  if (acc_is_present (b) .neqv. .TRUE.) STOP 4
 
   do i = 1, N
     a(i) = 5.0
@@ -48,12 +48,12 @@ program update
   !$acc update host (a, b)
 
   do i = 1, N
-    if (a(i) .ne. 5.0) call abort
-    if (b(i) .ne. 5.0) call abort
+    if (a(i) .ne. 5.0) STOP 5
+    if (b(i) .ne. 5.0) STOP 6
  end do
 
-  if (acc_is_present (a) .neqv. .TRUE.) call abort
-  if (acc_is_present (b) .neqv. .TRUE.) call abort
+  if (acc_is_present (a) .neqv. .TRUE.) STOP 7
+  if (acc_is_present (b) .neqv. .TRUE.) STOP 8
 
   !$acc parallel present (a, b)
   do i = 1, N
@@ -64,12 +64,12 @@ program update
   !$acc update host (a, b)
 
   do i = 1, N
-    if (a(i) .ne. 5.0) call abort
-    if (b(i) .ne. 5.0) call abort
+    if (a(i) .ne. 5.0) STOP 9
+    if (b(i) .ne. 5.0) STOP 10
   end do
 
-  if (acc_is_present (a) .neqv. .TRUE.) call abort
-  if (acc_is_present (b) .neqv. .TRUE.) call abort
+  if (acc_is_present (a) .neqv. .TRUE.) STOP 11
+  if (acc_is_present (b) .neqv. .TRUE.) STOP 12
 
   do i = 1, N
     a(i) = 6.0
@@ -91,12 +91,12 @@ program update
   !$acc update host (a, b)
 
   do i = 1, N
-    if (a(i) .ne. 6.0) call abort
-    if (b(i) .ne. 6.0) call abort
+    if (a(i) .ne. 6.0) STOP 13
+    if (b(i) .ne. 6.0) STOP 14
   end do
 
-  if (acc_is_present (a) .neqv. .TRUE.) call abort
-  if (acc_is_present (b) .neqv. .TRUE.) call abort
+  if (acc_is_present (a) .neqv. .TRUE.) STOP 15
+  if (acc_is_present (b) .neqv. .TRUE.) STOP 16
 
   do i = 1, N
     a(i) = 7.0
@@ -118,8 +118,8 @@ program update
   !$acc update host (a, b)
 
   do i = 1, N
-    if (a(i) .ne. 7.0) call abort
-    if (b(i) .ne. 7.0) call abort
+    if (a(i) .ne. 7.0) STOP 17
+    if (b(i) .ne. 7.0) STOP 18
   end do
 
   do i = 1, N
@@ -137,12 +137,12 @@ program update
   !$acc update host (a, b)
 
   do i = 1, N
-    if (a(i) .ne. 9.0) call abort
-    if (b(i) .ne. 9.0) call abort
+    if (a(i) .ne. 9.0) STOP 19
+    if (b(i) .ne. 9.0) STOP 20
   end do
 
-  if (acc_is_present (a) .neqv. .TRUE.) call abort
-  if (acc_is_present (b) .neqv. .TRUE.) call abort
+  if (acc_is_present (a) .neqv. .TRUE.) STOP 21
+  if (acc_is_present (b) .neqv. .TRUE.) STOP 22
 
   do i = 1, N
     a(i) = 5.0
@@ -165,17 +165,17 @@ program update
   !$acc update host (a, b)
 
   do i = 1, NDIV2
-    if (a(i) .ne. 6.0) call abort
-    if (b(i) .ne. 6.0) call abort
+    if (a(i) .ne. 6.0) STOP 23
+    if (b(i) .ne. 6.0) STOP 24
   end do
 
   do i = NDIV2 + 1, N
-    if (a(i) .ne. 5.0) call abort
-    if (b(i) .ne. 5.0) call abort
+    if (a(i) .ne. 5.0) STOP 25
+    if (b(i) .ne. 5.0) STOP 26
   end do
 
-  if (acc_is_present (a) .neqv. .TRUE.) call abort
-  if (acc_is_present (b) .neqv. .TRUE.) call abort
+  if (acc_is_present (a) .neqv. .TRUE.) STOP 27
+  if (acc_is_present (b) .neqv. .TRUE.) STOP 28
 
   do i = 1, N
     a(i) = 0.0
@@ -192,21 +192,21 @@ program update
   !$acc update host (a(5:N))
 
   do i = 1, NDIV2
-    if (a(i) .ne. 0.0) call abort
+    if (a(i) .ne. 0.0) STOP 29
   end do
 
   do i = NDIV2 + 1, N
-    if (a(i) .ne. 6.0) call abort
+    if (a(i) .ne. 6.0) STOP 30
   end do
 
   !$acc update host (a(1:4))
 
   do i = 1, NDIV2
-    if (a(i) .ne. 1.0) call abort
+    if (a(i) .ne. 1.0) STOP 31
   end do
 
   do i = NDIV2 + 1, N
-    if (a(i) .ne. 6.0) call abort
+    if (a(i) .ne. 6.0) STOP 32
   end do
 
   a(3) = 9
@@ -225,15 +225,15 @@ program update
   !$acc update host (a(3:6))
 
   do i = 1, 2
-    if (a(i) .ne. 1.0) call abort
+    if (a(i) .ne. 1.0) STOP 33
   end do
 
   do i = 3, 6
-    if (a(i) .ne. 10.0) call abort
+    if (a(i) .ne. 10.0) STOP 34
   end do
 
   do i = 7, N
-    if (a(i) .ne. 6.0) call abort
+    if (a(i) .ne. 6.0) STOP 35
   end do
 
   !$acc exit data delete (a, b)

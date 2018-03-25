@@ -72,7 +72,7 @@ end module threadprivate4
   vi = -1
 !$omp end parallel
 
-  if (l) call abort
+  if (l) STOP 1
 
 end
 

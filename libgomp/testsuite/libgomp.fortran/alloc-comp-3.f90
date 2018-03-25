@@ -22,19 +22,19 @@ contains
     type (dl), intent (in) :: obj
     integer, intent (in) :: val, cl1, cu1, cl2, cu2
     logical, intent (in) :: c, f
-    if ((c .neqv. allocated (obj%c)) .or. (f .neqv. allocated (obj%f))) call abort
+    if ((c .neqv. allocated (obj%c)) .or. (f .neqv. allocated (obj%f))) STOP 1
     if (c) then
-      if (lbound (obj%c, 1) /= cl1 .or. ubound (obj%c, 1) /= cu1) call abort
-      if (lbound (obj%c, 2) /= cl2 .or. ubound (obj%c, 2) /= cu2) call abort
+      if (lbound (obj%c, 1) /= cl1 .or. ubound (obj%c, 1) /= cu1) STOP 2
+      if (lbound (obj%c, 2) /= cl2 .or. ubound (obj%c, 2) /= cu2) STOP 3
     end if
     if (val /= 0) then
-      if (obj%a /= val .or. obj%b /= val) call abort
-      if (obj%d /= val .or. obj%e /= val) call abort
+      if (obj%a /= val .or. obj%b /= val) STOP 4
+      if (obj%d /= val .or. obj%e /= val) STOP 5
       if (c) then
-        if (any (obj%c /= val)) call abort
+        if (any (obj%c /= val)) STOP 6
       end if
       if (f) then
-        if (obj%f /= val) call abort
+        if (obj%f /= val) STOP 7
       end if
     end if
   end subroutine ver_dl
@@ -43,9 +43,9 @@ contains
     integer, intent (in) :: val, hl, hu, cl1, cu1, cl2, cu2
     logical, intent (in) :: h, k, c, f
     integer :: i, j
-    if ((h .neqv. allocated (obj%h)) .or. (k .neqv. allocated (obj%k))) call abort
+    if ((h .neqv. allocated (obj%h)) .or. (k .neqv. allocated (obj%k))) STOP 8
     if (h) then
-      if (lbound (obj%h, 1) /= hl .or. ubound (obj%h, 1) /= hu) call abort
+      if (lbound (obj%h, 1) /= hl .or. ubound (obj%h, 1) /= hu) STOP 9
       do i = hl, hu
         call ver_dl (obj%h(i), val, c, cl1, cu1, cl2, cu2, f)
       end do
@@ -57,7 +57,7 @@ contains
     end do
     if (k) call ver_dl (obj%k, val, c, cl1, cu1, cl2, cu2, f)
     if (val /= 0) then
-      if (obj%g /= val .or. obj%i /= val) call abort
+      if (obj%g /= val .or. obj%i /= val) STOP 10
     end if
   end subroutine ver_dt
   subroutine alloc_dl (obj, val, c, cl1, cu1, cl2, cu2, f)
@@ -124,27 +124,27 @@ contains
     logical, parameter :: F = .false.
     logical, parameter :: T = .true.
     logical :: l
-    if (lbound (x, 1) /= 2 .or. ubound (x, 1) /= 4) call abort
-    if (lbound (y, 1) /= 3 .or. ubound (y, 1) /= 4) call abort
+    if (lbound (x, 1) /= 2 .or. ubound (x, 1) /= 4) STOP 11
+    if (lbound (y, 1) /= 3 .or. ubound (y, 1) /= 4) STOP 12
     call ver_dt (x(2), 0, F, 0, 0, F, F, 0, 0, 0, 0, F)
     call ver_dt (x(n), 0, F, 0, 0, F, F, 0, 0, 0, 0, F)
     call ver_dt (y(3), 0, F, 0, 0, F, F, 0, 0, 0, 0, F)
     call ver_dt (y(4), 0, F, 0, 0, F, F, 0, 0, 0, 0, F)
 !$omp parallel private (z)
-    if (allocated (z)) call abort
+    if (allocated (z)) STOP 13
 !$omp end parallel
 !$omp parallel firstprivate (z)
-    if (allocated (z)) call abort
+    if (allocated (z)) STOP 14
 !$omp end parallel
     l = F
 !$omp parallel sections lastprivate (z) firstprivate (l)
 !$omp section
     if (.not. l) then
-      if (allocated (z)) call abort
+      if (allocated (z)) STOP 15
     end if
 !$omp section
     if (.not. l) then
-      if (allocated (z)) call abort
+      if (allocated (z)) STOP 16
     end if
     allocate (z(-3:-3,2:3))
     call alloc_dt (z(-3,2), 5, F, 0, 0, T, T, -1, -1, -1, -1, T)
@@ -153,9 +153,9 @@ contains
     call ver_dt (z(-3,3), 23, T, 0, 1, T, T, 2, 2, 2, 2, F)
 !$omp section
 !$omp end parallel sections
-    if (.not.allocated (z)) call abort
-    if (lbound (z, 1) /= -3 .or. ubound (z, 1) /= -3) call abort
-    if (lbound (z, 2) /= 2 .or. ubound (z, 2) /= 3) call abort
+    if (.not.allocated (z)) STOP 17
+    if (lbound (z, 1) /= -3 .or. ubound (z, 1) /= -3) STOP 18
+    if (lbound (z, 2) /= 2 .or. ubound (z, 2) /= 3) STOP 19
     call ver_dt (z(-3,2), 5, F, 0, 0, T, T, -1, -1, -1, -1, T)
     call ver_dt (z(-3,3), 23, T, 0, 1, T, T, 2, 2, 2, 2, F)
     call ver_dt (x(n - 1), 0, F, 0, 0, F, F, 0, 0, 0, 0, F)
@@ -203,8 +203,8 @@ contains
     call alloc_dt (z(-3,2), 5, T, 1, 2, F, T, 2, 3, -2, -2, F)
     call alloc_dt (z(-3,3), 15, F, 0, 0, T, T, 2, 2, 2, 2, T)
 !$omp parallel firstprivate (x, y, z)
-    if (lbound (x, 1) /= 2 .or. ubound (x, 1) /= 4) call abort
-    if (lbound (y, 1) /= 3 .or. ubound (y, 1) /= 4) call abort
+    if (lbound (x, 1) /= 2 .or. ubound (x, 1) /= 4) STOP 20
+    if (lbound (y, 1) /= 3 .or. ubound (y, 1) /= 4) STOP 21
     call ver_dt (x(n - 1), 5, T, 1, 2, F, T, 2, 3, -2, -2, F)
     call alloc_dt (x(n - 1), 4, T, -3, -1, T, T, -1, -1, 2, 3, T)
     call ver_dt (x(n - 1), 4, T, -3, -1, T, T, -1, -1, 2, 3, T)

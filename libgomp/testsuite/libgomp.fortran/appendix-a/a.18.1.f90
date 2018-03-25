@@ -53,7 +53,7 @@
                 NEIGHBOR = I - 1
           ENDIF
           IF (RESULT(I) .NE. I * 2 + NEIGHBOR * 2) THEN
-            CALL ABORT
+            STOP 1
           ENDIF
         ENDDO
         END PROGRAM A18

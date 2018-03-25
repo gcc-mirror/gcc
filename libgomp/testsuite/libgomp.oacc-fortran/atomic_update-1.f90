@@ -18,7 +18,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (fgot /= fexp) call abort
+  if (fgot /= fexp) STOP 1
 
   fgot = 1.0
   fexp = 2.0**32
@@ -31,7 +31,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (fgot /= fexp) call abort
+  if (fgot /= fexp) STOP 2
 
   fgot = 32.0
   fexp = fgot - N
@@ -44,7 +44,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (fgot /= fexp) call abort
+  if (fgot /= fexp) STOP 3
 
   fgot = 2**32.0
   fexp = 1.0
@@ -57,7 +57,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (fgot /= fexp) call abort
+  if (fgot /= fexp) STOP 4
 
   lgot = .TRUE.
   lexp = .FALSE.
@@ -68,7 +68,7 @@ program main
   !$acc end atomic
   !$acc end parallel
 
-  if (lgot .neqv. lexp) call abort
+  if (lgot .neqv. lexp) STOP 5
 
   lgot = .FALSE.
   lexp = .FALSE.
@@ -79,7 +79,7 @@ program main
   !$acc end atomic
   !$acc end parallel
 
-  if (lgot .neqv. lexp) call abort
+  if (lgot .neqv. lexp) STOP 6
 
   lgot = .FALSE.
   lexp = .FALSE.
@@ -90,7 +90,7 @@ program main
   !$acc end atomic
   !$acc end parallel
 
-  if (lgot .neqv. lexp) call abort
+  if (lgot .neqv. lexp) STOP 7
 
   lgot = .FALSE.
   lexp = .TRUE.
@@ -101,7 +101,7 @@ program main
   !$acc end atomic
   !$acc end parallel
 
-  if (lgot .neqv. lexp) call abort
+  if (lgot .neqv. lexp) STOP 8
 
   fgot = 1234.0
   fexp = 1266.0
@@ -114,7 +114,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (fgot /= fexp) call abort
+  if (fgot /= fexp) STOP 9
 
   fgot = 1.0
   fexp = 2.0**32
@@ -127,7 +127,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (fgot /= fexp) call abort
+  if (fgot /= fexp) STOP 10
 
   fgot = 32.0
   fexp = 32.0
@@ -140,7 +140,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (fgot /= fexp) call abort
+  if (fgot /= fexp) STOP 11
 
   fgot = 2.0**16
   fexp = 2.0**16
@@ -153,7 +153,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (fgot /= fexp) call abort
+  if (fgot /= fexp) STOP 12
 
   lgot = .TRUE.
   lexp = .FALSE.
@@ -164,7 +164,7 @@ program main
   !$acc end atomic
   !$acc end parallel
 
-  if (lgot .neqv. lexp) call abort
+  if (lgot .neqv. lexp) STOP 13
 
   lgot = .FALSE.
   lexp = .FALSE.
@@ -175,7 +175,7 @@ program main
   !$acc end atomic
   !$acc end parallel
 
-  if (lgot .neqv. lexp) call abort
+  if (lgot .neqv. lexp) STOP 14
 
   lgot = .FALSE.
   lexp = .FALSE.
@@ -186,7 +186,7 @@ program main
   !$acc end atomic
   !$acc end parallel
 
-  if (lgot .neqv. lexp) call abort
+  if (lgot .neqv. lexp) STOP 15
 
   lgot = .FALSE.
   lexp = .TRUE.
@@ -197,7 +197,7 @@ program main
   !$acc end atomic
   !$acc end parallel
 
-  if (lgot .neqv. lexp) call abort
+  if (lgot .neqv. lexp) STOP 16
 
   igot = 1
   iexp = N
@@ -210,7 +210,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 17
 
   igot = N
   iexp = 1
@@ -223,7 +223,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 18
 
   igot = -1
   iexp = 0
@@ -237,7 +237,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 19
 
   igot = 0
   iexp = -1 
@@ -251,7 +251,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 20
 
   igot = -1
   iexp = 0 
@@ -265,7 +265,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 21
 
   igot = 1
   iexp = N
@@ -278,7 +278,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 22
 
   igot = N
   iexp = 1
@@ -291,7 +291,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 23
 
   igot = -1
   iexp = 0
@@ -305,7 +305,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 24
 
   igot = 0
   iexp = -1 
@@ -319,7 +319,7 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 25
 
   igot = -1
   iexp = 0 
@@ -333,6 +333,6 @@ program main
     end do
   !$acc end parallel loop
 
-  if (igot /= iexp) call abort
+  if (igot /= iexp) STOP 26
 
 end program

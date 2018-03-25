@@ -36,7 +36,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 1
   end do
 
   a(:) = 16.0
@@ -52,7 +52,7 @@ program main
   !$acc end parallel
 
   do i = 1, N
-    if (b(i) .ne. 17.0) call abort
+    if (b(i) .ne. 17.0) STOP 2
   end do
 
   a(:) = 8.0
@@ -74,7 +74,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 3
   end do
 
   a(:) = 22.0
@@ -90,7 +90,7 @@ program main
   !$acc end parallel
 
   do i = 1, N
-    if (b(i) .ne. 23.0) call abort
+    if (b(i) .ne. 23.0) STOP 4
   end do
 
   a(:) = 16.0
@@ -112,7 +112,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 5
   end do
 
   a(:) = 76.0
@@ -128,7 +128,7 @@ program main
   !$acc end parallel
 
   do i = 1, N
-    if (b(i) .ne. 77.0) call abort
+    if (b(i) .ne. 77.0) STOP 6
   end do
 
   a(:) = 22.0
@@ -152,7 +152,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 7
   end do
 
   a(:) = 18.0
@@ -170,7 +170,7 @@ program main
   !$acc end parallel
 
   do i = 1, N
-    if (b(i) .ne. 19.0) call abort
+    if (b(i) .ne. 19.0) STOP 8
   end do
 
   a(:) = 49.0
@@ -194,7 +194,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 9
   end do
 
   a(:) = 38.0
@@ -212,7 +212,7 @@ program main
   !$acc end parallel
 
   do i = 1, N
-    if (b(i) .ne. 39.0) call abort
+    if (b(i) .ne. 39.0) STOP 10
   end do
 
   a(:) = 91.0
@@ -228,7 +228,7 @@ program main
   !$acc end parallel
 
   do i = 1, N
-    if (b(i) .ne. 92.0) call abort
+    if (b(i) .ne. 92.0) STOP 11
   end do
 
   a(:) = 43.0
@@ -250,7 +250,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 12
   end do
 
   a(:) = 87.0
@@ -266,7 +266,7 @@ program main
   !$acc end parallel
 
   do i = 1, N
-    if (b(i) .ne. 88.0) call abort
+    if (b(i) .ne. 88.0) STOP 13
   end do
 
   a(:) = 3.0
@@ -290,8 +290,8 @@ program main
   !$acc update host (a(1:N), b(1:N)) if (1 == 1)
 
   do i = 1, N
-    if (a(i) .ne. exp) call abort
-    if (b(i) .ne. exp2) call abort
+    if (a(i) .ne. exp) STOP 14
+    if (b(i) .ne. exp2) STOP 15
   end do
 
   a(:) = 6.0
@@ -305,8 +305,8 @@ program main
   !$acc update host (a(1:N), b(1:N)) if (1 == 1)
 
   do i = 1, N
-    if (a(i) .ne. exp) call abort
-    if (b(i) .ne. exp2) call abort
+    if (a(i) .ne. exp) STOP 16
+    if (b(i) .ne. exp2) STOP 17
   end do
 
   a(:) = 26.0
@@ -320,8 +320,8 @@ program main
   !$acc update host (a(1:N), b(1:N)) if (0 == 1)
 
   do i = 1, N
-    if (a(i) .ne. 0.0) call abort
-    if (b(i) .ne. 0.0) call abort
+    if (a(i) .ne. 0.0) STOP 18
+    if (b(i) .ne. 0.0) STOP 19
   end do
 
 #if !ACC_MEM_SHARED
@@ -342,7 +342,7 @@ program main
   !$acc end data
 
   do i = 1, N
-    if (b(i) .ne. 4.0) call abort
+    if (b(i) .ne. 4.0) STOP 20
   end do
 
   a(:) = 8.0
@@ -351,8 +351,8 @@ program main
   !$acc data copyin (a(1:N)) copyout (b(1:N)) if (0 == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (a) .eqv. .TRUE.) call abort
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (a) .eqv. .TRUE.) STOP 21
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 22
 #endif
 
   !$acc end data
@@ -363,12 +363,12 @@ program main
   !$acc data copyin (a(1:N)) if (1 == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (a) .eqv. .FALSE.) call abort
+    if (acc_is_present (a) .eqv. .FALSE.) STOP 23
 #endif
 
     !$acc data copyout (b(1:N)) if (0 == 1)
 #if !ACC_MEM_SHARED
-      if (acc_is_present (b) .eqv. .TRUE.) call abort
+      if (acc_is_present (b) .eqv. .TRUE.) STOP 24
 #endif
         !$acc data copyout (b(1:N)) if (1 == 1)
 
@@ -381,19 +381,19 @@ program main
     !$acc end data
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .TRUE.) call abort
+    if (acc_is_present (b) .eqv. .TRUE.) STOP 25
 #endif
     !$acc end data
   !$acc end data
 
   do i = 1, N
-   if (b(1) .ne. 18.0) call abort
+   if (b(1) .ne. 18.0) STOP 26
   end do
 
   !$acc enter data copyin (b(1:N)) if (0 == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 27
 #endif
 
   !$acc exit data delete (b(1:N)) if (0 == 1)
@@ -401,19 +401,19 @@ program main
   !$acc enter data copyin (b(1:N)) if (1 == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .FALSE.) call abort
+    if (acc_is_present (b) .eqv. .FALSE.) STOP 28
 #endif
 
   !$acc exit data delete (b(1:N)) if (1 == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 29
 #endif
 
   !$acc enter data copyin (b(1:N)) if (zero == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .TRUE.) call abort
+    if (acc_is_present (b) .eqv. .TRUE.) STOP 30
 #endif
 
   !$acc exit data delete (b(1:N)) if (zero == 1)
@@ -421,19 +421,19 @@ program main
   !$acc enter data copyin (b(1:N)) if (one == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .FALSE.) call abort
+    if (acc_is_present (b) .eqv. .FALSE.) STOP 31
 #endif
 
   !$acc exit data delete (b(1:N)) if (one == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 32
 #endif
 
   !$acc enter data copyin (b(1:N)) if (one == 0)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .TRUE.) call abort
+    if (acc_is_present (b) .eqv. .TRUE.) STOP 33
 #endif
 
   !$acc exit data delete (b(1:N)) if (one == 0)
@@ -441,13 +441,13 @@ program main
   !$acc enter data copyin (b(1:N)) if (one == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .FALSE.) call abort
+    if (acc_is_present (b) .eqv. .FALSE.) STOP 34
 #endif
 
   !$acc exit data delete (b(1:N)) if (one == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 35
 #endif
 
   a(:) = 4.0
@@ -469,7 +469,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 36
   end do
 
   a(:) = 16.0
@@ -485,7 +485,7 @@ program main
   !$acc end kernels
 
   do i = 1, N
-    if (b(i) .ne. 17.0) call abort
+    if (b(i) .ne. 17.0) STOP 37
   end do
 
   a(:) = 8.0
@@ -507,7 +507,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 38
   end do
 
   a(:) = 22.0
@@ -523,7 +523,7 @@ program main
   !$acc end kernels
 
   do i = 1, N
-    if (b(i) .ne. 23.0) call abort
+    if (b(i) .ne. 23.0) STOP 39
   end do
 
   a(:) = 16.0
@@ -545,7 +545,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 40
   end do
 
   a(:) = 76.0
@@ -561,7 +561,7 @@ program main
   !$acc end kernels
 
   do i = 1, N
-    if (b(i) .ne. 77.0) call abort
+    if (b(i) .ne. 77.0) STOP 41
   end do
 
   a(:) = 22.0
@@ -585,7 +585,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 42
   end do
 
   a(:) = 18.0
@@ -603,7 +603,7 @@ program main
   !$acc end kernels
 
   do i = 1, N
-    if (b(i) .ne. 19.0) call abort
+    if (b(i) .ne. 19.0) STOP 43
   end do
 
   a(:) = 49.0
@@ -627,7 +627,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 44
   end do
 
   a(:) = 38.0
@@ -645,7 +645,7 @@ program main
   !$acc end kernels
 
   do i = 1, N
-    if (b(i) .ne. 39.0) call abort
+    if (b(i) .ne. 39.0) STOP 45
   end do
 
   a(:) = 91.0
@@ -661,7 +661,7 @@ program main
   !$acc end kernels
 
   do i = 1, N
-    if (b(i) .ne. 92.0) call abort
+    if (b(i) .ne. 92.0) STOP 46
   end do
 
   a(:) = 43.0
@@ -683,7 +683,7 @@ program main
 #endif
 
   do i = 1, N
-    if (b(i) .ne. exp) call abort
+    if (b(i) .ne. exp) STOP 47
   end do
 
   a(:) = 87.0
@@ -699,7 +699,7 @@ program main
   !$acc end kernels
 
   do i = 1, N
-    if (b(i) .ne. 88.0) call abort
+    if (b(i) .ne. 88.0) STOP 48
   end do
 
   a(:) = 3.0
@@ -723,8 +723,8 @@ program main
   !$acc update host (a(1:N), b(1:N)) if (1 == 1)
 
   do i = 1, N
-    if (a(i) .ne. exp) call abort
-    if (b(i) .ne. exp2) call abort
+    if (a(i) .ne. exp) STOP 49
+    if (b(i) .ne. exp2) STOP 50
   end do
 
   a(:) = 6.0
@@ -738,8 +738,8 @@ program main
   !$acc update host (a(1:N), b(1:N)) if (1 == 1)
 
   do i = 1, N
-    if (a(i) .ne. exp) call abort
-    if (b(i) .ne. exp2) call abort
+    if (a(i) .ne. exp) STOP 51
+    if (b(i) .ne. exp2) STOP 52
   end do
 
   a(:) = 26.0
@@ -753,8 +753,8 @@ program main
   !$acc update host (a(1:N), b(1:N)) if (0 == 1)
 
   do i = 1, N
-    if (a(i) .ne. 0.0) call abort
-    if (b(i) .ne. 0.0) call abort
+    if (a(i) .ne. 0.0) STOP 53
+    if (b(i) .ne. 0.0) STOP 54
   end do
 
 #if !ACC_MEM_SHARED
@@ -775,7 +775,7 @@ program main
   !$acc end data
 
   do i = 1, N
-    if (b(i) .ne. 4.0) call abort
+    if (b(i) .ne. 4.0) STOP 55
   end do
 
   a(:) = 8.0
@@ -784,8 +784,8 @@ program main
   !$acc data copyin (a(1:N)) copyout (b(1:N)) if (0 == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (a) .eqv. .TRUE.) call abort
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (a) .eqv. .TRUE.) STOP 56
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 57
 #endif
 
   !$acc end data
@@ -796,12 +796,12 @@ program main
   !$acc data copyin (a(1:N)) if (1 == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (a) .eqv. .FALSE.) call abort
+    if (acc_is_present (a) .eqv. .FALSE.) STOP 58
 #endif
 
     !$acc data copyout (b(1:N)) if (0 == 1)
 #if !ACC_MEM_SHARED
-      if (acc_is_present (b) .eqv. .TRUE.) call abort
+      if (acc_is_present (b) .eqv. .TRUE.) STOP 59
 #endif
         !$acc data copyout (b(1:N)) if (1 == 1)
 
@@ -814,19 +814,19 @@ program main
     !$acc end data
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .TRUE.) call abort
+    if (acc_is_present (b) .eqv. .TRUE.) STOP 60
 #endif
     !$acc end data
   !$acc end data
 
   do i = 1, N
-   if (b(1) .ne. 18.0) call abort
+   if (b(1) .ne. 18.0) STOP 61
   end do
 
   !$acc enter data copyin (b(1:N)) if (0 == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 62
 #endif
 
   !$acc exit data delete (b(1:N)) if (0 == 1)
@@ -834,19 +834,19 @@ program main
   !$acc enter data copyin (b(1:N)) if (1 == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .FALSE.) call abort
+    if (acc_is_present (b) .eqv. .FALSE.) STOP 63
 #endif
 
   !$acc exit data delete (b(1:N)) if (1 == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 64
 #endif
 
   !$acc enter data copyin (b(1:N)) if (zero == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .TRUE.) call abort
+    if (acc_is_present (b) .eqv. .TRUE.) STOP 65
 #endif
 
   !$acc exit data delete (b(1:N)) if (zero == 1)
@@ -854,19 +854,19 @@ program main
   !$acc enter data copyin (b(1:N)) if (one == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .FALSE.) call abort
+    if (acc_is_present (b) .eqv. .FALSE.) STOP 66
 #endif
 
   !$acc exit data delete (b(1:N)) if (one == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 67
 #endif
 
   !$acc enter data copyin (b(1:N)) if (one == 0)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .TRUE.) call abort
+    if (acc_is_present (b) .eqv. .TRUE.) STOP 68
 #endif
 
   !$acc exit data delete (b(1:N)) if (one == 0)
@@ -874,13 +874,13 @@ program main
   !$acc enter data copyin (b(1:N)) if (one == 1)
 
 #if !ACC_MEM_SHARED
-    if (acc_is_present (b) .eqv. .FALSE.) call abort
+    if (acc_is_present (b) .eqv. .FALSE.) STOP 69
 #endif
 
   !$acc exit data delete (b(1:N)) if (one == 1)
 
 #if !ACC_MEM_SHARED
-  if (acc_is_present (b) .eqv. .TRUE.) call abort
+  if (acc_is_present (b) .eqv. .TRUE.) STOP 70
 #endif
 
 end program main

@@ -7,7 +7,7 @@ program foo
 
   !$acc parallel num_gangs(1) num_workers(2)
 
-  if (any(a(1:3,1:3,1:3).ne.1)) call abort
+  if (any(a(1:3,1:3,1:3).ne.1)) STOP 1
 
   do ll=1,3
 
@@ -18,7 +18,7 @@ program foo
 
   enddo
 
-  if (a(1,1,1).ne.2) call abort
+  if (a(1,1,1).ne.2) STOP 2
 
   !$acc end parallel
 

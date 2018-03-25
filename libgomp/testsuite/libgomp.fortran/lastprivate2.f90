@@ -4,15 +4,15 @@ program lastprivate
   !$omp parallel num_threads (4)
   call test1
   !$omp end parallel
-  if (i .ne. 21 .or. k .ne. 20) call abort
+  if (i .ne. 21 .or. k .ne. 20) STOP 1
   !$omp parallel num_threads (4)
   call test2
   !$omp end parallel
-  if (i .ne. 64 .or. k .ne. 61) call abort
+  if (i .ne. 64 .or. k .ne. 61) STOP 2
   !$omp parallel num_threads (4)
   call test3
   !$omp end parallel
-  if (i .ne. 14 .or. k .ne. 11) call abort
+  if (i .ne. 14 .or. k .ne. 11) STOP 3
   call test4
   call test5
   call test6
@@ -57,7 +57,7 @@ contains
     do j = 1, 20
       l = j
     end do
-    if (j .ne. 21 .or. l .ne. 20) call abort
+    if (j .ne. 21 .or. l .ne. 20) STOP 4
   end subroutine test4
   subroutine test5
     integer :: j, l
@@ -66,7 +66,7 @@ contains
     do j = 7, 61, 3
       l = j
     end do
-    if (j .ne. 64 .or. l .ne. 61) call abort
+    if (j .ne. 64 .or. l .ne. 61) STOP 5
   end subroutine test5
   subroutine test6
     integer :: j, l
@@ -74,7 +74,7 @@ contains
     do j = -10, 11, ret3 ()
       l = j
     end do
-    if (j .ne. 14 .or. l .ne. 11) call abort
+    if (j .ne. 14 .or. l .ne. 11) STOP 6
   end subroutine test6
   subroutine test7
     integer :: i, k
@@ -83,7 +83,7 @@ contains
     do i = 1, 20
       k = i
     end do
-    if (i .ne. 21 .or. k .ne. 20) call abort
+    if (i .ne. 21 .or. k .ne. 20) STOP 7
   end subroutine test7
   subroutine test8
     integer :: i, k
@@ -92,7 +92,7 @@ contains
     do i = 7, 61, 3
       k = i
     end do
-    if (i .ne. 64 .or. k .ne. 61) call abort
+    if (i .ne. 64 .or. k .ne. 61) STOP 8
   end subroutine test8
   subroutine test9
     integer :: i, k
@@ -102,7 +102,7 @@ contains
     do i = -10, 11, ret3 ()
       k = i
     end do
-    if (i .ne. 14 .or. k .ne. 11) call abort
+    if (i .ne. 14 .or. k .ne. 11) STOP 9
   end subroutine test9
   subroutine test10
     integer :: i, k
@@ -113,7 +113,7 @@ contains
       k = i
     end do
     !$omp end parallel
-    if (i .ne. 21 .or. k .ne. 20) call abort
+    if (i .ne. 21 .or. k .ne. 20) STOP 10
   end subroutine test10
   subroutine test11
     integer :: i, k
@@ -124,7 +124,7 @@ contains
       k = i
     end do
     !$omp end parallel
-    if (i .ne. 64 .or. k .ne. 61) call abort
+    if (i .ne. 64 .or. k .ne. 61) STOP 11
   end subroutine test11
   subroutine test12
     integer :: i, k
@@ -136,6 +136,6 @@ contains
       k = i
     end do
     !$omp end parallel
-    if (i .ne. 14 .or. k .ne. 11) call abort
+    if (i .ne. 14 .or. k .ne. 11) STOP 12
   end subroutine test12
 end program lastprivate
