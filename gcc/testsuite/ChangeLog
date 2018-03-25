@@ -1,6 +1,6 @@
 2018-03-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR fortran/89497
+	PR fortran/69497
 	* gfortran.dg/pr89497.f90: New test.
 
 2018-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
