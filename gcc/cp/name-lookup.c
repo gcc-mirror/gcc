@@ -3522,10 +3522,7 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
 
   if (tree tdecl = MAYBE_STAT_TYPE (binding))
     {
-      if (!DECL_MODULE_EXPORT_P (tdecl)
-	  && MAYBE_DECL_MODULE_PURVIEW_P (tdecl) == MODULE_NONE)
-	;
-      else
+      if (MAYBE_DECL_MODULE_PURVIEW_P (tdecl) == MODULE_PURVIEW)
 	{
 	  name = DECL_NAME (tdecl);
 	  decls.safe_push (tdecl);
@@ -3540,20 +3537,26 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
 
       // FIXME using decls, hidden decls
       if (TREE_CODE (decl) == TEMPLATE_DECL)
+	// FIXME: this smells wrong.  There maybe an undo of this in module.c
 	decl = DECL_TEMPLATE_RESULT (decl);
 
-      if (!DECL_MODULE_EXPORT_P (decl)
-	  && MAYBE_DECL_MODULE_PURVIEW_P (decl) == MODULE_NONE)
+      /* Ignore not this module.  */
+      if (MAYBE_DECL_MODULE_PURVIEW_P (decl) != MODULE_PURVIEW
+	  // FIXME:Needed for old-style binding writing, not tng
+	  && TREE_CODE (decl) != NAMESPACE_DECL)
 	continue;
 
+      /* Ignore TINFO things.  */
       if ((TREE_CODE (decl) == VAR_DECL
 	   || TREE_CODE (decl) == TYPE_DECL)
 	  && DECL_TINFO_P (decl))
 	continue;
 
-      if ((TREE_CODE (decl) == FUNCTION_DECL
-	   || TREE_CODE (decl) == VAR_DECL)
-	  && !TREE_PUBLIC (decl))
+      /* Ignore internal-linkage things.  */
+      if (!TREE_PUBLIC (decl)
+	  && (TREE_CODE (decl) == FUNCTION_DECL
+	      || TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == NAMESPACE_DECL))
 	continue;
 
       name = DECL_NAME (*iter);
@@ -7519,9 +7522,8 @@ make_namespace (tree ctx, tree name, bool inline_p)
     SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
   else if (TREE_PUBLIC (ctx))
     {
-      TREE_PUBLIC (ns) = true;
-      // FIXME:Only export in module purview, fix in push_namespace
       DECL_MODULE_EXPORT_P (ns) = true;
+      TREE_PUBLIC (ns) = true;
     }
 
   if (inline_p)
@@ -7635,6 +7637,11 @@ push_namespace (tree name, bool make_inline)
 
   if (ns)
     {
+      /* Set the ownership, if we're within an export, so that we know
+	 importers should see this.  */
+      if (TREE_PUBLIC (ns) && module_exporting_level ())
+	DECL_MODULE_OWNER (ns) = MODULE_PURVIEW;
+
       if (make_inline && !DECL_NAMESPACE_INLINE_P (ns))
 	{
 	  error ("inline namespace must be specified at initial definition");

@@ -1,5 +1,18 @@
 2018-03-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (depset::table::find_exports): Renamed ...
+	(depset::table::add_writables): .. here.  Return bool, add
+	exported namespaces.
+	(depset::table::append): Add namespaces to worklist.
+	(mdule_state::write_namespace): Use TREE_PUBLIC.
+	* name-lookup.c (extract_module_decls): Only extract decls in our
+	purview.
+	(make_namespace): Remove FIXME.
+	(push_namespace): Set MODULE_OWNER if exporting.
+	gcc/testsuite/
+	* g++.dg/modules/namespace-2.C: New.
+
 	gcc/testsuite/
 	* lib/scanlang.exp (scan-lang-dump-not): new.
 

@@ -1888,7 +1888,7 @@ public:
     void append (tree decl);
 
   public:
-    void find_exports (tree ns);
+    bool add_writables (tree ns);
     void find_dependencies (module_state *, vec<tree, va_gc> *globals);
     void find_sccs (auto_vec<depset *> &clusters);
     void write_bindings (elf_out *to, unsigned *crc_ptr);
@@ -1965,9 +1965,7 @@ depset::table::append (tree decl)
   if (is_new)
     {
       /* A newly needed decl of this binding.  */
-      if (decls->section == decls->decls.length ()
-	  && !(TREE_CODE (decl) == NAMESPACE_DECL
-	       && !DECL_NAMESPACE_ALIAS (decl)))
+      if (decls->section == decls->decls.length ())
 	/* Add back to worklist, so we figure this decl's dependencies. */
 	worklist.safe_push (decls);
       decls->decls.safe_push (decl);
@@ -3320,15 +3318,20 @@ module_state::read_config (elf_in *from, unsigned *expected_crc)
   return cfg.end (from);
 }
 
-/* Recursively Find all the namespace bindings in NS that we must
-   write out (either exported or module-linkage).  */
+/* Recursively find all the namespace bindings of NS.
+   Add a depset for every binding that contains an export or
+   module-linkage entity.  Add a defining depset for every such decl
+   that we need to write a definition.  Such defining depsets depend
+   on the binding depset.  Returns true if we contain something
+   explicitly exported.  */
 
-void
-depset::table::find_exports (tree ns)
+bool
+depset::table::add_writables (tree ns)
 {
+  bool res = false;
   auto_vec<tree> decls;
 
-  dump () && dump ("Finding exports of %N", ns);
+  dump () && dump ("Finding writables in %N", ns);
   dump.indent ();
   hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
@@ -3345,33 +3348,46 @@ depset::table::find_exports (tree ns)
       if (!bind)
 	continue;
 
-      bool is_ns = (TREE_CODE (bind) == NAMESPACE_DECL
-		    && !DECL_NAMESPACE_ALIAS (bind));
+      /* Walk inner namespace.  */
+      if (TREE_CODE (bind) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (bind)
+	  && TREE_PUBLIC (bind)
+	  && add_writables (bind))
+	{
+	  /* The inner namespace is now visible in importers by name.
+	     (Otherwise how could they name the things in it we
+	     exported?)  */
+	  DECL_MODULE_OWNER (bind) = MODULE_PURVIEW;
+	  res = true;
+	}
 
       if (tree name = extract_module_decls (bind, decls))
 	{
-	  depset *b = new depset (ns);
-
-	  dump () && dump ("Exports for %P", ns, name);
-	  b->decls.reserve_exact (decls.length ());
-	  for (unsigned ix = 0; ix != decls.length (); ix++)
+	  // FIXME:extra check needed for old-style compatibility.
+	  // See comment in extract_module_decls
+	  if (TREE_CODE (decls[0]) != NAMESPACE_DECL
+	      || MAYBE_DECL_MODULE_OWNER (decls[0]) == MODULE_PURVIEW)
 	    {
-	      gcc_checking_assert (DECL_P (decls[ix]));
-	      b->decls.quick_push (decls[ix]);
+	      depset *b = new depset (ns);
+
+	      dump () && dump ("Writable bindings at %P", ns, name);
+	      b->decls.reserve_exact (decls.length ());
+	      for (unsigned ix = 0; ix != decls.length (); ix++)
+		{
+		  gcc_checking_assert (DECL_P (decls[ix]));
+		  b->decls.quick_push (decls[ix]);
+		}
+	      depset **slot = maybe_insert (ns, name);
+	      gcc_assert (!*slot);
+	      *slot = b;
+	      worklist.safe_push (b);
 	    }
 	  decls.truncate (0);
-	  depset **slot = maybe_insert (ns, name);
-	  gcc_assert (!*slot);
-	  *slot = b;
-	  if (!is_ns)
-	    worklist.safe_push (b);
 	}
 
-      if (is_ns && TREE_PUBLIC (bind))
-	/* Walk inner namespace.  */
-	find_exports (bind);
     }
   dump.outdent ();
+  return res;
 }
 
 /* Iteratively find dependencies.  During the walk we may find more
@@ -3542,7 +3558,8 @@ depset::table::maybe_namespace (depset *b)
       || DECL_NAMESPACE_ALIAS (b->decls[0]))
     return false;
   
-  gcc_assert (!b->deps.length ());
+  gcc_checking_assert (b->deps.length ()
+		       == (CP_DECL_CONTEXT (b->decls[0]) != global_namespace));
   b->cluster = 0;
   b->section = 0;
   worklist.safe_push (b);
@@ -3698,7 +3715,7 @@ module_state::write_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
   inner.reserve (10);
 
   gcc_checking_assert ((ns == global_namespace) == LOOKUP_FOUND_P (ns));
-  if (!LOOKUP_FOUND_P (ns) && DECL_MODULE_EXPORT_P (ns))
+  if (!LOOKUP_FOUND_P (ns) && TREE_PUBLIC (ns))
     {
       gcc_checking_assert (!stack.length () || LOOKUP_FOUND_P (stack.last ()));
       record_namespace (to, bind, trees, ns);
@@ -3741,7 +3758,7 @@ module_state::write_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
 	  gcc_assert (decls.length () == hwm);
 	  decls.pop ();
 	  decls.pop ();
-	  if (!DECL_MODULE_EXPORT_P (first))
+	  if (!TREE_PUBLIC (first))
 	    continue;
 	  first = NULL_TREE;
 	}
@@ -3821,7 +3838,7 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
   depset::table table (200);
 
   /* Find the set of decls we must write out.  */
-  table.find_exports (global_namespace);
+  table.add_writables (global_namespace);
 
   table.find_dependencies (this, global_vec);
 
