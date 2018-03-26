@@ -1,3 +1,15 @@
+2018-03-26  Nathan Sidwell  <nathan@acm.org>
+
+	Add depset analysis (incomplete)
+	gcc/cp/
+	* module.c (struct depset): New.
+	(module_state::tng_write_bindings, write_cluster): New.
+	(trees_out::{decls,mark_decls,mark_trees,unmark_trees): New.
+	(trees_out::{begin,end,walk_into,force_insert): New.
+	(module_state::write): Call tng_write_bindings.
+	(trees_out::{core_vals,lang_decl_vals,lang_type_vals,tree_node_raw,
+	tree_node): Deal with deps_only.
+
 2018-03-23  Nathan Sidwell  <nathan@acm.org>
 
 	Allow dump '-'
