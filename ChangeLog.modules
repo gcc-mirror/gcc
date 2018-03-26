@@ -1,5 +1,8 @@
 2018-03-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* lib/scanlang.exp (scan-lang-dump-not): new.
+
 	gcc/cp/
 	* module.c (depset::visited): Use depset::cluster.  Adjust users.
 

@@ -41,3 +41,26 @@ proc scan-lang-dump { args } {
 	scan-dump "lang" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]"
     }
 }
+
+# Utility for scanning compiler result, invoked via dg-final.
+# Call pass if pattern is not present, otherwise fail.
+#
+# Argument 0 is the regexp to match
+# Argument 1 is the name of the dumped lang pass
+# Argument 2 handles expected failures and the like
+proc scan-lang-dump-not { args } {
+
+    if { [llength $args] < 2 } {
+	error "scan-lang-dump-not: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-lang-dump-not: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	scan-dump-not "lang" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]" [lindex $args 2]
+    } else {
+	scan-dump-not "lang" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]"
+    }
+}
