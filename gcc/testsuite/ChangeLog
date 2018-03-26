@@ -1,3 +1,8 @@
+2018-03-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66709
+	* gfortran.dg/parameter_array_format.f90: New test.
+
 2018-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Neil Carlson <neil.n.carlson@gmail.com>
 

@@ -1,3 +1,10 @@
+2018-03-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66709
+	* io.c: Include constructor.h.
+	(resolve_tag_format): For a constant character array, concatenate
+	into a single character expression.
+
 2018-03-25  Seth Johnson <johnsonsr@ornl.gov>
 	Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
