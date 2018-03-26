@@ -1,5 +1,13 @@
 2018-03-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	module.c (class depset): Make a class, add accessors.  Implicitly
+	hold name as first decl.
+	(depset::table::{maybe_insert,find}): New.
+	(depset::table::{append,find_exports,find_dependencies}): Adjust.
+	(depset::table::{write_bindings,write_namespaces}): Adjust.
+	(module_state::write_cluster): Adjust.
+
 	Add depset analysis (incomplete)
 	gcc/cp/
 	* module.c (struct depset): New.

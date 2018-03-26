@@ -1688,16 +1688,16 @@ struct module_state;
 
 */
 
-struct depset
+class depset
 {
-  typedef std::pair<tree,tree> key_t;
-
-  key_t key; /* Key to find this depset  */
-  vec<tree> decls; /* Decls in set.  */
+  tree container; /* Container of this depset  */
+public:
+  vec<tree> decls; /* Decls in set.  Unless CONTAINER is not a namespace  */
   vec<depset *> deps;  /* Depsets in this TU we reference.  */
 
   unsigned cluster; /* Strongly connected cluster.  */
   unsigned section : 31; /* Section written to.  */
+private:
   /* During construction, the SECTION field is used as follows:
      During building the graph, marks the position in the DECLS vector
      that has been walked -- item can be put back on the worklist.
@@ -1705,7 +1705,7 @@ struct depset
   bool visited : 1; // FIXME: Use cluster
 
 public:
-  depset (tree ns, tree name);
+  depset (tree container);
   ~depset ();
 
 private:
@@ -1714,32 +1714,72 @@ private:
    vec<depset *, va_heap, vl_embed> *stack, unsigned *index);
 
 public:
+  tree get_container () const
+  {
+    return container;
+  }
+  tree get_decl () const
+  {
+    gcc_assert (decls.length () == 1);
+    return decls[0];
+  }
+  tree get_naming_decl () const
+  {
+    return TREE_CODE (container) == NAMESPACE_DECL ? decls[0] : container;
+  }
+  tree get_name () const
+  {
+    return DECL_NAME (get_naming_decl ());
+  }
+  unsigned get_cluster () const
+  {
+    return cluster;
+  }
+  bool is_binding () const
+  {
+    return TREE_CODE (container) == NAMESPACE_DECL;
+  }
+
+public:
   /* Traits for a hash table of pointers to bindings.  */
   struct traits
   {
     /* Each entry is a pointer to a binding. */
     typedef depset *value_type;
-    /* We lookup by namespace:identifier pair.  */
-    typedef key_t compare_type;
-    /* Namespaces and identifiers are suitably unique, we can hash by
-       their pointers -- rather than, say, look at their
-       IDENTIFIER_HASH_VALUE.  */
-    typedef pair_hash<pointer_hash<tree_node>,
-		      pointer_hash<tree_node>> pair_traits;
+    /* We lookup by container:maybe-identifier pair.  */
+    typedef std::pair<tree,tree> compare_type;
 
-    inline static hashval_t hash (const compare_type &pair)
+    /* Hash by pointer value.  */
+    inline static hashval_t hash (tree container, tree name)
     {
-      return pair_traits::hash (pair);
+      hashval_t res = pointer_hash<tree_node>::hash (container);
+
+      if (TREE_CODE (container) == NAMESPACE_DECL)
+	{
+	  hashval_t name_hash = pointer_hash<tree_node>::hash (name);
+	  res = iterative_hash_hashval_t (res, name_hash);
+	}
+      
+      return res;
+    }
+
+    /* hash and equality for compare_type.  */
+    inline static hashval_t hash (const compare_type &p)
+    {
+      return hash (p.first, p.second);
     }
     inline static bool equal (const value_type b, const compare_type &p)
     {
-      return pair_traits::equal (b->key, p);
+      return (b->container == p.first
+	      && (TREE_CODE (b->container) != NAMESPACE_DECL
+		  || DECL_NAME (b->decls[0]) == p.second));
     }
 
     /* (re)hasher for a binding itself.  */
     inline static hashval_t hash (const value_type b)
     {
-      return hash (b->key);
+      return hash (b->container, (TREE_CODE (b->container) == NAMESPACE_DECL
+				  ? DECL_NAME (b->decls[0]) : NULL_TREE));
     }
     static inline void mark_empty (value_type &p) {p = NULL;}
     static inline bool is_empty (value_type p) {return !p;}
@@ -1758,6 +1798,7 @@ public:
 public:
   class table : public hash_table<traits>
   {
+    typedef traits::compare_type key_t;
     typedef hash_table<traits> parent;
 
   public:
@@ -1774,6 +1815,13 @@ public:
     {
     }
 
+  private:
+    depset **maybe_insert (tree ns, tree name, bool = true);
+
+  public:
+    /* Find a depset by containing namespace and name.  */
+    depset *find (tree ns, tree name);
+
   public:
     void append (tree decl);
 
@@ -1787,14 +1835,33 @@ public:
   };
 };
 
-depset::depset (tree ns, tree name)
-  :key (ns, name),
+depset::depset (tree cont)
+  :container (cont),
    decls (), deps (), cluster (0), section (0), visited (false)
 {
 }
 
 depset::~depset ()
 {
+}
+
+depset **
+depset::table::maybe_insert (tree ns, tree name, bool insert)
+{
+  gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
+  traits::compare_type cmp (ns, name);
+  depset **slot = find_slot_with_hash (cmp, traits::hash (cmp),
+				       insert ? INSERT : NO_INSERT);
+
+  return slot;
+}
+
+depset *
+depset::table::find (tree ns, tree name)
+{
+  depset **slot = maybe_insert (ns, name, false);
+
+  return slot ? *slot : NULL;
 }
 
 /* Append DECL to the existing depset in the hash table.  Create an
@@ -1813,15 +1880,13 @@ depset::table::append (tree decl)
     decl = DECL_PRIMARY_TEMPLATE (decl);
 
   tree ctx = CP_DECL_CONTEXT (decl);
-  gcc_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-  depset::key_t key (ctx, DECL_NAME (decl));
-  depset **slot = find_slot_with_hash (key, traits::hash (key), INSERT);
+  depset **slot = maybe_insert (ctx, DECL_NAME (decl));
   depset *decls = *slot;
   bool is_new = true;
   
   if (!decls)
     /* Create an entry.  */
-    decls = new depset (key.first, key.second);
+    *slot = decls = new depset (ctx);
   else
     {
       for (unsigned ix = decls->decls.length (); ix--;)
@@ -3222,15 +3287,14 @@ depset::table::find_exports (tree ns)
 
       if (tree name = extract_module_decls (bind, decls))
 	{
-	  depset *b = new depset (ns, name);
+	  depset *b = new depset (ns);
 
 	  dump () && dump ("Exports for %P", ns, name);
 	  b->decls.reserve_exact (decls.length ());
 	  for (unsigned ix = 0; ix != decls.length (); ix++)
 	    b->decls.quick_push (decls[ix]);
 	  decls.truncate (0);
-	  depset **slot = find_slot_with_hash
-	    (b->key, traits::hash (b->key), INSERT);
+	  depset **slot = maybe_insert (ns, name);
 	  gcc_assert (!*slot);
 	  *slot = b;
 	  if (!is_ns)
@@ -3264,8 +3328,8 @@ depset::table::find_dependencies (module_state *state,
       current->section = to;
 
       dump () && dump (from + 1 == to ? "Bindings of %P[%u]"
-		       : "Bindings of %P[%u-%u)", current->key.first,
-		       current->key.second, from, to);
+		       : "Bindings of %P[%u-%u)", current->get_container (),
+		       current->get_name (), from, to);
       dump.indent ();
 
       /* Mark the cursor's decls and deps.  */
@@ -3389,14 +3453,11 @@ depset::table::write_bindings (elf_out *to, unsigned *crc_p)
       if (b->cluster)
 	{
 	  unsigned ns_num = 0;
-	  tree ns = b->key.first;
+	  tree ns = b->get_container ();
 	  if (ns != global_namespace)
-	    {
-	      key_t ns_key (CP_DECL_CONTEXT (ns), DECL_NAME (ns));
-	      ns_num = find_with_hash (ns_key, traits::hash (ns_key))->section;
-	    }
-	  dump () && dump ("Bindings %P->%u", ns, b->key.second, b->section);
-	  sec.u (to->name (b->key.second));
+	    ns_num = find (CP_DECL_CONTEXT (ns), DECL_NAME (ns))->section;
+	  dump () && dump ("Bindings %P->%u", ns, b->get_name (), b->section);
+	  sec.u (to->name (b->get_name ()));
 	  sec.u (ns_num);
 	  sec.u (b->section);
 	}
@@ -3426,8 +3487,8 @@ ns_cmp (const void *a_, const void *b_)
 {
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
-  tree ns_a = a->decls[0];
-  tree ns_b = b->decls[0];
+  tree ns_a = a->get_decl ();
+  tree ns_b = b->get_decl ();
 
   /* Deeper namespaces come after shallower ones.  */
   if (int delta = SCOPE_DEPTH (ns_a) - SCOPE_DEPTH (ns_b))
@@ -3457,19 +3518,16 @@ depset::table::write_namespaces (elf_out *to, unsigned *crc_p)
   for (unsigned ix = 0; ix != worklist.length (); ix++)
     {
       depset *b = worklist[ix];
-      tree ns = b->decls[0];
+      tree ns = b->get_decl ();
 
       gcc_assert (b->decls.length () == 1
 		  && TREE_CODE (ns) == NAMESPACE_DECL);
       
       b->section = ix + 1;
       unsigned ctx_num = 0;
-      tree ctx = b->key.first;
+      tree ctx = b->get_container ();
       if (ctx != global_namespace)
-	{
-	  key_t ctx_key (CP_DECL_CONTEXT (ctx), DECL_NAME (ctx));
-	  ctx_num = find_with_hash (ctx_key, traits::hash (ctx_key))->section;
-	}
+	ctx_num = find (CP_DECL_CONTEXT (ctx), DECL_NAME (ctx))->section;
       dump () && dump ("Writing namespace %N %u::%u", ns, ctx_num, b->section);
 
       sec.u (to->name (DECL_NAME (ns)));
@@ -3488,7 +3546,7 @@ unsigned
 module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 			     unsigned from, unsigned *crc_ptr)
 {
-  unsigned cluster = sccs[from]->cluster;
+  unsigned cluster = sccs[from]->get_cluster ();
 
   dump () && dump ("Writing SCC %u", cluster & (~0U >> 1));
   dump.indent ();
@@ -3500,7 +3558,7 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
   for (end = from; end != sccs.length (); end++)
     {
       depset *b = sccs[end];
-      if (b->cluster != cluster)
+      if (b->get_cluster () != cluster)
 	break;
       for (unsigned ix = b->decls.length (); ix--;)
 	sec.walk_into (b->decls[ix]);
@@ -3510,19 +3568,21 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
   for (unsigned ix = from; ix != end; ix++)
     {
       depset *b = sccs[from];
-      dump () && dump ("Writing decls of %P", b->key.first, b->key.second);
+      dump () && dump ("Writing decls of %P",
+		       b->get_container (), b->get_name ());
       for (unsigned ix = b->decls.length (); ix--;)
 	sec.tree_node (b->decls[ix]);
     }
 
   /* We don't find this by name, so just pick the unqualified name of
      the first member.  */
-  unsigned snum = sec.end (to, to->name (sccs[from]->key.second), crc_ptr);
+  unsigned snum = sec.end (to, to->name (DECL_NAME (sccs[from]->decls[0])),
+			   crc_ptr);
   for (unsigned ix = from; ix != end; ix++)
     sccs[ix]->section = snum;
   dump.outdent ();
   dump () && dump ("Wrote SCC %u to section %u (%N)", cluster & (~0U >> 1),
-		   snum, sccs[from]->key.second);
+		   snum, DECL_NAME (sccs[from]->decls[0]));
 
   return end;
 }
