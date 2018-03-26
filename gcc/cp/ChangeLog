@@ -1,5 +1,9 @@
 2018-03-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85062 - ICE with alignas in wrong place.
+	* decl.c (grokdeclarator): Ignore attributes on type-specifiers
+	here.
+
 	PR c++/85049 - ICE with __integer_pack.
 	* pt.c (unify_pack_expansion): Don't try to deduce generated packs.
 	* cp-tree.h (TEMPLATE_PARM_P): New.
