@@ -1,6 +1,17 @@
 2018-03-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (elf_out::strtab::named_decl): Cope with TYPE constext.
+	(elf_out::strtab::write_named_decl): Likewise.
+	(module_state::write_cluster): Adjust dump.
+	(fixup_unscoped_enum_owner): New.
+	* decl.c (finish_enum_value_list): Call
+	fixup_unscoped_enum_owner, as necessary.
+	* cp-tree.h (fixup_unscoped_enum_owner): Declare.
+	gcc/testsuite/
+	* g++.dg/modules/scc-1.C: New.
+
+	gcc/cp/
 	* module.c (elf_out::strtab): Add name-by-decl.
 	(module_state::write_cluster): Find naming decl, and use it.
 

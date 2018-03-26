@@ -6528,6 +6528,7 @@ extern bool module_interface_p ();
 extern int module_exporting_level ();
 extern tree get_module_owner (tree);
 extern void set_module_owner (tree);
+extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
 extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);

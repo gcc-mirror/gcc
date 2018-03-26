@@ -14452,13 +14452,19 @@ finish_enum_value_list (tree enumtype)
   for (t = TYPE_MAIN_VARIANT (enumtype); t; t = TYPE_NEXT_VARIANT (t))
     TYPE_VALUES (t) = TYPE_VALUES (enumtype);
 
-  if (at_class_scope_p ()
-      && COMPLETE_TYPE_P (current_class_type)
-      && UNSCOPED_ENUM_P (enumtype))
+  if (UNSCOPED_ENUM_P (enumtype))
     {
-      insert_late_enum_def_bindings (current_class_type, enumtype);
-      /* TYPE_FIELDS needs fixup.  */
-      fixup_type_variants (current_class_type);
+      if (at_class_scope_p ()
+	  && COMPLETE_TYPE_P (current_class_type))
+	{
+	  insert_late_enum_def_bindings (current_class_type, enumtype);
+	  /* TYPE_FIELDS needs fixup.  */
+	  fixup_type_variants (current_class_type);
+	}
+
+      if (at_namespace_scope_p ())
+	/* Each member of the enum needs to be marked as an export.  */
+	fixup_unscoped_enum_owner (enumtype);
     }
 
   /* Finish debugging output for this type.  */

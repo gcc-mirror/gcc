@@ -822,6 +822,8 @@ elf_out::strtab::named_decl (tree decl)
     {
       size += IDENTIFIER_LENGTH (DECL_NAME (decl))  + 2;
       decl = CP_DECL_CONTEXT (decl);
+      if (TYPE_P (decl))
+	decl = TYPE_NAME (decl);
     }
   size++;
 
@@ -833,7 +835,10 @@ elf_out::strtab::write_named_decl (elf_out *elf, tree decl)
 {
   if (decl == global_namespace)
     return true;
-  
+
+  if (TYPE_P (decl))
+    decl = TYPE_NAME (decl);
+
   if (!write_named_decl (elf, CP_DECL_CONTEXT (decl)))
     return false;
 
@@ -1929,6 +1934,7 @@ depset::table::find (tree ns, tree name)
 void
 depset::table::append (tree decl)
 {
+  gcc_checking_assert (DECL_P (decl));
   if (DECL_LANG_SPECIFIC (decl)
       && (TREE_CODE (decl) == VAR_DECL
 	  || TREE_CODE (decl) == FUNCTION_DECL
@@ -3350,7 +3356,10 @@ depset::table::find_exports (tree ns)
 	  dump () && dump ("Exports for %P", ns, name);
 	  b->decls.reserve_exact (decls.length ());
 	  for (unsigned ix = 0; ix != decls.length (); ix++)
-	    b->decls.quick_push (decls[ix]);
+	    {
+	      gcc_checking_assert (DECL_P (decls[ix]));
+	      b->decls.quick_push (decls[ix]);
+	    }
 	  decls.truncate (0);
 	  depset **slot = maybe_insert (ns, name);
 	  gcc_assert (!*slot);
@@ -3514,7 +3523,8 @@ depset::table::write_bindings (elf_out *to, unsigned *crc_p)
 	  tree ns = b->get_container ();
 	  if (ns != global_namespace)
 	    ns_num = find (CP_DECL_CONTEXT (ns), DECL_NAME (ns))->section;
-	  dump () && dump ("Bindings %P->%u", ns, b->get_name (), b->section);
+	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
+			   b->section);
 	  sec.u (to->name (b->get_name ()));
 	  sec.u (ns_num);
 	  sec.u (b->section);
@@ -3606,8 +3616,6 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 {
   unsigned cluster = sccs[from]->get_cluster ();
 
-  dump () && dump ("Writing SCC %u", cluster & (~0U >> 1));
-  dump.indent ();
   trees_out sec (this, global_vec);
   sec.begin ();
   unsigned end;
@@ -3628,6 +3636,10 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 	naming_decl = b->decls[0];
     }
 
+  dump () && dump ("Writing SCC:%u bindings:%u",
+		   cluster & (~0U >> 1), end - from);
+  dump.indent ();
+
   /* Now write every member.  */
   for (unsigned ix = from; ix != end; ix++)
     {
@@ -3643,7 +3655,7 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
   for (unsigned ix = from; ix != end; ix++)
     sccs[ix]->section = snum;
   dump.outdent ();
-  dump () && dump ("Wrote SCC %u to section %u (%N)", cluster & (~0U >> 1),
+  dump () && dump ("Wrote SCC:%u section:%u (%N)", cluster & (~0U >> 1),
 		   snum, naming_decl);
 
   return end;
@@ -7375,6 +7387,29 @@ set_implicit_module_owner (tree decl, tree from)
       DECL_MODULE_EXPORT_P (decl) = DECL_MODULE_EXPORT_P (from);
       retrofit_lang_decl (decl);
       DECL_MODULE_OWNER (decl) = owner;
+    }
+}
+
+/* ENUMTYPE is an unscoped enum in namespace scope.  Fixup its
+   CONST_DECLs to match the enum's TYPE_DECL.  */
+
+void
+fixup_unscoped_enum_owner (tree enumtype)
+{
+  tree tdef = TYPE_NAME (enumtype);
+  if (unsigned owner = MAYBE_DECL_MODULE_OWNER (tdef))
+    {
+      bool exported = DECL_MODULE_EXPORT_P (tdef);
+
+      for (tree values = TYPE_VALUES (enumtype); values;
+	   values = TREE_CHAIN (values))
+	{
+	  tree decl = TREE_VALUE (values);
+
+	  DECL_MODULE_EXPORT_P (decl) = exported;
+	  retrofit_lang_decl (decl);
+	  DECL_MODULE_OWNER (decl) = owner;
+	}
     }
 }
 
