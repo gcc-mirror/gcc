@@ -1,6 +1,12 @@
 2018-03-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (depset::table): Rename to ...
+	(depset::hash): ... here.
+	(trees_out::deps_only): Rename to ...
+	(trees_out::dep_walk_p): ... here.
+
+	gcc/cp/
 	* module.c (depset::table::find_exports): Renamed ...
 	(depset::table::add_writables): .. here.  Return bool, add
 	exported namespaces.
