@@ -1,6 +1,9 @@
 2018-03-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (depset::visited): Use depset::cluster.  Adjust users.
+
+	gcc/cp/
 	* module.c (elf_out::strtab::named_decl): Cope with TYPE constext.
 	(elf_out::strtab::write_named_decl): Likewise.
 	(module_state::write_cluster): Adjust dump.

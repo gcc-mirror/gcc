@@ -1759,13 +1759,12 @@ public:
   vec<depset *> deps;  /* Depsets in this TU we reference.  */
 
   unsigned cluster; /* Strongly connected cluster.  */
-  unsigned section : 31; /* Section written to.  */
-private:
-  /* During construction, the SECTION field is used as follows:
-     During building the graph, marks the position in the DECLS vector
-     that has been walked -- item can be put back on the worklist.
-     During SCC construction, records lowlink.  */
-  bool visited : 1; // FIXME: Use cluster
+  /* During dependency determination, the cluster field is a visited flag.  */
+  unsigned section; /* Section written to.  */
+  /* During dependency determination the section field marks the
+     position on the DECLS vector that has been walked -- item can be
+     put back on the worklist.
+     During SCC construction, it is lowlink.  */
 
 public:
   depset (tree container);
@@ -1900,7 +1899,7 @@ public:
 
 depset::depset (tree cont)
   :container (cont),
-   decls (), deps (), cluster (0), section (0), visited (false)
+   decls (), deps (), cluster (0), section (0)
 {
 }
 
@@ -1974,10 +1973,10 @@ depset::table::append (tree decl)
       decls->decls.safe_push (decl);
     }
 
-  if (!decls->visited)
+  if (!decls->cluster)
     {
       /* A newly discovered dependency. */
-      decls->visited = true;
+      decls->cluster = true;
       current->deps.safe_push (decls);
     }
 }
@@ -3400,14 +3399,14 @@ depset::table::find_dependencies (module_state *state,
       dump.indent ();
 
       /* Mark the cursor's decls and deps.  */
-      current->visited = true;
+      current->cluster = true;
       for (unsigned ix = to; ix--;)
 	walker.walk_into (current->decls[ix], ix >= from);
       for (unsigned ix = current->deps.length (); ix--;)
 	{
 	  depset *dep = current->deps[ix];
-	  gcc_assert (!dep->visited);
-	  dep->visited = true;
+	  gcc_assert (!dep->cluster);
+	  dep->cluster = true;
 	  for (unsigned jx = dep->decls.length (); jx--;)
 	    walker.walk_into (dep->decls[jx], false);
 	}
@@ -3421,17 +3420,17 @@ depset::table::find_dependencies (module_state *state,
 	}
 
       /* Unmark.  */
-      current->visited = false;
+      current->cluster = false;
       for (unsigned ix = current->deps.length (); ix--;)
-	current->deps[ix]->visited = false;
+	current->deps[ix]->cluster = false;
       dump.outdent ();
       walker.end ();
     }
 }
 
-/* Core of TARJAN's algorithm (see find_sccs).
-   Use depset::section as lowlink.  Completed nodes have
-   depset::cluster set, with the top bit set.   */
+/* Core of TARJAN's algorithm (see find_sccs).  Use depset::section as
+   lowlink.  Completed nodes have depset::cluster set, with the top
+   bit set.  */
 
 vec<depset *, va_heap, vl_embed> *
 depset::tarjan_connect (auto_vec<depset *> &clusters,
