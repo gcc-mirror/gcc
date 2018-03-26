@@ -1967,9 +1967,7 @@ public:
   virtual bool gate (function *fun)
     {
 #ifdef ACCEL_COMPILER
-      tree attrs = DECL_ATTRIBUTES (fun->decl);
-      return lookup_attribute ("omp declare target", attrs)
-	     || lookup_attribute ("omp target entrypoint", attrs);
+      return offloading_function_p (fun->decl);
 #else
       (void) fun;
       return false;
