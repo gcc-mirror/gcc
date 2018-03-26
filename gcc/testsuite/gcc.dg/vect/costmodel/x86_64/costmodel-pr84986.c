@@ -1,10 +1,10 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_long } */
+/* { dg-require-effective-target vect_long_long } */
 
 int N;
-long fn1(void) {
+long long fn1(void) {
   short i;
-  long a;
+  long long a;
   i = a = 0;
   while (i < N)
     a -= i++;
