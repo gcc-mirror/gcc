@@ -1,3 +1,13 @@
+2018-03-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/85063
+	* omp-general.c (offloading_function_p): New function.  Factor out
+	of ...
+	* omp-offload.c (pass_omp_target_link::gate): ... here.
+	* omp-general.h (offloading_function_p): Declare.
+	* tree-switch-conversion.c (build_one_array): Mark CSWTCH.x variable
+	with attribute omp declare target for offloading functions.
+
 2018-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84005
