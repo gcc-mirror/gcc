@@ -31,6 +31,8 @@ gmp='gmp-6.1.0.tar.bz2'
 mpfr='mpfr-3.1.4.tar.bz2'
 mpc='mpc-1.0.3.tar.gz'
 isl='isl-0.18.tar.bz2'
+mpich='mpich-3.2.tar.gz'
+opencoarrays='opencoarrays-1.9.0.tar.gz'
 
 base_url='ftp://gcc.gnu.org/pub/gcc/infrastructure/'
 
@@ -38,9 +40,12 @@ echo_archives() {
     echo "${gmp}"
     echo "${mpfr}"
     echo "${mpc}"
+    if [ ${fortran} -gt 0 ]; then echo "${mpich}"; fi
+    if [ ${fortran} -gt 0 ]; then echo "${opencoarrays}"; fi
     if [ ${graphite} -gt 0 ]; then echo "${isl}"; fi
 }
 
+fortran=1
 graphite=1
 verify=1
 force=0
@@ -83,6 +88,7 @@ The following options are available:
  --md5            use MD5 checksum to verify package integrity
  --help           show this text and exit
  --version        show version information and exit
+ --no-fortran     do not download Fortran prerequisites
 "
 
 versiontext="${program} ${version}
@@ -94,6 +100,14 @@ die() {
     echo "error: $@" >&2
     exit 1
 }
+
+if type wget > /dev/null ; then
+  fetch='wget'
+elif type curl > /dev/null ; then
+  fetch='curl -LO -u anonymous:'
+else
+  die "Neither wget nor curl found, cannot download tarballs."
+fi
 
 for arg in "$@"
 do
@@ -145,6 +159,9 @@ do
                 ;;
             --no-force)
                 force=0
+                ;;
+            --no-fortran)
+                fortran=0
                 ;;
             --isl|--graphite)
                 graphite=1
