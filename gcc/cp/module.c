@@ -559,11 +559,16 @@ public:
 
   public:
     /* IDENTIFIER to offset.  */
-    unsigned name (const_tree ident);
+    unsigned name (tree ident);
     /* String literal to offset.  */
     unsigned name (const char *literal);
+    /* Qualified name to offset.  */
+    unsigned named_decl (tree decl);
     /* Write out the string table.  */
     unsigned write (elf_out *out);
+
+  private:
+    static bool write_named_decl (elf_out *out, tree decl);
   };
 
 private:
@@ -583,7 +588,7 @@ protected:
 
 public:
   /* IDENTIFIER to strtab offset.  */
-  unsigned name (const_tree ident)
+  unsigned name (tree ident)
   {
     return strings.name (ident);
   }
@@ -591,6 +596,11 @@ public:
   unsigned name (const char *n)
   {
     return strings.name (n);
+  }
+  /* Qualified name of DECL to strtab offset.  */
+  unsigned named_decl (tree decl)
+  {
+    return strings.named_decl (decl);
   }
 
 public:
@@ -767,17 +777,18 @@ elf_in::begin ()
    already there.  */
 
 unsigned
-elf_out::strtab::name (const_tree ident)
+elf_out::strtab::name (tree ident)
 {
+  gcc_checking_assert (identifier_p (ident));
   unsigned result;
   bool existed;
-  int *slot = &ident_map.get_or_insert (const_cast <tree> (ident), &existed);
+  int *slot = &ident_map.get_or_insert (ident, &existed);
   if (existed)
     result = *slot;
   else
     {
       *slot = (int)size;
-      vec_safe_push (idents, const_cast <tree> (ident));
+      vec_safe_push (idents, ident);
       result = size;
       size += IDENTIFIER_LENGTH (ident) + 1;
     }
@@ -797,6 +808,45 @@ elf_out::strtab::name (const char *literal)
   return result;
 }
 
+/* Map a DECL's qualified name to strtab offset.  Does not detect
+   duplicates.  */
+
+unsigned
+elf_out::strtab::named_decl (tree decl)
+{
+  gcc_checking_assert (DECL_P (decl) && decl != global_namespace);
+  unsigned result = size;
+  vec_safe_push (idents, decl);
+
+  while (decl != global_namespace)
+    {
+      size += IDENTIFIER_LENGTH (DECL_NAME (decl))  + 2;
+      decl = CP_DECL_CONTEXT (decl);
+    }
+  size++;
+
+  return result;
+}
+
+bool
+elf_out::strtab::write_named_decl (elf_out *elf, tree decl)
+{
+  if (decl == global_namespace)
+    return true;
+  
+  if (!write_named_decl (elf, CP_DECL_CONTEXT (decl)))
+    return false;
+
+  if (!elf->write ("::", 2))
+    return false;
+
+  tree name = DECL_NAME (decl);
+  if (!elf->write (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name)))
+    return false;
+
+  return true;
+}
+
 /* Write the string table to ELF.  section name is .strtab.  */
 
 unsigned
@@ -810,18 +860,26 @@ elf_out::strtab::write (elf_out *elf)
   unsigned lit_ix = 0;
   for (unsigned ix = 0; ix != idents->length (); ix++)
     {
+      tree ident = (*idents)[ix];
       unsigned len;
       const char *ptr;
-
-      if (const_tree ident = (*idents)[ix])
+      if (!ident)
+	{
+	  ptr = (*literals)[lit_ix++];
+	  len = strlen (ptr);
+	}
+      else if (identifier_p (ident))
 	{
 	  len = IDENTIFIER_LENGTH (ident);
 	  ptr = IDENTIFIER_POINTER (ident);
 	}
       else
 	{
-	  ptr = (*literals)[lit_ix++];
-	  len = strlen (ptr);
+	  if (!write_named_decl (elf, ident))
+	    return 0;
+	  /* Write the trailing NUL.  */
+	  ptr = "";
+	  len = 0;
 	}
       if (!elf->write (ptr, len + 1))
 	return 0;
@@ -3553,6 +3611,7 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
   trees_out sec (this, global_vec);
   sec.begin ();
   unsigned end;
+  tree naming_decl = NULL_TREE;
 
   /* Find the size of the cluster and mark every member as walkable.  */
   for (end = from; end != sccs.length (); end++)
@@ -3562,6 +3621,11 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 	break;
       for (unsigned ix = b->decls.length (); ix--;)
 	sec.walk_into (b->decls[ix]);
+
+      /* Don't use an enum constant as the naming decl.  That'll just
+	 be confusing.  */
+      if (!naming_decl || TREE_CODE (naming_decl) == CONST_DECL)
+	naming_decl = b->decls[0];
     }
 
   /* Now write every member.  */
@@ -3574,15 +3638,13 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 	sec.tree_node (b->decls[ix]);
     }
 
-  /* We don't find this by name, so just pick the unqualified name of
-     the first member.  */
-  unsigned snum = sec.end (to, to->name (DECL_NAME (sccs[from]->decls[0])),
-			   crc_ptr);
+  /* We don't find this by name, use the naming_set's  */
+  unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
   for (unsigned ix = from; ix != end; ix++)
     sccs[ix]->section = snum;
   dump.outdent ();
   dump () && dump ("Wrote SCC %u to section %u (%N)", cluster & (~0U >> 1),
-		   snum, DECL_NAME (sccs[from]->decls[0]));
+		   snum, naming_decl);
 
   return end;
 }
