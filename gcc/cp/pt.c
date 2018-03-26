@@ -20645,6 +20645,11 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
       tree parm_pack = TREE_VALUE (pack);
       int idx, level;
 
+      /* Only template parameter packs can be deduced, not e.g. function
+	 parameter packs or __bases or __integer_pack.  */
+      if (!TEMPLATE_PARM_P (parm_pack))
+	continue;
+
       /* Determine the index and level of this parameter pack.  */
       template_parm_level_and_index (parm_pack, &level, &idx);
       if (level < levels)

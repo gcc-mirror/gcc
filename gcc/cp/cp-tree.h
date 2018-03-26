@@ -4554,6 +4554,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
        || TREE_CODE (NODE) == TYPE_DECL		\
        || TREE_CODE (NODE) == TEMPLATE_DECL))
 
+/* Nonzero for a raw template parameter node.  */
+#define TEMPLATE_PARM_P(NODE)					\
+  (TREE_CODE (NODE) == TEMPLATE_TYPE_PARM			\
+   || TREE_CODE (NODE) == TEMPLATE_TEMPLATE_PARM		\
+   || TREE_CODE (NODE) == TEMPLATE_PARM_INDEX)
+
 /* Mark NODE as a template parameter.  */
 #define SET_DECL_TEMPLATE_PARM_P(NODE) \
   (DECL_LANG_FLAG_0 (NODE) = 1)
