@@ -1,5 +1,10 @@
 2018-03-27  Chenghua Xu  <paul.hua.gm@gmail.com>
 
+	* gcc.target/mips/umips-stroe16-2.c: Change "length = 2"
+	to "l=2" in dg-final.
+
+2018-03-27  Chenghua Xu  <paul.hua.gm@gmail.com>
+
 	* gcc.target/mips/fix-r4000-1.c: Delete "[^\n]+" in dg-final.
 	* gcc.target/mips/fix-r4000-2.c: Likewise.
 	* gcc.target/mips/fix-r4000-3.c: Likewise.
