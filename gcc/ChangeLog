@@ -1,5 +1,11 @@
 2018-03-27  Richard Biener  <rguenther@suse.de>
 
+	PR middle-ed/84067
+	* match.pd ((A * C) +- (B * C) -> (A+-B) * C): Guard with
+	explicit single_use checks.
+
+2018-03-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/85082
 	* tree-ssa-sccvn.c (vn_reference_lookup_or_insert_for_pieces):
 	Valueize the VUSE.
