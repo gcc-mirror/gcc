@@ -1,3 +1,11 @@
+2018-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/84914
+	* config/rs6000/rs6000.c (create_complex_muldiv): New helper
+	function to create the function decl for complex long double
+	multiply and divide for -mabi=ieeelongdouble.
+	(init_float128_ieee): Call it.
+
 2018-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85044
