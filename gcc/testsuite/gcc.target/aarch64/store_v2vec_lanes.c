@@ -26,6 +26,6 @@ construct_lane_2 (long long *y, v2di *z)
    values from consecutive memory into a 2-element vector by using
    a Q-reg LDR.  */
 
-/* { dg-final { scan-assembler-times "stp\td\[0-9\]+, d\[0-9\]+" 1 } } */
-/* { dg-final { scan-assembler-times "stp\tx\[0-9\]+, x\[0-9\]+" 1 } } */
-/* { dg-final { scan-assembler-not "ins\t" } } */
+/* { dg-final { scan-assembler-times "stp\td\[0-9\]+, d\[0-9\]+" 1 { xfail ilp32 } } } */
+/* { dg-final { scan-assembler-times "stp\tx\[0-9\]+, x\[0-9\]+" 1 { xfail ilp32 } } } */
+/* { dg-final { scan-assembler-not "ins\t" { xfail ilp32 } } } */
