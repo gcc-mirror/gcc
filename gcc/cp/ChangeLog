@@ -1,3 +1,11 @@
+2018-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/84632
+	* init.c (build_aggr_init): When initializing from array,
+	reject anything but CONSTRUCTORs and TARGET_EXPRs.
+	(build_vec_init): Handle separately ARRAY_TYPEs.
+
 2018-03-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85062 - ICE with alignas in wrong place.
