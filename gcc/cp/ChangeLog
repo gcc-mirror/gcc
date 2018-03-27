@@ -1,3 +1,9 @@
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85068
+	* class.c (update_vtable_entry_for_fn): Don't ICE if base_binfo
+	is NULL.  Assert if thunk_binfo is NULL then errorcount is non-zero.
+
 2018-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 

@@ -1,3 +1,8 @@
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85068
+	* g++.dg/inherit/covariant22.C: New test.
+
 2018-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/84004
