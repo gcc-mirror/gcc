@@ -1,3 +1,9 @@
+2018-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85067
+	* g++.dg/cpp0x/defaulted51.C: New.
+	* g++.dg/cpp0x/constexpr-68754.C: Adjust.
+
 2018-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85077

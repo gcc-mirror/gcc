@@ -1,3 +1,9 @@
+2018-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85067
+	* method.c (defaulted_late_check): Partially revert r253321 changes,
+	do not early return upon error.
+
 2018-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85077
