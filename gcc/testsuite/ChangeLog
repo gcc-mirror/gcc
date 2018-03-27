@@ -1,3 +1,9 @@
+2018-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/83462
+	* c-c++-common/Warray-bounds-4.c: Disable assertion for targets
+	other than x86.
+
 2018-03-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/83009
