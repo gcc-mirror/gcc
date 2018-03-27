@@ -1,3 +1,20 @@
+2018-03-27  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/fix-r4000-1.c: Delete "[^\n]+" in dg-final.
+	* gcc.target/mips/fix-r4000-2.c: Likewise.
+	* gcc.target/mips/fix-r4000-3.c: Likewise.
+	* gcc.target/mips/fix-r4000-4.c: Likewise.
+	* gcc.target/mips/fix-r4000-5.c: Likewise.
+	* gcc.target/mips/fix-r4000-6.c: Likewise.
+	* gcc.target/mips/fix-r4000-7.c: Likewise.
+	* gcc.target/mips/fix-r4000-8.c: Likewise.
+	* gcc.target/mips/fix-r4000-9.c: Likewise.
+	* gcc.target/mips/fix-r4000-10.c: Likewise.
+	* gcc.target/mips/fix-r4000-7.c: Change dg-final
+	"mulditi3_r4000" instead of "mulditi3".
+	* gcc.target/mips/fix-r4000-8.c: Change dg-final
+	"umulditi3_r4000" instead of "umulditi3".
+
 2018-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85068
