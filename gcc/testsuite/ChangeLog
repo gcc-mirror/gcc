@@ -1,4 +1,9 @@
 2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85084
+	* gfortran.dg/matmul_rank_1.f90: New test.
+
+2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Harald Anlauf  <anlauf@gmx.de>
 
 	* gfortran.dg/structure_constructor_15.f90: New test.
