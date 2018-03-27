@@ -1787,7 +1787,7 @@ public:
   }
   tree get_naming_decl () const
   {
-    return TREE_CODE (container) == NAMESPACE_DECL ? decls[0] : container;
+    return decls[0];
   }
   tree get_name () const
   {
@@ -1815,14 +1815,8 @@ public:
     inline static hashval_t hash (tree container, tree name)
     {
       hashval_t res = pointer_hash<tree_node>::hash (container);
-
-      if (TREE_CODE (container) == NAMESPACE_DECL)
-	{
-	  hashval_t name_hash = pointer_hash<tree_node>::hash (name);
-	  res = iterative_hash_hashval_t (res, name_hash);
-	}
-      
-      return res;
+      hashval_t name_hash = pointer_hash<tree_node>::hash (name);
+      return iterative_hash_hashval_t (res, name_hash);
     }
 
     /* hash and equality for compare_type.  */
@@ -1833,15 +1827,13 @@ public:
     inline static bool equal (const value_type b, const compare_type &p)
     {
       return (b->container == p.first
-	      && (TREE_CODE (b->container) != NAMESPACE_DECL
-		  || DECL_NAME (b->decls[0]) == p.second));
+	      && DECL_NAME (b->decls[0]) == p.second);
     }
 
     /* (re)hasher for a binding itself.  */
     inline static hashval_t hash (const value_type b)
     {
-      return hash (b->container, (TREE_CODE (b->container) == NAMESPACE_DECL
-				  ? DECL_NAME (b->decls[0]) : NULL_TREE));
+      return hash (b->container, DECL_NAME (b->decls[0]));
     }
     static inline void mark_empty (value_type &p) {p = NULL;}
     static inline bool is_empty (value_type p) {return !p;}

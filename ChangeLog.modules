@@ -1,5 +1,8 @@
 2018-03-27  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (depset::traits): Hash & compare using name too.
+
 	gcc/cp
 	* module.c (refs_tng): Temporary modal hack.
 	(tree_tag): Rename tt_import to tt_named.
