@@ -1,4 +1,10 @@
 2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85084
+	* frontend-passes.c (gfc_run_passes): Do not run front-end
+	optimizations if a previous error occurred.
+
+2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/85083
