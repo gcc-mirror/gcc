@@ -1,3 +1,13 @@
+2018-03-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2018-03-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82518
+	* lib/target-supports.exp (check_effective_target_vect_load_lanes):
+	Disable for armeb targets.
+	* gcc.target/arm/pr82518.c: New test.
+
 2018-03-22  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
