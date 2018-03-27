@@ -221,6 +221,10 @@ HOST_EXPORTS = \
 	HOST_LIBS="$(STAGE1_LIBS)"; export HOST_LIBS; \
 	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
+#
+	MPILIBS="$(HOST_MPILIBS)"; export MPILIBS; \
+	MPIINC="$(HOST_MPIINC)"; export MPIINC; \
+#
 	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
 	LIBELFLIBS="$(HOST_LIBELFLIBS)"; export LIBELFLIBS; \
@@ -311,6 +315,10 @@ NORMAL_TARGET_EXPORTS = \
 # Where to find GMP
 HOST_GMPLIBS = @gmplibs@
 HOST_GMPINC = @gmpinc@
+
+# Where to find MPI
+HOST_MPILIBS = @mpilibs@
+HOST_MPIINC = @mpiinc@
 
 # Where to find isl
 HOST_ISLLIBS = @isllibs@

@@ -644,6 +644,8 @@ get_gcc_base_ver
 extra_host_zlib_configure_flags
 extra_host_libiberty_configure_flags
 stage1_languages
+mpiinc
+mpilibs
 host_shared
 extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
@@ -782,6 +784,9 @@ enable_lto
 enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
 enable_host_shared
+with_mpi
+with_mpi_include
+with_mpi_lib
 enable_stage1_languages
 enable_objc_gc
 with_target_bdw_gc
@@ -1553,6 +1558,11 @@ Optional Packages:
                           --with-isl-lib=PATH/lib
   --with-isl-include=PATH Specify directory for installed isl include files
   --with-isl-lib=PATH     Specify the directory for the installed isl library
+  --with-mpi=PATH         specify prefix directory for installed MPI package.
+                          Equivalent to --with-mpi-include=PATH/include plus
+                          --with-mpi-lib=PATH/lib
+  --with-mpi-include=PATH specify directory for installed MPI include files
+  --with-mpi-lib=PATH     specify directory for the installed MPI library
   --with-target-bdw-gc=PATHLIST
                           specify prefix directory for installed bdw-gc
                           package. Equivalent to
@@ -2733,7 +2743,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv mpich"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -2761,6 +2771,7 @@ target_libraries="target-libgcc \
 		target-libmpx \
 		target-libssp \
 		target-libquadmath \
+		target-mpich \
 		target-libgfortran \
 		target-libffi \
 		target-libobjc \
@@ -6107,6 +6118,70 @@ if test -d ${srcdir}/gcc; then
       echo configure.ac: warning: 'f95' as language name is deprecated, use 'fortran' instead 1>&2
       enable_languages=`echo "${enable_languages}" | sed -e 's/f95/fortran/g'`
       ;;
+  esac
+
+  # Check if fortran is enabled. Support for coarrays requires a MPI.
+  case ,${enable_languages}, in
+    *,fortran,*)
+    # Check for MPI. Default is MPICH.
+    mpidist="mpich"
+    mpilibs="-lmpich"
+#"-l$mpidist"
+#"--libs-only-l mpich"
+    mpiinc=
+#"--libs-only-I mpich"
+    have_mpi=no
+    # Specify a location for MPI package
+
+# Check whether --with-mpi was given.
+if test "${with_mpi+set}" = set; then :
+  withval=$with_mpi;
+fi
+
+
+# Check whether --with-mpi-include was given.
+if test "${with_mpi_include+set}" = set; then :
+  withval=$with_mpi_include;
+fi
+
+
+# Check whether --with-mpi-lib was given.
+if test "${with_mpi_lib+set}" = set; then :
+  withval=$with_mpi_lib;
+fi
+
+    #AC_SEARCH_LIBS(MPI_Init, mpi, [], AC_MSG_ERROR([Unable to find mpi library - make sure LD path to the library is set]), [])
+    # Test if MPI exists.
+    if test "x$with_mpi" != x; then
+      mpilibs="-L$with_mpi/lib $mpilibs"
+      mpiinc="-I$with_mpi/include $mpiinc"
+    fi
+    if test "x$with_mpi_include" != x; then
+      mpiinc="-I$with_mpi_include $with_mpiinc"
+    fi
+    if test "x$with_mpi_lib" != x; then
+      mpilibs="-L$with_mpi_lib $mpilibs"
+    fi
+    if test "x$with_mpi$with_mpi_include$with_mpi_lib" = x && test -d ${srcdir}/$mpidist; then
+      mpilibs='-L$$r/$(HOST_SUBDIR)/'"$mpidist"'/src/'"$lt_cv_objdir $mpilibs"
+      mpiinc='-I$$s/'"$mpidist"'/src '"$mpiinc"
+      have_mpi=yes
+    fi
+    # Coarray support in gfortran requires an MPI installation.
+    if test "x$have_mpi" != xyes; then
+      as_fn_error "Building gfortran requires an MPI installation to support coarrays.
+Try the --with-mpi, or --with-mpi-include and --with-mpi-lib options
+to specify its location. Source code for the default GCC MPI library, MPICH,
+can be found at its hosting site as well as at
+ftp://gcc.gnu.org/pub/gcc/infrastructure/. See also
+http://gcc.gnu.org/install/prerequisites.html for additional info. If
+you obtained a different MPI from a vendor distribution package,
+make sure that you have installed both the libraries and the header
+files. They may be located in separate packages." "$LINENO" 5
+    fi
+
+
+    ;;
   esac
 
   # If bootstrapping, C++ must be enabled.

@@ -160,6 +160,7 @@ target_libraries="target-libgcc \
 		target-libmpx \
 		target-libssp \
 		target-libquadmath \
+		target-mpich \
 		target-libgfortran \
 		target-libffi \
 		target-libobjc \
@@ -1789,8 +1790,12 @@ if test -d ${srcdir}/gcc; then
   case ,${enable_languages}, in
     *,fortran,*)
     # Check for MPI. Default is MPICH.
+    mpidist="mpich"
     mpilibs="-lmpich"
+#"-l$mpidist"
+#"--libs-only-l mpich"
     mpiinc=
+#"--libs-only-I mpich"
     have_mpi=no
     # Specify a location for MPI package
     AC_ARG_WITH(mpi,
@@ -1804,6 +1809,7 @@ if test -d ${srcdir}/gcc; then
     AC_ARG_WITH(mpi-lib,
     [AS_HELP_STRING([--with-mpi-lib=PATH],
 		    [specify directory for the installed MPI library])])
+    #AC_SEARCH_LIBS(MPI_Init, mpi, [], AC_MSG_ERROR([Unable to find mpi library - make sure LD path to the library is set]), [])
     # Test if MPI exists.
     if test "x$with_mpi" != x; then
       mpilibs="-L$with_mpi/lib $mpilibs"
@@ -1815,13 +1821,13 @@ if test -d ${srcdir}/gcc; then
     if test "x$with_mpi_lib" != x; then
       mpilibs="-L$with_mpi_lib $mpilibs"
     fi
-    if test "x$with_mpi$with_mpi_include$with_mpi_lib" = x && test -d ${srcdir}/mpi; then
-      mpilibs='-L$$r/$(HOST_SUBDIR)/mpi/src/'"$lt_cv_objdir $mpilibs"
-      mpiinc='-I$$s/mpi/src '"$mpiinc"
+    if test "x$with_mpi$with_mpi_include$with_mpi_lib" = x && test -d ${srcdir}/$mpidist; then
+      mpilibs='-L$$r/$(HOST_SUBDIR)/'"$mpidist"'/src/'"$lt_cv_objdir $mpilibs"
+      mpiinc='-I$$s/'"$mpidist"'/src '"$mpiinc"
       have_mpi=yes
     fi
     # Coarray support in gfortran requires an MPI installation.
-    if test x$have_mpi != xyes; then
+    if test "x$have_mpi" != xyes; then
       AC_MSG_ERROR([Building gfortran requires an MPI installation to support coarrays.
 Try the --with-mpi, or --with-mpi-include and --with-mpi-lib options 
 to specify its location. Source code for the default GCC MPI library, MPICH,
@@ -1832,6 +1838,8 @@ you obtained a different MPI from a vendor distribution package,
 make sure that you have installed both the libraries and the header
 files. They may be located in separate packages.])
     fi
+    AC_SUBST(mpilibs)
+    AC_SUBST(mpiinc)
     ;;
   esac
 
