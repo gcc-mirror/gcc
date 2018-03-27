@@ -7,4 +7,4 @@
 typedef long long int64_t;
 typedef int int128_t __attribute__((mode(TI)));
 NOMIPS16 int128_t foo (int64_t x, int64_t y) { return (int128_t) x * y; }
-/* { dg-final { scan-assembler "[concat {\tdmult\t\$[45],\$[45][^\n]+mulditi3_r4000[^\n]+\n\tmflo\t\$2\n\tmfhi\t\$3\n}]" } } */
+/* { dg-final { scan-assembler "[concat {\tdmult\t\$[45],\$[45][^\n]+mulditi3_r4000\n\tmflo\t\$2\n\tmfhi\t\$3\n}]" } } */

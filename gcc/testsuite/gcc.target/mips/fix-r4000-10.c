@@ -6,4 +6,4 @@
 typedef unsigned long long uint64_t;
 typedef unsigned int uint128_t __attribute__((mode(TI)));
 NOMIPS16 uint128_t foo (uint64_t x, uint64_t y) { return (uint128_t) x * y; }
-/* { dg-final { scan-assembler "[concat {\tdmultu\t\$[45],\$[45][^\n]+umulditi3_r4000[^\n]+\n\tmflo\t\$2\n\tmfhi\t\$3\n}]" } } */
+/* { dg-final { scan-assembler "[concat {\tdmultu\t\$[45],\$[45][^\n]+umulditi3_r4000\n\tmflo\t\$2\n\tmfhi\t\$3\n}]" } } */
