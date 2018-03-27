@@ -1,3 +1,9 @@
+2018-03-27  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR target/85056
+	* testsuite/gcc.target/nvptx/pr85056.c: New test.
+	* testsuite/gcc.target/nvptx/pr85056a.c: New test.
+
 2018-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/82847
