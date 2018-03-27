@@ -1,3 +1,8 @@
+2018-03-27  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* search.c (check_final_overrider): Use inform instead of error
+	for the diagnostics of the overridden functions.  Tweak wording.
+
 2018-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85068

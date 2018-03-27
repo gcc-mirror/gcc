@@ -1,3 +1,24 @@
+2018-03-27  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* g++.dg/cpp0x/defaulted2.C: Use dg-message instead of dg-error
+	for the diagnostics of overridden functions.  Adjust for new wording.
+	* g++.dg/cpp0x/implicit1.C: Likewise.
+	* g++.dg/cpp0x/override1.C: Likewise.
+	* g++.dg/cpp1y/auto-fn18.C: Likewise.
+	* g++.dg/eh/shadow1.C: Likewise.
+	* g++.dg/inherit/covariant12.C: Likewise.
+	* g++.dg/inherit/covariant14.C: Likewise.
+	* g++.dg/inherit/covariant15.C: Likewise.
+	* g++.dg/inherit/covariant16.C: Likewise.
+	* g++.dg/inherit/covariant22.C: Likewise.
+	* g++.dg/inherit/crash3.C: Likewise.
+	* g++.dg/inherit/error2.C: Likewise.
+	* g++.dg/template/crash100.C: Likewise.
+	* g++.old-deja/g++.eh/spec6.C: Likewise.
+	* g++.old-deja/g++.mike/p811.C: Likewise.
+	* g++.old-deja/g++.other/virtual11.C: Likewise.
+	* g++.old-deja/g++.other/virtual4.C: Likewise.
+
 2018-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85044
