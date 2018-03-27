@@ -2189,7 +2189,6 @@ defaulted_late_check (tree fn)
 	     "expected signature", fn);
       inform (DECL_SOURCE_LOCATION (fn),
 	      "expected signature: %qD", implicit_fn);
-      return;
     }
 
   if (DECL_DELETED_FN (implicit_fn))
