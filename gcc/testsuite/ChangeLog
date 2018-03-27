@@ -1,3 +1,8 @@
+2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/structure_constructor_15.f90: New test.
+
 2018-03-27  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/cpp0x/defaulted2.C: Use dg-message instead of dg-error
