@@ -1,6 +1,14 @@
 2018-03-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c
+	(depset::hash::{add_writables,find_dependencies}): Moved to ...
+	(module_state::{add_writables,find_dependencies}): ... here.  Adjust.
+	(depset::hash::write_bindings): Moved to ...
+	(module_state::tng_write_bindings): ... here.  Adjust.
+	(depset::hash::{add_decls,get_work}): New.
+
+	gcc/cp/
 	* module.c (hash_definition): New.
 	(struct depset::tarjan): New.
 	(depset::tarjan_connect, depset::hash::find_sccs): Delete.
