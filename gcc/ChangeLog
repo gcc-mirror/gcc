@@ -1,3 +1,9 @@
+2018-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85082
+	* tree-ssa-sccvn.c (vn_reference_lookup_or_insert_for_pieces):
+	Valueize the VUSE.
+
 2018-03-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config.gcc (aarch64*-*-linux*): New TARGET_DEFAULT_ASYNC_UNWIND_TABLES
