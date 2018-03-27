@@ -1,3 +1,9 @@
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85076
+	* tree.c (cp_build_reference_type): If to_type is error_mark_node,
+	return it right away.
+
 2018-03-27  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* search.c (check_final_overrider): Use inform instead of error

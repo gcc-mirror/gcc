@@ -1078,6 +1078,9 @@ cp_build_reference_type (tree to_type, bool rval)
 {
   tree lvalue_ref, t;
 
+  if (to_type == error_mark_node)
+    return error_mark_node;
+
   if (TREE_CODE (to_type) == REFERENCE_TYPE)
     {
       rval = rval && TYPE_REF_IS_RVALUE (to_type);

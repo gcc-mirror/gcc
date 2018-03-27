@@ -1,3 +1,8 @@
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85076
+	* g++.dg/cpp1y/pr85076.C: New test.
+
 2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/85084
