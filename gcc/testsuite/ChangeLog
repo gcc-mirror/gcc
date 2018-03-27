@@ -1,5 +1,8 @@
 2018-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85077
+	* g++.dg/ext/vector35.C: New test.
+
 	PR c++/85061
 	* g++.dg/ext/builtin-offsetof3.C: New test.
 

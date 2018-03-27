@@ -1,5 +1,9 @@
 2018-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85077
+	* cp-gimplify.c (cp_fold) <case CONSTRUCTOR>: For ctors with vector
+	type call fold to generate VECTOR_CSTs when possible.
+
 	PR c++/85076
 	* tree.c (cp_build_reference_type): If to_type is error_mark_node,
 	return it right away.
