@@ -1,3 +1,10 @@
+2018-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85044
+	* config/i386/i386.c (ix86_trampoline_init): Insert ENDBR for
+	-fcf-protection=branch -mibt.
+	* config/i386/i386.h (TRAMPOLINE_SIZE): Increased by 4 bytes.
+
 2018-03-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/81863

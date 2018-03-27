@@ -1,3 +1,8 @@
+2018-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85044
+	* gcc.target/i386/pr85044.c: New test.
+
 2018-03-27  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/83462
