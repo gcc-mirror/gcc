@@ -1736,6 +1736,50 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
   return sec_num;
 }
 
+/* Return true if DECL has a definition that would be interesting to
+   write out.  */
+
+static bool
+has_definition (tree decl)
+{
+ again:
+  switch (TREE_CODE (decl))
+    {
+    default:
+      break;
+
+    case TEMPLATE_DECL:
+      decl = DECL_TEMPLATE_RESULT (decl);
+      goto again;
+
+    case FUNCTION_DECL:
+      if (!DECL_INITIAL (decl))
+	/* Not defined.  */
+	break;
+
+      if (DECL_TEMPLATE_INFO (decl))
+	{
+	  if (!(DECL_USE_TEMPLATE (decl) & 1))
+	    return true;
+	}
+      else if (DECL_DECLARED_INLINE_P (decl))
+	return true;
+      break;
+
+    case TYPE_DECL:
+      if (!DECL_IMPLICIT_TYPEDEF_P (decl))
+	break;
+
+      if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
+	  ? TYPE_VALUES (TREE_TYPE (decl))
+	  : TYPE_FIELDS (TREE_TYPE (decl)))
+	return true;
+      break;
+    }
+
+  return false;
+}
+
 struct module_state;
 
 /* A dependency set.  These are not quite the decl-sets of the TS.  We
@@ -1769,11 +1813,6 @@ public:
 public:
   depset (tree container);
   ~depset ();
-
-private:
-  vec<depset *, va_heap, vl_embed> *tarjan_connect
-  (auto_vec<depset *> &clusters,
-   vec<depset *, va_heap, vl_embed> *stack, unsigned *index);
 
 public:
   tree get_container () const
@@ -1871,21 +1910,45 @@ public:
 
   private:
     depset **maybe_insert (tree ns, tree name, bool = true);
+    void maybe_add_definition (depset *binding, tree decl);
 
   public:
     /* Find a depset by containing namespace and name.  */
     depset *find (tree ns, tree name);
 
   public:
-    void append (tree decl);
+    void add_dependency (tree decl);
 
   public:
     bool add_writables (tree ns);
     void find_dependencies (module_state *, vec<tree, va_gc> *globals);
-    void find_sccs (auto_vec<depset *> &clusters);
+    void find_sccs (auto_vec<depset *> &binds, auto_vec<depset *> &spaces,
+		    auto_vec<depset *> &defs);
     void write_bindings (elf_out *to, unsigned *crc_ptr);
-    bool maybe_namespace (depset *b);
-    void write_namespaces (elf_out *to, unsigned *crc_ptr);
+  };
+
+public:
+  struct tarjan
+  {
+    auto_vec<depset *> &binds;
+    auto_vec<depset *> &spaces;
+    auto_vec<depset *> &defs;
+    vec<depset *> stack;
+    unsigned index;
+
+    tarjan (auto_vec<depset *> &binds, auto_vec<depset *> &spaces,
+	    auto_vec<depset *> &defs)
+      : binds (binds), spaces (spaces), defs (defs),
+	stack (), index (0)
+    {
+    }
+    ~tarjan () 
+    {
+      gcc_assert (!stack.length ());
+    }
+
+  public:
+    void connect (depset *);
   };
 };
 
@@ -1897,78 +1960,6 @@ depset::depset (tree cont)
 
 depset::~depset ()
 {
-}
-
-depset **
-depset::hash::maybe_insert (tree ns, tree name, bool insert)
-{
-  gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
-  traits::compare_type cmp (ns, name);
-  depset **slot = find_slot_with_hash (cmp, traits::hash (cmp),
-				       insert ? INSERT : NO_INSERT);
-
-  return slot;
-}
-
-depset *
-depset::hash::find (tree ns, tree name)
-{
-  depset **slot = maybe_insert (ns, name, false);
-
-  return slot ? *slot : NULL;
-}
-
-/* Append DECL to the existing depset in the hash table.  Create an
-   entry if there isn't one.  Push it into the worklist, if it's not
-   there.  We use depset::section to indicate where we've got to.  */
-
-void
-depset::hash::append (tree decl)
-{
-  gcc_checking_assert (DECL_P (decl));
-  if (DECL_LANG_SPECIFIC (decl)
-      && (TREE_CODE (decl) == VAR_DECL
-	  || TREE_CODE (decl) == FUNCTION_DECL
-	  || TREE_CODE (decl) == TYPE_DECL)
-      && DECL_TEMPLATE_INFO (decl))
-    /* For a template instantiation, we want the TEMPLATE_DECL.  */
-    decl = DECL_PRIMARY_TEMPLATE (decl);
-
-  tree ctx = CP_DECL_CONTEXT (decl);
-  depset **slot = maybe_insert (ctx, DECL_NAME (decl));
-  depset *decls = *slot;
-  bool is_new = true;
-  
-  if (!decls)
-    /* Create an entry.  */
-    *slot = decls = new depset (ctx);
-  else
-    {
-      for (unsigned ix = decls->decls.length (); ix--;)
-	if (decls->decls[ix] == decl)
-	  {
-	    is_new = false;
-	    break;
-	  }
-      /* If DECL is being exported, it must already be on the list. */
-      gcc_assert (DECL_MODULE_EXPORT_P (decl) ? !is_new : true);
-    }
-  
-  if (is_new)
-    {
-      /* A newly needed decl of this binding.  */
-      if (decls->section == decls->decls.length ())
-	/* Add back to worklist, so we figure this decl's dependencies. */
-	worklist.safe_push (decls);
-      decls->decls.safe_push (decl);
-    }
-
-  if (!decls->cluster)
-    {
-      /* A newly discovered dependency. */
-      decls->cluster = true;
-      current->deps.safe_push (decls);
-    }
 }
 
 // FIXME:Forward declare, until module_state::{read,write}_namespace don't
@@ -2059,8 +2050,10 @@ struct GTY(()) module_state {
 
   // FIXME:
   void tng_write_bindings (elf_out *to, unsigned *crc_ptr);
-  unsigned write_cluster (elf_out *to, auto_vec<depset *> &sccs,
-			  unsigned from, unsigned *crc_ptr);
+  void tng_write_namespaces (elf_out *to, depset::hash &table,
+			     auto_vec<depset *> &spaces, unsigned *crc_ptr);
+  unsigned tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
+			      unsigned from, unsigned *crc_ptr);
 
  public:
   /* Import a module.  Possibly ourselves.  */
@@ -3312,6 +3305,114 @@ module_state::read_config (elf_in *from, unsigned *expected_crc)
   return cfg.end (from);
 }
 
+/* Lookup and maybe add a depset of CONTAINER and NAME.  */
+
+depset **
+depset::hash::maybe_insert (tree container, tree name, bool insert)
+{
+  traits::compare_type cmp (container, name);
+  depset **slot = find_slot_with_hash (cmp, traits::hash (cmp),
+				       insert ? INSERT : NO_INSERT);
+
+  return slot;
+}
+
+depset *
+depset::hash::find (tree ns, tree name)
+{
+  depset **slot = maybe_insert (ns, name, false);
+
+  return slot ? *slot : NULL;
+}
+
+/* DECL has just been added to BINDING, or declared within in BINDING.
+   If we need a definition of DECL, add it to the hash table unless
+   it's already there.  Create a dependency on BINDING.  Add to
+   worklist too.  Return the definition's depset.  */
+
+void
+depset::hash::maybe_add_definition (depset *binding, tree decl)
+{
+  if (!has_definition (decl))
+    return;
+
+  return; // FIXME: do nothing, yet
+  
+  depset **slot = maybe_insert (decl, DECL_NAME (decl), true);
+  depset *dep = *slot;
+  if (dep)
+    {
+      gcc_assert (dep->get_naming_decl () == decl);
+      return;
+    }
+
+  dump () && dump ("Need definition of %N", decl);
+  dep = new depset (decl);
+  dep->decls.reserve_exact (1);
+  dep->decls.quick_push (decl);
+  dep->deps.safe_push (binding);
+  *slot = dep;
+  worklist.safe_push (dep);
+}
+
+/* DECL is a newly discovered dependency.  Append it to its depset
+   binding in the hash table (creating an entry if there isn't one).
+   Push it into the worklist, if it's not there.  We use
+   depset::section to indicate where we've got to.
+
+   Add the DECL's binding to the current depset, if the binding was
+   not already there.  */
+
+void
+depset::hash::add_dependency (tree decl)
+{
+  gcc_checking_assert (DECL_P (decl));
+  if (DECL_LANG_SPECIFIC (decl)
+      && (TREE_CODE (decl) == VAR_DECL
+	  || TREE_CODE (decl) == FUNCTION_DECL
+	  || TREE_CODE (decl) == TYPE_DECL)
+      && DECL_TEMPLATE_INFO (decl))
+    /* For a template instantiation, we want the TEMPLATE_DECL.  */
+    decl = DECL_PRIMARY_TEMPLATE (decl);
+
+  tree ctx = CP_DECL_CONTEXT (decl);
+  depset **slot = maybe_insert (ctx, DECL_NAME (decl));
+  depset *dep = *slot;
+  bool is_new = true;
+  
+  if (!dep)
+    /* Create an entry.  */
+    *slot = dep = new depset (ctx);
+  else
+    {
+      for (unsigned ix = dep->decls.length (); ix--;)
+	if (dep->decls[ix] == decl)
+	  {
+	    is_new = false;
+	    break;
+	  }
+      /* If DECL is being exported, it must already be on the list. */
+      gcc_assert (DECL_MODULE_EXPORT_P (decl) ? !is_new : true);
+    }
+  
+  if (is_new)
+    {
+      /* A newly needed decl of this binding.  */
+      if (dep->section == dep->decls.length ())
+	/* Add back to worklist, so we figure this decl's dependencies. */
+	worklist.safe_push (dep);
+      dep->decls.safe_push (decl);
+      maybe_add_definition (dep, decl);
+    }
+
+  if (!dep->cluster)
+    {
+      /* A newly discovered dependency. */
+      dep->cluster = true;
+      current->deps.safe_push (dep);
+    }
+}
+
 /* Recursively find all the namespace bindings of NS.
    Add a depset for every binding that contains an export or
    module-linkage entity.  Add a defining depset for every such decl
@@ -3366,10 +3467,14 @@ depset::hash::add_writables (tree ns)
 
 	      dump () && dump ("Writable bindings at %P", ns, name);
 	      b->decls.reserve_exact (decls.length ());
-	      for (unsigned ix = 0; ix != decls.length (); ix++)
+	      /* Reverse ordering, so exported things are first.  */
+	      for (unsigned ix = decls.length (); ix--;)
 		{
-		  gcc_checking_assert (DECL_P (decls[ix]));
-		  b->decls.quick_push (decls[ix]);
+		  tree decl = decls[ix];
+
+		  gcc_checking_assert (DECL_P (decl));
+		  b->decls.quick_push (decl);
+		  maybe_add_definition (b, decl);
 		}
 	      depset **slot = maybe_insert (ns, name);
 	      gcc_assert (!*slot);
@@ -3388,14 +3493,17 @@ depset::hash::add_writables (tree ns)
    entries on the same binding that need walking.  */
 
 void
-depset::hash::find_dependencies (module_state *state,
-				    vec<tree, va_gc> *globals)
+depset::hash::find_dependencies (module_state *state, vec<tree, va_gc> *globals)
 {
   trees_out walker (state, globals);
 
   while (worklist.length ())
     {
       current = worklist.pop ();
+      if (!current->is_binding ())
+	// FIXME:Ignore non-bindings.
+	continue;
+
       walker.begin (this);
 
       /* Walk the new decls since last time.  */
@@ -3438,74 +3546,62 @@ depset::hash::find_dependencies (module_state *state,
     }
 }
 
-/* Core of TARJAN's algorithm (see find_sccs).  Use depset::section as
-   lowlink.  Completed nodes have depset::cluster set, with the top
+/* Core of TARJAN's algorithm to find Strongly Connected Components
+   within a graph.  See https://en.wikipedia.org/wiki/
+   Tarjan%27s_strongly_connected_components_algorithm for details.
+
+   We use depset::section as lowlink.  Completed nodes have
+   depset::cluster containing the cluster number, with the top
    bit set.  */
 
-vec<depset *, va_heap, vl_embed> *
-depset::tarjan_connect (auto_vec<depset *> &clusters,
-			  vec<depset *, va_heap, vl_embed> *stack,
-			  unsigned *index)
+void
+depset::tarjan::connect (depset *v)
 {
-  cluster = section = ++*index;
-  vec_safe_push (stack, this);
+  v->cluster = v->section = ++index;
+  stack.safe_push (v);
 
   /* Walk all our dependencies.  */
-  for (unsigned ix = deps.length (); ix--;)
+  for (unsigned ix = v->deps.length (); ix--;)
     {
-      depset *dep = deps[ix];
+      depset *dep = v->deps[ix];
       if (!dep->cluster)
 	{
 	  /* A new node.  Connect it.  */
-	  stack = dep->tarjan_connect (clusters, stack, index);
-	  if (section > dep->section)
-	    section = dep->section;
+	  connect (dep);
+	  if (v->section > dep->section)
+	    v->section = dep->section;
 	}
-      else if (section > dep->cluster)
+      else if (v->section > dep->cluster)
 	/* Because we set the top bit of dep->cluster when removing
 	   from the stack, we don't need to explicitly check that
 	   dep is not in the stack, the above comparison will DTRT.  */
-	section = dep->cluster;
+	v->section = dep->cluster;
     }
 
-  if (section == cluster)
+  if (v->section == v->cluster)
     {
-      /* Root of a new SCC.  */
-      unsigned num = cluster | ~(~0u >> 1);
+      /* Root of a new SCC.  If it is a (singleton) namespace, put it on the
+	 spaces vector.  If it is a singleton non-binding, put it on
+	 the defs vector.  Otherwise it's a binding.  */
+      auto_vec<depset *> *vec = &binds;
+      if (stack.last () == v)
+	{
+	  if (!v->is_binding ())
+	    vec = &defs;
+	  else if (TREE_CODE (v->get_naming_decl ()) == NAMESPACE_DECL)
+	    vec = &spaces;
+	}
+
+      unsigned num = v->cluster | ~(~0u >> 1);
       depset *p;
       do
 	{
-	  p = stack->pop ();
+	  p = stack.pop ();
 	  p->cluster = num;
-	  clusters.safe_push (p);
+	  vec->safe_push (p);
 	}
-      while (p != this);
+      while (p != v);
     }
-
-  return stack;
-}
-
-/* Return a vector of depset, sorted by Strongly Connected Component
-   number.  depset in the same component will be adjacent and have
-   the same cluster value.
-
-   Uses Tarjan's algorithm: https://en.wikipedia.org/wiki/
-   Tarjan%27s_strongly_connected_components_algorithm   */
-
-void
-depset::hash::find_sccs (auto_vec<depset *> &clusters)
-{
-  vec<depset *, va_heap, vl_embed> *stack = NULL;
-  unsigned index = 0;
-  iterator end (this->end ());
-  for (iterator iter (begin ()); iter != end; ++iter)
-    {
-      depset *v = *iter;
-      if (!v->cluster)
-	stack = v->tarjan_connect (clusters, stack, &index);
-    }
-  gcc_assert (!vec_safe_length (stack));
-  vec_free (stack);
 }
 
 /* Write the binding TABLE.  Each binding is:
@@ -3544,85 +3640,9 @@ depset::hash::write_bindings (elf_out *to, unsigned *crc_p)
   dump.outdent ();
 }
 
-bool
-depset::hash::maybe_namespace (depset *b)
-{
-  if (b->decls.length () != 1
-      || TREE_CODE (b->decls[0]) != NAMESPACE_DECL
-      || DECL_NAMESPACE_ALIAS (b->decls[0]))
-    return false;
-  
-  gcc_checking_assert (b->deps.length ()
-		       == (CP_DECL_CONTEXT (b->decls[0]) != global_namespace));
-  b->cluster = 0;
-  b->section = 0;
-  worklist.safe_push (b);
-  return true;
-}
-
-static int
-ns_cmp (const void *a_, const void *b_)
-{
-  depset *a = *(depset *const *)a_;
-  depset *b = *(depset *const *)b_;
-  tree ns_a = a->get_decl ();
-  tree ns_b = b->get_decl ();
-
-  /* Deeper namespaces come after shallower ones.  */
-  if (int delta = SCOPE_DEPTH (ns_a) - SCOPE_DEPTH (ns_b))
-    return delta;
-
-  /* Otherwise order by UID for consistent results.  */
-  return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
-}
-
-/* NAMESPACES is a vector of namespaces.  Sort it and write them out.
-   Each namespace is:
-   u:name,
-   u:context, number of containing namespace
-   b:export_p
-   b:inline_p
-   b:public_p  */
-
-void
-depset::hash::write_namespaces (elf_out *to, unsigned *crc_p)
-{
-  dump () && dump ("Writing namespaces");
-  dump.indent ();
-  (worklist.qsort) (ns_cmp);
-
-  bytes_out sec;
-  sec.begin ();
-  for (unsigned ix = 0; ix != worklist.length (); ix++)
-    {
-      depset *b = worklist[ix];
-      tree ns = b->get_decl ();
-
-      gcc_assert (b->decls.length () == 1
-		  && TREE_CODE (ns) == NAMESPACE_DECL);
-      
-      b->section = ix + 1;
-      unsigned ctx_num = 0;
-      tree ctx = b->get_container ();
-      if (ctx != global_namespace)
-	ctx_num = find (CP_DECL_CONTEXT (ctx), DECL_NAME (ctx))->section;
-      dump () && dump ("Writing namespace %N %u::%u", ns, ctx_num, b->section);
-
-      sec.u (to->name (DECL_NAME (ns)));
-      sec.u (ctx_num);
-      sec.b (DECL_MODULE_EXPORT_P (ns));
-      sec.b (DECL_NAMESPACE_INLINE_P (ns));
-      sec.b (TREE_PUBLIC (ns));
-      sec.bflush ();
-    }
-
-  sec.end (to, to->name (MOD_SNAME_PFX ".namespaces"), crc_p);
-  dump.outdent ();
-}
-
 unsigned
-module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
-			     unsigned from, unsigned *crc_ptr)
+module_state::tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
+				 unsigned from, unsigned *crc_ptr)
 {
   unsigned cluster = sccs[from]->get_cluster ();
 
@@ -3826,30 +3846,101 @@ module_state::read_namespace (elf_in *from, bytes_in &bind, tree ns)
   dump () && dump ("Read namespace %N", ns);
 }
 
+static int
+ns_cmp (const void *a_, const void *b_)
+{
+  depset *a = *(depset *const *)a_;
+  depset *b = *(depset *const *)b_;
+  tree ns_a = a->get_decl ();
+  tree ns_b = b->get_decl ();
+
+  /* Deeper namespaces come after shallower ones.  */
+  if (int delta = SCOPE_DEPTH (ns_a) - SCOPE_DEPTH (ns_b))
+    return delta;
+
+  /* Otherwise order by UID for consistent results.  */
+  return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
+}
+
+/* NAMESPACES is a vector of namespaces.  Sort it and write them out.
+   Each namespace is:
+   u:name,
+   u:context, number of containing namespace
+   b:export_p
+   b:inline_p
+   b:public_p  */
+
+void
+module_state::tng_write_namespaces (elf_out *to, depset::hash &table,
+				    auto_vec<depset *> &spaces, unsigned *crc_p)
+{
+  dump () && dump ("Writing namespaces");
+  dump.indent ();
+  (spaces.qsort) (ns_cmp);
+
+  bytes_out sec;
+  sec.begin ();
+  for (unsigned ix = 0; ix != spaces.length (); ix++)
+    {
+      depset *b = spaces[ix];
+      tree ns = b->get_decl ();
+
+      gcc_assert (TREE_CODE (ns) == NAMESPACE_DECL);
+
+      b->section = ix + 1;
+      unsigned ctx_num = 0;
+      tree ctx = b->get_container ();
+      if (ctx != global_namespace)
+	ctx_num = table.find (CP_DECL_CONTEXT (ctx), DECL_NAME (ctx))->section;
+      dump () && dump ("Writing namespace %N %u::%u", ns, ctx_num, b->section);
+
+      sec.u (to->name (DECL_NAME (ns)));
+      sec.u (ctx_num);
+      sec.b (DECL_MODULE_EXPORT_P (ns));
+      sec.b (DECL_NAMESPACE_INLINE_P (ns));
+      sec.b (TREE_PUBLIC (ns));
+      sec.bflush ();
+    }
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".namespaces"), crc_p);
+  dump.outdent ();
+}
+
 void
 module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
 {
   depset::hash table (200);
 
   refs_tng = true;  // FIXME:Tell tree-walker we're new-style references
+
   /* Find the set of decls we must write out.  */
   table.add_writables (global_namespace);
 
   table.find_dependencies (this, global_vec);
 
   /* Find the SCCs. */
-  auto_vec<depset *> sccs;
-  table.find_sccs (sccs);
+  auto_vec<depset *> binds, spaces, defs;
+  {
+    depset::tarjan connector (binds, spaces, defs);
 
-  /* Write each SCC.  */
-  for (unsigned ix = 0; ix != sccs.length ();)
-    if (table.maybe_namespace (sccs[ix]))
-      ix++;
-    else
-      ix = write_cluster (to, sccs, ix, crc_p);
+    depset::hash::iterator end (table.end ());
+    for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
+      {
+	depset *v = *iter;
+	if (!v->cluster)
+	  connector.connect (v);
+      }
+  }
+
+  /* Write the binding clusters.  */
+  for (unsigned ix = 0; ix != binds.length ();)
+    ix = tng_write_cluster (to, binds, ix, crc_p);
+
+  // FIXME:write the defs.
+  gcc_assert (!defs.length ());
 
   /* Write the namespace hierarchy. */
-  table.write_namespaces (to, crc_p);
+  tng_write_namespaces (to, table, spaces, crc_p);
 
   /* Write the bindings themselves.  */
   table.write_bindings (to, crc_p);
@@ -6544,7 +6635,7 @@ trees_out::tree_node (tree t)
 	  tree_node (CP_DECL_CONTEXT (t));
 	}
       else
-	dep_hash->append (t);
+	dep_hash->add_dependency (t);
       tree_node (DECL_NAME (t));
       unsigned tag = insert (t);
       if (!dep_walk_p ())
@@ -6726,7 +6817,7 @@ trees_out::tree_node (tree t)
 	{
 	  // FIXME: member of tagged type?
 	  if (TREE_CODE (CP_DECL_CONTEXT (t)) == NAMESPACE_DECL)
-	    dep_hash->append (t);
+	    dep_hash->add_dependency (t);
 	}
 
       if (refs_tng || is_import)

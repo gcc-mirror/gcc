@@ -1,6 +1,15 @@
 2018-03-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (hash_definition): New.
+	(struct depset::tarjan): New.
+	(depset::tarjan_connect, depset::hash::find_sccs): Delete.
+	(depset::hash::maybe_add_definition): New.
+	(module_state::tng_write_namespaces): New.
+	(depset::hash::{maybe_namespace,write_namespaces): Delete.
+	(module_state::tng_write_bindings): Adjust.
+
+	gcc/cp/
 	* module.c (depset::traits): Hash & compare using name too.
 
 	gcc/cp
