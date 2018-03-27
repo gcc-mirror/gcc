@@ -1,3 +1,17 @@
+2018-03-27  Sudakshina Das  <sudi.das@arm.com>
+
+	Backport from mainline:
+	2018-03-20  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82989
+	* gcc.target/arm/pr82989.c: New test.
+
+	Backport from mainline:
+	2018-03-21  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82989
+	* gcc.target/arm/pr82989.c: Change dg scan-assembly directives.
+
 2018-03-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
