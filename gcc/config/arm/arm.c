@@ -29787,6 +29787,9 @@ arm_valid_symbolic_address_p (rtx addr)
   rtx xop0, xop1 = NULL_RTX;
   rtx tmp = addr;
 
+  if (target_word_relocations)
+    return false;
+
   if (GET_CODE (tmp) == SYMBOL_REF || GET_CODE (tmp) == LABEL_REF)
     return true;
 

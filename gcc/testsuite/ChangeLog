@@ -1,3 +1,8 @@
+2018-03-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/81863
+	* gcc.target/arm/pr81863.c: New test.
+
 2018-03-27  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR target/85056
