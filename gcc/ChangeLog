@@ -1,3 +1,15 @@
+2018-03-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from mainline
+	2018-03-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/82411
+	* config/rs6000/rs6000.c (rs6000_elf_in_small_data_p): Don't put
+	readonly data in sdata, if that is disabled.
+	* config/rs6000/sysv4.opt (mreadonly-in-sdata): New option.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mreadonly-in-sdata option.
+
 2018-03-27  Carl Love  <cel@us.ibm.com>
 
 	Backport from mainline
