@@ -1631,7 +1631,7 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
   vn_reference_s vr1;
   vn_reference_t result;
   unsigned value_id;
-  vr1.vuse = vuse;
+  vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr1.operands = operands;
   vr1.type = type;
   vr1.set = set;

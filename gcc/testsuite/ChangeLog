@@ -1,3 +1,8 @@
+2018-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85082
+	* gfortran.dg/pr85082.f90: New testcase.
+
 2018-03-27  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/umips-stroe16-2.c: Change "length = 2"
