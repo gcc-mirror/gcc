@@ -1,5 +1,12 @@
 2018-03-27  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/82847
+	* lib/target-supports.exp (check_ssse3_available): New function.
+	(check_effective_target_vect_perm_short): Enable for x86 if
+	check_ssse3_available.
+
+2018-03-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/85082
 	* gfortran.dg/pr85082.f90: New testcase.
 

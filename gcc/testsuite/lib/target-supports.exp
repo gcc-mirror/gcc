@@ -5828,6 +5828,8 @@ proc check_effective_target_vect_perm_short { } {
 		 && ![check_effective_target_vect_variable_length])
 	     || [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
+	     || (([istarget i?86-*-*] || [istarget x86_64-*-*]
+	         && [check_ssse3_available]))
 	     || ([istarget mips*-*-*]
 		  && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
@@ -8009,6 +8011,19 @@ proc check_effective_target_automatic_stack_alignment  { } {
 proc check_avx_available { } {
   if { [check_no_compiler_messages avx_available assembly {
     #ifndef __AVX__
+    #error unsupported
+    #endif
+  } ""] } {
+    return 1;
+  }
+  return 0;
+}
+
+# Return true if we are compiling for SSSE3 target.
+
+proc check_ssse3_available { } {
+  if { [check_no_compiler_messages sse3a_available assembly {
+    #ifndef __SSSE3__
     #error unsupported
     #endif
   } ""] } {
