@@ -1,3 +1,17 @@
+2018-03-27  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp
+	* module.c (refs_tng): Temporary modal hack.
+	(tree_tag): Rename tt_import to tt_named.
+	(module_state::write_cluster): Fix iteration.
+	(module_state::tng_write_bindings): Set and clear refs_tng.
+	(trees_out::tree_node): Refs by name when applicable.
+	(trees_out::tree_node): Use tt_named.
+	gcc/testsuite/
+	* g++.dg/modules/by-name-1.C: New.
+	* g++.dg/modules/class-3_b.C: Adjust.
+	* g++.dg/modules/scc-1.C: More checking.
+
 2018-03-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

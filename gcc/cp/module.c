@@ -1983,6 +1983,8 @@ depset::hash::append (tree decl)
 // need it
 class trees_out;
 
+static bool refs_tng = false; // FIXME: transition
+
 /* Hash module state by name.  This cannot be a member of
    module_state, because of GTY restrictions.  */
 
@@ -2154,7 +2156,7 @@ enum tree_tag
     tt_tinfo_pseudo,	/* Typeinfo pseudo type.  */
     tt_type_name,	/* TYPE_DECL for type.  */
     tt_namespace,	/* Namespace.  */
-    tt_import,  	/* Import from another module. */
+    tt_named,  		/* Named decl. */
     tt_binfo,		/* A BINFO.  */
     tt_as_base,		/* An As-Base type.  */
 
@@ -3659,11 +3661,11 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
   /* Now write every member.  */
   for (unsigned ix = from; ix != end; ix++)
     {
-      depset *b = sccs[from];
+      depset *b = sccs[ix];
       dump () && dump ("Writing decls of %P",
 		       b->get_container (), b->get_name ());
-      for (unsigned ix = b->decls.length (); ix--;)
-	sec.tree_node (b->decls[ix]);
+      for (unsigned jx = b->decls.length (); jx--;)
+	sec.tree_node (b->decls[jx]);
     }
 
   /* We don't find this by name, use the naming_set's  */
@@ -3837,6 +3839,7 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
 {
   depset::hash table (200);
 
+  refs_tng = true;  // FIXME:Tell tree-walker we're new-style references
   /* Find the set of decls we must write out.  */
   table.add_writables (global_namespace);
 
@@ -3858,6 +3861,8 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
 
   /* Write the bindings themselves.  */
   table.write_bindings (to, crc_p);
+
+  refs_tng = false;  // FIXME:and back to the old way
 }
 
 /* Bindings: MOD_SNAME_PFX .bindings
@@ -6714,12 +6719,30 @@ trees_out::tree_node (tree t)
       /* A DECL.  */
       tree owner_decl = get_module_owner (t);
       unsigned owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
-      if (owner >= MODULE_IMPORT_BASE)
+      bool is_import = owner >= MODULE_IMPORT_BASE;
+
+      if (TREE_CODE (owner_decl) == FUNCTION_DECL
+	  && owner_decl != t)
 	{
-	  /* An imported decl -> tt_import.  */
+	  /* We cannot look up inside a function by name.  */
+	  // FIXME:think about fns returning lambdas.
+	  gcc_assert (!is_import);
+	  goto by_value;
+	}
+
+      if (!is_import && dep_walk_p ())
+	{
+	  // FIXME: member of tagged type?
+	  if (TREE_CODE (CP_DECL_CONTEXT (t)) == NAMESPACE_DECL)
+	    dep_hash->append (t);
+	}
+
+      if (refs_tng || is_import)
+	{
+	  /* A named decl -> tt_named.  */
 	  if (!dep_walk_p ())
 	    {
-	      i (tt_import);
+	      i (tt_named);
 	      u (TREE_CODE (t));
 	    }
 	  tree_node (CP_DECL_CONTEXT (t));
@@ -6729,8 +6752,9 @@ trees_out::tree_node (tree t)
 	  tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
 	  int tag = insert (t);
 	  if (!dep_walk_p ())
-	    dump () && dump ("Wrote import:%d %N@%I", tag, t,
-			     module_name (owner));
+	    dump () && dump (is_import ? "Wrote named import:%d %C:%N@%I"
+			     : "Wrote named decl:%d %C:%N",
+			     tag, TREE_CODE (t), t, module_name (owner));
 	  if (tree type = TREE_TYPE (t))
 	    {
 	      /* Make sure the imported type is in the map too.  */
@@ -6739,19 +6763,12 @@ trees_out::tree_node (tree t)
 		{
 		  u (tag != 0);
 		  if (tag)
-		    dump () && dump ("Wrote imported type:%d %C:%N%S", tag,
+		    dump () && dump ("Wrote named type:%d %C:%N%S", tag,
 				     TREE_CODE (type), type, type);
 		}
 	    }
 	  goto done;
 	}
-      else if (dep_walk_p ())
-	{
-	  // FIXME: member of tagged type?
-	  if (TREE_CODE (CP_DECL_CONTEXT (t)) == NAMESPACE_DECL)
-	    dep_hash->append (t);
-	}
-      // FIXME:Write by reference?
     }
 
   /* else */
@@ -6925,9 +6942,9 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_import:
+    case tt_named:
       {
-	/* An imported decl.  */
+	/* A named decl.  */
 	unsigned code = u ();
 	tree ctx = tree_node ();
 	unsigned owner = u ();
@@ -6935,6 +6952,7 @@ trees_in::tree_node ()
 	unsigned remapped = (owner < state->remap->length ()
 			     ? (*state->remap)[owner] : MODULE_NONE);
 	tree type = tree_node ();
+	// FIXME:internal by-name?
 	if (remapped != MODULE_NONE && remapped != state->mod
 	    && !get_overrun ())
 	  res = lookup_by_ident (ctx, remapped, name, type, code);
