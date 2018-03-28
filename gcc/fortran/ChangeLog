@@ -1,3 +1,12 @@
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_dt): Rename default_exp field to dec_ext.
+	* ioparm.def (IOPARM_dt_default_exp): Rename to ...
+	(IOPARM_dt_dec_ext): ... this.
+	* trans-io.c (build_dt): Adjust for default_exp renaming to
+	dec_ext and IOPARM_dt_default_exp renaming to IOPARM_dt_dec_ext.
+	* io.c (match_io): Likewise.
+
 2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/85084

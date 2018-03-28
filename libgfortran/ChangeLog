@@ -1,3 +1,12 @@
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/io.h (IOPARM_DT_DEFAULT_EXP): Rename to ...
+	(IOPARM_DT_DEC_EXT): ... this.
+	* io/list_read.c (parse_real): Adjust for IOPARM_DT_DEFAULT_EXP
+	renaming to IOPARM_DT_DEC_EXT.
+	(read_real): Likewise.
+	* io/read.c (read_f): Likewise.
+
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgfortran/84880

@@ -4291,9 +4291,10 @@ get_io_list:
 	goto syntax;
     }
 
-  /* See if we want to use defaults for missing exponents in real transfers.  */
+  /* See if we want to use defaults for missing exponents in real transfers
+     and other DEC runtime extensions.  */
   if (flag_dec)
-    dt->default_exp = 1;
+    dt->dec_ext = 1;
 
   /* A full IO statement has been matched.  Check the constraints.  spec_end is
      supplied for cases where no locus is supplied.  */
