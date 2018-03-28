@@ -1093,7 +1093,7 @@ exponent:
   if (w == 0)
     {
       /* Extension: allow default exponent of 0 when omitted.  */
-      if (dtp->common.flags & IOPARM_DT_DEFAULT_EXP)
+      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
 	goto done;
       else
 	goto bad_float;
