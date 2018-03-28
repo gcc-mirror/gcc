@@ -8618,7 +8618,8 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       if (cum->caller)
 	cfun->machine->outgoing_args_on_stack = true;
 
-      cum->bnds_in_bt = chkp_type_bounds_count (type);
+      if (flag_check_pointer_bounds)
+	cum->bnds_in_bt = chkp_type_bounds_count (type);
     }
 }
 
