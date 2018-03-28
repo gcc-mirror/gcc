@@ -9,5 +9,5 @@ template<typename> struct B : A {};
 
 template<typename T> struct C : B<T>
 {
-  B<T>::A::I::I i; // { dg-error "typename" }
+  B<T>::A::I::I i; // { dg-error "not a class type|does not name a type|typename" }
 };
