@@ -1788,6 +1788,10 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
       error ("lambda-expression in a constant expression");
       return error_mark_node;
 
+    case STATEMENT_LIST:
+      error ("statement-expression in a constant expression");
+      return error_mark_node;
+
     default:
       break;
     }
