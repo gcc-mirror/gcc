@@ -1,3 +1,9 @@
+2018-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85028
+	* pt.c (tsubst_default_argument): Early return if the type of the
+	parameter is erroneous.
+
 2018-03-28  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/84973
