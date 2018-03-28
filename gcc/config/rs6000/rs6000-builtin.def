@@ -2310,13 +2310,9 @@ BU_P9V_OVERLOAD_1 (VCTZLSBB,	"vctzlsbb")
 
 /* 2 argument extended divide functions added in ISA 2.06.  */
 BU_P7_MISC_2 (DIVWE,		"divwe",	CONST,	dive_si)
-BU_P7_MISC_2 (DIVWEO,		"divweo",	CONST,	diveo_si)
 BU_P7_MISC_2 (DIVWEU,		"divweu",	CONST,	diveu_si)
-BU_P7_MISC_2 (DIVWEUO,		"divweuo",	CONST,	diveuo_si)
 BU_P7_MISC_2 (DIVDE,		"divde",	CONST,	dive_di)
-BU_P7_MISC_2 (DIVDEO,		"divdeo",	CONST,	diveo_di)
 BU_P7_MISC_2 (DIVDEU,		"divdeu",	CONST,	diveu_di)
-BU_P7_MISC_2 (DIVDEUO,		"divdeuo",	CONST,	diveuo_di)
 
 /* 1 argument DFP (decimal floating point) functions added in ISA 2.05.  */
 BU_DFP_MISC_1 (DXEX,		"dxex",		CONST,	dfp_dxex_dd)
