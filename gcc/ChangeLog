@@ -1,3 +1,7 @@
+2018-03-27  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (BRANCH_COST): Adjust cost.
+
 2018-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/84914
