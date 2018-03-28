@@ -1,3 +1,10 @@
+2018-03-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/69497
+	* symbol.c (gfc_symbol_done_2): Start freeing namespaces
+	from the root.
+	(gfc_free_namespace): Restore assert (revert r258839). 
+
 2018-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.h (gfc_dt): Rename default_exp field to dec_ext.

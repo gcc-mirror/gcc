@@ -4037,9 +4037,10 @@ gfc_free_namespace (gfc_namespace *ns)
     return;
 
   ns->refs--;
-
-  if (ns->refs != 0)
+  if (ns->refs > 0)
     return;
+
+  gcc_assert (ns->refs == 0);
 
   gfc_free_statements (ns->code);
 
@@ -4087,8 +4088,14 @@ gfc_symbol_init_2 (void)
 void
 gfc_symbol_done_2 (void)
 {
-  gfc_free_namespace (gfc_current_ns);
-  gfc_current_ns = NULL;
+  if (gfc_current_ns != NULL)
+    {
+      /* free everything from the root.  */
+      while (gfc_current_ns->parent != NULL)
+	gfc_current_ns = gfc_current_ns->parent;
+      gfc_free_namespace (gfc_current_ns);
+      gfc_current_ns = NULL;
+    }
   gfc_free_dt_list ();
 
   enforce_single_undo_checkpoint ();
