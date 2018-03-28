@@ -135,6 +135,10 @@ gfc_run_passes (gfc_namespace *ns)
   check_locus (ns);
 #endif
 
+  gfc_get_errors (&w, &e);
+  if (e > 0)
+   return;
+
   if (flag_frontend_optimize)
     {
       optimize_namespace (ns);
@@ -144,10 +148,6 @@ gfc_run_passes (gfc_namespace *ns)
 
       expr_array.release ();
     }
-
-  gfc_get_errors (&w, &e);
-  if (e > 0)
-   return;
 
   if (flag_realloc_lhs)
     realloc_strings (ns);
