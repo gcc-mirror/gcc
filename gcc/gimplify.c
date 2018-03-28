@@ -1168,10 +1168,6 @@ static void
 asan_poison_variable (tree decl, bool poison, gimple_stmt_iterator *it,
 		      bool before)
 {
-  /* When within an OMP context, do not emit ASAN_MARK internal fns.  */
-  if (gimplify_omp_ctxp)
-    return;
-
   tree unit_size = DECL_SIZE_UNIT (decl);
   tree base = build_fold_addr_expr (decl);
 
@@ -1689,7 +1685,8 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	  && !TREE_STATIC (decl)
 	  && !DECL_HAS_VALUE_EXPR_P (decl)
 	  && DECL_ALIGN (decl) <= MAX_SUPPORTED_STACK_ALIGNMENT
-	  && dbg_cnt (asan_use_after_scope))
+	  && dbg_cnt (asan_use_after_scope)
+	  && !gimplify_omp_ctxp)
 	{
 	  asan_poisoned_variables->add (decl);
 	  asan_poison_variable (decl, false, seq_p);
@@ -6614,7 +6611,8 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    }
 	  if (asan_poisoned_variables
 	      && DECL_ALIGN (temp) <= MAX_SUPPORTED_STACK_ALIGNMENT
-	      && dbg_cnt (asan_use_after_scope))
+	      && dbg_cnt (asan_use_after_scope)
+	      && !gimplify_omp_ctxp)
 	    {
 	      tree asan_cleanup = build_asan_poison_call_expr (temp);
 	      if (asan_cleanup)

@@ -1,3 +1,12 @@
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/85081
+	* gimplify.c (asan_poison_variable): Don't do the check for
+	gimplify_omp_ctxp here.
+	(gimplify_decl_expr): Do it here.
+	(gimplify_target_expr): Likewise.
+
 2018-03-28  Martin Liska  <mliska@suse.cz>
 
 	PR target/84988
