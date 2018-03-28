@@ -1,5 +1,10 @@
 2018-03-28  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/84973
+	* g++.dg/template/pr84973.C: New.
+	* g++.dg/template/pr84973-2.C: New.
+	* g++.dg/template/pr84973-3.C: New.
+
 	PR c++/84968
 	* g++.dg/eh/pr84968.C: New.
 
