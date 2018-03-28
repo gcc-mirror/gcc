@@ -865,7 +865,7 @@ enum reg_class
 /* A C expression for the cost of a branch instruction.
    A value of 1 is the default;
    other values are interpreted relative to that.  */
-#define BRANCH_COST(speed_p, predictable_p) ((speed_p) ? 2 : 0)
+#define BRANCH_COST(speed_p, predictable_p) ((speed_p) ? 2 : 1)
 
 /* Override BRANCH_COST heuristic which empirically produces worse
    performance for removing short circuiting from the logical ops.  */
