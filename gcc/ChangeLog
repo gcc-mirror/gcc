@@ -1,3 +1,21 @@
+2018-03-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84912
+	* config/rs6000/rs6000-builtin.def (DIVWEO): Delete macro expansion.
+	(DIVWEUO): Likewise.
+	(DIVDEO): Likewise.
+	(DIVDEUO): Likewise.
+	* config/rs6000/rs6000.c (builtin_function_type): Remove support for
+	DIVWEUO and DIVDEUO.
+	* config/rs6000/rs6000.md (UNSPEC_DIVEO, UNSPEC_DIVEUO): Delete unspecs.
+	(UNSPEC_DIV_EXTEND): Remove deleted unspecs.
+	(div_extend): Likewise.
+	* doc/extend.texi (__builtin_divweo): Remove documention for deleted
+	builtin function.
+	(__builtin_divweuo): Likewise.
+	(__builtin_divdeo): Likewise.
+	(__builtin_divdeuo): Likewise.
+
 2018-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85095
