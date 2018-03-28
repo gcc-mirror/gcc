@@ -1,3 +1,12 @@
+2018-03-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2018-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/85026
+	* config/arm/arm.md (unaligned_loadhis): Remove first alternative.
+	Clean up attributes.
+
 2018-03-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from mainline

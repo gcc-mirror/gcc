@@ -4247,16 +4247,13 @@
    (set_attr "type" "load1")])
 
 (define_insn "unaligned_loadhis"
-  [(set (match_operand:SI 0 "s_register_operand" "=l,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(sign_extend:SI
-	  (unspec:HI [(match_operand:HI 1 "memory_operand" "Uw,Uh")]
+	  (unspec:HI [(match_operand:HI 1 "memory_operand" "Uh")]
 		     UNSPEC_UNALIGNED_LOAD)))]
   "unaligned_access"
   "ldrsh%?\t%0, %1\t@ unaligned"
-  [(set_attr "arch" "t2,any")
-   (set_attr "length" "2,4")
-   (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "yes,no")
+  [(set_attr "predicable" "yes")
    (set_attr "type" "load_byte")])
 
 (define_insn "unaligned_loadhiu"
