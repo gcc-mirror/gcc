@@ -1,5 +1,10 @@
 2018-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85095
+	* gcc.target/i386/pr85095-1.c: New test.
+	* gcc.target/i386/pr85095-2.c: New test.
+	* gcc.c-torture/execute/pr85095.c: New test.
+
 	PR tree-optimization/82004
 	* gcc.dg/pr82004.c: New test.
 
