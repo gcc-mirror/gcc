@@ -1,5 +1,9 @@
 2018-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85095
+	* config/i386/i386.md (*add<mode>3_carry_0, *addsi3_carry_zext_0,
+	*sub<mode>3_carry_0, *subsi3_carry_zext_0): New patterns.
+
 	PR tree-optimization/82004
 	* gimple-match-head.c (optimize_pow_to_exp): New function.
 	* match.pd (pow(C,x) -> exp(log(C)*x)): Wrap with #if GIMPLE.
