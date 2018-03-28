@@ -10,7 +10,7 @@
 	* config/rs6000/rs6000.md (UNSPEC_DIVEO, UNSPEC_DIVEUO): Delete unspecs.
 	(UNSPEC_DIV_EXTEND): Remove deleted unspecs.
 	(div_extend): Likewise.
-	* doc/extend.texi (__builtin_divweo): Remove documention for deleted
+	* doc/extend.texi (__builtin_divweo): Remove documentation for deleted
 	builtin function.
 	(__builtin_divweuo): Likewise.
 	(__builtin_divdeo): Likewise.
