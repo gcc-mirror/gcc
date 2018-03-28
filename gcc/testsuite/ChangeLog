@@ -11,7 +11,7 @@
 	PR target/81647
 	* gcc.target/aarch64/pr81647.c: New.
 
-2018-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2018-03-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
 	2018-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
