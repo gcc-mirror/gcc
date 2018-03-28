@@ -1,8 +1,15 @@
+2018-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85084
+	Backport from trunk.
+	* frontend-passes.c (gfc_run_passes): Do not run front-end
+	optimizations if a previous error occurred.
+
 2018-03-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85001
 	* interface.c (symbol_rank): Remove bogus null pointer check that
-	crept in when translating a ternary operator into an if-else 
+	crept in when translating a ternary operator into an if-else
 	constructor.
 
 2018-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
