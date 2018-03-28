@@ -1999,7 +1999,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		  *may_tailcall = false;
 		  maybe_complain_about_tail_call (exp,
 						  "a callee-copied argument is"
-						  " stored in the current "
+						  " stored in the current"
 						  " function's frame");
 		}
 

@@ -1002,7 +1002,7 @@ Select what to sanitize.
 
 fsanitize-coverage=
 Common Report Joined
-Select what to coverage sanitize.
+Select type of coverage sanitization.
 
 fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer
@@ -1637,7 +1637,7 @@ Common Report Joined RejectNegative Enum(cf_protection_level) Var(flag_cf_protec
 instructions have valid targets.
 
 Enum
-Name(cf_protection_level) Type(enum cf_protection_level) UnknownError(unknown Cotrol-Flow Protection Level %qs)
+Name(cf_protection_level) Type(enum cf_protection_level) UnknownError(unknown Control-Flow Protection Level %qs)
 
 EnumValue
 Enum(cf_protection_level) String(full) Value(CF_FULL)
