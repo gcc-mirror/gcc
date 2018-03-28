@@ -1,3 +1,8 @@
+2018-03-28  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/crypto-builtin-1-runnable:  Add
+	p8vector_hw to dg-do run.
+
 2018-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/85084
