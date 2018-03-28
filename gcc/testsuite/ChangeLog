@@ -1,3 +1,8 @@
+2018-03-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84968
+	* g++.dg/eh/pr84968.C: New.
+
 2018-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/84914
