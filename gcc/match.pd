@@ -4006,6 +4006,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* pow(C,x) -> exp(log(C)*x) if C > 0,
     or if C is a positive power of 2,
     pow(C,x) -> exp2(log2(C)*x).  */
+#if GIMPLE
  (for pows (POW)
       exps (EXP)
       logs (LOG)
@@ -4035,8 +4036,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 }
      }
      (if (!use_exp2)
-      (exps (mult (logs @0) @1))
+      (if (optimize_pow_to_exp (@0, @1))
+       (exps (mult (logs @0) @1)))
       (exp2s (mult (log2s @0) @1)))))))
+#endif
 
  /* pow(C,x)*expN(y) -> expN(logN(C)*x+y) if C > 0.  */
  (for pows (POW)

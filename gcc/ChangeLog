@@ -1,3 +1,10 @@
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82004
+	* gimple-match-head.c (optimize_pow_to_exp): New function.
+	* match.pd (pow(C,x) -> exp(log(C)*x)): Wrap with #if GIMPLE.
+	Don't fold to exp if optimize_pow_to_exp is false.
+
 2018-03-28  Martin Liska  <mliska@suse.cz>
 
 	PR other/84819

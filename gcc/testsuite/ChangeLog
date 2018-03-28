@@ -1,4 +1,9 @@
 2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82004
+	* gcc.dg/pr82004.c: New test.
+
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/85081
