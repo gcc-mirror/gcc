@@ -12337,6 +12337,9 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   tree parmtype = TREE_TYPE (parm);
   if (DECL_BY_REFERENCE (parm))
     parmtype = TREE_TYPE (parmtype);
+  if (parmtype == error_mark_node)
+    return error_mark_node;
+
   gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, parmtype));
 
   tree *slot;
