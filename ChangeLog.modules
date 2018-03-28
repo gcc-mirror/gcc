@@ -1,3 +1,30 @@
+2018-03-28  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (maybe_get_template): New.
+	(depset::hash::maybe_add_definition): Return a depset.
+	(depset::hash::add_dependency): Don't deal with template here.
+	(module_state::write_{function,class}): New stubs.
+	(module_state::write_enum): New.
+	(module_state::write_definition): New.
+	(module_state::tng_write_cluster): Write binding header.
+	(module_state::add_writables): Don't return a bool. No need to
+	nadger namespace ownership.
+	(module_state::find_dependencies): Adjust.
+	(bind_cmp, space_cmp): New.
+	(ns_cmp): Delete.
+	(module_state::tng_write_bindings): Sort here.
+	(trees_out::tree_node): Check dependency of containers.
+	(module_purview_p): Defend against early checks.
+	* name-lookup.c (extract_module_decls): Don't special-case
+	namespaces.
+	(push_namespace): Set EXPORT & OWNER inside a module.
+	gcc/testsuite/
+	* g++.dg/modules/namespace-2.C: Adjust.
+	* g++.dg/modules/namespace-3.C: New.
+	* g++.dg/modules/scc-1.C: Adjust.
+	* g++.dg/modules/scc-2.C: New.
+
 2018-03-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

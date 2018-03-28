@@ -3541,9 +3541,7 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
 	decl = DECL_TEMPLATE_RESULT (decl);
 
       /* Ignore not this module.  */
-      if (MAYBE_DECL_MODULE_PURVIEW_P (decl) != MODULE_PURVIEW
-	  // FIXME:Needed for old-style binding writing, not tng
-	  && TREE_CODE (decl) != NAMESPACE_DECL)
+      if (MAYBE_DECL_MODULE_PURVIEW_P (decl) != MODULE_PURVIEW)
 	continue;
 
       /* Ignore TINFO things.  */
@@ -7521,10 +7519,7 @@ make_namespace (tree ctx, tree name, bool inline_p)
   if (!name)
     SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
   else if (TREE_PUBLIC (ctx))
-    {
-      DECL_MODULE_EXPORT_P (ns) = true;
-      TREE_PUBLIC (ns) = true;
-    }
+    TREE_PUBLIC (ns) = true;
 
   if (inline_p)
     DECL_NAMESPACE_INLINE_P (ns) = true;
@@ -7637,10 +7632,13 @@ push_namespace (tree name, bool make_inline)
 
   if (ns)
     {
-      /* Set the ownership, if we're within an export, so that we know
-	 importers should see this.  */
-      if (TREE_PUBLIC (ns) && module_exporting_level ())
-	DECL_MODULE_OWNER (ns) = MODULE_PURVIEW;
+      /* Explicitly opened public namespaces names are always
+	 exported, regardless of whether they're inside 'export'.  */
+      if (TREE_PUBLIC (ns) && !DECL_MODULE_EXPORT_P (ns) && module_purview_p ())
+	{
+	  DECL_MODULE_EXPORT_P (ns) = true;
+	  DECL_MODULE_OWNER (ns) = MODULE_PURVIEW;
+	}
 
       if (make_inline && !DECL_NAMESPACE_INLINE_P (ns))
 	{
