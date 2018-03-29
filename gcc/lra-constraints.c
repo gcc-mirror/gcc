@@ -2126,7 +2126,6 @@ process_alt_operands (int only_alternative)
 			&& curr_operand_mode[m] != curr_operand_mode[nop])
 		      break;
 		    
-		    this_alternative_matches = m;
 		    m_hregno = get_hard_regno (*curr_id->operand_loc[m], false);
 		    /* We are supposed to match a previous operand.
 		       If we do, we win if that one did.  If we do
@@ -2228,6 +2227,7 @@ process_alt_operands (int only_alternative)
 		    else
 		      did_match = true;
 
+		    this_alternative_matches = m;
 		    /* This can be fixed with reloads if the operand
 		       we are supposed to match can be fixed with
 		       reloads. */
