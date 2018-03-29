@@ -69,12 +69,6 @@ host_modules= { module= isl; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@';
 		extra_make_flags='V=1';
 		no_install= true; };
-// start daniel
-host_modules= { module= mpi; lib_path=src/.libs; bootstrap=true;
-		no_install= true; };
-/*host_modules= { module= mpi; lib_path=src/.libs; bootstrap=true;
-		no_install= true; };*/
-// end daniel
 host_modules= { module= libelf; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared';
 		no_install= true; };
@@ -86,6 +80,9 @@ host_modules= { module= tcl;
 host_modules= { module= itcl; };
 host_modules= { module= ld; bootstrap=true; };
 host_modules= { module= libbacktrace; bootstrap=true; };
+// start daniel
+host_modules= { module= libmpi; };
+// end daniel
 host_modules= { module= libcpp; bootstrap=true; };
 host_modules= { module= libdecnumber; bootstrap=true; };
 host_modules= { module= libgui; };
@@ -159,7 +156,7 @@ target_modules = { module= libgcc; bootstrap=true; no_check=true; };
 target_modules = { module= libbacktrace; };
 target_modules = { module= libquadmath; };
 // start daniel
-target_modules = { module= mpi; };
+target_modules = { module= libmpi; };
 // end daniel
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
@@ -288,6 +285,9 @@ flags_to_pass = { flag= CXXFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= DLLTOOL_FOR_TARGET ; };
 flags_to_pass = { flag= FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
+// start daniel
+flags_to_pass = { flag= MPI_FOR_TARGET ; };
+// end daniel
 flags_to_pass = { flag= GOC_FOR_TARGET ; };
 flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };
@@ -570,7 +570,7 @@ dependencies = { module=install-target-libgo; on=install-target-libatomic; };
 dependencies = { module=install-target-libgfortran; on=install-target-libquadmath; };
 dependencies = { module=install-target-libgfortran; on=install-target-libgcc; };
 // start daniel
-dependencies = { module=install-target-libgfortran; on=install-target-mpi; };
+// dependencies = { module=install-target-libgfortran; on=install-target-mpi; };
 // end daniel
 dependencies = { module=install-target-libsanitizer; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-libsanitizer; on=install-target-libgcc; };
@@ -594,7 +594,7 @@ dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libbacktrace; };
 // start daniel
-dependencies = { module=configure-target-libgfortran; on=all-target-mpi; };
+// dependencies = { module=configure-target-libgfortran; on=all-target-mpi; };
 // end daniel
 
 languages = { language=c;	gcc-check-target=check-gcc; };
@@ -604,10 +604,11 @@ languages = { language=c++;	gcc-check-target=check-c++;
 				lib-check-target=check-target-libgomp-c++; };
 languages = { language=fortran;	gcc-check-target=check-fortran;
 				lib-check-target=check-target-libquadmath;
-				lib-check-target=check-target-libgfortran; 
-				// start daniel
-				lib-check-target=check-target-mpi; };
-				// end daniel
+				lib-check-target=check-target-libgfortran; };
+// start daniel
+languages = { language=mpi; 	gcc-check-target=check-fortran;
+				lib-check-target=check-target-libmpi; };
+// end daniel
 languages = { language=ada;	gcc-check-target=check-ada;
 				lib-check-target=check-target-libada; };
 languages = { language=objc;	gcc-check-target=check-objc;
