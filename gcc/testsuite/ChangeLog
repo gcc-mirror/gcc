@@ -1,4 +1,9 @@
-2018-03-20  Carl Love  <cel@us.ibm.com>
+2018-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84606
+	* g++.dg/cpp0x/pr84606.C: New.
+
+2018-03-29  Carl Love  <cel@us.ibm.com>
 
 	Revert
 	2017-09-27  Carl Love  <cel@us.ibm.com>
