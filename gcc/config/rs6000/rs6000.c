@@ -3916,6 +3916,7 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_P9_MISC)		    ? RS6000_BTM_P9_MISC   : 0)
 	  | ((TARGET_MODULO)		    ? RS6000_BTM_MODULO    : 0)
 	  | ((TARGET_64BIT)		    ? RS6000_BTM_64BIT     : 0)
+	  | ((TARGET_POWERPC64)		    ? RS6000_BTM_POWERPC64 : 0)
 	  | ((TARGET_CRYPTO)		    ? RS6000_BTM_CRYPTO	   : 0)
 	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
 	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0)
@@ -15952,6 +15953,11 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 	   name);
   else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
     error ("builtin function %qs requires the %qs option", name, "-mfloat128");
+  else if ((fnmask & (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
+	   == (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
+    error ("builtin function %qs requires the %qs (or newer), and "
+	   "%qs or %qs options",
+	   name, "-mcpu=power7", "-m64", "-mpowerpc64");
   else
     error ("builtin function %qs is not supported with the current options",
 	   name);
@@ -36653,6 +36659,7 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "hard-dfp",		 RS6000_BTM_DFP,	false, false },
   { "hard-float",	 RS6000_BTM_HARD_FLOAT,	false, false },
   { "long-double-128",	 RS6000_BTM_LDBL128,	false, false },
+  { "powerpc64",	 RS6000_BTM_POWERPC64,  false, false },
   { "float128",		 RS6000_BTM_FLOAT128,   false, false },
   { "float128-hw",	 RS6000_BTM_FLOAT128_HW,false, false },
 };
