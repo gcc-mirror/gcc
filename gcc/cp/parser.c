@@ -11459,7 +11459,7 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 				  /*protect=*/2, /*want_type=*/false,
 				  tf_warning_or_error);
 
-      if (member_begin != NULL_TREE || member_end != NULL_TREE)
+      if (member_begin != NULL_TREE && member_end != NULL_TREE)
 	{
 	  /* Use the member functions.  */
 	  if (member_begin != NULL_TREE)
