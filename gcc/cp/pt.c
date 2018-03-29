@@ -8497,6 +8497,22 @@ coerce_template_parms (tree parms,
       goto bad_nargs;
     }
 
+  if (arg_idx < nargs)
+    {
+      /* We had some pack expansion arguments that will only work if the packs
+	 are empty, but wait until instantiation time to complain.
+	 See variadic-ttp3.C.  */
+      int len = nparms + (nargs - arg_idx);
+      tree args = make_tree_vec (len);
+      int i = 0;
+      for (; i < nparms; ++i)
+	TREE_VEC_ELT (args, i) = TREE_VEC_ELT (new_inner_args, i);
+      for (; i < len; ++i, ++arg_idx)
+	TREE_VEC_ELT (args, i) = TREE_VEC_ELT (inner_args,
+					       arg_idx - pack_adjust);
+      new_inner_args = args;
+    }
+
   if (lost)
     {
       gcc_assert (!(complain & tf_error) || seen_error ());
