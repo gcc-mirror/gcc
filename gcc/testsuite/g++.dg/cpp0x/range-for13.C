@@ -3,16 +3,6 @@
 
 // { dg-do compile { target c++11 } }
 
-//These should not be used
-template<typename T> int *begin(T &t)
-{
-    T::fail;
-}
-template<typename T> int *end(T &t)
-{
-    T::fail;
-}
-
 struct container1
 {
     int *begin();
@@ -87,10 +77,37 @@ struct container10
     static function end;
 };
 
+namespace N
+{
+template<typename T> int *begin(T &t)
+{
+    return 0;
+}
+template<typename T> int *end(T &t)
+{
+    return 0;
+}
+struct container11
+{
+    int *begin();
+    //no end
+};
+
+struct container12
+{
+    int *end();
+    //no begin
+};
+
+struct container13
+{
+};
+}
+
 void test1()
 {
-  for (int x : container1()); // { dg-error "member but not" }
-  for (int x : container2()); // { dg-error "member but not" }
+  for (int x : container1()); // { dg-error "'begin' was not declared|'end' was not declared" }
+  for (int x : container2()); // { dg-error "'begin' was not declared|'end' was not declared" }
   for (int x : container3()); // { dg-error "within this context" }
   for (int x : container4()); // { dg-error "cannot be used as a function" }
   for (int x : container5()); // { dg-error "invalid use of" }
@@ -99,4 +116,7 @@ void test1()
   for (int x : container8());
   for (int x : container9()); // { dg-error "within this context" }
   for (int x : container10());
+  for (int x : N::container11());
+  for (int x : N::container12());
+  for (int x : N::container13());
 }
