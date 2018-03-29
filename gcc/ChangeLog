@@ -1,3 +1,11 @@
+2018-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85094
+	* fold-const.c (operand_equal_p): Handle DEBUG_BEGIN_STMT.
+	For STATEMENT_LIST, pass down OEP_LEXICOGRAPHIC and maybe
+	OEP_NO_HASH_CHECK for recursive call, to avoid exponential
+	checking.
+
 2018-03-28  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/84912

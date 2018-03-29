@@ -1,3 +1,8 @@
+2018-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85094
+	* c-c++-common/Wduplicated-branches-14.c: New test.
+
 2018-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84606
