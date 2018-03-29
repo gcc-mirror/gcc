@@ -1,3 +1,9 @@
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* name-lookup.c (get_std_name_hint): Add names from <memory>,
+	<tuple>, and <utility>.
+
 2018-03-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85093 - too many template args with pack expansion.
