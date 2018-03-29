@@ -1,5 +1,11 @@
 2018-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85093 - too many template args with pack expansion.
+	* pt.c (coerce_template_parms): Keep pack expansion args that will
+	need to be empty.
+
+2018-03-29  Jason Merrill  <jason@redhat.com>
+
 	* pt.c (build_non_dependent_expr): Propagate expr location.
 
 2018-03-27  Jason Merrill  <jason@redhat.com>
