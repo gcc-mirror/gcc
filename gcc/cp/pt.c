@@ -25473,7 +25473,8 @@ build_non_dependent_expr (tree expr)
   gcc_assert (TREE_TYPE (expr) != unknown_type_node);
 
   /* Otherwise, build a NON_DEPENDENT_EXPR.  */
-  return build1 (NON_DEPENDENT_EXPR, TREE_TYPE (expr), expr);
+  return build1_loc (EXPR_LOCATION (orig_expr), NON_DEPENDENT_EXPR,
+		     TREE_TYPE (expr), expr);
 }
 
 /* ARGS is a vector of expressions as arguments to a function call.

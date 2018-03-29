@@ -1,3 +1,7 @@
+2018-03-29  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (build_non_dependent_expr): Propagate expr location.
+
 2018-03-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85060 - wrong-code with call to base member in template.
