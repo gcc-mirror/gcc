@@ -1,3 +1,16 @@
+2018-03-29  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	PR c++/84783
+	* gcc.target/i386/avx512vl-vpermd-1.c (_mm256_permutexvar_epi32):
+	Test new intrinsic.
+	* gcc.target/i386/avx512vl-vpermq-imm-1.c (_mm256_permutex_epi64):
+	Ditto.
+	* gcc.target/i386/avx512vl-vpermq-var-1.c (_mm256_permutexvar_epi64):
+	Ditto.
+	* gcc.target/i386/avx512f-vpermd-2.c: Do not check for AVX512F_LEN.
+	* gcc.target/i386/avx512f-vpermq-imm-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-var-2.c: Ditto.
+
 2018-03-29  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/arm/pr84826.c: Change dg-option to -fstack-check.

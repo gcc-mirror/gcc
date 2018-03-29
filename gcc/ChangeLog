@@ -1,3 +1,9 @@
+2018-03-29  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	PR c++/84783
+	* config/i386/avx512vlintrin.h (_mm256_permutexvar_epi64)
+	(_mm256_permutexvar_epi32, _mm256_permutex_epi64): New intrinsics.
+
 2018-03-29  Sudakshina Das  <sudi.das@arm.com>
 
 	Backport from mainline
