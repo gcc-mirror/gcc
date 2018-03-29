@@ -1,3 +1,19 @@
+2018-03-29  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/arm/pr84826.c: Change dg-option to -fstack-check.
+
+	Backport from mainline
+	2018-03-23  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/84826
+	* gcc.target/arm/pr84826.c: Add dg directive.
+
+	Backport from mainline
+	2018-03-22  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/84826
+	* gcc.target/arm/pr84826.c: New test.
+
 2018-03-28  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/crypto-builtin-1-runnable:  Add

@@ -1435,6 +1435,9 @@ typedef struct GTY(()) machine_function
   machine_mode thumb1_cc_mode;
   /* Set to 1 after arm_reorg has started.  */
   int after_arm_reorg;
+  /* The number of bytes used to store the static chain register on the
+     stack, above the stack frame.  */
+  int static_chain_stack_bytes;
 }
 machine_function;
 #endif

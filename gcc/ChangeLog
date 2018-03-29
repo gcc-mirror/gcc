@@ -1,3 +1,16 @@
+2018-03-29  Sudakshina Das  <sudi.das@arm.com>
+
+	Backport from mainline
+	2018-03-22  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/84826
+	* config/arm/arm.h (machine_function): Add static_chain_stack_bytes.
+	* config/arm/arm.c (arm_compute_static_chain_stack_bytes): Avoid
+	re-computing once computed.
+	(arm_expand_prologue): Compute machine->static_chain_stack_bytes.
+	(arm_init_machine_status): Initialize
+	machine->static_chain_stack_bytes.
+
 2018-03-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
