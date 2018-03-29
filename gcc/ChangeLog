@@ -1,4 +1,18 @@
-2018-03-20 Carl Love  <cel@us.ibm.com>
+2018-03-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84912
+	* config/rs6000/rs6000.h (RS6000_BTM_POWERPC64): New define.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_POWERPC64.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add support
+	for RS6000_BTM_POWERPC64.
+	(rs6000_invalid_builtin): Add handling for RS6000_BTM_POWERPC64
+	(rs6000_builtin_mask_names): Add RS6000_BTM_POWERPC64.
+	* config/rs6000/rs6000-builtin.def (BU_P7_POWERPC64_MISC_2): New macro
+	definition.
+	(DIVDE): Use it.
+	(DIVDEU): Likewise.
+
+2018-03-28 Carl Love  <cel@us.ibm.com>
 
 	Revert
 	2017-09-27  Carl Love  <cel@us.ibm.com>
