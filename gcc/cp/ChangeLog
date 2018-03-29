@@ -1,3 +1,9 @@
+2018-03-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85060 - wrong-code with call to base member in template.
+	* search.c (any_dependent_bases_p): Check uses_template_parms
+	rather than processing_template_decl.
+
 2018-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85110
