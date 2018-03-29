@@ -1,3 +1,13 @@
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* g++.dg/lookup/missing-std-include-6.C: New test.
+	* g++.dg/lookup/missing-std-include.C: Add std::pair and
+	std::tuple tests.
+	* g++.dg/spellcheck-reswords.C: Expect a hint about <cstring>.
+	* g++.dg/spellcheck-stdlib.C: Add tests for names in <cstdio>,
+	<cstring>, <cassert>, and <cstdlib>.
+
 2018-03-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/84985

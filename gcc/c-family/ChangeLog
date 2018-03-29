@@ -1,3 +1,10 @@
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* known-headers.cc (get_stdlib_header_for_name): Add various names
+	from <assert.h>, <string.h>, and <memory.h>; add more names from
+	<stdio.h>.
+
 2018-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85061

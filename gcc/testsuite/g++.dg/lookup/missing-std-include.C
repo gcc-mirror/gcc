@@ -26,4 +26,12 @@ void test (void)
   std::list<int> lst;  // { dg-error ".list. is not a member of .std." }
   // { dg-message ".std::list. is defined in header .<list>.; did you forget to .#include <list>.?" "" { target *-*-* } .-1 }
   // { dg-error "expected primary-expression before .int." "" { target *-*-* } .-2 }
+
+  std::pair<int,float> p; // { dg-error ".pair. is not a member of .std." }
+  // { dg-message ".std::pair. is defined in header .<utility>.; did you forget to .#include <utility>.?" "" { target *-*-* } .-1 }
+  // { dg-error "expected primary-expression before .int." "" { target *-*-* } .-2 }
+
+  std::tuple<int,float> p; // { dg-error ".tuple. is not a member of .std." }
+  // { dg-message ".std::tuple. is defined in header .<tuple>.; did you forget to .#include <tuple>.?" "" { target *-*-* } .-1 }
+  // { dg-error "expected primary-expression before .int." "" { target *-*-* } .-2 }
 }
