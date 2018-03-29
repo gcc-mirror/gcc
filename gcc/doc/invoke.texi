@@ -9483,9 +9483,8 @@ strict version check, so bytecode files generated in one version of
 GCC do not work with an older or newer version of GCC.
 
 Link-time optimization does not work well with generation of debugging
-information.  Combining @option{-flto} with
-@option{-g} is currently experimental and expected to produce unexpected
-results.
+information on systems other than those using a combination of ELF and
+DWARF.
 
 If you specify the optional @var{n}, the optimization and code
 generation done at link time is executed in parallel using @var{n}
@@ -9564,6 +9563,11 @@ need to support linker plugins to allow a full-featured build environment
 (capable of building static libraries etc).  GCC provides the @command{gcc-ar},
 @command{gcc-nm}, @command{gcc-ranlib} wrappers to pass the right options
 to these tools. With non fat LTO makefiles need to be modified to use them.
+
+Note that modern binutils provide plugin auto-load mechanism.
+Installing the linker plugin into @file{$libdir/bfd-plugins} has the same
+effect as usage of the command wrappers (@command{gcc-ar}, @command{gcc-nm} and
+@command{gcc-ranlib}).
 
 The default is @option{-fno-fat-lto-objects} on targets with linker plugin
 support.
@@ -26439,6 +26443,9 @@ enables all instruction subsets supported by the local machine (hence
 the result might not run on different machines).  Using @option{-mtune=native}
 produces code optimized for the local machine under the constraints
 of the selected instruction set.  
+
+@item x86-64
+A generic CPU with 64-bit extensions.
 
 @item i386
 Original Intel i386 CPU@.
