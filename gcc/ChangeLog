@@ -1,5 +1,7 @@
 2018-03-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (<avx512>_blendm<mode>): Use <sseintprefix>.
+
 	PR c/85094
 	* fold-const.c (operand_equal_p): Handle DEBUG_BEGIN_STMT.
 	For STATEMENT_LIST, pass down OEP_LEXICOGRAPHIC and maybe
