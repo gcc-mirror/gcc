@@ -1,3 +1,8 @@
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* g++.dg/diagnostic/param-type-mismatch-2.C: New test.
+
 2018-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85108

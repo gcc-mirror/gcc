@@ -1,3 +1,10 @@
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* typeck.c (convert_for_assignment): When complaining due to
+	conversions for an argument, attempt to use the location of the
+	argument.
+
 2018-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85028
