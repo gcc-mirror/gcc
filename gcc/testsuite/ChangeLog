@@ -1,3 +1,11 @@
+2018-03-30  Cesar Philippidis  <cesar@codesourcery.com>
+
+	Backport from mainline
+	2018-03-27  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/gcc.target/nvptx/pr85056.c: New test.
+	* testsuite/gcc.target/nvptx/pr85056a.c: New test.
+
 2018-03-29  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/arm/pr84826.c: Change dg-option to -fstack-check.

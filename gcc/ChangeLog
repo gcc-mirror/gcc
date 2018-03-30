@@ -1,3 +1,12 @@
+2018-03-30  Cesar Philippidis  <cesar@codesourcery.com>
+
+	Backport from mainline
+	2018-03-27  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR target/85056
+	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): Add '[]' to
+	extern array declarations.
+
 2018-03-29  Sudakshina Das  <sudi.das@arm.com>
 
 	Backport from mainline
