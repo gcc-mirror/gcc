@@ -1,3 +1,9 @@
+2018-03-30  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (process_init_constructor_record): Use
+	init_list_type_node for the CONSTRUCTOR around an anonymous union
+	designated initializer.
+
 2018-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84791
