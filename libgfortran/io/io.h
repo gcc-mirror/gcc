@@ -442,7 +442,7 @@ st_parameter_inquire;
 #define IOPARM_DT_HAS_SIGN			(1 << 24)
 #define IOPARM_DT_HAS_F2003                     (1 << 25)
 #define IOPARM_DT_HAS_UDTIO                     (1 << 26)
-#define IOPARM_DT_DEFAULT_EXP			(1 << 27)
+#define IOPARM_DT_DEC_EXT			(1 << 27)
 /* Internal use bit.  */
 #define IOPARM_DT_IONML_SET			(1u << 31)
 

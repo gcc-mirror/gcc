@@ -739,6 +739,9 @@ check_classfn (tree ctype, tree function, tree template_parms)
 void
 note_vague_linkage_fn (tree decl)
 {
+  if (processing_template_decl)
+    return;
+
   DECL_DEFER_OUTPUT (decl) = 1;
   vec_safe_push (deferred_fns, decl);
 }

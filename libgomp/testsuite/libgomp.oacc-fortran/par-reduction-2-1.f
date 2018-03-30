@@ -29,8 +29,8 @@
 
       CALL ACC_ASYNC_WAIT (1)
 
-      IF (RES .NE. RES1) CALL ABORT
-      IF (RES .NE. RES2) CALL ABORT
+      IF (RES .NE. RES1) STOP 1
+      IF (RES .NE. RES2) STOP 2
 
       RES1 = 1
       RES2 = 1
@@ -51,7 +51,7 @@
 
       CALL ACC_ASYNC_WAIT_ALL
 
-      IF (RES .NE. RES1) CALL ABORT
-      IF (RES .NE. RES2) CALL ABORT
+      IF (RES .NE. RES1) STOP 3
+      IF (RES .NE. RES2) STOP 4
 
       END PROGRAM

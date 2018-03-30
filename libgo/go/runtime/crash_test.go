@@ -150,6 +150,9 @@ var (
 
 func checkStaleRuntime(t *testing.T) {
 	staleRuntimeOnce.Do(func() {
+		if runtime.Compiler == "gccgo" {
+			return
+		}
 		// 'go run' uses the installed copy of runtime.a, which may be out of date.
 		out, err := testenv.CleanCmdEnv(exec.Command(testenv.GoToolPath(t), "list", "-gcflags=all="+os.Getenv("GO_GCFLAGS"), "-f", "{{.Stale}}", "runtime")).CombinedOutput()
 		if err != nil {

@@ -1904,7 +1904,7 @@ check_final_overrider (tree overrider, tree basefn)
 	  if (pedwarn (DECL_SOURCE_LOCATION (overrider), 0,
 		       "invalid covariant return type for %q#D", overrider))
 	    inform (DECL_SOURCE_LOCATION (basefn),
-		    "  overriding %q#D", basefn);
+		    "overridden function is %q#D", basefn);
 	}
       else
 	fail = 2;
@@ -1918,12 +1918,14 @@ check_final_overrider (tree overrider, tree basefn)
       if (fail == 1)
 	{
 	  error ("invalid covariant return type for %q+#D", overrider);
-	  error ("  overriding %q+#D", basefn);
+	  inform (DECL_SOURCE_LOCATION (basefn),
+		  "overridden function is %q#D", basefn);
 	}
       else
 	{
 	  error ("conflicting return type specified for %q+#D", overrider);
-	  error ("  overriding %q+#D", basefn);
+	  inform (DECL_SOURCE_LOCATION (basefn),
+		  "overridden function is %q#D", basefn);
 	}
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
@@ -1938,7 +1940,8 @@ check_final_overrider (tree overrider, tree basefn)
   if (!comp_except_specs (base_throw, over_throw, ce_derived))
     {
       error ("looser throw specifier for %q+#F", overrider);
-      error ("  overriding %q+#F", basefn);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %q#F", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
@@ -1950,7 +1953,8 @@ check_final_overrider (tree overrider, tree basefn)
       && !tx_safe_fn_type_p (over_type))
     {
       error ("conflicting type attributes specified for %q+#D", overrider);
-      error ("  overriding %q+#D", basefn);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %q#D", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
@@ -1974,21 +1978,26 @@ check_final_overrider (tree overrider, tree basefn)
     {
       if (DECL_DELETED_FN (overrider))
 	{
-	  error ("deleted function %q+D", overrider);
-	  error ("overriding non-deleted function %q+D", basefn);
+	  error ("deleted function %q+D overriding non-deleted function",
+		 overrider);
+	  inform (DECL_SOURCE_LOCATION (basefn),
+		  "overridden function is %qD", basefn);
 	  maybe_explain_implicit_delete (overrider);
 	}
       else
 	{
-	  error ("non-deleted function %q+D", overrider);
-	  error ("overriding deleted function %q+D", basefn);
+	  error ("non-deleted function %q+D overriding deleted function",
+		 overrider);
+	  inform (DECL_SOURCE_LOCATION (basefn),
+		  "overridden function is %qD", basefn);
 	}
       return 0;
     }
   if (DECL_FINAL_P (basefn))
     {
-      error ("virtual function %q+D", overrider);
-      error ("overriding final function %q+D", basefn);
+      error ("virtual function %q+D overriding final function", overrider);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %qD", basefn);
       return 0;
     }
   return 1;
@@ -2610,7 +2619,7 @@ original_binfo (tree binfo, tree here)
 bool
 any_dependent_bases_p (tree type)
 {
-  if (!type || !CLASS_TYPE_P (type) || !processing_template_decl)
+  if (!type || !CLASS_TYPE_P (type) || !uses_template_parms (type))
     return false;
 
   /* If we haven't set TYPE_BINFO yet, we don't know anything about the bases.

@@ -8618,7 +8618,8 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       if (cum->caller)
 	cfun->machine->outgoing_args_on_stack = true;
 
-      cum->bnds_in_bt = chkp_type_bounds_count (type);
+      if (flag_check_pointer_bounds)
+	cum->bnds_in_bt = chkp_type_bounds_count (type);
     }
 }
 
@@ -30411,12 +30412,21 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   rtx mem, fnaddr;
   int opcode;
   int offset = 0;
+  bool need_endbr = (flag_cf_protection & CF_BRANCH) && TARGET_IBT;
 
   fnaddr = XEXP (DECL_RTL (fndecl), 0);
 
   if (TARGET_64BIT)
     {
       int size;
+
+      if (need_endbr)
+	{
+	  /* Insert ENDBR64.  */
+	  mem = adjust_address (m_tramp, SImode, offset);
+	  emit_move_insn (mem, gen_int_mode (0xfa1e0ff3, SImode));
+	  offset += 4;
+	}
 
       /* Load the function address to r11.  Try to load address using
 	 the shorter movl instead of movabs.  We may want to support
@@ -30494,6 +30504,14 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	}
       else
 	opcode = 0x68;
+
+      if (need_endbr)
+	{
+	  /* Insert ENDBR32.  */
+	  mem = adjust_address (m_tramp, SImode, offset);
+	  emit_move_insn (mem, gen_int_mode (0xfb1e0ff3, SImode));
+	  offset += 4;
+	}
 
       mem = adjust_address (m_tramp, QImode, offset);
       emit_move_insn (mem, gen_int_mode (opcode, QImode));

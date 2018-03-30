@@ -57,6 +57,9 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
   gcc_assert (lib < NUM_STDLIBS);
 
   static const stdlib_hint hints[] = {
+    /* <assert.h> and <cassert>.  */
+    {"assert", {"<assert.h>",  "<cassert>"} },
+
     /* <errno.h> and <cerrno>.  */
     {"errno", {"<errno.h>", "<cerrno>"} },
 
@@ -92,15 +95,43 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
     {"size_t", {"<stddef.h>", "<cstddef>"} },
     {"wchar_t", {"<stddef.h>", NULL /* a keyword in C++ */} },
 
-    /* <stdio.h>.  */
+    /* <stdio.h> and <cstdio>.  */
     {"BUFSIZ", {"<stdio.h>", "<cstdio>"} },
     {"EOF", {"<stdio.h>", "<cstdio>"} },
     {"FILE", {"<stdio.h>", "<cstdio>"} },
     {"FILENAME_MAX", {"<stdio.h>", "<cstdio>"} },
+    {"fopen", {"<stdio.h>", "<cstdio>"} },
     {"fpos_t", {"<stdio.h>", "<cstdio>"} },
+    {"getchar", {"<stdio.h>", "<cstdio>"} },
+    {"printf", {"<stdio.h>", "<cstdio>"} },
+    {"snprintf", {"<stdio.h>", "<cstdio>"} },
+    {"sprintf", {"<stdio.h>", "<cstdio>"} },
     {"stderr", {"<stdio.h>", "<cstdio>"} },
     {"stdin", {"<stdio.h>", "<cstdio>"} },
     {"stdout", {"<stdio.h>", "<cstdio>"} },
+
+    /* <stdlib.h> and <cstdlib>.  */
+    {"free", {"<stdlib.h>", "<cstdlib>"} },
+    {"malloc", {"<stdlib.h>", "<cstdlib>"} },
+    {"realloc", {"<stdlib.h>", "<cstdlib>"} },
+
+    /* <string.h> and <cstring>.  */
+    {"memchr", {"<string.h>", "<cstring>"} },
+    {"memcmp", {"<string.h>", "<cstring>"} },
+    {"memcpy", {"<string.h>", "<cstring>"} },
+    {"memmove", {"<string.h>", "<cstring>"} },
+    {"memset", {"<string.h>", "<cstring>"} },
+    {"strcat", {"<string.h>", "<cstring>"} },
+    {"strchr", {"<string.h>", "<cstring>"} },
+    {"strcmp", {"<string.h>", "<cstring>"} },
+    {"strcpy", {"<string.h>", "<cstring>"} },
+    {"strlen", {"<string.h>", "<cstring>"} },
+    {"strncat", {"<string.h>", "<cstring>"} },
+    {"strncmp", {"<string.h>", "<cstring>"} },
+    {"strncpy", {"<string.h>", "<cstring>"} },
+    {"strrchr", {"<string.h>", "<cstring>"} },
+    {"strspn", {"<string.h>", "<cstring>"} },
+    {"strstr", {"<string.h>", "<cstring>"} },
 
     /* <stdint.h>.  */
     {"PTRDIFF_MAX", {"<stdint.h>", "<cstdint>"} },

@@ -8782,8 +8782,9 @@ convert_for_assignment (tree type, tree rhs,
 						   parmnum, complain, flags);
 		}
 	      else if (fndecl)
-		error ("cannot convert %qH to %qI for argument %qP to %qD",
-		       rhstype, type, parmnum, fndecl);
+		error_at (EXPR_LOC_OR_LOC (rhs, input_location),
+			  "cannot convert %qH to %qI for argument %qP to %qD",
+			  rhstype, type, parmnum, fndecl);
 	      else
 		switch (errtype)
 		  {

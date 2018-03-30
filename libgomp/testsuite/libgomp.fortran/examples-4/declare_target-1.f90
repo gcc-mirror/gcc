@@ -26,6 +26,6 @@ end module
 
 program e_53_1
   use e_53_1_mod, only : fib, fib_wrapper
-  if (fib (15) /= fib_wrapper (15)) call abort
-  if (fib (25) /= fib_wrapper (25)) call abort
+  if (fib (15) /= fib_wrapper (15)) STOP 1
+  if (fib (25) /= fib_wrapper (25)) STOP 2
 end program

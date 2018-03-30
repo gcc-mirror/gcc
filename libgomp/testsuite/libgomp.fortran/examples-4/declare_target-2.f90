@@ -6,7 +6,7 @@ program e_53_2
   !$omp target map(from: x)
     x = fib (25)
   !$omp end target
-  if (x /= fib (25)) call abort
+  if (x /= fib (25)) STOP 1
 end program
 
 integer recursive function fib (n) result (f)

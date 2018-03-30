@@ -23,7 +23,7 @@
     c(i) = foo (a(i), b(:,i))
   end do
   do i = 1, 1024
-    if (c(i).ne.(6 * i)) call abort
+    if (c(i).ne.(6 * i)) STOP 1
   end do
 contains  
   function foo (x, y)

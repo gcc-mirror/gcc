@@ -380,7 +380,7 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 {
   gfc_expr *result, *a, *b, *c;
 
-  /* Set result to an INTEGER(1) 0 for numeric types and .false. for 
+  /* Set result to an INTEGER(1) 0 for numeric types and .false. for
      LOGICAL.  Mixed-mode math in the loop will promote result to the
      correct type and kind.  */
   if (matrix_a->ts.type == BT_LOGICAL)
@@ -627,7 +627,7 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
       n += 1;
     }
 
-  done = false;
+  done = resultsize <= 0;
   base = arrayvec;
   dest = resultvec;
   while (!done)
@@ -2086,7 +2086,7 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
     }
   else
     shiftvec = NULL;
-  
+
   /* Shut up compiler */
   len = 1;
   rsoffset = 1;
@@ -2296,7 +2296,7 @@ gfc_simplify_dim (gfc_expr *x, gfc_expr *y)
 gfc_expr*
 gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 {
-  /* If vector_a is a zero-sized array, the result is 0 for INTEGER, 
+  /* If vector_a is a zero-sized array, the result is 0 for INTEGER,
      REAL, and COMPLEX types and .false. for LOGICAL.  */
   if (vector_a->shape && mpz_get_si (vector_a->shape[0]) == 0)
     {
@@ -2423,7 +2423,7 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
     {
       if (boundary->rank > 0)
 	gfc_simplify_expr (boundary, 1);
-      
+
       if (!gfc_is_constant_expr (boundary))
 	  return NULL;
     }
@@ -2443,7 +2443,7 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
       temp_boundary = true;
       switch (array->ts.type)
 	{
-	  
+
 	case BT_INTEGER:
 	  bnd = gfc_get_int_expr (array->ts.kind, NULL, 0);
 	  break;
@@ -2477,7 +2477,7 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
       temp_boundary = false;
       bnd = boundary;
     }
-  
+
   gfc_array_size (array, &size);
   arraysize = mpz_get_ui (size);
   mpz_clear (size);
@@ -2615,7 +2615,7 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 
       if (bnd_ctor)
 	bnd_ctor = gfc_constructor_next (bnd_ctor);
-      
+
       count[0]++;
       n = 0;
       while (count[n] == extent[n])
@@ -5304,7 +5304,7 @@ simplify_minmaxloc_to_array (gfc_expr *result, gfc_expr *array,
       n += 1;
     }
 
-  done = false;
+  done = resultsize <= 0;
   base = arrayvec;
   dest = resultvec;
   while (!done)
@@ -5316,7 +5316,7 @@ simplify_minmaxloc_to_array (gfc_expr *result, gfc_expr *array,
 	  if (*src && min_max_choose (*src, ex, sign) > 0)
 	    mpz_set_si ((*dest)->value.integer, n + 1);
 	}
- 
+
       count[0]++;
       base += sstride[0];
       dest += dstride[0];
@@ -5373,7 +5373,7 @@ gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
   gfc_expr *extremum;
   int ikind;
   int init_val;
-  
+
   if (!is_constant_array_expr (array)
       || !gfc_is_constant_expr (dim))
     return NULL;
@@ -7879,8 +7879,8 @@ gfc_simplify_xor (gfc_expr *x, gfc_expr *y)
 gfc_expr *
 gfc_convert_constant (gfc_expr *e, bt type, int kind)
 {
-  gfc_expr *g, *result, *(*f) (gfc_expr *, int);
-  gfc_constructor *c;
+  gfc_expr *result, *(*f) (gfc_expr *, int);
+  gfc_constructor *c, *t;
 
   switch (e->ts.type)
     {
@@ -8017,31 +8017,24 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	  gfc_expr *tmp;
 	  if (c->iterator == NULL)
 	    {
-	      tmp = f (c->expr, kind);
-	      if (tmp == NULL)
-		{
-		  gfc_free_expr (result);
-		  return NULL;
-		}
-
-	      gfc_constructor_append_expr (&result->value.constructor,
-					   tmp, &c->where);
+	      if (c->expr->expr_type == EXPR_ARRAY)
+		tmp = gfc_convert_constant (c->expr, type, kind);
+	      else
+		tmp = f (c->expr, kind);
 	    }
 	  else
+	    tmp = gfc_convert_constant (c->expr, type, kind);
+
+	  if (tmp == NULL || tmp == &gfc_bad_expr)
 	    {
-	      gfc_constructor *n;
-	      g = gfc_convert_constant (c->expr, type, kind);
-	      if (g == NULL || g == &gfc_bad_expr)
-	        {
-		  gfc_free_expr (result);
-		  return g;
-		}
-	      n = gfc_constructor_get ();
-	      n->expr = g;
-	      n->iterator = gfc_copy_iterator (c->iterator);
-	      n->where = c->where;
-	      gfc_constructor_append (&result->value.constructor, n);
+	      gfc_free_expr (result);
+	      return NULL;
 	    }
+
+	  t = gfc_constructor_append_expr (&result->value.constructor,
+					   tmp, &c->where);
+	  if (c->iterator)
+	    t->iterator = gfc_copy_iterator (c->iterator);
 	}
 
       break;

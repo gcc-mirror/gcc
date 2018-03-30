@@ -19,5 +19,5 @@
       endif
     !$omp end parallel
   !$omp end parallel
-  if (err .ne. 0) call abort
+  if (err .ne. 0) STOP 1
 end

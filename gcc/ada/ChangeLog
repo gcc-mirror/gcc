@@ -1,3 +1,16 @@
+2018-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/85007
+	* gnatlink.adb (Gnatlink): Remove handling of -b switch.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (gnatlink):
+	Remove documentation of -b switch.
+
+2018-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/85036
+	* gnatlink.adb (Process_Args): Drop existing link switches if multiple
+	switches are passed for --LINK.
+
 2018-03-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/82813

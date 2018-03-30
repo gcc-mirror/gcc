@@ -27,7 +27,7 @@ firstdo: do i = 1, 3
         end do
       end do firstdo
     !$acc end parallel
-    if (l) call abort
+    if (l) STOP 1
   end subroutine test1
 
   subroutine test2
@@ -47,7 +47,7 @@ firstdo: do i = 1, 3
 115   continue
     !$acc loop gang(static:1) collapse(1)
       do k=1,3
-         if (any(a(k,1:3,1:3).ne.1)) call abort
+         if (any(a(k,1:3,1:3).ne.1)) STOP 2
       enddo
     ! Use "gang(static:1)" here and below to effectively turn gang-redundant
     ! execution mode into something like gang-single.
@@ -62,7 +62,7 @@ firstdo: do i = 1, 3
 120   end do dol
     !$acc loop gang(static:1) collapse(1)
      do l=1,3
-        if (any(a(l,1:3,1:3).ne.2)) call abort
+        if (any(a(l,1:3,1:3).ne.2)) STOP 3
      enddo
     !$acc end parallel
   end subroutine test2

@@ -19,7 +19,7 @@ program reduction
      do j = 1, n
         vsum = vsum + 1;
      end do
-     if (vsum .ne. arr(i)) call abort ()
+     if (vsum .ne. arr(i)) STOP 1
   end do
 end program reduction
 
@@ -45,7 +45,7 @@ subroutine redsub_private(sum, n, arr)
 
   ! verify the results
   do i = 1, 10
-     if (arr(i) .ne. 100+i) call abort ()
+     if (arr(i) .ne. 100+i) STOP 2
   end do
 end subroutine redsub_private
 

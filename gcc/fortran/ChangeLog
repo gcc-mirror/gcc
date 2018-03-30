@@ -1,3 +1,83 @@
+2018-03-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84931
+	* simplify.c (gfc_convert_constant): Handle case of array
+	constructors within an array that has no iterator and improve
+	the conciseness of this section of code.
+
+2017-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85111
+	* array.c (gfc_resolve_character_array_constructor): Early
+	exit for zero-size arrays.
+	* simplify.c (simplify_transformation_to_array): Exit early
+	if the result size is zero.
+	(simplify_minmaxloc_to_array): Likewise.
+
+2018-03-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/69497
+	* symbol.c (gfc_symbol_done_2): Start freeing namespaces
+	from the root.
+	(gfc_free_namespace): Restore assert (revert r258839).
+
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_dt): Rename default_exp field to dec_ext.
+	* ioparm.def (IOPARM_dt_default_exp): Rename to ...
+	(IOPARM_dt_dec_ext): ... this.
+	* trans-io.c (build_dt): Adjust for default_exp renaming to
+	dec_ext and IOPARM_dt_default_exp renaming to IOPARM_dt_dec_ext.
+	* io.c (match_io): Likewise.
+
+2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85084
+	* frontend-passes.c (gfc_run_passes): Do not run front-end
+	optimizations if a previous error occurred.
+
+2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85083
+	* primary.c (gfc_convert_to_structure_constructor): Check
+	conformance of argument types in structure constructor.
+
+2018-03-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66709
+	* io.c: Include constructor.h.
+	(resolve_tag_format): For a constant character array, concatenate
+	into a single character expression.
+
+2018-03-25  Seth Johnson <johnsonsr@ornl.gov>
+	Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/84924
+	* check.c (gfc_check_c_f_pointer): Allow scalar noninteroperable
+	scalar derived type with -std=f2003 and -std=f2008.
+
+2018-03-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/69497
+	* symbol.c (gfc_free_namespace): Delete the assert and only if
+	refs count is equals zero, free the namespace. Otherwise,
+	something is halfway and other errors will resound.
+
+2018-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/70068
+	* expr.c (find_substring_ref): Change types of start, end
+	and length variables to gfc_charlen_t. Set length to zero
+	for empty substring.
+
+2018-03-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/42651
+	* decl.c (check_function_name): Improved error message
+	(gfc_match_volatile, gfc_match_asynchronous) Use check_function_name.
+
 2018-03-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/84922

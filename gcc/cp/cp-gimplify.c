@@ -2504,6 +2504,8 @@ cp_fold (tree x)
 	    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (x)
 	      = CONSTRUCTOR_PLACEHOLDER_BOUNDARY (org_x);
 	  }
+	if (VECTOR_TYPE_P (TREE_TYPE (x)))
+	  x = fold (x);
 	break;
       }
     case TREE_VEC:

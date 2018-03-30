@@ -7270,14 +7270,6 @@ The following switches are available with the ``gnatlink`` utility:
   an executable called :file:`try`.
 
 
-.. index:: -b  (gnatlink)
-
-:switch:`-b {target}`
-  Compile your program to run on ``target``, which is the name of a
-  system configuration. You must have a GNAT cross-compiler built if
-  ``target`` is not the same as your host system.
-
-
 .. index:: -B  (gnatlink)
 
 :switch:`-B{dir}`

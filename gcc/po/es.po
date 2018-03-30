@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2018-03-18 22:49+0100\n"
+"PO-Revision-Date: 2018-03-23 15:47+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -32158,58 +32158,49 @@ msgstr ""
 #. The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
 #. get control in TARGET_OPTION_OVERRIDE.
 #: config/rs6000/sysv4.h:111
-#, fuzzy, gcc-internal-format
-#| msgid "bad value for -mcall-%s"
+#, gcc-internal-format
 msgid "bad value for %<%s-%s%>"
-msgstr "valor erróneo para -mcall-%s"
+msgstr "valor erróneo para %<%s-%s%>"
 
 #: config/rs6000/sysv4.h:127
-#, fuzzy, gcc-internal-format
-#| msgid "bad value for -msdata=%s"
+#, gcc-internal-format
 msgid "bad value for %<%s=%s%>"
-msgstr "valor erróneo para -msdata=%s"
+msgstr "valor erróneo para %<%s=%s%>"
 
 #: config/rs6000/sysv4.h:144
-#, fuzzy, gcc-internal-format
-#| msgid "-f%s and -msdata=%s are incompatible"
+#, gcc-internal-format
 msgid "%qs and %<%s=%s%> are incompatible"
-msgstr "-f%s y -msdata=%s son incompatibles"
+msgstr "%qs y %<%s=%s%> son incompatibles"
 
 #: config/rs6000/sysv4.h:153
-#, fuzzy, gcc-internal-format
-#| msgid "-f%s and -msdata=%s are incompatible"
+#, gcc-internal-format
 msgid "%<-f%s%> and %<%s=%s%> are incompatible"
-msgstr "-f%s y -msdata=%s son incompatibles"
+msgstr "%<-f%s%> y %<%s=%s%> son incompatibles"
 
 #: config/rs6000/sysv4.h:162
-#, fuzzy, gcc-internal-format
-#| msgid "-msdata=%s and -mcall-%s are incompatible"
+#, gcc-internal-format
 msgid "%<%s=%s%> and %<%s-%s%> are incompatible"
-msgstr "-msdata=%s y -mcall-%s son incompatibles"
+msgstr "%<%s=%s%> y %<%s-%s%> son incompatibles"
 
 #: config/rs6000/sysv4.h:171
-#, fuzzy, gcc-internal-format
-#| msgid "-f%s and -msdata=%s are incompatible"
+#, gcc-internal-format
 msgid "%qs and %qs are incompatible"
-msgstr "-f%s y -msdata=%s son incompatibles"
+msgstr "%qs y %qs son incompatibles"
 
 #: config/rs6000/sysv4.h:178 config/rs6000/sysv4.h:185
-#, fuzzy, gcc-internal-format
-#| msgid "-f%s and -msdata=%s are incompatible"
+#, gcc-internal-format
 msgid "%qs and %<%s-%s%> are incompatible"
-msgstr "-f%s y -msdata=%s son incompatibles"
+msgstr "%qs y %<%s-%s%> son incompatibles"
 
 #: config/rs6000/sysv4.h:191
-#, fuzzy, gcc-internal-format
-#| msgid "-msecure-plt not supported by your assembler"
+#, gcc-internal-format
 msgid "%qs not supported by your assembler"
-msgstr "su ensamblador no admite -msecure-plt"
+msgstr "su ensamblador no admite %qs"
 
 #: config/rs6000/sysv4.h:219
-#, fuzzy, gcc-internal-format
-#| msgid "-m%s not supported in this configuration"
+#, gcc-internal-format
 msgid "%<-m%s%> not supported in this configuration"
-msgstr "no se admite -m%s en esta configuración"
+msgstr "no se admite %<-m%s%> en esta configuración"
 
 #: config/rx/rx.c:651
 #, gcc-internal-format, gfc-internal-format
@@ -32217,10 +32208,9 @@ msgid "unrecognized control register number: %d - using 'psw'"
 msgstr "no se reconoce el número de registro de control: %d - se utiliza 'psw'"
 
 #: config/rx/rx.c:1389
-#, fuzzy, gcc-internal-format
-#| msgid "multiple interrupt attributes not allowed"
+#, gcc-internal-format
 msgid "multiple fast interrupt routines seen: %qE and %qE"
-msgstr "no se permiten atributos interrupt múltiples"
+msgstr "se han visto múltiples rutinas de interrupción rápidas: %qE y %qE"
 
 #: config/rx/rx.c:2579
 #, gcc-internal-format, gfc-internal-format
@@ -32235,7 +32225,7 @@ msgstr "utilice __builtin_rx_mvtc (0, ... ) para escribir valores arbitrarios en
 #: config/rx/rx.c:2628
 #, gcc-internal-format
 msgid "-mno-allow-string-insns forbids the generation of the RMPA instruction"
-msgstr ""
+msgstr "-mno-allow-string-insns prohibe la generación de la instrucción RMPA"
 
 #: config/rx/rx.c:2775
 #, gcc-internal-format
@@ -32245,45 +32235,42 @@ msgstr "las instrucciones FPU de RX no admiten NaNs e infinitos"
 #: config/s390/s390-c.c:472
 #, gcc-internal-format
 msgid "builtin vec_step can only be used on vector types."
-msgstr ""
+msgstr "la interna vec_step solo puede usarse con tipos vectoriales."
 
 #: config/s390/s390-c.c:687 config/s390/s390.c:938
 #, gcc-internal-format
 msgid "constant value required for builtin %qF argument %d"
-msgstr ""
+msgstr "se requiere un valor constante para la interna %qF, argumento %d"
 
 #: config/s390/s390-c.c:702
 #, gcc-internal-format
 msgid "valid values for builtin %qF argument %d are 64, 128, 256, 512, 1024, 2048, and 4096"
-msgstr ""
+msgstr "los valores válidos de la interna %qF, argumento %d, son 64, 128, 256, 512, 1024, 2048 y 4096"
 
 #: config/s390/s390-c.c:873
 #, gcc-internal-format
 msgid "builtin %qF is for GCC internal use only."
-msgstr ""
+msgstr "la interna %qF es solo para uso interno de GCC."
 
 #: config/s390/s390-c.c:881
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is deprecated"
+#, gcc-internal-format
 msgid "builtin %qF is deprecated."
-msgstr "%qs es obsoleto"
+msgstr "la interna %qF es obsoleta."
 
 #: config/s390/s390-c.c:885
-#, fuzzy, gcc-internal-format
-#| msgid "--resource requires -o"
+#, gcc-internal-format
 msgid "%qF requires -mvx"
-msgstr "--resource requiere -o"
+msgstr "%qF requiere -mvx"
 
 #: config/s390/s390-c.c:891
-#, fuzzy, gcc-internal-format
-#| msgid "--resource requires -o"
+#, gcc-internal-format
 msgid "%qF requires z14 or higher"
-msgstr "--resource requiere -o"
+msgstr "%qF requiere z14 o superior"
 
 #: config/s390/s390-c.c:905
 #, gcc-internal-format
 msgid "mismatch in number of arguments for builtin %qF. Expected: %d got %d"
-msgstr ""
+msgstr "desajuste en el número de argumentos para la interna %qF. Esperados: %d obtenidos %d"
 
 #: config/s390/s390-c.c:954
 #, fuzzy, gcc-internal-format

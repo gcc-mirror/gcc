@@ -1,3 +1,17 @@
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* known-headers.cc (get_stdlib_header_for_name): Add various names
+	from <assert.h>, <string.h>, and <memory.h>; add more names from
+	<stdio.h>.
+
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85061
+	* c-common.c (fold_offsetof_1) <case COMPOUND_EXPR>: Assert that
+	get_base_address of the second operand is a VAR_P, rather than the
+	operand itself, and use gcc_checking_assert instead of gcc_assert.
+
 2018-03-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85045

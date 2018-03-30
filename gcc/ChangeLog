@@ -1,3 +1,215 @@
+2018-03-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/83822
+	* config/rs6000/rs6000-string.c (expand_compare_loop): Fix redundant
+	condition.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Fix redundant
+	condition.
+
+2018-03-30  Julia Koval  <julia.koval@intel.com>
+
+	PR target/84413
+	* x86-tune.def (movx, partial_reg_dependency): Enable for
+	m_SKYLAKE_AVX512.
+
+2018-03-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/84985
+	* lra-constraints.c (process_alt_operands): Move setting
+	this_alternative_matches below.
+
+2018-03-29  Martin Liska  <mliska@suse.cz>
+
+        PR lto/84995.
+        * doc/invoke.texi: Document how LTO works with debug info.
+        Describe auto-load support of binutils.  Mention 'x86-64'
+        as valid option value of -march option.
+
+2018-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (<avx512>_blendm<mode>): Use <sseintprefix>.
+
+	PR c/85094
+	* fold-const.c (operand_equal_p): Handle DEBUG_BEGIN_STMT.
+	For STATEMENT_LIST, pass down OEP_LEXICOGRAPHIC and maybe
+	OEP_NO_HASH_CHECK for recursive call, to avoid exponential
+	checking.
+
+2018-03-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84912
+	* config/rs6000/rs6000.h (RS6000_BTM_POWERPC64): New define.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_POWERPC64.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add support
+	for RS6000_BTM_POWERPC64.
+	(rs6000_invalid_builtin): Add handling for RS6000_BTM_POWERPC64
+	(rs6000_builtin_mask_names): Add RS6000_BTM_POWERPC64.
+	* config/rs6000/rs6000-builtin.def (BU_P7_POWERPC64_MISC_2): New macro
+	definition.
+	(DIVDE): Use it.
+	(DIVDEU): Likewise.
+
+2018-03-28 Carl Love  <cel@us.ibm.com>
+
+	Revert
+	2017-09-27  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_FP_1MISC_1): Add define macro.
+	(FCTID, FCTIW): Add BU_FP_MISC_1 macro expansion for builtins.
+	* config/rs6000/rs6000.md (lrintsfsi2): Add define_insn for the
+	fctiw instruction.
+
+2018-03-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/xmmintrin.h (_mm_max_pi16): Use __vector __bool
+	instead of __vector bool.
+	(_mm_max_pu8): Likewise.
+	(_mm_min_pi16): Likewise.
+
+2018-03-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84912
+	* config/rs6000/rs6000-builtin.def (DIVWEO): Delete macro expansion.
+	(DIVWEUO): Likewise.
+	(DIVDEO): Likewise.
+	(DIVDEUO): Likewise.
+	* config/rs6000/rs6000.c (builtin_function_type): Remove support for
+	DIVWEUO and DIVDEUO.
+	* config/rs6000/rs6000.md (UNSPEC_DIVEO, UNSPEC_DIVEUO): Delete unspecs.
+	(UNSPEC_DIV_EXTEND): Remove deleted unspecs.
+	(div_extend): Likewise.
+	* doc/extend.texi (__builtin_divweo): Remove documentation for deleted
+	builtin function.
+	(__builtin_divweuo): Likewise.
+	(__builtin_divdeo): Likewise.
+	(__builtin_divdeuo): Likewise.
+
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85095
+	* config/i386/i386.md (*add<mode>3_carry_0, *addsi3_carry_zext_0,
+	*sub<mode>3_carry_0, *subsi3_carry_zext_0): New patterns.
+
+	PR tree-optimization/82004
+	* gimple-match-head.c (optimize_pow_to_exp): New function.
+	* match.pd (pow(C,x) -> exp(log(C)*x)): Wrap with #if GIMPLE.
+	Don't fold to exp if optimize_pow_to_exp is false.
+
+2018-03-28  Martin Liska  <mliska@suse.cz>
+
+	PR other/84819
+	* calls.c (initialize_argument_information): Fix trailing space.
+	* common.opt: Fix typo and provide better explanation for
+	-fsanitize-coverage option.
+	* config/i386/i386.opt: Fix typo.
+
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/85081
+	* gimplify.c (asan_poison_variable): Don't do the check for
+	gimplify_omp_ctxp here.
+	(gimplify_decl_expr): Do it here.
+	(gimplify_target_expr): Likewise.
+
+2018-03-28  Martin Liska  <mliska@suse.cz>
+
+	PR target/84988
+	* config/i386/i386.c (ix86_function_arg_advance): Do not call
+	chkp_type_bounds_count if MPX is not enabled.
+
+2018-03-27  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (BRANCH_COST): Adjust cost.
+
+2018-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/84914
+	* config/rs6000/rs6000.c (create_complex_muldiv): New helper
+	function to create the function decl for complex long double
+	multiply and divide for -mabi=ieeelongdouble.
+	(init_float128_ieee): Call it.
+
+2018-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85044
+	* config/i386/i386.c (ix86_trampoline_init): Insert ENDBR for
+	-fcf-protection=branch -mibt.
+	* config/i386/i386.h (TRAMPOLINE_SIZE): Increased by 4 bytes.
+
+2018-03-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/81863
+	* config/arm/arm.c (arm_valid_symbolic_address): Handle arm_word_relocations
+
+2018-03-27  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR target/85056
+	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): Add '[]' to
+	extern array declarations.
+
+2018-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84067
+	* match.pd ((A * C) +- (B * C) -> (A+-B) * C): Guard with
+	explicit single_use checks.
+
+2018-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85082
+	* tree-ssa-sccvn.c (vn_reference_lookup_or_insert_for_pieces):
+	Valueize the VUSE.
+
+2018-03-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config.gcc (aarch64*-*-linux*): New TARGET_DEFAULT_ASYNC_UNWIND_TABLES
+	* common/config/aarch64/aarch64-common.c (aarch64_optimization_table[]):
+	Turn on fasynchronous-unwind-tables and funwind-tables.
+
+2018-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85073
+	* config/i386/i386.md (*bmi_blsr_<mode>_cmp): New insn pattern.
+	(*bmi_blsr_<mode>_ccz): Ditto.
+
+2018-03-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/85063
+	* omp-general.c (offloading_function_p): New function.  Factor out
+	of ...
+	* omp-offload.c (pass_omp_target_link::gate): ... here.
+	* omp-general.h (offloading_function_p): Declare.
+	* tree-switch-conversion.c (build_one_array): Mark CSWTCH.x variable
+	with attribute omp declare target for offloading functions.
+
+2018-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84005
+	* tree-data-ref.h (get_base_for_alignment): Declare.
+	* tree-data-ref.c (get_base_for_alignment_1): New function.
+	(get_base_for_alignment): Likewise.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Use
+	get_base_for_alignment to find a suitable base object, instead
+	of always using drb->base_address.
+
+2018-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/85022
+	* emit-rtl.c (init_emit_regs): Indicate that VOIDmode MEMs don't have
+	known size by default.
+
+2018-03-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/85030
+	* lra-constraints.c (process_alt_operands): Don't match BLKmode
+	and non BLKmode operands.
+
+2018-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/85026
+	* config/arm/arm.md (unaligned_loadhis): Remove first alternative.
+	Clean up attributes.
+
 2018-03-23  Richard Biener  <rguenther@suse.de>
 
 	PR debug/85020
