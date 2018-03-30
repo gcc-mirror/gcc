@@ -1,3 +1,9 @@
+2018-03-30  Julia Koval  <julia.koval@intel.com>
+
+	PR target/84413
+	* x86-tune.def (movx, partial_reg_dependency): Enable for
+	m_SKYLAKE_AVX512.
+
 2018-03-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/84985
