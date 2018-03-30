@@ -1,3 +1,8 @@
+2017-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85111
+	* gfortran.dg/zero_sized_10.f90: New test.
+
 2018-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84269
