@@ -1,3 +1,8 @@
+2018-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84791
+	* g++.dg/gomp/pr84791.C: New test.
+
 2018-03-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84931
