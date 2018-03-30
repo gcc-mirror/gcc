@@ -132,7 +132,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv libmpi"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -164,7 +164,8 @@ target_libraries="target-libgcc \
 		target-libffi \
 		target-libobjc \
 		target-libada \
-		target-libgo"
+		target-libgo \
+		target-libmpi"
 
 # these tools are built using the target libraries, and are intended to
 # run only in the target environment
@@ -1247,6 +1248,9 @@ if test "${build}" != "${host}" ; then
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
   CXX_FOR_BUILD=${CXX_FOR_BUILD-g++}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
+# start daniel
+  MPI_FOR_BUILD=${MPI_FOR_BUILD-mpi}
+# end daniel
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
   LD_FOR_BUILD=${LD_FOR_BUILD-ld}
@@ -1260,6 +1264,9 @@ else
   CC_FOR_BUILD="\$(CC)"
   CXX_FOR_BUILD="\$(CXX)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
+# start daniel
+  MPI_FOR_BUILD="\$(MPI)"
+# end daniel
   GOC_FOR_BUILD="\$(GOC)"
   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
   LD_FOR_BUILD="\$(LD)"
@@ -1783,6 +1790,65 @@ if test -d ${srcdir}/gcc; then
       echo configure.ac: warning: 'f95' as language name is deprecated, use 'fortran' instead 1>&2
       enable_languages=`echo "${enable_languages}" | sed -e 's/f95/fortran/g'`
       ;;
+  esac
+
+  # Check if fortran is enabled. Support for coarrays requires a MPI.
+  case ,${enable_languages}, in
+    *,fortran,*)
+    # Check for MPI. Default is mpi.
+    mpidist="mpich"
+    mpilibs="-l$mpidist"
+#"-l$mpidist"
+#"--libs-only-l mpi"
+    mpiinc=
+#"--libs-only-I mpi"
+    have_mpi=no
+    # Specify a location for MPI package
+    AC_ARG_WITH(mpi,
+    [AS_HELP_STRING([--with-mpi=PATH],
+             [specify prefix directory for installed mpi package.
+              Equivalent to --with-mpi-include=PATH/include
+	      plus --with-mpi-lib=PATH/lib])])
+    AC_ARG_WITH(mpi-include,
+    [AS_HELP_STRING([--with-mpi-include=PATH],
+                    [specify directory for installed mpi include files])])
+    AC_ARG_WITH(mpi-lib,
+    [AS_HELP_STRING([--with-mpi-lib=PATH],
+		    [specify directory for the installed mpi library])])
+    #AC_SEARCH_LIBS(MPI_Init, mpi, [], AC_MSG_ERROR([Unable to find mpi library - make sure LD path to the library is set]), [])
+    # Test if MPI exists.
+    if test "x$with_mpi" != x; then
+      mpilibs="-L$with_mpi/lib $mpilibs"
+      mpiinc="-I$with_mpi/include $mpiinc"
+    fi
+    if test "x$with_mpi_include" != x; then
+      mpiinc="-I$with_mpi_include $with_mpiinc"
+    fi
+    if test "x$with_mpi_lib" != x; then
+      mpilibs="-L$with_mpi_lib $mpilibs"
+    fi
+    if test "x$with_mpi$with_mpi_include$with_mpi_lib" = x && test -d ${srcdir}/$mpidist; then
+      mpilibs='-L$$r/$(HOST_SUBDIR)/mpc/src/'"$lt_cv_objdir $gmplibs"
+      mpiinc='-I$$s/mpc/src '"$gmpinc"
+#      mpilibs='-L$$r/$(HOST_SUBDIR)/'"$mpidist"'/src/'"$lt_cv_objdir $mpilibs"
+#      mpiinc='-I$$s/'"$mpidist"'/src '"$mpiinc"
+      have_mpi=yes
+    fi
+    # Coarray support in gfortran requires an MPI installation.
+    if test "x$have_mpi" != xyes; then
+      AC_MSG_ERROR([Building gfortran requires an MPI installation to support coarrays.
+Try the --with-mpi, or --with-mpi-include and --with-mpi-lib options 
+to specify its location. Source code for the default GCC MPICH library, mpi,
+can be found at its hosting site as well as at 
+ftp://gcc.gnu.org/pub/gcc/infrastructure/. See also 
+http://gcc.gnu.org/install/prerequisites.html for additional info. If
+you obtained a different MPI from a vendor distribution package,
+make sure that you have installed both the libraries and the header
+files. They may be located in separate packages.])
+    fi
+    AC_SUBST(mpilibs)
+    AC_SUBST(mpiinc)
+    ;;
   esac
 
   # If bootstrapping, C++ must be enabled.
@@ -2925,7 +2991,7 @@ changequote(,)
 changequote([,])
 
     case $lib in
-    mpc | mpfr | gmp | isl)
+    mpc | mpfr | gmp | isl | mpi)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any
@@ -3247,6 +3313,9 @@ AC_SUBST(CXXFLAGS_FOR_BUILD)
 AC_SUBST(CXX_FOR_BUILD)
 AC_SUBST(DLLTOOL_FOR_BUILD)
 AC_SUBST(GFORTRAN_FOR_BUILD)
+# start daniel
+AC_SUBST(MPI_FOR_BUILD)
+# end daniel
 AC_SUBST(GOC_FOR_BUILD)
 AC_SUBST(LDFLAGS_FOR_BUILD)
 AC_SUBST(LD_FOR_BUILD)
@@ -3356,6 +3425,10 @@ NCN_STRICT_CHECK_TARGET_TOOLS(CC_FOR_TARGET, cc gcc)
 NCN_STRICT_CHECK_TARGET_TOOLS(CXX_FOR_TARGET, c++ g++ cxx gxx)
 NCN_STRICT_CHECK_TARGET_TOOLS(GCC_FOR_TARGET, gcc, ${CC_FOR_TARGET})
 NCN_STRICT_CHECK_TARGET_TOOLS(GFORTRAN_FOR_TARGET, gfortran)
+# start daniel
+NCN_STRICT_CHECK_TARGET_TOOLS(MPI_FOR_TARGET, mpi)
+# end daniel
+
 NCN_STRICT_CHECK_TARGET_TOOLS(GOC_FOR_TARGET, gccgo)
 
 ACX_CHECK_INSTALLED_TARGET_TOOL(AR_FOR_TARGET, ar)
@@ -3388,6 +3461,10 @@ GCC_TARGET_TOOL(dlltool, DLLTOOL_FOR_TARGET, DLLTOOL, [binutils/dlltool])
 GCC_TARGET_TOOL(gcc, GCC_FOR_TARGET, , [gcc/xgcc -B$$r/$(HOST_SUBDIR)/gcc/])
 GCC_TARGET_TOOL(gfortran, GFORTRAN_FOR_TARGET, GFORTRAN,
 		[gcc/gfortran -B$$r/$(HOST_SUBDIR)/gcc/], fortran)
+# start daniel
+GCC_TARGET_TOOL(mpi, MPI_FOR_TARGET, MPI,
+		[gcc/mpi -B$$r/$(HOST_SUBDIR)/gcc/], mpi)
+# end daniel
 GCC_TARGET_TOOL(gccgo, GOC_FOR_TARGET, GOC,
 		[gcc/gccgo -B$$r/$(HOST_SUBDIR)/gcc/], go)
 GCC_TARGET_TOOL(ld, LD_FOR_TARGET, LD, [ld/ld-new])
