@@ -1435,7 +1435,8 @@ process_init_constructor_record (tree type, tree init, int nested,
 		   designated-initializer-list { D }, where D is the
 		   designated-initializer-clause naming a member of the
 		   anonymous union object.  */
-		next = build_constructor_single (type, ce->index, ce->value);
+		next = build_constructor_single (init_list_type_node,
+						 ce->index, ce->value);
 	      else
 		{
 		  ce = NULL;
