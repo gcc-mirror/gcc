@@ -1,3 +1,10 @@
+2018-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84791
+	* semantics.c (finish_omp_reduction_clause): If
+	OMP_CLAUSE_REDUCTION_PLACEHOLDER is error_mark_node, return true
+	even if processing_template_decl.
+
 2018-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84269
