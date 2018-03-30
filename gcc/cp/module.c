@@ -1786,6 +1786,16 @@ has_definition (tree decl)
 	return true;
       break;
 
+    case VAR_DECL:
+      if (!DECL_INITIAL (decl))
+	/* Nothing to define.  */
+	break;
+
+      if (TREE_CONSTANT (decl))
+	return true;
+
+      break;
+
     case TYPE_DECL:
       if (!DECL_IMPLICIT_TYPEDEF_P (decl))
 	break;
@@ -2058,7 +2068,8 @@ struct GTY(()) module_state {
   /* The configuration -- cmd args etc.  */
   void write_config (elf_out *to, unsigned crc);
   bool read_config (elf_in *from, unsigned *crc_ptr);
-  
+
+  // FIXME:Old-style interface
   void record_namespace (elf_out *to, bytes_out &bind,
 			 trees_out &trees, tree ns);
   void write_namespace (elf_out *to, bytes_out &bind, trees_out &trees, tree ns,
@@ -2067,11 +2078,23 @@ struct GTY(()) module_state {
   void write_bindings (elf_out *to, unsigned *crc_ptr);
   bool read_bindings (elf_in *from);
 
+  /* Mark a defintion prior to walking.  */
+  static void mark_definition (trees_out &out, tree decl);
+  static void mark_function_def  (trees_out &out, tree decl);
+  static void mark_var_def (trees_out &out, tree decl);
+  static void mark_class_def  (trees_out &out, tree type);
+  static void mark_enum_def  (trees_out &out, tree type);
+
+  /* Write a defintion.  */
   static void write_definition (trees_out &out, tree decl);
-  static void write_function  (trees_out &out, tree decl);
-  static void write_class  (trees_out &out, tree type);
-  static void write_enum  (trees_out &out, tree type);
+  static void write_function_def  (trees_out &out, tree decl);
+  static void write_var_def (trees_out &out, tree decl);
+  static void write_class_def  (trees_out &out, tree type);
+  static void write_enum_def  (trees_out &out, tree type);
+
+  /* Add writable bindings to hash table.  */
   static void add_writables (depset::hash &table, tree ns);
+  /* Build dependency graph of hash table.  */
   void find_dependencies (depset::hash &table);
   // FIXME: names
   void tng_write_bindings (elf_out *to, unsigned *crc_ptr);
@@ -2262,7 +2285,7 @@ public:
   trees_out (module_state *, vec<tree, va_gc> *globals);
   ~trees_out ();
 
-private:
+public:
   /* True if only figuring dependencies.  */
   bool dep_walk_p () const
   {
@@ -2281,7 +2304,7 @@ public:
 public:
   void begin (depset::hash *);
   void end ();
-  void walk_into (tree, bool = true);
+  void mark_node (tree, bool walk_into = true);
 
 public:
   void write (auto_vec<tree> &decls);
@@ -2312,7 +2335,7 @@ private:
   void tree_binfo (tree type);
   void tree_node_raw (tree);
 
-private:
+public:
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
@@ -2427,18 +2450,26 @@ trees_out::end ()
   dep_hash = NULL;
 }
 
+/* Insert a decl into the map.  If INTO is true, mark it to be walked
+   into by value.  Otherwise give it a fixed ref num -- it doesn't
+   matter which.  May be called on the same node multiple times,
+   seting INTO is sticky.  */
+
 void
-trees_out::walk_into (tree decl, bool mordor)
+trees_out::mark_node (tree decl, bool into)
 {
   gcc_assert (DECL_P (decl));
 
-  int tag = mordor ? 0 : --ref_num;
-  bool existed = tree_map.put (decl, tag);
-  gcc_checking_assert (!TREE_VISITED (decl) && !existed);
-  TREE_VISITED (decl) = true;
+  if (!TREE_VISITED (decl) || into)
+    {
+      bool existed = tree_map.put (decl, into ? 0 : 1);
+      gcc_checking_assert (TREE_VISITED (decl) || !existed);
+      TREE_VISITED (decl) = true;
+    }
 
+  // FIXME: this is probably not right
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    walk_into (DECL_TEMPLATE_RESULT (decl), mordor);
+    mark_node (DECL_TEMPLATE_RESULT (decl), into);
 }
 
 /* A dumping machinery.  */
@@ -3357,7 +3388,12 @@ depset::hash::find (tree ns, tree name)
    If we need a definition of DECL, add it to the hash table unless
    it's already there.  Create a dependency on BINDING.  Add to
    worklist too.  Return the definition's depsetm, if we create one.
-   Otherwise return the binding.  */
+   Otherwise return the binding.
+
+   NOTE:For the moment we make the declaration's depset depend on the
+   defintion's.  Thus forcing them into the same cluster and writing
+   out together.  See note on the modules_state::write_${foo}_def
+   functions about why that's important.  */
 
 depset *
 depset::hash::maybe_add_definition (depset *binding, tree decl)
@@ -3395,7 +3431,17 @@ depset::hash::maybe_add_definition (depset *binding, tree decl)
    depset::section to indicate where we've got to.
 
    Add the DECL's binding to the current depset, if the binding was
-   not already there.  */
+   not already there.
+
+   A definition's depset naturally depends on its declaration's
+   depset.
+
+   NOTE:DECLs added here that are not export/module linkage (i.e. all
+   !NEEDS_DEP cases), need not actually be added into the named
+   depset.  We will never need to find them by name from the language
+   POV (after p0923 fixes ADL).  It is a convenience that the
+   inter-module loading uses the same bindings.  We could locate them
+   by a different, module-specific, mechanism.  */
 
 void
 depset::hash::add_dependency (tree decl, bool needs_def)
@@ -3417,10 +3463,12 @@ depset::hash::add_dependency (tree decl, bool needs_def)
 	    is_new = false;
 	    break;
 	  }
-      /* If DECL is being exported, it must already be on the list. */
-      gcc_assert (DECL_MODULE_EXPORT_P (decl) ? !is_new : true);
+      /* Only internal linkage things should be new (export/module
+	 linkage should have been added by add_writables).  */
+      gcc_assert (!(MAYBE_DECL_MODULE_PURVIEW_P (decl) && TREE_PUBLIC (decl))
+		  || !is_new);
     }
-  
+
   if (is_new)
     {
       /* A newly needed decl of this binding.  */
@@ -3539,27 +3587,38 @@ depset::tarjan::connect (depset *v)
 }
 
 void
-module_state::write_function (trees_out &out, tree decl)
+module_state::mark_function_def (trees_out &out, tree decl)
 {
 }
 
 void
-module_state::write_class (trees_out &out, tree type)
+module_state::mark_var_def (trees_out &out, tree decl)
 {
 }
 
 void
-module_state::write_enum (trees_out &out, tree type)
+module_state::mark_class_def (trees_out &out, tree type)
 {
-  gcc_assert (TYPE_MAIN_VARIANT (type) == type);
-
-  out.tree_node (TYPE_VALUES (type));
-  out.tree_node (TYPE_MIN_VALUE (type));
-  out.tree_node (TYPE_MAX_VALUE (type));
+  for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
+    {
+      out.mark_node (member, true);
+      if (has_definition (member))
+	mark_definition (out, member);
+    }
 }
 
 void
-module_state::write_definition (trees_out &out, tree decl)
+module_state::mark_enum_def (trees_out &out, tree type)
+{
+  if (!UNSCOPED_ENUM_P (type))
+    for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
+      out.mark_node (TREE_VALUE (values), true);
+}
+
+/* Mark the body of DECL.  */
+
+void
+module_state::mark_definition (trees_out &out, tree decl)
 {
   switch (TREE_CODE (decl))
     {
@@ -3575,15 +3634,150 @@ module_state::write_definition (trees_out &out, tree decl)
       break;
 
     case FUNCTION_DECL:
-      write_function (out, decl);
+      mark_function_def (out, decl);
+      break;
+
+    case VAR_DECL:
+      mark_var_def (out, decl);
       break;
 
     case TYPE_DECL:
-      gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
-      if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
-	write_enum (out, TREE_TYPE (decl));
-      else
-	write_class (out, TREE_TYPE (decl));
+      {
+	tree type = TREE_TYPE (decl);
+	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+		    && TYPE_MAIN_VARIANT (type) == type);
+	if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  mark_enum_def (out, type);
+	else
+	  mark_class_def (out, type);
+      }
+      break;
+    }
+}
+
+/* The following writer functions rely on the current behaviour of
+   depset::hash::add_dependency making the decl and defn depset nodes
+   depend on eachother.  That way we don't have to worry about seeding
+   the tree map with named decls that cannot be looked up by name (I.e
+   template and function parms).  We know the decl and definition will
+   be in the same cluster, which is what we want.  */
+
+void
+module_state::write_function_def (trees_out &out, tree decl)
+{
+  out.tree_node (DECL_RESULT (decl));
+  out.tree_node (DECL_INITIAL (decl));
+  out.tree_node (DECL_SAVED_TREE (decl));
+  if (DECL_DECLARED_CONSTEXPR_P (decl))
+    out.tree_node (find_constexpr_fundef (decl));
+}
+
+void
+module_state::write_var_def (trees_out &out, tree decl)
+{
+}
+
+void
+module_state::write_class_def (trees_out &out, tree type)
+{
+  out.chained_decls (TYPE_FIELDS (type));
+  out.tree_node (TYPE_VFIELD (type));
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      out.tree_vec (CLASSTYPE_MEMBER_VEC (type));
+      out.tree_node (CLASSTYPE_FRIEND_CLASSES (type));
+      out.tree_node (CLASSTYPE_LAMBDA_EXPR (type));
+
+      if (TYPE_CONTAINS_VPTR_P (type))
+	{
+	  out.tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
+	  out.tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
+	  out.tree_node (CLASSTYPE_KEY_METHOD (type));
+	}
+    }
+
+  /* Write the remaining BINFO contents. */
+  for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
+    {
+      dump () && dump ("Writing binfo:%N of %N contents", binfo, type);
+      out.tree_node (binfo->binfo.vtable);
+      out.tree_node (binfo->binfo.virtuals);
+      out.tree_node (binfo->binfo.vptr_field);
+      out.tree_node (binfo->binfo.vtt_subvtt);
+      out.tree_node (binfo->binfo.vtt_vptr);
+      out.tree_vec (BINFO_BASE_ACCESSES (binfo));
+    }
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      tree vtables = CLASSTYPE_VTABLES (type);
+      out.chained_decls (vtables);
+      /* Write the vtable initializers.  */
+      for (; vtables; vtables = TREE_CHAIN (vtables))
+	out.tree_node (DECL_INITIAL (vtables));
+    }
+
+  // lang->nested_udts
+
+  /* Now define all the members.  */
+  for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
+    if (has_definition (member))
+      {
+	out.tree_node (member);
+	write_definition (out, member);
+      }
+
+  /* End of definitions.  */
+  out.tree_node (NULL_TREE);
+}
+
+void
+module_state::write_enum_def (trees_out &out, tree type)
+{
+  out.tree_node (TYPE_VALUES (type));
+  out.tree_node (TYPE_MIN_VALUE (type));
+  out.tree_node (TYPE_MAX_VALUE (type));
+}
+
+/* Write out the body of DECL.  See above circularity node.  */
+
+void
+module_state::write_definition (trees_out &out, tree decl)
+{
+  if (!out.dep_walk_p ())
+    dump () && dump ("Writing definition %C %N", TREE_CODE (decl), decl);
+
+  switch (TREE_CODE (decl))
+    {
+    default:
+      gcc_unreachable ();
+
+    case TEMPLATE_DECL:
+      // FIXME:
+      // We should refer to templates by naming the primary template,
+      // and attaching the instantiation's arguments.  When dumping a
+      // template we should force walking into DECL_TEMPLATE_RESULT.
+      // hm, that node will have two handles, which seems wrong ...
+      break;
+
+    case FUNCTION_DECL:
+      write_function_def (out, decl);
+      break;
+
+    case VAR_DECL:
+      write_var_def (out, decl);
+      break;
+
+    case TYPE_DECL:
+      {
+	tree type = TREE_TYPE (decl);
+	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+		    && TYPE_MAIN_VARIANT (type) == type);
+	if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  write_enum_def (out, type);
+	else
+	  write_class_def (out, type);
+      }
       break;
     }
 }
@@ -3606,7 +3800,9 @@ module_state::tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 	break;
       if (b->is_binding ())
 	for (unsigned ix = b->decls.length (); ix--;)
-	  sec.walk_into (b->decls[ix]);
+	  sec.mark_node (b->decls[ix]);
+      else
+	mark_definition (sec, b->get_decl ());
     }
 
   dump () && dump ("Writing SCC:%u bindings:%u",
@@ -3964,7 +4160,9 @@ module_state::find_dependencies (depset::hash &table)
       d->cluster = true;
       if (d->is_binding ())
 	for (unsigned ix = to; ix--;)
-	  walker.walk_into (d->decls[ix], ix >= from);
+	  walker.mark_node (d->decls[ix], ix >= from);
+      else
+	mark_definition (walker, d->get_decl ());
       for (unsigned ix = d->deps.length (); ix--;)
 	{
 	  depset *dep = d->deps[ix];
@@ -3972,9 +4170,9 @@ module_state::find_dependencies (depset::hash &table)
 	  dep->cluster = true;
 	  if (dep->is_binding ())
 	    for (unsigned jx = dep->decls.length (); jx--;)
-	      walker.walk_into (dep->decls[jx], false);
+	      walker.mark_node (dep->decls[jx], false);
 	  else
-	    {} // FIXME:walk definition?
+	    walker.mark_node (dep->get_decl ());
 	}
 
       /* Analyse them.  */
@@ -4306,6 +4504,7 @@ trees_out::force_insert (tree t, bool force)
 
 /* Insert T into the backreference array.  Return its back reference
    number.  */
+
 int
 trees_in::insert (tree t)
 {
@@ -4486,7 +4685,8 @@ void
 trees_out::tree_vec (vec<tree, va_gc> *v)
 {
   unsigned len = vec_safe_length (v);
-  u (len);
+  if (!dep_walk_p ())
+    u (len);
   if (len)
     for (unsigned ix = 0; ix != len; ix++)
       tree_node ((*v)[ix]);
@@ -4511,7 +4711,8 @@ void
 trees_out::tree_pair_vec (vec<tree_pair_s, va_gc> *v)
 {
   unsigned len = vec_safe_length (v);
-  u (len);
+  if (!dep_walk_p ())
+    u (len);
   if (len)
     for (unsigned ix = 0; ix != len; ix++)
       {

@@ -1,3 +1,13 @@
+2018-03-30  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (has_definition): VAR_DECLs too.
+	{module_state::mark_{,function_,var_,class_,enum_}definition): New.
+	(trees_out::walk_into): Turn into ...
+	(trees_out::mark_node): ... this.  Adjust callers.
+	(module_state::write{_function_,class_,var_}_def): Define.
+	(module_state::find_dependencies): Look in definitions.
+
 2018-03-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
