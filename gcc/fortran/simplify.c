@@ -627,7 +627,7 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
       n += 1;
     }
 
-  done = false;
+  done = resultsize <= 0;
   base = arrayvec;
   dest = resultvec;
   while (!done)
@@ -5304,7 +5304,7 @@ simplify_minmaxloc_to_array (gfc_expr *result, gfc_expr *array,
       n += 1;
     }
 
-  done = false;
+  done = resultsize <= 0;
   base = arrayvec;
   dest = resultvec;
   while (!done)
