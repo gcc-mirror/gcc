@@ -3172,13 +3172,12 @@ check_access (tree exp, tree, tree, tree dstwrite,
 			  exp, func, range[0], dstsize);
 	    }
 	  else if (tree_int_cst_equal (range[0], range[1]))
-	    warning_at (loc, opt,
-			(integer_onep (range[0])
-			 ? G_("%K%qD writing %E byte into a region "
-			      "of size %E overflows the destination")
-			 : G_("%K%qD writing %E bytes into a region "
-			      "of size %E overflows the destination")),
-			exp, func, range[0], dstsize);
+	    warning_n (loc, opt, tree_to_uhwi (range[0]),
+		       "%K%qD writing %E byte into a region "
+		       "of size %E overflows the destination",
+		       "%K%qD writing %E bytes into a region "
+		       "of size %E overflows the destination",
+		       exp, func, range[0], dstsize);
 	  else if (tree_int_cst_sign_bit (range[1]))
 	    {
 	      /* Avoid printing the upper bound if it's invalid.  */
@@ -3273,10 +3272,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
       location_t loc = tree_nonartificial_location (exp);
 
       if (tree_int_cst_equal (range[0], range[1]))
-	warning_at (loc, opt,
-		    (tree_int_cst_equal (range[0], integer_one_node)
-		     ? G_("%K%qD reading %E byte from a region of size %E")
-		     : G_("%K%qD reading %E bytes from a region of size %E")),
+	warning_n (loc, opt, tree_to_uhwi (range[0]),
+		   "%K%qD reading %E byte from a region of size %E",
+		   "%K%qD reading %E bytes from a region of size %E",
 		    exp, func, range[0], slen);
       else if (tree_int_cst_sign_bit (range[1]))
 	{
