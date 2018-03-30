@@ -244,7 +244,7 @@ testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
 gdbhooks.py		David Malcolm		<dmalcolm@redhat.com>
-SLSR			Bill Schmidt		<wschmidt@linux.vnet.ibm.com>
+SLSR			Bill Schmidt		<wschmidt@linux.ibm.com>
 jit			David Malcolm		<dmalcolm@redhat.com>
 pointer bounds checker	Ilya Enkovich		<enkovich.gnu@gmail.com>
 i386 MPX		Ilya Enkovich		<enkovich.gnu@gmail.com>
@@ -570,8 +570,8 @@ Sujoy Saraswati					<sujoy.saraswati@hpe.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
 Aaron Sawdey					<acsawdey@linux.vnet.ibm.com>
 Roger Sayle					<roger@eyesopen.com>
+Bill Schmidt					<wschmidt@linux.ibm.com>
 Will Schmidt					<will_schmidt@vnet.ibm.com>
-William Schmidt					<wschmidt@linux.vnet.ibm.com>
 Tilo Schwarz					<tilo@tilo-schwarz.de>
 Martin Sebor					<msebor@gcc.gnu.org>
 Svein Seldal					<svein@dev.seldal.com>
