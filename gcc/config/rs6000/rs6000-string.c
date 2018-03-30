@@ -966,8 +966,7 @@ expand_compare_loop (rtx operands[])
       rtx final_cleanup = gen_label_rtx ();
       rtx cmp_rem_before = gen_reg_rtx (word_mode);
       /* Compare one more word_mode chunk if needed.  */
-      if (!bytes_is_const
-	  || (bytes_is_const && bytes_remaining >= load_mode_size))
+      if (!bytes_is_const || bytes_remaining >= load_mode_size)
 	{
 	  /* If remainder length < word length, branch to final
 	     cleanup compare.  */

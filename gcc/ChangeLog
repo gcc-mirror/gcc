@@ -1,3 +1,11 @@
+2018-03-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/83822
+	* config/rs6000/rs6000-string.c (expand_compare_loop): Fix redundant
+	condition.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Fix redundant
+	condition.
+
 2018-03-30  Julia Koval  <julia.koval@intel.com>
 
 	PR target/84413
