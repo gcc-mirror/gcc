@@ -1,3 +1,109 @@
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* name-lookup.c (get_std_name_hint): Add names from <memory>,
+	<tuple>, and <utility>.
+
+2018-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85093 - too many template args with pack expansion.
+	* pt.c (coerce_template_parms): Keep pack expansion args that will
+	need to be empty.
+
+2018-03-29  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (build_non_dependent_expr): Propagate expr location.
+
+2018-03-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85060 - wrong-code with call to base member in template.
+	* search.c (any_dependent_bases_p): Check uses_template_parms
+	rather than processing_template_decl.
+
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* typeck.c (convert_for_assignment): When complaining due to
+	conversions for an argument, attempt to use the location of the
+	argument.
+
+2018-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85028
+	* pt.c (tsubst_default_argument): Early return if the type of the
+	parameter is erroneous.
+
+2018-03-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84973
+	* decl2.c (note_vague_linkage_fn): Don't defer uninstantiated
+	templates.
+
+	PR c++/84968
+	* tree.c (strip_typedefs_expr): Reject STATEMENT_LISTs.
+
+2018-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85067
+	* method.c (defaulted_late_check): Partially revert r253321 changes,
+	do not early return upon error.
+
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85077
+	* cp-gimplify.c (cp_fold) <case CONSTRUCTOR>: For ctors with vector
+	type call fold to generate VECTOR_CSTs when possible.
+
+	PR c++/85076
+	* tree.c (cp_build_reference_type): If to_type is error_mark_node,
+	return it right away.
+
+2018-03-27  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* search.c (check_final_overrider): Use inform instead of error
+	for the diagnostics of the overridden functions.  Tweak wording.
+
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85068
+	* class.c (update_vtable_entry_for_fn): Don't ICE if base_binfo
+	is NULL.  Assert if thunk_binfo is NULL then errorcount is non-zero.
+
+2018-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/84632
+	* init.c (build_aggr_init): When initializing from array,
+	reject anything but CONSTRUCTORs and TARGET_EXPRs.
+	(build_vec_init): Handle separately ARRAY_TYPEs.
+
+2018-03-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85062 - ICE with alignas in wrong place.
+	* decl.c (grokdeclarator): Ignore attributes on type-specifiers
+	here.
+
+	PR c++/85049 - ICE with __integer_pack.
+	* pt.c (unify_pack_expansion): Don't try to deduce generated packs.
+	* cp-tree.h (TEMPLATE_PARM_P): New.
+
+2018-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/78489 - wrong SFINAE behavior.
+
+	PR c++/84489
+	* pt.c (type_unification_real): Don't defer substitution failure.
+
+2018-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85015
+	* decl.c (compute_array_index_type): Set osize to mark_rvalue_use
+	result.
+
+	PR c++/84942
+	* pt.c (tsubst_copy_and_build) <case FIX_TRUNC_EXPR>: Replace
+	cp_build_unary_op call with gcc_unreachable ().
+
 2018-03-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85045

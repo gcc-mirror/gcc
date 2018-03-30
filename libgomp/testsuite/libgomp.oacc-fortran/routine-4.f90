@@ -13,7 +13,7 @@
   end do
   !$acc end parallel
   do i = 1, n
-     if (a(i) .ne. (i + 1)) call abort
+     if (a(i) .ne. (i + 1)) STOP 1
   end do
 end
 subroutine incr (x)

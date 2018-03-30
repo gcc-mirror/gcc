@@ -5453,6 +5453,12 @@ get_std_name_hint (const char *name)
     /* <map>.  */
     {"map", "<map>"},
     {"multimap", "<map>"},
+    /* <memory>.  */
+    {"make_shared", "<memory>"},
+    {"make_unique", "<memory>"},
+    {"shared_ptr", "<memory>"},
+    {"unique_ptr", "<memory>"},
+    {"weak_ptr", "<memory>"},
     /* <queue>.  */
     {"queue", "<queue>"},
     {"priority_queue", "<queue>"},
@@ -5472,6 +5478,9 @@ get_std_name_hint (const char *name)
     {"basic_stringstream", "<sstream>"},
     /* <stack>.  */
     {"stack", "<stack>"},
+    /* <tuple>.  */
+    {"make_tuple", "<tuple>"},
+    {"tuple", "<tuple>"},
     /* <string>.  */
     {"string", "<string>"},
     {"wstring", "<string>"},
@@ -5483,6 +5492,11 @@ get_std_name_hint (const char *name)
     /* <unordered_set>.  */
     {"unordered_set", "<unordered_set>"}, // C++11
     {"unordered_multiset", "<unordered_set>"}, // C++11
+    /* <utility>.  */
+    {"forward", "<utility>"},
+    {"make_pair", "<utility>"},
+    {"move", "<utility>"},
+    {"pair", "<utility>"},
     /* <vector>.  */
     {"vector", "<vector>"},
   };

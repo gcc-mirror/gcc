@@ -8,7 +8,7 @@
     !$omp do
       do i = 0, 999
 	!$omp cancel do
-	if (omp_get_cancellation ()) call abort
+	if (omp_get_cancellation ()) STOP 1
       enddo
   !$omp endparallel
 end

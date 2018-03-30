@@ -1078,6 +1078,9 @@ cp_build_reference_type (tree to_type, bool rval)
 {
   tree lvalue_ref, t;
 
+  if (to_type == error_mark_node)
+    return error_mark_node;
+
   if (TREE_CODE (to_type) == REFERENCE_TYPE)
     {
       rval = rval && TYPE_REF_IS_RVALUE (to_type);
@@ -1783,6 +1786,10 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
 
     case LAMBDA_EXPR:
       error ("lambda-expression in a constant expression");
+      return error_mark_node;
+
+    case STATEMENT_LIST:
+      error ("statement-expression in a constant expression");
       return error_mark_node;
 
     default:

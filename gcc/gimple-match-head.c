@@ -840,3 +840,71 @@ canonicalize_math_after_vectorization_p ()
 {
   return !cfun || (cfun->curr_properties & PROP_gimple_lvec) != 0;
 }
+
+/* Return true if pow(cst, x) should be optimized into exp(log(cst) * x).
+   As a workaround for SPEC CPU2017 628.pop2_s, don't do it if arg0
+   is an exact integer, arg1 = phi_res +/- cst1 and phi_res = PHI <cst2, ...>
+   where cst2 +/- cst1 is an exact integer, because then pow (arg0, arg1)
+   will likely be exact, while exp (log (arg0) * arg1) might be not.
+   Also don't do it if arg1 is phi_res above and cst2 is an exact integer.  */
+
+static bool
+optimize_pow_to_exp (tree arg0, tree arg1)
+{
+  gcc_assert (TREE_CODE (arg0) == REAL_CST);
+  if (!real_isinteger (TREE_REAL_CST_PTR (arg0), TYPE_MODE (TREE_TYPE (arg0))))
+    return true;
+
+  if (TREE_CODE (arg1) != SSA_NAME)
+    return true;
+
+  gimple *def = SSA_NAME_DEF_STMT (arg1);
+  gphi *phi = dyn_cast <gphi *> (def);
+  tree cst1 = NULL_TREE;
+  enum tree_code code = ERROR_MARK;
+  if (!phi)
+    {
+      if (!is_gimple_assign (def))
+	return true;
+      code = gimple_assign_rhs_code (def);
+      switch (code)
+	{
+	case PLUS_EXPR:
+	case MINUS_EXPR:
+	  break;
+	default:
+	  return true;
+	}
+      if (TREE_CODE (gimple_assign_rhs1 (def)) != SSA_NAME
+	  || TREE_CODE (gimple_assign_rhs2 (def)) != REAL_CST)
+	return true;
+
+      cst1 = gimple_assign_rhs2 (def);
+
+      phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def)));
+      if (!phi)
+	return true;
+    }
+
+  tree cst2 = NULL_TREE;
+  int n = gimple_phi_num_args (phi);
+  for (int i = 0; i < n; i++)
+    {
+      tree arg = PHI_ARG_DEF (phi, i);
+      if (TREE_CODE (arg) != REAL_CST)
+	continue;
+      else if (cst2 == NULL_TREE)
+	cst2 = arg;
+      else if (!operand_equal_p (cst2, arg, 0))
+	return true;
+    }
+
+  if (cst1 && cst2)
+    cst2 = const_binop (code, TREE_TYPE (cst2), cst2, cst1);
+  if (cst2
+      && TREE_CODE (cst2) == REAL_CST
+      && real_isinteger (TREE_REAL_CST_PTR (cst2),
+			 TYPE_MODE (TREE_TYPE (cst2))))
+    return false;
+  return true;
+}

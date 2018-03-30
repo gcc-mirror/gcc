@@ -642,8 +642,7 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 	  cpp_get_callbacks (pfile)->macro_to_expand = rs6000_macro_to_expand;
 	}
     }
-  if (!TARGET_HARD_FLOAT
-      || (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT))
+  if (!TARGET_HARD_FLOAT || !TARGET_DOUBLE_FLOAT)
     builtin_define ("_SOFT_DOUBLE");
   /* Used by lwarx/stwcx. errata work-around.  */
   if (rs6000_cpu == PROCESSOR_PPC405)

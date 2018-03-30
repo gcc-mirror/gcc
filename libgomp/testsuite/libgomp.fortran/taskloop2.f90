@@ -13,7 +13,7 @@
   !$omp end single
   !$omp end parallel
   do i = 1, 1024
-    if (u(i) .ne. 2 * i + 1) call abort
+    if (u(i) .ne. 2 * i + 1) STOP 1
     v(i) = 1024 - i
     w(i) = 512 - i
   end do
@@ -24,45 +24,45 @@
   !$omp end parallel
   do i = 1, 1024
     if (i .lt. 2 .or. i .gt. 1022) then
-      if (u(i) .ne. 2 * i + 1) call abort
+      if (u(i) .ne. 2 * i + 1) STOP 2
     else
-      if (u(i) .ne. 1536 - 2 * i) call abort
+      if (u(i) .ne. 1536 - 2 * i) STOP 3
     end if
     v(i) = i
     w(i) = i + 1
   end do
-  if (m .ne. (1023 + 2 * (1021 * 5 + 17) + 9)) call abort
+  if (m .ne. (1023 + 2 * (1021 * 5 + 17) + 9)) STOP 4
   !$omp parallel
   !$omp single
     call f3 (1, 1024)
   !$omp end single
   !$omp end parallel 
   do i = 1, 1024
-    if (u(i) .ne. 2 * i + 1) call abort
+    if (u(i) .ne. 2 * i + 1) STOP 5
     v(i) = 1024 - i
     w(i) = 512 - i
   end do
-  if (m .ne. 1025) call abort
+  if (m .ne. 1025) STOP 6
   !$omp parallel
   !$omp single
     call f4 (0, 31, 1, 32)
   !$omp end single
   !$omp end parallel 
   do i = 1, 1024
-    if (u(i) .ne. 1536 - 2 * i) call abort
+    if (u(i) .ne. 1536 - 2 * i) STOP 7
     v(i) = i
     w(i) = i + 1
   end do
-  if (m .ne. 32 + 33 + 1024) call abort
+  if (m .ne. 32 + 33 + 1024) STOP 8
   !$omp parallel
   !$omp single
     call f5 (0, 31, 1, 32)
   !$omp end single
   !$omp end parallel 
   do i = 1, 1024
-    if (u(i) .ne. 2 * i + 1) call abort
+    if (u(i) .ne. 2 * i + 1) STOP 9
   end do
-  if (m .ne. 32 + 33) call abort
+  if (m .ne. 32 + 33) STOP 10
 contains
   subroutine f1 (a, b)
     integer, intent(in) :: a, b

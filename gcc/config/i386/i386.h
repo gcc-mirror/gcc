@@ -1716,7 +1716,7 @@ typedef struct ix86_args {
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 24 : 10)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 28 : 14)
 
 /* Definitions for register eliminations.
 

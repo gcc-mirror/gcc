@@ -27,8 +27,8 @@ program asyncwait
   !$acc end data
 
   do i = 1, N
-     if (a(i) .ne. 3.0) call abort
-     if (b(i) .ne. 3.0) call abort
+     if (a(i) .ne. 3.0) STOP 1
+     if (b(i) .ne. 3.0) STOP 2
   end do
 
   a(:) = 2.0
@@ -47,8 +47,8 @@ program asyncwait
   !$acc end data
 
   do i = 1, N
-     if (a(i) .ne. 2.0) call abort
-     if (b(i) .ne. 2.0) call abort
+     if (a(i) .ne. 2.0) STOP 3
+     if (b(i) .ne. 2.0) STOP 4
   end do
 
   a(:) = 3.0
@@ -81,10 +81,10 @@ program asyncwait
   !$acc end data
 
   do i = 1, N
-     if (a(i) .ne. 3.0) call abort
-     if (b(i) .ne. 9.0) call abort
-     if (c(i) .ne. 4.0) call abort
-     if (d(i) .ne. 1.0) call abort
+     if (a(i) .ne. 3.0) STOP 5
+     if (b(i) .ne. 9.0) STOP 6
+     if (c(i) .ne. 4.0) STOP 7
+     if (d(i) .ne. 1.0) STOP 8
   end do
 
   a(:) = 2.0
@@ -126,11 +126,11 @@ program asyncwait
   !$acc end data
 
   do i = 1, N
-     if (a(i) .ne. 2.0) call abort
-     if (b(i) .ne. 4.0) call abort
-     if (c(i) .ne. 4.0) call abort
-     if (d(i) .ne. 1.0) call abort
-     if (e(i) .ne. 11.0) call abort
+     if (a(i) .ne. 2.0) STOP 9
+     if (b(i) .ne. 4.0) STOP 10
+     if (c(i) .ne. 4.0) STOP 11
+     if (d(i) .ne. 1.0) STOP 12
+     if (e(i) .ne. 11.0) STOP 13
   end do
 
   a(:) = 3.0
@@ -149,8 +149,8 @@ program asyncwait
   !$acc end data
 
   do i = 1, N
-     if (a(i) .ne. 3.0) call abort
-     if (b(i) .ne. 3.0) call abort
+     if (a(i) .ne. 3.0) STOP 14
+     if (b(i) .ne. 3.0) STOP 15
   end do
 
   a(:) = 2.0
@@ -169,8 +169,8 @@ program asyncwait
   !$acc end data
 
   do i = 1, N
-     if (a(i) .ne. 2.0) call abort
-     if (b(i) .ne. 2.0) call abort
+     if (a(i) .ne. 2.0) STOP 16
+     if (b(i) .ne. 2.0) STOP 17
   end do
 
   a(:) = 3.0
@@ -203,10 +203,10 @@ program asyncwait
   !$acc end data
 
   do i = 1, N
-     if (a(i) .ne. 3.0) call abort
-     if (b(i) .ne. 9.0) call abort
-     if (c(i) .ne. 4.0) call abort
-     if (d(i) .ne. 1.0) call abort
+     if (a(i) .ne. 3.0) STOP 18
+     if (b(i) .ne. 9.0) STOP 19
+     if (c(i) .ne. 4.0) STOP 20
+     if (d(i) .ne. 1.0) STOP 21
   end do
 
   a(:) = 2.0
@@ -248,10 +248,10 @@ program asyncwait
   !$acc end data
 
   do i = 1, N
-     if (a(i) .ne. 2.0) call abort
-     if (b(i) .ne. 4.0) call abort
-     if (c(i) .ne. 4.0) call abort
-     if (d(i) .ne. 1.0) call abort
-     if (e(i) .ne. 11.0) call abort
+     if (a(i) .ne. 2.0) STOP 22
+     if (b(i) .ne. 4.0) STOP 23
+     if (c(i) .ne. 4.0) STOP 24
+     if (d(i) .ne. 1.0) STOP 25
+     if (e(i) .ne. 11.0) STOP 26
   end do
 end program asyncwait

@@ -56,6 +56,6 @@ contains
       l = l .or. t .ne. '456'
     end if
 !$omp end parallel
-    if (l) call abort
+    if (l) STOP 1
   end subroutine test
 end

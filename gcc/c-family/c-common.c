@@ -6272,7 +6272,7 @@ fold_offsetof_1 (tree expr, enum tree_code ctx)
     case COMPOUND_EXPR:
       /* Handle static members of volatile structs.  */
       t = TREE_OPERAND (expr, 1);
-      gcc_assert (VAR_P (t));
+      gcc_checking_assert (VAR_P (get_base_address (t)));
       return fold_offsetof_1 (t);
 
     default:

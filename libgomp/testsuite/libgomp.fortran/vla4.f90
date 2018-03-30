@@ -165,7 +165,7 @@ contains
     call check (size (k), 15, l)
 110 continue
 !$omp end parallel do
-    if (l) call abort
+    if (l) STOP 1
     if (z2 == 6) then
       x = 5
       w = 'thread5thr_number_5THREAD5THR_NUMBER_5'
@@ -201,7 +201,7 @@ contains
 	do 115, q = 4, 6
 	  l = l .or. k(p, 1, q - 3) .ne. 19 + x + p + 7 + 3 * q
 115   continue
-      if (l) call abort
+      if (l) STOP 2
     end if
   end subroutine foo
 

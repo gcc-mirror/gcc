@@ -20,14 +20,14 @@
       if (i.gt.2) then
         !$omp atomic read
         l = a(i - 1)
-        if (l.lt.2) call abort
+        if (l.lt.2) STOP 1
       end if
       !$omp atomic write
       a(i) = 2
       if (i.lt.N) then
         !$omp atomic read
         l = a(i + 1)
-        if (l.eq.3) call abort
+        if (l.eq.3) STOP 2
       end if
       !$omp ordered depend(source)
       !$omp atomic write
@@ -46,19 +46,19 @@
           if (j.gt.2.and.k.gt.2) then
             !$omp atomic read
             l = b(i,j-2,k-1)
-            if (l.lt.2) call abort
+            if (l.lt.2) STOP 3
           end if
           !$omp atomic write
           b(i,j,k) = 2
           if (i.gt.5.and.j.gt.2.and.k.lt.4) then
             !$omp atomic read
             l = b(i-2,j-2, k+1)
-            if (l.lt.2) call abort
+            if (l.lt.2) STOP 4
           end if
           if (i.gt.6.and.j.le.N/16-3.and.k.eq.4) then
             !$omp atomic read
             l = b( i - 3, j+2, k-2)
-            if (l.lt.2) call abort
+            if (l.lt.2) STOP 5
           end if
           !$omp ordered depend(source)
           !$omp atomic write
@@ -97,19 +97,19 @@
             if (k.le.5) then
               !$omp atomic read
               l = c(i, j, k + 2)
-              if (l.lt.2) call abort
+              if (l.lt.2) STOP 6
             end if
             !$omp atomic write
             c(i, j, k) = 2
             if (i.ge.5.and.j.lt.8.and.k.ge.5) then
               !$omp atomic read
               l = c(i - 2, j + 1, k - 4)
-              if (l.lt.2) call abort
+              if (l.lt.2) STOP 7
             end if
             if (i.ge.4.and.j.ge.5.and.k.ge.3) then
               !$omp atomic read
               l = c(i - 1, j - 2, k - 2)
-              if (l.lt.2) call abort
+              if (l.lt.2) STOP 8
             end if
             !$omp ordered depend ( source )
             !$omp atomic write
@@ -145,19 +145,19 @@
           if (k.gt.2.and.i.gt.4) then
             !$omp atomic read
             l = g(j,k-2,i-1)
-            if (l.lt.2) call abort
+            if (l.lt.2) STOP 9
           end if
           !$omp atomic write
           g(j,k,i) = 2
           if (j.gt.2.and.k.gt.2.and.i.lt.6) then
             !$omp atomic read
             l = g(j-2,k-2, i+1)
-            if (l.lt.2) call abort
+            if (l.lt.2) STOP 10
           end if
           if (j.gt.3.and.k.le.N/16-3.and.i.eq.6) then
             !$omp atomic read
             l = g( j - 3, k+2, i-2)
-            if (l.lt.2) call abort
+            if (l.lt.2) STOP 11
           end if
           !$omp ordered depend(source)
           !$omp atomic write
@@ -173,13 +173,13 @@
           do l = 0, d + 1, 1 + d
             !$omp ordered depend(source)
             !$omp ordered depend(sink: i-2,j+2,k-2,l)
-            if (e.eq.0) call abort
+            if (e.eq.0) STOP 12
           end do
         end do
       end do
     end do
     !$omp single
-    if (i.ne.3.or.j.ne.-1.or.k.ne.0) call abort
+    if (i.ne.3.or.j.ne.-1.or.k.ne.0) STOP 13
     i = 8; j = 9; k = 10
     !$omp end single
     !$omp do ordered(4) collapse(2) lastprivate (i, j, k, m)
@@ -189,13 +189,13 @@
           do m = 0, d-1, d+1
             !$omp ordered depend(source)
             !$omp ordered depend(sink: i - 2, j + 2, k - 2, m)
-            call abort
+            STOP 14
           end do
         end do
       end do
     end do
     !$omp single
-    if (i.ne.3.or.j.ne.-1.or.k.ne.2.or.m.ne.0) call abort
+    if (i.ne.3.or.j.ne.-1.or.k.ne.2.or.m.ne.0) STOP 15
     !$omp end single
     !$omp do collapse(2) ordered(4) lastprivate (i,j,k)
     do i = 2, f + 2, 1 + f
@@ -204,18 +204,18 @@
           do l = 0, d + 3, d + 1
             !$omp ordered depend(source)
             !$omp ordered depend(sink: i-2,j+2,k-2,l)
-            if (e.eq.0) call abort
+            if (e.eq.0) STOP 16
           end do
         end do
       end do
     end do
     !$omp end do nowait
     !$omp single
-    if (a(1) .ne. 0) call abort
+    if (a(1) .ne. 0) STOP 17
     !$omp end single nowait
     !$omp do
     do i = 2, N
-      if (a(i) .ne. 3) call abort
+      if (a(i) .ne. 3) STOP 18
     end do
     !$omp end do nowait
     !$omp do collapse(2) private(k)
@@ -223,9 +223,9 @@
       do j = 1, 8
         do k = 1, 4
           if (i.ge.4.and.i.lt.N/16.and.iand(j,1).ne.0.and.k.ge.2) then
-            if (b(i,j,k).ne.3) call abort
+            if (b(i,j,k).ne.3) STOP 19
           else
-            if (b(i,j,k).ne.0) call abort
+            if (b(i,j,k).ne.0) STOP 20
           end if
         end do
       end do
@@ -236,9 +236,9 @@
       do j = 1, 8
         do k = 1, 4
           if (i.ge.3.and.j.ge.3.and.iand(k,1).ne.0) then
-            if (c(i,j,k).ne.3) call abort
+            if (c(i,j,k).ne.3) STOP 21
           else
-            if (c(i,j,k).ne.0) call abort
+            if (c(i,j,k).ne.0) STOP 22
           end if
         end do
       end do
@@ -249,9 +249,9 @@
       do j = 1, 8
         do k = 1, 6
           if (i.lt.N/16.and.iand(j,1).ne.0.and.k.ge.4) then
-            if (g(i,j,k).ne.3) call abort
+            if (g(i,j,k).ne.3) STOP 23
           else
-            if (g(i,j,k).ne.0) call abort
+            if (g(i,j,k).ne.0) STOP 24
           end if
         end do
       end do

@@ -22,8 +22,8 @@ program main
 
   !$acc end parallel
 
-  if (v1 .ne. 99) call abort
+  if (v1 .ne. 99) STOP 1
 
-  if (v2 .ne. 32) call abort
+  if (v2 .ne. 32) STOP 2
 
 end program main

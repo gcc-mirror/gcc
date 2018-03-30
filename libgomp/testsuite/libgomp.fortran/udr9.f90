@@ -23,7 +23,7 @@ contains
   end subroutine
   subroutine initializer1 (x, y)
     integer :: x, y
-    if (y .ne. 3) call abort
+    if (y .ne. 3) STOP 1
     x = y
   end subroutine
 end module udr9m1
@@ -61,5 +61,5 @@ end module udr9m2
     j = j.add.iand (i, -4)
     d = d + dt(i)
   end do
-  if (d%x /= 5050 .or. j /= 4903) call abort
+  if (d%x /= 5050 .or. j /= 4903) STOP 2
 end

@@ -2118,7 +2118,14 @@ process_alt_operands (int only_alternative)
 				    GET_MODE_SIZE (biggest_mode[nop])))
 		      break;
 
-		    this_alternative_matches = m;
+		    /* Don't match wrong asm insn operands for proper
+		       diagnostic later.  */
+		    if (INSN_CODE (curr_insn) < 0
+			&& (curr_operand_mode[m] == BLKmode
+			    || curr_operand_mode[nop] == BLKmode)
+			&& curr_operand_mode[m] != curr_operand_mode[nop])
+		      break;
+		    
 		    m_hregno = get_hard_regno (*curr_id->operand_loc[m], false);
 		    /* We are supposed to match a previous operand.
 		       If we do, we win if that one did.  If we do
@@ -2220,6 +2227,7 @@ process_alt_operands (int only_alternative)
 		    else
 		      did_match = true;
 
+		    this_alternative_matches = m;
 		    /* This can be fixed with reloads if the operand
 		       we are supposed to match can be fixed with
 		       reloads. */

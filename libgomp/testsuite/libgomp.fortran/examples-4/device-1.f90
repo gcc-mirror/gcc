@@ -20,7 +20,7 @@ program e_57_1
     !$omp end target
   !$omp end target data
 
-  if (b /= 100 .or. .not. c .or. d) call abort
+  if (b /= 100 .or. .not. c .or. d) STOP 1
 
   a = a + 200
   b = 0
@@ -36,7 +36,7 @@ program e_57_1
     !$omp end target
   !$omp end target data
 
-  if (b /= 0 .or. c .or. d) call abort
+  if (b /= 0 .or. c .or. d) STOP 2
 
   a = a + 200
   b = 0
@@ -52,5 +52,5 @@ program e_57_1
     !$omp end target
   !$omp end target data
 
-  if (b /= 100 .or. .not. c .or. d) call abort
+  if (b /= 100 .or. .not. c .or. d) STOP 3
 end program

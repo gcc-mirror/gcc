@@ -1688,14 +1688,6 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
 	}
       else
 	{
-	  /* An array may not be initialized use the parenthesized
-	     initialization form -- unless the initializer is "()".  */
-	  if (init && TREE_CODE (init) == TREE_LIST)
-	    {
-	      if (complain & tf_error)
-		error ("bad array initializer");
-	      return error_mark_node;
-	    }
 	  /* Must arrange to initialize each element of EXP
 	     from elements of INIT.  */
 	  if (cv_qualified_p (type))
@@ -1705,14 +1697,17 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
 	  from_array = (itype && same_type_p (TREE_TYPE (init),
 					      TREE_TYPE (exp)));
 
-	  if (init && !from_array
-	      && !BRACE_ENCLOSED_INITIALIZER_P (init))
+	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init)
+	      && (!from_array
+		  || (TREE_CODE (init) != CONSTRUCTOR
+		      /* Can happen, eg, handling the compound-literals
+			 extension (ext/complit12.C).  */
+		      && TREE_CODE (init) != TARGET_EXPR)))
 	    {
 	      if (complain & tf_error)
-		permerror (init_loc, "array must be initialized "
-			   "with a brace-enclosed initializer");
-	      else
-		return error_mark_node;
+		error_at (init_loc, "array must be initialized "
+			  "with a brace-enclosed initializer");
+	      return error_mark_node;
 	    }
 	}
 
@@ -4367,7 +4362,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  else
 	    from = NULL_TREE;
 
-	  if (from_array == 2)
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    elt_init = build_vec_init (to, NULL_TREE, from, /*val_init*/false,
+				       from_array, complain);
+	  else if (from_array == 2)
 	    elt_init = cp_build_modify_expr (input_location, to, NOP_EXPR,
 					     from, complain);
 	  else if (type_build_ctor_call (type))

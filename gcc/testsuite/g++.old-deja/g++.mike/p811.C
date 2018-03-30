@@ -512,7 +512,7 @@ class Y {
 public:
     Y() {}
   virtual const char *stringify() = 0;
-    virtual char *stringify2() const = 0; // { dg-error "overriding" } 
+    virtual char *stringify2() const = 0; // { dg-message "overridden" } 
 };
 
 class X: public Y { // { dg-message "defined here" }

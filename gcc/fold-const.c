@@ -3479,7 +3479,8 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	      if (tsi_end_p (tsi1) && tsi_end_p (tsi2))
 		return 1;
 	      if (!operand_equal_p (tsi_stmt (tsi1), tsi_stmt (tsi2),
-				    OEP_LEXICOGRAPHIC))
+				    flags & (OEP_LEXICOGRAPHIC
+					     | OEP_NO_HASH_CHECK)))
 		return 0;
 	    }
 	}
@@ -3491,6 +3492,10 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case RETURN_EXPR:
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME_WITH_NULL (0);
+	  return 0;
+	case DEBUG_BEGIN_STMT:
+	  if (flags & OEP_LEXICOGRAPHIC)
+	    return 1;
 	  return 0;
 	default:
 	  return 0;

@@ -2,7 +2,7 @@
 
 struct A
 {
-  virtual int& foo(); // { dg-error "overriding" }
+  virtual int& foo(); // { dg-message "overridden" }
 };
 
 struct B : A
