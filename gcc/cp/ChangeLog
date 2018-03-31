@@ -1,3 +1,9 @@
+2018-03-31  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/85027
+	* class.c (instantiate_type): Peel off SAVE_EXPR before
+	BASELINK.
+
 2018-03-30  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.c (process_init_constructor_record): Use

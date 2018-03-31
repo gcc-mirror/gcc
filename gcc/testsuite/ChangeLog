@@ -1,3 +1,8 @@
+2018-03-31  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/85027
+	* g++.dg/pr85027.C: New.
+
 2018-03-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/83315

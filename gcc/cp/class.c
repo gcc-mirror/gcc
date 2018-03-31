@@ -7971,6 +7971,11 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t complain)
 	}
     }
 
+  /* If we instantiate a template, and it is a A ?: C expression
+     with omitted B, look through the SAVE_EXPR.  */
+  if (TREE_CODE (rhs) == SAVE_EXPR)
+    rhs = TREE_OPERAND (rhs, 0);
+
   if (BASELINK_P (rhs))
     {
       access_path = BASELINK_ACCESS_BINFO (rhs);
@@ -7985,11 +7990,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t complain)
 	error ("not enough type information");
       return error_mark_node;
     }
-
-  /* If we instantiate a template, and it is a A ?: C expression
-     with omitted B, look through the SAVE_EXPR.  */
-  if (TREE_CODE (rhs) == SAVE_EXPR)
-    rhs = TREE_OPERAND (rhs, 0);
 
   /* There are only a few kinds of expressions that may have a type
      dependent on overload resolution.  */
