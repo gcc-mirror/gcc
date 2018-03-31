@@ -725,8 +725,8 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		if (!SSA_NAME_RANGE_INFO (tmp_var))
 		  return false;
 		irange var_range (tmp_var);
-		irange var_nonzero;
-		get_nonzero_bits_as_range (var_nonzero, tmp_var);
+		// irange var_nonzero;
+		// get_nonzero_bits_as_range (var_nonzero, tmp_var);
 		// FIXME: enable after get_nonzero_bits_as_range gets tested.
 		// var_range.intersect (var_nonzero);
 		// if (var_range.empty_p ())
