@@ -1,3 +1,10 @@
+2018-03-30  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80546
+	* config/rs6000/vsx.md (??r): New mode attribute.
+	(*vsx_mov<mode>_64bit): Use it.
+	(*vsx_mov<mode>_32bit): Likewise.
+
 2018-03-30  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84818
@@ -25,10 +32,10 @@
 
 2018-03-29  Martin Liska  <mliska@suse.cz>
 
-        PR lto/84995.
-        * doc/invoke.texi: Document how LTO works with debug info.
-        Describe auto-load support of binutils.  Mention 'x86-64'
-        as valid option value of -march option.
+	PR lto/84995.
+	* doc/invoke.texi: Document how LTO works with debug info.
+	Describe auto-load support of binutils.  Mention 'x86-64'
+	as valid option value of -march option.
 
 2018-03-29  Jakub Jelinek  <jakub@redhat.com>
 
