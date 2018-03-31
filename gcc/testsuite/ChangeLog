@@ -1,3 +1,9 @@
+2018-03-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/83315
+	* gcc.target/powerpc/sse-maxps-2.c: New test.
+	* gcc.target/powerpc/sse-minps-2.c: New test.
+
 2018-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84791
