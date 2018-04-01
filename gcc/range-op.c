@@ -1061,7 +1061,7 @@ operator_divide::op1_irange (irange& r ATTRIBUTE_UNUSED,
   // 	a_7 = a_6 / 4
   // if a_7 is [4,4], a_6 is actually [16,19] so ranges are trickier to
   // calulate.  
-  if (op2.singleton_p (offset) && op_rr (OPM_MUL, r, lhs, op2))
+  if (0 & op2.singleton_p (offset) && op_rr (OPM_MUL, r, lhs, op2))
     {
       wide_int ub, lb;
       bool lb_ov = false, ub_ov = false;
@@ -1075,10 +1075,26 @@ operator_divide::op1_irange (irange& r ATTRIBUTE_UNUSED,
       offset = wi::sub (offset, 1, sign, &ub_ov);
       lb = r.lower_bound ();
       ub = r.upper_bound ();
+      
       if (wi::le_p (lb, 0, sign))
-	lb = wi::sub (lb, offset, sign, &lb_ov);
+        {
+	  lb = wi::sub (lb, offset, sign, &lb_ov);
+	  if (lb_ov)
+	    {
+	      lb = wi::min_value (TYPE_PRECISION (type), sign);
+	      lb_ov = false;
+	    }
+
+	}
       if (wi::ge_p (ub, 0, sign))
-	ub = wi::add (ub, offset, sign, &ub_ov);
+        {
+	  ub = wi::add (ub, offset, sign, &ub_ov);
+	  if (ub_ov)
+	    {
+	      ub = wi::max_value (TYPE_PRECISION (type), sign);
+	      ub_ov = false;
+	    }
+	}
       add_to_range (r, lb, lb_ov, ub, ub_ov);
       if (!r.overflow_p ())
 	return true;
