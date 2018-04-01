@@ -29,6 +29,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tree-pass.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "df.h"
@@ -48,6 +49,7 @@
 #include "tm-constrs.h"
 #include "builtins.h"
 #include "cpplib.h"
+#include "context.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1225,6 +1227,36 @@ nds32_legitimate_index_p (machine_mode outer_mode,
     default:
       return false;
     }
+}
+
+static void
+nds32_register_pass (
+  rtl_opt_pass *(*make_pass_func) (gcc::context *),
+  enum pass_positioning_ops pass_pos,
+  const char *ref_pass_name)
+{
+  opt_pass *new_opt_pass = make_pass_func (g);
+
+  struct register_pass_info insert_pass =
+    {
+      new_opt_pass,	/* pass */
+      ref_pass_name,	/* reference_pass_name */
+      1,		/* ref_pass_instance_number */
+      pass_pos		/* po_op */
+    };
+
+  register_pass (&insert_pass);
+}
+
+/* This function is called from nds32_option_override ().
+   All new passes should be registered here.  */
+static void
+nds32_register_passes (void)
+{
+  nds32_register_pass (
+    make_pass_nds32_relax_opt,
+    PASS_POS_INSERT_AFTER,
+    "mach");
 }
 
 /* ------------------------------------------------------------------------ */
@@ -2776,6 +2808,8 @@ nds32_option_override (void)
   /* Currently, we don't support PIC code generation yet.  */
   if (flag_pic)
     sorry ("position-independent code not supported");
+
+  nds32_register_passes ();
 }
 
 

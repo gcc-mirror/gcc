@@ -1,3 +1,23 @@
+2018-04-01  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+	    Kuan-Lin Chen <kuanlinchentw@gmail.com>
+
+	* config.gcc (nds32): Add nds32-relax-opt.o into extra_objs.
+	* config/nds32/constants.md (unspec_volatile_element): Add
+	UNSPEC_VOLATILE_RELAX_GROUP.
+	* config/nds32/nds32-relax-opt.c: New file.
+	* config/nds32/nds32-predicates.c
+	(nds32_symbol_load_store_p): New function.
+	* config/nds32/nds32-protos.h
+	(nds32_symbol_load_store_p): Declare function.
+	(make_pass_nds32_relax_opt): Declare new rtl pass function.
+	* config/nds32/nds32.c
+	(nds32_register_pass): New function to register pass.
+	(nds32_register_passes): New function to register passes.
+	* config/nds32/nds32.md (relax_group): New pattern.
+	* config/nds32/nds32.opt (mrelax-hint): New option.
+	* config/nds32/t-nds32 (nds32-relax-opt.o): New dependency.
+
 2018-04-01  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/t-nds32: Modify files dependency.

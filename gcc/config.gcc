@@ -445,7 +445,7 @@ mips*-*-*)
 nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h"
-	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o"
+	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o nds32-relax-opt.o"
 	;;
 nios2-*-*)
 	cpu_type=nios2

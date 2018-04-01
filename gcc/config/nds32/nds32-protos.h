@@ -109,6 +109,8 @@ extern int nds32_adjust_insn_length (rtx_insn *, int);
 
 extern int nds32_fp_as_gp_check_available (void);
 
+extern bool nds32_symbol_load_store_p (rtx_insn *);
+
 /* Auxiliary functions for jump table generation.  */
 
 extern const char *nds32_output_casesi_pc_relative (rtx *);
@@ -163,5 +165,8 @@ extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 
 /* Auxiliary functions for pre-define marco.  */
 extern void nds32_cpu_cpp_builtins(struct cpp_reader *);
+
+/* Functions for create nds32 specific optimization pass.  */
+extern rtl_opt_pass *make_pass_nds32_relax_opt (gcc::context *);
 
 /* ------------------------------------------------------------------------ */
