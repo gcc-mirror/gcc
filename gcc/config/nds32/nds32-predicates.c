@@ -35,6 +35,7 @@
 #include "emit-rtl.h"
 #include "recog.h"
 #include "tm-constrs.h"
+#include "insn-attr.h"
 
 /* ------------------------------------------------------------------------ */
 
@@ -414,4 +415,37 @@ nds32_can_use_bitci_p (int ival)
 	  && satisfies_constraint_Iu15 (gen_int_mode (~ival, SImode)));
 }
 
+/* Return true if is load/store with SYMBOL_REF addressing mode
+   and memory mode is SImode.  */
+bool
+nds32_symbol_load_store_p (rtx_insn *insn)
+{
+  rtx mem_src = NULL_RTX;
+
+  switch (get_attr_type (insn))
+    {
+    case TYPE_LOAD:
+      mem_src = SET_SRC (PATTERN (insn));
+      break;
+    case TYPE_STORE:
+      mem_src = SET_DEST (PATTERN (insn));
+      break;
+    default:
+      break;
+    }
+
+  /* Find load/store insn with addressing mode is SYMBOL_REF.  */
+  if (mem_src != NULL_RTX)
+    {
+      if ((GET_CODE (mem_src) == ZERO_EXTEND)
+	  || (GET_CODE (mem_src) == SIGN_EXTEND))
+	mem_src = XEXP (mem_src, 0);
+
+      if ((GET_CODE (XEXP (mem_src, 0)) == SYMBOL_REF)
+	   || (GET_CODE (XEXP (mem_src, 0)) == LO_SUM))
+	return true;
+    }
+
+  return false;
+}
 /* ------------------------------------------------------------------------ */

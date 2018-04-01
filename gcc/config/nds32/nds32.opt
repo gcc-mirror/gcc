@@ -77,6 +77,10 @@ m16-bit
 Target Report Mask(16_BIT)
 Generate 16-bit instructions.
 
+mrelax-hint
+Target Report Mask(RELAX_HINT)
+Insert relax hint for linker to do relaxation.
+
 mvh
 Target Report Mask(VH)
 Enable Virtual Hosting support.

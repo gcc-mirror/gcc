@@ -179,7 +179,7 @@
 
 ;; We use nds32_symbolic_operand to limit that only CONST/SYMBOL_REF/LABEL_REF
 ;; are able to match such instruction template.
-(define_insn "*move_addr"
+(define_insn "move_addr"
   [(set (match_operand:SI 0 "register_operand"       "=l, r")
 	(match_operand:SI 1 "nds32_symbolic_operand" " i, i"))]
   ""
@@ -188,7 +188,7 @@
    (set_attr "length"  "8")])
 
 
-(define_insn "*sethi"
+(define_insn "sethi"
   [(set (match_operand:SI 0 "register_operand"                "=r")
 	(high:SI (match_operand:SI 1 "nds32_symbolic_operand" " i")))]
   ""
@@ -197,7 +197,7 @@
    (set_attr "length" "4")])
 
 
-(define_insn "*lo_sum"
+(define_insn "lo_sum"
   [(set (match_operand:SI 0 "register_operand"                  "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand"       " r")
 		   (match_operand:SI 2 "nds32_symbolic_operand" " i")))]
@@ -2369,6 +2369,13 @@ create_template:
 ;; ----------------------------------------------------------------------------
 
 ;; Pseudo NOPs
+
+(define_insn "relax_group"
+  [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP)]
+  ""
+  ".relax_hint %0"
+  [(set_attr "length" "0")]
+)
 
 (define_insn "pop25return"
   [(return)
