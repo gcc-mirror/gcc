@@ -801,7 +801,15 @@ enum reg_class
 #define EXIT_IGNORE_STACK 1
 
 #define FUNCTION_PROFILER(file, labelno) \
-  fprintf (file, "/* profiler %d */", (labelno))
+  fprintf (file, "/* profiler %d */\n", (labelno))
+
+#define PROFILE_HOOK(LABEL)						\
+  {									\
+    rtx fun, lp;							\
+    lp = get_hard_reg_initial_val (Pmode, LP_REGNUM);			\
+    fun = gen_rtx_SYMBOL_REF (Pmode, "_mcount");			\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode, lp, Pmode);		\
+  }
 
 
 /* Implementing the Varargs Macros.  */
