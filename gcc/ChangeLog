@@ -1,3 +1,8 @@
+2018-04-01  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Use unsigned int
+	type and 32-bit size.
+
 2018-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/85090

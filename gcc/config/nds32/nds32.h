@@ -516,8 +516,8 @@ enum nds32_builtins
 
 #define SIZE_TYPE "long unsigned int"
 #define PTRDIFF_TYPE "long int"
-#define WCHAR_TYPE "short unsigned int"
-#define WCHAR_TYPE_SIZE 16
+#define WCHAR_TYPE "unsigned int"
+#define WCHAR_TYPE_SIZE 32
 
 
 /* Register Usage.  */
