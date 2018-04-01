@@ -1,3 +1,15 @@
+2018-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85090
+	* config/i386/sse.md (V): Add V64QI and V32HI for TARGET_AVX512F.
+	(V_128_256): New mode iterator.
+	(*avx512dq_vextract<shuffletype>64x2_1 splitter): New define_split.
+	(*avx512f_vextract<shuffletype>32x4_1 splitter): Likewise.
+	(xop_pcmov_<mode><avxsizesuffix>): Use V_128_256 mode iterator instead
+	of V.
+	* config/i386/i386.c (ix86_expand_vector_set): Improve V32HImode and
+	V64QImode expansion for !TARGET_AVX512BW && TARGET_AVX512F.
+
 2018-03-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/83315
@@ -1123,7 +1135,7 @@
 	PR target/84807
 	* config/i386/i386.opt: Replace Enforcment with Enforcement.
 
-2018-03-10  Alexandre Oliva <aoliva@redhat.com>
+2018-03-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/84620
 	* dwarf2out.h (dw_val_class): Add dw_val_class_symview.
@@ -1171,7 +1183,7 @@
 	(builtin_access::generic_overlap): Be prepared to handle non-array
 	base objects.
 
-2018-03-09  Alexandre Oliva <aoliva@redhat.com>
+2018-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/84682
 	* lra-constraints.c (process_address_1): Check is_address flag
@@ -1302,7 +1314,7 @@
 	* doc/gcov.texi: Document usage of profile files.
 	* gcov-io.h: Document changes in the format.
 
-2018-03-08  Alexandre Oliva <aoliva@redhat.com>
+2018-03-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/84404
 	PR debug/84408

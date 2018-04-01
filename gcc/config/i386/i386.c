@@ -44085,20 +44085,68 @@ half:
       break;
 
     case E_V32HImode:
-      if (TARGET_AVX512F && TARGET_AVX512BW)
+      if (TARGET_AVX512BW)
 	{
 	  mmode = SImode;
 	  gen_blendm = gen_avx512bw_blendmv32hi;
 	}
+      else if (TARGET_AVX512F)
+	{
+	  half_mode = E_V8HImode;
+	  n = 8;
+	  goto quarter;
+	}
       break;
 
     case E_V64QImode:
-      if (TARGET_AVX512F && TARGET_AVX512BW)
+      if (TARGET_AVX512BW)
 	{
 	  mmode = DImode;
 	  gen_blendm = gen_avx512bw_blendmv64qi;
 	}
+      else if (TARGET_AVX512F)
+	{
+	  half_mode = E_V16QImode;
+	  n = 16;
+	  goto quarter;
+	}
       break;
+
+quarter:
+      /* Compute offset.  */
+      i = elt / n;
+      elt %= n;
+
+      gcc_assert (i <= 3);
+
+      {
+	/* Extract the quarter.  */
+	tmp = gen_reg_rtx (V4SImode);
+	rtx tmp2 = gen_lowpart (V16SImode, target);
+	rtx mask = gen_reg_rtx (QImode);
+
+	emit_move_insn (mask, constm1_rtx);
+	emit_insn (gen_avx512f_vextracti32x4_mask (tmp, tmp2, GEN_INT (i),
+						   tmp, mask));
+
+	tmp2 = gen_reg_rtx (half_mode);
+	emit_move_insn (tmp2, gen_lowpart (half_mode, tmp));
+	tmp = tmp2;
+
+	/* Put val in tmp at elt.  */
+	ix86_expand_vector_set (false, tmp, val, elt);
+
+	/* Put it back.  */
+	tmp2 = gen_reg_rtx (V16SImode);
+	rtx tmp3 = gen_lowpart (V16SImode, target);
+	mask = gen_reg_rtx (HImode);
+	emit_move_insn (mask, constm1_rtx);
+	tmp = gen_lowpart (V4SImode, tmp);
+	emit_insn (gen_avx512f_vinserti32x4_mask (tmp2, tmp3, tmp, GEN_INT (i),
+						  tmp3, mask));
+	emit_move_insn (target, gen_lowpart (mode, tmp2));
+      }
+      return;
 
     default:
       break;
