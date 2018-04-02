@@ -1,3 +1,7 @@
+2018-04-02  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (-Wrestrict): Fix typos.
+
 2018-04-02  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.h (SHIFT_COUNT_TRUNCATED): Set to zero.
