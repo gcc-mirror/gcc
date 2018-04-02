@@ -1219,6 +1219,7 @@ public:
 public:
   bool b ();	    	/* Read a bool.  */
   void bflush ();	/* Completed a block of bools.  */
+
 private:
   void bfill ();	/* Get the next block of bools.  */
 
@@ -2070,11 +2071,8 @@ struct GTY(()) module_state {
   bool read_config (elf_in *from, unsigned *crc_ptr);
 
   // FIXME:Old-style interface
-  void record_namespace (elf_out *to, bytes_out &bind,
-			 trees_out &trees, tree ns);
-  void write_namespace (elf_out *to, bytes_out &bind, trees_out &trees, tree ns,
+  void write_namespace (elf_out *to, trees_out &trees, tree ns,
 			auto_vec<tree> &stack, auto_vec<tree> &decls);
-  void read_namespace (elf_in *from, bytes_in &bind, tree ctx);
   void write_bindings (elf_out *to, unsigned *crc_ptr);
   bool read_bindings (elf_in *from);
 
@@ -2098,11 +2096,13 @@ struct GTY(()) module_state {
   void find_dependencies (depset::hash &table);
   // FIXME: names
   void tng_write_bindings (elf_out *to, unsigned *crc_ptr);
+  bool tng_read_bindings (elf_in *from);
   static void tng_write_bindings (elf_out *to, depset::hash &table,
 				  unsigned *crc_ptr);
   static void tng_write_namespaces (elf_out *to, depset::hash &table,
 				    auto_vec<depset *> &spaces,
 				    unsigned *crc_ptr);
+  bool tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces);
   unsigned tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 			      unsigned from, unsigned *crc_ptr);
 
@@ -3852,19 +3852,6 @@ module_state::tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
   return end;
 }
 
-void
-module_state::record_namespace (elf_out *to, bytes_out &bind, trees_out &/*trees*/,
-			       tree ns)
-{
-  dump () && dump ("Recording namespace %N", ns);
-  LOOKUP_FOUND_P (ns) = true;
-  // FIXME: register with trees
-  bind.u (to->name (DECL_NAME (ns)));
-  bind.b (DECL_MODULE_EXPORT_P (ns));
-  bind.b (DECL_NAMESPACE_INLINE_P (ns));
-  bind.bflush ();
-}
-
 /* Walk the bindings of NS, writing out the bindings for the current
    TU.   */
 
@@ -3880,21 +3867,17 @@ module_state::record_namespace (elf_out *to, bytes_out &bind, trees_out &/*trees
    zero. */
 
 void
-module_state::write_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
-			       tree ns,
+module_state::write_namespace (elf_out *to, trees_out &trees, tree ns,
 			       auto_vec<tree> &stack, auto_vec<tree> &decls)
 {
   dump () && dump ("Writing namespace %N", ns);
 
   auto_vec<tree> inner;
   inner.reserve (10);
-
+  
   gcc_checking_assert ((ns == global_namespace) == LOOKUP_FOUND_P (ns));
   if (!LOOKUP_FOUND_P (ns) && TREE_PUBLIC (ns))
-    {
-      gcc_checking_assert (!stack.length () || LOOKUP_FOUND_P (stack.last ()));
-      record_namespace (to, bind, trees, ns);
-    }
+    LOOKUP_FOUND_P (ns) = true;
   stack.safe_push (ns);
 
   hash_table<named_decl_hash>::iterator end
@@ -3944,11 +3927,7 @@ module_state::write_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
 	  {
 	    tree outer = stack[ix];
 	    if (!LOOKUP_FOUND_P (outer))
-	      {
-		record_namespace (to, bind, trees, outer);
-		if (ix < stack.length () - 1)
-		  bind.u (0); /* It had no bindings of its own.  */
-	      }
+	      LOOKUP_FOUND_P (outer) = true;
 	  }
 
       if (first)
@@ -3958,54 +3937,20 @@ module_state::write_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
 	  decls.safe_push (NULL_TREE);
 
 	  // FIXME: register with trees
-	  bind.u (to->name (name));
 	  // FIXME, here we'd emit the section number containing the
 	  // declaration.
 	}
     }
 
-  /* Mark end of non-namespace bindings.  */
-  if (LOOKUP_FOUND_P (ns))
-    bind.u (0);
   while (inner.length ())
-    write_namespace (to, bind, trees, inner.pop (), stack, decls);
+    write_namespace (to, trees, inner.pop (), stack, decls);
+
   /* Mark end of namespace bindings.  */
   if (LOOKUP_FOUND_P (ns))
-    {
-      bind.u (0);
-      LOOKUP_FOUND_P (ns) = false;
-    }
+    LOOKUP_FOUND_P (ns) = false;
   stack.pop ();
 
   dump () && dump ("Wrote namespace %N", ns);
-}
-
-void
-module_state::read_namespace (elf_in *from, bytes_in &bind, tree ns)
-{
-  dump () && dump ("Reading namespace %N", ns);
-
-  /* Read the non-namespace bound names.  */
-  while (unsigned off = bind.u ())
-    {
-      /* tree name =*/ get_identifier (from->name (off));
-      // FIXME:insert?
-    }
-
-  /* Read the inner namespaces.  */
-  while (unsigned off = bind.u ())
-    {
-      /*bool exported_p =*/ bind.b (); // FIXME:do something with this
-      bool inline_p = bind.b ();
-      bind.bflush ();
-
-      tree name = get_identifier (from->name (off));
-      tree inner = add_imported_namespace (ns, mod, name, inline_p);
-      DECL_MODULE_EXPORT_P (inner) = true;
-      read_namespace (from, bind, inner);
-    }
-
-  dump () && dump ("Read namespace %N", ns);
 }
 
 /* SPACES is a vector of namespaces.  Sort it so that outer namespaces
@@ -4013,9 +3958,7 @@ module_state::read_namespace (elf_in *from, bytes_in &bind, tree ns)
    Each namespace is:
    u:name,
    u:context, number of containing namespace (0 == ::)
-   b:export_p
-   b:inline_p
-   b:public_p  */
+   u:inline_p  */
 
 void
 module_state::tng_write_namespaces (elf_out *to, depset::hash &table,
@@ -4031,7 +3974,9 @@ module_state::tng_write_namespaces (elf_out *to, depset::hash &table,
       depset *b = spaces[ix];
       tree ns = b->get_decl ();
 
-      gcc_assert (TREE_CODE (ns) == NAMESPACE_DECL);
+      gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL
+			   && (DECL_NAME (ns) || !TREE_PUBLIC (ns))
+			   && (TREE_PUBLIC (ns) == DECL_MODULE_EXPORT_P (ns)));
 
       b->section = ix + 1;
       b->cluster = 0;
@@ -4043,10 +3988,9 @@ module_state::tng_write_namespaces (elf_out *to, depset::hash &table,
 
       sec.u (to->name (DECL_NAME (ns)));
       sec.u (ctx_num);
-      sec.b (DECL_MODULE_EXPORT_P (ns));
-      sec.b (DECL_NAMESPACE_INLINE_P (ns));
-      sec.b (TREE_PUBLIC (ns));
-      sec.bflush ();
+      /* Don't use a bool, because this can be near the end of the
+	 section, and it won't save anything anyway.  */
+      sec.u (DECL_NAMESPACE_INLINE_P (ns));
     }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".namespaces"), crc_p);
@@ -4298,9 +4242,6 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
 void
 module_state::write_bindings (elf_out *to, unsigned *crc_p)
 {
-  bytes_out bind;
-  bind.begin ();
-  
   trees_out trees (this, global_vec);
   auto_vec<tree> stack;
   auto_vec<tree> decls;
@@ -4308,38 +4249,72 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
   decls.reserve (20);
 
   LOOKUP_FOUND_P (global_namespace) = true;
-  write_namespace (to, bind, trees, global_namespace, stack, decls);
+  write_namespace (to, trees, global_namespace, stack, decls);
 
   trees.begin ();
   trees.write (decls);
 
   // FIXME: For now, there's only one blob holding all the decls
-  unsigned snum = trees.end (to, to->name (DECL_NAME (global_namespace)), crc_p);
-  bind.u (snum);
-  bind.end (to, to->name (MOD_SNAME_PFX ".bindings"), crc_p);
+  trees.end (to, to->name (IDENTIFIER_POINTER (DECL_NAME (global_namespace))),
+	     crc_p);
+}
+
+bool
+module_state::tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces)
+{
+  bytes_in sec;
+
+  if (!sec.begin (from, MOD_SNAME_PFX ".namespaces"))
+    return false;
+
+  dump () && dump ("Reading namespaces");
+  dump.indent ();
+
+  spaces.safe_push (global_namespace);
+  while (sec.more_p ())
+    {
+      const char *name = from->name (sec.u ());
+      unsigned parent = sec.u ();
+      /* See comment in write_namespace about why not a bit.  */
+      bool inline_p = bool (sec.u ());
+
+      if (parent >= spaces.length ())
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
+
+      tree id = name ? get_identifier (name) : NULL_TREE;
+      dump () && dump ("Read namespace %P %u",
+		       spaces[parent], id, spaces.length ());
+      tree inner = add_imported_namespace (spaces[parent],
+					   mod, id, inline_p);
+      spaces.safe_push (inner);
+    }
+  dump.outdent ();
+  if (!sec.end (from))
+    return false;
+
+  return true;
+}
+
+bool
+module_state::tng_read_bindings (elf_in *from)
+{
+  /* Read the namespace hierarchy. */
+  auto_vec<tree> spaces;
+
+  if (!tng_read_namespaces (from, spaces))
+    return false;
+
+  return true;
 }
 
 bool
 module_state::read_bindings (elf_in *from)
 {
-  bytes_in bind;
-
-  if (!bind.begin (from, MOD_SNAME_PFX ".bindings"))
-    return false;
-
   trees_in trees (this, global_vec);
 
-  read_namespace (from, bind, global_namespace);
-
-  unsigned snum = bind.u ();
-
-  if (!bind.end (from))
-    return false;
-
-  /* We're done with the string table now.  */
-  from->release ();
-
-  if (!trees.begin (from, snum))
+  if (!trees.begin (from, IDENTIFIER_POINTER (DECL_NAME (global_namespace))))
     return false;
 
   trees.read ();
@@ -4397,6 +4372,9 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   mod = ix;
   (*remap)[MODULE_PURVIEW] = ix;
   dump () && dump ("Assigning %N module number %u", name, ix);
+
+  if (!tng_read_bindings (from))
+    return;
 
   if (!read_bindings (from))
     return;

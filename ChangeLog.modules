@@ -1,5 +1,16 @@
 2018-04-02  Nathan Sidwell  <nathan@acm.org>
 
+	Kill old .bindings section
+	gcc/cp/
+	* module.c (module_state::record_namespace): Delete.
+	(module_state::write_namespace): Remove bind parm.  Adjust.
+	(module_state::read_namespace): Delete.
+	(module_state::tng_read_namespaces): New.
+	(module_state::write_bindings): Don't write bindings section.
+	(module_state::read_bindings): Use tng_read_bindings).
+	* name-lookup.c (make_namepace): Public namespaces are exported.
+	(push_namespace): Adjust.
+
 	gcc/cp/
 	* module.c (trees_{in,out}::define_class): Check refs_tng.
 	(trees_out::tree_binfo): Add definition dependency.
