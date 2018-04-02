@@ -157,6 +157,22 @@
 			 (TF	"wp")
 			 (KF	"wq")])
 
+;; A mode attribute to disparage use of GPR registers, except for scalar
+;; interger modes.
+(define_mode_attr ??r	[(V16QI "??r")
+			 (V8HI  "??r")
+			 (V4SI  "??r")
+			 (V4SF  "??r")
+			 (V2DI  "??r")
+			 (V2DF  "??r")
+			 (DI    "r")
+			 (DF    "??r")
+			 (SF    "??r")
+			 (V1TI  "??r")
+			 (TI    "r")
+			 (TF    "??r")
+			 (KF    "??r")])
+
 ;; Same size integer type for floating point data
 (define_mode_attr VSi [(V4SF  "v4si")
 		       (V2DF  "v2di")
@@ -961,7 +977,7 @@
 (define_insn "*vsx_mov<mode>_64bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      <VSa>,     <VSa>,     r,         we,        ?wQ,
-                ?&r,       ??r,       ??Y,       ??r,       wo,        v,
+                ?&r,       ??r,       ??Y,       <??r>,     wo,        v,
                 ?<VSa>,    *r,        v,         ??r,       wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
@@ -990,7 +1006,7 @@
 ;;              LVX (VMX)  STVX (VMX)
 (define_insn "*vsx_mov<mode>_32bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
-               "=ZwO,      <VSa>,     <VSa>,     ??r,       ??Y,       ??r,
+               "=ZwO,      <VSa>,     <VSa>,     ??r,       ??Y,       <??r>,
                 wo,        v,         ?<VSa>,    *r,        v,         ??r,
                 wZ,        v")
 
