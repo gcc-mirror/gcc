@@ -1,6 +1,18 @@
 2018-04-02  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
+	2018-03-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84912
+	* gcc.target/powerpc/extend-divide-1.c (div_weo): Remove test for
+	deleted builtin function.
+	(div_weuo): Likewise.
+	* gcc.target/powerpc/extend-divide-2.c (div_deo): Likewise.
+	(div_deuo): Likewise.
+
+2018-04-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
 	2018-02-08  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/81143

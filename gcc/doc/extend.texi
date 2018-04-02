@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -15165,21 +15165,16 @@ or @option{-mpopcntd}):
 @smallexample
 long __builtin_bpermd (long, long);
 int __builtin_divwe (int, int);
-int __builtin_divweo (int, int);
 unsigned int __builtin_divweu (unsigned int, unsigned int);
-unsigned int __builtin_divweuo (unsigned int, unsigned int);
 long __builtin_divde (long, long);
-long __builtin_divdeo (long, long);
 unsigned long __builtin_divdeu (unsigned long, unsigned long);
-unsigned long __builtin_divdeuo (unsigned long, unsigned long);
 unsigned int cdtbcd (unsigned int);
 unsigned int cbcdtd (unsigned int);
 unsigned int addg6s (unsigned int, unsigned int);
 @end smallexample
 
-The @code{__builtin_divde}, @code{__builtin_divdeo},
-@code{__builtin_divdeu}, @code{__builtin_divdeou} functions require a
-64-bit environment support ISA 2.06 or later.
+The @code{__builtin_divde} and @code{__builtin_divdeu} functions
+require a 64-bit environment supporting ISA 2.06 or later.
 
 The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
