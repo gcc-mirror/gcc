@@ -4765,6 +4765,9 @@ trees_out::define_class (tree type, tree maybe_template)
 	}
     }
 
+  if (refs_tng)
+    tree_binfo (type);
+
   /* Write the remaining BINFO contents. */
   for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
     {
@@ -4862,7 +4865,10 @@ trees_in::define_class (tree type, tree maybe_template)
       /* Resort the member vector.  */
       resort_type_member_vec (member_vec, NULL, nop, NULL);
     }
-  
+
+  if (refs_tng)
+    tree_binfo (type);
+
   /* Read the remaining BINFO contents. */
   for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
     {
@@ -6737,6 +6743,12 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
       dom = BINFO_TYPE (binfo);
 
       tree_node (dom);
+      // FIXME:Until I have something like tree_decl, make sure we
+      // note we want the internals of a namespace-scope class.
+      if (dep_walk_p () &&
+	  TREE_CODE (CP_DECL_CONTEXT (TYPE_NAME (dom))) == NAMESPACE_DECL)
+	dep_hash->add_dependency (TYPE_NAME (dom), true);
+
       if (!dep_walk_p ())
 	{
 	  dump () && dump ("Wrote dominating BINFO %N", dom);
@@ -7290,7 +7302,8 @@ trees_out::tree_node (tree t)
 	&& TYPE_MAIN_VARIANT (t) == t)
       {
 	/* Write out the binfo heirarchy.  */
-	tree_binfo (t);
+	if (!refs_tng)
+	  tree_binfo (t);
 	if (TYPE_LANG_SPECIFIC (t))
 	  {
 	    tree_node (CLASSTYPE_PRIMARY_BINFO (t));
@@ -7636,7 +7649,7 @@ trees_in::finish_type (tree type)
   else if (main == type)
     {
       /* Read in the binfo heirarchy.  */
-      if (!tree_binfo (type))
+      if (!refs_tng && !tree_binfo (type))
 	set_overrun ();
       if (TYPE_LANG_SPECIFIC (type))
 	{

@@ -1,6 +1,12 @@
 2018-04-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_{in,out}::define_class): Check refs_tng.
+	(trees_out::tree_binfo): Add definition dependency.
+	(trees_{in,out}::tree_node): Don't write binfos in refs_tng mode.
+	(trees_in::finish_type): Chek refs_tng.
+
+	gcc/cp/
 	* module.c (trees_{in,out}::tree_binfo): Serialize entire path.
 	(trees_{in,out}::tree_node): Adjust.
 
