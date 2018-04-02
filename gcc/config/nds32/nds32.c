@@ -2150,6 +2150,45 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 }
 
 
+/* Condition Code Status.  */
+
+/* -- Representation of condition codes using registers.  */
+
+static void
+nds32_canonicalize_comparison (int *code,
+			       rtx *op0 ATTRIBUTE_UNUSED,
+			       rtx *op1,
+			       bool op0_preserve_value ATTRIBUTE_UNUSED)
+{
+  /* When the instruction combination pass tries to combine a comparison insn
+     with its previous insns, it also transforms the operator in order to
+     minimize its constant field.  For example, it tries to transform a
+     comparison insn from
+       (set (reg:SI 54)
+	   (ltu:SI (reg:SI 52)
+	       (const_int 10 [0xa])))
+     to
+       (set (reg:SI 54)
+	   (leu:SI (reg:SI 52)
+	       (const_int 9 [0x9])))
+
+     However, the nds32 target only provides instructions supporting the LTU
+     operation directly, and the implementation of the pattern "cbranchsi4"
+     only expands the LTU form.  In order to handle the non-LTU operations
+     generated from passes other than the RTL expansion pass, we have to
+     implement this hook to revert those changes.  Since we only expand the LTU
+     operator in the RTL expansion pass, we might only need to handle the LEU
+     case, unless we find other optimization passes perform more aggressive
+     transformations.  */
+
+  if (*code == LEU && CONST_INT_P (*op1))
+    {
+      *op1 = gen_int_mode (INTVAL (*op1) + 1, SImode);
+      *code = LTU;
+    }
+}
+
+
 /* Describing Relative Costs of Operations.  */
 
 static int
@@ -3766,6 +3805,9 @@ nds32_target_alignment (rtx_insn *label)
 /* -- Representation of condition codes using (cc0).  */
 
 /* -- Representation of condition codes using registers.  */
+
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON nds32_canonicalize_comparison
 
 /* -- Macros to control conditional execution.  */
 

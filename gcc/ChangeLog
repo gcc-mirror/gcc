@@ -1,3 +1,8 @@
+2018-04-02  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (TARGET_CANONICALIZE_COMPARISON): Define.
+	(nds32_canonicalize_comparison): New function.
+
 2018-04-01  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 	    Kuan-Lin Chen <kuanlinchentw@gmail.com>
