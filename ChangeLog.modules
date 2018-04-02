@@ -1,5 +1,19 @@
 2018-04-02  Nathan Sidwell  <nathan@acm.org>
 
+	Read new .bindings section
+	gcc/cp/
+	* module.c (elf::get_num_sections): New.
+	(module_state::tng_{read,write}_namespaces): Serialize section range.
+	(module_state::tng_read_bindings): New.
+	(module_State::tng_{read,write}_bindings): Adjust.
+	(trees_in::define_enum, trees_in::tag_binding): Adjust.
+	* name-lookup.h (push_module_binding): Rename to ...
+	(set_module_binding): ... here.
+	(import_module_binding): Declare.
+	* name-lookup.c (import_module_binding): New.
+	(push_module_binding): Rename to ...
+	(set_module_binding): ... here.  Adjust.
+
 	Kill old .bindings section
 	gcc/cp/
 	* module.c (module_state::record_namespace): Delete.

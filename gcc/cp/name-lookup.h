@@ -344,7 +344,9 @@ extern tree lookup_all_conversions (tree);
 
 /* Lower level interface for modules. */
 extern tree merge_global_decl (tree ctx, unsigned mod, tree decl);
-extern bool push_module_binding (tree ctx, tree name, unsigned mod,
+extern bool import_module_binding (tree ctx, tree name, unsigned mod,
+				   unsigned snum);
+extern bool set_module_binding (tree ctx, tree name, unsigned mod,
 				 tree value, tree type);
 extern tree lookup_by_ident (tree ctx, unsigned mod,
 			     tree name, tree type, unsigned code);

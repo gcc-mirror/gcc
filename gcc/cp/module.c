@@ -442,6 +442,12 @@ public:
   }
 
 public:
+  int get_num_sections () const 
+  {
+    return sections->length ();
+  }
+
+public:
   /* Begin reading/writing file.  Return false on error.  */
   bool begin () const
   {
@@ -2099,10 +2105,14 @@ struct GTY(()) module_state {
   bool tng_read_bindings (elf_in *from);
   static void tng_write_bindings (elf_out *to, depset::hash &table,
 				  unsigned *crc_ptr);
+  bool tng_read_bindings (elf_in *from, auto_vec<tree> &spaces,
+			  const std::pair<unsigned, unsigned> &range);
   static void tng_write_namespaces (elf_out *to, depset::hash &table,
 				    auto_vec<depset *> &spaces,
+				    const std::pair<unsigned, unsigned> &range,
 				    unsigned *crc_ptr);
-  bool tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces);
+  bool tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces,
+			    std::pair<unsigned, unsigned> &range);
   unsigned tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 			      unsigned from, unsigned *crc_ptr);
 
@@ -3536,7 +3546,11 @@ depset::hash::add_decls (tree ns, tree name, auto_vec<tree> &decls)
 
    We use depset::section as lowlink.  Completed nodes have
    depset::cluster containing the cluster number, with the top
-   bit set.  */
+   bit set.
+
+   A useful property is that successor SCCs are found before their
+   predecessors.  Thus the output vector is a revers topological sort
+   of the resulting DAG.  */
 
 void
 depset::tarjan::connect (depset *v)
@@ -3784,6 +3798,9 @@ module_state::write_definition (trees_out &out, tree decl)
     }
 }
 
+/* Write a cluster of depsets atarting at SCCS[FROM], return index of next
+   cluster.  */
+
 unsigned
 module_state::tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 				 unsigned from, unsigned *crc_ptr)
@@ -3962,13 +3979,19 @@ module_state::write_namespace (elf_out *to, trees_out &trees, tree ns,
 
 void
 module_state::tng_write_namespaces (elf_out *to, depset::hash &table,
-				    auto_vec<depset *> &spaces, unsigned *crc_p)
+				    auto_vec<depset *> &spaces,
+				    const std::pair<unsigned, unsigned> &range,
+				    unsigned *crc_p)
 {
   dump () && dump ("Writing namespaces");
   dump.indent ();
 
   bytes_out sec;
   sec.begin ();
+  /* Write the section range.  */
+  sec.u (range.first);
+  sec.u (range.second);
+
   for (unsigned ix = 0; ix != spaces.length (); ix++)
     {
       depset *b = spaces[ix];
@@ -4030,8 +4053,44 @@ module_state::tng_write_bindings (elf_out *to, depset::hash &table,
 	}
     }
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".newbindings"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".bindings"), crc_p);
   dump.outdent ();
+}
+
+bool
+module_state::tng_read_bindings (elf_in *from, auto_vec<tree> &spaces,
+				 const std::pair<unsigned, unsigned> &range)
+{
+  bytes_in sec;
+
+  if (!sec.begin (from, MOD_SNAME_PFX ".bindings"))
+    return false;
+
+  dump () && dump ("Reading binding table");
+  dump.indent ();
+  while (sec.more_p ())
+    {
+      const char *name = from->name (sec.u ());
+      unsigned nsnum = sec.u ();
+      unsigned snum = sec.u ();
+
+      if (nsnum >= spaces.length () || !name
+	  || snum < range.first || snum >= range.second)
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
+      tree ctx = spaces[nsnum];
+      tree id = get_identifier (name);
+      dump () && dump ("Bindings %P section:%u", ctx, name, snum);
+      if (mod >= MODULE_IMPORT_BASE
+	  && !import_module_binding (ctx, id, mod, snum))
+	break;
+    }
+
+  dump.outdent ();
+  if (!sec.end (from))
+    return false;
+  return true;
 }
 
 /* Recursively find all the namespace bindings of NS.
@@ -4219,15 +4278,19 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
   (binds.qsort) (bind_cmp);
   (spaces.qsort) (space_cmp);
 
+  std::pair<unsigned, unsigned> range;
+
   /* Write the binding clusters.  */
+  range.first = to->get_num_sections ();
   for (unsigned ix = 0; ix != binds.length ();)
     ix = tng_write_cluster (to, binds, ix, crc_p);
+  range.second = to->get_num_sections ();
 
   // FIXME:write the defs.
   gcc_assert (!defs.length ());
 
   /* Write the namespace hierarchy. */
-  tng_write_namespaces (to, table, spaces, crc_p);
+  tng_write_namespaces (to, table, spaces, range, crc_p);
 
   /* Write the bindings themselves.  */
   tng_write_bindings (to, table, crc_p);
@@ -4260,7 +4323,8 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
 }
 
 bool
-module_state::tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces)
+module_state::tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces,
+				   std::pair<unsigned, unsigned>& range)
 {
   bytes_in sec;
 
@@ -4269,6 +4333,9 @@ module_state::tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces)
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
+
+  range.first = sec.u ();
+  range.second = sec.u ();
 
   spaces.safe_push (global_namespace);
   while (sec.more_p ())
@@ -4302,8 +4369,12 @@ module_state::tng_read_bindings (elf_in *from)
 {
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;
+  std::pair<unsigned, unsigned> range;
 
-  if (!tng_read_namespaces (from, spaces))
+  if (!tng_read_namespaces (from, spaces, range))
+    return false;
+
+  if (!tng_read_bindings (from, spaces, range))
     return false;
 
   return true;
@@ -4543,7 +4614,7 @@ trees_in::tag_binding ()
   if (!decls && !type)
     return true;
 
-  return push_module_binding (ns, name, state->mod, decls, type);
+  return set_module_binding (ns, name, state->mod, decls, type);
 }
 
 /* Stream a function definition.  */
@@ -4932,7 +5003,7 @@ trees_in::define_enum (tree type, tree)
 	    // the ENUM itself, even though it needs to be in the
 	    // containing scope.
 	    DECL_MODULE_EXPORT_P (cst) = true;
-	    push_module_binding (ctx, DECL_NAME (cst), mod_ix, cst, NULL);
+	    set_module_binding (ctx, DECL_NAME (cst), mod_ix, cst, NULL);
 	  }
       else
 	insert_late_enum_def_bindings (ctx, type);

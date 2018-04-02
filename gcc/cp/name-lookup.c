@@ -3564,12 +3564,29 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
   return name;
 }
 
+/* Imported module MOD has a binding to NS::NAME, stored in section
+   SNUM.  */
+
+bool
+import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
+{
+  gcc_assert (mod >= MODULE_IMPORT_BASE);
+  tree *slot = find_namespace_slot (ns, name, true);
+  tree *mslot = module_binding_slot (slot, name, mod, true);
+
+  if (*mslot)
+    return false;
+  // FIXME:Squirrel snum into binding
+  *mslot = error_mark_node;
+  return true;
+}
+
 /* During an import NAME is being bound within namespace NS and
    MODULE.  There should be no existing binding.  VALUE and TYPE are
    the value and type bindings.  */
 
 bool
-push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
+set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 {
   gcc_assert (!value || !type); // FIXME stat hack
   if (!value)
@@ -3582,7 +3599,8 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
     (slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod,
      true);
 
-  gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
+  gcc_assert (slot == mslot ? !*mslot : *mslot == error_mark_node);
+  *mslot = NULL_TREE;
 
   // FIXME: with changes to global module, this is now overcomplicated
   tree export_tail = NULL_TREE;
