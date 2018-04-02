@@ -2240,7 +2240,8 @@ private:
   bool lang_type_vals (tree);
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
-  bool tree_binfo (tree type);
+  tree tree_binfo ();
+  bool tree_binfo (tree type); // FIXME move into read_class_def
 
   /* All the bits of a tree.  */
   bool tree_node_raw (tree);
@@ -2332,7 +2333,8 @@ private:
   void lang_type_vals (tree);
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
-  void tree_binfo (tree type);
+  void tree_binfo (tree type); // FIXME:Move into write_class_def
+  tree tree_binfo (tree, int, bool);
   void tree_node_raw (tree);
 
 public:
@@ -6704,6 +6706,81 @@ trees_in::lang_type_vals (tree t)
   return !get_overrun ();
 }
 
+tree
+trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
+{
+  tree dom;
+
+  if (tree inh = BINFO_INHERITANCE_CHAIN (binfo))
+    {
+      bool is_virt = BINFO_VIRTUAL_P (binfo);
+      dom = tree_binfo (inh, depth + !via_virt, is_virt || via_virt);
+      if (!via_virt && !dep_walk_p ())
+	{
+	  vec<tree, va_gc> *binfo_vec;
+	  if (is_virt)
+	    /* A virtual base.  Look on the CLASSTYPE_VIRTUALS.  */
+	    binfo_vec = CLASSTYPE_VBASECLASSES (dom);
+	  else
+	    /* Look along BINFO_BASE_BINFOS (inh).  */
+	    binfo_vec = BINFO_BASE_BINFOS (inh);
+	  unsigned ix;
+	  for (ix = 0; (*binfo_vec)[ix] != binfo; ix++)
+	    ;
+	  dump () && dump ("Wrote derived %sBINFO %u %N of %N",
+			   is_virt ? "virtual " : "", ix, binfo, inh);
+	  u (ix);
+	}
+    }
+  else
+    {
+      dom = BINFO_TYPE (binfo);
+
+      tree_node (dom);
+      if (!dep_walk_p ())
+	{
+	  dump () && dump ("Wrote dominating BINFO %N", dom);
+	  i (via_virt ? -depth : depth);
+	}
+    }
+  return dom;
+}
+
+tree
+trees_in::tree_binfo ()
+{
+  tree dom = tree_node ();
+  dump () && dump ("Read dominating binfo %N", dom);
+  int depth = i ();
+  tree binfo = TYPE_BINFO (dom);
+  if (depth)
+    {
+      vec<tree, va_gc> *binfo_vec = NULL;
+      if (depth < 0)
+	{
+	  /* A virtual base.  Look on the CLASSTYPE_VIRTUALS.  */
+	  binfo_vec = CLASSTYPE_VBASECLASSES (dom);
+	  depth = -depth;
+	}
+      for (; depth--; binfo_vec = NULL)
+	{
+	  if (!binfo_vec)
+	    binfo_vec = BINFO_BASE_BINFOS (binfo);
+	  unsigned ix = u ();
+	  if (vec_safe_length (binfo_vec) < ix)
+	    {
+	      set_overrun ();
+	      binfo = NULL_TREE;
+	      break;
+	    }
+	  else
+	    binfo = (*binfo_vec)[ix];
+	  dump () && dump ("Read derived BINFO %N", binfo);
+	}
+    }
+  return binfo;
+}
+
 /* Stream the BINFO tree owned by TYPE.  We only write sufficient
    information to recreate the tree -- not populate it.  */
 
@@ -7041,44 +7118,7 @@ trees_out::tree_node (tree t)
 	 itself when streaming its owning RECORD_TYPE.  */
       if (!dep_walk_p ())
 	i (tt_binfo);
-      tree inh = BINFO_INHERITANCE_CHAIN (t);
-      tree_node (inh);
-      if (!inh)
-	{
-	  /* Dominating binfo.  Find TYPE, then grab it's binfo.  */
-	  tree type = BINFO_TYPE (t);
-	  gcc_checking_assert (TYPE_BINFO (type) == t);
-	  tree_node (TYPE_NAME (t));
-	  if (!dep_walk_p ())
-	    dump () && dump ("Wrote dominating BINFO %N", t);
-	}
-      else if (!dep_walk_p ())
-	{
-	  /* Copied binfo.  Record which child we are.  */
-	  gcc_assert (TYPE_BINFO (BINFO_TYPE (t)) != t);
-	  vec<tree, va_gc> *binfo_vec;
-
-	  bool is_virt = BINFO_VIRTUAL_P (t);
-	  if (is_virt)
-	    {
-	      /* A virtual base.  Look on the CLASSTYPE_VIRTUALS.  */
-	      while (BINFO_INHERITANCE_CHAIN (inh))
-		inh = BINFO_INHERITANCE_CHAIN (inh);
-
-	      binfo_vec = CLASSTYPE_VBASECLASSES (BINFO_TYPE (inh));
-	    }
-	  else
-	    /* Look along BINFO_BASE_BINFOS (inh).  */
-	    binfo_vec = BINFO_BASE_BINFOS (inh);
-
-	  gcc_assert (vec_safe_length (binfo_vec));
-	  unsigned ix;
-	  for (ix = 0; (*binfo_vec)[ix] != t; ix++)
-	    gcc_assert (ix + 1 < binfo_vec->length ());
-	  dump () && dump ("Wrote derived %sBINFO %u %N of %N",
-			   is_virt ? "virtual " : "", ix, t, inh);
-	  u (ix * 2 | is_virt);
-	}
+      tree_binfo (t, 0, false);
 
       /* If the dominating type was an import, we will not have put this
 	 in the map.  Do that now.  */
@@ -7160,6 +7200,8 @@ trees_out::tree_node (tree t)
 	{
 	  /* We cannot look up inside a function by name.  */
 	  // FIXME:think about fns local types such as lambdas.
+	  // probably needs special mapping, similar to how to deal
+	  // with internal-linkage decls we reference?
 	  gcc_assert (!is_import);
 	  goto by_value;
 	}
@@ -7426,44 +7468,7 @@ trees_in::tree_node ()
     case tt_binfo:
       {
 	/* A BINFO.  Walk the tree of the dominating type.  */
-	tree inh = tree_node ();
-	if (!inh)
-	  {
-	    /* Dominating binfo.  Read the type and get its binfo.  */
-	    tree decl = tree_node ();
-	    if (get_overrun ())
-	      break;
-	    res = TYPE_BINFO (TREE_TYPE (decl));
-	    dump () && dump ("Read dominating binfo %N", res);
-	  }
-	else
-	  {
-	    /* Copied binfo.  Find it in our parent.  */
-	    unsigned key = u ();
-	    bool is_virt = key & 1;
-	    unsigned ix = key >> 1;
-	    vec<tree, va_gc> *binfo_vec;
-
-	    if (is_virt)
-	      {
-		/* A virtual base.  Look on the CLASSTYPE_VIRTUALS.  */
-		while (BINFO_INHERITANCE_CHAIN (inh))
-		  inh = BINFO_INHERITANCE_CHAIN (inh);
-
-		binfo_vec = CLASSTYPE_VBASECLASSES (BINFO_TYPE (inh));
-	      }
-	    else
-	      /* Look along BINFO_BASE_BINFOS (inh).  */
-	      binfo_vec = BINFO_BASE_BINFOS (inh);
-
-	    if (vec_safe_length (binfo_vec) < ix)
-	      set_overrun ();
-	    else
-	      res = (*binfo_vec)[ix];
-	    dump () && dump ("Read derived %sBINFO %u %N of %N",
-			     is_virt ? "virtual " : "", ix, res, inh);
-	  }
-
+	res = tree_binfo ();
 	if (get_overrun ())
 	  break;
 
