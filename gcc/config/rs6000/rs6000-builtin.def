@@ -1,5 +1,5 @@
 /* Builtin functions for rs6000/powerpc.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
    This file is part of GCC.
@@ -630,6 +630,14 @@
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_P7_POWERPC64_MISC_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */      \
+		    "__builtin_" NAME,			/* NAME */      \
+		    RS6000_BTM_POPCNTD			/* MASK */	\
+		    | RS6000_BTM_POWERPC64,				\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */      \
+		    | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
 
 /* Miscellaneous builtins for instructions added in ISA 2.07.  These
    instructions do require the ISA 2.07 vector support, but they aren't vector
@@ -1801,13 +1809,9 @@ BU_P9V_OVERLOAD_2 (VADUW,	"vaduw")
 
 /* 2 argument extended divide functions added in ISA 2.06.  */
 BU_P7_MISC_2 (DIVWE,		"divwe",	CONST,	dive_si)
-BU_P7_MISC_2 (DIVWEO,		"divweo",	CONST,	diveo_si)
 BU_P7_MISC_2 (DIVWEU,		"divweu",	CONST,	diveu_si)
-BU_P7_MISC_2 (DIVWEUO,		"divweuo",	CONST,	diveuo_si)
-BU_P7_MISC_2 (DIVDE,		"divde",	CONST,	dive_di)
-BU_P7_MISC_2 (DIVDEO,		"divdeo",	CONST,	diveo_di)
-BU_P7_MISC_2 (DIVDEU,		"divdeu",	CONST,	diveu_di)
-BU_P7_MISC_2 (DIVDEUO,		"divdeuo",	CONST,	diveuo_di)
+BU_P7_POWERPC64_MISC_2 (DIVDE,	"divde",	CONST,	dive_di)
+BU_P7_POWERPC64_MISC_2 (DIVDEU,	"divdeu",	CONST,	diveu_di)
 
 /* 1 argument DFP (decimal floating point) functions added in ISA 2.05.  */
 BU_DFP_MISC_1 (DXEX,		"dxex",		CONST,	dfp_dxex_dd)

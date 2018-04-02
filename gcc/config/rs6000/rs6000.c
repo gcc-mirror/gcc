@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -3774,6 +3774,7 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_P9_MISC)		    ? RS6000_BTM_P9_MISC   : 0)
 	  | ((TARGET_MODULO)		    ? RS6000_BTM_MODULO    : 0)
 	  | ((TARGET_64BIT)		    ? RS6000_BTM_64BIT     : 0)
+	  | ((TARGET_POWERPC64)		    ? RS6000_BTM_POWERPC64 : 0)
 	  | ((TARGET_CRYPTO)		    ? RS6000_BTM_CRYPTO	   : 0)
 	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
 	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0)
@@ -15647,6 +15648,11 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
     error ("Builtin function %s requires the -mhard-float option", name);
   else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
     error ("Builtin function %s requires the -mfloat128 option", name);
+  else if ((fnmask & (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
+	   == (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
+    error ("builtin function %qs requires the %qs (or newer), and "
+	   "%qs or %qs options",
+	   name, "-mcpu=power7", "-m64", "-mpowerpc64");
   else
     error ("Builtin function %s is not supported with the current options",
 	   name);
@@ -17232,9 +17238,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case CRYPTO_BUILTIN_VPMSUM:
     case MISC_BUILTIN_ADDG6S:
     case MISC_BUILTIN_DIVWEU:
-    case MISC_BUILTIN_DIVWEUO:
     case MISC_BUILTIN_DIVDEU:
-    case MISC_BUILTIN_DIVDEUO:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;
@@ -36056,6 +36060,7 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "hard-dfp",		 RS6000_BTM_DFP,	false, false },
   { "hard-float",	 RS6000_BTM_HARD_FLOAT,	false, false },
   { "long-double-128",	 RS6000_BTM_LDBL128,	false, false },
+  { "powerpc64",	 RS6000_BTM_POWERPC64,  false, false },
   { "float128",		 RS6000_BTM_FLOAT128,   false, false },
 };
 
