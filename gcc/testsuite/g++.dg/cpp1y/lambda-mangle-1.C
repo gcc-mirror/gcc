@@ -85,4 +85,4 @@ void Baz ()
 // { dg-final { scan-assembler "_Z3eatIZ3FoovEUlPT_PT0_E4_Z3FoovEUlS1_S3_E5_EvRS0_RS2_:" } }
 // { dg-final { scan-assembler "_Z3eatIPiZ3BarIsEvvEUlPsPfS3_E_EvRT_RT0_:" } }
 // { dg-final { scan-assembler "_Z3eatIPiZ3BarIsEvvEUlPsPT_PT0_E0_EvRS3_RS5_:" } }
-// { dg-final { scan-assembler "_Z3eatIPiZ3BarIsEvvEUlPsPT_zE1_EvRS3_RT0_:" } }
+// { dg-final { scan-assembler "_Z3eatIPiZ3BarIsEvvEUlPsDpPT_E1_EvRT_RT0_:" } }
