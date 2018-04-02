@@ -1,3 +1,21 @@
+2018-04-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85100
+	* config/i386/cpuinfo.c (XCR_XFEATURE_ENABLED_MASK): New.
+	(XSTATE_FP): Likewise.
+	(XSTATE_SSE): Likewise.
+	(XSTATE_YMM): Likewise.
+	(XSTATE_OPMASK): Likewise.
+	(XSTATE_ZMM): Likewise.
+	(XSTATE_HI_ZMM): Likewise.
+	(XCR_AVX_ENABLED_MASK): Likewise.
+	(XCR_AVX512F_ENABLED_MASK): Likewise.
+	(get_available_features): Enable AVX and AVX512 features only
+	if their states are supported by OSXSAVE.
+
 2018-03-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
