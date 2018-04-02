@@ -1,3 +1,8 @@
+2018-04-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/cpp.texi (Variadic Macros): Fix line continuation in an
+	example.
+
 2018-04-02  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (TARGET_CANONICALIZE_COMPARISON): Define.
