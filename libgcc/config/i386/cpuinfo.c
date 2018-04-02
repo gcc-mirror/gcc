@@ -303,6 +303,40 @@ get_available_features (unsigned int ecx, unsigned int edx,
 {
   unsigned int features = 0;
 
+  /* Get XCR_XFEATURE_ENABLED_MASK register with xgetbv.  */
+#define XCR_XFEATURE_ENABLED_MASK	0x0
+#define XSTATE_FP			0x1
+#define XSTATE_SSE			0x2
+#define XSTATE_YMM			0x4
+#define XSTATE_OPMASK			0x20
+#define XSTATE_ZMM			0x40
+#define XSTATE_HI_ZMM			0x80
+
+#define XCR_AVX_ENABLED_MASK \
+  (XSTATE_SSE | XSTATE_YMM)
+#define XCR_AVX512F_ENABLED_MASK \
+  (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM)
+
+  /* Check if AVX and AVX512 are usable.  */
+  int avx_usable = 0;
+  int avx512_usable = 0;
+  if ((ecx & bit_OSXSAVE))
+    {
+      /* Check if XMM, YMM, OPMASK, upper 256 bits of ZMM0-ZMM15 and
+         ZMM16-ZMM31 states are supported by OSXSAVE.  */
+      unsigned int xcrlow;
+      unsigned int xcrhigh;
+      asm (".byte 0x0f, 0x01, 0xd0"
+	   : "=a" (xcrlow), "=d" (xcrhigh)
+	   : "c" (XCR_XFEATURE_ENABLED_MASK));
+      if ((xcrlow & XCR_AVX_ENABLED_MASK) == XCR_AVX_ENABLED_MASK)
+	{
+	  avx_usable = 1;
+	  avx512_usable = ((xcrlow & XCR_AVX512F_ENABLED_MASK)
+			   == XCR_AVX512F_ENABLED_MASK);
+	}
+    }
+
   if (edx & bit_CMOV)
     features |= (1 << FEATURE_CMOV);
   if (edx & bit_MMX)
@@ -325,10 +359,13 @@ get_available_features (unsigned int ecx, unsigned int edx,
     features |= (1 << FEATURE_SSE4_1);
   if (ecx & bit_SSE4_2)
     features |= (1 << FEATURE_SSE4_2);
-  if (ecx & bit_AVX)
-    features |= (1 << FEATURE_AVX);
-  if (ecx & bit_FMA)
-    features |= (1 << FEATURE_FMA);
+  if (avx_usable)
+    {
+      if (ecx & bit_AVX)
+	features |= (1 << FEATURE_AVX);
+      if (ecx & bit_FMA)
+	features |= (1 << FEATURE_FMA);
+    }
 
   /* Get Advanced Features at level 7 (eax = 7, ecx = 0). */
   if (max_cpuid_level >= 7)
@@ -337,28 +374,34 @@ get_available_features (unsigned int ecx, unsigned int edx,
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
       if (ebx & bit_BMI)
         features |= (1 << FEATURE_BMI);
-      if (ebx & bit_AVX2)
-	features |= (1 << FEATURE_AVX2);
+      if (avx_usable)
+	{
+	  if (ebx & bit_AVX2)
+	    features |= (1 << FEATURE_AVX2);
+	}
       if (ebx & bit_BMI2)
         features |= (1 << FEATURE_BMI2);
-      if (ebx & bit_AVX512F)
-	features |= (1 << FEATURE_AVX512F);
-      if (ebx & bit_AVX512VL)
-	features |= (1 << FEATURE_AVX512VL);
-      if (ebx & bit_AVX512BW)
-	features |= (1 << FEATURE_AVX512BW);
-      if (ebx & bit_AVX512DQ)
-	features |= (1 << FEATURE_AVX512DQ);
-      if (ebx & bit_AVX512CD)
-	features |= (1 << FEATURE_AVX512CD);
-      if (ebx & bit_AVX512PF)
-	features |= (1 << FEATURE_AVX512PF);
-      if (ebx & bit_AVX512ER)
-	features |= (1 << FEATURE_AVX512ER);
-      if (ebx & bit_AVX512IFMA)
-	features |= (1 << FEATURE_AVX512IFMA);
-      if (ecx & bit_AVX512VBMI)
-	features |= (1 << FEATURE_AVX512VBMI);
+      if (avx512_usable)
+	{
+	  if (ebx & bit_AVX512F)
+	    features |= (1 << FEATURE_AVX512F);
+	  if (ebx & bit_AVX512VL)
+	    features |= (1 << FEATURE_AVX512VL);
+	  if (ebx & bit_AVX512BW)
+	    features |= (1 << FEATURE_AVX512BW);
+	  if (ebx & bit_AVX512DQ)
+	    features |= (1 << FEATURE_AVX512DQ);
+	  if (ebx & bit_AVX512CD)
+	    features |= (1 << FEATURE_AVX512CD);
+	  if (ebx & bit_AVX512PF)
+	    features |= (1 << FEATURE_AVX512PF);
+	  if (ebx & bit_AVX512ER)
+	    features |= (1 << FEATURE_AVX512ER);
+	  if (ebx & bit_AVX512IFMA)
+	    features |= (1 << FEATURE_AVX512IFMA);
+	  if (ecx & bit_AVX512VBMI)
+	    features |= (1 << FEATURE_AVX512VBMI);
+	}
     }
 
   unsigned int ext_level;
@@ -372,10 +415,13 @@ get_available_features (unsigned int ecx, unsigned int edx,
 
       if (ecx & bit_SSE4a)
 	features |= (1 << FEATURE_SSE4_A);
-      if (ecx & bit_FMA4)
-	features |= (1 << FEATURE_FMA4);
-      if (ecx & bit_XOP)
-	features |= (1 << FEATURE_XOP);
+      if (avx_usable)
+	{
+	  if (ecx & bit_FMA4)
+	    features |= (1 << FEATURE_FMA4);
+	  if (ecx & bit_XOP)
+	    features |= (1 << FEATURE_XOP);
+	}
     }
     
   __cpu_model.__cpu_features[0] = features;
