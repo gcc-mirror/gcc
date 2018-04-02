@@ -563,135 +563,8 @@ irange::union_ (const wide_int &x, const wide_int &y)
       gcc_assert (!CHECKING_P || valid_p ());
       return *this;
     }
-
-  /* If [X,Y] comes before, put it at the front.  */
-  if (wi::lt_p (y, bounds[0], TYPE_SIGN (type)))
-    {
-      prepend (x, y);
-      gcc_assert (!CHECKING_P || valid_p ());
-      return *this;
-    }
-  /* If [X,Y] comes after, put it at the end.  */
-  if (wi::gt_p (x, bounds[nitems - 1], TYPE_SIGN (type)))
-    {
-      append (x, y);
-      gcc_assert (!CHECKING_P || valid_p ());
-      return *this;
-    }
-  /* Handle [X,Y] swalling up all of THIS.  */
-  if (wi::le_p (x, bounds[0], TYPE_SIGN (type))
-      && wi::ge_p (y, bounds[nitems - 1], TYPE_SIGN (type)))
-    {
-      bounds[0] = x;
-      bounds[1] = y;
-      nitems = 2;
-      gcc_assert (!CHECKING_P || valid_p ());
-      return *this;
-    }
-  /* Handle X starting before, while Y is within.
-		  Y
-     X[a,b][c,d][e,f][g,h][i,j]
-     ==> [X,Y][g,h][i,j].  */
-  if (wi::lt_p (x, bounds[0], TYPE_SIGN (type)))
-    {
-      bounds[0] = x;
-
-      /*    Y
-	 X[a,b]   => [X,b].  */
-      if (nitems == 2)
-	{
-	  gcc_assert (!CHECKING_P || valid_p ());
-	  return *this;
-	}
-
-      for (unsigned i = 1; i < nitems; i += 2)
-	if (wi::le_p (y, bounds[i], TYPE_SIGN (type)))
-	  {
-	    if (y == bounds[i])
-	      bounds[1] = y;
-	    else
-	      bounds[1] = bounds[i];
-	    if (i >= 2)
-	      remove (2, i);
-	    gcc_assert (!CHECKING_P || valid_p ());
-	    return *this;
-	  }
-      gcc_unreachable ();
-    }
-  /* Handle Y being outside, while X is within.
-		  X           Y
-     [a,b][c,d][e,f][g,h][i,j]
-     ==> [a,b][c,d][e,Y].  */
-  if (wi::gt_p (y, bounds[nitems - 1], TYPE_SIGN (type)))
-    {
-      for (unsigned i = 0; i < nitems; i += 2)
-	if (wi::ge_p (bounds[i + 1], x, TYPE_SIGN (type)))
-	  {
-	    bounds[i + 1] = y;
-	    nitems = i + 2;
-	    return *this;
-	  }
-      gcc_unreachable ();
-    }
-
-  /* At this point, [X,Y] must be completely inside.
-      X           Y
-     [a,b][c,d][e,f][g,h].  */
-  gcc_assert (wi::ge_p (x, bounds[0], TYPE_SIGN (type))
-	      && wi::le_p (y, bounds[nitems - 1], TYPE_SIGN (type)));
-
-  /* Find X.  */
-  gcc_assert (nitems >= 2);
-  unsigned xpos = ~0U;
-  unsigned i = nitems;
-  do
-    {
-      i -= 2;
-      if (wi::ge_p (x, bounds[i], TYPE_SIGN (type)))
-	{
-	  xpos = i;
-	  break;
-	}
-    }
-  while (i);
-  gcc_assert (xpos != ~0U);
-
-  /* Handle [X,Y] fitting between two sub-ranges:
-
-     [a,b][X,Y][b,c].  */
-  if (nitems < max_pairs * 2
-      && wi::gt_p (x, bounds[xpos + 1], TYPE_SIGN (type))
-      && wi::lt_p (y, bounds[xpos + 2], TYPE_SIGN (type)))
-    {
-      insert (x, y, xpos + 2);
-      gcc_assert (!CHECKING_P || valid_p ());
-      return *this;
-    }
-
-  /* Find Y.  */
-  unsigned ypos = ~0U;
-  for (i = 1; i < nitems; i += 2)
-    if (wi::le_p (y, bounds[i], TYPE_SIGN (type)))
-      {
-	ypos = i;
-	break;
-      }
-  gcc_assert (ypos != ~0U);
-
-  /* If [x,y] is inside of subrange [xpos,ypos], there's nothing to do.  */
-  if (xpos + 1 == ypos)
-    {
-      gcc_assert (!CHECKING_P || valid_p ());
-      return *this;
-    }
-
-  /* Squash the sub-ranges in between xpos and ypos.  */
-  wide_int tmp = bounds[ypos];
-  remove (xpos + 2, ypos);
-  bounds[xpos + 1] = tmp;
-
-  gcc_assert (!CHECKING_P || valid_p ());
-  return *this;
+  irange tmp (type, x, y);
+  return union_ (tmp);
 }
 
 // THIS = THIS U R
@@ -709,19 +582,102 @@ irange::union_ (const irange &r)
   else if (r.empty_p ())
     return *this;
 
-  /* FIXME: It would be nice to look at both THIS and R as a whole and
-     optimize the case where they don't overlap and be easily appended
-     or prepended.  That is, do the calculation in this function
-     instead of doing it piecemeal below.
+  // Build a union of 2 ranges here.  Make sure we dont have to worry about
+  // merging and such by reserving twice as many pairs as needed, and simply
+  // sort the 2 ranges into this intermediate form.
+  // THe intermediate result will have the property that the beginning of
+  // each range is <= the beginning of the next range
+  // There may be overlapping ranges at this point.
+  // ie this would be valid 
+  // 	[ -20, 10], [-10, 0], [0, 20], [40, 90] 
+  // as it satidfies this contraint : -20 < -10 < 0 < 40
+  // WHen the range is rebuilt into r, the merge is performed.
+  //
+  // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
 
-     For example: [8,10][14,14] U [135,255].  */
-  for (unsigned i = 0; i < r.nitems; i += 2)
-    union_ (r.bounds[i], r.bounds[i + 1]);
+  signop sign = TYPE_SIGN (type);
+  wide_int res[max_pairs * 4];
+  wide_int u1 ;
+  bool ovf;
+  unsigned i = 0, j = 0, k = 0;
 
-  /* There is no valid_p() check here because the calls to union_
-     above would have called valid_p().  */
+  while (i < nitems && j < r.nitems)
+    {
+      // lower of Xi and Xj is the lowest point.
+      if (wi::le_p (bounds[i], r.bounds[j], sign))
+        {
+	  res[k++] = bounds[i];
+	  res[k++] = bounds[i + 1];
+	  i += 2;
+	}
+      else
+        {
+	  res[k++] = r.bounds[j];
+	  res[k++] = r.bounds[j + 1];
+	  j += 2;
+	}
+    }
 
+  for ( ; i < nitems; i += 2)
+    {
+      res[k++] = bounds[i];
+      res[k++] = bounds[i + 1];
+    }
+
+  for ( ; j < r.nitems; j += 2)
+    {
+      res[k++] = r.bounds[j];
+      res[k++] = r.bounds[j + 1];
+    }
+
+  // Now normalize the vector removing any overlaps.
+  
+  i = 2;
+  for (j = 2; j < k ; j += 2)
+    {
+      u1 = wi::add (res[i - 1], 1, sign, &ovf);
+      // Overflow indicates we are at MAX already
+      if (ovf)
+        break;
+      // Current upper+1 is >= lower bound next pair, then we merge ranges.
+      if (wi::ge_p (u1, res[j], sign))
+        {
+	  // New upper bounds is greater of current or the next one.
+	  if (wi::gt_p (res[j + 1], res [i - 1], sign))
+	    res [i - 1] = res[j + 1];
+	}
+      else
+        {
+	  // this is a new distinct range, but no point in copying it if its
+	  // in the right place.
+	  if (i != j)
+	    {
+	      res[i++] = res[j];
+	      res[i++] = res[j + 1];
+	    }
+	  else
+	    i += 2;
+
+	}
+    }
+  
+  // At This point, the vector should have i ranges, none overlapping. Now
+  // it simply needs to be copied, and if there are too many ranges,
+  // merge some.  WE wont do any analysis as to what the "best" merges are,
+  // simply combine the final ranges into one.
+  if (i > max_pairs * 2)
+    {
+      res[max_pairs * 2 - 1] = res[i - 1];
+      i = max_pairs * 2;
+    }
+
+  for (j = 0; j < i ; j++)
+    bounds[j] = res [j];
+  nitems = i;
+    
   overflow |= r.overflow;
+
+  gcc_assert (!CHECKING_P || valid_p ());
   return *this;
 }
 
@@ -1390,7 +1346,7 @@ irange_tests ()
   r1 = irange (integer_type_node, 25, 70);
   r0.union_ (r1);
   ASSERT_TRUE (r0 == irange_union (irange (integer_type_node, 10, 20),
-				   irange (integer_type_node, 30, 70)));
+				   irange (integer_type_node, 25, 70)));
 
   if (irange::max_pairs > 2)
     {
