@@ -21320,9 +21320,6 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
       cp_parameter_declarator *parameter;
       tree decl = error_mark_node;
       bool parenthesized_p = false;
-      int template_parm_idx = (function_being_declared_is_template_p (parser)?
-			       TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS
-						(current_template_parms)) : 0);
 
       /* Parse the parameter.  */
       parameter
@@ -21336,22 +21333,6 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 
       if (parameter)
 	{
-	  /* If a function parameter pack was specified and an implicit template
-	     parameter was introduced during cp_parser_parameter_declaration,
-	     change any implicit parameters introduced into packs.  */
-	  if (parser->implicit_template_parms
-	      && parameter->declarator
-	      && parameter->declarator->parameter_pack_p)
-	    {
-	      int latest_template_parm_idx = TREE_VEC_LENGTH
-		(INNERMOST_TEMPLATE_PARMS (current_template_parms));
-
-	      if (latest_template_parm_idx != template_parm_idx)
-		parameter->decl_specifiers.type = convert_generic_types_to_packs
-		  (parameter->decl_specifiers.type,
-		   template_parm_idx, latest_template_parm_idx);
-	    }
-
 	  decl = grokdeclarator (parameter->declarator,
 				 &parameter->decl_specifiers,
 				 PARM,
@@ -21511,6 +21492,10 @@ cp_parser_parameter_declaration (cp_parser *parser,
   parser->type_definition_forbidden_message
     = G_("types may not be defined in parameter types");
 
+  int template_parm_idx = (function_being_declared_is_template_p (parser) ?
+			   TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS
+					    (current_template_parms)) : 0);
+
   /* Parse the declaration-specifiers.  */
   cp_token *decl_spec_token_start = cp_lexer_peek_token (parser->lexer);
   cp_parser_decl_specifier_seq (parser,
@@ -21600,6 +21585,23 @@ cp_parser_parameter_declaration (cp_parser *parser,
      parameter pack expansion expression. Otherwise, leave the ellipsis
      for a C-style variadic function. */
   token = cp_lexer_peek_token (parser->lexer);
+
+  /* If a function parameter pack was specified and an implicit template
+     parameter was introduced during cp_parser_parameter_declaration,
+     change any implicit parameters introduced into packs.  */
+  if (parser->implicit_template_parms
+      && (token->type == CPP_ELLIPSIS
+	  || (declarator && declarator->parameter_pack_p)))
+    {
+      int latest_template_parm_idx = TREE_VEC_LENGTH
+	(INNERMOST_TEMPLATE_PARMS (current_template_parms));
+
+      if (latest_template_parm_idx != template_parm_idx)
+	decl_specifiers.type = convert_generic_types_to_packs
+	  (decl_specifiers.type,
+	   template_parm_idx, latest_template_parm_idx);
+    }
+
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
     {
       tree type = decl_specifiers.type;
