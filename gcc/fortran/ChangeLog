@@ -1,3 +1,9 @@
+2018-04-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85102
+	* decl.c (variable_decl): If upper or lower bounds simplify
+	to a constant, use that.
+
 2018-03-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84931
