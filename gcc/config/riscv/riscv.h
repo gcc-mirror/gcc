@@ -636,7 +636,9 @@ typedef struct {
    and maybe make use of that.  */
 #define SLOW_BYTE_ACCESS 1
 
-#define SHIFT_COUNT_TRUNCATED 1
+/* Using SHIFT_COUNT_TRUNCATED is discouraged, so we handle this with patterns
+   in the md file instead.  */
+#define SHIFT_COUNT_TRUNCATED 0
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

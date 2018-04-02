@@ -1,3 +1,14 @@
+2018-04-02  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.h (SHIFT_COUNT_TRUNCATED): Set to zero.
+	* config/riscv/riscv.md (<optab>si3): Use QImode shift count.
+	(<optab>di3, <optab>si3_extend): Likewise.
+	(<optab>si3_mask, <optab>si3_mask_1): New.
+	(<optab>di3_mask, <optab>di3_mask_1): New.
+	(<optab>si3_extend_mask, <optab>si3_extend_mask_1): New.
+	(lshrsi3_zero_extend_1): Use VOIDmode shift count.
+	* config/riscv/sync.md (atomic_test_and_set): Emit QImode shift count.
+
 2018-04-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/cpp.texi (Variadic Macros): Fix line continuation in an
