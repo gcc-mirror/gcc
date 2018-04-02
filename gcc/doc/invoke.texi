@@ -6825,13 +6825,16 @@ the call writes the terminating NUL into @code{a[4]}, the copies overlap and
 the call is diagnosed.
 
 @smallexample
-struct foo
+void foo (void)
 @{
   char a[] = "abcd1234";
   strcpy (a, a + 4);
-@};
+  &hellip;
+@}
 @end smallexample
-The @option{-Wrestrict} is included in @option{-Wall}.
+The @option{-Wrestrict} option detects some instances of simple overlap
+even without optimization but works best at @option{-O2}.  It is included
+in @option{-Wall}.
 
 @item -Wnested-externs @r{(C and Objective-C only)}
 @opindex Wnested-externs
