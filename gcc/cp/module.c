@@ -1200,7 +1200,7 @@ private:
 	bytes = space;
 	if (!avail)
 	  {
-	    overrun = true;
+	    set_overrun ();
 	    return NULL;
 	  }
       }
@@ -1466,7 +1466,7 @@ bytes_in::i ()
     {
       if (count == max)
 	{
-	  overrun = true;
+	  set_overrun ();
 	  return 0;
 	}
       byte = ptr[count++];
@@ -1517,7 +1517,7 @@ bytes_in::u ()
     {
       if (count == max)
 	{
-	  overrun = true;
+	  set_overrun ();
 	  return 0;
 	}
       byte = ptr[count++];
@@ -1567,7 +1567,7 @@ bytes_in::wi ()
     {
       if (count == max)
 	{
-	  overrun = true;
+	  set_overrun ();
 	  return 0;
 	}
       byte = ptr[count++];
@@ -1654,7 +1654,7 @@ bytes_in::str (size_t *len_p)
   const char *str = buf (len + 1);
   if (str[len])
     {
-      overrun = true;
+      set_overrun ();
       str = "";
     }
   return str;
@@ -1999,9 +1999,10 @@ depset::~depset ()
 {
 }
 
-// FIXME:Forward declare, until module_state::{read,write}_namespace don't
-// need it
+// Forward declare for module_state use.
+// FIXME:do these need refs to module_state?
 class trees_out;
+class trees_in;
 
 static bool refs_tng = false; // FIXME: transition
 
@@ -2255,12 +2256,13 @@ private:
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   tree tree_binfo ();
+public:
   bool tree_binfo (tree type); // FIXME move into read_class_def
 
   /* All the bits of a tree.  */
   bool tree_node_raw (tree);
 
-private:
+public:
   tree chained_decls ();  /* Follow DECL_CHAIN.  */
   vec<tree, va_gc> *tree_vec (); /* vec of tree.  */
   vec<tree_pair_s, va_gc> *tree_pair_vec (); /* vec of tree_pair.  */
@@ -2347,9 +2349,10 @@ private:
   void lang_type_vals (tree);
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
-  void tree_binfo (tree type); // FIXME:Move into write_class_def
   tree tree_binfo (tree, int, bool);
   void tree_node_raw (tree);
+public:
+  void tree_binfo (tree type); // FIXME:Move into write_class_def
 
 public:
   void chained_decls (tree);
@@ -3555,9 +3558,9 @@ depset::hash::add_decls (tree ns, tree name, auto_vec<tree> &decls)
    depset::cluster containing the cluster number, with the top
    bit set.
 
-   A useful property is that successor SCCs are found before their
-   predecessors.  Thus the output vector is a reverse topological sort
-   of the resulting DAG.  */
+   A useful property is that the output vector is a reverse
+   topological sort of the resulting DAG.  In our case that means
+   dependent SCCs are found before their dependers.  */
 
 void
 depset::tarjan::connect (depset *v)
@@ -3719,6 +3722,8 @@ module_state::write_class_def (trees_out &out, tree type)
 	}
     }
 
+  out.tree_binfo (type);
+
   /* Write the remaining BINFO contents. */
   for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
     {
@@ -3763,13 +3768,13 @@ module_state::write_enum_def (trees_out &out, tree type)
   out.tree_node (TYPE_MAX_VALUE (type));
 }
 
-/* Write out the body of DECL.  See above circularity node.  */
+/* Write out the body of DECL.  See above circularity note.  */
 
 void
 module_state::write_definition (trees_out &out, tree decl)
 {
   if (!out.dep_walk_p ())
-    dump () && dump ("Writing definition %C %N", TREE_CODE (decl), decl);
+    dump () && dump ("Writing definition %C:%N", TREE_CODE (decl), decl);
 
   switch (TREE_CODE (decl))
     {
@@ -3806,6 +3811,26 @@ module_state::write_definition (trees_out &out, tree decl)
     }
 }
 
+/* Compare bindings in a cluster.  Definitions are less than bindings.  */
+
+static int
+bind_cmp (const void *a_, const void *b_)
+{
+  depset *a = *(depset *const *)a_;
+  depset *b = *(depset *const *)b_;
+
+  bool a_bind = a->is_binding ();
+  if (a_bind != b->is_binding ())
+    /* Exactly one is a binding.  It is the greater.  */
+    return a_bind ? +1 : -1;
+
+  /* Both bindings or both non-bindings.  Order by UID of first decl.  */
+  tree a_decl = a->decls[0];
+  tree b_decl = b->decls[0];
+
+  return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
+}
+
 /* Write a cluster of depsets atarting at SCCS[FROM], return index of next
    cluster.  */
 
@@ -3831,6 +3856,9 @@ module_state::tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
       else
 	mark_definition (sec, b->get_decl ());
     }
+
+  /* Sort the cluster.  */
+  qsort (&sccs[from], end - from, sizeof (depset *), bind_cmp);
 
   dump () && dump ("Writing SCC:%u bindings:%u",
 		   cluster & (~0U >> 1), end - from);
@@ -4228,30 +4256,6 @@ space_cmp (const void *a_, const void *b_)
   return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
 }
 
-/* Compare bindings.  Ordered by cluster number.  Within a cluster,
-   definitions are less than bindings.  */
-
-static int
-bind_cmp (const void *a_, const void *b_)
-{
-  depset *a = *(depset *const *)a_;
-  depset *b = *(depset *const *)b_;
-
-  if (a->cluster != b->cluster)
-    return a->cluster < b->cluster ? -1 : +1;
-
-  bool a_bind = a->is_binding ();
-  if (a_bind != b->is_binding ())
-    /* Exactly one is a binding.  It is the greater.  */
-    return a_bind ? +1 : -1;
-
-  /* Both bindings or both non-bindings.  Order by UID of first decl.  */
-  tree a_decl = a->decls[0];
-  tree b_decl = b->decls[0];
-
-  return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
-}
-
 void
 module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
 {
@@ -4282,8 +4286,7 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
       }
   }
 
-  /* Sort bindings and namespaces.  */
-  (binds.qsort) (bind_cmp);
+  /* Sort the namespaces.  */
   (spaces.qsort) (space_cmp);
 
   std::pair<unsigned, unsigned> range;
@@ -4379,11 +4382,16 @@ module_state::tng_read_bindings (elf_in *from)
   auto_vec<tree> spaces;
   std::pair<unsigned, unsigned> range;
 
+  // It doesn't matter that we leave this set on error.  We gonna die.
+  refs_tng = true;
+
   if (!tng_read_namespaces (from, spaces, range))
     return false;
 
   if (!tng_read_bindings (from, spaces, range))
     return false;
+
+  refs_tng = false;
 
   return true;
 }
@@ -4822,9 +4830,6 @@ trees_out::define_class (tree type, tree maybe_template)
 	}
     }
 
-  if (refs_tng)
-    tree_binfo (type);
-
   /* Write the remaining BINFO contents. */
   for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
     {
@@ -4922,9 +4927,6 @@ trees_in::define_class (tree type, tree maybe_template)
       /* Resort the member vector.  */
       resort_type_member_vec (member_vec, NULL, nop, NULL);
     }
-
-  if (refs_tng)
-    tree_binfo (type);
 
   /* Read the remaining BINFO contents. */
   for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
@@ -6706,6 +6708,9 @@ trees_out::lang_decl_vals (tree t)
   /* Module index already written.  */
   switch (lang->u.base.selector)
     {
+    default:
+      gcc_unreachable ();
+
     case lds_fn:  /* lang_decl_fn.  */
       if (!dep_walk_p ())
 	{
@@ -6719,12 +6724,15 @@ trees_out::lang_decl_vals (tree t)
       if (!lang->u.fn.thunk_p)
 	WT (lang->u.fn.u5.cloned_function);
       /* FALLTHROUGH.  */
+
     case lds_min:  /* lang_decl_min.  */
       WT (lang->u.min.template_info);
       WT (lang->u.min.access);
       break;
+
     case lds_ns:  /* lang_decl_ns.  */
       break;
+
     case lds_parm:  /* lang_decl_parm.  */
       if (!dep_walk_p ())
 	{
@@ -6732,8 +6740,6 @@ trees_out::lang_decl_vals (tree t)
 	  WU (lang->u.parm.index);
 	}
       break;
-    default:
-      gcc_unreachable ();
     }
 #undef WU
 #undef WT
@@ -6747,9 +6753,11 @@ trees_in::lang_decl_vals (tree t)
 #define RT(X) ((X) = tree_node ())
 
   /* Module index already read.  */
-
   switch (lang->u.base.selector)
     {
+    default:
+      gcc_unreachable ();
+
     case lds_fn:  /* lang_decl_fn.  */
       {
 	if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
@@ -6771,18 +6779,19 @@ trees_in::lang_decl_vals (tree t)
 	  RT (lang->u.fn.u5.cloned_function);
       }
       /* FALLTHROUGH.  */
+
     case lds_min:  /* lang_decl_min.  */
       RT (lang->u.min.template_info);
       RT (lang->u.min.access);
       break;
+
     case lds_ns:  /* lang_decl_ns.  */
       break;
+
     case lds_parm:  /* lang_decl_parm.  */
       RU (lang->u.parm.level);
       RU (lang->u.parm.index);
       break;
-    default:
-      gcc_unreachable ();
     }
 #undef RU
 #undef RT
@@ -6911,33 +6920,41 @@ trees_out::tree_binfo (tree type)
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
       tree_node (BINFO_TYPE (child));
-      u (BINFO_N_BASE_BINFOS (child));
+      /* We might have tagged the binfo during a by-reference walk.
+	 Force a new tag now.  */
+      int tag = force_insert (child, TREE_VISITED (child));
+      if (!dep_walk_p ())
+	{
+	  u (BINFO_N_BASE_BINFOS (child));
 
-      int tag = insert (child);
-      dump () && dump ("Wrote binfo:%d child %N", tag, BINFO_TYPE (child));
+	  dump () && dump ("Wrote binfo:%d child %N", tag, BINFO_TYPE (child));
+	}
     }
   tree_node (NULL_TREE);
-  if (TYPE_LANG_SPECIFIC (type))
+  if (!dep_walk_p ())
     {
-      unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
-      u (nvbases);
-      if (nvbases)
-	dump () && dump ("Type %N has %u vbases", type, nvbases);
-    }
+      if (TYPE_LANG_SPECIFIC (type))
+	{
+	  unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
+	  u (nvbases);
+	  if (nvbases)
+	    dump () && dump ("Type %N has %u vbases", type, nvbases);
+	}
 
-  /* Stream out some contents DFS order.  */
-  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
-    {
-      core_bools (child);
-      bflush ();
+      /* Stream out some contents DFS order.  */
+      for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+	{
+	  core_bools (child);
+	  bflush ();
 #define WT(X) (tree_node (X))
-      WT (child->binfo.offset);
-      WT (child->binfo.inheritance);
+	  WT (child->binfo.offset);
+	  WT (child->binfo.inheritance);
 #undef WT
-      unsigned num = BINFO_N_BASE_BINFOS (child);
-      u (num);
-      for (unsigned ix = 0; ix != num; ix++)
-	tree_node (BINFO_BASE_BINFO (child, ix));
+	  unsigned num = BINFO_N_BASE_BINFOS (child);
+	  u (num);
+	  for (unsigned ix = 0; ix != num; ix++)
+	    tree_node (BINFO_BASE_BINFO (child, ix));
+	}
     }
 }
 
@@ -7400,7 +7417,7 @@ trees_out::tree_node (tree t)
 		       && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
     tree_node_raw (t);
     if (!dep_walk_p ())
-      dump () && dump ("Written:%d %N", tag, t);
+      dump () && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
 
     
     // FIXME: This dep_walk_p checkseems wrong

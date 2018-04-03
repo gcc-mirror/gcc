@@ -1,5 +1,14 @@
 2018-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (bytes_in::{use,i,u,wi,str}): Use set_overrun.
+	(module_state::tng_write_cluster): Sort cluster here ...
+	(module_state::tng_write_bindings): ... not here.
+	(module_state::tng_read_bindings): Set refs_tng.
+	(trees_{in,out}::define_class): Don't deal with refs_tng here.
+	(trees_out::tree_binfo): Protect from dep_walk_p.  Force insert
+	new tag.
+
 	Reorder for better logging
 	gcc/cp/
 	* module.c (trees_{in,out}::core_vals): Stream name-like members
