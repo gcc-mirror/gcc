@@ -1,6 +1,17 @@
 2018-04-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (tt_type_name, tt_named): Rename to ...
+	(tt_named_type, tt_named_decl): ... here.  Adjust uses.
+	(module_state::mark_class_def): Mark fake base.
+	(module_state::write_class_def): Write fake base.
+	(trees_{in,out}::tree_node): Avoid goto again.
+	(trees_in::finish_type): Protect fake base serialize.
+	* Make-lang.in (version.o): Depend on cp dir.
+	gcc/testsuite/
+	* g++.dg/aaa/class-3_d.C: Adjust message.
+
+	gcc/cp/
 	* module.c (bytes_in::{use,i,u,wi,str}): Use set_overrun.
 	(module_state::tng_write_cluster): Sort cluster here ...
 	(module_state::tng_write_bindings): ... not here.

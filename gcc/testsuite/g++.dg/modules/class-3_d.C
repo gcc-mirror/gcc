@@ -1,7 +1,7 @@
 // { dg-additional-options "-fdump-lang-module" }
 // { dg-final { scan-lang-dump "Imported:-\[0-9\]* '::X'@One" module } }
 // { dg-final { scan-lang-dump "Read imported type:-\[0-9\]* record_type:'::X'" module } }
-// { dg-final { scan-lang-dump "Read interstitial type name type_decl:'::X'" module } }
+// { dg-final { scan-lang-dump "Read named type type_decl:'::X'" module } }
 // { dg-final { scan-lang-dump "Imported:-\[0-9\]* '::X::a'@One" module } }
 // { dg-final { scan-lang-dump "Imported:-\[0-9\]* '::X::b'@One" module } }
 

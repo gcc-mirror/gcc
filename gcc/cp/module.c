@@ -2205,9 +2205,9 @@ enum tree_tag
     tt_conv_id,		/* Conversion operator name.  */
     tt_tinfo_var,	/* Typeinfo object. */
     tt_tinfo_pseudo,	/* Typeinfo pseudo type.  */
-    tt_type_name,	/* TYPE_DECL for type.  */
+    tt_named_type,	/* TYPE_DECL for type.  */
     tt_namespace,	/* Namespace.  */
-    tt_named,  		/* Named decl. */
+    tt_named_decl,  	/* Named decl. */
     tt_binfo,		/* A BINFO.  */
     tt_as_base,		/* An As-Base type.  */
 
@@ -2477,7 +2477,7 @@ trees_out::end ()
 void
 trees_out::mark_node (tree decl, bool into)
 {
-  gcc_assert (DECL_P (decl));
+  gcc_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
 
   if (!TREE_VISITED (decl) || into)
     {
@@ -3631,6 +3631,16 @@ module_state::mark_class_def (trees_out &out, tree type)
       if (has_definition (member))
 	mark_definition (out, member);
     }
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      tree as_base = CLASSTYPE_AS_BASE (type);
+      if (as_base && as_base != type)
+	{
+	  out.mark_node (as_base, true);
+	  mark_class_def (out, as_base);
+	}
+    }
 }
 
 void
@@ -3739,6 +3749,13 @@ module_state::write_class_def (trees_out &out, tree type)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
+      out.tree_node (CLASSTYPE_PRIMARY_BINFO (type));
+
+      tree as_base = CLASSTYPE_AS_BASE (type);
+      out.tree_node (as_base);
+      if (as_base && as_base != type)
+	write_class_def (out, as_base);
+
       tree vtables = CLASSTYPE_VTABLES (type);
       out.chained_decls (vtables);
       /* Write the vtable initializers.  */
@@ -7142,7 +7159,6 @@ void
 trees_out::tree_node (tree t)
 {
   dump.indent ();
- again:
   bool force = false;
   if (!t)
     {
@@ -7163,10 +7179,14 @@ trees_out::tree_node (tree t)
       if (!val)
 	{
 	  /* An entry we should walk into.  */
-	  gcc_checking_assert (DECL_P (t) && TREE_CODE (t) != NAMESPACE_DECL);
 	  force = true;
+	  if (IS_FAKE_BASE_TYPE (t))
+	    goto by_value;
+
+	  gcc_checking_assert (DECL_P (t) && TREE_CODE (t) != NAMESPACE_DECL);
 	  goto by_name;
 	}
+
       if (!dep_walk_p ())
 	{
 	  refs++;
@@ -7175,7 +7195,7 @@ trees_out::tree_node (tree t)
 	    i (val);
 	  else
 	    /* Fixed reference -> tt_fixed */
-	    i (tt_fixed), u (val - 1);
+	    i (tt_fixed), u (--val);
 	  dump () && dump ("Wrote %s:%d %C:%N%S", val < 0 ? "backref" : "fixed",
 			   val, TREE_CODE (t), t, t);
 	}
@@ -7294,7 +7314,7 @@ trees_out::tree_node (tree t)
 
       if (!tree_map.get (name))
 	{
-	  /* A new named type -> tt_type_name.
+	  /* A new named type -> tt_named_type.
 
 	     Write the type name as an interstitial, and then start
 	     over.  We need to stream the DECL_NAME first.  */
@@ -7306,15 +7326,16 @@ trees_out::tree_node (tree t)
 	  gcc_assert (TREE_TYPE (DECL_NAME (name)) != t
 		      || DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
 	  if (!dep_walk_p ())
-	    i (tt_type_name);
+	    i (tt_named_type);
 	  tree_node (name);
 	  if (!dep_walk_p ())
-	    dump () && dump ("Wrote interstitial type name %C:%N%S",
+	    dump () && dump ("Wrote named type %C:%N%S",
 			     TREE_CODE (name), name, name);
 	  /* The type itself could be a variant of TREE_TYPE (name),
 	     so stream it out in its own right.  We'll find the name
 	     in the map, so not end up here next time.  */
-	  goto again;
+	  tree_node (t);
+	  goto done;
 	}
     }
 
@@ -7364,10 +7385,10 @@ trees_out::tree_node (tree t)
 
       if (refs_tng || is_import)
 	{
-	  /* A named decl -> tt_named.  */
+	  /* A named decl -> tt_named_decl.  */
 	  if (!dep_walk_p ())
 	    {
-	      i (tt_named);
+	      i (tt_named_decl);
 	      u (TREE_CODE (t));
 	      tree_node (CP_DECL_CONTEXT (t));
 	      u (owner);
@@ -7421,13 +7442,12 @@ trees_out::tree_node (tree t)
 
     
     // FIXME: This dep_walk_p checkseems wrong
-    if (!dep_walk_p ()
+    if (!dep_walk_p () && !refs_tng
 	&& RECORD_OR_UNION_CODE_P (TREE_CODE (t))
 	&& TYPE_MAIN_VARIANT (t) == t)
       {
 	/* Write out the binfo heirarchy.  */
-	if (!refs_tng)
-	  tree_binfo (t);
+	tree_binfo (t);
 	if (TYPE_LANG_SPECIFIC (t))
 	  {
 	    tree_node (CLASSTYPE_PRIMARY_BINFO (t));
@@ -7460,7 +7480,6 @@ trees_in::tree_node ()
     return NULL_TREE;
 
   dump.indent ();
- again:
   int tag = i ();
   tree res = NULL_TREE;
   switch (tag)
@@ -7515,15 +7534,14 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_type_name:
-      /* An interstitial type name.  Read the name and then start
-	 over.  */
+    case tt_named_type:
+      /* An interstitial type name.  Read the name and then the type again.  */
       res = tree_node ();
-      dump () && dump ("Read interstitial type name %C:%N%S",
+      dump () && dump ("Read named type %C:%N%S",
 		       res ? TREE_CODE (res) : ERROR_MARK, res, res);
-      if (res && TREE_CODE (res) == TYPE_DECL)
-	goto again;
-      set_overrun ();
+      if (!res || TREE_CODE (res) != TYPE_DECL)
+	set_overrun ();
+      res = tree_node ();
       break;
 
     case tt_tinfo_var:
@@ -7567,7 +7585,7 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_named:
+    case tt_named_decl:
       {
 	/* A named decl.  */
 	unsigned code = u ();
@@ -7772,13 +7790,16 @@ trees_in::finish_type (tree type)
     ;
   else if (main == type)
     {
-      /* Read in the binfo heirarchy.  */
-      if (!refs_tng && !tree_binfo (type))
-	set_overrun ();
-      if (TYPE_LANG_SPECIFIC (type))
+      if (!refs_tng)
 	{
-	  CLASSTYPE_PRIMARY_BINFO (type) = tree_node ();
-	  CLASSTYPE_AS_BASE (type) = tree_node ();
+	  /* Read in the binfos & as-base.  */
+	  if (!tree_binfo (type))
+	    set_overrun ();
+	  else if (TYPE_LANG_SPECIFIC (type))
+	    {
+	      CLASSTYPE_PRIMARY_BINFO (type) = tree_node ();
+	      CLASSTYPE_AS_BASE (type) = tree_node ();
+	    }
 	}
     }
   else
