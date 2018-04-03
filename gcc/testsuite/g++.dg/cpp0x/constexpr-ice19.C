@@ -9,5 +9,5 @@ struct A
 
 struct B
 {
-  static constexpr A a {};  // { dg-error "not literal" }
+  static constexpr A a {};  // { dg-error "not literal|in-class initialization" }
 };

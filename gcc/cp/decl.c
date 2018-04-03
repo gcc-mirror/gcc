@@ -6923,11 +6923,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
     }
 
-  if (ensure_literal_type_for_constexpr_object (decl)
-      == error_mark_node)
+  if (ensure_literal_type_for_constexpr_object (decl) == error_mark_node)
     {
       DECL_DECLARED_CONSTEXPR_P (decl) = 0;
-      return;
+      if (VAR_P (decl) && DECL_CLASS_SCOPE_P (decl))
+	{
+	  init = NULL_TREE;
+	  DECL_EXTERNAL (decl) = 1;
+	}
     }
 
   if (VAR_P (decl)
