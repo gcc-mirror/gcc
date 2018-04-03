@@ -7611,6 +7611,9 @@ conv_binds_ref_to_prvalue (conversion *c)
     return true;
   if (c->kind == ck_user && TREE_CODE (c->type) != REFERENCE_TYPE)
     return true;
+  if (c->kind == ck_identity && c->u.expr
+      && TREE_CODE (c->u.expr) == TARGET_EXPR)
+    return true;
 
   return false;
 }
