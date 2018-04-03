@@ -1811,14 +1811,16 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
   struct ipa_node_params *callee_info = IPA_NODE_REF (callee);
   tree parm_type = ipa_get_type (callee_info, idx);
 
-  /* For K&R C programs, ipa_get_type() could return NULL_TREE.
-     Avoid the transform for these cases.  */
-  if (!parm_type)
+  /* For K&R C programs, ipa_get_type() could return NULL_TREE.  Avoid the
+     transform for these cases.  Similarly, we can have bad type mismatches
+     with LTO, avoid doing anything with those too.  */
+  if (!parm_type
+      || (!INTEGRAL_TYPE_P (parm_type) && !POINTER_TYPE_P (parm_type)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Setting dest_lattice to bottom, because"
-			    " param %i type is NULL for %s\n", idx,
-			    cs->callee->name ());
+	fprintf (dump_file, "Setting dest_lattice to bottom, because type of "
+		 "param %i of %s is NULL or unsuitable for bits propagation\n",
+		 idx, cs->callee->name ());
 
       return dest_lattice->set_to_bottom ();
     }
