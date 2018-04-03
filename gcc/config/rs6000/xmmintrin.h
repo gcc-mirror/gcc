@@ -58,6 +58,18 @@
 #define _XMMINTRIN_H_INCLUDED
 
 #include <altivec.h>
+
+/* Avoid collisions between altivec.h and strict adherence to C++ and
+   C11 standards.  This should eventually be done inside altivec.h itself,
+   but only after testing a full distro build.  */
+#if defined(__STRICT_ANSI__) && (defined(__cplusplus) || \
+				 (defined(__STDC_VERSION__) &&	\
+				  __STDC_VERSION__ >= 201112L))
+#undef vector
+#undef pixel
+#undef bool
+#endif
+
 #include <assert.h>
 
 /* We need type definitions from the MMX header file.  */
