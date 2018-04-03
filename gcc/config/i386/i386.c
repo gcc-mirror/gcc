@@ -44127,12 +44127,14 @@ quarter:
 	 where the mask is clear and second input operand otherwise.  */
       emit_insn (gen_blendm (target, target, tmp,
 			     force_reg (mmode,
-					gen_int_mode (1 << elt, mmode))));
+					gen_int_mode (HOST_WIDE_INT_1U << elt,
+						      mmode))));
     }
   else if (use_vec_merge)
     {
       tmp = gen_rtx_VEC_DUPLICATE (mode, val);
-      tmp = gen_rtx_VEC_MERGE (mode, tmp, target, GEN_INT (1 << elt));
+      tmp = gen_rtx_VEC_MERGE (mode, tmp, target,
+			       GEN_INT (HOST_WIDE_INT_1U << elt));
       emit_insn (gen_rtx_SET (target, tmp));
     }
   else
@@ -44141,7 +44143,7 @@ quarter:
 
       emit_move_insn (mem, target);
 
-      tmp = adjust_address (mem, inner_mode, elt*GET_MODE_SIZE (inner_mode));
+      tmp = adjust_address (mem, inner_mode, elt * GET_MODE_SIZE (inner_mode));
       emit_move_insn (tmp, val);
 
       emit_move_insn (target, mem);
