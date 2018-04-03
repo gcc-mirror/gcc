@@ -1,5 +1,10 @@
 2018-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64095 - auto... parameter pack.
+	* parser.c (cp_parser_parameter_declaration): Handle turning autos
+	into packs here.
+	(cp_parser_parameter_declaration_list): Not here.
+
 	PR c++/85060 - wrong-code with call to base member in template.
 	* search.c (any_dependent_bases_p): Check uses_template_parms
 	rather than processing_template_decl.
