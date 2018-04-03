@@ -2879,7 +2879,7 @@ original_binfo (tree binfo, tree here)
 bool
 any_dependent_bases_p (tree type)
 {
-  if (!type || !CLASS_TYPE_P (type) || !processing_template_decl)
+  if (!type || !CLASS_TYPE_P (type) || !uses_template_parms (type))
     return false;
 
   unsigned i;
