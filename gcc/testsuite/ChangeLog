@@ -1,3 +1,10 @@
+2018-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85169
+	* gcc.c-torture/execute/pr85169.c: New test.
+	* gcc.target/i386/avx512f-pr85169.c: New test.
+	* gcc.target/i386/avx512bw-pr85169.c: New test.
+
 2018-04-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/85126
