@@ -1,3 +1,8 @@
+2018-04-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Move -mfloat-abi=hard to
+	dg-additional-options.
+
 2018-04-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/pr82015.c: Use __vector instead of vector.
