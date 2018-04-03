@@ -25834,6 +25834,9 @@ static tree
 rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
 		       tree tsubst_args, tsubst_flags_t complain)
 {
+  if (olddecl == error_mark_node)
+    return error_mark_node;
+
   tree oldidx = get_template_parm_index (olddecl);
 
   tree newtype;
@@ -25969,6 +25972,7 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   else
     {
       ++processing_template_decl;
+      bool ok = true;
 
       fn_tmpl
 	= (TREE_CODE (ctor) == TEMPLATE_DECL ? ctor
@@ -26039,6 +26043,8 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 	      tree olddecl = TREE_VALUE (oldelt);
 	      tree newdecl = rewrite_template_parm (olddecl, index, level,
 						    tsubst_args, complain);
+	      if (newdecl == error_mark_node)
+		ok = false;
 	      tree newdef = tsubst_template_arg (TREE_PURPOSE (oldelt),
 						 tsubst_args, complain, ctor);
 	      tree list = build_tree_list (newdef, newdecl);
@@ -26060,7 +26066,10 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 
 	  current_template_parms = save_parms;
 	}
+
       --processing_template_decl;
+      if (!ok)
+	return error_mark_node;
     }
 
   if (!memtmpl)
@@ -26187,6 +26196,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type)); iter; ++iter)
     {
       tree guide = build_deduction_guide (*iter, outer_args, complain);
+      if (guide == error_mark_node)
+	return error_mark_node;
       if ((flags & LOOKUP_ONLYCONVERTING)
 	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
 	elided = true;
@@ -26238,6 +26249,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
       if (gtype)
 	{
 	  tree guide = build_deduction_guide (gtype, outer_args, complain);
+	  if (guide == error_mark_node)
+	    return error_mark_node;
 	  cands = lookup_add (guide, cands);
 	}
     }
