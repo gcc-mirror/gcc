@@ -147,11 +147,22 @@ range_stmt::fold (irange &res, const irange& r1) const
   irange_operator *handler = irange_op_handler (code);
   gcc_assert (handler != NULL);
 
+  // Empty ranges are viral.  
+  if (r1.empty_p ())
+    {
+      if (lhs)
+        res.clear (TREE_TYPE (lhs));
+      else
+        res.clear (r1.get_type ());
+      return true;
+    }
+
   /* Single ssa operations require the LHS type as the second range.  */
   if (lhs)
     r2.set_range_for_type (TREE_TYPE (lhs));
   else
     r2.clear ();
+
   return handler->fold_range (res, r1, r2);
 }
 
@@ -164,6 +175,13 @@ range_stmt::fold (irange &res, const irange& r1, const irange& r2) const
 {
   irange_operator *handler = irange_op_handler (code);
   gcc_assert (handler != NULL);
+
+  // Empty ranges are viral.  
+  if (r1.empty_p () || r2.empty_p ())
+    {
+      res.clear (r1.get_type ());
+      return true;
+    }
 
   // Make sure this isnt a unary operation being passed a second range.
   gcc_assert (op2);

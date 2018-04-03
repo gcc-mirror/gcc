@@ -2646,6 +2646,11 @@ ftree-vrp
 Common Report Var(flag_tree_vrp) Init(0) Optimization
 Perform Value Range Propagation on trees.
 
+ftree-rvrp
+Common Report Var(flag_tree_rvrp) Init(1) Optimization
+Perform New Ranger Value Range Propagation on trees.
+
+
 fsplit-paths
 Common Report Var(flag_split_paths) Init(0) Optimization
 Split paths leading to loop backedges.

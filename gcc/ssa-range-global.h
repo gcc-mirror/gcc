@@ -27,5 +27,6 @@ void dump_global_ssa_range_cache (FILE *f);
 
 bool get_global_ssa_range (irange& r, tree name);
 void set_global_ssa_range (tree name, const irange&r);
+void clear_global_ssa_range (tree name);
 
 #endif /* GCC_SSA_RANGE_GLOBAL_H  */

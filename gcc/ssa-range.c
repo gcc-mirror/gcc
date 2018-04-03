@@ -253,16 +253,15 @@ bool
 path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
 {
   gimple *def_stmt;
-  basic_block def_bb;
+  basic_block def_bb = NULL;
 
   if (!valid_irange_ssa (name))
     return false;
 
   def_stmt = SSA_NAME_DEF_STMT (name);
-  if (!def_stmt)
-    return false;
+  if (def_stmt)
+    def_bb = gimple_bb (def_stmt);;
 
-  def_bb = gimple_bb (def_stmt);;
   if (!def_bb)
     def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
@@ -291,18 +290,22 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
   if (!valid_irange_ssa (name))
     return false;
 
+  /* Get an initial range for NAME.  */
+  
   gimple *stmt = SSA_NAME_DEF_STMT (name);
   if (stmt && gimple_bb (stmt) == e->src)
     {
-      if (!path_range_of_def (r, stmt))
-        get_global_ssa_range (r, name);
+      /* If it is in this block, evaluate it.  */
+      if (!path_range_stmt (r, stmt))
+        return false;
     }
   else
-    /* Get the range for the def and possible basic block.  */
+    /* The name comes from outside this block, so evaluate it's value on
+       entry to the block.  */
     if (!path_range_entry (r, name, bb))
-      return false;
+      error (" Why can't we get a live on entry range? ");
 
-  /* Now intersect it with what we know about this edge.  */
+  /* Now intersect it with what NAME evaluates to on this edge.  */
   irange edge_range;
   if (range_on_edge (edge_range, name, e))
     {
@@ -333,7 +336,7 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
   /* Avoid infinite recursion by marking this block as calculated.  */
   block_cache->get_block_ranges (name).set_bb_range_for_type (bb);
 
-  /* Visit each predecessor to reseolve them.  */
+  /* Visit each predecessor to resolve them.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       determine_block (name, e->src, def_bb);
@@ -345,7 +348,7 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     {
       irange pred_range;
       basic_block src = e->src;
-      // Should be using range_on_def
+      // Should be using range_on_def??? or something.
       if (src == def_bb)
         get_global_ssa_range (pred_range, name);
       else
@@ -374,57 +377,145 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     block_cache->get_block_ranges (name).set_bb_range (bb, block_result);
 }
 
+
+bool
+path_ranger::process_phi (irange &r, gphi *phi)
+{
+  tree phi_def = gimple_phi_result (phi);
+  unsigned x;
+
+  if (!valid_irange_ssa (phi_def))
+    return false;
+
+  // If this node has already been processed, just return it.
+  if (get_global_ssa_range (r, phi_def))
+    return true;
+
+  // Avoid infinite recursion by initializing global cache 
+  r.set_range (phi_def);
+  set_global_ssa_range (phi_def, r);
+ 
+  // And start with an empty range, unioning in each areument's range.
+  r.clear (TREE_TYPE (phi_def));
+  for (x = 0; x < gimple_phi_num_args (phi); x++)
+    {
+      irange arg_range;
+      tree arg = gimple_phi_arg_def (phi, x);
+      edge e = gimple_phi_arg_edge (phi, x);
+      if (!path_range_edge (arg_range, arg, e))
+	if (!get_operand_range (arg_range, arg))
+	  return false;
+
+      normalize_bool_type (r, arg_range);
+      r.union_ (arg_range);
+      if (r.range_for_type_p ())
+	break;
+    }
+
+  set_global_ssa_range (phi_def, r);
+  return true;
+}
+
 bool
 path_ranger::path_range_stmt (irange& r, tree name, gimple *g)
 {
-#if 0
-  if (is_a <gphi *> (g))
-    {
-      gphi *phi = as_a <gphi *> (g);
-      tree phi_def = gimple_phi_result (phi);
-      irange tmp;
-      unsigned x;
-
-      /* Only calculate ranges for PHI defs.  */
-      if (phi_def != name)
-        return false;
-
-      r.clear (TREE_TYPE (name));
-
-      for (x = 0; x < gimple_phi_num_args (phi); x++)
-        {
-	  bool res;
-	  tree arg = gimple_phi_arg_def (phi, x);
-	  if (TREE_CODE (arg) == SSA_NAME)
-	    res = path_range_edge (tmp, arg, gimple_phi_arg_edge (phi, x));
-	  else
-	    res = get_operand_range (tmp, arg);
-          if (res)
-	    r.union_ (tmp);
-	  else
-	    {
-	      r.set_range_for_type (name);
-	      return false;
-	    }
-	  if (r.range_for_type_p ())
-	    return true;
-	}
-      return true;
-
-    }
-#endif
-  return range_on_stmt (r, name, g);
+  return path_get_operand (r, name, gimple_bb (g));
 }
 
 
-static inline bool
+bool
+path_ranger::path_range_stmt (irange& r, gimple *g)
+{
+  tree name = gimple_get_lhs (g);
+  irange range_op1, range_op2;
+  range_stmt rn;
+  basic_block bb = gimple_bb (g);
+
+  if (is_a <gphi *> (g))
+    {
+      gphi *phi = as_a <gphi *> (g);
+      return process_phi (r, phi);
+    }
+ 
+  // Not all statements have a LHS.  */
+  if (name)
+    {
+      // If this STMT has already been processed, return that value. 
+      if (get_global_ssa_range (r, name))
+	return true;
+     
+      // avoid infinite recursion by initializing global cache 
+      r.set_range (name);
+      set_global_ssa_range (name, r);
+    }
+
+  rn = g;
+  if (!rn.valid ())
+    return false;
+
+  if (!path_get_operand (range_op1, rn.operand1 (), bb))
+    return false;
+    
+  // If this is a unary operation, call fold now.  
+  if (!rn.operand2 ())
+    return rn.fold (r, range_op1);
+
+  if (!path_get_operand (range_op2, rn.operand2 (), bb))
+    return false;
+
+  normalize_bool_type (range_op1, range_op2);
+  bool res = rn.fold (r, range_op1, range_op2);
+
+  if (name)
+    {
+      if (res)
+	set_global_ssa_range (name, r);
+      else
+	clear_global_ssa_range (name);
+    }
+  return res;
+}
+
+
+static inline gimple *
 ssa_name_same_bb_p (tree name, basic_block bb)
 {
   gimple *g = SSA_NAME_DEF_STMT (name);
   if (!g || gimple_bb (g) != bb)
-   return false;
-  return true;
+   return NULL;
+  return g;
 }
+
+
+/* Determine a range for NAME in basic block BB.
+   If FULL is true, then rescursively call the path ranger to fully evaluate
+   a range for NAME.
+   if FULL is false, then dont go outside the current block to find a best 
+   guess range.
+   if edge E is specified, then only follow E for calculations.  */
+
+bool
+path_ranger::path_get_operand (irange &r, tree name, basic_block bb)
+{
+  if (!valid_irange_ssa (name))
+    return get_operand_range (r, name);
+    
+  // check if the defining statement is in the same block.
+  gimple *s = ssa_name_same_bb_p (name, bb);
+  if (s)
+    {
+      // This means NAME is defined in the same block, simply try to extract 
+      // a range from that statement. 
+      if (!path_range_stmt (r, s))
+	return get_operand_range (r, name);
+      return true;
+    }
+
+  if (path_range_entry (r, name, bb))
+    return true;
+  return get_operand_range (r, name);
+}
+
 
 bool
 path_ranger::path_fold_stmt (irange &r, range_stmt &rn, basic_block bb, edge e)
@@ -482,8 +573,7 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 
   range_stmt rn(g);
   if (!rn.valid())
-    return false;
-
+    return false; 
   return path_fold_stmt (r, rn, bb, e);
 
 }
@@ -494,7 +584,7 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 bool
 path_ranger::path_range_of_def (irange &r, gimple *g)
 {
-  tree name = gimple_get_lhs (g);
+  tree name;
   basic_block bb = gimple_bb (g);
   tree arg;
   irange range_op1, range_op2;
@@ -517,7 +607,7 @@ path_ranger::path_range_of_def (irange &r, gimple *g)
       if (get_global_ssa_range (r, phi_def))
         return true;
 
-      // avoid infinite recursion by initializing global cache 
+      // Avoid infinite recursion by initializing global cache 
       r.set_range (phi_def);
       set_global_ssa_range (phi_def, r);
 
@@ -545,7 +635,10 @@ path_ranger::path_range_of_def (irange &r, gimple *g)
     return false;
 
   name = gimple_get_lhs (g);
-  gcc_checking_assert (name);
+
+  /* If there is no LHS, then we are simply folding an expression.  */
+  if (!name)
+    return path_fold_stmt (r, rn, bb);
 
   if (get_global_ssa_range (r, name))
     return true;

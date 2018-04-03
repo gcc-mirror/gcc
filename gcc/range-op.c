@@ -1011,6 +1011,14 @@ bool
 operator_multiply::op1_irange (irange& r, const irange& lhs,
 			       const irange& op2) const
 {
+  wide_int c;
+  // For overflow types. all we know is that the lower "precsion / 2" bits
+  // match up with the range of the LHS.  See if we know anything about
+  // the zero bits.
+  if (lhs.singleton_p (c) && TYPE_OVERFLOW_WRAPS (lhs.get_type ()))
+   {
+     return false;
+   }
   return op_rr (OPM_DIV, r, lhs, op2);
 }
 
@@ -1018,6 +1026,14 @@ bool
 operator_multiply::op2_irange (irange& r, const irange& lhs,
 			       const irange& op1) const
 {
+  wide_int c;
+  // For overflow types. all we know is that the lower "precsion / 2" bits
+  // match up with the range of the LHS.  See if we know anything about
+  // the zero bits.
+  if (lhs.singleton_p (c) && TYPE_OVERFLOW_WRAPS (lhs.get_type ()))
+   {
+     return false;
+   }
   return op_rr (OPM_DIV, r, lhs, op1);
 }
 

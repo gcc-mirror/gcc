@@ -2494,6 +2494,12 @@ execute_one_pass (opt_pass *pass)
     do_per_function (verify_curr_properties,
 		     (void *)(size_t)pass->properties_required);
 
+  if (pass->name && !strcmp (pass->name, "rvrp"))
+    {
+      path_ranger r;
+      r.exercise (dump_file);
+    }
+
   /* Do it!  */
   todo_after = pass->execute (cfun);
 
@@ -2557,12 +2563,6 @@ execute_one_pass (opt_pass *pass)
 
   if (!current_function_decl)
     symtab->process_new_functions ();
-
-  if (pass->name && !strcmp (pass->name, "ssa"))
-    {
-      path_ranger r;
-      r.exercise (dump_file);
-    }
 
   pass_fini_dump_file (pass);
 

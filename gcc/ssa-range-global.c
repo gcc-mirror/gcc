@@ -59,6 +59,7 @@ public:
   ~ssa_global_cache ();
   bool get_global_range (irange& r, tree name)  const;
   void set_global_range (tree name, const irange&r);
+  void clear_global_range (tree name);
   void clear ();
   void copy_to_range_info ();
   void dump (FILE *f = stderr);
@@ -112,6 +113,13 @@ set_global_ssa_range (tree name, const irange&r)
   globals->set_global_range (name, r);
 }
 
+/* Clear the global range for NAME.  */
+void
+clear_global_ssa_range (tree name)
+{
+  gcc_assert (globals);
+  globals->clear_global_range (name);
+}
 // ---------------------------------------------------------------
 
 /* Initialize a global cache.  */
@@ -155,6 +163,13 @@ ssa_global_cache::set_global_range (tree name, const irange& r)
       m = irange_storage::ggc_alloc_init (r);
       tab[SSA_NAME_VERSION (name)] = m;
     }
+}
+
+/* Set the range for NAME to R in the glonbal cache.  */
+void
+ssa_global_cache::clear_global_range (tree name)
+{
+  tab[SSA_NAME_VERSION (name)] = NULL;
 }
 
 /* Clear the global cache.  */
