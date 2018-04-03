@@ -11663,6 +11663,46 @@ extract_local_specs (tree pattern, tsubst_flags_t complain)
   return data.extra;
 }
 
+/* Extract any uses of local_specializations from PATTERN and add them to ARGS
+   for use in PACK_EXPANSION_EXTRA_ARGS.  */
+
+tree
+build_extra_args (tree pattern, tree args, tsubst_flags_t complain)
+{
+  tree extra = args;
+  if (local_specializations)
+    if (tree locals = extract_local_specs (pattern, complain))
+      extra = tree_cons (NULL_TREE, extra, locals);
+  return extra;
+}
+
+/* Apply any local specializations from PACK_EXPANSION_EXTRA_ARGS and add the
+   normal template args to ARGS.  */
+
+tree
+add_extra_args (tree extra, tree args)
+{
+  if (extra && TREE_CODE (extra) == TREE_LIST)
+    {
+      for (tree elt = TREE_CHAIN (extra); elt; elt = TREE_CHAIN (elt))
+	{
+	  /* The partial instantiation involved local declarations collected in
+	     extract_local_specs; map from the general template to our local
+	     context.  */
+	  tree gen = TREE_PURPOSE (elt);
+	  tree inst = TREE_VALUE (elt);
+	  if (DECL_P (inst))
+	    if (tree local = retrieve_local_specialization (inst))
+	      inst = local;
+	  /* else inst is already a full instantiation of the pack.  */
+	  register_local_specialization (inst, gen);
+	}
+      gcc_assert (!TREE_PURPOSE (extra));
+      extra = TREE_VALUE (extra);
+    }
+  return add_to_template_args (extra, args);
+}
+
 /* Substitute ARGS into T, which is an pack expansion
    (i.e. TYPE_PACK_EXPANSION or EXPR_PACK_EXPANSION). Returns a
    TREE_VEC with the substituted arguments, a PACK_EXPANSION_* node
@@ -11686,26 +11726,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   pattern = PACK_EXPANSION_PATTERN (t);
 
   /* Add in any args remembered from an earlier partial instantiation.  */
-  tree extra = PACK_EXPANSION_EXTRA_ARGS (t);
-  if (extra && TREE_CODE (extra) == TREE_LIST)
-    {
-      for (tree elt = TREE_CHAIN (extra); elt; elt = TREE_CHAIN (elt))
-	{
-	  /* The partial instantiation involved local declarations collected in
-	     extract_local_specs; map from the general template to our local
-	     context.  */
-	  tree gen = TREE_PURPOSE (elt);
-	  tree inst = TREE_VALUE (elt);
-	  if (DECL_P (inst))
-	    if (tree local = retrieve_local_specialization (inst))
-	      inst = local;
-	  /* else inst is already a full instantiation of the pack.  */
-	  register_local_specialization (inst, gen);
-	}
-      gcc_assert (!TREE_PURPOSE (extra));
-      extra = TREE_VALUE (extra);
-    }
-  args = add_to_template_args (extra, args);
+  args = add_extra_args (PACK_EXPANSION_EXTRA_ARGS (t), args);
 
   levels = TMPL_ARGS_DEPTH (args);
 
@@ -11881,11 +11902,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	 have values for all the packs.  So remember these until then.  */
 
       t = make_pack_expansion (pattern, complain);
-      tree extra = args;
-      if (local_specializations)
-	if (tree locals = extract_local_specs (pattern, complain))
-	  extra = tree_cons (NULL_TREE, extra, locals);
-      PACK_EXPANSION_EXTRA_ARGS (t) = extra;
+      PACK_EXPANSION_EXTRA_ARGS (t)
+	= build_extra_args (pattern, args, complain);
       return t;
     }
   else if (unsubstituted_packs)
@@ -16485,8 +16503,24 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case IF_STMT:
       stmt = begin_if_stmt ();
       IF_STMT_CONSTEXPR_P (stmt) = IF_STMT_CONSTEXPR_P (t);
+      if (IF_STMT_CONSTEXPR_P (t))
+	args = add_extra_args (IF_STMT_EXTRA_ARGS (t), args);
       tmp = RECUR (IF_COND (t));
       tmp = finish_if_stmt_cond (tmp, stmt);
+      if (IF_STMT_CONSTEXPR_P (t)
+	  && instantiation_dependent_expression_p (tmp))
+	{
+	  /* We're partially instantiating a generic lambda, but the condition
+	     of the constexpr if is still dependent.  Don't substitute into the
+	     branches now, just remember the template arguments.  */
+	  do_poplevel (IF_SCOPE (stmt));
+	  IF_COND (stmt) = IF_COND (t);
+	  THEN_CLAUSE (stmt) = THEN_CLAUSE (t);
+	  ELSE_CLAUSE (stmt) = ELSE_CLAUSE (t);
+	  IF_STMT_EXTRA_ARGS (stmt) = build_extra_args (t, args, complain);
+	  add_stmt (stmt);
+	  break;
+	}
       if (IF_STMT_CONSTEXPR_P (t) && integer_zerop (tmp))
 	/* Don't instantiate the THEN_CLAUSE. */;
       else
