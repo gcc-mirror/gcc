@@ -4339,7 +4339,7 @@ strip_offset_and_add (rtx x, poly_int64_pod *offset)
     {
       poly_int64 suboffset;
       x = strip_offset (x, &suboffset);
-      *offset += suboffset;
+      *offset = poly_uint64 (*offset) + suboffset;
     }
   return x;
 }
