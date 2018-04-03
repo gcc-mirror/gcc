@@ -3722,7 +3722,8 @@ module_state::write_class_def (trees_out &out, tree type)
   /* Write the remaining BINFO contents. */
   for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
     {
-      dump () && dump ("Writing binfo:%N of %N contents", binfo, type);
+      if (!out.dep_walk_p ())
+	dump () && dump ("Writing binfo:%N of %N contents", binfo, type);
       out.tree_node (binfo->binfo.vtable);
       out.tree_node (binfo->binfo.virtuals);
       out.tree_node (binfo->binfo.vptr_field);
@@ -5942,6 +5943,46 @@ trees_out::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_BASE))
     { /* Nothing to do.  */ }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+    {
+      /* Write this early, for better log information.  */
+      WT (t->decl_minimal.name);
+      WT (t->decl_minimal.context);
+
+      if (!dep_walk_p ())
+	loc (t->decl_minimal.locus);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    {
+      /* Likewise, stream the name first.  */
+      WT (t->type_common.name);
+      WT (t->type_common.context);
+
+      /* By construction we want to make sure we have the canonical
+	 and main variants already in the type table, so emit them
+	 now.  */
+      WT (t->type_common.main_variant);
+      WT (t->type_common.canonical);
+
+      /* type_common.next_variant is internally manipulated.  */
+      /* type_common.pointer_to, type_common.reference_to.  */
+
+      if (!dep_walk_p ())
+	{
+	  WU (t->type_common.precision);
+	  WU (t->type_common.contains_placeholder_bits);
+	  WU (t->type_common.mode);
+	  WU (t->type_common.align);
+	}
+
+      WT (t->type_common.size);
+      WT (t->type_common.size_unit);
+      WT (t->type_common.attributes);
+
+      WT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
+    }
+
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     {
       if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
@@ -5994,14 +6035,6 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     gcc_unreachable (); /* Should never meet.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
-    {
-      if (!dep_walk_p ())
-	loc (t->decl_minimal.locus);
-      WT (t->decl_minimal.name);
-      WT (t->decl_minimal.context);
-    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
@@ -6082,34 +6115,6 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     gcc_unreachable (); /* Should never meet.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
-    {
-      /* By construction we want to make sure we have the canonical
-	 and main variants already in the type table, so emit them
-	 now.  */
-      WT (t->type_common.main_variant);
-      WT (t->type_common.canonical);
-
-      /* type_common.next_variant is internally manipulated.  */
-      /* type_common.pointer_to, type_common.reference_to.  */
-
-      if (!dep_walk_p ())
-	{
-	  WU (t->type_common.precision);
-	  WU (t->type_common.contains_placeholder_bits);
-	  WU (t->type_common.mode);
-	  WU (t->type_common.align);
-	}
-
-      WT (t->type_common.size);
-      WT (t->type_common.size_unit);
-      WT (t->type_common.attributes);
-      WT (t->type_common.name);
-      WT (t->type_common.context);
-
-      WT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
-    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_WITH_LANG_SPECIFIC))
     { /* Nothing to do.  */ }
@@ -6340,6 +6345,40 @@ trees_in::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_BASE))
     { /* Nothing to do.  */ }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+    {
+      RT (t->decl_minimal.name);
+      RT (t->decl_minimal.context);
+
+      /* Don't zap the locus just yet, we don't record it correctly
+	 and thus lose all location information.  */
+      /* t->decl_minimal.locus = */
+      loc ();
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    {
+      RT (t->type_common.name);
+      RT (t->type_common.context);
+
+      RT (t->type_common.main_variant);
+      RT (t->type_common.canonical);
+
+      /* type_common.next_variant is internally manipulated.  */
+      /* type_common.pointer_to, type_common.reference_to.  */
+
+      RU (t->type_common.precision);
+      RU (t->type_common.contains_placeholder_bits);
+      RUC (machine_mode, t->type_common.mode);
+      RU (t->type_common.align);
+
+      RT (t->type_common.size);
+      RT (t->type_common.size_unit);
+      RT (t->type_common.attributes);
+
+      RT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
+    }
+
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     {
       if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
@@ -6397,16 +6436,6 @@ trees_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     return false; /* Should never meet.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
-    {
-      /* Don't zap the locus just yet, we don't record it correctly
-	 and thus lose all location information.  */
-      /* t->decl_minimal.locus = */
-      loc ();
-      RT (t->decl_minimal.name);
-      RT (t->decl_minimal.context);
-    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
@@ -6482,28 +6511,6 @@ trees_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     return false;
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
-    {
-      RT (t->type_common.main_variant);
-      RT (t->type_common.canonical);
-
-      /* type_common.next_variant is internally manipulated.  */
-      /* type_common.pointer_to, type_common.reference_to.  */
-
-      RU (t->type_common.precision);
-      RU (t->type_common.contains_placeholder_bits);
-      RUC (machine_mode, t->type_common.mode);
-      RU (t->type_common.align);
-
-      RT (t->type_common.size);
-      RT (t->type_common.size_unit);
-      RT (t->type_common.attributes);
-      RT (t->type_common.name);
-      RT (t->type_common.context);
-
-      RT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
-    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_WITH_LANG_SPECIFIC))
     { /* Nothing to do.  */ }
@@ -8370,20 +8377,25 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 
   if (!state->occupied ())
     {
-      if (module_p && export_p)
+      if (module_p)
 	{
-	  /* We're the exporting module unit, so not loading anything.  */
-	  state->exported = true;
-	  state->mod = MODULE_PURVIEW;
-	  if (module_output)
+	  (*modules)[MODULE_PURVIEW] = state;
+	  current_module = MODULE_PURVIEW;
+	  if (export_p)
 	    {
-	      free (state->filename);
-	      state->filename = xstrdup (module_output);
-	      module_output = NULL;
+	      /* We're the exporting module unit, so not loading anything.  */
+	      state->exported = true;
+	      state->mod = MODULE_PURVIEW;
+	      if (module_output)
+		{
+		  free (state->filename);
+		  state->filename = xstrdup (module_output);
+		  module_output = NULL;
+		}
+	      state->srcname = xstrdup (main_input_filename);
 	    }
-	  state->srcname = xstrdup (main_input_filename);
 	}
-      else if (!module_p && !export_p)
+      else if (!export_p)
 	{
 	  /* The ordering of the import table implies that indirect
 	     imports should have already been loaded.  */
@@ -8449,11 +8461,6 @@ module_state::do_import (location_t loc, tree name, bool module_p,
     }
 
   gcc_assert (state);
-  if (module_p)
-    {
-      (*modules)[MODULE_PURVIEW] = state;
-      current_module = MODULE_PURVIEW;
-    }
 
   return state;
 }

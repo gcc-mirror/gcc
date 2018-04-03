@@ -3588,9 +3588,13 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
 bool
 set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 {
-  gcc_assert (!value || !type); // FIXME stat hack
   if (!value)
     value = type;
+
+  if (!value)
+    /* Bogus BMIs could give rise to nothing to bind.  */
+    return false;
+
   gcc_assert (TREE_CODE (value) != NAMESPACE_DECL
 	      || DECL_NAMESPACE_ALIAS (value));
 

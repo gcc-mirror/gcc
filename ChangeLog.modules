@@ -1,5 +1,15 @@
 2018-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	Reorder for better logging
+	gcc/cp/
+	* module.c (trees_{in,out}::core_vals): Stream name-like members
+	early.
+	(module_state::do_import): Set module purview before streaming.
+	* name-lookup.c (set_module_binding): Don't barf on null.
+
+	gcc/
+	* gdbinit.in: Add conditions on error catching breakpoints.
+
 	Fix enum types, more globals
 	gcc/cp/
 	* module.c (module_state::maybe_add_global): New.
