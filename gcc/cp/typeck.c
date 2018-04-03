@@ -905,14 +905,14 @@ merge_types (tree t1, tree t2)
       return t1;
 
     default:;
+      if (attribute_list_equal (TYPE_ATTRIBUTES (t1), attributes))
+	return t1;
+      else if (attribute_list_equal (TYPE_ATTRIBUTES (t2), attributes))
+	return t2;
+      break;
     }
 
-  if (attribute_list_equal (TYPE_ATTRIBUTES (t1), attributes))
-    return t1;
-  else if (attribute_list_equal (TYPE_ATTRIBUTES (t2), attributes))
-    return t2;
-  else
-    return cp_build_type_attribute_variant (t1, attributes);
+  return cp_build_type_attribute_variant (t1, attributes);
 }
 
 /* Return the ARRAY_TYPE type without its domain.  */
