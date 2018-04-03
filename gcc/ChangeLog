@@ -1,3 +1,10 @@
+2018-03-29  Martin Liska  <mliska@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/84947
+	* ipa-cp.c (propagate_bits_across_jump_function): Bail out if
+	param_type is not an integral or pointer type.
+
 2018-04-03  Richard Biener  <rguenther@suse.de>
 
 	* sese.h (recompute_all_dominators): Remove.
