@@ -1,3 +1,13 @@
+2018-04-03  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/emmintrin.h (_mm_cvtpd_epi32): Use __vector rather
+	than vector.
+	(_mm_cvtpd_ps): Likewise.
+	(_mm_cvttpd_epi32): Likewise.
+	* config/rs6000/mmintrin.h (_mm_unpacklo_pi8): Likewise.
+	* config/rs6000/xmmintrin.h: For strict-ANSI C++ or C11, undefine
+	vector, pixel, and bool following altivec.h include.
+
 2018-04-03  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (Common Function Attributes): Clarify.
