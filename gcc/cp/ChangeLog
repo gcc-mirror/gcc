@@ -1,5 +1,11 @@
 2018-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85149 - generic lambda and constexpr if.
+	* pt.c (build_extra_args, add_extra_args): Split from
+	tsubst_pack_expansion.
+	(tsubst_expr) [IF_STMT]: Use them.
+	* cp-tree.h (IF_STMT_EXTRA_ARGS): New.
+
 	* typeck.c (merge_types): Limit matching attribute shortcut to
 	the default case.
 
