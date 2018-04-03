@@ -7998,6 +7998,7 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
     {
       tree op0 = TREE_OPERAND (inner, 0);
       tree op1 = TREE_OPERAND (inner, 1);
+      arg1 = save_expr (arg1);
 
       op0 = build_builtin_expect_predicate (loc, op0, arg1, arg2);
       op1 = build_builtin_expect_predicate (loc, op1, arg1, arg2);
