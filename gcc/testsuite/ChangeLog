@@ -1,3 +1,9 @@
+2018-04-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/85126
+	* gcc.target/powerpc/pr69946: Adjust comment.  Remove
+	scan-assembler-times clause.
+
 2018-04-03  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/armv8_2-fp16-move-1.c: Move -mfloat-abi=hard to
