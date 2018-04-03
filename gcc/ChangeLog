@@ -1,3 +1,9 @@
+2018-04-03  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82491
+	* rtl.h (strip_offset_and_add): Replace += suboffset with
+	poly_uint64 () + suboffset.
+
 2018-03-29  Martin Liska  <mliska@suse.cz>
 	    Martin Jambor  <mjambor@suse.cz>
 
