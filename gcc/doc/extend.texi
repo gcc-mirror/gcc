@@ -2275,8 +2275,11 @@ on a declaration, followed by an attribute specification inside double
 parentheses.  You can specify multiple attributes in a declaration by
 separating them by commas within the double parentheses or by
 immediately following an attribute declaration with another attribute
-declaration.  @xref{Attribute Syntax}, for the exact rules on
-attribute syntax and placement.
+declaration.  @xref{Attribute Syntax}, for the exact rules on attribute
+syntax and placement.  Compatible attribute specifications on distinct
+declarations of the same function are merged.  An attribute specification
+that is not compatible with attributes already applied to a declaration
+of the same function is ignored with a warning.
 
 GCC also supports attributes on
 variable declarations (@pxref{Variable Attributes}),
@@ -2499,7 +2502,7 @@ themselves to optimization such as common subexpression elimination.
 The @code{const} attribute imposes greater restrictions on a function's
 definition than the similar @code{pure} attribute below because it prohibits
 the function from reading global variables.  Consequently, the presence of
-the attribute on a function declarations allows GCC to emit more efficient
+the attribute on a function declaration allows GCC to emit more efficient
 code for some calls to the function.  Decorating the same function with
 both the @code{const} and the @code{pure} attribute is diagnosed.
 
@@ -2507,8 +2510,9 @@ both the @code{const} and the @code{pure} attribute is diagnosed.
 Note that a function that has pointer arguments and examines the data
 pointed to must @emph{not} be declared @code{const}.  Likewise, a
 function that calls a non-@code{const} function usually must not be
-@code{const}.  It does not make sense for a @code{const} function to
-return @code{void}.
+@code{const}.  Because a @code{const} function cannot have any side
+effects it does not make sense for such a function to return @code{void}.
+Declaring such a function is diagnosed.
 
 @item constructor
 @itemx destructor
@@ -3218,6 +3222,9 @@ The @code{pure} attribute imposes similar but looser restrictions on
 a function's defintion than the @code{const} attribute: it allows the
 function to read global variables.  Decorating the same function with
 both the @code{pure} and the @code{const} attribute is diagnosed.
+Because a @code{pure} function cannot have any side effects it does not
+make sense for such a function to return @code{void}.  Declaring such
+a function is diagnosed.
 
 @item returns_nonnull
 @cindex @code{returns_nonnull} function attribute
