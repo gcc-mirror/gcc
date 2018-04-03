@@ -733,7 +733,7 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
   if (IF_STMT_CONSTEXPR_P (if_stmt)
       && !type_dependent_expression_p (cond)
       && require_constant_expression (cond)
-      && !value_dependent_expression_p (cond)
+      && !instantiation_dependent_expression_p (cond)
       /* Wait until instantiation time, since only then COND has been
 	 converted to bool.  */
       && TREE_TYPE (cond) == boolean_type_node)

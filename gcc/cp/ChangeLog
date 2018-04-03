@@ -1,5 +1,8 @@
 2018-04-03  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_if_stmt_cond): Use
+	instantiation_dependent_expression_p.
+
 	PR c++/85149 - generic lambda and constexpr if.
 	* pt.c (build_extra_args, add_extra_args): Split from
 	tsubst_pack_expansion.
