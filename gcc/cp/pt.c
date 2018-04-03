@@ -5101,7 +5101,7 @@ static void
 fixed_parameter_pack_p_1 (tree parm, struct find_parameter_pack_data *ppd)
 {
   /* A type parm can't refer to another parm.  */
-  if (TREE_CODE (parm) == TYPE_DECL)
+  if (TREE_CODE (parm) == TYPE_DECL || parm == error_mark_node)
     return;
   else if (TREE_CODE (parm) == PARM_DECL)
     {

@@ -1,5 +1,8 @@
 2018-04-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85147
+	* g++.dg/cpp0x/pr85147.C: New test.
+
 	PR c++/85140
 	* g++.dg/cpp0x/gen-attrs-64.C: New test.
 
