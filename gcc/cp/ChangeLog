@@ -1,5 +1,9 @@
 2018-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85092 - C++17 ICE with unused list constructor.
+	* call.c (conv_binds_ref_to_prvalue): Also count ck_identity
+	from a TARGET_EXPR.
+
 	PR c++/85113 - ICE with constexpr and __builtin_constant_p.
 	* constexpr.c (cxx_eval_builtin_function_call): Only defer
 	__builtin_constant_p if ctx->quiet.
