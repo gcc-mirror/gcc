@@ -1,5 +1,8 @@
 2018-04-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85147
+	* pt.c (fixed_parameter_pack_p_1): Punt if parm is error_mark_node.
+
 	PR c++/85140
 	* name-lookup.c (handle_namespace_attrs): Return early if attributes
 	is error_mark_node.
