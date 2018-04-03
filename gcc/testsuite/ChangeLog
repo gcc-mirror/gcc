@@ -1,3 +1,7 @@
+2018-04-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr82015.c: Use __vector instead of vector.
+
 2018-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/85154
