@@ -1,5 +1,8 @@
 2018-04-03  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (merge_types): Limit matching attribute shortcut to
+	the default case.
+
 	PR c++/64095 - auto... parameter pack.
 	* parser.c (cp_parser_parameter_declaration): Handle turning autos
 	into packs here.
