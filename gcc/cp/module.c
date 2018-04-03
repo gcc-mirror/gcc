@@ -125,6 +125,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "incpath.h"
 #include "libiberty.h"
+#include "stor-layout.h"
 #include "version.h"
 #include "tree-diagnostic.h"
 
@@ -2121,6 +2122,9 @@ struct GTY(()) module_state {
   static module_state *do_import (location_t, tree, bool module_unit_p,
 				  bool import_export_p, unsigned * = NULL);
 
+ private:
+  static int maybe_add_global (tree, unsigned &);
+
  public:
   static void init ();
   static void fini ();
@@ -2893,6 +2897,31 @@ module_state::get_module (tree name, module_state *dflt)
   return state;
 }
 
+/* VAL is a global tree, add it to the global vec if it is
+   interesting.  Add some of its targets, if they too are
+   interesting.  */
+
+int
+module_state::maybe_add_global (tree val, unsigned &crc)
+{
+  int v = 0;
+
+  if (val && !(identifier_p (val) || TREE_VISITED (val)))
+    {
+      TREE_VISITED (val) = true;
+      crc = crc32_unsigned (crc, global_vec->length ());
+      vec_safe_push (global_vec, val);
+      v++;
+
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
+	v += maybe_add_global (TREE_TYPE (val), crc);
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPE_COMMON))
+	v += maybe_add_global (TYPE_NAME (val), crc);
+    }
+
+  return v;
+}
+
 /* Initialize module state.  Create the hash table, determine the
    global trees.  Create the module for current TU.  */
 
@@ -2933,30 +2962,8 @@ module_state::init ()
 
       for (unsigned ix = 0; ix != limit; ix++, ptr++)
 	{
-	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx,ix);
-	  unsigned v = 0;
-	  if (tree val = *ptr)
-	    {
-	      if (identifier_p (val))
-		continue;
-	      if (TREE_VISITED (val))
-		continue;
-	      TREE_VISITED (val) = true;
-	      crc = crc32_unsigned (crc, global_vec->length ());
-	      vec_safe_push (global_vec, val);
-	      v++;
-	      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
-		{
-		  val = TREE_TYPE (val);
-		  if (val && !TREE_VISITED (val))
-		    {
-		      TREE_VISITED (val) = true;
-		      crc = crc32_unsigned (crc, global_vec->length ());
-		      vec_safe_push (global_vec, val);
-		      v++;
-		    }
-		}
-	    }
+	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx, ix);
+	  unsigned v = maybe_add_global (*ptr, crc);
 	  dump () && dump ("+%u", v);
 	}
     }
@@ -3549,7 +3556,7 @@ depset::hash::add_decls (tree ns, tree name, auto_vec<tree> &decls)
    bit set.
 
    A useful property is that successor SCCs are found before their
-   predecessors.  Thus the output vector is a revers topological sort
+   predecessors.  Thus the output vector is a reverse topological sort
    of the resulting DAG.  */
 
 void
@@ -4081,7 +4088,7 @@ module_state::tng_read_bindings (elf_in *from, auto_vec<tree> &spaces,
 	break;
       tree ctx = spaces[nsnum];
       tree id = get_identifier (name);
-      dump () && dump ("Bindings %P section:%u", ctx, name, snum);
+      dump () && dump ("Bindings %P section:%u", ctx, id, snum);
       if (mod >= MODULE_IMPORT_BASE
 	  && !import_module_binding (ctx, id, mod, snum))
 	break;
@@ -5936,7 +5943,26 @@ trees_out::core_vals (tree t)
     { /* Nothing to do.  */ }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
-    WT (t->typed.type);
+    {
+      if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
+	WT (t->typed.type);
+      else if (!dep_walk_p ())
+	{
+	  // FIXME it'd be nice if we could make TREE_TYPE of the
+	  // enum's underlying type point to the original integral
+	  // type.
+	  tree type = t->typed.type;
+	  int precision = TYPE_PRECISION (type);
+	  unsigned itk;
+	  tree name = DECL_NAME (TYPE_NAME (type));
+	  for (itk = itk_none; itk--;)
+	    if (integer_types[itk]
+		&& DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
+	      break;
+	  WU (itk);
+	  WU (precision);
+	}
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
     {
@@ -6315,7 +6341,32 @@ trees_in::core_vals (tree t)
     { /* Nothing to do.  */ }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
-    RT (t->typed.type);
+    {
+      if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
+	RT (t->typed.type);
+      else
+	{
+	  unsigned itk, precision;
+	  RU (itk);
+	  RU (precision);
+	  if (itk >= itk_none)
+	    set_overrun ();
+	  else
+	    {
+	      tree type = integer_types[itk];
+	      if (!type || precision > TYPE_PRECISION (type))
+		set_overrun ();
+	      else if (precision != TYPE_PRECISION (type))
+		{
+		  type = build_distinct_type_copy (type);
+		  TYPE_PRECISION (type) = precision;
+		  set_min_and_max_values_for_integral_type (type, precision,
+							    TYPE_SIGN (type));
+		}
+	      t->typed.type = type;
+	    }
+	}
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
     {

@@ -1,3 +1,11 @@
+2018-04-03  Nathan Sidwell  <nathan@acm.org>
+
+	Fix enum types, more globals
+	gcc/cp/
+	* module.c (module_state::maybe_add_global): New.
+	(module_state::init): Use it.
+	(trees_{in,out}::core_vals): Special case TYPE of unscoped enum.
+
 2018-04-02  Nathan Sidwell  <nathan@acm.org>
 
 	Read new .bindings section

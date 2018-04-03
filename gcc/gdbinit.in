@@ -229,7 +229,8 @@ b fancy_abort
 b internal_error
 
 # Break on module streaming error
-b cpm_serial::bad
+b bytes_in::set_overrun
+b elf::set_error
 
 set complaints 0
 # Don't let abort actually run, as it will make
