@@ -1,3 +1,9 @@
+2018-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85113 - ICE with constexpr and __builtin_constant_p.
+	* constexpr.c (cxx_eval_builtin_function_call): Only defer
+	__builtin_constant_p if ctx->quiet.
+
 2018-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84768
