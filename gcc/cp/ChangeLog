@@ -1,3 +1,10 @@
+2018-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85134
+	* decl.c (cp_finish_decl): If ensure_literal_type_for_constexpr_object
+	fails, after clearing DECL_DECLARED_CONSTEXPR_P don't return early,
+	instead for static data members clear init and set DECL_EXTERNAL.
+
 2018-04-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64095 - auto... parameter pack.
