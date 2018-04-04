@@ -60,7 +60,7 @@ CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 ifeq ($(DEVPHASE_c),experimental)
 # We want to rebuild module if the source dir changes
 cp/module.o : $(srcdir)/cp
-version.o : $(srcdir)/cp
+version.o : $(srcdir)/cp/module.c
 MODULE_STAMP := $(shell date -r $(srcdir)/cp '+%Y%m%d-%H%M')
 ifneq ($(REVISION_s),"\"\"")
 # Wedge the MODULE_STAMP into REVISION_s so that it turns up in -v invocations
