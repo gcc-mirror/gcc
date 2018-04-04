@@ -8083,7 +8083,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	     side effect associated with any single compound assignment
 	     operator. -- end note ]  */
 	  lhs = cp_stabilize_reference (lhs);
-	  rhs = rvalue (rhs);
+	  rhs = decay_conversion (rhs, complain);
 	  if (rhs == error_mark_node)
 	    return error_mark_node;
 	  rhs = stabilize_expr (rhs, &init);

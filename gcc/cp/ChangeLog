@@ -1,5 +1,9 @@
 2018-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85141 - ICE with compound assignment and static member fn.
+	* typeck.c (cp_build_modify_expr): Call decay_conversion for RHS of
+	compound assignment.
+
 	PR c++/85148 - ICE with 'this' in array NSDMI.
 	* tree.c (replace_placeholders_r): Use handled_component_p.
 
