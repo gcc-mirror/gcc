@@ -1,3 +1,18 @@
+2018-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85146
+	* cp-tree.h (calculate_bases, calculate_direct_bases): Add complain
+	argument.
+	* semantics.c (calculate_bases): Add complain argument.  Use
+	complete_type_or_maybe_complain instead of just complete_type and
+	return an empty vector if it fails.  Move make_tree_vector () call
+	after early return.  Formatting fixes.
+	(calculate_direct_bases): Likewise.  Call release_tree_vector at the
+	end.
+	(dfs_calculate_bases_post, calculate_bases_helper): Formatting fixes.
+	* pt.c (tsubst_pack_expansion): Adjust calculate_bases and
+	calculate_direct_bases callers, formatting fixes.
+
 2018-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85006 - -fconcepts ICE with A<auto...> return type
