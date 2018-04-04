@@ -37,6 +37,8 @@
 #include "output.h"
 #include "tm-constrs.h"
 #include "expr.h"
+#include "emit-rtl.h"
+#include "explow.h"
 
 /* ------------------------------------------------------------------------ */
 
@@ -76,7 +78,780 @@ nds32_byte_to_size (int byte)
     }
 }
 
-/* A helper function to return memory format.  */
+static int
+nds32_inverse_cond_code (int code)
+{
+  switch (code)
+    {
+      case NE:
+	return EQ;
+      case EQ:
+	return NE;
+      case GT:
+	return LE;
+      case LE:
+	return GT;
+      case GE:
+	return LT;
+      case LT:
+	return GE;
+      default:
+	gcc_unreachable ();
+    }
+}
+
+static const char *
+nds32_cond_code_str (int code)
+{
+  switch (code)
+    {
+      case NE:
+	return "ne";
+      case EQ:
+	return "eq";
+      case GT:
+	return "gt";
+      case LE:
+	return "le";
+      case GE:
+	return "ge";
+      case LT:
+	return "lt";
+      default:
+	gcc_unreachable ();
+    }
+}
+
+static void
+output_cond_branch (int code, const char *suffix, bool r5_p,
+		    bool long_jump_p, rtx *operands)
+{
+  char pattern[256];
+  const char *cond_code;
+
+  if (r5_p && REGNO (operands[2]) == 5 && TARGET_16_BIT)
+    {
+      /* This is special case for beqs38 and bnes38,
+	 second operand 2 can't be $r5 and it's almost meanless,
+	 however it may occur after copy propgation.  */
+      if (code == EQ)
+	{
+	  /* $r5 == $r5 always taken! */
+	  if (long_jump_p)
+	    snprintf (pattern, sizeof (pattern),
+		      "j\t%%3");
+	  else
+	    snprintf (pattern, sizeof (pattern),
+		      "j8\t%%3");
+	}
+      else
+	/* Don't output anything since $r5 != $r5 never taken! */
+	pattern[0] = '\0';
+    }
+  else if (long_jump_p)
+    {
+      int inverse_code = nds32_inverse_cond_code (code);
+      cond_code = nds32_cond_code_str (inverse_code);
+
+      /*      b<cond><suffix>  $r0, $r1, .L0
+	    =>
+	      b<inverse_cond><suffix>  $r0, $r1, .LCB0
+	      j  .L0
+	    .LCB0:
+
+	    or
+
+	      b<cond><suffix>  $r0, $r1, .L0
+	    =>
+	      b<inverse_cond><suffix>  $r0, $r1, .LCB0
+	      j  .L0
+	    .LCB0:
+      */
+      if (r5_p && TARGET_16_BIT)
+	{
+	  snprintf (pattern, sizeof (pattern),
+		    "b%ss38\t %%2, .LCB%%=\n\tj\t%%3\n.LCB%%=:",
+		    cond_code);
+	}
+      else
+	{
+	  snprintf (pattern, sizeof (pattern),
+		    "b%s%s\t%%1, %%2, .LCB%%=\n\tj\t%%3\n.LCB%%=:",
+		    cond_code, suffix);
+	}
+    }
+  else
+    {
+      cond_code = nds32_cond_code_str (code);
+      if (r5_p && TARGET_16_BIT)
+	{
+	  /* b<cond>s38  $r1, .L0   */
+	  snprintf (pattern, sizeof (pattern),
+		    "b%ss38\t %%2, %%3", cond_code);
+	}
+      else
+	{
+	  /* b<cond><suffix>  $r0, $r1, .L0   */
+	  snprintf (pattern, sizeof (pattern),
+		    "b%s%s\t%%1, %%2, %%3", cond_code, suffix);
+	}
+    }
+
+  output_asm_insn (pattern, operands);
+}
+
+static void
+output_cond_branch_compare_zero (int code, const char *suffix,
+				 bool long_jump_p, rtx *operands,
+				 bool ta_implied_p)
+{
+  char pattern[256];
+  const char *cond_code;
+  if (long_jump_p)
+    {
+      int inverse_code = nds32_inverse_cond_code (code);
+      cond_code = nds32_cond_code_str (inverse_code);
+
+      if (ta_implied_p && TARGET_16_BIT)
+	{
+	  /*    b<cond>z<suffix>  .L0
+	      =>
+		b<inverse_cond>z<suffix>  .LCB0
+		j  .L0
+	      .LCB0:
+	   */
+	  snprintf (pattern, sizeof (pattern),
+		    "b%sz%s\t.LCB%%=\n\tj\t%%2\n.LCB%%=:",
+		    cond_code, suffix);
+	}
+      else
+	{
+	  /*      b<cond>z<suffix>  $r0, .L0
+		=>
+		  b<inverse_cond>z<suffix>  $r0, .LCB0
+		  j  .L0
+		.LCB0:
+	   */
+	  snprintf (pattern, sizeof (pattern),
+		    "b%sz%s\t%%1, .LCB%%=\n\tj\t%%2\n.LCB%%=:",
+		    cond_code, suffix);
+	}
+    }
+  else
+    {
+      cond_code = nds32_cond_code_str (code);
+      if (ta_implied_p && TARGET_16_BIT)
+	{
+	  /* b<cond>z<suffix>  .L0  */
+	  snprintf (pattern, sizeof (pattern),
+		    "b%sz%s\t%%2", cond_code, suffix);
+	}
+      else
+	{
+	  /* b<cond>z<suffix>  $r0, .L0  */
+	  snprintf (pattern, sizeof (pattern),
+		    "b%sz%s\t%%1, %%2", cond_code, suffix);
+	}
+    }
+
+  output_asm_insn (pattern, operands);
+}
+
+/* ------------------------------------------------------------------------ */
+
+/* Auxiliary function for expand RTL pattern.  */
+
+enum nds32_expand_result_type
+nds32_expand_cbranch (rtx *operands)
+{
+  rtx tmp_reg;
+  enum rtx_code code;
+
+  code = GET_CODE (operands[0]);
+
+  /* If operands[2] is (const_int 0),
+     we can use beqz,bnez,bgtz,bgez,bltz,or blez instructions.
+     So we have gcc generate original template rtx.  */
+  if (GET_CODE (operands[2]) == CONST_INT)
+    if (INTVAL (operands[2]) == 0)
+      if ((code != GTU)
+	  && (code != GEU)
+	  && (code != LTU)
+	  && (code != LEU))
+	return EXPAND_CREATE_TEMPLATE;
+
+  /* For other comparison, NDS32 ISA only has slt (Set-on-Less-Than)
+     behavior for the comparison, we might need to generate other
+     rtx patterns to achieve same semantic.  */
+  switch (code)
+    {
+    case GT:
+    case GTU:
+      if (GET_CODE (operands[2]) == CONST_INT)
+	{
+	  /* GT  reg_A, const_int  =>  !(LT  reg_A, const_int + 1) */
+	  if (optimize_size || optimize == 0)
+	    tmp_reg = gen_rtx_REG (SImode, TA_REGNUM);
+	  else
+	    tmp_reg = gen_reg_rtx (SImode);
+
+	  /* We want to plus 1 into the integer value
+	     of operands[2] to create 'slt' instruction.
+	     This caculation is performed on the host machine,
+	     which may be 64-bit integer.
+	     So the meaning of caculation result may be
+	     different from the 32-bit nds32 target.
+
+	     For example:
+	       0x7fffffff + 0x1 -> 0x80000000,
+	       this value is POSITIVE on 64-bit machine,
+	       but the expected value on 32-bit nds32 target
+	       should be NEGATIVE value.
+
+	     Hence, instead of using GEN_INT(), we use gen_int_mode() to
+	     explicitly create SImode constant rtx.  */
+	  enum rtx_code cmp_code;
+
+	  rtx plus1 = gen_int_mode (INTVAL (operands[2]) + 1, SImode);
+	  if (satisfies_constraint_Is15 (plus1))
+	    {
+	      operands[2] = plus1;
+	      cmp_code = EQ;
+	      if (code == GT)
+		{
+		  /* GT, use slts instruction */
+		  emit_insn (
+		    gen_slts_compare (tmp_reg, operands[1], operands[2]));
+		}
+	      else
+		{
+		  /* GTU, use slt instruction */
+		  emit_insn (
+		    gen_slt_compare  (tmp_reg, operands[1], operands[2]));
+		}
+	    }
+	  else
+	    {
+	      cmp_code = NE;
+	      if (code == GT)
+		{
+		  /* GT, use slts instruction */
+		  emit_insn (
+		    gen_slts_compare (tmp_reg, operands[2], operands[1]));
+		}
+	      else
+		{
+		  /* GTU, use slt instruction */
+		  emit_insn (
+		    gen_slt_compare  (tmp_reg, operands[2], operands[1]));
+		}
+	    }
+
+	  PUT_CODE (operands[0], cmp_code);
+	  operands[1] = tmp_reg;
+	  operands[2] = const0_rtx;
+	  emit_insn (gen_cbranchsi4 (operands[0], operands[1],
+				     operands[2], operands[3]));
+
+	  return EXPAND_DONE;
+	}
+      else
+	{
+	  /* GT  reg_A, reg_B  =>  LT  reg_B, reg_A */
+	  if (optimize_size || optimize == 0)
+	    tmp_reg = gen_rtx_REG (SImode, TA_REGNUM);
+	  else
+	    tmp_reg = gen_reg_rtx (SImode);
+
+	  if (code == GT)
+	    {
+	      /* GT, use slts instruction */
+	      emit_insn (gen_slts_compare (tmp_reg, operands[2], operands[1]));
+	    }
+	  else
+	    {
+	      /* GTU, use slt instruction */
+	      emit_insn (gen_slt_compare  (tmp_reg, operands[2], operands[1]));
+	    }
+
+	  PUT_CODE (operands[0], NE);
+	  operands[1] = tmp_reg;
+	  operands[2] = const0_rtx;
+	  emit_insn (gen_cbranchsi4 (operands[0], operands[1],
+				     operands[2], operands[3]));
+
+	  return EXPAND_DONE;
+	}
+
+    case GE:
+    case GEU:
+      /* GE  reg_A, reg_B      =>  !(LT  reg_A, reg_B) */
+      /* GE  reg_A, const_int  =>  !(LT  reg_A, const_int) */
+      if (optimize_size || optimize == 0)
+	tmp_reg = gen_rtx_REG (SImode, TA_REGNUM);
+      else
+	tmp_reg = gen_reg_rtx (SImode);
+
+      if (code == GE)
+	{
+	  /* GE, use slts instruction */
+	  emit_insn (gen_slts_compare (tmp_reg, operands[1], operands[2]));
+	}
+      else
+	{
+	  /* GEU, use slt instruction */
+	  emit_insn (gen_slt_compare  (tmp_reg, operands[1], operands[2]));
+	}
+
+      PUT_CODE (operands[0], EQ);
+      operands[1] = tmp_reg;
+      operands[2] = const0_rtx;
+      emit_insn (gen_cbranchsi4 (operands[0], operands[1],
+				 operands[2], operands[3]));
+
+      return EXPAND_DONE;
+
+    case LT:
+    case LTU:
+      /* LT  reg_A, reg_B      =>  LT  reg_A, reg_B */
+      /* LT  reg_A, const_int  =>  LT  reg_A, const_int */
+      if (optimize_size || optimize == 0)
+	tmp_reg = gen_rtx_REG (SImode, TA_REGNUM);
+      else
+	tmp_reg = gen_reg_rtx (SImode);
+
+      if (code == LT)
+	{
+	  /* LT, use slts instruction */
+	  emit_insn (gen_slts_compare (tmp_reg, operands[1], operands[2]));
+	}
+      else
+	{
+	  /* LTU, use slt instruction */
+	  emit_insn (gen_slt_compare  (tmp_reg, operands[1], operands[2]));
+	}
+
+      PUT_CODE (operands[0], NE);
+      operands[1] = tmp_reg;
+      operands[2] = const0_rtx;
+      emit_insn (gen_cbranchsi4 (operands[0], operands[1],
+				 operands[2], operands[3]));
+
+      return EXPAND_DONE;
+
+    case LE:
+    case LEU:
+      if (GET_CODE (operands[2]) == CONST_INT)
+	{
+	  /* LE  reg_A, const_int  =>  LT  reg_A, const_int + 1 */
+	  if (optimize_size || optimize == 0)
+	    tmp_reg = gen_rtx_REG (SImode, TA_REGNUM);
+	  else
+	    tmp_reg = gen_reg_rtx (SImode);
+
+	  enum rtx_code cmp_code;
+	  /* Note that (le:SI X INT_MAX) is not the same as (lt:SI X INT_MIN).
+	     We better have an assert here in case GCC does not properly
+	     optimize it away.  The INT_MAX here is 0x7fffffff for target.  */
+	  rtx plus1 = gen_int_mode (INTVAL (operands[2]) + 1, SImode);
+	  if (satisfies_constraint_Is15 (plus1))
+	    {
+	      operands[2] = plus1;
+	      cmp_code = NE;
+	      if (code == LE)
+		{
+		  /* LE, use slts instruction */
+		  emit_insn (
+		    gen_slts_compare (tmp_reg, operands[1], operands[2]));
+		}
+	      else
+		{
+		  /* LEU, use slt instruction */
+		  emit_insn (
+		    gen_slt_compare  (tmp_reg, operands[1], operands[2]));
+		}
+	    }
+	  else
+	    {
+	      cmp_code = EQ;
+	      if (code == LE)
+		{
+		  /* LE, use slts instruction */
+		  emit_insn (
+		    gen_slts_compare (tmp_reg, operands[2], operands[1]));
+		}
+	      else
+		{
+		  /* LEU, use slt instruction */
+		  emit_insn (
+		    gen_slt_compare  (tmp_reg, operands[2], operands[1]));
+		}
+	    }
+
+	  PUT_CODE (operands[0], cmp_code);
+	  operands[1] = tmp_reg;
+	  operands[2] = const0_rtx;
+	  emit_insn (gen_cbranchsi4 (operands[0], operands[1],
+				     operands[2], operands[3]));
+
+	  return EXPAND_DONE;
+	}
+      else
+	{
+	  /* LE  reg_A, reg_B  =>  !(LT  reg_B, reg_A) */
+	  if (optimize_size || optimize == 0)
+	    tmp_reg = gen_rtx_REG (SImode, TA_REGNUM);
+	  else
+	    tmp_reg = gen_reg_rtx (SImode);
+
+	  if (code == LE)
+	    {
+	      /* LE, use slts instruction */
+	      emit_insn (gen_slts_compare (tmp_reg, operands[2], operands[1]));
+	    }
+	  else
+	    {
+	      /* LEU, use slt instruction */
+	      emit_insn (gen_slt_compare  (tmp_reg, operands[2], operands[1]));
+	    }
+
+	  PUT_CODE (operands[0], EQ);
+	  operands[1] = tmp_reg;
+	  operands[2] = const0_rtx;
+	  emit_insn (gen_cbranchsi4 (operands[0], operands[1],
+				     operands[2], operands[3]));
+
+	  return EXPAND_DONE;
+	}
+
+    case EQ:
+    case NE:
+      /* NDS32 ISA has various form for eq/ne behavior no matter
+	 what kind of the operand is.
+	 So just generate original template rtx.  */
+
+      /* Put operands[2] into register if operands[2] is a large
+	 const_int or ISAv2.  */
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && (!satisfies_constraint_Is11 (operands[2])
+	      || TARGET_ISA_V2))
+	operands[2] = force_reg (SImode, operands[2]);
+
+      return EXPAND_CREATE_TEMPLATE;
+
+    default:
+      return EXPAND_FAIL;
+    }
+}
+
+enum nds32_expand_result_type
+nds32_expand_cstore (rtx *operands)
+{
+  rtx tmp_reg;
+  enum rtx_code code;
+
+  code = GET_CODE (operands[1]);
+
+  switch (code)
+    {
+    case EQ:
+    case NE:
+      if (GET_CODE (operands[3]) == CONST_INT)
+	{
+	  /* reg_R = (reg_A == const_int_B)
+	     --> xori reg_C, reg_A, const_int_B
+		 slti reg_R, reg_C, const_int_1
+	     reg_R = (reg_A != const_int_B)
+	     --> xori reg_C, reg_A, const_int_B
+		 slti reg_R, const_int0, reg_C */
+	  tmp_reg = gen_reg_rtx (SImode);
+
+	  /* If the integer value is not in the range of imm15s,
+	     we need to force register first because our addsi3 pattern
+	     only accept nds32_rimm15s_operand predicate.  */
+	  rtx new_imm = gen_int_mode (-INTVAL (operands[3]), SImode);
+	  if (satisfies_constraint_Is15 (new_imm))
+	    emit_insn (gen_addsi3 (tmp_reg, operands[2], new_imm));
+	  else
+	    {
+	      if (!(satisfies_constraint_Iu15 (operands[3])
+		    || (TARGET_EXT_PERF
+			&& satisfies_constraint_It15 (operands[3]))))
+		operands[3] = force_reg (SImode, operands[3]);
+	      emit_insn (gen_xorsi3 (tmp_reg, operands[2], operands[3]));
+	    }
+
+	  if (code == EQ)
+	    emit_insn (gen_slt_eq0 (operands[0], tmp_reg));
+	  else
+	    emit_insn (gen_slt_compare (operands[0], const0_rtx, tmp_reg));
+
+	  return EXPAND_DONE;
+	}
+      else
+	{
+	  /* reg_R = (reg_A == reg_B)
+	     --> xor  reg_C, reg_A, reg_B
+		 slti reg_R, reg_C, const_int_1
+	     reg_R = (reg_A != reg_B)
+	     --> xor  reg_C, reg_A, reg_B
+		 slti reg_R, const_int0, reg_C */
+	  tmp_reg = gen_reg_rtx (SImode);
+	  emit_insn (gen_xorsi3 (tmp_reg, operands[2], operands[3]));
+	  if (code == EQ)
+	    emit_insn (gen_slt_eq0 (operands[0], tmp_reg));
+	  else
+	    emit_insn (gen_slt_compare (operands[0], const0_rtx, tmp_reg));
+
+	  return EXPAND_DONE;
+	}
+    case GT:
+    case GTU:
+      /* reg_R = (reg_A > reg_B)       --> slt reg_R, reg_B, reg_A */
+      /* reg_R = (reg_A > const_int_B) --> slt reg_R, const_int_B, reg_A */
+      if (code == GT)
+	{
+	  /* GT, use slts instruction */
+	  emit_insn (gen_slts_compare (operands[0], operands[3], operands[2]));
+	}
+      else
+	{
+	  /* GTU, use slt instruction */
+	  emit_insn (gen_slt_compare  (operands[0], operands[3], operands[2]));
+	}
+
+      return EXPAND_DONE;
+
+    case GE:
+    case GEU:
+      if (GET_CODE (operands[3]) == CONST_INT)
+	{
+	  /* reg_R = (reg_A >= const_int_B)
+	     --> movi reg_C, const_int_B - 1
+		 slt  reg_R, reg_C, reg_A */
+	  tmp_reg = gen_reg_rtx (SImode);
+
+	  emit_insn (gen_movsi (tmp_reg,
+				gen_int_mode (INTVAL (operands[3]) - 1,
+					      SImode)));
+	  if (code == GE)
+	    {
+	      /* GE, use slts instruction */
+	      emit_insn (gen_slts_compare (operands[0], tmp_reg, operands[2]));
+	    }
+	  else
+	    {
+	      /* GEU, use slt instruction */
+	      emit_insn (gen_slt_compare  (operands[0], tmp_reg, operands[2]));
+	    }
+
+	  return EXPAND_DONE;
+	}
+      else
+	{
+	  /* reg_R = (reg_A >= reg_B)
+	     --> slt  reg_R, reg_A, reg_B
+		 xori reg_R, reg_R, const_int_1 */
+	  if (code == GE)
+	    {
+	      /* GE, use slts instruction */
+	      emit_insn (gen_slts_compare (operands[0],
+					   operands[2], operands[3]));
+	    }
+	  else
+	    {
+	      /* GEU, use slt instruction */
+	      emit_insn (gen_slt_compare  (operands[0],
+					   operands[2], operands[3]));
+	    }
+
+	  /* perform 'not' behavior */
+	  emit_insn (gen_xorsi3 (operands[0], operands[0], const1_rtx));
+
+	  return EXPAND_DONE;
+	}
+
+    case LT:
+    case LTU:
+      /* reg_R = (reg_A < reg_B)       --> slt reg_R, reg_A, reg_B */
+      /* reg_R = (reg_A < const_int_B) --> slt reg_R, reg_A, const_int_B */
+      if (code == LT)
+	{
+	  /* LT, use slts instruction */
+	  emit_insn (gen_slts_compare (operands[0], operands[2], operands[3]));
+	}
+      else
+	{
+	  /* LTU, use slt instruction */
+	  emit_insn (gen_slt_compare  (operands[0], operands[2], operands[3]));
+	}
+
+      return EXPAND_DONE;
+
+    case LE:
+    case LEU:
+      if (GET_CODE (operands[3]) == CONST_INT)
+	{
+	  /* reg_R = (reg_A <= const_int_B)
+	     --> movi reg_C, const_int_B + 1
+		 slt  reg_R, reg_A, reg_C */
+	  tmp_reg = gen_reg_rtx (SImode);
+
+	  emit_insn (gen_movsi (tmp_reg,
+				gen_int_mode (INTVAL (operands[3]) + 1,
+						      SImode)));
+	  if (code == LE)
+	    {
+	      /* LE, use slts instruction */
+	      emit_insn (gen_slts_compare (operands[0], operands[2], tmp_reg));
+	    }
+	  else
+	    {
+	      /* LEU, use slt instruction */
+	      emit_insn (gen_slt_compare  (operands[0], operands[2], tmp_reg));
+	    }
+
+	  return EXPAND_DONE;
+	}
+      else
+	{
+	  /* reg_R = (reg_A <= reg_B) --> slt  reg_R, reg_B, reg_A
+					  xori reg_R, reg_R, const_int_1 */
+	  if (code == LE)
+	    {
+	      /* LE, use slts instruction */
+	      emit_insn (gen_slts_compare (operands[0],
+					   operands[3], operands[2]));
+	    }
+	  else
+	    {
+	      /* LEU, use slt instruction */
+	      emit_insn (gen_slt_compare  (operands[0],
+					   operands[3], operands[2]));
+	    }
+
+	  /* perform 'not' behavior */
+	  emit_insn (gen_xorsi3 (operands[0], operands[0], const1_rtx));
+
+	  return EXPAND_DONE;
+	}
+
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+enum nds32_expand_result_type
+nds32_expand_movcc (rtx *operands)
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  enum rtx_code new_code = code;
+  machine_mode cmp0_mode = GET_MODE (XEXP (operands[1], 0));
+  rtx cmp_op0 = XEXP (operands[1], 0);
+  rtx cmp_op1 = XEXP (operands[1], 1);
+  rtx tmp;
+
+  if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
+      && XEXP (operands[1], 1) == const0_rtx)
+    {
+      /* If the operands[1] rtx is already (eq X 0) or (ne X 0),
+	 we have gcc generate original template rtx.  */
+      return EXPAND_CREATE_TEMPLATE;
+    }
+  else
+    {
+      /* Since there is only 'slt'(Set when Less Than) instruction for
+	 comparison in Andes ISA, the major strategy we use here is to
+	 convert conditional move into 'LT + EQ' or 'LT + NE' rtx combination.
+	 We design constraints properly so that the reload phase will assist
+	 to make one source operand to use same register as result operand.
+	 Then we can use cmovz/cmovn to catch the other source operand
+	 which has different register.  */
+      int reverse = 0;
+
+      /* Main Goal: Use 'LT + EQ' or 'LT + NE' to target "then" part
+	 Strategy : Reverse condition and swap comparison operands
+
+	 For example:
+
+	     a <= b ? P : Q   (LE or LEU)
+	 --> a >  b ? Q : P   (reverse condition)
+	 --> b <  a ? Q : P   (swap comparison operands to achieve 'LT/LTU')
+
+	     a >= b ? P : Q   (GE or GEU)
+	 --> a <  b ? Q : P   (reverse condition to achieve 'LT/LTU')
+
+	     a <  b ? P : Q   (LT or LTU)
+	 --> (NO NEED TO CHANGE, it is already 'LT/LTU')
+
+	     a >  b ? P : Q   (GT or GTU)
+	 --> b <  a ? P : Q   (swap comparison operands to achieve 'LT/LTU') */
+      switch (code)
+	{
+	case GE: case GEU: case LE: case LEU:
+	  new_code = reverse_condition (code);
+	  reverse = 1;
+	  break;
+	case EQ:
+	case NE:
+	  /* no need to reverse condition */
+	  break;
+	default:
+	  return EXPAND_FAIL;
+	}
+
+      /* For '>' comparison operator, we swap operands
+	 so that we can have 'LT/LTU' operator.  */
+      if (new_code == GT || new_code == GTU)
+	{
+	  tmp     = cmp_op0;
+	  cmp_op0 = cmp_op1;
+	  cmp_op1 = tmp;
+
+	  new_code = swap_condition (new_code);
+	}
+
+      /* Use a temporary register to store slt/slts result.  */
+      tmp = gen_reg_rtx (SImode);
+
+      if (new_code == EQ || new_code == NE)
+	{
+	  emit_insn (gen_xorsi3 (tmp, cmp_op0, cmp_op1));
+	  /* tmp == 0 if cmp_op0 == cmp_op1.  */
+	  operands[1] = gen_rtx_fmt_ee (new_code, VOIDmode, tmp, const0_rtx);
+	}
+      else
+	{
+	  /* This emit_insn will create corresponding 'slt/slts'
+	      insturction.  */
+	  if (new_code == LT)
+	    emit_insn (gen_slts_compare (tmp, cmp_op0, cmp_op1));
+	  else if (new_code == LTU)
+	    emit_insn (gen_slt_compare (tmp, cmp_op0, cmp_op1));
+	  else
+	    gcc_unreachable ();
+
+	  /* Change comparison semantic into (eq X 0) or (ne X 0) behavior
+	     so that cmovz or cmovn will be matched later.
+
+	     For reverse condition cases, we want to create a semantic that:
+	       (eq X 0) --> pick up "else" part
+	     For normal cases, we want to create a semantic that:
+	       (ne X 0) --> pick up "then" part
+
+	     Later we will have cmovz/cmovn instruction pattern to
+	     match corresponding behavior and output instruction.  */
+	  operands[1] = gen_rtx_fmt_ee (reverse ? EQ : NE,
+					VOIDmode, tmp, const0_rtx);
+	}
+    }
+  return EXPAND_CREATE_TEMPLATE;
+}
+
+/* ------------------------------------------------------------------------ */
+
+/* Function to return memory format.  */
 enum nds32_16bit_address_type
 nds32_mem_format (rtx op)
 {
@@ -1144,6 +1919,190 @@ nds32_expand_unaligned_store (rtx *operands, enum machine_mode mode)
 	  offset = offset + offset_adj;
 	}
     }
+}
+
+const char *
+nds32_output_cbranchsi4_equality_zero (rtx_insn *insn, rtx *operands)
+{
+  enum rtx_code code;
+  bool long_jump_p = false;
+
+  code = GET_CODE (operands[0]);
+
+  /* This zero-comparison conditional branch has two forms:
+       32-bit instruction =>          beqz/bnez           imm16s << 1
+       16-bit instruction => beqzs8/bnezs8/beqz38/bnez38  imm8s << 1
+
+     For 32-bit case,
+     we assume it is always reachable. (but check range -65500 ~ 65500)
+
+     For 16-bit case,
+     it must satisfy { 255 >= (label - pc) >= -256 } condition.
+     However, since the $pc for nds32 is at the beginning of the instruction,
+     we should leave some length space for current insn.
+     So we use range -250 ~ 250.  */
+
+  switch (get_attr_length (insn))
+    {
+    case 8:
+      long_jump_p = true;
+      /* fall through  */
+    case 2:
+      if (which_alternative == 0)
+	{
+	  /* constraint: t */
+	  /*    b<cond>zs8  .L0
+	      or
+		b<inverse_cond>zs8  .LCB0
+		j  .L0
+	      .LCB0:
+	   */
+	  output_cond_branch_compare_zero (code, "s8", long_jump_p,
+					   operands, true);
+	  return "";
+	}
+      else if (which_alternative == 1)
+	{
+	  /* constraint: l */
+	  /*    b<cond>z38  $r0, .L0
+	      or
+		b<inverse_cond>z38  $r0, .LCB0
+		j  .L0
+	      .LCB0:
+	   */
+	  output_cond_branch_compare_zero (code, "38", long_jump_p,
+					   operands, false);
+	  return "";
+	}
+      else
+	{
+	  /* constraint: r */
+	  /* For which_alternative==2, it should not be here.  */
+	  gcc_unreachable ();
+	}
+    case 10:
+      /* including constraints: t, l, and r */
+      long_jump_p = true;
+      /* fall through  */
+    case 4:
+      /* including constraints: t, l, and r */
+      output_cond_branch_compare_zero (code, "", long_jump_p, operands, false);
+      return "";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+const char *
+nds32_output_cbranchsi4_equality_reg (rtx_insn *insn, rtx *operands)
+{
+  enum rtx_code code;
+  bool long_jump_p, r5_p;
+  int insn_length;
+
+  insn_length = get_attr_length (insn);
+
+  long_jump_p = (insn_length == 10 || insn_length == 8) ? true : false;
+  r5_p = (insn_length == 2 || insn_length == 8) ? true : false;
+
+  code = GET_CODE (operands[0]);
+
+  /* This register-comparison conditional branch has one form:
+       32-bit instruction =>          beq/bne           imm14s << 1
+
+     For 32-bit case,
+     we assume it is always reachable. (but check range -16350 ~ 16350).  */
+
+  switch (code)
+    {
+    case EQ:
+    case NE:
+      output_cond_branch (code, "", r5_p, long_jump_p, operands);
+      return "";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+const char *
+nds32_output_cbranchsi4_equality_reg_or_const_int (rtx_insn *insn,
+						   rtx *operands)
+{
+  enum rtx_code code;
+  bool long_jump_p, r5_p;
+  int insn_length;
+
+  insn_length = get_attr_length (insn);
+
+  long_jump_p = (insn_length == 10 || insn_length == 8) ? true : false;
+  r5_p = (insn_length == 2 || insn_length == 8) ? true : false;
+
+  code = GET_CODE (operands[0]);
+
+  /* This register-comparison conditional branch has one form:
+       32-bit instruction =>          beq/bne           imm14s << 1
+       32-bit instruction =>         beqc/bnec          imm8s << 1
+
+     For 32-bit case, we assume it is always reachable.
+     (but check range -16350 ~ 16350 and -250 ~ 250).  */
+
+  switch (code)
+    {
+    case EQ:
+    case NE:
+      if (which_alternative == 2)
+	{
+	  /* r, Is11 */
+	  /* b<cond>c */
+	  output_cond_branch (code, "c", r5_p, long_jump_p, operands);
+	}
+      else
+	{
+	  /* r, r */
+	  /* v, r */
+	  output_cond_branch (code, "", r5_p, long_jump_p, operands);
+	}
+      return "";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+const char *
+nds32_output_cbranchsi4_greater_less_zero (rtx_insn *insn, rtx *operands)
+{
+  enum rtx_code code;
+  bool long_jump_p;
+  int insn_length;
+
+  insn_length = get_attr_length (insn);
+
+  gcc_assert (insn_length == 4 || insn_length == 10);
+
+  long_jump_p = (insn_length == 10) ? true : false;
+
+  code = GET_CODE (operands[0]);
+
+  /* This zero-greater-less-comparison conditional branch has one form:
+       32-bit instruction =>      bgtz/bgez/bltz/blez     imm16s << 1
+
+     For 32-bit case, we assume it is always reachable.
+     (but check range -65500 ~ 65500).  */
+
+  switch (code)
+    {
+    case GT:
+    case GE:
+    case LT:
+    case LE:
+      output_cond_branch_compare_zero (code, "", long_jump_p, operands, false);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return "";
 }
 
 /* Return true X is need use long call.  */

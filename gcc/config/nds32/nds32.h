@@ -33,6 +33,14 @@
 #define NDS32_SYMBOL_REF_RODATA_P(x) \
   ((SYMBOL_REF_FLAGS (x) & NDS32_SYMBOL_FLAG_RODATA) != 0)
 
+/* Classifies expand result for expand helper function.  */
+enum nds32_expand_result_type
+{
+  EXPAND_DONE,
+  EXPAND_FAIL,
+  EXPAND_CREATE_TEMPLATE
+};
+
 /* Computing the Length of an Insn.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   (LENGTH = nds32_adjust_insn_length (INSN, LENGTH))

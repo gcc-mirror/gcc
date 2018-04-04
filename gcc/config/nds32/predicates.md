@@ -24,6 +24,9 @@
 (define_predicate "nds32_greater_less_comparison_operator"
   (match_code "gt,ge,lt,le"))
 
+(define_predicate "nds32_movecc_comparison_operator"
+  (match_code "eq,ne,le,leu,ge,geu"))
+
 (define_special_predicate "nds32_logical_binary_operator"
   (match_code "and,ior,xor"))
 
@@ -38,6 +41,11 @@
   (ior (match_operand 0 "register_operand")
        (and (match_operand 0 "const_int_operand")
 	    (match_test "satisfies_constraint_Is15 (op)"))))
+
+(define_predicate "nds32_rimm11s_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_operand 0 "const_int_operand")
+	    (match_test "satisfies_constraint_Is11 (op)"))))
 
 (define_predicate "nds32_imm5u_operand"
   (and (match_operand 0 "const_int_operand")

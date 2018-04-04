@@ -116,6 +116,16 @@ extern bool nds32_symbol_load_store_p (rtx_insn *);
 extern const char *nds32_output_casesi_pc_relative (rtx *);
 extern const char *nds32_output_casesi (rtx *);
 
+/* Auxiliary functions for conditional branch generation.  */
+
+extern enum nds32_expand_result_type nds32_expand_cbranch (rtx *);
+extern enum nds32_expand_result_type nds32_expand_cstore (rtx *);
+
+/* Auxiliary functions for conditional move generation.  */
+
+extern enum nds32_expand_result_type nds32_expand_movcc (rtx *);
+
+
 /* Auxiliary functions to identify long-call symbol.  */
 extern bool nds32_long_call_p (rtx);
 
@@ -132,6 +142,12 @@ extern const char *nds32_output_32bit_load (rtx *, int);
 extern const char *nds32_output_32bit_load_s (rtx *, int);
 extern const char *nds32_output_smw_single_word (rtx *);
 extern const char *nds32_output_lmw_single_word (rtx *);
+extern const char *nds32_output_cbranchsi4_equality_zero (rtx_insn *, rtx *);
+extern const char *nds32_output_cbranchsi4_equality_reg (rtx_insn *, rtx *);
+extern const char *nds32_output_cbranchsi4_equality_reg_or_const_int (rtx_insn *,
+								      rtx *);
+extern const char *nds32_output_cbranchsi4_greater_less_zero (rtx_insn *, rtx *);
+
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 
