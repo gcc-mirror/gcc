@@ -1,5 +1,9 @@
 2018-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84221 - bogus -Wunused with attribute and template.
+	* decl2.c (is_late_template_attribute): Handle unused and used
+	normally on non-TYPE_DECL.
+
 	PR c++/85135 - ICE with omitted template arguments.
 	* decl.c (grokdeclarator): Catch deduced class type in trailing
 	return type.
