@@ -1,4 +1,8 @@
 2018-04-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.md (movqi, movhi): Merge into mov<mode>.
+
+2018-04-04  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/nds32-md-auxiliary.c (nds32_inverse_cond_code,
