@@ -5201,6 +5201,12 @@ maybe_instantiate_decl (tree decl)
 bool
 mark_used (tree decl, tsubst_flags_t complain)
 {
+  /* If we're just testing conversions or resolving overloads, we
+     don't want any permanent effects like forcing functions to be
+     output or instantiating templates.  */
+  if ((complain & tf_conv))
+    return true;
+
   /* If DECL is a BASELINK for a single function, then treat it just
      like the DECL for the function.  Otherwise, if the BASELINK is
      for an overloaded function, we don't know which function was
