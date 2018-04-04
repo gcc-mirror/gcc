@@ -70,15 +70,26 @@ along with GCC; see the file COPYING3.  If not see
    a list of all the namespace-scope DECLS that are needed.  From that
    we determine the strongly connected components (SCC) within this
    TU.  Each SCC is dumped to a separate section of the BMI.  We
-   generate a binding table section, mapping each namespace&name to an
-   SCC.  This allows lazy loading.
+   generate a binding table section, mapping each namespace&name to a
+   defining section.  This allows lazy loading.
 
+   Notice this means we embed section indices into the contents of
+   other sections.  Thus random maniupulation of the BMI file by ELF
+   tools may well break it.  The kosher way would probably be to
+   introduce indirection via section symbols, but that would require
+   defining a relocation type.
+
+   FIXME:The below is inaccurate.
    References to imported decls are done via indexing the imported
    module's decl list.
 
    References to global-module decls are either via an index to an
    imported module that happens to also make the decl available.  Or
-   by value if there is no such import.
+   by value if there is no such import.  Section groups may just about
+   work, (emit an index to the GRP section's slot indicating the
+   target section).  But there's no requirement on tools to keep GRP
+   section contents ordered, thought they probably do.  Anyway, best
+   not to objcopy these things!
 
    There can be no SCCs containing both current-module and
    global-module decls.  Construction of such an SCC would require the
@@ -2477,11 +2488,15 @@ trees_out::end ()
 void
 trees_out::mark_node (tree decl, bool into)
 {
-  gcc_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
+  gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
 
   if (!TREE_VISITED (decl) || into)
     {
-      bool existed = tree_map.put (decl, into ? 0 : 1);
+      /* On a dep-walk we don't care whan number we're tagging with,
+	 but on an emission walk, we're pre-seeding the table with
+	 specific numbers the reader will recreate.  */
+      int tag = into ? 0 : --ref_num;
+      bool existed = tree_map.put (decl, tag);
       gcc_checking_assert (TREE_VISITED (decl) || !existed);
       TREE_VISITED (decl) = true;
     }
@@ -7265,6 +7280,7 @@ trees_out::tree_node (tree t)
 	  dump () && dump ("Writing as_base for %N", TYPE_CONTEXT (t));
 	}
       tree_node (TYPE_NAME (TYPE_CONTEXT (t)));
+      goto done;
     }
 
   if (TREE_CODE (t) == TREE_BINFO)
@@ -7288,7 +7304,8 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
-  if (TYPE_P (t) && TYPE_NAME (t))
+  if (TYPE_P (t) && TYPE_NAME (t)
+      && (!refs_tng || TREE_TYPE (TYPE_NAME (t)) == t))
     {
       /* A named type.  */
       tree name = TYPE_NAME (t);
