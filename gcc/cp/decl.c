@@ -7010,7 +7010,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (!VAR_P (decl) || type_dependent_p)
 	/* We can't do anything if the decl has dependent type.  */;
       else if (!init && is_concept_var (decl))
-        error ("variable concept has no initializer");
+	{
+	  error ("variable concept has no initializer");
+	  init = boolean_true_node;
+	}
       else if (init
 	       && init_const_expr_p
 	       && TREE_CODE (type) != REFERENCE_TYPE
