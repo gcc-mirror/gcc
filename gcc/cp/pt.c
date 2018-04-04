@@ -11743,15 +11743,18 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       int level = 0;
 
       if (TREE_CODE (parm_pack) == BASES)
-       {
-	 gcc_assert (parm_pack == pattern);
-         if (BASES_DIRECT (parm_pack))
-           return calculate_direct_bases (tsubst_expr (BASES_TYPE (parm_pack),
-                                                        args, complain, in_decl, false));
-         else
-           return calculate_bases (tsubst_expr (BASES_TYPE (parm_pack),
-                                                 args, complain, in_decl, false));
-       }
+	{
+	  gcc_assert (parm_pack == pattern);
+	  if (BASES_DIRECT (parm_pack))
+	    return calculate_direct_bases (tsubst_expr (BASES_TYPE (parm_pack),
+							args, complain,
+							in_decl, false),
+					   complain);
+	  else
+	    return calculate_bases (tsubst_expr (BASES_TYPE (parm_pack),
+						 args, complain, in_decl,
+						 false), complain);
+	}
       else if (builtin_pack_call_p (parm_pack))
 	{
 	  /* ??? Support use in other patterns.  */

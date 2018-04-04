@@ -3885,49 +3885,36 @@ finish_underlying_type (tree type)
 }
 
 /* Implement the __direct_bases keyword: Return the direct base classes
-   of type */
+   of type.  */
 
 tree
-calculate_direct_bases (tree type)
+calculate_direct_bases (tree type, tsubst_flags_t complain)
 {
-  vec<tree, va_gc> *vector = make_tree_vector();
-  tree bases_vec = NULL_TREE;
-  vec<tree, va_gc> *base_binfos;
+  if (!complete_type_or_maybe_complain (type, NULL_TREE, complain)
+      || !NON_UNION_CLASS_TYPE_P (type))
+    return make_tree_vec (0);
+
+  vec<tree, va_gc> *vector = make_tree_vector ();
+  vec<tree, va_gc> *base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
   tree binfo;
   unsigned i;
 
-  complete_type (type);
-
-  if (!NON_UNION_CLASS_TYPE_P (type))
-    return make_tree_vec (0);
-
-  base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
-
   /* Virtual bases are initialized first */
   for (i = 0; base_binfos->iterate (i, &binfo); i++)
-    {
-      if (BINFO_VIRTUAL_P (binfo))
-       {
-         vec_safe_push (vector, binfo);
-       }
-    }
+    if (BINFO_VIRTUAL_P (binfo))
+      vec_safe_push (vector, binfo);
 
   /* Now non-virtuals */
   for (i = 0; base_binfos->iterate (i, &binfo); i++)
-    {
-      if (!BINFO_VIRTUAL_P (binfo))
-       {
-         vec_safe_push (vector, binfo);
-       }
-    }
+    if (!BINFO_VIRTUAL_P (binfo))
+      vec_safe_push (vector, binfo);
 
-
-  bases_vec = make_tree_vec (vector->length ());
+  tree bases_vec = make_tree_vec (vector->length ());
 
   for (i = 0; i < vector->length (); ++i)
-    {
-      TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE ((*vector)[i]);
-    }
+    TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE ((*vector)[i]);
+
+  release_tree_vector (vector);
   return bases_vec;
 }
 
@@ -3949,9 +3936,7 @@ dfs_calculate_bases_post (tree binfo, void *data_)
 {
   vec<tree, va_gc> **data = ((vec<tree, va_gc> **) data_);
   if (!BINFO_VIRTUAL_P (binfo))
-    {
-      vec_safe_push (*data, BINFO_TYPE (binfo));
-    }
+    vec_safe_push (*data, BINFO_TYPE (binfo));
   return NULL_TREE;
 }
 
@@ -3959,7 +3944,7 @@ dfs_calculate_bases_post (tree binfo, void *data_)
 static vec<tree, va_gc> *
 calculate_bases_helper (tree type)
 {
-  vec<tree, va_gc> *vector = make_tree_vector();
+  vec<tree, va_gc> *vector = make_tree_vector ();
 
   /* Now add non-virtual base classes in order of construction */
   if (TYPE_BINFO (type))
@@ -3969,26 +3954,25 @@ calculate_bases_helper (tree type)
 }
 
 tree
-calculate_bases (tree type)
+calculate_bases (tree type, tsubst_flags_t complain)
 {
-  vec<tree, va_gc> *vector = make_tree_vector();
+  if (!complete_type_or_maybe_complain (type, NULL_TREE, complain)
+      || !NON_UNION_CLASS_TYPE_P (type))
+    return make_tree_vec (0);
+
+  vec<tree, va_gc> *vector = make_tree_vector ();
   tree bases_vec = NULL_TREE;
   unsigned i;
   vec<tree, va_gc> *vbases;
   vec<tree, va_gc> *nonvbases;
   tree binfo;
 
-  complete_type (type);
-
-  if (!NON_UNION_CLASS_TYPE_P (type))
-    return make_tree_vec (0);
-
   /* First go through virtual base classes */
   for (vbases = CLASSTYPE_VBASECLASSES (type), i = 0;
        vec_safe_iterate (vbases, i, &binfo); i++)
     {
-      vec<tree, va_gc> *vbase_bases;
-      vbase_bases = calculate_bases_helper (BINFO_TYPE (binfo));
+      vec<tree, va_gc> *vbase_bases
+	= calculate_bases_helper (BINFO_TYPE (binfo));
       vec_safe_splice (vector, vbase_bases);
       release_tree_vector (vbase_bases);
     }
@@ -4002,7 +3986,7 @@ calculate_bases (tree type)
   if (vector->length () > 1)
     {
       /* Last element is entire class, so don't copy */
-      bases_vec = make_tree_vec (vector->length() - 1);
+      bases_vec = make_tree_vec (vector->length () - 1);
 
       for (i = 0; i < vector->length () - 1; ++i)
 	TREE_VEC_ELT (bases_vec, i) = (*vector)[i];
