@@ -1,5 +1,8 @@
 2018-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85200 - ICE with constexpr if in generic lambda.
+	* tree.c (cp_walk_subtrees): Walk into DECL_EXPR in templates.
+
 	PR c++/84221 - bogus -Wunused with attribute and template.
 	* decl2.c (is_late_template_attribute): Handle unused and used
 	normally on non-TYPE_DECL.
