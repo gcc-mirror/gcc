@@ -1,3 +1,10 @@
+2018-04-04  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR rtl-optimization/84878
+	* ddg.c (add_cross_iteration_register_deps): Use DF_REF_BB to determine
+	the basic block.  Assert the use reference is not artificial and that
+	it has an associated insn.
+
 2018-04-04  Michael Matz  <matz@suse.de>
 
 	* builtins.c (compute_objsize): Pass correct operand
