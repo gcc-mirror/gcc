@@ -69,11 +69,11 @@
 ;; If the instruction pattern already check TARGET_16_BIT to
 ;; determine the length by itself, its enabled attribute should be
 ;; always 1 to avoid the conflict with the settings here.
-(define_attr "enabled" ""
+(define_attr "enabled" "no,yes"
   (cond [(and (eq_attr "length" "2")
 	      (match_test "!TARGET_16_BIT"))
-	 (const_int 0)]
-	(const_int 1)))
+	 (const_string "no")]
+	(const_string "yes")))
 
 
 ;; ----------------------------------------------------------------------------
@@ -1296,7 +1296,7 @@ create_template:
     }
 }
   [(set_attr "type" "branch")
-   (set_attr "enabled" "1")
+   (set_attr "enabled" "yes")
    (set_attr_alternative "length"
      [
        ;; Alternative 0
@@ -1878,7 +1878,7 @@ create_template:
     }
 }
   [(set_attr "type" "branch")
-   (set_attr "enabled" "1")
+   (set_attr "enabled" "yes")
    (set (attr "length")
 	(if_then_else (and (ge (minus (match_dup 0) (pc)) (const_int -250))
 			   (le (minus (match_dup 0) (pc)) (const_int  250)))
@@ -2028,7 +2028,7 @@ create_template:
       gcc_unreachable ();
     }
 }
-  [(set_attr "enabled" "1")
+  [(set_attr "enabled" "yes")
    (set_attr "type" "branch")
    (set_attr_alternative "length"
      [
@@ -2079,7 +2079,7 @@ create_template:
       gcc_unreachable ();
     }
 }
-  [(set_attr "enabled" "1")
+  [(set_attr "enabled" "yes")
    (set_attr "type" "branch")
    (set_attr_alternative "length"
      [
@@ -2146,7 +2146,7 @@ create_template:
     return "nop";
 }
   [(set_attr "type" "misc")
-   (set_attr "enabled" "1")
+   (set_attr "enabled" "yes")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_16_BIT")
 		      (const_int 2)
@@ -2172,7 +2172,7 @@ create_template:
 }
   [(set_attr "type" "store_multiple")
    (set_attr "combo" "12")
-   (set_attr "enabled" "1")
+   (set_attr "enabled" "yes")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_V3PUSH
 				   && !nds32_isr_function_p (cfun->decl)
@@ -2195,7 +2195,7 @@ create_template:
 }
   [(set_attr "type" "load_multiple")
    (set_attr "combo" "12")
-   (set_attr "enabled" "1")
+   (set_attr "enabled" "yes")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_V3PUSH
 				   && !nds32_isr_function_p (cfun->decl)
@@ -2234,7 +2234,7 @@ create_template:
     return "ret";
 }
   [(set_attr "type" "branch")
-   (set_attr "enabled" "1")
+   (set_attr "enabled" "yes")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_16_BIT")
 		      (const_int 2)
