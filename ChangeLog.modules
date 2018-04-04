@@ -1,6 +1,13 @@
 2018-04-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::read_definition): New.
+	(module_state::read_{function,var,class,enum}_def): New.
+	(module_state::tng_read_cluster): New.
+	(module_state::tng_read_bindings): Call it.
+	(trees_in::tree_node): Check refs_tng.
+
+	gcc/cp/
 	* module.c (module_state::write_var_def): Write definition.
 
 	gcc/cp/

@@ -124,6 +124,8 @@ along with GCC; see the file COPYING3.  If not see
 #define MODULE_STAMP 0
 #endif
 
+#define TNG 0 // FIXME:in transition
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2109,6 +2111,13 @@ struct GTY(()) module_state {
   static void write_class_def  (trees_out &out, tree type);
   static void write_enum_def  (trees_out &out, tree type);
 
+  /* Read a definition.  */
+  bool read_definition (trees_in &in, tree decl);
+  bool read_function_def (trees_in &in, tree decl);
+  bool read_var_def (trees_in &in, tree decl);
+  bool read_class_def (trees_in &in, tree decl);
+  bool read_enum_def (trees_in &in, tree decl);
+
   /* Add writable bindings to hash table.  */
   static void add_writables (depset::hash &table, tree ns);
   /* Build dependency graph of hash table.  */
@@ -2128,6 +2137,7 @@ struct GTY(()) module_state {
 			    std::pair<unsigned, unsigned> &range);
   unsigned tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 			      unsigned from, unsigned *crc_ptr);
+  bool tng_read_cluster (elf_in *from, unsigned snum);
 
  public:
   /* Import a module.  Possibly ourselves.  */
@@ -3723,10 +3733,72 @@ module_state::write_function_def (trees_out &out, tree decl)
     out.tree_node (find_constexpr_fundef (decl));
 }
 
+bool
+module_state::read_function_def (trees_in &in, tree decl)
+{
+  tree result = in.tree_node ();
+  tree initial = in.tree_node ();
+  tree saved = in.tree_node ();
+  tree constexpr_body = (DECL_DECLARED_CONSTEXPR_P (decl)
+			 ? in.tree_node () : NULL_TREE);
+
+  if (in.get_overrun ())
+    return NULL_TREE;
+
+  if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+    {
+      if (mod != MAYBE_DECL_MODULE_OWNER (decl))
+	{
+	  error ("unexpected definition of %q#D", decl);
+	  in.set_overrun ();
+	  return false;
+	}
+
+      if (!MAYBE_DECL_MODULE_PURVIEW_P (decl)
+	  && DECL_SAVED_TREE (decl))
+	return true; // FIXME check same
+    }
+
+  DECL_RESULT (decl) = result;
+  DECL_INITIAL (decl) = initial;
+  DECL_SAVED_TREE (decl) = saved;
+  if (constexpr_body)
+    register_constexpr_fundef (decl, constexpr_body);
+
+  current_function_decl = decl;
+  allocate_struct_function (decl, false);
+  cfun->language = ggc_cleared_alloc<language_function> ();
+  cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
+  set_cfun (NULL);
+  current_function_decl = NULL_TREE;
+
+  if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
+    {
+      comdat_linkage (decl);
+      note_vague_linkage_fn (decl);
+      cgraph_node::finalize_function (decl, false);
+    }
+
+  return true;
+}
+
 void
 module_state::write_var_def (trees_out &out, tree decl)
 {
   out.tree_node (DECL_INITIAL (decl));
+}
+
+bool
+module_state::read_var_def (trees_in &in, tree decl)
+{
+  tree init = in.tree_node ();
+
+  if (in.get_overrun ())
+    return false;
+
+  DECL_INITIAL (decl) = init;
+
+  return true;
 }
 
 void
@@ -3793,12 +3865,144 @@ module_state::write_class_def (trees_out &out, tree type)
   out.tree_node (NULL_TREE);
 }
 
+/* Nop sorted needed for resorting the member vec.  */
+
+static void
+nop (void *, void *)
+{
+}
+
+bool
+module_state::read_class_def (trees_in &in, tree type)
+{
+  tree fields = in.chained_decls ();
+  tree vfield = in.tree_node ();
+  vec<tree, va_gc> *member_vec = NULL;
+  vec<tree, va_gc> *pure_virts = NULL;
+  vec<tree_pair_s, va_gc> *vcall_indices = NULL;
+  tree key_method = NULL_TREE;
+  tree lambda = NULL_TREE;
+  tree friends = NULL_TREE;
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      member_vec = in.tree_vec ();
+      friends = in.tree_node ();
+      lambda = in.tree_node ();
+
+      if (TYPE_CONTAINS_VPTR_P (type))
+	{
+	  pure_virts = in.tree_vec ();
+	  vcall_indices = in.tree_pair_vec ();
+	  key_method = in.tree_node ();
+	}
+    }
+
+  // lang->nested_udts
+
+  // FIXME: Sanity check stuff
+
+  if (in.get_overrun ())
+    return NULL_TREE;
+
+  TYPE_FIELDS (type) = fields;
+  TYPE_VFIELD (type) = vfield;
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      CLASSTYPE_FRIEND_CLASSES (type) = friends;
+      CLASSTYPE_LAMBDA_EXPR (type) = lambda;
+
+      CLASSTYPE_MEMBER_VEC (type) = member_vec;
+      CLASSTYPE_PURE_VIRTUALS (type) = pure_virts;
+      CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
+
+      CLASSTYPE_KEY_METHOD (type) = key_method;
+      if (!key_method && TYPE_CONTAINS_VPTR_P (type))
+	vec_safe_push (keyed_classes, type);
+
+      /* Resort the member vector.  */
+      resort_type_member_vec (member_vec, NULL, nop, NULL);
+    }
+
+  in.tree_binfo (type);
+
+  /* Read the remaining BINFO contents. */
+  for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
+    {
+      dump () && dump ("Reading binfo:%N of %N contents", binfo, type);
+#define RT(X) ((X) = in.tree_node ())
+      RT (binfo->binfo.vtable);
+      RT (binfo->binfo.virtuals);
+      RT (binfo->binfo.vptr_field);
+      RT (binfo->binfo.vtt_subvtt);
+      RT (binfo->binfo.vtt_vptr);
+#undef RT
+      BINFO_BASE_ACCESSES (binfo) = in.tree_vec ();
+      if (vec_safe_length (BINFO_BASE_ACCESSES (binfo))
+	  != BINFO_N_BASE_BINFOS (binfo))
+	in.set_overrun ();
+    }
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      CLASSTYPE_PRIMARY_BINFO (type) = in.tree_node ();
+
+      tree as_base = in.tree_node ();
+      CLASSTYPE_AS_BASE (type) = as_base;
+      if (as_base && as_base != type)
+	read_class_def (in, as_base);
+      
+      /* Read the vtables.  */
+      tree vtables = in.chained_decls ();
+
+      CLASSTYPE_VTABLES (type) = vtables;
+      for (; vtables; vtables = TREE_CHAIN (vtables))
+	DECL_INITIAL (vtables) = in.tree_node ();
+    }
+
+  // FIXME:
+  if (false/*TREE_CODE (decl) == TEMPLATE_DECL*/)
+    CLASSTYPE_DECL_LIST (type) = in.tree_node ();
+
+  /* Propagate to all variants.  */
+  fixup_type_variants (type);
+
+  /* Now define all the members.  */
+  while (tree member = in.tree_node ())
+    {
+      if (in.get_overrun ())
+	break;
+      if (!read_definition (in, member))
+	break;
+    }
+
+  return !in.get_overrun ();
+}
+
 void
 module_state::write_enum_def (trees_out &out, tree type)
 {
   out.tree_node (TYPE_VALUES (type));
   out.tree_node (TYPE_MIN_VALUE (type));
   out.tree_node (TYPE_MAX_VALUE (type));
+}
+
+bool
+module_state::read_enum_def (trees_in &in, tree type)
+{
+  tree values = in.tree_node ();
+  tree min = in.tree_node ();
+  tree max = in.tree_node ();
+
+  if (in.get_overrun ())
+    return false;
+
+  TYPE_VALUES (type) = values;
+  TYPE_MIN_VALUE (type) = min;
+  TYPE_MAX_VALUE (type) = max;
+
+  return true;
 }
 
 /* Write out the body of DECL.  See above circularity note.  */
@@ -3842,6 +4046,48 @@ module_state::write_definition (trees_out &out, tree decl)
       }
       break;
     }
+}
+
+/* Read in the body of DECL.  See above circularity note.  */
+
+bool
+module_state::read_definition (trees_in &in, tree decl)
+{
+  dump () && dump ("Reading definition %C %N", TREE_CODE (decl), decl);
+
+  switch (TREE_CODE (decl))
+    {
+    default:
+      break;
+
+    case TEMPLATE_DECL:
+      // FIXME:
+      // We should refer to templates by naming the primary template,
+      // and attaching the instantiation's arguments.  When dumping a
+      // template we should force walking into DECL_TEMPLATE_RESULT.
+      // hm, that node will have two handles, which seems wrong ...
+      break;
+
+    case FUNCTION_DECL:
+      return read_function_def (in, decl);
+
+    case VAR_DECL:
+      return read_var_def (in, decl);
+
+    case TYPE_DECL:
+      {
+	tree type = TREE_TYPE (decl);
+	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+		    && TYPE_MAIN_VARIANT (type) == type);
+	if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  return read_enum_def (in, type);
+	else
+	  return read_class_def (in, type);
+      }
+      break;
+    }
+
+  return false;
 }
 
 /* Compare bindings in a cluster.  Definitions are less than bindings.  */
@@ -3936,6 +4182,71 @@ module_state::tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 		   snum, naming_decl);
 
   return end;
+}
+
+bool
+module_state::tng_read_cluster (elf_in *from, unsigned snum)
+{
+  trees_in sec (this, global_vec);
+
+  if (!sec.begin (from, snum))
+    return false;
+
+  dump () && dump ("Reading section:%u", snum);
+  dump.indent ();
+  while (sec.more_p ())
+    {
+      tree ctx = sec.tree_node ();
+      if (!ctx)
+	break;
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	{
+	  /* A set of namespace bindings.  */
+	  tree name = sec.tree_node ();
+	  tree decls = NULL_TREE;
+	  tree type = NULL_TREE;
+
+	  while (tree decl = sec.tree_node ())
+	    {
+	      if (TREE_CODE (decl) == TYPE_DECL)
+		{
+		  if (type)
+		    sec.set_overrun ();
+		  type = decl;
+		}
+	      else if (decls
+		       || (TREE_CODE (decl) == TEMPLATE_DECL
+			   && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
+			       == FUNCTION_DECL)))
+		{
+		  if (!DECL_DECLARES_FUNCTION_P (decl)
+		      || (decls
+			  && TREE_CODE (decls) != OVERLOAD
+			  && TREE_CODE (decls) != FUNCTION_DECL))
+		    sec.set_overrun ();
+		  decls = ovl_make (decl, decls);
+		  if (DECL_MODULE_EXPORT_P (decl))
+		    OVL_EXPORT_P (decls) = true;
+		}
+	      else
+		decls = decl;
+	    }
+	  if (!set_module_binding (ctx, name, mod, decls, type))
+	    break;
+	}
+      else
+	{
+	  /* A definition.  */
+	  if (!read_definition (sec, ctx))
+	    break;
+	}
+    }
+  dump.outdent ();
+
+  if (!sec.end (from))
+    return false;
+
+  return true;
 }
 
 /* Walk the bindings of NS, writing out the bindings for the current
@@ -4424,6 +4735,15 @@ module_state::tng_read_bindings (elf_in *from)
   if (!tng_read_bindings (from, spaces, range))
     return false;
 
+  if (TNG) {
+  /* Read the sections in forward order, so that dependencies are read
+     first.  See note about tarjan_connect.  */
+  unsigned hwm = range.second;
+  for (unsigned ix = range.first; ix != hwm; ix++)
+    if (!tng_read_cluster (from, ix))
+      return false;
+  }
+
   refs_tng = false;
 
   return true;
@@ -4445,8 +4765,8 @@ module_state::read_bindings (elf_in *from)
 /* Use ELROND format to record the following sections:
      1     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
      2     MOD_SNAME_PFX.context  : context data
-     [3-N) qualified-names 	  : binding value(s)
-     N     MOD_SNAME_PFX.namespace : namespaces
+     [3-N) qualified-names	  : binding value(s)
+     N     MOD_SNAME_PFX.namespace : namespace hierarchy
      N+1   MOD_SNAME_PFX.bind     : binding table
      N+2   MOD_SNAME_PFX.config   : config data
 */
@@ -4458,7 +4778,8 @@ module_state::write (elf_out *to)
 
   write_context (to, &crc);
   tng_write_bindings (to, &crc);
-  write_bindings (to, &crc); // FIXME this should go away
+  if (!TNG)
+    write_bindings (to, &crc); // FIXME this should go away
   write_config (to, crc);
 
   trees_out::instrument ();
@@ -4497,7 +4818,7 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   if (!tng_read_bindings (from))
     return;
 
-  if (!read_bindings (from))
+  if (!TNG && !read_bindings (from))
     return;
 
   return;
@@ -4898,13 +5219,6 @@ trees_out::define_class (tree type, tree maybe_template)
 
   /* End of definitions.  */
   tree_node (NULL_TREE);
-}
-
-/* Nop sorted needed for resorting the member vec.  */
-
-static void
-nop (void *, void *)
-{
 }
 
 tree
@@ -7614,8 +7928,8 @@ trees_in::tree_node ()
 	unsigned remapped = (owner < state->remap->length ()
 			     ? (*state->remap)[owner] : MODULE_NONE);
 	tree type = tree_node ();
-	// FIXME:internal by-name?
-	if (remapped != MODULE_NONE && remapped != state->mod
+	if (remapped != MODULE_NONE
+	    && (refs_tng || remapped != state->mod)
 	    && !get_overrun ())
 	  res = lookup_by_ident (ctx, remapped, name, type, code);
 	if (!res)
