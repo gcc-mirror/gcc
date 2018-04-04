@@ -2798,7 +2798,7 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 	for (; !same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (*t),
 							   TREE_TYPE (x));
 	     x = TREE_OPERAND (x, 0))
-	  gcc_assert (TREE_CODE (x) == COMPONENT_REF);
+	  gcc_assert (handled_component_p (x));
 	*t = x;
 	*walk_subtrees = false;
 	d->seen = true;
