@@ -1,5 +1,9 @@
 2018-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/85172
+	* g++.dg/ext/builtin13.C: New test.
+	* g++.dg/ext/atomic-4.C: New test.
+
 	PR c++/85146
 	* g++.dg/ext/bases2.C: Expect extra error diagnostics.
 	* g++.dg/ext/bases3.C: New test.

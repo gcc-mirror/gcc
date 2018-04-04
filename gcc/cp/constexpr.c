@@ -1189,8 +1189,14 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   bool dummy1 = false, dummy2 = false;
   for (i = 0; i < nargs; ++i)
     {
-      args[i] = cxx_eval_constant_expression (&new_ctx, CALL_EXPR_ARG (t, i),
-					      false, &dummy1, &dummy2);
+      args[i] = CALL_EXPR_ARG (t, i);
+      /* If builtin_valid_in_constant_expr_p is true,
+	 potential_constant_expression_1 has not recursed into the arguments
+	 of the builtin, verify it here.  */
+      if (!builtin_valid_in_constant_expr_p (fun)
+	  || potential_constant_expression (args[i]))
+	args[i] = cxx_eval_constant_expression (&new_ctx, args[i], false,
+						&dummy1, &dummy2);
       if (bi_const_p)
 	/* For __built_in_constant_p, fold all expressions with constant values
 	   even if they aren't C++ constant-expressions.  */

@@ -1,5 +1,11 @@
 2018-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/85172
+	* constexpr.c (cxx_eval_builtin_function_call): For calls to
+	builtin_valid_in_constant_expr_p functions, don't call
+	cxx_eval_constant_expression if argument is not
+	potential_constant_expression.
+
 	PR c++/85146
 	* cp-tree.h (calculate_bases, calculate_direct_bases): Add complain
 	argument.
