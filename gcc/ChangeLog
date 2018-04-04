@@ -1,3 +1,9 @@
+2018-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85168
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address): Avoid
+	propagating abnormals.
+
 2018-04-04  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.md (enabled): Use yes/no for this attribute.
