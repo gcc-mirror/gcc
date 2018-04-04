@@ -2096,22 +2096,25 @@ struct GTY(()) module_state {
   void write_bindings (elf_out *to, unsigned *crc_ptr);
   bool read_bindings (elf_in *from);
 
-  /* Mark a defintion prior to walking.  */
+  /* Mark a definition prior to walking.  */
   static void mark_definition (trees_out &out, tree decl);
-  static void mark_function_def  (trees_out &out, tree decl);
+  static void mark_template_def (trees_out &out, tree decl);
+  static void mark_function_def (trees_out &out, tree decl);
   static void mark_var_def (trees_out &out, tree decl);
-  static void mark_class_def  (trees_out &out, tree type);
-  static void mark_enum_def  (trees_out &out, tree type);
+  static void mark_class_def (trees_out &out, tree type);
+  static void mark_enum_def (trees_out &out, tree type);
 
-  /* Write a defintion.  */
+  /* Write a definition.  */
   static void write_definition (trees_out &out, tree decl);
-  static void write_function_def  (trees_out &out, tree decl);
+  static void write_template_def (trees_out &out, tree decl);
+  static void write_function_def (trees_out &out, tree decl);
   static void write_var_def (trees_out &out, tree decl);
-  static void write_class_def  (trees_out &out, tree type);
-  static void write_enum_def  (trees_out &out, tree type);
+  static void write_class_def (trees_out &out, tree type);
+  static void write_enum_def (trees_out &out, tree type);
 
   /* Read a definition.  */
   bool read_definition (trees_in &in, tree decl);
+  bool read_template_def (trees_in &in, tree decl);
   bool read_function_def (trees_in &in, tree decl);
   bool read_var_def (trees_in &in, tree decl);
   bool read_class_def (trees_in &in, tree decl);
@@ -3493,6 +3496,10 @@ depset::hash::maybe_add_definition (depset *binding, tree decl)
 void
 depset::hash::add_dependency (tree decl, bool needs_def)
 {
+  if (!DECL_CONTEXT (decl))
+    /* We can't be dependent on something with no context.  */
+    return;
+
   tree ctx = CP_DECL_CONTEXT (decl);
   gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
   depset **slot = maybe_insert (ctx, DECL_NAME (decl));
@@ -3637,92 +3644,6 @@ depset::tarjan::connect (depset *v)
     }
 }
 
-void
-module_state::mark_function_def (trees_out &out, tree decl)
-{
-}
-
-void
-module_state::mark_var_def (trees_out &out, tree decl)
-{
-}
-
-void
-module_state::mark_class_def (trees_out &out, tree type)
-{
-  for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
-    {
-      out.mark_node (member, true);
-      if (has_definition (member))
-	mark_definition (out, member);
-    }
-
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      tree as_base = CLASSTYPE_AS_BASE (type);
-      if (as_base && as_base != type)
-	{
-	  out.mark_node (as_base, true);
-	  mark_class_def (out, as_base);
-	}
-
-      for (tree vtables = CLASSTYPE_VTABLES (type);
-	   vtables; vtables = TREE_CHAIN (vtables))
-	{
-	  out.mark_node (vtables, true);
-	  mark_var_def (out, vtables);
-	}
-    }
-}
-
-void
-module_state::mark_enum_def (trees_out &out, tree type)
-{
-  if (!UNSCOPED_ENUM_P (type))
-    for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
-      out.mark_node (TREE_VALUE (values), true);
-}
-
-/* Mark the body of DECL.  */
-
-void
-module_state::mark_definition (trees_out &out, tree decl)
-{
-  switch (TREE_CODE (decl))
-    {
-    default:
-      gcc_unreachable ();
-
-    case TEMPLATE_DECL:
-      // FIXME:
-      // We should refer to templates by naming the primary template,
-      // and attaching the instantiation's arguments.  When dumping a
-      // template we should force walking into DECL_TEMPLATE_RESULT.
-      // hm, that node will have two handles, which seems wrong ...
-      break;
-
-    case FUNCTION_DECL:
-      mark_function_def (out, decl);
-      break;
-
-    case VAR_DECL:
-      mark_var_def (out, decl);
-      break;
-
-    case TYPE_DECL:
-      {
-	tree type = TREE_TYPE (decl);
-	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && TYPE_MAIN_VARIANT (type) == type);
-	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  mark_enum_def (out, type);
-	else
-	  mark_class_def (out, type);
-      }
-      break;
-    }
-}
-
 /* The following writer functions rely on the current behaviour of
    depset::hash::add_dependency making the decl and defn depset nodes
    depend on eachother.  That way we don't have to worry about seeding
@@ -3738,6 +3659,11 @@ module_state::write_function_def (trees_out &out, tree decl)
   out.tree_node (DECL_SAVED_TREE (decl));
   if (DECL_DECLARED_CONSTEXPR_P (decl))
     out.tree_node (find_constexpr_fundef (decl));
+}
+
+void
+module_state::mark_function_def (trees_out &out, tree decl)
+{
 }
 
 bool
@@ -3793,6 +3719,11 @@ void
 module_state::write_var_def (trees_out &out, tree decl)
 {
   out.tree_node (DECL_INITIAL (decl));
+}
+
+void
+module_state::mark_var_def (trees_out &out, tree decl)
+{
 }
 
 bool
@@ -3876,6 +3807,34 @@ module_state::write_class_def (trees_out &out, tree type)
 
   /* End of definitions.  */
   out.tree_node (NULL_TREE);
+}
+
+void
+module_state::mark_class_def (trees_out &out, tree type)
+{
+  for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
+    {
+      out.mark_node (member, true);
+      if (has_definition (member))
+	mark_definition (out, member);
+    }
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      tree as_base = CLASSTYPE_AS_BASE (type);
+      if (as_base && as_base != type)
+	{
+	  out.mark_node (as_base, true);
+	  mark_class_def (out, as_base);
+	}
+
+      for (tree vtables = CLASSTYPE_VTABLES (type);
+	   vtables; vtables = TREE_CHAIN (vtables))
+	{
+	  out.mark_node (vtables, true);
+	  mark_var_def (out, vtables);
+	}
+    }
 }
 
 /* Nop sorted needed for resorting the member vec.  */
@@ -4002,6 +3961,14 @@ module_state::write_enum_def (trees_out &out, tree type)
   out.tree_node (TYPE_MAX_VALUE (type));
 }
 
+void
+module_state::mark_enum_def (trees_out &out, tree type)
+{
+  if (!UNSCOPED_ENUM_P (type))
+    for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
+      out.mark_node (TREE_VALUE (values), true);
+}
+
 bool
 module_state::read_enum_def (trees_in &in, tree type)
 {
@@ -4019,6 +3986,27 @@ module_state::read_enum_def (trees_in &in, tree type)
   return true;
 }
 
+void
+module_state::write_template_def (trees_out &out, tree decl)
+{
+  tree res = DECL_TEMPLATE_RESULT (decl);
+  write_definition (out, res);
+}
+
+void
+module_state::mark_template_def (trees_out &out, tree decl)
+{
+  tree res = DECL_TEMPLATE_RESULT (decl);
+  mark_definition (out, res);
+}
+
+bool
+module_state::read_template_def (trees_in &in, tree decl)
+{
+  tree res = DECL_TEMPLATE_RESULT (decl);
+  return read_definition (in, res);
+}
+
 /* Write out the body of DECL.  See above circularity note.  */
 
 void
@@ -4033,11 +4021,7 @@ module_state::write_definition (trees_out &out, tree decl)
       gcc_unreachable ();
 
     case TEMPLATE_DECL:
-      // FIXME:
-      // We should refer to templates by naming the primary template,
-      // and attaching the instantiation's arguments.  When dumping a
-      // template we should force walking into DECL_TEMPLATE_RESULT.
-      // hm, that node will have two handles, which seems wrong ...
+      write_template_def (out, decl);
       break;
 
     case FUNCTION_DECL:
@@ -4062,6 +4046,42 @@ module_state::write_definition (trees_out &out, tree decl)
     }
 }
 
+/* Mark the body of DECL.  */
+
+void
+module_state::mark_definition (trees_out &out, tree decl)
+{
+  switch (TREE_CODE (decl))
+    {
+    default:
+      gcc_unreachable ();
+
+    case TEMPLATE_DECL:
+      mark_template_def (out, decl);
+      break;
+
+    case FUNCTION_DECL:
+      mark_function_def (out, decl);
+      break;
+
+    case VAR_DECL:
+      mark_var_def (out, decl);
+      break;
+
+    case TYPE_DECL:
+      {
+	tree type = TREE_TYPE (decl);
+	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+		    && TYPE_MAIN_VARIANT (type) == type);
+	if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  mark_enum_def (out, type);
+	else
+	  mark_class_def (out, type);
+      }
+      break;
+    }
+}
+
 /* Read in the body of DECL.  See above circularity note.  */
 
 bool
@@ -4075,12 +4095,7 @@ module_state::read_definition (trees_in &in, tree decl)
       break;
 
     case TEMPLATE_DECL:
-      // FIXME:
-      // We should refer to templates by naming the primary template,
-      // and attaching the instantiation's arguments.  When dumping a
-      // template we should force walking into DECL_TEMPLATE_RESULT.
-      // hm, that node will have two handles, which seems wrong ...
-      break;
+      return read_template_def (in, decl);
 
     case FUNCTION_DECL:
       return read_function_def (in, decl);
@@ -7650,6 +7665,7 @@ trees_out::tree_node (tree t)
   if (!DECL_P (t))
     goto by_value;
 
+ by_name:
   if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
     {
       /* A typeinfo object -> tt_tinfo_var.
@@ -7681,10 +7697,8 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
- by_name:
   /* Some decls are never by name.  */
-  if (TREE_CODE (t) == PARM_DECL
-      || (TREE_CODE (t) == CONST_DECL && !DECL_CONTEXT (t)))
+  if (TREE_CODE (t) == PARM_DECL || !DECL_CONTEXT (t))
     goto by_value;
 
   if (refs_tng && !force && DECL_ARTIFICIAL (t) && TREE_CODE (t) == VAR_DECL)

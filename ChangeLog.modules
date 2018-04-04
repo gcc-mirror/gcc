@@ -1,6 +1,12 @@
 2018-04-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::{read,write,mark}_template_def): New.
+	(module_state::{read_write_mark}_definition): Call them.
+	(depset::hash::add_dependency): Don't depend on no-context decls.
+	(trees_out::tree_node): Don't try and name no-context decls.
+
+	gcc/cp/
 	* module.c (module_state::{read,write}_class_def}): Fixup
 	vptr-containing logic.
 	(trees_in::tree_binfo): Forward walk.
