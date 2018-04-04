@@ -182,8 +182,8 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type"   "move,move,move,move")
-   (set_attr "length" "   4,  16,   8,   8")])
+  [(set_attr "type"   "alu,alu,alu,alu")
+   (set_attr "length" "  4, 16,  8,  8")])
 
 (define_split
   [(set (match_operand:DIDF 0 "register_operand"     "")
