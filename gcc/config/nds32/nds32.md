@@ -101,6 +101,27 @@
     }
 })
 
+(define_expand "movmisalign<mode>"
+  [(set (match_operand:SIDI 0 "general_operand" "")
+	(match_operand:SIDI 1 "general_operand" ""))]
+  ""
+{
+  rtx addr;
+  if (MEM_P (operands[0]) && !REG_P (operands[1]))
+    operands[1] = force_reg (<MODE>mode, operands[1]);
+
+  if (MEM_P (operands[0]))
+    {
+      addr = force_reg (Pmode, XEXP (operands[0], 0));
+      emit_insn (gen_unaligned_store<mode> (addr, operands[1]));
+    }
+  else
+    {
+      addr = force_reg (Pmode, XEXP (operands[1], 0));
+      emit_insn (gen_unaligned_load<mode> (operands[0], addr));
+    }
+  DONE;
+})
 
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_operand" "")
