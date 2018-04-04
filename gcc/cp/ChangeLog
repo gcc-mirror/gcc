@@ -1,3 +1,8 @@
+2018-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85148 - ICE with 'this' in array NSDMI.
+	* tree.c (replace_placeholders_r): Use handled_component_p.
+
 2018-04-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/65923
