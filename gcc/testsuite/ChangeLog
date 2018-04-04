@@ -1,3 +1,12 @@
+2018-04-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/85203
+	* gcc.target/arm/cmse/cmse-1.c: Tighten cmse_nonsecure_caller RTL scan
+	to match a single insn of the baz function.  Move scan directives at
+	the end of the file below the functions they are trying to test for
+	better readability.
+	* gcc.target/arm/cmse/cmse-16.c: New testcase.
+
 2018-04-04  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR rtl-optimization/84878
