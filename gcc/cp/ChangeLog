@@ -1,5 +1,9 @@
 2018-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85135 - ICE with omitted template arguments.
+	* decl.c (grokdeclarator): Catch deduced class type in trailing
+	return type.
+
 	PR c++/85133 - ICE with missing concept initializer.
 	* decl.c (cp_finish_decl): If a concept initializer is missing, use
 	true.
