@@ -83,25 +83,24 @@
 ;; For QImode and HImode, the immediate value can be fit in imm20s.
 ;; So there is no need to split rtx for QI and HI patterns.
 
-(define_expand "movqi"
-  [(set (match_operand:QI 0 "general_operand" "")
-	(match_operand:QI 1 "general_operand" ""))]
+(define_expand "mov<mode>"
+  [(set (match_operand:QIHI 0 "general_operand" "")
+	(match_operand:QIHI 1 "general_operand" ""))]
   ""
 {
   /* Need to force register if mem <- !reg.  */
   if (MEM_P (operands[0]) && !REG_P (operands[1]))
-    operands[1] = force_reg (QImode, operands[1]);
+    operands[1] = force_reg (<MODE>mode, operands[1]);
+
+  if (MEM_P (operands[1]) && optimize > 0)
+    {
+      rtx reg = gen_reg_rtx (SImode);
+
+      emit_insn (gen_zero_extend<mode>si2 (reg, operands[1]));
+      operands[1] = gen_lowpart (<MODE>mode, reg);
+    }
 })
 
-(define_expand "movhi"
-  [(set (match_operand:HI 0 "general_operand" "")
-	(match_operand:HI 1 "general_operand" ""))]
-  ""
-{
-  /* Need to force register if mem <- !reg.  */
-  if (MEM_P (operands[0]) && !REG_P (operands[1]))
-    operands[1] = force_reg (HImode, operands[1]);
-})
 
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_operand" "")
