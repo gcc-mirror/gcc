@@ -1,5 +1,9 @@
 2018-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85118 - wrong error with generic lambda and std::bind.
+	* call.c (add_template_conv_candidate): Disable if there are any
+	call operators.
+
 	PR c++/85141 - ICE with compound assignment and static member fn.
 	* typeck.c (cp_build_modify_expr): Call decay_conversion for RHS of
 	compound assignment.
