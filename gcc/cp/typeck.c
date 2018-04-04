@@ -5971,6 +5971,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
      so we can just form an ADDR_EXPR with the correct type.  */
   if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
     {
+      if (TREE_CODE (arg) == FUNCTION_DECL
+	  && !mark_used (arg, complain) && !(complain & tf_error))
+	return error_mark_node;
       val = build_address (arg);
       if (TREE_CODE (arg) == OFFSET_REF)
 	PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);

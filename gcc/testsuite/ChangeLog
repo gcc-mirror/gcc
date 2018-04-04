@@ -1,3 +1,9 @@
+2018-04-04  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84943
+	* g++.dg/pr84943.C: New.
+	* g++.dg/pr84943-2.C: New.
+
 2018-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85167
