@@ -48,7 +48,8 @@
 (define_insn "move_<mode>"
   [(set (match_operand:DIDF 0 "nonimmediate_operand" "=r, r, r, m")
 	(match_operand:DIDF 1 "general_operand"      " r, i, m, r"))]
-  ""
+  "register_operand(operands[0], <MODE>mode)
+   || register_operand(operands[1], <MODE>mode)"
 {
   rtx addr;
   rtx otherops[5];

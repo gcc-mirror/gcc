@@ -1,4 +1,10 @@
 2018-04-04  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32-doubleword.md (move_<mode>): Require
+	resiter_operand condition.
+	* config/nds32/nds32.md (*move<mode>): Ditto.
+
+2018-04-04  Kito Cheng  <kito.cheng@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 
 	* config/nds32/nds32.md (movmisalign<mode>): New pattern.
