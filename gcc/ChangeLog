@@ -1,3 +1,9 @@
+2018-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/85176
+	* dwarf2out.c (dwarf2out_register_external_die): Peel namespaces
+	from contexts for DINFO_LEVEL_TERSE and below.
+
 2018-04-04  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/nds32-doubleword.md (move_<mode>): Require

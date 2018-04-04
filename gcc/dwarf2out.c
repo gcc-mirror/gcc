@@ -5903,8 +5903,13 @@ dwarf2out_register_external_die (tree decl, const char *sym,
     }
   else
     ctx = DECL_CONTEXT (decl);
+  /* Peel types in the context stack.  */
   while (ctx && TYPE_P (ctx))
     ctx = TYPE_CONTEXT (ctx);
+  /* Likewise namespaces in case we do not want to emit DIEs for them.  */
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    while (ctx && TREE_CODE (ctx) == NAMESPACE_DECL)
+      ctx = DECL_CONTEXT (ctx);
   if (ctx)
     {
       if (TREE_CODE (ctx) == BLOCK)
