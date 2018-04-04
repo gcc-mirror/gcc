@@ -1762,6 +1762,26 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
 /* -- Permitting tail calls.  */
 
+/* Return true if it is ok to do sibling call optimization.  */
+static bool
+nds32_function_ok_for_sibcall (tree decl,
+			       tree exp ATTRIBUTE_UNUSED)
+{
+  /* The DECL is NULL if it is an indirect call.  */
+
+  /* 1. Do not apply sibling call if -mv3push is enabled,
+	because pop25 instruction also represents return behavior.
+     2. If this function is a variadic function, do not apply sibling call
+	because the stack layout may be a mess.
+     3. We don't want to apply sibling call optimization for indirect
+	sibcall because the pop behavior in epilogue may pollute the
+	content of caller-saved regsiter when the register is used for
+	indirect sibcall.  */
+  return (!TARGET_V3PUSH
+	  && (cfun->machine->va_args_size == 0)
+	  && decl);
+}
+
 /* Determine whether we need to enable warning for function return check.  */
 static bool
 nds32_warn_func_return (tree decl)
@@ -3763,6 +3783,9 @@ nds32_target_alignment (rtx_insn *label)
 /* -- Generating Code for Profiling.  */
 
 /* -- Permitting tail calls.  */
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL nds32_function_ok_for_sibcall
 
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN nds32_warn_func_return

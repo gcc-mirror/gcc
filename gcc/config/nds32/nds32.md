@@ -1996,50 +1996,55 @@ create_template:
 ;; The sibcall patterns.
 
 ;; sibcall
-;; sibcall_register
-;; sibcall_immediate
+;; sibcall_internal
 
 (define_expand "sibcall"
   [(parallel [(call (match_operand 0 "memory_operand" "")
 		    (const_int 0))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
-  ""
-  ""
-)
+  "")
 
-(define_insn "*sibcall_register"
-  [(parallel [(call (mem (match_operand:SI 0 "register_operand" "r, r"))
-		    (match_operand 1))
-	      (clobber (reg:SI TA_REGNUM))
-	      (return)])]
-  ""
-  "@
-   jr5\t%0
-   jr\t%0"
-  [(set_attr "type"   "branch,branch")
-   (set_attr "length" "     2,     4")])
-
-(define_insn "*sibcall_immediate"
-  [(parallel [(call (mem (match_operand:SI 0 "immediate_operand" "i"))
+(define_insn "sibcall_internal"
+  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, i"))
 		    (match_operand 1))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
   ""
 {
-  if (TARGET_CMODEL_LARGE)
-    return "b\t%0";
-  else
-    return "j\t%0";
+  switch (which_alternative)
+    {
+    case 0:
+      if (TARGET_16_BIT)
+	return "jr5\t%0";
+      else
+	return "jr\t%0";
+    case 1:
+      if (nds32_long_call_p (operands[0]))
+	return "b\t%0";
+      else
+	return "j\t%0";
+    default:
+      gcc_unreachable ();
+    }
 }
-  [(set_attr "type"   "branch")
-   (set (attr "length")
-	(if_then_else (match_test "TARGET_CMODEL_LARGE")
-		      (const_int 12)
-		      (const_int 4)))])
+  [(set_attr "enabled" "1")
+   (set_attr "type" "branch")
+   (set_attr_alternative "length"
+     [
+       ;; Alternative 0
+       (if_then_else (match_test "TARGET_16_BIT")
+		     (const_int 2)
+		     (const_int 4))
+       ;; Alternative 1
+       (if_then_else (match_test "nds32_long_call_p (operands[0])")
+		     (const_int 12)
+		     (const_int 4))
+     ])]
+)
 
 ;; sibcall_value
-;; sibcall_value_register
+;; sibcall_value_internal
 ;; sibcall_value_immediate
 
 (define_expand "sibcall_value"
@@ -2048,42 +2053,46 @@ create_template:
 			 (const_int 0)))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
-  ""
-  ""
-)
+  "")
 
-(define_insn "*sibcall_value_register"
+(define_insn "sibcall_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "register_operand" "r, r"))
-			 (match_operand 2)))
-	      (clobber (reg:SI TA_REGNUM))
-	      (return)])]
-  ""
-  "@
-   jr5\t%1
-   jr\t%1"
-  [(set_attr "type"   "branch,branch")
-   (set_attr "length" "     2,     4")])
-
-(define_insn "*sibcall_value_immediate"
-  [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "immediate_operand" "i"))
+		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, i"))
 			 (match_operand 2)))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
   ""
 {
-  if (TARGET_CMODEL_LARGE)
-    return "b\t%1";
-  else
-    return "j\t%1";
+  switch (which_alternative)
+    {
+    case 0:
+      if (TARGET_16_BIT)
+	return "jr5\t%1";
+      else
+	return "jr\t%1";
+    case 1:
+      if (nds32_long_call_p (operands[1]))
+	return "b\t%1";
+      else
+	return "j\t%1";
+    default:
+      gcc_unreachable ();
+    }
 }
-  [(set_attr "type"   "branch")
-   (set (attr "length")
-	(if_then_else (match_test "TARGET_CMODEL_LARGE")
-		      (const_int 12)
-		      (const_int 4)))])
-
+  [(set_attr "enabled" "1")
+   (set_attr "type" "branch")
+   (set_attr_alternative "length"
+     [
+       ;; Alternative 0
+       (if_then_else (match_test "TARGET_16_BIT")
+		     (const_int 2)
+		     (const_int 4))
+       ;; Alternative 1
+       (if_then_else (match_test "nds32_long_call_p (operands[1])")
+		     (const_int 12)
+		     (const_int 4))
+     ])]
+)
 
 ;; ----------------------------------------------------------------------------
 

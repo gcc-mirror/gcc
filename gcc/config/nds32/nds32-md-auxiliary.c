@@ -1145,3 +1145,10 @@ nds32_expand_unaligned_store (rtx *operands, enum machine_mode mode)
 	}
     }
 }
+
+/* Return true X is need use long call.  */
+bool
+nds32_long_call_p (rtx symbol)
+{
+  return TARGET_CMODEL_LARGE;
+}
