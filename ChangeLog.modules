@@ -1,6 +1,9 @@
 2018-04-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::write_var_def): Write definition.
+
+	gcc/cp/
 	* module.c (trees_out::mark_node): Allow preseeding.
 	(trees_out::tree_node): Fix as_base.
 

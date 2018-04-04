@@ -3726,6 +3726,7 @@ module_state::write_function_def (trees_out &out, tree decl)
 void
 module_state::write_var_def (trees_out &out, tree decl)
 {
+  out.tree_node (DECL_INITIAL (decl));
 }
 
 void
@@ -4084,7 +4085,7 @@ module_state::tng_write_namespaces (elf_out *to, depset::hash &table,
       sec.u (DECL_NAMESPACE_INLINE_P (ns));
     }
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".namespaces"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".namespace"), crc_p);
   dump.outdent ();
 }
 
@@ -4121,7 +4122,7 @@ module_state::tng_write_bindings (elf_out *to, depset::hash &table,
 	}
     }
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".bindings"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".bind"), crc_p);
   dump.outdent ();
 }
 
@@ -4131,7 +4132,7 @@ module_state::tng_read_bindings (elf_in *from, auto_vec<tree> &spaces,
 {
   bytes_in sec;
 
-  if (!sec.begin (from, MOD_SNAME_PFX ".bindings"))
+  if (!sec.begin (from, MOD_SNAME_PFX ".bind"))
     return false;
 
   dump () && dump ("Reading binding table");
@@ -4371,7 +4372,7 @@ module_state::tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces,
 {
   bytes_in sec;
 
-  if (!sec.begin (from, MOD_SNAME_PFX ".namespaces"))
+  if (!sec.begin (from, MOD_SNAME_PFX ".namespace"))
     return false;
 
   dump () && dump ("Reading namespaces");
@@ -4444,9 +4445,10 @@ module_state::read_bindings (elf_in *from)
 /* Use ELROND format to record the following sections:
      1     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
      2     MOD_SNAME_PFX.context  : context data
-     [3-N) DECL_NAME() 		  : binding value(s)
-     N     MOD_SNAME_PFX.bindings : bindings of namespace names
-     N+1   MOD_SNAME_PFX.config   : config data
+     [3-N) qualified-names 	  : binding value(s)
+     N     MOD_SNAME_PFX.namespace : namespaces
+     N+1   MOD_SNAME_PFX.bind     : binding table
+     N+2   MOD_SNAME_PFX.config   : config data
 */
 
 void
