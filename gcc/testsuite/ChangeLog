@@ -1,3 +1,9 @@
+2018-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/85189
+	* g++.dg/inherit/override-attribs.C: Use dg-message instead of dg-error
+	for the diagnostics of overridden functions.  Adjust for new wording.
+
 2018-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR lto/85176
