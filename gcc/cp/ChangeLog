@@ -1,3 +1,9 @@
+2018-04-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/65923
+	* decl.c (grokfndecl): Handle standard UDL diagnostics here..
+	* parser.c (cp_parser_unqualified_id): ..not here.
+
 2018-04-04  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/84943
