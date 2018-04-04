@@ -116,6 +116,9 @@ extern bool nds32_symbol_load_store_p (rtx_insn *);
 extern const char *nds32_output_casesi_pc_relative (rtx *);
 extern const char *nds32_output_casesi (rtx *);
 
+/* Auxiliary functions to identify long-call symbol.  */
+extern bool nds32_long_call_p (rtx);
+
 /* Auxiliary functions to identify 16 bit addresing mode.  */
 
 extern enum nds32_16bit_address_type nds32_mem_format (rtx);

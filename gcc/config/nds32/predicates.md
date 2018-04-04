@@ -57,6 +57,21 @@
   return true;
 })
 
+(define_predicate "nds32_general_register_operand"
+  (match_code "reg,subreg")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  return (REG_P (op)
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || REGNO (op) <= NDS32_LAST_GPR_REGNUM));
+})
+
+(define_predicate "nds32_call_address_operand"
+  (ior (match_operand 0 "nds32_symbolic_operand")
+       (match_operand 0 "nds32_general_register_operand")))
+
 (define_predicate "nds32_lmw_smw_base_operand"
   (and (match_code "mem")
        (match_test "nds32_valid_smw_lwm_base_p (op)")))

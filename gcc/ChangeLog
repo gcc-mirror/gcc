@@ -1,3 +1,19 @@
+2018-04-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32-md-auxiliary.c (nds32_long_call_p): New function.
+	* config/nds32/nds32-protos.h (nds32_long_call_p): Declare.
+	* config/nds32/nds32.c (nds32_function_ok_for_sibcall): New function.
+	(TARGET_FUNCTION_OK_FOR_SIBCALL): Define.
+	* config/nds32/nds32.md (sibcall_internal): New.
+	(sibcall_register): Remove.
+	(sibcall_immediate): Remove.
+	(sibcall_value_internal): New.
+	(sibcall_value_register): Remove.
+	(sibcall_value_immediate): Remove.
+	* config/nds32/predicates.md (nds32_general_register_operand): New.
+	(nds32_call_address_operand): New.
+
 2018-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85167
