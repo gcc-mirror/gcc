@@ -3377,7 +3377,7 @@ compute_objsize (tree dest, int ostype)
   type = TYPE_MAIN_VARIANT (type);
 
   if (TREE_CODE (type) == ARRAY_TYPE
-      && !array_at_struct_end_p (dest))
+      && !array_at_struct_end_p (TREE_OPERAND (dest, 0)))
     {
       /* Return the constant size unless it's zero (that's a zero-length
 	 array likely at the end of a struct).  */

@@ -1,3 +1,8 @@
+2018-04-04  Michael Matz  <matz@suse.de>
+
+	* builtins.c (compute_objsize): Pass correct operand
+	to array_at_struct_end_p.
+
 2018-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR lto/85176
