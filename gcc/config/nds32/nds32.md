@@ -52,9 +52,8 @@
 
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
-  "unknown,move,load,store,load_multiple,store_multiple,alu,compare,branch,call,misc"
+  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,call,misc"
   (const_string "unknown"))
-
 
 ;; Length, in bytes, default is 4-bytes.
 (define_attr "length" "" (const_int 4))
@@ -184,7 +183,7 @@
 	(match_operand:SI 1 "nds32_symbolic_operand" " i, i"))]
   ""
   "la\t%0, %1"
-  [(set_attr "type" "move")
+  [(set_attr "type"  "alu")
    (set_attr "length"  "8")])
 
 
@@ -337,8 +336,9 @@
 
   return "add_slli\t%0, %3, %1, %2";
 }
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "combo"        "2")
+   (set_attr "length"       "4")])
 
 (define_insn "*add_srli"
   [(set (match_operand:SI 0 "register_operand"                        "=   r")
@@ -347,8 +347,9 @@
 		 (match_operand:SI 3 "register_operand"               "    r")))]
   "TARGET_ISA_V3"
   "add_srli\t%0, %3, %1, %2"
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "combo"        "2")
+   (set_attr "length"       "4")])
 
 
 ;; GCC intends to simplify (minus (reg) (ashift ...))
@@ -369,8 +370,9 @@
 
   return "sub_slli\t%0, %1, %2, %3";
 }
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "combo"        "2")
+   (set_attr "length"       "4")])
 
 (define_insn "*sub_srli"
   [(set (match_operand:SI 0 "register_operand"                         "=   r")
@@ -379,8 +381,9 @@
 			       (match_operand:SI 3 "immediate_operand" " Iu05"))))]
   "TARGET_ISA_V3"
   "sub_srli\t%0, %1, %2, %3"
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "combo"        "2")
+   (set_attr "length"       "4")])
 
 
 ;; Multiplication instructions.
@@ -393,7 +396,7 @@
   "@
   mul33\t%0, %2
   mul\t%0, %1, %2"
-  [(set_attr "type"   "alu,alu")
+  [(set_attr "type"    "mul,mul")
    (set_attr "length" "  2,  4")])
 
 (define_insn "mulsidi3"
@@ -402,7 +405,7 @@
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" " r"))))]
   "TARGET_ISA_V2 || TARGET_ISA_V3"
   "mulsr64\t%0, %1, %2"
-  [(set_attr "type"   "alu")
+  [(set_attr "type"   "mul")
    (set_attr "length"   "4")])
 
 (define_insn "umulsidi3"
@@ -411,7 +414,7 @@
 		 (zero_extend:DI (match_operand:SI 2 "register_operand" " r"))))]
   "TARGET_ISA_V2 || TARGET_ISA_V3"
   "mulr64\t%0, %1, %2"
-  [(set_attr "type"   "alu")
+  [(set_attr "type"   "mul")
    (set_attr "length"   "4")])
 
 
@@ -424,7 +427,7 @@
 			  (match_operand:SI 2 "register_operand" " r"))))]
   ""
   "maddr32\t%0, %1, %2"
-  [(set_attr "type"   "alu")
+  [(set_attr "type"   "mac")
    (set_attr "length"   "4")])
 
 (define_insn "*maddr32_1"
@@ -434,7 +437,7 @@
 		 (match_operand:SI 3 "register_operand"          " 0")))]
   ""
   "maddr32\t%0, %1, %2"
-  [(set_attr "type"   "alu")
+  [(set_attr "type"   "mac")
    (set_attr "length"   "4")])
 
 (define_insn "*msubr32"
@@ -444,7 +447,7 @@
 			   (match_operand:SI 2 "register_operand" " r"))))]
   ""
   "msubr32\t%0, %1, %2"
-  [(set_attr "type"   "alu")
+  [(set_attr "type"   "mac")
    (set_attr "length"   "4")])
 
 
@@ -458,7 +461,7 @@
 	(mod:SI (match_dup 1) (match_dup 2)))]
   ""
   "divsr\t%0, %3, %1, %2"
-  [(set_attr "type"   "alu")
+  [(set_attr "type"   "div")
    (set_attr "length"   "4")])
 
 (define_insn "udivmodsi4"
@@ -469,7 +472,7 @@
 	(umod:SI (match_dup 1) (match_dup 2)))]
   ""
   "divr\t%0, %3, %1, %2"
-  [(set_attr "type"   "alu")
+  [(set_attr "type"   "div")
    (set_attr "length"   "4")])
 
 
@@ -568,8 +571,8 @@
 		(match_operand:SI 3 "register_operand"              "    r")))]
   "TARGET_ISA_V3"
   "and_slli\t%0, %3, %1, %2"
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "length"       "4")])
 
 (define_insn "*and_srli"
   [(set (match_operand:SI 0 "register_operand"                       "=   r")
@@ -578,8 +581,8 @@
 		(match_operand:SI 3 "register_operand"               "    r")))]
   "TARGET_ISA_V3"
   "and_srli\t%0, %3, %1, %2"
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "length"       "4")])
 
 
 ;; ----------------------------------------------------------------------------
@@ -628,8 +631,8 @@
 		(match_operand:SI 3 "register_operand"             "    r")))]
   "TARGET_ISA_V3"
   "or_slli\t%0, %3, %1, %2"
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "length"       "4")])
 
 (define_insn "*or_srli"
   [(set (match_operand:SI 0 "register_operand"                       "=   r")
@@ -638,8 +641,8 @@
 		(match_operand:SI 3 "register_operand"               "    r")))]
   "TARGET_ISA_V3"
   "or_srli\t%0, %3, %1, %2"
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "length"       "4")])
 
 
 ;; ----------------------------------------------------------------------------
@@ -688,8 +691,8 @@
 		(match_operand:SI 3 "register_operand"             "    r")))]
   "TARGET_ISA_V3"
   "xor_slli\t%0, %3, %1, %2"
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "length"       "4")])
 
 (define_insn "*xor_srli"
   [(set (match_operand:SI 0 "register_operand"                       "=   r")
@@ -698,8 +701,8 @@
 		(match_operand:SI 3 "register_operand"               "    r")))]
   "TARGET_ISA_V3"
   "xor_srli\t%0, %3, %1, %2"
-  [(set_attr "type" "alu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "alu_shift")
+   (set_attr "length"       "4")])
 
 ;; Rotate Right Instructions.
 
@@ -711,8 +714,8 @@
   "@
   rotri\t%0, %1, %2
   rotr\t%0, %1, %2"
-  [(set_attr "type"   "alu,alu")
-   (set_attr "length" "  4,  4")])
+  [(set_attr "type"    "  alu,  alu")
+   (set_attr "length"  "    4,    4")])
 
 
 ;; ----------------------------------------------------------------------------
@@ -924,7 +927,7 @@ create_template:
   "@
    cmovz\t%0, %2, %1
    cmovn\t%0, %3, %1"
-  [(set_attr "type" "move")
+  [(set_attr "type"  "alu")
    (set_attr "length"  "4")])
 
 (define_insn "cmovn"
@@ -937,7 +940,7 @@ create_template:
   "@
    cmovn\t%0, %2, %1
    cmovz\t%0, %3, %1"
-  [(set_attr "type" "move")
+  [(set_attr "type"  "alu")
    (set_attr "length"  "4")])
 
 
@@ -1831,7 +1834,7 @@ create_template:
    sltsi45\t%1, %2
    slts\t%0, %1, %2
    sltsi\t%0, %1, %2"
-  [(set_attr "type"   "compare,compare,compare,compare")
+  [(set_attr "type"   "    alu,    alu,    alu,    alu")
    (set_attr "length" "      2,      2,      4,      4")])
 
 (define_insn "slt_compare"
@@ -1844,8 +1847,8 @@ create_template:
    slti45\t%1, %2
    slt\t%0, %1, %2
    slti\t%0, %1, %2"
-  [(set_attr "type"   "compare,compare,compare,compare")
-   (set_attr "length" "      2,      2,      4,      4")])
+  [(set_attr "type"   "alu,    alu,    alu,    alu")
+   (set_attr "length" "  2,      2,      4,      4")])
 
 
 ;; ----------------------------------------------------------------------------
@@ -2333,7 +2336,7 @@ create_template:
     return nds32_output_casesi (operands);
 }
   [(set_attr "length" "20")
-   (set_attr "type" "alu")])
+   (set_attr "type" "branch")])
 
 ;; ----------------------------------------------------------------------------
 
