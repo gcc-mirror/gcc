@@ -23,7 +23,7 @@ void test_arrays (struct Arrays *p, const char *s)
 {
   strncpy (p->a, s, sizeof p->a);           /* { dg-warning "\\\[-Wstringop-truncation" } */
   strncpy ((char*)p->b, s, sizeof p->b);    /* { dg-warning "\\\[-Wstringop-truncation" } */
-  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-warning "\\\[-Wstringop-truncation" } */
+  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-bogus "\\\[-Wstringop-truncation" } */
 }
 
 struct Pointers
@@ -51,7 +51,7 @@ void test_const_arrays (struct ConstArrays *p, const char *s)
 {
   strncpy ((char*)p->a, s, sizeof p->a);    /* { dg-warning "\\\[-Wstringop-truncation" } */
   strncpy ((char*)p->b, s, sizeof p->b);    /* { dg-warning "\\\[-Wstringop-truncation" } */
-  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-warning "\\\[-Wstringop-truncation" } */
+  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-bogus "\\\[-Wstringop-truncation" } */
 }
 
 struct ConstPointers
@@ -79,7 +79,7 @@ void test_volatile_arrays (struct VolatileArrays *p, const char *s)
 {
   strncpy ((char*)p->a, s, sizeof p->a);    /* { dg-warning "\\\[-Wstringop-truncation" } */
   strncpy ((char*)p->b, s, sizeof p->b);    /* { dg-warning "\\\[-Wstringop-truncation" } */
-  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-warning "\\\[-Wstringop-truncation" } */
+  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-bogus "\\\[-Wstringop-truncation" } */
 }
 
 struct VolatilePointers
@@ -107,7 +107,7 @@ void test_const_volatile_arrays (struct ConstVolatileArrays *p, const char *s)
 {
   strncpy ((char*)p->a, s, sizeof p->a);    /* { dg-warning "\\\[-Wstringop-truncation" } */
   strncpy ((char*)p->b, s, sizeof p->b);    /* { dg-warning "\\\[-Wstringop-truncation" } */
-  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-warning "\\\[-Wstringop-truncation" } */
+  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-bogus "\\\[-Wstringop-truncation" } */
 }
 
 struct ConstVolatilePointers
