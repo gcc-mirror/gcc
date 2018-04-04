@@ -5828,8 +5828,8 @@ proc check_effective_target_vect_perm_short { } {
 		 && ![check_effective_target_vect_variable_length])
 	     || [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
-	     || (([istarget i?86-*-*] || [istarget x86_64-*-*]
-	         && [check_ssse3_available]))
+	     || (([istarget i?86-*-*] || [istarget x86_64-*-*])
+	         && [check_ssse3_available])
 	     || ([istarget mips*-*-*]
 		  && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]

@@ -1,3 +1,9 @@
+2018-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/85191
+	* lib/target-supports.exp (check_effective_target_vect_perm_short):
+	Fix typo.
+
 2018-04-04  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/85174
