@@ -1,6 +1,11 @@
 2018-04-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::{read,write}_class_def}): Fixup
+	vptr-containing logic.
+	(trees_in::tree_binfo): Forward walk.
+
+	gcc/cp/
 	* module.c (enum tree_tag): Replace tt_tinfo_pseudo with
 	tt_tinfo_typedef.  Add tt_vtable.
 	(module_state::mark_class_def): Mark vtables.

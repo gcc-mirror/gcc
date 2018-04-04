@@ -3819,7 +3819,13 @@ module_state::write_class_def (trees_out &out, tree type)
       out.tree_node (CLASSTYPE_FRIEND_CLASSES (type));
       out.tree_node (CLASSTYPE_LAMBDA_EXPR (type));
 
-      if (TYPE_CONTAINS_VPTR_P (type))
+      /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
+	 reader won't know at this point.  */
+      // FIXME Think about better ordering
+      int has_vptr = TYPE_CONTAINS_VPTR_P (type);
+      if (!out.dep_walk_p ())
+	out.i (has_vptr);
+      if (has_vptr)
 	{
 	  out.tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
 	  out.tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
@@ -3897,7 +3903,8 @@ module_state::read_class_def (trees_in &in, tree type)
       friends = in.tree_node ();
       lambda = in.tree_node ();
 
-      if (TYPE_CONTAINS_VPTR_P (type))
+      int has_vptr = in.i ();
+      if (has_vptr)
 	{
 	  pure_virts = in.tree_vec ();
 	  vcall_indices = in.tree_pair_vec ();
@@ -3925,8 +3932,6 @@ module_state::read_class_def (trees_in &in, tree type)
       CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
 
       CLASSTYPE_KEY_METHOD (type) = key_method;
-      if (!key_method && TYPE_CONTAINS_VPTR_P (type))
-	vec_safe_push (keyed_classes, type);
 
       /* Resort the member vector.  */
       resort_type_member_vec (member_vec, NULL, nop, NULL);
@@ -3961,8 +3966,10 @@ module_state::read_class_def (trees_in &in, tree type)
 	read_class_def (in, as_base);
       
       /* Read the vtables.  */
+      // FIXME: via read_var_def?
       tree vtables = in.chained_decls ();
-
+      if (!CLASSTYPE_KEY_METHOD (type) && vtables)
+	vec_safe_push (keyed_classes, type);
       CLASSTYPE_VTABLES (type) = vtables;
       for (; vtables; vtables = TREE_CHAIN (vtables))
 	DECL_INITIAL (vtables) = in.tree_node ();
@@ -7282,10 +7289,12 @@ trees_out::tree_binfo (tree type)
 	{
 	  u (BINFO_N_BASE_BINFOS (child));
 
-	  dump () && dump ("Wrote binfo:%d child %N", tag, BINFO_TYPE (child));
+	  dump () && dump ("Wrote binfo:%d child %N of %N",
+			   tag, BINFO_TYPE (child), type);
 	}
     }
   tree_node (NULL_TREE);
+
   if (!dep_walk_p ())
     {
       if (TYPE_LANG_SPECIFIC (type))
@@ -7316,7 +7325,7 @@ trees_out::tree_binfo (tree type)
 bool
 trees_in::tree_binfo (tree type)
 {
-  tree binfo = NULL_TREE;
+  tree *binfo_p = &TYPE_BINFO (type);
 
   /* Stream in the types and sizes in DFS order.  */
   while (tree t = tree_node ())
@@ -7328,12 +7337,11 @@ trees_in::tree_binfo (tree type)
       BINFO_TYPE (child) = t;
 
       int tag = insert (child);
-      dump () && dump ("Read binfo:%d child %N", tag, BINFO_TYPE (child));
-      TREE_CHAIN (child) = binfo;
-      binfo = child;
+      dump () && dump ("Read binfo:%d child %N of %N", tag,
+		       BINFO_TYPE (child), type);
+      *binfo_p = child;
+      binfo_p = &TREE_CHAIN (child);
     }
-  binfo = nreverse (binfo);
-  TYPE_BINFO (type) = binfo;
 
   unsigned nvbases = 0;
   vec<tree, va_gc> *vbase_vec = NULL;
@@ -7349,7 +7357,7 @@ trees_in::tree_binfo (tree type)
     }
 
   /* Stream in some contents in DFS order.  */
-  for (tree child = binfo; child; child = TREE_CHAIN (child))
+  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
       core_bools (child);
       bflush ();
