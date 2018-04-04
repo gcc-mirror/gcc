@@ -158,7 +158,8 @@
 (define_insn "*mov<mode>"
   [(set (match_operand:QIHISI 0 "nonimmediate_operand" "=r, r, U45, U33, U37, U45, m,   l,   l,   l,   d, r,    d,    r,    r,    r")
 	(match_operand:QIHISI 1 "nds32_move_operand"   " r, r,   l,   l,   l,   d, r, U45, U33, U37, U45, m, Ip05, Is05, Is20, Ihig"))]
-  ""
+  "register_operand(operands[0], <MODE>mode)
+   || register_operand(operands[1], <MODE>mode)"
 {
   switch (which_alternative)
     {
