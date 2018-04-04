@@ -1,5 +1,8 @@
 2018-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85006 - -fconcepts ICE with A<auto...> return type
+	* pt.c (tsubst_pack_expansion): Allow unsubstituted auto pack.
+
 	PR c++/85200 - ICE with constexpr if in generic lambda.
 	* tree.c (cp_walk_subtrees): Walk into DECL_EXPR in templates.
 
