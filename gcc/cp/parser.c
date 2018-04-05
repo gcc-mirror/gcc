@@ -15826,8 +15826,16 @@ cp_parser_template_id (cp_parser *parser,
   location_t combined_loc
     = make_location (token->location, token->location, finish_loc);
 
+  /* Check for concepts autos where they don't belong.  We could
+     identify types in some cases of idnetifier TEMPL, looking ahead
+     for a CPP_SCOPE, but that would buy us nothing: we accept auto in
+     types.  We reject them in functions, but if what we have is an
+     identifier, even with none_type we can't conclude it's NOT a
+     type, we have to wait for template substitution.  */
+  if (flag_concepts && check_auto_in_tmpl_args (templ, arguments))
+    template_id = error_mark_node;
   /* Build a representation of the specialization.  */
-  if (identifier_p (templ))
+  else if (identifier_p (templ))
     template_id = build_min_nt_loc (combined_loc,
 				    TEMPLATE_ID_EXPR,
 				    templ, arguments);

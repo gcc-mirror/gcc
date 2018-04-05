@@ -6500,6 +6500,7 @@ extern void maybe_show_extern_c_location (void);
 
 /* in pt.c */
 extern bool check_template_shadow		(tree);
+extern bool check_auto_in_tmpl_args             (tree, tree);
 extern tree get_innermost_template_args		(tree, int);
 extern void maybe_begin_member_template_processing (tree);
 extern void maybe_end_member_template_processing (void);
