@@ -320,10 +320,10 @@
 
 ;; Arithmetic instructions.
 
-(define_insn "add<mode>3"
-  [(set (match_operand:QIHISI 0 "register_operand"                   "=   d,    l,    d,    l,  d, l,    k,    l,    r, r")
-	(plus:QIHISI (match_operand:QIHISI 1 "register_operand"      "%   0,    l,    0,    l,  0, l,    0,    k,    r, r")
-		     (match_operand:QIHISI 2 "nds32_rimm15s_operand" " In05, In03, Iu05, Iu03,  r, l, Is10, Iu06, Is15, r")))]
+(define_insn "addsi3"
+  [(set (match_operand:SI 0 "register_operand"               "=   d,   l,   d,   l, d, l,   k,   l,    r, r")
+	(plus:SI (match_operand:SI 1 "register_operand"      "%   0,   l,   0,   l, 0, l,   0,   k,    r, r")
+		 (match_operand:SI 2 "nds32_rimm15s_operand" " In05,In03,Iu05,Iu03, r, l,Is10,IU06, Is15, r")))]
   ""
 {
   switch (which_alternative)
@@ -363,10 +363,10 @@
    (set_attr "length"  "  2,  2,  2,  2,  2,  2,  2,  2,  4,  4")
    (set_attr "feature" " v1, v1, v1, v1, v1, v1, v2, v1, v1, v1")])
 
-(define_insn "sub<mode>3"
-  [(set (match_operand:QIHISI 0 "register_operand"                    "=d, l,    r, r")
-	(minus:QIHISI (match_operand:QIHISI 1 "nds32_rimm15s_operand" " 0, l, Is15, r")
-		      (match_operand:QIHISI 2 "register_operand"      " r, l,    r, r")))]
+(define_insn "subsi3"
+  [(set (match_operand:SI 0 "register_operand"                "=d, l,    r, r")
+	(minus:SI (match_operand:SI 1 "nds32_rimm15s_operand" " 0, l, Is15, r")
+		  (match_operand:SI 2 "register_operand"      " r, l,    r, r")))]
   ""
   "@
    sub45\t%0, %2

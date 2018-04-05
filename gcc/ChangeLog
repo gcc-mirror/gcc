@@ -1,5 +1,10 @@
 2018-04-05  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.md (add<mode>3, sub<mode>3): Rename to ...
+	(addsi3, subsi3): ... this.
+
+2018-04-05  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.md (*sub_srli, *and_slli): Fine-tune predicator.
 
 2018-04-05  Chung-Ju Wu  <jasonwucj@gmail.com>
