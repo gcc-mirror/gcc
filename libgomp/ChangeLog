@@ -1,3 +1,8 @@
+2018-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85204
+	* testsuite/libgomp.oacc-c-c++-common/broadcast-1.c: New test.
+
 2018-03-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/85063

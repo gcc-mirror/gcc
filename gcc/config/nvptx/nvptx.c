@@ -4048,6 +4048,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   /* Insert the vector test inside the worker test.  */
   unsigned mode;
   rtx_insn *before = tail;
+  rtx_insn *neuter_start = NULL;
   for (mode = GOMP_DIM_WORKER; mode <= GOMP_DIM_VECTOR; mode++)
     if (GOMP_DIM_MASK (mode) & skip_mask)
       {
@@ -4065,7 +4066,10 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	  br = gen_br_true (pred, label);
 	else
 	  br = gen_br_true_uni (pred, label);
-	emit_insn_before (br, head);
+	if (neuter_start)
+	  neuter_start = emit_insn_after (br, neuter_start);
+	else
+	  neuter_start = emit_insn_before (br, head);
 
 	LABEL_NUSES (label)++;
 	if (tail_branch)
