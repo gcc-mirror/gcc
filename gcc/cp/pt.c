@@ -16239,7 +16239,8 @@ tsubst_decomp_names (tree decl, tree pattern_decl, tree args,
       if (error_operand_p (decl3))
 	decl = error_mark_node;
       else if (decl != error_mark_node
-	       && DECL_CHAIN (decl3) != prev)
+	       && DECL_CHAIN (decl3) != prev
+	       && decl != prev)
 	{
 	  gcc_assert (errorcount);
 	  decl = error_mark_node;

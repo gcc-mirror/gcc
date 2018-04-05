@@ -1,5 +1,9 @@
 2018-04-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85209
+	* pt.c (tsubst_decomp_names): Don't fail or ICE if DECL_CHAIN (decl3)
+	is not prev, if prev == decl.
+
 	PR c++/85208
 	* decl.c (start_decl): For DECL_DECOMPOSITION_P decls, don't call
 	maybe_apply_pragma_weak here...
