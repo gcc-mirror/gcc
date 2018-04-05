@@ -1,6 +1,14 @@
 2018-04-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (enum tree_tag): Delete tt_definition, tt_binding.
+	(trees_in::tag_{binding,definition}): Delete.
+	(trees_out::{,maybe_}tag_definition): Delete.
+	(trees_{in,out}::define_{function,var,class,enum}): Delete.
+	(trees_in::tree_node): Remove tt_definition handling.
+	(trees_in::read, trees_out::write): Delete.
+
+	gcc/cp/
 	* module.c (module_state::write_namespace): Delete.
 	(module_state::{write_bindings,read_bindings}): Likewise.
 
