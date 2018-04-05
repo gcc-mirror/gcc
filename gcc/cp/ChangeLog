@@ -1,3 +1,9 @@
+2018-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85228 - ICE with lambda in enumerator in template.
+	* pt.c (bt_instantiate_type_proc): Don't assume
+	CLASSTYPE_TEMPLATE_INFO is non-null.
+
 2018-04-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0969
