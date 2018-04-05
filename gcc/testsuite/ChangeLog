@@ -1,3 +1,10 @@
+2018-04-05  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84979
+	* g++.dg/concepts/pr84979.C: New.
+	* g++.dg/concepts/pr84979-2.C: New.
+	* g++.dg/concepts/pr84979-3.C: New.
+
 2018-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80026

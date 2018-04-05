@@ -14906,6 +14906,15 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
   if (is_template)
     {
+      /* We may be repeating a check already done during parsing, but
+	 if it was well-formed and passed then, it will pass again
+	 now, and if it didn't, we wouldn't have got here.  The case
+	 we want to catch is when we couldn't tell then, and can now,
+	 namely when templ prior to substitution was an
+	 identifier.  */
+      if (flag_concepts && check_auto_in_tmpl_args (expr, template_args))
+	return error_mark_node;
+
       if (variable_template_p (expr))
 	expr = lookup_and_finish_template_variable (expr, template_args,
 						    complain);
@@ -26548,6 +26557,49 @@ type_uses_auto (tree type)
     }
   else
     return find_type_usage (type, is_auto);
+}
+
+/* Report ill-formed occurrences of auto types in ARGUMENTS.  If
+   concepts are enabled, auto is acceptable in template arguments, but
+   only when TEMPL identifies a template class.  Return TRUE if any
+   such errors were reported.  */
+
+bool
+check_auto_in_tmpl_args (tree tmpl, tree args)
+{
+  /* If there were previous errors, nevermind.  */
+  if (!args || TREE_CODE (args) != TREE_VEC)
+    return false;
+
+  /* If TMPL is an identifier, we're parsing and we can't tell yet
+     whether TMPL is supposed to be a type, a function or a variable.
+     We'll only be able to tell during template substitution, so we
+     expect to be called again then.  If concepts are enabled and we
+     know we have a type, we're ok.  */
+  if (flag_concepts
+      && (identifier_p (tmpl)
+	  || (DECL_P (tmpl)
+	      &&  (DECL_TYPE_TEMPLATE_P (tmpl)
+		   || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))))
+    return false;
+
+  /* Quickly search for any occurrences of auto; usually there won't
+     be any, and then we'll avoid allocating the vector.  */
+  if (!type_uses_auto (args))
+    return false;
+
+  bool errors = false;
+
+  tree vec = extract_autos (args);
+  for (int i = 0; i < TREE_VEC_LENGTH (vec); i++)
+    {
+      tree xauto = TREE_VALUE (TREE_VEC_ELT (vec, i));
+      error_at (DECL_SOURCE_LOCATION (xauto),
+		"invalid use of %qT in template argument", xauto);
+      errors = true;
+    }
+
+  return errors;
 }
 
 /* For a given template T, return the vector of typedefs referenced

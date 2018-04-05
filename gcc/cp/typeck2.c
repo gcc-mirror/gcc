@@ -2081,7 +2081,8 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       if (!CLASS_PLACEHOLDER_TEMPLATE (anode))
 	{
 	  if (complain & tf_error)
-	    error ("invalid use of %qT", anode);
+	    error_at (DECL_SOURCE_LOCATION (TEMPLATE_TYPE_DECL (anode)),
+		      "invalid use of %qT", anode);
 	  return error_mark_node;
 	}
       else if (!parms)
