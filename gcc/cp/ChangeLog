@@ -1,3 +1,9 @@
+2018-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83808 - ICE with VLA initialization.
+	* typeck2.c (process_init_constructor_array): Don't require a VLA
+	initializer to have VLA type.
+
 2018-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80956
