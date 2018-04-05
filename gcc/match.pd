@@ -4650,7 +4650,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         { build_constructor (type, NULL); }
 	(if (count == 1)
 	 (if (elt < CONSTRUCTOR_NELTS (ctor))
-	  { CONSTRUCTOR_ELT (ctor, elt)->value; }
+	  (view_convert { CONSTRUCTOR_ELT (ctor, elt)->value; })
 	  { build_zero_cst (type); })
 	 {
 	   vec<constructor_elt, va_gc> *vals;
@@ -4668,7 +4668,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(if (CONSTRUCTOR_NELTS (ctor) <= idx / const_k)
 	 { build_zero_cst (type); })
 	(if (n == const_k)
-	 { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; })
+	 (view_convert { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; }))
 	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; }
 		       @1 { bitsize_int ((idx % const_k) * width); })))))))))
 

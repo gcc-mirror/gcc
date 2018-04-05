@@ -1,3 +1,9 @@
+2018-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85195
+	* match.pd (BIT_FIELD_REF CONSTRUCTOR@0 @1 @2): Use view_convert around
+	CONSTRUCTOR_ELT (ctor, ...)->value.
+
 2018-04-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/85193
