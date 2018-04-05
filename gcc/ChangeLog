@@ -1,3 +1,9 @@
+2018-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85204
+	* config/nvptx/nvptx.c (nvptx_single): Fix neutering of bb with only
+	cond jump.
+
 2018-04-05  Shiva Chen  <shiva0217@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 
