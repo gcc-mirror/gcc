@@ -6880,8 +6880,12 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	if (array == error_mark_node)
 	  return error_mark_node;
 
-	/* Build up the initializer_list object.  */
-	totype = complete_type (totype);
+	/* Build up the initializer_list object.  Note: fail gracefully
+	   if the object cannot be completed because, for example, no
+	   definition is provided (c++/80956).  */
+	totype = complete_type_or_maybe_complain (totype, NULL_TREE, complain);
+	if (!totype)
+	  return error_mark_node;
 	field = next_initializable_field (TYPE_FIELDS (totype));
 	CONSTRUCTOR_APPEND_ELT (vec, field, array);
 	field = next_initializable_field (DECL_CHAIN (field));

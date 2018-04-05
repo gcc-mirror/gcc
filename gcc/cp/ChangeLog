@@ -1,5 +1,13 @@
 2018-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/80956
+	* call.c (convert_like_real): Fail gracefully for a broken
+	std::initializer_list, missing a definition.
+
+	* name-lookup.c (do_pushtag): Tweak message, use %< and %>.
+
+2018-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/84792
 	* decl.c (grokdeclarator): Fix diagnostic about typedef name used
 	as nested-name-specifier, keep type and TREE_TYPE (decl) in sync.
