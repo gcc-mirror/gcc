@@ -1,3 +1,7 @@
+2018-04-05  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32.md (feature): New attribute.
+
 2018-04-05  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.md (subtype): New attribute.
