@@ -1,3 +1,9 @@
+2018-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85200 - ICE with constexpr if in generic lambda.
+	* pt.c (extract_locals_r): Don't record the local specs of variables
+	declared within the pattern.
+
 2018-04-05  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/84979
