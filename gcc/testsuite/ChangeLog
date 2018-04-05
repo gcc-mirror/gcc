@@ -1,5 +1,9 @@
 2018-04-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85209
+	* g++.dg/cpp1z/decomp39.C: New test.
+	* g++.dg/cpp1z/decomp40.C: New test.
+
 	PR c++/85208
 	* g++.dg/cpp1z/decomp41.C: New test.
 
