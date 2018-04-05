@@ -1,5 +1,11 @@
 2018-04-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Implement P0969
+	* decl.c (find_decomp_class_base): Check accessibility instead
+	of declared access, adjust diagnostic.
+
+2018-04-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement P0961
 	* decl.c (get_tuple_decomp_init): Check the templatedness
 	of a member get.

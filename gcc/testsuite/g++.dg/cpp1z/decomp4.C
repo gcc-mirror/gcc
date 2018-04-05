@@ -18,10 +18,10 @@ test (A &a, B &b, C &c, D &d, E &e, F &f, G &g, H &h, I &i)
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
   auto [ k ] { b };			// { dg-error "cannot decompose class type 'B' because it has an anonymous union member" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
-  auto [ l, l2 ] = c;			// { dg-error "cannot decompose non-public member 'C::b' of 'C'" }
+  auto [ l, l2 ] = c;			// { dg-error "cannot decompose inaccessible member 'C::b' of 'C'" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
   auto [ m ] = d;			// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } }
-  auto [ n ] { e };			// { dg-error "cannot decompose non-public member 'E::a' of 'E'" }
+  auto [ n ] { e };			// { dg-error "cannot decompose inaccessible member 'E::a' of 'E'" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
   auto [ o ] { f };			// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } }
   auto & [ p ] { g };			// { dg-error "cannot decompose class type 'G': both it and its base class 'F' have non-static data members" }
