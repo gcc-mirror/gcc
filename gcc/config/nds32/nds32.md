@@ -369,10 +369,10 @@
 		      (match_operand:QIHISI 2 "register_operand"      " r, l,    r, r")))]
   ""
   "@
-  sub45\t%0, %2
-  sub333\t%0, %1, %2
-  subri\t%0, %2, %1
-  sub\t%0, %1, %2"
+   sub45\t%0, %2
+   sub333\t%0, %1, %2
+   subri\t%0, %2, %1
+   sub\t%0, %1, %2"
   [(set_attr "type"   "alu,alu,alu,alu")
    (set_attr "length" "  2,  2,  4,  4")])
 
@@ -453,8 +453,8 @@
 		 (match_operand:SI 2 "register_operand" " w, r")))]
   ""
   "@
-  mul33\t%0, %2
-  mul\t%0, %1, %2"
+   mul33\t%0, %2
+   mul\t%0, %1, %2"
   [(set_attr "type"    "mul,mul")
    (set_attr "length"  "  2,  4")
    (set_attr "feature" "v3m, v1")])
@@ -774,8 +774,8 @@
 		       (match_operand:SI 2 "nonmemory_operand" " Iu05, r")))]
   ""
   "@
-  rotri\t%0, %1, %2
-  rotr\t%0, %1, %2"
+   rotri\t%0, %1, %2
+   rotr\t%0, %1, %2"
   [(set_attr "type"    "  alu,  alu")
    (set_attr "subtype" "shift,shift")
    (set_attr "length"  "    4,    4")])
@@ -828,9 +828,9 @@
 		   (match_operand:SI 2 "nonmemory_operand" " Iu03, Iu05, r")))]
   ""
   "@
-  slli333\t%0, %1, %2
-  slli\t%0, %1, %2
-  sll\t%0, %1, %2"
+   slli333\t%0, %1, %2
+   slli\t%0, %1, %2
+   sll\t%0, %1, %2"
   [(set_attr "type"    "  alu,  alu,  alu")
    (set_attr "subtype" "shift,shift,shift")
    (set_attr "length"  "    2,    4,    4")])
@@ -840,9 +840,9 @@
 		     (match_operand:SI 2 "nonmemory_operand" " Iu05, Iu05, r")))]
   ""
   "@
-  srai45\t%0, %2
-  srai\t%0, %1, %2
-  sra\t%0, %1, %2"
+   srai45\t%0, %2
+   srai\t%0, %1, %2
+   sra\t%0, %1, %2"
   [(set_attr "type"    "  alu,  alu,  alu")
    (set_attr "subtype" "shift,shift,shift")
    (set_attr "length"  "    2,    4,    4")])
@@ -853,9 +853,9 @@
 		     (match_operand:SI 2 "nonmemory_operand" " Iu05, Iu05, r")))]
   ""
   "@
-  srli45\t%0, %2
-  srli\t%0, %1, %2
-  srl\t%0, %1, %2"
+   srli45\t%0, %2
+   srli\t%0, %1, %2
+   srl\t%0, %1, %2"
   [(set_attr "type"    "  alu,  alu,  alu")
    (set_attr "subtype" "shift,shift,shift")
    (set_attr "length"  "    2,    4,    4")])
@@ -1279,8 +1279,8 @@
   [(set (pc) (match_operand:SI 0 "register_operand" "r, r"))]
   ""
   "@
-  jr5\t%0
-  jr\t%0"
+   jr5\t%0
+   jr\t%0"
   [(set_attr "type"   "branch,branch")
    (set_attr "length" "     2,     4")])
 
