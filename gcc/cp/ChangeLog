@@ -1,5 +1,8 @@
 2018-04-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84665 - ICE with array of empty class.
+	* decl2.c (cp_check_const_attributes): Use fold_non_dependent_expr.
+
 	PR c++/85228 - ICE with lambda in enumerator in template.
 	* pt.c (bt_instantiate_type_proc): Don't assume
 	CLASSTYPE_TEMPLATE_INFO is non-null.
