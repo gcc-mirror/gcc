@@ -68,16 +68,48 @@
   "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25"
   (const_string "1"))
 
+;; Insn in which feature set, it is used to enable/disable insn alternatives.
+;; v1  : Baseline Instructions
+;; v2  : Baseline Version 2 Instructions
+;; v3m : Baseline Version 3m Instructions
+;; v3  : Baseline Version 3 Instructions
+;; pe1 : Performance Extension Instructions
+;; pe2 : Performance Extension Version 2 Instructions
+;; se  : String Extension instructions
+(define_attr "feature"
+  "v1,v2,v3m,v3,pe1,pe2,se"
+  (const_string "v1"))
+
 ;; Enabled, which is used to enable/disable insn alternatives.
 ;; Note that we use length and TARGET_16_BIT here as criteria.
-;; If the instruction pattern already check TARGET_16_BIT to
-;; determine the length by itself, its enabled attribute should be
-;; always 1 to avoid the conflict with the settings here.
+;; If the instruction pattern already check TARGET_16_BIT to determine
+;; the length by itself, its enabled attribute should be customized to
+;; avoid the conflict between length attribute and this default setting.
 (define_attr "enabled" "no,yes"
-  (cond [(and (eq_attr "length" "2")
-	      (match_test "!TARGET_16_BIT"))
-	 (const_string "no")]
-	(const_string "yes")))
+  (if_then_else
+    (and (eq_attr "length" "2")
+	 (match_test "!TARGET_16_BIT"))
+    (const_string "no")
+    (cond [(eq_attr "feature" "v1")   (const_string "yes")
+	   (eq_attr "feature" "v2")   (if_then_else (match_test "TARGET_ISA_V2 || TARGET_ISA_V3 || TARGET_ISA_V3M")
+						    (const_string "yes")
+						    (const_string "no"))
+	   (eq_attr "feature" "v3")   (if_then_else (match_test "TARGET_ISA_V3")
+						    (const_string "yes")
+						    (const_string "no"))
+	   (eq_attr "feature" "v3m")  (if_then_else (match_test "TARGET_ISA_V3 || TARGET_ISA_V3M")
+						    (const_string "yes")
+						    (const_string "no"))
+	   (eq_attr "feature" "pe1")  (if_then_else (match_test "TARGET_EXT_PERF")
+						    (const_string "yes")
+						    (const_string "no"))
+	   (eq_attr "feature" "pe2")  (if_then_else (match_test "TARGET_EXT_PERF2")
+						    (const_string "yes")
+						    (const_string "no"))
+	   (eq_attr "feature" "se")   (if_then_else (match_test "TARGET_EXT_STRING")
+						    (const_string "yes")
+						    (const_string "no"))]
+	   (const_string "yes"))))
 
 
 ;; ----------------------------------------------------------------------------
@@ -327,8 +359,9 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type"   "alu,alu,alu,alu,alu,alu,alu,alu,alu,alu")
-   (set_attr "length" "  2,  2,  2,  2,  2,  2,  2,  2,  4,  4")])
+  [(set_attr "type"    "alu,alu,alu,alu,alu,alu,alu,alu,alu,alu")
+   (set_attr "length"  "  2,  2,  2,  2,  2,  2,  2,  2,  4,  4")
+   (set_attr "feature" " v1, v1, v1, v1, v1, v1, v2, v1, v1, v1")])
 
 (define_insn "sub<mode>3"
   [(set (match_operand:QIHISI 0 "register_operand"                    "=d, l,    r, r")
@@ -423,7 +456,8 @@
   mul33\t%0, %2
   mul\t%0, %1, %2"
   [(set_attr "type"    "mul,mul")
-   (set_attr "length" "  2,  4")])
+   (set_attr "length"  "  2,  4")
+   (set_attr "feature" "v3m, v1")])
 
 (define_insn "mulsidi3"
   [(set (match_operand:DI 0 "register_operand"                          "=r")
@@ -587,8 +621,9 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type"   "alu,alu,alu,alu,alu,alu,alu,alu,alu,alu,alu,alu,alu")
-   (set_attr "length" "  2,  4,  2,  2,  2,  2,  2,  2,  4,  4,  4,  4,  4")])
+  [(set_attr "type"    "alu,alu,alu,alu,alu,alu,alu,alu,alu,alu,alu,alu,alu")
+   (set_attr "length"  "  2,  4,  2,  2,  2,  2,  2,  2,  4,  4,  4,  4,  4")
+   (set_attr "feature" "v3m, v1, v1, v1, v1, v1,v3m,v3m, v1, v1, v1, v3,pe1")])
 
 (define_insn "*and_slli"
   [(set (match_operand:SI 0 "register_operand"                      "=   r")
@@ -707,8 +742,9 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type"   "alu,alu,alu,alu")
-   (set_attr "length" "  2,  4,  4,  4")])
+  [(set_attr "type"    "alu,alu,alu,alu")
+   (set_attr "length"  "  2,  4,  4,  4")
+   (set_attr "feature" "v3m, v1, v1,pe1")])
 
 (define_insn "*xor_slli"
   [(set (match_operand:SI 0 "register_operand"                     "=   r")
@@ -777,8 +813,9 @@
   "@
    not33\t%0, %1
    nor\t%0, %1, %1"
-  [(set_attr "type"   "alu,alu")
-   (set_attr "length" "  2,  4")])
+  [(set_attr "type"    "alu,alu")
+   (set_attr "length"  "  2,  4")
+   (set_attr "feature" "v3m, v1")])
 
 
 ;; ----------------------------------------------------------------------------
