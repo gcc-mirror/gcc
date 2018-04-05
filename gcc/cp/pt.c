@@ -25429,6 +25429,9 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
     // FIXME cache artificial deduction guides
     for (tree fns = CLASSTYPE_CONSTRUCTORS (type); fns; fns = OVL_NEXT (fns))
       {
+	if (TREE_CODE (fns) == OVERLOAD && OVL_USED (fns))
+	  continue;
+
 	tree fn = OVL_CURRENT (fns);
 	tree guide = build_deduction_guide (fn, outer_args, complain);
 	cands = ovl_cons (guide, cands);
