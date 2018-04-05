@@ -1,3 +1,8 @@
+2018-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85193
+	* config/i386/i386.md (define_attr "memory"): Handle rotate1 type.
+
 2018-04-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/85204
