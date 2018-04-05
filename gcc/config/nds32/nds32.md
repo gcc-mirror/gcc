@@ -385,7 +385,7 @@
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand"  " r")
 			  (match_operand:SI 2 "immediate_operand" " i"))
 		 (match_operand:SI 3 "register_operand"           " r")))]
-  "TARGET_ISA_V3
+  "TARGET_ISA_V3 && optimize_size
    && (exact_log2 (INTVAL (operands[2])) != -1)
    && (exact_log2 (INTVAL (operands[2])) <= 31)"
 {
@@ -404,7 +404,7 @@
 	(plus:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"    "    r")
 			      (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
 		 (match_operand:SI 3 "register_operand"                 "    r")))]
-  "TARGET_ISA_V3"
+  "TARGET_ISA_V3 && optimize_size"
   "add_srli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "combo"        "2")
@@ -419,7 +419,7 @@
 	(minus:SI (match_operand:SI 1 "register_operand"           " r")
 		  (mult:SI (match_operand:SI 2 "register_operand"  " r")
 			   (match_operand:SI 3 "immediate_operand" " i"))))]
-  "TARGET_ISA_V3
+  "TARGET_ISA_V3 && optimize_size
    && (exact_log2 (INTVAL (operands[3])) != -1)
    && (exact_log2 (INTVAL (operands[3])) <= 31)"
 {
@@ -438,7 +438,7 @@
 	(minus:SI (match_operand:SI 1 "register_operand"                 "    r")
 		  (lshiftrt:SI (match_operand:SI 2 "register_operand"    "    r")
 			       (match_operand:SI 3 "nds32_imm5u_operand" " Iu05"))))]
-  "TARGET_ISA_V3"
+  "TARGET_ISA_V3 && optimize_size"
   "sub_srli\t%0, %1, %2, %3"
   [(set_attr "type" "alu_shift")
    (set_attr "combo"        "2")
@@ -650,7 +650,7 @@
 	(and:SI (ashift:SI (match_operand:SI 1 "register_operand"     "    r")
 			    (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
 		(match_operand:SI 3 "register_operand"                "    r")))]
-  "TARGET_ISA_V3"
+  "TARGET_ISA_V3 && optimize_size"
   "and_slli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "length"       "4")])
@@ -660,7 +660,7 @@
 	(and:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"    "    r")
 			     (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
 		(match_operand:SI 3 "register_operand"                 "    r")))]
-  "TARGET_ISA_V3"
+  "TARGET_ISA_V3 && optimize_size"
   "and_srli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "length"       "4")])
@@ -702,7 +702,7 @@
 	(ior:SI (ashift:SI (match_operand:SI 1 "register_operand"    "    r")
 			   (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
 		(match_operand:SI 3 "register_operand"               "    r")))]
-  "TARGET_ISA_V3"
+  "TARGET_ISA_V3 && optimize_size"
   "or_slli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "length"       "4")])
@@ -712,7 +712,7 @@
 	(ior:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"    "    r")
 			     (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
 		(match_operand:SI 3 "register_operand"                 "    r")))]
-  "TARGET_ISA_V3"
+  "TARGET_ISA_V3 && optimize_size"
   "or_srli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "length"       "4")])
@@ -754,7 +754,7 @@
 	(xor:SI (ashift:SI (match_operand:SI 1 "register_operand"  "    r")
 			   (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
 		(match_operand:SI 3 "register_operand"             "    r")))]
-  "TARGET_ISA_V3"
+  "TARGET_ISA_V3 && optimize_size"
   "xor_slli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "length"       "4")])
@@ -764,7 +764,7 @@
 	(xor:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"    "    r")
 			     (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
 		(match_operand:SI 3 "register_operand"                 "    r")))]
-  "TARGET_ISA_V3"
+  "TARGET_ISA_V3 && optimize_size"
   "xor_srli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "length"       "4")])
