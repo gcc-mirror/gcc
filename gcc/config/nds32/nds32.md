@@ -773,15 +773,15 @@
 ;; And for V2 ISA, there is NO 'neg33' instruction.
 ;; The only option is to use 'subri A,B,0' (its semantic is 'A = 0 - B').
 (define_insn "negsi2"
-  [(set (match_operand:SI 0 "register_operand"         "=w, r")
-	(neg:SI (match_operand:SI 1 "register_operand" " w, r")))]
+  [(set (match_operand:SI 0 "register_operand"         "=l, r")
+	(neg:SI (match_operand:SI 1 "register_operand" " l, r")))]
   ""
   "@
    neg33\t%0, %1
    subri\t%0, %1, 0"
-  [(set_attr "type"   "alu,alu")
-   (set_attr "length" "  2,  4")])
-
+  [(set_attr "type"    "alu,alu")
+   (set_attr "length"  "  2,  4")
+   (set_attr "feature" "v3m, v1")])
 
 ;; ----------------------------------------------------------------------------
 ;; 'ONE_COMPLIMENT' operation
