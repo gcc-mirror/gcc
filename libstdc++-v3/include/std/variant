@@ -272,8 +272,8 @@ namespace __variant
     constexpr bool \
     __erased_##__NAME(const _Variant& __lhs, const _Variant& __rhs) \
     { \
-      return __get<_Np>(std::forward<_Variant>(__lhs)) \
-	  __OP __get<_Np>(std::forward<_Variant>(__rhs)); \
+      return __variant::__get<_Np>(std::forward<_Variant>(__lhs)) \
+	  __OP __variant::__get<_Np>(std::forward<_Variant>(__rhs)); \
     }
 
   _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
