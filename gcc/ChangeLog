@@ -1,3 +1,20 @@
+2018-04-05  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/iterators.md (shift_rotate): New code iterator.
+	(shift): New code attribute.
+	* config/nds32/nds32-md-auxiliary.c (nds32_expand_constant): New.
+	* config/nds32/nds32-protos.h (nds32_expand_constant): Declare.
+	* config/nds32/nds32.c (nds32_print_operand): Deal with more cases.
+	* config/nds32/nds32.md (addsi3, *add_srli): Refine implementation for
+	bit-wise operations.
+	(andsi3, *andsi3): Ditto.
+	(iorsi3, *iorsi3, *or_slli, *or_srli): Ditto.
+	(xorsi3, *xorsi3, *xor_slli, *xor_srli): Ditto.
+	(<shift>si3, *ashlsi3, *ashrsi3, *lshrsi3, *rotrsi3): Ditto.
+	* config/nds32/predicates.md (nds32_rimm5u_operand, nds32_and_operand,
+	nds32_ior_operand, nds32_xor_operand): New predicates.
+
 2018-04-05  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.md (add<mode>3, sub<mode>3): Rename to ...

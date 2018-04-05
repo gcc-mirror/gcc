@@ -2402,6 +2402,8 @@ nds32_asm_globalize_label (FILE *stream, const char *name)
 static void
 nds32_print_operand (FILE *stream, rtx x, int code)
 {
+  HOST_WIDE_INT one_position;
+  HOST_WIDE_INT zero_position;
   int op_value;
 
   switch (code)
@@ -2409,6 +2411,26 @@ nds32_print_operand (FILE *stream, rtx x, int code)
     case 0 :
       /* Do nothing special.  */
       break;
+
+    case 'b':
+      /* Use exact_log2() to search the 0-bit position.  */
+      gcc_assert (CONST_INT_P (x));
+      zero_position = exact_log2 (~UINTVAL (x) & GET_MODE_MASK (SImode));
+      gcc_assert (zero_position != -1);
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, zero_position);
+
+      /* No need to handle following process, so return immediately.  */
+      return;
+
+    case 'B':
+      /* Use exact_log2() to search the 1-bit position.  */
+      gcc_assert (CONST_INT_P (x));
+      one_position = exact_log2 (UINTVAL (x) & GET_MODE_MASK (SImode));
+      gcc_assert (one_position != -1);
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, one_position);
+
+      /* No need to handle following process, so return immediately.  */
+      return;
 
     case 'V':
       /* 'x' is supposed to be CONST_INT, get the value.  */

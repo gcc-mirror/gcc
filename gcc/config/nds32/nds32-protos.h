@@ -154,6 +154,11 @@ extern const char *nds32_output_cbranchsi4_greater_less_zero (rtx_insn *, rtx *)
 extern const char *nds32_output_stack_push (rtx);
 extern const char *nds32_output_stack_pop (rtx);
 
+/* Auxiliary functions to split large constant RTX pattern.  */
+
+extern void nds32_expand_constant (machine_mode,
+				   HOST_WIDE_INT, rtx, rtx);
+
 /* Auxiliary functions to check using return with null epilogue.  */
 
 extern int nds32_can_use_return_insn (void);

@@ -323,7 +323,7 @@
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand"               "=   d,   l,   d,   l, d, l,   k,   l,    r, r")
 	(plus:SI (match_operand:SI 1 "register_operand"      "%   0,   l,   0,   l, 0, l,   0,   k,    r, r")
-		 (match_operand:SI 2 "nds32_rimm15s_operand" " In05,In03,Iu05,Iu03, r, l,Is10,IU06, Is15, r")))]
+		 (match_operand:SI 2 "nds32_rimm15s_operand" " In05,In03,Iu05,Iu03, r, l,Is10,Iu06, Is15, r")))]
   ""
 {
   switch (which_alternative)
@@ -400,10 +400,10 @@
    (set_attr "length"       "4")])
 
 (define_insn "*add_srli"
-  [(set (match_operand:SI 0 "register_operand"                        "=   r")
-	(plus:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"  "    r")
-			      (match_operand:SI 2 "immediate_operand" " Iu05"))
-		 (match_operand:SI 3 "register_operand"               "    r")))]
+  [(set (match_operand:SI 0 "register_operand"                          "=   r")
+	(plus:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"    "    r")
+			      (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
+		 (match_operand:SI 3 "register_operand"                 "    r")))]
   "TARGET_ISA_V3"
   "add_srli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
@@ -555,14 +555,28 @@
    (set_attr "length" "4")]
 )
 
-(define_insn "andsi3"
-  [(set (match_operand:SI 0 "register_operand"         "=w, r,    l,    l,    l,    l,    l,    l,    r,   r,     r,    r,    r")
-	(and:SI (match_operand:SI 1 "register_operand" "%0, r,    l,    l,    l,    l,    0,    0,    r,   r,     r,    r,    r")
-		(match_operand:SI 2 "general_operand"  " w, r, Izeb, Izeh, Ixls, Ix11, Ibms, Ifex, Izeb, Izeh, Iu15, Ii15, Ic15")))]
+(define_expand "andsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(and:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "nds32_reg_constant_operand" "")))]
+  ""
+{
+  if (CONST_INT_P (operands[2])
+      && !nds32_and_operand (operands[2], SImode))
+    {
+      nds32_expand_constant (SImode, INTVAL (operands[2]),
+			     operands[0], operands[1]);
+      DONE;
+    }
+})
+
+(define_insn "*andsi3"
+  [(set (match_operand:SI 0 "register_operand"          "=l, r,   l,   l,   l,   l,   l,   l,    r,   r,     r,    r,    r")
+	(and:SI (match_operand:SI 1 "register_operand"  "%0, r,   l,   l,   l,   l,   0,   0,    r,   r,     r,    r,    r")
+		(match_operand:SI 2 "nds32_and_operand" " l, r,Izeb,Izeh,Ixls,Ix11,Ibms,Ifex, Izeb, Izeh, Iu15, Ii15, Ic15")))]
   ""
 {
   HOST_WIDE_INT mask = INTVAL (operands[2]);
-  int zero_position;
 
   /* 16-bit andi instructions:
      andi Rt3,Ra3,0xff   -> zeb33  Rt3,Ra3
@@ -587,8 +601,7 @@
     case 5:
       return "x11b33\t%0, %1";
     case 6:
-      operands[2] = GEN_INT (floor_log2 (mask));
-      return "bmski33\t%0, %2";
+      return "bmski33\t%0, %B2";
     case 7:
       operands[2] = GEN_INT (floor_log2 (mask + 1) - 1);
       return "fexti33\t%0, %2";
@@ -602,20 +615,7 @@
       operands[2] = GEN_INT (~mask);
       return "bitci\t%0, %1, %2";
     case 12:
-      /* If we reach this alternative,
-         it must pass the nds32_can_use_bclr_p() test,
-         so that we can guarantee there is only one 0-bit
-         within the immediate value.  */
-      for (zero_position = 31; zero_position >= 0; zero_position--)
-	{
-	  if ((INTVAL (operands[2]) & (1 << zero_position)) == 0)
-	    {
-	      /* Found the 0-bit position.  */
-	      operands[2] = GEN_INT (zero_position);
-	      break;
-	    }
-	}
-      return "bclr\t%0, %1, %2";
+      return "bclr\t%0, %1, %b2";
 
     default:
       gcc_unreachable ();
@@ -652,54 +652,46 @@
 
 ;; For V3/V3M ISA, we have 'or33' instruction.
 ;; So we can identify 'or Rt3,Rt3,Ra3' case and set its length to be 2.
-(define_insn "iorsi3"
-  [(set (match_operand:SI 0 "register_operand"         "=w, r,    r,    r")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0, r,    r,    r")
-		(match_operand:SI 2 "general_operand"  " w, r, Iu15, Ie15")))]
+
+(define_expand "iorsi3"
+  [(set (match_operand:SI 0 "register_operand"         "")
+	(ior:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "general_operand"  "")))]
   ""
 {
-  int one_position;
+  if (!nds32_ior_operand (operands[2], SImode))
+    operands[2] = force_reg (SImode, operands[2]);
+})
 
-  switch (which_alternative)
-    {
-    case 0:
-      return "or33\t%0, %2";
-    case 1:
-      return "or\t%0, %1, %2";
-    case 2:
-      return "ori\t%0, %1, %2";
-    case 3:
-      /* If we reach this alternative,
-         it must pass the nds32_can_use_bset_p() test,
-         so that we can guarantee there is only one 1-bit
-         within the immediate value.  */
-      /* Use exact_log2() to search the 1-bit position.  */
-      one_position = exact_log2 (INTVAL (operands[2]));
-      operands[2] = GEN_INT (one_position);
-      return "bset\t%0, %1, %2";
-
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type"   "alu,alu,alu,alu")
-   (set_attr "length" "  2,  4,  4,  4")])
+(define_insn "*iorsi3"
+  [(set (match_operand:SI 0 "register_operand"          "=l, r,    r,    r")
+	(ior:SI (match_operand:SI 1 "register_operand"  "%0, r,    r,    r")
+		(match_operand:SI 2 "nds32_ior_operand" " l, r, Iu15, Ie15")))]
+  ""
+  "@
+   or33\t%0, %2
+   or\t%0, %1, %2
+   ori\t%0, %1, %2
+   bset\t%0, %1, %B2"
+  [(set_attr "type"    "alu,alu,alu,alu")
+   (set_attr "length"  "  2,  4,  4,  4")
+   (set_attr "feature" "v3m, v1, v1,pe1")])
 
 (define_insn "*or_slli"
-  [(set (match_operand:SI 0 "register_operand"                     "=   r")
-	(ior:SI (ashift:SI (match_operand:SI 1 "register_operand"  "    r")
-			   (match_operand:SI 2 "immediate_operand" " Iu05"))
-		(match_operand:SI 3 "register_operand"             "    r")))]
+  [(set (match_operand:SI 0 "register_operand"                       "=   r")
+	(ior:SI (ashift:SI (match_operand:SI 1 "register_operand"    "    r")
+			   (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
+		(match_operand:SI 3 "register_operand"               "    r")))]
   "TARGET_ISA_V3"
   "or_slli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "length"       "4")])
 
 (define_insn "*or_srli"
-  [(set (match_operand:SI 0 "register_operand"                       "=   r")
-	(ior:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"  "    r")
-			     (match_operand:SI 2 "immediate_operand" " Iu05"))
-		(match_operand:SI 3 "register_operand"               "    r")))]
+  [(set (match_operand:SI 0 "register_operand"                         "=   r")
+	(ior:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"    "    r")
+			     (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
+		(match_operand:SI 3 "register_operand"                 "    r")))]
   "TARGET_ISA_V3"
   "or_srli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
@@ -712,36 +704,27 @@
 
 ;; For V3/V3M ISA, we have 'xor33' instruction.
 ;; So we can identify 'xor Rt3,Rt3,Ra3' case and set its length to be 2.
-(define_insn "xorsi3"
-  [(set (match_operand:SI 0 "register_operand"         "=w, r,    r,    r")
-	(xor:SI (match_operand:SI 1 "register_operand" "%0, r,    r,    r")
-		(match_operand:SI 2 "general_operand"  " w, r, Iu15, It15")))]
+
+(define_expand "xorsi3"
+  [(set (match_operand:SI 0 "register_operand"         "")
+	(xor:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "general_operand"  "")))]
   ""
 {
-  int one_position;
+  if (!nds32_xor_operand (operands[2], SImode))
+    operands[2] = force_reg (SImode, operands[2]);
+})
 
-  switch (which_alternative)
-    {
-    case 0:
-      return "xor33\t%0, %2";
-    case 1:
-      return "xor\t%0, %1, %2";
-    case 2:
-      return "xori\t%0, %1, %2";
-    case 3:
-      /* If we reach this alternative,
-         it must pass the nds32_can_use_btgl_p() test,
-         so that we can guarantee there is only one 1-bit
-         within the immediate value.  */
-      /* Use exact_log2() to search the 1-bit position.  */
-      one_position = exact_log2 (INTVAL (operands[2]));
-      operands[2] = GEN_INT (one_position);
-      return "btgl\t%0, %1, %2";
-
-    default:
-      gcc_unreachable ();
-    }
-}
+(define_insn "*xorsi3"
+  [(set (match_operand:SI 0 "register_operand"          "=l, r,    r,    r")
+	(xor:SI (match_operand:SI 1 "register_operand"  "%0, r,    r,    r")
+		(match_operand:SI 2 "nds32_xor_operand" " l, r, Iu15, It15")))]
+  ""
+  "@
+   xor33\t%0, %2
+   xor\t%0, %1, %2
+   xori\t%0, %1, %2
+   btgl\t%0, %1, %B2"
   [(set_attr "type"    "alu,alu,alu,alu")
    (set_attr "length"  "  2,  4,  4,  4")
    (set_attr "feature" "v3m, v1, v1,pe1")])
@@ -749,7 +732,7 @@
 (define_insn "*xor_slli"
   [(set (match_operand:SI 0 "register_operand"                     "=   r")
 	(xor:SI (ashift:SI (match_operand:SI 1 "register_operand"  "    r")
-			   (match_operand:SI 2 "immediate_operand" " Iu05"))
+			   (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
 		(match_operand:SI 3 "register_operand"             "    r")))]
   "TARGET_ISA_V3"
   "xor_slli\t%0, %3, %1, %2"
@@ -757,10 +740,10 @@
    (set_attr "length"       "4")])
 
 (define_insn "*xor_srli"
-  [(set (match_operand:SI 0 "register_operand"                       "=   r")
-	(xor:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"  "    r")
-			     (match_operand:SI 2 "immediate_operand" " Iu05"))
-		(match_operand:SI 3 "register_operand"               "    r")))]
+  [(set (match_operand:SI 0 "register_operand"                         "=   r")
+	(xor:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"    "    r")
+			     (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
+		(match_operand:SI 3 "register_operand"                 "    r")))]
   "TARGET_ISA_V3"
   "xor_srli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
@@ -768,10 +751,10 @@
 
 ;; Rotate Right Instructions.
 
-(define_insn "rotrsi3"
-  [(set (match_operand:SI 0 "register_operand"                 "=   r, r")
-	  (rotatert:SI (match_operand:SI 1 "register_operand"  "    r, r")
-		       (match_operand:SI 2 "nonmemory_operand" " Iu05, r")))]
+(define_insn "*rotrsi3"
+  [(set (match_operand:SI 0 "register_operand"                    "=   r, r")
+	  (rotatert:SI (match_operand:SI 1 "register_operand"     "    r, r")
+		       (match_operand:SI 2 "nds32_rimm5u_operand" " Iu05, r")))]
   ""
   "@
    rotri\t%0, %1, %2
@@ -822,10 +805,23 @@
 
 ;; Shift instructions.
 
-(define_insn "ashlsi3"
-  [(set (match_operand:SI 0 "register_operand"             "=   l,    r, r")
-	(ashift:SI (match_operand:SI 1 "register_operand"  "    l,    r, r")
-		   (match_operand:SI 2 "nonmemory_operand" " Iu03, Iu05, r")))]
+(define_expand "<shift>si3"
+  [(set (match_operand:SI 0 "register_operand"                      "")
+	(shift_rotate:SI (match_operand:SI 1 "register_operand"     "")
+			 (match_operand:SI 2 "nds32_rimm5u_operand" "")))]
+  ""
+{
+  if (operands[2] == const0_rtx)
+    {
+      emit_move_insn (operands[0], operands[1]);
+      DONE;
+    }
+})
+
+(define_insn "*ashlsi3"
+  [(set (match_operand:SI 0 "register_operand"                "=   l,    r, r")
+	(ashift:SI (match_operand:SI 1 "register_operand"     "    l,    r, r")
+		   (match_operand:SI 2 "nds32_rimm5u_operand" " Iu03, Iu05, r")))]
   ""
   "@
    slli333\t%0, %1, %2
@@ -834,10 +830,11 @@
   [(set_attr "type"    "  alu,  alu,  alu")
    (set_attr "subtype" "shift,shift,shift")
    (set_attr "length"  "    2,    4,    4")])
-(define_insn "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand"               "=   d,    r, r")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand"  "    0,    r, r")
-		     (match_operand:SI 2 "nonmemory_operand" " Iu05, Iu05, r")))]
+
+(define_insn "*ashrsi3"
+  [(set (match_operand:SI 0 "register_operand"                  "=   d,    r, r")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand"     "    0,    r, r")
+		     (match_operand:SI 2 "nds32_rimm5u_operand" " Iu05, Iu05, r")))]
   ""
   "@
    srai45\t%0, %2
@@ -847,10 +844,10 @@
    (set_attr "subtype" "shift,shift,shift")
    (set_attr "length"  "    2,    4,    4")])
 
-(define_insn "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand"               "=   d,    r, r")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand"  "    0,    r, r")
-		     (match_operand:SI 2 "nonmemory_operand" " Iu05, Iu05, r")))]
+(define_insn "*lshrsi3"
+  [(set (match_operand:SI 0 "register_operand"                  "=   d,    r, r")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand"     "    0,    r, r")
+		     (match_operand:SI 2 "nds32_rimm5u_operand" " Iu05, Iu05, r")))]
   ""
   "@
    srli45\t%0, %2

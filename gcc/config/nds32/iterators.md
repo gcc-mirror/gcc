@@ -61,10 +61,16 @@
 ;; Code iterators.
 ;;----------------------------------------------------------------------------
 
+;; shifts
+(define_code_iterator shift_rotate [ashift ashiftrt lshiftrt rotatert])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes.
 ;;----------------------------------------------------------------------------
+
+;; shifts
+(define_code_attr shift
+  [(ashift "ashl") (ashiftrt "ashr") (lshiftrt "lshr") (rotatert "rotr")])
 
 
 ;;----------------------------------------------------------------------------
