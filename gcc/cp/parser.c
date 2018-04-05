@@ -14381,10 +14381,15 @@ cp_parser_mem_initializer_list (cp_parser* parser)
       /* Parse the mem-initializer.  */
       mem_initializer = cp_parser_mem_initializer (parser);
       /* If the next token is a `...', we're expanding member initializers. */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+      bool ellipsis = cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS);
+      if (ellipsis
+	  || (mem_initializer != error_mark_node
+	      && check_for_bare_parameter_packs (TREE_PURPOSE
+						 (mem_initializer))))
         {
           /* Consume the `...'. */
-          cp_lexer_consume_token (parser->lexer);
+	  if (ellipsis)
+	    cp_lexer_consume_token (parser->lexer);
 
           /* The TREE_PURPOSE must be a _TYPE, because base-specifiers
              can be expanded but members cannot. */
