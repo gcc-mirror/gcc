@@ -1360,7 +1360,7 @@ cp_check_const_attributes (tree attributes)
 	{
 	  tree expr = TREE_VALUE (arg);
 	  if (EXPR_P (expr))
-	    TREE_VALUE (arg) = maybe_constant_value (expr);
+	    TREE_VALUE (arg) = fold_non_dependent_expr (expr);
 	}
     }
 }
