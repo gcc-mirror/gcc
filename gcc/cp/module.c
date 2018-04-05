@@ -125,7 +125,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #define TNG 01 // FIXME:in transition
-static bool refs_tng = false; // FIXME: transition
 
 #include "config.h"
 #include "system.h"
@@ -4649,8 +4648,6 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
 {
   depset::hash table (200);
 
-  refs_tng = true;  // FIXME:Tell tree-walker we're new-style references
-
   /* Find the set of decls we must write out.  */
   add_writables (table, global_namespace);
 
@@ -4693,8 +4690,6 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
 
   /* Write the bindings themselves.  */
   tng_write_bindings (to, table, crc_p);
-
-  refs_tng = false;  // FIXME:and back to the old way
 }
 
 /* Bindings: MOD_SNAME_PFX .bindings
@@ -4770,9 +4765,6 @@ module_state::tng_read_bindings (elf_in *from)
   auto_vec<tree> spaces;
   std::pair<unsigned, unsigned> range;
 
-  // It doesn't matter that we leave this set on error.  We gonna die.
-  refs_tng = true;
-
   if (!tng_read_namespaces (from, spaces, range))
     return false;
 
@@ -4787,8 +4779,6 @@ module_state::tng_read_bindings (elf_in *from)
     if (!tng_read_cluster (from, ix))
       return false;
   }
-
-  refs_tng = false;
 
   return true;
 }
@@ -7745,7 +7735,7 @@ trees_out::tree_node (tree t)
       goto by_value;
     }
 
-  if (refs_tng && !force && DECL_ARTIFICIAL (t) && TREE_CODE (t) == VAR_DECL)
+  if (TNG && !force && DECL_ARTIFICIAL (t) && TREE_CODE (t) == VAR_DECL)
     {
       tree ctx = CP_DECL_CONTEXT (t);
       if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
@@ -7805,7 +7795,7 @@ trees_out::tree_node (tree t)
     if (force)
       goto by_value;
 
-    if (refs_tng || is_import)
+    if (TNG || is_import)
       {
 	/* A named decl -> tt_named_decl.  */
 	if (!dep_walk_p ())
@@ -7864,7 +7854,7 @@ trees_out::tree_node (tree t)
 
     
     // FIXME: This dep_walk_p checkseems wrong
-    if (!dep_walk_p () && !refs_tng
+    if (!dep_walk_p () && !TNG
 	&& RECORD_OR_UNION_CODE_P (TREE_CODE (t))
 	&& TYPE_MAIN_VARIANT (t) == t)
       {
@@ -8018,7 +8008,7 @@ trees_in::tree_node ()
 			     ? (*state->remap)[owner] : MODULE_NONE);
 	tree type = tree_node ();
 	if (remapped != MODULE_NONE
-	    && (refs_tng || remapped != state->mod)
+	    && (TNG || remapped != state->mod)
 	    && !get_overrun ())
 	  res = lookup_by_ident (ctx, remapped, name, type, code);
 	if (!res)
@@ -8227,7 +8217,7 @@ trees_in::finish_type (tree type)
     ;
   else if (main == type)
     {
-      if (!refs_tng)
+      if (!TNG)
 	{
 	  /* Read in the binfos & as-base.  */
 	  if (!tree_binfo (type))
