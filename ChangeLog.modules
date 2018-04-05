@@ -1,5 +1,9 @@
 2018-04-05  Nathan Sidwell  <nathan@acm.org>
 
+	Switch over to new binding scheme.
+	gcc/cp/
+	* module.c (TNG): Enable.
+
 	gcc/cp/
 	* module.c (module_state::{read,write,mark}_template_def): Deal
 	with CLASSTYPE_DECL_LIST.

@@ -124,7 +124,7 @@ along with GCC; see the file COPYING3.  If not see
 #define MODULE_STAMP 0
 #endif
 
-#define TNG 0 // FIXME:in transition
+#define TNG 01 // FIXME:in transition
 static bool refs_tng = false; // FIXME: transition
 
 #include "config.h"
@@ -4003,7 +4003,7 @@ module_state::mark_template_def (trees_out &out, tree decl)
 	 decls; decls = TREE_CHAIN (decls))
       {
 	/* There may be decls here, that are not on the member vector.
-	 for instance forward declarations of member tagged types.  */
+	   for instance forward declarations of member tagged types.  */
 	tree decl = TREE_VALUE (decls);
 	if (TYPE_P (decl))
 	  /* In spite of its name, non-decls appear :(.  */
