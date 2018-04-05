@@ -1,3 +1,8 @@
+2018-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85195
+	* gcc.dg/pr85195.c: New test.
+
 2018-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80956
