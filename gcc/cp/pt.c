@@ -11597,8 +11597,12 @@ tsubst_binary_right_fold (tree t, tree args, tsubst_flags_t complain,
 
 struct el_data
 {
+  hash_set<tree> internal;
   tree extra;
   tsubst_flags_t complain;
+
+  el_data (tsubst_flags_t c)
+    : extra (NULL_TREE), complain (c) {}
 };
 static tree
 extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
@@ -11606,8 +11610,13 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
   el_data &data = *reinterpret_cast<el_data*>(data_);
   tree *extra = &data.extra;
   tsubst_flags_t complain = data.complain;
-  if (tree spec = retrieve_local_specialization (*tp))
+  if (TREE_CODE (*tp) == DECL_EXPR)
+    data.internal.add (DECL_EXPR_DECL (*tp));
+  else if (tree spec = retrieve_local_specialization (*tp))
     {
+      if (data.internal.contains (*tp))
+	/* Don't mess with variables declared within the pattern.  */
+	return NULL_TREE;
       if (TREE_CODE (spec) == NONTYPE_ARGUMENT_PACK)
 	{
 	  /* Maybe pull out the PARM_DECL for a partial instantiation.  */
@@ -11658,7 +11667,7 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
 static tree
 extract_local_specs (tree pattern, tsubst_flags_t complain)
 {
-  el_data data = { NULL_TREE, complain };
+  el_data data (complain);
   cp_walk_tree_without_duplicates (&pattern, extract_locals_r, &data);
   return data.extra;
 }
