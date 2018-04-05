@@ -193,8 +193,8 @@
 })
 
 (define_insn "*mov<mode>"
-  [(set (match_operand:QIHISI 0 "nonimmediate_operand" "=r, r, U45, U33, U37, U45, m,   l,   l,   l,   d, r,    d,    r,    r,    r")
-	(match_operand:QIHISI 1 "nds32_move_operand"   " r, r,   l,   l,   l,   d, r, U45, U33, U37, U45, m, Ip05, Is05, Is20, Ihig"))]
+  [(set (match_operand:QIHISI 0 "nonimmediate_operand" "=r, r, U45, U33, U37, U45, m,   l,   l,   l,   d,   d, r,    d,    r,    r,    r")
+	(match_operand:QIHISI 1 "nds32_move_operand"   " r, r,   l,   l,   l,   d, r, U45, U33, U37, U45, Ufe, m, Ip05, Is05, Is20, Ihig"))]
   "register_operand(operands[0], <MODE>mode)
    || register_operand(operands[1], <MODE>mode)"
 {
@@ -215,23 +215,24 @@
     case 8:
     case 9:
     case 10:
-      return nds32_output_16bit_load (operands, <byte>);
     case 11:
-      return nds32_output_32bit_load (operands, <byte>);
+      return nds32_output_16bit_load (operands, <byte>);
     case 12:
-      return "movpi45\t%0, %1";
+      return nds32_output_32bit_load (operands, <byte>);
     case 13:
-      return "movi55\t%0, %1";
+      return "movpi45\t%0, %1";
     case 14:
-      return "movi\t%0, %1";
+      return "movi55\t%0, %1";
     case 15:
+      return "movi\t%0, %1";
+    case 16:
       return "sethi\t%0, hi20(%1)";
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "type"   "alu,alu,store,store,store,store,store,load,load,load,load,load,alu,alu,alu,alu")
-   (set_attr "length" "  2,  4,    2,    2,    2,    2,    4,   2,   2,   2,   2,   4,  2,  2,  4,  4")])
+  [(set_attr "type"   "alu,alu,store,store,store,store,store,load,load,load,load,load,load,alu,alu,alu,alu")
+   (set_attr "length" "  2,  4,    2,    2,    2,    2,    4,   2,   2,   2,   2,   2,   4,  2,  2,  4,  4")])
 
 
 ;; We use nds32_symbolic_operand to limit that only CONST/SYMBOL_REF/LABEL_REF

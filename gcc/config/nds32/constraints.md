@@ -296,6 +296,12 @@
        (match_test "(nds32_mem_format (op) == ADDRESS_REG)
 		    && (GET_MODE (op) == SImode)")))
 
+(define_memory_constraint "Ufe"
+  "Memory constraint for fe format"
+  (and (match_code "mem")
+       (match_test "nds32_mem_format (op) == ADDRESS_R8_IMM7U
+		    && (GET_MODE (op) == SImode)")))
+
 (define_memory_constraint "U37"
   "Memory constraint for 37 format"
   (and (match_code "mem")

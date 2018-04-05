@@ -113,6 +113,8 @@ enum nds32_16bit_address_type
   ADDRESS_LO_REG_IMM3U,
   /* post_inc [lo_reg + imm3u]: 333 format address.  */
   ADDRESS_POST_INC_LO_REG_IMM3U,
+  /* [$r8 + imm7u]: r8 imply address.  */
+  ADDRESS_R8_IMM7U,
   /* [$fp + imm7u]: fp imply address.  */
   ADDRESS_FP_IMM7U,
   /* [$sp + imm7u]: sp imply address.  */
