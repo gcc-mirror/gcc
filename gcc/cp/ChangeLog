@@ -1,5 +1,8 @@
 2018-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84938 - ICE with division by ~-1.
+	* call.c (set_up_extended_ref_temp): Call cp_fully_fold.
+
 	PR c++/84936 - ICE with unexpanded pack in mem-initializer.
 	* parser.c (cp_parser_mem_initializer_list): Call
 	check_for_bare_parameter_packs.
