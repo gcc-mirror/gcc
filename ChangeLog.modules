@@ -1,6 +1,9 @@
 2018-04-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::tng_*): Rename.
+
+	gcc/cp/
 	* module.c (enum tree_tag): Delete tt_definition, tt_binding.
 	(trees_in::tag_{binding,definition}): Delete.
 	(trees_out::{,maybe_}tag_definition): Delete.

@@ -2115,22 +2115,21 @@ struct GTY(()) module_state {
   static void add_writables (depset::hash &table, tree ns);
   /* Build dependency graph of hash table.  */
   void find_dependencies (depset::hash &table);
-  // FIXME: names
-  void tng_write_bindings (elf_out *to, unsigned *crc_ptr);
-  bool tng_read_bindings (elf_in *from);
-  static void tng_write_bindings (elf_out *to, depset::hash &table,
-				  unsigned *crc_ptr);
-  bool tng_read_bindings (elf_in *from, auto_vec<tree> &spaces,
-			  const std::pair<unsigned, unsigned> &range);
-  static void tng_write_namespaces (elf_out *to, depset::hash &table,
-				    auto_vec<depset *> &spaces,
-				    const std::pair<unsigned, unsigned> &range,
-				    unsigned *crc_ptr);
-  bool tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces,
-			    std::pair<unsigned, unsigned> &range);
-  unsigned tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
-			      unsigned from, unsigned *crc_ptr);
-  bool tng_read_cluster (elf_in *from, unsigned snum);
+  void write_decls (elf_out *to, unsigned *crc_ptr);
+  bool read_decls (elf_in *from);
+  static void write_bindings (elf_out *to, depset::hash &table,
+			      unsigned *crc_ptr);
+  bool read_bindings (elf_in *from, auto_vec<tree> &spaces,
+		      const std::pair<unsigned, unsigned> &range);
+  static void write_namespaces (elf_out *to, depset::hash &table,
+				auto_vec<depset *> &spaces,
+				const std::pair<unsigned, unsigned> &range,
+				unsigned *crc_ptr);
+  bool read_namespaces (elf_in *from, auto_vec<tree> &spaces,
+			std::pair<unsigned, unsigned> &range);
+  unsigned write_cluster (elf_out *to, auto_vec<depset *> &sccs,
+			  unsigned from, unsigned *crc_ptr);
+  bool read_cluster (elf_in *from, unsigned snum);
 
  public:
   /* Import a module.  Possibly ourselves.  */
@@ -4116,12 +4115,12 @@ bind_cmp (const void *a_, const void *b_)
   return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
 }
 
-/* Write a cluster of depsets atarting at SCCS[FROM], return index of next
+/* Write a cluster of depsets starting at SCCS[FROM], return index of next
    cluster.  */
 
 unsigned
-module_state::tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
-				 unsigned from, unsigned *crc_ptr)
+module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
+			     unsigned from, unsigned *crc_ptr)
 {
   unsigned cluster = sccs[from]->get_cluster ();
 
@@ -4190,8 +4189,10 @@ module_state::tng_write_cluster (elf_out *to, auto_vec<depset *> &sccs,
   return end;
 }
 
+/* Read a cluster from section SNUM.  */
+
 bool
-module_state::tng_read_cluster (elf_in *from, unsigned snum)
+module_state::read_cluster (elf_in *from, unsigned snum)
 {
   trees_in sec (this, global_vec);
 
@@ -4255,18 +4256,20 @@ module_state::tng_read_cluster (elf_in *from, unsigned snum)
   return true;
 }
 
-/* SPACES is a vector of namespaces.  Sort it so that outer namespaces
-   preceed inner namespaces, and then write them out.
+/* SPACES is a sorted vector of namespaces.  RANGE is the range of
+   sections containing the module data.  Write out the range and
+   namespaces to MOD_SNAME_PFX.namespace section.
+
    Each namespace is:
-   u:name,
-   u:context, number of containing namespace (0 == ::)
-   u:inline_p  */
+     u:name,
+     u:context, number of containing namespace (0 == ::)
+     u:inline_p  */
 
 void
-module_state::tng_write_namespaces (elf_out *to, depset::hash &table,
-				    auto_vec<depset *> &spaces,
-				    const std::pair<unsigned, unsigned> &range,
-				    unsigned *crc_p)
+module_state::write_namespaces (elf_out *to, depset::hash &table,
+				auto_vec<depset *> &spaces,
+				const std::pair<unsigned, unsigned> &range,
+				unsigned *crc_p)
 {
   dump () && dump ("Writing namespaces");
   dump.indent ();
@@ -4305,14 +4308,60 @@ module_state::tng_write_namespaces (elf_out *to, depset::hash &table,
   dump.outdent ();
 }
 
-/* Write the binding TABLE.  Each binding is:
-   u:name
-   u:context - number of containing namespace
-   u:section - section number of binding. */
+/* Read the namespace hierarchy from MOD_SNAME_PFX.namespace.  Fill in
+   SPACES and RANGE from that data.  */
+
+bool
+module_state::read_namespaces (elf_in *from, auto_vec<tree> &spaces,
+			       std::pair<unsigned, unsigned>& range)
+{
+  bytes_in sec;
+
+  if (!sec.begin (from, MOD_SNAME_PFX ".namespace"))
+    return false;
+
+  dump () && dump ("Reading namespaces");
+  dump.indent ();
+
+  range.first = sec.u ();
+  range.second = sec.u ();
+
+  spaces.safe_push (global_namespace);
+  while (sec.more_p ())
+    {
+      const char *name = from->name (sec.u ());
+      unsigned parent = sec.u ();
+      /* See comment in write_namespace about why not a bit.  */
+      bool inline_p = bool (sec.u ());
+
+      if (parent >= spaces.length ())
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
+
+      tree id = name ? get_identifier (name) : NULL_TREE;
+      dump () && dump ("Read namespace %P %u",
+		       spaces[parent], id, spaces.length ());
+      tree inner = add_imported_namespace (spaces[parent],
+					   mod, id, inline_p);
+      spaces.safe_push (inner);
+    }
+  dump.outdent ();
+  if (!sec.end (from))
+    return false;
+
+  return true;
+}
+
+/* Write the binding TABLE to MOD_SNAME_PFX.bind
+
+   Each binding is:
+     u:name
+     u:context - number of containing namespace
+     u:section - section number of binding. */
 
 void
-module_state::tng_write_bindings (elf_out *to, depset::hash &table,
-				  unsigned *crc_p)
+module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
 {
   dump () && dump ("Writing binding table");
   dump.indent ();
@@ -4342,9 +4391,11 @@ module_state::tng_write_bindings (elf_out *to, depset::hash &table,
   dump.outdent ();
 }
 
+/* Read the binding table from MOD_SNAME_PFX.bind.  */
+
 bool
-module_state::tng_read_bindings (elf_in *from, auto_vec<tree> &spaces,
-				 const std::pair<unsigned, unsigned> &range)
+module_state::read_bindings (elf_in *from, auto_vec<tree> &spaces,
+			     const std::pair<unsigned, unsigned> &range)
 {
   bytes_in sec;
 
@@ -4370,6 +4421,7 @@ module_state::tng_read_bindings (elf_in *from, auto_vec<tree> &spaces,
       if (mod >= MODULE_IMPORT_BASE
 	  && !import_module_binding (ctx, id, mod, snum))
 	break;
+      // FIXME:Do something with snum
     }
 
   dump.outdent ();
@@ -4505,8 +4557,10 @@ space_cmp (const void *a_, const void *b_)
   return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
 }
 
+/* Write the module declarations of interest  */
+
 void
-module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
+module_state::write_decls (elf_out *to, unsigned *crc_p)
 {
   depset::hash table (200);
 
@@ -4541,79 +4595,39 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
   /* Write the binding clusters.  */
   range.first = to->get_num_sections ();
   for (unsigned ix = 0; ix != binds.length ();)
-    ix = tng_write_cluster (to, binds, ix, crc_p);
+    ix = write_cluster (to, binds, ix, crc_p);
   range.second = to->get_num_sections ();
 
   // FIXME:write the defs.
   gcc_assert (!defs.length ());
 
   /* Write the namespace hierarchy. */
-  tng_write_namespaces (to, table, spaces, range, crc_p);
+  write_namespaces (to, table, spaces, range, crc_p);
 
   /* Write the bindings themselves.  */
-  tng_write_bindings (to, table, crc_p);
+  write_bindings (to, table, crc_p);
 }
 
-bool
-module_state::tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces,
-				   std::pair<unsigned, unsigned>& range)
-{
-  bytes_in sec;
-
-  if (!sec.begin (from, MOD_SNAME_PFX ".namespace"))
-    return false;
-
-  dump () && dump ("Reading namespaces");
-  dump.indent ();
-
-  range.first = sec.u ();
-  range.second = sec.u ();
-
-  spaces.safe_push (global_namespace);
-  while (sec.more_p ())
-    {
-      const char *name = from->name (sec.u ());
-      unsigned parent = sec.u ();
-      /* See comment in write_namespace about why not a bit.  */
-      bool inline_p = bool (sec.u ());
-
-      if (parent >= spaces.length ())
-	sec.set_overrun ();
-      if (sec.get_overrun ())
-	break;
-
-      tree id = name ? get_identifier (name) : NULL_TREE;
-      dump () && dump ("Read namespace %P %u",
-		       spaces[parent], id, spaces.length ());
-      tree inner = add_imported_namespace (spaces[parent],
-					   mod, id, inline_p);
-      spaces.safe_push (inner);
-    }
-  dump.outdent ();
-  if (!sec.end (from))
-    return false;
-
-  return true;
-}
+/* Read module decls.  */
 
 bool
-module_state::tng_read_bindings (elf_in *from)
+module_state::read_decls (elf_in *from)
 {
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;
   std::pair<unsigned, unsigned> range;
 
-  if (!tng_read_namespaces (from, spaces, range))
+  if (!read_namespaces (from, spaces, range))
     return false;
 
-  if (!tng_read_bindings (from, spaces, range))
+  if (!read_bindings (from, spaces, range))
     return false;
 
   /* Read the sections in forward order, so that dependencies are read
      first.  See note about tarjan_connect.  */
   unsigned hwm = range.second;
   for (unsigned ix = range.first; ix != hwm; ix++)
-    if (!tng_read_cluster (from, ix))
+    if (!read_cluster (from, ix))
       return false;
 
   return true;
@@ -4634,7 +4648,7 @@ module_state::write (elf_out *to)
   unsigned crc = 0;
 
   write_context (to, &crc);
-  tng_write_bindings (to, &crc);
+  write_decls (to, &crc);
   write_config (to, crc);
 
   trees_out::instrument ();
@@ -4671,7 +4685,7 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   (*remap)[MODULE_PURVIEW] = ix;
   dump () && dump ("Assigning %N module number %u", name, ix);
 
-  if (!tng_read_bindings (from))
+  if (!read_decls (from))
     return;
 
   return;
