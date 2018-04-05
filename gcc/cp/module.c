@@ -3989,6 +3989,8 @@ void
 module_state::write_template_def (trees_out &out, tree decl)
 {
   tree res = DECL_TEMPLATE_RESULT (decl);
+  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
+    out.tree_node (CLASSTYPE_DECL_LIST (TREE_TYPE (res)));
   write_definition (out, res);
 }
 
@@ -3996,6 +3998,18 @@ void
 module_state::mark_template_def (trees_out &out, tree decl)
 {
   tree res = DECL_TEMPLATE_RESULT (decl);
+  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
+    for (tree decls = CLASSTYPE_DECL_LIST (TREE_TYPE (res));
+	 decls; decls = TREE_CHAIN (decls))
+      {
+	/* There may be decls here, that are not on the member vector.
+	 for instance forward declarations of member tagged types.  */
+	tree decl = TREE_VALUE (decls);
+	if (TYPE_P (decl))
+	  /* In spite of its name, non-decls appear :(.  */
+	  decl = TYPE_NAME (decl);
+	out.mark_node (decl);
+      }
   mark_definition (out, res);
 }
 
@@ -4003,6 +4017,8 @@ bool
 module_state::read_template_def (trees_in &in, tree decl)
 {
   tree res = DECL_TEMPLATE_RESULT (decl);
+  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
+    CLASSTYPE_DECL_LIST (TREE_TYPE (res)) = in.tree_node ();
   return read_definition (in, res);
 }
 
@@ -7701,6 +7717,32 @@ trees_out::tree_node (tree t)
       if (!dep_walk_p ())
 	dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
       goto done;
+    }
+
+  if (TREE_CODE (t) == TEMPLATE_DECL
+      && TREE_CODE (CP_DECL_CONTEXT (t)) != NAMESPACE_DECL)
+    goto by_value;
+
+  /* Some members of template classes have an implicit TEMPLATE_DECL
+     attached to them.  That TEMPLATE_DECL needs to be written by value.  */
+  // FIXME: distinguish from explicit member templates
+  if ((TREE_CODE (t) == FUNCTION_DECL
+       || TREE_CODE (t) == VAR_DECL
+       || TREE_CODE (t) == TYPE_DECL)
+      && TREE_CODE (CP_DECL_CONTEXT (t)) != NAMESPACE_DECL
+      && DECL_LANG_SPECIFIC (t)
+      && DECL_TEMPLATE_INFO (t))
+    {
+      tree ti = DECL_TEMPLATE_INFO (t);
+      tree tpl = TI_TEMPLATE (ti);
+
+      if (!TREE_VISITED (tpl))
+	{
+	  /* Mark the TEMPLATE_DECL for by-value writing.  */
+	  TREE_VISITED (tpl) = 1;
+	  tree_map.put (tpl, 0);
+	}
+      goto by_value;
     }
 
   if (refs_tng && !force && DECL_ARTIFICIAL (t) && TREE_CODE (t) == VAR_DECL)
