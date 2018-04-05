@@ -4771,14 +4771,12 @@ module_state::tng_read_bindings (elf_in *from)
   if (!tng_read_bindings (from, spaces, range))
     return false;
 
-  if (TNG) {
   /* Read the sections in forward order, so that dependencies are read
      first.  See note about tarjan_connect.  */
   unsigned hwm = range.second;
   for (unsigned ix = range.first; ix != hwm; ix++)
     if (!tng_read_cluster (from, ix))
       return false;
-  }
 
   return true;
 }
@@ -4812,8 +4810,6 @@ module_state::write (elf_out *to)
 
   write_context (to, &crc);
   tng_write_bindings (to, &crc);
-  if (!TNG)
-    write_bindings (to, &crc); // FIXME this should go away
   write_config (to, crc);
 
   trees_out::instrument ();
@@ -4851,9 +4847,6 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   dump () && dump ("Assigning %N module number %u", name, ix);
 
   if (!tng_read_bindings (from))
-    return;
-
-  if (!TNG && !read_bindings (from))
     return;
 
   return;
@@ -7735,7 +7728,7 @@ trees_out::tree_node (tree t)
       goto by_value;
     }
 
-  if (TNG && !force && DECL_ARTIFICIAL (t) && TREE_CODE (t) == VAR_DECL)
+  if (!force && DECL_ARTIFICIAL (t) && TREE_CODE (t) == VAR_DECL)
     {
       tree ctx = CP_DECL_CONTEXT (t);
       if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
@@ -7795,37 +7788,34 @@ trees_out::tree_node (tree t)
     if (force)
       goto by_value;
 
-    if (TNG || is_import)
+    /* A named decl -> tt_named_decl.  */
+    if (!dep_walk_p ())
       {
-	/* A named decl -> tt_named_decl.  */
-	if (!dep_walk_p ())
-	  {
-	    i (tt_named_decl);
-	    u (TREE_CODE (t));
-	    tree_node (CP_DECL_CONTEXT (t));
-	    u (owner);
-	  }
-	tree_node (DECL_NAME (t));
-	tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
-	int tag = insert (t);
-	if (!dep_walk_p ())
-	  dump () && dump (is_import ? "Wrote named import:%d %C:%N@%I"
-			   : "Wrote named decl:%d %C:%N",
-			   tag, TREE_CODE (t), t, module_name (owner));
-	if (tree type = TREE_TYPE (t))
-	  {
-	    /* Make sure the imported type is in the map too.  */
-	    tag = maybe_insert (type);
-	    if (!dep_walk_p ())
-	      {
-		u (tag != 0);
-		if (tag)
-		  dump () && dump ("Wrote named type:%d %C:%N%S", tag,
-				   TREE_CODE (type), type, type);
-	      }
-	  }
-	goto done;
+	i (tt_named_decl);
+	u (TREE_CODE (t));
+	tree_node (CP_DECL_CONTEXT (t));
+	u (owner);
       }
+    tree_node (DECL_NAME (t));
+    tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
+    int tag = insert (t);
+    if (!dep_walk_p ())
+      dump () && dump (is_import ? "Wrote named import:%d %C:%N@%I"
+		       : "Wrote named decl:%d %C:%N",
+		       tag, TREE_CODE (t), t, module_name (owner));
+    if (tree type = TREE_TYPE (t))
+      {
+	/* Make sure the imported type is in the map too.  */
+	tag = maybe_insert (type);
+	if (!dep_walk_p ())
+	  {
+	    u (tag != 0);
+	    if (tag)
+	      dump () && dump ("Wrote named type:%d %C:%N%S", tag,
+			       TREE_CODE (type), type, type);
+	  }
+      }
+    goto done;
   }
 
   /* Otherwise by value */
@@ -7851,31 +7841,6 @@ trees_out::tree_node (tree t)
     tree_node_raw (t);
     if (!dep_walk_p ())
       dump () && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
-
-    
-    // FIXME: This dep_walk_p checkseems wrong
-    if (!dep_walk_p () && !TNG
-	&& RECORD_OR_UNION_CODE_P (TREE_CODE (t))
-	&& TYPE_MAIN_VARIANT (t) == t)
-      {
-	/* Write out the binfo heirarchy.  */
-	tree_binfo (t);
-	if (TYPE_LANG_SPECIFIC (t))
-	  {
-	    tree_node (CLASSTYPE_PRIMARY_BINFO (t));
-	    tree as_base = CLASSTYPE_AS_BASE (t);
-	    if (as_base && as_base != t)
-	      {
-		/* A fake base class.  We must break the IS_FAKE_BASE loop,
-		   while streaming it out. */
-		CLASSTYPE_AS_BASE (t) = NULL_TREE;
-		tag_definition (as_base, NULL_TREE);
-		CLASSTYPE_AS_BASE (t) = as_base;
-	      }
-	    else
-	      tree_node (as_base);
-	  }
-      }
   }
 
  done:
@@ -8007,9 +7972,7 @@ trees_in::tree_node ()
 	unsigned remapped = (owner < state->remap->length ()
 			     ? (*state->remap)[owner] : MODULE_NONE);
 	tree type = tree_node ();
-	if (remapped != MODULE_NONE
-	    && (TNG || remapped != state->mod)
-	    && !get_overrun ())
+	if (remapped != MODULE_NONE && !get_overrun ())
 	  res = lookup_by_ident (ctx, remapped, name, type, code);
 	if (!res)
 	  {
@@ -8213,23 +8176,8 @@ trees_in::finish_type (tree type)
 		       (void *)main, (void *)type);
     }
 
-  if (!RECORD_OR_UNION_CODE_P (TREE_CODE (type)))
-    ;
-  else if (main == type)
-    {
-      if (!TNG)
-	{
-	  /* Read in the binfos & as-base.  */
-	  if (!tree_binfo (type))
-	    set_overrun ();
-	  else if (TYPE_LANG_SPECIFIC (type))
-	    {
-	      CLASSTYPE_PRIMARY_BINFO (type) = tree_node ();
-	      CLASSTYPE_AS_BASE (type) = tree_node ();
-	    }
-	}
-    }
-  else
+  if (RECORD_OR_UNION_CODE_P (TREE_CODE (type))
+      && main != type)
     {
       /* The main variant might already have been defined, copy
 	 the bits of its definition that we need.  */
