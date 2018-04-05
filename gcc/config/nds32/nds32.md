@@ -535,6 +535,26 @@
   [(set_attr "type"   "div")
    (set_attr "length"   "4")])
 
+;; divsr/divr will keep quotient only when quotient and remainder is the same
+;; register in our ISA spec, it's can reduce 1 register presure if we don't
+;; want remainder.
+(define_insn "divsi4"
+  [(set (match_operand:SI 0 "register_operand"         "=r")
+	(div:SI (match_operand:SI 1 "register_operand" " r")
+		(match_operand:SI 2 "register_operand" " r")))]
+  ""
+  "divsr\t%0, %0, %1, %2"
+  [(set_attr "type"   "div")
+   (set_attr "length"   "4")])
+
+(define_insn "udivsi4"
+  [(set (match_operand:SI 0 "register_operand"          "=r")
+	(udiv:SI (match_operand:SI 1 "register_operand" " r")
+		 (match_operand:SI 2 "register_operand"  " r")))]
+  ""
+  "divr\t%0, %0, %1, %2"
+  [(set_attr "type"   "div")
+   (set_attr "length"   "4")])
 
 ;; ----------------------------------------------------------------------------
 
