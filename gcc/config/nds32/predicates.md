@@ -51,6 +51,10 @@
   (and (match_operand 0 "const_int_operand")
        (match_test "satisfies_constraint_Iu05 (op)")))
 
+(define_predicate "nds32_rimm5u_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "nds32_imm5u_operand")))
+
 (define_predicate "nds32_move_operand"
   (and (match_operand 0 "general_operand")
        (not (match_code "high,const,symbol_ref,label_ref")))
@@ -63,6 +67,40 @@
     return false;
 
   return true;
+})
+
+(define_predicate "nds32_and_operand"
+  (match_operand 0 "nds32_reg_constant_operand")
+{
+  return REG_P (op)
+	 || GET_CODE (op) == SUBREG
+	 || satisfies_constraint_Izeb (op)
+	 || satisfies_constraint_Izeh (op)
+	 || satisfies_constraint_Ixls (op)
+	 || satisfies_constraint_Ix11 (op)
+	 || satisfies_constraint_Ibms (op)
+	 || satisfies_constraint_Ifex (op)
+	 || satisfies_constraint_Iu15 (op)
+	 || satisfies_constraint_Ii15 (op)
+	 || satisfies_constraint_Ic15 (op);
+})
+
+(define_predicate "nds32_ior_operand"
+  (match_operand 0 "nds32_reg_constant_operand")
+{
+  return REG_P (op)
+	 || GET_CODE (op) == SUBREG
+	 || satisfies_constraint_Iu15 (op)
+	 || satisfies_constraint_Ie15 (op);
+})
+
+(define_predicate "nds32_xor_operand"
+  (match_operand 0 "nds32_reg_constant_operand")
+{
+  return REG_P (op)
+	 || GET_CODE (op) == SUBREG
+	 || satisfies_constraint_Iu15 (op)
+	 || satisfies_constraint_It15 (op);
 })
 
 (define_predicate "nds32_general_register_operand"

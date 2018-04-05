@@ -2111,3 +2111,49 @@ nds32_long_call_p (rtx symbol)
 {
   return TARGET_CMODEL_LARGE;
 }
+
+void
+nds32_expand_constant (machine_mode mode, HOST_WIDE_INT val,
+		       rtx target, rtx source)
+{
+  rtx temp = gen_reg_rtx (mode);
+  int clear_sign_bit_copies = 0;
+  int clear_zero_bit_copies = 0;
+  unsigned HOST_WIDE_INT remainder = val & 0xffffffffUL;
+
+  /* Count number of leading zeros.  */
+  clear_sign_bit_copies =  __builtin_clz (remainder);
+  /* Count number of trailing zeros.  */
+  clear_zero_bit_copies = __builtin_ctz (remainder);
+
+  HOST_WIDE_INT sign_shift_mask = ((0xffffffffUL
+				    << (32 - clear_sign_bit_copies))
+				   & 0xffffffffUL);
+  HOST_WIDE_INT zero_shift_mask = (1 << clear_zero_bit_copies) - 1;
+
+  if (clear_sign_bit_copies > 0 && clear_sign_bit_copies < 17
+      && (remainder | sign_shift_mask) == 0xffffffffUL)
+    {
+      /* Transfer AND to two shifts, example:
+	 a = b & 0x7fffffff => (b << 1) >> 1 */
+      rtx shift = GEN_INT (clear_sign_bit_copies);
+
+      emit_insn (gen_ashlsi3 (temp, source, shift));
+      emit_insn (gen_lshrsi3 (target, temp, shift));
+    }
+  else if (clear_zero_bit_copies > 0 && clear_sign_bit_copies < 17
+	   && (remainder | zero_shift_mask) == 0xffffffffUL)
+    {
+      /* Transfer AND to two shifts, example:
+	 a = b & 0xfff00000 => (b >> 20) << 20 */
+      rtx shift = GEN_INT (clear_zero_bit_copies);
+
+      emit_insn (gen_lshrsi3 (temp, source, shift));
+      emit_insn (gen_ashlsi3 (target, temp, shift));
+    }
+  else
+    {
+      emit_move_insn (temp, GEN_INT (val));
+      emit_move_insn (target, gen_rtx_fmt_ee (AND, mode, source, temp));
+    }
+}
