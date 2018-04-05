@@ -156,6 +156,7 @@ only one of these two forms, whichever one is not the default.
 * Spec Files::          How to pass switches to sub-processes.
 * Environment Variables:: Env vars that affect GCC.
 * Precompiled Headers:: Compiling a header once, and using it many times.
+* C++ Modules::		Experimental module system for C++.
 @end menu
 
 @c man begin OPTIONS
@@ -2542,17 +2543,33 @@ errors if these functions are not inlined everywhere they are called.
 @opindex fmodules-ts
 @opindex fmodules-atom
 Enable experimental support for n4720:``Working Draft, Extensions to
-C++ for Modules'' or for p0947:``Another Take On Modules''.
+C++ for Modules'' or for p0947:``Another Take On Modules''.  See
+@pxref{C++ Modules} for more details.
 
-@item -fmodule-prefix=@var{dir}
-@opindex fmodule-prefix
-Prefix all relative compiled module interface filenames with @var{dir}.
+@item -fmodule-file=@r{[}@var{name}=@r{]}@var{file}
+@opindex fmodule-file
+If the @var{name}=@var{file} form is used, then the binary interface
+for module @var{name} is in @var{file}.  If the @var{file} form is
+used, then read mappings from @var{file}.
+
+@item -fno-module-lazy
+@opindex fno-module-lazy
+Disable lazy module importing.
+
+@item -fmodule-output=@var{file}
+@opindex fmodule-output
+Write the binary module interface into @var{file}.  This option is
+only valid when compiling a module interface unit.
 
 @item -fmodule-path=@var{dir}
 @opindex fmodule-path
 Append @var{dir} to the module-map search path.  The ':' separated
 directory list in @env{CXX_MODULE_PATH} is appended after explicitly
 specified directories.
+
+@item -fmodule-prefix=@var{dir}
+@opindex fmodule-prefix
+Prefix all relative compiled module interface filenames with @var{dir}.
 
 @item -fmodule-wrapper=@var{program}
 @opindex fmodule-wrapper
@@ -2562,26 +2579,6 @@ invoked to build it.  If not specified, the value of
 default to a built-in wrapper program.  The values of
 @env{COLLECT_GCC} and @env{COLLECT_GCC_OPTIONS} can be used to
 determine the compiler command and compilation options.
-
-@item -fmodule-output=@var{file}
-@opindex fmodule-output
-Write the binary module interface into @var{file}.  This option is
-only valid when compiling a module interface unit.
-
-@item -fmodule-file=@r{[}@var{name}=@r{]}@var{file}
-@opindex fmodule-file
-If the @var{name}=@var{file} form is used, then the binary interface
-for module @var{name} is in @var{file}.  If the @var{file} form is
-used, then read mappings of either form, from @var{file}.  The
-module-path is used to find the mapping file.  The mapping file may
-contain commented lines beginning with @code{#}.  If a
-line begins with @code{G++Module}, even inside a comment, the next
-word is taken to be a marker word.  All lines not beginning with the
-marker are ignored.  Marker lines are taken to be a map, or a map
-file.  Without a marker, uncommented lines are used.  A line may have
-a trailing @code{;}@var{srcname} suffix, which is passed to the module
-wrapper.  FIXME: this should all go in a new Modules? How do they work?
-section.
 
 @item -fms-extensions
 @opindex fms-extensions
@@ -28990,8 +28987,8 @@ preprocessor.
 
 @node Precompiled Headers
 @section Using Precompiled Headers
-@cindex precompiled headers
-@cindex speed of compilation
+@cindex Precompiled Headers
+@cindex Speed of Compilation
 
 Often large projects have many header files that are included in every
 source file.  The time the compiler takes to process these header files
@@ -29118,3 +29115,83 @@ precompiled header, the actual behavior is a mixture of the
 behavior for the options.  For instance, if you use @option{-g} to
 generate the precompiled header but not when using it, you may or may
 not get debugging information for routines in the precompiled header.
+
+@node C++ Modules
+@section C++ Modules
+@cindex C++ Modules
+@cindex Speed of Compilation
+
+C++ Modules are an experimental feature, providing a modular system
+for C++, replacing header file technology.  There are two module
+schemes, which overlap to some extent:
+
+@itemize
+
+@item n4720
+``Working Draft, Extensions to C++ for Modules'', aka the TS,
+@uref{http://wg21.link/n4720}.
+
+@item p0947
+``Another Take On Modules'', aka the ATOM proposal
+@uref{http://wg21.link/p0947r0}.
+
+@end itemize
+
+Enable with either @option{-fmodules-ts} or @option{-fmodules-atom}.
+@emph{Modules support is a work in progress.  The implementation is
+not complete, and the specification is a moving target.  Syntax,
+semantics and command-line options are not stable.}
+
+A module interface unit creates a Binary Module Interface (BMI) file,
+encoding the exported declarations of the module.  Importing a module
+reads in the BMI.  The dependency graph of imports is a Directed
+Acyclic Graph (DAG).
+
+Modules have distinct names.  There is a default mapping between
+module names and BMI files, but this may be overridden by various
+command options and auxilary files.
+
+By default the BMI file is named from the module name, replacing any
+@code{.} characters with @code{-}, and appending a New Module System
+(@code{.nms}) suffix.  The BMI files are created and searched for in
+the current directory.
+
+When compiling a module interface, the
+@option{-fmodule-output=@var{file}} option may be used to override the
+default.  It is an error to use this option when not compiling a
+module interface.
+
+Mappings from module names to BMI files may be specified with the
+@option{-fmodule-file=@var{mapping}} option.  This has two
+different forms:
+
+@itemize
+
+@item @var{module}=@var{BMI-file}
+When the argument contains a @code{=}, it is a direct mapping from
+module name to BMI file.  When importing, the specified module, the
+named BMI file will be read.
+
+@item @var{mapping-file}
+Without the @code{=}, it is a plain file name.  The file is read for
+mappings to add.  Each active line of the file may be of either of
+these two forms, so indirect mapping files are permitted.  White space
+is ignored.  If the first word of a line is @code{G++Module}, the next
+word is taken to be a prefix word.  After this, lines that do not
+start with the prefix are ignored.
+
+Lines beginning with @code{#} are usually comments.  One exception is
+that the prefix may be specified by the forst word of the comment.
+Also if a prefix has been specified, then the prefix is looked for in
+comments too.
+
+The prefix allows you to embed mappings in other files, such as
+Makefiles, without disturbing the file's usual reader.
+
+@end itemize
+
+The @option{-fmodule-path=@var{dir}} option
+
+The @option{-fmodule-prefix=@var{dir}} option
+
+The @option{-fmodule-wrapper=@var{program}} option

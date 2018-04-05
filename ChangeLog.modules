@@ -1,5 +1,12 @@
 2018-04-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (C++ Modules): New section.
+	gcc/c-family/
+	* c.opt (-fmodule-lazy): New option.
+	gcc/cp/
+	* module.c (module_state::read_decls): Prepare for laziness.
+
 	gcc/cp/
 	* module.c (module_state::tng_*): Rename.
 

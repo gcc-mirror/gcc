@@ -4623,12 +4623,20 @@ module_state::read_decls (elf_in *from)
   if (!read_bindings (from, spaces, range))
     return false;
 
-  /* Read the sections in forward order, so that dependencies are read
-     first.  See note about tarjan_connect.  */
-  unsigned hwm = range.second;
-  for (unsigned ix = range.first; ix != hwm; ix++)
-    if (!read_cluster (from, ix))
-      return false;
+  /* We're now done with the string table.  */
+  from->release ();
+
+  if (mod == MODULE_PURVIEW || !flag_module_lazy
+      // FIXME:Implement lazy loading
+      || true)
+    {
+      /* Read the sections in forward order, so that dependencies are read
+	 first.  See note about tarjan_connect.  */
+      unsigned hwm = range.second;
+      for (unsigned ix = range.first; ix != hwm; ix++)
+	if (!read_cluster (from, ix))
+	  return false;
+    }
 
   return true;
 }

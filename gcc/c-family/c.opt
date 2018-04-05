@@ -1509,36 +1509,40 @@ C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
 fmodules-ts
-C++ ObjC++ Driver Var(flag_modules) Uinteger
+C++ ObjC++ Driver RejectNegative Var(flag_modules) Uinteger
 Enable c++ modules-ts (experimental)
 
 fmodules-atom
-C++ ObjC++ Driver Var(flag_modules) Uinteger
+C++ ObjC++ Driver RejectNegative Var(flag_modules) Uinteger
 Enable C++ modules-atom (experimental)
 
-fmodule-prefix=
-C++ ObjC++ Joined
--fmodule-prefix=<directory>  Directory component to prefix all module files.
-
-fmodule-path=
-C++ ObjC++ Joined
--fmodule-path=<directory> Append <directory> to module search path
-
-fmodule-wrapper=
-C++ ObjC++ JoinedOrMissing
--fmodule-wrapper=<program> Invoke <program> for missing binary module interface
-
-fmodule-output=
-C++ ObjC++ Joined MissingArgError(missing filename after %qs)
--fmodule-output=<file> Write the binary module interface into <file>.
-
-fmodule-file=
-C++ ObjC++ Joined MissingArgError(missing module map after %qs)
--fmodule-file=[<name>=]<file> Map from <name> to <file>, or read mapping file <file>
+fmodule-lazy
+C++ ObjC++ Driver Var(flag_module_lazy) Init (1)
+Enable lazy module importing.
 
 fmodule-map-dump
 C++ ObjC++
 Print the module map
+
+fmodule-output=
+C++ ObjC++ Joined RejectNegative MissingArgError(missing filename after %qs)
+-fmodule-output=<file> Write the binary module interface into <file>.
+
+fmodule-path=
+C++ ObjC++ Joined RejectNegative
+-fmodule-path=<directory> Append <directory> to module search path
+
+fmodule-prefix=
+C++ ObjC++ Joined RejectNegative
+-fmodule-prefix=<directory>  Directory component to prefix all module files.
+
+fmodule-wrapper=
+C++ ObjC++ JoinedOrMissing RejectNegative
+-fmodule-wrapper=<program> Invoke <program> for missing binary module interface
+
+fmodule-file=
+C++ ObjC++ Joined RejectNegative MissingArgError(missing module map after %qs)
+-fmodule-file=[<name>=]<file> Map from <name> to <file>, or read mapping file <file>
 
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)
