@@ -1,3 +1,12 @@
+2018-04-05  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (trees_out::tree_node): Reorder by-name checks.
+	* name-lookup.c (pushdecl_top_level): Replace IS_FRIEND parm with
+	MAYBE_INIT.  Set DECL_CONTEXT.  Finish if requested.
+	(pushdecl_top_level_and_finish): Use pushdecl_top_level.
+	* name-lookup.h (pushdecl_top_leve): Adjust declaration.
+
 2018-04-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -7464,11 +7464,15 @@ finish_local_using_directive (tree target, tree attribs)
 /* Pushes X into the global namespace.  */
 
 tree
-pushdecl_top_level (tree x, bool is_friend)
+pushdecl_top_level (tree x, tree *maybe_init)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   do_push_to_top_level ();
-  x = pushdecl_namespace_level (x, is_friend);
+  if (!DECL_CONTEXT (x))
+    DECL_CONTEXT (x) = FROB_CONTEXT (global_namespace);
+  x = pushdecl_namespace_level (x, false);
+  if (maybe_init)
+    cp_finish_decl (x, *maybe_init, false, NULL_TREE, 0);
   do_pop_from_top_level ();
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return x;
@@ -7480,13 +7484,7 @@ pushdecl_top_level (tree x, bool is_friend)
 tree
 pushdecl_top_level_and_finish (tree x, tree init)
 {
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  do_push_to_top_level ();
-  x = pushdecl_namespace_level (x, false);
-  cp_finish_decl (x, init, false, NULL_TREE, 0);
-  do_pop_from_top_level ();
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return x;
+  return pushdecl_top_level (x, &init);
 }
 
 /* Enter the namespaces from current_namerspace to NS.  */

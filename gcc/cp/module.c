@@ -2514,7 +2514,6 @@ trees_out::mark_node (tree decl, bool into)
       TREE_VISITED (decl) = true;
     }
 
-  // FIXME: this is probably not right
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     mark_node (DECL_TEMPLATE_RESULT (decl), into);
 }
@@ -4812,6 +4811,7 @@ module_state::write (elf_out *to)
   write_config (to, crc);
 
   trees_out::instrument ();
+  dump () && dump ("Wrote %u sections", to->get_num_sections ());
 }
 
 void
@@ -7666,6 +7666,12 @@ trees_out::tree_node (tree t)
     goto by_value;
 
  by_name:
+  /* T is a DECL.  Perhaps we need to refer to it by name.  */
+
+  /* Some decls are never by name.  */
+  if (TREE_CODE (t) == PARM_DECL || !DECL_CONTEXT (t))
+    goto by_value;
+
   if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
     {
       /* A typeinfo object -> tt_tinfo_var.
@@ -7696,10 +7702,6 @@ trees_out::tree_node (tree t)
 	dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
       goto done;
     }
-
-  /* Some decls are never by name.  */
-  if (TREE_CODE (t) == PARM_DECL || !DECL_CONTEXT (t))
-    goto by_value;
 
   if (refs_tng && !force && DECL_ARTIFICIAL (t) && TREE_CODE (t) == VAR_DECL)
     {

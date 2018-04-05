@@ -326,7 +326,7 @@ extern void finish_namespace_using_directive (tree, tree);
 extern void finish_local_using_directive (tree, tree);
 extern tree pushdecl (tree, bool is_friend = false);
 extern tree pushdecl_outermost_localscope (tree);
-extern tree pushdecl_top_level (tree, bool is_friend = false);
+extern tree pushdecl_top_level (tree, tree *maybe_init = NULL);
 extern tree pushdecl_top_level_and_finish (tree, tree);
 extern tree pushtag (tree, tree, tag_scope);
 extern int push_namespace (tree, bool make_inline = false);
