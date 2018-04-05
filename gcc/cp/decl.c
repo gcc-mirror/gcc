@@ -7322,9 +7322,9 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
 	inform (DECL_SOURCE_LOCATION (field), "declared here");
 	return error_mark_node;
       }
-    else if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
+    else if (!accessible_p (type, field, true))
       {
-	error_at (loc, "cannot decompose non-public member %qD of %qT",
+	error_at (loc, "cannot decompose inaccessible member %qD of %qT",
 		  field, type);
 	inform (DECL_SOURCE_LOCATION (field),
 		TREE_PRIVATE (field)
