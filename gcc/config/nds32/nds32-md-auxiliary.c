@@ -891,8 +891,8 @@ nds32_mem_format (rtx op)
     {
       regno = REGNO (XEXP (XEXP (op, 1), 0));
       val = INTVAL (XEXP (XEXP (op, 1), 1));
-      if (regno < 8 && val < 32)
-	return ADDRESS_POST_INC_LO_REG_IMM3U;
+      if (regno < 8 && val > 0 && val < 32)
+	return ADDRESS_POST_MODIFY_LO_REG_IMM3U;
     }
 
   if ((GET_CODE (op) == PLUS)
@@ -903,7 +903,7 @@ nds32_mem_format (rtx op)
 
       regno = REGNO(XEXP (op, 0));
 
-      if (regno > 7
+      if (regno > 8
 	  && regno != SP_REGNUM
 	  && regno != FP_REGNUM)
 	return ADDRESS_NOT_16BIT_FORMAT;
@@ -971,7 +971,11 @@ nds32_output_16bit_store (rtx *operands, int byte)
       output_asm_insn (pattern, operands);
       break;
     case ADDRESS_POST_INC_LO_REG_IMM3U:
-      snprintf (pattern, sizeof (pattern), "s%ci333.bi\t%%1, %%0", size);
+      snprintf (pattern, sizeof (pattern), "swi333.bi\t%%1, %%0, 4");
+      output_asm_insn (pattern, operands);
+      break;
+    case ADDRESS_POST_MODIFY_LO_REG_IMM3U:
+      snprintf (pattern, sizeof (pattern), "swi333.bi\t%%1, %%0");
       output_asm_insn (pattern, operands);
       break;
     case ADDRESS_FP_IMM7U:
@@ -1010,7 +1014,11 @@ nds32_output_16bit_load (rtx *operands, int byte)
       output_asm_insn (pattern, operands);
       break;
     case ADDRESS_POST_INC_LO_REG_IMM3U:
-      snprintf (pattern, sizeof (pattern), "l%ci333.bi\t%%0, %%1", size);
+      snprintf (pattern, sizeof (pattern), "lwi333.bi\t%%0, %%1, 4");
+      output_asm_insn (pattern, operands);
+      break;
+    case ADDRESS_POST_MODIFY_LO_REG_IMM3U:
+      snprintf (pattern, sizeof (pattern), "lwi333.bi\t%%0, %%1");
       output_asm_insn (pattern, operands);
       break;
     case ADDRESS_R8_IMM7U:

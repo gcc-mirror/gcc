@@ -288,7 +288,9 @@
 (define_memory_constraint "U33"
   "Memory constraint for 333 format"
   (and (match_code "mem")
-       (match_test "nds32_mem_format (op) == ADDRESS_LO_REG_IMM3U")))
+       (match_test "nds32_mem_format (op) == ADDRESS_POST_INC_LO_REG_IMM3U
+		    || nds32_mem_format (op) == ADDRESS_POST_MODIFY_LO_REG_IMM3U
+		    || nds32_mem_format (op) == ADDRESS_LO_REG_IMM3U")))
 
 (define_memory_constraint "U45"
   "Memory constraint for 45 format"
