@@ -1,5 +1,8 @@
 2018-04-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84665 - ICE with array of empty class.
+	* decl2.c (cp_check_const_attributes): Use fold_non_dependent_expr.
+
 	PR c++/85006 - -fconcepts ICE with A<auto...> return type
 	* pt.c (tsubst_pack_expansion): Allow unsubstituted auto pack.
 
