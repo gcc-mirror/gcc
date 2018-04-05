@@ -1319,9 +1319,11 @@ process_init_constructor_array (tree type, tree init, int nested,
       ce->value
 	= massage_init_elt (TREE_TYPE (type), ce->value, nested, complain);
 
-      if (ce->value != error_mark_node)
-	gcc_assert (same_type_ignoring_top_level_qualifiers_p
-		      (TREE_TYPE (type), TREE_TYPE (ce->value)));
+      gcc_checking_assert
+	(ce->value == error_mark_node
+	 || (same_type_ignoring_top_level_qualifiers_p
+	     (strip_array_types (TREE_TYPE (type)),
+	      strip_array_types (TREE_TYPE (ce->value)))));
 
       flags |= picflag_from_initializer (ce->value);
     }
