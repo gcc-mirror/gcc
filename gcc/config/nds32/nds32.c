@@ -2422,6 +2422,14 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       /* No need to handle following process, so return immediately.  */
       return;
 
+    case 'e':
+      gcc_assert (MEM_P (x)
+		  && GET_CODE (XEXP (x, 0)) == PLUS
+		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT);
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (XEXP (XEXP (x, 0), 1)));
+
+      /* No need to handle following process, so return immediately.  */
+      return;
     case 'B':
       /* Use exact_log2() to search the 1-bit position.  */
       gcc_assert (CONST_INT_P (x));

@@ -1,3 +1,14 @@
+2018-04-05  Shiva Chen  <shiva0217@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/constraints.md (Ufe): New memory constraint.
+	* config/nds32/nds32-md-auxiliary.c (nds32_mem_format,
+	nds32_output_16bit_load): Consider r8 register for lwi45.fe format.
+	* config/nds32/nds32.c (nds32_print_operand): Output lwi45.fe
+	operands.
+	* config/nds32/nds32.h (nds32_16bit_address_type): Add ADDRESS_R8_IMM7U.
+	* config/nds32/nds32.md (*mov<mode>): Adjust pattern.
+
 2018-04-05  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.md: Use optimize_size in the condition for

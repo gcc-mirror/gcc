@@ -925,6 +925,10 @@ nds32_mem_format (rtx op)
 	case E_SImode:
 	case E_SFmode:
 	case E_DFmode:
+	  /* r8 imply fe format.  */
+	  if ((regno == 8) &&
+	      (val >= -128 && val <= -4 && (val % 4 == 0)))
+	    return ADDRESS_R8_IMM7U;
 	  /* fp imply 37 format.  */
 	  if ((regno == FP_REGNUM) &&
 	      (val >= 0 && val < 512 && (val % 4 == 0)))
@@ -1008,6 +1012,9 @@ nds32_output_16bit_load (rtx *operands, int byte)
     case ADDRESS_POST_INC_LO_REG_IMM3U:
       snprintf (pattern, sizeof (pattern), "l%ci333.bi\t%%0, %%1", size);
       output_asm_insn (pattern, operands);
+      break;
+    case ADDRESS_R8_IMM7U:
+      output_asm_insn ("lwi45.fe\t%0, %e1", operands);
       break;
     case ADDRESS_FP_IMM7U:
       output_asm_insn ("lwi37\t%0, %1", operands);
