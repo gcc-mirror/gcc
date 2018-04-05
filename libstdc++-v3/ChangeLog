@@ -1,3 +1,8 @@
+2018-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Qualify
+	__get calls to avoid ADL and avoid ambiguity due to Clang bug.
+
 2018-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85183
@@ -18,7 +23,7 @@
 	(less::__not_overloaded, greater_equal::__not_overloaded)
 	(less_equal::__not_overloaded): Fix ambiguous specializations.
 	* testsuite/20_util/function_objects/comparisons_pointer.cc: Add
-	tests for type with overlaoded operators.
+	tests for type with overloaded operators.
 
 2018-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
