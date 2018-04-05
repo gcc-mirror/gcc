@@ -5415,12 +5415,15 @@ check_array_designated_initializer (constructor_elt *ce,
 						  ce->index, true);
       if (ce_index
 	  && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (ce_index))
-	  && (TREE_CODE (ce_index = maybe_constant_value (ce_index))
+	  && (TREE_CODE (ce_index = fold_non_dependent_expr (ce_index))
 	      == INTEGER_CST))
 	{
 	  /* A C99 designator is OK if it matches the current index.  */
 	  if (wi::to_wide (ce_index) == index)
-	    return true;
+	    {
+	      ce->index = ce_index;
+	      return true;
+	    }
 	  else
 	    sorry ("non-trivial designated initializers not supported");
 	}
@@ -5463,8 +5466,12 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	  constructor_elt *ce;
 	  HOST_WIDE_INT i;
 	  FOR_EACH_VEC_SAFE_ELT (v, i, ce)
-	    if (!check_array_designated_initializer (ce, i))
-	      failure = 1;
+	    {
+	      if (instantiation_dependent_expression_p (ce->index))
+		return;
+	      if (!check_array_designated_initializer (ce, i))
+		failure = 1;
+	    }
 	}
 
       if (failure)

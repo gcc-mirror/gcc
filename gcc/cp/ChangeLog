@@ -1,5 +1,11 @@
 2018-04-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85136 - ICE with designated init in template.
+	* decl.c (maybe_deduce_size_from_array_init): Handle dependent
+	designated initializer.
+	(check_array_designated_initializer): Update ce->index with the
+	constant value.
+
 	PR c++/83808 - ICE with VLA initialization.
 	* typeck2.c (process_init_constructor_array): Don't require a VLA
 	initializer to have VLA type.
