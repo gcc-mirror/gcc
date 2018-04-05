@@ -26217,6 +26217,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   // FIXME cache artificial deduction guides
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type)); iter; ++iter)
     {
+      /* Skip inherited constructors.  */
+      if (iter.using_p ())
+	continue;
+
       tree guide = build_deduction_guide (*iter, outer_args, complain);
       if (guide == error_mark_node)
 	return error_mark_node;

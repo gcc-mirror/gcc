@@ -1,5 +1,8 @@
 2018-04-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/82152 - ICE with class deduction and inherited ctor.
+	* pt.c (do_class_deduction): Ignore inherited ctors.
+
 	PR c++/84665 - ICE with array of empty class.
 	* decl2.c (cp_check_const_attributes): Use fold_non_dependent_expr.
 
