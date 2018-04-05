@@ -434,10 +434,10 @@
    (set_attr "length"       "4")])
 
 (define_insn "*sub_srli"
-  [(set (match_operand:SI 0 "register_operand"                         "=   r")
-	(minus:SI (match_operand:SI 1 "register_operand"               "    r")
-		  (lshiftrt:SI (match_operand:SI 2 "register_operand"  "    r")
-			       (match_operand:SI 3 "immediate_operand" " Iu05"))))]
+  [(set (match_operand:SI 0 "register_operand"                           "=   r")
+	(minus:SI (match_operand:SI 1 "register_operand"                 "    r")
+		  (lshiftrt:SI (match_operand:SI 2 "register_operand"    "    r")
+			       (match_operand:SI 3 "nds32_imm5u_operand" " Iu05"))))]
   "TARGET_ISA_V3"
   "sub_srli\t%0, %1, %2, %3"
   [(set_attr "type" "alu_shift")
@@ -626,20 +626,20 @@
    (set_attr "feature" "v3m, v1, v1, v1, v1, v1,v3m,v3m, v1, v1, v1, v3,pe1")])
 
 (define_insn "*and_slli"
-  [(set (match_operand:SI 0 "register_operand"                      "=   r")
-	(and:SI (ashift:SI (match_operand:SI 1 "register_operand"   "    r")
-			    (match_operand:SI 2 "immediate_operand" " Iu05"))
-		(match_operand:SI 3 "register_operand"              "    r")))]
+  [(set (match_operand:SI 0 "register_operand"                        "=   r")
+	(and:SI (ashift:SI (match_operand:SI 1 "register_operand"     "    r")
+			    (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
+		(match_operand:SI 3 "register_operand"                "    r")))]
   "TARGET_ISA_V3"
   "and_slli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
    (set_attr "length"       "4")])
 
 (define_insn "*and_srli"
-  [(set (match_operand:SI 0 "register_operand"                       "=   r")
-	(and:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"  "    r")
-			     (match_operand:SI 2 "immediate_operand" " Iu05"))
-		(match_operand:SI 3 "register_operand"               "    r")))]
+  [(set (match_operand:SI 0 "register_operand"                         "=   r")
+	(and:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"    "    r")
+			     (match_operand:SI 2 "nds32_imm5u_operand" " Iu05"))
+		(match_operand:SI 3 "register_operand"                 "    r")))]
   "TARGET_ISA_V3"
   "and_srli\t%0, %3, %1, %2"
   [(set_attr "type" "alu_shift")
