@@ -22841,6 +22841,7 @@ bt_instantiate_type_proc (binding_entry entry, void *data)
   tree storage = *(tree *) data;
 
   if (MAYBE_CLASS_TYPE_P (entry->type)
+      && CLASSTYPE_TEMPLATE_INFO (entry->type)
       && !uses_template_parms (CLASSTYPE_TI_ARGS (entry->type)))
     do_type_instantiation (TYPE_MAIN_DECL (entry->type), storage, 0);
 }
