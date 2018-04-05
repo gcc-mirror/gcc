@@ -5090,7 +5090,7 @@ start_decl (const cp_declarator *declarator,
     }
 
   /* If #pragma weak was used, mark the decl weak now.  */
-  if (!processing_template_decl)
+  if (!processing_template_decl && !DECL_DECOMPOSITION_P (decl))
     maybe_apply_pragma_weak (decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
@@ -7510,6 +7510,7 @@ cp_maybe_mangle_decomp (tree decl, tree first, unsigned int count)
       for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
 	v[count - i - 1] = d;
       SET_DECL_ASSEMBLER_NAME (decl, mangle_decomp (decl, v));
+      maybe_apply_pragma_weak (decl);
     }
 }
 
