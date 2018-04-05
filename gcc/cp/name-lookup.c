@@ -6476,8 +6476,8 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	      && init_list_identifier == DECL_NAME (TYPE_NAME (type))
 	      && !CLASSTYPE_TEMPLATE_INFO (type))
 	    {
-	      error ("declaration of std::initializer_list does not match "
-		     "#include <initializer_list>, isn't a template");
+	      error ("declaration of %<std::initializer_list%> does not match "
+		     "%<#include <initializer_list>%>, isn't a template");
 	      return error_mark_node;
 	    }
 	}
