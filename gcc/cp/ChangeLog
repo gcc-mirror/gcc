@@ -1,3 +1,9 @@
+2018-04-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement P0961
+	* decl.c (get_tuple_decomp_init): Check the templatedness
+	of a member get.
+
 2018-04-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85200 - ICE with constexpr if in generic lambda.
