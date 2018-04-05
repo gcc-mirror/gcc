@@ -1,6 +1,10 @@
 2018-04-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::write_namespace): Delete.
+	(module_state::{write_bindings,read_bindings}): Likewise.
+
+	gcc/cp/
 	* module.c (TNG): Delete.
 	(module_state::{tng_read_bindings,write): Constant fold TNG.
 	(trees_out::tree_node, trees_in::finish_type): Likewise.

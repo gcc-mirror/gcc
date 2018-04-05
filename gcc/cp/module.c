@@ -124,8 +124,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MODULE_STAMP 0
 #endif
 
-#define TNG 01 // FIXME:in transition
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2088,12 +2086,6 @@ struct GTY(()) module_state {
   /* The configuration -- cmd args etc.  */
   void write_config (elf_out *to, unsigned crc);
   bool read_config (elf_in *from, unsigned *crc_ptr);
-
-  // FIXME:Old-style interface
-  void write_namespace (elf_out *to, trees_out &trees, tree ns,
-			auto_vec<tree> &stack, auto_vec<tree> &decls);
-  void write_bindings (elf_out *to, unsigned *crc_ptr);
-  bool read_bindings (elf_in *from);
 
   /* Mark a definition prior to walking.  */
   static void mark_definition (trees_out &out, tree decl);
@@ -4292,107 +4284,6 @@ module_state::tng_read_cluster (elf_in *from, unsigned snum)
   return true;
 }
 
-/* Walk the bindings of NS, writing out the bindings for the current
-   TU.   */
-
-// FIXME: There's a problem with namespaces themselves.  We need to
-// know whether the namespace itself is exported, which happens if
-// it's explicitly opened in the purview.  (It may exist because of
-// being opened in the global module.)  Need flag on namespace,
-// perhaps simple as DECL_MODULE_EXPORT.
-
-/* The binding section is a serialized tree.  Each non-namespace
-   binding is a <stroff,shnum> tuple.  Each namespace contains a list
-   of non-namespace bindings, zero, a list of namespace bindings,
-   zero. */
-
-void
-module_state::write_namespace (elf_out *to, trees_out &trees, tree ns,
-			       auto_vec<tree> &stack, auto_vec<tree> &decls)
-{
-  dump () && dump ("Writing namespace %N", ns);
-
-  auto_vec<tree> inner;
-  inner.reserve (10);
-  
-  gcc_checking_assert ((ns == global_namespace) == LOOKUP_FOUND_P (ns));
-  if (!LOOKUP_FOUND_P (ns) && TREE_PUBLIC (ns))
-    LOOKUP_FOUND_P (ns) = true;
-  stack.safe_push (ns);
-
-  hash_table<named_decl_hash>::iterator end
-    (DECL_NAMESPACE_BINDINGS (ns)->end ());
-  for (hash_table<named_decl_hash>::iterator iter
-	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-    {
-      tree binding = *iter;
-
-      if (TREE_CODE (binding) == MODULE_VECTOR)
-	binding = (MODULE_VECTOR_CLUSTER
-		   (binding, (MODULE_SLOT_CURRENT
-			      / MODULE_VECTOR_SLOTS_PER_CLUSTER))
-		   .slots[MODULE_SLOT_CURRENT
-			  % MODULE_VECTOR_SLOTS_PER_CLUSTER]);
-
-      if (!binding)
-	continue;
-
-      // FIXME:slightly awkward for now.
-      decls.safe_push (ns);
-      decls.safe_push (NULL);
-      unsigned hwm = decls.length ();
-      tree name = extract_module_decls (binding, decls);
-      if (!name)
-	{
-	  decls.pop ();
-	  decls.pop ();
-	  continue;
-	}
-
-      tree first = decls[hwm];
-      if (TREE_CODE (first) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (first))
-	{
-	  inner.safe_push (decls.pop ());
-	  gcc_assert (decls.length () == hwm);
-	  decls.pop ();
-	  decls.pop ();
-	  if (!TREE_PUBLIC (first))
-	    continue;
-	  first = NULL_TREE;
-	}
-
-      /* Emit open scopes.  */
-      if (!LOOKUP_FOUND_P (ns))
-	for (unsigned ix = 0; ix != stack.length (); ix++)
-	  {
-	    tree outer = stack[ix];
-	    if (!LOOKUP_FOUND_P (outer))
-	      LOOKUP_FOUND_P (outer) = true;
-	  }
-
-      if (first)
-	{
-	  // FIXME:mark end of this binding
-	  decls[hwm-1] = name;
-	  decls.safe_push (NULL_TREE);
-
-	  // FIXME: register with trees
-	  // FIXME, here we'd emit the section number containing the
-	  // declaration.
-	}
-    }
-
-  while (inner.length ())
-    write_namespace (to, trees, inner.pop (), stack, decls);
-
-  /* Mark end of namespace bindings.  */
-  if (LOOKUP_FOUND_P (ns))
-    LOOKUP_FOUND_P (ns) = false;
-  stack.pop ();
-
-  dump () && dump ("Wrote namespace %N", ns);
-}
-
 /* SPACES is a vector of namespaces.  Sort it so that outer namespaces
    preceed inner namespaces, and then write them out.
    Each namespace is:
@@ -4692,30 +4583,6 @@ module_state::tng_write_bindings (elf_out *to, unsigned *crc_p)
   tng_write_bindings (to, table, crc_p);
 }
 
-/* Bindings: MOD_SNAME_PFX .bindings
-
-   flattened namespace record of which names are bound.  */
-
-void
-module_state::write_bindings (elf_out *to, unsigned *crc_p)
-{
-  trees_out trees (this, global_vec);
-  auto_vec<tree> stack;
-  auto_vec<tree> decls;
-  stack.reserve (20);
-  decls.reserve (20);
-
-  LOOKUP_FOUND_P (global_namespace) = true;
-  write_namespace (to, trees, global_namespace, stack, decls);
-
-  trees.begin ();
-  trees.write (decls);
-
-  // FIXME: For now, there's only one blob holding all the decls
-  trees.end (to, to->name (IDENTIFIER_POINTER (DECL_NAME (global_namespace))),
-	     crc_p);
-}
-
 bool
 module_state::tng_read_namespaces (elf_in *from, auto_vec<tree> &spaces,
 				   std::pair<unsigned, unsigned>& range)
@@ -4779,19 +4646,6 @@ module_state::tng_read_bindings (elf_in *from)
       return false;
 
   return true;
-}
-
-bool
-module_state::read_bindings (elf_in *from)
-{
-  trees_in trees (this, global_vec);
-
-  if (!trees.begin (from, IDENTIFIER_POINTER (DECL_NAME (global_namespace))))
-    return false;
-
-  trees.read ();
-
-  return trees.end (from);
 }
 
 /* Use ELROND format to record the following sections:
