@@ -55,6 +55,11 @@
   "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,call,misc"
   (const_string "unknown"))
 
+;; Insn sub-type
+(define_attr "subtype"
+  "simple,shift"
+  (const_string "simple"))
+
 ;; Length, in bytes, default is 4-bytes.
 (define_attr "length" "" (const_int 4))
 
@@ -736,6 +741,7 @@
   rotri\t%0, %1, %2
   rotr\t%0, %1, %2"
   [(set_attr "type"    "  alu,  alu")
+   (set_attr "subtype" "shift,shift")
    (set_attr "length"  "    4,    4")])
 
 
@@ -788,9 +794,9 @@
   slli333\t%0, %1, %2
   slli\t%0, %1, %2
   sll\t%0, %1, %2"
-  [(set_attr "type"   "alu,alu,alu")
-   (set_attr "length" "  2,  4,  4")])
-
+  [(set_attr "type"    "  alu,  alu,  alu")
+   (set_attr "subtype" "shift,shift,shift")
+   (set_attr "length"  "    2,    4,    4")])
 (define_insn "ashrsi3"
   [(set (match_operand:SI 0 "register_operand"               "=   d,    r, r")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand"  "    0,    r, r")
@@ -800,8 +806,9 @@
   srai45\t%0, %2
   srai\t%0, %1, %2
   sra\t%0, %1, %2"
-  [(set_attr "type"   "alu,alu,alu")
-   (set_attr "length" "  2,  4,  4")])
+  [(set_attr "type"    "  alu,  alu,  alu")
+   (set_attr "subtype" "shift,shift,shift")
+   (set_attr "length"  "    2,    4,    4")])
 
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand"               "=   d,    r, r")
@@ -812,8 +819,9 @@
   srli45\t%0, %2
   srli\t%0, %1, %2
   srl\t%0, %1, %2"
-  [(set_attr "type"   "alu,alu,alu")
-   (set_attr "length" "  2,  4,  4")])
+  [(set_attr "type"    "  alu,  alu,  alu")
+   (set_attr "subtype" "shift,shift,shift")
+   (set_attr "length"  "    2,    4,    4")])
 
 
 ;; ----------------------------------------------------------------------------
