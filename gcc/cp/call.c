@@ -3642,6 +3642,12 @@ merge_conversion_sequences (conversion *user_seq, conversion *std_seq)
 	(*t)->bad_p = true;
     }
 
+  if ((*t)->rvaluedness_matches_p)
+    /* We're binding a reference directly to the result of the conversion.
+       build_user_type_conversion_1 stripped the REFERENCE_TYPE from the return
+       type, but we want it back.  */
+    user_seq->type = TREE_TYPE (TREE_TYPE (user_seq->cand->fn));
+
   /* Replace the identity conversion with the user conversion
      sequence.  */
   *t = user_seq;
