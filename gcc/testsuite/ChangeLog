@@ -1,3 +1,9 @@
+2018-04-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/struct-simple.c: Revert r254862.
+	* lib/target-supports.exp
+	(check_effective_target_word_mode_no_slow_unalign): Likewise.
+
 2018-04-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85244
