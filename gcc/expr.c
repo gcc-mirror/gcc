@@ -2782,9 +2782,7 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
 
   n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   dst_words = XALLOCAVEC (rtx, n_regs);
-  bitsize = BITS_PER_WORD;
-  if (targetm.slow_unaligned_access (word_mode, TYPE_ALIGN (TREE_TYPE (src))))
-    bitsize = MIN (TYPE_ALIGN (TREE_TYPE (src)), BITS_PER_WORD);
+  bitsize = MIN (TYPE_ALIGN (TREE_TYPE (src)), BITS_PER_WORD);
 
   /* Copy the structure BITSIZE bits at a time.  */
   for (bitpos = 0, xbitpos = padding_correction;

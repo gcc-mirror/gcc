@@ -1,3 +1,8 @@
+2018-04-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* expr.c (copy_blkmode_to_reg): Revert 254862.
+	* doc/sourcebuild.texi (word_mode_no_slow_unalign): Likewise.
+
 2018-04-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85244
