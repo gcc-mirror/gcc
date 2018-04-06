@@ -220,7 +220,7 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S,C}]] \
 
 # Additional hotpatch torture tests.
 torture-init
-set-torture-options [list -Os -O0 -O1 -O2 -O3]
+set-torture-options [list -Os -O1 -O2 -O3]
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/hotpatch-\[0-9\]*.c]] \
 	"" $DEFAULT_CFLAGS
 torture-finish
