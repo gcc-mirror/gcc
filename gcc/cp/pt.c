@@ -16235,6 +16235,12 @@ tsubst_decomp_names (tree decl, tree pattern_decl, tree args,
       DECL_HAS_VALUE_EXPR_P (decl2) = 1;
       if (VAR_P (decl3))
 	DECL_TEMPLATE_INSTANTIATED (decl3) = 1;
+      else
+	{
+	  gcc_assert (errorcount);
+	  decl = error_mark_node;
+	  continue;
+	}
       maybe_push_decl (decl3);
       if (error_operand_p (decl3))
 	decl = error_mark_node;
