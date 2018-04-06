@@ -13,9 +13,6 @@ void test (void)
   std::cin >> i; // { dg-error ".cin. is not a member of .std." }
   // { dg-message ".std::cin. is defined in header .<iostream>.; did you forget to .#include <iostream>.?" "" { target *-*-* } .-1 }
 
-  std::array a; // { dg-error ".array. is not a member of .std." }
-  // { dg-message ".std::array. is defined in header .<array>.; did you forget to .#include <array>.?" "" { target *-*-* } .-1 }
-
   std::deque a; // { dg-error ".deque. is not a member of .std." }
   // { dg-message ".std::deque. is defined in header .<deque>.; did you forget to .#include <deque>.?" "" { target *-*-* } .-1 }
 
@@ -29,9 +26,5 @@ void test (void)
 
   std::pair<int,float> p; // { dg-error ".pair. is not a member of .std." }
   // { dg-message ".std::pair. is defined in header .<utility>.; did you forget to .#include <utility>.?" "" { target *-*-* } .-1 }
-  // { dg-error "expected primary-expression before .int." "" { target *-*-* } .-2 }
-
-  std::tuple<int,float> p; // { dg-error ".tuple. is not a member of .std." }
-  // { dg-message ".std::tuple. is defined in header .<tuple>.; did you forget to .#include <tuple>.?" "" { target *-*-* } .-1 }
   // { dg-error "expected primary-expression before .int." "" { target *-*-* } .-2 }
 }
