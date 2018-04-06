@@ -1,3 +1,9 @@
+2018-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85210
+	* pt.c (tsubst_decomp_names): Return error_mark_node and assert
+	errorcount is set if tsubst doesn't return a VAR_DECL.
+
 2018-04-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85021
