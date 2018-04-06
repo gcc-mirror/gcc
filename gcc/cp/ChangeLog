@@ -1,5 +1,9 @@
 2018-04-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85242 - ICE with class definition in template parm.
+	* cp-tree.h (PROCESSING_REAL_TEMPLATE_DECL_P): False if
+	processing_template_parmlist.
+
 	PR c++/85240 - LTO ICE with using of undeduced auto fn.
 	* cp-gimplify.c (cp_genericize_r): Discard using of undeduced auto.
 

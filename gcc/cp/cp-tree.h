@@ -4719,7 +4719,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    entity with its own template parameter list, and which is not a
    full specialization.  */
 #define PROCESSING_REAL_TEMPLATE_DECL_P() \
-  (processing_template_decl > template_class_depth (current_scope ()))
+  (!processing_template_parmlist \
+   && processing_template_decl > template_class_depth (current_scope ()))
 
 /* Nonzero if this VAR_DECL or FUNCTION_DECL has already been
    instantiated, i.e. its definition has been generated from the
