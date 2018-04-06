@@ -1,3 +1,8 @@
+2018-04-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85021
+	* g++.dg/lookup/missing-std-include-7.C: New test.
+
 2018-04-06  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/struct-simple.c: Revert r254862.

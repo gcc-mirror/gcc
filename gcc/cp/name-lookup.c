@@ -41,6 +41,7 @@ static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
+static bool maybe_suggest_missing_std_header (location_t location, tree name);
 
 /* Create an overload suitable for recording an artificial TYPE_DECL
    and another decl.  We use this machanism to implement the struct
@@ -5330,6 +5331,48 @@ qualify_lookup (tree val, int flags)
   return true;
 }
 
+/* Is there a "using namespace std;" directive within USINGS?  */
+
+static bool
+using_directives_contain_std_p (vec<tree, va_gc> *usings)
+{
+  if (!usings)
+    return false;
+
+  for (unsigned ix = usings->length (); ix--;)
+    if ((*usings)[ix] == std_node)
+      return true;
+
+  return false;
+}
+
+/* Is there a "using namespace std;" directive within the current
+   namespace (or its ancestors)?
+   Compare with name_lookup::search_unqualified.  */
+
+static bool
+has_using_namespace_std_directive_p ()
+{
+  /* Look at local using-directives.  */
+  for (cp_binding_level *level = current_binding_level;
+       level->kind != sk_namespace;
+       level = level->level_chain)
+    if (using_directives_contain_std_p (level->using_directives))
+      return true;
+
+  /* Look at this namespace and its ancestors.  */
+  for (tree scope = current_namespace; scope; scope = CP_DECL_CONTEXT (scope))
+    {
+      if (using_directives_contain_std_p (DECL_NAMESPACE_USING (scope)))
+	return true;
+
+      if (scope == global_namespace)
+	break;
+    }
+
+  return false;
+}
+
 /* Suggest alternatives for NAME, an IDENTIFIER_NODE for which name
    lookup failed.  Search through all available namespaces and print out
    possible candidates.  If no exact matches are found, and
@@ -5400,11 +5443,23 @@ suggest_alternatives_for (location_t location, tree name,
 	  inform (location_of (val), "  %qE", val);
 	}
       candidates.release ();
+      return;
     }
-  else if (!suggest_misspellings)
-    ;
-  else if (name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME,
-					       location))
+
+  /* No candidates were found in the available namespaces.  */
+
+  /* If there's a "using namespace std;" active, and this
+     is one of the most common "std::" names, then it's probably a
+     missing #include.  */
+  if (has_using_namespace_std_directive_p ())
+    if (maybe_suggest_missing_std_header (location, name))
+      return;
+
+  /* Otherwise, consider misspellings.  */
+  if (!suggest_misspellings)
+    return;
+  if (name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME,
+					  location))
     {
       /* Show a spelling correction.  */
       gcc_rich_location richloc (location);
@@ -5512,20 +5567,13 @@ get_std_name_hint (const char *name)
   return NULL;
 }
 
-/* If SCOPE is the "std" namespace, then suggest pertinent header
-   files for NAME at LOCATION.
+/* Suggest pertinent header files for NAME at LOCATION, for common
+   names within the "std" namespace.
    Return true iff a suggestion was offered.  */
 
 static bool
-maybe_suggest_missing_header (location_t location, tree name, tree scope)
+maybe_suggest_missing_std_header (location_t location, tree name)
 {
-  if (scope == NULL_TREE)
-    return false;
-  if (TREE_CODE (scope) != NAMESPACE_DECL)
-    return false;
-  /* We only offer suggestions for the "std" namespace.  */
-  if (scope != std_node)
-    return false;
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
   const char *name_str = IDENTIFIER_POINTER (name);
@@ -5540,6 +5588,23 @@ maybe_suggest_missing_header (location_t location, tree name, tree scope)
 	  " did you forget to %<#include %s%>?",
 	  name_str, header_hint, header_hint);
   return true;
+}
+
+/* If SCOPE is the "std" namespace, then suggest pertinent header
+   files for NAME at LOCATION.
+   Return true iff a suggestion was offered.  */
+
+static bool
+maybe_suggest_missing_header (location_t location, tree name, tree scope)
+{
+  if (scope == NULL_TREE)
+    return false;
+  if (TREE_CODE (scope) != NAMESPACE_DECL)
+    return false;
+  /* We only offer suggestions for the "std" namespace.  */
+  if (scope != std_node)
+    return false;
+  return maybe_suggest_missing_std_header (location, name);
 }
 
 /* Look for alternatives for NAME, an IDENTIFIER_NODE for which name
