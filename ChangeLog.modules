@@ -1,5 +1,33 @@
 2018-04-06  Nathan Sidwell  <nathan@acm.org>
 
+	Lazy loading!
+	gcc/cp/
+	* cp-tree.h (union mc_slot): New.
+	(struct module_cluster): Use it.
+	(lazy_load_binding): Take an mc_slot.
+	* module.c (module_state::release): End the elf source.
+	(module_state::read_function_def): Save and restore
+	current_function_decl.
+	(module_state::read): Enable lazy loading.
+	(module_state::lazy_load): Take an mc_slot, adjust.
+	(lazy_load_binding): Likewise.
+	* name-lookup.c (module_binding_slot): Return an mc_slot pointer.
+	(fixed_module_binding_slot): New.
+	(name_lookup::search_namespace_only): Lazily load.
+	(do_pushdecl): Use fixed_module_binding_slot.
+	(merge_global_decl): Adjust.
+	(import_module_binding): Install lazy cookie.
+	(set_module_binding): Adjust.  Kill stale & wrong global module
+	bits.
+	(lookup_by_ident): Lazily load.
+	(reuse_namespace): Use fixed_module_binding_slot.
+	(make_namespace_finish): Likweise.
+	(add_imported_namespace, find_imported_namespace): Adjust.
+	gcc/c-family/
+	* c.opt (fmodule-lazy): Default on.
+	gcc/testsuite/
+	* g++.dg/modules/lazy-1_[ab].C: New.
+
 	gcc/cp/
 	* module.c (elf::E_BAD_LAZY): New error.
 	(elf::has_error): New.

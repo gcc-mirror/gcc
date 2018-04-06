@@ -2207,7 +2207,7 @@ struct GTY(()) module_state {
   void read (elf_in *from, unsigned *crc_ptr);
 
   /* Lazily read a section.  */
-  bool lazy_load (tree ns, tree id, tree *slot, bool outermost = false);
+  bool lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost = false);
 
  private:
   /* Check or complete a read.  */
@@ -5940,8 +5940,12 @@ module_state::release (bool all)
   if (remap)
     {
       vec_free (remap);
-      delete from;
-      from = NULL;
+      if (from)
+	{
+	  from->end ();
+	  delete from;
+	  from = NULL;
+	}
     }
 }
 
@@ -6391,12 +6395,17 @@ module_state::read_function_def (trees_in &in, tree decl)
   if (constexpr_body)
     register_constexpr_fundef (decl, constexpr_body);
 
+  /* When lazy loading is in effect, we can be in the middle of
+     parsing or instantiating a function.  */
+  // FIXME:This smells bad
+  tree old_cfd = current_function_decl;
+  struct function *old_cfun = cfun;
   current_function_decl = decl;
   allocate_struct_function (decl, false);
   cfun->language = ggc_cleared_alloc<language_function> ();
   cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
-  set_cfun (NULL);
-  current_function_decl = NULL_TREE;
+  set_cfun (old_cfun);
+  current_function_decl = old_cfd;
 
   if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
     {
@@ -7498,9 +7507,7 @@ module_state::read (elf_in *in, unsigned *crc_ptr)
   from->keep_sections (range.first, range.second);
   lazy = range.second - range.first;
 
-  if (mod == MODULE_PURVIEW || !flag_module_lazy
-      // FIXME:Implement lazy loading
-      || true)
+  if (mod == MODULE_PURVIEW || !flag_module_lazy)
     {
       /* Read the sections in forward order, so that dependencies are read
 	 first.  See note about tarjan_connect.  */
@@ -7520,6 +7527,7 @@ bool
 module_state::check_error (bool outermost, tree ns, tree id)
 {
   bool done = loading == ~0u && (from->has_error () || !lazy);
+  // FIXME freeup remap too?
   if (done)
     from->end ();
 
@@ -8171,8 +8179,8 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  if (from->begin ())
 	    state->read (from, crc_ptr);
 	  bool failed = state->check_error (module_p || export_p);
-	  gcc_assert (failed || !state->lazy);
-	  state->announce ("imported");
+	  state->announce (flag_module_lazy && !module_p
+			   ? "lazily" : "imported");
 	  dump.pop (n);
 	  state->pop_location ();
 	  if (failed)
@@ -8210,16 +8218,15 @@ module_state::do_import (location_t loc, tree name, bool module_p,
    named ID.  Lazily load it, or die trying.  */
 
 bool
-module_state::lazy_load (tree ns, tree id, tree *slot, bool outermost)
+module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 {
   push_location ();
   unsigned n = dump.push (this);
 
-  unsigned snum = 0; // FIXME
-
+  unsigned snum = mslot->get_lazy ();
   dump () && dump ("Lazily loading %P@%N section:%u", ns, id, name, snum);
   unsigned old_loading = loading;
-  if (snum >= loading)
+  if (snum >= loading || !flag_module_lazy)
     from->set_error (elf::E_BAD_LAZY);
   else
     {
@@ -8230,7 +8237,7 @@ module_state::lazy_load (tree ns, tree id, tree *slot, bool outermost)
       lazy_depth--;
       loading = old_loading;
       lazy--;
-      if (*slot) // FIXME
+      if (mslot->is_lazy ())
 	from->set_error (elf::E_BAD_LAZY);
     }
   bool failed = check_error (outermost, ns, id);
@@ -8243,9 +8250,10 @@ module_state::lazy_load (tree ns, tree id, tree *slot, bool outermost)
 }
 
 void
-lazy_load_binding (unsigned mod, tree ns, tree id, tree *slot)
+lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 {
-  (*module_state::modules)[mod]->lazy_load (ns, id, slot, true);
+  gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
+  (*module_state::modules)[mod]->lazy_load (ns, id, mslot, outer);
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */

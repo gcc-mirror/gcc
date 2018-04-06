@@ -112,7 +112,7 @@ find_namespace_value (tree ns, tree name)
    construction, one can only create new binding slots at the end of
    the array.  */
 
-static tree *
+static mc_slot *
 module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 {
   unsigned clusters = 0;
@@ -153,7 +153,9 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 		    + cluster->indices[offset].span <= ix)
 		  goto not_found;
 		if (cluster->indices[offset].base <= ix)
-		  return &cluster->slots[offset];
+		  {
+		    return &cluster->slots[offset];
+		  }
 	    }
 	}
     not_found:;
@@ -175,8 +177,9 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 	clusters = 0;
     }
   else if (ix == MODULE_SLOT_CURRENT)
-    /* The current TU can just use slot directly.  */
-    return slot;
+    /* The current TU can just use slot directly.  But make it look
+       like an mc_slot.  */
+    return reinterpret_cast <mc_slot *> (slot);
   else if (!create)
     return NULL;
 
@@ -222,6 +225,17 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
   cluster->indices[offset].span = 1;
   cluster->slots[offset] = NULL_TREE;
   return &cluster->slots[offset];
+}
+
+static tree *
+fixed_module_binding_slot (tree *slot, tree name, bool global_p, bool create)
+{
+  mc_slot *mslot
+    = module_binding_slot (slot, name,
+			   global_p ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT,
+			   create);
+  gcc_checking_assert (!mslot || !mslot->is_lazy ());
+  return reinterpret_cast<tree *> (mslot);
 }
 
 /* Add DECL to the list of things declared in binding level B.  */
@@ -745,10 +759,18 @@ name_lookup::search_namespace_only (tree scope)
 			       == MODULE_IMPORT_BASE);
 	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ++cluster, --ix;)
 	    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
-	      if (cluster->slots[jx])
-		marker = process_module_binding
-		  (imports, marker, cluster->slots[jx],
-		   cluster->indices[jx].base, cluster->indices[jx].span);
+	      {
+		if (cluster->slots[jx].is_lazy ())
+		  {
+		    gcc_assert (cluster->indices[jx].span == 1);
+		    lazy_load_binding (cluster->indices[jx].base,
+				       scope, name, &cluster->slots[jx], true);
+		  }
+		if (cluster->slots[jx])
+		  marker = process_module_binding
+		    (imports, marker, cluster->slots[jx],
+		     cluster->indices[jx].base, cluster->indices[jx].span);
+	      }
 	  found |= marker & 1;
 	}
       else if (current_module <= MODULE_IMPORT_BASE)
@@ -3330,8 +3352,8 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (slot)
 	    {
 	      gcc_assert (current_module <= MODULE_IMPORT_BASE);
-	      mslot = module_binding_slot (slot, name, MODULE_SLOT_CURRENT,
-					   ns == current_namespace);
+	      mslot = fixed_module_binding_slot (slot, name, false,
+						 ns == current_namespace);
 	      old = MAYBE_STAT_DECL (*mslot);
 	    }
 	}
@@ -3432,7 +3454,7 @@ do_pushdecl (tree decl, bool is_friend)
 	{
 	  ns = current_namespace;
 	  slot = find_namespace_slot (ns, name, true);
-	  mslot = module_binding_slot (slot, name, MODULE_SLOT_CURRENT, true);
+	  mslot = fixed_module_binding_slot (slot, name, false, true);
 	  /* Update OLD to reflect the namespace we're going to be
 	     pushing into.  */
 	  old = MAYBE_STAT_DECL (*mslot);
@@ -3483,7 +3505,7 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   /* We know we'll eventually insert the decl, so we can create the
      slot now.  */
   tree *slot = find_namespace_slot (ctx, DECL_NAME (decl), true);
-  tree *mslot = module_binding_slot
+  mc_slot *mslot = module_binding_slot
     (slot, DECL_NAME (decl),
      mod_ix == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod_ix, false);
   tree old = NULL_TREE;
@@ -3491,11 +3513,14 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   if (!mslot)
     return decl;
 
+  if (mslot->is_lazy ())
+    *mslot = NULL_TREE;
+
   if (*mslot && anticipated_builtin_p (*mslot))
     /* Zap out an anticipated builtin.  */
     *mslot = NULL_TREE;
 
-  for (ovl_iterator iter (MAYBE_STAT_DECL (*mslot)); !old && iter; ++iter)
+  for (ovl_iterator iter (MAYBE_STAT_DECL (tree (*mslot))); !old && iter; ++iter)
     if (!iter.using_p ())
       old = duplicate_decls (decl, *iter, false);
 
@@ -3572,12 +3597,13 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
 {
   gcc_assert (mod >= MODULE_IMPORT_BASE);
   tree *slot = find_namespace_slot (ns, name, true);
-  tree *mslot = module_binding_slot (slot, name, mod, true);
+  mc_slot *mslot = module_binding_slot (slot, name, mod, true);
 
-  if (*mslot)
+  if (mslot->is_lazy () || *mslot)
+    /* Oops, something was already there.  */
     return false;
-  // FIXME:Squirrel snum into binding
-  *mslot = error_mark_node;
+
+  mslot->set_lazy (snum);
   return true;
 }
 
@@ -3599,66 +3625,39 @@ set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 	      || DECL_NAMESPACE_ALIAS (value));
 
   tree *slot = find_namespace_slot (ns, name, true);
-  tree *mslot = module_binding_slot
+  mc_slot *mslot = module_binding_slot
     (slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod,
-     true);
+     mod < MODULE_IMPORT_BASE);
 
-  gcc_assert (slot == mslot ? !*mslot : *mslot == error_mark_node);
-  *mslot = NULL_TREE;
+  gcc_assert ((mod >= MODULE_IMPORT_BASE) == mslot->is_lazy ());
 
   // FIXME: with changes to global module, this is now overcomplicated
   tree export_tail = NULL_TREE;
   for (ovl_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
-      bool found = false;
 
-      if (*mslot)
-	{
-	  tree old = MAYBE_STAT_DECL (*mslot);
-
-	  // FIXME:Hidden names?
-	  for (ovl_iterator cur (old); !found && cur; ++cur)
-	    /* We'll already have done lookup when reading in the decl
-	       itself, so pointer equality is sufficient.  */
-	    if (*cur == decl)
-	      found = true;
-
-	  if (!found)
-	    {
-	      gcc_assert (!TREE_CHAIN (decl));
-	      old = update_binding (NAMESPACE_LEVEL (ns), NULL, mslot,
-				    old, decl, DECL_FRIEND_P (decl));
-	      if (old != decl)
-		// Should we bail out at this point?
-		found = true;
-	    }
-	}
-      else if (!iter.using_p ())
+      if (!iter.using_p ())
 	{
 	  gcc_assert (!DECL_CHAIN (decl));
 	  export_tail = iter.export_tail (export_tail);
 	  add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
 	}
-      if (!found)
-	newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
+      newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
     }
 
-  if (!*mslot)
+  /* There was nothing there, just install the whole binding.  */
+  if (export_tail == value && TREE_CODE (value) != OVERLOAD)
+    /* We only use the export-tail linky when there's an actual
+       overload.  */
+    export_tail = NULL_TREE;
+  if (export_tail)
     {
-      /* There was nothing there, just install the whole binding.  */
-      if (export_tail == value && TREE_CODE (value) != OVERLOAD)
-	/* We only use the export-tail linky when there's an actual
-	   overload.  */
-	export_tail = NULL_TREE;
-      if (export_tail)
-	{
-	  *mslot = stat_hack (value, NULL_TREE);
-	  STAT_EXPORTS (*mslot) = export_tail;
-	}
-      else
-	*mslot = value;
+      *mslot = stat_hack (value, NULL_TREE);
+      STAT_EXPORTS (*mslot) = export_tail;
     }
+  else
+    *mslot = value;
 
   return true;
 }
@@ -3679,10 +3678,17 @@ lookup_by_ident (tree ctx, unsigned mod, tree name, tree type, unsigned code)
       /* Although there must be a binding, we're dealing with
 	 untrustworthy data, so check for NULL.  */
       if (tree *slot = find_namespace_slot (ctx, name))
-	if (tree *mslot = module_binding_slot
+	if (mc_slot *mslot = module_binding_slot
 	    (slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod,
 	     false))
-	  binding = *mslot;
+	  {
+	    if (mslot->is_lazy ())
+	      {
+		lazy_load_binding (mod, ctx, name, mslot, false);
+		gcc_assert (!mslot->is_lazy ());
+	      }
+	    binding = *mslot;
+	  }
       break;
 
     case RECORD_TYPE:
@@ -7514,10 +7520,10 @@ reuse_namespace (tree *slot, tree ctx, tree name)
   if (flag_modules && *slot && TREE_PUBLIC (ctx) && name)
     {
       /* Public namespace.  Shared.  */
-      tree *global_slot
-	= TREE_CODE (*slot) == MODULE_VECTOR
-	?  module_binding_slot (slot, name, MODULE_SLOT_GLOBAL, false)
-	: slot;
+      tree *global_slot = slot;
+      if (TREE_CODE (*slot) == MODULE_VECTOR)
+	global_slot = fixed_module_binding_slot (slot, name, true, false);
+
       if (tree decl = *global_slot)
 	if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
 	  return decl;
@@ -7557,8 +7563,7 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
   if (flag_modules && TREE_PUBLIC (ns) && (from_import || *slot != ns))
     {
       /* Place a binding in the global module's slot.  */
-      slot = module_binding_slot (slot, DECL_NAME (ns),
-				  MODULE_SLOT_GLOBAL, true);
+      slot = fixed_module_binding_slot (slot, DECL_NAME (ns), true, true);
       if (*slot && *slot != ns)
 	{
 	  /* Something was already bound there.  */
@@ -7732,9 +7737,8 @@ add_imported_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
 	}
     }
 
-  tree *mslot = module_binding_slot (slot, name, mod, true);
-
-  gcc_assert (!*mslot || *mslot == decl);
+  mc_slot *mslot = module_binding_slot (slot, name, mod, true);
+  gcc_assert (!mslot->is_lazy () && (!*mslot || *mslot == decl));
   *mslot = decl;
 
   return decl;
@@ -7747,7 +7751,7 @@ find_imported_namespace (tree ctx, unsigned mod, tree name)
   gcc_assert (name && TREE_PUBLIC (ctx));
 
   if (tree *slot = find_namespace_slot (ctx, name, false))
-    if (tree *mslot = module_binding_slot
+    if (mc_slot *mslot = module_binding_slot
 	(slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod, false))
       if (tree decl = *mslot)
 	if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))

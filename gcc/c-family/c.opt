@@ -1517,7 +1517,7 @@ C++ ObjC++ Driver RejectNegative Var(flag_modules) Uinteger
 Enable C++ modules-atom (experimental)
 
 fmodule-lazy
-C++ ObjC++ Driver Var(flag_module_lazy) Init (1)
+C++ ObjC++ Driver Var(flag_module_lazy) Init(1)
 Enable lazy module importing.
 
 fmodule-map-dump
