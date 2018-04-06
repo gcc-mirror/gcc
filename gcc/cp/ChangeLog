@@ -1,3 +1,16 @@
+2018-04-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85021
+	* name-lookup.c (using_directives_contain_std_p): New function.
+	(has_using_namespace_std_directive_p): New function.
+	(suggest_alternatives_for): Simplify if/else logic using early
+	returns.  If no candidates were found, and there's a
+	"using namespace std;" directive, call
+	maybe_suggest_missing_std_header.
+	(maybe_suggest_missing_header): Split later part of the function
+	into..
+	(maybe_suggest_missing_std_header): New.
+
 2018-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85242 - ICE with class definition in template parm.
