@@ -4345,9 +4345,10 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  save_pending_stack_adjust (&save);
 	  last = get_last_insn ();
 	  do_pending_stack_adjust ();
+	  machine_mode cmpmode = cmode;
 	  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
 			    GET_CODE (comparison), NULL_RTX, unsignedp,
-			    OPTAB_WIDEN, &comparison, &cmode);
+			    OPTAB_WIDEN, &comparison, &cmpmode);
 	  if (comparison)
 	    {
 	      struct expand_operand ops[4];

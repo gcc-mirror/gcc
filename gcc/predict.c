@@ -3998,6 +3998,9 @@ rebuild_frequencies (void)
     }
   else if (profile_status_for_fn (cfun) == PROFILE_READ)
     update_max_bb_count ();
+  else if (profile_status_for_fn (cfun) == PROFILE_ABSENT
+	   && !flag_guess_branch_prob)
+    ;
   else
     gcc_unreachable ();
   timevar_pop (TV_REBUILD_FREQUENCIES);
@@ -4204,7 +4207,7 @@ test_prediction_value_range ()
 {
   branch_predictor predictors[] = {
 #include "predict.def"
-    {NULL, -1U}
+    { NULL, PROB_UNINITIALIZED }
   };
 
   for (unsigned i = 0; predictors[i].name != NULL; i++)

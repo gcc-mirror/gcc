@@ -466,7 +466,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	      return true;
 	    }
 
-	  if (!loop->force_vectorize)
+	  if (loop->safelen < 2)
 	    {
 	      tree indicator = dr_zero_step_indicator (dra);
 	      if (TREE_CODE (indicator) != INTEGER_CST)
@@ -957,11 +957,11 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
   if (base_alignment < vector_alignment)
     {
-      tree base = drb->base_address;
-      if (TREE_CODE (base) == ADDR_EXPR)
-	base = TREE_OPERAND (base, 0);
-      if (!vect_can_force_dr_alignment_p (base,
-					  vector_alignment * BITS_PER_UNIT))
+      unsigned int max_alignment;
+      tree base = get_base_for_alignment (drb->base_address, &max_alignment);
+      if (max_alignment < vector_alignment
+	  || !vect_can_force_dr_alignment_p (base,
+					     vector_alignment * BITS_PER_UNIT))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -2720,7 +2720,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       /* Allow references with zero step for outer loops marked
 	 with pragma omp simd only - it guarantees absence of
 	 loop-carried dependencies between inner loop iterations.  */
-      if (!loop->force_vectorize)
+      if (loop->safelen < 2)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,

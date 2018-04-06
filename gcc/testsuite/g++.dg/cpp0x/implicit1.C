@@ -7,7 +7,7 @@ class C
 {
   void operator delete (void *); // { dg-message "private" }
 public:
-  virtual ~C();			// { dg-error "overriding" }
+  virtual ~C();			// { dg-message "overridden" }
 };
 
 struct D: C { };		// { dg-error "deleted" }
@@ -20,7 +20,7 @@ struct E
 
 struct F
 {
-  virtual ~F();			// { dg-error "overriding" }
+  virtual ~F();			// { dg-message "overridden" }
 };
 
 struct G: E, F { };		// { dg-error "deleted" }

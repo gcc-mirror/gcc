@@ -1,3 +1,53 @@
+2018-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85100
+	* config/i386/cpuinfo.c (XCR_XFEATURE_ENABLED_MASK): New.
+	(XSTATE_FP): Likewise.
+	(XSTATE_SSE): Likewise.
+	(XSTATE_YMM): Likewise.
+	(XSTATE_OPMASK): Likewise.
+	(XSTATE_ZMM): Likewise.
+	(XSTATE_HI_ZMM): Likewise.
+	(XCR_AVX_ENABLED_MASK): Likewise.
+	(XCR_AVX512F_ENABLED_MASK): Likewise.
+	(get_available_features): Enable AVX and AVX512 features only
+	if their states are supported by OSXSAVE.
+
+2018-03-22  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/85025
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Fix a typo, tmp => 255.
+
+2018-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84945
+	* config/i386/cpuinfo.h (__cpu_features2): Declare.
+	* config/i386/cpuinfo.c (__cpu_features2): New variable for
+	ifndef SHARED only.
+	(set_feature): Define.
+	(get_available_features): Use set_feature macro.  Set __cpu_features2
+	to the second word of features ifndef SHARED.
+
+2018-03-15  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.c (get_available_features): Add
+	FEATURE_AVX512VBMI2, FEATURE_GFNI, FEATURE_VPCLMULQDQ,
+	FEATURE_AVX512VNNI, FEATURE_AVX512BITALG.
+	* config/i386/cpuinfo.h (processor_features): Add FEATURE_AVX512VBMI2,
+	FEATURE_GFNI, FEATURE_VPCLMULQDQ, FEATURE_AVX512VNNI,
+	FEATURE_AVX512BITALG.
+
+2018-03-14  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.h (processor_subtypes): Split up icelake on
+	icelake client and icelake server.
+
+2018-03-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (_dl_read_access_allowed): New.
+	(__canonicalize_funcptr_for_compare): Use it.
+	
 2018-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83917

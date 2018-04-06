@@ -128,7 +128,7 @@ subroutine test (a, e)
   integer, parameter :: N = 8
   integer :: a(N)
 
-  if (acc_is_present (a) .neqv. e) call abort
+  if (acc_is_present (a) .neqv. e) STOP 1
 
 end subroutine
 
@@ -159,7 +159,7 @@ subroutine subr0 (a, b, c, d)
   call test (c, .false.)
 
   do i = 1, N
-    if (c(i) .ne. 8) call abort
+    if (c(i) .ne. 8) STOP 2
   end do
 
   call subr3 (a, c)
@@ -169,8 +169,8 @@ subroutine subr0 (a, b, c, d)
   call test (c, .false.)
 
   do i = 1, N
-    if (a(i) .ne. 2) call abort
-    if (c(i) .ne. 8) call abort
+    if (a(i) .ne. 2) STOP 3
+    if (c(i) .ne. 8) STOP 4
   end do
 
   call subr4 (a, b)
@@ -180,7 +180,7 @@ subroutine subr0 (a, b, c, d)
   call test (c, .false.)
 
   do i = 1, N
-    if (b(i) .ne. 8) call abort
+    if (b(i) .ne. 8) STOP 5
   end do
 
   call subr5 (a, b, c, d)
@@ -191,8 +191,8 @@ subroutine subr0 (a, b, c, d)
   call test (d, .false.)
 
   do i = 1, N
-    if (c(i) .ne. 8) call abort
-    if (d(i) .ne. 13) call abort
+    if (c(i) .ne. 8) STOP 6
+    if (d(i) .ne. 13) STOP 7
   end do
 
 end subroutine
@@ -213,7 +213,7 @@ program main
   c(:) = 4
   d(:) = 5
 
-  if (acc_is_present (z) .neqv. .true.) call abort
+  if (acc_is_present (z) .neqv. .true.) STOP 8
 
   call subr0 (a, b, c, d)
 
@@ -223,10 +223,10 @@ program main
   call test (d, .false.)
 
   do i = 1, N
-    if (a(i) .ne. 8) call abort
-    if (b(i) .ne. 8) call abort
-    if (c(i) .ne. 8) call abort
-    if (d(i) .ne. 13) call abort
+    if (a(i) .ne. 8) STOP 9
+    if (b(i) .ne. 8) STOP 10
+    if (c(i) .ne. 8) STOP 11
+    if (d(i) .ne. 13) STOP 12
   end do
 
 end program

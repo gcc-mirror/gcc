@@ -1094,15 +1094,16 @@ aarch64_min_divisions_for_recip_mul (machine_mode mode)
   return aarch64_tune_params.min_div_recip_mul_df;
 }
 
+/* Return the reassociation width of treeop OPC with mode MODE.  */
 static int
-aarch64_reassociation_width (unsigned opc ATTRIBUTE_UNUSED,
-			     machine_mode mode)
+aarch64_reassociation_width (unsigned opc, machine_mode mode)
 {
   if (VECTOR_MODE_P (mode))
     return aarch64_tune_params.vec_reassoc_width;
   if (INTEGRAL_MODE_P (mode))
     return aarch64_tune_params.int_reassoc_width;
-  if (FLOAT_MODE_P (mode))
+  /* Avoid reassociating floating point addition so we emit more FMAs.  */
+  if (FLOAT_MODE_P (mode) && opc != PLUS_EXPR)
     return aarch64_tune_params.fp_reassoc_width;
   return 1;
 }
@@ -7732,11 +7733,9 @@ aarch64_can_use_per_function_literal_pools_p (void)
 static bool
 aarch64_use_blocks_for_constant_p (machine_mode, const_rtx)
 {
-  /* Fixme:: In an ideal world this would work similar
-     to the logic in aarch64_select_rtx_section but this
-     breaks bootstrap in gcc go.  For now we workaround
-     this by returning false here.  */
-  return false;
+  /* We can't use blocks for constants when we're using a per-function
+     constant pool.  */
+  return !aarch64_can_use_per_function_literal_pools_p ();
 }
 
 /* Select appropriate section for constants depending

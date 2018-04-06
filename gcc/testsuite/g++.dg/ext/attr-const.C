@@ -68,6 +68,5 @@ void test_fnone_const ()
   if (i0 != i1)
     templ_none_const_failed ();
 
-  // The following fails (most likely) due to bug 84294.
-  // { dg-final { scan-tree-dump-not "templ_none_const_failed" "optimized" { xfail *-*-* } } }
+  // { dg-final { scan-tree-dump-not "templ_none_const_failed" "optimized" } }
 }

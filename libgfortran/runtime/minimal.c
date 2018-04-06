@@ -187,3 +187,17 @@ sys_abort (void)
 
   abort();
 }
+
+/* A numeric STOP statement.  */
+
+extern _Noreturn void stop_numeric (int, bool);
+export_proto(stop_numeric);
+
+void
+stop_numeric (int code, bool quiet)
+{
+  if (!quiet)
+    printf ("STOP %d\n", code);
+
+  exit (code);
+}

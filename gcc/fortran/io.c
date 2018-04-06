@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
+#include "constructor.h"
 
 gfc_st_label
 format_asterisk = {0, NULL, NULL, -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL,
@@ -1606,7 +1607,7 @@ match_dec_ftag (const io_tag *tag, gfc_open *o)
 /* Resolution of the FORMAT tag, to be called from resolve_tag.  */
 
 static bool
-resolve_tag_format (const gfc_expr *e)
+resolve_tag_format (gfc_expr *e)
 {
   if (e->expr_type == EXPR_CONSTANT
       && (e->ts.type != BT_CHARACTER
@@ -1615,6 +1616,47 @@ resolve_tag_format (const gfc_expr *e)
       gfc_error ("Constant expression in FORMAT tag at %L must be "
 		 "of type default CHARACTER", &e->where);
       return false;
+    }
+
+  /* Concatenate a constant character array into a single character
+     expression.  */
+
+  if ((e->expr_type == EXPR_ARRAY || e->rank > 0)
+      && e->ts.type == BT_CHARACTER
+      && gfc_is_constant_expr (e))
+    {
+      if (e->expr_type == EXPR_VARIABLE
+	  && e->symtree->n.sym->attr.flavor == FL_PARAMETER)
+	gfc_simplify_expr (e, 1);
+
+      if (e->expr_type == EXPR_ARRAY)
+	{
+	  gfc_constructor *c;
+	  gfc_charlen_t n, len;
+	  gfc_expr *r;
+	  gfc_char_t *dest, *src;
+
+	  n = 0;
+	  c = gfc_constructor_first (e->value.constructor);
+	  len = c->expr->value.character.length;
+	  
+	  for ( ; c; c = gfc_constructor_next (c))
+	    n += len;
+
+	  r = gfc_get_character_expr (e->ts.kind, &e->where, NULL, n);
+	  dest = r->value.character.string;
+
+	  for (c = gfc_constructor_first (e->value.constructor);
+	     c; c = gfc_constructor_next (c))
+	    {
+	      src = c->expr->value.character.string;
+	      for (gfc_charlen_t i = 0 ; i < len; i++)
+		*dest++ = *src++;
+	    }
+
+	  gfc_replace_expr (e, r);
+	  return true;
+	}
     }
 
   /* If e's rank is zero and e is not an element of an array, it should be
@@ -4249,9 +4291,10 @@ get_io_list:
 	goto syntax;
     }
 
-  /* See if we want to use defaults for missing exponents in real transfers.  */
+  /* See if we want to use defaults for missing exponents in real transfers
+     and other DEC runtime extensions.  */
   if (flag_dec)
-    dt->default_exp = 1;
+    dt->dec_ext = 1;
 
   /* A full IO statement has been matched.  Check the constraints.  spec_end is
      supplied for cases where no locus is supplied.  */

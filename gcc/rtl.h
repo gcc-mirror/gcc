@@ -3277,6 +3277,8 @@ extern rtx_insn *next_nonnote_nondebug_insn (rtx_insn *);
 extern rtx_insn *next_nonnote_nondebug_insn_bb (rtx_insn *);
 extern rtx_insn *prev_real_insn (rtx_insn *);
 extern rtx_insn *next_real_insn (rtx);
+extern rtx_insn *prev_real_nondebug_insn (rtx_insn *);
+extern rtx_insn *next_real_nondebug_insn (rtx);
 extern rtx_insn *prev_active_insn (rtx_insn *);
 extern rtx_insn *next_active_insn (rtx_insn *);
 extern int active_insn_p (const rtx_insn *);
@@ -4337,7 +4339,7 @@ strip_offset_and_add (rtx x, poly_int64_pod *offset)
     {
       poly_int64 suboffset;
       x = strip_offset (x, &suboffset);
-      *offset += suboffset;
+      *offset = poly_uint64 (*offset) + suboffset;
     }
   return x;
 }

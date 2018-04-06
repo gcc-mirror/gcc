@@ -12,7 +12,7 @@ void sink (char*);
 
 size_t value (void);
 
-size_t range (size_t min, size_t max)
+static size_t range (size_t min, size_t max)
 {
   size_t val = value ();
   return val < min || max < val ? min : val;

@@ -32,6 +32,31 @@ EL
 Target RejectNegative Alias(mlittle-endian)
 Generate code in little-endian mode.
 
+
+; ---------------------------------------------------------------
+
+mabi=
+Target RejectNegative Joined Enum(abi_type) Var(nds32_abi) Init(TARGET_DEFAULT_ABI)
+Specify which ABI type to generate code for: 2, 2fp+.
+
+Enum
+Name(abi_type) Type(enum abi_type)
+Known ABIs (for use with the -mabi= option):
+
+EnumValue
+Enum(abi_type) String(2) Value(NDS32_ABI_V2)
+
+EnumValue
+Enum(abi_type) String(2fp+) Value(NDS32_ABI_V2_FP_PLUS)
+
+mfloat-abi=soft
+Target RejectNegative Alias(mabi=, 2)
+Specify use soft floating point ABI which mean alias to -mabi=2.
+
+mfloat-abi=hard
+Target RejectNegative Alias(mabi=, 2fp+)
+Specify use soft floating point ABI which mean alias to -mabi=2fp+.
+
 ; ---------------------------------------------------------------
 
 mreduced-regs
@@ -77,6 +102,14 @@ m16-bit
 Target Report Mask(16_BIT)
 Generate 16-bit instructions.
 
+mrelax-hint
+Target Report Mask(RELAX_HINT)
+Insert relax hint for linker to do relaxation.
+
+mvh
+Target Report Mask(VH)
+Enable Virtual Hosting support.
+
 misr-vector-size=
 Target RejectNegative Joined UInteger Var(nds32_isr_vector_size) Init(NDS32_DEFAULT_ISR_VECTOR_SIZE)
 Specify the size of each interrupt vector, which must be 4 or 16.
@@ -102,8 +135,14 @@ Enum(nds32_arch_type) String(v3) Value(ARCH_V3)
 EnumValue
 Enum(nds32_arch_type) String(v3m) Value(ARCH_V3M)
 
+EnumValue
+Enum(nds32_arch_type) String(v3f) Value(ARCH_V3F)
+
+EnumValue
+Enum(nds32_arch_type) String(v3s) Value(ARCH_V3S)
+
 mcmodel=
-Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_MEDIUM)
+Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_LARGE)
 Specify the address generation strategy for code model.
 
 Enum
@@ -130,6 +169,38 @@ Known cpu types (for use with the -mcpu= option):
 EnumValue
 Enum(nds32_cpu_type) String(n9) Value(CPU_N9)
 
+mconfig-fpu=
+Target RejectNegative Joined Enum(float_reg_number) Var(nds32_fp_regnum) Init(TARGET_CONFIG_FPU_DEFAULT)
+Specify a fpu configuration value from 0 to 7; 0-3 is as FPU spec says, and 4-7 is corresponding to 0-3.
+
+Enum
+Name(float_reg_number) Type(enum float_reg_number)
+Known floating-point number of registers (for use with the -mconfig-fpu= option):
+
+EnumValue
+Enum(float_reg_number) String(0) Value(NDS32_CONFIG_FPU_0)
+
+EnumValue
+Enum(float_reg_number) String(1) Value(NDS32_CONFIG_FPU_1)
+
+EnumValue
+Enum(float_reg_number) String(2) Value(NDS32_CONFIG_FPU_2)
+
+EnumValue
+Enum(float_reg_number) String(3) Value(NDS32_CONFIG_FPU_3)
+
+EnumValue
+Enum(float_reg_number) String(4) Value(NDS32_CONFIG_FPU_4)
+
+EnumValue
+Enum(float_reg_number) String(5) Value(NDS32_CONFIG_FPU_5)
+
+EnumValue
+Enum(float_reg_number) String(6) Value(NDS32_CONFIG_FPU_6)
+
+EnumValue
+Enum(float_reg_number) String(7) Value(NDS32_CONFIG_FPU_7)
+
 mctor-dtor
 Target Report
 Enable constructor/destructor feature.
@@ -137,3 +208,15 @@ Enable constructor/destructor feature.
 mrelax
 Target Report
 Guide linker to relax instructions.
+
+mext-fpu-fma
+Target Report Mask(EXT_FPU_FMA)
+Generate floating-point multiply-accumulation instructions.
+
+mext-fpu-sp
+Target Report Mask(FPU_SINGLE)
+Generate single-precision floating-point instructions.
+
+mext-fpu-dp
+Target Report Mask(FPU_DOUBLE)
+Generate double-precision floating-point instructions.

@@ -2755,7 +2755,13 @@ gfc_check_kill (gfc_expr *pid, gfc_expr *sig)
   if (!type_check (pid, 0, BT_INTEGER))
     return false;
 
+  if (!scalar_check (pid, 0))
+    return false;
+
   if (!type_check (sig, 1, BT_INTEGER))
+    return false;
+
+  if (!scalar_check (sig, 1))
     return false;
 
   return true;
@@ -2777,14 +2783,14 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
   if (!scalar_check (sig, 1))
     return false;
 
-  if (status == NULL)
-    return true;
+  if (status)
+    {
+      if (!type_check (status, 2, BT_INTEGER))
+	return false;
 
-  if (!type_check (status, 2, BT_INTEGER))
-    return false;
-
-  if (!scalar_check (status, 2))
-    return false;
+      if (!scalar_check (status, 2))
+	return false;
+    }
 
   return true;
 }
@@ -4743,7 +4749,7 @@ gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
       return false;
     }
 
-  if (!is_c_interoperable (fptr, &msg, false, true))
+  if (fptr->rank > 0 && !is_c_interoperable (fptr, &msg, false, true))
     return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable array FPTR "
 			   "at %L to C_F_POINTER: %s", &fptr->where, msg);
 

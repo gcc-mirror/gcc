@@ -1,3 +1,19 @@
+2018-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR jit/84288
+	* Make-lang.in ($(LIBGCCJIT_FILENAME)): Add $(EXTRA_GCC_LIBS).
+
+2018-03-09  David Malcolm  <dmalcolm@redhat.com>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR jit/64089
+	PR jit/84288
+	* Make-lang.in (COMMA): New.
+	(LIBGCCJIT_VERSION_SCRIPT_OPTION): New.
+	(LIBGCCJIT_SONAME_OPTION): New.
+	(jit): Move --version-script and -soname linker options to the
+	above.
+
 2018-01-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/81672

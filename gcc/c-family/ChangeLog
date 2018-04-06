@@ -1,3 +1,81 @@
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* known-headers.cc (get_stdlib_header_for_name): Add various names
+	from <assert.h>, <string.h>, and <memory.h>; add more names from
+	<stdio.h>.
+
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85061
+	* c-common.c (fold_offsetof_1) <case COMPOUND_EXPR>: Assert that
+	get_base_address of the second operand is a VAR_P, rather than the
+	operand itself, and use gcc_checking_assert instead of gcc_assert.
+
+2018-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85045
+	* c-pretty-print.c (c_pretty_printer::multiplicative_expression)
+	<case RDIV_EXPR>: Tweak condition.
+
+2018-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (pp_ada_tree_identifier): Deal specifically with _Bool.
+
+2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84909
+	* c-warn.c (conversion_warning): Replace "to to" with "to" in
+	diagnostics.
+
+	PR c/84910
+	* c-warn.c (diagnose_mismatched_attributes): Remove trailing space from
+	diagnostics.
+
+2018-03-16  Richard Biener  <rguenther@suse.de>
+
+	PR c/84873
+	* c-gimplify.c (c_gimplify_expr): Revert previous change.  Instead
+	unshare the possibly folded expression.
+
+2018-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/84873
+	* c-gimplify.c (c_gimplify_expr): Do not fold expressions.
+
+2018-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84725
+	* c-attribs.c (handle_nonstring_attribute): Allow attribute nonstring
+	with all three narrow character types, including their qualified forms.
+
+2018-03-12  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83456
+	* gcc/c-family/c-common.c (check_function_restrict): Return bool.
+	Restore checking of bounded built-in functions.
+	(check_function_arguments): Also return the result
+	of warn_for_restrict.
+	* gcc/c-family/c-common.c (check_function_restrict): Return bool.
+	* gcc/c-family/c-warn.c (warn_for_restrict): Return bool.
+
+2018-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84171
+	* c-warn.c (warn_for_sign_compare): Bail out if any of the operands
+	is erroneous.
+
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-attribs.c (c_common_attribute_table): Remove "cilk simd
+	function".
+
+2018-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84639
+	* c-attribs.c (common_handle_aligned_attribute): Don't use invalid
+	alignment in computation.
+
 2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ada_node) <NULLPTR_TYPE>: New case.

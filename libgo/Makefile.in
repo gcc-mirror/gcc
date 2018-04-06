@@ -757,7 +757,8 @@ toolexeclibgounicode_DATA = \
 # Force them to be built.
 noinst_DATA = golang_org/x/net/internal/nettest.gox \
 	golang_org/x/net/nettest.gox internal/testenv.gox \
-	net/internal/socktest.gox os/signal/internal/pty.gox \
+	internal/trace.gox net/internal/socktest.gox \
+	os/signal/internal/pty.gox runtime/pprof/internal/profile.gox \
 	zstdpkglist.go zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
@@ -1170,7 +1171,8 @@ CHECK_DEPS = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
 	$(toolexeclibgotesting_DATA) $(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA) \
-	$(noinst_LIBRARIES) $(am__append_3) $(am__append_4)
+	$(noinst_DATA) $(noinst_LIBRARIES) $(am__append_3) \
+	$(am__append_4)
 
 # Pass -ffp-contract=off, or 386-specific options, when building the
 # math package.  MATH_FLAG is defined in configure.ac.

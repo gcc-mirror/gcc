@@ -14376,9 +14376,9 @@ s390_z10_optimize_cmp (rtx_insn *insn)
 	  && s390_non_addr_reg_read_p (*op0, prev_insn))
 	{
 	  if (REGNO (*op1) == 0)
-	    emit_insn_after (gen_nop1 (), insn);
+	    emit_insn_after (gen_nop_lr1 (), insn);
 	  else
-	    emit_insn_after (gen_nop (), insn);
+	    emit_insn_after (gen_nop_lr0 (), insn);
 	  insn_added_p = true;
 	}
       else

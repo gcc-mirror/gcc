@@ -38,6 +38,9 @@ do {						\
 	builtin_define("__itanium__");		\
 	if (TARGET_BIG_ENDIAN)			\
 	  builtin_define("__BIG_ENDIAN__");	\
+	builtin_define("__SIZEOF_FPREG__=16");	\
+	builtin_define("__SIZEOF_FLOAT80__=16");\
+	builtin_define("__SIZEOF_FLOAT128__=16");\
 } while (0)
 
 #ifndef SUBTARGET_EXTRA_SPECS

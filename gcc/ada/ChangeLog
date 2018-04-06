@@ -1,3 +1,43 @@
+2018-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/85007
+	* gnatlink.adb (Gnatlink): Remove handling of -b switch.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (gnatlink):
+	Remove documentation of -b switch.
+
+2018-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/85036
+	* gnatlink.adb (Process_Args): Drop existing link switches if multiple
+	switches are passed for --LINK.
+
+2018-03-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82813
+	* gcc-interface/misc.c (gnat_post_options): Disable string overflow
+	warnings.
+
+2018-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (node_has_volatile_full_access) <N_Identifier>:
+	Consider only entities for objects.
+
+2018-03-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc-interface/Makefile.in (OSCONS_CPP): Remove redundant
+	$(GNATLIBCFLAGS).
+	(OSCONS_EXTRACT): Add $(GNATLIBCFLAGS_FOR_C).
+
+2018-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (convert_with_check): Fix typo in the condition
+	guarding the overflow check emitted for the upper bound of a floating-
+	point conversion.
+
+2018-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (def_builtin_1): Bail out on error_mark_node.
+
 2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/i-cexten.ads (Float_128): New type.

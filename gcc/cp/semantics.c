@@ -733,7 +733,10 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
   if (IF_STMT_CONSTEXPR_P (if_stmt)
       && !type_dependent_expression_p (cond)
       && require_constant_expression (cond)
-      && !value_dependent_expression_p (cond))
+      && !instantiation_dependent_expression_p (cond)
+      /* Wait until instantiation time, since only then COND has been
+	 converted to bool.  */
+      && TREE_TYPE (cond) == boolean_type_node)
     {
       cond = instantiate_non_dependent_expr (cond);
       cond = cxx_constant_value (cond, NULL_TREE);
@@ -1512,6 +1515,21 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		      && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
 	    cxx_readonly_error (operand, lv_asm);
 
+	  tree *op = &operand;
+	  while (TREE_CODE (*op) == COMPOUND_EXPR)
+	    op = &TREE_OPERAND (*op, 1);
+	  switch (TREE_CODE (*op))
+	    {
+	    case PREINCREMENT_EXPR:
+	    case PREDECREMENT_EXPR:
+	    case MODIFY_EXPR:
+	      *op = genericize_compound_lvalue (*op);
+	      op = &TREE_OPERAND (*op, 1);
+	      break;
+	    default:
+	      break;
+	    }
+
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
 	  oconstraints[i] = constraint;
 
@@ -1520,7 +1538,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	    {
 	      /* If the operand is going to end up in memory,
 		 mark it addressable.  */
-	      if (!allows_reg && !cxx_mark_addressable (operand))
+	      if (!allows_reg && !cxx_mark_addressable (*op))
 		operand = error_mark_node;
 	    }
 	  else
@@ -1562,7 +1580,23 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  /* Strip the nops as we allow this case.  FIXME, this really
 		     should be rejected or made deprecated.  */
 		  STRIP_NOPS (operand);
-		  if (!cxx_mark_addressable (operand))
+
+		  tree *op = &operand;
+		  while (TREE_CODE (*op) == COMPOUND_EXPR)
+		    op = &TREE_OPERAND (*op, 1);
+		  switch (TREE_CODE (*op))
+		    {
+		    case PREINCREMENT_EXPR:
+		    case PREDECREMENT_EXPR:
+		    case MODIFY_EXPR:
+		      *op = genericize_compound_lvalue (*op);
+		      op = &TREE_OPERAND (*op, 1);
+		      break;
+		    default:
+		      break;
+		    }
+
+		  if (!cxx_mark_addressable (*op))
 		    operand = error_mark_node;
 		}
 	      else if (!allows_reg && !allows_mem)
@@ -1693,7 +1727,7 @@ force_paren_expr (tree expr)
   if (TREE_CODE (expr) == COMPONENT_REF
       || TREE_CODE (expr) == SCOPE_REF)
     REF_PARENTHESIZED_P (expr) = true;
-  else if (type_dependent_expression_p (expr))
+  else if (processing_template_decl)
     expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
   else if (VAR_P (expr) && DECL_HARD_REGISTER (expr))
     /* We can't bind a hard register variable to a reference.  */;
@@ -1724,9 +1758,10 @@ force_paren_expr (tree expr)
 tree
 maybe_undo_parenthesized_ref (tree t)
 {
-  if (cxx_dialect >= cxx14
-      && INDIRECT_REF_P (t)
-      && REF_PARENTHESIZED_P (t))
+  if (cxx_dialect < cxx14)
+    return t;
+
+  if (INDIRECT_REF_P (t) && REF_PARENTHESIZED_P (t))
     {
       t = TREE_OPERAND (t, 0);
       while (TREE_CODE (t) == NON_LVALUE_EXPR
@@ -1737,6 +1772,8 @@ maybe_undo_parenthesized_ref (tree t)
 		  || TREE_CODE (t) == STATIC_CAST_EXPR);
       t = TREE_OPERAND (t, 0);
     }
+  else if (TREE_CODE (t) == PAREN_EXPR)
+    t = TREE_OPERAND (t, 0);
 
   return t;
 }
@@ -2111,7 +2148,14 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
     {
       tree type = TREE_TYPE (expr);
 
-      if (processing_template_decl)
+      if (type && type_unknown_p (type))
+	{
+	  error ("a statement expression is an insufficient context"
+		 " for overload resolution");
+	  TREE_TYPE (stmt_expr) = error_mark_node;
+	  return error_mark_node;
+	}
+      else if (processing_template_decl)
 	{
 	  expr = build_stmt (input_location, EXPR_STMT, expr);
 	  expr = add_stmt (expr);
@@ -3322,7 +3366,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     {
       /* Check whether we've already built a proxy.  */
       tree var = decl;
-      while (is_capture_proxy_with_ref (var))
+      while (is_normal_capture_proxy (var))
 	var = DECL_CAPTURED_VARIABLE (var);
       tree d = retrieve_local_specialization (var);
 
@@ -3841,49 +3885,36 @@ finish_underlying_type (tree type)
 }
 
 /* Implement the __direct_bases keyword: Return the direct base classes
-   of type */
+   of type.  */
 
 tree
-calculate_direct_bases (tree type)
+calculate_direct_bases (tree type, tsubst_flags_t complain)
 {
-  vec<tree, va_gc> *vector = make_tree_vector();
-  tree bases_vec = NULL_TREE;
-  vec<tree, va_gc> *base_binfos;
+  if (!complete_type_or_maybe_complain (type, NULL_TREE, complain)
+      || !NON_UNION_CLASS_TYPE_P (type))
+    return make_tree_vec (0);
+
+  vec<tree, va_gc> *vector = make_tree_vector ();
+  vec<tree, va_gc> *base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
   tree binfo;
   unsigned i;
 
-  complete_type (type);
-
-  if (!NON_UNION_CLASS_TYPE_P (type))
-    return make_tree_vec (0);
-
-  base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
-
   /* Virtual bases are initialized first */
   for (i = 0; base_binfos->iterate (i, &binfo); i++)
-    {
-      if (BINFO_VIRTUAL_P (binfo))
-       {
-         vec_safe_push (vector, binfo);
-       }
-    }
+    if (BINFO_VIRTUAL_P (binfo))
+      vec_safe_push (vector, binfo);
 
   /* Now non-virtuals */
   for (i = 0; base_binfos->iterate (i, &binfo); i++)
-    {
-      if (!BINFO_VIRTUAL_P (binfo))
-       {
-         vec_safe_push (vector, binfo);
-       }
-    }
+    if (!BINFO_VIRTUAL_P (binfo))
+      vec_safe_push (vector, binfo);
 
-
-  bases_vec = make_tree_vec (vector->length ());
+  tree bases_vec = make_tree_vec (vector->length ());
 
   for (i = 0; i < vector->length (); ++i)
-    {
-      TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE ((*vector)[i]);
-    }
+    TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE ((*vector)[i]);
+
+  release_tree_vector (vector);
   return bases_vec;
 }
 
@@ -3905,9 +3936,7 @@ dfs_calculate_bases_post (tree binfo, void *data_)
 {
   vec<tree, va_gc> **data = ((vec<tree, va_gc> **) data_);
   if (!BINFO_VIRTUAL_P (binfo))
-    {
-      vec_safe_push (*data, BINFO_TYPE (binfo));
-    }
+    vec_safe_push (*data, BINFO_TYPE (binfo));
   return NULL_TREE;
 }
 
@@ -3915,7 +3944,7 @@ dfs_calculate_bases_post (tree binfo, void *data_)
 static vec<tree, va_gc> *
 calculate_bases_helper (tree type)
 {
-  vec<tree, va_gc> *vector = make_tree_vector();
+  vec<tree, va_gc> *vector = make_tree_vector ();
 
   /* Now add non-virtual base classes in order of construction */
   if (TYPE_BINFO (type))
@@ -3925,26 +3954,25 @@ calculate_bases_helper (tree type)
 }
 
 tree
-calculate_bases (tree type)
+calculate_bases (tree type, tsubst_flags_t complain)
 {
-  vec<tree, va_gc> *vector = make_tree_vector();
+  if (!complete_type_or_maybe_complain (type, NULL_TREE, complain)
+      || !NON_UNION_CLASS_TYPE_P (type))
+    return make_tree_vec (0);
+
+  vec<tree, va_gc> *vector = make_tree_vector ();
   tree bases_vec = NULL_TREE;
   unsigned i;
   vec<tree, va_gc> *vbases;
   vec<tree, va_gc> *nonvbases;
   tree binfo;
 
-  complete_type (type);
-
-  if (!NON_UNION_CLASS_TYPE_P (type))
-    return make_tree_vec (0);
-
   /* First go through virtual base classes */
   for (vbases = CLASSTYPE_VBASECLASSES (type), i = 0;
        vec_safe_iterate (vbases, i, &binfo); i++)
     {
-      vec<tree, va_gc> *vbase_bases;
-      vbase_bases = calculate_bases_helper (BINFO_TYPE (binfo));
+      vec<tree, va_gc> *vbase_bases
+	= calculate_bases_helper (BINFO_TYPE (binfo));
       vec_safe_splice (vector, vbase_bases);
       release_tree_vector (vbase_bases);
     }
@@ -3958,7 +3986,7 @@ calculate_bases (tree type)
   if (vector->length () > 1)
     {
       /* Last element is entire class, so don't copy */
-      bases_vec = make_tree_vec (vector->length() - 1);
+      bases_vec = make_tree_vec (vector->length () - 1);
 
       for (i = 0; i < vector->length () - 1; ++i)
 	TREE_VEC_ELT (bases_vec, i) = (*vector)[i];
@@ -4026,6 +4054,11 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
 	    expr = TREE_OPERAND (expr, 1);
 	  error ("cannot apply %<offsetof%> to member function %qD", expr);
 	}
+      return error_mark_node;
+    }
+  if (TREE_CODE (expr) == CONST_DECL)
+    {
+      error ("cannot apply %<offsetof%> to an enumerator %qD", expr);
       return error_mark_node;
     }
   if (REFERENCE_REF_P (expr))
@@ -5575,7 +5608,11 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
       return false;
     }
   else if (processing_template_decl)
-    return false;
+    {
+      if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == error_mark_node)
+	return true;
+      return false;
+    }
 
   tree id = OMP_CLAUSE_REDUCTION_PLACEHOLDER (c);
 
@@ -8614,8 +8651,7 @@ finish_static_assert (tree condition, tree message, location_t location,
   if (check_for_bare_parameter_packs (condition))
     condition = error_mark_node;
 
-  if (type_dependent_expression_p (condition) 
-      || value_dependent_expression_p (condition))
+  if (instantiation_dependent_expression_p (condition))
     {
       /* We're in a template; build a STATIC_ASSERT and put it in
          the right place. */
@@ -8665,7 +8701,7 @@ finish_static_assert (tree condition, tree message, location_t location,
       else if (condition && condition != error_mark_node)
 	{
 	  error ("non-constant condition for static assertion");
-	  if (require_potential_rvalue_constant_expression (condition))
+	  if (require_rvalue_constant_expression (condition))
 	    cxx_constant_value (condition);
 	}
       input_location = saved_loc;

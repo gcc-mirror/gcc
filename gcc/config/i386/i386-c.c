@@ -190,9 +190,13 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__cannonlake");
       def_or_undef (parse_in, "__cannonlake__");
       break;
-    case PROCESSOR_ICELAKE:
-      def_or_undef (parse_in, "__icelake");
-      def_or_undef (parse_in, "__icelake__");
+    case PROCESSOR_ICELAKE_CLIENT:
+      def_or_undef (parse_in, "__icelake_client");
+      def_or_undef (parse_in, "__icelake_client__");
+      break;
+    case PROCESSOR_ICELAKE_SERVER:
+      def_or_undef (parse_in, "__icelake_server");
+      def_or_undef (parse_in, "__icelake_server__");
       break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
@@ -315,8 +319,11 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_CANNONLAKE:
       def_or_undef (parse_in, "__tune_cannonlake__");
       break;
-    case PROCESSOR_ICELAKE:
-      def_or_undef (parse_in, "__tune_icelake__");
+    case PROCESSOR_ICELAKE_CLIENT:
+      def_or_undef (parse_in, "__tune_icelake_client__");
+      break;
+    case PROCESSOR_ICELAKE_SERVER:
+      def_or_undef (parse_in, "__tune_icelake_server__");
       break;
     case PROCESSOR_LAKEMONT:
       def_or_undef (parse_in, "__tune_lakemont__");
@@ -353,6 +360,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       ;
     }
 
+  if (isa_flag2 & OPTION_MASK_ISA_WBNOINVD)
+    def_or_undef (parse_in, "__WBNOINVD__");
   if (isa_flag & OPTION_MASK_ISA_MMX)
     def_or_undef (parse_in, "__MMX__");
   if (isa_flag & OPTION_MASK_ISA_3DNOW)
@@ -405,6 +414,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AVX512VBMI2__");
   if (isa_flag & OPTION_MASK_ISA_AVX512VNNI)
     def_or_undef (parse_in, "__AVX512VNNI__");
+  if (isa_flag2 & OPTION_MASK_ISA_PCONFIG)
+    def_or_undef (parse_in, "__PCONFIG__");
   if (isa_flag2 & OPTION_MASK_ISA_SGX)
     def_or_undef (parse_in, "__SGX__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX5124FMAPS)

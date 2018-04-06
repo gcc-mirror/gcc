@@ -656,7 +656,7 @@ set_type_binfo (tree type, tree binfo)
       gcc_assert (!TYPE_BINFO (type));
 }
 
-/* Compare T2 and T2 based on name or structure.  */
+/* Compare T1 and T2 based on name or structure.  */
 
 static bool
 odr_subtypes_equivalent_p (tree t1, tree t2,
@@ -678,15 +678,22 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
     return false;
 
   /* For ODR types be sure to compare their names.
-     To support -wno-odr-type-merging we allow one type to be non-ODR
+     To support -Wno-odr-type-merging we allow one type to be non-ODR
      and other ODR even though it is a violation.  */
   if (types_odr_comparable (t1, t2, true))
     {
       if (!types_same_for_odr (t1, t2, true))
         return false;
-      /* Limit recursion: If subtypes are ODR types and we know
-         that they are same, be happy.  */
-      if (!odr_type_p (t1) || !get_odr_type (t1, true)->odr_violated)
+      /* Limit recursion: if subtypes are ODR types and we know that they are
+	 same, be happy.  We need to call get_odr_type on both subtypes since
+	 we don't know which among t1 and t2 defines the common ODR type and
+	 therefore which call will report the ODR violation, if any.  */
+	 if (!odr_type_p (t1)
+	     || !odr_type_p (t2)
+	     || !COMPLETE_TYPE_P (t1)
+	     || !COMPLETE_TYPE_P (t2)
+	     || (!get_odr_type (t1, true)->odr_violated
+		 && !get_odr_type (t2, true)->odr_violated))
         return true;
     }
 

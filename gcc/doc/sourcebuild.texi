@@ -822,6 +822,23 @@ manual needs to be installed as info for this to work, or to be a
 chapter of this manual.
 @end itemize
 
+The @file{@var{machine}.h} header is included very early in GCC's
+standard sequence of header files, while @file{@var{machine}-protos.h}
+is included late in the sequence.  Thus @file{@var{machine}-protos.h}
+can include declarations referencing types that are not defined when
+@file{@var{machine}.h} is included, specifically including those from
+@file{rtl.h} and @file{tree.h}.  Since both RTL and tree types may not
+be available in every context where @file{@var{machine}-protos.h} is
+included, in this file you should guard declarations using these types
+inside appropriate @code{#ifdef RTX_CODE} or @code{#ifdef TREE_CODE}
+conditional code segments.
+
+If the backend uses shared data structures that require @code{GTY} markers 
+for garbage collection (@pxref{Type Information}), you must declare those
+in @file{@var{machine}.h} rather than @file{@var{machine}-protos.h}.  
+Any definitions required for building libgcc must also go in
+@file{@var{machine}.h}.
+
 GCC uses the macro @code{IN_TARGET_CODE} to distinguish between
 machine-specific @file{.c} and @file{.cc} files and
 machine-independent @file{.c} and @file{.cc} files.  Machine-specific
@@ -2280,14 +2297,7 @@ Target supports @code{wchar_t} that is compatible with @code{char32_t}.
 
 @item comdat_group
 Target uses comdat groups.
-
-@item weak_undefined
-Target supports weak undefined symbols.
-
-@item word_mode_no_slow_unalign
-Target does not have slow unaligned access when doing word size accesses.
 @end table
-
 
 @subsubsection Local to tests in @code{gcc.target/i386}
 

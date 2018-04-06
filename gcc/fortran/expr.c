@@ -1662,9 +1662,9 @@ cleanup:
 static bool
 find_substring_ref (gfc_expr *p, gfc_expr **newp)
 {
-  int end;
-  int start;
-  int length;
+  gfc_charlen_t end;
+  gfc_charlen_t start;
+  gfc_charlen_t length;
   gfc_char_t *chr;
 
   if (p->ref->u.ss.start->expr_type != EXPR_CONSTANT
@@ -1674,9 +1674,12 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
   *newp = gfc_copy_expr (p);
   free ((*newp)->value.character.string);
 
-  end = (int) mpz_get_ui (p->ref->u.ss.end->value.integer);
-  start = (int) mpz_get_ui (p->ref->u.ss.start->value.integer);
-  length = end - start + 1;
+  end = (gfc_charlen_t) mpz_get_ui (p->ref->u.ss.end->value.integer);
+  start = (gfc_charlen_t) mpz_get_ui (p->ref->u.ss.start->value.integer);
+  if (end >= start)
+    length = end - start + 1;
+  else
+    length = 0;
 
   chr = (*newp)->value.character.string = gfc_get_wide_string (length + 1);
   (*newp)->value.character.length = length;
@@ -1856,6 +1859,22 @@ simplify_parameter_variable (gfc_expr *p, int type)
 {
   gfc_expr *e;
   bool t;
+
+  if (gfc_is_size_zero_array (p))
+    {
+      if (p->expr_type == EXPR_ARRAY)
+	return true;
+
+      e = gfc_get_expr ();
+      e->expr_type = EXPR_ARRAY;
+      e->ts = p->ts;
+      e->rank = p->rank;
+      e->value.constructor = NULL;
+      e->shape = gfc_copy_shape (p->shape, p->rank);
+      e->where = p->where;
+      gfc_replace_expr (p, e);
+      return true;
+    }
 
   e = gfc_copy_expr (p->symtree->n.sym->value);
   if (e == NULL)

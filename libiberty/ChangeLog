@@ -1,3 +1,7 @@
+2018-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-demangle.c: Update URL for g++ V3 ABI.
+
 2018-01-20  Eli Zaretskii  <eliz@gnu.org>
 
 	* simple-object-xcoff.c (simple_object_xcoff_find_sections): Use

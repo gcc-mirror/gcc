@@ -1,3 +1,34 @@
+2018-03-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression): For __builtin_tgmath
+	where all functions return the same _FloatN or _FloatNx type,
+	treat integer types as _Float64 instead of double.
+
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84999
+	* c-typeck.c (build_binary_op): If c_common_type_for_size fails when
+	building vector comparison, diagnose it and return error_mark_node.
+
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84853
+	* c-typeck.c (build_binary_op) <case RSHIFT_EXPR, case LSHIFT_EXPR>:
+	If code1 is INTEGER_TYPE, only allow code0 VECTOR_TYPE if it has
+	INTEGER_TYPE element type.
+
+2018-03-13  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/46921
+	* c-typeck.c (output_init_element): Ensure field initializer
+	expression is always evaluated if there are side effects.
+
+2018-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84721
+	* c-parser.c (add_debug_begin_stmt): Don't add DEBUG_BEGIN_STMT if
+	!building_stmt_list_p ().
+
 2018-02-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR c/84305

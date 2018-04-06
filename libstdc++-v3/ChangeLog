@@ -1,3 +1,149 @@
+2018-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Qualify
+	__get calls to avoid ADL and avoid ambiguity due to Clang bug.
+
+2018-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85183
+	* include/std/variant (_Move_assign_base::operator=): Fix incorrect
+	value categories.
+	* testsuite/20_util/variant/85183.cc: New.
+
+2018-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__get): Qualify calls to avoid ADL.
+	(__select_index): Adjust whitespace.
+	(variant): Add using-declaration to workaround Clang bug.
+
+2018-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85040
+	* include/bits/stl_function.h (greater::__not_overloaded)
+	(less::__not_overloaded, greater_equal::__not_overloaded)
+	(less_equal::__not_overloaded): Fix ambiguous specializations.
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: Add
+	tests for type with overloaded operators.
+
+2018-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/77691
+	* testsuite/experimental/memory_resource/resource_adaptor.cc:
+	xfail execution on 32-bit Solaris/x86.
+
+2018-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: Use
+	VERIFY instead of assert.
+	* testsuite/20_util/hash/84998.cc: New test.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc: New
+	copy of test adjusted for Debug Mode.
+	* testsuite/23_containers/vector/cons/destructible_neg.cc: Do not run
+	test in Debug Mode.
+
+2018-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/84998
+	* include/bits/stl_bvector.h: Fix std::hash friend declaration.
+	* include/std/bitset: Likewise.
+	* include/bits/stl_map.h (std::map<>): Fix _Rb_tree_merge_helper friend
+	declaration.
+	* include/bits/stl_multimap.h (std::multimap<>): Likewise.
+	* include/bits/stl_multiset.h (std::multiset<>): Likewise.
+	* include/bits/stl_set.h (std::set<>): Likewise.
+	* include/bits/unordered_map.h (std::unordered_map<>): Fix
+	_Hash_merge_helper friend declaration.
+	(std::unordered_multimap<>): Likewise.
+	* include/bits/unordered_set.h (std::unordered_set<>): Likewise.
+	(std::unordered_multiset<>): Likewise.
+
+2018-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/api.xml: www.fsf.org has moved to https. Also omit
+	trailing slash for domain level link.
+	* doc/xml/faq.xml: Ditto.
+	* doc/xml/manual/appendix_free.xml (software): Ditto.
+	* doc/xml/manual/intro.xml: Ditto.
+	* doc/xml/manual/spine.xml: Ditto.
+	* doc/xml/spine.xml: Ditto.
+
+2018-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Adjust link to
+	docbook.org.
+
+2018-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: Adjust
+	to compile as C++98.
+
+2018-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78420
+	* include/bits/stl_function.h (greater<_Tp*>, less<_Tp*>)
+	(greater_equal<_Tp*>, less_equal<_Tp>*): Add partial specializations
+	to ensure total order for pointers.
+	(greater<void>, less<void>, greater_equal<void>, less_equal<void>):
+	Add operator() overloads for pointer arguments and make generic
+	overloads dispatch to new _S_cmp functions when comparisons would
+	use built-in operators for pointers.
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: New.
+
+2018-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84773
+	PR libstdc++/83662
+	* crossconfig.m4: Check for aligned_alloc etc. on freebsd and mingw32.
+	* configure: Regenerate.
+	* include/c_global/cstdlib [_GLIBCXX_HAVE_ALIGNED_ALLOC]
+	(aligned_alloc): Add using-declaration.
+	* testsuite/18_support/aligned_alloc/aligned_alloc.cc: New test.
+
+2018-03-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
+	Fix std::_Fwd_list_iterator and std::_Fwd_list_const_iterator printers
+	registration.
+
+2018-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84769
+	* include/std/variant (get<_Tp, _Types...>, get_if<_Tp, _Types...>):
+	Qualify calls to get<_Np, Types...> and get_if<_Np, _Types...>.
+
+	src/filesystem/ops.cc (create_dir): Pass error_code to is_directory.
+	src/filesystem/std-ops.cc (create_dir): Likewise.
+
+2018-03-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (NodeIteratorPrinter): New.
+	(StdListIteratorPrinter): Inherit from latter.
+	(StdFwdListIteratorPrinter): New, inherit from latter.
+	(StdDebugIteratorPrinter.to_string): Use non-debug iterator printer
+	when iterator has no associated container.
+	(build_libstdcxx_dictionary): Add __gnu_cxx::_Fwd_list_iterator and
+	__gnu_cxx::_Fwd_list_const_iterator printers. Remove __norm namespace
+	registrations.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Adapt.
+	* testsuite/libstdc++-prettyprinters/debug_cxx11.cc: Adapt.
+
+2018-03-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/84601
+	* include/std/optional (_Optional_payload): Split into multiple
+	specializations that can handle different cases of trivial or
+	non-trivial assignment operators.
+	* testsuite/20_util/optional/84601.cc: New.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
+
+2018-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84671
+	* include/bits/parse_numbers.h (_Number_help): Add partial
+	specialization to handle digit separators. Adjust partial
+	specialization for recursion temrination to require _Pow == 1ULL.
+	* testsuite/20_util/duration/literals/84671.cc: New
+
 2018-02-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement the missing bits of LWG 2769

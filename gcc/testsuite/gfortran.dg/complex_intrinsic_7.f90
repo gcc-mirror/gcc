@@ -40,4 +40,4 @@ if (abs(tanh(z80_0) - cmplx(0.0_8,0.0_8,8)) > eps8) STOP 15
 if (abs(tanh(z81_1) - cmplx(1.0839233273386946_8,0.27175258531951174_8,8)) > eps8) STOP 16
 
 end
-! { dg-final { scan-tree-dump-times "abort" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_stop" 0 "original" } }

@@ -45,11 +45,15 @@
 (define_mode_iterator VSQIHIDI [V4QI V2HI QI HI DI])
 (define_mode_iterator VQIHIDI [V4QI V2HI DI])
 
+;; A list of the modes that are up to double-word long.
+(define_mode_iterator ANYF [(SF "TARGET_FPU_SINGLE")
+			    (DF "TARGET_FPU_DOUBLE")])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes.
 ;;----------------------------------------------------------------------------
 
-(define_mode_attr size [(QI "b") (HI "h") (SI "w")])
+(define_mode_attr size [(QI "b") (HI "h") (SI "w") (SF "s") (DF "d")])
 
 (define_mode_attr byte [(QI "1") (HI "2") (SI "4") (V4QI "4") (V2HI "4")])
 
@@ -61,10 +65,16 @@
 ;; Code iterators.
 ;;----------------------------------------------------------------------------
 
+;; shifts
+(define_code_iterator shift_rotate [ashift ashiftrt lshiftrt rotatert])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes.
 ;;----------------------------------------------------------------------------
+
+;; shifts
+(define_code_attr shift
+  [(ashift "ashl") (ashiftrt "ashr") (lshiftrt "lshr") (rotatert "rotr")])
 
 
 ;;----------------------------------------------------------------------------

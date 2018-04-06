@@ -3015,7 +3015,8 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
     {
       if (value0 == false)
 	{
-	  if (!chrec_is_positive (CHREC_RIGHT (chrec_b), &value1))
+	  if (TREE_CODE (chrec_b) != POLYNOMIAL_CHREC
+	      || !chrec_is_positive (CHREC_RIGHT (chrec_b), &value1))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "siv test failed: chrec not positive.\n");
@@ -3096,7 +3097,8 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 	}
       else
 	{
-	  if (!chrec_is_positive (CHREC_RIGHT (chrec_b), &value2))
+	  if (TREE_CODE (chrec_b) != POLYNOMIAL_CHREC
+	      || !chrec_is_positive (CHREC_RIGHT (chrec_b), &value2))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "siv test failed: chrec not positive.\n");
@@ -5198,6 +5200,81 @@ dr_alignment (innermost_loop_behavior *drb)
     alignment = MIN (alignment, drb->step_alignment);
 
   return alignment;
+}
+
+/* If BASE is a pointer-typed SSA name, try to find the object that it
+   is based on.  Return this object X on success and store the alignment
+   in bytes of BASE - &X in *ALIGNMENT_OUT.  */
+
+static tree
+get_base_for_alignment_1 (tree base, unsigned int *alignment_out)
+{
+  if (TREE_CODE (base) != SSA_NAME || !POINTER_TYPE_P (TREE_TYPE (base)))
+    return NULL_TREE;
+
+  gimple *def = SSA_NAME_DEF_STMT (base);
+  base = analyze_scalar_evolution (loop_containing_stmt (def), base);
+
+  /* Peel chrecs and record the minimum alignment preserved by
+     all steps.  */
+  unsigned int alignment = MAX_OFILE_ALIGNMENT / BITS_PER_UNIT;
+  while (TREE_CODE (base) == POLYNOMIAL_CHREC)
+    {
+      unsigned int step_alignment = highest_pow2_factor (CHREC_RIGHT (base));
+      alignment = MIN (alignment, step_alignment);
+      base = CHREC_LEFT (base);
+    }
+
+  /* Punt if the expression is too complicated to handle.  */
+  if (tree_contains_chrecs (base, NULL) || !POINTER_TYPE_P (TREE_TYPE (base)))
+    return NULL_TREE;
+
+  /* The only useful cases are those for which a dereference folds to something
+     other than an INDIRECT_REF.  */
+  tree ref_type = TREE_TYPE (TREE_TYPE (base));
+  tree ref = fold_indirect_ref_1 (UNKNOWN_LOCATION, ref_type, base);
+  if (!ref)
+    return NULL_TREE;
+
+  /* Analyze the base to which the steps we peeled were applied.  */
+  poly_int64 bitsize, bitpos, bytepos;
+  machine_mode mode;
+  int unsignedp, reversep, volatilep;
+  tree offset;
+  base = get_inner_reference (ref, &bitsize, &bitpos, &offset, &mode,
+			      &unsignedp, &reversep, &volatilep);
+  if (!base || !multiple_p (bitpos, BITS_PER_UNIT, &bytepos))
+    return NULL_TREE;
+
+  /* Restrict the alignment to that guaranteed by the offsets.  */
+  unsigned int bytepos_alignment = known_alignment (bytepos);
+  if (bytepos_alignment != 0)
+    alignment = MIN (alignment, bytepos_alignment);
+  if (offset)
+    {
+      unsigned int offset_alignment = highest_pow2_factor (offset);
+      alignment = MIN (alignment, offset_alignment);
+    }
+
+  *alignment_out = alignment;
+  return base;
+}
+
+/* Return the object whose alignment would need to be changed in order
+   to increase the alignment of ADDR.  Store the maximum achievable
+   alignment in *MAX_ALIGNMENT.  */
+
+tree
+get_base_for_alignment (tree addr, unsigned int *max_alignment)
+{
+  tree base = get_base_for_alignment_1 (addr, max_alignment);
+  if (base)
+    return base;
+
+  if (TREE_CODE (addr) == ADDR_EXPR)
+    addr = TREE_OPERAND (addr, 0);
+  *max_alignment = MAX_OFILE_ALIGNMENT / BITS_PER_UNIT;
+  return addr;
 }
 
 /* Recursive helper function.  */

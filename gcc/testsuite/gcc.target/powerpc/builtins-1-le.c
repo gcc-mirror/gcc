@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc64le-*-* } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O0 -mno-fold-gimple" } */
+/* { dg-options "-mcpu=power8 -O0 -mno-fold-gimple -dp" } */
+/* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
 
 /* Test that a number of newly added builtin overloads are accepted
    by the compiler.  */
@@ -36,34 +37,35 @@
    vec_rsqrt  xvrsqrtesp
    vec_rsqrte xvrsqrtesp  */
 
-/* { dg-final { scan-assembler-times "vcmpequd." 4 } } */
-/* { dg-final { scan-assembler-times "vcmpgtud." 8 } } */
-/* { dg-final { scan-assembler-times "xxland" 29 } } */
-/* { dg-final { scan-assembler-times "vclzb" 2 } } */
-/* { dg-final { scan-assembler-times "vclzb" 2 } } */
-/* { dg-final { scan-assembler-times "vclzw" 2 } } */
-/* { dg-final { scan-assembler-times "vclzh" 2 } } */
-/* { dg-final { scan-assembler-times "xvcpsgnsp" 1 } } */
-/* { dg-final { scan-assembler-times "xvmuldp" 6 } } */
-/* { dg-final { scan-assembler-times "xvcvdpsxds" 1 } } */
-/* { dg-final { scan-assembler-times "vctsxs" 1 } } */
-/* { dg-final { scan-assembler-times "xvcvdpuxds" 1 } } */
-/* { dg-final { scan-assembler-times "vctuxs" 1 } } */
-/* { dg-final { scan-assembler-times "divd" 4 } } */
-/* { dg-final { scan-assembler-times "divdu" 2 } } */
-/* { dg-final { scan-assembler-times "vmrghb" 3 } } */
-/* { dg-final { scan-assembler-times "vmrghh" 4 } } */
-/* { dg-final { scan-assembler-times "xxmrghw" 4 } } */
-/* { dg-final { scan-assembler-times "xxmrglw" 1 } } */
-/* { dg-final { scan-assembler-times "vmrglh" 3 } } */
-/* { dg-final { scan-assembler-times "mulld" 4 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 19 } } */
-/* { dg-final { scan-assembler-times "xxlor" 14 } } */
-/* { dg-final { scan-assembler-times "vpksdus" 1 } } */
-/* { dg-final { scan-assembler-times "vperm" 2 } } */
-/* { dg-final { scan-assembler-times "xvrdpi" 1 } } */
-/* { dg-final { scan-assembler-times "xxsel" 6 } } */
-/* { dg-final { scan-assembler-times "xxlxor" 6 } } */
+/* { dg-final { scan-assembler-times {\mvcmpequd\M\.} 4 } } */
+/* { dg-final { scan-assembler-times {\mvcmpgtud\M\.} 8 } } */
+/* { dg-final { scan-assembler-times {\mxxland\M} 16 } } */
+/* { dg-final { scan-assembler-times {\mxxlandc\M} 13 } } */
+/* { dg-final { scan-assembler-times {\mvclzb\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mvclzd\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mvclzw\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mvclzh\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mxvcpsgnsp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvmuldp\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mxvcvdpsxds\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvctsxs\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvcvdpuxds\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvctuxs\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mdivd\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mdivdu\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mvmrghb\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mvmrghh\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mxxmrghw\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mxxmrglw\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvmrglh\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mmulld\M} 4 } } */
+/* { dg-final { scan-assembler-times {(?n)\mxxlnor\M.*\mboolccv4si3_internal1\M} 6 } } */
+/* { dg-final { scan-assembler-times {(?n)\mxxlor\M.*\mboolv4si3_internal\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mvpksdus\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mxvrdpi\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxxsel\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mxxlxor\M} 6 } } */
 
 /* The test code is in builtins -1.h.  */
 #include "builtins-1.h"

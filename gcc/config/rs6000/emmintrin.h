@@ -885,7 +885,7 @@ _mm_cvtpd_epi32 (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4si)vec_vpkudum ((vector long)temp, (vector long)vzero);
+  result = (__v4si)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -919,7 +919,7 @@ _mm_cvtpd_ps (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4sf)vec_vpkudum ((vector long)temp, (vector long)vzero);
+  result = (__v4sf)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -947,7 +947,7 @@ _mm_cvttpd_epi32 (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4si)vec_vpkudum ((vector long)temp, (vector long)vzero);
+  result = (__v4si)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,

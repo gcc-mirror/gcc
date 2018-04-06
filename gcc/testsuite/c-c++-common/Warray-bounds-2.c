@@ -1,4 +1,4 @@
-/* Test to exercise that -Warray-bounds warnings for memory and sring
+/* Test to exercise that -Warray-bounds warnings for memory and string
    functions are issued even when they are declared in system headers
    (i.e., not just when they are explicitly declared in the source
    file.)
@@ -24,7 +24,8 @@ struct __attribute__ ((packed)) Array
 
 /* Exercise memcpy out-of-bounds offsets with an array of known size.  */
 
-void wrap_memcpy_src_xsize (char *d, const char *s, ptrdiff_t i, size_t n)
+static void
+wrap_memcpy_src_xsize (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   memcpy (d, s + i, n);   /* { dg-warning "offset 46 is out of the bounds \\\[0, 45] of object .ar. with type .(struct )?Array." "memcpy" } */
 }
@@ -39,7 +40,8 @@ void call_memcpy_src_xsize (char *d, size_t n)
 
 /* Exercise memcpy out-of-bounds offsets with an array of unknown size.  */
 
-void wrap_memcpy_src_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
+static void
+wrap_memcpy_src_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   memcpy (d, s + i, n);   /* { dg-warning "pointer overflow between offset \[0-9\]+ and size 3" "memcpy" } */
 }
@@ -49,7 +51,8 @@ void call_memcpy_src_diff_max (char *d, const char *s, size_t n)
   wrap_memcpy_src_diff_max (d, s, MAX, 3);
 }
 
-void wrap_memcpy_dst_xsize (char *d, const char *s, ptrdiff_t i, size_t n)
+static void
+wrap_memcpy_dst_xsize (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   memcpy (d + i, s, n);   /* { dg-warning "offset 47 is out of the bounds \\\[0, 45] of object .ar1. with type .(struct )?Array." "memcpy" } */
 }
@@ -62,7 +65,8 @@ void call_memcpy_dst_xsize (const char *s, size_t n)
   sink (&ar1);
 }
 
-void wrap_memcpy_dst_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
+static void
+wrap_memcpy_dst_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   memcpy (d + i, s, n);   /* { dg-warning "offset -?\[0-9\]+ is out of the bounds \\\[0, 45] of object .ar2. with type .(struct )?Array." "memcpy" } */
 }
@@ -76,7 +80,7 @@ void call_memcpy_dst_diff_max (const char *s, size_t n)
 }
 
 
-void wrap_strcat_src_xsize (char *d, const char *s, ptrdiff_t i)
+static void wrap_strcat_src_xsize (char *d, const char *s, ptrdiff_t i)
 {
   strcat (d, s + i);   /* { dg-warning "offset 46 is out of the bounds \\\[0, 45] of object .ar3. with type .(struct )?Array." "strcat" } */
 }
@@ -89,7 +93,7 @@ void call_strcat_src_xsize (char *d)
   sink (&ar3);
 }
 
-void wrap_strcat_dst_xsize (char *d, const char *s, ptrdiff_t i)
+static void wrap_strcat_dst_xsize (char *d, const char *s, ptrdiff_t i)
 {
   strcat (d + i, s);   /* { dg-warning "offset 47 is out of the bounds \\\[0, 45] of object .ar4. with type .(struct )?Array." "strcat" } */
 }
@@ -103,7 +107,7 @@ void call_strcat_dst_xsize (const char *s)
 }
 
 
-void wrap_strcpy_src_xsize (char *d, const char *s, ptrdiff_t i)
+static void wrap_strcpy_src_xsize (char *d, const char *s, ptrdiff_t i)
 {
   strcpy (d, s + i);   /* { dg-warning "offset 48 is out of the bounds \\\[0, 45] of object .ar5. with type .(struct )?Array." "strcpy" } */
 }
@@ -116,7 +120,7 @@ void call_strcpy_src_xsize (char *d)
   sink (&ar5);
 }
 
-void wrap_strcpy_dst_xsize (char *d, const char *s, ptrdiff_t i)
+static void wrap_strcpy_dst_xsize (char *d, const char *s, ptrdiff_t i)
 {
   strcpy (d + i, s);   /* { dg-warning "offset 49 is out of the bounds \\\[0, 45] of object .ar6. with type .(struct )?Array." "strcpy" } */
 }
@@ -132,7 +136,8 @@ void call_strcpy_dst_xsize (const char *s)
 
 /* Exercise strncpy out-of-bounds offsets with an array of known size.  */
 
-void wrap_strncpy_src_xsize (char *d, const char *s, ptrdiff_t i, size_t n)
+static void
+wrap_strncpy_src_xsize (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   strncpy (d, s + i, n);   /* { dg-warning "offset 46 is out of the bounds \\\[0, 45] of object .ar7. with type '(struct )?Array." "strncpy" } */
 }
@@ -147,7 +152,8 @@ void call_strncpy_src_xsize (char *d, size_t n)
 
 /* Exercise strncpy out-of-bounds offsets with an array of unknown size.  */
 
-void wrap_strncpy_src_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
+static void
+wrap_strncpy_src_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   /* Unlike in the similar call to memcpy(), there is no pointer
      overflow here because the size N is not added to the source
@@ -160,7 +166,8 @@ void call_strncpy_src_diff_max (char *d, const char *s, size_t n)
   wrap_strncpy_src_diff_max (d, s, MAX, 3);
 }
 
-void wrap_strncpy_dst_xsize (char *d, const char *s, ptrdiff_t i, size_t n)
+static void
+wrap_strncpy_dst_xsize (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   strncpy (d + i, s, n);   /* { dg-warning "offset 47 is out of the bounds \\\[0, 45] of object .ar8. with type .(struct )?Array." "strncpy" } */
 }
@@ -173,21 +180,22 @@ void call_strncpy_dst_xsize (const char *s, size_t n)
   sink (&ar8);
 }
 
-void wrap_strncpy_dst_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
+static void
+wrap_strncpy_dst_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   strncpy (d + i, s, n);   /* { dg-warning "offset -\[0-9\]+ is out of the bounds \\\[0, 45] of object .ar9. with type .(struct )?Array." "strncpy" } */
 }
 
 void call_strncpy_dst_diff_max (const char *s, size_t n)
 {
-  struct Array ar9;       /* { dg-message ".ar9. declared here" } */
+  struct Array ar9;       /* { dg-message ".ar9. declared here" "strncpy" } */
   sink (&ar9);
   wrap_strncpy_dst_diff_max (ar9.a17, s, MAX, n);
   sink (&ar9);
 }
 
-void wrap_strncpy_dstarray_diff_neg (char *d, const char *s, ptrdiff_t i,
-				     size_t n)
+static void
+wrap_strncpy_dstarray_diff_neg (char *d, const char *s, ptrdiff_t i, size_t n)
 {
   strncpy (d + i, s, n);   /* { dg-warning "offset -\[0-9\]+ is out of the bounds \\\[0, 90] of object .ar10. with type .(struct )?Array ?\\\[2]." "strncpy" } */
 }

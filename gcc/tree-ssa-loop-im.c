@@ -2616,6 +2616,8 @@ pass_lim::execute (function *fun)
 
   if (!in_loop_pipeline)
     loop_optimizer_finalize ();
+  else
+    scev_reset ();
   return todo;
 }
 

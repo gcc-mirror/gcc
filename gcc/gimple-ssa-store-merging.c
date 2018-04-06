@@ -3248,16 +3248,23 @@ invert_op (split_store *split_store, int idx, tree int_type, tree &mask)
   unsigned int i;
   store_immediate_info *info;
   unsigned int cnt = 0;
+  bool any_paddings = false;
   FOR_EACH_VEC_ELT (split_store->orig_stores, i, info)
     {
       bool bit_not_p = idx < 2 ? info->ops[idx].bit_not_p : info->bit_not_p;
       if (bit_not_p)
-	++cnt;
+	{
+	  ++cnt;
+	  tree lhs = gimple_assign_lhs (info->stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	      && TYPE_PRECISION (TREE_TYPE (lhs)) < info->bitsize)
+	    any_paddings = true;
+	}
     }
   mask = NULL_TREE;
   if (cnt == 0)
     return NOP_EXPR;
-  if (cnt == split_store->orig_stores.length ())
+  if (cnt == split_store->orig_stores.length () && !any_paddings)
     return BIT_NOT_EXPR;
 
   unsigned HOST_WIDE_INT try_bitpos = split_store->bytepos * BITS_PER_UNIT;
@@ -3274,14 +3281,42 @@ invert_op (split_store *split_store, int idx, tree int_type, tree &mask)
 	 clear regions with !bit_not_p, so that gaps in between stores aren't
 	 set in the mask.  */
       unsigned HOST_WIDE_INT bitsize = info->bitsize;
+      unsigned HOST_WIDE_INT prec = bitsize;
       unsigned int pos_in_buffer = 0;
+      if (any_paddings)
+	{
+	  tree lhs = gimple_assign_lhs (info->stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	      && TYPE_PRECISION (TREE_TYPE (lhs)) < bitsize)
+	    prec = TYPE_PRECISION (TREE_TYPE (lhs));
+	}
       if (info->bitpos < try_bitpos)
 	{
 	  gcc_assert (info->bitpos + bitsize > try_bitpos);
-	  bitsize -= (try_bitpos - info->bitpos);
+	  if (!BYTES_BIG_ENDIAN)
+	    {
+	      if (prec <= try_bitpos - info->bitpos)
+		continue;
+	      prec -= try_bitpos - info->bitpos;
+	    }
+	  bitsize -= try_bitpos - info->bitpos;
+	  if (BYTES_BIG_ENDIAN && prec > bitsize)
+	    prec = bitsize;
 	}
       else
 	pos_in_buffer = info->bitpos - try_bitpos;
+      if (prec < bitsize)
+	{
+	  /* If this is a bool inversion, invert just the least significant
+	     prec bits rather than all bits of it.  */
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      pos_in_buffer += bitsize - prec;
+	      if (pos_in_buffer >= split_store->size)
+		continue;
+	    }
+	  bitsize = prec;
+	}
       if (pos_in_buffer + bitsize > split_store->size)
 	bitsize = split_store->size - pos_in_buffer;
       unsigned char *p = buf + (pos_in_buffer / BITS_PER_UNIT);
@@ -3948,7 +3983,8 @@ mem_valid_for_store_merging (tree mem, poly_uint64 *pbitsize,
   if (known_eq (bitregion_end, 0U))
     {
       bitregion_start = round_down_to_byte_boundary (bitpos);
-      bitregion_end = round_up_to_byte_boundary (bitpos + bitsize);
+      bitregion_end = bitpos;
+      bitregion_end = round_up_to_byte_boundary (bitregion_end + bitsize);
     }
 
   if (offset != NULL_TREE)

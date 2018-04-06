@@ -110,6 +110,13 @@
 
 #include <vpclmulqdqintrin.h>
 
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_wbinvd (void)
+{
+  __builtin_ia32_wbinvd ();
+}
+
 #ifndef __RDRND__
 #pragma GCC push_options
 #pragma GCC target("rdrnd")

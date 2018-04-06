@@ -2730,10 +2730,10 @@
 	  break;
 	}
       /* Fall through.  */
-    case UNGE:
+    case UNLT:
       std::swap (operands[2], operands[3]);
       /* Fall through.  */
-    case UNLE:
+    case UNGT:
     case GT:
       comparison = gen_aarch64_cmgt<mode>;
       break;
@@ -2744,10 +2744,10 @@
 	  break;
 	}
       /* Fall through.  */
-    case UNGT:
+    case UNLE:
       std::swap (operands[2], operands[3]);
       /* Fall through.  */
-    case UNLT:
+    case UNGE:
     case GE:
       comparison = gen_aarch64_cmge<mode>;
       break;
@@ -2770,21 +2770,41 @@
     case UNGT:
     case UNLE:
     case UNLT:
-    case NE:
-      /* FCM returns false for lanes which are unordered, so if we use
-	 the inverse of the comparison we actually want to emit, then
-	 invert the result, we will end up with the correct result.
-	 Note that a NE NaN and NaN NE b are true for all a, b.
+      {
+	/* All of the above must not raise any FP exceptions.  Thus we first
+	   check each operand for NaNs and force any elements containing NaN to
+	   zero before using them in the compare.
+	   Example: UN<cc> (a, b) -> UNORDERED (a, b) |
+				     (cm<cc> (isnan (a) ? 0.0 : a,
+					      isnan (b) ? 0.0 : b))
+	   We use the following transformations for doing the comparisions:
+	   a UNGE b -> a GE b
+	   a UNGT b -> a GT b
+	   a UNLE b -> b GE a
+	   a UNLT b -> b GT a.  */
 
-	 Our transformations are:
-	 a UNGE b -> !(b GT a)
-	 a UNGT b -> !(b GE a)
-	 a UNLE b -> !(a GT b)
-	 a UNLT b -> !(a GE b)
-	 a   NE b -> !(a EQ b)  */
-      gcc_assert (comparison != NULL);
-      emit_insn (comparison (operands[0], operands[2], operands[3]));
-      emit_insn (gen_one_cmpl<v_int_equiv>2 (operands[0], operands[0]));
+	rtx tmp0 = gen_reg_rtx (<V_INT_EQUIV>mode);
+	rtx tmp1 = gen_reg_rtx (<V_INT_EQUIV>mode);
+	rtx tmp2 = gen_reg_rtx (<V_INT_EQUIV>mode);
+	emit_insn (gen_aarch64_cmeq<mode> (tmp0, operands[2], operands[2]));
+	emit_insn (gen_aarch64_cmeq<mode> (tmp1, operands[3], operands[3]));
+	emit_insn (gen_and<v_int_equiv>3 (tmp2, tmp0, tmp1));
+	emit_insn (gen_and<v_int_equiv>3 (tmp0, tmp0,
+					  lowpart_subreg (<V_INT_EQUIV>mode,
+							  operands[2],
+							  <MODE>mode)));
+	emit_insn (gen_and<v_int_equiv>3 (tmp1, tmp1,
+					  lowpart_subreg (<V_INT_EQUIV>mode,
+							  operands[3],
+							  <MODE>mode)));
+	gcc_assert (comparison != NULL);
+	emit_insn (comparison (operands[0],
+			       lowpart_subreg (<MODE>mode,
+					       tmp0, <V_INT_EQUIV>mode),
+			       lowpart_subreg (<MODE>mode,
+					       tmp1, <V_INT_EQUIV>mode)));
+	emit_insn (gen_orn<v_int_equiv>3 (operands[0], tmp2, operands[0]));
+      }
       break;
 
     case LT:
@@ -2792,25 +2812,19 @@
     case GT:
     case GE:
     case EQ:
+    case NE:
       /* The easy case.  Here we emit one of FCMGE, FCMGT or FCMEQ.
 	 As a LT b <=> b GE a && a LE b <=> b GT a.  Our transformations are:
 	 a GE b -> a GE b
 	 a GT b -> a GT b
 	 a LE b -> b GE a
 	 a LT b -> b GT a
-	 a EQ b -> a EQ b  */
+	 a EQ b -> a EQ b
+	 a NE b -> ~(a EQ b)  */
       gcc_assert (comparison != NULL);
       emit_insn (comparison (operands[0], operands[2], operands[3]));
-      break;
-
-    case UNEQ:
-      /* We first check (a > b ||  b > a) which is !UNEQ, inverting
-	 this result will then give us (a == b || a UNORDERED b).  */
-      emit_insn (gen_aarch64_cmgt<mode> (operands[0],
-					 operands[2], operands[3]));
-      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[3], operands[2]));
-      emit_insn (gen_ior<v_int_equiv>3 (operands[0], operands[0], tmp));
-      emit_insn (gen_one_cmpl<v_int_equiv>2 (operands[0], operands[0]));
+      if (code == NE)
+	emit_insn (gen_one_cmpl<v_int_equiv>2 (operands[0], operands[0]));
       break;
 
     case LTGT:
@@ -2822,21 +2836,22 @@
       emit_insn (gen_ior<v_int_equiv>3 (operands[0], operands[0], tmp));
       break;
 
-    case UNORDERED:
-      /* Operands are ORDERED iff (a > b || b >= a), so we can compute
-	 UNORDERED as !ORDERED.  */
-      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[2], operands[3]));
-      emit_insn (gen_aarch64_cmge<mode> (operands[0],
-					 operands[3], operands[2]));
-      emit_insn (gen_ior<v_int_equiv>3 (operands[0], operands[0], tmp));
-      emit_insn (gen_one_cmpl<v_int_equiv>2 (operands[0], operands[0]));
-      break;
-
     case ORDERED:
-      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[2], operands[3]));
-      emit_insn (gen_aarch64_cmge<mode> (operands[0],
-					 operands[3], operands[2]));
-      emit_insn (gen_ior<v_int_equiv>3 (operands[0], operands[0], tmp));
+    case UNORDERED:
+    case UNEQ:
+      /* cmeq (a, a) & cmeq (b, b).  */
+      emit_insn (gen_aarch64_cmeq<mode> (operands[0],
+					 operands[2], operands[2]));
+      emit_insn (gen_aarch64_cmeq<mode> (tmp, operands[3], operands[3]));
+      emit_insn (gen_and<v_int_equiv>3 (operands[0], operands[0], tmp));
+
+      if (code == UNORDERED)
+	emit_insn (gen_one_cmpl<v_int_equiv>2 (operands[0], operands[0]));
+      else if (code == UNEQ)
+	{
+	  emit_insn (gen_aarch64_cmeq<mode> (tmp, operands[2], operands[3]));
+	  emit_insn (gen_orn<v_int_equiv>3 (operands[0], operands[0], tmp));
+	}
       break;
 
     default:

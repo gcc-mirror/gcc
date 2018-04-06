@@ -1483,11 +1483,16 @@
 ;;
 ;;  ....................
 
+;; Use a QImode shift count, to avoid generating sign or zero extend
+;; instructions for shift counts, and to avoid dropping subregs.
+;; expand_shift_1 can do this automatically when SHIFT_COUNT_TRUNCATED is
+;; defined, but use of that is discouraged.
+
 (define_insn "<optab>si3"
   [(set (match_operand:SI     0 "register_operand" "= r")
 	(any_shift:SI
 	    (match_operand:SI 1 "register_operand" "  r")
-	    (match_operand:SI 2 "arith_operand"    " rI")))]
+	    (match_operand:QI 2 "arith_operand"    " rI")))]
   ""
 {
   if (GET_CODE (operands[2]) == CONST_INT)
@@ -1499,11 +1504,50 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
+(define_insn_and_split "<optab>si3_mask"
+  [(set (match_operand:SI     0 "register_operand" "= r")
+	(any_shift:SI
+	    (match_operand:SI 1 "register_operand" "  r")
+	    (subreg:QI
+	     (and:SI
+	      (match_operand:SI 2 "register_operand"  "r")
+	      (match_operand 3 "const_int_operand")) 0)))]
+  "(INTVAL (operands[3]) & (GET_MODE_BITSIZE (SImode)-1))
+   == GET_MODE_BITSIZE (SImode)-1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(any_shift:SI (match_dup 1)
+		      (match_dup 2)))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+(define_insn_and_split "<optab>si3_mask_1"
+  [(set (match_operand:SI     0 "register_operand" "= r")
+	(any_shift:SI
+	    (match_operand:SI 1 "register_operand" "  r")
+	    (subreg:QI
+	     (and:DI
+	      (match_operand:DI 2 "register_operand"  "r")
+	      (match_operand 3 "const_int_operand")) 0)))]
+  "TARGET_64BIT
+   && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (SImode)-1))
+       == GET_MODE_BITSIZE (SImode)-1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(any_shift:SI (match_dup 1)
+		      (match_dup 2)))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
 (define_insn "<optab>di3"
   [(set (match_operand:DI 0 "register_operand"     "= r")
 	(any_shift:DI
 	    (match_operand:DI 1 "register_operand" "  r")
-	    (match_operand:DI 2 "arith_operand"    " rI")))]
+	    (match_operand:QI 2 "arith_operand"    " rI")))]
   "TARGET_64BIT"
 {
   if (GET_CODE (operands[2]) == CONST_INT)
@@ -1515,11 +1559,51 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")])
 
+(define_insn_and_split "<optab>di3_mask"
+  [(set (match_operand:DI     0 "register_operand" "= r")
+	(any_shift:DI
+	    (match_operand:DI 1 "register_operand" "  r")
+	    (subreg:QI
+	     (and:SI
+	      (match_operand:SI 2 "register_operand"  "r")
+	      (match_operand 3 "const_int_operand")) 0)))]
+  "TARGET_64BIT
+   && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode)-1))
+       == GET_MODE_BITSIZE (DImode)-1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(any_shift:DI (match_dup 1)
+		      (match_dup 2)))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "DI")])
+
+(define_insn_and_split "<optab>di3_mask_1"
+  [(set (match_operand:DI     0 "register_operand" "= r")
+	(any_shift:DI
+	    (match_operand:DI 1 "register_operand" "  r")
+	    (subreg:QI
+	     (and:DI
+	      (match_operand:DI 2 "register_operand"  "r")
+	      (match_operand 3 "const_int_operand")) 0)))]
+  "TARGET_64BIT
+   && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode)-1))
+       == GET_MODE_BITSIZE (DImode)-1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(any_shift:DI (match_dup 1)
+		      (match_dup 2)))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "DI")])
+
 (define_insn "*<optab>si3_extend"
   [(set (match_operand:DI                   0 "register_operand" "= r")
 	(sign_extend:DI
 	    (any_shift:SI (match_operand:SI 1 "register_operand" "  r")
-			  (match_operand:SI 2 "arith_operand"    " rI"))))]
+			  (match_operand:QI 2 "arith_operand"    " rI"))))]
   "TARGET_64BIT"
 {
   if (GET_CODE (operands[2]) == CONST_INT)
@@ -1530,13 +1614,57 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
+(define_insn_and_split "*<optab>si3_extend_mask"
+  [(set (match_operand:DI                   0 "register_operand" "= r")
+	(sign_extend:DI
+	    (any_shift:SI
+	     (match_operand:SI 1 "register_operand" "  r")
+	     (subreg:QI
+	      (and:SI
+	       (match_operand:SI 2 "register_operand" " r")
+	       (match_operand 3 "const_int_operand")) 0))))]
+  "TARGET_64BIT
+   && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (SImode)-1))
+       == GET_MODE_BITSIZE (SImode)-1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(sign_extend:DI
+	 (any_shift:SI (match_dup 1)
+		       (match_dup 2))))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+(define_insn_and_split "*<optab>si3_extend_mask_1"
+  [(set (match_operand:DI                   0 "register_operand" "= r")
+	(sign_extend:DI
+	    (any_shift:SI
+	     (match_operand:SI 1 "register_operand" "  r")
+	     (subreg:QI
+	      (and:DI
+	       (match_operand:DI 2 "register_operand" " r")
+	       (match_operand 3 "const_int_operand")) 0))))]
+  "TARGET_64BIT
+   && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (SImode)-1))
+       == GET_MODE_BITSIZE (SImode)-1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(sign_extend:DI
+	 (any_shift:SI (match_dup 1)
+		       (match_dup 2))))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
 ;; Non-canonical, but can be formed by ree when combine is not successful at
 ;; producing one of the two canonical patterns below.
 (define_insn "*lshrsi3_zero_extend_1"
   [(set (match_operand:DI                   0 "register_operand" "=r")
 	(zero_extend:DI
 	 (lshiftrt:SI (match_operand:SI     1 "register_operand" " r")
-		      (match_operand:SI     2 "const_int_operand"))))]
+		      (match_operand        2 "const_int_operand"))))]
   "TARGET_64BIT && (INTVAL (operands[2]) & 0x1f) > 0"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);

@@ -2,9 +2,9 @@
 /* { dg-skip-if "" { powerpc_elfv2 } } */
 /* { dg-options "-O2" } */
 
-/* This generates a rotate:DI by 44, with mask 0xf00, which is implemented
-   using a rlwinm instruction.  We used to write 44 for the shift count
-   there; it should be 12.  */
+/* This used to generate a rotate:DI by 44, with mask 0xf00, which is
+   implemented using a rlwinm instruction.  We used to write 44 for the
+   shift count there; it should be 12.  */
 
 struct A
 {
@@ -35,4 +35,3 @@ foo (void)
 }
 
 /* { dg-final { scan-assembler-not {(?n)rlwinm.*,44,20,23} } } */
-/* { dg-final { scan-assembler-times {(?n)rlwinm.*,12,20,23} 1 } } */

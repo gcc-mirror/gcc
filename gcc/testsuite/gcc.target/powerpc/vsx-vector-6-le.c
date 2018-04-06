@@ -9,7 +9,11 @@
 /* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvadddp" 1 } } */
 /* { dg-final { scan-assembler-times "xxlnor" 8 } } */
-/* { dg-final { scan-assembler-times "xxlor" 30 } } */
+/* We generate xxlor instructions for many reasons other than or'ing vector
+   operands or calling __builtin_vec_or(), which  means we cannot rely on
+   their usage counts being stable.  Therefore, we just ensure at least one
+   xxlor instruction was generated.  */
+/* { dg-final { scan-assembler "xxlor" } } */
 /* { dg-final { scan-assembler-times "xvcmpeqdp" 5 } } */
 /* { dg-final { scan-assembler-times "xvcmpgtdp" 8 } } */
 /* { dg-final { scan-assembler-times "xvcmpgedp" 6 } } */

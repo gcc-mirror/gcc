@@ -817,7 +817,7 @@
   "<perm_insn><perm_hilo>\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
 )
 
-(define_insn "*aarch64_sve_<perm_insn><perm_hilo><mode>"
+(define_insn "aarch64_sve_<perm_insn><perm_hilo><mode>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
 	(unspec:SVE_ALL [(match_operand:SVE_ALL 1 "register_operand" "w")
 			 (match_operand:SVE_ALL 2 "register_operand" "w")]
@@ -978,6 +978,34 @@
   "@
    msb\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
    mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+)
+
+;; Unpredicated highpart multiplication.
+(define_expand "<su>mul<mode>3_highpart"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
+	  [(match_dup 3)
+	   (unspec:SVE_I [(match_operand:SVE_I 1 "register_operand")
+			  (match_operand:SVE_I 2 "register_operand")]
+			 MUL_HIGHPART)]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  {
+    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+  }
+)
+
+;; Predicated highpart multiplication.
+(define_insn "*<su>mul<mode>3_highpart"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (unspec:SVE_I [(match_operand:SVE_I 2 "register_operand" "%0")
+			  (match_operand:SVE_I 3 "register_operand" "w")]
+			 MUL_HIGHPART)]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  "<su>mulh\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
 )
 
 ;; Unpredicated NEG, NOT and POPCOUNT.
@@ -2156,7 +2184,7 @@
 )
 
 ;; Conversion of DI or SI to DF, predicated with a PTRUE.
-(define_insn "*<optab><mode>vnx2df2"
+(define_insn "aarch64_sve_<optab><mode>vnx2df2"
   [(set (match_operand:VNx2DF 0 "register_operand" "=w")
 	(unspec:VNx2DF
 	  [(match_operand:VNx2BI 1 "register_operand" "Upl")
@@ -2183,7 +2211,7 @@
 
 ;; Conversion of SFs to the same number of DFs, or HFs to the same number
 ;; of SFs.
-(define_insn "*extend<mode><Vwide>2"
+(define_insn "aarch64_sve_extend<mode><Vwide>2"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(unspec:<VWIDE>
 	  [(match_operand:<VWIDE_PRED> 1 "register_operand" "Upl")
@@ -2195,17 +2223,50 @@
   "fcvt\t%0.<Vewtype>, %1/m, %2.<Vetype>"
 )
 
+;; Unpack the low or high half of a predicate, where "high" refers to
+;; the low-numbered lanes for big-endian and the high-numbered lanes
+;; for little-endian.
+(define_expand "vec_unpack<su>_<perm_hilo>_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (unspec:<VWIDE> [(match_operand:PRED_BHS 1 "register_operand")]
+		   UNPACK)]
+  "TARGET_SVE"
+  {
+    emit_insn ((<hi_lanes_optab>
+		? gen_aarch64_sve_punpkhi_<PRED_BHS:mode>
+		: gen_aarch64_sve_punpklo_<PRED_BHS:mode>)
+	       (operands[0], operands[1]));
+    DONE;
+  }
+)
+
 ;; PUNPKHI and PUNPKLO.
-(define_insn "vec_unpack<su>_<perm_hilo>_<mode>"
+(define_insn "aarch64_sve_punpk<perm_hilo>_<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=Upa")
 	(unspec:<VWIDE> [(match_operand:PRED_BHS 1 "register_operand" "Upa")]
-			UNPACK))]
+			UNPACK_UNSIGNED))]
   "TARGET_SVE"
   "punpk<perm_hilo>\t%0.h, %1.b"
 )
 
+;; Unpack the low or high half of a vector, where "high" refers to
+;; the low-numbered lanes for big-endian and the high-numbered lanes
+;; for little-endian.
+(define_expand "vec_unpack<su>_<perm_hilo>_<SVE_BHSI:mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (unspec:<VWIDE> [(match_operand:SVE_BHSI 1 "register_operand")] UNPACK)]
+  "TARGET_SVE"
+  {
+    emit_insn ((<hi_lanes_optab>
+		? gen_aarch64_sve_<su>unpkhi_<SVE_BHSI:mode>
+		: gen_aarch64_sve_<su>unpklo_<SVE_BHSI:mode>)
+	       (operands[0], operands[1]));
+    DONE;
+  }
+)
+
 ;; SUNPKHI, UUNPKHI, SUNPKLO and UUNPKLO.
-(define_insn "vec_unpack<su>_<perm_hilo>_<SVE_BHSI:mode>"
+(define_insn "aarch64_sve_<su>unpk<perm_hilo>_<SVE_BHSI:mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(unspec:<VWIDE> [(match_operand:SVE_BHSI 1 "register_operand" "w")]
 			UNPACK))]
@@ -2213,32 +2274,28 @@
   "<su>unpk<perm_hilo>\t%0.<Vewtype>, %1.<Vetype>"
 )
 
-;; Used by the vec_unpacks_<perm_hilo>_<mode> expander to unpack the bit
-;; representation of a VNx4SF or VNx8HF without conversion.  The choice
-;; between signed and unsigned isn't significant.
-(define_insn "*vec_unpacku_<perm_hilo>_<mode>_no_convert"
-  [(set (match_operand:SVE_HSF 0 "register_operand" "=w")
-	(unspec:SVE_HSF [(match_operand:SVE_HSF 1 "register_operand" "w")]
-			UNPACK_UNSIGNED))]
-  "TARGET_SVE"
-  "uunpk<perm_hilo>\t%0.<Vewtype>, %1.<Vetype>"
-)
-
 ;; Unpack one half of a VNx4SF to VNx2DF, or one half of a VNx8HF to VNx4SF.
 ;; First unpack the source without conversion, then float-convert the
 ;; unpacked source.
 (define_expand "vec_unpacks_<perm_hilo>_<mode>"
-  [(set (match_dup 2)
-	(unspec:SVE_HSF [(match_operand:SVE_HSF 1 "register_operand")]
-			UNPACK_UNSIGNED))
-   (set (match_operand:<VWIDE> 0 "register_operand")
-	(unspec:<VWIDE> [(match_dup 3)
-			 (unspec:<VWIDE> [(match_dup 2)] UNSPEC_FLOAT_CONVERT)]
-			UNSPEC_MERGE_PTRUE))]
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (unspec:SVE_HSF [(match_operand:SVE_HSF 1 "register_operand")]
+		   UNPACK_UNSIGNED)]
   "TARGET_SVE"
   {
-    operands[2] = gen_reg_rtx (<MODE>mode);
-    operands[3] = force_reg (<VWIDE_PRED>mode, CONSTM1_RTX (<VWIDE_PRED>mode));
+    /* Use ZIP to do the unpack, since we don't care about the upper halves
+       and since it has the nice property of not needing any subregs.
+       If using UUNPK* turns out to be preferable, we could model it as
+       a ZIP whose first operand is zero.  */
+    rtx temp = gen_reg_rtx (<MODE>mode);
+    emit_insn ((<hi_lanes_optab>
+		? gen_aarch64_sve_zip2<mode>
+		: gen_aarch64_sve_zip1<mode>)
+		(temp, operands[1], operands[1]));
+    rtx ptrue = force_reg (<VWIDE_PRED>mode, CONSTM1_RTX (<VWIDE_PRED>mode));
+    emit_insn (gen_aarch64_sve_extend<mode><Vwide>2 (operands[0],
+						     ptrue, temp));
+    DONE;
   }
 )
 
@@ -2246,18 +2303,25 @@
 ;; to VNx2DI, reinterpret the VNx2DI as a VNx4SI, then convert the
 ;; unpacked VNx4SI to VNx2DF.
 (define_expand "vec_unpack<su_optab>_float_<perm_hilo>_vnx4si"
-  [(set (match_dup 2)
-	(unspec:VNx2DI [(match_operand:VNx4SI 1 "register_operand")]
-		       UNPACK_UNSIGNED))
-   (set (match_operand:VNx2DF 0 "register_operand")
-	(unspec:VNx2DF [(match_dup 3)
-			(FLOATUORS:VNx2DF (match_dup 4))]
-		       UNSPEC_MERGE_PTRUE))]
+  [(match_operand:VNx2DF 0 "register_operand")
+   (FLOATUORS:VNx2DF
+     (unspec:VNx2DI [(match_operand:VNx4SI 1 "register_operand")]
+		    UNPACK_UNSIGNED))]
   "TARGET_SVE"
   {
-    operands[2] = gen_reg_rtx (VNx2DImode);
-    operands[3] = force_reg (VNx2BImode, CONSTM1_RTX (VNx2BImode));
-    operands[4] = gen_rtx_SUBREG (VNx4SImode, operands[2], 0);
+    /* Use ZIP to do the unpack, since we don't care about the upper halves
+       and since it has the nice property of not needing any subregs.
+       If using UUNPK* turns out to be preferable, we could model it as
+       a ZIP whose first operand is zero.  */
+    rtx temp = gen_reg_rtx (VNx4SImode);
+    emit_insn ((<hi_lanes_optab>
+	        ? gen_aarch64_sve_zip2vnx4si
+	        : gen_aarch64_sve_zip1vnx4si)
+	       (temp, operands[1], operands[1]));
+    rtx ptrue = force_reg (VNx2BImode, CONSTM1_RTX (VNx2BImode));
+    emit_insn (gen_aarch64_sve_<FLOATUORS:optab>vnx4sivnx2df2 (operands[0],
+							       ptrue, temp));
+    DONE;
   }
 )
 

@@ -65,7 +65,7 @@ void* f_llong_2 (long long, long long) ALLOC_SIZE (1, 2);
 void* f_size_1 (size_t) ALLOC_SIZE (1);
 void* f_size_2 (size_t, size_t) ALLOC_SIZE (1, 2);
 
-size_t
+static size_t
 unsigned_range (size_t min, size_t max)
 {
   extern size_t random_unsigned_value (void);
@@ -74,7 +74,7 @@ unsigned_range (size_t min, size_t max)
   return val;
 }
 
-long long
+static long long
 signed_range (long long min, long long max)
 {
   extern long long random_signed_value (void);
@@ -83,21 +83,11 @@ signed_range (long long min, long long max)
   return val;
 }
 
-size_t
+static size_t
 unsigned_anti_range (size_t min, size_t max)
 {
   extern size_t random_unsigned_value (void);
   size_t val = random_unsigned_value ();
-  if (min <= val && val <= max)
-    val = min - 1;
-  return val;
-}
-
-long long
-signed_anti_range (long long min, long long max)
-{
-  extern long long random_signed_value (void);
-  long long val = random_signed_value ();
   if (min <= val && val <= max)
     val = min - 1;
   return val;

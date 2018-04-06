@@ -1,3 +1,65 @@
+2018-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/85253
+	* m4/matmul_internal.m4: If ycount == 1, add one more row to
+	the internal buffer.
+	* generated/matmul_c10.c: Regenerated.
+	* generated/matmul_c16.c: Regenerated.
+	* generated/matmul_c4.c: Regenerated.
+	* generated/matmul_c8.c: Regenerated.
+	* generated/matmul_i1.c: Regenerated.
+	* generated/matmul_i16.c: Regenerated.
+	* generated/matmul_i2.c: Regenerated.
+	* generated/matmul_i4.c: Regenerated.
+	* generated/matmul_i8.c: Regenerated.
+	* generated/matmul_r10.c: Regenerated.
+	* generated/matmul_r16.c: Regenerated.
+	* generated/matmul_r4.c: Regenerated.
+	* generated/matmul_r8.c: Regenerated.
+	* generated/matmulavx128_c10.c: Regenerated.
+	* generated/matmulavx128_c16.c: Regenerated.
+	* generated/matmulavx128_c4.c: Regenerated.
+	* generated/matmulavx128_c8.c: Regenerated.
+	* generated/matmulavx128_i1.c: Regenerated.
+	* generated/matmulavx128_i16.c: Regenerated.
+	* generated/matmulavx128_i2.c: Regenerated.
+	* generated/matmulavx128_i4.c: Regenerated.
+	* generated/matmulavx128_i8.c: Regenerated.
+	* generated/matmulavx128_r10.c: Regenerated.
+	* generated/matmulavx128_r16.c: Regenerated.
+	* generated/matmulavx128_r4.c: Regenerated.
+	* generated/matmulavx128_r8.c: Regenerated.
+
+2018-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/85166
+	* runtime/minimal.c (stop_numeric): Add new function in order to
+	implement numeric stop on minimal targets.
+
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/io.h (IOPARM_DT_DEFAULT_EXP): Rename to ...
+	(IOPARM_DT_DEC_EXT): ... this.
+	* io/list_read.c (parse_real): Adjust for IOPARM_DT_DEFAULT_EXP
+	renaming to IOPARM_DT_DEC_EXT.
+	(read_real): Likewise.
+	* io/read.c (read_f): Likewise.
+
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgfortran/84880
+	* intrinsics/kill.c (kill): Rename to...
+	(PREFIX (kill)): ... this.  Use export_proto_np instead of export_proto.
+
+2018-03-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* libgfortran/gfortran.map: Remove _gfortran_kill_i4,
+	_gfortran_kill_i4_sub, _gfortran_kill_i8, and _gfortran_kill_i8_sub.
+	Add _gfortran_kill and _gfortran_kill_sub.
+	* libgfortran/intrinsics/kill.c: Eliminate _gfortran_kill_i4,
+	_gfortran_kill_i4_sub, _gfortran_kill_i8, and _gfortran_kill_i8_sub.
+	Add _gfortran_kill and _gfortran_kill_sub.
+
 2018-02-23  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/84519

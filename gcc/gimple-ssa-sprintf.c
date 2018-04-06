@@ -589,18 +589,40 @@ get_format_string (tree format, location_t *ploc)
   return fmtstr;
 }
 
-/* The format_warning_at_substring function is not used here in a way
-   that makes using attribute format viable.  Suppress the warning.  */
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
-
-/* For convenience and brevity.  */
+/* For convenience and brevity, shorter named entrypoints of
+   format_warning_at_substring and format_warning_at_substring_n.
+   These have to be functions with the attribute so that exgettext
+   works properly.  */
 
 static bool
-  (* const fmtwarn) (const substring_loc &, location_t,
-		     const char *, int, const char *, ...)
-  = format_warning_at_substring;
+ATTRIBUTE_GCC_DIAG (5, 6)
+fmtwarn (const substring_loc &fmt_loc, location_t param_loc,
+	 const char *corrected_substring, int opt, const char *gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool warned = format_warning_va (fmt_loc, param_loc, corrected_substring,
+				   opt, gmsgid, &ap);
+  va_end (ap);
+
+  return warned;
+}
+
+static bool
+ATTRIBUTE_GCC_DIAG (6, 8) ATTRIBUTE_GCC_DIAG (7, 8)
+fmtwarn_n (const substring_loc &fmt_loc, location_t param_loc,
+	   const char *corrected_substring, int opt, unsigned HOST_WIDE_INT n,
+	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, plural_gmsgid);
+  bool warned = format_warning_n_va (fmt_loc, param_loc, corrected_substring,
+				     opt, n, singular_gmsgid, plural_gmsgid,
+				     &ap);
+  va_end (ap);
+
+  return warned;
+}
 
 /* Format length modifiers.  */
 
@@ -2489,113 +2511,105 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
 	  /* This is the terminating nul.  */
 	  gcc_assert (res.min == 1 && res.min == res.max);
 
-	  const char *fmtstr
-	    = (info.bounded
-	       ? (maybe
-		  ? G_("%qE output may be truncated before the last format "
-		       "character")
-		  : G_("%qE output truncated before the last format character"))
-	       : (maybe
-		  ? G_("%qE may write a terminating nul past the end "
-		       "of the destination")
-		  : G_("%qE writing a terminating nul past the end "
-		       "of the destination")));
-
 	  return fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
-			  fmtstr, info.func);
+			  info.bounded
+			  ? (maybe
+			     ? G_("%qE output may be truncated before the "
+				  "last format character")
+			     : G_("%qE output truncated before the last "
+				  "format character"))
+			  : (maybe
+			     ? G_("%qE may write a terminating nul past the "
+				  "end of the destination")
+			     : G_("%qE writing a terminating nul past the "
+				  "end of the destination")),
+			  info.func);
 	}
 
       if (res.min == res.max)
 	{
-	  const char* fmtstr
-	    = (res.min == 1
-	       ? (info.bounded
-		  ? (maybe
-		     ? G_("%<%.*s%> directive output may be truncated writing "
-			  "%wu byte into a region of size %wu")
-		     : G_("%<%.*s%> directive output truncated writing "
-			  "%wu byte into a region of size %wu"))
-		  : G_("%<%.*s%> directive writing %wu byte "
-		       "into a region of size %wu"))
-	       : (info.bounded
-		  ? (maybe
-		     ? G_("%<%.*s%> directive output may be truncated writing "
-			  "%wu bytes into a region of size %wu")
-		     : G_("%<%.*s%> directive output truncated writing "
-			  "%wu bytes into a region of size %wu"))
-		  : G_("%<%.*s%> directive writing %wu bytes "
-		       "into a region of size %wu")));
-	  return fmtwarn (dirloc, argloc, NULL,
-			  info.warnopt (), fmtstr, dir.len,
-			  target_to_host (hostdir, sizeof hostdir, dir.beg),
-			  res.min, navail);
+	  const char *d = target_to_host (hostdir, sizeof hostdir, dir.beg);
+	  if (!info.bounded)
+	    return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			      "%<%.*s%> directive writing %wu byte into a "
+			      "region of size %wu",
+			      "%<%.*s%> directive writing %wu bytes into a "
+			      "region of size %wu",
+			      (int) dir.len, d, res.min, navail);
+	  else if (maybe)
+	    return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			      "%<%.*s%> directive output may be truncated "
+			      "writing %wu byte into a region of size %wu",
+			      "%<%.*s%> directive output may be truncated "
+			      "writing %wu bytes into a region of size %wu",
+			      (int) dir.len, d, res.min, navail);
+	  else
+	    return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			      "%<%.*s%> directive output truncated writing "
+			      "%wu byte into a region of size %wu",
+			      "%<%.*s%> directive output truncated writing "
+			      "%wu bytes into a region of size %wu",
+			      (int) dir.len, d, res.min, navail);
 	}
-
       if (res.min == 0 && res.max < maxbytes)
-	{
-	  const char* fmtstr
-	    = (info.bounded
-	       ? (maybe
-		  ? G_("%<%.*s%> directive output may be truncated writing "
-		       "up to %wu bytes into a region of size %wu")
-		  : G_("%<%.*s%> directive output truncated writing "
-		       "up to %wu bytes into a region of size %wu"))
-	       : G_("%<%.*s%> directive writing up to %wu bytes "
-		    "into a region of size %wu"));
-	  return fmtwarn (dirloc, argloc, NULL,
-			  info.warnopt (), fmtstr, dir.len,
-			  target_to_host (hostdir, sizeof hostdir, dir.beg),
-			  res.max, navail);
-	}
+	return fmtwarn (dirloc, argloc, NULL,
+			info.warnopt (),
+			info.bounded
+			? (maybe
+			   ? G_("%<%.*s%> directive output may be truncated "
+				"writing up to %wu bytes into a region of "
+				"size %wu")
+			   : G_("%<%.*s%> directive output truncated writing "
+				"up to %wu bytes into a region of size %wu"))
+			: G_("%<%.*s%> directive writing up to %wu bytes "
+			     "into a region of size %wu"), (int) dir.len,
+			target_to_host (hostdir, sizeof hostdir, dir.beg),
+			res.max, navail);
 
       if (res.min == 0 && maxbytes <= res.max)
-	{
-	  /* This is a special case to avoid issuing the potentially
-	     confusing warning:
-	       writing 0 or more bytes into a region of size 0.  */
-	  const char* fmtstr
-	    = (info.bounded
-	       ? (maybe
-		  ? G_("%<%.*s%> directive output may be truncated writing "
-		       "likely %wu or more bytes into a region of size %wu")
-		  : G_("%<%.*s%> directive output truncated writing "
-		       "likely %wu or more bytes into a region of size %wu"))
-	       : G_("%<%.*s%> directive writing likely %wu or more bytes "
-		    "into a region of size %wu"));
-	  return fmtwarn (dirloc, argloc, NULL,
-			  info.warnopt (), fmtstr, dir.len,
-			  target_to_host (hostdir, sizeof hostdir, dir.beg),
-			  res.likely, navail);
-	}
+	/* This is a special case to avoid issuing the potentially
+	   confusing warning:
+	     writing 0 or more bytes into a region of size 0.  */
+	return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			info.bounded
+			? (maybe
+			   ? G_("%<%.*s%> directive output may be truncated "
+				"writing likely %wu or more bytes into a "
+				"region of size %wu")
+			   : G_("%<%.*s%> directive output truncated writing "
+				"likely %wu or more bytes into a region of "
+				"size %wu"))
+			: G_("%<%.*s%> directive writing likely %wu or more "
+			     "bytes into a region of size %wu"), (int) dir.len,
+			target_to_host (hostdir, sizeof hostdir, dir.beg),
+			res.likely, navail);
 
       if (res.max < maxbytes)
-	{
-	  const char* fmtstr
-	    = (info.bounded
-	       ? (maybe
-		  ? G_("%<%.*s%> directive output may be truncated writing "
-		       "between %wu and %wu bytes into a region of size %wu")
-		  : G_("%<%.*s%> directive output truncated writing "
-		       "between %wu and %wu bytes into a region of size %wu"))
-	       : G_("%<%.*s%> directive writing between %wu and "
-		    "%wu bytes into a region of size %wu"));
-	  return fmtwarn (dirloc, argloc, NULL,
-			  info.warnopt (), fmtstr, dir.len,
-			  target_to_host (hostdir, sizeof hostdir, dir.beg),
-			  res.min, res.max, navail);
-	}
+	return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			info.bounded
+			? (maybe
+			   ? G_("%<%.*s%> directive output may be truncated "
+				"writing between %wu and %wu bytes into a "
+				"region of size %wu")
+			   : G_("%<%.*s%> directive output truncated "
+				"writing between %wu and %wu bytes into a "
+				"region of size %wu"))
+			: G_("%<%.*s%> directive writing between %wu and "
+			     "%wu bytes into a region of size %wu"),
+			(int) dir.len,
+			target_to_host (hostdir, sizeof hostdir, dir.beg),
+			res.min, res.max, navail);
 
-      const char* fmtstr
-	= (info.bounded
-	   ? (maybe
-	      ? G_("%<%.*s%> directive output may be truncated writing "
-		   "%wu or more bytes into a region of size %wu")
-	      : G_("%<%.*s%> directive output truncated writing "
-		   "%wu or more bytes into a region of size %wu"))
-	   : G_("%<%.*s%> directive writing %wu or more bytes "
-		"into a region of size %wu"));
-      return fmtwarn (dirloc, argloc, NULL,
-		      info.warnopt (), fmtstr, dir.len,
+      return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		      info.bounded
+		      ? (maybe
+			 ? G_("%<%.*s%> directive output may be truncated "
+			      "writing %wu or more bytes into a region of "
+			      "size %wu")
+			 : G_("%<%.*s%> directive output truncated writing "
+			      "%wu or more bytes into a region of size %wu"))
+		      : G_("%<%.*s%> directive writing %wu or more bytes "
+			   "into a region of size %wu"), (int) dir.len,
 		      target_to_host (hostdir, sizeof hostdir, dir.beg),
 		      res.min, navail);
     }
@@ -2617,122 +2631,111 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
     {
       gcc_assert (res.min == 1 && res.min == res.max);
 
-      const char *fmtstr
-	= (info.bounded
-	   ? (maybe
-	      ? G_("%qE output may be truncated before the last format "
-		   "character")
-	      : G_("%qE output truncated before the last format character"))
-	   : (maybe
-	      ? G_("%qE may write a terminating nul past the end "
-		   "of the destination")
-	      : G_("%qE writing a terminating nul past the end "
-		   "of the destination")));
-
-      return fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (), fmtstr,
-		      info.func);
+      return fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
+		      info.bounded
+		      ? (maybe
+			 ? G_("%qE output may be truncated before the last "
+			      "format character")
+			 : G_("%qE output truncated before the last format "
+			      "character"))
+		      : (maybe
+			 ? G_("%qE may write a terminating nul past the end "
+			      "of the destination")
+			 : G_("%qE writing a terminating nul past the end "
+			      "of the destination")), info.func);
     }
 
   if (res.min == res.max)
     {
-      const char* fmtstr
-	= (res.min == 1
-	   ? (info.bounded
-	      ? (maybe
-		 ? G_("%<%.*s%> directive output may be truncated writing "
-		      "%wu byte into a region of size between %wu and %wu")
-		 : G_("%<%.*s%> directive output truncated writing "
-		      "%wu byte into a region of size between %wu and %wu"))
-	      : G_("%<%.*s%> directive writing %wu byte "
-		   "into a region of size between %wu and %wu"))
-	   : (info.bounded
-	      ? (maybe
-		 ? G_("%<%.*s%> directive output may be truncated writing "
-		      "%wu bytes into a region of size between %wu and %wu")
-		 : G_("%<%.*s%> directive output truncated writing "
-		      "%wu bytes into a region of size between %wu and %wu"))
-	      : G_("%<%.*s%> directive writing %wu bytes "
-		   "into a region of size between %wu and %wu")));
-
-      return fmtwarn (dirloc, argloc, NULL,
-		      info.warnopt (), fmtstr, dir.len,
-		      target_to_host (hostdir, sizeof hostdir, dir.beg),
-		      res.min, avail_range.min, avail_range.max);
+      const char *d = target_to_host (hostdir, sizeof hostdir, dir.beg);
+      if (!info.bounded)
+	return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			  "%<%.*s%> directive writing %wu byte into a region "
+			  "of size between %wu and %wu",
+			  "%<%.*s%> directive writing %wu bytes into a region "
+			  "of size between %wu and %wu", (int) dir.len, d,
+			  res.min, avail_range.min, avail_range.max);
+      else if (maybe)
+	return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			  "%<%.*s%> directive output may be truncated writing "
+			  "%wu byte into a region of size between %wu and %wu",
+			  "%<%.*s%> directive output may be truncated writing "
+			  "%wu bytes into a region of size between %wu and "
+			  "%wu", (int) dir.len, d, res.min, avail_range.min,
+			  avail_range.max);
+      else
+	return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			  "%<%.*s%> directive output truncated writing %wu "
+			  "byte into a region of size between %wu and %wu",
+			  "%<%.*s%> directive output truncated writing %wu "
+			  "bytes into a region of size between %wu and %wu",
+			  (int) dir.len, d, res.min, avail_range.min,
+			  avail_range.max);
     }
 
   if (res.min == 0 && res.max < maxbytes)
-    {
-      const char* fmtstr
-	= (info.bounded
-	   ? (maybe
-	      ? G_("%<%.*s%> directive output may be truncated writing "
-		   "up to %wu bytes into a region of size between "
-		   "%wu and %wu")
-	      : G_("%<%.*s%> directive output truncated writing "
-		   "up to %wu bytes into a region of size between "
-		   "%wu and %wu"))
-	   : G_("%<%.*s%> directive writing up to %wu bytes "
-		"into a region of size between %wu and %wu"));
-      return fmtwarn (dirloc, argloc, NULL,
-		      info.warnopt (), fmtstr, dir.len,
-		      target_to_host (hostdir, sizeof hostdir, dir.beg),
-		      res.max, avail_range.min, avail_range.max);
-    }
+    return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		    info.bounded
+		    ? (maybe
+		       ? G_("%<%.*s%> directive output may be truncated "
+			    "writing up to %wu bytes into a region of size "
+			    "between %wu and %wu")
+		       : G_("%<%.*s%> directive output truncated writing "
+			    "up to %wu bytes into a region of size between "
+			    "%wu and %wu"))
+		    : G_("%<%.*s%> directive writing up to %wu bytes "
+			 "into a region of size between %wu and %wu"),
+		    (int) dir.len,
+		    target_to_host (hostdir, sizeof hostdir, dir.beg),
+		    res.max, avail_range.min, avail_range.max);
 
   if (res.min == 0 && maxbytes <= res.max)
-    {
-      /* This is a special case to avoid issuing the potentially confusing
-	 warning:
-	   writing 0 or more bytes into a region of size between 0 and N.  */
-      const char* fmtstr
-	= (info.bounded
-	   ? (maybe
-	      ? G_("%<%.*s%> directive output may be truncated writing "
-		   "likely %wu or more bytes into a region of size between "
-		   "%wu and %wu")
-	      : G_("%<%.*s%> directive output truncated writing likely "
-		   "%wu or more bytes into a region of size between "
-		   "%wu and %wu"))
-	   : G_("%<%.*s%> directive writing likely %wu or more bytes "
-		"into a region of size between %wu and %wu"));
-      return fmtwarn (dirloc, argloc, NULL,
-		      info.warnopt (), fmtstr, dir.len,
-		      target_to_host (hostdir, sizeof hostdir, dir.beg),
-		      res.likely, avail_range.min, avail_range.max);
-    }
+    /* This is a special case to avoid issuing the potentially confusing
+       warning:
+	 writing 0 or more bytes into a region of size between 0 and N.  */
+    return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		    info.bounded
+		    ? (maybe
+		       ? G_("%<%.*s%> directive output may be truncated "
+			    "writing likely %wu or more bytes into a region "
+			    "of size between %wu and %wu")
+		       : G_("%<%.*s%> directive output truncated writing "
+			    "likely %wu or more bytes into a region of size "
+			    "between %wu and %wu"))
+		    : G_("%<%.*s%> directive writing likely %wu or more bytes "
+			 "into a region of size between %wu and %wu"),
+		    (int) dir.len,
+		    target_to_host (hostdir, sizeof hostdir, dir.beg),
+		    res.likely, avail_range.min, avail_range.max);
 
   if (res.max < maxbytes)
-    {
-      const char* fmtstr
-	= (info.bounded
-	   ? (maybe
-	      ? G_("%<%.*s%> directive output may be truncated writing "
-		   "between %wu and %wu bytes into a region of size "
-		   "between %wu and %wu")
-	      : G_("%<%.*s%> directive output truncated writing "
-		   "between %wu and %wu bytes into a region of size "
-		   "between %wu and %wu"))
-	   : G_("%<%.*s%> directive writing between %wu and "
-		"%wu bytes into a region of size between %wu and %wu"));
-      return fmtwarn (dirloc, argloc, NULL,
-		      info.warnopt (), fmtstr, dir.len,
-		      target_to_host (hostdir, sizeof hostdir, dir.beg),
-		      res.min, res.max, avail_range.min, avail_range.max);
-    }
+    return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		    info.bounded
+		    ? (maybe
+		       ? G_("%<%.*s%> directive output may be truncated "
+			    "writing between %wu and %wu bytes into a region "
+			    "of size between %wu and %wu")
+		       : G_("%<%.*s%> directive output truncated writing "
+			    "between %wu and %wu bytes into a region of size "
+			    "between %wu and %wu"))
+		    : G_("%<%.*s%> directive writing between %wu and "
+			 "%wu bytes into a region of size between %wu and "
+			 "%wu"), (int) dir.len,
+		    target_to_host (hostdir, sizeof hostdir, dir.beg),
+		    res.min, res.max, avail_range.min, avail_range.max);
 
-  const char* fmtstr
-    = (info.bounded
-       ? (maybe
-	  ? G_("%<%.*s%> directive output may be truncated writing "
-	       "%wu or more bytes into a region of size between "
-	       "%wu and %wu")
-	  : G_("%<%.*s%> directive output truncated writing "
-	       "%wu or more bytes into a region of size between "
-	       "%wu and %wu"))
-       : G_("%<%.*s%> directive writing %wu or more bytes "
-	    "into a region of size between %wu and %wu"));
-  return fmtwarn (dirloc, argloc, NULL,
-		  info.warnopt (), fmtstr, dir.len,
+  return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		  info.bounded
+		  ? (maybe
+		     ? G_("%<%.*s%> directive output may be truncated writing "
+			  "%wu or more bytes into a region of size between "
+			  "%wu and %wu")
+		     : G_("%<%.*s%> directive output truncated writing "
+			  "%wu or more bytes into a region of size between "
+			  "%wu and %wu"))
+		  : G_("%<%.*s%> directive writing %wu or more bytes "
+		       "into a region of size between %wu and %wu"),
+		  (int) dir.len,
 		  target_to_host (hostdir, sizeof hostdir, dir.beg),
 		  res.min, avail_range.min, avail_range.max);
 }
@@ -2883,27 +2886,22 @@ format_directive (const sprintf_dom_walker::call_info &info,
 	 (like Glibc does under some conditions).  */
 
       if (fmtres.range.min == fmtres.range.max)
-	warned = fmtwarn (dirloc, argloc, NULL,
-			  info.warnopt (),
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
 			  "%<%.*s%> directive output of %wu bytes exceeds "
-			  "minimum required size of 4095",
-			  dirlen,
+			  "minimum required size of 4095", dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min);
       else
-	{
-	  const char *fmtstr
-	    = (minunder4k
-	       ? G_("%<%.*s%> directive output between %wu and %wu "
-		    "bytes may exceed minimum required size of 4095")
-	       : G_("%<%.*s%> directive output between %wu and %wu "
-		    "bytes exceeds minimum required size of 4095"));
-
-	  warned = fmtwarn (dirloc, argloc, NULL,
-			    info.warnopt (), fmtstr, dirlen,
-			    target_to_host (hostdir, sizeof hostdir, dir.beg),
-			    fmtres.range.min, fmtres.range.max);
-	}
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  minunder4k
+			  ? G_("%<%.*s%> directive output between %wu and %wu "
+			       "bytes may exceed minimum required size of "
+			       "4095")
+			  : G_("%<%.*s%> directive output between %wu and %wu "
+			       "bytes exceeds minimum required size of 4095"),
+			  dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min, fmtres.range.max);
     }
 
   /* Has the likely and maximum directive output exceeded INT_MAX?  */
@@ -2929,29 +2927,24 @@ format_directive (const sprintf_dom_walker::call_info &info,
       if (fmtres.range.min == fmtres.range.max)
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
 			  "%<%.*s%> directive output of %wu bytes causes "
-			  "result to exceed %<INT_MAX%>",
-			  dirlen,
+			  "result to exceed %<INT_MAX%>", dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min);
       else
-	{
-	  const char *fmtstr
-	    = (fmtres.range.min > target_int_max ()
-	       ? G_ ("%<%.*s%> directive output between %wu and %wu "
-		     "bytes causes result to exceed %<INT_MAX%>")
-	       : G_ ("%<%.*s%> directive output between %wu and %wu "
-		     "bytes may cause result to exceed %<INT_MAX%>"));
-	  warned = fmtwarn (dirloc, argloc, NULL,
-			    info.warnopt (), fmtstr, dirlen,
-			    target_to_host (hostdir, sizeof hostdir, dir.beg),
-			    fmtres.range.min, fmtres.range.max);
-	}
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  fmtres.range.min > target_int_max ()
+			  ? G_ ("%<%.*s%> directive output between %wu and "
+				"%wu bytes causes result to exceed "
+				"%<INT_MAX%>")
+			  : G_ ("%<%.*s%> directive output between %wu and "
+				"%wu bytes may cause result to exceed "
+				"%<INT_MAX%>"), dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min, fmtres.range.max);
     }
 
   if (warned && fmtres.range.min < fmtres.range.likely
       && fmtres.range.likely < fmtres.range.max)
-    /* Some languages have special plural rules even for large values,
-       but it is periodic with period of 10, 100, 1000 etc.  */
     inform_n (info.fmtloc, fmtres.range.likely,
 	      "assuming directive output of %wu byte",
 	      "assuming directive output of %wu bytes",
@@ -3021,8 +3014,6 @@ format_directive (const sprintf_dom_walker::call_info &info,
 
   return true;
 }
-
-#pragma GCC diagnostic pop
 
 /* Parse a format directive in function call described by INFO starting
    at STR and populate DIR structure.  Bump up *ARGNO by the number of
@@ -3373,9 +3364,9 @@ parse_directive (sprintf_dom_walker::call_info &info,
 	  substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
 				caret, begin, end);
 
-	  fmtwarn (dirloc, UNKNOWN_LOCATION, NULL,
-		   info.warnopt (), "%<%.*s%> directive width out of range",
-		   dir.len, target_to_host (hostdir, sizeof hostdir, dir.beg));
+	  fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
+		   "%<%.*s%> directive width out of range", (int) dir.len,
+		   target_to_host (hostdir, sizeof hostdir, dir.beg));
 	}
 
       dir.set_width (width);
@@ -3407,9 +3398,9 @@ parse_directive (sprintf_dom_walker::call_info &info,
 	  substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
 				caret, begin, end);
 
-	  fmtwarn (dirloc, UNKNOWN_LOCATION, NULL,
-		   info.warnopt (), "%<%.*s%> directive precision out of range",
-		   dir.len, target_to_host (hostdir, sizeof hostdir, dir.beg));
+	  fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
+		   "%<%.*s%> directive precision out of range", (int) dir.len,
+		   target_to_host (hostdir, sizeof hostdir, dir.beg));
 	}
 
       dir.set_precision (precision);

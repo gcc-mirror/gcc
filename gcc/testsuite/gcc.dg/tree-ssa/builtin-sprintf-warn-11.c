@@ -19,15 +19,9 @@ typedef __WCHAR_TYPE__ wchar_t;
 extern int int_value (void);
 extern size_t size_value (void);
 
-int int_range (int min, int max)
+static int int_range (int min, int max)
 {
   int n = int_value ();
-  return n < min || max < n ? min : n;
-}
-
-size_t size_range (size_t min, size_t max)
-{
-  size_t n = size_value ();
   return n < min || max < n ? min : n;
 }
 

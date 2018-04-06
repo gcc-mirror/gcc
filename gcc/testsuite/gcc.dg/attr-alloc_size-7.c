@@ -13,7 +13,7 @@ typedef __SIZE_TYPE__ size_t;
 
 void sink (void*);
 
-size_t maxobjsize (void)
+static size_t maxobjsize (void)
 {
   return MAXOBJSZ;
 }

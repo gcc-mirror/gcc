@@ -3376,7 +3376,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   gfc_array_info *info;
   tree decl = NULL_TREE;
   tree index;
-  tree tmp;
+  tree base;
   gfc_ss *ss;
   gfc_expr *expr;
   int n;
@@ -3395,6 +3395,12 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   if (info->offset && !integer_zerop (info->offset))
     index = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
 			     index, info->offset);
+
+  base = build_fold_indirect_ref_loc (input_location, info->data);
+
+  /* Use the vptr 'size' field to access the element of a class array.  */
+  if (build_class_array_ref (se, base, index))
+    return;
 
   if (expr && ((is_subref_array (expr)
 		&& GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (info->descriptor)))
@@ -3420,14 +3426,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 	decl = info->descriptor;
     }
 
-  tmp = build_fold_indirect_ref_loc (input_location, info->data);
-
-  /* Use the vptr 'size' field to access a class the element of a class
-     array.  */
-  if (build_class_array_ref (se, tmp, index))
-    return;
-
-  se->expr = gfc_build_array_ref (tmp, index, decl);
+  se->expr = gfc_build_array_ref (base, index, decl);
 }
 
 
@@ -8883,6 +8882,31 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		}
 
 	      gfc_init_block (&tmpblock);
+
+	      gfc_add_modify (&tmpblock, gfc_class_vptr_get (dcmp),
+			      gfc_class_vptr_get (comp));
+
+	      /* Copy the unlimited '_len' field. If it is greater than zero
+		 (ie. a character(_len)), multiply it by size and use this
+		 for the malloc call.  */
+	      if (UNLIMITED_POLY (c))
+		{
+		  tree ctmp;
+		  gfc_add_modify (&tmpblock, gfc_class_len_get (dcmp),
+				  gfc_class_len_get (comp));
+
+		  size = gfc_evaluate_now (size, &tmpblock);
+		  tmp = gfc_class_len_get (comp);
+		  ctmp = fold_build2_loc (input_location, MULT_EXPR,
+					  size_type_node, size,
+					  fold_convert (size_type_node, tmp));
+		  tmp = fold_build2_loc (input_location, GT_EXPR,
+					 logical_type_node, tmp,
+					 build_zero_cst (TREE_TYPE (tmp)));
+		  size = fold_build3_loc (input_location, COND_EXPR,
+					  size_type_node, tmp, ctmp, size);
+		  size = gfc_evaluate_now (size, &tmpblock);
+		}
 
 	      /* Coarray component have to have the same allocation status and
 		 shape/type-parameter/effective-type on the LHS and RHS of an

@@ -950,7 +950,7 @@ synthesize_method (tree fndecl)
   pop_deferring_access_checks ();
 
   if (error_count != errorcount || warning_count != warningcount + werrorcount)
-    inform (input_location, "synthesized method %qD first required here ",
+    inform (input_location, "synthesized method %qD first required here",
 	    fndecl);
 }
 
@@ -2190,7 +2190,6 @@ defaulted_late_check (tree fn)
 	     "expected signature", fn);
       inform (DECL_SOURCE_LOCATION (fn),
 	      "expected signature: %qD", implicit_fn);
-      return;
     }
 
   if (DECL_DELETED_FN (implicit_fn))

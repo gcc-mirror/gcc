@@ -2265,6 +2265,11 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	  maybe_output_next_view (seen);
 
+	  output_function_exception_table (0);
+
+	  if (targetm.asm_out.unwind_emit)
+	    targetm.asm_out.unwind_emit (asm_out_file, insn);
+
 	  in_cold_section_p = !in_cold_section_p;
 
 	  if (in_cold_section_p)
@@ -4672,7 +4677,7 @@ rest_of_handle_final (void)
   /* The IA-64 ".handlerdata" directive must be issued before the ".endp"
      directive that closes the procedure descriptor.  Similarly, for x64 SEH.
      Otherwise it's not strictly necessary, but it doesn't hurt either.  */
-  output_function_exception_table (fnname);
+  output_function_exception_table (crtl->has_bb_partition ? 1 : 0);
 
   assemble_end_function (current_function_decl, fnname);
 

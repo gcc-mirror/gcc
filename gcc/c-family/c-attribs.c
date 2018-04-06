@@ -439,8 +439,6 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_returns_nonnull_attribute, NULL },
   { "omp declare simd",       0, -1, true,  false, false, false,
 			      handle_omp_declare_simd_attribute, NULL },
-  { "cilk simd function",     0, -1, true,  false, false, false,
-			      handle_omp_declare_simd_attribute, NULL },
   { "simd",		      0, 1, true,  false, false, false,
 			      handle_simd_attribute, NULL },
   { "omp declare target",     0, 0, true, false, false, false,
@@ -1817,6 +1815,12 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
 
   /* Log2 of specified alignment.  */
   int pow2align = check_user_alignment (align_expr, true);
+  if (pow2align == -1
+      || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
+    {
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
 
   /* The alignment in bits corresponding to the specified alignment.  */
   unsigned bitalign = (1U << pow2align) * BITS_PER_UNIT;
@@ -1826,10 +1830,7 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
   unsigned curalign = 0;
   unsigned lastalign = 0;
 
-  if (pow2align == -1
-      || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
-    *no_add_attrs = true;
-  else if (is_type)
+  if (is_type)
     {
       if ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	/* OK, modify the type in place.  */;
@@ -3193,8 +3194,13 @@ handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
       if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	{
+	  /* Accept the attribute on arrays and pointers to all three
+	     narrow character types.  */
 	  tree eltype = TREE_TYPE (type);
-	  if (eltype == char_type_node)
+	  eltype = TYPE_MAIN_VARIANT (eltype);
+	  if (eltype == char_type_node
+	      || eltype == signed_char_type_node
+	      || eltype == unsigned_char_type_node)
 	    return NULL_TREE;
 	}
 

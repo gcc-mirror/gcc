@@ -1043,7 +1043,8 @@ See RS/6000 and PowerPC Options.
 -msave-restore  -mno-save-restore @gol
 -mstrict-align -mno-strict-align @gol
 -mcmodel=medlow -mcmodel=medany @gol
--mexplicit-relocs  -mno-explicit-relocs @gol}
+-mexplicit-relocs  -mno-explicit-relocs @gol
+-mrelax -mno-relax @gol}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -1088,7 +1089,7 @@ See RS/6000 and PowerPC Options.
 -mdlmzb  -mno-dlmzb @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
--msdata=@var{opt}  -mvxworks  -G @var{num} @gol
+-msdata=@var{opt}  -mreadonly-in-sdata  -mvxworks  -G @var{num} @gol
 -mrecip  -mrecip=@var{opt}  -mno-recip  -mrecip-precision @gol
 -mno-recip-precision @gol
 -mveclibabi=@var{type}  -mfriz  -mno-friz @gol
@@ -1250,7 +1251,7 @@ See RS/6000 and PowerPC Options.
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
--mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma @gol
+-mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma -mpconfig -mwbnoinvd @gol
 -mprefetchwt1  -mclflushopt  -mxsavec  -mxsaves @gol
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  @gol
@@ -6753,7 +6754,7 @@ Requires @option{-flto-odr-type-merging} to be enabled.  Enabled by default.
 
 @item -Wopenmp-simd
 @opindex Wopenm-simd
-Warn if the vectorizer cost model overrides the OpenMP or the Cilk Plus
+Warn if the vectorizer cost model overrides the OpenMP
 simd directive set by user.  The @option{-fsimd-cost-model=unlimited}
 option can be used to relax the cost model.
 
@@ -6867,13 +6868,16 @@ the call writes the terminating NUL into @code{a[4]}, the copies overlap and
 the call is diagnosed.
 
 @smallexample
-struct foo
+void foo (void)
 @{
   char a[] = "abcd1234";
   strcpy (a, a + 4);
-@};
+  &hellip;
+@}
 @end smallexample
-The @option{-Wrestrict} is included in @option{-Wall}.
+The @option{-Wrestrict} option detects some instances of simple overlap
+even without optimization but works best at @option{-O2}.  It is included
+in @option{-Wall}.
 
 @item -Wnested-externs @r{(C and Objective-C only)}
 @opindex Wnested-externs
@@ -8996,7 +9000,7 @@ either @samp{dynamic} or @samp{cheap}.
 @item -fsimd-cost-model=@var{model}
 @opindex fsimd-cost-model
 Alter the cost model used for vectorization of loops marked with the OpenMP
-or Cilk Plus simd directive.  The @var{model} argument should be one of
+simd directive.  The @var{model} argument should be one of
 @samp{unlimited}, @samp{dynamic}, @samp{cheap}.  All values of @var{model}
 have the same meaning as described in @option{-fvect-cost-model} and by
 default a cost model defined with @option{-fvect-cost-model} is used.
@@ -9525,9 +9529,8 @@ strict version check, so bytecode files generated in one version of
 GCC do not work with an older or newer version of GCC.
 
 Link-time optimization does not work well with generation of debugging
-information.  Combining @option{-flto} with
-@option{-g} is currently experimental and expected to produce unexpected
-results.
+information on systems other than those using a combination of ELF and
+DWARF.
 
 If you specify the optional @var{n}, the optimization and code
 generation done at link time is executed in parallel using @var{n}
@@ -9606,6 +9609,11 @@ need to support linker plugins to allow a full-featured build environment
 (capable of building static libraries etc).  GCC provides the @command{gcc-ar},
 @command{gcc-nm}, @command{gcc-ranlib} wrappers to pass the right options
 to these tools. With non fat LTO makefiles need to be modified to use them.
+
+Note that modern binutils provide plugin auto-load mechanism.
+Installing the linker plugin into @file{$libdir/bfd-plugins} has the same
+effect as usage of the command wrappers (@command{gcc-ar}, @command{gcc-nm} and
+@command{gcc-ranlib}).
 
 The default is @option{-fno-fat-lto-objects} on targets with linker plugin
 support.
@@ -23155,6 +23163,12 @@ Use or do not use assembler relocation operators when dealing with symbolic
 addresses.  The alternative is to use assembler macros instead, which may
 limit optimization.
 
+@item -mrelax
+@itemx -mno-relax
+Take advantage of linker relaxations to reduce the number of instructions
+required to materialize symbol addresses. The default is to take advantage of
+linker relaxations.
+
 @end table
 
 @node RL78 Options
@@ -24166,6 +24180,13 @@ other @option{-msdata} options are used.
 On embedded PowerPC systems, put all initialized global and static data
 in the @code{.data} section, and all uninitialized data in the
 @code{.bss} section.
+
+@item -mreadonly-in-sdata
+@itemx -mreadonly-in-sdata
+@opindex mreadonly-in-sdata
+@opindex mno-readonly-in-sdata
+Put read-only objects in the @code{.sdata} section as well.  This is the
+default.
 
 @item -mblock-move-inline-limit=@var{num}
 @opindex mblock-move-inline-limit
@@ -26479,6 +26500,9 @@ the result might not run on different machines).  Using @option{-mtune=native}
 produces code optimized for the local machine under the constraints
 of the selected instruction set.  
 
+@item x86-64
+A generic CPU with 64-bit extensions.
+
 @item i386
 Original Intel i386 CPU@.
 
@@ -26589,22 +26613,31 @@ AVX5124VNNIW, AVX5124FMAPS and AVX512VPOPCNTDQ instruction set support.
 Intel Skylake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
 BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
-AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
+CLWB, AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
 
 @item cannonlake
 Intel Cannonlake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
 RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
-AVX512IFMA, SHA, CLWB and UMIP instruction set support.
+AVX512IFMA, SHA and UMIP instruction set support.
 
-@item Icelake
-Intel Icelake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
+@item icelake-client
+Intel Icelake Client CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
 RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
 AVX512IFMA, SHA, CLWB, UMIP, RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ,
 AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES instruction set support.
+
+@item icelake-server
+Intel Icelake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
+SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
+XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
+AVX512IFMA, SHA, CLWB, UMIP, RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ,
+AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES, PCONFIG and WBNOINVD instruction
+set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -27212,8 +27245,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mpclmul
 @opindex mpclmul
 @need 200
-@itemx -mclfushopt
-@opindex mclfushopt
+@itemx -mclflushopt
+@opindex mclflushopt
 @need 200
 @itemx -mfsgsbase
 @opindex mfsgsbase
@@ -27226,6 +27259,12 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mfma
 @opindex mfma
+@need 200
+@itemx -mpconfig
+@opindex mpconfig
+@need 200
+@itemx -mwbnoinvd
+@opindex mwbnoinvd
 @need 200
 @itemx -mfma4
 @opindex mfma4
@@ -27917,9 +27956,9 @@ You can control this behavior for a specific function by using the
 function attribute @code{indirect_branch}.  @xref{Function Attributes}.
 
 Note that @option{-mcmodel=large} is incompatible with
-@option{-mindirect-branch=thunk} nor
+@option{-mindirect-branch=thunk} and
 @option{-mindirect-branch=thunk-extern} since the thunk function may
-not be reachable in large code model.
+not be reachable in the large code model.
 
 Note that @option{-mindirect-branch=thunk-extern} is incompatible with
 @option{-fcf-protection=branch} and @option{-fcheck-pointer-bounds}
@@ -27938,9 +27977,9 @@ using the function attribute @code{function_return}.
 @xref{Function Attributes}.
 
 Note that @option{-mcmodel=large} is incompatible with
-@option{-mfunction-return=thunk} nor
+@option{-mfunction-return=thunk} and
 @option{-mfunction-return=thunk-extern} since the thunk function may
-not be reachable in large code model.
+not be reachable in the large code model.
 
 
 @item -mindirect-branch-register

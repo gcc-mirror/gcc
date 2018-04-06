@@ -1142,7 +1142,7 @@ grep '^const _RLIM_' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(RLIM_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 if test "${rlimit}" = "_rlimit64" && grep '^const _RLIM64_INFINITY ' gen-sysinfo.go > /dev/null 2>&1; then
   echo 'const RLIM_INFINITY = _RLIM64_INFINITY' >> ${OUT}
-elif grep '^const _RLIM_INFINITY ' gen-sysinfo-go; then
+elif grep '^const _RLIM_INFINITY ' gen-sysinfo.go > /dev/null 2>&1; then
   echo 'const RLIM_INFINITY = _RLIM_INFINITY' >> ${OUT}
 fi
 

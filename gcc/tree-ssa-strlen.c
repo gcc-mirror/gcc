@@ -1801,6 +1801,8 @@ bool
 maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 {
   gimple *stmt = gsi_stmt (gsi);
+  if (gimple_no_warning_p (stmt))
+    return false;
 
   wide_int cntrange[2];
 
@@ -1856,8 +1858,33 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
      avoid the truncation warning.  */
   gsi_next_nondebug (&gsi);
   gimple *next_stmt = gsi_stmt (gsi);
+  if (!next_stmt)
+    {
+      /* When there is no statement in the same basic block check
+	 the immediate successor block.  */
+      if (basic_block bb = gimple_bb (stmt))
+	{
+	  if (single_succ_p (bb))
+	    {
+	      /* For simplicity, ignore blocks with multiple outgoing
+		 edges for now and only consider successor blocks along
+		 normal edges.  */
+	      edge e = EDGE_SUCC (bb, 0);
+	      if (!(e->flags & EDGE_ABNORMAL))
+		{
+		  gsi = gsi_start_bb (e->dest);
+		  next_stmt = gsi_stmt (gsi);
+		  if (next_stmt && is_gimple_debug (next_stmt))
+		    {
+		      gsi_next_nondebug (&gsi);
+		      next_stmt = gsi_stmt (gsi);
+		    }
+		}
+	    }
+	}
+    }
 
-  if (!gsi_end_p (gsi) && is_gimple_assign (next_stmt))
+  if (next_stmt && is_gimple_assign (next_stmt))
     {
       tree lhs = gimple_assign_lhs (next_stmt);
       tree_code code = TREE_CODE (lhs);

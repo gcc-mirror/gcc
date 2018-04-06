@@ -266,7 +266,8 @@ proc scan-assembler-times { args } {
     if {$result_count == $times} {
 	pass "$testcase scan-assembler-times $pp_pattern $times"
     } else {
-	fail "$testcase scan-assembler-times $pp_pattern $times (found $result_count times)"
+	verbose -log "$testcase: $pp_pattern found $result_count times"
+	fail "$testcase scan-assembler-times $pp_pattern $times"
     }
 }
 

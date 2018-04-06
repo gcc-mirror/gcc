@@ -1,3 +1,10 @@
+2018-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/85161
+	* elf.c (elf_zlib_fetch): Fix up predefined macro names in test for
+	big endian, only use 32-bit loads if endianity macros are predefined
+	and indicate big or little endian.
+
 2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84148

@@ -334,7 +334,8 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_masks *dest_rgm,
 	{
 	  tree src = src_rgm->masks[i / 2];
 	  tree dest = dest_rgm->masks[i];
-	  tree_code code = (i & 1 ? VEC_UNPACK_HI_EXPR
+	  tree_code code = ((i & 1) == (BYTES_BIG_ENDIAN ? 0 : 1)
+			    ? VEC_UNPACK_HI_EXPR
 			    : VEC_UNPACK_LO_EXPR);
 	  gassign *stmt;
 	  if (dest_masktype == unpack_masktype)
@@ -2699,7 +2700,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 /* Function vect_create_cond_for_niters_checks.
 
    Create a conditional expression that represents the run-time checks for
-   loop's niter.  The loop is guaranteed to to terminate if the run-time
+   loop's niter.  The loop is guaranteed to terminate if the run-time
    checks hold.
 
    Input:

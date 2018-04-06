@@ -23,7 +23,7 @@
 (define_cpu_unit "general_unit" "nds32_machine")
 
 (define_insn_reservation "simple_insn" 1
-			 (eq_attr "type" "unknown,load,store,move,alu,compare,branch,call,misc")
+			 (eq_attr "type" "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,call,misc")
 			 "general_unit")
 
 ;; ------------------------------------------------------------------------

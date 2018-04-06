@@ -284,7 +284,10 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
   else if (VECTOR_TYPE_P (type))
     init = build_zero_cst (type);
   else
-    gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+    {
+      gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+      init = build_zero_cst (type);
+    }
 
   /* In all cases, the initializer is a constant.  */
   if (init)
@@ -1685,14 +1688,6 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
 	}
       else
 	{
-	  /* An array may not be initialized use the parenthesized
-	     initialization form -- unless the initializer is "()".  */
-	  if (init && TREE_CODE (init) == TREE_LIST)
-	    {
-	      if (complain & tf_error)
-		error ("bad array initializer");
-	      return error_mark_node;
-	    }
 	  /* Must arrange to initialize each element of EXP
 	     from elements of INIT.  */
 	  if (cv_qualified_p (type))
@@ -1702,14 +1697,17 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
 	  from_array = (itype && same_type_p (TREE_TYPE (init),
 					      TREE_TYPE (exp)));
 
-	  if (init && !from_array
-	      && !BRACE_ENCLOSED_INITIALIZER_P (init))
+	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init)
+	      && (!from_array
+		  || (TREE_CODE (init) != CONSTRUCTOR
+		      /* Can happen, eg, handling the compound-literals
+			 extension (ext/complit12.C).  */
+		      && TREE_CODE (init) != TARGET_EXPR)))
 	    {
 	      if (complain & tf_error)
-		permerror (init_loc, "array must be initialized "
-			   "with a brace-enclosed initializer");
-	      else
-		return error_mark_node;
+		error_at (init_loc, "array must be initialized "
+			  "with a brace-enclosed initializer");
+	      return error_mark_node;
 	    }
 	}
 
@@ -3367,11 +3365,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  else if (*init)
             {
               if (complain & tf_error)
-                permerror (input_location,
-			   "parenthesized initializer in array new");
-              else
-                return error_mark_node;
-	      vecinit = build_tree_list_vec (*init);
+                error ("parenthesized initializer in array new");
+	      return error_mark_node;
             }
 	  init_expr
 	    = build_vec_init (data_addr,
@@ -4367,7 +4362,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  else
 	    from = NULL_TREE;
 
-	  if (from_array == 2)
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    elt_init = build_vec_init (to, NULL_TREE, from, /*val_init*/false,
+				       from_array, complain);
+	  else if (from_array == 2)
 	    elt_init = cp_build_modify_expr (input_location, to, NOP_EXPR,
 					     from, complain);
 	  else if (type_build_ctor_call (type))
@@ -4381,12 +4379,17 @@ build_vec_init (tree base, tree maxindex, tree init,
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init))
-	    sorry
-	      ("cannot initialize multi-dimensional array with initializer");
-	  elt_init = build_vec_init (build1 (INDIRECT_REF, type, base),
-				     0, init,
-				     explicit_value_init_p,
-				     0, complain);
+	    {
+	      if ((complain & tf_error))
+		error_at (loc, "array must be initialized "
+			  "with a brace-enclosed initializer");
+	      elt_init = error_mark_node;
+	    }
+	  else
+	    elt_init = build_vec_init (build1 (INDIRECT_REF, type, base),
+				       0, init,
+				       explicit_value_init_p,
+				       0, complain);
 	}
       else if (explicit_value_init_p)
 	{
@@ -4446,7 +4449,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
 
       current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-      if (elt_init)
+      if (elt_init && !errors)
 	finish_expr_stmt (elt_init);
       current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 

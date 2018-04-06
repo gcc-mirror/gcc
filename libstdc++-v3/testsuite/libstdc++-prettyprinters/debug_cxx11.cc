@@ -19,7 +19,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#define _GLIBCXX_DEBUG
+#ifndef _GLIBCXX_DEBUG
+# define _GLIBCXX_DEBUG
+#endif
 
 #include <forward_list>
 #include <unordered_map>
@@ -31,7 +33,7 @@ main()
 {
   std::forward_list<std::string> flst;
   std::forward_list<std::string>::iterator flstiter0;
-// { dg-final { note-test flstiter0 {invalid iterator}} }
+// { dg-final { note-test flstiter0 {non-dereferenceable iterator for std::forward_list}} }
   flst.push_front("dum");
   std::forward_list<std::string>::iterator flstiter1 = flst.begin();
 // { dg-final { note-test *flstiter1 {"dum"}} }

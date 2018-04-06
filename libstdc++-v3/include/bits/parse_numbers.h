@@ -197,10 +197,16 @@ namespace __parse_int
 		    "integer literal does not fit in unsigned long long");
     };
 
-  template<unsigned _Base, unsigned long long _Pow, char _Dig>
-    struct _Number_help<_Base, _Pow, _Dig>
+  // Skip past digit separators:
+  template<unsigned _Base, unsigned long long _Pow, char _Dig, char..._Digs>
+    struct _Number_help<_Base, _Pow, '\'', _Dig, _Digs...>
+    : _Number_help<_Base, _Pow, _Dig, _Digs...>
+    { };
+
+  // Terminating case for recursion:
+  template<unsigned _Base, char _Dig>
+    struct _Number_help<_Base, 1ULL, _Dig>
     {
-      //static_assert(_Pow == 1U, "power should be one");
       using type = __ull_constant<_Digit<_Base, _Dig>::value>;
     };
 

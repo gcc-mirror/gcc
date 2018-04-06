@@ -1185,15 +1185,32 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
    of the referenced element.  */
 
 tree
-gfc_get_class_array_ref (tree index, tree class_decl, tree data_comp)
+gfc_get_class_array_ref (tree index, tree class_decl, tree data_comp,
+			 bool unlimited)
 {
-  tree data = data_comp != NULL_TREE ? data_comp :
-				       gfc_class_data_get (class_decl);
-  tree size = gfc_class_vtab_size_get (class_decl);
-  tree offset = fold_build2_loc (input_location, MULT_EXPR,
-				 gfc_array_index_type,
-				 index, size);
-  tree ptr;
+  tree data, size, tmp, ctmp, offset, ptr;
+
+  data = data_comp != NULL_TREE ? data_comp :
+				  gfc_class_data_get (class_decl);
+  size = gfc_class_vtab_size_get (class_decl);
+
+  if (unlimited)
+    {
+      tmp = fold_convert (gfc_array_index_type,
+			  gfc_class_len_get (class_decl));
+      ctmp = fold_build2_loc (input_location, MULT_EXPR,
+			      gfc_array_index_type, size, tmp);
+      tmp = fold_build2_loc (input_location, GT_EXPR,
+			     logical_type_node, tmp,
+			     build_zero_cst (TREE_TYPE (tmp)));
+      size = fold_build3_loc (input_location, COND_EXPR,
+			      gfc_array_index_type, tmp, ctmp, size);
+    }
+
+  offset = fold_build2_loc (input_location, MULT_EXPR,
+			    gfc_array_index_type,
+			    index, size);
+
   data = gfc_conv_descriptor_data_get (data);
   ptr = fold_convert (pvoid_type_node, data);
   ptr = fold_build_pointer_plus_loc (input_location, ptr, offset);
@@ -1295,14 +1312,15 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
 
       if (is_from_desc)
 	{
-	  from_ref = gfc_get_class_array_ref (index, from, from_data);
+	  from_ref = gfc_get_class_array_ref (index, from, from_data,
+					      unlimited);
 	  vec_safe_push (args, from_ref);
 	}
       else
         vec_safe_push (args, from_data);
 
       if (is_to_class)
-	to_ref = gfc_get_class_array_ref (index, to, to_data);
+	to_ref = gfc_get_class_array_ref (index, to, to_data, unlimited);
       else
 	{
 	  tmp = gfc_conv_array_data (to);
@@ -4349,6 +4367,8 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 
       if (expr->value.function.esym == NULL
 	    && expr->value.function.isym != NULL
+	    && expr->value.function.actual
+	    && expr->value.function.actual->expr
 	    && expr->value.function.actual->expr->symtree
 	    && gfc_map_intrinsic_function (expr, mapping))
 	break;
@@ -5953,9 +5973,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
 	  gfc_add_block_to_block (&se->post, &parmse.post);
 	  tmp = parmse.expr;
+	  /* TODO: It would be better to have the charlens as
+	     gfc_charlen_type_node already when the interface is
+	     created instead of converting it here (see PR 84615).  */
 	  tmp = fold_build2_loc (input_location, MAX_EXPR,
-				 TREE_TYPE (tmp), tmp,
-				 build_zero_cst (TREE_TYPE (tmp)));
+				 gfc_charlen_type_node,
+				 fold_convert (gfc_charlen_type_node, tmp),
+				 build_zero_cst (gfc_charlen_type_node));
 	  cl.backend_decl = tmp;
 	}
 

@@ -28,4 +28,4 @@ program main
   if (len(c(     i*(i+1) - 2  :     (i+1)*i      )) /= 3) STOP 17! Case 17
   if (len(c(  (i-2)*(i-3)     :   (i-3)*(i-2)    )) /= 1)       STOP 18! Case 18
 end program main
-! { dg-final { scan-tree-dump-times "_abort" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_stop" 0 "original" } }

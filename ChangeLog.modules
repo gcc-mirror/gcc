@@ -1,5 +1,7 @@
 2018-04-06  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r259189.
+
 	Lazy loading!
 	gcc/cp/
 	* cp-tree.h (union mc_slot): New.

@@ -1229,25 +1229,26 @@ set_attr_value (int n, ...)
 static void
 add_functions (void)
 {
-  /* Argument names as in the standard (to be used as argument keywords).  */
+  /* Argument names.  These are used as argument keywords and so need to
+    match the documentation.  Please keep this list in sorted order.  */
   const char
-    *a = "a", *f = "field", *pt = "pointer", *tg = "target",
-    *b = "b", *m = "matrix", *ma = "matrix_a", *mb = "matrix_b",
-    *c = "c", *n = "n", *ncopies= "ncopies", *pos = "pos", *bck = "back",
-    *i = "i", *v = "vector", *va = "vector_a", *vb = "vector_b",
-    *j = "j", *a1 = "a1", *fs = "fsource", *ts = "tsource",
-    *l = "l", *a2 = "a2", *mo = "mold", *ord = "order",
-    *p = "p", *ar = "array", *shp = "shape", *src = "source",
-    *r = "r", *bd = "boundary", *pad = "pad", *set = "set",
-    *s = "s", *dm = "dim", *kind = "kind", *msk = "mask",
-    *x = "x", *sh = "shift", *stg = "string", *ssg = "substring",
-    *y = "y", *sz = "size", *sta = "string_a", *stb = "string_b",
-    *z = "z", *ln = "len", *ut = "unit", *han = "handler",
-    *num = "number", *tm = "time", *nm = "name", *md = "mode",
-    *vl = "values", *p1 = "path1", *p2 = "path2", *com = "command",
-    *ca = "coarray", *sub = "sub", *dist = "distance", *failed="failed",
-    *c_ptr_1 = "c_ptr_1", *c_ptr_2 = "c_ptr_2", *back = "back",
-    *team = "team", *image = "image", *level = "level";
+    *a = "a", *a1 = "a1", *a2 = "a2", *ar = "array", *b = "b",
+    *bck = "back", *bd = "boundary", *c = "c", *c_ptr_1 = "c_ptr_1",
+    *c_ptr_2 = "c_ptr_2", *ca = "coarray", *com = "command",
+    *dist = "distance", *dm = "dim", *f = "field", *failed="failed",
+    *fs = "fsource", *han = "handler", *i = "i",
+    *image = "image", *j = "j", *kind = "kind",
+    *l = "l", *ln = "len", *level = "level", *m = "matrix", *ma = "matrix_a",
+    *mb = "matrix_b", *md = "mode", *mo = "mold", *msk = "mask",
+    *n = "n", *ncopies= "ncopies", *nm = "name", *num = "number",
+    *ord = "order", *p = "p", *p1 = "path1", *p2 = "path2",
+    *pad = "pad", *pid = "pid", *pos = "pos", *pt = "pointer",
+    *r = "r", *s = "s", *set = "set", *sh = "shift", *shp = "shape",
+    *sig = "sig", *src = "source", *ssg = "substring",
+    *sta = "string_a", *stb = "string_b", *stg = "string",
+    *sub = "sub", *sz = "size", *tg = "target", *team = "team", *tm = "time",
+    *ts = "tsource", *ut = "unit", *v = "vector", *va = "vector_a",
+    *vb = "vector_b", *vl = "values", *x = "x", *y = "y", *z = "z";
 
   int di, dr, dd, dl, dc, dz, ii;
 
@@ -2254,8 +2255,8 @@ add_functions (void)
   make_generic ("ishftc", GFC_ISYM_ISHFTC, GFC_STD_F95);
 
   add_sym_2 ("kill", GFC_ISYM_KILL, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER,
-	     di, GFC_STD_GNU, gfc_check_kill, NULL, gfc_resolve_kill,
-	     a, BT_INTEGER, di, REQUIRED, b, BT_INTEGER, di, REQUIRED);
+	     di, GFC_STD_GNU, gfc_check_kill, NULL, NULL,
+	     pid, BT_INTEGER, di, REQUIRED, sig, BT_INTEGER, di, REQUIRED);
 
   make_generic ("kill", GFC_ISYM_KILL, GFC_STD_GNU);
 
@@ -2471,7 +2472,7 @@ add_functions (void)
 	       gfc_check_minloc_maxloc, gfc_simplify_maxloc, gfc_resolve_maxloc,
 	       ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 	       msk, BT_LOGICAL, dl, OPTIONAL, kind, BT_INTEGER, di, OPTIONAL,
-	       back, BT_LOGICAL, dl, OPTIONAL);
+	       bck, BT_LOGICAL, dl, OPTIONAL);
 
   make_generic ("maxloc", GFC_ISYM_MAXLOC, GFC_STD_F95);
 
@@ -2548,7 +2549,7 @@ add_functions (void)
 	       gfc_check_minloc_maxloc, gfc_simplify_minloc, gfc_resolve_minloc,
 	       ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 	       msk, BT_LOGICAL, dl, OPTIONAL, kind, BT_INTEGER, di, OPTIONAL,
-	       back, BT_LOGICAL, dl, OPTIONAL);
+	       bck, BT_LOGICAL, dl, OPTIONAL);
 
   make_generic ("minloc", GFC_ISYM_MINLOC, GFC_STD_F95);
 
@@ -3301,20 +3302,21 @@ add_functions (void)
 static void
 add_subroutines (void)
 {
-  /* Argument names as in the standard (to be used as argument keywords).  */
-  const char
-    *a = "a", *h = "harvest", *dt = "date", *vl = "values", *pt = "put",
-    *c = "count", *tm = "time", *tp = "topos", *gt = "get",
-    *t = "to", *zn = "zone", *fp = "frompos", *cm = "count_max",
-    *f = "from", *sz = "size", *ln = "len", *cr = "count_rate",
-    *com = "command", *length = "length", *st = "status",
-    *val = "value", *num = "number", *name = "name",
-    *trim_name = "trim_name", *ut = "unit", *han = "handler",
-    *sec = "seconds", *res = "result", *of = "offset", *md = "mode",
-    *whence = "whence", *pos = "pos", *ptr = "ptr", *p1 = "path1",
-    *p2 = "path2", *msk = "mask", *old = "old", *result_image = "result_image",
-    *stat = "stat", *errmsg = "errmsg";
-
+  /* Argument names.  These are used as argument keywords and so need to
+     match the documentation.  Please keep this list in sorted order.  */
+  static const char
+    *a = "a", *c = "count", *cm = "count_max", *com = "command",
+    *cr = "count_rate", *dt = "date", *errmsg = "errmsg", *f = "from",
+    *fp = "frompos", *gt = "get", *h = "harvest", *han = "handler",
+    *length = "length", *ln = "len", *md = "mode", *msk = "mask",
+    *name = "name", *num = "number", *of = "offset", *old = "old",
+    *p1 = "path1", *p2 = "path2", *pid = "pid", *pos = "pos",
+    *pt = "put", *ptr = "ptr", *res = "result",
+    *result_image = "result_image", *sec = "seconds", *sig = "sig",
+    *st = "status", *stat = "stat", *sz = "size", *t = "to",
+    *tm = "time", *tp = "topos", *trim_name = "trim_name", *ut = "unit",
+    *val = "value", *vl = "values", *whence = "whence", *zn = "zone";
+ 
   int di, dr, dc, dl, ii;
 
   di = gfc_default_integer_kind;
@@ -3722,9 +3724,9 @@ add_subroutines (void)
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_3s ("kill", GFC_ISYM_KILL, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
-	      gfc_check_kill_sub, NULL, gfc_resolve_kill_sub,
-	      c, BT_INTEGER, di, REQUIRED, INTENT_IN,
-	      val, BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      gfc_check_kill_sub, NULL, NULL,
+	      pid, BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      sig, BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_3s ("link", GFC_ISYM_LINK, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,

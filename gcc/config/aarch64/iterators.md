@@ -438,6 +438,8 @@
     UNSPEC_ANDF		; Used in aarch64-sve.md.
     UNSPEC_IORF		; Used in aarch64-sve.md.
     UNSPEC_XORF		; Used in aarch64-sve.md.
+    UNSPEC_SMUL_HIGHPART ; Used in aarch64-sve.md.
+    UNSPEC_UMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_COND_ADD	; Used in aarch64-sve.md.
     UNSPEC_COND_SUB	; Used in aarch64-sve.md.
     UNSPEC_COND_SMAX	; Used in aarch64-sve.md.
@@ -1467,6 +1469,8 @@
 
 (define_int_iterator UNPACK_UNSIGNED [UNSPEC_UNPACKULO UNSPEC_UNPACKUHI])
 
+(define_int_iterator MUL_HIGHPART [UNSPEC_SMUL_HIGHPART UNSPEC_UMUL_HIGHPART])
+
 (define_int_iterator SVE_COND_INT_OP [UNSPEC_COND_ADD UNSPEC_COND_SUB
 				      UNSPEC_COND_SMAX UNSPEC_COND_UMAX
 				      UNSPEC_COND_SMIN UNSPEC_COND_UMIN
@@ -1558,7 +1562,9 @@
 (define_int_attr su [(UNSPEC_UNPACKSHI "s")
 		     (UNSPEC_UNPACKUHI "u")
 		     (UNSPEC_UNPACKSLO "s")
-		     (UNSPEC_UNPACKULO "u")])
+		     (UNSPEC_UNPACKULO "u")
+		     (UNSPEC_SMUL_HIGHPART "s")
+		     (UNSPEC_UMUL_HIGHPART "u")])
 
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")
@@ -1673,6 +1679,15 @@
 			    (UNSPEC_UZP1 "1") (UNSPEC_UZP2 "2")
 			    (UNSPEC_UNPACKSHI "hi") (UNSPEC_UNPACKUHI "hi")
 			    (UNSPEC_UNPACKSLO "lo") (UNSPEC_UNPACKULO "lo")])
+
+;; Return true if the associated optab refers to the high-numbered lanes,
+;; false if it refers to the low-numbered lanes.  The convention is for
+;; "hi" to refer to the low-numbered lanes (the first ones in memory)
+;; for big-endian.
+(define_int_attr hi_lanes_optab [(UNSPEC_UNPACKSHI "!BYTES_BIG_ENDIAN")
+				 (UNSPEC_UNPACKUHI "!BYTES_BIG_ENDIAN")
+				 (UNSPEC_UNPACKSLO "BYTES_BIG_ENDIAN")
+				 (UNSPEC_UNPACKULO "BYTES_BIG_ENDIAN")])
 
 (define_int_attr frecp_suffix  [(UNSPEC_FRECPE "e") (UNSPEC_FRECPX "x")])
 

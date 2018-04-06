@@ -55,9 +55,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 0 "vect" { xfail {vect_element_align} } } } */
-
 /* For targets that support unaligned loads we version for the two unaligned 
    stores and generate misaligned accesses for the loads. For targets that 
    don't support unaligned loads we version for all four accesses.  */

@@ -43,7 +43,7 @@ test (A &b, B c)
 
 void
 test2 (auto & [ p ] = bar ())		// { dg-error "'p' was not declared in this scope" }
-{
+{					// { dg-warning "auto" "" { target { ! concepts } } .-1 }
 }
 
 int arr[4];

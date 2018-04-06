@@ -407,6 +407,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_fma = 0, has_fma4 = 0, has_xop = 0;
   unsigned int has_bmi = 0, has_bmi2 = 0, has_tbm = 0, has_lzcnt = 0;
   unsigned int has_hle = 0, has_rtm = 0, has_sgx = 0;
+  unsigned int has_pconfig = 0, has_wbnoinvd = 0;
   unsigned int has_rdrnd = 0, has_f16c = 0, has_fsgsbase = 0;
   unsigned int has_rdseed = 0, has_prfchw = 0, has_adx = 0;
   unsigned int has_osxsave = 0, has_fxsr = 0, has_xsave = 0, has_xsaveopt = 0;
@@ -523,6 +524,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
       has_shstk = ecx & bit_SHSTK;
       has_ibt = edx & bit_IBT;
+      has_pconfig = edx & bit_PCONFIG;
     }
 
   if (max_level >= 13)
@@ -561,6 +563,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
     {
       __cpuid (0x80000008, eax, ebx, ecx, edx);
       has_clzero = ebx & bit_CLZERO;
+      has_wbnoinvd = ebx & bit_WBNOINVD;
     }
 
   /* Get XCR_XFEATURE_ENABLED_MASK register with xgetbv.  */
@@ -822,9 +825,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  if (arch)
 	    {
 	      /* This is unknown family 0x6 CPU.  */
+	      /* Assume Ice Lake Server.  */
+	      if (has_wbnoinvd)
+		cpu = "icelake-server";
 	      /* Assume Ice Lake.  */
-	      if (has_gfni)
-		cpu = "icelake";
+	      else if (has_gfni)
+		cpu = "icelake-client";
 	      /* Assume Cannon Lake.  */
 	      else if (has_avx512vbmi)
 		cpu = "cannonlake";
@@ -1042,6 +1048,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *fma4 = has_fma4 ? " -mfma4" : " -mno-fma4";
       const char *xop = has_xop ? " -mxop" : " -mno-xop";
       const char *bmi = has_bmi ? " -mbmi" : " -mno-bmi";
+      const char *pconfig = has_pconfig ? " -mpconfig" : " -mno-pconfig";
+      const char *wbnoinvd = has_wbnoinvd ? " -mwbnoinvd" : " -mno-wbnoinvd";
       const char *sgx = has_sgx ? " -msgx" : " -mno-sgx";
       const char *bmi2 = has_bmi2 ? " -mbmi2" : " -mno-bmi2";
       const char *tbm = has_tbm ? " -mtbm" : " -mno-tbm";
@@ -1092,6 +1100,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, sgx, bmi2,
+			pconfig, wbnoinvd,
 			tbm, avx, avx2, sse4_2, sse4_1, lzcnt, rtm,
 			hle, rdrnd, f16c, fsgsbase, rdseed, prfchw, adx,
 			fxsr, xsave, xsaveopt, avx512f, avx512er,

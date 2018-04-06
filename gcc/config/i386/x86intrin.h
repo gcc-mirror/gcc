@@ -77,6 +77,8 @@
 
 #include <sgxintrin.h>
 
+#include <pconfigintrin.h>
+
 #endif /* __iamcu__ */
 
 #include <adxintrin.h>
@@ -94,6 +96,8 @@
 #include <mwaitxintrin.h>
 
 #include <clzerointrin.h>
+
+#include <wbnoinvdintrin.h>
 
 #include <pkuintrin.h>
 

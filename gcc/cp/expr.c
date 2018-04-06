@@ -111,13 +111,21 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
     {
     case VAR_DECL:
     case PARM_DECL:
-      if (rvalue_p && is_capture_proxy_with_ref (expr))
+      if (rvalue_p && is_normal_capture_proxy (expr))
 	{
 	  /* Look through capture by copy.  */
 	  tree cap = DECL_CAPTURED_VARIABLE (expr);
 	  if (TREE_CODE (TREE_TYPE (cap)) == TREE_CODE (TREE_TYPE (expr))
 	      && decl_constant_var_p (cap))
-	    return RECUR (cap);
+	    {
+	      tree val = RECUR (cap);
+	      if (!is_capture_proxy (val))
+		{
+		  tree l = current_lambda_expr ();
+		  LAMBDA_EXPR_CAPTURE_OPTIMIZED (l) = true;
+		}
+	      return val;
+	    }
 	}
       if (outer_automatic_var_p (expr)
 	  && decl_constant_var_p (expr))
@@ -154,13 +162,21 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	{
 	  /* Try to look through the reference.  */
 	  tree ref = TREE_OPERAND (expr, 0);
-	  if (rvalue_p && is_capture_proxy_with_ref (ref))
+	  if (rvalue_p && is_normal_capture_proxy (ref))
 	    {
 	      /* Look through capture by reference.  */
 	      tree cap = DECL_CAPTURED_VARIABLE (ref);
 	      if (TREE_CODE (TREE_TYPE (cap)) != REFERENCE_TYPE
 		  && decl_constant_var_p (cap))
-		return RECUR (cap);
+		{
+		  tree val = RECUR (cap);
+		  if (!is_capture_proxy (val))
+		    {
+		      tree l = current_lambda_expr ();
+		      LAMBDA_EXPR_CAPTURE_OPTIMIZED (l) = true;
+		    }
+		  return val;
+		}
 	    }
 	  tree r = mark_rvalue_use (ref, loc, reject_builtin);
 	  if (r != ref)

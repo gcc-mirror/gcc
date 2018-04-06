@@ -32,61 +32,34 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    INTEGER, INTENT(IN) :: PID, SIGNAL
    INTEGER(KIND=1), INTENT(OUT), OPTIONAL :: STATUS
 
-   INTEGER(KIND=1) FUNCTION KILL(PID, SIGNAL)
+   INTEGER FUNCTION KILL(PID, SIGNAL)
    INTEGER, INTENT(IN) :: PID, SIGNAL */
 
 #ifdef HAVE_KILL
-extern void kill_i4_sub (GFC_INTEGER_4 *, GFC_INTEGER_4 *, GFC_INTEGER_4 *);
-iexport_proto(kill_i4_sub);
+extern void kill_sub (GFC_INTEGER_4, GFC_INTEGER_4, GFC_INTEGER_4 *);
+iexport_proto(kill_sub);
 
 void
-kill_i4_sub (GFC_INTEGER_4 *pid, GFC_INTEGER_4 *signal,
-	     GFC_INTEGER_4 *status)
+kill_sub (GFC_INTEGER_4 pid, GFC_INTEGER_4 signal, GFC_INTEGER_4 *status)
 {
   int val;
 
-  val = kill (*pid, *signal);
+  val = kill (pid, signal);
 
   if (status != NULL) 
     *status = (val == 0) ? 0 : errno;
 }
-iexport(kill_i4_sub);
+iexport(kill_sub);
 
-extern void kill_i8_sub (GFC_INTEGER_8 *, GFC_INTEGER_8 *, GFC_INTEGER_8 *);
-iexport_proto(kill_i8_sub);
-
-void
-kill_i8_sub (GFC_INTEGER_8 *pid, GFC_INTEGER_8 *signal,
-	     GFC_INTEGER_8 *status)
-{
-  int val;
-
-  val = kill (*pid, *signal);
-
-  if (status != NULL) 
-    *status = (val == 0) ? 0 : errno;
-}
-iexport(kill_i8_sub);
-
-extern GFC_INTEGER_4 kill_i4 (GFC_INTEGER_4 *, GFC_INTEGER_4 *);
-export_proto(kill_i4);
+extern GFC_INTEGER_4 PREFIX (kill) (GFC_INTEGER_4, GFC_INTEGER_4);
+export_proto_np(PREFIX (kill));
 
 GFC_INTEGER_4
-kill_i4 (GFC_INTEGER_4 *pid, GFC_INTEGER_4 *signal)
+PREFIX (kill) (GFC_INTEGER_4 pid, GFC_INTEGER_4 signal)
 {
-  GFC_INTEGER_4 val;
-  kill_i4_sub (pid, signal, &val);
-  return val;
+  int val;
+  val = (int)kill (pid, signal);
+  return ((val == 0) ? 0 : errno);
 }
 
-extern GFC_INTEGER_8 kill_i8 (GFC_INTEGER_8 *, GFC_INTEGER_8 *);
-export_proto(kill_i8);
-
-GFC_INTEGER_8
-kill_i8 (GFC_INTEGER_8 *pid, GFC_INTEGER_8 *signal)
-{
-  GFC_INTEGER_8 val;
-  kill_i8_sub (pid, signal, &val);
-  return val;
-}
 #endif
