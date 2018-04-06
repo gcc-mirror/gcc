@@ -368,7 +368,8 @@ public:
     {
       /* Special error codes.  Breaking layering a bit.  */
       E_BAD_DATA = -1,  /* Random unexpected data errors.  */
-      E_BAD_IMPORT = -2 /* A nested import failed.  */
+      E_BAD_LAZY = -2,  /* Badly ordered laziness.  */
+      E_BAD_IMPORT = -3 /* A nested import failed.  */
     };
 
 protected:
@@ -443,10 +444,10 @@ public:
   }
 
 public:
-  /* Return the current error.  Zero if there is none.  */
-  int get_error () const
+  /* Return true if we have an error.  */
+  bool has_error () const
   {
-    return err;
+    return err != 0;
   }
   /* Set the error, unless it's already been set.  */
   void set_error (int e = E_BAD_DATA)
@@ -454,6 +455,8 @@ public:
     if (!err)
       err = e;
   }
+  /* Get an error string.  */
+  const char *get_error () const;
 
 public:
   unsigned get_num_sections () const 
@@ -466,15 +469,33 @@ public:
   bool begin () const
   {
     gcc_checking_assert (!sections);
-    return !get_error ();
+    return !has_error ();
   }
   /* Finish reading/writing file.  Return NULL or error string.  */
-  const char *end ();
+  bool end ();
 };
 
-/* Close the stream and return NULL, or error string.  */
+/* Return error string.  */
 
 const char *
+elf::get_error () const
+{
+  switch (err)
+    {
+    case 0:
+      gcc_unreachable ();
+    case E_BAD_DATA:
+      return "Bad file data";
+    case E_BAD_LAZY:
+      return "Bad lazy ordering";
+    case E_BAD_IMPORT:
+      return "Bad import dependency";
+    default:
+      return xstrerror (err);
+    }
+}
+
+bool
 elf::end ()
 {
   /* Close the stream and free the section table.  */
@@ -484,18 +505,7 @@ elf::end ()
   vec_free (sections);
   sections = NULL;
 
-  /* Return an error message, or NULL.  */
-  switch (get_error ())
-    {
-    case 0:
-      return NULL;
-    case E_BAD_DATA:
-      return "Bad file data";
-    case E_BAD_IMPORT:
-      return "Bad import dependency";
-    default:
-      return xstrerror (get_error ());
-    }
+  return has_error ();
 }
 
 /* ELROND reader.  */
@@ -534,11 +544,16 @@ public:
   /* Release string table, and all section information but those
      specified.  */
   void keep_sections (unsigned, unsigned);
-  
+  /* Forget a particular section, so we detect errors trying to reload
+     it.  */
+  void forget_section (unsigned s)
+  {
+    memset (&(*sections)[s], 0, sizeof (isection));
+  }
 
 public:
   bool begin ();
-  const char *end ()
+  bool end ()
   {
     release ();
     return parent::end ();
@@ -634,7 +649,7 @@ public:
 public:
   /* Begin and end writing.  */
   bool begin ();
-  const char *end ();
+  bool end ();
 };
 
 /* Forget about sections not in the range [from,to).  */
@@ -1030,7 +1045,7 @@ elf_out::begin ()
 /* Finish writing the file.  Write out the string & section tables.
    Fill in the header.  Return error string or NULL on success.  */
 
-const char *
+bool
 elf_out::end ()
 {
   /* Write the string table.  */
@@ -2191,16 +2206,20 @@ struct GTY(()) module_state {
   void write (elf_out *to);
   void read (elf_in *from, unsigned *crc_ptr);
 
+  /* Lazily read a section.  */
+  bool lazy_load (tree ns, tree id, tree *slot, bool outermost = false);
+
+ private:
+  /* Check or complete a read.  */
+  bool check_error (bool outermost, tree ns = NULL_TREE, tree id = NULL_TREE);
+
  private:
   /* The context -- global state, imports etc.  */
   void write_context (elf_out *to, unsigned *crc_ptr);
-  bool read_context (elf_in *from);
+  bool read_context ();
   /* The configuration -- cmd args etc.  */
   void write_config (elf_out *to, const range_t &sec_range, unsigned crc);
-  bool read_config (elf_in *from, range_t &sec_range, unsigned *crc_ptr);
-  /* The declarations themeselves.  */
-  void write_decls (elf_out *to, range_t &sec_range, unsigned *crc_ptr);
-  bool read_decls (elf_in *from, const range_t &sec_range);
+  bool read_config (range_t &sec_range, unsigned *crc_ptr);
 
  private:
   /* Serialize various definitions. */
@@ -2237,14 +2256,13 @@ struct GTY(()) module_state {
   void find_dependencies (depset::hash &table);
   static void write_bindings (elf_out *to, depset::hash &table,
 			      unsigned *crc_ptr);
-  bool read_bindings (elf_in *from, auto_vec<tree> &spaces,
-		      const range_t &range);
+  bool read_bindings (auto_vec<tree> &spaces, const range_t &range);
   static void write_namespaces (elf_out *to, depset::hash &table,
 				auto_vec<depset *> &spaces, unsigned *crc_ptr);
-  bool read_namespaces (elf_in *from, auto_vec<tree> &spaces);
+  bool read_namespaces (auto_vec<tree> &spaces);
   unsigned write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 			  unsigned from, unsigned *crc_ptr);
-  bool read_cluster (elf_in *from, unsigned snum);
+  bool read_cluster (unsigned snum);
 
  public:
   /* Import a module.  Possibly ourselves.  */
@@ -2273,6 +2291,7 @@ struct GTY(()) module_state {
   static const std::pair<tree *, unsigned> global_trees[];
   static vec<tree, va_gc> *global_vec;
   static unsigned global_crc;
+  static unsigned lazy_depth;
 };
 
 module_state::module_state (tree name)
@@ -2331,6 +2350,9 @@ const std::pair<tree *, unsigned> module_state::global_trees[] =
   };
 vec<tree, va_gc> GTY (()) *module_state::global_vec;
 unsigned module_state::global_crc;
+
+/* Nesting of lazy loaders.  */
+unsigned module_state::lazy_depth;
 
 /* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
 vec<module_state *, va_gc> GTY(()) *module_state::modules;
@@ -6101,7 +6123,7 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
 }
 
 bool
-module_state::read_context (elf_in *from)
+module_state::read_context ()
 {
   bytes_in ctx;
 
@@ -6213,8 +6235,7 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
 }
 
 bool
-module_state::read_config (elf_in *from, range_t &sec_range,
-			   unsigned *expected_crc)
+module_state::read_config (range_t &sec_range, unsigned *expected_crc)
 {
   bytes_in cfg;
 
@@ -7010,7 +7031,7 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 /* Read a cluster from section SNUM.  */
 
 bool
-module_state::read_cluster (elf_in *from, unsigned snum)
+module_state::read_cluster (unsigned snum)
 {
   trees_in sec (this, global_vec);
 
@@ -7125,7 +7146,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
    SPACES from that data.  */
 
 bool
-module_state::read_namespaces (elf_in *from, auto_vec<tree> &spaces)
+module_state::read_namespaces (auto_vec<tree> &spaces)
 {
   bytes_in sec;
 
@@ -7203,8 +7224,7 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
 /* Read the binding table from MOD_SNAME_PFX.bind.  */
 
 bool
-module_state::read_bindings (elf_in *from, auto_vec<tree> &spaces,
-			     const range_t &range)
+module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
 {
   bytes_in sec;
 
@@ -7366,72 +7386,6 @@ space_cmp (const void *a_, const void *b_)
   return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
 }
 
-/* Write the module declarations of interest  */
-
-void
-module_state::write_decls (elf_out *to, range_t &range, unsigned *crc_p)
-{
-  depset::hash table (200);
-
-  /* Find the set of decls we must write out.  */
-  add_writables (table, global_namespace);
-
-  find_dependencies (table);
-
-  /* Find the SCCs. */
-  auto_vec<depset *> binds, spaces, defs;
-  {
-    depset::tarjan connector (binds, spaces, defs);
-
-    /* Iteration over the hash table is an unspecified ordering.
-       That's good (for now) because it'll give us some random code
-       coverage.  We may want to fill the worklist and sort it in
-       future though?  */
-    depset::hash::iterator end (table.end ());
-    for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
-      {
-	depset *v = *iter;
-	if (!v->cluster)
-	  connector.connect (v);
-      }
-  }
-
-  /* Sort the namespaces.  */
-  (spaces.qsort) (space_cmp);
-
-  /* Write the binding clusters.  */
-  range.first = to->get_num_sections ();
-  for (unsigned ix = 0; ix != binds.length ();)
-    ix = write_cluster (to, binds, ix, crc_p);
-  range.second = to->get_num_sections ();
-
-  // FIXME:write the defs.
-  gcc_assert (!defs.length ());
-
-  /* Write the namespace hierarchy. */
-  write_namespaces (to, table, spaces, crc_p);
-
-  /* Write the bindings themselves.  */
-  write_bindings (to, table, crc_p);
-}
-
-/* Read module decls.  */
-
-bool
-module_state::read_decls (elf_in *from, const range_t &range)
-{
-  /* Read the namespace hierarchy. */
-  auto_vec<tree> spaces;
-
-  if (!read_namespaces (from, spaces))
-    return false;
-
-  if (!read_bindings (from, spaces, range))
-    return false;
-
-  return true;
-}
-
 /* Use ELROND format to record the following sections:
      1     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
      2     MOD_SNAME_PFX.context  : context data
@@ -7448,7 +7402,48 @@ module_state::write (elf_out *to)
   range_t range;
 
   write_context (to, &crc);
-  write_decls (to, range, &crc);
+  depset::hash table (200);
+
+  /* Find the set of decls we must write out.  */
+  add_writables (table, global_namespace);
+
+  find_dependencies (table);
+
+  /* Find the SCCs. */
+  auto_vec<depset *> binds, spaces, defs;
+  depset::tarjan connector (binds, spaces, defs);
+
+  /* Iteration over the hash table is an unspecified ordering.  That's
+     good (for now) because it'll give us some random code coverage.
+     We may want to fill the worklist and sort it in future
+     though?  */
+  depset::hash::iterator end (table.end ());
+  for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
+    {
+      depset *v = *iter;
+      if (!v->cluster)
+	connector.connect (v);
+    }
+
+  /* Sort the namespaces.  */
+  (spaces.qsort) (space_cmp);
+
+  /* Write the binding clusters.  */
+  range.first = to->get_num_sections ();
+  for (unsigned ix = 0; ix != binds.length ();)
+    ix = write_cluster (to, binds, ix, &crc);
+  range.second = to->get_num_sections ();
+
+  // FIXME:write the defs.
+  gcc_assert (!defs.length ());
+
+  /* Write the namespace hierarchy. */
+  write_namespaces (to, table, spaces, &crc);
+
+  /* Write the bindings themselves.  */
+  write_bindings (to, table, &crc);
+
+  /* And finish up.  */
   write_config (to, range, crc);
 
   trees_out::instrument ();
@@ -7456,13 +7451,15 @@ module_state::write (elf_out *to)
 }
 
 void
-module_state::read (elf_in *from, unsigned *crc_ptr)
+module_state::read (elf_in *in, unsigned *crc_ptr)
 {
   range_t range;
 
-  if (!read_config (from, range, crc_ptr))
+  this->from = in;
+
+  if (!read_config (range, crc_ptr))
     return;
-  if (!read_context (from))
+  if (!read_context ())
     return;
 
   /* Determine the module's number.  */
@@ -7487,7 +7484,13 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   (*remap)[MODULE_PURVIEW] = ix;
   dump () && dump ("Assigning %N module number %u", name, ix);
 
-  if (!read_decls (from, range))
+  /* Read the namespace hierarchy. */
+  auto_vec<tree> spaces;
+  if (!read_namespaces (spaces))
+    return;
+
+  /* And the bindings.  */
+  if (!read_bindings (spaces, range))
     return;
 
   /* We're done with the string and non-decl sections now.  */
@@ -7504,13 +7507,47 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
       unsigned hwm = range.second;
       for (unsigned ix = range.first; ix != hwm; ix++)
 	{
-	  if (!read_cluster (from, ix))
+	  if (!read_cluster (ix))
 	    break;
 	  lazy--;
 	}
     }
 
   return;
+}
+
+bool
+module_state::check_error (bool outermost, tree ns, tree id)
+{
+  bool done = loading == ~0u && (from->has_error () || !lazy);
+  if (done)
+    from->end ();
+
+  bool failed = from->has_error ();
+  if (failed)
+    {
+      const char *err = from->get_error ();
+      /* Failure to read a module is going to cause big
+	 problems, so bail out, if this is the top level.
+	 Otherwise return NULL to let our importer know (and
+	 fail).  */
+      if (lazy && ns)
+	error_at (loc, "failed to lazily load %<%E%s%E@%E%>: %s",
+		  ns, &"::"[ns == global_namespace ? 2 : 0], id, name, err);
+      else
+	error_at  (loc, "failed to import module %qE: %s", name, err);
+    }
+
+  if (done)
+    {
+      delete from;
+      from = NULL;
+    }
+
+  if (failed && outermost)
+    fatal_error (loc, "declining opportunity to proceed into weeds");
+
+  return failed;
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -7801,7 +7838,7 @@ static FILE *
 find_module_file (module_state *state)
 {
   FILE *stream = fopen (state->filename, "rb");
-  if (stream || !module_wrapper)
+  if (stream || errno != ENOENT || !module_wrapper)
     return stream;
 
   inform (state->loc, "installing module %qE (%qs)",
@@ -8123,33 +8160,22 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	{
 	  FILE *stream = find_module_file (state);
 	  int e = errno;
+
+	  // FIXME: if errno == EMFILE, and we're lazy loading, we might
+	  // consider some closing and reopening of active modules.
+
 	  state->push_location ();
 	  unsigned n = dump.push (state);
 	  state->announce ("importing");
-
 	  elf_in *from = new elf_in (stream, e);
 	  if (from->begin ())
 	    state->read (from, crc_ptr);
-	  gcc_assert (!state->lazy);
-	  const char *err = from->end ();
-	  if (err)
-	    {
-	      /* Failure to read a module is going to cause big
-		 problems, so bail out, if this is the top level.
-		 Otherwise return NULL to let our importer know (and
-		 fail).  */
-	      (module_p || export_p ? fatal_error
-	       : (void (*)(location_t, const char *, ...))error_at)
-		(state->loc, "failed to import module %qE: %s",
-		 state->name, err);
-	    }
-	  else
-	    gcc_assert (state->mod <= modules->length ());
-	  delete from;
+	  bool failed = state->check_error (module_p || export_p);
+	  gcc_assert (failed || !state->lazy);
 	  state->announce ("imported");
 	  dump.pop (n);
 	  state->pop_location ();
-	  if (err)
+	  if (failed)
 	    return NULL;
 	}
     }
@@ -8178,6 +8204,48 @@ module_state::do_import (location_t loc, tree name, bool module_p,
   gcc_assert (state);
 
   return state;
+}
+
+/* *SLOT is a yet-to-be loaded binding of module MOD in namepsace NS
+   named ID.  Lazily load it, or die trying.  */
+
+bool
+module_state::lazy_load (tree ns, tree id, tree *slot, bool outermost)
+{
+  push_location ();
+  unsigned n = dump.push (this);
+
+  unsigned snum = 0; // FIXME
+
+  dump () && dump ("Lazily loading %P@%N section:%u", ns, id, name, snum);
+  unsigned old_loading = loading;
+  if (snum >= loading)
+    from->set_error (elf::E_BAD_LAZY);
+  else
+    {
+      loading = snum;
+      lazy_depth++;
+      read_cluster (snum);
+      from->forget_section (loading);
+      lazy_depth--;
+      loading = old_loading;
+      lazy--;
+      if (*slot) // FIXME
+	from->set_error (elf::E_BAD_LAZY);
+    }
+  bool failed = check_error (outermost, ns, id);
+  gcc_assert (!failed || !outermost);
+ 
+  dump.pop (n);
+  pop_location ();
+
+  return !failed;
+}
+
+void
+lazy_load_binding (unsigned mod, tree ns, tree id, tree *slot)
+{
+  (*module_state::modules)[mod]->lazy_load (ns, id, slot, true);
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */
@@ -8266,9 +8334,9 @@ finish_module ()
       elf_out to (stream, e);
       if (to.begin ())
 	state->write (&to);
-      if (const char *err = to.end ())
+      if (to.end ())
 	error_at (state->loc, "failed to export module %qE: %s", state->name,
-		  err);
+		  to.get_error ());
 
       dump.pop (n);
       input_location = saved_loc;

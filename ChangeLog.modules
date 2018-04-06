@@ -1,6 +1,26 @@
 2018-04-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (elf::E_BAD_LAZY): New error.
+	(elf::has_error): New.
+	(elf::get_error): Return string.
+	(elf::end): Return bool.
+	(elf_in::forget_section): New.
+	(module_state::check_error): New.
+	(module_state::do_module_import): Use it.
+	(module_state::lazy_load): New.
+	(module_state::{read,write}_decls): Absorb into callers.
+	(module_state::read_{context,config,namespaces,bindings,cluster}): Lose
+	from parm.
+	(module_state::lazy_depth): New.
+	(lazy_load_binding): New.
+	(finish_module): Adjust.
+	* cp-tree.h (lazy_load_binding): Declare.
+	gcc/testsuite/
+	* g++.dg/modules/circ-1_c.C: Adjust errors.
+	* g++.dg/modules/mod-stamp-1_d.C: Adjust errors.
+
+	gcc/cp/
 	* module.c (elf_in::keep_sections): New.
 	(elf_in::read): Add type arg.
 	(elf_in::find): Remove type arg.
