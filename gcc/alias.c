@@ -1876,7 +1876,8 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
 }
 
 static rtx
-find_base_term (rtx x)
+find_base_term (rtx x, vec<std::pair<cselib_val *,
+				     struct elt_loc_list *> > &visited_vals)
 {
   cselib_val *val;
   struct elt_loc_list *l, *f;
@@ -1910,7 +1911,7 @@ find_base_term (rtx x)
     case POST_DEC:
     case PRE_MODIFY:
     case POST_MODIFY:
-      return find_base_term (XEXP (x, 0));
+      return find_base_term (XEXP (x, 0), visited_vals);
 
     case ZERO_EXTEND:
     case SIGN_EXTEND:	/* Used for Alpha/NT pointers */
@@ -1921,7 +1922,7 @@ find_base_term (rtx x)
 	return 0;
 
       {
-	rtx temp = find_base_term (XEXP (x, 0));
+	rtx temp = find_base_term (XEXP (x, 0), visited_vals);
 
 	if (temp != 0 && CONSTANT_P (temp))
 	  temp = convert_memory_address (Pmode, temp);
@@ -1940,7 +1941,9 @@ find_base_term (rtx x)
 	return static_reg_base_value[STACK_POINTER_REGNUM];
 
       f = val->locs;
-      /* Temporarily reset val->locs to avoid infinite recursion.  */
+      /* Reset val->locs to avoid infinite recursion.  */
+      if (f)
+	visited_vals.safe_push (std::make_pair (val, f));
       val->locs = NULL;
 
       for (l = f; l; l = l->next)
@@ -1949,16 +1952,15 @@ find_base_term (rtx x)
 	    && !CSELIB_VAL_PTR (l->loc)->locs->next
 	    && CSELIB_VAL_PTR (l->loc)->locs->loc == x)
 	  continue;
-	else if ((ret = find_base_term (l->loc)) != 0)
+	else if ((ret = find_base_term (l->loc, visited_vals)) != 0)
 	  break;
 
-      val->locs = f;
       return ret;
 
     case LO_SUM:
       /* The standard form is (lo_sum reg sym) so look only at the
          second operand.  */
-      return find_base_term (XEXP (x, 1));
+      return find_base_term (XEXP (x, 1), visited_vals);
 
     case CONST:
       x = XEXP (x, 0);
@@ -1984,7 +1986,7 @@ find_base_term (rtx x)
 	   other operand is the base register.  */
 
 	if (tmp1 == pic_offset_table_rtx && CONSTANT_P (tmp2))
-	  return find_base_term (tmp2);
+	  return find_base_term (tmp2, visited_vals);
 
 	/* If either operand is known to be a pointer, then prefer it
 	   to determine the base term.  */
@@ -2001,12 +2003,12 @@ find_base_term (rtx x)
 	   term is from a pointer or is a named object or a special address
 	   (like an argument or stack reference), then use it for the
 	   base term.  */
-	rtx base = find_base_term (tmp1);
+	rtx base = find_base_term (tmp1, visited_vals);
 	if (base != NULL_RTX
 	    && ((REG_P (tmp1) && REG_POINTER (tmp1))
 		 || known_base_value_p (base)))
 	  return base;
-	base = find_base_term (tmp2);
+	base = find_base_term (tmp2, visited_vals);
 	if (base != NULL_RTX
 	    && ((REG_P (tmp2) && REG_POINTER (tmp2))
 		 || known_base_value_p (base)))
@@ -2020,7 +2022,7 @@ find_base_term (rtx x)
 
     case AND:
       if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) != 0)
-	return find_base_term (XEXP (x, 0));
+	return find_base_term (XEXP (x, 0), visited_vals);
       return 0;
 
     case SYMBOL_REF:
@@ -2030,6 +2032,19 @@ find_base_term (rtx x)
     default:
       return 0;
     }
+}
+
+/* Wrapper around the worker above which removes locs from visited VALUEs
+   to avoid visiting them multiple times.  We unwind that changes here.  */
+
+static rtx
+find_base_term (rtx x)
+{
+  auto_vec<std::pair<cselib_val *, struct elt_loc_list *>, 32> visited_vals;
+  rtx res = find_base_term (x, visited_vals);
+  for (unsigned i = 0; i < visited_vals.length (); ++i)
+    visited_vals[i].first->locs = visited_vals[i].second;
+  return res;
 }
 
 /* Return true if accesses to address X may alias accesses based
