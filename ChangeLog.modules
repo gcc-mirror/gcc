@@ -1,6 +1,17 @@
 2018-04-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (elf_in::keep_sections): New.
+	(elf_in::read): Add type arg.
+	(elf_in::find): Remove type arg.
+	(elf_in::begin): Coalesce error messages.
+	(module_state::loading): New field.
+	(module_state::{read,write}_config): Serialize section range ...
+	(module_state::{read,write}_namespace): ... not here.
+	(module_state::read_decls): Do not read the actual decls.
+	(module_state::read): ... do them here.
+
+	gcc/cp/
 	* module.c (trees_{in,out}, depset): Reorder definitions.
 
 	gcc/cp/

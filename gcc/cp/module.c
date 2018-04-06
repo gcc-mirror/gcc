@@ -456,7 +456,7 @@ public:
   }
 
 public:
-  int get_num_sections () const 
+  unsigned get_num_sections () const 
   {
     return sections->length ();
   }
@@ -521,9 +521,9 @@ protected:
 
 public:
   /* Read section by number.  */
-  data *read (unsigned snum);
+  data *read (unsigned snum, unsigned type = SHT_PROGBITS);
   /* Find section by name.  */
-  unsigned find (const char *name, unsigned type = SHT_PROGBITS);
+  unsigned find (const char *name);
 
 public:
   /* Release the string table, when we're done with it.  */
@@ -531,6 +531,10 @@ public:
   {
     strings = data::release (strings);
   }
+  /* Release string table, and all section information but those
+     specified.  */
+  void keep_sections (unsigned, unsigned);
+  
 
 public:
   bool begin ();
@@ -633,6 +637,19 @@ public:
   const char *end ();
 };
 
+/* Forget about sections not in the range [from,to).  */
+
+void
+elf_in::keep_sections (unsigned from, unsigned to)
+{
+  release ();
+  gcc_assert (to <= get_num_sections ());
+  if (from)
+    memset (&(*sections)[0], 0, sizeof (isection) * from);
+  if (unsigned tail = get_num_sections () - to)
+    memset (&(*sections)[to], 0, sizeof (isection) * tail);
+}
+
 /* Read at current position into BUFFER.  Return true on success.  */
 
 bool
@@ -646,14 +663,16 @@ elf_in::read (void *buffer, size_t size)
   return true;
 }
 
-/* Read section SNUM.  Return data buffer, or NULL on error.  */
+/* Read section SNUM of TYPE.  Return data buffer, or NULL on error.  */
 
 data *
-elf_in::read (unsigned snum)
+elf_in::read (unsigned snum, unsigned type)
 {
   if (!snum || snum >= sections->length ())
     return NULL;
   const isection *sec = &(*sections)[snum];
+  if (sec->type != type)
+    return NULL;
   if (fseek (stream, sec->offset, SEEK_SET))
     {
       set_error (errno);
@@ -671,14 +690,14 @@ elf_in::read (unsigned snum)
    failure.  */
 
 unsigned
-elf_in::find (const char *sname, unsigned type)
+elf_in::find (const char *sname)
 {
   unsigned snum = sections->length ();
   while (--snum)
     {
       const isection *isec = &(*sections)[snum];
 
-      if (isec->type == type && !strcmp (sname, name (isec->name)))
+      if (!strcmp (sname, name (isec->name)))
 	return snum;
     }
 
@@ -711,34 +730,30 @@ elf_in::begin ()
      distributable.  */
   if (header.ident.klass != MY_CLASS
       || header.ident.data != MY_ENDIAN
-      || header.ident.version != EV_CURRENT)
-    {
-      error ("unexpected encapsulation format");
-      return false;
-    }
-
-  /* And the versioning isn't target-specific.  */
-  if (header.type != ET_NONE
+      || header.ident.version != EV_CURRENT
+      || header.type != ET_NONE
       || header.machine != EM_NONE
       || header.ident.osabi != OSABI_NONE)
     {
-      error ("unexpected encapsulation type");
+      error ("unexpected encapsulation format or type");
       return false;
     }
 
+  int e = -1;
   if (!header.shoff || !header.shnum
       || header.shentsize != sizeof (section))
     {
-      error ("section table missing or wrong format");
+    malformed:
+      set_error (e);
+      error ("encapsulation is malformed");
       return false;
     }
 
   if (fseek (stream, header.shoff, SEEK_SET))
     {
     section_table_fail:
-      set_error (errno);
-      error ("cannot read section table");
-      return false;
+      e = errno;
+      goto malformed;
     }
 
   unsigned strndx = header.shstrndx;
@@ -760,7 +775,7 @@ elf_in::begin ()
 	      shnum = section.size;
 	      section.size = 0;
 	      if (!shnum)
-		goto section_table_fail;
+		goto malformed;
 	    }
 	  vec_safe_reserve (sections, shnum, true);
 	}
@@ -775,7 +790,7 @@ elf_in::begin ()
 
   if (strndx)
     {
-      strings = read (strndx);
+      strings = read (strndx, SHT_STRTAB);
       /* The string table should be at least one byte, with NUL chars
 	 at either end.  */
       if (strings && !(strings->size && !strings->buffer[0]
@@ -784,11 +799,7 @@ elf_in::begin ()
     }
 
   if (!strings)
-    {
-      /* Create a default string table.  */
-      strings = data::extend (NULL, 1);
-      strings->buffer[0] = 0;
-    }
+    goto malformed;
 
   return true;
 }
@@ -2120,9 +2131,14 @@ struct module_state_hash : nodel_ptr_hash<module_state> {
   static inline bool equal (const value_type existing, compare_type candidate);
 };
 
+/* Likewise, this cannot be a member of module_state.  */
+
+typedef std::pair<unsigned,unsigned> range_t;
+
 /* State of a particular module. */
 
 struct GTY(()) module_state {
+ public:
   /* We always import & export ourselves.  */
   bitmap imports;	/* Transitive modules we're importing.  */
   bitmap exports;	/* Subset of that, that we're exporting.  */
@@ -2138,6 +2154,7 @@ struct GTY(()) module_state {
   location_t loc;	/* Its location.  */
 
   unsigned lazy;	/* Number of lazy sections yet to read.  */
+  unsigned loading;	/* Section currently being loaded.  */
 
   unsigned mod;		/* Module owner number.  */
   unsigned crc;		/* CRC we saw reading it in. */
@@ -2179,8 +2196,11 @@ struct GTY(()) module_state {
   void write_context (elf_out *to, unsigned *crc_ptr);
   bool read_context (elf_in *from);
   /* The configuration -- cmd args etc.  */
-  void write_config (elf_out *to, unsigned crc);
-  bool read_config (elf_in *from, unsigned *crc_ptr);
+  void write_config (elf_out *to, const range_t &sec_range, unsigned crc);
+  bool read_config (elf_in *from, range_t &sec_range, unsigned *crc_ptr);
+  /* The declarations themeselves.  */
+  void write_decls (elf_out *to, range_t &sec_range, unsigned *crc_ptr);
+  bool read_decls (elf_in *from, const range_t &sec_range);
 
  private:
   /* Serialize various definitions. */
@@ -2215,18 +2235,13 @@ struct GTY(()) module_state {
   static void add_writables (depset::hash &table, tree ns);
   /* Build dependency graph of hash table.  */
   void find_dependencies (depset::hash &table);
-  void write_decls (elf_out *to, unsigned *crc_ptr);
-  bool read_decls (elf_in *from);
   static void write_bindings (elf_out *to, depset::hash &table,
 			      unsigned *crc_ptr);
   bool read_bindings (elf_in *from, auto_vec<tree> &spaces,
-		      const std::pair<unsigned, unsigned> &range);
+		      const range_t &range);
   static void write_namespaces (elf_out *to, depset::hash &table,
-				auto_vec<depset *> &spaces,
-				const std::pair<unsigned, unsigned> &range,
-				unsigned *crc_ptr);
-  bool read_namespaces (elf_in *from, auto_vec<tree> &spaces,
-			std::pair<unsigned, unsigned> &range);
+				auto_vec<depset *> &spaces, unsigned *crc_ptr);
+  bool read_namespaces (elf_in *from, auto_vec<tree> &spaces);
   unsigned write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 			  unsigned from, unsigned *crc_ptr);
   bool read_cluster (elf_in *from, unsigned snum);
@@ -2265,7 +2280,7 @@ module_state::module_state (tree name)
     name (name), vec_name (NULL_TREE),
     remap (NULL), from (NULL),
     filename (NULL), srcname (NULL), loc (UNKNOWN_LOCATION),
-    lazy (0), mod (MODULE_UNKNOWN), crc (0)
+    lazy (0), loading (~0u), mod (MODULE_UNKNOWN), crc (0)
 {
   imported = exported = false;
 }
@@ -6145,12 +6160,15 @@ module_state::read_context (elf_in *from)
    u:<host-triplet>
    u:global_vec->length()
    u32:global_crc
+   u:decl-section-lwm
+   u:decl-section-hwm
    // FIXME CPU,ABI and similar tags
    // FIXME Optimization and similar tags
 */
 
 void
-module_state::write_config (elf_out *to, unsigned inner_crc)
+module_state::write_config (elf_out *to, const range_t &sec_range,
+			    unsigned inner_crc)
 {
   bytes_out cfg;
 
@@ -6183,6 +6201,11 @@ module_state::write_config (elf_out *to, unsigned inner_crc)
   cfg.u (global_vec->length ());
   cfg.u32 (global_crc);
 
+  dump () && dump ("Declaration sections are [%u,%u)",
+		   sec_range.first, sec_range.second);
+  cfg.u (sec_range.first);
+  cfg.u (sec_range.second);
+
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
   cfg.end (to, to->name (MOD_SNAME_PFX ".config"), &crc);
@@ -6190,7 +6213,8 @@ module_state::write_config (elf_out *to, unsigned inner_crc)
 }
 
 bool
-module_state::read_config (elf_in *from, unsigned *expected_crc)
+module_state::read_config (elf_in *from, range_t &sec_range,
+			   unsigned *expected_crc)
 {
   bytes_in cfg;
 
@@ -6271,6 +6295,18 @@ module_state::read_config (elf_in *from, unsigned *expected_crc)
       || their_gcrc != global_crc)
     {
       error ("global tree mismatch");
+      goto fail;
+    }
+
+  sec_range.first = cfg.u ();
+  sec_range.second = cfg.u ();
+  dump () && dump ("Declaration sections are [%u,%u)",
+		   sec_range.first, sec_range.second);
+
+  if (sec_range.first > sec_range.second
+      || sec_range.second > from->get_num_sections ())
+    {
+      error ("paradoxical declaration section range");
       goto fail;
     }
 
@@ -7038,9 +7074,8 @@ module_state::read_cluster (elf_in *from, unsigned snum)
   return true;
 }
 
-/* SPACES is a sorted vector of namespaces.  RANGE is the range of
-   sections containing the module data.  Write out the range and
-   namespaces to MOD_SNAME_PFX.namespace section.
+/* SPACES is a sorted vector of namespaces.  Write out the namespaces
+   to MOD_SNAME_PFX.namespace section.
 
    Each namespace is:
      u:name,
@@ -7050,7 +7085,6 @@ module_state::read_cluster (elf_in *from, unsigned snum)
 void
 module_state::write_namespaces (elf_out *to, depset::hash &table,
 				auto_vec<depset *> &spaces,
-				const std::pair<unsigned, unsigned> &range,
 				unsigned *crc_p)
 {
   dump () && dump ("Writing namespaces");
@@ -7058,9 +7092,6 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
 
   bytes_out sec;
   sec.begin ();
-  /* Write the section range.  */
-  sec.u (range.first);
-  sec.u (range.second);
 
   for (unsigned ix = 0; ix != spaces.length (); ix++)
     {
@@ -7091,11 +7122,10 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
 }
 
 /* Read the namespace hierarchy from MOD_SNAME_PFX.namespace.  Fill in
-   SPACES and RANGE from that data.  */
+   SPACES from that data.  */
 
 bool
-module_state::read_namespaces (elf_in *from, auto_vec<tree> &spaces,
-			       std::pair<unsigned, unsigned>& range)
+module_state::read_namespaces (elf_in *from, auto_vec<tree> &spaces)
 {
   bytes_in sec;
 
@@ -7104,9 +7134,6 @@ module_state::read_namespaces (elf_in *from, auto_vec<tree> &spaces,
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
-
-  range.first = sec.u ();
-  range.second = sec.u ();
 
   spaces.safe_push (global_namespace);
   while (sec.more_p ())
@@ -7177,7 +7204,7 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
 
 bool
 module_state::read_bindings (elf_in *from, auto_vec<tree> &spaces,
-			     const std::pair<unsigned, unsigned> &range)
+			     const range_t &range)
 {
   bytes_in sec;
 
@@ -7342,7 +7369,7 @@ space_cmp (const void *a_, const void *b_)
 /* Write the module declarations of interest  */
 
 void
-module_state::write_decls (elf_out *to, unsigned *crc_p)
+module_state::write_decls (elf_out *to, range_t &range, unsigned *crc_p)
 {
   depset::hash table (200);
 
@@ -7372,8 +7399,6 @@ module_state::write_decls (elf_out *to, unsigned *crc_p)
   /* Sort the namespaces.  */
   (spaces.qsort) (space_cmp);
 
-  std::pair<unsigned, unsigned> range;
-
   /* Write the binding clusters.  */
   range.first = to->get_num_sections ();
   for (unsigned ix = 0; ix != binds.length ();)
@@ -7384,7 +7409,7 @@ module_state::write_decls (elf_out *to, unsigned *crc_p)
   gcc_assert (!defs.length ());
 
   /* Write the namespace hierarchy. */
-  write_namespaces (to, table, spaces, range, crc_p);
+  write_namespaces (to, table, spaces, crc_p);
 
   /* Write the bindings themselves.  */
   write_bindings (to, table, crc_p);
@@ -7393,32 +7418,16 @@ module_state::write_decls (elf_out *to, unsigned *crc_p)
 /* Read module decls.  */
 
 bool
-module_state::read_decls (elf_in *from)
+module_state::read_decls (elf_in *from, const range_t &range)
 {
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;
-  std::pair<unsigned, unsigned> range;
 
-  if (!read_namespaces (from, spaces, range))
+  if (!read_namespaces (from, spaces))
     return false;
 
   if (!read_bindings (from, spaces, range))
     return false;
-
-  /* We're now done with the string table.  */
-  from->release ();
-
-  if (mod == MODULE_PURVIEW || !flag_module_lazy
-      // FIXME:Implement lazy loading
-      || true)
-    {
-      /* Read the sections in forward order, so that dependencies are read
-	 first.  See note about tarjan_connect.  */
-      unsigned hwm = range.second;
-      for (unsigned ix = range.first; ix != hwm; ix++)
-	if (!read_cluster (from, ix))
-	  return false;
-    }
 
   return true;
 }
@@ -7436,10 +7445,11 @@ void
 module_state::write (elf_out *to)
 {
   unsigned crc = 0;
+  range_t range;
 
   write_context (to, &crc);
-  write_decls (to, &crc);
-  write_config (to, crc);
+  write_decls (to, range, &crc);
+  write_config (to, range, crc);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_num_sections ());
@@ -7448,7 +7458,9 @@ module_state::write (elf_out *to)
 void
 module_state::read (elf_in *from, unsigned *crc_ptr)
 {
-  if (!read_config (from, crc_ptr))
+  range_t range;
+
+  if (!read_config (from, range, crc_ptr))
     return;
   if (!read_context (from))
     return;
@@ -7475,8 +7487,28 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   (*remap)[MODULE_PURVIEW] = ix;
   dump () && dump ("Assigning %N module number %u", name, ix);
 
-  if (!read_decls (from))
+  if (!read_decls (from, range))
     return;
+
+  /* We're done with the string and non-decl sections now.  */
+  from->release ();
+  from->keep_sections (range.first, range.second);
+  lazy = range.second - range.first;
+
+  if (mod == MODULE_PURVIEW || !flag_module_lazy
+      // FIXME:Implement lazy loading
+      || true)
+    {
+      /* Read the sections in forward order, so that dependencies are read
+	 first.  See note about tarjan_connect.  */
+      unsigned hwm = range.second;
+      for (unsigned ix = range.first; ix != hwm; ix++)
+	{
+	  if (!read_cluster (from, ix))
+	    break;
+	  lazy--;
+	}
+    }
 
   return;
 }
