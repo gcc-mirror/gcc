@@ -2011,7 +2011,6 @@ depset::~depset ()
 }
 
 // Forward declare for module_state use.
-// FIXME:do these need refs to module_state?
 class trees_out;
 class trees_in;
 
@@ -2087,29 +2086,34 @@ struct GTY(()) module_state {
   void write_config (elf_out *to, unsigned crc);
   bool read_config (elf_in *from, unsigned *crc_ptr);
 
-  /* Mark a definition prior to walking.  */
+ private:
+  /* Serialize various definitions. */
   static void mark_definition (trees_out &out, tree decl);
-  static void mark_template_def (trees_out &out, tree decl);
-  static void mark_function_def (trees_out &out, tree decl);
-  static void mark_var_def (trees_out &out, tree decl);
-  static void mark_class_def (trees_out &out, tree type);
-  static void mark_enum_def (trees_out &out, tree type);
-
-  /* Write a definition.  */
   static void write_definition (trees_out &out, tree decl);
-  static void write_template_def (trees_out &out, tree decl);
-  static void write_function_def (trees_out &out, tree decl);
-  static void write_var_def (trees_out &out, tree decl);
-  static void write_class_def (trees_out &out, tree type);
-  static void write_enum_def (trees_out &out, tree type);
-
-  /* Read a definition.  */
   bool read_definition (trees_in &in, tree decl);
+
+  static void mark_template_def (trees_out &out, tree decl);
+  static void write_template_def (trees_out &out, tree decl);
   bool read_template_def (trees_in &in, tree decl);
+
+  static void mark_function_def (trees_out &out, tree decl);
+  static void write_function_def (trees_out &out, tree decl);
   bool read_function_def (trees_in &in, tree decl);
+
+  static void mark_var_def (trees_out &out, tree decl);
+  static void write_var_def (trees_out &out, tree decl);
   bool read_var_def (trees_in &in, tree decl);
+
+  static void mark_class_def (trees_out &out, tree type);
+  static void write_class_def (trees_out &out, tree type);
   bool read_class_def (trees_in &in, tree decl);
+
+  static void mark_enum_def (trees_out &out, tree type);
+  static void write_enum_def (trees_out &out, tree type);
   bool read_enum_def (trees_in &in, tree decl);
+
+  static void write_binfos (trees_out &out, tree type);
+  bool read_binfos (trees_in &in, tree type);
 
   /* Add writable bindings to hash table.  */
   static void add_writables (depset::hash &table, tree ns);
@@ -2241,8 +2245,9 @@ public:
   trees_in (module_state *, vec<tree, va_gc> *globals);
   ~trees_in ();
 
-private:
+public:
   int insert (tree);
+private:
   tree finish_type (tree);
 
 private:
@@ -2250,20 +2255,17 @@ private:
   tree finish (tree);
   location_t loc ();
 
-private:
+public:
   /* Stream tree_core, lang_decl_specific and lang_type_specific
      bits.  */
   bool core_bools (tree);
+private:
   bool core_vals (tree);
   bool lang_type_bools (tree);
   bool lang_type_vals (tree);
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   tree tree_binfo ();
-public:
-  bool tree_binfo (tree type); // FIXME move into read_class_def
-
-  /* All the bits of a tree.  */
   bool tree_node_raw (tree);
 
 public:
@@ -2329,12 +2331,15 @@ private:
   }
   int insert (tree);
   int maybe_insert (tree);
+public:
   int force_insert (tree, bool);
+private:
   void start (tree_code, tree);
   void loc (location_t);
 
-private:
+public:
   void core_bools (tree);
+private:
   void core_vals (tree);
   void lang_type_bools (tree);
   void lang_type_vals (tree);
@@ -2342,8 +2347,6 @@ private:
   void lang_decl_vals (tree);
   tree tree_binfo (tree, int, bool);
   void tree_node_raw (tree);
-public:
-  void tree_binfo (tree type); // FIXME:Move into write_class_def
 
 public:
   void chained_decls (tree);
@@ -3622,7 +3625,7 @@ module_state::write_function_def (trees_out &out, tree decl)
 }
 
 void
-module_state::mark_function_def (trees_out &out, tree decl)
+module_state::mark_function_def (trees_out &, tree)
 {
 }
 
@@ -3682,7 +3685,7 @@ module_state::write_var_def (trees_out &out, tree decl)
 }
 
 void
-module_state::mark_var_def (trees_out &out, tree decl)
+module_state::mark_var_def (trees_out &, tree)
 {
 }
 
@@ -3700,31 +3703,49 @@ module_state::read_var_def (trees_in &in, tree decl)
 }
 
 void
-module_state::write_class_def (trees_out &out, tree type)
+module_state::write_binfos (trees_out &out, tree type)
 {
-  out.chained_decls (TYPE_FIELDS (type));
-  out.tree_node (TYPE_VFIELD (type));
-  if (TYPE_LANG_SPECIFIC (type))
+  /* Stream out types and sizes in DFS order, inserting each binfo
+     into the map.  */
+  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
-      out.tree_vec (CLASSTYPE_MEMBER_VEC (type));
-      out.tree_node (CLASSTYPE_FRIEND_CLASSES (type));
-      out.tree_node (CLASSTYPE_LAMBDA_EXPR (type));
-
-      /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
-	 reader won't know at this point.  */
-      // FIXME Think about better ordering
-      int has_vptr = TYPE_CONTAINS_VPTR_P (type);
+      out.tree_node (BINFO_TYPE (child));
+      /* We might have tagged the binfo during a by-reference walk.
+	 Force a new tag now.  */
+      int tag = out.force_insert (child, TREE_VISITED (child));
       if (!out.dep_walk_p ())
-	out.i (has_vptr);
-      if (has_vptr)
 	{
-	  out.tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
-	  out.tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
-	  out.tree_node (CLASSTYPE_KEY_METHOD (type));
+	  out.u (BINFO_N_BASE_BINFOS (child));
+
+	  dump () && dump ("Wrote binfo:%d child %N of %N",
+			   tag, BINFO_TYPE (child), type);
 	}
     }
+  out.tree_node (NULL_TREE);
 
-  out.tree_binfo (type);
+  if (!out.dep_walk_p ())
+    {
+      if (TYPE_LANG_SPECIFIC (type))
+	{
+	  unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
+	  out.u (nvbases);
+	  if (nvbases)
+	    dump () && dump ("Type %N has %u vbases", type, nvbases);
+	}
+
+      /* Stream out some contents DFS order.  */
+      for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+	{
+	  out.core_bools (child);
+	  out.bflush ();
+	  out.tree_node (child->binfo.offset);
+	  out.tree_node (child->binfo.inheritance);
+	  unsigned num = BINFO_N_BASE_BINFOS (child);
+	  out.u (num);
+	  for (unsigned ix = 0; ix != num; ix++)
+	    out.tree_node (BINFO_BASE_BINFO (child, ix));
+	}
+    }
 
   /* Write the remaining BINFO contents. */
   for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
@@ -3754,6 +3775,117 @@ module_state::write_class_def (trees_out &out, tree type)
       for (; vtables; vtables = TREE_CHAIN (vtables))
 	out.tree_node (DECL_INITIAL (vtables));
     }
+}
+
+bool
+module_state::read_binfos (trees_in &in, tree type)
+{
+  tree *binfo_p = &TYPE_BINFO (type);
+
+  /* Stream in the types and sizes in DFS order.  */
+  while (tree t = in.tree_node ())
+    {
+      unsigned n_children = in.u ();
+      if (in.get_overrun ())
+	return false;
+      tree child = make_tree_binfo (n_children);
+      BINFO_TYPE (child) = t;
+
+      int tag = in.insert (child);
+      dump () && dump ("Read binfo:%d child %N of %N", tag,
+		       BINFO_TYPE (child), type);
+      *binfo_p = child;
+      binfo_p = &TREE_CHAIN (child);
+    }
+
+  unsigned nvbases = 0;
+  vec<tree, va_gc> *vbase_vec = NULL;
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      nvbases = in.u ();
+      if (nvbases)
+	{
+	  vec_alloc (vbase_vec, nvbases);
+	  CLASSTYPE_VBASECLASSES (type) = vbase_vec;
+	  dump () && dump ("Type %N has %u vbases", type, nvbases);
+	}
+    }
+
+  /* Stream in some contents in DFS order.  */
+  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+    {
+      in.core_bools (child);
+      in.bflush ();
+      child->binfo.offset = in.tree_node ();
+      child->binfo.inheritance = in.tree_node ();
+
+      unsigned num = in.u ();
+      if (in.get_overrun ())
+	return false;
+      for (unsigned ix = 0; ix != num; ix++)
+	BINFO_BASE_APPEND (child, in.tree_node ());
+      if (in.get_overrun ())
+	return false;
+      if (BINFO_VIRTUAL_P (child))
+	{
+	  if (vec_safe_length (vbase_vec) == nvbases)
+	    {
+	      in.set_overrun ();
+	      return false;
+	    }
+	  vbase_vec->quick_push (child);
+	}
+    }
+
+  /* Read the remaining BINFO contents. */
+  for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
+    {
+      dump () && dump ("Reading binfo:%N of %N contents", binfo, type);
+#define RT(X) ((X) = in.tree_node ())
+      RT (binfo->binfo.vtable);
+      RT (binfo->binfo.virtuals);
+      RT (binfo->binfo.vptr_field);
+      RT (binfo->binfo.vtt_subvtt);
+      RT (binfo->binfo.vtt_vptr);
+#undef RT
+      BINFO_BASE_ACCESSES (binfo) = in.tree_vec ();
+      if (vec_safe_length (BINFO_BASE_ACCESSES (binfo))
+	  != BINFO_N_BASE_BINFOS (binfo))
+	in.set_overrun ();
+    }
+
+  if (vec_safe_length (vbase_vec) != nvbases)
+    in.set_overrun ();
+
+  return !in.get_overrun ();
+}
+
+void
+module_state::write_class_def (trees_out &out, tree type)
+{
+  out.chained_decls (TYPE_FIELDS (type));
+  out.tree_node (TYPE_VFIELD (type));
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      out.tree_vec (CLASSTYPE_MEMBER_VEC (type));
+      out.tree_node (CLASSTYPE_FRIEND_CLASSES (type));
+      out.tree_node (CLASSTYPE_LAMBDA_EXPR (type));
+
+      /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
+	 reader won't know at this point.  */
+      // FIXME Think about better ordering
+      int has_vptr = TYPE_CONTAINS_VPTR_P (type);
+      if (!out.dep_walk_p ())
+	out.i (has_vptr);
+      if (has_vptr)
+	{
+	  out.tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
+	  out.tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
+	  out.tree_node (CLASSTYPE_KEY_METHOD (type));
+	}
+    }
+
+  write_binfos (out, type);
 
   // lang->nested_udts
 
@@ -3856,24 +3988,8 @@ module_state::read_class_def (trees_in &in, tree type)
       resort_type_member_vec (member_vec, NULL, nop, NULL);
     }
 
-  in.tree_binfo (type);
-
-  /* Read the remaining BINFO contents. */
-  for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
-    {
-      dump () && dump ("Reading binfo:%N of %N contents", binfo, type);
-#define RT(X) ((X) = in.tree_node ())
-      RT (binfo->binfo.vtable);
-      RT (binfo->binfo.virtuals);
-      RT (binfo->binfo.vptr_field);
-      RT (binfo->binfo.vtt_subvtt);
-      RT (binfo->binfo.vtt_vptr);
-#undef RT
-      BINFO_BASE_ACCESSES (binfo) = in.tree_vec ();
-      if (vec_safe_length (BINFO_BASE_ACCESSES (binfo))
-	  != BINFO_N_BASE_BINFOS (binfo))
-	in.set_overrun ();
-    }
+  if (!read_binfos (in, type))
+    return false;
 
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -6631,121 +6747,6 @@ trees_in::tree_binfo ()
 	}
     }
   return binfo;
-}
-
-/* Stream the BINFO tree owned by TYPE.  We only write sufficient
-   information to recreate the tree -- not populate it.  */
-
-void
-trees_out::tree_binfo (tree type)
-{
-  /* Stream out types and sizes in DFS order, inserting each binfo
-     into the map.  */
-  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
-    {
-      tree_node (BINFO_TYPE (child));
-      /* We might have tagged the binfo during a by-reference walk.
-	 Force a new tag now.  */
-      int tag = force_insert (child, TREE_VISITED (child));
-      if (!dep_walk_p ())
-	{
-	  u (BINFO_N_BASE_BINFOS (child));
-
-	  dump () && dump ("Wrote binfo:%d child %N of %N",
-			   tag, BINFO_TYPE (child), type);
-	}
-    }
-  tree_node (NULL_TREE);
-
-  if (!dep_walk_p ())
-    {
-      if (TYPE_LANG_SPECIFIC (type))
-	{
-	  unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
-	  u (nvbases);
-	  if (nvbases)
-	    dump () && dump ("Type %N has %u vbases", type, nvbases);
-	}
-
-      /* Stream out some contents DFS order.  */
-      for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
-	{
-	  core_bools (child);
-	  bflush ();
-#define WT(X) (tree_node (X))
-	  WT (child->binfo.offset);
-	  WT (child->binfo.inheritance);
-#undef WT
-	  unsigned num = BINFO_N_BASE_BINFOS (child);
-	  u (num);
-	  for (unsigned ix = 0; ix != num; ix++)
-	    tree_node (BINFO_BASE_BINFO (child, ix));
-	}
-    }
-}
-
-bool
-trees_in::tree_binfo (tree type)
-{
-  tree *binfo_p = &TYPE_BINFO (type);
-
-  /* Stream in the types and sizes in DFS order.  */
-  while (tree t = tree_node ())
-    {
-      unsigned n_children = u ();
-      if (get_overrun ())
-	return false;
-      tree child = make_tree_binfo (n_children);
-      BINFO_TYPE (child) = t;
-
-      int tag = insert (child);
-      dump () && dump ("Read binfo:%d child %N of %N", tag,
-		       BINFO_TYPE (child), type);
-      *binfo_p = child;
-      binfo_p = &TREE_CHAIN (child);
-    }
-
-  unsigned nvbases = 0;
-  vec<tree, va_gc> *vbase_vec = NULL;
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      nvbases = u ();
-      if (nvbases)
-	{
-	  vec_alloc (vbase_vec, nvbases);
-	  CLASSTYPE_VBASECLASSES (type) = vbase_vec;
-	  dump () && dump ("Type %N has %u vbases", type, nvbases);
-	}
-    }
-
-  /* Stream in some contents in DFS order.  */
-  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
-    {
-      core_bools (child);
-      bflush ();
-#define RT(X) ((X) = tree_node ())
-      RT (child->binfo.offset);
-      RT (child->binfo.inheritance);
-#undef RT
-      unsigned num = u ();
-      if (get_overrun ())
-	return false;
-      for (unsigned ix = 0; ix != num; ix++)
-	BINFO_BASE_APPEND (child, tree_node ());
-      if (get_overrun ())
-	return false;
-      if (BINFO_VIRTUAL_P (child))
-	{
-	  if (vec_safe_length (vbase_vec) == nvbases)
-	    {
-	      set_overrun ();
-	      return false;
-	    }
-	  vbase_vec->quick_push (child);
-	}
-    }
-
-  return true;
 }
 
 /* The raw tree node.  We've already dealt with the code, and in the

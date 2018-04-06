@@ -1,3 +1,10 @@
+2018-04-06  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.c (trees_{in,out}::tree_binfo): Delete.
+	(module_state::{read,write}_binfos): New.
+	(module_state::{read,write}_class_def): Use them.
+
 2018-04-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/

@@ -1509,7 +1509,7 @@ C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
 fmodules-ts
-C++ ObjC++ Driver RejectNegative Var(flag_modules) Uinteger
+C++ ObjC++ Driver Var(flag_modules) Uinteger
 Enable c++ modules-ts (experimental)
 
 fmodules-atom
