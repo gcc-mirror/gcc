@@ -283,7 +283,7 @@ matmul_r16_avx128_fma3 (gfc_array_r16 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
@@ -836,7 +836,7 @@ matmul_r16_avx128_fma4 (gfc_array_r16 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
