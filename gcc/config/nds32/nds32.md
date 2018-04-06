@@ -1419,36 +1419,41 @@
   ""
 )
 
-(define_insn "*call_register"
-  [(parallel [(call (mem (match_operand:SI 0 "register_operand" "r, r"))
-		    (match_operand 1))
-	      (clobber (reg:SI LP_REGNUM))
-	      (clobber (reg:SI TA_REGNUM))])]
-  ""
-  "@
-  jral5\t%0
-  jral\t%0"
-  [(set_attr "type"   "branch,branch")
-   (set_attr "length" "     2,     4")])
-
-(define_insn "*call_immediate"
-  [(parallel [(call (mem (match_operand:SI 0 "immediate_operand" "i"))
+(define_insn "call_internal"
+  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, i"))
 		    (match_operand 1))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
 {
-  if (TARGET_CMODEL_LARGE)
-    return "bal\t%0";
-  else
-    return "jal\t%0";
+  switch (which_alternative)
+    {
+    case 0:
+      if (TARGET_16_BIT)
+	return "jral5\t%0";
+      else
+	return "jral\t%0";
+    case 1:
+      return nds32_output_call (insn, operands, operands[0],
+				"bal\t%0", "jal\t%0", false);
+    default:
+      gcc_unreachable ();
+    }
 }
-  [(set_attr "type"   "branch")
-   (set (attr "length")
-	(if_then_else (match_test "TARGET_CMODEL_LARGE")
-		      (const_int 12)
-		      (const_int 4)))])
-
+  [(set_attr "enabled" "yes")
+   (set_attr "type" "branch")
+   (set_attr_alternative "length"
+     [
+       ;; Alternative 0
+       (if_then_else (match_test "TARGET_16_BIT")
+		     (const_int 2)
+		     (const_int 4))
+       ;; Alternative 1
+       (if_then_else (match_test "nds32_long_call_p (operands[0])")
+		     (const_int 12)
+		     (const_int 4))
+     ])]
+)
 
 ;; Subroutine call instruction returning a value.
 ;;   operands[0]: It is the hard regiser in which the value is returned.
@@ -1462,42 +1467,71 @@
 		         (match_operand 2)))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
-  ""
-  ""
-)
+  "")
 
-(define_insn "*call_value_register"
+(define_insn "call_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "register_operand" "r, r"))
+		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, i"))
 		         (match_operand 2)))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
-  "@
-  jral5\t%1
-  jral\t%1"
-  [(set_attr "type"   "branch,branch")
-   (set_attr "length" "     2,     4")])
+{
+  switch (which_alternative)
+    {
+    case 0:
+      if (TARGET_16_BIT)
+	return "jral5\t%1";
+      else
+	return "jral\t%1";
+    case 1:
+      return nds32_output_call (insn, operands, operands[1],
+				"bal\t%1", "jal\t%1", false);
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "enabled" "yes")
+   (set_attr "type" "branch")
+   (set_attr_alternative "length"
+     [
+       ;; Alternative 0
+       (if_then_else (match_test "TARGET_16_BIT")
+		     (const_int 2)
+		     (const_int 4))
+       ;; Alternative 1
+       (if_then_else (match_test "nds32_long_call_p (operands[1])")
+		     (const_int 12)
+		     (const_int 4))
+     ])]
+)
 
-(define_insn "*call_value_immediate"
-  [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "immediate_operand" "i"))
-			 (match_operand 2)))
-	      (clobber (reg:SI LP_REGNUM))
-	      (clobber (reg:SI TA_REGNUM))])]
+;; Call subroutine returning any type.
+
+(define_expand "untyped_call"
+  [(parallel [(call (match_operand 0 "" "")
+		    (const_int 0))
+	      (match_operand 1 "" "")
+	      (match_operand 2 "" "")])]
   ""
 {
-  if (TARGET_CMODEL_LARGE)
-    return "bal\t%1";
-  else
-    return "jal\t%1";
-}
-  [(set_attr "type"   "branch")
-   (set (attr "length")
-	(if_then_else (match_test "TARGET_CMODEL_LARGE")
-		      (const_int 12)
-		      (const_int 4)))])
+  int i;
 
+  emit_call_insn (gen_call (operands[0], const0_rtx));
+
+  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+    {
+      rtx set = XVECEXP (operands[2], 0, i);
+      emit_move_insn (SET_DEST (set), SET_SRC (set));
+    }
+
+  /* The optimizer does not know that the call sets the function value
+     registers we stored in the result block.  We avoid problems by
+     claiming that all hard registers are used and clobbered at this
+     point.  */
+  emit_insn (gen_blockage ());
+  DONE;
+})
 
 ;; ----------------------------------------------------------------------------
 
@@ -1715,10 +1749,18 @@
 ;; Use this pattern to expand a return instruction
 ;; with simple_return rtx if no epilogue is required.
 (define_expand "return"
-  [(simple_return)]
+  [(parallel [(return)
+              (clobber (reg:SI FP_REGNUM))])]
   "nds32_can_use_return_insn ()"
-  ""
-)
+{
+  /* Emit as the simple return.  */
+  if (cfun->machine->naked_p
+      && (cfun->machine->va_args_size == 0))
+    {
+      emit_jump_insn (gen_return_internal ());
+      DONE;
+    }
+})
 
 ;; This pattern is expanded only by the shrink-wrapping optimization
 ;; on paths where the function prologue has not been executed.
@@ -1727,6 +1769,17 @@
   ""
   ""
 )
+
+(define_insn "*nds32_return"
+  [(parallel [(return)
+   (clobber (reg:SI FP_REGNUM))])]
+  ""
+{
+  return nds32_output_return ();
+}
+  [(set_attr "type" "branch")
+   (set_attr "enabled" "yes")
+   (set_attr "length" "4")])
 
 (define_insn "return_internal"
   [(simple_return)]
