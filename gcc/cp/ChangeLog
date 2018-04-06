@@ -1,3 +1,8 @@
+2018-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85214 - ICE with alias, generic lambda, constexpr if.
+	* pt.c (extract_locals_r): Remember local typedefs.
+
 2018-04-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84269

@@ -11610,6 +11610,11 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
   el_data &data = *reinterpret_cast<el_data*>(data_);
   tree *extra = &data.extra;
   tsubst_flags_t complain = data.complain;
+
+  if (TYPE_P (*tp) && typedef_variant_p (*tp))
+    /* Remember local typedefs (85214).  */
+    tp = &TYPE_NAME (*tp);
+
   if (TREE_CODE (*tp) == DECL_EXPR)
     data.internal.add (DECL_EXPR_DECL (*tp));
   else if (tree spec = retrieve_local_specialization (*tp))
