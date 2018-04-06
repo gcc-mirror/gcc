@@ -3702,10 +3702,14 @@ module_state::read_var_def (trees_in &in, tree decl)
   return true;
 }
 
+/* Write the binfo heirarchy of TYPE.  The binfos are chained in DFS
+   order, but it is a strongly connected graph, so requires two
+   passes.  */
+
 void
 module_state::write_binfos (trees_out &out, tree type)
 {
-  /* Stream out types and sizes in DFS order, inserting each binfo
+  /* Stream out types and sizes in DFS order, forcing each binfo
      into the map.  */
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
@@ -3721,6 +3725,7 @@ module_state::write_binfos (trees_out &out, tree type)
 			   tag, BINFO_TYPE (child), type);
 	}
     }
+
   out.tree_node (NULL_TREE);
 
   if (!out.dep_walk_p ())
@@ -3733,49 +3738,32 @@ module_state::write_binfos (trees_out &out, tree type)
 	    dump () && dump ("Type %N has %u vbases", type, nvbases);
 	}
 
-      /* Stream out some contents DFS order.  */
+      /* Stream out contents in DFS order.  */
       for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
 	{
+	  dump () && dump ("Writing binfo:%N of %N contents", child, type);
+
 	  out.core_bools (child);
 	  out.bflush ();
 	  out.tree_node (child->binfo.offset);
 	  out.tree_node (child->binfo.inheritance);
-	  unsigned num = BINFO_N_BASE_BINFOS (child);
-	  out.u (num);
+	  out.tree_node (child->binfo.vtable);
+	  out.tree_node (child->binfo.virtuals);
+	  out.tree_node (child->binfo.vptr_field);
+	  out.tree_node (child->binfo.vtt_subvtt);
+	  out.tree_node (child->binfo.vtt_vptr);
+
+	  out.tree_vec (BINFO_BASE_ACCESSES (child));
+	  unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
+	  gcc_checking_assert (BINFO_N_BASE_BINFOS (child) == num);
 	  for (unsigned ix = 0; ix != num; ix++)
 	    out.tree_node (BINFO_BASE_BINFO (child, ix));
 	}
     }
-
-  /* Write the remaining BINFO contents. */
-  for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
-    {
-      if (!out.dep_walk_p ())
-	dump () && dump ("Writing binfo:%N of %N contents", binfo, type);
-      out.tree_node (binfo->binfo.vtable);
-      out.tree_node (binfo->binfo.virtuals);
-      out.tree_node (binfo->binfo.vptr_field);
-      out.tree_node (binfo->binfo.vtt_subvtt);
-      out.tree_node (binfo->binfo.vtt_vptr);
-      out.tree_vec (BINFO_BASE_ACCESSES (binfo));
-    }
-
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      out.tree_node (CLASSTYPE_PRIMARY_BINFO (type));
-
-      tree as_base = CLASSTYPE_AS_BASE (type);
-      out.tree_node (as_base);
-      if (as_base && as_base != type)
-	write_class_def (out, as_base);
-
-      tree vtables = CLASSTYPE_VTABLES (type);
-      out.chained_decls (vtables);
-      /* Write the vtable initializers.  */
-      for (; vtables; vtables = TREE_CHAIN (vtables))
-	out.tree_node (DECL_INITIAL (vtables));
-    }
 }
+
+/* Read the binfo heirarchy of TYPE.  Sets TYPE_BINFO and
+   CLASSTYPE_VBASECLASSES.  */
 
 bool
 module_state::read_binfos (trees_in &in, tree type)
@@ -3792,8 +3780,7 @@ module_state::read_binfos (trees_in &in, tree type)
       BINFO_TYPE (child) = t;
 
       int tag = in.insert (child);
-      dump () && dump ("Read binfo:%d child %N of %N", tag,
-		       BINFO_TYPE (child), type);
+      dump () && dump ("Read binfo:%d child %N of %N", tag, child, type);
       *binfo_p = child;
       binfo_p = &TREE_CHAIN (child);
     }
@@ -3811,21 +3798,28 @@ module_state::read_binfos (trees_in &in, tree type)
 	}
     }
 
-  /* Stream in some contents in DFS order.  */
+  /* Stream in the contents in DFS order.  */
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
+      dump () && dump ("Reading binfo:%N of %N contents", child, type);
+
       in.core_bools (child);
       in.bflush ();
       child->binfo.offset = in.tree_node ();
       child->binfo.inheritance = in.tree_node ();
+      child->binfo.vtable = in.tree_node ();
+      child->binfo.virtuals = in.tree_node ();
+      child->binfo.vptr_field = in.tree_node ();
+      child->binfo.vtt_subvtt = in.tree_node ();
+      child->binfo.vtt_vptr = in.tree_node ();
 
-      unsigned num = in.u ();
+      BINFO_BASE_ACCESSES (child) = in.tree_vec ();
       if (in.get_overrun ())
 	return false;
+      unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
       for (unsigned ix = 0; ix != num; ix++)
 	BINFO_BASE_APPEND (child, in.tree_node ());
-      if (in.get_overrun ())
-	return false;
+
       if (BINFO_VIRTUAL_P (child))
 	{
 	  if (vec_safe_length (vbase_vec) == nvbases)
@@ -3835,23 +3829,6 @@ module_state::read_binfos (trees_in &in, tree type)
 	    }
 	  vbase_vec->quick_push (child);
 	}
-    }
-
-  /* Read the remaining BINFO contents. */
-  for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
-    {
-      dump () && dump ("Reading binfo:%N of %N contents", binfo, type);
-#define RT(X) ((X) = in.tree_node ())
-      RT (binfo->binfo.vtable);
-      RT (binfo->binfo.virtuals);
-      RT (binfo->binfo.vptr_field);
-      RT (binfo->binfo.vtt_subvtt);
-      RT (binfo->binfo.vtt_vptr);
-#undef RT
-      BINFO_BASE_ACCESSES (binfo) = in.tree_vec ();
-      if (vec_safe_length (BINFO_BASE_ACCESSES (binfo))
-	  != BINFO_N_BASE_BINFOS (binfo))
-	in.set_overrun ();
     }
 
   if (vec_safe_length (vbase_vec) != nvbases)
@@ -3886,6 +3863,22 @@ module_state::write_class_def (trees_out &out, tree type)
     }
 
   write_binfos (out, type);
+  
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      out.tree_node (CLASSTYPE_PRIMARY_BINFO (type));
+
+      tree as_base = CLASSTYPE_AS_BASE (type);
+      out.tree_node (as_base);
+      if (as_base && as_base != type)
+	write_class_def (out, as_base);
+
+      tree vtables = CLASSTYPE_VTABLES (type);
+      out.chained_decls (vtables);
+      /* Write the vtable initializers.  */
+      for (; vtables; vtables = TREE_CHAIN (vtables))
+	out.tree_node (DECL_INITIAL (vtables));
+    }
 
   // lang->nested_udts
 
