@@ -1,3 +1,9 @@
+2018-04-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* c-c++-common/Wattributes.c: Disable warning for s390* target and
+	check for an error instead.
+	* gcc.dg/Wattributes-6.c: Likewise.
+
 2018-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85209
