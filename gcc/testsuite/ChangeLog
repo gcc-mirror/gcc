@@ -1,5 +1,11 @@
 2018-04-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vector/vcond-shift.c: Use the proper conditions
+	to trigger the optimization. Do some cleanup and function
+	renaming.  Add more test functions.
+
+2018-04-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/s390.exp: Remove -O0 from list of torture
 	options.
 	* gcc.target/s390/hotpatch-1.c: Skip when building without
