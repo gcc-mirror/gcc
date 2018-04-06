@@ -32,6 +32,11 @@
 
 ;; The unpec operation index.
 (define_c_enum "unspec_element" [
+  UNSPEC_COPYSIGN
+  UNSPEC_FCPYNSD
+  UNSPEC_FCPYNSS
+  UNSPEC_FCPYSD
+  UNSPEC_FCPYSS
   UNSPEC_FFB
   UNSPEC_FFMISM
   UNSPEC_FLMISM

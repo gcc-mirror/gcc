@@ -1,3 +1,34 @@
+2018-04-06  Monk Chiang  <sh.chiang04@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config.gcc (nds32*-*-*): Add v2j v3f v3s checking.
+	(nds32*-*-*): Add float and fpu_config into supported_defaults.
+	* common/config/nds32/nds32-common.c (TARGET_DEFAULT_TARGET_FLAGS):
+	Include TARGET_DEFAULT_FPU_ISA and TARGET_DEFAULT_FPU_FMA.
+	* config/nds32/constants.md (unspec_element): Add UNSPEC_COPYSIGN,
+	UNSPEC_FCPYNSD, UNSPEC_FCPYNSS, UNSPEC_FCPYSD and UNSPEC_FCPYSS.
+	* config/nds32/constraints.md: New constraints and checking for hard
+	float configuration.
+	* config/nds32/iterators.md: New mode iterator and attribute for hard
+	float configuration.
+	* config/nds32/nds32-doubleword.md: Use hard float alternatives and
+	patterns.
+	* config/nds32/nds32-fpu.md: New file.
+	* config/nds32/nds32-md-auxiliary.c: New functions and checkings to
+	deal with hard float code generation.
+	* config/nds32/nds32-opts.h (nds32_arch_type): Add ARCH_V3F and
+	ARCH_V3S.
+	(abi_type, float_reg_number): New enum type.
+	* config/nds32/nds32-predicates.c: New predicates for hard float.
+	* config/nds32/nds32-protos.h: Declare functions for hard float.
+	* config/nds32/nds32.c: Implementation for hard float configuration.
+	* config/nds32/nds32.h: Definitions for hard float configuration.
+	* config/nds32/nds32.md: Include hard float machine description and
+	modify patterns for hard float configuration.
+	* config/nds32/nds32.opt: New options for hard float configuration.
+	* config/nds32/predicates.md: New predicates for hard float
+	configuration.
+
 2018-04-06  Kuan-Lin Chen  <kuanlinchentw@gmail.com>
 
 	* common/config/nds32/nds32-common.c

@@ -4278,15 +4278,26 @@ case "${target}" in
 		;;
 
 	nds32*-*-*)
-		supported_defaults="arch cpu nds32_lib"
+		supported_defaults="arch cpu nds32_lib float fpu_config"
 
 		# process --with-arch
 		case "${with_arch}" in
-		"" | v2 | v3 | v3m)
+		"" | v3 )
+			tm_defines="${tm_defines} TARGET_ARCH_DEFAULT=0"
+			;;
+		v2 | v2j | v3m)
 			# OK
+			tm_defines="${tm_defines} TARGET_ARCH_DEFAULT=0"
+			;;
+		v3f)
+			tm_defines="${tm_defines} TARGET_ARCH_DEFAULT=1"
+			;;
+		v3s)
+			tm_defines="${tm_defines} TARGET_ARCH_DEFAULT=2"
+
 			;;
 		*)
-			echo "Cannot accept --with-arch=$with_arch, available values are: v2 v3 v3m" 1>&2
+			echo "Cannot accept --with-arch=$with_arch, available values are: v2 v2j v3 v3m v3f v3s" 1>&2
 			exit 1
 			;;
 		esac
@@ -4321,8 +4332,31 @@ case "${target}" in
 			exit 1
 			;;
 		esac
-		;;
 
+		# process --with-float
+		case "${with_float}" in
+		"" | soft | hard)
+			# OK
+			;;
+		*)
+			echo "Cannot accept --with-float=$with_float, available values are: soft hard" 1>&2
+			exit 1
+			;;
+		esac
+
+		# process --with-config-fpu
+		case "${with_config_fpu}" in
+		"" | 0 | 1 | 2 | 3)
+			# OK
+			;;
+		*)
+			echo "Cannot accept --with-config-fpu=$with_config_fpu, available values from 0 to 7" 1>&2
+			exit 1
+			;;
+		esac
+
+
+		;;
 	nios2*-*-*)
 		supported_defaults="arch"
 			case "$with_arch" in

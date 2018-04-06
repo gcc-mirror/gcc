@@ -218,6 +218,10 @@ nds32_compute_stack_frame (void)
   cfun->machine->callee_saved_gpr_regs_size = 0;
   cfun->machine->callee_saved_first_gpr_regno = SP_REGNUM;
   cfun->machine->callee_saved_last_gpr_regno  = SP_REGNUM;
+  cfun->machine->callee_saved_fpr_regs_size = 0;
+  cfun->machine->callee_saved_first_fpr_regno = SP_REGNUM;
+  cfun->machine->callee_saved_last_fpr_regno  = SP_REGNUM;
+
   /* Currently, there is no need to check $r28~$r31
      because we will save them in another way.  */
   for (r = 0; r < 28; r++)
@@ -233,6 +237,35 @@ nds32_compute_stack_frame (void)
 	  /* Mark the last required callee-saved register.  */
 	  cfun->machine->callee_saved_last_gpr_regno = r;
 	}
+    }
+
+  /* Recording fpu callee-saved register.  */
+  if (TARGET_HARD_FLOAT)
+    {
+      for (r = NDS32_FIRST_FPR_REGNUM; r < NDS32_LAST_FPR_REGNUM; r++)
+	{
+	  if (NDS32_REQUIRED_CALLEE_SAVED_P (r))
+	    {
+	      /* Mark the first required callee-saved register.  */
+	      if (cfun->machine->callee_saved_first_fpr_regno == SP_REGNUM)
+		{
+		  /* Make first callee-saved number is even,
+		     bacause we use doubleword access, and this way
+		     promise 8-byte alignemt.  */
+		  if (!NDS32_FPR_REGNO_OK_FOR_DOUBLE (r))
+		    cfun->machine->callee_saved_first_fpr_regno = r - 1;
+		  else
+		    cfun->machine->callee_saved_first_fpr_regno = r;
+		}
+	      cfun->machine->callee_saved_last_fpr_regno = r;
+	    }
+	}
+
+      /* Make last callee-saved register number is odd,
+	 we hope callee-saved register is even.  */
+      int last_fpr = cfun->machine->callee_saved_last_fpr_regno;
+      if (NDS32_FPR_REGNO_OK_FOR_DOUBLE (last_fpr))
+	cfun->machine->callee_saved_last_fpr_regno++;
     }
 
   /* Check if this function can omit prologue/epilogue code fragment.
@@ -252,6 +285,8 @@ nds32_compute_stack_frame (void)
   if (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
       || (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_last_gpr_regno == SP_REGNUM
+	  && cfun->machine->callee_saved_first_fpr_regno == SP_REGNUM
+	  && cfun->machine->callee_saved_last_fpr_regno == SP_REGNUM
 	  && !df_regs_ever_live_p (FP_REGNUM)
 	  && !df_regs_ever_live_p (LP_REGNUM)
 	  && cfun->machine->local_size == 0))
@@ -340,7 +375,8 @@ nds32_compute_stack_frame (void)
 
   int sp_adjust = cfun->machine->local_size
 		  + cfun->machine->out_args_size
-		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes
+		  + cfun->machine->callee_saved_fpr_regs_size;
 
   if (!v3pushpop_p
       && sp_adjust == 0
@@ -383,6 +419,18 @@ nds32_compute_stack_frame (void)
 	= 4 * (cfun->machine->callee_saved_last_gpr_regno
 	       - cfun->machine->callee_saved_first_gpr_regno
 	       + 1);
+    }
+
+  if (TARGET_HARD_FLOAT)
+    {
+      /* Compute size of callee svaed floating-point registers.  */
+      if (cfun->machine->callee_saved_last_fpr_regno != SP_REGNUM)
+	{
+	  cfun->machine->callee_saved_fpr_regs_size
+	   = 4 * (cfun->machine->callee_saved_last_fpr_regno
+		  - cfun->machine->callee_saved_first_fpr_regno
+		  + 1);
+	}
     }
 
   /* Important: We need to make sure that
@@ -1130,45 +1178,61 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 
     case CONST_INT:
       /* The alignment of the integer value is determined by 'outer_mode'.  */
-      if (GET_MODE_SIZE (outer_mode) == 1)
+      switch (GET_MODE_SIZE (outer_mode))
 	{
+	case 1:
 	  /* Further check if the value is legal for the 'outer_mode'.  */
-	  if (!satisfies_constraint_Is15 (index))
-	    return false;
+	  if (satisfies_constraint_Is15 (index))
+	    return true;
+	  break;
 
-	  /* Pass all test, the value is valid, return true.  */
-	  return true;
-	}
-      if (GET_MODE_SIZE (outer_mode) == 2
-	  && NDS32_HALF_WORD_ALIGN_P (INTVAL (index)))
-	{
+	case 2:
 	  /* Further check if the value is legal for the 'outer_mode'.  */
-	  if (!satisfies_constraint_Is16 (index))
-	    return false;
+	  if (satisfies_constraint_Is16 (index))
+	    {
+	      /* Make sure address is half word alignment.  */
+	      if (NDS32_HALF_WORD_ALIGN_P (INTVAL (index)))
+		return true;
+	    }
+	  break;
 
-	  /* Pass all test, the value is valid, return true.  */
-	  return true;
-	}
-      if (GET_MODE_SIZE (outer_mode) == 4
-	  && NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
-	{
+	case 4:
 	  /* Further check if the value is legal for the 'outer_mode'.  */
-	  if (!satisfies_constraint_Is17 (index))
-	    return false;
+	  if (satisfies_constraint_Is17 (index))
+	    {
+	      if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE))
+		{
+		  if (!satisfies_constraint_Is14 (index))
+		    return false;
+		}
 
-	  /* Pass all test, the value is valid, return true.  */
-	  return true;
-	}
-      if (GET_MODE_SIZE (outer_mode) == 8
-	  && NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
-	{
-	  /* Further check if the value is legal for the 'outer_mode'.  */
-	  if (!satisfies_constraint_Is17 (gen_int_mode (INTVAL (index) + 4,
-							SImode)))
-	    return false;
+	      /* Make sure address is word alignment.  */
+	      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
+		return true;
+	    }
+	  break;
 
-	  /* Pass all test, the value is valid, return true.  */
-	  return true;
+	case 8:
+	  if (satisfies_constraint_Is17 (gen_int_mode (INTVAL (index) + 4,
+						       SImode)))
+	    {
+	      if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE))
+		{
+		  if (!satisfies_constraint_Is14 (index))
+		    return false;
+		}
+
+	      /* Make sure address is word alignment.
+		Currently we do not have 64-bit load/store yet,
+		so we will use two 32-bit load/store instructions to do
+		memory access and they are single word alignment.  */
+	      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
+		return true;
+	    }
+	  break;
+
+	default:
+	  return false;
 	}
 
       return false;
@@ -1263,6 +1327,39 @@ nds32_register_passes (void)
 
 /* PART 3: Implement target hook stuff definitions.  */
 
+
+/* Register Usage.  */
+
+static void
+nds32_conditional_register_usage (void)
+{
+  int regno;
+
+  if (TARGET_HARD_FLOAT)
+    {
+      for (regno = NDS32_FIRST_FPR_REGNUM;
+	   regno <= NDS32_LAST_FPR_REGNUM; regno++)
+	{
+	  fixed_regs[regno] = 0;
+	  if (regno < NDS32_FIRST_FPR_REGNUM + NDS32_MAX_FPR_REGS_FOR_ARGS)
+	    call_used_regs[regno] = 1;
+	  else if (regno >= NDS32_FIRST_FPR_REGNUM + 22
+		   && regno < NDS32_FIRST_FPR_REGNUM + 48)
+	    call_used_regs[regno] = 1;
+	  else
+	    call_used_regs[regno] = 0;
+	}
+    }
+  else if (TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+    {
+      for (regno = NDS32_FIRST_FPR_REGNUM;
+	   regno <= NDS32_LAST_FPR_REGNUM;
+	   regno++)
+	fixed_regs[regno] = 0;
+    }
+}
+
+
 /* Register Classes.  */
 
 static unsigned char
@@ -1296,6 +1393,22 @@ nds32_register_priority (int hard_regno)
       else
 	return 4;
     }
+}
+
+static bool
+nds32_can_change_mode_class (machine_mode from,
+			     machine_mode to,
+			     reg_class_t rclass)
+{
+  /* Don't spill double-precision register to two singal-precision
+     registers  */
+  if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+       && GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
+    {
+      return !reg_classes_intersect_p (rclass, FP_REGS);
+    }
+
+  return true;
 }
 
 
@@ -1422,8 +1535,28 @@ nds32_function_arg (cumulative_args_t ca, machine_mode mode,
      are different.  */
   if (TARGET_HARD_FLOAT)
     {
-      /* Currently we have not implemented hard float yet.  */
-      gcc_unreachable ();
+      /* For TARGET_HARD_FLOAT calling convention, we use GPR and FPR
+	 to pass argument.  We have to further check TYPE and MODE so
+	 that we can determine which kind of register we shall use.  */
+
+      /* Note that we need to pass argument entirely in registers under
+	 hard float abi.  */
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && NDS32_ARG_ENTIRE_IN_FPR_REG_P (cum->fpr_offset, mode, type))
+	{
+	  /* Pick up the next available FPR register number.  */
+	  regno
+	    = NDS32_AVAILABLE_REGNUM_FOR_FPR_ARG (cum->fpr_offset, mode, type);
+	  return gen_rtx_REG (mode, regno);
+	}
+      else if (GET_MODE_CLASS (mode) != MODE_FLOAT
+	       && NDS32_ARG_ENTIRE_IN_GPR_REG_P (cum->gpr_offset, mode, type))
+	{
+	  /* Pick up the next available GPR register number.  */
+	  regno
+	    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type);
+	  return gen_rtx_REG (mode, regno);
+	}
     }
   else
     {
@@ -1506,23 +1639,20 @@ static void
 nds32_function_arg_advance (cumulative_args_t ca, machine_mode mode,
 			    const_tree type, bool named)
 {
-  machine_mode sub_mode;
   CUMULATIVE_ARGS *cum = get_cumulative_args (ca);
 
   if (named)
     {
       /* We need to further check TYPE and MODE so that we can determine
-         which kind of register we shall advance.  */
-      if (type && TREE_CODE (type) == COMPLEX_TYPE)
-	sub_mode = TYPE_MODE (TREE_TYPE (type));
-      else
-	sub_mode = mode;
+	 which kind of register we shall advance.  */
 
       /* Under hard float abi, we may advance FPR registers.  */
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (sub_mode) == MODE_FLOAT)
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  /* Currently we have not implemented hard float yet.  */
-	  gcc_unreachable ();
+	  cum->fpr_offset
+	    = NDS32_AVAILABLE_REGNUM_FOR_FPR_ARG (cum->fpr_offset, mode, type)
+	      - NDS32_FPR_ARG_FIRST_REGNUM
+	      + NDS32_NEED_N_REGS_FOR_ARG (mode, type);
 	}
       else
 	{
@@ -1569,22 +1699,62 @@ nds32_function_value (const_tree ret_type,
   mode = TYPE_MODE (ret_type);
   unsignedp = TYPE_UNSIGNED (ret_type);
 
-  mode = promote_mode (ret_type, mode, &unsignedp);
+  if (INTEGRAL_TYPE_P (ret_type))
+    mode = promote_mode (ret_type, mode, &unsignedp);
 
-  return gen_rtx_REG (mode, NDS32_GPR_RET_FIRST_REGNUM);
+  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+    return gen_rtx_REG (mode, NDS32_FPR_RET_FIRST_REGNUM);
+  else
+    return gen_rtx_REG (mode, NDS32_GPR_RET_FIRST_REGNUM);
 }
 
 static rtx
 nds32_libcall_value (machine_mode mode,
 		     const_rtx fun ATTRIBUTE_UNUSED)
 {
+  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+    return gen_rtx_REG (mode, NDS32_FPR_RET_FIRST_REGNUM);
+
   return gen_rtx_REG (mode, NDS32_GPR_RET_FIRST_REGNUM);
 }
 
 static bool
 nds32_function_value_regno_p (const unsigned int regno)
 {
-  return (regno == NDS32_GPR_RET_FIRST_REGNUM);
+  if (regno == NDS32_GPR_RET_FIRST_REGNUM
+      || (TARGET_HARD_FLOAT
+	  && regno == NDS32_FPR_RET_FIRST_REGNUM))
+    return true;
+
+  return false;
+}
+
+/* -- How Large Values Are Returned.  */
+
+static bool
+nds32_return_in_memory (const_tree type,
+			const_tree fntype ATTRIBUTE_UNUSED)
+{
+  /* Note that int_size_in_bytes can return -1 if the size can vary
+     or is larger than an integer.  */
+  HOST_WIDE_INT size = int_size_in_bytes (type);
+
+  /* For COMPLEX_TYPE, if the total size cannot be hold within two registers,
+     the return value is supposed to be in memory.  We need to be aware of
+     that the size may be -1.  */
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    if (size < 0 || size > 2 * UNITS_PER_WORD)
+      return true;
+
+  /* If it is BLKmode and the total size cannot be hold within two registers,
+     the return value is supposed to be in memory.  We need to be aware of
+     that the size may be -1.  */
+  if (TYPE_MODE (type) == BLKmode)
+    if (size < 0 || size > 2 * UNITS_PER_WORD)
+      return true;
+
+  /* For other cases, having result in memory is unnecessary.  */
+  return false;
 }
 
 /* -- Function Entry and Exit.  */
@@ -1614,7 +1784,7 @@ nds32_asm_function_prologue (FILE *file)
   /* Use df_regs_ever_live_p() to detect if the register
      is ever used in the current function.  */
   fprintf (file, "\t! registers ever_live: ");
-  for (r = 0; r < 32; r++)
+  for (r = 0; r < 65; r++)
     {
       if (df_regs_ever_live_p (r))
 	fprintf (file, "%s, ", reg_names[r]);
@@ -2013,6 +2183,43 @@ nds32_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 static bool
 nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
+  if (TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+    {
+     /* When using floating-point instructions,
+	we don't allow 'addr' to be [symbol_ref], [CONST] pattern.  */
+      if ((mode == DFmode || mode == SFmode)
+	  && (GET_CODE (x) == SYMBOL_REF
+	  || GET_CODE(x) == CONST))
+	return false;
+
+      /* Allow [post_modify] addressing mode, when using FPU instructions.  */
+      if (GET_CODE (x) == POST_MODIFY
+	  && mode == DFmode)
+	{
+	  if (GET_CODE (XEXP (x, 0)) == REG
+	      && GET_CODE (XEXP (x, 1)) == PLUS)
+	    {
+	      rtx plus_op = XEXP (x, 1);
+	      rtx op0 = XEXP (plus_op, 0);
+	      rtx op1 = XEXP (plus_op, 1);
+
+	      if (nds32_address_register_rtx_p (op0, strict)
+		  && CONST_INT_P (op1))
+		{
+		  if (satisfies_constraint_Is14 (op1))
+		    {
+		      /* Make sure address is word alignment.
+			Currently we do not have 64-bit load/store yet,
+			so we will use two 32-bit load/store instructions to do
+			memory access and they are single word alignment.  */
+		      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (op1)))
+			return true;
+		    }
+		}
+	    }
+	}
+    }
+
   /* For (mem:DI addr) or (mem:DF addr) case,
      we only allow 'addr' to be [reg], [symbol_ref],
 				[const], or [reg + const_int] pattern.  */
@@ -2028,6 +2235,13 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	  else if (nds32_address_register_rtx_p (XEXP (x, 1), strict)
 		   && nds32_legitimate_index_p (mode, XEXP (x, 0), strict)
 		   && CONST_INT_P (XEXP (x, 0)))
+	    return true;
+	}
+
+      /* Allow [post_inc] and [post_dec] addressing mode.  */
+      if (GET_CODE (x) == POST_INC || GET_CODE (x) == POST_DEC)
+	{
+	  if (nds32_address_register_rtx_p (XEXP (x, 0), strict))
 	    return true;
 	}
 
@@ -2216,10 +2430,13 @@ nds32_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t from,
 			  reg_class_t to)
 {
-  if (from == HIGH_REGS || to == HIGH_REGS)
-    return 6;
-
-  return 2;
+  if ((from == FP_REGS && to != FP_REGS)
+      || (from != FP_REGS && to == FP_REGS))
+    return 9;
+  else if (from == HIGH_REGS || to == HIGH_REGS)
+    return optimize_size ? 6 : 2;
+  else
+    return 2;
 }
 
 static int
@@ -2305,7 +2522,10 @@ nds32_asm_file_start (void)
 
   /* Tell assembler which ABI we are using.  */
   fprintf (asm_out_file, "\t! ABI version\n");
-  fprintf (asm_out_file, "\t.abi_2\n");
+  if (TARGET_HARD_FLOAT)
+    fprintf (asm_out_file, "\t.abi_2fp_plus\n");
+  else
+    fprintf (asm_out_file, "\t.abi_2\n");
 
   /* Tell assembler that this asm code is generated by compiler.  */
   fprintf (asm_out_file, "\t! This asm file is generated by compiler\n");
@@ -2334,6 +2554,15 @@ nds32_asm_file_start (void)
   fprintf (asm_out_file, "\t! Endian setting\t: %s\n",
 			 ((TARGET_BIG_ENDIAN) ? "big-endian"
 					      : "little-endian"));
+  fprintf (asm_out_file, "\t! Use SP floating-point instruction\t: %s\n",
+			 ((TARGET_FPU_SINGLE) ? "Yes"
+					      : "No"));
+  fprintf (asm_out_file, "\t! Use DP floating-point instruction\t: %s\n",
+			 ((TARGET_FPU_DOUBLE) ? "Yes"
+					      : "No"));
+  fprintf (asm_out_file, "\t! ABI version\t\t: %s\n",
+			 ((TARGET_HARD_FLOAT) ? "ABI2FP+"
+					      : "ABI2"));
 
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
@@ -2404,6 +2633,10 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 {
   HOST_WIDE_INT one_position;
   HOST_WIDE_INT zero_position;
+  bool pick_lsb_p = false;
+  bool pick_msb_p = false;
+  int regno;
+
   int op_value;
 
   switch (code)
@@ -2439,6 +2672,20 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 
       /* No need to handle following process, so return immediately.  */
       return;
+
+    case 'L':
+      /* X is supposed to be REG rtx.  */
+      gcc_assert (REG_P (x));
+      /* Claim that we are going to pick LSB part of X.  */
+      pick_lsb_p = true;
+      break;
+
+    case 'H':
+      /* X is supposed to be REG rtx.  */
+      gcc_assert (REG_P (x));
+      /* Claim that we are going to pick MSB part of X.  */
+      pick_msb_p = true;
+      break;
 
     case 'V':
       /* 'x' is supposed to be CONST_INT, get the value.  */
@@ -2489,6 +2736,38 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       break;
 
     case REG:
+      /* Print a Double-precision register name.  */
+      if ((GET_MODE (x) == DImode || GET_MODE (x) == DFmode)
+	  && NDS32_IS_FPR_REGNUM (REGNO (x)))
+	{
+	  regno = REGNO (x);
+	  if (!NDS32_FPR_REGNO_OK_FOR_DOUBLE (regno))
+	    {
+	      output_operand_lossage ("invalid operand for code '%c'", code);
+	      break;
+	    }
+	  fprintf (stream, "$fd%d", (regno - NDS32_FIRST_FPR_REGNUM) >> 1);
+	  break;
+	}
+
+      /* Print LSB or MSB part of register pair if the
+	 constraint modifier 'L' or 'H' is specified.  */
+      if ((GET_MODE (x) == DImode || GET_MODE (x) == DFmode)
+	  && NDS32_IS_GPR_REGNUM (REGNO (x)))
+	{
+	  if ((pick_lsb_p && WORDS_BIG_ENDIAN)
+	      || (pick_msb_p && !WORDS_BIG_ENDIAN))
+	    {
+	      /* If we would like to print out LSB register under big-endian,
+		 or print out MSB register under little-endian, we need to
+		 increase register number.  */
+	      regno = REGNO (x);
+	      regno++;
+	      fputs (reg_names[regno], stream);
+	      break;
+	    }
+	}
+
       /* Forbid using static chain register ($r16)
 	 on reduced-set registers configuration.  */
       if (TARGET_REDUCED_REGS
@@ -2501,6 +2780,33 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 
     case MEM:
       output_address (GET_MODE (x), XEXP (x, 0));
+      break;
+
+    case HIGH:
+      if (GET_CODE (XEXP (x, 0)) == CONST_DOUBLE)
+	{
+	  const REAL_VALUE_TYPE *rv;
+	  long val;
+	  gcc_assert (GET_MODE (x) == SFmode);
+
+	  rv = CONST_DOUBLE_REAL_VALUE (XEXP (x, 0));
+	  REAL_VALUE_TO_TARGET_SINGLE (*rv, val);
+
+	  fprintf (stream, "hi20(0x%lx)", val);
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    case CONST_DOUBLE:
+      const REAL_VALUE_TYPE *rv;
+      long val;
+      gcc_assert (GET_MODE (x) == SFmode);
+
+      rv = CONST_DOUBLE_REAL_VALUE (x);
+      REAL_VALUE_TO_TARGET_SINGLE (*rv, val);
+
+      fprintf (stream, "0x%lx", val);
       break;
 
     case CODE_LABEL:
@@ -2685,6 +2991,84 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
       gcc_unreachable ();
       break;
     }
+}
+
+/* -- Assembler Commands for Exception Regions.  */
+
+static rtx
+nds32_dwarf_register_span (rtx reg)
+{
+  rtx dwarf_high, dwarf_low;
+  rtx dwarf_single;
+  machine_mode mode;
+  int regno;
+
+  mode = GET_MODE (reg);
+  regno = REGNO (reg);
+
+  /* We need to adjust dwarf register information for floating-point registers
+     rather than using default register number mapping.  */
+  if (regno >= NDS32_FIRST_FPR_REGNUM
+      && regno <= NDS32_LAST_FPR_REGNUM)
+    {
+      if (mode == DFmode || mode == SCmode)
+	{
+	  /* By default, GCC maps increasing register numbers to increasing
+	     memory locations, but paired FPRs in NDS32 target are always
+	     big-endian, i.e.:
+
+	       fd0 :  fs0   fs1
+		     (MSB) (LSB)
+
+	     We must return parallel rtx to represent such layout.  */
+	  dwarf_high = gen_rtx_REG (word_mode, regno);
+	  dwarf_low = gen_rtx_REG (word_mode, regno + 1);
+	  return gen_rtx_PARALLEL (VOIDmode,
+				   gen_rtvec (2, dwarf_low, dwarf_high));
+	}
+      else if (mode == DCmode)
+	{
+	  rtx dwarf_high_re = gen_rtx_REG (word_mode, regno);
+	  rtx dwarf_low_re = gen_rtx_REG (word_mode, regno + 1);
+	  rtx dwarf_high_im = gen_rtx_REG (word_mode, regno);
+	  rtx dwarf_low_im = gen_rtx_REG (word_mode, regno + 1);
+	  return gen_rtx_PARALLEL (VOIDmode,
+				   gen_rtvec (4, dwarf_low_re, dwarf_high_re,
+						 dwarf_high_im, dwarf_low_im));
+	}
+      else if (mode == SFmode || mode == SImode)
+	{
+	  /* Create new dwarf information with adjusted register number.  */
+	  dwarf_single = gen_rtx_REG (word_mode, regno);
+	  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, dwarf_single));
+	}
+      else
+	{
+	  /* We should not be here.  */
+	  gcc_unreachable ();
+	}
+    }
+
+  return NULL_RTX;
+}
+
+/* Map internal gcc register numbers to DWARF2 register numbers.  */
+
+unsigned int
+nds32_dbx_register_number (unsigned int regno)
+{
+  /* The nds32 port in GDB maintains a mapping between dwarf register
+     number and displayed register name.  For backward compatibility to
+     previous toolchain, currently our gdb still has four registers
+     (d0.l, d0.h, d1.l, and d1.h) between GPR and FPR while compiler
+     does not count those four registers in its register number table.
+     So we have to add 4 on its register number and then create new
+     dwarf information.  Hopefully we can discard such workaround
+     in the future.  */
+  if (NDS32_IS_FPR_REGNUM (regno))
+    return regno + 4;
+
+  return regno;
 }
 
 
@@ -2894,6 +3278,16 @@ nds32_option_override (void)
       target_flags &= ~MASK_V3PUSH;
     }
 
+  if (TARGET_HARD_FLOAT && !(TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE))
+    {
+      if (nds32_arch_option == ARCH_V3S || nds32_arch_option == ARCH_V3F)
+	error ("Disable FPU ISA, "
+	       "the ABI option must be enable '-mfloat-abi=soft'");
+      else
+	error ("'-mabi=2fp+' option only support when FPU available, "
+	       "must be enable '-mext-fpu-sp' or '-mext-fpu-dp'");
+    }
+
   /* Currently, we don't support PIC code generation yet.  */
   if (flag_pic)
     sorry ("position-independent code not supported");
@@ -2954,12 +3348,51 @@ nds32_cpu_cpp_builtins(struct cpp_reader *pfile)
   builtin_define ("__nds32__");
   builtin_define ("__NDS32__");
 
+  if (TARGET_HARD_FLOAT)
+    builtin_define ("__NDS32_ABI_2FP_PLUS__");
+  else
+    builtin_define ("__NDS32_ABI_2__");
+
   if (TARGET_ISA_V2)
     builtin_define ("__NDS32_ISA_V2__");
   if (TARGET_ISA_V3)
     builtin_define ("__NDS32_ISA_V3__");
   if (TARGET_ISA_V3M)
     builtin_define ("__NDS32_ISA_V3M__");
+
+  if (TARGET_FPU_SINGLE)
+    builtin_define ("__NDS32_EXT_FPU_SP__");
+  if (TARGET_FPU_DOUBLE)
+    builtin_define ("__NDS32_EXT_FPU_DP__");
+
+  if (TARGET_EXT_FPU_FMA)
+    builtin_define ("__NDS32_EXT_FPU_FMA__");
+  if (NDS32_EXT_FPU_DOT_E)
+    builtin_define ("__NDS32_EXT_FPU_DOT_E__");
+  if (TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+    {
+      switch (nds32_fp_regnum)
+	{
+	case 0:
+	case 4:
+	  builtin_define ("__NDS32_EXT_FPU_CONFIG_0__");
+	  break;
+	case 1:
+	case 5:
+	  builtin_define ("__NDS32_EXT_FPU_CONFIG_1__");
+	  break;
+	case 2:
+	case 6:
+	  builtin_define ("__NDS32_EXT_FPU_CONFIG_2__");
+	  break;
+	case 3:
+	case 7:
+	  builtin_define ("__NDS32_EXT_FPU_CONFIG_3__");
+	  break;
+	default:
+	  abort ();
+	}
+    }
 
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__NDS32_EB__");
@@ -2988,6 +3421,12 @@ nds32_cpu_cpp_builtins(struct cpp_reader *pfile)
 
   builtin_assert ("cpu=nds32");
   builtin_assert ("machine=nds32");
+
+  if (TARGET_HARD_FLOAT)
+    builtin_define ("__NDS32_ABI_2FP_PLUS");
+  else
+    builtin_define ("__NDS32_ABI_2");
+
 #undef builtin_define
 #undef builtin_assert
 }
@@ -3026,15 +3465,37 @@ nds32_adjust_reg_alloc_order (void)
 
 /* -- How Values Fit in Registers.  */
 
+static unsigned
+nds32_hard_regno_nregs (unsigned regno ATTRIBUTE_UNUSED,
+			machine_mode mode)
+{
+  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool
 nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
-  /* Restrict double-word quantities to even register pairs.  */
-  if (targetm.hard_regno_nregs (regno, mode) == 1
-      || !((regno) & 1))
+  if (regno > FIRST_PSEUDO_REGISTER)
     return true;
+
+  if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE) && NDS32_IS_FPR_REGNUM (regno))
+    {
+      if (NDS32_IS_EXT_FPR_REGNUM(regno))
+	return (NDS32_FPR_REGNO_OK_FOR_DOUBLE(regno) && (mode == DFmode));
+      else if (mode == SFmode || mode == SImode)
+	return NDS32_FPR_REGNO_OK_FOR_SINGLE (regno);
+      else if (mode == DFmode)
+	return NDS32_FPR_REGNO_OK_FOR_DOUBLE (regno);
+
+      return false;
+    }
+
+  /* Restrict double-word quantities to even register pairs.  */
+  if (regno <= NDS32_LAST_GPR_REGNUM)
+    return (targetm.hard_regno_nregs (regno, mode) == 1
+	    || !((regno) & 1));
 
   return false;
 }
@@ -3048,10 +3509,22 @@ nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 static bool
 nds32_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
-  return (GET_MODE_CLASS (mode1) == MODE_INT
-	  && GET_MODE_CLASS (mode2) == MODE_INT
-	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
-	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
+  if ((GET_MODE_CLASS (mode1) == MODE_INT
+       && GET_MODE_CLASS (mode2) == MODE_INT)
+      && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD)
+    return true;
+
+  if (GET_MODE_SIZE (mode1) == GET_MODE_SIZE (mode2))
+    {
+      if ((TARGET_FPU_SINGLE && !TARGET_FPU_DOUBLE)
+	  && (mode1 == DFmode || mode2 == DFmode))
+	return false;
+      else
+	return true;
+    }
+
+  return false;
 }
 
 #undef TARGET_MODES_TIEABLE_P
@@ -3077,7 +3550,14 @@ nds32_regno_reg_class (int regno)
   else if (regno >= 20 && regno <= 31)
     return HIGH_REGS;
   else if (regno == 32 || regno == 33)
-    return FRAME_REGS;
+    {
+      /* $SFP and $AP is FRAME_REGS in fact, However prevent IRA don't
+	 know how to allocate register for $SFP and $AP, just tell IRA they
+	 are GENERAL_REGS, and ARM do this hack too.  */
+      return GENERAL_REGS;
+    }
+  else if (regno >= 34 && regno <= 97)
+    return FP_REGS;
   else
     return NO_REGS;
 }
@@ -3123,6 +3603,7 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
 		+ cfun->machine->lp_size
 		+ cfun->machine->callee_saved_gpr_regs_size
 		+ cfun->machine->callee_saved_area_gpr_padding_bytes
+		+ cfun->machine->callee_saved_fpr_regs_size
 		+ cfun->machine->local_size
 		+ cfun->machine->out_args_size);
     }
@@ -3143,7 +3624,8 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
 		       + cfun->machine->gp_size
 		       + cfun->machine->lp_size
 		       + cfun->machine->callee_saved_gpr_regs_size
-		       + cfun->machine->callee_saved_area_gpr_padding_bytes);
+		       + cfun->machine->callee_saved_area_gpr_padding_bytes
+		       + cfun->machine->callee_saved_fpr_regs_size);
     }
   else
     {
@@ -3162,10 +3644,11 @@ nds32_init_cumulative_args (CUMULATIVE_ARGS *cum,
 			    tree fndecl ATTRIBUTE_UNUSED,
 			    int n_named_args ATTRIBUTE_UNUSED)
 {
-  /* Initial available registers
-     (in offset, corresponding to NDS32_GPR_ARG_FIRST_REGNUM)
+  /* Initial available registers.  The values are offset against
+     NDS32_GPR_ARG_FIRST_REGNUM and NDS32_FPR_ARG_FIRST_REGNUM
      for passing arguments.  */
   cum->gpr_offset = 0;
+  cum->fpr_offset = 0;
 }
 
 /* -- Function Entry and Exit.  */
@@ -3248,17 +3731,79 @@ nds32_expand_prologue (void)
 			       fp_adjust);
     }
 
-  /* Adjust $sp = $sp - local_size - out_args_size
-                      - callee_saved_area_gpr_padding_bytes.  */
-  sp_adjust = cfun->machine->local_size
-	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
-  /* sp_adjust value may be out of range of the addi instruction,
-     create alternative add behavior with TA_REGNUM if necessary,
-     using NEGATIVE value to tell that we are decreasing address.  */
-  nds32_emit_adjust_frame (stack_pointer_rtx,
-			   stack_pointer_rtx,
-			   -1 * sp_adjust);
+  /* Save fpu registers.  */
+  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+    {
+      /* When $sp moved to bottom of stack, we need to check whether
+	 the range of offset in the FPU instruction.  */
+      int fpr_offset = cfun->machine->local_size
+		       + cfun->machine->out_args_size
+		       + cfun->machine->callee_saved_fpr_regs_size;
+
+      /* Check FPU instruction offset imm14s.  */
+      if (!satisfies_constraint_Is14 (GEN_INT (fpr_offset)))
+	{
+	  int fpr_space = cfun->machine->callee_saved_area_gpr_padding_bytes
+			  + cfun->machine->callee_saved_fpr_regs_size;
+
+	  /* Save fpu registers, need to allocate stack space
+	     for fpu callee registers.  And now $sp position
+	     on callee saved fpr registers.  */
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   -1 * fpr_space);
+
+	  /* Emit fpu store instruction, using [$sp + offset] store
+	     fpu registers.  */
+	  nds32_emit_push_fpr_callee_saved (0);
+
+          /* Adjust $sp = $sp - local_size - out_args_size.  */
+	  sp_adjust = cfun->machine->local_size
+		      + cfun->machine->out_args_size;
+
+	  /* Allocate stack space for local size and out args size.  */
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   -1 * sp_adjust);
+	}
+      else
+	{
+	  /* Offset range in Is14, so $sp moved to bottom of stack.  */
+
+          /* Adjust $sp = $sp - local_size - out_args_size
+			      - callee_saved_area_gpr_padding_bytes
+			      - callee_saved_fpr_regs_size.  */
+	  sp_adjust = cfun->machine->local_size
+		      + cfun->machine->out_args_size
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes
+		      + cfun->machine->callee_saved_fpr_regs_size;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   -1 * sp_adjust);
+
+	  /* Emit fpu store instruction, using [$sp + offset] store
+	     fpu registers.  */
+	  int fpr_position = cfun->machine->out_args_size
+			     + cfun->machine->local_size;
+	  nds32_emit_push_fpr_callee_saved (fpr_position);
+	}
+    }
+  else
+    {
+      /* Adjust $sp = $sp - local_size - out_args_size
+			  - callee_saved_area_gpr_padding_bytes.  */
+      sp_adjust = cfun->machine->local_size
+		  + cfun->machine->out_args_size
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
+
+      /* sp_adjust value may be out of range of the addi instruction,
+	 create alternative add behavior with TA_REGNUM if necessary,
+	 using NEGATIVE value to tell that we are decreasing address.  */
+      nds32_emit_adjust_frame (stack_pointer_rtx,
+			       stack_pointer_rtx,
+			       -1 * sp_adjust);
+    }
 
   /* Prevent the instruction scheduler from
      moving instructions across the boundary.  */
@@ -3310,39 +3855,93 @@ nds32_expand_epilogue (bool sibcall_p)
 
   if (frame_pointer_needed)
     {
-      /* adjust $sp = $fp - ($fp size) - ($gp size) - ($lp size)
-			  - (4 * callee-saved-registers)
-	 Note: No need to adjust
-	       cfun->machine->callee_saved_area_gpr_padding_bytes,
-	       because we want to adjust stack pointer
-	       to the position for pop instruction.  */
-      sp_adjust = cfun->machine->fp_size
-		  + cfun->machine->gp_size
-		  + cfun->machine->lp_size
-		  + cfun->machine->callee_saved_gpr_regs_size;
+      /* Restore fpu registers.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  int gpr_padding = cfun->machine->callee_saved_area_gpr_padding_bytes;
 
-      nds32_emit_adjust_frame (stack_pointer_rtx,
-			       hard_frame_pointer_rtx,
-			       -1 * sp_adjust);
+	  /* adjust $sp = $fp - ($fp size) - ($gp size) - ($lp size)
+			      - (4 * callee-saved-registers)
+			      - (4 * exception-handling-data-registers)
+			      - (4 * callee-saved-gpr-registers padding byte)
+			      - (4 * callee-saved-fpr-registers)
+	     Note:  we want to adjust stack pointer
+		    to the position for callee-saved fpr register,
+		    And restore fpu register use .bi instruction to adjust $sp
+		    from callee-saved fpr register to pop instruction.  */
+	  sp_adjust = cfun->machine->fp_size
+		      + cfun->machine->gp_size
+		      + cfun->machine->lp_size
+		      + cfun->machine->callee_saved_gpr_regs_size
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes
+		      + cfun->machine->callee_saved_fpr_regs_size;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   hard_frame_pointer_rtx,
+				   -1 * sp_adjust);
+
+	  /* Emit fpu load instruction, using .bi instruction
+	     load fpu registers.  */
+	  nds32_emit_pop_fpr_callee_saved (gpr_padding);
+	}
+      else
+	{
+	  /* adjust $sp = $fp - ($fp size) - ($gp size) - ($lp size)
+			      - (4 * callee-saved-registers)
+			      - (4 * exception-handling-data-registers)
+	     Note: No need to adjust
+		   cfun->machine->callee_saved_area_gpr_padding_bytes,
+		   because we want to adjust stack pointer
+		   to the position for pop instruction.  */
+	  sp_adjust = cfun->machine->fp_size
+		      + cfun->machine->gp_size
+		      + cfun->machine->lp_size
+		      + cfun->machine->callee_saved_gpr_regs_size;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   hard_frame_pointer_rtx,
+				   -1 * sp_adjust);
+	}
     }
   else
     {
-      /* If frame pointer is NOT needed,
-	 we cannot calculate the sp adjustment from frame pointer.
-	 Instead, we calculate the adjustment by local_size,
-	 out_args_size, and callee_saved_area_gpr_padding_bytes.
-	 Notice that such sp adjustment value may be out of range,
-	 so we have to deal with it as well.  */
+      /* Restore fpu registers.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  int gpr_padding = cfun->machine->callee_saved_area_gpr_padding_bytes;
 
-      /* Adjust $sp = $sp + local_size + out_args_size
-	                  + callee_saved_area_gpr_padding_bytes.  */
-      sp_adjust = cfun->machine->local_size
-		  + cfun->machine->out_args_size
-		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
+	  /* Adjust $sp = $sp + local_size + out_args_size.  */
+	  sp_adjust = cfun->machine->local_size
+		      + cfun->machine->out_args_size;
 
-      nds32_emit_adjust_frame (stack_pointer_rtx,
-			       stack_pointer_rtx,
-			       sp_adjust);
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   sp_adjust);
+
+	  /* Emit fpu load instruction, using .bi instruction
+	     load fpu registers, and adjust $sp from callee-saved fpr register
+	     to callee-saved gpr register.  */
+	  nds32_emit_pop_fpr_callee_saved (gpr_padding);
+	}
+      else
+	{
+	  /* If frame pointer is NOT needed,
+	     we cannot calculate the sp adjustment from frame pointer.
+	     Instead, we calculate the adjustment by local_size,
+	     out_args_size, and callee_saved_area_gpr_padding_bytes.
+	     Notice that such sp adjustment value may be out of range,
+	     so we have to deal with it as well.  */
+
+	  /* Adjust $sp = $sp + local_size + out_args_size
+			      + callee_saved_area_gpr_padding_bytes.  */
+	  sp_adjust = cfun->machine->local_size
+		      + cfun->machine->out_args_size
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   sp_adjust);
+	}
     }
 
   /* Get callee_first_regno and callee_last_regno.  */
@@ -3389,6 +3988,7 @@ nds32_expand_prologue_v3push (void)
 {
   int fp_adjust;
   int sp_adjust;
+  int fpr_space = 0;
   unsigned Rb, Re;
 
   /* Compute and setup stack frame size.
@@ -3411,7 +4011,8 @@ nds32_expand_prologue_v3push (void)
      where imm8u has to be 8-byte alignment.  */
   sp_adjust = cfun->machine->local_size
 	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes
+	      + cfun->machine->callee_saved_fpr_regs_size;
 
   if (satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
       && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust))
@@ -3421,6 +4022,18 @@ nds32_expand_prologue_v3push (void)
       /* nds32_emit_stack_v3push(last_regno, sp_adjust),
 	 the pattern 'stack_v3push' is implemented in nds32.md.  */
       nds32_emit_stack_v3push (Rb, Re, sp_adjust);
+
+      /* Save fpu registers.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  /* Calculate fpr position.  */
+	  int fpr_position = cfun->machine->local_size
+			     + cfun->machine->out_args_size;
+	  /* Emit fpu store instruction, using [$sp + offset] store
+	     fpu registers.  */
+	  nds32_emit_push_fpr_callee_saved (fpr_position);
+	}
+
       /* Check frame_pointer_needed to see
 	 if we shall emit fp adjustment instruction.  */
       if (frame_pointer_needed)
@@ -3448,12 +4061,26 @@ nds32_expand_prologue_v3push (void)
     }
   else
     {
-      /* We have to use 'push25 Re,0' and
-	 expand one more instruction to adjust $sp later.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  /* Calculate fpr space.  */
+	  fpr_space = cfun->machine->callee_saved_area_gpr_padding_bytes
+		      + cfun->machine->callee_saved_fpr_regs_size;
 
-      /* nds32_emit_stack_v3push(last_regno, sp_adjust),
-	 the pattern 'stack_v3push' is implemented in nds32.md.  */
-      nds32_emit_stack_v3push (Rb, Re, 0);
+	  /* We have to use 'push25 Re, fpr_space', to pre-allocate
+	     callee saved fpr registers space.  */
+	  nds32_emit_stack_v3push (Rb, Re, fpr_space);
+	  nds32_emit_push_fpr_callee_saved (0);
+	}
+      else
+	{
+	  /* We have to use 'push25 Re,0' and
+	     expand one more instruction to adjust $sp later.  */
+
+	  /* nds32_emit_stack_v3push(last_regno, sp_adjust),
+	     the pattern 'stack_v3push' is implemented in nds32.md.  */
+	  nds32_emit_stack_v3push (Rb, Re, 0);
+	}
 
       /* Check frame_pointer_needed to see
 	 if we shall emit fp adjustment instruction.  */
@@ -3472,9 +4099,25 @@ nds32_expand_prologue_v3push (void)
 		      + cfun->machine->lp_size
 		      + cfun->machine->callee_saved_gpr_regs_size;
 
+	  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	    {
+	      /* We use 'push25 Re, fpr_space', the $sp is
+		 on callee saved fpr position, so need to consider
+		 fpr space.  */
+	      fp_adjust = fp_adjust + fpr_space;
+	    }
+
 	  nds32_emit_adjust_frame (hard_frame_pointer_rtx,
 				   stack_pointer_rtx,
 				   fp_adjust);
+	}
+
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  /* We use 'push25 Re, fpr_space',
+	     the $sp is on callee saved fpr position,
+	     no need to consider fpr space.  */
+	  sp_adjust = sp_adjust - fpr_space;
 	}
 
       /* Because we use 'push25 Re,0',
@@ -3524,7 +4167,8 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
      where imm8u has to be 8-byte alignment.  */
   sp_adjust = cfun->machine->local_size
 	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes
+	      + cfun->machine->callee_saved_fpr_regs_size;
 
   /* We have to consider alloca issue as well.
      If the function does call alloca(), the stack pointer is not fixed.
@@ -3537,6 +4181,16 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
       && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust)
       && !cfun->calls_alloca)
     {
+      /* Restore fpu registers.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  int fpr_position = cfun->machine->local_size
+			     + cfun->machine->out_args_size;
+	  /* Emit fpu load instruction, using [$sp + offset] restore
+	     fpu registers.  */
+	  nds32_emit_v3pop_fpr_callee_saved (fpr_position);
+	}
+
       /* We can use 'pop25 Re,imm8u'.  */
 
       /* nds32_emit_stack_v3pop(last_regno, sp_adjust),
@@ -3563,9 +4217,29 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
 		      + cfun->machine->lp_size
 		      + cfun->machine->callee_saved_gpr_regs_size;
 
-	  nds32_emit_adjust_frame (stack_pointer_rtx,
-				   hard_frame_pointer_rtx,
-				   -1 * sp_adjust);
+	  /* Restore fpu registers.  */
+	  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	    {
+	      /* Set $sp to callee saved fpr position, we need to restore
+		 fpr registers.  */
+	      sp_adjust = sp_adjust
+			  + cfun->machine->callee_saved_area_gpr_padding_bytes
+			  + cfun->machine->callee_saved_fpr_regs_size;
+
+	      nds32_emit_adjust_frame (stack_pointer_rtx,
+				       hard_frame_pointer_rtx,
+				       -1 * sp_adjust);
+
+	      /* Emit fpu load instruction, using [$sp + offset] restore
+		 fpu registers.  */
+	      nds32_emit_v3pop_fpr_callee_saved (0);
+	    }
+	  else
+	    {
+	      nds32_emit_adjust_frame (stack_pointer_rtx,
+				       hard_frame_pointer_rtx,
+				       -1 * sp_adjust);
+	    }
 	}
       else
 	{
@@ -3577,24 +4251,57 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
 	     so we have to deal with it as well.  */
 
 	  /* Adjust $sp = $sp + local_size + out_args_size
-                              + callee_saved_area_gpr_padding_bytes.  */
+			      + callee_saved_area_gpr_padding_bytes
+			      + callee_saved_fpr_regs_size.  */
 	  sp_adjust = cfun->machine->local_size
 		      + cfun->machine->out_args_size
-		      + cfun->machine->callee_saved_area_gpr_padding_bytes;
-	   /* sp_adjust value may be out of range of the addi instruction,
-	      create alternative add behavior with TA_REGNUM if necessary,
-	      using POSITIVE value to tell that we are increasing
-	      address.  */
-	  nds32_emit_adjust_frame (stack_pointer_rtx,
-				   stack_pointer_rtx,
-				   sp_adjust);
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes
+		      + cfun->machine->callee_saved_fpr_regs_size;
+
+	  /* Restore fpu registers.  */
+	  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	    {
+	      /* Set $sp to callee saved fpr position, we need to restore
+		 fpr registers.  */
+	      sp_adjust = sp_adjust
+			  - cfun->machine->callee_saved_area_gpr_padding_bytes
+			  - cfun->machine->callee_saved_fpr_regs_size;
+
+	      nds32_emit_adjust_frame (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       sp_adjust);
+
+	      /* Emit fpu load instruction, using [$sp + offset] restore
+		 fpu registers.  */
+	      nds32_emit_v3pop_fpr_callee_saved (0);
+	    }
+	  else
+	    {
+	       /* sp_adjust value may be out of range of the addi instruction,
+		  create alternative add behavior with TA_REGNUM if necessary,
+		  using POSITIVE value to tell that we are increasing
+		  address.  */
+	      nds32_emit_adjust_frame (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       sp_adjust);
+	    }
 	}
 
-      /* nds32_emit_stack_v3pop(last_regno, sp_adjust),
-	 the pattern 'stack_v3pop' is implementad in nds32.md.  */
-      nds32_emit_stack_v3pop (Rb, Re, 0);
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  /* We have fpr need to restore, so $sp is set on callee saved fpr
+	     position.  And we use 'pop25 Re, fpr_space' to adjust $sp.  */
+	  int fpr_space = cfun->machine->callee_saved_area_gpr_padding_bytes
+			  + cfun->machine->callee_saved_fpr_regs_size;
+	  nds32_emit_stack_v3pop (Rb, Re, fpr_space);
+	}
+      else
+	{
+	  /* nds32_emit_stack_v3pop(last_regno, sp_adjust),
+	     the pattern 'stack_v3pop' is implementad in nds32.md.  */
+	  nds32_emit_stack_v3pop (Rb, Re, 0);
+	}
     }
-
   /* Generate return instruction.  */
   emit_jump_insn (gen_pop25return ());
 }
@@ -3605,10 +4312,25 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
 int
 nds32_can_use_return_insn (void)
 {
+  int sp_adjust;
+
   /* Prior to reloading, we can't tell how many registers must be saved.
      Thus we can not determine whether this function has null epilogue.  */
   if (!reload_completed)
     return 0;
+
+  sp_adjust = cfun->machine->local_size
+	      + cfun->machine->out_args_size
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes
+	      + cfun->machine->callee_saved_fpr_regs_size;
+  if (!cfun->machine->fp_as_gp_p
+      && satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
+      && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust)
+      && !cfun->calls_alloca
+      && NDS32_V3PUSH_AVAILABLE_P
+      && !(TARGET_HARD_FLOAT
+	   && (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)))
+    return 1;
 
   /* If no stack was created, two conditions must be satisfied:
      1. This is a naked function.
@@ -3673,6 +4395,36 @@ nds32_adjust_insn_length (rtx_insn *insn, int length)
   return length;
 }
 
+bool
+nds32_split_double_word_load_store_p(rtx *operands, bool load_p)
+{
+  rtx mem = load_p ? operands[1] : operands[0];
+  /* Do split at split2 if -O0 or schedule 2 not enable.  */
+  if (optimize == 0 || !flag_schedule_insns_after_reload)
+    return !satisfies_constraint_Da (mem) || MEM_VOLATILE_P (mem);
+
+  /* Split double word load store after copy propgation.  */
+  if (current_pass == NULL)
+    return false;
+
+  const char *pass_name = current_pass->name;
+  if (pass_name && ((strcmp (pass_name, "split4") == 0)
+		     || (strcmp (pass_name, "split5") == 0)))
+    return !satisfies_constraint_Da (mem) || MEM_VOLATILE_P (mem);
+
+  return false;
+}
+
+static bool
+nds32_use_blocks_for_constant_p (machine_mode mode,
+				 const_rtx x ATTRIBUTE_UNUSED)
+{
+  if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+      && (mode == DFmode || mode == SFmode))
+    return true;
+  else
+    return false;
+}
 
 /* Return align 2 (log base 2) if the next instruction of LABEL is 4 byte.  */
 int
@@ -3720,9 +4472,15 @@ nds32_target_alignment (rtx_insn *label)
 
 /* -- Basic Characteristics of Registers.  */
 
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE nds32_conditional_register_usage
+
 /* -- Order of Allocation of Registers.  */
 
 /* -- How Values Fit in Registers.  */
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS nds32_hard_regno_nregs
 
 /* -- Handling Leaf Functions.  */
 
@@ -3736,6 +4494,9 @@ nds32_target_alignment (rtx_insn *label)
 
 #undef TARGET_REGISTER_PRIORITY
 #define TARGET_REGISTER_PRIORITY nds32_register_priority
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS nds32_can_change_mode_class
 
 
 /* Obsolete Macros for Defining Constraints.  */
@@ -3787,6 +4548,9 @@ nds32_target_alignment (rtx_insn *label)
 #define TARGET_FUNCTION_VALUE_REGNO_P nds32_function_value_regno_p
 
 /* -- How Large Values Are Returned.  */
+
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY nds32_return_in_memory
 
 /* -- Caller-Saves Register Allocation.  */
 
@@ -3931,6 +4695,9 @@ nds32_target_alignment (rtx_insn *label)
 
 /* -- Assembler Commands for Exception Regions.  */
 
+#undef TARGET_DWARF_REGISTER_SPAN
+#define TARGET_DWARF_REGISTER_SPAN nds32_dwarf_register_span
+
 /* -- Assembler Commands for Alignment.  */
 
 
@@ -4001,6 +4768,10 @@ nds32_target_alignment (rtx_insn *label)
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN nds32_expand_builtin
+
+
+#undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P nds32_use_blocks_for_constant_p
 
 
 /* ------------------------------------------------------------------------ */
