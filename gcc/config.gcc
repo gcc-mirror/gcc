@@ -2089,6 +2089,15 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	  ;;
 	esac
 	;;
+riscv*-*-freebsd*)
+	tm_file="${tm_file} elfos.h ${fbsd_tm_file} riscv/freebsd.h"
+	tmake_file="${tmake_file} riscv/t-riscv"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h ${nbsd_tm_file} mips/netbsd.h"
