@@ -1,3 +1,8 @@
+2018-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85240 - LTO ICE with using of undeduced auto fn.
+	* cp-gimplify.c (cp_genericize_r): Discard using of undeduced auto.
+
 2018-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85209

@@ -1294,16 +1294,20 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  }
 	if (block)
 	  {
-	    tree using_directive;
-	    gcc_assert (TREE_OPERAND (stmt, 0));
+	    tree decl = TREE_OPERAND (stmt, 0);
+	    gcc_assert (decl);
 
-	    using_directive = make_node (IMPORTED_DECL);
-	    TREE_TYPE (using_directive) = void_type_node;
+	    if (undeduced_auto_decl (decl))
+	      /* Omit from the GENERIC, the back-end can't handle it.  */;
+	    else
+	      {
+		tree using_directive = make_node (IMPORTED_DECL);
+		TREE_TYPE (using_directive) = void_type_node;
 
-	    IMPORTED_DECL_ASSOCIATED_DECL (using_directive)
-	      = TREE_OPERAND (stmt, 0);
-	    DECL_CHAIN (using_directive) = BLOCK_VARS (block);
-	    BLOCK_VARS (block) = using_directive;
+		IMPORTED_DECL_ASSOCIATED_DECL (using_directive) = decl;
+		DECL_CHAIN (using_directive) = BLOCK_VARS (block);
+		BLOCK_VARS (block) = using_directive;
+	      }
 	  }
 	/* The USING_STMT won't appear in GENERIC.  */
 	*stmt_p = build1 (NOP_EXPR, void_type_node, integer_zero_node);
