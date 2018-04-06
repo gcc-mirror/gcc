@@ -1682,9 +1682,7 @@
    (set_attr "combo" "12")
    (set_attr "enabled" "yes")
    (set (attr "length")
-	(if_then_else (match_test "TARGET_V3PUSH
-				   && !nds32_isr_function_p (cfun->decl)
-				   && (cfun->machine->va_args_size == 0)")
+	(if_then_else (match_test "NDS32_V3PUSH_AVAILABLE_P")
 		      (const_int 2)
 		      (const_int 4)))])
 
@@ -1705,9 +1703,7 @@
    (set_attr "combo" "12")
    (set_attr "enabled" "yes")
    (set (attr "length")
-	(if_then_else (match_test "TARGET_V3PUSH
-				   && !nds32_isr_function_p (cfun->decl)
-				   && (cfun->machine->va_args_size == 0)")
+	(if_then_else (match_test "NDS32_V3PUSH_AVAILABLE_P")
 		      (const_int 2)
 		      (const_int 4)))])
 
