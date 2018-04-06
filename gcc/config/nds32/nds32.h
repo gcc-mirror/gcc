@@ -24,6 +24,9 @@
 /* The following are auxiliary macros or structure declarations
    that are used all over the nds32.c and nds32.h.  */
 
+#define ADJUST_INSN_LENGTH(INSN, LENGTH) \
+  (LENGTH = nds32_adjust_insn_length (INSN, LENGTH))
+
 /* Use SYMBOL_FLAG_MACH_DEP to define our own symbol_ref flag.
    It is used in nds32_encode_section_info() to store flag in symbol_ref
    in case the symbol should be placed in .rodata section.
@@ -40,10 +43,6 @@ enum nds32_expand_result_type
   EXPAND_FAIL,
   EXPAND_CREATE_TEMPLATE
 };
-
-/* Computing the Length of an Insn.  */
-#define ADJUST_INSN_LENGTH(INSN, LENGTH) \
-  (LENGTH = nds32_adjust_insn_length (INSN, LENGTH))
 
 /* Check instruction LS-37-FP-implied form.
    Note: actually its immediate range is imm9u
