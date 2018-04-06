@@ -1,5 +1,8 @@
 2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/85252
+	* gcc.dg/debug/pr85252.c: New test.
+
 	PR rtl-optimization/84872
 	* gcc.dg/graphite/pr84872.c: New test.
 
