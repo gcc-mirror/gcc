@@ -1,3 +1,12 @@
+2018-04-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_z10_optimize_cmp): Expand dedicated NOP
+	instructions.
+	* config/s390/s390.md (UNSPECV_NOP_LR_0, UNSPECV_NOP_LR_1): New
+	constant definitions.
+	("nop"): lr 0,0 -> nopr r0
+	("nop_lr0", "nop_lr1"): New insn definitions.
+
 2018-04-06  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.md (*stack_push, *stack_pop): Use
