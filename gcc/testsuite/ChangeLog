@@ -1,5 +1,8 @@
 2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/84872
+	* gcc.dg/graphite/pr84872.c: New test.
+
 	PR c++/85210
 	* g++.dg/cpp1z/decomp42.C: New test.
 
