@@ -1,6 +1,9 @@
 2018-04-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_{in,out}, depset): Reorder definitions.
+
+	gcc/cp/
 	* module.c (module_state::{read,write}_binfos): Merge loops.
 
 	gcc/cp/

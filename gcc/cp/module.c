@@ -113,6 +113,8 @@ along with GCC; see the file COPYING3.  If not see
    trees_in : bytes_in - tree reader
    trees_out : bytes_out - tree writer
 
+   depset - dependency set
+
    module_state - module object   */
 
 /* MODULE_STAMP is a #define passed in from the Makefile.  When
@@ -1755,80 +1757,6 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
   return sec_num;
 }
 
-/* If DECL is a templated decl, return the containing TEMPLATE_DECL.  */
-
-static tree
-maybe_get_template (tree decl)
-{
-  tree ti = NULL_TREE;
-
-  if (TREE_CODE (decl) == TYPE_DECL)
-    ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
-  else if (DECL_LANG_SPECIFIC (decl)
-	   && (TREE_CODE (decl) == VAR_DECL
-	       || TREE_CODE (decl) == FUNCTION_DECL))
-    ti = DECL_TEMPLATE_INFO (decl);
-
-  if (ti)
-    decl = DECL_PRIMARY_TEMPLATE (TI_TEMPLATE (ti));
-
-  return decl;
-}
-
-/* Return true if DECL has a definition that would be interesting to
-   write out.  */
-
-static bool
-has_definition (tree decl)
-{
- again:
-  switch (TREE_CODE (decl))
-    {
-    default:
-      break;
-
-    case TEMPLATE_DECL:
-      decl = DECL_TEMPLATE_RESULT (decl);
-      goto again;
-
-    case FUNCTION_DECL:
-      if (!DECL_INITIAL (decl))
-	/* Not defined.  */
-	break;
-
-      if (DECL_TEMPLATE_INFO (decl))
-	{
-	  if (!(DECL_USE_TEMPLATE (decl) & 1))
-	    return true;
-	}
-      else if (DECL_DECLARED_INLINE_P (decl))
-	return true;
-      break;
-
-    case VAR_DECL:
-      if (!DECL_INITIAL (decl))
-	/* Nothing to define.  */
-	break;
-
-      if (TREE_CONSTANT (decl))
-	return true;
-
-      break;
-
-    case TYPE_DECL:
-      if (!DECL_IMPLICIT_TYPEDEF_P (decl))
-	break;
-
-      if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
-	  ? TYPE_VALUES (TREE_TYPE (decl))
-	  : TYPE_FIELDS (TREE_TYPE (decl)))
-	return true;
-      break;
-    }
-
-  return false;
-}
-
 struct module_state;
 
 /* A dependency set.  These are not quite the decl-sets of the TS.  We
@@ -2010,207 +1938,6 @@ depset::~depset ()
 {
 }
 
-// Forward declare for module_state use.
-class trees_out;
-class trees_in;
-
-/* Hash module state by name.  This cannot be a member of
-   module_state, because of GTY restrictions.  */
-
-struct module_state_hash : nodel_ptr_hash<module_state> {
-  typedef tree compare_type; /* An identifier.  */
-
-  static inline hashval_t hash (const value_type m);
-  static inline bool equal (const value_type existing, compare_type candidate);
-};
-
-/* State of a particular module. */
-
-struct GTY(()) module_state {
-  /* We always import & export ourselves.  */
-  bitmap imports;	/* Transitive modules we're importing.  */
-  bitmap exports;	/* Subset of that, that we're exporting.  */
-
-  tree name;		/* Name of the module.  */
-  tree vec_name;  	/* Name as a vector.  */
-
-  vec<unsigned, va_gc_atomic> *remap; /* Module owner remapping.  */
-  elf_in *GTY((skip)) from;     /* Lazy loading info (not implemented) */
-
-  char *filename;	/* Filename */
-  char *srcname;	/* Source name, if available.  */
-  location_t loc;	/* Its location.  */
-
-  unsigned lazy;	/* Number of lazy sections yet to read.  */
-
-  unsigned mod;		/* Module owner number.  */
-  unsigned crc;		/* CRC we saw reading it in. */
-
-  bool imported : 1;	/* Imported via import declaration.  */
-  bool exported : 1;	/* The import is exported.  */
-
- public:
-  module_state (tree name = NULL_TREE);
-  ~module_state ();
-
- public:
-  void release (bool = true);
-
- public:
-  /* Whether this module is currently occupied.  */
-  bool occupied () const
-  {
-    return vec_name != NULL_TREE;
-  }
-  void occupy (location_t loc, tree vname);
-
- public:
-  /* Enter and leave the module's location.  */
-  void push_location ();
-  void pop_location ();
-
- public:
-  void set_import (module_state const *, bool is_export);
-  void announce (const char *) const;
-
- public:
-  /* Read and write module.  */
-  void write (elf_out *to);
-  void read (elf_in *from, unsigned *crc_ptr);
-
- private:
-  /* The context -- global state, imports etc.  */
-  void write_context (elf_out *to, unsigned *crc_ptr);
-  bool read_context (elf_in *from);
-  /* The configuration -- cmd args etc.  */
-  void write_config (elf_out *to, unsigned crc);
-  bool read_config (elf_in *from, unsigned *crc_ptr);
-
- private:
-  /* Serialize various definitions. */
-  static void mark_definition (trees_out &out, tree decl);
-  static void write_definition (trees_out &out, tree decl);
-  bool read_definition (trees_in &in, tree decl);
-
-  static void mark_template_def (trees_out &out, tree decl);
-  static void write_template_def (trees_out &out, tree decl);
-  bool read_template_def (trees_in &in, tree decl);
-
-  static void mark_function_def (trees_out &out, tree decl);
-  static void write_function_def (trees_out &out, tree decl);
-  bool read_function_def (trees_in &in, tree decl);
-
-  static void mark_var_def (trees_out &out, tree decl);
-  static void write_var_def (trees_out &out, tree decl);
-  bool read_var_def (trees_in &in, tree decl);
-
-  static void mark_class_def (trees_out &out, tree type);
-  static void write_class_def (trees_out &out, tree type);
-  bool read_class_def (trees_in &in, tree decl);
-
-  static void mark_enum_def (trees_out &out, tree type);
-  static void write_enum_def (trees_out &out, tree type);
-  bool read_enum_def (trees_in &in, tree decl);
-
-  static void write_binfos (trees_out &out, tree type);
-  bool read_binfos (trees_in &in, tree type);
-
-  /* Add writable bindings to hash table.  */
-  static void add_writables (depset::hash &table, tree ns);
-  /* Build dependency graph of hash table.  */
-  void find_dependencies (depset::hash &table);
-  void write_decls (elf_out *to, unsigned *crc_ptr);
-  bool read_decls (elf_in *from);
-  static void write_bindings (elf_out *to, depset::hash &table,
-			      unsigned *crc_ptr);
-  bool read_bindings (elf_in *from, auto_vec<tree> &spaces,
-		      const std::pair<unsigned, unsigned> &range);
-  static void write_namespaces (elf_out *to, depset::hash &table,
-				auto_vec<depset *> &spaces,
-				const std::pair<unsigned, unsigned> &range,
-				unsigned *crc_ptr);
-  bool read_namespaces (elf_in *from, auto_vec<tree> &spaces,
-			std::pair<unsigned, unsigned> &range);
-  unsigned write_cluster (elf_out *to, auto_vec<depset *> &sccs,
-			  unsigned from, unsigned *crc_ptr);
-  bool read_cluster (elf_in *from, unsigned snum);
-
- public:
-  /* Import a module.  Possibly ourselves.  */
-  static module_state *do_import (location_t, tree, bool module_unit_p,
-				  bool import_export_p, unsigned * = NULL);
-
- private:
-  static int maybe_add_global (tree, unsigned &);
-
- public:
-  static void init ();
-  static void fini ();
-  static module_state *get_module (tree name, module_state * = NULL);
-  static void print_map ();
-
- public:
-  /* Vector indexed by OWNER.  */
-  static vec<module_state *, va_gc> *modules;
-
- private:
-  /* Hash, findable by NAME.  */
-  static hash_table<module_state_hash> *hash;
-
- private:
-  /* Global tree context.  */
-  static const std::pair<tree *, unsigned> global_trees[];
-  static vec<tree, va_gc> *global_vec;
-  static unsigned global_crc;
-};
-
-/* Hash module state by name.  */
-hashval_t module_state_hash::hash (const value_type m)
-{
-  return IDENTIFIER_HASH_VALUE (m->name);
-}
-/* Always lookup by IDENTIFIER_NODE.  */
-bool module_state_hash::equal (const value_type existing,
-			       compare_type candidate)
-{
-  return existing->name == candidate;
-}
-
-/* Some flag values: */
-
-/* Binary module interface output file name. */
-static const char *module_output;
-/* Pathfragment inserted before module filename.  */
-static const char *module_prefix;
-/* Set of module-file arguments to process on initialization.  */
-static vec<const char *, va_heap> module_file_args;
-/* The module wrapper script.  */
-static const char *module_wrapper;
-/* Print out the module map.  */
-static bool module_map_dump;
-/* Module search path.  */
-static cpp_dir *module_path;
-/* Longest module path.  */
-static size_t module_path_max;
-
-/* Global trees.  */
-const std::pair<tree *, unsigned> module_state::global_trees[] =
-  {
-    std::pair<tree *, unsigned> (sizetype_tab, stk_type_kind_last),
-    std::pair<tree *, unsigned> (integer_types, itk_none),
-    std::pair<tree *, unsigned> (::global_trees, TI_MAX),
-    std::pair<tree *, unsigned> (cp_global_trees, CPTI_MAX),
-    std::pair<tree *, unsigned> (NULL, 0)
-  };
-vec<tree, va_gc> GTY (()) *module_state::global_vec;
-unsigned module_state::global_crc;
-
-/* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
-vec<module_state *, va_gc> GTY(()) *module_state::modules;
-
-/* Has of module state, findable by NAME. */
-hash_table<module_state_hash> *module_state::hash;
-
 /* Tree tags.  */
 enum tree_tag
   {
@@ -2383,104 +2110,218 @@ trees_out::~trees_out ()
 {
 }
 
-void
-trees_out::mark_trees ()
+/* Hash module state by name.  This cannot be a member of
+   module_state, because of GTY restrictions.  */
+
+struct module_state_hash : nodel_ptr_hash<module_state> {
+  typedef tree compare_type; /* An identifier.  */
+
+  static inline hashval_t hash (const value_type m);
+  static inline bool equal (const value_type existing, compare_type candidate);
+};
+
+/* State of a particular module. */
+
+struct GTY(()) module_state {
+  /* We always import & export ourselves.  */
+  bitmap imports;	/* Transitive modules we're importing.  */
+  bitmap exports;	/* Subset of that, that we're exporting.  */
+
+  tree name;		/* Name of the module.  */
+  tree vec_name;  	/* Name as a vector.  */
+
+  vec<unsigned, va_gc_atomic> *remap; /* Module owner remapping.  */
+  elf_in *GTY((skip)) from;     /* Lazy loading info (not implemented) */
+
+  char *filename;	/* Filename */
+  char *srcname;	/* Source name, if available.  */
+  location_t loc;	/* Its location.  */
+
+  unsigned lazy;	/* Number of lazy sections yet to read.  */
+
+  unsigned mod;		/* Module owner number.  */
+  unsigned crc;		/* CRC we saw reading it in. */
+
+  bool imported : 1;	/* Imported via import declaration.  */
+  bool exported : 1;	/* The import is exported.  */
+
+ public:
+  module_state (tree name = NULL_TREE);
+  ~module_state ();
+
+ public:
+  void release (bool = true);
+
+ public:
+  /* Whether this module is currently occupied.  */
+  bool occupied () const
+  {
+    return vec_name != NULL_TREE;
+  }
+  void occupy (location_t loc, tree vname);
+
+ public:
+  /* Enter and leave the module's location.  */
+  void push_location ();
+  void pop_location ();
+
+ public:
+  void set_import (module_state const *, bool is_export);
+  void announce (const char *) const;
+
+ public:
+  /* Read and write module.  */
+  void write (elf_out *to);
+  void read (elf_in *from, unsigned *crc_ptr);
+
+ private:
+  /* The context -- global state, imports etc.  */
+  void write_context (elf_out *to, unsigned *crc_ptr);
+  bool read_context (elf_in *from);
+  /* The configuration -- cmd args etc.  */
+  void write_config (elf_out *to, unsigned crc);
+  bool read_config (elf_in *from, unsigned *crc_ptr);
+
+ private:
+  /* Serialize various definitions. */
+  static void mark_definition (trees_out &out, tree decl);
+  static void write_definition (trees_out &out, tree decl);
+  bool read_definition (trees_in &in, tree decl);
+
+  static void mark_template_def (trees_out &out, tree decl);
+  static void write_template_def (trees_out &out, tree decl);
+  bool read_template_def (trees_in &in, tree decl);
+
+  static void mark_function_def (trees_out &out, tree decl);
+  static void write_function_def (trees_out &out, tree decl);
+  bool read_function_def (trees_in &in, tree decl);
+
+  static void mark_var_def (trees_out &out, tree decl);
+  static void write_var_def (trees_out &out, tree decl);
+  bool read_var_def (trees_in &in, tree decl);
+
+  static void mark_class_def (trees_out &out, tree type);
+  static void write_class_def (trees_out &out, tree type);
+  bool read_class_def (trees_in &in, tree decl);
+
+  static void mark_enum_def (trees_out &out, tree type);
+  static void write_enum_def (trees_out &out, tree type);
+  bool read_enum_def (trees_in &in, tree decl);
+
+  static void write_binfos (trees_out &out, tree type);
+  bool read_binfos (trees_in &in, tree type);
+
+  /* Add writable bindings to hash table.  */
+  static void add_writables (depset::hash &table, tree ns);
+  /* Build dependency graph of hash table.  */
+  void find_dependencies (depset::hash &table);
+  void write_decls (elf_out *to, unsigned *crc_ptr);
+  bool read_decls (elf_in *from);
+  static void write_bindings (elf_out *to, depset::hash &table,
+			      unsigned *crc_ptr);
+  bool read_bindings (elf_in *from, auto_vec<tree> &spaces,
+		      const std::pair<unsigned, unsigned> &range);
+  static void write_namespaces (elf_out *to, depset::hash &table,
+				auto_vec<depset *> &spaces,
+				const std::pair<unsigned, unsigned> &range,
+				unsigned *crc_ptr);
+  bool read_namespaces (elf_in *from, auto_vec<tree> &spaces,
+			std::pair<unsigned, unsigned> &range);
+  unsigned write_cluster (elf_out *to, auto_vec<depset *> &sccs,
+			  unsigned from, unsigned *crc_ptr);
+  bool read_cluster (elf_in *from, unsigned snum);
+
+ public:
+  /* Import a module.  Possibly ourselves.  */
+  static module_state *do_import (location_t, tree, bool module_unit_p,
+				  bool import_export_p, unsigned * = NULL);
+
+ private:
+  static int maybe_add_global (tree, unsigned &);
+
+ public:
+  static void init ();
+  static void fini ();
+  static module_state *get_module (tree name, module_state * = NULL);
+  static void print_map ();
+
+ public:
+  /* Vector indexed by OWNER.  */
+  static vec<module_state *, va_gc> *modules;
+
+ private:
+  /* Hash, findable by NAME.  */
+  static hash_table<module_state_hash> *hash;
+
+ private:
+  /* Global tree context.  */
+  static const std::pair<tree *, unsigned> global_trees[];
+  static vec<tree, va_gc> *global_vec;
+  static unsigned global_crc;
+};
+
+module_state::module_state (tree name)
+  : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
+    name (name), vec_name (NULL_TREE),
+    remap (NULL), from (NULL),
+    filename (NULL), srcname (NULL), loc (UNKNOWN_LOCATION),
+    lazy (0), mod (MODULE_UNKNOWN), crc (0)
 {
-  if (size_t size = tree_map.elements ())
-    {
-      /* This isn't our first rodeo, destroy and recreate the
-	 tree_map.  I'm a bad bad man.  Use the previous size as a
-	 guess for the next one (so not all bad).  */
-      tree_map.~ptr_int_hash_map ();
-      new (&tree_map) ptr_int_hash_map (size);
-    }
-
-  /* Install the fixed trees, with +ve references.  */
-  unsigned limit = fixed_refs->length ();
-  for (unsigned ix = 0; ix != limit; ix++)
-    {
-      tree val = (*fixed_refs)[ix];
-      bool existed = tree_map.put (val, ix + 1);
-      gcc_checking_assert (!TREE_VISITED (val) && !existed);
-      TREE_VISITED (val) = true;
-    }
-
-  ref_num = 0;
+  imported = exported = false;
 }
 
-void
-trees_out::unmark_trees ()
+module_state::~module_state ()
 {
-  /* Unmark all the trees.  */
-  ptr_int_hash_map::iterator end (tree_map.end ());
-  for (ptr_int_hash_map::iterator iter (tree_map.begin ()); iter != end; ++iter)
-    {
-      tree node = reinterpret_cast <tree> ((*iter).first);
-      gcc_checking_assert (TREE_VISITED (node));
-      TREE_VISITED (node) = false;
-    }
+  release ();
 }
 
-/* Setup and teardown for an outputting tree walk.  */
-
-void
-trees_out::begin ()
+/* Hash module state by name.  */
+hashval_t module_state_hash::hash (const value_type m)
 {
-  gcc_assert (!tree_map.elements ());
-
-  mark_trees ();
-  parent::begin ();
+  return IDENTIFIER_HASH_VALUE (m->name);
 }
 
-unsigned
-trees_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
+/* Always lookup by IDENTIFIER_NODE.  */
+bool module_state_hash::equal (const value_type existing,
+			       compare_type candidate)
 {
-  gcc_checking_assert (!dep_walk_p ());
-
-  unmark_trees ();
-  return parent::end (sink, name, crc_ptr);
+  return existing->name == candidate;
 }
 
+/* Some flag values: */
 
-/* Setup and teardown for a dependency tree walk.  */
-void
-trees_out::begin (depset::hash *hash)
-{
-  dep_hash = hash;
-  mark_trees ();
-}
+/* Binary module interface output file name. */
+static const char *module_output;
+/* Pathfragment inserted before module filename.  */
+static const char *module_prefix;
+/* Set of module-file arguments to process on initialization.  */
+static vec<const char *, va_heap> module_file_args;
+/* The module wrapper script.  */
+static const char *module_wrapper;
+/* Print out the module map.  */
+static bool module_map_dump;
+/* Module search path.  */
+static cpp_dir *module_path;
+/* Longest module path.  */
+static size_t module_path_max;
 
-void
-trees_out::end ()
-{
-  unmark_trees ();
-  dep_hash = NULL;
-}
+/* Global trees.  */
+const std::pair<tree *, unsigned> module_state::global_trees[] =
+  {
+    std::pair<tree *, unsigned> (sizetype_tab, stk_type_kind_last),
+    std::pair<tree *, unsigned> (integer_types, itk_none),
+    std::pair<tree *, unsigned> (::global_trees, TI_MAX),
+    std::pair<tree *, unsigned> (cp_global_trees, CPTI_MAX),
+    std::pair<tree *, unsigned> (NULL, 0)
+  };
+vec<tree, va_gc> GTY (()) *module_state::global_vec;
+unsigned module_state::global_crc;
 
-/* Insert a decl into the map.  If INTO is true, mark it to be walked
-   into by value.  Otherwise give it a fixed ref num -- it doesn't
-   matter which.  May be called on the same node multiple times,
-   seting INTO is sticky.  */
+/* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
+vec<module_state *, va_gc> GTY(()) *module_state::modules;
 
-void
-trees_out::mark_node (tree decl, bool into)
-{
-  gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
-
-  if (!TREE_VISITED (decl) || into)
-    {
-      /* On a dep-walk we don't care whan number we're tagging with,
-	 but on an emission walk, we're pre-seeding the table with
-	 specific numbers the reader will recreate.  */
-      int tag = into ? 0 : --ref_num;
-      bool existed = tree_map.put (decl, tag);
-      gcc_checking_assert (TREE_VISITED (decl) || !existed);
-      TREE_VISITED (decl) = true;
-    }
-
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    mark_node (DECL_TEMPLATE_RESULT (decl), into);
-}
+/* Has of module state, findable by NAME. */
+hash_table<module_state_hash> *module_state::hash;
 
 /* A dumping machinery.  */
 
@@ -2834,2017 +2675,24 @@ dumper::operator () (const char *format, ...)
   return true;
 }
 
-module_state::module_state (tree name)
-  : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (name), vec_name (NULL_TREE),
-    remap (NULL), from (NULL),
-    filename (NULL), srcname (NULL), loc (UNKNOWN_LOCATION),
-    lazy (0), mod (MODULE_UNKNOWN), crc (0)
+/* If DECL is a templated decl, return the containing TEMPLATE_DECL.  */
+
+static tree
+maybe_get_template (tree decl)
 {
-  imported = exported = false;
-}
-
-module_state::~module_state ()
-{
-  release ();
-}
-
-/* Find or create module NAME in the hash table.  */
-
-module_state *
-module_state::get_module (tree name, module_state *dflt)
-{
-  module_state **slot
-    = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), INSERT);
-  module_state *state = *slot;
-
-  if (dflt)
-    {
-      /* Don't overwrite occupied default.  */
-      if (dflt->occupied ())
-	return NULL;
-
-      /* Don't copy an occupied existing module.  */
-      if (state && state->occupied ())
-	return state;
-
-      /* Copy name and filename from the empty one we found.  */
-      if (state)
-	{
-	  if (!dflt->filename)
-	    dflt->filename = state->filename;
-	  else
-	    free (state->filename);
-	}
-
-      /* Use the default we were given, and put it back in the hash
-	 table.  */
-      dflt->name = name;
-      state = dflt;
-      *slot = state;
-    }
-  else if (!state)
-    {
-      state = new (ggc_alloc<module_state> ()) module_state (name);
-      *slot = state;
-    }
-  return state;
-}
-
-/* VAL is a global tree, add it to the global vec if it is
-   interesting.  Add some of its targets, if they too are
-   interesting.  */
-
-int
-module_state::maybe_add_global (tree val, unsigned &crc)
-{
-  int v = 0;
-
-  if (val && !(identifier_p (val) || TREE_VISITED (val)))
-    {
-      TREE_VISITED (val) = true;
-      crc = crc32_unsigned (crc, global_vec->length ());
-      vec_safe_push (global_vec, val);
-      v++;
-
-      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
-	v += maybe_add_global (TREE_TYPE (val), crc);
-      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPE_COMMON))
-	v += maybe_add_global (TYPE_NAME (val), crc);
-    }
-
-  return v;
-}
-
-/* Initialize module state.  Create the hash table, determine the
-   global trees.  Create the module for current TU.  */
-
-void
-module_state::init ()
-{
-  hash = new hash_table<module_state_hash> (30);
-
-  vec_safe_reserve (modules, 20);
-  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
-    modules->quick_push (NULL);
-
-  /* Create module for current TU.  */
-  module_state *current = new (ggc_alloc <module_state> ()) module_state ();
-  current->mod = MODULE_NONE;
-  bitmap_set_bit (current->imports, MODULE_NONE);
-  (*modules)[MODULE_NONE] = current;
-
-  gcc_checking_assert (!global_vec);
-
-  dump.push (NULL);
-  /* Construct the global tree array.  This is an array of unique
-     global trees (& types).  */
-  // FIXME:Some slots are lazily allocated, we must move them to
-  // the end and not stream them here.  They must be locatable via
-  // some other means.
-  unsigned crc = 0;
-  vec_alloc (global_vec, 200);
-
-  dump () && dump ("+Creating globals");
-  /* Insert the TRANSLATION_UNIT_DECL.  */
-  TREE_VISITED (DECL_CONTEXT (global_namespace)) = true;
-  global_vec->quick_push (DECL_CONTEXT (global_namespace));
-  for (unsigned jx = 0; global_trees[jx].first; jx++)
-    {
-      const tree *ptr = global_trees[jx].first;
-      unsigned limit = global_trees[jx].second;
-
-      for (unsigned ix = 0; ix != limit; ix++, ptr++)
-	{
-	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx, ix);
-	  unsigned v = maybe_add_global (*ptr, crc);
-	  dump () && dump ("+%u", v);
-	}
-    }
-  global_crc = crc32_unsigned (crc, global_vec->length ());
-  dump ("") && dump ("Created %u unique globals, crc=%x",
-		     global_vec->length (), global_crc);
-  for (unsigned ix = global_vec->length (); ix--;)
-    TREE_VISITED ((*global_vec)[ix]) = false;
-  dump.pop (0);
-}
-
-/* Delete post-parsing state.  */
-
-void
-module_state::fini ()
-{
-  for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
-    (*modules)[ix]->release ();
-
-  delete hash;
-  hash = NULL;
-}
-
-/* Free up state.  If ALL is true, we're completely done.  If ALL is
-   false, we've completed reading in the module (but have not
-   completed parsing).  */
-
-void
-module_state::release (bool all)
-{
-  if (all)
-    {
-      imports = NULL;
-      exports = NULL;
-    }
-
-  XDELETEVEC (srcname);
-  srcname = NULL;
-
-  if (remap)
-    {
-      vec_free (remap);
-      delete from;
-      from = NULL;
-    }
-}
-
-void
-module_state::print_map ()
-{
-  fprintf (stdout, "Module Map:\n");
-  hash_table<module_state_hash>::iterator end (hash->end ());
-  for (hash_table<module_state_hash>::iterator iter (hash->begin ());
-       iter != end; ++iter)
-    {
-      module_state *state = *iter;
-      if (state->name)
-	fprintf (stdout, state->srcname ? "%s=%s ;%s\n" : "%s=%s\n",
-		 IDENTIFIER_POINTER (state->name), state->filename,
-		 state->srcname);
-    }
-}
-
-/* Announce WHAT about the module.  */
-
-void
-module_state::announce (const char *what) const
-{
-  if (quiet_flag)
-    return;
-
-  fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
-	   what, IDENTIFIER_POINTER (name), mod);
-  fflush (stderr);
-  pp_needs_newline (global_dc->printer) = true;
-  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
-}
-
-/* Create a module file name from NAME, length NAME_LEN.  NAME might
-   not be NUL-terminated.  FROM_IDENT is true if NAME is the
-   module-name, false if it is already filenamey.  */
-
-static char *
-make_module_filename (const char *name, size_t name_len, bool from_ident)
-{
-  size_t pfx_len = module_prefix ? strlen (module_prefix) : 0;
-  size_t sfx_len = from_ident ? strlen (MOD_FNAME_SFX) : 0;
-  char *res = XNEWVEC (char, name_len + sfx_len + pfx_len + (pfx_len != 0) + 1);
-  char *ptr = res;
-
-  if (pfx_len)
-    {
-      memcpy (ptr, module_prefix, pfx_len);
-      ptr += pfx_len;
-      *ptr++ = DIR_SEPARATOR;
-    }
-  memcpy (ptr, name, name_len);
-  ptr[name_len] = 0;
-  if (from_ident)
-    {
-      strcpy (ptr + name_len, MOD_FNAME_SFX);
-      if (MOD_FNAME_DOT != '.')
-	for (; name_len--; ptr++)
-	  if (*ptr == '.')
-	    *ptr = MOD_FNAME_DOT;
-    }
-  return res;
-}
-
-/* Set VEC_NAME fields from incoming VNAME, which may be a regular
-   IDENTIFIER.  */
-
-void
-module_state::occupy (location_t l, tree maybe_vec)
-{
-  gcc_assert (!vec_name);
-  loc = l;
-  if (identifier_p (maybe_vec))
-    {
-      /* Create a TREE_VEC of components.  */
-      auto_vec<tree,5> ids;
-      size_t len = IDENTIFIER_LENGTH (maybe_vec);
-      const char *ptr = IDENTIFIER_POINTER (maybe_vec);
-
-      while (const char *dot = (const char *)memchr (ptr, '.', len))
-	{
-	  tree id = get_identifier_with_length (ptr, dot - ptr);
-	  len -= dot - ptr + 1;
-	  ptr = dot + 1;
-	  ids.safe_push (id);
-	}
-      tree id = (ids.length () ? get_identifier_with_length (ptr, len)
-		 : maybe_vec);
-      ids.safe_push (id);
-      maybe_vec = make_tree_vec (ids.length ());
-      for (unsigned ix = ids.length (); ix--;)
-	TREE_VEC_ELT (maybe_vec, ix) = ids.pop ();
-    }
-
-  vec_name = maybe_vec;
-
-  if (!filename)
-    filename = make_module_filename (IDENTIFIER_POINTER (name),
-				     IDENTIFIER_LENGTH (name), true);
-}
-
-/* Set location to NAME, and then enter the module.  */
-
-void
-module_state::push_location ()
-{
-  // FIXME:We want LC_MODULE_ENTER really.
-  linemap_add (line_table, LC_ENTER, false, filename, 0);
-  input_location = linemap_line_start (line_table, 0, 0);
-}
-
-void
-module_state::pop_location ()
-{
-  linemap_add (line_table, LC_LEAVE, false, NULL, 0);  
-  input_location = linemap_line_start (line_table, 0, 0);
-}
-
-/* Context of the compilation: MOD_SNAME_PFX .context   
-
-   This is data we need to read in to modify our state.
-
-   u:import_size
-   {
-     b:imported
-     b:exported
-     u32:crc
-     u:name
-   } imports[N]
-
-   We need the complete set, so that we can build up the remapping
-   vector on subsequent import.
-
-   The README section is intended for human consumption.  It is a
-   STRTAB that may be extracted with:
-     readelf -p.gnu.c++.README $(module).nms   */
-
-void
-module_state::write_context (elf_out *to, unsigned *crc_p)
-{
-  bytes_out ctx, readme;
-
-  ctx.begin ();
-  readme.begin ();
-
-  /* Write version and module name to readme.  */
-  readme.printf ("GNU C++ Module");
-  readme.printf ("compiler:%s", version_string);
-  verstr_t string;
-  version2string (get_version (), string);
-  readme.printf ("version:%s", string);
-  readme.printf ("module:%s", IDENTIFIER_POINTER (name));
-  readme.printf ("source:%s", srcname);
-
-  /* Total number of modules.  */
-  ctx.u (modules->length ());
-  /* Write the imports, in forward order.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
-    {
-      module_state *state = (*modules)[ix];
-      dump () && dump ("Writing %simport %I (crc=%x)",
-		       state->exported ? "export " :
-		       state->imported ? "" : "indirect ",
-		       state->name, state->crc);
-      ctx.b (state->imported);
-      ctx.b (state->exported);
-      ctx.bflush ();
-      ctx.u32 (state->crc);
-      unsigned name = to->name (state->name);
-      ctx.u (name);
-
-      if (state->imported)
-	/* Write a direct import to README.  */
-	readme.printf ("import:%s", IDENTIFIER_POINTER (state->name));
-    }
-  readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
-  ctx.end (to, to->name (MOD_SNAME_PFX ".context"), crc_p);
-}
-
-bool
-module_state::read_context (elf_in *from)
-{
-  bytes_in ctx;
-
-  if (!ctx.begin (from, MOD_SNAME_PFX ".context"))
-    return false;
-
-  /* Allocate the REMAP vector.  */
-  unsigned imports = ctx.u ();
-  gcc_assert (!remap);
-  remap = NULL;
-  vec_safe_reserve (remap, imports);
-
-  /* Allocate the reserved slots.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
-    remap->quick_push (0);
-
-  /* Read the import table in forward order.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < imports; ix++)
-    {
-      bool imported = ctx.b ();
-      bool exported = ctx.b ();
-      ctx.bflush ();
-      unsigned crc = ctx.u32 ();
-      tree name = get_identifier (from->name (ctx.u ()));
-
-      dump () && dump ("Nested %simport %I",
-		       exported ? "export " : imported ? "" : "indirect ", name);
-      module_state *imp = do_import (input_location, name, /*unit_p=*/false,
-				     /*import_p=*/imported, &crc);
-      if (!imp)
-	{
-	  from->set_error (elf::E_BAD_IMPORT);
-	  goto fail;
-	}
-      remap->quick_push (imp->mod);
-      if (imported)
-	{
-	  dump () && dump ("Direct %simport %I %u",
-			   exported ? "export " : "", name, imp->mod);
-	  set_import (imp, exported);
-	}
-    }
-
- fail:
-  return ctx.end (from);
-}
-
-/* Tool configuration:  MOD_SNAME_PFX .config
-
-   This is data that confirms current state (or fails).
-
-   u32:version
-   u32:crc
-   u:module-name
-   u:<target-triplet>
-   u:<host-triplet>
-   u:global_vec->length()
-   u32:global_crc
-   // FIXME CPU,ABI and similar tags
-   // FIXME Optimization and similar tags
-*/
-
-void
-module_state::write_config (elf_out *to, unsigned inner_crc)
-{
-  bytes_out cfg;
-
-  cfg.begin ();
-
-  /* Write version and inner crc as u32 values, for easier
-     debug inspection.  */
-  dump () && dump ("Writing version=%V, inner_crc=%x",
-		   get_version (), inner_crc);
-  cfg.u32 (unsigned (get_version ()));
-  cfg.u32 (inner_crc);
-
-  cfg.u (to->name (name));
-
-  /* Configuration. */
-  dump () && dump ("Writing target='%s', host='%s'",
-		   TARGET_MACHINE, HOST_MACHINE);
-  unsigned target = to->name (TARGET_MACHINE);
-  unsigned host = (!strcmp (TARGET_MACHINE, HOST_MACHINE)
-		   ? target : to->name (HOST_MACHINE));
-  cfg.u (target);
-  cfg.u (host);
-
-  /* Global tree information.  We write the globals crc separately,
-     rather than mix it directly into the overall crc, as it is used
-     to ensure data match between instances of the compiler, not
-     integrity of the file.  */
-  dump () && dump ("Writing globals=%u, crc=%x",
-		   global_vec->length (), global_crc);
-  cfg.u (global_vec->length ());
-  cfg.u32 (global_crc);
-
-  /* Now generate CRC, we'll have incorporated the inner CRC because
-     of its serialization above.  */
-  cfg.end (to, to->name (MOD_SNAME_PFX ".config"), &crc);
-  dump () && dump ("Writing CRC=%x", crc);
-}
-
-bool
-module_state::read_config (elf_in *from, unsigned *expected_crc)
-{
-  bytes_in cfg;
-
-  if (!cfg.begin (from, MOD_SNAME_PFX ".config"))
-    return false;
-
-  crc = cfg.get_crc ();
-  dump () && dump ("Reading CRC=%x", crc);
-  if (expected_crc && crc != *expected_crc)
-    {
-      error ("module %qE CRC mismatch", name);
-    fail:
-      cfg.set_overrun ();
-      return cfg.end (from);
-    }
-
-  /* Check version.  */
-  int my_ver = get_version ();
-  int their_ver = int (cfg.u32 ());
-  dump () && dump  (my_ver == their_ver ? "Version %V"
-		    : "Expecting %V found %V", my_ver, their_ver);
-  if (their_ver != my_ver)
-    {
-      int my_date = version2date (my_ver);
-      int their_date = version2date (their_ver);
-      int my_time = version2time (my_ver);
-      int their_time = version2time (their_ver);
-      verstr_t my_string, their_string;
-
-      version2string (my_ver, my_string);
-      version2string (their_ver, their_string);
-
-      if (my_date != their_date)
-	{
-	  /* Dates differ, decline.  */
-	  error ("file is version %s, this is version %s",
-		 their_string, my_string);
-	  goto fail;
-	}
-      else if (my_time != their_time)
-	/* Times differ, give it a go.  */
-	warning (0, "file is version %s, compiler is version %s,"
-		 " perhaps close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
-		 their_string, my_string);
-    }
-
-  /* Read and ignore the inner crc.  We only wrote it to mix it into
-     the crc.  */
-  cfg.u32 ();
-
-  /* Check module name.  */
-  const char *their_name = from->name (cfg.u ());
-  if (strlen (their_name) != IDENTIFIER_LENGTH (name)
-      || memcmp (their_name, IDENTIFIER_POINTER (name),
-		 IDENTIFIER_LENGTH (name)))
-    {
-      error ("module %qs found, expected module %qE", their_name, name);
-      goto fail;
-    }
-
-  /* Check target & host.  */
-  const char *their_target = from->name (cfg.u ());
-  const char *their_host = from->name (cfg.u ());
-  dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
-  if (strcmp (their_target, TARGET_MACHINE)
-      || strcmp (their_host, HOST_MACHINE))
-    {
-      error ("target & host is %qs:%qs, expected %qs:%qs",
-	     their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
-      goto fail;
-    }
-
-  /* Check global trees.  */
-  unsigned their_glength = cfg.u ();
-  unsigned their_gcrc = cfg.u32 ();
-  dump () && dump ("Read globals=%u, crc=%x", their_glength, their_gcrc);
-  if (their_glength != global_vec->length ()
-      || their_gcrc != global_crc)
-    {
-      error ("global tree mismatch");
-      goto fail;
-    }
-
-  if (cfg.more_p ())
-    goto fail;
-
-  return cfg.end (from);
-}
-
-/* Lookup and maybe add a depset of CONTAINER and NAME.  */
-
-depset **
-depset::hash::maybe_insert (tree container, tree name, bool insert)
-{
-  traits::compare_type cmp (container, name);
-  depset **slot = find_slot_with_hash (cmp, traits::hash (cmp),
-				       insert ? INSERT : NO_INSERT);
-
-  return slot;
-}
-
-depset *
-depset::hash::find (tree ns, tree name)
-{
-  depset **slot = maybe_insert (ns, name, false);
-
-  return slot ? *slot : NULL;
-}
-
-/* DECL has just been added to BINDING, or declared within in BINDING.
-   If we need a definition of DECL, add it to the hash table unless
-   it's already there.  Create a dependency on BINDING.  Add to
-   worklist too.  Return the definition's depsetm, if we create one.
-   Otherwise return the binding.
-
-   NOTE:For the moment we make the declaration's depset depend on the
-   defintion's.  Thus forcing them into the same cluster and writing
-   out together.  See note on the modules_state::write_${foo}_def
-   functions about why that's important.  */
-
-depset *
-depset::hash::maybe_add_definition (depset *binding, tree decl)
-{
-  if (!has_definition (decl))
-    return binding;
-
-  depset **slot = maybe_insert (decl, DECL_NAME (decl), true);
-  depset *dep = *slot;
-  if (dep)
-    gcc_assert (dep->get_naming_decl () == decl);
-  else
-    {
-      dump () && dump ("Need definition of %N", decl);
-      dep = new depset (decl);
-      dep->decls.reserve_exact (1);
-      dep->decls.quick_push (decl);
-      /* It depends on the binding.  */
-      dep->deps.safe_push (binding);
-
-      *slot = dep;
-      worklist.safe_push (dep);
-
-      // FIXME:Make the binding depend on the definition, until I figure
-      // out how to lazily load it.
-      binding->deps.safe_push (dep);
-    }
-
-  return dep;
-}
-
-/* DECL is a newly discovered dependency.  Append it to its depset
-   binding in the hash table (creating an entry if there isn't one).
-   Push it into the worklist, if it's not there.  We use
-   depset::section to indicate where we've got to.
-
-   Add the DECL's binding to the current depset, if the binding was
-   not already there.
-
-   A definition's depset naturally depends on its declaration's
-   depset.
-
-   NOTE:DECLs added here that are not export/module linkage (i.e. all
-   !NEEDS_DEP cases), need not actually be added into the named
-   depset.  We will never need to find them by name from the language
-   POV (after p0923 fixes ADL).  It is a convenience that the
-   inter-module loading uses the same bindings.  We could locate them
-   by a different, module-specific, mechanism.  */
-
-void
-depset::hash::add_dependency (tree decl, bool needs_def)
-{
-  if (!DECL_CONTEXT (decl))
-    /* We can't be dependent on something with no context.  */
-    return;
-
-  tree ctx = CP_DECL_CONTEXT (decl);
-  gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-  depset **slot = maybe_insert (ctx, DECL_NAME (decl));
-  depset *dep = *slot;
-  bool is_new = true;
-
-  if (!dep)
-    /* Create an entry.  */
-    *slot = dep = new depset (ctx);
-  else
-    {
-      for (unsigned ix = dep->decls.length (); ix--;)
-	if (dep->decls[ix] == decl)
-	  {
-	    is_new = false;
-	    break;
-	  }
-      /* Only internal linkage things should be new (export/module
-	 linkage should have been added by add_writables).  */
-      gcc_assert (!(MAYBE_DECL_MODULE_PURVIEW_P (decl) && TREE_PUBLIC (decl))
-		  || !is_new);
-    }
-
-  if (is_new)
-    {
-      /* A newly needed decl of this binding.  */
-      dump () && dump ("New binding dependency %N added", decl);
-
-      if (dep->section == dep->decls.length ())
-	/* Add (back) to worklist, so we figure this decl's dependencies. */
-	worklist.safe_push (dep);
-      dep->decls.safe_push (decl);
-    }
-
-  if (is_new || needs_def)
-    dep = maybe_add_definition (dep, decl);
-
-  if (!dep->cluster)
-    {
-      /* A newly discovered dependency. */
-      dump () && dump (dep->is_binding () ? "Dependency %P added"
-		       : "Definition dependency %N added",
-		       dep->get_container (), dep->get_name ());
-      dep->cluster = true;
-      current->deps.safe_push (dep);
-      if (current->is_binding ()
-	  && TREE_CODE (decl) == TYPE_DECL
-	  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
-	  && CP_DECL_CONTEXT (current->decls[0]) == TREE_TYPE (decl))
-	/* Unscoped enum values are pushed into the containing
-	   scope.  Insert a dependency to the current binding, if it
-	   is one of the enum constants.  */
-	dep->deps.safe_push (current);
-    }
-}
-
-/* DECLS is a vector of decls that must be written out (export or
-   module-linkage).  Create a new depset and insert into the hash
-   table.  */
-
-void
-depset::hash::add_decls (tree ns, tree name, auto_vec<tree> &decls)
-{
-  depset *b = new depset (ns);
-
-  b->decls.reserve_exact (decls.length ());
-  /* Reverse ordering, so exported things are first.  */
-  for (unsigned ix = decls.length (); ix--;)
-    {
-      tree decl = decls[ix];
-
-      gcc_checking_assert (DECL_P (decl));
-      b->decls.quick_push (decl);
-      maybe_add_definition (b, decl);
-    }
-
-  depset **slot = maybe_insert (ns, name);
-  gcc_assert (!*slot);
-  *slot = b;
-  worklist.safe_push (b);
-}
-	      
-/* Core of TARJAN's algorithm to find Strongly Connected Components
-   within a graph.  See https://en.wikipedia.org/wiki/
-   Tarjan%27s_strongly_connected_components_algorithm for details.
-
-   We use depset::section as lowlink.  Completed nodes have
-   depset::cluster containing the cluster number, with the top
-   bit set.
-
-   A useful property is that the output vector is a reverse
-   topological sort of the resulting DAG.  In our case that means
-   dependent SCCs are found before their dependers.  */
-
-void
-depset::tarjan::connect (depset *v)
-{
-  v->cluster = v->section = ++index;
-  stack.safe_push (v);
-
-  /* Walk all our dependencies.  */
-  for (unsigned ix = v->deps.length (); ix--;)
-    {
-      depset *dep = v->deps[ix];
-      if (!dep->cluster)
-	{
-	  /* A new node.  Connect it.  */
-	  connect (dep);
-	  if (v->section > dep->section)
-	    v->section = dep->section;
-	}
-      else if (v->section > dep->cluster)
-	/* Because we set the top bit of dep->cluster when removing
-	   from the stack, we don't need to explicitly check that
-	   dep is not in the stack, the above comparison will DTRT.  */
-	v->section = dep->cluster;
-    }
-
-  if (v->section == v->cluster)
-    {
-      /* Root of a new SCC.  If it is a (singleton) namespace, put it on the
-	 spaces vector.  If it is a singleton non-binding, put it on
-	 the defs vector.  Otherwise it's a binding.  */
-      auto_vec<depset *> *vec = &binds;
-      if (stack.last () == v)
-	{
-	  if (!v->is_binding ())
-	    vec = &defs;
-	  else if (TREE_CODE (v->get_naming_decl ()) == NAMESPACE_DECL)
-	    vec = &spaces;
-	}
-
-      unsigned num = v->cluster | ~(~0u >> 1);
-      depset *p;
-      do
-	{
-	  p = stack.pop ();
-	  p->cluster = num;
-	  vec->safe_push (p);
-	}
-      while (p != v);
-    }
-}
-
-/* The following writer functions rely on the current behaviour of
-   depset::hash::add_dependency making the decl and defn depset nodes
-   depend on eachother.  That way we don't have to worry about seeding
-   the tree map with named decls that cannot be looked up by name (I.e
-   template and function parms).  We know the decl and definition will
-   be in the same cluster, which is what we want.  */
-
-void
-module_state::write_function_def (trees_out &out, tree decl)
-{
-  out.tree_node (DECL_RESULT (decl));
-  out.tree_node (DECL_INITIAL (decl));
-  out.tree_node (DECL_SAVED_TREE (decl));
-  if (DECL_DECLARED_CONSTEXPR_P (decl))
-    out.tree_node (find_constexpr_fundef (decl));
-}
-
-void
-module_state::mark_function_def (trees_out &, tree)
-{
-}
-
-bool
-module_state::read_function_def (trees_in &in, tree decl)
-{
-  tree result = in.tree_node ();
-  tree initial = in.tree_node ();
-  tree saved = in.tree_node ();
-  tree constexpr_body = (DECL_DECLARED_CONSTEXPR_P (decl)
-			 ? in.tree_node () : NULL_TREE);
-
-  if (in.get_overrun ())
-    return NULL_TREE;
-
-  if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
-    {
-      if (mod != MAYBE_DECL_MODULE_OWNER (decl))
-	{
-	  error ("unexpected definition of %q#D", decl);
-	  in.set_overrun ();
-	  return false;
-	}
-
-      if (!MAYBE_DECL_MODULE_PURVIEW_P (decl)
-	  && DECL_SAVED_TREE (decl))
-	return true; // FIXME check same
-    }
-
-  DECL_RESULT (decl) = result;
-  DECL_INITIAL (decl) = initial;
-  DECL_SAVED_TREE (decl) = saved;
-  if (constexpr_body)
-    register_constexpr_fundef (decl, constexpr_body);
-
-  current_function_decl = decl;
-  allocate_struct_function (decl, false);
-  cfun->language = ggc_cleared_alloc<language_function> ();
-  cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
-  set_cfun (NULL);
-  current_function_decl = NULL_TREE;
-
-  if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
-    {
-      comdat_linkage (decl);
-      note_vague_linkage_fn (decl);
-      cgraph_node::finalize_function (decl, false);
-    }
-
-  return true;
-}
-
-void
-module_state::write_var_def (trees_out &out, tree decl)
-{
-  out.tree_node (DECL_INITIAL (decl));
-}
-
-void
-module_state::mark_var_def (trees_out &, tree)
-{
-}
-
-bool
-module_state::read_var_def (trees_in &in, tree decl)
-{
-  tree init = in.tree_node ();
-
-  if (in.get_overrun ())
-    return false;
-
-  DECL_INITIAL (decl) = init;
-
-  return true;
-}
-
-/* Write the binfo heirarchy of TYPE.  The binfos are chained in DFS
-   order, but it is a strongly connected graph, so requires two
-   passes.  */
-
-void
-module_state::write_binfos (trees_out &out, tree type)
-{
-  /* Stream out types and sizes in DFS order, forcing each binfo
-     into the map.  */
-  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
-    {
-      out.tree_node (BINFO_TYPE (child));
-      /* We might have tagged the binfo during a by-reference walk.
-	 Force a new tag now.  */
-      int tag = out.force_insert (child, TREE_VISITED (child));
-      if (!out.dep_walk_p ())
-	{
-	  out.u (BINFO_N_BASE_BINFOS (child));
-
-	  dump () && dump ("Wrote binfo:%d child %N of %N",
-			   tag, BINFO_TYPE (child), type);
-	}
-    }
-
-  out.tree_node (NULL_TREE);
-
-  if (!out.dep_walk_p ())
-    {
-      if (TYPE_LANG_SPECIFIC (type))
-	{
-	  unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
-	  out.u (nvbases);
-	  if (nvbases)
-	    dump () && dump ("Type %N has %u vbases", type, nvbases);
-	}
-
-      /* Stream out contents in DFS order.  */
-      for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
-	{
-	  dump () && dump ("Writing binfo:%N of %N contents", child, type);
-
-	  out.core_bools (child);
-	  out.bflush ();
-	  out.tree_node (child->binfo.offset);
-	  out.tree_node (child->binfo.inheritance);
-	  out.tree_node (child->binfo.vtable);
-	  out.tree_node (child->binfo.virtuals);
-	  out.tree_node (child->binfo.vptr_field);
-	  out.tree_node (child->binfo.vtt_subvtt);
-	  out.tree_node (child->binfo.vtt_vptr);
-
-	  out.tree_vec (BINFO_BASE_ACCESSES (child));
-	  unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
-	  gcc_checking_assert (BINFO_N_BASE_BINFOS (child) == num);
-	  for (unsigned ix = 0; ix != num; ix++)
-	    out.tree_node (BINFO_BASE_BINFO (child, ix));
-	}
-    }
-}
-
-/* Read the binfo heirarchy of TYPE.  Sets TYPE_BINFO and
-   CLASSTYPE_VBASECLASSES.  */
-
-bool
-module_state::read_binfos (trees_in &in, tree type)
-{
-  tree *binfo_p = &TYPE_BINFO (type);
-
-  /* Stream in the types and sizes in DFS order.  */
-  while (tree t = in.tree_node ())
-    {
-      unsigned n_children = in.u ();
-      if (in.get_overrun ())
-	return false;
-      tree child = make_tree_binfo (n_children);
-      BINFO_TYPE (child) = t;
-
-      int tag = in.insert (child);
-      dump () && dump ("Read binfo:%d child %N of %N", tag, child, type);
-      *binfo_p = child;
-      binfo_p = &TREE_CHAIN (child);
-    }
-
-  unsigned nvbases = 0;
-  vec<tree, va_gc> *vbase_vec = NULL;
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      nvbases = in.u ();
-      if (nvbases)
-	{
-	  vec_alloc (vbase_vec, nvbases);
-	  CLASSTYPE_VBASECLASSES (type) = vbase_vec;
-	  dump () && dump ("Type %N has %u vbases", type, nvbases);
-	}
-    }
-
-  /* Stream in the contents in DFS order.  */
-  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
-    {
-      dump () && dump ("Reading binfo:%N of %N contents", child, type);
-
-      in.core_bools (child);
-      in.bflush ();
-      child->binfo.offset = in.tree_node ();
-      child->binfo.inheritance = in.tree_node ();
-      child->binfo.vtable = in.tree_node ();
-      child->binfo.virtuals = in.tree_node ();
-      child->binfo.vptr_field = in.tree_node ();
-      child->binfo.vtt_subvtt = in.tree_node ();
-      child->binfo.vtt_vptr = in.tree_node ();
-
-      BINFO_BASE_ACCESSES (child) = in.tree_vec ();
-      if (in.get_overrun ())
-	return false;
-      unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
-      for (unsigned ix = 0; ix != num; ix++)
-	BINFO_BASE_APPEND (child, in.tree_node ());
-
-      if (BINFO_VIRTUAL_P (child))
-	{
-	  if (vec_safe_length (vbase_vec) == nvbases)
-	    {
-	      in.set_overrun ();
-	      return false;
-	    }
-	  vbase_vec->quick_push (child);
-	}
-    }
-
-  if (vec_safe_length (vbase_vec) != nvbases)
-    in.set_overrun ();
-
-  return !in.get_overrun ();
-}
-
-void
-module_state::write_class_def (trees_out &out, tree type)
-{
-  out.chained_decls (TYPE_FIELDS (type));
-  out.tree_node (TYPE_VFIELD (type));
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      out.tree_vec (CLASSTYPE_MEMBER_VEC (type));
-      out.tree_node (CLASSTYPE_FRIEND_CLASSES (type));
-      out.tree_node (CLASSTYPE_LAMBDA_EXPR (type));
-
-      /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
-	 reader won't know at this point.  */
-      // FIXME Think about better ordering
-      int has_vptr = TYPE_CONTAINS_VPTR_P (type);
-      if (!out.dep_walk_p ())
-	out.i (has_vptr);
-      if (has_vptr)
-	{
-	  out.tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
-	  out.tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
-	  out.tree_node (CLASSTYPE_KEY_METHOD (type));
-	}
-    }
-
-  write_binfos (out, type);
-  
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      out.tree_node (CLASSTYPE_PRIMARY_BINFO (type));
-
-      tree as_base = CLASSTYPE_AS_BASE (type);
-      out.tree_node (as_base);
-      if (as_base && as_base != type)
-	write_class_def (out, as_base);
-
-      tree vtables = CLASSTYPE_VTABLES (type);
-      out.chained_decls (vtables);
-      /* Write the vtable initializers.  */
-      for (; vtables; vtables = TREE_CHAIN (vtables))
-	out.tree_node (DECL_INITIAL (vtables));
-    }
-
-  // lang->nested_udts
-
-  /* Now define all the members.  */
-  for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
-    if (has_definition (member))
-      {
-	out.tree_node (member);
-	write_definition (out, member);
-      }
-
-  /* End of definitions.  */
-  out.tree_node (NULL_TREE);
-}
-
-void
-module_state::mark_class_def (trees_out &out, tree type)
-{
-  for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
-    {
-      out.mark_node (member, true);
-      if (has_definition (member))
-	mark_definition (out, member);
-    }
-
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      tree as_base = CLASSTYPE_AS_BASE (type);
-      if (as_base && as_base != type)
-	{
-	  out.mark_node (as_base, true);
-	  mark_class_def (out, as_base);
-	}
-
-      for (tree vtables = CLASSTYPE_VTABLES (type);
-	   vtables; vtables = TREE_CHAIN (vtables))
-	{
-	  out.mark_node (vtables, true);
-	  mark_var_def (out, vtables);
-	}
-    }
-}
-
-/* Nop sorted needed for resorting the member vec.  */
-
-static void
-nop (void *, void *)
-{
-}
-
-bool
-module_state::read_class_def (trees_in &in, tree type)
-{
-  tree fields = in.chained_decls ();
-  tree vfield = in.tree_node ();
-  vec<tree, va_gc> *member_vec = NULL;
-  vec<tree, va_gc> *pure_virts = NULL;
-  vec<tree_pair_s, va_gc> *vcall_indices = NULL;
-  tree key_method = NULL_TREE;
-  tree lambda = NULL_TREE;
-  tree friends = NULL_TREE;
-
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      member_vec = in.tree_vec ();
-      friends = in.tree_node ();
-      lambda = in.tree_node ();
-
-      int has_vptr = in.i ();
-      if (has_vptr)
-	{
-	  pure_virts = in.tree_vec ();
-	  vcall_indices = in.tree_pair_vec ();
-	  key_method = in.tree_node ();
-	}
-    }
-
-  // lang->nested_udts
-
-  // FIXME: Sanity check stuff
-
-  if (in.get_overrun ())
-    return NULL_TREE;
-
-  TYPE_FIELDS (type) = fields;
-  TYPE_VFIELD (type) = vfield;
-
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      CLASSTYPE_FRIEND_CLASSES (type) = friends;
-      CLASSTYPE_LAMBDA_EXPR (type) = lambda;
-
-      CLASSTYPE_MEMBER_VEC (type) = member_vec;
-      CLASSTYPE_PURE_VIRTUALS (type) = pure_virts;
-      CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
-
-      CLASSTYPE_KEY_METHOD (type) = key_method;
-
-      /* Resort the member vector.  */
-      resort_type_member_vec (member_vec, NULL, nop, NULL);
-    }
-
-  if (!read_binfos (in, type))
-    return false;
-
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      CLASSTYPE_PRIMARY_BINFO (type) = in.tree_node ();
-
-      tree as_base = in.tree_node ();
-      CLASSTYPE_AS_BASE (type) = as_base;
-      if (as_base && as_base != type)
-	read_class_def (in, as_base);
-      
-      /* Read the vtables.  */
-      // FIXME: via read_var_def?
-      tree vtables = in.chained_decls ();
-      if (!CLASSTYPE_KEY_METHOD (type) && vtables)
-	vec_safe_push (keyed_classes, type);
-      CLASSTYPE_VTABLES (type) = vtables;
-      for (; vtables; vtables = TREE_CHAIN (vtables))
-	DECL_INITIAL (vtables) = in.tree_node ();
-    }
-
-  // FIXME:
-  if (false/*TREE_CODE (decl) == TEMPLATE_DECL*/)
-    CLASSTYPE_DECL_LIST (type) = in.tree_node ();
-
-  /* Propagate to all variants.  */
-  fixup_type_variants (type);
-
-  /* Now define all the members.  */
-  while (tree member = in.tree_node ())
-    {
-      if (in.get_overrun ())
-	break;
-      if (!read_definition (in, member))
-	break;
-    }
-
-  return !in.get_overrun ();
-}
-
-void
-module_state::write_enum_def (trees_out &out, tree type)
-{
-  out.tree_node (TYPE_VALUES (type));
-  out.tree_node (TYPE_MIN_VALUE (type));
-  out.tree_node (TYPE_MAX_VALUE (type));
-}
-
-void
-module_state::mark_enum_def (trees_out &out, tree type)
-{
-  if (!UNSCOPED_ENUM_P (type))
-    for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
-      out.mark_node (TREE_VALUE (values), true);
-}
-
-bool
-module_state::read_enum_def (trees_in &in, tree type)
-{
-  tree values = in.tree_node ();
-  tree min = in.tree_node ();
-  tree max = in.tree_node ();
-
-  if (in.get_overrun ())
-    return false;
-
-  TYPE_VALUES (type) = values;
-  TYPE_MIN_VALUE (type) = min;
-  TYPE_MAX_VALUE (type) = max;
-
-  return true;
-}
-
-void
-module_state::write_template_def (trees_out &out, tree decl)
-{
-  tree res = DECL_TEMPLATE_RESULT (decl);
-  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
-    out.tree_node (CLASSTYPE_DECL_LIST (TREE_TYPE (res)));
-  write_definition (out, res);
-}
-
-void
-module_state::mark_template_def (trees_out &out, tree decl)
-{
-  tree res = DECL_TEMPLATE_RESULT (decl);
-  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
-    for (tree decls = CLASSTYPE_DECL_LIST (TREE_TYPE (res));
-	 decls; decls = TREE_CHAIN (decls))
-      {
-	/* There may be decls here, that are not on the member vector.
-	   for instance forward declarations of member tagged types.  */
-	tree decl = TREE_VALUE (decls);
-	if (TYPE_P (decl))
-	  /* In spite of its name, non-decls appear :(.  */
-	  decl = TYPE_NAME (decl);
-	out.mark_node (decl);
-      }
-  mark_definition (out, res);
-}
-
-bool
-module_state::read_template_def (trees_in &in, tree decl)
-{
-  tree res = DECL_TEMPLATE_RESULT (decl);
-  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
-    CLASSTYPE_DECL_LIST (TREE_TYPE (res)) = in.tree_node ();
-  return read_definition (in, res);
-}
-
-/* Write out the body of DECL.  See above circularity note.  */
-
-void
-module_state::write_definition (trees_out &out, tree decl)
-{
-  if (!out.dep_walk_p ())
-    dump () && dump ("Writing definition %C:%N", TREE_CODE (decl), decl);
-
-  switch (TREE_CODE (decl))
-    {
-    default:
-      gcc_unreachable ();
-
-    case TEMPLATE_DECL:
-      write_template_def (out, decl);
-      break;
-
-    case FUNCTION_DECL:
-      write_function_def (out, decl);
-      break;
-
-    case VAR_DECL:
-      write_var_def (out, decl);
-      break;
-
-    case TYPE_DECL:
-      {
-	tree type = TREE_TYPE (decl);
-	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && TYPE_MAIN_VARIANT (type) == type);
-	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  write_enum_def (out, type);
-	else
-	  write_class_def (out, type);
-      }
-      break;
-    }
-}
-
-/* Mark the body of DECL.  */
-
-void
-module_state::mark_definition (trees_out &out, tree decl)
-{
-  switch (TREE_CODE (decl))
-    {
-    default:
-      gcc_unreachable ();
-
-    case TEMPLATE_DECL:
-      mark_template_def (out, decl);
-      break;
-
-    case FUNCTION_DECL:
-      mark_function_def (out, decl);
-      break;
-
-    case VAR_DECL:
-      mark_var_def (out, decl);
-      break;
-
-    case TYPE_DECL:
-      {
-	tree type = TREE_TYPE (decl);
-	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && TYPE_MAIN_VARIANT (type) == type);
-	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  mark_enum_def (out, type);
-	else
-	  mark_class_def (out, type);
-      }
-      break;
-    }
-}
-
-/* Read in the body of DECL.  See above circularity note.  */
-
-bool
-module_state::read_definition (trees_in &in, tree decl)
-{
-  dump () && dump ("Reading definition %C %N", TREE_CODE (decl), decl);
-
-  switch (TREE_CODE (decl))
-    {
-    default:
-      break;
-
-    case TEMPLATE_DECL:
-      return read_template_def (in, decl);
-
-    case FUNCTION_DECL:
-      return read_function_def (in, decl);
-
-    case VAR_DECL:
-      return read_var_def (in, decl);
-
-    case TYPE_DECL:
-      {
-	tree type = TREE_TYPE (decl);
-	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && TYPE_MAIN_VARIANT (type) == type);
-	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  return read_enum_def (in, type);
-	else
-	  return read_class_def (in, type);
-      }
-      break;
-    }
-
-  return false;
-}
-
-/* Compare bindings in a cluster.  Definitions are less than bindings.  */
-
-static int
-bind_cmp (const void *a_, const void *b_)
-{
-  depset *a = *(depset *const *)a_;
-  depset *b = *(depset *const *)b_;
-
-  bool a_bind = a->is_binding ();
-  if (a_bind != b->is_binding ())
-    /* Exactly one is a binding.  It is the greater.  */
-    return a_bind ? +1 : -1;
-
-  /* Both bindings or both non-bindings.  Order by UID of first decl.  */
-  tree a_decl = a->decls[0];
-  tree b_decl = b->decls[0];
-
-  return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
-}
-
-/* Write a cluster of depsets starting at SCCS[FROM], return index of next
-   cluster.  */
-
-unsigned
-module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
-			     unsigned from, unsigned *crc_ptr)
-{
-  unsigned cluster = sccs[from]->get_cluster ();
-
-  trees_out sec (this, global_vec);
-  sec.begin ();
-  unsigned end;
-
-  /* Find the size of the cluster and mark every member as walkable.  */
-  for (end = from; end != sccs.length (); end++)
-    {
-      depset *b = sccs[end];
-      if (b->get_cluster () != cluster)
-	break;
-      if (b->is_binding ())
-	for (unsigned ix = b->decls.length (); ix--;)
-	  sec.mark_node (b->decls[ix]);
-      else
-	mark_definition (sec, b->get_decl ());
-    }
-
-  /* Sort the cluster.  */
-  qsort (&sccs[from], end - from, sizeof (depset *), bind_cmp);
-
-  dump () && dump ("Writing SCC:%u bindings:%u",
-		   cluster & (~0U >> 1), end - from);
-  dump.indent ();
-
-  /* Now write every member.  */
-  for (unsigned ix = from; ix != end; ix++)
-    {
-      depset *b = sccs[ix];
-      dump () && dump (b->is_binding () ? "Writing decls of %P"
-		       : "Writing definition %N",
-		       b->get_container (), b->get_name ());
-      sec.tree_node (b->get_container ());
-      if (b->is_binding ())
-	{
-	  sec.tree_node (b->get_name ());
-	  /* Write in forward order, so reading will see the
-	     exports first, thus building the overload chain will be
-	     optimized.  */
-	  for (unsigned jx = 0; jx != b->decls.length (); jx++)
-	    sec.tree_node (b->decls[jx]);
-	  /* Terminate the list.  */
-	  sec.tree_node (NULL);
-	}
-      else
-	write_definition (sec, b->get_decl ());
-    }
-
-  /* We don't find this by name, use the first decl's name for human
-     friendliness.  Because of cluster sorting, this will prefer a
-     definition -- and thus we'll not be confused by naming an
-     unscoped enum constant.  */
-  tree naming_decl = sccs[from]->get_naming_decl ();
-  unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
-
-  /* Record the section number in each depset.  */
-  for (unsigned ix = from; ix != end; ix++)
-    sccs[ix]->section = snum;
-
-  dump.outdent ();
-  dump () && dump ("Wrote SCC:%u section:%u (%N)", cluster & (~0U >> 1),
-		   snum, naming_decl);
-
-  return end;
-}
-
-/* Read a cluster from section SNUM.  */
-
-bool
-module_state::read_cluster (elf_in *from, unsigned snum)
-{
-  trees_in sec (this, global_vec);
-
-  if (!sec.begin (from, snum))
-    return false;
-
-  dump () && dump ("Reading section:%u", snum);
-  dump.indent ();
-  while (sec.more_p ())
-    {
-      tree ctx = sec.tree_node ();
-      if (!ctx)
-	break;
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	{
-	  /* A set of namespace bindings.  */
-	  tree name = sec.tree_node ();
-	  tree decls = NULL_TREE;
-	  tree type = NULL_TREE;
-
-	  while (tree decl = sec.tree_node ())
-	    {
-	      if (TREE_CODE (decl) == TYPE_DECL)
-		{
-		  if (type)
-		    sec.set_overrun ();
-		  type = decl;
-		}
-	      else if (decls
-		       || (TREE_CODE (decl) == TEMPLATE_DECL
-			   && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
-			       == FUNCTION_DECL)))
-		{
-		  if (!DECL_DECLARES_FUNCTION_P (decl)
-		      || (decls
-			  && TREE_CODE (decls) != OVERLOAD
-			  && TREE_CODE (decls) != FUNCTION_DECL))
-		    sec.set_overrun ();
-		  decls = ovl_make (decl, decls);
-		  if (DECL_MODULE_EXPORT_P (decl))
-		    OVL_EXPORT_P (decls) = true;
-		}
-	      else
-		decls = decl;
-	    }
-	  if (!set_module_binding (ctx, name, mod, decls, type))
-	    break;
-	}
-      else
-	{
-	  /* A definition.  */
-	  if (!read_definition (sec, ctx))
-	    break;
-	}
-    }
-  dump.outdent ();
-
-  if (!sec.end (from))
-    return false;
-
-  return true;
-}
-
-/* SPACES is a sorted vector of namespaces.  RANGE is the range of
-   sections containing the module data.  Write out the range and
-   namespaces to MOD_SNAME_PFX.namespace section.
-
-   Each namespace is:
-     u:name,
-     u:context, number of containing namespace (0 == ::)
-     u:inline_p  */
-
-void
-module_state::write_namespaces (elf_out *to, depset::hash &table,
-				auto_vec<depset *> &spaces,
-				const std::pair<unsigned, unsigned> &range,
-				unsigned *crc_p)
-{
-  dump () && dump ("Writing namespaces");
-  dump.indent ();
-
-  bytes_out sec;
-  sec.begin ();
-  /* Write the section range.  */
-  sec.u (range.first);
-  sec.u (range.second);
-
-  for (unsigned ix = 0; ix != spaces.length (); ix++)
-    {
-      depset *b = spaces[ix];
-      tree ns = b->get_decl ();
-
-      gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL
-			   && (DECL_NAME (ns) || !TREE_PUBLIC (ns))
-			   && (TREE_PUBLIC (ns) == DECL_MODULE_EXPORT_P (ns)));
-
-      b->section = ix + 1;
-      b->cluster = 0;
-      unsigned ctx_num = 0;
-      tree ctx = b->get_container ();
-      if (ctx != global_namespace)
-	ctx_num = table.find (CP_DECL_CONTEXT (ctx), DECL_NAME (ctx))->section;
-      dump () && dump ("Writing namespace %N %u::%u", ns, ctx_num, b->section);
-
-      sec.u (to->name (DECL_NAME (ns)));
-      sec.u (ctx_num);
-      /* Don't use a bool, because this can be near the end of the
-	 section, and it won't save anything anyway.  */
-      sec.u (DECL_NAMESPACE_INLINE_P (ns));
-    }
-
-  sec.end (to, to->name (MOD_SNAME_PFX ".namespace"), crc_p);
-  dump.outdent ();
-}
-
-/* Read the namespace hierarchy from MOD_SNAME_PFX.namespace.  Fill in
-   SPACES and RANGE from that data.  */
-
-bool
-module_state::read_namespaces (elf_in *from, auto_vec<tree> &spaces,
-			       std::pair<unsigned, unsigned>& range)
-{
-  bytes_in sec;
-
-  if (!sec.begin (from, MOD_SNAME_PFX ".namespace"))
-    return false;
-
-  dump () && dump ("Reading namespaces");
-  dump.indent ();
-
-  range.first = sec.u ();
-  range.second = sec.u ();
-
-  spaces.safe_push (global_namespace);
-  while (sec.more_p ())
-    {
-      const char *name = from->name (sec.u ());
-      unsigned parent = sec.u ();
-      /* See comment in write_namespace about why not a bit.  */
-      bool inline_p = bool (sec.u ());
-
-      if (parent >= spaces.length ())
-	sec.set_overrun ();
-      if (sec.get_overrun ())
-	break;
-
-      tree id = name ? get_identifier (name) : NULL_TREE;
-      dump () && dump ("Read namespace %P %u",
-		       spaces[parent], id, spaces.length ());
-      tree inner = add_imported_namespace (spaces[parent],
-					   mod, id, inline_p);
-      spaces.safe_push (inner);
-    }
-  dump.outdent ();
-  if (!sec.end (from))
-    return false;
-
-  return true;
-}
-
-/* Write the binding TABLE to MOD_SNAME_PFX.bind
-
-   Each binding is:
-     u:name
-     u:context - number of containing namespace
-     u:section - section number of binding. */
-
-void
-module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
-{
-  dump () && dump ("Writing binding table");
-  dump.indent ();
-
-  bytes_out sec;
-  sec.begin ();
-
-  depset::hash::iterator end (table.end ());
-  for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
-    {
-      depset *b = *iter;
-      if (b->is_binding () && b->cluster)
-	{
-	  unsigned ns_num = 0;
-	  tree ns = b->get_container ();
-	  if (ns != global_namespace)
-	    ns_num = table.find (CP_DECL_CONTEXT (ns), DECL_NAME (ns))->section;
-	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
-			   b->section);
-	  sec.u (to->name (b->get_name ()));
-	  sec.u (ns_num);
-	  sec.u (b->section);
-	}
-    }
-
-  sec.end (to, to->name (MOD_SNAME_PFX ".bind"), crc_p);
-  dump.outdent ();
-}
-
-/* Read the binding table from MOD_SNAME_PFX.bind.  */
-
-bool
-module_state::read_bindings (elf_in *from, auto_vec<tree> &spaces,
-			     const std::pair<unsigned, unsigned> &range)
-{
-  bytes_in sec;
-
-  if (!sec.begin (from, MOD_SNAME_PFX ".bind"))
-    return false;
-
-  dump () && dump ("Reading binding table");
-  dump.indent ();
-  while (sec.more_p ())
-    {
-      const char *name = from->name (sec.u ());
-      unsigned nsnum = sec.u ();
-      unsigned snum = sec.u ();
-
-      if (nsnum >= spaces.length () || !name
-	  || snum < range.first || snum >= range.second)
-	sec.set_overrun ();
-      if (sec.get_overrun ())
-	break;
-      tree ctx = spaces[nsnum];
-      tree id = get_identifier (name);
-      dump () && dump ("Bindings %P section:%u", ctx, id, snum);
-      if (mod >= MODULE_IMPORT_BASE
-	  && !import_module_binding (ctx, id, mod, snum))
-	break;
-      // FIXME:Do something with snum
-    }
-
-  dump.outdent ();
-  if (!sec.end (from))
-    return false;
-  return true;
-}
-
-/* Recursively find all the namespace bindings of NS.
-   Add a depset for every binding that contains an export or
-   module-linkage entity.  Add a defining depset for every such decl
-   that we need to write a definition.  Such defining depsets depend
-   on the binding depset.  Returns true if we contain something
-   explicitly exported.  */
-
-void
-module_state::add_writables (depset::hash &table, tree ns)
-{
-  auto_vec<tree> decls;
-
-  dump () && dump ("Finding writables in %N", ns);
-  dump.indent ();
-  hash_table<named_decl_hash>::iterator end
-    (DECL_NAMESPACE_BINDINGS (ns)->end ());
-  for (hash_table<named_decl_hash>::iterator iter
-	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-    {
-      tree bind = *iter;
-
-      if (TREE_CODE (bind) == MODULE_VECTOR)
-	bind = (MODULE_VECTOR_CLUSTER
-		(bind, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
-		.slots[MODULE_SLOT_CURRENT % MODULE_VECTOR_SLOTS_PER_CLUSTER]);
-
-      if (!bind)
-	continue;
-
-      /* Walk inner namespace.  */
-      if (TREE_CODE (bind) == NAMESPACE_DECL
-	  && !DECL_NAMESPACE_ALIAS (bind)
-	  && TREE_PUBLIC (bind))
-	add_writables (table, bind);
-  
-      if (tree name = extract_module_decls (bind, decls))
-	{
-	  dump () && dump ("Writable bindings at %P", ns, name);
-	  table.add_decls (ns, name, decls);
-	  decls.truncate (0);
-	}
-    }
-  dump.outdent ();
-}
-
-/* Iteratively find dependencies.  During the walk we may find more
-   entries on the same binding that need walking.  */
-
-void
-module_state::find_dependencies (depset::hash &table)
-{
-  trees_out walker (this, global_vec);
-
-  while (depset *d = table.get_work ())
-    {
-      walker.begin (&table);
-
-      /* Walk the new decls since last time.  */
-      unsigned from = d->section;
-      unsigned to = d->decls.length ();
-      d->section = to;
-
-      gcc_assert (d->is_binding () ? from < to : !from && to == 1);
-      dump () && dump (!d->is_binding () ? "Definition of %N" : from + 1 == to
-		       ? "Bindings of %P[%u]" : "Bindings of %P[%u-%u)",
-		       d->get_container (), d->get_name (), from, to);
-      dump.indent ();
-
-      /* Mark the depset's decls and known deps.  */
-      d->cluster = true;
-      if (d->is_binding ())
-	for (unsigned ix = to; ix--;)
-	  walker.mark_node (d->decls[ix], ix >= from);
-      else
-	mark_definition (walker, d->get_decl ());
-      for (unsigned ix = d->deps.length (); ix--;)
-	{
-	  depset *dep = d->deps[ix];
-	  gcc_assert (!dep->cluster);
-	  dep->cluster = true;
-	  if (dep->is_binding ())
-	    for (unsigned jx = dep->decls.length (); jx--;)
-	      walker.mark_node (dep->decls[jx], false);
-	  else
-	    walker.mark_node (dep->get_decl ());
-	}
-
-      /* Analyse them.  */
-      if (d->is_binding ())
-	for (unsigned ix = from; ix != to; ix++)
-	  {
-	    tree decl = d->decls[ix];
-	    dump () && dump ("Analysing declarations of %N", decl);
-	    if (TREE_CODE (decl) != NAMESPACE_DECL)
-	      walker.tree_node (decl);
-	  }
-      else
-	write_definition (walker, d->get_decl ());
-
-      /* Unmark.  */
-      d->cluster = false;
-      for (unsigned ix = d->deps.length (); ix--;)
-	d->deps[ix]->cluster = false;
-      dump.outdent ();
-      walker.end ();
-    }
-}
-
-/* Compare bindings for two namespaces.  Those closer to :: are
-   less.  */
-
-static int
-space_cmp (const void *a_, const void *b_)
-{
-  depset *a = *(depset *const *)a_;
-  depset *b = *(depset *const *)b_;
-  tree ns_a = a->get_decl ();
-  tree ns_b = b->get_decl ();
-
-  /* Deeper namespaces come after shallower ones.  */
-  if (int delta = SCOPE_DEPTH (ns_a) - SCOPE_DEPTH (ns_b))
-    return delta;
-
-  /* Otherwise order by UID for consistent results.  */
-  return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
-}
-
-/* Write the module declarations of interest  */
-
-void
-module_state::write_decls (elf_out *to, unsigned *crc_p)
-{
-  depset::hash table (200);
-
-  /* Find the set of decls we must write out.  */
-  add_writables (table, global_namespace);
-
-  find_dependencies (table);
-
-  /* Find the SCCs. */
-  auto_vec<depset *> binds, spaces, defs;
-  {
-    depset::tarjan connector (binds, spaces, defs);
-
-    /* Iteration over the hash table is an unspecified ordering.
-       That's good (for now) because it'll give us some random code
-       coverage.  We may want to fill the worklist and sort it in
-       future though?  */
-    depset::hash::iterator end (table.end ());
-    for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
-      {
-	depset *v = *iter;
-	if (!v->cluster)
-	  connector.connect (v);
-      }
-  }
-
-  /* Sort the namespaces.  */
-  (spaces.qsort) (space_cmp);
-
-  std::pair<unsigned, unsigned> range;
-
-  /* Write the binding clusters.  */
-  range.first = to->get_num_sections ();
-  for (unsigned ix = 0; ix != binds.length ();)
-    ix = write_cluster (to, binds, ix, crc_p);
-  range.second = to->get_num_sections ();
-
-  // FIXME:write the defs.
-  gcc_assert (!defs.length ());
-
-  /* Write the namespace hierarchy. */
-  write_namespaces (to, table, spaces, range, crc_p);
-
-  /* Write the bindings themselves.  */
-  write_bindings (to, table, crc_p);
-}
-
-/* Read module decls.  */
-
-bool
-module_state::read_decls (elf_in *from)
-{
-  /* Read the namespace hierarchy. */
-  auto_vec<tree> spaces;
-  std::pair<unsigned, unsigned> range;
-
-  if (!read_namespaces (from, spaces, range))
-    return false;
-
-  if (!read_bindings (from, spaces, range))
-    return false;
-
-  /* We're now done with the string table.  */
-  from->release ();
-
-  if (mod == MODULE_PURVIEW || !flag_module_lazy
-      // FIXME:Implement lazy loading
-      || true)
-    {
-      /* Read the sections in forward order, so that dependencies are read
-	 first.  See note about tarjan_connect.  */
-      unsigned hwm = range.second;
-      for (unsigned ix = range.first; ix != hwm; ix++)
-	if (!read_cluster (from, ix))
-	  return false;
-    }
-
-  return true;
-}
-
-/* Use ELROND format to record the following sections:
-     1     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
-     2     MOD_SNAME_PFX.context  : context data
-     [3-N) qualified-names	  : binding value(s)
-     N     MOD_SNAME_PFX.namespace : namespace hierarchy
-     N+1   MOD_SNAME_PFX.bind     : binding table
-     N+2   MOD_SNAME_PFX.config   : config data
-*/
-
-void
-module_state::write (elf_out *to)
-{
-  unsigned crc = 0;
-
-  write_context (to, &crc);
-  write_decls (to, &crc);
-  write_config (to, crc);
-
-  trees_out::instrument ();
-  dump () && dump ("Wrote %u sections", to->get_num_sections ());
-}
-
-void
-module_state::read (elf_in *from, unsigned *crc_ptr)
-{
-  if (!read_config (from, crc_ptr))
-    return;
-  if (!read_context (from))
-    return;
-
-  /* Determine the module's number.  */
-  unsigned ix = MODULE_PURVIEW;
-  if (this != (*modules)[MODULE_NONE])
-    {
-      ix = modules->length ();
-      if (ix == MODULE_LIMIT)
-	{
-	  sorry ("too many modules loaded (limit is %u)", ix);
-	  from->set_error (elf::E_BAD_IMPORT);
-	  return;
-	}
-      else
-	{
-	  vec_safe_push (modules, this);
-	  bitmap_set_bit (imports, ix);
-	  bitmap_set_bit (exports, ix);
-	}
-    }
-  mod = ix;
-  (*remap)[MODULE_PURVIEW] = ix;
-  dump () && dump ("Assigning %N module number %u", name, ix);
-
-  if (!read_decls (from))
-    return;
-
-  return;
-}
-
-/* Return the IDENTIFIER_NODE naming module IX.  This is the name
-   including dots.  */
-
-tree
-module_name (unsigned ix)
-{
-  return (*module_state::modules)[ix]->name;
-}
-
-/* Return the vector of IDENTIFIER_NODES naming module IX.  These are
-   individual identifers per sub-module component.  */
-
-tree
-module_vec_name (unsigned ix)
-{
-  return (*module_state::modules)[ix]->vec_name;
-}
-
-/* Return the bitmap describing what modules are imported into
-   MODULE.  Remember, we always import ourselves.  */
-
-bitmap
-module_import_bitmap (unsigned ix)
-{
-  return (*module_state::modules)[ix]->imports;
-}
-
-/* We've just directly imported OTHER.  Update our import/export
-   bitmaps.  IS_EXPORT is true if we're reexporting the OTHER.  */
-
-void
-module_state::set_import (module_state const *other, bool is_export)
-{
-  gcc_checking_assert (this != other);
-  bitmap_ior_into (imports, other->exports);
-  if (is_export)
-    bitmap_ior_into (exports, other->exports);
+  tree ti = NULL_TREE;
+
+  if (TREE_CODE (decl) == TYPE_DECL)
+    ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
+  else if (DECL_LANG_SPECIFIC (decl)
+	   && (TREE_CODE (decl) == VAR_DECL
+	       || TREE_CODE (decl) == FUNCTION_DECL))
+    ti = DECL_TEMPLATE_INFO (decl);
+
+  if (ti)
+    decl = DECL_PRIMARY_TEMPLATE (TI_TEMPLATE (ti));
+
+  return decl;
 }
 
 /* Instrumentation gathered writing bytes.  */
@@ -4874,6 +2722,105 @@ trees_out::instrument ()
       dump ("  %u nulls", nulls);
       dump ("Wrote %u records", records);
     }
+}
+
+/* Setup and teardown for an outputting tree walk.  */
+
+void
+trees_out::begin ()
+{
+  gcc_assert (!tree_map.elements ());
+
+  mark_trees ();
+  parent::begin ();
+}
+
+unsigned
+trees_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
+{
+  gcc_checking_assert (!dep_walk_p ());
+
+  unmark_trees ();
+  return parent::end (sink, name, crc_ptr);
+}
+
+
+/* Setup and teardown for a dependency tree walk.  */
+void
+trees_out::begin (depset::hash *hash)
+{
+  dep_hash = hash;
+  mark_trees ();
+}
+
+void
+trees_out::end ()
+{
+  unmark_trees ();
+  dep_hash = NULL;
+}
+
+void
+trees_out::mark_trees ()
+{
+  if (size_t size = tree_map.elements ())
+    {
+      /* This isn't our first rodeo, destroy and recreate the
+	 tree_map.  I'm a bad bad man.  Use the previous size as a
+	 guess for the next one (so not all bad).  */
+      tree_map.~ptr_int_hash_map ();
+      new (&tree_map) ptr_int_hash_map (size);
+    }
+
+  /* Install the fixed trees, with +ve references.  */
+  unsigned limit = fixed_refs->length ();
+  for (unsigned ix = 0; ix != limit; ix++)
+    {
+      tree val = (*fixed_refs)[ix];
+      bool existed = tree_map.put (val, ix + 1);
+      gcc_checking_assert (!TREE_VISITED (val) && !existed);
+      TREE_VISITED (val) = true;
+    }
+
+  ref_num = 0;
+}
+
+void
+trees_out::unmark_trees ()
+{
+  /* Unmark all the trees.  */
+  ptr_int_hash_map::iterator end (tree_map.end ());
+  for (ptr_int_hash_map::iterator iter (tree_map.begin ()); iter != end; ++iter)
+    {
+      tree node = reinterpret_cast <tree> ((*iter).first);
+      gcc_checking_assert (TREE_VISITED (node));
+      TREE_VISITED (node) = false;
+    }
+}
+
+/* Insert a decl into the map.  If INTO is true, mark it to be walked
+   into by value.  Otherwise give it a fixed ref num -- it doesn't
+   matter which.  May be called on the same node multiple times,
+   seting INTO is sticky.  */
+
+void
+trees_out::mark_node (tree decl, bool into)
+{
+  gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
+
+  if (!TREE_VISITED (decl) || into)
+    {
+      /* On a dep-walk we don't care whan number we're tagging with,
+	 but on an emission walk, we're pre-seeding the table with
+	 specific numbers the reader will recreate.  */
+      int tag = into ? 0 : --ref_num;
+      bool existed = tree_map.put (decl, tag);
+      gcc_checking_assert (TREE_VISITED (decl) || !existed);
+      TREE_VISITED (decl) = true;
+    }
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    mark_node (DECL_TEMPLATE_RESULT (decl), into);
 }
 
 /* Insert T into the map, return its back reference number.  */
@@ -7519,6 +5466,2058 @@ trees_in::finish_type (tree type)
     }
 
   return type;
+}
+
+/* Return true if DECL has a definition that would be interesting to
+   write out.  */
+
+static bool
+has_definition (tree decl)
+{
+ again:
+  switch (TREE_CODE (decl))
+    {
+    default:
+      break;
+
+    case TEMPLATE_DECL:
+      decl = DECL_TEMPLATE_RESULT (decl);
+      goto again;
+
+    case FUNCTION_DECL:
+      if (!DECL_INITIAL (decl))
+	/* Not defined.  */
+	break;
+
+      if (DECL_TEMPLATE_INFO (decl))
+	{
+	  if (!(DECL_USE_TEMPLATE (decl) & 1))
+	    return true;
+	}
+      else if (DECL_DECLARED_INLINE_P (decl))
+	return true;
+      break;
+
+    case VAR_DECL:
+      if (!DECL_INITIAL (decl))
+	/* Nothing to define.  */
+	break;
+
+      if (TREE_CONSTANT (decl))
+	return true;
+
+      break;
+
+    case TYPE_DECL:
+      if (!DECL_IMPLICIT_TYPEDEF_P (decl))
+	break;
+
+      if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
+	  ? TYPE_VALUES (TREE_TYPE (decl))
+	  : TYPE_FIELDS (TREE_TYPE (decl)))
+	return true;
+      break;
+    }
+
+  return false;
+}
+
+/* Lookup and maybe add a depset of CONTAINER and NAME.  */
+
+depset **
+depset::hash::maybe_insert (tree container, tree name, bool insert)
+{
+  traits::compare_type cmp (container, name);
+  depset **slot = find_slot_with_hash (cmp, traits::hash (cmp),
+				       insert ? INSERT : NO_INSERT);
+
+  return slot;
+}
+
+depset *
+depset::hash::find (tree ns, tree name)
+{
+  depset **slot = maybe_insert (ns, name, false);
+
+  return slot ? *slot : NULL;
+}
+
+/* DECL has just been added to BINDING, or declared within in BINDING.
+   If we need a definition of DECL, add it to the hash table unless
+   it's already there.  Create a dependency on BINDING.  Add to
+   worklist too.  Return the definition's depsetm, if we create one.
+   Otherwise return the binding.
+
+   NOTE:For the moment we make the declaration's depset depend on the
+   defintion's.  Thus forcing them into the same cluster and writing
+   out together.  See note on the modules_state::write_${foo}_def
+   functions about why that's important.  */
+
+depset *
+depset::hash::maybe_add_definition (depset *binding, tree decl)
+{
+  if (!has_definition (decl))
+    return binding;
+
+  depset **slot = maybe_insert (decl, DECL_NAME (decl), true);
+  depset *dep = *slot;
+  if (dep)
+    gcc_assert (dep->get_naming_decl () == decl);
+  else
+    {
+      dump () && dump ("Need definition of %N", decl);
+      dep = new depset (decl);
+      dep->decls.reserve_exact (1);
+      dep->decls.quick_push (decl);
+      /* It depends on the binding.  */
+      dep->deps.safe_push (binding);
+
+      *slot = dep;
+      worklist.safe_push (dep);
+
+      // FIXME:Make the binding depend on the definition, until I figure
+      // out how to lazily load it.
+      binding->deps.safe_push (dep);
+    }
+
+  return dep;
+}
+
+/* DECL is a newly discovered dependency.  Append it to its depset
+   binding in the hash table (creating an entry if there isn't one).
+   Push it into the worklist, if it's not there.  We use
+   depset::section to indicate where we've got to.
+
+   Add the DECL's binding to the current depset, if the binding was
+   not already there.
+
+   A definition's depset naturally depends on its declaration's
+   depset.
+
+   NOTE:DECLs added here that are not export/module linkage (i.e. all
+   !NEEDS_DEP cases), need not actually be added into the named
+   depset.  We will never need to find them by name from the language
+   POV (after p0923 fixes ADL).  It is a convenience that the
+   inter-module loading uses the same bindings.  We could locate them
+   by a different, module-specific, mechanism.  */
+
+void
+depset::hash::add_dependency (tree decl, bool needs_def)
+{
+  if (!DECL_CONTEXT (decl))
+    /* We can't be dependent on something with no context.  */
+    return;
+
+  tree ctx = CP_DECL_CONTEXT (decl);
+  gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+  depset **slot = maybe_insert (ctx, DECL_NAME (decl));
+  depset *dep = *slot;
+  bool is_new = true;
+
+  if (!dep)
+    /* Create an entry.  */
+    *slot = dep = new depset (ctx);
+  else
+    {
+      for (unsigned ix = dep->decls.length (); ix--;)
+	if (dep->decls[ix] == decl)
+	  {
+	    is_new = false;
+	    break;
+	  }
+      /* Only internal linkage things should be new (export/module
+	 linkage should have been added by add_writables).  */
+      gcc_assert (!(MAYBE_DECL_MODULE_PURVIEW_P (decl) && TREE_PUBLIC (decl))
+		  || !is_new);
+    }
+
+  if (is_new)
+    {
+      /* A newly needed decl of this binding.  */
+      dump () && dump ("New binding dependency %N added", decl);
+
+      if (dep->section == dep->decls.length ())
+	/* Add (back) to worklist, so we figure this decl's dependencies. */
+	worklist.safe_push (dep);
+      dep->decls.safe_push (decl);
+    }
+
+  if (is_new || needs_def)
+    dep = maybe_add_definition (dep, decl);
+
+  if (!dep->cluster)
+    {
+      /* A newly discovered dependency. */
+      dump () && dump (dep->is_binding () ? "Dependency %P added"
+		       : "Definition dependency %N added",
+		       dep->get_container (), dep->get_name ());
+      dep->cluster = true;
+      current->deps.safe_push (dep);
+      if (current->is_binding ()
+	  && TREE_CODE (decl) == TYPE_DECL
+	  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+	  && CP_DECL_CONTEXT (current->decls[0]) == TREE_TYPE (decl))
+	/* Unscoped enum values are pushed into the containing
+	   scope.  Insert a dependency to the current binding, if it
+	   is one of the enum constants.  */
+	dep->deps.safe_push (current);
+    }
+}
+
+/* DECLS is a vector of decls that must be written out (export or
+   module-linkage).  Create a new depset and insert into the hash
+   table.  */
+
+void
+depset::hash::add_decls (tree ns, tree name, auto_vec<tree> &decls)
+{
+  depset *b = new depset (ns);
+
+  b->decls.reserve_exact (decls.length ());
+  /* Reverse ordering, so exported things are first.  */
+  for (unsigned ix = decls.length (); ix--;)
+    {
+      tree decl = decls[ix];
+
+      gcc_checking_assert (DECL_P (decl));
+      b->decls.quick_push (decl);
+      maybe_add_definition (b, decl);
+    }
+
+  depset **slot = maybe_insert (ns, name);
+  gcc_assert (!*slot);
+  *slot = b;
+  worklist.safe_push (b);
+}
+	      
+/* Core of TARJAN's algorithm to find Strongly Connected Components
+   within a graph.  See https://en.wikipedia.org/wiki/
+   Tarjan%27s_strongly_connected_components_algorithm for details.
+
+   We use depset::section as lowlink.  Completed nodes have
+   depset::cluster containing the cluster number, with the top
+   bit set.
+
+   A useful property is that the output vector is a reverse
+   topological sort of the resulting DAG.  In our case that means
+   dependent SCCs are found before their dependers.  */
+
+void
+depset::tarjan::connect (depset *v)
+{
+  v->cluster = v->section = ++index;
+  stack.safe_push (v);
+
+  /* Walk all our dependencies.  */
+  for (unsigned ix = v->deps.length (); ix--;)
+    {
+      depset *dep = v->deps[ix];
+      if (!dep->cluster)
+	{
+	  /* A new node.  Connect it.  */
+	  connect (dep);
+	  if (v->section > dep->section)
+	    v->section = dep->section;
+	}
+      else if (v->section > dep->cluster)
+	/* Because we set the top bit of dep->cluster when removing
+	   from the stack, we don't need to explicitly check that
+	   dep is not in the stack, the above comparison will DTRT.  */
+	v->section = dep->cluster;
+    }
+
+  if (v->section == v->cluster)
+    {
+      /* Root of a new SCC.  If it is a (singleton) namespace, put it on the
+	 spaces vector.  If it is a singleton non-binding, put it on
+	 the defs vector.  Otherwise it's a binding.  */
+      auto_vec<depset *> *vec = &binds;
+      if (stack.last () == v)
+	{
+	  if (!v->is_binding ())
+	    vec = &defs;
+	  else if (TREE_CODE (v->get_naming_decl ()) == NAMESPACE_DECL)
+	    vec = &spaces;
+	}
+
+      unsigned num = v->cluster | ~(~0u >> 1);
+      depset *p;
+      do
+	{
+	  p = stack.pop ();
+	  p->cluster = num;
+	  vec->safe_push (p);
+	}
+      while (p != v);
+    }
+}
+
+/* Find or create module NAME in the hash table.  */
+
+module_state *
+module_state::get_module (tree name, module_state *dflt)
+{
+  module_state **slot
+    = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), INSERT);
+  module_state *state = *slot;
+
+  if (dflt)
+    {
+      /* Don't overwrite occupied default.  */
+      if (dflt->occupied ())
+	return NULL;
+
+      /* Don't copy an occupied existing module.  */
+      if (state && state->occupied ())
+	return state;
+
+      /* Copy name and filename from the empty one we found.  */
+      if (state)
+	{
+	  if (!dflt->filename)
+	    dflt->filename = state->filename;
+	  else
+	    free (state->filename);
+	}
+
+      /* Use the default we were given, and put it back in the hash
+	 table.  */
+      dflt->name = name;
+      state = dflt;
+      *slot = state;
+    }
+  else if (!state)
+    {
+      state = new (ggc_alloc<module_state> ()) module_state (name);
+      *slot = state;
+    }
+  return state;
+}
+
+/* VAL is a global tree, add it to the global vec if it is
+   interesting.  Add some of its targets, if they too are
+   interesting.  */
+
+int
+module_state::maybe_add_global (tree val, unsigned &crc)
+{
+  int v = 0;
+
+  if (val && !(identifier_p (val) || TREE_VISITED (val)))
+    {
+      TREE_VISITED (val) = true;
+      crc = crc32_unsigned (crc, global_vec->length ());
+      vec_safe_push (global_vec, val);
+      v++;
+
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
+	v += maybe_add_global (TREE_TYPE (val), crc);
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPE_COMMON))
+	v += maybe_add_global (TYPE_NAME (val), crc);
+    }
+
+  return v;
+}
+
+/* Initialize module state.  Create the hash table, determine the
+   global trees.  Create the module for current TU.  */
+
+void
+module_state::init ()
+{
+  hash = new hash_table<module_state_hash> (30);
+
+  vec_safe_reserve (modules, 20);
+  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
+    modules->quick_push (NULL);
+
+  /* Create module for current TU.  */
+  module_state *current = new (ggc_alloc <module_state> ()) module_state ();
+  current->mod = MODULE_NONE;
+  bitmap_set_bit (current->imports, MODULE_NONE);
+  (*modules)[MODULE_NONE] = current;
+
+  gcc_checking_assert (!global_vec);
+
+  dump.push (NULL);
+  /* Construct the global tree array.  This is an array of unique
+     global trees (& types).  */
+  // FIXME:Some slots are lazily allocated, we must move them to
+  // the end and not stream them here.  They must be locatable via
+  // some other means.
+  unsigned crc = 0;
+  vec_alloc (global_vec, 200);
+
+  dump () && dump ("+Creating globals");
+  /* Insert the TRANSLATION_UNIT_DECL.  */
+  TREE_VISITED (DECL_CONTEXT (global_namespace)) = true;
+  global_vec->quick_push (DECL_CONTEXT (global_namespace));
+  for (unsigned jx = 0; global_trees[jx].first; jx++)
+    {
+      const tree *ptr = global_trees[jx].first;
+      unsigned limit = global_trees[jx].second;
+
+      for (unsigned ix = 0; ix != limit; ix++, ptr++)
+	{
+	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx, ix);
+	  unsigned v = maybe_add_global (*ptr, crc);
+	  dump () && dump ("+%u", v);
+	}
+    }
+  global_crc = crc32_unsigned (crc, global_vec->length ());
+  dump ("") && dump ("Created %u unique globals, crc=%x",
+		     global_vec->length (), global_crc);
+  for (unsigned ix = global_vec->length (); ix--;)
+    TREE_VISITED ((*global_vec)[ix]) = false;
+  dump.pop (0);
+}
+
+/* Delete post-parsing state.  */
+
+void
+module_state::fini ()
+{
+  for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
+    (*modules)[ix]->release ();
+
+  delete hash;
+  hash = NULL;
+}
+
+/* Free up state.  If ALL is true, we're completely done.  If ALL is
+   false, we've completed reading in the module (but have not
+   completed parsing).  */
+
+void
+module_state::release (bool all)
+{
+  if (all)
+    {
+      imports = NULL;
+      exports = NULL;
+    }
+
+  XDELETEVEC (srcname);
+  srcname = NULL;
+
+  if (remap)
+    {
+      vec_free (remap);
+      delete from;
+      from = NULL;
+    }
+}
+
+void
+module_state::print_map ()
+{
+  fprintf (stdout, "Module Map:\n");
+  hash_table<module_state_hash>::iterator end (hash->end ());
+  for (hash_table<module_state_hash>::iterator iter (hash->begin ());
+       iter != end; ++iter)
+    {
+      module_state *state = *iter;
+      if (state->name)
+	fprintf (stdout, state->srcname ? "%s=%s ;%s\n" : "%s=%s\n",
+		 IDENTIFIER_POINTER (state->name), state->filename,
+		 state->srcname);
+    }
+}
+
+/* Announce WHAT about the module.  */
+
+void
+module_state::announce (const char *what) const
+{
+  if (quiet_flag)
+    return;
+
+  fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
+	   what, IDENTIFIER_POINTER (name), mod);
+  fflush (stderr);
+  pp_needs_newline (global_dc->printer) = true;
+  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+}
+
+/* Create a module file name from NAME, length NAME_LEN.  NAME might
+   not be NUL-terminated.  FROM_IDENT is true if NAME is the
+   module-name, false if it is already filenamey.  */
+
+static char *
+make_module_filename (const char *name, size_t name_len, bool from_ident)
+{
+  size_t pfx_len = module_prefix ? strlen (module_prefix) : 0;
+  size_t sfx_len = from_ident ? strlen (MOD_FNAME_SFX) : 0;
+  char *res = XNEWVEC (char, name_len + sfx_len + pfx_len + (pfx_len != 0) + 1);
+  char *ptr = res;
+
+  if (pfx_len)
+    {
+      memcpy (ptr, module_prefix, pfx_len);
+      ptr += pfx_len;
+      *ptr++ = DIR_SEPARATOR;
+    }
+  memcpy (ptr, name, name_len);
+  ptr[name_len] = 0;
+  if (from_ident)
+    {
+      strcpy (ptr + name_len, MOD_FNAME_SFX);
+      if (MOD_FNAME_DOT != '.')
+	for (; name_len--; ptr++)
+	  if (*ptr == '.')
+	    *ptr = MOD_FNAME_DOT;
+    }
+  return res;
+}
+
+/* Set VEC_NAME fields from incoming VNAME, which may be a regular
+   IDENTIFIER.  */
+
+void
+module_state::occupy (location_t l, tree maybe_vec)
+{
+  gcc_assert (!vec_name);
+  loc = l;
+  if (identifier_p (maybe_vec))
+    {
+      /* Create a TREE_VEC of components.  */
+      auto_vec<tree,5> ids;
+      size_t len = IDENTIFIER_LENGTH (maybe_vec);
+      const char *ptr = IDENTIFIER_POINTER (maybe_vec);
+
+      while (const char *dot = (const char *)memchr (ptr, '.', len))
+	{
+	  tree id = get_identifier_with_length (ptr, dot - ptr);
+	  len -= dot - ptr + 1;
+	  ptr = dot + 1;
+	  ids.safe_push (id);
+	}
+      tree id = (ids.length () ? get_identifier_with_length (ptr, len)
+		 : maybe_vec);
+      ids.safe_push (id);
+      maybe_vec = make_tree_vec (ids.length ());
+      for (unsigned ix = ids.length (); ix--;)
+	TREE_VEC_ELT (maybe_vec, ix) = ids.pop ();
+    }
+
+  vec_name = maybe_vec;
+
+  if (!filename)
+    filename = make_module_filename (IDENTIFIER_POINTER (name),
+				     IDENTIFIER_LENGTH (name), true);
+}
+
+/* Set location to NAME, and then enter the module.  */
+
+void
+module_state::push_location ()
+{
+  // FIXME:We want LC_MODULE_ENTER really.
+  linemap_add (line_table, LC_ENTER, false, filename, 0);
+  input_location = linemap_line_start (line_table, 0, 0);
+}
+
+void
+module_state::pop_location ()
+{
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);  
+  input_location = linemap_line_start (line_table, 0, 0);
+}
+
+/* Context of the compilation: MOD_SNAME_PFX .context   
+
+   This is data we need to read in to modify our state.
+
+   u:import_size
+   {
+     b:imported
+     b:exported
+     u32:crc
+     u:name
+   } imports[N]
+
+   We need the complete set, so that we can build up the remapping
+   vector on subsequent import.
+
+   The README section is intended for human consumption.  It is a
+   STRTAB that may be extracted with:
+     readelf -p.gnu.c++.README $(module).nms   */
+
+void
+module_state::write_context (elf_out *to, unsigned *crc_p)
+{
+  bytes_out ctx, readme;
+
+  ctx.begin ();
+  readme.begin ();
+
+  /* Write version and module name to readme.  */
+  readme.printf ("GNU C++ Module");
+  readme.printf ("compiler:%s", version_string);
+  verstr_t string;
+  version2string (get_version (), string);
+  readme.printf ("version:%s", string);
+  readme.printf ("module:%s", IDENTIFIER_POINTER (name));
+  readme.printf ("source:%s", srcname);
+
+  /* Total number of modules.  */
+  ctx.u (modules->length ());
+  /* Write the imports, in forward order.  */
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
+    {
+      module_state *state = (*modules)[ix];
+      dump () && dump ("Writing %simport %I (crc=%x)",
+		       state->exported ? "export " :
+		       state->imported ? "" : "indirect ",
+		       state->name, state->crc);
+      ctx.b (state->imported);
+      ctx.b (state->exported);
+      ctx.bflush ();
+      ctx.u32 (state->crc);
+      unsigned name = to->name (state->name);
+      ctx.u (name);
+
+      if (state->imported)
+	/* Write a direct import to README.  */
+	readme.printf ("import:%s", IDENTIFIER_POINTER (state->name));
+    }
+  readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
+  ctx.end (to, to->name (MOD_SNAME_PFX ".context"), crc_p);
+}
+
+bool
+module_state::read_context (elf_in *from)
+{
+  bytes_in ctx;
+
+  if (!ctx.begin (from, MOD_SNAME_PFX ".context"))
+    return false;
+
+  /* Allocate the REMAP vector.  */
+  unsigned imports = ctx.u ();
+  gcc_assert (!remap);
+  remap = NULL;
+  vec_safe_reserve (remap, imports);
+
+  /* Allocate the reserved slots.  */
+  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
+    remap->quick_push (0);
+
+  /* Read the import table in forward order.  */
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < imports; ix++)
+    {
+      bool imported = ctx.b ();
+      bool exported = ctx.b ();
+      ctx.bflush ();
+      unsigned crc = ctx.u32 ();
+      tree name = get_identifier (from->name (ctx.u ()));
+
+      dump () && dump ("Nested %simport %I",
+		       exported ? "export " : imported ? "" : "indirect ", name);
+      module_state *imp = do_import (input_location, name, /*unit_p=*/false,
+				     /*import_p=*/imported, &crc);
+      if (!imp)
+	{
+	  from->set_error (elf::E_BAD_IMPORT);
+	  goto fail;
+	}
+      remap->quick_push (imp->mod);
+      if (imported)
+	{
+	  dump () && dump ("Direct %simport %I %u",
+			   exported ? "export " : "", name, imp->mod);
+	  set_import (imp, exported);
+	}
+    }
+
+ fail:
+  return ctx.end (from);
+}
+
+/* Tool configuration:  MOD_SNAME_PFX .config
+
+   This is data that confirms current state (or fails).
+
+   u32:version
+   u32:crc
+   u:module-name
+   u:<target-triplet>
+   u:<host-triplet>
+   u:global_vec->length()
+   u32:global_crc
+   // FIXME CPU,ABI and similar tags
+   // FIXME Optimization and similar tags
+*/
+
+void
+module_state::write_config (elf_out *to, unsigned inner_crc)
+{
+  bytes_out cfg;
+
+  cfg.begin ();
+
+  /* Write version and inner crc as u32 values, for easier
+     debug inspection.  */
+  dump () && dump ("Writing version=%V, inner_crc=%x",
+		   get_version (), inner_crc);
+  cfg.u32 (unsigned (get_version ()));
+  cfg.u32 (inner_crc);
+
+  cfg.u (to->name (name));
+
+  /* Configuration. */
+  dump () && dump ("Writing target='%s', host='%s'",
+		   TARGET_MACHINE, HOST_MACHINE);
+  unsigned target = to->name (TARGET_MACHINE);
+  unsigned host = (!strcmp (TARGET_MACHINE, HOST_MACHINE)
+		   ? target : to->name (HOST_MACHINE));
+  cfg.u (target);
+  cfg.u (host);
+
+  /* Global tree information.  We write the globals crc separately,
+     rather than mix it directly into the overall crc, as it is used
+     to ensure data match between instances of the compiler, not
+     integrity of the file.  */
+  dump () && dump ("Writing globals=%u, crc=%x",
+		   global_vec->length (), global_crc);
+  cfg.u (global_vec->length ());
+  cfg.u32 (global_crc);
+
+  /* Now generate CRC, we'll have incorporated the inner CRC because
+     of its serialization above.  */
+  cfg.end (to, to->name (MOD_SNAME_PFX ".config"), &crc);
+  dump () && dump ("Writing CRC=%x", crc);
+}
+
+bool
+module_state::read_config (elf_in *from, unsigned *expected_crc)
+{
+  bytes_in cfg;
+
+  if (!cfg.begin (from, MOD_SNAME_PFX ".config"))
+    return false;
+
+  crc = cfg.get_crc ();
+  dump () && dump ("Reading CRC=%x", crc);
+  if (expected_crc && crc != *expected_crc)
+    {
+      error ("module %qE CRC mismatch", name);
+    fail:
+      cfg.set_overrun ();
+      return cfg.end (from);
+    }
+
+  /* Check version.  */
+  int my_ver = get_version ();
+  int their_ver = int (cfg.u32 ());
+  dump () && dump  (my_ver == their_ver ? "Version %V"
+		    : "Expecting %V found %V", my_ver, their_ver);
+  if (their_ver != my_ver)
+    {
+      int my_date = version2date (my_ver);
+      int their_date = version2date (their_ver);
+      int my_time = version2time (my_ver);
+      int their_time = version2time (their_ver);
+      verstr_t my_string, their_string;
+
+      version2string (my_ver, my_string);
+      version2string (their_ver, their_string);
+
+      if (my_date != their_date)
+	{
+	  /* Dates differ, decline.  */
+	  error ("file is version %s, this is version %s",
+		 their_string, my_string);
+	  goto fail;
+	}
+      else if (my_time != their_time)
+	/* Times differ, give it a go.  */
+	warning (0, "file is version %s, compiler is version %s,"
+		 " perhaps close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
+		 their_string, my_string);
+    }
+
+  /* Read and ignore the inner crc.  We only wrote it to mix it into
+     the crc.  */
+  cfg.u32 ();
+
+  /* Check module name.  */
+  const char *their_name = from->name (cfg.u ());
+  if (strlen (their_name) != IDENTIFIER_LENGTH (name)
+      || memcmp (their_name, IDENTIFIER_POINTER (name),
+		 IDENTIFIER_LENGTH (name)))
+    {
+      error ("module %qs found, expected module %qE", their_name, name);
+      goto fail;
+    }
+
+  /* Check target & host.  */
+  const char *their_target = from->name (cfg.u ());
+  const char *their_host = from->name (cfg.u ());
+  dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
+  if (strcmp (their_target, TARGET_MACHINE)
+      || strcmp (their_host, HOST_MACHINE))
+    {
+      error ("target & host is %qs:%qs, expected %qs:%qs",
+	     their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
+      goto fail;
+    }
+
+  /* Check global trees.  */
+  unsigned their_glength = cfg.u ();
+  unsigned their_gcrc = cfg.u32 ();
+  dump () && dump ("Read globals=%u, crc=%x", their_glength, their_gcrc);
+  if (their_glength != global_vec->length ()
+      || their_gcrc != global_crc)
+    {
+      error ("global tree mismatch");
+      goto fail;
+    }
+
+  if (cfg.more_p ())
+    goto fail;
+
+  return cfg.end (from);
+}
+
+/* The following writer functions rely on the current behaviour of
+   depset::hash::add_dependency making the decl and defn depset nodes
+   depend on eachother.  That way we don't have to worry about seeding
+   the tree map with named decls that cannot be looked up by name (I.e
+   template and function parms).  We know the decl and definition will
+   be in the same cluster, which is what we want.  */
+
+void
+module_state::write_function_def (trees_out &out, tree decl)
+{
+  out.tree_node (DECL_RESULT (decl));
+  out.tree_node (DECL_INITIAL (decl));
+  out.tree_node (DECL_SAVED_TREE (decl));
+  if (DECL_DECLARED_CONSTEXPR_P (decl))
+    out.tree_node (find_constexpr_fundef (decl));
+}
+
+void
+module_state::mark_function_def (trees_out &, tree)
+{
+}
+
+bool
+module_state::read_function_def (trees_in &in, tree decl)
+{
+  tree result = in.tree_node ();
+  tree initial = in.tree_node ();
+  tree saved = in.tree_node ();
+  tree constexpr_body = (DECL_DECLARED_CONSTEXPR_P (decl)
+			 ? in.tree_node () : NULL_TREE);
+
+  if (in.get_overrun ())
+    return NULL_TREE;
+
+  if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+    {
+      if (mod != MAYBE_DECL_MODULE_OWNER (decl))
+	{
+	  error ("unexpected definition of %q#D", decl);
+	  in.set_overrun ();
+	  return false;
+	}
+
+      if (!MAYBE_DECL_MODULE_PURVIEW_P (decl)
+	  && DECL_SAVED_TREE (decl))
+	return true; // FIXME check same
+    }
+
+  DECL_RESULT (decl) = result;
+  DECL_INITIAL (decl) = initial;
+  DECL_SAVED_TREE (decl) = saved;
+  if (constexpr_body)
+    register_constexpr_fundef (decl, constexpr_body);
+
+  current_function_decl = decl;
+  allocate_struct_function (decl, false);
+  cfun->language = ggc_cleared_alloc<language_function> ();
+  cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
+  set_cfun (NULL);
+  current_function_decl = NULL_TREE;
+
+  if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
+    {
+      comdat_linkage (decl);
+      note_vague_linkage_fn (decl);
+      cgraph_node::finalize_function (decl, false);
+    }
+
+  return true;
+}
+
+void
+module_state::write_var_def (trees_out &out, tree decl)
+{
+  out.tree_node (DECL_INITIAL (decl));
+}
+
+void
+module_state::mark_var_def (trees_out &, tree)
+{
+}
+
+bool
+module_state::read_var_def (trees_in &in, tree decl)
+{
+  tree init = in.tree_node ();
+
+  if (in.get_overrun ())
+    return false;
+
+  DECL_INITIAL (decl) = init;
+
+  return true;
+}
+
+/* Write the binfo heirarchy of TYPE.  The binfos are chained in DFS
+   order, but it is a strongly connected graph, so requires two
+   passes.  */
+
+void
+module_state::write_binfos (trees_out &out, tree type)
+{
+  /* Stream out types and sizes in DFS order, forcing each binfo
+     into the map.  */
+  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+    {
+      out.tree_node (BINFO_TYPE (child));
+      /* We might have tagged the binfo during a by-reference walk.
+	 Force a new tag now.  */
+      int tag = out.force_insert (child, TREE_VISITED (child));
+      if (!out.dep_walk_p ())
+	{
+	  out.u (BINFO_N_BASE_BINFOS (child));
+
+	  dump () && dump ("Wrote binfo:%d child %N of %N",
+			   tag, BINFO_TYPE (child), type);
+	}
+    }
+
+  out.tree_node (NULL_TREE);
+
+  if (!out.dep_walk_p ())
+    {
+      if (TYPE_LANG_SPECIFIC (type))
+	{
+	  unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
+	  out.u (nvbases);
+	  if (nvbases)
+	    dump () && dump ("Type %N has %u vbases", type, nvbases);
+	}
+
+      /* Stream out contents in DFS order.  */
+      for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+	{
+	  dump () && dump ("Writing binfo:%N of %N contents", child, type);
+
+	  out.core_bools (child);
+	  out.bflush ();
+	  out.tree_node (child->binfo.offset);
+	  out.tree_node (child->binfo.inheritance);
+	  out.tree_node (child->binfo.vtable);
+	  out.tree_node (child->binfo.virtuals);
+	  out.tree_node (child->binfo.vptr_field);
+	  out.tree_node (child->binfo.vtt_subvtt);
+	  out.tree_node (child->binfo.vtt_vptr);
+
+	  out.tree_vec (BINFO_BASE_ACCESSES (child));
+	  unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
+	  gcc_checking_assert (BINFO_N_BASE_BINFOS (child) == num);
+	  for (unsigned ix = 0; ix != num; ix++)
+	    out.tree_node (BINFO_BASE_BINFO (child, ix));
+	}
+    }
+}
+
+/* Read the binfo heirarchy of TYPE.  Sets TYPE_BINFO and
+   CLASSTYPE_VBASECLASSES.  */
+
+bool
+module_state::read_binfos (trees_in &in, tree type)
+{
+  tree *binfo_p = &TYPE_BINFO (type);
+
+  /* Stream in the types and sizes in DFS order.  */
+  while (tree t = in.tree_node ())
+    {
+      unsigned n_children = in.u ();
+      if (in.get_overrun ())
+	return false;
+      tree child = make_tree_binfo (n_children);
+      BINFO_TYPE (child) = t;
+
+      int tag = in.insert (child);
+      dump () && dump ("Read binfo:%d child %N of %N", tag, child, type);
+      *binfo_p = child;
+      binfo_p = &TREE_CHAIN (child);
+    }
+
+  unsigned nvbases = 0;
+  vec<tree, va_gc> *vbase_vec = NULL;
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      nvbases = in.u ();
+      if (nvbases)
+	{
+	  vec_alloc (vbase_vec, nvbases);
+	  CLASSTYPE_VBASECLASSES (type) = vbase_vec;
+	  dump () && dump ("Type %N has %u vbases", type, nvbases);
+	}
+    }
+
+  /* Stream in the contents in DFS order.  */
+  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+    {
+      dump () && dump ("Reading binfo:%N of %N contents", child, type);
+
+      in.core_bools (child);
+      in.bflush ();
+      child->binfo.offset = in.tree_node ();
+      child->binfo.inheritance = in.tree_node ();
+      child->binfo.vtable = in.tree_node ();
+      child->binfo.virtuals = in.tree_node ();
+      child->binfo.vptr_field = in.tree_node ();
+      child->binfo.vtt_subvtt = in.tree_node ();
+      child->binfo.vtt_vptr = in.tree_node ();
+
+      BINFO_BASE_ACCESSES (child) = in.tree_vec ();
+      if (in.get_overrun ())
+	return false;
+      unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
+      for (unsigned ix = 0; ix != num; ix++)
+	BINFO_BASE_APPEND (child, in.tree_node ());
+
+      if (BINFO_VIRTUAL_P (child))
+	{
+	  if (vec_safe_length (vbase_vec) == nvbases)
+	    {
+	      in.set_overrun ();
+	      return false;
+	    }
+	  vbase_vec->quick_push (child);
+	}
+    }
+
+  if (vec_safe_length (vbase_vec) != nvbases)
+    in.set_overrun ();
+
+  return !in.get_overrun ();
+}
+
+void
+module_state::write_class_def (trees_out &out, tree type)
+{
+  out.chained_decls (TYPE_FIELDS (type));
+  out.tree_node (TYPE_VFIELD (type));
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      out.tree_vec (CLASSTYPE_MEMBER_VEC (type));
+      out.tree_node (CLASSTYPE_FRIEND_CLASSES (type));
+      out.tree_node (CLASSTYPE_LAMBDA_EXPR (type));
+
+      /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
+	 reader won't know at this point.  */
+      // FIXME Think about better ordering
+      int has_vptr = TYPE_CONTAINS_VPTR_P (type);
+      if (!out.dep_walk_p ())
+	out.i (has_vptr);
+      if (has_vptr)
+	{
+	  out.tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
+	  out.tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
+	  out.tree_node (CLASSTYPE_KEY_METHOD (type));
+	}
+    }
+
+  write_binfos (out, type);
+  
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      out.tree_node (CLASSTYPE_PRIMARY_BINFO (type));
+
+      tree as_base = CLASSTYPE_AS_BASE (type);
+      out.tree_node (as_base);
+      if (as_base && as_base != type)
+	write_class_def (out, as_base);
+
+      tree vtables = CLASSTYPE_VTABLES (type);
+      out.chained_decls (vtables);
+      /* Write the vtable initializers.  */
+      for (; vtables; vtables = TREE_CHAIN (vtables))
+	out.tree_node (DECL_INITIAL (vtables));
+    }
+
+  // lang->nested_udts
+
+  /* Now define all the members.  */
+  for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
+    if (has_definition (member))
+      {
+	out.tree_node (member);
+	write_definition (out, member);
+      }
+
+  /* End of definitions.  */
+  out.tree_node (NULL_TREE);
+}
+
+void
+module_state::mark_class_def (trees_out &out, tree type)
+{
+  for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
+    {
+      out.mark_node (member, true);
+      if (has_definition (member))
+	mark_definition (out, member);
+    }
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      tree as_base = CLASSTYPE_AS_BASE (type);
+      if (as_base && as_base != type)
+	{
+	  out.mark_node (as_base, true);
+	  mark_class_def (out, as_base);
+	}
+
+      for (tree vtables = CLASSTYPE_VTABLES (type);
+	   vtables; vtables = TREE_CHAIN (vtables))
+	{
+	  out.mark_node (vtables, true);
+	  mark_var_def (out, vtables);
+	}
+    }
+}
+
+/* Nop sorted needed for resorting the member vec.  */
+
+static void
+nop (void *, void *)
+{
+}
+
+bool
+module_state::read_class_def (trees_in &in, tree type)
+{
+  tree fields = in.chained_decls ();
+  tree vfield = in.tree_node ();
+  vec<tree, va_gc> *member_vec = NULL;
+  vec<tree, va_gc> *pure_virts = NULL;
+  vec<tree_pair_s, va_gc> *vcall_indices = NULL;
+  tree key_method = NULL_TREE;
+  tree lambda = NULL_TREE;
+  tree friends = NULL_TREE;
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      member_vec = in.tree_vec ();
+      friends = in.tree_node ();
+      lambda = in.tree_node ();
+
+      int has_vptr = in.i ();
+      if (has_vptr)
+	{
+	  pure_virts = in.tree_vec ();
+	  vcall_indices = in.tree_pair_vec ();
+	  key_method = in.tree_node ();
+	}
+    }
+
+  // lang->nested_udts
+
+  // FIXME: Sanity check stuff
+
+  if (in.get_overrun ())
+    return NULL_TREE;
+
+  TYPE_FIELDS (type) = fields;
+  TYPE_VFIELD (type) = vfield;
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      CLASSTYPE_FRIEND_CLASSES (type) = friends;
+      CLASSTYPE_LAMBDA_EXPR (type) = lambda;
+
+      CLASSTYPE_MEMBER_VEC (type) = member_vec;
+      CLASSTYPE_PURE_VIRTUALS (type) = pure_virts;
+      CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
+
+      CLASSTYPE_KEY_METHOD (type) = key_method;
+
+      /* Resort the member vector.  */
+      resort_type_member_vec (member_vec, NULL, nop, NULL);
+    }
+
+  if (!read_binfos (in, type))
+    return false;
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      CLASSTYPE_PRIMARY_BINFO (type) = in.tree_node ();
+
+      tree as_base = in.tree_node ();
+      CLASSTYPE_AS_BASE (type) = as_base;
+      if (as_base && as_base != type)
+	read_class_def (in, as_base);
+      
+      /* Read the vtables.  */
+      // FIXME: via read_var_def?
+      tree vtables = in.chained_decls ();
+      if (!CLASSTYPE_KEY_METHOD (type) && vtables)
+	vec_safe_push (keyed_classes, type);
+      CLASSTYPE_VTABLES (type) = vtables;
+      for (; vtables; vtables = TREE_CHAIN (vtables))
+	DECL_INITIAL (vtables) = in.tree_node ();
+    }
+
+  // FIXME:
+  if (false/*TREE_CODE (decl) == TEMPLATE_DECL*/)
+    CLASSTYPE_DECL_LIST (type) = in.tree_node ();
+
+  /* Propagate to all variants.  */
+  fixup_type_variants (type);
+
+  /* Now define all the members.  */
+  while (tree member = in.tree_node ())
+    {
+      if (in.get_overrun ())
+	break;
+      if (!read_definition (in, member))
+	break;
+    }
+
+  return !in.get_overrun ();
+}
+
+void
+module_state::write_enum_def (trees_out &out, tree type)
+{
+  out.tree_node (TYPE_VALUES (type));
+  out.tree_node (TYPE_MIN_VALUE (type));
+  out.tree_node (TYPE_MAX_VALUE (type));
+}
+
+void
+module_state::mark_enum_def (trees_out &out, tree type)
+{
+  if (!UNSCOPED_ENUM_P (type))
+    for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
+      out.mark_node (TREE_VALUE (values), true);
+}
+
+bool
+module_state::read_enum_def (trees_in &in, tree type)
+{
+  tree values = in.tree_node ();
+  tree min = in.tree_node ();
+  tree max = in.tree_node ();
+
+  if (in.get_overrun ())
+    return false;
+
+  TYPE_VALUES (type) = values;
+  TYPE_MIN_VALUE (type) = min;
+  TYPE_MAX_VALUE (type) = max;
+
+  return true;
+}
+
+void
+module_state::write_template_def (trees_out &out, tree decl)
+{
+  tree res = DECL_TEMPLATE_RESULT (decl);
+  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
+    out.tree_node (CLASSTYPE_DECL_LIST (TREE_TYPE (res)));
+  write_definition (out, res);
+}
+
+void
+module_state::mark_template_def (trees_out &out, tree decl)
+{
+  tree res = DECL_TEMPLATE_RESULT (decl);
+  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
+    for (tree decls = CLASSTYPE_DECL_LIST (TREE_TYPE (res));
+	 decls; decls = TREE_CHAIN (decls))
+      {
+	/* There may be decls here, that are not on the member vector.
+	   for instance forward declarations of member tagged types.  */
+	tree decl = TREE_VALUE (decls);
+	if (TYPE_P (decl))
+	  /* In spite of its name, non-decls appear :(.  */
+	  decl = TYPE_NAME (decl);
+	out.mark_node (decl);
+      }
+  mark_definition (out, res);
+}
+
+bool
+module_state::read_template_def (trees_in &in, tree decl)
+{
+  tree res = DECL_TEMPLATE_RESULT (decl);
+  if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
+    CLASSTYPE_DECL_LIST (TREE_TYPE (res)) = in.tree_node ();
+  return read_definition (in, res);
+}
+
+/* Write out the body of DECL.  See above circularity note.  */
+
+void
+module_state::write_definition (trees_out &out, tree decl)
+{
+  if (!out.dep_walk_p ())
+    dump () && dump ("Writing definition %C:%N", TREE_CODE (decl), decl);
+
+  switch (TREE_CODE (decl))
+    {
+    default:
+      gcc_unreachable ();
+
+    case TEMPLATE_DECL:
+      write_template_def (out, decl);
+      break;
+
+    case FUNCTION_DECL:
+      write_function_def (out, decl);
+      break;
+
+    case VAR_DECL:
+      write_var_def (out, decl);
+      break;
+
+    case TYPE_DECL:
+      {
+	tree type = TREE_TYPE (decl);
+	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+		    && TYPE_MAIN_VARIANT (type) == type);
+	if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  write_enum_def (out, type);
+	else
+	  write_class_def (out, type);
+      }
+      break;
+    }
+}
+
+/* Mark the body of DECL.  */
+
+void
+module_state::mark_definition (trees_out &out, tree decl)
+{
+  switch (TREE_CODE (decl))
+    {
+    default:
+      gcc_unreachable ();
+
+    case TEMPLATE_DECL:
+      mark_template_def (out, decl);
+      break;
+
+    case FUNCTION_DECL:
+      mark_function_def (out, decl);
+      break;
+
+    case VAR_DECL:
+      mark_var_def (out, decl);
+      break;
+
+    case TYPE_DECL:
+      {
+	tree type = TREE_TYPE (decl);
+	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+		    && TYPE_MAIN_VARIANT (type) == type);
+	if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  mark_enum_def (out, type);
+	else
+	  mark_class_def (out, type);
+      }
+      break;
+    }
+}
+
+/* Read in the body of DECL.  See above circularity note.  */
+
+bool
+module_state::read_definition (trees_in &in, tree decl)
+{
+  dump () && dump ("Reading definition %C %N", TREE_CODE (decl), decl);
+
+  switch (TREE_CODE (decl))
+    {
+    default:
+      break;
+
+    case TEMPLATE_DECL:
+      return read_template_def (in, decl);
+
+    case FUNCTION_DECL:
+      return read_function_def (in, decl);
+
+    case VAR_DECL:
+      return read_var_def (in, decl);
+
+    case TYPE_DECL:
+      {
+	tree type = TREE_TYPE (decl);
+	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+		    && TYPE_MAIN_VARIANT (type) == type);
+	if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  return read_enum_def (in, type);
+	else
+	  return read_class_def (in, type);
+      }
+      break;
+    }
+
+  return false;
+}
+
+/* Compare bindings in a cluster.  Definitions are less than bindings.  */
+
+static int
+bind_cmp (const void *a_, const void *b_)
+{
+  depset *a = *(depset *const *)a_;
+  depset *b = *(depset *const *)b_;
+
+  bool a_bind = a->is_binding ();
+  if (a_bind != b->is_binding ())
+    /* Exactly one is a binding.  It is the greater.  */
+    return a_bind ? +1 : -1;
+
+  /* Both bindings or both non-bindings.  Order by UID of first decl.  */
+  tree a_decl = a->decls[0];
+  tree b_decl = b->decls[0];
+
+  return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
+}
+
+/* Write a cluster of depsets starting at SCCS[FROM], return index of next
+   cluster.  */
+
+unsigned
+module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
+			     unsigned from, unsigned *crc_ptr)
+{
+  unsigned cluster = sccs[from]->get_cluster ();
+
+  trees_out sec (this, global_vec);
+  sec.begin ();
+  unsigned end;
+
+  /* Find the size of the cluster and mark every member as walkable.  */
+  for (end = from; end != sccs.length (); end++)
+    {
+      depset *b = sccs[end];
+      if (b->get_cluster () != cluster)
+	break;
+      if (b->is_binding ())
+	for (unsigned ix = b->decls.length (); ix--;)
+	  sec.mark_node (b->decls[ix]);
+      else
+	mark_definition (sec, b->get_decl ());
+    }
+
+  /* Sort the cluster.  */
+  qsort (&sccs[from], end - from, sizeof (depset *), bind_cmp);
+
+  dump () && dump ("Writing SCC:%u bindings:%u",
+		   cluster & (~0U >> 1), end - from);
+  dump.indent ();
+
+  /* Now write every member.  */
+  for (unsigned ix = from; ix != end; ix++)
+    {
+      depset *b = sccs[ix];
+      dump () && dump (b->is_binding () ? "Writing decls of %P"
+		       : "Writing definition %N",
+		       b->get_container (), b->get_name ());
+      sec.tree_node (b->get_container ());
+      if (b->is_binding ())
+	{
+	  sec.tree_node (b->get_name ());
+	  /* Write in forward order, so reading will see the
+	     exports first, thus building the overload chain will be
+	     optimized.  */
+	  for (unsigned jx = 0; jx != b->decls.length (); jx++)
+	    sec.tree_node (b->decls[jx]);
+	  /* Terminate the list.  */
+	  sec.tree_node (NULL);
+	}
+      else
+	write_definition (sec, b->get_decl ());
+    }
+
+  /* We don't find this by name, use the first decl's name for human
+     friendliness.  Because of cluster sorting, this will prefer a
+     definition -- and thus we'll not be confused by naming an
+     unscoped enum constant.  */
+  tree naming_decl = sccs[from]->get_naming_decl ();
+  unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
+
+  /* Record the section number in each depset.  */
+  for (unsigned ix = from; ix != end; ix++)
+    sccs[ix]->section = snum;
+
+  dump.outdent ();
+  dump () && dump ("Wrote SCC:%u section:%u (%N)", cluster & (~0U >> 1),
+		   snum, naming_decl);
+
+  return end;
+}
+
+/* Read a cluster from section SNUM.  */
+
+bool
+module_state::read_cluster (elf_in *from, unsigned snum)
+{
+  trees_in sec (this, global_vec);
+
+  if (!sec.begin (from, snum))
+    return false;
+
+  dump () && dump ("Reading section:%u", snum);
+  dump.indent ();
+  while (sec.more_p ())
+    {
+      tree ctx = sec.tree_node ();
+      if (!ctx)
+	break;
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	{
+	  /* A set of namespace bindings.  */
+	  tree name = sec.tree_node ();
+	  tree decls = NULL_TREE;
+	  tree type = NULL_TREE;
+
+	  while (tree decl = sec.tree_node ())
+	    {
+	      if (TREE_CODE (decl) == TYPE_DECL)
+		{
+		  if (type)
+		    sec.set_overrun ();
+		  type = decl;
+		}
+	      else if (decls
+		       || (TREE_CODE (decl) == TEMPLATE_DECL
+			   && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
+			       == FUNCTION_DECL)))
+		{
+		  if (!DECL_DECLARES_FUNCTION_P (decl)
+		      || (decls
+			  && TREE_CODE (decls) != OVERLOAD
+			  && TREE_CODE (decls) != FUNCTION_DECL))
+		    sec.set_overrun ();
+		  decls = ovl_make (decl, decls);
+		  if (DECL_MODULE_EXPORT_P (decl))
+		    OVL_EXPORT_P (decls) = true;
+		}
+	      else
+		decls = decl;
+	    }
+	  if (!set_module_binding (ctx, name, mod, decls, type))
+	    break;
+	}
+      else
+	{
+	  /* A definition.  */
+	  if (!read_definition (sec, ctx))
+	    break;
+	}
+    }
+  dump.outdent ();
+
+  if (!sec.end (from))
+    return false;
+
+  return true;
+}
+
+/* SPACES is a sorted vector of namespaces.  RANGE is the range of
+   sections containing the module data.  Write out the range and
+   namespaces to MOD_SNAME_PFX.namespace section.
+
+   Each namespace is:
+     u:name,
+     u:context, number of containing namespace (0 == ::)
+     u:inline_p  */
+
+void
+module_state::write_namespaces (elf_out *to, depset::hash &table,
+				auto_vec<depset *> &spaces,
+				const std::pair<unsigned, unsigned> &range,
+				unsigned *crc_p)
+{
+  dump () && dump ("Writing namespaces");
+  dump.indent ();
+
+  bytes_out sec;
+  sec.begin ();
+  /* Write the section range.  */
+  sec.u (range.first);
+  sec.u (range.second);
+
+  for (unsigned ix = 0; ix != spaces.length (); ix++)
+    {
+      depset *b = spaces[ix];
+      tree ns = b->get_decl ();
+
+      gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL
+			   && (DECL_NAME (ns) || !TREE_PUBLIC (ns))
+			   && (TREE_PUBLIC (ns) == DECL_MODULE_EXPORT_P (ns)));
+
+      b->section = ix + 1;
+      b->cluster = 0;
+      unsigned ctx_num = 0;
+      tree ctx = b->get_container ();
+      if (ctx != global_namespace)
+	ctx_num = table.find (CP_DECL_CONTEXT (ctx), DECL_NAME (ctx))->section;
+      dump () && dump ("Writing namespace %N %u::%u", ns, ctx_num, b->section);
+
+      sec.u (to->name (DECL_NAME (ns)));
+      sec.u (ctx_num);
+      /* Don't use a bool, because this can be near the end of the
+	 section, and it won't save anything anyway.  */
+      sec.u (DECL_NAMESPACE_INLINE_P (ns));
+    }
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".namespace"), crc_p);
+  dump.outdent ();
+}
+
+/* Read the namespace hierarchy from MOD_SNAME_PFX.namespace.  Fill in
+   SPACES and RANGE from that data.  */
+
+bool
+module_state::read_namespaces (elf_in *from, auto_vec<tree> &spaces,
+			       std::pair<unsigned, unsigned>& range)
+{
+  bytes_in sec;
+
+  if (!sec.begin (from, MOD_SNAME_PFX ".namespace"))
+    return false;
+
+  dump () && dump ("Reading namespaces");
+  dump.indent ();
+
+  range.first = sec.u ();
+  range.second = sec.u ();
+
+  spaces.safe_push (global_namespace);
+  while (sec.more_p ())
+    {
+      const char *name = from->name (sec.u ());
+      unsigned parent = sec.u ();
+      /* See comment in write_namespace about why not a bit.  */
+      bool inline_p = bool (sec.u ());
+
+      if (parent >= spaces.length ())
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
+
+      tree id = name ? get_identifier (name) : NULL_TREE;
+      dump () && dump ("Read namespace %P %u",
+		       spaces[parent], id, spaces.length ());
+      tree inner = add_imported_namespace (spaces[parent],
+					   mod, id, inline_p);
+      spaces.safe_push (inner);
+    }
+  dump.outdent ();
+  if (!sec.end (from))
+    return false;
+
+  return true;
+}
+
+/* Write the binding TABLE to MOD_SNAME_PFX.bind
+
+   Each binding is:
+     u:name
+     u:context - number of containing namespace
+     u:section - section number of binding. */
+
+void
+module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
+{
+  dump () && dump ("Writing binding table");
+  dump.indent ();
+
+  bytes_out sec;
+  sec.begin ();
+
+  depset::hash::iterator end (table.end ());
+  for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
+    {
+      depset *b = *iter;
+      if (b->is_binding () && b->cluster)
+	{
+	  unsigned ns_num = 0;
+	  tree ns = b->get_container ();
+	  if (ns != global_namespace)
+	    ns_num = table.find (CP_DECL_CONTEXT (ns), DECL_NAME (ns))->section;
+	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
+			   b->section);
+	  sec.u (to->name (b->get_name ()));
+	  sec.u (ns_num);
+	  sec.u (b->section);
+	}
+    }
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".bind"), crc_p);
+  dump.outdent ();
+}
+
+/* Read the binding table from MOD_SNAME_PFX.bind.  */
+
+bool
+module_state::read_bindings (elf_in *from, auto_vec<tree> &spaces,
+			     const std::pair<unsigned, unsigned> &range)
+{
+  bytes_in sec;
+
+  if (!sec.begin (from, MOD_SNAME_PFX ".bind"))
+    return false;
+
+  dump () && dump ("Reading binding table");
+  dump.indent ();
+  while (sec.more_p ())
+    {
+      const char *name = from->name (sec.u ());
+      unsigned nsnum = sec.u ();
+      unsigned snum = sec.u ();
+
+      if (nsnum >= spaces.length () || !name
+	  || snum < range.first || snum >= range.second)
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
+      tree ctx = spaces[nsnum];
+      tree id = get_identifier (name);
+      dump () && dump ("Bindings %P section:%u", ctx, id, snum);
+      if (mod >= MODULE_IMPORT_BASE
+	  && !import_module_binding (ctx, id, mod, snum))
+	break;
+      // FIXME:Do something with snum
+    }
+
+  dump.outdent ();
+  if (!sec.end (from))
+    return false;
+  return true;
+}
+
+/* Recursively find all the namespace bindings of NS.
+   Add a depset for every binding that contains an export or
+   module-linkage entity.  Add a defining depset for every such decl
+   that we need to write a definition.  Such defining depsets depend
+   on the binding depset.  Returns true if we contain something
+   explicitly exported.  */
+
+void
+module_state::add_writables (depset::hash &table, tree ns)
+{
+  auto_vec<tree> decls;
+
+  dump () && dump ("Finding writables in %N", ns);
+  dump.indent ();
+  hash_table<named_decl_hash>::iterator end
+    (DECL_NAMESPACE_BINDINGS (ns)->end ());
+  for (hash_table<named_decl_hash>::iterator iter
+	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
+    {
+      tree bind = *iter;
+
+      if (TREE_CODE (bind) == MODULE_VECTOR)
+	bind = (MODULE_VECTOR_CLUSTER
+		(bind, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
+		.slots[MODULE_SLOT_CURRENT % MODULE_VECTOR_SLOTS_PER_CLUSTER]);
+
+      if (!bind)
+	continue;
+
+      /* Walk inner namespace.  */
+      if (TREE_CODE (bind) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (bind)
+	  && TREE_PUBLIC (bind))
+	add_writables (table, bind);
+  
+      if (tree name = extract_module_decls (bind, decls))
+	{
+	  dump () && dump ("Writable bindings at %P", ns, name);
+	  table.add_decls (ns, name, decls);
+	  decls.truncate (0);
+	}
+    }
+  dump.outdent ();
+}
+
+/* Iteratively find dependencies.  During the walk we may find more
+   entries on the same binding that need walking.  */
+
+void
+module_state::find_dependencies (depset::hash &table)
+{
+  trees_out walker (this, global_vec);
+
+  while (depset *d = table.get_work ())
+    {
+      walker.begin (&table);
+
+      /* Walk the new decls since last time.  */
+      unsigned from = d->section;
+      unsigned to = d->decls.length ();
+      d->section = to;
+
+      gcc_assert (d->is_binding () ? from < to : !from && to == 1);
+      dump () && dump (!d->is_binding () ? "Definition of %N" : from + 1 == to
+		       ? "Bindings of %P[%u]" : "Bindings of %P[%u-%u)",
+		       d->get_container (), d->get_name (), from, to);
+      dump.indent ();
+
+      /* Mark the depset's decls and known deps.  */
+      d->cluster = true;
+      if (d->is_binding ())
+	for (unsigned ix = to; ix--;)
+	  walker.mark_node (d->decls[ix], ix >= from);
+      else
+	mark_definition (walker, d->get_decl ());
+      for (unsigned ix = d->deps.length (); ix--;)
+	{
+	  depset *dep = d->deps[ix];
+	  gcc_assert (!dep->cluster);
+	  dep->cluster = true;
+	  if (dep->is_binding ())
+	    for (unsigned jx = dep->decls.length (); jx--;)
+	      walker.mark_node (dep->decls[jx], false);
+	  else
+	    walker.mark_node (dep->get_decl ());
+	}
+
+      /* Analyse them.  */
+      if (d->is_binding ())
+	for (unsigned ix = from; ix != to; ix++)
+	  {
+	    tree decl = d->decls[ix];
+	    dump () && dump ("Analysing declarations of %N", decl);
+	    if (TREE_CODE (decl) != NAMESPACE_DECL)
+	      walker.tree_node (decl);
+	  }
+      else
+	write_definition (walker, d->get_decl ());
+
+      /* Unmark.  */
+      d->cluster = false;
+      for (unsigned ix = d->deps.length (); ix--;)
+	d->deps[ix]->cluster = false;
+      dump.outdent ();
+      walker.end ();
+    }
+}
+
+/* Compare bindings for two namespaces.  Those closer to :: are
+   less.  */
+
+static int
+space_cmp (const void *a_, const void *b_)
+{
+  depset *a = *(depset *const *)a_;
+  depset *b = *(depset *const *)b_;
+  tree ns_a = a->get_decl ();
+  tree ns_b = b->get_decl ();
+
+  /* Deeper namespaces come after shallower ones.  */
+  if (int delta = SCOPE_DEPTH (ns_a) - SCOPE_DEPTH (ns_b))
+    return delta;
+
+  /* Otherwise order by UID for consistent results.  */
+  return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
+}
+
+/* Write the module declarations of interest  */
+
+void
+module_state::write_decls (elf_out *to, unsigned *crc_p)
+{
+  depset::hash table (200);
+
+  /* Find the set of decls we must write out.  */
+  add_writables (table, global_namespace);
+
+  find_dependencies (table);
+
+  /* Find the SCCs. */
+  auto_vec<depset *> binds, spaces, defs;
+  {
+    depset::tarjan connector (binds, spaces, defs);
+
+    /* Iteration over the hash table is an unspecified ordering.
+       That's good (for now) because it'll give us some random code
+       coverage.  We may want to fill the worklist and sort it in
+       future though?  */
+    depset::hash::iterator end (table.end ());
+    for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
+      {
+	depset *v = *iter;
+	if (!v->cluster)
+	  connector.connect (v);
+      }
+  }
+
+  /* Sort the namespaces.  */
+  (spaces.qsort) (space_cmp);
+
+  std::pair<unsigned, unsigned> range;
+
+  /* Write the binding clusters.  */
+  range.first = to->get_num_sections ();
+  for (unsigned ix = 0; ix != binds.length ();)
+    ix = write_cluster (to, binds, ix, crc_p);
+  range.second = to->get_num_sections ();
+
+  // FIXME:write the defs.
+  gcc_assert (!defs.length ());
+
+  /* Write the namespace hierarchy. */
+  write_namespaces (to, table, spaces, range, crc_p);
+
+  /* Write the bindings themselves.  */
+  write_bindings (to, table, crc_p);
+}
+
+/* Read module decls.  */
+
+bool
+module_state::read_decls (elf_in *from)
+{
+  /* Read the namespace hierarchy. */
+  auto_vec<tree> spaces;
+  std::pair<unsigned, unsigned> range;
+
+  if (!read_namespaces (from, spaces, range))
+    return false;
+
+  if (!read_bindings (from, spaces, range))
+    return false;
+
+  /* We're now done with the string table.  */
+  from->release ();
+
+  if (mod == MODULE_PURVIEW || !flag_module_lazy
+      // FIXME:Implement lazy loading
+      || true)
+    {
+      /* Read the sections in forward order, so that dependencies are read
+	 first.  See note about tarjan_connect.  */
+      unsigned hwm = range.second;
+      for (unsigned ix = range.first; ix != hwm; ix++)
+	if (!read_cluster (from, ix))
+	  return false;
+    }
+
+  return true;
+}
+
+/* Use ELROND format to record the following sections:
+     1     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
+     2     MOD_SNAME_PFX.context  : context data
+     [3-N) qualified-names	  : binding value(s)
+     N     MOD_SNAME_PFX.namespace : namespace hierarchy
+     N+1   MOD_SNAME_PFX.bind     : binding table
+     N+2   MOD_SNAME_PFX.config   : config data
+*/
+
+void
+module_state::write (elf_out *to)
+{
+  unsigned crc = 0;
+
+  write_context (to, &crc);
+  write_decls (to, &crc);
+  write_config (to, crc);
+
+  trees_out::instrument ();
+  dump () && dump ("Wrote %u sections", to->get_num_sections ());
+}
+
+void
+module_state::read (elf_in *from, unsigned *crc_ptr)
+{
+  if (!read_config (from, crc_ptr))
+    return;
+  if (!read_context (from))
+    return;
+
+  /* Determine the module's number.  */
+  unsigned ix = MODULE_PURVIEW;
+  if (this != (*modules)[MODULE_NONE])
+    {
+      ix = modules->length ();
+      if (ix == MODULE_LIMIT)
+	{
+	  sorry ("too many modules loaded (limit is %u)", ix);
+	  from->set_error (elf::E_BAD_IMPORT);
+	  return;
+	}
+      else
+	{
+	  vec_safe_push (modules, this);
+	  bitmap_set_bit (imports, ix);
+	  bitmap_set_bit (exports, ix);
+	}
+    }
+  mod = ix;
+  (*remap)[MODULE_PURVIEW] = ix;
+  dump () && dump ("Assigning %N module number %u", name, ix);
+
+  if (!read_decls (from))
+    return;
+
+  return;
+}
+
+/* Return the IDENTIFIER_NODE naming module IX.  This is the name
+   including dots.  */
+
+tree
+module_name (unsigned ix)
+{
+  return (*module_state::modules)[ix]->name;
+}
+
+/* Return the vector of IDENTIFIER_NODES naming module IX.  These are
+   individual identifers per sub-module component.  */
+
+tree
+module_vec_name (unsigned ix)
+{
+  return (*module_state::modules)[ix]->vec_name;
+}
+
+/* Return the bitmap describing what modules are imported into
+   MODULE.  Remember, we always import ourselves.  */
+
+bitmap
+module_import_bitmap (unsigned ix)
+{
+  return (*module_state::modules)[ix]->imports;
+}
+
+/* We've just directly imported OTHER.  Update our import/export
+   bitmaps.  IS_EXPORT is true if we're reexporting the OTHER.  */
+
+void
+module_state::set_import (module_state const *other, bool is_export)
+{
+  gcc_checking_assert (this != other);
+  bitmap_ior_into (imports, other->exports);
+  if (is_export)
+    bitmap_ior_into (exports, other->exports);
 }
 
 static GTY(()) tree proclaimer;
