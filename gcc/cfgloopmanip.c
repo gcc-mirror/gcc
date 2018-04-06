@@ -1494,7 +1494,9 @@ create_preheader (struct loop *loop, int flags)
 
   mfb_kj_edge = loop_latch_edge (loop);
   latch_edge_was_fallthru = (mfb_kj_edge->flags & EDGE_FALLTHRU) != 0;
-  if (nentry == 1)
+  if (nentry == 1
+      && ((flags & CP_FALLTHRU_PREHEADERS) == 0
+  	  || (single_entry->flags & EDGE_CROSSING) == 0))
     dummy = split_edge (single_entry);
   else
     {

@@ -1,3 +1,10 @@
+2018-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/84872
+	* cfgloopmanip.c (create_preheader): Use make_forwarder_block even if
+	nentry == 1 when CP_FALLTHRU_PREHEADERS and single_entry is
+	EDGE_CROSSING edge.
+
 2018-04-06  Tamar Christina  <tamar.christina@arm.com>
 
 	* expr.c (copy_blkmode_to_reg): Revert 254862.
