@@ -1,3 +1,12 @@
+2018-04-06  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32-md-auxiliary.c (nds32_output_return,
+	nds32_output_call, nds32_symbol_binds_local_p): New functions.
+	* config/nds32/nds32-protos.h (nds32_output_call,
+	nds32_output_return): Declare.
+	* config/nds32/nds32.md: Refine all the call and return patterns.
+
 2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/85252

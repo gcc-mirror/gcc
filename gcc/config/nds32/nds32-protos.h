@@ -172,11 +172,15 @@ extern const char *nds32_output_cbranchsi4_equality_reg_or_const_int (rtx_insn *
 								      rtx *);
 extern const char *nds32_output_cbranchsi4_greater_less_zero (rtx_insn *, rtx *);
 
+extern const char *nds32_output_call (rtx, rtx *, rtx,
+				      const char *, const char *, bool);
+
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 
 extern const char *nds32_output_stack_push (rtx);
 extern const char *nds32_output_stack_pop (rtx);
+extern const char *nds32_output_return (void);
 
 /* Auxiliary functions to split double word RTX pattern.  */
 

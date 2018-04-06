@@ -1938,6 +1938,48 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
   return "";
 }
 
+/* Function to output return operation.  */
+const char *
+nds32_output_return (void)
+{
+  /* A string pattern for output_asm_insn().  */
+  char pattern[100];
+  /* The operands array which will be used in output_asm_insn().  */
+  rtx operands[2];
+  /* For stack v3pop:
+     operands[0]: Re
+     operands[1]: imm8u */
+  int re_callee_saved = cfun->machine->callee_saved_last_gpr_regno;
+  int sp_adjust;
+
+  /* Set operands[0].  */
+  operands[0] = gen_rtx_REG (SImode, re_callee_saved);
+
+  /* Check if we can generate 'pop25 Re,imm8u',
+     otherwise, generate 'pop25 Re,0'.
+     We have to consider alloca issue as well.
+     If the function does call alloca(), the stack pointer is not fixed.
+     In that case, we cannot use 'pop25 Re,imm8u' directly.
+     We have to caculate stack pointer from frame pointer
+     and then use 'pop25 Re,0'.  */
+  sp_adjust = cfun->machine->local_size
+    + cfun->machine->out_args_size
+    + cfun->machine->callee_saved_area_gpr_padding_bytes
+    + cfun->machine->callee_saved_fpr_regs_size;
+  if (satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
+      && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust)
+      && !cfun->calls_alloca)
+    operands[1] = GEN_INT (sp_adjust);
+  else
+    operands[1] = GEN_INT (0);
+
+  /* Create assembly code pattern.  */
+  snprintf (pattern, sizeof (pattern), "pop25\t%%0, %%1");
+  /* We use output_asm_insn() to output assembly code by ourself.  */
+  output_asm_insn (pattern, operands);
+  return "";
+}
+
 /* Function to generate PC relative jump table.
    Refer to nds32.md for more details.
 
@@ -2678,6 +2720,56 @@ nds32_output_cbranchsi4_greater_less_zero (rtx_insn *insn, rtx *operands)
     default:
       gcc_unreachable ();
     }
+  return "";
+}
+
+/* Return true if SYMBOL_REF X binds locally.  */
+
+static bool
+nds32_symbol_binds_local_p (const_rtx x)
+{
+  return (SYMBOL_REF_DECL (x)
+	  ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
+	  : SYMBOL_REF_LOCAL_P (x));
+}
+
+const char *
+nds32_output_call (rtx insn, rtx *operands, rtx symbol, const char *long_call,
+		   const char *call, bool align_p)
+{
+  char pattern[100];
+  bool noreturn_p;
+
+  if (GET_CODE (symbol) == CONST)
+    {
+      symbol= XEXP (symbol, 0);
+
+      if (GET_CODE (symbol) == PLUS)
+        symbol = XEXP (symbol, 0);
+    }
+
+  gcc_assert (GET_CODE (symbol) == SYMBOL_REF
+	      || REG_P (symbol));
+
+  if (nds32_long_call_p (symbol))
+    strcpy (pattern, long_call);
+  else
+    strcpy (pattern, call);
+
+  if (align_p)
+    strcat (pattern, "\n\t.align 2");
+
+  noreturn_p = find_reg_note (insn, REG_NORETURN, NULL_RTX) != NULL_RTX;
+
+  if (noreturn_p)
+    {
+      if (TARGET_16_BIT)
+	strcat (pattern, "\n\tnop16");
+      else
+	strcat (pattern, "\n\tnop");
+    }
+
+  output_asm_insn (pattern, operands);
   return "";
 }
 
