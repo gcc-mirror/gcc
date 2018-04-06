@@ -1,3 +1,11 @@
+2018-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85244
+	* tree-dfa.c (get_ref_base_and_extent): Reset seen_variable_array_ref
+	after seeing a component reference with an adjacent field.  Treat
+	refs to arrays at struct end of external decls similar to
+	refs to unconstrained commons.
+
 2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/85213
