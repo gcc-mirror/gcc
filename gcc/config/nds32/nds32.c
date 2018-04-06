@@ -1328,6 +1328,35 @@ nds32_register_passes (void)
 /* PART 3: Implement target hook stuff definitions.  */
 
 
+/* Computing the Length of an Insn.
+   Modifies the length assigned to instruction INSN.
+   LEN is the initially computed length of the insn.  */
+int
+nds32_adjust_insn_length (rtx_insn *insn, int length)
+{
+  int adjust_value = 0;
+  switch (recog_memoized (insn))
+    {
+    case CODE_FOR_call_internal:
+    case CODE_FOR_call_value_internal:
+      {
+	/* We need insert a nop after a noretun function call
+	   to prevent software breakpoint corrupt the next function. */
+	if (find_reg_note (insn, REG_NORETURN, NULL_RTX))
+	  {
+	    if (TARGET_16_BIT)
+	      adjust_value += 2;
+	    else
+	      adjust_value += 4;
+	  }
+      }
+      return length + adjust_value;
+
+    default:
+      return length;
+    }
+}
+
 /* Register Usage.  */
 
 static void
@@ -4362,37 +4391,6 @@ nds32_ls_333_p (rtx rt, rtx ra, rtx imm, machine_mode mode)
     }
 
   return false;
-}
-
-
-/* Computing the Length of an Insn.
-   Modifies the length assigned to instruction INSN.
-   LEN is the initially computed length of the insn.  */
-int
-nds32_adjust_insn_length (rtx_insn *insn, int length)
-{
-  rtx src, dst;
-
-  switch (recog_memoized (insn))
-    {
-    case CODE_FOR_move_df:
-    case CODE_FOR_move_di:
-      /* Adjust length of movd44 to 2.  */
-      src = XEXP (PATTERN (insn), 1);
-      dst = XEXP (PATTERN (insn), 0);
-
-      if (REG_P (src)
-	  && REG_P (dst)
-	  && (REGNO (src) % 2) == 0
-	  && (REGNO (dst) % 2) == 0)
-	length = 2;
-      break;
-
-    default:
-      break;
-    }
-
-  return length;
 }
 
 bool
