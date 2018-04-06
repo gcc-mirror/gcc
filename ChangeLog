@@ -1,8 +1,3 @@
-2018-04-06  Amaan Cheval  <amaan.cheval@gmail.com>
-
-	* config.gcc (x86_64-*-rtems*): Add rtems.h to tm_file for
-	custom LIB_SPEC setup.
-
 2018-04-02  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* MAINTAINERS: Remove redundant Write-After-Approval entry.
