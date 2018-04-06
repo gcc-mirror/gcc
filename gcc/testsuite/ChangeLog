@@ -1,3 +1,9 @@
+2018-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85244
+	* gcc.dg/torture/pr85244-1.c: New testcase.
+	* gcc.dg/torture/pr85244-2.c: Likewise.
+
 2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/85213
