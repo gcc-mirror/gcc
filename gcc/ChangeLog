@@ -1,3 +1,9 @@
+2018-04-06  Ruslan Bukin  <br@bsdpad.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config.gcc (riscv*-*-freebsd*): Add RISC-V FreeBSD support.
+	* config/riscv/freebsd.h: New.
+
 2018-04-06  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_adjust_insn_length): Refine.
@@ -10043,4 +10049,6 @@
 
 Copyright (C) 2018 Free Software Foundation, Inc.
 
-Copying and distribu
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

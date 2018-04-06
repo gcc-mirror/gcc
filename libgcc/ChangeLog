@@ -1,3 +1,7 @@
+2018-04-06  Ruslan Bukin  <br@bsdpad.com>
+
+	* config.host (riscv*-*-freebsd*): Add RISC-V FreeBSD support.
+
 2018-03-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85100
