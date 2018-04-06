@@ -60,3 +60,16 @@ void test_move(T&& arg)
   // { dg-message "'#include <utility>'" "" { target *-*-* } .-1 }
   // { dg-error "expected primary-expression before '>' token" "" { target *-*-* } .-2 }
 }
+
+void test_array ()
+{
+  std::array a; // { dg-error ".array. is not a member of .std." }
+  // { dg-message ".std::array. is defined in header .<array>.; did you forget to .#include <array>.?" "" { target *-*-* } .-1 }
+}
+
+void test_tuple ()
+{
+  std::tuple<int,float> p; // { dg-error ".tuple. is not a member of .std." }
+  // { dg-message ".std::tuple. is defined in header .<tuple>.; did you forget to .#include <tuple>.?" "" { target *-*-* } .-1 }
+  // { dg-error "expected primary-expression before .int." "" { target *-*-* } .-2 }
+}

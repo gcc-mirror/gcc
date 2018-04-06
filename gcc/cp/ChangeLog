@@ -1,3 +1,24 @@
+2018-04-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* name-lookup.c (struct std_name_hint): Move out of
+	get_std_name_hint; add field "min_dialect".
+	(get_std_name_hint): Add min_dialect values to all initializers.
+	Add <any>, <atomic>, <bitset>, <condition_variable>, <functional>,
+	<future>, <istream>, <iterator>, <ostream>, <mutex>, <optional>,
+	<shared_mutex>, <string_view>, <thread>, and <variant>.
+	Add fstream, ifstream, and ofstream to <fstream>.
+	Add istringstream, ostringstream, and stringstream to <sstream>.
+	Add basic_string to <string>.
+	Add tuple_element and tuple_size to <tuple>.
+	Add declval to <utility>.
+	Fix ordering of <queue> and <tuple>.
+	Return a std_name_hint, rather than a const char *.
+	(get_cxx_dialect_name): New function.
+	(maybe_suggest_missing_std_header): Detect names that aren't yet
+	available in the current dialect, and instead of suggesting a
+	missing #include, warn about the dialect.
+
 2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85210

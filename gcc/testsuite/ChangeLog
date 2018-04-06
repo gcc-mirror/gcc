@@ -1,3 +1,13 @@
+2018-04-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* g++.dg/lookup/missing-std-include-6.C: Move std::array and
+	std::tuple here since they need C++11.
+	* g++.dg/lookup/missing-std-include-8.C: New test.
+	* g++.dg/lookup/missing-std-include.C: Move std::array and
+	std::tuple test to missing-std-include-6.C to avoid failures
+	with C++98.
+
 2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/85252
