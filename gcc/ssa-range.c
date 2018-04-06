@@ -297,7 +297,7 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
     {
       /* If it is in this block, evaluate it.  */
       if (!path_range_stmt (r, stmt))
-        return false;
+        r.set_range (name);
     }
   else
     /* The name comes from outside this block, so evaluate it's value on
