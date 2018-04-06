@@ -1,5 +1,9 @@
 2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/85252
+	* dwarf2out.c (rtl_for_decl_init): For STRING_CST initializer only
+	build CONST_STRING if TYPE_MAX_VALUE is non-NULL and is INTEGER_CST.
+
 	PR rtl-optimization/84872
 	* cfgloopmanip.c (create_preheader): Use make_forwarder_block even if
 	nentry == 1 when CP_FALLTHRU_PREHEADERS and single_entry is
