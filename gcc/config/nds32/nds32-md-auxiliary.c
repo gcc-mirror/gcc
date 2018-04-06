@@ -742,6 +742,146 @@ nds32_expand_cstore (rtx *operands)
     }
 }
 
+void
+nds32_expand_float_cbranch (rtx *operands)
+{
+  enum rtx_code code = GET_CODE (operands[0]);
+  enum rtx_code new_code = code;
+  rtx cmp_op0 = operands[1];
+  rtx cmp_op1 = operands[2];
+  rtx tmp_reg;
+  rtx tmp;
+
+  int reverse = 0;
+
+  /* Main Goal: Use compare instruction + branch instruction.
+
+     For example:
+     GT, GE: swap condition and swap operands and generate
+     compare instruction(LT, LE) + branch not equal instruction.
+
+     UNORDERED, LT, LE, EQ: no need to change and generate
+     compare instruction(UNORDERED, LT, LE, EQ) + branch not equal instruction.
+
+     ORDERED, NE: reverse condition and generate
+     compare instruction(EQ) + branch equal instruction. */
+
+  switch (code)
+    {
+    case GT:
+    case GE:
+      tmp = cmp_op0;
+      cmp_op0 = cmp_op1;
+      cmp_op1 = tmp;
+      new_code = swap_condition (new_code);
+      break;
+    case UNORDERED:
+    case LT:
+    case LE:
+    case EQ:
+      break;
+    case ORDERED:
+    case NE:
+      new_code = reverse_condition (new_code);
+      reverse = 1;
+      break;
+    case UNGT:
+    case UNGE:
+      new_code = reverse_condition_maybe_unordered (new_code);
+      reverse = 1;
+      break;
+    case UNLT:
+    case UNLE:
+      new_code = reverse_condition_maybe_unordered (new_code);
+      tmp = cmp_op0;
+      cmp_op0 = cmp_op1;
+      cmp_op1 = tmp;
+      new_code = swap_condition (new_code);
+      reverse = 1;
+      break;
+    default:
+      return;
+    }
+
+  tmp_reg = gen_reg_rtx (SImode);
+  emit_insn (gen_rtx_SET (tmp_reg,
+			  gen_rtx_fmt_ee (new_code, SImode,
+					  cmp_op0, cmp_op1)));
+
+  PUT_CODE (operands[0], reverse ? EQ : NE);
+  emit_insn (gen_cbranchsi4 (operands[0], tmp_reg,
+			     const0_rtx, operands[3]));
+}
+
+void
+nds32_expand_float_cstore (rtx *operands)
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  enum rtx_code new_code = code;
+  machine_mode mode = GET_MODE (operands[2]);
+
+  rtx cmp_op0 = operands[2];
+  rtx cmp_op1 = operands[3];
+  rtx tmp;
+
+  /* Main Goal: Use compare instruction to store value.
+
+     For example:
+     GT, GE: swap condition and swap operands.
+       reg_R = (reg_A >  reg_B) --> fcmplt reg_R, reg_B, reg_A
+       reg_R = (reg_A >= reg_B) --> fcmple reg_R, reg_B, reg_A
+
+     LT, LE, EQ: no need to change, it is already LT, LE, EQ.
+       reg_R = (reg_A <  reg_B) --> fcmplt reg_R, reg_A, reg_B
+       reg_R = (reg_A <= reg_B) --> fcmple reg_R, reg_A, reg_B
+       reg_R = (reg_A == reg_B) --> fcmpeq reg_R, reg_A, reg_B
+
+     ORDERED: reverse condition and using xor insturction to achieve 'ORDERED'.
+       reg_R = (reg_A != reg_B) --> fcmpun reg_R, reg_A, reg_B
+				       xor reg_R, reg_R, const1_rtx
+
+     NE: reverse condition and using xor insturction to achieve 'NE'.
+       reg_R = (reg_A != reg_B) --> fcmpeq reg_R, reg_A, reg_B
+				       xor reg_R, reg_R, const1_rtx */
+  switch (code)
+    {
+    case GT:
+    case GE:
+      tmp = cmp_op0;
+      cmp_op0 = cmp_op1;
+      cmp_op1 =tmp;
+      new_code = swap_condition (new_code);
+      break;
+    case UNORDERED:
+    case LT:
+    case LE:
+    case EQ:
+      break;
+    case ORDERED:
+      if (mode == SFmode)
+	emit_insn (gen_cmpsf_un (operands[0], cmp_op0, cmp_op1));
+      else
+	emit_insn (gen_cmpdf_un (operands[0], cmp_op0, cmp_op1));
+
+      emit_insn (gen_xorsi3 (operands[0], operands[0], const1_rtx));
+      return;
+    case NE:
+      if (mode == SFmode)
+	emit_insn (gen_cmpsf_eq (operands[0], cmp_op0, cmp_op1));
+      else
+	emit_insn (gen_cmpdf_eq (operands[0], cmp_op0, cmp_op1));
+
+      emit_insn (gen_xorsi3 (operands[0], operands[0], const1_rtx));
+      return;
+    default:
+      return;
+    }
+
+  emit_insn (gen_rtx_SET (operands[0],
+			  gen_rtx_fmt_ee (new_code, SImode,
+					  cmp_op0, cmp_op1)));
+}
+
 enum nds32_expand_result_type
 nds32_expand_movcc (rtx *operands)
 {
@@ -758,6 +898,11 @@ nds32_expand_movcc (rtx *operands)
       /* If the operands[1] rtx is already (eq X 0) or (ne X 0),
 	 we have gcc generate original template rtx.  */
       return EXPAND_CREATE_TEMPLATE;
+    }
+  else if ((TARGET_FPU_SINGLE && cmp0_mode == SFmode)
+	   || (TARGET_FPU_DOUBLE && cmp0_mode == DFmode))
+    {
+      nds32_expand_float_movcc (operands);
     }
   else
     {
@@ -849,6 +994,203 @@ nds32_expand_movcc (rtx *operands)
   return EXPAND_CREATE_TEMPLATE;
 }
 
+void
+nds32_expand_float_movcc (rtx *operands)
+{
+  if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
+      && GET_MODE (XEXP (operands[1], 0)) == SImode
+      && XEXP (operands[1], 1) == const0_rtx)
+    {
+      /* If the operands[1] rtx is already (eq X 0) or (ne X 0),
+	 we have gcc generate original template rtx.  */
+      return;
+    }
+  else
+    {
+      enum rtx_code code = GET_CODE (operands[1]);
+      enum rtx_code new_code = code;
+      machine_mode cmp0_mode = GET_MODE (XEXP (operands[1], 0));
+      machine_mode cmp1_mode = GET_MODE (XEXP (operands[1], 1));
+      rtx cmp_op0 = XEXP (operands[1], 0);
+      rtx cmp_op1 = XEXP (operands[1], 1);
+      rtx tmp;
+
+      /* Compare instruction Operations: (cmp_op0 condition cmp_op1) ? 1 : 0,
+	 when result is 1, and 'reverse' be set 1 for fcmovzs instructuin. */
+      int reverse = 0;
+
+      /* Main Goal: Use cmpare instruction + conditional move instruction.
+	 Strategy : swap condition and swap comparison operands.
+
+	 For example:
+	     a > b ? P : Q   (GT)
+	 --> a < b ? Q : P   (swap condition)
+	 --> b < a ? Q : P   (swap comparison operands to achieve 'GT')
+
+	     a >= b ? P : Q  (GE)
+	 --> a <= b ? Q : P  (swap condition)
+	 --> b <= a ? Q : P  (swap comparison operands to achieve 'GE')
+
+	     a <  b ? P : Q  (LT)
+	 --> (NO NEED TO CHANGE, it is already 'LT')
+
+	     a >= b ? P : Q  (LE)
+	 --> (NO NEED TO CHANGE, it is already 'LE')
+
+	     a == b ? P : Q  (EQ)
+	 --> (NO NEED TO CHANGE, it is already 'EQ') */
+
+      switch (code)
+	{
+	case GT:
+	case GE:
+	  tmp = cmp_op0;
+	  cmp_op0 = cmp_op1;
+	  cmp_op1 =tmp;
+	  new_code = swap_condition (new_code);
+	  break;
+	case UNORDERED:
+	case LT:
+	case LE:
+	case EQ:
+	  break;
+	case ORDERED:
+	case NE:
+	  reverse = 1;
+	  new_code = reverse_condition (new_code);
+	  break;
+	case UNGT:
+	case UNGE:
+	  new_code = reverse_condition_maybe_unordered (new_code);
+	  reverse = 1;
+	  break;
+	case UNLT:
+	case UNLE:
+	  new_code = reverse_condition_maybe_unordered (new_code);
+	  tmp = cmp_op0;
+	  cmp_op0 = cmp_op1;
+	  cmp_op1 = tmp;
+	  new_code = swap_condition (new_code);
+	  reverse = 1;
+	  break;
+	default:
+	  return;
+	}
+
+      /* Use a temporary register to store fcmpxxs result.  */
+      tmp = gen_reg_rtx (SImode);
+
+      /* Create float compare instruction for SFmode and DFmode,
+	 other MODE using cstoresi create compare instruction. */
+      if ((cmp0_mode == DFmode || cmp0_mode == SFmode)
+	  && (cmp1_mode == DFmode || cmp1_mode == SFmode))
+	{
+	  /* This emit_insn create corresponding float compare instruction */
+	  emit_insn (gen_rtx_SET (tmp,
+				  gen_rtx_fmt_ee (new_code, SImode,
+						  cmp_op0, cmp_op1)));
+	}
+      else
+	{
+	  /* This emit_insn using cstoresi create corresponding
+	     compare instruction */
+	  PUT_CODE (operands[1], new_code);
+	  emit_insn (gen_cstoresi4 (tmp, operands[1],
+				    cmp_op0, cmp_op1));
+	}
+      /* operands[1] crete corresponding condition move instruction
+	 for fcmovzs and fcmovns.  */
+      operands[1] = gen_rtx_fmt_ee (reverse ? EQ : NE,
+				    VOIDmode, tmp, const0_rtx);
+    }
+}
+
+void
+nds32_emit_push_fpr_callee_saved (int base_offset)
+{
+  rtx fpu_insn;
+  rtx reg, mem;
+  unsigned int regno = cfun->machine->callee_saved_first_fpr_regno;
+  unsigned int last_fpr = cfun->machine->callee_saved_last_fpr_regno;
+
+  while (regno <= last_fpr)
+    {
+      /* Handling two registers, using fsdi instruction.  */
+      reg = gen_rtx_REG (DFmode, regno);
+      mem = gen_frame_mem (DFmode, plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  base_offset));
+      base_offset += 8;
+      regno += 2;
+      fpu_insn = emit_move_insn (mem, reg);
+      RTX_FRAME_RELATED_P (fpu_insn) = 1;
+    }
+}
+
+void
+nds32_emit_pop_fpr_callee_saved (int gpr_padding_size)
+{
+  rtx fpu_insn;
+  rtx reg, mem, addr;
+  rtx dwarf, adjust_sp_rtx;
+  unsigned int regno = cfun->machine->callee_saved_first_fpr_regno;
+  unsigned int last_fpr = cfun->machine->callee_saved_last_fpr_regno;
+  int padding = 0;
+
+  while (regno <= last_fpr)
+    {
+      /* Handling two registers, using fldi.bi instruction.  */
+      if ((regno + 1) >= last_fpr)
+	padding = gpr_padding_size;
+
+      reg = gen_rtx_REG (DFmode, (regno));
+      addr = gen_rtx_POST_MODIFY (Pmode, stack_pointer_rtx,
+				  gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+						GEN_INT (8 + padding)));
+      mem = gen_frame_mem (DFmode, addr);
+      regno += 2;
+      fpu_insn = emit_move_insn (reg, mem);
+
+      adjust_sp_rtx =
+	gen_rtx_SET (stack_pointer_rtx,
+		     plus_constant (Pmode, stack_pointer_rtx,
+				    8 + padding));
+
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, NULL_RTX);
+      /* Tell gcc we adjust SP in this insn.  */
+      dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, copy_rtx (adjust_sp_rtx),
+			      dwarf);
+      RTX_FRAME_RELATED_P (fpu_insn) = 1;
+      REG_NOTES (fpu_insn) = dwarf;
+    }
+}
+
+void
+nds32_emit_v3pop_fpr_callee_saved (int base)
+{
+  int fpu_base_addr = base;
+  int regno;
+  rtx fpu_insn;
+  rtx reg, mem;
+  rtx dwarf;
+
+  regno = cfun->machine->callee_saved_first_fpr_regno;
+  while (regno <= cfun->machine->callee_saved_last_fpr_regno)
+    {
+      /* Handling two registers, using fldi instruction.  */
+      reg = gen_rtx_REG (DFmode, regno);
+      mem = gen_frame_mem (DFmode, plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  fpu_base_addr));
+      fpu_base_addr += 8;
+      regno += 2;
+      fpu_insn = emit_move_insn (reg, mem);
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, NULL_RTX);
+      RTX_FRAME_RELATED_P (fpu_insn) = 1;
+      REG_NOTES (fpu_insn) = dwarf;
+    }
+}
+
 /* ------------------------------------------------------------------------ */
 
 /* Function to return memory format.  */
@@ -867,7 +1209,8 @@ nds32_mem_format (rtx op)
   op = XEXP (op, 0);
 
   /* 45 format.  */
-  if (GET_CODE (op) == REG && (mode_test == SImode))
+  if (GET_CODE (op) == REG
+      && ((mode_test == SImode) || (mode_test == SFmode)))
     return ADDRESS_REG;
 
   /* 333 format for QI/HImode.  */
@@ -875,7 +1218,8 @@ nds32_mem_format (rtx op)
     return ADDRESS_LO_REG_IMM3U;
 
   /* post_inc 333 format.  */
-  if ((GET_CODE (op) == POST_INC) && (mode_test == SImode))
+  if ((GET_CODE (op) == POST_INC)
+      && ((mode_test == SImode) || (mode_test == SFmode)))
     {
       regno = REGNO(XEXP (op, 0));
 
@@ -885,7 +1229,7 @@ nds32_mem_format (rtx op)
 
   /* post_inc 333 format.  */
   if ((GET_CODE (op) == POST_MODIFY)
-      && (mode_test == SImode)
+      && ((mode_test == SImode) || (mode_test == SFmode))
       && (REG_P (XEXP (XEXP (op, 1), 0)))
       && (CONST_INT_P (XEXP (XEXP (op, 1), 1))))
     {
@@ -1409,12 +1753,25 @@ nds32_output_stack_push (rtx par_rtx)
 	 otherwise, generate 'push25 Re,0'.  */
       sp_adjust = cfun->machine->local_size
 		  + cfun->machine->out_args_size
-		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes
+		  + cfun->machine->callee_saved_fpr_regs_size;
       if (satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
 	  && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust))
 	operands[1] = GEN_INT (sp_adjust);
       else
-	operands[1] = GEN_INT (0);
+	{
+	  /* Allocate callee saved fpr space.  */
+	  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	    {
+	      sp_adjust = cfun->machine->callee_saved_area_gpr_padding_bytes
+			  + cfun->machine->callee_saved_fpr_regs_size;
+	      operands[1] = GEN_INT (sp_adjust);
+	    }
+	  else
+	    {
+	      operands[1] = GEN_INT (0);
+	    }
+	}
 
       /* Create assembly code pattern.  */
       snprintf (pattern, sizeof (pattern), "push25\t%%0, %%1");
@@ -1507,13 +1864,28 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
 	 and then use 'pop25 Re,0'.  */
       sp_adjust = cfun->machine->local_size
 		  + cfun->machine->out_args_size
-		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes
+		  + cfun->machine->callee_saved_fpr_regs_size;
       if (satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
 	  && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust)
 	  && !cfun->calls_alloca)
 	operands[1] = GEN_INT (sp_adjust);
       else
-	operands[1] = GEN_INT (0);
+	{
+	  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	    {
+	      /* If has fpr need to restore, the $sp on callee saved fpr
+		 position, so we need to consider gpr pading bytes and
+		 callee saved fpr size.  */
+	      sp_adjust = cfun->machine->callee_saved_area_gpr_padding_bytes
+			  + cfun->machine->callee_saved_fpr_regs_size;
+	      operands[1] = GEN_INT (sp_adjust);
+	    }
+	  else
+	    {
+	      operands[1] = GEN_INT (0);
+	    }
+	}
 
       /* Create assembly code pattern.  */
       snprintf (pattern, sizeof (pattern), "pop25\t%%0, %%1");
@@ -1636,6 +2008,162 @@ nds32_output_casesi_pc_relative (rtx *operands)
     return "jr5\t$ta";
   else
     return "jr\t$ta";
+}
+
+/* output a float load instruction */
+const char *
+nds32_output_float_load (rtx *operands)
+{
+  char buff[100];
+  const char *pattern;
+  rtx addr, addr_op0, addr_op1;
+  int dp = GET_MODE_SIZE (GET_MODE (operands[0])) == 8;
+  addr = XEXP (operands[1], 0);
+  switch (GET_CODE (addr))
+    {
+    case REG:
+      pattern = "fl%ci\t%%0, %%1";
+      break;
+
+    case PLUS:
+      addr_op0 = XEXP (addr, 0);
+      addr_op1 = XEXP (addr, 1);
+
+      if (REG_P (addr_op0) && REG_P (addr_op1))
+	pattern = "fl%c\t%%0, %%1";
+      else if (REG_P (addr_op0) && CONST_INT_P (addr_op1))
+	pattern = "fl%ci\t%%0, %%1";
+      else if (GET_CODE (addr_op0) == MULT && REG_P (addr_op1)
+	       && REG_P (XEXP (addr_op0, 0))
+	       && CONST_INT_P (XEXP (addr_op0, 1)))
+	pattern = "fl%c\t%%0, %%1";
+      else
+	gcc_unreachable ();
+      break;
+
+    case POST_MODIFY:
+      addr_op0 = XEXP (addr, 0);
+      addr_op1 = XEXP (addr, 1);
+
+      if (REG_P (addr_op0) && GET_CODE (addr_op1) == PLUS
+	  && REG_P (XEXP (addr_op1, 1)))
+	pattern = "fl%c.bi\t%%0, %%1";
+      else if (REG_P (addr_op0) && GET_CODE (addr_op1) == PLUS
+	       && CONST_INT_P (XEXP (addr_op1, 1)))
+	pattern = "fl%ci.bi\t%%0, %%1";
+      else
+	gcc_unreachable ();
+      break;
+
+    case POST_INC:
+      if (REG_P (XEXP (addr, 0)))
+	{
+	  if (dp)
+	    pattern = "fl%ci.bi\t%%0, %%1, 8";
+	  else
+	    pattern = "fl%ci.bi\t%%0, %%1, 4";
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    case POST_DEC:
+      if (REG_P (XEXP (addr, 0)))
+	{
+	  if (dp)
+	    pattern = "fl%ci.bi\t%%0, %%1, -8";
+	  else
+	    pattern = "fl%ci.bi\t%%0, %%1, -4";
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  sprintf (buff, pattern, dp ? 'd' : 's');
+  output_asm_insn (buff, operands);
+  return "";
+}
+
+/* output a float store instruction */
+const char *
+nds32_output_float_store (rtx *operands)
+{
+  char buff[100];
+  const char *pattern;
+  rtx addr, addr_op0, addr_op1;
+  int dp = GET_MODE_SIZE (GET_MODE (operands[0])) == 8;
+  addr = XEXP (operands[0], 0);
+  switch (GET_CODE (addr))
+    {
+    case REG:
+      pattern = "fs%ci\t%%1, %%0";
+      break;
+
+    case PLUS:
+      addr_op0 = XEXP (addr, 0);
+      addr_op1 = XEXP (addr, 1);
+
+      if (REG_P (addr_op0) && REG_P (addr_op1))
+	pattern = "fs%c\t%%1, %%0";
+      else if (REG_P (addr_op0) && CONST_INT_P (addr_op1))
+	pattern = "fs%ci\t%%1, %%0";
+      else if (GET_CODE (addr_op0) == MULT && REG_P (addr_op1)
+	       && REG_P (XEXP (addr_op0, 0))
+	       && CONST_INT_P (XEXP (addr_op0, 1)))
+	pattern = "fs%c\t%%1, %%0";
+      else
+	gcc_unreachable ();
+      break;
+
+    case POST_MODIFY:
+      addr_op0 = XEXP (addr, 0);
+      addr_op1 = XEXP (addr, 1);
+
+      if (REG_P (addr_op0) && GET_CODE (addr_op1) == PLUS
+	  && REG_P (XEXP (addr_op1, 1)))
+	pattern = "fs%c.bi\t%%1, %%0";
+      else if (REG_P (addr_op0) && GET_CODE (addr_op1) == PLUS
+	       && CONST_INT_P (XEXP (addr_op1, 1)))
+	pattern = "fs%ci.bi\t%%1, %%0";
+      else
+	gcc_unreachable ();
+      break;
+
+    case POST_INC:
+      if (REG_P (XEXP (addr, 0)))
+	{
+	  if (dp)
+	    pattern = "fs%ci.bi\t%%1, %%0, 8";
+	  else
+	    pattern = "fs%ci.bi\t%%1, %%0, 4";
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    case POST_DEC:
+      if (REG_P (XEXP (addr, 0)))
+	{
+	  if (dp)
+	    pattern = "fs%ci.bi\t%%1, %%0, -8";
+	  else
+	    pattern = "fs%ci.bi\t%%1, %%0, -4";
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  sprintf (buff, pattern, dp ? 'd' : 's');
+  output_asm_insn (buff, operands);
+  return "";
 }
 
 /* Function to generate normal jump table.  */
@@ -1936,6 +2464,39 @@ nds32_expand_unaligned_store (rtx *operands, enum machine_mode mode)
     }
 }
 
+/* Using multiple load/store instruction to output doubleword instruction.  */
+const char *
+nds32_output_double (rtx *operands, bool load_p)
+{
+  char pattern[100];
+  int reg = load_p ? 0 : 1;
+  int mem = load_p ? 1 : 0;
+  rtx otherops[3];
+  rtx addr = XEXP (operands[mem], 0);
+
+  otherops[0] = gen_rtx_REG (SImode, REGNO (operands[reg]));
+  otherops[1] = gen_rtx_REG (SImode, REGNO (operands[reg]) + 1);
+
+  if (GET_CODE (addr)  == POST_INC)
+    {
+      /* (mem (post_inc (reg))) */
+      otherops[2] = XEXP (addr, 0);
+      snprintf (pattern, sizeof (pattern),
+		"%cmw.bim\t%%0, [%%2], %%1, 0", load_p ? 'l' : 's');
+    }
+  else
+    {
+      /* (mem (reg)) */
+      otherops[2] = addr;
+      snprintf (pattern, sizeof (pattern),
+		"%cmw.bi\t%%0, [%%2], %%1, 0", load_p ? 'l' : 's');
+
+    }
+
+  output_asm_insn (pattern, otherops);
+  return "";
+}
+
 const char *
 nds32_output_cbranchsi4_equality_zero (rtx_insn *insn, rtx *operands)
 {
@@ -2118,6 +2679,115 @@ nds32_output_cbranchsi4_greater_less_zero (rtx_insn *insn, rtx *operands)
       gcc_unreachable ();
     }
   return "";
+}
+
+/* Spilt a doubleword instrucion to two single word instructions.  */
+void
+nds32_spilt_doubleword (rtx *operands, bool load_p)
+{
+  int reg = load_p ? 0 : 1;
+  int mem = load_p ? 1 : 0;
+  rtx reg_rtx = load_p ? operands[0] : operands[1];
+  rtx mem_rtx = load_p ? operands[1] : operands[0];
+  rtx low_part[2], high_part[2];
+  rtx sub_mem = XEXP (mem_rtx, 0);
+
+  /* Generate low_part and high_part register pattern.
+     i.e. register pattern like:
+     (reg:DI) -> (subreg:SI (reg:DI))
+		 (subreg:SI (reg:DI)) */
+  low_part[reg] = simplify_gen_subreg (SImode, reg_rtx, GET_MODE (reg_rtx), 0);
+  high_part[reg] = simplify_gen_subreg (SImode, reg_rtx, GET_MODE (reg_rtx), 4);
+
+  /* Generate low_part and high_part memory pattern.
+     Memory format is (post_dec) will generate:
+       low_part:  lwi.bi reg, [mem], 4
+       high_part: lwi.bi reg, [mem], -12 */
+  if (GET_CODE (sub_mem) == POST_DEC)
+    {
+      /* memory format is (post_dec (reg)),
+	 so that extract (reg) from the (post_dec (reg)) pattern.  */
+      sub_mem = XEXP (sub_mem, 0);
+
+      /* generate low_part and high_part memory format:
+	   low_part:  (post_modify ((reg) (plus (reg) (const 4)))
+	   high_part: (post_modify ((reg) (plus (reg) (const -12))) */
+      low_part[mem] = gen_frame_mem (SImode,
+				     gen_rtx_POST_MODIFY (Pmode, sub_mem,
+							  gen_rtx_PLUS (Pmode,
+							  sub_mem,
+							  GEN_INT (4))));
+      high_part[mem] = gen_frame_mem (SImode,
+				      gen_rtx_POST_MODIFY (Pmode, sub_mem,
+							   gen_rtx_PLUS (Pmode,
+							   sub_mem,
+							   GEN_INT (-12))));
+    }
+  else if (GET_CODE (sub_mem) == POST_MODIFY)
+    {
+      /* Memory format is (post_modify (reg) (plus (reg) (const))),
+	 so that extract (reg) from the post_modify pattern.  */
+      rtx post_mem = XEXP (sub_mem, 0);
+
+      /* Extract (const) from the (post_modify (reg) (plus (reg) (const)))
+	 pattern.  */
+
+      rtx plus_op = XEXP (sub_mem, 1);
+      rtx post_val = XEXP (plus_op, 1);
+
+      /* Generate low_part and high_part memory format:
+	   low_part:  (post_modify ((reg) (plus (reg) (const)))
+	   high_part: ((plus (reg) (const 4))) */
+      low_part[mem] = gen_frame_mem (SImode,
+				     gen_rtx_POST_MODIFY (Pmode, post_mem,
+							  gen_rtx_PLUS (Pmode,
+							  post_mem,
+							  post_val)));
+      high_part[mem] = gen_frame_mem (SImode, plus_constant (Pmode,
+							     post_mem,
+							     4));
+    }
+  else
+    {
+      /* memory format: (symbol_ref), (const), (reg + const_int).  */
+      low_part[mem] = adjust_address (mem_rtx, SImode, 0);
+      high_part[mem] = adjust_address (mem_rtx, SImode, 4);
+    }
+
+  /* After reload completed, we have dependent issue by low part register and
+     higt part memory. i.e. we cannot split a sequence
+     like:
+	load $r0, [%r1]
+     spilt to
+	lw  $r0, [%r0]
+	lwi $r1, [%r0 + 4]
+     swap position
+	lwi $r1, [%r0 + 4]
+	lw  $r0, [%r0]
+     For store instruction we don't have a problem.
+
+     When memory format is [post_modify], we need to emit high part instruction,
+     before low part instruction.
+     expamle:
+       load $r0, [%r2], post_val
+     spilt to
+       load $r1, [%r2 + 4]
+       load $r0, [$r2], post_val.  */
+  if ((load_p && reg_overlap_mentioned_p (low_part[0], high_part[1]))
+      || GET_CODE (sub_mem) == POST_MODIFY)
+    {
+      operands[2] = high_part[0];
+      operands[3] = high_part[1];
+      operands[4] = low_part[0];
+      operands[5] = low_part[1];
+    }
+  else
+    {
+      operands[2] = low_part[0];
+      operands[3] = low_part[1];
+      operands[4] = high_part[0];
+      operands[5] = high_part[1];
+    }
 }
 
 /* Return true X is need use long call.  */

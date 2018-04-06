@@ -46,13 +46,17 @@
 ;; Include DImode/DFmode operations.
 (include "nds32-doubleword.md")
 
+;; Include floating-point patterns.
+(include "nds32-fpu.md")
+
 ;; Include peephole patterns.
 (include "nds32-peephole2.md")
 
 
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
-  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,call,misc"
+  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,call,misc,\
+   falu,fmuls,fmuld,fmacs,fmacd,fdivs,fdivd,fsqrts,fsqrtd,fcmp,fabs,fcpy,fcmov,fmfsr,fmfdr,fmtsr,fmtdr,fload,fstore"
   (const_string "unknown"))
 
 ;; Insn sub-type
@@ -77,7 +81,7 @@
 ;; pe2 : Performance Extension Version 2 Instructions
 ;; se  : String Extension instructions
 (define_attr "feature"
-  "v1,v2,v3m,v3,pe1,pe2,se"
+  "v1,v2,v3m,v3,pe1,pe2,se,fpu"
   (const_string "v1"))
 
 ;; Enabled, which is used to enable/disable insn alternatives.
@@ -107,6 +111,9 @@
 						    (const_string "yes")
 						    (const_string "no"))
 	   (eq_attr "feature" "se")   (if_then_else (match_test "TARGET_EXT_STRING")
+						    (const_string "yes")
+						    (const_string "no"))
+	   (eq_attr "feature" "fpu")  (if_then_else (match_test "TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE")
 						    (const_string "yes")
 						    (const_string "no"))]
 	   (const_string "yes"))))
@@ -193,8 +200,8 @@
 })
 
 (define_insn "*mov<mode>"
-  [(set (match_operand:QIHISI 0 "nonimmediate_operand" "=r, r, U45, U33, U37, U45, m,   l,   l,   l,   d,   d, r,    d,    r,    r,    r")
-	(match_operand:QIHISI 1 "nds32_move_operand"   " r, r,   l,   l,   l,   d, r, U45, U33, U37, U45, Ufe, m, Ip05, Is05, Is20, Ihig"))]
+  [(set (match_operand:QIHISI 0 "nonimmediate_operand" "=r, r,U45,U33,U37,U45, m,  l,  l,  l,  d,  d, r,   d,    r,    r,    r, *f, *f,  r, *f,  Q")
+	(match_operand:QIHISI 1 "nds32_move_operand"   " r, r,  l,  l,  l,  d, r,U45,U33,U37,U45,Ufe, m,Ip05, Is05, Is20, Ihig, *f,  r, *f,  Q, *f"))]
   "register_operand(operands[0], <MODE>mode)
    || register_operand(operands[1], <MODE>mode)"
 {
@@ -227,12 +234,26 @@
       return "movi\t%0, %1";
     case 16:
       return "sethi\t%0, hi20(%1)";
+    case 17:
+      if (TARGET_FPU_SINGLE)
+	return "fcpyss\t%0, %1, %1";
+      else
+	return "#";
+    case 18:
+      return "fmtsr\t%1, %0";
+    case 19:
+      return "fmfsr\t%0, %1";
+    case 20:
+      return nds32_output_float_load (operands);
+    case 21:
+      return nds32_output_float_store (operands);
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "type"   "alu,alu,store,store,store,store,store,load,load,load,load,load,load,alu,alu,alu,alu")
-   (set_attr "length" "  2,  4,    2,    2,    2,    2,    4,   2,   2,   2,   2,   2,   4,  2,  2,  4,  4")])
+  [(set_attr "type"    "alu,alu,store,store,store,store,store,load,load,load,load,load,load,alu,alu,alu,alu,fcpy,fmtsr,fmfsr,fload,fstore")
+   (set_attr "length"  "  2,  4,    2,    2,    2,    2,    4,   2,   2,   2,   2,   2,   4,  2,  2,  4,  4,   4,    4,    4,    4,     4")
+   (set_attr "feature" " v1, v1,   v1,   v1,   v1,   v1,   v1,  v1,  v1,  v1,  v1, v3m,  v1, v1, v1, v1, v1, fpu,  fpu,  fpu,  fpu,   fpu")])
 
 
 ;; We use nds32_symbolic_operand to limit that only CONST/SYMBOL_REF/LABEL_REF
@@ -803,6 +824,87 @@
   [(set_attr "type"    "alu,alu")
    (set_attr "length"  "  2,  4")
    (set_attr "feature" "v3m, v1")])
+
+(define_expand "negsf2"
+  [(set (match_operand:SF 0 "register_operand" "")
+	(neg:SF (match_operand:SF 1 "register_operand" "")))]
+  ""
+{
+  if (!TARGET_FPU_SINGLE && !TARGET_EXT_PERF)
+    {
+      rtx new_dst = simplify_gen_subreg (SImode, operands[0], SFmode, 0);
+      rtx new_src = simplify_gen_subreg (SImode, operands[1], SFmode, 0);
+
+      emit_insn (gen_xorsi3 (new_dst,
+			     new_src,
+			     gen_int_mode (0x80000000, SImode)));
+
+      DONE;
+    }
+})
+
+(define_expand "negdf2"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(neg:DF (match_operand:DF 1 "register_operand" "")))]
+  ""
+{
+})
+
+(define_insn_and_split "soft_negdf2"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(neg:DF (match_operand:DF 1 "register_operand" "")))]
+  "!TARGET_FPU_DOUBLE"
+  "#"
+  "!TARGET_FPU_DOUBLE"
+  [(const_int 1)]
+{
+    rtx src = operands[1];
+    rtx dst = operands[0];
+    rtx ori_dst = operands[0];
+
+    bool need_extra_move_for_dst_p;
+    /* FPU register can't change mode to SI directly, so we need create a
+       tmp register to handle it, and FPU register can't do `xor` or btgl.  */
+    if (HARD_REGISTER_P (src)
+	&& TEST_HARD_REG_BIT (reg_class_contents[FP_REGS], REGNO (src)))
+      {
+	rtx tmp = gen_reg_rtx (DFmode);
+	emit_move_insn (tmp, src);
+	src = tmp;
+      }
+
+    if (HARD_REGISTER_P (dst)
+	&& TEST_HARD_REG_BIT (reg_class_contents[FP_REGS], REGNO (dst)))
+      {
+	need_extra_move_for_dst_p = true;
+	rtx tmp = gen_reg_rtx (DFmode);
+	dst = tmp;
+      }
+
+    rtx dst_high_part = simplify_gen_subreg (
+			  SImode, dst,
+			  DFmode, subreg_highpart_offset (SImode, DFmode));
+    rtx dst_low_part = simplify_gen_subreg (
+			  SImode, dst,
+			  DFmode, subreg_lowpart_offset (SImode, DFmode));
+    rtx src_high_part = simplify_gen_subreg (
+			  SImode, src,
+			  DFmode, subreg_highpart_offset (SImode, DFmode));
+    rtx src_low_part = simplify_gen_subreg (
+			  SImode, src,
+			  DFmode, subreg_lowpart_offset (SImode, DFmode));
+
+    emit_insn (gen_xorsi3 (dst_high_part,
+			   src_high_part,
+			   gen_int_mode (0x80000000, SImode)));
+    emit_move_insn (dst_low_part, src_low_part);
+
+    if (need_extra_move_for_dst_p)
+      emit_move_insn (ori_dst, dst);
+
+    DONE;
+})
+
 
 ;; ----------------------------------------------------------------------------
 ;; 'ONE_COMPLIMENT' operation

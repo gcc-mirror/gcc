@@ -107,6 +107,8 @@ static const struct default_options nds32_option_optimization_table[] =
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS		\
   (TARGET_CPU_DEFAULT				\
+   | TARGET_DEFAULT_FPU_ISA			\
+   | TARGET_DEFAULT_FPU_FMA			\
    | MASK_16_BIT				\
    | MASK_EXT_PERF				\
    | MASK_EXT_PERF2				\

@@ -24,11 +24,20 @@
 (define_predicate "nds32_greater_less_comparison_operator"
   (match_code "gt,ge,lt,le"))
 
+(define_predicate "nds32_float_comparison_operator"
+  (match_code "eq,ne,le,lt,ge,gt,ordered,unordered,ungt,unge,unlt,unle"))
+
 (define_predicate "nds32_movecc_comparison_operator"
   (match_code "eq,ne,le,leu,ge,geu"))
 
 (define_special_predicate "nds32_logical_binary_operator"
   (match_code "and,ior,xor"))
+
+(define_special_predicate "nds32_conditional_call_comparison_operator"
+  (match_code "lt,ge"))
+
+(define_special_predicate "nds32_have_33_inst_operator"
+  (match_code "mult,and,ior,xor"))
 
 (define_predicate "nds32_symbolic_operand"
   (match_code "const,symbol_ref,label_ref"))
@@ -121,6 +130,18 @@
 (define_predicate "nds32_lmw_smw_base_operand"
   (and (match_code "mem")
        (match_test "nds32_valid_smw_lwm_base_p (op)")))
+
+(define_predicate "float_even_register_operand"
+  (and (match_code "reg")
+       (and (match_test "REGNO (op) >= NDS32_FIRST_FPR_REGNUM")
+	    (match_test "REGNO (op) <= NDS32_LAST_FPR_REGNUM")
+	    (match_test "(REGNO (op) & 1) == 0"))))
+
+(define_predicate "float_odd_register_operand"
+  (and (match_code "reg")
+       (and (match_test "REGNO (op) >= NDS32_FIRST_FPR_REGNUM")
+	    (match_test "REGNO (op) <= NDS32_LAST_FPR_REGNUM")
+	    (match_test "(REGNO (op) & 1) != 0"))))
 
 (define_special_predicate "nds32_load_multiple_operation"
   (match_code "parallel")
