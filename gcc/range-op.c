@@ -58,6 +58,18 @@ min_limit (const_tree type)
   return wi::min_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
 }
 
+inline bool
+empty_range_check (irange& r, const irange& op1, const irange & op2,
+		   const_tree type)
+{
+  if (op1.empty_p () || op2.empty_p ())
+    {
+      r.clear (type);
+      return true;
+    }
+  else
+    return false;
+}
 
 /* Given newly calcuclated lbound and ubound, examine the overflow bits to 
    determine where the various ranges belong.  */
@@ -192,6 +204,9 @@ bool
 operator_equal::fold_range (irange& r, const irange& op1,
 			    const irange& op2) const
 {
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
   /* We can be sure the values are always equal or not if both ranges
      consist of a single value, and then compare them.  */
   if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
@@ -279,6 +294,9 @@ bool
 operator_not_equal::fold_range (irange& r, const irange& op1,
 				const irange& op2) const
 {
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
   /* We can be sure the values are always equal or not if both ranges
      consist of a single value, and then compare them.  */
   if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
@@ -407,6 +425,9 @@ operator_lt::dump (FILE *f) const
 bool
 operator_lt::fold_range (irange& r, const irange& op1, const irange& op2) const
 {
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
   signop sign = TYPE_SIGN (op1.get_type ());
   gcc_checking_assert (sign == TYPE_SIGN (op2.get_type ()));
 
@@ -483,6 +504,9 @@ operator_le::dump (FILE *f) const
 bool
 operator_le::fold_range (irange& r, const irange& op1, const irange& op2) const
 {
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
   signop sign = TYPE_SIGN (op1.get_type ());
   gcc_checking_assert (sign == TYPE_SIGN (op2.get_type ()));
 
@@ -559,6 +583,9 @@ operator_gt::dump (FILE *f) const
 bool
 operator_gt::fold_range (irange& r, const irange& op1, const irange& op2) const
 {
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
   signop sign = TYPE_SIGN (op1.get_type ());
   gcc_checking_assert (sign == TYPE_SIGN (op2.get_type ()));
 
@@ -636,6 +663,9 @@ operator_ge::dump (FILE *f) const
 bool
 operator_ge::fold_range (irange& r, const irange& op1, const irange& op2) const
 {
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
   signop sign = TYPE_SIGN (op1.get_type ());
   gcc_checking_assert (sign == TYPE_SIGN (op2.get_type ()));
 
@@ -910,6 +940,9 @@ operator_plus::dump (FILE *f) const
 bool
 operator_plus::fold_range (irange& r, const irange& lh, const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
   return op_rr (OPM_ADD, r, lh, rh);
 }
 
@@ -954,6 +987,9 @@ operator_minus::dump (FILE *f) const
 bool
 operator_minus::fold_range (irange& r, const irange& lh, const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
   return op_rr (OPM_SUB, r, lh, rh);
 }
 
@@ -1001,6 +1037,9 @@ bool
 operator_multiply::fold_range (irange& r, const irange& lh,
 			      const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
   return op_rr (OPM_MUL, r, lh, rh);
 }
 
@@ -1062,6 +1101,9 @@ bool
 operator_divide::fold_range (irange& r, const irange& lh,
 			     const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
   return op_rr (OPM_DIV, r, lh, rh);
 }
 
@@ -1149,6 +1191,9 @@ bool
 operator_exact_divide::fold_range (irange& r, const irange& lh,
 			     const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
   return op_rr (OPM_EXACTDIV, r, lh, rh);
 }
 
@@ -1197,6 +1242,9 @@ operator_cast::dump (FILE *f) const
 bool
 operator_cast::fold_range (irange& r, const irange& lh, const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, rh.get_type ()))
+    return true;
+
   if (lh.get_type () != rh.get_type ())
     {
       /* Handle conversion so they become the same type.  */
@@ -1274,13 +1322,8 @@ bool
 operator_logical_and::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
-  
-  // Empty ranges are viral.
-  if (lh.empty_p () || rh.empty_p ())
-    {
-      r.clear (boolean_type_node);
-      return true;
-    }
+  if (empty_range_check (r, lh, rh, boolean_type_node))
+    return true;
 
   // 0 && anything is 0
   if ((wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (lh.upper_bound (), 0))
@@ -1332,6 +1375,9 @@ operator_logical_and::op2_irange (irange& r, const irange& lhs,
 
 class operator_bitwise_and : public irange_operator
 {
+  bool mask_range (irange& r, const_tree type, const wide_int_ref& mask) const;
+  bool apply_mask (irange &r, const irange& val,
+		   const wide_int_ref& mask) const;
 public:
   void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
@@ -1347,6 +1393,83 @@ operator_bitwise_and::dump (FILE *f) const
   fprintf (f, " & ");
 }
 
+bool 
+operator_bitwise_and::mask_range (irange& r, const_tree type,
+				  const wide_int_ref& mask) const
+{
+  signop sign = TYPE_SIGN (type);
+  int lz = wi::clz (mask);
+  int tz = wi::ctz (mask);
+  bool signed_and_negative;
+
+  wide_int filled_mask, lb;
+
+  // No trailing or leading zeros, won't be able to do anything.
+  if (lz == 0 && tz == 0 )
+    return false;
+
+  int prec = TYPE_PRECISION (type);
+
+  // Any result wil have to include 0
+  r.set_range (type, 0, 0);
+
+  // If this is a signed value, and the signed bit is set, create a mask which
+  // does not include the sign bit.
+  signed_and_negative = ((sign == SIGNED) && lz == 0);
+  if (signed_and_negative)
+    { 
+      // If the sign bit is set, then the range can be from MIN (ie sign bit
+      // set, everything else zeroed  0x8000,  to whatever the filled mask value
+      // is.  The prevents the small numbers whose bits must be cleared.
+      filled_mask = wi::shifted_mask (tz, prec - tz, false, prec);
+      lb = wi::min_value (prec, sign);
+      r.union_ (lb, filled_mask);
+
+      // Create a mask with just the upper bit cleared, AND it with the
+      // original mask.  then reset the number of leading zeros so we can get
+      // the positive part of the range on the fallthru
+      filled_mask = wi::shifted_mask (0, prec - 1, false, prec);
+      filled_mask = wi::bit_and (filled_mask, mask);
+      // Now set lz as if the signed bit was not set so we can get a mask for
+      // the positive range.
+      lz = wi::clz (filled_mask);
+    }
+
+  // An all 0's mask has already has ranges calculated.
+  if (lz == prec)
+    return true;
+
+  // create a filled mask between leading and trailing zeros.
+  // ie. 00100110  produces 00111110.
+  filled_mask = wi::shifted_mask (tz, prec - lz - tz, false, prec);
+  // The lower bound is the least significant bit set, ignoring 0.
+  lb = wi::set_bit_in_zero (tz, prec);
+  // The upper bound is now the value of new_mask.
+  r.union_ (lb, filled_mask);
+
+  return true;
+}
+
+bool
+operator_bitwise_and::apply_mask (irange &r, const irange& val,
+				  const wide_int_ref& mask) const
+{
+  // Get the list of possible ranges from the mask
+  if (!mask_range (r, val.get_type (), mask))
+    return false;
+
+  // And intersect it with the real ranges.
+  // We could do slightly better here with some detailed analysis. for instance
+  // [65, 129] & 0x7c  
+  // the mask 0x3c is 01111100, which is a range of [4,124]
+  // [65,129] intersect [0,0][4,124] is [65,124]
+  // in fact, the lower bound can't be 65, it would really be 68. we could
+  // mask the new lower and upper bound as well, but that even more work and
+  // should get resolved when we support the non-zero-bits masking.
+
+
+  return true;
+}
 
 /* A bitwise AND of two ranges is executed when we are walking forward with
    ranges that have been determined.   x_8 is an unsigned char.
@@ -1360,12 +1483,21 @@ bool
 operator_bitwise_and::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
+  wide_int w;
   /* If this is really a logical operation, call that.  */
   if (types_compatible_p (const_cast <tree> (lh.get_type ()),
 			  boolean_type_node))
     return op_logical_and.fold_range (r, lh, rh);
 
-  /* For now do nothing with bitwise AND of iranges, just return the type. */
+  if (lh.singleton_p (w))
+    return apply_mask (r, rh, w);
+
+  if (rh.singleton_p (w))
+    return apply_mask (r, lh, w);
+  
   r.set_range_for_type (lh.get_type ());
   return true;
 }
@@ -1414,6 +1546,9 @@ bool
 operator_logical_or::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, boolean_type_node))
+    return true;
+
   r = irange_union (lh, rh);
   return true;
 }
@@ -1475,6 +1610,9 @@ bool
 operator_bitwise_or::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
   /* If this is really a logical operation, call that.  */
   if (types_compatible_p (const_cast <tree> (lh.get_type ()),
 			  boolean_type_node))
@@ -1540,6 +1678,9 @@ bool
 operator_logical_not::fold_range (irange& r, const irange& lh,
 				  const irange& rh ATTRIBUTE_UNUSED) const
 {
+  if (empty_range_check (r, lh, rh, boolean_type_node))
+    return true;
+
   if (lh.range_for_type_p () || lh.empty_p ())
     r = lh;
   else
@@ -1578,6 +1719,9 @@ bool
 operator_bitwise_not::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
   /* If this is a boolean not, call the logical version.  */
   if (types_compatible_p (const_cast <tree> (lh.get_type ()),
 			  boolean_type_node))
