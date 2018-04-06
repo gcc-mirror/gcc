@@ -1,3 +1,7 @@
+2018-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/opt/pr85196.C: New test.
+
 2018-04-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84269

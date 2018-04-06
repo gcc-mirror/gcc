@@ -1,3 +1,19 @@
+2018-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/85196
+	* config/sparc/sparc.c (sparc_expand_move): Deal with symbolic operands
+	based on LABEL_REF.  Remove useless assertion.
+	(pic_address_needs_scratch): Fix formatting.
+	(sparc_legitimize_pic_address): Minor tweaks.
+	(sparc_delegitimize_address): Adjust assertion accordingly.
+	* config/sparc/sparc.md (movsi_pic_label_ref): Change label_ref_operand
+	into symbolic_operand.
+	(movsi_high_pic_label_ref): Likewise.
+	(movsi_lo_sum_pic_label_ref): Likewise.
+	(movdi_pic_label_ref): Likewise.
+	(movdi_high_pic_label_ref): Likewise.
+	(movdi_lo_sum_pic_label_ref): Likewise.
+
 2018-04-06  Amaan Cheval  <amaan.cheval@gmail.com>
 
 	* config.gcc (x86_64-*-rtems*): Add rtems.h to tm_file for
