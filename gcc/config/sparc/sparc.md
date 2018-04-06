@@ -1525,7 +1525,7 @@
 
 (define_expand "movsi_pic_label_ref"
   [(set (match_dup 3) (high:SI
-     (unspec:SI [(match_operand:SI 1 "label_ref_operand" "")
+     (unspec:SI [(match_operand:SI 1 "symbolic_operand" "")
 		 (match_dup 2)] UNSPEC_MOVE_PIC_LABEL)))
    (set (match_dup 4) (lo_sum:SI (match_dup 3)
      (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_MOVE_PIC_LABEL)))
@@ -1551,7 +1551,7 @@
 (define_insn "*movsi_high_pic_label_ref"
   [(set (match_operand:SI 0 "register_operand" "=r")
       (high:SI
-        (unspec:SI [(match_operand:SI 1 "label_ref_operand" "")
+        (unspec:SI [(match_operand:SI 1 "symbolic_operand" "")
 		    (match_operand:SI 2 "" "")] UNSPEC_MOVE_PIC_LABEL)))]
   "flag_pic"
   "sethi\t%%hi(%a2-(%a1-.)), %0")
@@ -1559,7 +1559,7 @@
 (define_insn "*movsi_lo_sum_pic_label_ref"
   [(set (match_operand:SI 0 "register_operand" "=r")
       (lo_sum:SI (match_operand:SI 1 "register_operand" "r")
-        (unspec:SI [(match_operand:SI 2 "label_ref_operand" "")
+        (unspec:SI [(match_operand:SI 2 "symbolic_operand" "")
 		    (match_operand:SI 3 "" "")] UNSPEC_MOVE_PIC_LABEL)))]
   "flag_pic"
   "or\t%1, %%lo(%a3-(%a2-.)), %0")
@@ -1661,7 +1661,7 @@
 
 (define_expand "movdi_pic_label_ref"
   [(set (match_dup 3) (high:DI
-     (unspec:DI [(match_operand:DI 1 "label_ref_operand" "")
+     (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")
                  (match_dup 2)] UNSPEC_MOVE_PIC_LABEL)))
    (set (match_dup 4) (lo_sum:DI (match_dup 3)
      (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_MOVE_PIC_LABEL)))
@@ -1687,7 +1687,7 @@
 (define_insn "*movdi_high_pic_label_ref"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI
-          (unspec:DI [(match_operand:DI 1 "label_ref_operand" "")
+          (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")
                       (match_operand:DI 2 "" "")] UNSPEC_MOVE_PIC_LABEL)))]
   "TARGET_ARCH64 && flag_pic"
   "sethi\t%%hi(%a2-(%a1-.)), %0")
@@ -1695,7 +1695,7 @@
 (define_insn "*movdi_lo_sum_pic_label_ref"
   [(set (match_operand:DI 0 "register_operand" "=r")
       (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
-        (unspec:DI [(match_operand:DI 2 "label_ref_operand" "")
+        (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")
                     (match_operand:DI 3 "" "")] UNSPEC_MOVE_PIC_LABEL)))]
   "TARGET_ARCH64 && flag_pic"
   "or\t%1, %%lo(%a3-(%a2-.)), %0")
