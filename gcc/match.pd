@@ -3700,7 +3700,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (neeq @0 @1)
   (if (POINTER_TYPE_P (TREE_TYPE (@0))
        && ptrs_compare_unequal (@0, @1))
-   { neeq == EQ_EXPR ? boolean_false_node : boolean_true_node; })))
+   { constant_boolean_node (neeq != EQ_EXPR, type); })))
 
 /* PR70920: Transform (intptr_t)x eq/ne CST to x eq/ne (typeof x) CST.
    and (typeof ptr_cst) x eq/ne ptr_cst to x eq/ne (typeof x) CST.
