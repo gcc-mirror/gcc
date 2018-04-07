@@ -13035,7 +13035,7 @@ verify_type_variant (const_tree t, tree tv)
   do {									    \
     if (flag (tv) != flag (t))						    \
       {									    \
-	error ("type variant differs by " #flag ".");			    \
+	error ("type variant differs by %s", #flag);			    \
 	debug_tree (tv);						    \
 	return false;							    \
       }									    \
