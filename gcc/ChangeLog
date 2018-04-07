@@ -1,3 +1,9 @@
+2018-04-07  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_legitimate_index_p): Modify condition
+	for load/store addressing form.
+	(nds32_print_operand_address): Likewise.
+
 2018-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/85196
