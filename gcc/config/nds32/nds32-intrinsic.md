@@ -40,6 +40,26 @@
    (set_attr "length"    "4")]
 )
 
+(define_expand "mtsr_isb"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "immediate_operand" ""))]
+  ""
+{
+  emit_insn (gen_unspec_volatile_mtsr (operands[0], operands[1]));
+  emit_insn (gen_unspec_volatile_isb());
+  DONE;
+})
+
+(define_expand "mtsr_dsb"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "immediate_operand" ""))]
+  ""
+{
+  emit_insn (gen_unspec_volatile_mtsr (operands[0], operands[1]));
+  emit_insn (gen_unspec_dsb());
+  DONE;
+})
+
 (define_insn "unspec_volatile_mtsr"
   [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")
 			(match_operand:SI 1 "immediate_operand" "i")] UNSPEC_VOLATILE_MTSR)]
@@ -162,6 +182,90 @@
   [(set_attr "type" "misc")]
 )
 
+(define_insn "unspec_dsb"
+  [(unspec_volatile [(const_int 0)] UNSPEC_VOLATILE_DSB)]
+  ""
+  "dsb"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_msync"
+  [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "i")] UNSPEC_VOLATILE_MSYNC)]
+  ""
+  "msync\t%0"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_msync_all"
+  [(unspec_volatile [(const_int 0)] UNSPEC_VOLATILE_MSYNC_ALL)]
+  ""
+  "msync\tall"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_msync_store"
+  [(unspec_volatile [(const_int 0)] UNSPEC_VOLATILE_MSYNC_STORE)]
+  ""
+  "msync\tstore"
+  [(set_attr "type" "misc")]
+)
+
+;; Load and Store
+
+(define_insn "unspec_volatile_llw"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+					      (match_operand:SI 2 "register_operand" "r")))] UNSPEC_VOLATILE_LLW))]
+  ""
+  "llw\t%0, [%1 + %2]"
+  [(set_attr "length"    "4")]
+)
+
+(define_insn "unspec_lwup"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+					      (match_operand:SI 2 "register_operand" "r")))] UNSPEC_LWUP))]
+  ""
+  "lwup\t%0, [%1 + %2]"
+  [(set_attr "length"    "4")]
+)
+
+(define_insn "unspec_lbup"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+					      (match_operand:SI 2 "register_operand" "r")))] UNSPEC_LBUP))]
+  ""
+  "lbup\t%0, [%1 + %2]"
+  [(set_attr "length"    "4")]
+)
+
+(define_insn "unspec_volatile_scw"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+					      (match_operand:SI 2 "register_operand" "r")))
+			     (match_operand:SI 3 "register_operand" "0")] UNSPEC_VOLATILE_SCW))]
+  ""
+  "scw\t%0, [%1 + %2]"
+  [(set_attr "length"     "4")]
+)
+
+(define_insn "unspec_swup"
+  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "r")
+			 (match_operand:SI 1 "register_operand" "r")))
+	(unspec:SI [(match_operand:SI 2 "register_operand" "r")] UNSPEC_SWUP))]
+  ""
+  "swup\t%2, [%0 + %1]"
+  [(set_attr "length"     "4")]
+)
+
+(define_insn "unspec_sbup"
+  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "r")
+			 (match_operand:SI 1 "register_operand" "r")))
+	(unspec:SI [(match_operand:SI 2 "register_operand" "r")] UNSPEC_SBUP))]
+  ""
+  "sbup\t%2, [%0 + %1]"
+  [(set_attr "length"     "4")]
+)
 
 ;; CCTL
 

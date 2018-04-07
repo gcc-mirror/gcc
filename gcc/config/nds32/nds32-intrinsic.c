@@ -135,6 +135,23 @@ nds32_check_constant_argument (enum insn_code icode, int opnum, rtx opval,
   return true;
 }
 
+/* Expand builtins that return target.  */
+static rtx
+nds32_expand_noarg_builtin (enum insn_code icode, rtx target)
+{
+  rtx pat;
+
+  target = nds32_legitimize_target (icode, target);
+
+  /* Emit and return the new instruction. */
+  pat = GEN_FCN (icode) (target);
+  if (! pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
 /* Expand builtins that take one operand.  */
 static rtx
 nds32_expand_unop_builtin (enum insn_code icode, tree exp, rtx target,
@@ -222,6 +239,61 @@ nds32_expand_binop_builtin (enum insn_code icode, tree exp, rtx target,
   return target;
 }
 
+/* Expand builtins for load.  */
+static rtx
+nds32_expand_builtin_load (enum insn_code icode, tree exp, rtx target)
+{
+  /* Load address format is [$ra + $rb],
+     but input arguments not enough,
+     so we need another temp register as $rb.
+     Generating assembly code:
+       movi $temp, 0
+       llw  $rt, [$ra + $temp] */
+  rtx pat;
+  rtx op0 = nds32_read_argument (exp, 0);
+  rtx addr_helper = gen_reg_rtx (insn_data[icode].operand[1].mode);
+
+  target = nds32_legitimize_target (icode, target);
+  op0 = nds32_legitimize_argument (icode, 1, op0);
+
+  /* Emit and return the new instruction. */
+  pat = GEN_FCN (icode) (target, op0, addr_helper);
+  if (!pat)
+    return NULL_RTX;
+
+  emit_move_insn (addr_helper, GEN_INT (0));
+  emit_insn (pat);
+  return target;
+}
+
+/* Expand builtins for store.  */
+static rtx
+nds32_expand_builtin_store (enum insn_code icode, tree exp, rtx target)
+{
+  /* Store address format is [$ra + $rb],
+     but input arguments not enough,
+     so we need another temp register as $rb.
+     Generating assembly code:
+       movi $temp, 0
+       store  $rt, [$ra + $temp] */
+  rtx pat;
+  rtx op0 = nds32_read_argument (exp, 0);
+  rtx op1 = nds32_read_argument (exp, 1);
+  rtx addr_helper = gen_reg_rtx (insn_data[icode].operand[1].mode);
+
+  op0 = nds32_legitimize_argument (icode, 0, op0);
+  op1 = nds32_legitimize_argument (icode, 2, op1);
+
+  /* Emit and return the new instruction. */
+  pat = GEN_FCN (icode) (op0, addr_helper, op1);
+  if (! pat)
+    return NULL_RTX;
+
+  emit_move_insn (addr_helper, GEN_INT (0));
+  emit_insn (pat);
+  return target;
+}
+
 /* Expand cctl builtins.  */
 static rtx
 nds32_expand_cctl_builtin (enum insn_code icode, tree exp, rtx target,
@@ -259,6 +331,36 @@ nds32_expand_cctl_builtin (enum insn_code icode, tree exp, rtx target,
   if (! pat)
     return NULL_RTX;
 
+  emit_insn (pat);
+  return target;
+}
+
+/* Expand scw builtins.  */
+static rtx
+nds32_expand_scw_builtin (enum insn_code icode, tree exp, rtx target)
+{
+  /* SCW address format is [$ra + $rb], but input arguments not enough,
+     so we need another temp register as $rb.
+     Generating assembly code:
+	movi $temp, 0
+	scw  $rt, [$ra + $temp] */
+  rtx pat;
+  rtx op0 = nds32_read_argument (exp, 0);
+  rtx op1 = nds32_read_argument (exp, 1);
+  rtx addr_helper = gen_reg_rtx (insn_data[icode].operand[1].mode);
+
+  target = nds32_legitimize_target (icode, target);
+  op0 = nds32_legitimize_argument (icode, 1, op0);
+  op1 = nds32_legitimize_argument (icode, 2, op1);
+
+  /* Emit and return the new instruction. */
+  pat = GEN_FCN (icode) (target, op0, addr_helper, target);
+
+  if (!pat)
+    return NULL_RTX;
+
+  emit_move_insn (addr_helper, GEN_INT (0));
+  emit_move_insn (target, op1);
   emit_insn (pat);
   return target;
 }
@@ -313,6 +415,8 @@ static struct builtin_description bdesc_2arg[] =
   NDS32_BUILTIN(unspec_ffb, "ffb", FFB)
   NDS32_BUILTIN(unspec_ffmism, "ffmsim", FFMISM)
   NDS32_BUILTIN(unspec_flmism, "flmism", FLMISM)
+  NDS32_NO_TARGET_BUILTIN(mtsr_isb, "mtsr_isb", MTSR_ISB)
+  NDS32_NO_TARGET_BUILTIN(mtsr_dsb, "mtsr_dsb", MTSR_DSB)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_mtsr, "mtsr", MTSR)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_mtusr, "mtusr", MTUSR)
   NDS32_NO_TARGET_BUILTIN(unaligned_store_hw, "unaligned_store_hw", UASTORE_HW)
@@ -321,6 +425,20 @@ static struct builtin_description bdesc_2arg[] =
 
 };
 
+/* Intrinsics that load a value.  */
+static struct builtin_description bdesc_load[] =
+{
+  NDS32_BUILTIN(unspec_volatile_llw, "llw", LLW)
+  NDS32_BUILTIN(unspec_lwup, "lwup", LWUP)
+  NDS32_BUILTIN(unspec_lbup, "lbup", LBUP)
+};
+
+/* Intrinsics that store a value.  */
+static struct builtin_description bdesc_store[] =
+{
+  NDS32_BUILTIN(unspec_swup, "swup", SWUP)
+  NDS32_BUILTIN(unspec_sbup, "sbup", SBUP)
+};
 
 static struct builtin_description bdesc_cctl[] =
 {
@@ -375,6 +493,21 @@ nds32_expand_builtin_impl (tree exp,
 	  return NULL_RTX;
 	}
       break;
+
+    /* Load and Store  */
+    case NDS32_BUILTIN_LLW:
+    case NDS32_BUILTIN_LWUP:
+    case NDS32_BUILTIN_LBUP:
+    case NDS32_BUILTIN_SCW:
+    case NDS32_BUILTIN_SWUP:
+    case NDS32_BUILTIN_SBUP:
+      if (TARGET_ISA_V3M)
+	{
+	  error ("this builtin function not support "
+		 "on the v3m toolchain");
+	  return NULL_RTX;
+	}
+      break;
     /* String Extension  */
     case NDS32_BUILTIN_FFB:
     case NDS32_BUILTIN_FFMISM:
@@ -396,6 +529,15 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_ISB:
       emit_insn (gen_unspec_volatile_isb ());
       return target;
+    case NDS32_BUILTIN_DSB:
+      emit_insn (gen_unspec_dsb ());
+      return target;
+    case NDS32_BUILTIN_MSYNC_ALL:
+      emit_insn (gen_unspec_msync_all ());
+      return target;
+    case NDS32_BUILTIN_MSYNC_STORE:
+      emit_insn (gen_unspec_msync_store ());
+      return target;
     case NDS32_BUILTIN_SETGIE_EN:
       emit_insn (gen_unspec_volatile_setgie_en ());
       return target;
@@ -410,6 +552,9 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_CCTL_L1D_WBALL_ONE_LVL:
       emit_insn (gen_cctl_l1d_wball_one_lvl());
       return target;
+    case NDS32_BUILTIN_SCW:
+      return nds32_expand_scw_builtin (CODE_FOR_unspec_volatile_scw,
+				       exp, target);
       return target;
     default:
       break;
@@ -432,6 +577,14 @@ nds32_expand_builtin_impl (tree exp,
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
       return nds32_expand_binop_builtin (d->icode, exp, target, d->return_p);
+
+  for (i = 0, d = bdesc_load; i < ARRAY_SIZE (bdesc_load); i++, d++)
+    if (d->code == fcode)
+      return nds32_expand_builtin_load (d->icode, exp, target);
+
+  for (i = 0, d = bdesc_store; i < ARRAY_SIZE (bdesc_store); i++, d++)
+    if (d->code == fcode)
+      return nds32_expand_builtin_store (d->icode, exp, target);
 
   for (i = 0, d = bdesc_cctl; i < ARRAY_SIZE (bdesc_cctl); i++, d++)
     if (d->code == fcode)
@@ -492,6 +645,7 @@ nds32_init_builtins_impl (void)
 			NDS32_BUILTIN_ ## CODE, BUILT_IN_MD, NULL, NULL_TREE)
 
   /* Looking for return type and argument can be found in tree.h file.  */
+  tree ptr_uchar_type_node = build_pointer_type (unsigned_char_type_node);
   tree ptr_ushort_type_node = build_pointer_type (short_unsigned_type_node);
   tree ptr_uint_type_node = build_pointer_type (unsigned_type_node);
   tree ptr_ulong_type_node = build_pointer_type (long_long_unsigned_type_node);
@@ -499,11 +653,16 @@ nds32_init_builtins_impl (void)
   /* Cache.  */
   ADD_NDS32_BUILTIN1 ("isync", void, ptr_uint, ISYNC);
   ADD_NDS32_BUILTIN0 ("isb", void, ISB);
+  ADD_NDS32_BUILTIN0 ("dsb", void, DSB);
+  ADD_NDS32_BUILTIN0 ("msync_all", void, MSYNC_ALL);
+  ADD_NDS32_BUILTIN0 ("msync_store", void, MSYNC_STORE);
 
   /* Register Transfer.  */
   ADD_NDS32_BUILTIN1 ("mfsr", unsigned, integer, MFSR);
   ADD_NDS32_BUILTIN1 ("mfusr", unsigned, integer, MFUSR);
   ADD_NDS32_BUILTIN2 ("mtsr", void, unsigned, integer, MTSR);
+  ADD_NDS32_BUILTIN2 ("mtsr_isb", void, unsigned, integer, MTSR_ISB);
+  ADD_NDS32_BUILTIN2 ("mtsr_dsb", void, unsigned, integer, MTSR_DSB);
   ADD_NDS32_BUILTIN2 ("mtusr", void, unsigned, integer, MTUSR);
 
   /* FPU Register Transfer.  */
@@ -518,6 +677,14 @@ nds32_init_builtins_impl (void)
   /* Interrupt.  */
   ADD_NDS32_BUILTIN0 ("setgie_en", void, SETGIE_EN);
   ADD_NDS32_BUILTIN0 ("setgie_dis", void, SETGIE_DIS);
+
+  /* Load and Store  */
+  ADD_NDS32_BUILTIN1 ("llw", unsigned, ptr_uint, LLW);
+  ADD_NDS32_BUILTIN1 ("lwup", unsigned, ptr_uint, LWUP);
+  ADD_NDS32_BUILTIN1 ("lbup", char, ptr_uchar, LBUP);
+  ADD_NDS32_BUILTIN2 ("scw", unsigned, ptr_uint, unsigned, SCW);
+  ADD_NDS32_BUILTIN2 ("swup", void, ptr_uint, unsigned, SWUP);
+  ADD_NDS32_BUILTIN2 ("sbup", void, ptr_uchar, char, SBUP);
 
   /* CCTL  */
   ADD_NDS32_BUILTIN0 ("cctl_l1d_invalall", void, CCTL_L1D_INVALALL);
