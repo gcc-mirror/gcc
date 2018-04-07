@@ -1,5 +1,28 @@
 2018-04-07  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/constants.md (unspec_volatile_element): Add
+	UNSPEC_VOLATILE_EH_RETURN.
+	* config/nds32/nds32-md-auxiliary.c (nds32_output_stack_push,
+	nds32_output_stack_pop): Support dwarf exception handling process.
+	* config/nds32/nds32-protos.h (nds32_dynamic_chain_address): Declare.
+	* config/nds32/nds32.c (nds32_init_machine_status): Support dwarf
+	exception handling process.
+	(nds32_compute_stack_frame): Likewise.
+	(nds32_return_addr_rtx): Likewise.
+	(nds32_initial_elimination_offset): Likewise.
+	(nds32_expand_prologue): Likewise.
+	(nds32_expand_epilogue): Likewise.
+	(nds32_dynamic_chain_address): New function.
+	* config/nds32/nds32.h (machine_function): Add fields for dwarf
+	exception handling.
+	(DYNAMIC_CHAIN_ADDRESS): Define.
+	(EH_RETURN_DATA_REGNO): Define.
+	(EH_RETURN_STACKADJ_RTX): Define.
+	* config/nds32/nds32.md (eh_return, nds32_eh_return): Implement
+	patterns for dwarf exception handling.
+
+2018-04-07  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.h: Clean up obsolete macros.
 
 2018-04-07  Monk Chiang  <sh.chiang04@gmail.com>

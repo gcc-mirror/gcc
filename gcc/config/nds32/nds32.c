@@ -323,6 +323,9 @@ nds32_init_machine_status (void)
   struct machine_function *machine;
   machine = ggc_cleared_alloc<machine_function> ();
 
+  /* Initially assume this function does not use __builtin_eh_return.  */
+  machine->use_eh_return_p = 0;
+
   /* Initially assume this function needs prologue/epilogue.  */
   machine->naked_p = 0;
 
@@ -345,6 +348,36 @@ nds32_compute_stack_frame (void)
      everytime we enter this function, we have to assume this function
      needs prologue/epilogue.  */
   cfun->machine->naked_p = 0;
+
+
+  /* If __builtin_eh_return is used, we better have frame pointer needed
+     so that we can easily locate the stack slot of return address.  */
+  if (crtl->calls_eh_return)
+    {
+      frame_pointer_needed = 1;
+
+      /* We need to mark eh data registers that need to be saved
+	 in the stack.  */
+      cfun->machine->eh_return_data_first_regno = EH_RETURN_DATA_REGNO (0);
+      for (r = 0; EH_RETURN_DATA_REGNO (r) != INVALID_REGNUM; r++)
+	cfun->machine->eh_return_data_last_regno = r;
+
+      cfun->machine->eh_return_data_regs_size
+	= 4 * (cfun->machine->eh_return_data_last_regno
+	       - cfun->machine->eh_return_data_first_regno
+	       + 1);
+      cfun->machine->use_eh_return_p = 1;
+    }
+  else
+    {
+      /* Assigning SP_REGNUM to eh_first_regno and eh_last_regno means we
+	 do not need to handle __builtin_eh_return case in this function.  */
+      cfun->machine->eh_return_data_first_regno = SP_REGNUM;
+      cfun->machine->eh_return_data_last_regno  = SP_REGNUM;
+
+      cfun->machine->eh_return_data_regs_size = 0;
+      cfun->machine->use_eh_return_p = 0;
+    }
 
   /* Get variadic arguments size to prepare pretend arguments and
      we will push them into stack at prologue by ourself.  */
@@ -3817,14 +3850,39 @@ nds32_regno_reg_class (int regno)
 /* -- Basic Stack Layout.  */
 
 rtx
-nds32_return_addr_rtx (int count,
-		       rtx frameaddr ATTRIBUTE_UNUSED)
+nds32_dynamic_chain_address (rtx frameaddr)
 {
-  /* There is no way to determine the return address
-     if frameaddr is the frame that has 'count' steps
-     up from current frame.  */
+  if (TARGET_V3PUSH)
+    {
+      /* If -mv3push is specified, we push $fp, $gp, and $lp into stack.
+         We can access dynamic chain address from stack by [$fp - 12].  */
+      return plus_constant (Pmode, frameaddr, -12);
+    }
+  else
+    {
+      /* For general case we push $fp and $lp into stack at prologue.
+         We can access dynamic chain address from stack by [$fp - 8].  */
+      return plus_constant (Pmode, frameaddr, -8);
+    }
+}
+
+rtx
+nds32_return_addr_rtx (int count,
+		       rtx frameaddr)
+{
+  int offset;
+  rtx addr;
+
   if (count != 0)
-    return NULL_RTX;
+    {
+      /* In nds32 ABI design, we can expect that $lp is always available
+         from stack by [$fp - 4] location.  */
+      offset = -4;
+      addr = plus_constant (Pmode, frameaddr, offset);
+      addr = memory_address (Pmode, addr);
+
+      return gen_rtx_MEM (Pmode, addr);
+    }
 
   /* If count == 0, it means we are at current frame,
      the return address is $r30 ($lp).  */
@@ -3843,7 +3901,8 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
   nds32_compute_stack_frame ();
 
   /* Remember to consider
-     cfun->machine->callee_saved_area_gpr_padding_bytes
+     cfun->machine->callee_saved_area_gpr_padding_bytes and
+     cfun->machine->eh_return_data_regs_size
      when calculating offset.  */
   if (from_reg == ARG_POINTER_REGNUM && to_reg == STACK_POINTER_REGNUM)
     {
@@ -3853,6 +3912,7 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
 		+ cfun->machine->callee_saved_gpr_regs_size
 		+ cfun->machine->callee_saved_area_gpr_padding_bytes
 		+ cfun->machine->callee_saved_fpr_regs_size
+		+ cfun->machine->eh_return_data_regs_size
 		+ cfun->machine->local_size
 		+ cfun->machine->out_args_size);
     }
@@ -3874,7 +3934,8 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
 		       + cfun->machine->lp_size
 		       + cfun->machine->callee_saved_gpr_regs_size
 		       + cfun->machine->callee_saved_area_gpr_padding_bytes
-		       + cfun->machine->callee_saved_fpr_regs_size);
+		       + cfun->machine->callee_saved_fpr_regs_size
+		       + cfun->machine->eh_return_data_regs_size);
     }
   else
     {
@@ -3960,12 +4021,24 @@ nds32_expand_prologue (void)
 	false);
     }
 
+  /* Save eh data registers.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      Rb = cfun->machine->eh_return_data_first_regno;
+      Re = cfun->machine->eh_return_data_last_regno;
+
+      /* No need to push $fp, $gp, or $lp.
+	 Also, this is not variadic arguments push.  */
+      nds32_emit_stack_push_multiple (Rb, Re, false, false, false, false);
+    }
+
   /* Check frame_pointer_needed to see
      if we shall emit fp adjustment instruction.  */
   if (frame_pointer_needed)
     {
       /* adjust $fp = $sp + ($fp size) + ($gp size) + ($lp size)
 			  + (4 * callee-saved-registers)
+			  + (4 * exception-handling-data-registers)
 	 Note: No need to adjust
 	       cfun->machine->callee_saved_area_gpr_padding_bytes,
 	       because, at this point, stack pointer is just
@@ -3973,7 +4046,8 @@ nds32_expand_prologue (void)
       fp_adjust = cfun->machine->fp_size
 		  + cfun->machine->gp_size
 		  + cfun->machine->lp_size
-		  + cfun->machine->callee_saved_gpr_regs_size;
+		  + cfun->machine->callee_saved_gpr_regs_size
+		  + cfun->machine->eh_return_data_regs_size;
 
       nds32_emit_adjust_frame (hard_frame_pointer_rtx,
 			       stack_pointer_rtx,
@@ -4122,6 +4196,7 @@ nds32_expand_epilogue (bool sibcall_p)
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
 		      + cfun->machine->callee_saved_gpr_regs_size
+		      + cfun->machine->eh_return_data_regs_size
 		      + cfun->machine->callee_saved_area_gpr_padding_bytes
 		      + cfun->machine->callee_saved_fpr_regs_size;
 
@@ -4145,7 +4220,8 @@ nds32_expand_epilogue (bool sibcall_p)
 	  sp_adjust = cfun->machine->fp_size
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
-		      + cfun->machine->callee_saved_gpr_regs_size;
+		      + cfun->machine->callee_saved_gpr_regs_size
+		      + cfun->machine->eh_return_data_regs_size;
 
 	  nds32_emit_adjust_frame (stack_pointer_rtx,
 				   hard_frame_pointer_rtx,
@@ -4193,6 +4269,16 @@ nds32_expand_epilogue (bool sibcall_p)
 	}
     }
 
+  /* Restore eh data registers.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      Rb = cfun->machine->eh_return_data_first_regno;
+      Re = cfun->machine->eh_return_data_last_regno;
+
+      /* No need to pop $fp, $gp, or $lp.  */
+      nds32_emit_stack_pop_multiple (Rb, Re, false, false, false);
+    }
+
   /* Get callee_first_regno and callee_last_regno.  */
   Rb = cfun->machine->callee_saved_first_gpr_regno;
   Re = cfun->machine->callee_saved_last_gpr_regno;
@@ -4224,6 +4310,42 @@ nds32_expand_epilogue (bool sibcall_p)
       nds32_emit_adjust_frame (stack_pointer_rtx,
 			       stack_pointer_rtx,
 			       sp_adjust);
+    }
+
+  /* If this function uses __builtin_eh_return, make stack adjustment
+     for exception handler.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      /* We need to unwind the stack by the offset computed by
+	 EH_RETURN_STACKADJ_RTX.  However, at this point the CFA is
+	 based on SP.  Ideally we would update the SP and define the
+	 CFA along the lines of:
+
+	 SP = SP + EH_RETURN_STACKADJ_RTX
+	 (regnote CFA = SP - EH_RETURN_STACKADJ_RTX)
+
+	 However the dwarf emitter only understands a constant
+	 register offset.
+
+	 The solution chosen here is to use the otherwise $ta ($r15)
+	 as a temporary register to hold the current SP value.  The
+	 CFA is described using $ta then SP is modified.  */
+
+      rtx ta_reg;
+      rtx insn;
+
+      ta_reg = gen_rtx_REG (SImode, TA_REGNUM);
+
+      insn = emit_move_insn (ta_reg, stack_pointer_rtx);
+      add_reg_note (insn, REG_CFA_DEF_CFA, ta_reg);
+      RTX_FRAME_RELATED_P (insn) = 1;
+
+      emit_insn (gen_addsi3 (stack_pointer_rtx,
+			     stack_pointer_rtx,
+			     EH_RETURN_STACKADJ_RTX));
+
+      /* Ensure the assignment to $ta does not get optimized away.  */
+      emit_use (ta_reg);
     }
 
   /* Generate return instruction.  */

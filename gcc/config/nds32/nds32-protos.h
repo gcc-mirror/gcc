@@ -40,6 +40,7 @@ extern enum reg_class nds32_regno_reg_class (int);
 
 /* -- Basic Stack Layout.  */
 
+extern rtx nds32_dynamic_chain_address (rtx);
 extern rtx nds32_return_addr_rtx (int, rtx);
 
 /* -- Eliminating Frame Pointer and Arg Pointer.  */

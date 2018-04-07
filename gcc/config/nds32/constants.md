@@ -66,6 +66,7 @@
 
 ;; The unspec_volatile operation index.
 (define_c_enum "unspec_volatile_element" [
+  UNSPEC_VOLATILE_EH_RETURN
   UNSPEC_VOLATILE_ISYNC
   UNSPEC_VOLATILE_ISB
   UNSPEC_VOLATILE_DSB

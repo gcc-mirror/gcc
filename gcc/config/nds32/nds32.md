@@ -1967,3 +1967,66 @@
 )
 
 ;; ----------------------------------------------------------------------------
+
+;; Patterns for exception handling
+
+(define_expand "eh_return"
+  [(use (match_operand 0 "general_operand"))]
+  ""
+{
+  emit_insn (gen_nds32_eh_return (operands[0]));
+  DONE;
+})
+
+(define_insn_and_split "nds32_eh_return"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_EH_RETURN)]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  rtx place;
+  rtx addr;
+
+  /* The operands[0] is the handler address.  We need to assign it
+     to return address rtx so that we can jump to exception handler
+     when returning from current function.  */
+
+  if (cfun->machine->lp_size == 0)
+    {
+      /* If $lp is not saved in the stack frame, we can take $lp directly.  */
+      place = gen_rtx_REG (SImode, LP_REGNUM);
+    }
+  else
+    {
+      /* Otherwise, we need to locate the stack slot of return address.
+	 The return address is generally saved in [$fp-4] location.
+	 However, DSE (dead store elimination) does not detect an alias
+	 between [$fp-x] and [$sp+y].  This can result in a store to save
+	 $lp introduced by builtin_eh_return() being incorrectly deleted
+	 if it is based on $fp.  The solution we take here is to compute
+	 the offset relative to stack pointer and then use $sp to access
+	 location so that the alias can be detected.
+	 FIXME: What if the immediate value "offset" is too large to be
+	        fit in a single addi instruction?  */
+      HOST_WIDE_INT offset;
+
+      offset = (cfun->machine->fp_size
+		+ cfun->machine->gp_size
+		+ cfun->machine->lp_size
+		+ cfun->machine->callee_saved_gpr_regs_size
+		+ cfun->machine->callee_saved_area_gpr_padding_bytes
+		+ cfun->machine->callee_saved_fpr_regs_size
+		+ cfun->machine->eh_return_data_regs_size
+		+ cfun->machine->local_size
+		+ cfun->machine->out_args_size);
+
+      addr = plus_constant (Pmode, stack_pointer_rtx, offset - 4);
+      place = gen_frame_mem (SImode, addr);
+    }
+
+  emit_move_insn (place, operands[0]);
+  DONE;
+})
+
+;; ----------------------------------------------------------------------------
