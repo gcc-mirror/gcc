@@ -44,65 +44,6 @@ enum nds32_expand_result_type
   EXPAND_CREATE_TEMPLATE
 };
 
-/* Check instruction LS-37-FP-implied form.
-   Note: actually its immediate range is imm9u
-         since it is used for lwi37/swi37 instructions.  */
-#define NDS32_LS_37_FP_P(rt, ra, imm)       \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS \
-   && REGNO (ra) == FP_REGNUM               \
-   && satisfies_constraint_Iu09 (imm))
-
-/* Check instruction LS-37-SP-implied form.
-   Note: actually its immediate range is imm9u
-         since it is used for lwi37/swi37 instructions.  */
-#define NDS32_LS_37_SP_P(rt, ra, imm)       \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS \
-   && REGNO (ra) == SP_REGNUM               \
-   && satisfies_constraint_Iu09 (imm))
-
-
-/* Check load/store instruction form : Rt3, Ra3, imm3u.  */
-#define NDS32_LS_333_P(rt, ra, imm, mode) nds32_ls_333_p (rt, ra, imm, mode)
-
-/* Check load/store instruction form : Rt4, Ra5, const_int_0.
-   Note: no need to check ra because Ra5 means it covers all registers.  */
-#define NDS32_LS_450_P(rt, ra, imm)                     \
-  ((imm == const0_rtx)                                  \
-   && (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS         \
-       || REGNO_REG_CLASS (REGNO (rt)) == MIDDLE_REGS))
-
-/* Check instruction RRI-333-form.  */
-#define NDS32_RRI_333_P(rt, ra, imm)           \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS    \
-   && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS \
-   && satisfies_constraint_Iu03 (imm))
-
-/* Check instruction RI-45-form.  */
-#define NDS32_RI_45_P(rt, ra, imm)                     \
-  (REGNO (rt) == REGNO (ra)                            \
-   && (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS        \
-       || REGNO_REG_CLASS (REGNO (rt)) == MIDDLE_REGS) \
-   && satisfies_constraint_Iu05 (imm))
-
-
-/* Check instruction RR-33-form.  */
-#define NDS32_RR_33_P(rt, ra)                   \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS     \
-   && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS)
-
-/* Check instruction RRR-333-form.  */
-#define NDS32_RRR_333_P(rt, ra, rb)             \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS     \
-   && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS  \
-   && REGNO_REG_CLASS (REGNO (rb)) == LOW_REGS)
-
-/* Check instruction RR-45-form.
-   Note: no need to check rb because Rb5 means it covers all registers.  */
-#define NDS32_RR_45_P(rt, ra, rb)               \
-  (REGNO (rt) == REGNO (ra)                     \
-   && (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS \
-       || REGNO_REG_CLASS (REGNO (rt)) == MIDDLE_REGS))
-
 /* Classifies address type to distinguish 16-bit/32-bit format.  */
 enum nds32_16bit_address_type
 {
