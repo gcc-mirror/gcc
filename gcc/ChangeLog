@@ -1,3 +1,9 @@
+2018-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80021
+	* tree.c (verify_type_variant): Make error call in verify_variant_match
+	translatable and remove final full stop.
+
 2018-04-07  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/constants.md (unspec_volatile_element): Add
