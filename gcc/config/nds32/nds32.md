@@ -55,7 +55,7 @@
 
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
-  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,call,misc,\
+  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,misc,\
    falu,fmuls,fmuld,fmacs,fmacd,fdivs,fdivd,fsqrts,fsqrtd,fcmp,fabs,fcpy,fcmov,fmfsr,fmfdr,fmtsr,fmtdr,fload,fstore"
   (const_string "unknown"))
 
