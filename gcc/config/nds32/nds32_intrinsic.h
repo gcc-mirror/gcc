@@ -185,6 +185,46 @@ enum nds32_intrinsic_registers
   __NDS32_REG_ITB__
 };
 
+/* The cctl subtype for intrinsic.  */
+enum nds32_cctl_valck
+{
+  __NDS32_CCTL_L1D_VA_FILLCK__,
+  __NDS32_CCTL_L1D_VA_ULCK__,
+  __NDS32_CCTL_L1I_VA_FILLCK__,
+  __NDS32_CCTL_L1I_VA_ULCK__
+};
+
+enum nds32_cctl_idxwbinv
+{
+  __NDS32_CCTL_L1D_IX_WBINVAL__,
+  __NDS32_CCTL_L1D_IX_INVAL__,
+  __NDS32_CCTL_L1D_IX_WB__,
+  __NDS32_CCTL_L1I_IX_INVAL__
+};
+
+enum nds32_cctl_vawbinv
+{
+  __NDS32_CCTL_L1D_VA_INVAL__,
+  __NDS32_CCTL_L1D_VA_WB__,
+  __NDS32_CCTL_L1D_VA_WBINVAL__,
+  __NDS32_CCTL_L1I_VA_INVAL__
+};
+
+enum nds32_cctl_idxread
+{
+  __NDS32_CCTL_L1D_IX_RTAG__,
+  __NDS32_CCTL_L1D_IX_RWD__,
+  __NDS32_CCTL_L1I_IX_RTAG__,
+  __NDS32_CCTL_L1I_IX_RWD__
+};
+
+enum nds32_cctl_idxwrite
+{
+  __NDS32_CCTL_L1D_IX_WTAG__,
+  __NDS32_CCTL_L1D_IX_WWD__,
+  __NDS32_CCTL_L1I_IX_WTAG__,
+  __NDS32_CCTL_L1I_IX_WWD__
+};
 
 /* ------------------------------------------------------------------------ */
 
@@ -344,6 +384,51 @@ enum nds32_intrinsic_registers
 #define NDS32_USR_PFM_CTL               __NDS32_REG_PFM_CTL__
 #define NDS32_USR_IFC_LP                __NDS32_REG_IFC_LP__
 #define NDS32_USR_ITB                   __NDS32_REG_ITB__
+
+#define NDS32_CCTL_L1D_VA_FILLCK        __NDS32_CCTL_L1D_VA_FILLCK__
+#define NDS32_CCTL_L1D_VA_ULCK          __NDS32_CCTL_L1D_VA_ULCK__
+#define NDS32_CCTL_L1I_VA_FILLCK        __NDS32_CCTL_L1I_VA_FILLCK__
+#define NDS32_CCTL_L1I_VA_ULCK          __NDS32_CCTL_L1I_VA_ULCK__
+
+#define NDS32_CCTL_L1D_IX_WBINVAL       __NDS32_CCTL_L1D_IX_WBINVAL__
+#define NDS32_CCTL_L1D_IX_INVAL         __NDS32_CCTL_L1D_IX_INVAL__
+#define NDS32_CCTL_L1D_IX_WB            __NDS32_CCTL_L1D_IX_WB__
+#define NDS32_CCTL_L1I_IX_INVAL         __NDS32_CCTL_L1I_IX_INVAL__
+
+#define NDS32_CCTL_L1D_VA_INVAL         __NDS32_CCTL_L1D_VA_INVAL__
+#define NDS32_CCTL_L1D_VA_WB            __NDS32_CCTL_L1D_VA_WB__
+#define NDS32_CCTL_L1D_VA_WBINVAL       __NDS32_CCTL_L1D_VA_WBINVAL__
+#define NDS32_CCTL_L1I_VA_INVAL         __NDS32_CCTL_L1I_VA_INVAL__
+
+#define NDS32_CCTL_L1D_IX_RTAG          __NDS32_CCTL_L1D_IX_RTAG__
+#define NDS32_CCTL_L1D_IX_RWD           __NDS32_CCTL_L1D_IX_RWD__
+#define NDS32_CCTL_L1I_IX_RTAG          __NDS32_CCTL_L1I_IX_RTAG__
+#define NDS32_CCTL_L1I_IX_RWD           __NDS32_CCTL_L1I_IX_RWD__
+
+#define NDS32_CCTL_L1D_IX_WTAG          __NDS32_CCTL_L1D_IX_WTAG__
+#define NDS32_CCTL_L1D_IX_WWD           __NDS32_CCTL_L1D_IX_WWD__
+#define NDS32_CCTL_L1I_IX_WTAG          __NDS32_CCTL_L1I_IX_WTAG__
+#define NDS32_CCTL_L1I_IX_WWD           __NDS32_CCTL_L1I_IX_WWD__
+/* ------------------------------------------------------------------------ */
+
+#define __nds32__cctlva_lck(subtype, va) \
+  (__builtin_nds32_cctl_va_lck ((subtype), (va)))
+#define __nds32__cctlidx_wbinval(subtype, idx) \
+  (__builtin_nds32_cctl_idx_wbinval ((subtype), (idx)))
+#define __nds32__cctlva_wbinval_alvl(subtype, va) \
+  (__builtin_nds32_cctl_va_wbinval_la ((subtype), (va)))
+#define __nds32__cctlva_wbinval_one_lvl(subtype, va) \
+  (__builtin_nds32_cctl_va_wbinval_l1 ((subtype), (va)))
+#define __nds32__cctlidx_read(subtype, idx) \
+  (__builtin_nds32_cctl_idx_read ((subtype), (idx)))
+#define __nds32__cctlidx_write(subtype, b, idxw) \
+  (__builtin_nds32_cctl_idx_write ((subtype), (b), (idxw)))
+#define __nds32__cctl_l1d_invalall()  \
+  (__builtin_nds32_cctl_l1d_invalall())
+#define __nds32__cctl_l1d_wball_alvl() \
+  (__builtin_nds32_cctl_l1d_wball_alvl())
+#define __nds32__cctl_l1d_wball_one_lvl() \
+  (__builtin_nds32_cctl_l1d_wball_one_lvl())
 
 #define __nds32__fcpynsd(a, b) \
   (__builtin_nds32_fcpynsd ((a), (b)))

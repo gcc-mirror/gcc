@@ -222,6 +222,47 @@ nds32_expand_binop_builtin (enum insn_code icode, tree exp, rtx target,
   return target;
 }
 
+/* Expand cctl builtins.  */
+static rtx
+nds32_expand_cctl_builtin (enum insn_code icode, tree exp, rtx target,
+			   bool return_p, const char *name)
+{
+  rtx pat;
+  rtx op0 = nds32_read_argument (exp, 0);
+  rtx op1 = nds32_read_argument (exp, 1);
+  int op0_num = return_p ? 1 : 0;
+  int op1_num = return_p ? 2 : 1;
+
+  if (return_p)
+    target = nds32_legitimize_target (icode, target);
+
+  if (!nds32_check_constant_argument (icode, op0_num, op0, name))
+    return NULL_RTX;
+
+  op0 = nds32_legitimize_argument (icode, op0_num, op0);
+  op1 = nds32_legitimize_argument (icode, op1_num, op1);
+
+  /* Emit and return the new instruction. */
+  if (icode == CODE_FOR_cctl_idx_write)
+    {
+      /* cctl_idx_write is three argument,
+	 so create operand2 for cctl_idx_write pattern.  */
+      rtx op2 = nds32_read_argument (exp, 2);
+      op2 = nds32_legitimize_argument (icode, 2, op2);
+      pat = GEN_FCN (icode) (op0, op1, op2);
+    }
+  else if (return_p)
+    pat = GEN_FCN (icode) (target, op0, op1);
+  else
+    pat = GEN_FCN (icode) (op0, op1);
+
+  if (! pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
 struct builtin_description
 {
   const enum insn_code icode;
@@ -278,6 +319,20 @@ static struct builtin_description bdesc_2arg[] =
   NDS32_NO_TARGET_BUILTIN(unaligned_storesi, "unaligned_store_hw", UASTORE_W)
   NDS32_NO_TARGET_BUILTIN(unaligned_storedi, "unaligned_store_hw", UASTORE_DW)
 
+};
+
+
+static struct builtin_description bdesc_cctl[] =
+{
+  NDS32_BUILTIN(cctl_idx_read, "cctl_idx_read", CCTL_IDX_READ)
+  NDS32_NO_TARGET_BUILTIN(cctl_idx_write, "cctl_idx_write", CCTL_IDX_WRITE)
+  NDS32_NO_TARGET_BUILTIN(cctl_va_lck, "cctl_va_lck", CCTL_VA_LCK)
+  NDS32_NO_TARGET_BUILTIN(cctl_idx_wbinval,
+			  "cctl_idx_wbinval", CCTL_IDX_WBINVAL)
+  NDS32_NO_TARGET_BUILTIN(cctl_va_wbinval_l1,
+			  "cctl_va_wbinval_l1", CCTL_VA_WBINVAL_L1)
+  NDS32_NO_TARGET_BUILTIN(cctl_va_wbinval_la,
+			  "cctl_va_wbinval_la", CCTL_VA_WBINVAL_LA)
 };
 
 rtx
@@ -346,6 +401,15 @@ nds32_expand_builtin_impl (tree exp,
       return target;
     case NDS32_BUILTIN_SETGIE_DIS:
       emit_insn (gen_unspec_volatile_setgie_dis ());
+    case NDS32_BUILTIN_CCTL_L1D_INVALALL:
+      emit_insn (gen_cctl_l1d_invalall());
+      return target;
+    case NDS32_BUILTIN_CCTL_L1D_WBALL_ALVL:
+      emit_insn (gen_cctl_l1d_wball_alvl());
+      return target;
+    case NDS32_BUILTIN_CCTL_L1D_WBALL_ONE_LVL:
+      emit_insn (gen_cctl_l1d_wball_one_lvl());
+      return target;
       return target;
     default:
       break;
@@ -369,6 +433,10 @@ nds32_expand_builtin_impl (tree exp,
     if (d->code == fcode)
       return nds32_expand_binop_builtin (d->icode, exp, target, d->return_p);
 
+  for (i = 0, d = bdesc_cctl; i < ARRAY_SIZE (bdesc_cctl); i++, d++)
+    if (d->code == fcode)
+      return nds32_expand_cctl_builtin (d->icode, exp, target,
+					d->return_p, d->name);
 
   return NULL_RTX;
 }
@@ -450,6 +518,22 @@ nds32_init_builtins_impl (void)
   /* Interrupt.  */
   ADD_NDS32_BUILTIN0 ("setgie_en", void, SETGIE_EN);
   ADD_NDS32_BUILTIN0 ("setgie_dis", void, SETGIE_DIS);
+
+  /* CCTL  */
+  ADD_NDS32_BUILTIN0 ("cctl_l1d_invalall", void, CCTL_L1D_INVALALL);
+  ADD_NDS32_BUILTIN0 ("cctl_l1d_wball_alvl", void, CCTL_L1D_WBALL_ALVL);
+  ADD_NDS32_BUILTIN0 ("cctl_l1d_wball_one_lvl", void, CCTL_L1D_WBALL_ONE_LVL);
+  ADD_NDS32_BUILTIN2 ("cctl_va_lck", void, integer, ptr_uint, CCTL_VA_LCK);
+  ADD_NDS32_BUILTIN2 ("cctl_idx_wbinval", void, integer, unsigned,
+		      CCTL_IDX_WBINVAL);
+  ADD_NDS32_BUILTIN2 ("cctl_va_wbinval_l1", void, integer, ptr_uint,
+		      CCTL_VA_WBINVAL_L1);
+  ADD_NDS32_BUILTIN2 ("cctl_va_wbinval_la", void, integer, ptr_uint,
+		      CCTL_VA_WBINVAL_LA);
+  ADD_NDS32_BUILTIN2 ("cctl_idx_read", unsigned, integer, unsigned,
+		      CCTL_IDX_READ);
+  ADD_NDS32_BUILTIN3 ("cctl_idx_write", void, integer, unsigned, unsigned,
+		      CCTL_IDX_WRITE);
 
   /* Unaligned Load/Store  */
   ADD_NDS32_BUILTIN1 ("unaligned_load_hw", short_unsigned, ptr_ushort,

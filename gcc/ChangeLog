@@ -1,3 +1,17 @@
+2018-04-07  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/constants.md (unspec_volatile_element): Add cache
+	control enum values.
+	* config/nds32/nds32-intrinsic.c: Add cache control expand functions.
+	* config/nds32/nds32-intrinsic.md: Add cache control patterns.
+	* config/nds32/nds32.c (nds32_cctl_names): New.
+	(nds32_print_operand): Handle cache control register names.
+	* config/nds32/nds32.h (nds32_builtins): New enum values.
+	* config/nds32/nds32_intrinsic.h: Add cache control enum types and
+	macros.
+	* config/nds32/nds32.md (type): Add mmu.
+	* config/nds32/pipelines.md (simple_insn): Add mmu.
+
 2018-04-07  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.md (type): Remove call.
