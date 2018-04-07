@@ -411,6 +411,20 @@ enum nds32_cctl_idxwrite
 #define NDS32_CCTL_L1I_IX_WWD           __NDS32_CCTL_L1I_IX_WWD__
 /* ------------------------------------------------------------------------ */
 
+
+/* Map __nds32__xxx() to __builtin_xxx() functions for compatibility.  */
+#define __nds32__llw(a) \
+  (__builtin_nds32_llw ((a)))
+#define __nds32__lwup(a) \
+  (__builtin_nds32_lwup ((a)))
+#define __nds32__lbup(a) \
+  (__builtin_nds32_lbup ((a)))
+#define __nds32__scw(a, b) \
+  (__builtin_nds32_scw ((a), (b)))
+#define __nds32__swup(a, b) \
+  (__builtin_nds32_swup ((a), (b)))
+#define __nds32__sbup(a, b) \
+  (__builtin_nds32_sbup ((a), (b)))
 #define __nds32__cctlva_lck(subtype, va) \
   (__builtin_nds32_cctl_va_lck ((subtype), (va)))
 #define __nds32__cctlidx_wbinval(subtype, idx) \
@@ -430,6 +444,14 @@ enum nds32_cctl_idxwrite
 #define __nds32__cctl_l1d_wball_one_lvl() \
   (__builtin_nds32_cctl_l1d_wball_one_lvl())
 
+#define __nds32__dsb() \
+  (__builtin_nds32_dsb())
+#define __nds32__isb() \
+  (__builtin_nds32_isb())
+#define __nds32__msync_store() \
+  (__builtin_nds32_msync_store())
+#define __nds32__msync_all() \
+  (__builtin_nds32_msync_all())
 #define __nds32__fcpynsd(a, b) \
   (__builtin_nds32_fcpynsd ((a), (b)))
 #define __nds32__fcpynss(a, b) \
