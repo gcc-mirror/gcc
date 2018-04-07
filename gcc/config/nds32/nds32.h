@@ -274,6 +274,17 @@ struct GTY(()) machine_function
   /* The last required register that should be saved on stack for va_args.  */
   int va_args_last_regno;
 
+  /* Number of bytes on the stack for saving exception handling registers.  */
+  int eh_return_data_regs_size;
+  /* The first register of passing exception handling information.  */
+  int eh_return_data_first_regno;
+  /* The last register of passing exception handling information.  */
+  int eh_return_data_last_regno;
+
+  /* Indicate that whether this function
+     calls __builtin_eh_return.  */
+  int use_eh_return_p;
+
   /* Indicate that whether this function needs
      prologue/epilogue code generation.  */
   int naked_p;
@@ -888,6 +899,11 @@ enum reg_class
 #define FIRST_PARM_OFFSET(fundecl) \
   (NDS32_DOUBLE_WORD_ALIGN_P (crtl->args.pretend_args_size) ? 0 : 4)
 
+/* A C expression whose value is RTL representing the address in a stack frame
+   where the pointer to the caller's frame is stored.  */
+#define DYNAMIC_CHAIN_ADDRESS(frameaddr) \
+  nds32_dynamic_chain_address (frameaddr)
+
 #define RETURN_ADDR_RTX(count, frameaddr) \
   nds32_return_addr_rtx (count, frameaddr)
 
@@ -898,6 +914,13 @@ enum reg_class
    DWARF_FRAME_RETURN_COLUMN to DWARF_FRAME_REGNUM (REGNO).  */
 #define INCOMING_RETURN_ADDR_RTX    gen_rtx_REG (Pmode, LP_REGNUM)
 #define DWARF_FRAME_RETURN_COLUMN   DWARF_FRAME_REGNUM (LP_REGNUM)
+
+/* Use $r0 $r1 to pass exception handling information.  */
+#define EH_RETURN_DATA_REGNO(N) (((N) < 2) ? (N) : INVALID_REGNUM)
+/* The register $r2 that represents a location in which to store a stack
+   adjustment to be applied before function return.
+   This is used to unwind the stack to an exception handler's call frame.  */
+#define EH_RETURN_STACKADJ_RTX gen_rtx_REG (Pmode, 2)
 
 #define DBX_REGISTER_NUMBER(REGNO) nds32_dbx_register_number (REGNO)
 
