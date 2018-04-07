@@ -1,3 +1,13 @@
+2018-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85257
+	* fold-const.c (native_encode_vector): If not all elts could fit
+	and off is -1, return 0 rather than offset.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Pass
+	(offseti - offset2) / BITS_PER_UNIT as 4th argument to
+	native_encode_expr.  Verify len * BITS_PER_UNIT >= maxsizei.  Don't
+	adjust buffer in native_interpret_expr call.
+
 2018-04-07  Monk Chiang  <sh.chiang04@gmail.com>
 
 	* config/nds32/constants.md (unspec_volatile_element): Add cache

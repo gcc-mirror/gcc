@@ -7307,7 +7307,7 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
 	return 0;
       offset += res;
       if (offset >= len)
-	return offset;
+	return (off == -1 && i < count - 1) ? 0 : offset;
       if (off != -1)
 	off = 0;
     }
