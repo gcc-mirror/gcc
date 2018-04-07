@@ -58,6 +58,74 @@
    (set_attr "length"    "4")]
 )
 
+;; FPU Register Transfer.
+
+(define_insn "unspec_fcpynsd"
+   [(set (match_operand:DF 0 "register_operand" "=f")
+	 (unspec:DF [(match_operand:DF 1 "register_operand" "f")
+		     (match_operand:DF 2 "register_operand" "f")] UNSPEC_FCPYNSD))]
+  ""
+  "fcpynsd\t%0, %1, %2"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_fcpynss"
+   [(set (match_operand:SF 0 "register_operand" "=f")
+	 (unspec:SF [(match_operand:SF 1 "register_operand" "f")
+		     (match_operand:SF 2 "register_operand" "f")] UNSPEC_FCPYNSS))]
+  ""
+  "fcpynss\t%0, %1, %2"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_fcpysd"
+   [(set (match_operand:DF 0 "register_operand" "=f")
+	 (unspec:DF [(match_operand:DF 1 "register_operand" "f")
+		     (match_operand:DF 2 "register_operand" "f")] UNSPEC_FCPYSD))]
+  ""
+  "fcpysd\t%0, %1, %2"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_fcpyss"
+   [(set (match_operand:SF 0 "register_operand" "=f")
+	 (unspec:SF [(match_operand:SF 1 "register_operand" "f")
+		     (match_operand:SF 2 "register_operand" "f")] UNSPEC_FCPYSS))]
+  ""
+  "fcpyss\t%0, %1, %2"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_fmfcsr"
+   [(set (match_operand:SI 0 "register_operand" "=r")
+	 (unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_FMFCSR))]
+  ""
+  "fmfcsr\t%0"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_fmtcsr"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_FMTCSR)]
+  ""
+  "fmtcsr\t%0"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_fmfcfg"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_FMFCFG))]
+  ""
+  "fmfcfg\t%0"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
 ;; ------------------------------------------------------------------------
 
 ;; Interrupt Instructions.

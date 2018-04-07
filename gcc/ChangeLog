@@ -1,5 +1,25 @@
 2018-04-07  Monk Chiang  <sh.chiang04@gmail.com>
 
+	* config/nds32/constants.md (unspec_volatile_element): Add
+	UNSPEC_VOLATILE_FMFCSR, UNSPEC_VOLATILE_FMTCSR and
+	UNSPEC_VOLATILE_FMFCFG.
+	* config/nds32/nds32-intrinsic.c (bdesc_noarg): New builtin
+	description for fmfcfg and fmfcsr.
+	(bdesc_1arg): Add fmtcsr.
+	(bdesc_2arg): Add fcpynss, fcpyss, fcpynsd and fcpysd.
+	(nds32_expand_builtin_impl): Deal with FPU intrinsic functions.
+	* config/nds32/nds32-intrinsic.md (unspec_fcpynsd, unspec_fcpysd,
+	unspec_fcpynss, unspec_fcpysd, unspec_fcpyss, unspec_fmfcsr,
+	unspec_fmfcfg): New patterns.
+	* config/nds32/nds32.h (nds32_builtins): Add NDS32_BUILTIN_FMFCFG,
+	NDS32_BUILTIN_FMFCSR, NDS32_BUILTIN_FMTCSR, NDS32_BUILTIN_FCPYNSS,
+	NDS32_BUILTIN_FCPYSS,NDS32_BUILTIN_FCPYNSD and NDS32_BUILTIN_FCPYSD.
+	* config/nds32/nds32_intrinsic.h (__nds32__fcpynsd, __nds32__fcpynss,
+	__nds32__fcpysd, __nds32__fcpyss, __nds32__fmfcsr, __nds32__fmtcsr,
+	__nds32__fmfcfg): Define.
+
+2018-04-07  Monk Chiang  <sh.chiang04@gmail.com>
+
 	* config/nds32/nds32.c (nds32_intrinsic_register_names): Add more
 	intrinsic register names.
 	* config/nds32/nds32_intrinsic.h (nds32_intrinsic_registers): Add more

@@ -238,6 +238,13 @@ struct builtin_description
   { CODE_FOR_##code, "__nds32__" string, \
     NDS32_BUILTIN_##builtin, false },
 
+/* Intrinsics that no argument, and that return value.  */
+static struct builtin_description bdesc_noarg[] =
+{
+  NDS32_BUILTIN(unspec_fmfcfg, "fmfcfg", FMFCFG)
+  NDS32_BUILTIN(unspec_fmfcsr, "fmfcsr", FMFCSR)
+};
+
 /* Intrinsics that take just one argument.  */
 static struct builtin_description bdesc_1arg[] =
 {
@@ -245,6 +252,7 @@ static struct builtin_description bdesc_1arg[] =
   NDS32_BUILTIN(unaligned_loadsi, "unaligned_load_w", UALOAD_W)
   NDS32_BUILTIN(unaligned_loaddi, "unaligned_load_dw", UALOAD_DW)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_isync, "isync", ISYNC)
+  NDS32_NO_TARGET_BUILTIN(unspec_fmtcsr, "fmtcsr", FMTCSR)
 };
 
 /* Intrinsics that take just one argument. and the argument is immediate.  */
@@ -257,6 +265,10 @@ static struct builtin_description bdesc_1argimm[] =
 /* Intrinsics that take two arguments.  */
 static struct builtin_description bdesc_2arg[] =
 {
+  NDS32_BUILTIN(unspec_fcpynss, "fcpynss", FCPYNSS)
+  NDS32_BUILTIN(unspec_fcpyss, "fcpyss", FCPYSS)
+  NDS32_BUILTIN(unspec_fcpynsd, "fcpynsd", FCPYNSD)
+  NDS32_BUILTIN(unspec_fcpysd, "fcpysd", FCPYSD)
   NDS32_BUILTIN(unspec_ffb, "ffb", FFB)
   NDS32_BUILTIN(unspec_ffmism, "ffmsim", FFMISM)
   NDS32_BUILTIN(unspec_flmism, "flmism", FLMISM)
@@ -282,6 +294,32 @@ nds32_expand_builtin_impl (tree exp,
 
   switch (fcode)
     {
+    /* FPU Register Transfer.  */
+    case NDS32_BUILTIN_FMFCFG:
+    case NDS32_BUILTIN_FMFCSR:
+    case NDS32_BUILTIN_FMTCSR:
+    case NDS32_BUILTIN_FCPYNSS:
+    case NDS32_BUILTIN_FCPYSS:
+      /* Both v3s and v3f toolchains define TARGET_FPU_SINGLE.  */
+      if (!TARGET_FPU_SINGLE)
+	{
+	  error ("this builtin function is only available "
+		 "on the v3s or v3f toolchain");
+	  return NULL_RTX;
+	}
+      break;
+
+    /* FPU Register Transfer.  */
+    case NDS32_BUILTIN_FCPYNSD:
+    case NDS32_BUILTIN_FCPYSD:
+      /* Only v3f toolchain defines TARGET_FPU_DOUBLE.  */
+      if (!TARGET_FPU_DOUBLE)
+	{
+	  error ("this builtin function is only available "
+		 "on the v3f toolchain");
+	  return NULL_RTX;
+	}
+      break;
     /* String Extension  */
     case NDS32_BUILTIN_FFB:
     case NDS32_BUILTIN_FFMISM:
@@ -314,6 +352,10 @@ nds32_expand_builtin_impl (tree exp,
     }
 
   /* Expand groups of builtins.  */
+  for (i = 0, d = bdesc_noarg; i < ARRAY_SIZE (bdesc_noarg); i++, d++)
+    if (d->code == fcode)
+      return nds32_expand_noarg_builtin (d->icode, target);
+
   for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
       return nds32_expand_unop_builtin (d->icode, exp, target, d->return_p);
@@ -395,6 +437,15 @@ nds32_init_builtins_impl (void)
   ADD_NDS32_BUILTIN1 ("mfusr", unsigned, integer, MFUSR);
   ADD_NDS32_BUILTIN2 ("mtsr", void, unsigned, integer, MTSR);
   ADD_NDS32_BUILTIN2 ("mtusr", void, unsigned, integer, MTUSR);
+
+  /* FPU Register Transfer.  */
+  ADD_NDS32_BUILTIN0 ("fmfcsr", unsigned, FMFCSR);
+  ADD_NDS32_BUILTIN1 ("fmtcsr", void, unsigned, FMTCSR);
+  ADD_NDS32_BUILTIN0 ("fmfcfg", unsigned, FMFCFG);
+  ADD_NDS32_BUILTIN2 ("fcpyss", float, float, float, FCPYSS);
+  ADD_NDS32_BUILTIN2 ("fcpynss", float, float, float, FCPYNSS);
+  ADD_NDS32_BUILTIN2 ("fcpysd", double, double, double, FCPYSD);
+  ADD_NDS32_BUILTIN2 ("fcpynsd", double, double, double, FCPYNSD);
 
   /* Interrupt.  */
   ADD_NDS32_BUILTIN0 ("setgie_en", void, SETGIE_EN);
