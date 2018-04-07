@@ -55,7 +55,7 @@
 
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
-  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,mmu,misc,\
+  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,pbsad,pbsada,mul,mac,div,branch,mmu,misc,\
    falu,fmuls,fmuld,fmacs,fmacd,fdivs,fdivd,fsqrts,fsqrtd,fcmp,fabs,fcpy,fcmov,fmfsr,fmfdr,fmtsr,fmtdr,fload,fstore"
   (const_string "unknown"))
 
@@ -1922,13 +1922,28 @@
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
 
-(define_insn "*btst"
-  [(set (match_operand:SI 0 "register_operand"                   "=   r")
-	(zero_extract:SI (match_operand:SI 1 "register_operand"  "    r")
+(define_insn "btst"
+  [(set (match_operand:SI 0 "register_operand"                     "=   r")
+	(zero_extract:SI (match_operand:SI 1 "register_operand"    "    r")
 			 (const_int 1)
-			 (match_operand:SI 2 "immediate_operand" " Iu05")))]
+			 (match_operand:SI 2 "nds32_imm5u_operand" " Iu05")))]
   "TARGET_EXT_PERF"
   "btst\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")])
+
+(define_insn "ave"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(truncate:SI
+	  (ashiftrt:DI
+	    (plus:DI
+	      (plus:DI
+		(sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
+		(sign_extend:DI (match_operand:SI 2 "register_operand" "r")))
+	      (const_int 1))
+	  (const_int 1))))]
+  "TARGET_EXT_PERF"
+  "ave\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
 

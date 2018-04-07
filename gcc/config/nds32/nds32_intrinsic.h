@@ -425,6 +425,22 @@ enum nds32_cctl_idxwrite
   (__builtin_nds32_swup ((a), (b)))
 #define __nds32__sbup(a, b) \
   (__builtin_nds32_sbup ((a), (b)))
+
+#define __nds32__mfsr(srname) \
+  (__builtin_nds32_mfsr ((srname)))
+#define __nds32__mfusr(usrname) \
+  (__builtin_nds32_mfusr ((usrname)))
+#define __nds32__mtsr(val, srname) \
+  (__builtin_nds32_mtsr ((val), (srname)))
+#define __nds32__mtsr_isb(val, srname) \
+  (__builtin_nds32_mtsr_isb ((val), (srname)))
+#define __nds32__mtsr_dsb(val, srname) \
+  (__builtin_nds32_mtsr_dsb ((val), (srname)))
+#define __nds32__mtusr(val, usrname) \
+  (__builtin_nds32_mtusr ((val), (usrname)))
+
+#define __nds32__break(swid) \
+  (__builtin_nds32_break(swid))
 #define __nds32__cctlva_lck(subtype, va) \
   (__builtin_nds32_cctl_va_lck ((subtype), (va)))
 #define __nds32__cctlidx_wbinval(subtype, idx) \
@@ -452,6 +468,96 @@ enum nds32_cctl_idxwrite
   (__builtin_nds32_msync_store())
 #define __nds32__msync_all() \
   (__builtin_nds32_msync_all())
+#define __nds32__nop() \
+  (__builtin_nds32_nop())
+
+#define __nds32__standby_wait_done() \
+  (__builtin_nds32_standby_wait_done())
+#define __nds32__standby_no_wake_grant() \
+  (__builtin_nds32_standby_no_wake_grant())
+#define __nds32__standby_wake_grant() \
+  (__builtin_nds32_standby_wake_grant())
+#define __nds32__schedule_barrier() \
+  (__builtin_nds32_schedule_barrier())
+#define __nds32__setend_big() \
+  (__builtin_nds32_setend_big())
+#define __nds32__setend_little() \
+  (__builtin_nds32_setend_little())
+#define __nds32__setgie_en() \
+
+#define __nds32__jr_itoff(a) \
+  (__builtin_nds32_jr_itoff ((a)))
+#define __nds32__jr_toff(a) \
+  (__builtin_nds32_jr_toff ((a)))
+#define __nds32__jral_iton(a) \
+  (__builtin_nds32_jral_iton ((a)))
+#define __nds32__jral_ton(a) \
+  (__builtin_nds32_jral_ton ((a)))
+#define __nds32__ret_itoff(a) \
+  (__builtin_nds32_ret_itoff ((a)))
+#define __nds32__ret_toff(a) \
+  (__builtin_nds32_ret_toff ((a)))
+#define __nds32__svs(a, b) \
+  (__builtin_nds32_svs ((a), (b)))
+#define __nds32__sva(a, b) \
+  (__builtin_nds32_sva ((a), (b)))
+
+#define __nds32__teqz(a, swid) \
+  (__builtin_nds32_teqz ((a), (swid)))
+#define __nds32__tnez(a, swid) \
+  ( __builtin_nds32_tnez ((a), (swid)))
+#define __nds32__trap(swid) \
+  (__builtin_nds32_trap ((swid)))
+#define __nds32__isync(a) \
+  (__builtin_nds32_isync ((a)))
+#define __nds32__rotr(val, ror) \
+  (__builtin_nds32_rotr ((val), (ror)))
+#define __nds32__wsbh(a) \
+  (__builtin_nds32_wsbh ((a)))
+#define __nds32__syscall(a) \
+  (__builtin_nds32_syscall ((a)))
+#define __nds32__return_address() \
+  (__builtin_nds32_return_address())
+#define __nds32__get_current_sp() \
+  (__builtin_nds32_get_current_sp())
+#define __nds32__set_current_sp(a) \
+  (__builtin_nds32_set_current_sp ((a)))
+#define __nds32__abs(a) \
+  (__builtin_nds32_pe_abs ((a)))
+#define __nds32__ave(a, b) \
+  (__builtin_nds32_pe_ave ((a), (b)))
+#define __nds32__bclr(a, pos) \
+  (__builtin_nds32_pe_bclr ((a), (pos)))
+#define __nds32__bset(a, pos) \
+  (__builtin_nds32_pe_bset ((a), (pos)))
+#define __nds32__btgl(a, pos) \
+  (__builtin_nds32_pe_btgl ((a), (pos)))
+#define __nds32__btst(a, pos) \
+  (__builtin_nds32_pe_btst ((a), (pos)))
+
+#define __nds32__clip(a, imm) \
+  (__builtin_nds32_pe_clip ((a), (imm)))
+#define __nds32__clips(a, imm) \
+  (__builtin_nds32_pe_clips ((a), (imm)))
+#define __nds32__clz(a) \
+  (__builtin_nds32_pe_clz ((a)))
+#define __nds32__clo(a) \
+  (__builtin_nds32_pe_clo ((a)))
+#define __nds32__bse(r, a, b) \
+  (__builtin_nds32_pe2_bse ((r), (a), (b)))
+#define __nds32__bsp(r, a, b) \
+  (__builtin_nds32_pe2_bsp ((r), (a), (b)))
+#define __nds32__pbsad(a, b) \
+  (__builtin_nds32_pe2_pbsad ((a), (b)))
+#define __nds32__pbsada(acc, a, b) \
+  (__builtin_nds32_pe2_pbsada ((acc), (a), (b)))
+
+#define __nds32__ffb(a, b) \
+  (__builtin_nds32_se_ffb ((a), (b)))
+#define __nds32__ffmism(a, b) \
+  (__builtin_nds32_se_ffmism ((a), (b)))
+#define __nds32__flmism(a, b) \
+  (__builtin_nds32_se_flmism ((a), (b)))
 #define __nds32__fcpynsd(a, b) \
   (__builtin_nds32_fcpynsd ((a), (b)))
 #define __nds32__fcpynss(a, b) \

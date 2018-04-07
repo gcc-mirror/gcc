@@ -239,6 +239,72 @@ nds32_expand_binop_builtin (enum insn_code icode, tree exp, rtx target,
   return target;
 }
 
+/* Expand builtins that take two operands and the second is immediate.  */
+static rtx
+nds32_expand_binopimm_builtin (enum insn_code icode, tree exp, rtx target,
+			       bool return_p, const char *name)
+{
+  rtx pat;
+  rtx op0 = nds32_read_argument (exp, 0);
+  rtx op1 = nds32_read_argument (exp, 1);
+  int op0_num = return_p ? 1 : 0;
+  int op1_num = return_p ? 2 : 1;
+
+  if (return_p)
+    target = nds32_legitimize_target (icode, target);
+
+  if (!nds32_check_constant_argument (icode, op1_num, op1, name))
+    return NULL_RTX;
+
+  op0 = nds32_legitimize_argument (icode, op0_num, op0);
+  op1 = nds32_legitimize_argument (icode, op1_num, op1);
+
+  /* Emit and return the new instruction. */
+  if (return_p)
+    pat = GEN_FCN (icode) (target, op0, op1);
+  else
+    pat = GEN_FCN (icode) (op0, op1);
+
+  if (! pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
+/* Expand builtins that take three operands.  */
+static rtx
+nds32_expand_triop_builtin (enum insn_code icode, tree exp, rtx target,
+			    bool return_p)
+{
+  rtx pat;
+  rtx op0 = nds32_read_argument (exp, 0);
+  rtx op1 = nds32_read_argument (exp, 1);
+  rtx op2 = nds32_read_argument (exp, 2);
+  int op0_num = return_p ? 1 : 0;
+  int op1_num = return_p ? 2 : 1;
+  int op2_num = return_p ? 3 : 2;
+
+  if (return_p)
+    target = nds32_legitimize_target (icode, target);
+
+  op0 = nds32_legitimize_argument (icode, op0_num, op0);
+  op1 = nds32_legitimize_argument (icode, op1_num, op1);
+  op2 = nds32_legitimize_argument (icode, op2_num, op2);
+
+  /* Emit and return the new instruction. */
+  if (return_p)
+    pat = GEN_FCN (icode) (target, op0, op1, op2);
+  else
+    pat = GEN_FCN (icode) (op0, op1, op2);
+
+  if (! pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
 /* Expand builtins for load.  */
 static rtx
 nds32_expand_builtin_load (enum insn_code icode, tree exp, rtx target)
@@ -386,16 +452,30 @@ static struct builtin_description bdesc_noarg[] =
 {
   NDS32_BUILTIN(unspec_fmfcfg, "fmfcfg", FMFCFG)
   NDS32_BUILTIN(unspec_fmfcsr, "fmfcsr", FMFCSR)
+  NDS32_BUILTIN(unspec_get_current_sp, "get_current_sp", GET_CURRENT_SP)
+  NDS32_BUILTIN(unspec_return_address, "return_address", RETURN_ADDRESS)
 };
 
 /* Intrinsics that take just one argument.  */
 static struct builtin_description bdesc_1arg[] =
 {
+  NDS32_BUILTIN(unspec_ssabssi2, "abs", ABS)
+  NDS32_BUILTIN(clzsi2, "clz", CLZ)
+  NDS32_BUILTIN(unspec_clo, "clo", CLO)
+  NDS32_BUILTIN(unspec_wsbh, "wsbh", WSBH)
   NDS32_BUILTIN(unaligned_load_hw, "unaligned_load_hw", UALOAD_HW)
   NDS32_BUILTIN(unaligned_loadsi, "unaligned_load_w", UALOAD_W)
   NDS32_BUILTIN(unaligned_loaddi, "unaligned_load_dw", UALOAD_DW)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_isync, "isync", ISYNC)
   NDS32_NO_TARGET_BUILTIN(unspec_fmtcsr, "fmtcsr", FMTCSR)
+  NDS32_NO_TARGET_BUILTIN(unspec_jr_itoff, "jr_itoff", JR_ITOFF)
+  NDS32_NO_TARGET_BUILTIN(unspec_jr_toff, "jr_toff", JR_TOFF)
+  NDS32_NO_TARGET_BUILTIN(unspec_jral_ton, "jral_ton", JRAL_TON)
+  NDS32_NO_TARGET_BUILTIN(unspec_ret_toff, "ret_toff", RET_TOFF)
+  NDS32_NO_TARGET_BUILTIN(unspec_jral_iton, "jral_iton",JRAL_ITON)
+  NDS32_NO_TARGET_BUILTIN(unspec_ret_itoff, "ret_itoff", RET_ITOFF)
+  NDS32_NO_TARGET_BUILTIN(unspec_set_current_sp,
+			  "set_current_sp", SET_CURRENT_SP)
 };
 
 /* Intrinsics that take just one argument. and the argument is immediate.  */
@@ -403,6 +483,9 @@ static struct builtin_description bdesc_1argimm[] =
 {
   NDS32_BUILTIN(unspec_volatile_mfsr, "mfsr", MFSR)
   NDS32_BUILTIN(unspec_volatile_mfusr, "mfsr", MFUSR)
+  NDS32_NO_TARGET_BUILTIN(unspec_trap, "trap", TRAP)
+  NDS32_NO_TARGET_BUILTIN(unspec_break, "break", BREAK)
+  NDS32_NO_TARGET_BUILTIN(unspec_syscall, "syscall", SYSCALL)
 };
 
 /* Intrinsics that take two arguments.  */
@@ -412,9 +495,14 @@ static struct builtin_description bdesc_2arg[] =
   NDS32_BUILTIN(unspec_fcpyss, "fcpyss", FCPYSS)
   NDS32_BUILTIN(unspec_fcpynsd, "fcpynsd", FCPYNSD)
   NDS32_BUILTIN(unspec_fcpysd, "fcpysd", FCPYSD)
+  NDS32_BUILTIN(unspec_ave, "ave", AVE)
+  NDS32_BUILTIN(unspec_pbsad, "pbsad", PBSAD)
   NDS32_BUILTIN(unspec_ffb, "ffb", FFB)
   NDS32_BUILTIN(unspec_ffmism, "ffmsim", FFMISM)
   NDS32_BUILTIN(unspec_flmism, "flmism", FLMISM)
+  NDS32_BUILTIN(rotrsi3, "rotr", ROTR)
+  NDS32_BUILTIN(unspec_sva, "sva", SVA)
+  NDS32_BUILTIN(unspec_svs, "svs", SVS)
   NDS32_NO_TARGET_BUILTIN(mtsr_isb, "mtsr_isb", MTSR_ISB)
   NDS32_NO_TARGET_BUILTIN(mtsr_dsb, "mtsr_dsb", MTSR_DSB)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_mtsr, "mtsr", MTSR)
@@ -423,6 +511,27 @@ static struct builtin_description bdesc_2arg[] =
   NDS32_NO_TARGET_BUILTIN(unaligned_storesi, "unaligned_store_hw", UASTORE_W)
   NDS32_NO_TARGET_BUILTIN(unaligned_storedi, "unaligned_store_hw", UASTORE_DW)
 
+};
+
+/* Two-argument intrinsics with an immediate second argument.  */
+static struct builtin_description bdesc_2argimm[] =
+{
+  NDS32_BUILTIN(unspec_bclr, "bclr", BCLR)
+  NDS32_BUILTIN(unspec_bset, "bset", BSET)
+  NDS32_BUILTIN(unspec_btgl, "btgl", BTGL)
+  NDS32_BUILTIN(unspec_btst, "btst", BTST)
+  NDS32_BUILTIN(unspec_clip, "clip", CLIP)
+  NDS32_BUILTIN(unspec_clips, "clips", CLIPS)
+  NDS32_NO_TARGET_BUILTIN(unspec_teqz, "teqz", TEQZ)
+  NDS32_NO_TARGET_BUILTIN(unspec_tnez, "tnez", TNEZ)
+};
+
+/* Intrinsics that take three arguments.  */
+static struct builtin_description bdesc_3arg[] =
+{
+  NDS32_BUILTIN(unspec_pbsada, "pbsada", PBSADA)
+  NDS32_NO_TARGET_BUILTIN(bse, "bse", BSE)
+  NDS32_NO_TARGET_BUILTIN(bsp, "bsp", BSP)
 };
 
 /* Intrinsics that load a value.  */
@@ -508,6 +617,38 @@ nds32_expand_builtin_impl (tree exp,
 	  return NULL_RTX;
 	}
       break;
+
+    /* Performance Extension  */
+    case NDS32_BUILTIN_ABS:
+    case NDS32_BUILTIN_AVE:
+    case NDS32_BUILTIN_BCLR:
+    case NDS32_BUILTIN_BSET:
+    case NDS32_BUILTIN_BTGL:
+    case NDS32_BUILTIN_BTST:
+    case NDS32_BUILTIN_CLIP:
+    case NDS32_BUILTIN_CLIPS:
+    case NDS32_BUILTIN_CLZ:
+    case NDS32_BUILTIN_CLO:
+      if (!TARGET_EXT_PERF)
+	{
+	  error ("don't support performance extension instructions");
+	  return NULL_RTX;
+	}
+      break;
+
+    /* Performance Extension 2  */
+    case NDS32_BUILTIN_PBSAD:
+    case NDS32_BUILTIN_PBSADA:
+    case NDS32_BUILTIN_BSE:
+    case NDS32_BUILTIN_BSP:
+      if (!TARGET_EXT_PERF2)
+	{
+	  error ("don't support performance extension "
+		 "version 2 instructions");
+	  return NULL_RTX;
+	}
+      break;
+
     /* String Extension  */
     case NDS32_BUILTIN_FFB:
     case NDS32_BUILTIN_FFMISM:
@@ -540,9 +681,12 @@ nds32_expand_builtin_impl (tree exp,
       return target;
     case NDS32_BUILTIN_SETGIE_EN:
       emit_insn (gen_unspec_volatile_setgie_en ());
+      emit_insn (gen_unspec_dsb ());
       return target;
     case NDS32_BUILTIN_SETGIE_DIS:
       emit_insn (gen_unspec_volatile_setgie_dis ());
+      emit_insn (gen_unspec_dsb ());
+      return target;
     case NDS32_BUILTIN_CCTL_L1D_INVALALL:
       emit_insn (gen_cctl_l1d_invalall());
       return target;
@@ -551,6 +695,27 @@ nds32_expand_builtin_impl (tree exp,
       return target;
     case NDS32_BUILTIN_CCTL_L1D_WBALL_ONE_LVL:
       emit_insn (gen_cctl_l1d_wball_one_lvl());
+      return target;
+    case NDS32_BUILTIN_STANDBY_NO_WAKE_GRANT:
+      emit_insn (gen_unspec_standby_no_wake_grant ());
+      return target;
+    case NDS32_BUILTIN_STANDBY_WAKE_GRANT:
+      emit_insn (gen_unspec_standby_wake_grant ());
+      return target;
+    case NDS32_BUILTIN_STANDBY_WAKE_DONE:
+      emit_insn (gen_unspec_standby_wait_done ());
+      return target;
+    case NDS32_BUILTIN_SETEND_BIG:
+      emit_insn (gen_unspec_setend_big ());
+      return target;
+    case NDS32_BUILTIN_SETEND_LITTLE:
+      emit_insn (gen_unspec_setend_little ());
+      return target;
+    case NDS32_BUILTIN_NOP:
+      emit_insn (gen_unspec_nop ());
+      return target;
+    case NDS32_BUILTIN_SCHE_BARRIER:
+      emit_insn (gen_blockage ());
       return target;
     case NDS32_BUILTIN_SCW:
       return nds32_expand_scw_builtin (CODE_FOR_unspec_volatile_scw,
@@ -577,6 +742,15 @@ nds32_expand_builtin_impl (tree exp,
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
       return nds32_expand_binop_builtin (d->icode, exp, target, d->return_p);
+
+  for (i = 0, d = bdesc_2argimm; i < ARRAY_SIZE (bdesc_2argimm); i++, d++)
+    if (d->code == fcode)
+      return nds32_expand_binopimm_builtin (d->icode, exp, target,
+					    d->return_p, d->name);
+
+  for (i = 0, d = bdesc_3arg; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
+    if (d->code == fcode)
+      return nds32_expand_triop_builtin (d->icode, exp, target, d->return_p);
 
   for (i = 0, d = bdesc_load; i < ARRAY_SIZE (bdesc_load); i++, d++)
     if (d->code == fcode)
@@ -702,6 +876,63 @@ nds32_init_builtins_impl (void)
   ADD_NDS32_BUILTIN3 ("cctl_idx_write", void, integer, unsigned, unsigned,
 		      CCTL_IDX_WRITE);
 
+  /* Performance Extension  */
+  ADD_NDS32_BUILTIN1 ("pe_abs", integer, integer, ABS);
+  ADD_NDS32_BUILTIN2 ("pe_ave", integer, integer, integer, AVE);
+  ADD_NDS32_BUILTIN2 ("pe_bclr", unsigned, unsigned, unsigned, BCLR);
+  ADD_NDS32_BUILTIN2 ("pe_bset", unsigned, unsigned, unsigned, BSET);
+  ADD_NDS32_BUILTIN2 ("pe_btgl", unsigned, unsigned, unsigned, BTGL);
+  ADD_NDS32_BUILTIN2 ("pe_btst", unsigned, unsigned, unsigned, BTST);
+  ADD_NDS32_BUILTIN2 ("pe_clip", unsigned, integer, unsigned, CLIP);
+  ADD_NDS32_BUILTIN2 ("pe_clips", integer, integer, unsigned, CLIPS);
+  ADD_NDS32_BUILTIN1 ("pe_clz", unsigned, unsigned, CLZ);
+  ADD_NDS32_BUILTIN1 ("pe_clo", unsigned, unsigned, CLO);
+
+  /* Performance Extension 2  */
+  ADD_NDS32_BUILTIN3 ("pe2_bse", void, ptr_uint, unsigned, ptr_uint, BSE);
+  ADD_NDS32_BUILTIN3 ("pe2_bsp", void, ptr_uint, unsigned, ptr_uint, BSP);
+  ADD_NDS32_BUILTIN2 ("pe2_pbsad", unsigned, unsigned, unsigned, PBSAD);
+  ADD_NDS32_BUILTIN3 ("pe2_pbsada", unsigned, unsigned, unsigned, unsigned,
+		      PBSADA);
+
+  /* String Extension  */
+  ADD_NDS32_BUILTIN2 ("se_ffb", integer, unsigned, unsigned, FFB);
+  ADD_NDS32_BUILTIN2 ("se_ffmism", integer, unsigned, unsigned, FFMISM);
+  ADD_NDS32_BUILTIN2 ("se_flmism", integer, unsigned, unsigned, FLMISM);
+
+
+  /* ROTR  */
+  ADD_NDS32_BUILTIN2 ("rotr", unsigned, unsigned, unsigned, ROTR);
+
+  /* Swap  */
+  ADD_NDS32_BUILTIN1 ("wsbh", unsigned, unsigned, WSBH);
+
+  /* System  */
+  ADD_NDS32_BUILTIN2 ("svs", unsigned, integer, integer, SVS);
+  ADD_NDS32_BUILTIN2 ("sva", unsigned, integer, integer, SVA);
+  ADD_NDS32_BUILTIN1 ("jr_itoff", void, unsigned, JR_ITOFF);
+  ADD_NDS32_BUILTIN1 ("jr_toff", void, unsigned, JR_TOFF);
+  ADD_NDS32_BUILTIN1 ("jral_iton", void, unsigned, JRAL_ITON);
+  ADD_NDS32_BUILTIN1 ("jral_ton", void, unsigned, JRAL_TON);
+  ADD_NDS32_BUILTIN1 ("ret_itoff", void, unsigned, RET_ITOFF);
+  ADD_NDS32_BUILTIN1 ("ret_toff", void, unsigned, RET_TOFF);
+  ADD_NDS32_BUILTIN0 ("standby_no_wake_grant", void, STANDBY_NO_WAKE_GRANT);
+  ADD_NDS32_BUILTIN0 ("standby_wake_grant", void, STANDBY_WAKE_GRANT);
+  ADD_NDS32_BUILTIN0 ("standby_wait_done", void, STANDBY_WAKE_DONE);
+  ADD_NDS32_BUILTIN1 ("break", void, unsigned, BREAK);
+  ADD_NDS32_BUILTIN1 ("syscall", void, unsigned, SYSCALL);
+  ADD_NDS32_BUILTIN0 ("nop", void, NOP);
+  ADD_NDS32_BUILTIN0 ("get_current_sp", unsigned, GET_CURRENT_SP);
+  ADD_NDS32_BUILTIN1 ("set_current_sp", void, unsigned, SET_CURRENT_SP);
+  ADD_NDS32_BUILTIN2 ("teqz", void, unsigned, unsigned, TEQZ);
+  ADD_NDS32_BUILTIN2 ("tnez", void, unsigned, unsigned, TNEZ);
+  ADD_NDS32_BUILTIN1 ("trap", void, unsigned, TRAP);
+  ADD_NDS32_BUILTIN0 ("return_address", unsigned, RETURN_ADDRESS);
+  ADD_NDS32_BUILTIN0 ("setend_big", void, SETEND_BIG);
+  ADD_NDS32_BUILTIN0 ("setend_little", void, SETEND_LITTLE);
+
+  /* Schedule Barrier */
+  ADD_NDS32_BUILTIN0 ("schedule_barrier", void, SCHE_BARRIER);
   /* Unaligned Load/Store  */
   ADD_NDS32_BUILTIN1 ("unaligned_load_hw", short_unsigned, ptr_ushort,
 		      UALOAD_HW);

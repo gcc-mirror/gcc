@@ -339,6 +339,190 @@
   "cctl\t%1, %R0"
   [(set_attr "type" "mmu")]
 )
+
+
+;; Performance Extension
+
+(define_expand "unspec_ave"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "register_operand" "")]
+  ""
+{
+  emit_insn (gen_ave (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "unspec_bclr"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
+  ""
+{
+  unsigned HOST_WIDE_INT val = ~(1u << UINTVAL (operands[2]));
+  emit_insn (gen_andsi3 (operands[0], operands[1], gen_int_mode (val, SImode)));
+  DONE;
+})
+
+(define_expand "unspec_bset"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
+  ""
+{
+  unsigned HOST_WIDE_INT val = 1u << UINTVAL (operands[2]);
+  emit_insn (gen_iorsi3 (operands[0], operands[1], gen_int_mode (val, SImode)));
+  DONE;
+})
+
+(define_expand "unspec_btgl"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
+  ""
+{
+  unsigned HOST_WIDE_INT val = 1u << UINTVAL (operands[2]);
+  emit_insn (gen_xorsi3 (operands[0], operands[1], gen_int_mode (val, SImode)));
+  DONE;
+})
+
+(define_expand "unspec_btst"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
+  ""
+{
+  emit_insn (gen_btst (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "unspec_clip"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "immediate_operand" "i")] UNSPEC_CLIP))]
+  ""
+  "clip\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
+(define_insn "unspec_clips"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "immediate_operand" "i")] UNSPEC_CLIPS))]
+  ""
+  "clips\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
+(define_insn "unspec_clo"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")] UNSPEC_CLO))]
+  ""
+  "clo\t%0, %1"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
+(define_insn "unspec_ssabssi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ss_abs:SI (match_operand:SI 1 "register_operand" "r")))]
+  ""
+  "abs\t%0, %1"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
+;; Performance extension 2
+
+(define_insn "unspec_pbsad"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_PBSAD))]
+  ""
+  "pbsad\t%0, %1, %2"
+  [(set_attr "type" "pbsad")
+   (set_attr "length"   "4")]
+)
+
+(define_insn "unspec_pbsada"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "0")
+		    (match_operand:SI 2 "register_operand" "r")
+		    (match_operand:SI 3 "register_operand" "r")] UNSPEC_PBSADA))]
+  ""
+  "pbsada\t%0, %2, %3"
+  [(set_attr "type" "pbsada")
+   (set_attr "length"    "4")]
+)
+
+(define_expand "bse"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "register_operand" "")]
+  ""
+  {
+    rtx temp0 = gen_reg_rtx (SImode);
+    rtx temp2 = gen_reg_rtx (SImode);
+
+    emit_move_insn (temp0, gen_rtx_MEM (Pmode, operands[0]));
+    emit_move_insn (temp2, gen_rtx_MEM (Pmode, operands[2]));
+    emit_insn (gen_unspec_bse (temp0, operands[1], temp2, temp0, temp2));
+    emit_move_insn (gen_rtx_MEM (Pmode, operands[0]), temp0);
+    emit_move_insn (gen_rtx_MEM (Pmode, operands[2]), temp2);
+    DONE;
+  }
+)
+
+(define_insn "unspec_bse"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")
+		    (match_operand:SI 3 "register_operand" "0")] UNSPEC_BSE))
+   (set (match_operand:SI 4 "register_operand" "=2")
+	(unspec:SI [(match_dup 1)
+		    (match_dup 2)
+		    (match_dup 0)] UNSPEC_BSE_2))]
+  ""
+  "bse\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
+(define_expand "bsp"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "register_operand" "")]
+  ""
+  {
+    rtx temp0 = gen_reg_rtx (SImode);
+    rtx temp2 = gen_reg_rtx (SImode);
+
+    emit_move_insn (temp0, gen_rtx_MEM (Pmode, operands[0]));
+    emit_move_insn (temp2, gen_rtx_MEM (Pmode, operands[2]));
+    emit_insn (gen_unspec_bsp (temp0, operands[1], temp2, temp0, temp2));
+    emit_move_insn (gen_rtx_MEM (Pmode, operands[0]), temp0);
+    emit_move_insn (gen_rtx_MEM (Pmode, operands[2]), temp2);
+    DONE;
+  }
+)
+
+(define_insn "unspec_bsp"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")
+		    (match_operand:SI 3 "register_operand" "0")] UNSPEC_BSP))
+   (set (match_operand:SI 4 "register_operand" "=2")
+	(unspec:SI [(match_dup 1)
+		    (match_dup 2)
+		    (match_dup 0)] UNSPEC_BSP_2))]
+  ""
+  "bsp\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
 ;; String Extension
 
 (define_insn "unspec_ffb"
@@ -373,6 +557,183 @@
    (set_attr "length" "4")]
 )
 
+;; System
+
+(define_insn "unspec_sva"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_SVA))]
+  ""
+  "sva\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_svs"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_SVS))]
+  ""
+  "svs\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_jr_itoff"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_JR_ITOFF)]
+  ""
+  "jr.itoff\t%0"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_jr_toff"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_JR_TOFF)]
+  ""
+  "jr.toff\t%0"
+  [(set_attr "type" "branch")]
+)
+
+(define_insn "unspec_jral_iton"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_JRAL_ITON)]
+  ""
+  "jral.iton\t%0"
+  [(set_attr "type" "branch")]
+)
+
+(define_insn "unspec_jral_ton"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_JRAL_TON)]
+  ""
+  "jral.ton\t%0"
+  [(set_attr "type" "branch")]
+)
+
+(define_insn "unspec_ret_itoff"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_RET_ITOFF)]
+  ""
+  "ret.itoff\t%0"
+  [(set_attr "type" "branch")]
+)
+
+(define_insn "unspec_ret_toff"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_RET_TOFF)]
+  ""
+  "ret.toff\t%0"
+  [(set_attr "type" "branch")]
+)
+
+(define_insn "unspec_standby_no_wake_grant"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_STANDBY_NO_WAKE_GRANT)]
+  ""
+  "standby\tno_wake_grant"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_standby_wake_grant"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_STANDBY_WAKE_GRANT)]
+  ""
+  "standby\twake_grant"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_standby_wait_done"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_STANDBY_WAKE_DONE)]
+  ""
+  "standby\twait_done"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_teqz"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")
+			(match_operand:SI 1 "immediate_operand" "i")] UNSPEC_VOLATILE_TEQZ)]
+  ""
+  "teqz\t%0, %1"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_tnez"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")
+			(match_operand:SI 1 "immediate_operand" "i")] UNSPEC_VOLATILE_TNEZ)]
+  ""
+  "tnez\t%0, %1"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_trap"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")] UNSPEC_VOLATILE_TRAP)]
+  ""
+  "trap\t%0"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_setend_big"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_SETEND_BIG)]
+  ""
+  "setend.b"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_setend_little"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_SETEND_LITTLE)]
+  ""
+  "setend.l"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_break"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")] UNSPEC_VOLATILE_BREAK)]
+  ""
+  "break\t%0"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_syscall"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")] UNSPEC_VOLATILE_SYSCALL)]
+  ""
+  "syscall\t%0"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "unspec_nop"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_NOP)]
+  ""
+  "nop"
+  [(set_attr "type" "misc")]
+)
+
+(define_expand "unspec_get_current_sp"
+  [(match_operand:SI 0 "register_operand" "")]
+  ""
+{
+  emit_move_insn (operands[0], gen_rtx_REG (SImode, SP_REGNUM));
+  DONE;
+})
+
+(define_expand "unspec_set_current_sp"
+  [(match_operand:SI 0 "register_operand" "")]
+  ""
+{
+  emit_move_insn (gen_rtx_REG (SImode, SP_REGNUM), operands[0]);
+  DONE;
+})
+
+(define_expand "unspec_return_address"
+  [(match_operand:SI 0 "register_operand" "")]
+  ""
+{
+  emit_move_insn (operands[0], gen_rtx_REG (SImode, LP_REGNUM));
+  DONE;
+})
+
+;; Swap
+
+(define_insn "unspec_wsbh"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")] UNSPEC_WSBH))]
+  ""
+  "wsbh\t%0, %1"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
 ;;Unaligned Load/Store
 
 (define_expand "unaligned_load_hw"

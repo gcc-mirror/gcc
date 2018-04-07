@@ -1,6 +1,18 @@
 2018-04-07  Monk Chiang  <sh.chiang04@gmail.com>
 
 	* config/nds32/constants.md (unspec_element, unspec_volatile_element):
+	Add enum values for particular instructions.
+	* config/nds32/nds32-intrinsic.c: Implementation of expanding
+	particular intrinsic functions.
+	* config/nds32/nds32-intrinsic.md: Likewise.
+	* config/nds32/nds32_intrinsic.h: Likewise.
+	* config/nds32/nds32.h (nds32_builtins): Likewise.
+	* config/nds32/nds32.md (type): Add pbsad and pbsada.
+	(btst, ave): New patterns for particular instructions.
+
+2018-04-07  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/constants.md (unspec_element, unspec_volatile_element):
 	Add enum values for atomic load/store and memory sync.
 	* config/nds32/nds32-intrinsic.c: Implementation for atomic load/store
 	and memory sync.
