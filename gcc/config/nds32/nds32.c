@@ -237,6 +237,34 @@ static const char * const nds32_intrinsic_register_names[] =
   "$ITB"
 };
 
+/* Define instrinsic cctl names.  */
+static const char * const nds32_cctl_names[] =
+{
+  "L1D_VA_FILLCK",
+  "L1D_VA_ULCK",
+  "L1I_VA_FILLCK",
+  "L1I_VA_ULCK",
+
+  "L1D_IX_WBINVAL",
+  "L1D_IX_INVAL",
+  "L1D_IX_WB",
+  "L1I_IX_INVAL",
+
+  "L1D_VA_INVAL",
+  "L1D_VA_WB",
+  "L1D_VA_WBINVAL",
+  "L1I_VA_INVAL",
+
+  "L1D_IX_RTAG",
+  "L1D_IX_RWD",
+  "L1I_IX_RTAG",
+  "L1I_IX_RWD",
+
+  "L1D_IX_WTAG",
+  "L1D_IX_WWD",
+  "L1I_IX_WTAG",
+  "L1I_IX_WWD"
+};
 
 /* Defining register allocation order for performance.
    We want to allocate callee-saved registers after others.
@@ -2904,6 +2932,41 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 	}
 
       /* No need to handle following process, so return immediately.  */
+      return;
+
+    case 'R': /* cctl valck  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value]);
+      return;
+
+    case 'T': /* cctl idxwbinv  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 4]);
+      return;
+
+    case 'U': /* cctl vawbinv  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 8]);
+      return;
+
+    case 'X': /* cctl idxread  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 12]);
+      return;
+
+    case 'W': /* cctl idxwitre  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 16]);
       return;
 
     default :

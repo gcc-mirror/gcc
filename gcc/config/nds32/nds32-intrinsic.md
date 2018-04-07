@@ -162,6 +162,79 @@
   [(set_attr "type" "misc")]
 )
 
+
+;; CCTL
+
+(define_insn "cctl_l1d_invalall"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_CCTL_L1D_INVALALL)]
+  ""
+  "cctl\tL1D_INVALALL"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "cctl_l1d_wball_alvl"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_CCTL_L1D_WBALL_ALVL)]
+  ""
+  "cctl\tL1D_WBALL, alevel"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "cctl_l1d_wball_one_lvl"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_CCTL_L1D_WBALL_ONE_LVL)]
+  ""
+  "cctl\tL1D_WBALL, 1level"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "cctl_idx_read"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "i")
+			     (match_operand:SI 2 "register_operand" "r")] UNSPEC_VOLATILE_CCTL_IDX_READ))]
+  ""
+  "cctl\t%0, %2, %X1"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "cctl_idx_write"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")
+			(match_operand:SI 1 "register_operand" "r")
+			(match_operand:SI 2 "register_operand" "r")] UNSPEC_VOLATILE_CCTL_IDX_WRITE)]
+  ""
+  "cctl\t%1, %2, %W0"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "cctl_va_wbinval_l1"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")
+			(match_operand:SI 1 "register_operand" "r")] UNSPEC_VOLATILE_CCTL_VA_WBINVAL_L1)]
+  ""
+  "cctl\t%1, %U0, 1level"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "cctl_va_wbinval_la"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")
+			(match_operand:SI 1 "register_operand" "r")] UNSPEC_VOLATILE_CCTL_VA_WBINVAL_LA)]
+  ""
+  "cctl\t%1, %U0, alevel"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "cctl_idx_wbinval"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")
+			(match_operand:SI 1 "register_operand" "r")] UNSPEC_VOLATILE_CCTL_IDX_WBINVAL)]
+  ""
+  "cctl\t%1, %T0"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "cctl_va_lck"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")
+			(match_operand:SI 1 "register_operand" "r")] UNSPEC_VOLATILE_CCTL_VA_LCK)]
+  ""
+  "cctl\t%1, %R0"
+  [(set_attr "type" "mmu")]
+)
 ;; String Extension
 
 (define_insn "unspec_ffb"
