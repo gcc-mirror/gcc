@@ -345,4 +345,19 @@ enum nds32_intrinsic_registers
 #define NDS32_USR_IFC_LP                __NDS32_REG_IFC_LP__
 #define NDS32_USR_ITB                   __NDS32_REG_ITB__
 
+#define __nds32__fcpynsd(a, b) \
+  (__builtin_nds32_fcpynsd ((a), (b)))
+#define __nds32__fcpynss(a, b) \
+  (__builtin_nds32_fcpynss ((a), (b)))
+#define __nds32__fcpysd(a, b) \
+  (__builtin_nds32_fcpysd ((a), (b)))
+#define __nds32__fcpyss(a, b) \
+  (__builtin_nds32_fcpyss ((a), (b)))
+#define __nds32__fmfcsr() \
+  (__builtin_nds32_fmfcsr())
+#define __nds32__fmtcsr(fpcsr) \
+  (__builtin_nds32_fmtcsr ((fpcsr)))
+#define __nds32__fmfcfg() \
+  (__builtin_nds32_fmfcfg())
+
 #endif /* nds32_intrinsic.h */
