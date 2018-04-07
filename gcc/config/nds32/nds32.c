@@ -1246,9 +1246,10 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 	  int multiplier;
 	  multiplier = INTVAL (op1);
 
-	  /* We only allow (mult reg const_int_1)
-	     or (mult reg const_int_2) or (mult reg const_int_4).  */
-	  if (multiplier != 1 && multiplier != 2 && multiplier != 4)
+	  /* We only allow (mult reg const_int_1), (mult reg const_int_2),
+	     (mult reg const_int_4) or (mult reg const_int_8).  */
+	  if (multiplier != 1 && multiplier != 2
+	      && multiplier != 4 && multiplier != 8)
 	    return false;
 
 	  regno = REGNO (op0);
@@ -1273,8 +1274,9 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 	  sv = INTVAL (op1);
 
 	  /* We only allow (ashift reg const_int_0)
-	     or (ashift reg const_int_1) or (ashift reg const_int_2).  */
-	  if (sv != 0 && sv != 1 && sv !=2)
+	     or (ashift reg const_int_1) or (ashift reg const_int_2) or
+	     (ashift reg const_int_3).  */
+	  if (sv != 0 && sv != 1 && sv !=2 && sv != 3)
 	    return false;
 
 	  regno = REGNO (op0);
@@ -2926,6 +2928,8 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 	    sv = 1;
 	  else if (INTVAL (XEXP (op0, 1)) == 4)
 	    sv = 2;
+	  else if (INTVAL (XEXP (op0, 1)) == 8)
+	    sv = 3;
 	  else
 	    gcc_unreachable ();
 
