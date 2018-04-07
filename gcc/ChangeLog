@@ -1,3 +1,10 @@
+2018-04-07  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.c (nds32_intrinsic_register_names): Add more
+	intrinsic register names.
+	* config/nds32/nds32_intrinsic.h (nds32_intrinsic_registers): Add more
+	intrinsic register enum values and macros.
+
 2018-04-07  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_legitimate_index_p): Modify condition
