@@ -69,6 +69,14 @@ Use full-set registers for register allocation.
 
 ; ---------------------------------------------------------------
 
+malways-align
+Target Mask(ALWAYS_ALIGN)
+Always align function entry, jump target and return address.
+
+malign-functions
+Target Mask(ALIGN_FUNCTION)
+Align function entry to 4 byte.
+
 mbig-endian
 Target Undocumented RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
 Generate code in big-endian mode.

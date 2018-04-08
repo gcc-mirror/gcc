@@ -128,6 +128,8 @@ output_cond_branch (int code, const char *suffix, bool r5_p,
 {
   char pattern[256];
   const char *cond_code;
+  bool align_p = NDS32_ALIGN_P ();
+  const char *align = align_p ? "\t.align\t2\n" : "";
 
   if (r5_p && REGNO (operands[2]) == 5 && TARGET_16_BIT)
     {
@@ -170,14 +172,14 @@ output_cond_branch (int code, const char *suffix, bool r5_p,
       if (r5_p && TARGET_16_BIT)
 	{
 	  snprintf (pattern, sizeof (pattern),
-		    "b%ss38\t %%2, .LCB%%=\n\tj\t%%3\n.LCB%%=:",
-		    cond_code);
+		    "b%ss38\t %%2, .LCB%%=\n\tj\t%%3\n%s.LCB%%=:",
+		    cond_code, align);
 	}
       else
 	{
 	  snprintf (pattern, sizeof (pattern),
-		    "b%s%s\t%%1, %%2, .LCB%%=\n\tj\t%%3\n.LCB%%=:",
-		    cond_code, suffix);
+		    "b%s%s\t%%1, %%2, .LCB%%=\n\tj\t%%3\n%s.LCB%%=:",
+		    cond_code, suffix, align);
 	}
     }
   else
@@ -207,6 +209,8 @@ output_cond_branch_compare_zero (int code, const char *suffix,
 {
   char pattern[256];
   const char *cond_code;
+  bool align_p = NDS32_ALIGN_P ();
+  const char *align = align_p ? "\t.align\t2\n" : "";
   if (long_jump_p)
     {
       int inverse_code = nds32_inverse_cond_code (code);
@@ -221,8 +225,8 @@ output_cond_branch_compare_zero (int code, const char *suffix,
 	      .LCB0:
 	   */
 	  snprintf (pattern, sizeof (pattern),
-		    "b%sz%s\t.LCB%%=\n\tj\t%%2\n.LCB%%=:",
-		    cond_code, suffix);
+		    "b%sz%s\t.LCB%%=\n\tj\t%%2\n%s.LCB%%=:",
+		    cond_code, suffix, align);
 	}
       else
 	{
@@ -233,8 +237,8 @@ output_cond_branch_compare_zero (int code, const char *suffix,
 		.LCB0:
 	   */
 	  snprintf (pattern, sizeof (pattern),
-		    "b%sz%s\t%%1, .LCB%%=\n\tj\t%%2\n.LCB%%=:",
-		    cond_code, suffix);
+		    "b%sz%s\t%%1, .LCB%%=\n\tj\t%%2\n%s.LCB%%=:",
+		    cond_code, suffix, align);
 	}
     }
   else

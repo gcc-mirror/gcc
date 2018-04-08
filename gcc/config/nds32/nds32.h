@@ -135,6 +135,11 @@ enum nds32_16bit_address_type
 #define NDS32_SINGLE_WORD_ALIGN_P(value) (((value) & 0x03) == 0)
 #define NDS32_DOUBLE_WORD_ALIGN_P(value) (((value) & 0x07) == 0)
 
+/* Determine whether we would like to have code generation strictly aligned.
+   We set it strictly aligned when -malways-align is enabled.
+   Check gcc/common/config/nds32/nds32-common.c for the optimizations that
+   apply -malways-align.  */
+#define NDS32_ALIGN_P() (TARGET_ALWAYS_ALIGN)
 /* Get alignment according to mode or type information.
    When 'type' is nonnull, there is no need to look at 'mode'.  */
 #define NDS32_MODE_TYPE_ALIGN(mode, type) \
@@ -643,7 +648,8 @@ enum nds32_builtins
 
 #define STACK_BOUNDARY 64
 
-#define FUNCTION_BOUNDARY 32
+#define FUNCTION_BOUNDARY \
+  ((NDS32_ALIGN_P () || TARGET_ALIGN_FUNCTION) ? 32 : 16)
 
 #define BIGGEST_ALIGNMENT 64
 
