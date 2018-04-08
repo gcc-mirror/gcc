@@ -1566,6 +1566,12 @@ nds32_adjust_insn_length (rtx_insn *insn, int length)
     case CODE_FOR_call_internal:
     case CODE_FOR_call_value_internal:
       {
+	if (NDS32_ALIGN_P ())
+	  {
+	    rtx_insn *next_insn = next_active_insn (insn);
+	    if (next_insn && get_attr_length (next_insn) != 2)
+	      adjust_value += 2;
+	  }
 	/* We need insert a nop after a noretun function call
 	   to prevent software breakpoint corrupt the next function. */
 	if (find_reg_note (insn, REG_NORETURN, NULL_RTX))
@@ -4749,6 +4755,28 @@ nds32_ls_333_p (rtx rt, rtx ra, rtx imm, machine_mode mode)
   return false;
 }
 
+/* Return alignment for the label.  */
+int
+nds32_target_alignment (rtx_insn *label)
+{
+  rtx_insn *insn;
+
+  if (!NDS32_ALIGN_P ())
+    return 0;
+
+  insn = next_active_insn (label);
+
+  /* Always align to 4 byte when first instruction after label is jump
+     instruction since length for that might changed, so let's always align
+     it for make sure we don't lose any perfomance here.  */
+  if (insn == 0
+      || (get_attr_length (insn) == 2
+	  && !JUMP_P (insn) && !CALL_P (insn)))
+    return 0;
+  else
+    return 2;
+}
+
 bool
 nds32_split_double_word_load_store_p(rtx *operands, bool load_p)
 {
@@ -4778,25 +4806,6 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
     return true;
   else
     return false;
-}
-
-/* Return align 2 (log base 2) if the next instruction of LABEL is 4 byte.  */
-int
-nds32_target_alignment (rtx_insn *label)
-{
-  rtx_insn *insn;
-
-  if (optimize_size)
-    return 0;
-
-  insn = next_active_insn (label);
-
-  if (insn == 0)
-    return 0;
-  else if ((get_attr_length (insn) % 4) == 0)
-    return 2;
-  else
-    return 0;
 }
 
 /* ------------------------------------------------------------------------ */

@@ -1,3 +1,16 @@
+2018-04-08  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-md-auxiliary.c (output_cond_branch): Output align
+	information if necessary.
+	(output_cond_branch_compare_zero): Likewise.
+	* config/nds32/nds32.c (nds32_adjust_insn_length): Consider align case.
+	(nds32_target_alignment): Refine for alignment.
+	* config/nds32/nds32.h (NDS32_ALIGN_P): Define.
+	(FUNCTION_BOUNDARY): Modify.
+	* config/nds32/nds32.md (call_internal, call_value_internal): Consider
+	align case.
+	* config/nds32/nds32.opt (malways-align, malign-functions): New.
+
 2018-04-08  Monk Chiang  <sh.chiang04@gmail.com>
 
 	* config/nds32/constants.md (unspec_volatile_element): Add values for

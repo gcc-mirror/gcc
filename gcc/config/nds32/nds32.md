@@ -1426,16 +1426,29 @@
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
 {
+  rtx_insn *next_insn = next_active_insn (insn);
+  bool align_p = (!(next_insn && get_attr_length (next_insn) == 2))
+		 && NDS32_ALIGN_P ();
   switch (which_alternative)
     {
     case 0:
       if (TARGET_16_BIT)
-	return "jral5\t%0";
+	{
+	  if (align_p)
+	    return "jral5\t%0\;.align 2";
+	  else
+	    return "jral5\t%0";
+	}
       else
-	return "jral\t%0";
+	{
+	  if (align_p)
+	    return "jral\t%0\;.align 2";
+	  else
+	    return "jral\t%0";
+	}
     case 1:
       return nds32_output_call (insn, operands, operands[0],
-				"bal\t%0", "jal\t%0", false);
+				"bal\t%0", "jal\t%0", align_p);
     default:
       gcc_unreachable ();
     }
@@ -1477,16 +1490,29 @@
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
 {
+  rtx_insn *next_insn = next_active_insn (insn);
+  bool align_p = (!(next_insn && get_attr_length (next_insn) == 2))
+		 && NDS32_ALIGN_P ();
   switch (which_alternative)
     {
     case 0:
       if (TARGET_16_BIT)
-	return "jral5\t%1";
+	{
+	  if (align_p)
+	    return "jral5\t%1\;.align 2";
+	  else
+	    return "jral5\t%1";
+	}
       else
-	return "jral\t%1";
+	{
+	  if (align_p)
+	    return "jral\t%1\;.align 2";
+	  else
+	    return "jral\t%1";
+	}
     case 1:
       return nds32_output_call (insn, operands, operands[1],
-				"bal\t%1", "jal\t%1", false);
+				"bal\t%1", "jal\t%1", align_p);
     default:
       gcc_unreachable ();
     }
