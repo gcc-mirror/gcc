@@ -377,6 +377,33 @@ movd44_insn_p (rtx_insn *insn)
   return false;
 }
 
+/* Extract the second result (odd reg) of a movd44 insn.  */
+rtx
+extract_movd44_odd_reg (rtx_insn *insn)
+{
+  gcc_assert (movd44_insn_p (insn));
+
+  rtx def_reg = SET_DEST (PATTERN (insn));
+  machine_mode mode;
+
+  gcc_assert (REG_P (def_reg) || GET_CODE (def_reg) == SUBREG);
+  switch (GET_MODE (def_reg))
+    {
+    case E_DImode:
+      mode = SImode;
+      break;
+
+    case E_DFmode:
+      mode = SFmode;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return gen_highpart (mode, def_reg);
+}
+
 /* Extract the rtx representing non-accumulation operands of a MAC insn.  */
 rtx
 extract_mac_non_acc_rtx (rtx_insn *insn)
@@ -394,6 +421,91 @@ extract_mac_non_acc_rtx (rtx_insn *insn)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Extract the rtx representing the branch target to help recognize
+   data hazards.  */
+rtx
+extract_branch_target_rtx (rtx_insn *insn)
+{
+  gcc_assert (CALL_P (insn) || JUMP_P (insn));
+
+  rtx body = PATTERN (insn);
+
+  if (GET_CODE (body) == SET)
+    {
+      /* RTXs in IF_THEN_ELSE are branch conditions.  */
+      if (GET_CODE (SET_SRC (body)) == IF_THEN_ELSE)
+        return NULL_RTX;
+
+      return SET_SRC (body);
+    }
+
+  if (GET_CODE (body) == CALL)
+    return XEXP (body, 0);
+
+  if (GET_CODE (body) == PARALLEL)
+    {
+      rtx first_rtx = parallel_element (body, 0);
+
+      if (GET_CODE (first_rtx) == SET)
+	return SET_SRC (first_rtx);
+
+      if (GET_CODE (first_rtx) == CALL)
+	return XEXP (first_rtx, 0);
+    }
+
+  /* Handle special cases of bltzal, bgezal and jralnez.  */
+  if (GET_CODE (body) == COND_EXEC)
+    {
+      rtx addr_rtx = XEXP (body, 1);
+
+      if (GET_CODE (addr_rtx) == SET)
+	return SET_SRC (addr_rtx);
+
+      if (GET_CODE (addr_rtx) == PARALLEL)
+	{
+	  rtx first_rtx = parallel_element (addr_rtx, 0);
+
+	  if (GET_CODE (first_rtx) == SET)
+	    {
+	      rtx call_rtx = SET_SRC (first_rtx);
+	      gcc_assert (GET_CODE (call_rtx) == CALL);
+
+	      return XEXP (call_rtx, 0);
+	    }
+
+	  if (GET_CODE (first_rtx) == CALL)
+	    return XEXP (first_rtx, 0);
+	}
+    }
+
+  gcc_unreachable ();
+}
+
+/* Extract the rtx representing the branch condition to help recognize
+   data hazards.  */
+rtx
+extract_branch_condition_rtx (rtx_insn *insn)
+{
+  gcc_assert (CALL_P (insn) || JUMP_P (insn));
+
+  rtx body = PATTERN (insn);
+
+  if (GET_CODE (body) == SET)
+    {
+      rtx if_then_else_rtx = SET_SRC (body);
+
+      if (GET_CODE (if_then_else_rtx) == IF_THEN_ELSE)
+        return XEXP (if_then_else_rtx, 0);
+
+      return NULL_RTX;
+    }
+
+  if (GET_CODE (body) == COND_EXEC)
+    return XEXP (body, 0);
+
+  return NULL_RTX;
 }
 
 } // namespace nds32

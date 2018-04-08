@@ -37,6 +37,8 @@ enum nds32_arch_type
 /* The various ANDES CPU.  */
 enum nds32_cpu_type
 {
+  CPU_N6,
+  CPU_N8,
   CPU_N9,
   CPU_SIMPLE
 };

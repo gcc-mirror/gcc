@@ -1,6 +1,20 @@
 2018-04-08  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config.gcc (nds32*-*-*): Check that n6/n8/s8 are valid to --with-cpu.
+	* config/nds32/nds32-n8.md: New file.
+	* config/nds32/nds32-opts.h (nds32_cpu_type): Add CPU_N6 and CPU_N8.
+	* config/nds32/nds32-pipelines-auxiliary.c: Implementation for n8
+	pipeline.
+	* config/nds32/nds32-protos.h: More declarations for n8 pipeline.
+	* config/nds32/nds32-utils.c: More implementations for n8 pipeline.
+	* config/nds32/nds32.md (pipeline_model): Add n8.
+	* config/nds32/nds32.opt (mcpu): Support n8 pipeline cpus.
+	* config/nds32/pipelines.md: Include n8 settings.
+
+2018-04-08  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config.gcc (nds32*): Add nds32-utils.o into extra_objs.
 	* config/nds32/nds32-n9-2r1w.md: New file.
 	* config/nds32/nds32-n9-3r2w.md: New file.

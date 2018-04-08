@@ -343,6 +343,108 @@ movd44_even_dep_p (rtx_insn *insn, rtx def_reg)
 using namespace nds32;
 using namespace nds32::scheduling;
 
+namespace { // anonymous namespace
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at AG (II).  */
+bool
+n8_consumed_by_addr_in_p (rtx_insn *consumer, rtx def_reg)
+{
+  rtx use_rtx;
+
+  switch (get_attr_type (consumer))
+    {
+    case TYPE_BRANCH:
+      use_rtx = extract_branch_target_rtx (consumer);
+      break;
+
+    case TYPE_LOAD:
+      if (load_single_p (consumer))
+	use_rtx = extract_mem_rtx (consumer);
+      else
+	use_rtx = extract_base_reg (consumer);
+      break;
+
+    case TYPE_STORE:
+      if (store_single_p (consumer)
+	  && (!post_update_insn_p (consumer)
+	      || immed_offset_p (extract_mem_rtx (consumer))))
+	use_rtx = extract_mem_rtx (consumer);
+      else
+	use_rtx = extract_base_reg (consumer);
+      break;
+
+    case TYPE_LOAD_MULTIPLE:
+    case TYPE_STORE_MULTIPLE:
+      use_rtx = extract_base_reg (consumer);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return reg_overlap_p (def_reg, use_rtx);
+}
+
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at EX.  */
+bool
+n8_consumed_by_ex_p (rtx_insn *consumer, rtx def_reg)
+{
+  rtx use_rtx;
+
+  switch (get_attr_type (consumer))
+    {
+    case TYPE_ALU:
+      if (movd44_even_dep_p (consumer, def_reg))
+	return true;
+
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_MUL:
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_MAC:
+      use_rtx = extract_mac_non_acc_rtx (consumer);
+      break;
+
+   /* Some special instructions, divmodsi4 and udivmodsi4, produce two
+      results, the quotient and the remainder.  It requires two micro-
+      operations in order to write two registers. We have to check the
+      dependency from the producer to the first micro-operation.  */
+    case TYPE_DIV:
+      if (INSN_CODE (consumer) == CODE_FOR_divmodsi4
+	  || INSN_CODE (consumer) == CODE_FOR_udivmodsi4)
+	use_rtx = SET_SRC (parallel_element (consumer, 0));
+      else
+	use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_BRANCH:
+      use_rtx = extract_branch_condition_rtx (consumer);
+      break;
+
+    case TYPE_STORE:
+      /* exclude ST_!bi_RR */
+      if (!post_update_insn_p (consumer)
+	  && !immed_offset_p (extract_mem_rtx (consumer)))
+	return false;
+
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_STORE_MULTIPLE:
+      use_rtx = extract_nth_access_rtx (consumer, 0);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return reg_overlap_p (def_reg, use_rtx);
+}
+
 /* Check the dependency between the producer defining DEF_REG and CONSUMER
    requiring input operand at EX.  */
 bool
@@ -512,6 +614,152 @@ n9_3r2w_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
     return true;
 
   return false;
+}
+
+
+} // anonymous namespace
+
+/* ------------------------------------------------------------------------ */
+
+/* Guard functions for N8 core.  */
+
+bool
+nds32_n8_load_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  if (post_update_insn_p (producer))
+    return false;
+
+  rtx def_reg = SET_DEST (PATTERN (producer));
+
+  return n8_consumed_by_addr_in_p (consumer, def_reg);
+}
+
+bool
+nds32_n8_load_bi_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  if (!post_update_insn_p (producer))
+    return false;
+
+  rtx def_reg = SET_DEST (PATTERN (producer));
+
+  return n8_consumed_by_addr_in_p (consumer, def_reg);
+}
+
+bool
+nds32_n8_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  if (post_update_insn_p (producer))
+    return false;
+
+  rtx def_reg = SET_DEST (PATTERN (producer));
+
+  return n8_consumed_by_ex_p (consumer, def_reg);
+}
+
+bool
+nds32_n8_ex_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg;
+
+  switch (get_attr_type (producer))
+    {
+    case TYPE_ALU:
+      if (movd44_insn_p (producer))
+	def_reg = extract_movd44_odd_reg (producer);
+      else
+	def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    case TYPE_MUL:
+    case TYPE_MAC:
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    case TYPE_DIV:
+      if (INSN_CODE (producer) == CODE_FOR_divmodsi4
+	  || INSN_CODE (producer) == CODE_FOR_udivmodsi4)
+	def_reg = SET_DEST (parallel_element (producer, 1));
+      else
+	def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    case TYPE_LOAD:
+    case TYPE_STORE:
+    case TYPE_LOAD_MULTIPLE:
+    case TYPE_STORE_MULTIPLE:
+      if (!post_update_insn_p (producer))
+	return false;
+
+      def_reg = extract_base_reg (producer);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return n8_consumed_by_addr_in_p (consumer, def_reg);
+}
+
+bool
+nds32_n8_last_load_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  /* If PRODUCER is a post-update LMW insn, the last micro-operation updates
+     the base register and the result is ready in EX stage, so we don't need
+     to handle that case in this guard function and the corresponding bypass
+     rule.  */
+  if (post_update_insn_p (producer))
+    return false;
+
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  if (last_def_reg == NULL_RTX)
+    return false;
+
+  gcc_assert (REG_P (last_def_reg) || GET_CODE (last_def_reg) == SUBREG);
+
+  return n8_consumed_by_addr_in_p (consumer, last_def_reg);
+}
+
+bool
+nds32_n8_last_load_two_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  int index = -2;
+
+  /* If PRODUCER is a post-update insn, there is an additional one micro-
+     operation inserted in the end, so the last memory access operation should
+     be handled by this guard function and the corresponding bypass rule.  */
+  if (post_update_insn_p (producer))
+    index = -1;
+
+  rtx last_two_def_reg = extract_nth_access_reg (producer, index);
+
+  if (last_two_def_reg == NULL_RTX)
+    return false;
+
+  gcc_assert (REG_P (last_two_def_reg)
+	      || GET_CODE (last_two_def_reg) == SUBREG);
+
+  return n8_consumed_by_addr_in_p (consumer, last_two_def_reg);
+}
+
+bool
+nds32_n8_last_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  /* If PRODUCER is a post-update LMW insn, the last micro-operation updates
+     the base register and the result is ready in EX stage, so we don't need
+     to handle that case in this guard function and the corresponding bypass
+     rule.  */
+  if (post_update_insn_p (producer))
+    return false;
+
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  if (last_def_reg == NULL_RTX)
+    return false;
+
+  gcc_assert (REG_P (last_def_reg) || GET_CODE (last_def_reg) == SUBREG);
+
+  return n8_consumed_by_ex_p (consumer, last_def_reg);
 }
 
 /* Guard functions for N9 cores.  */
