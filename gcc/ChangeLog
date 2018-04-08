@@ -1,3 +1,23 @@
+2018-04-08  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config.gcc (nds32*): Add nds32-utils.o into extra_objs.
+	* config/nds32/nds32-n9-2r1w.md: New file.
+	* config/nds32/nds32-n9-3r2w.md: New file.
+	* config/nds32/nds32-opts.h (nds32_cpu_type, nds32_mul_type,
+	nds32_register_ports): New or modify for cpu n9.
+	* config/nds32/nds32-pipelines-auxiliary.c: Implementation for n9
+	pipeline.
+	* config/nds32/nds32-protos.h: More declarations for n9 pipeline.
+	* config/nds32/nds32-utils.c: New file.
+	* config/nds32/nds32.h (TARGET_PIPELINE_N9, TARGET_PIPELINE_SIMPLE,
+	TARGET_MUL_SLOW): Define.
+	* config/nds32/nds32.md (pipeline_model): New attribute.
+	* config/nds32/nds32.opt (mcpu, mconfig-mul, mconfig-register-ports):
+	New options that support cpu n9.
+	* config/nds32/pipelines.md: Include n9 settings.
+	* config/nds32/t-nds32 (nds32-utils.o): Add dependency.
+
 2018-04-08  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32-md-auxiliary.c (output_cond_branch): Output align

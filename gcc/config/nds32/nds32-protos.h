@@ -97,6 +97,13 @@ extern void nds32_expand_unaligned_store (rtx *, enum machine_mode);
 
 extern bool nds32_valid_multiple_load_store_p (rtx, bool, bool);
 
+/* Auxiliary functions for guard function checking in pipelines.md.  */
+
+extern bool nds32_n9_2r1w_mm_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n9_3r2w_mm_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n9_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
+
 /* Auxiliary functions for stack operation predicate checking.  */
 
 extern bool nds32_valid_stack_push_pop_p (rtx, bool);
@@ -224,6 +231,29 @@ extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 extern void nds32_cpu_cpp_builtins(struct cpp_reader *);
 
 extern bool nds32_split_double_word_load_store_p (rtx *,bool);
+
+namespace nds32 {
+
+extern rtx extract_pattern_from_insn (rtx);
+
+size_t parallel_elements (rtx);
+rtx parallel_element (rtx, int);
+bool load_single_p (rtx_insn *);
+bool store_single_p (rtx_insn *);
+bool load_double_p (rtx_insn *);
+bool store_double_p (rtx_insn *);
+bool post_update_insn_p (rtx_insn *);
+bool immed_offset_p (rtx);
+int find_post_update_rtx (rtx_insn *);
+rtx extract_mem_rtx (rtx_insn *);
+rtx extract_base_reg (rtx_insn *);
+
+rtx extract_shift_reg (rtx);
+
+bool movd44_insn_p (rtx_insn *);
+
+rtx extract_mac_non_acc_rtx (rtx_insn *);
+} // namespace nds32
 
 /* Functions for create nds32 specific optimization pass.  */
 extern rtl_opt_pass *make_pass_nds32_relax_opt (gcc::context *);
