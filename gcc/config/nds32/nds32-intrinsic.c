@@ -305,6 +305,42 @@ nds32_expand_triop_builtin (enum insn_code icode, tree exp, rtx target,
   return target;
 }
 
+/* Expand builtins that take three operands and the third is immediate.  */
+static rtx
+nds32_expand_triopimm_builtin (enum insn_code icode, tree exp, rtx target,
+			       bool return_p, const char *name)
+{
+  rtx pat;
+  rtx op0 = nds32_read_argument (exp, 0);
+  rtx op1 = nds32_read_argument (exp, 1);
+  rtx op2 = nds32_read_argument (exp, 2);
+  int op0_num = return_p ? 1 : 0;
+  int op1_num = return_p ? 2 : 1;
+  int op2_num = return_p ? 3 : 2;
+
+  if (return_p)
+    target = nds32_legitimize_target (icode, target);
+
+  if (!nds32_check_constant_argument (icode, op2_num, op2, name))
+    return NULL_RTX;
+
+  op0 = nds32_legitimize_argument (icode, op0_num, op0);
+  op1 = nds32_legitimize_argument (icode, op1_num, op1);
+  op2 = nds32_legitimize_argument (icode, op2_num, op2);
+
+  /* Emit and return the new instruction. */
+  if (return_p)
+    pat = GEN_FCN (icode) (target, op0, op1, op2);
+  else
+    pat = GEN_FCN (icode) (op0, op1, op2);
+
+  if (! pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
 /* Expand builtins for load.  */
 static rtx
 nds32_expand_builtin_load (enum insn_code icode, tree exp, rtx target)
@@ -463,6 +499,7 @@ static struct builtin_description bdesc_1arg[] =
   NDS32_BUILTIN(clzsi2, "clz", CLZ)
   NDS32_BUILTIN(unspec_clo, "clo", CLO)
   NDS32_BUILTIN(unspec_wsbh, "wsbh", WSBH)
+  NDS32_BUILTIN(unspec_tlbop_pb, "tlbop_pb",TLBOP_PB)
   NDS32_BUILTIN(unaligned_load_hw, "unaligned_load_hw", UALOAD_HW)
   NDS32_BUILTIN(unaligned_loadsi, "unaligned_load_w", UALOAD_W)
   NDS32_BUILTIN(unaligned_loaddi, "unaligned_load_dw", UALOAD_DW)
@@ -473,6 +510,12 @@ static struct builtin_description bdesc_1arg[] =
   NDS32_NO_TARGET_BUILTIN(unspec_jral_ton, "jral_ton", JRAL_TON)
   NDS32_NO_TARGET_BUILTIN(unspec_ret_toff, "ret_toff", RET_TOFF)
   NDS32_NO_TARGET_BUILTIN(unspec_jral_iton, "jral_iton",JRAL_ITON)
+  NDS32_NO_TARGET_BUILTIN(unspec_tlbop_trd, "tlbop_trd", TLBOP_TRD)
+  NDS32_NO_TARGET_BUILTIN(unspec_tlbop_twr, "tlbop_twr", TLBOP_TWR)
+  NDS32_NO_TARGET_BUILTIN(unspec_tlbop_rwr, "tlbop_rwr", TLBOP_RWR)
+  NDS32_NO_TARGET_BUILTIN(unspec_tlbop_rwlk, "tlbop_rwlk", TLBOP_RWLK)
+  NDS32_NO_TARGET_BUILTIN(unspec_tlbop_unlk, "tlbop_unlk", TLBOP_UNLK)
+  NDS32_NO_TARGET_BUILTIN(unspec_tlbop_inv, "tlbop_inv", TLBOP_INV)
   NDS32_NO_TARGET_BUILTIN(unspec_ret_itoff, "ret_itoff", RET_ITOFF)
   NDS32_NO_TARGET_BUILTIN(unspec_set_current_sp,
 			  "set_current_sp", SET_CURRENT_SP)
@@ -532,6 +575,15 @@ static struct builtin_description bdesc_3arg[] =
   NDS32_BUILTIN(unspec_pbsada, "pbsada", PBSADA)
   NDS32_NO_TARGET_BUILTIN(bse, "bse", BSE)
   NDS32_NO_TARGET_BUILTIN(bsp, "bsp", BSP)
+};
+
+/* Three-argument intrinsics with an immediate third argument.  */
+static struct builtin_description bdesc_3argimm[] =
+{
+  NDS32_NO_TARGET_BUILTIN(prefetch_qw, "prefetch_qw", DPREF_QW)
+  NDS32_NO_TARGET_BUILTIN(prefetch_hw, "prefetch_hw", DPREF_HW)
+  NDS32_NO_TARGET_BUILTIN(prefetch_w, "prefetch_w", DPREF_W)
+  NDS32_NO_TARGET_BUILTIN(prefetch_dw, "prefetch_dw", DPREF_DW)
 };
 
 /* Intrinsics that load a value.  */
@@ -717,6 +769,9 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_SCHE_BARRIER:
       emit_insn (gen_blockage ());
       return target;
+    case NDS32_BUILTIN_TLBOP_FLUA:
+      emit_insn (gen_unspec_tlbop_flua ());
+      return target;
     case NDS32_BUILTIN_SCW:
       return nds32_expand_scw_builtin (CODE_FOR_unspec_volatile_scw,
 				       exp, target);
@@ -751,6 +806,11 @@ nds32_expand_builtin_impl (tree exp,
   for (i = 0, d = bdesc_3arg; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
     if (d->code == fcode)
       return nds32_expand_triop_builtin (d->icode, exp, target, d->return_p);
+
+  for (i = 0, d = bdesc_3argimm; i < ARRAY_SIZE (bdesc_3argimm); i++, d++)
+    if (d->code == fcode)
+      return nds32_expand_triopimm_builtin (d->icode, exp, target,
+					    d->return_p, d->name);
 
   for (i = 0, d = bdesc_load; i < ARRAY_SIZE (bdesc_load); i++, d++)
     if (d->code == fcode)
@@ -876,6 +936,13 @@ nds32_init_builtins_impl (void)
   ADD_NDS32_BUILTIN3 ("cctl_idx_write", void, integer, unsigned, unsigned,
 		      CCTL_IDX_WRITE);
 
+  /* PREFETCH  */
+  ADD_NDS32_BUILTIN3 ("dpref_qw", void, ptr_uchar, unsigned, integer, DPREF_QW);
+  ADD_NDS32_BUILTIN3 ("dpref_hw", void, ptr_ushort, unsigned, integer,
+		      DPREF_HW);
+  ADD_NDS32_BUILTIN3 ("dpref_w", void, ptr_uint, unsigned, integer, DPREF_W);
+  ADD_NDS32_BUILTIN3 ("dpref_dw", void, ptr_ulong, unsigned, integer, DPREF_DW);
+
   /* Performance Extension  */
   ADD_NDS32_BUILTIN1 ("pe_abs", integer, integer, ABS);
   ADD_NDS32_BUILTIN2 ("pe_ave", integer, integer, integer, AVE);
@@ -933,6 +1000,17 @@ nds32_init_builtins_impl (void)
 
   /* Schedule Barrier */
   ADD_NDS32_BUILTIN0 ("schedule_barrier", void, SCHE_BARRIER);
+
+  /* TLBOP  */
+  ADD_NDS32_BUILTIN1 ("tlbop_trd", void, unsigned, TLBOP_TRD);
+  ADD_NDS32_BUILTIN1 ("tlbop_twr", void, unsigned, TLBOP_TWR);
+  ADD_NDS32_BUILTIN1 ("tlbop_rwr", void, unsigned, TLBOP_RWR);
+  ADD_NDS32_BUILTIN1 ("tlbop_rwlk", void, unsigned, TLBOP_RWLK);
+  ADD_NDS32_BUILTIN1 ("tlbop_unlk", void, unsigned, TLBOP_UNLK);
+  ADD_NDS32_BUILTIN1 ("tlbop_pb", unsigned, unsigned, TLBOP_PB);
+  ADD_NDS32_BUILTIN1 ("tlbop_inv", void, unsigned, TLBOP_INV);
+  ADD_NDS32_BUILTIN0 ("tlbop_flua", void, TLBOP_FLUA);
+
   /* Unaligned Load/Store  */
   ADD_NDS32_BUILTIN1 ("unaligned_load_hw", short_unsigned, ptr_ushort,
 		      UALOAD_HW);

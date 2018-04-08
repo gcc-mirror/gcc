@@ -226,6 +226,16 @@ enum nds32_cctl_idxwrite
   __NDS32_CCTL_L1I_IX_WWD__
 };
 
+enum nds32_dpref
+{
+  __NDS32_DPREF_SRD__,
+  __NDS32_DPREF_MRD__,
+  __NDS32_DPREF_SWR__,
+  __NDS32_DPREF_MWR__,
+  __NDS32_DPREF_PTE__,
+  __NDS32_DPREF_CLWR__
+};
+
 /* ------------------------------------------------------------------------ */
 
 /* Define intrinsic register name macro for compatibility.  */
@@ -409,6 +419,14 @@ enum nds32_cctl_idxwrite
 #define NDS32_CCTL_L1D_IX_WWD           __NDS32_CCTL_L1D_IX_WWD__
 #define NDS32_CCTL_L1I_IX_WTAG          __NDS32_CCTL_L1I_IX_WTAG__
 #define NDS32_CCTL_L1I_IX_WWD           __NDS32_CCTL_L1I_IX_WWD__
+
+#define NDS32_DPREF_SRD                 __NDS32_DPREF_SRD__
+#define NDS32_DPREF_MRD                 __NDS32_DPREF_MRD__
+#define NDS32_DPREF_SWR                 __NDS32_DPREF_SWR__
+#define NDS32_DPREF_MWR                 __NDS32_DPREF_MWR__
+#define NDS32_DPREF_PTE                 __NDS32_DPREF_PTE__
+#define NDS32_DPREF_CLWR                __NDS32_DPREF_CLWR__
+
 /* ------------------------------------------------------------------------ */
 
 
@@ -501,6 +519,14 @@ enum nds32_cctl_idxwrite
   (__builtin_nds32_svs ((a), (b)))
 #define __nds32__sva(a, b) \
   (__builtin_nds32_sva ((a), (b)))
+#define __nds32__dpref_qw(a, b, subtype) \
+  (__builtin_nds32_dpref_qw ((a), (b), (subtype)))
+#define __nds32__dpref_hw(a, b, subtype) \
+  (__builtin_nds32_dpref_hw ((a), (b), (subtype)))
+#define __nds32__dpref_w(a, b, subtype) \
+  (__builtin_nds32_dpref_w ((a), (b), (subtype)))
+#define __nds32__dpref_dw(a, b, subtype) \
+  (__builtin_nds32_dpref_dw ((a), (b), (subtype)))
 
 #define __nds32__teqz(a, swid) \
   (__builtin_nds32_teqz ((a), (swid)))
@@ -572,5 +598,22 @@ enum nds32_cctl_idxwrite
   (__builtin_nds32_fmtcsr ((fpcsr)))
 #define __nds32__fmfcfg() \
   (__builtin_nds32_fmfcfg())
+
+#define __nds32__tlbop_trd(a) \
+  (__builtin_nds32_tlbop_trd ((a)))
+#define __nds32__tlbop_twr(a) \
+  (__builtin_nds32_tlbop_twr ((a)))
+#define __nds32__tlbop_rwr(a) \
+  (__builtin_nds32_tlbop_rwr ((a)))
+#define __nds32__tlbop_rwlk(a) \
+  (__builtin_nds32_tlbop_rwlk ((a)))
+#define __nds32__tlbop_unlk(a) \
+  (__builtin_nds32_tlbop_unlk ((a)))
+#define __nds32__tlbop_pb(a) \
+  (__builtin_nds32_tlbop_pb ((a)))
+#define __nds32__tlbop_inv(a) \
+  (__builtin_nds32_tlbop_inv ((a)))
+#define __nds32__tlbop_flua() \
+(__builtin_nds32_tlbop_flua())
 
 #endif /* nds32_intrinsic.h */
