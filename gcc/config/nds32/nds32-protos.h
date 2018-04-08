@@ -99,6 +99,14 @@ extern bool nds32_valid_multiple_load_store_p (rtx, bool, bool);
 
 /* Auxiliary functions for guard function checking in pipelines.md.  */
 
+extern bool nds32_n8_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_load_bi_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_load_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_ex_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_two_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
 extern bool nds32_n9_2r1w_mm_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n9_3r2w_mm_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n9_last_load_to_ex_p (rtx_insn *, rtx_insn *);
@@ -251,8 +259,12 @@ rtx extract_base_reg (rtx_insn *);
 rtx extract_shift_reg (rtx);
 
 bool movd44_insn_p (rtx_insn *);
+rtx extract_movd44_odd_reg (rtx_insn *);
 
 rtx extract_mac_non_acc_rtx (rtx_insn *);
+
+rtx extract_branch_target_rtx (rtx_insn *);
+rtx extract_branch_condition_rtx (rtx_insn *);
 } // namespace nds32
 
 /* Functions for create nds32 specific optimization pass.  */

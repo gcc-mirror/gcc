@@ -175,6 +175,30 @@ Name(nds32_cpu_type) Type(enum nds32_cpu_type)
 Known cpu types (for use with the -mcpu= option):
 
 EnumValue
+Enum(nds32_cpu_type) String(n6) Value(CPU_N6)
+
+EnumValue
+Enum(nds32_cpu_type) String(n650) Value(CPU_N6)
+
+EnumValue
+Enum(nds32_cpu_type) String(n8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(n801) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(sn8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(sn801) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(s8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(s801) Value(CPU_N8)
+
+EnumValue
 Enum(nds32_cpu_type) String(n9) Value(CPU_N9)
 
 EnumValue
