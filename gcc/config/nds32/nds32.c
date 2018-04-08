@@ -342,6 +342,9 @@ nds32_init_machine_status (void)
   /* Initially assume this function does NOT use fp_as_gp optimization.  */
   machine->fp_as_gp_p = 0;
 
+  /* Initially this function is not under strictly aligned situation.  */
+  machine->strict_aligned_p = 0;
+
   return machine;
 }
 
@@ -1414,8 +1417,12 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 	  /* Further check if the value is legal for the 'outer_mode'.  */
 	  if (satisfies_constraint_Is16 (index))
 	    {
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
 	      /* Make sure address is half word alignment.  */
-	      if (NDS32_HALF_WORD_ALIGN_P (INTVAL (index)))
+	      else if (NDS32_HALF_WORD_ALIGN_P (INTVAL (index)))
 		return true;
 	    }
 	  break;
@@ -1430,8 +1437,12 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 		    return false;
 		}
 
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
 	      /* Make sure address is word alignment.  */
-	      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
+	      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
 		return true;
 	    }
 	  break;
@@ -1446,11 +1457,15 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 		    return false;
 		}
 
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
 	      /* Make sure address is word alignment.
 		Currently we do not have 64-bit load/store yet,
 		so we will use two 32-bit load/store instructions to do
 		memory access and they are single word alignment.  */
-	      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
+	      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
 		return true;
 	    }
 	  break;
@@ -1589,6 +1604,20 @@ nds32_adjust_insn_length (rtx_insn *insn, int length)
     }
 }
 
+/* Storage Layout.  */
+
+/* This function will be called just before expansion into rtl.  */
+static void
+nds32_expand_to_rtl_hook (void)
+{
+  /* We need to set strictly aligned situation.
+     After that, the memory address checking in nds32_legitimate_address_p()
+     will take alignment offset into consideration so that it will not create
+     unaligned [base + offset] access during the rtl optimization.  */
+  cfun->machine->strict_aligned_p = 1;
+}
+
+
 /* Register Usage.  */
 
 static void
@@ -2469,11 +2498,15 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 		{
 		  if (satisfies_constraint_Is14 (op1))
 		    {
+		      /* If it is not under strictly aligned situation,
+			 we can return true without checking alignment.  */
+		      if (!cfun->machine->strict_aligned_p)
+			return true;
 		      /* Make sure address is word alignment.
 			Currently we do not have 64-bit load/store yet,
 			so we will use two 32-bit load/store instructions to do
 			memory access and they are single word alignment.  */
-		      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (op1)))
+		      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (op1)))
 			return true;
 		    }
 		}
@@ -4826,6 +4859,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE \
   default_promote_function_mode_always_promote
+
+#undef TARGET_EXPAND_TO_RTL_HOOK
+#define TARGET_EXPAND_TO_RTL_HOOK nds32_expand_to_rtl_hook
 
 
 /* Layout of Source Language Data Types.  */

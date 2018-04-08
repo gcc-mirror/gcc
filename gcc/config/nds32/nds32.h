@@ -296,6 +296,15 @@ struct GTY(()) machine_function
   /* Indicate that whether this function
      uses fp_as_gp optimization.  */
   int fp_as_gp_p;
+  /* Indicate that whether this function is under strictly aligned
+     situation for legitimate address checking.  This flag informs
+     nds32_legitimate_address_p() how to treat offset alignment:
+       1. The IVOPT phase needs to detect available range for memory access,
+	  such as checking [base + 32767] ~ [base + (-32768)].
+	  For this case we do not want address to be strictly aligned.
+       2. The rtl lowering and optimization are close to target code.
+	  For this case we need address to be strictly aligned.  */
+  int strict_aligned_p;
 };
 
 /* A C structure that contains the arguments information.  */

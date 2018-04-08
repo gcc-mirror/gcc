@@ -1,3 +1,12 @@
+2018-04-08  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_init_machine_status,
+	nds32_legitimate_index_p, nds32_legitimate_address_p): Consider
+	strict_aligned_p field.
+	(nds32_expand_to_rtl_hook): New function.
+	(TARGET_EXPAND_TO_RTL_HOOK): Define.
+	* config/nds32/nds32.h (machine_function): Add strict_aligned_p field.
+
 2018-04-08  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
