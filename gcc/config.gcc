@@ -4315,11 +4315,11 @@ case "${target}" in
 		"")
 			with_cpu=n9
 			;;
-		n6 | n8 | e8 | s8 | n9)
+		n6 | n7 | n8 | e8 | s8 | n9)
 			# OK
 			;;
 		*)
-			echo "Cannot accept --with-cpu=$with_cpu, available values are: n6 n8 e8 s8 n9" 1>&2
+			echo "Cannot accept --with-cpu=$with_cpu, available values are: n6 n7 n8 e8 s8 n9" 1>&2
 			exit 1
 			;;
 		esac

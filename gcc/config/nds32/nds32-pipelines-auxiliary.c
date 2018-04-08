@@ -344,6 +344,98 @@ using namespace nds32;
 using namespace nds32::scheduling;
 
 namespace { // anonymous namespace
+
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at II.  */
+bool
+n7_consumed_by_ii_dep_p (rtx_insn *consumer, rtx def_reg)
+{
+  rtx use_rtx;
+
+  switch (get_attr_type (consumer))
+    {
+    /* MOVD44_E */
+    case TYPE_ALU:
+      if (movd44_even_dep_p (consumer, def_reg))
+	return true;
+
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_MUL:
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_MAC:
+      use_rtx = extract_mac_non_acc_rtx (consumer);
+      break;
+
+   /* Some special instructions, divmodsi4 and udivmodsi4, produce two
+      results, the quotient and the remainder.  It requires two micro-
+      operations in order to write two registers. We have to check the
+      dependency from the producer to the first micro-operation.  */
+    case TYPE_DIV:
+      if (INSN_CODE (consumer) == CODE_FOR_divmodsi4
+	  || INSN_CODE (consumer) == CODE_FOR_udivmodsi4)
+	use_rtx = SET_SRC (parallel_element (consumer, 0));
+      else
+	use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_LOAD:
+      /* ADDR_IN_bi_Ra, ADDR_IN_!bi */
+      if (post_update_insn_p (consumer))
+	use_rtx = extract_base_reg (consumer);
+      else
+	use_rtx = extract_mem_rtx (consumer);
+      break;
+
+    case TYPE_STORE:
+      /* ADDR_IN_bi_Ra, ADDR_IN_!bi */
+      if (post_update_insn_p (consumer))
+	use_rtx = extract_base_reg (consumer);
+      else
+	use_rtx = extract_mem_rtx (consumer);
+
+      if (reg_overlap_p (def_reg, use_rtx))
+	return true;
+
+      /* ST_bi, ST_!bi_RI */
+      if (!post_update_insn_p (consumer)
+	  && !immed_offset_p (extract_mem_rtx (consumer)))
+	return false;
+
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_LOAD_MULTIPLE:
+      use_rtx = extract_base_reg (consumer);
+      break;
+
+    case TYPE_STORE_MULTIPLE:
+      /* ADDR_IN */
+      use_rtx = extract_base_reg (consumer);
+      if (reg_overlap_p (def_reg, use_rtx))
+	return true;
+
+      /* SMW (N, 1) */
+      use_rtx = extract_nth_access_rtx (consumer, 0);
+      break;
+
+    case TYPE_BRANCH:
+      use_rtx = PATTERN (consumer);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (reg_overlap_p (def_reg, use_rtx))
+    return true;
+
+  return false;
+}
+
 /* Check the dependency between the producer defining DEF_REG and CONSUMER
    requiring input operand at AG (II).  */
 bool
@@ -656,6 +748,39 @@ n9_3r2w_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
 } // anonymous namespace
 
 /* ------------------------------------------------------------------------ */
+
+/* Guard functions for N7 core.  */
+
+bool
+nds32_n7_load_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  if (post_update_insn_p (producer))
+    return false;
+
+  rtx def_reg = SET_DEST (PATTERN (producer));
+
+  return n7_consumed_by_ii_dep_p (consumer, def_reg);
+}
+
+bool
+nds32_n7_last_load_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  /* If PRODUCER is a post-update LMW insn, the last micro-operation updates
+     the base register and the result is ready in II stage, so we don't need
+     to handle that case in this guard function and the corresponding bypass
+     rule.  */
+  if (post_update_insn_p (producer))
+    return false;
+
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  if (last_def_reg == NULL_RTX)
+    return false;
+
+  gcc_assert (REG_P (last_def_reg) || GET_CODE (last_def_reg) == SUBREG);
+
+  return n7_consumed_by_ii_dep_p (consumer, last_def_reg);
+}
 
 /* Guard functions for N8 core.  */
 

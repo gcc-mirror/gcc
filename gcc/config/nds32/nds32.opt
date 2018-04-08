@@ -181,6 +181,12 @@ EnumValue
 Enum(nds32_cpu_type) String(n650) Value(CPU_N6)
 
 EnumValue
+Enum(nds32_cpu_type) String(n7) Value(CPU_N7)
+
+EnumValue
+Enum(nds32_cpu_type) String(n705) Value(CPU_N7)
+
+EnumValue
 Enum(nds32_cpu_type) String(n8) Value(CPU_N8)
 
 EnumValue
