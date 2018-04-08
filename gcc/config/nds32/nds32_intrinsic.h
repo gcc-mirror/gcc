@@ -238,6 +238,78 @@ enum nds32_dpref
 
 /* ------------------------------------------------------------------------ */
 
+/* Define interrupt number for intrinsic function.  */
+#define NDS32_INT_H0 0
+#define NDS32_INT_H1 1
+#define NDS32_INT_H2 2
+#define NDS32_INT_H3 3
+#define NDS32_INT_H4 4
+#define NDS32_INT_H5 5
+#define NDS32_INT_H6 6
+#define NDS32_INT_H7 7
+#define NDS32_INT_H8 8
+#define NDS32_INT_H9 9
+#define NDS32_INT_H10 10
+#define NDS32_INT_H11 11
+#define NDS32_INT_H12 12
+#define NDS32_INT_H13 13
+#define NDS32_INT_H14 14
+#define NDS32_INT_H15 15
+#define NDS32_INT_H16 16
+#define NDS32_INT_H17 17
+#define NDS32_INT_H18 18
+#define NDS32_INT_H19 19
+#define NDS32_INT_H20 20
+#define NDS32_INT_H21 21
+#define NDS32_INT_H22 22
+#define NDS32_INT_H23 23
+#define NDS32_INT_H24 24
+#define NDS32_INT_H25 25
+#define NDS32_INT_H26 26
+#define NDS32_INT_H27 27
+#define NDS32_INT_H28 28
+#define NDS32_INT_H29 29
+#define NDS32_INT_H30 30
+#define NDS32_INT_H31 31
+#define NDS32_INT_H32 32
+#define NDS32_INT_H33 33
+#define NDS32_INT_H34 34
+#define NDS32_INT_H35 35
+#define NDS32_INT_H36 36
+#define NDS32_INT_H37 37
+#define NDS32_INT_H38 38
+#define NDS32_INT_H39 39
+#define NDS32_INT_H40 40
+#define NDS32_INT_H41 41
+#define NDS32_INT_H42 42
+#define NDS32_INT_H43 43
+#define NDS32_INT_H44 44
+#define NDS32_INT_H45 45
+#define NDS32_INT_H46 46
+#define NDS32_INT_H47 47
+#define NDS32_INT_H48 48
+#define NDS32_INT_H49 49
+#define NDS32_INT_H50 50
+#define NDS32_INT_H51 51
+#define NDS32_INT_H52 52
+#define NDS32_INT_H53 53
+#define NDS32_INT_H54 54
+#define NDS32_INT_H55 55
+#define NDS32_INT_H56 56
+#define NDS32_INT_H57 57
+#define NDS32_INT_H58 58
+#define NDS32_INT_H59 59
+#define NDS32_INT_H60 60
+#define NDS32_INT_H61 61
+#define NDS32_INT_H62 62
+#define NDS32_INT_H63 63
+#define NDS32_INT_SWI 64
+#define NDS32_INT_ALZ 65
+#define NDS32_INT_IDIVZE 66
+#define NDS32_INT_DSSIM 67
+
+/* ------------------------------------------------------------------------ */
+
 /* Define intrinsic register name macro for compatibility.  */
 #define NDS32_SR_CPU_VER               __NDS32_REG_CPU_VER__
 #define NDS32_SR_ICM_CFG               __NDS32_REG_ICM_CFG__
@@ -502,6 +574,9 @@ enum nds32_dpref
 #define __nds32__setend_little() \
   (__builtin_nds32_setend_little())
 #define __nds32__setgie_en() \
+  (__builtin_nds32_setgie_en())
+#define __nds32__setgie_dis() \
+  (__builtin_nds32_setgie_dis())
 
 #define __nds32__jr_itoff(a) \
   (__builtin_nds32_jr_itoff ((a)))
@@ -615,5 +690,34 @@ enum nds32_dpref
   (__builtin_nds32_tlbop_inv ((a)))
 #define __nds32__tlbop_flua() \
 (__builtin_nds32_tlbop_flua())
+
+#define __nds32__gie_dis() \
+  (__builtin_nds32_gie_dis())
+#define __nds32__gie_en() \
+  (__builtin_nds32_gie_en())
+#define __nds32__enable_int(a) \
+  (__builtin_nds32_enable_int ((a)))
+#define __nds32__disable_int(a) \
+  (__builtin_nds32_disable_int ((a)))
+#define __nds32__set_pending_swint() \
+  (__builtin_nds32_set_pending_swint())
+#define __nds32__clr_pending_swint() \
+  (__builtin_nds32_clr_pending_swint())
+#define __nds32__clr_pending_hwint(a) \
+  (__builtin_nds32_clr_pending_hwint(a))
+#define __nds32__get_all_pending_int() \
+  (__builtin_nds32_get_all_pending_int())
+#define __nds32__get_pending_int(a) \
+  (__builtin_nds32_get_pending_int ((a)))
+#define __nds32__set_int_priority(a, b) \
+  (__builtin_nds32_set_int_priority ((a), (b)))
+#define __nds32__get_int_priority(a) \
+  (__builtin_nds32_get_int_priority ((a)))
+#define __nds32__set_trig_type_level(a) \
+  (__builtin_nds32_set_trig_level(a))
+#define __nds32__set_trig_type_edge(a) \
+  (__builtin_nds32_set_trig_edge(a))
+#define __nds32__get_trig_type(a) \
+  (__builtin_nds32_get_trig_type ((a)))
 
 #endif /* nds32_intrinsic.h */

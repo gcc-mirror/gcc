@@ -1,3 +1,15 @@
+2018-04-08  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config.gcc (nds32le-*-*, nds32be-*-*): Add nds32/nds32_intrinsic.h
+	into tm_file.
+	* config/nds32/constants.md (unspec_volatile_element): Add enum values
+	for interrupt control.
+	* config/nds32/nds32-intrinsic.c: Implementation of intrinsic
+	functions for interrupt control.
+	* config/nds32/nds32-intrinsic.md: Likewise.
+	* config/nds32/nds32_intrinsic.h: Likewise.
+	* config/nds32/nds32.h (nds32_builtins): Likewise.
+
 2018-04-08  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_init_machine_status,

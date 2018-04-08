@@ -467,6 +467,37 @@ nds32_expand_scw_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
+/* Expand set int priority builtins. */
+static rtx
+nds32_expand_priority_builtin (enum insn_code icode, tree exp, rtx target,
+			       const char *name)
+{
+  rtx pat;
+  rtx op0 = nds32_read_argument (exp, 0);
+  rtx op1 = nds32_read_argument (exp, 1);
+
+  /* set_int_priority intrinsic function that two arguments are immediate,
+     so check whether auguments are immedite.  */
+
+  if (!nds32_check_constant_argument (icode, 0, op0, name))
+    return NULL_RTX;
+
+  if (!nds32_check_constant_argument (icode, 1, op1, name))
+    return NULL_RTX;
+
+  op0 = nds32_legitimize_argument (icode, 0, op0);
+  op1 = nds32_legitimize_argument (icode, 1, op1);
+
+  /* Emit and return the new instruction. */
+  pat = GEN_FCN (icode) (op0, op1);
+
+  if (! pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
 struct builtin_description
 {
   const enum insn_code icode;
@@ -490,6 +521,8 @@ static struct builtin_description bdesc_noarg[] =
   NDS32_BUILTIN(unspec_fmfcsr, "fmfcsr", FMFCSR)
   NDS32_BUILTIN(unspec_get_current_sp, "get_current_sp", GET_CURRENT_SP)
   NDS32_BUILTIN(unspec_return_address, "return_address", RETURN_ADDRESS)
+  NDS32_BUILTIN(unspec_get_all_pending_int, "get_all_pending_int",
+		GET_ALL_PENDING_INT)
 };
 
 /* Intrinsics that take just one argument.  */
@@ -526,9 +559,20 @@ static struct builtin_description bdesc_1argimm[] =
 {
   NDS32_BUILTIN(unspec_volatile_mfsr, "mfsr", MFSR)
   NDS32_BUILTIN(unspec_volatile_mfusr, "mfsr", MFUSR)
+  NDS32_BUILTIN(unspec_get_pending_int, "get_pending_int", GET_PENDING_INT)
+  NDS32_BUILTIN(unspec_get_int_priority, "get_int_priority", GET_INT_PRIORITY)
   NDS32_NO_TARGET_BUILTIN(unspec_trap, "trap", TRAP)
   NDS32_NO_TARGET_BUILTIN(unspec_break, "break", BREAK)
   NDS32_NO_TARGET_BUILTIN(unspec_syscall, "syscall", SYSCALL)
+  NDS32_NO_TARGET_BUILTIN(unspec_enable_int, "enable_int", ENABLE_INT)
+  NDS32_NO_TARGET_BUILTIN(unspec_disable_int, "disable_int", DISABLE_INT)
+  NDS32_NO_TARGET_BUILTIN(unspec_clr_pending_hwint, "clr_pending_hwint",
+			  CLR_PENDING_HWINT)
+  NDS32_NO_TARGET_BUILTIN(unspec_set_trig_level, "set_trig_level",
+			  SET_TRIG_LEVEL)
+  NDS32_NO_TARGET_BUILTIN(unspec_set_trig_edge, "set_trig_edge",
+			  SET_TRIG_EDGE)
+  NDS32_BUILTIN(unspec_get_trig_type, "get_trig_type", GET_TRIG_TYPE)
 };
 
 /* Intrinsics that take two arguments.  */
@@ -739,6 +783,20 @@ nds32_expand_builtin_impl (tree exp,
       emit_insn (gen_unspec_volatile_setgie_dis ());
       emit_insn (gen_unspec_dsb ());
       return target;
+    case NDS32_BUILTIN_GIE_DIS:
+      emit_insn (gen_unspec_volatile_setgie_dis ());
+      emit_insn (gen_unspec_dsb ());
+      return target;
+    case NDS32_BUILTIN_GIE_EN:
+      emit_insn (gen_unspec_volatile_setgie_en ());
+      emit_insn (gen_unspec_dsb ());
+      return target;
+    case NDS32_BUILTIN_SET_PENDING_SWINT:
+      emit_insn (gen_unspec_set_pending_swint ());
+      return target;
+    case NDS32_BUILTIN_CLR_PENDING_SWINT:
+      emit_insn (gen_unspec_clr_pending_swint ());
+      return target;
     case NDS32_BUILTIN_CCTL_L1D_INVALALL:
       emit_insn (gen_cctl_l1d_invalall());
       return target;
@@ -775,6 +833,10 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_SCW:
       return nds32_expand_scw_builtin (CODE_FOR_unspec_volatile_scw,
 				       exp, target);
+    case NDS32_BUILTIN_SET_INT_PRIORITY:
+      return nds32_expand_priority_builtin (CODE_FOR_unspec_set_int_priority,
+					    exp, target,
+					    "__nds32__set_int_priority");
       return target;
     default:
       break;
@@ -911,6 +973,21 @@ nds32_init_builtins_impl (void)
   /* Interrupt.  */
   ADD_NDS32_BUILTIN0 ("setgie_en", void, SETGIE_EN);
   ADD_NDS32_BUILTIN0 ("setgie_dis", void, SETGIE_DIS);
+  ADD_NDS32_BUILTIN0 ("gie_en", void, GIE_EN);
+  ADD_NDS32_BUILTIN0 ("gie_dis", void, GIE_DIS);
+  ADD_NDS32_BUILTIN1 ("enable_int", void, integer, ENABLE_INT);
+  ADD_NDS32_BUILTIN1 ("disable_int", void, integer, DISABLE_INT);
+  ADD_NDS32_BUILTIN0 ("set_pending_swint", void, SET_PENDING_SWINT);
+  ADD_NDS32_BUILTIN0 ("clr_pending_swint", void, CLR_PENDING_SWINT);
+  ADD_NDS32_BUILTIN0 ("get_all_pending_int", unsigned, GET_ALL_PENDING_INT);
+  ADD_NDS32_BUILTIN1 ("get_pending_int", unsigned, integer, GET_PENDING_INT);
+  ADD_NDS32_BUILTIN1 ("get_int_priority", unsigned, integer, GET_INT_PRIORITY);
+  ADD_NDS32_BUILTIN2 ("set_int_priority", void, integer, integer,
+		      SET_INT_PRIORITY);
+  ADD_NDS32_BUILTIN1 ("clr_pending_hwint", void, integer, CLR_PENDING_HWINT);
+  ADD_NDS32_BUILTIN1 ("set_trig_level", void, integer, SET_TRIG_LEVEL);
+  ADD_NDS32_BUILTIN1 ("set_trig_edge", void, integer, SET_TRIG_EDGE);
+  ADD_NDS32_BUILTIN1 ("get_trig_type", unsigned, integer, GET_TRIG_TYPE);
 
   /* Load and Store  */
   ADD_NDS32_BUILTIN1 ("llw", unsigned, ptr_uint, LLW);
