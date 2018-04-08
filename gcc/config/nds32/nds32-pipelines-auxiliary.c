@@ -446,6 +446,42 @@ n8_consumed_by_ex_p (rtx_insn *consumer, rtx def_reg)
 }
 
 /* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at AG (II).  */
+bool
+e8_consumed_by_addr_in_p (rtx_insn *consumer, rtx def_reg)
+{
+  return n8_consumed_by_addr_in_p (consumer, def_reg);
+}
+
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at EX.  */
+bool
+e8_consumed_by_ex_p (rtx_insn *consumer, rtx def_reg)
+{
+  rtx use_rtx;
+
+  switch (get_attr_type (consumer))
+    {
+    case TYPE_ALU:
+    case TYPE_STORE:
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_MUL:
+    case TYPE_MAC:
+    case TYPE_DIV:
+    case TYPE_BRANCH:
+    case TYPE_STORE_MULTIPLE:
+      return n8_consumed_by_ex_p (consumer, def_reg);
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return reg_overlap_p (def_reg, use_rtx);
+}
+
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
    requiring input operand at EX.  */
 bool
 n9_2r1w_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
@@ -760,6 +796,108 @@ nds32_n8_last_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
   gcc_assert (REG_P (last_def_reg) || GET_CODE (last_def_reg) == SUBREG);
 
   return n8_consumed_by_ex_p (consumer, last_def_reg);
+}
+
+/* Guard functions for E8 cores.  */
+
+bool
+nds32_e8_load_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg = SET_DEST (PATTERN (producer));
+
+  return e8_consumed_by_addr_in_p (consumer, def_reg);
+}
+
+bool
+nds32_e8_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg = SET_DEST (PATTERN (producer));
+
+  return e8_consumed_by_ex_p (consumer, def_reg);
+}
+
+bool
+nds32_e8_ex_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg;
+
+  switch (get_attr_type (producer))
+    {
+    case TYPE_ALU:
+      /* No data hazards if AGEN's input is produced by MOVI or SETHI.  */
+      if (GET_CODE (PATTERN (producer)) == SET)
+	{
+	  rtx dest = SET_DEST (PATTERN (producer));
+	  rtx src = SET_SRC (PATTERN (producer));
+
+	  if ((REG_P (dest) || GET_CODE (dest) == SUBREG)
+	      && (GET_CODE (src) == CONST_INT || GET_CODE (src) == HIGH))
+	    return false;
+	}
+
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    case TYPE_MUL:
+    case TYPE_MAC:
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    case TYPE_DIV:
+      if (INSN_CODE (producer) == CODE_FOR_divmodsi4
+	  || INSN_CODE (producer) == CODE_FOR_udivmodsi4)
+	{
+	  rtx def_reg1 = SET_DEST (parallel_element (producer, 0));
+	  rtx def_reg2 = SET_DEST (parallel_element (producer, 1));
+
+	  return (e8_consumed_by_addr_in_p (consumer, def_reg1)
+		  || e8_consumed_by_addr_in_p (consumer, def_reg2));
+	}
+
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    case TYPE_LOAD:
+    case TYPE_STORE:
+    case TYPE_LOAD_MULTIPLE:
+    case TYPE_STORE_MULTIPLE:
+      if (!post_update_insn_p (producer))
+	return false;
+
+      def_reg = extract_base_reg (producer);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return e8_consumed_by_addr_in_p (consumer, def_reg);
+}
+
+bool
+nds32_e8_last_load_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  if (last_def_reg == NULL_RTX)
+    return false;
+
+  gcc_assert (REG_P (last_def_reg) || GET_CODE (last_def_reg) == SUBREG);
+
+  return e8_consumed_by_addr_in_p (consumer, last_def_reg);
+}
+
+bool
+nds32_e8_last_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  if (last_def_reg == NULL_RTX)
+    return false;
+
+  gcc_assert (REG_P (last_def_reg) || GET_CODE (last_def_reg) == SUBREG);
+
+  return e8_consumed_by_ex_p (consumer, last_def_reg);
 }
 
 /* Guard functions for N9 cores.  */
