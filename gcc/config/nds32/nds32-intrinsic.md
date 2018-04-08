@@ -340,6 +340,47 @@
   [(set_attr "type" "mmu")]
 )
 
+;;PREFETCH
+
+(define_insn "prefetch_qw"
+  [(unspec_volatile:QI [(match_operand:SI 0 "register_operand" "r")
+			(match_operand:SI 1 "nonmemory_operand" "r")
+			(match_operand:SI 2 "immediate_operand" "i")] UNSPEC_VOLATILE_DPREF_QW)]
+  ""
+  "dpref\t%Z2, [%0 + %1]"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "prefetch_hw"
+  [(unspec_volatile:HI [(match_operand:SI 0 "register_operand" "r")
+			(match_operand:SI 1 "nonmemory_operand" "r")
+			(match_operand:SI 2 "immediate_operand" "i")] UNSPEC_VOLATILE_DPREF_HW)]
+  ""
+  "dpref\t%Z2, [%0 + (%1<<1)]"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "prefetch_w"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "    r, r")
+			(match_operand:SI 1 "nonmemory_operand" "Is15, r")
+			(match_operand:SI 2 "immediate_operand" "   i, i")] UNSPEC_VOLATILE_DPREF_W)]
+  ""
+  "@
+  dprefi.w\t%Z2, [%0 + %1]
+  dpref\t%Z2, [%0 + (%1<<2)]"
+  [(set_attr "type" "misc")]
+)
+
+(define_insn "prefetch_dw"
+  [(unspec_volatile:DI [(match_operand:SI 0 "register_operand"  "   r, r")
+			(match_operand:SI 1 "nonmemory_operand" "Is15, r")
+			(match_operand:SI 2 "immediate_operand" "   i, i")] UNSPEC_VOLATILE_DPREF_DW)]
+  ""
+  "@
+  dprefi.d\t%Z2, [%0 + %1]
+  dpref\t%Z2, [%0 + (%1<<3)]"
+  [(set_attr "type" "misc")]
+)
 
 ;; Performance Extension
 
@@ -734,6 +775,66 @@
   [(set_attr "type"    "alu")
    (set_attr "length"    "4")]
 )
+
+;; TLBOP Intrinsic
+
+(define_insn "unspec_tlbop_trd"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_TLBOP_TRD)]
+  ""
+  "tlbop\t%0, TRD"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "unspec_tlbop_twr"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_TLBOP_TWR)]
+  ""
+  "tlbop\t%0, TWR"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "unspec_tlbop_rwr"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_TLBOP_RWR)]
+  ""
+  "tlbop\t%0, RWR"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "unspec_tlbop_rwlk"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_TLBOP_RWLK)]
+  ""
+  "tlbop\t%0, RWLK"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "unspec_tlbop_unlk"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_TLBOP_UNLK)]
+  ""
+  "tlbop\t%0, UNLK"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "unspec_tlbop_pb"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "r")] UNSPEC_VOLATILE_TLBOP_PB))]
+  ""
+  "tlbop\t%0, %1, PB"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "unspec_tlbop_inv"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_TLBOP_INV)]
+  ""
+  "tlbop\t%0, INV"
+  [(set_attr "type" "mmu")]
+)
+
+(define_insn "unspec_tlbop_flua"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_TLBOP_FLUA)]
+  ""
+  "tlbop\tFLUA"
+  [(set_attr "type" "mmu")]
+)
+
 ;;Unaligned Load/Store
 
 (define_expand "unaligned_load_hw"

@@ -266,6 +266,16 @@ static const char * const nds32_cctl_names[] =
   "L1I_IX_WWD"
 };
 
+static const char * const nds32_dpref_names[] =
+{
+  "SRD",
+  "MRD",
+  "SWR",
+  "MWR",
+  "PTE",
+  "CLWR"
+};
+
 /* Defining register allocation order for performance.
    We want to allocate callee-saved registers after others.
    It may be used by nds32_adjust_reg_alloc_order().  */
@@ -3000,6 +3010,10 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       if (op_value < 0 || op_value > 4)
 	error ("CCTL intrinsic function subtype out of range!");
       fprintf (stream, "%s", nds32_cctl_names[op_value + 16]);
+      return;
+
+    case 'Z': /* dpref  */
+      fprintf (stream, "%s", nds32_dpref_names[op_value]);
       return;
 
     default :
