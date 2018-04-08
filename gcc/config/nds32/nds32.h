@@ -502,6 +502,11 @@ enum nds32_builtins
    || nds32_arch_option == ARCH_V3S)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
 
+#define TARGET_PIPELINE_N9 \
+  (nds32_cpu_option == CPU_N9)
+#define TARGET_PIPELINE_SIMPLE \
+  (nds32_cpu_option == CPU_SIMPLE)
+
 #define TARGET_CMODEL_SMALL \
    (nds32_cmodel_option == CMODEL_SMALL)
 #define TARGET_CMODEL_MEDIUM \
@@ -515,6 +520,8 @@ enum nds32_builtins
    (nds32_cmodel_option == CMODEL_SMALL\
     || nds32_cmodel_option == CMODEL_MEDIUM)
 
+#define TARGET_MUL_SLOW \
+  (nds32_mul_config == MUL_TYPE_SLOW)
 
 /* Run-time Target Specification.  */
 #define TARGET_SOFT_FLOAT (nds32_abi == NDS32_ABI_V2)
@@ -553,6 +560,7 @@ enum nds32_builtins
 	   " %{!mno-ext-fpu-dp:%{!mext-fpu-dp:-mext-fpu-dp}}}" \
 	   " %{march=v3s:%{!mfloat-abi=*:-mfloat-abi=hard}" \
 	   " %{!mno-ext-fpu-sp:%{!mext-fpu-sp:-mext-fpu-sp}}}" }, \
+  {"cpu",  "%{!mcpu=*:-mcpu=%(VALUE)}" },   \
   {"float", "%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}" }
 
 #define CC1_SPEC \

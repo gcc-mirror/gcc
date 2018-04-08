@@ -53,6 +53,15 @@
 (include "nds32-peephole2.md")
 
 
+;; ------------------------------------------------------------------------
+
+;; CPU pipeline model.
+(define_attr "pipeline_model" "n9,simple"
+  (const
+    (cond [(match_test "nds32_cpu_option == CPU_N9")  (const_string "n9")
+	   (match_test "nds32_cpu_option == CPU_SIMPLE") (const_string "simple")]
+	  (const_string "n9"))))
+
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
   "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,pbsad,pbsada,mul,mac,div,branch,mmu,misc,\
