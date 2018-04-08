@@ -164,6 +164,445 @@
   [(set_attr "type" "misc")]
 )
 
+(define_expand "unspec_enable_int"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "")] UNSPEC_VOLATILE_ENABLE_INT)]
+  ""
+{
+  rtx system_reg;
+  rtx temp_reg = gen_reg_rtx (SImode);
+
+  /* Set system register form nds32_intrinsic_register_names[].  */
+  if ((INTVAL (operands[0]) >= NDS32_INT_H16)
+      && (INTVAL (operands[0]) <= NDS32_INT_H31))
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_MASK2__);
+      operands[0] = GEN_INT (1 << (INTVAL (operands[0])));
+    }
+  else if ((INTVAL (operands[0]) >= NDS32_INT_H32)
+	   && (INTVAL (operands[0]) <= NDS32_INT_H63))
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_MASK3__);
+      operands[0] = GEN_INT (1 << (INTVAL (operands[0]) - 32));
+    }
+  else
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_MASK__);
+
+      if (INTVAL (operands[0]) == NDS32_INT_SWI)
+        operands[0] = GEN_INT (1 << 16);
+      else if ((INTVAL (operands[0]) >= NDS32_INT_ALZ)
+	       && (INTVAL (operands[0]) <= NDS32_INT_DSSIM))
+	operands[0] = GEN_INT (1 << (INTVAL (operands[0]) - 4));
+      else
+	operands[0] = GEN_INT (1 << (INTVAL (operands[0])));
+    }
+
+  emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+  emit_insn (gen_iorsi3 (temp_reg, temp_reg, operands[0]));
+  emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+  emit_insn (gen_unspec_dsb ());
+  DONE;
+})
+
+(define_expand "unspec_disable_int"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "")] UNSPEC_VOLATILE_DISABLE_INT)]
+  ""
+{
+  rtx system_reg;
+  rtx temp_reg = gen_reg_rtx (SImode);
+
+  /* Set system register form nds32_intrinsic_register_names[].  */
+  if ((INTVAL (operands[0]) >= NDS32_INT_H16)
+      && (INTVAL (operands[0]) <= NDS32_INT_H31))
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_MASK2__);
+      operands[0] = GEN_INT (~(1 << INTVAL (operands[0])));
+    }
+  else if ((INTVAL (operands[0]) >= NDS32_INT_H32)
+	   && (INTVAL (operands[0]) <= NDS32_INT_H63))
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_MASK3__);
+      operands[0] = GEN_INT (~(1 << (INTVAL (operands[0]) - 32)));
+    }
+  else
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_MASK__);
+
+      if (INTVAL (operands[0]) == NDS32_INT_SWI)
+        operands[0] = GEN_INT (~(1 << 16));
+      else if ((INTVAL (operands[0]) >= NDS32_INT_ALZ)
+	       && (INTVAL (operands[0]) <= NDS32_INT_DSSIM))
+	operands[0] = GEN_INT (~(1 << (INTVAL (operands[0]) - 4)));
+      else
+	operands[0] = GEN_INT (~(1 << INTVAL (operands[0])));
+    }
+
+  emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+  emit_insn (gen_andsi3 (temp_reg, temp_reg, operands[0]));
+  emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+  emit_insn (gen_unspec_dsb ());
+  DONE;
+})
+
+(define_expand "unspec_set_pending_swint"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_SET_PENDING_SWINT)]
+  ""
+{
+  /* Get $INT_PEND system register form nds32_intrinsic_register_names[]  */
+  rtx system_reg =  GEN_INT (__NDS32_REG_INT_PEND__);
+  rtx temp_reg = gen_reg_rtx (SImode);
+
+  emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+  emit_insn (gen_iorsi3 (temp_reg, temp_reg, GEN_INT (65536)));
+  emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+  emit_insn (gen_unspec_dsb ());
+  DONE;
+})
+
+(define_expand "unspec_clr_pending_swint"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_CLR_PENDING_SWINT)]
+  ""
+{
+  /* Get $INT_PEND system register form nds32_intrinsic_register_names[]  */
+  rtx system_reg =  GEN_INT (__NDS32_REG_INT_PEND__);
+  rtx temp_reg = gen_reg_rtx (SImode);
+
+  emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+  emit_insn (gen_andsi3 (temp_reg, temp_reg, GEN_INT (~(1 << 16))));
+  emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+  emit_insn (gen_unspec_dsb ());
+  DONE;
+})
+
+(define_expand "unspec_clr_pending_hwint"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "")] UNSPEC_VOLATILE_CLR_PENDING_HWINT)]
+  ""
+{
+  rtx system_reg = NULL_RTX;
+  rtx temp_reg = gen_reg_rtx (SImode);
+  rtx clr_hwint;
+  unsigned offset = 0;
+
+  /* Set system register form nds32_intrinsic_register_names[].  */
+  if ((INTVAL (operands[0]) >= NDS32_INT_H0)
+      && (INTVAL (operands[0]) <= NDS32_INT_H15))
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_PEND__);
+    }
+  else if ((INTVAL (operands[0]) >= NDS32_INT_H16)
+	   && (INTVAL (operands[0]) <= NDS32_INT_H31))
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_PEND2__);
+    }
+  else if ((INTVAL (operands[0]) >= NDS32_INT_H32)
+	   && (INTVAL (operands[0]) <= NDS32_INT_H63))
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_PEND3__);
+      offset = 32;
+    }
+  else
+    error ("__nds32__clr_pending_hwint not support NDS32_INT_SWI,"
+	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+
+  /* $INT_PEND type is write one clear.  */
+  clr_hwint = GEN_INT (1 << (INTVAL (operands[0]) - offset));
+
+  if (system_reg != NULL_RTX)
+    {
+      emit_move_insn (temp_reg, clr_hwint);
+      emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+      emit_insn (gen_unspec_dsb ());
+    }
+  DONE;
+})
+
+(define_expand "unspec_get_all_pending_int"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_GET_ALL_PENDING_INT))]
+  ""
+{
+  rtx system_reg = GEN_INT (__NDS32_REG_INT_PEND__);
+  emit_insn (gen_unspec_volatile_mfsr (operands[0], system_reg));
+  emit_insn (gen_unspec_dsb ());
+  DONE;
+})
+
+(define_expand "unspec_get_pending_int"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "")] UNSPEC_VOLATILE_GET_PENDING_INT))]
+  ""
+{
+  rtx system_reg = NULL_RTX;
+
+  /* Set system register form nds32_intrinsic_register_names[].  */
+  if ((INTVAL (operands[1]) >= NDS32_INT_H0)
+      && (INTVAL (operands[1]) <= NDS32_INT_H15))
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_PEND__);
+      operands[2] = GEN_INT (31 - INTVAL (operands[1]));
+    }
+  else if (INTVAL (operands[1]) == NDS32_INT_SWI)
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_PEND__);
+      operands[2] = GEN_INT (15);
+    }
+  else if ((INTVAL (operands[1]) >= NDS32_INT_H16)
+	   && (INTVAL (operands[1]) <= NDS32_INT_H31))
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_PEND2__);
+      operands[2] = GEN_INT (31 - INTVAL (operands[1]));
+    }
+  else if ((INTVAL (operands[1]) >= NDS32_INT_H32)
+	   && (INTVAL (operands[1]) <= NDS32_INT_H63))
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_PEND3__);
+      operands[2] = GEN_INT (31 - (INTVAL (operands[1]) - 32));
+    }
+  else
+    error ("get_pending_int not support NDS32_INT_ALZ,"
+	   " NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+
+  /* mfsr op0, sytem_reg  */
+  if (system_reg != NULL_RTX)
+    {
+      emit_insn (gen_unspec_volatile_mfsr (operands[0], system_reg));
+      emit_insn (gen_ashlsi3 (operands[0], operands[0], operands[2]));
+      emit_insn (gen_lshrsi3 (operands[0], operands[0], GEN_INT (31)));
+      emit_insn (gen_unspec_dsb ());
+    }
+  DONE;
+})
+
+(define_expand "unspec_set_int_priority"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "")
+			(match_operand:SI 1 "immediate_operand" "")] UNSPEC_VOLATILE_SET_INT_PRIORITY)]
+  ""
+{
+  rtx system_reg = NULL_RTX;
+  rtx priority = NULL_RTX;
+  rtx mask = NULL_RTX;
+  rtx temp_reg = gen_reg_rtx (SImode);
+  rtx mask_reg = gen_reg_rtx (SImode);
+  rtx set_reg = gen_reg_rtx (SImode);
+  unsigned offset = 0;
+
+  /* Get system register form nds32_intrinsic_register_names[].  */
+  if (INTVAL (operands[0]) <= NDS32_INT_H15)
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_PRI__);
+      offset = 0;
+    }
+  else if (INTVAL (operands[0]) >= NDS32_INT_H16
+	   && INTVAL (operands[0]) <= NDS32_INT_H31)
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_PRI2__);
+      /* The $INT_PRI2 first bit correspond to H16, so need
+	 subtract 16.  */
+      offset = 16;
+    }
+  else if (INTVAL (operands[0]) >= NDS32_INT_H32
+	   && INTVAL (operands[0]) <= NDS32_INT_H47)
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_PRI3__);
+      /* The $INT_PRI3 first bit correspond to H32, so need
+	 subtract 32.  */
+      offset = 32;
+    }
+  else if (INTVAL (operands[0]) >= NDS32_INT_H48
+	   && INTVAL (operands[0]) <= NDS32_INT_H63)
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_PRI4__);
+      /* The $INT_PRI3 first bit correspond to H48, so need
+	 subtract 48.  */
+      offset = 48;
+    }
+  else
+    error ("set_int_priority not support NDS32_INT_SWI,"
+	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+
+  mask = GEN_INT (~(3 << 2 * (INTVAL (operands[0]) - offset)));
+  priority = GEN_INT ((int) (INTVAL (operands[1])
+			     << ((INTVAL (operands[0]) - offset) * 2)));
+
+  if (system_reg != NULL_RTX)
+    {
+      emit_move_insn (mask_reg, mask);
+      emit_move_insn (set_reg, priority);
+      emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+      emit_insn (gen_andsi3 (temp_reg, temp_reg, mask_reg));
+      emit_insn (gen_iorsi3 (temp_reg, temp_reg, set_reg));
+      emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+      emit_insn (gen_unspec_dsb ());
+    }
+  DONE;
+})
+
+(define_expand "unspec_get_int_priority"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "")] UNSPEC_VOLATILE_GET_INT_PRIORITY))]
+  ""
+{
+  rtx system_reg = NULL_RTX;
+  rtx priority = NULL_RTX;
+  unsigned offset = 0;
+
+  /* Get system register form nds32_intrinsic_register_names[]  */
+  if (INTVAL (operands[1]) <= NDS32_INT_H15)
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_PRI__);
+      offset = 0;
+    }
+  else if (INTVAL (operands[1]) >= NDS32_INT_H16
+	   && INTVAL (operands[1]) <= NDS32_INT_H31)
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_PRI2__);
+      /* The $INT_PRI2 first bit correspond to H16, so need
+	 subtract 16.  */
+      offset = 16;
+    }
+  else if (INTVAL (operands[1]) >= NDS32_INT_H32
+	   && INTVAL (operands[1]) <= NDS32_INT_H47)
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_PRI3__);
+      /* The $INT_PRI3 first bit correspond to H32, so need
+	 subtract 32.  */
+      offset = 32;
+    }
+  else if (INTVAL (operands[1]) >= NDS32_INT_H48
+	   && INTVAL (operands[1]) <= NDS32_INT_H63)
+    {
+      system_reg =  GEN_INT (__NDS32_REG_INT_PRI4__);
+      /* The $INT_PRI4 first bit correspond to H48, so need
+	 subtract 48.  */
+      offset = 48;
+    }
+  else
+    error ("set_int_priority not support NDS32_INT_SWI,"
+	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+
+  priority = GEN_INT (31 - 2 * (INTVAL (operands[1]) - offset));
+
+  if (system_reg != NULL_RTX)
+    {
+      emit_insn (gen_unspec_volatile_mfsr (operands[0], system_reg));
+      emit_insn (gen_ashlsi3 (operands[0], operands[0], priority));
+      emit_insn (gen_lshrsi3 (operands[0], operands[0], GEN_INT (30)));
+      emit_insn (gen_unspec_dsb ());
+    }
+  DONE;
+})
+
+(define_expand "unspec_set_trig_level"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "")] UNSPEC_VOLATILE_SET_TRIG_LEVEL)]
+  ""
+{
+  rtx system_reg = NULL_RTX;
+  rtx temp_reg = gen_reg_rtx (SImode);
+  rtx set_level;
+  unsigned offset = 0;
+
+  if (INTVAL (operands[0]) >= NDS32_INT_H0
+      && INTVAL (operands[0]) <= NDS32_INT_H31)
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_TRIGGER__);
+      offset = 0;
+    }
+  else if (INTVAL (operands[0]) >= NDS32_INT_H32
+	   && INTVAL (operands[0]) <= NDS32_INT_H63)
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_TRIGGER2__);
+      offset = 32;
+    }
+  else
+    error ("__nds32__set_trig_type_level not support NDS32_INT_SWI,"
+	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+
+  if (system_reg != NULL_RTX)
+    {
+      /* TRIGGER register, 0 mean level triggered and 1 mean edge triggered. */
+      set_level = GEN_INT (~(1 << (INTVAL (operands[0]) - offset)));
+
+      emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+      emit_insn (gen_andsi3 (temp_reg, temp_reg, set_level));
+      emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+    }
+  DONE;
+})
+
+(define_expand "unspec_set_trig_edge"
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "")] UNSPEC_VOLATILE_SET_TRIG_EDGE)]
+  ""
+{
+  rtx system_reg = NULL_RTX;
+  rtx temp_reg = gen_reg_rtx (SImode);
+  rtx set_level;
+  unsigned offset = 0;
+
+  if (INTVAL (operands[0]) >= NDS32_INT_H0
+      && INTVAL (operands[0]) <= NDS32_INT_H31)
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_TRIGGER__);
+      offset = 0;
+    }
+  else if (INTVAL (operands[0]) >= NDS32_INT_H32
+	   && INTVAL (operands[0]) <= NDS32_INT_H63)
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_TRIGGER2__);
+      offset = 32;
+    }
+  else
+    error ("__nds32__set_trig_type_edge not support NDS32_INT_SWI,"
+	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+
+  if (system_reg != NULL_RTX)
+    {
+      /* TRIGGER register, 0 mean level triggered and 1 mean edge triggered. */
+      set_level = GEN_INT ((1 << (INTVAL (operands[0]) - offset)));
+
+      emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+      emit_insn (gen_iorsi3 (temp_reg, temp_reg, set_level));
+      emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+    }
+  DONE;
+})
+
+(define_expand "unspec_get_trig_type"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "")] UNSPEC_VOLATILE_GET_TRIG_TYPE))]
+  ""
+{
+  rtx system_reg = NULL_RTX;
+  rtx trig_type;
+  unsigned offset = 0;
+
+  if (INTVAL (operands[1]) >= NDS32_INT_H0
+      && INTVAL (operands[1]) <= NDS32_INT_H31)
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_TRIGGER__);
+      offset = 0;
+    }
+  else if (INTVAL (operands[1]) >= NDS32_INT_H32
+	   && INTVAL (operands[1]) <= NDS32_INT_H63)
+    {
+      system_reg = GEN_INT (__NDS32_REG_INT_TRIGGER2__);
+      offset = 32;
+    }
+  else
+    error ("__nds32__get_trig_type not support NDS32_INT_SWI,"
+	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+
+  if (system_reg != NULL_RTX)
+    {
+      trig_type = GEN_INT (31 - (INTVAL (operands[1]) - offset));
+
+      emit_insn (gen_unspec_volatile_mfsr (operands[0], system_reg));
+      emit_insn (gen_ashlsi3 (operands[0], operands[0], trig_type));
+      emit_insn (gen_lshrsi3 (operands[0], operands[0], GEN_INT (31)));
+      emit_insn (gen_unspec_dsb ());
+    }
+  DONE;
+})
+
 ;; ------------------------------------------------------------------------
 
 ;; Cache Synchronization Instructions

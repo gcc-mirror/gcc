@@ -2335,13 +2335,13 @@ msp430*-*-*)
 nds32le-*-*)
 	target_cpu_default="0"
 	tm_defines="${tm_defines}"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
 	tmake_file="nds32/t-nds32 nds32/t-mlibs"
 	;;
 nds32be-*-*)
 	target_cpu_default="0|MASK_BIG_ENDIAN"
 	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
 	tmake_file="nds32/t-nds32 nds32/t-mlibs"
 	;;
 nios2-*-*)
