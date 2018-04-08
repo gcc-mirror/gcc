@@ -107,6 +107,12 @@ extern bool nds32_n8_last_load_to_ii_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n8_last_load_two_to_ii_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n8_last_load_to_ex_p (rtx_insn *, rtx_insn *);
 
+extern bool nds32_e8_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_load_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_ex_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
 extern bool nds32_n9_2r1w_mm_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n9_3r2w_mm_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n9_last_load_to_ex_p (rtx_insn *, rtx_insn *);
