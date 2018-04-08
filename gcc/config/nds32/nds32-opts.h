@@ -38,6 +38,7 @@ enum nds32_arch_type
 enum nds32_cpu_type
 {
   CPU_N6,
+  CPU_N7,
   CPU_N8,
   CPU_E8,
   CPU_N9,

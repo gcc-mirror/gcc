@@ -99,6 +99,9 @@ extern bool nds32_valid_multiple_load_store_p (rtx, bool, bool);
 
 /* Auxiliary functions for guard function checking in pipelines.md.  */
 
+extern bool nds32_n7_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n7_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+
 extern bool nds32_n8_load_to_ii_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n8_load_bi_to_ii_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n8_load_to_ex_p (rtx_insn *, rtx_insn *);
