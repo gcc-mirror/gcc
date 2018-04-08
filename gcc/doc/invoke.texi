@@ -6829,12 +6829,12 @@ void foo (void)
 @{
   char a[] = "abcd1234";
   strcpy (a, a + 4);
-  &hellip;
+  @dots{}
 @}
 @end smallexample
 The @option{-Wrestrict} option detects some instances of simple overlap
-even without optimization but works best at @option{-O2}.  It is included
-in @option{-Wall}.
+even without optimization but works best at @option{-O2} and above.  It
+is included in @option{-Wall}.
 
 @item -Wnested-externs @r{(C and Objective-C only)}
 @opindex Wnested-externs
@@ -9043,9 +9043,9 @@ if (snprintf (buf, "%08x", i) >= sizeof buf)
 @end smallexample
 
 The @option{-fprintf-return-value} option relies on other optimizations
-and yields best results with @option{-O2}.  It works in tandem with the
-@option{-Wformat-overflow} and @option{-Wformat-truncation} options.
-The @option{-fprintf-return-value} option is enabled by default.
+and yields best results with @option{-O2} and above.  It works in tandem
+with the @option{-Wformat-overflow} and @option{-Wformat-truncation}
+options.  The @option{-fprintf-return-value} option is enabled by default.
 
 @item -fno-peephole
 @itemx -fno-peephole2
