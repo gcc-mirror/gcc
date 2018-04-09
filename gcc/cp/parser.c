@@ -12983,8 +12983,14 @@ cp_parser_simple_declaration (cp_parser* parser,
 	/* The next token should be either a `,' or a `;'.  */
 	cp_token *token = cp_lexer_peek_token (parser->lexer);
 	/* If it's a `;', we are done.  */
-	if (token->type == CPP_SEMICOLON || maybe_range_for_decl)
+	if (token->type == CPP_SEMICOLON)
 	  goto finish;
+	else if (maybe_range_for_decl)
+	  {
+	    if (*maybe_range_for_decl == NULL_TREE)
+	      *maybe_range_for_decl = error_mark_node;
+	    goto finish;
+	  }
 	/* Anything else is an error.  */
 	else
 	  {

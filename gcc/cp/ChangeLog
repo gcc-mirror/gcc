@@ -1,3 +1,10 @@
+2018-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85194
+	* parser.c (cp_parser_simple_declaration): For structured bindings,
+	if *maybe_range_for_decl is NULL after parsing it, set it to
+	error_mark_node.
+
 2018-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85256 - ICE capturing pointer to VLA.
