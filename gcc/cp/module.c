@@ -2182,7 +2182,7 @@ struct GTY(()) module_state {
   ~module_state ();
 
  public:
-  void release (bool = true);
+  void release (bool at_eof = true);
 
  public:
   /* Whether this module is currently occupied.  */
@@ -5926,9 +5926,9 @@ module_state::fini ()
    completed parsing).  */
 
 void
-module_state::release (bool all)
+module_state::release (bool at_eof)
 {
-  if (all)
+  if (at_eof)
     {
       imports = NULL;
       exports = NULL;
@@ -5937,15 +5937,13 @@ module_state::release (bool all)
   XDELETEVEC (srcname);
   srcname = NULL;
 
-  if (remap)
+  vec_free (remap);
+  remap = NULL;
+  if (from)
     {
-      vec_free (remap);
-      if (from)
-	{
-	  from->end ();
-	  delete from;
-	  from = NULL;
-	}
+      from->end ();
+      delete from;
+      from = NULL;
     }
 }
 
@@ -7459,6 +7457,9 @@ module_state::write (elf_out *to)
   dump () && dump ("Wrote %u sections", to->get_num_sections ());
 }
 
+/* Read a BMI from STREAM.  E is errno from its fopen.  Reading will
+   be lazy, if this is an import and flag_module_lazy is in effect.  */
+
 void
 module_state::read (FILE *stream, int e, unsigned *crc_ptr)
 {
@@ -7516,6 +7517,7 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
       unsigned hwm = range.second;
       for (unsigned ix = range.first; ix != hwm; ix++)
 	{
+	  loading = ix;
 	  if (!read_cluster (ix))
 	    break;
 	  lazy--;
@@ -7525,11 +7527,16 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
   return;
 }
 
+/* After a reading operation, make sure things are still ok.  If not,
+   emit an error and clean up.  In order to get some kind of context
+   information, OUTERMOST is true, if this is the outermost cause of a
+   read happening (eiher an import, or a lazy binding found during
+   name-lookup).  In the latter case NS and ID provide the binding.  */
+
 bool
 module_state::check_read (bool outermost, tree ns, tree id)
 {
   bool done = loading == ~0u && (from->has_error () || !lazy);
-  // FIXME freeup remap too?
   if (done)
     from->end ();
 
@@ -7549,10 +7556,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
     }
 
   if (done)
-    {
-      delete from;
-      from = NULL;
-    }
+    release (false);
 
   if (failed && outermost)
     fatal_error (loc, "declining opportunity to proceed into weeds");

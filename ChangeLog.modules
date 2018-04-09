@@ -1,6 +1,13 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::release): Simplify.
+	(module_state::check_read): Release if done.
+	gcc/testsuite/
+	* g++.dg/modules/import-2.C: Expect no bmi.
+	* g++.dg/modules/modules.exp (dg-module-bmi): Always delete the bmi.
+
+	gcc/cp/
 	* module.c (module_state::read): Allocate elf_in here.
 	(module_state::do_import): Adjust.
 	gcc/testsuite/

@@ -67,10 +67,8 @@ proc dg-module-bmi { args } {
 
     set spec [lindex $args 1]
     set decode [decode_mod_spec $spec]
-    if { ! [lindex $decode 0] } {
-	# delete file, only if we expect to create it
-	file_on_host delete [lindex $decode 1]
-    }
+    # delete file, so we don't get confused by a stale one.
+    file_on_host delete [lindex $decode 1]
 
     set res [list $spec]
     if { [llength $args] > 2 } {
