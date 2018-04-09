@@ -1,5 +1,12 @@
 2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/83064
+	* gfortran.dg/do_concurrent_5.f90: New test.
+	* gfortran.dg/vect/vect-do-concurrent-1.f90: Adjust dg-bogus
+	message.
+
+2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/51260
 	* gfortran.dg/parameter_array_element_3.f90: New test.
 
