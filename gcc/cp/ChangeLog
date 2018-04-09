@@ -1,3 +1,9 @@
+2018-04-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85227
+	* decl.c (cp_finish_decomp): In a template, if the type is incomplete
+	issue a pedwarn and defer trying to do bindings.
+
 2018-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85279 - dump_expr doesn't understand decltype.
