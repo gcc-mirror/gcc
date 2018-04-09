@@ -394,19 +394,6 @@ try_forward_edges (int mode, basic_block b)
   edge_iterator ei;
   edge e, *threaded_edges = NULL;
 
-  /* If we are partitioning hot/cold basic blocks, we don't want to
-     mess up unconditional or indirect jumps that cross between hot
-     and cold sections.
-
-     Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really
-     must be left untouched (they are required to make it safely across
-     partition boundaries).  See the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
-
-  if (JUMP_P (BB_END (b)) && CROSSING_JUMP_P (BB_END (b)))
-    return false;
-
   for (ei = ei_start (b->succs); (e = ei_safe_edge (ei)); )
     {
       basic_block target, first;
@@ -415,6 +402,7 @@ try_forward_edges (int mode, basic_block b)
       bool threaded = false;
       int nthreaded_edges = 0;
       bool may_thread = first_pass || (b->flags & BB_MODIFIED) != 0;
+      bool new_target_threaded = false;
 
       /* Skip complex edges because we don't know how to update them.
 
@@ -431,29 +419,12 @@ try_forward_edges (int mode, basic_block b)
       counter = NUM_FIXED_BLOCKS;
       goto_locus = e->goto_locus;
 
-      /* If we are partitioning hot/cold basic_blocks, we don't want to mess
-	 up jumps that cross between hot/cold sections.
-
-	 Basic block partitioning may result in some jumps that appear
-	 to be optimizable (or blocks that appear to be mergeable), but which
-	 really must be left untouched (they are required to make it safely
-	 across partition boundaries).  See the comments at the top of
-	 bb-reorder.c:partition_hot_cold_basic_blocks for complete
-	 details.  */
-
-      if (first != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && JUMP_P (BB_END (first))
-	  && CROSSING_JUMP_P (BB_END (first)))
-	return changed;
-
       while (counter < n_basic_blocks_for_fn (cfun))
 	{
 	  basic_block new_target = NULL;
-	  bool new_target_threaded = false;
 	  may_thread |= (target->flags & BB_MODIFIED) != 0;
 
 	  if (FORWARDER_BLOCK_P (target)
-	      && !(single_succ_edge (target)->flags & EDGE_CROSSING)
 	      && single_succ (target) != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      /* Bypass trivial infinite loops.  */
@@ -543,8 +514,14 @@ try_forward_edges (int mode, basic_block b)
 	    break;
 
 	  counter++;
-	  target = new_target;
-	  threaded |= new_target_threaded;
+	  /* Do not turn non-crossing jump to crossing.  Depending on target
+	     it may require different instruction pattern.  */
+	  if ((e->flags & EDGE_CROSSING)
+	      || BB_PARTITION (first) == BB_PARTITION (new_target))
+	    {
+	      target = new_target;
+	      threaded |= new_target_threaded;
+	    }
 	}
 
       if (counter >= n_basic_blocks_for_fn (cfun))
