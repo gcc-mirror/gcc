@@ -3315,7 +3315,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		"-std=c++11 or -std=gnu++11");
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
 	inform (location, "%<concept%> only available with -fconcepts");
-      else if (!flag_modules && (id == ridpointers[(int)RID_MODULE]
+      else if (!modules_p () && (id == ridpointers[(int)RID_MODULE]
 				 || id == ridpointers[(int)RID_IMPORT]))
 	inform (location,
 		"%qE only available with -fmodules-ts or -fmodules-atom", id);
@@ -12779,8 +12779,8 @@ cp_parser_module_proclamation (cp_parser *parser)
 static void
 cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 {
-  bool in_global = top_level && flag_modules;
-  bool import_ok = in_global && flag_modules == 2;
+  bool in_global = top_level && modules_p ();
+  bool import_ok = in_global && modules_atom_p ();
 
   while (true)
     {
@@ -12844,7 +12844,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 		  cp_lexer_consume_token (parser->lexer);
 		  maybe_global = false;
 		}
-	      else if (flag_modules == 2)
+	      else if (modules_atom_p ())
 		maybe_global = false;
 
 	      in_global = cp_parser_module_declaration
@@ -12960,13 +12960,13 @@ cp_parser_declaration (cp_parser* parser)
       else
 	cp_parser_explicit_instantiation (parser);
     }
-  else if (token1.keyword == RID_IMPORT && flag_modules != 2)
+  else if (token1.keyword == RID_IMPORT && !modules_atom_p ())
     cp_parser_import_declaration (parser);
   /* If the next token is `export', it's new-style modules or
      old-style template.  */
   else if (token1.keyword == RID_EXPORT)
     {
-      if (!flag_modules)
+      if (!modules_p ())
 	cp_parser_template_declaration (parser, /*member_p=*/false);
       else
 	cp_parser_module_export (parser);
@@ -38860,6 +38860,10 @@ cp_parser_initial_pragma (cp_token *first_token)
   while (first_token->type != CPP_PRAGMA_EOL && first_token->type != CPP_EOF)
     cp_lexer_get_preprocessor_token (NULL, first_token);
 
+  if (modules_p ())
+    error_at (first_token->location,
+	      "PCH is incompatible with C++ modules");
+
   /* Now actually load the PCH file.  */
   if (name)
     c_common_pch_pragma (parse_in, TREE_STRING_POINTER (name));
@@ -39259,7 +39263,7 @@ c_parse_file (void)
 
   if (already_called)
     fatal_error (input_location,
-		 "inter-module optimizations not implemented for C++");
+		 "multi-source compilation not implemented for C++");
   already_called = true;
 
   the_parser = cp_parser_new ();

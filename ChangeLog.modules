@@ -1,6 +1,29 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (modules_p, modules_atom_p): New predicates.
+	* decl.c (cxx_init_decl_processing): Use modules_p.
+	* decl2.c (c_parse_final_cleanups): Likewise.
+	* lex.c (init_reswords):
+	* module.c (module_state::write_readme): Use modules_atom_p.
+	(module_state::{read,write}_config): Likewise.
+	(handle_module_option): Don't handle OPT_fmodules_atom here,
+	* name-lookup,c (reuse_namespace, make_namespace_finish): Use
+	modules_p.
+	* optmize.c (maybe_clone_body): Likewise.
+	* semantics.c (expand_or_defer_fn_1): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name)
+	(cp_parser_declaration_seq_opt, cp_parser_declaration): Use
+	modules predicates.
+	(cp_parser_initial_pragma): Reject pragma with modules.
+	(c_parse_file): Adjust error message.
+	gcc/c-family/
+	* c.opt (fmodules-ts, fmodules-atom): Adust.
+	(fno-modules): New.
+	gcc/
+	* doc/invoke.texi (fno-modules): Document.
+
+	gcc/cp/
 	* module.c (init_module_processing): Disallow PCH.
 	gcc/c-family/
 	* c-pch.c (c_common_valid_pch): Never valid with modules.

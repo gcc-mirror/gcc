@@ -6074,7 +6074,7 @@ module_state::write_readme (elf_out *to)
 
   readme.begin ();
 
-  readme.printf ("GNU C++ Module (%s)", flag_modules == 2 ? "ATOM" : "TS");
+  readme.printf ("GNU C++ Module (%s)", modules_atom_p () ? "ATOM" : "TS");
   /* Compiler's version.  */
   readme.printf ("compiler:%s", version_string);
 
@@ -6138,7 +6138,7 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
   cfg.u32 (unsigned (get_version ()));
   cfg.u32 (inner_crc);
 
-  cfg.u (flag_modules == 2);
+  cfg.u (modules_atom_p ());
   cfg.u (to->name (name));
 
   /* Configuration. */
@@ -6230,7 +6230,7 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
       back and forget it.  */
   cfg.u32 ();
 
-  if ((flag_modules == 2) != cfg.u ())
+  if (modules_atom_p () != cfg.u ())
     {
       error ("TS/ATOM mismatch");
     fail:
@@ -8363,10 +8363,6 @@ handle_module_option (unsigned code, const char *arg, int)
 {
   switch (opt_code (code))
     {
-    case OPT_fmodules_atom:
-      flag_modules = 2;
-      return true;
-
     case OPT_fmodule_path_:
       add_path (xstrdup (arg), INC_CXX_MPATH, true, true);
       return true;

@@ -507,7 +507,7 @@ maybe_clone_body (tree fn)
     }
 
   // FIXME:make modules compatible with aliasing cdtors.
-  bool can_alias = !flag_modules && can_alias_cdtor (fn);
+  bool can_alias = !modules_p () && can_alias_cdtor (fn);
 
   /* If we decide to turn clones into thunks, they will branch to fn.
      Must have original function available to call.  */

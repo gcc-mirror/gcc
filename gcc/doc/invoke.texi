@@ -2541,11 +2541,14 @@ errors if these functions are not inlined everywhere they are called.
 
 @item -fmodules-ts
 @itemx -fmodules-atom
+@itemx -fno-modules
 @opindex fmodules-ts
 @opindex fmodules-atom
+@opindex fno-modules
 Enable experimental support for n4720:``Working Draft, Extensions to
 C++ for Modules'' or for p0947:``Another Take On Modules''.  See
-@pxref{C++ Modules} for more details.
+@pxref{C++ Modules} for more details.  The @option{-fno-modules} is
+usually not needed, as that is the default.  For now.
 
 @item -fmodule-file=@r{[}@var{name}=@r{]}@var{file}
 @opindex fmodule-file

@@ -4672,7 +4672,7 @@ c_parse_final_cleanups (void)
     }
 
   timevar_stop (TV_PHASE_PARSING);
-  if (flag_modules)
+  if (modules_p ())
     finish_module ();
   timevar_start (TV_PHASE_DEFERRED);
 

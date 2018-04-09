@@ -7723,7 +7723,7 @@ push_inline_namespaces (tree ns)
 static tree
 reuse_namespace (tree *slot, tree ctx, tree name)
 {
-  if (flag_modules && *slot && TREE_PUBLIC (ctx) && name)
+  if (modules_p () && *slot && TREE_PUBLIC (ctx) && name)
     {
       /* Public namespace.  Shared.  */
       tree *global_slot = slot;
@@ -7766,7 +7766,7 @@ make_namespace (tree ctx, tree name, bool inline_p)
 static void
 make_namespace_finish (tree ns, tree *slot, bool from_import = false)
 {
-  if (flag_modules && TREE_PUBLIC (ns) && (from_import || *slot != ns))
+  if (modules_p () && TREE_PUBLIC (ns) && (from_import || *slot != ns))
     {
       /* Place a binding in the global module's slot.  */
       slot = fixed_module_binding_slot (slot, DECL_NAME (ns), true, true);

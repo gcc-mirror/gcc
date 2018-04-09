@@ -4418,7 +4418,7 @@ cxx_init_decl_processing (void)
   if (! supports_one_only ())
     flag_weak = 0;
 
-  if (flag_modules)
+  if (modules_p ())
     init_module_processing ();
 
   make_fname_decl = cp_make_fname_decl;
