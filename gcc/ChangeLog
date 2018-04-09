@@ -1,5 +1,12 @@
 2018-04-09  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/83913
+
+	* sel-sched-ir.c (merge_expr_data): Choose the middle between two
+	different sched-times when merging exprs.
+
+2018-04-09  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/83962
 
 	* sel-sched-ir.c (tidy_control_flow): Correct the order in which we call

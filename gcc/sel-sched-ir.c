@@ -1837,8 +1837,12 @@ merge_expr_data (expr_t to, expr_t from, insn_t split_point)
   if (EXPR_PRIORITY (to) < EXPR_PRIORITY (from))
     EXPR_PRIORITY (to) = EXPR_PRIORITY (from);
 
-  if (EXPR_SCHED_TIMES (to) > EXPR_SCHED_TIMES (from))
-    EXPR_SCHED_TIMES (to) = EXPR_SCHED_TIMES (from);
+  /* We merge sched-times half-way to the larger value to avoid the endless
+     pipelining of unneeded insns.  The average seems to be good compromise
+     between pipelining opportunities and avoiding extra work.  */
+  if (EXPR_SCHED_TIMES (to) != EXPR_SCHED_TIMES (from))
+    EXPR_SCHED_TIMES (to) = ((EXPR_SCHED_TIMES (from) + EXPR_SCHED_TIMES (to)
+                             + 1) / 2);
 
   if (EXPR_ORIG_BB_INDEX (to) != EXPR_ORIG_BB_INDEX (from))
     EXPR_ORIG_BB_INDEX (to) = 0;
