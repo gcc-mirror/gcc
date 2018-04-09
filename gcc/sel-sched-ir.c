@@ -3297,11 +3297,22 @@ has_dependence_note_mem_dep (rtx mem ATTRIBUTE_UNUSED,
 
 /* Note a dependence.  */
 static void
-has_dependence_note_dep (insn_t pro ATTRIBUTE_UNUSED,
-			 ds_t ds ATTRIBUTE_UNUSED)
+has_dependence_note_dep (insn_t pro, ds_t ds ATTRIBUTE_UNUSED)
 {
-  if (!sched_insns_conditions_mutex_p (has_dependence_data.pro,
-				       VINSN_INSN_RTX (has_dependence_data.con)))
+  insn_t real_pro = has_dependence_data.pro;
+  insn_t real_con = VINSN_INSN_RTX (has_dependence_data.con);
+
+  /* We do not allow for debug insns to move through others unless they
+     are at the start of bb.  This movement may create bookkeeping copies
+     that later would not be able to move up, violating the invariant
+     that a bookkeeping copy should be movable as the original insn.
+     Detect that here and allow that movement if we allowed it before
+     in the first place.  */
+  if (DEBUG_INSN_P (real_con)
+      && INSN_UID (NEXT_INSN (pro)) == INSN_UID (real_con))
+    return;
+
+  if (!sched_insns_conditions_mutex_p (real_pro, real_con))
     {
       ds_t *dsp = &has_dependence_data.has_dep_p[has_dependence_data.where];
 
@@ -3897,6 +3908,19 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
         = sel_redirect_edge_and_branch (EDGE_SUCC (xbb->prev_bb, 0), xbb);
 
       gcc_assert (EDGE_SUCC (xbb->prev_bb, 0)->flags & EDGE_FALLTHRU);
+
+      /* We could have skipped some debug insns which did not get removed with the block,
+         and the seqnos could become incorrect.  Fix them up here.  */
+      if (MAY_HAVE_DEBUG_INSNS && (sel_bb_head (xbb) != first || sel_bb_end (xbb) != last))
+       {
+         if (!sel_bb_empty_p (xbb->prev_bb))
+           {
+             int prev_seqno = INSN_SEQNO (sel_bb_end (xbb->prev_bb));
+             if (prev_seqno > INSN_SEQNO (sel_bb_head (xbb)))
+               for (insn_t insn = sel_bb_head (xbb); insn != first; insn = NEXT_INSN (insn))
+                 INSN_SEQNO (insn) = prev_seqno + 1;
+           }
+       }
 
       /* It can turn out that after removing unused jump, basic block
          that contained that jump, becomes empty too.  In such case
