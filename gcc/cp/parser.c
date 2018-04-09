@@ -212,7 +212,7 @@ static int cp_lexer_saving_tokens
 static cp_token *cp_lexer_token_at
   (cp_lexer *, cp_token_position);
 static void cp_lexer_get_preprocessor_token
-  (cp_lexer *, cp_token *);
+  (unsigned, cp_token *);
 static inline cp_token *cp_lexer_peek_token
   (cp_lexer *);
 static cp_token *cp_lexer_peek_nth_token
@@ -631,7 +631,6 @@ cp_lexer_alloc (void)
 static cp_lexer *
 cp_lexer_new_main (void)
 {
-  cp_lexer *lexer;
   cp_token token;
 
   /* It's possible that parsing the first pragma will load a PCH file,
@@ -639,16 +638,17 @@ cp_lexer_new_main (void)
      allocating any memory.  */
   cp_parser_initial_pragma (&token);
 
-  lexer = cp_lexer_alloc ();
+  cp_lexer *lexer = cp_lexer_alloc ();
 
   /* Put the first token in the buffer.  */
   lexer->buffer->quick_push (token);
 
   /* Get the remaining tokens from the preprocessor.  */
-  while (token.type != CPP_EOF)
+  cp_token *tok = &token;
+  while (tok->type != CPP_EOF)
     {
-      cp_lexer_get_preprocessor_token (lexer, &token);
-      vec_safe_push (lexer->buffer, token);
+      tok = vec_safe_push (lexer->buffer, cp_token ());
+      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
 
   lexer->last_token = lexer->buffer->address ()
@@ -777,14 +777,14 @@ cp_lexer_saving_tokens (const cp_lexer* lexer)
    processed strings.  */
 
 static void
-cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
+cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
 {
   static int is_extern_c = 0;
 
    /* Get a new token from the preprocessor.  */
   token->type
     = c_lex_with_flags (&token->u.value, &token->location, &token->flags,
-			lexer == NULL ? 0 : C_LEX_STRING_NO_JOIN);
+			flags);
   token->keyword = RID_MAX;
   token->purged_p = false;
   token->error_reported = false;
@@ -38839,16 +38839,16 @@ cp_parser_initial_pragma (cp_token *first_token)
 {
   tree name = NULL;
 
-  cp_lexer_get_preprocessor_token (NULL, first_token);
+  cp_lexer_get_preprocessor_token (0, first_token);
   if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
     return;
 
-  cp_lexer_get_preprocessor_token (NULL, first_token);
+  cp_lexer_get_preprocessor_token (0, first_token);
   if (first_token->type == CPP_STRING)
     {
       name = first_token->u.value;
 
-      cp_lexer_get_preprocessor_token (NULL, first_token);
+      cp_lexer_get_preprocessor_token (0, first_token);
       if (first_token->type != CPP_PRAGMA_EOL)
 	error_at (first_token->location,
 		  "junk at end of %<#pragma GCC pch_preprocess%>");
@@ -38858,7 +38858,7 @@ cp_parser_initial_pragma (cp_token *first_token)
 
   /* Skip to the end of the pragma.  */
   while (first_token->type != CPP_PRAGMA_EOL && first_token->type != CPP_EOF)
-    cp_lexer_get_preprocessor_token (NULL, first_token);
+    cp_lexer_get_preprocessor_token (0, first_token);
 
   if (modules_p ())
     error_at (first_token->location,
@@ -38871,7 +38871,7 @@ cp_parser_initial_pragma (cp_token *first_token)
   /* Read one more token to return to our caller.  We have to do this
      after reading the PCH file in, since its pointers have to be
      live.  */
-  cp_lexer_get_preprocessor_token (NULL, first_token);
+  cp_lexer_get_preprocessor_token (0, first_token);
 }
 
 /* Parse a pragma GCC ivdep.  */
