@@ -1,5 +1,12 @@
 2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/83064
+	* trans-stmt.c (gfc_trans_forall_loop): Remove annotation for
+	parallell processing of DO CONCURRENT -ftree-parallelize-loops
+	is set.
+
+2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/51260
 	* resolve.c (resolve_variable): Simplify cases where access to a
 	parameter array results in a single constant.
