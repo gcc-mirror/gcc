@@ -4043,17 +4043,17 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
       || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
       || TREE_TYPE (expr) == unknown_type_node)
     {
-      if (INDIRECT_REF_P (expr))
-	error ("second operand of %<offsetof%> is neither a single "
-	       "identifier nor a sequence of member accesses and "
-	       "array references");
-      else
+      while (TREE_CODE (expr) == COMPONENT_REF
+	     || TREE_CODE (expr) == COMPOUND_EXPR)
+	expr = TREE_OPERAND (expr, 1);
+
+      if (DECL_P (expr))
 	{
-	  if (TREE_CODE (expr) == COMPONENT_REF
-	      || TREE_CODE (expr) == COMPOUND_EXPR)
-	    expr = TREE_OPERAND (expr, 1);
 	  error ("cannot apply %<offsetof%> to member function %qD", expr);
+	  inform (DECL_SOURCE_LOCATION (expr), "declared here");
 	}
+      else
+	error ("cannot apply %<offsetof%> to member function");
       return error_mark_node;
     }
   if (TREE_CODE (expr) == CONST_DECL)
@@ -4069,9 +4069,9 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
       && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (object_ptr)))
       && CLASSTYPE_NON_STD_LAYOUT (TREE_TYPE (TREE_TYPE (object_ptr)))
       && cp_unevaluated_operand == 0)
-    pedwarn (loc, OPT_Winvalid_offsetof,
-	     "offsetof within non-standard-layout type %qT is undefined",
-	     TREE_TYPE (TREE_TYPE (object_ptr)));
+    warning_at (loc, OPT_Winvalid_offsetof, "offsetof within "
+		"non-standard-layout type %qT is conditionally-supported",
+		TREE_TYPE (TREE_TYPE (object_ptr)));
   return fold_offsetof (expr);
 }
 
