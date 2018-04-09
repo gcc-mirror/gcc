@@ -1,6 +1,14 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::write_readme): New.  Broken out of ...
+	(module_state::write_context): ... here.  Absorb remainder into ...
+	(module_state::write_config): ... here.
+	(module_state::read_context): Merge into ...
+	(module_state::read_config): ... here.
+	(module_state::{read,write}): Adjust.
+
+	gcc/cp/
 	* module.c (module_state::release): Simplify.
 	(module_state::check_read): Release if done.
 	gcc/testsuite/

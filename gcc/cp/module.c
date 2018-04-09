@@ -2214,10 +2214,10 @@ struct GTY(()) module_state {
   bool check_read (bool outermost, tree ns = NULL_TREE, tree id = NULL_TREE);
 
  private:
-  /* The context -- global state, imports etc.  */
-  void write_context (elf_out *to, unsigned *crc_ptr);
-  bool read_context ();
-  /* The configuration -- cmd args etc.  */
+  /* The README, for human consumption.  */
+  void write_readme (elf_out *to);
+
+  /* The configuration.  */
   void write_config (elf_out *to, const range_t &sec_range, unsigned crc);
   bool read_config (range_t &sec_range, unsigned *crc_ptr);
 
@@ -6063,114 +6063,39 @@ module_state::pop_location ()
   input_location = linemap_line_start (line_table, 0, 0);
 }
 
-/* Context of the compilation: MOD_SNAME_PFX .context   
-
-   This is data we need to read in to modify our state.
-
-   u:import_size
-   {
-     b:imported
-     b:exported
-     u32:crc
-     u:name
-   } imports[N]
-
-   We need the complete set, so that we can build up the remapping
-   vector on subsequent import.
-
-   The README section is intended for human consumption.  It is a
-   STRTAB that may be extracted with:
-     readelf -p.gnu.c++.README $(module).nms   */
+/* A human-readable README section.  It is a STRTAB that may be
+   extracted with:
+     readelf -p.gnu.c++.README $(module).nms */
 
 void
-module_state::write_context (elf_out *to, unsigned *crc_p)
+module_state::write_readme (elf_out *to)
 {
-  bytes_out ctx, readme;
+  bytes_out readme;
 
-  ctx.begin ();
   readme.begin ();
 
-  /* Write version and module name to readme.  */
-  readme.printf ("GNU C++ Module");
+  readme.printf ("GNU C++ Module (%s)", flag_modules == 2 ? "ATOM" : "TS");
+  /* Compiler's version.  */
   readme.printf ("compiler:%s", version_string);
+
+  /* Module format version.  */
   verstr_t string;
   version2string (get_version (), string);
   readme.printf ("version:%s", string);
+
+  /* Module information.  */
   readme.printf ("module:%s", IDENTIFIER_POINTER (name));
   readme.printf ("source:%s", srcname);
 
-  /* Total number of modules.  */
-  ctx.u (modules->length ());
-  /* Write the imports, in forward order.  */
+  /* Its direct imports.  */
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
-      dump () && dump ("Writing %simport %I (crc=%x)",
-		       state->exported ? "export " :
-		       state->imported ? "" : "indirect ",
-		       state->name, state->crc);
-      ctx.b (state->imported);
-      ctx.b (state->exported);
-      ctx.bflush ();
-      ctx.u32 (state->crc);
-      unsigned name = to->name (state->name);
-      ctx.u (name);
-
       if (state->imported)
-	/* Write a direct import to README.  */
 	readme.printf ("import:%s", IDENTIFIER_POINTER (state->name));
     }
+
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
-  ctx.end (to, to->name (MOD_SNAME_PFX ".context"), crc_p);
-}
-
-bool
-module_state::read_context ()
-{
-  bytes_in ctx;
-
-  if (!ctx.begin (from, MOD_SNAME_PFX ".context"))
-    return false;
-
-  /* Allocate the REMAP vector.  */
-  unsigned imports = ctx.u ();
-  gcc_assert (!remap);
-  remap = NULL;
-  vec_safe_reserve (remap, imports);
-
-  /* Allocate the reserved slots.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
-    remap->quick_push (0);
-
-  /* Read the import table in forward order.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < imports; ix++)
-    {
-      bool imported = ctx.b ();
-      bool exported = ctx.b ();
-      ctx.bflush ();
-      unsigned crc = ctx.u32 ();
-      tree name = get_identifier (from->name (ctx.u ()));
-
-      dump () && dump ("Nested %simport %I",
-		       exported ? "export " : imported ? "" : "indirect ", name);
-      module_state *imp = do_import (input_location, name, /*unit_p=*/false,
-				     /*import_p=*/imported, &crc);
-      if (!imp)
-	{
-	  from->set_error (elf::E_BAD_IMPORT);
-	  goto fail;
-	}
-      remap->quick_push (imp->mod);
-      if (imported)
-	{
-	  dump () && dump ("Direct %simport %I %u",
-			   exported ? "export " : "", name, imp->mod);
-	  set_import (imp, exported);
-	}
-    }
-
- fail:
-  return ctx.end (from);
 }
 
 /* Tool configuration:  MOD_SNAME_PFX .config
@@ -6184,6 +6109,13 @@ module_state::read_context ()
    u:<host-triplet>
    u:global_vec->length()
    u32:global_crc
+   u:import-num
+   {
+     b:imported
+     b:exported
+     u32:crc
+     u:name
+   } imports[N]
    u:decl-section-lwm
    u:decl-section-hwm
    // FIXME CPU,ABI and similar tags
@@ -6225,6 +6157,24 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
   cfg.u (global_vec->length ());
   cfg.u32 (global_crc);
 
+  /* Total number of modules.  */
+  cfg.u (modules->length ());
+  /* Write the imports, in forward order.  */
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
+    {
+      module_state *state = (*modules)[ix];
+      dump () && dump ("Writing %simport %I (crc=%x)",
+		       state->exported ? "export " :
+		       state->imported ? "" : "indirect ",
+		       state->name, state->crc);
+      cfg.b (state->imported);
+      cfg.b (state->exported);
+      cfg.bflush ();
+      cfg.u32 (state->crc);
+      unsigned name = to->name (state->name);
+      cfg.u (name);
+    }
+
   dump () && dump ("Declaration sections are [%u,%u)",
 		   sec_range.first, sec_range.second);
   cfg.u (sec_range.first);
@@ -6243,16 +6193,6 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
 
   if (!cfg.begin (from, MOD_SNAME_PFX ".config"))
     return false;
-
-  crc = cfg.get_crc ();
-  dump () && dump ("Reading CRC=%x", crc);
-  if (expected_crc && crc != *expected_crc)
-    {
-      error ("module %qE CRC mismatch", name);
-    fail:
-      cfg.set_overrun ();
-      return cfg.end (from);
-    }
 
   /* Check version.  */
   int my_ver = get_version ();
@@ -6284,9 +6224,19 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
 		 their_string, my_string);
     }
 
-  /* Read and ignore the inner crc.  We only wrote it to mix it into
-     the crc.  */
+  /* Check the CRC after the above sanity checks, so that the user is
+     clued in.  We wrote the inner crc merely to merge it, so simply
+     read it back and forget it.  */
   cfg.u32 ();
+  crc = cfg.get_crc ();
+  dump () && dump ("Reading CRC=%x", crc);
+  if (expected_crc && crc != *expected_crc)
+    {
+      error ("module %qE CRC mismatch", name);
+    fail:
+      cfg.set_overrun ();
+      return cfg.end (from);
+    }
 
   /* Check module name.  */
   const char *their_name = from->name (cfg.u ());
@@ -6321,6 +6271,43 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
       goto fail;
     }
 
+  /* Allocate the REMAP vector.  */
+  unsigned imports = cfg.u ();
+  gcc_assert (!remap);
+  remap = NULL;
+  vec_safe_reserve (remap, imports);
+
+  /* Allocate the reserved slots.  */
+  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
+    remap->quick_push (0);
+
+  /* Read the import table in forward order.  */
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < imports; ix++)
+    {
+      bool imported = cfg.b ();
+      bool exported = cfg.b ();
+      cfg.bflush ();
+      unsigned crc = cfg.u32 ();
+      tree name = get_identifier (from->name (cfg.u ()));
+
+      dump () && dump ("Nested %simport %I",
+		       exported ? "export " : imported ? "" : "indirect ", name);
+      module_state *imp = do_import (input_location, name, /*unit_p=*/false,
+				     /*import_p=*/imported, &crc);
+      if (!imp)
+	{
+	  from->set_error (elf::E_BAD_IMPORT);
+	  goto fail;
+	}
+      remap->quick_push (imp->mod);
+      if (imported)
+	{
+	  dump () && dump ("Direct %simport %I %u",
+			   exported ? "export " : "", name, imp->mod);
+	  set_import (imp, exported);
+	}
+    }
+
   sec_range.first = cfg.u ();
   sec_range.second = cfg.u ();
   dump () && dump ("Declaration sections are [%u,%u)",
@@ -6332,9 +6319,6 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
       error ("paradoxical declaration section range");
       goto fail;
     }
-
-  if (cfg.more_p ())
-    goto fail;
 
   return cfg.end (from);
 }
@@ -7408,7 +7392,7 @@ module_state::write (elf_out *to)
   unsigned crc = 0;
   range_t range;
 
-  write_context (to, &crc);
+  write_readme (to);
   depset::hash table (200);
 
   /* Find the set of decls we must write out.  */
@@ -7470,8 +7454,6 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
   range_t range;
 
   if (!read_config (range, crc_ptr))
-    return;
-  if (!read_context ())
     return;
 
   /* Determine the module's number.  */
