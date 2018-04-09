@@ -1,3 +1,8 @@
+2018-04-09  Alexey Brodkin  <abrodkin@synopsys.com>
+
+	* config/arc/arc.c (arc_expand_prologue): Set stack usage info
+	also for naked functions.
+
 2018-04-09  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (add_shift): New pattern.
