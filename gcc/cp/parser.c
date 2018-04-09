@@ -201,8 +201,8 @@ public:
 
 /* Prototypes.  */
 
-static cp_lexer *cp_lexer_new_main
-  (void);
+static void cp_lexer_fill_main
+  (cp_lexer *lexer, cp_token *first);
 static cp_lexer *cp_lexer_new_from_tokens
   (cp_token_cache *tokens);
 static void cp_lexer_destroy
@@ -625,26 +625,17 @@ cp_lexer_alloc (void)
 }
 
 
-/* Create a new main C++ lexer, the lexer that gets tokens from the
-   preprocessor.  */
+/* Fill the lexer with tokens from the preprocessor.  *FIRST is the
+   intial token found by cp_parser_initial_pragma.  */
 
-static cp_lexer *
-cp_lexer_new_main (void)
+static void
+cp_lexer_fill_main (cp_lexer *lexer, cp_token *first)
 {
-  cp_token token;
-
-  /* It's possible that parsing the first pragma will load a PCH file,
-     which is a GC collection point.  So we have to do that before
-     allocating any memory.  */
-  cp_parser_initial_pragma (&token);
-
-  cp_lexer *lexer = cp_lexer_alloc ();
-
-  /* Put the first token in the buffer.  */
-  lexer->buffer->quick_push (token);
+  /* Save the first token found by the initial pragma parse.  */
+  lexer->buffer->quick_push (*first);
 
   /* Get the remaining tokens from the preprocessor.  */
-  cp_token *tok = &token;
+  cp_token *tok = first;
   while (tok->type != CPP_EOF)
     {
       tok = vec_safe_push (lexer->buffer, cp_token ());
@@ -663,7 +654,6 @@ cp_lexer_new_main (void)
   done_lexing = true;
 
   gcc_assert (!lexer->next_token->purged_p);
-  return lexer;
 }
 
 /* Create a new lexer whose token stream is primed with the tokens in
@@ -3854,21 +3844,13 @@ cp_parser_make_indirect_declarator (enum tree_code code, tree class_type,
 static cp_parser *
 cp_parser_new (void)
 {
-  cp_parser *parser;
-  cp_lexer *lexer;
-  unsigned i;
-
-  /* cp_lexer_new_main is called before doing GC allocation because
-     cp_lexer_new_main might load a PCH file.  */
-  lexer = cp_lexer_new_main ();
-
   /* Initialize the binops_by_token so that we can get the tree
      directly from the token.  */
-  for (i = 0; i < sizeof (binops) / sizeof (binops[0]); i++)
+  for (unsigned i = 0; i < sizeof (binops) / sizeof (binops[0]); i++)
     binops_by_token[binops[i].token_type] = binops[i];
 
-  parser = ggc_cleared_alloc<cp_parser> ();
-  parser->lexer = lexer;
+  cp_parser *parser = ggc_cleared_alloc<cp_parser> ();
+  parser->lexer = cp_lexer_alloc ();
   parser->context = cp_parser_context_new (NULL);
 
   /* For now, we always accept GNU extensions.  */
@@ -38837,13 +38819,12 @@ static GTY (()) cp_parser *the_parser;
 static void
 cp_parser_initial_pragma (cp_token *first_token)
 {
-  tree name = NULL;
-
   cp_lexer_get_preprocessor_token (0, first_token);
   if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
     return;
 
   cp_lexer_get_preprocessor_token (0, first_token);
+  tree name = NULL;
   if (first_token->type == CPP_STRING)
     {
       name = first_token->u.value;
@@ -39266,9 +39247,16 @@ c_parse_file (void)
 		 "multi-source compilation not implemented for C++");
   already_called = true;
 
+  cp_token first;
+  /* It's possible that parsing the first pragma will load a PCH file,
+     which is a GC collection point.  So we have to do that before
+     allocating any memory.  */
+  cp_parser_initial_pragma (&first);
+
   the_parser = cp_parser_new ();
   push_deferring_access_checks (flag_access_control
 				? dk_no_deferred : dk_no_check);
+  cp_lexer_fill_main (the_parser->lexer, &first);
   cp_parser_translation_unit (the_parser);
   the_parser = NULL;
 }

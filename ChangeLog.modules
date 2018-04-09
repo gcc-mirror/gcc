@@ -1,6 +1,13 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* parser.c (cp_lexer_new_main): Replace with ...
+	(cp_lexer_fill_main): ... this.  Move initial pragma processing to
+	...
+	(c_parse_file): ... here.
+	(cp_parser_new): Adjust.
+
+	gcc/cp/
 	* parser.c (cp_lexer_get_preprocessor_token): Take cpp-flags
 	directly.
 	(cp_lexer_new_main, cp_parser_initial_pragma): Adjust.
