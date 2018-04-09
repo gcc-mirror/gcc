@@ -7780,7 +7780,7 @@ heuristically decides which functions are simple enough to be worth integrating
 in this way.  This inlining applies to all functions, even those not declared
 inline.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -findirect-inlining
 @opindex findirect-inlining
@@ -7789,7 +7789,7 @@ time thanks to previous inlining.  This option has any effect only
 when inlining itself is turned on by the @option{-finline-functions}
 or @option{-finline-small-functions} options.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -finline-functions
 @opindex finline-functions
@@ -7801,7 +7801,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at level @option{-O3}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -finline-functions-called-once
 @opindex finline-functions-called-once
@@ -9002,7 +9002,7 @@ Inline parts of functions.  This option has any effect only
 when inlining itself is turned on by the @option{-finline-functions}
 or @option{-finline-small-functions} options.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fpredictive-commoning
 @opindex fpredictive-commoning
@@ -9109,7 +9109,7 @@ sections.  When @option{-fsplit-stack} is used this option is not
 enabled by default (to avoid linker errors), but may be enabled
 explicitly (if using a working linker).
 
-Enabled for x86 at levels @option{-O2}, @option{-O3}.
+Enabled for x86 at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -freorder-functions
 @opindex freorder-functions
