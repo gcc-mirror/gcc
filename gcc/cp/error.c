@@ -2714,6 +2714,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case INTEGER_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
+    case DECLTYPE_TYPE:
       pp_type_specifier_seq (pp, t);
       break;
 
