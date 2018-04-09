@@ -2204,14 +2204,14 @@ struct GTY(()) module_state {
  public:
   /* Read and write module.  */
   void write (elf_out *to);
-  void read (elf_in *from, unsigned *crc_ptr);
+  void read (FILE *handle, int e, unsigned *crc_ptr);
 
   /* Lazily read a section.  */
   bool lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost = false);
 
  private:
   /* Check or complete a read.  */
-  bool check_error (bool outermost, tree ns = NULL_TREE, tree id = NULL_TREE);
+  bool check_read (bool outermost, tree ns = NULL_TREE, tree id = NULL_TREE);
 
  private:
   /* The context -- global state, imports etc.  */
@@ -7460,11 +7460,13 @@ module_state::write (elf_out *to)
 }
 
 void
-module_state::read (elf_in *in, unsigned *crc_ptr)
+module_state::read (FILE *stream, int e, unsigned *crc_ptr)
 {
-  range_t range;
+  from = new elf_in (stream, e);
+  if (!from->begin ())
+    return;
 
-  this->from = in;
+  range_t range;
 
   if (!read_config (range, crc_ptr))
     return;
@@ -7524,7 +7526,7 @@ module_state::read (elf_in *in, unsigned *crc_ptr)
 }
 
 bool
-module_state::check_error (bool outermost, tree ns, tree id)
+module_state::check_read (bool outermost, tree ns, tree id)
 {
   bool done = loading == ~0u && (from->has_error () || !lazy);
   // FIXME freeup remap too?
@@ -8175,10 +8177,8 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  state->push_location ();
 	  unsigned n = dump.push (state);
 	  state->announce ("importing");
-	  elf_in *from = new elf_in (stream, e);
-	  if (from->begin ())
-	    state->read (from, crc_ptr);
-	  bool failed = state->check_error (module_p || export_p);
+	  state->read (stream, e, crc_ptr);
+	  bool failed = state->check_read (module_p || export_p);
 	  state->announce (flag_module_lazy && !module_p
 			   ? "lazily" : "imported");
 	  dump.pop (n);
@@ -8240,7 +8240,7 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
       if (mslot->is_lazy ())
 	from->set_error (elf::E_BAD_LAZY);
     }
-  bool failed = check_error (outermost, ns, id);
+  bool failed = check_read (outermost, ns, id);
   gcc_assert (!failed || !outermost);
  
   dump.pop (n);

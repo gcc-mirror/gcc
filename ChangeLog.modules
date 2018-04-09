@@ -1,6 +1,12 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::read): Allocate elf_in here.
+	(module_state::do_import): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/import-2.C: New.
+
+	gcc/cp/
 	* module.c (trees_out::tree_node): Avoid uninitialized false
 	positive.
 
