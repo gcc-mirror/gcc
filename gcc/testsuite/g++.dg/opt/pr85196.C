@@ -64,7 +64,7 @@ inline e F::v(F *ak) {
   f(al);
 }
 template <typename> am() { return q; }
-class an : F {
+class an : public F {
 public:
   static ao(d<e> u) {
     int *ap;
