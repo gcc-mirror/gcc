@@ -1,5 +1,8 @@
 2018-04-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85194
+	* g++.dg/cpp1z/decomp43.C: New test.
+
 	PR rtl-optimization/80463
 	* g++.dg/pr80463.C: Add -w to dg-options.
 
