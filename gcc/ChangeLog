@@ -1,5 +1,15 @@
 2018-04-09  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/80463
+	PR rtl-optimization/83972
+	PR rtl-optimization/83480
+
+	* sel-sched-ir.c (has_dependence_note_mem_dep): Take into account the
+	correct producer for the insn.
+	(tidy_control_flow): Fixup seqnos in case of debug insns.
+
+2018-04-09  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/83913
 
 	* sel-sched-ir.c (merge_expr_data): Choose the middle between two
