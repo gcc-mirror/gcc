@@ -681,6 +681,46 @@ irange::union_ (const irange &r)
   return *this;
 }
 
+// Intersect this range with a bitmask MASK.
+// Based on the bits in the mask, each lower bound is rounded up and each
+// upper bounds is rounded down.
+void
+irange::intersect_mask (const wide_int& mask)
+{
+  signop sign = TYPE_SIGN (type);
+  unsigned pos = 0;
+  
+  // Remove zero from the current range.
+  //
+  // seems to be a bug., I can't specify:
+  //
+  //   irange nz (type, 0, 0, INVERSE);
+  irange nz (type, 0 ,0);
+  nz.invert ();
+
+  intersect (nz);
+
+  for (unsigned i = 0; i < nitems; i += 2)
+    {
+      wide_int ub = wi::round_down_for_mask (bounds[i + 1], mask);
+      // Have to check for ub > lb immediately due to signed values
+      // potentially wrapping.  skip if not a valid range.
+      if (wi::gt_p (bounds[i], ub, sign))
+        continue;
+      wide_int lb = wi::round_up_for_mask (bounds[i], mask);
+
+      // If this is not a valid range, skip it
+      if (wi::gt_p (lb, ub, sign))
+        continue;
+      bounds[pos++] = lb;
+      bounds[pos++] = ub ;
+    }
+  nitems = pos;
+
+  // 0 is always a possible result, even if it wasn't in the original range.
+  union_ (irange (type, 0 , 0));
+}
+
 // THIS = THIS ^ [X,Y].
 
 irange &

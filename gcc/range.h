@@ -142,6 +142,8 @@ class irange
 
   const_tree get_type () const { return type; }
 
+  void intersect_mask (const wide_int& mask);
+
   irange& operator= (const irange &r);
   irange& operator= (const_tree t);
 
