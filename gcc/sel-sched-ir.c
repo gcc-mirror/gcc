@@ -3839,9 +3839,13 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
       && INSN_SCHED_TIMES (BB_END (xbb)) == 0
       && !IN_CURRENT_FENCE_P (BB_END (xbb)))
     {
-      if (sel_remove_insn (BB_END (xbb), false, false))
-        return true;
+      /* We used to call sel_remove_insn here that can trigger tidy_control_flow
+         before we fix up the fallthru edge.  Correct that ordering by
+	 explicitly doing the latter before the former.  */
+      clear_expr (INSN_EXPR (BB_END (xbb)));
       tidy_fallthru_edge (EDGE_SUCC (xbb, 0));
+      if (tidy_control_flow (xbb, false))
+	return true;
     }
 
   first = sel_bb_head (xbb);
