@@ -9104,14 +9104,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));
   gcc_assert (CLASS_TYPE_P (basetype));
 
-  if (processing_template_decl)
-    {
-      orig_args = args == NULL ? NULL : make_tree_vector_copy (*args);
-      instance = build_non_dependent_expr (instance);
-      if (args != NULL)
-	make_args_non_dependent (*args);
-    }
-
   user_args = args == NULL ? NULL : *args;
   /* Under DR 147 A::A() is an invalid constructor call,
      not a functional cast.  */
@@ -9132,12 +9124,21 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
       return call;
     }
 
+  if (processing_template_decl)
+    {
+      orig_args = args == NULL ? NULL : make_tree_vector_copy (*args);
+      instance = build_non_dependent_expr (instance);
+      if (args != NULL)
+	make_args_non_dependent (*args);
+    }
+
   /* Process the argument list.  */
   if (args != NULL && *args != NULL)
     {
       *args = resolve_args (*args, complain);
       if (*args == NULL)
 	return error_mark_node;
+      user_args = *args;
     }
 
   /* Consider the object argument to be used even if we end up selecting a

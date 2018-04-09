@@ -1,5 +1,9 @@
 2018-04-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85262 - ICE with redundant qualification on constructor.
+	* call.c (build_new_method_call_1): Move make_args_non_dependent
+	after A::A() handling.
+
 	PR c++/85277 - ICE with invalid offsetof.
 	* semantics.c (finish_offsetof): Avoid passing non-DECL to %qD.
 	Adjust -Winvalid-offsetof diagnostic to say conditionally supported.
