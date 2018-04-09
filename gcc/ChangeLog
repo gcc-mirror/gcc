@@ -1,3 +1,13 @@
+2018-04-09  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/83530
+
+	* sel-sched.c (force_next_insn): New global variable.
+	(remove_insn_for_debug): When force_next_insn is true, also leave only
+	next insn in the ready list.
+	(sel_sched_region): When the region wasn't scheduled, make another pass
+	over it with force_next_insn set to 1.
+
 2018-04-08  Monk Chiang  <sh.chiang04@gmail.com>
 
 	* config.gcc (nds32le-*-*, nds32be-*-*): Add nds32/nds32_intrinsic.h
