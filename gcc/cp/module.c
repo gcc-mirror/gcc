@@ -6104,6 +6104,7 @@ module_state::write_readme (elf_out *to)
 
    u32:version
    u32:crc
+   u:atom_p
    u:module-name
    u:<target-triplet>
    u:<host-triplet>
@@ -6137,6 +6138,7 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
   cfg.u32 (unsigned (get_version ()));
   cfg.u32 (inner_crc);
 
+  cfg.u (flag_modules == 2);
   cfg.u (to->name (name));
 
   /* Configuration. */
@@ -6224,18 +6226,26 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
 		 their_string, my_string);
     }
 
-  /* Check the CRC after the above sanity checks, so that the user is
-     clued in.  We wrote the inner crc merely to merge it, so simply
-     read it back and forget it.  */
+  /*  We wrote the inner crc merely to merge it, so simply read it
+      back and forget it.  */
   cfg.u32 ();
+
+  if ((flag_modules == 2) != cfg.u ())
+    {
+      error ("TS/ATOM mismatch");
+    fail:
+      cfg.set_overrun ();
+      return cfg.end (from);
+    }
+
+  /* Check the CRC after the above sanity checks, so that the user is
+     clued in.  */
   crc = cfg.get_crc ();
   dump () && dump ("Reading CRC=%x", crc);
   if (expected_crc && crc != *expected_crc)
     {
       error ("module %qE CRC mismatch", name);
-    fail:
-      cfg.set_overrun ();
-      return cfg.end (from);
+      goto fail;
     }
 
   /* Check module name.  */

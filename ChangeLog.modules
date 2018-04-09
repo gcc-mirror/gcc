@@ -1,6 +1,12 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::{read,write}_config): Check ATOM/TS
+	matches.
+	gcc/testsuite/
+	* g++.dg/modules/atom-check-1_[ab].C: New.
+
+	gcc/cp/
 	* module.c (module_state::write_readme): New.  Broken out of ...
 	(module_state::write_context): ... here.  Absorb remainder into ...
 	(module_state::write_config): ... here.
