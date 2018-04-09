@@ -1,3 +1,10 @@
+2018-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85284
+	* tree-ssa-loop-niter.c (number_of_iterations_exit_assumptions):
+	Only use the niter constraining form of simple_iv when the exit
+	is always executed.
+
 2018-04-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/84041
