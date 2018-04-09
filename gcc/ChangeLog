@@ -1,3 +1,10 @@
+2018-04-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/84041
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add UNSPECV_MEMBAR.
+	(define_expand "*memory_barrier"): New define_expand.
+	(define_insn "memory_barrier"): New insn.
+
 2018-04-09  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/80463
