@@ -5577,6 +5577,16 @@ resolve_procedure:
   if (t && flag_coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
     add_caf_get_intrinsic (e);
 
+  /* Simplify cases where access to a parameter array results in a
+     single constant.  Suppress errors since those will have been
+     issued before, as warnings.  */
+  if (e->rank == 0 && sym->as && sym->attr.flavor == FL_PARAMETER)
+    {
+      gfc_push_suppress_errors ();
+      gfc_simplify_expr (e, 1);
+      gfc_pop_suppress_errors ();
+    }
+
   return t;
 }
 
