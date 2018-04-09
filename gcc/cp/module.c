@@ -8289,6 +8289,9 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 void
 init_module_processing ()
 {
+  if (pch_file)
+    error ("modules and PCH are incompatible");
+
   module_state::init ();
 
   module_path = get_added_cpp_dirs (INC_CXX_MPATH);

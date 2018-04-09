@@ -214,6 +214,10 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
   gcc_assert (memcmp (executable_checksum, no_checksum, 16) != 0);
 
+  /* C++ modules and PCH don't play together.  */
+  if (flag_modules)
+    return 2;
+
   sizeread = read (fd, ident, IDENT_LENGTH + 16);
   if (sizeread == -1)
     fatal_error (input_location, "can%'t read %s: %m", name);
