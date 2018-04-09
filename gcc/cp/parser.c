@@ -2498,7 +2498,7 @@ static tree cp_parser_maybe_treat_template_as_class
 static bool cp_parser_check_declarator_template_parameters
   (cp_parser *, cp_declarator *, location_t);
 static bool cp_parser_check_template_parameters
-  (cp_parser *, unsigned, location_t, cp_declarator *);
+  (cp_parser *, unsigned, bool, location_t, cp_declarator *);
 static cp_expr cp_parser_simple_cast_expression
   (cp_parser *);
 static tree cp_parser_global_scope_opt
@@ -17923,6 +17923,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  if (template_parm_lists_apply
 	      && !cp_parser_check_template_parameters (parser,
 						       /*num_templates=*/0,
+						       /*template_id*/false,
 						       token->location,
 						       /*declarator=*/NULL))
 	    return error_mark_node;
@@ -18977,6 +18978,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (parser->num_template_parameter_lists
       && !cp_parser_check_template_parameters (parser,
 					       /*num_templates=*/0,
+					       /*template_id*/false,
 					       id_location,
 					       /*declarator=*/NULL))
     return error_mark_node;
@@ -23123,6 +23125,7 @@ cp_parser_class_head (cp_parser* parser,
   /* Make sure that the right number of template parameters were
      present.  */
   if (!cp_parser_check_template_parameters (parser, num_templates,
+					    template_id_p,
 					    type_start_token->location,
 					    /*declarator=*/NULL))
     {
@@ -26397,17 +26400,22 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
       {
 	unsigned num_templates = 0;
 	tree scope = declarator->u.id.qualifying_scope;
+	bool template_id_p = false;
 
 	if (scope)
 	  num_templates = num_template_headers_for_class (scope);
 	else if (TREE_CODE (declarator->u.id.unqualified_name)
 		 == TEMPLATE_ID_EXPR)
-	  /* If the DECLARATOR has the form `X<y>' then it uses one
-	     additional level of template parameters.  */
-	  ++num_templates;
+	  {
+	    /* If the DECLARATOR has the form `X<y>' then it uses one
+	       additional level of template parameters.  */
+	    ++num_templates;
+	    template_id_p = true;
+	  }
 
 	return cp_parser_check_template_parameters 
-	  (parser, num_templates, declarator_location, declarator);
+	  (parser, num_templates, template_id_p, declarator_location,
+	   declarator);
       }
 
     case cdk_function:
@@ -26436,6 +26444,7 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
 static bool
 cp_parser_check_template_parameters (cp_parser* parser,
 				     unsigned num_templates,
+				     bool template_id_p,
 				     location_t location,
 				     cp_declarator *declarator)
 {
@@ -26445,7 +26454,8 @@ cp_parser_check_template_parameters (cp_parser* parser,
     return true;
   /* If there are more, but only one more, then we are referring to a
      member template.  That's OK too.  */
-  if (parser->num_template_parameter_lists == num_templates + 1)
+  if (!template_id_p
+      && parser->num_template_parameter_lists == num_templates + 1)
     return true;
   /* If there are more template classes than parameter lists, we have
      something like:
