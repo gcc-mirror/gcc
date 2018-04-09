@@ -1,3 +1,9 @@
+2018-04-09  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (trees_out::tree_node): Avoid uninitialized false
+	positive.
+
 2018-04-06  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r259189.

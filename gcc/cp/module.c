@@ -5097,7 +5097,7 @@ trees_out::tree_node (tree t)
     if (!is_import && dep_walk_p ()
 	&& DECL_SOURCE_LOCATION (t) != BUILTINS_LOCATION)
       {
-	tree depends_on, ctx = owner_decl;
+	tree depends_on = NULL_TREE, ctx = owner_decl;
 
 	/* Find the namespace-scope containing entity.  */
 	while (TREE_CODE (ctx) != NAMESPACE_DECL)
