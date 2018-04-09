@@ -1,5 +1,9 @@
 2018-04-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85277 - ICE with invalid offsetof.
+	* semantics.c (finish_offsetof): Avoid passing non-DECL to %qD.
+	Adjust -Winvalid-offsetof diagnostic to say conditionally supported.
+
 	PR c++/85264 - ICE with excess template-parameter-list.
 	* parser.c (cp_parser_check_template_parameters): Add template_id_p
 	parameter.  Don't allow an extra template header if true.
