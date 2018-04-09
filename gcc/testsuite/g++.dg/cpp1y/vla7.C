@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
   int x[1][argc];
 
-  [&x](int i) {			// { dg-error "variable.size" }
-    x[0][i] = 0;	     	// { dg-prune-output "assignment" }
+  [&x](int i) {			// { dg-prune-output "sorry" }
+    x[0][i] = 0;	     	// { dg-prune-output "not captured" }
   }(5);
 }
