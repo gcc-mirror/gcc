@@ -522,7 +522,7 @@
 	return FALSE;
     }
 
-  if (REGNO (op) != 61)
+  if (REGNO (op) != CC_REG)
     return FALSE;
   if (mode == rmode
       || (mode == CC_ZNmode && rmode == CC_Zmode)
@@ -609,7 +609,9 @@
 )
 
 (define_predicate "noncommutative_operator"
-  (ior (match_code "minus,ashift,ashiftrt,lshiftrt,rotatert")
+  (ior (and (match_code "ashift,ashiftrt,lshiftrt,rotatert")
+	    (match_test "TARGET_BARREL_SHIFTER"))
+       (match_code "minus")
        (and (match_code "ss_minus")
 	    (match_test "TARGET_ARC700 || TARGET_EA_SET")))
 )

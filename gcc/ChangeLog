@@ -1,3 +1,31 @@
+2018-04-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (add_shift): New pattern.
+	(add_shift2): Likewise.
+	(sub_shift): Likewise.
+	(sub_shift_cmp0_noout): Likewise.
+	(compare_si_ashiftsi): Likewise.
+	(xbfu_cmp0_noout): New combine pattern.
+	(xbfu_cmp0"): Likewise.
+	(movsi_set_cc_insn): Place the predicable variant first.
+	(commutative_binary_cmp0_noout): Remove clobber.
+	(commutative_binary_cmp0): New pattern.
+	(noncommutative_binary_cmp0): Likewise.
+	(noncommutative_binary_cmp0_noout): Likewise.
+	(noncommutative_binary_comparison_result_used): Removed.
+	(rsub_cmp0): New pattern.
+	(rsub_cmp0_noout): Likewise.
+	(extzvsi): Changed, keep only meaningful variants.
+	(SQH, SEZ): New iterators.
+	(SQH_postfix): New mode attribute.
+	(SEZ_prefix): New code attribute.
+	(<SEZ_prefix>xt<SQH_postfix>_cmp0_noout): New instruction pattern.
+	(<SEZ_prefix>xt<SQH_postfix>_cmp0): Likewise.
+	* config/arc/predicates.md (cc_set_register): Use CC_REG instead
+	of numerical value.
+	(noncommutative_operator): Check the availability of barrel
+	shifter option.
+
 2018-04-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85284
