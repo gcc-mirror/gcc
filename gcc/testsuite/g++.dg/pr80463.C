@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
-/* { dg-options "-g -fselective-scheduling2 -O2 -fvar-tracking-assignments" } */
+/* { dg-options "-g -fselective-scheduling2 -O2 -fvar-tracking-assignments -w" } */
 
 int *a;
 int b, c;
