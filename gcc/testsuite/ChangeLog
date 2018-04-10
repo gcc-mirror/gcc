@@ -1,3 +1,11 @@
+2018-04-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2018-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/84748
+	* gcc.c-torture/execute/pr84748.c: New test.
+
 2018-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/opt/pr85196.C: New test.

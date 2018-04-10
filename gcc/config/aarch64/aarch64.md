@@ -3081,7 +3081,8 @@
 (define_insn_and_split "*compare_cstore<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	 (EQL:GPI (match_operand:GPI 1 "register_operand" "r")
-		  (match_operand:GPI 2 "aarch64_imm24" "n")))]
+		  (match_operand:GPI 2 "aarch64_imm24" "n")))
+   (clobber (reg:CC CC_REGNUM))]
   "!aarch64_move_imm (INTVAL (operands[2]), <MODE>mode)
    && !aarch64_plus_operand (operands[2], <MODE>mode)
    && !reload_completed"
