@@ -1,5 +1,6 @@
 2018-04-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR target/85287
 	* gcc/config/rs6000/rs6000.md (allocate_stack): Put the residual size
 	for stack clash protection in a register whenever we need it to be in
 	a register.
