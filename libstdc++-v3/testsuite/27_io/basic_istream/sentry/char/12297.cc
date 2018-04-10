@@ -26,19 +26,12 @@ int main()
   istringstream stream;
   stream.exceptions(ios_base::eofbit);
 
-  // The library throws the new definition of std::ios::failure
-#if _GLIBCXX_USE_CXX11_ABI
-    typedef std::ios_base::failure exception_type;
-#else
-    typedef std::exception exception_type;
-#endif
-
   try
     {
       istream::sentry sentry(stream, false);
       VERIFY( false );
     }
-  catch (exception_type&)
+  catch (std::ios_base::failure&)
     {
       VERIFY( stream.rdstate() == (ios_base::eofbit | ios_base::failbit) );
     }

@@ -50,18 +50,11 @@ void test02()
   ios.pword(1) = v;
   VERIFY( ios.pword(1) == v );
 
-  // The library throws the new definition of std::ios::failure
-#if _GLIBCXX_USE_CXX11_ABI
-    typedef std::ios_base::failure exception_type;
-#else
-    typedef std::exception exception_type;
-#endif
-
   try
     {
       v = ios.pword(max);
     }
-  catch(exception_type&)
+  catch(std::ios_base::failure&)
     {
       // Ok.
       VERIFY( ios.bad() );
@@ -80,7 +73,7 @@ void test02()
     {
       v = ios.pword(std::numeric_limits<int>::max());
     }
-  catch(exception_type&)
+  catch(std::ios_base::failure&)
     {
       // Ok.
       VERIFY( ios.bad() );
@@ -99,7 +92,7 @@ void test02()
     {
       l = ios.iword(max);
     }
-  catch(exception_type&)
+  catch(std::ios_base::failure&)
     {
       // Ok.
       VERIFY( ios.bad() );
@@ -118,7 +111,7 @@ void test02()
     {
       l = ios.iword(std::numeric_limits<int>::max());
     }
-  catch(exception_type&)
+  catch(std::ios_base::failure&)
     {
       // Ok.
       VERIFY( ios.bad() );
