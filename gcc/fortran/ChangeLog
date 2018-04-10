@@ -1,3 +1,9 @@
+2018-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/85313
+	* openmp.c (resolve_omp_do): Remove bogus if (j < i) break;.
+	(resolve_oacc_nested_loops): Likewise.  Formatting fix.
+
 2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83064
