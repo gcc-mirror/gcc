@@ -1080,6 +1080,9 @@ See RS/6000 and PowerPC Options.
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=@var{abi-type}  -msecure-plt  -mbss-plt @gol
 -mblock-move-inline-limit=@var{num} @gol
+-mblock-compare-inline-limit=@var{num} @gol
+-mblock-compare-inline-loop-limit=@var{num} @gol
+-mstring-compare-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
 -misel=yes  -misel=no @gol
 -mpaired @gol
@@ -24141,6 +24144,31 @@ Inline all block moves (such as calls to @code{memcpy} or structure
 copies) less than or equal to @var{num} bytes.  The minimum value for
 @var{num} is 32 bytes on 32-bit targets and 64 bytes on 64-bit
 targets.  The default value is target-specific.
+
+@item -mblock-compare-inline-limit=@var{num}
+@opindex mblock-compare-inline-limit
+Generate non-looping inline code for all block compares (such as calls
+to @code{memcmp} or structure compares) less than or equal to @var{num}
+bytes. If @var{num} is 0, all inline expansion (non-loop and loop) of
+block compare is disabled. The default value is target-specific.
+
+@item -mblock-compare-inline-loop-limit=@var{num}
+@opindex mblock-compare-inline-loop-limit
+Generate an inline expansion using loop code for all block compares that
+are less than or equal to @var{num} bytes, but greater than the limit
+for non-loop inline block compare expansion. If the block length is not
+constant, at most @var{num} bytes will be compared before @code{memcmp}
+is called to compare the remainder of the block. The default value is
+target-specific.
+
+@item -mstring-compare-inline-limit=@var{num}
+@opindex mstring-compare-inline-limit
+Generate at most @var{num} pairs of load instructions to compare the
+string inline. If the difference or end of string is not found at the
+end of the inline compare a call to @code{strcmp} or @code{strncmp} will
+take care of the rest of the comparison. The default is 8 pairs of
+loads, which will compare 64 bytes on a 64-bit target and 32 bytes on a
+32-bit target.
 
 @item -G @var{num}
 @opindex G
