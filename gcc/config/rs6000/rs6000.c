@@ -16953,7 +16953,7 @@ rs6000_init_builtins (void)
   bool_char_type_node = build_distinct_type_copy (unsigned_intQI_type_node);
   bool_short_type_node = build_distinct_type_copy (unsigned_intHI_type_node);
   bool_int_type_node = build_distinct_type_copy (unsigned_intSI_type_node);
-  bool_long_type_node = build_distinct_type_copy (unsigned_intDI_type_node);
+  bool_long_long_type_node = build_distinct_type_copy (unsigned_intDI_type_node);
   pixel_type_node = build_distinct_type_copy (unsigned_intHI_type_node);
 
   long_integer_type_internal_node = long_integer_type_node;
@@ -17070,7 +17070,7 @@ rs6000_init_builtins (void)
   bool_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
 					    ? "__vector __bool long"
 					    : "__vector __bool long long",
-					    bool_long_type_node, 2);
+					    bool_long_long_type_node, 2);
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
 
@@ -32900,7 +32900,7 @@ rs6000_mangle_type (const_tree type)
   if (type == bool_short_type_node) return "U6__bools";
   if (type == pixel_type_node) return "u7__pixel";
   if (type == bool_int_type_node) return "U6__booli";
-  if (type == bool_long_type_node) return "U6__booll";
+  if (type == bool_long_long_type_node) return "U6__boolx";
 
   /* Use a unique name for __float128 rather than trying to use "e" or "g". Use
      "g" for IBM extended double, no matter whether it is long double (using

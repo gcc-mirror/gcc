@@ -1,3 +1,30 @@
+2018-04-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Remove
+	erroneous entries for
+	"vector int vec_ldl (int, long int *)", and
+	"vector unsigned int vec_ldl (int, unsigned long int *)".
+	Add comments and entries for
+	"vector bool char vec_ldl (int, bool char *)",
+	"vector bool short vec_ldl (int, bool short *)",
+	"vector bool int vec_ldl (int, bool int *)",
+	"vector bool long long vec_ldl (int, bool long long *)",
+	"vector pixel vec_ldl (int, pixel *)",
+	"vector long long vec_ldl (int, long long *)",
+	"vector unsigned long long vec_ldl (int, unsigned long long *)".
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Initialize new
+	type tree bool_long_long_type_node and correct definition of
+	bool_V2DI_type_node to make reference to this new type tree.
+	(rs6000_mangle_type): Replace erroneous reference to
+	bool_long_type_node with bool_long_long_type_node.
+	* config/rs6000/rs6000.h (enum rs6000_builtin_type_index): Add
+	comments to emphasize sign distinctions for char and int types and
+	replace RS6000_BTI_bool_long constant with
+	RS6000_BTI_bool_long_long constant.  Also add comment to restrict
+	use of RS6000_BTI_pixel.
+	(bool_long_type_node): Remove this macro definition.
+	(bool_long_long_type_node): New macro definition
+
 2018-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85300
