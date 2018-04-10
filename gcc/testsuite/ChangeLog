@@ -1,3 +1,10 @@
+2018-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85177
+	PR target/85255
+	* gcc.target/i386/avx512f-pr85177.c: New test.
+	* gcc.target/i386/avx512f-pr85255.c: New test.
+
 2018-04-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85286

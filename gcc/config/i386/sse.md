@@ -12627,11 +12627,11 @@
    (match_operand:<avx512fmaskmode> 5 "register_operand")]
   "TARGET_AVX512F"
 {
-  int mask,selector;
+  int mask, selector;
   mask = INTVAL (operands[3]);
-  selector = GET_MODE_UNIT_SIZE (<MODE>mode) == 4 ?
-    0xFFFF ^ (0xF000 >> mask * 4)
-    : 0xFF ^ (0xC0 >> mask * 2);
+  selector = (GET_MODE_UNIT_SIZE (<MODE>mode) == 4
+  	      ? 0xFFFF ^ (0x000F << mask * 4)
+	      : 0xFF ^ (0x03 << mask * 2));
   emit_insn (gen_<extract_type>_vinsert<shuffletype><extract_suf>_1_mask
     (operands[0], operands[1], operands[2], GEN_INT (selector),
      operands[4], operands[5]));
@@ -12650,16 +12650,16 @@
   int mask;
   int selector = INTVAL (operands[3]);
 
-  if (selector == 0xFFF || selector == 0x3F)
+  if (selector == (GET_MODE_UNIT_SIZE (<MODE>mode) == 4 ? 0xFFF0 : 0xFC))
     mask = 0;
-  else if ( selector == 0xF0FF || selector == 0xCF)
+  else if (selector == (GET_MODE_UNIT_SIZE (<MODE>mode) == 4 ? 0xFF0F : 0xF3))
     mask = 1;
-  else if ( selector == 0xFF0F || selector == 0xF3)
+  else if (selector == (GET_MODE_UNIT_SIZE (<MODE>mode) == 4 ? 0xF0FF : 0xCF))
     mask = 2;
-  else if ( selector == 0xFFF0 || selector == 0xFC)
+  else if (selector == (GET_MODE_UNIT_SIZE (<MODE>mode) == 4 ? 0x0FFF : 0x3F))
     mask = 3;
   else
-      gcc_unreachable ();
+    gcc_unreachable ();
 
   operands[3] = GEN_INT (mask);
 

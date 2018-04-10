@@ -1,3 +1,13 @@
+2018-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85177
+	PR target/85255
+	* config/i386/sse.md
+	(<extract_type>_vinsert<shuffletype><extract_suf>_mask): Fix
+	computation of the VEC_MERGE selector from mask.
+	(<extract_type>_vinsert<shuffletype><extract_suf>_1<mask_name>):
+	Fix decoding of the VEC_MERGE selector into mask.
+
 2018-04-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85286
