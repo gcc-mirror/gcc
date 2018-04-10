@@ -430,6 +430,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   irange range_op1, range_op2;
   range_stmt rn;
   basic_block bb = gimple_bb (g);
+  bool res;
 
   if (is_a <gphi *> (g))
     {
@@ -458,13 +459,16 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
     
   // If this is a unary operation, call fold now.  
   if (!rn.operand2 ())
-    return rn.fold (r, range_op1);
+    res = rn.fold (r, range_op1);
+  else
+    {
 
-  if (!path_get_operand (range_op2, rn.operand2 (), bb))
-    return false;
+      if (!path_get_operand (range_op2, rn.operand2 (), bb))
+	return false;
 
-  normalize_bool_type (range_op1, range_op2);
-  bool res = rn.fold (r, range_op1, range_op2);
+      normalize_bool_type (range_op1, range_op2);
+      res = rn.fold (r, range_op1, range_op2);
+    }
 
   if (name)
     {

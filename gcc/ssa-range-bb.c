@@ -208,12 +208,13 @@ void
 gori_map::process_stmt (gimple *stmt, bitmap result, basic_block bb)
 {
   range_stmt rn (stmt);
-  tree ssa1 = rn.ssa_operand1 ();
-  tree ssa2 = rn.ssa_operand2 ();
   bitmap b;
 
   if (!rn.valid ())
     return;
+
+  tree ssa1 = rn.ssa_operand1 ();
+  tree ssa2 = rn.ssa_operand2 ();
 
   if (ssa1)
     {
@@ -348,125 +349,36 @@ block_ranger::~block_ranger ()
   delete gori;
 }
 
-/* Return TRUE if CODE with operands of type TYPE is a boolean
-   evaluation.  These are important to identify as both sides of a logical
-   binary expression must be evaluated in order to calculate a range.  */
+/* This routine will return what  is globally known about the range for an
+   operand of any kind.  */
 bool
-block_ranger::logical_expr_p (tree_code code, tree type) const
+block_ranger::get_operand_range (irange& r, tree op)
 {
+  /* This check allows unary operations to be handled without having to 
+     make an explicit check for the existence of a second operand.  */
+  if (!op)
+    return false;
 
-  /* Look for boolean and/or condition.  */
-  switch (code)
-    {
-      case TRUTH_AND_EXPR:
-      case TRUTH_OR_EXPR:
-        return true;
-
-      case BIT_AND_EXPR:
-      case BIT_IOR_EXPR:
-        if (types_compatible_p (type, boolean_type_node))
-	  return true;
-	break;
-
-      default:
-        break;
-    }
-  return false;
-}
-
-/* Evaluate a binary logical expression given true and false ranges for each
-   of the operands. Base the result on the value in the LHS.  */
-bool
-block_ranger::eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
-			    const irange& op1_true, const irange& op1_false,
-			    const irange& op2_true,
-			    const irange& op2_false) const
-{
-  gcc_checking_assert (logical_expr_p (stmt.get_code (),
-				       TREE_TYPE (stmt.operand1 ())));
- 
-  /* If the LHS can be TRUE OR FALSE, then both need to be evalauted and
-     combined, otherwise any range restrictions that have been determined
-     leading up to this point would be lost.  */
-  if (!wi::eq_p (lhs.lower_bound(), lhs.upper_bound()))
-    {
-      irange r1;
-      if (eval_logical (r1, stmt, bool_zero, op1_true, op1_false, op2_true,
-			op2_false) &&
-	  eval_logical (r, stmt, bool_one, op1_true, op1_false, op2_true,
-			op2_false))
-	{
-	  r.union_ (r1);
-	  return true;
-	}
-      return false;
-
-    }
-
-  /* Now combine based on whether the result is TRUE or FALSE.  */
-  switch (stmt.get_code ())
-    {
-
-      /* A logical operation on two ranges is executed with operand ranges that
-	 have been determined for both a TRUE and FALSE result..
-	 Assuming x_8 is an unsigned char:
-		b_1 = x_8 < 20
-		b_2 = x_8 > 5
-	 if we are looking for the range of x_8, the operand ranges will be:
-	 will be: 
-	 b_1 TRUE	x_8 = [0, 19]
-	 b_1 FALSE  	x_8 = [20, 255]
-	 b_2 TRUE 	x_8 = [6, 255]
-	 b_2 FALSE	x_8 = [0,5]. */
-	       
-      /*	c_2 = b_1 && b_2
-	 The result of an AND operation with a TRUE result is the intersection
-	 of the 2 TRUE ranges, [0,19] intersect [6,255]  ->   [6, 19]. */
-      case TRUTH_AND_EXPR:
-      case BIT_AND_EXPR:
-        if (!lhs.zero_p ())
-	  r = irange_intersect (op1_true, op2_true);
-	else
-	  {
-	    /* The FALSE side is the union of the other 3 cases.  */
-	    irange ff = irange_intersect (op1_false, op2_false);
-	    irange tf = irange_intersect (op1_true, op2_false);
-	    irange ft = irange_intersect (op1_false, op2_true);
-	    r = irange_union (ff, tf);
-	    r.union_ (ft);
-	  }
-        break;
-
-      /* 	c_2 = b_1 || b_2
-	 An OR operation will only take the FALSE path if both operands are
-	 false, so [20, 255] intersect [0, 5] is the union: [0,5][20,255].  */
-      case TRUTH_OR_EXPR:
-      case BIT_IOR_EXPR:
-        if (lhs.zero_p ())
-	  r = irange_intersect (op1_false, op2_false);
-	else
-	  {
-	    /* The TRUE side of the OR operation will be the union of the other
-	       three combinations.  */
-	    irange tt = irange_intersect (op1_true, op2_true);
-	    irange tf = irange_intersect (op1_true, op2_false);
-	    irange ft = irange_intersect (op1_false, op2_true);
-	    r = irange_union (tt, tf);
-	    r.union_ (ft);
-	  }
-	break;
-
-      default:
-        gcc_unreachable ();
-    }
+  if (TREE_CODE (op) == INTEGER_CST)
+    r.set_range (TREE_TYPE (op), op, op);
+  else
+    if (TREE_CODE (op) == SSA_NAME)
+      r = op;
+    else
+      if (TYPE_P (op))
+	r.set_range_for_type (op);
+      else
+        /* Default to range for the type of the expression.   */
+	r.set_range_for_type (TREE_TYPE (op));
 
   return true;
 }
 
+
 /* Given a logical STMT, calculate true and false for each potential path 
    using NAME and resolve the outcome based on the logical operator.  */
 bool
-block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
+block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
 		       const irange& lhs)
 {
   range_stmt op_stmt;
@@ -521,8 +433,8 @@ block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
 	}
     }
 
-  if (!ret || !eval_logical (r, stmt, lhs, op1_true, op1_false, op2_true,
-			     op2_false))
+  if (!ret || !stmt.fold_logical (r, lhs, op1_true, op1_false, op2_true,
+				  op2_false))
     r.set_range_for_type (TREE_TYPE (name));
   return true;
 }
@@ -531,13 +443,21 @@ block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
 /* Given the expression in STMT, return an evaluation in R for NAME.
    Returning false means the name being looked for was NOT resolvable.  */
 bool
-block_ranger::get_range (range_stmt& stmt, irange& r, tree name,
-			 const irange& lhs)
+block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
+				   const irange& lhs)
 {
-  range_stmt op_stmt;
   irange op1_range, op2_range;
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
+
+  if (!stmt.valid ())
+    return false;
+
+  if (lhs.empty_p ())
+    {
+      r.clear (TREE_TYPE (name));
+      return true;
+    }
 
   op1 = stmt.operand1 ();
   op2 = stmt.operand2 ();
@@ -561,7 +481,7 @@ block_ranger::get_range (range_stmt& stmt, irange& r, tree name,
     }
 
   /* Check for boolean cases which require developing ranges and combining.  */
-  if (logical_expr_p (stmt.get_code (), TREE_TYPE (op1)))
+  if (stmt.logical_expr_p ())
     return process_logical (stmt, r, name, lhs);
 
   /* Reaching this point means NAME is not in this stmt, but one of the
@@ -621,29 +541,6 @@ block_ranger::get_range (range_stmt& stmt, irange& r, tree name,
   return get_range_from_stmt (SSA_NAME_DEF_STMT (op2), r, name, op2_range);
 }
  
-/* Given the expression in STMT, return an evaluation in R for NAME. */
-bool
-block_ranger::get_range_from_stmt (gimple *stmt, irange& r, tree name,
-			   const irange& lhs)
-{
-  range_stmt rn;
-  rn = stmt;
-
-  /* If it isnt an expression that is understood, we know nothing.  */
-  if (!rn.valid())
-    return false;
-
-  /* If the lhs has no range, ie , it cannot be executed, then the query
-     has no range either.  */
-  if (lhs.empty_p ())
-    {
-      r.clear (TREE_TYPE (name));
-      return true;
-    }
- 
-  return get_range (rn, r, name, lhs);
-}
-
 void
 block_ranger::dump (FILE *f)
 {
@@ -812,28 +709,45 @@ block_ranger::range_on_stmt (irange& r, tree name, gimple *g)
   if (rn.operand1 () != name && rn.operand2 () != name)
     return false;
 
-  /* So far only understand LHS if its an assignment.  */
-  if (gimple_code (g) != GIMPLE_ASSIGN)
+  /* Only works if there is a LHS.  */
+  if (!gimple_get_lhs (g))
     return false;
 
   if (get_operand_range (lhs, gimple_get_lhs (g)))
-    return get_range (rn, r, name, lhs);
+    return get_range_from_stmt (rn, r, name, lhs);
 
   return false;
 }
+
+
+/* Attempt to evaluate the epression using whatever is globally known about
+   the operands.  If it can be evaluated, TRUE is returned
+   and the range is returned in R.  */
 
 bool
 block_ranger::range_of_def (irange& r, gimple *g)
 {
   range_stmt rn (g);
+  irange r1, r2;
 
   /* If we don't understand the stmt... */
   if (!rn.valid())
     return false;
   
-  return rn.fold (r);
+  tree op1 = rn.operand1 ();
+  tree op2 = rn.operand2 ();
+
+  get_operand_range (r1, op1);
+  if (op2)
+    return rn.fold (r, r1);
+
+  get_operand_range (r2, op2);
+  return rn.fold (r, r1, r2);
 }
 
+/* This method will attempt to evaluate the expression by replacing any
+   occurrence of ssa_name NAME with the range NAME_RANGE. If it can be
+   evaluated, TRUE is returned and the resulting range returned in R.  */
 bool
 block_ranger::range_of_def (irange& r, gimple *g, tree name,
 		    const irange& range_of_name)
@@ -844,6 +758,23 @@ block_ranger::range_of_def (irange& r, gimple *g, tree name,
   if (!rn.valid())
     return false;
   
-  return rn.fold (r, name, range_of_name);
+  irange r1, r2;
+  tree op1 = rn.operand1 ();
+  tree op2 = rn.operand2 ();
+
+  if (op1 == name)
+    r1 = range_of_name;
+  else
+    get_operand_range (r1, op1);
+
+  if (!op2)
+    return rn.fold (r, r1);
+
+  if (op2 == name)
+    r2 = range_of_name;
+  else
+    get_operand_range (r2, op2);
+
+  return rn.fold (r, r1, r2);
 }
 

@@ -24,9 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 
-/* Return a the range for a single tree object.  */
-bool get_operand_range (irange& r, tree op);
-
 /* This class is used summarize expressions that are supported by the
    irange_operator class, and provide an interface to the operators on
    the expression.  
@@ -43,12 +40,8 @@ bool get_operand_range (irange& r, tree op);
 class range_stmt
 {
 private:
-  tree_code code;
-  tree lhs;
-  tree op1, op2;
-  tree ssa1, ssa2;
-  tree_code validate_operands ();
-  void from_stmt (gimple *s);
+  gimple *g;
+  void validate_stmt (gimple *s);
   class irange_operator *handler() const;
 public:
   range_stmt ();
@@ -64,8 +57,8 @@ public:
   tree ssa_operand1 () const;
   tree ssa_operand2 () const;
 
-  bool fold (irange& res) const;
-  bool fold (irange& res, tree name, const irange& name_range) const;
+  bool logical_expr_p () const;
+
   bool fold (irange& res, const irange& r1) const;
   bool fold (irange& res, const irange& r1, const irange& r2) const;
   bool op1_irange (irange& r, const irange& lhs_range) const;
@@ -73,6 +66,10 @@ public:
 		   const irange& op2_range) const;
   bool op2_irange (irange& r, const irange& lhs_range,
 		   const irange& op1_range) const;
+
+  bool fold_logical (irange& r, const irange& lhs, const irange& op1_true,
+		     const irange& op1_false, const irange& op2_true,
+		     const irange& op2_false) const;
 
   void dump (FILE *f) const;
 };
@@ -82,21 +79,21 @@ public:
 inline
 range_stmt::range_stmt ()
 {
-  code = ERROR_MARK;
+  g = NULL;
 }
 
 /* Initialize a range statement from gimple statement S.  */
 inline 
 range_stmt::range_stmt (gimple *s)
 {
-  from_stmt (s);
+  validate_stmt (s);
 }
 
 /* Initialize a range statement from gimple statement S.  */
 inline range_stmt&
 range_stmt::operator= (gimple *s)
 {
-  from_stmt (s);
+  validate_stmt (s);
   return *this;
 }
 
@@ -104,43 +101,70 @@ range_stmt::operator= (gimple *s)
 inline bool
 range_stmt::valid () const
 {
-  return code != ERROR_MARK;
+  return g != NULL;
 }
 
 inline tree_code
 range_stmt::get_code () const
 {
-  return code;
+  return gimple_expr_code (g);
 }
 
 inline tree
 range_stmt::operand1 () const
 {
-  return op1;
+  switch (gimple_code (g))
+    {
+      case GIMPLE_COND:
+        return gimple_cond_lhs (g);
+      case GIMPLE_ASSIGN:
+        return gimple_assign_rhs1 (g);
+      default:
+        break;
+    }
+  return NULL;
 }
 
 inline tree
 range_stmt::operand2 () const
 {
-  return op2;
+  switch (gimple_code (g))
+    {
+      case GIMPLE_COND:
+        return gimple_cond_rhs (g);
+      case GIMPLE_ASSIGN:
+        if (gimple_num_ops (g) >= 3)
+	  return gimple_assign_rhs2 (g);
+	else
+	  return NULL;
+      default:
+        break;
+    }
+  return NULL;
 }
 
 inline tree
 range_stmt::ssa_operand1() const
 {
-  return ssa1;
+  tree op1 = operand1 ();
+  if (op1 && TREE_CODE (op1) == SSA_NAME)
+    return op1;
+  return NULL_TREE;
 }
 
 inline tree
 range_stmt::ssa_operand2 () const
 {
-  return ssa2;
+  tree op2 = operand2 ();
+  if (op2 && TREE_CODE (op2) == SSA_NAME)
+    return op2;
+  return NULL_TREE;
 }
 
 inline irange_operator *
 range_stmt::handler () const
 {
-  return irange_op_handler (code);
+  return irange_op_handler (get_code ());
 }
 
 #endif /* GCC_SSA_RANGE_STMT_H */
