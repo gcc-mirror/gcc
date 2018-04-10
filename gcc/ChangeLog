@@ -1,3 +1,10 @@
+2018-04-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/85173
+	* explow.c (emit_stack_probe): Call validize_mem on memory location
+	before passing it to gen_probe_stack.  Create address operand and
+	legitimize it for the probe_stack_address case.
+
 2018-04-09  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/85078
