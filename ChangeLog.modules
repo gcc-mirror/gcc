@@ -1,5 +1,8 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_parser_declaration_seq_opt): Remove ATOM handling here.
+
 	Incremental tokenization of ATOM preamble.
 	gcc/c-family/
 	* c-pragma.h (C_LEX_STRING_FILENAME): New.

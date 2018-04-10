@@ -12731,7 +12731,6 @@ static void
 cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 {
   bool in_global = top_level && modules_p () && !modules_atom_p ();
-  bool import_ok = in_global && modules_atom_p ();
 
   while (true)
     {
@@ -12743,16 +12742,6 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 	  || token->type == CPP_EOF
 	  || token->type == CPP_PRAGMA_EOL)
 	break;
-
-      if (token->type == CPP_SEMICOLON)
-	{
-	  /* A declaration consisting of a single semicolon is
-	     permitted.  */
-	  cp_lexer_consume_token (parser->lexer);
-	  if (!in_system_header_at (input_location))
-	    pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
-	  continue;
-	}
 
       /* If we're entering or exiting a region that's implicitly
 	 extern "C", modify the lang context appropriately.  */
@@ -12795,8 +12784,6 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 		  cp_lexer_consume_token (parser->lexer);
 		  maybe_global = false;
 		}
-	      else if (modules_atom_p ())
-		maybe_global = false;
 
 	      in_global = cp_parser_module_declaration
 		(parser, maybe_global, exporting);
@@ -12805,20 +12792,14 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 	    }
 	}
 
-      if (import_ok)
+      if (token->type == CPP_SEMICOLON)
 	{
-	  bool exporting
-	    = cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT);
-	  if (cp_lexer_nth_token_is_keyword (parser->lexer,
-					     1 + exporting, RID_IMPORT))
-	    {
-	      if (exporting)
-		cp_lexer_consume_token (parser->lexer);
-	      cp_parser_import_declaration (parser, exporting);
-	      continue;
-	    }
-	  else
-	    import_ok = false;
+	  /* A declaration consisting of a single semicolon is
+	     permitted.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  if (!in_system_header_at (input_location))
+	    pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
+	  continue;
 	}
 
       /* Parse the declaration itself.  */
