@@ -10904,6 +10904,14 @@ instantiate_class_template_1 (tree type)
 			      cxx_incomplete_type_error (r, rtype);
 			      TREE_TYPE (r) = error_mark_node;
 			    }
+			  else if (TREE_CODE (rtype) == ARRAY_TYPE
+				   && TYPE_DOMAIN (rtype) == NULL_TREE
+				   && (TREE_CODE (type) == UNION_TYPE
+				       || TREE_CODE (type) == QUAL_UNION_TYPE))
+			    {
+			      error ("flexible array member %qD in union", r);
+			      TREE_TYPE (r) = error_mark_node;
+			    }
 			}
 
 		      /* If it is a TYPE_DECL for a class-scoped ENUMERAL_TYPE,
