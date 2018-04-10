@@ -407,7 +407,7 @@ Target RejectNegative Joined Var(rs6000_tune_index) Init(-1) Enum(rs6000_cpu_opt
 
 mtraceback=
 Target RejectNegative Joined Enum(rs6000_traceback_type) Var(rs6000_traceback)
--mtraceback=	Select full, part, or no traceback table.
+-mtraceback=[full,part,no]	Select type of traceback table.
 
 Enum
 Name(rs6000_traceback_type) Type(enum rs6000_traceback_type)
@@ -435,7 +435,7 @@ Warn about deprecated 'vector long ...' AltiVec type usage.
 
 mlong-double-
 Target RejectNegative Joined UInteger Var(rs6000_long_double_type_size) Save
--mlong-double-<n>	Specify size of long double (64 or 128 bits).
+-mlong-double-[64,128]	Specify size of long double.
 
 ; This option existed in the past, but now is always on.
 mlra
