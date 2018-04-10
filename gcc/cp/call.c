@@ -7296,6 +7296,21 @@ cxx_type_promotes_to (tree type)
   return promote;
 }
 
+/* walk_tree callback to override EXPR_LOCATION in an expression tree.  */
+
+tree
+clear_location_r (tree *tp, int *walk_subtrees, void */*data*/)
+{
+  if (!EXPR_P (*tp))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+  if (EXPR_HAS_LOCATION (*tp))
+    SET_EXPR_LOCATION (*tp, input_location);
+  return NULL_TREE;
+}
+
 /* ARG is a default argument expression being passed to a parameter of
    the indicated TYPE, which is a parameter to FN.  PARMNUM is the
    zero-based argument number.  Do any required conversions.  Return
@@ -7360,6 +7375,11 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum,
   /* We must make a copy of ARG, in case subsequent processing
      alters any part of it.  */
   arg = break_out_target_exprs (arg);
+
+  /* The use of a default argument has the location of the call, not where it
+     was originally written.  */
+  cp_walk_tree_without_duplicates (&arg, clear_location_r, NULL);
+
   arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 				    ICR_DEFAULT_ARGUMENT, fn, parmnum,
 				    complain);

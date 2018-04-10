@@ -1,5 +1,10 @@
 2018-04-10  Jason Merrill  <jason@redhat.com>
 
+	PR debug/65821 - wrong location for main().
+	* call.c (clear_location_r): New.
+	(convert_default_arg): Use it.
+	* tree.c (bot_manip): Remove builtin_LINE/FILE handling.
+
 	PR c++/85285 - ICE with flexible array after substitution.
 	* pt.c (instantiate_class_template_1): Check for flexible array in
 	union.
