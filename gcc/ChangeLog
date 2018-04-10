@@ -1,5 +1,10 @@
 2018-04-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* common/config/rs6000/rs6000-common.c (rs6000_option_init_struct):
+	Enable -fasynchronous-unwind-tables by default if OBJECT_FORMAT_ELF.
+
+2018-04-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR target/85321
 	* config/rs6000/rs6000.opt (mtraceback=): Show the allowed values in
 	the help text.
