@@ -1,3 +1,10 @@
+2018-04-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/dfmode_off.c: Add -fno-asynchronous-unwind-tables.
+	* gcc.target/powerpc/dimode_off.c: Ditto.
+	* gcc.target/powerpc/tfmode_off.c: Ditto.
+	* gcc.target/powerpc/timode_off.c: Ditto.
+
 2018-04-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/vec-ldl-1.c: New test.
