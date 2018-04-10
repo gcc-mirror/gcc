@@ -4,43 +4,58 @@
 
 /* decl, with argname.  */
 
-extern int callee_1 (int one, const char **two, float three);
+extern int callee_1 (int one, const char **two, float three); // { dg-line callee_1 }
 
 int test_1 (int first, const char *second, float third)
 {
-  return callee_1 (first, second, third); // { dg-error "27: cannot convert 'const char\\*' to 'const char\\*\\*' for argument '2' to 'int callee_1\\(int, const char\\*\\*, float\\)'" }
+  return callee_1 (first, second, third); // { dg-error "27: cannot convert 'const char\\*' to 'const char\\*\\*'" }
   /* { dg-begin-multiline-output "" }
    return callee_1 (first, second, third);
                            ^~~~~~
+     { dg-end-multiline-output "" } */
+  // { dg-message "initializing argument 2 of 'int callee_1\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_1 }
+  /* { dg-begin-multiline-output "" }
+ extern int callee_1 (int one, const char **two, float three);
+                               ~~~~~~~~~~~~~^~~
      { dg-end-multiline-output "" } */
 }
 
 /* decl, without argname.  */
 
-extern int callee_2 (int, const char **, float);
+extern int callee_2 (int, const char **, float); // { dg-line callee_2 }
 
 int test_2 (int first, const char *second, float third)
 {
-  return callee_2 (first, second, third); // { dg-error "27: cannot convert 'const char\\*' to 'const char\\*\\*' for argument '2' to 'int callee_2\\(int, const char\\*\\*, float\\)'" }
+  return callee_2 (first, second, third); // { dg-error "27: cannot convert 'const char\\*' to 'const char\\*\\*'" }
   /* { dg-begin-multiline-output "" }
    return callee_2 (first, second, third);
                            ^~~~~~
+     { dg-end-multiline-output "" } */
+  // { dg-message "initializing argument 2 of 'int callee_2\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_2 }
+  /* { dg-begin-multiline-output "" }
+ extern int callee_2 (int, const char **, float);
+                           ^~~~~~~~~~~~~
      { dg-end-multiline-output "" } */
 }
 
 /* defn, with argname.  */
 
-static int callee_3 (int one, const char **two, float three)
+static int callee_3 (int one, const char **two, float three) // { dg-line callee_3 }
 {
   return callee_2 (one, two, three);
 }
 
 int test_3 (int first, const char *second, float third)
 {
-  return callee_3 (first, second, third); // { dg-error "27: cannot convert 'const char\\*' to 'const char\\*\\*' for argument '2' to 'int callee_3\\(int, const char\\*\\*, float\\)'" }
+  return callee_3 (first, second, third); // { dg-error "27: cannot convert 'const char\\*' to 'const char\\*\\*'" }
   /* { dg-begin-multiline-output "" }
    return callee_3 (first, second, third);
                            ^~~~~~
+     { dg-end-multiline-output "" } */
+  // { dg-message "initializing argument 2 of 'int callee_3\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_3 }
+  /* { dg-begin-multiline-output "" }
+ static int callee_3 (int one, const char **two, float three)
+                               ~~~~~~~~~~~~~^~~
      { dg-end-multiline-output "" } */
 }
 

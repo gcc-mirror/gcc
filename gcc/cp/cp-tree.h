@@ -5995,6 +5995,8 @@ extern bool can_convert_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern bool can_convert_arg_bad			(tree, tree, tree, int,
 						 tsubst_flags_t);
+extern location_t get_fndecl_argument_location  (tree, int);
+
 
 /* A class for recording information about access failures (e.g. private
    fields), so that we can potentially supply a fix-it hint about

@@ -1,3 +1,11 @@
+2018-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* g++.dg/cpp1z/direct-enum-init1.C: Update for the cases
+	where we now show the pertinent parameter.
+	* g++.dg/diagnostic/aka2.C: Likewise.
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Likewise.
+
 2018-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/85313
