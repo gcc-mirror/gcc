@@ -1,3 +1,12 @@
+2018-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (get_fndecl_argument_location): Make non-static.
+	* cp-tree.h (get_fndecl_argument_location): New decl.
+	* typeck.c (convert_for_assignment): When complaining due to
+	conversions for an argument, show the location of the parameter
+	within the decl.
+
 2018-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85312 - P0962 cleanup

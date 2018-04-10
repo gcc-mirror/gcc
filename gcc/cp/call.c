@@ -6595,7 +6595,7 @@ maybe_print_user_conv_context (conversion *convs)
    ARGNUM is zero based, -1 indicates the `this' argument of a method.
    Return the location of the FNDECL itself if there are problems.  */
 
-static location_t
+location_t
 get_fndecl_argument_location (tree fndecl, int argnum)
 {
   int i;
