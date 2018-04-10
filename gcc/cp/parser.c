@@ -201,8 +201,6 @@ public:
 
 /* Prototypes.  */
 
-static void cp_lexer_fill_main
-  (cp_lexer *lexer, cp_token *first);
 static cp_lexer *cp_lexer_new_from_tokens
   (cp_token_cache *tokens);
 static void cp_lexer_destroy
@@ -249,6 +247,8 @@ static cp_token_cache *cp_token_cache_new
 
 static void cp_parser_initial_pragma
   (cp_token *);
+static void cp_parser_fill_main
+  (cp_parser *parser, cp_token *first);
 
 static bool cp_parser_omp_declare_reduction_exprs
   (tree, cp_parser *);
@@ -624,37 +624,6 @@ cp_lexer_alloc (void)
   return lexer;
 }
 
-
-/* Fill the lexer with tokens from the preprocessor.  *FIRST is the
-   intial token found by cp_parser_initial_pragma.  */
-
-static void
-cp_lexer_fill_main (cp_lexer *lexer, cp_token *first)
-{
-  /* Save the first token found by the initial pragma parse.  */
-  lexer->buffer->quick_push (*first);
-
-  /* Get the remaining tokens from the preprocessor.  */
-  cp_token *tok = first;
-  while (tok->type != CPP_EOF)
-    {
-      tok = vec_safe_push (lexer->buffer, cp_token ());
-      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
-    }
-
-  lexer->last_token = lexer->buffer->address ()
-                      + lexer->buffer->length ()
-		      - 1;
-  lexer->next_token = lexer->buffer->length ()
-		      ? lexer->buffer->address ()
-		      : &eof_token;
-
-  /* Subsequent preprocessor diagnostics should use compiler
-     diagnostic functions to get the compiler source location.  */
-  done_lexing = true;
-
-  gcc_assert (!lexer->next_token->purged_p);
-}
 
 /* Create a new lexer whose token stream is primed with the tokens in
    CACHE.  When these tokens are exhausted, no new tokens will be read.  */
@@ -12761,7 +12730,7 @@ cp_parser_module_proclamation (cp_parser *parser)
 static void
 cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 {
-  bool in_global = top_level && modules_p ();
+  bool in_global = top_level && modules_p () && !modules_atom_p ();
   bool import_ok = in_global && modules_atom_p ();
 
   while (true)
@@ -12778,7 +12747,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
       if (token->type == CPP_SEMICOLON)
 	{
 	  /* A declaration consisting of a single semicolon is
-	     invalid.  Allow it unless we're being pedantic.  */
+	     permitted.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  if (!in_system_header_at (input_location))
 	    pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
@@ -39232,6 +39201,91 @@ pragma_lex (tree *value, location_t *loc)
   return ret;
 }
 
+/* Fill the lexer with tokens from the preprocessor.  *FIRST is the
+   intial token found by cp_parser_initial_pragma.  */
+
+static void
+cp_parser_fill_main (cp_parser *parser, cp_token *first)
+{
+  cp_lexer *lexer = parser->lexer;
+  unsigned lwm = 0;
+  if (modules_atom_p ())
+    {
+      /* Read until the module preamble is done.  */
+      for (; first->type != CPP_EOF; )
+	{
+	  // FIXME:pragma?
+	  bool exporting = first->keyword == RID_EXPORT;
+	  if (exporting)
+	    {
+	      vec_safe_push (lexer->buffer, *first);
+	      cp_lexer_get_preprocessor_token (0, first);
+	    }
+
+	  if (first->keyword != RID_IMPORT
+	      && first->keyword != RID_MODULE)
+	    /* End of preamble.  */
+	    break;
+
+	  // FIXME: warn if I'm inside a macro at this point
+	  do
+	    {
+	      vec_safe_push (lexer->buffer, *first);
+	      // FIXME:string-file names
+	      cp_lexer_get_preprocessor_token (0, first);
+	    }
+	  while (first->type != CPP_EOF && first->type != CPP_SEMICOLON);
+	  vec_safe_push (lexer->buffer, *first);
+	  if (first->type != CPP_EOF)
+	    vec_safe_push (lexer->buffer, eof_token);
+
+	  lexer->next_token = &(*lexer->buffer)[lwm + exporting];
+	  lexer->last_token = &lexer->buffer->last ();
+	  if (lexer->next_token->keyword == RID_MODULE)
+	    cp_parser_module_declaration (parser, false, exporting);
+	  else
+	    cp_parser_import_declaration (parser, exporting);
+
+	  /* Remove the extra EOF token.  */
+	  if (first->type != CPP_EOF)
+	    {
+	      lexer->buffer->pop ();
+	      cp_lexer_get_preprocessor_token (0, first);
+	    }
+	  lwm = lexer->buffer->length ();
+	  if (lexer->next_token != &eof_token)
+	    {
+	      lwm -= lexer->next_token - &(*lexer->buffer)[0];
+	      break;
+	    }
+	}
+
+      /* End of preamble.  Commit module state.  */
+      // FIXME:     module_atom_preamble_end ();
+    }
+
+  /* Save the first token found by the initial pragma parse.  */
+  vec_safe_push (lexer->buffer, *first);
+
+  /* Get the remaining tokens from the preprocessor.  */
+  cp_token *tok = first;
+  while (tok->type != CPP_EOF)
+    {
+      tok = vec_safe_push (lexer->buffer, cp_token ());
+      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
+    }
+
+  lexer->last_token = &lexer->buffer->last ();
+  lexer->next_token = (lexer->buffer->length () > lwm
+		       ? &(*lexer->buffer)[lwm] : &eof_token);
+
+  /* Subsequent preprocessor diagnostics should use compiler
+     diagnostic functions to get the compiler source location.  */
+  done_lexing = true;
+
+  gcc_assert (!lexer->next_token->purged_p);
+}
+
 
 /* External interface.  */
 
@@ -39256,7 +39310,7 @@ c_parse_file (void)
   the_parser = cp_parser_new ();
   push_deferring_access_checks (flag_access_control
 				? dk_no_deferred : dk_no_check);
-  cp_lexer_fill_main (the_parser->lexer, &first);
+  cp_parser_fill_main (the_parser, &first);
   cp_parser_translation_unit (the_parser);
   the_parser = NULL;
 }

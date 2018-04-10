@@ -6046,21 +6046,33 @@ module_state::occupy (location_t l, tree maybe_vec)
 				     IDENTIFIER_LENGTH (name), true);
 }
 
-/* Set location to NAME, and then enter the module.  */
+/* Set enter or leave the module.
+   With atom modules, we interact closely with the preprocessor.
+   Imports happen before we've read following tokens.   */
 
 void
 module_state::push_location ()
 {
   // FIXME:We want LC_MODULE_ENTER really.
-  linemap_add (line_table, LC_ENTER, false, filename, 0);
-  input_location = linemap_line_start (line_table, 0, 0);
+  if (modules_atom_p ())
+    module_file_nest (filename);
+  else
+    {
+      linemap_add (line_table, LC_ENTER, false, filename, 0);
+      input_location = linemap_line_start (line_table, 0, 0);
+    }
 }
 
 void
 module_state::pop_location ()
 {
-  linemap_add (line_table, LC_LEAVE, false, NULL, 0);  
-  input_location = linemap_line_start (line_table, 0, 0);
+  if (modules_atom_p ())
+    module_file_nest (NULL);
+  else
+    {
+      linemap_add (line_table, LC_LEAVE, false, NULL, 0);  
+      input_location = linemap_line_start (line_table, 0, 0);
+    }
 }
 
 /* A human-readable README section.  It is a STRTAB that may be

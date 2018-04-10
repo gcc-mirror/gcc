@@ -1,5 +1,21 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
+	Incremental tokenization of ATOM preamble.
+	gcc/c-family/
+	* c-pragma.h (C_LEX_STRING_FILENAME): New.
+	gcc/cp/
+	* cp-tree.h (module_file_nest): Declare.
+	* lex.c (module_file_nest): Define.
+	* module.c (module_state::{push,pop}_location): Use it.
+	* parser.c (cp_lexer_fill_main): Rename to ...
+	(cp_parser_file_main): ... this.  Take parser not lexer.  Read &
+	parse one atom declaration at a time.
+	(cp_parser_declaration_seq_opt): Disable atom preamble here.
+	(c_parse_file): Adjust.
+	libcpp/
+	* files.c (cpp_module_file): New.
+	* include/cpplib.h (cpp_module_file): Declare.
+
 	gcc/cp/
 	* parser.c (cp_lexer_new_main): Replace with ...
 	(cp_lexer_fill_main): ... this.  Move initial pragma processing to

@@ -1177,6 +1177,7 @@ extern void cpp_make_system_header (cpp_reader *, int, int);
 extern bool cpp_push_include (cpp_reader *, const char *);
 extern bool cpp_push_default_include (cpp_reader *, const char *);
 extern void cpp_change_file (cpp_reader *, enum lc_reason, const char *);
+extern void cpp_module_file (cpp_reader *, const char *);
 extern const char *cpp_get_path (struct _cpp_file *);
 extern cpp_dir *cpp_get_dir (struct _cpp_file *);
 extern cpp_buffer *cpp_get_buffer (cpp_reader *);

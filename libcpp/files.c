@@ -1375,6 +1375,18 @@ cpp_change_file (cpp_reader *pfile, enum lc_reason reason,
   _cpp_do_file_change (pfile, reason, new_name, 1, 0);
 }
 
+/* Enter or leave a C++ module file.  This difers from
+   cpp_change_file, in that the module file is a binary, (indicated by
+   line number zero).  */
+
+void
+cpp_module_file (cpp_reader *pfile, const char *new_name)
+{
+  // FIXME:Really want LC_ENTER_MODULE/LC_LEAVE_MODULE
+  _cpp_do_file_change (pfile, new_name ? LC_ENTER : LC_LEAVE,
+		       new_name, 0, 0);
+}
+
 struct report_missing_guard_data
 {
   const char **paths;

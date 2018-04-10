@@ -486,6 +486,15 @@ handle_pragma_implementation (cpp_reader* /*dfile*/)
     }
 }
 
+/* Enter or leave a module file.  This is the least-worst location for
+   this function.  */
+
+void
+module_file_nest (const char *name)
+{
+  cpp_module_file (parse_in, name);
+}
+
 /* Issue an error message indicating that the lookup of NAME (an
    IDENTIFIER_NODE) failed.  Returns the ERROR_MARK_NODE.  */
 

@@ -6575,6 +6575,7 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
+extern void module_file_nest			(const char *name);
 
 /* in method.c */
 extern void init_method				(void);
