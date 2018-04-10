@@ -1,3 +1,12 @@
+2018-04-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2018-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/84748
+	* config/aarch64/aarch64.md (*compare_cstore<mode>_insn): Mark pattern
+	as clobbering CC_REGNUM.
+
 2018-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/85196
