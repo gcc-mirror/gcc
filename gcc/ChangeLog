@@ -1,5 +1,10 @@
 2018-04-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/85286
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type):
+
+2018-04-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* final.c (final_1): Set insn_last_address as well as
 	insn_current_address.
 

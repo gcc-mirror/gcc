@@ -132,6 +132,8 @@ vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
 
   if (is_gimple_assign (stmt)
       && (gimple_assign_cast_p (stmt)
+          || gimple_assign_rhs_code (stmt) == DOT_PROD_EXPR
+          || gimple_assign_rhs_code (stmt) == WIDEN_SUM_EXPR
           || gimple_assign_rhs_code (stmt) == WIDEN_MULT_EXPR
           || gimple_assign_rhs_code (stmt) == WIDEN_LSHIFT_EXPR
           || gimple_assign_rhs_code (stmt) == FLOAT_EXPR))
