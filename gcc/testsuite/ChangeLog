@@ -1,3 +1,8 @@
+2018-04-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70808
+	* g++.dg/warn/Wzero-as-null-pointer-constant-7.C: New.
+
 2018-04-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/dfmode_off.c: Add -fno-asynchronous-unwind-tables.
