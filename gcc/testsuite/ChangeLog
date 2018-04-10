@@ -1,3 +1,8 @@
+2018-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/85300
+	* gcc.dg/pr85300.c: New test.
+
 2018-04-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85110

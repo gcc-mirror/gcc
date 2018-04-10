@@ -1,3 +1,10 @@
+2018-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/85300
+	* combine.c (subst): Handle subst of CONST_SCALAR_INT_P new_rtx also
+	into FLOAT and UNSIGNED_FLOAT like ZERO_EXTEND, return a CLOBBER if
+	simplify_unary_operation fails.
+
 2018-04-10  Martin Liska  <mliska@suse.cz>
 
 	* gdbhooks.py: Add pretty-printers for varpool_node, symtab_node,
