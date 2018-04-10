@@ -2558,7 +2558,8 @@ used, then read mappings from @var{file}.
 
 @item -fno-module-lazy
 @opindex fno-module-lazy
-Disable lazy module importing.
+@opindex fmodule-lazy
+Disable module importing.
 
 @item -fmodule-output=@var{file}
 @opindex fmodule-output
@@ -29232,8 +29233,12 @@ Makefiles, without disturbing the file's usual reader.
 
 @end itemize
 
-The @option{-fmodule-path=@var{dir}} option
+The @option{-fmodule-path=@var{dir}} option ...
 
-The @option{-fmodule-prefix=@var{dir}} option
+The @option{-fmodule-prefix=@var{dir}} option ...
 
-The @option{-fmodule-wrapper=@var{program}} option
+The @option{-fmodule-wrapper=@var{program}} option ...
+
+The @option{-fno-module-lazy} option ...
+
+The @option{--param lazy-module-files=@{var}} ...

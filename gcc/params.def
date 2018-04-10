@@ -1331,8 +1331,12 @@ DEFPARAM(PARAM_AVOID_FMA_MAX_BITS,
 	 "Maximum number of bits for which we avoid creating FMAs.",
 	 0, 0, 512)
 
-/*
+DEFPARAM(PARAM_LAZY_MODULE_FILES,
+	 "lazy-module-files",
+	 "Maximum number of concurrently module files open during lazy loading",
+	 100, 1, 32768)
 
+/*
 Local variables:
 mode:c
 End:

@@ -1,5 +1,21 @@
 2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
+	Protect against too-many lazy loadings.
+	gcc/
+	* params.def (PARAM_LAZY_MODULE_FILES): Define.
+	gcc/cp/
+	* module.c: Include params.h
+	(elf::has_error): Return the error code.
+	(elf_in): Add device, inode & size fields.
+	(elf_in::{is_frozen,freeze,defrost}): New.
+	(module_state): Add lru, lazy_lru, lazy_open fields.
+	(module_state::{load_section,freeze_an_elf}): New.
+	(module_state::{read,lazy_load}): Adjust.
+	(module_state::check_read): Check for EMFILE.
+	(module_state::do_import): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/freeze-1_[a-d].C: New.
+
 	gcc/cp/
 	* parser.c (cp_parser_declaration_seq_opt): Remove ATOM handling here.
 

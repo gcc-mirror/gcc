@@ -141,6 +141,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "version.h"
 #include "tree-diagnostic.h"
+#include "params.h"
 
 /* Id for dumping module information.  */
 int module_dump_id;
@@ -444,10 +445,10 @@ public:
   }
 
 public:
-  /* Return true if we have an error.  */
-  bool has_error () const
+  /* Return the error, if we have an error.  */
+  int has_error () const
   {
-    return err != 0;
+    return err;
   }
   /* Set the error, unless it's already been set.  */
   void set_error (int e = E_BAD_DATA)
@@ -513,18 +514,34 @@ elf::end ()
 class elf_in : public elf {
   typedef elf parent;
 
+private:
+  /* For freezing & defrosting.  */
+#if !defined (HOST_LACKS_INODE_NUMBERS)
+  dev_t device;
+  ino_t inode;
+#endif
+  unsigned size;
+
 protected:
   data *strings;  /* String table.  */
 
   public:
   elf_in (FILE *s, int e)
-    :parent (s, e), strings (NULL)
+    :parent (s, e), size (0), strings (NULL)
   {
   }
   ~elf_in ()
   {
     gcc_checking_assert (!strings);
   }
+
+public:
+  bool is_frozen () const
+  {
+    return !stream && size;
+  }
+  void freeze ();
+  void defrost (const char *);
 
 protected:
   bool read (void *, size_t);
@@ -651,6 +668,52 @@ public:
   bool begin ();
   bool end ();
 };
+
+/* Close and open the file, without destroying it.  */
+
+void
+elf_in::freeze ()
+{
+  gcc_checking_assert (!is_frozen ());
+  struct stat stat;
+
+  if (fstat (fileno (stream), &stat) < 0)
+    set_error (errno);
+  else
+    {
+#if !defined (HOST_LACKS_INODE_NUMBERS)
+      device = stat.st_dev;
+      inode = stat.st_ino;
+#endif
+      size = unsigned (stat.st_size);
+      if (fclose (stream) < 0)
+	set_error (errno);
+      stream = NULL;
+    }
+}
+
+void
+elf_in::defrost (const char *name)
+{
+  gcc_checking_assert (is_frozen ());
+  struct stat stat;
+
+  stream = fopen (name, "rb");
+  if (!stream || fstat (fileno (stream), &stat) < 0)
+    set_error (errno);
+  else
+    {
+      bool ok = size == unsigned (stat.st_size);
+#if !defined (HOST_LACKS_INODE_NUMBERS)
+      if (device != stat.st_dev
+	  || inode != stat.st_ino)
+	ok = false;
+#endif
+      if (!ok)
+	set_error (EMFILE);
+    }
+  size = 0;
+}
 
 /* Forget about sections not in the range [from,to).  */
 
@@ -2170,6 +2233,7 @@ struct GTY(()) module_state {
 
   unsigned lazy;	/* Number of lazy sections yet to read.  */
   unsigned loading;	/* Section currently being loaded.  */
+  unsigned lru;		/* An LRU counter.  */
 
   unsigned mod;		/* Module owner number.  */
   unsigned crc;		/* CRC we saw reading it in. */
@@ -2206,8 +2270,11 @@ struct GTY(()) module_state {
   void write (elf_out *to);
   void read (FILE *handle, int e, unsigned *crc_ptr);
 
+  void load_section (unsigned snum);
+
   /* Lazily read a section.  */
   bool lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost = false);
+  static void freeze_an_elf ();
 
  private:
   /* Check or complete a read.  */
@@ -2292,6 +2359,8 @@ struct GTY(()) module_state {
   static vec<tree, va_gc> *global_vec;
   static unsigned global_crc;
   static unsigned lazy_depth;
+  static unsigned lazy_lru;
+  static int lazy_open;
 };
 
 module_state::module_state (tree name)
@@ -2299,7 +2368,7 @@ module_state::module_state (tree name)
     name (name), vec_name (NULL_TREE),
     remap (NULL), from (NULL),
     filename (NULL), srcname (NULL), loc (UNKNOWN_LOCATION),
-    lazy (0), loading (~0u), mod (MODULE_UNKNOWN), crc (0)
+    lazy (0), loading (~0u), lru (0), mod (MODULE_UNKNOWN), crc (0)
 {
   imported = exported = false;
 }
@@ -2353,6 +2422,8 @@ unsigned module_state::global_crc;
 
 /* Nesting of lazy loaders.  */
 unsigned module_state::lazy_depth;
+unsigned module_state::lazy_lru;
+int module_state::lazy_open;
 
 /* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
 vec<module_state *, va_gc> GTY(()) *module_state::modules;
@@ -7470,6 +7541,8 @@ void
 module_state::read (FILE *stream, int e, unsigned *crc_ptr)
 {
   from = new elf_in (stream, e);
+  lru = lazy_lru++;
+  lazy_open++;
   if (!from->begin ())
     return;
 
@@ -7521,14 +7594,37 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
       unsigned hwm = range.second;
       for (unsigned ix = range.first; ix != hwm; ix++)
 	{
-	  loading = ix;
-	  if (!read_cluster (ix))
+	  load_section (ix);
+	  if (from->has_error ())
 	    break;
-	  lazy--;
 	}
     }
 
   return;
+}
+
+/* Load section SNUM, dealing with laziness.  */
+
+void
+module_state::load_section (unsigned snum)
+{
+  unsigned old_loading = loading;
+  if (from->is_frozen ())
+    {
+      if (lazy_open >= PARAM_VALUE (PARAM_LAZY_MODULE_FILES))
+	freeze_an_elf ();
+      dump () && dump ("Defrosting %s", filename);
+      from->defrost (filename);
+      lazy_open++;
+    }
+  loading = snum;
+  lru = lazy_lru++;
+  lazy_depth++;
+  read_cluster (snum);
+  from->forget_section (loading);
+  lazy_depth--;
+  loading = old_loading;
+  lazy--;
 }
 
 /* After a reading operation, make sure things are still ok.  If not,
@@ -7542,10 +7638,13 @@ module_state::check_read (bool outermost, tree ns, tree id)
 {
   bool done = loading == ~0u && (from->has_error () || !lazy);
   if (done)
-    from->end ();
+    {
+      lazy_open--;
+      from->end ();
+    }
 
-  bool failed = from->has_error ();
-  if (failed)
+  int e = from->has_error ();
+  if (e)
     {
       const char *err = from->get_error ();
       /* Failure to read a module is going to cause big
@@ -7557,15 +7656,20 @@ module_state::check_read (bool outermost, tree ns, tree id)
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id, name, err);
       else
 	error_at  (loc, "failed to import module %qE: %s", name, err);
+      
+      if (e == EMFILE)
+	inform (loc, "consider reducing --param %s=%d",
+		compiler_params[PARAM_LAZY_MODULE_FILES].option,
+		PARAM_VALUE (PARAM_LAZY_MODULE_FILES));
     }
 
   if (done)
     release (false);
 
-  if (failed && outermost)
+  if (e && outermost)
     fatal_error (loc, "declining opportunity to proceed into weeds");
 
-  return failed;
+  return e;
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -8176,21 +8280,21 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 
       if (!module_p || !export_p)
 	{
+	  unsigned n = dump.push (state);
+	  if (lazy_open >= PARAM_VALUE (PARAM_LAZY_MODULE_FILES))
+	    freeze_an_elf ();
 	  FILE *stream = find_module_file (state);
 	  int e = errno;
 
-	  // FIXME: if errno == EMFILE, and we're lazy loading, we might
-	  // consider some closing and reopening of active modules.
-
 	  state->push_location ();
-	  unsigned n = dump.push (state);
 	  state->announce ("importing");
 	  state->read (stream, e, crc_ptr);
 	  bool failed = state->check_read (module_p || export_p);
 	  state->announce (flag_module_lazy && !module_p
 			   ? "lazily" : "imported");
-	  dump.pop (n);
 	  state->pop_location ();
+	  dump.pop (n);
+
 	  if (failed)
 	    return NULL;
 	}
@@ -8222,6 +8326,27 @@ module_state::do_import (location_t loc, tree name, bool module_p,
   return state;
 }
 
+/* Pick a victim module to freeze its reader.  */
+
+void
+module_state::freeze_an_elf ()
+{
+  module_state *victim = NULL;
+  for (unsigned ix = modules->length (); ix--;)
+    {
+      module_state *candidate = (*modules)[ix];
+      if (candidate && candidate->from && !candidate->from->is_frozen ()
+	  && (!victim || victim->lru > candidate->lru))
+	victim = candidate;
+    }
+
+  /* We should always find a victim  */
+  gcc_assert (victim);
+  dump () && dump ("Freezing %s", victim->filename);
+  victim->from->freeze ();
+  lazy_open--;
+}
+
 /* *SLOT is a yet-to-be loaded binding of module MOD in namepsace NS
    named ID.  Lazily load it, or die trying.  */
 
@@ -8233,18 +8358,11 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 
   unsigned snum = mslot->get_lazy ();
   dump () && dump ("Lazily loading %P@%N section:%u", ns, id, name, snum);
-  unsigned old_loading = loading;
   if (snum >= loading || !flag_module_lazy)
     from->set_error (elf::E_BAD_LAZY);
   else
     {
-      loading = snum;
-      lazy_depth++;
-      read_cluster (snum);
-      from->forget_section (loading);
-      lazy_depth--;
-      loading = old_loading;
-      lazy--;
+      load_section (snum);
       if (mslot->is_lazy ())
 	from->set_error (elf::E_BAD_LAZY);
     }
