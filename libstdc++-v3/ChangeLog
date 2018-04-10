@@ -1,5 +1,14 @@
 2018-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/faq.xml: Update links to archived copy of SGI STL docs.
+	* doc/xml/manual/backwards_compatibility.xml: Likewise.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/policy_data_structures_biblio.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Likewise.
+
 	PR libstdc++/85222
 	* src/c++11/Makefile.am [ENABLE_DUAL_ABI]: Add special rules for
 	cxx11-ios_failure.cc to rewrite type info for __ios_failure.

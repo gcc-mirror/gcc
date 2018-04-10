@@ -1132,9 +1132,9 @@
     </para>
     <para>
     Libstdc++-v3 incorporates a lot of code from
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/">the SGI STL</link>
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/">the SGI STL</link>
     (the final merge was from
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/whats_new.html">release 3.3</link>).
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/whats_new.html">release 3.3</link>).
     The code in libstdc++ contains many fixes and changes compared to the
     original SGI code.
     </para>
@@ -1153,7 +1153,7 @@
     compatibility</link> documentation.
     </para>
     <para>
-    The <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/FAQ.html">FAQ</link>
+    The <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/FAQ.html">FAQ</link>
     for SGI's STL is still recommended reading.
     </para> 
   </answer>
