@@ -1,3 +1,8 @@
+2018-04-10  Bin Cheng  <bin.cheng@arm.com>
+
+	PR testsuite/85190
+	* gcc.dg/vect/pr81196.c: Adjust pointer for aligned access.
+
 2018-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85177
