@@ -1,3 +1,12 @@
+2018-04-09  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/85078
+	* ipa-devirt.c (rebuild_type_inheritance-hash): New.
+	* ipa-utils.h (rebuild_type_inheritance-hash): Declare.
+	* tree.c (free_lang_data_in_type): Fix handling of binfos;
+	walk basetypes.
+	(free_lang_data): Rebuild type inheritance graph.
+
 2018-04-09  Martin Sebor  <msebor@redhat.com>
 
 	* invoke.texi (-finline-small-functions): Mention other optimization
