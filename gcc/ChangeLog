@@ -1,3 +1,12 @@
+2018-04-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/85321
+	* config/rs6000/rs6000.opt (mtraceback=): Show the allowed values in
+	the help text.
+	(mlong-double-): Ditto.
+	* config/rs6000/sysv4.opt (msdata=): Ditto.
+	(mtls-size=): Ditto.
+
 2018-04-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Remove
