@@ -1644,10 +1644,10 @@ represented conveniently as @code{(i >= 0 && i < 10) ? i : abort()}.
 As a GNU extension, the C language front-ends allow the second
 operand of the @code{?:} operator may be omitted in the source.
 For example, @code{x ? : 3} is equivalent to @code{x ? x : 3},
-assuming that @code{x} is an expression without side-effects.
+assuming that @code{x} is an expression without side effects.
 In the tree representation, however, the second operand is always
 present, possibly protected by @code{SAVE_EXPR} if the first
-argument does cause side-effects.
+argument does cause side effects.
 
 @item CALL_EXPR
 These nodes are used to represent calls to functions, including
@@ -1732,10 +1732,10 @@ by the @code{COMPOUND_LITERAL_EXPR_DECL} macro.
 @item SAVE_EXPR
 
 A @code{SAVE_EXPR} represents an expression (possibly involving
-side-effects) that is used more than once.  The side-effects should
+side effects) that is used more than once.  The side effects should
 occur only the first time the expression is evaluated.  Subsequent uses
 should just reuse the computed value.  The first operand to the
-@code{SAVE_EXPR} is the expression to evaluate.  The side-effects should
+@code{SAVE_EXPR} is the expression to evaluate.  The side effects should
 be executed where the @code{SAVE_EXPR} is first encountered in a
 depth-first preorder traversal of the expression tree.
 
@@ -2222,9 +2222,9 @@ of the form @code{VAR @{<,>,<=,>=@} N2}.
 Operand @code{OMP_FOR_INCR} is the loop index increment of the
 form @code{VAR @{+=,-=@} INCR}.
 
-Operand @code{OMP_FOR_PRE_BODY} contains side-effect code from
+Operand @code{OMP_FOR_PRE_BODY} contains side effect code from
 operands @code{OMP_FOR_INIT}, @code{OMP_FOR_COND} and
-@code{OMP_FOR_INC}.  These side-effects are part of the
+@code{OMP_FOR_INC}.  These side effects are part of the
 @code{OMP_FOR} block but must be evaluated before the start of
 loop body.
 
@@ -2233,7 +2233,7 @@ which is implicitly private to each thread.  Bounds
 @code{N1} and @code{N2} and the increment expression
 @code{INCR} are required to be loop invariant integer
 expressions that are evaluated without any synchronization. The
-evaluation order, frequency of evaluation and side-effects are
+evaluation order, frequency of evaluation and side effects are
 unspecified by the standard.
 
 @item OMP_SECTIONS

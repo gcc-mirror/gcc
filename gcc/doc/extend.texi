@@ -2050,7 +2050,7 @@ int widths[] = @{ [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 @};
 @end smallexample
 
 @noindent
-If the value in it has side-effects, the side-effects happen only once,
+If the value in it has side effects, the side effects happen only once,
 not for each initialized field by the range initializer.
 
 @noindent
@@ -2147,7 +2147,7 @@ struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
 @noindent
 If the same field is initialized multiple times, it has the value from
 the last initialization.  If any such overridden initialization has
-side-effect, it is unspecified whether the side-effect happens or not.
+side effect, it is unspecified whether the side effect happens or not.
 Currently, GCC discards them and issues a warning.
 
 @node Case Ranges
@@ -3028,7 +3028,7 @@ This function attribute prevents a function from being considered for
 inlining.
 @c Don't enumerate the optimizations by name here; we try to be
 @c future-compatible with this mechanism.
-If the function does not have side-effects, there are optimizations
+If the function does not have side effects, there are optimizations
 other than inlining that cause function calls to be optimized away,
 although the function call is live.  To keep such calls from being
 optimized away, put
@@ -3038,7 +3038,7 @@ asm ("");
 
 @noindent
 (@pxref{Extended Asm}) in the called function, to serve as a special
-side-effect.
+side effect.
 
 @item noipa
 @cindex @code{noipa} function attribute
@@ -10665,7 +10665,7 @@ The built-in functions promote the first two operands into infinite precision si
 and perform addition on those promoted operands. The result is then
 cast to the type of the third argument.  If the cast result is equal to the infinite
 precision result, the built-in functions return false, otherwise they return true.
-The value of the third argument is ignored, just the side-effects in the third argument
+The value of the third argument is ignored, just the side effects in the third argument
 are evaluated, and no integral argument promotions are performed on the last argument.
 If the third argument is a bit-field, the type used for the result cast has the
 precision and signedness of the given bit-field, rather than precision and signedness
@@ -10761,7 +10761,7 @@ a limited extent, they can be used without optimization as well.
 is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  @code{__builtin_object_size} never evaluates
-its arguments for side-effects.  If there are any side-effects in them, it
+its arguments for side effects.  If there are any side effects in them, it
 returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
 for @var{type} 2 or 3.  If there are multiple objects @var{ptr} can
 point to and all of them are known at compile time, the returned number
@@ -11780,7 +11780,7 @@ This built-in function is analogous to the @samp{? :} operator in C,
 except that the expression returned has its type unaltered by promotion
 rules.  Also, the built-in function does not evaluate the expression
 that is not chosen.  For example, if @var{const_exp} evaluates to true,
-@var{exp2} is not evaluated even if it has side-effects.
+@var{exp2} is not evaluated even if it has side effects.
 
 This built-in function can return an lvalue if the chosen argument is an
 lvalue.
@@ -21839,7 +21839,7 @@ Returns @code{_XBEGIN_STARTED} when the transaction
 started successfully (note this is not 0, so the constant has to be 
 explicitly tested).  
 
-If the transaction aborts, all side-effects 
+If the transaction aborts, all side effects
 are undone and an abort code encoded as a bit mask is returned.
 The following macros are defined:
 
@@ -21866,7 +21866,7 @@ fallback path.
 
 @deftypefn {RTM Function} {void} _xend ()
 Commit the current transaction. When no transaction is active this faults.
-All memory side-effects of the transaction become visible
+All memory side effects of the transaction become visible
 to other threads in an atomic manner.
 @end deftypefn
 
