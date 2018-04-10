@@ -1,3 +1,8 @@
+2018-04-10  Martin Liska  <mliska@suse.cz>
+
+	* gdbhooks.py: Add pretty-printers for varpool_node, symtab_node,
+	cgraph_edge and ipa_ref.
+
 2018-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85177
