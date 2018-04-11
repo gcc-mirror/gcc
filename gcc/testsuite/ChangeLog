@@ -1,3 +1,9 @@
+2018-04-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/85261
+	* config/arm/arm-builtins.c (arm_expand_builtin): Force input operand
+	into register.
+
 2018-04-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70808
