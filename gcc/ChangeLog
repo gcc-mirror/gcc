@@ -1,3 +1,23 @@
+2018-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/84149
+	* ipa-cp.c (propagate_vals_across_pass_through): Expand comment.
+	(cgraph_edge_brings_value_p): New parameter dest_val, check if it is
+	not the same as the source val.
+	(cgraph_edge_brings_value_p): New parameter.
+	(gather_edges_for_value): Pass destination value to
+	cgraph_edge_brings_value_p.
+	(perhaps_add_new_callers): Likewise.
+	(get_info_about_necessary_edges): Likewise and exclude values brought
+	only by self-recursive edges.
+	(create_specialized_node): Redirect only clones of self-calling edges.
+	(+self_recursive_pass_through_p): New function.
+	(find_more_scalar_values_for_callers_subset): Use it.
+	(find_aggregate_values_for_callers_subset): Likewise.
+	(known_aggs_to_agg_replacement_list): Removed.
+	(decide_whether_version_node): Re-calculate known constants for all
+	remaining context clones.
+
 2018-04-11  Richard Biener  <rguenther@suse.de>
 
 	PR lto/85339
