@@ -7739,13 +7739,13 @@ alpha_expand_prologue (void)
 	  int probed;
 
 	  for (probed = 4096; probed < probed_size; probed += 8192)
-	    emit_insn (gen_probe_stack (GEN_INT (-probed)));
+	    emit_insn (gen_stack_probe_internal (GEN_INT (-probed)));
 
 	  /* We only have to do this probe if we aren't saving registers or
 	     if we are probing beyond the frame because of -fstack-check.  */
 	  if ((sa_size == 0 && probed_size > probed - 4096)
 	      || flag_stack_check)
-	    emit_insn (gen_probe_stack (GEN_INT (-probed_size)));
+	    emit_insn (gen_stack_probe_internal (GEN_INT (-probed_size)));
 	}
 
       if (frame_size != 0)

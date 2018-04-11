@@ -4843,7 +4843,7 @@
 
 
 ;; Subroutine of stack space allocation.  Perform a stack probe.
-(define_expand "probe_stack"
+(define_expand "stack_probe_internal"
   [(set (match_dup 1) (match_operand:DI 0 "const_int_operand"))]
   ""
 {
@@ -4878,12 +4878,14 @@
 
 	  int probed = 4096;
 
-	  emit_insn (gen_probe_stack (GEN_INT (- probed)));
+	  emit_insn (gen_stack_probe_internal (GEN_INT (- probed)));
 	  while (probed + 8192 < INTVAL (operands[1]))
-	    emit_insn (gen_probe_stack (GEN_INT (- (probed += 8192))));
+	    emit_insn (gen_stack_probe_internal
+		       (GEN_INT (- (probed += 8192))));
 
 	  if (probed + 4096 < INTVAL (operands[1]))
-	    emit_insn (gen_probe_stack (GEN_INT (- INTVAL(operands[1]))));
+	    emit_insn (gen_stack_probe_internal
+		       (GEN_INT (- INTVAL(operands[1]))));
 	}
 
       operands[1] = GEN_INT (- INTVAL (operands[1]));
