@@ -1,3 +1,8 @@
+2018-04-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR testsuite/85190
+	* gcc.dg/vect/pr81196.c: Remove function with undefined behavior.
+
 2018-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70808
