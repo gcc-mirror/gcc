@@ -339,7 +339,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CLEANUP_P (in TRY_BLOCK)
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF, SCOPE_REF)
-      PAREN_STRING_LITERAL (in STRING_CST)
+      PAREN_STRING_LITERAL_P (in STRING_CST)
       CP_DECL_THREAD_LOCAL_P (in VAR_DECL)
       KOENIG_LOOKUP_P (in CALL_EXPR)
       STATEMENT_LIST_NO_SCOPE (in STATEMENT_LIST).
@@ -378,6 +378,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
+      HEADER_STRING_LITERAL_P (in STRING_CST)
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       ICS_ELLIPSIS_FLAG (in _CONV)
@@ -3796,6 +3797,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 #define PAREN_STRING_LITERAL_P(NODE) \
   TREE_LANG_FLAG_0 (STRING_CST_CHECK (NODE))
+
+/* A string literal is from a CPP_HEADER_NAME token.  */
+
+#define HEADER_STRING_LITERAL_P(NODE) \
+  TREE_LANG_FLAG_1 (STRING_CST_CHECK (NODE))
 
 /* Indicates whether a COMPONENT_REF or a SCOPE_REF has been parenthesized, or
    an INDIRECT_REF comes from parenthesizing a _DECL.  Currently only set some

@@ -1,5 +1,20 @@
 2018-04-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c-lex.c (c_lex_with_flags): Check C_LEX_FILENAME.  Deal with
+	CPP_HEADER_NAME.
+	* c-pragma.h (C_LEX_FILENAME): New.
+	gcc/cp/
+	* parser.c (cp_parser_fill_main): Ask for C_LEX_FILENAME.
+	(cp_parser_import_declaration): Parse legacy import names.
+	* cp-tree.h (HEADER_STRING_LITERAL_P): New.
+	libcpp/
+	* include/cpplib.h (cpp_enable_filename_token): Declare.
+	* macro.c (cpp_enable_filename_token): Define.
+	pfile->state.angled_headers.
+	gcc/testsuite/
+	* g++.dg/modules/atom-inc-1.C: New.
+
 	gcc/cp/
 	* module.c (module_state::lazy_depth): Remove.
 	(module_state::lazy_open): Make countdown value.

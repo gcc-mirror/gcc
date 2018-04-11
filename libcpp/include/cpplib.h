@@ -890,6 +890,7 @@ extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
 extern const cpp_token *cpp_get_token (cpp_reader *);
 extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 						     source_location *);
+extern void cpp_enable_filename_token (cpp_reader *, bool);
 extern bool cpp_fun_like_macro_p (cpp_hashnode *);
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);

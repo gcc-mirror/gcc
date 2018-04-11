@@ -12644,14 +12644,32 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  cp_expr name = cp_parser_module_name (parser);
+  cp_expr name;
+  if (modules_atom_p ())
+    {
+      cp_token *tok = cp_lexer_peek_token (parser->lexer);
+      if (tok->type == CPP_STRING || tok->type == CPP_HEADER_NAME)
+	{
+	  tree cst = tok->u.value;
+	  if (tok->type == CPP_HEADER_NAME)
+	    HEADER_STRING_LITERAL_P (cst) = true;
+	  name = cp_expr (cst, tok->location);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+    }
+
+  if (!name)
+    name = cp_parser_module_name (parser);
+
   tree attrs = cp_parser_attributes_opt (parser);
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
-  if (!*name)
+  if (!name)
     ;
   else if (!check_module_outermost (token, "module-import"))
-    ;
+    gcc_assert (!modules_atom_p ());
+  else if (TREE_CODE (*name) == STRING_CST)
+    ; // FIXME:Ignore legacy headers for now.
   else
     import_module (name, exporting, attrs);
 }
@@ -39209,11 +39227,12 @@ cp_parser_fill_main (cp_parser *parser, cp_token *first)
 	    break;
 
 	  // FIXME: warn if I'm inside a macro at this point
+	  unsigned lex_flags = C_LEX_FILENAME;
 	  do
 	    {
 	      vec_safe_push (lexer->buffer, *first);
-	      // FIXME:string-file names
-	      cp_lexer_get_preprocessor_token (0, first);
+	      cp_lexer_get_preprocessor_token (lex_flags, first);
+	      lex_flags = C_LEX_STRING_NO_JOIN;
 	    }
 	  while (first->type != CPP_EOF && first->type != CPP_SEMICOLON);
 	  vec_safe_push (lexer->buffer, *first);

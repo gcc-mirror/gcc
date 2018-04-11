@@ -399,6 +399,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
   enum overflow_type overflow = OT_NONE;
 
   timevar_push (TV_CPP);
+  if (lex_flags & C_LEX_FILENAME)
+    cpp_enable_filename_token (parse_in, true);
  retry:
   tok = cpp_get_token_with_location (parse_in, loc);
   type = tok->type;
@@ -596,8 +598,15 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       *value = build_int_cst (integer_type_node, tok->val.pragma);
       break;
 
-      /* These tokens should not be visible outside cpplib.  */
     case CPP_HEADER_NAME:
+      /* An angle header name.  The value will be surrounded by BRA &
+	 KET,  so remove them.  */
+      gcc_assert (lex_flags & C_LEX_FILENAME);
+      *value = build_string (tok->val.str.len - 2,
+			     (const char *) tok->val.str.text + 1);
+      break;
+
+      /* These tokens should not be visible outside cpplib.  */
     case CPP_MACRO_ARG:
       gcc_unreachable ();
 
@@ -631,7 +640,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       no_more_pch = true;
       c_common_no_more_pch ();
     }
-
+  if (lex_flags & C_LEX_FILENAME)
+    cpp_enable_filename_token (parse_in, false);
   timevar_pop (TV_CPP);
 
   return type;

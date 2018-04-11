@@ -2904,6 +2904,12 @@ cpp_get_token_with_location (cpp_reader *pfile, source_location *loc)
   return cpp_get_token_1 (pfile, loc);
 }
 
+void
+cpp_enable_filename_token (cpp_reader *pfile, bool enable)
+{
+  pfile->state.angled_headers += enable ? +1 : -1;
+}
+
 /* Returns true if we're expanding an object-like macro that was
    defined in a system header.  Just checks the macro at the top of
    the stack.  Used for diagnostic suppression.  */
