@@ -1,3 +1,9 @@
+2018-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85331
+	* vec-perm-indices.h (vec_perm_indices::clamp): Change input type
+	from int to HOST_WIDE_INT.
+
 2018-04-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/84149
