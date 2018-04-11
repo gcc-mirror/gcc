@@ -1,3 +1,8 @@
+2018-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/85302
+	* g++.dg/debug/dwarf2/pr85302.C: New test.
+
 2018-04-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/85261
