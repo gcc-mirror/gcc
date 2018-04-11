@@ -1,4 +1,5 @@
 // PR c++/70808
+// { dg-do compile { target c++11 } }
 // { dg-options "-Wzero-as-null-pointer-constant" }
 
 int* no_warn = {};
