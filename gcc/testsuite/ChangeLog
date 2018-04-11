@@ -1,6 +1,6 @@
 2018-04-11  Alexander Monakov  <amonakov@ispras.ru>
 
-	PR rtl-optimization/85659
+	PR rtl-optimization/84659
 	* gcc.dg/pr84659.c: New test.
 
 2018-04-11  Jakub Jelinek  <jakub@redhat.com>
