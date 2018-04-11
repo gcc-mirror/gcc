@@ -1,3 +1,9 @@
+2018-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70808
+	* g++.dg/warn/Wzero-as-null-pointer-constant-7.C: Require c++11
+	effective target.
+
 2018-04-11  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/84301
