@@ -1,3 +1,11 @@
+2018-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85281
+	* config/i386/sse.md (iptr): Add V16SFmode and V8DFmode cases.
+	(<avx512>_vec_dup<mode><mask_name>): Use a single pattern for modes
+	other than V2DFmode using iptr mode attribute.
+	(<avx512>_vec_dup<mode><mask_name>): Use iptr mode attribute.
+
 2018-04-11  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/84659
