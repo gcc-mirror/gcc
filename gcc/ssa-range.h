@@ -37,7 +37,8 @@ private:
 		       edge e = NULL);
   bool process_phi (irange &r, gphi *phi);
   bool path_get_operand (irange &r, tree name, basic_block bb);
-
+protected:
+  virtual bool get_operand_range (irange &r, tree op, gimple *s = NULL);
 public:
   enum path_range_direction { FORWARD, REVERSE };
   path_ranger ();
@@ -46,9 +47,7 @@ public:
   /* What is the known range of name from its DEF point to edge E.  */
   bool path_range_edge (irange& r, tree name, edge e);
   bool path_range_entry (irange& r, tree name, basic_block bb);
-  // Specifying NAME give the range of NAME before G is executed.
-  bool path_range_stmt (irange& r, tree name, gimple *g);
-  // no NAME, give the range of the LHS of the statement.
+  // Get ive the range of the LHS of the statement.
   bool path_range_stmt (irange& r, gimple *g);
 
   bool path_range (irange &r, tree name, const vec<basic_block> &bbs,

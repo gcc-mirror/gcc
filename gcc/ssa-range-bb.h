@@ -39,7 +39,8 @@ class block_ranger
   bool get_range_from_stmt (range_stmt stmt, irange& r, tree name,
 			    const irange& lhs);
 protected:
-  bool get_operand_range (irange& r, tree op);
+  virtual bool get_operand_range (irange& r, tree op, gimple *s = NULL);
+  void normalize_bool_type (irange& r1, irange& r2);
 public:
   block_ranger ();
   ~block_ranger ();
@@ -48,8 +49,6 @@ public:
   bool range_p (basic_block bb, tree name);
   /* What is the static calculated range of NAME on outgoing edge E.  */
   bool range_on_edge (irange& r, tree name, edge e);
-  /* What range does NAME have on entry to statement g.  */
-  bool range_on_stmt (irange& r, tree name, gimple *g);
   /* What infomation does stmt g provide about the lhs.  */
   bool range_of_def (irange& r, gimple *g);
   /* What does g provide about the lhs if NAME has RANGE_FOR_NAME.  */

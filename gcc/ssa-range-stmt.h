@@ -43,30 +43,30 @@ private:
   gimple *g;
   void validate_stmt (gimple *s);
   class irange_operator *handler() const;
+  tree_code get_code () const;
 public:
   range_stmt ();
   range_stmt (gimple *stmt);
   range_stmt &operator= (gimple *stmt);
 
   bool valid () const;
-  tree_code get_code () const;
+  operator gimple *() const;
 
   tree operand1 () const;
   tree operand2 () const;
-
   tree ssa_operand1 () const;
   tree ssa_operand2 () const;
 
-  bool logical_expr_p () const;
-
   bool fold (irange& res, const irange& r1) const;
-  bool fold (irange& res, const irange& r1, const irange& r2) const;
   bool op1_irange (irange& r, const irange& lhs_range) const;
+
+  bool fold (irange& res, const irange& r1, const irange& r2) const;
   bool op1_irange (irange& r, const irange& lhs_range,
 		   const irange& op2_range) const;
   bool op2_irange (irange& r, const irange& lhs_range,
 		   const irange& op1_range) const;
 
+  bool logical_expr_p () const;
   bool fold_logical (irange& r, const irange& lhs, const irange& op1_true,
 		     const irange& op1_false, const irange& op2_true,
 		     const irange& op2_false) const;
@@ -167,4 +167,9 @@ range_stmt::handler () const
   return irange_op_handler (get_code ());
 }
 
+inline 
+range_stmt::operator gimple *() const
+{
+  return g;
+}
 #endif /* GCC_SSA_RANGE_STMT_H */

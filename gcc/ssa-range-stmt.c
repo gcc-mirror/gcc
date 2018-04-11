@@ -235,6 +235,11 @@ bool
 range_stmt::op1_irange (irange& r, const irange& lhs_range) const
 {  
   irange type_range;
+  if (lhs_range.empty_p ())
+    {
+      r.clear (TREE_TYPE (operand1 ()));
+      return true;
+    }
   type_range.set_range_for_type (TREE_TYPE (operand1 ()));
   return handler ()->op1_irange (r, lhs_range, type_range);
 }
@@ -248,6 +253,11 @@ range_stmt::op1_irange (irange& r, const irange& lhs_range,
 			const irange& op2_range) const
 {  
   gcc_assert (operand2 () != NULL);
+  if (op2_range.empty_p () || lhs_range.empty_p ())
+    {
+      r.clear (op2_range.get_type ());
+      return true;
+    }
   return handler ()->op1_irange (r, lhs_range, op2_range);
 }
 
@@ -259,6 +269,11 @@ bool
 range_stmt::op2_irange (irange& r, const irange& lhs_range,
 			const irange& op1_range) const
 {  
+  if (op1_range.empty_p () || lhs_range.empty_p ())
+    {
+      r.clear (op1_range.get_type ());
+      return true;
+    }
   return handler ()->op2_irange (r, lhs_range, op1_range);
 }
 

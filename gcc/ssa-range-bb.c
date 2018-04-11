@@ -349,10 +349,38 @@ block_ranger::~block_ranger ()
   delete gori;
 }
 
+
+// Internally, the range operators all use boolen_type_node when comparisons
+// and such are made to create ranges for logical operations.
+// some languages, such as fortran, may use boolean types with different
+// precisions and these are incompatible.   This routine will look at the 
+// 2 ranges, and if there is a mismatch between the boolean types, will change
+// the range generated from the default node to the other type.
+//
+void
+block_ranger::normalize_bool_type (irange& r1, irange& r2)
+{
+  const_tree t1 = r1.get_type ();
+  const_tree t2 = r2.get_type ();
+  if (TREE_CODE (t1) != BOOLEAN_TYPE || TREE_CODE (t2) != BOOLEAN_TYPE)
+    return;
+
+  if (t1 == t2)
+    return;
+
+  /* If neither is boolean_type_node, assume they are compatible.  */
+  if (t1 == boolean_type_node)
+      r1.cast (t2);
+  else
+    if (t2 == boolean_type_node)
+      r2.cast (t1);
+}
+
 /* This routine will return what  is globally known about the range for an
    operand of any kind.  */
 bool
-block_ranger::get_operand_range (irange& r, tree op)
+block_ranger::get_operand_range (irange& r, tree op,
+				 gimple *s ATTRIBUTE_UNUSED)
 {
   /* This check allows unary operations to be handled without having to 
      make an explicit check for the existence of a second operand.  */
@@ -412,8 +440,8 @@ block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
     }
   else
     {
-      ret = get_operand_range (op1_true, name);
-      ret &= get_operand_range (op1_false, name);
+      ret = get_operand_range (op1_true, name, stmt);
+      ret &= get_operand_range (op1_false, name, stmt);
     }
 
   /* If operand1 evaluated OK, move on to operand 2.  */
@@ -428,8 +456,8 @@ block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
 	}
       else
 	{
-	  ret &= get_operand_range (op2_true, name);
-	  ret &= get_operand_range (op2_false, name);
+	  ret &= get_operand_range (op2_true, name, stmt);
+	  ret &= get_operand_range (op2_false, name, stmt);
 	}
     }
 
@@ -446,7 +474,7 @@ bool
 block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
 				   const irange& lhs)
 {
-  irange op1_range, op2_range;
+  irange op1_range, op2_range, tmp_range;
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
 
@@ -466,7 +494,7 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
     { 
       if (!op2)
         return stmt.op1_irange (r, lhs);
-      if (get_operand_range (op2_range, op2))
+      if (get_operand_range (op2_range, op2, stmt))
 	return stmt.op1_irange (r, lhs, op2_range);
       else
         return false;
@@ -474,7 +502,7 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
 
   if (op2 == name)
     {
-      if (get_operand_range (op1_range, op1))
+      if (get_operand_range (op1_range, op1, stmt))
 	return stmt.op2_irange (r, lhs, op1_range);
       else
         return false;
@@ -493,51 +521,59 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
+  /* Pick up an operand range for each argument.  */
+  if (!get_operand_range (op1_range, op1, stmt))
+    return false;
+  if (op2 && !get_operand_range (op2_range, op2, stmt))
+    return false;
+
   /* Can't resolve both sides at once, so take a guess at operand 1, calculate
      operand 2 and check if the guess at operand 1 was good.  */
   if (op1_in_chain && op2_in_chain)
     {
-      irange tmp_op1_range;
-      if (!get_operand_range (tmp_op1_range, op1))
+      // Get an op2_range based on the op1 range. 
+      if (!stmt.op2_irange (tmp_range, lhs, op1_range))
         return false;
-      if (!stmt.op2_irange (op2_range, lhs, tmp_op1_range))
-        return false;
+      // And combine it with the raw possibilty.
+      normalize_bool_type (op2_range, tmp_range);
+      op2_range.intersect (tmp_range);
       if (!get_range_from_stmt (SSA_NAME_DEF_STMT (op2), r, name, op2_range))
         return false;
-      if (!stmt.op1_irange (op1_range, lhs, op2_range))
+
+      // Now the same for operand 1
+      if (!stmt.op1_irange (tmp_range, lhs, op2_range))
         return false;
+      normalize_bool_type (op1_range, tmp_range);
+      op1_range.intersect (tmp_range);
       if (!get_range_from_stmt (SSA_NAME_DEF_STMT (op1), r, name, op1_range))
         return false;
-
-      /* If the guess is good, we're done. */
-      if (op1_range == tmp_op1_range)
-        return true;
-      /* Otherwise fall thru and calculate op2_range with this range.  */
+      // Do we need to possibly reevaluate op2?
+      return true;
     }
   else
     if (op1_in_chain)
       {
         if (!op2)
 	  {
-	    if (!stmt.op1_irange (op1_range, lhs))
+	    if (!stmt.op1_irange (tmp_range, lhs))
 	      return false;
 	  }
 	else
 	  {
-	    if (!get_operand_range (op2_range, op2))
-	      return false;
-	    if (!stmt.op1_irange (op1_range, lhs, op2_range))
+	    if (!stmt.op1_irange (tmp_range, lhs, op2_range))
 	      return false;
 	  }
+	normalize_bool_type (op1_range, tmp_range);
+	op1_range.intersect (tmp_range);
 	return get_range_from_stmt (SSA_NAME_DEF_STMT (op1), r, name,
 				    op1_range);
       }
     else
-      if (!get_operand_range (op1_range, op1))
-        return false;
 
-  if (!stmt.op2_irange (op2_range, lhs, op1_range))
+  if (!stmt.op2_irange (tmp_range, lhs, op1_range))
     return false;
+  normalize_bool_type (op2_range, tmp_range);
+  op2_range.intersect (tmp_range);
   return get_range_from_stmt (SSA_NAME_DEF_STMT (op2), r, name, op2_range);
 }
  
@@ -691,32 +727,6 @@ block_ranger::exercise (FILE *output)
   if (output)
     dump (output);
 
-}
-
-
-
-bool
-block_ranger::range_on_stmt (irange& r, tree name, gimple *g)
-{
-  range_stmt rn (g);
-  irange lhs;
-
-  /* If we don't understand the stmt... */
-  if (!rn.valid())
-    return false;
-
-  /* If neither operand is what we are looking for, then return nothing.  */
-  if (rn.operand1 () != name && rn.operand2 () != name)
-    return false;
-
-  /* Only works if there is a LHS.  */
-  if (!gimple_get_lhs (g))
-    return false;
-
-  if (get_operand_range (lhs, gimple_get_lhs (g)))
-    return get_range_from_stmt (rn, r, name, lhs);
-
-  return false;
 }
 
 
