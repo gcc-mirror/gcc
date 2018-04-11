@@ -657,15 +657,25 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     Tests that need to perform runtime checks should use the
     <literal>VERIFY</literal> macro, defined in the
     <filename class="headerfile">&lt;testsuite_hooks.h&gt;</filename> header.
-    This usually expands to the standard <literal>assert</literal> macro, but
-    allows targets to define it to something different. In order to support
-    the alternative expansions of <literal>VERIFY</literal>, before any
-    use of the macro there must be a variable called <varname>test</varname>
-    in scope, which is usually defined like so (the attribute avoids
+    This expands to a custom assertion using
+    <function>__builtin_printf</function> and
+    <function>__builtin_abort</function>
+    (to avoid using <literal>assert</literal> and being affected by
+    <literal>NDEBUG</literal>).
+   </para>
+
+   <para>
+    Prior to GCC 7.1, <literal>VERIFY</literal> was defined differently.
+    It usually expanded to the standard <literal>assert</literal> macro, but
+    allowed targets to define it to something different. In order to support
+    the alternative expansions of <literal>VERIFY</literal>, before any use
+    of the macro there needed to be a variable called <varname>test</varname>
+    in scope, which was usually defined like so (the attribute avoids
     warnings about an unused variable):
     <programlisting>
     bool test __attribute__((unused)) = true;
     </programlisting>
+    This is no longer needed, and should not be added to new tests.
    </para>
 
    <para>
