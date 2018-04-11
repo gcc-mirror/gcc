@@ -1,3 +1,9 @@
+2018-04-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85032
+	* g++.dg/cpp0x/pr51225.C: Adjust error message.
+	* g++.dg/cpp1z/constexpr-if21.C: New test.
+
 2018-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85281
