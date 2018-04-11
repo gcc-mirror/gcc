@@ -6,11 +6,14 @@
 /* { dg-add-options arm_fp } */
 
 void
-test_fpscr ()
+test_fpscr (void)
 {
-  volatile unsigned int status = __builtin_arm_get_fpscr ();
+  unsigned status;
+
+  __builtin_arm_set_fpscr (0);
+  status = __builtin_arm_get_fpscr ();
   __builtin_arm_set_fpscr (status);
 }
 
 /* { dg-final { scan-assembler "mrc\tp10, 7, r\[0-9\]+, cr1, cr0, 0" } } */
-/* { dg-final { scan-assembler "mcr\tp10, 7, r\[0-9\]+, cr1, cr0, 0" } } */
+/* { dg-final { scan-assembler-times "mcr\tp10, 7, r\[0-9\]+, cr1, cr0, 0" 2 } } */
