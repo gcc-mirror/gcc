@@ -804,6 +804,7 @@
   [(V64QI "b") (V32HI "w") (V16SI "k") (V8DI "q")
    (V32QI "b") (V16HI "w") (V8SI "k") (V4DI "q")
    (V16QI "b") (V8HI "w") (V4SI "k") (V2DI "q")
+   (V16SF "k") (V8DF "q")
    (V8SF "k") (V4DF "q")
    (V4SF "k") (V2DF "q")
    (SF "k") (DF "q")])
@@ -17686,10 +17687,7 @@
   if (<MODE>mode == V2DFmode)
     return "vpbroadcastq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}";
 
-  if (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) == 4)
-    return "v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %k1}";
-  else
-    return "v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}";
+  return "v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %<iptr>1}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
@@ -17702,7 +17700,7 @@
 	    (match_operand:<ssexmmmode> 1 "nonimmediate_operand" "vm")
 	    (parallel [(const_int 0)]))))]
   "TARGET_AVX512BW"
-  "vpbroadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  "vpbroadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %<iptr>1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
