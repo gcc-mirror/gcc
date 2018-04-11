@@ -392,15 +392,23 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
     Tests that need to perform runtime checks should use the
     <code class="literal">VERIFY</code> macro, defined in the
     <code class="filename">&lt;testsuite_hooks.h&gt;</code> header.
-    This usually expands to the standard <code class="literal">assert</code> macro, but
-    allows targets to define it to something different. In order to support
-    the alternative expansions of <code class="literal">VERIFY</code>, before any
-    use of the macro there must be a variable called <code class="varname">test</code>
-    in scope, which is usually defined like so (the attribute avoids
+    This expands to a custom assertion using
+    <code class="function">__builtin_printf</code> and
+    <code class="function">__builtin_abort</code>
+    (to avoid using <code class="literal">assert</code> and being affected by
+    <code class="literal">NDEBUG</code>).
+   </p><p>
+    Prior to GCC 7.1, <code class="literal">VERIFY</code> was defined differently.
+    It usually expanded to the standard <code class="literal">assert</code> macro, but
+    allowed targets to define it to something different. In order to support
+    the alternative expansions of <code class="literal">VERIFY</code>, before any use
+    of the macro there needed to be a variable called <code class="varname">test</code>
+    in scope, which was usually defined like so (the attribute avoids
     warnings about an unused variable):
     </p><pre class="programlisting">
     bool test __attribute__((unused)) = true;
     </pre><p>
+    This is no longer needed, and should not be added to new tests.
    </p><p>
     The testsuite uses the DejaGnu framework to compile and run the tests.
     Test cases are normal C++ files which contain special directives in

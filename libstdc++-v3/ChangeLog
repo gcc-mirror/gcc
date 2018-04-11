@@ -1,3 +1,14 @@
+2018-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document header locations in recent
+	releases.
+	* doc/xml/manual/evolution.xml: Add API changes since GCC 5.
+	* doc/xml/manual/spine.xml: Update copyright years.
+	* doc/xml/manual/strings.xml: Adjust tolower example to avoid
+	undefined behaviour.
+	* doc/xml/manual/test.xml: Update outdated notes on VERIFY in tests.
+	* doc/html/*: Regenerate.
+
 2018-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml: Update links to archived copy of SGI STL docs.
