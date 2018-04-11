@@ -1,6 +1,6 @@
 2018-04-11  Alexander Monakov  <amonakov@ispras.ru>
 
-	PR rtl-optimization/85659
+	PR rtl-optimization/84659
 	* sel-sched-ir.c (sel_init_pipelining): Invoke cleanup_cfg.
 
 2018-04-11  Jakub Jelinek  <jakub@redhat.com>
