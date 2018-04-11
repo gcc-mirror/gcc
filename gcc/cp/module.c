@@ -2358,9 +2358,10 @@ struct GTY(()) module_state {
   static const std::pair<tree *, unsigned> global_trees[];
   static vec<tree, va_gc> *global_vec;
   static unsigned global_crc;
-  static unsigned lazy_depth;
-  static unsigned lazy_lru;
-  static int lazy_open;
+
+ private:
+  static unsigned lazy_lru;  /* LRU counter.  */
+  static unsigned lazy_open; /* Remaining limit for unfrozen loaders.  */
 };
 
 module_state::module_state (tree name)
@@ -2421,9 +2422,8 @@ vec<tree, va_gc> GTY (()) *module_state::global_vec;
 unsigned module_state::global_crc;
 
 /* Nesting of lazy loaders.  */
-unsigned module_state::lazy_depth;
 unsigned module_state::lazy_lru;
-int module_state::lazy_open;
+unsigned module_state::lazy_open;
 
 /* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
 vec<module_state *, va_gc> GTY(()) *module_state::modules;
@@ -5948,6 +5948,28 @@ module_state::init ()
   gcc_checking_assert (!global_vec);
 
   dump.push (NULL);
+
+  /* Determine lazy limit bound.  */
+  if (flag_module_lazy)
+    {
+      unsigned n = PARAM_VALUE (PARAM_LAZY_MODULES);
+      if (!n)
+	{
+	  n = 100;
+#if HAVE_GETRLIMIT
+	  struct rlimit rlimit;
+	  if (!getrlimit (RLIMIT_NOFILE, &rlimit))
+	    n = rlimit.rlim_cur > 1000000 ? 1000000 : rlimit.rlim_cur;
+#endif
+	  if (n > 20)
+	    n -= 20;
+	}
+      lazy_open = n;
+    }
+  else
+    lazy_open = 1;
+  dump () && dump ("Lazy limit is %u", lazy_open);
+
   /* Construct the global tree array.  This is an array of unique
      global trees (& types).  */
   // FIXME:Some slots are lazily allocated, we must move them to
@@ -7542,7 +7564,7 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
 {
   from = new elf_in (stream, e);
   lru = lazy_lru++;
-  lazy_open++;
+  lazy_open--;
   if (!from->begin ())
     return;
 
@@ -7611,18 +7633,16 @@ module_state::load_section (unsigned snum)
   unsigned old_loading = loading;
   if (from->is_frozen ())
     {
-      if (lazy_open >= PARAM_VALUE (PARAM_LAZY_MODULE_FILES))
+      if (!lazy_open)
 	freeze_an_elf ();
       dump () && dump ("Defrosting %s", filename);
       from->defrost (filename);
-      lazy_open++;
+      lazy_open--;
     }
   loading = snum;
   lru = lazy_lru++;
-  lazy_depth++;
   read_cluster (snum);
   from->forget_section (loading);
-  lazy_depth--;
   loading = old_loading;
   lazy--;
 }
@@ -7639,7 +7659,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
   bool done = loading == ~0u && (from->has_error () || !lazy);
   if (done)
     {
-      lazy_open--;
+      lazy_open++;
       from->end ();
     }
 
@@ -7658,9 +7678,8 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	error_at  (loc, "failed to import module %qE: %s", name, err);
       
       if (e == EMFILE)
-	inform (loc, "consider reducing --param %s=%d",
-		compiler_params[PARAM_LAZY_MODULE_FILES].option,
-		PARAM_VALUE (PARAM_LAZY_MODULE_FILES));
+	inform (loc, "consider reducing %<--param %s%> value",
+		compiler_params[PARAM_LAZY_MODULES].option);
     }
 
   if (done)
@@ -8281,7 +8300,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
       if (!module_p || !export_p)
 	{
 	  unsigned n = dump.push (state);
-	  if (lazy_open >= PARAM_VALUE (PARAM_LAZY_MODULE_FILES))
+	  if (!lazy_open)
 	    freeze_an_elf ();
 	  FILE *stream = find_module_file (state);
 	  int e = errno;
@@ -8344,7 +8363,7 @@ module_state::freeze_an_elf ()
   gcc_assert (victim);
   dump () && dump ("Freezing %s", victim->filename);
   victim->from->freeze ();
-  lazy_open--;
+  lazy_open++;
 }
 
 /* *SLOT is a yet-to-be loaded binding of module MOD in namepsace NS

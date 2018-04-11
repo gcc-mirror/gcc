@@ -1,4 +1,17 @@
-2018-04-09  Nathan Sidwell  <nathan@acm.org>
+2018-04-11  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (module_state::lazy_depth): Remove.
+	(module_state::lazy_open): Make countdown value.
+	(module_state::init): Use getrlimit to default PARAM_LAZY_MODULES.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document lazy loading.
+	* params.def (PARAM_LAZY_MODULE_FILES): Rename to ...
+	(PARAM_LAZY_MODULES): ... here.
+	gcc/testsuite/
+	* g++.dg/modules/freeze-1_d.C: Fix.
+
+2018-04-10  Nathan Sidwell  <nathan@acm.org>
 
 	Protect against too-many lazy loadings.
 	gcc/
@@ -34,6 +47,8 @@
 	libcpp/
 	* files.c (cpp_module_file): New.
 	* include/cpplib.h (cpp_module_file): Declare.
+
+2018-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
 	* parser.c (cp_lexer_new_main): Replace with ...

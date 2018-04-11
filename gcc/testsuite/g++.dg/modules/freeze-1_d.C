@@ -1,4 +1,4 @@
-// { dg-additional-options "--param lazy-module-files=1 -fdump-lang-mdule" }
+// { dg-additional-options "--param lazy-modules=1 -fdump-lang-module" }
 
 import bob;
 import stuart;
@@ -12,9 +12,9 @@ int main ()
   return 0;
 }
 
-// { dg-final scan-lang-dump {Freezing bob.nms} module } }
-// { dg-final scan-lang-dump {Freezing stuart.nms} module } }
-// { dg-final scan-lang-dump {Freezing kevin.nms} module } }
-// { dg-final scan-lang-dump {Defrosting bob.nms} module } }
-// { dg-final scan-lang-dump {Defrosting stuart.nms} module } }
-// { dg-final scan-lang-dump {Defrosting kevin.nms} module } }
+// { dg-final { scan-lang-dump {Freezing bob.nms} module } }
+// { dg-final { scan-lang-dump {Freezing stuart.nms} module } }
+// { dg-final { scan-lang-dump {Freezing kevin.nms} module } }
+// { dg-final { scan-lang-dump {Defrosting bob.nms} module } }
+// { dg-final { scan-lang-dump {Defrosting stuart.nms} module } }
+// { dg-final { scan-lang-dump {Defrosting kevin.nms} module } }

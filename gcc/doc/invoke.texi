@@ -29239,6 +29239,15 @@ The @option{-fmodule-prefix=@var{dir}} option ...
 
 The @option{-fmodule-wrapper=@var{program}} option ...
 
-The @option{-fno-module-lazy} option ...
+The @option{-fno-module-lazy} option disables lazy module loading.
+Usually importing a module will load minimal information, defering the
+bulk of the loading to the point at which name-lookup inspects a
+particular namespace-scope name.
 
-The @option{--param lazy-module-files=@{var}} ...
+The @option{--param lazy-modules=@var{n}} parameter controls the
+limit on the number of concurrently open module files during lazy
+loading.  Should more modules be imported, an LRU algorithm is used to
+determine which files to close -- until that file is needed again.
+With large code bases there may be more imports than the process limit
+of file descriptors.  By default, the limit is 20 less than the
+per-process limit, if that is determinable.
