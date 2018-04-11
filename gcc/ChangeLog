@@ -1,5 +1,11 @@
 2018-04-11  Alexander Monakov  <amonakov@ispras.ru>
 
+	PR rtl-optimization/84566
+	* sched-deps.c (sched_analyze_insn): Check deps->readonly when invoking
+	sched_macro_fuse_insns.
+
+2018-04-11  Alexander Monakov  <amonakov@ispras.ru>
+
 	PR target/84301
 	* sched-rgn.c (add_branch_dependences): Move sel_sched_p check here...
 	(compute_block_dependences): ... from here.
