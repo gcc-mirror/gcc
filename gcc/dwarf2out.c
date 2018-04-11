@@ -10032,17 +10032,21 @@ maybe_gen_llsym (dw_loc_list_ref list)
   gen_llsym (list);
 }
 
-/* Determine whether or not to skip loc_list entry CURR.  If we're not
+/* Determine whether or not to skip loc_list entry CURR.  If SIZEP is
+   NULL, don't consider size of the location expression.  If we're not
    to skip it, and SIZEP is non-null, store the size of CURR->expr's
    representation in *SIZEP.  */
 
 static bool
-skip_loc_list_entry (dw_loc_list_ref curr, unsigned long *sizep = 0)
+skip_loc_list_entry (dw_loc_list_ref curr, unsigned long *sizep = NULL)
 {
   /* Don't output an entry that starts and ends at the same address.  */
   if (strcmp (curr->begin, curr->end) == 0
       && curr->vbegin == curr->vend && !curr->force)
     return true;
+
+  if (!sizep)
+    return false;
 
   unsigned long size = size_of_locs (curr->expr);
 
@@ -10053,8 +10057,7 @@ skip_loc_list_entry (dw_loc_list_ref curr, unsigned long *sizep = 0)
   if (dwarf_version < 5 && size > 0xffff)
     return true;
 
-  if (sizep)
-    *sizep = size;
+  *sizep = size;
 
   return false;
 }
@@ -10121,7 +10124,9 @@ output_loc_list (dw_loc_list_ref list_head)
       for (dw_loc_list_ref curr = list_head; curr != NULL;
 	   curr = curr->dw_loc_next)
 	{
-	  if (skip_loc_list_entry (curr))
+	  unsigned long size;
+
+	  if (skip_loc_list_entry (curr, &size))
 	    continue;
 
 	  vcount++;
@@ -30887,7 +30892,14 @@ index_location_lists (dw_die_ref die)
         for (curr = list; curr != NULL; curr = curr->dw_loc_next)
           {
             /* Don't index an entry that has already been indexed
-               or won't be output.  */
+	       or won't be output.  Make sure skip_loc_list_entry doesn't
+	       call size_of_locs, because that might cause circular dependency,
+	       index_location_lists requiring address table indexes to be
+	       computed, but adding new indexes through add_addr_table_entry
+	       and address table index computation requiring no new additions
+	       to the hash table.  In the rare case of DWARF[234] >= 64KB
+	       location expression, we'll just waste unused address table entry
+	       for it.  */
             if (curr->begin_entry != NULL
                 || skip_loc_list_entry (curr))
               continue;

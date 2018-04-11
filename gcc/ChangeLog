@@ -1,3 +1,13 @@
+2018-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/85302
+	* dwarf2out.c (skip_loc_list_entry): Don't call size_of_locs if
+	SIZEP is NULL.
+	(output_loc_list): Pass address of a dummy size variable even in the
+	locview handling loop.
+	(index_location_lists): Add comment on why skip_loc_list_entry can't
+	call size_of_locs.
+
 2018-04-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/85261
