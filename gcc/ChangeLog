@@ -1,3 +1,9 @@
+2018-04-11  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/84301
+	* sched-rgn.c (add_branch_dependences): Move sel_sched_p check here...
+	(compute_block_dependences): ... from here.
+
 2018-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/85331
