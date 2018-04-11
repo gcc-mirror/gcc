@@ -1076,7 +1076,10 @@ See RS/6000 and PowerPC Options.
 -mprioritize-restricted-insns=@var{priority} @gol
 -msched-costly-dep=@var{dependence_type} @gol
 -minsert-sched-nops=@var{scheme} @gol
--mcall-sysv  -mcall-netbsd @gol
+-mcall-aixdesc  -mcall-eabi  -mcall-freebsd  @gol
+-mcall-linux  -mcall-netbsd  -mcall-openbsd  @gol
+-mcall-sysv  -mcall-sysv-eabi  -mcall-sysv-noeabi @gol
+-mtraceback=@var{traceback_type} @gol
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=@var{abi-type}  -msecure-plt  -mbss-plt @gol
 -mblock-move-inline-limit=@var{num} @gol
@@ -23957,6 +23960,11 @@ NetBSD operating system.
 On System V.4 and embedded PowerPC systems compile code for the
 OpenBSD operating system.
 
+@item -mtraceback=@var{traceback_type}
+@opindex mtraceback
+Select the type of traceback table. Valid values for @var{traceback_type}
+are @samp{full}, @samp{part}, and @samp{no}.
+
 @item -maix-struct-return
 @opindex maix-struct-return
 Return all structures in memory (as specified by the AIX ABI)@.
@@ -23972,16 +23980,6 @@ Extend the current ABI with a particular extension, or remove such extension.
 Valid values are @samp{altivec}, @samp{no-altivec}, @samp{spe},
 @samp{no-spe}, @samp{ibmlongdouble}, @samp{ieeelongdouble},
 @samp{elfv1}, @samp{elfv2}@.
-
-@item -mabi=spe
-@opindex mabi=spe
-Extend the current ABI with SPE ABI extensions.  This does not change
-the default ABI, instead it adds the SPE ABI extensions to the current
-ABI@.
-
-@item -mabi=no-spe
-@opindex mabi=no-spe
-Disable Book-E SPE ABI extensions for the current ABI@.
 
 @item -mabi=ibmlongdouble
 @opindex mabi=ibmlongdouble

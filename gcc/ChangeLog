@@ -1,3 +1,17 @@
+2018-04-11  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/85321
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document options
+	-mcall- and -mtraceback=. Remove options -mabi=spe and -mabi=no-spe
+	from PowerPC section.
+	* config/rs6000/sysv4.opt (mcall-): Improve help text.
+	* config/rs6000/rs6000.opt (mblock-compare-inline-limit=): Trim
+	help text that is too long.
+	* config/rs6000/rs6000.opt (mblock-compare-inline-loop-limit=): Trim
+	help text that is too long.
+	* config/rs6000/rs6000.opt (mstring-compare-inline-limit=): Trim
+	help text that is too long.
+
 2018-04-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (stack_probe_internal): Rename
