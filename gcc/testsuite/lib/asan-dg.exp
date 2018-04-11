@@ -18,9 +18,24 @@
 # code, 0 otherwise.
 
 proc check_effective_target_fsanitize_address {} {
-    return [check_no_compiler_messages fsanitize_address executable {
+    if ![check_no_compiler_messages fsanitize_address executable {
 	int main (void) { return 0; }
-    }]
+    }] {
+	return 0;
+    }
+
+    # asan doesn't work if there's a ulimit on virtual memory.
+    if ![is_remote target] {
+	if [catch {exec sh -c "ulimit -v"} ulimit_v] {
+	    # failed to get ulimit
+	} elseif [regexp {^[0-9]+$} $ulimit_v] {
+	    # ulimit -v gave a numeric limit
+	    warning "skipping asan tests due to ulimit -v"
+	    return 0;
+	}
+    }
+
+    return 1;
 }
 
 proc asan_include_flags {} {
