@@ -31057,7 +31057,8 @@ dwarf2out_finish (const char *)
       /* Reset die CU symbol so we don't output it twice.  */
       comp_unit_die ()->die_id.die_symbol = NULL;
 
-      /* Remove DW_AT_macro from the early output.  */
+      /* Remove DW_AT_macro and DW_AT_stmt_list from the early output.  */
+      remove_AT (comp_unit_die (), DW_AT_stmt_list);
       if (have_macinfo)
 	remove_AT (comp_unit_die (), DEBUG_MACRO_ATTRIBUTE);
 
@@ -31693,6 +31694,7 @@ static void
 dwarf2out_early_finish (const char *filename)
 {
   set_early_dwarf s;
+  char dl_section_ref[MAX_ARTIFICIAL_LABEL_BYTES];
 
   /* PCH might result in DW_AT_producer string being restored from the
      header compilation, so always fill it with empty string initially
@@ -31841,6 +31843,15 @@ dwarf2out_early_finish (const char *filename)
        ctnode != NULL; ctnode = ctnode->next)
     add_sibling_attributes (ctnode->root_die);
 
+  /* AIX Assembler inserts the length, so adjust the reference to match the
+     offset expected by debuggers.  */
+  strcpy (dl_section_ref, debug_skeleton_line_section_label);
+  if (XCOFF_DEBUGGING_INFO)
+    strcat (dl_section_ref, DWARF_INITIAL_LENGTH_SIZE_STR);
+
+  if (debug_info_level >= DINFO_LEVEL_TERSE)
+    add_AT_lineptr (comp_unit_die (), DW_AT_stmt_list, dl_section_ref);
+
   if (have_macinfo)
     add_AT_macptr (comp_unit_die (), DEBUG_MACRO_ATTRIBUTE,
 		   macinfo_section_label);
@@ -31910,11 +31921,6 @@ dwarf2out_early_finish (const char *filename)
       output_macinfo (debug_skeleton_line_section_label, true);
       dw2_asm_output_data (1, 0, "End compilation unit");
 
-      /* Emit a skeleton debug_line section.  */
-      switch_to_section (debug_skeleton_line_section);
-      ASM_OUTPUT_LABEL (asm_out_file, debug_skeleton_line_section_label);
-      output_line_info (true);
-
       if (flag_fat_lto_objects)
 	{
 	  vec_free (macinfo_table);
@@ -31922,6 +31928,10 @@ dwarf2out_early_finish (const char *filename)
 	}
     }
 
+  /* Emit a skeleton debug_line section.  */
+  switch_to_section (debug_skeleton_line_section);
+  ASM_OUTPUT_LABEL (asm_out_file, debug_skeleton_line_section_label);
+  output_line_info (true);
 
   /* If we emitted any indirect strings, output the string table too.  */
   if (debug_str_hash || skeleton_debug_str_hash)
