@@ -1,3 +1,12 @@
+2018-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83157
+	* var-tracking.c (add_stores): Handle STRICT_LOW_PART SET_DEST.
+	* cselib.c (cselib_record_sets): For STRICT_LOW_PART dest,
+	lookup if dest in some wider mode is known to be const0_rtx and
+	if so, record permanent equivalence for it to be ZERO_EXTEND of
+	the narrower mode destination.
+
 2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* lto-streamer-out.c (output_function): Revert 259346.
