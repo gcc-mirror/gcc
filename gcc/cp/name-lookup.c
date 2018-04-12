@@ -5888,6 +5888,27 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 class macro_use_before_def : public deferred_diagnostic
 {
  public:
+  /* Factory function.  Return a new macro_use_before_def instance if
+     appropriate, or return NULL. */
+  static macro_use_before_def *
+  maybe_make (location_t use_loc, cpp_hashnode *macro)
+  {
+    source_location def_loc = cpp_macro_definition_location (macro);
+    if (def_loc == UNKNOWN_LOCATION)
+      return NULL;
+
+    /* We only want to issue a note if the macro was used *before* it was
+       defined.
+       We don't want to issue a note for cases where a macro was incorrectly
+       used, leaving it unexpanded (e.g. by using the wrong argument
+       count).  */
+    if (!linemap_location_before_p (line_table, use_loc, def_loc))
+      return NULL;
+
+    return new macro_use_before_def (use_loc, macro);
+  }
+
+ private:
   /* Ctor.  LOC is the location of the usage.  MACRO is the
      macro that was used.  */
   macro_use_before_def (location_t loc, cpp_hashnode *macro)
@@ -5901,13 +5922,10 @@ class macro_use_before_def : public deferred_diagnostic
     if (is_suppressed_p ())
       return;
 
-    source_location def_loc = cpp_macro_definition_location (m_macro);
-    if (def_loc != UNKNOWN_LOCATION)
-      {
-	inform (get_location (), "the macro %qs had not yet been defined",
-		(const char *)m_macro->ident.str);
-	inform (def_loc, "it was later defined here");
-      }
+    inform (get_location (), "the macro %qs had not yet been defined",
+	    (const char *)m_macro->ident.str);
+    inform (cpp_macro_definition_location (m_macro),
+	    "it was later defined here");
   }
 
  private:
@@ -5990,12 +6008,13 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
     bm.consider ((const char *)best_macro->ident.str);
   else if (bmm.get_best_distance () == 0)
     {
-      /* If we have an exact match for a macro name, then the
-	 macro has been used before it was defined.  */
+      /* If we have an exact match for a macro name, then either the
+	 macro was used with the wrong argument count, or the macro
+	 has been used before it was defined.  */
       cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
       if (macro && (macro->flags & NODE_BUILTIN) == 0)
 	return name_hint (NULL,
-			  new macro_use_before_def (loc, macro));
+			  macro_use_before_def::maybe_make (loc, macro));
     }
 
   /* Try the "starts_decl_specifier_p" keywords to detect

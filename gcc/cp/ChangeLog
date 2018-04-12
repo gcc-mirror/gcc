@@ -1,3 +1,14 @@
+2018-04-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85385
+	* name-lookup.c (macro_use_before_def::maybe_make): New function,
+	checking that the use is indeed before the definition.
+	(macro_use_before_def::macro_use_before_def): Make private.
+	(macro_use_before_def::~macro_use_before_def): Make private.  Move
+	check for UNKNOWN_LOCATION to macro_use_before_def::maybe_make.
+	(lookup_name_fuzzy): Call macro_use_before_def::maybe_make rather
+	than using new directly.
+
 2018-04-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85356 - ICE with pointer to member function.
