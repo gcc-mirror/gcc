@@ -1,3 +1,10 @@
+2018-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83064
+	PR testsuite/85346
+	* trans-stmt.c (gfc_trans_forall_loop): Use annot_expr_ivdep_kind
+	for annotation and remove dependence on -ftree-parallelize-loops.
+
 2018-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/85313

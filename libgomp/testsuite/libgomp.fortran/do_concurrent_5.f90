@@ -1,6 +1,6 @@
 ! { dg-do  run }
 ! PR 83064 - this used to give wrong results.
-! { dg-options "-O3 -ftree-parallelize-loops=2" }
+! { dg-additional-options "-O1 -ftree-parallelize-loops=2" }
 ! Original test case by Christian Felter
 
 program main
@@ -8,10 +8,12 @@ program main
     implicit none
 
     integer, parameter :: nsplit = 4
-    integer(int64), parameter :: ne = 20000000
-    integer(int64) :: stride, low(nsplit), high(nsplit), edof(ne), i
+    integer(int64), parameter :: ne = 2**20
+    integer(int64) :: stride, low(nsplit), high(nsplit), i
     real(real64), dimension(nsplit) :: pi
-    
+    integer(int64), dimension(:), allocatable :: edof 
+
+    allocate (edof(ne))
     edof(1::4) = 1
     edof(2::4) = 2
     edof(3::4) = 3
@@ -31,7 +33,7 @@ program main
     do concurrent (i = 1:nsplit)
         pi(i) = sum(compute( low(i), high(i) ))
     end do
-    if (abs (sum(pi) - atan(1.0d0)) > 1e-5) call abort
+    if (abs (sum(pi) - atan(1.0d0)) > 1e-5) STOP 1
     
 contains
     
