@@ -751,7 +751,6 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       bool is_asm, any_replacements;
       rtx set;
       rtx link;
-      bool replaced[MAX_RECOG_OPERANDS];
       bool changed = false;
       struct kill_set_value_data ksvd;
 
@@ -934,7 +933,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	 eldest live copy that's in an appropriate register class.  */
       for (i = 0; i < n_ops; i++)
 	{
-	  replaced[i] = false;
+	  bool replaced = false;
 
 	  /* Don't scan match_operand here, since we've no reg class
 	     information to pass down.  Any operands that we could
@@ -951,26 +950,26 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  if (recog_data.operand_type[i] == OP_IN)
 	    {
 	      if (op_alt[i].is_address)
-		replaced[i]
+		replaced
 		  = replace_oldest_value_addr (recog_data.operand_loc[i],
 					       alternative_class (op_alt, i),
 					       VOIDmode, ADDR_SPACE_GENERIC,
 					       insn, vd);
 	      else if (REG_P (recog_data.operand[i]))
-		replaced[i]
+		replaced
 		  = replace_oldest_value_reg (recog_data.operand_loc[i],
 					      alternative_class (op_alt, i),
 					      insn, vd);
 	      else if (MEM_P (recog_data.operand[i]))
-		replaced[i] = replace_oldest_value_mem (recog_data.operand[i],
-							insn, vd);
+		replaced = replace_oldest_value_mem (recog_data.operand[i],
+						     insn, vd);
 	    }
 	  else if (MEM_P (recog_data.operand[i]))
-	    replaced[i] = replace_oldest_value_mem (recog_data.operand[i],
-						    insn, vd);
+	    replaced = replace_oldest_value_mem (recog_data.operand[i],
+						 insn, vd);
 
 	  /* If we performed any replacement, update match_dups.  */
-	  if (replaced[i])
+	  if (replaced)
 	    {
 	      int j;
 	      rtx new_rtx;
@@ -989,13 +988,6 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	{
 	  if (! apply_change_group ())
 	    {
-	      for (i = 0; i < n_ops; i++)
-		if (replaced[i])
-		  {
-		    rtx old = *recog_data.operand_loc[i];
-		    recog_data.operand[i] = old;
-		  }
-
 	      if (dump_file)
 		fprintf (dump_file,
 			 "insn %u: reg replacements not verified\n",
