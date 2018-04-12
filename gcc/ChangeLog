@@ -1,3 +1,8 @@
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* lto-streamer-out.c (output_function): Revert 259346.
+	* omp-expand.c (expand_oacc_for): Likewise.
+
 2018-04-12  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/85354
