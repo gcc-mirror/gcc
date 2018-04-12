@@ -1194,11 +1194,14 @@ build_noexcept_spec (tree expr, int complain)
 {
   /* This isn't part of the signature, so don't bother trying to evaluate
      it until instantiation.  */
-  if (!processing_template_decl && TREE_CODE (expr) != DEFERRED_NOEXCEPT)
+  if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
+      && (!processing_template_decl
+	  || (flag_noexcept_type && !value_dependent_expression_p (expr))))
     {
       expr = perform_implicit_conversion_flags (boolean_type_node, expr,
 						complain,
 						LOOKUP_NORMAL);
+      expr = instantiate_non_dependent_expr (expr);
       expr = cxx_constant_value (expr);
     }
   if (TREE_CODE (expr) == INTEGER_CST)

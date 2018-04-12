@@ -1,3 +1,13 @@
+2018-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85356 - ICE with pointer to member function.
+	* pt.c (maybe_instantiate_noexcept): Do instantiate in templates if
+	flag_noexcept_type.  Build the new spec within the function context.
+	* except.c (build_noexcept_spec): Do get constant value in templates
+	if flag_noexcept_type.
+	* decl.c (check_redeclaration_exception_specification): Don't
+	instantiate noexcept on a dependent declaration.
+
 2018-04-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85258
