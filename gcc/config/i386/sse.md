@@ -7361,9 +7361,21 @@
 	(vec_select:<ssequartermode>
 	  (match_operand:V8FI 1 "register_operand")
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_AVX512DQ && reload_completed"
+  "TARGET_AVX512DQ
+   && reload_completed
+   && (TARGET_AVX512VL
+       || REG_P (operands[0])
+       || !EXT_REX_SSE_REG_P (operands[1]))"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_lowpart (<ssequartermode>mode, operands[1]);")
+{
+  if (!TARGET_AVX512VL
+      && REG_P (operands[0])
+      && EXT_REX_SSE_REG_P (operands[1]))
+    operands[0]
+      = lowpart_subreg (<MODE>mode, operands[0], <ssequartermode>mode);
+  else
+    operands[1] = gen_lowpart (<ssequartermode>mode, operands[1]);
+})
 
 (define_insn "<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>"
   [(set (match_operand:<ssequartermode> 0 "<store_mask_predicate>" "=<store_mask_constraint>")
@@ -7394,9 +7406,21 @@
 	  (match_operand:V16FI 1 "register_operand")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
-  "TARGET_AVX512F && reload_completed"
+  "TARGET_AVX512F
+   && reload_completed
+   && (TARGET_AVX512VL
+       || REG_P (operands[0])
+       || !EXT_REX_SSE_REG_P (operands[1]))"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_lowpart (<ssequartermode>mode, operands[1]);")
+{
+  if (!TARGET_AVX512VL
+      && REG_P (operands[0])
+      && EXT_REX_SSE_REG_P (operands[1]))
+    operands[0]
+      = lowpart_subreg (<MODE>mode, operands[0], <ssequartermode>mode);
+  else
+    operands[1] = gen_lowpart (<ssequartermode>mode, operands[1]);
+})
 
 (define_mode_attr extract_type_2
   [(V16SF "avx512dq") (V16SI "avx512dq") (V8DF "avx512f") (V8DI "avx512f")])
@@ -7639,7 +7663,10 @@
    && <mask_mode512bit_condition>
    && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
-  if (<mask_applied>)
+  if (<mask_applied>
+      || (!TARGET_AVX512VL
+	  && !REG_P (operands[0])
+	  && EXT_REX_SSE_REG_P (operands[1])))
     return "vextract<shuffletype>32x8\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
   else
     return "#";
@@ -7654,9 +7681,20 @@
 	    (const_int 4) (const_int 5)
 	    (const_int 6) (const_int 7)])))]
   "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))
-   && reload_completed"
+   && reload_completed
+   && (TARGET_AVX512VL
+       || REG_P (operands[0])
+       || !EXT_REX_SSE_REG_P (operands[1]))"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);")
+{
+  if (!TARGET_AVX512VL
+      && REG_P (operands[0])
+      && EXT_REX_SSE_REG_P (operands[1]))
+    operands[0]
+      = lowpart_subreg (<MODE>mode, operands[0], <ssehalfvecmode>mode);
+  else
+    operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);
+})
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
   [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,m")
@@ -7828,10 +7866,27 @@
 		     (const_int 12) (const_int 13)
 		     (const_int 14) (const_int 15)])))]
   "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "#"
-  "&& reload_completed"
+{
+  if (TARGET_AVX512VL
+      || REG_P (operands[0])
+      || !EXT_REX_SSE_REG_P (operands[1]))
+    return "#";
+  else
+    return "vextracti64x4\t{$0x0, %1, %0|%0, %1, 0x0}";
+}
+  "&& reload_completed
+   && (TARGET_AVX512VL
+       || REG_P (operands[0])
+       || !EXT_REX_SSE_REG_P (operands[1]))"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_lowpart (V16HImode, operands[1]);")
+{
+  if (!TARGET_AVX512VL
+      && REG_P (operands[0])
+      && EXT_REX_SSE_REG_P (operands[1]))
+    operands[0] = lowpart_subreg (V32HImode, operands[0], V16HImode);
+  else
+    operands[1] = gen_lowpart (V16HImode, operands[1]);
+})
 
 (define_insn "vec_extract_hi_v32hi"
   [(set (match_operand:V16HI 0 "nonimmediate_operand" "=v,m")
@@ -7913,10 +7968,27 @@
 		     (const_int 28) (const_int 29)
 		     (const_int 30) (const_int 31)])))]
   "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "#"
-  "&& reload_completed"
+{
+  if (TARGET_AVX512VL
+      || REG_P (operands[0])
+      || !EXT_REX_SSE_REG_P (operands[1]))
+    return "#";
+  else
+    return "vextracti64x4\t{$0x0, %1, %0|%0, %1, 0x0}";
+}
+  "&& reload_completed
+   && (TARGET_AVX512VL
+       || REG_P (operands[0])
+       || !EXT_REX_SSE_REG_P (operands[1]))"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_lowpart (V32QImode, operands[1]);")
+{
+  if (!TARGET_AVX512VL
+      && REG_P (operands[0])
+      && EXT_REX_SSE_REG_P (operands[1]))
+    operands[0] = lowpart_subreg (V64QImode, operands[0], V32QImode);
+  else
+    operands[1] = gen_lowpart (V32QImode, operands[1]);
+})
 
 (define_insn "vec_extract_hi_v64qi"
   [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
