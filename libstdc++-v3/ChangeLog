@@ -1,5 +1,10 @@
 2018-04-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++11/Makefile.am: Fix comment.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cxx11-ios_failure.cc: Fix comment.
+	* src/c++98/ios_failure.cc: Likewise.
+
 	* src/c++11/ios.cc: Remove redundant macro definition.
 
 2018-04-11  Jonathan Wakely  <jwakely@redhat.com>
