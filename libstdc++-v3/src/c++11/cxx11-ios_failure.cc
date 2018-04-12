@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __ios_failure can be upcast to the type in a catch handler.
   bool
   __iosfail_type_info::__do_upcast(const __class_type_info *dst_type,
-			        void **obj_ptr) const
+				   void **obj_ptr) const
   {
     // If the handler is for the gcc4-compatible ios::failure type then
     // catch the object stored in __ios_failure::buf instead of
@@ -150,7 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	*obj_ptr = static_cast<__ios_failure*>(*obj_ptr)->buf;
 	return true;
       }
-    // Otherwise proceeed as normal to see if the handler matches.
+    // Otherwise proceed as normal to see if the handler matches.
     return __class_type_info::__do_upcast(dst_type, obj_ptr);
   }
 #else // ! __cpp_rtti

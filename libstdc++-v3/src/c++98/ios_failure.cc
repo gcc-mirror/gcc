@@ -57,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_DUAL_ABI
   // When the dual ABI is enabled __throw_ios_failure() is defined in
-  // src/c++11/ios_failure.cc
+  // src/c++11/cxx11-ios_failure.cc
 #if __cpp_rtti
   // If RTTI is enabled the exception type thrown will use these functions to
   // construct/destroy a gcc4-compatible ios::failure object in a buffer,
