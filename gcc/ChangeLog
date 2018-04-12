@@ -1,3 +1,11 @@
+2018-04-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/85291
+	* config/rs6000/rs6000.md (fix_trunc<mode>si2): Use legacy code if
+	asked to not generate direct moves.
+	(fix_trunc<mode>si2_stfiwx): Similar.
+	(fix_trunc<mode>si2_internal): Similar.
+
 2018-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83157
