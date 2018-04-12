@@ -1,3 +1,12 @@
+2018-04-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85296
+	* config/nvptx/nvptx.c (flexible_array_member_type_p): New function.
+	(nvptx_assemble_decl_begin): Add undefined param.  Declare undefined
+	array with flexible array member as array without given dimension.
+	(nvptx_assemble_undefined_decl): Set nvptx_assemble_decl_begin call
+	argument for undefined param to true.
+
 2018-04-11  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/85321
