@@ -15965,7 +15965,7 @@ s390_output_indirect_thunk_function (unsigned int regno, bool z10_p)
      Stopping in the thunk: backtrace will point to the thunk target
      is if it was interrupted by a signal.  For a call this means that
      the call chain will be: caller->callee->thunk   */
-  if (flag_asynchronous_unwind_tables)
+  if (flag_asynchronous_unwind_tables && flag_dwarf2_cfi_asm)
     {
       fputs ("\t.cfi_signal_frame\n", asm_out_file);
       fprintf (asm_out_file, "\t.cfi_return_column %d\n", regno);
