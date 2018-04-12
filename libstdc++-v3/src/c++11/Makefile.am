@@ -127,7 +127,7 @@ hashtable_c++0x.o: hashtable_c++0x.cc
 	$(CXXCOMPILE) -fimplicit-templates -c $<
 
 if ENABLE_DUAL_ABI
-# Rewrite the type info for __dual_abi_ios_failure.
+# Rewrite the type info for __ios_failure.
 rewrite_ios_failure_typeinfo = sed -e '/^_ZTISt13__ios_failure:$$/{' \
 	-e 'n' \
 	-e 's/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt19__iosfail_type_info/' \
