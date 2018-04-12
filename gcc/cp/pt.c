@@ -23234,7 +23234,8 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
   tree fntype, spec, noex, clone;
 
   /* Don't instantiate a noexcept-specification from template context.  */
-  if (processing_template_decl)
+  if (processing_template_decl
+      && (!flag_noexcept_type || type_dependent_expression_p (fn)))
     return true;
 
   if (DECL_CLONED_FUNCTION_P (fn))
@@ -23273,10 +23274,10 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 					tf_warning_or_error, fn,
 					/*function_p=*/false,
 					/*integral_constant_expression_p=*/true);
+	  spec = build_noexcept_spec (noex, tf_warning_or_error);
 	  pop_deferring_access_checks ();
 	  pop_access_scope (fn);
 	  pop_tinst_level ();
-	  spec = build_noexcept_spec (noex, tf_warning_or_error);
 	  if (spec == error_mark_node)
 	    spec = noexcept_false_spec;
 	}
