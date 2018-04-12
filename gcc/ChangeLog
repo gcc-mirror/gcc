@@ -1,3 +1,8 @@
+2018-04-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_output_indirect_thunk_function): Check
+	also for flag_dwarf2_cfi_asm.
+
 2018-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85342
