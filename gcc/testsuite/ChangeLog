@@ -1,3 +1,8 @@
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: Revert 259346.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: Likewise.
+
 2018-04-12  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/85347
