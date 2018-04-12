@@ -13,6 +13,11 @@
 	PR testsuite/85190
 	* gcc.dg/vect/pr81196.c: Remove function with undefined behavior.
 
+2018-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/warn/Wzero-as-null-pointer-constant-7.C: Move...
+	* g++.dg/cpp0x/Wzero-as-null-pointer-constant-3.C: ... here.
+
 2018-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70808
