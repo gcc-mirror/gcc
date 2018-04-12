@@ -1,3 +1,9 @@
+2018-04-12  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/85347
+	* gcc.target/powerpc/vec-ldl-1.c: Change dejagnu directives to
+	specify -mvsx on gcc command line.
+
 2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR middle-end/84955
