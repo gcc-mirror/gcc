@@ -50,20 +50,13 @@ void test01()
   }
 
   {
-    // The library throws the new definition of std::ios::failure
-#if _GLIBCXX_USE_CXX11_ABI
-    typedef std::ios_base::failure exception_type;
-#else
-    typedef std::exception exception_type;
-#endif
-
     std::ios ios_01(0);
     ios_01.clear(std::ios_base::eofbit);
     try {
       ios_01.exceptions(std::ios_base::eofbit);
       VERIFY( false );
     }
-    catch(exception_type&) {
+    catch(std::ios_base::failure&) {
       iostate02 = ios_01.exceptions();
       VERIFY( static_cast<bool>(iostate02 & std::ios_base::eofbit) );
     }
