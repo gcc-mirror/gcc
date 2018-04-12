@@ -1,6 +1,6 @@
 /* { dg-do run { target powerpc*-*-* } } */
-/* { dg-require-effective-target vmx_hw } */
-/* { dg-options "-maltivec -O0 -Wall" } */
+/* { dg-require-effective-target vsx_hw } */
+/* { dg-options "-mvsx -O0 -Wall" } */
 
 #include <altivec.h>
 #include <stdlib.h>
