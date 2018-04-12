@@ -2021,6 +2021,30 @@ nvptx_output_ascii (FILE *, const char *str, unsigned HOST_WIDE_INT size)
     nvptx_assemble_value (str[i], 1);
 }
 
+/* Return true if TYPE is a record type where the last field is an array without
+   given dimension.  */
+
+static bool
+flexible_array_member_type_p (const_tree type)
+{
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return false;
+
+  const_tree last_field = NULL_TREE;
+  for (const_tree f = TYPE_FIELDS (type); f; f = TREE_CHAIN (f))
+    last_field = f;
+
+  if (!last_field)
+    return false;
+
+  const_tree last_field_type = TREE_TYPE (last_field);
+  if (TREE_CODE (last_field_type) != ARRAY_TYPE)
+    return false;
+
+  return (! TYPE_DOMAIN (last_field_type)
+	  || ! TYPE_MAX_VALUE (TYPE_DOMAIN (last_field_type)));
+}
+
 /* Emit a PTX variable decl and prepare for emission of its
    initializer.  NAME is the symbol name and SETION the PTX data
    area. The type is TYPE, object size SIZE and alignment is ALIGN.
@@ -2031,10 +2055,17 @@ nvptx_output_ascii (FILE *, const char *str, unsigned HOST_WIDE_INT size)
 
 static void
 nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
-			   const_tree type, HOST_WIDE_INT size, unsigned align)
+			   const_tree type, HOST_WIDE_INT size, unsigned align,
+			   bool undefined = false)
 {
   bool atype = (TREE_CODE (type) == ARRAY_TYPE)
     && (TYPE_DOMAIN (type) == NULL_TREE);
+
+  if (undefined && flexible_array_member_type_p (type))
+    {
+      size = 0;
+      atype = true;
+    }
 
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
@@ -2172,7 +2203,7 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
   tree size = DECL_SIZE_UNIT (decl);
   nvptx_assemble_decl_begin (file, name, section_for_decl (decl),
 			     TREE_TYPE (decl), size ? tree_to_shwi (size) : 0,
-			     DECL_ALIGN (decl));
+			     DECL_ALIGN (decl), true);
   nvptx_assemble_decl_end ();
 }
 
