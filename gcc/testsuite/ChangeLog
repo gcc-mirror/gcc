@@ -1,3 +1,8 @@
+2018-04-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85258
+	* g++.dg/parse/error61.C: New test.
+
 2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: Revert 259346.
