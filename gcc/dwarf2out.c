@@ -28405,14 +28405,6 @@ init_sections_and_labels (bool early_lto_debug)
 	  debug_macinfo_section = get_section (debug_macinfo_section_name,
 					       SECTION_DEBUG
 					       | SECTION_EXCLUDE, NULL);
-	  /* For macro info we have to refer to a debug_line section, so
-	     similar to split-dwarf emit a skeleton one for early debug.  */
-	  debug_skeleton_line_section
-	    = get_section (DEBUG_LTO_LINE_SECTION,
-			   SECTION_DEBUG | SECTION_EXCLUDE, NULL);
-	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
-				       DEBUG_SKELETON_LINE_SECTION_LABEL,
-				       generation);
 	}
       else
 	{
@@ -28459,6 +28451,13 @@ init_sections_and_labels (bool early_lto_debug)
 					       SECTION_DEBUG | SECTION_EXCLUDE,
 					       NULL);
 	}
+      /* For macro info and the file table we have to refer to a
+	 debug_line section.  */
+      debug_line_section = get_section (DEBUG_LTO_LINE_SECTION,
+					SECTION_DEBUG | SECTION_EXCLUDE, NULL);
+      ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
+				   DEBUG_LINE_SECTION_LABEL, generation);
+
       debug_str_section = get_section (DEBUG_LTO_STR_SECTION,
 				       DEBUG_STR_SECTION_FLAGS
 				       | SECTION_EXCLUDE, NULL);
@@ -31845,7 +31844,7 @@ dwarf2out_early_finish (const char *filename)
 
   /* AIX Assembler inserts the length, so adjust the reference to match the
      offset expected by debuggers.  */
-  strcpy (dl_section_ref, debug_skeleton_line_section_label);
+  strcpy (dl_section_ref, debug_line_section_label);
   if (XCOFF_DEBUGGING_INFO)
     strcat (dl_section_ref, DWARF_INITIAL_LENGTH_SIZE_STR);
 
@@ -31918,7 +31917,7 @@ dwarf2out_early_finish (const char *filename)
 
       switch_to_section (debug_macinfo_section);
       ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
-      output_macinfo (debug_skeleton_line_section_label, true);
+      output_macinfo (debug_line_section_label, true);
       dw2_asm_output_data (1, 0, "End compilation unit");
 
       if (flag_fat_lto_objects)
@@ -31929,8 +31928,8 @@ dwarf2out_early_finish (const char *filename)
     }
 
   /* Emit a skeleton debug_line section.  */
-  switch_to_section (debug_skeleton_line_section);
-  ASM_OUTPUT_LABEL (asm_out_file, debug_skeleton_line_section_label);
+  switch_to_section (debug_line_section);
+  ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
   output_line_info (true);
 
   /* If we emitted any indirect strings, output the string table too.  */

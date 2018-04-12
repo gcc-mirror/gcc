@@ -1,3 +1,12 @@
+2018-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/85371
+	* dwarf2out.c (init_sections_and_labels): Use debug_line_section[_label]
+	for the early LTO debug to properly generate references to it
+	during DIE emission.  Do not re-use that for the skeleton for
+	split-dwarf.
+	(dwarf2out_early_finish): Likewise.
+
 2018-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85328
