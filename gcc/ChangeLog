@@ -1,3 +1,10 @@
+2018-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/85342
+	* regcprop.c (copyprop_hardreg_forward_1): Remove replaced array, use
+	a bool scalar var inside of the loop instead.  Don't try to update
+	recog_data.operand after failed apply_change_group.
+
 2018-04-12  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/85296
