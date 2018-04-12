@@ -1,3 +1,17 @@
+2018-04-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/85238
+	* lto-wrapper.c (debug_objcopy): Open the files in binary mode.
+	* dwarf2out.c (dwarf2out_early_finish): Do not generate assembly in LTO
+	mode for PE-COFF targets.
+	* config/i386/i386-protos.h (i386_pe_asm_lto_start): Declare.
+	(i386_pe_asm_lto_end): Likewise.
+	* config/i386/cygming.h (TARGET_ASM_LTO_START): Define.
+	(TARGET_ASM_LTO_END): Likewise.
+	* config/i386/winnt.c (saved_debug_info_level): New static variable.
+	(i386_pe_asm_lto_start): New function.
+	(i386_pe_asm_lto_end): Likewise.
+
 2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
 	    Richard Biener  <rguenther@suse.de>
 
