@@ -1,3 +1,12 @@
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84955
+	* lto-streamer-out.c (output_function): Fix CFG loop state before
+	streaming out.
+	* omp-expand.c (expand_oacc_for): Handle calls to internal
+	functions like regular functions.
+
 2018-04-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/85371

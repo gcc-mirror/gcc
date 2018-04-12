@@ -2084,6 +2084,9 @@ output_function (struct cgraph_node *node)
   /* Set current_function_decl and cfun.  */
   push_cfun (fn);
 
+  /* Fixup loops if required to match discovery done in the reader.  */
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
   /* Make string 0 be a NULL string.  */
   streamer_write_char_stream (ob->string_stream, 0);
 
@@ -2176,11 +2179,12 @@ output_function (struct cgraph_node *node)
       streamer_write_record_start (ob, LTO_null);
 
       output_cfg (ob, fn);
-
-      pop_cfun ();
    }
   else
     streamer_write_uhwi (ob, 0);
+
+  loop_optimizer_finalize ();
+  pop_cfun ();
 
   /* Create a section to hold the pickled output of this function.   */
   produce_asm (ob, function);
