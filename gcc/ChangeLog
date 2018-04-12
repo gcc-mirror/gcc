@@ -1,3 +1,18 @@
+2018-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85328
+	* config/i386/sse.md
+	(<mask_codefor>avx512dq_vextract<shuffletype>64x2_1<mask_name> split,
+	<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name> split,
+	vec_extract_lo_<mode><mask_name> split, vec_extract_lo_v32hi,
+	vec_extract_lo_v64qi): For non-AVX512VL if input is xmm16+ reg
+	and output is a reg, avoid creating invalid lowpart subreg, but
+	instead split into a 512-bit move.  Don't split if not AVX512VL,
+	input is xmm16+ reg and output is a mem.
+	(vec_extract_lo_<mode><mask_name>, vec_extract_lo_v32hi,
+	vec_extract_lo_v64qi): Don't require split if not AVX512VL, input is
+	xmm16+ reg and output is a mem.
+
 2018-04-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_output_indirect_thunk_function): Check
