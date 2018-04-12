@@ -5962,7 +5962,9 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	  mo.type = MO_CLOBBER;
 	  mo.u.loc = loc;
 	  if (GET_CODE (expr) == SET
-	      && SET_DEST (expr) == loc
+	      && (SET_DEST (expr) == loc
+		  || (GET_CODE (SET_DEST (expr)) == STRICT_LOW_PART
+		      && XEXP (SET_DEST (expr), 0) == loc))
 	      && !unsuitable_loc (SET_SRC (expr))
 	      && find_use_val (loc, mode, cui))
 	    {
