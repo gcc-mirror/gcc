@@ -1,3 +1,8 @@
+2018-04-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85385
+	* g++.dg/diagnostic/macro-arg-count.C: New test.
+
 2018-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83064
