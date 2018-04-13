@@ -189,9 +189,11 @@ gori_map::single_import (tree name)
   basic_block bb;
   bitmap_iterator bi;
 
+  bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+  if (bb && !incoming[bb->index])
+    calculate_gori (bb);
   if (def_chain [name_index] == NULL)
     return NULL_TREE;
-  bb = gimple_bb (SSA_NAME_DEF_STMT (name));
 
   EXECUTE_IF_AND_IN_BITMAP (def_chain [name_index], incoming[bb->index], 0,
 			    index, bi)
@@ -241,7 +243,7 @@ gori_map::calc_def_chain (tree name, basic_block bb)
   unsigned v = SSA_NAME_VERSION (name);
   range_stmt rn;
 
-  if (!stmt || gimple_bb (stmt) != bb)
+  if (!stmt || gimple_bb (stmt) != bb || is_a <gphi *> (stmt))
     {
       bitmap_set_bit (incoming[bb->index], v);
       return NULL;
