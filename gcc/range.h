@@ -82,7 +82,8 @@ class irange
     { set_range (typ, wi::to_wide (lbound), wi::to_wide (ubound), rt); }
   irange (const irange &);
   irange (const irange_storage *stor, tree typ) { set_range (stor, typ); }
-  irange (const_tree t, int x, int y) { set_range (t, x, y, PLAIN); }
+  irange (const_tree t, int x, int y, kind k = PLAIN)
+						    { set_range (t, x, y, k); }
 
   void set_range (const irange_storage *, const_tree);
   void set_range (const_tree);
