@@ -10610,7 +10610,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
 	  cl = reg_preferred_class (regno);
-	  regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][1];
+	  regno = reg_renumber[regno];
+	  if (regno < 0)
+	    regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][1];
 	}
       if (regno >= 0 && ! FP_REGNO_P (regno))
 	{
@@ -10635,7 +10637,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	{
 	  cl = reg_preferred_class (regno);
 	  gcc_assert (cl != NO_REGS);
-	  regno = ira_class_hard_regs[cl][0];
+	  regno = reg_renumber[regno];
+	  if (regno < 0)
+	    regno = ira_class_hard_regs[cl][0];
 	}
       if (FP_REGNO_P (regno))
 	{
@@ -10664,7 +10668,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
 	  cl = reg_preferred_class (regno);
-	  regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][0];
+	  regno = reg_renumber[regno];
+	  if (regno < 0)
+	    regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][0];
 	}
       if (regno >= 0 && ! FP_REGNO_P (regno))
 	{
@@ -10689,7 +10695,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	{
 	  cl = reg_preferred_class (regno);
 	  gcc_assert (cl != NO_REGS);
-	  regno = ira_class_hard_regs[cl][0];
+	  regno = reg_renumber[regno];
+	  if (regno < 0)
+	    regno = ira_class_hard_regs[cl][0];
 	}
       if (FP_REGNO_P (regno))
 	{

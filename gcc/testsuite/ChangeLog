@@ -1,3 +1,8 @@
+2018-04-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/79916
+	* gcc.target/powerpc/pr79916.c: New.
+
 2018-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85393
