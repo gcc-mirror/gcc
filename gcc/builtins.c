@@ -3650,12 +3650,16 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   set_mem_align (src_mem, src_align);
 
   /* Copy word part most expediently.  */
-  dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx,
-				     CALL_EXPR_TAILCALL (exp)
-				     && (endp == 0 || target == const0_rtx)
-				     ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
+  enum block_op_methods method = BLOCK_OP_NORMAL;
+  if (CALL_EXPR_TAILCALL (exp) && (endp == 0 || target == const0_rtx))
+    method = BLOCK_OP_TAILCALL;
+  if (endp == 1 && target != const0_rtx)
+    method = BLOCK_OP_NO_LIBCALL_RET;
+  dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx, method,
 				     expected_align, expected_size,
 				     min_size, max_size, probable_max_size);
+  if (dest_addr == pc_rtx)
+    return NULL_RTX;
 
   if (dest_addr == 0)
     {
