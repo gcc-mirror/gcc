@@ -1565,7 +1565,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 		       unsigned HOST_WIDE_INT max_size,
 		       unsigned HOST_WIDE_INT probable_max_size)
 {
-  bool may_use_call;
+  int may_use_call;
   rtx retval = 0;
   unsigned int align;
 
@@ -1577,7 +1577,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
     {
     case BLOCK_OP_NORMAL:
     case BLOCK_OP_TAILCALL:
-      may_use_call = true;
+      may_use_call = 1;
       break;
 
     case BLOCK_OP_CALL_PARM:
@@ -1589,7 +1589,11 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       break;
 
     case BLOCK_OP_NO_LIBCALL:
-      may_use_call = false;
+      may_use_call = 0;
+      break;
+
+    case BLOCK_OP_NO_LIBCALL_RET:
+      may_use_call = -1;
       break;
 
     default:
@@ -1625,6 +1629,9 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (y)))
     {
+      if (may_use_call < 0)
+	return pc_rtx;
+
       /* Since x and y are passed to a libcall, mark the corresponding
 	 tree EXPR as addressable.  */
       tree y_expr = MEM_EXPR (y);
