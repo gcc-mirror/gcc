@@ -1,3 +1,10 @@
+2018-04-13  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/83402
+	* config/rs6000/emmintrin.h (_mm_slli_epi{16,32,64}):
+	Ensure that vec_splat_s32 is only called with 0 <= shift < 16.
+	Ensure negative shifts result in {0}.
+
 2018-04-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/79916
