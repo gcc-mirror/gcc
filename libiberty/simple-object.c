@@ -284,6 +284,11 @@ handle_lto_debug_sections (const char *name)
   /* Copy over .note.GNU-stack section under the same name if present.  */
   else if (strcmp (name, ".note.GNU-stack") == 0)
     return strcpy (newname, name);
+  /* Copy over .comment section under the same name if present.  Solaris
+     ld uses them to relax its checking of ELF gABI access rules for
+     COMDAT sections in objects produced by GCC.  */
+  else if (strcmp (name, ".comment") == 0)
+    return strcpy (newname, name);
   return NULL;
 }
 

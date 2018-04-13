@@ -1,3 +1,9 @@
+2018-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR lto/81968
+	* simple-object.c (handle_lto_debug_sections): Keep .comment
+	section.
+
 2018-03-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-demangle.c: Update URL for g++ V3 ABI.
