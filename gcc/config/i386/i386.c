@@ -5766,6 +5766,19 @@ ix86_can_inline_p (tree caller, tree callee)
 {
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+
+  /* Changes of those flags can be tolerated for always inlines. Lets hope
+     user knows what he is doing.  */
+  const unsigned HOST_WIDE_INT always_inline_safe_mask
+	 = (MASK_USE_8BIT_IDIV | MASK_ACCUMULATE_OUTGOING_ARGS
+	    | MASK_NO_ALIGN_STRINGOPS | MASK_AVX256_SPLIT_UNALIGNED_LOAD
+	    | MASK_AVX256_SPLIT_UNALIGNED_STORE | MASK_CLD
+	    | MASK_NO_FANCY_MATH_387 | MASK_IEEE_FP | MASK_INLINE_ALL_STRINGOPS
+	    | MASK_INLINE_STRINGOPS_DYNAMICALLY | MASK_RECIP | MASK_STACK_PROBE
+	    | MASK_STV | MASK_TLS_DIRECT_SEG_REFS | MASK_VZEROUPPER
+	    | MASK_NO_PUSH_ARGS | MASK_OMIT_LEAF_FRAME_POINTER);
+
+
   if (!callee_tree)
     callee_tree = target_option_default_node;
   if (!caller_tree)
@@ -5776,6 +5789,10 @@ ix86_can_inline_p (tree caller, tree callee)
   struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
   struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
   bool ret = false;
+  bool always_inline =
+     (DECL_DISREGARD_INLINE_LIMITS (callee)
+      && lookup_attribute ("always_inline",
+			   DECL_ATTRIBUTES (callee)));
 
   /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
      function can inline a SSE2 function but a SSE2 function can't inline
@@ -5787,14 +5804,17 @@ ix86_can_inline_p (tree caller, tree callee)
     ret = false;
 
   /* See if we have the same non-isa options.  */
-  else if (caller_opts->x_target_flags != callee_opts->x_target_flags)
+  else if ((!always_inline
+	    && caller_opts->x_target_flags != callee_opts->x_target_flags)
+	   || (caller_opts->x_target_flags & ~always_inline_safe_mask)
+	       != (callee_opts->x_target_flags & ~always_inline_safe_mask))
     ret = false;
 
   /* See if arch, tune, etc. are the same.  */
   else if (caller_opts->arch != callee_opts->arch)
     ret = false;
 
-  else if (caller_opts->tune != callee_opts->tune)
+  else if (!always_inline && caller_opts->tune != callee_opts->tune)
     ret = false;
 
   else if (caller_opts->x_ix86_fpmath != callee_opts->x_ix86_fpmath
@@ -5807,7 +5827,8 @@ ix86_can_inline_p (tree caller, tree callee)
 	       (cgraph_node::get (callee))->fp_expressions))
     ret = false;
 
-  else if (caller_opts->branch_cost != callee_opts->branch_cost)
+  else if (!always_inline
+	   && caller_opts->branch_cost != callee_opts->branch_cost)
     ret = false;
 
   else
