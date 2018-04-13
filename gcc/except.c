@@ -947,7 +947,7 @@ emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
    at the rtl level.  Emit the code required by the target at a landing
    pad for the given region.  */
 
-void
+static void
 expand_dw2_landing_pad_for_region (eh_region region)
 {
   if (targetm.have_exception_receiver ())

@@ -1409,14 +1409,14 @@ get_uncond_jump_length (void)
 }
 
 /* The landing pad OLD_LP, in block OLD_BB, has edges from both partitions.
-   Duplicate the landing pad and split the edges so that no EH edge
-   crosses partitions.  */
+   Add a new landing pad that will just jump to the old one and split the
+   edges so that no EH edge crosses partitions.  */
 
 static void
 fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
 {
   eh_landing_pad new_lp;
-  basic_block new_bb, last_bb, post_bb;
+  basic_block new_bb, last_bb;
   rtx_insn *jump;
   unsigned new_partition;
   edge_iterator ei;
@@ -1431,24 +1431,20 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
   /* Put appropriate instructions in new bb.  */
   rtx_code_label *new_label = emit_label (new_lp->landing_pad);
 
-  expand_dw2_landing_pad_for_region (old_lp->region);
-
-  post_bb = BLOCK_FOR_INSN (old_lp->landing_pad);
-  post_bb = single_succ (post_bb);
-  rtx_code_label *post_label = block_label (post_bb);
-  jump = emit_jump_insn (targetm.gen_jump (post_label));
-  JUMP_LABEL (jump) = post_label;
+  rtx_code_label *old_label = block_label (old_bb);
+  jump = emit_jump_insn (targetm.gen_jump (old_label));
+  JUMP_LABEL (jump) = old_label;
 
   /* Create new basic block to be dest for lp.  */
   last_bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
   new_bb = create_basic_block (new_label, jump, last_bb);
   new_bb->aux = last_bb->aux;
-  new_bb->count = post_bb->count;
+  new_bb->count = old_bb->count;
   last_bb->aux = new_bb;
 
   emit_barrier_after_bb (new_bb);
 
-  make_single_succ_edge (new_bb, post_bb, 0);
+  make_single_succ_edge (new_bb, old_bb, 0);
 
   /* Make sure new bb is in the other partition.  */
   new_partition = BB_PARTITION (old_bb);
@@ -1457,7 +1453,7 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
 
   /* Fix up the edges.  */
   for (ei = ei_start (old_bb->preds); (e = ei_safe_edge (ei)) != NULL; )
-    if (BB_PARTITION (e->src) == new_partition)
+    if (e->src != new_bb && BB_PARTITION (e->src) == new_partition)
       {
 	rtx_insn *insn = BB_END (e->src);
 	rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);

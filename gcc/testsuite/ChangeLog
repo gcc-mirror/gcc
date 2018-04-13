@@ -1,5 +1,9 @@
 2018-04-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/85393
+	* g++.dg/opt/pr85393.C: New test.
+	* g++.dg/opt/pr85393-aux.cc: New file.
+
 	PR rtl-optimization/85376
 	* gcc.dg/pr85376.c: New test.
 
