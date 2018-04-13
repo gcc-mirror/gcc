@@ -1,4 +1,15 @@
 2018-04-13  Jan Hubicka  <hubicka@ucw.cz>
+	    Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82965
+	PR tree-optimization/83991
+	* cfgloopanal.c (expected_loop_iterations_unbounded): Add
+	by_profile_only parameter.
+	* cfgloopmanip.c (scale_loop_profile): Further scale loop's profile
+        information if the loop was predicted to iterate too many times.
+	* cfgloop.h (expected_loop_iterations_unbounded): Update prototype
+
+2018-04-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/71991
 	* config/i386/i386.c (ix86_can_inline_p): Allow safe transitions for
