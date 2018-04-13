@@ -1,3 +1,9 @@
+2018-04-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/71991
+	* config/i386/i386.c (ix86_can_inline_p): Allow safe transitions for
+	always inline.
+
 2018-04-13  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
