@@ -1,5 +1,13 @@
 2018-04-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/85393
+	* except.h (expand_dw2_landing_pad_for_region): Remove declaration.
+	* except.c (expand_dw2_landing_pad_for_region): Make static.
+	* bb-reorder.c (fix_up_crossing_landing_pad): In new_bb emit just
+	a label and unconditional jump to old_bb, rather than
+	expand_dw2_landing_pad_for_region insn(s) and jump to single_succ
+	basic block.
+
 	PR rtl-optimization/85376
 	* simplify-rtx.c (simplify_const_unary_operation): For CLZ and CTZ and
 	zero op0, if C?Z_DEFINED_VALUE_AT_ZERO is false, return NULL_RTX
