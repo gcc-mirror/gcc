@@ -1,3 +1,10 @@
+2018-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/85376
+	* simplify-rtx.c (simplify_const_unary_operation): For CLZ and CTZ and
+	zero op0, if C?Z_DEFINED_VALUE_AT_ZERO is false, return NULL_RTX
+	instead of a specific value.
+
 2018-04-13  Jan Hubicka  <hubicka@ucw.cz>
 	    Bin Cheng  <bin.cheng@arm.com>
 
