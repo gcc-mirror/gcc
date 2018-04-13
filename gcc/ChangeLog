@@ -1,3 +1,10 @@
+2018-04-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/79916
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use assigned hard
+	regs (if any) to define how to gnerate SD moves when LRA is in
+	progress.
+
 2018-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85393
