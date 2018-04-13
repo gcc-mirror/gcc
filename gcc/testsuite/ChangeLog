@@ -1,3 +1,8 @@
+2018-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/85376
+	* gcc.dg/pr85376.c: New test.
+
 2018-04-13  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/83852
