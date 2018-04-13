@@ -305,3 +305,5 @@ void sizepos_c_13 (signed char b)
   if (b >> 13 & 1)
     g = b;
 }
+
+/* { dg-final { scan-assembler-not "risbg.*-\[0-9\]+\\\+1\n" } } */
