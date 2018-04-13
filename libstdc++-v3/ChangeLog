@@ -1,3 +1,9 @@
+2018-04-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Rewrite sed rule to be less fragile and to
+	handle mangled names starting with double underscores on darwin.
+	* src/c++11/Makefile.in: Regenerate.
+
 2018-04-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/Makefile.am: Fix comment.
