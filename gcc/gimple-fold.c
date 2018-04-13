@@ -642,9 +642,25 @@ var_decl_component_p (tree var)
 static bool
 size_must_be_zero_p (tree size)
 {
-  return (integer_zerop (size)
-	  || (TREE_CODE (size) == SSA_NAME
-	      && irange (size).zero_p ()));
+  if (integer_zerop (size))
+    return true;
+
+  if (TREE_CODE (size) != SSA_NAME)
+    return false;
+
+  tree type = TREE_TYPE (size);
+  int prec = TYPE_PRECISION (type);
+
+  wide_int wone = wi::one (prec);
+
+  /* Compute the value of SSIZE_MAX, the largest positive value that
+     can be stored in ssize_t, the signed counterpart of size_t.  */
+  wide_int ssize_max = wi::lshift (wi::one (prec), prec - 1) - 1;
+
+  irange not_zero (type, wone, ssize_max);
+  irange size_range (size);
+  return (size_range.contains_p (0)
+	  && size_range.intersect (not_zero).empty_p ());
 }
 
 /* Fold function call to builtin mem{{,p}cpy,move}.  Try to detect and
