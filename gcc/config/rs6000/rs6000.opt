@@ -534,8 +534,7 @@ Target Report Mask(CRYPTO) Var(rs6000_isa_flags)
 Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions.
 
 mdirect-move
-Target Report Mask(DIRECT_MOVE) Var(rs6000_isa_flags)
-Use ISA 2.07 direct move between GPR & VSX register instructions.
+Target Undocumented Mask(DIRECT_MOVE) Var(rs6000_isa_flags) Ignore Warn(%qs is deprecated)
 
 mhtm
 Target Report Mask(HTM) Var(rs6000_isa_flags)
