@@ -1,3 +1,11 @@
+2018-04-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/85293
+	* gcc.target/powerpc/pr80098-2.c: Remove -mdirect-move.  Remove the
+	corresponding dg-error clause.
+	* gcc.target/powerpc/pr80098-3.c: Ditto.
+	* gcc.target/powerpc/pr80103-1.c: Delete.
+
 2018-04-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/81773
