@@ -1,3 +1,15 @@
+2018-04-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/81773
+	PR fortran/83606
+	* dependency.c (gfc_dep_resolver): Coarray indexes are to be ignored
+	during dependency computation.  They define no data dependency.
+	* trans-array.c (conv_array_index_offset): The stride can not be set
+	here, prevent fail.
+	* trans-intrinsic.c (conv_caf_send): Add creation of temporary array
+	for caf_get's result and copying to the array with vectorial
+	indexing.
+
 2018-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/85387

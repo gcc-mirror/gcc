@@ -3215,7 +3215,7 @@ conv_array_index_offset (gfc_se * se, gfc_ss * ss, int dim, int i,
     }
 
   /* Multiply by the stride.  */
-  if (!integer_onep (stride))
+  if (stride != NULL && !integer_onep (stride))
     index = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			     index, stride);
 
