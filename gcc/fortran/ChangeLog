@@ -1,3 +1,9 @@
+2018-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85387
+	* frontend-passes.c (traverse_io_block): Check for start, end or
+	stride being defined by an outer implied DO loop.
+
 2018-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83064

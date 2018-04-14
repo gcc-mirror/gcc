@@ -1237,6 +1237,23 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 	}
     }
 
+  /* Check for cases like ((a(i, j), i=1, j), j=1, 2). */
+  for (int i = 1; i < ref->u.ar.dimen; i++)
+    {
+      if (iters[i])
+	{
+	  gfc_expr *var = iters[i]->var;
+	  for (int j = i - 1; j < i; j++)
+	    {
+	      if (iters[j]
+		  && (gfc_check_dependency (var, iters[j]->start, true)
+		      || gfc_check_dependency (var, iters[j]->end, true)
+		      || gfc_check_dependency (var, iters[j]->step, true)))
+		  return false;
+	    }		  
+	}
+    }
+
   /* Create new expr.  */
   new_e = gfc_copy_expr (curr->expr1);
   new_e->expr_type = EXPR_VARIABLE;
