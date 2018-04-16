@@ -1,3 +1,9 @@
+2018-04-16  Julia Koval  <julia.koval@intel.com>
+
+	PR target/84413
+	* config/i386/x86-tune.def (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL,
+	X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Add m_SKYLAKE_AVX512
+
 2018-04-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/85293
