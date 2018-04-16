@@ -386,8 +386,13 @@ set_and_canonicalize_value_range (value_range *vr, enum value_range_type t,
   /* Anti-ranges that can be represented as ranges should be so.  */
   if (t == VR_ANTI_RANGE)
     {
-      bool is_min = vrp_val_is_min (min);
-      bool is_max = vrp_val_is_max (max);
+      /* For -fstrict-enums we may receive out-of-range ranges so consider
+         values < -INF and values > INF as -INF/INF as well.  */
+      tree type = TREE_TYPE (min);
+      bool is_min = (INTEGRAL_TYPE_P (type)
+		     && tree_int_cst_compare (min, TYPE_MIN_VALUE (type)) <= 0);
+      bool is_max = (INTEGRAL_TYPE_P (type)
+		     && tree_int_cst_compare (max, TYPE_MAX_VALUE (type)) >= 0);
 
       if (is_min && is_max)
 	{

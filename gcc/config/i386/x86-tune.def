@@ -50,7 +50,7 @@ DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
 DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
           m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
 	  | m_BONNELL | m_SILVERMONT | m_INTEL
-	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_GENERIC)
+	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_SKYLAKE_AVX512 | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: This knob promotes all store
    destinations to be 128bit to allow register renaming on 128bit SSE units,
@@ -85,7 +85,7 @@ DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
 DEF_TUNE (X86_TUNE_MOVX, "movx",
           m_PPRO | m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
 	  | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
-	  | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC)
+	  | m_GEODE | m_AMD_MULTIPLE | m_SKYLAKE_AVX512 | m_GENERIC)
 
 /* X86_TUNE_MEMORY_MISMATCH_STALL: Avoid partial stores that are followed by
    full sized loads.  */
@@ -336,13 +336,14 @@ DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
 	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_SILVERMONT | m_KNL | m_KNM
-	  | m_INTEL | m_AMDFAM10 | m_BDVER | m_BTVER | m_ZNVER1 | m_GENERIC)
+	  | m_INTEL | m_SKYLAKE_AVX512 | m_AMDFAM10 | m_BDVER | m_BTVER
+	  | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores instead
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
 	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_SILVERMONT | m_KNL | m_KNM
-	  | m_INTEL | m_BDVER | m_ZNVER1 | m_GENERIC)
+	  | m_INTEL | m_SKYLAKE_AVX512 | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* Use packed single precision instructions where posisble.  I.e. movups instead
    of movupd.  */

@@ -156,6 +156,10 @@ gfc_run_passes (gfc_namespace *ns)
   check_locus (ns);
 #endif
 
+  gfc_get_errors (&w, &e);
+  if (e > 0)
+    return;
+
   if (flag_frontend_optimize || flag_frontend_loop_interchange)
     optimize_namespace (ns);
 
@@ -167,10 +171,6 @@ gfc_run_passes (gfc_namespace *ns)
 
       expr_array.release ();
     }
-
-  gfc_get_errors (&w, &e);
-  if (e > 0)
-   return;
 
   if (flag_realloc_lhs)
     realloc_strings (ns);
@@ -1234,6 +1234,23 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 	  break;
 	default:
 	  return false;
+	}
+    }
+
+  /* Check for cases like ((a(i, j), i=1, j), j=1, 2). */
+  for (int i = 1; i < ref->u.ar.dimen; i++)
+    {
+      if (iters[i])
+	{
+	  gfc_expr *var = iters[i]->var;
+	  for (int j = i - 1; j < i; j++)
+	    {
+	      if (iters[j]
+		  && (gfc_check_dependency (var, iters[j]->start, true)
+		      || gfc_check_dependency (var, iters[j]->end, true)
+		      || gfc_check_dependency (var, iters[j]->step, true)))
+		  return false;
+	    }		  
 	}
     }
 

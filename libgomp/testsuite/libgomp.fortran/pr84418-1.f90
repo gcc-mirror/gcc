@@ -15,7 +15,7 @@
     c(i) = foo (a(i), b(i))
   end do
   do i = 1, 1024
-    if (c(i).ne.(2 * i)) call abort
+    if (c(i).ne.(2 * i)) STOP 1
   end do
 contains
   real function foo (x, y)

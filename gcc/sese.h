@@ -228,19 +228,6 @@ if_region_get_condition_block (ifsese if_region)
   return if_region_entry (if_region)->dest;
 }
 
-/* Free and compute again all the dominators information.  */
-
-static inline void
-recompute_all_dominators (void)
-{
-  mark_irreducible_loops ();
-  free_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  free_dominance_info (CDI_POST_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
-}
-
 typedef std::pair <gimple *, tree> scalar_use;
 
 typedef struct gimple_poly_bb

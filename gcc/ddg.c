@@ -295,10 +295,13 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
   /* Create inter-loop true dependences and anti dependences.  */
   for (r_use = DF_REF_CHAIN (last_def); r_use != NULL; r_use = r_use->next)
     {
-      rtx_insn *use_insn = DF_REF_INSN (r_use->ref);
-
-      if (BLOCK_FOR_INSN (use_insn) != g->bb)
+      if (DF_REF_BB (r_use->ref) != g->bb)
 	continue;
+
+      gcc_assert (!DF_REF_IS_ARTIFICIAL (r_use->ref)
+		  && DF_REF_INSN_INFO (r_use->ref) != NULL);
+
+      rtx_insn *use_insn = DF_REF_INSN (r_use->ref);
 
       /* ??? Do not handle uses with DF_REF_IN_NOTE notes.  */
       use_node = get_node_of_insn (g, use_insn);

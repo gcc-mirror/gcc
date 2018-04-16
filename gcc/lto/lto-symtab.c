@@ -572,14 +572,15 @@ lto_symtab_merge_p (tree prevailing, tree decl)
 	  return false;
 	}
     }
+
+  /* FIXME: after MPX is removed, use flags_from_decl_or_type
+     function instead.  PR lto/85248.  */
   if (DECL_ATTRIBUTES (prevailing) != DECL_ATTRIBUTES (decl))
     {
       tree prev_attr = lookup_attribute ("error", DECL_ATTRIBUTES (prevailing));
       tree attr = lookup_attribute ("error", DECL_ATTRIBUTES (decl));
       if ((prev_attr == NULL) != (attr == NULL)
-	  || (prev_attr
-	      && TREE_VALUE (TREE_VALUE (prev_attr))
-		 != TREE_VALUE (TREE_VALUE (attr))))
+	  || (prev_attr && !attribute_value_equal (prev_attr, attr)))
 	{
           if (symtab->dump_file)
 	    fprintf (symtab->dump_file, "Not merging decls; "
@@ -590,13 +591,21 @@ lto_symtab_merge_p (tree prevailing, tree decl)
       prev_attr = lookup_attribute ("warning", DECL_ATTRIBUTES (prevailing));
       attr = lookup_attribute ("warning", DECL_ATTRIBUTES (decl));
       if ((prev_attr == NULL) != (attr == NULL)
-	  || (prev_attr
-	      && TREE_VALUE (TREE_VALUE (prev_attr))
-		 != TREE_VALUE (TREE_VALUE (attr))))
+	  || (prev_attr && !attribute_value_equal (prev_attr, attr)))
 	{
           if (symtab->dump_file)
 	    fprintf (symtab->dump_file, "Not merging decls; "
 		     "warning attribute mismatch\n");
+	  return false;
+	}
+
+      prev_attr = lookup_attribute ("noreturn", DECL_ATTRIBUTES (prevailing));
+      attr = lookup_attribute ("noreturn", DECL_ATTRIBUTES (decl));
+      if ((prev_attr == NULL) != (attr == NULL))
+	{
+          if (symtab->dump_file)
+	    fprintf (symtab->dump_file, "Not merging decls; "
+		     "noreturn attribute mismatch\n");
 	  return false;
 	}
     }

@@ -28,7 +28,7 @@
      Yes it is, at least using the <xref linkend="manual.intro.using.abi">old
      ABI</xref>, and that's okay.  This is a decision that we preserved
      when we imported SGI's STL implementation.  The following is
-     quoted from <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/FAQ.html">their FAQ</link>:
+     quoted from <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/FAQ.html">their FAQ</link>:
    </para>
    <blockquote>
      <para>

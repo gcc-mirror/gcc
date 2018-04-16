@@ -13,36 +13,56 @@
 #define TEST sse2_test_psllq_1
 #endif
 
-#define N 60
-
 #include <emmintrin.h>
 
 #ifdef _ARCH_PWR8
-static __m128i
-__attribute__((noinline, unused))
-test (__m128i s1)
-{
-  return _mm_slli_epi64 (s1, N); 
-}
+#define TEST_FUNC(id, N) \
+  static __m128i \
+  __attribute__((noinline, unused)) \
+  test##id (__m128i s1) \
+  { \
+    return _mm_slli_epi64 (s1, N);  \
+  }
+
+TEST_FUNC(0, 0)
+TEST_FUNC(15, 15)
+TEST_FUNC(16, 16)
+TEST_FUNC(31, 31)
+TEST_FUNC(63, 63)
+TEST_FUNC(neg1, -1)
+TEST_FUNC(neg16, -16)
+TEST_FUNC(neg32, -32)
+TEST_FUNC(neg64, -64)
+TEST_FUNC(neg128, -128)
 #endif
+
+#define TEST_CODE(id, N) \
+  { \
+    union128i_q u, s; \
+    long long e[2] = {0}; \
+    int i; \
+    s.x = _mm_set_epi64x (-1, 0xf); \
+    u.x = test##id (s.x); \
+    if (N >= 0 && N < 64) \
+      for (i = 0; i < 2; i++) \
+        e[i] = s.a[i] << (N * (N >= 0)); \
+    if (check_union128i_q (u, e)) \
+      abort (); \
+  }
 
 static void
 TEST (void)
 {
 #ifdef _ARCH_PWR8
-  union128i_q u, s;
-  long long e[2] = {0};
-  int i;
- 
-  s.x = _mm_set_epi64x (-1, 0xf);
-
-  u.x = test (s.x);
-
-  if (N < 64)
-    for (i = 0; i < 2; i++)
-      e[i] = s.a[i] << N; 
-
-  if (check_union128i_q (u, e))
-    abort (); 
+  TEST_CODE(0, 0);
+  TEST_CODE(15, 15);
+  TEST_CODE(16, 16);
+  TEST_CODE(31, 31);
+  TEST_CODE(63, 63);
+  TEST_CODE(neg1, -1);
+  TEST_CODE(neg16, -16);
+  TEST_CODE(neg32, -32);
+  TEST_CODE(neg64, -64);
+  TEST_CODE(neg128, -128);
 #endif
 }

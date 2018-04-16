@@ -49,6 +49,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "alloc-pool.h"
 #include "target.h"
 #include "tree-into-ssa.h"
+#include "omp-general.h"
 
 /* ??? For lang_hooks.types.type_for_mode, but is there a word_mode
    type in the GIMPLE type system that is language-independent?  */
@@ -1162,6 +1163,10 @@ build_one_array (gswitch *swtch, int num, tree arr_index_type,
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
+      if (offloading_function_p (cfun->decl))
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("omp declare target"), NULL_TREE,
+		       NULL_TREE);
       varpool_node::finalize_decl (decl);
 
       fetch = build4 (ARRAY_REF, value_type, decl, tidx, NULL_TREE,

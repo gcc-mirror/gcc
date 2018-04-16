@@ -1601,7 +1601,9 @@ propagate_vals_across_pass_through (cgraph_edge *cs, ipa_jump_func *jfunc,
 
   /* Do not create new values when propagating within an SCC because if there
      are arithmetic functions with circular dependencies, there is infinite
-     number of them and we would just make lattices bottom.  */
+     number of them and we would just make lattices bottom.  If this condition
+     is ever relaxed we have to detect self-feeding recursive calls in
+     cgraph_edge_brings_value_p in a smarter way.  */
   if ((ipa_get_jf_pass_through_operation (jfunc) != NOP_EXPR)
       && ipa_edge_within_scc (cs))
     ret = dest_lat->set_contains_variable ();
@@ -1811,14 +1813,16 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
   struct ipa_node_params *callee_info = IPA_NODE_REF (callee);
   tree parm_type = ipa_get_type (callee_info, idx);
 
-  /* For K&R C programs, ipa_get_type() could return NULL_TREE.
-     Avoid the transform for these cases.  */
-  if (!parm_type)
+  /* For K&R C programs, ipa_get_type() could return NULL_TREE.  Avoid the
+     transform for these cases.  Similarly, we can have bad type mismatches
+     with LTO, avoid doing anything with those too.  */
+  if (!parm_type
+      || (!INTEGRAL_TYPE_P (parm_type) && !POINTER_TYPE_P (parm_type)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Setting dest_lattice to bottom, because"
-			    " param %i type is NULL for %s\n", idx,
-			    cs->callee->name ());
+	fprintf (dump_file, "Setting dest_lattice to bottom, because type of "
+		 "param %i of %s is NULL or unsuitable for bits propagation\n",
+		 idx, cs->callee->name ());
 
       return dest_lattice->set_to_bottom ();
     }
@@ -3470,12 +3474,12 @@ same_node_or_its_all_contexts_clone_p (cgraph_node *node, cgraph_node *dest)
   return info->is_all_contexts_clone && info->ipcp_orig_node == dest;
 }
 
-/* Return true if edge CS does bring about the value described by SRC to node
-   DEST or its clone for all contexts.  */
+/* Return true if edge CS does bring about the value described by SRC to
+   DEST_VAL of node DEST or its clone for all contexts.  */
 
 static bool
 cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
-			    cgraph_node *dest)
+			    cgraph_node *dest, ipcp_value<tree> *dest_val)
 {
   struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
   enum availability availability;
@@ -3485,7 +3489,9 @@ cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
       || availability <= AVAIL_INTERPOSABLE
       || caller_info->node_dead)
     return false;
-  if (!src->val)
+  /* At the moment we do not propagate over arithmetic jump functions in SCCs,
+     so it is safe to detect self-feeding recursive calls in this way.  */
+  if (!src->val || src->val == dest_val)
     return true;
 
   if (caller_info->ipcp_orig_node)
@@ -3521,13 +3527,14 @@ cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
     }
 }
 
-/* Return true if edge CS does bring about the value described by SRC to node
-   DEST or its clone for all contexts.  */
+/* Return true if edge CS does bring about the value described by SRC to
+   DST_VAL of node DEST or its clone for all contexts.  */
 
 static bool
 cgraph_edge_brings_value_p (cgraph_edge *cs,
 			    ipcp_value_source<ipa_polymorphic_call_context> *src,
-			    cgraph_node *dest)
+			    cgraph_node *dest,
+			    ipcp_value<ipa_polymorphic_call_context> *)
 {
   struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
   cgraph_node *real_dest = cs->callee->function_symbol ();
@@ -3558,9 +3565,10 @@ get_next_cgraph_edge_clone (struct cgraph_edge *cs)
   return next_edge_clone[cs->uid];
 }
 
-/* Given VAL that is intended for DEST, iterate over all its sources and if
-   they still hold, add their edge frequency and their number into *FREQUENCY
-   and *CALLER_COUNT respectively.  */
+/* Given VAL that is intended for DEST, iterate over all its sources and if any
+   of them is viable and hot, return true.  In that case, for those that still
+   hold, add their edge frequency and their number into *FREQUENCY and
+   *CALLER_COUNT respectively.  */
 
 template <typename valtype>
 static bool
@@ -3572,23 +3580,31 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
   int freq = 0, count = 0;
   profile_count cnt = profile_count::zero ();
   bool hot = false;
+  bool non_self_recursive = false;
 
   for (src = val->sources; src; src = src->next)
     {
       struct cgraph_edge *cs = src->cs;
       while (cs)
 	{
-	  if (cgraph_edge_brings_value_p (cs, src, dest))
+	  if (cgraph_edge_brings_value_p (cs, src, dest, val))
 	    {
 	      count++;
 	      freq += cs->frequency ();
 	      if (cs->count.ipa ().initialized_p ())
 	        cnt += cs->count.ipa ();
 	      hot |= cs->maybe_hot_p ();
+	      if (cs->caller != dest)
+		non_self_recursive = true;
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
 	}
     }
+
+  /* If the only edges bringing a value are self-recursive ones, do not bother
+     evaluating it.  */
+  if (!non_self_recursive)
+    return false;
 
   *freq_sum = freq;
   *count_sum = cnt;
@@ -3613,7 +3629,7 @@ gather_edges_for_value (ipcp_value<valtype> *val, cgraph_node *dest,
       struct cgraph_edge *cs = src->cs;
       while (cs)
 	{
-	  if (cgraph_edge_brings_value_p (cs, src, dest))
+	  if (cgraph_edge_brings_value_p (cs, src, dest, val))
 	    ret.quick_push (cs);
 	  cs = get_next_cgraph_edge_clone (cs);
 	}
@@ -3833,9 +3849,28 @@ create_specialized_node (struct cgraph_node *node,
 	    vec_safe_push (replace_trees, replace_map);
 	}
     }
+  auto_vec<cgraph_edge *, 2> self_recursive_calls;
+  for (i = callers.length () - 1; i >= 0; i--)
+    {
+      cgraph_edge *cs = callers[i];
+      if (cs->caller == node)
+	{
+	  self_recursive_calls.safe_push (cs);
+	  callers.unordered_remove (i);
+	}
+    }
 
   new_node = node->create_virtual_clone (callers, replace_trees,
 					 args_to_skip, "constprop");
+
+  for (unsigned j = 0; j < self_recursive_calls.length (); j++)
+    {
+      cgraph_edge *cs = next_edge_clone[self_recursive_calls[j]->uid];
+      gcc_checking_assert (cs);
+      gcc_assert (cs->caller == new_node);
+      cs->redirect_callee_duplicating_thunks (new_node);
+    }
+
   ipa_set_node_agg_value_chain (new_node, aggvals);
   for (av = aggvals; av; av = av->next)
     new_node->maybe_create_reference (av->value, NULL);
@@ -3868,6 +3903,22 @@ create_specialized_node (struct cgraph_node *node,
   return new_node;
 }
 
+/* Return true, if JFUNC, which describes a i-th parameter of call CS, is a
+   simple no-operation pass-through function to itself.  */
+
+static bool
+self_recursive_pass_through_p (cgraph_edge *cs, ipa_jump_func *jfunc, int i)
+{
+  enum availability availability;
+  if (cs->caller == cs->callee->function_symbol (&availability)
+      && availability > AVAIL_INTERPOSABLE
+      && jfunc->type == IPA_JF_PASS_THROUGH
+      && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR
+      && ipa_get_jf_pass_through_formal_id (jfunc) == i)
+    return true;
+  return false;
+}
+
 /* Given a NODE, and a subset of its CALLERS, try to populate blanks slots in
    KNOWN_CSTS with constants that are also known for all of the CALLERS.  */
 
@@ -3895,6 +3946,9 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	  struct ipa_jump_func *jump_func;
 	  tree t;
 
+	  if (IPA_NODE_REF (cs->caller)->node_dead)
+	    continue;
+
 	  if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      || (i == 0
 		  && call_passes_through_thunk_p (cs))
@@ -3905,6 +3959,9 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	      break;
 	    }
 	  jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
+	  if (self_recursive_pass_through_p (cs, jump_func, i))
+	    continue;
+
 	  t = ipa_value_from_jfunc (IPA_NODE_REF (cs->caller), jump_func, type);
 	  if (!t
 	      || (newval
@@ -4297,6 +4354,10 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 
       FOR_EACH_VEC_ELT (callers, j, cs)
 	{
+	  struct ipa_jump_func *jfunc
+	    = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
+	  if (self_recursive_pass_through_p (cs, jfunc, i))
+	    continue;
 	  inter = intersect_aggregates_with_edge (cs, i, inter);
 
 	  if (!inter.exists ())
@@ -4323,33 +4384,6 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
       if (inter.exists ())
 	inter.release ();
     }
-  *tail = NULL;
-  return res;
-}
-
-/* Turn KNOWN_AGGS into a list of aggregate replacement values.  */
-
-static struct ipa_agg_replacement_value *
-known_aggs_to_agg_replacement_list (vec<ipa_agg_jump_function> known_aggs)
-{
-  struct ipa_agg_replacement_value *res;
-  struct ipa_agg_replacement_value **tail = &res;
-  struct ipa_agg_jump_function *aggjf;
-  struct ipa_agg_jf_item *item;
-  int i, j;
-
-  FOR_EACH_VEC_ELT (known_aggs, i, aggjf)
-    FOR_EACH_VEC_SAFE_ELT (aggjf->items, j, item)
-      {
-	struct ipa_agg_replacement_value *v;
-	v = ggc_alloc<ipa_agg_replacement_value> ();
-	v->index = i;
-	v->offset = item->offset;
-	v->value = item->value;
-	v->by_ref = aggjf->by_ref;
-	*tail = v;
-	tail = &v->next;
-      }
   *tail = NULL;
   return res;
 }
@@ -4479,7 +4513,7 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
       struct cgraph_edge *cs = src->cs;
       while (cs)
 	{
-	  if (cgraph_edge_brings_value_p (cs, src, node)
+	  if (cgraph_edge_brings_value_p (cs, src, node, val)
 	      && cgraph_edge_brings_all_scalars_for_node (cs, val->spec_node)
 	      && cgraph_edge_brings_all_agg_vals_for_node (cs, val->spec_node))
 	    {
@@ -4744,6 +4778,10 @@ decide_whether_version_node (struct cgraph_node *node)
 		 "for all known contexts.\n", node->dump_name ());
 
       callers = node->collect_callers ();
+      find_more_scalar_values_for_callers_subset (node, known_csts, callers);
+      find_more_contexts_for_caller_subset (node, &known_contexts, callers);
+      ipa_agg_replacement_value *aggvals
+	= find_aggregate_values_for_callers_subset (node, callers);
 
       if (!known_contexts_useful_p (known_contexts))
 	{
@@ -4751,8 +4789,7 @@ decide_whether_version_node (struct cgraph_node *node)
 	  known_contexts = vNULL;
 	}
       clone = create_specialized_node (node, known_csts, known_contexts,
-			       known_aggs_to_agg_replacement_list (known_aggs),
-			       callers);
+				       aggvals, callers);
       info = IPA_NODE_REF (node);
       info->do_clone_for_all_contexts = false;
       IPA_NODE_REF (clone)->is_all_contexts_clone = true;

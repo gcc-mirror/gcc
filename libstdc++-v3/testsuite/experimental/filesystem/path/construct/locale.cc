@@ -1,4 +1,4 @@
-// { dg-options "-lstdc++fs" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 

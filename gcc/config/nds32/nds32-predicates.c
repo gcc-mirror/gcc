@@ -35,6 +35,7 @@
 #include "emit-rtl.h"
 #include "recog.h"
 #include "tm-constrs.h"
+#include "insn-attr.h"
 
 /* ------------------------------------------------------------------------ */
 
@@ -414,4 +415,104 @@ nds32_can_use_bitci_p (int ival)
 	  && satisfies_constraint_Iu15 (gen_int_mode (~ival, SImode)));
 }
 
+/* Return true if is load/store with SYMBOL_REF addressing mode
+   and memory mode is SImode.  */
+bool
+nds32_symbol_load_store_p (rtx_insn *insn)
+{
+  rtx mem_src = NULL_RTX;
+
+  switch (get_attr_type (insn))
+    {
+    case TYPE_LOAD:
+      mem_src = SET_SRC (PATTERN (insn));
+      break;
+    case TYPE_STORE:
+      mem_src = SET_DEST (PATTERN (insn));
+      break;
+    default:
+      break;
+    }
+
+  /* Find load/store insn with addressing mode is SYMBOL_REF.  */
+  if (mem_src != NULL_RTX)
+    {
+      if ((GET_CODE (mem_src) == ZERO_EXTEND)
+	  || (GET_CODE (mem_src) == SIGN_EXTEND))
+	mem_src = XEXP (mem_src, 0);
+
+      if ((GET_CODE (XEXP (mem_src, 0)) == SYMBOL_REF)
+	   || (GET_CODE (XEXP (mem_src, 0)) == LO_SUM))
+	return true;
+    }
+
+  return false;
+}
+
+/* Vaild memory operand for floating-point loads and stores */
+bool
+nds32_float_mem_operand_p (rtx op)
+{
+  machine_mode mode = GET_MODE (op);
+  rtx addr = XEXP (op, 0);
+
+  /* Not support [symbol] [const] memory */
+  if (GET_CODE (addr) == SYMBOL_REF
+      || GET_CODE (addr) == CONST
+      || GET_CODE (addr) == LO_SUM)
+    return false;
+
+  if (GET_CODE (addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (addr, 0)) == SYMBOL_REF)
+	return false;
+
+      /* Restrict const range: (imm12s << 2) */
+      if (GET_CODE (XEXP (addr, 1)) == CONST_INT)
+	{
+	  if ((mode == SImode || mode == SFmode)
+	      && NDS32_SINGLE_WORD_ALIGN_P (INTVAL (XEXP (addr, 1)))
+	      && !satisfies_constraint_Is14 ( XEXP(addr, 1)))
+	    return false;
+
+	  if ((mode == DImode || mode == DFmode)
+	      && NDS32_DOUBLE_WORD_ALIGN_P (INTVAL (XEXP (addr, 1)))
+	      && !satisfies_constraint_Is14 (XEXP (addr, 1)))
+	    return false;
+	}
+    }
+
+  return true;
+}
+
+int
+nds32_cond_move_p (rtx cmp_rtx)
+{
+  machine_mode cmp0_mode = GET_MODE (XEXP (cmp_rtx, 0));
+  machine_mode cmp1_mode = GET_MODE (XEXP (cmp_rtx, 1));
+  enum rtx_code cond = GET_CODE (cmp_rtx);
+
+  if ((cmp0_mode == DFmode || cmp0_mode == SFmode)
+      && (cmp1_mode == DFmode || cmp1_mode == SFmode)
+      && (cond == ORDERED || cond == UNORDERED))
+    return true;
+  return false;
+}
+
+bool
+nds32_const_double_range_ok_p (rtx op, machine_mode mode,
+			       HOST_WIDE_INT lower, HOST_WIDE_INT upper)
+{
+  if (GET_CODE (op) != CONST_DOUBLE
+      || GET_MODE (op) != mode)
+    return false;
+
+  const REAL_VALUE_TYPE *rv;
+  long val;
+
+  rv = CONST_DOUBLE_REAL_VALUE (op);
+  REAL_VALUE_TO_TARGET_SINGLE (*rv, val);
+
+  return val >= lower && val < upper;
+}
 /* ------------------------------------------------------------------------ */

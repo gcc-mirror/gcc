@@ -14376,9 +14376,9 @@ s390_z10_optimize_cmp (rtx_insn *insn)
 	  && s390_non_addr_reg_read_p (*op0, prev_insn))
 	{
 	  if (REGNO (*op1) == 0)
-	    emit_insn_after (gen_nop1 (), insn);
+	    emit_insn_after (gen_nop_lr1 (), insn);
 	  else
-	    emit_insn_after (gen_nop (), insn);
+	    emit_insn_after (gen_nop_lr0 (), insn);
 	  insn_added_p = true;
 	}
       else
@@ -16522,7 +16522,7 @@ s390_output_indirect_thunk_function (unsigned int regno, bool z10_p)
      Stopping in the thunk: backtrace will point to the thunk target
      is if it was interrupted by a signal.  For a call this means that
      the call chain will be: caller->callee->thunk   */
-  if (flag_asynchronous_unwind_tables)
+  if (flag_asynchronous_unwind_tables && flag_dwarf2_cfi_asm)
     {
       fputs ("\t.cfi_signal_frame\n", asm_out_file);
       fprintf (asm_out_file, "\t.cfi_return_column %d\n", regno);

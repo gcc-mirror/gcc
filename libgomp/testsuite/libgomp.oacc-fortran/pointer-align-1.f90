@@ -13,9 +13,9 @@ program test
   a(4) = 54
   !$acc end parallel
 
-  if (a(1) .ne. 10) call abort
-  if (a(2) .ne. 52) call abort
-  if (a(3) .ne. 53) call abort
-  if (a(4) .ne. 54) call abort
+  if (a(1) .ne. 10) STOP 1
+  if (a(2) .ne. 52) STOP 2
+  if (a(3) .ne. 53) STOP 3
+  if (a(4) .ne. 54) STOP 4
 
 end program test

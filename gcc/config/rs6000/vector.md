@@ -180,55 +180,6 @@
   DONE;
 })
 
-;; Vector floating point load/store instructions that uses the Altivec
-;; instructions even if we are compiling for VSX, since the Altivec
-;; instructions silently ignore the bottom 3 bits of the address, and VSX does
-;; not.
-(define_expand "vector_altivec_load_<mode>"
-  [(set (match_operand:VEC_M 0 "vfloat_operand")
-	(match_operand:VEC_M 1 "memory_operand"))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
-{
-  gcc_assert (VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode));
-
-  if (VECTOR_MEM_VSX_P (<MODE>mode))
-    {
-      operands[1] = rs6000_address_for_altivec (operands[1]);
-      rtx and_op = XEXP (operands[1], 0);
-      gcc_assert (GET_CODE (and_op) == AND);
-      rtx addr = XEXP (and_op, 0);
-      if (GET_CODE (addr) == PLUS)
-        emit_insn (gen_altivec_lvx_<mode>_2op (operands[0], XEXP (addr, 0),
-	                                       XEXP (addr, 1)));
-      else
-        emit_insn (gen_altivec_lvx_<mode>_1op (operands[0], operands[1]));
-      DONE;
-    }
-})
-
-(define_expand "vector_altivec_store_<mode>"
-  [(set (match_operand:VEC_M 0 "memory_operand")
-	(match_operand:VEC_M 1 "vfloat_operand"))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
-{
-  gcc_assert (VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode));
-
-  if (VECTOR_MEM_VSX_P (<MODE>mode))
-    {
-      operands[0] = rs6000_address_for_altivec (operands[0]);
-      rtx and_op = XEXP (operands[0], 0);
-      gcc_assert (GET_CODE (and_op) == AND);
-      rtx addr = XEXP (and_op, 0);
-      if (GET_CODE (addr) == PLUS)
-        emit_insn (gen_altivec_stvx_<mode>_2op (operands[1], XEXP (addr, 0),
-	                                        XEXP (addr, 1)));
-      else
-        emit_insn (gen_altivec_stvx_<mode>_1op (operands[1], operands[0]));
-      DONE;
-    }
-})
-
-
 
 ;; Generic floating point vector arithmetic support
 (define_expand "add<mode>3"

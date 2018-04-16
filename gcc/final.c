@@ -2081,6 +2081,9 @@ final_1 (rtx_insn *first, FILE *file, int seen, int optimize_p)
 	    }
 	  else
 	    insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
+	  /* final can be seen as an iteration of shorten_branches that
+	     does nothing (since a fixed point has already been reached).  */
+	  insn_last_address = insn_current_address;
 	}
 
       dump_basic_block_info (file, insn, start_to_bb, end_to_bb,

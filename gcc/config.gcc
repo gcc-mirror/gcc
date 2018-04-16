@@ -445,7 +445,7 @@ mips*-*-*)
 nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h"
-	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o"
+	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o nds32-relax-opt.o nds32-utils.o"
 	;;
 nios2-*-*)
 	cpu_type=nios2
@@ -637,7 +637,7 @@ x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
 bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
 sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
-skylake-avx512 cannonlake icelake-client icelake-server x86-64 native"
+skylake-avx512 cannonlake icelake-client icelake-server skylake x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -983,6 +983,7 @@ aarch64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
 	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-linux.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-linux"
+	tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
 	case $target in
 	aarch64_be-*)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
@@ -1495,7 +1496,7 @@ x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h"
 	;;
 x86_64-*-rtems*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h i386/rtemself.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h i386/rtemself.h rtems.h"
 	;;
 i[34567]86-*-rdos*)
     tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/rdos.h"
@@ -2088,6 +2089,15 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	  ;;
 	esac
 	;;
+riscv*-*-freebsd*)
+	tm_file="${tm_file} elfos.h ${fbsd_tm_file} riscv/freebsd.h"
+	tmake_file="${tmake_file} riscv/t-riscv"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h ${nbsd_tm_file} mips/netbsd.h"
@@ -2325,13 +2335,13 @@ msp430*-*-*)
 nds32le-*-*)
 	target_cpu_default="0"
 	tm_defines="${tm_defines}"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
 	tmake_file="nds32/t-nds32 nds32/t-mlibs"
 	;;
 nds32be-*-*)
 	target_cpu_default="0|MASK_BIG_ENDIAN"
 	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
 	tmake_file="nds32/t-nds32 nds32/t-mlibs"
 	;;
 nios2-*-*)
@@ -4277,15 +4287,26 @@ case "${target}" in
 		;;
 
 	nds32*-*-*)
-		supported_defaults="arch cpu nds32_lib"
+		supported_defaults="arch cpu nds32_lib float fpu_config"
 
 		# process --with-arch
 		case "${with_arch}" in
-		"" | v2 | v3 | v3m)
+		"" | v3 )
+			tm_defines="${tm_defines} TARGET_ARCH_DEFAULT=0"
+			;;
+		v2 | v2j | v3m)
 			# OK
+			tm_defines="${tm_defines} TARGET_ARCH_DEFAULT=0"
+			;;
+		v3f)
+			tm_defines="${tm_defines} TARGET_ARCH_DEFAULT=1"
+			;;
+		v3s)
+			tm_defines="${tm_defines} TARGET_ARCH_DEFAULT=2"
+
 			;;
 		*)
-			echo "Cannot accept --with-arch=$with_arch, available values are: v2 v3 v3m" 1>&2
+			echo "Cannot accept --with-arch=$with_arch, available values are: v2 v2j v3 v3m v3f v3s" 1>&2
 			exit 1
 			;;
 		esac
@@ -4294,11 +4315,11 @@ case "${target}" in
 		"")
 			with_cpu=n9
 			;;
-		n9)
+		n6 | n7 | n8 | e8 | s8 | n9)
 			# OK
 			;;
 		*)
-			echo "Cannot accept --with-cpu=$with_cpu, available values are: n9" 1>&2
+			echo "Cannot accept --with-cpu=$with_cpu, available values are: n6 n7 n8 e8 s8 n9" 1>&2
 			exit 1
 			;;
 		esac
@@ -4320,8 +4341,31 @@ case "${target}" in
 			exit 1
 			;;
 		esac
-		;;
 
+		# process --with-float
+		case "${with_float}" in
+		"" | soft | hard)
+			# OK
+			;;
+		*)
+			echo "Cannot accept --with-float=$with_float, available values are: soft hard" 1>&2
+			exit 1
+			;;
+		esac
+
+		# process --with-config-fpu
+		case "${with_config_fpu}" in
+		"" | 0 | 1 | 2 | 3)
+			# OK
+			;;
+		*)
+			echo "Cannot accept --with-config-fpu=$with_config_fpu, available values from 0 to 7" 1>&2
+			exit 1
+			;;
+		esac
+
+
+		;;
 	nios2*-*-*)
 		supported_defaults="arch"
 			case "$with_arch" in

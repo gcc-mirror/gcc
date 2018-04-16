@@ -26,6 +26,11 @@
 extern void nds32_init_expanders (void);
 
 
+/* Register Usage.  */
+
+/* -- Order of Allocation of Registers.  */
+extern void nds32_adjust_reg_alloc_order (void);
+
 /* Register Classes.  */
 
 extern enum reg_class nds32_regno_reg_class (int);
@@ -35,6 +40,7 @@ extern enum reg_class nds32_regno_reg_class (int);
 
 /* -- Basic Stack Layout.  */
 
+extern rtx nds32_dynamic_chain_address (rtx);
 extern rtx nds32_return_addr_rtx (int, rtx);
 
 /* -- Eliminating Frame Pointer and Arg Pointer.  */
@@ -53,6 +59,13 @@ extern void nds32_expand_prologue (void);
 extern void nds32_expand_epilogue (bool);
 extern void nds32_expand_prologue_v3push (void);
 extern void nds32_expand_epilogue_v3pop (bool);
+extern void nds32_emit_push_fpr_callee_saved (int);
+extern void nds32_emit_pop_fpr_callee_saved (int);
+extern void nds32_emit_v3pop_fpr_callee_saved (int);
+
+/* Controlling Debugging Information Format.  */
+
+extern unsigned int nds32_dbx_register_number (unsigned int);
 
 /* ------------------------------------------------------------------------ */
 
@@ -84,6 +97,30 @@ extern void nds32_expand_unaligned_store (rtx *, enum machine_mode);
 
 extern bool nds32_valid_multiple_load_store_p (rtx, bool, bool);
 
+/* Auxiliary functions for guard function checking in pipelines.md.  */
+
+extern bool nds32_n7_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n7_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+
+extern bool nds32_n8_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_load_bi_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_load_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_ex_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_two_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
+extern bool nds32_e8_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_load_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_ex_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
+extern bool nds32_n9_2r1w_mm_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n9_3r2w_mm_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n9_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
+
 /* Auxiliary functions for stack operation predicate checking.  */
 
 extern bool nds32_valid_stack_push_pop_p (rtx, bool);
@@ -96,6 +133,9 @@ extern int nds32_can_use_btgl_p (int);
 
 extern int nds32_can_use_bitci_p (int);
 
+extern bool nds32_const_double_range_ok_p (rtx, machine_mode,
+					   HOST_WIDE_INT, HOST_WIDE_INT);
+
 /* Auxiliary function for 'Computing the Length of an Insn'.  */
 
 extern int nds32_adjust_insn_length (rtx_insn *, int);
@@ -104,14 +144,40 @@ extern int nds32_adjust_insn_length (rtx_insn *, int);
 
 extern int nds32_fp_as_gp_check_available (void);
 
+extern bool nds32_symbol_load_store_p (rtx_insn *);
+
 /* Auxiliary functions for jump table generation.  */
 
 extern const char *nds32_output_casesi_pc_relative (rtx *);
 extern const char *nds32_output_casesi (rtx *);
 
+/* Auxiliary functions for conditional branch generation.  */
+
+extern enum nds32_expand_result_type nds32_expand_cbranch (rtx *);
+extern enum nds32_expand_result_type nds32_expand_cstore (rtx *);
+extern void nds32_expand_float_cbranch (rtx *);
+extern void nds32_expand_float_cstore (rtx *);
+
+/* Auxiliary functions for conditional move generation.  */
+
+extern enum nds32_expand_result_type nds32_expand_movcc (rtx *);
+extern void nds32_expand_float_movcc (rtx *);
+
+
+/* Auxiliary functions to identify long-call symbol.  */
+extern bool nds32_long_call_p (rtx);
+
+/* Auxiliary functions to identify conditional move comparison operand.  */
+
+extern int nds32_cond_move_p (rtx);
+
 /* Auxiliary functions to identify 16 bit addresing mode.  */
 
 extern enum nds32_16bit_address_type nds32_mem_format (rtx);
+
+/* Auxiliary functions to identify floating-point addresing mode.  */
+
+extern bool nds32_float_mem_operand_p (rtx);
 
 /* Auxiliary functions to output assembly code.  */
 
@@ -120,13 +186,35 @@ extern const char *nds32_output_16bit_load (rtx *, int);
 extern const char *nds32_output_32bit_store (rtx *, int);
 extern const char *nds32_output_32bit_load (rtx *, int);
 extern const char *nds32_output_32bit_load_s (rtx *, int);
+extern const char *nds32_output_float_load(rtx *);
+extern const char *nds32_output_float_store(rtx *);
 extern const char *nds32_output_smw_single_word (rtx *);
 extern const char *nds32_output_lmw_single_word (rtx *);
+extern const char *nds32_output_double (rtx *, bool);
+extern const char *nds32_output_cbranchsi4_equality_zero (rtx_insn *, rtx *);
+extern const char *nds32_output_cbranchsi4_equality_reg (rtx_insn *, rtx *);
+extern const char *nds32_output_cbranchsi4_equality_reg_or_const_int (rtx_insn *,
+								      rtx *);
+extern const char *nds32_output_cbranchsi4_greater_less_zero (rtx_insn *, rtx *);
+
+extern const char *nds32_output_call (rtx, rtx *, rtx,
+				      const char *, const char *, bool);
+
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 
 extern const char *nds32_output_stack_push (rtx);
 extern const char *nds32_output_stack_pop (rtx);
+extern const char *nds32_output_return (void);
+
+/* Auxiliary functions to split double word RTX pattern.  */
+
+extern void nds32_spilt_doubleword (rtx *, bool);
+
+/* Auxiliary functions to split large constant RTX pattern.  */
+
+extern void nds32_expand_constant (machine_mode,
+				   HOST_WIDE_INT, rtx, rtx);
 
 /* Auxiliary functions to check using return with null epilogue.  */
 
@@ -158,5 +246,37 @@ extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 
 /* Auxiliary functions for pre-define marco.  */
 extern void nds32_cpu_cpp_builtins(struct cpp_reader *);
+
+extern bool nds32_split_double_word_load_store_p (rtx *,bool);
+
+namespace nds32 {
+
+extern rtx extract_pattern_from_insn (rtx);
+
+size_t parallel_elements (rtx);
+rtx parallel_element (rtx, int);
+bool load_single_p (rtx_insn *);
+bool store_single_p (rtx_insn *);
+bool load_double_p (rtx_insn *);
+bool store_double_p (rtx_insn *);
+bool post_update_insn_p (rtx_insn *);
+bool immed_offset_p (rtx);
+int find_post_update_rtx (rtx_insn *);
+rtx extract_mem_rtx (rtx_insn *);
+rtx extract_base_reg (rtx_insn *);
+
+rtx extract_shift_reg (rtx);
+
+bool movd44_insn_p (rtx_insn *);
+rtx extract_movd44_odd_reg (rtx_insn *);
+
+rtx extract_mac_non_acc_rtx (rtx_insn *);
+
+rtx extract_branch_target_rtx (rtx_insn *);
+rtx extract_branch_condition_rtx (rtx_insn *);
+} // namespace nds32
+
+/* Functions for create nds32 specific optimization pass.  */
+extern rtl_opt_pass *make_pass_nds32_relax_opt (gcc::context *);
 
 /* ------------------------------------------------------------------------ */

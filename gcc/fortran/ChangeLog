@@ -1,3 +1,196 @@
+2018-04-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/81773
+	PR fortran/83606
+	* dependency.c (gfc_dep_resolver): Coarray indexes are to be ignored
+	during dependency computation.  They define no data dependency.
+	* trans-array.c (conv_array_index_offset): The stride can not be set
+	here, prevent fail.
+	* trans-intrinsic.c (conv_caf_send): Add creation of temporary array
+	for caf_get's result and copying to the array with vectorial
+	indexing.
+
+2018-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85387
+	* frontend-passes.c (traverse_io_block): Check for start, end or
+	stride being defined by an outer implied DO loop.
+
+2018-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83064
+	PR testsuite/85346
+	* trans-stmt.c (gfc_trans_forall_loop): Use annot_expr_ivdep_kind
+	for annotation and remove dependence on -ftree-parallelize-loops.
+
+2018-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/85313
+	* openmp.c (resolve_omp_do): Remove bogus if (j < i) break;.
+	(resolve_oacc_nested_loops): Likewise.  Formatting fix.
+
+2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83064
+	* trans-stmt.c (gfc_trans_forall_loop): Remove annotation for
+	parallell processing of DO CONCURRENT -ftree-parallelize-loops
+	is set.
+
+2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51260
+	* resolve.c (resolve_variable): Simplify cases where access to a
+	parameter array results in a single constant.
+
+2018-04-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85102
+	* decl.c (variable_decl): If upper or lower bounds simplify
+	to a constant, use that.
+
+2018-03-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84931
+	* simplify.c (gfc_convert_constant): Handle case of array
+	constructors within an array that has no iterator and improve
+	the conciseness of this section of code.
+
+2017-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85111
+	* array.c (gfc_resolve_character_array_constructor): Early
+	exit for zero-size arrays.
+	* simplify.c (simplify_transformation_to_array): Exit early
+	if the result size is zero.
+	(simplify_minmaxloc_to_array): Likewise.
+
+2018-03-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/69497
+	* symbol.c (gfc_symbol_done_2): Start freeing namespaces
+	from the root.
+	(gfc_free_namespace): Restore assert (revert r258839).
+
+2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_dt): Rename default_exp field to dec_ext.
+	* ioparm.def (IOPARM_dt_default_exp): Rename to ...
+	(IOPARM_dt_dec_ext): ... this.
+	* trans-io.c (build_dt): Adjust for default_exp renaming to
+	dec_ext and IOPARM_dt_default_exp renaming to IOPARM_dt_dec_ext.
+	* io.c (match_io): Likewise.
+
+2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85084
+	* frontend-passes.c (gfc_run_passes): Do not run front-end
+	optimizations if a previous error occurred.
+
+2018-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85083
+	* primary.c (gfc_convert_to_structure_constructor): Check
+	conformance of argument types in structure constructor.
+
+2018-03-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66709
+	* io.c: Include constructor.h.
+	(resolve_tag_format): For a constant character array, concatenate
+	into a single character expression.
+
+2018-03-25  Seth Johnson <johnsonsr@ornl.gov>
+	Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/84924
+	* check.c (gfc_check_c_f_pointer): Allow scalar noninteroperable
+	scalar derived type with -std=f2003 and -std=f2008.
+
+2018-03-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/69497
+	* symbol.c (gfc_free_namespace): Delete the assert and only if
+	refs count is equals zero, free the namespace. Otherwise,
+	something is halfway and other errors will resound.
+
+2018-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/70068
+	* expr.c (find_substring_ref): Change types of start, end
+	and length variables to gfc_charlen_t. Set length to zero
+	for empty substring.
+
+2018-03-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/42651
+	* decl.c (check_function_name): Improved error message
+	(gfc_match_volatile, gfc_match_asynchronous) Use check_function_name.
+
+2018-03-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/84922
+	* decl.c (get_proc_name): If the MODULE prefix appears in interface
+	body, then it must appear on the contained subroutine or function.
+	While here, fix nearby mis-indented code.
+
+2018-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/84957
+	* trans-types.c (gfc_sym_type): Do not dereference NULL pointer.
+
+2018-03-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/84615
+	* trans-expr.c (gfc_conv_procedure_call): Convert charlen to
+	gfc_charlen_type_node when calling procedure.
+
+2018-03-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85001
+	* interface.c (symbol_rank): Remove bogus null pointer check that
+	crept in when translating a ternary operator into an if-else
+	constructor.
+
+2018-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84931
+	* simplify.c (gfc_convert_constant): Correctly handle iterators
+	for type conversion.
+
+2018-03-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77414
+	* decl.c (get_proc_name):  Check for a subroutine re-defined in
+	the contain portion of a subroutine.  Change language of existing
+	error message to better describe the issue. While here fix whitespace
+	issues.
+
+2018-03-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/65453
+	* decl.c (get_proc_name): Catch clash between a procedure statement
+	and a contained subprogram
+
+2018-03-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69395
+	* decl.c (merge_array_spec): Correct the error condition.
+
+2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78741
+	* decl.c (get_proc_name):  Check for clash of entry name with
+	subroutine name.
+
+2018-03-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69395
+	* decl.c (merge_array_spec): Limit the merging to maximum allowed
+	dimensions, and issue error message if limit is exceeded.
+
 2018-03-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* check.c (gfc_check_kill_sub):  Remove check for INTEGER(4) or (8).

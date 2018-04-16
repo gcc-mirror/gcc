@@ -1249,7 +1249,9 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  return true;
 	}
       if (!addr_base
-	  || TREE_CODE (addr_base) != MEM_REF)
+	  || TREE_CODE (addr_base) != MEM_REF
+	  || (TREE_CODE (TREE_OPERAND (addr_base, 0)) == SSA_NAME
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (addr_base, 0))))
 	return false;
 
       off += addr_offset;
@@ -1262,6 +1264,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       ptr = gimple_assign_rhs1 (def_stmt);
       ptroff = gimple_assign_rhs2 (def_stmt);
       if (TREE_CODE (ptr) != SSA_NAME
+	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr)
 	  || TREE_CODE (ptroff) != INTEGER_CST)
 	return false;
 
@@ -1631,7 +1634,7 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
   vn_reference_s vr1;
   vn_reference_t result;
   unsigned value_id;
-  vr1.vuse = vuse;
+  vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr1.operands = operands;
   vr1.type = type;
   vr1.set = set;
@@ -2035,8 +2038,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  if (TREE_CODE (rhs) == SSA_NAME)
 	    rhs = SSA_VAL (rhs);
 	  len = native_encode_expr (gimple_assign_rhs1 (def_stmt),
-				    buffer, sizeof (buffer));
-	  if (len > 0)
+				    buffer, sizeof (buffer),
+				    (offseti - offset2) / BITS_PER_UNIT);
+	  if (len > 0 && len * BITS_PER_UNIT >= maxsizei)
 	    {
 	      tree type = vr->type;
 	      /* Make sure to interpret in a type that has a range
@@ -2045,10 +2049,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 		  && maxsizei != TYPE_PRECISION (vr->type))
 		type = build_nonstandard_integer_type (maxsizei,
 						       TYPE_UNSIGNED (type));
-	      tree val = native_interpret_expr (type,
-						buffer
-						+ ((offseti - offset2)
-						   / BITS_PER_UNIT),
+	      tree val = native_interpret_expr (type, buffer,
 						maxsizei / BITS_PER_UNIT);
 	      /* If we chop off bits because the types precision doesn't
 		 match the memory access size this is ok when optimizing

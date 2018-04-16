@@ -225,7 +225,7 @@ hash_section (section *sect)
 {
   if (sect->common.flags & SECTION_NAMED)
     return htab_hash_string (sect->named.name);
-  return sect->common.flags;
+  return sect->common.flags & ~SECTION_DECLARED;
 }
 
 /* Helper routines for maintaining object_block_htab.  */
@@ -1253,10 +1253,9 @@ use_blocks_for_decl_p (tree decl)
   if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
     return false;
 
-  /* Detect decls created by dw2_force_const_mem.  Such decls are
-     special because DECL_INITIAL doesn't specify the decl's true value.
-     dw2_output_indirect_constants will instead call assemble_variable
-     with dont_output_data set to 1 and then print the contents itself.  */
+  /* DECL_INITIAL (decl) set to decl is a hack used for some decls that
+     are never used from code directly and we never want object block handling
+     for those.  */
   if (DECL_INITIAL (decl) == decl)
     return false;
 

@@ -1,3 +1,9 @@
+2018-21-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.am (check-runtime): Pass -test.timeout
+	with GOTOOLS_TEST_TIMEOUT.
+	* Makefile.in: Rebuild.
+
 2018-02-09  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (GOTOOLS_TEST_TIMEOUT): Double value.

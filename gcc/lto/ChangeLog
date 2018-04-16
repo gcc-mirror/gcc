@@ -1,3 +1,20 @@
+2018-04-11  Martin Liska  <mliska@suse.cz>
+
+	* lto-symtab.c (lto_symtab_merge_p): Use attribute_value_equal
+	function.
+
+2018-04-10  Martin Liska  <mliska@suse.cz>
+
+	PR lto/85248
+	* lto-symtab.c (lto_symtab_merge_p): Do not check for
+	TREE_VALUES of error attributes.
+
+2018-04-10  Richard Biener  <rguenther@suse.de>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR lto/85248
+	* lto-symtab.c (lto_symtab_merge_p): Handle noreturn attribute.
+
 2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (lto_balanced_map): Watch overflow.

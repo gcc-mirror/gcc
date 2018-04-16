@@ -2297,14 +2297,7 @@ Target supports @code{wchar_t} that is compatible with @code{char32_t}.
 
 @item comdat_group
 Target uses comdat groups.
-
-@item weak_undefined
-Target supports weak undefined symbols.
-
-@item word_mode_no_slow_unalign
-Target does not have slow unaligned access when doing word size accesses.
 @end table
-
 
 @subsubsection Local to tests in @code{gcc.target/i386}
 

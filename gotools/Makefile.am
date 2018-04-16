@@ -256,14 +256,14 @@ check-runtime: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
 	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
-	echo "$(ECHO_ENV) GC='$(abs_builddir)/check-gccgo -fgo-compiling-runtime' GOARCH=$${GOARCH} GOOS=$${GOOS} $(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles='$${files}' $(GOTESTFLAGS) -test.v" > runtime-testlog
+	echo "$(ECHO_ENV) GC='$(abs_builddir)/check-gccgo -fgo-compiling-runtime' GOARCH=$${GOARCH} GOOS=$${GOOS} $(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles='$${files}' $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > runtime-testlog
 	$(CHECK_ENV) \
 	GC="$${GCCGO} -fgo-compiling-runtime"; \
 	export GC; \
 	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
 	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
-	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.v >> runtime-testlog 2>&1 || echo "--- $${fl}: go test runtime (0.00s)" >> runtime-testlog
+	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v >> runtime-testlog 2>&1 || echo "--- $${fl}: go test runtime (0.00s)" >> runtime-testlog
 	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-cgo-test runs `go test misc/cgo/test` in our environment.

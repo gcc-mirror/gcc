@@ -385,6 +385,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
 #define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
 #define TARGET_KNM (ix86_tune == PROCESSOR_KNM)
+#define TARGET_SKYLAKE (ix86_tune == PROCESSOR_SKYLAKE)
 #define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
 #define TARGET_CANNONLAKE (ix86_tune == PROCESSOR_CANNONLAKE)
 #define TARGET_ICELAKE_CLIENT (ix86_tune == PROCESSOR_ICELAKE_CLIENT)
@@ -1716,7 +1717,7 @@ typedef struct ix86_args {
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 24 : 10)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 28 : 14)
 
 /* Definitions for register eliminations.
 
@@ -2267,6 +2268,7 @@ enum processor_type
   PROCESSOR_SILVERMONT,
   PROCESSOR_KNL,
   PROCESSOR_KNM,
+  PROCESSOR_SKYLAKE,
   PROCESSOR_SKYLAKE_AVX512,
   PROCESSOR_CANNONLAKE,
   PROCESSOR_ICELAKE_CLIENT,

@@ -30,12 +30,12 @@ program reduction
   end do
   !$acc end parallel loop
 
-  if (h1 .ne. s1) call abort ()
-  if (h2 .ne. s2) call abort ()
+  if (h1 .ne. s1) STOP 1
+  if (h2 .ne. s2) STOP 2
 
   !$acc wait(1)
 
-  if (h1 .ne. a1) call abort ()
-  if (h2 .ne. a2) call abort ()
+  if (h1 .ne. a1) STOP 3
+  if (h2 .ne. a2) STOP 4
 
 end program reduction

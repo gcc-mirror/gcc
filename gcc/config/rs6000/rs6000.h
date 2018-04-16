@@ -2506,6 +2506,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
 #define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
 #define RS6000_BTM_64BIT	MASK_64BIT	/* 64-bit addressing.  */
+#define RS6000_BTM_POWERPC64	MASK_POWERPC64	/* 64-bit registers.  */
 #define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
 #define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
 
@@ -2526,6 +2527,7 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_DFP			\
 				 | RS6000_BTM_HARD_FLOAT		\
 				 | RS6000_BTM_LDBL128			\
+				 | RS6000_BTM_POWERPC64			\
 				 | RS6000_BTM_FLOAT128			\
 				 | RS6000_BTM_FLOAT128_HW)
 
@@ -2578,7 +2580,7 @@ enum rs6000_builtin_type_index
   RS6000_BTI_opaque_V2SF,
   RS6000_BTI_opaque_p_V2SI,
   RS6000_BTI_opaque_V4SI,
-  RS6000_BTI_V16QI,
+  RS6000_BTI_V16QI,              /* __vector signed char */
   RS6000_BTI_V1TI,
   RS6000_BTI_V2SI,
   RS6000_BTI_V2SF,
@@ -2588,7 +2590,7 @@ enum rs6000_builtin_type_index
   RS6000_BTI_V4SI,
   RS6000_BTI_V4SF,
   RS6000_BTI_V8HI,
-  RS6000_BTI_unsigned_V16QI,
+  RS6000_BTI_unsigned_V16QI,     /* __vector unsigned char */
   RS6000_BTI_unsigned_V1TI,
   RS6000_BTI_unsigned_V8HI,
   RS6000_BTI_unsigned_V4SI,
@@ -2596,8 +2598,14 @@ enum rs6000_builtin_type_index
   RS6000_BTI_bool_char,          /* __bool char */
   RS6000_BTI_bool_short,         /* __bool short */
   RS6000_BTI_bool_int,           /* __bool int */
-  RS6000_BTI_bool_long,		 /* __bool long */
-  RS6000_BTI_pixel,              /* __pixel */
+  RS6000_BTI_bool_long_long,     /* __bool long long */
+  RS6000_BTI_pixel,              /* __pixel (16 bits arranged as 4
+				    channels of 1, 5, 5, and 5 bits
+				    respectively as packed with the
+				    vpkpx insn.  __pixel is only
+				    meaningful as a vector type.
+				    There is no corresponding scalar
+				    __pixel data type.)  */
   RS6000_BTI_bool_V16QI,         /* __vector __bool char */
   RS6000_BTI_bool_V8HI,          /* __vector __bool short */
   RS6000_BTI_bool_V4SI,          /* __vector __bool int */
@@ -2607,11 +2615,11 @@ enum rs6000_builtin_type_index
   RS6000_BTI_unsigned_long,      /* long_unsigned_type_node */
   RS6000_BTI_long_long,	         /* long_long_integer_type_node */
   RS6000_BTI_unsigned_long_long, /* long_long_unsigned_type_node */
-  RS6000_BTI_INTQI,	         /* intQI_type_node */
+  RS6000_BTI_INTQI,	         /* (signed) intQI_type_node */
   RS6000_BTI_UINTQI,		 /* unsigned_intQI_type_node */
   RS6000_BTI_INTHI,	         /* intHI_type_node */
   RS6000_BTI_UINTHI,		 /* unsigned_intHI_type_node */
-  RS6000_BTI_INTSI,		 /* intSI_type_node */
+  RS6000_BTI_INTSI,		 /* intSI_type_node (signed) */
   RS6000_BTI_UINTSI,		 /* unsigned_intSI_type_node */
   RS6000_BTI_INTDI,		 /* intDI_type_node */
   RS6000_BTI_UINTDI,		 /* unsigned_intDI_type_node */
@@ -2652,7 +2660,7 @@ enum rs6000_builtin_type_index
 #define bool_char_type_node           (rs6000_builtin_types[RS6000_BTI_bool_char])
 #define bool_short_type_node          (rs6000_builtin_types[RS6000_BTI_bool_short])
 #define bool_int_type_node            (rs6000_builtin_types[RS6000_BTI_bool_int])
-#define bool_long_type_node           (rs6000_builtin_types[RS6000_BTI_bool_long])
+#define bool_long_long_type_node      (rs6000_builtin_types[RS6000_BTI_bool_long_long])
 #define pixel_type_node               (rs6000_builtin_types[RS6000_BTI_pixel])
 #define bool_V16QI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V16QI])
 #define bool_V8HI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V8HI])

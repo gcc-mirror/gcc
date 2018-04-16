@@ -2050,7 +2050,7 @@ int widths[] = @{ [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 @};
 @end smallexample
 
 @noindent
-If the value in it has side-effects, the side-effects happen only once,
+If the value in it has side effects, the side effects happen only once,
 not for each initialized field by the range initializer.
 
 @noindent
@@ -2147,7 +2147,7 @@ struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
 @noindent
 If the same field is initialized multiple times, it has the value from
 the last initialization.  If any such overridden initialization has
-side-effect, it is unspecified whether the side-effect happens or not.
+side effect, it is unspecified whether the side effect happens or not.
 Currently, GCC discards them and issues a warning.
 
 @node Case Ranges
@@ -2275,8 +2275,11 @@ on a declaration, followed by an attribute specification inside double
 parentheses.  You can specify multiple attributes in a declaration by
 separating them by commas within the double parentheses or by
 immediately following an attribute declaration with another attribute
-declaration.  @xref{Attribute Syntax}, for the exact rules on
-attribute syntax and placement.
+declaration.  @xref{Attribute Syntax}, for the exact rules on attribute
+syntax and placement.  Compatible attribute specifications on distinct
+declarations of the same function are merged.  An attribute specification
+that is not compatible with attributes already applied to a declaration
+of the same function is ignored with a warning.
 
 GCC also supports attributes on
 variable declarations (@pxref{Variable Attributes}),
@@ -2499,7 +2502,7 @@ themselves to optimization such as common subexpression elimination.
 The @code{const} attribute imposes greater restrictions on a function's
 definition than the similar @code{pure} attribute below because it prohibits
 the function from reading global variables.  Consequently, the presence of
-the attribute on a function declarations allows GCC to emit more efficient
+the attribute on a function declaration allows GCC to emit more efficient
 code for some calls to the function.  Decorating the same function with
 both the @code{const} and the @code{pure} attribute is diagnosed.
 
@@ -2507,8 +2510,9 @@ both the @code{const} and the @code{pure} attribute is diagnosed.
 Note that a function that has pointer arguments and examines the data
 pointed to must @emph{not} be declared @code{const}.  Likewise, a
 function that calls a non-@code{const} function usually must not be
-@code{const}.  It does not make sense for a @code{const} function to
-return @code{void}.
+@code{const}.  Because a @code{const} function cannot have any side
+effects it does not make sense for such a function to return @code{void}.
+Declaring such a function is diagnosed.
 
 @item constructor
 @itemx destructor
@@ -3024,7 +3028,7 @@ This function attribute prevents a function from being considered for
 inlining.
 @c Don't enumerate the optimizations by name here; we try to be
 @c future-compatible with this mechanism.
-If the function does not have side-effects, there are optimizations
+If the function does not have side effects, there are optimizations
 other than inlining that cause function calls to be optimized away,
 although the function call is live.  To keep such calls from being
 optimized away, put
@@ -3034,7 +3038,7 @@ asm ("");
 
 @noindent
 (@pxref{Extended Asm}) in the called function, to serve as a special
-side-effect.
+side effect.
 
 @item noipa
 @cindex @code{noipa} function attribute
@@ -3218,6 +3222,9 @@ The @code{pure} attribute imposes similar but looser restrictions on
 a function's defintion than the @code{const} attribute: it allows the
 function to read global variables.  Decorating the same function with
 both the @code{pure} and the @code{const} attribute is diagnosed.
+Because a @code{pure} function cannot have any side effects it does not
+make sense for such a function to return @code{void}.  Declaring such
+a function is diagnosed.
 
 @item returns_nonnull
 @cindex @code{returns_nonnull} function attribute
@@ -10658,7 +10665,7 @@ The built-in functions promote the first two operands into infinite precision si
 and perform addition on those promoted operands. The result is then
 cast to the type of the third argument.  If the cast result is equal to the infinite
 precision result, the built-in functions return false, otherwise they return true.
-The value of the third argument is ignored, just the side-effects in the third argument
+The value of the third argument is ignored, just the side effects in the third argument
 are evaluated, and no integral argument promotions are performed on the last argument.
 If the third argument is a bit-field, the type used for the result cast has the
 precision and signedness of the given bit-field, rather than precision and signedness
@@ -10754,7 +10761,7 @@ a limited extent, they can be used without optimization as well.
 is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  @code{__builtin_object_size} never evaluates
-its arguments for side-effects.  If there are any side-effects in them, it
+its arguments for side effects.  If there are any side effects in them, it
 returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
 for @var{type} 2 or 3.  If there are multiple objects @var{ptr} can
 point to and all of them are known at compile time, the returned number
@@ -11773,7 +11780,7 @@ This built-in function is analogous to the @samp{? :} operator in C,
 except that the expression returned has its type unaltered by promotion
 rules.  Also, the built-in function does not evaluate the expression
 that is not chosen.  For example, if @var{const_exp} evaluates to true,
-@var{exp2} is not evaluated even if it has side-effects.
+@var{exp2} is not evaluated even if it has side effects.
 
 This built-in function can return an lvalue if the chosen argument is an
 lvalue.
@@ -11848,7 +11855,9 @@ corresponding to @var{t} for each function.
 The standard rules for @code{<tgmath.h>} macros are used to find a
 common type @var{u} from the types of the arguments for parameters
 whose types vary between the functions; complex integer types (a GNU
-extension) are treated like @code{_Complex double} for this purpose.
+extension) are treated like @code{_Complex double} for this purpose
+(or @code{_Complex _Float64} if all the function return types are the
+same @code{_Float@var{n}} or @code{_Float@var{n}x} type).
 If the function return types vary, or are all the same integer type,
 the function called is the one for which @var{t} is @var{u}, and it is
 an error if there is no such function.  If the function return types
@@ -12426,7 +12435,6 @@ of an actual hardware address this function returns the extended user
 pointer.  Targets where this is true included ILP32 mode on x86_64 or
 Aarch64.  This function is mainly useful when writing inline assembly
 code.
-@var{addr}
 @end deftypefn
 
 @node Target Builtins
@@ -15819,22 +15827,17 @@ or @option{-mpopcntd}):
 @smallexample
 long __builtin_bpermd (long, long);
 int __builtin_divwe (int, int);
-int __builtin_divweo (int, int);
 unsigned int __builtin_divweu (unsigned int, unsigned int);
-unsigned int __builtin_divweuo (unsigned int, unsigned int);
 long __builtin_divde (long, long);
-long __builtin_divdeo (long, long);
 unsigned long __builtin_divdeu (unsigned long, unsigned long);
-unsigned long __builtin_divdeuo (unsigned long, unsigned long);
 unsigned int cdtbcd (unsigned int);
 unsigned int cbcdtd (unsigned int);
 unsigned int addg6s (unsigned int, unsigned int);
 void __builtin_rs6000_speculation_barrier (void);
 @end smallexample
 
-The @code{__builtin_divde}, @code{__builtin_divdeo},
-@code{__builtin_divdeu}, @code{__builtin_divdeou} functions require a
-64-bit environment support ISA 2.06 or later.
+The @code{__builtin_divde} and @code{__builtin_divdeu} functions
+require a 64-bit environment supporting ISA 2.06 or later.
 
 The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
@@ -18396,6 +18399,10 @@ vector double vec_div (vector double, vector double);
 vector long vec_div (vector long, vector long);
 vector unsigned long vec_div (vector unsigned long, vector unsigned long);
 vector double vec_floor (vector double);
+vector __int128 vec_ld (int, const vector __int128 *);
+vector unsigned __int128 vec_ld (int, const vector unsigned __int128 *);
+vector __int128 vec_ld (int, const __int128 *);
+vector unsigned __int128 vec_ld (int, const unsigned __int128 *);
 vector double vec_ld (int, const vector double *);
 vector double vec_ld (int, const double *);
 vector double vec_ldl (int, const vector double *);
@@ -18448,6 +18455,12 @@ vector double vec_perm (vector double, vector double, vector unsigned char);
 vector long vec_perm (vector long, vector long, vector unsigned char);
 vector unsigned long vec_perm (vector unsigned long, vector unsigned long,
                                vector unsigned char);
+vector bool char vec_permxor (vector bool char, vector bool char,
+                              vector bool char);
+vector unsigned char vec_permxor (vector signed char, vector signed char,
+                                  vector signed char);
+vector unsigned char vec_permxor (vector unsigned char, vector unsigned char,
+                                  vector unsigned char);
 vector double vec_rint (vector double);
 vector double vec_recip (vector double, vector double);
 vector double vec_rsqrt (vector double);
@@ -21826,7 +21839,7 @@ Returns @code{_XBEGIN_STARTED} when the transaction
 started successfully (note this is not 0, so the constant has to be 
 explicitly tested).  
 
-If the transaction aborts, all side-effects 
+If the transaction aborts, all side effects
 are undone and an abort code encoded as a bit mask is returned.
 The following macros are defined:
 
@@ -21853,7 +21866,7 @@ fallback path.
 
 @deftypefn {RTM Function} {void} _xend ()
 Commit the current transaction. When no transaction is active this faults.
-All memory side-effects of the transaction become visible
+All memory side effects of the transaction become visible
 to other threads in an atomic manner.
 @end deftypefn
 
@@ -23818,46 +23831,21 @@ some cases that the feature will be dropped in the future.  In other
 cases, the feature might be gone already.
 
 While the list below is not exhaustive, it documents some of the options
-that are now deprecated:
+that are now deprecated or have been removed:
 
 @table @code
-@item -fexternal-templates
-@itemx -falt-external-templates
-These are two of the many ways for G++ to implement template
-instantiation.  @xref{Template Instantiation}.  The C++ standard clearly
-defines how template definitions have to be organized across
-implementation units.  G++ has an implicit instantiation mechanism that
-should work just fine for standard-conforming code.
 
-@item -fstrict-prototype
-@itemx -fno-strict-prototype
-Previously it was possible to use an empty prototype parameter list to
-indicate an unspecified number of parameters (like C), rather than no
-parameters, as C++ demands.  This feature has been removed, except where
-it is required for backwards compatibility.   @xref{Backwards Compatibility}.
+@item -fno-for-scope
+@itemx -ffriend-injection
+These two options provide compatibility with pre-standard C++.
+@xref{Backwards Compatibility}.
+
 @end table
 
 G++ allows a virtual function returning @samp{void *} to be overridden
 by one returning a different pointer type.  This extension to the
 covariant return type rules is now deprecated and will be removed from a
 future version.
-
-The G++ minimum and maximum operators (@samp{<?} and @samp{>?}) and
-their compound forms (@samp{<?=}) and @samp{>?=}) have been deprecated
-and are now removed from G++.  Code using these operators should be
-modified to use @code{std::min} and @code{std::max} instead.
-
-The named return value extension has been deprecated, and is now
-removed from G++.
-
-The use of initializer lists with new expressions has been deprecated,
-and is now removed from G++.
-
-Floating and complex non-type template parameters have been deprecated,
-and are now removed from G++.
-
-The implicit typename extension has been deprecated and is now
-removed from G++.
 
 The use of default arguments in function pointers, function typedefs
 and other places where they are not permitted by the standard is
@@ -23872,6 +23860,14 @@ with an initializer in a class definition. The standard only allows
 initializers for static members of const integral types and const
 enumeration types so this extension has been deprecated and will be removed
 from a future version.
+
+G++ allows attributes to follow a parenthesized direct initializer,
+e.g.@: @samp{ int f (0) __attribute__ ((something)); } This extension
+has been ignored since G++ 3.3 and is deprecated.
+
+G++ allows anonymous structs and unions to have members that are not
+public non-static data members (i.e.@: fields).  These extensions are
+deprecated.
 
 @node Backwards Compatibility
 @section Backwards Compatibility

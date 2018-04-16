@@ -1657,8 +1657,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
 
    Specifically, a simple accessor within struct S of the form:
        T get_field () { return m_field; }
-   should have a DECL_SAVED_TREE of the form:
-       <return_expr
+   should have a constexpr_fn_retval (saved_tree) of the form:
 	 <init_expr:T
 	   <result_decl:T
 	   <nop_expr:T
@@ -1666,7 +1665,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
 	       <indirect_ref:S>
 		 <nop_expr:P*
 		   <parm_decl (this)>
-		 <field_decl (FIELD_DECL)>>>.  */
+		 <field_decl (FIELD_DECL)>>>>>.  */
 
 static bool
 direct_accessor_p (tree init_expr, tree field_decl, tree field_type)
@@ -1690,8 +1689,7 @@ direct_accessor_p (tree init_expr, tree field_decl, tree field_type)
 
    Specifically, a simple accessor within struct S of the form:
        T& get_field () { return m_field; }
-   should have a DECL_SAVED_TREE of the form:
-       <return_expr
+   should have a constexpr_fn_retval (saved_tree) of the form:
 	 <init_expr:T&
 	   <result_decl:T&
 	   <nop_expr: T&
@@ -1747,8 +1745,8 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
      that the "this" parameter is const.  */
   if (const_p)
     {
-      tree this_type = type_of_this_parm (fntype);
-      if (!TYPE_READONLY (this_type))
+      tree this_class = class_of_this_parm (fntype);
+      if (!TYPE_READONLY (this_class))
 	return false;
     }
 
@@ -1757,16 +1755,19 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
   if (saved_tree == NULL_TREE)
     return false;
 
-  if (TREE_CODE (saved_tree) != RETURN_EXPR)
+  /* Attempt to extract a single return value from the function,
+     if it has one.  */
+  tree retval = constexpr_fn_retval (saved_tree);
+  if (retval == NULL_TREE || retval == error_mark_node)
     return false;
-
-  tree init_expr = TREE_OPERAND (saved_tree, 0);
-  if (TREE_CODE (init_expr) != INIT_EXPR)
+  /* Require an INIT_EXPR.  */
+  if (TREE_CODE (retval) != INIT_EXPR)
     return false;
+  tree init_expr = retval;
 
   /* Determine if this is a simple accessor within struct S of the form:
        T get_field () { return m_field; }.  */
-   tree field_type = TREE_TYPE (field_decl);
+  tree field_type = TREE_TYPE (field_decl);
   if (cxx_types_compatible_p (TREE_TYPE (init_expr), field_type))
     return direct_accessor_p (init_expr, field_decl, field_type);
 
@@ -1903,7 +1904,7 @@ check_final_overrider (tree overrider, tree basefn)
 	  if (pedwarn (DECL_SOURCE_LOCATION (overrider), 0,
 		       "invalid covariant return type for %q#D", overrider))
 	    inform (DECL_SOURCE_LOCATION (basefn),
-		    "  overriding %q#D", basefn);
+		    "overridden function is %q#D", basefn);
 	}
       else
 	fail = 2;
@@ -1917,12 +1918,14 @@ check_final_overrider (tree overrider, tree basefn)
       if (fail == 1)
 	{
 	  error ("invalid covariant return type for %q+#D", overrider);
-	  error ("  overriding %q+#D", basefn);
+	  inform (DECL_SOURCE_LOCATION (basefn),
+		  "overridden function is %q#D", basefn);
 	}
       else
 	{
 	  error ("conflicting return type specified for %q+#D", overrider);
-	  error ("  overriding %q+#D", basefn);
+	  inform (DECL_SOURCE_LOCATION (basefn),
+		  "overridden function is %q#D", basefn);
 	}
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
@@ -1937,7 +1940,8 @@ check_final_overrider (tree overrider, tree basefn)
   if (!comp_except_specs (base_throw, over_throw, ce_derived))
     {
       error ("looser throw specifier for %q+#F", overrider);
-      error ("  overriding %q+#F", basefn);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %q#F", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
@@ -1949,7 +1953,8 @@ check_final_overrider (tree overrider, tree basefn)
       && !tx_safe_fn_type_p (over_type))
     {
       error ("conflicting type attributes specified for %q+#D", overrider);
-      error ("  overriding %q+#D", basefn);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %q#D", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
@@ -1973,21 +1978,26 @@ check_final_overrider (tree overrider, tree basefn)
     {
       if (DECL_DELETED_FN (overrider))
 	{
-	  error ("deleted function %q+D", overrider);
-	  error ("overriding non-deleted function %q+D", basefn);
+	  error ("deleted function %q+D overriding non-deleted function",
+		 overrider);
+	  inform (DECL_SOURCE_LOCATION (basefn),
+		  "overridden function is %qD", basefn);
 	  maybe_explain_implicit_delete (overrider);
 	}
       else
 	{
-	  error ("non-deleted function %q+D", overrider);
-	  error ("overriding deleted function %q+D", basefn);
+	  error ("non-deleted function %q+D overriding deleted function",
+		 overrider);
+	  inform (DECL_SOURCE_LOCATION (basefn),
+		  "overridden function is %qD", basefn);
 	}
       return 0;
     }
   if (DECL_FINAL_P (basefn))
     {
-      error ("virtual function %q+D", overrider);
-      error ("overriding final function %q+D", basefn);
+      error ("virtual function %q+D overriding final function", overrider);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %qD", basefn);
       return 0;
     }
   return 1;
@@ -2609,7 +2619,7 @@ original_binfo (tree binfo, tree here)
 bool
 any_dependent_bases_p (tree type)
 {
-  if (!type || !CLASS_TYPE_P (type) || !processing_template_decl)
+  if (!type || !CLASS_TYPE_P (type) || !uses_template_parms (type))
     return false;
 
   /* If we haven't set TYPE_BINFO yet, we don't know anything about the bases.

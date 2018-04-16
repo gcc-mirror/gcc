@@ -144,6 +144,7 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_SILVERMONT (HOST_WIDE_INT_1U<<PROCESSOR_SILVERMONT)
 #define m_KNL (HOST_WIDE_INT_1U<<PROCESSOR_KNL)
 #define m_KNM (HOST_WIDE_INT_1U<<PROCESSOR_KNM)
+#define m_SKYLAKE (HOST_WIDE_INT_1U<<PROCESSOR_SKYLAKE)
 #define m_SKYLAKE_AVX512 (HOST_WIDE_INT_1U<<PROCESSOR_SKYLAKE_AVX512)
 #define m_CANNONLAKE (HOST_WIDE_INT_1U<<PROCESSOR_CANNONLAKE)
 #define m_ICELAKE_CLIENT (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_CLIENT)
@@ -183,7 +184,7 @@ unsigned char ix86_tune_features[X86_TUNE_LAST];
 
 /* Feature tests against the various tunings used to create ix86_tune_features
    based on the processor mask.  */
-static unsigned long long initial_ix86_tune_features[X86_TUNE_LAST] = {
+static unsigned HOST_WIDE_INT initial_ix86_tune_features[X86_TUNE_LAST] = {
 #undef DEF_TUNE
 #define DEF_TUNE(tune, name, selector) selector,
 #include "x86-tune.def"
@@ -195,7 +196,7 @@ unsigned char ix86_arch_features[X86_ARCH_LAST];
 
 /* Feature tests against the various architecture variations, used to create
    ix86_arch_features based on the processor mask.  */
-static unsigned long long initial_ix86_arch_features[X86_ARCH_LAST] = {
+static unsigned HOST_WIDE_INT initial_ix86_arch_features[X86_ARCH_LAST] = {
   /* X86_ARCH_CMOV: Conditional move was added for pentiumpro.  */
   ~(m_386 | m_486 | m_PENT | m_LAKEMONT | m_K6),
 
@@ -859,6 +860,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
   {"knl", &slm_cost, 16, 15, 16, 7, 16},
   {"knm", &slm_cost, 16, 15, 16, 7, 16},
+  {"skylake", &skylake_cost, 16, 10, 16, 10, 16},
   {"skylake-avx512", &skylake_cost, 16, 10, 16, 10, 16},
   {"cannonlake", &skylake_cost, 16, 10, 16, 10, 16},
   {"icelake-client", &skylake_cost, 16, 10, 16, 10, 16},
@@ -3310,7 +3312,7 @@ parse_mtune_ctrl_str (bool dump)
 static void
 set_ix86_tune_features (enum processor_type ix86_tune, bool dump)
 {
-  unsigned int ix86_tune_mask = 1u << ix86_tune;
+  unsigned HOST_WIDE_INT ix86_tune_mask = HOST_WIDE_INT_1U << ix86_tune;
   int i;
 
   for (i = 0; i < X86_TUNE_LAST; ++i)
@@ -3318,7 +3320,8 @@ set_ix86_tune_features (enum processor_type ix86_tune, bool dump)
       if (ix86_tune_no_default)
         ix86_tune_features[i] = 0;
       else
-        ix86_tune_features[i] = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
+	ix86_tune_features[i]
+	  = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
     }
 
   if (dump)
@@ -3373,7 +3376,7 @@ ix86_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts_set)
 {
   int i;
-  unsigned int ix86_arch_mask;
+  unsigned HOST_WIDE_INT ix86_arch_mask;
   const bool ix86_tune_specified = (opts->x_ix86_tune_string != NULL);
 
   const wide_int_bitmask PTA_3DNOW (HOST_WIDE_INT_1U << 0);
@@ -3543,10 +3546,10 @@ ix86_option_override_internal (bool main_args_p,
       {"haswell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
       {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
       {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
-      {"skylake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE},
+      {"skylake", PROCESSOR_SKYLAKE, CPU_HASWELL, PTA_SKYLAKE},
       {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL,
         PTA_SKYLAKE_AVX512},
-      {"cannonlake", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_CANNONLAKE},
+      {"cannonlake", PROCESSOR_CANNONLAKE, CPU_HASWELL, PTA_CANNONLAKE},
       {"icelake-client", PROCESSOR_ICELAKE_CLIENT, CPU_HASWELL,
 	PTA_ICELAKE_CLIENT},
       {"icelake-server", PROCESSOR_ICELAKE_SERVER, CPU_HASWELL,
@@ -4234,7 +4237,7 @@ ix86_option_override_internal (bool main_args_p,
       XDELETEVEC (s);
     }
 
-  ix86_arch_mask = 1u << ix86_arch;
+  ix86_arch_mask = HOST_WIDE_INT_1U << ix86_arch;
   for (i = 0; i < X86_ARCH_LAST; ++i)
     ix86_arch_features[i] = !!(initial_ix86_arch_features[i] & ix86_arch_mask);
 
@@ -5159,7 +5162,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
 {
   enum processor_type old_tune = ix86_tune;
   enum processor_type old_arch = ix86_arch;
-  unsigned int ix86_arch_mask;
+  unsigned HOST_WIDE_INT ix86_arch_mask;
   int i;
 
   /* We don't change -fPIC.  */
@@ -5210,7 +5213,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
   /* Recreate the arch feature tests if the arch changed */
   if (old_arch != ix86_arch)
     {
-      ix86_arch_mask = 1u << ix86_arch;
+      ix86_arch_mask = HOST_WIDE_INT_1U << ix86_arch;
       for (i = 0; i < X86_ARCH_LAST; ++i)
 	ix86_arch_features[i]
 	  = !!(initial_ix86_arch_features[i] & ix86_arch_mask);
@@ -5765,6 +5768,19 @@ ix86_can_inline_p (tree caller, tree callee)
 {
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+
+  /* Changes of those flags can be tolerated for always inlines. Lets hope
+     user knows what he is doing.  */
+  const unsigned HOST_WIDE_INT always_inline_safe_mask
+	 = (MASK_USE_8BIT_IDIV | MASK_ACCUMULATE_OUTGOING_ARGS
+	    | MASK_NO_ALIGN_STRINGOPS | MASK_AVX256_SPLIT_UNALIGNED_LOAD
+	    | MASK_AVX256_SPLIT_UNALIGNED_STORE | MASK_CLD
+	    | MASK_NO_FANCY_MATH_387 | MASK_IEEE_FP | MASK_INLINE_ALL_STRINGOPS
+	    | MASK_INLINE_STRINGOPS_DYNAMICALLY | MASK_RECIP | MASK_STACK_PROBE
+	    | MASK_STV | MASK_TLS_DIRECT_SEG_REFS | MASK_VZEROUPPER
+	    | MASK_NO_PUSH_ARGS | MASK_OMIT_LEAF_FRAME_POINTER);
+
+
   if (!callee_tree)
     callee_tree = target_option_default_node;
   if (!caller_tree)
@@ -5775,6 +5791,10 @@ ix86_can_inline_p (tree caller, tree callee)
   struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
   struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
   bool ret = false;
+  bool always_inline =
+     (DECL_DISREGARD_INLINE_LIMITS (callee)
+      && lookup_attribute ("always_inline",
+			   DECL_ATTRIBUTES (callee)));
 
   /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
      function can inline a SSE2 function but a SSE2 function can't inline
@@ -5786,14 +5806,17 @@ ix86_can_inline_p (tree caller, tree callee)
     ret = false;
 
   /* See if we have the same non-isa options.  */
-  else if (caller_opts->x_target_flags != callee_opts->x_target_flags)
+  else if ((!always_inline
+	    && caller_opts->x_target_flags != callee_opts->x_target_flags)
+	   || (caller_opts->x_target_flags & ~always_inline_safe_mask)
+	       != (callee_opts->x_target_flags & ~always_inline_safe_mask))
     ret = false;
 
   /* See if arch, tune, etc. are the same.  */
   else if (caller_opts->arch != callee_opts->arch)
     ret = false;
 
-  else if (caller_opts->tune != callee_opts->tune)
+  else if (!always_inline && caller_opts->tune != callee_opts->tune)
     ret = false;
 
   else if (caller_opts->x_ix86_fpmath != callee_opts->x_ix86_fpmath
@@ -5806,7 +5829,8 @@ ix86_can_inline_p (tree caller, tree callee)
 	       (cgraph_node::get (callee))->fp_expressions))
     ret = false;
 
-  else if (caller_opts->branch_cost != callee_opts->branch_cost)
+  else if (!always_inline
+	   && caller_opts->branch_cost != callee_opts->branch_cost)
     ret = false;
 
   else
@@ -8617,7 +8641,8 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       if (cum->caller)
 	cfun->machine->outgoing_args_on_stack = true;
 
-      cum->bnds_in_bt = chkp_type_bounds_count (type);
+      if (flag_check_pointer_bounds)
+	cum->bnds_in_bt = chkp_type_bounds_count (type);
     }
 }
 
@@ -10819,18 +10844,22 @@ ix86_setup_frame_addresses (void)
    labels in call and return thunks.  */
 static int indirectlabelno;
 
-/* True if call and return thunk functions are needed.  */
+/* True if call thunk function is needed.  */
 static bool indirect_thunk_needed = false;
-/* True if call and return thunk functions with the BND prefix are
-   needed.  */
+/* True if call thunk function with the BND prefix is needed.  */
 static bool indirect_thunk_bnd_needed = false;
 
 /* Bit masks of integer registers, which contain branch target, used
-   by call and return thunks functions.  */
+   by call thunk functions.  */
 static int indirect_thunks_used;
 /* Bit masks of integer registers, which contain branch target, used
-   by call and return thunks functions with the BND prefix.  */
+   by call thunk functions with the BND prefix.  */
 static int indirect_thunks_bnd_used;
+
+/* True if return thunk function is needed.  */
+static bool indirect_return_needed = false;
+/* True if return thunk function with the BND prefix is needed.  */
+static bool indirect_return_bnd_needed = false;
 
 /* True if return thunk function via CX is needed.  */
 static bool indirect_return_via_cx;
@@ -11027,17 +11056,18 @@ output_indirect_thunk (enum indirect_thunk_prefix need_prefix,
 /* Output a funtion with a call and return thunk for indirect branch.
    If BND_P is true, the BND prefix is needed.  If REGNO != UNVALID_REGNUM,
    the function address is in REGNO.  Otherwise, the function address is
-   on the top of stack.  */
+   on the top of stack.  Thunk is used for function return if RET_P is
+   true.  */
 
 static void
 output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
-				unsigned int regno)
+				unsigned int regno, bool ret_p)
 {
   char name[32];
   tree decl;
 
   /* Create __x86_indirect_thunk/__x86_indirect_thunk_bnd.  */
-  indirect_thunk_name (name, regno, need_prefix, false);
+  indirect_thunk_name (name, regno, need_prefix, ret_p);
   decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 		     get_identifier (name),
 		     build_function_type_list (void_type_node, NULL_TREE));
@@ -11079,50 +11109,6 @@ output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
 	switch_to_section (text_section);
 	ASM_OUTPUT_LABEL (asm_out_file, name);
       }
-
-  /* Create alias for __x86_return_thunk/__x86_return_thunk_bnd or
-     __x86_return_thunk_ecx/__x86_return_thunk_ecx_bnd.  */
-  bool need_alias;
-  if (regno == INVALID_REGNUM)
-    need_alias = true;
-  else if (regno == CX_REG)
-    {
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	need_alias = indirect_return_via_cx_bnd;
-      else
-	need_alias = indirect_return_via_cx;
-    }
-  else
-    need_alias = false;
-
-  if (need_alias)
-    {
-      char alias[32];
-
-      indirect_thunk_name (alias, regno, need_prefix, true);
-#if TARGET_MACHO
-      if (TARGET_MACHO)
-	{
-	  fputs ("\t.weak_definition\t", asm_out_file);
-	  assemble_name (asm_out_file, alias);
-	  fputs ("\n\t.private_extern\t", asm_out_file);
-	  assemble_name (asm_out_file, alias);
-	  putc ('\n', asm_out_file);
-	  ASM_OUTPUT_LABEL (asm_out_file, alias);
-	}
-#else
-      ASM_OUTPUT_DEF (asm_out_file, alias, name);
-      if (USE_HIDDEN_LINKONCE)
-	{
-	  fputs ("\t.globl\t", asm_out_file);
-	  assemble_name (asm_out_file, alias);
-	  putc ('\n', asm_out_file);
-	  fputs ("\t.hidden\t", asm_out_file);
-	  assemble_name (asm_out_file, alias);
-	  putc ('\n', asm_out_file);
-	}
-#endif
-    }
 
   DECL_INITIAL (decl) = make_node (BLOCK);
   current_function_decl = decl;
@@ -11170,23 +11156,37 @@ ix86_code_end (void)
   rtx xops[2];
   unsigned int regno;
 
+  if (indirect_return_needed)
+    output_indirect_thunk_function (indirect_thunk_prefix_none,
+				    INVALID_REGNUM, true);
+  if (indirect_return_bnd_needed)
+    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
+				    INVALID_REGNUM, true);
+
+  if (indirect_return_via_cx)
+    output_indirect_thunk_function (indirect_thunk_prefix_none,
+				    CX_REG, true);
+  if (indirect_return_via_cx_bnd)
+    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
+				    CX_REG, true);
+
   if (indirect_thunk_needed)
     output_indirect_thunk_function (indirect_thunk_prefix_none,
-				    INVALID_REGNUM);
+				    INVALID_REGNUM, false);
   if (indirect_thunk_bnd_needed)
     output_indirect_thunk_function (indirect_thunk_prefix_bnd,
-				    INVALID_REGNUM);
+				    INVALID_REGNUM, false);
 
   for (regno = FIRST_REX_INT_REG; regno <= LAST_REX_INT_REG; regno++)
     {
       unsigned int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
       if ((indirect_thunks_used & (1 << i)))
 	output_indirect_thunk_function (indirect_thunk_prefix_none,
-					regno);
+					regno, false);
 
       if ((indirect_thunks_bnd_used & (1 << i)))
 	output_indirect_thunk_function (indirect_thunk_prefix_bnd,
-					regno);
+					regno, false);
     }
 
   for (regno = FIRST_INT_REG; regno <= LAST_INT_REG; regno++)
@@ -11196,11 +11196,11 @@ ix86_code_end (void)
 
       if ((indirect_thunks_used & (1 << regno)))
 	output_indirect_thunk_function (indirect_thunk_prefix_none,
-					regno);
+					regno, false);
 
       if ((indirect_thunks_bnd_used & (1 << regno)))
 	output_indirect_thunk_function (indirect_thunk_prefix_bnd,
-					regno);
+					regno, false);
 
       if (!(pic_labels_used & (1 << regno)))
 	continue;
@@ -19701,72 +19701,36 @@ emit_i387_cw_initialization (int mode)
   emit_insn (gen_x86_fnstcw_1 (stored_mode));
   emit_move_insn (reg, copy_rtx (stored_mode));
 
-  if (TARGET_64BIT || TARGET_PARTIAL_REG_STALL
-      || optimize_insn_for_size_p ())
+  switch (mode)
     {
-      switch (mode)
-	{
-	case I387_CW_TRUNC:
-	  /* round toward zero (truncate) */
-	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0c00)));
-	  slot = SLOT_CW_TRUNC;
-	  break;
+    case I387_CW_TRUNC:
+      /* round toward zero (truncate) */
+      emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0c00)));
+      slot = SLOT_CW_TRUNC;
+      break;
 
-	case I387_CW_FLOOR:
-	  /* round down toward -oo */
-	  emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
-	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0400)));
-	  slot = SLOT_CW_FLOOR;
-	  break;
+    case I387_CW_FLOOR:
+      /* round down toward -oo */
+      emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
+      emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0400)));
+      slot = SLOT_CW_FLOOR;
+      break;
 
-	case I387_CW_CEIL:
-	  /* round up toward +oo */
-	  emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
-	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0800)));
-	  slot = SLOT_CW_CEIL;
-	  break;
+    case I387_CW_CEIL:
+      /* round up toward +oo */
+      emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
+      emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0800)));
+      slot = SLOT_CW_CEIL;
+      break;
 
-	case I387_CW_MASK_PM:
-	  /* mask precision exception for nearbyint() */
-	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0020)));
-	  slot = SLOT_CW_MASK_PM;
-	  break;
+    case I387_CW_MASK_PM:
+      /* mask precision exception for nearbyint() */
+      emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0020)));
+      slot = SLOT_CW_MASK_PM;
+      break;
 
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  else
-    {
-      switch (mode)
-	{
-	case I387_CW_TRUNC:
-	  /* round toward zero (truncate) */
-	  emit_insn (gen_insvsi_1 (reg, GEN_INT (0xc)));
-	  slot = SLOT_CW_TRUNC;
-	  break;
-
-	case I387_CW_FLOOR:
-	  /* round down toward -oo */
-	  emit_insn (gen_insvsi_1 (reg, GEN_INT (0x4)));
-	  slot = SLOT_CW_FLOOR;
-	  break;
-
-	case I387_CW_CEIL:
-	  /* round up toward +oo */
-	  emit_insn (gen_insvsi_1 (reg, GEN_INT (0x8)));
-	  slot = SLOT_CW_CEIL;
-	  break;
-
-	case I387_CW_MASK_PM:
-	  /* mask precision exception for nearbyint() */
-	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0020)));
-	  slot = SLOT_CW_MASK_PM;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
+    default:
+      gcc_unreachable ();
     }
 
   gcc_assert (slot < MAX_386_STACK_LOCALS);
@@ -29060,12 +29024,12 @@ ix86_output_function_return (bool long_p)
 			       true);
 	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    {
-	      indirect_thunk_bnd_needed |= need_thunk;
+	      indirect_return_bnd_needed |= need_thunk;
 	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
 	    }
 	  else
 	    {
-	      indirect_thunk_needed |= need_thunk;
+	      indirect_return_needed |= need_thunk;
 	      fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	    }
 	}
@@ -30435,12 +30399,21 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   rtx mem, fnaddr;
   int opcode;
   int offset = 0;
+  bool need_endbr = (flag_cf_protection & CF_BRANCH) && TARGET_IBT;
 
   fnaddr = XEXP (DECL_RTL (fndecl), 0);
 
   if (TARGET_64BIT)
     {
       int size;
+
+      if (need_endbr)
+	{
+	  /* Insert ENDBR64.  */
+	  mem = adjust_address (m_tramp, SImode, offset);
+	  emit_move_insn (mem, gen_int_mode (0xfa1e0ff3, SImode));
+	  offset += 4;
+	}
 
       /* Load the function address to r11.  Try to load address using
 	 the shorter movl instead of movabs.  We may want to support
@@ -30518,6 +30491,14 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	}
       else
 	opcode = 0x68;
+
+      if (need_endbr)
+	{
+	  /* Insert ENDBR32.  */
+	  mem = adjust_address (m_tramp, SImode, offset);
+	  emit_move_insn (mem, gen_int_mode (0xfb1e0ff3, SImode));
+	  offset += 4;
+	}
 
       mem = adjust_address (m_tramp, QImode, offset);
       emit_move_insn (mem, gen_int_mode (opcode, QImode));
@@ -32356,6 +32337,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 						      &global_options_set);
     
       gcc_assert (target_node);
+      if (target_node == error_mark_node)
+	return 0;
       new_target = TREE_TARGET_OPTION (target_node);
       gcc_assert (new_target);
       
@@ -32390,27 +32373,31 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_AVX;
 	      break;
 	    case PROCESSOR_HASWELL:
-	    case PROCESSOR_SKYLAKE_AVX512:
-	      if (new_target->x_ix86_isa_flags
-			& OPTION_MASK_ISA_AVX512VBMI)
-		arg_str = "cannonlake";
-	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
-	        arg_str = "skylake-avx512";
-	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_XSAVES)
-	        arg_str = "skylake";
-	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_ADX)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_ADX)
 		arg_str = "broadwell";
 	      else
 		arg_str = "haswell";
 	      priority = P_PROC_AVX2;
 	      break;
+	    case PROCESSOR_SKYLAKE:
+	      arg_str = "skylake";
+	      priority = P_PROC_AVX2;
+	      break;
+	    case PROCESSOR_SKYLAKE_AVX512:
+	      arg_str = "skylake-avx512";
+	      priority = P_PROC_AVX512F;
+	      break;
+	    case PROCESSOR_CANNONLAKE:
+	      arg_str = "cannonlake";
+	      priority = P_PROC_AVX512F;
+	      break;
 	    case PROCESSOR_ICELAKE_CLIENT:
 	      arg_str = "icelake-client";
-	      priority = P_PROC_AVX2;
+	      priority = P_PROC_AVX512F;
 	      break;
 	    case PROCESSOR_ICELAKE_SERVER:
 	      arg_str = "icelake-server";
-	      priority = P_PROC_AVX2;
+	      priority = P_PROC_AVX512F;
 	      break;
 	    case PROCESSOR_BONNELL:
 	      arg_str = "bonnell";
@@ -33086,6 +33073,11 @@ fold_builtin_cpu (tree fndecl, tree *args)
     F_AVX5124VNNIW,
     F_AVX5124FMAPS,
     F_AVX512VPOPCNTDQ,
+    F_AVX512VBMI2,
+    F_GFNI,
+    F_VPCLMULQDQ,
+    F_AVX512VNNI,
+    F_AVX512BITALG,
     F_MAX
   };
 
@@ -33210,7 +33202,12 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"avx512ifma",F_AVX512IFMA},
       {"avx5124vnniw",F_AVX5124VNNIW},
       {"avx5124fmaps",F_AVX5124FMAPS},
-      {"avx512vpopcntdq",F_AVX512VPOPCNTDQ}
+      {"avx512vpopcntdq",F_AVX512VPOPCNTDQ},
+      {"avx512vbmi2", F_AVX512VBMI2},
+      {"gfni", F_GFNI},
+      {"vpclmulqdq", F_VPCLMULQDQ},
+      {"avx512vnni", F_AVX512VNNI},
+      {"avx512bitalg", F_AVX512BITALG}
     };
 
   tree __processor_model_type = build_processor_model_struct ();
@@ -33279,8 +33276,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	}
 
       /* Get the appropriate field in __cpu_model.  */
-      ref =  build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
-		     field, NULL_TREE);
+      ref = build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+		    field, NULL_TREE);
 
       /* Check the value.  */
       final = build2 (EQ_EXPR, unsigned_type_node, ref,
@@ -33310,20 +33307,34 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	  return integer_zero_node;
 	}
 
+      if (isa_names_table[i].feature >= 32)
+	{
+	  tree __cpu_features2_var = make_var_decl (unsigned_type_node,
+						    "__cpu_features2");
+
+	  varpool_node::add (__cpu_features2_var);
+	  field_val = (1U << (isa_names_table[i].feature - 32));
+	  /* Return __cpu_features2 & field_val  */
+	  final = build2 (BIT_AND_EXPR, unsigned_type_node,
+			  __cpu_features2_var,
+			  build_int_cstu (unsigned_type_node, field_val));
+	  return build1 (CONVERT_EXPR, integer_type_node, final);
+	}
+
       field = TYPE_FIELDS (__processor_model_type);
       /* Get the last field, which is __cpu_features.  */
       while (DECL_CHAIN (field))
         field = DECL_CHAIN (field);
 
       /* Get the appropriate field: __cpu_model.__cpu_features  */
-      ref =  build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
-		     field, NULL_TREE);
+      ref = build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+		    field, NULL_TREE);
 
       /* Access the 0th element of __cpu_features array.  */
       array_elt = build4 (ARRAY_REF, unsigned_type_node, ref,
 			  integer_zero_node, NULL_TREE, NULL_TREE);
 
-      field_val = (1 << isa_names_table[i].feature);
+      field_val = (1U << isa_names_table[i].feature);
       /* Return __cpu_model.__cpu_features[0] & field_val  */
       final = build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
 		      build_int_cstu (unsigned_type_node, field_val));
@@ -44067,20 +44078,68 @@ half:
       break;
 
     case E_V32HImode:
-      if (TARGET_AVX512F && TARGET_AVX512BW)
+      if (TARGET_AVX512BW)
 	{
 	  mmode = SImode;
 	  gen_blendm = gen_avx512bw_blendmv32hi;
 	}
+      else if (TARGET_AVX512F)
+	{
+	  half_mode = E_V8HImode;
+	  n = 8;
+	  goto quarter;
+	}
       break;
 
     case E_V64QImode:
-      if (TARGET_AVX512F && TARGET_AVX512BW)
+      if (TARGET_AVX512BW)
 	{
 	  mmode = DImode;
 	  gen_blendm = gen_avx512bw_blendmv64qi;
 	}
+      else if (TARGET_AVX512F)
+	{
+	  half_mode = E_V16QImode;
+	  n = 16;
+	  goto quarter;
+	}
       break;
+
+quarter:
+      /* Compute offset.  */
+      i = elt / n;
+      elt %= n;
+
+      gcc_assert (i <= 3);
+
+      {
+	/* Extract the quarter.  */
+	tmp = gen_reg_rtx (V4SImode);
+	rtx tmp2 = gen_lowpart (V16SImode, target);
+	rtx mask = gen_reg_rtx (QImode);
+
+	emit_move_insn (mask, constm1_rtx);
+	emit_insn (gen_avx512f_vextracti32x4_mask (tmp, tmp2, GEN_INT (i),
+						   tmp, mask));
+
+	tmp2 = gen_reg_rtx (half_mode);
+	emit_move_insn (tmp2, gen_lowpart (half_mode, tmp));
+	tmp = tmp2;
+
+	/* Put val in tmp at elt.  */
+	ix86_expand_vector_set (false, tmp, val, elt);
+
+	/* Put it back.  */
+	tmp2 = gen_reg_rtx (V16SImode);
+	rtx tmp3 = gen_lowpart (V16SImode, target);
+	mask = gen_reg_rtx (HImode);
+	emit_move_insn (mask, constm1_rtx);
+	tmp = gen_lowpart (V4SImode, tmp);
+	emit_insn (gen_avx512f_vinserti32x4_mask (tmp2, tmp3, tmp, GEN_INT (i),
+						  tmp3, mask));
+	emit_move_insn (target, gen_lowpart (mode, tmp2));
+      }
+      return;
 
     default:
       break;
@@ -44097,12 +44156,14 @@ half:
 	 where the mask is clear and second input operand otherwise.  */
       emit_insn (gen_blendm (target, target, tmp,
 			     force_reg (mmode,
-					gen_int_mode (1 << elt, mmode))));
+					gen_int_mode (HOST_WIDE_INT_1U << elt,
+						      mmode))));
     }
   else if (use_vec_merge)
     {
       tmp = gen_rtx_VEC_DUPLICATE (mode, val);
-      tmp = gen_rtx_VEC_MERGE (mode, tmp, target, GEN_INT (1 << elt));
+      tmp = gen_rtx_VEC_MERGE (mode, tmp, target,
+			       GEN_INT (HOST_WIDE_INT_1U << elt));
       emit_insn (gen_rtx_SET (target, tmp));
     }
   else
@@ -44111,7 +44172,7 @@ half:
 
       emit_move_insn (mem, target);
 
-      tmp = adjust_address (mem, inner_mode, elt*GET_MODE_SIZE (inner_mode));
+      tmp = adjust_address (mem, inner_mode, elt * GET_MODE_SIZE (inner_mode));
       emit_move_insn (tmp, val);
 
       emit_move_insn (target, mem);
@@ -50462,7 +50523,11 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	  }
 	  break;
 	case NOP_EXPR:
-	  stmt_cost = 0;
+	  /* Only sign-conversions are free.  */
+	  if (tree_nop_conversion_p
+	        (TREE_TYPE (gimple_assign_lhs (stmt_info->stmt)),
+		 TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))))
+	    stmt_cost = 0;
 	  break;
 
 	case BIT_IOR_EXPR:

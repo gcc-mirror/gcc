@@ -885,7 +885,7 @@ _mm_cvtpd_epi32 (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4si)vec_vpkudum ((vector long)temp, (vector long)vzero);
+  result = (__v4si)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -919,7 +919,7 @@ _mm_cvtpd_ps (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4sf)vec_vpkudum ((vector long)temp, (vector long)vzero);
+  result = (__v4sf)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -947,7 +947,7 @@ _mm_cvttpd_epi32 (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4si)vec_vpkudum ((vector long)temp, (vector long)vzero);
+  result = (__v4si)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -1488,12 +1488,12 @@ _mm_slli_epi16 (__m128i __A, int __B)
   __v8hu lshift;
   __v8hi result = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  if (__B < 16)
+  if (__B >= 0 && __B < 16)
     {
       if (__builtin_constant_p(__B))
-	  lshift = (__v8hu) vec_splat_s16(__B);
+	lshift = (__v8hu) vec_splat_s16(__B);
       else
-	  lshift = vec_splats ((unsigned short) __B);
+	lshift = vec_splats ((unsigned short) __B);
 
       result = vec_vslh ((__v8hi) __A, lshift);
     }
@@ -1507,9 +1507,9 @@ _mm_slli_epi32 (__m128i __A, int __B)
   __v4su lshift;
   __v4si result = { 0, 0, 0, 0 };
 
-  if (__B < 32)
+  if (__B >= 0 && __B < 32)
     {
-      if (__builtin_constant_p(__B))
+      if (__builtin_constant_p(__B) && __B < 16)
 	lshift = (__v4su) vec_splat_s32(__B);
       else
 	lshift = vec_splats ((unsigned int) __B);
@@ -1527,17 +1527,12 @@ _mm_slli_epi64 (__m128i __A, int __B)
   __v2du lshift;
   __v2di result = { 0, 0 };
 
-  if (__B < 64)
+  if (__B >= 0 && __B < 64)
     {
-      if (__builtin_constant_p(__B))
-	{
-	  if (__B < 32)
-	      lshift = (__v2du) vec_splat_s32(__B);
-	    else
-	      lshift = (__v2du) vec_splats((unsigned long long)__B);
-	}
+      if (__builtin_constant_p(__B) && __B < 16)
+	lshift = (__v2du) vec_splat_s32(__B);
       else
-	  lshift = (__v2du) vec_splats ((unsigned int) __B);
+	lshift = (__v2du) vec_splats ((unsigned int) __B);
 
       result = vec_vsld ((__v2di) __A, lshift);
     }

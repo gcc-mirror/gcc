@@ -983,7 +983,7 @@ debug_objcopy (const char *infile)
       infile = fname;
       inoff = (off_t) loffset;
     }
-  int infd = open (infile, O_RDONLY);
+  int infd = open (infile, O_RDONLY | O_BINARY);
   if (infd == -1)
     return NULL;
   simple_object_read *inobj = simple_object_start_read (infd, inoff,

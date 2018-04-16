@@ -438,7 +438,7 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		   referenced the last field of a struct or a union member
 		   then we have to adjust maxsize by the padding at the end
 		   of our field.  */
-		if (seen_variable_array_ref && known_size_p (maxsize))
+		if (seen_variable_array_ref)
 		  {
 		    tree stype = TREE_TYPE (TREE_OPERAND (exp, 0));
 		    tree next = DECL_CHAIN (field);
@@ -454,7 +454,7 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 			    || ssize == NULL
 			    || !poly_int_tree_p (ssize))
 			  maxsize = -1;
-			else
+			else if (known_size_p (maxsize))
 			  {
 			    poly_offset_int tem
 			      = (wi::to_poly_offset (ssize)
@@ -464,6 +464,11 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 			    maxsize += tem;
 			  }
 		      }
+		    /* An component ref with an adjacent field up in the
+		       structure hierarchy constrains the size of any variable
+		       array ref lower in the access hierarchy.  */
+		    else
+		      seen_variable_array_ref = false;
 		  }
 	      }
 	    else
@@ -622,7 +627,9 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 
   if (DECL_P (exp))
     {
-      if (flag_unconstrained_commons && VAR_P (exp) && DECL_COMMON (exp))
+      if (VAR_P (exp)
+	  && ((flag_unconstrained_commons && DECL_COMMON (exp))
+	      || (DECL_EXTERNAL (exp) && seen_variable_array_ref)))
 	{
 	  tree sz_tree = TYPE_SIZE (TREE_TYPE (exp));
 	  /* If size is unknown, or we have read to the end, assume there

@@ -2,6 +2,10 @@
 /* { dg-set-target-env-var ASAN_OPTIONS "detect_invalid_pointer_pairs=2:halt_on_error=0" } */
 /* { dg-options "-fsanitize=address,pointer-compare" } */
 
+/* FIXME: remove me after PR sanitizer/82501 is resolved.  */
+/* { dg-additional-options "-fno-section-anchors" } */
+/* { dg-additional-options "-msdata=none" { target { powerpc*-*-* } } } */
+
 volatile int v;
 
 __attribute__((noipa)) void

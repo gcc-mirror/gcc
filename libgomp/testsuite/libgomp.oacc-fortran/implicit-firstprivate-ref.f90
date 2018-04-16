@@ -38,5 +38,5 @@ program t
 
   CALL test(x_min)
 
-  if (x_min .ne. -1) call abort
+  if (x_min .ne. -1) STOP 1
 end program t

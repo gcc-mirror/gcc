@@ -4749,7 +4749,7 @@ gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
       return false;
     }
 
-  if (!is_c_interoperable (fptr, &msg, false, true))
+  if (fptr->rank > 0 && !is_c_interoperable (fptr, &msg, false, true))
     return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable array FPTR "
 			   "at %L to C_F_POINTER: %s", &fptr->where, msg);
 

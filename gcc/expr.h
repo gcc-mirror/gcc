@@ -100,7 +100,11 @@ enum block_op_methods
   BLOCK_OP_NO_LIBCALL,
   BLOCK_OP_CALL_PARM,
   /* Like BLOCK_OP_NORMAL, but the libcall can be tail call optimized.  */
-  BLOCK_OP_TAILCALL
+  BLOCK_OP_TAILCALL,
+  /* Like BLOCK_OP_NO_LIBCALL, but instead of emitting a libcall return
+     pc_rtx to indicate nothing has been emitted and let the caller handle
+     it.  */
+  BLOCK_OP_NO_LIBCALL_RET
 };
 
 typedef rtx (*by_pieces_constfn) (void *, HOST_WIDE_INT, scalar_int_mode);

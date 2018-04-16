@@ -5,7 +5,7 @@ template<typename...> struct A {};
 
 template<typename T> struct B
 {
-  typedef A<__bases(T)...> C;
+  typedef A<__bases(T)...> C;	// { dg-error "incomplete type" }
 };
 
 struct X {};

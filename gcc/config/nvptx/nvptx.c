@@ -2021,6 +2021,30 @@ nvptx_output_ascii (FILE *, const char *str, unsigned HOST_WIDE_INT size)
     nvptx_assemble_value (str[i], 1);
 }
 
+/* Return true if TYPE is a record type where the last field is an array without
+   given dimension.  */
+
+static bool
+flexible_array_member_type_p (const_tree type)
+{
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return false;
+
+  const_tree last_field = NULL_TREE;
+  for (const_tree f = TYPE_FIELDS (type); f; f = TREE_CHAIN (f))
+    last_field = f;
+
+  if (!last_field)
+    return false;
+
+  const_tree last_field_type = TREE_TYPE (last_field);
+  if (TREE_CODE (last_field_type) != ARRAY_TYPE)
+    return false;
+
+  return (! TYPE_DOMAIN (last_field_type)
+	  || ! TYPE_MAX_VALUE (TYPE_DOMAIN (last_field_type)));
+}
+
 /* Emit a PTX variable decl and prepare for emission of its
    initializer.  NAME is the symbol name and SETION the PTX data
    area. The type is TYPE, object size SIZE and alignment is ALIGN.
@@ -2031,8 +2055,18 @@ nvptx_output_ascii (FILE *, const char *str, unsigned HOST_WIDE_INT size)
 
 static void
 nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
-			   const_tree type, HOST_WIDE_INT size, unsigned align)
+			   const_tree type, HOST_WIDE_INT size, unsigned align,
+			   bool undefined = false)
 {
+  bool atype = (TREE_CODE (type) == ARRAY_TYPE)
+    && (TYPE_DOMAIN (type) == NULL_TREE);
+
+  if (undefined && flexible_array_member_type_p (type))
+    {
+      size = 0;
+      atype = true;
+    }
+
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
 
@@ -2072,6 +2106,8 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
     /* We make everything an array, to simplify any initialization
        emission.  */
     fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC "]", init_frag.remaining);
+  else if (atype)
+    fprintf (file, "[]");
 }
 
 /* Called when the initializer for a decl has been completely output through
@@ -2167,7 +2203,7 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
   tree size = DECL_SIZE_UNIT (decl);
   nvptx_assemble_decl_begin (file, name, section_for_decl (decl),
 			     TREE_TYPE (decl), size ? tree_to_shwi (size) : 0,
-			     DECL_ALIGN (decl));
+			     DECL_ALIGN (decl), true);
   nvptx_assemble_decl_end ();
 }
 
@@ -3969,7 +4005,9 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   while (true)
     {
       /* Find first insn of from block.  */
-      while (head != BB_END (from) && !INSN_P (head))
+      while (head != BB_END (from)
+	     && (!INSN_P (head)
+		 || recog_memoized (head) == CODE_FOR_nvptx_barsync))
 	head = NEXT_INSN (head);
 
       if (from == to)
@@ -4018,6 +4056,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	{
 	default:
 	  break;
+	case CODE_FOR_nvptx_barsync:
 	case CODE_FOR_nvptx_fork:
 	case CODE_FOR_nvptx_forked:
 	case CODE_FOR_nvptx_joining:
@@ -4040,6 +4079,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   /* Insert the vector test inside the worker test.  */
   unsigned mode;
   rtx_insn *before = tail;
+  rtx_insn *neuter_start = NULL;
   for (mode = GOMP_DIM_WORKER; mode <= GOMP_DIM_VECTOR; mode++)
     if (GOMP_DIM_MASK (mode) & skip_mask)
       {
@@ -4057,7 +4097,10 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	  br = gen_br_true (pred, label);
 	else
 	  br = gen_br_true_uni (pred, label);
-	emit_insn_before (br, head);
+	if (neuter_start)
+	  neuter_start = emit_insn_after (br, neuter_start);
+	else
+	  neuter_start = emit_insn_before (br, head);
 
 	LABEL_NUSES (label)++;
 	if (tail_branch)
@@ -4275,8 +4318,8 @@ nvptx_process_pars (parallel *par)
       nvptx_wpropagate (false, par->forked_block, par->forked_insn);
       nvptx_wpropagate (true, par->forked_block, par->fork_insn);
       /* Insert begin and end synchronizations.  */
-      emit_insn_after (nvptx_wsync (false), par->forked_insn);
-      emit_insn_before (nvptx_wsync (true), par->joining_insn);
+      emit_insn_before (nvptx_wsync (false), par->forked_insn);
+      emit_insn_before (nvptx_wsync (true), par->join_insn);
     }
   else if (par->mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR))
     nvptx_vpropagate (par->forked_block, par->forked_insn);
@@ -4419,13 +4462,14 @@ prevent_branch_around_nothing (void)
   rtx_insn *seen_label = NULL;
     for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
       {
-	if (seen_label == NULL)
+	if (INSN_P (insn) && condjump_p (insn))
 	  {
-	    if (INSN_P (insn) && condjump_p (insn))
-	      seen_label = label_ref_label (nvptx_condjump_label (insn, false));
-
+	    seen_label = label_ref_label (nvptx_condjump_label (insn, false));
 	    continue;
 	  }
+
+	if (seen_label == NULL)
+	  continue;
 
 	if (NOTE_P (insn) || DEBUG_INSN_P (insn))
 	  continue;

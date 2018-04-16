@@ -858,7 +858,7 @@ test02()
   standard library implementations.</para></listitem>
 
   <listitem><para><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stlport.org/">STLport</link>: STLport is a free
-  implementation of the C++ standard library derived from the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/">SGI implementation</link>, and
+  implementation of the C++ standard library derived from the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/">SGI implementation</link>, and
   ported to many other platforms. It includes a debug mode that uses a
   wrapper model (that in some ways inspired the libstdc++ debug mode
   design), although at the time of this writing the debug mode is

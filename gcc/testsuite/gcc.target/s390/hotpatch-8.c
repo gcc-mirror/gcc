@@ -2,6 +2,7 @@
 
 /* { dg-do compile { target { ! lp64 } } } */
 /* { dg-options "-mesa -march=g5 -Wno-deprecated -mhotpatch=0,3" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-O*" } } */
 
 #include <stdio.h>
 

@@ -132,6 +132,8 @@ vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
 
   if (is_gimple_assign (stmt)
       && (gimple_assign_cast_p (stmt)
+          || gimple_assign_rhs_code (stmt) == DOT_PROD_EXPR
+          || gimple_assign_rhs_code (stmt) == WIDEN_SUM_EXPR
           || gimple_assign_rhs_code (stmt) == WIDEN_MULT_EXPR
           || gimple_assign_rhs_code (stmt) == WIDEN_LSHIFT_EXPR
           || gimple_assign_rhs_code (stmt) == FLOAT_EXPR))
@@ -957,11 +959,11 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
   if (base_alignment < vector_alignment)
     {
-      tree base = drb->base_address;
-      if (TREE_CODE (base) == ADDR_EXPR)
-	base = TREE_OPERAND (base, 0);
-      if (!vect_can_force_dr_alignment_p (base,
-					  vector_alignment * BITS_PER_UNIT))
+      unsigned int max_alignment;
+      tree base = get_base_for_alignment (drb->base_address, &max_alignment);
+      if (max_alignment < vector_alignment
+	  || !vect_can_force_dr_alignment_p (base,
+					     vector_alignment * BITS_PER_UNIT))
 	{
 	  if (dump_enabled_p ())
 	    {

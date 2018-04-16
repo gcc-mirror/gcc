@@ -144,6 +144,17 @@ create_dispatcher_calls (struct cgraph_node *node)
 		  if (ref->referring->decl != resolver_decl)
 		    walk_gimple_stmt (&it, NULL, replace_function_decl, &wi);
 		}
+
+	      symtab_node *source = ref->referring;
+	      ref->remove_reference ();
+	      source->create_reference (inode, IPA_REF_ADDR);
+	    }
+	  else if (ref->use == IPA_REF_ALIAS)
+	    {
+	      symtab_node *source = ref->referring;
+	      ref->remove_reference ();
+	      source->create_reference (inode, IPA_REF_ALIAS);
+	      source->add_to_same_comdat_group (inode);
 	    }
 	  else
 	    gcc_unreachable ();

@@ -739,6 +739,9 @@ check_classfn (tree ctype, tree function, tree template_parms)
 void
 note_vague_linkage_fn (tree decl)
 {
+  if (processing_template_decl)
+    return;
+
   DECL_DEFER_OUTPUT (decl) = 1;
   vec_safe_push (deferred_fns, decl);
 }
@@ -1142,10 +1145,11 @@ is_late_template_attribute (tree attr, tree decl)
   if (is_attribute_p ("weak", name))
     return true;
 
-  /* Attributes used and unused are applied directly, as they appertain to
-     decls. */
-  if (is_attribute_p ("unused", name)
-      || is_attribute_p ("used", name))
+  /* Attributes used and unused are applied directly to typedefs for the
+     benefit of maybe_warn_unused_local_typedefs.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && (is_attribute_p ("unused", name)
+	  || is_attribute_p ("used", name)))
     return false;
 
   /* Attribute tls_model wants to modify the symtab.  */
@@ -1412,7 +1416,7 @@ cp_check_const_attributes (tree attributes)
 	{
 	  tree expr = TREE_VALUE (arg);
 	  if (EXPR_P (expr))
-	    TREE_VALUE (arg) = maybe_constant_value (expr);
+	    TREE_VALUE (arg) = fold_non_dependent_expr (expr);
 	}
     }
 }
@@ -1940,7 +1944,7 @@ vague_linkage_p (tree decl)
       if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
 	   || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
 	  && DECL_CHAIN (decl)
-	  && DECL_CLONED_FUNCTION (DECL_CHAIN (decl)))
+	  && DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)))
 	return vague_linkage_p (DECL_CHAIN (decl));
 
       gcc_checking_assert (!DECL_COMDAT (decl));
@@ -5198,6 +5202,12 @@ maybe_instantiate_decl (tree decl)
 bool
 mark_used (tree decl, tsubst_flags_t complain)
 {
+  /* If we're just testing conversions or resolving overloads, we
+     don't want any permanent effects like forcing functions to be
+     output or instantiating templates.  */
+  if ((complain & tf_conv))
+    return true;
+
   /* If DECL is a BASELINK for a single function, then treat it just
      like the DECL for the function.  Otherwise, if the BASELINK is
      for an overloaded function, we don't know which function was

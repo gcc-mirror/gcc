@@ -57,6 +57,6 @@ program SIMD3
 
   diff = sum - sum_ref
 
-  if (diff > EPS .or. -diff > EPS) call abort
+  if (diff > EPS .or. -diff > EPS) STOP 1
 
 end program

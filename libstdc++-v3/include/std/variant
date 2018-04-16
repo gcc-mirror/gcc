@@ -223,13 +223,17 @@ namespace __variant
 
   template<size_t _Np, typename _Union>
     constexpr decltype(auto) __get(in_place_index_t<_Np>, _Union&& __u)
-    { return __get(in_place_index<_Np-1>, std::forward<_Union>(__u)._M_rest); }
+    {
+      return __variant::__get(in_place_index<_Np-1>,
+			      std::forward<_Union>(__u)._M_rest);
+    }
 
   // Returns the typed storage for __v.
   template<size_t _Np, typename _Variant>
     constexpr decltype(auto) __get(_Variant&& __v)
     {
-      return __get(std::in_place_index<_Np>, std::forward<_Variant>(__v)._M_u);
+      return __variant::__get(std::in_place_index<_Np>,
+			      std::forward<_Variant>(__v)._M_u);
     }
 
   // Various functions as "vtable" entries, where those vtables are used by
@@ -268,8 +272,8 @@ namespace __variant
     constexpr bool \
     __erased_##__NAME(const _Variant& __lhs, const _Variant& __rhs) \
     { \
-      return __get<_Np>(std::forward<_Variant>(__lhs)) \
-	  __OP __get<_Np>(std::forward<_Variant>(__rhs)); \
+      return __variant::__get<_Np>(std::forward<_Variant>(__lhs)) \
+	  __OP __variant::__get<_Np>(std::forward<_Variant>(__rhs)); \
     }
 
   _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
@@ -358,10 +362,9 @@ namespace __variant
 
   template <typename... _Types>
   using __select_index =
-    typename __select_int::_Select_int_base<sizeof...(_Types)+1,
+    typename __select_int::_Select_int_base<sizeof...(_Types) + 1,
 					    unsigned char,
-					    unsigned short>
-    ::type::value_type;
+					    unsigned short>::type::value_type;
 
   template<typename... _Types>
     struct _Variant_storage<false, _Types...>
@@ -602,13 +605,14 @@ namespace __variant
 	    if (__rhs._M_valid())
 	      {
 		static constexpr void (*_S_vtable[])(void*, void*) =
-		  { &__erased_assign<_Types&, const _Types&>... };
-		_S_vtable[__rhs._M_index](this->_M_storage(), __rhs._M_storage());
+		  { &__erased_assign<_Types&, _Types&&>... };
+		_S_vtable[__rhs._M_index]
+		  (this->_M_storage(), __rhs._M_storage());
 	      }
 	  }
 	else
 	  {
-	    _Move_assign_base __tmp(__rhs);
+	    _Move_assign_base __tmp(std::move(__rhs));
 	    this->~_Move_assign_base();
 	    __try
 	      {
@@ -1303,6 +1307,12 @@ namespace __variant
       _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
 
 #undef _VARIANT_RELATION_FUNCTION_TEMPLATE
+
+#ifdef __clang__
+    public:
+      using _Base::_M_u; // See https://bugs.llvm.org/show_bug.cgi?id=31852
+    private:
+#endif
 
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto) __detail::__variant::__get(_Vp&& __v);

@@ -78,6 +78,8 @@ static const struct default_options nds32_option_optimization_table[] =
   { OPT_LEVELS_1_PLUS,            OPT_fsched_pressure,     NULL, 1 },
   /* Enable -fomit-frame-pointer by default at all optimization levels.  */
   { OPT_LEVELS_ALL,               OPT_fomit_frame_pointer, NULL, 1 },
+  /* Enable -mrelax-hint by default at all optimization levels.  */
+  { OPT_LEVELS_ALL,               OPT_mrelax_hint,         NULL, 1 },
   /* Enable -mv3push by default at -Os, but it is useless under V2 ISA.  */
   { OPT_LEVELS_SIZE,              OPT_mv3push,             NULL, 1 },
 
@@ -105,6 +107,8 @@ static const struct default_options nds32_option_optimization_table[] =
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS		\
   (TARGET_CPU_DEFAULT				\
+   | TARGET_DEFAULT_FPU_ISA			\
+   | TARGET_DEFAULT_FPU_FMA			\
    | MASK_16_BIT				\
    | MASK_EXT_PERF				\
    | MASK_EXT_PERF2				\

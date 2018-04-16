@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-additional-options "-w -fpermissive -Wno-psabi" }
+// { dg-additional-options "-w -Wno-psabi" }
 // { dg-additional-options "-mavx" { target x86_64-*-* i?86-*-* } }
 
 typedef double __m256d __attribute__ ((__vector_size__ (32), __may_alias__));
@@ -30,7 +30,7 @@ struct Foo {
 template<typename Tx>  
 __attribute__((__always_inline__)) inline void inlineFunc(Tx hx[]) {
     Tx x = hx[0], y = hx[1];
-    Tx lam[1] = (x*y);
+    Tx lam[1] = {(x*y)};
 }
 
 void FooBarFunc () {

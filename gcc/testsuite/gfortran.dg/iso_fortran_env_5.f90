@@ -22,5 +22,5 @@ if (STAT_LOCKED == STAT_UNLOCKED) STOP 5
 
 end
 
-! { dg-final { scan-tree-dump-times "abort" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_stop" 0 "original" } }
 

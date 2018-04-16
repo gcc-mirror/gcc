@@ -1948,30 +1948,35 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      && (!FLOAT_TYPE_P (type) || flag_associative_math))
  (for plusminus (plus minus)
   (simplify
-   (plusminus (mult:cs @0 @1) (mult:cs @0 @2))
-   (if (!ANY_INTEGRAL_TYPE_P (type)
-        || TYPE_OVERFLOW_WRAPS (type)
-        || (INTEGRAL_TYPE_P (type)
-	    && tree_expr_nonzero_p (@0)
-	    && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
+   (plusminus (mult:cs@3 @0 @1) (mult:cs@4 @0 @2))
+   (if ((!ANY_INTEGRAL_TYPE_P (type)
+	 || TYPE_OVERFLOW_WRAPS (type)
+	 || (INTEGRAL_TYPE_P (type)
+	     && tree_expr_nonzero_p (@0)
+	     && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
+	/* If @1 +- @2 is constant require a hard single-use on either
+	   original operand (but not on both).  */
+	&& (single_use (@3) || single_use (@4)))
     (mult (plusminus @1 @2) @0)))
   /* We cannot generate constant 1 for fract.  */
   (if (!ALL_FRACT_MODE_P (TYPE_MODE (type)))
    (simplify
-    (plusminus @0 (mult:cs @0 @2))
-    (if (!ANY_INTEGRAL_TYPE_P (type)
-	 || TYPE_OVERFLOW_WRAPS (type)
-	 || (INTEGRAL_TYPE_P (type)
-	     && tree_expr_nonzero_p (@0)
-	     && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
+    (plusminus @0 (mult:c@3 @0 @2))
+    (if ((!ANY_INTEGRAL_TYPE_P (type)
+	  || TYPE_OVERFLOW_WRAPS (type)
+	  || (INTEGRAL_TYPE_P (type)
+	      && tree_expr_nonzero_p (@0)
+	      && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
+	 && single_use (@3))
      (mult (plusminus { build_one_cst (type); } @2) @0)))
    (simplify
-    (plusminus (mult:cs @0 @2) @0)
-    (if (!ANY_INTEGRAL_TYPE_P (type)
-	 || TYPE_OVERFLOW_WRAPS (type)
-	 || (INTEGRAL_TYPE_P (type)
-	     && tree_expr_nonzero_p (@0)
-	     && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
+    (plusminus (mult:c@3 @0 @2) @0)
+    (if ((!ANY_INTEGRAL_TYPE_P (type)
+	  || TYPE_OVERFLOW_WRAPS (type)
+	  || (INTEGRAL_TYPE_P (type)
+	      && tree_expr_nonzero_p (@0)
+	      && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
+	 && single_use (@3))
      (mult (plusminus @2 { build_one_cst (type); }) @0))))))
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
@@ -3695,7 +3700,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (neeq @0 @1)
   (if (POINTER_TYPE_P (TREE_TYPE (@0))
        && ptrs_compare_unequal (@0, @1))
-   { neeq == EQ_EXPR ? boolean_false_node : boolean_true_node; })))
+   { constant_boolean_node (neeq != EQ_EXPR, type); })))
 
 /* PR70920: Transform (intptr_t)x eq/ne CST to x eq/ne (typeof x) CST.
    and (typeof ptr_cst) x eq/ne ptr_cst to x eq/ne (typeof x) CST.
@@ -4001,6 +4006,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* pow(C,x) -> exp(log(C)*x) if C > 0,
     or if C is a positive power of 2,
     pow(C,x) -> exp2(log2(C)*x).  */
+#if GIMPLE
  (for pows (POW)
       exps (EXP)
       logs (LOG)
@@ -4030,8 +4036,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 }
      }
      (if (!use_exp2)
-      (exps (mult (logs @0) @1))
+      (if (optimize_pow_to_exp (@0, @1))
+       (exps (mult (logs @0) @1)))
       (exp2s (mult (log2s @0) @1)))))))
+#endif
 
  /* pow(C,x)*expN(y) -> expN(logN(C)*x+y) if C > 0.  */
  (for pows (POW)
@@ -4642,7 +4650,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         { build_constructor (type, NULL); }
 	(if (count == 1)
 	 (if (elt < CONSTRUCTOR_NELTS (ctor))
-	  { CONSTRUCTOR_ELT (ctor, elt)->value; }
+	  (view_convert { CONSTRUCTOR_ELT (ctor, elt)->value; })
 	  { build_zero_cst (type); })
 	 {
 	   vec<constructor_elt, va_gc> *vals;
@@ -4660,7 +4668,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(if (CONSTRUCTOR_NELTS (ctor) <= idx / const_k)
 	 { build_zero_cst (type); })
 	(if (n == const_k)
-	 { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; })
+	 (view_convert { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; }))
 	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; }
 		       @1 { bitsize_int ((idx % const_k) * width); })))))))))
 

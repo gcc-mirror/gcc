@@ -1662,9 +1662,9 @@ cleanup:
 static bool
 find_substring_ref (gfc_expr *p, gfc_expr **newp)
 {
-  int end;
-  int start;
-  int length;
+  gfc_charlen_t end;
+  gfc_charlen_t start;
+  gfc_charlen_t length;
   gfc_char_t *chr;
 
   if (p->ref->u.ss.start->expr_type != EXPR_CONSTANT
@@ -1674,9 +1674,12 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
   *newp = gfc_copy_expr (p);
   free ((*newp)->value.character.string);
 
-  end = (int) mpz_get_ui (p->ref->u.ss.end->value.integer);
-  start = (int) mpz_get_ui (p->ref->u.ss.start->value.integer);
-  length = end - start + 1;
+  end = (gfc_charlen_t) mpz_get_ui (p->ref->u.ss.end->value.integer);
+  start = (gfc_charlen_t) mpz_get_ui (p->ref->u.ss.start->value.integer);
+  if (end >= start)
+    length = end - start + 1;
+  else
+    length = 0;
 
   chr = (*newp)->value.character.string = gfc_get_wide_string (length + 1);
   (*newp)->value.character.length = length;

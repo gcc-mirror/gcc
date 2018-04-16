@@ -502,14 +502,17 @@ scale_loop_frequencies (struct loop *loop, profile_probability p)
 
 /* Scale profile in LOOP by P.
    If ITERATION_BOUND is non-zero, scale even further if loop is predicted
-   to iterate too many times.  */
+   to iterate too many times.
+   Before caling this function, preheader block profile should be already
+   scaled to final count.  This is necessary because loop iterations are
+   determined by comparing header edge count to latch ege count and thus
+   they need to be scaled synchronously.  */
 
 void
 scale_loop_profile (struct loop *loop, profile_probability p,
 		    gcov_type iteration_bound)
 {
-  gcov_type iterations = expected_loop_iterations_unbounded (loop);
-  edge e;
+  edge e, preheader_e;
   edge_iterator ei;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -517,28 +520,45 @@ scale_loop_profile (struct loop *loop, profile_probability p,
       fprintf (dump_file, ";; Scaling loop %i with scale ",
 	       loop->num);
       p.dump (dump_file);
-      fprintf (dump_file, " bounding iterations to %i from guessed %i\n",
-	       (int)iteration_bound, (int)iterations);
+      fprintf (dump_file, " bounding iterations to %i\n",
+	       (int)iteration_bound);
+    }
+
+  /* Scale the probabilities.  */
+  scale_loop_frequencies (loop, p);
+
+  if (iteration_bound == 0)
+    return;
+
+  gcov_type iterations = expected_loop_iterations_unbounded (loop, NULL, true);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, ";; guessed iterations after scaling %i\n",
+	       (int)iterations);
     }
 
   /* See if loop is predicted to iterate too many times.  */
-  if (iteration_bound && iterations > 0
-      && p.apply (iterations) > iteration_bound)
-    {
-      /* Fixing loop profile for different trip count is not trivial; the exit
-	 probabilities has to be updated to match and frequencies propagated down
-	 to the loop body.
+  if (iterations <= iteration_bound)
+    return;
 
-	 We fully update only the simple case of loop with single exit that is
-	 either from the latch or BB just before latch and leads from BB with
-	 simple conditional jump.   This is OK for use in vectorizer.  */
+  preheader_e = loop_preheader_edge (loop);
+
+  /* We could handle also loops without preheaders, but bounding is
+     currently used only by optimizers that have preheaders constructed.  */
+  gcc_checking_assert (preheader_e);
+  profile_count count_in = preheader_e->count ();
+
+  if (count_in > profile_count::zero ()
+      && loop->header->count.initialized_p ())
+    {
+      profile_count count_delta = profile_count::zero ();
+
       e = single_exit (loop);
       if (e)
 	{
 	  edge other_e;
-	  profile_count count_delta;
-
-          FOR_EACH_EDGE (other_e, ei, e->src->succs)
+	  FOR_EACH_EDGE (other_e, ei, e->src->succs)
 	    if (!(other_e->flags & (EDGE_ABNORMAL | EDGE_FAKE))
 		&& e != other_e)
 	      break;
@@ -546,52 +566,54 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 	  /* Probability of exit must be 1/iterations.  */
 	  count_delta = e->count ();
 	  e->probability = profile_probability::always ()
-				.apply_scale (1, iteration_bound);
+				    .apply_scale (1, iteration_bound);
 	  other_e->probability = e->probability.invert ();
-	  count_delta -= e->count ();
 
-	  /* If latch exists, change its count, since we changed
-	     probability of exit.  Theoretically we should update everything from
-	     source of exit edge to latch, but for vectorizer this is enough.  */
-	  if (loop->latch
-	      && loop->latch != e->src)
+	  /* In code below we only handle the following two updates.  */
+	  if (other_e->dest != loop->header
+	      && other_e->dest != loop->latch
+	      && (dump_file && (dump_flags & TDF_DETAILS)))
 	    {
-	      loop->latch->count += count_delta;
+	      fprintf (dump_file, ";; giving up on update of paths from "
+		       "exit condition to latch\n");
 	    }
 	}
+      else
+        if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf (dump_file, ";; Loop has multiple exit edges; "
+	      		      "giving up on exit condition update\n");
 
       /* Roughly speaking we want to reduce the loop body profile by the
 	 difference of loop iterations.  We however can do better if
 	 we look at the actual profile, if it is available.  */
-      p = p.apply_scale (iteration_bound, iterations);
+      p = profile_probability::always ();
 
-      if (loop->header->count.initialized_p ())
-	{
-	  profile_count count_in = profile_count::zero ();
-
-	  FOR_EACH_EDGE (e, ei, loop->header->preds)
-	    if (e->src != loop->latch)
-	      count_in += e->count ();
-
-	  if (count_in > profile_count::zero () )
-	    {
-	      p = count_in.probability_in (loop->header->count.apply_scale
-						 (iteration_bound, 1));
-	    }
-	}
+      count_in = count_in.apply_scale (iteration_bound, 1);
+      p = count_in.probability_in (loop->header->count);
       if (!(p > profile_probability::never ()))
 	p = profile_probability::very_unlikely ();
+
+      if (p == profile_probability::always ()
+	  || !p.initialized_p ())
+	return;
+
+      /* If latch exists, change its count, since we changed
+	 probability of exit.  Theoretically we should update everything from
+	 source of exit edge to latch, but for vectorizer this is enough.  */
+      if (loop->latch && loop->latch != e->src)
+	loop->latch->count += count_delta;
+
+      /* Scale the probabilities.  */
+      scale_loop_frequencies (loop, p);
+
+      /* Change latch's count back.  */
+      if (loop->latch && loop->latch != e->src)
+	loop->latch->count -= count_delta;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, ";; guessed iterations are now %i\n",
+		 (int)expected_loop_iterations_unbounded (loop, NULL, true));
     }
-
-  if (p >= profile_probability::always ()
-      || !p.initialized_p ())
-    return;
-
-  /* Scale the actual probabilities.  */
-  scale_loop_frequencies (loop, p);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, ";; guessed iterations are now %i\n",
-	     (int)expected_loop_iterations_unbounded (loop));
 }
 
 /* Recompute dominance information for basic blocks outside LOOP.  */
@@ -1494,7 +1516,9 @@ create_preheader (struct loop *loop, int flags)
 
   mfb_kj_edge = loop_latch_edge (loop);
   latch_edge_was_fallthru = (mfb_kj_edge->flags & EDGE_FALLTHRU) != 0;
-  if (nentry == 1)
+  if (nentry == 1
+      && ((flags & CP_FALLTHRU_PREHEADERS) == 0
+  	  || (single_entry->flags & EDGE_CROSSING) == 0))
     dummy = split_edge (single_entry);
   else
     {

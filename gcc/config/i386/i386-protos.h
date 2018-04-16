@@ -254,6 +254,8 @@ extern void i386_pe_asm_output_aligned_decl_common (FILE *, tree,
 						    HOST_WIDE_INT,
 						    HOST_WIDE_INT);
 extern void i386_pe_file_end (void);
+extern void i386_pe_asm_lto_start (void);
+extern void i386_pe_asm_lto_end (void);
 extern void i386_pe_start_function (FILE *, const char *, tree);
 extern void i386_pe_end_function (FILE *, const char *, tree);
 extern void i386_pe_end_cold_function (FILE *, const char *, tree);

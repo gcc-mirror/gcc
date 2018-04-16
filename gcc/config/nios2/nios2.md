@@ -298,9 +298,10 @@
   }
   "(nios2_large_constant_memory_operand_p (operands[0]) 
     || nios2_large_constant_memory_operand_p (operands[1])
-    || (nios2_large_constant_p (operands[1]) 
-        && !SMALL_INT_UNSIGNED (INTVAL (operands[1]))
-	&& !UPPER16_INT (INTVAL (operands[1]))))"
+    || (nios2_large_constant_p (operands[1])
+        && !(CONST_INT_P (operands[1])
+	     && (SMALL_INT_UNSIGNED (INTVAL (operands[1]))
+	     	 || UPPER16_INT (INTVAL (operands[1]))))))"
   [(set (match_dup 0) (match_dup 1))]
   {
     if (nios2_large_constant_memory_operand_p (operands[0]))

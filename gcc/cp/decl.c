@@ -1232,8 +1232,11 @@ check_redeclaration_exception_specification (tree new_decl,
       && UNEVALUATED_NOEXCEPT_SPEC_P (old_exceptions))
     return;
 
-  maybe_instantiate_noexcept (new_decl);
-  maybe_instantiate_noexcept (old_decl);
+  if (!type_dependent_expression_p (old_decl))
+    {
+      maybe_instantiate_noexcept (new_decl);
+      maybe_instantiate_noexcept (old_decl);
+    }
   new_exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (new_decl));
   old_exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old_decl));
 
@@ -5090,7 +5093,7 @@ start_decl (const cp_declarator *declarator,
     }
 
   /* If #pragma weak was used, mark the decl weak now.  */
-  if (!processing_template_decl)
+  if (!processing_template_decl && !DECL_DECOMPOSITION_P (decl))
     maybe_apply_pragma_weak (decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
@@ -5415,12 +5418,15 @@ check_array_designated_initializer (constructor_elt *ce,
 						  ce->index, true);
       if (ce_index
 	  && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (ce_index))
-	  && (TREE_CODE (ce_index = maybe_constant_value (ce_index))
+	  && (TREE_CODE (ce_index = fold_non_dependent_expr (ce_index))
 	      == INTEGER_CST))
 	{
 	  /* A C99 designator is OK if it matches the current index.  */
 	  if (wi::to_wide (ce_index) == index)
-	    return true;
+	    {
+	      ce->index = ce_index;
+	      return true;
+	    }
 	  else
 	    sorry ("non-trivial designated initializers not supported");
 	}
@@ -5463,11 +5469,17 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	  constructor_elt *ce;
 	  HOST_WIDE_INT i;
 	  FOR_EACH_VEC_SAFE_ELT (v, i, ce)
-	    if (!check_array_designated_initializer (ce, i))
-	      failure = 1;
+	    {
+	      if (instantiation_dependent_expression_p (ce->index))
+		return;
+	      if (!check_array_designated_initializer (ce, i))
+		failure = 1;
+	    }
 	}
 
-      if (!failure)
+      if (failure)
+	TREE_TYPE (decl) = error_mark_node;
+      else
 	{
 	  failure = cp_complete_array_type (&TREE_TYPE (decl), initializer,
 					    do_default);
@@ -5885,8 +5897,17 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    return error_mark_node;
 
 	  if (TREE_CODE (d->cur->index) == FIELD_DECL)
-	    /* We already reshaped this.  */
-	    gcc_assert (d->cur->index == field);
+	    {
+	      /* We already reshaped this.  */
+	      if (field != d->cur->index)
+		{
+		  tree id = DECL_NAME (d->cur->index);
+		  gcc_assert (id);
+		  gcc_checking_assert (d->cur->index
+				       == get_class_binding (type, id, false));
+		  field = d->cur->index;
+		}
+	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
 	    field = get_class_binding (type, d->cur->index, false);
 	  else
@@ -6912,11 +6933,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
     }
 
-  if (ensure_literal_type_for_constexpr_object (decl)
-      == error_mark_node)
+  if (ensure_literal_type_for_constexpr_object (decl) == error_mark_node)
     {
       DECL_DECLARED_CONSTEXPR_P (decl) = 0;
-      return;
+      if (VAR_P (decl) && DECL_CLASS_SCOPE_P (decl))
+	{
+	  init = NULL_TREE;
+	  DECL_EXTERNAL (decl) = 1;
+	}
     }
 
   if (VAR_P (decl)
@@ -6996,7 +7020,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (!VAR_P (decl) || type_dependent_p)
 	/* We can't do anything if the decl has dependent type.  */;
       else if (!init && is_concept_var (decl))
-        error ("variable concept has no initializer");
+	{
+	  error ("variable concept has no initializer");
+	  init = boolean_true_node;
+	}
       else if (init
 	       && init_const_expr_p
 	       && TREE_CODE (type) != REFERENCE_TYPE
@@ -7025,7 +7052,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
 
       if (init)
-	DECL_INITIAL (decl) = init;
+	{
+	  if (TREE_CODE (init) == TREE_LIST)
+	    lookup_list_keep (init, true);
+	  DECL_INITIAL (decl) = init;
+	}
       if (dep_init)
 	{
 	  retrofit_lang_decl (decl);
@@ -7301,9 +7332,9 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
 	inform (DECL_SOURCE_LOCATION (field), "declared here");
 	return error_mark_node;
       }
-    else if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
+    else if (!accessible_p (type, field, true))
       {
-	error_at (loc, "cannot decompose non-public member %qD of %qT",
+	error_at (loc, "cannot decompose inaccessible member %qD of %qT",
 		  field, type);
 	inform (DECL_SOURCE_LOCATION (field),
 		TREE_PRIVATE (field)
@@ -7411,7 +7442,27 @@ get_tuple_decomp_init (tree decl, unsigned i)
 
   tree fns = lookup_qualified_name (TREE_TYPE (e), get_id,
 				    /*type*/false, /*complain*/false);
-  if (fns != error_mark_node)
+  bool use_member_get = false;
+
+  /* To use a member get, member lookup must find at least one
+     declaration that is a function template
+     whose first template parameter is a non-type parameter.  */
+  for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns)); iter; ++iter)
+    {
+      tree fn = *iter;
+      if (TREE_CODE (fn) == TEMPLATE_DECL)
+	{
+	  tree tparms = DECL_TEMPLATE_PARMS (fn);
+	  tree parm = TREE_VEC_ELT (INNERMOST_TEMPLATE_PARMS (tparms), 0);
+	  if (TREE_CODE (TREE_VALUE (parm)) == PARM_DECL)
+	    {
+	      use_member_get = true;
+	      break;
+	    }
+	}
+    }
+
+  if (use_member_get)
     {
       fns = lookup_template_function (fns, targs);
       return build_new_method_call (e, fns, /*args*/NULL,
@@ -7462,6 +7513,7 @@ cp_maybe_mangle_decomp (tree decl, tree first, unsigned int count)
       for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
 	v[count - i - 1] = d;
       SET_DECL_ASSEMBLER_NAME (decl, mangle_decomp (decl, v));
+      maybe_apply_pragma_weak (decl);
     }
 }
 
@@ -7707,6 +7759,9 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
       error_at (loc, "cannot decompose lambda closure type %qT", type);
       goto error_out;
     }
+  else if (processing_template_decl && !COMPLETE_TYPE_P (type))
+    pedwarn (loc, 0, "structured binding refers to incomplete class type %qT",
+	     type);
   else
     {
       tree btype = find_decomp_class_base (loc, type, NULL_TREE);
@@ -8926,6 +8981,13 @@ grokfndecl (tree ctype,
 		warning (0, "floating point suffix %qs"
 			    " shadowed by implementation", suffix);
 	    }
+	  /* 17.6.3.3.5  */
+	  if (suffix[0] != '_'
+	      && !in_system_header_at (DECL_SOURCE_LOCATION (decl))
+	      && !current_function_decl && !(friendp && !funcdef_flag))
+	    warning (OPT_Wliteral_suffix,
+		     "literal operator suffixes not preceded by %<_%>"
+		     " are reserved for future standardization");
 	}
       else
 	{
@@ -9505,9 +9567,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 
   if (!type_dependent_expression_p (size))
     {
-      tree type = TREE_TYPE (size);
-
-      size = mark_rvalue_use (size);
+      osize = size = mark_rvalue_use (size);
 
       if (cxx_dialect < cxx11 && TREE_CODE (size) == NOP_EXPR
 	  && TREE_SIDE_EFFECTS (size))
@@ -9516,29 +9576,8 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       else
 	{
 	  size = instantiate_non_dependent_expr_sfinae (size, complain);
-
-	  if (CLASS_TYPE_P (type)
-	      && CLASSTYPE_LITERAL_P (type))
-	    {
-	      size = build_expr_type_conversion (WANT_INT, size, true);
-	      if (!size)
-		{
-		  if (!(complain & tf_error))
-		    return error_mark_node;
-		  if (name)
-		    error ("size of array %qD has non-integral type %qT",
-			   name, type);
-		  else
-		    error ("size of array has non-integral type %qT", type);
-		  size = integer_one_node;
-		}
-	      if (size == error_mark_node)
-		return error_mark_node;
-	      type = TREE_TYPE (size);
-	    }
-
-	  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
-	    size = maybe_constant_value (size);
+	  size = build_converted_constant_expr (size_type_node, size, complain);
+	  size = maybe_constant_value (size);
 
 	  if (!TREE_CONSTANT (size))
 	    size = osize;
@@ -9548,6 +9587,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	return error_mark_node;
 
       /* The array bound must be an integer type.  */
+      tree type = TREE_TYPE (size);
       if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
 	{
 	  if (!(complain & tf_error))
@@ -9557,7 +9597,6 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	  else
 	    error ("size of array has non-integral type %qT", type);
 	  size = integer_one_node;
-	  type = TREE_TYPE (size);
 	}
     }
 
@@ -9595,15 +9634,12 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
   /* Normally, the array-bound will be a constant.  */
   if (TREE_CODE (size) == INTEGER_CST)
     {
-      /* Check to see if the array bound overflowed.  Make that an
-	 error, no matter how generous we're being.  */
-      constant_expression_error (size);
-
       /* An array must have a positive number of elements.  */
-      if (tree_int_cst_lt (size, integer_zero_node))
+      if (!valid_constant_size_p (size))
 	{
 	  if (!(complain & tf_error))
 	    return error_mark_node;
+
 	  if (name)
 	    error ("size of array %qD is negative", name);
 	  else
@@ -10448,7 +10484,7 @@ grokdeclarator (const cp_declarator *declarator,
      suppress reports of deprecated items.  */
   if (type && TREE_DEPRECATED (type)
       && deprecated_state != DEPRECATED_SUPPRESS)
-    warn_deprecated_use (type, NULL_TREE);
+    cp_warn_deprecated_use (type);
   if (type && TREE_CODE (type) == TYPE_DECL)
     {
       typedef_decl = type;
@@ -10456,7 +10492,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (TREE_DEPRECATED (type)
 	  && DECL_ARTIFICIAL (typedef_decl)
 	  && deprecated_state != DEPRECATED_SUPPRESS)
-	warn_deprecated_use (type, NULL_TREE);
+	cp_warn_deprecated_use (type);
     }
   /* No type at all: default to `int', and set DEFAULTED_INT
      because it was not a user-defined typedef.  */
@@ -10957,10 +10993,10 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (declspecs->std_attributes)
     {
-      /* Apply the c++11 attributes to the type preceding them.  */
-      input_location = declspecs->locations[ds_std_attribute];
-      decl_attributes (&type, declspecs->std_attributes, 0);
-      input_location = saved_loc;
+      location_t attr_loc = declspecs->locations[ds_std_attribute];
+      if (warning_at (attr_loc, OPT_Wattributes, "attribute ignored"))
+	inform (attr_loc, "an attribute that appertains to a type-specifier "
+		"is ignored");
     }
 
   /* Determine the type of the entity declared by recurring on the
@@ -11098,20 +11134,29 @@ grokdeclarator (const cp_declarator *declarator,
 			       name, type);
 			return error_mark_node;
 		      }
-		    if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+		    tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
+		    if (!tmpl)
+		      if (tree late_auto = type_uses_auto (late_return_type))
+			tmpl = CLASS_PLACEHOLDER_TEMPLATE (late_auto);
+		    if (tmpl)
 		      {
-			if (!late_return_type)
+			if (!dguide_name_p (unqualified_id))
 			  {
-			    if (dguide_name_p (unqualified_id))
-			      error_at (declarator->id_loc, "deduction guide "
-					"for %qT must have trailing return "
-					"type", TREE_TYPE (tmpl));
-			    else
-			      error_at (declarator->id_loc, "deduced class "
-					"type %qT in function return type",
-					type);
+			    error_at (declarator->id_loc, "deduced class "
+				      "type %qD in function return type",
+				      DECL_NAME (tmpl));
 			    inform (DECL_SOURCE_LOCATION (tmpl),
 				    "%qD declared here", tmpl);
+			    return error_mark_node;
+			  }
+			else if (!late_return_type)
+			  {
+			    error_at (declarator->id_loc, "deduction guide "
+				      "for %qT must have trailing return "
+				      "type", TREE_TYPE (tmpl));
+			    inform (DECL_SOURCE_LOCATION (tmpl),
+				    "%qD declared here", tmpl);
+			    return error_mark_node;
 			  }
 			else if (CLASS_TYPE_P (late_return_type)
 				 && CLASSTYPE_TEMPLATE_INFO (late_return_type)
@@ -11271,8 +11316,18 @@ grokdeclarator (const cp_declarator *declarator,
 		  explicitp = 2;
 	      }
 
-	    arg_types = grokparms (declarator->u.function.parameters,
-				   &parms);
+	    tree pushed_scope = NULL_TREE;
+	    if (funcdecl_p
+		&& decl_context != FIELD
+		&& inner_declarator->u.id.qualifying_scope
+		&& CLASS_TYPE_P (inner_declarator->u.id.qualifying_scope))
+	      pushed_scope
+		= push_scope (inner_declarator->u.id.qualifying_scope);
+
+	    arg_types = grokparms (declarator->u.function.parameters, &parms);
+
+	    if (pushed_scope)
+	      pop_scope (pushed_scope);
 
 	    if (inner_declarator
 		&& inner_declarator->kind == cdk_id
@@ -11725,15 +11780,16 @@ grokdeclarator (const cp_declarator *declarator,
       if (reqs)
 	error_at (location_of (reqs), "requires-clause on typedef");
 
+      if (id_declarator && declarator->u.id.qualifying_scope)
+	{
+	  error ("typedef name may not be a nested-name-specifier");
+	  type = error_mark_node;
+	}
+
       if (decl_context == FIELD)
 	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
       else
 	decl = build_decl (input_location, TYPE_DECL, unqualified_id, type);
-      if (id_declarator && declarator->u.id.qualifying_scope) {
-	error_at (DECL_SOURCE_LOCATION (decl), 
-		  "typedef name may not be a nested-name-specifier");
-	TREE_TYPE (decl) = error_mark_node;
-      }
 
       if (decl_context != FIELD)
 	{
@@ -12799,7 +12855,7 @@ grokparms (tree parmlist, tree *parms)
 	    {
 	      tree deptype = type_is_deprecated (type);
 	      if (deptype)
-		warn_deprecated_use (deptype, NULL_TREE);
+		cp_warn_deprecated_use (deptype);
 	    }
 
 	  /* Top-level qualifiers on the parameters are

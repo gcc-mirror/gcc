@@ -5903,8 +5903,13 @@ dwarf2out_register_external_die (tree decl, const char *sym,
     }
   else
     ctx = DECL_CONTEXT (decl);
+  /* Peel types in the context stack.  */
   while (ctx && TYPE_P (ctx))
     ctx = TYPE_CONTEXT (ctx);
+  /* Likewise namespaces in case we do not want to emit DIEs for them.  */
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    while (ctx && TREE_CODE (ctx) == NAMESPACE_DECL)
+      ctx = DECL_CONTEXT (ctx);
   if (ctx)
     {
       if (TREE_CODE (ctx) == BLOCK)
@@ -10027,17 +10032,21 @@ maybe_gen_llsym (dw_loc_list_ref list)
   gen_llsym (list);
 }
 
-/* Determine whether or not to skip loc_list entry CURR.  If we're not
+/* Determine whether or not to skip loc_list entry CURR.  If SIZEP is
+   NULL, don't consider size of the location expression.  If we're not
    to skip it, and SIZEP is non-null, store the size of CURR->expr's
    representation in *SIZEP.  */
 
 static bool
-skip_loc_list_entry (dw_loc_list_ref curr, unsigned long *sizep = 0)
+skip_loc_list_entry (dw_loc_list_ref curr, unsigned long *sizep = NULL)
 {
   /* Don't output an entry that starts and ends at the same address.  */
   if (strcmp (curr->begin, curr->end) == 0
       && curr->vbegin == curr->vend && !curr->force)
     return true;
+
+  if (!sizep)
+    return false;
 
   unsigned long size = size_of_locs (curr->expr);
 
@@ -10048,8 +10057,7 @@ skip_loc_list_entry (dw_loc_list_ref curr, unsigned long *sizep = 0)
   if (dwarf_version < 5 && size > 0xffff)
     return true;
 
-  if (sizep)
-    *sizep = size;
+  *sizep = size;
 
   return false;
 }
@@ -10116,7 +10124,9 @@ output_loc_list (dw_loc_list_ref list_head)
       for (dw_loc_list_ref curr = list_head; curr != NULL;
 	   curr = curr->dw_loc_next)
 	{
-	  if (skip_loc_list_entry (curr))
+	  unsigned long size;
+
+	  if (skip_loc_list_entry (curr, &size))
 	    continue;
 
 	  vcount++;
@@ -19591,6 +19601,8 @@ rtl_for_decl_init (tree init, tree type)
       if (is_int_mode (TYPE_MODE (enttype), &mode)
 	  && GET_MODE_SIZE (mode) == 1
 	  && domain
+	  && TYPE_MAX_VALUE (domain)
+	  && TREE_CODE (TYPE_MAX_VALUE (domain)) == INTEGER_CST
 	  && integer_zerop (TYPE_MIN_VALUE (domain))
 	  && compare_tree_int (TYPE_MAX_VALUE (domain),
 			       TREE_STRING_LENGTH (init) - 1) == 0
@@ -19878,6 +19890,7 @@ rtl_for_decl_location (tree decl)
      in the current CU, resolve_addr will remove the expression referencing
      it.  */
   if (rtl == NULL_RTX
+      && !(early_dwarf && (flag_generate_lto || flag_generate_offload))
       && VAR_P (decl)
       && !DECL_EXTERNAL (decl)
       && TREE_STATIC (decl)
@@ -28392,14 +28405,6 @@ init_sections_and_labels (bool early_lto_debug)
 	  debug_macinfo_section = get_section (debug_macinfo_section_name,
 					       SECTION_DEBUG
 					       | SECTION_EXCLUDE, NULL);
-	  /* For macro info we have to refer to a debug_line section, so
-	     similar to split-dwarf emit a skeleton one for early debug.  */
-	  debug_skeleton_line_section
-	    = get_section (DEBUG_LTO_LINE_SECTION,
-			   SECTION_DEBUG | SECTION_EXCLUDE, NULL);
-	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
-				       DEBUG_SKELETON_LINE_SECTION_LABEL,
-				       generation);
 	}
       else
 	{
@@ -28446,6 +28451,13 @@ init_sections_and_labels (bool early_lto_debug)
 					       SECTION_DEBUG | SECTION_EXCLUDE,
 					       NULL);
 	}
+      /* For macro info and the file table we have to refer to a
+	 debug_line section.  */
+      debug_line_section = get_section (DEBUG_LTO_LINE_SECTION,
+					SECTION_DEBUG | SECTION_EXCLUDE, NULL);
+      ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
+				   DEBUG_LINE_SECTION_LABEL, generation);
+
       debug_str_section = get_section (DEBUG_LTO_STR_SECTION,
 				       DEBUG_STR_SECTION_FLAGS
 				       | SECTION_EXCLUDE, NULL);
@@ -30879,7 +30891,14 @@ index_location_lists (dw_die_ref die)
         for (curr = list; curr != NULL; curr = curr->dw_loc_next)
           {
             /* Don't index an entry that has already been indexed
-               or won't be output.  */
+	       or won't be output.  Make sure skip_loc_list_entry doesn't
+	       call size_of_locs, because that might cause circular dependency,
+	       index_location_lists requiring address table indexes to be
+	       computed, but adding new indexes through add_addr_table_entry
+	       and address table index computation requiring no new additions
+	       to the hash table.  In the rare case of DWARF[234] >= 64KB
+	       location expression, we'll just waste unused address table entry
+	       for it.  */
             if (curr->begin_entry != NULL
                 || skip_loc_list_entry (curr))
               continue;
@@ -31037,7 +31056,8 @@ dwarf2out_finish (const char *)
       /* Reset die CU symbol so we don't output it twice.  */
       comp_unit_die ()->die_id.die_symbol = NULL;
 
-      /* Remove DW_AT_macro from the early output.  */
+      /* Remove DW_AT_macro and DW_AT_stmt_list from the early output.  */
+      remove_AT (comp_unit_die (), DW_AT_stmt_list);
       if (have_macinfo)
 	remove_AT (comp_unit_die (), DEBUG_MACRO_ATTRIBUTE);
 
@@ -31673,6 +31693,7 @@ static void
 dwarf2out_early_finish (const char *filename)
 {
   set_early_dwarf s;
+  char dl_section_ref[MAX_ARTIFICIAL_LABEL_BYTES];
 
   /* PCH might result in DW_AT_producer string being restored from the
      header compilation, so always fill it with empty string initially
@@ -31799,7 +31820,11 @@ dwarf2out_early_finish (const char *filename)
   early_dwarf_finished = true;
 
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
-  if (!flag_generate_lto && !flag_generate_offload)
+  if ((!flag_generate_lto && !flag_generate_offload)
+      /* FIXME: Disable debug info generation for PE-COFF targets since the
+	 copy_lto_debug_sections operation of the simple object support in
+	 libiberty is not implemented for them yet.  */
+      || TARGET_PECOFF)
     return;
 
   /* Now as we are going to output for LTO initialize sections and labels
@@ -31820,6 +31845,15 @@ dwarf2out_early_finish (const char *filename)
   for (comdat_type_node *ctnode = comdat_type_list;
        ctnode != NULL; ctnode = ctnode->next)
     add_sibling_attributes (ctnode->root_die);
+
+  /* AIX Assembler inserts the length, so adjust the reference to match the
+     offset expected by debuggers.  */
+  strcpy (dl_section_ref, debug_line_section_label);
+  if (XCOFF_DEBUGGING_INFO)
+    strcat (dl_section_ref, DWARF_INITIAL_LENGTH_SIZE_STR);
+
+  if (debug_info_level >= DINFO_LEVEL_TERSE)
+    add_AT_lineptr (comp_unit_die (), DW_AT_stmt_list, dl_section_ref);
 
   if (have_macinfo)
     add_AT_macptr (comp_unit_die (), DEBUG_MACRO_ATTRIBUTE,
@@ -31887,13 +31921,8 @@ dwarf2out_early_finish (const char *filename)
 
       switch_to_section (debug_macinfo_section);
       ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
-      output_macinfo (debug_skeleton_line_section_label, true);
+      output_macinfo (debug_line_section_label, true);
       dw2_asm_output_data (1, 0, "End compilation unit");
-
-      /* Emit a skeleton debug_line section.  */
-      switch_to_section (debug_skeleton_line_section);
-      ASM_OUTPUT_LABEL (asm_out_file, debug_skeleton_line_section_label);
-      output_line_info (true);
 
       if (flag_fat_lto_objects)
 	{
@@ -31902,6 +31931,10 @@ dwarf2out_early_finish (const char *filename)
 	}
     }
 
+  /* Emit a skeleton debug_line section.  */
+  switch_to_section (debug_line_section);
+  ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
+  output_line_info (true);
 
   /* If we emitted any indirect strings, output the string table too.  */
   if (debug_str_hash || skeleton_debug_str_hash)

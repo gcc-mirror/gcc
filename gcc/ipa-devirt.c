@@ -2702,6 +2702,24 @@ free_polymorphic_call_targets_hash ()
     }
 }
 
+/* Force rebuilding type inheritance graph from scratch.
+   This is use to make sure that we do not keep references to types
+   which was not visible to free_lang_data.  */
+
+void
+rebuild_type_inheritance_graph ()
+{
+  if (!odr_hash)
+    return;
+  delete odr_hash;
+  if (in_lto_p)
+    delete odr_vtable_hash;
+  odr_hash = NULL;
+  odr_vtable_hash = NULL;
+  odr_types_ptr = NULL;
+  free_polymorphic_call_targets_hash ();
+}
+
 /* When virtual function is removed, we may need to flush the cache.  */
 
 static void

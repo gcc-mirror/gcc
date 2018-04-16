@@ -2502,6 +2502,7 @@ cselib_record_sets (rtx_insn *insn)
   rtx body = PATTERN (insn);
   rtx cond = 0;
   int n_sets_before_autoinc;
+  int n_strict_low_parts = 0;
   struct cselib_record_autoinc_data data;
 
   body = PATTERN (insn);
@@ -2556,6 +2557,7 @@ cselib_record_sets (rtx_insn *insn)
   for (i = 0; i < n_sets; i++)
     {
       rtx dest = sets[i].dest;
+      rtx orig = dest;
 
       /* A STRICT_LOW_PART can be ignored; we'll record the equivalence for
          the low part after invalidating any knowledge about larger modes.  */
@@ -2580,6 +2582,55 @@ cselib_record_sets (rtx_insn *insn)
 	    }
 	  else
 	    sets[i].dest_addr_elt = 0;
+	}
+
+      /* Improve handling of STRICT_LOW_PART if the current value is known
+	 to be const0_rtx, then the low bits will be set to dest and higher
+	 bits will remain zero.  Used in code like:
+
+	 {di:SI=0;clobber flags:CC;}
+	 flags:CCNO=cmp(bx:SI,0)
+	 strict_low_part(di:QI)=flags:CCNO<=0
+
+	 where we can note both that di:QI=flags:CCNO<=0 and
+	 also that because di:SI is known to be 0 and strict_low_part(di:QI)
+	 preserves the upper bits that di:SI=zero_extend(flags:CCNO<=0).  */
+      scalar_int_mode mode;
+      if (dest != orig
+	  && cselib_record_sets_hook
+	  && REG_P (dest)
+	  && HARD_REGISTER_P (dest)
+	  && is_a <scalar_int_mode> (GET_MODE (dest), &mode)
+	  && n_sets + n_strict_low_parts < MAX_SETS)
+	{
+	  opt_scalar_int_mode wider_mode_iter;
+	  FOR_EACH_WIDER_MODE (wider_mode_iter, mode)
+	    {
+	      scalar_int_mode wider_mode = wider_mode_iter.require ();
+	      if (GET_MODE_PRECISION (wider_mode) > BITS_PER_WORD)
+		break;
+
+	      rtx reg = gen_lowpart (wider_mode, dest);
+	      if (!REG_P (reg))
+		break;
+
+	      cselib_val *v = cselib_lookup (reg, wider_mode, 0, VOIDmode);
+	      if (!v)
+		continue;
+
+	      struct elt_loc_list *l;
+	      for (l = v->locs; l; l = l->next)
+		if (l->loc == const0_rtx)
+		  break;
+
+	      if (!l)
+		continue;
+
+	      sets[n_sets + n_strict_low_parts].dest = reg;
+	      sets[n_sets + n_strict_low_parts].src = dest;
+	      sets[n_sets + n_strict_low_parts++].src_elt = sets[i].src_elt;
+	      break;
+	    }
 	}
     }
 
@@ -2624,6 +2675,20 @@ cselib_record_sets (rtx_insn *insn)
       if (REG_P (dest)
 	  || (MEM_P (dest) && cselib_record_memory))
 	cselib_record_set (dest, sets[i].src_elt, sets[i].dest_addr_elt);
+    }
+
+  /* And deal with STRICT_LOW_PART.  */
+  for (i = 0; i < n_strict_low_parts; i++)
+    {
+      if (! PRESERVED_VALUE_P (sets[n_sets + i].src_elt->val_rtx))
+	continue;
+      machine_mode dest_mode = GET_MODE (sets[n_sets + i].dest);
+      cselib_val *v
+	= cselib_lookup (sets[n_sets + i].dest, dest_mode, 1, VOIDmode);
+      cselib_preserve_value (v);
+      rtx r = gen_rtx_ZERO_EXTEND (dest_mode,
+				   sets[n_sets + i].src_elt->val_rtx);
+      cselib_add_permanent_equiv (v, r, insn);
     }
 }
 

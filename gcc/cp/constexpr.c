@@ -657,7 +657,7 @@ get_function_named_in_call (tree t)
    return value if suitable, error_mark_node for a statement not allowed in
    a constexpr function, or NULL_TREE if no return value was found.  */
 
-static tree
+tree
 constexpr_fn_retval (tree body)
 {
   switch (TREE_CODE (body))
@@ -1171,7 +1171,10 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   /* Don't fold __builtin_constant_p within a constexpr function.  */
   bool bi_const_p = (DECL_FUNCTION_CODE (fun) == BUILT_IN_CONSTANT_P);
 
+  /* If we aren't requiring a constant expression, defer __builtin_constant_p
+     in a constexpr function until we have values for the parameters.  */
   if (bi_const_p
+      && ctx->quiet
       && current_function_decl
       && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
     {
@@ -1186,8 +1189,14 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   bool dummy1 = false, dummy2 = false;
   for (i = 0; i < nargs; ++i)
     {
-      args[i] = cxx_eval_constant_expression (&new_ctx, CALL_EXPR_ARG (t, i),
-					      false, &dummy1, &dummy2);
+      args[i] = CALL_EXPR_ARG (t, i);
+      /* If builtin_valid_in_constant_expr_p is true,
+	 potential_constant_expression_1 has not recursed into the arguments
+	 of the builtin, verify it here.  */
+      if (!builtin_valid_in_constant_expr_p (fun)
+	  || potential_constant_expression (args[i]))
+	args[i] = cxx_eval_constant_expression (&new_ctx, args[i], false,
+						&dummy1, &dummy2);
       if (bi_const_p)
 	/* For __built_in_constant_p, fold all expressions with constant values
 	   even if they aren't C++ constant-expressions.  */
@@ -1764,6 +1773,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 bool
 reduced_constant_expression_p (tree t)
 {
+  if (t == NULL_TREE)
+    return false;
+
   switch (TREE_CODE (t))
     {
     case PTRMEM_CST:
@@ -1785,9 +1797,8 @@ reduced_constant_expression_p (tree t)
 	field = NULL_TREE;
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, idx, val)
 	{
-	  if (!val)
-	    /* We're in the middle of initializing this element.  */
-	    return false;
+	  /* If VAL is null, we're in the middle of initializing this
+	     element.  */
 	  if (!reduced_constant_expression_p (val))
 	    return false;
 	  if (field)
@@ -2873,14 +2884,20 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (index))));
 	  changed = true;
 	}
-      else if (new_ctx.ctor != ctx->ctor)
-	{
-	  /* We appended this element above; update the value.  */
-	  gcc_assert ((*p)->last().index == index);
-	  (*p)->last().value = elt;
-	}
       else
-	CONSTRUCTOR_APPEND_ELT (*p, index, elt);
+	{
+	  if (new_ctx.ctor != ctx->ctor)
+	    {
+	      /* We appended this element above; update the value.  */
+	      gcc_assert ((*p)->last().index == index);
+	      (*p)->last().value = elt;
+	    }
+	  else
+	    CONSTRUCTOR_APPEND_ELT (*p, index, elt);
+	  /* Adding or replacing an element might change the ctor's flags.  */
+	  TREE_CONSTANT (ctx->ctor) = constant_p;
+	  TREE_SIDE_EFFECTS (ctx->ctor) = side_effects_p;
+	}
     }
   if (*non_constant_p || !changed)
     return t;
@@ -4106,7 +4123,15 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       /* We ask for an rvalue for the RESULT_DECL when indirecting
 	 through an invisible reference, or in named return value
 	 optimization.  */
-      return (*ctx->values->get (t));
+      if (tree *p = ctx->values->get (t))
+	return *p;
+      else
+	{
+	  if (!ctx->quiet)
+	    error ("%qE is not a constant expression", t);
+	  *non_constant_p = true;
+	}
+      break;
 
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
@@ -4530,11 +4555,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  /* Don't re-process a constant CONSTRUCTOR, but do fold it to
 	     VECTOR_CST if applicable.  */
-	  /* FIXME after GCC 6 branches, make the verify unconditional.  */
-	  if (CHECKING_P)
-	    verify_constructor_flags (t);
-	  else
-	    recompute_constructor_flags (t);
+	  verify_constructor_flags (t);
 	  if (TREE_CONSTANT (t))
 	    return fold (t);
 	}
@@ -5757,6 +5778,25 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		      "cast to non-integral type %qT in a constant expression",
 		      TREE_TYPE (t));
 	  return false;
+	}
+      /* This might be a conversion from a class to a (potentially) literal
+	 type.  Let's consider it potentially constant since the conversion
+	 might be a constexpr user-defined conversion.  */
+      else if (cxx_dialect >= cxx11
+	       && (dependent_type_p (TREE_TYPE (t))
+		   || !COMPLETE_TYPE_P (TREE_TYPE (t))
+		   || literal_type_p (TREE_TYPE (t)))
+	       && TREE_OPERAND (t, 0))
+	{
+	  tree type = TREE_TYPE (TREE_OPERAND (t, 0));
+	  /* If this is a dependent type, it could end up being a class
+	     with conversions.  */
+	  if (type == NULL_TREE || WILDCARD_TYPE_P (type))
+	    return true;
+	  /* Or a non-dependent class which has conversions.  */
+	  else if (CLASS_TYPE_P (type)
+		   && (TYPE_HAS_CONVERSION (type) || dependent_scope_p (type)))
+	    return true;
 	}
 
       return (RECUR (TREE_OPERAND (t, 0),

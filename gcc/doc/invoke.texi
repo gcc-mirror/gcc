@@ -1076,10 +1076,16 @@ See RS/6000 and PowerPC Options.
 -mprioritize-restricted-insns=@var{priority} @gol
 -msched-costly-dep=@var{dependence_type} @gol
 -minsert-sched-nops=@var{scheme} @gol
--mcall-sysv  -mcall-netbsd @gol
+-mcall-aixdesc  -mcall-eabi  -mcall-freebsd  @gol
+-mcall-linux  -mcall-netbsd  -mcall-openbsd  @gol
+-mcall-sysv  -mcall-sysv-eabi  -mcall-sysv-noeabi @gol
+-mtraceback=@var{traceback_type} @gol
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=@var{abi-type}  -msecure-plt  -mbss-plt @gol
 -mblock-move-inline-limit=@var{num} @gol
+-mblock-compare-inline-limit=@var{num} @gol
+-mblock-compare-inline-loop-limit=@var{num} @gol
+-mstring-compare-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
 -misel=yes  -misel=no @gol
 -mpaired @gol
@@ -1095,7 +1101,7 @@ See RS/6000 and PowerPC Options.
 -mpointers-to-nested-functions  -mno-pointers-to-nested-functions @gol
 -msave-toc-indirect  -mno-save-toc-indirect @gol
 -mpower8-fusion  -mno-mpower8-fusion  -mpower8-vector  -mno-power8-vector @gol
--mcrypto  -mno-crypto  -mhtm  -mno-htm  -mdirect-move  -mno-direct-move @gol
+-mcrypto  -mno-crypto  -mhtm  -mno-htm @gol
 -mquad-memory  -mno-quad-memory @gol
 -mquad-memory-atomic  -mno-quad-memory-atomic @gol
 -mcompat-align-parm  -mno-compat-align-parm @gol
@@ -6825,13 +6831,16 @@ the call writes the terminating NUL into @code{a[4]}, the copies overlap and
 the call is diagnosed.
 
 @smallexample
-struct foo
+void foo (void)
 @{
   char a[] = "abcd1234";
   strcpy (a, a + 4);
-@};
+  @dots{}
+@}
 @end smallexample
-The @option{-Wrestrict} is included in @option{-Wall}.
+The @option{-Wrestrict} option detects some instances of simple overlap
+even without optimization but works best at @option{-O2} and above.  It
+is included in @option{-Wall}.
 
 @item -Wnested-externs @r{(C and Objective-C only)}
 @opindex Wnested-externs
@@ -7777,7 +7786,7 @@ heuristically decides which functions are simple enough to be worth integrating
 in this way.  This inlining applies to all functions, even those not declared
 inline.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -findirect-inlining
 @opindex findirect-inlining
@@ -7786,7 +7795,7 @@ time thanks to previous inlining.  This option has any effect only
 when inlining itself is turned on by the @option{-finline-functions}
 or @option{-finline-small-functions} options.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -finline-functions
 @opindex finline-functions
@@ -7798,7 +7807,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at level @option{-O3}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -finline-functions-called-once
 @opindex finline-functions-called-once
@@ -8710,7 +8719,7 @@ default at @option{-O} and higher.
 @item -ftree-builtin-call-dce
 @opindex ftree-builtin-call-dce
 Perform conditional dead code elimination (DCE) for calls to built-in functions
-that may set @code{errno} but are otherwise side-effect free.  This flag is
+that may set @code{errno} but are otherwise free of side effects.  This flag is
 enabled by default at @option{-O2} and higher if @option{-Os} is not also
 specified.
 
@@ -8999,7 +9008,7 @@ Inline parts of functions.  This option has any effect only
 when inlining itself is turned on by the @option{-finline-functions}
 or @option{-finline-small-functions} options.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fpredictive-commoning
 @opindex fpredictive-commoning
@@ -9040,9 +9049,9 @@ if (snprintf (buf, "%08x", i) >= sizeof buf)
 @end smallexample
 
 The @option{-fprintf-return-value} option relies on other optimizations
-and yields best results with @option{-O2}.  It works in tandem with the
-@option{-Wformat-overflow} and @option{-Wformat-truncation} options.
-The @option{-fprintf-return-value} option is enabled by default.
+and yields best results with @option{-O2} and above.  It works in tandem
+with the @option{-Wformat-overflow} and @option{-Wformat-truncation}
+options.  The @option{-fprintf-return-value} option is enabled by default.
 
 @item -fno-peephole
 @itemx -fno-peephole2
@@ -9106,7 +9115,7 @@ sections.  When @option{-fsplit-stack} is used this option is not
 enabled by default (to avoid linker errors), but may be enabled
 explicitly (if using a working linker).
 
-Enabled for x86 at levels @option{-O2}, @option{-O3}.
+Enabled for x86 at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -freorder-functions
 @opindex freorder-functions
@@ -9483,9 +9492,8 @@ strict version check, so bytecode files generated in one version of
 GCC do not work with an older or newer version of GCC.
 
 Link-time optimization does not work well with generation of debugging
-information.  Combining @option{-flto} with
-@option{-g} is currently experimental and expected to produce unexpected
-results.
+information on systems other than those using a combination of ELF and
+DWARF.
 
 If you specify the optional @var{n}, the optimization and code
 generation done at link time is executed in parallel using @var{n}
@@ -9564,6 +9572,11 @@ need to support linker plugins to allow a full-featured build environment
 (capable of building static libraries etc).  GCC provides the @command{gcc-ar},
 @command{gcc-nm}, @command{gcc-ranlib} wrappers to pass the right options
 to these tools. With non fat LTO makefiles need to be modified to use them.
+
+Note that modern binutils provide plugin auto-load mechanism.
+Installing the linker plugin into @file{$libdir/bfd-plugins} has the same
+effect as usage of the command wrappers (@command{gcc-ar}, @command{gcc-nm} and
+@command{gcc-ranlib}).
 
 The default is @option{-fno-fat-lto-objects} on targets with linker plugin
 support.
@@ -14224,8 +14237,8 @@ not overridden} will do.
 @opindex fcompare-debug-second
 This option is implicitly passed to the compiler for the second
 compilation requested by @option{-fcompare-debug}, along with options to
-silence warnings, and omitting other options that would cause
-side-effect compiler outputs to files or to the standard output.  Dump
+silence warnings, and omitting other options that would cause the compiler
+to produce output to files or to standard output as a side effect.  Dump
 files and preserved temporary files are renamed so as to contain the
 @code{.gk} additional extension during the second compilation, to avoid
 overwriting those generated by the first.
@@ -20966,7 +20979,7 @@ Work around certain SB-1 CPU core errata.
 @item -mr10k-cache-barrier=@var{setting}
 @opindex mr10k-cache-barrier
 Specify whether GCC should insert cache barriers to avoid the
-side-effects of speculation on R10K processors.
+side effects of speculation on R10K processors.
 
 In common with many processors, the R10K tries to predict the outcome
 of a conditional branch and speculatively executes instructions from
@@ -23346,7 +23359,7 @@ following options:
 -mpopcntb -mpopcntd  -mpowerpc64 @gol
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
--mcrypto -mdirect-move -mhtm -mpower8-fusion -mpower8-vector @gol
+-mcrypto -mhtm -mpower8-fusion -mpower8-vector @gol
 -mquad-memory -mquad-memory-atomic -mfloat128 -mfloat128-hardware}
 
 The particular options set for any particular CPU varies between
@@ -23487,14 +23500,6 @@ more direct access to the VSX instruction set.
 Enable the use (disable) of the built-in functions that allow direct
 access to the cryptographic instructions that were added in version
 2.07 of the PowerPC ISA.
-
-@item -mdirect-move
-@itemx -mno-direct-move
-@opindex mdirect-move
-@opindex mno-direct-move
-Generate code that uses (does not use) the instructions to move data
-between the general purpose registers and the vector/scalar (VSX)
-registers that were added in version 2.07 of the PowerPC ISA.
 
 @item -mhtm
 @itemx -mno-htm
@@ -23947,6 +23952,11 @@ NetBSD operating system.
 On System V.4 and embedded PowerPC systems compile code for the
 OpenBSD operating system.
 
+@item -mtraceback=@var{traceback_type}
+@opindex mtraceback
+Select the type of traceback table. Valid values for @var{traceback_type}
+are @samp{full}, @samp{part}, and @samp{no}.
+
 @item -maix-struct-return
 @opindex maix-struct-return
 Return all structures in memory (as specified by the AIX ABI)@.
@@ -23962,16 +23972,6 @@ Extend the current ABI with a particular extension, or remove such extension.
 Valid values are @samp{altivec}, @samp{no-altivec}, @samp{spe},
 @samp{no-spe}, @samp{ibmlongdouble}, @samp{ieeelongdouble},
 @samp{elfv1}, @samp{elfv2}@.
-
-@item -mabi=spe
-@opindex mabi=spe
-Extend the current ABI with SPE ABI extensions.  This does not change
-the default ABI, instead it adds the SPE ABI extensions to the current
-ABI@.
-
-@item -mabi=no-spe
-@opindex mabi=no-spe
-Disable Book-E SPE ABI extensions for the current ABI@.
 
 @item -mabi=ibmlongdouble
 @opindex mabi=ibmlongdouble
@@ -24134,6 +24134,31 @@ Inline all block moves (such as calls to @code{memcpy} or structure
 copies) less than or equal to @var{num} bytes.  The minimum value for
 @var{num} is 32 bytes on 32-bit targets and 64 bytes on 64-bit
 targets.  The default value is target-specific.
+
+@item -mblock-compare-inline-limit=@var{num}
+@opindex mblock-compare-inline-limit
+Generate non-looping inline code for all block compares (such as calls
+to @code{memcmp} or structure compares) less than or equal to @var{num}
+bytes. If @var{num} is 0, all inline expansion (non-loop and loop) of
+block compare is disabled. The default value is target-specific.
+
+@item -mblock-compare-inline-loop-limit=@var{num}
+@opindex mblock-compare-inline-loop-limit
+Generate an inline expansion using loop code for all block compares that
+are less than or equal to @var{num} bytes, but greater than the limit
+for non-loop inline block compare expansion. If the block length is not
+constant, at most @var{num} bytes will be compared before @code{memcmp}
+is called to compare the remainder of the block. The default value is
+target-specific.
+
+@item -mstring-compare-inline-limit=@var{num}
+@opindex mstring-compare-inline-limit
+Generate at most @var{num} pairs of load instructions to compare the
+string inline. If the difference or end of string is not found at the
+end of the inline compare a call to @code{strcmp} or @code{strncmp} will
+take care of the rest of the comparison. The default is 8 pairs of
+loads, which will compare 64 bytes on a 64-bit target and 32 bytes on a
+32-bit target.
 
 @item -G @var{num}
 @opindex G
@@ -26440,6 +26465,9 @@ the result might not run on different machines).  Using @option{-mtune=native}
 produces code optimized for the local machine under the constraints
 of the selected instruction set.  
 
+@item x86-64
+A generic CPU with 64-bit extensions.
+
 @item i386
 Original Intel i386 CPU@.
 
@@ -26550,14 +26578,14 @@ AVX5124VNNIW, AVX5124FMAPS and AVX512VPOPCNTDQ instruction set support.
 Intel Skylake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
 BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
-AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
+CLWB, AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
 
 @item cannonlake
 Intel Cannonlake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
 RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
-AVX512IFMA, SHA, CLWB and UMIP instruction set support.
+AVX512IFMA, SHA and UMIP instruction set support.
 
 @item icelake-client
 Intel Icelake Client CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
@@ -27893,9 +27921,9 @@ You can control this behavior for a specific function by using the
 function attribute @code{indirect_branch}.  @xref{Function Attributes}.
 
 Note that @option{-mcmodel=large} is incompatible with
-@option{-mindirect-branch=thunk} nor
+@option{-mindirect-branch=thunk} and
 @option{-mindirect-branch=thunk-extern} since the thunk function may
-not be reachable in large code model.
+not be reachable in the large code model.
 
 Note that @option{-mindirect-branch=thunk-extern} is incompatible with
 @option{-fcf-protection=branch} and @option{-fcheck-pointer-bounds}
@@ -27914,9 +27942,9 @@ using the function attribute @code{function_return}.
 @xref{Function Attributes}.
 
 Note that @option{-mcmodel=large} is incompatible with
-@option{-mfunction-return=thunk} nor
+@option{-mfunction-return=thunk} and
 @option{-mfunction-return=thunk-extern} since the thunk function may
-not be reachable in large code model.
+not be reachable in the large code model.
 
 
 @item -mindirect-branch-register

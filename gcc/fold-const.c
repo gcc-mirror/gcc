@@ -115,7 +115,7 @@ static tree negate_expr (tree);
 static tree associate_trees (location_t, tree, tree, enum tree_code, tree);
 static enum comparison_code comparison_to_compcode (enum tree_code);
 static enum tree_code compcode_to_comparison (enum comparison_code);
-static int twoval_comparison_p (tree, tree *, tree *, int *);
+static int twoval_comparison_p (tree, tree *, tree *);
 static tree eval_subst (location_t, tree, tree, tree, tree, tree);
 static tree optimize_bit_field_compare (location_t, enum tree_code,
 					tree, tree, tree);
@@ -3479,7 +3479,8 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	      if (tsi_end_p (tsi1) && tsi_end_p (tsi2))
 		return 1;
 	      if (!operand_equal_p (tsi_stmt (tsi1), tsi_stmt (tsi2),
-				    OEP_LEXICOGRAPHIC))
+				    flags & (OEP_LEXICOGRAPHIC
+					     | OEP_NO_HASH_CHECK)))
 		return 0;
 	    }
 	}
@@ -3491,6 +3492,10 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case RETURN_EXPR:
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME_WITH_NULL (0);
+	  return 0;
+	case DEBUG_BEGIN_STMT:
+	  if (flags & OEP_LEXICOGRAPHIC)
+	    return 1;
 	  return 0;
 	default:
 	  return 0;
@@ -3544,13 +3549,12 @@ operand_equal_for_comparison_p (tree arg0, tree arg1)
    two different values, which will be stored in *CVAL1 and *CVAL2; if
    they are nonzero it means that some operands have already been found.
    No variables may be used anywhere else in the expression except in the
-   comparisons.  If SAVE_P is true it means we removed a SAVE_EXPR around
-   the expression and save_expr needs to be called with CVAL1 and CVAL2.
+   comparisons.  
 
    If this is true, return 1.  Otherwise, return zero.  */
 
 static int
-twoval_comparison_p (tree arg, tree *cval1, tree *cval2, int *save_p)
+twoval_comparison_p (tree arg, tree *cval1, tree *cval2)
 {
   enum tree_code code = TREE_CODE (arg);
   enum tree_code_class tclass = TREE_CODE_CLASS (code);
@@ -3563,39 +3567,23 @@ twoval_comparison_p (tree arg, tree *cval1, tree *cval2, int *save_p)
 	       || code == COMPOUND_EXPR))
     tclass = tcc_binary;
 
-  else if (tclass == tcc_expression && code == SAVE_EXPR
-	   && ! TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
-    {
-      /* If we've already found a CVAL1 or CVAL2, this expression is
-	 two complex to handle.  */
-      if (*cval1 || *cval2)
-	return 0;
-
-      tclass = tcc_unary;
-      *save_p = 1;
-    }
-
   switch (tclass)
     {
     case tcc_unary:
-      return twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2, save_p);
+      return twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2);
 
     case tcc_binary:
-      return (twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2, save_p)
-	      && twoval_comparison_p (TREE_OPERAND (arg, 1),
-				      cval1, cval2, save_p));
+      return (twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2)
+	      && twoval_comparison_p (TREE_OPERAND (arg, 1), cval1, cval2));
 
     case tcc_constant:
       return 1;
 
     case tcc_expression:
       if (code == COND_EXPR)
-	return (twoval_comparison_p (TREE_OPERAND (arg, 0),
-				     cval1, cval2, save_p)
-		&& twoval_comparison_p (TREE_OPERAND (arg, 1),
-					cval1, cval2, save_p)
-		&& twoval_comparison_p (TREE_OPERAND (arg, 2),
-					cval1, cval2, save_p));
+	return (twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2)
+		&& twoval_comparison_p (TREE_OPERAND (arg, 1), cval1, cval2)
+		&& twoval_comparison_p (TREE_OPERAND (arg, 2), cval1, cval2));
       return 0;
 
     case tcc_comparison:
@@ -7319,7 +7307,7 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
 	return 0;
       offset += res;
       if (offset >= len)
-	return offset;
+	return (off == -1 && i < count - 1) ? 0 : offset;
       if (off != -1)
 	off = 0;
     }
@@ -8776,9 +8764,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
   if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg0) != INTEGER_CST)
     {
       tree cval1 = 0, cval2 = 0;
-      int save_p = 0;
 
-      if (twoval_comparison_p (arg0, &cval1, &cval2, &save_p)
+      if (twoval_comparison_p (arg0, &cval1, &cval2)
 	  /* Don't handle degenerate cases here; they should already
 	     have been handled anyway.  */
 	  && cval1 != 0 && cval2 != 0
@@ -8851,12 +8838,6 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 		  return omit_one_operand_loc (loc, type, integer_one_node, arg0);
 		}
 
-	      if (save_p)
-		{
-		  tem = save_expr (build2 (code, type, cval1, cval2));
-		  protected_set_expr_location (tem, loc);
-		  return tem;
-		}
 	      return fold_build2_loc (loc, code, type, cval1, cval2);
 	    }
 	}
