@@ -35,7 +35,7 @@ if ![info exists DEFAULT_CFLAGS] then {
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
 
 set SAVRES_TEST_OPTS [list -Os -O2 {-Os -mno-multiple} {-O2 -mno-multiple}]
