@@ -1,3 +1,8 @@
+2018-04-16  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/83660
+	* gcc.target/powerpc/pr83660.C: New test.
+
 2018-04-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85403
