@@ -1,6 +1,16 @@
 2018-04-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
+	2017-11-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_can_use_return_insn_p): Use reference
+	of struct ix86_frame.
+	(ix86_initial_elimination_offset): Likewise.
+	(ix86_expand_split_stack_prologue): Likewise.
+
+2018-04-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
 	2017-10-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82499
