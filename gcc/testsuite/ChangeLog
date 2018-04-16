@@ -1,3 +1,10 @@
+2018-04-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR testsuite/85326
+	* g++.dg/ext/undef-bool-1.C: New file.
+	* gcc.target/powerpc/powerpc.exp: Remove .C support.
+	* gcc.target/powerpc/undef-bool-1.C: Remove file.
+
 2018-04-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/85293
