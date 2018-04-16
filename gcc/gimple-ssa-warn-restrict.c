@@ -308,10 +308,16 @@ builtin_memref::extend_offset_range (tree offset)
   if (TREE_CODE (offset) == SSA_NAME)
     {
       wide_int min, max;
-      if (get_range_info (offset, &min, &max))
+      value_range_type rng = get_range_info_as_value_range (offset, &min, &max);
+      if (rng == VR_RANGE)
 	{
 	  offrange[0] += offset_int::from (min, SIGNED);
 	  offrange[1] += offset_int::from (max, SIGNED);
+	}
+      else if (rng == VR_ANTI_RANGE)
+	{
+	  offrange[0] += offset_int::from (max + 1, SIGNED);
+	  offrange[1] += offset_int::from (min - 1, SIGNED);
 	}
       else
 	{
