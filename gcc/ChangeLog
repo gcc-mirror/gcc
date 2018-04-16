@@ -1,3 +1,10 @@
+2018-04-16  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/83660
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Mark
+	vec_extract expression as having side effects to make sure it gets
+	a cleanup point.
+
 2018-04-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85403
@@ -20,7 +27,7 @@
 	PROCESSOR_SKYLAKE-AVX512.
 	* gcc/config/i386/i386.h (processor_costs): Define TARGET_SKYLAKE.
 	(processor_type): Add PROCESSOR_SKYLAKE.
-	
+
 2018-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
