@@ -1623,6 +1623,9 @@ nested_anon_class_index (tree type)
 	  ++index;
       }
 
+  if (seen_error ())
+    return -1;
+
   gcc_unreachable ();
 }
 

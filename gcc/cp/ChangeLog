@@ -1,3 +1,10 @@
+2018-04-16  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/85039
+	* parser.c (cp_parser_builtin_offset): Reject type definitions.
+	* mangle.c (nested_anon_class_index): Avoid crash returning -1
+	if we've seen errors.
+
 2018-04-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85385
