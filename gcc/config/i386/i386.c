@@ -144,6 +144,7 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_SILVERMONT (HOST_WIDE_INT_1U<<PROCESSOR_SILVERMONT)
 #define m_KNL (HOST_WIDE_INT_1U<<PROCESSOR_KNL)
 #define m_KNM (HOST_WIDE_INT_1U<<PROCESSOR_KNM)
+#define m_SKYLAKE (HOST_WIDE_INT_1U<<PROCESSOR_SKYLAKE)
 #define m_SKYLAKE_AVX512 (HOST_WIDE_INT_1U<<PROCESSOR_SKYLAKE_AVX512)
 #define m_CANNONLAKE (HOST_WIDE_INT_1U<<PROCESSOR_CANNONLAKE)
 #define m_ICELAKE_CLIENT (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_CLIENT)
@@ -859,6 +860,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
   {"knl", &slm_cost, 16, 15, 16, 7, 16},
   {"knm", &slm_cost, 16, 15, 16, 7, 16},
+  {"skylake", &skylake_cost, 16, 10, 16, 10, 16},
   {"skylake-avx512", &skylake_cost, 16, 10, 16, 10, 16},
   {"cannonlake", &skylake_cost, 16, 10, 16, 10, 16},
   {"icelake-client", &skylake_cost, 16, 10, 16, 10, 16},
@@ -3544,10 +3546,10 @@ ix86_option_override_internal (bool main_args_p,
       {"haswell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
       {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
       {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
-      {"skylake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE},
+      {"skylake", PROCESSOR_SKYLAKE, CPU_HASWELL, PTA_SKYLAKE},
       {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL,
         PTA_SKYLAKE_AVX512},
-      {"cannonlake", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_CANNONLAKE},
+      {"cannonlake", PROCESSOR_CANNONLAKE, CPU_HASWELL, PTA_CANNONLAKE},
       {"icelake-client", PROCESSOR_ICELAKE_CLIENT, CPU_HASWELL,
 	PTA_ICELAKE_CLIENT},
       {"icelake-server", PROCESSOR_ICELAKE_SERVER, CPU_HASWELL,
@@ -32369,27 +32371,31 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_AVX;
 	      break;
 	    case PROCESSOR_HASWELL:
-	    case PROCESSOR_SKYLAKE_AVX512:
-	      if (new_target->x_ix86_isa_flags
-			& OPTION_MASK_ISA_AVX512VBMI)
-		arg_str = "cannonlake";
-	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
-	        arg_str = "skylake-avx512";
-	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_XSAVES)
-	        arg_str = "skylake";
-	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_ADX)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_ADX)
 		arg_str = "broadwell";
 	      else
 		arg_str = "haswell";
 	      priority = P_PROC_AVX2;
 	      break;
+	    case PROCESSOR_SKYLAKE:
+	      arg_str = "skylake";
+	      priority = P_PROC_AVX2;
+	      break;
+	    case PROCESSOR_SKYLAKE_AVX512:
+	      arg_str = "skylake-avx512";
+	      priority = P_PROC_AVX512F;
+	      break;
+	    case PROCESSOR_CANNONLAKE:
+	      arg_str = "cannonlake";
+	      priority = P_PROC_AVX512F;
+	      break;
 	    case PROCESSOR_ICELAKE_CLIENT:
 	      arg_str = "icelake-client";
-	      priority = P_PROC_AVX2;
+	      priority = P_PROC_AVX512F;
 	      break;
 	    case PROCESSOR_ICELAKE_SERVER:
 	      arg_str = "icelake-server";
-	      priority = P_PROC_AVX2;
+	      priority = P_PROC_AVX512F;
 	      break;
 	    case PROCESSOR_BONNELL:
 	      arg_str = "bonnell";
