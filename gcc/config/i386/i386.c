@@ -2434,53 +2434,6 @@ struct GTY(()) stack_local_entry {
   struct stack_local_entry *next;
 };
 
-/* Structure describing stack frame layout.
-   Stack grows downward:
-
-   [arguments]
-					<- ARG_POINTER
-   saved pc
-
-   saved static chain			if ix86_static_chain_on_stack
-
-   saved frame pointer			if frame_pointer_needed
-					<- HARD_FRAME_POINTER
-   [saved regs]
-					<- regs_save_offset
-   [padding0]
-
-   [saved SSE regs]
-					<- sse_regs_save_offset
-   [padding1]          |
-		       |		<- FRAME_POINTER
-   [va_arg registers]  |
-		       |
-   [frame]	       |
-		       |
-   [padding2]	       | = to_allocate
-					<- STACK_POINTER
-  */
-struct ix86_frame
-{
-  int nsseregs;
-  int nregs;
-  int va_arg_size;
-  int red_zone_size;
-  int outgoing_arguments_size;
-
-  /* The offsets relative to ARG_POINTER.  */
-  HOST_WIDE_INT frame_pointer_offset;
-  HOST_WIDE_INT hard_frame_pointer_offset;
-  HOST_WIDE_INT stack_pointer_offset;
-  HOST_WIDE_INT hfp_save_offset;
-  HOST_WIDE_INT reg_save_offset;
-  HOST_WIDE_INT sse_reg_save_offset;
-
-  /* When save_regs_using_mov is set, emit prologue using
-     move instead of push instructions.  */
-  bool save_regs_using_mov;
-};
-
 /* Which cpu are we scheduling for.  */
 enum attr_cpu ix86_schedule;
 
@@ -2572,7 +2525,7 @@ static unsigned int ix86_function_arg_boundary (machine_mode,
 						const_tree);
 static rtx ix86_static_chain (const_tree, bool);
 static int ix86_function_regparm (const_tree, const_tree);
-static void ix86_compute_frame_layout (struct ix86_frame *);
+static void ix86_compute_frame_layout (void);
 static bool ix86_expand_vector_init_one_nonzero (bool, machine_mode,
 						 rtx, rtx, int);
 static void ix86_add_new_builtins (HOST_WIDE_INT);
@@ -10944,7 +10897,8 @@ ix86_can_use_return_insn_p (void)
   if (crtl->args.pops_args && crtl->args.size >= 32768)
     return 0;
 
-  ix86_compute_frame_layout (&frame);
+  ix86_compute_frame_layout ();
+  frame = cfun->machine->frame;
   return (frame.stack_pointer_offset == UNITS_PER_WORD
 	  && (frame.nregs + frame.nsseregs) == 0);
 }
@@ -11355,8 +11309,8 @@ ix86_can_eliminate (const int from, const int to)
 HOST_WIDE_INT
 ix86_initial_elimination_offset (int from, int to)
 {
-  struct ix86_frame frame;
-  ix86_compute_frame_layout (&frame);
+  ix86_compute_frame_layout ();
+  struct ix86_frame frame = cfun->machine->frame;
 
   if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return frame.hard_frame_pointer_offset;
@@ -11395,8 +11349,9 @@ ix86_builtin_setjmp_frame_value (void)
 /* Fill structure ix86_frame about frame of currently computed function.  */
 
 static void
-ix86_compute_frame_layout (struct ix86_frame *frame)
+ix86_compute_frame_layout (void)
 {
+  struct ix86_frame *frame = &cfun->machine->frame;
   unsigned HOST_WIDE_INT stack_alignment_needed;
   HOST_WIDE_INT offset;
   unsigned HOST_WIDE_INT preferred_alignment;
@@ -12702,7 +12657,8 @@ ix86_expand_prologue (void)
   m->fs.sp_offset = INCOMING_FRAME_SP_OFFSET;
   m->fs.sp_valid = true;
 
-  ix86_compute_frame_layout (&frame);
+  ix86_compute_frame_layout ();
+  frame = m->frame;
 
   if (!TARGET_64BIT && ix86_function_ms_hook_prologue (current_function_decl))
     {
@@ -13379,7 +13335,8 @@ ix86_expand_epilogue (int style)
   bool using_drap;
 
   ix86_finalize_stack_realign_flags ();
-  ix86_compute_frame_layout (&frame);
+  ix86_compute_frame_layout ();
+  frame = m->frame;
 
   m->fs.sp_valid = (!frame_pointer_needed
 		    || (crtl->sp_is_unchanging
@@ -13876,7 +13833,8 @@ ix86_expand_split_stack_prologue (void)
   gcc_assert (flag_split_stack && reload_completed);
 
   ix86_finalize_stack_realign_flags ();
-  ix86_compute_frame_layout (&frame);
+  ix86_compute_frame_layout ();
+  frame = cfun->machine->frame;
   allocate = frame.stack_pointer_offset - INCOMING_FRAME_SP_OFFSET;
 
   /* This is the label we will branch to if we have enough stack
