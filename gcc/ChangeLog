@@ -1,3 +1,20 @@
+2018-04-16  Olga Makhotina  <olga.makhotina@intel.com>
+
+	PR target/84331
+	* gcc/config.gcc: Support "skylake".
+	* gcc/config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_SKYLAKE.
+	* gcc/config/i386/i386.c (m_SKYLAKE): Define.
+	(processor_target_table): Add "skylake".
+	(ix86_option_override_internal): Add "skylake".
+	(get_builtin_code_for_version): Handle PROCESSOR_SKYLAKE,
+	PROCESSOR_CANNONLAKE.
+	(get_builtin_code_for_version): Fix priority for
+	PROCESSOR_ICELAKE_CLIENT, PROCESSOR_ICELAKE_SERVER,
+	PROCESSOR_SKYLAKE-AVX512.
+	* gcc/config/i386/i386.h (processor_costs): Define TARGET_SKYLAKE.
+	(processor_type): Add PROCESSOR_SKYLAKE.
+	
 2018-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
