@@ -28056,7 +28056,8 @@ ix86_output_function_return (bool long_p)
 	{
 	  bool need_thunk = (cfun->machine->function_return_type
 			     == indirect_branch_thunk);
-	  indirect_thunk_name (thunk_name, -1, need_bnd_p, true);
+	  indirect_thunk_name (thunk_name, INVALID_REGNUM, need_bnd_p,
+			       true);
 	  if (need_bnd_p)
 	    {
 	      indirect_thunk_bnd_needed |= need_thunk;
@@ -28069,7 +28070,7 @@ ix86_output_function_return (bool long_p)
 	    }
 	}
       else
-	output_indirect_thunk (need_bnd_p, -1);
+	output_indirect_thunk (need_bnd_p, INVALID_REGNUM);
 
       return "";
     }
