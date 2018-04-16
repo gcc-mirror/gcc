@@ -5439,6 +5439,14 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 
 	  split->flags ^= EDGE_FALLTHRU | EDGE_TRUE_VALUE;
 
+	  /* Add a dummy exit for the tiled block when cont_bb is missing.  */
+	  if (cont_bb == NULL)
+	    {
+	      edge e = make_edge (body_bb, exit_bb, EDGE_FALSE_VALUE);
+	      e->probability = profile_probability::even ();
+	      split->probability = profile_probability::even ();
+	    }
+
 	  /* Initialize the user's loop vars.  */
 	  gsi = gsi_start_bb (elem_body_bb);
 	  expand_oacc_collapse_vars (fd, true, &gsi, counts, e_offset);
