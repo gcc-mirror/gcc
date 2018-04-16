@@ -1,3 +1,11 @@
+2018-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/85112
+	* convert.c (convert_to_integer_1): Use direct recursion for
+	enumeral types and types with a precision less than the number
+	of bits in their mode.
+
 2018-04-16  Julia Koval  <julia.koval@intel.com>
 
 	PR target/84413
