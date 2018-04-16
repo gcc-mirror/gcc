@@ -1169,7 +1169,7 @@ See RS/6000 and PowerPC Options.
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
 -malign-data=@var{type} -mstack-protector-guard=@var{guard} @gol
--mmitigate-rop}
+-mmitigate-rop -mindirect-branch=@var{choice}}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -24236,6 +24236,17 @@ Try to avoid generating code sequences that contain unintended return
 opcodes, to mitigate against certain forms of attack. At the moment,
 this option is limited in what it can do and should not be relied
 on to provide serious protection.
+
+@item -mindirect-branch=@var{choice}
+@opindex -mindirect-branch
+Convert indirect call and jump with @var{choice}.  The default is
+@samp{keep}, which keeps indirect call and jump unmodified.
+@samp{thunk} converts indirect call and jump to call and return thunk.
+@samp{thunk-inline} converts indirect call and jump to inlined call
+and return thunk.  @samp{thunk-extern} converts indirect call and jump
+to external call and return thunk provided in a separate object file.
+You can control this behavior for a specific function by using the
+function attribute @code{indirect_branch}.  @xref{Function Attributes}.
 
 @end table
 
