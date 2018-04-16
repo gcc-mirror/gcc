@@ -1,3 +1,10 @@
+2018-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84945
+	* config/i386/cpuinfo.c (set_feature): Wrap into do while (0) to avoid
+	-Wdangling-else warnings.  Mask shift counts to avoid
+	-Wshift-count-negative and -Wshift-count-overflow false positives.
+
 2018-04-06  Ruslan Bukin  <br@bsdpad.com>
 
 	* config.host (riscv*-*-freebsd*): Add RISC-V FreeBSD support.
