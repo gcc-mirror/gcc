@@ -2579,6 +2579,9 @@ struct GTY(()) machine_function {
      "indirect_jump" or "tablejump".  */
   BOOL_BITFIELD has_local_indirect_jump : 1;
 
+  /* How to generate function return.  */
+  ENUM_BITFIELD(indirect_branch) function_return_type : 3;
+
   /* If true, there is register available for argument passing.  This
      is used only in ix86_function_ok_for_sibcall by 32-bit to determine
      if there is scratch register available for indirect sibcall.  In

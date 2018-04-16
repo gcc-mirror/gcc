@@ -1169,7 +1169,8 @@ See RS/6000 and PowerPC Options.
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
 -malign-data=@var{type} -mstack-protector-guard=@var{guard} @gol
--mmitigate-rop -mindirect-branch=@var{choice}}
+-mmitigate-rop -mindirect-branch=@var{choice} @gol
+-mfunction-return=@var{choice}}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -24247,6 +24248,17 @@ and return thunk.  @samp{thunk-extern} converts indirect call and jump
 to external call and return thunk provided in a separate object file.
 You can control this behavior for a specific function by using the
 function attribute @code{indirect_branch}.  @xref{Function Attributes}.
+
+@item -mfunction-return=@var{choice}
+@opindex -mfunction-return
+Convert function return with @var{choice}.  The default is @samp{keep},
+which keeps function return unmodified.  @samp{thunk} converts function
+return to call and return thunk.  @samp{thunk-inline} converts function
+return to inlined call and return thunk.  @samp{thunk-extern} converts
+function return to external call and return thunk provided in a separate
+object file.  You can control this behavior for a specific function by
+using the function attribute @code{function_return}.
+@xref{Function Attributes}.
 
 @end table
 
