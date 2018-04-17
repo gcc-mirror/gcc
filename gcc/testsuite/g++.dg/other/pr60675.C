@@ -1,5 +1,7 @@
-/* { dg-do compile { target fpic } } */
-/* { dg-options "-std=c++11 -w -O2 -fPIC" } */
+/* { dg-do compile { target c++11 } } */
+/* { dg-require-effective-target tls } */
+/* { dg-require-effective-target fpic } */
+/* { dg-options "-w -O2 -fPIC" } */
 namespace CLHEP {
       static const double meter = 1000.*10;
       static const double meter2 = meter*meter;
