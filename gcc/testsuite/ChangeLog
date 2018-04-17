@@ -1,6 +1,12 @@
 2018-04-17  Martin Liska  <mliska@suse.cz>
 
 	PR lto/85405
+	* g++.dg/lto/pr85405b_0.C: New test.
+	* g++.dg/lto/pr85405b_1.C: New test.
+
+2018-04-17  Martin Liska  <mliska@suse.cz>
+
+	PR lto/85405
 	* g++.dg/lto/pr85405_0.C: New test.
 	* g++.dg/lto/pr85405_1.C: New test.
 
