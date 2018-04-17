@@ -35,13 +35,14 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <unistd.h>
 #include <sys/types.h>
 
+#include "backtrace-supported.h"
+
 #if !BACKTRACE_USES_MALLOC
 #include <sys/mman.h>
 #endif
 
 #include "unwind.h"
 #include "backtrace.h"
-#include "backtrace-supported.h"
 #include "internal.h"
 
 #ifndef MAP_ANONYMOUS
