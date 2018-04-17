@@ -1,3 +1,11 @@
+2018-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/84637
+	* dbxout.c (dbxout_int): Perform negation in unsigned int type.
+	(stabstr_D): Change type of unum from unsigned int to
+	unsigned HOST_WIDE_INT.  Perform negation in unsigned HOST_WIDE_INT
+	type.
+
 2018-04-17  Jim Wilson  <jimw@sifive.com>
 
 	PR 84856
