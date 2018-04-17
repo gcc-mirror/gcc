@@ -7495,9 +7495,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>,v")
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,<store_mask_constraint>,v")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:V8FI 1 "<store_mask_predicate>" "v,<store_mask_constraint>")
+	  (match_operand:V8FI 1 "<store_mask_predicate>" "v,v,<store_mask_constraint>")
 	  (parallel [(const_int 0) (const_int 1)
             (const_int 2) (const_int 3)])))]
   "TARGET_AVX512F
@@ -7511,6 +7511,7 @@
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
+   (set_attr "memory" "none,store,load")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
@@ -7651,10 +7652,10 @@
 })
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,v,m")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:V16FI 1 "<store_mask_predicate>"
-				 "<store_mask_constraint>,v")
+				 "v,<store_mask_constraint>,v")
 	  (parallel [(const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)
                      (const_int 4) (const_int 5)
@@ -7670,7 +7671,13 @@
     return "vextract<shuffletype>32x8\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
   else
     return "#";
-})
+}
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "memory" "none,load,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_split
   [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand")
@@ -7697,10 +7704,10 @@
 })
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,m")
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,v,m")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:VI8F_256 1 "<store_mask_predicate>"
-				    "<store_mask_constraint>,v")
+				    "v,<store_mask_constraint>,v")
 	  (parallel [(const_int 0) (const_int 1)])))]
   "TARGET_AVX
    && <mask_avx512vl_condition> && <mask_avx512dq_condition>
@@ -7711,10 +7718,10 @@
   else
     return "#";
 }
-   [(set_attr "type" "sselog")
+   [(set_attr "type" "sselog1")
     (set_attr "prefix_extra" "1")
     (set_attr "length_immediate" "1")
-    (set_attr "memory" "none,store")
+    (set_attr "memory" "none,load,store")
     (set_attr "prefix" "evex")
     (set_attr "mode" "XI")])
 
@@ -7745,10 +7752,9 @@
   else
     return "vextract<i128>\t{$0x1, %1, %0|%0, %1, 0x1}";
 }
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
@@ -7854,9 +7860,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "vec_extract_lo_v32hi"
-  [(set (match_operand:V16HI 0 "nonimmediate_operand" "=v,m")
+  [(set (match_operand:V16HI 0 "nonimmediate_operand" "=v,v,m")
 	(vec_select:V16HI
-	  (match_operand:V32HI 1 "nonimmediate_operand" "vm,v")
+	  (match_operand:V32HI 1 "nonimmediate_operand" "v,m,v")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)
 		     (const_int 4) (const_int 5)
@@ -7886,12 +7892,18 @@
     operands[0] = lowpart_subreg (V32HImode, operands[0], V16HImode);
   else
     operands[1] = gen_lowpart (V16HImode, operands[1]);
-})
+}
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "memory" "none,load,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
 
 (define_insn "vec_extract_hi_v32hi"
-  [(set (match_operand:V16HI 0 "nonimmediate_operand" "=v,m")
+  [(set (match_operand:V16HI 0 "nonimmediate_operand" "=vm")
 	(vec_select:V16HI
-	  (match_operand:V32HI 1 "register_operand" "v,v")
+	  (match_operand:V32HI 1 "register_operand" "v")
 	  (parallel [(const_int 16) (const_int 17)
 		     (const_int 18) (const_int 19)
 		     (const_int 20) (const_int 21)
@@ -7902,10 +7914,9 @@
 		     (const_int 30) (const_int 31)])))]
   "TARGET_AVX512F"
   "vextracti64x4\t{$0x1, %1, %0|%0, %1, 0x1}"
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
@@ -7924,9 +7935,9 @@
   "operands[1] = gen_lowpart (V8HImode, operands[1]);")
 
 (define_insn "vec_extract_hi_v16hi"
-  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=x,m,v,m,v,m")
+  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=xm,vm,vm")
 	(vec_select:V8HI
-	  (match_operand:V16HI 1 "register_operand" "x,x,v,v,v,v")
+	  (match_operand:V16HI 1 "register_operand" "x,v,v")
 	  (parallel [(const_int 8) (const_int 9)
 		     (const_int 10) (const_int 11)
 		     (const_int 12) (const_int 13)
@@ -7934,23 +7945,19 @@
   "TARGET_AVX"
   "@
    vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
    vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}
    vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}"
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "isa" "*,*,avx512dq,avx512dq,avx512f,avx512f")
-   (set_attr "memory" "none,store,none,store,none,store")
-   (set_attr "prefix" "vex,vex,evex,evex,evex,evex")
+   (set_attr "isa" "*,avx512dq,avx512f")
+   (set_attr "prefix" "vex,evex,evex")
    (set_attr "mode" "OI")])
 
 (define_insn_and_split "vec_extract_lo_v64qi"
-  [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
+  [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,v,m")
 	(vec_select:V32QI
-	  (match_operand:V64QI 1 "nonimmediate_operand" "vm,v")
+	  (match_operand:V64QI 1 "nonimmediate_operand" "v,m,v")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)
 		     (const_int 4) (const_int 5)
@@ -7988,12 +7995,18 @@
     operands[0] = lowpart_subreg (V64QImode, operands[0], V32QImode);
   else
     operands[1] = gen_lowpart (V32QImode, operands[1]);
-})
+}
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "memory" "none,load,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
 
 (define_insn "vec_extract_hi_v64qi"
-  [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
+  [(set (match_operand:V32QI 0 "nonimmediate_operand" "=vm")
 	(vec_select:V32QI
-	  (match_operand:V64QI 1 "register_operand" "v,v")
+	  (match_operand:V64QI 1 "register_operand" "v")
 	  (parallel [(const_int 32) (const_int 33)
 		     (const_int 34) (const_int 35)
 		     (const_int 36) (const_int 37)
@@ -8012,10 +8025,9 @@
 		     (const_int 62) (const_int 63)])))]
   "TARGET_AVX512F"
   "vextracti64x4\t{$0x1, %1, %0|%0, %1, 0x1}"
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
@@ -8038,9 +8050,9 @@
   "operands[1] = gen_lowpart (V16QImode, operands[1]);")
 
 (define_insn "vec_extract_hi_v32qi"
-  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=x,m,v,m,v,m")
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=xm,vm,vm")
 	(vec_select:V16QI
-	  (match_operand:V32QI 1 "register_operand" "x,x,v,v,v,v")
+	  (match_operand:V32QI 1 "register_operand" "x,v,v")
 	  (parallel [(const_int 16) (const_int 17)
 		     (const_int 18) (const_int 19)
 		     (const_int 20) (const_int 21)
@@ -8052,17 +8064,13 @@
   "TARGET_AVX"
   "@
    vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
    vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}
    vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}"
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "isa" "*,*,avx512dq,avx512dq,avx512f,avx512f")
-   (set_attr "memory" "none,store,none,store,none,store")
-   (set_attr "prefix" "vex,vex,evex,evex,evex,evex")
+   (set_attr "isa" "*,avx512dq,avx512f")
+   (set_attr "prefix" "vex,evex,evex")
    (set_attr "mode" "OI")])
 
 ;; Modes handled by vec_extract patterns.
