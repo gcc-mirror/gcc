@@ -1,3 +1,10 @@
+2018-04-17  Jim Wilson  <jimw@sifive.com>
+
+	PR 84856
+	* config/riscv/riscv.c (riscv_compute_frame_info): Add calls to
+	RISCV_STACK_ALIGN when using outgoing_args_size and pretend_args_size.
+	Set arg_pointer_offset after using pretend_args_size.
+
 2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85431
