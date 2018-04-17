@@ -1,3 +1,9 @@
+2018-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85414
+	* rtlhooks.c (gen_lowpart_if_possible): Don't call gen_lowpart_SUBREG
+	on a SUBREG.
+
 2018-04-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/85421
