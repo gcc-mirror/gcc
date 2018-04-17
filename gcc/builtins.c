@@ -5072,18 +5072,24 @@ expand_builtin_alloca (tree exp)
   return result;
 }
 
-/* Emit a call to __asan_allocas_unpoison call in EXP.  Replace second argument
-   of the call with virtual_stack_dynamic_rtx because in asan pass we emit a
-   dummy value into second parameter relying on this function to perform the
-   change.  See motivation for this in comment to handle_builtin_stack_restore
-   function.  */
+/* Emit a call to __asan_allocas_unpoison call in EXP.  Add to second argument
+   of the call virtual_stack_dynamic_rtx - stack_pointer_rtx, which is the
+   STACK_DYNAMIC_OFFSET value.  See motivation for this in comment to
+   handle_builtin_stack_restore function.  */
 
 static rtx
 expand_asan_emit_allocas_unpoison (tree exp)
 {
   tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx top = expand_expr (arg0, NULL_RTX, ptr_mode, EXPAND_NORMAL);
-  rtx bot = convert_memory_address (ptr_mode, virtual_stack_dynamic_rtx);
+  rtx bot = expand_expr (arg1, NULL_RTX, ptr_mode, EXPAND_NORMAL);
+  rtx off = expand_simple_binop (Pmode, MINUS, virtual_stack_dynamic_rtx,
+				 stack_pointer_rtx, NULL_RTX, 0,
+				 OPTAB_LIB_WIDEN);
+  off = convert_modes (ptr_mode, Pmode, off, 0);
+  bot = expand_simple_binop (ptr_mode, PLUS, bot, off, NULL_RTX, 0,
+			     OPTAB_LIB_WIDEN);
   rtx ret = init_one_libfunc ("__asan_allocas_unpoison");
   ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode,
 				 top, ptr_mode, bot, ptr_mode);
