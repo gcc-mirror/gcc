@@ -3863,6 +3863,7 @@ create_specialized_node (struct cgraph_node *node,
   new_node = node->create_virtual_clone (callers, replace_trees,
 					 args_to_skip, "constprop");
 
+  bool have_self_recursive_calls = !self_recursive_calls.is_empty ();
   for (unsigned j = 0; j < self_recursive_calls.length (); j++)
     {
       cgraph_edge *cs = next_edge_clone[self_recursive_calls[j]->uid];
@@ -3870,6 +3871,8 @@ create_specialized_node (struct cgraph_node *node,
       gcc_assert (cs->caller == new_node);
       cs->redirect_callee_duplicating_thunks (new_node);
     }
+  if (have_self_recursive_calls)
+    new_node->expand_all_artificial_thunks ();
 
   ipa_set_node_agg_value_chain (new_node, aggvals);
   for (av = aggvals; av; av = av->next)
