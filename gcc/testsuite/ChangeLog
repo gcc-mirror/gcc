@@ -1,3 +1,10 @@
+2018-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/85326
+	* g++.dg/other/pr81422.C: Require effective target tls and c++11.
+	* g++.dg/other/pr60675.C: Likewise.  Remove -std=c++11 from dg-options.
+	* g++.dg/other/sve_tls_2.C: Require effective target tls.
+
 2018-04-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/bfp/scalar-extract-sig-5.c: Simplify to
