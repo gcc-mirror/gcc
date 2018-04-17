@@ -1719,6 +1719,10 @@ fipa-vrp
 Common Report Var(flag_ipa_vrp) Optimization
 Perform IPA Value Range Propagation.
 
+ftree-rvrp
+Common Report Var(flag_tree_rvrp) Init(1) Optimization
+Perform Ranger Value Range Propagation on trees.
+
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
 -fira-algorithm=[CB|priority]	Set the used IRA algorithm.

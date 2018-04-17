@@ -1437,6 +1437,8 @@ OBJS = \
 	print-tree.o \
 	profile.o \
 	profile-count.o \
+	range.o \
+	range-op.o \
 	read-md.o \
 	read-rtl.o \
 	read-rtl-function.o \
@@ -1476,6 +1478,10 @@ OBJS = \
 	spellcheck.o \
 	spellcheck-tree.o \
 	sreal.o \
+	ssa-range.o \
+	ssa-range-bb.o \
+	ssa-range-global.o \
+	ssa-range-stmt.o \
 	stack-ptr-mod.o \
 	statistics.o \
 	stmt.o \
@@ -2553,6 +2559,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \
   $(srcdir)/tree-chkp.c \
+  $(srcdir)/range.h $(srcdir)/range.c \
   $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
   $(srcdir)/tree-cfg.c $(srcdir)/tree-ssa-loop-ivopts.c \
   $(srcdir)/tree-dfa.c \
