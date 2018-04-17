@@ -1,3 +1,13 @@
+2018-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/85230
+	* asan.c (handle_builtin_stack_restore): Adjust comment.  Emit
+	__asan_allocas_unpoison call and last_alloca_addr = new_sp before
+	__builtin_stack_restore rather than after it.
+	* builtins.c (expand_asan_emit_allocas_unpoison): Pass
+	arg1 + (virtual_dynamic_stack_rtx - stack_pointer_rtx) as second
+	argument instead of virtual_dynamic_stack_rtx.
+
 2018-04-17  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-protos.h (rs6000_builtin_is_supported_p):
