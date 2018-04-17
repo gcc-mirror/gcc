@@ -1,5 +1,8 @@
 2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85430
+	* config/i386/i386.md (*ashlqi3_1_slp): Use alu1 type instead of alu.
+
 	PR middle-end/85414
 	* rtlhooks.c (gen_lowpart_if_possible): Don't call gen_lowpart_SUBREG
 	on a SUBREG.
