@@ -1,5 +1,8 @@
 2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/85431
+	* dse.c (record_store): Ignore zero width stores.
+
 	PR sanitizer/85230
 	* asan.c (handle_builtin_stack_restore): Adjust comment.  Emit
 	__asan_allocas_unpoison call and last_alloca_addr = new_sp before
