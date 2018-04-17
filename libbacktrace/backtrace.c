@@ -32,11 +32,25 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include "config.h"
 
+#include <unistd.h>
 #include <sys/types.h>
+
+#if !BACKTRACE_USES_MALLOC
+#include <sys/mman.h>
+#endif
 
 #include "unwind.h"
 #include "backtrace.h"
+#include "backtrace-supported.h"
 #include "internal.h"
+
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 
 /* The main backtrace_full routine.  */
 
@@ -104,7 +118,6 @@ backtrace_full (struct backtrace_state *state, int skip,
 		backtrace_error_callback error_callback, void *data)
 {
   struct backtrace_data bdata;
-  void *p;
 
   bdata.skip = skip + 1;
   bdata.state = state;
@@ -113,16 +126,25 @@ backtrace_full (struct backtrace_state *state, int skip,
   bdata.data = data;
   bdata.ret = 0;
 
-  /* If we can't allocate any memory at all, don't try to produce
-     file/line information.  */
-  p = backtrace_alloc (state, 4096, NULL, NULL);
-  if (p == NULL)
-    bdata.can_alloc = 0;
-  else
-    {
-      backtrace_free (state, p, 4096, NULL, NULL);
-      bdata.can_alloc = 1;
-    }
+#if !BACKTRACE_USES_MALLOC
+  {
+    size_t pagesize;
+    void *page;
+
+    /* If we can't allocate any memory at all, don't try to produce
+       file/line information.  */
+    pagesize = getpagesize ();
+    page = mmap (NULL, pagesize, PROT_READ | PROT_WRITE, 
+		 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (page == MAP_FAILED)
+      bdata.can_alloc = 0;
+    else
+      {
+	munmap (page, pagesize);
+	bdata.can_alloc = 1;
+      }
+  }
+#endif
 
   _Unwind_Backtrace (unwind, &bdata);
   return bdata.ret;

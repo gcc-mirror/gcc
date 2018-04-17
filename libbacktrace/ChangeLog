@@ -1,3 +1,8 @@
+2018-04-17  Ian Lance Taylor  <iant@golang.org>
+
+	* backtrace.c (backtrace_full): When testing whether we can
+	allocate memory, call mmap directly, and munmap the memory.
+
 2018-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/85161
