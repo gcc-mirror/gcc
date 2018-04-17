@@ -1,3 +1,51 @@
+2018-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85281
+	* config/i386/sse.md (reduces<mode><mask_scalar_name>,
+	avx512f_vmcmp<mode>3<round_saeonly_name>,
+	avx512f_vmcmp<mode>3_mask<round_saeonly_name>,
+	avx512f_sgetexp<mode><mask_scalar_name><round_saeonly_scalar_name>,
+	avx512f_rndscale<mode><round_saeonly_name>,
+	avx512dq_ranges<mode><mask_scalar_name><round_saeonly_scalar_name>,
+	avx512f_vgetmant<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Use %<iptr>2 instead of %2 for -masm=intel.
+	(avx512f_vcvtss2usi<round_name>, avx512f_vcvtss2usiq<round_name>,
+	avx512f_vcvttss2usi<round_saeonly_name>,
+	avx512f_vcvttss2usiq<round_saeonly_name>): Use %k1 instead of %1 for
+	-masm=intel.
+	(avx512f_vcvtsd2usi<round_name>, avx512f_vcvtsd2usiq<round_name>,
+	avx512f_vcvttsd2usi<round_saeonly_name>,
+	avx512f_vcvttsd2usiq<round_saeonly_name>, ufloatv2siv2df2<mask_name>):
+	Use %q1 instead of %1 for -masm=intel.
+	(avx512f_sfixupimm<mode><sd_maskz_name><round_saeonly_name>,
+	avx512f_sfixupimm<mode>_mask<round_saeonly_name>): Use %<iptr>3 instead
+	of %3 for -masm=intel.
+	(sse2_shufpd_v2df_mask): Fix a typo, change %{6%} to %{%6%} for
+	-masm=intel.
+	(*avx512vl_<code>v2div2qi2_store): Use %w0 instead of %0 for
+	-masm=intel.
+	(*avx512vl_<code><mode>v4qi2_store): Use %k0 instead of %0 for
+	-masm=intel.
+	(avx512vl_<code><mode>v4qi2_mask_store): Use a single pattern with
+	%k0 and %1 for -masm=intel rather than two patterns, one with %0 and
+	%g1.
+	(*avx512vl_<code><mode>v8qi2_store): Use %q0 instead of %0 for
+	-masm=intel.
+	(avx512vl_<code><mode>v8qi2_mask_store): Use a single pattern with
+	%q0 and %1 for -masm=intel rather than two patterns, one with %0 and
+	%g1 and one with %0 and %1.
+	(avx512er_vmrcp28<mode><round_saeonly_name>,
+	avx512er_vmrsqrt28<mode><round_saeonly_name>): Use %<iptr>1 instead of
+	%1 for -masm=intel.
+	(avx5124fmaddps_4fmaddps_mask, avx5124fmaddps_4fmaddss_mask,
+	avx5124fmaddps_4fnmaddps_mask, avx5124fmaddps_4fnmaddss_mask,
+	avx5124vnniw_vp4dpwssd_mask, avx5124vnniw_vp4dpwssds_mask): Swap order
+	of %0 and %{%4%} for -masm=intel.
+	(avx5124fmaddps_4fmaddps_maskz, avx5124fmaddps_4fmaddss_maskz,
+	avx5124fmaddps_4fnmaddps_maskz, avx5124fmaddps_4fnmaddss_maskz,
+	avx5124vnniw_vp4dpwssd_maskz, avx5124vnniw_vp4dpwssds_maskz): Swap
+	order of %0 and %{%5%}%{z%} for -masm=intel.
+
 2018-04-17  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/85405
