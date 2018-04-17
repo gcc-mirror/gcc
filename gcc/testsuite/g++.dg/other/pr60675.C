@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target fpic } } */
 /* { dg-options "-std=c++11 -w -O2 -fPIC" } */
 namespace CLHEP {
       static const double meter = 1000.*10;
