@@ -190,15 +190,15 @@ func (gccgoToolchain) pack(b *Builder, a *Action, afile string, ofiles []string)
 	}
 	absAfile := mkAbs(objdir, afile)
 	// Try with D modifier first, then without if that fails.
-	if b.run(a, p.Dir, p.ImportPath, nil, "ar", "rcD", absAfile, absOfiles) != nil {
+	if cfg.Goos == "aix" || b.run(a, p.Dir, p.ImportPath, nil, "ar", "rcD", absAfile, absOfiles) != nil {
+		var arArgs []string
 		if cfg.Goos == "aix" && cfg.Goarch == "ppc64" {
 			// AIX puts both 32-bit and 64-bit objects in the same archive.
 			// Tell the AIX "ar" command to only care about 64-bit objects.
 			// AIX "ar" command does not know D option.
-			return b.run(a, p.Dir, p.ImportPath, nil, "ar", "-X64", "rc", absAfile, absOfiles)
-		} else {
-			return b.run(a, p.Dir, p.ImportPath, nil, "ar", "rc", absAfile, absOfiles)
+			arArgs = append(arArgs, "-X64")
 		}
+		return b.run(a, p.Dir, p.ImportPath, nil, "ar", "rc", arArgs, absAfile, absOfiles)
 	}
 	return nil
 }
@@ -466,7 +466,10 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 		ldflags = append(ldflags, goLibBegin...)
 		ldflags = append(ldflags, "-lgo", "-lgcc_s", "-lgcc", "-lc", "-lgcc")
 	case "shared":
-		ldflags = append(ldflags, "-zdefs", "-shared", "-nostdlib", "-lgo", "-lgcc_s", "-lgcc", "-lc")
+		if cfg.Goos != "aix" {
+			ldflags = append(ldflags, "-zdefs")
+		}
+		ldflags = append(ldflags, "-shared", "-nostdlib", "-lgo", "-lgcc_s", "-lgcc", "-lc")
 
 	case "pie":
 		ldflags = append(ldflags, "-pie")
