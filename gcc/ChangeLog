@@ -1,5 +1,33 @@
 2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Add
+	(=v, v) alternative and explicit "memory" attribute.
+	(vec_extract_lo_<mode><mask_name>): Likewise.  Also add
+	"type", "prefix", "prefix_extra", "length_immediate" and "mode"
+	attributes.
+	(vec_extract_lo_<mode><mask_name>): Add (=v, v) alternative and use
+	"sselog1" type instead of "sselog".
+	(vec_extract_hi_<mode><mask_name>): Use "sselog1" type instead of
+	"sselog".  Remove explicit "memory" attribute.
+	(vec_extract_lo_v32hi): Add (=v, v) alternative and explicit "memory",
+	"type", "prefix", "prefix_extra", "length_immediate" and "mode"
+	attributes.
+	(vec_extract_hi_v32hi): Merge all alternatives into one, use
+	"sselog1" type instead of "sselog".  Remove explicit "memory"
+	attribute.
+	(vec_extract_hi_v16hi): Merge each pair of alternatives into one,
+	use "sselog1" type instead of "sselog".  Remove explicit "memory"
+	attribute.
+	(vec_extract_lo_v64qi): Add (=v, v) alternative and explicit "memory",
+	"type", "prefix", "prefix_extra", "length_immediate" and "mode"
+	attributes.
+	(vec_extract_hi_v64qi): Merge all alternatives into one, use
+	"sselog1" type instead of "sselog".  Remove explicit "memory"
+	attribute.
+	(vec_extract_hi_v32qi): Merge each pair of alternatives into one,
+	use "sselog1" type instead of "sselog".  Remove explicit "memory"
+	attribute.
+
 	PR target/85430
 	* config/i386/i386.md (*ashlqi3_1_slp): Use alu1 type instead of alu.
 
