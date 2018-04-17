@@ -1,5 +1,10 @@
 2018-04-17  Ian Lance Taylor  <iant@golang.org>
 
+	* backtrace.c: Revert last two changes.  Don't call mmap
+	directly.
+
+2018-04-17  Ian Lance Taylor  <iant@golang.org>
+
 	* backtrace.c: Include backtrace-supported.h before checking
 	BACKTRACE_USES_MALLOC.
 
