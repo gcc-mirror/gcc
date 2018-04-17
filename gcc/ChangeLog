@@ -1,3 +1,9 @@
+2018-04-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/85424
+	* config/rs6000/rs6000.md (pack<mode>): Do not try handle a pack
+	where the inputs overlap with the output.
+
 2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Add
