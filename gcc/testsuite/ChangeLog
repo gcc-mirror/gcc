@@ -1,3 +1,16 @@
+2018-04-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/bfp/scalar-extract-sig-5.c: Simplify to
+	prevent cascading of errors and change expected error message.
+	* gcc.target/powerpc/bfp/scalar-test-neg-4.c: Restrict this test
+	to 64-bit targets.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-8.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-9.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-10.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-11.c: Change expected
+	error message.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-5.c: Likewise.
+
 2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85430

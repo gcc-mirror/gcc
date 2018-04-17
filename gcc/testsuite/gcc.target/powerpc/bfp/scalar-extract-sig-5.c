@@ -8,10 +8,10 @@
    error because the builtin requires 64 bits.  */
 #include <altivec.h>
 
-unsigned __int128 /* { dg-error "'__int128' is not supported on this target" } */
+unsigned long long int
 get_significand (__ieee128 *p)
 {
   __ieee128 source = *p;
 
-  return __builtin_vec_scalar_extract_sig (source); /* { dg-error "builtin function '__builtin_vec_scalar_extract_sig' not supported in this compiler configuration" } */
+  return (long long int) __builtin_vec_scalar_extract_sig (source); /* { dg-error "requires ISA 3.0 IEEE 128-bit floating point" } */
 }

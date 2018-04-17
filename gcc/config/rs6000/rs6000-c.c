@@ -6894,6 +6894,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 
   {
     bool unsupported_builtin = false;
+    enum rs6000_builtins overloaded_code;
+    tree result = NULL;
     for (desc = altivec_overloaded_builtins;
 	 desc->code && desc->code != fcode; desc++)
       continue;
@@ -6906,7 +6908,6 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
        discrimination between the desired forms of the function.  */
     if (fcode == P6_OV_BUILTIN_CMPB)
       {
-	int overloaded_code;
 	machine_mode arg1_mode = TYPE_MODE (types[0]);
 	machine_mode arg2_mode = TYPE_MODE (types[1]);
 
@@ -6941,14 +6942,20 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    && rs6000_builtin_type_compatible (types[1], desc->op2))
 	  {
 	    if (rs6000_builtin_decls[desc->overloaded_code] != NULL_TREE)
-	      return altivec_build_resolved_builtin (args, n, desc);
+	      {
+		result = altivec_build_resolved_builtin (args, n, desc);
+		/* overloaded_code is set above */
+		if (!rs6000_builtin_is_supported_p (overloaded_code))
+		  unsupported_builtin = true;
+		else
+		  return result;
+	      }
 	    else
 	      unsupported_builtin = true;
 	  }
       }
     else if (fcode == P9V_BUILTIN_VEC_VSIEDP)
       {
-	int overloaded_code;
 	machine_mode arg1_mode = TYPE_MODE (types[0]);
 
 	if (nargs != 2)
@@ -6983,12 +6990,20 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	while (desc->code && desc->code == fcode
 	       && desc->overloaded_code != overloaded_code)
 	  desc++;
+
 	if (desc->code && (desc->code == fcode)
 	    && rs6000_builtin_type_compatible (types[0], desc->op1)
 	    && rs6000_builtin_type_compatible (types[1], desc->op2))
 	  {
 	    if (rs6000_builtin_decls[desc->overloaded_code] != NULL_TREE)
-	      return altivec_build_resolved_builtin (args, n, desc);
+	      {
+		result = altivec_build_resolved_builtin (args, n, desc);
+		/* overloaded_code is set above.  */
+		if (!rs6000_builtin_is_supported_p (overloaded_code))
+		  unsupported_builtin = true;
+		else
+		  return result;
+	      }
 	    else
 	      unsupported_builtin = true;
 	  }
@@ -7007,7 +7022,18 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		    || rs6000_builtin_type_compatible (types[2], desc->op3)))
 	      {
 		if (rs6000_builtin_decls[desc->overloaded_code] != NULL_TREE)
-		  return altivec_build_resolved_builtin (args, n, desc);
+		  {
+		    result = altivec_build_resolved_builtin (args, n, desc);
+		    if (!rs6000_builtin_is_supported_p (desc->overloaded_code))
+		      {
+			/* Allow loop to continue in case a different
+			   definition is supported.  */
+			overloaded_code = desc->overloaded_code;
+			unsupported_builtin = true;
+		      }
+		    else
+		      return result;
+		  }
 		else
 		  unsupported_builtin = true;
 	      }
@@ -7017,9 +7043,23 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
     if (unsupported_builtin)
       {
 	const char *name = rs6000_overloaded_builtin_name (fcode);
-	error ("builtin function %qs not supported in this compiler "
-	       "configuration", name);
-	return error_mark_node;
+	if (result != NULL)
+	  {
+	    const char *internal_name
+	      = rs6000_overloaded_builtin_name (overloaded_code);
+	    /* An error message making reference to the name of the
+	       non-overloaded function has already been issued.  Add
+	       clarification of the previous message.  */
+	    rich_location richloc (line_table, input_location);
+	    inform (&richloc, "builtin %qs requires builtin %qs",
+		    name, internal_name);
+	  }
+	else
+	  error ("builtin function %qs not supported in this compiler "
+		 "configuration", name);
+	/* If an error-representing  result tree was returned from
+	   altivec_build_resolved_builtin above, use it.  */
+	return (result != NULL) ? result : error_mark_node;
       }
   }
  bad:
