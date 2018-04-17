@@ -1,17 +1,15 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
 /* { dg-options "-O -msve-vector-bits=256 --save-temps" } */
 
-#include <stdint.h>
+typedef __INT8_TYPE__ vnx16qi __attribute__((vector_size(32)));
+typedef __INT16_TYPE__ vnx8hi __attribute__((vector_size(32)));
+typedef __INT32_TYPE__ vnx4si __attribute__((vector_size(32)));
+typedef __INT64_TYPE__ vnx2di __attribute__((vector_size(32)));
 
-typedef int8_t vnx16qi __attribute__((vector_size(32)));
-typedef int16_t vnx8hi __attribute__((vector_size(32)));
-typedef int32_t vnx4si __attribute__((vector_size(32)));
-typedef int64_t vnx2di __attribute__((vector_size(32)));
-
-typedef uint8_t v32qu __attribute__((vector_size(32)));
-typedef uint16_t v16hu __attribute__((vector_size(32)));
-typedef uint32_t v8su __attribute__((vector_size(32)));
-typedef uint64_t v4du __attribute__((vector_size(32)));
+typedef __UINT8_TYPE__ v32qu __attribute__((vector_size(32)));
+typedef __UINT16_TYPE__ v16hu __attribute__((vector_size(32)));
+typedef __UINT32_TYPE__ v8su __attribute__((vector_size(32)));
+typedef __UINT64_TYPE__ v4du __attribute__((vector_size(32)));
 
 #define DEF_VCOND_VAR(TYPE, COND, SUFFIX)			\
 TYPE vcond_##TYPE##_##SUFFIX (TYPE x, TYPE y, TYPE a, TYPE b)	\

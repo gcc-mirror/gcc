@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target arm*-*-* } } */
 /* { dg-require-effective-target arm_neon } */
 /* { dg-options "-O2" } */
 /* { dg-add-options arm_neon } */
