@@ -3307,7 +3307,7 @@ riscv_compute_frame_info (void)
     }
 
   /* At the bottom of the frame are any outgoing stack arguments. */
-  offset = crtl->outgoing_args_size;
+  offset = RISCV_STACK_ALIGN (crtl->outgoing_args_size);
   /* Next are local stack variables. */
   offset += RISCV_STACK_ALIGN (get_frame_size ());
   /* The virtual frame pointer points above the local variables. */
@@ -3333,9 +3333,11 @@ riscv_compute_frame_info (void)
   frame->hard_frame_pointer_offset = offset;
   /* Above the hard frame pointer is the callee-allocated varags save area. */
   offset += RISCV_STACK_ALIGN (cfun->machine->varargs_size);
-  frame->arg_pointer_offset = offset;
   /* Next is the callee-allocated area for pretend stack arguments.  */
-  offset += crtl->args.pretend_args_size;
+  offset += RISCV_STACK_ALIGN (crtl->args.pretend_args_size);
+  /* Arg pointer must be below pretend args, but must be above alignment
+     padding.  */
+  frame->arg_pointer_offset = offset - crtl->args.pretend_args_size;
   frame->total_size = offset;
   /* Next points the incoming stack pointer and any incoming arguments. */
 
