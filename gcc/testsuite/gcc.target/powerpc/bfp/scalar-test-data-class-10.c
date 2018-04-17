@@ -1,5 +1,8 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
+/* Require 64-bit target to select expected error message below.  32-bit
+   target produces different error message.  */
+/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-mcpu=power9" } */
 

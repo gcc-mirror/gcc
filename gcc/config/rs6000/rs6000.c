@@ -15905,6 +15905,18 @@ paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
+/* Check whether a builtin function is supported in this target
+   configuration.  */
+bool
+rs6000_builtin_is_supported_p (enum rs6000_builtins fncode)
+{
+  HOST_WIDE_INT fnmask = rs6000_builtin_info[fncode].mask;
+  if ((fnmask & rs6000_builtin_mask) != fnmask)
+    return false;
+  else
+    return true;
+}
+
 /* Raise an error message for a builtin function that is called without the
    appropriate target options being set.  */
 
