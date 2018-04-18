@@ -592,6 +592,7 @@ block_ranger::dump (FILE *f)
 
   fprintf (f, "\nDUMPING Globals table\n");
   dump_global_ssa_range_cache (f);
+  fprintf (f, "\n");
 }
 
 

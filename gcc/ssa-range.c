@@ -741,7 +741,7 @@ path_ranger::exercise (FILE *output)
       /* This dramatically slows down builds, so only when printing.  */
       if (output)
         {
-	  fprintf (output, "----- BB%d -----\n", bb->index);
+	  fprintf (output, "========= BB%d =========\n", bb->index);
 	  for (x = 1; x < num_ssa_names; x++)
 	    {
 	      tree name = ssa_name (x);
@@ -750,7 +750,7 @@ path_ranger::exercise (FILE *output)
 		  if (output && !range.range_for_type_p ())
 		    {
 		      if (!printed)
-			fprintf (output,"   Ranges on entry :\n");
+			fprintf (output,"   Ranges on Entry :\n");
 		      printed = true;
 		      fprintf (output, "     ");
 		      print_generic_expr (output, name, 0);
@@ -765,227 +765,78 @@ path_ranger::exercise (FILE *output)
 	  printed = false;
 	}
 
+      // Run through the block once to visit each value.
       FOR_EACH_EDGE (e, ei, bb->succs)
         {
 	  for (x = 1; x < num_ssa_names; x++)
 	    {
 	      tree name = ssa_name (x);
 	      if (name && range_p (bb, name))
-		{
-		  if (path_range_edge (range, name, e))
+		  path_range_edge (range, name, e);
+	    }
+	}
+
+      if (output)
+        {
+	  // Dump any globals defined.
+	  printed = false;
+	  for (x = 1; x < num_ssa_names; x++)
+	    {
+	      if (ssa_name(x) && get_global_ssa_range (range, ssa_name (x)))
+	        {
+		  gimple *s = SSA_NAME_DEF_STMT (ssa_name (x));
+		  if (s && gimple_bb (s) == bb)
 		    {
-		      if (output && !range.range_for_type_p ())
+		      if (!printed)
+			fprintf (output, "     -- Ranges Defined -- :\n");
+		      fprintf (output, "     ");
+		      print_generic_expr (output, ssa_name (x), 0);
+		      fprintf (output, "  : ");
+		      range.dump (output);
+		      printed = true;
+		    }
+		}
+	    }
+	  if (printed)
+	    fprintf (output, "\n");
+
+	  // Now print any edge values.
+          printed = false;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    {
+	      for (x = 1; x < num_ssa_names; x++)
+		{
+		  tree name = ssa_name (x);
+		  if (name && range_p (bb, name))
+		    {
+		      if (path_range_edge (range, name, e))
 			{
-			  printed = true;
-			  fprintf (output, "     %d->%d ", e->src->index,
-				   e->dest->index);
-			  if (e->flags & EDGE_TRUE_VALUE)
-			    fprintf (output, " (T) ");
-			  else if (e->flags & EDGE_FALSE_VALUE)
-			    fprintf (output, " (F) ");
-			  else
-			    fprintf (output, "     ");
-			  print_generic_expr (output, name, TDF_SLIM);
-			  fprintf(output, "  \t");
-			  range.dump(output);
+			  if (!range.range_for_type_p ())
+			    {
+			      printed = true;
+			      fprintf (output, "     %d->%d ", e->src->index,
+				       e->dest->index);
+			      if (e->flags & EDGE_TRUE_VALUE)
+				fprintf (output, " (T) ");
+			      else if (e->flags & EDGE_FALSE_VALUE)
+				fprintf (output, " (F) ");
+			      else
+				fprintf (output, "     ");
+			      print_generic_expr (output, name, TDF_SLIM);
+			      fprintf(output, "  \t");
+			      range.dump(output);
+			    }
 			}
 		    }
 		}
 	    }
+	  if (printed)
+	    fprintf (output, "\n");
 	}
-      if (printed)
-        fprintf (output, "\n");
-
     }
 
-  if (output)
+  if (output && (dump_flags & TDF_DETAILS))
     dump (output);
 
 }
-
-
-
-// --------------------------------------------------------------------
-
-
-
-/* Main entry point for the early Ranger vrp pass.  */
-
-static bool
-argument_ok_to_propagate (tree name)
-{
-  if (TREE_CODE (name) != SSA_NAME)
-    return true;
-  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
-    {
-      // From may_propagate_copy
-      if (SSA_NAME_IS_DEFAULT_DEF (name) && (SSA_NAME_VAR (name) == NULL_TREE
-          || TREE_CODE (SSA_NAME_VAR (name)) == VAR_DECL))
-      return true;
-    }
-  // probably dont need this.
-  if (virtual_operand_p (name))
-    return false;
-  return true;
-}
-
-static unsigned int
-execute_ranger_vrp ()
-{
-  // Create a temp ranger and exercise it before running in order to get a
-  // listing in the dump file, and to fully exercise the code.
-  { 
-    path_ranger e;
-    e.exercise (dump_file);
-  }
-
-  // Don't run the actual pass by default until andrew fixes the regressions!!
-  return 0;
-  
-  path_ranger ranger;
-  basic_block bb;
-  irange r;
-  wide_int i;
-  unsigned x;
-  bitmap_iterator bi;
-  bitmap touched = BITMAP_ALLOC (NULL);
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      gcond *cond;
-      gimple *stmt = last_stmt (bb);
-      if (stmt && (cond = dyn_cast <gcond *> (stmt)))
-        {
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Considering ");
-	      print_gimple_stmt (dump_file, cond, 0,0);
-	    }
-	  if (ranger.path_range_stmt (r, stmt))
-	    {
-	      if (dump_file)
-	        {
-		  fprintf (dump_file, "Found a range for the expression: ");
-		  r.dump (dump_file);
-		  fprintf (dump_file, "\n");
-		}
-
-	      if (r.singleton_p (i))
-	        {
-		  if (!argument_ok_to_propagate (gimple_cond_lhs (cond)) ||
-		      !argument_ok_to_propagate (gimple_cond_rhs (cond)))
-		    {
-		      if (dump_file)
-			{
-			  fprintf (dump_file, "Found  BB%d branch",bb->index);
-			  print_gimple_stmt (dump_file, stmt, 0, 0);
-			  fprintf (dump_file, "cannot eliminate. proprules.\n");
-			  fprintf (stderr,"\n  ***************** caught one\n");
-			}
-		      continue;
-		    }
-
-		  /* If either operand is an ssa_name, set the touched bit for
-		     potential removal later if no uses are left.  */
-		  tree t = valid_irange_ssa (gimple_cond_lhs (cond));
-		  if (t)
-		    bitmap_set_bit (touched, SSA_NAME_VERSION (t));
-		  t = valid_irange_ssa (gimple_cond_rhs (cond));
-		  if (t)
-		    bitmap_set_bit (touched, SSA_NAME_VERSION (t));
-
-		  if (dump_file)
-		    {
-		      fprintf (dump_file, "eliminating BB%d branch",bb->index);
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
-		    }
-
-		  /* Rewrite the condition to either true or false.  */
-		  if (wi::eq_p (i, 0))
-		    gimple_cond_make_false (cond);
-		  else
-		    gimple_cond_make_true (cond);
-
-		  if (dump_file)
-		    {
-		      fprintf (dump_file, "Re-written to: \n");
-		      print_gimple_stmt (dump_file, cond, 0, 0);
-		      fprintf (dump_file, "\n");
-		    }
-		}
-	    }
-	}
-
-    }
-
-  // Now visit each name that was rewritten and see if the definiing statement
-  // can be deleted due to no more uses in the program
-  EXECUTE_IF_SET_IN_BITMAP (touched, 0, x, bi)
-    {
-      tree name = ssa_name (x);
-      gimple *s = SSA_NAME_DEF_STMT (name);
-      
-      if (s)
-        {
-	  if (has_zero_uses (name))
-	    {
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Should delete");
-		  print_gimple_stmt (dump_file, s, 0, 0);
-		}
-	    }
-	  else
-	    {
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Still has uses, Could not delete ");
-		  print_gimple_stmt (dump_file, s, 0, 0);
-		}
-	    }
-	}
-    }
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_ranger_vrp =
-{
-  GIMPLE_PASS, /* type */
-  "rvrp", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_TREE_RANGER_VRP, /* tv_id */
-  PROP_ssa, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_cleanup_cfg | TODO_verify_all ),
-};
-
-class pass_ranger_vrp : public gimple_opt_pass
-{
-public:
-  pass_ranger_vrp (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_ranger_vrp, ctxt)
-    {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_ranger_vrp (m_ctxt); }
-  virtual bool gate (function *)
-    {
-      return flag_tree_rvrp != 0;
-    }
-  virtual unsigned int execute (function *)
-    { return execute_ranger_vrp (); }
-
-}; // class pass_vrp
-} // anon namespace
-
-gimple_opt_pass *
-make_pass_ranger_vrp (gcc::context *ctxt)
-{
-  return new pass_ranger_vrp (ctxt);
-}
-
 

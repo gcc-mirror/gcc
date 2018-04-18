@@ -97,6 +97,9 @@ dump_global_ssa_range_cache (FILE *f)
 bool
 get_global_ssa_range (irange& r, tree name)
 {
+  if (!valid_irange_ssa (name))
+    return false;
+
   if (globals)
     return globals->get_global_range (r, name);
 
@@ -108,6 +111,8 @@ get_global_ssa_range (irange& r, tree name)
 void
 set_global_ssa_range (tree name, const irange&r)
 {
+  gcc_checking_assert (valid_irange_ssa (name));
+
   gcc_assert (globals);
   globals->set_global_range (name, r);
 }
