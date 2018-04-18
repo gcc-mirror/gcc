@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fno-tree-fre" } */
+/* { dg-options "-O2 -fdisable-tree-ethread -fdisable-tree-thread1 -fdump-tree-vrp1 -fno-tree-fre" } */
 
 /* This is from PR14052.  */
 

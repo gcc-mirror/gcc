@@ -1,6 +1,6 @@
 /* PR inline-asm/8832 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -dP" } */
+/* { dg-options "-O2 -dP -fdisable-tree-ethread -fdisable-tree-thread1 -fdisable-tree-thread2 -fdisable-tree-thread3 -fdisable-tree-thread4" } */
 
 /* Verify that GCC doesn't optimize
    old style asm instructions.  */

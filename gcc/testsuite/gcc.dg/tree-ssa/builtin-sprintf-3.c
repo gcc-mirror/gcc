@@ -3,7 +3,7 @@
    that the sprintf return value (or value range) optimization is not
    performed for an unknown string.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -Werror -fdump-tree-optimized -fprintf-return-value" } */
+/* { dg-options "-O2 -Wall -Werror -fdump-tree-optimized -fprintf-return-value -fdisable-tree-thread1 -fdisable-tree-thread2 -fdisable-tree-thread3 -fdisable-tree-thread4" } */
 
 #define INT_MAX   __INT_MAX__
 #define INT_MIN   (-INT_MAX - 1)

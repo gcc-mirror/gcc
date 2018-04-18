@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! logical_op_short_circuit  } } } */
-/* { dg-options "-O2 -fdump-tree-dom2-details -w" } */
+/* { dg-options "-O2 -fdump-tree-dom2-details -w -fdisable-tree-thread1 -fdisable-tree-thread2 -fdisable-tree-ethread" } */
 
 enum optab_methods
 {
