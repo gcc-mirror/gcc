@@ -1,3 +1,13 @@
+2018-04-18  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2018-04-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/85261
+	* gcc.target/arm/fpscr.c: Add call to __builtin_arm_set_fpscr with
+	literal value.  Expect 2 MCR instruction.  Fix function prototype.
+	Remove volatile keyword.
+
 2018-04-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
