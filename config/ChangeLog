@@ -1,3 +1,8 @@
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* acx.m4 (GCC_BASE_VER): Remove \$\$ from sed expression.
+
 2018-04-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR gas/22318

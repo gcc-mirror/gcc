@@ -11883,7 +11883,7 @@ EOF
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi
@@ -30084,8 +30084,10 @@ _ACEOF
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
 # of jit/jit-playback.c.
+gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
+echo "gcc_driver_version: ${gcc_driver_version}"
 cat > gcc-driver-name.h <<EOF
-#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_BASEVER}${exeext}"
+#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_driver_version}${exeext}"
 EOF
 
 # Check whether --enable-default-pie was given.

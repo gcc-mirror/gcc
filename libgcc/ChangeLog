@@ -1,3 +1,8 @@
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
 2018-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84945
