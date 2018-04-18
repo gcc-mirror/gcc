@@ -17570,6 +17570,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     }
 
   tree type = begin_lambda_type (r);
+  if (type == error_mark_node)
+    return error_mark_node;
 
   /* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
   determine_visibility (TYPE_NAME (type));

@@ -1,3 +1,9 @@
+2018-04-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84630
+	* pt.c (tsubst_lambda_expr): Check begin_lambda_type return value
+	for error_mark_node.
+
 2018-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84463
