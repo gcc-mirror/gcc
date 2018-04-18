@@ -690,8 +690,6 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
 	 therefore which call will report the ODR violation, if any.  */
 	 if (!odr_type_p (t1)
 	     || !odr_type_p (t2)
-	     || !COMPLETE_TYPE_P (t1)
-	     || !COMPLETE_TYPE_P (t2)
 	     || (!get_odr_type (t1, true)->odr_violated
 		 && !get_odr_type (t2, true)->odr_violated))
         return true;
