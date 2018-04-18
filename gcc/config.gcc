@@ -236,7 +236,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- nothing				\
+  powerpc*-*-*spe*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
