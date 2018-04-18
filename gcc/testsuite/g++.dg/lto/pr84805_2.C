@@ -15,7 +15,7 @@ template < _Lock_policy > class __shared_count { _Sp_counted_base<> *_M_pi; };
 template < typename a, _Lock_policy, bool = g< a >::d, bool = t::d >
 class __shared_ptr_access {};
 template < typename a, _Lock_policy l >
-class __shared_ptr : __shared_ptr_access< a, l > { // { dg-lto-warning "7: type 'struct __shared_ptr' violates the C\\+\\+ One Definition Rule" }
+class __shared_ptr : __shared_ptr_access< a, l > {
   using m = a;
   m *_M_ptr;
   __shared_count< l > _M_refcount;

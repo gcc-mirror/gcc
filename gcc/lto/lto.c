@@ -1772,12 +1772,13 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		  seen_type = true;
 		  num_prevailing_types++;
 		  lto_fixup_prevailing_type (t);
-		}
-	      /* Compute the canonical type of all types.
-		 ???  Should be able to assert that !TYPE_CANONICAL.  */
-	      if (TYPE_P (t) && !TYPE_CANONICAL (t))
-		{
-		  gimple_register_canonical_type (t);
+
+	          /* Compute the canonical type of all types.
+		     Because SCC components ar estreame in random (hash) order
+		     we may have enountered the type before while registering
+		     type canonical of a derived type in the same SCC.  */
+		  if (!TYPE_CANONICAL (t))
+		    gimple_register_canonical_type (t);
 		  if (odr_type_p (t))
 		    register_odr_type (t);
 		}
