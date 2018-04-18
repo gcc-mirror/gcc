@@ -5893,19 +5893,6 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       return arg;
     }
 
-  /* ??? Cope with user tricks that amount to offsetof.  */
-  if (TREE_CODE (argtype) != FUNCTION_TYPE
-      && TREE_CODE (argtype) != METHOD_TYPE
-      && argtype != unknown_type_node
-      && (val = get_base_address (arg))
-      && COMPLETE_TYPE_P (TREE_TYPE (val))
-      && INDIRECT_REF_P (val)
-      && TREE_CONSTANT (TREE_OPERAND (val, 0)))
-    {
-      tree type = build_pointer_type (argtype);
-      return fold_convert (type, fold_offsetof_1 (arg));
-    }
-
   /* Handle complex lvalues (when permitted)
      by reduction to simpler cases.  */
   val = unary_complex_lvalue (ADDR_EXPR, arg);

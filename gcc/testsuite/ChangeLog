@@ -1,3 +1,15 @@
+2018-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84463
+	* g++.dg/cpp0x/constexpr-nullptr-1.C: Add -O1 to dg-options.
+	* g++.dg/cpp0x/constexpr-nullptr-2.C: Expect different diagnostics
+	in two cases.  Uncomment two other tests and add expected dg-error for
+	them.
+	* g++.dg/init/struct2.C: Cast to int rather than long to avoid
+	-Wnarrowing diagnostics on some targets for c++11.
+	* g++.dg/parse/array-size2.C: Remove xfail.
+	* g++.dg/cpp0x/constexpr-84463.C: New test.
+
 2018-04-17  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/undef-bool-2.c: Add -mvsx.
