@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -std=c11 -DNO_WARN_X86_INTRINSICS" } */
+/* { dg-options "-O2 -std=c11 -DNO_WARN_X86_INTRINSICS -mvsx" } */
 
 /* Test to ensure that "bool" gets undef'd in xmmintrin.h when
    we require strict ANSI.  Subsequent use of bool needs stdbool.h.
