@@ -2368,7 +2368,7 @@ arm_expand_builtin (tree exp,
 	  icode = CODE_FOR_set_fpscr;
 	  arg0 = CALL_EXPR_ARG (exp, 0);
 	  op0 = expand_normal (arg0);
-	  pat = GEN_FCN (icode) (op0);
+	  pat = GEN_FCN (icode) (force_reg (SImode, op0));
 	}
       emit_insn (pat);
       return target;
