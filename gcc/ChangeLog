@@ -1,3 +1,9 @@
+2018-04-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85388
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Insert
+	ENDBR after calling __morestack.
+
 2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384
