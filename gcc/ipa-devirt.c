@@ -685,7 +685,7 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
       if (!types_same_for_odr (t1, t2, true))
         return false;
       /* Limit recursion: If subtypes are ODR types and we know
-         that they are same, be happy.  */
+	 that they are same, be happy.  */
       if (!odr_type_p (t1) || !get_odr_type (t1, true)->odr_violated)
         return true;
     }

@@ -1,5 +1,10 @@
 2018-04-18  Martin Liska  <mliska@suse.cz>
 
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Fix GNU coding
+	style.
+
+2018-04-18  Martin Liska  <mliska@suse.cz>
+
 	Revert
 	2018-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
