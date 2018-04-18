@@ -1,3 +1,12 @@
+2018-04-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/83983
+	PR ipa/85391
+	* lto.c (cmp_type_location): New function.
+	(lto_read_decls): First collect all types, then
+	sort them according by location before register_odr_type
+	is called.
+
 2018-04-18  Jan Hubicka  <jh@suse.cz>
 	    Martin Liska  <mliska@suse.cz>
 
