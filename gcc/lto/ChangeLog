@@ -1,5 +1,9 @@
 2018-04-18  Martin Liska  <mliska@suse.cz>
 
+	* lto.c (lto_read_decls): Fix GNU coding style and typos.
+
+2018-04-18  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/83983
 	PR ipa/85391
 	* lto.c (cmp_type_location): New function.
