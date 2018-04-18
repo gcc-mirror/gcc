@@ -5870,19 +5870,71 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   /* The immediately deeper level in the chain.  */
   struct tinst_level *next;
 
-  /* The original node.  Can be either a DECL (for a function or static
-     data member) or a TYPE (for a class), depending on what we were
-     asked to instantiate.  */
-  tree decl;
+  /* The original node.  TLDCL can be a DECL (for a function or static
+     data member), a TYPE (for a class), depending on what we were
+     asked to instantiate, or a TREE_LIST with the template as PURPOSE
+     and the template args as VALUE, if we are substituting for
+     overload resolution.  In all these cases, TARGS is NULL.
+     However, to avoid creating TREE_LIST objects for substitutions if
+     we can help, we store PURPOSE and VALUE in TLDCL and TARGS,
+     respectively.  So TLDCL stands for TREE_LIST or DECL (the
+     template is a DECL too), whereas TARGS stands for the template
+     arguments.  */
+  tree tldcl, targs;
+
+ private:
+  /* Return TRUE iff the original node is a split list.  */
+  bool split_list_p () const { return targs; }
+
+  /* Return TRUE iff the original node is a TREE_LIST object.  */
+  bool tree_list_p () const
+  {
+    return !split_list_p () && TREE_CODE (tldcl) == TREE_LIST;
+  }
+
+  /* Return TRUE iff the original node is not a list, split or not.  */
+  bool not_list_p () const
+  {
+    return !split_list_p () && !tree_list_p ();
+  }
+
+  /* Convert (in place) the original node from a split list to a
+     TREE_LIST.  */
+  tree to_list ();
+
+ public:
+  /* Release storage for OBJ and node, if it's a TREE_LIST.  */
+  static void free(tinst_level *obj);
+
+  /* Return TRUE iff the original node is a list, split or not.  */
+  bool list_p () const { return !not_list_p (); }
+
+  /* Return the original node; if it's a split list, make it a
+     TREE_LIST first, so that it can be returned as a single tree
+     object.  */
+  tree get_node () {
+    if (!split_list_p ()) return tldcl;
+    else return to_list ();
+  }
+
+  /* Return the original node if it's a DECL or a TREE_LIST, but do
+     NOT convert a split list to a TREE_LIST: return NULL instead.  */
+  tree maybe_get_node () const {
+    if (!split_list_p ()) return tldcl;
+    else return NULL_TREE;
+  }
 
   /* The location where the template is instantiated.  */
   location_t locus;
 
   /* errorcount+sorrycount when we pushed this level.  */
-  int errors;
+  unsigned short errors;
 
   /* True if the location is in a system header.  */
   bool in_system_header_p;
+
+  /* Count references to this object.  */
+  unsigned char refcount;
 };
 
 bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);

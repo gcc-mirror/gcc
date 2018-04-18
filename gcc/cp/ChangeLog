@@ -1,3 +1,45 @@
+2018-04-18  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/80290
+	* cp-tree.h (struct tinst_level): Split decl into tldcl and
+	targs.  Add private split_list_p, tree_list_p, and not_list_p
+	inline const predicates; to_list private member function
+	declaration; free public member function declaration; list_p,
+	get_node and maybe_get_node accessors, and refcount data
+	member.  Narrow errors to unsigned short.
+	* error.c (print_instantiation_full_context): Use new
+	accessors.
+	(print_instantiation_partial_context_line): Likewise.  Drop
+	const from tinst_level-typed parameter.
+	* mangle.c (mangle_decl_string): Likewise.
+	* pt.c (freelist): New template class.
+	(tree_list_freelist_head): New var.
+	(tree_list_freelist): New fn, along with specializations.
+	(tinst_level_freelist_head): New var.
+	(pending_template_freelist_head): Likewise.
+	(tinst_level_freelist, pending_template_freelist): New fns.
+	(tinst_level::to_list, tinst_level::free): Define.
+	(inc_refcount_use, dec_refcount_use): New fns for tinst_level.
+	(set_refcount_ptr): New template fn.
+	(add_pending_template): Adjust for refcounting, freelists and
+	new accessors.
+	(neglectable_inst_p): Take a NULL d as a non-DECL.
+	(limit_bad_template_recursion): Use new accessors.
+	(push_tinst_level): New overload to create the list.
+	(push_tinst_level_loc): Make it static, split decl into two
+	args, adjust tests and initialization to cope with split
+	lists, use freelist, adjust for refcounting.
+	(push_tinst_level_loc): New wrapper with the old interface.
+	(pop_tinst_level): Adjust for refcounting.
+	(record_last_problematic_instantiation): Likewise.
+	(reopen_tinst_level): Likewise.  Use new accessors.
+	(instantiate_alias_template): Adjust for split list.
+	(fn_type_unification): Likewise.
+	(get_partial_spec_bindings): Likewise.
+	(instantiate_pending_templates): Use new accessors.  Adjust
+	for refcount.  Release pending_template to freelist.
+	(instantiating_current_function_p): Use new accessors.
+
 2018-04-16  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/85039
