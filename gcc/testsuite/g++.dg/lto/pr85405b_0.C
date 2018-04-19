@@ -1,4 +1,6 @@
 // { dg-lto-do link }
+// { dg-require-effective-target shared }
+// { dg-require-effective-target fpic }
 // { dg-lto-options {{-fPIC -shared -flto}} }
 
 class VclReferenceBase { // { dg-lto-warning "7: type 'struct VclReferenceBase' violates the C\\+\\+ One Definition Rule" }

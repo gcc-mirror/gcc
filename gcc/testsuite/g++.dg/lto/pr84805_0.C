@@ -1,4 +1,6 @@
 // { dg-lto-do link }
+// { dg-require-effective-target shared }
+// { dg-require-effective-target fpic }
 // { dg-lto-options {{-O0 -fPIC -shared -flto}} }
 
 template < typename _Tp, _Tp __v > struct integral_constant {
