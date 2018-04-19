@@ -1,5 +1,14 @@
 2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/85397
+	* config/i386/i386.h (STACK_SAVEAREA_MODE): New.
+	* config/i386/i386.md (builtin_setjmp_setup): Removed.
+	(builtin_longjmp): Likewise.
+	(save_stack_nonlocal): New pattern.
+	(restore_stack_nonlocal): Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/85404
 	* config/i386/cet.c (file_end_indicate_exec_stack_and_cet):
 	Replace ASM_OUTPUT_LABEL with fprintf.

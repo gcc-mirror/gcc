@@ -1,5 +1,12 @@
 2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/85397
+	* gcc.dg/torture/pr85397-1.c: New test.
+	* gcc.target/i386/cet-sjlj-6a.c: Adjusted.
+	* gcc.target/i386/cet-sjlj-6b.c: Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/85404
 	* gcc.target/i386/pr85404.c: New test.
 
