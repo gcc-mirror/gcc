@@ -7,4 +7,4 @@ int
 foo ()
 {
   return -2;
-} /* { dg-error "requires Intel CET support" } */
+}

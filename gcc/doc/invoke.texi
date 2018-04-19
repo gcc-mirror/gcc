@@ -11833,9 +11833,7 @@ which functions and calls should be skipped from instrumentation
 (@pxref{Function Attributes}).
 
 Currently the x86 GNU/Linux target provides an implementation based
-on Intel Control-flow Enforcement Technology (CET).  Instrumentation
-for x86 is controlled by target-specific options @option{-mcet},
-@option{-mibt} and @option{-mshstk} (@pxref{x86 Options}).
+on Intel Control-flow Enforcement Technology (CET).
 
 @item -fstack-protector
 @opindex fstack-protector
@@ -27351,11 +27349,9 @@ the file containing the CPU detection code should be compiled without
 these options.
 
 The @option{-mcet} option turns on the @option{-mibt} and @option{-mshstk}
-options.  The @option{-mibt} option enables indirect branch tracking support
-and the @option{-mshstk} option enables shadow stack support from
-Intel Control-flow Enforcement Technology (CET).  The compiler also provides
-a number of built-in functions for fine-grained control in a CET-based
-application.  See @xref{x86 Built-in Functions}, for more information.
+options.  The compiler provides a number of built-in functions for
+fine-grained control in a CET-based application.  See
+@xref{x86 Built-in Functions}, for more information.
 
 @item -mdump-tune-features
 @opindex mdump-tune-features
@@ -27451,19 +27447,15 @@ This option enables use of the @code{movbe} instruction to implement
 
 @item -mibt
 @opindex mibt
-This option tells the compiler to use indirect branch tracking support
-(for indirect calls and jumps) from x86 Control-flow Enforcement
-Technology (CET).  The option has effect only if the
-@option{-fcf-protection=full} or @option{-fcf-protection=branch} option
-is specified. The option @option{-mibt} is on by default when the
-@code{-mcet} option is specified.
+This option enables indirect branch tracking built-in functions from
+x86 Control-flow Enforcement Technology (CET).  The option
+@option{-mibt} is on by default when the @code{-mcet} option is
+specified.
 
 @item -mshstk
 @opindex mshstk
-This option tells the compiler to use shadow stack support (return
-address tracking) from x86 Control-flow Enforcement Technology (CET).
-The option has effect only if the @option{-fcf-protection=full} or
-@option{-fcf-protection=return} option is specified.  The option
+This option enables shadow stack built-in functions from x86
+Control-flow Enforcement Technology (CET).  The option
 @option{-mshstk} is on by default when the @option{-mcet} option is
 specified.
 

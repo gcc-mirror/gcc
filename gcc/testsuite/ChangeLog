@@ -1,3 +1,31 @@
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85417
+	* c-c++-common/attr-nocf-check-1.c: Compile with
+	-fcf-protection=none.
+	* c-c++-common/attr-nocf-check-3.c: Likewise.
+	* gcc.dg/march-generic.c: Likewise.
+	* gcc.target/i386/align-limit.c: Likewise.
+	* gcc.target/i386/cet-notrack-icf-1.c: Likewise.
+	* gcc.target/i386/cet-notrack-icf-3.c: Likewise.
+	* gcc.target/i386/cet-property-2.c: Likewise.
+	* gcc.target/i386/ret-thunk-26.c: Likewise.
+	* c-c++-common/fcf-protection-1.c: Remove dg-error for x86
+	targets.
+	* c-c++-common/fcf-protection-2.c: Likewise.
+	* c-c++-common/fcf-protection-3.c: Likewise.
+	* c-c++-common/fcf-protection-5.c: Likewise.
+	* c-c++-common/fcf-protection-6.c: Likewise.
+	* c-c++-common/fcf-protection-7.c: Likewise.
+	* gcc.target/i386/cet-label-3.c: New test.
+	* gcc.target/i386/cet-property-3.c: Likewise.
+	* gcc.target/i386/cet-sjlj-7.c: Likewise.
+	* gcc.target/i386/pr85417-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-7.c: Also expect
+	__x86_indirect_thunk_nt_(r|e)ax
+	* gcc.target/i386/indirect-thunk-extern-7.c: Likewise.
+	* gcc.target/i386/pr85403.c: Remove dg-error,
+
 2018-04-19  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/movdir-1.c: New test.

@@ -1,6 +1,6 @@
 /* PR target/r84530 */
 /* { dg-do run } */
-/* { dg-options "-Os -mfunction-return=thunk" } */
+/* { dg-options "-Os -mfunction-return=thunk -fcf-protection=none" } */
 
 struct S { int i; };
 __attribute__((const, noinline, noclone))
