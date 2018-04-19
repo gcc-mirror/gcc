@@ -1,3 +1,9 @@
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85379
+	* config/i386/morestack.S (__stack_split_initialize): Add
+	_CET_ENDBR.
+
 2018-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure: Regenerated.
