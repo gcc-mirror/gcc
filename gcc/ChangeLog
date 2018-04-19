@@ -1,3 +1,36 @@
+2018-04-19  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* common/config/i386/i386-common.c 
+	(OPTION_MASK_ISA_MOVDIRI_SET, OPTION_MASK_ISA_MOVDIR64B_SET,
+	OPTION_MASK_ISA_MOVDIRI_UNSET,
+	OPTION_MASK_ISA_MOVDIR64B_UNSET): New defines.
+	(ix86_handle_option): Handle -mmovdiri and -mmovdir64b.
+	* config.gcc (movdirintrin.h): New header.
+	* config/i386/cpuid.h (bit_MOVDIRI,
+	bit_MOVDIR64B): New bits.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect -mmovdiri
+	and -mmvodir64b.
+	* config/i386/i386-builtin-types.def ((VOID, PUNSIGNED, UNSIGNED),
+	(VOID, PVOID, PCVOID)): New function types.
+	* config/i386/i386-builtin.def (__builtin_ia32_directstoreu_u32,
+	__builtin_ia32_directstoreu_u64,
+	 __builtin_ia32_movdir64b): New builtins.
+	* config/i386/i386-c.c (__MOVDIRI__, __MOVDIR64B__): New.
+	* config/i386/i386.c (ix86_target_string): Added -mmovdir64b
+	and -mmovdiri.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_expand_special_args_builtin): Added VOID_FTYPE_PUNSIGNED_UNSIGNED
+	and VOID_FTYPE_PUNSIGNED_UNSIGNED.
+	(ix86_expand_builtin): Expand IX86_BUILTIN_MOVDIR64B.
+	* config/i386/i386.h (TARGET_MOVDIRI, TARGET_MOVDIRI_P,
+	TARGET_MOVDIR64B, TARGET_MOVDIR64B_P): New.
+	* config/i386/i386.md (UNSPECV_MOVDIRI, UNSPECV_MOVDIR64B): New.
+	(movdiri<mode>, movdir64b_<mode>): New.
+	* config/i386/i386.opt: Add -mmovdiri and -mmovdir64b.
+	* config/i386/immintrin.h: Include movdirintrin.h.
+	* config/i386/movdirintrin.h: New file.
+	* doc/invoke.texi: Added -mmovdiri and -mmovdir64b.
+
 2018-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85455

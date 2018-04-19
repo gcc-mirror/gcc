@@ -2770,7 +2770,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mhle",		OPTION_MASK_ISA_HLE },
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mclzero",	OPTION_MASK_ISA_CLZERO },
-    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX }
+    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
+    { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -2833,7 +2834,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mlwp",		OPTION_MASK_ISA_LWP },
     { "-mfxsr",		OPTION_MASK_ISA_FXSR },
     { "-mclwb",		OPTION_MASK_ISA_CLWB },
-    { "-mshstk",	OPTION_MASK_ISA_SHSTK }
+    { "-mshstk",	OPTION_MASK_ISA_SHSTK },
+    { "-mmovdiri",	OPTION_MASK_ISA_MOVDIRI }
   };
 
   /* Flag options.  */
@@ -5419,6 +5421,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("shstk",	OPT_mshstk),
     IX86_ATTR_ISA ("vaes",	OPT_mvaes),
     IX86_ATTR_ISA ("vpclmulqdq", OPT_mvpclmulqdq),
+    IX86_ATTR_ISA ("movdiri", OPT_mmovdiri),
+    IX86_ATTR_ISA ("movdir64b", OPT_mmovdir64b),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -35997,6 +36001,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PDOUBLE_V2DF:
     case VOID_FTYPE_PLONGLONG_LONGLONG:
     case VOID_FTYPE_PULONGLONG_ULONGLONG:
+    case VOID_FTYPE_PUNSIGNED_UNSIGNED:
     case VOID_FTYPE_PINT_INT:
       nargs = 1;
       klass = store;
@@ -36026,6 +36031,12 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	  break;
 	}
       break;
+    case VOID_FTYPE_PVOID_PCVOID:
+	nargs = 1;
+	klass = store;
+	memory = 0;
+
+	break;
     case V4SF_FTYPE_V4SF_PCV2SF:
     case V2DF_FTYPE_V2DF_PCDOUBLE:
       nargs = 2;
@@ -37165,6 +37176,24 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
       emit_move_insn (target, op0);
       return target;
+
+    case IX86_BUILTIN_MOVDIR64B:
+
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      mode0 = (TARGET_64BIT ? DImode : SImode);
+
+      op0 = force_reg (mode0, op0);
+      if (!memory_operand (op1, mode0))
+	op1 = gen_rtx_MEM (mode0, op1);
+
+      insn = (TARGET_64BIT
+		? gen_movdir64b_di (op0, op1)
+		: gen_movdir64b_si (op0, op1));
+      emit_insn (insn);
+      return 0;
 
     case IX86_BUILTIN_FXSAVE:
     case IX86_BUILTIN_FXRSTOR:

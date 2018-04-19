@@ -423,6 +423,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_ibt = 0, has_shstk = 0;
   unsigned int has_avx512vnni = 0, has_vaes = 0;
   unsigned int has_vpclmulqdq = 0;
+  unsigned int has_movdiri = 0, has_movdir64b = 0;
 
   bool arch;
 
@@ -518,6 +519,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_vaes = ecx & bit_VAES;
       has_vpclmulqdq = ecx & bit_VPCLMULQDQ;
       has_avx512bitalg = ecx & bit_AVX512BITALG;
+      has_movdiri = ecx & bit_MOVDIRI;
+      has_movdir64b = ecx & bit_MOVDIR64B;
 
       has_avx5124vnniw = edx & bit_AVX5124VNNIW;
       has_avx5124fmaps = edx & bit_AVX5124FMAPS;
@@ -1097,6 +1100,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *vaes = has_vaes ? " -mvaes" : " -mno-vaes";
       const char *vpclmulqdq = has_vpclmulqdq ? " -mvpclmulqdq" : " -mno-vpclmulqdq";
       const char *avx512bitalg = has_avx512bitalg ? " -mavx512bitalg" : " -mno-avx512bitalg";
+      const char *movdiri = has_movdiri ? " -mmovdiri" : " -mno-movdiri";
+      const char *movdir64b = has_movdir64b ? " -mmovdir64b" : " -mno-movdir64b";
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, sgx, bmi2,
@@ -1109,7 +1114,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			avx512ifma, avx512vbmi, avx5124fmaps, avx5124vnniw,
 			clwb, mwaitx, clzero, pku, rdpid, gfni, ibt, shstk,
 			avx512vbmi2, avx512vnni, vaes, vpclmulqdq,
-			avx512bitalg, NULL);
+			avx512bitalg, movdiri, movdir64b, NULL);
     }
 
 done:
