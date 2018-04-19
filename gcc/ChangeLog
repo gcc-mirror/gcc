@@ -1,5 +1,11 @@
 2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/85404
+	* config/i386/cet.c (file_end_indicate_exec_stack_and_cet):
+	Replace ASM_OUTPUT_LABEL with fprintf.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/85417
 	* config/i386/cet.c (file_end_indicate_exec_stack_and_cet):
 	Check flag_cf_protection instead of TARGET_IBT and TARGET_SHSTK.
