@@ -1,3 +1,8 @@
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* g++.dg/torture/pr85334.C: New test.
+
 2018-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/85464 - missing location for -Wignored-qualifiers diagnostic
