@@ -1,3 +1,8 @@
+2018-04-19  Toon Moene  <toon@moene.org>
+
+	* doc/invoke.texi: Add -floop-unroll-and-jam to options enabled
+	by -O3. 
+
 2018-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/85467

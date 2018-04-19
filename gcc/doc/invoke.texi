@@ -7652,6 +7652,7 @@ by @option{-O2} and also turns on the following optimization flags:
 -ftree-loop-distribution @gol
 -ftree-loop-distribute-patterns @gol
 -floop-interchange @gol
+-floop-unroll-and-jam @gol
 -fsplit-paths @gol
 -ftree-slp-vectorize @gol
 -fvect-cost-model @gol
