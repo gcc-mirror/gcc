@@ -49,3 +49,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	}					\
     }						\
     while (0)
+
+/* Increment frame count.  Skip signal frames.  */
+#undef _Unwind_Frames_Increment
+#define _Unwind_Frames_Increment(context, frames) \
+  if (!_Unwind_IsSignalFrame (context)) frames++

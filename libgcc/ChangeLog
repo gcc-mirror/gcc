@@ -1,5 +1,15 @@
 2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR libgcc/85334
+	* unwind-generic.h (_Unwind_Frames_Increment): New.
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Likewise.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Increment frame
+	count with _Unwind_Frames_Increment.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR libgcc/85379
 	* config/i386/morestack.S (__stack_split_initialize): Add
 	_CET_ENDBR.
