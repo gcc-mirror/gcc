@@ -1,3 +1,10 @@
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85467
+	* fold-const.c (fold_ternary_loc) <case BIT_FIELD_REF>: Use
+	VECTOR_TYPE_P macro.  If type is vector type, VIEW_CONVERT_EXPR the
+	VECTOR_CST element to type.
+
 2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85397

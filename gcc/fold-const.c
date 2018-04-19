@@ -11631,7 +11631,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
     case BIT_FIELD_REF:
       if (TREE_CODE (arg0) == VECTOR_CST
 	  && (type == TREE_TYPE (TREE_TYPE (arg0))
-	      || (TREE_CODE (type) == VECTOR_TYPE
+	      || (VECTOR_TYPE_P (type)
 		  && TREE_TYPE (type) == TREE_TYPE (TREE_TYPE (arg0))))
 	  && tree_fits_uhwi_p (op1)
 	  && tree_fits_uhwi_p (op2))
@@ -11653,7 +11653,12 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      if (TREE_CODE (arg0) == VECTOR_CST)
 		{
 		  if (n == 1)
-		    return VECTOR_CST_ELT (arg0, idx);
+		    {
+		      tem = VECTOR_CST_ELT (arg0, idx);
+		      if (VECTOR_TYPE_P (type))
+			tem = fold_build1 (VIEW_CONVERT_EXPR, type, tem);
+		      return tem;
+		    }
 
 		  tree_vector_builder vals (type, n, 1);
 		  for (unsigned i = 0; i < n; ++i)
