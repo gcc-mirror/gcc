@@ -1,3 +1,18 @@
+2018-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/85463
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: New file.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-3.f: Likewise.
+
+	PR libfortran/85166
+	* testsuite/libgomp.oacc-fortran/abort-1.f90: Switch back to "call
+	abort".
+	* testsuite/libgomp.oacc-fortran/abort-2.f90: Likewise.
+
 2018-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure: Regenerated.
