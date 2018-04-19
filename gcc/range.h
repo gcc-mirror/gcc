@@ -58,7 +58,7 @@ class irange
   /* Whether or not a set operation overflowed.  */
   bool overflow;
   /* The type of the range.  */
-  const_tree type;
+  tree type;
   /* The pairs of sub-ranges in the range.  */
   wide_int bounds[max_pairs * 2];
 
@@ -73,27 +73,27 @@ class irange
      regular range, or the inverse of a range.  */
   enum kind { PLAIN, INVERSE };
   irange () { type = NULL_TREE; nitems = 0; }
-  explicit irange (const_tree t) { set_range (t); }
-  irange (const_tree typ, const wide_int &lbound, const wide_int &ubound,
+  explicit irange (tree t) { set_range (t); }
+  irange (tree typ, const wide_int &lbound, const wide_int &ubound,
 	  kind rt = PLAIN)
     { set_range (typ, lbound, ubound, rt); }
-  irange (const_tree typ, const_tree lbound, const_tree ubound,
+  irange (tree typ, tree lbound, tree ubound,
 	  kind rt = PLAIN)
     { set_range (typ, wi::to_wide (lbound), wi::to_wide (ubound), rt); }
   irange (const irange &);
   irange (const irange_storage *stor, tree typ) { set_range (stor, typ); }
-  irange (const_tree t, int x, int y, kind k = PLAIN)
+  irange (tree t, int x, int y, kind k = PLAIN)
 						    { set_range (t, x, y, k); }
 
-  void set_range (const irange_storage *, const_tree);
-  void set_range (const_tree);
-  void set_range (const_tree, const wide_int &lbound, const wide_int &ubound,
+  void set_range (const irange_storage *, tree);
+  void set_range (tree);
+  void set_range (tree, const wide_int &lbound, const wide_int &ubound,
 		  kind rt = PLAIN);
-  void set_range (const_tree typ, const_tree lbound, const_tree ubound,
+  void set_range (tree typ, tree lbound, tree ubound,
 		  kind rt = PLAIN)
     { set_range (typ, wi::to_wide (lbound), wi::to_wide (ubound), rt);  }
-  void set_range (const_tree t, int x, int y, kind rt = PLAIN);
-  void set_range_for_type (const_tree);
+  void set_range (tree t, int x, int y, kind rt = PLAIN);
+  void set_range_for_type (tree);
 
   bool overflow_p () const { return overflow && !TYPE_OVERFLOW_WRAPS (type); }
   void set_overflow () { overflow = true; }
@@ -118,7 +118,7 @@ class irange
      sub-range to remove.  */
   void remove_pair (unsigned pair) { remove (pair * 2, pair * 2 + 1); }
   void clear () { nitems = 0; }
-  void clear (const_tree t) { type = t; nitems = 0; overflow = false; }
+  void clear (tree t) { type = t; nitems = 0; overflow = false; }
   bool empty_p () const { return !nitems; }
   bool range_for_type_p () const;
   bool simple_range_p () const { return nitems == 2; }
@@ -136,17 +136,17 @@ class irange
   void dump (FILE *) const;
 
   bool valid_p () const;
-  void cast (const_tree type);
+  void cast (tree type);
   bool contains_p (const wide_int &element) const;
-  bool contains_p (const_tree) const;
+  bool contains_p (tree) const;
   bool contains_p (int) const;
 
-  const_tree get_type () const { return type; }
+  tree get_type () const { return type; }
 
   void intersect_mask (const wide_int& mask);
 
   irange& operator= (const irange &r);
-  irange& operator= (const_tree t);
+  irange& operator= (tree t);
 
   bool operator== (const irange &r) const;
   bool operator!= (const irange &r) const { return !(*this == r); }
@@ -280,7 +280,7 @@ class GTY((variable_size)) irange_storage
   }
   /* Extract the current range onto OUTPUT with a type of TYP.
      Returns the range.  */
-  inline irange &extract_irange (irange &output, const_tree typ);
+  inline irange &extract_irange (irange &output, tree typ);
   /* Set the nonzero bit mask to WI.  */
   void set_nonzero_bits (const wide_int &wi)
   { trailing_bounds[irange::max_pairs * 2] = wi; }
@@ -293,7 +293,7 @@ class GTY((variable_size)) irange_storage
    Returns OUTPUT.  */
 
 inline irange &
-irange_storage::extract_irange (irange &output, const_tree typ)
+irange_storage::extract_irange (irange &output, tree typ)
 {
   output.set_range (this, typ);
   return output;

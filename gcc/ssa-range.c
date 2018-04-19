@@ -53,7 +53,7 @@ class ssa_block_ranges
 private:
   vec<irange_storage *> tab;
   irange_storage *type_range;
-  const_tree type;
+  tree type;
 public:
   ssa_block_ranges (tree t);
   ~ssa_block_ranges ();

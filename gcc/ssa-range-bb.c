@@ -362,8 +362,8 @@ block_ranger::~block_ranger ()
 void
 block_ranger::normalize_bool_type (irange& r1, irange& r2)
 {
-  const_tree t1 = r1.get_type ();
-  const_tree t2 = r2.get_type ();
+  tree t1 = r1.get_type ();
+  tree t2 = r2.get_type ();
   if (TREE_CODE (t1) != BOOLEAN_TYPE || TREE_CODE (t2) != BOOLEAN_TYPE)
     return;
 

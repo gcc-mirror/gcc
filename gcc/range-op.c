@@ -60,8 +60,7 @@ min_limit (const_tree type)
 }
 
 inline bool
-empty_range_check (irange& r, const irange& op1, const irange & op2,
-		   const_tree type)
+empty_range_check (irange& r, const irange& op1, const irange & op2, tree type)
 {
   if (op1.empty_p () || op2.empty_p ())
     {
@@ -111,7 +110,7 @@ add_to_range (irange& r, wide_int& lb, bool ov_lb, wide_int& ub, bool ov_ub)
 
 /* Handle the first addition to a range while handling the overflow bits.  */
 static void
-set_range (const_tree type, irange& r, wide_int& lb, bool ov_lb, wide_int& ub,
+set_range (tree type, irange& r, wide_int& lb, bool ov_lb, wide_int& ub,
 	   bool ov_ub)
 {
   r.clear (type);
@@ -158,7 +157,7 @@ enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
    for EMPTY or FULL, return the equivilent range for TYPE,
    for BRS_TRUE and BRS false, return the negatiuon of the bool range.  */
 static bool_range_state
-get_bool_state (irange& r, const irange& lhs, const_tree val_type)
+get_bool_state (irange& r, const irange& lhs, tree val_type)
 {
   /* If there is no result, then this is unexectuable, so no range. */
   if (lhs.empty_p ())
@@ -363,7 +362,7 @@ operator_not_equal::op2_irange (irange& r, const irange& lhs,
 
 /* (X < VAL) produces the a range of [MIN, VAL - 1]  */
 static void
-build_lt (irange& r, const_tree type, const wide_int& val)
+build_lt (irange& r, tree type, const wide_int& val)
 {
   bool ov;
   wide_int lim = wi::sub (val, 1, TYPE_SIGN (type), &ov);
@@ -377,14 +376,14 @@ build_lt (irange& r, const_tree type, const wide_int& val)
 
 /* (X <= VAL) produces the a range of [MIN, VAL]  */
 static void
-build_le (irange& r, const_tree type, const wide_int& val)
+build_le (irange& r, tree type, const wide_int& val)
 {
   r.set_range (type, min_limit (type), val);
 }
 
 /* (X > VAL) produces the a range of [VAL + 1, MAX]  */
 static void
-build_gt (irange& r, const_tree type, const wide_int& val)
+build_gt (irange& r, tree type, const wide_int& val)
 {
   bool ov;
   wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
@@ -397,7 +396,7 @@ build_gt (irange& r, const_tree type, const wide_int& val)
 
 /* (X >= val) produces the a range of [VAL, MAX]  */
 static void
-build_ge (irange& r, const_tree type, const wide_int& val)
+build_ge (irange& r, tree type, const wide_int& val)
 {
   r.set_range (type, val, max_limit (type));
 }
@@ -737,7 +736,7 @@ op_ir (opm_mode mode, irange& r, const wide_int& lh, const irange& rh)
   bool ov_lb, ov_ub;
   unsigned x;
   wide_int lb, ub, new_lb, new_ub;
-  const_tree type = rh.get_type ();
+  tree type = rh.get_type ();
   signop s = TYPE_SIGN (type);
 
   r.clear (type);
@@ -799,7 +798,7 @@ op_ri (opm_mode mode, irange& r, const irange& lh, const wide_int& rh)
   bool ov_lb, ov_ub;
   unsigned x;
   wide_int lb, ub, new_lb, new_ub;
-  const_tree type = lh.get_type ();
+  tree type = lh.get_type ();
   signop s = TYPE_SIGN (type);
 
   r.clear (type);
@@ -867,7 +866,7 @@ op_rr (opm_mode mode, irange& r, const irange& lh, const irange& rh)
     {
       wide_int lb, ub, new_lb, new_ub;
       bool ov_lb, ov_ub;
-      const_tree type = lh.get_type ();
+      tree type = lh.get_type ();
       signop s = TYPE_SIGN (type);
 
       switch (mode)
@@ -1124,7 +1123,7 @@ operator_divide::op1_irange (irange& r ATTRIBUTE_UNUSED,
     {
       wide_int ub, lb;
       bool lb_ov = false, ub_ov = false;
-      const_tree type = op2.get_type ();
+      tree type = op2.get_type ();
       signop sign = TYPE_SIGN (type);
 
       // no complex ranges, or divide by 0
@@ -1264,8 +1263,8 @@ bool
 operator_cast::op1_irange (irange& r, const irange& lhs,
 			   const irange& op2) const
 {
-  const_tree lhs_type = lhs.get_type ();
-  const_tree op2_type = op2.get_type ();
+  tree lhs_type = lhs.get_type ();
+  tree op2_type = op2.get_type ();
   irange op_type;
 
   /* if the precision of the LHS is smaller than the precision of the RHS,
@@ -1485,8 +1484,7 @@ operator_bitwise_and::fold_range (irange& r, const irange& lh,
 
   wide_int w;
   /* If this is really a logical operation, call that.  */
-  if (types_compatible_p (const_cast <tree> (lh.get_type ()),
-			  boolean_type_node))
+  if (types_compatible_p (lh.get_type (), boolean_type_node))
     return op_logical_and.fold_range (r, lh, rh);
 
   if (lh.singleton_p (w))
@@ -1509,8 +1507,7 @@ operator_bitwise_and::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
   /* If this is really a logical operation, call that.  */
-  if (types_compatible_p (const_cast <tree> (lhs.get_type ()),
-			  boolean_type_node))
+  if (types_compatible_p (lhs.get_type (), boolean_type_node))
     return op_logical_and.op1_irange (r, lhs, op2);
 
   /* For now do nothing with bitwise AND of iranges, just return the type. */
@@ -1616,8 +1613,7 @@ operator_bitwise_or::fold_range (irange& r, const irange& lh,
     return true;
 
   /* If this is really a logical operation, call that.  */
-  if (types_compatible_p (const_cast <tree> (lh.get_type ()),
-			  boolean_type_node))
+  if (types_compatible_p (lh.get_type (), boolean_type_node))
     return op_logical_or.fold_range (r, lh, rh);
 
   /* For now do nothing with bitwise AND of iranges, just return the type. */
@@ -1630,8 +1626,7 @@ operator_bitwise_or::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
   /* If this is really a logical operation, call that.  */
-  if (types_compatible_p (const_cast <tree> (lhs.get_type ()),
-			  boolean_type_node))
+  if (types_compatible_p (lhs.get_type (), boolean_type_node))
     return op_logical_or.op1_irange (r, lhs, op2);
 
   /* For now do nothing with bitwise AND of iranges, just return the type. */
@@ -1725,8 +1720,7 @@ operator_bitwise_not::fold_range (irange& r, const irange& lh,
     return true;
 
   /* If this is a boolean not, call the logical version.  */
-  if (types_compatible_p (const_cast <tree> (lh.get_type ()),
-			  boolean_type_node))
+  if (types_compatible_p (lh.get_type (), boolean_type_node))
     return op_logical_not.fold_range (r, lh, rh);
 
   /* Not sure how to logical not a range, add bitpattern support.  */
@@ -1739,8 +1733,7 @@ operator_bitwise_not::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2 ATTRIBUTE_UNUSED) const
 {
   /* If this is a boolean not, call the logical version.  */
-  if (types_compatible_p (const_cast <tree> (lhs.get_type ()),
-			  boolean_type_node))
+  if (types_compatible_p (lhs.get_type (), boolean_type_node))
     return op_logical_not.op1_irange (r, lhs, op2);
 
   /* Not sure how to logical not a range, add bitpattern support.  */

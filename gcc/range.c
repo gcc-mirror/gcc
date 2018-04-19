@@ -31,17 +31,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 
 static bool
-range_compatible_p (const_tree t1, const_tree t2)
+range_compatible_p (tree t1, tree t2)
 {
   if (POINTER_TYPE_P (t1) && POINTER_TYPE_P (t2))
     return true;
-  return types_compatible_p (const_cast <tree> (t1), const_cast <tree> (t2));
+  return types_compatible_p (t1, t2);
 }
 
 /* Subtract 1 from X and set OVERFLOW if the operation overflows.  */
 
 static wide_int inline
-subtract_one (const wide_int &x, const_tree type, bool &overflow)
+subtract_one (const wide_int &x, tree type, bool &overflow)
 {
   /* A signed 1-bit bit-field, has a range of [-1,0] so subtracting +1
      overflows, since +1 is unrepresentable.  This is why we have an
@@ -58,7 +58,7 @@ subtract_one (const wide_int &x, const_tree type, bool &overflow)
    range.  */
 
 void
-irange::set_range (const_tree typ, const wide_int &lbound,
+irange::set_range (tree typ, const wide_int &lbound,
 		   const wide_int &ubound, kind rt)
 {
   gcc_assert (INTEGRAL_TYPE_P (typ) || POINTER_TYPE_P (typ));
@@ -117,7 +117,7 @@ irange::set_range (const_tree typ, const wide_int &lbound,
    range.  */
 
 void
-irange::set_range (const_tree t, int x, int y, kind rt)
+irange::set_range (tree t, int x, int y, kind rt)
 {
   int precision = TYPE_PRECISION (t);
   wide_int xi, yi;
@@ -137,7 +137,7 @@ irange::set_range (const_tree t, int x, int y, kind rt)
 // Set range from an IRANGE_STORAGE and TYPE.
 
 void
-irange::set_range (const irange_storage *storage, const_tree typ)
+irange::set_range (const irange_storage *storage, tree typ)
 {
   overflow = false;
   type = typ;
@@ -164,7 +164,7 @@ irange::set_range (const irange_storage *storage, const_tree typ)
    available range, build a range for its entire domain.  */
 
 void
-irange::set_range (const_tree ssa)
+irange::set_range (tree ssa)
 {
   tree t = TREE_TYPE (ssa);
   gcc_assert (TREE_CODE (ssa) == SSA_NAME && (INTEGRAL_TYPE_P (t)
@@ -185,7 +185,7 @@ irange::set_range (const_tree ssa)
 /* Set range from the full domain of type T.  */
 
 void
-irange::set_range_for_type (const_tree t)
+irange::set_range_for_type (tree t)
 {
   gcc_assert (TYPE_P (t));
   gcc_assert (INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t));
@@ -229,7 +229,7 @@ irange::operator= (const irange &r)
 
 
 irange&
-irange::operator= (const_tree t)
+irange::operator= (tree t)
 {
   set_range (t);
   return *this;
@@ -278,7 +278,7 @@ irange::valid_p () const
    The type of the original range is changed to the new type.  */
 
 void
-irange::cast (const_tree new_type)
+irange::cast (tree new_type)
 {
   if (!nitems)
     {
@@ -302,16 +302,12 @@ irange::cast (const_tree new_type)
      the new type.  */
   if (new_precision < TYPE_PRECISION (type))
     {
-      /* NOTE: There are some const_cast<> sprinkled throughout
-	 because the fold_convert machinery is not properly
-	 constified.  */
       /* Get the extreme bounds for the new type, but within the old type,
 	 so we can properly compare them.  */
-      wide_int lbound = wi::to_wide (fold_convert (const_cast<tree> (type),
+      wide_int lbound = wi::to_wide (fold_convert (type,
 						   TYPE_MIN_VALUE (new_type)));
       wide_int ubound
-	= wi::to_wide (fold_convert (const_cast <tree> (type),
-				     TYPE_MAX_VALUE (new_type)));
+	= wi::to_wide (fold_convert (type, TYPE_MAX_VALUE (new_type)));
 
       if (wi::lt_p (bounds[0], lbound, TYPE_SIGN (type))
 	  || wi::gt_p (bounds[nitems - 1], ubound, TYPE_SIGN (type)))
@@ -334,13 +330,10 @@ irange::cast (const_tree new_type)
   for (unsigned i = 0; i < nitems; i += 2)
     {
       tree b0
-	= fold_convert (const_cast<tree> (new_type),
-			wide_int_to_tree (const_cast<tree> (type),
-					  bounds[i]));
+	= fold_convert (new_type, wide_int_to_tree (type, bounds[i]));
       tree b1
-	= fold_convert (const_cast<tree> (new_type),
-			wide_int_to_tree (const_cast<tree> (type),
-					  bounds[i+1]));
+	= fold_convert (new_type,
+			wide_int_to_tree (type, bounds[i+1]));
       bool sbit0 = bounds[i].sign_mask () < 0;
       bool sbit1 = bounds[i + 1].sign_mask () < 0;
 
@@ -420,11 +413,10 @@ irange::contains_p (const wide_int &element) const
 // Like above, but ELEMENT can be an INTEGER_CST of any type.
 
 bool
-irange::contains_p (const_tree element) const
+irange::contains_p (tree element) const
 {
   gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (element)));
-  tree t = fold_convert (const_cast <tree> (type),
-			 const_cast <tree> (element));
+  tree t = fold_convert (type, element);
   if (TREE_OVERFLOW (t))
     return false;
   wide_int wi = wi::to_wide (t);
@@ -926,7 +918,7 @@ irange::dump (pretty_printer *buffer) const
     pp_string (buffer, "[]");
 
   pp_character (buffer, ' ');
-  dump_generic_node (buffer, const_cast <tree> (type), 0, 0, false);
+  dump_generic_node (buffer, type, 0, 0, false);
   if (overflow)
     pp_string (buffer, " (overflow)");
   pp_newline_and_flush (buffer);
@@ -977,7 +969,7 @@ irange_storage::set_irange (const irange &ir)
 }
 
 bool
-make_irange (irange *result, const_tree lb, const_tree ub, const_tree type)
+make_irange (irange *result, tree lb, tree ub, tree type)
 {
   irange r (TREE_TYPE (lb), lb, ub);
   *result = r;
@@ -991,7 +983,7 @@ make_irange (irange *result, const_tree lb, const_tree ub, const_tree type)
 }
 
 bool
-make_irange_not (irange *result, const_tree not_exp, const_tree type)
+make_irange_not (irange *result, tree not_exp, tree type)
 {
   irange r (TREE_TYPE (not_exp), not_exp, not_exp, irange::INVERSE);
   *result = r;
