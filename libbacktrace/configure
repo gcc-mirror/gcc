@@ -1386,8 +1386,7 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-largefile     omit support for large files
-  --enable-cet            enable Intel CET in target libraries
-                          [default=default]
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --enable-host-shared    build host code as shared libraries
 
 Optional Packages:
@@ -11149,7 +11148,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11152 "configure"
+#line 11151 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11255,7 +11254,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11258 "configure"
+#line 11257 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11793,12 +11792,12 @@ if test -n "${with_target_subdir}"; then
 if test "${enable_cet+set}" = set; then :
   enableval=$enable_cet;
       case "$enableval" in
-       yes|no|default) ;;
+       yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
                           esac
 
 else
-  enable_cet=default
+  enable_cet=no
 fi
 
 
@@ -11808,7 +11807,7 @@ $as_echo_n "checking for CET support... " >&6; }
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
-      default)
+      auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext

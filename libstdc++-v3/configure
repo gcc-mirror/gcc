@@ -1598,8 +1598,7 @@ Optional Features:
                           enable C++11 threads support [default=auto]
   --enable-libstdcxx-filesystem-ts
                           turns on ISO/IEC TS 18822 support [default=auto]
-  --enable-cet            enable Intel CET in target libraries
-                          [default=default]
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -11607,7 +11606,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11610 "configure"
+#line 11609 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11713,7 +11712,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11716 "configure"
+#line 11715 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15399,7 +15398,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15402 "configure"
+#line 15401 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15434,7 +15433,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15437 "configure"
+#line 15436 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15469,7 +15468,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15472 "configure"
+#line 15471 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15505,7 +15504,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15508 "configure"
+#line 15507 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15586,7 +15585,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15589 "configure"
+#line 15588 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15628,7 +15627,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15631 "configure"
+#line 15630 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15662,7 +15661,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15665 "configure"
+#line 15664 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -81146,12 +81145,12 @@ CPU_OPT_BITS_RANDOM=config/${cpu_opt_bits_random}
 if test "${enable_cet+set}" = set; then :
   enableval=$enable_cet;
       case "$enableval" in
-       yes|no|default) ;;
+       yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
                           esac
 
 else
-  enable_cet=default
+  enable_cet=no
 fi
 
 
@@ -81161,7 +81160,7 @@ $as_echo_n "checking for CET support... " >&6; }
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
-      default)
+      auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext

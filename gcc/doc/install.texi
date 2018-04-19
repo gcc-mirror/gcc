@@ -2103,10 +2103,11 @@ instrumentation, see @option{-fcf-protection} option.  When
 to add @option{-fcf-protection} and, if needed, other target
 specific options to a set of building options.
 
-The option is enabled by default on Linux/x86 if target binutils
-supports @code{Intel CET} instructions.  In this case the target
-libraries are configured to get additional @option{-fcf-protection}
-and @option{-mcet} options.
+The option is disabled by default.  When @code{--enable-cet=auto}
+is used, it is enabled on Linux/x86 if target binutils
+supports @code{Intel CET} instructions and disabled otherwise.
+In this case the target libraries are configured to get additional
+@option{-fcf-protection} and @option{-mcet} options.
 @end table
 
 @subheading Cross-Compiler-Specific Options
