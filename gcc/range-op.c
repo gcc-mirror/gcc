@@ -1051,6 +1051,7 @@ operator_multiply::op1_irange (irange& r, const irange& lhs,
 			       const irange& op2) const
 {
   wide_int c;
+  return  false;
   // For overflow types. all we know is that the lower "precsion / 2" bits
   // match up with the range of the LHS.  See if we know anything about
   // the zero bits.
@@ -1066,6 +1067,7 @@ operator_multiply::op2_irange (irange& r, const irange& lhs,
 			       const irange& op1) const
 {
   wide_int c;
+  return  false;
   // For overflow types. all we know is that the lower "precsion / 2" bits
   // match up with the range of the LHS.  See if we know anything about
   // the zero bits.
@@ -1457,12 +1459,30 @@ operator_bitwise_and::apply_mask_to_range (irange &r, const irange& val,
   for (unsigned i = 0; i < tmp.num_pairs (); i++)
     apply_mask_to_pair (r, tmp.lower_bound (i), tmp.upper_bound (i), mask);
 
-  // If we converted from signed, convert back. 
+  // If nothing intersects with mask, then jhe result has to be 0. 
   if (r.empty_p ())
-    r.set_range (val.get_type (), 0, 0);
-  else
-    if (sign == SIGNED)
-      r.cast (val.get_type ());
+    {
+      r.set_range (val.get_type (), 0, 0);
+      return true;
+    }
+
+  // If the resulting range contains 0, AND the least significant bit of
+  // mask is not set, we can improve the range by making the least significant
+  // bit set the minimum, and adding in 0.
+  // ie,   a & 0x1C  returns a range of [0,28], we can improve this to
+  // [0,0][12, 28] since we have subranges now.
+  int tz;
+  if (r.contains_p (0) && (tz = wi::ctz (mask)) != 0)
+    {
+      wide_int lb = wi::set_bit_in_zero (tz, mask.get_precision ());
+      wide_int ub = r.upper_bound();
+      r.intersect (lb, ub);
+      r.union_ (irange (r.get_type (), 0, 0));
+    }
+
+  // If we converted from signed, convert back. 
+  if (sign == SIGNED)
+    r.cast (val.get_type ());
 
   return true;
 }
@@ -1493,12 +1513,21 @@ operator_bitwise_and::fold_range (irange& r, const irange& lh,
     if (rh.singleton_p (w))
       return apply_mask_to_range (r, lh, w);
 
-  // Oddly, unioning the 2 ranges is better than giving up.
-  // [10,20] & [30,40]  we could give up, but if we union them together
-  // we should get all possible bit combinations, without introducing
-  // impossible bits like 0x80 which we'd get if we gave up.
-  // This also produces correct results for null and non-null tracking.
-  r = irange_union (lh, rh);
+  tree type = lh.get_type ();
+  // FOr pointers we only care about NULL and NONNULL, and the union operation
+  // actually gets the results we desire.
+  if (POINTER_TYPE_P (type))
+    r = irange_union (lh, rh);
+  else
+    {
+      // To be safe, make the range largest to smallest, and include 0.
+      wide_int ub = wi::max (lh.upper_bound (), rh.upper_bound(),
+			     TYPE_SIGN (lh.get_type ()));
+      wide_int lb = wi::min (lh.lower_bound (), rh.lower_bound(),
+			     TYPE_SIGN (lh.get_type ()));
+      lb = wi::min (lb, 0, TYPE_SIGN (lh.get_type ()));
+      r.set_range (lh.get_type (), lb, ub);
+    }
   return true;
 }
 
@@ -1804,6 +1833,145 @@ operator_ssa_name::op1_irange (irange& r, const irange& lhs,
 }
 
 
+class operator_pointer_plus : public irange_operator
+{
+public:
+  virtual void dump (FILE *f) const;
+
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+} op_pointer_plus;
+
+void 
+operator_pointer_plus::dump (FILE *f) const
+{
+  fprintf (f, " POINTER_PLUS ");
+}
+
+bool
+operator_pointer_plus::fold_range (irange& r, const irange& lh,
+				   const irange& rh) const
+{
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
+  // For pointer types we are mostly concerned with NULL and NON-NULL.
+  if (!lh.contains_p (0) || !rh.contains_p (0))
+    r.set_range (lh.get_type (), 0, 0, irange::INVERSE);
+  else
+    if (lh.zero_p () && rh.zero_p ())
+      r = lh;
+    else
+      r.set_range_for_type (lh.get_type ());
+  return true;
+}
+
+class operator_min_max : public irange_operator
+{
+  tree_code code;
+public:
+  operator_min_max (tree_code c);
+  virtual void dump (FILE *f) const;
+
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_irange (irange& r, const irange& lhs,
+			   const irange& op2) const;
+  virtual bool op2_irange (irange& r, const irange& lhs,
+			   const irange& op1) const;
+} op_min (MIN_EXPR), op_max (MAX_EXPR);
+
+operator_min_max::operator_min_max (tree_code c)
+{
+  gcc_assert (c == MIN_EXPR || c == MAX_EXPR);
+  code = c;
+}
+
+void 
+operator_min_max::dump (FILE *f) const
+{
+  if (code == MIN_EXPR)
+    fprintf (f, " MIN ");
+  else
+    fprintf (f, " MAX ");
+}
+
+bool
+operator_min_max::fold_range (irange& r, const irange& lh,
+			      const irange& rh) const
+{
+  wide_int lb, ub;
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
+  if (POINTER_TYPE_P (lh.get_type ()))
+    {
+      // For pointer types we are mostly concerned with NULL and NON-NULL.
+      if (!lh.contains_p (0) || !rh.contains_p (0))
+	r.set_range (lh.get_type (), 0, 0, irange::INVERSE);
+      else
+	if (lh.zero_p () && rh.zero_p ())
+	  r = lh;
+	else
+	  r.set_range_for_type (lh.get_type ());
+      return true;
+    }
+  signop sign = TYPE_SIGN (lh.get_type ());
+  if (code == MIN_EXPR)
+    {
+      lb = wi::min (lh.lower_bound (), rh.lower_bound (), sign);
+      ub = wi::min (lh.upper_bound (), rh.upper_bound (), sign);
+    }
+  else
+    {
+      lb = wi::max (lh.lower_bound (), rh.lower_bound (), sign);
+      ub = wi::max (lh.upper_bound (), rh.upper_bound (), sign);
+    }
+  r.set_range (lh.get_type (), lb, ub);
+  return true;
+}
+
+bool
+operator_min_max::op1_irange (irange& r, const irange& lhs,
+				   const irange& op2) const
+{
+  if (empty_range_check (r, lhs, op2, lhs.get_type ()))
+    return true;
+
+  if (POINTER_TYPE_P (lhs.get_type ()))
+    return false;
+  
+  wide_int lb = lhs.lower_bound ();
+  wide_int ub = lhs.upper_bound ();
+  if (code == MIN_EXPR)
+    {
+      // If the upper bound is set by the other operand, we have no idea
+      // what this upper could be, otherwise it HAS to be the upper bound.
+      if (wi::eq_p (lhs.upper_bound (), op2.upper_bound ()))
+	ub = max_limit (lhs.get_type ());
+    }
+  else
+    {
+      // this operand.   Otherwise, it could be any value to MAX_TYPE as the
+      // upper bound comes from the other operand.
+      if (wi::eq_p (lhs.lower_bound (), op2.lower_bound ()))
+	lb = min_limit (lhs.get_type ());
+    }
+
+  r. set_range (lhs.get_type (), lb, ub);
+  return true;
+}
+
+bool
+operator_min_max::op2_irange (irange& r, const irange& lhs,
+			  const irange& op1) const
+{
+  return operator_min_max::op1_irange (r, lhs, op1);
+}
+
+
+
+
 
 /*  ----------------------------------------------------------------------  */
 
@@ -1852,6 +2020,9 @@ irange_op_table::irange_op_table ()
 
   irange_tree[INTEGER_CST] = &op_integer_cst;
   irange_tree[SSA_NAME] = &op_ssa_name;
+
+//  irange_tree[MIN_EXPR] = &op_min;
+//  irange_tree[MAX_EXPR] = &op_max;
 }
 
 /* The table is hidden and accessed via a simple extern function.  */
