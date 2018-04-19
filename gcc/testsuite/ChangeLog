@@ -1,3 +1,8 @@
+2018-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/85464 - missing location for -Wignored-qualifiers diagnostic
+	* g++.dg/diagnostic/pr85464.C: New.
+
 2018-04-18  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
