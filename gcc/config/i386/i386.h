@@ -1948,6 +1948,17 @@ do {							\
    between pointers and any other objects of this machine mode.  */
 #define Pmode (ix86_pmode == PMODE_DI ? DImode : SImode)
 
+/* Supply a definition of STACK_SAVEAREA_MODE for emit_stack_save.
+   NONLOCAL needs space to save both shadow stack and stack pointers.
+
+   FIXME: We only need to save and restore stack pointer in ptr_mode.
+   But expand_builtin_setjmp_setup and expand_builtin_longjmp use Pmode
+   to save and restore stack pointer.  See
+   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84150
+ */
+#define STACK_SAVEAREA_MODE(LEVEL)			\
+  ((LEVEL) == SAVE_NONLOCAL ? (TARGET_64BIT ? TImode : DImode) : Pmode)
+
 /* Specify the machine mode that bounds have.  */
 #define BNDmode (ix86_pmode == PMODE_DI ? BND64mode : BND32mode)
 
