@@ -466,9 +466,14 @@ lto_symtab_resolve_symbols (symtab_node *first)
   /* If the chain is already resolved there is nothing else to do.  */
   if (prevailing)
     {
-      /* Assert it's the only one.  */
+      /* Assert it's the only one.
+	 GCC should silence multiple PREVAILING_DEF_IRONLY defs error
+	 on COMMON symbols since it isn't error.
+	 See: https://sourceware.org/bugzilla/show_bug.cgi?id=23079.  */
       for (e = prevailing->next_sharing_asm_name; e; e = e->next_sharing_asm_name)
 	if (lto_symtab_symbol_p (e)
+	    && !DECL_COMMON (prevailing->decl)
+	    && !DECL_COMMON (e->decl)
 	    && (e->resolution == LDPR_PREVAILING_DEF_IRONLY
 		|| e->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 		|| e->resolution == LDPR_PREVAILING_DEF))
