@@ -1,3 +1,9 @@
+2018-04-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84611
+	* pt.c (lookup_template_class_1): Check pushtag return value for
+	error_mark_node.
+
 2018-04-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/80290
