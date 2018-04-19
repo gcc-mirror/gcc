@@ -1,3 +1,9 @@
+2018-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/85464 - missing location for -Wignored-qualifiers diagnostic
+	* decl.c (grokdeclarator): If declspecs->locations[ds_type_spec]
+	is UNKNOWN_LOCATION fall back to input_location.
+
 2018-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85279 - dump_expr doesn't understand decltype.
