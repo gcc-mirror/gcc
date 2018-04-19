@@ -1083,34 +1083,30 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
 }
 
 
-/* For range VR compute two wide_int bitmasks.  In *MAY_BE_NONZERO
+/* For range [LB, UB] compute two wide_int bitmasks.  In *MAY_BE_NONZERO
    bitmask if some bit is unset, it means for all numbers in the range
    the bit is 0, otherwise it might be 0 or 1.  In *MUST_BE_NONZERO
    bitmask if some bit is set, it means for all numbers in the range
    the bit is 1, otherwise it might be 0 or 1.  */
 
-bool
-zero_nonzero_bits_from_vr (const tree expr_type,
-			   value_range *vr,
-			   wide_int *may_be_nonzero,
-			   wide_int *must_be_nonzero)
+void
+zero_nonzero_bits_from_bounds (signop sign, const wide_int& lb,
+			       const wide_int& ub, wide_int *may_be_nonzero,
+			       wide_int *must_be_nonzero)
 {
-  *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
-  *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
-  if (!range_int_cst_p (vr))
-    return false;
+  *may_be_nonzero = wi::minus_one (lb.get_precision ());
+  *must_be_nonzero = wi::zero (lb.get_precision ());
 
-  if (range_int_cst_singleton_p (vr))
+  if (wi::eq_p (lb, ub))
     {
-      *may_be_nonzero = wi::to_wide (vr->min);
+      *may_be_nonzero = lb;
       *must_be_nonzero = *may_be_nonzero;
     }
-  else if (tree_int_cst_sgn (vr->min) >= 0
-	   || tree_int_cst_sgn (vr->max) < 0)
+  else if (wi::ge_p (lb, 0, sign) || wi::lt_p (ub, 0, sign))
     {
-      wide_int xor_mask = wi::to_wide (vr->min) ^ wi::to_wide (vr->max);
-      *may_be_nonzero = wi::to_wide (vr->min) | wi::to_wide (vr->max);
-      *must_be_nonzero = wi::to_wide (vr->min) & wi::to_wide (vr->max);
+      wide_int xor_mask = lb ^ ub;
+      *may_be_nonzero = lb | ub;
+      *must_be_nonzero = lb & ub;
       if (xor_mask != 0)
 	{
 	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
@@ -1119,7 +1115,26 @@ zero_nonzero_bits_from_vr (const tree expr_type,
 	  *must_be_nonzero = wi::bit_and_not (*must_be_nonzero, mask);
 	}
     }
+}
 
+/* For range VR compute two wide_int bitmasks by calling the bounds version.  */
+
+bool
+zero_nonzero_bits_from_vr (const tree expr_type,
+			   value_range *vr,
+			   wide_int *may_be_nonzero,
+			   wide_int *must_be_nonzero)
+{
+  if (!range_int_cst_p (vr))
+    {
+      *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
+      *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
+      return false;
+    }
+
+  zero_nonzero_bits_from_bounds (TYPE_SIGN (expr_type), wi::to_wide (vr->min),
+				 wi::to_wide (vr->max), may_be_nonzero,
+				 must_be_nonzero);
   return true;
 }
 
@@ -1274,6 +1289,45 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 		   wide_int_to_tree (type, min),
 		   wide_int_to_tree (type, max), NULL);
 }
+
+/* For op & or | attempt to optimize:
+   [x, y] op z into [x op z, y op z]
+   if z is a constant which (for op | its bitwise not) has n
+   consecutive least significant bits cleared followed by m 1
+   consecutive bits set immediately above it and either
+   m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
+   The least significant n bits of all the values in the range are
+   cleared or set, the m bits above it are preserved and any bits
+   above these are required to be the same for all values in the
+   range.
+   Return true if the min and max can simply be folded.  */
+
+bool vr_easy_mask_min_max (tree_code code, const wide_int& lb,
+			   const wide_int& ub, const wide_int& mask)
+
+{
+  wide_int w = mask;
+  int m = 0, n = 0;
+  if (code == BIT_IOR_EXPR)
+    w = ~w;
+  if (wi::eq_p (w, 0))
+    n = w.get_precision ();
+  else
+    {
+      n = wi::ctz (w);
+      w = ~(w | wi::mask (n, false, w.get_precision ()));
+      if (wi::eq_p (w, 0))
+	m = w.get_precision () - n;
+      else
+	m = wi::ctz (w) - n;
+    }
+  wide_int new_mask = wi::mask (m + n, true, w.get_precision ());
+  if ((new_mask & lb) == (new_mask & ub))
+    return true;
+
+  return false;
+}
+
 
 /* Extract range information from a binary operation CODE based on
    the ranges of each of its operands *VR0 and *VR1 with resulting
@@ -2215,30 +2269,13 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	     cleared or set, the m bits above it are preserved and any bits
 	     above these are required to be the same for all values in the
 	     range.  */
-	  if (vr0p && range_int_cst_p (vr0p))
+	  if (vr0p && range_int_cst_p (vr0p)
+	      && (vr_easy_mask_min_max (code, wi::to_wide (vr0p->min),
+					wi::to_wide (vr0p->max),
+					wi::to_wide (vr1p->min))))
 	    {
-	      wide_int w = wi::to_wide (vr1p->min);
-	      int m = 0, n = 0;
-	      if (code == BIT_IOR_EXPR)
-		w = ~w;
-	      if (wi::eq_p (w, 0))
-		n = TYPE_PRECISION (expr_type);
-	      else
-		{
-		  n = wi::ctz (w);
-		  w = ~(w | wi::mask (n, false, w.get_precision ()));
-		  if (wi::eq_p (w, 0))
-		    m = TYPE_PRECISION (expr_type) - n;
-		  else
-		    m = wi::ctz (w) - n;
-		}
-	      wide_int mask = wi::mask (m + n, true, w.get_precision ());
-	      if ((mask & wi::to_wide (vr0p->min))
-		  == (mask & wi::to_wide (vr0p->max)))
-		{
-		  min = int_const_binop (code, vr0p->min, vr1p->min);
-		  max = int_const_binop (code, vr0p->max, vr1p->min);
-		}
+	      min = int_const_binop (code, vr0p->min, vr1p->min);
+	      max = int_const_binop (code, vr0p->max, vr1p->min);
 	    }
 	}
 
