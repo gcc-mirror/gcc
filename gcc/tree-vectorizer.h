@@ -1494,6 +1494,7 @@ extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,
 				      tree = NULL_TREE, tree = NULL_TREE);
 extern tree bump_vector_ptr (tree, gimple *, gimple_stmt_iterator *, gimple *,
 			     tree);
+extern void vect_copy_ref_info (tree, tree);
 extern tree vect_create_destination_var (tree, tree);
 extern bool vect_grouped_store_supported (tree, unsigned HOST_WIDE_INT);
 extern bool vect_store_lanes_supported (tree, unsigned HOST_WIDE_INT, bool);
