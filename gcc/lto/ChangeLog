@@ -1,3 +1,8 @@
+2018-04-19  Martin Liska  <mliska@suse.cz>
+
+	* lto-symtab.c (lto_symtab_resolve_symbols): Do not bail out
+	for multiple PREVAILING_DEF_IRONLY for common symbols.
+
 2018-04-18  Martin Liska  <mliska@suse.cz>
 
 	* lto.c (lto_read_decls): Fix GNU coding style and typos.
