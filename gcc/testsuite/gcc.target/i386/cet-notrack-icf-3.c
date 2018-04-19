@@ -1,6 +1,6 @@
 /* Verify nocf_check function calls are not ICF optimized.  */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fcf-protection=none" } */
 /* { dg-final { scan-assembler-not "endbr" } } */
 /* { dg-final { scan-assembler-not "fn2:" } } */
 /* { dg-final { scan-assembler "set\[ \t]+fn2,fn1" } } */

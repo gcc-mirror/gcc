@@ -34,11 +34,11 @@ file_end_indicate_exec_stack_and_cet (void)
 
   unsigned int feature_1 = 0;
 
-  if (TARGET_IBT)
+  if (flag_cf_protection & CF_BRANCH)
     /* GNU_PROPERTY_X86_FEATURE_1_IBT.  */
     feature_1 |= 0x1;
 
-  if (TARGET_SHSTK)
+  if (flag_cf_protection & CF_RETURN)
     /* GNU_PROPERTY_X86_FEATURE_1_SHSTK.  */
     feature_1 |= 0x2;
 

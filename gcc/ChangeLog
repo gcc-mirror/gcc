@@ -1,3 +1,28 @@
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85417
+	* config/i386/cet.c (file_end_indicate_exec_stack_and_cet):
+	Check flag_cf_protection instead of TARGET_IBT and TARGET_SHSTK.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Also
+	define __IBT__ and __SHSTK__ for -fcf-protection.
+	* config/i386/i386.c (pass_insert_endbranch::gate): Don't check
+	TARGET_IBT.
+	(ix86_trampoline_init): Likewise.
+	(x86_output_mi_thunk): Likewise.
+	(ix86_notrack_prefixed_insn_p): Likewise.
+	(ix86_option_override_internal): Don't disallow -fcf-protection.
+	* config/i386/i386.md (rdssp<mode>): Also enable for
+	-fcf-protection.
+	(incssp<mode>): Likewise.
+	(nop_endbr): Likewise.
+	* config/i386/i386.opt (mcet): Change help message to built-in
+	functions only.
+	(mibt): Likewise.
+	(mshstk): Likewise.
+	* doc/invoke.texi: Remove -mcet, -mibt and -mshstk condition
+	on -fcf-protection.  Change -mcet, -mibt and -mshstk to only
+	enable CET built-in functions.
+
 2018-04-19  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* common/config/i386/i386-common.c 

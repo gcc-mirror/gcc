@@ -2701,7 +2701,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return ((flag_cf_protection & CF_BRANCH) && TARGET_IBT);
+      return ((flag_cf_protection & CF_BRANCH));
     }
 
   virtual unsigned int execute (function *)
@@ -4933,49 +4933,9 @@ ix86_option_override_internal (bool main_args_p,
     target_option_default_node = target_option_current_node
       = build_target_option_node (opts);
 
-  /* Do not support control flow instrumentation if CET is not enabled.  */
-  cf_protection_level cf_protection
-    = (cf_protection_level) (opts->x_flag_cf_protection & ~CF_SET);
-  if (cf_protection != CF_NONE)
-    {
-      switch (cf_protection)
-	{
-	case CF_BRANCH:
-	  if (! TARGET_IBT_P (opts->x_ix86_isa_flags2))
-	    {
-	      error ("%<-fcf-protection=branch%> requires Intel CET "
-		     "support. Use -mcet or -mibt option to enable CET");
-	      flag_cf_protection = CF_NONE;
-	      return false;
-	    }
-	  break;
-	case CF_RETURN:
-	  if (! TARGET_SHSTK_P (opts->x_ix86_isa_flags))
-	    {
-	      error ("%<-fcf-protection=return%> requires Intel CET "
-		     "support. Use -mcet or -mshstk option to enable CET");
-	      flag_cf_protection = CF_NONE;
-	      return false;
-	    }
-	  break;
-	case CF_FULL:
-	  if (   ! TARGET_IBT_P (opts->x_ix86_isa_flags2)
-		 || ! TARGET_SHSTK_P (opts->x_ix86_isa_flags))
-	    {
-	      error ("%<-fcf-protection=full%> requires Intel CET "
-		     "support. Use -mcet or both of -mibt and "
-		     "-mshstk options to enable CET");
-	      flag_cf_protection = CF_NONE;
-	      return false;
-	    }
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-
-      opts->x_flag_cf_protection =
-	(cf_protection_level) (cf_protection | CF_SET);
-    }
+  if (opts->x_flag_cf_protection != CF_NONE)
+    opts->x_flag_cf_protection =
+      (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
 
   if (ix86_tune_features [X86_TUNE_AVOID_128FMA_CHAINS])
     maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 128,
@@ -30412,7 +30372,7 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   rtx mem, fnaddr;
   int opcode;
   int offset = 0;
-  bool need_endbr = (flag_cf_protection & CF_BRANCH) && TARGET_IBT;
+  bool need_endbr = (flag_cf_protection & CF_BRANCH);
 
   fnaddr = XEXP (DECL_RTL (fndecl), 0);
 
@@ -41795,7 +41755,7 @@ x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
   emit_note (NOTE_INSN_PROLOGUE_END);
 
   /* CET is enabled, insert EB instruction.  */
-  if ((flag_cf_protection & CF_BRANCH) && TARGET_IBT)
+  if ((flag_cf_protection & CF_BRANCH))
     emit_insn (gen_nop_endbr ());
 
   /* If VCALL_OFFSET, we'll need THIS in a register.  Might as well
@@ -49795,7 +49755,7 @@ ix86_bnd_prefixed_insn_p (rtx insn)
 static bool
 ix86_notrack_prefixed_insn_p (rtx insn)
 {
-  if (!insn || !((flag_cf_protection & CF_BRANCH) && TARGET_IBT))
+  if (!insn || !((flag_cf_protection & CF_BRANCH)))
     return false;
 
   if (CALL_P (insn))
