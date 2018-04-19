@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "range.h"
 #include "range-op.h"
+#include "tree-vrp.h"
 
 inline wide_int
 max_limit (const_tree type)
@@ -1375,9 +1376,10 @@ operator_logical_and::op2_irange (irange& r, const irange& lhs,
 
 class operator_bitwise_and : public irange_operator
 {
-  bool mask_range (irange& r, const_tree type, const wide_int_ref& mask) const;
-  bool apply_mask (irange &r, const irange& val,
-		   const wide_int_ref& mask) const;
+  bool apply_mask_to_pair (irange& r, const wide_int& lb, const wide_int& ub,
+			   const wide_int& mask) const;
+  bool apply_mask_to_range (irange &r, const irange& val,
+			    const wide_int& mask) const;
 public:
   void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
@@ -1394,79 +1396,74 @@ operator_bitwise_and::dump (FILE *f) const
 }
 
 bool 
-operator_bitwise_and::mask_range (irange& r, const_tree type,
-				  const wide_int_ref& mask) const
+operator_bitwise_and::apply_mask_to_pair (irange& r, const wide_int& lb, 
+					  const wide_int& ub,
+					  const wide_int& mask) const
 {
-  signop sign = TYPE_SIGN (type);
-  int lz = wi::clz (mask);
-  int tz = wi::ctz (mask);
-  bool signed_and_negative;
+  wide_int new_lb, new_ub;
+  if (vr_easy_mask_min_max (BIT_AND_EXPR, lb, ub, mask))
+    {
+      new_lb = lb & mask;
+      new_ub = ub & mask;
+    }
+  else
+    {
+      wide_int may_be_nonzero;
+      wide_int must_be_nonzero;
 
-  wide_int filled_mask, lb;
+      zero_nonzero_bits_from_bounds (UNSIGNED, lb, ub, &may_be_nonzero,
+				     &must_be_nonzero);
 
-  // No trailing or leading zeros, won't be able to do anything.
-  if (lz == 0 && tz == 0 )
-    return false;
-
-  int prec = TYPE_PRECISION (type);
-
-  // Any result wil have to include 0
-  r.set_range (type, 0, 0);
-
-  // If this is a signed value, and the signed bit is set, create a mask which
-  // does not include the sign bit.
-  signed_and_negative = ((sign == SIGNED) && lz == 0);
-  if (signed_and_negative)
-    { 
-      // If the sign bit is set, then the range can be from MIN (ie sign bit
-      // set, everything else zeroed  0x8000,  to whatever the filled mask value
-      // is.  The prevents the small numbers whose bits must be cleared.
-      filled_mask = wi::shifted_mask (tz, prec - tz, false, prec);
-      lb = wi::min_value (prec, sign);
-      r.union_ (lb, filled_mask);
-
-      // Create a mask with just the upper bit cleared, AND it with the
-      // original mask.  then reset the number of leading zeros so we can get
-      // the positive part of the range on the fallthru
-      filled_mask = wi::shifted_mask (0, prec - 1, false, prec);
-      filled_mask = wi::bit_and (filled_mask, mask);
-      // Now set lz as if the signed bit was not set so we can get a mask for
-      // the positive range.
-      lz = wi::clz (filled_mask);
+      new_lb = must_be_nonzero & mask;
+      new_ub = may_be_nonzero & mask;
+      // Truncate the result range maximum to maximum of the input range.
+      new_ub = wi::min (new_ub, ub, UNSIGNED);
+      new_ub = wi::min (new_ub, mask, UNSIGNED);
     }
 
-  // An all 0's mask has already has ranges calculated.
-  if (lz == prec)
-    return true;
-
-  // create a filled mask between leading and trailing zeros.
-  // ie. 00100110  produces 00111110.
-  filled_mask = wi::shifted_mask (tz, prec - lz - tz, false, prec);
-  // The lower bound is the least significant bit set, ignoring 0.
-  lb = wi::set_bit_in_zero (tz, prec);
-  // The upper bound is now the value of new_mask.
-  r.union_ (lb, filled_mask);
-
+  r.union_ (new_lb, new_ub);
   return true;
 }
 
 bool
-operator_bitwise_and::apply_mask (irange &r, const irange& val,
-				  const wide_int_ref& mask) const
+operator_bitwise_and::apply_mask_to_range (irange &r, const irange& val,
+					   const wide_int& mask) const
 {
-  // Get the list of possible ranges from the mask
-  if (!mask_range (r, val.get_type (), mask))
-    return false;
+  tree type = const_cast <tree> (val.get_type ());
 
-  // And intersect it with the real ranges.
-  // We could do slightly better here with some detailed analysis. for instance
-  // [65, 129] & 0x7c  
-  // the mask 0x3c is 01111100, which is a range of [4,124]
-  // [65,129] intersect [0,0][4,124] is [65,124]
-  // in fact, the lower bound can't be 65, it would really be 68. we could
-  // mask the new lower and upper bound as well, but that even more work and
-  // should get resolved when we support the non-zero-bits masking.
+  if (val.empty_p ())
+   {
+     r.clear (type);
+     return true;
+   }
 
+  // If the mask is zero, zero is the only possible result. 
+  if (wi::eq_p (mask, 0))
+    {
+      r.set_range (type, mask, mask);
+      return true;
+    }
+
+  // Process the entire range as if it were unsigned, then convert back at 
+  // the end if need be.
+  signop sign = TYPE_SIGN (type);
+  irange tmp = val;
+  if (sign == SIGNED)
+    {
+      type = unsigned_type_for (type);
+      tmp.cast (type);
+    }
+    
+  r.clear (type);
+  for (unsigned i = 0; i < tmp.num_pairs (); i++)
+    apply_mask_to_pair (r, tmp.lower_bound (i), tmp.upper_bound (i), mask);
+
+  // If we converted from signed, convert back. 
+  if (r.empty_p ())
+    r.set_range (val.get_type (), 0, 0);
+  else
+    if (sign == SIGNED)
+      r.cast (val.get_type ());
 
   return true;
 }
@@ -1493,12 +1490,17 @@ operator_bitwise_and::fold_range (irange& r, const irange& lh,
     return op_logical_and.fold_range (r, lh, rh);
 
   if (lh.singleton_p (w))
-    return apply_mask (r, rh, w);
+    return apply_mask_to_range (r, rh, w);
+  else
+    if (rh.singleton_p (w))
+      return apply_mask_to_range (r, lh, w);
 
-  if (rh.singleton_p (w))
-    return apply_mask (r, lh, w);
-  
-  r.set_range_for_type (lh.get_type ());
+  // Oddly, unioning the 2 ranges is better than giving up.
+  // [10,20] & [30,40]  we could give up, but if we union them together
+  // we should get all possible bit combinations, without introducing
+  // impossible bits like 0x80 which we'd get if we gave up.
+  // This also produces correct results for null and non-null tracking.
+  r = irange_union (lh, rh);
   return true;
 }
 
