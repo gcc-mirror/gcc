@@ -1,5 +1,11 @@
 2018-04-19  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/85455
+	* cfg.c (clear_bb_flags): When loop state says we have
+	marked irreducible regions also preserve BB_IRREDUCIBLE_LOOP.
+
+2018-04-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84737
 	* tree-vect-data-refs.c (vect_copy_ref_info): New function
 	copying restrict info.

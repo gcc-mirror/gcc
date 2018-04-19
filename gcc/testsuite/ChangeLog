@@ -1,3 +1,8 @@
+2018-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85455
+	* gcc.dg/pr85455.c: New testcase.
+
 2018-04-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* g++.dg/lto/pr85405_0.C: Require shared and fpic effective
