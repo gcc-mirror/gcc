@@ -1,3 +1,8 @@
+2018-04-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/80290
+	* cp-tree.h (tinst_level::free): Fix whitespace.
+
 2018-04-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84630
