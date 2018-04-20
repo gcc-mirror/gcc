@@ -499,20 +499,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__RDPID__");
   if (isa_flag & OPTION_MASK_ISA_GFNI)
     def_or_undef (parse_in, "__GFNI__");
-  if ((isa_flag2 & OPTION_MASK_ISA_IBT)
-      || (flag_cf_protection & CF_BRANCH))
-    {
-      def_or_undef (parse_in, "__IBT__");
-      if (flag_cf_protection != CF_NONE)
-	def_or_undef (parse_in, "__CET__");
-    }
-  if ((isa_flag & OPTION_MASK_ISA_SHSTK)
-      || (flag_cf_protection & CF_RETURN))
-    {
-      def_or_undef (parse_in, "__SHSTK__");
-      if (flag_cf_protection != CF_NONE)
-	def_or_undef (parse_in, "__CET__");
-    }
+  if ((isa_flag & OPTION_MASK_ISA_SHSTK))
+    def_or_undef (parse_in, "__SHSTK__");
   if (isa_flag2 & OPTION_MASK_ISA_VAES)
     def_or_undef (parse_in, "__VAES__");
   if (isa_flag & OPTION_MASK_ISA_VPCLMULQDQ)
@@ -680,6 +668,10 @@ ix86_target_macros (void)
 
   cpp_define (parse_in, "__SEG_FS");
   cpp_define (parse_in, "__SEG_GS");
+
+  if (flag_cf_protection != CF_NONE)
+    cpp_define_formatted (parse_in, "__CET__=%d",
+			  flag_cf_protection & ~CF_SET);
 }
 
 

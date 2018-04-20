@@ -1008,17 +1008,13 @@ Generate code which uses only the general registers.
 
 mcet
 Target Report Var(flag_cet) Init(0)
-Support Control-flow Enforcement Technology (CET) built-in functions.
-
-mibt
-Target Report Mask(ISA_IBT) Var(ix86_isa_flags2) Save
-Specifically enable indirect branch tracking built-in functions from
-Control-flow Enforcement Technology (CET).
+Enable shadow stack built-in functions from Control-flow Enforcement
+Technology (CET).
 
 mshstk
 Target Report Mask(ISA_SHSTK) Var(ix86_isa_flags) Save
-Specifically enable shadow stack built-in functions from Control-flow
-Enforcement Technology (CET).
+Enable shadow stack built-in functions from Control-flow Enforcement
+Technology (CET).
 
 mcet-switch
 Target Report Undocumented Var(flag_cet_switch) Init(0)
