@@ -1,3 +1,8 @@
+2018-04-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85456
+	* gcc.target/powerpc/pr85456.c: New test.
+
 2018-04-20  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* g++.dg/ext/undef-bool-1.C: Require lp64.

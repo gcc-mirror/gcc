@@ -1,3 +1,19 @@
+2018-04-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85456
+	* config/rs6000/_powikf2.c: New file.  Add support for the
+	__builtin_powil function when long double is IEEE 128-bit floating
+	point.
+	* config/rs6000/float128-ifunc.c (__powikf2_resolve): Add
+	__powikf2 support.
+	(__powikf2): Likewise.
+	* config/rs6000/quad-float128.h (__powikf2_sw): Likewise.
+	(__powikf2_hw): Likewise.
+	(__powikf2): Likewise.
+	* config/rs6000/t-float128 (fp128_ppc_funcs): Likewise.
+	* config/rs6000/t-float128-hw (fp128_hw_func): Likewise.
+	(_powikf2-hw.c): Likewise.
+
 2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgcc/85334
