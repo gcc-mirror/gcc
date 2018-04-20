@@ -447,6 +447,17 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   return res;
 }
 
+// Return the known range for NAME as it would be used on stmt G
+bool
+path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
+{
+  // Eventually we'll have to look at statements in the block to track non-null
+  // pointers properly, but for now, we just want to know either the value
+  // calculated in this block, or the range on entry.
+  if (!g || !valid_irange_ssa (name))
+    return false;
+  return path_get_operand (r, name, gimple_bb (g));
+}
 
 static inline gimple *
 ssa_name_same_bb_p (tree name, basic_block bb)
