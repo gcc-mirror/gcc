@@ -1,3 +1,8 @@
+2018-04-20  Richard Biener <rguenther@suse.de>
+
+	PR middle-end/85475
+	* gcc.dg/torture/pr85475.c: New testcase.
+
 2018-04-20  Martin Jambor  <mjambor@suse.cz>
 
 	ipa/85449
