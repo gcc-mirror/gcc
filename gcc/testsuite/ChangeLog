@@ -1,3 +1,9 @@
+2018-04-20  Martin Jambor  <mjambor@suse.cz>
+
+	ipa/85447
+	* g++.dg/ipa/pr85447.C: New file.
+	* gcc.dg/ipa/ipcp-self-recursion-1.c: Likewise.
+
 2018-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85462
