@@ -1,3 +1,9 @@
+2018-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85445
+	* testsuite/libgomp.oacc-c++/ref-1.C: New.
+
 2018-04-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/85463

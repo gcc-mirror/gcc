@@ -399,8 +399,7 @@ nvptx_emit_forking (unsigned mask, bool is_call)
 	 it creates a block with a single successor before entering a
 	 partitooned region.  That is a good candidate for the end of
 	 an SESE region.  */
-      if (!is_call)
-	emit_insn (gen_nvptx_fork (op));
+      emit_insn (gen_nvptx_fork (op));
       emit_insn (gen_nvptx_forked (op));
     }
 }
@@ -419,8 +418,7 @@ nvptx_emit_joining (unsigned mask, bool is_call)
       /* Emit joining for all non-call pars to ensure there's a single
 	 predecessor for the block the join insn ends up in.  This is
 	 needed for skipping entire loops.  */
-      if (!is_call)
-	emit_insn (gen_nvptx_joining (op));
+      emit_insn (gen_nvptx_joining (op));
       emit_insn (gen_nvptx_join (op));
     }
 }
@@ -3086,8 +3084,7 @@ nvptx_find_par (bb_insn_map_t *map, parallel *par, basic_block block)
 	    par = new parallel (par, mask);
 	    par->forked_block = block;
 	    par->forked_insn = end;
-	    if (!(mask & GOMP_DIM_MASK (GOMP_DIM_MAX))
-		&& (mask & GOMP_DIM_MASK (GOMP_DIM_WORKER)))
+	    if (mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
 	      par->fork_insn
 		= nvptx_discover_pre (block, CODE_FOR_nvptx_fork);
 	  }
@@ -3102,8 +3099,7 @@ nvptx_find_par (bb_insn_map_t *map, parallel *par, basic_block block)
 	    gcc_assert (par->mask == mask);
 	    par->join_block = block;
 	    par->join_insn = end;
-	    if (!(mask & GOMP_DIM_MASK (GOMP_DIM_MAX))
-		&& (mask & GOMP_DIM_MASK (GOMP_DIM_WORKER)))
+	    if (mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
 	      par->joining_insn
 		= nvptx_discover_pre (block, CODE_FOR_nvptx_joining);
 	    par = par->parent;
@@ -3782,29 +3778,34 @@ nvptx_find_sese (auto_vec<basic_block> &blocks, bb_pair_vec_t &regions)
 #undef BB_SET_SESE
 #undef BB_GET_SESE
 
-/* Propagate live state at the start of a partitioned region.  BLOCK
-   provides the live register information, and might not contain
-   INSN. Propagation is inserted just after INSN. RW indicates whether
-   we are reading and/or writing state.  This
+/* Propagate live state at the start of a partitioned region.  IS_CALL
+   indicates whether the propagation is for a (partitioned) call
+   instruction.  BLOCK provides the live register information, and
+   might not contain INSN. Propagation is inserted just after INSN. RW
+   indicates whether we are reading and/or writing state.  This
    separation is needed for worker-level proppagation where we
    essentially do a spill & fill.  FN is the underlying worker
    function to generate the propagation instructions for single
    register.  DATA is user data.
 
-   We propagate the live register set and the entire frame.  We could
-   do better by (a) propagating just the live set that is used within
-   the partitioned regions and (b) only propagating stack entries that
-   are used.  The latter might be quite hard to determine.  */
+   Returns true if we didn't emit any instructions.
+
+   We propagate the live register set for non-calls and the entire
+   frame for calls and non-calls.  We could do better by (a)
+   propagating just the live set that is used within the partitioned
+   regions and (b) only propagating stack entries that are used.  The
+   latter might be quite hard to determine.  */
 
 typedef rtx (*propagator_fn) (rtx, propagate_mask, unsigned, void *);
 
-static void
-nvptx_propagate (basic_block block, rtx_insn *insn, propagate_mask rw,
-		 propagator_fn fn, void *data)
+static bool
+nvptx_propagate (bool is_call, basic_block block, rtx_insn *insn,
+		 propagate_mask rw, propagator_fn fn, void *data)
 {
   bitmap live = DF_LIVE_IN (block);
   bitmap_iterator iterator;
   unsigned ix;
+  bool empty = true;
 
   /* Copy the frame array.  */
   HOST_WIDE_INT fs = get_frame_size ();
@@ -3816,6 +3817,7 @@ nvptx_propagate (basic_block block, rtx_insn *insn, propagate_mask rw,
       rtx pred = NULL_RTX;
       rtx_code_label *label = NULL;
 
+      empty = false;
       /* The frame size might not be DImode compatible, but the frame
 	 array's declaration will be.  So it's ok to round up here.  */
       fs = (fs + GET_MODE_SIZE (DImode) - 1) / GET_MODE_SIZE (DImode);
@@ -3862,18 +3864,21 @@ nvptx_propagate (basic_block block, rtx_insn *insn, propagate_mask rw,
       insn = emit_insn_after (cpy, insn);
     }
 
-  /* Copy live registers.  */
-  EXECUTE_IF_SET_IN_BITMAP (live, 0, ix, iterator)
-    {
-      rtx reg = regno_reg_rtx[ix];
+  if (!is_call)
+    /* Copy live registers.  */
+    EXECUTE_IF_SET_IN_BITMAP (live, 0, ix, iterator)
+      {
+	rtx reg = regno_reg_rtx[ix];
 
-      if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-	{
-	  rtx bcast = fn (reg, rw, 0, data);
+	if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+	  {
+	    rtx bcast = fn (reg, rw, 0, data);
 
-	  insn = emit_insn_after (bcast, insn);
-	}
-    }
+	    insn = emit_insn_after (bcast, insn);
+	    empty = false;
+	  }
+      }
+  return empty;
 }
 
 /* Worker for nvptx_vpropagate.  */
@@ -3889,12 +3894,13 @@ vprop_gen (rtx reg, propagate_mask pm,
 }
 
 /* Propagate state that is live at start of BLOCK across the vectors
-   of a single warp.  Propagation is inserted just after INSN.   */
+   of a single warp.  Propagation is inserted just after INSN.
+   IS_CALL and return as for nvptx_propagate.  */
 
-static void
-nvptx_vpropagate (basic_block block, rtx_insn *insn)
+static bool
+nvptx_vpropagate (bool is_call, basic_block block, rtx_insn *insn)
 {
-  nvptx_propagate (block, insn, PM_read_write, vprop_gen, 0);
+  return nvptx_propagate (is_call, block, insn, PM_read_write, vprop_gen, 0);
 }
 
 /* Worker for nvptx_wpropagate.  */
@@ -3930,10 +3936,10 @@ wprop_gen (rtx reg, propagate_mask pm, unsigned rep, void *data_)
 /* Spill or fill live state that is live at start of BLOCK.  PRE_P
    indicates if this is just before partitioned mode (do spill), or
    just after it starts (do fill). Sequence is inserted just after
-   INSN.  */
+   INSN.  IS_CALL and return as for nvptx_propagate.  */
 
-static void
-nvptx_wpropagate (bool pre_p, basic_block block, rtx_insn *insn)
+static bool
+nvptx_wpropagate (bool pre_p, bool is_call, basic_block block, rtx_insn *insn)
 {
   wcast_data_t data;
 
@@ -3941,7 +3947,9 @@ nvptx_wpropagate (bool pre_p, basic_block block, rtx_insn *insn)
   data.offset = 0;
   data.ptr = NULL_RTX;
 
-  nvptx_propagate (block, insn, pre_p ? PM_read : PM_write, wprop_gen, &data);
+  bool empty = nvptx_propagate (is_call, block, insn,
+				pre_p ? PM_read : PM_write, wprop_gen, &data);
+  gcc_assert (empty == !data.offset);
   if (data.offset)
     {
       /* Stuff was emitted, initialize the base pointer now.  */
@@ -3951,6 +3959,7 @@ nvptx_wpropagate (bool pre_p, basic_block block, rtx_insn *insn)
       if (worker_bcast_size < data.offset)
 	worker_bcast_size = data.offset;
     }
+  return empty;
 }
 
 /* Emit a worker-level synchronization barrier.  We use different
@@ -4311,18 +4320,23 @@ nvptx_process_pars (parallel *par)
       inner_mask |= par->inner_mask;
     }
 
-  if (par->mask & GOMP_DIM_MASK (GOMP_DIM_MAX))
-    /* No propagation needed for a call.  */;
-  else if (par->mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
+  bool is_call = (par->mask & GOMP_DIM_MASK (GOMP_DIM_MAX)) != 0;
+
+  if (par->mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
     {
-      nvptx_wpropagate (false, par->forked_block, par->forked_insn);
-      nvptx_wpropagate (true, par->forked_block, par->fork_insn);
-      /* Insert begin and end synchronizations.  */
-      emit_insn_before (nvptx_wsync (false), par->forked_insn);
-      emit_insn_before (nvptx_wsync (true), par->join_insn);
+      nvptx_wpropagate (false, is_call, par->forked_block, par->forked_insn);
+      bool empty = nvptx_wpropagate (true, is_call,
+				     par->forked_block, par->fork_insn);
+
+      if (!empty || !is_call)
+	{
+	  /* Insert begin and end synchronizations.  */
+	  emit_insn_before (nvptx_wsync (false), par->forked_insn);
+	  emit_insn_before (nvptx_wsync (true), par->join_insn);
+	}
     }
   else if (par->mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR))
-    nvptx_vpropagate (par->forked_block, par->forked_insn);
+    nvptx_vpropagate (is_call, par->forked_block, par->forked_insn);
 
   /* Now do siblings.  */
   if (par->next)
