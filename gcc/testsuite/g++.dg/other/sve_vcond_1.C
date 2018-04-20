@@ -1,5 +1,5 @@
-/* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O -msve-vector-bits=256 --save-temps" } */
+/* { dg-do assemble { target { aarch64_asm_sve_ok && { ! ilp32 } } } } */
+/* { dg-options "-march=armv8.2-a+sve -O -msve-vector-bits=256 --save-temps" } */
 
 typedef __INT8_TYPE__ vnx16qi __attribute__((vector_size(32)));
 typedef __INT16_TYPE__ vnx8hi __attribute__((vector_size(32)));
