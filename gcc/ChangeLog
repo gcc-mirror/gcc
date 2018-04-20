@@ -1,3 +1,9 @@
+2018-04-20  Martin Jambor  <mjambor@suse.cz>
+
+	ipa/85447
+	* ipa-cp.c (create_specialized_node): Check that clones of
+	self-recursive edges exist during IPA-CP.
+
 2018-04-19  Toon Moene  <toon@moene.org>
 
 	* doc/invoke.texi: Add -floop-unroll-and-jam to options enabled

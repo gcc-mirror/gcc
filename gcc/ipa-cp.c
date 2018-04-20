@@ -3867,9 +3867,17 @@ create_specialized_node (struct cgraph_node *node,
   for (unsigned j = 0; j < self_recursive_calls.length (); j++)
     {
       cgraph_edge *cs = next_edge_clone[self_recursive_calls[j]->uid];
-      gcc_checking_assert (cs);
-      gcc_assert (cs->caller == new_node);
-      cs->redirect_callee_duplicating_thunks (new_node);
+      /* Cloned edges can disappear during cloning as speculation can be
+	 resolved, check that we have one and that it comes from the last
+	 cloning.  */
+      if (cs && cs->caller == new_node)
+	cs->redirect_callee_duplicating_thunks (new_node);
+      /* Any future code that would make more than one clone of an outgoing
+	 edge would confuse this mechanism, so let's check that does not
+	 happen.  */
+      gcc_checking_assert (!cs
+			   || !next_edge_clone[cs->uid]
+			   || next_edge_clone[cs->uid]->caller != new_node);
     }
   if (have_self_recursive_calls)
     new_node->expand_all_artificial_thunks ();
