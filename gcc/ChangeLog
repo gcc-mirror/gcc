@@ -1,3 +1,9 @@
+2018-04-20  Richard Biener <rguenther@suse.de>
+
+	PR middle-end/85475
+	* match.pd ((X * CST) * Y -> (X * Y) * CST): Avoid exponential
+	complexity by forcing a single use of the multiply operand.
+
 2018-04-20  Martin Jambor  <mjambor@suse.cz>
 
 	ipa/85449

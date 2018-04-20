@@ -2578,8 +2578,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Reassociate (X * CST) * Y to (X * Y) * CST.  This does not introduce
    signed overflow for CST != 0 && CST != -1.  */
 (simplify
- (mult:c (mult:s @0 INTEGER_CST@1) @2)
+ (mult:c (mult:s@3 @0 INTEGER_CST@1) @2)
  (if (TREE_CODE (@2) != INTEGER_CST
+      && single_use (@3)
       && !integer_zerop (@1) && !integer_minus_onep (@1))
   (mult (mult @0 @2) @1)))
 
