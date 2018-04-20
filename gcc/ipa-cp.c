@@ -3489,9 +3489,8 @@ cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
       || availability <= AVAIL_INTERPOSABLE
       || caller_info->node_dead)
     return false;
-  /* At the moment we do not propagate over arithmetic jump functions in SCCs,
-     so it is safe to detect self-feeding recursive calls in this way.  */
-  if (!src->val || src->val == dest_val)
+
+  if (!src->val)
     return true;
 
   if (caller_info->ipcp_orig_node)
@@ -3506,6 +3505,12 @@ cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
     }
   else
     {
+      /* At the moment we do not propagate over arithmetic jump functions in
+	 SCCs, so it is safe to detect self-feeding recursive calls in this
+	 way.  */
+      if (src->val == dest_val)
+	return true;
+
       struct ipcp_agg_lattice *aglat;
       struct ipcp_param_lattices *plats = ipa_get_parm_lattices (caller_info,
 								 src->index);

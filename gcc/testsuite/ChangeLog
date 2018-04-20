@@ -1,5 +1,10 @@
 2018-04-20  Martin Jambor  <mjambor@suse.cz>
 
+	ipa/85449
+	* gcc.dg/ipa/pr85449.c: New test.
+
+2018-04-20  Martin Jambor  <mjambor@suse.cz>
+
 	ipa/85447
 	* g++.dg/ipa/pr85447.C: New file.
 	* gcc.dg/ipa/ipcp-self-recursion-1.c: Likewise.
