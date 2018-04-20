@@ -5927,14 +5927,19 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   /* The location where the template is instantiated.  */
   location_t locus;
 
-  /* errorcount+sorrycount when we pushed this level.  */
+  /* errorcount + sorrycount when we pushed this level.  */
   unsigned short errors;
 
-  /* True if the location is in a system header.  */
-  bool in_system_header_p;
+  /* Count references to this object.  If refcount reaches
+     refcount_infinity value, we don't increment or decrement the
+     refcount anymore, as the refcount isn't accurate anymore.
+     The object can be still garbage collected if unreferenced from
+     anywhere, which might keep referenced objects referenced longer than
+     otherwise necessary.  Hitting the infinity is rare though.  */
+  unsigned short refcount;
 
-  /* Count references to this object.  */
-  unsigned char refcount;
+  /* Infinity value for the above refcount.  */
+  static const unsigned short refcount_infinity = (unsigned short) ~0;
 };
 
 bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);

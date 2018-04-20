@@ -8945,15 +8945,14 @@ tinst_level::to_list ()
   return ret;
 }
 
-/* Increment OBJ's refcount.  */
+const unsigned short tinst_level::refcount_infinity;
+
+/* Increment OBJ's refcount unless it is already infinite.  */
 static tinst_level *
 inc_refcount_use (tinst_level *obj)
 {
-  if (obj)
-    {
-      ++obj->refcount;
-      gcc_assert (obj->refcount != 0);
-    }
+  if (obj && obj->refcount != tinst_level::refcount_infinity)
+    ++obj->refcount;
   return obj;
 }
 
@@ -8966,15 +8965,16 @@ tinst_level::free (tinst_level *obj)
   tinst_level_freelist ().free (obj);
 }
 
-/* Decrement OBJ's refcount.  If it reaches zero, release OBJ's DECL
-   and OBJ, and start over with the tinst_level object that used to be
-   referenced by OBJ's NEXT.  */
+/* Decrement OBJ's refcount if not infinite.  If it reaches zero, release
+   OBJ's DECL and OBJ, and start over with the tinst_level object that
+   used to be referenced by OBJ's NEXT.  */
 static void
 dec_refcount_use (tinst_level *obj)
 {
-  while (obj && !--obj->refcount)
+  while (obj
+	 && obj->refcount != tinst_level::refcount_infinity
+	 && !--obj->refcount)
     {
-      gcc_assert (obj->refcount+1 != 0);
       tinst_level *next = obj->next;
       tinst_level::free (obj);
       obj = next;
@@ -10145,8 +10145,7 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
   new_level->tldcl = tldcl;
   new_level->targs = targs;
   new_level->locus = loc;
-  new_level->errors = errorcount+sorrycount;
-  new_level->in_system_header_p = in_system_header_at (input_location);
+  new_level->errors = errorcount + sorrycount;
   new_level->next = NULL;
   new_level->refcount = 0;
   set_refcount_ptr (new_level->next, current_tinst_level);

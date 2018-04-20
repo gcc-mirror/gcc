@@ -1,3 +1,16 @@
+2018-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85462
+	* cp-tree.h (tinst_level): Remove in_system_header_p member,
+	change refcount member from unsigned char to unsigned short,
+	add refcount_infinity static data member, adjust comments.
+	* pt.c (tinst_level::refcount_infinity): Define.
+	(inc_refcount_use): Remove assert, don't increment if refcount
+	is already refcount_infinity, adjust comment.
+	(dec_refcount_use): Remove assert, don't decrement if refcount
+	is refcount_infinity, adjust comment.
+	(push_tinst_level_loc): Formatting fix.
+
 2018-04-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84611
