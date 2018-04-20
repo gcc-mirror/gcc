@@ -420,7 +420,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_avx5124fmaps = 0, has_avx5124vnniw = 0;
   unsigned int has_gfni = 0, has_avx512vbmi2 = 0;
   unsigned int has_avx512bitalg = 0;
-  unsigned int has_ibt = 0, has_shstk = 0;
+  unsigned int has_shstk = 0;
   unsigned int has_avx512vnni = 0, has_vaes = 0;
   unsigned int has_vpclmulqdq = 0;
   unsigned int has_movdiri = 0, has_movdir64b = 0;
@@ -526,7 +526,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx5124fmaps = edx & bit_AVX5124FMAPS;
 
       has_shstk = ecx & bit_SHSTK;
-      has_ibt = edx & bit_IBT;
       has_pconfig = edx & bit_PCONFIG;
     }
 
@@ -1095,7 +1094,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *pku = has_pku ? " -mpku" : " -mno-pku";
       const char *rdpid = has_rdpid ? " -mrdpid" : " -mno-rdpid";
       const char *gfni = has_gfni ? " -mgfni" : " -mno-gfni";
-      const char *ibt = has_ibt ? " -mibt" : " -mno-ibt";
       const char *shstk = has_shstk ? " -mshstk" : " -mno-shstk";
       const char *vaes = has_vaes ? " -mvaes" : " -mno-vaes";
       const char *vpclmulqdq = has_vpclmulqdq ? " -mvpclmulqdq" : " -mno-vpclmulqdq";
@@ -1112,7 +1110,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			avx512cd, avx512pf, prefetchwt1, clflushopt,
 			xsavec, xsaves, avx512dq, avx512bw, avx512vl,
 			avx512ifma, avx512vbmi, avx5124fmaps, avx5124vnniw,
-			clwb, mwaitx, clzero, pku, rdpid, gfni, ibt, shstk,
+			clwb, mwaitx, clzero, pku, rdpid, gfni, shstk,
 			avx512vbmi2, avx512vnni, vaes, vpclmulqdq,
 			avx512bitalg, movdiri, movdir64b, NULL);
     }

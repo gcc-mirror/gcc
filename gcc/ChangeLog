@@ -1,3 +1,29 @@
+2018-04-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85469
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_IBT_SET):
+	Removed.
+	(OPTION_MASK_ISA_IBT_UNSET): Likewise.
+	(ix86_handle_option): Don't handle OPT_mibt.
+	* config/i386/cet.h: Check __CET__ instead of __IBT__ and
+	__SHSTK__.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Remove
+	has_ibt and ibt.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Don't
+	check OPTION_MASK_ISA_IBT nor flag_cf_protection.
+	(ix86_target_macros): Define __CET__ with flag_cf_protection
+	for -fcf-protection.
+	* config/i386/i386.c (isa2_opts): Remove -mibt.
+	* config/i386/i386.h (TARGET_IBT): Removed.
+	(TARGET_IBT_P): Likewise.
+	(ix86_valid_target_attribute_inner_p): Don't check OPT_mibt.
+	* config/i386/i386.md (nop_endbr): Don't check TARGET_IBT.
+	* config/i386/i386.opt (mcet): Update help message.
+	(mshstk): Likewise.
+	(mibt): Removed.
+	* doc/invoke.texi: Remove -mibt.  Document __CET__.  Document
+	-mcet as an alias for -mshstk.
+
 2018-04-20  Richard Biener <rguenther@suse.de>
 
 	PR middle-end/85475

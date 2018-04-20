@@ -1,3 +1,9 @@
+2018-04-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85469
+	* gcc.target/i386/pr85044.c (dg-options): Remove -mibt.
+	* gcc.target/i386/sse-26.c (dg-options): Remove -mno-ibt.
+
 2018-04-20  Richard Biener <rguenther@suse.de>
 
 	PR middle-end/85475
