@@ -84,6 +84,12 @@ __negkf2_resolve (void)
   return SW_OR_HW (__negkf2_sw, __negkf2_hw);
 }
 
+static __typeof__ (__powikf2_sw) *
+__powikf2_resolve (void)
+{
+  return SW_OR_HW (__powikf2_sw, __powikf2_hw);
+}
+
 static __typeof__ (__floatsikf_sw) *
 __floatsikf_resolve (void)
 {
@@ -242,6 +248,9 @@ TFtype __divkf3 (TFtype, TFtype)
 
 TFtype __negkf2 (TFtype)
   __attribute__ ((__ifunc__ ("__negkf2_resolve")));
+
+TFtype __powikf2 (TFtype, SItype_ppc)
+  __attribute__ ((__ifunc__ ("__powikf2_resolve")));
 
 CMPtype __eqkf2 (TFtype, TFtype)
   __attribute__ ((__ifunc__ ("__eqkf2_resolve")));
