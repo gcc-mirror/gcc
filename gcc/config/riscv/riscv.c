@@ -3507,7 +3507,8 @@ riscv_first_stack_step (struct riscv_frame_info *frame)
   if (SMALL_OPERAND (frame->total_size))
     return frame->total_size;
 
-  HOST_WIDE_INT min_first_step = frame->total_size - frame->fp_sp_offset;
+  HOST_WIDE_INT min_first_step =
+    RISCV_STACK_ALIGN (frame->total_size - frame->fp_sp_offset);
   HOST_WIDE_INT max_first_step = IMM_REACH / 2 - PREFERRED_STACK_BOUNDARY / 8;
   HOST_WIDE_INT min_second_step = frame->total_size - max_first_step;
   gcc_assert (min_first_step <= max_first_step);
