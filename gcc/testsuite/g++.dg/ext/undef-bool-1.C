@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-options "-O2 -DNO_WARN_X86_INTRINSICS -mvsx" } */
+/* { dg-require-effective-target lp64 } */
 
 /* Test to ensure that "bool" gets undef'd in xmmintrin.h when
    we require strict ANSI.  */
