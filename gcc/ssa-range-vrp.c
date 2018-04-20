@@ -76,10 +76,6 @@ execute_ranger_vrp ()
     e.exercise (dump_file);
   }
 
-  // Don't run the actual pass by default until andrew fixes the regressions!!
-  
-  return 0;
-  
   path_ranger ranger;
   basic_block bb;
   irange r;
