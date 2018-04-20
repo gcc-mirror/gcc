@@ -1,3 +1,13 @@
+2018-04-20  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/stack-check-5.c: Improve dg-skip-if selector for the
+	stack protector.
+	* gcc.dg/stack-check-6.c: Likewise.
+	* gcc.dg/stack-check-6a.c: Likewise.
+	* gcc.target/i386/stack-check-17.c: Add dg-skip-if selector.
+	* gcc.target/i386/stack-check-18.c: Likewise.
+	* gcc.target/i386/stack-check-19.c: Likewise.
+
 2018-04-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR testsuite/85483
