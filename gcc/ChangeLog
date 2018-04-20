@@ -1,3 +1,9 @@
+2018-04-20  Carl Love  <cel@us.ibm.com>
+
+        PR target/83402
+        * config/rs6000/rs6000-c.c (rs6000_gimple_fold_builtin): Add
+        size check for arg0.
+
 2018-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
 
