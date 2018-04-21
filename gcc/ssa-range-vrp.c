@@ -92,7 +92,7 @@ execute_ranger_vrp ()
         {
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "Considering ");
+	      fprintf (dump_file, "Considering BB%d:  ", bb->index);
 	      print_gimple_stmt (dump_file, cond, 0,0);
 	    }
 	  if (ranger.path_range_stmt (r, stmt))
@@ -130,7 +130,8 @@ execute_ranger_vrp ()
 
 		  if (dump_file)
 		    {
-		      fprintf (dump_file, "eliminating BB%d branch",bb->index);
+		      fprintf (dump_file, "eliminating BB%d branch:\n",
+			       bb->index);
 		      print_gimple_stmt (dump_file, stmt, 0, 0);
 		    }
 

@@ -250,7 +250,7 @@ path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
       r.intersect (block_range);
     }
 
-  return true;
+  return !r.range_for_type_p ();
 }
 
 
@@ -276,7 +276,7 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
     /* The name comes from outside this block, so evaluate it's value on
        entry to the block.  */
     if (!path_range_entry (r, name, bb))
-      error (" Why can't we get a live on entry range? ");
+      r.set_range (name);
 
   /* Now intersect it with what NAME evaluates to on this edge.  */
   irange edge_range;
@@ -285,8 +285,7 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
       normalize_bool_type (edge_range, r);
       r.intersect (edge_range);
     }
-  return true;
-
+  return !r.range_for_type_p ();
 }
 
 void
@@ -402,7 +401,9 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   if (is_a <gphi *> (g))
     {
       gphi *phi = as_a <gphi *> (g);
-      return process_phi (r, phi);
+      if (process_phi (r, phi))
+        return !r.range_for_type_p ();
+      return false;
     }
  
   // Not all statements have a LHS.  */
@@ -410,7 +411,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
     {
       // If this STMT has already been processed, return that value. 
       if (get_global_ssa_range (r, name))
-	return true;
+	return !r.range_for_type_p ();
      
       // avoid infinite recursion by initializing global cache 
       r.set_range (name);
@@ -444,7 +445,9 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
       else
 	clear_global_ssa_range (name);
     }
-  return res;
+  if (res)
+    return !r.range_for_type_p ();
+  return false;
 }
 
 // Return the known range for NAME as it would be used on stmt G
@@ -456,7 +459,9 @@ path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
   // calculated in this block, or the range on entry.
   if (!g || !valid_irange_ssa (name))
     return false;
-  return path_get_operand (r, name, gimple_bb (g));
+  if (path_get_operand (r, name, gimple_bb (g)))
+    return !r.range_for_type_p ();
+  return false;
 }
 
 static inline gimple *
@@ -699,9 +704,7 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 	r.intersect (redge);
     }
 
-  if (r.range_for_type_p ())
-    return false;
-  return true;
+  return !r.range_for_type_p ();
 }
 
 /* The same as above, but handle the case where BBS are a path of
@@ -723,9 +726,7 @@ path_ranger::path_range_reverse (irange &r, tree name,
 	r.intersect (redge);
     }
 
-  if (r.range_for_type_p ())
-    return false;
-  return true;
+  return !r.range_for_type_p ();
 }
 
 void
@@ -786,6 +787,15 @@ path_ranger::exercise (FILE *output)
 		  path_range_edge (range, name, e);
 	    }
 	}
+      // Now calculate any globals in this block if we asked for details
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	for (x = 1; x < num_ssa_names; x++)
+	  {
+	    if (ssa_name(x) && SSA_NAME_DEF_STMT (ssa_name (x)) &&
+		gimple_bb (SSA_NAME_DEF_STMT (ssa_name (x))) == bb &&
+		!get_global_ssa_range (range, ssa_name (x)))
+	      path_range_stmt (range, SSA_NAME_DEF_STMT (ssa_name (x)));
+	  }
 
       if (output)
         {
