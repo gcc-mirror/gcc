@@ -1,4 +1,9 @@
 2018-04-22  Shiva Chen  <shiva0217@gmail.com>
+
+	* config/nds32/nds32-protos.h (nds32_ls_333_p): Remove.
+	* config/nds32/nds32.c (nds32_ls_333_p): Remove.
+
+2018-04-22  Shiva Chen  <shiva0217@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32-protos.h (nds32_case_vector_shorten_mode):
