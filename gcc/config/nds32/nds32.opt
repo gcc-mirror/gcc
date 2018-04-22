@@ -321,6 +321,10 @@ mext-fpu-dp
 Target Report Mask(FPU_DOUBLE)
 Generate double-precision floating-point instructions.
 
+malways-save-lp
+Target Var(flag_always_save_lp) Init(0)
+Always save $lp in the stack.
+
 munaligned-access
 Target Report Var(flag_unaligned_access) Init(0)
 Enable unaligned word and halfword accesses to packed data.
