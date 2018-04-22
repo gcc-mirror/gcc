@@ -69,10 +69,6 @@ extern unsigned int nds32_dbx_register_number (unsigned int);
 
 /* ------------------------------------------------------------------------ */
 
-/* Auxiliary functions for auxiliary macros in nds32.h.  */
-
-extern bool nds32_ls_333_p (rtx, rtx, rtx, machine_mode);
-
 /* Auxiliary functions for lwm/smw.  */
 
 extern bool nds32_valid_smw_lwm_base_p (rtx);

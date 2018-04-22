@@ -4787,28 +4787,6 @@ nds32_case_vector_shorten_mode (int min_offset, int max_offset,
 
 /* ------------------------------------------------------------------------ */
 
-/* Function to test 333-form for load/store instructions.
-   This is auxiliary extern function for auxiliary macro in nds32.h.
-   Because it is a little complicated, we use function instead of macro.  */
-bool
-nds32_ls_333_p (rtx rt, rtx ra, rtx imm, machine_mode mode)
-{
-  if (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS
-      && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS)
-    {
-      if (GET_MODE_SIZE (mode) == 4)
-	return satisfies_constraint_Iu05 (imm);
-
-      if (GET_MODE_SIZE (mode) == 2)
-	return satisfies_constraint_Iu04 (imm);
-
-      if (GET_MODE_SIZE (mode) == 1)
-	return satisfies_constraint_Iu03 (imm);
-    }
-
-  return false;
-}
-
 /* Return alignment for the label.  */
 int
 nds32_target_alignment (rtx_insn *label)
