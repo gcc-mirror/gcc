@@ -4768,6 +4768,23 @@ nds32_can_use_return_insn (void)
   return (cfun->machine->naked_p && (cfun->machine->va_args_size == 0));
 }
 
+scalar_int_mode
+nds32_case_vector_shorten_mode (int min_offset, int max_offset,
+				rtx body ATTRIBUTE_UNUSED)
+{
+  if (min_offset < 0 || max_offset >= 0x2000)
+    return SImode;
+  else
+    {
+      /* The jump table maybe need to 2 byte alignment,
+	 so reserved 1 byte for check max_offset.  */
+      if (max_offset >= 0xff)
+	return HImode;
+      else
+	return QImode;
+    }
+}
+
 /* ------------------------------------------------------------------------ */
 
 /* Function to test 333-form for load/store instructions.

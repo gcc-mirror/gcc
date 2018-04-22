@@ -219,6 +219,7 @@ extern void nds32_expand_constant (machine_mode,
 /* Auxiliary functions to check using return with null epilogue.  */
 
 extern int nds32_can_use_return_insn (void);
+extern scalar_int_mode nds32_case_vector_shorten_mode (int, int, rtx);
 
 /* Auxiliary functions to decide output alignment or not.  */
 
