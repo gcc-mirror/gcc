@@ -1,3 +1,17 @@
+2018-04-22  Monk Chiang  <sh.chiang04@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/constants.md (unspec_volatile_element): Add enum values
+	for unaligned access.
+	* config/nds32/nds32-intrinsic.c: Implementation of expanding
+	unaligned access.
+	* config/nds32/nds32-intrinsic.md: Likewise.
+	* config/nds32/nds32_intrinsic.h: Likewise.
+	* config/nds32/nds32.h (nds32_builtins): Likewise.
+	* config/nds32/nds32.opt (munaligned-access): New option.
+	* config/nds32/nds32.c (nds32_asm_file_start): Display
+	flag_unaligned_access status.
+
 2018-04-20  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/riscv/elf.h (LINK_SPEC): Pass --no-relax if

@@ -1306,11 +1306,19 @@
 	(unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "r"))] UNSPEC_UALOAD_W))]
   ""
 {
-  if (TARGET_ISA_V3M)
-    nds32_expand_unaligned_load (operands, SImode);
+  if (flag_unaligned_access)
+    {
+      rtx mem = gen_rtx_MEM (SImode, operands[1]);
+      emit_move_insn (operands[0], mem);
+    }
   else
-    emit_insn (gen_unaligned_load_w (operands[0],
-				     gen_rtx_MEM (SImode, (operands[1]))));
+    {
+      if (TARGET_ISA_V3M)
+	nds32_expand_unaligned_load (operands, SImode);
+      else
+	emit_insn (gen_unaligned_load_w (operands[0],
+					 gen_rtx_MEM (SImode, (operands[1]))));
+    }
   DONE;
 })
 
@@ -1372,11 +1380,19 @@
 	(unspec:SI [(match_operand:SI 1 "register_operand" "r")] UNSPEC_UASTORE_W))]
   ""
 {
-  if (TARGET_ISA_V3M)
-    nds32_expand_unaligned_store (operands, SImode);
+  if (flag_unaligned_access)
+    {
+      rtx mem = gen_rtx_MEM (SImode, operands[0]);
+      emit_move_insn (mem, operands[1]);
+    }
   else
-    emit_insn (gen_unaligned_store_w (gen_rtx_MEM (SImode, operands[0]),
-				      operands[1]));
+    {
+      if (TARGET_ISA_V3M)
+	nds32_expand_unaligned_store (operands, SImode);
+      else
+	emit_insn (gen_unaligned_store_w (gen_rtx_MEM (SImode, operands[0]),
+					  operands[1]));
+    }
   DONE;
 })
 
@@ -1419,5 +1435,64 @@
   [(set_attr "type"   "store")
    (set_attr "length"     "4")]
 )
+
+(define_expand "unspec_unaligned_feature"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_UNALIGNED_FEATURE))]
+  ""
+{
+  /* Get $MMU_CTL system register form nds32_intrinsic_register_names[]  */
+  rtx system_reg =  GEN_INT (__NDS32_REG_MMU_CTL__);
+  rtx temp_reg = gen_reg_rtx (SImode);
+  rtx temp2_reg = gen_reg_rtx (SImode);
+
+  emit_insn (gen_unspec_volatile_mfsr (operands[0], system_reg));
+  emit_move_insn (temp_reg, operands[0]);
+  emit_move_insn (temp2_reg, GEN_INT (0x800 << 12));
+  emit_insn (gen_iorsi3 (operands[0], operands[0], temp2_reg));
+  emit_insn (gen_unspec_volatile_mtsr (operands[0], system_reg));
+  emit_insn (gen_unspec_dsb ());
+
+  emit_insn (gen_unspec_volatile_mfsr (operands[0], system_reg));
+  emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+  emit_insn (gen_unspec_dsb ());
+
+  emit_insn (gen_ashlsi3 (operands[0], operands[0], GEN_INT (8)));
+  emit_insn (gen_lshrsi3 (operands[0], operands[0], GEN_INT (31)));
+  DONE;
+})
+
+(define_expand "unspec_enable_unaligned"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_UNALIGNED_FEATURE)]
+  ""
+{
+  /* Get $MMU_CTL system register form nds32_intrinsic_register_names[]  */
+  rtx system_reg =  GEN_INT (__NDS32_REG_MMU_CTL__);
+  rtx temp_reg = gen_reg_rtx (SImode);
+  rtx temp2_reg = gen_reg_rtx (SImode);
+  emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+  emit_move_insn (temp2_reg, GEN_INT (0x800 << 12));
+  emit_insn (gen_iorsi3 (temp_reg, temp_reg, temp2_reg));
+  emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+  emit_insn (gen_unspec_dsb ());
+  DONE;
+})
+
+(define_expand "unspec_disable_unaligned"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_UNALIGNED_FEATURE)]
+  ""
+{
+  /* Get $MMU_CTL system register form nds32_intrinsic_register_names[]  */
+  rtx system_reg =  GEN_INT (__NDS32_REG_MMU_CTL__);
+  rtx temp_reg = gen_reg_rtx (SImode);
+  rtx temp2_reg = gen_reg_rtx (SImode);
+  emit_insn (gen_unspec_volatile_mfsr (temp_reg, system_reg));
+  emit_move_insn (temp2_reg, GEN_INT (0x800 << 12));
+  emit_insn (gen_one_cmplsi2 (temp2_reg, temp2_reg));
+  emit_insn (gen_andsi3 (temp_reg, temp_reg, temp2_reg));
+  emit_insn (gen_unspec_volatile_mtsr (temp_reg, system_reg));
+  emit_insn (gen_unspec_dsb ());
+  DONE;
+})
 
 ;; ------------------------------------------------------------------------

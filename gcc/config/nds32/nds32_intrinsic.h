@@ -720,4 +720,10 @@ enum nds32_dpref
 #define __nds32__get_trig_type(a) \
   (__builtin_nds32_get_trig_type ((a)))
 
+#define __nds32__unaligned_feature() \
+  (__builtin_nds32_unaligned_feature())
+#define __nds32__enable_unaligned() \
+  (__builtin_nds32_enable_unaligned())
+#define __nds32__disable_unaligned() \
+  (__builtin_nds32_disable_unaligned())
 #endif /* nds32_intrinsic.h */

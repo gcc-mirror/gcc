@@ -523,6 +523,12 @@ static struct builtin_description bdesc_noarg[] =
   NDS32_BUILTIN(unspec_return_address, "return_address", RETURN_ADDRESS)
   NDS32_BUILTIN(unspec_get_all_pending_int, "get_all_pending_int",
 		GET_ALL_PENDING_INT)
+  NDS32_BUILTIN(unspec_unaligned_feature, "unaligned_feature",
+		UNALIGNED_FEATURE)
+  NDS32_NO_TARGET_BUILTIN(unspec_enable_unaligned, "enable_unaligned",
+			  ENABLE_UNALIGNED)
+  NDS32_NO_TARGET_BUILTIN(unspec_disable_unaligned, "disable_unaligned",
+			  DISABLE_UNALIGNED)
 };
 
 /* Intrinsics that take just one argument.  */
@@ -1099,5 +1105,8 @@ nds32_init_builtins_impl (void)
   ADD_NDS32_BUILTIN2 ("unaligned_store_w", void, ptr_uint, unsigned, UASTORE_W);
   ADD_NDS32_BUILTIN2 ("unaligned_store_dw", void, ptr_ulong, long_long_unsigned,
 		      UASTORE_DW);
+  ADD_NDS32_BUILTIN0 ("unaligned_feature", unsigned, UNALIGNED_FEATURE);
+  ADD_NDS32_BUILTIN0 ("enable_unaligned", void, ENABLE_UNALIGNED);
+  ADD_NDS32_BUILTIN0 ("disable_unaligned", void, DISABLE_UNALIGNED);
 
 }
