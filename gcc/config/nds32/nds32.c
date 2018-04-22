@@ -2893,6 +2893,10 @@ nds32_asm_file_start (void)
 
   if (optimize_size)
     fprintf (asm_out_file, "\t! Optimization level\t: -Os\n");
+  else if (optimize_fast)
+    fprintf (asm_out_file, "\t! Optimization level\t: -Ofast\n");
+  else if (optimize_debug)
+    fprintf (asm_out_file, "\t! Optimization level\t: -Og\n");
   else
     fprintf (asm_out_file, "\t! Optimization level\t: -O%d\n", optimize);
 

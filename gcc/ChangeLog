@@ -1,3 +1,8 @@
+2018-04-22  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_asm_file_start): Display optimization
+	level Ofast and Og.
+
 2018-04-22  Monk Chiang  <sh.chiang04@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
