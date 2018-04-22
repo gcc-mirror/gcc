@@ -1,3 +1,9 @@
+2018-04-22  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_compute_stack_frame): Consider
+	flag_always_save_lp condition.
+	* config/nds32/nds32.opt (malways-save-lp): New option.
+
 2018-04-22  Shiva Chen  <shiva0217@gmail.com>
 
 	* config/nds32/nds32-protos.h (nds32_use_load_post_increment): Declare.

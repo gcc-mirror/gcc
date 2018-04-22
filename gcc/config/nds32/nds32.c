@@ -436,7 +436,8 @@ nds32_compute_stack_frame (void)
 
   /* If $lp value is required to be saved on stack, it needs 4 bytes space.
      Check whether $lp is ever live.  */
-  cfun->machine->lp_size = (df_regs_ever_live_p (LP_REGNUM)) ? 4 : 0;
+  cfun->machine->lp_size
+    = (flag_always_save_lp || df_regs_ever_live_p (LP_REGNUM)) ? 4 : 0;
 
   /* Initially there is no padding bytes.  */
   cfun->machine->callee_saved_area_gpr_padding_bytes = 0;
