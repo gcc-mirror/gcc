@@ -223,6 +223,8 @@ extern int nds32_can_use_return_insn (void);
 /* Auxiliary functions to decide output alignment or not.  */
 
 extern int nds32_target_alignment (rtx_insn *);
+extern unsigned int nds32_data_alignment (tree, unsigned int);
+extern unsigned int nds32_local_alignment (tree, unsigned int);
 
 /* Auxiliary functions to expand builtin functions.  */
 

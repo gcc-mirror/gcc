@@ -688,6 +688,12 @@ enum nds32_builtins
 
 #define BIGGEST_ALIGNMENT 64
 
+#define DATA_ALIGNMENT(constant, basic_align) \
+  nds32_data_alignment (constant, basic_align)
+
+#define LOCAL_ALIGNMENT(type, basic_align) \
+  nds32_local_alignment (type, basic_align)
+
 #define EMPTY_FIELD_BOUNDARY 32
 
 #define STRUCTURE_SIZE_BOUNDARY 8

@@ -1,5 +1,14 @@
 2018-04-22  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-protos.h (nds32_data_alignment,
+	nds32_local_alignment): Declare.
+	* config/nds32/nds32.c (nds32_data_alignment, nds32_constant_alignment,
+	nds32_local_alignment): New functions.
+	(TARGET_CONSTANT_ALIGNMENT): Define.
+	* config/nds32/nds32.h (DATA_ALIGNMENT, LOCAL_ALIGNMENT): Define.
+
+2018-04-22  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c
 	(TARGET_HARD_REGNO_MODE_OK): Move to the bottom of file.
 	(TARGET_MODES_TIEABLE_P): Likewise.

@@ -4812,6 +4812,63 @@ nds32_target_alignment (rtx_insn *label)
     return 2;
 }
 
+/* Return alignment for data.  */
+unsigned int
+nds32_data_alignment (tree data,
+		      unsigned int basic_align)
+{
+  if ((basic_align < BITS_PER_WORD)
+      && (TREE_CODE (data) == ARRAY_TYPE
+	 || TREE_CODE (data) == UNION_TYPE
+	 || TREE_CODE (data) == RECORD_TYPE))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
+}
+
+/* Return alignment for constant value.  */
+static HOST_WIDE_INT
+nds32_constant_alignment (const_tree constant,
+			  HOST_WIDE_INT basic_align)
+{
+  /* Make string literal and constant for constructor to word align.  */
+  if (((TREE_CODE (constant) == STRING_CST
+	|| TREE_CODE (constant) == CONSTRUCTOR
+	|| TREE_CODE (constant) == UNION_TYPE
+	|| TREE_CODE (constant) == RECORD_TYPE
+	|| TREE_CODE (constant) == ARRAY_TYPE)
+       && basic_align < BITS_PER_WORD))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
+}
+
+/* Return alignment for local variable.  */
+unsigned int
+nds32_local_alignment (tree local ATTRIBUTE_UNUSED,
+		       unsigned int basic_align)
+{
+  bool at_least_align_to_word = false;
+  /* Make local array, struct and union at least align to word for make
+     sure it can unroll memcpy when initialize by constant.  */
+  switch (TREE_CODE (local))
+    {
+    case ARRAY_TYPE:
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      at_least_align_to_word = true;
+      break;
+    default:
+      at_least_align_to_word = false;
+      break;
+    }
+  if (at_least_align_to_word
+      && (basic_align < BITS_PER_WORD))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
+}
+
 bool
 nds32_split_double_word_load_store_p(rtx *operands, bool load_p)
 {
@@ -4864,6 +4921,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 
 #undef TARGET_EXPAND_TO_RTL_HOOK
 #define TARGET_EXPAND_TO_RTL_HOOK nds32_expand_to_rtl_hook
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT nds32_constant_alignment
 
 
 /* Layout of Source Language Data Types.  */
