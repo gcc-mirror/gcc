@@ -1,5 +1,13 @@
 2018-04-22  Shiva Chen  <shiva0217@gmail.com>
 
+	* config/nds32/nds32-protos.h (nds32_use_load_post_increment): Declare.
+	* config/nds32/nds32.c (nds32_use_load_post_increment): New.
+	* config/nds32/nds32.h
+	(USE_LOAD_POST_INCREMENT, USE_LOAD_POST_DECREMENT): Define.
+	(USE_STORE_POST_INCREMENT, USE_STORE_POST_DECREMENT): Define.
+
+2018-04-22  Shiva Chen  <shiva0217@gmail.com>
+
 	* config/nds32/nds32-protos.h (nds32_ls_333_p): Remove.
 	* config/nds32/nds32.c (nds32_ls_333_p): Remove.
 
