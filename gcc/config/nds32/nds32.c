@@ -3843,9 +3843,6 @@ nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
-#undef TARGET_HARD_REGNO_MODE_OK
-#define TARGET_HARD_REGNO_MODE_OK nds32_hard_regno_mode_ok
-
 /* Implement TARGET_MODES_TIEABLE_P.  We can use general registers to
    tie QI/HI/SI modes together.  */
 
@@ -3869,9 +3866,6 @@ nds32_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
   return false;
 }
-
-#undef TARGET_MODES_TIEABLE_P
-#define TARGET_MODES_TIEABLE_P nds32_modes_tieable_p
 
 /* Register Classes.  */
 
@@ -4888,6 +4882,12 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS nds32_hard_regno_nregs
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK nds32_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P nds32_modes_tieable_p
 
 /* -- Handling Leaf Functions.  */
 
