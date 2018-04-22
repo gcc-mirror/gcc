@@ -2885,6 +2885,10 @@ nds32_asm_file_start (void)
 			 ((TARGET_REDUCED_REGS) ? "Yes"
 						: "No"));
 
+  fprintf (asm_out_file, "\t! Support unaligned access\t\t: %s\n",
+			 (flag_unaligned_access ? "Yes"
+						: "No"));
+
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
   if (optimize_size)

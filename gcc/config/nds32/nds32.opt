@@ -320,3 +320,7 @@ Generate single-precision floating-point instructions.
 mext-fpu-dp
 Target Report Mask(FPU_DOUBLE)
 Generate double-precision floating-point instructions.
+
+munaligned-access
+Target Report Var(flag_unaligned_access) Init(0)
+Enable unaligned word and halfword accesses to packed data.
