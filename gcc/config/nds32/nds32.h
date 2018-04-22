@@ -1083,6 +1083,12 @@ enum reg_class
 /* We have "LW.bi   Rt, [Ra], Rb" instruction form.  */
 #define HAVE_POST_MODIFY_REG  1
 
+#define USE_LOAD_POST_INCREMENT(mode) \
+  nds32_use_load_post_increment(mode)
+#define USE_LOAD_POST_DECREMENT(mode) USE_LOAD_POST_INCREMENT(mode)
+#define USE_STORE_POST_DECREMENT(mode) USE_LOAD_POST_DECREMENT(mode)
+#define USE_STORE_POST_INCREMENT(mode) USE_LOAD_POST_INCREMENT(mode)
+
 #define CONSTANT_ADDRESS_P(x) (CONSTANT_P (x) && GET_CODE (x) != CONST_DOUBLE)
 
 #define MAX_REGS_PER_ADDRESS 3

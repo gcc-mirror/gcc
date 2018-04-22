@@ -275,6 +275,8 @@ rtx extract_branch_target_rtx (rtx_insn *);
 rtx extract_branch_condition_rtx (rtx_insn *);
 } // namespace nds32
 
+extern bool nds32_use_load_post_increment(machine_mode);
+
 /* Functions for create nds32 specific optimization pass.  */
 extern rtl_opt_pass *make_pass_nds32_relax_opt (gcc::context *);
 

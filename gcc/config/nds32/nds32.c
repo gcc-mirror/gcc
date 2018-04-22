@@ -1354,6 +1354,14 @@ nds32_naked_function_p (tree func)
   return (t != NULL_TREE);
 }
 
+/* Function that determine whether a load postincrement is a good thing to use
+   for a given mode.  */
+bool
+nds32_use_load_post_increment (machine_mode mode)
+{
+  return (GET_MODE_SIZE (mode) <= GET_MODE_SIZE(E_DImode));
+}
+
 /* Function that check if 'X' is a valid address register.
    The variable 'STRICT' is very important to
    make decision for register number.
