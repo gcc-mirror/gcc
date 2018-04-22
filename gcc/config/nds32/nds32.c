@@ -611,10 +611,12 @@ nds32_compute_stack_frame (void)
     {
       block_size = cfun->machine->fp_size
 		   + cfun->machine->gp_size
-		   + cfun->machine->lp_size
-		   + (4 * (cfun->machine->callee_saved_last_gpr_regno
-			   - cfun->machine->callee_saved_first_gpr_regno
-			   + 1));
+		   + cfun->machine->lp_size;
+
+      if (cfun->machine->callee_saved_last_gpr_regno != SP_REGNUM)
+	block_size += (4 * (cfun->machine->callee_saved_last_gpr_regno
+			    - cfun->machine->callee_saved_first_gpr_regno
+			    + 1));
 
       if (!NDS32_DOUBLE_WORD_ALIGN_P (block_size))
 	{

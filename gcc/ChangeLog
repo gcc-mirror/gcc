@@ -1,5 +1,9 @@
 2018-04-22  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_compute_stack_frame): Fix wrong value.
+
+2018-04-22  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-protos.h (nds32_data_alignment,
 	nds32_local_alignment): Declare.
 	* config/nds32/nds32.c (nds32_data_alignment, nds32_constant_alignment,
