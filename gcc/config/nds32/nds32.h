@@ -1331,9 +1331,7 @@ enum reg_class
 /* Return the preferred mode for and addr_diff_vec when the mininum
    and maximum offset are known.  */
 #define CASE_VECTOR_SHORTEN_MODE(min_offset, max_offset, body)  \
-   ((min_offset < 0 || max_offset >= 0x2000 ) ? SImode          \
-   : (max_offset >= 100) ? HImode                               \
-   : QImode)
+  nds32_case_vector_shorten_mode (min_offset, max_offset, body)
 
 /* Generate pc relative jump table when -fpic or -Os.  */
 #define CASE_VECTOR_PC_RELATIVE (flag_pic || optimize_size)
