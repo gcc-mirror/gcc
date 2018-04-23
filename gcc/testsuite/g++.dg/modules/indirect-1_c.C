@@ -18,5 +18,5 @@ int main ()
 // { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::frob'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily loading '::bar::quux'@'bar' section:} module } }
-// { dg-final { scan-lang-dump {>Lazily loading '::foo::X'@'foo' section:2} module } }
+// { dg-final { scan-lang-dump {>Lazily loading '::foo::X'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::X'@foo} module } }
