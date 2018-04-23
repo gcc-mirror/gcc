@@ -136,9 +136,7 @@
   UNSPEC_ARC_VMPY2H
   UNSPEC_ARC_VMPY2HU
   UNSPEC_ARC_STKTIE
-  ])
 
-(define_c_enum "vunspec" [
   VUNSPEC_ARC_RTIE
   VUNSPEC_ARC_SYNC
   VUNSPEC_ARC_BRK
@@ -5802,21 +5800,19 @@
    })
 
 (define_insn "fls"
-  [(set (match_operand:SI  0 "dest_reg_operand" "=w,w")
-	(unspec:SI [(match_operand:SI 1 "general_operand" "cL,Cal")]
+  [(set (match_operand:SI  0 "register_operand" "=r,r")
+	(unspec:SI [(match_operand:SI 1 "nonmemory_operand" "rL,Cal")]
 			    UNSPEC_ARC_FLS))]
   "TARGET_NORM && TARGET_V2"
-  "@
-   fls \t%0, %1
-   fls \t%0, %1"
+  "fls\\t%0,%1"
   [(set_attr "length" "4,8")
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
 (define_insn "seti"
-  [(unspec_volatile:SI [(match_operand:SI 0 "general_operand" "rL")]
+  [(unspec_volatile:SI [(match_operand:SI 0 "nonmemory_operand" "rL")]
 		       VUNSPEC_ARC_SETI)]
   "TARGET_V2"
-  "seti  %0"
+  "seti\\t%0"
   [(set_attr "length" "4")
    (set_attr "type" "misc")])
 
