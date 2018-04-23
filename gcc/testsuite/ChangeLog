@@ -1,3 +1,7 @@
+2018-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/torture/pr85496.C: New test.
+
 2018-04-20  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/85436
