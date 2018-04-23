@@ -884,9 +884,35 @@ op_rr (opm_mode mode, irange& r, const irange& lh, const irange& rh)
 	  break;
 
 	case OPM_MUL:
-	  // Changing signs makes it complicated. we have to break any ranges
-	  // which cross 0 into sub ranges with same signs.  punt for now.
-	  ov_lb = ov_ub = true;
+	  new_lb = wi::mul (lh.lower_bound (), rh.lower_bound (), s, &ov_lb);
+	  new_ub = wi::mul (lh.upper_bound (), rh.upper_bound (), s, &ov_ub);
+	  if (!ov_lb && !ov_ub)
+	    {
+	      if (s == SIGNED && (wi::neg_p (lh.lower_bound ())
+				  || wi::neg_p (lh.upper_bound ())))
+	        {
+		  wide_int v1 = new_lb;
+		  wide_int v2 = new_lb;
+		  wide_int v3 = wi::smul (lh.lower_bound (),
+					  rh.upper_bound (), &ov_lb);
+		  wide_int v4 = wi::smul (lh.upper_bound (),
+					  rh.lower_bound (), &ov_ub);
+		  if (!ov_lb && !ov_ub)
+		    {
+		      new_lb = wi::smin (v1, v2);
+		      wide_int tmp = wi::smin (v3, v4);
+		      new_lb = wi::smin (new_lb, tmp);
+		      new_ub = wi::smax (v1, v2);
+		      tmp = wi::smax (v3, v4);
+		      new_ub = wi::smax (new_ub, tmp);
+		    }
+		  else
+		    ov_lb = ov_ub = true;
+		}
+	    }
+	  else
+	    ov_lb = ov_ub = true;
+
 	  break;
 
 	case OPM_DIV:
