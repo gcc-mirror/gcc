@@ -1,9 +1,15 @@
+2018-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/85496
+	* expr.c (store_field): In the bitfield case, if the value comes from
+	a function call and is returned in registers by means of a PARALLEL,
+	do not change the mode of the temporary unless BLKmode and VOIDmode.
+
 2018-04-23  Andrey Belevantsev  <abel@ispras.ru>
 
-        PR rtl-optimization/85423
-
-        * sel-sched-ir.c (has_dependence_note_mem_dep): Only discard
-        dependencies to debug insns when the previous insn is non-debug.
+	PR rtl-optimization/85423
+	* sel-sched-ir.c (has_dependence_note_mem_dep): Only discard
+	dependencies to debug insns when the previous insn is non-debug.
 
 2018-04-23  Claudiu Zissulescu  <claziss@synopsys.com>
 
