@@ -2273,6 +2273,7 @@ struct GTY(()) module_state {
   void load_section (unsigned snum);
 
   /* Lazily read a section.  */
+  void maybe_defrost ();
   bool lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost = false);
   static void freeze_an_elf ();
 
@@ -2362,6 +2363,7 @@ struct GTY(()) module_state {
  private:
   static unsigned lazy_lru;  /* LRU counter.  */
   static unsigned lazy_open; /* Remaining limit for unfrozen loaders.  */
+  static vec<module_state *, va_gc_atomic> *importing;
 };
 
 module_state::module_state (tree name)
@@ -2424,6 +2426,7 @@ unsigned module_state::global_crc;
 /* Nesting of lazy loaders.  */
 unsigned module_state::lazy_lru;
 unsigned module_state::lazy_open;
+GTY((deletable)) vec<module_state *, va_gc_atomic> *module_state::importing;
 
 /* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
 vec<module_state *, va_gc> GTY(()) *module_state::modules;
@@ -5949,25 +5952,20 @@ module_state::init ()
 
   dump.push (NULL);
 
-  /* Determine lazy limit bound.  */
-  if (flag_module_lazy)
+  /* Determine lazy handle bound.  */
+  lazy_open = PARAM_VALUE (PARAM_LAZY_MODULES);
+  if (!lazy_open)
     {
-      unsigned n = PARAM_VALUE (PARAM_LAZY_MODULES);
-      if (!n)
-	{
-	  n = 100;
+      lazy_open = 100;
 #if HAVE_GETRLIMIT
-	  struct rlimit rlimit;
-	  if (!getrlimit (RLIMIT_NOFILE, &rlimit))
-	    n = rlimit.rlim_cur > 1000000 ? 1000000 : rlimit.rlim_cur;
+      struct rlimit rlimit;
+      if (!getrlimit (RLIMIT_NOFILE, &rlimit))
+	lazy_open = (rlimit.rlim_cur > 1000000
+		     ? 1000000 : unsigned (rlimit.rlim_cur));
 #endif
-	  if (n > 20)
-	    n -= 20;
-	}
-      lazy_open = n;
+      /* Use 3/4's of the available handles.  */
+      lazy_open = lazy_open * 3 / 4;
     }
-  else
-    lazy_open = 1;
   dump () && dump ("Lazy limit is %u", lazy_open);
 
   /* Construct the global tree array.  This is an array of unique
@@ -6422,6 +6420,9 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
 	  set_import (imp, exported);
 	}
     }
+
+  /* We may have been frozen during the above importing.  */
+  maybe_defrost ();
 
   sec_range.first = cfg.u ();
   sec_range.second = cfg.u ();
@@ -7621,16 +7622,11 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
 	    break;
 	}
     }
-
-  return;
 }
 
-/* Load section SNUM, dealing with laziness.  */
-
 void
-module_state::load_section (unsigned snum)
+module_state::maybe_defrost ()
 {
-  unsigned old_loading = loading;
   if (from->is_frozen ())
     {
       if (!lazy_open)
@@ -7639,6 +7635,16 @@ module_state::load_section (unsigned snum)
       from->defrost (filename);
       lazy_open--;
     }
+}
+
+/* Load section SNUM, dealing with laziness.  */
+
+void
+module_state::load_section (unsigned snum)
+{
+  maybe_defrost ();
+
+  unsigned old_loading = loading;
   loading = snum;
   lru = lazy_lru++;
   read_cluster (snum);
@@ -8307,8 +8313,10 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 
 	  state->push_location ();
 	  state->announce ("importing");
+	  vec_safe_push (importing, state);
 	  state->read (stream, e, crc_ptr);
 	  bool failed = state->check_read (module_p || export_p);
+	  importing->pop ();
 	  state->announce (flag_module_lazy && !module_p
 			   ? "lazily" : "imported");
 	  state->pop_location ();
@@ -8359,8 +8367,19 @@ module_state::freeze_an_elf ()
 	victim = candidate;
     }
 
-  /* We should always find a victim  */
-  gcc_assert (victim);
+  if (!victim)
+    {
+      /* Pick the first available one off the importing stack.  There
+	 must be one */
+      for (unsigned ix = 0; !victim; ix++)
+	{
+	  gcc_assert (ix < vec_safe_length (importing));
+	  module_state *candidate = (*importing)[ix];
+	  if (!candidate->from->is_frozen ())
+	    victim = candidate;
+	}
+    }
+
   dump () && dump ("Freezing %s", victim->filename);
   victim->from->freeze ();
   lazy_open++;

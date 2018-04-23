@@ -1,3 +1,15 @@
+2018-04-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (module_state::importing): New.
+	(module_state::init): Lazy_open is not just for laziness.
+	(module_state::read_config): Call maybe_defrost.
+	(module_state::maybe_defrost): New, broken out of ...
+	(module_state::load_section): ... here.  Call it.
+	(module_state::freeze_an_elf): Look in importing stack too.
+	gcc/testsuite/
+	* g++.dg/modules/nest-1_[abc].C: New.
+
 2018-04-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/
