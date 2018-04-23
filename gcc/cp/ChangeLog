@@ -1,3 +1,16 @@
+2018-04-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69560 - wrong alignof(double) on x86.
+	CWG 1879 - Inadequate definition of alignment requirement.
+	* cp-tree.h (ALIGNOF_EXPR_STD_P): New.
+	* typeck.c (cxx_sizeof_or_alignof_type): Add std_alignof parm.
+	(cxx_sizeof_expr, cxx_sizeof_nowarn, cxx_alignas_expr)
+	(cxx_alignof_expr): Pass it.
+	* parser.c (cp_parser_unary_expression): Pass it.
+	* pt.c (tsubst_copy): Copy it.
+	(tsubst_copy_and_build): Pass it.
+	* decl.c (fold_sizeof_expr): Pass it.
+
 2018-04-23  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

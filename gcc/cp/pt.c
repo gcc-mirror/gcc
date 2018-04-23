@@ -15598,7 +15598,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		expanded = make_argument_pack (expanded);
 
 	      if (TYPE_P (expanded))
-		return cxx_sizeof_or_alignof_type (expanded, SIZEOF_EXPR, 
+		return cxx_sizeof_or_alignof_type (expanded, SIZEOF_EXPR,
+						   false,
 						   complain & tf_error);
 	      else
 		return cxx_sizeof_or_alignof_expr (expanded, SIZEOF_EXPR,
@@ -15636,7 +15637,10 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
-	return build1 (code, type, op0);
+	r = build1 (code, type, op0);
+	if (code == ALIGNOF_EXPR)
+	  ALIGNOF_EXPR_STD_P (r) = ALIGNOF_EXPR_STD_P (t);
+	return r;
       }
 
     case COMPONENT_REF:
@@ -18002,6 +18006,8 @@ tsubst_copy_and_build (tree t,
 	op1 = TREE_OPERAND (t, 0);
 	if (TREE_CODE (t) == SIZEOF_EXPR && SIZEOF_EXPR_TYPE_P (t))
 	  op1 = TREE_TYPE (op1);
+	bool std_alignof = (TREE_CODE (t) == ALIGNOF_EXPR
+			    && ALIGNOF_EXPR_STD_P (t));
         if (!args)
 	  {
 	    /* When there are no ARGS, we are trying to evaluate a
@@ -18025,7 +18031,7 @@ tsubst_copy_and_build (tree t,
 	    --c_inhibit_evaluation_warnings;
 	  }
         if (TYPE_P (op1))
-	  r = cxx_sizeof_or_alignof_type (op1, TREE_CODE (t),
+	  r = cxx_sizeof_or_alignof_type (op1, TREE_CODE (t), std_alignof,
 					  complain & tf_error);
 	else
 	  r = cxx_sizeof_or_alignof_expr (op1, TREE_CODE (t),

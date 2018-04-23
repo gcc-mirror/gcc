@@ -7993,19 +7993,22 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    location_t start_loc = token->location;
 
 	    op = keyword == RID_ALIGNOF ? ALIGNOF_EXPR : SIZEOF_EXPR;
+	    bool std_alignof = id_equal (token->u.value, "alignof");
+
 	    /* Consume the token.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the operand.  */
 	    operand = cp_parser_sizeof_operand (parser, keyword);
 
 	    if (TYPE_P (operand))
-	      ret = cxx_sizeof_or_alignof_type (operand, op, true);
+	      ret = cxx_sizeof_or_alignof_type (operand, op, std_alignof,
+						true);
 	    else
 	      {
 		/* ISO C++ defines alignof only with types, not with
 		   expressions. So pedwarn if alignof is used with a non-
 		   type expression. However, __alignof__ is ok.  */
-		if (id_equal (token->u.value, "alignof"))
+		if (std_alignof)
 		  pedwarn (token->location, OPT_Wpedantic,
 			   "ISO C++ does not allow %<alignof%> "
 			   "with a non-type");
