@@ -1,3 +1,8 @@
+2018-04-23  Andrey Belevantsev  <abel@ispras.ru>
+
+        PR rtl-optimization/85423
+        * gcc.dg/pr85423.c: New test.
+
 2018-04-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c/85365
