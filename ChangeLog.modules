@@ -1,6 +1,18 @@
 2018-04-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (enum tree_tag): Remove tt_namespace.
+	(trees_out::tree_{value,decl,type,ref,ctx}): New.  Broken out of ...
+	(trees_out::tree_node): ... here.  Use them.
+	(trees_out::core_vals): Use tree_ctx.
+	(module_state::write_cluster): Use tree_ctx.
+	* name-lookup.h (find_imported_namespace): Delete.
+	* name-lookup.c (find_imported_namespace): Delete.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_d.C: Adjust scans.
+	* g++.dg/modules/indirect-1_[abc].C: New.
+
+	gcc/cp/
 	* module.c (module_state::importing): New.
 	(module_state::init): Lazy_open is not just for laziness.
 	(module_state::read_config): Call maybe_defrost.

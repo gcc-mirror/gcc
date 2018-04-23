@@ -7950,21 +7950,6 @@ add_imported_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
   return decl;
 }
 
-tree
-find_imported_namespace (tree ctx, unsigned mod, tree name)
-{
-  /* Does not deal with anonymous namespaces.  */
-  gcc_assert (name && TREE_PUBLIC (ctx));
-
-  if (tree *slot = find_namespace_slot (ctx, name, false))
-    if (mc_slot *mslot = module_binding_slot
-	(slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod, false))
-      if (tree decl = *mslot)
-	if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
-	  return decl;
-  return NULL_TREE;
-}
-
 /* External entry points for do_{push_to/pop_from}_top_level.  */
 
 void
