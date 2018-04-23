@@ -17,6 +17,9 @@ int main ()
   static_assert (int (bar::Scoped_One (true)) == 1);
   static_assert (int (bar::Scoped_One (false)) == 2);
 
+  static_assert (bar::Plain_Const_Three == 3);
+  static_assert (int (bar::Scoped_Const_Three) == 3);
+
   return 0;
 }
 
@@ -42,3 +45,6 @@ int main ()
 // { dg-final { scan-lang-dump {>Lazily loading '::foo::Scoped'@'foo' section:} module } }
 // { dg-final { scan-lang-dump-not {Lazily loading '::foo::[ABC]'@'foo' section:} module } }
 // { dg-final { scan-lang-dump-not {Lazily loading '::foo::Scoped::[ABC]'@'foo' section:} module } }
+
+// { dg-final { scan-lang-dump {Lazily loading '::bar::Plain_Const_Three'@'bar' section:} module } }
+// { dg-final { scan-lang-dump {Lazily loading '::bar::Scoped_Const_Three'@'bar' section} module } }

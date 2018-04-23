@@ -1,5 +1,8 @@
 2018-04-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/indirect-1_[abc].C: Add exported constant.
+
 	gcc/cp/
 	* name-lookup.c (lookup_by_ident): Look in enumerals.
 	gcc/testsuite/
