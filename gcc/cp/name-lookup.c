@@ -3682,20 +3682,35 @@ lookup_by_ident (tree ctx, unsigned mod, tree name, tree type, unsigned code)
 
     case RECORD_TYPE:
     case UNION_TYPE:
-      gcc_assert (COMPLETE_TYPE_P (ctx));
-      if (IDENTIFIER_CONV_OP_P (name))
-	name = conv_op_identifier;
-      /* The originating module might not have lazily declared
-	 members, but the referencing module will have done so.  We
-	 need to repeat that declaration at this point.  */
-      maybe_lazily_declare (ctx, name);
-      if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
-	binding = member_vec_binary_search (member_vec, name);
-      else
-	for (decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
-	  if (TREE_CODE (decl) == code
-	      && (!type || same_type_p (type, TREE_TYPE (decl))))
-	    return decl;
+      if (COMPLETE_TYPE_P (ctx))
+	{
+	  if (IDENTIFIER_CONV_OP_P (name))
+	    name = conv_op_identifier;
+
+	  /* The originating module might not have lazily declared
+	     members, but the referencing module will have done so.
+	     We need to repeat that declaration at this point.  */
+	  maybe_lazily_declare (ctx, name);
+	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
+	    binding = member_vec_binary_search (member_vec, name);
+	  else
+	    for (decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
+	      if (name == DECL_NAME (decl)
+		  && TREE_CODE (decl) == code
+		  && (!type || same_type_p (type, TREE_TYPE (decl))))
+		return decl;
+	}
+      break;
+
+    case ENUMERAL_TYPE:
+      if (COMPLETE_TYPE_P (ctx) && code == CONST_DECL && !type)
+	for (tree values = TYPE_VALUES (ctx);
+	     values; values = TREE_CHAIN (values))
+	  {
+	    tree decl = TREE_VALUE (values);
+	    if (name == DECL_NAME (decl))
+	      return decl;
+	  }
       break;
 
     default:

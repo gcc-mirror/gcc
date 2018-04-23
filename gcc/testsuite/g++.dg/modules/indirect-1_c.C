@@ -12,6 +12,11 @@ int main ()
   if (bar::Z (1, 2).frob () != 3)
     return 3;
 
+  static_assert (bar::Plain_One (true) == 1);
+  static_assert (bar::Plain_One (false) == 2);
+  static_assert (int (bar::Scoped_One (true)) == 1);
+  static_assert (int (bar::Scoped_One (false)) == 2);
+
   return 0;
 }
 
@@ -26,7 +31,14 @@ int main ()
 // { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::X::__ct_comp '@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily loading '::bar::Z'@'bar' section:} module } }
-// { dg-final { scan-lang-dump {>Lazily loading '::foo::Y'@'foo' section:3} module } }
+// { dg-final { scan-lang-dump {>Lazily loading '::foo::Y'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::Y'@foo} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::foo::Y::_vptr.Y'@foo} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::Y::frob'@foo} module } }
+
+// { dg-final { scan-lang-dump {Lazily loading '::bar::Plain_One'@'bar' section:} module } }
+// { dg-final { scan-lang-dump {>Lazily loading '::foo::Plain'@'foo' section} module } }
+// { dg-final { scan-lang-dump {Lazily loading '::bar::Scoped_One'@'bar' section} module } }
+// { dg-final { scan-lang-dump {>Lazily loading '::foo::Scoped'@'foo' section:} module } }
+// { dg-final { scan-lang-dump-not {Lazily loading '::foo::[ABC]'@'foo' section:} module } }
+// { dg-final { scan-lang-dump-not {Lazily loading '::foo::Scoped::[ABC]'@'foo' section:} module } }

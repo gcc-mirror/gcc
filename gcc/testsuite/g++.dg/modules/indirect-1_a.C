@@ -32,4 +32,7 @@ namespace foo {
   {
     return *this + j;
   }
+
+  export enum Plain {A, B, C};
+  export enum class Scoped {A, B, C};
 }
