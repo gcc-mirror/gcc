@@ -1,6 +1,9 @@
 2018-04-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (dumper::pop): Don't print trailing line.
+
+	gcc/cp/
 	* module.c (trees_{in,out}::core_vals): Allow NULL-context VAR_DECLS.
 	gcc/testsuite/
 	* g++.dg/modules/indirect-1_[abc].C: Add class.

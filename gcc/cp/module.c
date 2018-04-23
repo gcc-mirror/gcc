@@ -2556,8 +2556,6 @@ void dumper::pop (unsigned n)
       dump_end (module_dump_id, dumps->stream);
       dumps->stream = NULL;
     }
-  else
-    dump ("");
 }
 
 /* Dump a nested name for arbitrary tree T.  Sometimes it won't have a
