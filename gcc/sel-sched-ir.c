@@ -3308,7 +3308,7 @@ has_dependence_note_dep (insn_t pro, ds_t ds ATTRIBUTE_UNUSED)
      that a bookkeeping copy should be movable as the original insn.
      Detect that here and allow that movement if we allowed it before
      in the first place.  */
-  if (DEBUG_INSN_P (real_con)
+  if (DEBUG_INSN_P (real_con) && !DEBUG_INSN_P (real_pro)
       && INSN_UID (NEXT_INSN (pro)) == INSN_UID (real_con))
     return;
 
