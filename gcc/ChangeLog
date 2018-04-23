@@ -1,5 +1,12 @@
 2018-04-23  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md ("vunspec"): Delete it, unify all the unspec
+	enums into a single definition.
+	(fls): Fix predicates and printing.
+	(seti): Likewise.
+
+2018-04-23  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-protos.h (check_if_valid_sleep_operand): Remove.
 	* config/arc/arc.c (arc_expand_builtin): Sleep accepts registers
 	and short u6 immediate.
