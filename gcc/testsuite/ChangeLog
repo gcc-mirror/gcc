@@ -1,7 +1,11 @@
+2018-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/torture/pr85496.C: New test.
+
 2018-04-23  Andrey Belevantsev  <abel@ispras.ru>
 
-        PR rtl-optimization/85423
-        * gcc.dg/pr85423.c: New test.
+	PR rtl-optimization/85423
+	* gcc.dg/pr85423.c: New test.
 
 2018-04-20  Martin Sebor  <msebor@redhat.com>
 
