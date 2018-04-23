@@ -6693,8 +6693,9 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       if (GET_CODE (temp) == PARALLEL)
 	{
 	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
-	  machine_mode temp_mode
-	    = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
+	  machine_mode temp_mode = GET_MODE (temp);
+	  if (temp_mode == BLKmode || temp_mode == VOIDmode)
+	    temp_mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
 	  rtx temp_target = gen_reg_rtx (temp_mode);
 	  emit_group_store (temp_target, temp, TREE_TYPE (exp), size);
 	  temp = temp_target;
