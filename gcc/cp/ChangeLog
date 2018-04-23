@@ -1,3 +1,10 @@
+2018-04-23  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/85470 - wrong error with static data member.
+	* decl.c (check_initializer): Check DECL_INITIALIZED_IN_CLASS_P.
+	* typeck2.c (store_init_value): Likewise.
+
 2018-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85462
