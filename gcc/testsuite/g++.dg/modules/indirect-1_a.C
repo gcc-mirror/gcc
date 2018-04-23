@@ -19,4 +19,17 @@ namespace foo {
     X (int i) :i(i) { }
     operator int () const { return i; }
   };
+
+  export class Y : public virtual X
+  {
+    int j;
+  public:
+    Y (int i, int j) : X(i), j(j){}
+    virtual int frob () const;
+  };
+
+  int Y::frob () const
+  {
+    return *this + j;
+  }
 }

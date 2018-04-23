@@ -4008,6 +4008,10 @@ trees_out::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
       chained_decls (t->function_decl.arguments);
+      WT (t->function_decl.personality);
+      WT (t->function_decl.function_specific_target);
+      WT (t->function_decl.function_specific_optimization);
+      WT (t->function_decl.vindex);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
@@ -4405,6 +4409,10 @@ trees_in::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
       t->function_decl.arguments = chained_decls ();
+      RT (t->function_decl.personality);
+      RT (t->function_decl.function_specific_target);
+      RT (t->function_decl.function_specific_optimization);
+      RT (t->function_decl.vindex);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))

@@ -15,6 +15,14 @@ namespace bar
   {
     return i;
   }
+
+  export class Z : public foo::Y
+  {
+  public:
+    Z (int i, int j) : X(i), Y(i, j)
+    {
+    }
+  };
 }
 
 // { dg-final { scan-lang-dump {Lazily loading '::foo::frob'@'foo' section:} module } }
@@ -23,3 +31,6 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Lazily loading '::foo::X'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote named import:-[0-9]* type_decl:'::foo::X'@foo} module } }
+
+// { dg-final { scan-lang-dump {Lazily loading '::foo::Y'@'foo' section:} module } }
+// { dg-final { scan-lang-dump {Wrote named import:-12 type_decl:'::foo::Y'@foo} module } }

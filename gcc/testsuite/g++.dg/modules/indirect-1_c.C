@@ -4,10 +4,13 @@ import bar;
 
 int main ()
 {
-  if ( bar::frob ())
+  if (bar::frob ())
     return 1;
-  if ( bar::quux ())
+  if (bar::quux ())
     return 2;
+
+  if (bar::Z (1, 2).frob () != 3)
+    return 3;
 
   return 0;
 }
@@ -20,3 +23,10 @@ int main ()
 // { dg-final { scan-lang-dump {Lazily loading '::bar::quux'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily loading '::foo::X'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::X'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::X::__ct_comp '@foo} module } }
+
+// { dg-final { scan-lang-dump {Lazily loading '::bar::Z'@'bar' section:} module } }
+// { dg-final { scan-lang-dump {>Lazily loading '::foo::Y'@'foo' section:3} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::Y'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::foo::Y::_vptr.Y'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::Y::frob'@foo} module } }
