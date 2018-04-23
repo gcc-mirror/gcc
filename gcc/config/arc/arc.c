@@ -6555,11 +6555,6 @@ arc_expand_builtin (tree exp,
       fold (arg0);
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
-      if  (!CONST_INT_P (op0) || !satisfies_constraint_L (op0))
-	{
-	  error ("builtin operand should be an unsigned 6-bit value");
-	  return NULL_RTX;
-	}
       gcc_assert (icode != 0);
       emit_insn (GEN_FCN (icode) (op0));
       return NULL_RTX;
@@ -6902,27 +6897,6 @@ check_if_valid_regno_const (rtx *operands, int opno)
       return true;
     default:
 	error ("register number must be a compile-time constant. Try giving higher optimization levels");
-	break;
-    }
-  return false;
-}
-
-/* Check that after all the constant folding, whether the operand to
-   __builtin_arc_sleep is an unsigned int of 6 bits.  If not, flag an error.  */
-
-bool
-check_if_valid_sleep_operand (rtx *operands, int opno)
-{
-  switch (GET_CODE (operands[opno]))
-    {
-    case CONST :
-    case CONST_INT :
-	if( UNSIGNED_INT6 (INTVAL (operands[opno])))
-	    return true;
-    /* FALLTHRU */
-    default:
-	fatal_error (input_location,
-		     "operand for sleep instruction must be an unsigned 6 bit compile-time constant");
 	break;
     }
   return false;

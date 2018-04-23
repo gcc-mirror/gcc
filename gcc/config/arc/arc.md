@@ -4778,9 +4778,9 @@
 
 
 (define_insn "sleep"
-  [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "L")]
+  [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand" "Lr")]
 		   VUNSPEC_ARC_SLEEP)]
-  "check_if_valid_sleep_operand(operands,0)"
+  ""
   "sleep %0"
   [(set_attr "length" "4")
   (set_attr "type" "misc")])
