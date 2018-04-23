@@ -24,7 +24,7 @@ g2 (int n)
 {
   void *p;
   if (n < 2000)
-    p = __builtin_alloca (n); // { dg-warning "large due to conversion" }
+    p = __builtin_alloca (n); // { dg-warning "may be too large" }
   else
     p = __builtin_malloc (n);
   f (p);
@@ -36,9 +36,7 @@ g3 (int n)
   void *p;
   if (n > 0 && n < 3000)
     {
-      p = __builtin_alloca (n); // { dg-warning "'alloca' may be too large" "" { target lp64} }
-      // { dg-message "note:.*argument may be as large as 2999" "note" { target lp64 } .-1 }
-      // { dg-warning "unbounded use of 'alloca'" "" { target { ! lp64 } } .-2 }
+      p = __builtin_alloca (n); // { dg-warning "may be too large" }
     }
   else
     p = __builtin_malloc (n);
