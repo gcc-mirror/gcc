@@ -1597,10 +1597,13 @@ compparms (const_tree parms1, const_tree parms2)
 
 
 /* Process a sizeof or alignof expression where the operand is a
-   type.  */
+   type. STD_ALIGNOF indicates whether an alignof has C++11 (minimum alignment)
+   or GNU (preferred alignment) semantics; it is ignored if op is
+   SIZEOF_EXPR.  */
 
 tree
-cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
+cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool std_alignof,
+			    bool complain)
 {
   tree value;
   bool dependent_p;
@@ -1637,11 +1640,13 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
     {
       value = build_min (op, size_type_node, type);
       TREE_READONLY (value) = 1;
+      if (op == ALIGNOF_EXPR && std_alignof)
+	ALIGNOF_EXPR_STD_P (value) = true;
       return value;
     }
 
   return c_sizeof_or_alignof_type (input_location, complete_type (type),
-				   op == SIZEOF_EXPR, false,
+				   op == SIZEOF_EXPR, std_alignof,
 				   complain);
 }
 
@@ -1659,7 +1664,7 @@ cxx_sizeof_nowarn (tree type)
   else if (!COMPLETE_TYPE_P (type))
     return size_zero_node;
   else
-    return cxx_sizeof_or_alignof_type (type, SIZEOF_EXPR, false);
+    return cxx_sizeof_or_alignof_type (type, SIZEOF_EXPR, false, false);
 }
 
 /* Process a sizeof expression where the operand is an expression.  */
@@ -1725,7 +1730,7 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
   else
     e = TREE_TYPE (e);
 
-  return cxx_sizeof_or_alignof_type (e, SIZEOF_EXPR, complain & tf_error);
+  return cxx_sizeof_or_alignof_type (e, SIZEOF_EXPR, false, complain & tf_error);
 }
 
 /* Implement the __alignof keyword: Return the minimum required
@@ -1786,7 +1791,7 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
       t = size_one_node;
     }
   else
-    return cxx_sizeof_or_alignof_type (TREE_TYPE (e), ALIGNOF_EXPR, 
+    return cxx_sizeof_or_alignof_type (TREE_TYPE (e), ALIGNOF_EXPR, false,
                                        complain & tf_error);
 
   return fold_convert (size_type_node, t);
@@ -1825,7 +1830,7 @@ cxx_alignas_expr (tree e)
 	   alignas(type-id ), it shall have the same effect as
 	   alignas(alignof(type-id )).  */
 
-    return cxx_sizeof_or_alignof_type (e, ALIGNOF_EXPR, false);
+    return cxx_sizeof_or_alignof_type (e, ALIGNOF_EXPR, true, false);
   
   /* If we reach this point, it means the alignas expression if of
      the form "alignas(assignment-expression)", so we should follow
