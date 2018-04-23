@@ -235,7 +235,7 @@ SYM(GTM_longjmp):
 	/* If # of frames is greater 255 then loop
 	   and adjust.  */
 	cmpq	$255, %rcx
-	jle	.L3
+	jbe	.L3
 	movl	$255, %edi
 	.p2align 4,,10
 	.p2align 3
@@ -243,7 +243,7 @@ SYM(GTM_longjmp):
 	incsspq	%rdi
 	subq	$255, %rcx
 	cmpq	$255, %rcx
-	jg	.L4
+	ja	.L4
 .L3:
 	incsspq	%rcx
 .L1:
@@ -273,7 +273,7 @@ SYM(GTM_longjmp):
 	/* If # of frames is greater 255 then loop
 	   and adjust.  */
 	cmpl	$255, %ecx
-	jle	.L3
+	jbe	.L3
 	pushl	%eax
 	movl	$255, %eax
 	.p2align 4,,10
@@ -282,7 +282,7 @@ SYM(GTM_longjmp):
 	incsspd	%eax
 	subl	$255, %ecx
 	cmpl	$255, %ecx
-	jg	.L4
+	ja	.L4
 	popl	%eax
 .L3:
 	incsspd	%ecx
