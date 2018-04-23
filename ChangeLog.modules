@@ -1,6 +1,11 @@
 2018-04-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_{in,out}::core_vals): Allow NULL-context VAR_DECLS.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-1_[abc].C: Add class.
+
+	gcc/cp/
 	* module.c (enum tree_tag): Remove tt_namespace.
 	(trees_out::tree_{value,decl,type,ref,ctx}): New.  Broken out of ...
 	(trees_out::tree_node): ... here.  Use them.

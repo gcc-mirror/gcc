@@ -3951,7 +3951,9 @@ trees_out::core_vals (tree t)
 	default:
 	  break;
 	case VAR_DECL:
-	  if (TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	  // FIXME:Perhaps always write DECL_INITIAL?
+	  if (DECL_CONTEXT (t)
+	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
 	    break;
 	  /* FALLTHROUGH */
 	case PARM_DECL:
@@ -4349,7 +4351,8 @@ trees_in::core_vals (tree t)
 	default:
 	  break;
 	case VAR_DECL:
-	  if (TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	  if (DECL_CONTEXT (t)
+	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
 	    break;
 	  /* FALLTHROUGH */
 	case PARM_DECL:
