@@ -1,3 +1,12 @@
+2018-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/85512
+	* config/aarch64/constraints.md (Usg, Usj): New constraints.
+	* config/aarch64/iterators.md (cmode_simd): New mode attribute.
+	* config/aarch64/aarch64.md (*aarch64_ashr_sisd_or_int_<mode>3):
+	Use the above on operand 2.  Reindent.
+	(*aarch64_lshr_sisd_or_int_<mode>3): Likewise.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85485

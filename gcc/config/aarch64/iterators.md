@@ -589,6 +589,9 @@
 ;; Map a mode to a specific constraint character.
 (define_mode_attr cmode [(QI "q") (HI "h") (SI "s") (DI "d")])
 
+;; Map modes to Usg and Usj constraints for SISD right shifts
+(define_mode_attr cmode_simd [(SI "g") (DI "j")])
+
 (define_mode_attr Vtype [(V8QI "8b") (V16QI "16b")
 			 (V4HI "4h") (V8HI  "8h")
                          (V2SI "2s") (V4SI  "4s")
