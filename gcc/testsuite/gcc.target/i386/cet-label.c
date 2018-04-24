@@ -1,6 +1,6 @@
-/* Verify that CET works.  */
+/* Verify that -fcf-protection works.  */
 /* { dg-do compile } */
-/* { dg-options "-O -fcf-protection -mcet" } */
+/* { dg-options "-O -fcf-protection" } */
 /* { dg-final { scan-assembler-times "endbr32" 3 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "endbr64" 3 { target { ! ia32 } } } } */
 

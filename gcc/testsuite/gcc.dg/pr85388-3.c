@@ -3,7 +3,7 @@
 /* { dg-do run { target { i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } } } */
 /* { dg-require-effective-target cet } */
 /* { dg-require-effective-target split_stack } */
-/* { dg-options "-fsplit-stack -fcf-protection -mcet" } */
+/* { dg-options "-fsplit-stack -fcf-protection" } */
 
 #include <stdarg.h>
 #include <stdlib.h>

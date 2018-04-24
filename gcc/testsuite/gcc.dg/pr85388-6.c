@@ -1,8 +1,8 @@
 /* { dg-do run { target { i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } } } */
 /* { dg-require-effective-target cet } */
 /* { dg-require-effective-target split_stack } */
-/* { dg-options "-fsplit-stack -O2 -fcf-protection -mcet" } */
-/* { dg-options "-fsplit-stack -O2 -mno-accumulate-outgoing-args -fcf-protection -mcet" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-options "-fsplit-stack -O2 -fcf-protection" } */
+/* { dg-options "-fsplit-stack -O2 -mno-accumulate-outgoing-args -fcf-protection" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 /* A case that used to fail on 32-bit x86 when optimizing and not
    using -maccumulate-args.  The stack adjustment of the alloca got

@@ -1,3 +1,78 @@
+
+	PR target/85485
+	* g++.dg/cet-notrack-1.C (dg-options): Remove -mcet.
+	* g++.dg/torture/pr85334.C (dg-additional-options): Likwise.
+	* gcc.dg/pr85388-1.c (dg-options): Likwise.
+	* gcc.dg/pr85388-2.c (dg-options): Likwise.
+	* gcc.dg/pr85388-3.c (dg-options): Likwise.
+	* gcc.dg/pr85388-4.c (dg-options): Likwise.
+	* gcc.dg/pr85388-5.c (dg-options): Likwise.
+	* gcc.dg/pr85388-6.c (dg-options): Likwise.
+	* gcc.dg/torture/pr85397-1.c (dg-additional-options): Likwise.
+	* gcc.target/i386/attr-nocf-check-1a.c (dg-options): Likwise.
+	* gcc.target/i386/attr-nocf-check-3a.c (dg-options): Likwise.
+	* gcc.target/i386/cet-label.c (dg-options): Likwise.
+	* gcc.target/i386/cet-label-2.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-1b.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-2a.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-2b.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-3.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-4b.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-5a.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-5b.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-6a.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-6b.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-7.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-icf-2.c (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-icf-4.c (dg-options): Likwise.
+	* gcc.target/i386/cet-property-1.c (dg-options): Likwise.
+	* gcc.target/i386/cet-property-2.c (dg-options): Likwise.
+	* gcc.target/i386/cet-sjlj-1.c (dg-options): Likwise.
+	* gcc.target/i386/cet-sjlj-2.c (dg-options): Likwise.
+	* gcc.target/i386/cet-sjlj-3.c (dg-options): Likwise.
+	* gcc.target/i386/cet-sjlj-4.c (dg-options): Likwise.
+	* gcc.target/i386/cet-sjlj-5.c (dg-options): Likwise.
+	* gcc.target/i386/cet-sjlj-6a.c (dg-options): Likwise.
+	* gcc.target/i386/cet-sjlj-6b.c (dg-options): Likwise.
+	* gcc.target/i386/cet-switch-1.c (dg-options): Likwise.
+	* gcc.target/i386/cet-switch-2.c (dg-options): Likwise.
+	* gcc.target/i386/cet-switch-3.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-11.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-12.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-attr-12.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-attr-13.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-attr-14.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-attr-15.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-attr-16.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-extern-8.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-extern-9.c (dg-options): Likwise.
+	* gcc.target/i386/indirect-thunk-extern-10.c (dg-options): Likwise.
+	* gcc.target/i386/pr82659-1.c (dg-options): Likwise.
+	* gcc.target/i386/pr82659-2.c (dg-options): Likwise.
+	* gcc.target/i386/pr82659-3.c (dg-options): Likwise.
+	* gcc.target/i386/pr82659-4.c (dg-options): Likwise.
+	* gcc.target/i386/pr82659-5.c (dg-options): Likwise.
+	* gcc.target/i386/pr82659-6.c (dg-options): Likwise.
+	* gcc.target/i386/pr84146.c (dg-options): Likwise.
+	* gcc.target/i386/pr85403.c (dg-options): Likwise.
+	* gcc.target/i386/pr85404.c (dg-options): Likwise.
+	* gcc.target/i386/cet-intrin-3.c (dg-options): Replace -mcet
+	with -mshstk.
+	* gcc.target/i386/cet-intrin-5.c (dg-options): Likwise.
+	* gcc.target/i386/cet-intrin-6.c (dg-options): Likwise.
+	* gcc.target/i386/cet-intrin-7.c (dg-options): Likwise.
+	* gcc.target/i386/cet-intrin-8.c (dg-options): Likwise.
+	* gcc.target/i386/cet-intrin-9.c (dg-options): Likwise.
+	* gcc.target/i386/cet-intrin-10.c (dg-options): Likwise.
+	* gcc.target/i386/cet-rdssp-1.c (dg-options): Likwise.
+	* (dg-options): Likwise.
+	* gcc.target/i386/cet-notrack-1a.c (dg-options): Remove
+	-mno-cet.
+	* gcc.target/i386/cet-notrack-4a.c (dg-options): Likwise.
+	* gcc.target/i386/cet-label-3.c: Removed.
+	* gcc.target/i386/cet-property-3.c: Likwise.
+	* gcc.target/i386/cet-sjlj-7.c: Likwise.
+
 2018-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85511

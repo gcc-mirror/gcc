@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcet" } */
+/* { dg-options "-O2 -mshstk" } */
 /* { dg-final { scan-assembler-times "rstorssp" 1 } } */
 
 #include <immintrin.h>
