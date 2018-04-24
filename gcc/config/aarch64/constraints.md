@@ -153,6 +153,20 @@
        (match_test "!(aarch64_is_noplt_call_p (op)
 		      || aarch64_is_long_call_p (op))")))
 
+(define_constraint "Usg"
+  "@internal
+  A constraint that matches an immediate right shift constant in SImode
+  suitable for a SISD instruction."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 1, 32)")))
+
+(define_constraint "Usj"
+  "@internal
+  A constraint that matches an immediate right shift constant in DImode
+  suitable for a SISD instruction."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 1, 64)")))
+
 (define_constraint "UsM"
   "@internal
   A constraint that matches the immediate constant -1."
