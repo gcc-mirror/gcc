@@ -1,6 +1,14 @@
 2018-04-24  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-03-21  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/84963
+	* gfortran.dg/goacc/pr84963.f90: New test.
+
+2018-04-24  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-03-13  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/84658.
