@@ -12896,7 +12896,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     ;;
 esac
 if test x$enable_cet = xyes; then
-  CET_FLAGS="-fcf-protection -mcet"
+  CET_FLAGS="-fcf-protection -mshstk"
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
