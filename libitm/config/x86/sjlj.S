@@ -141,7 +141,7 @@ SYM(_ITM_beginTransaction):
 	movq	%r15, -24(%rax)
 	xorq	%rdx, %rdx
 	/* Save zero or shadow stack pointer in the new field.  */
-#if defined(__SHSTK__) && defined(__CET__)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 	rdsspq	%rdx
 #endif
 	movq	%rdx, -16(%rax)
@@ -177,7 +177,7 @@ SYM(_ITM_beginTransaction):
 	movl	%ebp, 20(%esp)
 	xorl	%edx, %edx
 	/* Save zero or shadow stack pointer in the new field.  */
-#if defined(__SHSTK__) && defined(__CET__)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 	rdsspd	%edx
 #endif
 	movl	%edx, 24(%esp)
@@ -221,7 +221,7 @@ SYM(GTM_longjmp):
 	cfi_offset(%rip, 64)
 	cfi_register(%rsp, %rcx)
 	movq	%rcx, %rsp
-#if defined(__SHSTK__) && defined(__CET__)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 	/* Check if Shadow Stack is enabled.  */
 	xorq	%rcx, %rcx
 	rdsspq	%rcx
@@ -259,7 +259,7 @@ SYM(GTM_longjmp):
 	cfi_offset(%eip, 24)
 	cfi_register(%esp, %ecx)
 	movl	%ecx, %esp
-#if defined(__SHSTK__) && defined(__CET__)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 	/* Check if Shadow Stack is enabled.  */
 	xorl	%ecx, %ecx
 	rdsspd	%ecx
