@@ -4206,11 +4206,11 @@ Instead of GNU binutils, you will need to install
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
 
-A nvptx port of newlib is available at
-@uref{https://github.com/MentorEmbedded/nvptx-newlib/,,nvptx-newlib}.
-It can be automatically built together with GCC@.  For this, add a
-symbolic link to nvptx-newlib's @file{newlib} directory to the
-directory containing the GCC sources.
+You will need newlib 3.0 git revision
+cd31fbb2aea25f94d7ecedc9db16dfc87ab0c316 or later.  It can be
+automatically built together with GCC@.  For this, add a symbolic link
+to nvptx-newlib's @file{newlib} directory to the directory containing
+the GCC sources.
 
 Use the @option{--disable-sjlj-exceptions} and
 @option{--enable-newlib-io-long-long} options when configuring.

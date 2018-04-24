@@ -1,3 +1,7 @@
+2018-04-24  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* doc/install.texi: Update newlib dependency for nvptx.
+
 2018-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85508
