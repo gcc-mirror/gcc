@@ -316,7 +316,8 @@ tree valid_irange_type (tree t)
 static inline
 tree valid_irange_ssa (tree t)
 {
-  if (t && TREE_CODE (t) == SSA_NAME && valid_irange_type (TREE_TYPE (t)))
+  if (t && TREE_CODE (t) == SSA_NAME && !SSA_NAME_IS_VIRTUAL_OPERAND (t)
+      && valid_irange_type (TREE_TYPE (t)))
     return t;
   return NULL_TREE;
 }
