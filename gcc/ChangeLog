@@ -1,6 +1,15 @@
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85485
+	* common/config/i386/i386-common.c (ix86_handle_option): Don't
+	handle OPT_mcet.
+	* config/i386/i386.opt (mcet): Removed.
+	* doc/install.texi: Remove -mcet documentation.
+	* doc/invoke.texi: Likewise.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85485
 	* doc/install.texi: Remove -mcet from bootstrap-cet.
 
 2018-04-24  Jakub Jelinek  <jakub@redhat.com>
