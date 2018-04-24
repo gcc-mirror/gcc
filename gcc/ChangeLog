@@ -1,3 +1,9 @@
+2018-04-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR tree-optimization/85478
+	* tree-vect-loop.c (vect_analyze_loop_2): Do not call
+	vect_grouped_store_supported for single element vectors.
+
 2018-04-24  Richard Biener  <rguenther@suse.de>
 
 	PR target/85491
