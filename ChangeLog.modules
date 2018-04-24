@@ -1,3 +1,11 @@
+2018-04-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (trees_out::core_vals): Check module of type context.
+	(trees_out::tree_decl): Assert we can find the named decl.
+	(module_state:read_config): Move defrosting to ...
+	(module_state::read): ... here.
+
 2018-04-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/

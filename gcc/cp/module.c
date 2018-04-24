@@ -3851,8 +3851,10 @@ trees_out::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       /* Likewise, stream the name first.  */
-      WT (t->type_common.name);
-      tree_ctx (t->type_common.context);
+      tree name = t->type_common.name;
+      WT (name);
+      tree_ctx (t->type_common.context,
+		name && DECL_P (name) ? MAYBE_DECL_MODULE_OWNER (name) : -1);
 
       /* By construction we want to make sure we have the canonical
 	 and main variants already in the type table, so emit them
@@ -5047,8 +5049,13 @@ trees_out::tree_decl (tree decl, bool force, int owner)
     }
   if (!dep_walk_p () || (!is_import && TREE_CODE (decl) != NAMESPACE_DECL))
     tree_ctx (ctx, owner);
-  tree_node (DECL_NAME (decl));
-  tree_node (DECL_DECLARES_FUNCTION_P (decl) ? TREE_TYPE (decl) : NULL_TREE);
+  tree name = DECL_NAME (decl);
+  tree_node (name);
+  tree type = DECL_DECLARES_FUNCTION_P (decl) ? TREE_TYPE (decl) : NULL_TREE;
+  tree_node (type);
+  /* Make sure we can find it by name.  */
+  gcc_checking_assert (decl == lookup_by_ident (ctx, owner, name, type,
+						TREE_CODE (decl)));
   int tag = insert (decl);
   if (!dep_walk_p ())
     dump () && dump (is_import ? "Wrote named import:%d %C:%N@%I"
@@ -6465,9 +6472,6 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
 	}
     }
 
-  /* We may have been frozen during the above importing.  */
-  maybe_defrost ();
-
   sec_range.first = cfg.u ();
   sec_range.second = cfg.u ();
   dump () && dump ("Declaration sections are [%u,%u)",
@@ -7639,6 +7643,9 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
   mod = ix;
   (*remap)[MODULE_PURVIEW] = ix;
   dump () && dump ("Assigning %N module number %u", name, ix);
+
+  /* We may have been frozen during the importing done by read_config.  */
+  maybe_defrost ();
 
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;
