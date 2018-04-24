@@ -791,10 +791,13 @@ path_ranger::exercise (FILE *output)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	for (x = 1; x < num_ssa_names; x++)
 	  {
-	    if (ssa_name(x) && SSA_NAME_DEF_STMT (ssa_name (x)) &&
-		gimple_bb (SSA_NAME_DEF_STMT (ssa_name (x))) == bb &&
-		!get_global_ssa_range (range, ssa_name (x)))
-	      path_range_stmt (range, SSA_NAME_DEF_STMT (ssa_name (x)));
+	    tree name = ssa_name (x);
+	    if (name && TREE_CODE (name) == SSA_NAME 
+		&& !SSA_NAME_IS_VIRTUAL_OPERAND (name)
+		&& SSA_NAME_DEF_STMT (name) &&
+		gimple_bb (SSA_NAME_DEF_STMT (name)) == bb &&
+		!get_global_ssa_range (range, name))
+	      path_range_stmt (range, SSA_NAME_DEF_STMT (name));
 	  }
 
       if (output)
