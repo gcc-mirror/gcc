@@ -1,5 +1,10 @@
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR bootstrap/85490
+	* bootstrap-cet.mk (STAGE4_CFLAGS): New.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/85485
 	* bootstrap-cet.mk (STAGE2_CFLAGS): Remove -mcet.
 	(STAGE3_CFLAGS): Likewise.
