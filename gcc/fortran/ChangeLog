@@ -1,3 +1,8 @@
+2018-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85520
+	* decl.c (gfc_match_char_spec): Check for negative length and set to 0.
+
 2018-04-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/81773
