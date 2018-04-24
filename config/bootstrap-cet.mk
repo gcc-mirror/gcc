@@ -1,4 +1,4 @@
-# This option enables -fcf-protection -mcet for stage2 and stage3.
+# This option enables -fcf-protection for stage2 and stage3.
 
-STAGE2_CFLAGS += -fcf-protection -mcet
-STAGE3_CFLAGS += -fcf-protection -mcet
+STAGE2_CFLAGS += -fcf-protection
+STAGE3_CFLAGS += -fcf-protection

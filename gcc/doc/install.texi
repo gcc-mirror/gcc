@@ -2519,7 +2519,7 @@ must be used along with @code{bootstrap-debug-lean} and
 @item @samp{bootstrap-cet}
 This option enables Intel CET for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-cet} is equivalent to adding
-@option{-fcf-protection -mcet} to @samp{BOOT_CFLAGS}.  This option
+@option{-fcf-protection} to @samp{BOOT_CFLAGS}.  This option
 assumes that the host supports Intel CET (e.g. GNU assembler version
 2.30 or later).
 
