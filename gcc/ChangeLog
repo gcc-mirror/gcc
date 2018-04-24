@@ -1,3 +1,10 @@
+2018-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85503
+	* config/rs6000/rs6000-p8swap.c (const_load_sequence_p): Punt if
+	const_vector is not CONST_VECTOR or SYMBOL_REF for a constant pool
+	containing a CONST_VECTOR.
+
 2018-04-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* doc/install.texi: Update newlib dependency for nvptx.
