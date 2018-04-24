@@ -5040,15 +5040,19 @@ trees_out::tree_decl (tree decl, bool force, int owner)
     return false;
 
   const char *kind = NULL;
+  tree ti = NULL_TREE;
   if ((TREE_CODE (decl) == FUNCTION_DECL
-       || TREE_CODE (decl) == TYPE_DECL
        || TREE_CODE (decl) == VAR_DECL)
-      && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
+      && DECL_LANG_SPECIFIC (decl))
+    ti = DECL_TEMPLATE_INFO (decl);
+  else if (TREE_CODE (decl) == TYPE_DECL)
+    ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
+
+  if (ti)
     {
       /* A template specialization -> tt_template.  */
       if (!dep_walk_p ())
 	i (tt_template);
-      tree ti = DECL_TEMPLATE_INFO (decl);
       tree tpl = TI_TEMPLATE (ti);
       tree args = TI_ARGS (ti);
       tree_ctx (tpl, owner);
@@ -5439,8 +5443,18 @@ trees_in::tree_node ()
       {
 	tree tpl = tree_node ();
 	tree args = tree_node ();
-	res = instantiate_template (tpl, args, tf_error);
-	mark_used (res); // FIXME:this may be too early
+	if (TREE_CODE (DECL_TEMPLATE_RESULT (tpl)) != TYPE_DECL)
+	  {
+	    res = instantiate_template (tpl, args, tf_error);
+	    mark_used (res); // FIXME:this may be too early
+	  }
+	else
+	  {
+	    res = lookup_template_class (tpl, args, NULL_TREE, NULL_TREE,
+					 0, tf_error);
+	    complete_type (res); // FIXME:Probably too early
+	    res = TYPE_NAME (res);
+	  }
 	kind = "Instantiation";
 	owner = MAYBE_DECL_MODULE_OWNER (tpl);
       }

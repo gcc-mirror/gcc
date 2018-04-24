@@ -1,6 +1,12 @@
 2018-04-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_out::tree_decl): Deal with templated types.
+	(tree_in::tree_node): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-2_[abc].C: Add template class.
+
+	gcc/cp/
 	* module.c (enum tree_tag): Add tt_template.
 	(trees_out::tree_decl): Emit tt_template as needed.
 	(trees_in::tree_node): Read tt_template.

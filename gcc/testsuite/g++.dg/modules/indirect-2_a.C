@@ -9,5 +9,13 @@ namespace foo
   {
     return I;
   }
+
+  export template<int I> class X
+  {
+    int i = I;
+
+  public:
+    operator int () const { return i; }
+  };
 }
 
