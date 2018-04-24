@@ -42,7 +42,7 @@ asm ("setssbsy");
     ;;
 esac
 if test x$enable_cet = xyes; then
-  $1="-fcf-protection -mcet"
+  $1="-fcf-protection -mshstk"
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])
