@@ -1,3 +1,8 @@
+2018-04-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (init_float128_ieee): Fix spelling mistakes
+	in __abskf2 and __powikf2.
+
 2018-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/85512
