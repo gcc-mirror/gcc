@@ -1577,8 +1577,15 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 				 "in another translation unit"));
 		    return false;
 		  }
-		gcc_assert (DECL_NONADDRESSABLE_P (f1)
-			    == DECL_NONADDRESSABLE_P (f2));
+		if (DECL_BIT_FIELD (f1) != DECL_BIT_FIELD (f2))
+		  {
+		    warn_odr (t1, t2, f1, f2, warn, warned,
+			      G_ ("one field is bitfield while other is not "));
+		    return false;
+		  }
+		else
+		  gcc_assert (DECL_NONADDRESSABLE_P (f1)
+			      == DECL_NONADDRESSABLE_P (f2));
 	      }
 
 	    /* If one aggregate has more fields than the other, they
