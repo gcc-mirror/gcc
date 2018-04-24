@@ -1,6 +1,15 @@
 2018-04-24  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-03-21  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/84963
+	* ipa-icf.c (sem_item_optimizer::fixup_points_to_sets): Remove
+	not intended return statement.
+
+2018-04-24  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-03-13  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/84658.
