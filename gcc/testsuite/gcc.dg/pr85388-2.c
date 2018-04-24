@@ -2,7 +2,7 @@
 /* { dg-require-effective-target cet } */
 /* { dg-require-effective-target split_stack } */
 /* { dg-require-effective-target pthread_h } */
-/* { dg-options "-pthread -fsplit-stack -fcf-protection -mcet" } */
+/* { dg-options "-pthread -fsplit-stack -fcf-protection" } */
 
 #include <stdlib.h>
 #include <pthread.h>

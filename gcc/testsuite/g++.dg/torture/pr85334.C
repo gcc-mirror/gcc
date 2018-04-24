@@ -1,6 +1,6 @@
 // { dg-do run { target { i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } } }
 // { dg-require-effective-target cet }
-// { dg-additional-options "-fexceptions -fnon-call-exceptions -fcf-protection -mcet" }
+// { dg-additional-options "-fexceptions -fnon-call-exceptions -fcf-protection" }
 
 #include <signal.h>
 #include <stdlib.h>

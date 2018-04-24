@@ -1,6 +1,6 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target cet } */
-/* { dg-additional-options "-fcf-protection -mcet" } */
+/* { dg-additional-options "-fcf-protection" } */
 
 #define DEPTH 1000
 
