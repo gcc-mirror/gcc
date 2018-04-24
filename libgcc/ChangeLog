@@ -1,5 +1,10 @@
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/linux-unwind.h: Add (__CET__ & 2) != 0 check
+	when including "config/i386/shadow-stack-unwind.h".
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* configure: Regenerated.
 
 2018-04-20  Michael Meissner  <meissner@linux.ibm.com>

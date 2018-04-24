@@ -23,7 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 /* Unwind shadow stack for -fcf-protection -mshstk.  */
-#if defined __SHSTK__ && defined __CET__
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 # include "config/i386/shadow-stack-unwind.h"
 #endif
 
