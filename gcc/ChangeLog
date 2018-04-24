@@ -1,5 +1,10 @@
 2018-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85511
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Don't define
+	__builtin_ia32_readeflags_u32 and __builtin_ia32_writeeflags_u32
+	if TARGET_64BIT.
+
 	PR target/85503
 	* config/rs6000/rs6000-p8swap.c (const_load_sequence_p): Punt if
 	const_vector is not CONST_VECTOR or SYMBOL_REF for a constant pool

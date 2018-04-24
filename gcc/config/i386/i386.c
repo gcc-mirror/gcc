@@ -31934,14 +31934,20 @@ ix86_init_mmx_sse_builtins (void)
 	       IX86_BUILTIN_SBB64);
 
   /* Read/write FLAGS.  */
-  def_builtin (0, "__builtin_ia32_readeflags_u32",
-               UNSIGNED_FTYPE_VOID, IX86_BUILTIN_READ_FLAGS);
-  def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_ia32_readeflags_u64",
-               UINT64_FTYPE_VOID, IX86_BUILTIN_READ_FLAGS);
-  def_builtin (0, "__builtin_ia32_writeeflags_u32",
-               VOID_FTYPE_UNSIGNED, IX86_BUILTIN_WRITE_FLAGS);
-  def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_ia32_writeeflags_u64",
-               VOID_FTYPE_UINT64, IX86_BUILTIN_WRITE_FLAGS);
+  if (TARGET_64BIT)
+    {
+      def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_ia32_readeflags_u64",
+		   UINT64_FTYPE_VOID, IX86_BUILTIN_READ_FLAGS);
+      def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_ia32_writeeflags_u64",
+		   VOID_FTYPE_UINT64, IX86_BUILTIN_WRITE_FLAGS);
+    }
+  else
+    {
+      def_builtin (0, "__builtin_ia32_readeflags_u32",
+		   UNSIGNED_FTYPE_VOID, IX86_BUILTIN_READ_FLAGS);
+      def_builtin (0, "__builtin_ia32_writeeflags_u32",
+		   VOID_FTYPE_UNSIGNED, IX86_BUILTIN_WRITE_FLAGS);
+    }
 
   /* CLFLUSHOPT.  */
   def_builtin (OPTION_MASK_ISA_CLFLUSHOPT, "__builtin_ia32_clflushopt",
