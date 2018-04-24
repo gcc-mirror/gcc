@@ -50550,8 +50550,9 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
      construction cost by the number of elements involved.  */
   if (kind == vec_construct
       && stmt_info
-      && stmt_info->type == load_vec_info_type
-      && stmt_info->memory_access_type == VMAT_ELEMENTWISE)
+      && STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
+      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
+      && TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info))) != INTEGER_CST)
     {
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
       stmt_cost *= TYPE_VECTOR_SUBPARTS (vectype);

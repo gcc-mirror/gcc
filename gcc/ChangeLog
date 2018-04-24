@@ -1,3 +1,9 @@
+2018-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/85491
+	* config/i386/i386.c (ix86_add_stmt_cost): Restrict strided
+	load cost increase to the case of non-constant step.
+
 2018-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84828
