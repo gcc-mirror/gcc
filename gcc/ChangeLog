@@ -1,3 +1,9 @@
+2018-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85508
+	* config/i386/i386.c (ix86_expand_vector_init_one_var): Use UINTVAL
+	instead of INTVAL when shifting x left.
+
 2018-04-24  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR tree-optimization/85478
