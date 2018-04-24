@@ -1006,11 +1006,6 @@ mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save
 Generate code which uses only the general registers.
 
-mcet
-Target Report Var(flag_cet) Init(0)
-Enable shadow stack built-in functions from Control-flow Enforcement
-Technology (CET).
-
 mshstk
 Target Report Mask(ISA_SHSTK) Var(ix86_isa_flags) Save
 Enable shadow stack built-in functions from Control-flow Enforcement

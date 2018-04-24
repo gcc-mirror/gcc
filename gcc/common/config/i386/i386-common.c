@@ -543,7 +543,6 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
-    case OPT_mcet:
     case OPT_mshstk:
       if (value)
 	{

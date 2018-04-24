@@ -2107,7 +2107,7 @@ The option is disabled by default.  When @code{--enable-cet=auto}
 is used, it is enabled on Linux/x86 if target binutils
 supports @code{Intel CET} instructions and disabled otherwise.
 In this case the target libraries are configured to get additional
-@option{-fcf-protection} and @option{-mcet} options.
+@option{-fcf-protection} option.
 @end table
 
 @subheading Cross-Compiler-Specific Options
