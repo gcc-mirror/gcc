@@ -1,3 +1,12 @@
+2018-04-24  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-04-18  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR sanitizer/85389
+	* asan/asan_allocator.h (kAllocatorSpace): For __powerpc64__ change
+	from 0xa0000000000ULL to ~(uptr)0.
+
 2018-01-25  Release Manager
 
 	* GCC 7.3.0 released.
