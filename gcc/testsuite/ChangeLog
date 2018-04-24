@@ -1,6 +1,15 @@
 2018-04-24  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+		    Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/85081
+	* g++.dg/asan/pr85081.C: New test.
+
+2018-04-24  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-03-21  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/84963
