@@ -2040,11 +2040,10 @@ enum tree_tag
     tt_tinfo_typedef,	/* Typeinfo typedef.  */
     tt_named_type,	/* TYPE_DECL for type.  */
     tt_named_decl,  	/* Named decl. */
+    tt_template,	/* A template specialization.  */
     tt_binfo,		/* A BINFO.  */
     tt_as_base,		/* An As-Base type.  */
-    tt_vtable,		/* A vtable.  */
-
-    tt_decl		/* Declaration reference.  Must be last.  */
+    tt_vtable		/* A vtable.  */
   };
 
 /* Tree stream reader.  */
@@ -5040,27 +5039,48 @@ trees_out::tree_decl (tree decl, bool force, int owner)
   if (!tree_ref (decl))
     return false;
 
-  /* A named decl -> tt_named_decl.  */
-  if (!dep_walk_p ())
+  const char *kind = NULL;
+  if ((TREE_CODE (decl) == FUNCTION_DECL
+       || TREE_CODE (decl) == TYPE_DECL
+       || TREE_CODE (decl) == VAR_DECL)
+      && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
     {
-      i (tt_named_decl);
-      u (TREE_CODE (decl));
-      u (owner);
+      /* A template specialization -> tt_template.  */
+      if (!dep_walk_p ())
+	i (tt_template);
+      tree ti = DECL_TEMPLATE_INFO (decl);
+      tree tpl = TI_TEMPLATE (ti);
+      tree args = TI_ARGS (ti);
+      tree_ctx (tpl, owner);
+      tree_node (args);
+      kind = "instantiation";
     }
-  if (!dep_walk_p () || (!is_import && TREE_CODE (decl) != NAMESPACE_DECL))
-    tree_ctx (ctx, owner);
-  tree name = DECL_NAME (decl);
-  tree_node (name);
-  tree type = DECL_DECLARES_FUNCTION_P (decl) ? TREE_TYPE (decl) : NULL_TREE;
-  tree_node (type);
-  /* Make sure we can find it by name.  */
-  gcc_checking_assert (decl == lookup_by_ident (ctx, owner, name, type,
-						TREE_CODE (decl)));
+  else
+    {
+      /* A named decl -> tt_named_decl.  */
+      if (!dep_walk_p ())
+	{
+	  i (tt_named_decl);
+	  u (TREE_CODE (decl));
+	  u (owner);
+	}
+      if (!dep_walk_p () || (!is_import && TREE_CODE (decl) != NAMESPACE_DECL))
+	tree_ctx (ctx, owner);
+      tree name = DECL_NAME (decl);
+      tree_node (name);
+      tree type = DECL_DECLARES_FUNCTION_P (decl) ? TREE_TYPE (decl) : NULL_TREE;
+      tree_node (type);
+      /* Make sure we can find it by name.  */
+      gcc_checking_assert (decl == lookup_by_ident (ctx, owner, name, type,
+						    TREE_CODE (decl)));
+      kind = is_import ? "import" : "named decl";
+    }
+
   int tag = insert (decl);
   if (!dep_walk_p ())
-    dump () && dump (is_import ? "Wrote named import:%d %C:%N@%I"
-		     : "Wrote named decl:%d %C:%N",
-		     tag, TREE_CODE (decl), decl, module_name (owner));
+    dump () && dump ("Wrote %s:%d %C:%P@%I", kind, tag, TREE_CODE (decl),
+		     CP_DECL_CONTEXT (decl), DECL_NAME (decl),
+		     module_name (owner));
 
   if (tree type = TREE_TYPE (decl))
     {
@@ -5413,35 +5433,55 @@ trees_in::tree_node ()
       }
       break;
 
+    case tt_template:
+      const char *kind;
+      unsigned owner;
+      {
+	tree tpl = tree_node ();
+	tree args = tree_node ();
+	res = instantiate_template (tpl, args, tf_error);
+	mark_used (res); // FIXME:this may be too early
+	kind = "Instantiation";
+	owner = MAYBE_DECL_MODULE_OWNER (tpl);
+      }
+      goto finish_tpl;
+
     case tt_named_decl:
       {
 	/* A named decl.  */
 	unsigned code = u ();
-	unsigned owner = u ();
+	owner = u ();
 	tree ctx = tree_node ();
 	tree name = tree_node ();
-	unsigned remapped = (owner < state->remap->length ()
-			     ? (*state->remap)[owner] : MODULE_NONE);
+	owner = (owner < state->remap->length ()
+		 ? (*state->remap)[owner] : MODULE_NONE);
 	tree type = tree_node ();
-	if (remapped != MODULE_NONE && !get_overrun ())
-	  res = lookup_by_ident (ctx, remapped, name, type, code);
+	if (owner != MODULE_NONE && !get_overrun ())
+	  res = lookup_by_ident (ctx, owner, name, type, code);
 	if (!res)
 	  {
 	    error ("failed to find %<%E%s%E@%E%>",
 		   ctx, &"::"[2 * (ctx == global_namespace)],
-		   name, module_name (remapped));
+		   name, module_name (owner));
 	    set_overrun ();
 	  }
+	kind = owner != state->mod ?  "Imported" : "Named";
+      }
+      finish_tpl:
+      {
 	int tag = insert (res);
-	dump () && dump ("Imported:%d %C:%P@%I", tag,
-			 code, ctx, name, module_name (remapped));
-	if (res && TREE_TYPE (res) && u ())
+	if (res)
 	  {
-	    /* Insert the type too.  */
-	    tree type = TREE_TYPE (res);
-	    tag = insert (type);
-	    dump () && dump ("Read imported type:%d %C:%N%S", tag,
-			     TREE_CODE (type), type, type);
+	    dump () && dump ("%s:%d %C:%N@%I", kind, tag, TREE_CODE (res),
+			     res, module_name (owner));
+	    if (TREE_TYPE (res) && u ())
+	      {
+		/* Insert the type too.  */
+		tree type = TREE_TYPE (res);
+		tag = insert (type);
+		dump () && dump ("Read imported type:%d %C:%N%S", tag,
+				 TREE_CODE (type), type, type);
+	      }
 	  }
       }
       break;

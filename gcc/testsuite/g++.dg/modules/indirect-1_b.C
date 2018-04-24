@@ -33,14 +33,14 @@ namespace bar
 }
 
 // { dg-final { scan-lang-dump {Lazily loading '::foo::frob'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Wrote named import:-[0-9]* namespace_decl:'::foo'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote named import:-[0-9]* function_decl:'::foo::frob'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* namespace_decl:'::foo'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* function_decl:'::foo::frob'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily loading '::foo::X'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Wrote named import:-[0-9]* type_decl:'::foo::X'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::foo::X'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily loading '::foo::Y'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Wrote named import:-[0-9]* type_decl:'::foo::Y'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::foo::Y'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily loading '::foo::B'@'foo' section:} module } }
 // { dg-final { scan-lang-dump-not {Lazily loading '::foo::C'@'foo' section:} module } }
