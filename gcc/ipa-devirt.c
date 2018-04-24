@@ -1580,7 +1580,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		if (DECL_BIT_FIELD (f1) != DECL_BIT_FIELD (f2))
 		  {
 		    warn_odr (t1, t2, f1, f2, warn, warned,
-			      G_ ("one field is bitfield while other is not "));
+			      G_("one field is bitfield while other is not"));
 		    return false;
 		  }
 		else
