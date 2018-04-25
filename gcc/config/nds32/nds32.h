@@ -1144,7 +1144,7 @@ enum reg_class
 
 #define ASM_COMMENT_START "!"
 
-#define ASM_APP_ON "! #APP"
+#define ASM_APP_ON "! #APP\n"
 
 #define ASM_APP_OFF "! #NO_APP\n"
 
