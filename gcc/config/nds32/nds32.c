@@ -2944,13 +2944,15 @@ nds32_asm_globalize_label (FILE *stream, const char *name)
 static void
 nds32_print_operand (FILE *stream, rtx x, int code)
 {
+  HOST_WIDE_INT op_value = 0;
   HOST_WIDE_INT one_position;
   HOST_WIDE_INT zero_position;
   bool pick_lsb_p = false;
   bool pick_msb_p = false;
   int regno;
 
-  int op_value;
+  if (CONST_INT_P (x))
+    op_value = INTVAL (x);
 
   switch (code)
     {
@@ -3003,7 +3005,6 @@ nds32_print_operand (FILE *stream, rtx x, int code)
     case 'V':
       /* 'x' is supposed to be CONST_INT, get the value.  */
       gcc_assert (CONST_INT_P (x));
-      op_value = INTVAL (x);
 
       /* According to the Andes architecture,
 	 the system/user register index range is 0 ~ 1023.
