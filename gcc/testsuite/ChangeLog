@@ -1,3 +1,17 @@
+2018-04-25  Nathan Sidwell  <nathan@acm.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85437
+	PR c++/49171
+	* g++.dg/cpp0x/addressof1.C: Make reinterpret cases runtime checks.
+	* g++.dg/cpp0x/constexpr-cast.C: Remove xfails
+	* g++.dg/cpp0x/constexpr-nullptr-2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-pmf1.C: Check when optimized.
+	* g++.dg/cpp0x/pr85437-1.C: New.
+	* g++.dg/cpp0x/pr85437-2.C: New.
+	* g++.dg/cpp0x/pr85437-3.C: New.
+	* g++.dg/cpp0x/pr85437-4.C: New.
+
 2018-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85520
@@ -8,6 +22,7 @@
 	PR target/85512
 	* gcc.dg/pr85512.c: New test.
 
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85485
 	* g++.dg/cet-notrack-1.C (dg-options): Remove -mcet.

@@ -372,6 +372,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
       DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
       SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
+      REINTERPRET_CAST_P (in NOP_EXPR)
       ALIGNOF_EXPR_STD_P (in ALIGNOF_EXPR)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
@@ -631,6 +632,11 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 
 #define COND_EXPR_IS_VEC_DELETE(NODE) \
   TREE_LANG_FLAG_0 (COND_EXPR_CHECK (NODE))
+
+/* Nonzero if this NOP_EXPR is a reinterpret_cast.  Such conversions
+   are not constexprs.  Other NOP_EXPRs are.  */
+#define REINTERPRET_CAST_P(NODE)		\
+  TREE_LANG_FLAG_0 (NOP_EXPR_CHECK (NODE))
 
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
    sense of `same'.  */
