@@ -37147,11 +37147,14 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
-      mode0 = (TARGET_64BIT ? DImode : SImode);
 
-      op0 = force_reg (mode0, op0);
-      if (!memory_operand (op1, mode0))
-	op1 = gen_rtx_MEM (mode0, op1);
+      op0 = ix86_zero_extend_to_Pmode (op0);
+      if (!address_operand (op1, VOIDmode))
+      {
+	op1 = convert_memory_address (Pmode, op1);
+	op1 = copy_addr_to_reg (op1);
+      }
+      op1 = gen_rtx_MEM (XImode, op1);
 
       insn = (TARGET_64BIT
 		? gen_movdir64b_di (op0, op1)

@@ -1,3 +1,12 @@
+2018-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-04-25  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	PR target/85473
+	* gcc.target/i386/pr85473-1.c: New test.
+	* gcc.target/i386/pr85473-2.c: New test.
+
 2018-04-25  Nathan Sidwell  <nathan@acm.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
