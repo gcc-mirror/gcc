@@ -4821,6 +4821,10 @@ c_mark_addressable (tree exp, bool array_ref_p)
 	break;
 
       case COMPOUND_LITERAL_EXPR:
+	TREE_ADDRESSABLE (x) = 1;
+	TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (x)) = 1;
+	return true;
+
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
 	return true;
