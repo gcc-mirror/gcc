@@ -1,3 +1,7 @@
+2018-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Enable snapshots from gcc-8-branch.
+
 2018-01-25  Richard Biener  <rguenther@suse.de>
 
 	* gcc_release (build_sources): Use getconf to get at the number
