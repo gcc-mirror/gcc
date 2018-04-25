@@ -818,9 +818,6 @@ op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
       return false;
     }
 
-  if (ov_lb && ov_ub)
-    return false;
-
   add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
   return true;
 }
