@@ -2787,26 +2787,6 @@ dumper::operator () (const char *format, ...)
   return true;
 }
 
-/* If DECL is a templated decl, return the containing TEMPLATE_DECL.  */
-
-static tree
-maybe_get_template (tree decl)
-{
-  tree ti = NULL_TREE;
-
-  if (TREE_CODE (decl) == TYPE_DECL)
-    ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
-  else if (DECL_LANG_SPECIFIC (decl)
-	   && (TREE_CODE (decl) == VAR_DECL
-	       || TREE_CODE (decl) == FUNCTION_DECL))
-    ti = DECL_TEMPLATE_INFO (decl);
-
-  if (ti)
-    decl = DECL_PRIMARY_TEMPLATE (TI_TEMPLATE (ti));
-
-  return decl;
-}
-
 /* Instrumentation gathered writing bytes.  */
 
 void
@@ -5027,10 +5007,6 @@ trees_out::tree_decl (tree decl, bool force, int owner)
 
   bool is_import = owner >= MODULE_IMPORT_BASE;
   tree ctx = CP_DECL_CONTEXT (decl);
-  if (!is_import && dep_walk_p ()
-      && DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
-      && TREE_CODE (ctx) == NAMESPACE_DECL)
-    dep_hash->add_dependency (maybe_get_template (decl), is_ctx);
 
   if (force)
     {
@@ -5069,9 +5045,17 @@ trees_out::tree_decl (tree decl, bool force, int owner)
 	  i (tt_named_decl);
 	  u (TREE_CODE (decl));
 	  u (owner);
+	  tree_ctx (ctx, owner);
 	}
-      if (!dep_walk_p () || (!is_import && TREE_CODE (decl) != NAMESPACE_DECL))
-	tree_ctx (ctx, owner);
+      else if (!is_import)
+	{
+	  /* Build out dependencies.  */
+	  if (TREE_CODE (ctx) != NAMESPACE_DECL)
+	    tree_ctx (ctx, owner);
+	  else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
+	    dep_hash->add_dependency (decl, is_ctx);
+	}
+
       tree name = DECL_NAME (decl);
       tree_node (name);
       tree type = DECL_DECLARES_FUNCTION_P (decl) ? TREE_TYPE (decl) : NULL_TREE;

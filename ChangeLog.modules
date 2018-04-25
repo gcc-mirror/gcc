@@ -1,6 +1,11 @@
 2018-04-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (maybe_get_template): Delete.
+	(trees_out::tree_decl): Move dependency building into named-decl
+	handling.  Don't walk into namespaces.
+
+	gcc/cp/
 	* module.c (trees_out::tree_node): Reorder.
 
 2018-04-24  Nathan Sidwell  <nathan@acm.org>
