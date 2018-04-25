@@ -1,3 +1,10 @@
+2018-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85414
+	* simplify-rtx.c (simplify_unary_operation_1) <case SIGN_EXTEND,
+	case ZERO_EXTEND>: Pass SUBREG_REG (op) rather than op to
+	gen_lowpart_no_emit.
+
 2018-04-25  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	PR target/85473
