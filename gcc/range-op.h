@@ -70,4 +70,7 @@ public:
 
 extern irange_operator *irange_op_handler(enum tree_code code);
 
+extern bool fold_value_range (value_range& vr, enum tree_code code,
+			      value_range& vr0, value_range& vr1);
+
 #endif /* GCC_RANGE_OP_H */

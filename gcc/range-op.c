@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 #include "tree-vrp.h"
+#include "fold-const.h"
 
 inline wide_int
 max_limit (const_tree type)
@@ -106,15 +107,6 @@ add_to_range (irange& r, wide_int& lb, bool ov_lb, wide_int& ub, bool ov_ub)
       }
     else
       r.union_ (lb, ub);
-}
-
-/* Handle the first addition to a range while handling the overflow bits.  */
-static void
-set_range (tree type, irange& r, wide_int& lb, bool ov_lb, wide_int& ub,
-	   bool ov_ub)
-{
-  r.clear (type);
-  add_to_range (r, lb, ov_lb, ub, ov_ub);
 }
 
 /*  ------------------------------------------------------------------------  */
@@ -725,252 +717,246 @@ operator_ge::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 /*  -----------------------------------------------------------------------  */
 
 /*  -----------------------------------------------------------------------  */
-/* Range operator for     def = op1 + op2. */
 
-enum opm_mode { OPM_ADD, OPM_SUB, OPM_MUL, OPM_DIV, OPM_EXACTDIV };
+static bool
+do_multiplicative (enum tree_code code, signop s, irange& r,
+		   const wide_int& lh_lb, const wide_int lh_ub,
+		   const wide_int& rh_lb, const wide_int &rh_ub) 
+{
+  bool ov;
+  wide_int new_lb, new_ub, tmp;
+
+  // Compute the 4 cross operations and their minimum and maximum value.
+  if (!wide_int_const_binop (code, new_lb, lh_lb, rh_lb, s, ov) || ov)
+    return false;
+  new_ub = new_lb;
+
+  if (!wide_int_const_binop (code, tmp, lh_lb, rh_ub, s, ov) || ov)
+    return false;
+  if (wi::lt_p (tmp, new_lb, s))
+    new_lb = tmp;
+  else
+    if (wi::gt_p (tmp, new_ub, s))
+      new_ub = tmp;
+
+  if (!wide_int_const_binop (code, tmp, lh_ub, rh_lb, s, ov) || ov)
+    return false;
+  if (wi::lt_p (tmp, new_lb, s))
+    new_lb = tmp;
+  else
+    if (wi::gt_p (tmp, new_ub, s))
+      new_ub = tmp;
+
+  if (!wide_int_const_binop (code, tmp, lh_ub, rh_ub, s, ov) || ov)
+    return false;
+  if (wi::lt_p (tmp, new_lb, s))
+    new_lb = tmp;
+  else
+    if (wi::gt_p (tmp, new_ub, s))
+    new_ub = tmp;
+
+  r.union_ (new_lb, new_ub);
+  return true;
+}
+
+static bool
+op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
+       const wide_int lh_ub, const wide_int& rh_lb, const wide_int &rh_ub) 
+{
+  wide_int new_lb, new_ub, tmp;
+  bool ov_lb, ov_ub;
+
+  switch (code)
+    {
+    case PLUS_EXPR:
+      wide_int_const_binop (code, new_lb, lh_lb, rh_lb, s, ov_lb);
+      wide_int_const_binop (code, new_ub, lh_ub, rh_ub, s, ov_ub);
+      break;
+
+    case MINUS_EXPR:
+      wide_int_const_binop (code, new_lb, lh_lb, rh_ub, s, ov_lb);
+      wide_int_const_binop (code, new_ub, lh_ub, rh_lb, s, ov_ub);
+      break;
+
+    case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+      // if zero is not a possible result, do the operation
+      if (wi::lt_p (0, rh_lb, s) || wi::lt_p (rh_ub, 0, s))
+	return do_multiplicative (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
+      
+      // If divide by zero is allowed, do nothing.
+      if (cfun->can_throw_non_call_exceptions)
+        return false;
+      
+
+      // Perform the division in 2 parts,[LB, -1] and [1, UB]
+      // skipping that section if that bound is actually 0.
+      if (wi::ne_p (rh_lb, 0))
+        {
+	  tmp = wi::minus_one (rh_lb.get_precision ());
+	  if (!do_multiplicative (code, s, r, lh_lb, lh_ub, rh_lb, tmp))
+	    return false;
+	}
+      if (wi::ne_p (rh_ub, 0))
+        {
+	  tmp = wi::one (rh_ub.get_precision ());
+	  if (!do_multiplicative (code, s, r, lh_lb, lh_ub, tmp, rh_ub))
+	    return false;
+	}
+      return true;
+      
+    case MULT_EXPR:
+      return do_multiplicative (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
+
+    default:
+      return false;
+    }
+
+  if (ov_lb && ov_ub)
+    return false;
+
+  add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
+  return true;
+}
 
 /* Perform an operation between a constant and a range.  */
 static bool
-op_ir (opm_mode mode, irange& r, const wide_int& lh, const irange& rh)
+op_ir (enum tree_code code, irange& r, const wide_int& lh, const irange& rh)
 {
-  bool ov_lb, ov_ub;
   unsigned x;
-  wide_int lb, ub, new_lb, new_ub;
   tree type = rh.get_type ();
   signop s = TYPE_SIGN (type);
 
   r.clear (type);
   for (x = 0; x < rh.num_pairs () ; x++)
     {
-      lb = rh.lower_bound (x);
-      ub = rh.upper_bound (x);
-      switch (mode)
-        {
-        case OPM_ADD:
-	  new_lb = wi::add (lh, lb, s, &ov_lb);
-	  new_ub = wi::add (lh, ub, s, &ov_ub);
-	  break;
-
-        case OPM_SUB:
-	  new_lb = wi::sub (lh, ub, s, &ov_lb);
-	  new_ub = wi::sub (lh, lb, s, &ov_ub);
-	  break;
-
-        case OPM_MUL:
-	  new_lb = wi::mul (lh, lb, s, &ov_lb);
-	  new_ub = wi::mul (lh, ub, s, &ov_ub);
-	  // Multiply by large numbers can cause multiple overflows.
-	  if (ov_lb || ov_ub)
-	    return false;
-	  // Multiply by a negative number can cause bound reversals.
-	  if (wi::gt_p (new_lb, new_ub, s))
-	    {
-	      wide_int tmp = new_lb;
-	      new_lb = new_ub;
-	      new_ub = tmp;
-	    }
-	  break;
-
-        case OPM_DIV:
-	  // 0 / anything is [0,0]
-	  if (wi::eq_p (lh, 0))
-	    {
-	      new_lb = lh;
-	      new_ub = lh;
-	      ov_lb = ov_ub = false;
-	    }
-	  else
-	    return false;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-      add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
+      if (!op_ii (code, s, r, lh, lh, rh.lower_bound (x), rh.upper_bound (x)))
+        return false;
     }
   return true;
 }
 
 /* Perform an operation between a range and a constant.  */
 static bool
-op_ri (opm_mode mode, irange& r, const irange& lh, const wide_int& rh)
+op_ri (enum tree_code code, irange& r, const irange& lh, const wide_int& rh)
 {
-  bool ov_lb, ov_ub;
   unsigned x;
-  wide_int lb, ub, new_lb, new_ub;
   tree type = lh.get_type ();
   signop s = TYPE_SIGN (type);
 
   r.clear (type);
   for (x = 0; x < lh.num_pairs () ; x++)
     {
-      lb = lh.lower_bound (x);
-      ub = lh.upper_bound (x);
-      switch (mode)
-        {
-	case OPM_ADD:
-	  new_lb = wi::add (lb, rh, s, &ov_lb);
-	  new_ub = wi::add (ub, rh, s, &ov_ub);
-	  break;
-
-	case OPM_SUB:
-	  new_lb = wi::sub (lb, rh, s, &ov_lb);
-	  new_ub = wi::sub (ub, rh, s, &ov_ub);
-	  break;
-
-        case OPM_MUL:
-	  // Multiply is symetrical
-	  return op_ir (mode, r, rh, lh);
-
-        case OPM_DIV:
-	  // anything / [0,0] traps, so abort.
-	  if (wi::eq_p (rh, 0))
-	    return false;
-	  new_lb = wi::div_trunc (lb, rh, s, &ov_lb);
-	  new_ub = wi::div_trunc (ub, rh, s, &ov_ub);
-	  // The sign of the divisor can reverse the bounds.
-	  if (wi::gt_p (new_lb, new_ub, s))
-	    {
-	      wide_int tmp = new_lb;
-	      new_lb = new_ub;
-	      new_ub = tmp;
-	    }
-	  break;
-	default:
-	  return false;
-	}
-      add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
+      if (!op_ii (code, s, r, lh.lower_bound (x), lh.upper_bound (x), rh, rh))
+        return false;
     }
   return true;
 }
 
 /* Perform an operation between 2 ranges.  */
 static bool
-op_rr (opm_mode mode, irange& r, const irange& lh, const irange& rh)
+op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 {
   bool res = false;
+
   if (lh.empty_p () || rh.empty_p ())
     {
       r.clear (lh.get_type ());
       return true;
     }
 
+  if (lh.overflow_p() || rh.overflow_p ())
+    return false;
+
   /* Try constant cases first to see if we do anything special with them. */
   if (wi::eq_p (lh.upper_bound (), lh.lower_bound ()))
-    res = op_ir (mode, r, lh.upper_bound (), rh);
+    res = op_ir (code, r, lh.upper_bound (), rh);
 
   if (!res && wi::eq_p (rh.upper_bound (), rh.lower_bound ()))
-    res = op_ri (mode, r, lh, rh.upper_bound ());
+    res = op_ri (code, r, lh, rh.upper_bound ());
 
   if (!res)
     {
-      wide_int lb, ub, new_lb, new_ub;
-      bool ov_lb, ov_ub;
       tree type = lh.get_type ();
       signop s = TYPE_SIGN (type);
+      r.clear (lh.get_type ());
 
-      switch (mode)
-	{
-	case OPM_ADD:
-	  /* Add the 2 lower and upper bounds togther and see what we get.  */
-	  new_lb = wi::add (lh.lower_bound (), rh.lower_bound (), s, &ov_lb);
-	  new_ub = wi::add (lh.upper_bound (), rh.upper_bound (), s, &ov_ub);
-	  break;
+      res = op_ii (code, s, r, lh.lower_bound (), lh.upper_bound (),
+		   rh.lower_bound (), rh.upper_bound ());
+    }
 
-	case OPM_SUB:
-	  /* New possible range is [lb1-ub2, ub1-lb2].  */
-	  new_lb = wi::sub (lh.lower_bound (), rh.upper_bound (), s, &ov_lb);
-	  new_ub = wi::sub (lh.upper_bound (), rh.lower_bound (), s, &ov_ub);
-	  break;
-
-	case OPM_MUL:
-	  new_lb = wi::mul (lh.lower_bound (), rh.lower_bound (), s, &ov_lb);
-	  new_ub = wi::mul (lh.upper_bound (), rh.upper_bound (), s, &ov_ub);
-	  if (!ov_lb && !ov_ub)
+  // Any post-processing
+  switch (code)
+    {
+    case EXACT_DIV_EXPR:
+      // any (range without 0) EXACT_DIV (anything) results in ~[0,0]
+      if (lh.contains_p (0))
+        {
+	  if (!res)
 	    {
-	      if (s == SIGNED && (wi::neg_p (lh.lower_bound ())
-				  || wi::neg_p (lh.upper_bound ())))
-	        {
-		  wide_int v1 = new_lb;
-		  wide_int v2 = new_lb;
-		  wide_int v3 = wi::smul (lh.lower_bound (),
-					  rh.upper_bound (), &ov_lb);
-		  wide_int v4 = wi::smul (lh.upper_bound (),
-					  rh.lower_bound (), &ov_ub);
-		  if (!ov_lb && !ov_ub)
-		    {
-		      new_lb = wi::smin (v1, v2);
-		      wide_int tmp = wi::smin (v3, v4);
-		      new_lb = wi::smin (new_lb, tmp);
-		      new_ub = wi::smax (v1, v2);
-		      tmp = wi::smax (v3, v4);
-		      new_ub = wi::smax (new_ub, tmp);
-		    }
-		  else
-		    ov_lb = ov_ub = true;
-		}
+	      r.set_range (lh.get_type (), 0, 0, irange::INVERSE);
+	      res = true;
 	    }
 	  else
-	    ov_lb = ov_ub = true;
-
-	  break;
-
-	case OPM_DIV:
-	  ov_lb = ov_ub = true;
-	  break;
-
-	case OPM_EXACTDIV:
-	  // any range without 0 EXACT_DIV anything results in ~[0,0]
-	  if (!lh.contains_p (0))
-	    {
-	      r.set_range (type, 0, 0, irange::INVERSE);
-	      return true;
-	    }
-	  return false;
-	default:
-	  gcc_unreachable ();
+	    // if 0 is in the current result, remove it.
+	    if (r.contains_p (0))
+	      r.intersect (irange (r.get_type (), 0, 0, irange::INVERSE));
 	}
+      break;
 
-      /* If both overflow, we can't be sure of the final range. */
-      if (ov_lb && ov_ub)
-	r.set_range_for_type (type);
-      else
-	set_range (type, r, new_lb, ov_lb, new_ub, ov_ub);
-      res = true;
+    default:
+      break;
     }
+
   return res;
 }
 
 
-
-class operator_plus : public irange_operator
+class basic_operator : public irange_operator
 {
+private:
+  enum tree_code code;
 public:
+  basic_operator (enum tree_code c);
   virtual void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
+};
+
+basic_operator::basic_operator (enum tree_code c)
+{
+  code = c;
+}
+
+void 
+basic_operator::dump (FILE *f) const
+{
+  fprintf (f," %s ", get_tree_code_name (code));
+}
+
+bool
+basic_operator::fold_range (irange& r, const irange& lh, const irange& rh) const
+{
+  if (empty_range_check (r, lh, rh, lh.get_type ()))
+    return true;
+
+  return op_rr (code, r, lh, rh);
+}
+
+
+class operator_plus : public basic_operator
+{
+public:
+  operator_plus (): basic_operator (PLUS_EXPR) { }
   virtual bool op1_irange (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_irange (irange& r, const irange& lhs,
 			   const irange& op1) const;
 
 } op_plus;
-
-void 
-operator_plus::dump (FILE *f) const
-{
-  fprintf (f, " + ");
-}
-
-
-bool
-operator_plus::fold_range (irange& r, const irange& lh, const irange& rh) const
-{
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
-    return true;
-
-  return op_rr (OPM_ADD, r, lh, rh);
-}
 
 
 /* Adjust irange to be in terms of op1. 
@@ -979,46 +965,26 @@ bool
 operator_plus::op1_irange (irange& r, const irange& lhs,
 			   const irange& op2) const
 {
-  return op_rr (OPM_SUB, r, lhs, op2);
+  return op_rr (MINUS_EXPR, r, lhs, op2);
 }
 
 bool
 operator_plus::op2_irange (irange& r, const irange& lhs,
 			   const irange& op1) const
 {
-  return op_rr (OPM_SUB, r, lhs, op1);
+  return op_rr (MINUS_EXPR, r, lhs, op1);
 }
 
 
-class operator_minus : public irange_operator
+class operator_minus : public basic_operator
 {
 public:
-  virtual void dump (FILE *f) const;
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
+  operator_minus () : basic_operator (MINUS_EXPR) { }
   virtual bool op1_irange (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_irange (irange& r, const irange& lhs,
 			   const irange& op1) const;
-
 } op_minus;
-
-void 
-operator_minus::dump (FILE *f) const
-{
-  fprintf (f, " - ");
-}
-
-
-bool
-operator_minus::fold_range (irange& r, const irange& lh, const irange& rh) const
-{
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
-    return true;
-
-  return op_rr (OPM_SUB, r, lh, rh);
-}
-
 
 /* Adjust irange to be in terms of op1. 
    Given lhs = op1 - op2,  op1 = lhs + op2.  */
@@ -1026,7 +992,7 @@ bool
 operator_minus::op1_irange (irange& r, const irange& lhs,
 			    const irange& op2) const
 {
-  return op_rr (OPM_ADD, r, lhs, op2);
+  return op_rr (PLUS_EXPR, r, lhs, op2);
 }
 
 /* Adjust irange to be in terms of op2. 
@@ -1035,195 +1001,21 @@ bool
 operator_minus::op2_irange (irange& r, const irange& lhs,
 			   const irange& op1) const
 {
-  return op_rr (OPM_SUB, r, op1 ,lhs);
+  return op_rr (MINUS_EXPR, r, op1 ,lhs);
 }
 
 
-class operator_multiply : public irange_operator
+basic_operator op_multiply (MULT_EXPR);
+basic_operator op_divide (TRUNC_DIV_EXPR);
+
+class operator_exact_divide : public basic_operator
 {
 public:
-  virtual void dump (FILE *f) const;
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
-			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
-			   const irange& op1) const;
-
-} op_multiply;
-
-void 
-operator_multiply::dump (FILE *f) const
-{
-  fprintf (f, " * ");
-}
-
-
-bool
-operator_multiply::fold_range (irange& r, const irange& lh,
-			      const irange& rh) const
-{
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
-    return true;
-
-  return op_rr (OPM_MUL, r, lh, rh);
-}
-
-
-/* Adjust irange to be in terms of op1. 
-   Given [range] = op1 + val,  op1 = [range] - val.  */
-bool
-operator_multiply::op1_irange (irange& r, const irange& lhs,
-			       const irange& op2) const
-{
-  wide_int c;
-  return  false;
-  // For overflow types. all we know is that the lower "precsion / 2" bits
-  // match up with the range of the LHS.  See if we know anything about
-  // the zero bits.
-  if (lhs.singleton_p (c) && TYPE_OVERFLOW_WRAPS (lhs.get_type ()))
-   {
-     return false;
-   }
-  return op_rr (OPM_DIV, r, lhs, op2);
-}
-
-bool
-operator_multiply::op2_irange (irange& r, const irange& lhs,
-			       const irange& op1) const
-{
-  wide_int c;
-  return  false;
-  // For overflow types. all we know is that the lower "precsion / 2" bits
-  // match up with the range of the LHS.  See if we know anything about
-  // the zero bits.
-  if (lhs.singleton_p (c) && TYPE_OVERFLOW_WRAPS (lhs.get_type ()))
-   {
-     return false;
-   }
-  return op_rr (OPM_DIV, r, lhs, op1);
-}
-
-
-class operator_divide : public irange_operator
-{
-public:
-  virtual void dump (FILE *f) const;
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
-			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
-			   const irange& op1) const;
-
-} op_divide;
-
-void 
-operator_divide::dump (FILE *f) const
-{
-  fprintf (f, " / ");
-}
-
-
-bool
-operator_divide::fold_range (irange& r, const irange& lh,
-			     const irange& rh) const
-{
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
-    return true;
-
-  return op_rr (OPM_DIV, r, lh, rh);
-}
-
-
-// Adjust irange to be in terms of op1. 
-bool
-operator_divide::op1_irange (irange& r ATTRIBUTE_UNUSED,
-			     const irange& lhs ATTRIBUTE_UNUSED,
-			     const irange& op2 ATTRIBUTE_UNUSED) const
-{
-  wide_int offset;
-  // 	a_6 = foo ()
-  // 	a_7 = a_6 / 4
-  // if a_7 is [4,4], a_6 is actually [16,19] so ranges are trickier to
-  // calulate.  
-  if (0 & op2.singleton_p (offset) && op_rr (OPM_MUL, r, lhs, op2))
-    {
-      wide_int ub, lb;
-      bool lb_ov = false, ub_ov = false;
-      tree type = op2.get_type ();
-      signop sign = TYPE_SIGN (type);
-
-      // no complex ranges, or divide by 0
-      if (!r.simple_range_p () || wi::eq_p (offset, 0))
-        return false;
-      offset = wi::abs (offset);
-      offset = wi::sub (offset, 1, sign, &ub_ov);
-      lb = r.lower_bound ();
-      ub = r.upper_bound ();
-      
-      if (wi::le_p (lb, 0, sign))
-        {
-	  lb = wi::sub (lb, offset, sign, &lb_ov);
-	  if (lb_ov)
-	    {
-	      lb = wi::min_value (TYPE_PRECISION (type), sign);
-	      lb_ov = false;
-	    }
-
-	}
-      if (wi::ge_p (ub, 0, sign))
-        {
-	  ub = wi::add (ub, offset, sign, &ub_ov);
-	  if (ub_ov)
-	    {
-	      ub = wi::max_value (TYPE_PRECISION (type), sign);
-	      ub_ov = false;
-	    }
-	}
-      add_to_range (r, lb, lb_ov, ub, ub_ov);
-      if (!r.overflow_p ())
-	return true;
-    }
-  return false;
-}
-
-bool
-operator_divide::op2_irange (irange& r ATTRIBUTE_UNUSED,
-			     const irange& lhs ATTRIBUTE_UNUSED,
-			     const irange& op1 ATTRIBUTE_UNUSED) const
-{
-  return false;
-}
-
-
-class operator_exact_divide : public irange_operator
-{
-public:
-  virtual void dump (FILE *f) const;
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
+  operator_exact_divide () : basic_operator (EXACT_DIV_EXPR) { }
   virtual bool op1_irange (irange& r, const irange& lhs,
 			   const irange& op2) const;
 
 } op_exact_divide;
-
-void 
-operator_exact_divide::dump (FILE *f) const
-{
-  fprintf (f, " exact_div ");
-}
-
-
-bool
-operator_exact_divide::fold_range (irange& r, const irange& lh,
-			     const irange& rh) const
-{
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
-    return true;
-
-  return op_rr (OPM_EXACTDIV, r, lh, rh);
-}
 
 // Adjust irange to be in terms of op1. 
 bool
@@ -1237,7 +1029,7 @@ operator_exact_divide::op1_irange (irange& r,
   // We wont bother trying to enumerate all the in between stuff :-P
   // TRUE accuraacy is [6,6][9,9][12,12].  This is unlikely to matter most of
   // the time however.  
-  if (op2.singleton_p (offset) && op_rr (OPM_MUL, r, lhs, op2) &&
+  if (op2.singleton_p (offset) && op_rr (MULT_EXPR, r, lhs, op2) &&
       !r.overflow_p () && wi::ne_p (offset, 0))   
     return true;
   return false;
@@ -2031,7 +1823,7 @@ irange_op_table::irange_op_table ()
   irange_tree[MINUS_EXPR] = &op_minus;
   irange_tree[MULT_EXPR] = &op_multiply;
   irange_tree[TRUNC_DIV_EXPR] = &op_divide;
-  irange_tree[EXACT_DIV_EXPR] = &op_exact_divide;
+//  irange_tree[EXACT_DIV_EXPR] = &op_exact_divide;
   
   irange_tree[NOP_EXPR] = &op_cast;
   irange_tree[CONVERT_EXPR] = &op_cast;
@@ -2057,6 +1849,83 @@ irange_operator *
 irange_op_handler (enum tree_code code)
 {
   return irange_tree[code];
+}
+
+static bool
+irange_from_value_range (irange &r, const value_range& vr)
+{
+  wide_int w1, w2;
+  tree type = TREE_TYPE (vr.min);
+  bool ov;
+
+  if (TREE_CODE (vr.min) != INTEGER_CST || TREE_CODE (vr.max) != INTEGER_CST)
+    return false;
+
+  if (vr.type != VR_RANGE || vr.type != VR_ANTI_RANGE)
+    return false;
+
+  w1 = wi::to_wide (vr.min);
+  w2 = wi::to_wide (vr.max);
+  if (vr.type == VR_RANGE)
+    r.set_range (type, w1, w2);
+  else
+    {
+      w1 = wi::sub (w1, 1, TYPE_SIGN (type), &ov);
+      w2 = wi::add (w2, 1, TYPE_SIGN (type), &ov);
+      r.set_range (type, min_limit (type), w1);
+      r.union_ (irange (type, w2, max_limit (type)));
+    }
+
+  return true;
+}
+
+static bool
+value_range_from_irange (value_range& vr, const irange& r)
+{
+  bool ov;
+  if (r.overflow_p ())
+    return false;
+
+  tree type = r.get_type ();
+  wide_int w1 = r.lower_bound();
+  wide_int w2 = r.upper_bound();
+  wide_int min = min_limit (type);
+  wide_int max = max_limit (type);
+
+  // check for anti range
+  if (w1 == min && w2 == max)
+    {
+      if (r.num_pairs () != 2)
+	return false;
+      vr.type = VR_ANTI_RANGE;
+      w1 = wi::add (r.upper_bound (0), 1, TYPE_SIGN (type), &ov);
+      w2 = wi::sub (r.lower_bound (1), 1, TYPE_SIGN (type), &ov);
+    }
+  else
+    vr.type = VR_RANGE;
+
+  vr.min = wide_int_to_tree (type, w1);
+  vr.max = wide_int_to_tree (type, w2);
+  return true;
+}
+
+// Fold constant value ranges by using the range_ops code.
+bool fold_value_range (value_range& vr, enum tree_code code,
+		       value_range& vr0, value_range& vr1)
+{
+  irange res, v0, v1;
+  if (!irange_op_handler (code))
+    return false;
+
+  if (!irange_from_value_range (v0, vr0) || !irange_from_value_range (v1, vr1))
+    return false;
+
+  if (irange_op_handler (code)->fold_range (res, v0, v1))
+    if (value_range_from_irange (vr, res))
+      return true;
+  
+  vr.type = VR_VARYING;
+  return true; 
 }
 
 
