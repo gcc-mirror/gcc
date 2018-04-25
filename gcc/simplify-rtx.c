@@ -1484,7 +1484,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && SUBREG_PROMOTED_SIGNED_P (op)
 	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
 	  if (temp)
 	    return temp;
 	}
@@ -1567,7 +1567,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && SUBREG_PROMOTED_UNSIGNED_P (op)
 	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
 	  if (temp)
 	    return temp;
 	}

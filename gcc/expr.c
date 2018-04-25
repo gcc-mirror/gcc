@@ -233,7 +233,10 @@ convert_move (rtx to, rtx from, int unsignedp)
       && (GET_MODE_PRECISION (subreg_promoted_mode (from))
 	  >= GET_MODE_PRECISION (to_int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (from, unsignedp))
-    from = gen_lowpart (to_int_mode, from), from_mode = to_int_mode;
+    {
+      from = gen_lowpart (to_int_mode, SUBREG_REG (from));
+      from_mode = to_int_mode;
+    }
 
   gcc_assert (GET_CODE (to) != SUBREG || !SUBREG_PROMOTED_VAR_P (to));
 
