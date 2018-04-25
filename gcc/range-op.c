@@ -791,7 +791,6 @@ op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
       if (cfun->can_throw_non_call_exceptions)
         return false;
       
-
       // Perform the division in 2 parts,[LB, -1] and [1, UB]
       // skipping that section if that bound is actually 0.
       if (wi::ne_p (rh_lb, 0))
@@ -806,6 +805,10 @@ op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
 	  if (!do_multiplicative (code, s, r, lh_lb, lh_ub, tmp, rh_ub))
 	    return false;
 	}
+      // If nothing was done at all, the dividsor must be [0,0] and 
+      // non-call exceptions must be true.  simply calculate no range
+      // this allows division by ranges which have multiple sub-ranges to 
+      // continue if one of the subranges is [0,0]
       return true;
       
     case MULT_EXPR:
@@ -886,29 +889,6 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 
       res = op_ii (code, s, r, lh.lower_bound (), lh.upper_bound (),
 		   rh.lower_bound (), rh.upper_bound ());
-    }
-
-  // Any post-processing
-  switch (code)
-    {
-    case EXACT_DIV_EXPR:
-      // any (range without 0) EXACT_DIV (anything) results in ~[0,0]
-      if (lh.contains_p (0))
-        {
-	  if (!res)
-	    {
-	      r.set_range (lh.get_type (), 0, 0, irange::INVERSE);
-	      res = true;
-	    }
-	  else
-	    // if 0 is in the current result, remove it.
-	    if (r.contains_p (0))
-	      r.intersect (irange (r.get_type (), 0, 0, irange::INVERSE));
-	}
-      break;
-
-    default:
-      break;
     }
 
   return res;
@@ -1005,18 +985,44 @@ operator_minus::op2_irange (irange& r, const irange& lhs,
 }
 
 
-basic_operator op_multiply (MULT_EXPR);
-basic_operator op_divide (TRUNC_DIV_EXPR);
+basic_operator op_mult (MULT_EXPR);
+basic_operator op_trunc_div (TRUNC_DIV_EXPR);
+basic_operator op_floor_div(FLOOR_DIV_EXPR);
+basic_operator op_round_div (ROUND_DIV_EXPR);
+basic_operator op_ceil_div (CEIL_DIV_EXPR);
 
 class operator_exact_divide : public basic_operator
 {
 public:
   operator_exact_divide () : basic_operator (EXACT_DIV_EXPR) { }
+  virtual bool fold_range (irange& r, const irange& op1,
+                           const irange& op2) const;
   virtual bool op1_irange (irange& r, const irange& lhs,
 			   const irange& op2) const;
 
-} op_exact_divide;
+} op_exact_div;
 
+
+bool operator_exact_divide::fold_range (irange& r, const irange& op1,
+					const irange& op2) const
+{
+  bool res = basic_operator::fold_range (r , op1, op2);
+  // Unless 0 is in the dividend, the result cannot contain 0.
+  if (!op1.contains_p (0))
+    {
+      if (!res)
+	{
+	  // any (range without 0) EXACT_DIV (anything) results in ~[0,0]
+	  r.set_range (op1.get_type (), 0, 0, irange::INVERSE);
+	  return true;
+	}
+      else
+	// if 0 is in the current result, remove it.
+	if (r.contains_p (0))
+	  r.intersect (irange (r.get_type (), 0, 0, irange::INVERSE));
+    }
+  return res;
+}
 // Adjust irange to be in terms of op1. 
 bool
 operator_exact_divide::op1_irange (irange& r,
@@ -1025,10 +1031,11 @@ operator_exact_divide::op1_irange (irange& r,
 {
   wide_int offset;
   // [2, 4] = op1 / [3,3]   since its exact divide, no need to worry about
-  // remainders, so op1 = [2,4] * [3,3] = [6,12].
+  // remainders in the endpoints, so op1 = [2,4] * [3,3] = [6,12].
   // We wont bother trying to enumerate all the in between stuff :-P
   // TRUE accuraacy is [6,6][9,9][12,12].  This is unlikely to matter most of
   // the time however.  
+  // If op2 is a multiple of 2, we would be able to set some non-zero bits.
   if (op2.singleton_p (offset) && op_rr (MULT_EXPR, r, lhs, op2) &&
       !r.overflow_p () && wi::ne_p (offset, 0))   
     return true;
@@ -1759,6 +1766,9 @@ operator_min_max::op1_irange (irange& r, const irange& lhs,
   if (POINTER_TYPE_P (lhs.get_type ()))
     return false;
   
+  // Until this can be examined closer...  Im not convinces this is right
+  return false;
+
   wide_int lb = lhs.lower_bound ();
   wide_int ub = lhs.upper_bound ();
   if (code == MIN_EXPR)
@@ -1821,9 +1831,12 @@ irange_op_table::irange_op_table ()
 
   irange_tree[PLUS_EXPR] = &op_plus;
   irange_tree[MINUS_EXPR] = &op_minus;
-  irange_tree[MULT_EXPR] = &op_multiply;
-  irange_tree[TRUNC_DIV_EXPR] = &op_divide;
-//  irange_tree[EXACT_DIV_EXPR] = &op_exact_divide;
+  irange_tree[MULT_EXPR] = &op_mult;
+  irange_tree[TRUNC_DIV_EXPR] = &op_trunc_div;
+  irange_tree[FLOOR_DIV_EXPR] = &op_floor_div;
+  irange_tree[ROUND_DIV_EXPR] = &op_round_div;
+  irange_tree[CEIL_DIV_EXPR] = &op_ceil_div;
+  irange_tree[EXACT_DIV_EXPR] = &op_exact_div;
   
   irange_tree[NOP_EXPR] = &op_cast;
   irange_tree[CONVERT_EXPR] = &op_cast;
