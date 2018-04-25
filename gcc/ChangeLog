@@ -1,5 +1,9 @@
 2018-04-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.md (*x86_mov<mode>cc_0_m1): Use type "alu1" rather
+	than "alu", remove explicit "memory" and "imm_disp" attributes.
+	(*x86_mov<mode>cc_0_m1_se, *x86_mov<mode>cc_0_m1_neg): Likewise.
+
 	PR middle-end/85414
 	* simplify-rtx.c (simplify_unary_operation_1) <case SIGN_EXTEND,
 	case ZERO_EXTEND>: Pass SUBREG_REG (op) rather than op to
