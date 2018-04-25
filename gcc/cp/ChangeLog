@@ -1,3 +1,15 @@
+2018-04-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85437
+	PR c++/49171
+	* cp-tree.h (REINTERPRET_CAST_P): New.
+	* constexpr.c (cxx_eval_constant_expression) <case NOP_EXPR>:
+	Reject REINTERPET_CAST_P conversions.  Use cplus_expand_constant
+	for non-trivial PTRMEM_CST cases.
+	* typeck.c (build_nop_reinterpret): New.
+	(build_reinterpret_cast_1): Use it.  Set REINTERPRET_CAST_P on
+	NOP_EXPRs returned by cp_convert.
+
 2018-04-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69560 - wrong alignof(double) on x86.

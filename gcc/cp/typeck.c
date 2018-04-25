@@ -7280,6 +7280,18 @@ convert_member_func_to_ptr (tree type, tree expr, tsubst_flags_t complain)
   return build_nop (type, expr);
 }
 
+/* Build a NOP_EXPR to TYPE, but mark it as a reinterpret_cast so that
+   constexpr evaluation knows to reject it.  */
+
+static tree
+build_nop_reinterpret (tree type, tree expr)
+{
+  tree ret = build_nop (type, expr);
+  if (ret != expr)
+    REINTERPRET_CAST_P (ret) = true;
+  return ret;
+}
+
 /* Return a representation for a reinterpret_cast from EXPR to TYPE.
    If C_CAST_P is true, this reinterpret cast is being done as part of
    a C-style cast.  If VALID_P is non-NULL, *VALID_P is set to
@@ -7414,7 +7426,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	warning (OPT_Wcast_function_type,
 		 "cast between incompatible function types"
 		 " from %qH to %qI", intype, type);
-      return build_nop (type, expr);
+      return build_nop_reinterpret (type, expr);
     }
   else if (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype))
     {
@@ -7425,7 +7437,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	warning (OPT_Wcast_function_type,
 		 "cast between incompatible pointer to member types"
 		 " from %qH to %qI", intype, type);
-      return build_nop (type, expr);
+      return build_nop_reinterpret (type, expr);
     }
   else if ((TYPE_PTRDATAMEM_P (type) && TYPE_PTRDATAMEM_P (intype))
 	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
@@ -7451,7 +7463,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	/* strict_aliasing_warning STRIP_NOPs its expr.  */
 	strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
 
-      return build_nop (type, expr);
+      return build_nop_reinterpret (type, expr);
     }
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
 	   || (TYPE_PTRFN_P (intype) && TYPE_PTROBV_P (type)))
@@ -7462,7 +7474,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	warning (OPT_Wconditionally_supported,
 		 "casting between pointer-to-function and pointer-to-object "
 		 "is conditionally-supported");
-      return build_nop (type, expr);
+      return build_nop_reinterpret (type, expr);
     }
   else if (VECTOR_TYPE_P (type))
     return convert_to_vector (type, expr);
@@ -7478,7 +7490,11 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
       return error_mark_node;
     }
 
-  return cp_convert (type, expr, complain);
+  expr = cp_convert (type, expr, complain);
+  if (TREE_CODE (expr) == NOP_EXPR)
+    /* Mark any nop_expr that created as a reintepret_cast.  */
+    REINTERPRET_CAST_P (expr) = true;
+  return expr;
 }
 
 tree
