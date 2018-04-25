@@ -1,3 +1,8 @@
+2018-04-25  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (trees_out::tree_node): Reorder.
+
 2018-04-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

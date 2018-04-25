@@ -4814,9 +4814,10 @@ trees_in::tree_binfo ()
   return binfo;
 }
 
-/* The raw tree node.  We've already dealt with the code, and in the
-   case of decls, determining name, context & module.  Stream the
-   bools and vals without post-processing.  */
+/* The raw tree node.  If the node is a decl, we've already determined
+   it is to be by value.  The tree's code has been written, and we've
+   been inserted into the back-reference table.  Stream the bools and
+   vals, including any {decl,type}_lang_specific piece.  */
 
 void
 trees_out::tree_node_raw (tree t)
@@ -4825,11 +4826,12 @@ trees_out::tree_node_raw (tree t)
   bool specific = false;
 
   /* The only decls we should stream out are those from this module,
-     or the global module.  */
-  gcc_assert (klass != tcc_declaration
-	      || MAYBE_DECL_MODULE_OWNER (t) == MODULE_NONE
-	      || t != get_module_owner (t)
-	      || MAYBE_DECL_MODULE_OWNER (t) == MODULE_PURVIEW);
+     or the global module.  All other decls should be by name.  */
+  gcc_checking_assert (klass != tcc_declaration
+		       || MAYBE_DECL_MODULE_OWNER (t) == MODULE_NONE
+		       || t != get_module_owner (t)
+		       || MAYBE_DECL_MODULE_OWNER (t) == MODULE_PURVIEW);
+
   if (klass == tcc_type || klass == tcc_declaration)
     {
       if (klass == tcc_declaration)
@@ -5082,9 +5084,8 @@ trees_out::tree_decl (tree decl, bool force, int owner)
 
   int tag = insert (decl);
   if (!dep_walk_p ())
-    dump () && dump ("Wrote %s:%d %C:%P@%I", kind, tag, TREE_CODE (decl),
-		     CP_DECL_CONTEXT (decl), DECL_NAME (decl),
-		     module_name (owner));
+    dump () && dump ("Wrote %s:%d %C:%N@%I", kind, tag, TREE_CODE (decl),
+		     decl, module_name (owner));
 
   if (tree type = TREE_TYPE (decl))
     {
@@ -5239,43 +5240,68 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
+  if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
+    {
+      /* A typeinfo object -> tt_tinfo_var.  These need recreating by
+	 the loader.  The type it is for is stashed on the name's
+	 TREE_TYPE.  */
+      gcc_assert (!force);
+      tree type = TREE_TYPE (DECL_NAME (t));
+      if (!dep_walk_p ())
+	i (tt_tinfo_var);
+      tree_node (type);
+      int tag = insert (t);
+      if (!dep_walk_p ())
+	dump () && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
+      goto done;
+    }
+
+  if (TREE_CODE (t) == TYPE_DECL && DECL_TINFO_P (t))
+    {
+      /* A typeinfo pseudo type -> tt_tinfo_typedef.  */
+      gcc_assert (!force);
+      unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (t));
+
+      if (!dep_walk_p ())
+	{
+	  i (tt_tinfo_typedef);
+	  u (ix);
+	}
+      unsigned tag = insert (t);
+      if (!dep_walk_p ())
+	dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
+      goto done;
+    }
+
+  if (TREE_CODE (t) == VAR_DECL && !force && DECL_ARTIFICIAL (t))
+    {
+      tree ctx = CP_DECL_CONTEXT (t);
+      if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
+	{
+	  /* Try a VTABLE.  */
+	  unsigned ix = 0;
+	  for (tree vtables = CLASSTYPE_VTABLES (ctx);
+	       vtables; ix++, vtables = DECL_CHAIN (vtables))
+	    if (vtables == t)
+	      {
+		if (!dep_walk_p ())
+		  {
+		    u (tt_vtable);
+		    u (ix);
+		    dump () && dump ("Writing vtable %N[%u]", ctx, ix);
+		  }
+		tree_node (ctx);
+		goto done;
+	      }
+	}
+    }
+
   if (TYPE_P (t) && !tree_type (t, force))
     goto done;
 
   if (DECL_P (t))
     {
       /* T is a DECL.  Perhaps we need to refer to it by name.  */
-
-      if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
-	{
-	  /* A typeinfo object -> tt_tinfo_var.  These need recreating
-	     by the loader.  The type it is for is stashed on the
-	     name's TREE_TYPE.  */
-	  tree type = TREE_TYPE (DECL_NAME (t));
-	  if (!dep_walk_p ())
-	    i (tt_tinfo_var);
-	  tree_node (type);
-	  int tag = insert (t);
-	  if (!dep_walk_p ())
-	    dump () && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
-	  goto done;
-	}
-
-      if (TREE_CODE (t) == TYPE_DECL && DECL_TINFO_P (t))
-	{
-	  /* A typeinfo pseudo type -> tt_tinfo_typedef.  */
-	  unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (t));
-
-	  if (!dep_walk_p ())
-	    {
-	      i (tt_tinfo_typedef);
-	      u (ix);
-	    }
-	  unsigned tag = insert (t);
-	  if (!dep_walk_p ())
-	    dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
-	  goto done;
-	}
 
       if (TREE_CODE (t) == TEMPLATE_DECL
 	  && TREE_CODE (CP_DECL_CONTEXT (t)) != NAMESPACE_DECL)
@@ -5302,29 +5328,6 @@ trees_out::tree_node (tree t)
 	      tree_map.put (tpl, 0);
 	    }
 	  goto by_value;
-	}
-
-      if (!force && DECL_ARTIFICIAL (t) && TREE_CODE (t) == VAR_DECL)
-	{
-	  tree ctx = CP_DECL_CONTEXT (t);
-	  if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
-	    {
-	      /* Try a VTABLE.  */
-	      unsigned ix = 0;
-	      for (tree vtables = CLASSTYPE_VTABLES (ctx);
-		   vtables; ix++, vtables = DECL_CHAIN (vtables))
-		if (vtables == t)
-		  {
-		    if (!dep_walk_p ())
-		      {
-			u (tt_vtable);
-			u (ix);
-			dump () && dump ("Writing vtable %N[%u]", ctx, ix);
-		      }
-		    tree_node (ctx);
-		    goto done;
-		  }
-	    }
 	}
 
       if (!tree_decl (t, force))
@@ -5472,6 +5475,7 @@ trees_in::tree_node ()
 	tree type = tree_node ();
 	if (owner != MODULE_NONE && !get_overrun ())
 	  res = lookup_by_ident (ctx, owner, name, type, code);
+
 	if (!res)
 	  {
 	    error ("failed to find %<%E%s%E@%E%>",
@@ -5479,6 +5483,7 @@ trees_in::tree_node ()
 		   name, module_name (owner));
 	    set_overrun ();
 	  }
+
 	kind = owner != state->mod ?  "Imported" : "Named";
       }
       finish_tpl:
