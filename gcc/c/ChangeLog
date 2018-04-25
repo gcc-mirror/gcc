@@ -1,3 +1,12 @@
+2018-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/84307
+	* c-decl.c (build_compound_literal): Call pushdecl (decl) even when
+	it is not TREE_STATIC.
+	* c-typeck.c (c_mark_addressable) <case COMPOUND_LITERAL_EXPR>: Mark
+	not just the COMPOUND_LITERAL_EXPR node itself addressable, but also
+	its COMPOUND_LITERAL_EXPR_DECL.
+
 2018-03-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_postfix_expression): For __builtin_tgmath
