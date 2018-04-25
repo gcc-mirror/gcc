@@ -11955,7 +11955,9 @@ file_info_cmp (const void *p1, const void *p2)
      we return consistent values to qsort since some will get confused if
      we return the same value when identical operands are passed in opposite
      orders.  So if neither has a directory, return 0 and otherwise return
-     1 or -1 depending on which one has the directory.  */
+     1 or -1 depending on which one has the directory.  We want the one with
+     the directory to sort after the one without, so all no directory files
+     are at the start (normally only the compilation unit file).  */
   if ((s1->path == s1->fname || s2->path == s2->fname))
     return (s2->path == s2->fname) - (s1->path == s1->fname);
 
@@ -11966,11 +11968,12 @@ file_info_cmp (const void *p1, const void *p2)
     {
       ++cp1;
       ++cp2;
-      /* Reached the end of the first path?  If so, handle like above.  */
+      /* Reached the end of the first path?  If so, handle like above,
+	 but now we want longer directory prefixes before shorter ones.  */
       if ((cp1 == (const unsigned char *) s1->fname)
 	  || (cp2 == (const unsigned char *) s2->fname))
-	return ((cp2 == (const unsigned char *) s2->fname)
-		- (cp1 == (const unsigned char *) s1->fname));
+	return ((cp1 == (const unsigned char *) s1->fname)
+		- (cp2 == (const unsigned char *) s2->fname));
 
       /* Character of current path component the same?  */
       else if (*cp1 != *cp2)

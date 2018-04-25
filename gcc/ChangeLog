@@ -1,3 +1,8 @@
+2018-04-25  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (file_info_cmp): Sort longer dir prefixes before
+	shorter ones.
+
 2018-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (*x86_mov<mode>cc_0_m1): Use type "alu1" rather
