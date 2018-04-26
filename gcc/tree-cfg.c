@@ -3842,7 +3842,7 @@ verify_gimple_assign_unary (gassign *stmt)
 	    || (POINTER_TYPE_P (rhs1_type)
 		&& INTEGRAL_TYPE_P (lhs_type)
 		&& (TYPE_PRECISION (rhs1_type) >= TYPE_PRECISION (lhs_type)
-		    || ptrofftype_p (sizetype))))
+		    || ptrofftype_p (lhs_type))))
 	  return false;
 
 	/* Allow conversion from integral to offset type and vice versa.  */

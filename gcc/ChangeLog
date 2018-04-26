@@ -1,3 +1,12 @@
+2018-04-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85450
+	* tree-cfg.c (verify_gimple_assign_unary): Restore proper
+	checking of integer<->pointer conversions.
+	* omp-expand.c (expand_omp_for_static_nochunk): Avoid
+	sign-/zero-extending pointer types.
+	(expand_omp_for_static_chunk): Likewise.
+
 2018-03-22  Hans-Peter Nilsson  <hp@axis.com>
 	    Jean Lee  <xiaoyur347@gmail.com>
 

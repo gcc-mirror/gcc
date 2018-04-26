@@ -3501,7 +3501,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_convert (itype, s0);
   t = fold_build2 (MULT_EXPR, itype, t, step);
   if (POINTER_TYPE_P (type))
-    t = fold_build_pointer_plus (n1, t);
+    {
+      t = fold_build_pointer_plus (n1, t);
+      if (!POINTER_TYPE_P (TREE_TYPE (startvar))
+	  && TYPE_PRECISION (TREE_TYPE (startvar)) > TYPE_PRECISION (type))
+	t = fold_convert (signed_type_for (type), t);
+    }
   else
     t = fold_build2 (PLUS_EXPR, type, t, n1);
   t = fold_convert (TREE_TYPE (startvar), t);
@@ -3515,7 +3520,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_convert (itype, e0);
   t = fold_build2 (MULT_EXPR, itype, t, step);
   if (POINTER_TYPE_P (type))
-    t = fold_build_pointer_plus (n1, t);
+    {
+      t = fold_build_pointer_plus (n1, t);
+      if (!POINTER_TYPE_P (TREE_TYPE (startvar))
+	  && TYPE_PRECISION (TREE_TYPE (startvar)) > TYPE_PRECISION (type))
+	t = fold_convert (signed_type_for (type), t);
+    }
   else
     t = fold_build2 (PLUS_EXPR, type, t, n1);
   t = fold_convert (TREE_TYPE (startvar), t);
@@ -4000,7 +4010,12 @@ expand_omp_for_static_chunk (struct omp_region *region,
   t = fold_convert (itype, s0);
   t = fold_build2 (MULT_EXPR, itype, t, step);
   if (POINTER_TYPE_P (type))
-    t = fold_build_pointer_plus (n1, t);
+    {
+      t = fold_build_pointer_plus (n1, t);
+      if (!POINTER_TYPE_P (TREE_TYPE (startvar))
+	  && TYPE_PRECISION (TREE_TYPE (startvar)) > TYPE_PRECISION (type))
+	t = fold_convert (signed_type_for (type), t);
+    }
   else
     t = fold_build2 (PLUS_EXPR, type, t, n1);
   t = fold_convert (TREE_TYPE (startvar), t);
@@ -4014,7 +4029,12 @@ expand_omp_for_static_chunk (struct omp_region *region,
   t = fold_convert (itype, e0);
   t = fold_build2 (MULT_EXPR, itype, t, step);
   if (POINTER_TYPE_P (type))
-    t = fold_build_pointer_plus (n1, t);
+    {
+      t = fold_build_pointer_plus (n1, t);
+      if (!POINTER_TYPE_P (TREE_TYPE (startvar))
+	  && TYPE_PRECISION (TREE_TYPE (startvar)) > TYPE_PRECISION (type))
+	t = fold_convert (signed_type_for (type), t);
+    }
   else
     t = fold_build2 (PLUS_EXPR, type, t, n1);
   t = fold_convert (TREE_TYPE (startvar), t);
