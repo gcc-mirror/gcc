@@ -2120,6 +2120,9 @@ output_function (struct cgraph_node *node)
      debug info.  */
   if (gimple_has_body_p (function))
     {
+      /* Fixup loops if required to match discovery done in the reader.  */
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
       streamer_write_uhwi (ob, 1);
       output_struct_function_base (ob, fn);
 
@@ -2177,6 +2180,7 @@ output_function (struct cgraph_node *node)
 
       output_cfg (ob, fn);
 
+      loop_optimizer_finalize ();
       pop_cfun ();
    }
   else
