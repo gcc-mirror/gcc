@@ -4010,6 +4010,119 @@ needs_neutering_p (rtx_insn *insn)
     }
 }
 
+/* Verify position of VECTOR_{JUMP,LABEL} and WORKER_{JUMP,LABEL} in FROM.  */
+
+static bool
+verify_neutering_jumps (basic_block from,
+			rtx_insn *vector_jump, rtx_insn *worker_jump,
+			rtx_insn *vector_label, rtx_insn *worker_label)
+{
+  basic_block bb = from;
+  rtx_insn *insn = BB_HEAD (bb);
+  bool seen_worker_jump = false;
+  bool seen_vector_jump = false;
+  bool seen_worker_label = false;
+  bool seen_vector_label = false;
+  bool worker_neutered = false;
+  bool vector_neutered = false;
+  while (true)
+    {
+      if (insn == worker_jump)
+	{
+	  seen_worker_jump = true;
+	  worker_neutered = true;
+	  gcc_assert (!vector_neutered);
+	}
+      else if (insn == vector_jump)
+	{
+	  seen_vector_jump = true;
+	  vector_neutered = true;
+	}
+      else if (insn == worker_label)
+	{
+	  seen_worker_label = true;
+	  gcc_assert (worker_neutered);
+	  worker_neutered = false;
+	}
+      else if (insn == vector_label)
+	{
+	  seen_vector_label = true;
+	  gcc_assert (vector_neutered);
+	  vector_neutered = false;
+	}
+      else if (INSN_P (insn))
+	switch (recog_memoized (insn))
+	  {
+	  case CODE_FOR_nvptx_barsync:
+	    gcc_assert (!vector_neutered && !worker_neutered);
+	    break;
+	  default:
+	    break;
+	  }
+
+      if (insn != BB_END (bb))
+	insn = NEXT_INSN (insn);
+      else if (JUMP_P (insn) && single_succ_p (bb)
+	       && !seen_vector_jump && !seen_worker_jump)
+	{
+	  bb = single_succ (bb);
+	  insn = BB_HEAD (bb);
+	}
+      else
+	break;
+    }
+
+  gcc_assert (!(vector_jump && !seen_vector_jump));
+  gcc_assert (!(worker_jump && !seen_worker_jump));
+
+  if (seen_vector_label || seen_worker_label)
+    {
+      gcc_assert (!(vector_label && !seen_vector_label));
+      gcc_assert (!(worker_label && !seen_worker_label));
+
+      return true;
+    }
+
+  return false;
+}
+
+/* Verify position of VECTOR_LABEL and WORKER_LABEL in TO.  */
+
+static void
+verify_neutering_labels (basic_block to, rtx_insn *vector_label,
+			 rtx_insn *worker_label)
+{
+  basic_block bb = to;
+  rtx_insn *insn = BB_END (bb);
+  bool seen_worker_label = false;
+  bool seen_vector_label = false;
+  while (true)
+    {
+      if (insn == worker_label)
+	{
+	  seen_worker_label = true;
+	  gcc_assert (!seen_vector_label);
+	}
+      else if (insn == vector_label)
+	seen_vector_label = true;
+      else if (INSN_P (insn))
+	switch (recog_memoized (insn))
+	  {
+	  case CODE_FOR_nvptx_barsync:
+	    gcc_assert (!seen_vector_label && !seen_worker_label);
+	    break;
+	  }
+
+      if (insn != BB_HEAD (bb))
+	insn = PREV_INSN (insn);
+      else
+	break;
+    }
+
+  gcc_assert (!(vector_label && !seen_vector_label));
+  gcc_assert (!(worker_label && !seen_worker_label));
+}
+
 /* Single neutering according to MASK.  FROM is the incoming block and
    TO is the outgoing block.  These may be the same block. Insert at
    start of FROM:
@@ -4095,11 +4208,15 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   unsigned mode;
   rtx_insn *before = tail;
   rtx_insn *neuter_start = NULL;
+  rtx_insn *worker_label = NULL, *vector_label = NULL;
+  rtx_insn *worker_jump = NULL, *vector_jump = NULL;
   for (mode = GOMP_DIM_WORKER; mode <= GOMP_DIM_VECTOR; mode++)
     if (GOMP_DIM_MASK (mode) & skip_mask)
       {
 	rtx_code_label *label = gen_label_rtx ();
 	rtx pred = cfun->machine->axis_predicate[mode - GOMP_DIM_WORKER];
+	rtx_insn **mode_jump = mode == GOMP_DIM_VECTOR ? &vector_jump : &worker_jump;
+	rtx_insn **mode_label = mode == GOMP_DIM_VECTOR ? &vector_label : &worker_label;
 
 	if (!pred)
 	  {
@@ -4116,17 +4233,27 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	  neuter_start = emit_insn_after (br, neuter_start);
 	else
 	  neuter_start = emit_insn_before (br, head);
+	*mode_jump = neuter_start;
 
 	LABEL_NUSES (label)++;
+	rtx_insn *label_insn;
 	if (tail_branch)
-	  before = emit_label_before (label, before);
+	  {
+	    label_insn = emit_label_before (label, before);
+	    before = label_insn;
+	  }
 	else
 	  {
-	    rtx_insn *label_insn = emit_label_after (label, tail);
+	    label_insn = emit_label_after (label, tail);
 	    if ((mode == GOMP_DIM_VECTOR || mode == GOMP_DIM_WORKER)
 		&& CALL_P (tail) && find_reg_note (tail, REG_NORETURN, NULL))
 	      emit_insn_after (gen_exit (), label_insn);
 	  }
+
+	if (mode == GOMP_DIM_VECTOR)
+	  vector_label = label_insn;
+	else
+	  worker_label = label_insn;
       }
 
   /* Now deal with propagating the branch condition.  */
@@ -4226,6 +4353,11 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 				 UNSPEC_BR_UNIFIED);
       validate_change (tail, recog_data.operand_loc[0], unsp, false);
     }
+
+  bool seen_label = verify_neutering_jumps (from, vector_jump, worker_jump,
+					    vector_label, worker_label);
+  if (!seen_label)
+    verify_neutering_labels (to, vector_label, worker_label);
 }
 
 /* PAR is a parallel that is being skipped in its entirety according to
