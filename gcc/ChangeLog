@@ -1,3 +1,10 @@
+2018-04-26  Richard Biener <rguenther@suse.de>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/85422
+	* lto-streamer-out.c (output_function): Fixup loops if required to match
+	discovery done in the reader.
+
 2018-04-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85116
