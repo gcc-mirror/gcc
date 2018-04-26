@@ -1,5 +1,8 @@
 2018-04-26  Hans-Peter Nilsson  <hp@axis.com>
 
+	* configure.tgt <mips*-*-linux*>: Enable build, excluding
+	mips*64*-*-linux*.
+
 	* sanitizer_common/sanitizer_platform_limits_linux.cc: Do not
 	take the shortcut to #include <sys/stat.h> for MIPS instead of
 	the kernel <asm/stat.h>.  Explain why sys/stat.h is misleading
