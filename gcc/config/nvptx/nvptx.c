@@ -3989,6 +3989,27 @@ bb_first_real_insn (basic_block bb)
 }
 #endif
 
+/* Return true if INSN needs neutering.  */
+
+static bool
+needs_neutering_p (rtx_insn *insn)
+{
+  if (!INSN_P (insn))
+    return false;
+
+  switch (recog_memoized (insn))
+    {
+    case CODE_FOR_nvptx_fork:
+    case CODE_FOR_nvptx_forked:
+    case CODE_FOR_nvptx_joining:
+    case CODE_FOR_nvptx_join:
+    case CODE_FOR_nvptx_barsync:
+      return false;
+    default:
+      return true;
+    }
+}
+
 /* Single neutering according to MASK.  FROM is the incoming block and
    TO is the outgoing block.  These may be the same block. Insert at
    start of FROM:
@@ -4014,9 +4035,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   while (true)
     {
       /* Find first insn of from block.  */
-      while (head != BB_END (from)
-	     && (!INSN_P (head)
-		 || recog_memoized (head) == CODE_FOR_nvptx_barsync))
+      while (head != BB_END (from) && !needs_neutering_p (head))
 	head = NEXT_INSN (head);
 
       if (from == to)
@@ -4057,21 +4076,8 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   if (tail == head)
     {
       /* If this is empty, do nothing.  */
-      if (!head || !INSN_P (head))
+      if (!head || !needs_neutering_p (head))
 	return;
-
-      /* If this is a dummy insn, do nothing.  */
-      switch (recog_memoized (head))
-	{
-	default:
-	  break;
-	case CODE_FOR_nvptx_barsync:
-	case CODE_FOR_nvptx_fork:
-	case CODE_FOR_nvptx_forked:
-	case CODE_FOR_nvptx_joining:
-	case CODE_FOR_nvptx_join:
-	  return;
-	}
 
       if (cond_branch)
 	{
