@@ -1,3 +1,11 @@
+2018-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/84020
+	* plugin/cuda/cuda.h (CUjit_option): Add CU_JIT_OPTIMIZATION_LEVEL.
+	* plugin/plugin-nvptx.c (_GNU_SOURCE): Define.
+	(process_GOMP_NVPTX_JIT): New function.
+	(link_ptx): Use process_GOMP_NVPTX_JIT.
+
 2018-04-26  Richard Biener <rguenther@suse.de>
 	    Tom de Vries  <tom@codesourcery.com>
 
