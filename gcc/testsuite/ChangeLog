@@ -1,5 +1,10 @@
 2018-04-26  Maciej W. Rozycki  <macro@mips.com>
 
+	* gcc.target/mips/data-sym-pool.c (dg-options): Match `ld' and
+	`.dword' in addition to `lw' and `.word'.
+
+2018-04-26  Maciej W. Rozycki  <macro@mips.com>
+
 	* gcc.target/mips/data-sym-pool.c (dg-options): Add `-mplt'.
 
 2018-04-26  Eric Botcazou  <ebotcazou@adacore.com>
