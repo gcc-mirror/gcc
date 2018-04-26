@@ -1,5 +1,12 @@
 2018-04-26  Hans-Peter Nilsson  <hp@axis.com>
 
+	* sanitizer_common/sanitizer_platform_limits_linux.cc: Do not
+	take the shortcut to #include <sys/stat.h> for MIPS instead of
+	the kernel <asm/stat.h>.  Explain why sys/stat.h is misleading
+	or wrong to get the kernel struct stat.
+	* sanitizer_common/sanitizer_platform_limits_posix.h [__mips__]:
+	Correct the value for 32-bit non-android struct_kernel_stat_sz.
+
 	* sanitizer_common/sanitizer_atomic_clang_other.h [_MIPS_SIM
 	&& _MIPS_SIM == _ABIO32] (lock): Add initializer for .pad member.
 
