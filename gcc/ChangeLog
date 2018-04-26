@@ -1,5 +1,15 @@
 2018-04-26  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/85116
+	* tree-ssa-loop-ch.c (do_while_loop_p): A do-while loop should
+	have a loop exit from the single latch predecessor.  Remove
+	case of header with just condition.
+	(ch_base::copy_headers): Exclude infinite loops from any
+	processing.
+	(pass_ch::execute): Record exits.
+
+2018-04-26  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_get_data_access_cost): Get
 	prologue cost vector and pass it to vect_get_load_cost.
 	(vect_get_peeling_costs_all_drs): Likewise.
