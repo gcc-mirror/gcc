@@ -1,5 +1,12 @@
 2018-04-26  Tom de Vries  <tom@codesourcery.com>
 
+	PR target/84952
+	* config/nvptx/nvptx.c (verify_neutering_jumps)
+	(verify_neutering_labels): New function
+	(nvptx_single): Use verify_neutering_jumps and verify_neutering_labels.
+
+2018-04-26  Tom de Vries  <tom@codesourcery.com>
+
 	PR target/84025
 	* config/nvptx/nvptx.c (needs_neutering_p): New function.
 	(nvptx_single): Use needs_neutering_p to skip over insns that do not
