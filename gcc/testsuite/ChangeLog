@@ -1,3 +1,27 @@
+2018-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85284
+	* gcc.dg/torture/pr85284.c: New testcase.
+
+	2018-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85244
+	* gcc.dg/torture/pr85244-1.c: New testcase.
+	* gcc.dg/torture/pr85244-2.c: Likewise.
+
+	2018-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85168
+	* gcc.dg/torture/pr85168.c: New testcase.
+
+	2018-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/84873
+	* c-c++-common/pr84873.c: New testcase.
+
 2018-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85520
