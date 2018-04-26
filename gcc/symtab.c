@@ -947,6 +947,12 @@ symbol_table::dump (FILE *f)
     node->dump (f);
 }
 
+DEBUG_FUNCTION void
+symbol_table::debug (void)
+{
+  dump (stderr);
+}
+
 /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
    Return NULL if there's no such node.  */
 
