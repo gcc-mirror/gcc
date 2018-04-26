@@ -7008,7 +7008,7 @@
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI4F_128 0 "nonimmediate_operand"
-	  "=Yr,*x,v,v,Yi,x,x,v,Yr ,*x ,x  ,m ,m   ,m")
+	  "=Yr,*x,v,v,v,x,x,v,Yr ,*x ,x  ,m ,m   ,m")
 	(vec_merge:VI4F_128
 	  (vec_duplicate:VI4F_128
 	    (match_operand:<ssescalarmode> 2 "general_operand"
@@ -7071,7 +7071,12 @@
 	      (const_string "vex")
 	   ]
 	   (const_string "*")))
-   (set_attr "mode" "SF,SF,SF,<ssescalarmode>,SI,SF,SF,SF,TI,TI,TI,*,*,*")])
+   (set_attr "mode" "SF,SF,SF,<ssescalarmode>,SI,SF,SF,SF,TI,TI,TI,*,*,*")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "4")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 ;; A subset is vec_setv4sf.
 (define_insn "*vec_setv4sf_sse4_1"
@@ -7107,7 +7112,7 @@
 
 ;; All of vinsertps, vmovss, vmovd clear also the higher bits.
 (define_insn "vec_set<mode>_0"
-  [(set (match_operand:VI4F_256_512 0 "register_operand" "=v,v,Yi")
+  [(set (match_operand:VI4F_256_512 0 "register_operand" "=v,v,v")
 	(vec_merge:VI4F_256_512
 	  (vec_duplicate:VI4F_256_512
 	    (match_operand:<ssescalarmode> 2 "general_operand" "v,m,r"))
@@ -7123,7 +7128,12 @@
 		   (const_string "sselog")
 		   (const_string "ssemov")))
    (set_attr "prefix" "maybe_evex")
-   (set_attr "mode" "SF,<ssescalarmode>,SI")])
+   (set_attr "mode" "SF,<ssescalarmode>,SI")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "2")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "sse4_1_insertps"
   [(set (match_operand:V4SF 0 "register_operand" "=Yr,*x,v")
@@ -13606,7 +13616,7 @@
   "operands[2] = CONST0_RTX (V4SImode);")
 
 (define_insn "sse2_loadld"
-  [(set (match_operand:V4SI 0 "register_operand"       "=v,Yi,x,x,v")
+  [(set (match_operand:V4SI 0 "register_operand"       "=v,v,x,x,v")
 	(vec_merge:V4SI
 	  (vec_duplicate:V4SI
 	    (match_operand:SI 2 "nonimmediate_operand" "m ,r ,m,x,v"))
@@ -13622,7 +13632,12 @@
   [(set_attr "isa" "sse2,sse2,noavx,noavx,avx")
    (set_attr "type" "ssemov")
    (set_attr "prefix" "maybe_vex,maybe_vex,orig,orig,maybe_evex")
-   (set_attr "mode" "TI,TI,V4SF,SF,SF")])
+   (set_attr "mode" "TI,TI,V4SF,SF,SF")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "1")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 ;; QI and HI modes handled by pextr patterns.
 (define_mode_iterator PEXTR_MODE12
@@ -13687,12 +13702,18 @@
   "#")
 
 (define_insn "*vec_extract<ssevecmodelower>_0"
-  [(set (match_operand:SWI48 0 "nonimmediate_operand"	       "=r ,v ,m")
+  [(set (match_operand:SWI48 0 "nonimmediate_operand"	       "=r,r,v ,m")
 	(vec_select:SWI48
-	  (match_operand:<ssevecmode> 1 "nonimmediate_operand" "mYj,vm,v")
+	  (match_operand:<ssevecmode> 1 "nonimmediate_operand" "m ,v,vm,v")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "#")
+  "#"
+  [(set_attr "isa" "*,sse2,*,*")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "1")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "*vec_extractv2di_0_sse"
   [(set (match_operand:DI 0 "nonimmediate_operand"     "=v,m")
@@ -13716,11 +13737,16 @@
   [(set (match_operand:DI 0 "register_operand" "=r,x,v")
 	(zero_extend:DI
 	  (vec_select:SI
-	    (match_operand:V4SI 1 "register_operand" "Yj,x,v")
+	    (match_operand:V4SI 1 "register_operand" "v,x,v")
 	    (parallel [(const_int 0)]))))]
   "TARGET_SSE4_1"
   "#"
-  [(set_attr "isa" "x64,*,avx512f")])
+  [(set_attr "isa" "x64,*,avx512f")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "1")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "*vec_extractv4si_0_zext"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -14064,10 +14090,10 @@
 ;; movd instead of movq is required to handle broken assemblers.
 (define_insn "vec_concatv2di"
   [(set (match_operand:V2DI 0 "register_operand"
-	  "=Yr,*x,x ,v ,Yi,v ,x    ,x,v ,x,x,v")
+	  "=Yr,*x,x ,v ,v,v ,x   ,x,v ,x,x,v")
 	(vec_concat:V2DI
 	  (match_operand:DI 1 "nonimmediate_operand"
-	  "  0, 0,x ,Yv,r ,vm,?!*Yn,0,Yv,0,0,v")
+	  "  0, 0,x ,Yv,r,vm,?!*y,0,Yv,0,0,v")
 	  (match_operand:DI 2 "vector_move_operand"
 	  " rm,rm,rm,rm,C ,C ,C ,x,Yv,x,m,m")))]
   "TARGET_SSE"
@@ -14092,7 +14118,7 @@
 	    (eq_attr "alternative" "3")
 	      (const_string "x64_avx512dq")
 	    (eq_attr "alternative" "4")
-	      (const_string "x64")
+	      (const_string "x64_sse2")
 	    (eq_attr "alternative" "5,6")
 	      (const_string "sse2")
 	    (eq_attr "alternative" "7")
@@ -14129,11 +14155,18 @@
 	      (const_string "maybe_evex")
 	   ]
 	   (const_string "orig")))
-   (set_attr "mode" "TI,TI,TI,TI,TI,TI,TI,TI,TI,V4SF,V2SF,V2SF")])
+   (set_attr "mode" "TI,TI,TI,TI,TI,TI,TI,TI,TI,V4SF,V2SF,V2SF")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "4")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
+	    (eq_attr "alternative" "6")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 ;; vmovq clears also the higher bits.
 (define_insn "vec_set<mode>_0"
-  [(set (match_operand:VI8_AVX_AVX512F 0 "register_operand" "=Yi,v")
+  [(set (match_operand:VI8_AVX_AVX512F 0 "register_operand" "=v,v")
 	(vec_merge:VI8_AVX_AVX512F
 	  (vec_duplicate:VI8_AVX_AVX512F
 	    (match_operand:<ssescalarmode> 2 "general_operand" "r,vm"))
@@ -14145,7 +14178,12 @@
    (set_attr "type" "ssemov")
    (set_attr "prefix_rex" "1,*")
    (set_attr "prefix" "maybe_evex")
-   (set_attr "mode" "TI")])
+   (set_attr "mode" "TI")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
@@ -17901,7 +17939,7 @@
   [V32QI V16QI V16HI V8HI V8SI V4SI])
 
 (define_insn "*vec_dup<mode>"
-  [(set (match_operand:AVX2_VEC_DUP_MODE 0 "register_operand" "=x,x,Yi")
+  [(set (match_operand:AVX2_VEC_DUP_MODE 0 "register_operand" "=x,x,v")
 	(vec_duplicate:AVX2_VEC_DUP_MODE
 	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,x,$r")))]
   "TARGET_AVX2"
@@ -17913,7 +17951,12 @@
    (set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "maybe_evex")
-   (set_attr "mode" "<sseinsnmode>")])
+   (set_attr "mode" "<sseinsnmode>")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "2")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "vec_dup<mode>"
   [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "=x,x,x,v,x")

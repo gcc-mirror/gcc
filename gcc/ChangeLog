@@ -1,3 +1,27 @@
+2018-04-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md ("isa" attribute): Add x64_sse2.
+	("enabled" attribute): Handle "isa" attribute.
+	(*movdi_internal): Substitute Yi and Yj constraint with x
+	and Ym and Yn constraint with y constraint.  Update "isa"
+	attribute and set "preferred_for_speed" attribute from
+	TARGET_INTER_UNIT_MOVES_{FROM,TO}_VEC for updated alternatives.
+	(*movsi_internal): Ditto.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+	(*zero_extendsidi2): Ditto.
+	* config/i386/sse.md (vec_set<mode>_0): Ditto.
+	(sse2_loadld): Ditto.
+	(*vec_extract<ssevecmodelower>_0): Ditto.
+	(*vec_extractv4si_0_zext_sse4): Ditto.
+	(vec_concatv2di): Ditto.
+	(*vec_dup<mode>): Ditto.
+	* config/i386/mmx.md (*mov<mode>_internal): Ditto.
+	* config/i386/constraints.md (Yi): Remove.
+	(Yj): Remove.
+	(Ym): Remove.
+	(Yn): Remove.
+
 2018-04-26  Nathan Sidwell  <nathan@acm.org>
 
 	* dumpfile.c (dump_open): New.
