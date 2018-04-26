@@ -1,3 +1,9 @@
+2018-04-26  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* cgraph.h (symbol_table): Just declare debug method here.
+	* symtab.c (symbol_table::debug): Define.
+
 2018-04-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* loop-invariant.c (may_assign_reg_p): Return false for frame pointer.

@@ -2222,10 +2222,7 @@ public:
   void dump (FILE *f);
 
   /* Dump symbol table to stderr.  */
-  inline DEBUG_FUNCTION void debug (void)
-  {
-    dump (stderr);
-  }
+  void DEBUG_FUNCTION debug (void);
 
   /* Return true if assembler names NAME1 and NAME2 leads to the same symbol
      name.  */
