@@ -1,3 +1,11 @@
+2018-03-22  Hans-Peter Nilsson  <hp@axis.com>
+	    Jean Lee  <xiaoyur347@gmail.com>
+
+	* config/mips/mips.c (mips_asan_shadow_offset): New function.
+	(TARGET_ASAN_SHADOW_OFFSET): Define.
+	* config/mips/mips.h (FRAME_GROWS_DOWNWARD): Augment to also be
+	true for -fsanitize=address.
+
 2018-04-25  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2out.c (file_info_cmp): Sort longer dir prefixes before
