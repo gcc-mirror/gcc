@@ -60,8 +60,6 @@ along with GCC; see the file COPYING3.  If not see
    whether these should be DECL_HIDDEN for that import's binding, or
    should just not be in the symbol table.
 
-   WARNING: Lazy loading not implemented:
-
    A module interface compilation produces a Binary Module Interface
    (BMI).  I use ELROND format, which allows a bunch of named sections
    containing arbitrary data.  Although I don't defend against
@@ -74,29 +72,26 @@ along with GCC; see the file COPYING3.  If not see
    defining section.  This allows lazy loading.
 
    Notice this means we embed section indices into the contents of
-   other sections.  Thus random maniupulation of the BMI file by ELF
+   other sections.  Thus random manipulation of the BMI file by ELF
    tools may well break it.  The kosher way would probably be to
    introduce indirection via section symbols, but that would require
    defining a relocation type.
 
-   FIXME:The below is inaccurate.
-   References to imported decls are done via indexing the imported
-   module's decl list.
+   References to decls not in the same SCC are by several different
+   mechanisms.  All decls from other modules are like this (we cannot
+   form an SCC containing one of them).  Decls from the same module in
+   a different SCC are also like this.
 
-   References to global-module decls are either via an index to an
-   imported module that happens to also make the decl available.  Or
-   by value if there is no such import.  Section groups may just about
-   work, (emit an index to the GRP section's slot indicating the
-   target section).  But there's no requirement on tools to keep GRP
-   section contents ordered, thought they probably do.  Anyway, best
-   not to objcopy these things!
+   * The simplest is for nameable exports, which are by context, name &
+   type.
 
-   There can be no SCCs containing both current-module and
-   global-module decls.  Construction of such an SCC would require the
-   global-module decl to reference the current-module decl, and that
-   is not possible.
+   * Next are non-exported decls referenced from (bodies of) exported
+   decls.  Currently not handled properly.
 
-   Classes used:
+   * Finally there are voldemort types, for instance lambdas returned
+   from functions.  Currently not handled at all.
+
+Classes used:
 
    data - buffer with CRC capability
 
@@ -156,7 +151,9 @@ int module_dump_id;
 /* Prefix for section names.  */
 #define MOD_SNAME_PFX ".gnu.c++"
 
-/* Get the version of this compiler.  See above about MODULE_STAMP.  */
+/* Get the version of this compiler.  This is negative, when it is a
+   date-time stamp indicating experimentalness of the system.  See
+   above about MODULE_STAMP.  */
 
 static inline int
 get_version ()
@@ -178,7 +175,8 @@ get_version ()
 /* Version to date.  Understand both experimental and released
    version dates.  */
 
-static inline int version2date (int v)
+static inline int
+version2date (int v)
 {
   if (v < 0)
     return unsigned (-v) / 10000 + 20000000;
@@ -188,7 +186,8 @@ static inline int version2date (int v)
 
 /* Version to time.  Only understand times when experimental.  */
 
-static inline unsigned version2time (int v)
+static inline unsigned
+version2time (int v)
 {
   if (MODULE_STAMP && v < 0)
     return unsigned (-v) % 10000;
@@ -200,7 +199,8 @@ static inline unsigned version2time (int v)
    information for experimental builds.  */
 
 typedef char verstr_t[32];
-static void version2string (int version, verstr_t &out)
+static void
+version2string (int version, verstr_t &out)
 {
   unsigned date = version2date (version);
   unsigned time = version2time (version);
@@ -496,6 +496,8 @@ elf::get_error () const
     }
 }
 
+/* Finish file, return true if there's an error.  */
+
 bool
 elf::end ()
 {
@@ -589,6 +591,9 @@ public:
 
 class elf_out : public elf {
   typedef elf parent;
+  /* Desired section alignment on disk.  */
+  static const int SECTION_ALIGN = 16;
+
 public:
   /* Builder for string table.  */
   class strtab
@@ -1003,8 +1008,9 @@ elf_out::strtab::write (elf_out *elf)
   return elf->add (SHT_STRTAB, shname, off, size, SHF_STRINGS);
 }
 
-/* Padd file to the next 4 byte boundary.  Return the file position or
-   zero on error.  (We never need this at the start of file.  */
+/* Pad file to the next SECTION_ALIGN byte boundary.  Return the file
+   position or zero on error.  (We never need this at the start of
+   file.)  */
 
 uint32_t
 elf_out::pad ()
@@ -1012,11 +1018,12 @@ elf_out::pad ()
   long off = ftell (stream);
   if (off < 0)
     off = 0;
-  else if (unsigned padding = off & 3)
+  else if (unsigned padding = off & (SECTION_ALIGN - 1))
     {
-      /* Align the section on disk, should help the necessary copies.  */
-      unsigned zero = 0;
-      padding = 4 - padding;
+      /* Align the section on disk, should help the necessary copies.
+         fseeking to extend is non-portable.  */
+      static char zero[SECTION_ALIGN];
+      padding = SECTION_ALIGN - padding;
       off += padding;
       if (fwrite (&zero, 1, padding, stream) != padding)
 	off = 0;
@@ -1106,7 +1113,7 @@ elf_out::begin ()
 }
 
 /* Finish writing the file.  Write out the string & section tables.
-   Fill in the header.  Return error string or NULL on success.  */
+   Fill in the header.  Return true on error.  */
 
 bool
 elf_out::end ()
@@ -1136,9 +1143,15 @@ elf_out::end ()
 	{
 	  /* Store escape values in section[0].  */
 	  if (strndx >= SHN_LORESERVE)
-	    section.link = strndx;
+	    {
+	      section.link = strndx;
+	      strndx = SHN_XINDEX;
+	    }
 	  if (shnum >= SHN_LORESERVE)
-	    section.size = shnum;
+	    {
+	      section.size = shnum;
+	      shnum = SHN_XINDEX;
+	    }
 	}
 
       if (!write (&section, sizeof (section)))
@@ -1169,8 +1182,8 @@ elf_out::end ()
   header.shoff = shoff;
   header.ehsize = sizeof (header);
   header.shentsize = sizeof (section);
-  header.shnum = shnum >= SHN_LORESERVE ? unsigned (SHN_XINDEX) : shnum;
-  header.shstrndx = strndx >= SHN_LORESERVE ? unsigned (SHN_XINDEX) : strndx;
+  header.shnum = shnum;
+  header.shstrndx = strndx;
 
   write (&header, sizeof (header));
 
@@ -2124,7 +2137,6 @@ public:
   }
 
 private:
-  void mark_decls (depset *b, bool);
   void mark_trees ();
   void unmark_trees ();
 

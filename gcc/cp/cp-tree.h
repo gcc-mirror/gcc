@@ -3384,11 +3384,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    DECL_USE_TEMPLATE is nonzero) or the abstract instance of the
    template itself.
 
-   In either case, DECL_TEMPLATE_INFO is a TREE_LIST, whose
-   TREE_PURPOSE is the TEMPLATE_DECL of which this entity is a
-   specialization or abstract instance.  The TREE_VALUE is the
+   In either case, DECL_TEMPLATE_INFO is a TEMPLATE_INFO, whose
+   TI_TEMPLATE is the TEMPLATE_DECL of which this entity is a
+   specialization or abstract instance.  The TI_ARGS is the
    template arguments used to specialize the template.
-   
+
    Consider:
 
       template <typename T> struct S { friend void f(T) {} };
