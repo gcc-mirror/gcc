@@ -1,3 +1,9 @@
+2018-04-26  Nathan Sidwell  <nathan@acm.org>
+
+	* dumpfile.c (dump_open): New.
+	(dump_open_alternate_stream, dump_start, dump_begin): Call it.
+	(dump_finish): Detect stdio/stderr by value not name.
+
 2018-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (-Wreturn-type): Document default status for C++.
