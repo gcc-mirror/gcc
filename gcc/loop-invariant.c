@@ -660,6 +660,9 @@ may_assign_reg_p (rtx x)
   return (GET_MODE (x) != VOIDmode
 	  && GET_MODE (x) != BLKmode
 	  && can_copy_p (GET_MODE (x))
+	  /* Do not mess with the frame pointer adjustments that can
+	     be generated e.g. by expand_builtin_setjmp_receiver.  */
+	  && x != frame_pointer_rtx
 	  && (!REG_P (x)
 	      || !HARD_REGISTER_P (x)
 	      || REGNO_REG_CLASS (REGNO (x)) != NO_REGS));
