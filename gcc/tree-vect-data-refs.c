@@ -1253,7 +1253,8 @@ static void
 vect_get_data_access_cost (struct data_reference *dr,
                            unsigned int *inside_cost,
                            unsigned int *outside_cost,
-			   stmt_vector_for_cost *body_cost_vec)
+			   stmt_vector_for_cost *body_cost_vec,
+			   stmt_vector_for_cost *prologue_cost_vec)
 {
   gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -1267,7 +1268,7 @@ vect_get_data_access_cost (struct data_reference *dr,
 
   if (DR_IS_READ (dr))
     vect_get_load_cost (dr, ncopies, true, inside_cost, outside_cost,
-			NULL, body_cost_vec, false);
+			prologue_cost_vec, body_cost_vec, false);
   else
     vect_get_store_cost (dr, ncopies, inside_cost, body_cost_vec);
 
@@ -1376,6 +1377,7 @@ vect_get_peeling_costs_all_drs (vec<data_reference_p> datarefs,
 				unsigned int *inside_cost,
 				unsigned int *outside_cost,
 				stmt_vector_for_cost *body_cost_vec,
+				stmt_vector_for_cost *prologue_cost_vec,
 				unsigned int npeel,
 				bool unknown_misalignment)
 {
@@ -1410,7 +1412,7 @@ vect_get_peeling_costs_all_drs (vec<data_reference_p> datarefs,
       else
 	vect_update_misalignment_for_peel (dr, dr0, npeel);
       vect_get_data_access_cost (dr, inside_cost, outside_cost,
-				 body_cost_vec);
+				 body_cost_vec, prologue_cost_vec);
       SET_DR_MISALIGNMENT (dr, save_misalignment);
     }
 }
@@ -1437,7 +1439,8 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
 
   vect_get_peeling_costs_all_drs (LOOP_VINFO_DATAREFS (loop_vinfo),
 				  elem->dr, &inside_cost, &outside_cost,
-				  &body_cost_vec, elem->npeel, false);
+				  &body_cost_vec, &prologue_cost_vec,
+				  elem->npeel, false);
 
   body_cost_vec.release ();
 
@@ -1867,7 +1870,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       vect_get_peeling_costs_all_drs (datarefs, dr0,
 				      &load_inside_cost,
 				      &load_outside_cost,
-				      &dummy, estimated_npeels, true);
+				      &dummy, &dummy, estimated_npeels, true);
       dummy.release ();
 
       if (first_store)
@@ -1876,7 +1879,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  vect_get_peeling_costs_all_drs (datarefs, first_store,
 					  &store_inside_cost,
 					  &store_outside_cost,
-					  &dummy, estimated_npeels, true);
+					  &dummy, &dummy,
+					  estimated_npeels, true);
 	  dummy.release ();
 	}
       else
@@ -1965,7 +1969,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       stmt_vector_for_cost dummy;
       dummy.create (2);
       vect_get_peeling_costs_all_drs (datarefs, NULL, &nopeel_inside_cost,
-				      &nopeel_outside_cost, &dummy, 0, false);
+				      &nopeel_outside_cost, &dummy, &dummy,
+				      0, false);
       dummy.release ();
 
       /* Add epilogue costs.  As we do not peel for alignment here, no prologue

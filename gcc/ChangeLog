@@ -1,5 +1,13 @@
 2018-04-26  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-data-refs.c (vect_get_data_access_cost): Get
+	prologue cost vector and pass it to vect_get_load_cost.
+	(vect_get_peeling_costs_all_drs): Likewise.
+	(vect_peeling_hash_get_lowest_cost): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+
+2018-04-26  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/85450
 	* tree-cfg.c (verify_gimple_assign_unary): Restore proper
 	checking of integer<->pointer conversions.
