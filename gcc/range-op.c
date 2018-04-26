@@ -818,8 +818,15 @@ op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
       return false;
     }
 
-  add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
-  return true;
+  // Double Integral overflow calculations work fine, IF one of the two
+  // operands is a constant.  ie   [0, 100] + ([MAXINT-1),(MAXINT-1)] 
+  // Otherwise we don't know if the overflows "overflow" into each other.
+  if (!ov_lb || !ov_ub || wi::eq_p (lh_lb, lh_ub) || wi::eq_p (rh_lb, rh_ub))
+    {
+      add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
+      return true;
+    }
+  return false;
 }
 
 /* Perform an operation between a constant and a range.  */
