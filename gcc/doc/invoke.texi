@@ -4783,7 +4783,7 @@ For C++, a function without return type always produces a diagnostic
 message, even when @option{-Wno-return-type} is specified.  The only
 exceptions are @code{main} and functions defined in system headers.
 
-This warning is enabled by @option{-Wall}.
+This warning is enabled by default for C++ and is enabled by @option{-Wall}.
 
 @item -Wshift-count-negative
 @opindex Wshift-count-negative
