@@ -1,3 +1,7 @@
+2018-04-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_expr): Make dead code hit gcc_unreachable.
+
 2018-04-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movti_internal): Substitute Ye constraint
