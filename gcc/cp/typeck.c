@@ -3042,6 +3042,17 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
   tree ptrmem_type;
   tree member;
 
+  if (TREE_CODE (ptrmem) == CONSTRUCTOR)
+    {
+      unsigned int ix;
+      tree index, value;
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ptrmem),
+				ix, index, value)
+	if (index && DECL_P (index) && DECL_NAME (index) == member_name)
+	  return value;
+      gcc_unreachable ();
+    }
+
   /* This code is a stripped down version of
      build_class_member_access_expr.  It does not work to use that
      routine directly because it expects the object to be of class
@@ -8517,7 +8528,7 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
 	{
 	  if (same_type_p (to_type, pfn_type))
 	    return pfn;
-	  else if (integer_zerop (n))
+	  else if (integer_zerop (n) && TREE_CODE (pfn) != CONSTRUCTOR)
 	    return build_reinterpret_cast (to_type, pfn, 
                                            complain);
 	}
@@ -8537,12 +8548,15 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
       /* Just adjust the DELTA field.  */
       gcc_assert  (same_type_ignoring_top_level_qualifiers_p
 		   (TREE_TYPE (delta), ptrdiff_type_node));
-      if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_delta)
-	n = cp_build_binary_op (input_location,
-				LSHIFT_EXPR, n, integer_one_node,
-				complain);
-      delta = cp_build_binary_op (input_location,
-				  PLUS_EXPR, delta, n, complain);
+      if (!integer_zerop (n))
+	{
+	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_delta)
+	    n = cp_build_binary_op (input_location,
+				    LSHIFT_EXPR, n, integer_one_node,
+				    complain);
+	  delta = cp_build_binary_op (input_location,
+				      PLUS_EXPR, delta, n, complain);
+	}
       return build_ptrmemfunc1 (to_type, delta, npfn);
     }
 
