@@ -1,3 +1,12 @@
+2018-04-27  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (TEMPLATE_INFO): Fix comments.
+	(TI_PENDING_TEMPLATE_FLAG): Check TEMPLATE_INFO.
+	(NON_DEFAULT_TEMPLATE_ARG_COUNT): Wrap line.
+	(dump, print_other_binding_stacks): Remove declarations.
+	* name-lookup.c (print_other_binding_stack): Make static.
+	* pt.c (build_template_decl): Make static.
+
 2018-04-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85545 - ICE with noexcept PMF conversion.

@@ -4674,7 +4674,7 @@ maybe_update_decl_type (tree orig_type, tree scope)
    template PARMS and constraints, CONSTR.  If MEMBER_TEMPLATE_P is true,
    the new  template is a member template. */
 
-tree
+static tree
 build_template_decl (tree decl, tree parms, bool member_template_p)
 {
   tree tmpl = build_lang_decl (TEMPLATE_DECL, DECL_NAME (decl), NULL_TREE);
