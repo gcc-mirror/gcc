@@ -309,7 +309,11 @@ func (b *Builder) gccgoBuildIDELFFile(a *Action) (string, error) {
 	sfile := a.Objdir + "_buildid.s"
 
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "\t"+`.section .go.buildid,"e"`+"\n")
+	if cfg.Goos != "solaris" {
+		fmt.Fprintf(&buf, "\t"+`.section .go.buildid,"e"`+"\n")
+	} else {
+		fmt.Fprintf(&buf, "\t"+`.section ".go.buildid",#exclude`+"\n")
+	}
 	fmt.Fprintf(&buf, "\t.byte ")
 	for i := 0; i < len(a.buildID); i++ {
 		if i > 0 {
@@ -322,8 +326,10 @@ func (b *Builder) gccgoBuildIDELFFile(a *Action) (string, error) {
 		fmt.Fprintf(&buf, "%#02x", a.buildID[i])
 	}
 	fmt.Fprintf(&buf, "\n")
-	fmt.Fprintf(&buf, "\t"+`.section .note.GNU-stack,"",@progbits`+"\n")
-	fmt.Fprintf(&buf, "\t"+`.section .note.GNU-split-stack,"",@progbits`+"\n")
+	if cfg.Goos != "solaris" {
+		fmt.Fprintf(&buf, "\t"+`.section .note.GNU-stack,"",@progbits`+"\n")
+		fmt.Fprintf(&buf, "\t"+`.section .note.GNU-split-stack,"",@progbits`+"\n")
+	}
 
 	if cfg.BuildN || cfg.BuildX {
 		for _, line := range bytes.Split(buf.Bytes(), []byte("\n")) {
