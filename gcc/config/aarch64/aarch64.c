@@ -12267,23 +12267,17 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   if (align > 8)
     {
       /* if (alignof(type) > 8) (arg = arg + 15) & -16;  */
-      t = fold_convert (intDI_type_node, arg);
-      t = build2 (PLUS_EXPR, TREE_TYPE (t), t,
-		  build_int_cst (TREE_TYPE (t), 15));
+      t = fold_build_pointer_plus_hwi (arg, 15);
       t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
 		  build_int_cst (TREE_TYPE (t), -16));
-      t = fold_convert (TREE_TYPE (arg), t);
       roundup = build2 (MODIFY_EXPR, TREE_TYPE (arg), arg, t);
     }
   else
     roundup = NULL;
   /* Advance ap.__stack  */
-  t = fold_convert (intDI_type_node, arg);
-  t = build2 (PLUS_EXPR, TREE_TYPE (t), t,
-	      build_int_cst (TREE_TYPE (t), size + 7));
+  t = fold_build_pointer_plus_hwi (arg, size + 7);
   t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
 	      build_int_cst (TREE_TYPE (t), -8));
-  t = fold_convert (TREE_TYPE (arg), t);
   t = build2 (MODIFY_EXPR, TREE_TYPE (stack), unshare_expr (stack), t);
   /* String up roundup and advance.  */
   if (roundup)
