@@ -1,3 +1,16 @@
+2018-04-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_internal): Substitute Ye constraint
+	with Yd constraint. Set "preferred_for_speed" attribute from
+	TARGET_INTER_UNIT_MOVES_{FROM,TO}_VEC for alternatives
+	with Yd constraint.
+	(*movdi_internal): Ditto.
+	(movti_interunit splitters): Remove
+	TARGET_INTER_UNIT_MOVES_{FROM,TO}_VEC from insn condition.
+	(movdi_interunit splitters): Ditto.
+	* config/i386/constraints.md (Ye): Remove.
+	(Yd): Do not depend on TARGET_INTER_UNIT_MOVES_{FROM,TO}_VEC.
+
 2018-04-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/85512
@@ -29,7 +42,7 @@
 2018-04-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md ("isa" attribute): Add x64_sse2.
-	("enabled" attribute): Handle "isa" attribute.
+	("enabled" attribute): Handle x64_sse2 "isa" attribute.
 	(*movdi_internal): Substitute Yi and Yj constraint with x
 	and Ym and Yn constraint with y constraint.  Update "isa"
 	attribute and set "preferred_for_speed" attribute from
