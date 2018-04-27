@@ -1224,9 +1224,16 @@ lookup_field_fuzzy_info::fuzzy_lookup_field (tree type)
 
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
-      if (!m_want_type_p || DECL_DECLARES_TYPE_P (field))
-	if (DECL_NAME (field))
-	  m_candidates.safe_push (DECL_NAME (field));
+      if (m_want_type_p && !DECL_DECLARES_TYPE_P (field))
+	continue;
+
+      if (!DECL_NAME (field))
+	continue;
+
+      if (is_lambda_ignored_entity (field))
+	continue;
+
+      m_candidates.safe_push (DECL_NAME (field));
     }
 }
 

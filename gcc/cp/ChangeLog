@@ -1,3 +1,12 @@
+2018-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85515
+	* name-lookup.c (consider_binding_level): Skip compiler-generated
+	variables.
+	* search.c (lookup_field_fuzzy_info::fuzzy_lookup_field): Flatten
+	nested if statements into a series of rejection tests.  Reject
+	lambda-ignored entities as suggestions.
+
 2018-04-27  Jason Merrill  <jason@redhat.com>
 
 	* cvt.c (cp_fold_convert): Use convert_ptrmem.
