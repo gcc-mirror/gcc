@@ -1,3 +1,9 @@
+2018-04-27  Alan Modra  <amodra@gmail.com>
+
+	PR libgcc/85532
+	* config/rs6000/t-crtstuff (CRTSTUFF_T_CFLAGS): Add
+	-fno-asynchronous-unwind-tables.
+
 2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/sfp-machine.h: Fix settings for NDS32_ABI_2FP_PLUS.
