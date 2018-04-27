@@ -1,3 +1,9 @@
+2018-04-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/85549
+	* ipa-cp.c (find_aggregate_values_for_callers_subset): Make sure
+	the jump function allows for passing through aggregate values.
+
 2018-04-27  Jeff Law  <law@redhat.com>
 
 	* config.gcc: Mark tile* targets as deprecated/obsolete.
