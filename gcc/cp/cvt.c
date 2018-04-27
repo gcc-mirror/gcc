@@ -601,16 +601,20 @@ cp_fold_convert (tree type, tree expr)
   tree conv;
   if (TREE_TYPE (expr) == type)
     conv = expr;
-  else if (TREE_CODE (expr) == PTRMEM_CST)
+  else if (TREE_CODE (expr) == PTRMEM_CST
+	   && same_type_p (TYPE_PTRMEM_CLASS_TYPE (type),
+			   PTRMEM_CST_CLASS (expr)))
     {
       /* Avoid wrapping a PTRMEM_CST in NOP_EXPR.  */
       conv = copy_node (expr);
       TREE_TYPE (conv) = type;
     }
-  else if (TREE_CODE (expr) == CONSTRUCTOR
-	   && TYPE_PTRMEMFUNC_P (type))
-    conv = build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr,
-			     true, false, tf_warning_or_error);
+  else if (TYPE_PTRMEM_P (type))
+    {
+      conv = convert_ptrmem (type, expr, true, false,
+			     tf_warning_or_error);
+      conv = cp_fully_fold (conv);
+    }
   else
     {
       conv = fold_convert (type, expr);
