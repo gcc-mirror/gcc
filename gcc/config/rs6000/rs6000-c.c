@@ -1655,26 +1655,44 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_V16QI, RS6000_BTI_INTSI, ~RS6000_BTI_INTQI, 0 },
   { ALTIVEC_BUILTIN_VEC_LVEBX, ALTIVEC_BUILTIN_LVEBX,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTQI, 0 },
+
+  /*     vector float vec_ldl (int, vector float *);
+         vector float vec_ldl (int, float *); */
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SF,
     RS6000_BTI_V4SF, RS6000_BTI_INTSI, ~RS6000_BTI_V4SF, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SF,
     RS6000_BTI_V4SF, RS6000_BTI_INTSI, ~RS6000_BTI_float, 0 },
+
+  /*     vector bool int vec_ldl (int, vector bool int *);
+         vector bool int vec_ldl (int, bool int *);
+              vector int vec_ldl (int, vector int *);
+              vector int vec_ldl (int, int *);
+     vector unsigned int vec_ldl (int, vector unsigned int *);
+     vector unsigned int vec_ldl (int, unsigned int *); */
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SI,
     RS6000_BTI_bool_V4SI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_V4SI, 0 },
+  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SI,
+    RS6000_BTI_bool_V4SI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_int, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SI,
     RS6000_BTI_V4SI, RS6000_BTI_INTSI, ~RS6000_BTI_V4SI, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SI,
     RS6000_BTI_V4SI, RS6000_BTI_INTSI, ~RS6000_BTI_INTSI, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SI,
-    RS6000_BTI_V4SI, RS6000_BTI_INTSI, ~RS6000_BTI_long, 0 },
-  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SI,
     RS6000_BTI_unsigned_V4SI, RS6000_BTI_INTSI, ~RS6000_BTI_unsigned_V4SI, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SI,
     RS6000_BTI_unsigned_V4SI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTSI, 0 },
-  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SI,
-    RS6000_BTI_unsigned_V4SI, RS6000_BTI_INTSI, ~RS6000_BTI_unsigned_long, 0 },
+
+  /*     vector bool short vec_ldl (int, vector bool short *);
+         vector bool short vec_ldl (int, bool short *);
+              vector pixel vec_ldl (int, vector pixel *);
+              vector short vec_ldl (int, vector short *);
+              vector short vec_ldl (int, short *);
+     vector unsigned short vec_ldl (int, vector unsigned short *);
+     vector unsigned short vec_ldl (int, unsigned short *); */
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V8HI,
     RS6000_BTI_bool_V8HI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_V8HI, 0 },
+  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V8HI,
+    RS6000_BTI_bool_V8HI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_short, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V8HI,
     RS6000_BTI_pixel_V8HI, RS6000_BTI_INTSI, ~RS6000_BTI_pixel_V8HI, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V8HI,
@@ -1685,8 +1703,17 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V8HI, RS6000_BTI_INTSI, ~RS6000_BTI_unsigned_V8HI, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V8HI,
     RS6000_BTI_unsigned_V8HI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTHI, 0 },
+
+  /*     vector bool char vec_ldl (int, vector bool char *);
+         vector bool char vec_ldl (int, bool char *);
+              vector char vec_ldl (int, vector char *);
+              vector char vec_ldl (int, char *);
+     vector unsigned char vec_ldl (int, vector unsigned char *);
+     vector unsigned char vec_ldl (int, unsigned char *); */
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V16QI,
     RS6000_BTI_bool_V16QI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_V16QI, 0 },
+  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V16QI,
+    RS6000_BTI_bool_V16QI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_char, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V16QI,
     RS6000_BTI_V16QI, RS6000_BTI_INTSI, ~RS6000_BTI_V16QI, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V16QI,
@@ -1696,15 +1723,35 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     ~RS6000_BTI_unsigned_V16QI, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V16QI,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTQI, 0 },
+
+  /*     vector double vec_ldl (int, vector double *);
+         vector double vec_ldl (int, double *); */
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V2DF,
     RS6000_BTI_V2DF, RS6000_BTI_INTSI, ~RS6000_BTI_V2DF, 0 },
+  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V2DF,
+    RS6000_BTI_V2DF, RS6000_BTI_INTSI, ~RS6000_BTI_double, 0 },
+
+  /*          vector long long vec_ldl (int, vector long long *);
+              vector long long vec_ldl (int, long long *);
+     vector unsigned long long vec_ldl (int, vector unsigned long long *);
+     vector unsigned long long vec_ldl (int, unsigned long long *);
+         vector bool long long vec_ldl (int, vector bool long long *);
+         vector bool long long vec_ldl (int, bool long long *); */
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V2DI,
     RS6000_BTI_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_V2DI, 0 },
+  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_long_long, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V2DI,
     RS6000_BTI_unsigned_V2DI, RS6000_BTI_INTSI,
     ~RS6000_BTI_unsigned_V2DI, 0 },
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_INTSI,
+    ~RS6000_BTI_unsigned_long_long, 0 },
+  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V2DI,
     RS6000_BTI_bool_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_V2DI, 0 },
+  { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V2DI,
+    RS6000_BTI_bool_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_long_long, 0 },
+
   { ALTIVEC_BUILTIN_VEC_LVSL, ALTIVEC_BUILTIN_LVSL,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTQI, 0 },
   { ALTIVEC_BUILTIN_VEC_LVSL, ALTIVEC_BUILTIN_LVSL,
@@ -6658,6 +6705,15 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       stmt = build_binary_op (loc, PLUS_EXPR, stmt, arg2, 1);
       stmt = build_indirect_ref (loc, stmt, RO_NULL);
 
+      /* PR83660: We mark this as having side effects so that
+	 downstream in fold_build_cleanup_point_expr () it will get a
+	 CLEANUP_POINT_EXPR.  If it does not we can run into an ICE
+	 later in gimplify_cleanup_point_expr ().  Potentially this
+	 causes missed optimization because the actually is no side
+	 effect.  */
+      if (c_dialect_cxx ())
+	TREE_SIDE_EFFECTS (stmt) = 1;
+
       return stmt;
     }
 
@@ -6838,6 +6894,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 
   {
     bool unsupported_builtin = false;
+    enum rs6000_builtins overloaded_code;
+    tree result = NULL;
     for (desc = altivec_overloaded_builtins;
 	 desc->code && desc->code != fcode; desc++)
       continue;
@@ -6850,7 +6908,6 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
        discrimination between the desired forms of the function.  */
     if (fcode == P6_OV_BUILTIN_CMPB)
       {
-	int overloaded_code;
 	machine_mode arg1_mode = TYPE_MODE (types[0]);
 	machine_mode arg2_mode = TYPE_MODE (types[1]);
 
@@ -6885,14 +6942,20 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    && rs6000_builtin_type_compatible (types[1], desc->op2))
 	  {
 	    if (rs6000_builtin_decls[desc->overloaded_code] != NULL_TREE)
-	      return altivec_build_resolved_builtin (args, n, desc);
+	      {
+		result = altivec_build_resolved_builtin (args, n, desc);
+		/* overloaded_code is set above */
+		if (!rs6000_builtin_is_supported_p (overloaded_code))
+		  unsupported_builtin = true;
+		else
+		  return result;
+	      }
 	    else
 	      unsupported_builtin = true;
 	  }
       }
     else if (fcode == P9V_BUILTIN_VEC_VSIEDP)
       {
-	int overloaded_code;
 	machine_mode arg1_mode = TYPE_MODE (types[0]);
 
 	if (nargs != 2)
@@ -6927,12 +6990,20 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	while (desc->code && desc->code == fcode
 	       && desc->overloaded_code != overloaded_code)
 	  desc++;
+
 	if (desc->code && (desc->code == fcode)
 	    && rs6000_builtin_type_compatible (types[0], desc->op1)
 	    && rs6000_builtin_type_compatible (types[1], desc->op2))
 	  {
 	    if (rs6000_builtin_decls[desc->overloaded_code] != NULL_TREE)
-	      return altivec_build_resolved_builtin (args, n, desc);
+	      {
+		result = altivec_build_resolved_builtin (args, n, desc);
+		/* overloaded_code is set above.  */
+		if (!rs6000_builtin_is_supported_p (overloaded_code))
+		  unsupported_builtin = true;
+		else
+		  return result;
+	      }
 	    else
 	      unsupported_builtin = true;
 	  }
@@ -6951,7 +7022,18 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		    || rs6000_builtin_type_compatible (types[2], desc->op3)))
 	      {
 		if (rs6000_builtin_decls[desc->overloaded_code] != NULL_TREE)
-		  return altivec_build_resolved_builtin (args, n, desc);
+		  {
+		    result = altivec_build_resolved_builtin (args, n, desc);
+		    if (!rs6000_builtin_is_supported_p (desc->overloaded_code))
+		      {
+			/* Allow loop to continue in case a different
+			   definition is supported.  */
+			overloaded_code = desc->overloaded_code;
+			unsupported_builtin = true;
+		      }
+		    else
+		      return result;
+		  }
 		else
 		  unsupported_builtin = true;
 	      }
@@ -6961,9 +7043,23 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
     if (unsupported_builtin)
       {
 	const char *name = rs6000_overloaded_builtin_name (fcode);
-	error ("builtin function %qs not supported in this compiler "
-	       "configuration", name);
-	return error_mark_node;
+	if (result != NULL)
+	  {
+	    const char *internal_name
+	      = rs6000_overloaded_builtin_name (overloaded_code);
+	    /* An error message making reference to the name of the
+	       non-overloaded function has already been issued.  Add
+	       clarification of the previous message.  */
+	    rich_location richloc (line_table, input_location);
+	    inform (&richloc, "builtin %qs requires builtin %qs",
+		    name, internal_name);
+	  }
+	else
+	  error ("builtin function %qs not supported in this compiler "
+		 "configuration", name);
+	/* If an error-representing  result tree was returned from
+	   altivec_build_resolved_builtin above, use it.  */
+	return (result != NULL) ? result : error_mark_node;
       }
   }
  bad:

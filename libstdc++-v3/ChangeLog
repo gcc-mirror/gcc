@@ -1,3 +1,202 @@
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/85442
+	* src/c++11/Makefile.am: Don't generate debuginfo again for
+	cxx11-ios_failure-lt.s and cxx11-ios_failure.s files.
+	* src/c++11/Makefile.in: Regenerate.
+
+2018-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84442
+	* testsuite/30_threads/thread/cons/terminate.cc
+	[!_GLIBCXX_USE_C99_STDLIB] : Use _exit or std::exit instead of _Exit.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/file_status/1.cc: Add
+	-DUSE_FILESYSTEM_TS to dg-options.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/pop.cc: Likewise.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/absolute.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/canonical.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/copy_file.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/create_symlink.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/current_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/equivalent.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/exists.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/file_size.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/permissions.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/remove.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/status.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/append/path.cc: Likewise.
+	* testsuite/experimental/filesystem/path/assign/assign.cc: Likewise.
+	* testsuite/experimental/filesystem/path/assign/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/path/compare/compare.cc: Likewise.
+	* testsuite/experimental/filesystem/path/compare/path.cc: Likewise.
+	* testsuite/experimental/filesystem/path/compare/strings.cc: Likewise.
+	* testsuite/experimental/filesystem/path/concat/path.cc: Likewise.
+	* testsuite/experimental/filesystem/path/concat/strings.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/default.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/construct/locale.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/range.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/string_view.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_name.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/stem.cc: Likewise.
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc: Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/clear.cc: Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/make_preferred.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/remove_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/swap.cc: Likewise.
+	* testsuite/experimental/filesystem/path/native/string.cc: Likewise.
+	* testsuite/experimental/filesystem/path/nonmember/hash_value.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/empty.cc: Likewise.
+	* testsuite/experimental/filesystem/path/query/has_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_name.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_stem.cc: Likewise.
+	* testsuite/experimental/filesystem/path/query/is_relative.cc:
+	Likewise.
+
+2018-04-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Fix sed command.
+	* src/c++11/Makefile.in: Regenerate.
+
+	* src/c++11/Makefile.am: Rewrite sed rule to be less fragile and to
+	handle mangled names starting with double underscores on darwin.
+	* src/c++11/Makefile.in: Regenerate.
+
+2018-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Fix comment.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cxx11-ios_failure.cc: Fix comment.
+	* src/c++98/ios_failure.cc: Likewise.
+
+	* src/c++11/ios.cc: Remove redundant macro definition.
+
+2018-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document header locations in recent
+	releases.
+	* doc/xml/manual/evolution.xml: Add API changes since GCC 5.
+	* doc/xml/manual/spine.xml: Update copyright years.
+	* doc/xml/manual/strings.xml: Adjust tolower example to avoid
+	undefined behaviour.
+	* doc/xml/manual/test.xml: Update outdated notes on VERIFY in tests.
+	* doc/html/*: Regenerate.
+
+2018-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Update links to archived copy of SGI STL docs.
+	* doc/xml/manual/backwards_compatibility.xml: Likewise.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/policy_data_structures_biblio.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Likewise.
+
+	PR libstdc++/85222
+	* src/c++11/Makefile.am [ENABLE_DUAL_ABI]: Add special rules for
+	cxx11-ios_failure.cc to rewrite type info for __ios_failure.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cxx11-ios_failure.cc (__ios_failure, __iosfail_type_info):
+	New types.
+	[_GLIBCXX_USE_DUAL_ABI] (__throw_ios_failure): Define here.
+	* src/c++11/ios.cc (__throw_ios_failure): Remove definition.
+	* src/c++98/ios_failure.cc (__construct_ios_failure)
+	(__destroy_ios_failure, is_ios_failure_handler): New functions.
+	[!_GLIBCXX_USE_DUAL_ABI] (__throw_ios_failure): Define here.
+	* testsuite/27_io/ios_base/failure/dual_abi.cc: New.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Revert changes to
+	handler types, to always catch std::ios_base::failure.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/12297.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/12297.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+
 2018-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Qualify

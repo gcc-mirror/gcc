@@ -1,3 +1,27 @@
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/x86/sjlj.S (_ITM_beginTransaction): Add
+	(__CET__ & 2) != 0 check for shadow stack.
+	(GTM_longjmp): Likewise.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85489
+	* config/x86/sjlj.S (GTM_longjmp): Replace jle/jg with jbe/ja.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
 2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84148

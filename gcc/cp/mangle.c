@@ -1662,6 +1662,9 @@ nested_anon_class_index (tree type)
 	  ++index;
       }
 
+  if (seen_error ())
+    return -1;
+
   gcc_unreachable ();
 }
 
@@ -3813,7 +3816,7 @@ mangle_decl_string (const tree decl)
   if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
     {
       struct tinst_level *tl = current_instantiation ();
-      if ((!tl || tl->decl != decl)
+      if ((!tl || tl->maybe_get_node () != decl)
 	  && push_tinst_level (decl))
 	{
 	  template_p = true;

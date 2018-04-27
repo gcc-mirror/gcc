@@ -6501,8 +6501,10 @@ AC_DEFINE_UNQUOTED(DIAGNOSTICS_COLOR_DEFAULT, $DIAGNOSTICS_COLOR_DEFAULT,
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
 # of jit/jit-playback.c.
+gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
+echo "gcc_driver_version: ${gcc_driver_version}"
 cat > gcc-driver-name.h <<EOF
-#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_BASEVER}${exeext}"
+#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_driver_version}${exeext}"
 EOF
 
 # Check whether --enable-default-pie was given.

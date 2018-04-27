@@ -1452,8 +1452,7 @@ Optional Features:
   --enable-tls            Use thread-local storage [default=yes]
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
-  --enable-cet            enable Intel CET in target libraries
-                          [default=default]
+  --enable-cet            enable Intel CET in target libraries [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -11158,7 +11157,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11161 "configure"
+#line 11160 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11264,7 +11263,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11267 "configure"
+#line 11266 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16624,12 +16623,12 @@ XCFLAGS="$XCFLAGS$XPCFLAGS"
 if test "${enable_cet+set}" = set; then :
   enableval=$enable_cet;
       case "$enableval" in
-       yes|no|default) ;;
+       yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
                           esac
 
 else
-  enable_cet=default
+  enable_cet=no
 fi
 
 
@@ -16639,7 +16638,7 @@ $as_echo_n "checking for CET support... " >&6; }
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
-      default)
+      auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -16693,7 +16692,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     ;;
 esac
 if test x$enable_cet = xyes; then
-  CET_FLAGS="-fcf-protection -mcet"
+  CET_FLAGS="-fcf-protection -mshstk"
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -16911,7 +16910,7 @@ CFLAGS="$save_CFLAGS"
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi

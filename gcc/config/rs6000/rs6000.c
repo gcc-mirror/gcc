@@ -10610,7 +10610,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
 	  cl = reg_preferred_class (regno);
-	  regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][1];
+	  regno = reg_renumber[regno];
+	  if (regno < 0)
+	    regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][1];
 	}
       if (regno >= 0 && ! FP_REGNO_P (regno))
 	{
@@ -10635,7 +10637,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	{
 	  cl = reg_preferred_class (regno);
 	  gcc_assert (cl != NO_REGS);
-	  regno = ira_class_hard_regs[cl][0];
+	  regno = reg_renumber[regno];
+	  if (regno < 0)
+	    regno = ira_class_hard_regs[cl][0];
 	}
       if (FP_REGNO_P (regno))
 	{
@@ -10664,7 +10668,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
 	  cl = reg_preferred_class (regno);
-	  regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][0];
+	  regno = reg_renumber[regno];
+	  if (regno < 0)
+	    regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][0];
 	}
       if (regno >= 0 && ! FP_REGNO_P (regno))
 	{
@@ -10689,7 +10695,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	{
 	  cl = reg_preferred_class (regno);
 	  gcc_assert (cl != NO_REGS);
-	  regno = ira_class_hard_regs[cl][0];
+	  regno = reg_renumber[regno];
+	  if (regno < 0)
+	    regno = ira_class_hard_regs[cl][0];
 	}
       if (FP_REGNO_P (regno))
 	{
@@ -15897,6 +15905,18 @@ paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
+/* Check whether a builtin function is supported in this target
+   configuration.  */
+bool
+rs6000_builtin_is_supported_p (enum rs6000_builtins fncode)
+{
+  HOST_WIDE_INT fnmask = rs6000_builtin_info[fncode].mask;
+  if ((fnmask & rs6000_builtin_mask) != fnmask)
+    return false;
+  else
+    return true;
+}
+
 /* Raise an error message for a builtin function that is called without the
    appropriate target options being set.  */
 
@@ -16574,10 +16594,23 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VSPLTISH:
     case ALTIVEC_BUILTIN_VSPLTISW:
       {
+	 int size;
+
+         if (fn_code == ALTIVEC_BUILTIN_VSPLTISB)
+           size = 8;
+         else if (fn_code == ALTIVEC_BUILTIN_VSPLTISH)
+           size = 16;
+         else
+           size = 32;
+
 	 arg0 = gimple_call_arg (stmt, 0);
 	 lhs = gimple_call_lhs (stmt);
-	 /* Only fold the vec_splat_*() if arg0 is constant.  */
-	 if (TREE_CODE (arg0) != INTEGER_CST)
+
+	 /* Only fold the vec_splat_*() if the lower bits of arg 0 is a
+	    5-bit signed constant in range -16 to +15.  */
+	 if (TREE_CODE (arg0) != INTEGER_CST
+	     || !IN_RANGE (sext_hwi(TREE_INT_CST_LOW (arg0), size),
+			   -16, 15))
 	   return false;
 	 gimple_seq stmts = NULL;
 	 location_t loc = gimple_location (stmt);
@@ -16953,7 +16986,7 @@ rs6000_init_builtins (void)
   bool_char_type_node = build_distinct_type_copy (unsigned_intQI_type_node);
   bool_short_type_node = build_distinct_type_copy (unsigned_intHI_type_node);
   bool_int_type_node = build_distinct_type_copy (unsigned_intSI_type_node);
-  bool_long_type_node = build_distinct_type_copy (unsigned_intDI_type_node);
+  bool_long_long_type_node = build_distinct_type_copy (unsigned_intDI_type_node);
   pixel_type_node = build_distinct_type_copy (unsigned_intHI_type_node);
 
   long_integer_type_internal_node = long_integer_type_node;
@@ -17070,7 +17103,7 @@ rs6000_init_builtins (void)
   bool_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
 					    ? "__vector __bool long"
 					    : "__vector __bool long long",
-					    bool_long_type_node, 2);
+					    bool_long_long_type_node, 2);
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
 
@@ -18623,7 +18656,8 @@ init_float128_ieee (machine_mode mode)
       set_optab_libfunc (smul_optab, mode, "__mulkf3");
       set_optab_libfunc (sdiv_optab, mode, "__divkf3");
       set_optab_libfunc (sqrt_optab, mode, "__sqrtkf2");
-      set_optab_libfunc (abs_optab, mode, "__abstkf2");
+      set_optab_libfunc (abs_optab, mode, "__abskf2");
+      set_optab_libfunc (powi_optab, mode, "__powikf2");
 
       set_optab_libfunc (eq_optab, mode, "__eqkf2");
       set_optab_libfunc (ne_optab, mode, "__nekf2");
@@ -32900,7 +32934,7 @@ rs6000_mangle_type (const_tree type)
   if (type == bool_short_type_node) return "U6__bools";
   if (type == pixel_type_node) return "u7__pixel";
   if (type == bool_int_type_node) return "U6__booli";
-  if (type == bool_long_type_node) return "U6__booll";
+  if (type == bool_long_long_type_node) return "U6__boolx";
 
   /* Use a unique name for __float128 rather than trying to use "e" or "g". Use
      "g" for IBM extended double, no matter whether it is long double (using

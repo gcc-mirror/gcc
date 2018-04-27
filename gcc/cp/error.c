@@ -2735,6 +2735,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case INTEGER_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
+    case DECLTYPE_TYPE:
       pp_type_specifier_seq (pp, t);
       break;
 
@@ -3477,11 +3478,11 @@ print_instantiation_full_context (diagnostic_context *context)
   if (p)
     {
       pp_verbatim (context->printer,
-		   TREE_CODE (p->decl) == TREE_LIST
+		   p->list_p ()
 		   ? _("%s: In substitution of %qS:\n")
 		   : _("%s: In instantiation of %q#D:\n"),
 		   LOCATION_FILE (location),
-		   p->decl);
+		   p->get_node ());
 
       location = p->locus;
       p = p->next;
@@ -3495,7 +3496,7 @@ print_instantiation_full_context (diagnostic_context *context)
 
 static void
 print_instantiation_partial_context_line (diagnostic_context *context,
-					  const struct tinst_level *t,
+					  struct tinst_level *t,
 					  location_t loc, bool recursive_p)
 {
   if (loc == UNKNOWN_LOCATION)
@@ -3512,18 +3513,18 @@ print_instantiation_partial_context_line (diagnostic_context *context,
 
   if (t != NULL)
     {
-      if (TREE_CODE (t->decl) == TREE_LIST)
+      if (t->list_p ())
 	pp_verbatim (context->printer,
 		     recursive_p
 		     ? _("recursively required by substitution of %qS\n")
 		     : _("required by substitution of %qS\n"),
-		     t->decl);
+		     t->get_node ());
       else
 	pp_verbatim (context->printer,
 		     recursive_p
 		     ? _("recursively required from %q#D\n")
 		     : _("required from %q#D\n"),
-		     t->decl);
+		     t->get_node ());
     }
   else
     {

@@ -741,8 +741,10 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       || maybe_ne (outprec, GET_MODE_PRECISION (TYPE_MODE (type))))
 	{
-	  expr = convert (lang_hooks.types.type_for_mode
-			  (TYPE_MODE (type), TYPE_UNSIGNED (type)), expr);
+	  expr
+	    = convert_to_integer_1 (lang_hooks.types.type_for_mode
+				    (TYPE_MODE (type), TYPE_UNSIGNED (type)),
+				    expr, dofold);
 	  return maybe_fold_build1_loc (dofold, loc, NOP_EXPR, type, expr);
 	}
 

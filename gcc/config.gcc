@@ -236,7 +236,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- nothing				\
+  powerpc*-*-*spe*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -383,7 +383,7 @@ i[34567]86-*-*)
 		       avx512vbmi2vlintrin.h avx512vnniintrin.h
 		       avx512vnnivlintrin.h vaesintrin.h vpclmulqdqintrin.h
 		       avx512vpopcntdqvlintrin.h avx512bitalgintrin.h
-		       pconfigintrin.h wbnoinvdintrin.h"
+		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -412,7 +412,7 @@ x86_64-*-*)
 		       avx512vbmi2vlintrin.h avx512vnniintrin.h
 		       avx512vnnivlintrin.h vaesintrin.h vpclmulqdqintrin.h
 		       avx512vpopcntdqvlintrin.h avx512bitalgintrin.h
-		       pconfigintrin.h wbnoinvdintrin.h"
+		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -445,7 +445,7 @@ mips*-*-*)
 nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h"
-	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o nds32-relax-opt.o"
+	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o nds32-relax-opt.o nds32-utils.o"
 	;;
 nios2-*-*)
 	cpu_type=nios2
@@ -637,7 +637,7 @@ x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
 bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
 sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
-skylake-avx512 cannonlake icelake-client icelake-server x86-64 native"
+skylake-avx512 cannonlake icelake-client icelake-server skylake x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -1496,7 +1496,7 @@ x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h"
 	;;
 x86_64-*-rtems*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h i386/rtemself.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h i386/rtemself.h rtems.h"
 	;;
 i[34567]86-*-rdos*)
     tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/rdos.h"
@@ -2089,6 +2089,15 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	  ;;
 	esac
 	;;
+riscv*-*-freebsd*)
+	tm_file="${tm_file} elfos.h ${fbsd_tm_file} riscv/freebsd.h"
+	tmake_file="${tmake_file} riscv/t-riscv"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h ${nbsd_tm_file} mips/netbsd.h"
@@ -2326,13 +2335,13 @@ msp430*-*-*)
 nds32le-*-*)
 	target_cpu_default="0"
 	tm_defines="${tm_defines}"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
 	tmake_file="nds32/t-nds32 nds32/t-mlibs"
 	;;
 nds32be-*-*)
 	target_cpu_default="0|MASK_BIG_ENDIAN"
 	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
 	tmake_file="nds32/t-nds32 nds32/t-mlibs"
 	;;
 nios2-*-*)
@@ -4306,11 +4315,11 @@ case "${target}" in
 		"")
 			with_cpu=n9
 			;;
-		n9)
+		n6 | n7 | n8 | e8 | s8 | n9)
 			# OK
 			;;
 		*)
-			echo "Cannot accept --with-cpu=$with_cpu, available values are: n9" 1>&2
+			echo "Cannot accept --with-cpu=$with_cpu, available values are: n6 n7 n8 e8 s8 n9" 1>&2
 			exit 1
 			;;
 		esac

@@ -571,6 +571,9 @@ compatible.
     <listitem><para>GCC 3.4.x: include/c++/3.4.x</para></listitem>
     <listitem><para>GCC 4.x.y: include/c++/4.x.y</para></listitem>
     <listitem><para>GCC 5.x.0: include/c++/5.x.0</para></listitem>
+    <listitem><para>GCC 6.x.0: include/c++/6.x.0</para></listitem>
+    <listitem><para>GCC 7.x.0: include/c++/7.x.0</para></listitem>
+    <listitem><para>GCC 8.x.0: include/c++/8.x.0</para></listitem>
     </itemizedlist>
     <para/>
     </listitem>

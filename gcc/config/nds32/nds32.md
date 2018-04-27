@@ -53,9 +53,21 @@
 (include "nds32-peephole2.md")
 
 
+;; ------------------------------------------------------------------------
+
+;; CPU pipeline model.
+(define_attr "pipeline_model" "n7,n8,e8,n9,simple"
+  (const
+    (cond [(match_test "nds32_cpu_option == CPU_N7")  (const_string "n7")
+	   (match_test "nds32_cpu_option == CPU_E8")  (const_string "e8")
+	   (match_test "nds32_cpu_option == CPU_N6 || nds32_cpu_option == CPU_N8")  (const_string "n8")
+	   (match_test "nds32_cpu_option == CPU_N9")  (const_string "n9")
+	   (match_test "nds32_cpu_option == CPU_SIMPLE") (const_string "simple")]
+	  (const_string "n9"))))
+
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
-  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,mul,mac,div,branch,call,misc,\
+  "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,pbsad,pbsada,mul,mac,div,branch,mmu,misc,\
    falu,fmuls,fmuld,fmacs,fmacd,fdivs,fdivd,fsqrts,fsqrtd,fcmp,fabs,fcpy,fcmov,fmfsr,fmfdr,fmtsr,fmtdr,fload,fstore"
   (const_string "unknown"))
 
@@ -1426,16 +1438,29 @@
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
 {
+  rtx_insn *next_insn = next_active_insn (insn);
+  bool align_p = (!(next_insn && get_attr_length (next_insn) == 2))
+		 && NDS32_ALIGN_P ();
   switch (which_alternative)
     {
     case 0:
       if (TARGET_16_BIT)
-	return "jral5\t%0";
+	{
+	  if (align_p)
+	    return "jral5\t%0\;.align 2";
+	  else
+	    return "jral5\t%0";
+	}
       else
-	return "jral\t%0";
+	{
+	  if (align_p)
+	    return "jral\t%0\;.align 2";
+	  else
+	    return "jral\t%0";
+	}
     case 1:
       return nds32_output_call (insn, operands, operands[0],
-				"bal\t%0", "jal\t%0", false);
+				"bal\t%0", "jal\t%0", align_p);
     default:
       gcc_unreachable ();
     }
@@ -1477,16 +1502,29 @@
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
 {
+  rtx_insn *next_insn = next_active_insn (insn);
+  bool align_p = (!(next_insn && get_attr_length (next_insn) == 2))
+		 && NDS32_ALIGN_P ();
   switch (which_alternative)
     {
     case 0:
       if (TARGET_16_BIT)
-	return "jral5\t%1";
+	{
+	  if (align_p)
+	    return "jral5\t%1\;.align 2";
+	  else
+	    return "jral5\t%1";
+	}
       else
-	return "jral\t%1";
+	{
+	  if (align_p)
+	    return "jral\t%1\;.align 2";
+	  else
+	    return "jral\t%1";
+	}
     case 1:
       return nds32_output_call (insn, operands, operands[1],
-				"bal\t%1", "jal\t%1", false);
+				"bal\t%1", "jal\t%1", align_p);
     default:
       gcc_unreachable ();
     }
@@ -1922,13 +1960,28 @@
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
 
-(define_insn "*btst"
-  [(set (match_operand:SI 0 "register_operand"                   "=   r")
-	(zero_extract:SI (match_operand:SI 1 "register_operand"  "    r")
+(define_insn "btst"
+  [(set (match_operand:SI 0 "register_operand"                     "=   r")
+	(zero_extract:SI (match_operand:SI 1 "register_operand"    "    r")
 			 (const_int 1)
-			 (match_operand:SI 2 "immediate_operand" " Iu05")))]
+			 (match_operand:SI 2 "nds32_imm5u_operand" " Iu05")))]
   "TARGET_EXT_PERF"
   "btst\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")])
+
+(define_insn "ave"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(truncate:SI
+	  (ashiftrt:DI
+	    (plus:DI
+	      (plus:DI
+		(sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
+		(sign_extend:DI (match_operand:SI 2 "register_operand" "r")))
+	      (const_int 1))
+	  (const_int 1))))]
+  "TARGET_EXT_PERF"
+  "ave\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
 
@@ -1950,5 +2003,68 @@
   "! return for pop 25"
   [(set_attr "length" "0")]
 )
+
+;; ----------------------------------------------------------------------------
+
+;; Patterns for exception handling
+
+(define_expand "eh_return"
+  [(use (match_operand 0 "general_operand"))]
+  ""
+{
+  emit_insn (gen_nds32_eh_return (operands[0]));
+  DONE;
+})
+
+(define_insn_and_split "nds32_eh_return"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPEC_VOLATILE_EH_RETURN)]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  rtx place;
+  rtx addr;
+
+  /* The operands[0] is the handler address.  We need to assign it
+     to return address rtx so that we can jump to exception handler
+     when returning from current function.  */
+
+  if (cfun->machine->lp_size == 0)
+    {
+      /* If $lp is not saved in the stack frame, we can take $lp directly.  */
+      place = gen_rtx_REG (SImode, LP_REGNUM);
+    }
+  else
+    {
+      /* Otherwise, we need to locate the stack slot of return address.
+	 The return address is generally saved in [$fp-4] location.
+	 However, DSE (dead store elimination) does not detect an alias
+	 between [$fp-x] and [$sp+y].  This can result in a store to save
+	 $lp introduced by builtin_eh_return() being incorrectly deleted
+	 if it is based on $fp.  The solution we take here is to compute
+	 the offset relative to stack pointer and then use $sp to access
+	 location so that the alias can be detected.
+	 FIXME: What if the immediate value "offset" is too large to be
+	        fit in a single addi instruction?  */
+      HOST_WIDE_INT offset;
+
+      offset = (cfun->machine->fp_size
+		+ cfun->machine->gp_size
+		+ cfun->machine->lp_size
+		+ cfun->machine->callee_saved_gpr_regs_size
+		+ cfun->machine->callee_saved_area_gpr_padding_bytes
+		+ cfun->machine->callee_saved_fpr_regs_size
+		+ cfun->machine->eh_return_data_regs_size
+		+ cfun->machine->local_size
+		+ cfun->machine->out_args_size);
+
+      addr = plus_constant (Pmode, stack_pointer_rtx, offset - 4);
+      place = gen_frame_mem (SImode, addr);
+    }
+
+  emit_move_insn (place, operands[0]);
+  DONE;
+})
 
 ;; ----------------------------------------------------------------------------

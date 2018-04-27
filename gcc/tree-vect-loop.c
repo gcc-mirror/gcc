@@ -2492,8 +2492,9 @@ again:
       unsigned int size = STMT_VINFO_GROUP_SIZE (vinfo);
       tree vectype = STMT_VINFO_VECTYPE (vinfo);
       if (! vect_store_lanes_supported (vectype, size, false)
-	  && ! vect_grouped_store_supported (vectype, size))
-	return false;
+	 && ! known_eq (TYPE_VECTOR_SUBPARTS (vectype), 1U)
+	 && ! vect_grouped_store_supported (vectype, size))
+       return false;
       FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), j, node)
 	{
 	  vinfo = vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]);

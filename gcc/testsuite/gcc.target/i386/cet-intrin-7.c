@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcet" } */
+/* { dg-options "-O2 -mshstk" } */
 /* { dg-final { scan-assembler-times "wrssd" 1 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "wrss\[d|q]" 2 { target lp64 } } } */
 

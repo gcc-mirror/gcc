@@ -506,9 +506,13 @@ localname() {
 
 {
 	text="T"
-	case "$goarch" in
-	ppc64*) text="[TD]" ;;
-	esac
+
+	# On systems using PPC64 ELF ABI v1 function symbols show up
+	# as descriptors in the data section.  We assume that $goarch
+	# distinguishes v1 (ppc64) from v2 (ppc64le).
+	if test "$goos" != "aix" && test "$goarch" = "ppc64"; then
+	    text="[TD]"
+	fi
 
 	symtogo='sed -e s/_test\([^A-Za-z0-9]\)/XXXtest\1/ -e s/.*_\([^_]*\.\)/\1/ -e s/XXXtest/_test/'
 

@@ -3141,18 +3141,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       }
 
     case COND_EXPR:
-      x = COND_EXPR_COND (t);
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (x)))
-	{
-	  error ("non-integral used in condition");
-	  return x;
-	}
-      if (!is_gimple_condexpr (x))
-        {
-	  error ("invalid conditional operand");
-	  return x;
-	}
-      break;
+      gcc_unreachable ();
 
     case NON_LVALUE_EXPR:
     case TRUTH_NOT_EXPR:
@@ -3164,8 +3153,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case NEGATE_EXPR:
     case ABS_EXPR:
     case BIT_NOT_EXPR:
-      CHECK_OP (0, "invalid operand to unary operator");
-      break;
+      gcc_unreachable ();
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -3261,65 +3249,12 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       break;
     case PLUS_EXPR:
     case MINUS_EXPR:
-      /* PLUS_EXPR and MINUS_EXPR don't work on pointers, they should be done using
-	 POINTER_PLUS_EXPR. */
-      if (POINTER_TYPE_P (TREE_TYPE (t)))
-	{
-	  error ("invalid operand to plus/minus, type is a pointer");
-	  return t;
-	}
-      CHECK_OP (0, "invalid operand to binary operator");
-      CHECK_OP (1, "invalid operand to binary operator");
-      break;
+      gcc_unreachable ();
 
     case POINTER_DIFF_EXPR:
-      if (!POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
-	  || !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 1))))
-	{
-	  error ("invalid operand to pointer diff, operand is not a pointer");
-	  return t;
-	}
-      if (TREE_CODE (TREE_TYPE (t)) != INTEGER_TYPE
-	  || TYPE_UNSIGNED (TREE_TYPE (t))
-	  || (TYPE_PRECISION (TREE_TYPE (t))
-	      != TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))))
-	{
-	  error ("invalid type for pointer diff");
-	  return t;
-	}
-      CHECK_OP (0, "invalid operand to pointer diff");
-      CHECK_OP (1, "invalid operand to pointer diff");
-      break;
+      gcc_unreachable ();
 
     case POINTER_PLUS_EXPR:
-      /* Check to make sure the first operand is a pointer or reference type. */
-      if (!POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
-	{
-	  error ("invalid operand to pointer plus, first operand is not a pointer");
-	  return t;
-	}
-      /* Check to make sure the second operand is a ptrofftype.  */
-      if (!ptrofftype_p (TREE_TYPE (TREE_OPERAND (t, 1))))
-	{
-	  error ("invalid operand to pointer plus, second operand is not an "
-		 "integer type of appropriate width");
-	  return t;
-	}
-      /* FALLTHROUGH */
-    case LT_EXPR:
-    case LE_EXPR:
-    case GT_EXPR:
-    case GE_EXPR:
-    case EQ_EXPR:
-    case NE_EXPR:
-    case UNORDERED_EXPR:
-    case ORDERED_EXPR:
-    case UNLT_EXPR:
-    case UNLE_EXPR:
-    case UNGT_EXPR:
-    case UNGE_EXPR:
-    case UNEQ_EXPR:
-    case LTGT_EXPR:
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
@@ -3340,6 +3275,23 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:
+      gcc_unreachable ();
+
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case LTGT_EXPR:
+      /* Reachable via COND_EXPR condition which is GENERIC.  */
       CHECK_OP (0, "invalid operand to binary operator");
       CHECK_OP (1, "invalid operand to binary operator");
       break;
@@ -3842,7 +3794,7 @@ verify_gimple_assign_unary (gassign *stmt)
 	    || (POINTER_TYPE_P (rhs1_type)
 		&& INTEGRAL_TYPE_P (lhs_type)
 		&& (TYPE_PRECISION (rhs1_type) >= TYPE_PRECISION (lhs_type)
-		    || ptrofftype_p (sizetype))))
+		    || ptrofftype_p (lhs_type))))
 	  return false;
 
 	/* Allow conversion from integral to offset type and vice versa.  */

@@ -1,3 +1,252 @@
+2018-04-27  Nathan Sidwell  <nathan@acm.org>
+
+	* typeck.c (convert_ptrmem): Move local var decls to initialization.
+
+	* cp-tree.h (TEMPLATE_INFO): Fix comments.
+	(TI_PENDING_TEMPLATE_FLAG): Check TEMPLATE_INFO.
+	(NON_DEFAULT_TEMPLATE_ARG_COUNT): Wrap line.
+	(dump, print_other_binding_stacks): Remove declarations.
+	* name-lookup.c (print_other_binding_stack): Make static.
+	* pt.c (build_template_decl): Make static.
+
+2018-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85545 - ICE with noexcept PMF conversion.
+	* cvt.c (cp_fold_convert): Handle PMF CONSTRUCTORs directly.
+
+2018-04-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85437
+	PR c++/49171
+	* cp-tree.h (REINTERPRET_CAST_P): New.
+	* constexpr.c (cxx_eval_constant_expression) <case NOP_EXPR>:
+	Reject REINTERPET_CAST_P conversions.  Use cplus_expand_constant
+	for non-trivial PTRMEM_CST cases.
+	* typeck.c (build_nop_reinterpret): New.
+	(build_reinterpret_cast_1): Use it.  Set REINTERPRET_CAST_P on
+	NOP_EXPRs returned by cp_convert.
+
+2018-04-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69560 - wrong alignof(double) on x86.
+	CWG 1879 - Inadequate definition of alignment requirement.
+	* cp-tree.h (ALIGNOF_EXPR_STD_P): New.
+	* typeck.c (cxx_sizeof_or_alignof_type): Add std_alignof parm.
+	(cxx_sizeof_expr, cxx_sizeof_nowarn, cxx_alignas_expr)
+	(cxx_alignof_expr): Pass it.
+	* parser.c (cp_parser_unary_expression): Pass it.
+	* pt.c (tsubst_copy): Copy it.
+	(tsubst_copy_and_build): Pass it.
+	* decl.c (fold_sizeof_expr): Pass it.
+
+2018-04-23  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/85470 - wrong error with static data member.
+	* decl.c (check_initializer): Check DECL_INITIALIZED_IN_CLASS_P.
+	* typeck2.c (store_init_value): Likewise.
+
+2018-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85462
+	* cp-tree.h (tinst_level): Remove in_system_header_p member,
+	change refcount member from unsigned char to unsigned short,
+	add refcount_infinity static data member, adjust comments.
+	* pt.c (tinst_level::refcount_infinity): Define.
+	(inc_refcount_use): Remove assert, don't increment if refcount
+	is already refcount_infinity, adjust comment.
+	(dec_refcount_use): Remove assert, don't decrement if refcount
+	is refcount_infinity, adjust comment.
+	(push_tinst_level_loc): Formatting fix.
+
+2018-04-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84611
+	* pt.c (lookup_template_class_1): Check pushtag return value for
+	error_mark_node.
+
+2018-04-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/80290
+	* cp-tree.h (tinst_level::free): Fix whitespace.
+
+2018-04-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84630
+	* pt.c (tsubst_lambda_expr): Check begin_lambda_type return value
+	for error_mark_node.
+
+2018-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84463
+	* typeck.c (cp_build_addr_expr_1): Move handling of offsetof-like
+	tricks from here to ...
+	* cp-gimplify.c (cp_fold) <case ADDR_EXPR>: ... here.  Only use it
+	if INDIRECT_REF's operand is INTEGER_CST cast to pointer type.
+
+2018-04-18  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/80290
+	* cp-tree.h (struct tinst_level): Split decl into tldcl and
+	targs.  Add private split_list_p, tree_list_p, and not_list_p
+	inline const predicates; to_list private member function
+	declaration; free public member function declaration; list_p,
+	get_node and maybe_get_node accessors, and refcount data
+	member.  Narrow errors to unsigned short.
+	* error.c (print_instantiation_full_context): Use new
+	accessors.
+	(print_instantiation_partial_context_line): Likewise.  Drop
+	const from tinst_level-typed parameter.
+	* mangle.c (mangle_decl_string): Likewise.
+	* pt.c (freelist): New template class.
+	(tree_list_freelist_head): New var.
+	(tree_list_freelist): New fn, along with specializations.
+	(tinst_level_freelist_head): New var.
+	(pending_template_freelist_head): Likewise.
+	(tinst_level_freelist, pending_template_freelist): New fns.
+	(tinst_level::to_list, tinst_level::free): Define.
+	(inc_refcount_use, dec_refcount_use): New fns for tinst_level.
+	(set_refcount_ptr): New template fn.
+	(add_pending_template): Adjust for refcounting, freelists and
+	new accessors.
+	(neglectable_inst_p): Take a NULL d as a non-DECL.
+	(limit_bad_template_recursion): Use new accessors.
+	(push_tinst_level): New overload to create the list.
+	(push_tinst_level_loc): Make it static, split decl into two
+	args, adjust tests and initialization to cope with split
+	lists, use freelist, adjust for refcounting.
+	(push_tinst_level_loc): New wrapper with the old interface.
+	(pop_tinst_level): Adjust for refcounting.
+	(record_last_problematic_instantiation): Likewise.
+	(reopen_tinst_level): Likewise.  Use new accessors.
+	(instantiate_alias_template): Adjust for split list.
+	(fn_type_unification): Likewise.
+	(get_partial_spec_bindings): Likewise.
+	(instantiate_pending_templates): Use new accessors.  Adjust
+	for refcount.  Release pending_template to freelist.
+	(instantiating_current_function_p): Use new accessors.
+
+2018-04-16  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/85039
+	* parser.c (cp_parser_builtin_offset): Reject type definitions.
+	* mangle.c (nested_anon_class_index): Avoid crash returning -1
+	if we've seen errors.
+
+2018-04-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85385
+	* name-lookup.c (macro_use_before_def::maybe_make): New function,
+	checking that the use is indeed before the definition.
+	(macro_use_before_def::macro_use_before_def): Make private.
+	(macro_use_before_def::~macro_use_before_def): Make private.  Move
+	check for UNKNOWN_LOCATION to macro_use_before_def::maybe_make.
+	(lookup_name_fuzzy): Call macro_use_before_def::maybe_make rather
+	than using new directly.
+
+2018-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85356 - ICE with pointer to member function.
+	* pt.c (maybe_instantiate_noexcept): Do instantiate in templates if
+	flag_noexcept_type.  Build the new spec within the function context.
+	* except.c (build_noexcept_spec): Do get constant value in templates
+	if flag_noexcept_type.
+	* decl.c (check_redeclaration_exception_specification): Don't
+	instantiate noexcept on a dependent declaration.
+
+2018-04-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85258
+	* constexpr.c (reduced_constant_expression_p): Return false for null
+	trees.
+
+2018-04-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85032
+	* constexpr.c (potential_constant_expression_1): Consider conversions
+	from classes to literal types potentially constant.
+
+2018-04-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70808
+	* init.c (build_zero_init_1): Handle NULLPTR_TYPE_P being true of
+	the type like TYPE_PTR_OR_PTRMEM_P.
+
+2018-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR debug/65821 - wrong location for main().
+	* call.c (clear_location_r, convert_default_arg): Revert.
+	* tree.c (break_out_target_exprs): Add clear_location parm.
+	(struct bot_data): New.
+	(bot_manip): Clear location if requested.
+	* init.c (get_nsdmi): Pass clear_location.
+
+2018-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (get_fndecl_argument_location): Make non-static.
+	* cp-tree.h (get_fndecl_argument_location): New decl.
+	* typeck.c (convert_for_assignment): When complaining due to
+	conversions for an argument, show the location of the parameter
+	within the decl.
+
+2018-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85312 - P0962 cleanup
+	* parser.c (cp_parser_perform_range_for_lookup): Remove unreachable
+	diagnostics.
+
+2018-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR debug/65821 - wrong location for main().
+	* call.c (clear_location_r): New.
+	(convert_default_arg): Use it.
+	* tree.c (bot_manip): Remove builtin_LINE/FILE handling.
+
+	PR c++/85285 - ICE with flexible array after substitution.
+	* pt.c (instantiate_class_template_1): Check for flexible array in
+	union.
+
+2018-04-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85227
+	* decl.c (cp_finish_decomp): In a template, if the type is incomplete
+	issue a pedwarn and defer trying to do bindings.
+
+2018-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85279 - dump_expr doesn't understand decltype.
+	* error.c (dump_expr): Handle DECLTYPE_TYPE.
+
+	PR c++/85262 - ICE with redundant qualification on constructor.
+	* call.c (build_new_method_call_1): Move make_args_non_dependent
+	after A::A() handling.
+
+	PR c++/85277 - ICE with invalid offsetof.
+	* semantics.c (finish_offsetof): Avoid passing non-DECL to %qD.
+	Adjust -Winvalid-offsetof diagnostic to say conditionally supported.
+
+	PR c++/85264 - ICE with excess template-parameter-list.
+	* parser.c (cp_parser_check_template_parameters): Add template_id_p
+	parameter.  Don't allow an extra template header if true.
+	(cp_parser_class_head): Pass template_id_p.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(cp_parser_alias_declaration): Likewise.
+	(cp_parser_check_declarator_template_parameters): Likewise.
+
+2018-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85194
+	* parser.c (cp_parser_simple_declaration): For structured bindings,
+	if *maybe_range_for_decl is NULL after parsing it, set it to
+	error_mark_node.
+
+2018-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85256 - ICE capturing pointer to VLA.
+	* lambda.c (add_capture): Distinguish between variable-size and
+	variably-modified types.
+
 2018-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85214 - ICE with alias, generic lambda, constexpr if.

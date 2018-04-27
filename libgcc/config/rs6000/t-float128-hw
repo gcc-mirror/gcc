@@ -6,9 +6,9 @@ FLOAT128_HW_INSNS	= -DFLOAT128_HW_INSNS
 
 # New functions for hardware support
 fp128_hardfp_src	= _mulkc3-hw.c _divkc3-hw.c
-fp128_hw_funcs		= float128-hw _mulkc3-hw _divkc3-hw
+fp128_hw_funcs		= float128-hw _mulkc3-hw _divkc3-hw _powikf2-hw
 fp128_hw_src		= $(srcdir)/config/rs6000/float128-hw.c _mulkc3-hw.c \
-			  _divkc3-hw.c
+			  _divkc3-hw.c _powikf2-hw.c
 fp128_hw_static_obj	= $(addsuffix $(objext),$(fp128_hw_funcs))
 fp128_hw_shared_obj	= $(addsuffix _s$(objext),$(fp128_hw_funcs))
 fp128_hw_obj		= $(fp128_hw_static_obj) $(fp128_hw_shared_obj)
@@ -43,3 +43,7 @@ _mulkc3-hw.c: $(srcdir)/config/rs6000/_mulkc3.c
 _divkc3-hw.c: $(srcdir)/config/rs6000/_divkc3.c
 	(echo "#define __divkc3 __divkc3_hw"; \
 	 cat $(srcdir)/config/rs6000/_divkc3.c) > _divkc3-hw.c
+
+_powikf2-hw.c: $(srcdir)/config/rs6000/_powikf2.c
+	(echo "#define __powikf2 __powikf2_hw"; \
+	 cat $(srcdir)/config/rs6000/_powikf2.c) > _powikf2-hw.c

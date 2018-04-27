@@ -399,8 +399,7 @@ nvptx_emit_forking (unsigned mask, bool is_call)
 	 it creates a block with a single successor before entering a
 	 partitooned region.  That is a good candidate for the end of
 	 an SESE region.  */
-      if (!is_call)
-	emit_insn (gen_nvptx_fork (op));
+      emit_insn (gen_nvptx_fork (op));
       emit_insn (gen_nvptx_forked (op));
     }
 }
@@ -419,8 +418,7 @@ nvptx_emit_joining (unsigned mask, bool is_call)
       /* Emit joining for all non-call pars to ensure there's a single
 	 predecessor for the block the join insn ends up in.  This is
 	 needed for skipping entire loops.  */
-      if (!is_call)
-	emit_insn (gen_nvptx_joining (op));
+      emit_insn (gen_nvptx_joining (op));
       emit_insn (gen_nvptx_join (op));
     }
 }
@@ -2021,6 +2019,30 @@ nvptx_output_ascii (FILE *, const char *str, unsigned HOST_WIDE_INT size)
     nvptx_assemble_value (str[i], 1);
 }
 
+/* Return true if TYPE is a record type where the last field is an array without
+   given dimension.  */
+
+static bool
+flexible_array_member_type_p (const_tree type)
+{
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return false;
+
+  const_tree last_field = NULL_TREE;
+  for (const_tree f = TYPE_FIELDS (type); f; f = TREE_CHAIN (f))
+    last_field = f;
+
+  if (!last_field)
+    return false;
+
+  const_tree last_field_type = TREE_TYPE (last_field);
+  if (TREE_CODE (last_field_type) != ARRAY_TYPE)
+    return false;
+
+  return (! TYPE_DOMAIN (last_field_type)
+	  || ! TYPE_MAX_VALUE (TYPE_DOMAIN (last_field_type)));
+}
+
 /* Emit a PTX variable decl and prepare for emission of its
    initializer.  NAME is the symbol name and SETION the PTX data
    area. The type is TYPE, object size SIZE and alignment is ALIGN.
@@ -2031,10 +2053,17 @@ nvptx_output_ascii (FILE *, const char *str, unsigned HOST_WIDE_INT size)
 
 static void
 nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
-			   const_tree type, HOST_WIDE_INT size, unsigned align)
+			   const_tree type, HOST_WIDE_INT size, unsigned align,
+			   bool undefined = false)
 {
   bool atype = (TREE_CODE (type) == ARRAY_TYPE)
     && (TYPE_DOMAIN (type) == NULL_TREE);
+
+  if (undefined && flexible_array_member_type_p (type))
+    {
+      size = 0;
+      atype = true;
+    }
 
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
@@ -2172,7 +2201,7 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
   tree size = DECL_SIZE_UNIT (decl);
   nvptx_assemble_decl_begin (file, name, section_for_decl (decl),
 			     TREE_TYPE (decl), size ? tree_to_shwi (size) : 0,
-			     DECL_ALIGN (decl));
+			     DECL_ALIGN (decl), true);
   nvptx_assemble_decl_end ();
 }
 
@@ -3055,8 +3084,7 @@ nvptx_find_par (bb_insn_map_t *map, parallel *par, basic_block block)
 	    par = new parallel (par, mask);
 	    par->forked_block = block;
 	    par->forked_insn = end;
-	    if (!(mask & GOMP_DIM_MASK (GOMP_DIM_MAX))
-		&& (mask & GOMP_DIM_MASK (GOMP_DIM_WORKER)))
+	    if (mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
 	      par->fork_insn
 		= nvptx_discover_pre (block, CODE_FOR_nvptx_fork);
 	  }
@@ -3071,8 +3099,7 @@ nvptx_find_par (bb_insn_map_t *map, parallel *par, basic_block block)
 	    gcc_assert (par->mask == mask);
 	    par->join_block = block;
 	    par->join_insn = end;
-	    if (!(mask & GOMP_DIM_MASK (GOMP_DIM_MAX))
-		&& (mask & GOMP_DIM_MASK (GOMP_DIM_WORKER)))
+	    if (mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
 	      par->joining_insn
 		= nvptx_discover_pre (block, CODE_FOR_nvptx_joining);
 	    par = par->parent;
@@ -3751,29 +3778,34 @@ nvptx_find_sese (auto_vec<basic_block> &blocks, bb_pair_vec_t &regions)
 #undef BB_SET_SESE
 #undef BB_GET_SESE
 
-/* Propagate live state at the start of a partitioned region.  BLOCK
-   provides the live register information, and might not contain
-   INSN. Propagation is inserted just after INSN. RW indicates whether
-   we are reading and/or writing state.  This
+/* Propagate live state at the start of a partitioned region.  IS_CALL
+   indicates whether the propagation is for a (partitioned) call
+   instruction.  BLOCK provides the live register information, and
+   might not contain INSN. Propagation is inserted just after INSN. RW
+   indicates whether we are reading and/or writing state.  This
    separation is needed for worker-level proppagation where we
    essentially do a spill & fill.  FN is the underlying worker
    function to generate the propagation instructions for single
    register.  DATA is user data.
 
-   We propagate the live register set and the entire frame.  We could
-   do better by (a) propagating just the live set that is used within
-   the partitioned regions and (b) only propagating stack entries that
-   are used.  The latter might be quite hard to determine.  */
+   Returns true if we didn't emit any instructions.
+
+   We propagate the live register set for non-calls and the entire
+   frame for calls and non-calls.  We could do better by (a)
+   propagating just the live set that is used within the partitioned
+   regions and (b) only propagating stack entries that are used.  The
+   latter might be quite hard to determine.  */
 
 typedef rtx (*propagator_fn) (rtx, propagate_mask, unsigned, void *);
 
-static void
-nvptx_propagate (basic_block block, rtx_insn *insn, propagate_mask rw,
-		 propagator_fn fn, void *data)
+static bool
+nvptx_propagate (bool is_call, basic_block block, rtx_insn *insn,
+		 propagate_mask rw, propagator_fn fn, void *data)
 {
   bitmap live = DF_LIVE_IN (block);
   bitmap_iterator iterator;
   unsigned ix;
+  bool empty = true;
 
   /* Copy the frame array.  */
   HOST_WIDE_INT fs = get_frame_size ();
@@ -3785,6 +3817,7 @@ nvptx_propagate (basic_block block, rtx_insn *insn, propagate_mask rw,
       rtx pred = NULL_RTX;
       rtx_code_label *label = NULL;
 
+      empty = false;
       /* The frame size might not be DImode compatible, but the frame
 	 array's declaration will be.  So it's ok to round up here.  */
       fs = (fs + GET_MODE_SIZE (DImode) - 1) / GET_MODE_SIZE (DImode);
@@ -3831,18 +3864,21 @@ nvptx_propagate (basic_block block, rtx_insn *insn, propagate_mask rw,
       insn = emit_insn_after (cpy, insn);
     }
 
-  /* Copy live registers.  */
-  EXECUTE_IF_SET_IN_BITMAP (live, 0, ix, iterator)
-    {
-      rtx reg = regno_reg_rtx[ix];
+  if (!is_call)
+    /* Copy live registers.  */
+    EXECUTE_IF_SET_IN_BITMAP (live, 0, ix, iterator)
+      {
+	rtx reg = regno_reg_rtx[ix];
 
-      if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-	{
-	  rtx bcast = fn (reg, rw, 0, data);
+	if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+	  {
+	    rtx bcast = fn (reg, rw, 0, data);
 
-	  insn = emit_insn_after (bcast, insn);
-	}
-    }
+	    insn = emit_insn_after (bcast, insn);
+	    empty = false;
+	  }
+      }
+  return empty;
 }
 
 /* Worker for nvptx_vpropagate.  */
@@ -3858,12 +3894,13 @@ vprop_gen (rtx reg, propagate_mask pm,
 }
 
 /* Propagate state that is live at start of BLOCK across the vectors
-   of a single warp.  Propagation is inserted just after INSN.   */
+   of a single warp.  Propagation is inserted just after INSN.
+   IS_CALL and return as for nvptx_propagate.  */
 
-static void
-nvptx_vpropagate (basic_block block, rtx_insn *insn)
+static bool
+nvptx_vpropagate (bool is_call, basic_block block, rtx_insn *insn)
 {
-  nvptx_propagate (block, insn, PM_read_write, vprop_gen, 0);
+  return nvptx_propagate (is_call, block, insn, PM_read_write, vprop_gen, 0);
 }
 
 /* Worker for nvptx_wpropagate.  */
@@ -3899,10 +3936,10 @@ wprop_gen (rtx reg, propagate_mask pm, unsigned rep, void *data_)
 /* Spill or fill live state that is live at start of BLOCK.  PRE_P
    indicates if this is just before partitioned mode (do spill), or
    just after it starts (do fill). Sequence is inserted just after
-   INSN.  */
+   INSN.  IS_CALL and return as for nvptx_propagate.  */
 
-static void
-nvptx_wpropagate (bool pre_p, basic_block block, rtx_insn *insn)
+static bool
+nvptx_wpropagate (bool pre_p, bool is_call, basic_block block, rtx_insn *insn)
 {
   wcast_data_t data;
 
@@ -3910,7 +3947,9 @@ nvptx_wpropagate (bool pre_p, basic_block block, rtx_insn *insn)
   data.offset = 0;
   data.ptr = NULL_RTX;
 
-  nvptx_propagate (block, insn, pre_p ? PM_read : PM_write, wprop_gen, &data);
+  bool empty = nvptx_propagate (is_call, block, insn,
+				pre_p ? PM_read : PM_write, wprop_gen, &data);
+  gcc_assert (empty == !data.offset);
   if (data.offset)
     {
       /* Stuff was emitted, initialize the base pointer now.  */
@@ -3920,6 +3959,7 @@ nvptx_wpropagate (bool pre_p, basic_block block, rtx_insn *insn)
       if (worker_bcast_size < data.offset)
 	worker_bcast_size = data.offset;
     }
+  return empty;
 }
 
 /* Emit a worker-level synchronization barrier.  We use different
@@ -3949,6 +3989,140 @@ bb_first_real_insn (basic_block bb)
 }
 #endif
 
+/* Return true if INSN needs neutering.  */
+
+static bool
+needs_neutering_p (rtx_insn *insn)
+{
+  if (!INSN_P (insn))
+    return false;
+
+  switch (recog_memoized (insn))
+    {
+    case CODE_FOR_nvptx_fork:
+    case CODE_FOR_nvptx_forked:
+    case CODE_FOR_nvptx_joining:
+    case CODE_FOR_nvptx_join:
+    case CODE_FOR_nvptx_barsync:
+      return false;
+    default:
+      return true;
+    }
+}
+
+/* Verify position of VECTOR_{JUMP,LABEL} and WORKER_{JUMP,LABEL} in FROM.  */
+
+static bool
+verify_neutering_jumps (basic_block from,
+			rtx_insn *vector_jump, rtx_insn *worker_jump,
+			rtx_insn *vector_label, rtx_insn *worker_label)
+{
+  basic_block bb = from;
+  rtx_insn *insn = BB_HEAD (bb);
+  bool seen_worker_jump = false;
+  bool seen_vector_jump = false;
+  bool seen_worker_label = false;
+  bool seen_vector_label = false;
+  bool worker_neutered = false;
+  bool vector_neutered = false;
+  while (true)
+    {
+      if (insn == worker_jump)
+	{
+	  seen_worker_jump = true;
+	  worker_neutered = true;
+	  gcc_assert (!vector_neutered);
+	}
+      else if (insn == vector_jump)
+	{
+	  seen_vector_jump = true;
+	  vector_neutered = true;
+	}
+      else if (insn == worker_label)
+	{
+	  seen_worker_label = true;
+	  gcc_assert (worker_neutered);
+	  worker_neutered = false;
+	}
+      else if (insn == vector_label)
+	{
+	  seen_vector_label = true;
+	  gcc_assert (vector_neutered);
+	  vector_neutered = false;
+	}
+      else if (INSN_P (insn))
+	switch (recog_memoized (insn))
+	  {
+	  case CODE_FOR_nvptx_barsync:
+	    gcc_assert (!vector_neutered && !worker_neutered);
+	    break;
+	  default:
+	    break;
+	  }
+
+      if (insn != BB_END (bb))
+	insn = NEXT_INSN (insn);
+      else if (JUMP_P (insn) && single_succ_p (bb)
+	       && !seen_vector_jump && !seen_worker_jump)
+	{
+	  bb = single_succ (bb);
+	  insn = BB_HEAD (bb);
+	}
+      else
+	break;
+    }
+
+  gcc_assert (!(vector_jump && !seen_vector_jump));
+  gcc_assert (!(worker_jump && !seen_worker_jump));
+
+  if (seen_vector_label || seen_worker_label)
+    {
+      gcc_assert (!(vector_label && !seen_vector_label));
+      gcc_assert (!(worker_label && !seen_worker_label));
+
+      return true;
+    }
+
+  return false;
+}
+
+/* Verify position of VECTOR_LABEL and WORKER_LABEL in TO.  */
+
+static void
+verify_neutering_labels (basic_block to, rtx_insn *vector_label,
+			 rtx_insn *worker_label)
+{
+  basic_block bb = to;
+  rtx_insn *insn = BB_END (bb);
+  bool seen_worker_label = false;
+  bool seen_vector_label = false;
+  while (true)
+    {
+      if (insn == worker_label)
+	{
+	  seen_worker_label = true;
+	  gcc_assert (!seen_vector_label);
+	}
+      else if (insn == vector_label)
+	seen_vector_label = true;
+      else if (INSN_P (insn))
+	switch (recog_memoized (insn))
+	  {
+	  case CODE_FOR_nvptx_barsync:
+	    gcc_assert (!seen_vector_label && !seen_worker_label);
+	    break;
+	  }
+
+      if (insn != BB_HEAD (bb))
+	insn = PREV_INSN (insn);
+      else
+	break;
+    }
+
+  gcc_assert (!(vector_label && !seen_vector_label));
+  gcc_assert (!(worker_label && !seen_worker_label));
+}
+
 /* Single neutering according to MASK.  FROM is the incoming block and
    TO is the outgoing block.  These may be the same block. Insert at
    start of FROM:
@@ -3974,9 +4148,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   while (true)
     {
       /* Find first insn of from block.  */
-      while (head != BB_END (from)
-	     && (!INSN_P (head)
-		 || recog_memoized (head) == CODE_FOR_nvptx_barsync))
+      while (head != BB_END (from) && !needs_neutering_p (head))
 	head = NEXT_INSN (head);
 
       if (from == to)
@@ -4017,21 +4189,8 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   if (tail == head)
     {
       /* If this is empty, do nothing.  */
-      if (!head || !INSN_P (head))
+      if (!head || !needs_neutering_p (head))
 	return;
-
-      /* If this is a dummy insn, do nothing.  */
-      switch (recog_memoized (head))
-	{
-	default:
-	  break;
-	case CODE_FOR_nvptx_barsync:
-	case CODE_FOR_nvptx_fork:
-	case CODE_FOR_nvptx_forked:
-	case CODE_FOR_nvptx_joining:
-	case CODE_FOR_nvptx_join:
-	  return;
-	}
 
       if (cond_branch)
 	{
@@ -4049,11 +4208,15 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   unsigned mode;
   rtx_insn *before = tail;
   rtx_insn *neuter_start = NULL;
+  rtx_insn *worker_label = NULL, *vector_label = NULL;
+  rtx_insn *worker_jump = NULL, *vector_jump = NULL;
   for (mode = GOMP_DIM_WORKER; mode <= GOMP_DIM_VECTOR; mode++)
     if (GOMP_DIM_MASK (mode) & skip_mask)
       {
 	rtx_code_label *label = gen_label_rtx ();
 	rtx pred = cfun->machine->axis_predicate[mode - GOMP_DIM_WORKER];
+	rtx_insn **mode_jump = mode == GOMP_DIM_VECTOR ? &vector_jump : &worker_jump;
+	rtx_insn **mode_label = mode == GOMP_DIM_VECTOR ? &vector_label : &worker_label;
 
 	if (!pred)
 	  {
@@ -4070,17 +4233,27 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	  neuter_start = emit_insn_after (br, neuter_start);
 	else
 	  neuter_start = emit_insn_before (br, head);
+	*mode_jump = neuter_start;
 
 	LABEL_NUSES (label)++;
+	rtx_insn *label_insn;
 	if (tail_branch)
-	  before = emit_label_before (label, before);
+	  {
+	    label_insn = emit_label_before (label, before);
+	    before = label_insn;
+	  }
 	else
 	  {
-	    rtx_insn *label_insn = emit_label_after (label, tail);
+	    label_insn = emit_label_after (label, tail);
 	    if ((mode == GOMP_DIM_VECTOR || mode == GOMP_DIM_WORKER)
 		&& CALL_P (tail) && find_reg_note (tail, REG_NORETURN, NULL))
 	      emit_insn_after (gen_exit (), label_insn);
 	  }
+
+	if (mode == GOMP_DIM_VECTOR)
+	  vector_label = label_insn;
+	else
+	  worker_label = label_insn;
       }
 
   /* Now deal with propagating the branch condition.  */
@@ -4180,6 +4353,11 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 				 UNSPEC_BR_UNIFIED);
       validate_change (tail, recog_data.operand_loc[0], unsp, false);
     }
+
+  bool seen_label = verify_neutering_jumps (from, vector_jump, worker_jump,
+					    vector_label, worker_label);
+  if (!seen_label)
+    verify_neutering_labels (to, vector_label, worker_label);
 }
 
 /* PAR is a parallel that is being skipped in its entirety according to
@@ -4280,18 +4458,23 @@ nvptx_process_pars (parallel *par)
       inner_mask |= par->inner_mask;
     }
 
-  if (par->mask & GOMP_DIM_MASK (GOMP_DIM_MAX))
-    /* No propagation needed for a call.  */;
-  else if (par->mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
+  bool is_call = (par->mask & GOMP_DIM_MASK (GOMP_DIM_MAX)) != 0;
+
+  if (par->mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
     {
-      nvptx_wpropagate (false, par->forked_block, par->forked_insn);
-      nvptx_wpropagate (true, par->forked_block, par->fork_insn);
-      /* Insert begin and end synchronizations.  */
-      emit_insn_before (nvptx_wsync (false), par->forked_insn);
-      emit_insn_before (nvptx_wsync (true), par->join_insn);
+      nvptx_wpropagate (false, is_call, par->forked_block, par->forked_insn);
+      bool empty = nvptx_wpropagate (true, is_call,
+				     par->forked_block, par->fork_insn);
+
+      if (!empty || !is_call)
+	{
+	  /* Insert begin and end synchronizations.  */
+	  emit_insn_before (nvptx_wsync (false), par->forked_insn);
+	  emit_insn_before (nvptx_wsync (true), par->join_insn);
+	}
     }
   else if (par->mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR))
-    nvptx_vpropagate (par->forked_block, par->forked_insn);
+    nvptx_vpropagate (is_call, par->forked_block, par->forked_insn);
 
   /* Now do siblings.  */
   if (par->next)

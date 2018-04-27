@@ -128,6 +128,8 @@ output_cond_branch (int code, const char *suffix, bool r5_p,
 {
   char pattern[256];
   const char *cond_code;
+  bool align_p = NDS32_ALIGN_P ();
+  const char *align = align_p ? "\t.align\t2\n" : "";
 
   if (r5_p && REGNO (operands[2]) == 5 && TARGET_16_BIT)
     {
@@ -170,14 +172,14 @@ output_cond_branch (int code, const char *suffix, bool r5_p,
       if (r5_p && TARGET_16_BIT)
 	{
 	  snprintf (pattern, sizeof (pattern),
-		    "b%ss38\t %%2, .LCB%%=\n\tj\t%%3\n.LCB%%=:",
-		    cond_code);
+		    "b%ss38\t %%2, .LCB%%=\n\tj\t%%3\n%s.LCB%%=:",
+		    cond_code, align);
 	}
       else
 	{
 	  snprintf (pattern, sizeof (pattern),
-		    "b%s%s\t%%1, %%2, .LCB%%=\n\tj\t%%3\n.LCB%%=:",
-		    cond_code, suffix);
+		    "b%s%s\t%%1, %%2, .LCB%%=\n\tj\t%%3\n%s.LCB%%=:",
+		    cond_code, suffix, align);
 	}
     }
   else
@@ -207,6 +209,8 @@ output_cond_branch_compare_zero (int code, const char *suffix,
 {
   char pattern[256];
   const char *cond_code;
+  bool align_p = NDS32_ALIGN_P ();
+  const char *align = align_p ? "\t.align\t2\n" : "";
   if (long_jump_p)
     {
       int inverse_code = nds32_inverse_cond_code (code);
@@ -221,8 +225,8 @@ output_cond_branch_compare_zero (int code, const char *suffix,
 	      .LCB0:
 	   */
 	  snprintf (pattern, sizeof (pattern),
-		    "b%sz%s\t.LCB%%=\n\tj\t%%2\n.LCB%%=:",
-		    cond_code, suffix);
+		    "b%sz%s\t.LCB%%=\n\tj\t%%2\n%s.LCB%%=:",
+		    cond_code, suffix, align);
 	}
       else
 	{
@@ -233,8 +237,8 @@ output_cond_branch_compare_zero (int code, const char *suffix,
 		.LCB0:
 	   */
 	  snprintf (pattern, sizeof (pattern),
-		    "b%sz%s\t%%1, .LCB%%=\n\tj\t%%2\n.LCB%%=:",
-		    cond_code, suffix);
+		    "b%sz%s\t%%1, .LCB%%=\n\tj\t%%2\n%s.LCB%%=:",
+		    cond_code, suffix, align);
 	}
     }
   else
@@ -1712,6 +1716,10 @@ nds32_output_stack_push (rtx par_rtx)
   int last_argument_regno = NDS32_FIRST_GPR_REGNUM
 			    + NDS32_MAX_GPR_REGS_FOR_ARGS
 			    - 1;
+  /* Pick up first and last eh data regno for further use.  */
+  int rb_eh_data = cfun->machine->eh_return_data_first_regno;
+  int re_eh_data = cfun->machine->eh_return_data_last_regno;
+  int first_eh_data_regno = EH_RETURN_DATA_REGNO (0);
   /* Pick up callee-saved first regno and last regno for further use.  */
   int rb_callee_saved = cfun->machine->callee_saved_first_gpr_regno;
   int re_callee_saved = cfun->machine->callee_saved_last_gpr_regno;
@@ -1724,6 +1732,22 @@ nds32_output_stack_push (rtx par_rtx)
       /* Set operands[0] and operands[1].  */
       operands[0] = gen_rtx_REG (SImode, rb_va_args);
       operands[1] = gen_rtx_REG (SImode, re_va_args);
+      /* Create assembly code pattern: "Rb, Re, { }".  */
+      snprintf (pattern, sizeof (pattern), "push.s\t%s", "%0, %1, { }");
+      /* We use output_asm_insn() to output assembly code by ourself.  */
+      output_asm_insn (pattern, operands);
+      return "";
+    }
+
+  /* If last_argument_regno is not mentioned in par_rtx, we can confirm that
+     we do not need to push argument registers for variadic function.
+     But we still need to check if we need to push exception handling
+     data registers.  */
+  if (reg_mentioned_p (gen_rtx_REG (SImode, first_eh_data_regno), par_rtx))
+    {
+      /* Set operands[0] and operands[1].  */
+      operands[0] = gen_rtx_REG (SImode, rb_eh_data);
+      operands[1] = gen_rtx_REG (SImode, re_eh_data);
       /* Create assembly code pattern: "Rb, Re, { }".  */
       snprintf (pattern, sizeof (pattern), "push.s\t%s", "%0, %1, { }");
       /* We use output_asm_insn() to output assembly code by ourself.  */
@@ -1833,9 +1857,27 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
   char pattern[100];
   /* The operands array which will be used in output_asm_insn().  */
   rtx operands[3];
+  /* Pick up first and last eh data regno for further use.  */
+  int rb_eh_data = cfun->machine->eh_return_data_first_regno;
+  int re_eh_data = cfun->machine->eh_return_data_last_regno;
+  int first_eh_data_regno = EH_RETURN_DATA_REGNO (0);
   /* Pick up callee-saved first regno and last regno for further use.  */
   int rb_callee_saved = cfun->machine->callee_saved_first_gpr_regno;
   int re_callee_saved = cfun->machine->callee_saved_last_gpr_regno;
+
+  /* We need to check if we need to push exception handling
+     data registers.  */
+  if (reg_mentioned_p (gen_rtx_REG (SImode, first_eh_data_regno), par_rtx))
+    {
+      /* Set operands[0] and operands[1].  */
+      operands[0] = gen_rtx_REG (SImode, rb_eh_data);
+      operands[1] = gen_rtx_REG (SImode, re_eh_data);
+      /* Create assembly code pattern: "Rb, Re, { }".  */
+      snprintf (pattern, sizeof (pattern), "pop.s\t%s", "%0, %1, { }");
+      /* We use output_asm_insn() to output assembly code by ourself.  */
+      output_asm_insn (pattern, operands);
+      return "";
+    }
 
   /* If we step here, we are going to do v3pop or multiple pop operation.  */
 

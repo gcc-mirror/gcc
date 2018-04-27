@@ -81,9 +81,200 @@
    NOTE that the base value starting from 1024.  */
 static const char * const nds32_intrinsic_register_names[] =
 {
-  "$PSW", "$IPSW", "$ITYPE", "$IPC"
+  "$CPU_VER",
+  "$ICM_CFG",
+  "$DCM_CFG",
+  "$MMU_CFG",
+  "$MSC_CFG",
+  "$MSC_CFG2",
+  "$CORE_ID",
+  "$FUCOP_EXIST",
+
+  "$PSW",
+  "$IPSW",
+  "$P_IPSW",
+  "$IVB",
+  "$EVA",
+  "$P_EVA",
+  "$ITYPE",
+  "$P_ITYPE",
+
+  "$MERR",
+  "$IPC",
+  "$P_IPC",
+  "$OIPC",
+  "$P_P0",
+  "$P_P1",
+
+  "$INT_MASK",
+  "$INT_MASK2",
+  "$INT_MASK3",
+  "$INT_PEND",
+  "$INT_PEND2",
+  "$INT_PEND3",
+  "$SP_USR",
+  "$SP_PRIV",
+  "$INT_PRI",
+  "$INT_PRI2",
+  "$INT_PRI3",
+  "$INT_PRI4",
+  "$INT_CTRL",
+  "$INT_TRIGGER",
+  "$INT_TRIGGER2",
+  "$INT_GPR_PUSH_DIS",
+
+  "$MMU_CTL",
+  "$L1_PPTB",
+  "$TLB_VPN",
+  "$TLB_DATA",
+  "$TLB_MISC",
+  "$VLPT_IDX",
+  "$ILMB",
+  "$DLMB",
+
+  "$CACHE_CTL",
+  "$HSMP_SADDR",
+  "$HSMP_EADDR",
+  "$SDZ_CTL",
+  "$N12MISC_CTL",
+  "$MISC_CTL",
+  "$ECC_MISC",
+
+  "$BPC0",
+  "$BPC1",
+  "$BPC2",
+  "$BPC3",
+  "$BPC4",
+  "$BPC5",
+  "$BPC6",
+  "$BPC7",
+
+  "$BPA0",
+  "$BPA1",
+  "$BPA2",
+  "$BPA3",
+  "$BPA4",
+  "$BPA5",
+  "$BPA6",
+  "$BPA7",
+
+  "$BPAM0",
+  "$BPAM1",
+  "$BPAM2",
+  "$BPAM3",
+  "$BPAM4",
+  "$BPAM5",
+  "$BPAM6",
+  "$BPAM7",
+
+  "$BPV0",
+  "$BPV1",
+  "$BPV2",
+  "$BPV3",
+  "$BPV4",
+  "$BPV5",
+  "$BPV6",
+  "$BPV7",
+
+  "$BPCID0",
+  "$BPCID1",
+  "$BPCID2",
+  "$BPCID3",
+  "$BPCID4",
+  "$BPCID5",
+  "$BPCID6",
+  "$BPCID7",
+
+  "$EDM_CFG",
+  "$EDMSW",
+  "$EDM_CTL",
+  "$EDM_DTR",
+  "$BPMTC",
+  "$DIMBR",
+
+  "$TECR0",
+  "$TECR1",
+  "$PFMC0",
+  "$PFMC1",
+  "$PFMC2",
+  "$PFM_CTL",
+  "$PFT_CTL",
+  "$HSP_CTL",
+  "$SP_BOUND",
+  "$SP_BOUND_PRIV",
+  "$SP_BASE",
+  "$SP_BASE_PRIV",
+  "$FUCOP_CTL",
+  "$PRUSR_ACC_CTL",
+
+  "$DMA_CFG",
+  "$DMA_GCSW",
+  "$DMA_CHNSEL",
+  "$DMA_ACT",
+  "$DMA_SETUP",
+  "$DMA_ISADDR",
+  "$DMA_ESADDR",
+  "$DMA_TCNT",
+  "$DMA_STATUS",
+  "$DMA_2DSET",
+  "$DMA_2DSCTL",
+  "$DMA_RCNT",
+  "$DMA_HSTATUS",
+
+  "$PC",
+  "$SP_USR1",
+  "$SP_USR2",
+  "$SP_USR3",
+  "$SP_PRIV1",
+  "$SP_PRIV2",
+  "$SP_PRIV3",
+  "$BG_REGION",
+  "$SFCR",
+  "$SIGN",
+  "$ISIGN",
+  "$P_ISIGN",
+  "$IFC_LP",
+  "$ITB"
 };
 
+/* Define instrinsic cctl names.  */
+static const char * const nds32_cctl_names[] =
+{
+  "L1D_VA_FILLCK",
+  "L1D_VA_ULCK",
+  "L1I_VA_FILLCK",
+  "L1I_VA_ULCK",
+
+  "L1D_IX_WBINVAL",
+  "L1D_IX_INVAL",
+  "L1D_IX_WB",
+  "L1I_IX_INVAL",
+
+  "L1D_VA_INVAL",
+  "L1D_VA_WB",
+  "L1D_VA_WBINVAL",
+  "L1I_VA_INVAL",
+
+  "L1D_IX_RTAG",
+  "L1D_IX_RWD",
+  "L1I_IX_RTAG",
+  "L1I_IX_RWD",
+
+  "L1D_IX_WTAG",
+  "L1D_IX_WWD",
+  "L1I_IX_WTAG",
+  "L1I_IX_WWD"
+};
+
+static const char * const nds32_dpref_names[] =
+{
+  "SRD",
+  "MRD",
+  "SWR",
+  "MWR",
+  "PTE",
+  "CLWR"
+};
 
 /* Defining register allocation order for performance.
    We want to allocate callee-saved registers after others.
@@ -142,11 +333,17 @@ nds32_init_machine_status (void)
   struct machine_function *machine;
   machine = ggc_cleared_alloc<machine_function> ();
 
+  /* Initially assume this function does not use __builtin_eh_return.  */
+  machine->use_eh_return_p = 0;
+
   /* Initially assume this function needs prologue/epilogue.  */
   machine->naked_p = 0;
 
   /* Initially assume this function does NOT use fp_as_gp optimization.  */
   machine->fp_as_gp_p = 0;
+
+  /* Initially this function is not under strictly aligned situation.  */
+  machine->strict_aligned_p = 0;
 
   return machine;
 }
@@ -164,6 +361,36 @@ nds32_compute_stack_frame (void)
      everytime we enter this function, we have to assume this function
      needs prologue/epilogue.  */
   cfun->machine->naked_p = 0;
+
+
+  /* If __builtin_eh_return is used, we better have frame pointer needed
+     so that we can easily locate the stack slot of return address.  */
+  if (crtl->calls_eh_return)
+    {
+      frame_pointer_needed = 1;
+
+      /* We need to mark eh data registers that need to be saved
+	 in the stack.  */
+      cfun->machine->eh_return_data_first_regno = EH_RETURN_DATA_REGNO (0);
+      for (r = 0; EH_RETURN_DATA_REGNO (r) != INVALID_REGNUM; r++)
+	cfun->machine->eh_return_data_last_regno = r;
+
+      cfun->machine->eh_return_data_regs_size
+	= 4 * (cfun->machine->eh_return_data_last_regno
+	       - cfun->machine->eh_return_data_first_regno
+	       + 1);
+      cfun->machine->use_eh_return_p = 1;
+    }
+  else
+    {
+      /* Assigning SP_REGNUM to eh_first_regno and eh_last_regno means we
+	 do not need to handle __builtin_eh_return case in this function.  */
+      cfun->machine->eh_return_data_first_regno = SP_REGNUM;
+      cfun->machine->eh_return_data_last_regno  = SP_REGNUM;
+
+      cfun->machine->eh_return_data_regs_size = 0;
+      cfun->machine->use_eh_return_p = 0;
+    }
 
   /* Get variadic arguments size to prepare pretend arguments and
      we will push them into stack at prologue by ourself.  */
@@ -209,7 +436,8 @@ nds32_compute_stack_frame (void)
 
   /* If $lp value is required to be saved on stack, it needs 4 bytes space.
      Check whether $lp is ever live.  */
-  cfun->machine->lp_size = (df_regs_ever_live_p (LP_REGNUM)) ? 4 : 0;
+  cfun->machine->lp_size
+    = (flag_always_save_lp || df_regs_ever_live_p (LP_REGNUM)) ? 4 : 0;
 
   /* Initially there is no padding bytes.  */
   cfun->machine->callee_saved_area_gpr_padding_bytes = 0;
@@ -384,10 +612,12 @@ nds32_compute_stack_frame (void)
     {
       block_size = cfun->machine->fp_size
 		   + cfun->machine->gp_size
-		   + cfun->machine->lp_size
-		   + (4 * (cfun->machine->callee_saved_last_gpr_regno
-			   - cfun->machine->callee_saved_first_gpr_regno
-			   + 1));
+		   + cfun->machine->lp_size;
+
+      if (cfun->machine->callee_saved_last_gpr_regno != SP_REGNUM)
+	block_size += (4 * (cfun->machine->callee_saved_last_gpr_regno
+			    - cfun->machine->callee_saved_first_gpr_regno
+			    + 1));
 
       if (!NDS32_DOUBLE_WORD_ALIGN_P (block_size))
 	{
@@ -1125,6 +1355,14 @@ nds32_naked_function_p (tree func)
   return (t != NULL_TREE);
 }
 
+/* Function that determine whether a load postincrement is a good thing to use
+   for a given mode.  */
+bool
+nds32_use_load_post_increment (machine_mode mode)
+{
+  return (GET_MODE_SIZE (mode) <= GET_MODE_SIZE(E_DImode));
+}
+
 /* Function that check if 'X' is a valid address register.
    The variable 'STRICT' is very important to
    make decision for register number.
@@ -1190,8 +1428,12 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 	  /* Further check if the value is legal for the 'outer_mode'.  */
 	  if (satisfies_constraint_Is16 (index))
 	    {
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
 	      /* Make sure address is half word alignment.  */
-	      if (NDS32_HALF_WORD_ALIGN_P (INTVAL (index)))
+	      else if (NDS32_HALF_WORD_ALIGN_P (INTVAL (index)))
 		return true;
 	    }
 	  break;
@@ -1206,8 +1448,12 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 		    return false;
 		}
 
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
 	      /* Make sure address is word alignment.  */
-	      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
+	      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
 		return true;
 	    }
 	  break;
@@ -1222,11 +1468,15 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 		    return false;
 		}
 
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
 	      /* Make sure address is word alignment.
 		Currently we do not have 64-bit load/store yet,
 		so we will use two 32-bit load/store instructions to do
 		memory access and they are single word alignment.  */
-	      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
+	      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
 		return true;
 	    }
 	  break;
@@ -1246,9 +1496,10 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 	  int multiplier;
 	  multiplier = INTVAL (op1);
 
-	  /* We only allow (mult reg const_int_1)
-	     or (mult reg const_int_2) or (mult reg const_int_4).  */
-	  if (multiplier != 1 && multiplier != 2 && multiplier != 4)
+	  /* We only allow (mult reg const_int_1), (mult reg const_int_2),
+	     (mult reg const_int_4) or (mult reg const_int_8).  */
+	  if (multiplier != 1 && multiplier != 2
+	      && multiplier != 4 && multiplier != 8)
 	    return false;
 
 	  regno = REGNO (op0);
@@ -1273,8 +1524,9 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 	  sv = INTVAL (op1);
 
 	  /* We only allow (ashift reg const_int_0)
-	     or (ashift reg const_int_1) or (ashift reg const_int_2).  */
-	  if (sv != 0 && sv != 1 && sv !=2)
+	     or (ashift reg const_int_1) or (ashift reg const_int_2) or
+	     (ashift reg const_int_3).  */
+	  if (sv != 0 && sv != 1 && sv !=2 && sv != 3)
 	    return false;
 
 	  regno = REGNO (op0);
@@ -1340,6 +1592,12 @@ nds32_adjust_insn_length (rtx_insn *insn, int length)
     case CODE_FOR_call_internal:
     case CODE_FOR_call_value_internal:
       {
+	if (NDS32_ALIGN_P ())
+	  {
+	    rtx_insn *next_insn = next_active_insn (insn);
+	    if (next_insn && get_attr_length (next_insn) != 2)
+	      adjust_value += 2;
+	  }
 	/* We need insert a nop after a noretun function call
 	   to prevent software breakpoint corrupt the next function. */
 	if (find_reg_note (insn, REG_NORETURN, NULL_RTX))
@@ -1357,6 +1615,20 @@ nds32_adjust_insn_length (rtx_insn *insn, int length)
     }
 }
 
+/* Storage Layout.  */
+
+/* This function will be called just before expansion into rtl.  */
+static void
+nds32_expand_to_rtl_hook (void)
+{
+  /* We need to set strictly aligned situation.
+     After that, the memory address checking in nds32_legitimate_address_p()
+     will take alignment offset into consideration so that it will not create
+     unaligned [base + offset] access during the rtl optimization.  */
+  cfun->machine->strict_aligned_p = 1;
+}
+
+
 /* Register Usage.  */
 
 static void
@@ -2237,11 +2509,15 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 		{
 		  if (satisfies_constraint_Is14 (op1))
 		    {
+		      /* If it is not under strictly aligned situation,
+			 we can return true without checking alignment.  */
+		      if (!cfun->machine->strict_aligned_p)
+			return true;
 		      /* Make sure address is word alignment.
 			Currently we do not have 64-bit load/store yet,
 			so we will use two 32-bit load/store instructions to do
 			memory access and they are single word alignment.  */
-		      if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (op1)))
+		      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (op1)))
 			return true;
 		    }
 		}
@@ -2620,10 +2896,18 @@ nds32_asm_file_start (void)
 			 ((TARGET_REDUCED_REGS) ? "Yes"
 						: "No"));
 
+  fprintf (asm_out_file, "\t! Support unaligned access\t\t: %s\n",
+			 (flag_unaligned_access ? "Yes"
+						: "No"));
+
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
   if (optimize_size)
     fprintf (asm_out_file, "\t! Optimization level\t: -Os\n");
+  else if (optimize_fast)
+    fprintf (asm_out_file, "\t! Optimization level\t: -Ofast\n");
+  else if (optimize_debug)
+    fprintf (asm_out_file, "\t! Optimization level\t: -Og\n");
   else
     fprintf (asm_out_file, "\t! Optimization level\t: -O%d\n", optimize);
 
@@ -2660,13 +2944,15 @@ nds32_asm_globalize_label (FILE *stream, const char *name)
 static void
 nds32_print_operand (FILE *stream, rtx x, int code)
 {
+  HOST_WIDE_INT op_value = 0;
   HOST_WIDE_INT one_position;
   HOST_WIDE_INT zero_position;
   bool pick_lsb_p = false;
   bool pick_msb_p = false;
   int regno;
 
-  int op_value;
+  if (CONST_INT_P (x))
+    op_value = INTVAL (x);
 
   switch (code)
     {
@@ -2719,7 +3005,6 @@ nds32_print_operand (FILE *stream, rtx x, int code)
     case 'V':
       /* 'x' is supposed to be CONST_INT, get the value.  */
       gcc_assert (CONST_INT_P (x));
-      op_value = INTVAL (x);
 
       /* According to the Andes architecture,
 	 the system/user register index range is 0 ~ 1023.
@@ -2749,6 +3034,45 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 	}
 
       /* No need to handle following process, so return immediately.  */
+      return;
+
+    case 'R': /* cctl valck  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value]);
+      return;
+
+    case 'T': /* cctl idxwbinv  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 4]);
+      return;
+
+    case 'U': /* cctl vawbinv  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 8]);
+      return;
+
+    case 'X': /* cctl idxread  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 12]);
+      return;
+
+    case 'W': /* cctl idxwitre  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 16]);
+      return;
+
+    case 'Z': /* dpref  */
+      fprintf (stream, "%s", nds32_dpref_names[op_value]);
       return;
 
     default :
@@ -2926,6 +3250,8 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 	    sv = 1;
 	  else if (INTVAL (XEXP (op0, 1)) == 4)
 	    sv = 2;
+	  else if (INTVAL (XEXP (op0, 1)) == 8)
+	    sv = 3;
 	  else
 	    gcc_unreachable ();
 
@@ -3529,9 +3855,6 @@ nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
-#undef TARGET_HARD_REGNO_MODE_OK
-#define TARGET_HARD_REGNO_MODE_OK nds32_hard_regno_mode_ok
-
 /* Implement TARGET_MODES_TIEABLE_P.  We can use general registers to
    tie QI/HI/SI modes together.  */
 
@@ -3555,9 +3878,6 @@ nds32_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
   return false;
 }
-
-#undef TARGET_MODES_TIEABLE_P
-#define TARGET_MODES_TIEABLE_P nds32_modes_tieable_p
 
 /* Register Classes.  */
 
@@ -3597,14 +3917,39 @@ nds32_regno_reg_class (int regno)
 /* -- Basic Stack Layout.  */
 
 rtx
-nds32_return_addr_rtx (int count,
-		       rtx frameaddr ATTRIBUTE_UNUSED)
+nds32_dynamic_chain_address (rtx frameaddr)
 {
-  /* There is no way to determine the return address
-     if frameaddr is the frame that has 'count' steps
-     up from current frame.  */
+  if (TARGET_V3PUSH)
+    {
+      /* If -mv3push is specified, we push $fp, $gp, and $lp into stack.
+         We can access dynamic chain address from stack by [$fp - 12].  */
+      return plus_constant (Pmode, frameaddr, -12);
+    }
+  else
+    {
+      /* For general case we push $fp and $lp into stack at prologue.
+         We can access dynamic chain address from stack by [$fp - 8].  */
+      return plus_constant (Pmode, frameaddr, -8);
+    }
+}
+
+rtx
+nds32_return_addr_rtx (int count,
+		       rtx frameaddr)
+{
+  int offset;
+  rtx addr;
+
   if (count != 0)
-    return NULL_RTX;
+    {
+      /* In nds32 ABI design, we can expect that $lp is always available
+         from stack by [$fp - 4] location.  */
+      offset = -4;
+      addr = plus_constant (Pmode, frameaddr, offset);
+      addr = memory_address (Pmode, addr);
+
+      return gen_rtx_MEM (Pmode, addr);
+    }
 
   /* If count == 0, it means we are at current frame,
      the return address is $r30 ($lp).  */
@@ -3623,7 +3968,8 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
   nds32_compute_stack_frame ();
 
   /* Remember to consider
-     cfun->machine->callee_saved_area_gpr_padding_bytes
+     cfun->machine->callee_saved_area_gpr_padding_bytes and
+     cfun->machine->eh_return_data_regs_size
      when calculating offset.  */
   if (from_reg == ARG_POINTER_REGNUM && to_reg == STACK_POINTER_REGNUM)
     {
@@ -3633,6 +3979,7 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
 		+ cfun->machine->callee_saved_gpr_regs_size
 		+ cfun->machine->callee_saved_area_gpr_padding_bytes
 		+ cfun->machine->callee_saved_fpr_regs_size
+		+ cfun->machine->eh_return_data_regs_size
 		+ cfun->machine->local_size
 		+ cfun->machine->out_args_size);
     }
@@ -3654,7 +4001,8 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
 		       + cfun->machine->lp_size
 		       + cfun->machine->callee_saved_gpr_regs_size
 		       + cfun->machine->callee_saved_area_gpr_padding_bytes
-		       + cfun->machine->callee_saved_fpr_regs_size);
+		       + cfun->machine->callee_saved_fpr_regs_size
+		       + cfun->machine->eh_return_data_regs_size);
     }
   else
     {
@@ -3740,12 +4088,24 @@ nds32_expand_prologue (void)
 	false);
     }
 
+  /* Save eh data registers.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      Rb = cfun->machine->eh_return_data_first_regno;
+      Re = cfun->machine->eh_return_data_last_regno;
+
+      /* No need to push $fp, $gp, or $lp.
+	 Also, this is not variadic arguments push.  */
+      nds32_emit_stack_push_multiple (Rb, Re, false, false, false, false);
+    }
+
   /* Check frame_pointer_needed to see
      if we shall emit fp adjustment instruction.  */
   if (frame_pointer_needed)
     {
       /* adjust $fp = $sp + ($fp size) + ($gp size) + ($lp size)
 			  + (4 * callee-saved-registers)
+			  + (4 * exception-handling-data-registers)
 	 Note: No need to adjust
 	       cfun->machine->callee_saved_area_gpr_padding_bytes,
 	       because, at this point, stack pointer is just
@@ -3753,7 +4113,8 @@ nds32_expand_prologue (void)
       fp_adjust = cfun->machine->fp_size
 		  + cfun->machine->gp_size
 		  + cfun->machine->lp_size
-		  + cfun->machine->callee_saved_gpr_regs_size;
+		  + cfun->machine->callee_saved_gpr_regs_size
+		  + cfun->machine->eh_return_data_regs_size;
 
       nds32_emit_adjust_frame (hard_frame_pointer_rtx,
 			       stack_pointer_rtx,
@@ -3902,6 +4263,7 @@ nds32_expand_epilogue (bool sibcall_p)
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
 		      + cfun->machine->callee_saved_gpr_regs_size
+		      + cfun->machine->eh_return_data_regs_size
 		      + cfun->machine->callee_saved_area_gpr_padding_bytes
 		      + cfun->machine->callee_saved_fpr_regs_size;
 
@@ -3925,7 +4287,8 @@ nds32_expand_epilogue (bool sibcall_p)
 	  sp_adjust = cfun->machine->fp_size
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
-		      + cfun->machine->callee_saved_gpr_regs_size;
+		      + cfun->machine->callee_saved_gpr_regs_size
+		      + cfun->machine->eh_return_data_regs_size;
 
 	  nds32_emit_adjust_frame (stack_pointer_rtx,
 				   hard_frame_pointer_rtx,
@@ -3973,6 +4336,16 @@ nds32_expand_epilogue (bool sibcall_p)
 	}
     }
 
+  /* Restore eh data registers.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      Rb = cfun->machine->eh_return_data_first_regno;
+      Re = cfun->machine->eh_return_data_last_regno;
+
+      /* No need to pop $fp, $gp, or $lp.  */
+      nds32_emit_stack_pop_multiple (Rb, Re, false, false, false);
+    }
+
   /* Get callee_first_regno and callee_last_regno.  */
   Rb = cfun->machine->callee_saved_first_gpr_regno;
   Re = cfun->machine->callee_saved_last_gpr_regno;
@@ -4004,6 +4377,42 @@ nds32_expand_epilogue (bool sibcall_p)
       nds32_emit_adjust_frame (stack_pointer_rtx,
 			       stack_pointer_rtx,
 			       sp_adjust);
+    }
+
+  /* If this function uses __builtin_eh_return, make stack adjustment
+     for exception handler.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      /* We need to unwind the stack by the offset computed by
+	 EH_RETURN_STACKADJ_RTX.  However, at this point the CFA is
+	 based on SP.  Ideally we would update the SP and define the
+	 CFA along the lines of:
+
+	 SP = SP + EH_RETURN_STACKADJ_RTX
+	 (regnote CFA = SP - EH_RETURN_STACKADJ_RTX)
+
+	 However the dwarf emitter only understands a constant
+	 register offset.
+
+	 The solution chosen here is to use the otherwise $ta ($r15)
+	 as a temporary register to hold the current SP value.  The
+	 CFA is described using $ta then SP is modified.  */
+
+      rtx ta_reg;
+      rtx insn;
+
+      ta_reg = gen_rtx_REG (SImode, TA_REGNUM);
+
+      insn = emit_move_insn (ta_reg, stack_pointer_rtx);
+      add_reg_note (insn, REG_CFA_DEF_CFA, ta_reg);
+      RTX_FRAME_RELATED_P (insn) = 1;
+
+      emit_insn (gen_addsi3 (stack_pointer_rtx,
+			     stack_pointer_rtx,
+			     EH_RETURN_STACKADJ_RTX));
+
+      /* Ensure the assignment to $ta does not get optimized away.  */
+      emit_use (ta_reg);
     }
 
   /* Generate return instruction.  */
@@ -4369,28 +4778,102 @@ nds32_can_use_return_insn (void)
   return (cfun->machine->naked_p && (cfun->machine->va_args_size == 0));
 }
 
+scalar_int_mode
+nds32_case_vector_shorten_mode (int min_offset, int max_offset,
+				rtx body ATTRIBUTE_UNUSED)
+{
+  if (min_offset < 0 || max_offset >= 0x2000)
+    return SImode;
+  else
+    {
+      /* The jump table maybe need to 2 byte alignment,
+	 so reserved 1 byte for check max_offset.  */
+      if (max_offset >= 0xff)
+	return HImode;
+      else
+	return QImode;
+    }
+}
+
 /* ------------------------------------------------------------------------ */
 
-/* Function to test 333-form for load/store instructions.
-   This is auxiliary extern function for auxiliary macro in nds32.h.
-   Because it is a little complicated, we use function instead of macro.  */
-bool
-nds32_ls_333_p (rtx rt, rtx ra, rtx imm, machine_mode mode)
+/* Return alignment for the label.  */
+int
+nds32_target_alignment (rtx_insn *label)
 {
-  if (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS
-      && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS)
+  rtx_insn *insn;
+
+  if (!NDS32_ALIGN_P ())
+    return 0;
+
+  insn = next_active_insn (label);
+
+  /* Always align to 4 byte when first instruction after label is jump
+     instruction since length for that might changed, so let's always align
+     it for make sure we don't lose any perfomance here.  */
+  if (insn == 0
+      || (get_attr_length (insn) == 2
+	  && !JUMP_P (insn) && !CALL_P (insn)))
+    return 0;
+  else
+    return 2;
+}
+
+/* Return alignment for data.  */
+unsigned int
+nds32_data_alignment (tree data,
+		      unsigned int basic_align)
+{
+  if ((basic_align < BITS_PER_WORD)
+      && (TREE_CODE (data) == ARRAY_TYPE
+	 || TREE_CODE (data) == UNION_TYPE
+	 || TREE_CODE (data) == RECORD_TYPE))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
+}
+
+/* Return alignment for constant value.  */
+static HOST_WIDE_INT
+nds32_constant_alignment (const_tree constant,
+			  HOST_WIDE_INT basic_align)
+{
+  /* Make string literal and constant for constructor to word align.  */
+  if (((TREE_CODE (constant) == STRING_CST
+	|| TREE_CODE (constant) == CONSTRUCTOR
+	|| TREE_CODE (constant) == UNION_TYPE
+	|| TREE_CODE (constant) == RECORD_TYPE
+	|| TREE_CODE (constant) == ARRAY_TYPE)
+       && basic_align < BITS_PER_WORD))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
+}
+
+/* Return alignment for local variable.  */
+unsigned int
+nds32_local_alignment (tree local ATTRIBUTE_UNUSED,
+		       unsigned int basic_align)
+{
+  bool at_least_align_to_word = false;
+  /* Make local array, struct and union at least align to word for make
+     sure it can unroll memcpy when initialize by constant.  */
+  switch (TREE_CODE (local))
     {
-      if (GET_MODE_SIZE (mode) == 4)
-	return satisfies_constraint_Iu05 (imm);
-
-      if (GET_MODE_SIZE (mode) == 2)
-	return satisfies_constraint_Iu04 (imm);
-
-      if (GET_MODE_SIZE (mode) == 1)
-	return satisfies_constraint_Iu03 (imm);
+    case ARRAY_TYPE:
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      at_least_align_to_word = true;
+      break;
+    default:
+      at_least_align_to_word = false;
+      break;
     }
-
-  return false;
+  if (at_least_align_to_word
+      && (basic_align < BITS_PER_WORD))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
 }
 
 bool
@@ -4424,25 +4907,6 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
     return false;
 }
 
-/* Return align 2 (log base 2) if the next instruction of LABEL is 4 byte.  */
-int
-nds32_target_alignment (rtx_insn *label)
-{
-  rtx_insn *insn;
-
-  if (optimize_size)
-    return 0;
-
-  insn = next_active_insn (label);
-
-  if (insn == 0)
-    return 0;
-  else if ((get_attr_length (insn) % 4) == 0)
-    return 2;
-  else
-    return 0;
-}
-
 /* ------------------------------------------------------------------------ */
 
 /* PART 5: Initialize target hook structure and definitions.  */
@@ -4462,6 +4926,12 @@ nds32_target_alignment (rtx_insn *label)
 #define TARGET_PROMOTE_FUNCTION_MODE \
   default_promote_function_mode_always_promote
 
+#undef TARGET_EXPAND_TO_RTL_HOOK
+#define TARGET_EXPAND_TO_RTL_HOOK nds32_expand_to_rtl_hook
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT nds32_constant_alignment
+
 
 /* Layout of Source Language Data Types.  */
 
@@ -4479,6 +4949,12 @@ nds32_target_alignment (rtx_insn *label)
 
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS nds32_hard_regno_nregs
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK nds32_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P nds32_modes_tieable_p
 
 /* -- Handling Leaf Functions.  */
 

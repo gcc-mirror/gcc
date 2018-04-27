@@ -7,6 +7,6 @@ void f() {
   int m = 1;
   int d[n][m];
   [&]() {
-    return d[1];		// { dg-error "variabl" }
+    return d[1];		// { dg-prune-output "sorry" }
   }();
 }

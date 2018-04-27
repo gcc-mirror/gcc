@@ -2578,8 +2578,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Reassociate (X * CST) * Y to (X * Y) * CST.  This does not introduce
    signed overflow for CST != 0 && CST != -1.  */
 (simplify
- (mult:c (mult:s @0 INTEGER_CST@1) @2)
+ (mult:c (mult:s@3 @0 INTEGER_CST@1) @2)
  (if (TREE_CODE (@2) != INTEGER_CST
+      && single_use (@3)
       && !integer_zerop (@1) && !integer_minus_onep (@1))
   (mult (mult @0 @2) @1)))
 
@@ -3700,7 +3701,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (neeq @0 @1)
   (if (POINTER_TYPE_P (TREE_TYPE (@0))
        && ptrs_compare_unequal (@0, @1))
-   { neeq == EQ_EXPR ? boolean_false_node : boolean_true_node; })))
+   { constant_boolean_node (neeq != EQ_EXPR, type); })))
 
 /* PR70920: Transform (intptr_t)x eq/ne CST to x eq/ne (typeof x) CST.
    and (typeof ptr_cst) x eq/ne ptr_cst to x eq/ne (typeof x) CST.
@@ -3711,10 +3712,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cmp (ne eq)
  (simplify
   (cmp (convert @0) INTEGER_CST@1)
-  (if ((POINTER_TYPE_P (TREE_TYPE (@0)) && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@0)))
-	&& INTEGRAL_TYPE_P (TREE_TYPE (@1)))
-      || (INTEGRAL_TYPE_P (TREE_TYPE (@0)) && POINTER_TYPE_P (TREE_TYPE (@1))
-	  && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@1)))))
+  (if (((POINTER_TYPE_P (TREE_TYPE (@0))
+	 && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@0)))
+	 && INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+	|| (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	    && POINTER_TYPE_P (TREE_TYPE (@1))
+	    && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@1)))))
+       && TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
    (cmp @0 (convert @1)))))
 
 /* Non-equality compare simplifications from fold_binary  */

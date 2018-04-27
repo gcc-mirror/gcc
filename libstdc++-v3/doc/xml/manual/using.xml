@@ -1507,7 +1507,7 @@ The standard places requirements on the library to ensure that no data
 races are caused by the library itself or by programs which use the
 library correctly (as described below).
 The C++11 memory model and library requirements are a more formal version
-of the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</link> definition of thread safety, which the library used
+of the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</link> definition of thread safety, which the library used
 prior to the 2011 standard.
 </para>
 
@@ -1780,10 +1780,10 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
    </para>
    <para>Two excellent pages to read when working with the Standard C++
       containers and threads are
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
-      http://www.sgi.com/tech/stl/thread_safety.html</link> and
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/Allocators.html">SGI's
-      http://www.sgi.com/tech/stl/Allocators.html</link>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/thread_safety.html">SGI's
+      https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/thread_safety.html</link> and
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/Allocators.html">SGI's
+      https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/Allocators.html</link>.
    </para>
    <para><emphasis>However, please ignore all discussions about the user-level
       configuration of the lock implementation inside the STL

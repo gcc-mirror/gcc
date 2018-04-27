@@ -275,7 +275,14 @@ get_available_features (unsigned int ecx, unsigned int edx,
     }
 
 #define set_feature(f) \
-  if (f < 32) features |= (1U << f); else features2 |= (1U << (f - 32))
+  do						\
+    {						\
+      if (f < 32)				\
+	features |= (1U << (f & 31));		\
+      else					\
+	features2 |= (1U << ((f - 32) & 31));	\
+    }						\
+  while (0)
 
   if (edx & bit_CMOV)
     set_feature (FEATURE_CMOV);

@@ -5521,7 +5521,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  tree tem;
 	  FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (TYPE_BINFO (t)), i, tem)
 	    fld_worklist_push (TREE_TYPE (tem), fld);
-	  fld_worklist_push (BINFO_VIRTUALS (TYPE_BINFO (t)), fld);
+	  fld_worklist_push (BINFO_TYPE (TYPE_BINFO (t)), fld);
+	  fld_worklist_push (BINFO_VTABLE (TYPE_BINFO (t)), fld);
 	}
       if (RECORD_OR_UNION_TYPE_P (t))
 	{
@@ -5540,6 +5541,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	      tem = TREE_CHAIN (tem);
 	    }
 	}
+      if (FUNC_OR_METHOD_TYPE_P (t))
+	fld_worklist_push (TYPE_METHOD_BASETYPE (t), fld);
 
       fld_worklist_push (TYPE_STUB_DECL (t), fld);
       *ws = 0;
@@ -5858,6 +5861,8 @@ free_lang_data (void)
 
   /* Reset diagnostic machinery.  */
   tree_diagnostics_defaults (global_dc);
+
+  rebuild_type_inheritance_graph ();
 
   return 0;
 }
@@ -13035,7 +13040,7 @@ verify_type_variant (const_tree t, tree tv)
   do {									    \
     if (flag (tv) != flag (t))						    \
       {									    \
-	error ("type variant differs by " #flag ".");			    \
+	error ("type variant differs by %s", #flag);			    \
 	debug_tree (tv);						    \
 	return false;							    \
       }									    \

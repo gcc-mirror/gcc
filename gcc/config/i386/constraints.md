@@ -99,14 +99,8 @@
 
 ;; We use the Y prefix to denote any number of conditional register sets:
 ;;  z	First SSE register.
-;;  i	SSE2 inter-unit moves to SSE register enabled
-;;  j	SSE2 inter-unit moves from SSE register enabled
-;;  d	any EVEX encodable SSE register for AVX512BW target or any SSE register
-;;	for SSE4_1 target, when inter-unit moves to SSE register are enabled
-;;  e	any EVEX encodable SSE register for AVX512BW target or any SSE register
-;;	for SSE4_1 target, when inter-unit moves from SSE register are enabled
-;;  m	MMX inter-unit moves to MMX register enabled
-;;  n	MMX inter-unit moves from MMX register enabled
+;;  d	any EVEX encodable SSE register for AVX512BW target or
+;;	any SSE register for SSE4_1 target.
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  a	Integer register when zero extensions with AND are disabled
 ;;  b	Any register that can be used as the GOT base when calling
@@ -123,37 +117,9 @@
 (define_register_constraint "Yz" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
  "First SSE register (@code{%xmm0}).")
 
-(define_register_constraint "Yi"
- "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC ? ALL_SSE_REGS : NO_REGS"
- "@internal Any SSE register, when SSE2 and inter-unit moves to vector registers are enabled.")
-
-(define_register_constraint "Yj"
- "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_FROM_VEC ? ALL_SSE_REGS : NO_REGS"
- "@internal Any SSE register, when SSE2 and inter-unit moves from vector registers are enabled.")
-
 (define_register_constraint "Yd"
- "TARGET_INTER_UNIT_MOVES_TO_VEC
-  ? (TARGET_AVX512DQ
-     ? ALL_SSE_REGS
-     : (TARGET_SSE4_1 ? SSE_REGS : NO_REGS))
-  : NO_REGS"
- "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512DQ target or any SSE register for SSE4_1 target, when inter-unit moves to vector registers are enabled.")
-
-(define_register_constraint "Ye"
- "TARGET_INTER_UNIT_MOVES_FROM_VEC
-  ? (TARGET_AVX512DQ
-     ? ALL_SSE_REGS
-     : (TARGET_SSE4_1 ? SSE_REGS : NO_REGS))
-  : NO_REGS"
- "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512DQ target or any SSE register for SSE4_1 target, when inter-unit moves from vector registers are enabled.")
-
-(define_register_constraint "Ym"
- "TARGET_MMX && TARGET_INTER_UNIT_MOVES_TO_VEC ? MMX_REGS : NO_REGS"
- "@internal Any MMX register, when inter-unit moves to vector registers are enabled.")
-
-(define_register_constraint "Yn"
- "TARGET_MMX && TARGET_INTER_UNIT_MOVES_FROM_VEC ? MMX_REGS : NO_REGS"
- "@internal Any MMX register, when inter-unit moves from vector registers are enabled.")
+ "TARGET_AVX512DQ ? ALL_SSE_REGS : TARGET_SSE4_1 ? SSE_REGS : NO_REGS"
+ "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512DQ target or any SSE register for SSE4_1 target.")
 
 (define_register_constraint "Yp"
  "TARGET_PARTIAL_REG_STALL ? NO_REGS : GENERAL_REGS"

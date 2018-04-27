@@ -55,6 +55,7 @@
    UNSPECV_CAS
    UNSPECV_XCHG
    UNSPECV_BARSYNC
+   UNSPECV_MEMBAR
    UNSPECV_DIM_POS
 
    UNSPECV_FORK
@@ -1457,6 +1458,27 @@
 		    UNSPECV_BARSYNC)]
   ""
   "\\tbar.sync\\t%0;"
+  [(set_attr "predicable" "false")])
+
+(define_expand "memory_barrier"
+  [(set (match_dup 0)
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR))]
+  ""
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+;; Ptx defines the memory barriers membar.cta, membar.gl and membar.sys
+;; (corresponding to cuda functions threadfence_block, threadfence and
+;; threadfence_system).  For the insn memory_barrier we use membar.sys.  This
+;; may be overconservative, but before using membar.gl instead we'll need to
+;; explain in detail why it's safe to use.  For now, use membar.sys.
+(define_insn "*memory_barrier"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR))]
+  ""
+  "\\tmembar.sys;"
   [(set_attr "predicable" "false")])
 
 (define_insn "nvptx_nounroll"

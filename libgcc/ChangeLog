@@ -1,3 +1,75 @@
+2018-04-27  Alan Modra  <amodra@gmail.com>
+
+	PR libgcc/85532
+	* config/rs6000/t-crtstuff (CRTSTUFF_T_CFLAGS): Add
+	-fno-asynchronous-unwind-tables.
+
+2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/sfp-machine.h: Fix settings for NDS32_ABI_2FP_PLUS.
+	* config/nds32/t-nds32-newlib (HOST_LIBGCC2_CFLAGS): Use -fwrapv.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux-unwind.h: Add (__CET__ & 2) != 0 check
+	when including "config/i386/shadow-stack-unwind.h".
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85456
+	* config/rs6000/_powikf2.c: New file.  Add support for the
+	__builtin_powil function when long double is IEEE 128-bit floating
+	point.
+	* config/rs6000/float128-ifunc.c (__powikf2_resolve): Add
+	__powikf2 support.
+	(__powikf2): Likewise.
+	* config/rs6000/quad-float128.h (__powikf2_sw): Likewise.
+	(__powikf2_hw): Likewise.
+	(__powikf2): Likewise.
+	* config/rs6000/t-float128 (fp128_ppc_funcs): Likewise.
+	* config/rs6000/t-float128-hw (fp128_hw_func): Likewise.
+	(_powikf2-hw.c): Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* unwind-generic.h (_Unwind_Frames_Increment): New.
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Likewise.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Increment frame
+	count with _Unwind_Frames_Increment.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85379
+	* config/i386/morestack.S (__stack_split_initialize): Add
+	_CET_ENDBR.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84945
+	* config/i386/cpuinfo.c (set_feature): Wrap into do while (0) to avoid
+	-Wdangling-else warnings.  Mask shift counts to avoid
+	-Wshift-count-negative and -Wshift-count-overflow false positives.
+
+2018-04-06  Ruslan Bukin  <br@bsdpad.com>
+
+	* config.host (riscv*-*-freebsd*): Add RISC-V FreeBSD support.
+
 2018-03-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85100

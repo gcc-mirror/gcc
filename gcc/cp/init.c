@@ -180,7 +180,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
        items with static storage duration that are not otherwise
        initialized are initialized to zero.  */
     ;
-  else if (TYPE_PTR_OR_PTRMEM_P (type))
+  else if (TYPE_PTR_OR_PTRMEM_P (type) || NULLPTR_TYPE_P (type))
     init = fold (convert (type, nullptr_node));
   else if (SCALAR_TYPE_P (type))
     init = fold (convert (type, integer_zero_node));
@@ -634,7 +634,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
   bool simple_target = (init && SIMPLE_TARGET_EXPR_P (init));
   if (simple_target)
     init = TARGET_EXPR_INITIAL (init);
-  init = break_out_target_exprs (init);
+  init = break_out_target_exprs (init, /*loc*/true);
   if (simple_target && TREE_CODE (init) != CONSTRUCTOR)
     /* Now put it back so C++17 copy elision works.  */
     init = get_target_expr (init);

@@ -1,3 +1,26 @@
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-17  Ian Lance Taylor  <iant@golang.org>
+
+	* backtrace.c: Revert last two changes.  Don't call mmap
+	directly.
+
+2018-04-17  Ian Lance Taylor  <iant@golang.org>
+
+	* backtrace.c: Include backtrace-supported.h before checking
+	BACKTRACE_USES_MALLOC.
+
+2018-04-17  Ian Lance Taylor  <iant@golang.org>
+
+	* backtrace.c (backtrace_full): When testing whether we can
+	allocate memory, call mmap directly, and munmap the memory.
+
 2018-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/85161

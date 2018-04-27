@@ -34,6 +34,17 @@ enum nds32_arch_type
   ARCH_V3S
 };
 
+/* The various ANDES CPU.  */
+enum nds32_cpu_type
+{
+  CPU_N6,
+  CPU_N7,
+  CPU_N8,
+  CPU_E8,
+  CPU_N9,
+  CPU_SIMPLE
+};
+
 /* The code model defines the address generation strategy.  */
 enum nds32_cmodel_type
 {
@@ -42,10 +53,19 @@ enum nds32_cmodel_type
   CMODEL_LARGE
 };
 
-/* The various ANDES CPU.  */
-enum nds32_cpu_type
+/* Multiply instruction configuration.  */
+enum nds32_mul_type
 {
-  CPU_N9
+  MUL_TYPE_FAST_1,
+  MUL_TYPE_FAST_2,
+  MUL_TYPE_SLOW
+};
+
+/* Register ports configuration.  */
+enum nds32_register_ports
+{
+  REG_PORT_3R2W,
+  REG_PORT_2R1W
 };
 
 /* Which ABI to use.  */

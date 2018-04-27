@@ -132,6 +132,8 @@ vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
 
   if (is_gimple_assign (stmt)
       && (gimple_assign_cast_p (stmt)
+          || gimple_assign_rhs_code (stmt) == DOT_PROD_EXPR
+          || gimple_assign_rhs_code (stmt) == WIDEN_SUM_EXPR
           || gimple_assign_rhs_code (stmt) == WIDEN_MULT_EXPR
           || gimple_assign_rhs_code (stmt) == WIDEN_LSHIFT_EXPR
           || gimple_assign_rhs_code (stmt) == FLOAT_EXPR))
@@ -1251,7 +1253,8 @@ static void
 vect_get_data_access_cost (struct data_reference *dr,
                            unsigned int *inside_cost,
                            unsigned int *outside_cost,
-			   stmt_vector_for_cost *body_cost_vec)
+			   stmt_vector_for_cost *body_cost_vec,
+			   stmt_vector_for_cost *prologue_cost_vec)
 {
   gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -1265,7 +1268,7 @@ vect_get_data_access_cost (struct data_reference *dr,
 
   if (DR_IS_READ (dr))
     vect_get_load_cost (dr, ncopies, true, inside_cost, outside_cost,
-			NULL, body_cost_vec, false);
+			prologue_cost_vec, body_cost_vec, false);
   else
     vect_get_store_cost (dr, ncopies, inside_cost, body_cost_vec);
 
@@ -1374,6 +1377,7 @@ vect_get_peeling_costs_all_drs (vec<data_reference_p> datarefs,
 				unsigned int *inside_cost,
 				unsigned int *outside_cost,
 				stmt_vector_for_cost *body_cost_vec,
+				stmt_vector_for_cost *prologue_cost_vec,
 				unsigned int npeel,
 				bool unknown_misalignment)
 {
@@ -1408,7 +1412,7 @@ vect_get_peeling_costs_all_drs (vec<data_reference_p> datarefs,
       else
 	vect_update_misalignment_for_peel (dr, dr0, npeel);
       vect_get_data_access_cost (dr, inside_cost, outside_cost,
-				 body_cost_vec);
+				 body_cost_vec, prologue_cost_vec);
       SET_DR_MISALIGNMENT (dr, save_misalignment);
     }
 }
@@ -1435,7 +1439,8 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
 
   vect_get_peeling_costs_all_drs (LOOP_VINFO_DATAREFS (loop_vinfo),
 				  elem->dr, &inside_cost, &outside_cost,
-				  &body_cost_vec, elem->npeel, false);
+				  &body_cost_vec, &prologue_cost_vec,
+				  elem->npeel, false);
 
   body_cost_vec.release ();
 
@@ -1865,7 +1870,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       vect_get_peeling_costs_all_drs (datarefs, dr0,
 				      &load_inside_cost,
 				      &load_outside_cost,
-				      &dummy, estimated_npeels, true);
+				      &dummy, &dummy, estimated_npeels, true);
       dummy.release ();
 
       if (first_store)
@@ -1874,7 +1879,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  vect_get_peeling_costs_all_drs (datarefs, first_store,
 					  &store_inside_cost,
 					  &store_outside_cost,
-					  &dummy, estimated_npeels, true);
+					  &dummy, &dummy,
+					  estimated_npeels, true);
 	  dummy.release ();
 	}
       else
@@ -1963,7 +1969,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       stmt_vector_for_cost dummy;
       dummy.create (2);
       vect_get_peeling_costs_all_drs (datarefs, NULL, &nopeel_inside_cost,
-				      &nopeel_outside_cost, &dummy, 0, false);
+				      &nopeel_outside_cost, &dummy, &dummy,
+				      0, false);
       dummy.release ();
 
       /* Add epilogue costs.  As we do not peel for alignment here, no prologue
@@ -5008,6 +5015,27 @@ bump_vector_ptr (tree dataref_ptr, gimple *ptr_incr, gimple_stmt_iterator *gsi,
 }
 
 
+/* Copy memory reference info such as base/clique from the SRC reference
+   to the DEST MEM_REF.  */
+
+void
+vect_copy_ref_info (tree dest, tree src)
+{
+  if (TREE_CODE (dest) != MEM_REF)
+    return;
+
+  tree src_base = src;
+  while (handled_component_p (src_base))
+    src_base = TREE_OPERAND (src_base, 0);
+  if (TREE_CODE (src_base) != MEM_REF
+      && TREE_CODE (src_base) != TARGET_MEM_REF)
+    return;
+
+  MR_DEPENDENCE_CLIQUE (dest) = MR_DEPENDENCE_CLIQUE (src_base);
+  MR_DEPENDENCE_BASE (dest) = MR_DEPENDENCE_BASE (src_base);
+}
+
+
 /* Function vect_create_destination_var.
 
    Create a new temporary of type VECTYPE.  */
@@ -5559,6 +5587,7 @@ vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
       data_ref
 	= build2 (MEM_REF, TREE_TYPE (vec_dest), new_temp,
 		  build_int_cst (reference_alias_ptr_type (DR_REF (dr)), 0));
+      vect_copy_ref_info (data_ref, DR_REF (dr));
       new_stmt = gimple_build_assign (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);

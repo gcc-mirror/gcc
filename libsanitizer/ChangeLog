@@ -1,3 +1,37 @@
+2018-04-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.tgt <mips*-*-linux*>: Enable build, excluding
+	mips*64*-*-linux*.
+
+	* sanitizer_common/sanitizer_platform_limits_linux.cc: Do not
+	take the shortcut to #include <sys/stat.h> for MIPS instead of
+	the kernel <asm/stat.h>.  Explain why sys/stat.h is misleading
+	or wrong to get the kernel struct stat.
+	* sanitizer_common/sanitizer_platform_limits_posix.h [__mips__]:
+	Correct the value for 32-bit non-android struct_kernel_stat_sz.
+
+	* sanitizer_common/sanitizer_atomic_clang_other.h [_MIPS_SIM
+	&& _MIPS_SIM == _ABIO32] (lock): Add initializer for .pad member.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-04-18  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR sanitizer/85389
+	* asan/asan_allocator.h (kAllocatorSpace): For __powerpc64__ change
+	from 0xa0000000000ULL to ~(uptr)0.
+
 2018-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/84761

@@ -5600,8 +5600,6 @@ resolve_omp_do (gfc_code *code)
 			     "iteration space at %L", name, &do_code->loc);
 		  break;
 		}
-	      if (j < i)
-		break;
 	      do_code2 = do_code2->block->next;
 	    }
 	}
@@ -5765,12 +5763,10 @@ resolve_oacc_nested_loops (gfc_code *code, gfc_code* do_code, int collapse,
 		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->end)
 		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->step))
 		{
-		  gfc_error ("!$ACC LOOP %s loops don't form rectangular iteration space at %L",
-			     clause, &do_code->loc);
+		  gfc_error ("!$ACC LOOP %s loops don't form rectangular "
+			     "iteration space at %L", clause, &do_code->loc);
 		  break;
 		}
-	      if (j < i)
-		break;
 	      do_code2 = do_code2->block->next;
 	    }
 	}

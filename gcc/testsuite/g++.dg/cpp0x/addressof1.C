@@ -18,9 +18,7 @@ static_assert (addressof (j) == &i, "");
 
 struct S { int s; } s;
 static_assert (__builtin_addressof (s) == &s, "");
-static_assert ((int *) __builtin_addressof (s) == &s.s, "");
 static_assert (addressof (s) == &s, "");
-static_assert ((int *) addressof (s) == &s.s, "");
 
 struct T
 {
@@ -31,9 +29,7 @@ struct T
 };
 constexpr T t;
 T T::tt;
-static_assert (__builtin_addressof (t) == (const T *) &t.p, "");
 static_assert (&t == __builtin_addressof (T::tt), "");
-static_assert (addressof (t) == (const T *) &t.p, "");
 static_assert (&t == addressof (T::tt), "");
 
 struct S x, y;
@@ -76,8 +72,6 @@ constexpr int a = 1;
 static_assert (__builtin_addressof (a) == &a, "");
 static_assert (addressof (a) == &a, "");
 constexpr int c[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-static_assert ((const int *) __builtin_addressof (c) == &c[0], "");
-static_assert ((const int *) addressof (c) == &c[0], "");
 
 void
 baz ()
@@ -93,4 +87,15 @@ main ()
       || __builtin_addressof (baz) != baz
       || addressof (baz) != baz)
     __builtin_abort ();
+
+  // reinterpret casts are not constexprs
+  if (! (((int *) __builtin_addressof (s) == &s.s)
+	 && ((int *) addressof (s) == &s.s)
+	 && (__builtin_addressof (t) == (const T *) &t.p)
+	 && (addressof (t) == (const T *) &t.p)
+	 && ((const int *) __builtin_addressof (c) == &c[0])
+	 && ((const int *) addressof (c) == &c[0])))
+    __builtin_abort ();
+
+  return 0;
 }

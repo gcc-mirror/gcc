@@ -1789,6 +1789,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 bool
 reduced_constant_expression_p (tree t)
 {
+  if (t == NULL_TREE)
+    return false;
+
   switch (TREE_CODE (t))
     {
     case PTRMEM_CST:
@@ -1810,9 +1813,8 @@ reduced_constant_expression_p (tree t)
 	field = NULL_TREE;
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, idx, val)
 	{
-	  if (!val)
-	    /* We're in the middle of initializing this element.  */
-	    return false;
+	  /* If VAL is null, we're in the middle of initializing this
+	     element.  */
 	  if (!reduced_constant_expression_p (val))
 	    return false;
 	  if (field)
@@ -1836,8 +1838,8 @@ reduced_constant_expression_p (tree t)
 }
 
 /* Some expressions may have constant operands but are not constant
-   themselves, such as 1/0.  Call this function (or rather, the macro
-   following it) to check for that condition.
+   themselves, such as 1/0.  Call this function to check for that
+   condition.
 
    We only call this in places that require an arithmetic constant, not in
    places where we might have a non-constant expression that can be a
@@ -4593,9 +4595,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 				       non_constant_p, overflow_p);
       break;
 
+    case NOP_EXPR:
+      if (REINTERPRET_CAST_P (t))
+	{
+	  if (!ctx->quiet)
+	    error_at (EXPR_LOC_OR_LOC (t, input_location),
+		      "a reinterpret_cast is not a constant expression");
+	  *non_constant_p = true;
+	  return t;
+	}
+      /* FALLTHROUGH.  */
     case CONVERT_EXPR:
     case VIEW_CONVERT_EXPR:
-    case NOP_EXPR:
     case UNARY_PLUS_EXPR:
       {
 	tree oldop = TREE_OPERAND (t, 0);
@@ -4609,20 +4620,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (TREE_CODE (op) == PTRMEM_CST
 	    && !TYPE_PTRMEM_P (type))
 	  op = cplus_expand_constant (op);
+
 	if (TREE_CODE (op) == PTRMEM_CST && tcode == NOP_EXPR)
 	  {
-	    if (same_type_ignoring_top_level_qualifiers_p (type,
-							   TREE_TYPE (op))
-		|| can_convert_qual (type, op))
-	      return cp_fold_convert (type, op);
-	    else
-	      {
-		if (!ctx->quiet)
-		  error_at (EXPR_LOC_OR_LOC (t, input_location),
-			    "a reinterpret_cast is not a constant expression");
-		*non_constant_p = true;
-		return t;
-	      }
+	    if (!same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (op))
+		&& !can_convert_qual (type, op))
+	      op = cplus_expand_constant (op);
+	    return cp_fold_convert (type, op);
 	  }
 
 	if (POINTER_TYPE_P (type) && TREE_CODE (op) == INTEGER_CST)
@@ -4667,14 +4671,17 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		return t;
 	      }
 	  }
+
 	if (op == oldop && tcode != UNARY_PLUS_EXPR)
 	  /* We didn't fold at the top so we could check for ptr-int
 	     conversion.  */
 	  return fold (t);
+
 	if (tcode == UNARY_PLUS_EXPR)
 	  r = fold_convert (TREE_TYPE (t), op);
 	else
 	  r = fold_build1 (tcode, type, op);
+
 	/* Conversion of an out-of-range value has implementation-defined
 	   behavior; the language considers it different from arithmetic
 	   overflow, which is undefined.  */
@@ -5792,6 +5799,25 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		      "cast to non-integral type %qT in a constant expression",
 		      TREE_TYPE (t));
 	  return false;
+	}
+      /* This might be a conversion from a class to a (potentially) literal
+	 type.  Let's consider it potentially constant since the conversion
+	 might be a constexpr user-defined conversion.  */
+      else if (cxx_dialect >= cxx11
+	       && (dependent_type_p (TREE_TYPE (t))
+		   || !COMPLETE_TYPE_P (TREE_TYPE (t))
+		   || literal_type_p (TREE_TYPE (t)))
+	       && TREE_OPERAND (t, 0))
+	{
+	  tree type = TREE_TYPE (TREE_OPERAND (t, 0));
+	  /* If this is a dependent type, it could end up being a class
+	     with conversions.  */
+	  if (type == NULL_TREE || WILDCARD_TYPE_P (type))
+	    return true;
+	  /* Or a non-dependent class which has conversions.  */
+	  else if (CLASS_TYPE_P (type)
+		   && (TYPE_HAS_CONVERSION (type) || dependent_scope_p (type)))
+	    return true;
 	}
 
       return (RECUR (TREE_OPERAND (t, 0),

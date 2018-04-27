@@ -867,7 +867,7 @@ hardware's requirements explicitly.
 @defun push_operand
 This predicate allows a memory reference suitable for pushing a value
 onto the stack.  This will be a @code{MEM} which refers to
-@code{stack_pointer_rtx}, with a side-effect in its address expression
+@code{stack_pointer_rtx}, with a side effect in its address expression
 (@pxref{Incdec}); which one is determined by the
 @code{STACK_PUSH_CODE} macro (@pxref{Frame Layout}).
 @end defun
@@ -875,7 +875,7 @@ onto the stack.  This will be a @code{MEM} which refers to
 @defun pop_operand
 This predicate allows a memory reference suitable for popping a value
 off the stack.  Again, this will be a @code{MEM} referring to
-@code{stack_pointer_rtx}, with a side-effect in its address
+@code{stack_pointer_rtx}, with a side effect in its address
 expression.  However, this time @code{STACK_POP_CODE} is expected.
 @end defun
 
@@ -1091,7 +1091,7 @@ operand may be an immediate constant, and which possible values it may
 have.  Constraints can also require two operands to match.
 Side-effects aren't allowed in operands of inline @code{asm}, unless
 @samp{<} or @samp{>} constraints are used, because there is no guarantee
-that the side-effects will happen exactly once in an instruction that can update
+that the side effects will happen exactly once in an instruction that can update
 the addressing register.
 
 @ifset INTERNALS
@@ -1172,9 +1172,9 @@ would fit the @samp{m} constraint but not the @samp{o} constraint.
 A memory operand with autodecrement addressing (either predecrement or
 postdecrement) is allowed.  In inline @code{asm} this constraint is only
 allowed if the operand is used exactly once in an instruction that can
-handle the side-effects.  Not using an operand with @samp{<} in constraint
+handle the side effects.  Not using an operand with @samp{<} in constraint
 string in the inline @code{asm} pattern at all or using it in multiple
-instructions isn't valid, because the side-effects wouldn't be performed
+instructions isn't valid, because the side effects wouldn't be performed
 or would be performed more than once.  Furthermore, on some targets
 the operand with @samp{<} in constraint string must be accompanied by
 special instruction suffixes like @code{%U0} instruction suffix on PowerPC

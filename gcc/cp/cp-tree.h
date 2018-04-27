@@ -374,6 +374,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
       DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
       SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
+      REINTERPRET_CAST_P (in NOP_EXPR)
+      ALIGNOF_EXPR_STD_P (in ALIGNOF_EXPR)
       OVL_EXPORT_P (in OVERLOAD)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
@@ -638,6 +640,11 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 
 #define COND_EXPR_IS_VEC_DELETE(NODE) \
   TREE_LANG_FLAG_0 (COND_EXPR_CHECK (NODE))
+
+/* Nonzero if this NOP_EXPR is a reinterpret_cast.  Such conversions
+   are not constexprs.  Other NOP_EXPRs are.  */
+#define REINTERPRET_CAST_P(NODE)		\
+  TREE_LANG_FLAG_0 (NOP_EXPR_CHECK (NODE))
 
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
    sense of `same'.  */
@@ -5080,6 +5087,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define SIZEOF_EXPR_TYPE_P(NODE) \
   TREE_LANG_FLAG_0 (SIZEOF_EXPR_CHECK (NODE))
 
+/* True if the ALIGNOF_EXPR was spelled "alignof".  */
+#define ALIGNOF_EXPR_STD_P(NODE) \
+  TREE_LANG_FLAG_0 (ALIGNOF_EXPR_CHECK (NODE))
+
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
   none_type = 0, /* Not a tag type.  */
@@ -5996,19 +6007,76 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   /* The immediately deeper level in the chain.  */
   struct tinst_level *next;
 
-  /* The original node.  Can be either a DECL (for a function or static
-     data member) or a TYPE (for a class), depending on what we were
-     asked to instantiate.  */
-  tree decl;
+  /* The original node.  TLDCL can be a DECL (for a function or static
+     data member), a TYPE (for a class), depending on what we were
+     asked to instantiate, or a TREE_LIST with the template as PURPOSE
+     and the template args as VALUE, if we are substituting for
+     overload resolution.  In all these cases, TARGS is NULL.
+     However, to avoid creating TREE_LIST objects for substitutions if
+     we can help, we store PURPOSE and VALUE in TLDCL and TARGS,
+     respectively.  So TLDCL stands for TREE_LIST or DECL (the
+     template is a DECL too), whereas TARGS stands for the template
+     arguments.  */
+  tree tldcl, targs;
+
+ private:
+  /* Return TRUE iff the original node is a split list.  */
+  bool split_list_p () const { return targs; }
+
+  /* Return TRUE iff the original node is a TREE_LIST object.  */
+  bool tree_list_p () const
+  {
+    return !split_list_p () && TREE_CODE (tldcl) == TREE_LIST;
+  }
+
+  /* Return TRUE iff the original node is not a list, split or not.  */
+  bool not_list_p () const
+  {
+    return !split_list_p () && !tree_list_p ();
+  }
+
+  /* Convert (in place) the original node from a split list to a
+     TREE_LIST.  */
+  tree to_list ();
+
+ public:
+  /* Release storage for OBJ and node, if it's a TREE_LIST.  */
+  static void free (tinst_level *obj);
+
+  /* Return TRUE iff the original node is a list, split or not.  */
+  bool list_p () const { return !not_list_p (); }
+
+  /* Return the original node; if it's a split list, make it a
+     TREE_LIST first, so that it can be returned as a single tree
+     object.  */
+  tree get_node () {
+    if (!split_list_p ()) return tldcl;
+    else return to_list ();
+  }
+
+  /* Return the original node if it's a DECL or a TREE_LIST, but do
+     NOT convert a split list to a TREE_LIST: return NULL instead.  */
+  tree maybe_get_node () const {
+    if (!split_list_p ()) return tldcl;
+    else return NULL_TREE;
+  }
 
   /* The location where the template is instantiated.  */
   location_t locus;
 
-  /* errorcount+sorrycount when we pushed this level.  */
-  int errors;
+  /* errorcount + sorrycount when we pushed this level.  */
+  unsigned short errors;
 
-  /* True if the location is in a system header.  */
-  bool in_system_header_p;
+  /* Count references to this object.  If refcount reaches
+     refcount_infinity value, we don't increment or decrement the
+     refcount anymore, as the refcount isn't accurate anymore.
+     The object can be still garbage collected if unreferenced from
+     anywhere, which might keep referenced objects referenced longer than
+     otherwise necessary.  Hitting the infinity is rare though.  */
+  unsigned short refcount;
+
+  /* Infinity value for the above refcount.  */
+  static const unsigned short refcount_infinity = (unsigned short) ~0;
 };
 
 bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);
@@ -6122,6 +6190,8 @@ extern bool can_convert_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern bool can_convert_arg_bad			(tree, tree, tree, int,
 						 tsubst_flags_t);
+extern location_t get_fndecl_argument_location  (tree, int);
+
 
 /* A class for recording information about access failures (e.g. private
    fields), so that we can potentially supply a fix-it hint about
@@ -7212,7 +7282,7 @@ extern tree build_exception_variant		(tree, tree);
 extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
-extern tree break_out_target_exprs		(tree);
+extern tree break_out_target_exprs		(tree, bool = false);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
 extern tree replace_placeholders		(tree, tree, bool * = NULL);
 extern bool find_placeholders			(tree);
@@ -7290,7 +7360,7 @@ extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qualification		(int, int);
 extern int comp_cv_qual_signature		(tree, tree);
 extern tree cxx_sizeof_or_alignof_expr		(tree, enum tree_code, bool);
-extern tree cxx_sizeof_or_alignof_type		(tree, enum tree_code, bool);
+extern tree cxx_sizeof_or_alignof_type		(tree, enum tree_code, bool, bool);
 extern tree cxx_alignas_expr                    (tree);
 extern tree cxx_sizeof_nowarn                   (tree);
 extern tree is_bitfield_expr_with_lowered_type  (const_tree);
@@ -7387,7 +7457,7 @@ extern tree cp_build_binary_op                  (location_t,
 extern tree build_x_vec_perm_expr               (location_t,
 						 tree, tree, tree,
 						 tsubst_flags_t);
-#define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, true)
+#define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, false, true)
 extern tree build_simple_component_ref		(tree, tree);
 extern tree build_ptrmemfunc_access_expr	(tree, tree);
 extern tree build_address			(tree);

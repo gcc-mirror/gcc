@@ -593,8 +593,10 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	         remove this special test.  */
 	      rtx const_vector = get_pool_constant (base);
 	      if (GET_CODE (const_vector) == SYMBOL_REF
-		  && !CONSTANT_POOL_ADDRESS_P (const_vector))
-		    return false;
+		  && CONSTANT_POOL_ADDRESS_P (const_vector))
+		const_vector = get_pool_constant (const_vector);
+	      if (GET_CODE (const_vector) != CONST_VECTOR)
+		return false;
 	    }
 	}
     }

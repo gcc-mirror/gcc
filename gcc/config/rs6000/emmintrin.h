@@ -1488,12 +1488,12 @@ _mm_slli_epi16 (__m128i __A, int __B)
   __v8hu lshift;
   __v8hi result = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  if (__B < 16)
+  if (__B >= 0 && __B < 16)
     {
       if (__builtin_constant_p(__B))
-	  lshift = (__v8hu) vec_splat_s16(__B);
+	lshift = (__v8hu) vec_splat_s16(__B);
       else
-	  lshift = vec_splats ((unsigned short) __B);
+	lshift = vec_splats ((unsigned short) __B);
 
       result = vec_vslh ((__v8hi) __A, lshift);
     }
@@ -1507,9 +1507,9 @@ _mm_slli_epi32 (__m128i __A, int __B)
   __v4su lshift;
   __v4si result = { 0, 0, 0, 0 };
 
-  if (__B < 32)
+  if (__B >= 0 && __B < 32)
     {
-      if (__builtin_constant_p(__B))
+      if (__builtin_constant_p(__B) && __B < 16)
 	lshift = (__v4su) vec_splat_s32(__B);
       else
 	lshift = vec_splats ((unsigned int) __B);
@@ -1527,17 +1527,12 @@ _mm_slli_epi64 (__m128i __A, int __B)
   __v2du lshift;
   __v2di result = { 0, 0 };
 
-  if (__B < 64)
+  if (__B >= 0 && __B < 64)
     {
-      if (__builtin_constant_p(__B))
-	{
-	  if (__B < 32)
-	      lshift = (__v2du) vec_splat_s32(__B);
-	    else
-	      lshift = (__v2du) vec_splats((unsigned long long)__B);
-	}
+      if (__builtin_constant_p(__B) && __B < 16)
+	lshift = (__v2du) vec_splat_s32(__B);
       else
-	  lshift = (__v2du) vec_splats ((unsigned int) __B);
+	lshift = (__v2du) vec_splats ((unsigned int) __B);
 
       result = vec_vsld ((__v2di) __A, lshift);
     }

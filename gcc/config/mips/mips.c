@@ -22307,6 +22307,14 @@ mips_constant_alignment (const_tree exp, HOST_WIDE_INT align)
   return align;
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+mips_asan_shadow_offset (void)
+{
+  return 0x0aaa0000;
+}
+
 /* Implement TARGET_STARTING_FRAME_OFFSET.  See mips_compute_frame_info
    for details about the frame layout.  */
 
@@ -22617,6 +22625,9 @@ mips_starting_frame_offset (void)
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT mips_constant_alignment
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET mips_asan_shadow_offset
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET mips_starting_frame_offset

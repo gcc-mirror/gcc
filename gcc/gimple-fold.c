@@ -1612,7 +1612,11 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
   /* If SRC and DEST are the same (and not volatile), return DEST.  */
   if (operand_equal_p (src, dest, 0))
     {
-      if (!gimple_no_warning_p (stmt))
+      /* Issue -Wrestrict unless the pointers are null (those do
+	 not point to objects and so do not indicate an overlap;
+	 such calls could be the result of sanitization and jump
+	 threading).  */
+      if (!integer_zerop (dest) && !gimple_no_warning_p (stmt))
 	{
 	  tree func = gimple_call_fndecl (stmt);
 
@@ -2593,7 +2597,11 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
   /* If SRC and DEST are the same (and not volatile), return DEST.  */
   if (fcode == BUILT_IN_STRCPY_CHK && operand_equal_p (src, dest, 0))
     {
-      if (!gimple_no_warning_p (stmt))
+      /* Issue -Wrestrict unless the pointers are null (those do
+	 not point to objects and so do not indicate an overlap;
+	 such calls could be the result of sanitization and jump
+	 threading).  */
+      if (!integer_zerop (dest) && !gimple_no_warning_p (stmt))
 	{
 	  tree func = gimple_call_fndecl (stmt);
 

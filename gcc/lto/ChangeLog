@@ -1,3 +1,45 @@
+2018-04-19  Martin Liska  <mliska@suse.cz>
+
+	* lto-symtab.c (lto_symtab_resolve_symbols): Do not bail out
+	for multiple PREVAILING_DEF_IRONLY for common symbols.
+
+2018-04-18  Martin Liska  <mliska@suse.cz>
+
+	* lto.c (lto_read_decls): Fix GNU coding style and typos.
+
+2018-04-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/83983
+	PR ipa/85391
+	* lto.c (cmp_type_location): New function.
+	(lto_read_decls): First collect all types, then
+	sort them according by location before register_odr_type
+	is called.
+
+2018-04-18  Jan Hubicka  <jh@suse.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR lto/85391
+	* lto.c (lto_read_decls): Do not test TYPE_CANONICAL before registering odr
+	types.
+
+2018-04-11  Martin Liska  <mliska@suse.cz>
+
+	* lto-symtab.c (lto_symtab_merge_p): Use attribute_value_equal
+	function.
+
+2018-04-10  Martin Liska  <mliska@suse.cz>
+
+	PR lto/85248
+	* lto-symtab.c (lto_symtab_merge_p): Do not check for
+	TREE_VALUES of error attributes.
+
+2018-04-10  Richard Biener  <rguenther@suse.de>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR lto/85248
+	* lto-symtab.c (lto_symtab_merge_p): Handle noreturn attribute.
+
 2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (lto_balanced_map): Watch overflow.

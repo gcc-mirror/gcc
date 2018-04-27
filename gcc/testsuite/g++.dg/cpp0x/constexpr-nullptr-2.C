@@ -99,9 +99,8 @@ constexpr const volatile void* pv3 = p0;
 constexpr void* pv4 = static_cast<void*>(p0);
 constexpr const void* pv5 = static_cast<const void*>(p0);
 
-// The following should be rejected but isn't because of bug c++/49171
-// - [C++0x][constexpr] Constant expressions support reinterpret_cast
-constexpr void* pv6 = reinterpret_cast<void*>(p0);   // { dg-error "" "bug c++/49171" { xfail *-*-* } }
+// The following was accepted due to bug c++/49171
+constexpr void* pv6 = reinterpret_cast<void*>(p0);   // { dg-error "not a constant expression" }
 
 // Adding or subtracting zero from a null pointer is valid in C++.
 constexpr int* p1 = p0 + 0;
@@ -192,12 +191,11 @@ constexpr bool b11 = ps >= (S*)0;
 constexpr S* ps1 = ps;
 constexpr S* ps2 = ps1;
 
-// The following aren't diagnosed due to a bug.
-// constexpr int* pi0 = &((S*)0)->i;
-// constexpr int* pi1 = &((S*)nullptr)->i;
+constexpr int* pi0 = &((S*)0)->i;	// { dg-error "null pointer|not a constant" }
+constexpr int* pi1 = &((S*)nullptr)->i;	// { dg-error "null pointer|not a constant" }
 
-constexpr int* pj0 = &((S*)0)->j;	// { dg-error "not a constant expression" }
-constexpr int* pj1 = &((S*)nullptr)->j;  // { dg-error "not a constant expression" }
+constexpr int* pj0 = &((S*)0)->j;	// { dg-error "null pointer|not a constant" }
+constexpr int* pj1 = &((S*)nullptr)->j;	// { dg-error "null pointer|not a constant" }
 
 constexpr int* psi = &ps->i;	    // { dg-error "null pointer|not a constant" }
 constexpr int* psj = &ps->j;	    // { dg-error "null pointer|not a constant" }

@@ -1316,8 +1316,7 @@ Optional Features:
 			enable decimal float extension to C.  Selecting 'bid'
 			or 'dpd' choses which decimal floating point format
 			to use
-  --enable-cet            enable Intel CET in target libraries
-                          [default=default]
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --enable-explicit-exception-frame-registration
                           register exception tables explicitly at module
                           start, for use e.g. for compatibility with
@@ -4781,12 +4780,12 @@ $as_echo "$ac_cv_sjlj_exceptions" >&6; }
 if test "${enable_cet+set}" = set; then :
   enableval=$enable_cet;
       case "$enableval" in
-       yes|no|default) ;;
+       yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
                           esac
 
 else
-  enable_cet=default
+  enable_cet=no
 fi
 
 
@@ -4796,7 +4795,7 @@ $as_echo_n "checking for CET support... " >&6; }
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
-      default)
+      auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -4850,7 +4849,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     ;;
 esac
 if test x$enable_cet = xyes; then
-  CET_FLAGS="-fcf-protection -mcet"
+  CET_FLAGS="-fcf-protection -mshstk"
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -5463,7 +5462,7 @@ esac
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi

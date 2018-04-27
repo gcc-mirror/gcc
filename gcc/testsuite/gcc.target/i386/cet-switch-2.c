@@ -1,6 +1,6 @@
 /* Verify that CET works.  */
 /* { dg-do compile } */
-/* { dg-options "-O -fcf-protection -mcet -mcet-switch" } */
+/* { dg-options "-O -fcf-protection -mcet-switch" } */
 /* { dg-final { scan-assembler-times "endbr32" 12 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "endbr64" 12 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "\[ \t]+jmp\[ \t]+\[*]" 1 } } */

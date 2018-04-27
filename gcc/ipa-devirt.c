@@ -684,16 +684,9 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
     {
       if (!types_same_for_odr (t1, t2, true))
         return false;
-      /* Limit recursion: if subtypes are ODR types and we know that they are
-	 same, be happy.  We need to call get_odr_type on both subtypes since
-	 we don't know which among t1 and t2 defines the common ODR type and
-	 therefore which call will report the ODR violation, if any.  */
-	 if (!odr_type_p (t1)
-	     || !odr_type_p (t2)
-	     || !COMPLETE_TYPE_P (t1)
-	     || !COMPLETE_TYPE_P (t2)
-	     || (!get_odr_type (t1, true)->odr_violated
-		 && !get_odr_type (t2, true)->odr_violated))
+      /* Limit recursion: If subtypes are ODR types and we know
+	 that they are same, be happy.  */
+      if (!odr_type_p (t1) || !get_odr_type (t1, true)->odr_violated)
         return true;
     }
 
@@ -1587,8 +1580,15 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 				 "in another translation unit"));
 		    return false;
 		  }
-		gcc_assert (DECL_NONADDRESSABLE_P (f1)
-			    == DECL_NONADDRESSABLE_P (f2));
+		if (DECL_BIT_FIELD (f1) != DECL_BIT_FIELD (f2))
+		  {
+		    warn_odr (t1, t2, f1, f2, warn, warned,
+			      G_("one field is bitfield while other is not"));
+		    return false;
+		  }
+		else
+		  gcc_assert (DECL_NONADDRESSABLE_P (f1)
+			      == DECL_NONADDRESSABLE_P (f2));
 	      }
 
 	    /* If one aggregate has more fields than the other, they
@@ -2700,6 +2700,24 @@ free_polymorphic_call_targets_hash ()
       delete cached_polymorphic_call_targets;
       cached_polymorphic_call_targets = NULL;
     }
+}
+
+/* Force rebuilding type inheritance graph from scratch.
+   This is use to make sure that we do not keep references to types
+   which was not visible to free_lang_data.  */
+
+void
+rebuild_type_inheritance_graph ()
+{
+  if (!odr_hash)
+    return;
+  delete odr_hash;
+  if (in_lto_p)
+    delete odr_vtable_hash;
+  odr_hash = NULL;
+  odr_vtable_hash = NULL;
+  odr_types_ptr = NULL;
+  free_polymorphic_call_targets_hash ();
 }
 
 /* When virtual function is removed, we may need to flush the cache.  */

@@ -49,6 +49,15 @@ rs6000_option_init_struct (struct gcc_options *opts)
   /* Enable section anchors by default.  */
   if (!TARGET_MACHO)
     opts->x_flag_section_anchors = 1;
+
+  /* By default, always emit DWARF-2 unwind info.  This allows debugging
+     without maintaining a stack frame back-chain.  It also allows the
+     debugger to find out where on-entry register values are stored at any
+     point in a function, without having to analyze the executable code (which
+     isn't even possible to do in the general case).  */
+#ifdef OBJECT_FORMAT_ELF
+  opts->x_flag_asynchronous_unwind_tables = 1;
+#endif
 }
 
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */

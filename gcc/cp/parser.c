@@ -2457,7 +2457,7 @@ static tree cp_parser_maybe_treat_template_as_class
 static bool cp_parser_check_declarator_template_parameters
   (cp_parser *, cp_declarator *, location_t);
 static bool cp_parser_check_template_parameters
-  (cp_parser *, unsigned, location_t, cp_declarator *);
+  (cp_parser *, unsigned, bool, location_t, cp_declarator *);
 static cp_expr cp_parser_simple_cast_expression
   (cp_parser *);
 static tree cp_parser_global_scope_opt
@@ -7950,19 +7950,22 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    location_t start_loc = token->location;
 
 	    op = keyword == RID_ALIGNOF ? ALIGNOF_EXPR : SIZEOF_EXPR;
+	    bool std_alignof = id_equal (token->u.value, "alignof");
+
 	    /* Consume the token.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the operand.  */
 	    operand = cp_parser_sizeof_operand (parser, keyword);
 
 	    if (TYPE_P (operand))
-	      ret = cxx_sizeof_or_alignof_type (operand, op, true);
+	      ret = cxx_sizeof_or_alignof_type (operand, op, std_alignof,
+						true);
 	    else
 	      {
 		/* ISO C++ defines alignof only with types, not with
 		   expressions. So pedwarn if alignof is used with a non-
 		   type expression. However, __alignof__ is ok.  */
-		if (id_equal (token->u.value, "alignof"))
+		if (std_alignof)
 		  pedwarn (token->location, OPT_Wpedantic,
 			   "ISO C++ does not allow %<alignof%> "
 			   "with a non-type");
@@ -9780,7 +9783,13 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   parens.require_open (parser);
   /* Parse the type-id.  */
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
-  type = cp_parser_type_id (parser);
+  {
+    const char *saved_message = parser->type_definition_forbidden_message;
+    parser->type_definition_forbidden_message
+      = G_("types may not be defined within __builtin_offsetof");
+    type = cp_parser_type_id (parser);
+    parser->type_definition_forbidden_message = saved_message;
+  }
   /* Look for the `,'.  */
   cp_parser_require (parser, CPP_COMMA, RT_COMMA);
   token = cp_lexer_peek_token (parser->lexer);
@@ -11998,17 +12007,8 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
       if (member_begin != NULL_TREE && member_end != NULL_TREE)
 	{
 	  /* Use the member functions.  */
-	  if (member_begin != NULL_TREE)
-	    *begin = cp_parser_range_for_member_function (range, id_begin);
-	  else
-	    error ("range-based %<for%> expression of type %qT has an "
-		   "%<end%> member but not a %<begin%>", TREE_TYPE (range));
-
-	  if (member_end != NULL_TREE)
-	    *end = cp_parser_range_for_member_function (range, id_end);
-	  else
-	    error ("range-based %<for%> expression of type %qT has a "
-		   "%<begin%> member but not an %<end%>", TREE_TYPE (range));
+	  *begin = cp_parser_range_for_member_function (range, id_begin);
+	  *end = cp_parser_range_for_member_function (range, id_end);
 	}
       else
 	{
@@ -13177,8 +13177,14 @@ cp_parser_simple_declaration (cp_parser* parser,
 	/* The next token should be either a `,' or a `;'.  */
 	cp_token *token = cp_lexer_peek_token (parser->lexer);
 	/* If it's a `;', we are done.  */
-	if (token->type == CPP_SEMICOLON || maybe_range_for_decl)
+	if (token->type == CPP_SEMICOLON)
 	  goto finish;
+	else if (maybe_range_for_decl)
+	  {
+	    if (*maybe_range_for_decl == NULL_TREE)
+	      *maybe_range_for_decl = error_mark_node;
+	    goto finish;
+	  }
 	/* Anything else is an error.  */
 	else
 	  {
@@ -18111,6 +18117,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  if (template_parm_lists_apply
 	      && !cp_parser_check_template_parameters (parser,
 						       /*num_templates=*/0,
+						       /*template_id*/false,
 						       token->location,
 						       /*declarator=*/NULL))
 	    return error_mark_node;
@@ -19165,6 +19172,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (parser->num_template_parameter_lists
       && !cp_parser_check_template_parameters (parser,
 					       /*num_templates=*/0,
+					       /*template_id*/false,
 					       id_location,
 					       /*declarator=*/NULL))
     return error_mark_node;
@@ -23311,6 +23319,7 @@ cp_parser_class_head (cp_parser* parser,
   /* Make sure that the right number of template parameters were
      present.  */
   if (!cp_parser_check_template_parameters (parser, num_templates,
+					    template_id_p,
 					    type_start_token->location,
 					    /*declarator=*/NULL))
     {
@@ -26580,17 +26589,22 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
       {
 	unsigned num_templates = 0;
 	tree scope = declarator->u.id.qualifying_scope;
+	bool template_id_p = false;
 
 	if (scope)
 	  num_templates = num_template_headers_for_class (scope);
 	else if (TREE_CODE (declarator->u.id.unqualified_name)
 		 == TEMPLATE_ID_EXPR)
-	  /* If the DECLARATOR has the form `X<y>' then it uses one
-	     additional level of template parameters.  */
-	  ++num_templates;
+	  {
+	    /* If the DECLARATOR has the form `X<y>' then it uses one
+	       additional level of template parameters.  */
+	    ++num_templates;
+	    template_id_p = true;
+	  }
 
 	return cp_parser_check_template_parameters 
-	  (parser, num_templates, declarator_location, declarator);
+	  (parser, num_templates, template_id_p, declarator_location,
+	   declarator);
       }
 
     case cdk_function:
@@ -26619,6 +26633,7 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
 static bool
 cp_parser_check_template_parameters (cp_parser* parser,
 				     unsigned num_templates,
+				     bool template_id_p,
 				     location_t location,
 				     cp_declarator *declarator)
 {
@@ -26626,9 +26641,10 @@ cp_parser_check_template_parameters (cp_parser* parser,
      lists, that's OK.  */
   if (parser->num_template_parameter_lists == num_templates)
     return true;
-  /* If there are more, but only one more, then we are referring to a
-     member template.  That's OK too.  */
-  if (parser->num_template_parameter_lists == num_templates + 1)
+  /* If there are more, but only one more, and the name ends in an identifier,
+     then we are declaring a primary template.  That's OK too.  */
+  if (!template_id_p
+      && parser->num_template_parameter_lists == num_templates + 1)
     return true;
   /* If there are more template classes than parameter lists, we have
      something like:

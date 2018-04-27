@@ -1695,6 +1695,40 @@ unify_scc (struct data_in *data_in, unsigned from,
 }
 
 
+/* Compare types based on source file location.  */
+
+static int
+cmp_type_location (const void *p1_, const void *p2_)
+{
+  tree *p1 = (tree*)(const_cast<void *>(p1_));
+  tree *p2 = (tree*)(const_cast<void *>(p2_));
+  if (*p1 == *p2)
+    return 0;
+
+  tree tname1 = TYPE_NAME (*p1);
+  tree tname2 = TYPE_NAME (*p2);
+
+  const char *f1 = DECL_SOURCE_FILE (tname1);
+  const char *f2 = DECL_SOURCE_FILE (tname2);
+
+  int r = strcmp (f1, f2);
+  if (r == 0)
+    {
+      int l1 = DECL_SOURCE_LINE (tname1);
+      int l2 = DECL_SOURCE_LINE (tname2);
+      if (l1 == l2)
+       {
+	 int l1 = DECL_SOURCE_COLUMN (tname1);
+	 int l2 = DECL_SOURCE_COLUMN (tname2);
+	 return l1 - l2;
+       }
+      else
+       return l1 - l2;
+    }
+  else
+    return r;
+}
+
 /* Read all the symbols from buffer DATA, using descriptors in DECL_DATA.
    RESOLUTIONS is the set of symbols picked by the linker (read from the
    resolution file when the linker plugin is being used).  */
@@ -1711,6 +1745,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   unsigned int i;
   const uint32_t *data_ptr, *data_end;
   uint32_t num_decl_states;
+  auto_vec<tree> odr_types;
 
   lto_input_block ib_main ((const char *) data + main_offset,
 			   header->main_size, decl_data->mode_table);
@@ -1772,14 +1807,15 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		  seen_type = true;
 		  num_prevailing_types++;
 		  lto_fixup_prevailing_type (t);
-		}
-	      /* Compute the canonical type of all types.
-		 ???  Should be able to assert that !TYPE_CANONICAL.  */
-	      if (TYPE_P (t) && !TYPE_CANONICAL (t))
-		{
-		  gimple_register_canonical_type (t);
+
+		  /* Compute the canonical type of all types.
+		     Because SCC components are streamed in random (hash) order
+		     we may have encountered the type before while registering
+		     type canonical of a derived type in the same SCC.  */
+		  if (!TYPE_CANONICAL (t))
+		    gimple_register_canonical_type (t);
 		  if (odr_type_p (t))
-		    register_odr_type (t);
+		    odr_types.safe_push (t);
 		}
 	      /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its
 		 type which is also member of this SCC.  */
@@ -1840,6 +1876,15 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
       gcc_assert (*slot == NULL);
       *slot = state;
     }
+
+  /* Sort types for the file before registering in ODR machinery.  */
+  if (lto_location_cache::current_cache)
+    lto_location_cache::current_cache->apply_location_cache ();
+  odr_types.qsort (cmp_type_location);
+
+  /* Register ODR types.  */
+  for (unsigned i = 0; i < odr_types.length (); i++)
+    register_odr_type (odr_types[i]);
 
   if (data_ptr != data_end)
     internal_error ("bytecode stream: garbage at the end of symbols section");

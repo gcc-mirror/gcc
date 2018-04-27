@@ -1,3 +1,29 @@
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/85490
+	* bootstrap-cet.mk (STAGE4_CFLAGS): New.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85485
+	* bootstrap-cet.mk (STAGE2_CFLAGS): Remove -mcet.
+	(STAGE3_CFLAGS): Likewise.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85485
+	* cet.m4 (GCC_CET_FLAGS): Replace -mcet with -mshstk.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* cet.m4 (GCC_CET_FLAGS): Default to --disable-cet, replace
+	--enable-cet=default with --enable-cet=auto.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* acx.m4 (GCC_BASE_VER): Remove \$\$ from sed expression.
+
 2018-04-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR gas/22318

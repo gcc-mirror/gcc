@@ -1,3 +1,26 @@
+2018-04-26  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.tpl (STAGE1_TFLAGS): Add -fno-checking.
+	(STAGE2_CFLAGS): Likewise.
+	(STAGE2_TFLAGS): Likewise.
+	(STAGE3_CFLAGS): Add -fchecking.
+	(STAGE3_TFLAGS): Likewise.
+	(STAGEtrain_CFLAGS): Filter out -fchecking.
+	(STAGEtrain_TFLAGS): Likewise.
+	* Makefile.in: Re-generate.
+
+2018-04-25  Catherine Moore <clm@codesourcery.com>
+
+	* MAINTAINERS (mips): Remove myself as MIPS maintainer.
+
+2018-04-18  Paul Clarke  <pc@us.ibm.com>
+
+	* MAINTAINERS (write after approval): Add myself.
+
+2018-04-10  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* MAINTAINERS: Update my email address.
+
 2018-04-02  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* MAINTAINERS: Remove redundant Write-After-Approval entry.

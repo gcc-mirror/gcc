@@ -536,7 +536,7 @@ particular <quote>info iostream</quote>.
      against the gthr.h abstraction layer which is provided by gcc.  A
      minor problem that pops up every so often is different
      interpretations of what "thread-safe" means for a
-     library (not a general program).  We currently use the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/thread_safety.html">same
+     library (not a general program).  We currently use the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/thread_safety.html">same
      definition that SGI</link> uses for their STL subset.  However,
      the exception for read-only containers only applies to the STL
      components. This definition is widely-used and something similar

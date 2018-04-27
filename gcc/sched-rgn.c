@@ -2497,6 +2497,11 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
       while (insn != head && DEBUG_INSN_P (insn));
     }
 
+  /* Selective scheduling handles control dependencies by itself, and
+     CANT_MOVE flags ensure that other insns will be kept in place.  */
+  if (sel_sched_p ())
+    return;
+
   /* Make sure these insns are scheduled last in their block.  */
   insn = last;
   if (insn != 0)
@@ -2725,9 +2730,7 @@ compute_block_dependences (int bb)
 
   sched_analyze (&tmp_deps, head, tail);
 
-  /* Selective scheduling handles control dependencies by itself.  */
-  if (!sel_sched_p ())
-    add_branch_dependences (head, tail);
+  add_branch_dependences (head, tail);
 
   if (current_nr_blocks > 1)
     propagate_deps (bb, &tmp_deps);

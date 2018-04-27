@@ -1,3 +1,52 @@
+2018-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85520
+	* decl.c (gfc_match_char_spec): Check for negative length and set to 0.
+
+2018-04-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/81773
+	PR fortran/83606
+	* dependency.c (gfc_dep_resolver): Coarray indexes are to be ignored
+	during dependency computation.  They define no data dependency.
+	* trans-array.c (conv_array_index_offset): The stride can not be set
+	here, prevent fail.
+	* trans-intrinsic.c (conv_caf_send): Add creation of temporary array
+	for caf_get's result and copying to the array with vectorial
+	indexing.
+
+2018-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85387
+	* frontend-passes.c (traverse_io_block): Check for start, end or
+	stride being defined by an outer implied DO loop.
+
+2018-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83064
+	PR testsuite/85346
+	* trans-stmt.c (gfc_trans_forall_loop): Use annot_expr_ivdep_kind
+	for annotation and remove dependence on -ftree-parallelize-loops.
+
+2018-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/85313
+	* openmp.c (resolve_omp_do): Remove bogus if (j < i) break;.
+	(resolve_oacc_nested_loops): Likewise.  Formatting fix.
+
+2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83064
+	* trans-stmt.c (gfc_trans_forall_loop): Remove annotation for
+	parallell processing of DO CONCURRENT -ftree-parallelize-loops
+	is set.
+
+2018-04-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51260
+	* resolve.c (resolve_variable): Simplify cases where access to a
+	parameter array results in a single constant.
+
 2018-04-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/85102

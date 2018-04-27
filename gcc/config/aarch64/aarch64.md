@@ -4403,7 +4403,8 @@
   [(set (match_operand:GPI 0 "register_operand" "=r,r,w,&w,&w")
 	(lshiftrt:GPI
 	 (match_operand:GPI 1 "register_operand" "r,r,w,w,w")
-	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "Us<cmode>,r,Us<cmode>,w,0")))]
+	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>"
+			      "Us<cmode>,r,Us<cmode_simd>,w,0")))]
   ""
   "@
    lsr\t%<w>0, %<w>1, %2
@@ -4448,9 +4449,10 @@
 ;; Arithmetic right shift using SISD or Integer instruction
 (define_insn "*aarch64_ashr_sisd_or_int_<mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r,r,w,&w,&w")
-        (ashiftrt:GPI
-          (match_operand:GPI 1 "register_operand" "r,r,w,w,w")
-          (match_operand:QI 2 "aarch64_reg_or_shift_imm_di" "Us<cmode>,r,Us<cmode>,w,0")))]
+	(ashiftrt:GPI
+	  (match_operand:GPI 1 "register_operand" "r,r,w,w,w")
+	  (match_operand:QI 2 "aarch64_reg_or_shift_imm_di"
+			       "Us<cmode>,r,Us<cmode_simd>,w,0")))]
   ""
   "@
    asr\t%<w>0, %<w>1, %2

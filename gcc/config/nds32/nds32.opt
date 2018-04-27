@@ -69,6 +69,14 @@ Use full-set registers for register allocation.
 
 ; ---------------------------------------------------------------
 
+malways-align
+Target Mask(ALWAYS_ALIGN)
+Always align function entry, jump target and return address.
+
+malign-functions
+Target Mask(ALIGN_FUNCTION)
+Align function entry to 4 byte.
+
 mbig-endian
 Target Undocumented RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
 Generate code in big-endian mode.
@@ -167,7 +175,67 @@ Name(nds32_cpu_type) Type(enum nds32_cpu_type)
 Known cpu types (for use with the -mcpu= option):
 
 EnumValue
+Enum(nds32_cpu_type) String(n6) Value(CPU_N6)
+
+EnumValue
+Enum(nds32_cpu_type) String(n650) Value(CPU_N6)
+
+EnumValue
+Enum(nds32_cpu_type) String(n7) Value(CPU_N7)
+
+EnumValue
+Enum(nds32_cpu_type) String(n705) Value(CPU_N7)
+
+EnumValue
+Enum(nds32_cpu_type) String(n8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(n801) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(sn8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(sn801) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(s8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(s801) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(e8) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(e801) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(n820) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(s830) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(e830) Value(CPU_E8)
+
+EnumValue
 Enum(nds32_cpu_type) String(n9) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(n903) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(n903a) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(n968) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(n968a) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(simple) Value(CPU_SIMPLE)
 
 mconfig-fpu=
 Target RejectNegative Joined Enum(float_reg_number) Var(nds32_fp_regnum) Init(TARGET_CONFIG_FPU_DEFAULT)
@@ -201,6 +269,38 @@ Enum(float_reg_number) String(6) Value(NDS32_CONFIG_FPU_6)
 EnumValue
 Enum(float_reg_number) String(7) Value(NDS32_CONFIG_FPU_7)
 
+mconfig-mul=
+Target RejectNegative Joined Enum(nds32_mul_type) Var(nds32_mul_config) Init(MUL_TYPE_FAST_1)
+Specify configuration of instruction mul: fast1, fast2 or slow. The default is fast1.
+
+Enum
+Name(nds32_mul_type) Type(enum nds32_mul_type)
+
+EnumValue
+Enum(nds32_mul_type) String(fast) Value(MUL_TYPE_FAST_1)
+
+EnumValue
+Enum(nds32_mul_type) String(fast1) Value(MUL_TYPE_FAST_1)
+
+EnumValue
+Enum(nds32_mul_type) String(fast2) Value(MUL_TYPE_FAST_2)
+
+EnumValue
+Enum(nds32_mul_type) String(slow) Value(MUL_TYPE_SLOW)
+
+mconfig-register-ports=
+Target RejectNegative Joined Enum(nds32_register_ports) Var(nds32_register_ports_config) Init(REG_PORT_3R2W)
+Specify how many read/write ports for n9/n10 cores.  The value should be 3r2w or 2r1w.
+
+Enum
+Name(nds32_register_ports) Type(enum nds32_register_ports)
+
+EnumValue
+Enum(nds32_register_ports) String(3r2w) Value(REG_PORT_3R2W)
+
+EnumValue
+Enum(nds32_register_ports) String(2r1w) Value(REG_PORT_2R1W)
+
 mctor-dtor
 Target Report
 Enable constructor/destructor feature.
@@ -220,3 +320,11 @@ Generate single-precision floating-point instructions.
 mext-fpu-dp
 Target Report Mask(FPU_DOUBLE)
 Generate double-precision floating-point instructions.
+
+malways-save-lp
+Target Var(flag_always_save_lp) Init(0)
+Always save $lp in the stack.
+
+munaligned-access
+Target Report Var(flag_unaligned_access) Init(0)
+Enable unaligned word and halfword accesses to packed data.

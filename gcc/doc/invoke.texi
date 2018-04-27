@@ -1077,10 +1077,16 @@ See RS/6000 and PowerPC Options.
 -mprioritize-restricted-insns=@var{priority} @gol
 -msched-costly-dep=@var{dependence_type} @gol
 -minsert-sched-nops=@var{scheme} @gol
--mcall-sysv  -mcall-netbsd @gol
+-mcall-aixdesc  -mcall-eabi  -mcall-freebsd  @gol
+-mcall-linux  -mcall-netbsd  -mcall-openbsd  @gol
+-mcall-sysv  -mcall-sysv-eabi  -mcall-sysv-noeabi @gol
+-mtraceback=@var{traceback_type} @gol
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=@var{abi-type}  -msecure-plt  -mbss-plt @gol
 -mblock-move-inline-limit=@var{num} @gol
+-mblock-compare-inline-limit=@var{num} @gol
+-mblock-compare-inline-loop-limit=@var{num} @gol
+-mstring-compare-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
 -misel=yes  -misel=no @gol
 -mpaired @gol
@@ -1096,7 +1102,7 @@ See RS/6000 and PowerPC Options.
 -mpointers-to-nested-functions  -mno-pointers-to-nested-functions @gol
 -msave-toc-indirect  -mno-save-toc-indirect @gol
 -mpower8-fusion  -mno-mpower8-fusion  -mpower8-vector  -mno-power8-vector @gol
--mcrypto  -mno-crypto  -mhtm  -mno-htm  -mdirect-move  -mno-direct-move @gol
+-mcrypto  -mno-crypto  -mhtm  -mno-htm @gol
 -mquad-memory  -mno-quad-memory @gol
 -mquad-memory-atomic  -mno-quad-memory-atomic @gol
 -mcompat-align-parm  -mno-compat-align-parm @gol
@@ -1256,8 +1262,8 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  @gol
 -mmwaitx  -mclzero  -mpku  -mthreads -mgfni  -mvaes  @gol
--mcet -mibt -mshstk -mforce-indirect-call -mavx512vbmi2 @gol
--mvpclmulqdq -mavx512bitalg -mavx512vpopcntdq @gol
+-mshstk -mforce-indirect-call -mavx512vbmi2 @gol
+-mvpclmulqdq -mavx512bitalg -mmovdiri -mmovdir64b -mavx512vpopcntdq @gol
 -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -4824,7 +4830,7 @@ For C++, a function without return type always produces a diagnostic
 message, even when @option{-Wno-return-type} is specified.  The only
 exceptions are @code{main} and functions defined in system headers.
 
-This warning is enabled by @option{-Wall}.
+This warning is enabled by default for C++ and is enabled by @option{-Wall}.
 
 @item -Wshift-count-negative
 @opindex Wshift-count-negative
@@ -6876,12 +6882,12 @@ void foo (void)
 @{
   char a[] = "abcd1234";
   strcpy (a, a + 4);
-  &hellip;
+  @dots{}
 @}
 @end smallexample
 The @option{-Wrestrict} option detects some instances of simple overlap
-even without optimization but works best at @option{-O2}.  It is included
-in @option{-Wall}.
+even without optimization but works best at @option{-O2} and above.  It
+is included in @option{-Wall}.
 
 @item -Wnested-externs @r{(C and Objective-C only)}
 @opindex Wnested-externs
@@ -7693,6 +7699,7 @@ by @option{-O2} and also turns on the following optimization flags:
 -ftree-loop-distribution @gol
 -ftree-loop-distribute-patterns @gol
 -floop-interchange @gol
+-floop-unroll-and-jam @gol
 -fsplit-paths @gol
 -ftree-slp-vectorize @gol
 -fvect-cost-model @gol
@@ -7827,7 +7834,7 @@ heuristically decides which functions are simple enough to be worth integrating
 in this way.  This inlining applies to all functions, even those not declared
 inline.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -findirect-inlining
 @opindex findirect-inlining
@@ -7836,7 +7843,7 @@ time thanks to previous inlining.  This option has any effect only
 when inlining itself is turned on by the @option{-finline-functions}
 or @option{-finline-small-functions} options.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -finline-functions
 @opindex finline-functions
@@ -7848,7 +7855,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at level @option{-O3}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -finline-functions-called-once
 @opindex finline-functions-called-once
@@ -8760,7 +8767,7 @@ default at @option{-O} and higher.
 @item -ftree-builtin-call-dce
 @opindex ftree-builtin-call-dce
 Perform conditional dead code elimination (DCE) for calls to built-in functions
-that may set @code{errno} but are otherwise side-effect free.  This flag is
+that may set @code{errno} but are otherwise free of side effects.  This flag is
 enabled by default at @option{-O2} and higher if @option{-Os} is not also
 specified.
 
@@ -9049,7 +9056,7 @@ Inline parts of functions.  This option has any effect only
 when inlining itself is turned on by the @option{-finline-functions}
 or @option{-finline-small-functions} options.
 
-Enabled at level @option{-O2}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fpredictive-commoning
 @opindex fpredictive-commoning
@@ -9090,9 +9097,9 @@ if (snprintf (buf, "%08x", i) >= sizeof buf)
 @end smallexample
 
 The @option{-fprintf-return-value} option relies on other optimizations
-and yields best results with @option{-O2}.  It works in tandem with the
-@option{-Wformat-overflow} and @option{-Wformat-truncation} options.
-The @option{-fprintf-return-value} option is enabled by default.
+and yields best results with @option{-O2} and above.  It works in tandem
+with the @option{-Wformat-overflow} and @option{-Wformat-truncation}
+options.  The @option{-fprintf-return-value} option is enabled by default.
 
 @item -fno-peephole
 @itemx -fno-peephole2
@@ -9156,7 +9163,7 @@ sections.  When @option{-fsplit-stack} is used this option is not
 enabled by default (to avoid linker errors), but may be enabled
 explicitly (if using a working linker).
 
-Enabled for x86 at levels @option{-O2}, @option{-O3}.
+Enabled for x86 at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -freorder-functions
 @opindex freorder-functions
@@ -11869,14 +11876,17 @@ function.  The value @code{full} is an alias for specifying both
 @code{branch} and @code{return}. The value @code{none} turns off
 instrumentation.
 
+The macro @code{__CET__} is defined when @option{-fcf-protection} is
+used.  The first bit of @code{__CET__} is set to 1 for the value
+@code{branch} and the second bit of @code{__CET__} is set to 1 for
+the @code{return}.
+
 You can also use the @code{nocf_check} attribute to identify
 which functions and calls should be skipped from instrumentation
 (@pxref{Function Attributes}).
 
 Currently the x86 GNU/Linux target provides an implementation based
-on Intel Control-flow Enforcement Technology (CET).  Instrumentation
-for x86 is controlled by target-specific options @option{-mcet},
-@option{-mibt} and @option{-mshstk} (@pxref{x86 Options}).
+on Intel Control-flow Enforcement Technology (CET).
 
 @item -fstack-protector
 @opindex fstack-protector
@@ -14288,8 +14298,8 @@ not overridden} will do.
 @opindex fcompare-debug-second
 This option is implicitly passed to the compiler for the second
 compilation requested by @option{-fcompare-debug}, along with options to
-silence warnings, and omitting other options that would cause
-side-effect compiler outputs to files or to the standard output.  Dump
+silence warnings, and omitting other options that would cause the compiler
+to produce output to files or to standard output as a side effect.  Dump
 files and preserved temporary files are renamed so as to contain the
 @code{.gk} additional extension during the second compilation, to avoid
 overwriting those generated by the first.
@@ -21030,7 +21040,7 @@ Work around certain SB-1 CPU core errata.
 @item -mr10k-cache-barrier=@var{setting}
 @opindex mr10k-cache-barrier
 Specify whether GCC should insert cache barriers to avoid the
-side-effects of speculation on R10K processors.
+side effects of speculation on R10K processors.
 
 In common with many processors, the R10K tries to predict the outcome
 of a conditional branch and speculatively executes instructions from
@@ -23410,7 +23420,7 @@ following options:
 -mpopcntb -mpopcntd  -mpowerpc64 @gol
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
--mcrypto -mdirect-move -mhtm -mpower8-fusion -mpower8-vector @gol
+-mcrypto -mhtm -mpower8-fusion -mpower8-vector @gol
 -mquad-memory -mquad-memory-atomic -mfloat128 -mfloat128-hardware}
 
 The particular options set for any particular CPU varies between
@@ -23551,14 +23561,6 @@ more direct access to the VSX instruction set.
 Enable the use (disable) of the built-in functions that allow direct
 access to the cryptographic instructions that were added in version
 2.07 of the PowerPC ISA.
-
-@item -mdirect-move
-@itemx -mno-direct-move
-@opindex mdirect-move
-@opindex mno-direct-move
-Generate code that uses (does not use) the instructions to move data
-between the general purpose registers and the vector/scalar (VSX)
-registers that were added in version 2.07 of the PowerPC ISA.
 
 @item -mhtm
 @itemx -mno-htm
@@ -24011,6 +24013,11 @@ NetBSD operating system.
 On System V.4 and embedded PowerPC systems compile code for the
 OpenBSD operating system.
 
+@item -mtraceback=@var{traceback_type}
+@opindex mtraceback
+Select the type of traceback table. Valid values for @var{traceback_type}
+are @samp{full}, @samp{part}, and @samp{no}.
+
 @item -maix-struct-return
 @opindex maix-struct-return
 Return all structures in memory (as specified by the AIX ABI)@.
@@ -24026,16 +24033,6 @@ Extend the current ABI with a particular extension, or remove such extension.
 Valid values are @samp{altivec}, @samp{no-altivec}, @samp{spe},
 @samp{no-spe}, @samp{ibmlongdouble}, @samp{ieeelongdouble},
 @samp{elfv1}, @samp{elfv2}@.
-
-@item -mabi=spe
-@opindex mabi=spe
-Extend the current ABI with SPE ABI extensions.  This does not change
-the default ABI, instead it adds the SPE ABI extensions to the current
-ABI@.
-
-@item -mabi=no-spe
-@opindex mabi=no-spe
-Disable Book-E SPE ABI extensions for the current ABI@.
 
 @item -mabi=ibmlongdouble
 @opindex mabi=ibmlongdouble
@@ -24198,6 +24195,31 @@ Inline all block moves (such as calls to @code{memcpy} or structure
 copies) less than or equal to @var{num} bytes.  The minimum value for
 @var{num} is 32 bytes on 32-bit targets and 64 bytes on 64-bit
 targets.  The default value is target-specific.
+
+@item -mblock-compare-inline-limit=@var{num}
+@opindex mblock-compare-inline-limit
+Generate non-looping inline code for all block compares (such as calls
+to @code{memcmp} or structure compares) less than or equal to @var{num}
+bytes. If @var{num} is 0, all inline expansion (non-loop and loop) of
+block compare is disabled. The default value is target-specific.
+
+@item -mblock-compare-inline-loop-limit=@var{num}
+@opindex mblock-compare-inline-loop-limit
+Generate an inline expansion using loop code for all block compares that
+are less than or equal to @var{num} bytes, but greater than the limit
+for non-loop inline block compare expansion. If the block length is not
+constant, at most @var{num} bytes will be compared before @code{memcmp}
+is called to compare the remainder of the block. The default value is
+target-specific.
+
+@item -mstring-compare-inline-limit=@var{num}
+@opindex mstring-compare-inline-limit
+Generate at most @var{num} pairs of load instructions to compare the
+string inline. If the difference or end of string is not found at the
+end of the inline compare a call to @code{strcmp} or @code{strncmp} will
+take care of the rest of the comparison. The default is 8 pairs of
+loads, which will compare 64 bytes on a 64-bit target and 32 bytes on a
+32-bit target.
 
 @item -G @var{num}
 @opindex G
@@ -27335,9 +27357,6 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mpku
 @opindex mpku
 @need 200
-@itemx -mcet
-@opindex mcet
-@need 200
 @itemx -mavx512vbmi2
 @opindex mavx512vbmi2
 @need 200
@@ -27353,6 +27372,12 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mavx512bitalg
 @opindex mavx512bitalg
 @need 200
+@itemx -mmovdiri
+@opindex mmovdiri
+@need 200
+@itemx -mmovdir64b
+@opindex mmovdir64b
+@need 200
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq
 These switches enable the use of instructions in the MMX, SSE,
@@ -27360,8 +27385,8 @@ SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
 AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2, VAES,
 FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU, IBT, SHSTK, AVX512VBMI2,
-GFNI, VPCLMULQDQ, AVX512BITALG, AVX512VPOPCNTDQ3DNow!@: or enhanced 3DNow!@:
-extended instruction sets.
+GFNI, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
+AVX512VPOPCNTDQ3DNow!@: or enhanced 3DNow!@: extended instruction sets.
 Each has a corresponding @option{-mno-} option to disable use of these
 instructions.
 
@@ -27382,13 +27407,6 @@ perform run-time CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
-
-The @option{-mcet} option turns on the @option{-mibt} and @option{-mshstk}
-options.  The @option{-mibt} option enables indirect branch tracking support
-and the @option{-mshstk} option enables shadow stack support from
-Intel Control-flow Enforcement Technology (CET).  The compiler also provides
-a number of built-in functions for fine-grained control in a CET-based
-application.  See @xref{x86 Built-in Functions}, for more information.
 
 @item -mdump-tune-features
 @opindex mdump-tune-features
@@ -27482,23 +27500,10 @@ see @ref{Other Builtins} for details.
 This option enables use of the @code{movbe} instruction to implement
 @code{__builtin_bswap32} and @code{__builtin_bswap64}.
 
-@item -mibt
-@opindex mibt
-This option tells the compiler to use indirect branch tracking support
-(for indirect calls and jumps) from x86 Control-flow Enforcement
-Technology (CET).  The option has effect only if the
-@option{-fcf-protection=full} or @option{-fcf-protection=branch} option
-is specified. The option @option{-mibt} is on by default when the
-@code{-mcet} option is specified.
-
 @item -mshstk
 @opindex mshstk
-This option tells the compiler to use shadow stack support (return
-address tracking) from x86 Control-flow Enforcement Technology (CET).
-The option has effect only if the @option{-fcf-protection=full} or
-@option{-fcf-protection=return} option is specified.  The option
-@option{-mshstk} is on by default when the @option{-mcet} option is
-specified.
+The @option{-mshstk} option enables shadow stack built-in functions
+from x86 Control-flow Enforcement Technology (CET).
 
 @item -mcrc32
 @opindex mcrc32

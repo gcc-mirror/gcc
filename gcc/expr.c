@@ -233,7 +233,10 @@ convert_move (rtx to, rtx from, int unsignedp)
       && (GET_MODE_PRECISION (subreg_promoted_mode (from))
 	  >= GET_MODE_PRECISION (to_int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (from, unsignedp))
-    from = gen_lowpart (to_int_mode, from), from_mode = to_int_mode;
+    {
+      from = gen_lowpart (to_int_mode, SUBREG_REG (from));
+      from_mode = to_int_mode;
+    }
 
   gcc_assert (GET_CODE (to) != SUBREG || !SUBREG_PROMOTED_VAR_P (to));
 
@@ -1565,7 +1568,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 		       unsigned HOST_WIDE_INT max_size,
 		       unsigned HOST_WIDE_INT probable_max_size)
 {
-  bool may_use_call;
+  int may_use_call;
   rtx retval = 0;
   unsigned int align;
 
@@ -1577,7 +1580,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
     {
     case BLOCK_OP_NORMAL:
     case BLOCK_OP_TAILCALL:
-      may_use_call = true;
+      may_use_call = 1;
       break;
 
     case BLOCK_OP_CALL_PARM:
@@ -1589,7 +1592,11 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       break;
 
     case BLOCK_OP_NO_LIBCALL:
-      may_use_call = false;
+      may_use_call = 0;
+      break;
+
+    case BLOCK_OP_NO_LIBCALL_RET:
+      may_use_call = -1;
       break;
 
     default:
@@ -1625,6 +1632,9 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (y)))
     {
+      if (may_use_call < 0)
+	return pc_rtx;
+
       /* Since x and y are passed to a libcall, mark the corresponding
 	 tree EXPR as addressable.  */
       tree y_expr = MEM_EXPR (y);
@@ -6982,8 +6992,9 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
       if (GET_CODE (temp) == PARALLEL)
 	{
 	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
-	  scalar_int_mode temp_mode
-	    = smallest_int_mode_for_size (size * BITS_PER_UNIT);
+	  machine_mode temp_mode = GET_MODE (temp);
+	  if (temp_mode == BLKmode || temp_mode == VOIDmode)
+	    temp_mode = smallest_int_mode_for_size (size * BITS_PER_UNIT);
 	  rtx temp_target = gen_reg_rtx (temp_mode);
 	  emit_group_store (temp_target, temp, TREE_TYPE (exp), size);
 	  temp = temp_target;

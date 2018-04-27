@@ -44,65 +44,6 @@ enum nds32_expand_result_type
   EXPAND_CREATE_TEMPLATE
 };
 
-/* Check instruction LS-37-FP-implied form.
-   Note: actually its immediate range is imm9u
-         since it is used for lwi37/swi37 instructions.  */
-#define NDS32_LS_37_FP_P(rt, ra, imm)       \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS \
-   && REGNO (ra) == FP_REGNUM               \
-   && satisfies_constraint_Iu09 (imm))
-
-/* Check instruction LS-37-SP-implied form.
-   Note: actually its immediate range is imm9u
-         since it is used for lwi37/swi37 instructions.  */
-#define NDS32_LS_37_SP_P(rt, ra, imm)       \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS \
-   && REGNO (ra) == SP_REGNUM               \
-   && satisfies_constraint_Iu09 (imm))
-
-
-/* Check load/store instruction form : Rt3, Ra3, imm3u.  */
-#define NDS32_LS_333_P(rt, ra, imm, mode) nds32_ls_333_p (rt, ra, imm, mode)
-
-/* Check load/store instruction form : Rt4, Ra5, const_int_0.
-   Note: no need to check ra because Ra5 means it covers all registers.  */
-#define NDS32_LS_450_P(rt, ra, imm)                     \
-  ((imm == const0_rtx)                                  \
-   && (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS         \
-       || REGNO_REG_CLASS (REGNO (rt)) == MIDDLE_REGS))
-
-/* Check instruction RRI-333-form.  */
-#define NDS32_RRI_333_P(rt, ra, imm)           \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS    \
-   && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS \
-   && satisfies_constraint_Iu03 (imm))
-
-/* Check instruction RI-45-form.  */
-#define NDS32_RI_45_P(rt, ra, imm)                     \
-  (REGNO (rt) == REGNO (ra)                            \
-   && (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS        \
-       || REGNO_REG_CLASS (REGNO (rt)) == MIDDLE_REGS) \
-   && satisfies_constraint_Iu05 (imm))
-
-
-/* Check instruction RR-33-form.  */
-#define NDS32_RR_33_P(rt, ra)                   \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS     \
-   && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS)
-
-/* Check instruction RRR-333-form.  */
-#define NDS32_RRR_333_P(rt, ra, rb)             \
-  (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS     \
-   && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS  \
-   && REGNO_REG_CLASS (REGNO (rb)) == LOW_REGS)
-
-/* Check instruction RR-45-form.
-   Note: no need to check rb because Rb5 means it covers all registers.  */
-#define NDS32_RR_45_P(rt, ra, rb)               \
-  (REGNO (rt) == REGNO (ra)                     \
-   && (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS \
-       || REGNO_REG_CLASS (REGNO (rt)) == MIDDLE_REGS))
-
 /* Classifies address type to distinguish 16-bit/32-bit format.  */
 enum nds32_16bit_address_type
 {
@@ -194,6 +135,11 @@ enum nds32_16bit_address_type
 #define NDS32_SINGLE_WORD_ALIGN_P(value) (((value) & 0x03) == 0)
 #define NDS32_DOUBLE_WORD_ALIGN_P(value) (((value) & 0x07) == 0)
 
+/* Determine whether we would like to have code generation strictly aligned.
+   We set it strictly aligned when -malways-align is enabled.
+   Check gcc/common/config/nds32/nds32-common.c for the optimizations that
+   apply -malways-align.  */
+#define NDS32_ALIGN_P() (TARGET_ALWAYS_ALIGN)
 /* Get alignment according to mode or type information.
    When 'type' is nonnull, there is no need to look at 'mode'.  */
 #define NDS32_MODE_TYPE_ALIGN(mode, type) \
@@ -333,12 +279,32 @@ struct GTY(()) machine_function
   /* The last required register that should be saved on stack for va_args.  */
   int va_args_last_regno;
 
+  /* Number of bytes on the stack for saving exception handling registers.  */
+  int eh_return_data_regs_size;
+  /* The first register of passing exception handling information.  */
+  int eh_return_data_first_regno;
+  /* The last register of passing exception handling information.  */
+  int eh_return_data_last_regno;
+
+  /* Indicate that whether this function
+     calls __builtin_eh_return.  */
+  int use_eh_return_p;
+
   /* Indicate that whether this function needs
      prologue/epilogue code generation.  */
   int naked_p;
   /* Indicate that whether this function
      uses fp_as_gp optimization.  */
   int fp_as_gp_p;
+  /* Indicate that whether this function is under strictly aligned
+     situation for legitimate address checking.  This flag informs
+     nds32_legitimate_address_p() how to treat offset alignment:
+       1. The IVOPT phase needs to detect available range for memory access,
+	  such as checking [base + 32767] ~ [base + (-32768)].
+	  For this case we do not want address to be strictly aligned.
+       2. The rtl lowering and optimization are close to target code.
+	  For this case we need address to be strictly aligned.  */
+  int strict_aligned_p;
 };
 
 /* A C structure that contains the arguments information.  */
@@ -436,21 +402,120 @@ enum nds32_builtins
 {
   NDS32_BUILTIN_ISYNC,
   NDS32_BUILTIN_ISB,
+  NDS32_BUILTIN_DSB,
+  NDS32_BUILTIN_MSYNC_ALL,
+  NDS32_BUILTIN_MSYNC_STORE,
   NDS32_BUILTIN_MFSR,
   NDS32_BUILTIN_MFUSR,
   NDS32_BUILTIN_MTSR,
+  NDS32_BUILTIN_MTSR_ISB,
+  NDS32_BUILTIN_MTSR_DSB,
   NDS32_BUILTIN_MTUSR,
   NDS32_BUILTIN_SETGIE_EN,
   NDS32_BUILTIN_SETGIE_DIS,
+  NDS32_BUILTIN_FMFCFG,
+  NDS32_BUILTIN_FMFCSR,
+  NDS32_BUILTIN_FMTCSR,
+  NDS32_BUILTIN_FCPYNSS,
+  NDS32_BUILTIN_FCPYSS,
+  NDS32_BUILTIN_FCPYNSD,
+  NDS32_BUILTIN_FCPYSD,
+  NDS32_BUILTIN_ABS,
+  NDS32_BUILTIN_AVE,
+  NDS32_BUILTIN_BCLR,
+  NDS32_BUILTIN_BSET,
+  NDS32_BUILTIN_BTGL,
+  NDS32_BUILTIN_BTST,
+  NDS32_BUILTIN_CLIP,
+  NDS32_BUILTIN_CLIPS,
+  NDS32_BUILTIN_CLZ,
+  NDS32_BUILTIN_CLO,
+  NDS32_BUILTIN_MAX,
+  NDS32_BUILTIN_MIN,
+  NDS32_BUILTIN_PBSAD,
+  NDS32_BUILTIN_PBSADA,
+  NDS32_BUILTIN_BSE,
+  NDS32_BUILTIN_BSP,
   NDS32_BUILTIN_FFB,
   NDS32_BUILTIN_FFMISM,
   NDS32_BUILTIN_FLMISM,
+
+  NDS32_BUILTIN_ROTR,
+  NDS32_BUILTIN_SVA,
+  NDS32_BUILTIN_SVS,
+  NDS32_BUILTIN_WSBH,
+  NDS32_BUILTIN_JR_ITOFF,
+  NDS32_BUILTIN_JR_TOFF,
+  NDS32_BUILTIN_JRAL_ITON,
+  NDS32_BUILTIN_JRAL_TON,
+  NDS32_BUILTIN_RET_ITOFF,
+  NDS32_BUILTIN_RET_TOFF,
+  NDS32_BUILTIN_STANDBY_NO_WAKE_GRANT,
+  NDS32_BUILTIN_STANDBY_WAKE_GRANT,
+  NDS32_BUILTIN_STANDBY_WAKE_DONE,
+  NDS32_BUILTIN_TEQZ,
+  NDS32_BUILTIN_TNEZ,
+  NDS32_BUILTIN_TRAP,
+  NDS32_BUILTIN_SETEND_BIG,
+  NDS32_BUILTIN_SETEND_LITTLE,
+  NDS32_BUILTIN_SYSCALL,
+  NDS32_BUILTIN_BREAK,
+  NDS32_BUILTIN_NOP,
+  NDS32_BUILTIN_SCHE_BARRIER,
+  NDS32_BUILTIN_GET_CURRENT_SP,
+  NDS32_BUILTIN_SET_CURRENT_SP,
+  NDS32_BUILTIN_RETURN_ADDRESS,
+  NDS32_BUILTIN_LLW,
+  NDS32_BUILTIN_LWUP,
+  NDS32_BUILTIN_LBUP,
+  NDS32_BUILTIN_SCW,
+  NDS32_BUILTIN_SWUP,
+  NDS32_BUILTIN_SBUP,
+  NDS32_BUILTIN_CCTL_VA_LCK,
+  NDS32_BUILTIN_CCTL_IDX_WBINVAL,
+  NDS32_BUILTIN_CCTL_VA_WBINVAL_L1,
+  NDS32_BUILTIN_CCTL_VA_WBINVAL_LA,
+  NDS32_BUILTIN_CCTL_IDX_READ,
+  NDS32_BUILTIN_CCTL_IDX_WRITE,
+  NDS32_BUILTIN_CCTL_L1D_INVALALL,
+  NDS32_BUILTIN_CCTL_L1D_WBALL_ALVL,
+  NDS32_BUILTIN_CCTL_L1D_WBALL_ONE_LVL,
+  NDS32_BUILTIN_DPREF_QW,
+  NDS32_BUILTIN_DPREF_HW,
+  NDS32_BUILTIN_DPREF_W,
+  NDS32_BUILTIN_DPREF_DW,
+  NDS32_BUILTIN_TLBOP_TRD,
+  NDS32_BUILTIN_TLBOP_TWR,
+  NDS32_BUILTIN_TLBOP_RWR,
+  NDS32_BUILTIN_TLBOP_RWLK,
+  NDS32_BUILTIN_TLBOP_UNLK,
+  NDS32_BUILTIN_TLBOP_PB,
+  NDS32_BUILTIN_TLBOP_INV,
+  NDS32_BUILTIN_TLBOP_FLUA,
   NDS32_BUILTIN_UALOAD_HW,
   NDS32_BUILTIN_UALOAD_W,
   NDS32_BUILTIN_UALOAD_DW,
   NDS32_BUILTIN_UASTORE_HW,
   NDS32_BUILTIN_UASTORE_W,
   NDS32_BUILTIN_UASTORE_DW,
+  NDS32_BUILTIN_GIE_DIS,
+  NDS32_BUILTIN_GIE_EN,
+  NDS32_BUILTIN_ENABLE_INT,
+  NDS32_BUILTIN_DISABLE_INT,
+  NDS32_BUILTIN_SET_PENDING_SWINT,
+  NDS32_BUILTIN_CLR_PENDING_SWINT,
+  NDS32_BUILTIN_CLR_PENDING_HWINT,
+  NDS32_BUILTIN_GET_ALL_PENDING_INT,
+  NDS32_BUILTIN_GET_PENDING_INT,
+  NDS32_BUILTIN_SET_INT_PRIORITY,
+  NDS32_BUILTIN_GET_INT_PRIORITY,
+  NDS32_BUILTIN_SET_TRIG_LEVEL,
+  NDS32_BUILTIN_SET_TRIG_EDGE,
+  NDS32_BUILTIN_GET_TRIG_TYPE,
+
+  NDS32_BUILTIN_UNALIGNED_FEATURE,
+  NDS32_BUILTIN_ENABLE_UNALIGNED,
+  NDS32_BUILTIN_DISABLE_UNALIGNED,
   NDS32_BUILTIN_COUNT
 };
 
@@ -463,6 +528,11 @@ enum nds32_builtins
    || nds32_arch_option == ARCH_V3F \
    || nds32_arch_option == ARCH_V3S)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
+
+#define TARGET_PIPELINE_N9 \
+  (nds32_cpu_option == CPU_N9)
+#define TARGET_PIPELINE_SIMPLE \
+  (nds32_cpu_option == CPU_SIMPLE)
 
 #define TARGET_CMODEL_SMALL \
    (nds32_cmodel_option == CMODEL_SMALL)
@@ -477,6 +547,8 @@ enum nds32_builtins
    (nds32_cmodel_option == CMODEL_SMALL\
     || nds32_cmodel_option == CMODEL_MEDIUM)
 
+#define TARGET_MUL_SLOW \
+  (nds32_mul_config == MUL_TYPE_SLOW)
 
 /* Run-time Target Specification.  */
 #define TARGET_SOFT_FLOAT (nds32_abi == NDS32_ABI_V2)
@@ -515,6 +587,7 @@ enum nds32_builtins
 	   " %{!mno-ext-fpu-dp:%{!mext-fpu-dp:-mext-fpu-dp}}}" \
 	   " %{march=v3s:%{!mfloat-abi=*:-mfloat-abi=hard}" \
 	   " %{!mno-ext-fpu-sp:%{!mext-fpu-sp:-mext-fpu-sp}}}" }, \
+  {"cpu",  "%{!mcpu=*:-mcpu=%(VALUE)}" },   \
   {"float", "%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}" }
 
 #define CC1_SPEC \
@@ -610,9 +683,16 @@ enum nds32_builtins
 
 #define STACK_BOUNDARY 64
 
-#define FUNCTION_BOUNDARY 32
+#define FUNCTION_BOUNDARY \
+  ((NDS32_ALIGN_P () || TARGET_ALIGN_FUNCTION) ? 32 : 16)
 
 #define BIGGEST_ALIGNMENT 64
+
+#define DATA_ALIGNMENT(constant, basic_align) \
+  nds32_data_alignment (constant, basic_align)
+
+#define LOCAL_ALIGNMENT(type, basic_align) \
+  nds32_local_alignment (type, basic_align)
 
 #define EMPTY_FIELD_BOUNDARY 32
 
@@ -878,6 +958,11 @@ enum reg_class
 #define FIRST_PARM_OFFSET(fundecl) \
   (NDS32_DOUBLE_WORD_ALIGN_P (crtl->args.pretend_args_size) ? 0 : 4)
 
+/* A C expression whose value is RTL representing the address in a stack frame
+   where the pointer to the caller's frame is stored.  */
+#define DYNAMIC_CHAIN_ADDRESS(frameaddr) \
+  nds32_dynamic_chain_address (frameaddr)
+
 #define RETURN_ADDR_RTX(count, frameaddr) \
   nds32_return_addr_rtx (count, frameaddr)
 
@@ -888,6 +973,13 @@ enum reg_class
    DWARF_FRAME_RETURN_COLUMN to DWARF_FRAME_REGNUM (REGNO).  */
 #define INCOMING_RETURN_ADDR_RTX    gen_rtx_REG (Pmode, LP_REGNUM)
 #define DWARF_FRAME_RETURN_COLUMN   DWARF_FRAME_REGNUM (LP_REGNUM)
+
+/* Use $r0 $r1 to pass exception handling information.  */
+#define EH_RETURN_DATA_REGNO(N) (((N) < 2) ? (N) : INVALID_REGNUM)
+/* The register $r2 that represents a location in which to store a stack
+   adjustment to be applied before function return.
+   This is used to unwind the stack to an exception handler's call frame.  */
+#define EH_RETURN_STACKADJ_RTX gen_rtx_REG (Pmode, 2)
 
 #define DBX_REGISTER_NUMBER(REGNO) nds32_dbx_register_number (REGNO)
 
@@ -991,6 +1083,12 @@ enum reg_class
 /* We have "LW.bi   Rt, [Ra], Rb" instruction form.  */
 #define HAVE_POST_MODIFY_REG  1
 
+#define USE_LOAD_POST_INCREMENT(mode) \
+  nds32_use_load_post_increment(mode)
+#define USE_LOAD_POST_DECREMENT(mode) USE_LOAD_POST_INCREMENT(mode)
+#define USE_STORE_POST_DECREMENT(mode) USE_LOAD_POST_DECREMENT(mode)
+#define USE_STORE_POST_INCREMENT(mode) USE_LOAD_POST_INCREMENT(mode)
+
 #define CONSTANT_ADDRESS_P(x) (CONSTANT_P (x) && GET_CODE (x) != CONST_DOUBLE)
 
 #define MAX_REGS_PER_ADDRESS 3
@@ -1046,7 +1144,7 @@ enum reg_class
 
 #define ASM_COMMENT_START "!"
 
-#define ASM_APP_ON "! #APP"
+#define ASM_APP_ON "! #APP\n"
 
 #define ASM_APP_OFF "! #NO_APP\n"
 
@@ -1239,9 +1337,7 @@ enum reg_class
 /* Return the preferred mode for and addr_diff_vec when the mininum
    and maximum offset are known.  */
 #define CASE_VECTOR_SHORTEN_MODE(min_offset, max_offset, body)  \
-   ((min_offset < 0 || max_offset >= 0x2000 ) ? SImode          \
-   : (max_offset >= 100) ? HImode                               \
-   : QImode)
+  nds32_case_vector_shorten_mode (min_offset, max_offset, body)
 
 /* Generate pc relative jump table when -fpic or -Os.  */
 #define CASE_VECTOR_PC_RELATIVE (flag_pic || optimize_size)

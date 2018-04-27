@@ -1,3 +1,72 @@
+2018-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/84020
+	* plugin/cuda/cuda.h (CUjit_option): Add CU_JIT_OPTIMIZATION_LEVEL.
+	* plugin/plugin-nvptx.c (_GNU_SOURCE): Define.
+	(process_GOMP_NVPTX_JIT): New function.
+	(link_ptx): Use process_GOMP_NVPTX_JIT.
+
+2018-04-26  Richard Biener <rguenther@suse.de>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/85422
+	* testsuite/libgomp.oacc-c-c++-common/pr85422.c: New test.
+
+2018-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85519
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Reduce
+	recursion depth from 25 to 23.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85445
+	* testsuite/libgomp.oacc-c++/ref-1.C: New.
+
+2018-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/85463
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: New file.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-3.f: Likewise.
+
+	PR libfortran/85166
+	* testsuite/libgomp.oacc-fortran/abort-1.f90: Switch back to "call
+	abort".
+	* testsuite/libgomp.oacc-fortran/abort-2.f90: Likewise.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-04-16  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/84955
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: New test.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: New test.
+
+2018-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83064
+	PR testsuite/85346
+	* testsuite/libgomp.fortran/do_concurrent_5.f90: Move modified
+	test from gfortran.dg to here.
+
 2018-04-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/85204

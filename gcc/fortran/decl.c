@@ -3235,7 +3235,11 @@ done:
 	  e = gfc_copy_expr (len);
 	  gfc_reduce_init_expr (e);
 	  if (e->expr_type == EXPR_CONSTANT)
-	    gfc_replace_expr (len, e);
+	    {
+	      gfc_replace_expr (len, e);
+	      if (mpz_cmp_si (len->value.integer, 0) < 0)
+		mpz_set_ui (len->value.integer, 0);
+	    }
 	  else
 	    gfc_free_expr (e);
 	  cl->length = len;

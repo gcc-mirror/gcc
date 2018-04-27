@@ -1484,7 +1484,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && SUBREG_PROMOTED_SIGNED_P (op)
 	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
 	  if (temp)
 	    return temp;
 	}
@@ -1567,7 +1567,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && SUBREG_PROMOTED_UNSIGNED_P (op)
 	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
 	  if (temp)
 	    return temp;
 	}
@@ -1877,7 +1877,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  if (wi::ne_p (op0, 0))
 	    int_value = wi::clz (op0);
 	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (imode, int_value))
-	    int_value = GET_MODE_PRECISION (imode);
+	    return NULL_RTX;
 	  result = wi::shwi (int_value, result_mode);
 	  break;
 
@@ -1889,7 +1889,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  if (wi::ne_p (op0, 0))
 	    int_value = wi::ctz (op0);
 	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (imode, int_value))
-	    int_value = GET_MODE_PRECISION (imode);
+	    return NULL_RTX;
 	  result = wi::shwi (int_value, result_mode);
 	  break;
 

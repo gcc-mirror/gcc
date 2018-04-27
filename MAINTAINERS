@@ -77,7 +77,6 @@ m68k port		Andreas Schwab		<schwab@linux-m68k.org>
 m68k-motorola-sysv port	Philippe De Muyter	<phdm@macqel.be>
 mcore port		Nick Clifton		<nickc@redhat.com>
 microblaze		Michael Eager		<eager@eagercon.com>
-mips port		Catherine Moore		<clm@codesourcery.com>
 mips port		Matthew Fortune		<matthew.fortune@imgtec.com>
 mmix port		Hans-Peter Nilsson	<hp@bitrange.com>
 mn10300 port		Jeff Law		<law@redhat.com>
@@ -347,6 +346,7 @@ Bin Cheng					<bin.cheng@arm.com>
 Harshit Chopra					<harshit@google.com>
 Tamar Christina					<tamar.christina@arm.com>
 Eric Christopher				<echristo@gmail.com>
+Paul Clarke					<pc@us.ibm.com>
 William Cohen					<wcohen@redhat.com>
 Michael Collison				<michael.collison@arm.com>
 Josh Conner					<joshconner@google.com>
@@ -568,7 +568,7 @@ Iain Sandoe					<iain@codesourcery.com>
 Duncan Sands					<baldrick@gcc.gnu.org>
 Sujoy Saraswati					<sujoy.saraswati@hpe.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
-Aaron Sawdey					<acsawdey@linux.vnet.ibm.com>
+Aaron Sawdey					<acsawdey@linux.ibm.com>
 Roger Sayle					<roger@eyesopen.com>
 Will Schmidt					<will_schmidt@vnet.ibm.com>
 Tilo Schwarz					<tilo@tilo-schwarz.de>

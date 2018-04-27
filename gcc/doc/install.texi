@@ -2103,10 +2103,11 @@ instrumentation, see @option{-fcf-protection} option.  When
 to add @option{-fcf-protection} and, if needed, other target
 specific options to a set of building options.
 
-The option is enabled by default on Linux/x86 if target binutils
-supports @code{Intel CET} instructions.  In this case the target
-libraries are configured to get additional @option{-fcf-protection}
-and @option{-mcet} options.
+The option is disabled by default.  When @code{--enable-cet=auto}
+is used, it is enabled on Linux/x86 if target binutils
+supports @code{Intel CET} instructions and disabled otherwise.
+In this case the target libraries are configured to get additional
+@option{-fcf-protection} option.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2518,7 +2519,7 @@ must be used along with @code{bootstrap-debug-lean} and
 @item @samp{bootstrap-cet}
 This option enables Intel CET for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-cet} is equivalent to adding
-@option{-fcf-protection -mcet} to @samp{BOOT_CFLAGS}.  This option
+@option{-fcf-protection} to @samp{BOOT_CFLAGS}.  This option
 assumes that the host supports Intel CET (e.g. GNU assembler version
 2.30 or later).
 
@@ -4205,11 +4206,11 @@ Instead of GNU binutils, you will need to install
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
 
-A nvptx port of newlib is available at
-@uref{https://github.com/MentorEmbedded/nvptx-newlib/,,nvptx-newlib}.
-It can be automatically built together with GCC@.  For this, add a
-symbolic link to nvptx-newlib's @file{newlib} directory to the
-directory containing the GCC sources.
+You will need newlib 3.0 git revision
+cd31fbb2aea25f94d7ecedc9db16dfc87ab0c316 or later.  It can be
+automatically built together with GCC@.  For this, add a symbolic link
+to nvptx-newlib's @file{newlib} directory to the directory containing
+the GCC sources.
 
 Use the @option{--disable-sjlj-exceptions} and
 @option{--enable-newlib-io-long-long} options when configuring.

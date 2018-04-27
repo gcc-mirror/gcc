@@ -1,3 +1,24 @@
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libfortran/85166
+	PR libgomp/85463
+	* runtime/minimal.c (stop_numeric): Reimplement.
+	(stop_string, error_stop_string, error_stop_numeric): New
+	functions.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
 2018-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/85253

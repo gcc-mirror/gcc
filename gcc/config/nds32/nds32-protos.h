@@ -40,6 +40,7 @@ extern enum reg_class nds32_regno_reg_class (int);
 
 /* -- Basic Stack Layout.  */
 
+extern rtx nds32_dynamic_chain_address (rtx);
 extern rtx nds32_return_addr_rtx (int, rtx);
 
 /* -- Eliminating Frame Pointer and Arg Pointer.  */
@@ -68,10 +69,6 @@ extern unsigned int nds32_dbx_register_number (unsigned int);
 
 /* ------------------------------------------------------------------------ */
 
-/* Auxiliary functions for auxiliary macros in nds32.h.  */
-
-extern bool nds32_ls_333_p (rtx, rtx, rtx, machine_mode);
-
 /* Auxiliary functions for lwm/smw.  */
 
 extern bool nds32_valid_smw_lwm_base_p (rtx);
@@ -95,6 +92,30 @@ extern void nds32_expand_unaligned_store (rtx *, enum machine_mode);
 /* Auxiliary functions for multiple load/store predicate checking.  */
 
 extern bool nds32_valid_multiple_load_store_p (rtx, bool, bool);
+
+/* Auxiliary functions for guard function checking in pipelines.md.  */
+
+extern bool nds32_n7_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n7_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+
+extern bool nds32_n8_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_load_bi_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_load_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_ex_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_two_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n8_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
+extern bool nds32_e8_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_load_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_ex_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_last_load_to_ii_p (rtx_insn *, rtx_insn *);
+extern bool nds32_e8_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
+extern bool nds32_n9_2r1w_mm_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n9_3r2w_mm_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n9_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
 
 /* Auxiliary functions for stack operation predicate checking.  */
 
@@ -194,10 +215,13 @@ extern void nds32_expand_constant (machine_mode,
 /* Auxiliary functions to check using return with null epilogue.  */
 
 extern int nds32_can_use_return_insn (void);
+extern scalar_int_mode nds32_case_vector_shorten_mode (int, int, rtx);
 
 /* Auxiliary functions to decide output alignment or not.  */
 
 extern int nds32_target_alignment (rtx_insn *);
+extern unsigned int nds32_data_alignment (tree, unsigned int);
+extern unsigned int nds32_local_alignment (tree, unsigned int);
 
 /* Auxiliary functions to expand builtin functions.  */
 
@@ -223,6 +247,35 @@ extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 extern void nds32_cpu_cpp_builtins(struct cpp_reader *);
 
 extern bool nds32_split_double_word_load_store_p (rtx *,bool);
+
+namespace nds32 {
+
+extern rtx extract_pattern_from_insn (rtx);
+
+size_t parallel_elements (rtx);
+rtx parallel_element (rtx, int);
+bool load_single_p (rtx_insn *);
+bool store_single_p (rtx_insn *);
+bool load_double_p (rtx_insn *);
+bool store_double_p (rtx_insn *);
+bool post_update_insn_p (rtx_insn *);
+bool immed_offset_p (rtx);
+int find_post_update_rtx (rtx_insn *);
+rtx extract_mem_rtx (rtx_insn *);
+rtx extract_base_reg (rtx_insn *);
+
+rtx extract_shift_reg (rtx);
+
+bool movd44_insn_p (rtx_insn *);
+rtx extract_movd44_odd_reg (rtx_insn *);
+
+rtx extract_mac_non_acc_rtx (rtx_insn *);
+
+rtx extract_branch_target_rtx (rtx_insn *);
+rtx extract_branch_condition_rtx (rtx_insn *);
+} // namespace nds32
+
+extern bool nds32_use_load_post_increment(machine_mode);
 
 /* Functions for create nds32 specific optimization pass.  */
 extern rtl_opt_pass *make_pass_nds32_relax_opt (gcc::context *);

@@ -34,11 +34,11 @@ file_end_indicate_exec_stack_and_cet (void)
 
   unsigned int feature_1 = 0;
 
-  if (TARGET_IBT)
+  if (flag_cf_protection & CF_BRANCH)
     /* GNU_PROPERTY_X86_FEATURE_1_IBT.  */
     feature_1 |= 0x1;
 
-  if (TARGET_SHSTK)
+  if (flag_cf_protection & CF_RETURN)
     /* GNU_PROPERTY_X86_FEATURE_1_SHSTK.  */
     feature_1 |= 0x2;
 
@@ -57,20 +57,20 @@ file_end_indicate_exec_stack_and_cet (void)
       fprintf (asm_out_file, ASM_LONG " 4f - 1f\n");
       /* note type: NT_GNU_PROPERTY_TYPE_0.  */
       fprintf (asm_out_file, ASM_LONG " 5\n");
-      ASM_OUTPUT_LABEL (asm_out_file, "0");
+      fprintf (asm_out_file, "0:\n");
       /* vendor name: "GNU".  */
       fprintf (asm_out_file, STRING_ASM_OP " \"GNU\"\n");
-      ASM_OUTPUT_LABEL (asm_out_file, "1");
+      fprintf (asm_out_file, "1:\n");
       ASM_OUTPUT_ALIGN (asm_out_file, p2align);
       /* pr_type: GNU_PROPERTY_X86_FEATURE_1_AND.  */
       fprintf (asm_out_file, ASM_LONG " 0xc0000002\n");
       /* pr_datasz.  */\
       fprintf (asm_out_file, ASM_LONG " 3f - 2f\n");
-      ASM_OUTPUT_LABEL (asm_out_file, "2");
+      fprintf (asm_out_file, "2:\n");
       /* GNU_PROPERTY_X86_FEATURE_1_XXX.  */
       fprintf (asm_out_file, ASM_LONG " 0x%x\n", feature_1);
-      ASM_OUTPUT_LABEL (asm_out_file, "3");
+      fprintf (asm_out_file, "3:\n");
       ASM_OUTPUT_ALIGN (asm_out_file, p2align);
-      ASM_OUTPUT_LABEL (asm_out_file, "4");
+      fprintf (asm_out_file, "4:\n");
     }
 }
