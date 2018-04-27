@@ -3273,11 +3273,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    DECL_USE_TEMPLATE is nonzero) or the abstract instance of the
    template itself.
 
-   In either case, DECL_TEMPLATE_INFO is a TREE_LIST, whose
-   TREE_PURPOSE is the TEMPLATE_DECL of which this entity is a
-   specialization or abstract instance.  The TREE_VALUE is the
+   In either case, DECL_TEMPLATE_INFO is a TEMPLATE_INFO, whose
+   TI_TEMPLATE is the TEMPLATE_DECL of which this entity is a
+   specialization or abstract instance.  The TI_ARGS is the
    template arguments used to specialize the template.
-   
+
    Consider:
 
       template <typename T> struct S { friend void f(T) {} };
@@ -3344,11 +3344,14 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 #define TI_TEMPLATE(NODE) TREE_TYPE (TEMPLATE_INFO_CHECK (NODE))
 #define TI_ARGS(NODE) TREE_CHAIN (TEMPLATE_INFO_CHECK (NODE))
-#define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
+#define TI_PENDING_TEMPLATE_FLAG(NODE) \
+  TREE_LANG_FLAG_1 (TEMPLATE_INFO_CHECK (NODE))
 /* For a given TREE_VEC containing a template argument list,
    this property contains the number of arguments that are not
    defaulted.  */
-#define NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE) TREE_CHAIN (TREE_VEC_CHECK (NODE))
+#define NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE) \
+  TREE_CHAIN (TREE_VEC_CHECK (NODE))
+
 /* Below are the setter and getter of the NON_DEFAULT_TEMPLATE_ARGS_COUNT
    property.  */
 #define SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE, INT_VALUE) \
@@ -6229,9 +6232,6 @@ extern tree strip_fnptr_conv			(tree);
 extern void maybe_push_cleanup_level		(tree);
 extern tree make_anon_name			(void);
 extern tree check_for_out_of_scope_variable	(tree);
-extern void dump				(cp_binding_level &ref);
-extern void dump				(cp_binding_level *ptr);
-extern void print_other_binding_stack		(cp_binding_level *);
 extern tree maybe_push_decl			(tree);
 extern tree current_decl_namespace		(void);
 
