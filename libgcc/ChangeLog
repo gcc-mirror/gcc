@@ -1,3 +1,10 @@
+2018-04-27  Andreas Tobler  <andreast@gcc.gnu.org>
+	    Maryse Levavasseur <maryse.levavasseur@stormshield.eu>
+
+	PR libgcc/84292
+	* config/arm/freebsd-atomic.c (SYNC_OP_AND_FETCH_N): Fix the
+	op_and_fetch to return the right result.
+
 2018-04-27  Alan Modra  <amodra@gmail.com>
 
 	PR libgcc/85532
@@ -526,7 +533,6 @@
 	* config/i386/t-msabi: Modified to add avx and sse versions of stubs.
 
 2017-09-01  Olivier Hainque  <hainque@adacore.com>
-
 	* config.host (*-*-vxworks7): Widen scope to vxworks7*.
 
 2017-08-31  Olivier Hainque  <hainque@adacore.com>
