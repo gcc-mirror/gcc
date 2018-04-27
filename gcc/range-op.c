@@ -1746,6 +1746,13 @@ operator_min_max::fold_range (irange& r, const irange& lh,
       return true;
     }
   signop sign = TYPE_SIGN (lh.get_type ());
+  // Start with the union of both ranges  then intersect it with the
+  // max/min values of both to get a set of values.
+  // This allows   MIN  ([1,5][20,30] , [0,4][18,60])  to produce 
+  // [0,5][18,30]  rather than [0,30]
+  
+  r = irange_union (lh, rh);
+  
   if (code == MIN_EXPR)
     {
       lb = wi::min (lh.lower_bound (), rh.lower_bound (), sign);
@@ -1756,7 +1763,7 @@ operator_min_max::fold_range (irange& r, const irange& lh,
       lb = wi::max (lh.lower_bound (), rh.lower_bound (), sign);
       ub = wi::max (lh.upper_bound (), rh.upper_bound (), sign);
     }
-  r.set_range (lh.get_type (), lb, ub);
+  r.intersect (irange (lh.get_type (), lb, ub));
   return true;
 }
 
@@ -1856,8 +1863,8 @@ irange_op_table::irange_op_table ()
   irange_tree[INTEGER_CST] = &op_integer_cst;
   irange_tree[SSA_NAME] = &op_ssa_name;
 
-//  irange_tree[MIN_EXPR] = &op_min;
-//  irange_tree[MAX_EXPR] = &op_max;
+  irange_tree[MIN_EXPR] = &op_min;
+  irange_tree[MAX_EXPR] = &op_max;
 }
 
 /* The table is hidden and accessed via a simple extern function.  */
