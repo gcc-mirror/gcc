@@ -1,3 +1,10 @@
+2018-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85527
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90 (main): Store
+	atomic capture results obtained in parallel loop to an array, instead of
+	to a scalar.
+
 2018-04-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/84020
