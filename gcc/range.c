@@ -578,13 +578,13 @@ irange::union_ (const irange &r)
   // Build a union of 2 ranges here.  Make sure we dont have to worry about
   // merging and such by reserving twice as many pairs as needed, and simply
   // sort the 2 ranges into this intermediate form.
-  // THe intermediate result will have the property that the beginning of
+  // The intermediate result will have the property that the beginning of
   // each range is <= the beginning of the next range
   // There may be overlapping ranges at this point.
   // ie this would be valid 
   // 	[ -20, 10], [-10, 0], [0, 20], [40, 90] 
-  // as it satidfies this contraint : -20 < -10 < 0 < 40
-  // WHen the range is rebuilt into r, the merge is performed.
+  // as it satisfies this contraint : -20 < -10 < 0 < 40
+  // When the range is rebuilt into r, the merge is performed.
   //
   // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
 
@@ -626,12 +626,20 @@ irange::union_ (const irange &r)
   // Now normalize the vector removing any overlaps.
   
   i = 2;
+  int prec = TYPE_PRECISION (type);
+  wide_int max_val = wi::max_value (prec, sign);
   for (j = 2; j < k ; j += 2)
     {
+      if (res[i - 1] == max_val)
+        break;
       u1 = wi::add (res[i - 1], 1, sign, &ovf);
+
       // Overflow indicates we are at MAX already
+      // wide int bug requires the previous max_val check
+      // trigger: gcc.c-torture/compile/pr80443.c  with -O3
       if (ovf)
         break;
+
       // Current upper+1 is >= lower bound next pair, then we merge ranges.
       if (wi::ge_p (u1, res[j], sign))
         {
