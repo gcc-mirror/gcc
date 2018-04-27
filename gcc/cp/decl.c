@@ -11298,9 +11298,11 @@ grokdeclarator (const cp_declarator *declarator,
 		if (decl_context == NORMAL)
 		  error ("friend declaration not in class definition");
 		if (current_function_decl && funcdef_flag)
-		  error ("can%'t define friend function %qs in a local "
-			 "class definition",
-			 name);
+		  {
+		    error ("can%'t define friend function %qs in a local "
+			   "class definition", name);
+		    friendp = 0;
+		  }
 	      }
 	    else if (ctype && sfk == sfk_conversion)
 	      {

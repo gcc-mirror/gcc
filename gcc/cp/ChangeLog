@@ -1,3 +1,9 @@
+2018-04-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84691
+	* decl.c (grokdeclarator): Clear friendp upon definition in local
+	class definition error.
+
 2018-04-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85545 - ICE with noexcept PMF conversion.
