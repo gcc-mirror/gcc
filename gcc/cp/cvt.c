@@ -607,6 +607,10 @@ cp_fold_convert (tree type, tree expr)
       conv = copy_node (expr);
       TREE_TYPE (conv) = type;
     }
+  else if (TREE_CODE (expr) == CONSTRUCTOR
+	   && TYPE_PTRMEMFUNC_P (type))
+    conv = build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr,
+			     true, false, tf_warning_or_error);
   else
     {
       conv = fold_convert (type, expr);
