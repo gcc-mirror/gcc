@@ -1,3 +1,10 @@
+2018-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85529
+	* gcc.c-torture/execute/pr85529-1.c: New test.
+	* gcc.c-torture/execute/pr85529-2.c: New test.
+	* gcc.dg/pr85529.c: New test.
+
 2018-04-26  Maciej W. Rozycki  <macro@mips.com>
 
 	* gcc.target/mips/data-sym-pool.c (dg-options): Match `ld' and

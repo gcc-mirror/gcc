@@ -1,3 +1,15 @@
+2018-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85529
+	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): Add FIRST_BB
+	argument.  Don't call get_nonzero_bits if opcode is ERROR_MARK_NODE,
+	rhs2 def stmt's bb is dominated by first_bb and it isn't an obvious
+	zero extension or masking of the MSB bit.
+	(optimize_range_tests): Add FIRST_BB argument, pass it through
+	to optimize_range_tests_var_bound.
+	(maybe_optimize_range_tests, reassociate_bb): Adjust
+	optimize_range_tests callers.
+
 2018-04-26  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
