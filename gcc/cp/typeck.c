@@ -6844,15 +6844,16 @@ convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 
   if (TYPE_PTRDATAMEM_P (type))
     {
+      tree obase = TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (expr));
+      tree nbase = TYPE_PTRMEM_CLASS_TYPE (type);
       tree delta = (get_delta_difference
-		    (TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (expr)),
-		     TYPE_PTRMEM_CLASS_TYPE (type),
+		    (obase, nbase,
 		     allow_inverse_p, c_cast_p, complain));
 
       if (delta == error_mark_node)
 	return error_mark_node;
 
-      if (!integer_zerop (delta))
+      if (!same_type_p (obase, nbase))
 	{
 	  if (TREE_CODE (expr) == PTRMEM_CST)
 	    expr = cplus_expand_constant (expr);
