@@ -1,3 +1,9 @@
+2018-04-27  Alan Modra  <amodra@gmail.com>
+
+	PR libgcc/85532
+	* config/rs6000/t-crtstuff (CRTSTUFF_T_CFLAGS): Add
+	-fno-asynchronous-unwind-tables.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux-unwind.h: Add (__CET__ & 2) != 0 check
