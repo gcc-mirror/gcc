@@ -6833,34 +6833,28 @@ convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 
   if (TYPE_PTRDATAMEM_P (type))
     {
-      tree delta;
+      tree delta = (get_delta_difference
+		    (TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (expr)),
+		     TYPE_PTRMEM_CLASS_TYPE (type),
+		     allow_inverse_p, c_cast_p, complain));
 
-      delta = get_delta_difference (TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (expr)),
-				    TYPE_PTRMEM_CLASS_TYPE (type),
-				    allow_inverse_p,
-				    c_cast_p, complain);
       if (delta == error_mark_node)
 	return error_mark_node;
 
       if (!integer_zerop (delta))
 	{
-	  tree cond, op1, op2;
-
 	  if (TREE_CODE (expr) == PTRMEM_CST)
 	    expr = cplus_expand_constant (expr);
-	  cond = cp_build_binary_op (input_location,
-				     EQ_EXPR,
-				     expr,
-				     build_int_cst (TREE_TYPE (expr), -1),
-				     complain);
-	  op1 = build_nop (ptrdiff_type_node, expr);
-	  op2 = cp_build_binary_op (input_location,
-				    PLUS_EXPR, op1, delta,
-				    complain);
+
+	  tree cond = cp_build_binary_op (input_location, EQ_EXPR, expr,
+					  build_int_cst (TREE_TYPE (expr), -1),
+					  complain);
+	  tree op1 = build_nop (ptrdiff_type_node, expr);
+	  tree op2 = cp_build_binary_op (input_location, PLUS_EXPR, op1, delta,
+					 complain);
 
 	  expr = fold_build3_loc (input_location,
-			      COND_EXPR, ptrdiff_type_node, cond, op1, op2);
-			 
+				  COND_EXPR, ptrdiff_type_node, cond, op1, op2);
 	}
 
       return build_nop (type, expr);

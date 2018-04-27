@@ -1,5 +1,7 @@
 2018-04-27  Nathan Sidwell  <nathan@acm.org>
 
+	* typeck.c (convert_ptrmem): Move local var decls to initialization.
+
 	* cp-tree.h (TEMPLATE_INFO): Fix comments.
 	(TI_PENDING_TEMPLATE_FLAG): Check TEMPLATE_INFO.
 	(NON_DEFAULT_TEMPLATE_ARG_COUNT): Wrap line.
