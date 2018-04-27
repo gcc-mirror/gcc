@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "wide-int.h"
 #include "ssa-range-bb.h"
-#include "ssa-range-global.h"
 
 /* Is the last stmt in a block interesting to look at for range info.  */
 
@@ -341,13 +340,11 @@ block_ranger::block_ranger () : bool_zero (boolean_type_node, 0, 0),
 				bool_one (boolean_type_node, 1, 1)
 {
   gori = new gori_map ();
-  initialize_global_ssa_range_cache ();
 
 }
 
 block_ranger::~block_ranger ()
 {
-  destroy_global_ssa_range_cache ();
   delete gori;
 }
 
@@ -588,10 +585,6 @@ block_ranger::dump (FILE *f)
 
   fprintf (f, "\nDUMPING GORI MAP\n");
   gori->dump (f);
-  fprintf (f, "\n");
-
-  fprintf (f, "\nDUMPING Globals table\n");
-  dump_global_ssa_range_cache (f);
   fprintf (f, "\n");
 }
 

@@ -204,11 +204,67 @@ block_range_cache::dump (FILE *f)
 path_ranger::path_ranger () 
 {
   block_cache = new block_range_cache ();
+  globals = new ssa_global_cache ();
 }
 
 path_ranger::~path_ranger () 
 {
   delete block_cache;
+  delete globals;
+}
+
+inline void
+path_ranger::dump_global_ssa_range (FILE *f)
+{
+  globals->dump (f);
+}
+
+bool
+path_ranger::has_global_ssa_range (irange& r, tree name)
+{
+  if (!valid_irange_ssa (name))
+    return false;
+
+  if (globals->get_global_range (r, name))
+    return true;
+
+  r.set_range (name);
+  return false;
+}
+
+
+bool
+path_ranger::get_global_ssa_range (irange& r, tree name)
+{
+  gimple *s;
+  if (!valid_irange_ssa (name))
+    return false;
+
+  if (globals->get_global_range (r, name))
+    return true;
+
+  s = SSA_NAME_DEF_STMT (name);
+  if (s && path_range_stmt (r, s))
+    {
+      globals->set_global_range (name, r);
+      return true;
+    }
+
+  r.set_range (name);
+  globals->set_global_range (name, r);
+  return true;
+}
+
+inline void
+path_ranger::set_global_ssa_range (tree name, const irange&r)
+{
+  globals->set_global_range (name, r);
+}
+
+void
+path_ranger::clear_global_ssa_range (tree name) 
+{
+  globals->clear_global_range (name);
 }
 
 
@@ -247,6 +303,7 @@ path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
     {
       irange block_range;
       range_for_bb (block_range, name, bb, def_bb);
+      normalize_bool_type (r, block_range);
       r.intersect (block_range);
     }
 
@@ -360,7 +417,7 @@ path_ranger::process_phi (irange &r, gphi *phi)
     return false;
 
   // If this node has already been processed, just return it.
-  if (get_global_ssa_range (r, phi_def))
+  if (has_global_ssa_range (r, phi_def))
     return true;
 
   // Avoid infinite recursion by initializing global cache 
@@ -410,7 +467,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   if (name)
     {
       // If this STMT has already been processed, return that value. 
-      if (get_global_ssa_range (r, name))
+      if (has_global_ssa_range (r, name))
 	return !r.range_for_type_p ();
      
       // avoid infinite recursion by initializing global cache 
@@ -600,7 +657,7 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 
 	if (!valid_irange_ssa (phi_def))
 	  return false;
-	if (get_global_ssa_range (r, phi_def))
+	if (has_global_ssa_range (r, phi_def))
 	  return true;
 
 	// Avoid infinite recursion by initializing global cache 
@@ -636,7 +693,7 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
     if (!name)
       return path_fold_stmt (r, rn, bb);
 
-    if (get_global_ssa_range (r, name))
+    if (has_global_ssa_range (r, name))
       return true;
 
     // avoid infinite recursion by initializing global cache 
@@ -733,6 +790,7 @@ void
 path_ranger::dump(FILE *f)
 {
   block_ranger::dump (f);
+  dump_global_ssa_range (f);
 }
 
 
@@ -761,6 +819,11 @@ path_ranger::exercise (FILE *output)
 		{
 		  if (output && !range.range_for_type_p ())
 		    {
+		      // avoid printing global values that are just global
+		      irange gl;
+		      if (has_global_ssa_range (gl, name) && gl == range)
+		        continue;
+			  
 		      if (!printed)
 			fprintf (output,"   Ranges on Entry :\n");
 		      printed = true;
@@ -806,7 +869,7 @@ path_ranger::exercise (FILE *output)
 	  printed = false;
 	  for (x = 1; x < num_ssa_names; x++)
 	    {
-	      if (ssa_name(x) && get_global_ssa_range (range, ssa_name (x)))
+	      if (ssa_name(x) && has_global_ssa_range (range, ssa_name (x)))
 	        {
 		  gimple *s = SSA_NAME_DEF_STMT (ssa_name (x));
 		  if (s && gimple_bb (s) == bb)

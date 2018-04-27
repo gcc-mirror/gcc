@@ -198,12 +198,6 @@ void range_one (irange *r, tree type);
 bool range_non_zero (irange *r, tree type);
 void range_positives (irange *r, tree type, unsigned int);
 
-// From ssa-range-gen.c.  
-// class gori will control this  until we get globals set up properly.
-bool get_global_ssa_range (irange& r, tree name);
-void set_global_ssa_range (tree name, const irange&r);
-
-
 /* An irange is inefficient when it comes to memory, so this class is
    used to store iranges in memory (off of an SSA_NAME likely).  It is
    a variable length structure that contains the sub-range pairs as

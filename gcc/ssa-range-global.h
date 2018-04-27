@@ -22,12 +22,19 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SSA_RANGE_GLOBAL_H
 
 #include "range.h"
-void initialize_global_ssa_range_cache ();
-void destroy_global_ssa_range_cache ();
-void dump_global_ssa_range_cache (FILE *f);
 
-bool get_global_ssa_range (irange& r, tree name);
-void set_global_ssa_range (tree name, const irange&r);
-void clear_global_ssa_range (tree name);
+class ssa_global_cache
+{
+private:
+  vec<irange_storage *> tab;
+public:
+  ssa_global_cache ();
+  ~ssa_global_cache ();
+  bool get_global_range (irange& r, tree name)  const;
+  void set_global_range (tree name, const irange&r);
+  void clear_global_range (tree name);
+  void clear ();
+  void dump (FILE *f = stderr);
+};
 
 #endif /* GCC_SSA_RANGE_GLOBAL_H  */

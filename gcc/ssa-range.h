@@ -29,6 +29,7 @@ class path_ranger : public block_ranger
 {
 private:
   class block_range_cache *block_cache;
+  class ssa_global_cache *globals;
 
   void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
   void determine_block (tree name, basic_block bb, basic_block def_bb);
@@ -38,6 +39,11 @@ private:
   bool process_phi (irange &r, gphi *phi);
   bool path_get_operand (irange &r, tree name, basic_block bb);
 protected:
+  void dump_global_ssa_range (FILE *f);
+  bool has_global_ssa_range (irange& r, tree name);
+  bool get_global_ssa_range (irange& r, tree name);
+  void set_global_ssa_range (tree name, const irange&r);
+  void clear_global_ssa_range (tree name);
   virtual bool get_operand_range (irange &r, tree op, gimple *s = NULL);
 public:
   enum path_range_direction { FORWARD, REVERSE };

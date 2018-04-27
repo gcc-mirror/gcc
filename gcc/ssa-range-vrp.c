@@ -45,8 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "domwalk.h"
 #include "ssa-range.h"
-#include "ssa-range-global.h"
-
+#include "tree-ssa-dce.h"
 
 static bool
 argument_ok_to_propagate (tree name)
@@ -80,8 +79,6 @@ execute_ranger_vrp ()
   basic_block bb;
   irange r;
   wide_int i;
-  unsigned x;
-  bitmap_iterator bi;
   bitmap touched = BITMAP_ALLOC (NULL);
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -92,16 +89,15 @@ execute_ranger_vrp ()
         {
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "Considering BB%d:  ", bb->index);
+	      fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
 	      print_gimple_stmt (dump_file, cond, 0,0);
 	    }
 	  if (ranger.path_range_stmt (r, stmt))
 	    {
 	      if (dump_file)
 	        {
-		  fprintf (dump_file, "Found a range for the expression: ");
+		  fprintf (dump_file, "      Expression evaluates to range: ");
 		  r.dump (dump_file);
-		  fprintf (dump_file, "\n");
 		}
 
 	      if (r.singleton_p (i))
@@ -110,12 +106,7 @@ execute_ranger_vrp ()
 		      !argument_ok_to_propagate (gimple_cond_rhs (cond)))
 		    {
 		      if (dump_file)
-			{
-			  fprintf (dump_file, "Found  BB%d branch",bb->index);
-			  print_gimple_stmt (dump_file, stmt, 0, 0);
-			  fprintf (dump_file, "cannot eliminate. proprules.\n");
-			  fprintf (stderr,"\n  ***************** caught one\n");
-			}
+			fprintf (dump_file, "RVRP: Cannot propagate.\n");
 		      continue;
 		    }
 
@@ -128,13 +119,6 @@ execute_ranger_vrp ()
 		  if (t)
 		    bitmap_set_bit (touched, SSA_NAME_VERSION (t));
 
-		  if (dump_file)
-		    {
-		      fprintf (dump_file, "eliminating BB%d branch:\n",
-			       bb->index);
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
-		    }
-
 		  /* Rewrite the condition to either true or false.  */
 		  if (wi::eq_p (i, 0))
 		    gimple_cond_make_false (cond);
@@ -144,7 +128,7 @@ execute_ranger_vrp ()
 
 		  if (dump_file)
 		    {
-		      fprintf (dump_file, "Re-written to: \n");
+		      fprintf (dump_file, "RVRP: Branch rewritten to: ");
 		      print_gimple_stmt (dump_file, cond, 0, 0);
 		      fprintf (dump_file, "\n");
 		    }
@@ -154,33 +138,9 @@ execute_ranger_vrp ()
 
     }
 
-  // Now visit each name that was rewritten and see if the definiing statement
-  // can be deleted due to no more uses in the program
-  EXECUTE_IF_SET_IN_BITMAP (touched, 0, x, bi)
-    {
-      tree name = ssa_name (x);
-      gimple *s = SSA_NAME_DEF_STMT (name);
-      
-      if (s)
-        {
-	  if (has_zero_uses (name))
-	    {
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Should delete");
-		  print_gimple_stmt (dump_file, s, 0, 0);
-		}
-	    }
-	  else
-	    {
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Still has uses, Could not delete ");
-		  print_gimple_stmt (dump_file, s, 0, 0);
-		}
-	    }
-	}
-    }
+  // Now delete any statements with 0 uses.
+  simple_dce_from_worklist (touched);
+
   return 0;
 }
 
