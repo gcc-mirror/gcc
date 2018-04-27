@@ -180,8 +180,10 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
        items with static storage duration that are not otherwise
        initialized are initialized to zero.  */
     ;
-  else if (TYPE_PTR_OR_PTRMEM_P (type) || NULLPTR_TYPE_P (type))
+  else if (TYPE_PTR_OR_PTRMEM_P (type))
     init = fold (convert (type, nullptr_node));
+  else if (NULLPTR_TYPE_P (type))
+    init = build_int_cst (type, 0);
   else if (SCALAR_TYPE_P (type))
     init = fold (convert (type, integer_zero_node));
   else if (RECORD_OR_UNION_CODE_P (TREE_CODE (type)))
