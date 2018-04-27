@@ -158,14 +158,14 @@
   A constraint that matches an immediate right shift constant in SImode
   suitable for a SISD instruction."
   (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, 1, 32)")))
+       (match_test "IN_RANGE (ival, 1, 31)")))
 
 (define_constraint "Usj"
   "@internal
   A constraint that matches an immediate right shift constant in DImode
   suitable for a SISD instruction."
   (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, 1, 64)")))
+       (match_test "IN_RANGE (ival, 1, 63)")))
 
 (define_constraint "UsM"
   "@internal
