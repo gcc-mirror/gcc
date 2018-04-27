@@ -1,3 +1,9 @@
+2018-04-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/85549
+	* ipa-cp.c (find_aggregate_values_for_callers_subset): Make sure
+	the jump function allows for passing through aggregate values.
+
 2018-04-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.h (in_system_header_at): Convert from macro to inline
