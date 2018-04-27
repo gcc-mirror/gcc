@@ -6589,7 +6589,7 @@ proc check_effective_target_vect_load_lanes { } {
     } else {
 	set et_vect_load_lanes 0
 	# We don't support load_lanes correctly on big-endian arm.
-	if { ([istarget arm-*-*] && [check_effective_target_arm_neon_ok])
+	if { ([check_effective_target_arm_little_endian] && [check_effective_target_arm_neon_ok])
 	     || [istarget aarch64*-*-*] } {
 	    set et_vect_load_lanes 1
 	}
