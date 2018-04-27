@@ -1,3 +1,10 @@
+2018-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.h (in_system_header_at): Convert from macro to inline
+	function.
+	(from_macro_expansion_at): Likewise.
+	(from_macro_definition_at): Likewise.
+
 2018-04-27  Jeff Law  <law@redhat.com>
 
 	* config.gcc: Mark tile* targets as deprecated/obsolete.
