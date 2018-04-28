@@ -1,3 +1,11 @@
+2018-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/84431
+	* config/i386/i386.md (*ashl<dwi>3_doubleword_mask): New pattern.
+	(*ashl<dwi>3_doubleword_mask_1): Ditto.
+	(*<shift_insn><dwi>3_doubleword_mask): Ditto.
+	(*<shift_insn><dwi>3_doubleword_mask_1): Ditto.
+
 2018-04-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_phi): Take a gphi * argument.
