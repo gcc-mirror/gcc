@@ -1,3 +1,9 @@
+2018-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_phi): Take a gphi * argument.
+	(verify_gimple_in_cfg): Rename visited_stmts to visited_throwing_stmts
+	to reflect use.  Only add interesting stmts.
+
 2018-04-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/85549

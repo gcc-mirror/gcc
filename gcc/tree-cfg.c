@@ -5055,7 +5055,7 @@ verify_gimple_stmt (gimple *stmt)
    and false otherwise.  */
 
 static bool
-verify_gimple_phi (gimple *phi)
+verify_gimple_phi (gphi *phi)
 {
   bool err = false;
   unsigned i;
@@ -5374,7 +5374,7 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 
   timevar_push (TV_TREE_STMT_VERIFY);
   hash_set<void *> visited;
-  hash_set<gimple *> visited_stmts;
+  hash_set<gimple *> visited_throwing_stmts;
 
   /* Collect all BLOCKs referenced by the BLOCK tree of FN.  */
   hash_set<tree> blocks;
@@ -5395,8 +5395,6 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	  gphi *phi = gpi.phi ();
 	  bool err2 = false;
 	  unsigned i;
-
-	  visited_stmts.add (phi);
 
 	  if (gimple_bb (phi) != bb)
 	    {
@@ -5453,8 +5451,6 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	  tree addr;
 	  int lp_nr;
 
-	  visited_stmts.add (stmt);
-
 	  if (gimple_bb (stmt) != bb)
 	    {
 	      error ("gimple_bb (stmt) is set to a wrong basic block");
@@ -5504,6 +5500,8 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	     that they cannot throw, that we update other data structures
 	     to match.  */
 	  lp_nr = lookup_stmt_eh_lp (stmt);
+	  if (lp_nr != 0)
+	    visited_throwing_stmts.add (stmt);
 	  if (lp_nr > 0)
 	    {
 	      if (!stmt_could_throw_p (stmt))
@@ -5527,11 +5525,11 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	}
     }
 
-  eh_error_found = false;
   hash_map<gimple *, int> *eh_table = get_eh_throw_stmt_table (cfun);
+  eh_error_found = false;
   if (eh_table)
     eh_table->traverse<hash_set<gimple *> *, verify_eh_throw_stmt_node>
-      (&visited_stmts);
+      (&visited_throwing_stmts);
 
   if (err || eh_error_found)
     internal_error ("verify_gimple failed");
