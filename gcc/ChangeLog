@@ -1,3 +1,10 @@
+2018-04-28  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (dwarf2out_finish): Add .debug_addr table header for
+	dwarf_version >= 5.
+	(dwarf_AT): Handle DW_AT_addr_base.
+	(add_top_level_skeleton_die_attrs): Use dwarf_AT for DW_AT_addr_base.
+
 2018-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/84431
