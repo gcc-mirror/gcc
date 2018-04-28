@@ -1343,10 +1343,15 @@ operator_bitwise_and::fold_range (irange& r, const irange& lh,
       return apply_mask_to_range (r, lh, w);
 
   tree type = lh.get_type ();
-  // FOr pointers we only care about NULL and NONNULL, and the union operation
-  // actually gets the results we desire.
+  // For pointers we only care about NULL and NONNULL
   if (POINTER_TYPE_P (type))
-    r = irange_union (lh, rh);
+    {
+      // If either side is a 0, the result will be 0.
+      if (lh.zero_p () || rh.zero_p ())
+        r = lh;
+      else
+	r = irange_union (lh, rh);
+    }
   else
     {
       // To be safe, make the range largest to smallest, and include 0.
@@ -1355,6 +1360,7 @@ operator_bitwise_and::fold_range (irange& r, const irange& lh,
       wide_int lb = wi::min (lh.lower_bound (), rh.lower_bound(),
 			     TYPE_SIGN (lh.get_type ()));
       lb = wi::min (lb, 0, TYPE_SIGN (lh.get_type ()));
+      ub = wi::max (ub, 0, TYPE_SIGN (lh.get_type ()));
       r.set_range (lh.get_type (), lb, ub);
     }
   return true;
@@ -1685,13 +1691,17 @@ operator_pointer_plus::fold_range (irange& r, const irange& lh,
     return true;
 
   // For pointer types we are mostly concerned with NULL and NON-NULL.
+  // If either side is non-null, the result will be non-null.
   if (!lh.contains_p (0) || !rh.contains_p (0))
     r.set_range (lh.get_type (), 0, 0, irange::INVERSE);
   else
-    if (lh.zero_p () && rh.zero_p ())
-      r = lh;
-    else
-      r.set_range_for_type (lh.get_type ());
+    {
+      // Can't perform a union since the RH is a different type from the LH.
+      if (lh.zero_p () && rh.zero_p ())
+        r = lh;
+      else
+	r.set_range_for_type (lh.get_type ());
+    }
   return true;
 }
 
@@ -1719,10 +1729,7 @@ operator_min_max::operator_min_max (tree_code c)
 void 
 operator_min_max::dump (FILE *f) const
 {
-  if (code == MIN_EXPR)
-    fprintf (f, " MIN ");
-  else
-    fprintf (f, " MAX ");
+  fprintf (f," %s ", get_tree_code_name (code));
 }
 
 bool
@@ -1730,46 +1737,34 @@ operator_min_max::fold_range (irange& r, const irange& lh,
 			      const irange& rh) const
 {
   wide_int lb, ub;
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
+  bool ov;
+  tree type = lh.get_type ();
+
+  if (empty_range_check (r, lh, rh, type))
     return true;
 
-  if (POINTER_TYPE_P (lh.get_type ()))
-    {
-      // For pointer types we are mostly concerned with NULL and NON-NULL.
-      if (!lh.contains_p (0) || !rh.contains_p (0))
-	r.set_range (lh.get_type (), 0, 0, irange::INVERSE);
-      else
-	if (lh.zero_p () && rh.zero_p ())
-	  r = lh;
-	else
-	  r.set_range_for_type (lh.get_type ());
-      return true;
-    }
-  signop sign = TYPE_SIGN (lh.get_type ());
-  // Start with the union of both ranges  then intersect it with the
-  // max/min values of both to get a set of values.
+  // Start with the union of both ranges  
+  r = irange_union (lh, rh);
+
+  // For pointer types we are concerned with NULL and NON-NULL.
+  // Min max result in this case is a strict union.
+  if (POINTER_TYPE_P (type))
+    return true;
+
+  // intersect the union with the max/min values of both to get a set of values.
   // This allows   MIN  ([1,5][20,30] , [0,4][18,60])  to produce 
   // [0,5][18,30]  rather than [0,30]
-  
-  r = irange_union (lh, rh);
-  
-  if (code == MIN_EXPR)
-    {
-      lb = wi::min (lh.lower_bound (), rh.lower_bound (), sign);
-      ub = wi::min (lh.upper_bound (), rh.upper_bound (), sign);
-    }
-  else
-    {
-      lb = wi::max (lh.lower_bound (), rh.lower_bound (), sign);
-      ub = wi::max (lh.upper_bound (), rh.upper_bound (), sign);
-    }
-  r.intersect (irange (lh.get_type (), lb, ub));
+  wide_int_const_binop (code, lb, lh.lower_bound (), rh.lower_bound (),
+			TYPE_SIGN (type), ov);
+  wide_int_const_binop (code, ub, lh.upper_bound (), rh.upper_bound (),
+			TYPE_SIGN (type), ov);
+  r.intersect (irange (type, lb, ub));
   return true;
 }
 
 bool
 operator_min_max::op1_irange (irange& r, const irange& lhs,
-				   const irange& op2) const
+			      const irange& op2) const
 {
   if (empty_range_check (r, lhs, op2, lhs.get_type ()))
     return true;
@@ -1803,7 +1798,7 @@ operator_min_max::op1_irange (irange& r, const irange& lhs,
 
 bool
 operator_min_max::op2_irange (irange& r, const irange& lhs,
-			  const irange& op1) const
+			      const irange& op1) const
 {
   return operator_min_max::op1_irange (r, lhs, op1);
 }
@@ -1865,6 +1860,7 @@ irange_op_table::irange_op_table ()
 
   irange_tree[MIN_EXPR] = &op_min;
   irange_tree[MAX_EXPR] = &op_max;
+  irange_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
 }
 
 /* The table is hidden and accessed via a simple extern function.  */
