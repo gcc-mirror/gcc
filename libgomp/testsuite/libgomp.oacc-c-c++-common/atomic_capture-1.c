@@ -795,17 +795,16 @@ main(int argc, char **argv)
       }
   }
 
+  int ones = 0, thirtyones = 0;
+
   for (i = 0; i < N; i++)
-    if (i % 2 == 0)
-      {
-	if (fdata[i] != 31.0)
-	  abort ();
-      }
-    else
-      {
-	if (fdata[i] != 1.0)
-	  abort ();
-      }
+    if (fdata[i] == 31.0)
+      thirtyones++;
+    else if (fdata[i] == 1.0)
+      ones++;
+
+  if (ones != N / 2 || thirtyones != N / 2)
+    abort ();
 
 
   /* BINOP = / */
