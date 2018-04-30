@@ -13094,10 +13094,10 @@ are defined to 2.
 @itemx -fPIE
 @opindex fpie
 @opindex fPIE
-These options are similar to @option{-fpic} and @option{-fPIC}, but
-generated position independent code can be only linked into executables.
-Usually these options are used when @option{-pie} GCC option is
-used during linking.
+These options are similar to @option{-fpic} and @option{-fPIC}, but the
+generated position-independent code can be only linked into executables.
+Usually these options are used to compile code that will be linked using
+the @option{-pie} GCC option.
 
 @option{-fpie} and @option{-fPIE} both define the macros
 @code{__pie__} and @code{__PIE__}.  The macros have the value 1
