@@ -1,3 +1,50 @@
+2018-04-30 Andrew Sadek  <andrew.sadek.se@gmail.com>
+
+	Microblaze Target: PIC data text relative
+
+	* config/microblaze/microblaze.opt: add new option -mpic-data-text-rel.
+	* config/microblaze/microblaze-protos.h (microblaze_constant_address_p):
+	Add declaration.
+	* gcc/config/microblaze/microblaze.h (microblaze_constant_address_p):
+	CONSTANT_ADDRESS_P definition to microblaze_constant_address_p.
+	* config/microblaze/microblaze.c (TARGET_PIC_DATA_TEXT_REL):
+	New addressing mode for data-text relative position indepenedent code.
+	(microblaze_classify_unspec): add 'UNSPEC_TEXT' case ->
+	'ADDRESS_SYMBOLIC_TXT_REL'.
+	(microblaze_classify_address): Add handling for UNSPEC + CONST_INT.
+	(microblaze_legitimate_pic_operand): Exclude function calls from
+	pic operands in case of TARGET_PIC_DATA_TEXT_REL option.
+	(microblaze_legitimize_address): Generate 'UNSPEC_TEXT' for all possible
+	addresses cases.
+	(microblaze_address_insns): Add 'ADDRESS_SYMBOLIC_TXT_REL' case.
+	(print_operand): Add 'ADDRESS_SYMBOLIC_TXT_REL' case.
+	(print_operand_address): Add 'ADDRESS_SYMBOLIC_TXT_REL' case + handling
+	for 'address + offset'.
+	(microblaze_expand_prologue): Add new function prologue call for
+	'r20' assignation.
+	(microblaze_asm_generate_pic_addr_dif_vec): Override new target hook
+	'TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC' to disable address diff vector
+	table in case of TARGET_PIC_DATA_TEXT_REL.
+	(expand_pic_symbol_ref): Add handling for 'UNSPEC_TEXT'.
+	* gcc/config/microblaze/microblaze.md (TARGET_PIC_DATA_TEXT_REL):
+	Add new macros 'UNSPEC_TEXT',
+	'UNSPEC_SET_TEXT' + add rule for setting r20 in function prologue
+	+ exclude function calls from 'UNSPEC_PLT' in case of data text
+	relative mode.
+	* doc/tm.texi.in (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC): Add
+	new target hook for generating address diff vector tables in case of
+	flag_pic.
+	* doc/tm.texi : Regenerate.
+	* stmt.c (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC): Append new condition
+	'targetm.asm_out.generate_pic_addr_diff_vec' to flag_pic in case
+	of addr diff vector generation.
+	* target.def (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC): Add
+	target hook definition.
+	* targhooks.h, gcc/targhooks.c (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC):
+	Add default function for generate_pic_addr_diff_vec -> flag_pic.
+	* doc/invoke.texi (Add new pic option): Add new microblaze pic
+	option for data text relative.
+
 2018-04-30  Richard Biener  <rguenther@suse.de>
 
 	* tree-chrec.h (evolution_function_is_constant_p): Remove

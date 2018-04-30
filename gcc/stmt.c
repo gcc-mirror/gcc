@@ -853,7 +853,8 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
   /* Output the table.  */
   emit_label (table_label);
 
-  if (CASE_VECTOR_PC_RELATIVE || flag_pic)
+  if (CASE_VECTOR_PC_RELATIVE
+	  || (flag_pic && targetm.asm_out.generate_pic_addr_diff_vec ()))
     emit_jump_table_data (gen_rtx_ADDR_DIFF_VEC (CASE_VECTOR_MODE,
 						 gen_rtx_LABEL_REF (Pmode,
 								    table_label),
