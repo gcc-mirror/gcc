@@ -2059,6 +2059,16 @@ build_constructor_va (tree type, int nelts, ...)
   return build_constructor (type, v);
 }
 
+/* Return a node of type TYPE for which TREE_CLOBBER_P is true.  */
+
+tree
+build_clobber (tree type)
+{
+  tree clobber = build_constructor (type, NULL);
+  TREE_THIS_VOLATILE (clobber) = true;
+  return clobber;
+}
+
 /* Return a new FIXED_CST node whose type is TYPE and value is F.  */
 
 tree
