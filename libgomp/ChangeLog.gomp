@@ -1,0 +1,29 @@
+2017-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/for-2.h: If CONDNE macro is defined, define
+	a different N(test), don't define N(f0) to N(f14), but instead define
+	N(f20) to N(f34) using != comparisons.
+	* testsuite/libgomp.c/for-4.c: Use dg-additional-options.
+	* testsuite/libgomp.c/for-7.c: New test.
+	* testsuite/libgomp.c/for-8.c: New test.
+	* testsuite/libgomp.c/for-9.c: New test.
+	* testsuite/libgomp.c/for-10.c: New test.
+	* testsuite/libgomp.c/for-11.c: New test.
+	* testsuite/libgomp.c/for-12.c: New test.
+	* testsuite/libgomp.c/for-13.c: New test.
+	* testsuite/libgomp.c++/for-12.C: Remove dg-options.
+	* testsuite/libgomp.c++/for-15.C: New test.
+	* testsuite/libgomp.c++/for-16.C: New test.
+	* testsuite/libgomp.c++/for-17.C: New test.
+	* testsuite/libgomp.c++/for-18.C: New test.
+	* testsuite/libgomp.c++/for-19.C: New test.
+	* testsuite/libgomp.c++/for-20.C: New test.
+	* testsuite/libgomp.c++/for-21.C: New test.
+	* testsuite/libgomp.c++/for-22.C: New test.
+	* testsuite/libgomp.c++/for-23.C: New test.
+
+Copyright (C) 2017 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
