@@ -1,3 +1,14 @@
+2018-04-30  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (trees_out::tree_decl): Adjust for member templates.
+	(trees_out::tree_node): Don't deal with templates here.
+	(trees_in::tree_node): Adjust template instantiations here.
+	(module_state::mark_template_def): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-2_b.C: Adjust module scan.
+	* g++.dg/modules/indirect-3_[abc].C: New.
+
 2018-04-27  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r259710.

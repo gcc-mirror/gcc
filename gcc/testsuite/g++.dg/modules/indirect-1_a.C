@@ -1,5 +1,7 @@
 // { dg-module-do run }
 
+// indirect references to import.  Non-template cases
+
 export module foo;
 // { dg-module-bmi foo }
 

@@ -2053,7 +2053,7 @@ enum tree_tag
     tt_tinfo_typedef,	/* Typeinfo typedef.  */
     tt_named_type,	/* TYPE_DECL for type.  */
     tt_named_decl,  	/* Named decl. */
-    tt_template,	/* A template specialization.  */
+    tt_inst,		/* A template instantiation.  */
     tt_binfo,		/* A BINFO.  */
     tt_as_base,		/* An As-Base type.  */
     tt_vtable		/* A vtable.  */
@@ -2182,10 +2182,12 @@ public:
 public:
   void tree_node (tree);
   void tree_value (tree, bool);
-  bool tree_decl (tree, bool, int module = -1);
-  bool tree_type (tree, bool, int module = -1);
+  // FIXME 'owner' is wrong idiom, we should figure it out on each
+  // call, simply passing in a 'looking inside' flag
+  bool tree_decl (tree, bool, int owner = -1);
+  bool tree_type (tree, bool, int owner = -1);
   int tree_ref (tree);
-  void tree_ctx (tree, int module = MODULE_PURVIEW);
+  void tree_ctx (tree, int owner = MODULE_PURVIEW);
 
 public:
   static void instrument ();
@@ -2914,15 +2916,17 @@ trees_out::mark_node (tree decl, bool into)
 
   if (!TREE_VISITED (decl) || into)
     {
-      /* On a dep-walk we don't care whan number we're tagging with,
+      /* On a dep-walk we don't care what number we're tagging with,
 	 but on an emission walk, we're pre-seeding the table with
-	 specific numbers the reader will recreate.  */
+	 specific numbers that the reader will recreate.  */
       int tag = into ? 0 : --ref_num;
       bool existed = tree_map.put (decl, tag);
       gcc_checking_assert (TREE_VISITED (decl) || !existed);
       TREE_VISITED (decl) = true;
     }
 
+  /* If the node is a template, mark the underlying decl too.  (The
+     reverse does not need to be checked for.)  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     mark_node (DECL_TEMPLATE_RESULT (decl), into);
 }
@@ -4820,9 +4824,8 @@ trees_out::tree_node_raw (tree t)
   /* The only decls we should stream out are those from this module,
      or the global module.  All other decls should be by name.  */
   gcc_checking_assert (klass != tcc_declaration
-		       || MAYBE_DECL_MODULE_OWNER (t) == MODULE_NONE
-		       || t != get_module_owner (t)
-		       || MAYBE_DECL_MODULE_OWNER (t) == MODULE_PURVIEW);
+		       || MAYBE_DECL_MODULE_OWNER (t) < MODULE_IMPORT_BASE
+		       || t != get_module_owner (t));
 
   if (klass == tcc_type || klass == tcc_declaration)
     {
@@ -4990,98 +4993,152 @@ bool
 trees_out::tree_decl (tree decl, bool force, int owner)
 {
   gcc_checking_assert (DECL_P (decl));
-  bool is_ctx = owner >= 0;
-  if (!is_ctx)
-    {
-      /* The innermost decl.  Find its owning module and determine
-	 what to do.  */
-      /* Some decls are never by name.  */
-      if (TREE_CODE (decl) == PARM_DECL || !DECL_CONTEXT (decl))
-	return true;
-
-      gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
-
-      tree owner_decl = get_module_owner (decl);
-      owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
-
-      if (TREE_CODE (owner_decl) == FUNCTION_DECL
-	  && owner_decl != decl)
-	{
-	  /* We cannot look up inside a function by name.  */
-	  // FIXME:think about fns local types such as lambdas.
-	  // probably needs special mapping, similar to how to deal
-	  // with internal-linkage decls we reference?
-	  gcc_assert (owner < MODULE_IMPORT_BASE);
-
-	  return true;
-	}
-    }
-
-  bool is_import = owner >= MODULE_IMPORT_BASE;
-  tree ctx = CP_DECL_CONTEXT (decl);
 
   if (force)
     {
-      gcc_assert (!is_import);
+      /* If we requested by-value, this better not be an import.  */
+      gcc_assert ((owner >= 0 && owner <= MODULE_IMPORT_BASE)
+		  || (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
+		      <= MODULE_IMPORT_BASE));
+      return true;
+    }
+
+  if (TREE_CODE (decl) == PARM_DECL
+      || !DECL_CONTEXT (decl))
+    {
+      /* If we cannot name this, it better be the inner-most decl we
+	 asked about.  */
+      gcc_assert (owner < 0);
       return true;
     }
 
   if (!tree_ref (decl))
+    /* If this is a fixed decl, we're done.  */
     return false;
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL
+      && RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (decl)))
+      && !DECL_MEMBER_TEMPLATE_P (decl))
+    {
+      /* An implicit member template, we should not meet as an import.  */
+      gcc_assert ((owner >= 0 && owner <= MODULE_IMPORT_BASE)
+		  || (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
+		      <= MODULE_IMPORT_BASE));
+      return true;
+    }
 
   const char *kind = NULL;
   tree ti = NULL_TREE;
+  int use_tpl = -1;
   if ((TREE_CODE (decl) == FUNCTION_DECL
-       || TREE_CODE (decl) == VAR_DECL)
+       || TREE_CODE (decl) == VAR_DECL
+       || TREE_CODE (decl) == TYPE_DECL)
       && DECL_LANG_SPECIFIC (decl))
-    ti = DECL_TEMPLATE_INFO (decl);
-  else if (TREE_CODE (decl) == TYPE_DECL)
-    ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
-
-  if (ti)
     {
-      /* A template specialization -> tt_template.  */
-      if (!dep_walk_p ())
-	i (tt_template);
+      use_tpl = DECL_USE_TEMPLATE (decl);
+      ti = DECL_TEMPLATE_INFO (decl);
+    }
+
+  if (!ti && TREE_CODE (decl) == TYPE_DECL
+      && TYPE_LANG_SPECIFIC (TREE_TYPE (decl)))
+    {
+      ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
+      use_tpl = CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl));
+    }
+
+  if (!ti)
+    ;
+  else if (use_tpl & 1)
+    {
+      /* Some kind of instantiation. */
       tree tpl = TI_TEMPLATE (ti);
-      tree args = TI_ARGS (ti);
-      tree_ctx (tpl, owner);
-      tree_node (args);
-      kind = "instantiation";
+      if (!RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (tpl)))
+	  || DECL_MEMBER_TEMPLATE_P (tpl))
+	{
+	  if (!dep_walk_p ())
+	    i (tt_inst);
+	  tree_ctx (tpl, -1);
+	  tree_node (TI_ARGS (ti));
+	  kind = "instantiation";
+	  goto insert;
+	}
+    }
+  else if (!use_tpl)
+    {
+      /* Primary.  */
     }
   else
-    {
-      /* A named decl -> tt_named_decl.  */
-      if (!dep_walk_p ())
-	{
-	  i (tt_named_decl);
-	  u (TREE_CODE (decl));
-	  u (owner);
+    gcc_unreachable ();
+
+
+  {
+    bool is_ctx = owner >= 0;
+    if (!is_ctx)
+      {
+	/* The innermost decl.  Find its owning module and determine
+	   what to do.  */
+	gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
+
+	tree owner_decl = get_module_owner (decl);
+	owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
+
+	/* We should not get cross-module references to the pseudo
+	   template of a member of a template class.  */
+	gcc_assert (TREE_CODE (decl) != TEMPLATE_DECL
+		    || TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
+		    || DECL_MEMBER_TEMPLATE_P (decl)
+		    || owner < MODULE_IMPORT_BASE);
+
+	if (TREE_CODE (owner_decl) == FUNCTION_DECL
+	    && owner_decl != decl
+	    && (TREE_CODE (decl) != TEMPLATE_DECL
+		|| DECL_TEMPLATE_RESULT (decl) != owner_decl))
+	  {
+	    /* We cannot look up inside a function by name.  */
+	    // FIXME:think about fns local types such as lambdas.
+	    // probably needs special mapping, similar to how to deal
+	    // with internal-linkage decls we reference?
+	    gcc_assert (owner < MODULE_IMPORT_BASE);
+
+	    return true;
+	  }
+      }
+
+    bool is_import = owner >= MODULE_IMPORT_BASE;
+    tree ctx = CP_DECL_CONTEXT (decl);
+
+    /* A named decl -> tt_named_decl.  */
+    if (!dep_walk_p ())
+      {
+	i (tt_named_decl);
+	u (TREE_CODE (decl));
+	u (owner);
+	tree_ctx (ctx, owner);
+      }
+    else if (!is_import)
+      {
+	/* Build out dependencies.  */
+	if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, owner);
-	}
-      else if (!is_import)
-	{
-	  /* Build out dependencies.  */
-	  if (TREE_CODE (ctx) != NAMESPACE_DECL)
-	    tree_ctx (ctx, owner);
-	  else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
-	    dep_hash->add_dependency (decl, is_ctx);
-	}
+	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
+	  dep_hash->add_dependency (decl, is_ctx);
+      }
 
-      tree name = DECL_NAME (decl);
-      tree_node (name);
-      tree type = DECL_DECLARES_FUNCTION_P (decl) ? TREE_TYPE (decl) : NULL_TREE;
-      tree_node (type);
-      /* Make sure we can find it by name.  */
-      gcc_checking_assert (decl == lookup_by_ident (ctx, owner, name, type,
-						    TREE_CODE (decl)));
-      kind = is_import ? "import" : "named decl";
-    }
+    tree name = DECL_NAME (decl);
+    tree_node (name);
+    tree type = DECL_DECLARES_FUNCTION_P (decl) ? TREE_TYPE (decl) : NULL_TREE;
+    tree_node (type);
+    /* Make sure we can find it by name.  */
+    gcc_checking_assert (decl == lookup_by_ident (ctx, owner, name, type,
+						  TREE_CODE (decl)));
+    kind = is_import ? "import" : "named decl";
+  }
 
+ insert:
   int tag = insert (decl);
   if (!dep_walk_p ())
     dump () && dump ("Wrote %s:%d %C:%N@%I", kind, tag, TREE_CODE (decl),
-		     decl, module_name (owner));
+		     decl, owner < 0 ? NULL_TREE : module_name (owner));
 
   if (tree type = TREE_TYPE (decl))
     {
@@ -5295,43 +5352,10 @@ trees_out::tree_node (tree t)
   if (TYPE_P (t) && !tree_type (t, force))
     goto done;
 
-  if (DECL_P (t))
-    {
-      /* T is a DECL.  Perhaps we need to refer to it by name.  */
-
-      if (TREE_CODE (t) == TEMPLATE_DECL
-	  && TREE_CODE (CP_DECL_CONTEXT (t)) != NAMESPACE_DECL)
-	goto by_value;
-
-      /* Some members of template classes have an implicit
-	 TEMPLATE_DECL attached to them.  That TEMPLATE_DECL needs to
-	 be written by value.  */
-      // FIXME: distinguish from explicit member templates
-      if ((TREE_CODE (t) == FUNCTION_DECL
-	   || TREE_CODE (t) == VAR_DECL
-	   || TREE_CODE (t) == TYPE_DECL)
-	  && TREE_CODE (CP_DECL_CONTEXT (t)) != NAMESPACE_DECL
-	  && DECL_LANG_SPECIFIC (t)
-	  && DECL_TEMPLATE_INFO (t))
-	{
-	  tree ti = DECL_TEMPLATE_INFO (t);
-	  tree tpl = TI_TEMPLATE (ti);
-
-	  if (!TREE_VISITED (tpl))
-	    {
-	      /* Mark the TEMPLATE_DECL for by-value writing.  */
-	      TREE_VISITED (tpl) = 1;
-	      tree_map.put (tpl, 0);
-	    }
-	  goto by_value;
-	}
-
-      if (!tree_decl (t, force))
-	goto done;
-    }
+  if (DECL_P (t) && !tree_decl (t, force))
+    goto done;
 
   /* Otherwise by value */
- by_value:
   tree_value (t, force);
 
  done:
@@ -5436,13 +5460,29 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_template:
+    case tt_inst:
       const char *kind;
       unsigned owner;
       {
 	tree tpl = tree_node ();
 	tree args = tree_node ();
-	if (TREE_CODE (DECL_TEMPLATE_RESULT (tpl)) != TYPE_DECL)
+	if (TREE_CODE (tpl) != TEMPLATE_DECL)
+	  {
+	    tree ti = NULL_TREE;
+	    if (TREE_CODE (tpl) == TYPE_DECL)
+	      ti = TYPE_TEMPLATE_INFO (TREE_TYPE (tpl));
+	    else if (DECL_LANG_SPECIFIC (tpl))
+	      ti = DECL_TEMPLATE_INFO (tpl);
+	    tpl = ti ? TI_TEMPLATE (tpl) : NULL_TREE;
+	    if (!(tpl &&
+		  RECORD_OR_UNION_CODE_P (TREE_CODE (CP_DECL_CONTEXT (tpl)))
+		  && !DECL_MEMBER_TEMPLATE_P (tpl)))
+	      tpl = NULL_TREE;
+	  }
+
+	if (!tpl)
+	  set_overrun ();
+	else if (TREE_CODE (DECL_TEMPLATE_RESULT (tpl)) != TYPE_DECL)
 	  {
 	    res = instantiate_template (tpl, args, tf_error);
 	    mark_used (res); // FIXME:this may be too early
@@ -5455,7 +5495,7 @@ trees_in::tree_node ()
 	    res = TYPE_NAME (res);
 	  }
 	kind = "Instantiation";
-	owner = MAYBE_DECL_MODULE_OWNER (tpl);
+	owner = tpl ? MAYBE_DECL_MODULE_OWNER (tpl) : 0;
       }
       goto finish_tpl;
 
@@ -5479,6 +5519,8 @@ trees_in::tree_node ()
 		   name, module_name (owner));
 	    set_overrun ();
 	  }
+	else if (TREE_CODE (res) != TYPE_DECL)
+	  mark_used (res);
 
 	kind = owner != state->mod ?  "Imported" : "Named";
       }
@@ -7014,11 +7056,12 @@ module_state::mark_template_def (trees_out &out, tree decl)
       {
 	/* There may be decls here, that are not on the member vector.
 	   for instance forward declarations of member tagged types.  */
-	tree decl = TREE_VALUE (decls);
-	if (TYPE_P (decl))
+	tree member = TREE_VALUE (decls);
+	if (TYPE_P (member))
 	  /* In spite of its name, non-decls appear :(.  */
-	  decl = TYPE_NAME (decl);
-	out.mark_node (decl);
+	  member = TYPE_NAME (member);
+	gcc_assert (DECL_CONTEXT (member) == TREE_TYPE (decl));
+	out.mark_node (member);
       }
   mark_definition (out, res);
 }
@@ -8424,7 +8467,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  bool failed = state->check_read (module_p || export_p);
 	  importing->pop ();
 	  state->announce (flag_module_lazy && !module_p
-			   ? "lazily" : "imported");
+			   ? "lazy" : "imported");
 	  state->pop_location ();
 	  dump.pop (n);
 
