@@ -86,7 +86,7 @@ namespace tr1
       _Tp __term = _Tp(1);
       _Tp __esum = _Tp(0);
       _Tp __osum = _Tp(0);
-      const unsigned int __max_iter = 100;
+      const unsigned int __max_iter = 1000;
       for (unsigned int __i = 1; __i < __max_iter; ++__i)
         {
           __term *= - __x / __i;
@@ -156,7 +156,7 @@ namespace tr1
     _Tp
     __expint_En_series(unsigned int __n, _Tp __x)
     {
-      const unsigned int __max_iter = 100;
+      const unsigned int __max_iter = 1000;
       const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
       const int __nm1 = __n - 1;
       _Tp __ans = (__nm1 != 0
@@ -202,7 +202,7 @@ namespace tr1
     _Tp
     __expint_En_cont_frac(unsigned int __n, _Tp __x)
     {
-      const unsigned int __max_iter = 100;
+      const unsigned int __max_iter = 1000;
       const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
       const _Tp __fp_min = std::numeric_limits<_Tp>::min();
       const int __nm1 = __n - 1;
