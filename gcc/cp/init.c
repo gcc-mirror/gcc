@@ -4664,126 +4664,113 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       addr = convert_force (build_pointer_type (type), addr, 0, complain);
     }
 
-  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
+  tree head = NULL_TREE;
+  tree do_delete = NULL_TREE;
+  tree ifexp;
+
+  bool virtual_p = false;
+  if (type_build_dtor_call (type))
     {
-      /* Make sure the destructor is callable.  */
-      if (type_build_dtor_call (type))
-	{
-	  expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
-				  sfk_complete_destructor, flags, complain);
-	  if (expr == error_mark_node)
-	    return error_mark_node;
-	}
-
-      if (auto_delete != sfk_deleting_destructor)
-	return void_node;
-
-      return build_op_delete_call (DELETE_EXPR, addr,
-				   cxx_sizeof_nowarn (type),
-				   use_global_delete,
-				   /*placement=*/NULL_TREE,
-				   /*alloc_fn=*/NULL_TREE,
-				   complain);
-    }
-  else
-    {
-      tree head = NULL_TREE;
-      tree do_delete = NULL_TREE;
-      tree ifexp;
-
       if (CLASSTYPE_LAZY_DESTRUCTOR (type))
 	lazily_declare_fn (sfk_destructor, type);
-
-      /* For `::delete x', we must not use the deleting destructor
-	 since then we would not be sure to get the global `operator
-	 delete'.  */
-      if (use_global_delete && auto_delete == sfk_deleting_destructor)
-	{
-	  /* We will use ADDR multiple times so we must save it.  */
-	  addr = save_expr (addr);
-	  head = get_target_expr (build_headof (addr));
-	  /* Delete the object.  */
-	  do_delete = build_op_delete_call (DELETE_EXPR,
-					    head,
-					    cxx_sizeof_nowarn (type),
-					    /*global_p=*/true,
-					    /*placement=*/NULL_TREE,
-					    /*alloc_fn=*/NULL_TREE,
-					    complain);
-	  /* Otherwise, treat this like a complete object destructor
-	     call.  */
-	  auto_delete = sfk_complete_destructor;
-	}
-      /* If the destructor is non-virtual, there is no deleting
-	 variant.  Instead, we must explicitly call the appropriate
-	 `operator delete' here.  */
-      else if (!DECL_VIRTUAL_P (CLASSTYPE_DESTRUCTOR (type))
-	       && auto_delete == sfk_deleting_destructor)
-	{
-	  /* We will use ADDR multiple times so we must save it.  */
-	  addr = save_expr (addr);
-	  /* Build the call.  */
-	  do_delete = build_op_delete_call (DELETE_EXPR,
-					    addr,
-					    cxx_sizeof_nowarn (type),
-					    /*global_p=*/false,
-					    /*placement=*/NULL_TREE,
-					    /*alloc_fn=*/NULL_TREE,
-					    complain);
-	  /* Call the complete object destructor.  */
-	  auto_delete = sfk_complete_destructor;
-	}
-      else if (auto_delete == sfk_deleting_destructor
-	       && TYPE_GETS_REG_DELETE (type))
-	{
-	  /* Make sure we have access to the member op delete, even though
-	     we'll actually be calling it from the destructor.  */
-	  build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
-				/*global_p=*/false,
-				/*placement=*/NULL_TREE,
-				/*alloc_fn=*/NULL_TREE,
-				complain);
-	}
-
-      expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
-			      auto_delete, flags, complain);
-      if (expr == error_mark_node)
-	return error_mark_node;
-      if (do_delete)
-	/* The delete operator must be called, regardless of whether
-	   the destructor throws.
-
-	   [expr.delete]/7 The deallocation function is called
-	   regardless of whether the destructor for the object or some
-	   element of the array throws an exception.  */
-	expr = build2 (TRY_FINALLY_EXPR, void_type_node, expr, do_delete);
-
-      /* We need to calculate this before the dtor changes the vptr.  */
-      if (head)
-	expr = build2 (COMPOUND_EXPR, void_type_node, head, expr);
-
-      if (flags & LOOKUP_DESTRUCTOR)
-	/* Explicit destructor call; don't check for null pointer.  */
-	ifexp = integer_one_node;
-      else
-	{
-	  /* Handle deleting a null pointer.  */
-	  warning_sentinel s (warn_address);
-	  ifexp = cp_build_binary_op (input_location, NE_EXPR, addr,
-				      nullptr_node, complain);
-	  if (ifexp == error_mark_node)
-	    return error_mark_node;
-	  /* This is a compiler generated comparison, don't emit
-	     e.g. -Wnonnull-compare warning for it.  */
-	  else if (TREE_CODE (ifexp) == NE_EXPR)
-	    TREE_NO_WARNING (ifexp) = 1;
-	}
-
-      if (ifexp != integer_one_node)
-	expr = build3 (COND_EXPR, void_type_node, ifexp, expr, void_node);
-
-      return expr;
+      virtual_p = DECL_VIRTUAL_P (CLASSTYPE_DESTRUCTOR (type));
     }
+
+  /* For `::delete x', we must not use the deleting destructor
+     since then we would not be sure to get the global `operator
+     delete'.  */
+  if (use_global_delete && auto_delete == sfk_deleting_destructor)
+    {
+      /* We will use ADDR multiple times so we must save it.  */
+      addr = save_expr (addr);
+      head = get_target_expr (build_headof (addr));
+      /* Delete the object.  */
+      do_delete = build_op_delete_call (DELETE_EXPR,
+					head,
+					cxx_sizeof_nowarn (type),
+					/*global_p=*/true,
+					/*placement=*/NULL_TREE,
+					/*alloc_fn=*/NULL_TREE,
+					complain);
+      /* Otherwise, treat this like a complete object destructor
+	 call.  */
+      auto_delete = sfk_complete_destructor;
+    }
+  /* If the destructor is non-virtual, there is no deleting
+     variant.  Instead, we must explicitly call the appropriate
+     `operator delete' here.  */
+  else if (!virtual_p
+	   && auto_delete == sfk_deleting_destructor)
+    {
+      /* We will use ADDR multiple times so we must save it.  */
+      addr = save_expr (addr);
+      /* Build the call.  */
+      do_delete = build_op_delete_call (DELETE_EXPR,
+					addr,
+					cxx_sizeof_nowarn (type),
+					/*global_p=*/false,
+					/*placement=*/NULL_TREE,
+					/*alloc_fn=*/NULL_TREE,
+					complain);
+      /* Call the complete object destructor.  */
+      auto_delete = sfk_complete_destructor;
+    }
+  else if (auto_delete == sfk_deleting_destructor
+	   && TYPE_GETS_REG_DELETE (type))
+    {
+      /* Make sure we have access to the member op delete, even though
+	 we'll actually be calling it from the destructor.  */
+      build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
+			    /*global_p=*/false,
+			    /*placement=*/NULL_TREE,
+			    /*alloc_fn=*/NULL_TREE,
+			    complain);
+    }
+
+  if (type_build_dtor_call (type))
+    expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
+			    auto_delete, flags, complain);
+  else
+    expr = build_trivial_dtor_call (addr);
+  if (expr == error_mark_node)
+    return error_mark_node;
+
+  if (do_delete && !TREE_SIDE_EFFECTS (expr))
+    expr = do_delete;
+  else if (do_delete)
+    /* The delete operator must be called, regardless of whether
+       the destructor throws.
+
+       [expr.delete]/7 The deallocation function is called
+       regardless of whether the destructor for the object or some
+       element of the array throws an exception.  */
+    expr = build2 (TRY_FINALLY_EXPR, void_type_node, expr, do_delete);
+
+  /* We need to calculate this before the dtor changes the vptr.  */
+  if (head)
+    expr = build2 (COMPOUND_EXPR, void_type_node, head, expr);
+
+  if (flags & LOOKUP_DESTRUCTOR)
+    /* Explicit destructor call; don't check for null pointer.  */
+    ifexp = integer_one_node;
+  else
+    {
+      /* Handle deleting a null pointer.  */
+      warning_sentinel s (warn_address);
+      ifexp = cp_build_binary_op (input_location, NE_EXPR, addr,
+				  nullptr_node, complain);
+      if (ifexp == error_mark_node)
+	return error_mark_node;
+      /* This is a compiler generated comparison, don't emit
+	 e.g. -Wnonnull-compare warning for it.  */
+      else if (TREE_CODE (ifexp) == NE_EXPR)
+	TREE_NO_WARNING (ifexp) = 1;
+    }
+
+  if (ifexp != integer_one_node)
+    expr = build3 (COND_EXPR, void_type_node, ifexp, expr, void_node);
+
+  return expr;
 }
 
 /* At the beginning of a destructor, push cleanups that will call the

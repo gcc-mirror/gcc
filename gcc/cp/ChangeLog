@@ -1,5 +1,11 @@
 2018-04-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61982 - dead stores to destroyed objects.
+	* call.c (build_trivial_dtor_call): New, assigns a clobber.
+	(build_over_call, build_special_member_call): Use it.
+	* cp-tree.h: Declare it.
+	* init.c (build_delete): Remove trivial path.
+
 	* init.c (build_dtor_call): Use build_special_member_call.
 	(build_delete): Remove redundant uses of save_addr.
 

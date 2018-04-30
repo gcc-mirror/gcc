@@ -7629,6 +7629,33 @@ conv_binds_ref_to_prvalue (conversion *c)
   return false;
 }
 
+/* Call the trivial destructor for INSTANCE, which can be either an lvalue of
+   class type or a pointer to class type.  */
+
+tree
+build_trivial_dtor_call (tree instance)
+{
+  gcc_assert (!is_dummy_object (instance));
+
+  if (!flag_lifetime_dse)
+    {
+    no_clobber:
+      return fold_convert (void_type_node, instance);
+    }
+
+  if (POINTER_TYPE_P (TREE_TYPE (instance)))
+    {
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (instance))))
+	goto no_clobber;
+      instance = cp_build_fold_indirect_ref (instance);
+    }
+
+  /* A trivial destructor should still clobber the object.  */
+  tree clobber = build_clobber (TREE_TYPE (instance));
+  return build2 (MODIFY_EXPR, void_type_node,
+		 instance, clobber);
+}
+
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
    ARGS is a TREE_LIST of the unconverted arguments to the call.  FLAGS is a
@@ -8240,7 +8267,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   else if (trivial_fn_p (fn))
     {
       if (DECL_DESTRUCTOR_P (fn))
-	return fold_convert (void_type_node, argarray[0]);
+	return build_trivial_dtor_call (argarray[0]);
       else if (default_ctor_p (fn))
 	{
 	  if (is_dummy_object (argarray[0]))
@@ -8863,6 +8890,18 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
   tree ret;
 
   gcc_assert (IDENTIFIER_CDTOR_P (name) || name == assign_op_identifier);
+
+  if (error_operand_p (instance))
+    return error_mark_node;
+
+  if (IDENTIFIER_DTOR_P (name))
+    {
+      gcc_assert (args == NULL || vec_safe_is_empty (*args));
+      if (!type_build_dtor_call (TREE_TYPE (instance)))
+	/* Shortcut to avoid lazy destructor declaration.  */
+	return build_trivial_dtor_call (instance);
+    }
+
   if (TYPE_P (binfo))
     {
       /* Resolve the name.  */
@@ -8881,9 +8920,6 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
     instance = build_dummy_object (class_type);
   else
     {
-      if (IDENTIFIER_DTOR_P (name))
-	gcc_assert (args == NULL || vec_safe_is_empty (*args));
-
       /* Convert to the base class, if necessary.  */
       if (!same_type_ignoring_top_level_qualifiers_p
 	  (TREE_TYPE (instance), BINFO_TYPE (binfo)))
