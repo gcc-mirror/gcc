@@ -1,3 +1,10 @@
+2018-04-30  Nathan Sidwell  <nathan@acm.org>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	* dumpfile.c (dump_open): Allow '-' for stdout.
+	* doc/invoke.texi (Developer Options): Document dump filename
+	determination early.  Document stdin/stdout selection.
+
 2018-04-30 Andrew Sadek  <andrew.sadek.se@gmail.com>
 
 	Microblaze Target: PIC data text relative
