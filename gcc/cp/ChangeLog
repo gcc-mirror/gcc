@@ -1,5 +1,10 @@
 2018-04-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85305 - pack in lambda init-capture.
+	* parser.c (cp_parser_initializer): Add subexpression_p parm; don't
+	check_for_bare_parameter_packs in a subexpression.
+	(cp_parser_lambda_introducer): Use it.
+
 	PR c++/61982 - dead stores to destroyed objects.
 	* call.c (build_trivial_dtor_call): New, assigns a clobber.
 	(build_over_call, build_special_member_call): Use it.
