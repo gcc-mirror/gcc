@@ -4536,7 +4536,6 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags,
 		 tsubst_flags_t complain)
 {
   tree name;
-  tree fn;
   switch (dtor_kind)
     {
     case sfk_complete_destructor:
@@ -4554,13 +4553,12 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags,
     default:
       gcc_unreachable ();
     }
-  fn = lookup_fnfields (TREE_TYPE (exp), name, /*protect=*/2);
-  return build_new_method_call (exp, fn,
-				/*args=*/NULL,
-				/*conversion_path=*/NULL_TREE,
-				flags,
-				/*fn_p=*/NULL,
-				complain);
+
+  return build_special_member_call (exp, name,
+				    /*args=*/NULL,
+				    /*binfo=*/TREE_TYPE (exp),
+				    flags,
+				    complain);
 }
 
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.
@@ -4650,8 +4648,6 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 		}
 	    }
 	}
-      if (TREE_SIDE_EFFECTS (addr))
-	addr = save_expr (addr);
 
       /* Throw away const and volatile on target type of addr.  */
       addr = convert_force (build_pointer_type (type), addr, 0, complain);
@@ -4664,8 +4660,6 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       addr = cp_build_addr_expr (addr, complain);
       if (addr == error_mark_node)
 	return error_mark_node;
-      if (TREE_SIDE_EFFECTS (addr))
-	addr = save_expr (addr);
 
       addr = convert_force (build_pointer_type (type), addr, 0, complain);
     }
