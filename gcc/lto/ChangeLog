@@ -1,3 +1,7 @@
+2018-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Fix sanity check.
+
 2018-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c: Include sreal.h
