@@ -24234,6 +24234,8 @@ gen_producer_string (void)
       case OPT_fmacro_prefix_map_:
       case OPT_ffile_prefix_map_:
       case OPT_fcompare_debug:
+      case OPT_fchecking:
+      case OPT_fchecking_:
 	/* Ignore these.  */
 	continue;
       default:

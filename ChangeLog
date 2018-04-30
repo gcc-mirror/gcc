@@ -1,3 +1,12 @@
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85571
+	* Makefile.tpl (STAGE3_CFLAGS): Use -fchecking=1.
+	(STAGE3_TFLAGS): Likewise.
+	(STAGEtrain_CFLAGS): Filter out -fchecking=1.
+	(STAGEtrain_TFLAGS): Likewise.
+	* Makefile.in: Regenerate.
+
 2018-04-26  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.tpl (STAGE1_TFLAGS): Add -fno-checking.
