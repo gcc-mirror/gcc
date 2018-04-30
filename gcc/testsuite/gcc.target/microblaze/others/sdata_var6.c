@@ -1,5 +1,4 @@
-/* { dg-options "-mxl-gp-opt -G 16" } */
-
+/* { dg-options "-mxl-gp-opt -G 16 -fno-pic" } */
 struct test_s {
     int a;
     int b;

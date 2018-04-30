@@ -867,7 +867,8 @@ Objective-C and Objective-C++ Dialects}.
 -mmemcpy  -mxl-soft-mul  -mxl-soft-div  -mxl-barrel-shift @gol
 -mxl-pattern-compare  -mxl-stack-check  -mxl-gp-opt  -mno-clearbss @gol
 -mxl-multiply-high  -mxl-float-convert  -mxl-float-sqrt @gol
--mbig-endian  -mlittle-endian  -mxl-reorder  -mxl-mode-@var{app-model}}
+-mbig-endian  -mlittle-endian  -mxl-reorder  -mxl-mode-@var{app-model}
+-mpic-data-is-text-relative}
 
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
@@ -20112,6 +20113,12 @@ Select application model @var{app-model}.  Valid models are
 @table @samp
 @item executable
 normal executable (default), uses startup code @file{crt0.o}.
+
+@item -mpic-data-is-text-relative
+@opindex mpic-data-is-text-relative
+Assume that the displacement between the text and data segments is fixed
+at static link time.  This allows data to be referenced by offset from start of
+text address instead of GOT since PC-relative addressing is not supported.
 
 @item xmdstub
 for use with Xilinx Microprocessor Debugger (XMD) based

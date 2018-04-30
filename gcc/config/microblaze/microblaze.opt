@@ -127,5 +127,9 @@ mxl-prefetch
 Target Mask(PREFETCH)
 Use hardware prefetch instruction
 
+mpic-data-is-text-relative
+Target Mask(PIC_DATA_TEXT_REL)
+Data referenced by offset from start of text instead of GOT (with -fPIC/-fPIE).
+
 mxl-mode-xilkernel
 Target
