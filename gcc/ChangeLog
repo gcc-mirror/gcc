@@ -1,3 +1,39 @@
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::layout): Update for
+	location_get_source_line returning a char_span.
+	(struct char_span): Move to input.h.
+	(struct correction): Update for fields in char_span becoming
+	private.
+	(struct source_line): Update for location_get_source_line
+	returning a char_span.
+	(layout::print_line): Likewise.
+	* edit-context.c (edited_file::print_content): Likewise.
+	(edited_file::print_diff_hunk): Likewise.
+	(edited_file::print_run_of_changed_lines): Likewise.
+	(edited_file::get_num_lines): Likewise.
+	(edited_line::edited_line): Likewise.
+	* final.c (asm_show_source): Likewise.
+	* input.c (location_get_source_line): Convert return type
+	from const char * to char_span, losing the final "line_len"
+	param.
+	(dump_location_info): Update for the above.
+	(get_substring_ranges_for_loc): Likewise.  Use a char_span
+	when handling the literal within the line.
+	(test_reading_source_line): Update for location_get_source_line
+	returning a char_span.
+	* input.h (class char_span): Move here from
+	diagnostic-show-locus.c, converting from a struct to a class.
+	Make data members private.
+	(char_span::operator bool): New.
+	(char_span::length): New.
+	(char_span::get_buffer): New.
+	(char_span::operator[]): New.
+	(char_span::subspan): Make const.
+	(char_span::xstrdup): New.
+	(location_get_source_line): Convert return type from const char *
+	to char_span, losing the final "line_size" param.
+
 2018-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* lto-wrapper.c (ltrans_priorities): New static var.

@@ -377,19 +377,17 @@ test_show_locus (function *fun)
       rich_location richloc (line_table, loc);
       for (int line = start_line; line <= finish_line; line++)
 	{
-	  int line_size;
-	  const char *content = location_get_source_line (file, line,
-							  &line_size);
+	  char_span content = location_get_source_line (file, line);
 	  gcc_assert (content);
 	  /* Split line up into words.  */
-	  for (int idx = 0; idx < line_size; idx++)
+	  for (int idx = 0; idx < content.length (); idx++)
 	    {
 	      if (ISALPHA (content[idx]))
 		{
 		  int start_idx = idx;
-		  while (idx < line_size && ISALPHA (content[idx]))
+		  while (idx < content.length () && ISALPHA (content[idx]))
 		    idx++;
-		  if (idx == line_size || !ISALPHA (content[idx]))
+		  if (idx == content.length () || !ISALPHA (content[idx]))
 		    {
 		      location_t start_of_word = get_loc (line, start_idx);
 		      location_t end_of_word = get_loc (line, idx - 1);
@@ -399,8 +397,8 @@ test_show_locus (function *fun)
 		      richloc.add_range (word, true);
 
 		      /* Add a fixit, converting to upper case.  */
-		      char *copy = xstrndup (content + start_idx,
-					     idx - start_idx);
+		      char_span word_span = content.subspan (start_idx, idx - start_idx);
+		      char *copy = word_span.xstrdup ();
 		      for (char *ch = copy; *ch; ch++)
 			*ch = TOUPPER (*ch);
 		      richloc.add_fixit_replace (word, copy);

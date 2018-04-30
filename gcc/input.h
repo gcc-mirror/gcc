@@ -38,8 +38,52 @@ STATIC_ASSERT (BUILTINS_LOCATION < RESERVED_LOCATION_COUNT);
 
 extern bool is_location_from_builtin_token (source_location);
 extern expanded_location expand_location (source_location);
-extern const char *location_get_source_line (const char *file_path, int line,
-					     int *line_size);
+
+/* A class capturing the bounds of a buffer, to allow for run-time
+   bounds-checking in a checked build.  */
+
+class char_span
+{
+ public:
+  char_span (const char *ptr, size_t n_elts) : m_ptr (ptr), m_n_elts (n_elts) {}
+
+  /* Test for a non-NULL pointer.  */
+  operator bool() const { return m_ptr; }
+
+  /* Get length, not including any 0-terminator (which may not be,
+     in fact, present).  */
+  size_t length () const { return m_n_elts; }
+
+  const char *get_buffer () const { return m_ptr; }
+
+  char operator[] (int idx) const
+  {
+    gcc_assert (idx >= 0);
+    gcc_assert ((size_t)idx < m_n_elts);
+    return m_ptr[idx];
+  }
+
+  char_span subspan (int offset, int n_elts) const
+  {
+    gcc_assert (offset >= 0);
+    gcc_assert (offset < (int)m_n_elts);
+    gcc_assert (n_elts >= 0);
+    gcc_assert (offset + n_elts <= (int)m_n_elts);
+    return char_span (m_ptr + offset, n_elts);
+  }
+
+  char *xstrdup () const
+  {
+    return ::xstrndup (m_ptr, m_n_elts);
+  }
+
+ private:
+  const char *m_ptr;
+  size_t m_n_elts;
+};
+
+extern char_span location_get_source_line (const char *file_path, int line);
+
 extern bool location_missing_trailing_newline (const char *file_path);
 extern expanded_location expand_location_to_spelling_point (source_location);
 extern source_location expansion_point_location_if_in_system_header (source_location);

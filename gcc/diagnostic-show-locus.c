@@ -857,17 +857,15 @@ layout::layout (diagnostic_context * context,
   /* Adjust m_x_offset.
      Center the primary caret to fit in max_width; all columns
      will be adjusted accordingly.  */
-  int max_width = m_context->caret_max_width;
-  int line_width;
-  const char *line = location_get_source_line (m_exploc.file, m_exploc.line,
-					       &line_width);
-  if (line && m_exploc.column <= line_width)
+  size_t max_width = m_context->caret_max_width;
+  char_span line = location_get_source_line (m_exploc.file, m_exploc.line);
+  if (line && (size_t)m_exploc.column <= line.length ())
     {
-      int right_margin = CARET_LINE_MARGIN;
-      int column = m_exploc.column;
-      right_margin = MIN (line_width - column, right_margin);
+      size_t right_margin = CARET_LINE_MARGIN;
+      size_t column = m_exploc.column;
+      right_margin = MIN (line.length () - column, right_margin);
       right_margin = max_width - right_margin;
-      if (line_width >= max_width && column > right_margin)
+      if (line.length () >= max_width && column > right_margin)
 	m_x_offset = column - right_margin;
       gcc_assert (m_x_offset >= 0);
     }
@@ -1483,26 +1481,6 @@ get_printed_columns (const fixit_hint *hint)
     }
 }
 
-/* A struct capturing the bounds of a buffer, to allow for run-time
-   bounds-checking in a checked build.  */
-
-struct char_span
-{
-  char_span (const char *ptr, size_t n_elts) : m_ptr (ptr), m_n_elts (n_elts) {}
-
-  char_span subspan (int offset, int n_elts)
-  {
-    gcc_assert (offset >= 0);
-    gcc_assert (offset < (int)m_n_elts);
-    gcc_assert (n_elts >= 0);
-    gcc_assert (offset + n_elts <= (int)m_n_elts);
-    return char_span (m_ptr + offset, n_elts);
-  }
-
-  const char *m_ptr;
-  size_t m_n_elts;
-};
-
 /* A correction on a particular line.
    This describes a plan for how to print one or more fixit_hint
    instances that affected the line, potentially consolidating hints
@@ -1534,9 +1512,9 @@ struct correction
   void overwrite (int dst_offset, const char_span &src_span)
   {
     gcc_assert (dst_offset >= 0);
-    gcc_assert (dst_offset + src_span.m_n_elts < m_alloc_sz);
-    memcpy (m_text + dst_offset, src_span.m_ptr,
-	    src_span.m_n_elts);
+    gcc_assert (dst_offset + src_span.length () < m_alloc_sz);
+    memcpy (m_text + dst_offset, src_span.get_buffer (),
+	    src_span.length ());
   }
 
   /* If insert, then start: the column before which the text
@@ -1627,7 +1605,9 @@ struct source_line
 
 source_line::source_line (const char *filename, int line)
 {
-  chars = location_get_source_line (filename, line, &width);
+  char_span span = location_get_source_line (filename, line);
+  chars = span.get_buffer ();
+  width = span.length ();
 }
 
 /* Add HINT to the corrections for this line.
@@ -1935,15 +1915,13 @@ layout::show_ruler (int max_column) const
 void
 layout::print_line (linenum_type row)
 {
-  int line_width;
-  const char *line = location_get_source_line (m_exploc.file, row,
-					       &line_width);
+  char_span line = location_get_source_line (m_exploc.file, row);
   if (!line)
     return;
 
   line_bounds lbounds;
   print_leading_fixits (row);
-  print_source_line (row, line, line_width, &lbounds);
+  print_source_line (row, line.get_buffer (), line.length (), &lbounds);
   if (should_print_annotation_line_p (row))
     print_annotation_line (row, lbounds);
   print_trailing_fixits (row);

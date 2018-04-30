@@ -1,3 +1,12 @@
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (get_corrected_substring): Update for
+	location_get_source_line returning a char_span.  Use a char_span
+	when handling the prefix of the correction.
+	* c-indentation.c (get_visual_column): Update for
+	location_get_source_line returning a char_span.
+	(get_first_nws_vis_column): Likewise.
+
 2018-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84269
