@@ -1,3 +1,7 @@
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.h (builtins_location_check): Convert to a STATIC_ASSERT.
+
 2018-04-30  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_address): Remove base argument, add

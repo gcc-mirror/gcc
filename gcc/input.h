@@ -34,8 +34,7 @@ extern GTY(()) struct line_maps *saved_line_table;
 
 /* line-map.c reserves RESERVED_LOCATION_COUNT to the user.  Ensure
    both UNKNOWN_LOCATION and BUILTINS_LOCATION fit into that.  */
-extern char builtins_location_check[(BUILTINS_LOCATION
-				     < RESERVED_LOCATION_COUNT) ? 1 : -1];
+STATIC_ASSERT (BUILTINS_LOCATION < RESERVED_LOCATION_COUNT);
 
 extern bool is_location_from_builtin_token (source_location);
 extern expanded_location expand_location (source_location);
