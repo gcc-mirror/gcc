@@ -1,3 +1,15 @@
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_address): Remove base argument, add
+	flag whether to check TREE_ADDRESSABLE and do that.
+	(verify_expr): Remove.
+	(verify_types_in_gimple_reference): Add pieces from verify_expr.
+	(verify_gimple_assign_single): Likewise.
+	(verify_gimple_switch): Likewise.
+	(verify_expr_location_1): Dereference tp once.  Add (disabled)
+	piece from verify_expr.
+	(verify_gimple_in_cfg): Do not call verify_expr on all ops.
+
 2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/linux.h (CLEAR_INSN_CACHE): Define.
