@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os" } */
+/* { dg-options "-Os -fbranch-count-reg" } */
 
 /* This caused an assertion within arc_loop_hazard.  */
 
