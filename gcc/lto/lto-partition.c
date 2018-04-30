@@ -809,7 +809,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
     next_nodes.safe_push (noreorder[noreorder_pos++]);
   /* For one partition the cost of boundary should be 0 unless we added final
      symbols here (these are not accounted) or we have accounting bug.  */
-  gcc_assert (next_nodes.length () || npartitions != 1 || !best_cost);
+  gcc_assert (next_nodes.length () || npartitions != 1 || !best_cost || best_cost == -1);
   add_sorted_nodes (next_nodes, partition);
 
   free (order);
