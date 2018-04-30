@@ -9651,7 +9651,8 @@ arc_split_move (rtx *operands)
 
   if (TARGET_LL64
       && ((memory_operand (operands[0], mode)
-	   && even_register_operand (operands[1], mode))
+	   && (even_register_operand (operands[1], mode)
+	       || satisfies_constraint_Cm3 (operands[1])))
 	  || (memory_operand (operands[1], mode)
 	      && even_register_operand (operands[0], mode))))
     {

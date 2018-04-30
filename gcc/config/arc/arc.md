@@ -724,7 +724,9 @@
        /* Don't use a LIMM that we could load with a single insn - we loose
 	  delay-slot filling opportunities.  */
        && !satisfies_constraint_I (operands[1])
-       && satisfies_constraint_Usc (operands[0]))"
+       && satisfies_constraint_Usc (operands[0]))
+   || (satisfies_constraint_Cm3 (operands[1])
+      && memory_operand (operands[0], SImode))"
   "@
    mov%? %0,%1%&	;0
    mov%? %0,%1%&	;1
@@ -1221,10 +1223,12 @@
   ")
 
 (define_insn_and_split "*movdi_insn"
-  [(set (match_operand:DI 0 "move_dest_operand"      "=w, w,r,m")
-	(match_operand:DI 1 "move_double_src_operand" "c,Hi,m,c"))]
+  [(set (match_operand:DI 0 "move_dest_operand"      "=w, w,r,   m")
+	(match_operand:DI 1 "move_double_src_operand" "c,Hi,m,cCm3"))]
   "register_operand (operands[0], DImode)
-   || register_operand (operands[1], DImode)"
+   || register_operand (operands[1], DImode)
+   || (satisfies_constraint_Cm3 (operands[1])
+      && memory_operand (operands[0], DImode))"
   "*
 {
   switch (which_alternative)
@@ -1234,19 +1238,16 @@
 
     case 2:
     if (TARGET_LL64
-	&& ((even_register_operand (operands[0], DImode)
-	     && memory_operand (operands[1], DImode))
-	    || (memory_operand (operands[0], DImode)
-	        && even_register_operand (operands[1], DImode))))
+        && memory_operand (operands[1], DImode)
+	&& even_register_operand (operands[0], DImode))
       return \"ldd%U1%V1 %0,%1%&\";
     return \"#\";
 
     case 3:
     if (TARGET_LL64
-	&& ((even_register_operand (operands[0], DImode)
-	     && memory_operand (operands[1], DImode))
-	    || (memory_operand (operands[0], DImode)
-	        && even_register_operand (operands[1], DImode))))
+	&& memory_operand (operands[0], DImode)
+	&& (even_register_operand (operands[1], DImode)
+	    || satisfies_constraint_Cm3 (operands[1])))
      return \"std%U0%V0 %1,%0\";
     return \"#\";
     }
