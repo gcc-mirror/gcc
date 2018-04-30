@@ -323,7 +323,8 @@ dump_open (const char *filename, bool trunc)
   if (strcmp ("stderr", filename) == 0)
     return stderr;
 
-  if (strcmp ("stdout", filename) == 0)
+  if (strcmp ("stdout", filename) == 0
+      || strcmp ("-", filename) == 0)
     return stdout;
 
   FILE *stream = fopen (filename, trunc ? "w" : "a");
