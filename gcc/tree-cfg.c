@@ -5212,16 +5212,13 @@ static bool
 tree_node_can_be_shared (tree t)
 {
   if (IS_TYPE_OR_DECL_P (t)
-      || is_gimple_min_invariant (t)
       || TREE_CODE (t) == SSA_NAME
-      || t == error_mark_node
-      || TREE_CODE (t) == IDENTIFIER_NODE)
+      || TREE_CODE (t) == IDENTIFIER_NODE
+      || TREE_CODE (t) == CASE_LABEL_EXPR
+      || is_gimple_min_invariant (t))
     return true;
 
-  if (TREE_CODE (t) == CASE_LABEL_EXPR)
-    return true;
-
-  if (DECL_P (t))
+  if (t == error_mark_node)
     return true;
 
   return false;
