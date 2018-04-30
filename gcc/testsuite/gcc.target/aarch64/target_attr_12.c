@@ -10,4 +10,4 @@ foo (int a)
 }
 
 /* { dg-error "does not accept an argument" "" { target *-*-* } 0 } */
-/* { dg-error "is invalid" "" { target *-*-* } 0 } */
+/* { dg-error "is not valid" "" { target *-*-* } 0 } */

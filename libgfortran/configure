@@ -606,6 +606,8 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 get_gcc_base_ver
+HAVE_AVX128_FALSE
+HAVE_AVX128_TRUE
 IEEE_FLAGS
 IEEE_SUPPORT
 IEEE_SUPPORT_FALSE
@@ -771,6 +773,7 @@ enable_intermodule
 enable_maintainer_mode
 enable_multilib
 enable_dependency_tracking
+enable_cet
 enable_symvers
 with_gnu_ld
 enable_shared
@@ -1422,6 +1425,7 @@ Optional Features:
   --enable-multilib       build many library versions (default)
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --disable-symvers       disable symbol versioning for libgfortran
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
@@ -5784,6 +5788,93 @@ if test "x$GCC" = "xyes"; then
   ## that we'll encounter when compiling our own source files.
   CFLAGS="-std=gnu11 $CFLAGS"
 fi
+
+# Add CET specific flags if CET is enabled
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      auto)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mshstk"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+AM_FCFLAGS="$AM_FCFLAGS $CET_FLAGS"
+AM_CFLAGS="$AM_CFLAGS $CET_FLAGS"
+CFLAGS="$CFLAGS $CET_FLAGS"
+
 
 
 
@@ -12421,7 +12512,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12424 "configure"
+#line 12515 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12527,7 +12618,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12530 "configure"
+#line 12621 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26363,6 +26454,114 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$ac_save_CFLAGS"
 
 
+# Check for FMA3 extensions
+
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mfma -mno-fma4"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
+	{
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
+        }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_FMA3 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+
+
+# Check for FMA4 extensions
+
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mfma4 -mno-fma"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
+	{
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
+        }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_FMA4 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+
+
+# Check if AVX128 works
+
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mavx -mprefer-avx128"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        void foo()
+	{
+        }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_AVX128 1" >>confdefs.h
+
+	 if true; then
+  HAVE_AVX128_TRUE=
+  HAVE_AVX128_FALSE='#'
+else
+  HAVE_AVX128_TRUE='#'
+  HAVE_AVX128_FALSE=
+fi
+
+else
+   if false; then
+  HAVE_AVX128_TRUE=
+  HAVE_AVX128_FALSE='#'
+else
+  HAVE_AVX128_TRUE='#'
+  HAVE_AVX128_FALSE=
+fi
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+
+
 # Determine what GCC version number to use in filesystem paths.
 
   get_gcc_base_ver="cat"
@@ -26370,7 +26569,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi
@@ -26613,6 +26812,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${IEEE_SUPPORT_TRUE}" && test -z "${IEEE_SUPPORT_FALSE}"; then
   as_fn_error "conditional \"IEEE_SUPPORT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_AVX128_TRUE}" && test -z "${HAVE_AVX128_FALSE}"; then
+  as_fn_error "conditional \"HAVE_AVX128\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_AVX128_TRUE}" && test -z "${HAVE_AVX128_FALSE}"; then
+  as_fn_error "conditional \"HAVE_AVX128\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -17,7 +17,7 @@
       call inlist(ncards)
 
       read(input,1000)a
-      if (a.ne."Three") call abort
+      if (a.ne."Three") STOP 1
       close(10,status="delete")
       stop
  1000 format(a10)
@@ -38,9 +38,9 @@ c
    30 read(input,1000,end=60)   data
    40 kard=kard + 1
    50 continue
-      if ((kard .eq. 1) .and. (DATA(1) .ne. "One")) call abort
-      if ((kard .eq. 2) .and. (DATA(1) .ne. "Two")) call abort
-      if ((kard .eq. 3) .and. (DATA(1) .ne. "Thre")) call abort
+      if ((kard .eq. 1) .and. (DATA(1) .ne. "One")) STOP 2
+      if ((kard .eq. 2) .and. (DATA(1) .ne. "Two")) STOP 3
+      if ((kard .eq. 3) .and. (DATA(1) .ne. "Thre")) STOP 4
 
       go to 30
    60 continue

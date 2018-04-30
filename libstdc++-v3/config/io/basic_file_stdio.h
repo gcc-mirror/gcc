@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000-2017 Free Software Foundation, Inc.
+// Copyright (C) 2000-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,7 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __basic_file(__c_lock* __lock = 0) throw ();
 
 #if __cplusplus >= 201103L
-      __basic_file(__basic_file&& __rv, __c_lock* __lock = 0) noexcept
+      __basic_file(__basic_file&& __rv, __c_lock* = 0) noexcept
       : _M_cfile(__rv._M_cfile), _M_cfile_created(__rv._M_cfile_created)
       {
 	__rv._M_cfile = nullptr;

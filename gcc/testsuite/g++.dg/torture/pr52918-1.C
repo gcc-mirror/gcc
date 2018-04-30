@@ -23,13 +23,13 @@ class free_list   {
     __mutex_type&     _M_get_mutex();
     void _M_get(size_t __sz)
 #if __cplusplus <= 201402L
-    throw(bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+    throw(bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
     ;
 };
 void  free_list::_M_get(size_t __sz)
 #if __cplusplus <= 201402L
-throw(bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw(bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   __mutex_type& __bfl_mutex = _M_get_mutex();

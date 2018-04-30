@@ -147,6 +147,13 @@ if test "x$GCC" = "xyes"; then
   ## that we'll encounter when compiling our own source files.
   CFLAGS="-std=gnu11 $CFLAGS"
 fi
+
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+AM_FCFLAGS="$AM_FCFLAGS $CET_FLAGS"
+AM_CFLAGS="$AM_CFLAGS $CET_FLAGS"
+CFLAGS="$CFLAGS $CET_FLAGS"
+
 AC_SUBST(AM_FCFLAGS)
 AC_SUBST(AM_CFLAGS)
 AC_SUBST(CFLAGS)
@@ -623,6 +630,15 @@ LIBGFOR_CHECK_AVX2
 
 # Check wether we support AVX512f extensions
 LIBGFOR_CHECK_AVX512F
+
+# Check for FMA3 extensions
+LIBGFOR_CHECK_FMA3
+
+# Check for FMA4 extensions
+LIBGFOR_CHECK_FMA4
+
+# Check if AVX128 works
+LIBGFOR_CHECK_AVX128
 
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER

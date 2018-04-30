@@ -1,5 +1,5 @@
 /* Xstormy16 cpu description.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
    This file is part of GCC.
@@ -87,10 +87,6 @@
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 #define STRICT_ALIGNMENT 1
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
@@ -138,23 +134,6 @@
 /* Order of allocation of registers.  */
 
 #define REG_ALLOC_ORDER { 7, 6, 5, 4, 3, 2, 1, 0, 9, 8, 10, 11, 12, 13, 14, 15, 16 }
-
-
-/* How Values Fit in Registers.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) 				\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) ((REGNO) != 16 || (MODE) == BImode)
-
-/* A C expression that is nonzero if it is desirable to choose register
-   allocation so as to avoid move instructions between a value of mode MODE1
-   and a value of mode MODE2.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R, MODE2)' are
-   ever different for any R, then `MODES_TIEABLE_P (MODE1, MODE2)' must be
-   zero.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) ((MODE1) != BImode && (MODE2) != BImode)
 
 
 /* Register Classes.  */
@@ -237,8 +216,6 @@ enum reg_class
 
 #define ARGS_GROW_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET 0
-
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR)	\
@@ -251,6 +228,7 @@ enum reg_class
 
 #define INCOMING_FRAME_SP_OFFSET (xstormy16_interrupt_function_p () ? -6 : -4)
 
+#define DEFAULT_INCOMING_FRAME_SP_OFFSET -4
 
 /* Register That Address the Stack Frame.  */
 
@@ -278,7 +256,7 @@ enum reg_class
 
 /* Passing Function Arguments on the Stack.  */
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) xstormy16_push_rounding (BYTES)
 
 
 /* Function Arguments in Registers.  */
@@ -469,7 +447,7 @@ enum reg_class
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 
-/* Macros for SDB and Dwarf Output.  */
+/* Macros for Dwarf Output.  */
 
 /* Define this macro if addresses in Dwarf 2 debugging info should not
    be the same size as pointers on the target architecture.  The
@@ -494,8 +472,6 @@ enum reg_class
 #define MOVE_MAX 2
 
 #define SHIFT_COUNT_TRUNCATED 1
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define Pmode HImode
 

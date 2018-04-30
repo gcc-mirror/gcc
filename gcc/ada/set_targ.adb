@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2013-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -580,6 +580,7 @@ package body Set_Targ is
       --  Checks that we have one or more spaces and skips them
 
       procedure FailN (S : String);
+      pragma No_Return (FailN);
       --  Calls Fail adding " name in file xxx", where name is the currently
       --  gathered name in Nam_Buf, surrounded by quotes, and xxx is the
       --  name of the file.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,7 +100,8 @@ package body Errout is
      (Msg      : String;
       Sptr     : Source_Ptr;
       Optr     : Source_Ptr;
-      Msg_Cont : Boolean);
+      Msg_Cont : Boolean;
+      Node     : Node_Id);
    --  This is the low level routine used to post messages after dealing with
    --  the issue of messages placed on instantiations (which get broken up
    --  into separate calls in Error_Msg). Sptr is the location on which the
@@ -111,7 +112,9 @@ package body Errout is
    --  copy. So typically we can see Optr pointing to the template location
    --  in an instantiation copy when Sptr points to the source location of
    --  the actual instantiation (i.e the line with the new). Msg_Cont is
-   --  set true if this is a continuation message.
+   --  set true if this is a continuation message. Node is the relevant
+   --  Node_Id for this message, to be used to compute the enclosing entity if
+   --  Opt.Include_Subprogram_In_Messages is set.
 
    function No_Warnings (N : Node_Or_Entity_Id) return Boolean;
    --  Determines if warnings should be suppressed for the given node
@@ -303,6 +306,15 @@ package body Errout is
    --  referencing the generic declaration.
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
+   begin
+      Error_Msg (Msg, Flag_Location, Current_Node);
+   end Error_Msg;
+
+   procedure Error_Msg
+     (Msg           : String;
+      Flag_Location : Source_Ptr;
+      N             : Node_Id)
+   is
       Sindex : Source_File_Index;
       --  Source index for flag location
 
@@ -405,7 +417,7 @@ package body Errout is
       --  Error_Msg_Internal to place the message in the requested location.
 
       if Instantiation (Sindex) = No_Location then
-         Error_Msg_Internal (Msg, Flag_Location, Flag_Location, False);
+         Error_Msg_Internal (Msg, Flag_Location, Flag_Location, False, N);
          return;
       end if;
 
@@ -500,18 +512,35 @@ package body Errout is
                if Inlined_Body (X) then
                   if Is_Info_Msg then
                      Error_Msg_Internal
-                       ("info: in inlined body #",
-                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+                       (Msg      => "info: in inlined body #",
+                        Sptr     => Actual_Error_Loc,
+                        Optr     => Flag_Location,
+                        Msg_Cont => Msg_Cont_Status,
+                        Node     => N);
 
-                  elsif Is_Warning_Msg or Is_Style_Msg then
+                  elsif Is_Warning_Msg then
                      Error_Msg_Internal
-                       (Warn_Insertion & "in inlined body #",
-                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+                       (Msg      => Warn_Insertion & "in inlined body #",
+                        Sptr     => Actual_Error_Loc,
+                        Optr     => Flag_Location,
+                        Msg_Cont => Msg_Cont_Status,
+                        Node     => N);
+
+                  elsif Is_Style_Msg then
+                     Error_Msg_Internal
+                       (Msg      => "style: in inlined body #",
+                        Sptr     => Actual_Error_Loc,
+                        Optr     => Flag_Location,
+                        Msg_Cont => Msg_Cont_Status,
+                        Node     => N);
 
                   else
                      Error_Msg_Internal
-                       ("error in inlined body #",
-                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+                       (Msg      => "error in inlined body #",
+                        Sptr     => Actual_Error_Loc,
+                        Optr     => Flag_Location,
+                        Msg_Cont => Msg_Cont_Status,
+                        Node     => N);
                   end if;
 
                --  Case of generic instantiation
@@ -519,18 +548,35 @@ package body Errout is
                else
                   if Is_Info_Msg then
                      Error_Msg_Internal
-                       ("info: in instantiation #",
-                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+                       (Msg      => "info: in instantiation #",
+                        Sptr     => Actual_Error_Loc,
+                        Optr     => Flag_Location,
+                        Msg_Cont => Msg_Cont_Status,
+                        Node     => N);
 
-                  elsif Is_Warning_Msg or else Is_Style_Msg then
+                  elsif Is_Warning_Msg then
                      Error_Msg_Internal
-                       (Warn_Insertion & "in instantiation #",
-                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+                       (Msg      => Warn_Insertion & "in instantiation #",
+                        Sptr     => Actual_Error_Loc,
+                        Optr     => Flag_Location,
+                        Msg_Cont => Msg_Cont_Status,
+                        Node     => N);
+
+                  elsif Is_Style_Msg then
+                     Error_Msg_Internal
+                       (Msg      => "style: in instantiation #",
+                        Sptr     => Actual_Error_Loc,
+                        Optr     => Flag_Location,
+                        Msg_Cont => Msg_Cont_Status,
+                        Node     => N);
 
                   else
                      Error_Msg_Internal
-                       ("instantiation error #",
-                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+                       (Msg      => "instantiation error #",
+                        Sptr     => Actual_Error_Loc,
+                        Optr     => Flag_Location,
+                        Msg_Cont => Msg_Cont_Status,
+                        Node     => N);
                   end if;
                end if;
             end if;
@@ -546,7 +592,11 @@ package body Errout is
          --  Here we output the original message on the outer instantiation
 
          Error_Msg_Internal
-           (Msg, Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+           (Msg      => Msg,
+            Sptr     => Actual_Error_Loc,
+            Optr     => Flag_Location,
+            Msg_Cont => Msg_Cont_Status,
+            Node     => N);
       end;
    end Error_Msg;
 
@@ -760,7 +810,8 @@ package body Errout is
      (Msg      : String;
       Sptr     : Source_Ptr;
       Optr     : Source_Ptr;
-      Msg_Cont : Boolean)
+      Msg_Cont : Boolean;
+      Node     : Node_Id)
    is
       Next_Msg : Error_Msg_Id;
       --  Pointer to next message at insertion point
@@ -1042,7 +1093,8 @@ package body Errout is
           Serious  => Is_Serious_Error,
           Uncond   => Is_Unconditional_Msg,
           Msg_Cont => Continuation,
-          Deleted  => False));
+          Deleted  => False,
+          Node     => Node));
       Cur_Msg := Errors.Last;
 
       --  Test if warning to be treated as error
@@ -1331,7 +1383,7 @@ package body Errout is
       then
          Debug_Output (N);
          Error_Msg_Node_1 := E;
-         Error_Msg (Msg, Flag_Location);
+         Error_Msg (Msg, Flag_Location, N);
 
       else
          Last_Killed := True;
@@ -1423,10 +1475,6 @@ package body Errout is
 
             if Errors.Table (E).Info then
                Warning_Info_Messages := Warning_Info_Messages - 1;
-            end if;
-
-            if Errors.Table (E).Warn_Err then
-               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
             end if;
          end if;
       end Delete_Warning;
@@ -1765,7 +1813,7 @@ package body Errout is
          --  the Main_Source line is unknown (this happens in error situations,
          --  e.g. when integrated preprocessing fails).
 
-         if Main_Source_File /= No_Source_File then
+         if Main_Source_File > No_Source_File then
             Write_Str (" ");
             Write_Int (Num_Source_Lines (Main_Source_File));
 
@@ -1890,7 +1938,7 @@ package body Errout is
       --  Source_Reference. This ensures outputting the proper name of
       --  the source file in this situation.
 
-      if Main_Source_File = No_Source_File
+      if Main_Source_File <= No_Source_File
         or else Num_SRef_Pragmas (Main_Source_File) /= 0
       then
          Current_Error_Source_File := No_Source_File;
@@ -1997,7 +2045,7 @@ package body Errout is
 
                   --  Only write the header if Sfile is known
 
-                  if Sfile /= No_Source_File then
+                  if Sfile > No_Source_File then
                      Write_Header (Sfile);
                      Write_Eol;
                   end if;
@@ -2018,7 +2066,7 @@ package body Errout is
                   --  Only output the listing if Sfile is known, to avoid
                   --  crashing the compiler.
 
-                  if Sfile /= No_Source_File then
+                  if Sfile > No_Source_File then
                      for N in 1 .. Last_Source_Line (Sfile) loop
                         while E /= No_Error_Msg
                           and then Errors.Table (E).Deleted
@@ -2093,7 +2141,7 @@ package body Errout is
 
          --  Output the header only when Main_Source_File is known
 
-         if Main_Source_File /= No_Source_File then
+         if Main_Source_File > No_Source_File then
             Write_Header (Main_Source_File);
          end if;
 

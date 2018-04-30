@@ -1,3 +1,117 @@
+2018-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* test_summary: Match possible single quotes in configure path.
+
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* update-copyright.py: Remove "libcilkrts" reference.
+
+2018-02-19  Yury Gribov  <tetra2005@gmail.com>
+
+	* compare_tests: Use TMPDIR when set.
+	* dg-cmp-results.sh: Ditto.
+	* warn_summary: Ditto.
+
+2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* download_prerequisites: Use shasum for FreeBSD and DragonFly.
+
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Support new format that can be easily
+	parsed. Add new column to report.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Skip pdt-5.f03 in gfortran.dg subdir.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* contrib/gcc_update: Ditto.
+
+2017-11-08  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Fix abbreviations for SI units.
+
+2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Handle libbacktrace.
+
+2017-09-18  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites (isl): Bump version to 0.18.
+
+2017-08-02  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Added new implementation.
+
+2017-08-02  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Rename to ...
+	* mklog.pl: this.
+
+2017-07-17  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Fix extraction of changed file name.
+
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc_update (files_and_dependencies)
+	[gcc/config/avr/avr-tables.opt]: Remove dead entry.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc.doxy: Add default location for filters and output folder.
+	* filter_gcc_for_doxygen_new: Rename to filter_gcc_for_doxygen.
+	* filter_params.pl: Remove.
+
+2017-06-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* dg-cmp-results.sh: Restore filtering on target variant.
+
+2017-06-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* dg-cmp-results.sh: Keep test result lines rather than throwing
+	header and summary to support sum files with multiple tools.
+
+2017-05-31  Martin Liska  <mliska@suse.cz>
+
+	* filter_params.py:
+	Transform ENUM_BITFIELD and comments starting with '/**'
+
+2017-05-31  David Malcolm  <dmalcolm@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* filter_params.py: New, porting the perl script to python,
+	adding a test suite.
+	* filter_gcc_for_doxygen_new: New file.
+
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add new argument to parse and modify
+	predict.def file.
+	* analyze_brprob_spec.py: Likewise.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py (TrailingWhitespaceCheck.check): Assert no
+	trailing eol.
+	(TrailingWhitespaceTest): New unit test.
+	(check_GNU_style_file): Remove eol before checking.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py (check_GNU_style_file): Treat file argument as
+	file handle.  Add and handle file_encoding argument.
+	* check_GNU_style.py (main): Handle '-' file argument.  Call
+	check_GNU_style_file with file handle as argument.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py: Use import_pip3 to import pip3 packages.
+	(import_pip3): New function.
+
 2017-05-24  Tom de Vries  <tom@codesourcery.com>
 
 	* check_GNU_style_lib.py: New file, factored out of ...

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for HPs using the
    64bit runtime model.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -97,7 +97,7 @@ along with GCC; see the file COPYING3.  If not see
    function which has no frame and this function might also use SP-16.
    We have 14-bit immediates on the 64-bit port, so we use secondary
    memory for the copies.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
+#define PA_SECONDARY_MEMORY_NEEDED(MODE, CLASS1, CLASS2) \
   (MAYBE_FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)		\
    || MAYBE_FP_REG_CLASS_P (CLASS2) != FP_REG_CLASS_P (CLASS1))
 

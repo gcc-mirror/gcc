@@ -11,6 +11,7 @@ sinclude(../config/dfp.m4)
 sinclude(../config/unwind_ipinfo.m4)
 sinclude(../config/gthr.m4)
 sinclude(../config/sjlj.m4)
+sinclude(../config/cet.m4)
 
 AC_PREREQ(2.64)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])
@@ -191,6 +192,8 @@ GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_PROG_CPP_WERROR
 
+AC_SYS_LARGEFILE
+
 AC_CHECK_SIZEOF([double])
 AC_CHECK_SIZEOF([long double])
 AS_VAR_ARITH([double_type_size], [$ac_cv_sizeof_double \* 8])
@@ -233,6 +236,9 @@ GCC_CHECK_UNWIND_GETIPINFO
 
 # Check if the compiler is configured for setjmp/longjmp exceptions.
 GCC_CHECK_SJLJ_EXCEPTIONS
+
+GCC_CET_FLAGS(CET_FLAGS)
+AC_SUBST(CET_FLAGS)
 
 AC_ARG_ENABLE([explicit-exception-frame-registration],
   [AC_HELP_STRING([--enable-explicit-exception-frame-registration],
@@ -294,7 +300,7 @@ esac
 
 case ${host} in
 *-*-solaris2*)
-  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  # Check for system-provided CRTs on Solaris 11.4.
   AC_CACHE_CHECK([system-provided CRTs on Solaris],
     		 [libgcc_cv_solaris_crts],
     [libgcc_cv_solaris_crts=no
@@ -374,10 +380,10 @@ esac
 esac
 
 case ${host} in
-# At present, we cannot turn -mfloat128 on via #pragma GCC target,
-# so just check if we have VSX (ISA 2.06) support to build the
-# software libraries, and whether the assembler can handle xsaddqp
-# for hardware support.
+# At present, we cannot turn -mfloat128 on via #pragma GCC target, so just
+# check if we have VSX (ISA 2.06) support to build the software libraries, and
+# whether the assembler can handle xsaddqp for hardware support.  Also check if
+# a new glibc is being used so that __builtin_cpu_supports can be used.
 powerpc*-*-linux*)
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mabi=altivec -mvsx -mfloat128"
@@ -395,6 +401,9 @@ powerpc*-*-linux*)
     [#include <sys/auxv.h>
      #ifndef AT_PLATFORM
      #error "AT_PLATFORM is not defined"
+     #endif
+     #ifndef __BUILTIN_CPU_SUPPORTS__
+     #error "__builtin_cpu_supports is not available"
      #endif
      vector unsigned char add (vector unsigned char a, vector unsigned char b)
      {
@@ -477,10 +486,28 @@ AC_CACHE_CHECK([for __attribute__((visibility("hidden")))],
 
 if test $libgcc_cv_hidden_visibility_attribute = yes; then
     vis_hide='-fvisibility=hidden -DHIDE_EXPORTS'
+    AC_DEFINE_UNQUOTED(AS_HIDDEN_DIRECTIVE, $asm_hidden_op, [Define to the .hidden-like directive if it exists.])
 else
     vis_hide=
 fi
 AC_SUBST(vis_hide)
+
+# Check for .cfi_sections .debug_frame support.
+AC_CACHE_CHECK([for .cfi_sections .debug_frame],
+    libgcc_cv_cfi_sections_directive, [
+	echo 'int foo (int, char *);' > conftest.c
+	echo 'int bar (int x) { char *y = __builtin_alloca (x); return foo (x + 1, y) + 1; }' >> conftest.c
+	libgcc_cv_cfi_sections_directive=no
+	if AC_TRY_COMMAND(${CC-cc} -Werror -g -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions -S conftest.c -o conftest.s 1>&AS_MESSAGE_LOG_FD); then
+	    if grep "\\.cfi_sections.*\\.debug_frame" conftest.s >/dev/null; then
+		libgcc_cv_cfi_sections_directive=yes
+	    fi
+	fi
+	rm -f conftest.*
+    ])
+if test $libgcc_cv_cfi_sections_directive = yes; then
+    AC_DEFINE(HAVE_AS_CFI_SECTIONS, 1, [Define to 1 if the assembler supports .cfi_sections .debug_frame directive.])
+fi
 
 # See if we have thread-local storage.  We can only test assembler
 # since link-time and run-time tests require the newly built
@@ -501,6 +528,22 @@ if test "$enable_tls $gcc_cv_use_emutls" = "yes yes"; then
 fi
 AC_SUBST(set_use_emutls)
 
+dnl Check if as supports AVX instructions.
+AC_DEFUN([LIBGCC_CHECK_AS_AVX], [
+case "${target}" in
+i[[34567]]86-*-* | x86_64-*-*)
+  AC_CACHE_CHECK([if the assembler supports AVX], libgcc_cv_as_avx, [
+    AC_TRY_COMPILE([], [asm("vzeroupper");],
+		   [libgcc_cv_as_avx=yes], [libgcc_cv_as_avx=no])
+  ])
+  if test x$libgcc_cv_as_avx = xyes; then
+    AC_DEFINE(HAVE_AS_AVX, 1, [Define to 1 if the assembler supports AVX.])
+  fi
+  ;;
+esac])
+LIBGCC_CHECK_AS_AVX
+
+dnl Check if as supports RTM instructions.
 AC_CACHE_CHECK(for init priority support, libgcc_cv_init_priority, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,
   [[void ip (void) __attribute__ ((constructor (1)));]])],

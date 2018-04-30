@@ -8,8 +8,10 @@
 // This file is a part of ThreadSanitizer (TSan), a race detector.
 //
 //===----------------------------------------------------------------------===//
+#include "sanitizer_common/sanitizer_allocator_checks.h"
 #include "sanitizer_common/sanitizer_allocator_interface.h"
 #include "sanitizer_common/sanitizer_common.h"
+#include "sanitizer_common/sanitizer_errno.h"
 #include "sanitizer_common/sanitizer_placement_new.h"
 #include "tsan_mman.h"
 #include "tsan_rtl.h"
@@ -52,7 +54,8 @@ struct MapUnmapCallback {
     diff = p + size - RoundDown(p + size, kPageSize);
     if (diff != 0)
       size -= diff;
-    ReleaseMemoryToOS((uptr)MemToMeta(p), size / kMetaRatio);
+    uptr p_meta = (uptr)MemToMeta(p);
+    ReleaseMemoryPagesToOS(p_meta, p_meta + size / kMetaRatio);
   }
 };
 
@@ -109,7 +112,8 @@ ScopedGlobalProcessor::~ScopedGlobalProcessor() {
 }
 
 void InitializeAllocator() {
-  allocator()->Init(common_flags()->allocator_may_return_null);
+  SetAllocatorMayReturnNull(common_flags()->allocator_may_return_null);
+  allocator()->Init(common_flags()->allocator_release_to_os_interval_ms);
 }
 
 void InitializeAllocatorLate() {
@@ -144,25 +148,17 @@ static void SignalUnsafeCall(ThreadState *thr, uptr pc) {
   OutputReport(thr, rep);
 }
 
-void *user_alloc(ThreadState *thr, uptr pc, uptr sz, uptr align, bool signal) {
+void *user_alloc_internal(ThreadState *thr, uptr pc, uptr sz, uptr align,
+                          bool signal) {
   if ((sz >= (1ull << 40)) || (align >= (1ull << 40)))
-    return allocator()->ReturnNullOrDieOnBadRequest();
+    return Allocator::FailureHandler::OnBadRequest();
   void *p = allocator()->Allocate(&thr->proc()->alloc_cache, sz, align);
-  if (p == 0)
+  if (UNLIKELY(p == 0))
     return 0;
   if (ctx && ctx->initialized)
     OnUserAlloc(thr, pc, (uptr)p, sz, true);
   if (signal)
     SignalUnsafeCall(thr, pc);
-  return p;
-}
-
-void *user_calloc(ThreadState *thr, uptr pc, uptr size, uptr n) {
-  if (CallocShouldReturnNullDueToOverflow(size, n))
-    return allocator()->ReturnNullOrDieOnBadRequest();
-  void *p = user_alloc(thr, pc, n * size);
-  if (p)
-    internal_memset(p, 0, n * size);
   return p;
 }
 
@@ -173,6 +169,19 @@ void user_free(ThreadState *thr, uptr pc, void *p, bool signal) {
   allocator()->Deallocate(&thr->proc()->alloc_cache, p);
   if (signal)
     SignalUnsafeCall(thr, pc);
+}
+
+void *user_alloc(ThreadState *thr, uptr pc, uptr sz) {
+  return SetErrnoOnNull(user_alloc_internal(thr, pc, sz, kDefaultAlignment));
+}
+
+void *user_calloc(ThreadState *thr, uptr pc, uptr size, uptr n) {
+  if (UNLIKELY(CheckForCallocOverflow(size, n)))
+    return SetErrnoOnNull(Allocator::FailureHandler::OnBadRequest());
+  void *p = user_alloc_internal(thr, pc, n * size);
+  if (p)
+    internal_memset(p, 0, n * size);
+  return SetErrnoOnNull(p);
 }
 
 void OnUserAlloc(ThreadState *thr, uptr pc, uptr p, uptr sz, bool write) {
@@ -195,15 +204,64 @@ void OnUserFree(ThreadState *thr, uptr pc, uptr p, bool write) {
 void *user_realloc(ThreadState *thr, uptr pc, void *p, uptr sz) {
   // FIXME: Handle "shrinking" more efficiently,
   // it seems that some software actually does this.
-  void *p2 = user_alloc(thr, pc, sz);
-  if (p2 == 0)
-    return 0;
-  if (p) {
-    uptr oldsz = user_alloc_usable_size(p);
-    internal_memcpy(p2, p, min(oldsz, sz));
+  if (!p)
+    return SetErrnoOnNull(user_alloc_internal(thr, pc, sz));
+  if (!sz) {
+    user_free(thr, pc, p);
+    return nullptr;
+  }
+  void *new_p = user_alloc_internal(thr, pc, sz);
+  if (new_p) {
+    uptr old_sz = user_alloc_usable_size(p);
+    internal_memcpy(new_p, p, min(old_sz, sz));
     user_free(thr, pc, p);
   }
-  return p2;
+  return SetErrnoOnNull(new_p);
+}
+
+void *user_memalign(ThreadState *thr, uptr pc, uptr align, uptr sz) {
+  if (UNLIKELY(!IsPowerOfTwo(align))) {
+    errno = errno_EINVAL;
+    return Allocator::FailureHandler::OnBadRequest();
+  }
+  return SetErrnoOnNull(user_alloc_internal(thr, pc, sz, align));
+}
+
+int user_posix_memalign(ThreadState *thr, uptr pc, void **memptr, uptr align,
+                        uptr sz) {
+  if (UNLIKELY(!CheckPosixMemalignAlignment(align))) {
+    Allocator::FailureHandler::OnBadRequest();
+    return errno_EINVAL;
+  }
+  void *ptr = user_alloc_internal(thr, pc, sz, align);
+  if (UNLIKELY(!ptr))
+    return errno_ENOMEM;
+  CHECK(IsAligned((uptr)ptr, align));
+  *memptr = ptr;
+  return 0;
+}
+
+void *user_aligned_alloc(ThreadState *thr, uptr pc, uptr align, uptr sz) {
+  if (UNLIKELY(!CheckAlignedAllocAlignmentAndSize(align, sz))) {
+    errno = errno_EINVAL;
+    return Allocator::FailureHandler::OnBadRequest();
+  }
+  return SetErrnoOnNull(user_alloc_internal(thr, pc, sz, align));
+}
+
+void *user_valloc(ThreadState *thr, uptr pc, uptr sz) {
+  return SetErrnoOnNull(user_alloc_internal(thr, pc, sz, GetPageSizeCached()));
+}
+
+void *user_pvalloc(ThreadState *thr, uptr pc, uptr sz) {
+  uptr PageSize = GetPageSizeCached();
+  if (UNLIKELY(CheckForPvallocOverflow(sz, PageSize))) {
+    errno = errno_ENOMEM;
+    return Allocator::FailureHandler::OnBadRequest();
+  }
+  // pvalloc(0) should allocate one page.
+  sz = sz ? RoundUpTo(sz, PageSize) : PageSize;
+  return SetErrnoOnNull(user_alloc_internal(thr, pc, sz, PageSize));
 }
 
 uptr user_alloc_usable_size(const void *p) {
@@ -290,6 +348,8 @@ uptr __sanitizer_get_allocated_size(const void *p) {
 
 void __tsan_on_thread_idle() {
   ThreadState *thr = cur_thread();
+  thr->clock.ResetCached(&thr->proc()->clock_cache);
+  thr->last_sleep_clock.ResetCached(&thr->proc()->clock_cache);
   allocator()->SwallowCache(&thr->proc()->alloc_cache);
   internal_allocator()->SwallowCache(&thr->proc()->internal_alloc_cache);
   ctx->metamap.OnProcIdle(thr->proc());

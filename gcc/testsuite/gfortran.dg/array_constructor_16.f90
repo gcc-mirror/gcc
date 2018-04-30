@@ -26,9 +26,9 @@ CONTAINS
     ii = 0
     iii = 0
     CALL one
-    IF (i .NE. 0) CALL ABORT ()
-    IF (ii .NE. 99) CALL ABORT ()
-    IF (iii .NE. 999) CALL ABORT ()
+    IF (i .NE. 0) STOP 1
+    IF (ii .NE. 99) STOP 2
+    IF (iii .NE. 999) STOP 3
   END SUBROUTINE
 END
 

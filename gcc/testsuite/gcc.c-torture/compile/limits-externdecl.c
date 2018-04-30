@@ -1,4 +1,4 @@
-/* { dg-skip-if "ptxas runs out of memory" { nvptx-*-* } { "*" } { "" } } */
+/* { dg-skip-if "ptxas runs out of memory" { nvptx-*-* } } */
 
 /* { dg-require-effective-target int32plus } */
 /* Inspired by the test case for PR middle-end/52640.  */

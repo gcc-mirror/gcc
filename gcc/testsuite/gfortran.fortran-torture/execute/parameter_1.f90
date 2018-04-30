@@ -6,7 +6,7 @@ program parameter_1
   REAL, PARAMETER    :: rr(10) = ii
 
   do i = 1, 10
-    if (ii(i) /= i) call abort()
-    if (rr(i) /= i) call abort()
+    if (ii(i) /= i) STOP 1
+    if (rr(i) /= i) STOP 2
   end do
 end program parameter_1

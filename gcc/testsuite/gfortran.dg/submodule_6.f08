@@ -67,18 +67,18 @@ contains
           type is (t_b)
             this%b = q
           class default
-            call abort
+            STOP 1
          end select
       class default
-        call abort
+        STOP 2
       end select
   end procedure p_a
   module procedure print
     select type (this)
       type is (t_imp)
-        if (any (this%b%i .ne. [3,4,5])) call abort
+        if (any (this%b%i .ne. [3,4,5])) STOP 3
       class default
-        call abort
+        STOP 4
     end select
   end procedure
 end submodule imp_p_a
@@ -92,6 +92,3 @@ program p
   call p_a(a, create_b([3,4,5]))
   call print(a)
 end program p
-! { dg-final { cleanup-submodules "mod_a@imp_p_a" } }
-! { dg-final { cleanup-submodules "mod_b@imp_create" } }
-

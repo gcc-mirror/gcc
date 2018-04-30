@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -163,8 +163,7 @@ DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", tcc_exceptional, 0)
    TEMPLATE_PARM_INDEX.
 
    It is used without template arguments like TT in C<TT>,
-   TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO is NULL_TREE
-   and TYPE_NAME is a TEMPLATE_DECL.  */
+   TYPE_NAME is a TEMPLATE_DECL.  */
 DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", tcc_type, 0)
 
 /* The ordering of the following codes is optimized for the checking
@@ -228,8 +227,7 @@ DEFTREECODE (DEFERRED_NOEXCEPT, "deferred_noexcept", tcc_exceptional, 0)
    member template, the template may be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", tcc_expression, 2)
 
-/* A list-like node for chaining overloading candidates. TREE_TYPE is
-   the original name, and the parameter is the FUNCTION_DECL.  */
+/* One of a set of overloaded functions.  */
 DEFTREECODE (OVERLOAD, "overload", tcc_exceptional, 0)
 
 /* A pseudo-destructor, of the form "OBJECT.~DESTRUCTOR" or
@@ -304,8 +302,8 @@ DEFTREECODE (FOR_STMT, "for_stmt", tcc_statement, 5)
 
 /* Used to represent a range-based `for' statement. The operands are
    RANGE_FOR_DECL, RANGE_FOR_EXPR, RANGE_FOR_BODY, and RANGE_FOR_SCOPE,
-   respectively.  Only used in templates.  */
-DEFTREECODE (RANGE_FOR_STMT, "range_for_stmt", tcc_statement, 4)
+   RANGE_FOR_UNROLL respectively.  Only used in templates.  */
+DEFTREECODE (RANGE_FOR_STMT, "range_for_stmt", tcc_statement, 5)
 
 /* Used to represent a 'while' statement. The operands are WHILE_COND
    and WHILE_BODY, respectively.  */
@@ -470,8 +468,7 @@ DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
    LAMBDA_EXPR_THIS_CAPTURE goes straight to the capture of `this', if it exists.
    LAMBDA_EXPR_PENDING_PROXIES is a vector of capture proxies which need to
    be pushed once scope returns to the lambda.
-   LAMBDA_EXPR_MUTABLE_P signals whether this lambda was declared mutable.
-   LAMBDA_EXPR_RETURN_TYPE holds the return type, if it was specified.  */
+   LAMBDA_EXPR_MUTABLE_P signals whether this lambda was declared mutable.  */
 DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
 
 /* The declared type of an expression.  This is a C++0x extension.

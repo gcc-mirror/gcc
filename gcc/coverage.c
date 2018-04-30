@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-2018 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -143,8 +143,8 @@ static void coverage_obj_finish (vec<constructor_elt, va_gc> *);
 tree
 get_gcov_type (void)
 {
-  machine_mode mode
-    = smallest_mode_for_size (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32, MODE_INT);
+  scalar_int_mode mode
+    = smallest_int_mode_for_size (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32);
   return lang_hooks.types.type_for_mode (mode, false);
 }
 
@@ -153,7 +153,7 @@ get_gcov_type (void)
 static tree
 get_gcov_unsigned_t (void)
 {
-  machine_mode mode = smallest_mode_for_size (32, MODE_INT);
+  scalar_int_mode mode = smallest_int_mode_for_size (32);
   return lang_hooks.types.type_for_mode (mode, true);
 }
 
@@ -663,8 +663,15 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (cfg_checksum);
   gcov_write_string (IDENTIFIER_POINTER
 		     (DECL_ASSEMBLER_NAME (current_function_decl)));
-  gcov_write_string (xloc.file);
+  gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl));
+  gcov_write_filename (xloc.file);
   gcov_write_unsigned (xloc.line);
+  gcov_write_unsigned (xloc.column);
+
+  expanded_location endloc = expand_location (cfun->function_end_locus);
+
+  /* Function can start in a single file and end in another one.  */
+  gcov_write_unsigned (endloc.file == xloc.file ? endloc.line : xloc.line);
   gcov_write_length (offset);
 
   return !gcov_is_error ();
@@ -1262,6 +1269,9 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (GCOV_NOTE_MAGIC);
 	  gcov_write_unsigned (GCOV_VERSION);
 	  gcov_write_unsigned (bbg_file_stamp);
+
+	  /* Do not support has_unexecuted_blocks for Ada.  */
+	  gcov_write_unsigned (strcmp (lang_hooks.name, "GNU Ada") != 0);
 	}
     }
 

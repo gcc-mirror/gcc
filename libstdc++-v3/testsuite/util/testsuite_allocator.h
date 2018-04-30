@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002-2017 Free Software Foundation, Inc.
+// Copyright (C) 2002-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -508,6 +508,38 @@ namespace __gnu_test
     bool operator!=(const SimpleAllocator<T>&, const SimpleAllocator<U>&)
     { return false; }
 
+  template<typename T>
+    struct default_init_allocator
+    {
+      using value_type = T;
+
+      default_init_allocator() = default;
+
+      template<typename U>
+        default_init_allocator(const default_init_allocator<U>& a)
+	  : state(a.state)
+        { }
+
+      T*
+      allocate(std::size_t n)
+      { return std::allocator<T>().allocate(n); }
+
+      void
+      deallocate(T* p, std::size_t n)
+      { std::allocator<T>().deallocate(p, n); }
+
+      int state;
+    };
+
+  template<typename T, typename U>
+    bool operator==(const default_init_allocator<T>& t,
+		    const default_init_allocator<U>& u)
+    { return t.state == u.state; }
+
+  template<typename T, typename U>
+    bool operator!=(const default_init_allocator<T>& t,
+		    const default_init_allocator<U>& u)
+    { return !(t == u); }
 #endif
 
   template<typename Tp>
@@ -570,6 +602,8 @@ namespace __gnu_test
 
       explicit PointerBase(T* p = nullptr) : value(p) { }
 
+      PointerBase(std::nullptr_t) : value(nullptr) { }
+
       template<typename D, typename U,
 	       typename = decltype(static_cast<T*>(std::declval<U*>()))>
 	PointerBase(const PointerBase<D, U>& p) : value(p.value) { }
@@ -603,7 +637,11 @@ namespace __gnu_test
       }
 
     private:
-      Derived& derived() { return static_cast<Derived&>(*this); }
+      Derived&
+      derived() { return static_cast<Derived&>(*this); }
+
+      const Derived&
+      derived() const { return static_cast<const Derived&>(*this); }
     };
 
     template<typename D, typename T>

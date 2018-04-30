@@ -14,7 +14,7 @@ Machine Code Insertions
 
 .. index:: Machine Code insertions
 
-Package `Machine_Code` provides machine code support as described
+Package ``Machine_Code`` provides machine code support as described
 in the Ada Reference Manual in two separate forms:
 
 *
@@ -30,12 +30,12 @@ and use of the facilities in this package requires understanding the asm
 instruction, see the section on Extended Asm in
 :title:`Using_the_GNU_Compiler_Collection_(GCC)`.
 
-Calls to the function `Asm` and the procedure `Asm` have identical
+Calls to the function ``Asm`` and the procedure ``Asm`` have identical
 semantic restrictions and effects as described below.  Both are provided so
 that the procedure call can be used as a statement, and the function call
 can be used to form a code_statement.
 
-Consider this C `asm` instruction:
+Consider this C ``asm`` instruction:
 
 ::
 
@@ -51,14 +51,14 @@ The equivalent can be written for GNAT as:
        My_Float'Asm_Input  ("f",  angle));
 
 
-The first argument to `Asm` is the assembler template, and is
+The first argument to ``Asm`` is the assembler template, and is
 identical to what is used in GNU C.  This string must be a static
 expression.  The second argument is the output operand list.  It is
-either a single `Asm_Output` attribute reference, or a list of such
+either a single ``Asm_Output`` attribute reference, or a list of such
 references enclosed in parentheses (technically an array aggregate of
 such references).
 
-The `Asm_Output` attribute denotes a function that takes two
+The ``Asm_Output`` attribute denotes a function that takes two
 parameters.  The first is a string, the second is the name of a variable
 of the type designated by the attribute prefix.  The first (string)
 argument is required to be a static expression and designates the
@@ -69,19 +69,19 @@ argument is the variable to be written or updated with the
 result.  The possible values for constraint are the same as those used in
 the RTL, and are dependent on the configuration file used to build the
 GCC back end.  If there are no output operands, then this argument may
-either be omitted, or explicitly given as `No_Output_Operands`.
+either be omitted, or explicitly given as ``No_Output_Operands``.
 No support is provided for GNU C's symbolic names for output parameters.
 
 The second argument of ``my_float'Asm_Output`` functions as
-though it were an `out` parameter, which is a little curious, but
+though it were an ``out`` parameter, which is a little curious, but
 all names have the form of expressions, so there is no syntactic
 irregularity, even though normally functions would not be permitted
-`out` parameters.  The third argument is the list of input
-operands.  It is either a single `Asm_Input` attribute reference, or
+``out`` parameters.  The third argument is the list of input
+operands.  It is either a single ``Asm_Input`` attribute reference, or
 a list of such references enclosed in parentheses (technically an array
 aggregate of such references).
 
-The `Asm_Input` attribute denotes a function that takes two
+The ``Asm_Input`` attribute denotes a function that takes two
 parameters.  The first is a string, the second is an expression of the
 type designated by the prefix.  The first (string) argument is required
 to be a static expression, and is the constraint for the parameter,
@@ -92,19 +92,19 @@ the configuration file used to built the GCC back end.
 No support is provided for GNU C's symbolic names for input parameters.
 
 If there are no input operands, this argument may either be omitted, or
-explicitly given as `No_Input_Operands`.  The fourth argument, not
+explicitly given as ``No_Input_Operands``.  The fourth argument, not
 present in the above example, is a list of register names, called the
 *clobber* argument.  This argument, if given, must be a static string
 expression, and is a space or comma separated list of names of registers
-that must be considered destroyed as a result of the `Asm` call.  If
+that must be considered destroyed as a result of the ``Asm`` call.  If
 this argument is the null string (the default value), then the code
 generator assumes that no additional registers are destroyed.
-In addition to registers, the special clobbers `memory` and
-`cc` as described in the GNU C docs are both supported.
+In addition to registers, the special clobbers ``memory`` and
+``cc`` as described in the GNU C docs are both supported.
 
 The fifth argument, not present in the above example, called the
-*volatile* argument, is by default `False`.  It can be set to
-the literal value `True` to indicate to the code generator that all
+*volatile* argument, is by default ``False``.  It can be set to
+the literal value ``True`` to indicate to the code generator that all
 optimizations with respect to the instruction specified should be
 suppressed, and in particular an instruction that has outputs
 will still be generated, even if none of the outputs are
@@ -114,14 +114,14 @@ Generally it is strongly advisable to use Volatile for any ASM statement
 that is missing either input or output operands or to avoid unwanted
 optimizations. A warning is generated if this advice is not followed.
 
-No support is provided for GNU C's `asm goto` feature.
+No support is provided for GNU C's ``asm goto`` feature.
 
-The `Asm` subprograms may be used in two ways.  First the procedure
+The ``Asm`` subprograms may be used in two ways.  First the procedure
 forms can be used anywhere a procedure call would be valid, and
 correspond to what the RM calls 'intrinsic' routines.  Such calls can
 be used to intersperse machine instructions with other Ada statements.
 Second, the function forms, which return a dummy value of the limited
-private type `Asm_Insn`, can be used in code statements, and indeed
+private type ``Asm_Insn``, can be used in code statements, and indeed
 this is the only context where such calls are allowed.  Code statements
 appear as aggregates of the form:
 
@@ -137,7 +137,7 @@ not permissible to intermix such statements with other Ada statements.
 Typically the form using intrinsic procedure calls is more convenient
 and more flexible.  The code statement form is provided to meet the RM
 suggestion that such a facility should be made available.  The following
-is the exact syntax of the call to `Asm`. As usual, if named notation
+is the exact syntax of the call to ``Asm``. As usual, if named notation
 is used, the arguments may be given in arbitrary order, following the
 normal rules for use of positional and named arguments:
 
@@ -166,10 +166,10 @@ normal rules for use of positional and named arguments:
   INPUT_OPERAND_ATTRIBUTE ::=
     SUBTYPE_MARK'Asm_Input (static_string_EXPRESSION, EXPRESSION)
 
-The identifiers `No_Input_Operands` and `No_Output_Operands`
-are declared in the package `Machine_Code` and must be referenced
+The identifiers ``No_Input_Operands`` and ``No_Output_Operands``
+are declared in the package ``Machine_Code`` and must be referenced
 according to normal visibility rules. In particular if there is no
-`use` clause for this package, then appropriate package name
+``use`` clause for this package, then appropriate package name
 qualification is required.
 
 .. _GNAT_Implementation_of_Tasking:
@@ -251,7 +251,7 @@ the underlying threads has significant advantages, it does create some
 complications when it comes to respecting the scheduling semantics
 specified in the real-time annex (Annex D).
 
-For instance the Annex D requirement for the `FIFO_Within_Priorities`
+For instance the Annex D requirement for the ``FIFO_Within_Priorities``
 scheduling policy states:
 
   *When the active priority of a ready task that is not running
@@ -293,22 +293,31 @@ Support for Locking Policies
 This section specifies which policies specified by pragma Locking_Policy
 are supported on which platforms.
 
-GNAT supports the standard `Ceiling_Locking` policy, and the
-implementation defined `Inheritance_Locking` and
-`Concurrent_Readers_Locking` policies.
+GNAT supports the standard ``Ceiling_Locking`` policy, and the
+implementation defined ``Inheritance_Locking`` and
+``Concurrent_Readers_Locking`` policies.
 
-`Ceiling_Locking` is supported on all platforms if the operating system
-supports it. In particular, `Ceiling_Locking` is not supported on
+``Ceiling_Locking`` is supported on all platforms if the operating system
+supports it. In particular, ``Ceiling_Locking`` is not supported on
 VxWorks.
-`Inheritance_Locking` is supported on
+``Inheritance_Locking`` is supported on
 Linux,
 Darwin (Mac OS X),
 LynxOS 178,
 and VxWorks.
-`Concurrent_Readers_Locking` is supported on Linux.
+``Concurrent_Readers_Locking`` is supported on Linux.
 
-Note that on Linux, `Ceiling_Locking` requires the program to be running
-with root privileges. Otherwise, the policy is ignored.
+Notes about ``Ceiling_Locking`` on Linux:
+If the process is running as 'root', ceiling locking is used.
+If the capabilities facility is installed
+("sudo apt-get --assume-yes install libcap-dev" on Ubuntu,
+for example),
+and the program is linked against that library
+("-largs -lcap"),
+and the executable file has the cap_sys_nice capability
+("sudo /sbin/setcap cap_sys_nice=ep executable_file_name"),
+then ceiling locking is used.
+Otherwise, the ``Ceiling_Locking`` policy is ignored.
 
 .. _GNAT_Implementation_of_Shared_Passive_Packages:
 
@@ -318,7 +327,7 @@ GNAT Implementation of Shared Passive Packages
 .. index:: Shared passive packages
 
 GNAT fully implements the :index:`pragma <pragma Shared_Passive>`
-`Shared_Passive` for
+``Shared_Passive`` for
 the purpose of designating shared passive packages.
 This allows the use of passive partitions in the
 context described in the Ada Reference Manual; i.e., for communication
@@ -353,7 +362,7 @@ written.
 
 .. index:: SHARED_MEMORY_DIRECTORY environment variable
 
-The environment variable `SHARED_MEMORY_DIRECTORY` should be
+The environment variable ``SHARED_MEMORY_DIRECTORY`` should be
 set to the directory to be used for these files.
 The files in this directory
 have names that correspond to their fully qualified names. For
@@ -367,7 +376,7 @@ example, if we have the package
     Z : Float;
   end X;
 
-and the environment variable is set to `/stemp/`, then the files created
+and the environment variable is set to ``/stemp/``, then the files created
 will have the names:
 
 ::
@@ -384,7 +393,7 @@ will be used. This model ensures that there are no issues in synchronizing
 the elaboration process, since elaboration of passive packages elaborates the
 initial values, but does not create the files.
 
-The files are written using normal `Stream_IO` access.
+The files are written using normal ``Stream_IO`` access.
 If you want to be able
 to communicate between programs or partitions running on different
 architectures, then you should use the XDR versions of the stream attribute
@@ -487,7 +496,7 @@ Constant aggregates with unconstrained nominal types
 ----------------------------------------------------
 
 In such cases the aggregate itself establishes the subtype, so that
-associations with `others` cannot be used.  GNAT determines the
+associations with ``others`` cannot be used.  GNAT determines the
 bounds for the actual subtype of the aggregate, and allocates the
 aggregate statically as well.  No code is generated for the following:
 
@@ -587,7 +596,7 @@ that temporary will be copied onto the target.
 The Size of Discriminated Records with Default Discriminants
 ============================================================
 
-If a discriminated type `T` has discriminants with default values, it is
+If a discriminated type ``T`` has discriminants with default values, it is
 possible to declare an object of this type without providing an explicit
 constraint:
 
@@ -620,12 +629,12 @@ that depend on it:
 
 In order to support this behavior efficiently, an unconstrained object is
 given the maximum size that any value of the type requires. In the case
-above, `Word` has storage for the discriminant and for
-a `String` of length 100.
+above, ``Word`` has storage for the discriminant and for
+a ``String`` of length 100.
 It is important to note that unconstrained objects do not require dynamic
 allocation. It would be an improper implementation to place on the heap those
 components whose size depends on discriminants. (This improper implementation
-was used by some Ada83 compilers, where the `Name` component above
+was used by some Ada83 compilers, where the ``Name`` component above
 would have
 been stored as a pointer to a dynamic string). Following the principle that
 dynamic storage management should never be introduced implicitly,
@@ -651,13 +660,13 @@ declaration:
   Too_Large : Rec;
 
 is flagged by the compiler with a warning:
-an attempt to create `Too_Large` will raise `Storage_Error`,
-because the required size includes `Positive'Last`
+an attempt to create ``Too_Large`` will raise ``Storage_Error``,
+because the required size includes ``Positive'Last``
 bytes. As the first example indicates, the proper approach is to declare an
 index type of 'reasonable' range so that unconstrained objects are not too
 large.
 
-One final wrinkle: if the object is declared to be `aliased`, or if it is
+One final wrinkle: if the object is declared to be ``aliased``, or if it is
 created in the heap by means of an allocator, then it is *not*
 unconstrained:
 it is constrained by the default values of the discriminants, and those values
@@ -685,8 +694,8 @@ calls and generic instantiations (*-gnatE*), and stack overflow checking
 (*-fstack-check*).
 
 Note that the result of a floating point arithmetic operation in overflow and
-invalid situations, when the `Machine_Overflows` attribute of the result
-type is `False`, is to generate IEEE NaN and infinite values. This is the
+invalid situations, when the ``Machine_Overflows`` attribute of the result
+type is ``False``, is to generate IEEE NaN and infinite values. This is the
 case for machines compliant with the IEEE floating-point standard, but on
 machines that are not fully compliant with this standard, such as Alpha, the
 *-mieee* compiler flag must be used for achieving IEEE confirming

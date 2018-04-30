@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2017 Free Software Foundation, Inc.
+# Copyright (C) 2004-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,5 +22,35 @@ EXTRA_HEADERS += $(srcdir)/ginclude/unwind-arm-common.h
 # multilib for those without -- using the soft-float ABI in both
 # cases.  Symbian OS object should be compiled with interworking
 # enabled, so there are no separate thumb-mode libraries.
-MULTILIB_OPTIONS     = mfloat-abi=softfp
-MULTILIB_DIRNAMES    = softfp
+
+# Reset all the multilib variables.
+MULTILIB_OPTIONS	=
+MULTILIB_DIRNAMES	=
+MULTILIB_EXCEPTIONS	=
+MULTILIB_REUSE		=
+MULTILIB_MATCHES	=
+MULTILIB_REQUIRED	=
+
+MULTILIB_OPTIONS	+= march=armv5te+fp
+MULTILIB_DIRNAMES	+= v5te
+
+MULTILIB_OPTIONS	+= mfloat-abi=softfp
+MULTILIB_DIRNAMES	+= softfp
+
+MULTLILIB_REQUIRED	+= march=armv5te+fp/mfloat-abi=softfp
+
+MULTILIB_MATCHES	+= $(foreach ARCH, $(all_early_arch), \
+			     march?armv5te+fp=march?$(ARCH)+fp)
+
+MULTILIB_MATCHES	+= $(foreach FPARCH, $(v7a_fps), \
+		             march?armv5te+fp=march?armv7-a+$(FPARCH))
+
+MULTILIB_MATCHES	+= $(foreach FPARCH, $(v7ve_fps), \
+		             march?armv5te+fp=march?armv7ve+$(FPARCH))
+
+MULTILIB_MATCHES	+= $(foreach ARCH, $(all_v7_a_r), \
+			     march?armv5te+fp=march?$(ARCH)+fp)
+
+MULTILIB_MATCHES	+= $(foreach ARCH, $(all_v8_archs), \
+			     $(foreach FPARCH, $(v8_fps), \
+			       march?armv5te+fp=march?$(ARCH)+$(FPARCH)))

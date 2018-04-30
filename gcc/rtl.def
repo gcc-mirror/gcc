@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -348,6 +348,9 @@ DEF_RTL_EXPR(CONST_INT, "const_int", "w", RTX_CONST_OBJ)
 /* numeric integer constant */
 DEF_RTL_EXPR(CONST_WIDE_INT, "const_wide_int", "", RTX_CONST_OBJ)
 
+/* An rtx representation of a poly_wide_int.  */
+DEF_RTL_EXPR(CONST_POLY_INT, "const_poly_int", "", RTX_CONST_OBJ)
+
 /* fixed-point constant */
 DEF_RTL_EXPR(CONST_FIXED, "const_fixed", "www", RTX_CONST_OBJ)
 
@@ -391,7 +394,7 @@ DEF_RTL_EXPR(SCRATCH, "scratch", "", RTX_OBJ)
 
 /* A reference to a part of another value.  The first operand is the
    complete value and the second is the byte offset of the selected part.   */
-DEF_RTL_EXPR(SUBREG, "subreg", "ei", RTX_EXTRA)
+DEF_RTL_EXPR(SUBREG, "subreg", "ep", RTX_EXTRA)
 
 /* This one-argument rtx is used for move instructions
    that are guaranteed to alter only the low part of a destination.
@@ -710,6 +713,11 @@ DEF_RTL_EXPR(VEC_CONCAT, "vec_concat", "ee", RTX_BIN_ARITH)
    an integer multiple of the number of input parts.  */
 DEF_RTL_EXPR(VEC_DUPLICATE, "vec_duplicate", "e", RTX_UNARY)
 
+/* Creation of a vector in which element I has the value BASE + I * STEP,
+   where BASE is the first operand and STEP is the second.  The result
+   must have a vector integer mode.  */
+DEF_RTL_EXPR(VEC_SERIES, "vec_series", "ee", RTX_BIN_ARITH)
+
 /* Addition with signed saturation */
 DEF_RTL_EXPR(SS_PLUS, "ss_plus", "ee", RTX_COMM_ARITH)
 
@@ -760,6 +768,9 @@ DEF_RTL_EXPR(ENTRY_VALUE, "entry_value", "0", RTX_OBJ)
 /* Used in VAR_LOCATION for a reference to a parameter that has
    been optimized away completely.  */
 DEF_RTL_EXPR(DEBUG_PARAMETER_REF, "debug_parameter_ref", "t", RTX_OBJ)
+
+/* Used in marker DEBUG_INSNs to avoid being recognized as an insn.  */
+DEF_RTL_EXPR(DEBUG_MARKER, "debug_marker", "", RTX_EXTRA)
 
 /* All expressions from this point forward appear only in machine
    descriptions.  */

@@ -1,6 +1,6 @@
 !  OpenACC Runtime Library Definitions.
 
-!  Copyright (C) 2014-2017 Free Software Foundation, Inc.
+!  Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 !  Contributed by Tobias Burnus <burnus@net-b.de>
 !              and Mentor Embedded.
@@ -470,8 +470,10 @@ module openacc
 
   public :: acc_get_num_devices, acc_set_device_type, acc_get_device_type
   public :: acc_set_device_num, acc_get_device_num, acc_async_test
-  public :: acc_async_test_all, acc_wait, acc_wait_async, acc_wait_all
-  public :: acc_wait_all_async, acc_init, acc_shutdown, acc_on_device
+  public :: acc_async_test_all
+  public :: acc_wait, acc_async_wait, acc_wait_async
+  public :: acc_wait_all, acc_async_wait_all, acc_wait_all_async
+  public :: acc_init, acc_shutdown, acc_on_device
   public :: acc_copyin, acc_present_or_copyin, acc_pcopyin, acc_create
   public :: acc_present_or_create, acc_pcreate, acc_copyout, acc_delete
   public :: acc_update_device, acc_update_self, acc_is_present
@@ -510,11 +512,21 @@ module openacc
     procedure :: acc_wait_h
   end interface
 
+  ! acc_async_wait is an OpenACC 1.0 compatibility name for acc_wait.
+  interface acc_async_wait
+    procedure :: acc_wait_h
+  end interface
+
   interface acc_wait_async
     procedure :: acc_wait_async_h
   end interface
 
   interface acc_wait_all
+    procedure :: acc_wait_all_h
+  end interface
+
+  ! acc_async_wait_all is an OpenACC 1.0 compatibility name for acc_wait_all.
+  interface acc_async_wait_all
     procedure :: acc_wait_all_h
   end interface
 

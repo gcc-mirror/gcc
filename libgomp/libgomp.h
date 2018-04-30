@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -1060,8 +1060,6 @@ extern void gomp_set_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 extern void gomp_unset_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 
-# define strong_alias(fn, al) \
-  extern __typeof (fn) al __attribute__ ((alias (#fn)));
 # define omp_lock_symver(fn) \
   __asm (".symver g" #fn "_30, " #fn "@@OMP_3.0"); \
   __asm (".symver g" #fn "_25, " #fn "@OMP_1.0");
@@ -1085,6 +1083,9 @@ extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 #endif
 
 #ifdef HAVE_ATTRIBUTE_ALIAS
+# define strong_alias(fn, al) \
+  extern __typeof (fn) al __attribute__ ((alias (#fn)));
+
 # define ialias_ulp	ialias_str1(__USER_LABEL_PREFIX__)
 # define ialias_str1(x)	ialias_str2(x)
 # define ialias_str2(x)	#x

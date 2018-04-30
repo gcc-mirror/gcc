@@ -1,6 +1,6 @@
 // Output streams -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -613,19 +613,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __os.flush(); }
 
 #if __cplusplus >= 201103L
+  template<typename _Ch, typename _Up>
+    basic_ostream<_Ch, _Up>&
+    __is_convertible_to_basic_ostream_test(basic_ostream<_Ch, _Up>*);
+
+  template<typename _Tp, typename = void>
+    struct __is_convertible_to_basic_ostream_impl
+    {
+      using __ostream_type = void;
+    };
+
+  template<typename _Tp>
+    using __do_is_convertible_to_basic_ostream_impl =
+    decltype(__is_convertible_to_basic_ostream_test
+	     (declval<typename remove_reference<_Tp>::type*>()));
+
+  template<typename _Tp>
+    struct __is_convertible_to_basic_ostream_impl
+    <_Tp,
+     __void_t<__do_is_convertible_to_basic_ostream_impl<_Tp>>>
+    {
+      using __ostream_type =
+	__do_is_convertible_to_basic_ostream_impl<_Tp>;
+    };
+
   template<typename _Tp>
     struct __is_convertible_to_basic_ostream
-  {
-    template<typename _Ch, typename _Up>
-    static basic_ostream<_Ch, _Up>& __check(basic_ostream<_Ch, _Up>*);
-
-    static void __check(...);
-  public:
-    using ostream_type =
-      decltype(__check(declval<typename remove_reference<_Tp>::type*>()));
-    using type = __not_<is_same<ostream_type, void>>;
-    constexpr static bool value = type::value;
-  };
+    : __is_convertible_to_basic_ostream_impl<_Tp>
+    {
+    public:
+      using type = __not_<is_void<
+        typename __is_convertible_to_basic_ostream_impl<_Tp>::__ostream_type>>;
+      constexpr static bool value = type::value;
+    };
 
   template<typename _Ostream, typename _Tp, typename = void>
     struct __is_insertable : false_type {};
@@ -635,6 +655,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   __void_t<decltype(declval<_Ostream&>()
 					     << declval<const _Tp&>())>>
 				    : true_type {};
+
+  template<typename _Ostream>
+    using __rvalue_ostream_type =
+      typename __is_convertible_to_basic_ostream<
+	_Ostream>::__ostream_type;
 
   /**
    *  @brief  Generic inserter for rvalue stream
@@ -650,13 +675,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline
     typename enable_if<__and_<__not_<is_lvalue_reference<_Ostream>>,
 			      __is_convertible_to_basic_ostream<_Ostream>,
-			      __is_insertable<_Ostream&, const _Tp&>>::value,
-		       typename __is_convertible_to_basic_ostream<
-			 _Ostream>::ostream_type>::type
+			      __is_insertable<
+				__rvalue_ostream_type<_Ostream>,
+				const _Tp&>>::value,
+		       __rvalue_ostream_type<_Ostream>>::type
     operator<<(_Ostream&& __os, const _Tp& __x)
     {
-      __os << __x;
-      return __os;
+      __rvalue_ostream_type<_Ostream> __ret_os = __os;
+      __ret_os << __x;
+      return __ret_os;
     }
 #endif // C++11
 

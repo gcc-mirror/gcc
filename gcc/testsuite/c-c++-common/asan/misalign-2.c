@@ -39,5 +39,5 @@ main ()
 /* { dg-output "ERROR: AddressSanitizer:\[^\n\r]*on address\[^\n\r]*" } */
 /* { dg-output "0x\[0-9a-f\]+ at pc 0x\[0-9a-f\]+ bp 0x\[0-9a-f\]+ sp 0x\[0-9a-f\]+\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*READ of size 4 at 0x\[0-9a-f\]+ thread T0\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ +(in _*baz(\[^\n\r]*misalign-2.c:2\[23]|\[^\n\r]*:0)|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "    #1 0x\[0-9a-f\]+ +(in _*main (\[^\n\r]*misalign-2.c:3\[45]|\[^\n\r]*:0)|\[(\]).*(\n|\r\n|\r)" } */
+/* { dg-output "    #0 0x\[0-9a-f\]+ +(in _*baz(\[^\n\r]*misalign-2.c:2\[23]|\[^\n\r]*:0|\[^\n\r]*\\+0x\[0-9a-z\]*)|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "    #1 0x\[0-9a-f\]+ +(in _*main (\[^\n\r]*misalign-2.c:3\[45]|\[^\n\r]*:0|\[^\n\r]*\\+0x\[0-9a-z\]*)|\[(\]).*(\n|\r\n|\r)" } */

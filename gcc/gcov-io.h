@@ -1,5 +1,5 @@
 /* File format for coverage information
-   Copyright (C) 1996-2017 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
    Completely remangled by Nathan Sidwell <nathan@codesourcery.com>.
 
@@ -48,7 +48,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	padding: | char:0 | char:0 char:0 | char:0 char:0 char:0
 	item: int32 | int64 | string
 
-   The basic format of the files is
+   The basic format of the notes file is
+
+	file : int32:magic int32:version int32:stamp int32:support_unexecuted_blocks record*
+
+   The basic format of the data file is
 
    	file : int32:magic int32:version int32:stamp record*
 
@@ -104,7 +108,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	function-graph: announce_function basic_blocks {arcs | lines}*
 	announce_function: header int32:ident
 		int32:lineno_checksum int32:cfg_checksum
-		string:name string:source int32:lineno
+		string:name string:source int32:start_lineno int32:start_column int32:end_lineno
 	basic_block: header int32:flags*
 	arcs: header int32:block_no arc*
 	arc:  int32:dest_block int32:flags
@@ -387,6 +391,7 @@ GCOV_LINKAGE void gcov_write_unsigned (gcov_unsigned_t) ATTRIBUTE_HIDDEN;
 /* Available only in compiler */
 GCOV_LINKAGE unsigned gcov_histo_index (gcov_type value);
 GCOV_LINKAGE void gcov_write_string (const char *);
+GCOV_LINKAGE void gcov_write_filename (const char *);
 GCOV_LINKAGE gcov_position_t gcov_write_tag (gcov_unsigned_t);
 GCOV_LINKAGE void gcov_write_length (gcov_position_t /*position*/);
 #endif

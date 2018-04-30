@@ -68,9 +68,9 @@ are implemented using the C
 library streams facility; where
 
 *
-  All files are opened using `fopen`.
+  All files are opened using ``fopen``.
 *
-  All input/output operations use `fread`/`fwrite`.
+  All input/output operations use ``fread``/`fwrite`.
 
 There is no internal buffering of any kind at the Ada library level. The only
 buffering is that provided at the system level in the implementation of the
@@ -127,8 +127,8 @@ The records of a Direct_IO file are simply written to the file in index
 sequence, with the first record starting at offset zero, and subsequent
 records following.  There is no control information of any kind.  For
 example, if 32-bit integers are being written, each record takes
-4-bytes, so the record at index `K` starts at offset
-(`K`-1)*4.
+4-bytes, so the record at index ``K`` starts at offset
+(``K``-1)*4.
 
 There is no limit on the size of Direct_IO files, they are expanded as
 necessary to accommodate whatever records are written to the file.
@@ -148,17 +148,17 @@ checking is performed on input.
 
 For the indefinite type case, the elements written consist of two
 parts.  First is the size of the data item, written as the memory image
-of a `Interfaces.C.size_t` value, followed by the memory image of
+of a ``Interfaces.C.size_t`` value, followed by the memory image of
 the data value.  The resulting file can only be read using the same
 (unconstrained) type.  Normal assignment checks are performed on these
-read operations, and if these checks fail, `Data_Error` is
+read operations, and if these checks fail, ``Data_Error`` is
 raised.  In particular, in the array case, the lengths must match, and in
 the variant record case, if the variable for a particular read operation
 is constrained, the discriminants must match.
 
 Note that it is not possible to use Sequential_IO to write variable
 length array items, and then read the data back into different length
-arrays.  For example, the following will raise `Data_Error`:
+arrays.  For example, the following will raise ``Data_Error``:
 
 
 .. code-block:: ada
@@ -175,9 +175,9 @@ arrays.  For example, the following will raise `Data_Error`:
 
 
 
-On some Ada implementations, this will print `hell`, but the program is
+On some Ada implementations, this will print ``hell``, but the program is
 clearly incorrect, since there is only one element in the file, and that
-element is the string `hello!`.
+element is the string ``hello!``.
 
 In Ada 95 and Ada 2005, this kind of behavior can be legitimately achieved
 using Stream_IO, and this is the preferred mechanism.  In particular, the
@@ -202,23 +202,23 @@ A canonical Text_IO file is defined as one in which the following
 conditions are met:
 
 *
-  The character `LF` is used only as a line mark, i.e., to mark the end
+  The character ``LF`` is used only as a line mark, i.e., to mark the end
   of the line.
 
 *
-  The character `FF` is used only as a page mark, i.e., to mark the
+  The character ``FF`` is used only as a page mark, i.e., to mark the
   end of a page and consequently can appear only immediately following a
-  `LF` (line mark) character.
+  ``LF`` (line mark) character.
 
 *
-  The file ends with either `LF` (line mark) or `LF`-`FF`
+  The file ends with either ``LF`` (line mark) or ``LF``-`FF`
   (line mark, page mark).  In the former case, the page mark is implicitly
   assumed to be present.
 
 A file written using Text_IO will be in canonical form provided that no
-explicit `LF` or `FF` characters are written using `Put`
-or `Put_Line`.  There will be no `FF` character at the end of
-the file unless an explicit `New_Page` operation was performed
+explicit ``LF`` or ``FF`` characters are written using ``Put``
+or ``Put_Line``.  There will be no ``FF`` character at the end of
+the file unless an explicit ``New_Page`` operation was performed
 before closing the file.
 
 A canonical Text_IO file that is a regular file (i.e., not a device or a
@@ -230,24 +230,24 @@ A text file that does not meet the requirements for a canonical Text_IO
 file has one of the following:
 
 *
-  The file contains `FF` characters not immediately following a
-  `LF` character.
+  The file contains ``FF`` characters not immediately following a
+  ``LF`` character.
 
 *
-  The file contains `LF` or `FF` characters written by
-  `Put` or `Put_Line`, which are not logically considered to be
+  The file contains ``LF`` or ``FF`` characters written by
+  ``Put`` or ``Put_Line``, which are not logically considered to be
   line marks or page marks.
 
 *
-  The file ends in a character other than `LF` or `FF`,
+  The file ends in a character other than ``LF`` or ``FF``,
   i.e., there is no explicit line mark or page mark at the end of the file.
 
 Text_IO can be used to read such non-standard text files but subprograms
 to do with line or page numbers do not have defined meanings.  In
-particular, a `FF` character that does not follow a `LF`
+particular, a ``FF`` character that does not follow a ``LF``
 character may or may not be treated as a page mark from the point of
-view of page and line numbering.  Every `LF` character is considered
-to end a line, and there is an implied `LF` character at the end of
+view of page and line numbering.  Every ``LF`` character is considered
+to end a line, and there is an implied ``LF`` character at the end of
 the file.
 
 .. _Stream_Pointer_Positioning:
@@ -255,20 +255,20 @@ the file.
 Stream Pointer Positioning
 --------------------------
 
-`Ada.Text_IO` has a definition of current position for a file that
+``Ada.Text_IO`` has a definition of current position for a file that
 is being read.  No internal buffering occurs in Text_IO, and usually the
 physical position in the stream used to implement the file corresponds
 to this logical position defined by Text_IO.  There are two exceptions:
 
 *
-  After a call to `End_Of_Page` that returns `True`, the stream
-  is positioned past the `LF` (line mark) that precedes the page
+  After a call to ``End_Of_Page`` that returns ``True``, the stream
+  is positioned past the ``LF`` (line mark) that precedes the page
   mark.  Text_IO maintains an internal flag so that subsequent read
   operations properly handle the logical position which is unchanged by
-  the `End_Of_Page` call.
+  the ``End_Of_Page`` call.
 
 *
-  After a call to `End_Of_File` that returns `True`, if the
+  After a call to ``End_Of_File`` that returns ``True``, if the
   Text_IO file was positioned before the line mark at the end of file
   before the call, then the logical position is unchanged, but the stream
   is physically positioned right at the end of file (past the line mark,
@@ -294,12 +294,12 @@ for reading, the behavior of Text_IO is modified to avoid undesirable
 look-ahead as follows:
 
 An input file that is not a regular file is considered to have no page
-marks.  Any `Ascii.FF` characters (the character normally used for a
+marks.  Any ``Ascii.FF`` characters (the character normally used for a
 page mark) appearing in the file are considered to be data
 characters.  In particular:
 
 *
-  `Get_Line` and `Skip_Line` do not test for a page mark
+  ``Get_Line`` and ``Skip_Line`` do not test for a page mark
   following a line mark.  If a page mark appears, it will be treated as a
   data character.
 
@@ -308,14 +308,14 @@ characters.  In particular:
   entered from the pipe to complete one of these operations.
 
 *
-  `End_Of_Page` always returns `False`
+  ``End_Of_Page`` always returns ``False``
 
 *
-  `End_Of_File` will return `False` if there is a page mark at
+  ``End_Of_File`` will return ``False`` if there is a page mark at
   the end of the file.
 
 Output to non-regular files is the same as for regular files.  Page marks
-may be written to non-regular files using `New_Page`, but as noted
+may be written to non-regular files using ``New_Page``, but as noted
 above they will not be treated as page marks on input if the output is
 piped to another Ada program.
 
@@ -323,9 +323,9 @@ Another important discrepancy when reading non-regular files is that the end
 of file indication is not 'sticky'.  If an end of file is entered, e.g., by
 pressing the :kbd:`EOT` key,
 then end of file
-is signaled once (i.e., the test `End_Of_File`
-will yield `True`, or a read will
-raise `End_Error`), but then reading can resume
+is signaled once (i.e., the test ``End_Of_File``
+will yield ``True``, or a read will
+raise ``End_Error``), but then reading can resume
 to read data past that end of
 file indication, until another end of file indication is entered.
 
@@ -354,14 +354,14 @@ Treating Text_IO Files as Streams
 
 .. index:: Stream files
 
-The package `Text_IO.Streams` allows a Text_IO file to be treated
-as a stream.  Data written to a Text_IO file in this stream mode is
-binary data.  If this binary data contains bytes 16#0A# (`LF`) or
-16#0C# (`FF`), the resulting file may have non-standard
+The package ``Text_IO.Streams`` allows a ``Text_IO`` file to be treated
+as a stream.  Data written to a ``Text_IO`` file in this stream mode is
+binary data.  If this binary data contains bytes 16#0A# (``LF``) or
+16#0C# (``FF``), the resulting file may have non-standard
 format.  Similarly if read operations are used to read from a Text_IO
-file treated as a stream, then `LF` and `FF` characters may be
+file treated as a stream, then ``LF`` and ``FF`` characters may be
 skipped and the effect is similar to that described above for
-`Get_Immediate`.
+``Get_Immediate``.
 
 .. _Text_IO_Extensions:
 
@@ -371,7 +371,7 @@ Text_IO Extensions
 .. index:: Text_IO extensions
 
 A package GNAT.IO_Aux in the GNAT library provides some useful extensions
-to the standard `Text_IO` package:
+to the standard ``Text_IO`` package:
 
 * function File_Exists (Name : String) return Boolean;
   Determines if a file of the given name exists.
@@ -394,8 +394,8 @@ Text_IO Facilities for Unbounded Strings
 
 .. index:: Unbounded_String, Text_IO operations
 
-The package `Ada.Strings.Unbounded.Text_IO`
-in library files `a-suteio.ads/adb` contains some GNAT-specific
+The package ``Ada.Strings.Unbounded.Text_IO``
+in library files :file:`a-suteio.ads/adb` contains some GNAT-specific
 subprograms useful for Text_IO operations on unbounded strings:
 
 
@@ -406,32 +406,32 @@ subprograms useful for Text_IO operations on unbounded strings:
 * procedure Put (File : File_Type; U : Unbounded_String);
   Writes the value of the given unbounded string to the specified file
   Similar to the effect of
-  `Put (To_String (U))` except that an extra copy is avoided.
+  ``Put (To_String (U))`` except that an extra copy is avoided.
 
 * procedure Put_Line (File : File_Type; U : Unbounded_String);
   Writes the value of the given unbounded string to the specified file,
-  followed by a `New_Line`.
-  Similar to the effect of `Put_Line (To_String (U))` except
+  followed by a ``New_Line``.
+  Similar to the effect of ``Put_Line (To_String (U))`` except
   that an extra copy is avoided.
 
-In the above procedures, `File` is of type `Ada.Text_IO.File_Type`
+In the above procedures, ``File`` is of type ``Ada.Text_IO.File_Type``
 and is optional.  If the parameter is omitted, then the standard input or
 output file is referenced as appropriate.
 
-The package `Ada.Strings.Wide_Unbounded.Wide_Text_IO` in library
+The package ``Ada.Strings.Wide_Unbounded.Wide_Text_IO`` in library
 files :file:`a-swuwti.ads` and :file:`a-swuwti.adb` provides similar extended
-`Wide_Text_IO` functionality for unbounded wide strings.
+``Wide_Text_IO`` functionality for unbounded wide strings.
 
-The package `Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO` in library
+The package ``Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO`` in library
 files :file:`a-szuzti.ads` and :file:`a-szuzti.adb` provides similar extended
-`Wide_Wide_Text_IO` functionality for unbounded wide wide strings.
+``Wide_Wide_Text_IO`` functionality for unbounded wide wide strings.
 
 .. _Wide_Text_IO:
 
 Wide_Text_IO
 ============
 
-`Wide_Text_IO` is similar in most respects to Text_IO, except that
+``Wide_Text_IO`` is similar in most respects to Text_IO, except that
 both input and output files may contain special sequences that represent
 wide character values.  The encoding scheme for a given file may be
 specified using a FORM parameter:
@@ -443,7 +443,7 @@ specified using a FORM parameter:
 
 
 as part of the FORM string (WCEM = wide character encoding method),
-where `x` is one of the following characters
+where ``x`` is one of the following characters
 
 ========== ====================
 Character  Encoding
@@ -480,11 +480,11 @@ being brackets encoding if no coding method was specified with -gnatW).
 
 ..
 
-  where `a`, `b`, `c`, `d` are the four hexadecimal
+  where ``a``, ``b``, ``c``, ``d`` are the four hexadecimal
   characters (using upper case letters) of the wide character code.  For
   example, ESC A345 is used to represent the wide character with code
   16#A345#.  This scheme is compatible with use of the full
-  `Wide_Character` set.
+  ``Wide_Character`` set.
 
 
 *Upper Half Coding*
@@ -527,7 +527,7 @@ being brackets encoding if no coding method was specified with -gnatW).
 
 ..
 
-  where the `xxx` bits correspond to the left-padded bits of the
+  where the ``xxx`` bits correspond to the left-padded bits of the
   16-bit character value.  Note that all lower half ASCII characters
   are represented as ASCII bytes and all upper half characters and
   other wide characters are represented as sequences of upper-half
@@ -548,14 +548,14 @@ being brackets encoding if no coding method was specified with -gnatW).
 
 ..
 
-  where `a`, `b`, `c`, `d` are the four hexadecimal
+  where ``a``, ``b``, ``c``, ``d`` are the four hexadecimal
   characters (using uppercase letters) of the wide character code.  For
-  example, `["A345"]` is used to represent the wide character with code
-  `16#A345#`.
+  example, ``["A345"]`` is used to represent the wide character with code
+  ``16#A345#``.
   This scheme is compatible with use of the full Wide_Character set.
   On input, brackets coding can also be used for upper half characters,
-  e.g., `["C1"]` for lower case a.  However, on output, brackets notation
-  is only used for wide characters with a code greater than `16#FF#`.
+  e.g., ``["C1"]`` for lower case a.  However, on output, brackets notation
+  is only used for wide characters with a code greater than ``16#FF#``.
 
   Note that brackets coding is not normally used in the context of
   Wide_Text_IO or Wide_Wide_Text_IO, since it is really just designed as
@@ -612,11 +612,11 @@ input also causes Constraint_Error to be raised.
 Stream Pointer Positioning
 --------------------------
 
-`Ada.Wide_Text_IO` is similar to `Ada.Text_IO` in its handling
+``Ada.Wide_Text_IO`` is similar to ``Ada.Text_IO`` in its handling
 of stream pointer positioning (:ref:`Text_IO`).  There is one additional
 case:
 
-If `Ada.Wide_Text_IO.Look_Ahead` reads a character outside the
+If ``Ada.Wide_Text_IO.Look_Ahead`` reads a character outside the
 normal lower ASCII set (i.e., a character in the range:
 
 
@@ -626,11 +626,11 @@ normal lower ASCII set (i.e., a character in the range:
 
 
 then although the logical position of the file pointer is unchanged by
-the `Look_Ahead` call, the stream is physically positioned past the
+the ``Look_Ahead`` call, the stream is physically positioned past the
 wide character sequence.  Again this is to avoid the need for buffering
-or backup, and all `Wide_Text_IO` routines check the internal
+or backup, and all ``Wide_Text_IO`` routines check the internal
 indication that this situation has occurred so that this is not visible
-to a normal program using `Wide_Text_IO`.  However, this discrepancy
+to a normal program using ``Wide_Text_IO``.  However, this discrepancy
 can be observed if the wide text file shares a stream with another file.
 
 .. _Reading_and_Writing_Non-Regular_Files_1:
@@ -640,8 +640,8 @@ Reading and Writing Non-Regular Files
 
 As in the case of Text_IO, when a non-regular file is read, it is
 assumed that the file contains no page marks (any form characters are
-treated as data characters), and `End_Of_Page` always returns
-`False`.  Similarly, the end of file indication is not sticky, so
+treated as data characters), and ``End_Of_Page`` always returns
+``False``.  Similarly, the end of file indication is not sticky, so
 it is possible to read beyond an end of file.
 
 .. _Wide_Wide_Text_IO:
@@ -649,7 +649,7 @@ it is possible to read beyond an end of file.
 Wide_Wide_Text_IO
 =================
 
-`Wide_Wide_Text_IO` is similar in most respects to Text_IO, except that
+``Wide_Wide_Text_IO`` is similar in most respects to Text_IO, except that
 both input and output files may contain special sequences that represent
 wide wide character values.  The encoding scheme for a given file may be
 specified using a FORM parameter:
@@ -661,7 +661,7 @@ specified using a FORM parameter:
 
 
 as part of the FORM string (WCEM = wide character encoding method),
-where `x` is one of the following characters
+where ``x`` is one of the following characters
 
 ========== ====================
 Character  Encoding
@@ -704,7 +704,7 @@ being brackets encoding if no coding method was specified with -gnatW).
 
 ..
 
-  where the `xxx` bits correspond to the left-padded bits of the
+  where the ``xxx`` bits correspond to the left-padded bits of the
   21-bit character value.  Note that all lower half ASCII characters
   are represented as ASCII bytes and all upper half characters and
   other wide characters are represented as sequences of upper-half
@@ -731,16 +731,16 @@ being brackets encoding if no coding method was specified with -gnatW).
 
 ..
 
-  where `a`, `b`, `c`, `d`, `e`, and `f`
+  where ``a``, ``b``, ``c``, ``d``, ``e``, and ``f``
   are the four or six hexadecimal
   characters (using uppercase letters) of the wide wide character code.  For
-  example, `["01A345"]` is used to represent the wide wide character
-  with code `16#01A345#`.
+  example, ``["01A345"]`` is used to represent the wide wide character
+  with code ``16#01A345#``.
 
   This scheme is compatible with use of the full Wide_Wide_Character set.
   On input, brackets coding can also be used for upper half characters,
-  e.g., `["C1"]` for lower case a.  However, on output, brackets notation
-  is only used for wide characters with a code greater than `16#FF#`.
+  e.g., ``["C1"]`` for lower case a.  However, on output, brackets notation
+  is only used for wide characters with a code greater than ``16#FF#``.
 
 
 If is also possible to use the other Wide_Character encoding methods,
@@ -756,11 +756,11 @@ input also causes Constraint_Error to be raised.
 Stream Pointer Positioning
 --------------------------
 
-`Ada.Wide_Wide_Text_IO` is similar to `Ada.Text_IO` in its handling
+``Ada.Wide_Wide_Text_IO`` is similar to ``Ada.Text_IO`` in its handling
 of stream pointer positioning (:ref:`Text_IO`).  There is one additional
 case:
 
-If `Ada.Wide_Wide_Text_IO.Look_Ahead` reads a character outside the
+If ``Ada.Wide_Wide_Text_IO.Look_Ahead`` reads a character outside the
 normal lower ASCII set (i.e., a character in the range:
 
 
@@ -770,11 +770,11 @@ normal lower ASCII set (i.e., a character in the range:
 
 
 then although the logical position of the file pointer is unchanged by
-the `Look_Ahead` call, the stream is physically positioned past the
+the ``Look_Ahead`` call, the stream is physically positioned past the
 wide character sequence.  Again this is to avoid the need for buffering
-or backup, and all `Wide_Wide_Text_IO` routines check the internal
+or backup, and all ``Wide_Wide_Text_IO`` routines check the internal
 indication that this situation has occurred so that this is not visible
-to a normal program using `Wide_Wide_Text_IO`.  However, this discrepancy
+to a normal program using ``Wide_Wide_Text_IO``.  However, this discrepancy
 can be observed if the wide text file shares a stream with another file.
 
 .. _Reading_and_Writing_Non-Regular_Files_2:
@@ -784,8 +784,8 @@ Reading and Writing Non-Regular Files
 
 As in the case of Text_IO, when a non-regular file is read, it is
 assumed that the file contains no page marks (any form characters are
-treated as data characters), and `End_Of_Page` always returns
-`False`.  Similarly, the end of file indication is not sticky, so
+treated as data characters), and ``End_Of_Page`` always returns
+``False``.  Similarly, the end of file indication is not sticky, so
 it is possible to read beyond an end of file.
 
 .. _Stream_IO:
@@ -795,11 +795,11 @@ Stream_IO
 
 A stream file is a sequence of bytes, where individual elements are
 written to the file as described in the Ada Reference Manual.  The type
-`Stream_Element` is simply a byte.  There are two ways to read or
+``Stream_Element`` is simply a byte.  There are two ways to read or
 write a stream file.
 
 *
-  The operations `Read` and `Write` directly read or write a
+  The operations ``Read`` and ``Write`` directly read or write a
   sequence of stream elements with no control information.
 
 *
@@ -854,7 +854,7 @@ dependence, GNAT handles file sharing as follows:
 *
   In the absence of a ``shared=xxx`` form parameter, an attempt
   to open two or more files with the same full name is considered an error
-  and is not supported.  The exception `Use_Error` will be
+  and is not supported.  The exception ``Use_Error`` will be
   raised.  Note that a file that is not explicitly closed by the program
   remains open until the program terminates.
 
@@ -873,12 +873,12 @@ dependence, GNAT handles file sharing as follows:
 
 When a program that opens multiple files with the same name is ported
 from another Ada compiler to GNAT, the effect will be that
-`Use_Error` is raised.
+``Use_Error`` is raised.
 
 The documentation of the original compiler and the documentation of the
 program should then be examined to determine if file sharing was
-expected, and ``shared=xxx`` parameters added to `Open`
-and `Create` calls as required.
+expected, and ``shared=xxx`` parameters added to ``Open``
+and ``Create`` calls as required.
 
 When a program is ported from GNAT to some other Ada compiler, no
 special attention is required unless the ``shared=xxx`` form
@@ -961,11 +961,11 @@ This encoding is only supported on the Windows platform.
 Open Modes
 ==========
 
-`Open` and `Create` calls result in a call to `fopen`
+``Open`` and ``Create`` calls result in a call to ``fopen``
 using the mode shown in the following table:
 
 +----------------------------+---------------+------------------+
-|           `Open` and `Create` Call Modes                      |
+|           ``Open`` and ``Create`` Call Modes                  |
 +----------------------------+---------------+------------------+
 |                            |   **OPEN**    |     **CREATE**   |
 +============================+===============+==================+
@@ -989,7 +989,7 @@ DOS-like systems, and is not relevant to other systems.
 
 A special case occurs with Stream_IO.  As shown in the above table, the
 file is initially opened in ``r`` or ``w`` mode for the
-`In_File` and `Out_File` cases.  If a `Set_Mode` operation
+``In_File`` and ``Out_File`` cases.  If a ``Set_Mode`` operation
 subsequently requires switching from reading to writing or vice-versa,
 then the file is reopened in ``r+`` mode to permit the required operation.
 
@@ -998,7 +998,7 @@ then the file is reopened in ``r+`` mode to permit the required operation.
 Operations on C Streams
 =======================
 
-The package `Interfaces.C_Streams` provides an Ada program with direct
+The package ``Interfaces.C_Streams`` provides an Ada program with direct
 access to the C library functions for operations on C streams:
 
 
@@ -1233,19 +1233,19 @@ operations.
    end Ada.Stream_IO.C_Streams;
 
 
-In each of these six packages, the `C_Stream` function obtains the
-`FILE` pointer from a currently opened Ada file.  It is then
-possible to use the `Interfaces.C_Streams` package to operate on
+In each of these six packages, the ``C_Stream`` function obtains the
+``FILE`` pointer from a currently opened Ada file.  It is then
+possible to use the ``Interfaces.C_Streams`` package to operate on
 this stream, or the stream can be passed to a C program which can
 operate on it directly.  Of course the program is responsible for
 ensuring that only appropriate sequences of operations are executed.
 
 One particular use of relevance to an Ada program is that the
-`setvbuf` function can be used to control the buffering of the
+``setvbuf`` function can be used to control the buffering of the
 stream used by an Ada file.  In the absence of such a call the standard
 default buffering is used.
 
-The `Open` procedures in these packages open a file giving an
+The ``Open`` procedures in these packages open a file giving an
 existing C Stream instead of a file name.  Typically this stream is
 imported from a C program, allowing an Ada file to operate on an
 existing C file.

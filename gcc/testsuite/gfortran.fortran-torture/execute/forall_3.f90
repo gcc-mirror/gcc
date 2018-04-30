@@ -28,10 +28,10 @@ program evil_forall
     v(i)%p(1:v(i)%s) = v(6-i)%p(1:v(i)%s)
   end forall
 
-  if (any(v(1)%p(:) .ne. (/11, 10/))) call abort
-  if (any(v(2)%p(:) .ne. (/13, 14, 15, 16, 17, 18, 19, 20/))) call abort
-  if (any(v(4)%p(:) .ne. (/1, 2, 3, 4, 5, 6, 19, 20/))) call abort
-  if (any(v(5)%p(:) .ne. (/9, 10/))) call abort
+  if (any(v(1)%p(:) .ne. (/11, 10/))) STOP 1
+  if (any(v(2)%p(:) .ne. (/13, 14, 15, 16, 17, 18, 19, 20/))) STOP 2
+  if (any(v(4)%p(:) .ne. (/1, 2, 3, 4, 5, 6, 19, 20/))) STOP 3
+  if (any(v(5)%p(:) .ne. (/9, 10/))) STOP 4
 
   ! I should really free the memory I've allocated.
 end program

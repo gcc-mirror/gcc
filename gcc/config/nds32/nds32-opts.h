@@ -1,5 +1,5 @@
 /* Definitions for option handling of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -29,7 +29,20 @@ enum nds32_arch_type
 {
   ARCH_V2,
   ARCH_V3,
-  ARCH_V3M
+  ARCH_V3M,
+  ARCH_V3F,
+  ARCH_V3S
+};
+
+/* The various ANDES CPU.  */
+enum nds32_cpu_type
+{
+  CPU_N6,
+  CPU_N7,
+  CPU_N8,
+  CPU_E8,
+  CPU_N9,
+  CPU_SIMPLE
 };
 
 /* The code model defines the address generation strategy.  */
@@ -38,6 +51,41 @@ enum nds32_cmodel_type
   CMODEL_SMALL,
   CMODEL_MEDIUM,
   CMODEL_LARGE
+};
+
+/* Multiply instruction configuration.  */
+enum nds32_mul_type
+{
+  MUL_TYPE_FAST_1,
+  MUL_TYPE_FAST_2,
+  MUL_TYPE_SLOW
+};
+
+/* Register ports configuration.  */
+enum nds32_register_ports
+{
+  REG_PORT_3R2W,
+  REG_PORT_2R1W
+};
+
+/* Which ABI to use.  */
+enum abi_type
+{
+  NDS32_ABI_V2,
+  NDS32_ABI_V2_FP_PLUS
+};
+
+/* The various FPU number of registers.  */
+enum float_reg_number
+{
+  NDS32_CONFIG_FPU_0,
+  NDS32_CONFIG_FPU_1,
+  NDS32_CONFIG_FPU_2,
+  NDS32_CONFIG_FPU_3,
+  NDS32_CONFIG_FPU_4,
+  NDS32_CONFIG_FPU_5,
+  NDS32_CONFIG_FPU_6,
+  NDS32_CONFIG_FPU_7
 };
 
 #endif

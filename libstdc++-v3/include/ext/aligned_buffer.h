@@ -1,6 +1,6 @@
 // Aligned memory buffer -*- C++ -*-
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,6 +75,10 @@ namespace __gnu_cxx
       { return static_cast<const _Tp*>(_M_addr()); }
     };
 
+#if _GLIBCXX_INLINE_VERSION
+  template<typename _Tp>
+    using __aligned_buffer = __aligned_membuf<_Tp>;
+#else
   // Similar to __aligned_membuf but aligned for complete objects, not members.
   // This type is used in <forward_list>, <future>, <bits/shared_ptr_base.h>
   // and <bits/hashtable_policy.h>, but ideally they would use __aligned_membuf
@@ -113,6 +117,7 @@ namespace __gnu_cxx
       _M_ptr() const noexcept
       { return static_cast<const _Tp*>(_M_addr()); }
     };
+#endif
 
 } // namespace
 

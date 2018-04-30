@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template<typename T>
 concept bool C = false;
@@ -14,7 +14,7 @@ int (*p)() requires true; // { dg-error "" }
 int (&p)() requires true; // { dg-error "" }
 int g(int (*)() requires true); // { dg-error "" }
 
-int f() { }
+int f() { return 0; }
 
 int
 main()

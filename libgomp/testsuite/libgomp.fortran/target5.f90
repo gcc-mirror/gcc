@@ -1,10 +1,9 @@
 ! { dg-do compile }
-! { dg-options "-fopenmp" }
 
   integer :: r
   r = 0
   call foo (r)
-  if (r /= 11) call abort
+  if (r /= 11) STOP 1
 contains
   subroutine foo (r)
     integer :: i, r

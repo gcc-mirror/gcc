@@ -27,5 +27,5 @@ program main
 !  write (*, *) 'y: ', y
 !  write (*, *)
 
-  if ( any (b /= y) ) call abort()
+  if ( any (b /= y) ) STOP 1
 end program main

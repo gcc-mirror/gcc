@@ -1,6 +1,6 @@
 ; MinGW-specific options.
 
-; Copyright (C) 2008-2017 Free Software Foundation, Inc.
+; Copyright (C) 2008-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -27,9 +27,5 @@ Driver
 Wpedantic-ms-format
 C ObjC C++ ObjC++ Var(warn_pedantic_ms_format) Init(1) Warning
 Warn about none ISO msvcrt scanf/printf width extensions.
-
-fset-stack-executable
-Common Report Var(flag_setstackexecutable) Init(1) Optimization
-For nested functions on stack executable permission is set.
 
 ; Need to retain blank line above.

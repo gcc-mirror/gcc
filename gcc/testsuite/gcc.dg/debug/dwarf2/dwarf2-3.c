@@ -1,7 +1,6 @@
-/* Test -feliminate-dwarf2-dups */
 /* Contributed by Devang Patel <dpatel@apple.com> */
 /* { dg-do compile } */
-/* { dg-options "-gdwarf -feliminate-dwarf2-dups" } */
+/* { dg-options "-gdwarf" } */
 
 #include "dwarf2-3.h"
 

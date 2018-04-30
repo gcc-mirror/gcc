@@ -1,5 +1,5 @@
 /* Pointer Bounds Checker optimization pass.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Ilya Enkovich (ilya.enkovich@intel.com)
 
 This file is part of GCC.
@@ -1052,7 +1052,8 @@ chkp_optimize_string_function_calls (void)
 
 		  /* Split block before string function call.  */
 		  gsi_prev (&i);
-		  check_bb = insert_cond_bb (bb, gsi_stmt (i), check);
+		  check_bb = insert_cond_bb (bb, gsi_stmt (i), check,
+					     profile_probability::likely ());
 
 		  /* Set position for checks.  */
 		  j = gsi_last_bb (check_bb);

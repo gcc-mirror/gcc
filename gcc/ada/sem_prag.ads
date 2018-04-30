@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,6 +175,27 @@ package Sem_Prag is
       Pragma_Warnings        => True,
       others                 => False);
 
+   --  The following table lists all pragmas which are significant in SPARK and
+   --  as a result get translated into verification conditions. The table is an
+   --  amalgamation of the pragmas listed in SPARK RM 16.1 and internally added
+   --  entries.
+
+   Pragma_Significant_In_SPARK : constant array (Pragma_Id) of Boolean :=
+     (Pragma_All_Calls_Remote              => False,
+      Pragma_Asynchronous                  => False,
+      Pragma_Default_Storage_Pool          => False,
+      Pragma_Discard_Names                 => False,
+      Pragma_Dispatching_Domain            => False,
+      Pragma_Priority_Specific_Dispatching => False,
+      Pragma_Remote_Call_Interface         => False,
+      Pragma_Remote_Types                  => False,
+      Pragma_Shared_Passive                => False,
+      Pragma_Task_Dispatching_Policy       => False,
+      Pragma_Unmodified                    => False,
+      Pragma_Unreferenced                  => False,
+      Pragma_Warnings                      => False,
+      others                               => True);
+
    -----------------
    -- Subprograms --
    -----------------
@@ -202,7 +223,7 @@ package Sem_Prag is
 
    procedure Analyze_Global_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Global. This routine is also
-   --  capable of performing basic analysis of pragma Refind_Global.
+   --  capable of performing basic analysis of pragma Refined_Global.
 
    procedure Analyze_Initial_Condition_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Initial_Condition
@@ -375,6 +396,7 @@ package Sem_Prag is
    --    Depends
    --    Extensions_Visible
    --    Global
+   --    Initializes
    --    Max_Queue_Length
    --    Post
    --    Post_Class
@@ -385,6 +407,7 @@ package Sem_Prag is
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post
+   --    Refined_State
    --    Test_Case
    --    Volatile_Function
    --  as well as attributes 'Old and 'Result. Find the declaration of the

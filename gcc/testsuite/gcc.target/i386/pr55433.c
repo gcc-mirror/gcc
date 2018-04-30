@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-darwin* } } } */
+/* { dg-do compile { target *-*-darwin* } } */
 /* { dg-options "-O1" } */
 
 typedef unsigned long long tick_t;

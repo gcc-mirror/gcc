@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 1992-2017, Free Software Foundation, Inc.       *
+ *            Copyright (C) 1992-2018, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -101,11 +101,11 @@ extern Boolean UI_Lt			(Uint, Uint);
    the integer value itself.  The origin of the Uints_Ptr table is adjusted so
    that a Uint value of Uint_Bias indexes the first element.  */
 
-#define Uints_Ptr (uintp__uints__tab__the_instance - Uint_Table_Start)
-extern struct Uint_Entry *uintp__uints__tab__the_instance;
+#define Uints_Ptr (uintp__uints__table - Uint_Table_Start)
+extern struct Uint_Entry *uintp__uints__table;
 
-#define Udigits_Ptr uintp__udigits__tab__the_instance
-extern int *uintp__udigits__tab__the_instance;
+#define Udigits_Ptr uintp__udigits__table
+extern int *uintp__udigits__table;
 
 #ifdef __cplusplus
 }

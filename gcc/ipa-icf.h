@@ -1,5 +1,5 @@
 /* Interprocedural semantic function equality pass
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -140,6 +140,8 @@ public:
   /* Index of usage of such an item.  */
   unsigned int index;
 };
+
+typedef std::pair<symtab_node *, symtab_node *> symtab_pair;
 
 /* Semantic item is a base class that encapsulates all shared functionality
    for both semantic function and variable items.  */
@@ -563,6 +565,12 @@ private:
      processed.  */
   bool merge_classes (unsigned int prev_class_count);
 
+  /* Fixup points to analysis info.  */
+  void fixup_points_to_sets (void);
+
+  /* Fixup points to set PT.  */
+  void fixup_pt_set (struct pt_solution *pt);
+
   /* Adds a newly created congruence class CLS to worklist.  */
   void worklist_push (congruence_class *cls);
 
@@ -632,6 +640,10 @@ private:
 
   /* Bitmap stack.  */
   bitmap_obstack m_bmstack;
+
+  /* Vector of merged variables.  Needed for fixup of points-to-analysis
+     info.  */
+  vec <symtab_pair> m_merged_variables;
 }; // class sem_item_optimizer
 
 } // ipa_icf namespace

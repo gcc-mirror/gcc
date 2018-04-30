@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,7 @@ struct E : std::equal_to<T> { };
 
 using __gnu_test::CustomPointerAlloc;
 
-// { dg-xfail-if "node reinsertion assumes raw pointers" { c++1z } }
+// { dg-xfail-if "node reinsertion assumes raw pointers" { c++17 } }
 // TODO when removing this xfail change the test back to "dg-do run".
 template class std::unordered_set<T, H, E, CustomPointerAlloc<T>>;
 

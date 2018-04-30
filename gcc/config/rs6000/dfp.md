@@ -1,5 +1,5 @@
 ;; Decimal Floating Point (DFP) patterns.
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;; Contributed by Ben Elliston (bje@au.ibm.com) and Peter Bergner
 ;; (bergner@vnet.ibm.com).
 
@@ -35,7 +35,7 @@
 		   UNSPEC_MOVSD_STORE))]
   "(gpc_reg_operand (operands[0], DDmode)
    || gpc_reg_operand (operands[1], SDmode))
-   && TARGET_HARD_FLOAT && TARGET_FPRS"
+   && TARGET_HARD_FLOAT"
   "stfd%U0%X0 %1,%0"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -46,7 +46,7 @@
 		   UNSPEC_MOVSD_LOAD))]
   "(gpc_reg_operand (operands[0], SDmode)
    || gpc_reg_operand (operands[1], DDmode))
-   && TARGET_HARD_FLOAT && TARGET_FPRS"
+   && TARGET_HARD_FLOAT"
   "lfd%U1%X1 %0,%1"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -78,65 +78,41 @@
   "drsp %0,%1"
   [(set_attr "type" "dfp")])
 
-(define_expand "negdd2"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "")
-	(neg:DD (match_operand:DD 1 "gpc_reg_operand" "")))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
-  "")
-
-(define_insn "*negdd2_fpr"
+(define_insn "negdd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
 	(neg:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
+  "TARGET_HARD_FLOAT"
   "fneg %0,%1"
   [(set_attr "type" "fpsimple")])
 
-(define_expand "absdd2"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "")
-	(abs:DD (match_operand:DD 1 "gpc_reg_operand" "")))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
-  "")
-
-(define_insn "*absdd2_fpr"
+(define_insn "absdd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
 	(abs:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
+  "TARGET_HARD_FLOAT"
   "fabs %0,%1"
   [(set_attr "type" "fpsimple")])
 
 (define_insn "*nabsdd2_fpr"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
 	(neg:DD (abs:DD (match_operand:DD 1 "gpc_reg_operand" "d"))))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
+  "TARGET_HARD_FLOAT"
   "fnabs %0,%1"
   [(set_attr "type" "fpsimple")])
 
-(define_expand "negtd2"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "")
-	(neg:TD (match_operand:TD 1 "gpc_reg_operand" "")))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
-  "")
-
-(define_insn "*negtd2_fpr"
+(define_insn "negtd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d,d")
 	(neg:TD (match_operand:TD 1 "gpc_reg_operand" "0,d")))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
+  "TARGET_HARD_FLOAT"
   "@
    fneg %0,%1
    fneg %0,%1\;fmr %L0,%L1"
   [(set_attr "type" "fpsimple")
    (set_attr "length" "4,8")])
 
-(define_expand "abstd2"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "")
-	(abs:TD (match_operand:TD 1 "gpc_reg_operand" "")))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
-  "")
-
-(define_insn "*abstd2_fpr"
+(define_insn "abstd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d,d")
 	(abs:TD (match_operand:TD 1 "gpc_reg_operand" "0,d")))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
+  "TARGET_HARD_FLOAT"
   "@
    fabs %0,%1
    fabs %0,%1\;fmr %L0,%L1"
@@ -146,7 +122,7 @@
 (define_insn "*nabstd2_fpr"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d,d")
 	(neg:TD (abs:TD (match_operand:TD 1 "gpc_reg_operand" "0,d"))))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
+  "TARGET_HARD_FLOAT"
   "@
    fnabs %0,%1
    fnabs %0,%1\;fmr %L0,%L1"
@@ -368,11 +344,11 @@
   [(set (match_dup 3)
 	(compare:CCFP
          (unspec:D64_D128
-	  [(match_operand:SI 1 "const_int_operand" "n")
-	   (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+	  [(match_operand:SI 1 "const_int_operand")
+	   (match_operand:D64_D128 2 "gpc_reg_operand")]
 	  UNSPEC_DTSTSFI)
 	 (match_dup 4)))
-   (set (match_operand:SI 0 "register_operand" "")
+   (set (match_operand:SI 0 "register_operand")
    	(DFP_TEST:SI (match_dup 3)
 		     (const_int 0)))
   ]

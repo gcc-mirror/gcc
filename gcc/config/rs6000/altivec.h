@@ -1,5 +1,5 @@
 /* PowerPC AltiVec include file.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
    Rewritten by Paolo Bonzini (bonzini@gnu.org).
 
@@ -76,6 +76,7 @@
 #define vec_vor vec_or
 #define vec_vpkpx vec_packpx
 #define vec_vperm vec_perm
+#define vec_permxor __builtin_vec_vpermxor
 #define vec_vrefp vec_re
 #define vec_vrfin vec_round
 #define vec_vrsqrtefp vec_rsqrte
@@ -128,12 +129,21 @@
 #define vec_ctu __builtin_vec_ctu
 #define vec_cpsgn __builtin_vec_copysign
 #define vec_double __builtin_vec_double
+#define vec_doublee __builtin_vec_doublee
+#define vec_doubleo __builtin_vec_doubleo
+#define vec_doublel __builtin_vec_doublel
+#define vec_doubleh __builtin_vec_doubleh
 #define vec_expte __builtin_vec_expte
+#define vec_float __builtin_vec_float
+#define vec_float2 __builtin_vec_float2
+#define vec_floate __builtin_vec_floate
+#define vec_floato __builtin_vec_floato
 #define vec_floor __builtin_vec_floor
 #define vec_loge __builtin_vec_loge
 #define vec_madd __builtin_vec_madd
 #define vec_madds __builtin_vec_madds
 #define vec_mtvscr __builtin_vec_mtvscr
+#define vec_reve __builtin_vec_vreve
 #define vec_vmaxfp __builtin_vec_vmaxfp
 #define vec_vmaxsw __builtin_vec_vmaxsw
 #define vec_vmaxsh __builtin_vec_vmaxsh
@@ -173,8 +183,18 @@
 #define vec_rlnm(a,b,c) (__builtin_vec_rlnm((a),((b)<<8)|(c)))
 #define vec_rsqrt __builtin_vec_rsqrt
 #define vec_rsqrte __builtin_vec_rsqrte
+#define vec_signed __builtin_vec_vsigned
+#define vec_signed2 __builtin_vec_vsigned2
+#define vec_signede __builtin_vec_vsignede
+#define vec_signedo __builtin_vec_vsignedo
+#define vec_unsigned __builtin_vec_vunsigned
+#define vec_unsigned2 __builtin_vec_vunsigned2
+#define vec_unsignede __builtin_vec_vunsignede
+#define vec_unsignedo __builtin_vec_vunsignedo
 #define vec_vsubfp __builtin_vec_vsubfp
 #define vec_subc __builtin_vec_subc
+#define vec_sube __builtin_vec_sube
+#define vec_subec __builtin_vec_subec
 #define vec_vsubsws __builtin_vec_vsubsws
 #define vec_vsubshs __builtin_vec_vsubshs
 #define vec_vsubsbs __builtin_vec_vsubsbs
@@ -336,7 +356,9 @@
 #define vec_vsx_ld __builtin_vec_vsx_ld
 #define vec_vsx_st __builtin_vec_vsx_st
 #define vec_xl __builtin_vec_vsx_ld
+#define vec_xl_be __builtin_vec_xl_be
 #define vec_xst __builtin_vec_vsx_st
+#define vec_xst_be __builtin_vec_xst_be
 
 /* Note, xxsldi and xxpermdi were added as __builtin_vsx_<xxx> functions
    instead of __builtin_vec_<xxx>  */
@@ -395,18 +417,25 @@
 #define vec_vsubuqm __builtin_vec_vsubuqm
 #define vec_vupkhsw __builtin_vec_vupkhsw
 #define vec_vupklsw __builtin_vec_vupklsw
+#define vec_revb __builtin_vec_revb
 #endif
 
 #ifdef __POWER9_VECTOR__
 /* Vector additions added in ISA 3.0.  */
+#define vec_first_match_index __builtin_vec_first_match_index
+#define vec_first_match_or_eos_index __builtin_vec_first_match_or_eos_index
+#define vec_first_mismatch_index __builtin_vec_first_mismatch_index
+#define vec_first_mismatch_or_eos_index __builtin_vec_first_mismatch_or_eos_index
+#define vec_pack_to_short_fp32 __builtin_vec_convert_4f32_8i16
+#define vec_parity_lsbb __builtin_vec_vparity_lsbb
 #define vec_vctz __builtin_vec_vctz
 #define vec_cnttz __builtin_vec_vctz
 #define vec_vctzb __builtin_vec_vctzb
 #define vec_vctzd __builtin_vec_vctzd
 #define vec_vctzh __builtin_vec_vctzh
 #define vec_vctzw __builtin_vec_vctzw
-#define vec_vextract4b __builtin_vec_vextract4b
-#define vec_vinsert4b __builtin_vec_vinsert4b
+#define vec_extract4b __builtin_vec_extract4b
+#define vec_insert4b __builtin_vec_insert4b
 #define vec_vprtyb __builtin_vec_vprtyb
 #define vec_vprtybd __builtin_vec_vprtybd
 #define vec_vprtybw __builtin_vec_vprtybw
@@ -428,6 +457,11 @@
 #define vec_insert_exp __builtin_vec_insert_exp
 #define vec_test_data_class __builtin_vec_test_data_class
 
+#define vec_extract_fp_from_shorth __builtin_vec_vextract_fp_from_shorth
+#define vec_extract_fp_from_shortl __builtin_vec_vextract_fp_from_shortl
+#define vec_extract_fp32_from_shorth __builtin_vec_vextract_fp_from_shorth
+#define vec_extract_fp32_from_shortl __builtin_vec_vextract_fp_from_shortl
+
 #define scalar_extract_exp __builtin_vec_scalar_extract_exp
 #define scalar_extract_sig __builtin_vec_scalar_extract_sig
 #define scalar_insert_exp __builtin_vec_scalar_insert_exp
@@ -442,6 +476,8 @@
 #ifdef _ARCH_PPC64
 #define vec_xl_len __builtin_vec_lxvl
 #define vec_xst_len __builtin_vec_stxvl
+#define vec_xl_len_r __builtin_vec_xl_len_r
+#define vec_xst_len_r __builtin_vec_xst_len_r
 #endif
 
 #define vec_cmpnez __builtin_vec_vcmpnez
@@ -451,8 +487,6 @@
 
 #define vec_xlx __builtin_vec_vextulx
 #define vec_xrx __builtin_vec_vexturx
-
-#define vec_revb __builtin_vec_revb
 #endif
 
 /* Predicates.

@@ -5,7 +5,7 @@ program firstprivate
   integer :: a, b(Nupper), c, d, n
   include "openacc_lib.h"
 
-  if (acc_get_device_type () .eq. acc_device_nvidia) then
+  if (acc_get_device_type () .ne. acc_device_host) then
      n = Nupper
   else
      n = 1
@@ -23,7 +23,7 @@ program firstprivate
   !$acc end parallel
 
   do i = 1, n
-     if (b(i) .ne. i + a) call abort ()
+     if (b(i) .ne. i + a) STOP 1
   end do
 
   !$acc data copy (a)
@@ -37,6 +37,6 @@ program firstprivate
   !$acc end parallel
   !$acc end data
 
-  if (c .ne. 10) call abort ()
-  if (d .ne. 5) call abort ()
+  if (c .ne. 10) STOP 2
+  if (d .ne. 5) STOP 3
 end program firstprivate

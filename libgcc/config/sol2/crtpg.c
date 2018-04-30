@@ -1,5 +1,5 @@
 /* Register profiling startup and cleanup with Solaris CRTs.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,11 +31,10 @@ extern char _start[], _etext[];
 
 int __start_crt_compiler (int, char **);
 
-/* Since Solaris 11.x and Solaris 12, the system-provided CRTs provide a
-   hook to invoke initialization code early during process startup.
-   __start_crt_compiler is documented in crt1.o(5).  We use it to perform
-   initialization for profiling as a substitute for the earlier separate
-   gcrt1.o.  */
+/* Since Solaris 11.4, the system-provided CRTs provide a hook to invoke
+   initialization code early during process startup.  __start_crt_compiler
+   is documented in crt1.o(5).  We use it to perform initialization for
+   profiling as a substitute for the earlier separate gcrt1.o.  */
 
 int
 __start_crt_compiler (int argc __attribute__ ((unused)),

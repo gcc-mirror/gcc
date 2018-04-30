@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,6 +69,8 @@ with Sinfo;     use Sinfo;
 with Sinput;    use Sinput;
 with Style;
 with Uintp;     use Uintp;
+
+with GNAT.HTable;
 
 package body Sem_Ch7 is
 
@@ -187,6 +189,48 @@ package body Sem_Ch7 is
       end if;
    end Analyze_Package_Body;
 
+   ------------------------------------------------------
+   -- Analyze_Package_Body_Helper Data and Subprograms --
+   ------------------------------------------------------
+
+   Entity_Table_Size : constant := 4093;
+   --  Number of headers in hash table
+
+   subtype Entity_Header_Num is Integer range 0 .. Entity_Table_Size - 1;
+   --  Range of headers in hash table
+
+   function Node_Hash (Id : Entity_Id) return Entity_Header_Num;
+   --  Simple hash function for Entity_Ids
+
+   package Subprogram_Table is new GNAT.Htable.Simple_HTable
+     (Header_Num => Entity_Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Entity_Id,
+      Hash       => Node_Hash,
+      Equal      => "=");
+   --  Hash table to record which subprograms are referenced. It is declared
+   --  at library level to avoid elaborating it for every call to Analyze.
+
+   package Traversed_Table is new GNAT.Htable.Simple_HTable
+     (Header_Num => Entity_Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Node_Id,
+      Hash       => Node_Hash,
+      Equal      => "=");
+   --  Hash table to record which nodes we have traversed, so we can avoid
+   --  traversing the same nodes repeatedly.
+
+   -----------------
+   -- Node_Hash --
+   -----------------
+
+   function Node_Hash (Id : Entity_Id) return Entity_Header_Num is
+   begin
+      return Entity_Header_Num (Id mod Entity_Table_Size);
+   end Node_Hash;
+
    ---------------------------------
    -- Analyze_Package_Body_Helper --
    ---------------------------------
@@ -200,8 +244,8 @@ package body Sem_Ch7 is
       --  Attempt to hide all public entities found in declarative list Decls
       --  by resetting their Is_Public flag to False depending on whether the
       --  entities are not referenced by inlined or generic bodies. This kind
-      --  of processing is a conservative approximation and may still leave
-      --  certain entities externally visible.
+      --  of processing is a conservative approximation and will still leave
+      --  entities externally visible if the package is not simple enough.
 
       procedure Install_Composite_Operations (P : Entity_Id);
       --  Composite types declared in the current scope may depend on types
@@ -214,12 +258,6 @@ package body Sem_Ch7 is
       --------------------------
 
       procedure Hide_Public_Entities (Decls : List_Id) is
-         function Contains_Subprograms_Refs (N : Node_Id) return Boolean;
-         --  Subsidiary to routine Has_Referencer. Determine whether a node
-         --  contains a reference to a subprogram.
-         --  WARNING: this is a very expensive routine as it performs a full
-         --  tree traversal.
-
          function Has_Referencer
            (Decls     : List_Id;
             Top_Level : Boolean := False) return Boolean;
@@ -229,76 +267,19 @@ package body Sem_Ch7 is
          --  in the range Last (Decls) .. Referencer are hidden from external
          --  visibility.
 
-         -------------------------------
-         -- Contains_Subprograms_Refs --
-         -------------------------------
+         function Scan_Subprogram_Ref (N : Node_Id) return Traverse_Result;
+         --  Determine whether a node denotes a reference to a subprogram
 
-         function Contains_Subprograms_Refs (N : Node_Id) return Boolean is
-            Reference_Seen : Boolean := False;
+         procedure Traverse_And_Scan_Subprogram_Refs is
+           new Traverse_Proc (Scan_Subprogram_Ref);
+         --  Subsidiary to routine Has_Referencer. Determine whether a node
+         --  contains references to a subprogram and record them.
+         --  WARNING: this is a very expensive routine as it performs a full
+         --  tree traversal.
 
-            function Is_Subprogram_Ref (N : Node_Id) return Traverse_Result;
-            --  Determine whether a node denotes a reference to a subprogram
-
-            -----------------------
-            -- Is_Subprogram_Ref --
-            -----------------------
-
-            function Is_Subprogram_Ref
-              (N : Node_Id) return Traverse_Result
-            is
-               Val : Node_Id;
-
-            begin
-               --  Detect a reference of the form
-               --    Subp_Call
-
-               if Nkind (N) in N_Subprogram_Call
-                 and then Is_Entity_Name (Name (N))
-               then
-                  Reference_Seen := True;
-                  return Abandon;
-
-               --  Detect a reference of the form
-               --    Subp'Some_Attribute
-
-               elsif Nkind (N) = N_Attribute_Reference
-                 and then Is_Entity_Name (Prefix (N))
-                 and then Present (Entity (Prefix (N)))
-                 and then Is_Subprogram (Entity (Prefix (N)))
-               then
-                  Reference_Seen := True;
-                  return Abandon;
-
-               --  Constants can be substituted by their value in gigi, which
-               --  may contain a reference, so be conservative for them.
-
-               elsif Is_Entity_Name (N)
-                 and then Present (Entity (N))
-                 and then Ekind (Entity (N)) = E_Constant
-               then
-                  Val := Constant_Value (Entity (N));
-
-                  if Present (Val)
-                    and then not Compile_Time_Known_Value (Val)
-                  then
-                     Reference_Seen := True;
-                     return Abandon;
-                  end if;
-               end if;
-
-               return OK;
-            end Is_Subprogram_Ref;
-
-            procedure Find_Subprograms_Ref is
-              new Traverse_Proc (Is_Subprogram_Ref);
-
-         --  Start of processing for Contains_Subprograms_Refs
-
-         begin
-            Find_Subprograms_Ref (N);
-
-            return Reference_Seen;
-         end Contains_Subprograms_Refs;
+         procedure Scan_Subprogram_Refs (Node : Node_Id);
+         --  If we haven't already traversed Node, then mark it and traverse
+         --  it.
 
          --------------------
          -- Has_Referencer --
@@ -313,10 +294,9 @@ package body Sem_Ch7 is
             Spec    : Node_Id;
 
             Has_Non_Subprograms_Referencer : Boolean := False;
-            --  Flag set if a subprogram body was detected as a referencer but
-            --  does not contain references to other subprograms. In this case,
-            --  if we still are top level, we do not return True immediately,
-            --  but keep hiding subprograms from external visibility.
+            --  Set if an inlined subprogram body was detected as a referencer.
+            --  In this case, we do not return True immediately but keep hiding
+            --  subprograms from external visibility.
 
          begin
             if No (Decls) then
@@ -392,20 +372,23 @@ package body Sem_Ch7 is
 
                      --  An inlined subprogram body acts as a referencer
 
+                     --  Note that we test Has_Pragma_Inline here in addition
+                     --  to Is_Inlined. We are doing this for a client, since
+                     --  we are computing which entities should be public, and
+                     --  it is the client who will decide if actual inlining
+                     --  should occur, so we need to catch all cases where the
+                     --  subprogram may be inlined by the client.
+
                      if Is_Inlined (Decl_Id)
                        or else Has_Pragma_Inline (Decl_Id)
                      then
+                        Has_Non_Subprograms_Referencer := True;
+
                         --  Inspect the statements of the subprogram body
                         --  to determine whether the body references other
                         --  subprograms.
 
-                        if Top_Level
-                          and then not Contains_Subprograms_Refs (Decl)
-                        then
-                           Has_Non_Subprograms_Referencer := True;
-                        else
-                           return True;
-                        end if;
+                        Scan_Subprogram_Refs (Decl);
                      end if;
 
                   --  Otherwise this is a stand alone subprogram body
@@ -413,37 +396,43 @@ package body Sem_Ch7 is
                   else
                      Decl_Id := Defining_Entity (Decl);
 
-                     --  An inlined body acts as a referencer. Note that an
-                     --  inlined subprogram remains Is_Public as gigi requires
-                     --  the flag to be set.
+                     --  An inlined subprogram body acts as a referencer
 
-                     --  Note that we test Has_Pragma_Inline here rather than
-                     --  Is_Inlined. We are compiling this for a client, and
-                     --  it is the client who will decide if actual inlining
-                     --  should occur, so we need to assume that the procedure
-                     --  could be inlined for the purpose of accessing global
-                     --  entities.
+                     if Is_Inlined (Decl_Id)
+                       or else Has_Pragma_Inline (Decl_Id)
+                     then
+                        Has_Non_Subprograms_Referencer := True;
 
-                     if Has_Pragma_Inline (Decl_Id) then
-                        if Top_Level
-                          and then not Contains_Subprograms_Refs (Decl)
-                        then
-                           Has_Non_Subprograms_Referencer := True;
-                        else
-                           return True;
-                        end if;
-                     else
+                        --  Inspect the statements of the subprogram body
+                        --  to determine whether the body references other
+                        --  subprograms.
+
+                        Scan_Subprogram_Refs (Decl);
+
+                     --  Otherwise we can reset Is_Public right away
+
+                     elsif not Subprogram_Table.Get (Decl_Id) then
                         Set_Is_Public (Decl_Id, False);
                      end if;
                   end if;
+
+               --  Freeze node
+
+               elsif Nkind (Decl) = N_Freeze_Entity then
+                  declare
+                     Discard : Boolean;
+                     pragma Unreferenced (Discard);
+                  begin
+                     --  Inspect the actions to find references to subprograms
+
+                     Discard := Has_Referencer (Actions (Decl));
+                  end;
 
                --  Exceptions, objects and renamings do not need to be public
                --  if they are not followed by a construct which can reference
                --  and export them. The Is_Public flag is reset on top level
                --  entities only as anything nested is local to its context.
-               --  Likewise for subprograms, but we work harder for them as
-               --  their visibility can have a significant impact on inlining
-               --  decisions in the back end.
+               --  Likewise for subprograms, but we work harder for them.
 
                elsif Nkind_In (Decl, N_Exception_Declaration,
                                      N_Object_Declaration,
@@ -459,9 +448,27 @@ package body Sem_Ch7 is
                     and then No (Interface_Name (Decl_Id))
                     and then
                       (not Has_Non_Subprograms_Referencer
-                        or else Nkind (Decl) = N_Subprogram_Declaration)
+                        or else (Nkind (Decl) = N_Subprogram_Declaration
+                                  and then not Subprogram_Table.Get (Decl_Id)))
                   then
                      Set_Is_Public (Decl_Id, False);
+                  end if;
+
+                  --  For a subprogram renaming, if the entity is referenced,
+                  --  then so is the renamed subprogram. But there is an issue
+                  --  with generic bodies because instantiations are not done
+                  --  yet and, therefore, cannot be scanned for referencers.
+                  --  That's why we use an approximation and test that we have
+                  --  at least one subprogram referenced by an inlined body
+                  --  instead of precisely the entity of this renaming.
+
+                  if Nkind (Decl) = N_Subprogram_Renaming_Declaration
+                    and then Subprogram_Table.Get_First
+                    and then Is_Entity_Name (Name (Decl))
+                    and then Present (Entity (Name (Decl)))
+                    and then Is_Subprogram (Entity (Name (Decl)))
+                  then
+                     Subprogram_Table.Set (Entity (Name (Decl)), True);
                   end if;
                end if;
 
@@ -471,9 +478,68 @@ package body Sem_Ch7 is
             return Has_Non_Subprograms_Referencer;
          end Has_Referencer;
 
+         -------------------------
+         -- Scan_Subprogram_Ref --
+         -------------------------
+
+         function Scan_Subprogram_Ref (N : Node_Id) return Traverse_Result is
+         begin
+            --  Detect a reference of the form
+            --    Subp_Call
+
+            if Nkind (N) in N_Subprogram_Call
+              and then Is_Entity_Name (Name (N))
+              and then Present (Entity (Name (N)))
+              and then Is_Subprogram (Entity (Name (N)))
+            then
+               Subprogram_Table.Set (Entity (Name (N)), True);
+
+            --  Detect a reference of the form
+            --    Subp'Some_Attribute
+
+            elsif Nkind (N) = N_Attribute_Reference
+              and then Is_Entity_Name (Prefix (N))
+              and then Present (Entity (Prefix (N)))
+              and then Is_Subprogram (Entity (Prefix (N)))
+            then
+               Subprogram_Table.Set (Entity (Prefix (N)), True);
+
+            --  Constants can be substituted by their value in gigi, which may
+            --  contain a reference, so scan the value recursively.
+
+            elsif Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Ekind (Entity (N)) = E_Constant
+            then
+               declare
+                  Val : constant Node_Id := Constant_Value (Entity (N));
+               begin
+                  if Present (Val)
+                    and then not Compile_Time_Known_Value (Val)
+                  then
+                     Scan_Subprogram_Refs (Val);
+                  end if;
+               end;
+            end if;
+
+            return OK;
+         end Scan_Subprogram_Ref;
+
+         --------------------------
+         -- Scan_Subprogram_Refs --
+         --------------------------
+
+         procedure Scan_Subprogram_Refs (Node : Node_Id) is
+         begin
+            if not Traversed_Table.Get (Node) then
+               Traversed_Table.Set (Node, True);
+               Traverse_And_Scan_Subprogram_Refs (Node);
+            end if;
+         end Scan_Subprogram_Refs;
+
          --  Local variables
 
-         Discard : Boolean := True;
+         Discard : Boolean;
          pragma Unreferenced (Discard);
 
       --  Start of processing for Hide_Public_Entities
@@ -511,6 +577,38 @@ package body Sem_Ch7 is
          --  not always be the case. The algorithm takes a conservative stance
          --  and leaves entity External_Obj public.
 
+         --  This very conservative algorithm is supplemented by a more precise
+         --  processing for inlined bodies. For them, we traverse the syntactic
+         --  tree and record which subprograms are actually referenced from it.
+         --  This makes it possible to compute a much smaller set of externally
+         --  visible subprograms in the absence of generic bodies, which can
+         --  have a significant impact on the inlining decisions made in the
+         --  back end and the removal of out-of-line bodies from the object
+         --  code. We do it only for inlined bodies because they are supposed
+         --  to be reasonably small and tree traversal is very expensive.
+
+         --  Note that even this special processing is not optimal for inlined
+         --  bodies, because we treat all inlined subprograms alike. An optimal
+         --  algorithm would require computing the transitive closure of the
+         --  inlined subprograms that can really be referenced from other units
+         --  in the source code.
+
+         --  We could extend this processing for inlined bodies and record all
+         --  entities, not just subprograms, referenced from them, which would
+         --  make it possible to compute a much smaller set of all externally
+         --  visible entities in the absence of generic bodies. But this would
+         --  mean implementing a more thorough tree traversal of the bodies,
+         --  i.e. not just syntactic, and the gain would very likely be worth
+         --  neither the hassle nor the slowdown of the compiler.
+
+         --  Finally, an important thing to be aware of is that, at this point,
+         --  instantiations are not done yet so we cannot directly see inlined
+         --  bodies coming from them. That's not catastrophic because only the
+         --  actual parameters of the instantiations matter here, and they are
+         --  present in the declarations list of the instantiated packages.
+
+         Traversed_Table.Reset;
+         Subprogram_Table.Reset;
          Discard := Has_Referencer (Decls, Top_Level => True);
       end Hide_Public_Entities;
 
@@ -609,9 +707,9 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      --  A [generic] package body "freezes" the contract of the nearest
-      --  enclosing package body and all other contracts encountered in the
-      --  same declarative part up to and excluding the package body:
+      --  A [generic] package body freezes the contract of the nearest
+      --  enclosing package body and all other contracts encountered in
+      --  the same declarative part up to and excluding the package body:
 
       --    package body Nearest_Enclosing_Package
       --      with Refined_State => (State => Constit)
@@ -628,21 +726,21 @@ package body Sem_Ch7 is
 
       --  This ensures that any annotations referenced by the contract of a
       --  [generic] subprogram body declared within the current package body
-      --  are available. This form of "freezing" is decoupled from the usual
+      --  are available. This form of freezing is decoupled from the usual
       --  Freeze_xxx mechanism because it must also work in the context of
       --  generics where normal freezing is disabled.
 
-      --  Only bodies coming from source should cause this type of "freezing".
+      --  Only bodies coming from source should cause this type of freezing.
       --  Instantiated generic bodies are excluded because their processing is
       --  performed in a separate compilation pass which lacks enough semantic
       --  information with respect to contract analysis. It is safe to suppress
-      --  the "freezing" of contracts in this case because this action already
+      --  the freezing of contracts in this case because this action already
       --  took place at the end of the enclosing declarative part.
 
       if Comes_From_Source (N)
         and then not Is_Generic_Instance (Spec_Id)
       then
-         Analyze_Previous_Contracts (N);
+         Freeze_Previous_Contracts (N);
       end if;
 
       --  A package body is Ghost when the corresponding spec is Ghost. Set
@@ -778,10 +876,6 @@ package body Sem_Ch7 is
          Declare_Inherited_Private_Subprograms (Spec_Id);
       end if;
 
-      --  A package body "freezes" the contract of its initial declaration.
-      --  This analysis depends on attribute Corresponding_Spec being set. Only
-      --  bodies coming from source shuld cause this type of "freezing".
-
       if Present (Declarations (N)) then
          Analyze_Declarations (Declarations (N));
          Inspect_Deferred_Constant_Completion (Declarations (N));
@@ -874,6 +968,7 @@ package body Sem_Ch7 is
          Set_Last_Entity  (Spec_Id, Empty);
       end if;
 
+      Update_Use_Clause_Chain;
       End_Package_Scope (Spec_Id);
 
       --  All entities declared in body are not visible
@@ -915,11 +1010,11 @@ package body Sem_Ch7 is
       --  down the number of global symbols that do not neet public visibility
       --  as this has two beneficial effects:
       --    (1) It makes the compilation process more efficient.
-      --    (2) It gives the code generatormore freedom to optimize within each
+      --    (2) It gives the code generator more leeway to optimize within each
       --        unit, especially subprograms.
 
-      --  This is done only for top level library packages or child units as
-      --  the algorithm does a top down traversal of the package body.
+      --  This is done only for top-level library packages or child units as
+      --  the algorithm does a top-down traversal of the package body.
 
       if (Scope (Spec_Id) = Standard_Standard or else Is_Child_Unit (Spec_Id))
         and then not Is_Generic_Unit (Spec_Id)
@@ -1049,14 +1144,12 @@ package body Sem_Ch7 is
          end if;
       end if;
 
+      --  Set Body_Required indication on the compilation unit node
+
       if Is_Comp_Unit then
-
-         --  Set Body_Required indication on the compilation unit node, and
-         --  determine whether elaboration warnings may be meaningful on it.
-
          Set_Body_Required (Parent (N), Body_Required);
 
-         if not Body_Required then
+         if Legacy_Elaboration_Checks and not Body_Required then
             Set_Suppress_Elaboration_Warnings (Id);
          end if;
       end if;
@@ -1340,7 +1433,7 @@ package body Sem_Ch7 is
          Gen_Par :=
            Generic_Parent (Specification (Unit_Declaration_Node (Inst_Par)));
          while Present (Gen_Par) and then Is_Child_Unit (Gen_Par) loop
-            Inst_Node := Get_Package_Instantiation_Node (Inst_Par);
+            Inst_Node := Get_Unit_Instantiation_Node (Inst_Par);
 
             if Nkind_In (Inst_Node, N_Package_Instantiation,
                                     N_Formal_Package_Declaration)
@@ -1441,11 +1534,14 @@ package body Sem_Ch7 is
 
          --  Check on incomplete types
 
-         --  AI05-0213: A formal incomplete type has no completion
+         --  AI05-0213: A formal incomplete type has no completion, and neither
+         --  does the corresponding subtype in an instance.
 
-         if Ekind (E) = E_Incomplete_Type
+         if Is_Incomplete_Type (E)
            and then No (Full_View (E))
            and then not Is_Generic_Type (E)
+           and then not From_Limited_With (E)
+           and then not Is_Generic_Actual_Type (E)
          then
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
          end if;
@@ -1722,6 +1818,18 @@ package body Sem_Ch7 is
       then
          Unit_Requires_Body_Info (Id);
       end if;
+
+      --  Nested package specs that do not require bodies are not checked for
+      --  ineffective use clauses due to the possbility of subunits. This is
+      --  because at this stage it is impossible to tell whether there will be
+      --  a separate body.
+
+      if not Unit_Requires_Body (Id)
+        and then Is_Compilation_Unit (Id)
+        and then not Is_Private_Descendant (Id)
+      then
+         Update_Use_Clause_Chain;
+      end if;
    end Analyze_Package_Specification;
 
    --------------------------------------
@@ -1745,6 +1853,11 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
+
+      --  Set the SPARK mode from the current context
+
+      Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Id);
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
@@ -2570,7 +2683,8 @@ package body Sem_Ch7 is
          end if;
 
          if Priv_Is_Base_Type then
-            Set_Is_Controlled (Priv, Is_Controlled            (Full_Base));
+            Set_Is_Controlled_Active
+                              (Priv, Is_Controlled_Active     (Full_Base));
             Set_Finalize_Storage_Only
                               (Priv, Finalize_Storage_Only    (Full_Base));
             Set_Has_Controlled_Component

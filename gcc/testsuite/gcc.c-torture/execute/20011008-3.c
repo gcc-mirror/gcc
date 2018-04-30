@@ -1,3 +1,5 @@
+/* { dg-add-options stack_size } */
+
 extern void exit (int);
 extern void abort (void);
 

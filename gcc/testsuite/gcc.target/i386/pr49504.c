@@ -1,5 +1,5 @@
 /* PR target/49504 */
-/* { dg-do run { target { x32 } } } */
+/* { dg-do run { target x32 } } */
 /* { dg-options "-O" } */
 
 unsigned long long 

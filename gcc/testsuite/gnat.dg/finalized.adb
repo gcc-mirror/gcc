@@ -1,4 +1,5 @@
 -- { dg-do compile }
+-- { dg-options "-gnatws" }
 
 with Ada.Finalization; use Ada.Finalization;
 procedure finalized is

@@ -1,5 +1,5 @@
 ;; Machine description for Visium.
-;; Copyright (C) 2002-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2002-2018 Free Software Foundation, Inc.
 ;; Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
 ;; This file is part of GCC.
@@ -2145,7 +2145,7 @@
 ;; mantissa) to a quiet NaN (-1). This is acceptable when the data to be
 ;; moved is in fact a floating-point number, but to avoid nasty surprises
 ;; integers must in general be kept out of the floating-point registers.
-;; HARD_REGNO_MODE_OK thus only allows SFmode in these registers.
+;; TARGET_HARD_REGNO_MODE_OK thus only allows SFmode in these registers.
 ;; However, since FTOI and ITOF use floating-point registers for both their
 ;; inputs and outputs, to use these instructions integers must transiently
 ;; occupy such registers. To disguise this from the compiler, UNSPECs are
@@ -2962,13 +2962,13 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "nop			;generated nop"
+  "nop			;generated"
   [(set_attr "type" "nop")])
 
 (define_insn "hazard_nop"
   [(unspec_volatile [(const_int 0)] UNSPEC_NOP)]
   ""
-  "nop			;hazard avoidance nop"
+  "nop			;hazard avoidance"
   [(set_attr "type" "nop")])
 
 (define_insn "blockage"

@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2017
+@set copyrights-gfortran 1999-2018
 
 @include gcc-common.texi
 
@@ -180,7 +180,7 @@ Part I: Invoking GNU Fortran
 * Runtime::              Influencing runtime behavior with environment variables.
 
 Part II: Language Reference
-* Fortran 2003 and 2008 status::  Fortran 2003 and 2008 features supported by GNU Fortran.
+* Fortran standards status::      Fortran 2003, 2008 and 2018 features supported by GNU Fortran.
 * Compiler Characteristics::      User-visible implementation details.
 * Extensions::                    Language extensions implemented by GNU Fortran.
 * Mixed-Language Programming::    Interoperability with C
@@ -243,16 +243,15 @@ or alternative to, the Unix @command{f95} command;
 @section About GNU Fortran
 
 The GNU Fortran compiler supports the Fortran 77, 90 and 95 standards
-completely, parts of the Fortran 2003 and Fortran 2008 standards, and
+completely, parts of the Fortran 2003, 2008 and 2018 standards, and
 several vendor extensions.  The development goal is to provide the
 following features:
 
 @itemize @bullet
 @item
-Read a user's program,
-stored in a file and containing instructions written
-in Fortran 77, Fortran 90, Fortran 95, Fortran 2003 or Fortran 2008.
-This file contains @dfn{source code}.
+Read a user's program, stored in a file and containing instructions
+written in Fortran 77, Fortran 90, Fortran 95, Fortran 2003, Fortran
+2008 or Fortran 2018.  This file contains @dfn{source code}.
 
 @item
 Translate the user's program into instructions a computer
@@ -504,10 +503,11 @@ G77 can be compiled with GNU Fortran, although there are a few minor known
 regressions.
 
 The primary work remaining to be done on GNU Fortran falls into three
-categories: bug fixing (primarily regarding the treatment of invalid code
-and providing useful error messages), improving the compiler optimizations
-and the performance of compiled code, and extending the compiler to support
-future standards---in particular, Fortran 2003 and Fortran 2008.
+categories: bug fixing (primarily regarding the treatment of invalid
+code and providing useful error messages), improving the compiler
+optimizations and the performance of compiled code, and extending the
+compiler to support future standards---in particular, Fortran 2003,
+Fortran 2008 and Fortran 2018.
 
 
 @c ---------------------------------------------------------------------
@@ -527,13 +527,14 @@ ISO/IEC 1539:1997 (Fortran 95).  As such, it can also compile essentially all
 standard-compliant Fortran 90 and Fortran 77 programs.   It also supports
 the ISO/IEC TR-15581 enhancements to allocatable arrays.
 
-GNU Fortran also have a partial support for ISO/IEC 1539-1:2004 (Fortran
-2003), ISO/IEC 1539-1:2010 (Fortran 2008), the Technical Specification
-@code{Further Interoperability of Fortran with C} (ISO/IEC TS 29113:2012).
-Full support of those standards and future Fortran standards is planned.
-The current status of the support is can be found in the
-@ref{Fortran 2003 status}, @ref{Fortran 2008 status}, @ref{TS 29113 status}
-and @ref{TS 18508 status} sections of the documentation.
+GNU Fortran also have a partial support for ISO/IEC 1539-1:2004
+(Fortran 2003), ISO/IEC 1539-1:2010 (Fortran 2008), the Technical
+Specification @code{Further Interoperability of Fortran with C}
+(ISO/IEC TS 29113:2012).  Full support of those standards and future
+Fortran standards is planned.  The current status of the support is
+can be found in the @ref{Fortran 2003 status}, @ref{Fortran 2008
+status}, @ref{TS 29113 status}, @ref{TS 18508 status} and @ref{Fortran
+2018 status} sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
 (version 4.0 and most of the features of the 4.5 version,
@@ -600,7 +601,6 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_UNBUFFERED_PRECONNECTED:: Do not buffer I/O for preconnected units.
 * GFORTRAN_SHOW_LOCUS::  Show location for runtime errors
 * GFORTRAN_OPTIONAL_PLUS:: Print leading + where permitted
-* GFORTRAN_DEFAULT_RECL:: Default record length for new files
 * GFORTRAN_LIST_SEPARATOR::  Separator for list output
 * GFORTRAN_CONVERT_UNIT::  Set endianness for unformatted I/O
 * GFORTRAN_ERROR_BACKTRACE:: Show backtrace on run-time errors
@@ -682,14 +682,6 @@ a plus sign is printed
 where permitted by the Fortran standard.  If the first letter
 is @samp{n}, @samp{N} or @samp{0}, a plus sign is not printed
 in most cases.  Default is not to print plus signs.
-
-@node GFORTRAN_DEFAULT_RECL
-@section @env{GFORTRAN_DEFAULT_RECL}---Default record length for new files
-
-This environment variable specifies the default record length, in
-bytes, for files which are opened without a @code{RECL} tag in the
-@code{OPEN} statement.  This must be a positive integer.  The
-default value is 1073741824 bytes (1 GB).
 
 @node GFORTRAN_LIST_SEPARATOR
 @section @env{GFORTRAN_LIST_SEPARATOR}---Separator for list output
@@ -792,17 +784,18 @@ compile option was used.
 @end tex
 
 @c ---------------------------------------------------------------------
-@c Fortran 2003 and 2008 Status
+@c Fortran standards status
 @c ---------------------------------------------------------------------
 
-@node Fortran 2003 and 2008 status
-@chapter Fortran 2003 and 2008 Status
+@node Fortran standards status
+@chapter Fortran standards status
 
 @menu
 * Fortran 2003 status::
 * Fortran 2008 status::
 * TS 29113 status::
 * TS 18508 status::
+* Fortran 2018 status::
 @end menu
 
 @node Fortran 2003 status
@@ -1154,6 +1147,27 @@ polymorphic components.
 @end itemize
 
 
+@node Fortran 2018 status
+@section Status of Fortran 2018 support
+
+So far very little work has been done to support Fortran 2018.
+
+@itemize
+@item ERROR STOP in a PURE procedure
+An @code{ERROR STOP} statement is permitted in a @code{PURE}
+procedure.
+
+@item IMPLICIT NONE with a spec-list
+Support the @code{IMPLICIT NONE} statement with an
+@code{implicit-none-spec-list}.
+
+@item Behavior of INQUIRE with the RECL= specifier
+
+The behavior of the @code{INQUIRE} statement with the @code{RECL=}
+specifier now conforms to Fortran 2018.
+
+@end itemize
+
 @c ---------------------------------------------------------------------
 @c Compiler Characteristics
 @c ---------------------------------------------------------------------
@@ -1172,6 +1186,7 @@ might in some way or another become visible to the programmer.
 * Data consistency and durability::
 * Files opened without an explicit ACTION= specifier::
 * File operations on symbolic links::
+* File format of unformatted sequential files::
 @end menu
 
 
@@ -1402,7 +1417,65 @@ to be deleted, not its target.
 
 @end itemize
 
+@node File format of unformatted sequential files
+@section File format of unformatted sequential files
+@cindex file, unformatted sequential
+@cindex unformatted sequential
+@cindex sequential, unformatted
+@cindex record marker
+@cindex subrecord
 
+Unformatted sequential files are stored as logical records using
+record markers.  Each logical record consists of one of more
+subrecords.
+
+Each subrecord consists of a leading record marker, the data written
+by the user program, and a trailing record marker.  The record markers
+are four-byte integers by default, and eight-byte integers if the
+@option{-fmax-subrecord-length=8} option (which exists for backwards
+compability only) is in effect.
+
+The representation of the record markers is that of unformatted files
+given with the @option{-fconvert} option, the @xref{CONVERT specifier}
+on the open statement or the @xref{GFORTRAN_CONVERT_UNIT} environment
+variable.
+
+The maximum number of bytes of user data in a subrecord is 2147483639
+(2 GiB - 9) for a four-byte record marker.  This limit can be lowered
+with the @option{-fmax-subrecord-length} option, altough this is
+rarely useful. If the length of a logical record exceeds this limit,
+the data is distributed among several subrecords.
+
+The absolute of the number stored in the record markers is the number
+of bytes of user data in the corresponding subrecord.  If the leading
+record marker of a subrecord contains a negative number, another
+subrecord follows the current one.  If the trailing record marker
+contains a negative number, then there is a preceding subrecord.
+
+In the most simple case, with only one subrecord per logical record,
+both record markers contain the number of bytes of user data in the
+record,
+
+The format for unformatted sequential data can be duplicated using
+unformatted stream, as shown in the example program for an unformatted
+record containing a single subrecord:
+
+@smallexample
+program main
+  use iso_fortran_env, only: int32
+  implicit none
+  integer(int32) :: i 
+  real, dimension(10) :: a, b
+  call random_number(a)
+  open (10,file='test.dat',form='unformatted',access='stream')
+  inquire (iolength=i) a
+  write (10) i, a, i
+  close (10)
+  open (10,file='test.dat',form='unformatted')
+  read (10) b
+  if (all (a == b)) print *,'success!'
+end program main
+@end smallexample
 
 @c ---------------------------------------------------------------------
 @c Extensions
@@ -1432,18 +1505,19 @@ extensions.
 @section Extensions implemented in GNU Fortran
 @cindex extensions, implemented
 
-GNU Fortran implements a number of extensions over standard
-Fortran.  This chapter contains information on their syntax and
-meaning.  There are currently two categories of GNU Fortran
-extensions, those that provide functionality beyond that provided
-by any standard, and those that are supported by GNU Fortran
-purely for backward compatibility with legacy compilers.  By default,
-@option{-std=gnu} allows the compiler to accept both types of
-extensions, but to warn about the use of the latter.  Specifying
-either @option{-std=f95}, @option{-std=f2003} or @option{-std=f2008}
-disables both types of extensions, and @option{-std=legacy} allows both
-without warning.  The special compile flag @option{-fdec} enables additional
-compatibility extensions along with those enabled by @option{-std=legacy}.
+GNU Fortran implements a number of extensions over standard Fortran.
+This chapter contains information on their syntax and meaning.  There
+are currently two categories of GNU Fortran extensions, those that
+provide functionality beyond that provided by any standard, and those
+that are supported by GNU Fortran purely for backward compatibility
+with legacy compilers.  By default, @option{-std=gnu} allows the
+compiler to accept both types of extensions, but to warn about the use
+of the latter.  Specifying either @option{-std=f95},
+@option{-std=f2003}, @option{-std=f2008}, or @option{-std=f2018}
+disables both types of extensions, and @option{-std=legacy} allows
+both without warning.  The special compile flag @option{-fdec} enables
+additional compatibility extensions along with those enabled by
+@option{-std=legacy}.
 
 @menu
 * Old-style kind specifications::
@@ -2219,6 +2293,20 @@ rules and exceptions:
 @itemize @bullet
 @item Structures act like derived types with the @code{SEQUENCE} attribute.
 Otherwise they may contain no specifiers.
+
+@item Structures may contain a special field with the name @code{%FILL}.
+This will create an anonymous component which cannot be accessed but occupies
+space just as if a component of the same type was declared in its place, useful
+for alignment purposes.  As an example, the following structure will consist
+of at least sixteen bytes:
+
+@smallexample
+structure /padded/
+  character(4) start
+  character(8) %FILL
+  character(4) end
+end structure
+@end smallexample
 
 @item Structures may share names with other symbols. For example, the following
 is invalid for derived types, but valid for structures:
@@ -3359,6 +3447,14 @@ as this requires the new array descriptor.
 @node GNU Fortran Compiler Directives
 @section GNU Fortran Compiler Directives
 
+@menu
+* ATTRIBUTES directive::
+* UNROLL directive::
+@end menu
+
+@node ATTRIBUTES directive
+@subsection ATTRIBUTES directive
+
 The Fortran standard describes how a conforming program shall
 behave; however, the exact implementation is not standardized.  In order
 to allow the user to choose specific implementation details, compiler
@@ -3430,6 +3526,19 @@ start in the first column.
 For procedures, the compiler directives shall be placed into the body
 of the procedure; for variables and procedure pointers, they shall be in
 the same declaration part as the variable or procedure pointer.
+
+
+@node UNROLL directive
+@subsection UNROLL directive
+
+The syntax of the directive is
+
+@code{!GCC$ unroll N}
+
+You can use this directive to control how many times a loop should be unrolled.
+It must be placed immediately before a @code{DO} loop and applies only to the
+loop that follows.  N is an integer constant specifying the unrolling factor.
+The values of 0 and 1 block any unrolling of the loop.
 
 
 
@@ -3538,15 +3647,17 @@ used.
 @item @emph{option flag list}:
 @multitable @columnfractions .15 .70
 @item @var{option}[0] @tab Allowed standard; can give run-time errors
-if e.g. an input-output edit descriptor is invalid in a given standard.
-Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
-@code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4), @code{GFC_STD_F95}
-(8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU} (32),
-@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128),
-@code{GFC_STD_F2008_OBS} (256) and GFC_STD_F2008_TS (512). Default:
-@code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003
-| GFC_STD_F2008 | GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77
-| GFC_STD_GNU | GFC_STD_LEGACY}.
+if e.g. an input-output edit descriptor is invalid in a given
+standard.  Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
+@code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4),
+@code{GFC_STD_F95} (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU}
+(32), @code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128),
+@code{GFC_STD_F2008_OBS} (256), @code{GFC_STD_F2008_TS} (512),
+@code{GFC_STD_F2018} (1024), @code{GFC_STD_F2018_OBS} (2048), and
+@code{GFC_STD=F2018_DEL} (4096). Default: @code{GFC_STD_F95_OBS |
+GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003 | GFC_STD_F2008 |
+GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77 | GFC_STD_F2018 |
+GFC_STD_F2018_OBS | GFC_STD_F2018_DEL | GFC_STD_GNU | GFC_STD_LEGACY}.
 @item @var{option}[1] @tab Standard-warning flag; prints a warning to
 standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 @item @var{option}[2] @tab If non zero, enable pedantic checking.
@@ -3814,12 +3925,42 @@ front ends of GCC, e.g. to GCC's C99 compiler for @code{_Bool}
 or GCC's Ada compiler for @code{Boolean}.)
 
 For arguments of @code{CHARACTER} type, the character length is passed
-as hidden argument.  For deferred-length strings, the value is passed
-by reference, otherwise by value.  The character length has the type
-@code{INTEGER(kind=4)}.  Note with C binding, @code{CHARACTER(len=1)}
-result variables are returned according to the platform ABI and no
-hidden length argument is used for dummy arguments; with @code{VALUE},
-those variables are passed by value.
+as a hidden argument at the end of the argument list.  For
+deferred-length strings, the value is passed by reference, otherwise
+by value.  The character length has the C type @code{size_t} (or
+@code{INTEGER(kind=C_SIZE_T)} in Fortran).  Note that this is
+different to older versions of the GNU Fortran compiler, where the
+type of the hidden character length argument was a C @code{int}.  In
+order to retain compatibility with older versions, one can e.g. for
+the following Fortran procedure
+
+@smallexample
+subroutine fstrlen (s, a)
+   character(len=*) :: s
+   integer :: a
+   print*, len(s)
+end subroutine fstrlen
+@end smallexample
+
+define the corresponding C prototype as follows:
+
+@smallexample
+#if __GNUC__ > 7
+typedef size_t fortran_charlen_t;
+#else
+typedef int fortran_charlen_t;
+#endif
+
+void fstrlen_ (char*, int*, fortran_charlen_t);
+@end smallexample
+
+In order to avoid such compiler-specific details, for new code it is
+instead recommended to use the ISO_C_BINDING feature.
+
+Note with C binding, @code{CHARACTER(len=1)} result variables are
+returned according to the platform ABI and no hidden length argument
+is used for dummy arguments; with @code{VALUE}, those variables are
+passed by value.
 
 For @code{OPTIONAL} dummy arguments, an absent argument is denoted
 by a NULL pointer, except for scalar dummy arguments of type
@@ -4312,12 +4453,12 @@ is not used then.  On the contrary when
 @code{CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY} is specified, then the
 @var{token} needs to be registered by a previous call with regtype
 @code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} and either the memory specified
-in the @var{desc}'s data-ptr is registered or allocate when the data-ptr is
-NULL.
+in the @var{DESC}'s data-ptr is registered or allocate when the data-ptr is
+@code{NULL}.
 
 @item @emph{Syntax}:
 @code{void caf_register (size_t size, caf_register_t type, caf_token_t *token,
-gfc_descriptor_t *desc, int *stat, char *errmsg, int errmsg_len)}
+gfc_descriptor_t *desc, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4327,24 +4468,24 @@ allocated; for lock types and event types, the number of elements.
 @item @var{token} @tab intent(out) An opaque pointer identifying the coarray.
 @item @var{desc} @tab intent(inout) The (pseudo) array descriptor.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
-may be NULL
+may be @code{NULL}
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
+an error message; may be @code{NULL}
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
 @item @emph{NOTES}
-Nonalloatable coarrays have to be registered prior use from remote images.
+Nonallocatable coarrays have to be registered prior use from remote images.
 In order to guarantee this, they have to be registered before the main
 program. This can be achieved by creating constructor functions. That is what
-GCC does such that also nonallocatable coarrays the memory is allocated and no
-static memory is used.  The token permits to identify the coarray; to the
+GCC does such that also for nonallocatable coarrays the memory is allocated and
+no static memory is used.  The token permits to identify the coarray; to the
 processor, the token is a nonaliasing pointer. The library can, for instance,
 store the base address of the coarray in the token, some handle or a more
 complicated struct.  The library may also store the array descriptor
 @var{DESC} when its rank is non-zero.
 
-For lock types, the value shall only used for checking the allocation
+For lock types, the value shall only be used for checking the allocation
 status. Note that for critical blocks, the locking is only required on one
 image; in the locking statement, the processor shall always pass an
 image index of one for critical-block lock variables
@@ -4369,7 +4510,7 @@ during a call to @code{_gfortran_caf_register}.
 
 @item @emph{Syntax}:
 @code{void caf_deregister (caf_token_t *token, caf_deregister_t type,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4609,7 +4750,7 @@ remote image identified by the @var{image_index}.
 @item @emph{Syntax}:
 @code{void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
 gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind, int src_kind,
-bool may_require_tmp, bool dst_reallocatable, int *stat)}
+bool may_require_tmp, bool dst_reallocatable, int *stat, int dst_type)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4633,6 +4774,9 @@ is a full array or component ref.
 @item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
 operation, i.e., zero on success and non-zero on error.  When @code{NULL} and
 an error occurs, then an error message is printed and the program is terminated.
+@item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
+the destination is not an array, than the precise type, e.g. of a component in
+a derived type, is not known, but provided here.
 @end multitable
 
 @item @emph{NOTES}
@@ -4667,7 +4811,7 @@ identified by the @var{image_index}.
 @item @emph{Syntax}:
 @code{void _gfortran_caf_get_by_ref (caf_token_t token, int image_index,
 caf_reference_t *refs, gfc_descriptor_t *dst, int dst_kind, int src_kind,
-bool may_require_tmp, bool dst_reallocatable, int *stat)}
+bool may_require_tmp, bool dst_reallocatable, int *stat, int src_type)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4692,6 +4836,9 @@ array or a component is referenced.
 @item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
 operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
 error occurs, then an error message is printed and the program is terminated.
+@item @var{src_type} @tab intent(in)  Give the type of the source.  When the
+source is not an array, than the precise type, e.g. of a component in a
+derived type, is not known, but provided here.
 @end multitable
 
 @item @emph{NOTES}
@@ -4727,7 +4874,8 @@ identified by the @var{src_image_index} to a remote image identified by the
 @code{void _gfortran_caf_sendget_by_ref (caf_token_t dst_token,
 int dst_image_index, caf_reference_t *dst_refs,
 caf_token_t src_token, int src_image_index, caf_reference_t *src_refs,
-int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat, int *src_stat)}
+int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat,
+int *src_stat, int dst_type, int src_type)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4758,6 +4906,12 @@ program is terminated.
 the get-operation, i.e., zero on success and non-zero on error.  When
 @code{NULL} and an error occurs, then an error message is printed and the
 program is terminated.
+@item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
+the destination is not an array, than the precise type, e.g. of a component in
+a derived type, is not known, but provided here.
+@item @var{src_type} @tab intent(in)  Give the type of the source.  When the
+source is not an array, than the precise type, e.g. of a component in a
+derived type, is not known, but provided here.
 @end multitable
 
 @item @emph{NOTES}
@@ -4795,7 +4949,7 @@ which has already been locked by the same image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
-int *aquired_lock, int *stat, char *errmsg, int errmsg_len)}
+int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4830,7 +4984,7 @@ which is unlocked or has been locked by a different image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4862,7 +5016,7 @@ Increment the event count of the specified event variable.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_event_post (caf_token_t token, size_t index,
-int image_index, int *stat, char *errmsg, int errmsg_len)}
+int image_index, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4899,7 +5053,7 @@ amount and return.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_event_wait (caf_token_t token, size_t index,
-int until_count, int *stat, char *errmsg, int errmsg_len)}
+int until_count, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4977,7 +5131,7 @@ current team.  Additionally, it ensures that all pending data transfers of
 previous segment have completed.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, int errmsg_len)}
+@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5005,7 +5159,7 @@ transfers of previous segments have completed.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_sync_images (int count, int images[], int *stat,
-char *errmsg, int errmsg_len)}
+char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5033,7 +5187,7 @@ Acts as optimization barrier between different segments. It also ensures that
 all pending memory operations of this image have been completed.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, int errmsg_len)}
+@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5060,7 +5214,7 @@ function should terminate the program with the specified exit code.
 
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_error_stop (int32_t error)}
+@code{void _gfortran_caf_error_stop (int error)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5080,7 +5234,7 @@ Invoked for an @code{ERROR STOP} statement which has a string as argument.  The
 function should terminate the program with a nonzero-exit code.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_error_stop (const char *string, int32_t len)}
+@code{void _gfortran_caf_error_stop (const char *string, size_t len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5258,7 +5412,7 @@ be called collectively.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_broadcast (gfc_descriptor_t *a,
-int source_image, int *stat, char *errmsg, int errmsg_len)}
+int source_image, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5289,7 +5443,7 @@ strings.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_max (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5326,7 +5480,7 @@ strings.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_min (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5362,7 +5516,7 @@ specified image.  This function operates on numeric values only.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_sum (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5407,7 +5561,7 @@ string lengths shall be specified as hidden arguments;
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_reduce (gfc_descriptor_t *a,
 void * (*opr) (void *, void *), int opr_flags, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70

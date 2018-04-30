@@ -153,22 +153,22 @@ program main
         write (*,*) node%x
         if (.not.(     (cnt == 1 .and. node%x == 1.23)   &
                   .or. (cnt == 5 .and. node%x == 4.56))) then
-          call abort()
+          STOP 1
         end if
       type is (integer_node_type) 
         write (*,*) node%i
-        if (cnt /= 2 .or. node%i /= 42) call abort()
+        if (cnt /= 2 .or. node%i /= 42) STOP 2
       type is (node_type) 
         write (*,*) "Node with no data."
-        if (cnt /= 3) call abort()
+        if (cnt /= 3) STOP 3
       class default 
         Write (*,*) "Some other node type."
-        if (cnt /= 4) call abort()
+        if (cnt /= 4) STOP 4
     end select 
 
     node => next_node(node) 
   end do 
-  if (cnt /= 5) call abort()
+  if (cnt /= 5) STOP 5
   call destroy_list(list) 
   stop 
 end program main 

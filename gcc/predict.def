@@ -1,5 +1,5 @@
 /* Definitions for the branch prediction routines in the GNU compiler.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,7 +54,7 @@ DEF_PREDICTOR (PRED_UNCONDITIONAL, "unconditional jump", PROB_ALWAYS,
 /* Use number of loop iterations determined by # of iterations
    analysis to set probability.  We don't want to use Dempster-Shaffer
    theory here, as the predictions is exact.  */
-DEF_PREDICTOR (PRED_LOOP_ITERATIONS, "loop iterations", PROB_ALWAYS,
+DEF_PREDICTOR (PRED_LOOP_ITERATIONS, "loop iterations", PROB_UNINITIALIZED,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Assume that any given atomic operation has low contention,
@@ -71,11 +71,11 @@ DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY,
 
 /* Use number of loop iterations guessed by the contents of the loop.  */
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS_GUESSED, "guessed loop iterations",
-	       PROB_ALWAYS, PRED_FLAG_FIRST_MATCH)
+	       PROB_UNINITIALIZED, PRED_FLAG_FIRST_MATCH)
 
 /* Use number of loop iterations guessed by the contents of the loop.  */
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS_MAX, "guessed loop iterations",
-	       PROB_ALWAYS, PRED_FLAG_FIRST_MATCH)
+	       PROB_UNINITIALIZED, PRED_FLAG_FIRST_MATCH)
 
 /* Branch containing goto is probably not taken.  */
 DEF_PREDICTOR (PRED_CONTINUE, "continue", HITRATE (67), 0)
@@ -89,16 +89,16 @@ DEF_PREDICTOR (PRED_COLD_FUNCTION, "cold function call", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Edge causing loop to terminate is probably not taken.  */
-DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (85),
+DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (89),
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Same as LOOP_EXIT but for loops containing recursive call.  */
 DEF_PREDICTOR (PRED_LOOP_EXIT_WITH_RECURSION, "loop exit with recursion",
-	       HITRATE (72), PRED_FLAG_FIRST_MATCH)
+	       HITRATE (78), PRED_FLAG_FIRST_MATCH)
 
 /* Edge causing loop to terminate by computing value used by later
    conditional.  */
-DEF_PREDICTOR (PRED_LOOP_EXTRA_EXIT, "extra loop exit", HITRATE (83),
+DEF_PREDICTOR (PRED_LOOP_EXTRA_EXIT, "extra loop exit", HITRATE (67),
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Pointers are usually not NULL.  */
@@ -106,11 +106,11 @@ DEF_PREDICTOR (PRED_POINTER, "pointer", HITRATE (70), 0)
 DEF_PREDICTOR (PRED_TREE_POINTER, "pointer (on trees)", HITRATE (70), 0)
 
 /* NE is probable, EQ not etc...  */
-DEF_PREDICTOR (PRED_OPCODE_POSITIVE, "opcode values positive", HITRATE (64), 0)
+DEF_PREDICTOR (PRED_OPCODE_POSITIVE, "opcode values positive", HITRATE (59), 0)
 DEF_PREDICTOR (PRED_OPCODE_NONEQUAL, "opcode values nonequal", HITRATE (66), 0)
 DEF_PREDICTOR (PRED_FPOPCODE, "fp_opcode", HITRATE (90), 0)
 DEF_PREDICTOR (PRED_TREE_OPCODE_POSITIVE, "opcode values positive (on trees)",
-	       HITRATE (64), 0)
+	       HITRATE (59), 0)
 DEF_PREDICTOR (PRED_TREE_OPCODE_NONEQUAL, "opcode values nonequal (on trees)",
 	       HITRATE (66), 0)
 DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
@@ -118,50 +118,36 @@ DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 /* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (67), 0)
 
-/* PRED_CALL is not very reliable predictor and it turns out to be even
-   less reliable for indirect calls and polymorphic calls.  For spec2k6
-   the predictio nis slightly in the direction of taking the call.  */
-DEF_PREDICTOR (PRED_INDIR_CALL, "indirect call", HITRATE (86), 0)
-DEF_PREDICTOR (PRED_POLYMORPHIC_CALL, "polymorphic call", HITRATE (59), 0)
+/* Call predictors are for now ignored, lets leave the predictor
+   to measure its benefit.  */
+DEF_PREDICTOR (PRED_INDIR_CALL, "indirect call", PROB_EVEN, 0)
+DEF_PREDICTOR (PRED_POLYMORPHIC_CALL, "polymorphic call", PROB_EVEN, 0)
+DEF_PREDICTOR (PRED_RECURSIVE_CALL, "recursive call", PROB_EVEN, 0)
 
-/* Recursive calls are usually not taken or the function will recurse
-   indefinitely.  */
-DEF_PREDICTOR (PRED_RECURSIVE_CALL, "recursive call", HITRATE (75), 0)
+/* Branch causing function to terminate is probably not taken.  */
+DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (66),
+	       0)
 
-/* Branch causing function to terminate is probably not taken. 
-   FIXME: early return currently predicts code:
-   int foo (int a)
-   {
-      if (a)
-	bar();
-      else
-	bar2();
-   }
-   even though there is no return statement involved.  We probably want to track
-   this from FE or retire the predictor.  */
-DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (54), 0)
-
-/* Branch containing goto is probably not taken.
-   FIXME: Currently not used.  */
-DEF_PREDICTOR (PRED_GOTO, "goto", HITRATE (70), 0)
+/* Branch containing goto is probably not taken.  */
+DEF_PREDICTOR (PRED_GOTO, "goto", HITRATE (66), 0)
 
 /* Branch ending with return constant is probably not taken.  */
-DEF_PREDICTOR (PRED_CONST_RETURN, "const return", HITRATE (69), 0)
+DEF_PREDICTOR (PRED_CONST_RETURN, "const return", HITRATE (65), 0)
 
 /* Branch ending with return negative constant is probably not taken.  */
 DEF_PREDICTOR (PRED_NEGATIVE_RETURN, "negative return", HITRATE (98), 0)
 
 /* Branch ending with return; is probably not taken */
-DEF_PREDICTOR (PRED_NULL_RETURN, "null return", HITRATE (91), 0)
+DEF_PREDICTOR (PRED_NULL_RETURN, "null return", HITRATE (71), 0)
 
 /* Branches to compare induction variable to a loop bound is
    extremely likely.  */
 DEF_PREDICTOR (PRED_LOOP_IV_COMPARE_GUESS, "guess loop iv compare",
-	       HITRATE (98), 0)
+	       HITRATE (64), 0)
 
 /* Use number of loop iterations determined by # of iterations analysis
    to set probability of branches that compares IV to loop bound variable.  */
-DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_VERY_LIKELY,
+DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_UNINITIALIZED,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* In the following code
@@ -170,7 +156,7 @@ DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_VERY_LIKELY,
        for (loop2)
 	 body;
    guess that cond is unlikely.  */
-DEF_PREDICTOR (PRED_LOOP_GUARD, "loop guard", HITRATE (66), 0)
+DEF_PREDICTOR (PRED_LOOP_GUARD, "loop guard", HITRATE (73), 0)
 
 /* Same but for loops containing recursion.  */
 DEF_PREDICTOR (PRED_LOOP_GUARD_WITH_RECURSION, "loop guard with recursion",
@@ -194,12 +180,13 @@ DEF_PREDICTOR (PRED_FORTRAN_OVERFLOW, "Fortran overflow", PROB_ALWAYS,
    of memory.  This predictor only occurs when the user explicitly asked
    for a return status.  By default, the code aborts,
    which is handled via PRED_NORETURN.  */
-DEF_PREDICTOR (PRED_FORTRAN_FAIL_ALLOC, "Fortran fail alloc", PROB_VERY_LIKELY, 0)
+DEF_PREDICTOR (PRED_FORTRAN_FAIL_ALLOC, "Fortran fail alloc",
+	       PROB_VERY_LIKELY, 0)
 
 /* Predictor is used for an allocation of an already allocated memory or
    deallocating an already deallocated allocatable.  */
-DEF_PREDICTOR (PRED_FORTRAN_REALLOC, \
-	       "Fortran repeated allocation/deallocation", PROB_LIKELY, 0)
+DEF_PREDICTOR (PRED_FORTRAN_REALLOC, "Fortran repeated allocation/deallocation",
+	       PROB_LIKELY, 0)
 
 /* Branch leading to an I/O failure status are unlikely.  This predictor is
    used for I/O failures such as for invalid unit numbers.  This predictor

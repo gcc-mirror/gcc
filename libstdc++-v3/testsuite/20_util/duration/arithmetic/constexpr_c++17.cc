@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do compile { target c++1z } }
+// { dg-do compile { target c++17 } }
 
-// Copyright (C) 2011-2017 Free Software Foundation, Inc.
+// Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,13 @@
 
 #include <chrono>
 #include <testsuite_common_types.h>
+
+#ifndef __cpp_lib_chrono
+# error "Feature-test macro for constexpr <chrono> missing"
+#elif __cpp_lib_chrono != 201611
+# error "Feature-test macro for constexpr <chrono> has wrong value"
+#endif
+
 constexpr auto test_operators()
 {
   std::chrono::nanoseconds d1 { 1 };

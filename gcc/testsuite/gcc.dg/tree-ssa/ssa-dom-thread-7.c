@@ -3,7 +3,7 @@
 /* { dg-final { scan-tree-dump "Jumps threaded: 16"  "thread1" } } */
 /* { dg-final { scan-tree-dump "Jumps threaded: 9" "thread2" } } */
 /* { dg-final { scan-tree-dump "Jumps threaded: 3" "thread3" } } */
-/* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom2" } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 1"  "dom2" } } */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom3" } } */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "vrp2" } } */
 

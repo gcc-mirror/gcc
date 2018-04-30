@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix
+// +build aix openbsd
 
 package os
 
@@ -12,18 +12,19 @@ package os
 var initWd, errWd = Getwd()
 
 func executable() (string, error) {
-	var err error
 	var exePath string
 	if len(Args) == 0 || Args[0] == "" {
 		return "", ErrNotExist
 	}
-	// Args[0] is an absolute path : this is the executable
 	if IsPathSeparator(Args[0][0]) {
+		// Args[0] is an absolute path, so it is the executable.
+		// Note that we only need to worry about Unix paths here.
 		exePath = Args[0]
 	} else {
 		for i := 1; i < len(Args[0]); i++ {
-			// Args[0] is a relative path : append current directory
 			if IsPathSeparator(Args[0][i]) {
+				// Args[0] is a relative path: prepend the
+				// initial working directory.
 				if errWd != nil {
 					return "", errWd
 				}
@@ -33,18 +34,15 @@ func executable() (string, error) {
 		}
 	}
 	if exePath != "" {
-		err = isExecutable(exePath)
-		if err == nil {
-			return exePath, nil
+		if err := isExecutable(exePath); err != nil {
+			return "", err
 		}
-		// File does not exist or is not executable,
-		// this is an unexpected situation !
-		return "", err
+		return exePath, nil
 	}
-	// Search for executable in $PATH
+	// Search for executable in $PATH.
 	for _, dir := range splitPathList(Getenv("PATH")) {
 		if len(dir) == 0 {
-			continue
+			dir = "."
 		}
 		if !IsPathSeparator(dir[0]) {
 			if errWd != nil {
@@ -53,12 +51,11 @@ func executable() (string, error) {
 			dir = initWd + string(PathSeparator) + dir
 		}
 		exePath = dir + string(PathSeparator) + Args[0]
-		err = isExecutable(exePath)
-		if err == nil {
+		switch isExecutable(exePath) {
+		case nil:
 			return exePath, nil
-		}
-		if err == ErrPermission {
-			return "", err
+		case ErrPermission:
+			return "", ErrPermission
 		}
 	}
 	return "", ErrNotExist
@@ -74,15 +71,18 @@ func isExecutable(path string) error {
 	if !mode.IsRegular() {
 		return ErrPermission
 	}
-	if (mode & 0111) != 0 {
-		return nil
+	if (mode & 0111) == 0 {
+		return ErrPermission
 	}
-	return ErrPermission
+	return nil
 }
 
 // splitPathList splits a path list.
 // This is based on genSplit from strings/strings.go
 func splitPathList(pathList string) []string {
+	if pathList == "" {
+		return nil
+	}
 	n := 1
 	for i := 0; i < len(pathList); i++ {
 		if pathList[i] == PathListSeparator {

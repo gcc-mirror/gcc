@@ -1,6 +1,6 @@
 // std::list utilities implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,10 +52,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     void
     _List_node_base::swap(_List_node_base& __x,
 			  _List_node_base& __y) _GLIBCXX_USE_NOEXCEPT
@@ -141,7 +141,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       __prev_node->_M_next = __next_node;
       __next_node->_M_prev = __prev_node;
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

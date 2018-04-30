@@ -74,13 +74,13 @@ merge() {
       if ! cmp -s ${old} ${new}; then
         echo "merge.sh: $name: skipping: exists in old and new git, but not in libgo"
       fi
-      continue
+      return
     fi
     if cmp -s ${old} ${libgo}; then
       # The libgo file is unchanged from the old version.
       if cmp -s ${new} ${libgo}; then
         # File is unchanged from old to new version.
-        continue
+	return
       fi
       # Update file in libgo.
       echo "merge.sh: $name: updating"
@@ -128,7 +128,7 @@ echo ${rev} > VERSION
 (cd ${NEWDIR}/src && find . -name '*.go' -print) | while read f; do
   skip=false
   case "$f" in
-  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/*)
+  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/* | ./cmd/internal/objabi/* | ./cmd/internal/buildid/*)
     ;;
   ./cmd/*)
     skip=true
@@ -155,7 +155,7 @@ done
   ./cmd/*)
     skip=true
     ;;
-  ./runtime/race/*)
+  ./runtime/race/* | ./runtime/cgo/*)
     skip=true
     ;;
   esac
@@ -182,10 +182,32 @@ done
   done
 done
 
+(cd ${NEWDIR}/misc/cgo && find . -type f -print) | while read f; do
+  oldfile=${OLDDIR}/misc/cgo/$f
+  newfile=${NEWDIR}/misc/cgo/$f
+  libgofile=misc/cgo/$f
+  merge $f ${oldfile} ${newfile} ${libgofile}
+done
+
 (cd ${OLDDIR}/src && find . -name '*.go' -print) | while read f; do
   oldfile=${OLDDIR}/src/$f
   newfile=${NEWDIR}/src/$f
   libgofile=go/$f
+  if test -f ${newfile}; then
+    continue
+  fi
+  if ! test -f ${libgofile}; then
+    continue
+  fi
+  echo "merge.sh: ${libgofile}: REMOVED"
+  rm -f ${libgofile}
+  git rm ${libgofile}
+done
+
+(cd ${OLDDIR}/misc/cgo && find . -type f -print) | while read f; do
+  oldfile=${OLDDIR}/misc/cgo/$f
+  newfile=${NEWDIR}/misc/cgo/$f
+  libgofile=misc/cgo/$f
   if test -f ${newfile}; then
     continue
   fi

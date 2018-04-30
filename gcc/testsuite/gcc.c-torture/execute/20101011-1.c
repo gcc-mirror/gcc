@@ -1,5 +1,6 @@
 /* { dg-options "-fnon-call-exceptions" } */
 /* With -fnon-call-exceptions 0 / 0 should not be eliminated.  */
+/* { dg-additional-options "-DSIGNAL_SUPPRESS" { target { ! signal } } } */
 
 #ifdef SIGNAL_SUPPRESS
 # define DO_TEST 0

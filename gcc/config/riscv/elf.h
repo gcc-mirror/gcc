@@ -1,5 +1,5 @@
 /* Target macros for riscv*-elf targets.
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,12 +19,13 @@ along with GCC; see the file COPYING3.  If not see
 
 #define LINK_SPEC "\
 -melf" XLEN_SPEC "lriscv \
+%{mno-relax:--no-relax} \
 %{shared}"
 
 /* Link against Newlib libraries, because the ELF backend assumes Newlib.
    Handle the circular dependence between libc and libgloss. */
 #undef  LIB_SPEC
-#define LIB_SPEC "--start-group -lc -lgloss --end-group"
+#define LIB_SPEC "--start-group -lc %{!specs=nosys.specs:-lgloss} --end-group"
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0%O%s crtbegin%O%s"

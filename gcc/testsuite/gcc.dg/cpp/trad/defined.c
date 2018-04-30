@@ -16,7 +16,7 @@
 #error REGPARMS should be defined
 #endif
 
-#define defined			/* { dg-error "defined" } */
+#define defined			/* { dg-error "-:defined" } */
 
 /* No diagnostics, though you could argue there should be.  */
 #if defined defined

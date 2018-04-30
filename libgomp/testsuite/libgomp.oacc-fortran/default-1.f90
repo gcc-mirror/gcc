@@ -15,7 +15,7 @@ program main
     a = a + b
   !$acc end parallel
 
-  if (a .ne. 3.0) call abort
+  if (a .ne. 3.0) STOP 1
 
   !$acc kernels copy (a) create (b) default (none)
     b = a
@@ -23,7 +23,7 @@ program main
     a = a + b
   !$acc end kernels
 
-  if (a .ne. 4.0) call abort
+  if (a .ne. 4.0) STOP 2
 
   !$acc parallel default (none) copy (a) create (b)
     b = a
@@ -31,7 +31,7 @@ program main
     a = a + b
   !$acc end parallel
 
-  if (a .ne. 5.0) call abort
+  if (a .ne. 5.0) STOP 3
 
   !$acc parallel default (none) copy (a)
     c = a
@@ -39,7 +39,7 @@ program main
     a = a + c
   !$acc end parallel
 
-  if (a .ne. 6.0) call abort
+  if (a .ne. 6.0) STOP 4
 
   !$acc data copy (a)
   !$acc parallel default (none)
@@ -49,7 +49,7 @@ program main
   !$acc end parallel
   !$acc end data
 
-  if (a .ne. 7.0) call abort
+  if (a .ne. 7.0) STOP 5
 
   ! The default (present) clause doesn't affect scalar variables; these will
   ! still get an implicit copy clause added.
@@ -59,6 +59,6 @@ program main
     a = a + c
   !$acc end kernels
 
-  if (a .ne. 8.0) call abort
+  if (a .ne. 8.0) STOP 6
 
 end program main

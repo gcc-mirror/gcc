@@ -1,5 +1,5 @@
 /* Header file for loop interation estimates.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,13 +45,13 @@ extern HOST_WIDE_INT estimated_stmt_executions_int (struct loop *);
 extern bool max_stmt_executions (struct loop *, widest_int *);
 extern bool likely_max_stmt_executions (struct loop *, widest_int *);
 extern bool estimated_stmt_executions (struct loop *, widest_int *);
-extern void estimate_numbers_of_iterations (void);
+extern void estimate_numbers_of_iterations (function *);
+extern void estimate_numbers_of_iterations (struct loop *);
 extern bool stmt_dominates_stmt_p (gimple *, gimple *);
 extern bool nowrap_type_p (tree);
 extern bool scev_probably_wraps_p (tree, tree, tree, gimple *,
 				   struct loop *, bool);
-extern void free_loop_control_ivs (struct loop *);
-extern void free_numbers_of_iterations_estimates_loop (struct loop *);
+extern void free_numbers_of_iterations_estimates (struct loop *);
 extern void free_numbers_of_iterations_estimates (function *);
 extern void substitute_in_loop_info (struct loop *, tree, tree);
 

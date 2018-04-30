@@ -1,5 +1,5 @@
 /* Subroutines common to both C and C++ pretty-printers.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -24,9 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pretty-print.h"
 #include "diagnostic.h"
 #include "stor-layout.h"
+#include "stringpool.h"
 #include "attribs.h"
 #include "intl.h"
 #include "tree-pretty-print.h"
+#include "selftest.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -520,6 +522,11 @@ pp_c_parameter_type_list (c_pretty_printer *pp, tree t)
 	  else
 	    pp->abstract_declarator (TREE_VALUE (parms));
 	}
+      if (!first && !parms)
+	{
+	  pp_separate_with (pp, ',');
+	  pp_c_ws_string (pp, "...");
+	}
     }
   pp_c_right_paren (pp);
 }
@@ -910,9 +917,9 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
     pp_unsigned_wide_integer (pp, tree_to_uhwi (i));
   else
     {
-      wide_int wi = i;
+      wide_int wi = wi::to_wide (i);
 
-      if (wi::lt_p (i, 0, TYPE_SIGN (TREE_TYPE (i))))
+      if (wi::lt_p (wi::to_wide (i), 0, TYPE_SIGN (TREE_TYPE (i))))
 	{
 	  pp_minus (pp);
 	  wi = -wi;
@@ -1373,8 +1380,9 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
     case VECTOR_TYPE:
       if (TREE_CODE (e) == VECTOR_CST)
 	{
-	  unsigned i;
-	  for (i = 0; i < VECTOR_CST_NELTS (e); ++i)
+	  /* We don't create variable-length VECTOR_CSTs.  */
+	  unsigned int nunits = VECTOR_CST_NELTS (e).to_constant ();
+	  for (unsigned int i = 0; i < nunits; ++i)
 	    {
 	      if (i > 0)
 		pp_separate_with (pp, ',');
@@ -1476,17 +1484,6 @@ c_pretty_printer::postfix_expression (tree e)
       pp_c_right_bracket (this);
       break;
 
-    case ARRAY_NOTATION_REF:
-      postfix_expression (ARRAY_NOTATION_ARRAY (e));
-      pp_c_left_bracket (this);
-      expression (ARRAY_NOTATION_START (e));
-      pp_colon (this);
-      expression (ARRAY_NOTATION_LENGTH (e));
-      pp_colon (this);
-      expression (ARRAY_NOTATION_STRIDE (e));
-      pp_c_right_bracket (this);
-      break;
-      
     case CALL_EXPR:
       {
 	call_expr_arg_iterator iter;
@@ -1813,7 +1810,8 @@ pp_c_cast_expression (c_pretty_printer *pp, tree e)
     case FIX_TRUNC_EXPR:
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
-      pp_c_type_cast (pp, TREE_TYPE (e));
+      if (!location_wrapper_p (e))
+	pp_c_type_cast (pp, TREE_TYPE (e));
       pp_c_cast_expression (pp, TREE_OPERAND (e, 0));
       break;
 
@@ -1843,7 +1841,7 @@ c_pretty_printer::multiplicative_expression (tree e)
       pp_c_whitespace (this);
       if (code == MULT_EXPR)
 	pp_c_star (this);
-      else if (code == TRUNC_DIV_EXPR)
+      else if (code != TRUNC_MOD_EXPR)
 	pp_slash (this);
       else
 	pp_modulo (this);
@@ -1870,6 +1868,7 @@ pp_c_additive_expression (c_pretty_printer *pp, tree e)
     {
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       pp_c_additive_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
@@ -2185,7 +2184,6 @@ c_pretty_printer::expression (tree e)
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
     case ARRAY_REF:
-    case ARRAY_NOTATION_REF:
     case CALL_EXPR:
     case COMPONENT_REF:
     case BIT_FIELD_REF:
@@ -2286,6 +2284,7 @@ c_pretty_printer::expression (tree e)
 
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       pp_c_additive_expression (this, e);
       break;
@@ -2403,3 +2402,65 @@ pp_c_tree_decl_identifier (c_pretty_printer *pp, tree t)
 
   pp_c_identifier (pp, name);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for pretty-printing trees.  */
+
+/* Verify that EXPR printed by c_pretty_printer is EXPECTED, using
+   LOC as the effective location for any failures.  */
+
+static void
+assert_c_pretty_printer_output (const location &loc, const char *expected,
+				tree expr)
+{
+  c_pretty_printer pp;
+  pp.expression (expr);
+  ASSERT_STREQ_AT (loc, expected, pp_formatted_text (&pp));
+}
+
+/* Helper function for calling assert_c_pretty_printer_output.
+   This is to avoid having to write SELFTEST_LOCATION.  */
+
+#define ASSERT_C_PRETTY_PRINTER_OUTPUT(EXPECTED, EXPR) \
+  SELFTEST_BEGIN_STMT						\
+    assert_c_pretty_printer_output ((SELFTEST_LOCATION),	\
+				    (EXPECTED),		\
+				    (EXPR));			\
+  SELFTEST_END_STMT
+
+/* Verify that location wrappers don't show up in pretty-printed output.  */
+
+static void
+test_location_wrappers ()
+{
+  /* VAR_DECL.  */
+  tree id = get_identifier ("foo");
+  tree decl = build_decl (UNKNOWN_LOCATION, VAR_DECL, id,
+			  integer_type_node);
+  tree wrapped_decl = maybe_wrap_with_location (decl, BUILTINS_LOCATION);
+  ASSERT_NE (wrapped_decl, decl);
+  ASSERT_C_PRETTY_PRINTER_OUTPUT ("foo", decl);
+  ASSERT_C_PRETTY_PRINTER_OUTPUT ("foo", wrapped_decl);
+
+  /* INTEGER_CST.  */
+  tree int_cst = build_int_cst (integer_type_node, 42);
+  tree wrapped_cst = maybe_wrap_with_location (int_cst, BUILTINS_LOCATION);
+  ASSERT_NE (wrapped_cst, int_cst);
+  ASSERT_C_PRETTY_PRINTER_OUTPUT ("42", int_cst);
+  ASSERT_C_PRETTY_PRINTER_OUTPUT ("42", wrapped_cst);
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+c_pretty_print_c_tests ()
+{
+  test_location_wrappers ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

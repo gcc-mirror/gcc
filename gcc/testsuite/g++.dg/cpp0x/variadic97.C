@@ -21,7 +21,7 @@ template<typename _Functor, typename... _Bound_args>
 
 template<typename _Functor, typename _Arg>
   _Bind<_Functor(_Arg)>
-  bind(_Functor, _Arg) { }
+  bind(_Functor, _Arg) { return _Bind<_Functor(_Arg)>(); }
 
 struct State
 {

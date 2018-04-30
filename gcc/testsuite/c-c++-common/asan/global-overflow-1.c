@@ -23,6 +23,6 @@ int main() {
 }
 
 /* { dg-output "READ of size 1 at 0x\[0-9a-f\]+ thread T0.*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ +(in _*main (\[^\n\r]*global-overflow-1.c:20|\[^\n\r]*:0)|\[(\])\[^\n\r]*(\n|\r\n|\r).*" } */
+/* { dg-output "    #0 0x\[0-9a-f\]+ +(in _*main (\[^\n\r]*global-overflow-1.c:20|\[^\n\r]*:0|\[^\n\r]*\\+0x\[0-9a-z\]*)|\[(\])\[^\n\r]*(\n|\r\n|\r).*" } */
 /* { dg-output "0x\[0-9a-f\]+ is located 0 bytes to the right of global variable" } */
 /* { dg-output ".*YYY\[^\n\r]* of size 10\[^\n\r]*(\n|\r\n|\r)" } */

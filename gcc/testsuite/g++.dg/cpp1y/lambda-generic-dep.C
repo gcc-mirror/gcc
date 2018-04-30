@@ -27,7 +27,7 @@ struct S {
 
 int main()
 {
-  auto f = [] <typename T> (T const& s) mutable {	// { dg-warning "does not support lambda templates" }
+  auto f = [] <typename T> (T const& s) mutable {	// { dg-warning "lambda templates are only available with" "" { target c++17_down } }
     typename T::N x;
     return x.test ();
   };

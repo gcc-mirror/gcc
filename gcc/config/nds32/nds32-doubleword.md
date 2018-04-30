@@ -1,5 +1,5 @@
 ;; DImode/DFmode patterns description of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -46,144 +46,95 @@
 
 
 (define_insn "move_<mode>"
-  [(set (match_operand:DIDF 0 "nonimmediate_operand" "=r, r, r, m")
-	(match_operand:DIDF 1 "general_operand"      " r, i, m, r"))]
-  ""
+  [(set (match_operand:DIDF 0 "nonimmediate_operand" "=r, r,  r, r, Da, m, f, Q, f, *r, *f")
+	(match_operand:DIDF 1 "general_operand"      " r, i, Da, m,  r, r, Q, f, f, *f, *r"))]
+  "register_operand(operands[0], <MODE>mode)
+   || register_operand(operands[1], <MODE>mode)"
 {
-  rtx addr;
-  rtx otherops[5];
-
   switch (which_alternative)
     {
     case 0:
       return "movd44\t%0, %1";
-
     case 1:
       /* reg <- const_int, we ask gcc to split instruction.  */
       return "#";
-
     case 2:
-      /* Refer to nds32_legitimate_address_p() in nds32.c,
-         we only allow "reg", "symbol_ref", "const", and "reg + const_int"
-         as address rtx for DImode/DFmode memory access.  */
-      addr = XEXP (operands[1], 0);
-
-      otherops[0] = gen_rtx_REG (SImode, REGNO (operands[0]));
-      otherops[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
-      otherops[2] = addr;
-
-      if (REG_P (addr))
-	{
-	  /* (reg) <- (mem (reg)) */
-	  output_asm_insn ("lmw.bi\t%0, [%2], %1, 0", otherops);
-	}
-      else if (GET_CODE (addr) == PLUS)
-	{
-	  /* (reg) <- (mem (plus (reg) (const_int))) */
-	  rtx op0 = XEXP (addr, 0);
-	  rtx op1 = XEXP (addr, 1);
-
-	  if (REG_P (op0))
-	    {
-	      otherops[2] = op0;
-	      otherops[3] = op1;
-	      otherops[4] = gen_int_mode (INTVAL (op1) + 4, SImode);
-	    }
-	  else
-	    {
-	      otherops[2] = op1;
-	      otherops[3] = op0;
-	      otherops[4] = gen_int_mode (INTVAL (op0) + 4, SImode);
-	    }
-
-	  /* To avoid base overwrite when REGNO(%0) == REGNO(%2).  */
-	  if (REGNO (otherops[0]) != REGNO (otherops[2]))
-	    {
-	      output_asm_insn ("lwi\t%0, [%2 + (%3)]", otherops);
-	      output_asm_insn ("lwi\t%1, [%2 + (%4)]", otherops);
-	    }
-	  else
-	    {
-	      output_asm_insn ("lwi\t%1, [%2 + (%4)]", otherops);
-	      output_asm_insn ("lwi\t%0,[ %2 + (%3)]", otherops);
-	    }
-	}
-      else
-	{
-	  /* (reg) <- (mem (symbol_ref ...))
-	     (reg) <- (mem (const ...)) */
-	  output_asm_insn ("lwi.gp\t%0, [ + %2]", otherops);
-	  output_asm_insn ("lwi.gp\t%1, [ + %2 + 4]", otherops);
-	}
-
-      /* We have already used output_asm_insn() by ourself,
-         so return an empty string.  */
-      return "";
-
+      /* The memory format is (mem (reg)),
+	 we can generate 'lmw.bi' instruction.  */
+      return nds32_output_double (operands, true);
     case 3:
-      /* Refer to nds32_legitimate_address_p() in nds32.c,
-         we only allow "reg", "symbol_ref", "const", and "reg + const_int"
-         as address rtx for DImode/DFmode memory access.  */
-      addr = XEXP (operands[0], 0);
-
-      otherops[0] = gen_rtx_REG (SImode, REGNO (operands[1]));
-      otherops[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
-      otherops[2] = addr;
-
-      if (REG_P (addr))
-	{
-	  /* (mem (reg)) <- (reg) */
-	  output_asm_insn ("smw.bi\t%0, [%2], %1, 0", otherops);
-	}
-      else if (GET_CODE (addr) == PLUS)
-	{
-	  /* (mem (plus (reg) (const_int))) <- (reg) */
-	  rtx op0 = XEXP (addr, 0);
-	  rtx op1 = XEXP (addr, 1);
-
-	  if (REG_P (op0))
-	    {
-	      otherops[2] = op0;
-	      otherops[3] = op1;
-	      otherops[4] = gen_int_mode (INTVAL (op1) + 4, SImode);
-	    }
-	  else
-	    {
-	      otherops[2] = op1;
-	      otherops[3] = op0;
-	      otherops[4] = gen_int_mode (INTVAL (op0) + 4, SImode);
-	    }
-
-	  /* To avoid base overwrite when REGNO(%0) == REGNO(%2).  */
-	  if (REGNO (otherops[0]) != REGNO (otherops[2]))
-	    {
-	      output_asm_insn ("swi\t%0, [%2 + (%3)]", otherops);
-	      output_asm_insn ("swi\t%1, [%2 + (%4)]", otherops);
-	    }
-	  else
-	    {
-	      output_asm_insn ("swi\t%1, [%2 + (%4)]", otherops);
-	      output_asm_insn ("swi\t%0, [%2 + (%3)]", otherops);
-	    }
-	}
-      else
-	{
-	  /* (mem (symbol_ref ...)) <- (reg)
-	     (mem (const ...))      <- (reg) */
-	  output_asm_insn ("swi.gp\t%0, [ + %2]", otherops);
-	  output_asm_insn ("swi.gp\t%1, [ + %2 + 4]", otherops);
-	}
-
-      /* We have already used output_asm_insn() by ourself,
-         so return an empty string.  */
-      return "";
-
+      /* We haven't 64-bit load instruction,
+	 we split this pattern to two SImode pattern.  */
+      return "#";
+    case 4:
+      /* The memory format is (mem (reg)),
+	 we can generate 'smw.bi' instruction.  */
+      return nds32_output_double (operands, false);
+    case 5:
+      /* We haven't 64-bit store instruction,
+	 we split this pattern to two SImode pattern.  */
+      return "#";
+    case 6:
+      return nds32_output_float_load (operands);
+    case 7:
+      return nds32_output_float_store (operands);
+    case 8:
+      return "fcpysd\t%0, %1, %1";
+    case 9:
+      return "fmfdr\t%0, %1";
+    case 10:
+      return "fmtdr\t%1, %0";
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "type"   "move,move,move,move")
-   (set_attr "length" "   4,  16,   8,   8")])
+  [(set_attr "type"    "alu,alu,load,load,store,store,fload,fstore,fcpy,fmfdr,fmtdr")
+   (set_attr_alternative "length"
+     [
+       ;; Alternative 0
+       (if_then_else (match_test "!TARGET_16_BIT")
+		     (const_int 4)
+		     (const_int 2))
+       ;; Alternative 1
+       (const_int 16)
+       ;; Alternative 2
+       (const_int 4)
+       ;; Alternative 3
+       (const_int 8)
+       ;; Alternative 4
+       (const_int 4)
+       ;; Alternative 5
+       (const_int 8)
+       ;; Alternative 6
+       (const_int 4)
+       ;; Alternative 7
+       (const_int 4)
+       ;; Alternative 8
+       (const_int 4)
+       ;; Alternative 9
+       (const_int 4)
+       ;; Alternative 10
+       (const_int 4)
+     ])
+   (set_attr "feature" " v1, v1,  v1,  v1,   v1,   v1,    fpu,    fpu,    fpu,    fpu,    fpu")])
+
+;; Split move_di pattern when the hard register is odd.
+(define_split
+  [(set (match_operand:DIDF 0 "register_operand" "")
+	(match_operand:DIDF 1 "register_operand" ""))]
+  "(NDS32_IS_GPR_REGNUM (REGNO (operands[0]))
+    && ((REGNO (operands[0]) & 0x1) == 1))
+   || (NDS32_IS_GPR_REGNUM (REGNO (operands[1]))
+       && ((REGNO (operands[1]) & 0x1) == 1))"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+  {
+     operands[2] = gen_lowpart (SImode, operands[0]);
+     operands[4] = gen_highpart (SImode, operands[0]);
+     operands[3] = gen_lowpart (SImode, operands[1]);
+     operands[5] = gen_highpart (SImode, operands[1]);
+  }
+)
 
 (define_split
   [(set (match_operand:DIDF 0 "register_operand"     "")
@@ -207,7 +158,12 @@
   /* Actually we would like to create move behavior by ourself.
      So that movsi expander could have chance to split large constant.  */
   emit_move_insn (operands[2], operands[3]);
-  emit_move_insn (operands[4], operands[5]);
+
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (SImode);
+  if ((UINTVAL (operands[3]) & mask) == (UINTVAL (operands[5]) & mask))
+    emit_move_insn (operands[4], operands[2]);
+  else
+    emit_move_insn (operands[4], operands[5]);
   DONE;
 })
 
@@ -217,7 +173,9 @@
   [(set (match_operand:DIDF 0 "register_operand" "")
 	(match_operand:DIDF 1 "register_operand" ""))]
   "reload_completed
-   && (TARGET_ISA_V2 || !TARGET_16_BIT)"
+   && (TARGET_ISA_V2 || !TARGET_16_BIT)
+   && NDS32_IS_GPR_REGNUM (REGNO (operands[0]))
+   && NDS32_IS_GPR_REGNUM (REGNO (operands[1]))"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))]
 {
@@ -237,6 +195,28 @@
       operands[2] = tmp0;
       operands[3] = tmp1;
     }
+})
+
+(define_split
+  [(set (match_operand:DIDF 0 "nds32_general_register_operand" "")
+	(match_operand:DIDF 1 "memory_operand" ""))]
+  "reload_completed
+   && nds32_split_double_word_load_store_p (operands, true)"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+{
+  nds32_spilt_doubleword (operands, true);
+})
+
+(define_split
+  [(set (match_operand:DIDF 0  "memory_operand" "")
+	(match_operand:DIDF 1  "nds32_general_register_operand" ""))]
+  "reload_completed
+   && nds32_split_double_word_load_store_p (operands, false)"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+{
+  nds32_spilt_doubleword (operands, false);
 })
 
 ;; -------------------------------------------------------------

@@ -1,5 +1,5 @@
 /* Loop unrolling.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -202,10 +202,10 @@ report_unroll (struct loop *loop, location_t locus)
   dump_printf_loc (report_flags, locus,
                    "loop unrolled %d times",
                    loop->lpt_decision.times);
-  if (profile_info)
+  if (profile_info && loop->header->count.initialized_p ())
     dump_printf (report_flags,
                  " (header execution count %d)",
-                 (int)loop->header->count);
+                 (int)loop->header->count.to_gcov_type ());
 
   dump_printf (report_flags, "\n");
 }
@@ -224,9 +224,16 @@ decide_unrolling (int flags)
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, locus,
-                         ";; *** Considering loop %d at BB %d for "
-                         "unrolling ***\n",
-                         loop->num, loop->header->index);
+			 "considering unrolling loop %d at BB %d\n",
+			 loop->num, loop->header->index);
+
+      if (loop->unroll == 1)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     ";; Not unrolling loop, user didn't want it unrolled\n");
+	  continue;
+	}
 
       /* Do not peel cold areas.  */
       if (optimize_loop_for_size_p (loop))
@@ -256,9 +263,7 @@ decide_unrolling (int flags)
       loop->ninsns = num_loop_insns (loop);
       loop->av_ninsns = average_num_loop_insns (loop);
 
-      /* Try transformations one by one in decreasing order of
-	 priority.  */
-
+      /* Try transformations one by one in decreasing order of priority.  */
       decide_unroll_constant_iterations (loop, flags);
       if (loop->lpt_decision.decision == LPT_NONE)
 	decide_unroll_runtime_iterations (loop, flags);
@@ -347,19 +352,17 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
   struct niter_desc *desc;
   widest_int iterations;
 
-  if (!(flags & UAP_UNROLL))
-    {
-      /* We were not asked to, just return back silently.  */
-      return;
-    }
+  /* If we were not asked to unroll this loop, just return back silently.  */
+  if (!(flags & UAP_UNROLL) && !loop->unroll)
+    return;
 
-  if (dump_file)
-    fprintf (dump_file,
-	     "\n;; Considering unrolling loop with constant "
-	     "number of iterations\n");
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE,
+		 "considering unrolling loop with constant "
+		 "number of iterations\n");
 
   /* nunroll = total number of copies of the original loop body in
-     unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
+     unrolled loop (i.e. if it is 2, we have to duplicate loop body once).  */
   nunroll = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / loop->ninsns;
   nunroll_by_av
     = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
@@ -391,6 +394,24 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
       return;
     }
 
+  /* Check for an explicit unrolling factor.  */
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
+    {
+      /* However we cannot unroll completely at the RTL level a loop with
+	 constant number of iterations; it should have been peeled instead.  */
+      if ((unsigned) loop->unroll - 1 > desc->niter - 2)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; Loop should have been peeled\n");
+	}
+      else
+	{
+	  loop->lpt_decision.decision = LPT_UNROLL_CONSTANT;
+	  loop->lpt_decision.times = loop->unroll - 1;
+	}
+      return;
+    }
+
   /* Check whether the loop rolls enough to consider.  
      Consult also loop bounds and profile; in the case the loop has more
      than one exit it may well loop less than determined maximal number
@@ -412,7 +433,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
   best_copies = 2 * nunroll + 10;
 
   i = 2 * nunroll + 2;
-  if (i - 1 >= desc->niter)
+  if (i > desc->niter - 2)
     i = desc->niter - 2;
 
   for (; i >= nunroll - 1; i--)
@@ -477,7 +498,7 @@ unroll_loop_constant_iterations (struct loop *loop)
 
   exit_mod = niter % (max_unroll + 1);
 
-  auto_sbitmap wont_exit (max_unroll + 1);
+  auto_sbitmap wont_exit (max_unroll + 2);
   bitmap_ones (wont_exit);
 
   auto_vec<edge> remove_edges;
@@ -651,16 +672,14 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
   struct niter_desc *desc;
   widest_int iterations;
 
-  if (!(flags & UAP_UNROLL))
-    {
-      /* We were not asked to, just return back silently.  */
-      return;
-    }
+  /* If we were not asked to unroll this loop, just return back silently.  */
+  if (!(flags & UAP_UNROLL) && !loop->unroll)
+    return;
 
-  if (dump_file)
-    fprintf (dump_file,
-	     "\n;; Considering unrolling loop with runtime "
-	     "computable number of iterations\n");
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE,
+		 "considering unrolling loop with runtime-"
+		 "computable number of iterations\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
@@ -673,6 +692,9 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
+
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
+    nunroll = loop->unroll;
 
   /* Skip big loops.  */
   if (nunroll <= 1)
@@ -712,8 +734,9 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
       return;
     }
 
-  /* Success; now force nunroll to be power of 2, as we are unable to
-     cope with overflows in computation of number of iterations.  */
+  /* Success; now force nunroll to be power of 2, as code-gen
+     requires it, we are unable to cope with overflows in
+     computation of number of iterations.  */
   for (i = 1; 2 * i <= nunroll; i *= 2)
     continue;
 
@@ -774,7 +797,8 @@ split_edge_and_insert (edge e, rtx_insn *insns)
 
 static rtx_insn *
 compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp,
-		      rtx_code_label *label, int prob, rtx_insn *cinsn)
+		      rtx_code_label *label, profile_probability prob,
+		      rtx_insn *cinsn)
 {
   rtx_insn *seq;
   rtx_jump_insn *jump;
@@ -808,12 +832,14 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp,
       op0 = force_operand (op0, NULL_RTX);
       op1 = force_operand (op1, NULL_RTX);
       do_compare_rtx_and_jump (op0, op1, comp, 0,
-			       mode, NULL_RTX, NULL, label, -1);
+			       mode, NULL_RTX, NULL, label,
+			       profile_probability::uninitialized ());
       jump = as_a <rtx_jump_insn *> (get_last_insn ());
       jump->set_jump_target (label);
       LABEL_NUSES (label)++;
     }
-  add_int_reg_note (jump, REG_BR_PROB, prob);
+  if (prob.initialized_p ())
+    add_reg_br_prob_note (jump, prob);
 
   seq = get_insns ();
   end_sequence ();
@@ -821,9 +847,10 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp,
   return seq;
 }
 
-/* Unroll LOOP for which we are able to count number of iterations in runtime
-   LOOP->LPT_DECISION.TIMES times.  The transformation does this (with some
-   extra care for case n < 0):
+/* Unroll LOOP for which we are able to count number of iterations in
+   runtime LOOP->LPT_DECISION.TIMES times.  The times value must be a
+   power of two.  The transformation does this (with some extra care
+   for case n < 0):
 
    for (i = 0; i < n; i++)
      body;
@@ -857,10 +884,11 @@ unroll_loop_runtime_iterations (struct loop *loop)
 {
   rtx old_niter, niter, tmp;
   rtx_insn *init_code, *branch_code;
-  unsigned i, j, p;
+  unsigned i, j;
+  profile_probability p;
   basic_block preheader, *body, swtch, ezc_swtch = NULL;
-  int may_exit_copy, iter_freq, new_freq;
-  gcov_type iter_count, new_count;
+  int may_exit_copy;
+  profile_count iter_count, new_count;
   unsigned n_peel;
   edge e;
   bool extra_zero_check, last_may_exit;
@@ -966,14 +994,11 @@ unroll_loop_runtime_iterations (struct loop *loop)
   /* Record the place where switch will be built for preconditioning.  */
   swtch = split_edge (loop_preheader_edge (loop));
 
-  /* Compute frequency/count increments for each switch block and initialize
+  /* Compute count increments for each switch block and initialize
      innermost switch block.  Switch blocks and peeled loop copies are built
      from innermost outward.  */
-  iter_freq = new_freq = swtch->frequency / (max_unroll + 1);
-  iter_count = new_count = swtch->count / (max_unroll + 1);
-  swtch->frequency = new_freq;
+  iter_count = new_count = swtch->count.apply_scale (1, max_unroll + 1);
   swtch->count = new_count;
-  single_succ_edge (swtch)->count = new_count;
 
   for (i = 0; i < n_peel; i++)
     {
@@ -989,13 +1014,11 @@ unroll_loop_runtime_iterations (struct loop *loop)
 
       /* Create item for switch.  */
       j = n_peel - i - (extra_zero_check ? 0 : 1);
-      p = REG_BR_PROB_BASE / (i + 2);
+      p = profile_probability::always ().apply_scale (1, i + 2);
 
       preheader = split_edge (loop_preheader_edge (loop));
-      /* Add in frequency/count of edge from switch block.  */
-      preheader->frequency += iter_freq;
+      /* Add in count of edge from switch block.  */
       preheader->count += iter_count;
-      single_succ_edge (preheader)->count = preheader->count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
 					  block_label (preheader), p,
 					  NULL);
@@ -1006,32 +1029,25 @@ unroll_loop_runtime_iterations (struct loop *loop)
 
       swtch = split_edge_and_insert (single_pred_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
-      single_succ_edge (swtch)->probability = REG_BR_PROB_BASE - p;
-      single_succ_edge (swtch)->count = new_count;
-      new_freq += iter_freq;
+      single_succ_edge (swtch)->probability = p.invert ();
       new_count += iter_count;
-      swtch->frequency = new_freq;
       swtch->count = new_count;
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
-      e->count = iter_count;
       e->probability = p;
     }
 
   if (extra_zero_check)
     {
       /* Add branch for zero iterations.  */
-      p = REG_BR_PROB_BASE / (max_unroll + 1);
+      p = profile_probability::always ().apply_scale (1, max_unroll + 1);
       swtch = ezc_swtch;
       preheader = split_edge (loop_preheader_edge (loop));
-      /* Recompute frequency/count adjustments since initial peel copy may
+      /* Recompute count adjustments since initial peel copy may
 	 have exited and reduced those values that were computed above.  */
-      iter_freq = swtch->frequency / (max_unroll + 1);
-      iter_count = swtch->count / (max_unroll + 1);
-      /* Add in frequency/count of edge from switch block.  */
-      preheader->frequency += iter_freq;
+      iter_count = swtch->count.apply_scale (1, max_unroll + 1);
+      /* Add in count of edge from switch block.  */
       preheader->count += iter_count;
-      single_succ_edge (preheader)->count = preheader->count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
 					  block_label (preheader), p,
 					  NULL);
@@ -1039,11 +1055,9 @@ unroll_loop_runtime_iterations (struct loop *loop)
 
       swtch = split_edge_and_insert (single_succ_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
-      single_succ_edge (swtch)->probability = REG_BR_PROB_BASE - p;
-      single_succ_edge (swtch)->count -= iter_count;
+      single_succ_edge (swtch)->probability = p.invert ();
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
-      e->count = iter_count;
       e->probability = p;
     }
 
@@ -1143,14 +1157,12 @@ decide_unroll_stupid (struct loop *loop, int flags)
   struct niter_desc *desc;
   widest_int iterations;
 
-  if (!(flags & UAP_UNROLL_ALL))
-    {
-      /* We were not asked to, just return back silently.  */
-      return;
-    }
+  /* If we were not asked to unroll this loop, just return back silently.  */
+  if (!(flags & UAP_UNROLL_ALL) && !loop->unroll)
+    return;
 
-  if (dump_file)
-    fprintf (dump_file, "\n;; Considering unrolling loop stupidly\n");
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE, "considering unrolling loop stupidly\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
@@ -1164,6 +1176,9 @@ decide_unroll_stupid (struct loop *loop, int flags)
 
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
+
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
+    nunroll = loop->unroll;
 
   /* Skip big loops.  */
   if (nunroll <= 1)
@@ -1180,7 +1195,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
   if (desc->simple_p && !desc->assumptions)
     {
       if (dump_file)
-	fprintf (dump_file, ";; The loop is simple\n");
+	fprintf (dump_file, ";; Loop is simple\n");
       return;
     }
 
@@ -1505,6 +1520,7 @@ analyze_iv_to_split_insn (rtx_insn *insn)
   rtx set, dest;
   struct rtx_iv iv;
   struct iv_to_split *ivts;
+  scalar_int_mode mode;
   bool ok;
 
   /* For now we just split the basic induction variables.  Later this may be
@@ -1514,10 +1530,10 @@ analyze_iv_to_split_insn (rtx_insn *insn)
     return NULL;
 
   dest = SET_DEST (set);
-  if (!REG_P (dest))
+  if (!REG_P (dest) || !is_a <scalar_int_mode> (GET_MODE (dest), &mode))
     return NULL;
 
-  if (!biv_p (insn, dest))
+  if (!biv_p (insn, mode, dest))
     return NULL;
 
   ok = iv_analyze_result (insn, dest, &iv);
@@ -1726,7 +1742,8 @@ split_iv (struct iv_to_split *ivts, rtx_insn *insn, unsigned delta)
   else
     {
       incr = simplify_gen_binary (MULT, mode,
-				  ivts->step, gen_int_mode (delta, mode));
+				  copy_rtx (ivts->step),
+				  gen_int_mode (delta, mode));
       expr = simplify_gen_binary (PLUS, GET_MODE (ivts->base_var),
 				  ivts->base_var, incr);
     }
@@ -2020,12 +2037,14 @@ apply_opt_in_copies (struct opt_info *opt_info,
       FOR_BB_INSNS_SAFE (bb, insn, next)
         {
 	  if (!INSN_P (insn)
-	      || (DEBUG_INSN_P (insn)
+	      || (DEBUG_BIND_INSN_P (insn)
+		  && INSN_VAR_LOCATION_DECL (insn)
 		  && TREE_CODE (INSN_VAR_LOCATION_DECL (insn)) == LABEL_DECL))
             continue;
 
 	  while (!INSN_P (orig_insn)
-		 || (DEBUG_INSN_P (orig_insn)
+		 || (DEBUG_BIND_INSN_P (orig_insn)
+		     && INSN_VAR_LOCATION_DECL (orig_insn)
 		     && (TREE_CODE (INSN_VAR_LOCATION_DECL (orig_insn))
 			 == LABEL_DECL)))
             orig_insn = NEXT_INSN (orig_insn);

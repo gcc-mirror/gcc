@@ -1,5 +1,5 @@
 /* Iterator routines for GIMPLE statements.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez  <aldy@quesejoda.com>
 
 This file is part of GCC.
@@ -83,7 +83,6 @@ static void
 update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
 {
   struct cgraph_node *cfun_node = NULL;
-  int bb_freq = 0;
   gimple_seq_node n;
 
   for (n = first; n ; n = n->next)
@@ -94,15 +93,11 @@ update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
 	/* These function calls are expensive enough that we want
 	   to avoid calling them if we never see any calls.  */
 	if (cfun_node == NULL)
-	  {
-	    cfun_node = cgraph_node::get (current_function_decl);
-	    bb_freq = (compute_call_stmt_bb_frequency
-		       (current_function_decl, bb));
-	  }
+	  cfun_node = cgraph_node::get (current_function_decl);
 
 	e = cfun_node->get_edge (n);
 	if (e != NULL)
-	  e->frequency = bb_freq;
+	  e->count = bb->count;
       }
 }
 
@@ -573,6 +568,10 @@ gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
 
   if (remove_permanently)
     {
+      if (gimple_debug_nonbind_marker_p (stmt))
+	/* We don't need this to be exact, but try to keep it at least
+	   close.  */
+	cfun->debug_marker_count--;
       require_eh_edge_purge = remove_stmt_from_eh_lp (stmt);
       gimple_remove_stmt_histograms (cfun, stmt);
     }
@@ -768,7 +767,12 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
      Except for the entry block.  */
   src = e->src;
   if ((e->flags & EDGE_ABNORMAL) == 0
-      && single_succ_p (src)
+      && (single_succ_p (src)
+	  /* Do not count a fake edge as successor as added to infinite
+	     loops by connect_infinite_loops_to_exit.  */
+	  || (EDGE_COUNT (src->succs) == 2
+	      && (EDGE_SUCC (src, 0)->flags & EDGE_FAKE
+		  || EDGE_SUCC (src, 1)->flags & EDGE_FAKE)))
       && src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
     {
       *gsi = gsi_last_bb (src);
@@ -776,7 +780,21 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
 	return true;
 
       tmp = gsi_stmt (*gsi);
-      if (!stmt_ends_bb_p (tmp))
+      if (is_gimple_debug (tmp))
+	{
+	  gimple_stmt_iterator si = *gsi;
+	  gsi_prev_nondebug (&si);
+	  if (!gsi_end_p (si))
+	    tmp = gsi_stmt (si);
+	  /* If we don't have a BB-ending nondebug stmt, we want to
+	     insert after the trailing debug stmts.  Otherwise, we may
+	     insert before the BB-ending nondebug stmt, or split the
+	     edge.  */
+	  if (!stmt_ends_bb_p (tmp))
+	    return true;
+	  *gsi = si;
+	}
+      else if (!stmt_ends_bb_p (tmp))
 	return true;
 
       switch (gimple_code (tmp))

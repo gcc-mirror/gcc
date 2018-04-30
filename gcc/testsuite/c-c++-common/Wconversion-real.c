@@ -1,7 +1,7 @@
 /* Test for diagnostics for Wconversion for floating-point.  */
 
 /* { dg-do compile } */
-/* { dg-skip-if "doubles are floats" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "doubles are floats" { "avr-*-*" } } */
 /* { dg-options "-std=c99 -Wconversion" { target c } } */
 /* { dg-options "-Wconversion" { target c++ } } */
 /* { dg-require-effective-target large_double } */

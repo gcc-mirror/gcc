@@ -378,6 +378,14 @@ OACC_2.0 {
 	acc_set_cuda_stream;
 };
 
+OACC_2.0.1 {
+  global:
+	acc_async_wait;
+	acc_async_wait_all;
+	acc_pcopyin;
+	acc_pcreate;
+} OACC_2.0;
+
 GOACC_2.0 {
   global:
 	GOACC_data_end;

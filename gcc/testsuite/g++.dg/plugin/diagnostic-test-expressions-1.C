@@ -19,6 +19,113 @@ extern void __emit_expression_range (int dummy, ...);
 
 int global;
 
+void test_global (void)
+{
+  __emit_expression_range (0, global); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, global);
+                               ^~~~~~
+   { dg-end-multiline-output "" } */
+}
+
+void test_param (int param)
+{
+  __emit_expression_range (0, param); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, param);
+                               ^~~~~
+   { dg-end-multiline-output "" } */
+}
+
+void test_local (void)
+{
+  int local = 5;
+
+  __emit_expression_range (0, local); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, local);
+                               ^~~~~
+   { dg-end-multiline-output "" } */
+}
+
+void test_integer_constants (void)
+{
+  __emit_expression_range (0, 1234); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, 1234);
+                               ^~~~
+   { dg-end-multiline-output "" } */
+
+  /* Ensure that zero works.  */
+
+  __emit_expression_range (0, 0); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, 0);
+                               ^
+   { dg-end-multiline-output "" } */
+}
+
+void test_character_constants (void)
+{
+  __emit_expression_range (0, 'a'); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, 'a');
+                               ^~~
+   { dg-end-multiline-output "" } */
+}
+
+void test_floating_constants (void)
+{
+  __emit_expression_range (0, 98.6); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, 98.6);
+                               ^~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, .6); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, .6);
+                               ^~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, 98.); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, 98.);
+                               ^~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, 6.022140857e23 ); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, 6.022140857e23 );
+                               ^~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, 98.6f ); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, 98.6f );
+                               ^~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, 6.022140857e23l ); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, 6.022140857e23l );
+                               ^~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
+enum test_enum {
+  TEST_ENUM_VALUE
+};
+
+void test_enumeration_constant (void)
+{
+  __emit_expression_range (0, TEST_ENUM_VALUE ); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, TEST_ENUM_VALUE );
+                               ^~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
 void test_parentheses (int a, int b)
 {
   __emit_expression_range (0, (a + b) ); /* { dg-warning "range" } */
@@ -66,7 +173,7 @@ struct test_struct
   int field;
 };
 
-int test_structure_references (struct test_struct *ptr)
+void test_structure_references (struct test_struct *ptr)
 {
   struct test_struct local;
   local.field = 42;
@@ -84,7 +191,7 @@ int test_structure_references (struct test_struct *ptr)
    { dg-end-multiline-output "" } */
 }
 
-int test_postfix_incdec (int i)
+void test_postfix_incdec (int i)
 {
   __emit_expression_range (0, i++ ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
@@ -101,73 +208,42 @@ int test_postfix_incdec (int i)
 
 /* Unary operators.  ****************************************************/
 
-int test_sizeof (int i)
+void test_sizeof (int i)
 {
-  __emit_expression_range (0, sizeof(int) + i); /* { dg-warning "range" } */
+  __emit_expression_range (0, sizeof i ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, sizeof(int) + i);
-                               ~~~~~~~~~~~~^~~
+   __emit_expression_range (0, sizeof i );
+                               ^~~~~~~~
    { dg-end-multiline-output "" } */
 
-  __emit_expression_range (0, i + sizeof(int)); /* { dg-warning "range" } */
+  __emit_expression_range (0, sizeof (char) ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, i + sizeof(int));
-                               ~~^~~~~~~~~~~~~
-   { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0, sizeof i + i); /* { dg-warning "range" } */
-/* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, sizeof i + i);
-                               ~~~~~~~~~^~~
-   { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0, i + sizeof i); /* { dg-warning "range" } */
-/* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, i + sizeof i);
-                               ~~^~~~~~~~~~
+   __emit_expression_range (0, sizeof (char) );
+                               ^~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 }
 
-int test_alignof (int i)
+void test_alignof (int i)
 {
-  __emit_expression_range (0, alignof(int) + i); /* { dg-warning "range" } */
+  __emit_expression_range (0, alignof(int)); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, alignof(int) + i);
-                               ~~~~~~~~~~~~~^~~
+   __emit_expression_range (0, alignof(int));
+                               ^~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 
-  __emit_expression_range (0, i + alignof(int)); /* { dg-warning "range" } */
+  __emit_expression_range (0, __alignof__(int)); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, i + alignof(int));
-                               ~~^~~~~~~~~~~~~~
+   __emit_expression_range (0, __alignof__(int));
+                               ^~~~~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0, __alignof__(int) + i); /* { dg-warning "range" } */
+  __emit_expression_range (0, __alignof__ i); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, __alignof__(int) + i);
-                               ~~~~~~~~~~~~~~~~~^~~
-   { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0, i + __alignof__(int)); /* { dg-warning "range" } */
-/* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, i + __alignof__(int));
-                               ~~^~~~~~~~~~~~~~~~~~
-   { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0, __alignof__ i + i); /* { dg-warning "range" } */
-/* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, __alignof__ i + i);
-                               ~~~~~~~~~~~~~~^~~
-   { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0, i + __alignof__ i); /* { dg-warning "range" } */
-/* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, i + __alignof__ i);
-                               ~~^~~~~~~~~~~~~~~
+   __emit_expression_range (0, __alignof__ i);
+                               ^~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 }
 
-int test_prefix_incdec (int i)
+void test_prefix_incdec (int i)
 {
   __emit_expression_range (0, ++i ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
@@ -197,6 +273,15 @@ void test_indirection (int *ptr)
 /* { dg-begin-multiline-output "" }
    __emit_expression_range (0, *ptr );
                                ^~~~
+   { dg-end-multiline-output "" } */
+}
+
+void test_unary_plus (int i)
+{
+  __emit_expression_range (0, +i ); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, +i );
+                               ^~
    { dg-end-multiline-output "" } */
 }
 
@@ -471,53 +556,36 @@ void test_comma_operator (int a, int b)
 
 /* Literals.  **************************************************/
 
-/* We can't test the ranges of literals directly, since the underlying
-   tree nodes don't retain a location.  However, we can test that they
-   have ranges during parsing by building compound expressions using
-   them, and verifying the ranges of the compound expressions.  */
-
-void test_string_literals (int i)
+void test_string_literals ()
 {
-  __emit_expression_range (0, "foo"[i] ); /* { dg-warning "range" } */
+  __emit_expression_range (0, "0123456789"); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, "foo"[i] );
-                               ~~~~~~~^
+   __emit_expression_range (0, "0123456789");
+                               ^~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 
-  __emit_expression_range (0, &"foo" "bar" ); /* { dg-warning "range" } */
+  __emit_expression_range (0, "foo" "bar" ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, &"foo" "bar" );
-                               ^~~~~~~~~~~~
+   __emit_expression_range (0, "foo" "bar" );
+                               ^~~~~~~~~~~
    { dg-end-multiline-output "" } */
 }
 
 void test_numeric_literals (int i)
 {
-  __emit_expression_range (0, 42 + i ); /* { dg-warning "range" } */
+  __emit_expression_range (0, 42 ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, 42 + i );
-                               ~~~^~~
-   { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0, i + 42 ); /* { dg-warning "range" } */
-/* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, i + 42 );
-                               ~~^~~~
+   __emit_expression_range (0, 42 );
+                               ^~
    { dg-end-multiline-output "" } */
 
   /* Verify locations of negative literals (via folding of
      unary negation).  */
 
-  __emit_expression_range (0, -42 + i ); /* { dg-warning "range" } */
+  __emit_expression_range (0, -42 ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, -42 + i );
-                               ~~~~^~~
-   { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0, i + -42 ); /* { dg-warning "range" } */
-/* { dg-begin-multiline-output "" }
-   __emit_expression_range (0, i + -42 );
-                               ~~^~~~~
+   __emit_expression_range (0, -42 );
+                               ^~~
    { dg-end-multiline-output "" } */
 
   __emit_expression_range (0, i ? 0 : -1 ); /* { dg-warning "range" } */
@@ -638,16 +706,10 @@ struct s { int i; float f; };
 
 void test_builtin_offsetof (int i)
 {
-  __emit_expression_range (0,  i + __builtin_offsetof (struct s, f) );  /* { dg-warning "range" } */
+  __emit_expression_range (0,  __builtin_offsetof (struct s, f) );  /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
-   __emit_expression_range (0,  i + __builtin_offsetof (struct s, f) );
-                                ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   { dg-end-multiline-output "" } */
-
-  __emit_expression_range (0,  __builtin_offsetof (struct s, f) + i );  /* { dg-warning "range" } */
-/* { dg-begin-multiline-output "" }
-   __emit_expression_range (0,  __builtin_offsetof (struct s, f) + i );
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~
+   __emit_expression_range (0,  __builtin_offsetof (struct s, f) );
+                                ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 }
 
@@ -847,4 +909,108 @@ tests::test_method_calls ()
    __emit_expression_range (0, this->some_method () );
                                ~~~~~~~~~~~~~~~~~~^~
    { dg-end-multiline-output "" } */
+}
+
+namespace std
+{
+  class type_info { public: int foo; };
+}
+
+void test_typeid (int i)
+{
+  __emit_expression_range (0, typeid(i)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, typeid(i));
+                               ^~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, typeid(int)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, typeid(int));
+                               ^~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, typeid(i * 2)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, typeid(i * 2));
+                               ^~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
+/* Various tests of locations involving macros.  */
+
+void test_within_macro_1 (int lhs, int rhs)
+{
+#define MACRO_1(EXPR) EXPR
+
+  __emit_expression_range (0, MACRO_1 (lhs == rhs));
+
+/* { dg-warning "range" "" { target *-*-* } .-2 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_1 (lhs == rhs));
+                                        ~~~~^~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define MACRO_1(EXPR) EXPR
+                       ^~~~
+   { dg-end-multiline-output "" } */
+
+#undef MACRO_1
+}
+
+void test_within_macro_2 (int lhs, int rhs)
+{
+#define MACRO_2(EXPR) EXPR
+
+  __emit_expression_range (0, MACRO_2 (MACRO_2 (lhs == rhs)));
+
+/* { dg-warning "range" "" { target *-*-* } .-2 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_2 (MACRO_2 (lhs == rhs)));
+                                                 ~~~~^~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_2 (MACRO_2 (lhs == rhs)));
+                                        ^~~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define MACRO_2(EXPR) EXPR
+                       ^~~~
+   { dg-end-multiline-output "" } */
+
+#undef MACRO_2
+}
+
+void test_within_macro_3 (int lhs, int rhs)
+{
+#define MACRO_3(EXPR) EXPR
+
+  __emit_expression_range (0, MACRO_3 (lhs) == MACRO_3 (rhs));
+
+/* { dg-warning "range" "" { target *-*-* } .-2 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_3 (lhs) == MACRO_3 (rhs));
+                                             ^
+   { dg-end-multiline-output "" } */
+
+#undef MACRO_3
+}
+
+void test_within_macro_4 (int lhs, int rhs)
+{
+#define MACRO_4(EXPR) EXPR
+
+  __emit_expression_range (0, MACRO_4 (MACRO_4 (lhs) == MACRO_4 (rhs)));
+
+/* { dg-warning "range" "" { target *-*-* } .-2 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_4 (MACRO_4 (lhs) == MACRO_4 (rhs)));
+                                                      ^
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define MACRO_4(EXPR) EXPR
+                       ^~~~
+   { dg-end-multiline-output "" } */
+
+#undef MACRO_4
 }

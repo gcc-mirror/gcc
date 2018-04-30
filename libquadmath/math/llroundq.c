@@ -1,8 +1,8 @@
 /* Round __float128 value to long long int.
-   Copyright (C) 1997, 1999, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997 and
-   		  Jakub Jelinek <jj@ultra.linux.cz>, 1999.
+		  Jakub Jelinek <jj@ultra.linux.cz>, 1999.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -59,13 +59,32 @@ llroundq (__float128 x)
 	  if (j0 == 48)
 	    result = (long long int) i0;
 	  else
-	    result = ((long long int) i0 << (j0 - 48)) | (j >> (112 - j0));
+	    {
+	      result = ((long long int) i0 << (j0 - 48)) | (j >> (112 - j0));
+#if defined FE_INVALID && defined USE_FENV_H
+	      if (sign == 1 && result == LLONG_MIN)
+		/* Rounding brought the value out of range.  */
+		feraiseexcept (FE_INVALID);
+#endif
+	    }
 	}
     }
   else
     {
-      /* The number is too large.  It is left implementation defined
-	 what happens.  */
+      /* The number is too large.  Unless it rounds to LLONG_MIN,
+	 FE_INVALID must be raised and the return value is
+	 unspecified.  */
+#ifdef FE_INVALID
+      if (x <= (__float128) LLONG_MIN - 0.5Q)
+	{
+	  /* If truncation produces LLONG_MIN, the cast will not raise
+	     the exception, but may raise "inexact".  */
+#ifdef USE_FENV_H
+	  feraiseexcept (FE_INVALID);
+#endif
+	  return LLONG_MIN;
+	}
+#endif
       return (long long int) x;
     }
 

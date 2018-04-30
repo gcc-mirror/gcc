@@ -6,18 +6,21 @@
 // Member function of class template as friend
 // Erroneous case: mismatch during declaration
 
-template <class T> struct A {
-  template <class U> void f(U);		// { dg-error "candidate" }
-  void g();				// { dg-error "candidate|with" }
-  void h();				// { dg-error "candidate|with" }
-  void i(int);				// { dg-error "candidate" }
+template <class T> struct A { // { dg-message "defined here" }
+  template <class U> void f(U);		// { dg-message "candidate" }
+  void g();				// { dg-message "candidate" }
+  void h();				// { dg-message "candidate" }
+  void i(int);				// { dg-message "candidate" }
 };
 
 class C {
   int ii;
-  template <class U> friend void A<U>::f(U);	// { dg-error "not match" }
+  template <class U>
+  friend void A<U>::f(U); // { dg-error "no declaration matches" }
   template <class U> template <class V>
-    friend void A<U>::g();			// { dg-error "not match|cannot be overloaded" }
-  template <class U> friend int A<U>::h();	// { dg-error "not match|cannot be overloaded" }
-  template <class U> friend void A<U>::i(char);	// { dg-error "not match" }
+    friend void A<U>::g();  // { dg-error "no declaration matches" }
+  template <class U>
+  friend int A<U>::h();	// { dg-error "no declaration matches" }
+  template <class U>
+  friend void A<U>::i(char);	// { dg-error "no declaration matches" }
 };

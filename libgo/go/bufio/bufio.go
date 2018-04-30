@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package bufio implements buffered I/O.  It wraps an io.Reader or io.Writer
+// Package bufio implements buffered I/O. It wraps an io.Reader or io.Writer
 // object, creating another object (Reader or Writer) that also implements
 // the interface but provides buffering and some help for textual I/O.
 package bufio
@@ -61,6 +61,9 @@ func NewReaderSize(rd io.Reader, size int) *Reader {
 func NewReader(rd io.Reader) *Reader {
 	return NewReaderSize(rd, defaultBufSize)
 }
+
+// Size returns the size of the underlying buffer in bytes.
+func (r *Reader) Size() int { return len(r.buf) }
 
 // Reset discards any buffered data, resets all state, and switches
 // the buffered reader to read from r.
@@ -458,6 +461,7 @@ func (b *Reader) ReadString(delim byte) (string, error) {
 }
 
 // WriteTo implements io.WriterTo.
+// This may make multiple calls to the Read method of the underlying Reader.
 func (b *Reader) WriteTo(w io.Writer) (n int64, err error) {
 	n, err = b.writeBuf(w)
 	if err != nil {
@@ -513,7 +517,7 @@ func (b *Reader) writeBuf(w io.Writer) (int64, error) {
 
 // Writer implements buffering for an io.Writer object.
 // If an error occurs writing to a Writer, no more data will be
-// accepted and all subsequent writes will return the error.
+// accepted and all subsequent writes, and Flush, will return the error.
 // After all data has been written, the client should call the
 // Flush method to guarantee all data has been forwarded to
 // the underlying io.Writer.
@@ -546,6 +550,9 @@ func NewWriterSize(w io.Writer, size int) *Writer {
 func NewWriter(w io.Writer) *Writer {
 	return NewWriterSize(w, defaultBufSize)
 }
+
+// Size returns the size of the underlying buffer in bytes.
+func (b *Writer) Size() int { return len(b.buf) }
 
 // Reset discards any unflushed buffered data, clears any error, and
 // resets b to write its output to w.

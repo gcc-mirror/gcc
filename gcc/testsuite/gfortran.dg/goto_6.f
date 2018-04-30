@@ -20,5 +20,5 @@
       GO TO 1271
 21260 IVFAIL = IVFAIL + 1
  1271 CONTINUE
-      IF (IVFAIL /= 0) CALL abort ()
+      IF (IVFAIL /= 0) STOP 1
       END

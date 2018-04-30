@@ -1,7 +1,7 @@
 /* Various declarations for language-independent pretty-print
    subroutines that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,7 +45,7 @@ extern int op_code_prio (enum tree_code);
 extern int op_prio (const_tree);
 extern const char *op_symbol_code (enum tree_code);
 extern void print_call_name (pretty_printer *, tree, dump_flags_t);
-extern void percent_K_format (text_info *);
+extern void percent_K_format (text_info *, tree);
 extern void pp_tree_identifier (pretty_printer *, tree);
 extern void dump_function_header (FILE *, tree, dump_flags_t);
 extern void pp_double_int (pretty_printer *pp, double_int d, bool uns);

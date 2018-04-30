@@ -4,7 +4,7 @@
 /* { dg-options "-O1 -fsched-pressure -fschedule-insns -fcompare-debug" { target scheduling } } */
 /* { dg-options "-O1 -fcompare-debug" { target { ! scheduling } } } */
 /* { dg-require-effective-target int32plus } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 int lzo_adler32(int adler, char *buf)
 {

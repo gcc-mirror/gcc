@@ -156,34 +156,34 @@ f4 (int x)
   {
     do
       #pragma omp barrier			/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
   {
     do
       #pragma omp flush				/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
   {
     do
       #pragma omp taskwait			/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
   {
     do
       #pragma omp taskyield			/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
   #pragma omp parallel
   {
     do
       #pragma omp cancel parallel		/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
   #pragma omp parallel
   {
     do
       #pragma omp cancellation point parallel	/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
   #pragma omp for ordered(1)
   for (i = 0; i < 16; i++)
@@ -191,28 +191,28 @@ f4 (int x)
       {
 	do
 	  #pragma omp ordered depend(source)	/* { dg-error "may only be used in compound statements" } */
-	while (0);
+	while (0); /* { dg-error "before" "" { target c++ } } */
       } /* { dg-error "before" "" { target c++ } } */
       {
 	do
 	  #pragma omp ordered depend(sink: i-1)	/* { dg-error "may only be used in compound statements" } */
-	while (0);
+	while (0); /* { dg-error "before" "" { target c++ } } */
       } /* { dg-error "before" "" { target c++ } } */
     }
   {
     do
       #pragma omp target enter data map(to:i)	/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
   {
     do
       #pragma omp target update to(i)		/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
   {
     do
       #pragma omp target exit data map(from:i)	/* { dg-error "may only be used in compound statements" } */
-    while (0);
+    while (0); /* { dg-error "before" "" { target c++ } } */
   } /* { dg-error "before" "" { target c++ } } */
 }
 

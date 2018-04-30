@@ -9,4 +9,4 @@ struct B: virtual A { };
 int a[]  = {
   !&((B*)0)->i,    // { dg-error "invalid access to non-static data member" }
   __builtin_offsetof (B, i)   // { dg-error "invalid access to non-static" }
-};			      // { dg-error "offsetof within non-standard-layout type" "" { target *-*-* } .-1 }
+};			      // { dg-message "offsetof within non-standard-layout type" "" { target *-*-* } .-1 }

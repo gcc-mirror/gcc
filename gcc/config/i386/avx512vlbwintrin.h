@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -216,6 +216,13 @@ _mm256_cvtepi16_epi8 (__m256i __A)
 						  (__mmask16) -1);
 }
 
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtepi16_storeu_epi8 (void * __P, __mmask16 __M,__m256i __A)
+{
+  __builtin_ia32_pmovwb256mem_mask ((__v16qi *) __P , (__v16hi) __A, __M);
+}
+
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_cvtepi16_epi8 (__m128i __O, __mmask16 __M, __m256i __A)
@@ -242,6 +249,13 @@ _mm_cvtsepi16_epi8 (__m128i __A)
   return (__m128i) __builtin_ia32_pmovswb128_mask ((__v8hi) __A,
 						   (__v16qi)_mm_undefined_si128(),
 						   (__mmask8) -1);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtsepi16_storeu_epi8 (void * __P, __mmask8 __M,__m128i __A)
+{
+  __builtin_ia32_pmovswb128mem_mask ((__v8qi *) __P , (__v8hi) __A, __M);
 }
 
 extern __inline __m128i
@@ -272,6 +286,13 @@ _mm256_cvtsepi16_epi8 (__m256i __A)
 						   (__mmask16) -1);
 }
 
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtsepi16_storeu_epi8 (void * __P, __mmask16 __M,__m256i __A)
+{
+  __builtin_ia32_pmovswb256mem_mask ((__v16qi *) __P , (__v16hi) __A, __M);
+}
+
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_cvtsepi16_epi8 (__m128i __O, __mmask16 __M, __m256i __A)
@@ -298,6 +319,13 @@ _mm_cvtusepi16_epi8 (__m128i __A)
   return (__m128i) __builtin_ia32_pmovuswb128_mask ((__v8hi) __A,
 						    (__v16qi)_mm_undefined_si128(),
 						    (__mmask8) -1);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtusepi16_storeu_epi8 (void * __P, __mmask8 __M,__m128i __A)
+{
+  __builtin_ia32_pmovuswb128mem_mask ((__v8qi *) __P , (__v8hi) __A, __M);
 }
 
 extern __inline __m128i
@@ -327,6 +355,13 @@ _mm256_cvtusepi16_epi8 (__m256i __A)
   return (__m128i) __builtin_ia32_pmovuswb256_mask ((__v16hi) __A,
 						    (__v16qi)_mm_undefined_si128(),
 						    (__mmask16) -1);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtusepi16_storeu_epi8 (void * __P, __mmask16 __M,__m256i __A)
+{
+  __builtin_ia32_pmovuswb256mem_mask ((__v16qi *) __P , (__v16hi) __A, __M);
 }
 
 extern __inline __m128i
@@ -4007,6 +4042,13 @@ _mm_cvtepi16_epi8 (__m128i __A)
   return (__m128i) __builtin_ia32_pmovwb128_mask ((__v8hi) __A,
 						  (__v16qi)_mm_undefined_si128(),
 						  (__mmask8) -1);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtepi16_storeu_epi8 (void * __P, __mmask8 __M,__m128i __A)
+{
+  __builtin_ia32_pmovwb128mem_mask ((__v8qi *) __P , (__v8hi) __A, __M);
 }
 
 extern __inline __m128i

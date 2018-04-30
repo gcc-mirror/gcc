@@ -1,6 +1,6 @@
 ###################################
 # 
-#  Copyright (C) 2009-2017 Free Software Foundation, Inc.
+#  Copyright (C) 2009-2018 Free Software Foundation, Inc.
 #
 #  Contributed by Michael Eager <eager@eagercon.com>.
 #
@@ -29,6 +29,12 @@
 # 
 #######################################
 
+
+/* An executable stack is *not* required for these functions.  */
+#ifdef __linux__
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
 
 	.globl	__moddi3
 	.ent	__moddi3

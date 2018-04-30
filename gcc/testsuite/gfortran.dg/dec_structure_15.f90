@@ -24,4 +24,3 @@ contains
     a2 = 0.0
   end function
 end module
-! { dg-final { cleanup-modules "dec_structure_15" } }

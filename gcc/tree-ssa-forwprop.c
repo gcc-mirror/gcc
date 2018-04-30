@@ -1,5 +1,5 @@
 /* Forward propagation of expressions for single use variables.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "cfganal.h"
 #include "optabs-tree.h"
+#include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -758,12 +760,12 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && TREE_OPERAND (lhs, 0) == name)
     {
       tree def_rhs_base;
-      HOST_WIDE_INT def_rhs_offset;
+      poly_int64 def_rhs_offset;
       /* If the address is invariant we can always fold it.  */
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  offset_int off = mem_ref_offset (lhs);
+	  poly_offset_int off = mem_ref_offset (lhs);
 	  tree new_ptr;
 	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
@@ -850,11 +852,11 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && TREE_OPERAND (rhs, 0) == name)
     {
       tree def_rhs_base;
-      HOST_WIDE_INT def_rhs_offset;
+      poly_int64 def_rhs_offset;
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  offset_int off = mem_ref_offset (rhs);
+	  poly_offset_int off = mem_ref_offset (rhs);
 	  tree new_ptr;
 	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
@@ -1169,12 +1171,12 @@ constant_pointer_difference (tree p1, tree p2)
 	  if (TREE_CODE (p) == ADDR_EXPR)
 	    {
 	      tree q = TREE_OPERAND (p, 0);
-	      HOST_WIDE_INT offset;
+	      poly_int64 offset;
 	      tree base = get_addr_base_and_unit_offset (q, &offset);
 	      if (base)
 		{
 		  q = base;
-		  if (offset)
+		  if (maybe_ne (offset, 0))
 		    off = size_binop (PLUS_EXPR, off, size_int (offset));
 		}
 	      if (TREE_CODE (q) == MEM_REF
@@ -1491,9 +1493,14 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
    applied, otherwise return false.
 
    We are looking for X with unsigned type T with bitsize B, OP being
-   +, | or ^, some type T2 wider than T and
+   +, | or ^, some type T2 wider than T.  For:
    (X << CNT1) OP (X >> CNT2)				iff CNT1 + CNT2 == B
    ((T) ((T2) X << CNT1)) OP ((T) ((T2) X >> CNT2))	iff CNT1 + CNT2 == B
+
+   transform these into:
+   X r<< CNT1
+
+   Or for:
    (X << Y) OP (X >> (B - Y))
    (X << (int) Y) OP (X >> (int) (B - Y))
    ((T) ((T2) X << Y)) OP ((T) ((T2) X >> (B - Y)))
@@ -1503,12 +1510,23 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
    ((T) ((T2) X << Y)) | ((T) ((T2) X >> ((-Y) & (B - 1))))
    ((T) ((T2) X << (int) Y)) | ((T) ((T2) X >> (int) ((-Y) & (B - 1))))
 
-   and transform these into:
-   X r<< CNT1
+   transform these into:
    X r<< Y
 
+   Or for:
+   (X << (Y & (B - 1))) | (X >> ((-Y) & (B - 1)))
+   (X << (int) (Y & (B - 1))) | (X >> (int) ((-Y) & (B - 1)))
+   ((T) ((T2) X << (Y & (B - 1)))) | ((T) ((T2) X >> ((-Y) & (B - 1))))
+   ((T) ((T2) X << (int) (Y & (B - 1)))) \
+     | ((T) ((T2) X >> (int) ((-Y) & (B - 1))))
+
+   transform these into:
+   X r<< (Y & (B - 1))
+
    Note, in the patterns with T2 type, the type of OP operands
-   might be even a signed type, but should have precision B.  */
+   might be even a signed type, but should have precision B.
+   Expressions with & (B - 1) should be recognized only if B is
+   a power of 2.  */
 
 static bool
 simplify_rotate (gimple_stmt_iterator *gsi)
@@ -1529,7 +1547,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   /* Only create rotates in complete modes.  Other cases are not
      expanded properly.  */
   if (!INTEGRAL_TYPE_P (rtype)
-      || TYPE_PRECISION (rtype) != GET_MODE_PRECISION (TYPE_MODE (rtype)))
+      || !type_has_mode_precision_p (rtype))
     return false;
 
   for (i = 0; i < 2; i++)
@@ -1578,7 +1596,9 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	def_arg1[i] = tem;
       }
   /* Both shifts have to use the same first operand.  */
-  if (TREE_CODE (def_arg1[0]) != SSA_NAME || def_arg1[0] != def_arg1[1])
+  if (!operand_equal_for_phi_arg_p (def_arg1[0], def_arg1[1])
+      || !types_compatible_p (TREE_TYPE (def_arg1[0]),
+			      TREE_TYPE (def_arg1[1])))
     return false;
   if (!TYPE_UNSIGNED (TREE_TYPE (def_arg1[0])))
     return false;
@@ -1609,8 +1629,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (cdef_arg1[i]))
 	      && TYPE_PRECISION (TREE_TYPE (cdef_arg1[i]))
 		 > floor_log2 (TYPE_PRECISION (rtype))
-	      && TYPE_PRECISION (TREE_TYPE (cdef_arg1[i]))
-		 == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (cdef_arg1[i]))))
+	      && type_has_mode_precision_p (TREE_TYPE (cdef_arg1[i])))
 	    {
 	      def_arg2_alt[i] = cdef_arg1[i];
 	      defcodefor_name (def_arg2_alt[i], &cdef_code[i],
@@ -1639,8 +1658,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		&& INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		&& TYPE_PRECISION (TREE_TYPE (tem))
 		 > floor_log2 (TYPE_PRECISION (rtype))
-		&& TYPE_PRECISION (TREE_TYPE (tem))
-		 == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (tem)))
+		&& type_has_mode_precision_p (TREE_TYPE (tem))
 		&& (tem == def_arg2[1 - i]
 		    || tem == def_arg2_alt[1 - i]))
 	      {
@@ -1651,8 +1669,10 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	/* The above sequence isn't safe for Y being 0,
 	   because then one of the shifts triggers undefined behavior.
 	   This alternative is safe even for rotation count of 0.
-	   One shift count is Y and the other (-Y) & (B - 1).  */
+	   One shift count is Y and the other (-Y) & (B - 1).
+	   Or one shift count is Y & (B - 1) and the other (-Y) & (B - 1).  */
 	else if (cdef_code[i] == BIT_AND_EXPR
+		 && pow2p_hwi (TYPE_PRECISION (rtype))
 		 && tree_fits_shwi_p (cdef_arg2[i])
 		 && tree_to_shwi (cdef_arg2[i])
 		    == TYPE_PRECISION (rtype) - 1
@@ -1667,8 +1687,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		&& INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		&& TYPE_PRECISION (TREE_TYPE (tem))
 		 > floor_log2 (TYPE_PRECISION (rtype))
-		&& TYPE_PRECISION (TREE_TYPE (tem))
-		 == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (tem))))
+		&& type_has_mode_precision_p (TREE_TYPE (tem)))
 	      defcodefor_name (tem, &code, &tem, NULL);
 
 	    if (code == NEGATE_EXPR)
@@ -1678,18 +1697,50 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		    rotcnt = tem;
 		    break;
 		  }
-		defcodefor_name (tem, &code, &tem, NULL);
+		tree tem2;
+		defcodefor_name (tem, &code, &tem2, NULL);
 		if (CONVERT_EXPR_CODE_P (code)
-		    && INTEGRAL_TYPE_P (TREE_TYPE (tem))
-		    && TYPE_PRECISION (TREE_TYPE (tem))
+		    && INTEGRAL_TYPE_P (TREE_TYPE (tem2))
+		    && TYPE_PRECISION (TREE_TYPE (tem2))
 		       > floor_log2 (TYPE_PRECISION (rtype))
-		    && TYPE_PRECISION (TREE_TYPE (tem))
-		       == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (tem)))
-		    && (tem == def_arg2[1 - i]
-			|| tem == def_arg2_alt[1 - i]))
+		    && type_has_mode_precision_p (TREE_TYPE (tem2)))
 		  {
-		    rotcnt = tem;
-		    break;
+		    if (tem2 == def_arg2[1 - i]
+			|| tem2 == def_arg2_alt[1 - i])
+		      {
+			rotcnt = tem2;
+			break;
+		      }
+		  }
+		else
+		  tem2 = NULL_TREE;
+
+		if (cdef_code[1 - i] == BIT_AND_EXPR
+		    && tree_fits_shwi_p (cdef_arg2[1 - i])
+		    && tree_to_shwi (cdef_arg2[1 - i])
+		       == TYPE_PRECISION (rtype) - 1
+		    && TREE_CODE (cdef_arg1[1 - i]) == SSA_NAME)
+		  {
+		    if (tem == cdef_arg1[1 - i]
+			|| tem2 == cdef_arg1[1 - i])
+		      {
+			rotcnt = def_arg2[1 - i];
+			break;
+		      }
+		    tree tem3;
+		    defcodefor_name (cdef_arg1[1 - i], &code, &tem3, NULL);
+		    if (CONVERT_EXPR_CODE_P (code)
+			&& INTEGRAL_TYPE_P (TREE_TYPE (tem3))
+			&& TYPE_PRECISION (TREE_TYPE (tem3))
+			   > floor_log2 (TYPE_PRECISION (rtype))
+			&& type_has_mode_precision_p (TREE_TYPE (tem3)))
+		      {
+			if (tem == tem3 || tem2 == tem3)
+			  {
+			    rotcnt = def_arg2[1 - i];
+			    break;
+			  }
+		      }
 		  }
 	      }
 	  }
@@ -1731,7 +1782,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   gimple *def_stmt;
   tree op, op0, op1, op2;
   tree elem_type;
-  unsigned idx, n, size;
+  unsigned idx, size;
   enum tree_code code;
 
   op = gimple_assign_rhs1 (stmt);
@@ -1766,19 +1817,18 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
     return false;
 
   size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
-  n = TREE_INT_CST_LOW (op1) / size;
-  if (n != 1)
+  if (maybe_ne (bit_field_size (op), size))
     return false;
-  idx = TREE_INT_CST_LOW (op2) / size;
 
-  if (code == VEC_PERM_EXPR)
+  if (code == VEC_PERM_EXPR
+      && constant_multiple_p (bit_field_offset (op), size, &idx))
     {
       tree p, m, tem;
-      unsigned nelts;
+      unsigned HOST_WIDE_INT nelts;
       m = gimple_assign_rhs3 (def_stmt);
-      if (TREE_CODE (m) != VECTOR_CST)
+      if (TREE_CODE (m) != VECTOR_CST
+	  || !VECTOR_CST_NELTS (m).is_constant (&nelts))
 	return false;
-      nelts = VECTOR_CST_NELTS (m);
       idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx));
       idx %= 2 * nelts;
       if (idx < nelts)
@@ -1808,16 +1858,18 @@ static int
 is_combined_permutation_identity (tree mask1, tree mask2)
 {
   tree mask;
-  unsigned int nelts, i, j;
+  unsigned HOST_WIDE_INT nelts, i, j;
   bool maybe_identity1 = true;
   bool maybe_identity2 = true;
 
   gcc_checking_assert (TREE_CODE (mask1) == VECTOR_CST
 		       && TREE_CODE (mask2) == VECTOR_CST);
   mask = fold_ternary (VEC_PERM_EXPR, TREE_TYPE (mask1), mask1, mask1, mask2);
-  gcc_assert (TREE_CODE (mask) == VECTOR_CST);
+  if (mask == NULL_TREE || TREE_CODE (mask) != VECTOR_CST)
+    return 0;
 
-  nelts = VECTOR_CST_NELTS (mask);
+  if (!VECTOR_CST_NELTS (mask).is_constant (&nelts))
+    return 0;
   for (i = 0; i < nelts; i++)
     {
       tree val = VECTOR_CST_ELT (mask, i);
@@ -1953,10 +2005,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   gimple *def_stmt;
   tree op, op2, orig, type, elem_type;
-  unsigned elem_size, nelts, i;
+  unsigned elem_size, i;
+  unsigned HOST_WIDE_INT nelts;
   enum tree_code code, conv_code;
   constructor_elt *elt;
-  unsigned char *sel;
   bool maybe_ident;
 
   gcc_checking_assert (gimple_assign_rhs_code (stmt) == CONSTRUCTOR);
@@ -1965,11 +2017,12 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   type = TREE_TYPE (op);
   gcc_checking_assert (TREE_CODE (type) == VECTOR_TYPE);
 
-  nelts = TYPE_VECTOR_SUBPARTS (type);
+  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
+    return false;
   elem_type = TREE_TYPE (type);
   elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
 
-  sel = XALLOCAVEC (unsigned char, nelts);
+  vec_perm_builder sel (nelts, nelts, 1);
   orig = NULL;
   conv_code = ERROR_MARK;
   maybe_ident = true;
@@ -1992,8 +2045,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  op1 = gimple_assign_rhs1 (def_stmt);
 	  if (conv_code == ERROR_MARK)
 	    {
-	      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (elt->value)))
-		  != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1))))
+	      if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (elt->value))),
+			    GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1)))))
 		return false;
 	      conv_code = code;
 	    }
@@ -2025,17 +2078,20 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	    return false;
 	  orig = ref;
 	}
-      if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)
+      unsigned int elt;
+      if (maybe_ne (bit_field_size (op1), elem_size)
+	  || !constant_multiple_p (bit_field_offset (op1), elem_size, &elt))
 	return false;
-      sel[i] = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
-      if (sel[i] != i) maybe_ident = false;
+      if (elt != i)
+	maybe_ident = false;
+      sel.quick_push (elt);
     }
   if (i < nelts)
     return false;
 
   if (! VECTOR_TYPE_P (TREE_TYPE (orig))
-      || (TYPE_VECTOR_SUBPARTS (type)
-	  != TYPE_VECTOR_SUBPARTS (TREE_TYPE (orig))))
+      || maybe_ne (TYPE_VECTOR_SUBPARTS (type),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (orig))))
     return false;
 
   tree tem;
@@ -2055,21 +2111,19 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     }
   else
     {
-      tree mask_type, *mask_elts;
+      tree mask_type;
 
-      if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
+      vec_perm_indices indices (sel, 1, nelts);
+      if (!can_vec_perm_const_p (TYPE_MODE (type), indices))
 	return false;
       mask_type
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
 			     nelts);
       if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_VECTOR_INT
-	  || GET_MODE_SIZE (TYPE_MODE (mask_type))
-	     != GET_MODE_SIZE (TYPE_MODE (type)))
+	  || maybe_ne (GET_MODE_SIZE (TYPE_MODE (mask_type)),
+		       GET_MODE_SIZE (TYPE_MODE (type))))
 	return false;
-      mask_elts = XALLOCAVEC (tree, nelts);
-      for (i = 0; i < nelts; i++)
-	mask_elts[i] = build_int_cst (TREE_TYPE (mask_type), sel[i]);
-      op2 = build_vector (mask_type, mask_elts);
+      op2 = vec_perm_indices_to_tree (mask_type, indices);
       if (conv_code == ERROR_MARK)
 	gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);
       else

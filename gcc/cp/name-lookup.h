@@ -1,5 +1,5 @@
 /* Declarations for C++ name lookup routines.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -148,15 +148,6 @@ struct GTY(()) cp_class_binding {
   tree identifier;
 };
 
-
-struct GTY(()) cp_label_binding {
-  /* The bound LABEL_DECL.  */
-  tree label;
-  /* The previous IDENTIFIER_LABEL_VALUE.  */
-  tree prev_value;
-};
-
-
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
    Contours include:
@@ -178,9 +169,6 @@ struct GTY(()) cp_label_binding {
    CURRENT_BINDING_LEVEL.  You should use lookup_name_current_level
    instead.  */
 
-/* Note that the information in the `names' component of the global contour
-   is duplicated in the IDENTIFIER_GLOBAL_VALUEs of all identifiers.  */
-
 struct GTY(()) cp_binding_level {
   /* A chain of _DECL nodes for all variables, constants, functions,
       and typedef types.  These are in the reverse of the order
@@ -188,15 +176,11 @@ struct GTY(()) cp_binding_level {
       are wrapped in TREE_LISTs; the TREE_VALUE is the OVERLOAD.  */
   tree names;
 
-  /* A chain of NAMESPACE_DECL nodes.  */
-  tree namespaces;
-
   /* A list of USING_DECL nodes.  */
   tree usings;
 
-  /* A list of used namespaces. PURPOSE is the namespace,
-      VALUE the common ancestor with this binding_level's namespace.  */
-  tree using_directives;
+  /* Using directives.  */
+  vec<tree, va_gc> *using_directives;
 
   /* For the binding level corresponding to a class, the entities
       declared in the class or its base classes.  */
@@ -208,10 +192,6 @@ struct GTY(()) cp_binding_level {
       the TREE_VALUE is the IDENTIFIER_TYPE_VALUE before we entered
       the class.  */
   tree type_shadowed;
-
-  /* Similar to class_shadowed, but for IDENTIFIER_LABEL_VALUE, and
-      used for all binding levels.  */
-  vec<cp_label_binding, va_gc> *shadowed_labels;
 
   /* For each level (except not the global one),
       a chain of BLOCK nodes for all the levels
@@ -307,14 +287,14 @@ extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
-extern void set_global_binding (tree id, tree val);
-extern bool hidden_name_p (tree);
-extern tree remove_hidden_names (tree);
+extern void set_global_binding (tree decl);
+inline tree get_global_binding (tree id)
+{
+  return get_namespace_binding (NULL_TREE, id);
+}
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);
-extern tree lookup_name_innermost_nonclass_level (tree);
 extern bool is_local_extern (tree);
-extern tree lookup_function_nonclass (tree, vec<tree, va_gc> *, bool);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool);
 extern bool push_class_level_binding (tree, tree);
@@ -326,9 +306,16 @@ extern void push_decl_namespace (tree);
 extern void pop_decl_namespace (void);
 extern void do_namespace_alias (tree, tree);
 extern tree do_class_using_decl (tree, tree);
-extern void do_using_directive (tree);
-extern cp_expr lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
-extern bool is_associated_namespace (tree, tree);
+extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
+extern tree search_anon_aggr (tree, tree, bool = false);
+extern tree get_class_binding_direct (tree, tree, int type_or_fns = -1);
+extern tree get_class_binding (tree, tree, int type_or_fns = -1);
+extern tree *find_member_slot (tree klass, tree name);
+extern tree *add_member_slot (tree klass, tree name);
+extern void resort_type_member_vec (void *, void *,
+				    gt_pointer_operator, void *);
+extern void set_class_bindings (tree, unsigned extra = 0);
+extern void insert_late_enum_def_bindings (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
@@ -337,8 +324,8 @@ extern void finish_namespace_using_decl (tree, tree, tree);
 extern void finish_local_using_decl (tree, tree, tree);
 extern void finish_namespace_using_directive (tree, tree);
 extern void finish_local_using_directive (tree, tree);
-extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl (tree, bool is_friend = false);
+extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree, bool is_friend = false);
 extern tree pushdecl_top_level_and_finish (tree, tree);
 extern tree pushtag (tree, tree, tag_scope);

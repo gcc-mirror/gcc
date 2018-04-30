@@ -13,7 +13,7 @@ CONTAINS
   SUBROUTINE S1(a)
          REAL(dp), DIMENSION(45), INTENT(OUT), &
       OPTIONAL                               :: a
-      if (present(a)) call abort()
+      if (present(a)) STOP 1
   END SUBROUTINE S1
   SUBROUTINE S2(a)
           REAL(dp), DIMENSION(:, :), INTENT(OUT), &

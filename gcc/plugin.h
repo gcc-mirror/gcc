@@ -1,5 +1,5 @@
 /* Header file for internal GCC plugin mechanism.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -167,8 +167,6 @@ extern bool plugins_active_p (void);
 extern void dump_active_plugins (FILE *);
 extern void debug_active_plugins (void);
 extern void warn_if_plugins (void);
-extern void plugins_internal_error_function (diagnostic_context *,
-					     const char *, va_list *);
 extern void print_plugins_versions (FILE *file, const char *indent);
 extern void print_plugins_help (FILE *file, const char *indent);
 extern void finalize_plugins (void);

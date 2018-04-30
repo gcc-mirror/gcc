@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for any
    Solaris 2 system.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -169,14 +169,42 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY HAVE_INITFINI_ARRAY_SUPPORT
 
+/* Solaris libc and libm implement multiple behaviours for various
+   interfaces that have changed over the years in different versions of the
+   C standard.  The behaviour is controlled by linking corresponding
+   values-*.o objects.  Each of these objects contain alternate definitions
+   of one or more variables that the libraries use to select which
+   conflicting behaviour they should exhibit.  There are two sets of these
+   objects, values-X*.o and values-xpg*.o.
+
+   The values-X[ac].o objects set the variable _lib_version.  The Studio C
+   compilers use values-Xc.o with either -Xc or (since Studio 12.6)
+   -pedantic to select strictly conformant ISO C behaviour, otherwise
+   values-Xa.o.  Since -pedantic is a diagnostic option only in GCC, we
+   need to specifiy the -std=c* options and -std=iso9899:199409.  We
+   traditionally include -ansi, which affects C and C++, and also -std=c++*
+   for consistency.
+
+   The values-xpg[46].o objects define either or both __xpg[46] variables,
+   selecting XPG4 mode (__xpg4) and conforming C99/SUSv3 behavior (__xpg6).
+
+   Since GCC 5, gcc defaults to -std=gnu11 or higher, so we link
+   values-xpg6.o to get C99 semantics.  Besides, most of the runtime
+   libraries always require C99 semantics.
+
+   Since only one instance of _lib_version and __xpg[46] takes effekt (the
+   first in ld.so.1's search path), we only link the values-*.o files into
+   executable programs.  */
 #undef STARTFILE_ARCH_SPEC
-#define STARTFILE_ARCH_SPEC "%{ansi:values-Xc.o%s} \
-			    %{!ansi:values-Xa.o%s}"
+#define STARTFILE_ARCH_SPEC \
+  "%{!shared:%{!symbolic: \
+     %{ansi|std=c*|std=iso9899\\:199409:values-Xc.o%s; :values-Xa.o%s} \
+     %{std=c90|std=gnu90:values-xpg4.o%s; :values-xpg6.o%s}}}"
 
 #if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)
-#define STARTFILE_CRTBEGIN_SPEC "%{shared:crtbeginS.o%s} \
-				 %{" PIE_SPEC ":crtbeginS.o%s} \
-				 %{" NO_PIE_SPEC ":crtbegin.o%s}"
+#define STARTFILE_CRTBEGIN_SPEC "%{static:crtbegin.o%s; \
+				   shared|" PIE_SPEC ":crtbeginS.o%s; \
+				   :crtbegin.o%s}"
 #else
 #define STARTFILE_CRTBEGIN_SPEC	"crtbegin.o%s"
 #endif
@@ -205,8 +233,8 @@ along with GCC; see the file COPYING3.  If not see
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.  */
 #undef STARTFILE_SPEC
 #ifdef HAVE_SOLARIS_CRTS
-/* Since Solaris 11.x and Solaris 12, the OS delivers crt1.o, crti.o, and
-   crtn.o, with a hook for compiler-dependent stuff like profile handling.  */
+/* Since Solaris 11.4, the OS delivers crt1.o, crti.o, and crtn.o, with a hook
+   for compiler-dependent stuff like profile handling.  */
 #define STARTFILE_SPEC "%{!shared:%{!symbolic: \
 			  crt1.o%s \
 			  %{p:%e-p is not supported; \
@@ -224,9 +252,9 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)
-#define ENDFILE_CRTEND_SPEC "%{shared:crtendS.o%s;: \
-			       %{" PIE_SPEC ":crtendS.o%s} \
-			       %{" NO_PIE_SPEC ":crtend.o%s}}"
+#define ENDFILE_CRTEND_SPEC "%{static:crtend.o%s; \
+			       shared|" PIE_SPEC ":crtendS.o%s; \
+			       :crtend.o%s}"
 #else
 #define ENDFILE_CRTEND_SPEC "crtend.o%s"
 #endif
@@ -331,6 +359,11 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifndef USE_GLD
+/* Prefer native form with Solaris ld.  */
+#define SYSROOT_SPEC "-z sysroot=%R"
+#endif
+
+#ifndef USE_GLD
 /* With Sun ld, use mapfile to enforce direct binding to libgcc_s unwinder.  */
 #define LINK_LIBGCC_MAPFILE_SPEC \
   "%{shared|shared-libgcc:-M %slibgcc-unwind.map}"
@@ -367,7 +400,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Solaris 11 build 135+ implements dl_iterate_phdr.  GNU ld needs
    --eh-frame-hdr to create the required .eh_frame_hdr sections.  */
 #if defined(HAVE_LD_EH_FRAME_HDR) && defined(TARGET_DL_ITERATE_PHDR)
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif /* HAVE_LD_EH_FRAME && TARGET_DL_ITERATE_PHDR */
 #endif
 
@@ -401,8 +434,8 @@ along with GCC; see the file COPYING3.  If not see
 /* #pragma init and #pragma fini are implemented on top of init and
    fini attributes.  */
 #define SOLARIS_ATTRIBUTE_TABLE						\
-  { "init",      0, 0, true,  false,  false, NULL, false },		\
-  { "fini",      0, 0, true,  false,  false, NULL, false }
+  { "init",      0, 0, true,  false,  false, false, NULL, NULL },	\
+  { "fini",      0, 0, true,  false,  false, false, NULL, NULL }
 
 /* Solaris-specific #pragmas are implemented on top of attributes.  Hook in
    the bits from config/sol2.c.  */

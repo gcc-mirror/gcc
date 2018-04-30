@@ -402,9 +402,10 @@ func (check *Checker) updateExprType(x ast.Expr, typ Type, final bool) {
 
 	case *ast.UnaryExpr:
 		// If x is a constant, the operands were constants.
-		// They don't need to be updated since they never
-		// get "materialized" into a typed value; and they
-		// will be processed at the end of the type check.
+		// The operands don't need to be updated since they
+		// never get "materialized" into a typed value. If
+		// left in the untyped map, they will be processed
+		// at the end of the type check.
 		if old.val != nil {
 			break
 		}
@@ -443,12 +444,21 @@ func (check *Checker) updateExprType(x ast.Expr, typ Type, final bool) {
 	// Remove it from the map of yet untyped expressions.
 	delete(check.untyped, x)
 
-	// If x is the lhs of a shift, its final type must be integer.
-	// We already know from the shift check that it is representable
-	// as an integer if it is a constant.
-	if old.isLhs && !isInteger(typ) {
-		check.invalidOp(x.Pos(), "shifted operand %s (type %s) must be integer", x, typ)
-		return
+	if old.isLhs {
+		// If x is the lhs of a shift, its final type must be integer.
+		// We already know from the shift check that it is representable
+		// as an integer if it is a constant.
+		if !isInteger(typ) {
+			check.invalidOp(x.Pos(), "shifted operand %s (type %s) must be integer", x, typ)
+			return
+		}
+	} else if old.val != nil {
+		// If x is a constant, it must be representable as a value of typ.
+		c := operand{old.mode, x, old.typ, old.val, 0}
+		check.convertUntyped(&c, typ)
+		if c.mode == invalid {
+			return
+		}
 	}
 
 	// Everything's fine, record final type and value for x.
@@ -633,13 +643,13 @@ func (check *Checker) shift(x, y *operand, e *ast.BinaryExpr, op token.Token) {
 	}
 
 	// spec: "The right operand in a shift expression must have unsigned
-	// integer type or be an untyped constant that can be converted to
-	// unsigned integer type."
+	// integer type or be an untyped constant representable by a value of
+	// type uint."
 	switch {
 	case isUnsigned(y.typ):
 		// nothing to do
 	case isUntyped(y.typ):
-		check.convertUntyped(y, Typ[UntypedInt])
+		check.convertUntyped(y, Typ[Uint])
 		if y.mode == invalid {
 			x.mode = invalid
 			return
@@ -800,10 +810,24 @@ func (check *Checker) binary(x *operand, e *ast.BinaryExpr, lhs, rhs ast.Expr, o
 		return
 	}
 
-	if (op == token.QUO || op == token.REM) && (x.mode == constant_ || isInteger(x.typ)) && y.mode == constant_ && constant.Sign(y.val) == 0 {
-		check.invalidOp(y.pos(), "division by zero")
-		x.mode = invalid
-		return
+	if op == token.QUO || op == token.REM {
+		// check for zero divisor
+		if (x.mode == constant_ || isInteger(x.typ)) && y.mode == constant_ && constant.Sign(y.val) == 0 {
+			check.invalidOp(y.pos(), "division by zero")
+			x.mode = invalid
+			return
+		}
+
+		// check for divisor underflow in complex division (see issue 20227)
+		if x.mode == constant_ && y.mode == constant_ && isComplex(x.typ) {
+			re, im := constant.Real(y.val), constant.Imag(y.val)
+			re2, im2 := constant.BinaryOp(re, token.MUL, re), constant.BinaryOp(im, token.MUL, im)
+			if constant.Sign(re2) == 0 && constant.Sign(im2) == 0 {
+				check.invalidOp(y.pos(), "division by zero")
+				x.mode = invalid
+				return
+			}
+		}
 	}
 
 	if x.mode == constant_ && y.mode == constant_ {
@@ -1006,6 +1030,15 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 			// Anonymous functions are considered part of the
 			// init expression/func declaration which contains
 			// them: use existing package-level declaration info.
+			//
+			// TODO(gri) We delay type-checking of regular (top-level)
+			//           function bodies until later. Why don't we do
+			//           it for closures of top-level expressions?
+			//           (We can't easily do it for local closures
+			//           because the surrounding scopes must reflect
+			//           the exact position where the closure appears
+			//           in the source; e.g., variables declared below
+			//           must not be visible).
 			check.funcBody(check.decl, "", sig, e.Body)
 			x.mode = value
 			x.typ = sig
@@ -1111,6 +1144,16 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 			}
 
 		case *Array:
+			// Prevent crash if the array referred to is not yet set up.
+			// This is a stop-gap solution; a better approach would use the mechanism of
+			// Checker.ident (typexpr.go) using a path of types. But that would require
+			// passing the path everywhere (all expression-checking methods, not just
+			// type expression checking), and we're not set up for that (quite possibly
+			// an indication that cycle detection needs to be rethought). Was issue #18643.
+			if utyp.elem == nil {
+				check.error(e.Pos(), "illegal cycle in type declaration")
+				goto Error
+			}
 			n := check.indexedElts(e.Elts, utyp.elem, utyp.len)
 			// If we have an "open" [...]T array, set the length now that we know it
 			// and record the type for [...] (usually done by check.typExpr which is
@@ -1121,9 +1164,21 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 			}
 
 		case *Slice:
+			// Prevent crash if the slice referred to is not yet set up.
+			// See analogous comment for *Array.
+			if utyp.elem == nil {
+				check.error(e.Pos(), "illegal cycle in type declaration")
+				goto Error
+			}
 			check.indexedElts(e.Elts, utyp.elem, -1)
 
 		case *Map:
+			// Prevent crash if the map referred to is not yet set up.
+			// See analogous comment for *Array.
+			if utyp.key == nil || utyp.elem == nil {
+				check.error(e.Pos(), "illegal cycle in type declaration")
+				goto Error
+			}
 			visited := make(map[interface{}][]Type, len(e.Elts))
 			for _, e := range e.Elts {
 				kv, _ := e.(*ast.KeyValueExpr)
@@ -1139,17 +1194,18 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 				if x.mode == constant_ {
 					duplicate := false
 					// if the key is of interface type, the type is also significant when checking for duplicates
+					xkey := keyVal(x.val)
 					if _, ok := utyp.key.Underlying().(*Interface); ok {
-						for _, vtyp := range visited[x.val] {
+						for _, vtyp := range visited[xkey] {
 							if Identical(vtyp, x.typ) {
 								duplicate = true
 								break
 							}
 						}
-						visited[x.val] = append(visited[x.val], x.typ)
+						visited[xkey] = append(visited[xkey], x.typ)
 					} else {
-						_, duplicate = visited[x.val]
-						visited[x.val] = nil
+						_, duplicate = visited[xkey]
+						visited[xkey] = nil
 					}
 					if duplicate {
 						check.errorf(x.pos(), "duplicate key %s in map literal", x.val)
@@ -1161,6 +1217,17 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 			}
 
 		default:
+			// when "using" all elements unpack KeyValueExpr
+			// explicitly because check.use doesn't accept them
+			for _, e := range e.Elts {
+				if kv, _ := e.(*ast.KeyValueExpr); kv != nil {
+					// Ideally, we should also "use" kv.Key but we can't know
+					// if it's an externally defined struct key or not. Going
+					// forward anyway can lead to other errors. Give up instead.
+					e = kv.Value
+				}
+				check.use(e)
+			}
 			// if utyp is invalid, an error was reported before
 			if utyp != Typ[Invalid] {
 				check.errorf(e.Pos(), "invalid composite literal type %s", typ)
@@ -1182,6 +1249,7 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 	case *ast.IndexExpr:
 		check.expr(x, e.X)
 		if x.mode == invalid {
+			check.use(e.Index)
 			goto Error
 		}
 
@@ -1251,6 +1319,7 @@ func (check *Checker) exprInternal(x *operand, e ast.Expr, hint Type) exprKind {
 	case *ast.SliceExpr:
 		check.expr(x, e.X)
 		if x.mode == invalid {
+			check.use(e.Low, e.High, e.Max)
 			goto Error
 		}
 
@@ -1438,6 +1507,30 @@ Error:
 	x.mode = invalid
 	x.expr = e
 	return statement // avoid follow-up errors
+}
+
+func keyVal(x constant.Value) interface{} {
+	switch x.Kind() {
+	case constant.Bool:
+		return constant.BoolVal(x)
+	case constant.String:
+		return constant.StringVal(x)
+	case constant.Int:
+		if v, ok := constant.Int64Val(x); ok {
+			return v
+		}
+		if v, ok := constant.Uint64Val(x); ok {
+			return v
+		}
+	case constant.Float:
+		v, _ := constant.Float64Val(x)
+		return v
+	case constant.Complex:
+		r, _ := constant.Float64Val(constant.Real(x))
+		i, _ := constant.Float64Val(constant.Imag(x))
+		return complex(r, i)
+	}
+	return x
 }
 
 // typeAssertion checks that x.(T) is legal; xtyp must be the type of x.

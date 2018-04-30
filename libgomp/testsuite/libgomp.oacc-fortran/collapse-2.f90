@@ -21,5 +21,5 @@ firstdo: do i = 1, 3
       end do
     end do firstdo
   !$acc end parallel
-  if (l) call abort
+  if (l) STOP 1
 end program collapse2

@@ -1,6 +1,6 @@
 /* Callee-saved register spill and fill routines for RISC-V.
 
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,39 +23,13 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "riscv-asm.h"
+
   .text
-
-  .globl __riscv_save_12
-  .globl __riscv_save_11
-  .globl __riscv_save_10
-  .globl __riscv_save_9
-  .globl __riscv_save_8
-  .globl __riscv_save_7
-  .globl __riscv_save_6
-  .globl __riscv_save_5
-  .globl __riscv_save_4
-  .globl __riscv_save_3
-  .globl __riscv_save_2
-  .globl __riscv_save_1
-  .globl __riscv_save_0
-
-  .globl __riscv_restore_12
-  .globl __riscv_restore_11
-  .globl __riscv_restore_10
-  .globl __riscv_restore_9
-  .globl __riscv_restore_8
-  .globl __riscv_restore_7
-  .globl __riscv_restore_6
-  .globl __riscv_restore_5
-  .globl __riscv_restore_4
-  .globl __riscv_restore_3
-  .globl __riscv_restore_2
-  .globl __riscv_restore_1
-  .globl __riscv_restore_0
 
 #if __riscv_xlen == 64
 
-__riscv_save_12:
+FUNC_BEGIN (__riscv_save_12)
   .cfi_startproc
   # __riscv_save_* routine use t0/x5 as return address
   .cfi_return_column 5
@@ -66,8 +40,8 @@ __riscv_save_12:
   .cfi_offset 27, -104
   j .Ls10
 
-__riscv_save_11:
-__riscv_save_10:
+FUNC_BEGIN (__riscv_save_11)
+FUNC_BEGIN (__riscv_save_10)
   .cfi_restore 27
   addi sp, sp, -112
   .cfi_def_cfa_offset 112
@@ -79,8 +53,8 @@ __riscv_save_10:
   .cfi_offset 25, -88
   j .Ls8
 
-__riscv_save_9:
-__riscv_save_8:
+FUNC_BEGIN (__riscv_save_9)
+FUNC_BEGIN (__riscv_save_8)
   .cfi_restore 25
   .cfi_restore 26
   .cfi_restore 27
@@ -94,8 +68,8 @@ __riscv_save_8:
   .cfi_offset 23, -72
   j .Ls6
 
-__riscv_save_7:
-__riscv_save_6:
+FUNC_BEGIN (__riscv_save_7)
+FUNC_BEGIN (__riscv_save_6)
   .cfi_restore 23
   .cfi_restore 24
   .cfi_restore 25
@@ -111,8 +85,8 @@ __riscv_save_6:
   .cfi_offset 21, -56
   j .Ls4
 
-__riscv_save_5:
-__riscv_save_4:
+FUNC_BEGIN (__riscv_save_5)
+FUNC_BEGIN (__riscv_save_4)
   .cfi_restore 21
   .cfi_restore 22
   .cfi_restore 24
@@ -133,8 +107,8 @@ __riscv_save_4:
   .cfi_offset 19, -40
   j .Ls2
 
-__riscv_save_3:
-__riscv_save_2:
+FUNC_BEGIN (__riscv_save_3)
+FUNC_BEGIN (__riscv_save_2)
   .cfi_restore 19
   .cfi_restore 20
   .cfi_restore 21
@@ -164,9 +138,20 @@ __riscv_save_2:
   sub sp, sp, t1
   jr t0
   .cfi_endproc
+FUNC_END (__riscv_save_12)
+FUNC_END (__riscv_save_11)
+FUNC_END (__riscv_save_10)
+FUNC_END (__riscv_save_9)
+FUNC_END (__riscv_save_8)
+FUNC_END (__riscv_save_7)
+FUNC_END (__riscv_save_6)
+FUNC_END (__riscv_save_5)
+FUNC_END (__riscv_save_4)
+FUNC_END (__riscv_save_3)
+FUNC_END (__riscv_save_2)
 
-__riscv_save_1:
-__riscv_save_0:
+FUNC_BEGIN (__riscv_save_1)
+FUNC_BEGIN (__riscv_save_0)
   .cfi_startproc
   # __riscv_save_* routine use t0/x5 as return address
   .cfi_return_column 5
@@ -178,8 +163,10 @@ __riscv_save_0:
   .cfi_offset 1, -8
   jr t0
   .cfi_endproc
+FUNC_END (__riscv_save_1)
+FUNC_END (__riscv_save_0)
 
-__riscv_restore_12:
+FUNC_BEGIN (__riscv_restore_12)
   .cfi_startproc
   .cfi_def_cfa_offset 112
   .cfi_offset 27, -104
@@ -199,8 +186,8 @@ __riscv_restore_12:
   .cfi_restore 27
   addi sp, sp, 16
 
-__riscv_restore_11:
-__riscv_restore_10:
+FUNC_BEGIN (__riscv_restore_11)
+FUNC_BEGIN (__riscv_restore_10)
   .cfi_restore 27
   .cfi_def_cfa_offset 96
   ld s10, 0(sp)
@@ -209,8 +196,8 @@ __riscv_restore_10:
   .cfi_restore 25
   addi sp, sp, 16
 
-__riscv_restore_9:
-__riscv_restore_8:
+FUNC_BEGIN (__riscv_restore_9)
+FUNC_BEGIN (__riscv_restore_8)
   .cfi_restore 25
   .cfi_restore 26
   .cfi_restore 27
@@ -221,8 +208,8 @@ __riscv_restore_8:
   .cfi_restore 23
   addi sp, sp, 16
 
-__riscv_restore_7:
-__riscv_restore_6:
+FUNC_BEGIN (__riscv_restore_7)
+FUNC_BEGIN (__riscv_restore_6)
   .cfi_restore 23
   .cfi_restore 24
   .cfi_restore 25
@@ -235,8 +222,8 @@ __riscv_restore_6:
   .cfi_restore 21
   addi sp, sp, 16
 
-__riscv_restore_5:
-__riscv_restore_4:
+FUNC_BEGIN (__riscv_restore_5)
+FUNC_BEGIN (__riscv_restore_4)
   .cfi_restore 21
   .cfi_restore 22
   .cfi_restore 23
@@ -251,8 +238,8 @@ __riscv_restore_4:
   .cfi_restore 19
   addi sp, sp, 16
 
-__riscv_restore_3:
-__riscv_restore_2:
+FUNC_BEGIN (__riscv_restore_3)
+FUNC_BEGIN (__riscv_restore_2)
   .cfi_restore 19
   .cfi_restore 20
   .cfi_restore 21
@@ -269,8 +256,8 @@ __riscv_restore_2:
   .cfi_restore 9
   addi sp, sp, 16
 
-__riscv_restore_1:
-__riscv_restore_0:
+FUNC_BEGIN (__riscv_restore_1)
+FUNC_BEGIN (__riscv_restore_0)
   .cfi_restore 9
   .cfi_restore 18
   .cfi_restore 19
@@ -291,10 +278,23 @@ __riscv_restore_0:
   .cfi_def_cfa_offset 0
   ret
   .cfi_endproc
+FUNC_END (__riscv_restore_12)
+FUNC_END (__riscv_restore_11)
+FUNC_END (__riscv_restore_10)
+FUNC_END (__riscv_restore_9)
+FUNC_END (__riscv_restore_8)
+FUNC_END (__riscv_restore_7)
+FUNC_END (__riscv_restore_6)
+FUNC_END (__riscv_restore_5)
+FUNC_END (__riscv_restore_4)
+FUNC_END (__riscv_restore_3)
+FUNC_END (__riscv_restore_2)
+FUNC_END (__riscv_restore_1)
+FUNC_END (__riscv_restore_0)
 
 #else
 
-__riscv_save_12:
+FUNC_BEGIN (__riscv_save_12)
   .cfi_startproc
   # __riscv_save_* routine use t0/x5 as return address
   .cfi_return_column 5
@@ -305,10 +305,10 @@ __riscv_save_12:
   .cfi_offset 27, -52
   j .Ls10
 
-__riscv_save_11:
-__riscv_save_10:
-__riscv_save_9:
-__riscv_save_8:
+FUNC_BEGIN (__riscv_save_11)
+FUNC_BEGIN (__riscv_save_10)
+FUNC_BEGIN (__riscv_save_9)
+FUNC_BEGIN (__riscv_save_8)
   .cfi_restore 27
   addi sp, sp, -64
   .cfi_def_cfa_offset 64
@@ -324,10 +324,10 @@ __riscv_save_8:
   .cfi_offset 23, -36
   j .Ls6
 
-__riscv_save_7:
-__riscv_save_6:
-__riscv_save_5:
-__riscv_save_4:
+FUNC_BEGIN (__riscv_save_7)
+FUNC_BEGIN (__riscv_save_6)
+FUNC_BEGIN (__riscv_save_5)
+FUNC_BEGIN (__riscv_save_4)
   .cfi_restore 23
   .cfi_restore 24
   .cfi_restore 25
@@ -358,11 +358,20 @@ __riscv_save_4:
   sub sp, sp, t1
   jr t0
   .cfi_endproc
+FUNC_END (__riscv_save_12)
+FUNC_END (__riscv_save_11)
+FUNC_END (__riscv_save_10)
+FUNC_END (__riscv_save_9)
+FUNC_END (__riscv_save_8)
+FUNC_END (__riscv_save_7)
+FUNC_END (__riscv_save_6)
+FUNC_END (__riscv_save_5)
+FUNC_END (__riscv_save_4)
 
-__riscv_save_3:
-__riscv_save_2:
-__riscv_save_1:
-__riscv_save_0:
+FUNC_BEGIN (__riscv_save_3)
+FUNC_BEGIN (__riscv_save_2)
+FUNC_BEGIN (__riscv_save_1)
+FUNC_BEGIN (__riscv_save_0)
   .cfi_startproc
   # __riscv_save_* routine use t0/x5 as return address
   .cfi_return_column 5
@@ -377,8 +386,12 @@ __riscv_save_0:
   .cfi_offset 1, -4
   jr t0
   .cfi_endproc
+FUNC_END (__riscv_save_3)
+FUNC_END (__riscv_save_2)
+FUNC_END (__riscv_save_1)
+FUNC_END (__riscv_save_0)
 
-__riscv_restore_12:
+FUNC_BEGIN (__riscv_restore_12)
   .cfi_startproc
   .cfi_def_cfa_offset 64
   .cfi_offset 27, -52
@@ -398,10 +411,10 @@ __riscv_restore_12:
   .cfi_restore 27
   addi sp, sp, 16
 
-__riscv_restore_11:
-__riscv_restore_10:
-__riscv_restore_9:
-__riscv_restore_8:
+FUNC_BEGIN (__riscv_restore_11)
+FUNC_BEGIN (__riscv_restore_10)
+FUNC_BEGIN (__riscv_restore_9)
+FUNC_BEGIN (__riscv_restore_8)
   .cfi_restore 27
   .cfi_def_cfa_offset 48
   lw s10, 0(sp)
@@ -414,10 +427,10 @@ __riscv_restore_8:
   .cfi_restore 23
   addi sp, sp, 16
 
-__riscv_restore_7:
-__riscv_restore_6:
-__riscv_restore_5:
-__riscv_restore_4:
+FUNC_BEGIN (__riscv_restore_7)
+FUNC_BEGIN (__riscv_restore_6)
+FUNC_BEGIN (__riscv_restore_5)
+FUNC_BEGIN (__riscv_restore_4)
   .cfi_restore 23
   .cfi_restore 24
   .cfi_restore 25
@@ -434,10 +447,10 @@ __riscv_restore_4:
   .cfi_restore 19
   addi sp, sp, 16
 
-__riscv_restore_3:
-__riscv_restore_2:
-__riscv_restore_1:
-__riscv_restore_0:
+FUNC_BEGIN (__riscv_restore_3)
+FUNC_BEGIN (__riscv_restore_2)
+FUNC_BEGIN (__riscv_restore_1)
+FUNC_BEGIN (__riscv_restore_0)
   .cfi_restore 19
   .cfi_restore 20
   .cfi_restore 21
@@ -459,5 +472,18 @@ __riscv_restore_0:
   .cfi_def_cfa_offset 0
   ret
   .cfi_endproc
+FUNC_END (__riscv_restore_12)
+FUNC_END (__riscv_restore_11)
+FUNC_END (__riscv_restore_10)
+FUNC_END (__riscv_restore_9)
+FUNC_END (__riscv_restore_8)
+FUNC_END (__riscv_restore_7)
+FUNC_END (__riscv_restore_6)
+FUNC_END (__riscv_restore_5)
+FUNC_END (__riscv_restore_4)
+FUNC_END (__riscv_restore_3)
+FUNC_END (__riscv_restore_2)
+FUNC_END (__riscv_restore_1)
+FUNC_END (__riscv_restore_0)
 
 #endif

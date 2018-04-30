@@ -23,6 +23,13 @@ package math
 //	Cbrt(±Inf) = ±Inf
 //	Cbrt(NaN) = NaN
 func Cbrt(x float64) float64 {
+	return libc_cbrt(x)
+}
+
+//extern cbrt
+func libc_cbrt(float64) float64
+
+func cbrt(x float64) float64 {
 	const (
 		B1             = 715094163                   // (682-0.03306235651)*2**20
 		B2             = 696219795                   // (664-0.03306235651)*2**20

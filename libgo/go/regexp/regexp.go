@@ -76,7 +76,8 @@ import (
 )
 
 // Regexp is the representation of a compiled regular expression.
-// A Regexp is safe for concurrent use by multiple goroutines.
+// A Regexp is safe for concurrent use by multiple goroutines,
+// except for configuration methods, such as Longest.
 type Regexp struct {
 	// read-only after Compile
 	regexpRO
@@ -159,6 +160,8 @@ func CompilePOSIX(expr string) (*Regexp, error) {
 // That is, when matching against text, the regexp returns a match that
 // begins as early as possible in the input (leftmost), and among those
 // it chooses a match that is as long as possible.
+// This method modifies the Regexp and may not be called concurrently
+// with any other methods.
 func (re *Regexp) Longest() {
 	re.longest = true
 }
@@ -313,11 +316,19 @@ func (i *inputString) index(re *Regexp, pos int) int {
 
 func (i *inputString) context(pos int) syntax.EmptyOp {
 	r1, r2 := endOfText, endOfText
-	if pos > 0 && pos <= len(i.str) {
-		r1, _ = utf8.DecodeLastRuneInString(i.str[:pos])
+	// 0 < pos && pos <= len(i.str)
+	if uint(pos-1) < uint(len(i.str)) {
+		r1 = rune(i.str[pos-1])
+		if r1 >= utf8.RuneSelf {
+			r1, _ = utf8.DecodeLastRuneInString(i.str[:pos])
+		}
 	}
-	if pos < len(i.str) {
-		r2, _ = utf8.DecodeRuneInString(i.str[pos:])
+	// 0 <= pos && pos < len(i.str)
+	if uint(pos) < uint(len(i.str)) {
+		r2 = rune(i.str[pos])
+		if r2 >= utf8.RuneSelf {
+			r2, _ = utf8.DecodeRuneInString(i.str[pos:])
+		}
 	}
 	return syntax.EmptyOpContext(r1, r2)
 }
@@ -352,11 +363,19 @@ func (i *inputBytes) index(re *Regexp, pos int) int {
 
 func (i *inputBytes) context(pos int) syntax.EmptyOp {
 	r1, r2 := endOfText, endOfText
-	if pos > 0 && pos <= len(i.str) {
-		r1, _ = utf8.DecodeLastRune(i.str[:pos])
+	// 0 < pos && pos <= len(i.str)
+	if uint(pos-1) < uint(len(i.str)) {
+		r1 = rune(i.str[pos-1])
+		if r1 >= utf8.RuneSelf {
+			r1, _ = utf8.DecodeLastRune(i.str[:pos])
+		}
 	}
-	if pos < len(i.str) {
-		r2, _ = utf8.DecodeRune(i.str[pos:])
+	// 0 <= pos && pos < len(i.str)
+	if uint(pos) < uint(len(i.str)) {
+		r2 = rune(i.str[pos])
+		if r2 >= utf8.RuneSelf {
+			r2, _ = utf8.DecodeRune(i.str[pos:])
+		}
 	}
 	return syntax.EmptyOpContext(r1, r2)
 }
@@ -590,10 +609,18 @@ func (re *Regexp) ReplaceAllFunc(src []byte, repl func([]byte) []byte) []byte {
 	})
 }
 
-var specialBytes = []byte(`\.+*?()|[]{}^$`)
+// Bitmap used by func special to check whether a character needs to be escaped.
+var specialBytes [16]byte
 
+// special reports whether byte b needs to be escaped by QuoteMeta.
 func special(b byte) bool {
-	return bytes.IndexByte(specialBytes, b) >= 0
+	return b < utf8.RuneSelf && specialBytes[b%16]&(1<<(b/16)) != 0
+}
+
+func init() {
+	for _, b := range []byte(`\.+*?()|[]{}^$`) {
+		specialBytes[b%16] |= 1 << (b / 16)
+	}
 }
 
 // QuoteMeta returns a string that quotes all regular expression metacharacters

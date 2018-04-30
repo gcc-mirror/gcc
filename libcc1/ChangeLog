@@ -1,3 +1,84 @@
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* configure: Regenerate.
+
+2017-11-16  Sergio Durigan Junior  <sergiodj@redhat.com>
+	    Pedro Alves  <palves@redhat.com>
+
+	* Makefile.am: Remove references to c-compiler-name.h and
+	cp-compiler-name.h
+	* Makefile.in: Regenerate.
+	* compiler-name.hh: New file.
+	* libcc1.cc: Don't include c-compiler-name.h.  Include
+	compiler-name.hh.
+	* libcp1.cc: Don't include cp-compiler-name.h.  Include
+	compiler-name.hh.
+
+2017-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use
+	DECL_OVERLOADED_OPERATOR_CODE_RAW.
+
+2017-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use ovl_op_identifier.
+	Directly set operator code.
+	(plugin_build_dependent_expr): Use ovl_op_identifier.
+
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (supplement_binding): Don't use
+	maybe_remove_implicit_alias.
+
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	Remove TYPE_METHODS.
+	* libcp1plugin.cc (plugin_build_decl): Member fns are on TYPE_FIELDS.
+
+2017-07-12  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use
+	DECL_CXX_{CON,DE}STRUCTOR directly.
+
+2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* libcp1plugin.cc (plugin_build_field): Use SET_DECL_MODE.
+
+2017-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use make_conv_op_name.
+	(plugin_build_dependent_expr): Likewise.
+
+2017-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Don't set
+	DECL_ASSIGNMENT_OPERATOR_P.
+
+2017-06-16  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Adjust parm building.
+
+2017-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_make_namespace_inline): Push onto linees.
+
+	* libcp1plugin.cc (plugin_add_using_namespace): Call
+	finish_namespace_using_directive.
+
+2017-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_make_namespace_inline): Check and set
+	DECL_NAMESPACE_INLINE_P.
+
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_add_using_decl): Call

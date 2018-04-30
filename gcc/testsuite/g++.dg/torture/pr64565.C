@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
+
 typedef enum
 {
   NS_OK

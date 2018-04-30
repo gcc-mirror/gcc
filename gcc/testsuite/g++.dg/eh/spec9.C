@@ -6,7 +6,7 @@ IntArray i;
 
 void test_array()
 #if __cplusplus <= 201402L
-throw (IntArray)	// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw (IntArray)	// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   throw i;

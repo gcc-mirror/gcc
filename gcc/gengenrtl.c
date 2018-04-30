@@ -1,5 +1,5 @@
 /* Generate code to allocate RTL structures.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,6 +53,9 @@ type_from_format (int c)
 
     case 'w':
       return "HOST_WIDE_INT ";
+
+    case 'p':
+      return "poly_uint16 ";
 
     case 's':
       return "const char *";
@@ -156,6 +159,7 @@ excluded_rtx (int idx)
   return (strcmp (defs[idx].enumname, "VAR_LOCATION") == 0
 	  || strcmp (defs[idx].enumname, "CONST_DOUBLE") == 0
 	  || strcmp (defs[idx].enumname, "CONST_WIDE_INT") == 0
+	  || strcmp (defs[idx].enumname, "CONST_POLY_INT") == 0
 	  || strcmp (defs[idx].enumname, "CONST_FIXED") == 0);
 }
 
@@ -250,15 +254,17 @@ gendef (const char *format)
      the memory and initializes it.  */
   puts ("{");
   puts ("  rtx rt;");
-  puts ("  rt = rtx_alloc_stat (code PASS_MEM_STAT);\n");
+  puts ("  rt = rtx_alloc (code PASS_MEM_STAT);\n");
 
   puts ("  PUT_MODE_RAW (rt, mode);");
 
   for (p = format, i = j = 0; *p ; ++p, ++i)
-    if (*p != '0')
-      printf ("  %s (rt, %d) = arg%d;\n", accessor_from_format (*p), i, j++);
-    else
+    if (*p == '0')
       printf ("  X0EXP (rt, %d) = NULL_RTX;\n", i);
+    else if (*p == 'p')
+      printf ("  SUBREG_BYTE (rt) = arg%d;\n", j++);
+    else
+      printf ("  %s (rt, %d) = arg%d;\n", accessor_from_format (*p), i, j++);
 
   puts ("\n  return rt;\n}\n");
   printf ("#define gen_rtx_fmt_%s(c, m", format);

@@ -1,5 +1,5 @@
 /* If-conversion for vectorizer.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Devang Patel <dpatel@apple.com>
 
 This file is part of GCC.
@@ -257,6 +257,19 @@ set_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 static inline void
 add_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 {
+  /* We might have updated some stmts in STMTS via force_gimple_operand
+     calling fold_stmt and that producing multiple stmts.  Delink immediate
+     uses so update_ssa after loop versioning doesn't get confused for
+     the not yet inserted predicates.
+     ???  This should go away once we reliably avoid updating stmts
+     not in any BB.  */
+  for (gimple_stmt_iterator gsi = gsi_start (stmts);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      delink_stmt_imm_use (stmt);
+      gimple_set_modified (stmt, true);
+    }
   gimple_seq_add_seq_without_update
     (&(((struct bb_predicate *) bb->aux)->predicate_gimplified_stmts), stmts);
 }
@@ -271,8 +284,7 @@ init_bb_predicate (basic_block bb)
   set_bb_predicate (bb, boolean_true_node);
 }
 
-/* Release the SSA_NAMEs associated with the predicate of basic block BB,
-   but don't actually free it.  */
+/* Release the SSA_NAMEs associated with the predicate of basic block BB.  */
 
 static inline void
 release_bb_predicate (basic_block bb)
@@ -280,11 +292,14 @@ release_bb_predicate (basic_block bb)
   gimple_seq stmts = bb_predicate_gimplified_stmts (bb);
   if (stmts)
     {
+      /* Ensure that these stmts haven't yet been added to a bb.  */
       if (flag_checking)
 	for (gimple_stmt_iterator i = gsi_start (stmts);
 	     !gsi_end_p (i); gsi_next (&i))
-	  gcc_assert (! gimple_use_ops (gsi_stmt (i)));
+	  gcc_assert (! gimple_bb (gsi_stmt (i)));
 
+      /* Discard them.  */
+      gimple_seq_discard (stmts);
       set_bb_predicate_gimplified_stmts (bb, NULL);
     }
 }
@@ -849,6 +864,11 @@ base_object_writable (tree ref)
 static bool
 ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
 {
+  /* If DR didn't see a reference here we can't use it to tell
+     whether the ref traps or not.  */
+  if (gimple_uid (stmt) == 0)
+    return false;
+
   data_reference_p *master_dr, *base_master_dr;
   data_reference_p a = drs[gimple_uid (stmt) - 1];
 
@@ -933,8 +953,7 @@ ifcvt_can_use_mask_load_store (gimple *stmt)
   /* Mask should be integer mode of the same size as the load/store
      mode.  */
   mode = TYPE_MODE (TREE_TYPE (lhs));
-  if (int_mode_for_mode (mode) == BLKmode
-      || VECTOR_MODE_P (mode))
+  if (!int_mode_for_mode (mode).exists () || VECTOR_MODE_P (mode))
     return false;
 
   if (can_vec_mask_load_store_p (mode, VOIDmode, is_load))
@@ -1441,11 +1460,8 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 	         || TREE_CODE (ref) == REALPART_EXPR)
 	    ref = TREE_OPERAND (ref, 0);
 
-          DR_BASE_ADDRESS (dr) = ref;
-          DR_OFFSET (dr) = NULL;
-          DR_INIT (dr) = NULL;
-          DR_STEP (dr) = NULL;
-          DR_ALIGNED_TO (dr) = NULL;
+	  memset (&DR_INNERMOST (dr), 0, sizeof (DR_INNERMOST (dr)));
+	  DR_BASE_ADDRESS (dr) = ref;
         }
       hash_memrefs_baserefs_and_store_DRs_read_written_info (dr);
     }
@@ -1853,8 +1869,11 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       new_stmt = gimple_build_assign (res, rhs);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
       gimple_stmt_iterator new_gsi = gsi_for_stmt (new_stmt);
-      fold_stmt (&new_gsi, ifcvt_follow_ssa_use_edges);
-      update_stmt (new_stmt);
+      if (fold_stmt (&new_gsi, ifcvt_follow_ssa_use_edges))
+	{
+	  new_stmt = gsi_stmt (new_gsi);
+	  update_stmt (new_stmt);
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -2198,7 +2217,7 @@ predicate_mem_writes (loop_p loop)
       gimple *stmt;
       int index;
 
-      if (is_true_predicate (cond) || is_false_predicate (cond))
+      if (is_true_predicate (cond))
 	continue;
 
       swap = false;
@@ -2211,96 +2230,107 @@ predicate_mem_writes (loop_p loop)
       vect_sizes.truncate (0);
       vect_masks.truncate (0);
 
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	if (!gimple_assign_single_p (stmt = gsi_stmt (gsi)))
-	  continue;
-	else if (gimple_plf (stmt, GF_PLF_2))
-	  {
-	    tree lhs = gimple_assign_lhs (stmt);
-	    tree rhs = gimple_assign_rhs1 (stmt);
-	    tree ref, addr, ptr, mask;
-	    gimple *new_stmt;
-	    gimple_seq stmts = NULL;
-	    int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (lhs)));
-	    ref = TREE_CODE (lhs) == SSA_NAME ? rhs : lhs;
-	    mark_addressable (ref);
-	    addr = force_gimple_operand_gsi (&gsi, build_fold_addr_expr (ref),
-					     true, NULL_TREE, true,
-					     GSI_SAME_STMT);
-	    if (!vect_sizes.is_empty ()
-		&& (index = mask_exists (bitsize, vect_sizes)) != -1)
-	      /* Use created mask.  */
-	      mask = vect_masks[index];
-	    else
-	      {
-		if (COMPARISON_CLASS_P (cond))
-		  mask = gimple_build (&stmts, TREE_CODE (cond),
-				       boolean_type_node,
-				       TREE_OPERAND (cond, 0),
-				       TREE_OPERAND (cond, 1));
-		else
-		  {
-		    gcc_assert (TREE_CODE (cond) == SSA_NAME);
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+	{
+	  if (!gimple_assign_single_p (stmt = gsi_stmt (gsi)))
+	    ;
+	  else if (is_false_predicate (cond)
+		   && gimple_vdef (stmt))
+	    {
+	      unlink_stmt_vdef (stmt);
+	      gsi_remove (&gsi, true);
+	      release_defs (stmt);
+	      continue;
+	    }
+	  else if (gimple_plf (stmt, GF_PLF_2))
+	    {
+	      tree lhs = gimple_assign_lhs (stmt);
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      tree ref, addr, ptr, mask;
+	      gcall *new_stmt;
+	      gimple_seq stmts = NULL;
+	      machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+	      /* We checked before setting GF_PLF_2 that an equivalent
+		 integer mode exists.  */
+	      int bitsize = GET_MODE_BITSIZE (mode).to_constant ();
+	      ref = TREE_CODE (lhs) == SSA_NAME ? rhs : lhs;
+	      mark_addressable (ref);
+	      addr = force_gimple_operand_gsi (&gsi, build_fold_addr_expr (ref),
+					       true, NULL_TREE, true,
+					       GSI_SAME_STMT);
+	      if (!vect_sizes.is_empty ()
+		  && (index = mask_exists (bitsize, vect_sizes)) != -1)
+		/* Use created mask.  */
+		mask = vect_masks[index];
+	      else
+		{
+		  if (COMPARISON_CLASS_P (cond))
+		    mask = gimple_build (&stmts, TREE_CODE (cond),
+					 boolean_type_node,
+					 TREE_OPERAND (cond, 0),
+					 TREE_OPERAND (cond, 1));
+		  else
 		    mask = cond;
-		  }
 
-		if (swap)
-		  {
-		    tree true_val
-		      = constant_boolean_node (true, TREE_TYPE (mask));
-		    mask = gimple_build (&stmts, BIT_XOR_EXPR,
-					 TREE_TYPE (mask), mask, true_val);
-		  }
-		gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+		  if (swap)
+		    {
+		      tree true_val
+			= constant_boolean_node (true, TREE_TYPE (mask));
+		      mask = gimple_build (&stmts, BIT_XOR_EXPR,
+					   TREE_TYPE (mask), mask, true_val);
+		    }
+		  gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
 
-		mask = ifc_temp_var (TREE_TYPE (mask), mask, &gsi);
-		/* Save mask and its size for further use.  */
-	        vect_sizes.safe_push (bitsize);
-		vect_masks.safe_push (mask);
-	      }
-	    ptr = build_int_cst (reference_alias_ptr_type (ref),
-				 get_object_alignment (ref));
-	    /* Copy points-to info if possible.  */
-	    if (TREE_CODE (addr) == SSA_NAME && !SSA_NAME_PTR_INFO (addr))
-	      copy_ref_info (build2 (MEM_REF, TREE_TYPE (ref), addr, ptr),
-			     ref);
-	    if (TREE_CODE (lhs) == SSA_NAME)
-	      {
-		new_stmt
-		  = gimple_build_call_internal (IFN_MASK_LOAD, 3, addr,
-						ptr, mask);
-		gimple_call_set_lhs (new_stmt, lhs);
-		gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-	      }
-	    else
-	      {
-		new_stmt
-		  = gimple_build_call_internal (IFN_MASK_STORE, 4, addr, ptr,
+		  /* Save mask and its size for further use.  */
+		  vect_sizes.safe_push (bitsize);
+		  vect_masks.safe_push (mask);
+		}
+	      ptr = build_int_cst (reference_alias_ptr_type (ref),
+				   get_object_alignment (ref));
+	      /* Copy points-to info if possible.  */
+	      if (TREE_CODE (addr) == SSA_NAME && !SSA_NAME_PTR_INFO (addr))
+		copy_ref_info (build2 (MEM_REF, TREE_TYPE (ref), addr, ptr),
+			       ref);
+	      if (TREE_CODE (lhs) == SSA_NAME)
+		{
+		  new_stmt
+		    = gimple_build_call_internal (IFN_MASK_LOAD, 3, addr,
+						  ptr, mask);
+		  gimple_call_set_lhs (new_stmt, lhs);
+		  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		}
+	      else
+		{
+		  new_stmt
+		    = gimple_build_call_internal (IFN_MASK_STORE, 4, addr, ptr,
 						  mask, rhs);
-		gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-		gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-		SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
-	      }
+		  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+		}
+	      gimple_call_set_nothrow (new_stmt, true);
 
-	    gsi_replace (&gsi, new_stmt, true);
-	  }
-	else if (gimple_vdef (stmt))
-	  {
-	    tree lhs = gimple_assign_lhs (stmt);
-	    tree rhs = gimple_assign_rhs1 (stmt);
-	    tree type = TREE_TYPE (lhs);
+	      gsi_replace (&gsi, new_stmt, true);
+	    }
+	  else if (gimple_vdef (stmt))
+	    {
+	      tree lhs = gimple_assign_lhs (stmt);
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      tree type = TREE_TYPE (lhs);
 
-	    lhs = ifc_temp_var (type, unshare_expr (lhs), &gsi);
-	    rhs = ifc_temp_var (type, unshare_expr (rhs), &gsi);
-	    if (swap)
-	      std::swap (lhs, rhs);
-	    cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
-					       is_gimple_condexpr, NULL_TREE,
-					       true, GSI_SAME_STMT);
-	    rhs = fold_build_cond_expr (type, unshare_expr (cond), rhs, lhs);
-	    gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
-	    update_stmt (stmt);
-	  }
+	      lhs = ifc_temp_var (type, unshare_expr (lhs), &gsi);
+	      rhs = ifc_temp_var (type, unshare_expr (rhs), &gsi);
+	      if (swap)
+		std::swap (lhs, rhs);
+	      cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
+						 is_gimple_condexpr, NULL_TREE,
+						 true, GSI_SAME_STMT);
+	      rhs = fold_build_cond_expr (type, unshare_expr (cond), rhs, lhs);
+	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
+	      update_stmt (stmt);
+	    }
+	  gsi_next (&gsi);
+	}
     }
 }
 
@@ -2400,7 +2430,7 @@ combine_blocks (struct loop *loop)
       if (exit_bb != loop->header)
 	{
 	  /* Connect this node to loop header.  */
-	  make_edge (loop->header, exit_bb, EDGE_FALLTHRU);
+	  make_single_succ_edge (loop->header, exit_bb, EDGE_FALLTHRU);
 	  set_immediate_dominator (CDI_DOMINATORS, exit_bb, loop->header);
 	}
 
@@ -2564,8 +2594,10 @@ version_loop_for_if_conversion (struct loop *loop)
   /* At this point we invalidate porfile confistency until IFN_LOOP_VECTORIZED
      is re-merged in the vectorizer.  */
   new_loop = loop_version (loop, cond, &cond_bb,
-			   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
-			   REG_BR_PROB_BASE, REG_BR_PROB_BASE, true);
+			   profile_probability::always (),
+			   profile_probability::always (),
+			   profile_probability::always (),
+			   profile_probability::always (), true);
   free_original_copy_tables ();
 
   for (unsigned i = 0; i < save_length; i++)
@@ -2948,6 +2980,12 @@ pass_if_conversion::execute (function *fun)
 	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
 	    && !loop->dont_vectorize))
       todo |= tree_if_conversion (loop);
+
+  if (todo)
+    {
+      free_numbers_of_iterations_estimates (fun);
+      scev_reset ();
+    }
 
   if (flag_checking)
     {

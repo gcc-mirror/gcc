@@ -2,8 +2,7 @@
    are emitted properly.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wno-format -std=gnu99 -ftrack-macro-expansion=0" } */
-/* { dg-additional-options "-mstructure-size-boundary=8" { target arm*-*-* } } */
-// { dg-skip-if "packed attribute missing for t" { "epiphany-*-*" } { "*" } { "" } }
+// { dg-skip-if "packed attribute missing for t" { "epiphany-*-*" } }
 
 extern void abort (void);
 
@@ -37,7 +36,10 @@ test (int arg, ...)
   vx = stpcpy (&buf2[18], "a");
   vx = stpcpy (&buf2[18], "ab"); /* { dg-warning "writing 3" "stpcpy" } */
   strncpy (&buf2[18], "a", 2);
-  strncpy (&buf2[18], "a", 3); /* { dg-warning "specified bound 3 exceeds destination size 2" "strncpy" } */
+
+  /* Both warnings below are equally meaningful.  */
+  strncpy (&buf2[18], "a", 3); /* { dg-warning "(writing 3 bytes into a region of size 2|specified bound 3 exceeds destination size 2)" "strncpy" } */
+
   strncpy (&buf2[18], "abc", 2);
   strncpy (&buf2[18], "abc", 3); /* { dg-warning "writing 3 " "strncpy" } */
   memset (buf2, '\0', sizeof (buf2));
@@ -94,7 +96,7 @@ void
 test2 (const H h)
 {
   char c;
-  strncpy (&c, str, 3); /* { dg-warning "specified bound 3 exceeds destination size 1" "strncpy" } */
+  strncpy (&c, str, 3); /* { dg-warning "(writing 3 bytes into a region of size 1|specified bound 3 exceeds destination size 1)" "strncpy" } */
 
   struct { char b[4]; } x;
   sprintf (x.b, "%s", "ABCD"); /* { dg-warning "writing 5" "sprintf" } */

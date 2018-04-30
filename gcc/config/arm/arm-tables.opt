@@ -2,7 +2,7 @@
 ; Generated automatically by parsecpu.awk from arm-cpus.in.
 ; Do not edit.
 
-; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 
 ; This file is part of GCC.
 
@@ -328,12 +328,6 @@ EnumValue
 Enum(processor_type) String(exynos-m1) Value( TARGET_CPU_exynosm1)
 
 EnumValue
-Enum(processor_type) String(falkor) Value( TARGET_CPU_falkor)
-
-EnumValue
-Enum(processor_type) String(qdf24xx) Value( TARGET_CPU_qdf24xx)
-
-EnumValue
 Enum(processor_type) String(xgene1) Value( TARGET_CPU_xgene1)
 
 EnumValue
@@ -349,10 +343,22 @@ EnumValue
 Enum(processor_type) String(cortex-a73.cortex-a53) Value( TARGET_CPU_cortexa73cortexa53)
 
 EnumValue
+Enum(processor_type) String(cortex-a55) Value( TARGET_CPU_cortexa55)
+
+EnumValue
+Enum(processor_type) String(cortex-a75) Value( TARGET_CPU_cortexa75)
+
+EnumValue
+Enum(processor_type) String(cortex-a75.cortex-a55) Value( TARGET_CPU_cortexa75cortexa55)
+
+EnumValue
 Enum(processor_type) String(cortex-m23) Value( TARGET_CPU_cortexm23)
 
 EnumValue
 Enum(processor_type) String(cortex-m33) Value( TARGET_CPU_cortexm33)
+
+EnumValue
+Enum(processor_type) String(cortex-r52) Value( TARGET_CPU_cortexr52)
 
 Enum
 Name(arm_arch) Type(int)
@@ -440,16 +446,16 @@ EnumValue
 Enum(arm_arch) String(armv8-a) Value(26)
 
 EnumValue
-Enum(arm_arch) String(armv8-a+crc) Value(27)
+Enum(arm_arch) String(armv8.1-a) Value(27)
 
 EnumValue
-Enum(arm_arch) String(armv8.1-a) Value(28)
+Enum(arm_arch) String(armv8.2-a) Value(28)
 
 EnumValue
-Enum(arm_arch) String(armv8.2-a) Value(29)
+Enum(arm_arch) String(armv8.3-a) Value(29)
 
 EnumValue
-Enum(arm_arch) String(armv8.2-a+fp16) Value(30)
+Enum(arm_arch) String(armv8.4-a) Value(30)
 
 EnumValue
 Enum(arm_arch) String(armv8-m.base) Value(31)
@@ -458,7 +464,7 @@ EnumValue
 Enum(arm_arch) String(armv8-m.main) Value(32)
 
 EnumValue
-Enum(arm_arch) String(armv8-m.main+dsp) Value(33)
+Enum(arm_arch) String(armv8-r) Value(33)
 
 EnumValue
 Enum(arm_arch) String(iwmmxt) Value(34)

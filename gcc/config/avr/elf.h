@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
    This file is part of GCC.
@@ -30,11 +30,6 @@
 
 #undef STRING_LIMIT
 #define STRING_LIMIT ((unsigned) 64)
-
-/* Output alignment 2**1 for jump tables.  */
-#undef ASM_OUTPUT_BEFORE_CASE_LABEL
-#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  ASM_OUTPUT_ALIGN (FILE, 1);
 
 /* Be conservative in crtstuff.c.  */
 #undef INIT_SECTION_ASM_OP

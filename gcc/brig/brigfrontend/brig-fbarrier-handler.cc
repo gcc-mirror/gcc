@@ -1,5 +1,5 @@
 /* brig-fbarrier-handler.cc -- brig fbarrier directive handling
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -39,6 +39,7 @@ brig_directive_fbarrier_handler::operator () (const BrigBase *base)
   if (m_parent.m_cf != NULL)
     m_parent.m_cf->m_function_scope_vars.insert (base);
   std::string var_name = m_parent.get_mangled_name (fbar);
-  m_parent.append_group_variable (var_name, FBARRIER_STRUCT_SIZE, 1);
+  m_parent.add_group_variable (var_name, FBARRIER_STRUCT_SIZE, 1,
+			       m_parent.m_cf != NULL);
   return base->byteCount;
 }

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RX processors.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -22,6 +22,8 @@
 
  * Re-enable memory-to-memory copies and fix up reload.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -29,6 +31,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "memmodel.h"
@@ -283,6 +287,9 @@ rx_is_restricted_memory_address (rtx mem, machine_mode mode)
     case REG:
       /* Simple memory addresses are OK.  */
       return true;
+
+    case SUBREG:
+      return RX_REG_P (SUBREG_REG (mem));
 
     case PRE_DEC:
     case POST_INC:
@@ -964,25 +971,25 @@ rx_gen_move_template (rtx * operands, bool is_movu)
   /* Decide which extension, if any, should be given to the move instruction.  */
   switch (CONST_INT_P (src) ? GET_MODE (dest) : GET_MODE (src))
     {
-    case QImode:
+    case E_QImode:
       /* The .B extension is not valid when
 	 loading an immediate into a register.  */
       if (! REG_P (dest) || ! CONST_INT_P (src))
 	extension = ".B";
       break;
-    case HImode:
+    case E_HImode:
       if (! REG_P (dest) || ! CONST_INT_P (src))
 	/* The .W extension is not valid when
 	   loading an immediate into a register.  */
 	extension = ".W";
       break;
-    case DFmode:
-    case DImode:
-    case SFmode:
-    case SImode:
+    case E_DFmode:
+    case E_DImode:
+    case E_SFmode:
+    case E_SImode:
       extension = ".L";
       break;
-    case VOIDmode:
+    case E_VOIDmode:
       /* This mode is used by constants.  */
       break;
     default:
@@ -1637,6 +1644,20 @@ mark_frame_related (rtx insn)
     }
 }
 
+/* Create CFI notes for register pops.  */
+static void
+add_pop_cfi_notes (rtx_insn *insn, unsigned int high, unsigned int low)
+{
+  rtx t = plus_constant (Pmode, stack_pointer_rtx,
+                        (high - low + 1) * UNITS_PER_WORD);
+  t = gen_rtx_SET (stack_pointer_rtx, t);
+  add_reg_note (insn, REG_CFA_ADJUST_CFA, t);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  for (unsigned int i = low; i <= high; i++)
+    add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (word_mode, i));
+}
+
+
 static bool
 ok_for_max_constant (HOST_WIDE_INT val)
 {
@@ -1886,8 +1907,7 @@ add_vector_labels (FILE *file, const char *aname)
 }
 
 static void
-rx_output_function_prologue (FILE * file,
-			     HOST_WIDE_INT frame_size ATTRIBUTE_UNUSED)
+rx_output_function_prologue (FILE * file)
 {
   add_vector_labels (file, "interrupt");
   add_vector_labels (file, "vector");
@@ -2023,11 +2043,14 @@ rx_can_use_simple_return (void)
 static void
 pop_regs (unsigned int high, unsigned int low)
 {
+  rtx_insn *insn;
   if (high == low)
-    emit_insn (gen_stack_pop (gen_rtx_REG (SImode, low)));
+    insn = emit_insn (gen_stack_pop (gen_rtx_REG (SImode, low)));
   else
-    emit_insn (gen_stack_popm (GEN_INT (((high - low) + 1) * UNITS_PER_WORD),
-			       gen_rx_popm_vector (low, high)));
+    insn = emit_insn (gen_stack_popm (GEN_INT (((high - low) + 1)
+						* UNITS_PER_WORD),
+				      gen_rx_popm_vector (low, high)));
+  add_pop_cfi_notes (insn, high, low);
 }
 
 void
@@ -2730,17 +2753,17 @@ rx_handle_vector_attribute (tree * node,
 /* Table of RX specific attributes.  */
 const struct attribute_spec rx_attribute_table[] =
 {
-  /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-     affects_type_identity.  */
-  { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute,
-    false },
-  { "interrupt",      0, -1, true, false, false, rx_handle_func_attribute,
-    false },
-  { "naked",          0, 0, true, false, false, rx_handle_func_attribute,
-    false },
-  { "vector",         1, -1, true, false, false, rx_handle_vector_attribute,
-    false },
-  { NULL,             0, 0, false, false, false, NULL, false }
+  /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
+     affects_type_identity, handler, exclude.  */
+  { "fast_interrupt", 0, 0, true, false, false, false,
+    rx_handle_func_attribute, NULL },
+  { "interrupt",      0, -1, true, false, false, false,
+    rx_handle_func_attribute, NULL },
+  { "naked",          0, 0, true, false, false, false,
+    rx_handle_func_attribute, NULL },
+  { "vector",         1, -1, true, false, false, false,
+    rx_handle_vector_attribute, NULL },
+  { NULL,             0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
@@ -2970,6 +2993,62 @@ rx_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static bool
+rx_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
+	      int opno ATTRIBUTE_UNUSED, int* total, bool speed)
+{
+  if (x == const0_rtx)
+    {
+      *total = 0;
+      return true;
+    }
+
+  switch (GET_CODE (x))
+    {
+    case MULT:
+      if (mode == DImode)
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      /* fall through */
+
+    case PLUS:
+    case MINUS:
+    case AND:
+    case COMPARE:
+    case IOR:
+    case XOR:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case DIV:
+      if (speed)
+	/* This is the worst case for a division.  Pessimize divisions when
+	   not optimizing for size and allow reciprocal optimizations which
+	   produce bigger code.  */
+	*total = COSTS_N_INSNS (20);
+      else
+	*total = COSTS_N_INSNS (3);
+      return true;
+
+    case UDIV:
+      if (speed)
+	/* This is the worst case for a division.  Pessimize divisions when
+	   not optimizing for size and allow reciprocal optimizations which
+	   produce bigger code.  */
+	*total = COSTS_N_INSNS (18);
+      else
+	*total = COSTS_N_INSNS (3);
+      return true;
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
+static bool
 rx_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
   /* We can always eliminate to the frame pointer.
@@ -3078,15 +3157,15 @@ flags_from_mode (machine_mode mode)
 {
   switch (mode)
     {
-    case CC_ZSmode:
+    case E_CC_ZSmode:
       return CC_FLAG_S | CC_FLAG_Z;
-    case CC_ZSOmode:
+    case E_CC_ZSOmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O;
-    case CC_ZSCmode:
+    case E_CC_ZSCmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_C;
-    case CCmode:
+    case E_CCmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O | CC_FLAG_C;
-    case CC_Fmode:
+    case E_CC_Fmode:
       return CC_FLAG_FP;
     default:
       gcc_unreachable ();
@@ -3433,6 +3512,114 @@ rx_atomic_sequence::~rx_atomic_sequence (void)
     emit_insn (gen_mvtc (GEN_INT (CTRLREG_PSW), m_prev_psw_reg));
 }
 
+/* Given an insn and a reg number, tell whether the reg dies or is unused
+   after the insn.  */
+bool
+rx_reg_dead_or_unused_after_insn (const rtx_insn* i, int regno)
+{
+  return find_regno_note (i, REG_DEAD, regno) != NULL
+	 || find_regno_note (i, REG_UNUSED, regno) != NULL;
+}
+
+/* Copy dead and unused notes from SRC to DST for the specified REGNO.  */
+void
+rx_copy_reg_dead_or_unused_notes (rtx reg, const rtx_insn* src, rtx_insn* dst)
+{
+  int regno = REGNO (SUBREG_P (reg) ? SUBREG_REG (reg) : reg);
+
+  if (rtx note = find_regno_note (src, REG_DEAD, regno))
+    add_shallow_copy_of_reg_note (dst, note);
+
+  if (rtx note = find_regno_note (src, REG_UNUSED, regno))
+    add_shallow_copy_of_reg_note (dst, note);
+}
+
+/* Try to fuse the current bit-operation insn with the surrounding memory load
+   and store.  */
+bool
+rx_fuse_in_memory_bitop (rtx* operands, rtx_insn* curr_insn,
+			 rtx (*gen_insn)(rtx, rtx))
+{
+  rtx op2_reg = SUBREG_P (operands[2]) ? SUBREG_REG (operands[2]) : operands[2];
+
+  set_of_reg op2_def = rx_find_set_of_reg (op2_reg, curr_insn,
+					   prev_nonnote_nondebug_insn_bb);
+  if (op2_def.set_src == NULL_RTX
+      || !MEM_P (op2_def.set_src)
+      || GET_MODE (op2_def.set_src) != QImode
+      || !rx_is_restricted_memory_address (XEXP (op2_def.set_src, 0),
+					   GET_MODE (op2_def.set_src))
+      || reg_used_between_p (operands[2], op2_def.insn, curr_insn)
+      || !rx_reg_dead_or_unused_after_insn (curr_insn, REGNO (op2_reg))
+    )
+    return false;
+
+  /* The register operand originates from a memory load and the memory load
+     could be fused with the bitop insn.
+     Look for the following memory store with the same memory operand.  */
+  rtx mem = op2_def.set_src;
+
+  /* If the memory is an auto-mod address, it can't be fused.  */
+  if (GET_CODE (XEXP (mem, 0)) == POST_INC
+      || GET_CODE (XEXP (mem, 0)) == PRE_INC
+      || GET_CODE (XEXP (mem, 0)) == POST_DEC
+      || GET_CODE (XEXP (mem, 0)) == PRE_DEC)
+    return false;
+
+  rtx_insn* op0_use = rx_find_use_of_reg (operands[0], curr_insn,
+					  next_nonnote_nondebug_insn_bb);
+  if (op0_use == NULL
+      || !(GET_CODE (PATTERN (op0_use)) == SET
+	   && RX_REG_P (XEXP (PATTERN (op0_use), 1))
+	   && reg_overlap_mentioned_p (operands[0], XEXP (PATTERN (op0_use), 1))
+	   && rtx_equal_p (mem, XEXP (PATTERN (op0_use), 0)))
+      || !rx_reg_dead_or_unused_after_insn (op0_use, REGNO (operands[0]))
+      || reg_set_between_p (operands[2], curr_insn, op0_use))
+    return false;
+
+  /* If the load-modify-store operation is fused it could potentially modify
+     load/store ordering if there are other memory accesses between the load
+     and the store for this insn.  If there are volatile mems between the load
+     and store it's better not to change the ordering.  If there is a call
+     between the load and store, it's also not safe to fuse it.  */
+  for (rtx_insn* i = next_nonnote_nondebug_insn_bb (op2_def.insn);
+       i != NULL && i != op0_use;
+       i = next_nonnote_nondebug_insn_bb (i))
+    if (volatile_insn_p (PATTERN (i)) || CALL_P (i))
+      return false;
+
+  emit_insn (gen_insn (mem, gen_lowpart (QImode, operands[1])));
+  set_insn_deleted (op2_def.insn);
+  set_insn_deleted (op0_use);
+  return true;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+rx_hard_regno_nregs (unsigned int, machine_mode mode)
+{
+  return CLASS_MAX_NREGS (0, mode);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+rx_hard_regno_mode_ok (unsigned int regno, machine_mode)
+{
+  return REGNO_REG_CLASS (regno) == GR_REGS;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+rx_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
+}
 
 #undef  TARGET_NARROW_VOLATILE_BITFIELD
 #define TARGET_NARROW_VOLATILE_BITFIELD		rx_narrow_volatile_bitfield
@@ -3586,6 +3773,17 @@ rx_atomic_sequence::~rx_atomic_sequence (void)
 
 #undef  TARGET_LRA_P
 #define TARGET_LRA_P 				rx_enable_lra
+
+#undef  TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS			rx_hard_regno_nregs
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK		rx_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P			rx_modes_tieable_p
+
+#undef  TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS rx_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

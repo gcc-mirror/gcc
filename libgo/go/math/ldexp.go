@@ -13,10 +13,15 @@ package math
 //	Ldexp(NaN, exp) = NaN
 
 //extern ldexp
-func libc_ldexp(float64, int) float64
+func libc_ldexp(float64, int32) float64
 
 func Ldexp(frac float64, exp int) float64 {
-	r := libc_ldexp(frac, exp)
+	if exp > MaxInt32 {
+		exp = MaxInt32
+	} else if exp < MinInt32 {
+		exp = MinInt32
+	}
+	r := libc_ldexp(frac, int32(exp))
 	return r
 }
 

@@ -1,5 +1,5 @@
 // { dg-do assemble }
-// { dg-xfail-if "" { sparc64-*-elf } { "*" } { "" } }
+// { dg-xfail-if "" { sparc64-*-elf } }
 // { dg-options "-g" }
 // GROUPS passed old-abort
 extern "C" { typedef int jmp_buf[12]; }

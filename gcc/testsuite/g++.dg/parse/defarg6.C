@@ -6,6 +6,6 @@
 
 namespace sc_dt {
     class sc_length_param {
-	friend int compare_unsigned(int if_v_signed = 0) {}
+	friend int compare_unsigned(int if_v_signed = 0) { return 0; }
     };
 }

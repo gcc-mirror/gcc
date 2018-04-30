@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -105,6 +105,7 @@ const char *__gnat_default_libgcc_subdir = "lib";
 
 #elif defined (__FreeBSD__) || defined (__DragonFly__) \
    || defined (__NetBSD__) || defined (__OpenBSD__)
+   || defined (__QNX__)
 const char *__gnat_object_file_option = "-Wl,@";
 const char *__gnat_run_path_option = "-Wl,-rpath,";
 char __gnat_shared_libgnat_default = STATIC;

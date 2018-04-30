@@ -1,6 +1,6 @@
 // PR c++/77775
-// { dg-options -fdump-tree-gimple }
-// { dg-final { scan-tree-dump "== viewAdded" "gimple" { target c++11 } } }
+// { dg-options "-fdump-tree-fre1 -O1" }
+// { dg-final { scan-tree-dump "== viewAdded" "fre1" { target c++11 } } }
 
 namespace Sublime {
 struct View;

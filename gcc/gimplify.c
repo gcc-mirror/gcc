@@ -1,6 +1,6 @@
 /* Tree lowering pass.  This pass converts the GENERIC functions-as-trees
    tree representation into the GIMPLE form.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Major work done by Sebastian Pop <s.pop@laposte.net>,
    Diego Novillo <dnovillo@redhat.com> and Jason Merrill <jason@redhat.com>.
 
@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
+#include "tm_p.h"
 #include "gimple.h"
 #include "gimple-predict.h"
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */
@@ -54,12 +56,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-low.h"
 #include "gimple-low.h"
-#include "cilk.h"
 #include "gomp-constants.h"
 #include "splay-tree.h"
 #include "gimple-walk.h"
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "builtins.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "dbgcnt.h"
 
@@ -699,7 +702,7 @@ gimple_add_tmp_var_fn (struct function *fn, tree tmp)
   /* Later processing assumes that the object size is constant, which might
      not be true at this point.  Force the use of a constant upper bound in
      this case.  */
-  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (tmp)))
+  if (!tree_fits_poly_uint64_p (DECL_SIZE_UNIT (tmp)))
     force_constant_size (tmp);
 
   DECL_CONTEXT (tmp) = fn->decl;
@@ -718,7 +721,7 @@ gimple_add_tmp_var (tree tmp)
   /* Later processing assumes that the object size is constant, which might
      not be true at this point.  Force the use of a constant upper bound in
      this case.  */
-  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (tmp)))
+  if (!tree_fits_poly_uint64_p (DECL_SIZE_UNIT (tmp)))
     force_constant_size (tmp);
 
   DECL_CONTEXT (tmp) = current_function_decl;
@@ -818,12 +821,7 @@ mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
   /* Stop at types, decls, constants like copy_tree_r.  */
   else if (TREE_CODE_CLASS (code) == tcc_type
 	   || TREE_CODE_CLASS (code) == tcc_declaration
-	   || TREE_CODE_CLASS (code) == tcc_constant
-	   /* We can't do anything sensible with a BLOCK used as an
-	      expression, but we also can't just die when we see it
-	      because of non-expression uses.  So we avert our eyes
-	      and cross our fingers.  Silly Java.  */
-	   || code == BLOCK)
+	   || TREE_CODE_CLASS (code) == tcc_constant)
     *walk_subtrees = 0;
 
   /* Cope with the statement expression extension.  */
@@ -985,6 +983,48 @@ unshare_expr_without_location (tree expr)
     walk_tree (&expr, prune_expr_location, NULL, NULL);
   return expr;
 }
+
+/* Return the EXPR_LOCATION of EXPR, if it (maybe recursively) has
+   one, OR_ELSE otherwise.  The location of a STATEMENT_LISTs
+   comprising at least one DEBUG_BEGIN_STMT followed by exactly one
+   EXPR is the location of the EXPR.  */
+
+static location_t
+rexpr_location (tree expr, location_t or_else = UNKNOWN_LOCATION)
+{
+  if (!expr)
+    return or_else;
+
+  if (EXPR_HAS_LOCATION (expr))
+    return EXPR_LOCATION (expr);
+
+  if (TREE_CODE (expr) != STATEMENT_LIST)
+    return or_else;
+
+  tree_stmt_iterator i = tsi_start (expr);
+
+  bool found = false;
+  while (!tsi_end_p (i) && TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
+    {
+      found = true;
+      tsi_next (&i);
+    }
+
+  if (!found || !tsi_one_before_end_p (i))
+    return or_else;
+
+  return rexpr_location (tsi_stmt (i), or_else);
+}
+
+/* Return TRUE iff EXPR (maybe recursively) has a location; see
+   rexpr_location for the potential recursion.  */
+
+static inline bool
+rexpr_has_location (tree expr)
+{
+  return rexpr_location (expr) != UNKNOWN_LOCATION;
+}
+
 
 /* WRAPPER is a code such as BIND_EXPR or CLEANUP_POINT_EXPR which can both
    contain statements and have a value.  Assign its value to a temporary
@@ -1128,10 +1168,6 @@ static void
 asan_poison_variable (tree decl, bool poison, gimple_stmt_iterator *it,
 		      bool before)
 {
-  /* When within an OMP context, do not emit ASAN_MARK internal fns.  */
-  if (gimplify_omp_ctxp)
-    return;
-
   tree unit_size = DECL_SIZE_UNIT (decl);
   tree base = build_fold_addr_expr (decl);
 
@@ -1428,6 +1464,20 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+/* Maybe add early return predict statement to PRE_P sequence.  */
+
+static void
+maybe_add_early_return_predict_stmt (gimple_seq *pre_p)
+{
+  /* If we are not in a conditional context, add PREDICT statement.  */
+  if (gimple_conditional_context ())
+    {
+      gimple *predict = gimple_build_predict (PRED_TREE_EARLY_RETURN,
+					      NOT_TAKEN);
+      gimplify_seq_add_stmt (pre_p, predict);
+    }
+}
+
 /* Gimplify a RETURN_EXPR.  If the expression to be returned is not a
    GIMPLE value, it is assigned to a new temporary and the statement is
    re-written to return the temporary.
@@ -1445,19 +1495,10 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
   if (ret_expr == error_mark_node)
     return GS_ERROR;
 
-  /* Implicit _Cilk_sync must be inserted right before any return statement 
-     if there is a _Cilk_spawn in the function.  If the user has provided a 
-     _Cilk_sync, the optimizer should remove this duplicate one.  */
-  if (fn_contains_cilk_spawn_p (cfun))
-    {
-      tree impl_sync = build0 (CILK_SYNC_STMT, void_type_node);
-      gimplify_and_add (impl_sync, pre_p);
-    }
-
   if (!ret_expr
-      || TREE_CODE (ret_expr) == RESULT_DECL
-      || ret_expr == error_mark_node)
+      || TREE_CODE (ret_expr) == RESULT_DECL)
     {
+      maybe_add_early_return_predict_stmt (pre_p);
       greturn *ret = gimple_build_return (ret_expr);
       gimple_set_no_warning (ret, TREE_NO_WARNING (stmt));
       gimplify_seq_add_stmt (pre_p, ret);
@@ -1525,6 +1566,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
 
   gimplify_and_add (TREE_OPERAND (stmt, 0), pre_p);
 
+  maybe_add_early_return_predict_stmt (pre_p);
   ret = gimple_build_return (result);
   gimple_set_no_warning (ret, TREE_NO_WARNING (stmt));
   gimplify_seq_add_stmt (pre_p, ret);
@@ -1561,9 +1603,8 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   SET_DECL_VALUE_EXPR (decl, t);
   DECL_HAS_VALUE_EXPR_P (decl) = 1;
 
-  t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
-  t = build_call_expr (t, 2, DECL_SIZE_UNIT (decl),
-		       size_int (DECL_ALIGN (decl)));
+  t = build_alloca_call_expr (DECL_SIZE_UNIT (decl), DECL_ALIGN (decl),
+			      max_int_size_in_bytes (TREE_TYPE (decl)));
   /* The call has been built for a variable-sized object.  */
   CALL_ALLOCA_FOR_VAR_P (t) = 1;
   t = fold_convert (ptr_type, t);
@@ -1643,7 +1684,9 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	  && TREE_ADDRESSABLE (decl)
 	  && !TREE_STATIC (decl)
 	  && !DECL_HAS_VALUE_EXPR_P (decl)
-	  && dbg_cnt (asan_use_after_scope))
+	  && DECL_ALIGN (decl) <= MAX_SUPPORTED_STACK_ALIGNMENT
+	  && dbg_cnt (asan_use_after_scope)
+	  && !gimplify_omp_ctxp)
 	{
 	  asan_poisoned_variables->add (decl);
 	  asan_poison_variable (decl, false, seq_p);
@@ -1759,6 +1802,13 @@ warn_switch_unreachable_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
       /* Walk the sub-statements.  */
       *handled_ops_p = false;
       break;
+
+    case GIMPLE_DEBUG:
+      /* Ignore these.  We may generate them before declarations that
+	 are never executed.  If there's something to warn about,
+	 there will be non-debug stmts too, and we'll catch those.  */
+      break;
+
     case GIMPLE_CALL:
       if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
 	{
@@ -1842,7 +1892,7 @@ case_label_p (const vec<tree> *cases, tree label)
   return false;
 }
 
-/* Find the last statement in a scope STMT.  */
+/* Find the last nondebug statement in a scope STMT.  */
 
 static gimple *
 last_stmt_in_scope (gimple *stmt)
@@ -1855,26 +1905,29 @@ last_stmt_in_scope (gimple *stmt)
     case GIMPLE_BIND:
       {
 	gbind *bind = as_a <gbind *> (stmt);
-	stmt = gimple_seq_last_stmt (gimple_bind_body (bind));
+	stmt = gimple_seq_last_nondebug_stmt (gimple_bind_body (bind));
 	return last_stmt_in_scope (stmt);
       }
 
     case GIMPLE_TRY:
       {
 	gtry *try_stmt = as_a <gtry *> (stmt);
-	stmt = gimple_seq_last_stmt (gimple_try_eval (try_stmt));
+	stmt = gimple_seq_last_nondebug_stmt (gimple_try_eval (try_stmt));
 	gimple *last_eval = last_stmt_in_scope (stmt);
 	if (gimple_stmt_may_fallthru (last_eval)
 	    && (last_eval == NULL
 		|| !gimple_call_internal_p (last_eval, IFN_FALLTHROUGH))
 	    && gimple_try_kind (try_stmt) == GIMPLE_TRY_FINALLY)
 	  {
-	    stmt = gimple_seq_last_stmt (gimple_try_cleanup (try_stmt));
+	    stmt = gimple_seq_last_nondebug_stmt (gimple_try_cleanup (try_stmt));
 	    return last_stmt_in_scope (stmt);
 	  }
 	else
 	  return last_eval;
       }
+
+    case GIMPLE_DEBUG:
+      gcc_unreachable ();
 
     default:
       return stmt;
@@ -1892,6 +1945,27 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 
   do
     {
+      if (gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_BIND)
+	{
+	  /* Recognize the special GIMPLE_BIND added by gimplify_switch_expr,
+	     which starts on a GIMPLE_SWITCH and ends with a break label.
+	     Handle that as a single statement that can fall through.  */
+	  gbind *bind = as_a <gbind *> (gsi_stmt (*gsi_p));
+	  gimple *first = gimple_seq_first_stmt (gimple_bind_body (bind));
+	  gimple *last = gimple_seq_last_stmt (gimple_bind_body (bind));
+	  if (last
+	      && gimple_code (first) == GIMPLE_SWITCH
+	      && gimple_code (last) == GIMPLE_LABEL)
+	    {
+	      tree label = gimple_label_label (as_a <glabel *> (last));
+	      if (SWITCH_BREAK_LABEL_P (label))
+		{
+		  prev = bind;
+		  gsi_next (gsi_p);
+		  continue;
+		}
+	    }
+	}
       if (gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_BIND
 	  || gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_TRY)
 	{
@@ -1979,7 +2053,7 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	}
       else if (gimple_call_internal_p (gsi_stmt (*gsi_p), IFN_ASAN_MARK))
 	;
-      else
+      else if (!is_gimple_debug (gsi_stmt (*gsi_p)))
 	prev = gsi_stmt (*gsi_p);
       gsi_next (gsi_p);
     }
@@ -2016,7 +2090,7 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
 	     && gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
 	     && (l = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi))))
 	     && !case_label_p (&gimplify_ctxp->case_labels, l))
-	gsi_next (&gsi);
+	gsi_next_nondebug (&gsi);
       if (gsi_end_p (gsi) || gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
 	return false;
     }
@@ -2026,8 +2100,10 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
   gsi = *gsi_p;
 
   /* Skip all immediately following labels.  */
-  while (!gsi_end_p (gsi) && gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
-    gsi_next (&gsi);
+  while (!gsi_end_p (gsi)
+	 && (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
+	     || gimple_code (gsi_stmt (gsi)) == GIMPLE_PREDICT))
+    gsi_next_nondebug (&gsi);
 
   /* { ... something; default:; } */
   if (gsi_end_p (gsi)
@@ -2074,7 +2150,7 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	/* Found a label.  Skip all immediately following labels.  */
 	while (!gsi_end_p (*gsi_p)
 	       && gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_LABEL)
-	  gsi_next (gsi_p);
+	  gsi_next_nondebug (gsi_p);
 
 	/* There might be no more statements.  */
 	if (gsi_end_p (*gsi_p))
@@ -2215,8 +2291,10 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 		      break;
 		    }
 		}
-	      else
-		/* Something other than a label.  That's not expected.  */
+	      else if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
+		;
+	      else if (!is_gimple_debug (stmt))
+		/* Anything else is not expected.  */
 		break;
 	      gsi_next (&gsi2);
 	    }
@@ -2268,10 +2346,6 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       tree default_case = NULL_TREE;
       gswitch *switch_stmt;
 
-      /* If someone can be bothered to fill in the labels, they can
-	 be bothered to null out the body too.  */
-      gcc_assert (!SWITCH_LABELS (switch_expr));
-
       /* Save old labels, get new ones from body, then restore the old
          labels.  Save all the things from the switch body to append after.  */
       saved_labels = gimplify_ctxp->case_labels;
@@ -2279,7 +2353,8 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 
       /* Do not create live_switch_vars if SWITCH_BODY is not a BIND_EXPR.  */
       saved_live_switch_vars = gimplify_ctxp->live_switch_vars;
-      if (TREE_CODE (SWITCH_BODY (switch_expr)) == BIND_EXPR)
+      tree_code body_type = TREE_CODE (SWITCH_BODY (switch_expr));
+      if (body_type == BIND_EXPR || body_type == STATEMENT_LIST)
 	gimplify_ctxp->live_switch_vars = new hash_set<tree> (4);
       else
 	gimplify_ctxp->live_switch_vars = NULL;
@@ -2309,6 +2384,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       preprocess_case_label_vec_for_gimple (labels, index_type,
 					    &default_case);
 
+      bool add_bind = false;
       if (!default_case)
 	{
 	  glabel *new_default;
@@ -2316,18 +2392,50 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 	  default_case
 	    = build_case_label (NULL_TREE, NULL_TREE,
 				create_artificial_label (UNKNOWN_LOCATION));
+	  if (old_in_switch_expr)
+	    {
+	      SWITCH_BREAK_LABEL_P (CASE_LABEL (default_case)) = 1;
+	      add_bind = true;
+	    }
 	  new_default = gimple_build_label (CASE_LABEL (default_case));
 	  gimplify_seq_add_stmt (&switch_body_seq, new_default);
 	}
+      else if (old_in_switch_expr)
+	{
+	  gimple *last = gimple_seq_last_stmt (switch_body_seq);
+	  if (last && gimple_code (last) == GIMPLE_LABEL)
+	    {
+	      tree label = gimple_label_label (as_a <glabel *> (last));
+	      if (SWITCH_BREAK_LABEL_P (label))
+		add_bind = true;
+	    }
+	}
 
       switch_stmt = gimple_build_switch (SWITCH_COND (switch_expr),
-					   default_case, labels);
-      gimplify_seq_add_stmt (pre_p, switch_stmt);
-      gimplify_seq_add_seq (pre_p, switch_body_seq);
+					 default_case, labels);
+      /* For the benefit of -Wimplicit-fallthrough, if switch_body_seq
+	 ends with a GIMPLE_LABEL holding SWITCH_BREAK_LABEL_P LABEL_DECL,
+	 wrap the GIMPLE_SWITCH up to that GIMPLE_LABEL into a GIMPLE_BIND,
+	 so that we can easily find the start and end of the switch
+	 statement.  */
+      if (add_bind)
+	{
+	  gimple_seq bind_body = NULL;
+	  gimplify_seq_add_stmt (&bind_body, switch_stmt);
+	  gimple_seq_add_seq (&bind_body, switch_body_seq);
+	  gbind *bind = gimple_build_bind (NULL_TREE, bind_body, NULL_TREE);
+	  gimple_set_location (bind, EXPR_LOCATION (switch_expr));
+	  gimplify_seq_add_stmt (pre_p, bind);
+	}
+      else
+	{
+	  gimplify_seq_add_stmt (pre_p, switch_stmt);
+	  gimplify_seq_add_seq (pre_p, switch_body_seq);
+	}
       labels.release ();
     }
   else
-    gcc_assert (SWITCH_LABELS (switch_expr));
+    gcc_unreachable ();
 
   return GS_ALL_DONE;
 }
@@ -2340,9 +2448,17 @@ gimplify_label_expr (tree *expr_p, gimple_seq *pre_p)
   gcc_assert (decl_function_context (LABEL_EXPR_LABEL (*expr_p))
 	      == current_function_decl);
 
-  glabel *label_stmt = gimple_build_label (LABEL_EXPR_LABEL (*expr_p));
+  tree label = LABEL_EXPR_LABEL (*expr_p);
+  glabel *label_stmt = gimple_build_label (label);
   gimple_set_location (label_stmt, EXPR_LOCATION (*expr_p));
   gimplify_seq_add_stmt (pre_p, label_stmt);
+
+  if (lookup_attribute ("cold", DECL_ATTRIBUTES (label)))
+    gimple_seq_add_stmt (pre_p, gimple_build_predict (PRED_COLD_LABEL,
+						      NOT_TAKEN));
+  else if (lookup_attribute ("hot", DECL_ATTRIBUTES (label)))
+    gimple_seq_add_stmt (pre_p, gimple_build_predict (PRED_HOT_LABEL,
+						      TAKEN));
 
   return GS_ALL_DONE;
 }
@@ -3004,7 +3120,7 @@ maybe_with_size_expr (tree *expr_p)
 
   /* If the size isn't known or is a constant, we have nothing to do.  */
   size = TYPE_SIZE_UNIT (type);
-  if (!size || TREE_CODE (size) == INTEGER_CST)
+  if (!size || poly_int_tree_p (size))
     return;
 
   /* Otherwise, make a WITH_SIZE_EXPR.  */
@@ -3074,19 +3190,6 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
   return fold_stmt (gsi);
 }
 
-/* Add a gimple call to __builtin_cilk_detach to GIMPLE sequence PRE_P,
-   with the pointer to the proper cilk frame.  */
-static void
-gimplify_cilk_detach (gimple_seq *pre_p)
-{
-  tree frame = cfun->cilk_frame_decl;
-  tree ptrf = build1 (ADDR_EXPR, cilk_frame_ptr_type_decl,
-		      frame);
-  gcall *detach = gimple_build_call (cilk_detach_fndecl, 1,
-				     ptrf);
-  gimplify_seq_add_stmt(pre_p, detach);
-}
-
 /* Gimplify the CALL_EXPR node *EXPR_P into the GIMPLE sequence PRE_P.
    WANT_VALUE is true if the result of the call is desired.  */
 
@@ -3124,9 +3227,8 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	  vargs.quick_push (CALL_EXPR_ARG (*expr_p, i));
 	}
 
-      if (EXPR_CILK_SPAWN (*expr_p))
-        gimplify_cilk_detach (pre_p);
-      gimple *call = gimple_build_call_internal_vec (ifn, vargs);
+      gcall *call = gimple_build_call_internal_vec (ifn, vargs);
+      gimple_call_set_nothrow (call, TREE_NOTHROW (*expr_p));
       gimplify_seq_add_stmt (pre_p, call);
       return GS_ALL_DONE;
     }
@@ -3148,8 +3250,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
 	/* If the call has been built for a variable-sized object, then we
 	   want to restore the stack level when the enclosing BIND_EXPR is
 	   exited to reclaim the allocated space; otherwise, we precisely
@@ -3354,11 +3455,8 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       /* The CALL_EXPR in *EXPR_P is already in GIMPLE form, so all we
 	 have to do is replicate it as a GIMPLE_CALL tuple.  */
       gimple_stmt_iterator gsi;
-      call = gimple_build_call_from_tree (*expr_p);
-      gimple_call_set_fntype (call, TREE_TYPE (fnptrtype));
+      call = gimple_build_call_from_tree (*expr_p, fnptrtype);
       notice_special_calls (call);
-      if (EXPR_CILK_SPAWN (*expr_p))
-        gimplify_cilk_detach (pre_p);
       gimplify_seq_add_stmt (pre_p, call);
       gsi = gsi_last (*pre_p);
       maybe_fold_stmt (&gsi);
@@ -3413,7 +3511,7 @@ shortcut_cond_r (tree pred, tree *true_label_p, tree *false_label_p,
       append_to_statement_list (t, &expr);
 
       /* Set the source location of the && on the second 'if'.  */
-      new_locus = EXPR_HAS_LOCATION (pred) ? EXPR_LOCATION (pred) : locus;
+      new_locus = rexpr_location (pred, locus);
       t = shortcut_cond_r (TREE_OPERAND (pred, 1), true_label_p, false_label_p,
 			   new_locus);
       append_to_statement_list (t, &expr);
@@ -3436,7 +3534,7 @@ shortcut_cond_r (tree pred, tree *true_label_p, tree *false_label_p,
       append_to_statement_list (t, &expr);
 
       /* Set the source location of the || on the second 'if'.  */
-      new_locus = EXPR_HAS_LOCATION (pred) ? EXPR_LOCATION (pred) : locus;
+      new_locus = rexpr_location (pred, locus);
       t = shortcut_cond_r (TREE_OPERAND (pred, 1), true_label_p, false_label_p,
 			   new_locus);
       append_to_statement_list (t, &expr);
@@ -3458,7 +3556,7 @@ shortcut_cond_r (tree pred, tree *true_label_p, tree *false_label_p,
 
       /* Keep the original source location on the first 'if'.  Set the source
 	 location of the ? on the second 'if'.  */
-      new_locus = EXPR_HAS_LOCATION (pred) ? EXPR_LOCATION (pred) : locus;
+      new_locus = rexpr_location (pred, locus);
       expr = build3 (COND_EXPR, void_type_node, TREE_OPERAND (pred, 0),
 		     shortcut_cond_r (TREE_OPERAND (pred, 1), true_label_p,
 				      false_label_p, locus),
@@ -3480,6 +3578,45 @@ shortcut_cond_r (tree pred, tree *true_label_p, tree *false_label_p,
     }
 
   return expr;
+}
+
+/* If EXPR is a GOTO_EXPR, return it.  If it is a STATEMENT_LIST, skip
+   any of its leading DEBUG_BEGIN_STMTS and recurse on the subsequent
+   statement, if it is the last one.  Otherwise, return NULL.  */
+
+static tree
+find_goto (tree expr)
+{
+  if (!expr)
+    return NULL_TREE;
+
+  if (TREE_CODE (expr) == GOTO_EXPR)
+    return expr;
+
+  if (TREE_CODE (expr) != STATEMENT_LIST)
+    return NULL_TREE;
+
+  tree_stmt_iterator i = tsi_start (expr);
+
+  while (!tsi_end_p (i) && TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
+    tsi_next (&i);
+
+  if (!tsi_one_before_end_p (i))
+    return NULL_TREE;
+
+  return find_goto (tsi_stmt (i));
+}
+
+/* Same as find_goto, except that it returns NULL if the destination
+   is not a LABEL_DECL.  */
+
+static inline tree
+find_goto_label (tree expr)
+{
+  tree dest = find_goto (expr);
+  if (dest && TREE_CODE (GOTO_DESTINATION (dest)) == LABEL_DECL)
+    return dest;
+  return NULL_TREE;
 }
 
 /* Given a conditional expression EXPR with short-circuit boolean
@@ -3512,8 +3649,8 @@ shortcut_cond_expr (tree expr)
 	  location_t locus = EXPR_LOC_OR_LOC (expr, input_location);
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  /* Set the source location of the && on the second 'if'.  */
-	  if (EXPR_HAS_LOCATION (pred))
-	    SET_EXPR_LOCATION (expr, EXPR_LOCATION (pred));
+	  if (rexpr_has_location (pred))
+	    SET_EXPR_LOCATION (expr, rexpr_location (pred));
 	  then_ = shortcut_cond_expr (expr);
 	  then_se = then_ && TREE_SIDE_EFFECTS (then_);
 	  pred = TREE_OPERAND (pred, 0);
@@ -3534,8 +3671,8 @@ shortcut_cond_expr (tree expr)
 	  location_t locus = EXPR_LOC_OR_LOC (expr, input_location);
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  /* Set the source location of the || on the second 'if'.  */
-	  if (EXPR_HAS_LOCATION (pred))
-	    SET_EXPR_LOCATION (expr, EXPR_LOCATION (pred));
+	  if (rexpr_has_location (pred))
+	    SET_EXPR_LOCATION (expr, rexpr_location (pred));
 	  else_ = shortcut_cond_expr (expr);
 	  else_se = else_ && TREE_SIDE_EFFECTS (else_);
 	  pred = TREE_OPERAND (pred, 0);
@@ -3562,20 +3699,16 @@ shortcut_cond_expr (tree expr)
   /* If our arms just jump somewhere, hijack those labels so we don't
      generate jumps to jumps.  */
 
-  if (then_
-      && TREE_CODE (then_) == GOTO_EXPR
-      && TREE_CODE (GOTO_DESTINATION (then_)) == LABEL_DECL)
+  if (tree then_goto = find_goto_label (then_))
     {
-      true_label = GOTO_DESTINATION (then_);
+      true_label = GOTO_DESTINATION (then_goto);
       then_ = NULL;
       then_se = false;
     }
 
-  if (else_
-      && TREE_CODE (else_) == GOTO_EXPR
-      && TREE_CODE (GOTO_DESTINATION (else_)) == LABEL_DECL)
+  if (tree else_goto = find_goto_label (else_))
     {
-      false_label = GOTO_DESTINATION (else_);
+      false_label = GOTO_DESTINATION (else_goto);
       else_ = NULL;
       else_se = false;
     }
@@ -3639,8 +3772,8 @@ shortcut_cond_expr (tree expr)
 	{
 	  tree last = expr_last (expr);
 	  t = build_and_jump (&end_label);
-	  if (EXPR_HAS_LOCATION (last))
-	    SET_EXPR_LOCATION (t, EXPR_LOCATION (last));
+	  if (rexpr_has_location (last))
+	    SET_EXPR_LOCATION (t, rexpr_location (last));
 	  append_to_statement_list (t, &expr);
 	}
       if (emit_false)
@@ -3720,8 +3853,10 @@ gimple_boolify (tree expr)
       switch ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (expr, 1)))
 	{
 	case annot_expr_ivdep_kind:
+	case annot_expr_unroll_kind:
 	case annot_expr_no_vector_kind:
 	case annot_expr_vector_kind:
+	case annot_expr_parallel_kind:
 	  TREE_OPERAND (expr, 0) = gimple_boolify (TREE_OPERAND (expr, 0));
 	  if (TREE_CODE (type) != BOOLEAN_TYPE)
 	    TREE_TYPE (expr) = boolean_type_node;
@@ -3933,39 +4068,35 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
   gimple_push_condition ();
 
   have_then_clause_p = have_else_clause_p = false;
-  if (TREE_OPERAND (expr, 1) != NULL
-      && TREE_CODE (TREE_OPERAND (expr, 1)) == GOTO_EXPR
-      && TREE_CODE (GOTO_DESTINATION (TREE_OPERAND (expr, 1))) == LABEL_DECL
-      && (DECL_CONTEXT (GOTO_DESTINATION (TREE_OPERAND (expr, 1)))
-	  == current_function_decl)
+  label_true = find_goto_label (TREE_OPERAND (expr, 1));
+  if (label_true
+      && DECL_CONTEXT (GOTO_DESTINATION (label_true)) == current_function_decl
       /* For -O0 avoid this optimization if the COND_EXPR and GOTO_EXPR
 	 have different locations, otherwise we end up with incorrect
 	 location information on the branches.  */
       && (optimize
 	  || !EXPR_HAS_LOCATION (expr)
-	  || !EXPR_HAS_LOCATION (TREE_OPERAND (expr, 1))
-	  || EXPR_LOCATION (expr) == EXPR_LOCATION (TREE_OPERAND (expr, 1))))
+	  || !rexpr_has_location (label_true)
+	  || EXPR_LOCATION (expr) == rexpr_location (label_true)))
     {
-      label_true = GOTO_DESTINATION (TREE_OPERAND (expr, 1));
       have_then_clause_p = true;
+      label_true = GOTO_DESTINATION (label_true);
     }
   else
     label_true = create_artificial_label (UNKNOWN_LOCATION);
-  if (TREE_OPERAND (expr, 2) != NULL
-      && TREE_CODE (TREE_OPERAND (expr, 2)) == GOTO_EXPR
-      && TREE_CODE (GOTO_DESTINATION (TREE_OPERAND (expr, 2))) == LABEL_DECL
-      && (DECL_CONTEXT (GOTO_DESTINATION (TREE_OPERAND (expr, 2)))
-	  == current_function_decl)
+  label_false = find_goto_label (TREE_OPERAND (expr, 2));
+  if (label_false
+      && DECL_CONTEXT (GOTO_DESTINATION (label_false)) == current_function_decl
       /* For -O0 avoid this optimization if the COND_EXPR and GOTO_EXPR
 	 have different locations, otherwise we end up with incorrect
 	 location information on the branches.  */
       && (optimize
 	  || !EXPR_HAS_LOCATION (expr)
-	  || !EXPR_HAS_LOCATION (TREE_OPERAND (expr, 2))
-	  || EXPR_LOCATION (expr) == EXPR_LOCATION (TREE_OPERAND (expr, 2))))
+	  || !rexpr_has_location (label_false)
+	  || EXPR_LOCATION (expr) == rexpr_location (label_false)))
     {
-      label_false = GOTO_DESTINATION (TREE_OPERAND (expr, 2));
       have_else_clause_p = true;
+      label_false = GOTO_DESTINATION (label_false);
     }
   else
     label_false = create_artificial_label (UNKNOWN_LOCATION);
@@ -5077,6 +5208,8 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	    tree init = TARGET_EXPR_INITIAL (*from_p);
 
 	    if (init
+		&& (TREE_CODE (*expr_p) != MODIFY_EXPR
+		    || !TARGET_EXPR_NO_ELIDE (*from_p))
 		&& !VOID_TYPE_P (TREE_TYPE (init)))
 	      {
 		*from_p = init;
@@ -5315,7 +5448,6 @@ is_gimple_stmt (tree t)
     case OMP_PARALLEL:
     case OMP_FOR:
     case OMP_SIMD:
-    case CILK_SIMD:
     case OMP_DISTRIBUTE:
     case OACC_LOOP:
     case OMP_SECTIONS:
@@ -5454,7 +5586,12 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      side as statements and throw away the assignment.  Do this after
      gimplify_modify_expr_rhs so we handle TARGET_EXPRs of addressable
      types properly.  */
-  if (zero_sized_type (TREE_TYPE (*from_p)) && !want_value)
+  if (zero_sized_type (TREE_TYPE (*from_p))
+      && !want_value
+      /* Don't do this for calls that return addressable types, expand_call
+	 relies on those having a lhs.  */
+      && !(TREE_ADDRESSABLE (TREE_TYPE (*from_p))
+	   && TREE_CODE (*from_p) == CALL_EXPR))
     {
       gimplify_stmt (from_p, pre_p);
       gimplify_stmt (to_p, pre_p);
@@ -5580,7 +5717,8 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       && DECL_IGNORED_P (*from_p)
       && DECL_P (*to_p)
       && !DECL_IGNORED_P (*to_p)
-      && decl_function_context (*to_p) == current_function_decl)
+      && decl_function_context (*to_p) == current_function_decl
+      && decl_function_context (*from_p) == current_function_decl)
     {
       if (!DECL_NAME (*from_p) && DECL_NAME (*to_p))
 	DECL_NAME (*from_p)
@@ -5611,6 +5749,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      vargs.quick_push (CALL_EXPR_ARG (*from_p, i));
 	    }
 	  call_stmt = gimple_build_call_internal_vec (ifn, vargs);
+	  gimple_call_set_nothrow (call_stmt, TREE_NOTHROW (*from_p));
 	  gimple_set_location (call_stmt, EXPR_LOCATION (*expr_p));
 	}
       else
@@ -5629,8 +5768,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 						    CALL_EXPR_ARG (*from_p, 2));
 	  else
 	    {
-	      call_stmt = gimple_build_call_from_tree (*from_p);
-	      gimple_call_set_fntype (call_stmt, TREE_TYPE (fnptrtype));
+	      call_stmt = gimple_build_call_from_tree (*from_p, fnptrtype);
 	    }
 	}
       notice_special_calls (call_stmt);
@@ -5642,8 +5780,6 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   ???  This doesn't make it a default-def.  */
 	SSA_NAME_DEF_STMT (*to_p) = gimple_build_nop ();
 
-      if (EXPR_CILK_SPAWN (*from_p))
-        gimplify_cilk_detach (pre_p);
       assign = call_stmt;
     }
   else
@@ -5781,8 +5917,7 @@ gimplify_save_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   /* If the SAVE_EXPR has not been resolved, then evaluate it once.  */
   if (!SAVE_EXPR_RESOLVED_P (*expr_p))
     {
-      /* The operand may be a void-valued expression such as SAVE_EXPRs
-	 generated by the Java frontend for class initialization.  It is
+      /* The operand may be a void-valued expression.  It is
 	 being executed only for its side-effects.  */
       if (TREE_TYPE (val) == void_type_node)
 	{
@@ -6474,7 +6609,10 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	      clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
 	      gimple_push_cleanup (temp, clobber, false, pre_p, true);
 	    }
-	  if (asan_poisoned_variables && dbg_cnt (asan_use_after_scope))
+	  if (asan_poisoned_variables
+	      && DECL_ALIGN (temp) <= MAX_SUPPORTED_STACK_ALIGNMENT
+	      && dbg_cnt (asan_use_after_scope)
+	      && !gimplify_omp_ctxp)
 	    {
 	      tree asan_cleanup = build_asan_poison_call_expr (temp);
 	      if (asan_cleanup)
@@ -6632,9 +6770,11 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
     return;
 
   /* Never elide decls whose type has TREE_ADDRESSABLE set.  This means
-     there are constructors involved somewhere.  */
-  if (TREE_ADDRESSABLE (TREE_TYPE (decl))
-      || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+     there are constructors involved somewhere.  Exception is a shared clause,
+     there is nothing privatized in that case.  */
+  if ((flags & GOVD_SHARED) == 0
+      && (TREE_ADDRESSABLE (TREE_TYPE (decl))
+	  || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))))
     flags |= GOVD_SEEN;
 
   n = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
@@ -7862,7 +8002,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		    }
 
 		  tree offset;
-		  HOST_WIDE_INT bitsize, bitpos;
+		  poly_int64 bitsize, bitpos;
 		  machine_mode mode;
 		  int unsignedp, reversep, volatilep = 0;
 		  tree base = OMP_CLAUSE_DECL (c);
@@ -7883,7 +8023,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		    base = TREE_OPERAND (base, 0);
 		  gcc_assert (base == decl
 			      && (offset == NULL_TREE
-				  || TREE_CODE (offset) == INTEGER_CST));
+				  || poly_int_tree_p (offset)));
 
 		  splay_tree_node n
 		    = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
@@ -7962,13 +8102,13 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      tree *sc = NULL, *scp = NULL;
 		      if (GOMP_MAP_ALWAYS_P (OMP_CLAUSE_MAP_KIND (c)) || ptr)
 			n->value |= GOVD_SEEN;
-		      offset_int o1, o2;
+		      poly_offset_int o1, o2;
 		      if (offset)
-			o1 = wi::to_offset (offset);
+			o1 = wi::to_poly_offset (offset);
 		      else
 			o1 = 0;
-		      if (bitpos)
-			o1 = o1 + bitpos / BITS_PER_UNIT;
+		      if (maybe_ne (bitpos, 0))
+			o1 += bits_to_bytes_round_down (bitpos);
 		      sc = &OMP_CLAUSE_CHAIN (*osc);
 		      if (*sc != c
 			  && (OMP_CLAUSE_MAP_KIND (*sc)
@@ -7987,7 +8127,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			else
 			  {
 			    tree offset2;
-			    HOST_WIDE_INT bitsize2, bitpos2;
+			    poly_int64 bitsize2, bitpos2;
 			    base = OMP_CLAUSE_DECL (*sc);
 			    if (TREE_CODE (base) == ARRAY_REF)
 			      {
@@ -8023,7 +8163,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			    if (scp)
 			      continue;
 			    gcc_assert (offset == NULL_TREE
-					|| TREE_CODE (offset) == INTEGER_CST);
+					|| poly_int_tree_p (offset));
 			    tree d1 = OMP_CLAUSE_DECL (*sc);
 			    tree d2 = OMP_CLAUSE_DECL (c);
 			    while (TREE_CODE (d1) == ARRAY_REF)
@@ -8053,13 +8193,13 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 				break;
 			      }
 			    if (offset2)
-			      o2 = wi::to_offset (offset2);
+			      o2 = wi::to_poly_offset (offset2);
 			    else
 			      o2 = 0;
-			    if (bitpos2)
-			      o2 = o2 + bitpos2 / BITS_PER_UNIT;
-			    if (wi::ltu_p (o1, o2)
-				|| (wi::eq_p (o1, o2) && bitpos < bitpos2))
+			    o2 += bits_to_bytes_round_down (bitpos2);
+			    if (maybe_lt (o1, o2)
+				|| (known_eq (o1, 2)
+				    && maybe_lt (bitpos, bitpos2)))
 			      {
 				if (ptr)
 				  scp = sc;
@@ -8420,7 +8560,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
 	case OMP_CLAUSE_HINT:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_NUM_GANGS:
@@ -8921,7 +9060,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		OMP_CLAUSE_SHARED_READONLY (c) = 1;
 	      else if (DECL_P (decl)
 		       && ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
-			    && (n->value & GOVD_WRITTEN) != 1)
+			    && (n->value & GOVD_WRITTEN) != 0)
 			   || (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
 			       && !OMP_CLAUSE_LINEAR_NO_COPYOUT (c)))
 		       && omp_shared_to_firstprivate_optimizable_decl_p (decl))
@@ -9225,7 +9364,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_INDEPENDENT:
@@ -9520,7 +9658,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   switch (TREE_CODE (for_stmt))
     {
     case OMP_FOR:
-    case CILK_FOR:
     case OMP_DISTRIBUTE:
       break;
     case OACC_LOOP:
@@ -9533,7 +9670,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	ort = ORT_TASK;
       break;
     case OMP_SIMD:
-    case CILK_SIMD:
       ort = ORT_SIMD;
       break;
     default:
@@ -10208,8 +10344,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     {
     case OMP_FOR: kind = GF_OMP_FOR_KIND_FOR; break;
     case OMP_SIMD: kind = GF_OMP_FOR_KIND_SIMD; break;
-    case CILK_SIMD: kind = GF_OMP_FOR_KIND_CILKSIMD; break;
-    case CILK_FOR: kind = GF_OMP_FOR_KIND_CILKFOR; break;
     case OMP_DISTRIBUTE: kind = GF_OMP_FOR_KIND_DISTRIBUTE; break;
     case OMP_TASKLOOP: kind = GF_OMP_FOR_KIND_TASKLOOP; break;
     case OACC_LOOP: kind = GF_OMP_FOR_KIND_OACC_LOOP; break;
@@ -10837,6 +10971,7 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
 	case TRUTH_AND_EXPR:
 	case TRUTH_OR_EXPR:
 	case TRUTH_XOR_EXPR:
+	case BIT_INSERT_EXPR:
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p,
 					 lhs_addr, lhs_var);
 	  /* FALLTHRU */
@@ -10854,6 +10989,11 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
 	default:
 	  break;
 	}
+      break;
+    case tcc_reference:
+      if (TREE_CODE (expr) == BIT_FIELD_REF)
+	saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
+				       lhs_addr, lhs_var);
       break;
     default:
       break;
@@ -11229,9 +11369,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       save_expr = *expr_p;
 
       /* Die, die, die, my darling.  */
-      if (save_expr == error_mark_node
-	  || (TREE_TYPE (save_expr)
-	      && TREE_TYPE (save_expr) == error_mark_node))
+      if (error_operand_p (save_expr))
 	{
 	  ret = GS_ERROR;
 	  break;
@@ -11383,6 +11521,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  {
 	    tree cond = TREE_OPERAND (*expr_p, 0);
 	    tree kind = TREE_OPERAND (*expr_p, 1);
+	    tree data = TREE_OPERAND (*expr_p, 2);
 	    tree type = TREE_TYPE (cond);
 	    if (!INTEGRAL_TYPE_P (type))
 	      {
@@ -11393,7 +11532,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    tree tmp = create_tmp_var (type);
 	    gimplify_arg (&cond, pre_p, EXPR_LOCATION (*expr_p));
 	    gcall *call
-	      = gimple_build_call_internal (IFN_ANNOTATE, 2, cond, kind);
+	      = gimple_build_call_internal (IFN_ANNOTATE, 3, cond, kind, data);
 	    gimple_call_set_lhs (call, tmp);
 	    gimplify_seq_add_stmt (pre_p, call);
 	    *expr_p = tmp;
@@ -11783,6 +11922,18 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
+	case DEBUG_EXPR_DECL:
+	  gcc_unreachable ();
+
+	case DEBUG_BEGIN_STMT:
+	  gimplify_seq_add_stmt (pre_p,
+				 gimple_build_debug_begin_stmt
+				 (TREE_BLOCK (*expr_p),
+				  EXPR_LOCATION (*expr_p)));
+	  ret = GS_ALL_DONE;
+	  *expr_p = NULL;
+	  break;
+
 	case SSA_NAME:
 	  /* Allow callbacks into the gimplifier during optimization.  */
 	  ret = GS_ALL_DONE;
@@ -11800,8 +11951,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case OMP_FOR:
 	case OMP_SIMD:
-	case CILK_SIMD:
-	case CILK_FOR:
 	case OMP_DISTRIBUTE:
 	case OMP_TASKLOOP:
 	case OACC_LOOP:
@@ -11994,22 +12143,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    break;
 	  }
 
-	case CILK_SYNC_STMT:
-	  {
-	    if (!fn_contains_cilk_spawn_p (cfun))
-	      {
-		error_at (EXPR_LOCATION (*expr_p),
-			  "expected %<_Cilk_spawn%> before %<_Cilk_sync%>");
-		ret = GS_ERROR;
-	      }
-	    else
-	      {
-		gimplify_cilk_sync (expr_p, pre_p);
-		ret = GS_ALL_DONE;
-	      }
-	    break;
-	  }
-	
 	default:
 	  switch (TREE_CODE_CLASS (TREE_CODE (*expr_p)))
 	    {
@@ -12470,7 +12603,10 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
      a VAR_DECL.  If it's a VAR_DECL from another function, the gimplifier
      will want to replace it with a new variable, but that will cause problems
      if this type is from outside the function.  It's OK to have that here.  */
-  if (is_gimple_sizepos (expr))
+  if (expr == NULL_TREE
+      || is_gimple_constant (expr)
+      || TREE_CODE (expr) == VAR_DECL
+      || CONTAINS_PLACEHOLDER_P (expr))
     return;
 
   *expr_p = unshare_expr (expr);
@@ -12478,6 +12614,12 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
   /* SSA names in decl/type fields are a bad idea - they'll get reclaimed
      if the def vanishes.  */
   gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue, false);
+
+  /* If expr wasn't already is_gimple_sizepos or is_gimple_constant from the
+     FE, ensure that it is a VAR_DECL, otherwise we might handle some decls
+     as gimplify_vla_decl even when they would have all sizes INTEGER_CSTs.  */
+  if (is_gimple_constant (*expr_p))
+    *expr_p = get_initialized_tmp_var (*expr_p, stmt_p, NULL, false);
 }
 
 /* Gimplify the body of statements of FNDECL and return a GIMPLE_BIND node
@@ -12488,7 +12630,7 @@ gbind *
 gimplify_body (tree fndecl, bool do_parms)
 {
   location_t saved_location = input_location;
-  gimple_seq parm_stmts, seq;
+  gimple_seq parm_stmts, parm_cleanup = NULL, seq;
   gimple *outer_stmt;
   gbind *outer_bind;
   struct cgraph_node *cgn;
@@ -12527,7 +12669,7 @@ gimplify_body (tree fndecl, bool do_parms)
 
   /* Resolve callee-copies.  This has to be done before processing
      the body so that DECL_VALUE_EXPR gets processed correctly.  */
-  parm_stmts = do_parms ? gimplify_parameters () : NULL;
+  parm_stmts = do_parms ? gimplify_parameters (&parm_cleanup) : NULL;
 
   /* Gimplify the function's body.  */
   seq = NULL;
@@ -12556,6 +12698,13 @@ gimplify_body (tree fndecl, bool do_parms)
       tree parm;
 
       gimplify_seq_add_seq (&parm_stmts, gimple_bind_body (outer_bind));
+      if (parm_cleanup)
+	{
+	  gtry *g = gimple_build_try (parm_stmts, parm_cleanup,
+				      GIMPLE_TRY_FINALLY);
+	  parm_stmts = NULL;
+	  gimple_seq_add_stmt (&parm_stmts, g);
+	}
       gimple_bind_set_body (outer_bind, parm_stmts);
 
       for (parm = DECL_ARGUMENTS (current_function_decl);
@@ -12687,7 +12836,7 @@ gimplify_function_tree (tree fndecl)
       && !needs_to_live_in_memory (ret))
     DECL_GIMPLE_REG_P (ret) = 1;
 
-  if (asan_sanitize_use_after_scope () && !asan_no_sanitize_address_p ())
+  if (asan_sanitize_use_after_scope () && sanitize_flags_p (SANITIZE_ADDRESS))
     asan_poisoned_variables = new hash_set<tree> ();
   bind = gimplify_body (fndecl, true);
   if (asan_poisoned_variables)
@@ -12754,8 +12903,7 @@ gimplify_function_tree (tree fndecl)
       bind = new_bind;
     }
 
-  if ((flag_sanitize & SANITIZE_THREAD) != 0
-      && !lookup_attribute ("no_sanitize_thread", DECL_ATTRIBUTES (fndecl)))
+  if (sanitize_flags_p (SANITIZE_THREAD))
     {
       gcall *call = gimple_build_call_internal (IFN_TSAN_FUNC_EXIT, 0);
       gimple *tf = gimple_build_try (seq, call, GIMPLE_TRY_FINALLY);
@@ -12772,7 +12920,7 @@ gimplify_function_tree (tree fndecl)
 
   pop_cfun ();
 
-  dump_function (TDI_generic, fndecl);
+  dump_function (TDI_gimple, fndecl);
 }
 
 /* Return a dummy expression of type TYPE in order to keep going after an

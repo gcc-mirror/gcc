@@ -2,7 +2,7 @@
 
    Contributed by Evgeny Stupachenko <evstupac@gmail.com>
 
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +34,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "attribs.h"
 #include "pretty-print.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
+#include "tree-inline.h"
+#include "intl.h"
+
+/* Walker callback that replaces all FUNCTION_DECL of a function that's
+   going to be versioned.  */
+
+static tree
+replace_function_decl (tree *op, int *walk_subtrees, void *data)
+{
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  cgraph_function_version_info *info = (cgraph_function_version_info *)wi->info;
+
+  if (TREE_CODE (*op) == FUNCTION_DECL
+      && info->this_node->decl == *op)
+    {
+      *op = info->dispatcher_resolver;
+      *walk_subtrees = 0;
+    }
+
+  return NULL;
+}
 
 /* If the call in NODE has multiple target attribute with multiple fields,
    replace it with dispatcher call and create dispatcher (once).  */
@@ -41,64 +64,122 @@ along with GCC; see the file COPYING3.  If not see
 static void
 create_dispatcher_calls (struct cgraph_node *node)
 {
-  cgraph_edge *e;
-  cgraph_edge *e_next = NULL;
+  ipa_ref *ref;
+
+  if (!DECL_FUNCTION_VERSIONED (node->decl)
+      || !is_function_default_version (node->decl))
+    return;
+
+  if (!targetm.has_ifunc_p ())
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"the call requires ifunc, which is not"
+		" supported by this target");
+      return;
+    }
+  else if (!targetm.get_function_versions_dispatcher)
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"target does not support function version dispatcher");
+      return;
+    }
+
+  tree idecl = targetm.get_function_versions_dispatcher (node->decl);
+  if (!idecl)
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"default %<target_clones%> attribute was not set");
+      return;
+    }
+
+  cgraph_node *inode = cgraph_node::get (idecl);
+  gcc_assert (inode);
+  tree resolver_decl = targetm.generate_version_dispatcher_body (inode);
+
+  /* Update aliases.  */
+  inode->alias = true;
+  inode->alias_target = resolver_decl;
+  if (!inode->analyzed)
+    inode->resolve_alias (cgraph_node::get (resolver_decl));
+
+  auto_vec<cgraph_edge *> edges_to_redirect;
+  auto_vec<ipa_ref *> references_to_redirect;
+
+  for (unsigned i = 0; node->iterate_referring (i, ref); i++)
+    references_to_redirect.safe_push (ref);
 
   /* We need to remember NEXT_CALLER as it could be modified in the loop.  */
-  for (e = node->callers; e ;e = (e == NULL) ? e_next : e->next_caller)
+  for (cgraph_edge *e = node->callers; e ; e = e->next_caller)
+    edges_to_redirect.safe_push (e);
+
+  if (!edges_to_redirect.is_empty () || !references_to_redirect.is_empty ())
     {
-      tree resolver_decl;
-      tree idecl;
-      tree decl;
-      gimple *call = e->call_stmt;
-      struct cgraph_node *inode;
-
-      /* Checking if call of function is call of versioned function.
-	 Versioned function are not inlined, so there is no need to
-	 check for inline.  */
-      if (!call
-	  || !(decl = gimple_call_fndecl (call))
-	  || !DECL_FUNCTION_VERSIONED (decl))
-	continue;
-
-      if (!targetm.has_ifunc_p ())
+      /* Redirect edges.  */
+      unsigned i;
+      cgraph_edge *e;
+      FOR_EACH_VEC_ELT (edges_to_redirect, i, e)
 	{
-	  error_at (gimple_location (call),
-		    "the call requires ifunc, which is not"
-		    " supported by this target");
-	  break;
-	}
-      else if (!targetm.get_function_versions_dispatcher)
-	{
-	  error_at (gimple_location (call),
-		    "target does not support function version dispatcher");
-	  break;
+	  e->redirect_callee (inode);
+	  e->redirect_call_stmt_to_callee ();
 	}
 
-      e_next = e->next_caller;
-      idecl = targetm.get_function_versions_dispatcher (decl);
-      if (!idecl)
+      /* Redirect references.  */
+      FOR_EACH_VEC_ELT (references_to_redirect, i, ref)
 	{
-	  error_at (gimple_location (call),
-		    "default target_clones attribute was not set");
-	  break;
+	  if (ref->use == IPA_REF_ADDR)
+	    {
+	      struct walk_stmt_info wi;
+	      memset (&wi, 0, sizeof (wi));
+	      wi.info = (void *)node->function_version ();
+
+	      if (dyn_cast<varpool_node *> (ref->referring))
+		{
+		  hash_set<tree> visited_nodes;
+		  walk_tree (&DECL_INITIAL (ref->referring->decl),
+			     replace_function_decl, &wi, &visited_nodes);
+		}
+	      else
+		{
+		  gimple_stmt_iterator it = gsi_for_stmt (ref->stmt);
+		  if (ref->referring->decl != resolver_decl)
+		    walk_gimple_stmt (&it, NULL, replace_function_decl, &wi);
+		}
+
+	      symtab_node *source = ref->referring;
+	      ref->remove_reference ();
+	      source->create_reference (inode, IPA_REF_ADDR);
+	    }
+	  else if (ref->use == IPA_REF_ALIAS)
+	    {
+	      symtab_node *source = ref->referring;
+	      ref->remove_reference ();
+	      source->create_reference (inode, IPA_REF_ALIAS);
+	      source->add_to_same_comdat_group (inode);
+	    }
+	  else
+	    gcc_unreachable ();
 	}
-      inode = cgraph_node::get (idecl);
-      gcc_assert (inode);
-      resolver_decl = targetm.generate_version_dispatcher_body (inode);
-
-      /* Update aliases.  */
-      inode->alias = true;
-      inode->alias_target = resolver_decl;
-      if (!inode->analyzed)
-	inode->resolve_alias (cgraph_node::get (resolver_decl));
-
-      e->redirect_callee (inode);
-      e->redirect_call_stmt_to_callee ();
-      /*  Since REDIRECT_CALLEE modifies NEXT_CALLER field we move to
-	  previously set NEXT_CALLER.  */
-      e = NULL;
     }
+
+  symtab->change_decl_assembler_name (node->decl,
+				      clone_function_name (node->decl,
+							   "default"));
+
+  /* FIXME: copy of cgraph_node::make_local that should be cleaned up
+	    in next stage1.  */
+  node->make_decl_local ();
+  node->set_section (NULL);
+  node->set_comdat_group (NULL);
+  node->externally_visible = false;
+  node->forced_by_abi = false;
+  node->set_section (NULL);
+  node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
+			|| node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+		       && !flag_incremental_link);
+  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
+
+  DECL_ARTIFICIAL (node->decl) = 1;
+  node->force_output = true;
 }
 
 /* Return length of attribute names string,
@@ -150,26 +231,30 @@ get_attr_str (tree arglist, char *attr_str)
 }
 
 /* Return number of attributes separated by comma and put them into ARGS.
-   If there is no DEFAULT attribute return -1.  */
+   If there is no DEFAULT attribute return -1.  If there is an empty
+   string in attribute return -2.  */
 
 static int
-separate_attrs (char *attr_str, char **attrs)
+separate_attrs (char *attr_str, char **attrs, int attrnum)
 {
   int i = 0;
-  bool has_default = false;
+  int default_count = 0;
 
   for (char *attr = strtok (attr_str, ",");
        attr != NULL; attr = strtok (NULL, ","))
     {
       if (strcmp (attr, "default") == 0)
 	{
-	  has_default = true;
+	  default_count++;
 	  continue;
 	}
       attrs[i++] = attr;
     }
-  if (!has_default)
+  if (default_count == 0)
     return -1;
+  else if (i + default_count < attrnum)
+    return -2;
+
   return i;
 }
 
@@ -255,7 +340,23 @@ expand_target_clones (struct cgraph_node *node, bool definition)
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl),
 		  0,
-		  "single target_clones attribute is ignored");
+		  "single %<target_clones%> attribute is ignored");
+      return false;
+    }
+
+  if (node->definition
+      && !tree_versionable_function_p (node->decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"clones for %<target_clones%> attribute cannot be created");
+      const char *reason = NULL;
+      if (lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
+	reason = G_("function %q+F can never be copied "
+		    "because it has %<noclone%> attribute");
+      else
+	reason = copy_forbidden (DECL_STRUCT_FUNCTION (node->decl));
+      if (reason)
+	inform (DECL_SOURCE_LOCATION (node->decl), reason, node->decl);
       return false;
     }
 
@@ -263,11 +364,19 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   int attrnum = get_attr_str (arglist, attr_str);
   char **attrs = XNEWVEC (char *, attrnum);
 
-  attrnum = separate_attrs (attr_str, attrs);
+  attrnum = separate_attrs (attr_str, attrs, attrnum);
   if (attrnum == -1)
     {
       error_at (DECL_SOURCE_LOCATION (node->decl),
 		"default target was not set");
+      XDELETEVEC (attrs);
+      XDELETEVEC (attr_str);
+      return false;
+    }
+  else if (attrnum == -2)
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"an empty string cannot be in %<target_clones%> attribute");
       XDELETEVEC (attrs);
       XDELETEVEC (attr_str);
       return false;
@@ -345,14 +454,14 @@ static unsigned int
 ipa_target_clone (void)
 {
   struct cgraph_node *node;
+  auto_vec<cgraph_node *> to_dispatch;
 
-  bool target_clone_pass = false;
   FOR_EACH_FUNCTION (node)
-    target_clone_pass |= expand_target_clones (node, node->definition);
+    if (expand_target_clones (node, node->definition))
+      to_dispatch.safe_push (node);
 
-  if (target_clone_pass)
-    FOR_EACH_FUNCTION (node)
-      create_dispatcher_calls (node);
+  for (unsigned i = 0; i < to_dispatch.length (); i++)
+    create_dispatcher_calls (to_dispatch[i]);
 
   return 0;
 }

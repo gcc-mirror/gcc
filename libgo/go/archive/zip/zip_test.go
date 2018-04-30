@@ -255,7 +255,7 @@ func TestZip64EdgeCase(t *testing.T) {
 	testZip64DirectoryRecordLength(buf, t)
 }
 
-// Tests that we generate a zip64 file if the the directory at offset
+// Tests that we generate a zip64 file if the directory at offset
 // 0xFFFFFFFF, but not before.
 func TestZip64DirectoryOffset(t *testing.T) {
 	if testing.Short() && race.Enabled {
@@ -645,16 +645,54 @@ func TestHeaderTooShort(t *testing.T) {
 	h := FileHeader{
 		Name:   "foo.txt",
 		Method: Deflate,
-		Extra:  []byte{zip64ExtraId}, // missing size and second half of tag, but Extra is best-effort parsing
+		Extra:  []byte{zip64ExtraID}, // missing size and second half of tag, but Extra is best-effort parsing
 	}
 	testValidHeader(&h, t)
+}
+
+func TestHeaderTooLongErr(t *testing.T) {
+	var headerTests = []struct {
+		name    string
+		extra   []byte
+		wanterr error
+	}{
+		{
+			name:    strings.Repeat("x", 1<<16),
+			extra:   []byte{},
+			wanterr: errLongName,
+		},
+		{
+			name:    "long_extra",
+			extra:   bytes.Repeat([]byte{0xff}, 1<<16),
+			wanterr: errLongExtra,
+		},
+	}
+
+	// write a zip file
+	buf := new(bytes.Buffer)
+	w := NewWriter(buf)
+
+	for _, test := range headerTests {
+		h := &FileHeader{
+			Name:  test.name,
+			Extra: test.extra,
+		}
+		_, err := w.CreateHeader(h)
+		if err != test.wanterr {
+			t.Errorf("error=%v, want %v", err, test.wanterr)
+		}
+	}
+
+	if err := w.Close(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestHeaderIgnoredSize(t *testing.T) {
 	h := FileHeader{
 		Name:   "foo.txt",
 		Method: Deflate,
-		Extra:  []byte{zip64ExtraId & 0xFF, zip64ExtraId >> 8, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, // bad size but shouldn't be consulted
+		Extra:  []byte{zip64ExtraID & 0xFF, zip64ExtraID >> 8, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, // bad size but shouldn't be consulted
 	}
 	testValidHeader(&h, t)
 }
@@ -678,6 +716,18 @@ func TestZeroLengthHeader(t *testing.T) {
 func BenchmarkZip64Test(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		testZip64(b, 1<<26)
+	}
+}
+
+func BenchmarkZip64TestSizes(b *testing.B) {
+	for _, size := range []int64{1 << 12, 1 << 20, 1 << 26} {
+		b.Run(fmt.Sprint(size), func(b *testing.B) {
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					testZip64(b, size)
+				}
+			})
+		})
 	}
 }
 

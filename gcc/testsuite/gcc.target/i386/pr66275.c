@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
+/* { dg-do compile { target { *-*-linux* && lp64 } } } */
 /* { dg-options "-mabi=ms -fdump-rtl-dfinit" } */
 
 void

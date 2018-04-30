@@ -1,0 +1,3 @@
+VECTOR_MODE (INT, SI, 2);  /* V2SI */
+
+VECTOR_MODE (INT, DI, 2);  /* V2DI */

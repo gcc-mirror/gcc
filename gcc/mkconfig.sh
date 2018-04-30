@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright (C) 2001-2017 Free Software Foundation, Inc.
+# Copyright (C) 2001-2018 Free Software Foundation, Inc.
 # This file is part of GCC.
 
 # GCC is free software; you can redistribute it and/or modify
@@ -99,9 +99,6 @@ case $output in
 #endif
 #if defined IN_GCC && !defined GENERATOR_FILE
 # include "insn-modes.h"
-#endif
-#if defined IN_GCC && defined GENERATOR_FILE && !defined BITS_PER_UNIT
-#include "machmode.h"
 #endif
 EOF
     ;;

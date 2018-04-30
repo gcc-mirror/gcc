@@ -1,6 +1,5 @@
 /* { dg-do run } */
-
-#ifndef NO_TRAMPOLINES
+/* { dg-require-effective-target trampolines } */
 
 typedef __SIZE_TYPE__ size_t;
 extern void abort (void);
@@ -22,7 +21,3 @@ int main ()
  nonlocal:
   exit (0);
 }
-
-#else
-int main() { return 0; }
-#endif

@@ -1,5 +1,5 @@
 /* Declarations relating to class gcc_rich_location
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,6 +40,27 @@ class gcc_rich_location : public rich_location
 
   void add_fixit_misspelled_id (location_t misspelled_token_loc,
 				tree hint_id);
+
+  /* If LOC is within the spans of lines that will already be printed for
+     this gcc_rich_location, then add it as a secondary location
+     and return true.
+
+     Otherwise return false.
+
+     This allows for a diagnostic to compactly print secondary locations
+     in one diagnostic when these are near enough the primary locations for
+     diagnostics-show-locus.c to cope with them, and to fall back to
+     printing them via a note otherwise e.g.:
+
+	gcc_rich_location richloc (primary_loc);
+	bool added secondary = richloc.add_location_if_nearby (secondary_loc);
+	error_at_rich_loc (&richloc, "main message");
+	if (!added secondary)
+	  inform (secondary_loc, "message for secondary");
+
+     Implemented in diagnostic-show-locus.c.  */
+
+  bool add_location_if_nearby (location_t loc);
 };
 
 #endif /* GCC_RICH_LOCATION_H */

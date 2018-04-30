@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,9 +35,11 @@ package body ALI is
    use ASCII;
    --  Make control characters visible
 
-   --  The following variable records which characters currently are
-   --  used as line type markers in the ALI file. This is used in
-   --  Scan_ALI to detect (or skip) invalid lines.
+   --  The following variable records which characters currently are used as
+   --  line type markers in the ALI file. This is used in Scan_ALI to detect
+   --  (or skip) invalid lines. The following letters are still available:
+   --
+   --    B G H J K O Q Z
 
    Known_ALI_Lines : constant array (Character range 'A' .. 'Z') of Boolean :=
      ('V'    => True,   -- version
@@ -58,6 +60,7 @@ package body ALI is
       'Z'    => True,   -- implicit with from instantiation
       'C'    => True,   -- SCO information
       'F'    => True,   -- SPARK cross-reference information
+      'T'    => True,   -- task stack information
       others => False);
 
    --------------------
@@ -111,6 +114,7 @@ package body ALI is
       Locking_Policy_Specified               := ' ';
       No_Normalize_Scalars_Specified         := False;
       No_Object_Specified                    := False;
+      No_Component_Reordering_Specified      := False;
       GNATprove_Mode_Specified               := False;
       Normalize_Scalars_Specified            := False;
       Partition_Elaboration_Policy_Specified := ' ';
@@ -841,7 +845,7 @@ package body ALI is
 
       if Read_Xref then
          Ignore :=
-           ('U' | 'W' | 'Y' | 'Z' | 'D' | 'X' => False, others => True);
+           ('T' | 'U' | 'W' | 'Y' | 'Z' | 'D' | 'X' => False, others => True);
 
       --  Read_Lines parameter given
 
@@ -885,6 +889,7 @@ package body ALI is
         Main_Priority                => -1,
         Main_CPU                     => -1,
         Main_Program                 => None,
+        No_Component_Reordering      => False,
         No_Object                    => False,
         Normalize_Scalars            => False,
         Ofile_Full_Name              => Full_Object_File_Name,
@@ -1122,9 +1127,15 @@ package body ALI is
             elsif C = 'N' then
                C := Getc;
 
+               --  Processing for NC
+
+               if C = 'C' then
+                  ALIs.Table (Id).No_Component_Reordering := True;
+                  No_Component_Reordering_Specified := True;
+
                --  Processing for NO
 
-               if C = 'O' then
+               elsif C = 'O' then
                   ALIs.Table (Id).No_Object := True;
                   No_Object_Specified := True;
 
@@ -1736,6 +1747,8 @@ package body ALI is
             UL.Elaborate_Body_Desirable := False;
             UL.Optimize_Alignment       := 'O';
             UL.Has_Finalizer            := False;
+            UL.Primary_Stack_Count      := 0;
+            UL.Sec_Stack_Count          := 0;
 
             if Debug_Flag_U then
                Write_Str (" ----> reading unit ");
@@ -2017,8 +2030,7 @@ package body ALI is
                Withs.Table (Withs.Last).Elab_All_Desirable := False;
                Withs.Table (Withs.Last).SAL_Interface      := False;
                Withs.Table (Withs.Last).Limited_With       := (C = 'Y');
-               Withs.Table (Withs.Last).Implicit_With_From_Instantiation
-                                                           := (C = 'Z');
+               Withs.Table (Withs.Last).Implicit_With      := (C = 'Z');
 
                --  Generic case with no object file available
 
@@ -2087,6 +2099,28 @@ package body ALI is
 
          Units.Table (Units.Last).Last_With := Withs.Last;
          Units.Table (Units.Last).Last_Arg  := Args.Last;
+
+         --  Scan out task stack information for the unit if present
+
+         Check_Unknown_Line;
+
+         if C = 'T' then
+            if Ignore ('T') then
+               Skip_Line;
+
+            else
+               Checkc (' ');
+               Skip_Space;
+
+               Units.Table (Units.Last).Primary_Stack_Count := Get_Nat;
+               Skip_Space;
+               Units.Table (Units.Last).Sec_Stack_Count := Get_Nat;
+               Skip_Space;
+               Skip_Eol;
+            end if;
+
+            C := Getc;
+         end if;
 
          --  If there are linker options lines present, scan them
 

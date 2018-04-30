@@ -1,5 +1,5 @@
 /* Graph representation.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -55,12 +55,14 @@ struct graph *new_graph (int);
 void dump_graph (FILE *, struct graph *);
 struct graph_edge *add_edge (struct graph *, int, int);
 void identify_vertices (struct graph *, int, int);
+typedef bool (*skip_edge_callback) (struct graph_edge *);
 int graphds_dfs (struct graph *, int *, int,
-		 vec<int> *, bool, bitmap);
-int graphds_scc (struct graph *, bitmap);
+		 vec<int> *, bool, bitmap, skip_edge_callback = NULL);
+int graphds_scc (struct graph *, bitmap, skip_edge_callback = NULL);
 void graphds_domtree (struct graph *, int, int *, int *, int *);
-typedef void (*graphds_edge_callback) (struct graph *, struct graph_edge *);
-void for_each_edge (struct graph *, graphds_edge_callback);
+typedef void (*graphds_edge_callback) (struct graph *,
+				       struct graph_edge *, void *);
+void for_each_edge (struct graph *, graphds_edge_callback, void *);
 void free_graph (struct graph *g);
 
 #endif /* GCC_GRAPHDS_H */

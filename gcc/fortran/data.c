@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -104,11 +104,11 @@ static gfc_expr *
 create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 			      gfc_ref *ref, gfc_expr *rvalue)
 {
-  int len, start, end, tlen;
+  HOST_WIDE_INT len, start, end, tlen;
   gfc_char_t *dest;
   bool alloced_init = false;
 	    
-  gfc_extract_int (ts->u.cl->length, &len);
+  gfc_extract_hwi (ts->u.cl->length, &len);
 
   if (init == NULL)
     {
@@ -143,10 +143,10 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 	  return NULL;
 	}
 
-      gfc_extract_int (start_expr, &start);
+      gfc_extract_hwi (start_expr, &start);
       gfc_free_expr (start_expr);
       start--;
-      gfc_extract_int (end_expr, &end);
+      gfc_extract_hwi (end_expr, &end);
       gfc_free_expr (end_expr);
     }
   else
@@ -174,16 +174,15 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
       else
 	{
 	  gfc_warning_now (0, "Initialization string at %L was truncated to "
-			   "fit the variable (%d/%d)", &rvalue->where,
-			   tlen, len);
+			   "fit the variable (%ld/%ld)", &rvalue->where,
+			   (long) tlen, (long) len);
 	  len = tlen;
 	}
     }
 
   if (rvalue->ts.type == BT_HOLLERITH)
     {
-      int i;
-      for (i = 0; i < len; i++)
+      for (size_t i = 0; i < (size_t) len; i++)
 	dest[start+i] = rvalue->representation.string[i];
     }
   else

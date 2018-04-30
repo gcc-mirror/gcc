@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template<typename T>
   concept auto C1() { return 0; } // { dg-error "deduced return type" }

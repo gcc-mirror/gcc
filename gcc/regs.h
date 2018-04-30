@@ -1,5 +1,5 @@
 /* Define per-register tables for data flow info and register allocation.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -130,8 +130,10 @@ extern size_t reg_info_p_size;
    frequency.  */
 #define REG_FREQ_FROM_BB(bb) (optimize_function_for_size_p (cfun)	      \
 			      ? REG_FREQ_MAX				      \
-			      : ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\
-			      ? ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\
+			      : ((bb)->count.to_frequency (cfun)	      \
+				* REG_FREQ_MAX / BB_FREQ_MAX)		      \
+			      ? ((bb)->count.to_frequency (cfun)	      \
+				 * REG_FREQ_MAX / BB_FREQ_MAX)		      \
 			      : 1)
 
 /* Indexed by N, gives number of insns in which register N dies.
@@ -193,12 +195,6 @@ extern int caller_save_needed;
   choose_hard_reg_mode (REGNO, NREGS, false)
 #endif
 
-/* Registers that get partially clobbered by a call in a given mode.
-   These must not be call used registers.  */
-#ifndef HARD_REGNO_CALL_PART_CLOBBERED
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
-#endif
-
 /* Target-dependent globals.  */
 struct target_regs {
   /* For each starting hard register, the number of consecutive hard
@@ -238,9 +234,6 @@ extern struct target_regs *this_target_regs;
 #else
 #define this_target_regs (&default_target_regs)
 #endif
-
-#define hard_regno_nregs \
-  (this_target_regs->x_hard_regno_nregs)
 #define reg_raw_mode \
   (this_target_regs->x_reg_raw_mode)
 #define have_regs_of_mode \
@@ -256,13 +249,21 @@ extern struct target_regs *this_target_regs;
 #define float_extend_from_mem \
   (this_target_regs->x_float_extend_from_mem)
 
+/* Return the number of hard registers in (reg:MODE REGNO).  */
+
+ALWAYS_INLINE unsigned char
+hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  return this_target_regs->x_hard_regno_nregs[regno][mode];
+}
+
 /* Return an exclusive upper bound on the registers occupied by hard
    register (reg:MODE REGNO).  */
 
 static inline unsigned int
 end_hard_regno (machine_mode mode, unsigned int regno)
 {
-  return regno + hard_regno_nregs[regno][(int) mode];
+  return regno + hard_regno_nregs (regno, mode);
 }
 
 /* Add to REGS all the registers required to store a value of mode MODE

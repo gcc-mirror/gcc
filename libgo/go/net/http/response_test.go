@@ -318,7 +318,7 @@ var respTests = []respTest{
 	{
 		"HTTP/1.0 303\r\n\r\n",
 		Response{
-			Status:        "303 ",
+			Status:        "303",
 			StatusCode:    303,
 			Proto:         "HTTP/1.0",
 			ProtoMajor:    1,
@@ -531,6 +531,29 @@ some body`,
 			ContentLength: 23,
 		},
 		"\x1f\x8b\b\x00\x00\x00\x00\x00\x00\x00s\xf3\xf7\a\x00\xab'\xd4\x1a\x03\x00\x00\x00",
+	},
+
+	// Issue 19989: two spaces between HTTP version and status.
+	{
+		"HTTP/1.0  401 Unauthorized\r\n" +
+			"Content-type: text/html\r\n" +
+			"WWW-Authenticate: Basic realm=\"\"\r\n\r\n" +
+			"Your Authentication failed.\r\n",
+		Response{
+			Status:     "401 Unauthorized",
+			StatusCode: 401,
+			Proto:      "HTTP/1.0",
+			ProtoMajor: 1,
+			ProtoMinor: 0,
+			Request:    dummyReq("GET"),
+			Header: Header{
+				"Content-Type":     {"text/html"},
+				"Www-Authenticate": {`Basic realm=""`},
+			},
+			Close:         true,
+			ContentLength: -1,
+		},
+		"Your Authentication failed.\r\n",
 	},
 }
 
@@ -793,7 +816,6 @@ func TestReadResponseErrors(t *testing.T) {
 	type testCase struct {
 		name    string // optional, defaults to in
 		in      string
-		header  Header
 		wantErr interface{} // nil, err value, or string substring
 	}
 
@@ -819,22 +841,21 @@ func TestReadResponseErrors(t *testing.T) {
 		}
 	}
 
-	contentLength := func(status, body string, wantErr interface{}, header Header) testCase {
+	contentLength := func(status, body string, wantErr interface{}) testCase {
 		return testCase{
 			name:    fmt.Sprintf("status %q %q", status, body),
 			in:      fmt.Sprintf("HTTP/1.1 %s\r\n%s", status, body),
 			wantErr: wantErr,
-			header:  header,
 		}
 	}
 
 	errMultiCL := "message cannot contain multiple Content-Length headers"
 
 	tests := []testCase{
-		{"", "", nil, io.ErrUnexpectedEOF},
-		{"", "HTTP/1.1 301 Moved Permanently\r\nFoo: bar", nil, io.ErrUnexpectedEOF},
-		{"", "HTTP/1.1", nil, "malformed HTTP response"},
-		{"", "HTTP/2.0", nil, "malformed HTTP response"},
+		{"", "", io.ErrUnexpectedEOF},
+		{"", "HTTP/1.1 301 Moved Permanently\r\nFoo: bar", io.ErrUnexpectedEOF},
+		{"", "HTTP/1.1", "malformed HTTP response"},
+		{"", "HTTP/2.0", "malformed HTTP response"},
 		status("20X Unknown", true),
 		status("abcd Unknown", true),
 		status("二百/两百 OK", true),
@@ -860,18 +881,22 @@ func TestReadResponseErrors(t *testing.T) {
 		version("HTTP/1", true),
 		version("http/1.1", true),
 
-		contentLength("200 OK", "Content-Length: 10\r\nContent-Length: 7\r\n\r\nGopher hey\r\n", errMultiCL, nil),
-		contentLength("200 OK", "Content-Length: 7\r\nContent-Length: 7\r\n\r\nGophers\r\n", nil, Header{"Content-Length": {"7"}}),
-		contentLength("201 OK", "Content-Length: 0\r\nContent-Length: 7\r\n\r\nGophers\r\n", errMultiCL, nil),
-		contentLength("300 OK", "Content-Length: 0\r\nContent-Length: 0 \r\n\r\nGophers\r\n", nil, Header{"Content-Length": {"0"}}),
-		contentLength("200 OK", "Content-Length:\r\nContent-Length:\r\n\r\nGophers\r\n", nil, nil),
-		contentLength("206 OK", "Content-Length:\r\nContent-Length: 0 \r\nConnection: close\r\n\r\nGophers\r\n", errMultiCL, nil),
+		contentLength("200 OK", "Content-Length: 10\r\nContent-Length: 7\r\n\r\nGopher hey\r\n", errMultiCL),
+		contentLength("200 OK", "Content-Length: 7\r\nContent-Length: 7\r\n\r\nGophers\r\n", nil),
+		contentLength("201 OK", "Content-Length: 0\r\nContent-Length: 7\r\n\r\nGophers\r\n", errMultiCL),
+		contentLength("300 OK", "Content-Length: 0\r\nContent-Length: 0 \r\n\r\nGophers\r\n", nil),
+		contentLength("200 OK", "Content-Length:\r\nContent-Length:\r\n\r\nGophers\r\n", nil),
+		contentLength("206 OK", "Content-Length:\r\nContent-Length: 0 \r\nConnection: close\r\n\r\nGophers\r\n", errMultiCL),
 
 		// multiple content-length headers for 204 and 304 should still be checked
-		contentLength("204 OK", "Content-Length: 7\r\nContent-Length: 8\r\n\r\n", errMultiCL, nil),
-		contentLength("204 OK", "Content-Length: 3\r\nContent-Length: 3\r\n\r\n", nil, nil),
-		contentLength("304 OK", "Content-Length: 880\r\nContent-Length: 1\r\n\r\n", errMultiCL, nil),
-		contentLength("304 OK", "Content-Length: 961\r\nContent-Length: 961\r\n\r\n", nil, nil),
+		contentLength("204 OK", "Content-Length: 7\r\nContent-Length: 8\r\n\r\n", errMultiCL),
+		contentLength("204 OK", "Content-Length: 3\r\nContent-Length: 3\r\n\r\n", nil),
+		contentLength("304 OK", "Content-Length: 880\r\nContent-Length: 1\r\n\r\n", errMultiCL),
+		contentLength("304 OK", "Content-Length: 961\r\nContent-Length: 961\r\n\r\n", nil),
+
+		// golang.org/issue/22464
+		{"leading space in header", "HTTP/1.1 200 OK\r\n Content-type: text/html\r\nFoo: bar\r\n\r\n", "malformed MIME"},
+		{"leading tab in header", "HTTP/1.1 200 OK\r\n\tContent-type: text/html\r\nFoo: bar\r\n\r\n", "malformed MIME"},
 	}
 
 	for i, tt := range tests {
@@ -924,5 +949,31 @@ func TestNeedsSniff(t *testing.T) {
 	r.handlerHeader = Header{"Content-Type": nil}
 	if got, want := r.needsSniff(), false; got != want {
 		t.Errorf("needsSniff empty Content-Type = %t; want %t", got, want)
+	}
+}
+
+// A response should only write out single Connection: close header. Tests #19499.
+func TestResponseWritesOnlySingleConnectionClose(t *testing.T) {
+	const connectionCloseHeader = "Connection: close"
+
+	res, err := ReadResponse(bufio.NewReader(strings.NewReader("HTTP/1.0 200 OK\r\n\r\nAAAA")), nil)
+	if err != nil {
+		t.Fatalf("ReadResponse failed %v", err)
+	}
+
+	var buf1 bytes.Buffer
+	if err = res.Write(&buf1); err != nil {
+		t.Fatalf("Write failed %v", err)
+	}
+	if res, err = ReadResponse(bufio.NewReader(&buf1), nil); err != nil {
+		t.Fatalf("ReadResponse failed %v", err)
+	}
+
+	var buf2 bytes.Buffer
+	if err = res.Write(&buf2); err != nil {
+		t.Fatalf("Write failed %v", err)
+	}
+	if count := strings.Count(buf2.String(), connectionCloseHeader); count != 1 {
+		t.Errorf("Found %d %q header", count, connectionCloseHeader)
 	}
 }

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -floop-interchange" } */
+/* { dg-options "-O2 -floop-nest-optimize" } */
 
 static int
 aqc(void)

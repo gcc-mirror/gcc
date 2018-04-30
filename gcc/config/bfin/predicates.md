@@ -1,5 +1,5 @@
 ;; Predicate definitions for the Blackfin.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;; Contributed by Analog Devices.
 ;;
 ;; This file is part of GCC.
@@ -79,7 +79,7 @@
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
   if (REGNO (op) < FIRST_PSEUDO_REGISTER)
-    return HARD_REGNO_MODE_OK (REGNO (op), mode);
+    return targetm.hard_regno_mode_ok (REGNO (op), mode);
   return 1;
 })
 

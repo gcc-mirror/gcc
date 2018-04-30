@@ -21,7 +21,7 @@ static int b(int p)
     return a(p+1);
   return 1;
 }
-main()
+int main()
 {
   int aa;
   ptr = &barvar;

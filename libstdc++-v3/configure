@@ -611,6 +611,7 @@ glibcxx_toolexeclibdir
 glibcxx_toolexecdir
 gxx_include_dir
 glibcxx_prefixdir
+EXTRA_CFLAGS
 CPU_OPT_BITS_RANDOM
 CPU_OPT_EXT_RANDOM
 ERROR_CONSTANTS_SRCDIR
@@ -620,6 +621,8 @@ CPU_DEFINES_SRCDIR
 ATOMIC_FLAGS
 ATOMIC_WORD_SRCDIR
 ATOMICITY_SRCDIR
+INCLUDE_DIR_NOTPARALLEL_FALSE
+INCLUDE_DIR_NOTPARALLEL_TRUE
 BUILD_PDF_FALSE
 BUILD_PDF_TRUE
 PDFLATEX
@@ -896,6 +899,7 @@ enable_libstdcxx_dual_abi
 with_default_libstdcxx_abi
 enable_libstdcxx_threads
 enable_libstdcxx_filesystem_ts
+enable_cet
 with_gxx_include_dir
 enable_version_specific_runtime_libs
 with_gcc_major_version_only
@@ -1594,6 +1598,7 @@ Optional Features:
                           enable C++11 threads support [default=auto]
   --enable-libstdcxx-filesystem-ts
                           turns on ISO/IEC TS 18822 support [default=auto]
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -11601,7 +11606,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11604 "configure"
+#line 11609 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11707,7 +11712,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11710 "configure"
+#line 11715 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15393,7 +15398,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15396 "configure"
+#line 15401 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15428,7 +15433,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15431 "configure"
+#line 15436 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15463,7 +15468,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15466 "configure"
+#line 15471 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15499,7 +15504,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15502 "configure"
+#line 15507 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15580,7 +15585,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15583 "configure"
+#line 15588 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15622,7 +15627,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15625 "configure"
+#line 15630 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15656,7 +15661,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15659 "configure"
+#line 15664 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -20564,7 +20569,7 @@ $as_echo "$glibcxx_glibc217" >&6; }
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
-      freebsd*|netbsd*|dragonfly*)
+      freebsd*|netbsd*|dragonfly*|rtems*)
         ac_has_clock_monotonic=yes
         ac_has_clock_realtime=yes
         ac_has_nanosleep=yes
@@ -21795,7 +21800,7 @@ for ac_header in endian.h execinfo.h float.h fp.h ieeefp.h inttypes.h \
 locale.h machine/endian.h machine/param.h nan.h stdint.h stdlib.h string.h \
 strings.h sys/ipc.h sys/isa_defs.h sys/machine.h sys/param.h \
 sys/resource.h sys/sem.h sys/stat.h sys/time.h sys/types.h unistd.h \
-wchar.h wctype.h linux/random.h
+wchar.h wctype.h linux/types.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -21803,6 +21808,23 @@ eval as_val=\$$as_ac_Header
    if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+for ac_header in linux/random.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "linux/random.h" "ac_cv_header_linux_random_h" "#ifdef HAVE_LINUX_TYPES_H
+# include <linux/types.h>
+#endif
+
+"
+if test "x$ac_cv_header_linux_random_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LINUX_RANDOM_H 1
 _ACEOF
 
 fi
@@ -53327,6 +53349,19 @@ _ACEOF
 fi
 done
 
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
     ;;
 
   *-fuchsia*)
@@ -53748,7 +53783,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 	;;
     esac
     ;;
-  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin*)
+  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris*)
 
   # All these tests are for C++; save the language and the compiler flags.
   # The CXXFLAGS thing is suspicious, but based on similar bits previously
@@ -66077,6 +66112,19 @@ done
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
     ;;
   *-netbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -72387,170 +72435,6 @@ done
 
 
   CXXFLAGS="$ac_save_CXXFLAGS"
-
-    ;;
-  *-solaris*)
-
-  # If we're not using GNU ld, then there's no point in even trying these
-  # tests.  Check for that first.  We should have already tested for gld
-  # by now (in libtool), but require it now just to be safe...
-  test -z "$SECTION_LDFLAGS" && SECTION_LDFLAGS=''
-  test -z "$OPT_LDFLAGS" && OPT_LDFLAGS=''
-
-
-
-  # The name set by libtool depends on the version of libtool.  Shame on us
-  # for depending on an impl detail, but c'est la vie.  Older versions used
-  # ac_cv_prog_gnu_ld, but now it's lt_cv_prog_gnu_ld, and is copied back on
-  # top of with_gnu_ld (which is also set by --with-gnu-ld, so that actually
-  # makes sense).  We'll test with_gnu_ld everywhere else, so if that isn't
-  # set (hence we're using an older libtool), then set it.
-  if test x${with_gnu_ld+set} != xset; then
-    if test x${ac_cv_prog_gnu_ld+set} != xset; then
-      # We got through "ac_require(ac_prog_ld)" and still not set?  Huh?
-      with_gnu_ld=no
-    else
-      with_gnu_ld=$ac_cv_prog_gnu_ld
-    fi
-  fi
-
-  # Start by getting the version number.  I think the libtool test already
-  # does some of this, but throws away the result.
-  glibcxx_ld_is_gold=no
-  if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
-$as_echo_n "checking for ld version... " >&6; }
-
-    if $LD --version 2>/dev/null | grep 'GNU gold' >/dev/null 2>&1; then
-      glibcxx_ld_is_gold=yes
-    fi
-    ldver=`$LD --version 2>/dev/null |
-	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
-
-    glibcxx_gnu_ld_version=`echo $ldver | \
-	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
-$as_echo "$glibcxx_gnu_ld_version" >&6; }
-  fi
-
-  # Set --gc-sections.
-  glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes"; then
-    if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
-      glibcxx_have_gc_sections=yes
-    fi
-  else
-    glibcxx_gcsections_min_ld=21602
-    if test x"$with_gnu_ld" = x"yes" &&
-	test $glibcxx_gnu_ld_version -gt $glibcxx_gcsections_min_ld ; then
-      glibcxx_have_gc_sections=yes
-    fi
-  fi
-  if test "$glibcxx_have_gc_sections" = "yes"; then
-    # Sufficiently young GNU ld it is!  Joy and bunny rabbits!
-    # NB: This flag only works reliably after 2.16.1. Configure tests
-    # for this are difficult, so hard wire a value that should work.
-
-    ac_test_CFLAGS="${CFLAGS+set}"
-    ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-Wl,--gc-sections'
-
-    # Check for -Wl,--gc-sections
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,--gc-sections" >&5
-$as_echo_n "checking for ld that supports -Wl,--gc-sections... " >&6; }
-    if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
- int one(void) { return 1; }
-     int two(void) { return 2; }
-
-int
-main ()
-{
- two();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_gcsections=yes
-else
-  ac_gcsections=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    if test "$ac_gcsections" = "yes"; then
-      rm -f conftest.c
-      touch conftest.c
-      if $CC -c conftest.c; then
-	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
-	   grep "Warning: gc-sections option ignored" > /dev/null; then
-	  ac_gcsections=no
-	fi
-      fi
-      rm -f conftest.c conftest.o conftest
-    fi
-    if test "$ac_gcsections" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_gcsections" >&5
-$as_echo "$ac_gcsections" >&6; }
-
-    if test "$ac_test_CFLAGS" = set; then
-      CFLAGS="$ac_save_CFLAGS"
-    else
-      # this is the suspicious part
-      CFLAGS=''
-    fi
-  fi
-
-  # Set -z,relro.
-  # Note this is only for shared objects.
-  ac_ld_relro=no
-  if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
-$as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
-$as_echo "$ac_ld_relro" >&6; }
-  fi
-
-  # Set linker optimization flags.
-  if test x"$with_gnu_ld" = x"yes"; then
-    OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
-  fi
-
-
-
-
-    $as_echo "#define HAVE_MBSTATE_T 1" >>confdefs.h
-
-    $as_echo "#define HAVE_FINITE 1" >>confdefs.h
-
-    $as_echo "#define HAVE_FPCLASS 1" >>confdefs.h
-
-    # All of the dependencies for wide character support are here, so
-    # turn it on.
-    $as_echo "#define _GLIBCXX_USE_WCHAR_T 1" >>confdefs.h
-
-    # These two C99 functions are present only in Solaris >= 10
-    $as_echo "#define HAVE_STRTOF 1" >>confdefs.h
-
-    $as_echo "#define HAVE_STRTOLD 1" >>confdefs.h
-
-    $as_echo "#define HAVE_ISNAN 1" >>confdefs.h
-
-    $as_echo "#define HAVE_ISNANF 1" >>confdefs.h
-
-    $as_echo "#define HAVE_MODFF 1" >>confdefs.h
-
-    $as_echo "#define HAVE_HYPOT 1" >>confdefs.h
 
     ;;
   *-tpf)
@@ -79268,7 +79152,7 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:24:0
+libtool_VERSION=6:25:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -80156,6 +80040,9 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
         enable_libstdcxx_filesystem_ts=yes
         ;;
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      rtems*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
       solaris*)
@@ -81219,6 +81106,18 @@ else
 fi
 
 
+case "$build" in
+ *-*-darwin* ) glibcxx_include_dir_notparallel=yes ;;
+ * ) glibcxx_include_dir_notparallel=no ;;
+esac
+ if test $glibcxx_include_dir_notparallel = "yes"; then
+  INCLUDE_DIR_NOTPARALLEL_TRUE=
+  INCLUDE_DIR_NOTPARALLEL_FALSE='#'
+else
+  INCLUDE_DIR_NOTPARALLEL_TRUE='#'
+  INCLUDE_DIR_NOTPARALLEL_FALSE=
+fi
+
 
 # Propagate the target-specific source directories through the build chain.
 ATOMICITY_SRCDIR=config/${atomicity_dir}
@@ -81238,6 +81137,93 @@ CPU_OPT_BITS_RANDOM=config/${cpu_opt_bits_random}
 
 
 
+
+
+
+# Add CET specific flags if Intel CET is enabled.
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      auto)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mshstk"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+EXTRA_CXX_FLAGS="$EXTRA_CXX_FLAGS $CET_FLAGS"
+EXTRA_CFLAGS="$EXTRA_CFLAGS $CET_FLAGS"
 
 
 
@@ -81657,7 +81643,7 @@ $as_echo "$gxx_include_dir" >&6; }
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi
@@ -81911,6 +81897,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_PDF_TRUE}" && test -z "${BUILD_PDF_FALSE}"; then
   as_fn_error "conditional \"BUILD_PDF\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${INCLUDE_DIR_NOTPARALLEL_TRUE}" && test -z "${INCLUDE_DIR_NOTPARALLEL_FALSE}"; then
+  as_fn_error "conditional \"INCLUDE_DIR_NOTPARALLEL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) intercommunication header file.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -604,7 +604,7 @@ struct ira_spilled_reg_stack_slot
   /* RTL representation of the stack slot.  */
   rtx mem;
   /* Size of the stack slot.  */
-  unsigned int width;
+  poly_uint64_pod width;
 };
 
 /* The number of elements in the following array.  */
@@ -1393,7 +1393,7 @@ ira_hard_reg_set_intersection_p (int hard_regno, machine_mode mode,
   int i;
 
   gcc_assert (hard_regno >= 0);
-  for (i = hard_regno_nregs[hard_regno][mode] - 1; i >= 0; i--)
+  for (i = hard_regno_nregs (hard_regno, mode) - 1; i >= 0; i--)
     if (TEST_HARD_REG_BIT (hard_regset, hard_regno + i))
       return true;
   return false;
@@ -1421,7 +1421,7 @@ ira_hard_reg_in_set_p (int hard_regno, machine_mode mode,
   int i;
 
   ira_assert (hard_regno >= 0);
-  for (i = hard_regno_nregs[hard_regno][mode] - 1; i >= 0; i--)
+  for (i = hard_regno_nregs (hard_regno, mode) - 1; i >= 0; i--)
     if (!TEST_HARD_REG_BIT (hard_regset, hard_regno + i))
       return false;
   return true;

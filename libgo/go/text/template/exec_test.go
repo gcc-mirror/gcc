@@ -44,6 +44,12 @@ type T struct {
 	MSIEmpty map[string]int
 	MXI      map[interface{}]int
 	MII      map[int]int
+	MI32S    map[int32]string
+	MI64S    map[int64]string
+	MUI32S   map[uint32]string
+	MUI64S   map[uint64]string
+	MI8S     map[int8]string
+	MUI8S    map[uint8]string
 	SMSI     []map[string]int
 	// Empty interfaces; used to see if we can dig inside one.
 	Empty0 interface{} // nil
@@ -124,6 +130,12 @@ var tVal = &T{
 	MSIone: map[string]int{"one": 1},
 	MXI:    map[interface{}]int{"one": 1},
 	MII:    map[int]int{1: 1},
+	MI32S:  map[int32]string{1: "one", 2: "two"},
+	MI64S:  map[int64]string{2: "i642", 3: "i643"},
+	MUI32S: map[uint32]string{2: "u322", 3: "u323"},
+	MUI64S: map[uint64]string{2: "ui642", 3: "ui643"},
+	MI8S:   map[int8]string{2: "i82", 3: "i83"},
+	MUI8S:  map[uint8]string{2: "u82", 3: "u83"},
 	SMSI: []map[string]int{
 		{"one": 1, "two": 2},
 		{"eleven": 11, "twelve": 12},
@@ -146,6 +158,8 @@ var tVal = &T{
 	ErrFunc:              func() (string, error) { return "bla", nil },
 	Tmpl:                 Must(New("x").Parse("test template")), // "x" is the value of .X
 }
+
+var tSliceOfNil = []*T{nil}
 
 // A non-empty interface.
 type I interface {
@@ -337,6 +351,7 @@ var execTests = []execTest{
 		"true", tVal, true},
 	{".NilOKFunc not nil", "{{call .NilOKFunc .PI}}", "false", tVal, true},
 	{".NilOKFunc nil", "{{call .NilOKFunc nil}}", "true", tVal, true},
+	{"method on nil value from slice", "-{{range .}}{{.Method1 1234}}{{end}}-", "-1234-", tSliceOfNil, true},
 
 	// Function call builtin.
 	{".BinaryFunc", "{{call .BinaryFunc `1` `2`}}", "[1=2]", tVal, true},
@@ -445,6 +460,11 @@ var execTests = []execTest{
 	{"map[WRONG]", "{{index .MSI 10}}", "", tVal, false},
 	{"double index", "{{index .SMSI 1 `eleven`}}", "11", tVal, true},
 	{"nil[1]", "{{index nil 1}}", "", tVal, false},
+	{"map MI64S", "{{index .MI64S 2}}", "i642", tVal, true},
+	{"map MI32S", "{{index .MI32S 2}}", "two", tVal, true},
+	{"map MUI64S", "{{index .MUI64S 3}}", "ui643", tVal, true},
+	{"map MI8S", "{{index .MI8S 3}}", "i83", tVal, true},
+	{"map MUI8S", "{{index .MUI8S 2}}", "u82", tVal, true},
 
 	// Len.
 	{"slice", "{{len .SI}}", "3", tVal, true},

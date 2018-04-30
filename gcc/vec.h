@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -407,6 +407,118 @@ struct GTY((user)) vec
 {
 };
 
+/* Generic vec<> debug helpers.
+
+   These need to be instantiated for each vec<TYPE> used throughout
+   the compiler like this:
+
+    DEFINE_DEBUG_VEC (TYPE)
+
+   The reason we have a debug_helper() is because GDB can't
+   disambiguate a plain call to debug(some_vec), and it must be called
+   like debug<TYPE>(some_vec).  */
+
+template<typename T>
+void
+debug_helper (vec<T> &ref)
+{
+  unsigned i;
+  for (i = 0; i < ref.length (); ++i)
+    {
+      fprintf (stderr, "[%d] = ", i);
+      debug_slim (ref[i]);
+      fputc ('\n', stderr);
+    }
+}
+
+/* We need a separate va_gc variant here because default template
+   argument for functions cannot be used in c++-98.  Once this
+   restriction is removed, those variant should be folded with the
+   above debug_helper.  */
+
+template<typename T>
+void
+debug_helper (vec<T, va_gc> &ref)
+{
+  unsigned i;
+  for (i = 0; i < ref.length (); ++i)
+    {
+      fprintf (stderr, "[%d] = ", i);
+      debug_slim (ref[i]);
+      fputc ('\n', stderr);
+    }
+}
+
+/* Macro to define debug(vec<T>) and debug(vec<T, va_gc>) helper
+   functions for a type T.  */
+
+#define DEFINE_DEBUG_VEC(T) \
+  template void debug_helper (vec<T> &);		\
+  template void debug_helper (vec<T, va_gc> &);		\
+  /* Define the vec<T> debug functions.  */		\
+  DEBUG_FUNCTION void					\
+  debug (vec<T> &ref)					\
+  {							\
+    debug_helper <T> (ref);				\
+  }							\
+  DEBUG_FUNCTION void					\
+  debug (vec<T> *ptr)					\
+  {							\
+    if (ptr)						\
+      debug (*ptr);					\
+    else						\
+      fprintf (stderr, "<nil>\n");			\
+  }							\
+  /* Define the vec<T, va_gc> debug functions.  */	\
+  DEBUG_FUNCTION void					\
+  debug (vec<T, va_gc> &ref)				\
+  {							\
+    debug_helper <T> (ref);				\
+  }							\
+  DEBUG_FUNCTION void					\
+  debug (vec<T, va_gc> *ptr)				\
+  {							\
+    if (ptr)						\
+      debug (*ptr);					\
+    else						\
+      fprintf (stderr, "<nil>\n");			\
+  }
+
+/* Default-construct N elements in DST.  */
+
+template <typename T>
+inline void
+vec_default_construct (T *dst, unsigned n)
+{
+#ifdef BROKEN_VALUE_INITIALIZATION
+  /* Versions of GCC before 4.4 sometimes leave certain objects
+     uninitialized when value initialized, though if the type has
+     user defined default ctor, that ctor is invoked.  As a workaround
+     perform clearing first and then the value initialization, which
+     fixes the case when value initialization doesn't initialize due to
+     the bugs and should initialize to all zeros, but still allows
+     vectors for types with user defined default ctor that initializes
+     some or all elements to non-zero.  If T has no user defined
+     default ctor and some non-static data members have user defined
+     default ctors that initialize to non-zero the workaround will
+     still not work properly; in that case we just need to provide
+     user defined default ctor.  */
+  memset (dst, '\0', sizeof (T) * n);
+#endif
+  for ( ; n; ++dst, --n)
+    ::new (static_cast<void*>(dst)) T ();
+}
+
+/* Copy-construct N elements in DST from *SRC.  */
+
+template <typename T>
+inline void
+vec_copy_construct (T *dst, const T *src, unsigned n)
+{
+  for ( ; n; ++dst, ++src, --n)
+    ::new (static_cast<void*>(dst)) T (*src);
+}
+
 /* Type to provide NULL values for vec<T, A, L>.  This is used to
    provide nil initializers for vec instances.  Since vec must be
    a POD, we cannot have proper ctor/dtor for it.  To initialize
@@ -612,7 +724,7 @@ vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
   vec_safe_grow (v, len PASS_MEM_STAT);
-  memset (&(v->address ()[oldlen]), 0, sizeof (T) * (len - oldlen));
+  vec_default_construct (v->address () + oldlen, len - oldlen);
 }
 
 
@@ -818,7 +930,7 @@ vec<T, A, vl_embed>::copy (ALONE_MEM_STAT_DECL) const
     {
       vec_alloc (new_vec, len PASS_MEM_STAT);
       new_vec->embedded_init (len, len);
-      memcpy (new_vec->address (), m_vecdata, sizeof (T) * len);
+      vec_copy_construct (new_vec->address (), m_vecdata, len);
     }
   return new_vec;
 }
@@ -835,7 +947,7 @@ vec<T, A, vl_embed>::splice (const vec<T, A, vl_embed> &src)
   if (len)
     {
       gcc_checking_assert (space (len));
-      memcpy (address () + length (), src.address (), len * sizeof (T));
+      vec_copy_construct (end (), src.address (), len);
       m_vecpfx.m_num += len;
     }
 }
@@ -1089,12 +1201,11 @@ inline void
 vec<T, A, vl_embed>::quick_grow_cleared (unsigned len)
 {
   unsigned oldlen = length ();
-  size_t sz = sizeof (T) * (len - oldlen);
+  size_t growby = len - oldlen;
   quick_grow (len);
-  if (sz != 0)
-    memset (&(address ()[oldlen]), 0, sz);
+  if (growby != 0)
+    vec_default_construct (address () + oldlen, growby);
 }
-
 
 /* Garbage collection support for vec<T, A, vl_embed>.  */
 
@@ -1454,7 +1565,7 @@ vec<T, va_heap, vl_ptr>::reserve (unsigned nelems, bool exact MEM_STAT_DECL)
   va_heap::reserve (m_vec, nelems, exact PASS_MEM_STAT);
   if (handle_auto_vec)
     {
-      memcpy (m_vec->address (), oldvec->address (), sizeof (T) * oldsize);
+      vec_copy_construct (m_vec->address (), oldvec->address (), oldsize);
       m_vec->m_vecpfx.m_num = oldsize;
     }
 
@@ -1616,10 +1727,10 @@ inline void
 vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
-  size_t sz = sizeof (T) * (len - oldlen);
+  size_t growby = len - oldlen;
   safe_grow (len PASS_MEM_STAT);
-  if (sz != 0)
-    memset (&(address ()[oldlen]), 0, sz);
+  if (growby != 0)
+    vec_default_construct (address () + oldlen, growby);
 }
 
 

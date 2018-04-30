@@ -1,3 +1,81 @@
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-03-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/exch_n.c: New file.
+	* configure.tgt: Add the config directory for s390.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-12-14  Steve Ellcey  <sellcey@cavium.com>
+
+	* Makefile.am (IFUNC_OPTIONS): Change aarch64
+	option from -march=armv8.1-a to -march=armv8-a+lse.
+	* configure.ac (*aarch64*): Check to see if
+	compiler understands -march=armv8-a+lse option.
+	* configure.tgt (*aarch64*): Only set try_ifunc
+	if compiler understands -march=armv8-a+lse option.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2017-12-04  Steve Ellcey  <sellcey@cavium.com>
+
+	* Makefile.am (ARCH_AARCH64_LINUX): Add IFUNC_OPTIONS and
+	libatomic_la_LIBADD.
+	* config/linux/aarch64/host-config.h: New file.
+	* configure.ac (IFUNC_RESOLVER_ARGS): Define.
+	(ARCH_AARCH64_LINUX): New conditional for IFUNC builds.
+	* configure.tgt (aarch64): Set ARCH and try_ifunc.
+	(aarch64*-*-linux*) Update config_path.
+	(aarch64*-*-linux*) Set IFUNC_RESOLVER_ARGS.
+	* libatomic_i.h (GEN_SELECTOR): Add IFUNC_RESOLVER_ARGS argument.
+	* Makefile.in: Regenerate.
+	* auto-config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* configure.ac: Set CET_FLAGS, update XCFLAGS.
+	* acinclude.m4: Add cet.m4 and enable.m4.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2017-10-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* Makefile.am: (IFUNC_OPTIONS): Set the architecture to
+	-march=armv7-a+fp on Linux/Arm.
+	* Makefile.in: Regenerated.
+
+2017-10-02  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81854
+	* acinclude.m4 (LIBAT_CHECK_IFUNC): Have ifunc resolver return
+	a function pointer rather than void* to avoid GCC 8 warnings.
+	* configure: Regenerate.
+	* libatomic_i.h: Declare ifunc resolvers to return function
+	pointers rather than void*.
+
 2017-05-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libatomic.exp: Load scanlang.exp.
@@ -309,7 +387,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2012-2017 Free Software Foundation, Inc.
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

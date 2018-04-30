@@ -20,17 +20,17 @@ end module aap
 contains
   subroutine foo
     use aap, only : c=>b
-    if (any(c .ne. b)) call abort ()
+    if (any(c .ne. b)) STOP 1
   end subroutine
   subroutine bar
     use aap, only : a
-    if (any(a(3:5) .ne. b)) call abort ()
+    if (any(a(3:5) .ne. b)) STOP 2
   end subroutine
 
 ! Make sure that bad things do not happen if we do not USE a or b.
 
   subroutine foobar
     use aap, only : d
-    if (any(d(3:5) .ne. b)) call abort ()
+    if (any(d(3:5) .ne. b)) STOP 3
   end subroutine
 end

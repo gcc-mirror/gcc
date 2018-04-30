@@ -44,8 +44,8 @@ end
  allocate(o1)
  allocate(o2)
 
- if (t1%gen(2.0) .ne. o1%gen(2.0)) call abort
- if (t1%gen(2.0) .ne. o2%gen(2.0)) call abort
- if (o2%gen(3) .ne. 9) call abort
+ if (t1%gen(2.0) .ne. o1%gen(2.0)) STOP 1
+ if (t1%gen(2.0) .ne. o2%gen(2.0)) STOP 2
+ if (o2%gen(3) .ne. 9) STOP 3
 
 end

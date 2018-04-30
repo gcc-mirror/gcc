@@ -25,4 +25,5 @@ template<typename _Alloc = allocator<char> > class basic_string
 int getStringHeight()
 {
 	basic_string<> tmp;
+	return 0;
 }

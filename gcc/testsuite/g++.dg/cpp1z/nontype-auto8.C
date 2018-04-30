@@ -1,5 +1,5 @@
 // PR c++/79549
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <auto...>
 struct meow;

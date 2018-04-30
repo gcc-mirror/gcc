@@ -1,5 +1,5 @@
 /* Description of pass structure
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,9 +42,9 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
-  NEXT_PASS (pass_build_cgraph_edges);
   NEXT_PASS (pass_sprintf_length, false);
   NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
+  NEXT_PASS (pass_build_cgraph_edges);
   TERMINATE_PASS_LIST (all_lowering_passes)
 
   /* Interprocedural optimization passes.  */
@@ -107,6 +107,7 @@ along with GCC; see the file COPYING3.  If not see
 	     early optimizations again.  It is thus good idea to do this
 	      late.  */
 	  NEXT_PASS (pass_split_functions);
+	  NEXT_PASS (pass_strip_predict_hints);
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_release_ssa_names);
       NEXT_PASS (pass_rebuild_cgraph_edges);
@@ -143,7 +144,7 @@ along with GCC; see the file COPYING3.  If not see
   PUSH_INSERT_PASSES_WITHIN (pass_ipa_tree_profile)
       NEXT_PASS (pass_feedback_split_functions);
   POP_INSERT_PASSES ()
-  NEXT_PASS (pass_ipa_free_fn_summary);
+  NEXT_PASS (pass_ipa_free_fn_summary, true /* small_p */);
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_tm);
   NEXT_PASS (pass_ipa_lower_emutls);
@@ -160,6 +161,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_fn_summary);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
+  NEXT_PASS (pass_ipa_free_fn_summary, false /* small_p */);
   NEXT_PASS (pass_ipa_reference);
   /* This pass needs to be scheduled after any IP code duplication.   */
   NEXT_PASS (pass_ipa_single_use);
@@ -254,7 +256,6 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_optimize_bswap);
       NEXT_PASS (pass_laddress);
       NEXT_PASS (pass_lim);
-      NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_walloca, false);
       NEXT_PASS (pass_pre);
       NEXT_PASS (pass_sink_code);
@@ -273,11 +274,13 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_loop_split);
+	  NEXT_PASS (pass_loop_jam);
 	  /* All unswitching, final value replacement and splitting can expose
 	     empty loops.  Remove them now.  */
 	  NEXT_PASS (pass_cd_dce);
-	  NEXT_PASS (pass_record_bounds);
+	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_loop_distribution);
+	  NEXT_PASS (pass_linterchange);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_graphite);
 	  PUSH_INSERT_PASSES_WITHIN (pass_graphite)
@@ -286,7 +289,6 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_copy_prop);
 	      NEXT_PASS (pass_dce);
 	  POP_INSERT_PASSES ()
-	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_parallelize_loops, false /* oacc_kernels_p */);
 	  NEXT_PASS (pass_expand_omp_ssa);
 	  NEXT_PASS (pass_ch_vect);
@@ -331,6 +333,7 @@ along with GCC; see the file COPYING3.  If not see
 	 run the full propagators, run a specialized pass which
 	 only examines PHIs to discover const/copy propagation
 	 opportunities.  */
+      NEXT_PASS (pass_warn_restrict);
       NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_cd_dce);
@@ -395,6 +398,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_sancov_O0);
+  NEXT_PASS (pass_lower_switch);
   NEXT_PASS (pass_asan_O0);
   NEXT_PASS (pass_tsan_O0);
   NEXT_PASS (pass_sanopt);
@@ -456,6 +460,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_sms);
       NEXT_PASS (pass_live_range_shrinkage);
       NEXT_PASS (pass_sched);
+      NEXT_PASS (pass_early_remat);
       NEXT_PASS (pass_ira);
       NEXT_PASS (pass_reload);
       NEXT_PASS (pass_postreload);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -283,7 +283,7 @@ package body Sem_Ch4 is
    --  Called when P is the prefix of an implicit dereference, denoting an
    --  object E. The function returns the designated type of the prefix, taking
    --  into account that the designated type of an anonymous access type may be
-   --  a limited view, when the non-limited view is visible.
+   --  a limited view, when the nonlimited view is visible.
    --
    --  If in semantics only mode (-gnatc or generic), the function also records
    --  that the prefix is a reference to E, if any. Normally, such a reference
@@ -339,9 +339,8 @@ package body Sem_Ch4 is
       --------------------------
 
       procedure List_Operand_Interps (Opnd : Node_Id) is
-         Nam   : Node_Id;
-         pragma Warnings (Off, Nam);
-         Err   : Node_Id := N;
+         Nam : Node_Id := Empty;
+         Err : Node_Id := N;
 
       begin
          if Is_Overloaded (Opnd) then
@@ -413,13 +412,46 @@ package body Sem_Ch4 is
    -- Analyze_Aggregate --
    -----------------------
 
-   --  Most of the analysis of Aggregates requires that the type be known,
-   --  and is therefore put off until resolution.
+   --  Most of the analysis of Aggregates requires that the type be known, and
+   --  is therefore put off until resolution of the context. Delta aggregates
+   --  have a base component that determines the enclosing aggregate type so
+   --  its type can be ascertained earlier. This also allows delta aggregates
+   --  to appear in the context of a record type with a private extension, as
+   --  per the latest update of AI12-0127.
 
    procedure Analyze_Aggregate (N : Node_Id) is
    begin
       if No (Etype (N)) then
-         Set_Etype (N, Any_Composite);
+         if Nkind (N) = N_Delta_Aggregate then
+            declare
+               Base : constant Node_Id := Expression (N);
+
+               I  : Interp_Index;
+               It : Interp;
+
+            begin
+               Analyze (Base);
+
+               --  If the base is overloaded, propagate interpretations to the
+               --  enclosing aggregate.
+
+               if Is_Overloaded (Base) then
+                  Get_First_Interp (Base, I, It);
+                  Set_Etype (N, Any_Type);
+
+                  while Present (It.Nam) loop
+                     Add_One_Interp (N, It.Typ, It.Typ);
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+               else
+                  Set_Etype (N, Etype (Base));
+               end if;
+            end;
+
+         else
+            Set_Etype (N, Any_Composite);
+         end if;
       end if;
    end Analyze_Aggregate;
 
@@ -755,7 +787,7 @@ package body Sem_Ch4 is
                           ("\constraint with discriminant values required", N);
                      end if;
 
-                  --  Limited Ada 2005 and general non-limited case
+                  --  Limited Ada 2005 and general nonlimited case
 
                   else
                      Error_Msg_N
@@ -1043,12 +1075,11 @@ package body Sem_Ch4 is
 
             else
                declare
-                  Outermost : Node_Id;
+                  Outermost : Node_Id := Empty; -- init to avoid warning
                   P         : Node_Id := N;
 
                begin
                   while Present (P) loop
-
                      --  For object declarations we can climb to the node from
                      --  its object definition branch or from its initializing
                      --  expression. We prefer to mark the child node as the
@@ -1063,7 +1094,7 @@ package body Sem_Ch4 is
                         Outermost := P;
                      end if;
 
-                     --  Avoid climbing more than needed!
+                     --  Avoid climbing more than needed
 
                      exit when Stop_Subtree_Climbing (Nkind (P))
                        or else (Nkind (P) = N_Range
@@ -1469,10 +1500,10 @@ package body Sem_Ch4 is
          --  can also happen when the function declaration appears before the
          --  full view of the type (which is legal in Ada 2012) and the call
          --  appears in a different unit, in which case the incomplete view
-         --  must be replaced with the full view (or the non-limited view)
+         --  must be replaced with the full view (or the nonlimited view)
          --  to prevent subsequent type errors. Note that the usual install/
          --  removal of limited_with clauses is not sufficient to handle this
-         --  case, because the limited view may have been captured is another
+         --  case, because the limited view may have been captured in another
          --  compilation unit that defines the current function.
 
          if Is_Incomplete_Type (Etype (N)) then
@@ -1488,6 +1519,30 @@ package body Sem_Ch4 is
               and then Present (Non_Limited_View (Etype (N)))
             then
                Set_Etype (N, Non_Limited_View (Etype (N)));
+
+            --  If there is no completion for the type, this may be because
+            --  there is only a limited view of it and there is nothing in
+            --  the context of the current unit that has required a regular
+            --  compilation of the unit containing the type. We recognize
+            --  this unusual case by the fact that that unit is not analyzed.
+            --  Note that the call being analyzed is in a different unit from
+            --  the function declaration, and nothing indicates that the type
+            --  is a limited view.
+
+            elsif Ekind (Scope (Etype (N))) = E_Package
+              and then Present (Limited_View (Scope (Etype (N))))
+              and then not Analyzed (Unit_Declaration_Node (Scope (Etype (N))))
+            then
+               Error_Msg_NE
+                 ("cannot call function that returns limited view of}",
+                  N, Etype (N));
+
+               Error_Msg_NE
+                 ("\there must be a regular with_clause for package & in the "
+                  & "current unit, or in some unit in its context",
+                  N, Scope (Etype (N)));
+
+               Set_Etype (N, Any_Type);
             end if;
          end if;
       end if;
@@ -1667,11 +1722,11 @@ package body Sem_Ch4 is
       else
          Analyze_Choices (Alternatives (N), Exp_Type);
          Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
-      end if;
 
-      if Exp_Type = Universal_Integer and then not Others_Present then
-         Error_Msg_N
-           ("case on universal integer requires OTHERS choice", Expr);
+         if Exp_Type = Universal_Integer and then not Others_Present then
+            Error_Msg_N
+              ("case on universal integer requires OTHERS choice", Expr);
+         end if;
       end if;
    end Analyze_Case_Expression;
 
@@ -2935,6 +2990,14 @@ package body Sem_Ch4 is
                   --  for all of them.
 
                   Set_Etype (Alt, It.Typ);
+
+                  --  If the alternative is an enumeration literal, use the one
+                  --  for this interpretation.
+
+                  if Is_Entity_Name (Alt) then
+                     Set_Entity (Alt, It.Nam);
+                  end if;
+
                   Get_Next_Interp (Index, It);
 
                   if No (It.Typ) then
@@ -3922,6 +3985,21 @@ package body Sem_Ch4 is
       Set_Etype (N, Any_Type);
       Find_Type (Mark);
       T := Entity (Mark);
+
+      if Nkind_In (Enclosing_Declaration (N), N_Formal_Type_Declaration,
+                                              N_Full_Type_Declaration,
+                                              N_Incomplete_Type_Declaration,
+                                              N_Protected_Type_Declaration,
+                                              N_Private_Extension_Declaration,
+                                              N_Private_Type_Declaration,
+                                              N_Subtype_Declaration,
+                                              N_Task_Type_Declaration)
+        and then T = Defining_Identifier (Enclosing_Declaration (N))
+      then
+         Error_Msg_N ("current instance not allowed", Mark);
+         T := Any_Type;
+      end if;
+
       Set_Etype (N, T);
 
       if T = Any_Type then
@@ -4077,7 +4155,7 @@ package body Sem_Ch4 is
               and then Parent (Loop_Par) /= N
             then
                --  The parser cannot distinguish between a loop specification
-               --  and an iterator specification. If after pre-analysis the
+               --  and an iterator specification. If after preanalysis the
                --  proper form has been recognized, rewrite the expression to
                --  reflect the right kind. This is needed for proper ASIS
                --  navigation. If expansion is enabled, the transformation is
@@ -4264,6 +4342,79 @@ package body Sem_Ch4 is
 
       Check_Function_Writable_Actuals (N);
    end Analyze_Range;
+
+   -----------------------------------
+   -- Analyze_Reduction_Expression --
+   -----------------------------------
+
+   procedure Analyze_Reduction_Expression (N : Node_Id) is
+      Expr    : constant Node_Id := Expression (N);
+      QE_Scop : Entity_Id;
+
+   begin
+      QE_Scop := New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
+      Set_Etype  (QE_Scop, Standard_Void_Type);
+      Set_Scope  (QE_Scop, Current_Scope);
+      Set_Parent (QE_Scop, N);
+
+      Push_Scope (QE_Scop);
+
+      --  All constituents are preanalyzed and resolved to avoid untimely
+      --  generation of various temporaries and types. Full analysis and
+      --  expansion is carried out when the reduction expression is
+      --  transformed into an expression with actions.
+
+      if Present (Iterator_Specification (N)) then
+         Preanalyze (Iterator_Specification (N));
+
+      else pragma Assert (Present (Loop_Parameter_Specification (N)));
+         declare
+            Loop_Par : constant Node_Id := Loop_Parameter_Specification (N);
+
+         begin
+            Preanalyze (Loop_Par);
+
+            if Nkind (Discrete_Subtype_Definition (Loop_Par)) = N_Function_Call
+              and then Parent (Loop_Par) /= N
+            then
+               --  The parser cannot distinguish between a loop specification
+               --  and an iterator specification. If after preanalysis the
+               --  proper form has been recognized, rewrite the expression to
+               --  reflect the right kind. This is needed for proper ASIS
+               --  navigation. If expansion is enabled, the transformation is
+               --  performed when the expression is rewritten as a loop.
+
+               Set_Iterator_Specification (N,
+                 New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
+
+               Set_Defining_Identifier (Iterator_Specification (N),
+                 Relocate_Node (Defining_Identifier (Loop_Par)));
+               Set_Name (Iterator_Specification (N),
+                 Relocate_Node (Discrete_Subtype_Definition (Loop_Par)));
+               Set_Comes_From_Source (Iterator_Specification (N),
+                 Comes_From_Source (Loop_Parameter_Specification (N)));
+               Set_Loop_Parameter_Specification (N, Empty);
+            end if;
+         end;
+      end if;
+
+      Preanalyze (Expr);
+      End_Scope;
+
+      Set_Etype (N, Etype (Expr));
+   end Analyze_Reduction_Expression;
+
+   --------------------------------------------
+   -- Analyze_Reduction_Expression_Parameter --
+   --------------------------------------------
+
+   procedure Analyze_Reduction_Expression_Parameter (N : Node_Id) is
+      Expr : constant Node_Id := Expression (N);
+
+   begin
+      Analyze (Expr);
+      Set_Etype (N, Etype (Expr));
+   end Analyze_Reduction_Expression_Parameter;
 
    -----------------------
    -- Analyze_Reference --
@@ -4574,7 +4725,7 @@ package body Sem_Ch4 is
       --  in what follows, either to retrieve a component of to find
       --  a primitive operation. If the prefix is an explicit dereference,
       --  set the type of the prefix to reflect this transformation.
-      --  If the non-limited view is itself an incomplete type, get the
+      --  If the nonlimited view is itself an incomplete type, get the
       --  full view if available.
 
       if From_Limited_With (Prefix_Type)
@@ -4965,10 +5116,13 @@ package body Sem_Ch4 is
                   end if;
                end if;
 
-               Next_Entity (Comp);
+               --  Do not examine private operations if not within scope of
+               --  the synchronized type.
+
                exit when not In_Scope
                  and then
                    Comp = First_Private_Entity (Base_Type (Prefix_Type));
+               Next_Entity (Comp);
          end loop;
 
          --  If the scope is a current instance, the prefix cannot be an
@@ -6276,13 +6430,18 @@ package body Sem_Ch4 is
 
       procedure Try_One_Interp (T1 : Entity_Id) is
       begin
-
          --  If the operator is an expanded name, then the type of the operand
          --  must be defined in the corresponding scope. If the type is
-         --  universal, the context will impose the correct type.
+         --  universal, the context will impose the correct type. Note that we
+         --  also avoid returning if we are currently within a generic instance
+         --  due to the fact that the generic package declaration has already
+         --  been successfully analyzed and Defined_In_Scope expects the base
+         --  type to be defined within the instance which will never be the
+         --  case.
 
          if Present (Scop)
            and then not Defined_In_Scope (T1, Scop)
+           and then not In_Instance
            and then T1 /= Universal_Integer
            and then T1 /= Universal_Real
            and then T1 /= Any_String
@@ -6303,7 +6462,6 @@ package body Sem_Ch4 is
                else
                   T_F := It.Typ;
                end if;
-
             else
                Found := True;
                T_F   := T1;
@@ -6312,7 +6470,6 @@ package body Sem_Ch4 is
 
             Set_Etype (L, T_F);
             Find_Non_Universal_Interpretations (N, R, Op_Id, T1);
-
          end if;
       end Try_One_Interp;
 
@@ -6405,10 +6562,24 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Op_Type : constant Entity_Id := Etype (Op_Id);
+      Is_String : constant Boolean := Nkind (L) = N_String_Literal
+                                        or else
+                                      Nkind (R) = N_String_Literal;
+      Op_Type   : constant Entity_Id := Etype (Op_Id);
 
    begin
       if Is_Array_Type (Op_Type)
+
+        --  Small but very effective optimization: if at least one operand is a
+        --  string literal, then the type of the operator must be either array
+        --  of characters or array of strings.
+
+        and then (not Is_String
+                    or else
+                  Is_Character_Type (Component_Type (Op_Type))
+                    or else
+                  Is_String_Type (Component_Type (Op_Type)))
+
         and then not Is_Limited_Type (Op_Type)
 
         and then (Has_Compatible_Type (L, Op_Type)
@@ -6451,9 +6622,17 @@ package body Sem_Ch4 is
       --------------------
 
       procedure Try_One_Interp (T1 : Entity_Id) is
-         Bas : constant Entity_Id := Base_Type (T1);
+         Bas : Entity_Id;
 
       begin
+         --  Perform a sanity check in case of previous errors
+
+         if No (T1) then
+            return;
+         end if;
+
+         Bas := Base_Type (T1);
+
          --  If the operator is an expanded name, then the type of the operand
          --  must be defined in the corresponding scope. If the type is
          --  universal, the context will impose the correct type. An anonymous
@@ -6464,7 +6643,15 @@ package body Sem_Ch4 is
          --  is declared in Standard, and preference rules apply to it.
 
          if Present (Scop) then
+
+            --  Note that we avoid returning if we are currently within a
+            --  generic instance due to the fact that the generic package
+            --  declaration has already been successfully analyzed and
+            --  Defined_In_Scope expects the base type to be defined within
+            --  the instance which will never be the case.
+
             if Defined_In_Scope (T1, Scop)
+              or else In_Instance
               or else T1 = Universal_Integer
               or else T1 = Universal_Real
               or else T1 = Any_Access
@@ -8518,14 +8705,21 @@ package body Sem_Ch4 is
                  ("expect variable in call to&", Prefix (N), Entity (Subprog));
             end if;
 
-         --  Conversely, if the formal is an access parameter and the object
-         --  is not, replace the actual with a 'Access reference. Its analysis
-         --  will check that the object is aliased.
+         --  Conversely, if the formal is an access parameter and the object is
+         --  not an access type or a reference type (i.e. a type with the
+         --  Implicit_Dereference aspect specified), replace the actual with a
+         --  'Access reference. Its analysis will check that the object is
+         --  aliased.
 
          elsif Is_Access_Type (Formal_Type)
            and then not Is_Access_Type (Etype (Obj))
+           and then
+             (not Has_Implicit_Dereference (Etype (Obj))
+               or else
+                 not Is_Access_Type (Designated_Type (Etype
+                       (Get_Reference_Discriminant (Etype (Obj))))))
          then
-            --  A special case: A.all'access is illegal if A is an access to a
+            --  A special case: A.all'Access is illegal if A is an access to a
             --  constant and the context requires an access to a variable.
 
             if not Is_Access_Constant (Formal_Type) then
@@ -8586,7 +8780,8 @@ package body Sem_Ch4 is
          else
             --  The type of the subprogram may be a limited view obtained
             --  transitively from another unit. If full view is available,
-            --  use it to analyze call.
+            --  use it to analyze call. If there is no nonlimited view, then
+            --  this is diagnosed when analyzing the rewritten call.
 
             declare
                T : constant Entity_Id := Etype (Subprog);
@@ -8811,7 +9006,7 @@ package body Sem_Ch4 is
             while Present (Hom) loop
                if Ekind_In (Hom, E_Procedure, E_Function)
                  and then (not Is_Hidden (Hom) or else In_Instance)
-                 and then Scope (Hom) = Scope (Anc_Type)
+                 and then Scope (Hom) = Scope (Base_Type (Anc_Type))
                  and then Present (First_Formal (Hom))
                  and then
                    (Base_Type (Etype (First_Formal (Hom))) = Cls_Type
@@ -8872,8 +9067,13 @@ package body Sem_Ch4 is
                         Success    => Success,
                         Skip_First => True);
 
+                     --  The same operation may be encountered on two homonym
+                     --  traversals, before and after looking at interfaces.
+                     --  Check for this case before reporting a real ambiguity.
+
                      if Present (Valid_Candidate (Success, Call_Node, Hom))
                        and then Nkind (Call_Node) /= N_Function_Call
+                       and then Hom /= Matching_Op
                      then
                         Error_Msg_NE ("ambiguous call to&", N, Hom);
                         Report_Ambiguity (Matching_Op);
@@ -9004,7 +9204,7 @@ package body Sem_Ch4 is
 
          --  The type may have be obtained through a limited_with clause,
          --  in which case the primitive operations are available on its
-         --  non-limited view. If still incomplete, retrieve full view.
+         --  nonlimited view. If still incomplete, retrieve full view.
 
          if Ekind (Obj_Type) = E_Incomplete_Type
            and then From_Limited_With (Obj_Type)
@@ -9026,9 +9226,8 @@ package body Sem_Ch4 is
 
          declare
             Dup_Call_Node : constant Node_Id := New_Copy (New_Call_Node);
-            CW_Result     : Boolean;
-            Prim_Result   : Boolean;
-            pragma Unreferenced (CW_Result);
+            Ignore        : Boolean;
+            Prim_Result   : Boolean := False;
 
          begin
             if not CW_Test_Only then
@@ -9043,7 +9242,7 @@ package body Sem_Ch4 is
             --  was found in order to report ambiguous calls.
 
             if not Prim_Result then
-               CW_Result :=
+               Ignore :=
                  Try_Class_Wide_Operation
                    (Call_Node       => New_Call_Node,
                     Node_To_Replace => Node_To_Replace);
@@ -9053,7 +9252,7 @@ package body Sem_Ch4 is
             --  decoration if there is no ambiguity).
 
             else
-               CW_Result :=
+               Ignore :=
                  Try_Class_Wide_Operation
                    (Call_Node       => Dup_Call_Node,
                     Node_To_Replace => Node_To_Replace);
@@ -9285,14 +9484,31 @@ package body Sem_Ch4 is
          ---------------------------
 
          function Is_Private_Overriding (Op : Entity_Id) return Boolean is
-            Visible_Op : constant Entity_Id := Homonym (Op);
+            Visible_Op : Entity_Id;
 
          begin
-            return Present (Visible_Op)
-              and then Scope (Op) = Scope (Visible_Op)
-              and then not Comes_From_Source (Visible_Op)
-              and then Alias (Visible_Op) = Op
-              and then not Is_Hidden (Visible_Op);
+            --  The subprogram may be overloaded with both visible and private
+            --  entities with the same name. We have to scan the chain of
+            --  homonyms to determine whether there is a previous implicit
+            --  declaration in the same scope that is overridden by the
+            --  private candidate.
+
+            Visible_Op := Homonym (Op);
+            while Present (Visible_Op) loop
+               if Scope (Op) /= Scope (Visible_Op) then
+                  return False;
+
+               elsif not Comes_From_Source (Visible_Op)
+                 and then Alias (Visible_Op) = Op
+                 and then not Is_Hidden (Visible_Op)
+               then
+                  return True;
+               end if;
+
+               Visible_Op := Homonym (Visible_Op);
+            end loop;
+
+            return False;
          end Is_Private_Overriding;
 
          -----------------

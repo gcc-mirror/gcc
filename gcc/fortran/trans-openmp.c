@@ -1,5 +1,5 @@
 /* OpenMP directive translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -413,7 +413,7 @@ gfc_walk_alloc_comps (tree decl, tree dest, tree var,
 	    {
 	      tem = fold_convert (pvoid_type_node, tem);
 	      tem = fold_build2_loc (input_location, NE_EXPR,
-				     boolean_type_node, tem,
+				     logical_type_node, tem,
 				     null_pointer_node);
 	      then_b = build3_loc (input_location, COND_EXPR, void_type_node,
 				   tem, then_b,
@@ -540,7 +540,7 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
 			       GFC_DESCRIPTOR_TYPE_P (type)
 			       ? gfc_conv_descriptor_data_get (outer) : outer);
       tem = unshare_expr (tem);
-      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			      tem, null_pointer_node);
       gfc_add_expr_to_block (&block,
 			     build3_loc (input_location, COND_EXPR,
@@ -646,7 +646,7 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
 		    build_zero_cst (TREE_TYPE (dest)));
   else_b = gfc_finish_block (&cond_block);
 
-  cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			  unshare_expr (srcptr), null_pointer_node);
   gfc_add_expr_to_block (&block,
 			 build3_loc (input_location, COND_EXPR,
@@ -699,7 +699,7 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
 			       GFC_DESCRIPTOR_TYPE_P (type)
 			       ? gfc_conv_descriptor_data_get (dest) : dest);
       tem = unshare_expr (tem);
-      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			      tem, null_pointer_node);
       tem = build3_loc (input_location, COND_EXPR, void_type_node, cond,
 			then_b, build_empty_stmt (input_location));
@@ -739,7 +739,7 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
   destptr = fold_convert (pvoid_type_node, destptr);
   gfc_add_modify (&cond_block, ptr, destptr);
 
-  nonalloc = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+  nonalloc = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
 			      destptr, null_pointer_node);
   cond = nonalloc;
   if (GFC_DESCRIPTOR_TYPE_P (type))
@@ -755,11 +755,11 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
 	  tem = fold_build2_loc (input_location, PLUS_EXPR,
 				 gfc_array_index_type, tem,
 				 gfc_conv_descriptor_lbound_get (dest, rank));
-	  tem = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+	  tem = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				 tem, gfc_conv_descriptor_ubound_get (dest,
 								      rank));
 	  cond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
-				  boolean_type_node, cond, tem);
+				  logical_type_node, cond, tem);
 	}
     }
 
@@ -835,7 +835,7 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
 	}
       else_b = gfc_finish_block (&cond_block);
 
-      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			      unshare_expr (srcptr), null_pointer_node);
       gfc_add_expr_to_block (&block,
 			     build3_loc (input_location, COND_EXPR,
@@ -1028,7 +1028,7 @@ gfc_omp_clause_dtor (tree clause, tree decl)
 			  GFC_DESCRIPTOR_TYPE_P (type)
 			  ? gfc_conv_descriptor_data_get (decl) : decl);
       tem = unshare_expr (tem);
-      tree cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      tree cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				   tem, null_pointer_node);
       tem = build3_loc (input_location, COND_EXPR, void_type_node, cond,
 			then_b, build_empty_stmt (input_location));
@@ -1129,7 +1129,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
 	  tem = gfc_conv_descriptor_data_get (decl);
 	  tem = fold_convert (pvoid_type_node, tem);
 	  cond = fold_build2_loc (input_location, NE_EXPR,
-				  boolean_type_node, tem, null_pointer_node);
+				  logical_type_node, tem, null_pointer_node);
 	  gfc_add_expr_to_block (&block, build3_loc (input_location, COND_EXPR,
 						     void_type_node, cond,
 						     then_b, else_b));
@@ -1623,6 +1623,7 @@ gfc_trans_omp_array_reduction_or_udr (tree c, gfc_omp_namelist *n, locus where)
       intrinsic_sym.attr.referenced = 1;
       intrinsic_sym.attr.intrinsic = 1;
       intrinsic_sym.attr.function = 1;
+      intrinsic_sym.attr.implicit_type = 1;
       intrinsic_sym.result = &intrinsic_sym;
       intrinsic_sym.declared_at = where;
 
@@ -1948,9 +1949,32 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  }
 			else
 			  {
-			    tree type = gfc_typenode_for_spec (&n->sym->ts);
-			    OMP_CLAUSE_LINEAR_STEP (node)
-			      = fold_convert (type, last_step);
+			    if (kind == OMP_CLAUSE_LINEAR_REF)
+			      {
+				tree type;
+				if (n->sym->attr.flavor == FL_PROCEDURE)
+				  {
+				    type = gfc_get_function_type (n->sym);
+				    type = build_pointer_type (type);
+				  }
+				else
+				  type = gfc_sym_type (n->sym);
+				if (POINTER_TYPE_P (type))
+				  type = TREE_TYPE (type);
+				/* Otherwise to be determined what exactly
+				   should be done.  */
+				tree t = fold_convert (sizetype, last_step);
+				t = size_binop (MULT_EXPR, t,
+						TYPE_SIZE_UNIT (type));
+				OMP_CLAUSE_LINEAR_STEP (node) = t;
+			      }
+			    else
+			      {
+				tree type
+				  = gfc_typenode_for_spec (&n->sym->ts);
+				OMP_CLAUSE_LINEAR_STEP (node)
+				  = fold_convert (type, last_step);
+			      }
 			  }
 			if (n->sym->attr.dimension || n->sym->attr.allocatable)
 			  OMP_CLAUSE_LINEAR_ARRAY (node) = 1;
@@ -2155,7 +2179,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  tem = gfc_conv_descriptor_data_get (decl);
 			  tem = fold_convert (pvoid_type_node, tem);
 			  cond = fold_build2_loc (input_location, NE_EXPR,
-						  boolean_type_node,
+						  logical_type_node,
 						  tem, null_pointer_node);
 			  gfc_add_expr_to_block (block,
 						 build3_loc (input_location,
@@ -3599,7 +3623,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 	  /* The condition should not be folded.  */
 	  TREE_VEC_ELT (cond, i) = build2_loc (input_location, simple > 0
 					       ? LE_EXPR : GE_EXPR,
-					       boolean_type_node, dovar, to);
+					       logical_type_node, dovar, to);
 	  TREE_VEC_ELT (incr, i) = fold_build2_loc (input_location, PLUS_EXPR,
 						    type, dovar, step);
 	  TREE_VEC_ELT (incr, i) = fold_build2_loc (input_location,
@@ -3626,7 +3650,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 					     build_int_cst (type, 0));
 	  /* The condition should not be folded.  */
 	  TREE_VEC_ELT (cond, i) = build2_loc (input_location, LT_EXPR,
-					       boolean_type_node,
+					       logical_type_node,
 					       count, tmp);
 	  TREE_VEC_ELT (incr, i) = fold_build2_loc (input_location, PLUS_EXPR,
 						    type, count,
@@ -3925,6 +3949,12 @@ gfc_trans_omp_master (gfc_code *code)
 static tree
 gfc_trans_omp_ordered (gfc_code *code)
 {
+  if (!flag_openmp)
+    {
+      if (!code->ext.omp_clauses->simd)
+	return gfc_trans_code (code->block ? code->block->next : NULL);
+      code->ext.omp_clauses->threads = 0;
+    }
   tree omp_clauses = gfc_trans_omp_clauses (NULL, code->ext.omp_clauses,
 					    code->loc);
   return build2_loc (input_location, OMP_ORDERED, void_type_node,

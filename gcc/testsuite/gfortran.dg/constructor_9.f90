@@ -18,5 +18,3 @@ contains
     cfd=cfmde()                  ! { dg-error "Can't convert" }
   end subroutine
 end module
-
-! { dg-final { cleanup-modules "cf" } }

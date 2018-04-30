@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2017 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -25,7 +25,7 @@ etc).  Much like GENERIC, GIMPLE is a language independent, tree based
 representation.  However, it differs from GENERIC in that the GIMPLE
 grammar is more restrictive: expressions contain no more than 3
 operands (except function calls), it has no control flow structures
-and expressions with side-effects are only allowed on the right hand
+and expressions with side effects are only allowed on the right hand
 side of assignments.  See the chapter describing GENERIC and GIMPLE
 for more details.
 

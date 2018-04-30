@@ -6,7 +6,7 @@ template <typename> class A;
 struct B
 {
   template <typename T, typename U>
-  static bool foo (U T::*) {}
+  static bool foo (U T::*) { return true; }
 };
 template <typename, typename> class J;
 template <typename T, typename U, typename V, typename... W>

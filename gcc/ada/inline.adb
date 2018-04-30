@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -298,9 +298,64 @@ package body Inline is
       --  Inline_Package means that the call is considered for inlining and
       --  its package compiled and scanned for more inlining opportunities.
 
+      function Is_Non_Loading_Expression_Function
+        (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes a subprogram which is
+      --  either
+      --
+      --    * An expression function
+      --
+      --    * A function completed by an expression function where both the
+      --      spec and body are in the same context.
+
       function Must_Inline return Inline_Level_Type;
       --  Inlining is only done if the call statement N is in the main unit,
       --  or within the body of another inlined subprogram.
+
+      ----------------------------------------
+      -- Is_Non_Loading_Expression_Function --
+      ----------------------------------------
+
+      function Is_Non_Loading_Expression_Function
+        (Id : Entity_Id) return Boolean
+      is
+         Body_Decl : Node_Id;
+         Body_Id   : Entity_Id;
+         Spec_Decl : Node_Id;
+
+      begin
+         --  A stand-alone expression function is transformed into a spec-body
+         --  pair in-place. Since both the spec and body are in the same list,
+         --  the inlining of such an expression function does not need to load
+         --  anything extra.
+
+         if Is_Expression_Function (Id) then
+            return True;
+
+         --  A function may be completed by an expression function
+
+         elsif Ekind (Id) = E_Function then
+            Spec_Decl := Unit_Declaration_Node (Id);
+
+            if Nkind (Spec_Decl) = N_Subprogram_Declaration then
+               Body_Id := Corresponding_Body (Spec_Decl);
+
+               if Present (Body_Id) then
+                  Body_Decl := Unit_Declaration_Node (Body_Id);
+
+                  --  The inlining of a completing expression function does
+                  --  not need to load anything extra when both the spec and
+                  --  body are in the same context.
+
+                  return
+                    Was_Expression_Function (Body_Decl)
+                      and then Parent (Spec_Decl) = Parent (Body_Decl);
+               end if;
+            end if;
+         end if;
+
+         return False;
+      end Is_Non_Loading_Expression_Function;
 
       -----------------
       -- Must_Inline --
@@ -415,10 +470,12 @@ package body Inline is
          Set_Needs_Debug_Info (E, False);
       end if;
 
-      --  If the subprogram is an expression function, then there is no need to
-      --  load any package body since the body of the function is in the spec.
+      --  If the subprogram is an expression function, or is completed by one
+      --  where both the spec and body are in the same context, then there is
+      --  no need to load any package body since the body of the function is
+      --  in the spec.
 
-      if Is_Expression_Function (E) then
+      if Is_Non_Loading_Expression_Function (E) then
          Set_Is_Called (E);
          return;
       end if;
@@ -1053,12 +1110,12 @@ package body Inline is
       --  generic, so that the proper global references are preserved.
 
       --  Note that we do not do this at the library level, because it is not
-      --  needed, and furthermore this causes trouble if front end inlining
+      --  needed, and furthermore this causes trouble if front-end inlining
       --  is activated (-gnatN).
 
       if In_Instance and then Scope (Current_Scope) /= Standard_Standard then
          Save_Env (Scope (Current_Scope), Scope (Current_Scope));
-         Original_Body := Copy_Generic_Node (N, Empty, True);
+         Original_Body := Copy_Generic_Node (N, Empty, Instantiating => True);
       else
          Original_Body := Copy_Separate_Tree (N);
       end if;
@@ -1081,7 +1138,8 @@ package body Inline is
 
       Remove_Aspects_And_Pragmas (Original_Body);
 
-      Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
+      Body_To_Analyze :=
+        Copy_Generic_Node (Original_Body, Empty, Instantiating => False);
 
       --  Set return type of function, which is also global and does not need
       --  to be resolved.
@@ -1178,28 +1236,29 @@ package body Inline is
       --  types.
 
       function Has_Some_Contract (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id has any contract (Pre, Post, Global,
-      --  Depends, etc.)
+      --  Return True if subprogram Id has any contract. The presence of
+      --  Extensions_Visible or Volatile_Function is also considered as a
+      --  contract here.
 
       function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id defines a compilation unit
+      --  Return True if subprogram Id defines a compilation unit
       --  Shouldn't this be in Sem_Aux???
 
-      function In_Package_Visible_Spec (Id : Node_Id) return Boolean;
-      --  Returns True if subprogram Id is defined in the visible part of a
-      --  package specification.
+      function In_Package_Spec (Id : Entity_Id) return Boolean;
+      --  Return True if subprogram Id is defined in the package specification,
+      --  either its visible or private part.
 
       ---------------------------------------------------
       -- Has_Formal_With_Discriminant_Dependent_Fields --
       ---------------------------------------------------
 
       function Has_Formal_With_Discriminant_Dependent_Fields
-        (Id : Entity_Id) return Boolean is
-
+        (Id : Entity_Id) return Boolean
+      is
          function Has_Discriminant_Dependent_Component
            (Typ : Entity_Id) return Boolean;
-         --  Determine whether unconstrained record type Typ has at least
-         --  one component that depends on a discriminant.
+         --  Determine whether unconstrained record type Typ has at least one
+         --  component that depends on a discriminant.
 
          ------------------------------------------
          -- Has_Discriminant_Dependent_Component --
@@ -1211,8 +1270,8 @@ package body Inline is
             Comp : Entity_Id;
 
          begin
-            --  Inspect all components of the record type looking for one
-            --  that depends on a discriminant.
+            --  Inspect all components of the record type looking for one that
+            --  depends on a discriminant.
 
             Comp := First_Component (Typ);
             while Present (Comp) loop
@@ -1272,6 +1331,11 @@ package body Inline is
          if Is_Subprogram_Or_Generic_Subprogram (Id) then
             Items := Contract (Id);
 
+            --  Note that Classifications is not Empty when Extensions_Visible
+            --  or Volatile_Function is present, which causes such subprograms
+            --  to be considered to have a contract here. This is fine as we
+            --  want to avoid inlining these too.
+
             return Present (Items)
               and then (Present (Pre_Post_Conditions (Items)) or else
                         Present (Contract_Test_Cases (Items)) or else
@@ -1281,24 +1345,17 @@ package body Inline is
          return False;
       end Has_Some_Contract;
 
-      -----------------------------
-      -- In_Package_Visible_Spec --
-      -----------------------------
+      ---------------------
+      -- In_Package_Spec --
+      ---------------------
 
-      function In_Package_Visible_Spec  (Id : Node_Id) return Boolean is
-         Decl : Node_Id := Parent (Parent (Id));
-         P    : Node_Id;
+      function In_Package_Spec (Id : Entity_Id) return Boolean is
+         P : constant Node_Id := Parent (Subprogram_Spec (Id));
+         --  Parent of the subprogram's declaration
 
       begin
-         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Decl);
-         end if;
-
-         P := Parent (Decl);
-
-         return Nkind (P) = N_Package_Specification
-           and then List_Containing (Decl) = Visible_Declarations (P);
-      end In_Package_Visible_Spec;
+         return Nkind (Enclosing_Declaration (P)) = N_Package_Declaration;
+      end In_Package_Spec;
 
       ------------------------
       -- Is_Unit_Subprogram --
@@ -1344,9 +1401,20 @@ package body Inline is
       if Is_Unit_Subprogram (Id) then
          return False;
 
-      --  Do not inline subprograms declared in the visible part of a package
+      --  Do not inline subprograms declared in package specs, because they are
+      --  not local, i.e. can be called either from anywhere (if declared in
+      --  visible part) or from the child units (if declared in private part).
 
-      elsif In_Package_Visible_Spec (Id) then
+      elsif In_Package_Spec (Id) then
+         return False;
+
+      --  Do not inline subprograms declared in other units. This is important
+      --  in particular for subprograms defined in the private part of a
+      --  package spec, when analyzing one of its child packages, as otherwise
+      --  we issue spurious messages about the impossibility to inline such
+      --  calls.
+
+      elsif not In_Extended_Main_Code_Unit (Id) then
          return False;
 
       --  Do not inline subprograms marked No_Return, possibly used for
@@ -1356,7 +1424,8 @@ package body Inline is
          return False;
 
       --  Do not inline subprograms that have a contract on the spec or the
-      --  body. Use the contract(s) instead in GNATprove.
+      --  body. Use the contract(s) instead in GNATprove. This also prevents
+      --  inlining of subprograms with Extensions_Visible or Volatile_Function.
 
       elsif (Present (Spec_Id) and then Has_Some_Contract (Spec_Id))
                or else
@@ -1395,6 +1464,13 @@ package body Inline is
       --  problems with inlining of standard library subprograms.
 
       elsif Instantiation_Location (Sloc (Id)) /= No_Location then
+         return False;
+
+      --  Do not inline subprograms and entries defined inside protected types,
+      --  which typically are not helper subprograms, which also avoids getting
+      --  spurious messages on calls that cannot be inlined.
+
+      elsif Within_Protected_Type (Id) then
          return False;
 
       --  Do not inline predicate functions (treated specially by GNATprove)
@@ -1458,7 +1534,7 @@ package body Inline is
 
       pragma Assert (Msg (Msg'Last) = '?');
 
-      --  Legacy front end inlining model
+      --  Legacy front-end inlining model
 
       if not Back_End_Inlining then
 
@@ -1491,7 +1567,7 @@ package body Inline is
             Error_Msg_NE (Msg & "p?", N, Subp);
          end if;
 
-      --  New semantics relying on back end inlining
+      --  New semantics relying on back-end inlining
 
       elsif Is_Serious then
 
@@ -1569,22 +1645,13 @@ package body Inline is
       --  body N has no local declarations and its unique statement is a single
       --  extended return statement with a handled statements sequence.
 
-      procedure Generate_Subprogram_Body
-        (N              : Node_Id;
-         Body_To_Inline : out Node_Id);
-      --  Generate a parameterless duplicate of subprogram body N. Occurrences
-      --  of pragmas referencing the formals are removed since they have no
-      --  meaning when the body is inlined and the formals are rewritten (the
-      --  analysis of the non-inlined body will handle these pragmas properly).
-      --  A new internal name is associated with Body_To_Inline.
-
       procedure Split_Unconstrained_Function
         (N       : Node_Id;
          Spec_Id : Entity_Id);
       --  N is an inlined function body that returns an unconstrained type and
       --  has a single extended return statement. Split N in two subprograms:
       --  a procedure P' and a function F'. The formals of P' duplicate the
-      --  formals of N plus an extra formal which is used return a value;
+      --  formals of N plus an extra formal which is used to return a value;
       --  its body is composed by the declarations and list of statements
       --  of the extended return statement of N.
 
@@ -1593,6 +1660,63 @@ package body Inline is
       --------------------------
 
       procedure Build_Body_To_Inline (N : Node_Id; Spec_Id : Entity_Id) is
+         procedure Generate_Subprogram_Body
+           (N              : Node_Id;
+            Body_To_Inline : out Node_Id);
+         --  Generate a parameterless duplicate of subprogram body N. Note that
+         --  occurrences of pragmas referencing the formals are removed since
+         --  they have no meaning when the body is inlined and the formals are
+         --  rewritten (the analysis of the non-inlined body will handle these
+         --  pragmas).  A new internal name is associated with Body_To_Inline.
+
+         -----------------------------
+         -- Generate_Body_To_Inline --
+         -----------------------------
+
+         procedure Generate_Subprogram_Body
+           (N              : Node_Id;
+            Body_To_Inline : out Node_Id)
+         is
+         begin
+            --  Within an instance, the body to inline must be treated as a
+            --  nested generic so that proper global references are preserved.
+
+            --  Note that we do not do this at the library level, because it
+            --  is not needed, and furthermore this causes trouble if front
+            --  end inlining is activated (-gnatN).
+
+            if In_Instance
+              and then Scope (Current_Scope) /= Standard_Standard
+            then
+               Body_To_Inline :=
+                 Copy_Generic_Node (N, Empty, Instantiating => True);
+            else
+               Body_To_Inline := Copy_Separate_Tree (N);
+            end if;
+
+            --  Remove aspects/pragmas that have no meaning in an inlined body
+
+            Remove_Aspects_And_Pragmas (Body_To_Inline);
+
+            --  We need to capture references to the formals in order
+            --  to substitute the actuals at the point of inlining, i.e.
+            --  instantiation. To treat the formals as globals to the body to
+            --  inline, we nest it within a dummy parameterless subprogram,
+            --  declared within the real one.
+
+            Set_Parameter_Specifications
+              (Specification (Body_To_Inline), No_List);
+
+            --  A new internal name is associated with Body_To_Inline to avoid
+            --  conflicts when the non-inlined body N is analyzed.
+
+            Set_Defining_Unit_Name (Specification (Body_To_Inline),
+               Make_Defining_Identifier (Sloc (N), New_Internal_Name ('P')));
+            Set_Corresponding_Spec (Body_To_Inline, Empty);
+         end Generate_Subprogram_Body;
+
+         --  Local variables
+
          Decl            : constant Node_Id := Unit_Declaration_Node (Spec_Id);
          Original_Body   : Node_Id;
          Body_To_Analyze : Node_Id;
@@ -1603,7 +1727,7 @@ package body Inline is
          --  Within an instance, the body to inline must be treated as a nested
          --  generic, so that the proper global references are preserved. We
          --  do not do this at the library level, because it is not needed, and
-         --  furthermore this causes trouble if front end inlining is activated
+         --  furthermore this causes trouble if front-end inlining is activated
          --  (-gnatN).
 
          if In_Instance
@@ -1612,14 +1736,14 @@ package body Inline is
             Save_Env (Scope (Current_Scope), Scope (Current_Scope));
          end if;
 
-         --  We need to capture references to the formals in order
-         --  to substitute the actuals at the point of inlining, i.e.
-         --  instantiation. To treat the formals as globals to the body to
-         --  inline, we nest it within a dummy parameterless subprogram,
-         --  declared within the real one.
+         --  Capture references to formals in order to substitute the actuals
+         --  at the point of inlining or instantiation. To treat the formals
+         --  as globals to the body to inline, nest the body within a dummy
+         --  parameterless subprogram, declared within the real one.
 
          Generate_Subprogram_Body (N, Original_Body);
-         Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
+         Body_To_Analyze :=
+           Copy_Generic_Node (Original_Body, Empty, Instantiating => False);
 
          --  Set return type of function, which is also global and does not
          --  need to be resolved.
@@ -1659,8 +1783,7 @@ package body Inline is
       -- Can_Split_Unconstrained_Function --
       --------------------------------------
 
-      function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean
-      is
+      function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean is
          Ret_Node : constant Node_Id :=
                       First (Statements (Handled_Statement_Sequence (N)));
          D : Node_Id;
@@ -1692,51 +1815,6 @@ package body Inline is
            and then No (Next (Ret_Node))
            and then Present (Handled_Statement_Sequence (Ret_Node));
       end Can_Split_Unconstrained_Function;
-
-      -----------------------------
-      -- Generate_Body_To_Inline --
-      -----------------------------
-
-      procedure Generate_Subprogram_Body
-        (N              : Node_Id;
-         Body_To_Inline : out Node_Id)
-      is
-      begin
-         --  Within an instance, the body to inline must be treated as a nested
-         --  generic, so that the proper global references are preserved.
-
-         --  Note that we do not do this at the library level, because it
-         --  is not needed, and furthermore this causes trouble if front
-         --  end inlining is activated (-gnatN).
-
-         if In_Instance
-           and then Scope (Current_Scope) /= Standard_Standard
-         then
-            Body_To_Inline := Copy_Generic_Node (N, Empty, True);
-         else
-            Body_To_Inline := Copy_Separate_Tree (N);
-         end if;
-
-         --  Remove all aspects/pragmas that have no meaning in an inlined body
-
-         Remove_Aspects_And_Pragmas (Body_To_Inline);
-
-         --  We need to capture references to the formals in order
-         --  to substitute the actuals at the point of inlining, i.e.
-         --  instantiation. To treat the formals as globals to the body to
-         --  inline, we nest it within a dummy parameterless subprogram,
-         --  declared within the real one.
-
-         Set_Parameter_Specifications
-           (Specification (Body_To_Inline), No_List);
-
-         --  A new internal name is associated with Body_To_Inline to avoid
-         --  conflicts when the non-inlined body N is analyzed.
-
-         Set_Defining_Unit_Name (Specification (Body_To_Inline),
-            Make_Defining_Identifier (Sloc (N), New_Internal_Name ('P')));
-         Set_Corresponding_Spec (Body_To_Inline, Empty);
-      end Generate_Subprogram_Body;
 
       ----------------------------------
       -- Split_Unconstrained_Function --
@@ -1892,6 +1970,7 @@ package body Inline is
             Pop_Scope;
             Build_Procedure (Proc_Id, Decl_List);
             Insert_Actions (N, Decl_List);
+            Set_Is_Inlined (Proc_Id);
             Push_Scope (Scope);
          end;
 
@@ -1921,14 +2000,14 @@ package body Inline is
                 Parameter_Associations => Actual_List);
          end;
 
-         --  Generate
+         --  Generate:
 
          --    declare
          --       New_Obj : ...
          --    begin
-         --       main_1__F1b (New_Obj, ...);
-         --       return Obj;
-         --    end B10b;
+         --       Proc (New_Obj, ...);
+         --       return New_Obj;
+         --    end;
 
          Blk_Stmt :=
            Make_Block_Statement (Loc,
@@ -2202,13 +2281,13 @@ package body Inline is
       Exit_Lab : Entity_Id        := Empty;
       F        : Entity_Id;
       A        : Node_Id;
-      Lab_Decl : Node_Id;
+      Lab_Decl : Node_Id          := Empty;
       Lab_Id   : Node_Id;
       New_A    : Node_Id;
-      Num_Ret  : Nat := 0;
+      Num_Ret  : Nat              := 0;
       Ret_Type : Entity_Id;
 
-      Targ : Node_Id;
+      Targ : Node_Id := Empty;
       --  The target of the call. If context is an assignment statement then
       --  this is the left-hand side of the assignment, else it is a temporary
       --  to which the return value is assigned prior to rewriting the call.
@@ -2898,8 +2977,8 @@ package body Inline is
             --  The semantic analyzer checked that frontend-inlined functions
             --  returning unconstrained types have no declarations and have
             --  a single extended return statement. As part of its processing
-            --  the function was split in two subprograms: a procedure P and
-            --  a function F that has a block with a call to procedure P (see
+            --  the function was split into two subprograms: a procedure P' and
+            --  a function F' that has a block with a call to procedure P' (see
             --  Split_Unconstrained_Function).
 
             else
@@ -3245,7 +3324,7 @@ package body Inline is
          --  avoid generating undesired extra calls and goto statements.
 
          --     Given:
-         --                 function Func (...) return ...
+         --                 function Func (...) return String is
          --                 begin
          --                    declare
          --                       Result : String (1 .. 4);
@@ -3253,7 +3332,7 @@ package body Inline is
          --                       Proc (Result, ...);
          --                       return Result;
          --                    end;
-         --                 end F;
+         --                 end Func;
 
          --                 Result : String := Func (...);
 
@@ -3502,7 +3581,7 @@ package body Inline is
             return True;
          end if;
 
-         --  Then declarations excluded only for front end inlining
+         --  Then declarations excluded only for front-end inlining
 
          if Back_End_Inlining then
             null;

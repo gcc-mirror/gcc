@@ -19,7 +19,7 @@
       DDA1 = ATAN2 ((/(REAL(J1,KV),J1=1,10)/),
      $                 REAL((/(J1,J1=nf10,nf1,mf1)/), KV))   !fails
       DDA2 = ATAN2 (DDA, DDA(10:1:-1))
-      if (any (abs(DDA1-DDA2) .gt. 1.0e-6)) call abort ()
+      if (any (abs(DDA1-DDA2) .gt. 1.0e-6)) STOP 1
       END
 
       subroutine FA6077 (nf10,nf1,mf1, ida)
@@ -28,7 +28,7 @@
       IDA1 = IEOR((/1,2,3,4,5,6,7,8,9,10/),
      $            (/(IDA(J1),J1=10,1,-1)/) )
       IDA2 = IEOR ((/1,2,3,4,5,6,7,8,9,10/), (/10,9,8,7,6,5,4,3,2,1/) )
-      if (any (ida1 .ne. ida2)) call abort ()
+      if (any (ida1 .ne. ida2)) STOP 2
       END SUBROUTINE
 
       subroutine fa2083
@@ -41,7 +41,7 @@
       QDA1 = MOD ( 1.1_k*( QDA(1) -5.0_k), P=( QDA -2.5_k))
       DO J1 = 1,10
         QVAL = MOD(1.1_k*(QDA(1)-5.0_k),P=(QDA(J1)-2.5_k))
-        if (qval .ne. qda1(j1)) call abort ()
+        if (qval .ne. qda1(j1)) STOP 3
       ENDDO
       END
 

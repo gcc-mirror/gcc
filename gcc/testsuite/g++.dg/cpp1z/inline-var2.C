@@ -18,9 +18,9 @@ struct S
   static inline double var9 = 3.0;		// { dg-warning "inline variables are only available with" "" { target c++14_down } }
   static constexpr inline int var11 = 11;	// { dg-warning "inline variables are only available with" "" { target c++14_down } }
 };
-const int S::var3;				// { dg-warning "redundant redeclaration of" "" { target c++1z } }
+const int S::var3;				// { dg-warning "redundant redeclaration of" "" { target c++17 } }
 const int S::var3;				// { dg-error "redefinition of" "" { target c++14_down } }
-extern int foo (int);				// { dg-warning "redundant redeclaration of" "" { target c++1z } .-1 }
+extern int foo (int);				// { dg-warning "redundant redeclaration of" "" { target c++17 } .-1 }
 extern int bar (int);
 struct T { T () { t = foo (3); } T (int x) { t = foo (x); } int t; };
 inline int var12 = foo (0);			// { dg-warning "inline variables are only available with" "" { target c++14_down } }
@@ -69,6 +69,7 @@ foo (inline int var31)				// { dg-error "'var31' declared as an 'inline' paramet
 {
   inline int var32;				// { dg-error "'inline' specifier invalid for variable 'var32' declared at block scope" }
   static inline int var33;			// { dg-error "'inline' specifier invalid for variable 'var33' declared at block scope" }
+  return 0;
 }
 template <typename A, typename B, typename C>
 struct Y
@@ -111,7 +112,7 @@ double Z<N>::var41;				// { dg-error "redefinition of" }
 template <int N>
 double const Z<N>::var42;			// { dg-error "redefinition of" }
 template <int N>
-const int Z<N>::var43;				// { dg-warning "redundant redeclaration of" "" { target c++1z } }
-template <int N>				// { dg-warning "redundant redeclaration of" "" { target c++1z } .+1 }
+const int Z<N>::var43;				// { dg-warning "redundant redeclaration of" "" { target c++17 } }
+template <int N>				// { dg-warning "redundant redeclaration of" "" { target c++17 } .+1 }
 const int Z<N>::var43;				// { dg-error "redefinition of" "" { target c++14_down } }
 Z<0> z;

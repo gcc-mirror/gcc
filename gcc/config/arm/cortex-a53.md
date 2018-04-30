@@ -1,5 +1,5 @@
 ;; ARM Cortex-A53 pipeline description
-;; Copyright (C) 2013-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2018 Free Software Foundation, Inc.
 ;;
 ;; Contributed by ARM Ltd.
 ;;
@@ -141,13 +141,13 @@
 
 (define_insn_reservation "cortex_a53_load1" 4
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "load_byte,load1,load_acq"))
+       (eq_attr "type" "load_byte,load_4,load_acq"))
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_load")
 
 (define_insn_reservation "cortex_a53_store1" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "store1,store_rel"))
+       (eq_attr "type" "store_4,store_rel"))
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_store")
 
@@ -155,14 +155,14 @@
 
 (define_insn_reservation "cortex_a53_load2" 4
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "load2"))
+       (eq_attr "type" "load_8"))
   "cortex_a53_single_issue+cortex_a53_ls_agen,
    cortex_a53_load+cortex_a53_slot0,
    cortex_a53_load")
 
 (define_insn_reservation "cortex_a53_store2" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "store2"))
+       (eq_attr "type" "store_8"))
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_store")
 
@@ -170,14 +170,14 @@
 
 (define_insn_reservation "cortex_a53_load3plus" 6
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "load3,load4"))
+       (eq_attr "type" "load_12,load_16"))
   "cortex_a53_single_issue+cortex_a53_ls_agen,
    cortex_a53_load+cortex_a53_slot0,
    cortex_a53_load")
 
 (define_insn_reservation "cortex_a53_store3plus" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "store3,store4"))
+       (eq_attr "type" "store_12,store_16"))
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_store+cortex_a53_slot0,
    cortex_a53_store")
@@ -211,7 +211,7 @@
 
 (define_bypass 1 "cortex_a53_alu*"
 		 "cortex_a53_alu_shift*"
-		 "aarch_forward_to_shift_is_not_shifted_reg")
+		 "arm_no_early_alu_shift_dep")
 
 (define_bypass 2 "cortex_a53_alu*"
 		 "cortex_a53_alu_*,cortex_a53_shift*")
@@ -389,7 +389,7 @@
 		     neon_sat_mul_b_long, neon_sat_mul_h_long,\
 		     neon_sat_mul_s_long, neon_sat_mul_h_scalar_q,\
 		     neon_sat_mul_s_scalar_q, neon_sat_mul_h_scalar_long,\
-		     neon_sat_mul_s_scalar_long, neon_mla_b_q,\
+		     neon_sat_mul_s_scalar_long, crypto_pmull, neon_mla_b_q,\
 		     neon_mla_h_q, neon_mla_s_q, neon_mla_b_long,\
 		     neon_mla_h_long, neon_mla_s_long,\
 		     neon_mla_h_scalar_q, neon_mla_s_scalar_q,\
@@ -511,19 +511,19 @@
 ;; Floating-point arithmetic.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn_reservation "cortex_a53_fpalu" 5
+(define_insn_reservation "cortex_a53_fpalu" 4
   (and (eq_attr "tune" "cortexa53")
 	(eq_attr "type" "ffariths, fadds, ffarithd, faddd, fmov,
 			f_cvt, fcmps, fcmpd, fccmps, fccmpd, fcsel,
 			f_rints, f_rintd, f_minmaxs, f_minmaxd"))
   "cortex_a53_slot_any,cortex_a53_fp_alu")
 
-(define_insn_reservation "cortex_a53_fconst" 3
+(define_insn_reservation "cortex_a53_fconst" 2
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "fconsts,fconstd"))
   "cortex_a53_slot_any,cortex_a53_fp_alu")
 
-(define_insn_reservation "cortex_a53_fpmul" 5
+(define_insn_reservation "cortex_a53_fpmul" 4
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "fmuls,fmuld"))
   "cortex_a53_slot_any,cortex_a53_fp_mul")
@@ -574,7 +574,7 @@
 ;; Floating-point load/store.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn_reservation "cortex_a53_f_load_64" 4
+(define_insn_reservation "cortex_a53_f_load_64" 3
   (and (eq_attr "tune" "cortexa53")
        (ior (eq_attr "type" "f_loads,f_loadd")
 	    (eq_attr "cortex_a53_advsimd_type"
@@ -582,7 +582,7 @@
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_load")
 
-(define_insn_reservation "cortex_a53_f_load_many" 5
+(define_insn_reservation "cortex_a53_f_load_many" 4
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "cortex_a53_advsimd_type"
 		"advsimd_load_128,advsimd_load_lots"))
@@ -616,22 +616,22 @@
 ;; or a 128-bit operation in which case we require in our model that we
 ;; issue from slot 0.
 
-(define_insn_reservation "cortex_a53_advsimd_alu" 5
+(define_insn_reservation "cortex_a53_advsimd_alu" 4
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "cortex_a53_advsimd_type" "advsimd_alu"))
   "cortex_a53_slot_any,cortex_a53_fp_alu")
 
-(define_insn_reservation "cortex_a53_advsimd_alu_q" 5
+(define_insn_reservation "cortex_a53_advsimd_alu_q" 4
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "cortex_a53_advsimd_type" "advsimd_alu_q"))
   "cortex_a53_slot0,cortex_a53_fp_alu_q")
 
-(define_insn_reservation "cortex_a53_advsimd_mul" 5
+(define_insn_reservation "cortex_a53_advsimd_mul" 4
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "cortex_a53_advsimd_type" "advsimd_mul"))
   "cortex_a53_slot_any,cortex_a53_fp_mul")
 
-(define_insn_reservation "cortex_a53_advsimd_mul_q" 5
+(define_insn_reservation "cortex_a53_advsimd_mul_q" 4
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "cortex_a53_advsimd_type" "advsimd_mul_q"))
   "cortex_a53_slot0,cortex_a53_fp_mul_q")
@@ -710,20 +710,18 @@
 ;; multiply-accumulate operations as a bypass reducing the latency
 ;; of producing instructions to near zero.
 
-(define_bypass 1 "cortex_a53_fp*,
+(define_bypass 1 "cortex_a53_fpalu,
+		  cortex_a53_fpmul,
 		  cortex_a53_r2f,
+		  cortex_a53_r2f_cvt,
+		  cortex_a53_fconst,
 		  cortex_a53_f_load*"
 		 "cortex_a53_fpmac"
 		 "aarch_accumulator_forwarding")
 
-;; Model a bypass from the result of an FP operation to a use.
-
-(define_bypass 4 "cortex_a53_fpalu,
-		  cortex_a53_fpmul"
-		 "cortex_a53_fpalu,
-		  cortex_a53_fpmul,
-		  cortex_a53_fpmac,
-		  cortex_a53_advsimd_div*")
+(define_bypass 4 "cortex_a53_fpmac"
+		 "cortex_a53_fpmac"
+		 "aarch_accumulator_forwarding")
 
 ;; We want AESE and AESMC to end up consecutive to one another.
 

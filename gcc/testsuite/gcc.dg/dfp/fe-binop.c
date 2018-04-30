@@ -1,4 +1,4 @@
-/* { dg-skip-if "test is for emulation" { hard_dfp } { "*" } { "" } } */
+/* { dg-skip-if "test is for emulation" { hard_dfp } } */
 
 /* Touch tests that check for raising appropriate exceptions for binary
    arithmetic operations on decimal float values.  */

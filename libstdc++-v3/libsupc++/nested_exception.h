@@ -1,6 +1,6 @@
 // Nested Exception support header (nested_exception class) for -*- C++ -*-
 
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -92,6 +92,7 @@ namespace std
   // Throw an exception of unspecified type that is publicly derived from
   // both remove_reference_t<_Tp> and nested_exception.
   template<typename _Tp>
+    [[noreturn]]
     inline void
     __throw_with_nested_impl(_Tp&& __t, true_type)
     {
@@ -100,6 +101,7 @@ namespace std
     }
 
   template<typename _Tp>
+    [[noreturn]]
     inline void
     __throw_with_nested_impl(_Tp&& __t, false_type)
     { throw std::forward<_Tp>(__t); }

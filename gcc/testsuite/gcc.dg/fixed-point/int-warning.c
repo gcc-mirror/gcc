@@ -9,16 +9,16 @@ unsigned char uc;
 
 void test()
 {
-  sc = 500k; /* { dg-warning "overflow in implicit constant conversion" } */
-  sc = -500k; /* { dg-warning "overflow in implicit constant conversion" } */
-  sc = 500lk; /* { dg-warning "overflow in implicit constant conversion" } */
-  sc = -500lk; /* { dg-warning "overflow in implicit constant conversion" } */
-  sc = 500llk; /* { dg-warning "overflow in implicit constant conversion" } */
-  sc = -500llk; /* { dg-warning "overflow in implicit constant conversion" } */
-  uc = 500k; /* { dg-warning "overflow in implicit constant conversion" } */
-  uc = -500k; /* { dg-warning "overflow in implicit constant conversion" } */
-  uc = 500lk; /* { dg-warning "overflow in implicit constant conversion" } */
-  uc = -500lk; /* { dg-warning "overflow in implicit constant conversion" } */
-  uc = 500llk; /* { dg-warning "overflow in implicit constant conversion" } */
-  uc = -500llk; /* { dg-warning "overflow in implicit constant conversion" } */
+  sc = 500k; /* { dg-warning "overflow in conversion" } */
+  sc = -500k; /* { dg-warning "overflow in conversion" } */
+  sc = 500lk; /* { dg-warning "overflow in conversion" } */
+  sc = -500lk; /* { dg-warning "overflow in conversion" } */
+  sc = 500llk; /* { dg-warning "overflow in conversion" } */
+  sc = -500llk; /* { dg-warning "overflow in conversion" } */
+  uc = 500k; /* { dg-warning "overflow in conversion" } */
+  uc = -500k; /* { dg-warning "overflow in conversion" } */
+  uc = 500lk; /* { dg-warning "overflow in conversion" } */
+  uc = -500lk; /* { dg-warning "overflow in conversion" } */
+  uc = 500llk; /* { dg-warning "overflow in conversion" } */
+  uc = -500llk; /* { dg-warning "overflow in conversion" } */
 }

@@ -27,11 +27,11 @@ program namelist_13
 
   open(10,status="scratch", delim="apostrophe")
   write (10, nml=mynml, iostat=ier)
-  if (ier.ne.0) call abort
+  if (ier.ne.0) STOP 1
 
   rewind (10)
   read (10, NML=mynml, IOSTAT=ier)
-  if (ier.ne.0) call abort
+  if (ier.ne.0) STOP 2
   close (10)
 
 end program namelist_13

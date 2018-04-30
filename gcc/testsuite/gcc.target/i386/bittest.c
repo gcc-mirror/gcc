@@ -19,4 +19,4 @@ gate_rtl_cprop (void)
    memory and mask off bits are unnecessary.  In theory we can just count
    the move-with-extension, and and testb instructions.  There should be
    only one.  */
-/* { dg-final { scan-assembler-times "movzbl|and|testb" 1 { target { i?86-*-* x86_64-*-*} } } } */
+/* { dg-final { scan-assembler-times "movzbl|and|testb" 1 } } */

@@ -1,10 +1,12 @@
 -- { dg-do compile }
 
+with Interfaces.C; use Interfaces.C;
+
 procedure Object_Overflow3 is
 
   procedure Proc (x : Boolean) is begin null; end;
 
-  type Arr is array(0 .. Long_Integer'Last) of Boolean;
+  type Arr is array(0 .. ptrdiff_t'Last) of Boolean;
 
   type Rec is record
     A : Arr;

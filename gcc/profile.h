@@ -1,6 +1,6 @@
 /* Header file for minimum-cost maximal flow routines used to smooth basic
    block and edge frequency counts.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Paul Yuan (yingbo.com@gmail.com)
        and Vinodha Ramasamy (vinodha@google.com).
 
@@ -36,6 +36,27 @@ struct edge_profile_info
 };
 
 #define EDGE_INFO(e)  ((struct edge_profile_info *) (e)->aux)
+
+/* Helpers annotating edges/basic blocks to GCOV counts.  */
+
+extern vec<gcov_type> bb_gcov_counts;
+extern hash_map<edge,gcov_type> *edge_gcov_counts;
+
+inline gcov_type &
+edge_gcov_count (edge e)
+{
+  bool existed;
+  gcov_type &c = edge_gcov_counts->get_or_insert (e, &existed);
+  if (!existed)
+    c = 0;
+  return c;
+}
+
+inline gcov_type &
+bb_gcov_count (basic_block bb)
+{
+  return bb_gcov_counts[bb->index];
+}
 
 typedef struct gcov_working_set_info gcov_working_set_t;
 extern gcov_working_set_t *find_working_set (unsigned pct_times_10);

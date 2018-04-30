@@ -6,8 +6,6 @@
 #define N 128
 signed char data_ch[N];
 
-volatile int y = 0;
-
 __attribute__ ((noinline)) int
 foo ()
 {
@@ -19,9 +17,7 @@ foo ()
     {
       data_ch[i] = i*2;
       check_intsum += data_ch[i];
-      /* Avoid vectorization.  */
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* widenning sum: sum chars into int.  */

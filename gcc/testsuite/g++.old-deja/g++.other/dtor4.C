@@ -1,10 +1,10 @@
 // { dg-do assemble  }
 
-struct S1 {
-  ~S1(); // { dg-error "" } candidate
+struct S1 { // { dg-message "defined here" }
+  ~S1(); // { dg-message "candidate" }
 };
 
-S1::~S1() const // { dg-error "" } prototype does not match 
+S1::~S1() const // { dg-error "no declaration matches" }
 {
 }
 
@@ -15,12 +15,12 @@ struct S2 {
 
 
 template <class T>
-struct S3 {
-  ~S3(); // { dg-error "" } candidate
+struct S3 { // { dg-message "defined here" }
+  ~S3(); // { dg-message "candidate" }
 };
 
 template <class T>
-S3<T>::~S3() volatile  // { dg-error "" } prototype does not match 
+S3<T>::~S3() volatile  // { dg-error "no declaration matches" }
 {
 }
 

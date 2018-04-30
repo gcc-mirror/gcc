@@ -1,6 +1,6 @@
 // Helpers for quoted stream manipulators -*- C++ -*-
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,9 +39,9 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  namespace __detail {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  namespace __detail {
     /**
      * @brief Struct for delimited strings.
      */
@@ -155,9 +155,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 	return __is;
       }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

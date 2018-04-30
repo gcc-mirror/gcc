@@ -1,5 +1,5 @@
 /* Callgraph construction.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -190,21 +190,8 @@ record_eh_tables (cgraph_node *node, function *fun)
 int
 compute_call_stmt_bb_frequency (tree decl, basic_block bb)
 {
-  int entry_freq = ENTRY_BLOCK_PTR_FOR_FN
-  		     (DECL_STRUCT_FUNCTION (decl))->frequency;
-  int freq = bb->frequency;
-
-  if (profile_status_for_fn (DECL_STRUCT_FUNCTION (decl)) == PROFILE_ABSENT)
-    return CGRAPH_FREQ_BASE;
-
-  if (!entry_freq)
-    entry_freq = 1, freq++;
-
-  freq = freq * CGRAPH_FREQ_BASE / entry_freq;
-  if (freq > CGRAPH_FREQ_MAX)
-    freq = CGRAPH_FREQ_MAX;
-
-  return freq;
+  return bb->count.to_cgraph_frequency
+      (ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (decl))->count);
 }
 
 /* Mark address taken in STMT.  */
@@ -330,17 +317,15 @@ pass_build_cgraph_edges::execute (function *fun)
 
 	  if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	    {
-	      int freq = compute_call_stmt_bb_frequency (current_function_decl,
-							 bb);
 	      decl = gimple_call_fndecl (call_stmt);
 	      if (decl)
-		node->create_edge (cgraph_node::get_create (decl), call_stmt, bb->count, freq);
+		node->create_edge (cgraph_node::get_create (decl), call_stmt, bb->count);
 	      else if (gimple_call_internal_p (call_stmt))
 		;
 	      else
 		node->create_indirect_edge (call_stmt,
 					    gimple_call_flags (call_stmt),
-					    bb->count, freq);
+					    bb->count);
 	    }
 	  node->record_stmt_references (stmt);
 	  if (gomp_parallel *omp_par_stmt = dyn_cast <gomp_parallel *> (stmt))
@@ -426,18 +411,16 @@ cgraph_edge::rebuild_edges (void)
 
 	  if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	    {
-	      int freq = compute_call_stmt_bb_frequency (current_function_decl,
-							 bb);
 	      decl = gimple_call_fndecl (call_stmt);
 	      if (decl)
 		node->create_edge (cgraph_node::get_create (decl), call_stmt,
-				   bb->count, freq);
+				   bb->count);
 	      else if (gimple_call_internal_p (call_stmt))
 		;
 	      else
 		node->create_indirect_edge (call_stmt,
 					    gimple_call_flags (call_stmt),
-					    bb->count, freq);
+					    bb->count);
 	    }
 	  node->record_stmt_references (stmt);
 	}
@@ -472,8 +455,6 @@ cgraph_edge::rebuild_references (void)
       ref->remove_reference ();
     else
       i++;
-
-  node->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   FOR_EACH_BB_FN (bb, cfun)
     {

@@ -9,7 +9,7 @@ operator""_s(const char32_t *a, size_t b)
   return 0;
 }
 
-int
+void
 f()
 {
   using a = decltype(U"\x1181"_s);

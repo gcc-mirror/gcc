@@ -1,3 +1,5 @@
+/* { dg-require-effective-target trampolines } */
+
 int
 g (int a, int b, int (*gi) (int, int))
 {
@@ -9,7 +11,6 @@ g (int a, int b, int (*gi) (int, int))
 
 f ()
 {
-#ifndef NO_TRAMPOLINES
   int i, j;
   int f2 (int a, int b)
     {
@@ -18,7 +19,6 @@ f ()
 
   if (g (1, 2, f2) != 2)
     abort ();
-#endif
 }
 
 main ()

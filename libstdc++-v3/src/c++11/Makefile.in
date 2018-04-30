@@ -77,7 +77,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/linkage.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 CONFIG_HEADER = $(top_builddir)/config.h
@@ -183,6 +183,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 ERROR_CONSTANTS_SRCDIR = @ERROR_CONSTANTS_SRCDIR@
 EXEEXT = @EXEEXT@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 FGREP = @FGREP@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
@@ -432,6 +433,9 @@ sources = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-io-inst.cc
 
 libc__11convenience_la_SOURCES = $(sources)  $(inst_sources)
+
+# Rewrite the type info for __ios_failure.
+@ENABLE_DUAL_ABI_TRUE@rewrite_ios_failure_typeinfo = sed -e '/^_*_ZTISt13__ios_failure:/,/_ZTVN10__cxxabiv120__si_class_type_infoE/s/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt19__iosfail_type_info/'
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -747,6 +751,21 @@ hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c $<
 hashtable_c++0x.o: hashtable_c++0x.cc
 	$(CXXCOMPILE) -fimplicit-templates -c $<
+
+@ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
+@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+@ENABLE_DUAL_ABI_TRUE@	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
+@ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+@ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
+@ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.s: cxx11-ios_failure.cc
+@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -S $< -o tmp-$@
+@ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+@ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
+
+@ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.lo: cxx11-ios_failure-lt.s
+@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -g0 -c $< -o $@
+@ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.o: cxx11-ios_failure.s
+@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -g0 -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

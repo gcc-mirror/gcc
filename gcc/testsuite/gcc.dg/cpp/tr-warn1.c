@@ -20,9 +20,13 @@
    _and_ they should get a -pedantic warning. */
 
 #assert foo(bar)	/* { dg-warning "indented" "^#ext"    } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } .-1 } */
 # assert bar(baz)	/* { dg-warning "indented" "^# ext"   } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } .-1 } */
  #assert baz(quux)	/* { dg-bogus "indented" "^ #ext"     } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } .-1 } */
  # assert quux(weeble)	/* { dg-bogus "indented" "^ # ext"    } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } .-1 } */
 
 /* We warn of #elif regardless of whether we're skipping or not, and
    do not warn about indentaion.  */
@@ -32,8 +36,3 @@
 #endif
 #elif 0			/* { dg-warning "#elif" "#elif not skipping" }  */
 #endif
-
-/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 22 } */
-/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 23 } */
-/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 24 } */
-/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 25 } */

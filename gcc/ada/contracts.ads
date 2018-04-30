@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2015-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,12 +128,6 @@ package Contracts is
    --    Initializes
    --    Part_Of
 
-   procedure Analyze_Previous_Contracts (Body_Decl : Node_Id);
-   --  Analyze the contracts of all source constructs found in the declarative
-   --  list which contains entry, package, protected, subprogram, or task body
-   --  denoted by Body_Decl. The analysis stops once Body_Decl is reached. In
-   --  addition, analyze the contract of the nearest enclosing package body.
-
    procedure Analyze_Protected_Contract (Prot_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of protected unit
    --  Prot_Id if they appeared at the end of a declarative region. Currently
@@ -164,6 +158,12 @@ package Contracts is
    --  Create a contract node for a generic package, generic subprogram, or a
    --  generic body denoted by Unit by collecting all source contract-related
    --  pragmas in the contract of the unit.
+
+   procedure Freeze_Previous_Contracts (Body_Decl : Node_Id);
+   --  Freeze the contracts of all source constructs found in the declarative
+   --  list which contains entry, package, protected, subprogram, or task body
+   --  denoted by Body_Decl. In addition, freeze the contract of the nearest
+   --  enclosing package body.
 
    procedure Inherit_Subprogram_Contract
      (Subp      : Entity_Id;

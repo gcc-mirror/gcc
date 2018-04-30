@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-do compile { target { powerpc_p9vector_ok } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-options "-mcpu=power9 -O3 -fdump-tree-slp-details" } */

@@ -1,6 +1,6 @@
 ;; Code and mode itertator and attribute definitions
 ;; of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -26,30 +26,55 @@
 ;; A list of integer modes that are up to one word long.
 (define_mode_iterator QIHISI [QI HI SI])
 
+;; A list of integer modes for one word and double word.
+(define_mode_iterator SIDI [SI DI])
+
 ;; A list of integer modes that are up to one half-word long.
 (define_mode_iterator QIHI [QI HI])
 
 ;; A list of the modes that are up to double-word long.
 (define_mode_iterator DIDF [DI DF])
 
+;; A list of the modes that are up to one word long vector.
+(define_mode_iterator VQIHI [V4QI V2HI])
+
+;; A list of the modes that are up to one word long vector
+;; and scalar for varies mode.
+(define_mode_iterator VSHI [V2HI HI])
+(define_mode_iterator VSQIHI [V4QI V2HI QI HI])
+(define_mode_iterator VSQIHIDI [V4QI V2HI QI HI DI])
+(define_mode_iterator VQIHIDI [V4QI V2HI DI])
+
+;; A list of the modes that are up to double-word long.
+(define_mode_iterator ANYF [(SF "TARGET_FPU_SINGLE")
+			    (DF "TARGET_FPU_DOUBLE")])
 
 ;;----------------------------------------------------------------------------
 ;; Mode attributes.
 ;;----------------------------------------------------------------------------
 
-(define_mode_attr size [(QI "b") (HI "h") (SI "w")])
+(define_mode_attr size [(QI "b") (HI "h") (SI "w") (SF "s") (DF "d")])
 
-(define_mode_attr byte [(QI "1") (HI "2") (SI "4")])
+(define_mode_attr byte [(QI "1") (HI "2") (SI "4") (V4QI "4") (V2HI "4")])
 
+(define_mode_attr bits [(V4QI "8") (QI "8") (V2HI "16") (HI "16") (DI "64")])
+
+(define_mode_attr VELT [(V4QI "QI") (V2HI "HI")])
 
 ;;----------------------------------------------------------------------------
 ;; Code iterators.
 ;;----------------------------------------------------------------------------
 
+;; shifts
+(define_code_iterator shift_rotate [ashift ashiftrt lshiftrt rotatert])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes.
 ;;----------------------------------------------------------------------------
+
+;; shifts
+(define_code_attr shift
+  [(ashift "ashl") (ashiftrt "ashr") (lshiftrt "lshr") (rotatert "rotr")])
 
 
 ;;----------------------------------------------------------------------------

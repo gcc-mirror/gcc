@@ -6,5 +6,5 @@
 
 int f(unsigned a, int b)
 {
-  return a < b;  /* { dg-bogus "signed and unsigned" } */
+  return a < b;  /* { dg-bogus "changes signedness" } */
 }

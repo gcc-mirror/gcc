@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target powerpc_float128_hw_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-O2 -mcpu=power9 -mfloat128 -mfloat128-hardware" } */
+/* { dg-options "-O2 -mpower9-vector -mfloat128-hardware" } */
 
 #ifndef NO_FLOAT
 typedef _Complex float	float_complex;

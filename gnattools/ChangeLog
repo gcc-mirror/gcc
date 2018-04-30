@@ -1,3 +1,10 @@
+2017-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR ada/81878
+	* Makefile.in (CXX_LFLAGS): Remove.
+	(TOOLS_FLAGS_TO_PASS_NATIVE): Pass $(CXX) as CXX.
+	(TOOLS_FLAGS_TO_PASS_RE): Likewise.
+
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Add ACX_NONCANONICAL_HOST.
@@ -276,7 +283,7 @@
 	* configure: Regenerate.
 	* New directory, cloned from libada.
 
-Copyright 2004, 2005 Free Software Foundation, Inc.
+Copyright 2004-2018 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

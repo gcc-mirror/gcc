@@ -130,14 +130,14 @@ Conventions
 Following are examples of the typographical and graphic conventions used
 in this guide:
 
-* `Functions`, `utility program names`, `standard names`,
-  and `classes`.
+* ``Functions``, ``utility program names``, ``standard names``,
+  and ``classes``.
 
-* `Option flags`
+* ``Option flags``
 
 * :file:`File names`
 
-* `Variables`
+* ``Variables``
 
 * *Emphasis*
 

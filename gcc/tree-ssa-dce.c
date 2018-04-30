@@ -1,5 +1,5 @@
 /* Dead code elimination pass for the GNU compiler.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Ben Elliston <bje@redhat.com>
    and Andrew MacLeod <amacleod@redhat.com>
    Adapted to use control dependence by Steven Bosscher, SUSE Labs.
@@ -231,8 +231,7 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    case BUILT_IN_MALLOC:
 	    case BUILT_IN_ALIGNED_ALLOC:
 	    case BUILT_IN_CALLOC:
-	    case BUILT_IN_ALLOCA:
-	    case BUILT_IN_ALLOCA_WITH_ALIGN:
+	    CASE_BUILT_IN_ALLOCA:
 	    case BUILT_IN_STRDUP:
 	    case BUILT_IN_STRNDUP:
 	      return;
@@ -257,7 +256,8 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	 easily locate the debug temp bind stmt for a use thereof,
 	 would could refrain from marking all debug temps here, and
 	 mark them only if they're used.  */
-      if (!gimple_debug_bind_p (stmt)
+      if (gimple_debug_nonbind_marker_p (stmt)
+	  || !gimple_debug_bind_p (stmt)
 	  || gimple_debug_bind_has_value_p (stmt)
 	  || TREE_CODE (gimple_debug_bind_get_var (stmt)) != DEBUG_EXPR_DECL)
 	mark_stmt_necessary (stmt, false);
@@ -477,7 +477,7 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
       && !stmt_can_throw_internal (def_stmt))
     {
       tree base, lhs = gimple_get_lhs (def_stmt);
-      HOST_WIDE_INT size, offset, max_size;
+      poly_int64 size, offset, max_size;
       bool reverse;
       ao_ref_base (ref);
       base
@@ -488,13 +488,9 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
 	{
 	  /* For a must-alias check we need to be able to constrain
 	     the accesses properly.  */
-	  if (size != -1 && size == max_size
-	      && ref->max_size != -1)
-	    {
-	      if (offset <= ref->offset
-		  && offset + size >= ref->offset + ref->max_size)
-		return true;
-	    }
+	  if (known_eq (size, max_size)
+	      && known_subrange_p (ref->offset, ref->max_size, offset, size))
+	    return true;
 	  /* Or they need to be exactly the same.  */
 	  else if (ref->ref
 		   /* Make sure there is no induction variable involved
@@ -576,8 +572,7 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	  case BUILT_IN_MALLOC:
 	  case BUILT_IN_ALIGNED_ALLOC:
 	  case BUILT_IN_CALLOC:
-	  case BUILT_IN_ALLOCA:
-	  case BUILT_IN_ALLOCA_WITH_ALIGN:
+	  CASE_BUILT_IN_ALLOCA:
 	  case BUILT_IN_FREE:
 	    return false;
 
@@ -845,9 +840,7 @@ propagate_necessity (bool aggressive)
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_CALLOC
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_FREE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_VA_END
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
-		      || (DECL_FUNCTION_CODE (callee)
-			  == BUILT_IN_ALLOCA_WITH_ALIGN)
+		      || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee))
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ASSUME_ALIGNED))
@@ -1054,8 +1047,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	      e = e2;
 	}
       gcc_assert (e);
-      e->probability = REG_BR_PROB_BASE;
-      e->count = bb->count;
+      e->probability = profile_probability::always ();
 
       /* The edge is no longer associated with a conditional, so it does
 	 not have TRUE/FALSE flags.
@@ -1086,7 +1078,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 
   /* If this is a store into a variable that is being optimized away,
      add a debug bind stmt if possible.  */
-  if (MAY_HAVE_DEBUG_STMTS
+  if (MAY_HAVE_DEBUG_BIND_STMTS
       && gimple_assign_single_p (stmt)
       && is_gimple_val (gimple_assign_rhs1 (stmt)))
     {
@@ -1348,9 +1340,8 @@ eliminate_unnecessary_stmts (void)
 		      || (DECL_FUNCTION_CODE (call) != BUILT_IN_ALIGNED_ALLOC
 			  && DECL_FUNCTION_CODE (call) != BUILT_IN_MALLOC
 			  && DECL_FUNCTION_CODE (call) != BUILT_IN_CALLOC
-			  && DECL_FUNCTION_CODE (call) != BUILT_IN_ALLOCA
-			  && (DECL_FUNCTION_CODE (call)
-			      != BUILT_IN_ALLOCA_WITH_ALIGN)))
+			  && !ALLOCA_FUNCTION_CODE_P
+			      (DECL_FUNCTION_CODE (call))))
 		  /* Avoid doing so for bndret calls for the same reason.  */
 		  && !chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDRET))
 		{
@@ -1448,8 +1439,7 @@ eliminate_unnecessary_stmts (void)
 		     dominate others.  Walking backwards, this should
 		     be the common case.  ??? Do we need to recompute
 		     dominators because of cfg_altered?  */
-		  if (!MAY_HAVE_DEBUG_STMTS
-		      || !first_dom_son (CDI_DOMINATORS, bb))
+		  if (!first_dom_son (CDI_DOMINATORS, bb))
 		    delete_basic_block (bb);
 		  else
 		    {
@@ -1728,4 +1718,56 @@ gimple_opt_pass *
 make_pass_cd_dce (gcc::context *ctxt)
 {
   return new pass_cd_dce (ctxt);
+}
+
+
+/* A cheap DCE interface.  WORKLIST is a list of possibly dead stmts and
+   is consumed by this function.  The function has linear complexity in
+   the number of dead stmts with a constant factor like the average SSA
+   use operands number.  */
+
+void
+simple_dce_from_worklist (bitmap worklist)
+{
+  while (! bitmap_empty_p (worklist))
+    {
+      /* Pop item.  */
+      unsigned i = bitmap_first_set_bit (worklist);
+      bitmap_clear_bit (worklist, i);
+
+      tree def = ssa_name (i);
+      /* Removed by somebody else or still in use.  */
+      if (! def || ! has_zero_uses (def))
+	continue;
+
+      gimple *t = SSA_NAME_DEF_STMT (def);
+      if (gimple_has_side_effects (t))
+	continue;
+
+      /* Add uses to the worklist.  */
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      FOR_EACH_PHI_OR_STMT_USE (use_p, t, iter, SSA_OP_USE)
+	{
+	  tree use = USE_FROM_PTR (use_p);
+	  if (TREE_CODE (use) == SSA_NAME
+	      && ! SSA_NAME_IS_DEFAULT_DEF (use))
+	    bitmap_set_bit (worklist, SSA_NAME_VERSION (use));
+	}
+
+      /* Remove stmt.  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Removing dead stmt:");
+	  print_gimple_stmt (dump_file, t, 0);
+	}
+      gimple_stmt_iterator gsi = gsi_for_stmt (t);
+      if (gimple_code (t) == GIMPLE_PHI)
+	remove_phi_node (&gsi, true);
+      else
+	{
+	  gsi_remove (&gsi, true);
+	  release_defs (t);
+	}
+    }
 }

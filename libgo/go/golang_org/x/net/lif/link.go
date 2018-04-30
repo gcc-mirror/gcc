@@ -31,15 +31,15 @@ func (ll *Link) fetch(s uintptr) {
 	}
 	ioc := int64(sysSIOCGLIFINDEX)
 	if err := ioctl(s, uintptr(ioc), unsafe.Pointer(&lifr)); err == nil {
-		ll.Index = int(littleEndian.Uint32(lifr.Lifru[:4]))
+		ll.Index = int(nativeEndian.Uint32(lifr.Lifru[:4]))
 	}
 	ioc = int64(sysSIOCGLIFFLAGS)
 	if err := ioctl(s, uintptr(ioc), unsafe.Pointer(&lifr)); err == nil {
-		ll.Flags = int(littleEndian.Uint64(lifr.Lifru[:8]))
+		ll.Flags = int(nativeEndian.Uint64(lifr.Lifru[:8]))
 	}
 	ioc = int64(sysSIOCGLIFMTU)
 	if err := ioctl(s, uintptr(ioc), unsafe.Pointer(&lifr)); err == nil {
-		ll.MTU = int(littleEndian.Uint32(lifr.Lifru[:4]))
+		ll.MTU = int(nativeEndian.Uint32(lifr.Lifru[:4]))
 	}
 	switch ll.Type {
 	case sysIFT_IPV4, sysIFT_IPV6, sysIFT_6TO4:

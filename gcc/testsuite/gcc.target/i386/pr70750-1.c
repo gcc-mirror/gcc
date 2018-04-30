@@ -7,5 +7,5 @@ f (int (**p) (void))
   return p[1]();
 }
 
-/* { dg-final { scan-assembler "jmp\[ \t\].*\\(%rdi\\)" { target { lp64 } } } } */
-/* { dg-final { scan-assembler "jmp\[ \t\]\\*%rax" { target { x32 } } } } */
+/* { dg-final { scan-assembler "jmp\[ \t\].*\\(%rdi\\)" { target lp64 } } } */
+/* { dg-final { scan-assembler "jmp\[ \t\]\\*%rax" { target x32 } } } */

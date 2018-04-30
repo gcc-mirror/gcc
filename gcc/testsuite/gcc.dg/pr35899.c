@@ -5,13 +5,14 @@
 int
 foo (void)
 {
-  int a = bar ();
+  int a = bar (); /* { dg-line bar_implicit_decl } */
   return a;
 }
 
 void
-bar (void)		/* { dg-warning "conflicting types for" } */
+bar (void)
+/* { dg-warning "conflicting types for" "" { target *-*-* } .-1 } */
+/* { dg-message "note: previous implicit declaration" "" { target *-*-* } bar_implicit_decl } */
 {
 }
 
-/* { dg-message "note: previous implicit declaration" "" { target *-*-* } 8 } */

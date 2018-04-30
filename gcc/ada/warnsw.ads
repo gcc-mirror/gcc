@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,6 +146,13 @@ package Warnsw is
    --  given character preceded by a dot. Used to process a -gnatw. switch on
    --  the command line or .C in a string literal in pragma Warnings. Returns
    --  True for valid warning character C, False for invalid character.
+
+   function Set_Underscore_Warning_Switch (C : Character) return Boolean;
+   --  This function sets the warning switch or switches corresponding to the
+   --  given character preceded by an underscore. Used to process a -gnatw_
+   --  switch on the command line or _C in a string literal in pragma Warnings.
+   --  Returns True for valid warnings character C, False for invalid
+   --  character.
 
    procedure Set_GNAT_Mode_Warnings;
    --  This is called in -gnatg mode to set the warnings for gnat mode. It is

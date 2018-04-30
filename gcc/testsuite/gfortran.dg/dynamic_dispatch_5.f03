@@ -181,5 +181,5 @@ end module s_mat_mod
     b%a => c
     a => b
     call a%scal (1.0_spk_, info)
-    if (info .ne. 700) call abort
+    if (info .ne. 700) STOP 1
 end

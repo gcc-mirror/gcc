@@ -6,7 +6,7 @@
 #define INT_MAX __INT_MAX__
 #define UINT_MAX (2U * __INT_MAX__ + 1)
 
-int
+void
 foo (void)
 {
   int i;

@@ -1,6 +1,6 @@
 // Class template uniform_int_distribution -*- C++ -*-
 
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,21 +36,18 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
     /* Determine whether number is a power of 2.  */
     template<typename _Tp>
       inline bool
       _Power_of_2(_Tp __x)
       {
 	return ((__x - 1) & __x) == 0;
-      };
-_GLIBCXX_END_NAMESPACE_VERSION
+      }
   }
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @brief Uniform discrete distribution for random numbers.

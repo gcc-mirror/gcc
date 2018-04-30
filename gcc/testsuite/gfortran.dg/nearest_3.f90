@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 ! PR fortran/34209
 !
@@ -17,80 +17,80 @@ program test
   ! 0+ > 0
   if (nearest(r4, 1.0) &
       <= r4) &
-    call abort()
+    STOP 1
   ! 0++ > 0+
   if (nearest(nearest(r4, 1.0), 1.0) &
       <= nearest(r4, 1.0)) &
-    call abort()
+    STOP 2
   ! 0+++ > 0++
   if (nearest(nearest(nearest(r4, 1.0), 1.0), 1.0) &
       <= nearest(nearest(r4, 1.0), 1.0)) &
-    call abort()
+    STOP 3
   ! 0+- = 0
   if (nearest(nearest(r4, 1.0), -1.0) &
       /= r4) &
-    call abort()
+    STOP 4
   ! 0++- = 0+
   if (nearest(nearest(nearest(r4, 1.0), 1.0), -1.0) &
       /= nearest(r4, 1.0)) &
-    call abort()
+    STOP 5
   ! 0++-- = 0
   if (nearest(nearest(nearest(nearest(r4, 1.0), 1.0), -1.0), -1.0) &
       /= r4) &
-    call abort()
+    STOP 6
 
   ! 0- < 0
   if (nearest(r4, -1.0) &
       >= r4) &
-    call abort()
+    STOP 7
   ! 0-- < 0+
   if (nearest(nearest(r4, -1.0), -1.0) &
       >= nearest(r4, -1.0)) &
-    call abort()
+    STOP 8
   ! 0--- < 0--
   if (nearest(nearest(nearest(r4, -1.0), -1.0), -1.0) &
       >= nearest(nearest(r4, -1.0), -1.0)) &
-    call abort()
+    STOP 9
   ! 0-+ = 0
   if (nearest(nearest(r4, -1.0), 1.0) &
       /= r4) &
-    call abort()
+    STOP 10
   ! 0--+ = 0-
   if (nearest(nearest(nearest(r4, -1.0), -1.0), 1.0) &
       /= nearest(r4, -1.0)) &
-    call abort()
+    STOP 11
   ! 0--++ = 0
   if (nearest(nearest(nearest(nearest(r4, -1.0), -1.0), 1.0), 1.0) &
       /= r4) &
-    call abort()
+    STOP 12
 
   r4 = 42.0_4
   ! 42++ > 42+
   if (nearest(nearest(r4, 1.0), 1.0) &
       <= nearest(r4, 1.0)) &
-    call abort()
+    STOP 13
   ! 42-- < 42-
   if (nearest(nearest(r4, -1.0), -1.0) &
       >= nearest(r4, -1.0)) &
-    call abort()
+    STOP 14
   ! 42-+ = 42
   if (nearest(nearest(r4, -1.0), 1.0) &
       /= r4) &
-    call abort()
+    STOP 15
   ! 42+- = 42
   if (nearest(nearest(r4, 1.0), -1.0) &
       /= r4) &
-    call abort()
+    STOP 16
 
   r4 = 0.0
   ! INF+ = INF
-  if (nearest(1.0/r4, 1.0) /= 1.0/r4) call abort()
+  if (nearest(1.0/r4, 1.0) /= 1.0/r4) STOP 17
   ! -INF- = -INF
-  if (nearest(-1.0/r4, -1.0) /= -1.0/r4) call abort()
+  if (nearest(-1.0/r4, -1.0) /= -1.0/r4) STOP 18
   ! NAN- = NAN
-  if (.not.isnan(nearest(0.0/r4,  1.0))) call abort()
+  if (.not.isnan(nearest(0.0/r4,  1.0))) STOP 19
   ! NAN+ = NAN
-  if (.not.isnan(nearest(0.0/r4, -1.0))) call abort()
+  if (.not.isnan(nearest(0.0/r4, -1.0))) STOP 20
 
 ! Double precision with single-precision sign
 
@@ -98,80 +98,80 @@ program test
   ! 0+ > 0
   if (nearest(r8, 1.0) &
       <= r8) &
-    call abort()
+    STOP 21
   ! 0++ > 0+
   if (nearest(nearest(r8, 1.0), 1.0) &
       <= nearest(r8, 1.0)) &
-    call abort()
+    STOP 22
   ! 0+++ > 0++
   if (nearest(nearest(nearest(r8, 1.0), 1.0), 1.0) &
       <= nearest(nearest(r8, 1.0), 1.0)) &
-    call abort()
+    STOP 23
   ! 0+- = 0
   if (nearest(nearest(r8, 1.0), -1.0) &
       /= r8) &
-    call abort()
+    STOP 24
   ! 0++- = 0+
   if (nearest(nearest(nearest(r8, 1.0), 1.0), -1.0) &
       /= nearest(r8, 1.0)) &
-    call abort()
+    STOP 25
   ! 0++-- = 0
   if (nearest(nearest(nearest(nearest(r8, 1.0), 1.0), -1.0), -1.0) &
       /= r8) &
-    call abort()
+    STOP 26
 
   ! 0- < 0
   if (nearest(r8, -1.0) &
       >= r8) &
-    call abort()
+    STOP 27
   ! 0-- < 0+
   if (nearest(nearest(r8, -1.0), -1.0) &
       >= nearest(r8, -1.0)) &
-    call abort()
+    STOP 28
   ! 0--- < 0--
   if (nearest(nearest(nearest(r8, -1.0), -1.0), -1.0) &
       >= nearest(nearest(r8, -1.0), -1.0)) &
-    call abort()
+    STOP 29
   ! 0-+ = 0
   if (nearest(nearest(r8, -1.0), 1.0) &
       /= r8) &
-    call abort()
+    STOP 30
   ! 0--+ = 0-
   if (nearest(nearest(nearest(r8, -1.0), -1.0), 1.0) &
       /= nearest(r8, -1.0)) &
-    call abort()
+    STOP 31
   ! 0--++ = 0
   if (nearest(nearest(nearest(nearest(r8, -1.0), -1.0), 1.0), 1.0) &
       /= r8) &
-    call abort()
+    STOP 32
 
   r8 = 42.0_8
   ! 42++ > 42+
   if (nearest(nearest(r8, 1.0), 1.0) &
       <= nearest(r8, 1.0)) &
-    call abort()
+    STOP 33
   ! 42-- < 42-
   if (nearest(nearest(r8, -1.0), -1.0) &
       >= nearest(r8, -1.0)) &
-    call abort()
+    STOP 34
   ! 42-+ = 42
   if (nearest(nearest(r8, -1.0), 1.0) &
       /= r8) &
-    call abort()
+    STOP 35
   ! 42+- = 42
   if (nearest(nearest(r8, 1.0), -1.0) &
       /= r8) &
-    call abort()
+    STOP 36
 
   r4 = 0.0
   ! INF+ = INF
-  if (nearest(1.0/r4, 1.0) /= 1.0/r4) call abort()
+  if (nearest(1.0/r4, 1.0) /= 1.0/r4) STOP 37
   ! -INF- = -INF
-  if (nearest(-1.0/r4, -1.0) /= -1.0/r4) call abort()
+  if (nearest(-1.0/r4, -1.0) /= -1.0/r4) STOP 38
   ! NAN- = NAN
-  if (.not.isnan(nearest(0.0/r4,  1.0))) call abort()
+  if (.not.isnan(nearest(0.0/r4,  1.0))) STOP 39
   ! NAN+ = NAN
-  if (.not.isnan(nearest(0.0/r4, -1.0))) call abort()
+  if (.not.isnan(nearest(0.0/r4, -1.0))) STOP 40
 
 
 ! Single precision with double-precision sign
@@ -180,80 +180,80 @@ program test
   ! 0+ > 0
   if (nearest(r4, 1.0d0) &
       <= r4) &
-    call abort()
+    STOP 41
   ! 0++ > 0+
   if (nearest(nearest(r4, 1.0d0), 1.0d0) &
       <= nearest(r4, 1.0d0)) &
-    call abort()
+    STOP 42
   ! 0+++ > 0++
   if (nearest(nearest(nearest(r4, 1.0d0), 1.0d0), 1.0d0) &
       <= nearest(nearest(r4, 1.0d0), 1.0d0)) &
-    call abort()
+    STOP 43
   ! 0+- = 0
   if (nearest(nearest(r4, 1.0d0), -1.0d0) &
       /= r4) &
-    call abort()
+    STOP 44
   ! 0++- = 0+
   if (nearest(nearest(nearest(r4, 1.0d0), 1.0d0), -1.0d0) &
       /= nearest(r4, 1.0d0)) &
-    call abort()
+    STOP 45
   ! 0++-- = 0
   if (nearest(nearest(nearest(nearest(r4, 1.0d0), 1.0d0), -1.0d0), -1.0d0) &
       /= r4) &
-    call abort()
+    STOP 46
 
   ! 0- < 0
   if (nearest(r4, -1.0d0) &
       >= r4) &
-    call abort()
+    STOP 47
   ! 0-- < 0+
   if (nearest(nearest(r4, -1.0d0), -1.0d0) &
       >= nearest(r4, -1.0d0)) &
-    call abort()
+    STOP 48
   ! 0--- < 0--
   if (nearest(nearest(nearest(r4, -1.0d0), -1.0d0), -1.0d0) &
       >= nearest(nearest(r4, -1.0d0), -1.0d0)) &
-    call abort()
+    STOP 49
   ! 0-+ = 0
   if (nearest(nearest(r4, -1.0d0), 1.0d0) &
       /= r4) &
-    call abort()
+    STOP 50
   ! 0--+ = 0-
   if (nearest(nearest(nearest(r4, -1.0d0), -1.0d0), 1.0d0) &
       /= nearest(r4, -1.0d0)) &
-    call abort()
+    STOP 51
   ! 0--++ = 0
   if (nearest(nearest(nearest(nearest(r4, -1.0d0), -1.0d0), 1.0d0), 1.0d0) &
       /= r4) &
-    call abort()
+    STOP 52
 
   r4 = 42.0_4
   ! 42++ > 42+
   if (nearest(nearest(r4, 1.0d0), 1.0d0) &
       <= nearest(r4, 1.0d0)) &
-    call abort()
+    STOP 53
   ! 42-- < 42-
   if (nearest(nearest(r4, -1.0d0), -1.0d0) &
       >= nearest(r4, -1.0d0)) &
-    call abort()
+    STOP 54
   ! 42-+ = 42
   if (nearest(nearest(r4, -1.0d0), 1.0d0) &
       /= r4) &
-    call abort()
+    STOP 55
   ! 42+- = 42
   if (nearest(nearest(r4, 1.0d0), -1.0d0) &
       /= r4) &
-    call abort()
+    STOP 56
 
   r4 = 0.0
   ! INF+ = INF
-  if (nearest(1.0d0/r4, 1.0d0) /= 1.0d0/r4) call abort()
+  if (nearest(1.0d0/r4, 1.0d0) /= 1.0d0/r4) STOP 57
   ! -INF- = -INF
-  if (nearest(-1.0d0/r4, -1.0d0) /= -1.0d0/r4) call abort()
+  if (nearest(-1.0d0/r4, -1.0d0) /= -1.0d0/r4) STOP 58
   ! NAN- = NAN
-  if (.not.isnan(nearest(0.0/r4,  1.0d0))) call abort()
+  if (.not.isnan(nearest(0.0/r4,  1.0d0))) STOP 59
   ! NAN+ = NAN
-  if (.not.isnan(nearest(0.0/r4, -1.0d0))) call abort()
+  if (.not.isnan(nearest(0.0/r4, -1.0d0))) STOP 60
 
 ! Double precision with double-precision sign
 
@@ -261,79 +261,79 @@ program test
   ! 0+ > 0
   if (nearest(r8, 1.0d0) &
       <= r8) &
-    call abort()
+    STOP 61
   ! 0++ > 0+
   if (nearest(nearest(r8, 1.0d0), 1.0d0) &
       <= nearest(r8, 1.0d0)) &
-    call abort()
+    STOP 62
   ! 0+++ > 0++
   if (nearest(nearest(nearest(r8, 1.0d0), 1.0d0), 1.0d0) &
       <= nearest(nearest(r8, 1.0d0), 1.0d0)) &
-    call abort()
+    STOP 63
   ! 0+- = 0
   if (nearest(nearest(r8, 1.0d0), -1.0d0) &
       /= r8) &
-    call abort()
+    STOP 64
   ! 0++- = 0+
   if (nearest(nearest(nearest(r8, 1.0d0), 1.0d0), -1.0d0) &
       /= nearest(r8, 1.0d0)) &
-    call abort()
+    STOP 65
   ! 0++-- = 0
   if (nearest(nearest(nearest(nearest(r8, 1.0d0), 1.0d0), -1.0d0), -1.0d0) &
       /= r8) &
-    call abort()
+    STOP 66
 
   ! 0- < 0
   if (nearest(r8, -1.0d0) &
       >= r8) &
-    call abort()
+    STOP 67
   ! 0-- < 0+
   if (nearest(nearest(r8, -1.0d0), -1.0d0) &
       >= nearest(r8, -1.0d0)) &
-    call abort()
+    STOP 68
   ! 0--- < 0--
   if (nearest(nearest(nearest(r8, -1.0d0), -1.0d0), -1.0d0) &
       >= nearest(nearest(r8, -1.0d0), -1.0d0)) &
-    call abort()
+    STOP 69
   ! 0-+ = 0
   if (nearest(nearest(r8, -1.0d0), 1.0d0) &
       /= r8) &
-    call abort()
+    STOP 70
   ! 0--+ = 0-
   if (nearest(nearest(nearest(r8, -1.0d0), -1.0d0), 1.0d0) &
       /= nearest(r8, -1.0d0)) &
-    call abort()
+    STOP 71
   ! 0--++ = 0
   if (nearest(nearest(nearest(nearest(r8, -1.0d0), -1.0d0), 1.0d0), 1.0d0) &
       /= r8) &
-    call abort()
+    STOP 72
 
   r8 = 42.0_8
   ! 42++ > 42+
   if (nearest(nearest(r8, 1.0d0), 1.0d0) &
       <= nearest(r8, 1.0d0)) &
-    call abort()
+    STOP 73
   ! 42-- < 42-
   if (nearest(nearest(r8, -1.0d0), -1.0d0) &
       >= nearest(r8, -1.0d0)) &
-    call abort()
+    STOP 74
   ! 42-+ = 42
   if (nearest(nearest(r8, -1.0d0), 1.0d0) &
       /= r8) &
-    call abort()
+    STOP 75
   ! 42+- = 42
   if (nearest(nearest(r8, 1.0d0), -1.0d0) &
       /= r8) &
-    call abort()
+    STOP 76
 
   r4 = 0.0
   ! INF+ = INF
-  if (nearest(1.0d0/r4, 1.0d0) /= 1.0d0/r4) call abort()
+  if (nearest(1.0d0/r4, 1.0d0) /= 1.0d0/r4) STOP 77
   ! -INF- = -INF
-  if (nearest(-1.0d0/r4, -1.0d0) /= -1.0d0/r4) call abort()
+  if (nearest(-1.0d0/r4, -1.0d0) /= -1.0d0/r4) STOP 78
   ! NAN- = NAN
-  if (.not.isnan(nearest(0.0/r4,  1.0d0))) call abort()
+  if (.not.isnan(nearest(0.0/r4,  1.0d0))) STOP 79
   ! NAN+ = NAN
-  if (.not.isnan(nearest(0.0/r4, -1.0d0))) call abort()
+  if (.not.isnan(nearest(0.0/r4, -1.0d0))) STOP 80
 
 end program test

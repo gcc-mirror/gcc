@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -61,43 +61,34 @@ cxx_warn_unused_global_decl (const_tree decl)
 size_t
 cp_tree_size (enum tree_code code)
 {
+  gcc_checking_assert (code >= NUM_TREE_CODES);
   switch (code)
     {
-    case PTRMEM_CST:		return sizeof (struct ptrmem_cst);
-    case BASELINK:		return sizeof (struct tree_baselink);
+    case PTRMEM_CST:		return sizeof (ptrmem_cst);
+    case BASELINK:		return sizeof (tree_baselink);
     case TEMPLATE_PARM_INDEX:	return sizeof (template_parm_index);
-    case DEFAULT_ARG:		return sizeof (struct tree_default_arg);
-    case DEFERRED_NOEXCEPT:	return sizeof (struct tree_deferred_noexcept);
-    case OVERLOAD:		return sizeof (struct tree_overload);
-    case STATIC_ASSERT:         return sizeof (struct tree_static_assert);
+    case DEFAULT_ARG:		return sizeof (tree_default_arg);
+    case DEFERRED_NOEXCEPT:	return sizeof (tree_deferred_noexcept);
+    case OVERLOAD:		return sizeof (tree_overload);
+    case STATIC_ASSERT:         return sizeof (tree_static_assert);
     case TYPE_ARGUMENT_PACK:
-    case TYPE_PACK_EXPANSION:
-      return sizeof (struct tree_common);
-
+    case TYPE_PACK_EXPANSION:	return sizeof (tree_type_non_common);
     case NONTYPE_ARGUMENT_PACK:
-    case EXPR_PACK_EXPANSION:
-      return sizeof (struct tree_exp);
-
-    case ARGUMENT_PACK_SELECT:
-      return sizeof (struct tree_argument_pack_select);
-
-    case TRAIT_EXPR:
-      return sizeof (struct tree_trait_expr);
-
-    case LAMBDA_EXPR:           return sizeof (struct tree_lambda_expr);
-
-    case TEMPLATE_INFO:         return sizeof (struct tree_template_info);
-
-    case CONSTRAINT_INFO:       return sizeof (struct tree_constraint_info);
-
-    case USERDEF_LITERAL:	return sizeof (struct tree_userdef_literal);
-
-    case TEMPLATE_DECL:		return sizeof (struct tree_template_decl);
-
+    case EXPR_PACK_EXPANSION:	return sizeof (tree_exp);
+    case ARGUMENT_PACK_SELECT:	return sizeof (tree_argument_pack_select);
+    case TRAIT_EXPR:		return sizeof (tree_trait_expr);
+    case LAMBDA_EXPR:           return sizeof (tree_lambda_expr);
+    case TEMPLATE_INFO:         return sizeof (tree_template_info);
+    case CONSTRAINT_INFO:       return sizeof (tree_constraint_info);
+    case USERDEF_LITERAL:	return sizeof (tree_userdef_literal);
+    case TEMPLATE_DECL:		return sizeof (tree_template_decl);
     default:
-      if (TREE_CODE_CLASS (code) == tcc_declaration)
-	return sizeof (struct tree_decl_non_common);
-      gcc_unreachable ();
+      switch (TREE_CODE_CLASS (code))
+	{
+	case tcc_declaration:	return sizeof (tree_decl_non_common);
+	case tcc_type:		return sizeof (tree_type_non_common);
+	default: gcc_unreachable ();
+	}
     }
   /* NOTREACHED */
 }
@@ -131,17 +122,37 @@ cxx_types_compatible_p (tree x, tree y)
   return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
+static GTY((cache)) tree_cache_map *debug_type_map;
+
 /* Return a type to use in the debug info instead of TYPE, or NULL_TREE to
    keep TYPE.  */
 
 tree
 cp_get_debug_type (const_tree type)
 {
-  if (TYPE_PTRMEMFUNC_P (type) && !typedef_variant_p (type))
-    return build_offset_type (TYPE_PTRMEMFUNC_OBJECT_TYPE (type),
-			      TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)));
+  tree dtype = NULL_TREE;
 
-  return NULL_TREE;
+  if (TYPE_PTRMEMFUNC_P (type) && !typedef_variant_p (type))
+    dtype = build_offset_type (TYPE_PTRMEMFUNC_OBJECT_TYPE (type),
+			       TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)));
+
+  /* We cannot simply return the debug type here because the function uses
+     the type canonicalization hashtable, which is GC-ed, so its behavior
+     depends on the actual collection points.  Since we are building these
+     types on the fly for the debug info only, they would not be attached
+     to any GC root and always be swept, so we would make the contents of
+     the debug info depend on the collection points.  */
+  if (dtype)
+    {
+      tree ktype = CONST_CAST_TREE (type);
+      if (debug_type_map == NULL)
+	debug_type_map = tree_cache_map::create_ggc (512);
+      else if (tree *slot = debug_type_map->get (ktype))
+	return *slot;
+      debug_type_map->put (ktype, dtype);
+    }
+
+  return dtype;
 }
 
 /* Return -1 if dwarf ATTR shouldn't be added for DECL, or the attribute
@@ -210,6 +221,13 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	  else
 	    return DW_INL_inlined;
 	}
+      break;
+
+    case DW_AT_export_symbols:
+      if (TREE_CODE (decl) == NAMESPACE_DECL
+	  && (DECL_NAMESPACE_INLINE_P (decl)
+	      || (DECL_NAME (decl) == NULL_TREE && dwarf_version >= 5)))
+	return 1;
       break;
 
     default:
@@ -331,6 +349,16 @@ cxx_block_may_fallthru (const_tree stmt)
     case THROW_EXPR:
       return false;
 
+    case IF_STMT:
+      if (block_may_fallthru (THEN_CLAUSE (stmt)))
+	return true;
+      return block_may_fallthru (ELSE_CLAUSE (stmt));
+
+    case SWITCH_STMT:
+      return (!SWITCH_STMT_ALL_CASES_P (stmt)
+	      || !SWITCH_STMT_NO_BREAK_P (stmt)
+	      || block_may_fallthru (SWITCH_STMT_BODY (stmt)));
+
     default:
       return true;
     }
@@ -350,6 +378,15 @@ tree
 cp_pushdecl (tree decl)
 {
   return pushdecl (decl);
+}
+
+/* Get the global value binding of NAME.  Called directly from
+   c-common.c, not via a hook. */
+
+tree
+identifier_global_value (tree name)
+{
+  return get_global_binding (name);
 }
 
 /* Register c++-specific dumps.  */
@@ -441,7 +478,6 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (USING_STMT);
   MARK_TS_TYPED (LAMBDA_EXPR);
   MARK_TS_TYPED (CTOR_INITIALIZER);
-  MARK_TS_TYPED (ARRAY_NOTATION_REF);
   MARK_TS_TYPED (REQUIRES_EXPR);
   MARK_TS_TYPED (UNARY_LEFT_FOLD_EXPR);
   MARK_TS_TYPED (UNARY_RIGHT_FOLD_EXPR);

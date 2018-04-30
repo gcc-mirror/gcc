@@ -30,7 +30,7 @@ dokk:   do kk=1,3
         enddo dokk
 115   continue
     !$acc end parallel
-    if (any(a(1:3,1:3,1:3).ne.1)) call abort
+    if (any(a(1:3,1:3,1:3).ne.1)) STOP 1
     !$acc parallel
     !$acc loop collapse(3)
 dol:  do 120 l=1,3
@@ -41,7 +41,7 @@ doll:   do ll=1,3
         enddo doll
 120   end do dol
     !$acc end parallel
-    if (any(a(1:3,1:3,1:3).ne.2)) call abort
+    if (any(a(1:3,1:3,1:3).ne.2)) STOP 2
     end subroutine test1
 
   subroutine test2(v1, v2, v3, v4, v5, v6)
@@ -73,11 +73,11 @@ doll:   do ll=1,3
         end do
       end do
     end do
-    if (l .neqv. r) call abort
+    if (l .neqv. r) STOP 3
     do i = v1, v2
       do j = v3, v4
         do k = v5, v6
-           if (a(i, j, k) .ne. b(i, j, k)) call abort
+           if (a(i, j, k) .ne. b(i, j, k)) STOP 4
         end do
       end do
     end do
@@ -112,11 +112,11 @@ doll:   do ll=1,3
         end do
       end do
     end do
-    if (l .neqv. r) call abort
+    if (l .neqv. r) STOP 5
     do i = v1, v2, v7
       do j = v3, v4, v8
         do k = v5, v6, v9
-           if (a(i, j, k) .ne. b(i, j, k)) call abort
+           if (a(i, j, k) .ne. b(i, j, k)) STOP 6
         end do
       end do
     end do
@@ -160,11 +160,11 @@ doll:   do ll=1,3
         end do
       end do
     end do
-    if (l .neqv. r) call abort
+    if (l .neqv. r) STOP 7
     do i = v1, v2, v7
       do j = v3, v4, v8
          do k = v5, v6, v9
-           if (a(i, j, k) .ne. b(i, j, k)) call abort
+           if (a(i, j, k) .ne. b(i, j, k)) STOP 8
          end do
       end do
     end do

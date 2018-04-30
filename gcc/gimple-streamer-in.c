@@ -1,6 +1,6 @@
 /* Routines for reading GIMPLE from a file stream.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -264,9 +264,11 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
   index = streamer_read_uhwi (ib);
   bb = BASIC_BLOCK_FOR_FN (fn, index);
 
-  bb->count = apply_scale (streamer_read_gcov_count (ib),
-                           count_materialization_scale);
-  bb->frequency = streamer_read_hwi (ib);
+  bb->count = profile_count::stream_in (ib);
+  if (count_materialization_scale != REG_BR_PROB_BASE
+      && bb->count.ipa ().nonzero_p ())
+    bb->count
+      = bb->count.apply_scale (count_materialization_scale, REG_BR_PROB_BASE);
   bb->flags = streamer_read_hwi (ib);
 
   /* LTO_bb1 has statements.  LTO_bb0 does not.  */

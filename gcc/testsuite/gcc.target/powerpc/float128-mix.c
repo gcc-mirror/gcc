@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
-/* { dg-require-effective-target powerpc_float128_sw_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O2 -mcpu=power7 -mfloat128" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O2 -mvsx" } */
 
 
 /* Test to make sure that __float128 and long double cannot be combined together.  */

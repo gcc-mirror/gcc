@@ -1,5 +1,5 @@
 ; Options of Andes NDS32 cpu for GNU compiler
-; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ; Contributed by Andes Technology Corporation.
 ;
 ; This file is part of GCC.
@@ -21,13 +21,43 @@
 HeaderInclude
 config/nds32/nds32-opts.h
 
-mbig-endian
-Target Report RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
+; ---------------------------------------------------------------
+; The following options are designed for aliasing and compatibility options.
+
+EB
+Target RejectNegative Alias(mbig-endian)
 Generate code in big-endian mode.
 
-mlittle-endian
-Target Report RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
+EL
+Target RejectNegative Alias(mlittle-endian)
 Generate code in little-endian mode.
+
+
+; ---------------------------------------------------------------
+
+mabi=
+Target RejectNegative Joined Enum(abi_type) Var(nds32_abi) Init(TARGET_DEFAULT_ABI)
+Specify which ABI type to generate code for: 2, 2fp+.
+
+Enum
+Name(abi_type) Type(enum abi_type)
+Known ABIs (for use with the -mabi= option):
+
+EnumValue
+Enum(abi_type) String(2) Value(NDS32_ABI_V2)
+
+EnumValue
+Enum(abi_type) String(2fp+) Value(NDS32_ABI_V2_FP_PLUS)
+
+mfloat-abi=soft
+Target RejectNegative Alias(mabi=, 2)
+Specify use soft floating point ABI which mean alias to -mabi=2.
+
+mfloat-abi=hard
+Target RejectNegative Alias(mabi=, 2fp+)
+Specify use soft floating point ABI which mean alias to -mabi=2fp+.
+
+; ---------------------------------------------------------------
 
 mreduced-regs
 Target Report RejectNegative Negative(mfull-regs) Mask(REDUCED_REGS)
@@ -37,13 +67,40 @@ mfull-regs
 Target Report RejectNegative Negative(mreduced-regs) InverseMask(REDUCED_REGS)
 Use full-set registers for register allocation.
 
+; ---------------------------------------------------------------
+
+malways-align
+Target Mask(ALWAYS_ALIGN)
+Always align function entry, jump target and return address.
+
+malign-functions
+Target Mask(ALIGN_FUNCTION)
+Align function entry to 4 byte.
+
+mbig-endian
+Target Undocumented RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
+Generate code in big-endian mode.
+
+mlittle-endian
+Target Undocumented RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
+Generate code in little-endian mode.
+
+
 mcmov
 Target Report Mask(CMOV)
 Generate conditional move instructions.
 
-mperf-ext
-Target Report Mask(PERF_EXT)
+mext-perf
+Target Report Mask(EXT_PERF)
 Generate performance extension instructions.
+
+mext-perf2
+Target Report Mask(EXT_PERF2)
+Generate performance extension version 2 instructions.
+
+mext-string
+Target Report Mask(EXT_STRING)
+Generate string extension instructions.
 
 mv3push
 Target Report Mask(V3PUSH)
@@ -52,6 +109,14 @@ Generate v3 push25/pop25 instructions.
 m16-bit
 Target Report Mask(16_BIT)
 Generate 16-bit instructions.
+
+mrelax-hint
+Target Report Mask(RELAX_HINT)
+Insert relax hint for linker to do relaxation.
+
+mvh
+Target Report Mask(VH)
+Enable Virtual Hosting support.
 
 misr-vector-size=
 Target RejectNegative Joined UInteger Var(nds32_isr_vector_size) Init(NDS32_DEFAULT_ISR_VECTOR_SIZE)
@@ -78,8 +143,14 @@ Enum(nds32_arch_type) String(v3) Value(ARCH_V3)
 EnumValue
 Enum(nds32_arch_type) String(v3m) Value(ARCH_V3M)
 
+EnumValue
+Enum(nds32_arch_type) String(v3f) Value(ARCH_V3F)
+
+EnumValue
+Enum(nds32_arch_type) String(v3s) Value(ARCH_V3S)
+
 mcmodel=
-Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_MEDIUM)
+Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_LARGE)
 Specify the address generation strategy for code model.
 
 Enum
@@ -95,6 +166,141 @@ Enum(nds32_cmodel_type) String(medium) Value(CMODEL_MEDIUM)
 EnumValue
 Enum(nds32_cmodel_type) String(large) Value(CMODEL_LARGE)
 
+mcpu=
+Target RejectNegative Joined Enum(nds32_cpu_type) Var(nds32_cpu_option) Init(CPU_N9)
+Specify the cpu for pipeline model.
+
+Enum
+Name(nds32_cpu_type) Type(enum nds32_cpu_type)
+Known cpu types (for use with the -mcpu= option):
+
+EnumValue
+Enum(nds32_cpu_type) String(n6) Value(CPU_N6)
+
+EnumValue
+Enum(nds32_cpu_type) String(n650) Value(CPU_N6)
+
+EnumValue
+Enum(nds32_cpu_type) String(n7) Value(CPU_N7)
+
+EnumValue
+Enum(nds32_cpu_type) String(n705) Value(CPU_N7)
+
+EnumValue
+Enum(nds32_cpu_type) String(n8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(n801) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(sn8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(sn801) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(s8) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(s801) Value(CPU_N8)
+
+EnumValue
+Enum(nds32_cpu_type) String(e8) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(e801) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(n820) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(s830) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(e830) Value(CPU_E8)
+
+EnumValue
+Enum(nds32_cpu_type) String(n9) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(n903) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(n903a) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(n968) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(n968a) Value(CPU_N9)
+
+EnumValue
+Enum(nds32_cpu_type) String(simple) Value(CPU_SIMPLE)
+
+mconfig-fpu=
+Target RejectNegative Joined Enum(float_reg_number) Var(nds32_fp_regnum) Init(TARGET_CONFIG_FPU_DEFAULT)
+Specify a fpu configuration value from 0 to 7; 0-3 is as FPU spec says, and 4-7 is corresponding to 0-3.
+
+Enum
+Name(float_reg_number) Type(enum float_reg_number)
+Known floating-point number of registers (for use with the -mconfig-fpu= option):
+
+EnumValue
+Enum(float_reg_number) String(0) Value(NDS32_CONFIG_FPU_0)
+
+EnumValue
+Enum(float_reg_number) String(1) Value(NDS32_CONFIG_FPU_1)
+
+EnumValue
+Enum(float_reg_number) String(2) Value(NDS32_CONFIG_FPU_2)
+
+EnumValue
+Enum(float_reg_number) String(3) Value(NDS32_CONFIG_FPU_3)
+
+EnumValue
+Enum(float_reg_number) String(4) Value(NDS32_CONFIG_FPU_4)
+
+EnumValue
+Enum(float_reg_number) String(5) Value(NDS32_CONFIG_FPU_5)
+
+EnumValue
+Enum(float_reg_number) String(6) Value(NDS32_CONFIG_FPU_6)
+
+EnumValue
+Enum(float_reg_number) String(7) Value(NDS32_CONFIG_FPU_7)
+
+mconfig-mul=
+Target RejectNegative Joined Enum(nds32_mul_type) Var(nds32_mul_config) Init(MUL_TYPE_FAST_1)
+Specify configuration of instruction mul: fast1, fast2 or slow. The default is fast1.
+
+Enum
+Name(nds32_mul_type) Type(enum nds32_mul_type)
+
+EnumValue
+Enum(nds32_mul_type) String(fast) Value(MUL_TYPE_FAST_1)
+
+EnumValue
+Enum(nds32_mul_type) String(fast1) Value(MUL_TYPE_FAST_1)
+
+EnumValue
+Enum(nds32_mul_type) String(fast2) Value(MUL_TYPE_FAST_2)
+
+EnumValue
+Enum(nds32_mul_type) String(slow) Value(MUL_TYPE_SLOW)
+
+mconfig-register-ports=
+Target RejectNegative Joined Enum(nds32_register_ports) Var(nds32_register_ports_config) Init(REG_PORT_3R2W)
+Specify how many read/write ports for n9/n10 cores.  The value should be 3r2w or 2r1w.
+
+Enum
+Name(nds32_register_ports) Type(enum nds32_register_ports)
+
+EnumValue
+Enum(nds32_register_ports) String(3r2w) Value(REG_PORT_3R2W)
+
+EnumValue
+Enum(nds32_register_ports) String(2r1w) Value(REG_PORT_2R1W)
+
 mctor-dtor
 Target Report
 Enable constructor/destructor feature.
@@ -102,3 +308,23 @@ Enable constructor/destructor feature.
 mrelax
 Target Report
 Guide linker to relax instructions.
+
+mext-fpu-fma
+Target Report Mask(EXT_FPU_FMA)
+Generate floating-point multiply-accumulation instructions.
+
+mext-fpu-sp
+Target Report Mask(FPU_SINGLE)
+Generate single-precision floating-point instructions.
+
+mext-fpu-dp
+Target Report Mask(FPU_DOUBLE)
+Generate double-precision floating-point instructions.
+
+malways-save-lp
+Target Var(flag_always_save_lp) Init(0)
+Always save $lp in the stack.
+
+munaligned-access
+Target Report Var(flag_unaligned_access) Init(0)
+Enable unaligned word and halfword accesses to packed data.

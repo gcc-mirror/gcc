@@ -51,4 +51,4 @@ inline void C::m_fn1() {
     sort(c, b, qt_notclosestLeaf);
   }
 }
-A F::m_fn1() const { const_cast<F *>(this)->d_ptr->m_fn1(); }
+A F::m_fn1() const { const_cast<F *>(this)->d_ptr->m_fn1(); return A(); }

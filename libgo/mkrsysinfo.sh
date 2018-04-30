@@ -23,6 +23,7 @@ grep -v '^// ' gen-sysinfo.go | \
   grep -v '^type _timespec_t ' | \
   grep -v '^type _timespec ' | \
   grep -v '^type _epoll_' | \
+  grep -v '^type _*locale[_ ]' | \
   grep -v 'in6_addr' | \
   grep -v 'sockaddr_in6' | \
   sed -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1timeval\2/g' \
@@ -34,6 +35,10 @@ grep -v '^// ' gen-sysinfo.go | \
 # a field of type _in6_addr, but other types depend on _arpcom, so we need to
 # put it back.
 grep '^type _arpcom ' gen-sysinfo.go | \
+  sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
+
+# Same on Solaris for _mld_hdr_t.
+grep '^type _mld_hdr_t ' gen-sysinfo.go | \
   sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
 
 # The time structures need special handling: we need to name the
@@ -83,7 +88,11 @@ if grep '^const _epoll_data_offset ' ${OUT} >/dev/null 2>&1; then
   if test "$val" = "4"; then
       echo 'type epollevent struct { events uint32; data [8]byte }' >> ${OUT}
   elif test "$val" = "8"; then
-      echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte }' >> ${OUT}
+      if test "$GOARCH" = "sparc64" -a "$GOOS" = "linux"; then
+          echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte; _align [0]int64 }' >> ${OUT}
+      else
+          echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte }' >> ${OUT}
+      fi
   else
       echo 1>&2 "unknown epoll data offset value ${val}"
       exit 1
@@ -159,22 +168,22 @@ grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr/[16]byte/' \
     >> ${OUT}
 
-# The Solaris 12 _flow_arp_desc_t struct.
+# The Solaris 11.4 _flow_arp_desc_t struct.
 grep '^type _flow_arp_desc_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}
 
-# The Solaris 12 _flow_l3_desc_t struct.
+# The Solaris 11.4 _flow_l3_desc_t struct.
 grep '^type _flow_l3_desc_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}
 
-# The Solaris 12 _mac_ipaddr_t struct.
+# The Solaris 11.3 _mac_ipaddr_t struct.
 grep '^type _mac_ipaddr_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}
 
-# The Solaris 12 _mactun_info_t struct.
+# The Solaris 11.3 _mactun_info_t struct.
 grep '^type _mactun_info_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}

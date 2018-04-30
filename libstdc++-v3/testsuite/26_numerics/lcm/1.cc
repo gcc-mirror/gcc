@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,14 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++1z" }
-// { dg-do compile { target c++1z } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
 #include <numeric>
 
-#ifndef __cpp_lib_lcm
+#ifndef __cpp_lib_gcd_lcm
 # error "Feature-test macro for lcm missing"
-#elif __cpp_lib_lcm != 201606
+#elif __cpp_lib_gcd_lcm != 201606
 # error "Feature-test macro for lcm has wrong value"
 #endif
 

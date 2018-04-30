@@ -51,6 +51,19 @@ void test_fixit_insert_newline (void)
 #endif
 }
 
+/* Unit test for mutually-exclusive suggestions.  */
+
+void test_mutually_exclusive_suggestions (void)
+{
+#if 0
+  original; /* { dg-warning "warning 1" } */
+/* { dg-warning "warning 2" "" { target *-*-* } .-1 } */
+/* We should not print the mutually-incompatible fix-it hints within
+   the generated patch; they are not listed in the big expected
+   multiline output below.  */
+#endif
+}
+
 /* Verify the output from -fdiagnostics-generate-patch.
    We expect a header, containing the filename.  This is the absolute path,
    so we can only capture it via regexps.  */

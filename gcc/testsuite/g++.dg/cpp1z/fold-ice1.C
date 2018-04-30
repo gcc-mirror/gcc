@@ -1,5 +1,5 @@
 // PR c++/67926
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <bool ... T> bool FUR = (T && ...);
 template <bool ... T> bool FUL = (... && T);

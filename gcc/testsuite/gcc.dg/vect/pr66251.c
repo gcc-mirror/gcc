@@ -1,7 +1,7 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_double } */
-/* { dg-require-effective-target vect_floatint_cvt } */
-/* { dg-require-effective-target vect_intfloat_cvt } */
+/* { dg-require-effective-target vect_doubleint_cvt } */
+/* { dg-require-effective-target vect_intdouble_cvt } */
 /* { dg-require-effective-target vect_pack_trunc } */
 /* { dg-require-effective-target vect_unpack } */
 /* { dg-require-effective-target vect_hw_misalign } */

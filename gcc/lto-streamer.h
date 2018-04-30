@@ -1,7 +1,7 @@
 /* Data structures and declarations used for reading and writing
    GIMPLE to a file stream.
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -120,7 +120,7 @@ along with GCC; see the file COPYING3.  If not see
      String are represented in the table as pairs, a length in ULEB128
      form followed by the data for the string.  */
 
-#define LTO_major_version 7
+#define LTO_major_version 8
 #define LTO_minor_version 0
 
 typedef unsigned char	lto_decl_flags_t;
@@ -1211,5 +1211,15 @@ DEFINE_DECL_STREAM_FUNCS (VAR_DECL, var_decl)
 DEFINE_DECL_STREAM_FUNCS (TYPE_DECL, type_decl)
 DEFINE_DECL_STREAM_FUNCS (NAMESPACE_DECL, namespace_decl)
 DEFINE_DECL_STREAM_FUNCS (LABEL_DECL, label_decl)
+
+/* Entry for the delayed registering of decl -> DIE references.  */
+struct dref_entry {
+    tree decl;
+    const char *sym;
+    unsigned HOST_WIDE_INT off;
+};
+
+extern vec<dref_entry> dref_queue;
+
 
 #endif /* GCC_LTO_STREAMER_H  */

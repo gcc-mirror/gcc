@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-options "-O2 --param case-values-threshold=2" } */
 /* { dg-final { scan-assembler "mtctr" } } */
 /* { dg-final { scan-assembler "bctr" } } */

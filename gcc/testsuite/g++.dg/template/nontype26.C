@@ -7,7 +7,7 @@ template<int& i> void doit() {
 template<const int& i> class X {
 public:
     void foo() {
-      doit<i>();  // { dg-error "cv-qualification|no matching" }
+      doit<i>();  // { dg-error "qualifi|template arg|no matching" }
     }
 };
 

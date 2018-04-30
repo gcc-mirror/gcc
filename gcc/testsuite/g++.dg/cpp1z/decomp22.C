@@ -16,6 +16,6 @@ int &&get (C<E...> &&);
 int
 foo (C<int> t)
 {
-  auto[x0] = t;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto[x0] = t;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
   return x0;
 }

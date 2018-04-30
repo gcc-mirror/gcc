@@ -1,6 +1,6 @@
 // PR c++/79143
 // { dg-do compile }
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 struct base {
   base (int, int) {}

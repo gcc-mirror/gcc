@@ -40,8 +40,8 @@ void sink (void*);
    of the operand even when it's not constant (i.e., makes use of
    inlining and constant propagation information).  */
 
-int i (int x) { return x; }
-const char* s (const char *str) { return str; }
+static int i (int x) { return x; }
+static const char* s (const char *str) { return str; }
 
 /* Function to "generate" a unique unknown number (as far as GCC can
    tell) each time it's called.  It prevents the optimizer from being
@@ -140,42 +140,42 @@ extern int rand (void);
    avoid diagnosing the output of sufficiently constrained arguments to
    integer directives.  */
 
-signed char
+static signed char
 range_schar (signed char min, signed char max)
 {
   signed char val = rand ();
   return val < min || max < val ? min : val;
 }
 
-unsigned char
+static unsigned char
 range_uchar (unsigned char min, unsigned char max)
 {
   unsigned char val = rand ();
   return val < min || max < val ? min : val;
 }
 
-signed short
+static signed short
 range_sshrt (signed short min, signed short max)
 {
   signed short val = rand ();
   return val < min || max < val ? min : val;
 }
 
-unsigned short
+static unsigned short
 range_ushrt (unsigned short min, unsigned short max)
 {
   unsigned short val = rand ();
   return val < min || max < val ? min : val;
 }
 
-signed int
+static signed int
 range_sint (signed int min, signed int max)
 {
   signed int val = rand ();
   return val < min || max < val ? min : val;
 }
 
-unsigned int
+static unsigned int
 range_uint (unsigned int min, unsigned int max)
 {
   unsigned int val = rand ();

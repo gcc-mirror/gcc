@@ -1,5 +1,5 @@
 /* PR target/pr65105 */
-/* { dg-do run { target { ia32 } } } */
+/* { dg-do run { target ia32 } } */
 /* { dg-options "-O2 -msse2 -mtune=slm -mno-stackrealign -save-temps" } */
 /* { dg-require-effective-target sse2 } */
 /* { dg-final { scan-assembler "por" } } */

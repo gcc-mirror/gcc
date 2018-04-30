@@ -25,5 +25,3 @@ program assoc_err
     print *, 1. + b
   end associate
 end program
-
-! { dg-final { cleanup-modules "assoc_err_m" } }

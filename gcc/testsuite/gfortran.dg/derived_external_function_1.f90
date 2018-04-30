@@ -23,5 +23,5 @@ end
   type(t)  f
   write (line1, *) f()
   write (line2, *) 42_4
-  if (line1 .ne. line2) call abort
+  if (line1 .ne. line2) STOP 1
 end

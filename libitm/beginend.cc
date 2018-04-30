@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -431,7 +431,7 @@ GTM::gtm_transaction_cp::save(gtm_thread* tx)
   // Save everything that we might have to restore on restarts or aborts.
   jb = tx->jb;
   undolog_size = tx->undolog.size();
-  memcpy(&alloc_actions, &tx->alloc_actions, sizeof(alloc_actions));
+  alloc_actions = tx->alloc_actions;
   user_actions_size = tx->user_actions.size();
   id = tx->id;
   prop = tx->prop;
@@ -449,7 +449,7 @@ GTM::gtm_transaction_cp::commit(gtm_thread* tx)
   // commits of nested transactions. Allocation actions must be committed
   // before committing the snapshot.
   tx->jb = jb;
-  memcpy(&tx->alloc_actions, &alloc_actions, sizeof(alloc_actions));
+  tx->alloc_actions = alloc_actions;
   tx->id = id;
   tx->prop = prop;
 }
@@ -485,7 +485,7 @@ GTM::gtm_thread::rollback (gtm_transaction_cp *cp, bool aborting)
       prop = cp->prop;
       if (cp->disp != abi_disp())
 	set_abi_disp(cp->disp);
-      memcpy(&alloc_actions, &cp->alloc_actions, sizeof(alloc_actions));
+      alloc_actions = cp->alloc_actions;
       nesting = cp->nesting;
     }
   else

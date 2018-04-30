@@ -9,13 +9,13 @@ int
 g (void)
 {
   sitype si = 12;
-  unsigned int ui = -1; /* { dg-warning "21:negative integer implicitly converted to unsigned type" } */
+  unsigned int ui = -1; /* { dg-warning "21:-Wsign-conversion" } */
   unsigned char uc;
   ui = si; /* { dg-warning "8:conversion" } */
-  si = 0x80000000; /* { dg-warning "8:conversion of unsigned constant value to negative integer" } */
+  si = 0x80000000; /* { dg-warning "8:-Wsign-conversion" } */
   si = 3.2f; /* { dg-warning "8:conversion" } */
-  uc = 256; /* { dg-warning "8:large integer implicitly truncated to unsigned type" } */
-  si = 0x800000000; /* { dg-warning "8:overflow in implicit constant conversion" } */
+  uc = 256; /* { dg-warning "8:-Woverflow" } */
+  si = 0x800000000; /* { dg-warning "8:-Woverflow" } */
   return f (si) /* { dg-warning "13:conversion" } */
          + f (si); /* { dg-warning "15:conversion" } */
 }

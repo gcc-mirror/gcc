@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
    and Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -243,9 +243,12 @@ struct store_info
   /* Canonized MEM address for use by canon_true_dependence.  */
   rtx mem_addr;
 
-  /* The offset of the first and byte before the last byte associated
-     with the operation.  */
-  HOST_WIDE_INT begin, end;
+  /* The offset of the first byte associated with the operation.  */
+  poly_int64 offset;
+
+  /* The number of bytes covered by the operation.  This is always exact
+     and known (rather than -1).  */
+  poly_int64 width;
 
   union
     {
@@ -256,12 +259,19 @@ struct store_info
 
       struct
 	{
-	  /* A bitmap with one bit per byte.  Cleared bit means the position
-	     is needed.  Used if IS_LARGE is false.  */
+	  /* A bitmap with one bit per byte, or null if the number of
+	     bytes isn't known at compile time.  A cleared bit means
+	     the position is needed.  Used if IS_LARGE is true.  */
 	  bitmap bmap;
 
-	  /* Number of set bits (i.e. unneeded bytes) in BITMAP.  If it is
-	     equal to END - BEGIN, the whole store is unused.  */
+	  /* When BITMAP is nonnull, this counts the number of set bits
+	     (i.e. unneeded bytes) in the bitmap.  If it is equal to
+	     WIDTH, the whole store is unused.
+
+	     When BITMAP is null:
+	     - the store is definitely not needed when COUNT == 1
+	     - all the store is needed when COUNT == 0 and RHS is nonnull
+	     - otherwise we don't know which parts of the store are needed.  */
 	  int count;
 	} large;
     } positions_needed;
@@ -304,10 +314,11 @@ struct read_info_type
   /* The id of the mem group of the base address.  */
   int group_id;
 
-  /* The offset of the first and byte after the last byte associated
-     with the operation.  If begin == end == 0, the read did not have
-     a constant offset.  */
-  int begin, end;
+  /* The offset of the first byte associated with the operation.  */
+  poly_int64 offset;
+
+  /* The number of bytes covered by the operation, or -1 if not known.  */
+  poly_int64 width;
 
   /* The mem being read.  */
   rtx mem;
@@ -586,6 +597,18 @@ static bitmap kill_on_calls;
 
 /* The number of bits used in the global bitmaps.  */
 static unsigned int current_position;
+
+/* Print offset range [OFFSET, OFFSET + WIDTH) to FILE.  */
+
+static void
+print_range (FILE *file, poly_int64 offset, poly_int64 width)
+{
+  fprintf (file, "[");
+  print_dec (offset, file, SIGNED);
+  fprintf (file, "..");
+  print_dec (offset + width, file, SIGNED);
+  fprintf (file, ")");
+}
 
 /*----------------------------------------------------------------------------
    Zeroth step.
@@ -924,13 +947,18 @@ can_escape (tree expr)
    OFFSET and WIDTH.  */
 
 static void
-set_usage_bits (group_info *group, HOST_WIDE_INT offset, HOST_WIDE_INT width,
+set_usage_bits (group_info *group, poly_int64 offset, poly_int64 width,
                 tree expr)
 {
-  HOST_WIDE_INT i;
+  /* Non-constant offsets and widths act as global kills, so there's no point
+     trying to use them to derive global DSE candidates.  */
+  HOST_WIDE_INT i, const_offset, const_width;
   bool expr_escapes = can_escape (expr);
-  if (offset > -MAX_OFFSET && offset + width < MAX_OFFSET)
-    for (i=offset; i<offset+width; i++)
+  if (offset.is_constant (&const_offset)
+      && width.is_constant (&const_width)
+      && const_offset > -MAX_OFFSET
+      && const_offset + const_width < MAX_OFFSET)
+    for (i = const_offset; i < const_offset + const_width; ++i)
       {
 	bitmap store1;
 	bitmap store2;
@@ -1064,7 +1092,7 @@ const_or_frame_p (rtx x)
 static bool
 canon_address (rtx mem,
 	       int *group_id,
-	       HOST_WIDE_INT *offset,
+	       poly_int64 *offset,
 	       cselib_val **base)
 {
   machine_mode address_mode = get_address_mode (mem);
@@ -1131,12 +1159,7 @@ canon_address (rtx mem,
       if (GET_CODE (address) == CONST)
 	address = XEXP (address, 0);
 
-      if (GET_CODE (address) == PLUS
-	  && CONST_INT_P (XEXP (address, 1)))
-	{
-	  *offset = INTVAL (XEXP (address, 1));
-	  address = XEXP (address, 0);
-	}
+      address = strip_offset_and_add (address, offset);
 
       if (ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (mem))
 	  && const_or_frame_p (address))
@@ -1144,8 +1167,11 @@ canon_address (rtx mem,
 	  group_info *group = get_group_info (address);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  gid=%d offset=%d \n",
-		     group->id, (int)*offset);
+	    {
+	      fprintf (dump_file, "  gid=%d offset=", group->id);
+	      print_dec (*offset, dump_file);
+	      fprintf (dump_file, "\n");
+	    }
 	  *base = NULL;
 	  *group_id = group->id;
 	  return true;
@@ -1162,8 +1188,12 @@ canon_address (rtx mem,
       return false;
     }
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  varying cselib base=%u:%u offset = %d\n",
-	     (*base)->uid, (*base)->hash, (int)*offset);
+    {
+      fprintf (dump_file, "  varying cselib base=%u:%u offset = ",
+	       (*base)->uid, (*base)->hash);
+      print_dec (*offset, dump_file);
+      fprintf (dump_file, "\n");
+    }
   return true;
 }
 
@@ -1212,10 +1242,17 @@ set_all_positions_unneeded (store_info *s_info)
 {
   if (__builtin_expect (s_info->is_large, false))
     {
-      int pos, end = s_info->end - s_info->begin;
-      for (pos = 0; pos < end; pos++)
-	bitmap_set_bit (s_info->positions_needed.large.bmap, pos);
-      s_info->positions_needed.large.count = end;
+      HOST_WIDE_INT width;
+      if (s_info->width.is_constant (&width))
+	{
+	  bitmap_set_range (s_info->positions_needed.large.bmap, 0, width);
+	  s_info->positions_needed.large.count = width;
+	}
+      else
+	{
+	  gcc_checking_assert (!s_info->positions_needed.large.bmap);
+	  s_info->positions_needed.large.count = 1;
+	}
     }
   else
     s_info->positions_needed.small_bitmask = HOST_WIDE_INT_0U;
@@ -1227,36 +1264,64 @@ static inline bool
 any_positions_needed_p (store_info *s_info)
 {
   if (__builtin_expect (s_info->is_large, false))
-    return (s_info->positions_needed.large.count
-	    < s_info->end - s_info->begin);
+    {
+      HOST_WIDE_INT width;
+      if (s_info->width.is_constant (&width))
+	{
+	  gcc_checking_assert (s_info->positions_needed.large.bmap);
+	  return s_info->positions_needed.large.count < width;
+	}
+      else
+	{
+	  gcc_checking_assert (!s_info->positions_needed.large.bmap);
+	  return s_info->positions_needed.large.count == 0;
+	}
+    }
   else
     return (s_info->positions_needed.small_bitmask != HOST_WIDE_INT_0U);
 }
 
 /* Return TRUE if all bytes START through START+WIDTH-1 from S_INFO
-   store are needed.  */
+   store are known to be needed.  */
 
 static inline bool
-all_positions_needed_p (store_info *s_info, int start, int width)
+all_positions_needed_p (store_info *s_info, poly_int64 start,
+			poly_int64 width)
 {
+  gcc_assert (s_info->rhs);
+  if (!s_info->width.is_constant ())
+    {
+      gcc_assert (s_info->is_large
+		  && !s_info->positions_needed.large.bmap);
+      return s_info->positions_needed.large.count == 0;
+    }
+
+  /* Otherwise, if START and WIDTH are non-constant, we're asking about
+     a non-constant region of a constant-sized store.  We can't say for
+     sure that all positions are needed.  */
+  HOST_WIDE_INT const_start, const_width;
+  if (!start.is_constant (&const_start)
+      || !width.is_constant (&const_width))
+    return false;
+
   if (__builtin_expect (s_info->is_large, false))
     {
-      int end = start + width;
-      while (start < end)
-	if (bitmap_bit_p (s_info->positions_needed.large.bmap, start++))
+      for (HOST_WIDE_INT i = const_start; i < const_start + const_width; ++i)
+	if (bitmap_bit_p (s_info->positions_needed.large.bmap, i))
 	  return false;
       return true;
     }
   else
     {
-      unsigned HOST_WIDE_INT mask = lowpart_bitmask (width) << start;
+      unsigned HOST_WIDE_INT mask
+	= lowpart_bitmask (const_width) << const_start;
       return (s_info->positions_needed.small_bitmask & mask) == mask;
     }
 }
 
 
-static rtx get_stored_val (store_info *, machine_mode, HOST_WIDE_INT,
-			   HOST_WIDE_INT, basic_block, bool);
+static rtx get_stored_val (store_info *, machine_mode, poly_int64,
+			   poly_int64, basic_block, bool);
 
 
 /* BODY is an instruction pattern that belongs to INSN.  Return 1 if
@@ -1267,8 +1332,8 @@ static int
 record_store (rtx body, bb_info_t bb_info)
 {
   rtx mem, rhs, const_rhs, mem_addr;
-  HOST_WIDE_INT offset = 0;
-  HOST_WIDE_INT width = 0;
+  poly_int64 offset = 0;
+  poly_int64 width = 0;
   insn_info_t insn_info = bb_info->last_insn;
   store_info *store_info = NULL;
   int group_id;
@@ -1300,6 +1365,7 @@ record_store (rtx body, bb_info_t bb_info)
   /* At this point we know mem is a mem. */
   if (GET_MODE (mem) == BLKmode)
     {
+      HOST_WIDE_INT const_size;
       if (GET_CODE (XEXP (mem, 0)) == SCRATCH)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1311,8 +1377,11 @@ record_store (rtx body, bb_info_t bb_info)
       /* Handle (set (mem:BLK (addr) [... S36 ...]) (const_int 0))
 	 as memset (addr, 0, 36);  */
       else if (!MEM_SIZE_KNOWN_P (mem)
-	       || MEM_SIZE (mem) <= 0
-	       || MEM_SIZE (mem) > MAX_OFFSET
+	       || maybe_le (MEM_SIZE (mem), 0)
+	       /* This is a limit on the bitmap size, which is only relevant
+		  for constant-sized MEMs.  */
+	       || (MEM_SIZE (mem).is_constant (&const_size)
+		   && const_size > MAX_OFFSET)
 	       || GET_CODE (body) != SET
 	       || !CONST_INT_P (SET_SRC (body)))
 	{
@@ -1342,6 +1411,15 @@ record_store (rtx body, bb_info_t bb_info)
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
 
+  if (!endpoint_representable_p (offset, width))
+    {
+      clear_rhs_from_active_local_stores ();
+      return 0;
+    }
+
+  if (known_eq (width, 0))
+    return 0;
+
   if (group_id >= 0)
     {
       /* In the restrictive case where the base is a constant or the
@@ -1355,8 +1433,12 @@ record_store (rtx body, bb_info_t bb_info)
       set_usage_bits (group, offset, width, expr);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " processing const base store gid=%d[%d..%d)\n",
-		 group_id, (int)offset, (int)(offset+width));
+	{
+	  fprintf (dump_file, " processing const base store gid=%d",
+		   group_id);
+	  print_range (dump_file, offset, width);
+	  fprintf (dump_file, "\n");
+	}
     }
   else
     {
@@ -1368,8 +1450,11 @@ record_store (rtx body, bb_info_t bb_info)
       group_id = -1;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " processing cselib store [%d..%d)\n",
-		 (int)offset, (int)(offset+width));
+	{
+	  fprintf (dump_file, " processing cselib store ");
+	  print_range (dump_file, offset, width);
+	  fprintf (dump_file, "\n");
+	}
     }
 
   const_rhs = rhs = NULL_RTX;
@@ -1416,7 +1501,7 @@ record_store (rtx body, bb_info_t bb_info)
       group_info *group = rtx_group_vec[group_id];
       mem_addr = group->canon_base_addr;
     }
-  if (offset)
+  if (maybe_ne (offset, 0))
     mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
 
   while (ptr)
@@ -1435,19 +1520,27 @@ record_store (rtx body, bb_info_t bb_info)
 	{
 	  HOST_WIDE_INT i;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "    trying store in insn=%d gid=%d[%d..%d)\n",
-		     INSN_UID (ptr->insn), s_info->group_id,
-		     (int)s_info->begin, (int)s_info->end);
+	    {
+	      fprintf (dump_file, "    trying store in insn=%d gid=%d",
+		       INSN_UID (ptr->insn), s_info->group_id);
+	      print_range (dump_file, s_info->offset, s_info->width);
+	      fprintf (dump_file, "\n");
+	    }
 
 	  /* Even if PTR won't be eliminated as unneeded, if both
 	     PTR and this insn store the same constant value, we might
 	     eliminate this insn instead.  */
 	  if (s_info->const_rhs
 	      && const_rhs
-	      && offset >= s_info->begin
-	      && offset + width <= s_info->end
-	      && all_positions_needed_p (s_info, offset - s_info->begin,
-					 width))
+	      && known_subrange_p (offset, width,
+				   s_info->offset, s_info->width)
+	      && all_positions_needed_p (s_info, offset - s_info->offset,
+					 width)
+	      /* We can only remove the later store if the earlier aliases
+		 at least all accesses the later one.  */
+	      && (MEM_ALIAS_SET (mem) == MEM_ALIAS_SET (s_info->mem)
+		  || alias_set_subset_of (MEM_ALIAS_SET (mem),
+					  MEM_ALIAS_SET (s_info->mem))))
 	    {
 	      if (GET_MODE (mem) == BLKmode)
 		{
@@ -1462,8 +1555,7 @@ record_store (rtx body, bb_info_t bb_info)
 		{
 		  rtx val;
 		  start_sequence ();
-		  val = get_stored_val (s_info, GET_MODE (mem),
-					offset, offset + width,
+		  val = get_stored_val (s_info, GET_MODE (mem), offset, width,
 					BLOCK_FOR_INSN (insn_info->insn),
 					true);
 		  if (get_insns () != NULL)
@@ -1474,10 +1566,27 @@ record_store (rtx body, bb_info_t bb_info)
 		}
 	    }
 
-	  for (i = MAX (offset, s_info->begin);
-	       i < offset + width && i < s_info->end;
-	       i++)
-	    set_position_unneeded (s_info, i - s_info->begin);
+	  HOST_WIDE_INT begin_unneeded, const_s_width, const_width;
+	  if (known_subrange_p (s_info->offset, s_info->width, offset, width))
+	    /* The new store touches every byte that S_INFO does.  */
+	    set_all_positions_unneeded (s_info);
+	  else if ((offset - s_info->offset).is_constant (&begin_unneeded)
+		   && s_info->width.is_constant (&const_s_width)
+		   && width.is_constant (&const_width))
+	    {
+	      HOST_WIDE_INT end_unneeded = begin_unneeded + const_width;
+	      begin_unneeded = MAX (begin_unneeded, 0);
+	      end_unneeded = MIN (end_unneeded, const_s_width);
+	      for (i = begin_unneeded; i < end_unneeded; ++i)
+		set_position_unneeded (s_info, i);
+	    }
+	  else
+	    {
+	      /* We don't know which parts of S_INFO are needed and
+		 which aren't, so invalidate the RHS.  */
+	      s_info->rhs = NULL;
+	      s_info->const_rhs = NULL;
+	    }
 	}
       else if (s_info->rhs)
 	/* Need to see if it is possible for this store to overwrite
@@ -1523,7 +1632,14 @@ record_store (rtx body, bb_info_t bb_info)
   store_info->mem = mem;
   store_info->mem_addr = mem_addr;
   store_info->cse_base = base;
-  if (width > HOST_BITS_PER_WIDE_INT)
+  HOST_WIDE_INT const_width;
+  if (!width.is_constant (&const_width))
+    {
+      store_info->is_large = true;
+      store_info->positions_needed.large.count = 0;
+      store_info->positions_needed.large.bmap = NULL;
+    }
+  else if (const_width > HOST_BITS_PER_WIDE_INT)
     {
       store_info->is_large = true;
       store_info->positions_needed.large.count = 0;
@@ -1532,11 +1648,12 @@ record_store (rtx body, bb_info_t bb_info)
   else
     {
       store_info->is_large = false;
-      store_info->positions_needed.small_bitmask = lowpart_bitmask (width);
+      store_info->positions_needed.small_bitmask
+	= lowpart_bitmask (const_width);
     }
   store_info->group_id = group_id;
-  store_info->begin = offset;
-  store_info->end = offset + width;
+  store_info->offset = offset;
+  store_info->width = width;
   store_info->is_set = GET_CODE (body) == SET;
   store_info->rhs = rhs;
   store_info->const_rhs = const_rhs;
@@ -1567,13 +1684,13 @@ dump_insn_info (const char * start, insn_info_t insn_info)
    shift.  */
 
 static rtx
-find_shift_sequence (int access_size,
+find_shift_sequence (poly_int64 access_size,
 		     store_info *store_info,
 		     machine_mode read_mode,
-		     int shift, bool speed, bool require_cst)
+		     poly_int64 shift, bool speed, bool require_cst)
 {
   machine_mode store_mode = GET_MODE (store_info->mem);
-  machine_mode new_mode;
+  scalar_int_mode new_mode;
   rtx read_reg = NULL;
 
   /* Some machines like the x86 have shift insns for each size of
@@ -1583,27 +1700,31 @@ find_shift_sequence (int access_size,
      justify the value we want to read but is available in one insn on
      the machine.  */
 
-  for (new_mode = smallest_mode_for_size (access_size * BITS_PER_UNIT,
-					  MODE_INT);
-       GET_MODE_BITSIZE (new_mode) <= BITS_PER_WORD;
-       new_mode = GET_MODE_WIDER_MODE (new_mode))
+  opt_scalar_int_mode new_mode_iter;
+  FOR_EACH_MODE_FROM (new_mode_iter,
+		      smallest_int_mode_for_size (access_size * BITS_PER_UNIT))
     {
       rtx target, new_reg, new_lhs;
       rtx_insn *shift_seq, *insn;
       int cost;
+
+      new_mode = new_mode_iter.require ();
+      if (GET_MODE_BITSIZE (new_mode) > BITS_PER_WORD)
+	break;
 
       /* If a constant was stored into memory, try to simplify it here,
 	 otherwise the cost of the shift might preclude this optimization
 	 e.g. at -Os, even when no actual shift will be needed.  */
       if (store_info->const_rhs)
 	{
-	  unsigned int byte = subreg_lowpart_offset (new_mode, store_mode);
+	  poly_uint64 byte = subreg_lowpart_offset (new_mode, store_mode);
 	  rtx ret = simplify_subreg (new_mode, store_info->const_rhs,
 				     store_mode, byte);
 	  if (ret && CONSTANT_P (ret))
 	    {
+	      rtx shift_rtx = gen_int_shift_amount (new_mode, shift);
 	      ret = simplify_const_binary_operation (LSHIFTRT, new_mode,
-						     ret, GEN_INT (shift));
+						     ret, shift_rtx);
 	      if (ret && CONSTANT_P (ret))
 		{
 		  byte = subreg_lowpart_offset (read_mode, new_mode);
@@ -1621,14 +1742,14 @@ find_shift_sequence (int access_size,
 
       /* Try a wider mode if truncating the store mode to NEW_MODE
 	 requires a real instruction.  */
-      if (GET_MODE_BITSIZE (new_mode) < GET_MODE_BITSIZE (store_mode)
+      if (maybe_lt (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (store_mode))
 	  && !TRULY_NOOP_TRUNCATION_MODES_P (new_mode, store_mode))
 	continue;
 
       /* Also try a wider mode if the necessary punning is either not
 	 desirable or not possible.  */
       if (!CONSTANT_P (store_info->rhs)
-	  && !MODES_TIEABLE_P (new_mode, store_mode))
+	  && !targetm.modes_tieable_p (new_mode, store_mode))
 	continue;
 
       new_reg = gen_reg_rtx (new_mode);
@@ -1639,7 +1760,8 @@ find_shift_sequence (int access_size,
 	 of one dsp where the cost of these two was not the same.  But
 	 this really is a rare case anyway.  */
       target = expand_binop (new_mode, lshr_optab, new_reg,
-			     GEN_INT (shift), new_reg, 1, OPTAB_DIRECT);
+			     gen_int_shift_amount (new_mode, shift),
+			     new_reg, 1, OPTAB_DIRECT);
 
       shift_seq = get_insns ();
       end_sequence ();
@@ -1650,7 +1772,7 @@ find_shift_sequence (int access_size,
       cost = 0;
       for (insn = shift_seq; insn != NULL_RTX; insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
-	  cost += insn_rtx_cost (PATTERN (insn), speed);
+	  cost += insn_cost (insn, speed);
 
       /* The computation up to here is essentially independent
 	 of the arguments and could be precomputed.  It may
@@ -1695,49 +1817,48 @@ look_for_hardregs (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 }
 
 /* Helper function for replace_read and record_store.
-   Attempt to return a value stored in STORE_INFO, from READ_BEGIN
-   to one before READ_END bytes read in READ_MODE.  Return NULL
+   Attempt to return a value of mode READ_MODE stored in STORE_INFO,
+   consisting of READ_WIDTH bytes starting from READ_OFFSET.  Return NULL
    if not successful.  If REQUIRE_CST is true, return always constant.  */
 
 static rtx
 get_stored_val (store_info *store_info, machine_mode read_mode,
-		HOST_WIDE_INT read_begin, HOST_WIDE_INT read_end,
+		poly_int64 read_offset, poly_int64 read_width,
 		basic_block bb, bool require_cst)
 {
   machine_mode store_mode = GET_MODE (store_info->mem);
-  int shift;
-  int access_size; /* In bytes.  */
+  poly_int64 gap;
   rtx read_reg;
 
   /* To get here the read is within the boundaries of the write so
      shift will never be negative.  Start out with the shift being in
      bytes.  */
   if (store_mode == BLKmode)
-    shift = 0;
+    gap = 0;
   else if (BYTES_BIG_ENDIAN)
-    shift = store_info->end - read_end;
+    gap = ((store_info->offset + store_info->width)
+	   - (read_offset + read_width));
   else
-    shift = read_begin - store_info->begin;
+    gap = read_offset - store_info->offset;
 
-  access_size = shift + GET_MODE_SIZE (read_mode);
-
-  /* From now on it is bits.  */
-  shift *= BITS_PER_UNIT;
-
-  if (shift)
-    read_reg = find_shift_sequence (access_size, store_info, read_mode, shift,
-    				    optimize_bb_for_speed_p (bb),
-				    require_cst);
+  if (maybe_ne (gap, 0))
+    {
+      poly_int64 shift = gap * BITS_PER_UNIT;
+      poly_int64 access_size = GET_MODE_SIZE (read_mode) + gap;
+      read_reg = find_shift_sequence (access_size, store_info, read_mode,
+				      shift, optimize_bb_for_speed_p (bb),
+				      require_cst);
+    }
   else if (store_mode == BLKmode)
     {
       /* The store is a memset (addr, const_val, const_size).  */
       gcc_assert (CONST_INT_P (store_info->rhs));
-      store_mode = int_mode_for_mode (read_mode);
-      if (store_mode == BLKmode)
+      scalar_int_mode int_store_mode;
+      if (!int_mode_for_mode (read_mode).exists (&int_store_mode))
 	read_reg = NULL_RTX;
       else if (store_info->rhs == const0_rtx)
-	read_reg = extract_low_bits (read_mode, store_mode, const0_rtx);
-      else if (GET_MODE_BITSIZE (store_mode) > HOST_BITS_PER_WIDE_INT
+	read_reg = extract_low_bits (read_mode, int_store_mode, const0_rtx);
+      else if (GET_MODE_BITSIZE (int_store_mode) > HOST_BITS_PER_WIDE_INT
 	       || BITS_PER_UNIT >= HOST_BITS_PER_WIDE_INT)
 	read_reg = NULL_RTX;
       else
@@ -1751,8 +1872,8 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 	      c |= (c << shift);
 	      shift <<= 1;
 	    }
-	  read_reg = gen_int_mode (c, store_mode);
-	  read_reg = extract_low_bits (read_mode, store_mode, read_reg);
+	  read_reg = gen_int_mode (c, int_store_mode);
+	  read_reg = extract_low_bits (read_mode, int_store_mode, read_reg);
 	}
     }
   else if (store_info->const_rhs
@@ -1830,7 +1951,7 @@ replace_read (store_info *store_info, insn_info_t store_insn,
   start_sequence ();
   bb = BLOCK_FOR_INSN (read_insn->insn);
   read_reg = get_stored_val (store_info,
-			     read_mode, read_info->begin, read_info->end,
+			     read_mode, read_info->offset, read_info->width,
 			     bb, false);
   if (read_reg == NULL_RTX)
     {
@@ -1942,8 +2063,8 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 {
   rtx mem = *loc, mem_addr;
   insn_info_t insn_info;
-  HOST_WIDE_INT offset = 0;
-  HOST_WIDE_INT width = 0;
+  poly_int64 offset = 0;
+  poly_int64 width = 0;
   cselib_val *base = NULL;
   int group_id;
   read_info_t read_info;
@@ -1978,11 +2099,19 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
 
+  if (!endpoint_representable_p (offset, known_eq (width, -1) ? 1 : width))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, " adding wild read, due to overflow.\n");
+      add_wild_read (bb_info);
+      return;
+    }
+
   read_info = read_info_type_pool.allocate ();
   read_info->group_id = group_id;
   read_info->mem = mem;
-  read_info->begin = offset;
-  read_info->end = offset + width;
+  read_info->offset = offset;
+  read_info->width = width;
   read_info->next = insn_info->read_rec;
   insn_info->read_rec = read_info;
   if (group_id < 0)
@@ -1992,7 +2121,7 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
       group_info *group = rtx_group_vec[group_id];
       mem_addr = group->canon_base_addr;
     }
-  if (offset)
+  if (maybe_ne (offset, 0))
     mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
 
   if (group_id >= 0)
@@ -2004,12 +2133,15 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  if (width == -1)
+	  if (!known_size_p (width))
 	    fprintf (dump_file, " processing const load gid=%d[BLK]\n",
 		     group_id);
 	  else
-	    fprintf (dump_file, " processing const load gid=%d[%d..%d)\n",
-		     group_id, (int)offset, (int)(offset+width));
+	    {
+	      fprintf (dump_file, " processing const load gid=%d", group_id);
+	      print_range (dump_file, offset, width);
+	      fprintf (dump_file, "\n");
+	    }
 	}
 
       while (i_ptr)
@@ -2035,7 +2167,7 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 	    {
 	      /* This is a block mode load.  We may get lucky and
 		 canon_true_dependence may save the day.  */
-	      if (width == -1)
+	      if (!known_size_p (width))
 		remove
 		  = canon_true_dependence (store_info->mem,
 					   GET_MODE (store_info->mem),
@@ -2047,19 +2179,20 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 	      else
 		{
 		  if (store_info->rhs
-		      && offset >= store_info->begin
-		      && offset + width <= store_info->end
+		      && known_subrange_p (offset, width, store_info->offset,
+					   store_info->width)
 		      && all_positions_needed_p (store_info,
-						 offset - store_info->begin,
+						 offset - store_info->offset,
 						 width)
 		      && replace_read (store_info, i_ptr, read_info,
 				       insn_info, loc, bb_info->regs_live))
 		    return;
 
 		  /* The bases are the same, just see if the offsets
-		     overlap.  */
-		  if ((offset < store_info->end)
-		      && (offset + width > store_info->begin))
+		     could overlap.  */
+		  if (ranges_maybe_overlap_p (offset, width,
+					      store_info->offset,
+					      store_info->width))
 		    remove = true;
 		}
 	    }
@@ -2114,11 +2247,10 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 	  if (store_info->rhs
 	      && store_info->group_id == -1
 	      && store_info->cse_base == base
-	      && width != -1
-	      && offset >= store_info->begin
-	      && offset + width <= store_info->end
+	      && known_subrange_p (offset, width, store_info->offset,
+				   store_info->width)
 	      && all_positions_needed_p (store_info,
-					 offset - store_info->begin, width)
+					 offset - store_info->offset, width)
 	      && replace_read (store_info, i_ptr,  read_info, insn_info, loc,
 			       bb_info->regs_live))
 	    return;
@@ -2182,11 +2314,14 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
        arg != void_list_node && idx < nargs;
        arg = TREE_CHAIN (arg), idx++)
     {
-      machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
+      scalar_int_mode mode;
       rtx reg, link, tmp;
+
+      if (!is_int_mode (TYPE_MODE (TREE_VALUE (arg)), &mode))
+	return false;
+
       reg = targetm.calls.function_arg (args_so_far, mode, NULL_TREE, true);
-      if (!reg || !REG_P (reg) || GET_MODE (reg) != mode
-	  || GET_MODE_CLASS (mode) != MODE_INT)
+      if (!reg || !REG_P (reg) || GET_MODE (reg) != mode)
 	return false;
 
       for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
@@ -2194,15 +2329,14 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
 	   link = XEXP (link, 1))
 	if (GET_CODE (XEXP (link, 0)) == USE)
 	  {
+	    scalar_int_mode arg_mode;
 	    args[idx] = XEXP (XEXP (link, 0), 0);
 	    if (REG_P (args[idx])
 		&& REGNO (args[idx]) == REGNO (reg)
 		&& (GET_MODE (args[idx]) == mode
-		    || (GET_MODE_CLASS (GET_MODE (args[idx])) == MODE_INT
-			&& (GET_MODE_SIZE (GET_MODE (args[idx]))
-			    <= UNITS_PER_WORD)
-			&& (GET_MODE_SIZE (GET_MODE (args[idx]))
-			    > GET_MODE_SIZE (mode)))))
+		    || (is_int_mode (GET_MODE (args[idx]), &arg_mode)
+			&& (GET_MODE_SIZE (arg_mode) <= UNITS_PER_WORD)
+			&& (GET_MODE_SIZE (arg_mode) > GET_MODE_SIZE (mode)))))
 	      break;
 	  }
       if (!link)
@@ -2764,20 +2898,27 @@ scan_stores (store_info *store_info, bitmap gen, bitmap kill)
 {
   while (store_info)
     {
-      HOST_WIDE_INT i;
+      HOST_WIDE_INT i, offset, width;
       group_info *group_info
 	= rtx_group_vec[store_info->group_id];
-      if (group_info->process_globally)
-	for (i = store_info->begin; i < store_info->end; i++)
-	  {
-	    int index = get_bitmap_index (group_info, i);
-	    if (index != 0)
-	      {
-		bitmap_set_bit (gen, index);
-		if (kill)
-		  bitmap_clear_bit (kill, index);
-	      }
-	  }
+      /* We can (conservatively) ignore stores whose bounds aren't known;
+	 they simply don't generate new global dse opportunities.  */
+      if (group_info->process_globally
+	  && store_info->offset.is_constant (&offset)
+	  && store_info->width.is_constant (&width))
+	{
+	  HOST_WIDE_INT end = offset + width;
+	  for (i = offset; i < end; i++)
+	    {
+	      int index = get_bitmap_index (group_info, i);
+	      if (index != 0)
+		{
+		  bitmap_set_bit (gen, index);
+		  if (kill)
+		    bitmap_clear_bit (kill, index);
+		}
+	    }
+	}
       store_info = store_info->next;
     }
 }
@@ -2827,9 +2968,14 @@ scan_reads (insn_info_t insn_info, bitmap gen, bitmap kill)
 	    {
 	      if (i == read_info->group_id)
 		{
-		  if (read_info->begin > read_info->end)
+		  HOST_WIDE_INT offset, width;
+		  /* Reads with non-constant size kill all DSE opportunities
+		     in the group.  */
+		  if (!read_info->offset.is_constant (&offset)
+		      || !read_info->width.is_constant (&width)
+		      || !known_size_p (width))
 		    {
-		      /* Begin > end for block mode reads.  */
+		      /* Handle block mode reads.  */
 		      if (kill)
 			bitmap_ior_into (kill, group->group_kill);
 		      bitmap_and_compl_into (gen, group->group_kill);
@@ -2839,7 +2985,8 @@ scan_reads (insn_info_t insn_info, bitmap gen, bitmap kill)
 		      /* The groups are the same, just process the
 			 offsets.  */
 		      HOST_WIDE_INT j;
-		      for (j = read_info->begin; j < read_info->end; j++)
+		      HOST_WIDE_INT end = offset + width;
+		      for (j = offset; j < end; j++)
 			{
 			  int index = get_bitmap_index (group, j);
 			  if (index != 0)
@@ -3255,21 +3402,30 @@ dse_step5 (void)
 	      while (!store_info->is_set)
 		store_info = store_info->next;
 
-	      HOST_WIDE_INT i;
+	      HOST_WIDE_INT i, offset, width;
 	      group_info *group_info = rtx_group_vec[store_info->group_id];
 
-	      for (i = store_info->begin; i < store_info->end; i++)
+	      if (!store_info->offset.is_constant (&offset)
+		  || !store_info->width.is_constant (&width))
+		deleted = false;
+	      else
 		{
-		  int index = get_bitmap_index (group_info, i);
-
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "i = %d, index = %d\n", (int)i, index);
-		  if (index == 0 || !bitmap_bit_p (v, index))
+		  HOST_WIDE_INT end = offset + width;
+		  for (i = offset; i < end; i++)
 		    {
+		      int index = get_bitmap_index (group_info, i);
+
 		      if (dump_file && (dump_flags & TDF_DETAILS))
-			fprintf (dump_file, "failing at i = %d\n", (int)i);
-		      deleted = false;
-		      break;
+			fprintf (dump_file, "i = %d, index = %d\n",
+				 (int) i, index);
+		      if (index == 0 || !bitmap_bit_p (v, index))
+			{
+			  if (dump_file && (dump_flags & TDF_DETAILS))
+			    fprintf (dump_file, "failing at i = %d\n",
+				     (int) i);
+			  deleted = false;
+			  break;
+			}
 		    }
 		}
 	      if (deleted)

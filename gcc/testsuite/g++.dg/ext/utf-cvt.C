@@ -21,9 +21,9 @@ extern void full (unsigned long long);
 
 void m(char16_t c0, char32_t c1)
 {
-    f_c (c0);	/* { dg-warning "alter its value" } */
-    fsc (c0);	/* { dg-warning "alter its value" } */
-    fuc (c0);	/* { dg-warning "alter its value" } */
+    f_c (c0);	/* { dg-warning "conversion from .char16_t. to .char. may change value" } */
+    fsc (c0);	/* { dg-warning "change value" } */
+    fuc (c0);	/* { dg-warning "change value" } */
     f_s (c0);	/* { dg-warning "change the sign" } */
     fss (c0);	/* { dg-warning "change the sign" } */
     fus (c0);
@@ -37,12 +37,12 @@ void m(char16_t c0, char32_t c1)
     fsll (c0);
     full (c0);
 
-    f_c (c1);	/* { dg-warning "alter its value" } */
-    fsc (c1);	/* { dg-warning "alter its value" } */
-    fuc (c1);	/* { dg-warning "alter its value" } */
-    f_s (c1);	/* { dg-warning "alter its value" } */
-    fss (c1);	/* { dg-warning "alter its value" } */
-    fus (c1);	/* { dg-warning "alter its value" } */
+    f_c (c1);	/* { dg-warning "change value" } */
+    fsc (c1);	/* { dg-warning "change value" } */
+    fuc (c1);	/* { dg-warning "change value" } */
+    f_s (c1);	/* { dg-warning "change value" } */
+    fss (c1);	/* { dg-warning "change value" } */
+    fus (c1);	/* { dg-warning "change value" } */
     f_i (c1);	/* { dg-warning "change the sign" } */
     fsi (c1);	/* { dg-warning "change the sign" } */
     fui (c1);

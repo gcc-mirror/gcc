@@ -1,6 +1,6 @@
 // Filesystem declarations -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,23 +40,20 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 namespace filesystem
 {
 inline namespace v1
 {
-#if _GLIBCXX_INLINE_VERSION
-inline namespace __8 { }
-#endif
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #if _GLIBCXX_USE_CXX11_ABI
 inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
 #endif
 
   /**
-   * @defgroup filesystem Filesystem
+   * @defgroup filesystem-ts Filesystem TS
    * @ingroup experimental
    *
    * Utilities for performing operations on file systems and their components,
@@ -281,11 +278,12 @@ _GLIBCXX_END_NAMESPACE_CXX11
   bool is_regular_file(file_status) noexcept;
   bool is_symlink(file_status) noexcept;
 
-  // @} group filesystem
-_GLIBCXX_END_NAMESPACE_VERSION
+  // @} group filesystem-ts
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

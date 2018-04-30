@@ -1,4 +1,5 @@
-#ifndef NO_LABEL_VALUES
+/* { dg-require-effective-target label_values } */
+
 extern int printk(const char *fmt, ...);
 
 void foo (int x, int y)
@@ -7,7 +8,3 @@ void foo (int x, int y)
   here:
   printk ("", &&here);
 }
-
-#else
-int x;
-#endif

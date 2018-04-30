@@ -1,5 +1,5 @@
 /* fileline.c -- Get file and line number information in a backtrace.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "backtrace.h"
 #include "internal.h"
@@ -57,6 +58,8 @@ fileline_initialize (struct backtrace_state *state,
   int pass;
   int called_error_callback;
   int descriptor;
+  const char *filename;
+  char buf[64];
 
   if (!state->threaded)
     failed = state->fileline_initialization_failed;
@@ -80,9 +83,8 @@ fileline_initialize (struct backtrace_state *state,
 
   descriptor = -1;
   called_error_callback = 0;
-  for (pass = 0; pass < 4; ++pass)
+  for (pass = 0; pass < 5; ++pass)
     {
-      const char *filename;
       int does_not_exist;
 
       switch (pass)
@@ -98,6 +100,11 @@ fileline_initialize (struct backtrace_state *state,
 	  break;
 	case 3:
 	  filename = "/proc/curproc/file";
+	  break;
+	case 4:
+	  snprintf (buf, sizeof (buf), "/proc/%ld/object/a.out",
+		    (long) getpid ());
+	  filename = buf;
 	  break;
 	default:
 	  abort ();
@@ -133,8 +140,8 @@ fileline_initialize (struct backtrace_state *state,
 
   if (!failed)
     {
-      if (!backtrace_initialize (state, descriptor, error_callback, data,
-				 &fileline_fn))
+      if (!backtrace_initialize (state, filename, descriptor, error_callback,
+				 data, &fileline_fn))
 	failed = 1;
     }
 

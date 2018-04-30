@@ -236,7 +236,7 @@ contains
 	l = l .or. k(p, 1, q - 3) .ne. 19 + x + p + 7 + 3 * q
 125 continue
 !$omp end parallel
-    if (l) call abort
+    if (l) STOP 1
   end subroutine foo
 
   subroutine test

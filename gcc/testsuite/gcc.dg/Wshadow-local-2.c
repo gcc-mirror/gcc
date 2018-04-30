@@ -40,10 +40,11 @@ int func3() {
 
 void func4() {
   struct Bar bar;     /* { dg-message "shadowed declaration" } */
+  /* { dg-bogus "shadows a global" ""  { target *-*-* } .-1 } */
+
   if (val) {
     int bar;          /* { dg-warning "shadows a previous local" } */
     func1(bar);
   }
 }
 
-/* { dg-bogus "shadows a global" ""  { target *-*-* } 42 } */

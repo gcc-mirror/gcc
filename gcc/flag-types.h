@@ -1,5 +1,5 @@
 /* Compilation switch flag type definitions for GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,7 +24,6 @@ enum debug_info_type
 {
   NO_DEBUG,	    /* Write no debug info.  */
   DBX_DEBUG,	    /* Write BSD .stabs for DBX (using dbxout.c).  */
-  SDB_DEBUG,	    /* Write COFF for (old) SDB (using sdbout.c).  */
   DWARF2_DEBUG,	    /* Write Dwarf v2 debug info (using dwarf2out.c).  */
   XCOFF_DEBUG,	    /* Write IBM/Xcoff debug info (using dbxout.c).  */
   VMS_DEBUG,        /* Write VMS debug info (using vmsdbgout.c).  */
@@ -166,7 +165,14 @@ enum permitted_flt_eval_methods
   PERMITTED_FLT_EVAL_METHODS_C11
 };
 
-/* Type of stack check.  */
+/* Type of stack check.
+
+   Stack checking is designed to detect infinite recursion and stack
+   overflows for Ada programs.  Furthermore stack checking tries to ensure
+   in that scenario that enough stack space is left to run a signal handler.
+
+   -fstack-check= does not prevent stack-clash style attacks.  For that
+   you want -fstack-clash-protection.  */
 enum stack_check_type
 {
   /* Do not check the stack.  */
@@ -238,6 +244,10 @@ enum sanitize_code {
   SANITIZE_OBJECT_SIZE = 1UL << 21,
   SANITIZE_VPTR = 1UL << 22,
   SANITIZE_BOUNDS_STRICT = 1UL << 23,
+  SANITIZE_POINTER_OVERFLOW = 1UL << 24,
+  SANITIZE_BUILTIN = 1UL << 25,
+  SANITIZE_POINTER_COMPARE = 1UL << 26,
+  SANITIZE_POINTER_SUBTRACT = 1UL << 27,
   SANITIZE_SHIFT = SANITIZE_SHIFT_BASE | SANITIZE_SHIFT_EXPONENT,
   SANITIZE_UNDEFINED = SANITIZE_SHIFT | SANITIZE_DIVIDE | SANITIZE_UNREACHABLE
 		       | SANITIZE_VLA | SANITIZE_NULL | SANITIZE_RETURN
@@ -245,9 +255,18 @@ enum sanitize_code {
 		       | SANITIZE_BOUNDS | SANITIZE_ALIGNMENT
 		       | SANITIZE_NONNULL_ATTRIBUTE
 		       | SANITIZE_RETURNS_NONNULL_ATTRIBUTE
-		       | SANITIZE_OBJECT_SIZE | SANITIZE_VPTR,
-  SANITIZE_NONDEFAULT = SANITIZE_FLOAT_DIVIDE | SANITIZE_FLOAT_CAST
-			| SANITIZE_BOUNDS_STRICT
+		       | SANITIZE_OBJECT_SIZE | SANITIZE_VPTR
+		       | SANITIZE_POINTER_OVERFLOW | SANITIZE_BUILTIN,
+  SANITIZE_UNDEFINED_NONDEFAULT = SANITIZE_FLOAT_DIVIDE | SANITIZE_FLOAT_CAST
+				  | SANITIZE_BOUNDS_STRICT
+};
+
+/* Different trace modes.  */
+enum sanitize_coverage_code {
+  /* Trace PC.  */
+  SANITIZE_COV_TRACE_PC = 1 << 0,
+  /* Trace Comparison.  */
+  SANITIZE_COV_TRACE_CMP = 1 << 1
 };
 
 /* flag_vtable_verify initialization levels. */
@@ -308,4 +327,13 @@ enum gfc_convert
 };
 
 
+/* Control-Flow Protection values.  */
+enum cf_protection_level
+{
+  CF_NONE = 0,
+  CF_BRANCH = 1 << 0,
+  CF_RETURN = 1 << 1,
+  CF_FULL = CF_BRANCH | CF_RETURN,
+  CF_SET = 1 << 2
+};
 #endif /* ! GCC_FLAG_TYPES_H */

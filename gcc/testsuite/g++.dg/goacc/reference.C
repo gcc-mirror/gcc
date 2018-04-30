@@ -1,4 +1,4 @@
-int
+void
 test1 (int &ref)
 {
 #pragma acc kernels copy (ref)
@@ -7,7 +7,7 @@ test1 (int &ref)
   }
 }
 
-int
+void
 test2 (int &ref)
 {
   int b;

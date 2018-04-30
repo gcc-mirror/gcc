@@ -1,5 +1,5 @@
 ;; Machine description for AppliedMicro xgene1 core.
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Theobroma Systems Design und Consulting GmbH.
 ;;
 ;; This file is part of GCC.
@@ -20,17 +20,26 @@
 
 ;; Pipeline description for the xgene1 micro-architecture
 
-(define_automaton "xgene1")
+(define_automaton "xgene1_main, xgene1_decoder, xgene1_div, xgene1_simd")
 
-(define_cpu_unit "xgene1_decode_out0" "xgene1")
-(define_cpu_unit "xgene1_decode_out1" "xgene1")
-(define_cpu_unit "xgene1_decode_out2" "xgene1")
-(define_cpu_unit "xgene1_decode_out3" "xgene1")
+(define_cpu_unit "xgene1_decode_out0" "xgene1_decoder")
+(define_cpu_unit "xgene1_decode_out1" "xgene1_decoder")
+(define_cpu_unit "xgene1_decode_out2" "xgene1_decoder")
+(define_cpu_unit "xgene1_decode_out3" "xgene1_decoder")
 
-(define_cpu_unit "xgene1_divide" "xgene1")
-(define_cpu_unit "xgene1_fp_divide" "xgene1")
-(define_cpu_unit "xgene1_fsu" "xgene1")
-(define_cpu_unit "xgene1_fcmp" "xgene1")
+(define_cpu_unit "xgene1_IXA" "xgene1_main")
+(define_cpu_unit "xgene1_IXB" "xgene1_main")
+(define_cpu_unit "xgene1_IXB_compl" "xgene1_main")
+
+(define_reservation "xgene1_IXn" "(xgene1_IXA | xgene1_IXB)")
+
+(define_cpu_unit "xgene1_multiply" "xgene1_main")
+(define_cpu_unit "xgene1_divide" "xgene1_div")
+(define_cpu_unit "xgene1_fp_divide" "xgene1_div")
+(define_cpu_unit "xgene1_fsu" "xgene1_simd")
+(define_cpu_unit "xgene1_fcmp" "xgene1_simd")
+(define_cpu_unit "xgene1_ld" "xgene1_main")
+(define_cpu_unit "xgene1_st" "xgene1_main")
 
 (define_reservation "xgene1_decode1op"
         "( xgene1_decode_out0 )
@@ -68,12 +77,12 @@
 (define_insn_reservation "xgene1_f_load" 10
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "f_loadd,f_loads"))
-  "xgene1_decode2op")
+  "xgene1_decode2op, xgene1_ld")
 
 (define_insn_reservation "xgene1_f_store" 4
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "f_stored,f_stores"))
-  "xgene1_decode2op")
+  "xgene1_decode2op, xgene1_st")
 
 (define_insn_reservation "xgene1_fmov" 2
   (and (eq_attr "tune" "xgene1")
@@ -92,85 +101,108 @@
 
 (define_insn_reservation "xgene1_load_pair" 6
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "load2"))
-  "xgene1_decodeIsolated")
+       (eq_attr "type" "load_16"))
+  "xgene1_decodeIsolated, xgene1_ld*2")
 
 (define_insn_reservation "xgene1_store_pair" 2
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "store2"))
-  "xgene1_decodeIsolated")
+       (eq_attr "type" "store_16"))
+  "xgene1_decodeIsolated, xgene1_st*2")
 
 (define_insn_reservation "xgene1_fp_load1" 10
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "load1")
+       (eq_attr "type" "load_4, load_8")
        (eq_attr "fp" "yes"))
-  "xgene1_decode1op")
+  "xgene1_decode1op, xgene1_ld")
 
 (define_insn_reservation "xgene1_load1" 5
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "load1"))
-  "xgene1_decode1op")
+       (eq_attr "type" "load_4, load_8"))
+  "xgene1_decode1op, xgene1_ld")
 
-(define_insn_reservation "xgene1_store1" 2
+(define_insn_reservation "xgene1_store1" 1
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "store1"))
-  "xgene1_decode2op")
+       (eq_attr "type" "store_4, store_8"))
+  "xgene1_decode1op, xgene1_st")
 
 (define_insn_reservation "xgene1_move" 1
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "mov_reg,mov_imm,mrs"))
-  "xgene1_decode1op")
+  "xgene1_decode1op, xgene1_IXn")
+
+(define_insn_reservation "xgene1_alu_cond" 1
+  (and (eq_attr "tune" "xgene1")
+       (eq_attr "type" "csel"))
+  "xgene1_decode1op, xgene1_IXn")
 
 (define_insn_reservation "xgene1_alu" 1
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "alu_imm,alu_sreg,alu_shift_imm,\
-                        alu_ext,adc_reg,csel,logic_imm,\
+                        alu_ext,adc_reg,logic_imm,\
                         logic_reg,logic_shift_imm,clz,\
-                        rbit,shift_reg,adr,mov_reg,\
-                        mov_imm,extend"))
-  "xgene1_decode1op")
+                        rbit,adr,mov_reg,shift_imm,\
+                        mov_imm,extend,multiple"))
+  "xgene1_decode1op, xgene1_IXn")
 
-(define_insn_reservation "xgene1_simd" 1
+(define_insn_reservation "xgene1_shift_rotate" 2
+  (and (eq_attr "tune" "xgene1")
+       (eq_attr "type" "shift_reg"))
+  "xgene1_decode1op, xgene1_IXB, xgene1_IXB_compl")
+
+(define_insn_reservation "xgene1_simd" 2
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "rev"))
-  "xgene1_decode1op")
+  "xgene1_decode1op, xgene1_IXB, xgene1_IXB_compl")
 
 (define_insn_reservation "xgene1_alus" 1
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "alus_imm,alu_sreg,alus_shift_imm,\
+       (eq_attr "type" "alus_imm,alus_sreg,alus_shift_imm,\
                         alus_ext,logics_imm,logics_reg,\
                         logics_shift_imm"))
-  "xgene1_decode1op")
+  "xgene1_decode1op, xgene1_IXB, xgene1_IXB_compl")
 
-(define_insn_reservation "xgene1_mul" 6
+(define_bypass 2 "xgene1_alus"
+  "xgene1_alu_cond, xgene1_branch")
+
+(define_insn_reservation "xgene1_mul32" 4
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "mul,mla,smull,umull,smlal,umlal"))
-  "xgene1_decode2op")
+       (eq_attr "mul32" "yes"))
+  "xgene1_decode2op, xgene1_IXB + xgene1_multiply, xgene1_multiply, nothing, xgene1_IXB_compl")
+
+(define_insn_reservation "xgene1_mul64" 5
+  (and (eq_attr "tune" "xgene1")
+       (eq_attr "mul64" "yes"))
+  "xgene1_decode2op, xgene1_IXB + xgene1_multiply, xgene1_multiply, nothing*2, xgene1_IXB_compl")
 
 (define_insn_reservation "xgene1_div" 34
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "sdiv,udiv"))
-  "xgene1_decode1op,xgene1_divide*7")
+  "xgene1_decode1op, xgene1_IXB + xgene1_divide*7")
 
 (define_insn_reservation "xgene1_fcmp" 10
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "fcmpd,fcmps,fccmpd,fccmps"))
-  "xgene1_decode1op,xgene1_fsu+xgene1_fcmp*3")
+  "xgene1_decode1op, xgene1_fsu + xgene1_fcmp*3")
 
 (define_insn_reservation "xgene1_fcsel" 3
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "fcsel"))
-  "xgene1_decode1op,xgene1_fsu")
+  "xgene1_decode1op, xgene1_fsu")
+
+(define_insn_reservation "xgene1_bfx" 1
+  (and (eq_attr "tune" "xgene1")
+       (eq_attr "type" "bfx"))
+  "xgene1_decode1op, xgene1_IXn")
 
 (define_insn_reservation "xgene1_bfm" 2
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "bfm,bfx"))
-  "xgene1_decode1op,xgene1_fsu")
+       (eq_attr "type" "bfm"))
+  "xgene1_decode1op, xgene1_IXB, xgene1_IXB_compl")
 
 (define_insn_reservation "xgene1_f_rint" 5
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "f_rintd,f_rints"))
-  "xgene1_decode1op,xgene1_fsu")
+  "xgene1_decode1op, xgene1_fsu")
 
 (define_insn_reservation "xgene1_f_cvt" 3
   (and (eq_attr "tune" "xgene1")
@@ -225,12 +257,12 @@
 (define_insn_reservation "xgene1_neon_load1" 11
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "neon_load1_1reg, neon_load1_1reg_q"))
-  "xgene1_decode2op,xgene1_fsu")
+  "xgene1_decode2op, xgene1_ld")
 
 (define_insn_reservation "xgene1_neon_store1" 5
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "neon_store1_1reg, neon_store1_1reg_q"))
-  "xgene1_decode2op,xgene1_fsu")
+  "xgene1_decode2op, xgene1_st")
 
 (define_insn_reservation "xgene1_neon_logic" 2
   (and (eq_attr "tune" "xgene1")
@@ -300,6 +332,8 @@
                         neon_compare_zero_q,\
                         neon_tst,\
                         neon_tst_q,\
+                        neon_minmax,\
+                        neon_minmax_q,\
                        "))
   "xgene1_decode1op,xgene1_fsu")
 
@@ -439,8 +473,10 @@
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "neon_store1_one_lane,\
                         neon_store1_one_lane_q,\
+                        neon_stp,\
+                        neon_stp_q,\
                        "))
-  "xgene1_decode1op")
+  "xgene1_decodeIsolated, xgene1_st")
 
 (define_insn_reservation "xgene1_neon_halve_narrow" 6
   (and (eq_attr "tune" "xgene1")
@@ -499,7 +535,7 @@
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "neon_load1_all_lanes,\
                        "))
-  "xgene1_decode1op")
+  "xgene1_decode1op, xgene1_ld")
 
 (define_insn_reservation "xgene1_neon_fp_recp" 3
   (and (eq_attr "tune" "xgene1")
@@ -527,5 +563,6 @@
 (define_insn_reservation "xgene1_neon_pmull" 5
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "neon_mul_d_long,\
-                       "))
+			crypto_pmull,\
+		       "))
   "xgene1_decode2op")

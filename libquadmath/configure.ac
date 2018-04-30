@@ -210,7 +210,11 @@ AM_CONDITIONAL(LIBQUAD_USE_SYMVER_SUN, [test "x$quadmath_use_symver" = xsun])
 
 AC_CACHE_CHECK([whether __float128 is supported], [libquad_cv_have_float128],
   [GCC_TRY_COMPILE_OR_LINK([
+    #if (!defined(_ARCH_PPC)) || defined(__LONG_DOUBLE_IEEE128__)
     typedef _Complex float __attribute__((mode(TC))) __complex128;
+    #else
+    typedef _Complex float __attribute__((mode(KC))) __complex128;
+    #endif
 
     __float128 foo (__float128 x)
     {
@@ -336,6 +340,11 @@ AC_MSG_RESULT($quadmath_use_i18n_number_h)
 if test x$quadmath_use_i18n_number_h = xyes; then
   AC_DEFINE([USE_I18N_NUMBER_H],[1],[whether i18n number rewriting can be supported])
 fi
+
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+XCFLAGS="$XCFLAGS $CET_FLAGS"
+AC_SUBST(XCFLAGS)
 
 AC_CACHE_SAVE
 

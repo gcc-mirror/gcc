@@ -17,6 +17,6 @@ program gfcbug40
   mat(:,:) = 1
   h(3,:) = h(3,:) + matmul (matmul (h(3,:), transpose (mat)), mat)
 
-  if (any (h(3,:) .ne. (/2.0, 2.0, 3.0/))) call abort ()
+  if (any (h(3,:) .ne. (/2.0, 2.0, 3.0/))) STOP 1
 
 end program gfcbug40

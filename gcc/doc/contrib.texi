@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -586,6 +586,11 @@ Chen Liqin for various S+core related fixes/improvement, and for
 maintaining the S+core port.
 
 @item
+Martin Liska for his work on identical code folding, the sanitizers,
+HSA, general bug fixing and for running automated regression testing of GCC
+and reporting numerous bugs.
+
+@item
 Weiwen Liu for testing and various bug fixes.
 
 @item
@@ -615,8 +620,13 @@ various code generation improvements, work on the global optimizer, etc.
 @item
 Vladimir Makarov for hacking some ugly i960 problems, PowerPC hacking
 improvements to compile-time performance, overall knowledge and
-direction in the area of instruction scheduling, and design and
-implementation of the automaton based instruction scheduler.
+direction in the area of instruction scheduling, design and
+implementation of the automaton based instruction scheduler and
+design and implementation of the integrated and local register allocators.
+
+@item
+David Malcolm for his work on improving GCC diagnostics, JIT, self-tests
+and unit testing.
 
 @item
 Bob Manson for his behind the scenes work on dejagnu.
@@ -736,6 +746,10 @@ engine setup, various documentation fixes and other small fixes.
 Geoff Noer for his work on getting cygwin native builds working.
 
 @item
+Vegard Nossum for running automated regression testing of GCC and reporting
+numerous bugs.
+
+@item
 Diego Novillo for his work on Tree SSA, OpenMP, SPEC performance
 tracking web pages, GIMPLE tuples, and assorted fixes.
 
@@ -761,6 +775,11 @@ clean-ups and porting work, and maintaining the IRIX, Solaris 2, and
 Tru64 UNIX ports.
 
 @item
+Steven Pemberton for his contribution of @file{enquire} which allowed GCC to
+determine various properties of the floating point unit and generate
+@file{float.h} in older versions of GCC.
+
+@item
 Hartmut Penner for work on the s390 port.
 
 @item
@@ -777,6 +796,10 @@ Matthias Pfaller for major improvements to the NS32k port.
 Gerald Pfeifer for his direction via the steering committee, pointing
 out lots of problems we need to solve, maintenance of the web pages, and
 taking care of documentation maintenance in general.
+
+@item
+Marek Polacek for his work on the C front end, the sanitizers and general
+bug fixing.
 
 @item
 Andrew Pinski for processing bug reports by the dozen.
@@ -800,7 +823,12 @@ David Reese of Sun Microsystems contributed to the Solaris on PowerPC
 port.
 
 @item
-Volker Reichelt for keeping up with the problem reports.
+John Regehr for running automated regression testing of GCC and reporting
+numerous bugs.
+
+@item
+Volker Reichelt for running automated regression testing of GCC and reporting
+numerous bugs and for keeping up with the problem reports.
 
 @item
 Joern Rennecke for maintaining the sh port, loop, regmove & reload
@@ -942,6 +970,10 @@ Zdenek Sojka for running automated regression testing of GCC and reporting
 numerous bugs.
 
 @item
+Arseny Solokha for running automated regression testing of GCC and reporting
+numerous bugs.
+
+@item
 Jayant Sonar for contributing the CR16 port.
 
 @item
@@ -953,6 +985,10 @@ Richard Stallman, for writing the original GCC and launching the GNU project.
 @item
 Jan Stein of the Chalmers Computer Society provided support for
 Genix, as well as part of the 32000 machine description.
+
+@item
+Gerhard Steinmetz for running automated regression testing of GCC and reporting
+numerous bugs.
 
 @item
 Nigel Stephens for various mips16 related fixes/improvements.
@@ -972,6 +1008,14 @@ recently his vxworks contributions
 
 @item
 Jeff Sturm for Java porting help, bug fixes, and encouragement.
+
+@item
+Zhendong Su for running automated regression testing of GCC and reporting
+numerous bugs.
+
+@item
+Chengnian Sun for running automated regression testing of GCC and reporting
+numerous bugs.
 
 @item
 Shigeya Suzuki for this fixes for the bsdi platforms.
@@ -1045,7 +1089,7 @@ Andrew Waterman for contributing the RISC-V port, as well as maintaining it.
 
 @item
 Jonathan Wakely for contributing libstdc++ Doxygen notes and XHTML
-guidance.
+guidance and maintaining libstdc++.
 
 @item
 Dean Wakerley for converting the install documentation from HTML to texinfo
@@ -1121,6 +1165,10 @@ Kevin Zachmann helped port GCC to the Tahoe.
 
 @item
 Ayal Zaks for Swing Modulo Scheduling (SMS).
+
+@item
+Qirun Zhang for running automated regression testing of GCC and reporting
+numerous bugs.
 
 @item
 Xiaoqiang Zhang for work on GNU Fortran.

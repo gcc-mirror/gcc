@@ -1,5 +1,5 @@
 /* { dg-do run { target { powerpc*-*-* && lp64 } } } */
-/* { dg-skip-if "" { *-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { *-*-darwin* } } */
 /* { dg-options "-O2" } */
 
 typedef __builtin_va_list va_list;

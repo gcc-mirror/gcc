@@ -6,6 +6,6 @@
 
 struct A
 {
-  void foo();  // { dg-error "with" }
+  void foo();  // { dg-message "previous" }
   virtual void foo();  // { dg-error "cannot be overloaded" }
 };

@@ -1,5 +1,5 @@
 /* Definitions for c-common.c.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "tree.h"
 #include "fold-const.h"
+#include "wide-int-bitmask.h"
 
 /* In order for the format checking to accept the C frontend
    diagnostic framework extensions, you must include this file before
@@ -101,6 +102,7 @@ enum rid
   RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
+  RID_BUILTIN_TGMATH,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* TS 18661-3 keywords, in the same sequence as the TI_* values.  */
@@ -183,9 +185,6 @@ enum rid
   /* C++ transactional memory.  */
   RID_ATOMIC_NOEXCEPT, RID_ATOMIC_CANCEL, RID_SYNCHRONIZED,
 
-  /* Cilk Plus keywords.  */
-  RID_CILK_SPAWN, RID_CILK_SYNC, RID_CILK_FOR,
-  
   /* Objective-C ("AT" reserved words - they are only keywords when
      they follow '@')  */
   RID_AT_ENCODE,   RID_AT_END,
@@ -493,13 +492,6 @@ extern const unsigned int num_c_common_reswords;
 
 extern GTY(()) tree c_global_trees[CTI_MAX];
 
-/* In a RECORD_TYPE, a sorted array of the fields of the type, not a
-   tree for size reasons.  */
-struct GTY(()) sorted_fields_type {
-  int len;
-  tree GTY((length ("%h.len"))) elts[1];
-};
-
 /* Mark which labels are explicitly declared.
    These may be shadowed, and may be referenced from nested functions.  */
 #define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
@@ -592,14 +584,8 @@ extern void push_cleanup (tree, tree, bool);
 
 extern tree build_modify_expr (location_t, tree, tree, enum tree_code,
 			       location_t, tree, tree);
-extern tree build_array_notation_expr (location_t, tree, tree, enum tree_code,
-				       location_t, tree, tree);
-extern tree build_array_notation_ref (location_t, tree, tree, tree, tree, tree);
 extern tree build_indirect_ref (location_t, tree, ref_operator);
 
-extern int field_decl_cmp (const void *, const void *);
-extern void resort_sorted_fields (void *, void *, gt_pointer_operator,
-				  void *);
 extern bool has_c_linkage (const_tree decl);
 extern bool c_decl_implicit (const_tree);
 
@@ -712,8 +698,10 @@ enum cxx_dialect {
   cxx11 = cxx0x,
   /* C++14 */
   cxx14,
-  /* C++1z (C++17?) */
-  cxx1z
+  /* C++17 */
+  cxx17,
+  /* C++2a (C++20?) */
+  cxx2a
 };
 
 /* The C++ dialect being used. C++98 is the default.  */
@@ -808,7 +796,7 @@ extern tree fname_decl (location_t, unsigned, tree);
 
 extern int check_user_alignment (const_tree, bool);
 extern bool check_function_arguments (location_t loc, const_tree, const_tree,
-				      int, tree *);
+				      int, tree *, vec<location_t> *);
 extern void check_function_arguments_recurse (void (*)
 					      (void *, tree,
 					       unsigned HOST_WIDE_INT),
@@ -816,7 +804,7 @@ extern void check_function_arguments_recurse (void (*)
 					      unsigned HOST_WIDE_INT);
 extern bool check_builtin_function_arguments (location_t, vec<location_t>,
 					      tree, int, tree *);
-extern void check_function_format (tree, int, tree *);
+extern void check_function_format (tree, int, tree *, vec<location_t> *);
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
@@ -832,10 +820,10 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern void c_common_init_ts (void);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
-extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree,
+extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree, tree,
 						   bool);
 extern bool decl_with_nonnull_addr_p (const_tree);
-extern tree c_fully_fold (tree, bool, bool *);
+extern tree c_fully_fold (tree, bool, bool *, bool = false);
 extern tree c_wrap_maybe_const (tree, bool);
 extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
@@ -952,6 +940,10 @@ extern void c_parse_final_cleanups (void);
 #define CLEAR_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 0)
 
+/* True if the decl was an unnamed bitfield.  */
+#define DECL_UNNAMED_BIT_FIELD(NODE) \
+  (DECL_C_BIT_FIELD (NODE) && !DECL_NAME (NODE))
+
 extern tree do_case (location_t, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
@@ -960,7 +952,7 @@ extern tree build_real_imag_expr (location_t, enum tree_code, tree);
    a variant of the C language.  They are used in c-common.c.  */
 
 extern tree build_unary_op (location_t, enum tree_code, tree, bool);
-extern tree build_binary_op (location_t, enum tree_code, tree, tree, int);
+extern tree build_binary_op (location_t, enum tree_code, tree, tree, bool);
 extern tree perform_integral_promotions (tree);
 
 /* These functions must be defined by each front-end which implements
@@ -982,6 +974,7 @@ extern int case_compare (splay_tree_key, splay_tree_key);
 
 extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree, tree,
 			      bool *);
+extern bool c_switch_covers_all_cases_p (splay_tree, tree);
 
 extern tree build_function_call (location_t, tree, tree);
 
@@ -997,18 +990,6 @@ extern tree finish_label_address_expr (tree, location_t);
 extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
-
-enum lookup_name_fuzzy_kind {
-  /* Names of types.  */
-  FUZZY_LOOKUP_TYPENAME,
-
-  /* Names of function decls.  */
-  FUZZY_LOOKUP_FUNCTION_NAME,
-
-  /* Any name.  */
-  FUZZY_LOOKUP_NAME
-};
-extern const char *lookup_name_fuzzy (tree, enum lookup_name_fuzzy_kind);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
@@ -1124,7 +1105,8 @@ extern void builtin_define_with_int_value (const char *, HOST_WIDE_INT);
 extern void builtin_define_type_sizeof (const char *, tree);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const line_map_ordinary *);
-extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char);
+extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char,
+			   rich_location *richloc);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);
@@ -1134,126 +1116,7 @@ extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
 
 /* In c-omp.c  */
-struct omp_clause_mask
-{
-  inline omp_clause_mask ();
-  inline omp_clause_mask (uint64_t l);
-  inline omp_clause_mask (uint64_t l, uint64_t h);
-  inline omp_clause_mask &operator &= (omp_clause_mask);
-  inline omp_clause_mask &operator |= (omp_clause_mask);
-  inline omp_clause_mask operator ~ () const;
-  inline omp_clause_mask operator & (omp_clause_mask) const;
-  inline omp_clause_mask operator | (omp_clause_mask) const;
-  inline omp_clause_mask operator >> (int);
-  inline omp_clause_mask operator << (int);
-  inline bool operator == (omp_clause_mask) const;
-  inline bool operator != (omp_clause_mask) const;
-  uint64_t low, high;
-};
-
-inline
-omp_clause_mask::omp_clause_mask ()
-{
-}
-
-inline
-omp_clause_mask::omp_clause_mask (uint64_t l)
-: low (l), high (0)
-{
-}
-
-inline
-omp_clause_mask::omp_clause_mask (uint64_t l, uint64_t h)
-: low (l), high (h)
-{
-}
-
-inline omp_clause_mask &
-omp_clause_mask::operator &= (omp_clause_mask b)
-{
-  low &= b.low;
-  high &= b.high;
-  return *this;
-}
-
-inline omp_clause_mask &
-omp_clause_mask::operator |= (omp_clause_mask b)
-{
-  low |= b.low;
-  high |= b.high;
-  return *this;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator ~ () const
-{
-  omp_clause_mask ret (~low, ~high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator | (omp_clause_mask b) const
-{
-  omp_clause_mask ret (low | b.low, high | b.high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator & (omp_clause_mask b) const
-{
-  omp_clause_mask ret (low & b.low, high & b.high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator << (int amount)
-{
-  omp_clause_mask ret;
-  if (amount >= 64)
-    {
-      ret.low = 0;
-      ret.high = low << (amount - 64);
-    }
-  else if (amount == 0)
-    ret = *this;
-  else
-    {
-      ret.low = low << amount;
-      ret.high = (low >> (64 - amount)) | (high << amount);
-    }
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator >> (int amount)
-{
-  omp_clause_mask ret;
-  if (amount >= 64)
-    {
-      ret.low = high >> (amount - 64);
-      ret.high = 0;
-    }
-  else if (amount == 0)
-    ret = *this;
-  else
-    {
-      ret.low = (high << (64 - amount)) | (low >> amount);
-      ret.high = high >> amount;
-    }
-  return ret;
-}
-
-inline bool
-omp_clause_mask::operator == (omp_clause_mask b) const
-{
-  return low == b.low && high == b.high;
-}
-
-inline bool
-omp_clause_mask::operator != (omp_clause_mask b) const
-{
-  return low != b.low || high != b.high;
-}
+typedef wide_int_bitmask omp_clause_mask;
 
 #define OMP_CLAUSE_MASK_1 omp_clause_mask (1)
 
@@ -1273,9 +1136,8 @@ enum c_omp_clause_split
 enum c_omp_region_type
 {
   C_ORT_OMP			= 1 << 0,
-  C_ORT_CILK			= 1 << 1,
-  C_ORT_ACC			= 1 << 2,
-  C_ORT_DECLARE_SIMD		= 1 << 3,
+  C_ORT_ACC			= 1 << 1,
+  C_ORT_DECLARE_SIMD		= 1 << 2,
   C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD
 };
 
@@ -1382,115 +1244,23 @@ enum stv_conv {
 extern enum stv_conv scalar_to_vector (location_t loc, enum tree_code code,
 				       tree op0, tree op1, bool);
 
-/* In c-cilkplus.c  */
-extern tree c_validate_cilk_plus_loop (tree *, int *, void *);
-extern bool c_check_cilk_loop (location_t, tree);
-
-/* These #defines allow users to access different operands of the
-   array notation tree.  */
-
-#define ARRAY_NOTATION_CHECK(NODE) TREE_CHECK (NODE, ARRAY_NOTATION_REF)
-#define ARRAY_NOTATION_ARRAY(NODE) \
-  TREE_OPERAND (ARRAY_NOTATION_CHECK (NODE), 0)
-#define ARRAY_NOTATION_START(NODE) \
-  TREE_OPERAND (ARRAY_NOTATION_CHECK (NODE), 1)
-#define ARRAY_NOTATION_LENGTH(NODE) \
-  TREE_OPERAND (ARRAY_NOTATION_CHECK (NODE), 2)
-#define ARRAY_NOTATION_STRIDE(NODE) \
-  TREE_OPERAND (ARRAY_NOTATION_CHECK (NODE), 3)
-
-/* This structure holds all the scalar values and its appropriate variable 
-   replacment.  It is mainly used by the function that pulls all the invariant
-   parts that should be executed only once, which comes with array notation 
-   expressions.  */
-struct inv_list
-{
-  vec<tree, va_gc> *list_values;
-  vec<tree, va_gc> *replacement;
-  vec<enum tree_code, va_gc> *additional_tcodes; 
-};
-
-/* This structure holds all the important components that can be extracted
-   from an ARRAY_NOTATION_REF expression.  It is used to pass array notation
-   information between the functions that are responsible for expansion.  */
-typedef struct cilkplus_an_parts
-{
-  tree value;
-  tree start;
-  tree length;
-  tree stride;
-  bool is_vector;
-} an_parts;
-
-/* This structure holds the components necessary to create the loop around
-   the ARRAY_REF that is created using the ARRAY_NOTATION information.  */
-
-typedef struct cilkplus_an_loop_parts
-{
-  tree var;         /* Loop induction variable.  */
-  tree incr;        /* Loop increment/decrement expression.  */
-  tree cmp;         /* Loop condition.  */
-  tree ind_init;    /* Initialization of the loop induction variable.  */
-} an_loop_parts; 
-
-/* In array-notation-common.c.  */
-extern HOST_WIDE_INT extract_sec_implicit_index_arg (location_t, tree);
-extern bool is_sec_implicit_index_fn (tree);
-extern void array_notation_init_builtins (void);
-extern struct c_expr fix_array_notation_expr (location_t, enum tree_code, 
-					      struct c_expr);
-extern bool contains_array_notation_expr (tree);
-extern tree expand_array_notation_exprs (tree);
-extern tree fix_conditional_array_notations (tree);
-extern tree find_correct_array_notation_type (tree);
-extern bool length_mismatch_in_expr_p (location_t, vec<vec<an_parts> >);
-extern enum built_in_function is_cilkplus_reduce_builtin (tree);
-extern bool find_rank (location_t, tree, tree, bool, size_t *);
-extern void extract_array_notation_exprs (tree, bool, vec<tree, va_gc> **);
-extern void replace_array_notations (tree *, bool, vec<tree, va_gc> *,
-				     vec<tree, va_gc> *);
 extern tree find_inv_trees (tree *, int *, void *);
 extern tree replace_inv_trees (tree *, int *, void *);
-extern tree find_correct_array_notation_type (tree op);
-extern void cilkplus_extract_an_triplets (vec<tree, va_gc> *, size_t, size_t,
-					  vec<vec<an_parts> > *);
-extern vec <tree, va_gc> *fix_sec_implicit_args
-  (location_t, vec <tree, va_gc> *, vec<an_loop_parts>, size_t, tree);
-extern bool is_cilkplus_vector_p (tree);
 
-/* In cilk.c.  */
-extern tree insert_cilk_frame (tree);
-extern void cilk_init_builtins (void);
-extern int gimplify_cilk_spawn (tree *);
-extern void cilk_install_body_with_frame_cleanup (tree, tree, void *);
-extern bool cilk_detect_spawn_and_unwrap (tree *);
-extern bool cilk_set_spawn_marker (location_t, tree);
-extern tree build_cilk_sync (void);
-extern tree build_cilk_spawn (location_t, tree);
-extern tree make_cilk_frame (tree);
-extern tree create_cilk_function_exit (tree, bool, bool);
-extern void cilk_outline (tree, tree *, void *);
-extern bool contains_cilk_spawn_stmt (tree);
-extern tree cilk_for_number_of_iterations (tree);
-extern bool check_no_cilk (tree, const char *, const char *,
-		           location_t loc = UNKNOWN_LOCATION);
 extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
 extern bool valid_array_size_p (location_t, tree, tree);
-
-extern bool cilk_ignorable_spawn_rhs_op (tree);
-extern bool cilk_recognize_spawn (tree, tree *);
 
 /* In c-warn.c.  */
 extern void constant_expression_warning (tree);
 extern void constant_expression_error (tree);
-extern void overflow_warning (location_t, tree);
+extern void overflow_warning (location_t, tree, tree = NULL_TREE);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
 extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
 					  tree);
 extern bool warn_if_unused_value (const_tree, location_t);
-extern bool strict_aliasing_warning (tree, tree, tree);
+extern bool strict_aliasing_warning (location_t, tree, tree);
 extern void sizeof_pointer_memaccess_warning (location_t *, tree,
 					      vec<tree, va_gc> *, tree *,
 					      bool (*) (tree, tree));
@@ -1499,7 +1269,7 @@ extern void warnings_for_convert_and_check (location_t, tree, tree, tree);
 extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool,
 				  bool);
 extern void warn_for_omitted_condop (location_t, tree);
-extern void warn_for_restrict (unsigned, tree *, unsigned);
+extern bool warn_for_restrict (unsigned, tree *, unsigned);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and
@@ -1539,6 +1309,8 @@ extern bool maybe_warn_shift_overflow (location_t, tree, tree);
 extern void warn_duplicated_cond_add_or_warn (location_t, tree, vec<tree> **);
 extern bool diagnose_mismatched_attributes (tree, tree);
 extern tree do_warn_duplicated_branches_r (tree *, int *, void *);
+extern void warn_for_multistatement_macros (location_t, location_t,
+					    location_t, enum rid);
 
 /* In c-attribs.c.  */
 extern bool attribute_takes_identifier_p (const_tree);
@@ -1552,11 +1324,23 @@ extern enum flt_eval_method
 excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);
 
 extern int c_flt_eval_method (bool ts18661_p);
+extern void add_no_sanitize_value (tree node, unsigned int flags);
+
+extern void maybe_add_include_fixit (rich_location *, const char *);
+extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
+						   enum cpp_ttype token_type,
+						   location_t prev_token_loc);
 
 #if CHECKING_P
 namespace selftest {
+  /* Declarations for specific families of tests within c-family,
+     by source file, in alphabetical order.  */
   extern void c_format_c_tests (void);
-  extern void run_c_tests (void);
+  extern void c_pretty_print_c_tests (void);
+  extern void c_spellcheck_cc_tests (void);
+
+  /* The entrypoint for running all of the above tests.  */
+  extern void c_family_tests (void);
 } // namespace selftest
 #endif /* #if CHECKING_P */
 

@@ -54,7 +54,8 @@ host_triplet = @host@
 target_triplet = @target@
 @SANITIZER_SUPPORTED_TRUE@am__append_1 = include/sanitizer/common_interface_defs.h \
 @SANITIZER_SUPPORTED_TRUE@	include/sanitizer/lsan_interface.h \
-@SANITIZER_SUPPORTED_TRUE@	include/sanitizer/asan_interface.h
+@SANITIZER_SUPPORTED_TRUE@	include/sanitizer/asan_interface.h \
+@SANITIZER_SUPPORTED_TRUE@	include/sanitizer/tsan_interface.h
 @SANITIZER_SUPPORTED_TRUE@@USING_MAC_INTERPOSE_FALSE@am__append_2 = interception
 @LIBBACKTRACE_SUPPORTED_TRUE@@SANITIZER_SUPPORTED_TRUE@am__append_3 = libbacktrace
 @SANITIZER_SUPPORTED_TRUE@@TSAN_SUPPORTED_TRUE@am__append_4 = tsan
@@ -74,7 +75,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/enable.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -173,6 +175,9 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+EXTRA_ASFLAGS = @EXTRA_ASFLAGS@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
+EXTRA_CXXFLAGS = @EXTRA_CXXFLAGS@
 FGREP = @FGREP@
 FORMAT_FILE = @FORMAT_FILE@
 GREP = @GREP@

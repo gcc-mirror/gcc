@@ -21,7 +21,7 @@ program test
 
 !  print *, 'length main program after',len(my_string_type%name)
 !  print *, 'final result:',my_string_type%name
-  if (my_string_type%name .ne. 'here the word is finally set') call abort
+  if (my_string_type%name .ne. 'here the word is finally set') STOP 1
 
 contains
   subroutine inputreadword1(word_intermediate)

@@ -139,10 +139,24 @@ func prepareArg(value reflect.Value, argType reflect.Type) (reflect.Value, error
 		}
 		value = reflect.Zero(argType)
 	}
-	if !value.Type().AssignableTo(argType) {
-		return reflect.Value{}, fmt.Errorf("value has type %s; should be %s", value.Type(), argType)
+	if value.Type().AssignableTo(argType) {
+		return value, nil
 	}
-	return value, nil
+	if intLike(value.Kind()) && intLike(argType.Kind()) && value.Type().ConvertibleTo(argType) {
+		value = value.Convert(argType)
+		return value, nil
+	}
+	return reflect.Value{}, fmt.Errorf("value has type %s; should be %s", value.Type(), argType)
+}
+
+func intLike(typ reflect.Kind) bool {
+	switch typ {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return true
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return true
+	}
+	return false
 }
 
 // Indexing.
@@ -489,6 +503,7 @@ var (
 	htmlAmp  = []byte("&amp;")
 	htmlLt   = []byte("&lt;")
 	htmlGt   = []byte("&gt;")
+	htmlNull = []byte("\uFFFD")
 )
 
 // HTMLEscape writes to w the escaped HTML equivalent of the plain text data b.
@@ -497,6 +512,8 @@ func HTMLEscape(w io.Writer, b []byte) {
 	for i, c := range b {
 		var html []byte
 		switch c {
+		case '\000':
+			html = htmlNull
 		case '"':
 			html = htmlQuot
 		case '\'':
@@ -520,7 +537,7 @@ func HTMLEscape(w io.Writer, b []byte) {
 // HTMLEscapeString returns the escaped HTML equivalent of the plain text data s.
 func HTMLEscapeString(s string) string {
 	// Avoid allocation if we can.
-	if !strings.ContainsAny(s, `'"&<>`) {
+	if !strings.ContainsAny(s, "'\"&<>\000") {
 		return s
 	}
 	var b bytes.Buffer

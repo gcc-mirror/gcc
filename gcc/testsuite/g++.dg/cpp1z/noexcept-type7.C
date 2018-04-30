@@ -1,5 +1,5 @@
 // Test for static_cast.
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 void f()
 {

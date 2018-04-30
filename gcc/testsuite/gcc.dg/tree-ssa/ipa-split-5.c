@@ -20,6 +20,23 @@ struct a split_me (int a)
       retval = make_me_big (a);
       retval = make_me_big (a);
       retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
+      retval = make_me_big (a);
       return retval;
     }
 }

@@ -1,6 +1,6 @@
 // <numeric> -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,10 +79,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace __detail
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __detail
+{
   // std::abs is not constexpr and doesn't support unsigned integers.
   template<typename _Tp>
     constexpr
@@ -117,37 +117,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  * __detail::__abs_integral(__n)
 	: 0;
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+} // namespace __detail
 
 #if __cplusplus > 201402L
 
+#define __cpp_lib_gcd_lcm 201606
+// These were used in drafts of SD-6:
 #define __cpp_lib_gcd 201606
+#define __cpp_lib_lcm 201606
+
   /// Greatest common divisor
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
     gcd(_Mn __m, _Nn __n)
     {
-      static_assert(is_integral<_Mn>::value, "gcd arguments are integers");
-      static_assert(is_integral<_Nn>::value, "gcd arguments are integers");
-      static_assert(!is_same<_Mn, bool>::value, "gcd arguments are not bools");
-      static_assert(!is_same<_Nn, bool>::value, "gcd arguments are not bools");
+      static_assert(is_integral_v<_Mn>, "gcd arguments are integers");
+      static_assert(is_integral_v<_Nn>, "gcd arguments are integers");
+      static_assert(!is_same_v<remove_cv_t<_Mn>, bool>,
+		    "gcd arguments are not bools");
+      static_assert(!is_same_v<remove_cv_t<_Nn>, bool>,
+		    "gcd arguments are not bools");
       return __detail::__gcd(__m, __n);
     }
 
-#define __cpp_lib_lcm 201606
   /// Least common multiple
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
     lcm(_Mn __m, _Nn __n)
     {
-      static_assert(is_integral<_Mn>::value, "lcm arguments are integers");
-      static_assert(is_integral<_Nn>::value, "lcm arguments are integers");
-      static_assert(!is_same<_Mn, bool>::value, "lcm arguments are not bools");
-      static_assert(!is_same<_Nn, bool>::value, "lcm arguments are not bools");
+      static_assert(is_integral_v<_Mn>, "lcm arguments are integers");
+      static_assert(is_integral_v<_Nn>, "lcm arguments are integers");
+      static_assert(!is_same_v<remove_cv_t<_Mn>, bool>,
+		    "lcm arguments are not bools");
+      static_assert(!is_same_v<remove_cv_t<_Nn>, bool>,
+		    "lcm arguments are not bools");
       return __detail::__lcm(__m, __n);
     }
 

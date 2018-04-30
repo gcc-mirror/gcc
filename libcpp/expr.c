@@ -1,5 +1,5 @@
 /* Parse C expressions for cpplib.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it
@@ -90,6 +90,8 @@ static cpp_num parse_has_include (cpp_reader *, enum include_type);
 static unsigned int
 interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
+  size_t orig_len = len;
+  const uchar *orig_s = s;
   size_t flags;
   size_t f, d, l, w, q, i, fn, fnx, fn_bits;
 
@@ -269,8 +271,21 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   if (fn && fn_bits == 96)
     return 0;
 
-  if (i && !CPP_OPTION (pfile, ext_numeric_literals))
-    return 0;
+  if (i)
+    {
+      if (!CPP_OPTION (pfile, ext_numeric_literals))
+	return 0;
+
+      /* In C++14 and up these suffixes are in the standard library, so treat
+	 them as user-defined literals.  */
+      if (CPP_OPTION (pfile, cplusplus)
+	  && CPP_OPTION (pfile, lang) > CLK_CXX11
+	  && orig_s[0] == 'i'
+	  && (orig_len == 1
+	      || (orig_len == 2
+		  && (orig_s[1] == 'f' || orig_s[1] == 'l'))))
+	return 0;
+    }
 
   if ((w || q) && !CPP_OPTION (pfile, ext_numeric_literals))
     return 0;
@@ -299,6 +314,7 @@ cpp_interpret_float_suffix (cpp_reader *pfile, const char *s, size_t len)
 static unsigned int
 interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
+  size_t orig_len = len;
   size_t u, l, i;
 
   u = l = i = 0;
@@ -321,8 +337,19 @@ interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   if (l > 2 || u > 1 || i > 1)
     return 0;
 
-  if (i && !CPP_OPTION (pfile, ext_numeric_literals))
-    return 0;
+  if (i)
+    {
+      if (!CPP_OPTION (pfile, ext_numeric_literals))
+	return 0;
+
+      /* In C++14 and up these suffixes are in the standard library, so treat
+	 them as user-defined literals.  */
+      if (CPP_OPTION (pfile, cplusplus)
+	  && CPP_OPTION (pfile, lang) > CLK_CXX11
+	  && s[0] == 'i'
+	  && (orig_len == 1 || (orig_len == 2 && s[1] == 'l')))
+	return 0;
+    }
 
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (u ? CPP_N_UNSIGNED : 0)
@@ -636,7 +663,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
 	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-				 "use of C++1z hexadecimal floating constant");
+				 "use of C++17 hexadecimal floating constant");
 	  else
 	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
 				 "use of C99 hexadecimal floating constant");

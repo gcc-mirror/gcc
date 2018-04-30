@@ -1,7 +1,7 @@
 /* Various declarations for language-independent diagnostics
    subroutines that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -55,6 +55,6 @@ void virt_loc_aware_diagnostic_finalizer (diagnostic_context *,
 
 void tree_diagnostics_defaults (diagnostic_context *context);
 bool default_tree_printer (pretty_printer *, text_info *, const char *,
-			   int, bool, bool, bool);
+			   int, bool, bool, bool, bool *, const char **);
 
 #endif /* ! GCC_TREE_DIAGNOSTIC_H */

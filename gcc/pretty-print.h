@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRETTY_PRINT_H
 
 #include "obstack.h"
-#include "wide-int-print.h"
 
 /* Maximum number of format string arguments.  */
 #define PP_NL_ARGMAX   30
@@ -180,10 +179,19 @@ struct pp_wrapping_mode_t
    A client-supplied formatter returns true if everything goes well,
    otherwise it returns false.  */
 typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
-			    int, bool, bool, bool);
+			    int, bool, bool, bool, bool *, const char **);
 
 /* Client supplied function used to decode formats.  */
 #define pp_format_decoder(PP) (PP)->format_decoder
+
+/* Base class for an optional client-supplied object for doing additional
+   processing between stages 2 and 3 of formatted printing.  */
+class format_postprocessor
+{
+ public:
+  virtual ~format_postprocessor () {}
+  virtual void handle (pretty_printer *) = 0;
+};
 
 /* TRUE if a newline character needs to be added before further
    formatting.  */
@@ -239,8 +247,15 @@ struct pretty_printer
      If the BUFFER needs additional characters from the format string, it
      should advance the TEXT->format_spec as it goes.  When FORMAT_DECODER
      returns, TEXT->format_spec should point to the last character processed.
-  */
+     The QUOTE and BUFFER_PTR are passed in, to allow for deferring-handling
+     of format codes (e.g. %H and %I in the C++ frontend).  */
   printer_fn format_decoder;
+
+  /* If non-NULL, this is called by pp_format once after all format codes
+     have been processed, to allow for client-specific postprocessing.
+     This is used by the C++ frontend for handling the %H and %I
+     format codes (which interract with each other).  */
+  format_postprocessor *m_format_postprocessor;
 
   /* Nonzero if current PREFIX was emitted at least once.  */
   bool emitted_prefix;
@@ -313,8 +328,6 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
       pp_string (PP, pp_buffer (PP)->digit_buffer);		\
     }								\
   while (0)
-#define pp_wide_integer(PP, I) \
-   pp_scalar (PP, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
 #define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 
 #define pp_identifier(PP, ID)  pp_string (PP, (pp_translate_identifiers (PP) \
@@ -371,6 +384,9 @@ extern void pp_write_text_to_stream (pretty_printer *);
 extern void pp_write_text_as_dot_label_to_stream (pretty_printer *, bool);
 extern void pp_maybe_space (pretty_printer *);
 
+extern void pp_begin_quote (pretty_printer *, bool);
+extern void pp_end_quote (pretty_printer *, bool);
+
 /* Switch into verbatim mode and return the old mode.  */
 static inline pp_wrapping_mode_t
 pp_set_verbatim_wrapping_ (pretty_printer *pp)
@@ -385,5 +401,16 @@ pp_set_verbatim_wrapping_ (pretty_printer *pp)
 extern const char *identifier_to_locale (const char *);
 extern void *(*identifier_to_locale_alloc) (size_t);
 extern void (*identifier_to_locale_free) (void *);
+
+/* Print I to PP in decimal.  */
+
+inline void
+pp_wide_integer (pretty_printer *pp, HOST_WIDE_INT i)
+{
+  pp_scalar (pp, HOST_WIDE_INT_PRINT_DEC, i);
+}
+
+template<unsigned int N, typename T>
+void pp_wide_integer (pretty_printer *pp, const poly_int_pod<N, T> &);
 
 #endif /* GCC_PRETTY_PRINT_H */

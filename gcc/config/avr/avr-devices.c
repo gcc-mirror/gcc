@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Anatoly Sokolov (aesok@post.ru)
 
    This file is part of GCC.
@@ -18,6 +18,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 #ifndef IN_GEN_AVR_MMCU_TEXI
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -34,30 +36,31 @@ const avr_arch_t
 avr_arch_types[] =
 {
   /* unknown device specified */
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, NULL, AVR_MMCU_DEFAULT },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 0,      32, NULL, AVR_MMCU_DEFAULT },
   /*
-    A  M  J  LM E  E  E  X  R  T  d S   S O   A
-    S  U  M  PO L  L  I  M  A  I  a t   F ff  r
-    M  L  P  MV P  P  J  E  M  N  t a   R s   c
-             XW M  M  M  G  P  Y  a r     e   h
-                   X  P  A  D       t     t   ID   */
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, "1",   "avr1"  },
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, "2",   "avr2"  },
-  { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0x0060, 32, "25",  "avr25" },
-  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, "3",   "avr3"  },
-  { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0x0060, 32, "31",  "avr31" },
-  { 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0x0060, 32, "35",  "avr35" },
-  { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0x0060, 32, "4",   "avr4"  },
-  { 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0x0060, 32, "5",   "avr5"  },
-  { 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0x0060, 32, "51",  "avr51" },
-  { 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0x0060, 32, "6",   "avr6"  },
+    A  M  J  LM E  E  E  X  R  T  d S     FPO     S O   A
+    S  U  M  PO L  L  I  M  A  I  a t     lMff    F ff  r
+    M  L  P  MV P  P  J  E  M  N  t a     a s     R s   c
+             XW M  M  M  G  P  Y  a r     s e       e   h
+                   X  P  A  D       t     h t       t   ID   */
+  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 0,      32, "1",   "avr1"  },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 0,      32, "2",   "avr2"  },
+  { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0x0060, 0,      32, "25",  "avr25" },
+  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0x0060, 0,      32, "3",   "avr3"  },
+  { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0x0060, 0,      32, "31",  "avr31" },
+  { 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0x0060, 0,      32, "35",  "avr35" },
+  { 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0x0060, 0,      32, "4",   "avr4"  },
+  { 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0x0060, 0,      32, "5",   "avr5"  },
+  { 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0x0060, 0,      32, "51",  "avr51" },
+  { 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0x0060, 0,      32, "6",   "avr6"  },
 
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0x0040,  0, "100", "avrtiny" },
-  { 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0x2000,  0, "102", "avrxmega2" },
-  { 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0x2000,  0, "104", "avrxmega4" },
-  { 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0x2000,  0, "105", "avrxmega5" },
-  { 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0x2000,  0, "106", "avrxmega6" },
-  { 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0x2000,  0, "107", "avrxmega7" }
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0x0040, 0x4000, 0, "100", "avrtiny" },
+  { 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0x2000, 0,      0, "102", "avrxmega2" },
+  { 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0x2000, 0x8000, 0, "103", "avrxmega3" },
+  { 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0x2000, 0,      0, "104", "avrxmega4" },
+  { 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0x2000, 0,      0, "105", "avrxmega5" },
+  { 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0x2000, 0,      0, "106", "avrxmega6" },
+  { 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0x2000, 0,      0, "107", "avrxmega7" }
 };
 
 const avr_arch_info_t
@@ -95,6 +98,9 @@ avr_texinfo[] =
   { ARCH_AVRXMEGA2,
     "``XMEGA'' devices with more than 8@tie{}KiB and up to 64@tie{}KiB "
     "of program memory." },
+  { ARCH_AVRXMEGA3,
+    "``XMEGA'' devices with up to 64@tie{}KiB of combined program memory "
+    "and RAM, and with program memory visible in the RAM address space." },
   { ARCH_AVRXMEGA4,
     "``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB "
     "of program memory." },
@@ -124,39 +130,6 @@ avr_mcu_types[] =
 
 #ifndef IN_GEN_AVR_MMCU_TEXI
 
-/* Copy-pastes from `gen-avr-mmcu-texi.c' follow...  */
-
-static const char*
-mcu_name[sizeof avr_mcu_types / sizeof avr_mcu_types[0]];
-
-static int
-comparator (const void *va, const void *vb)
-{
-  const char *a = *(const char* const*) va;
-  const char *b = *(const char* const*) vb;
-
-  while (*a && *b)
-    {
-      /* Make letters smaller than digits so that `atmega16a' follows
-         `atmega16' without `atmega161' etc. between them.  */
-      
-      if (ISALPHA (*a) && ISDIGIT (*b))
-        return -1;
-
-      if (ISDIGIT (*a) && ISALPHA (*b))
-        return 1;
-
-      if (*a != *b)
-        return *a - *b;
-      
-      a++;
-      b++;
-    }
-
-  return *a - *b;
-}
-
-
 static char*
 avr_archs_str (void)
 {
@@ -172,39 +145,6 @@ avr_archs_str (void)
 }
 
   
-static char*
-avr_mcus_str (void)
-{
-  size_t n_mcus = 0;
-  char *mcus = concat ("", NULL);
-
-  // Build array of proper devices' names.
-
-  for (const avr_mcu_t *mcu = avr_mcu_types; mcu->name; mcu++)
-    if (mcu->macro)
-      mcu_name[n_mcus++] = mcu->name;
-
-  // Sort MCUs so that they are displayed in the same canonical order as
-  // in doc/avr-mcus.texi.
-
-  qsort (mcu_name, n_mcus, sizeof (char*), comparator);
-
-  for (size_t i = 0; i < n_mcus; i++)
-    mcus = concat (mcus, " ", mcu_name[i], NULL);
-
-  return mcus;
-}
-
-
-void
-avr_inform_devices (void)
-{
-  char *mcus = avr_mcus_str ();
-  inform (input_location, "devices natively supported:%s", mcus);
-  free (mcus);
-}
-
-
 void
 avr_inform_core_architectures (void)
 {

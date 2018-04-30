@@ -1,3 +1,5 @@
+/* { dg-require-effective-target label_values } */
+
 /* Test profile-directed block ordering with computed gotos.
  *
    This is the same as test gcc.c-torture/execute/980526-1.c and
@@ -37,9 +39,7 @@ static void do2(void){
 }
  
 int main(void){
-#ifndef NO_LABEL_VALUES
   do1();
   do2();
-#endif
   exit(0);
 }

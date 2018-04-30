@@ -6,17 +6,17 @@
 
 int main()
 {
-   auto glambda = [] <typename A, typename B> (A a, B&& b) { return a < b; };	// { dg-warning "does not support lambda templates" }
+   auto glambda = [] <typename A, typename B> (A a, B&& b) { return a < b; };	// { dg-warning "lambda templates are only available with" "" { target c++17_down } }
    bool b = glambda(3, 3.14); // OK
-   auto vglambda = [] <typename P> (P printer) {				// { dg-warning "does not support lambda templates" }
+   auto vglambda = [] <typename P> (P printer) {				// { dg-warning "lambda templates are only available with" "" { target c++17_down } }
      return [=] <typename... T> (T&& ... ts) { // OK: ts is a function parameter pack
-       printer(std::forward<decltype(ts)>(ts)...);				// { dg-warning "does not support lambda templates" "" { target *-*-* } .-1 }
+       printer(std::forward<decltype(ts)>(ts)...);				// { dg-warning "lambda templates are only available with" "" { target c++17_down } .-1 }
        return [=]() {
          printer(ts ...);
        };
      };
    };
-   auto p = vglambda( [] <typename A,						// { dg-warning "does not support lambda templates" }
+   auto p = vglambda( [] <typename A,						// { dg-warning "lambda templates are only available with" "" { target c++17_down } }
                           typename B,
                           typename C> (A v1, B v2, C v3)
      { std::cout << v1 << v2 << v3; } );

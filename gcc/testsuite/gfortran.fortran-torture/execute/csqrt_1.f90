@@ -6,7 +6,7 @@
       common /flags/ fail
       fail = .false.
       call square_root
-      if (fail) call abort
+      if (fail) STOP 1
       end
       subroutine square_root
       intrinsic sqrt, dsqrt, csqrt

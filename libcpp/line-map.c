@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -25,11 +25,6 @@ along with this program; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "internal.h"
 #include "hashtab.h"
-
-/* Do not track column numbers higher than this one.  As a result, the
-   range of column_bits is [12, 18] (or 0 if column numbers are
-   disabled).  */
-const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
 
 /* Highest possible source location encoded within an ordinary or
    macro map.  */
@@ -62,7 +57,8 @@ extern unsigned num_macro_tokens_counter;
 
 line_maps::~line_maps ()
 {
-  htab_delete (location_adhoc_data_map.htab);
+  if (location_adhoc_data_map.htab)
+    htab_delete (location_adhoc_data_map.htab);
 }
 
 /* Hash function for location_adhoc_data hashtable.  */
@@ -98,7 +94,8 @@ location_adhoc_data_eq (const void *l1, const void *l2)
 static int
 location_adhoc_data_update (void **slot, void *data)
 {
-  *((char **) slot) += *((int64_t *) data);
+  *((char **) slot)
+    = (char *) ((uintptr_t) *((char **) slot) + *((ptrdiff_t *) data));
   return 1;
 }
 
@@ -220,7 +217,7 @@ get_combined_adhoc_loc (struct line_maps *set,
 	  set->location_adhoc_data_map.allocated)
 	{
 	  char *orig_data = (char *) set->location_adhoc_data_map.data;
-	  int64_t offset;
+	  ptrdiff_t offset;
 	  /* Cast away extern "C" from the type of xrealloc.  */
 	  line_map_realloc reallocator = (set->reallocator
 					  ? set->reallocator
@@ -347,7 +344,12 @@ void
 linemap_init (struct line_maps *set,
 	      source_location builtin_location)
 {
+#if __GNUC__ == 4 && __GNUC_MINOR__ == 2 && !defined (__clang__)
+  /* PR33916, needed to fix PR82939.  */
   memset (set, 0, sizeof (struct line_maps));
+#else
+  *set = line_maps ();
+#endif
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =
@@ -1438,21 +1440,23 @@ linemap_macro_loc_to_def_point (struct line_maps *set,
 {
   struct line_map *map;
 
-  if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[location
-						 & MAX_SOURCE_LOCATION].locus;
-
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
   while (true)
     {
-      map = const_cast <line_map *> (linemap_lookup (set, location));
+      source_location caret_loc;
+      if (IS_ADHOC_LOC (location))
+	caret_loc = get_location_from_adhoc_loc (set, location);
+      else
+	caret_loc = location;
+
+      map = const_cast <line_map *> (linemap_lookup (set, caret_loc));
       if (!linemap_macro_expansion_map_p (map))
 	break;
 
       location =
 	linemap_macro_map_loc_to_def_point (linemap_check_macro (map),
-					    location);
+					    caret_loc);
     }
 
   if (original_map)
@@ -2012,7 +2016,8 @@ rich_location::rich_location (line_maps *set, source_location loc) :
   m_column_override (0),
   m_have_expanded_location (false),
   m_fixit_hints (),
-  m_seen_impossible_fixit (false)
+  m_seen_impossible_fixit (false),
+  m_fixits_cannot_be_auto_applied (false)
 {
   add_range (loc, true);
 }
@@ -2063,7 +2068,8 @@ rich_location::get_expanded_location (unsigned int idx)
      if (!m_have_expanded_location)
        {
 	  m_expanded_location
-	    = linemap_client_expand_location_to_spelling_point (get_loc (0));
+	    = linemap_client_expand_location_to_spelling_point
+		(get_loc (0), LOCATION_ASPECT_CARET);
 	  if (m_column_override)
 	    m_expanded_location.column = m_column_override;
 	  m_have_expanded_location = true;
@@ -2072,7 +2078,8 @@ rich_location::get_expanded_location (unsigned int idx)
      return m_expanded_location;
    }
   else
-    return linemap_client_expand_location_to_spelling_point (get_loc (idx));
+    return linemap_client_expand_location_to_spelling_point
+	     (get_loc (idx), LOCATION_ASPECT_CARET);
 }
 
 /* Set the column of the primary location, with 0 meaning
@@ -2325,6 +2332,35 @@ rich_location::maybe_add_fixit (source_location start,
   if (reject_impossible_fixit (next_loc))
     return;
 
+  /* Only allow fix-it hints that affect a single line in one file.
+     Compare the end-points.  */
+  expanded_location exploc_start
+    = linemap_client_expand_location_to_spelling_point (start,
+							LOCATION_ASPECT_START);
+  expanded_location exploc_next_loc
+    = linemap_client_expand_location_to_spelling_point (next_loc,
+							LOCATION_ASPECT_START);
+  /* They must be within the same file...  */
+  if (exploc_start.file != exploc_next_loc.file)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+  /* ...and on the same line.  */
+  if (exploc_start.line != exploc_next_loc.line)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+  /* The columns must be in the correct order.  This can fail if the
+     endpoints straddle the boundary for which the linemap can represent
+     columns (PR c/82050).  */
+  if (exploc_start.column > exploc_next_loc.column)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+
   const char *newline = strchr (new_content, '\n');
   if (newline)
     {
@@ -2340,8 +2376,6 @@ rich_location::maybe_add_fixit (source_location start,
 	}
 
       /* The insertion must be at the start of a line.  */
-      expanded_location exploc_start
-	= linemap_client_expand_location_to_spelling_point (start);
       if (exploc_start.column != 1)
 	{
 	  stop_supporting_fixits ();
@@ -2387,13 +2421,15 @@ bool
 fixit_hint::affects_line_p (const char *file, int line) const
 {
   expanded_location exploc_start
-    = linemap_client_expand_location_to_spelling_point (m_start);
+    = linemap_client_expand_location_to_spelling_point (m_start,
+							LOCATION_ASPECT_START);
   if (file != exploc_start.file)
     return false;
   if (line < exploc_start.line)
       return false;
   expanded_location exploc_next_loc
-    = linemap_client_expand_location_to_spelling_point (m_next_loc);
+    = linemap_client_expand_location_to_spelling_point (m_next_loc,
+							LOCATION_ASPECT_START);
   if (file != exploc_next_loc.file)
     return false;
   if (line > exploc_next_loc.line)

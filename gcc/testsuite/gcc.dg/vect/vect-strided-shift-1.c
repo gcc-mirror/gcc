@@ -1,3 +1,4 @@
+/* { dg-skip-if "Skip for mips -mpaired-single" { mips*-*-* } { "-mpaired-single" } } */
 /* PR tree-optimization/65963.  */
 #include "tree-vect.h"
 

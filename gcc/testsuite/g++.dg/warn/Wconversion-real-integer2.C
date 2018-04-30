@@ -23,7 +23,7 @@
 //
 // That is more useful.
 
-#define INT_MAX __INT_MAX__ // { dg-warning "17: conversion to .float. alters .int. constant value" }
+#define INT_MAX __INT_MAX__ // { dg-warning "17: conversion from 'int' to 'float' changes value from .2147483647. to " }
 
 float  vfloat;
 

@@ -51,5 +51,5 @@ PROGRAM use_foobar
   CALL sub2 (z, j)
   z%i1 = 1
   CALL sub3 (z, j)
-  IF (ALL (j.ne.(/3,2,1/))) CALL abort ()
+  IF (ALL (j.ne.(/3,2,1/))) STOP 1
 END PROGRAM use_foobar

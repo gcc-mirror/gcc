@@ -1,5 +1,5 @@
 /* Building internal representation for IRA.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -566,7 +566,7 @@ ira_create_allocno_objects (ira_allocno_t a)
   int n = ira_reg_class_max_nregs[aclass][mode];
   int i;
 
-  if (GET_MODE_SIZE (mode) != 2 * UNITS_PER_WORD || n != 2)
+  if (n != 2 || maybe_ne (GET_MODE_SIZE (mode), n * UNITS_PER_WORD))
     n = 1;
 
   ALLOCNO_NUM_OBJECTS (a) = n;
@@ -1853,7 +1853,7 @@ create_insn_allocnos (rtx x, rtx outer, bool output_p)
 	      if (outer != NULL && GET_CODE (outer) == SUBREG)
 		{
 		  machine_mode wmode = GET_MODE (outer);
-		  if (GET_MODE_SIZE (wmode) > GET_MODE_SIZE (ALLOCNO_WMODE (a)))
+		  if (partial_subreg_p (ALLOCNO_WMODE (a), wmode))
 		    ALLOCNO_WMODE (a) = wmode;
 		}
 	    }
@@ -2202,7 +2202,8 @@ loop_compare_func (const void *v1p, const void *v2p)
     return -1;
   if (! l1->to_remove_p && l2->to_remove_p)
     return 1;
-  if ((diff = l1->loop->header->frequency - l2->loop->header->frequency) != 0)
+  if ((diff = l1->loop->header->count.to_frequency (cfun)
+	      - l2->loop->header->count.to_frequency (cfun)) != 0)
     return diff;
   if ((diff = (int) loop_depth (l1->loop) - (int) loop_depth (l2->loop)) != 0)
     return diff;
@@ -2260,7 +2261,7 @@ mark_loops_for_removal (void)
 	  (ira_dump_file,
 	   "  Mark loop %d (header %d, freq %d, depth %d) for removal (%s)\n",
 	   sorted_loops[i]->loop_num, sorted_loops[i]->loop->header->index,
-	   sorted_loops[i]->loop->header->frequency,
+	   sorted_loops[i]->loop->header->count.to_frequency (cfun),
 	   loop_depth (sorted_loops[i]->loop),
 	   low_pressure_loop_node_p (sorted_loops[i]->parent)
 	   && low_pressure_loop_node_p (sorted_loops[i])
@@ -2293,7 +2294,7 @@ mark_all_loops_for_removal (void)
 	     "  Mark loop %d (header %d, freq %d, depth %d) for removal\n",
 	     ira_loop_nodes[i].loop_num,
 	     ira_loop_nodes[i].loop->header->index,
-	     ira_loop_nodes[i].loop->header->frequency,
+	     ira_loop_nodes[i].loop->header->count.to_frequency (cfun),
 	     loop_depth (ira_loop_nodes[i].loop));
       }
 }
@@ -2727,7 +2728,13 @@ setup_min_max_allocno_live_range_point (void)
 	    ira_object_t parent_obj;
 
 	    if (OBJECT_MAX (obj) < 0)
-	      continue;
+	      {
+		/* The object is not used and hence does not live.  */
+		ira_assert (OBJECT_LIVE_RANGES (obj) == NULL);
+		OBJECT_MAX (obj) = 0;
+		OBJECT_MIN (obj) = 1;
+		continue;
+	      }
 	    ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
 	    /* Accumulation of range info.  */
 	    if (ALLOCNO_CAP (a) != NULL)
@@ -2755,8 +2762,8 @@ setup_min_max_allocno_live_range_point (void)
 #ifdef ENABLE_IRA_CHECKING
   FOR_EACH_OBJECT (obj, oi)
     {
-      if ((0 <= OBJECT_MIN (obj) && OBJECT_MIN (obj) <= ira_max_point)
-	  && (0 <= OBJECT_MAX (obj) && OBJECT_MAX (obj) <= ira_max_point))
+      if ((OBJECT_MIN (obj) >= 0 && OBJECT_MIN (obj) <= ira_max_point)
+	  && (OBJECT_MAX (obj) >= 0 && OBJECT_MAX (obj) <= ira_max_point))
 	continue;
       gcc_unreachable ();
     }

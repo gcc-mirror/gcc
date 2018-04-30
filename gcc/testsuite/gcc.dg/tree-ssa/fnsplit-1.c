@@ -19,4 +19,5 @@ main(void)
   return 0;
 }
 /* { dg-final { scan-tree-dump-times "Splitting function at:" 1 "fnsplit"} } */
+/* { dg-final { scan-tree-dump-times "Invalid sum" 0 "fnsplit"} } */
 

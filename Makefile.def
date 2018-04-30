@@ -144,8 +144,6 @@ target_modules = { module= libvtv;
 		   bootstrap=true;
 		   lib_path=.libs;
 		   raw_cxx=true; };
-target_modules = { module= libcilkrts;
-		   lib_path=.libs; };
 target_modules = { module= liboffloadmic;
 		   lib_path=.libs;
 		   extra_configure_flags='@extra_liboffloadmic_configure_flags@'; };
@@ -533,7 +531,6 @@ dependencies = { module=all-m4; on=all-build-texinfo; };
 // on libgcc and newlib/libgloss.
 lang_env_dependencies = { module=libitm; cxx=true; };
 lang_env_dependencies = { module=libffi; cxx=true; };
-lang_env_dependencies = { module=libcilkrts; cxx=true; };
 lang_env_dependencies = { module=liboffloadmic; cxx=true; };
 lang_env_dependencies = { module=newlib; no_c=true; };
 lang_env_dependencies = { module=libgloss; no_c=true; };
@@ -567,8 +564,6 @@ dependencies = { module=install-target-libsanitizer; on=install-target-libstdc++
 dependencies = { module=install-target-libsanitizer; on=install-target-libgcc; };
 dependencies = { module=install-target-libvtv; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-libvtv; on=install-target-libgcc; };
-dependencies = { module=install-target-libcilkrts; on=install-target-libstdc++-v3; };
-dependencies = { module=install-target-libcilkrts; on=install-target-libgcc; };
 dependencies = { module=install-target-liboffloadmic; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-liboffloadmic; on=install-target-libgcc; };
 dependencies = { module=install-target-libitm; on=install-target-libgcc; };
@@ -601,7 +596,8 @@ languages = { language=objc;	gcc-check-target=check-objc;
 				lib-check-target=check-target-libobjc; };
 languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
-				lib-check-target=check-target-libgo; };
+				lib-check-target=check-target-libgo;
+				lib-check-target=check-gotools; };
 languages = { language=brig;	gcc-check-target=check-brig;
 				lib-check-target=check-target-libhsail-rt; };
 
@@ -622,7 +618,9 @@ bootstrap_stage = {
 bootstrap_stage = {
 	id=profile ; prev=1 ; };
 bootstrap_stage = {
-	id=feedback ; prev=profile ;
+	id=train; prev=profile ; } ;
+bootstrap_stage = {
+	id=feedback ; prev=train;
 	bootstrap_target=profiledbootstrap ; };
 bootstrap_stage = {
 	id=autoprofile ; prev=1 ;

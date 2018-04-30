@@ -20,5 +20,3 @@ program bug2
   class(aqq_t) :: aqq  ! { dg-error "must be dummy, allocatable or pointer" }
   call aqq%aqq_init
 end program
-
-! { dg-final { cleanup-modules "aqq_m" } }

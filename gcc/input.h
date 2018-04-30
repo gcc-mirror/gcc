@@ -1,6 +1,6 @@
 /* Declarations for variables relating to reading the source file.
    Used by parsers, lexical analyzers, and error message routines.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -73,17 +73,31 @@ extern location_t input_location;
    Note that this function returns 1 if LOCATION belongs to a token
    that is part of a macro replacement-list defined in a system
    header, but expanded in a non-system file.  */
-#define in_system_header_at(LOC) \
-  (linemap_location_in_system_header_p (line_table, LOC))
-/* Return a positive value if LOCATION is the locus of a token that
-   comes from a macro expansion, O otherwise.  */
-#define from_macro_expansion_at(LOC) \
-  ((linemap_location_from_macro_expansion_p (line_table, LOC)))
-/* Return a positive value if LOCATION is the locus of a token that comes from
-   a macro definition, O otherwise.  This differs from from_macro_expansion_at
+
+static inline int
+in_system_header_at (location_t loc)
+{
+  return linemap_location_in_system_header_p (line_table, loc);
+}
+
+/* Return true if LOCATION is the locus of a token that
+   comes from a macro expansion, false otherwise.  */
+
+static inline bool
+from_macro_expansion_at (location_t loc)
+{
+  return linemap_location_from_macro_expansion_p (line_table, loc);
+}
+
+/* Return true if LOCATION is the locus of a token that comes from
+   a macro definition, false otherwise.  This differs from from_macro_expansion_at
    in its treatment of macro arguments, for which this returns false.  */
-#define from_macro_definition_at(LOC) \
-  ((linemap_location_from_macro_definition_p (line_table, LOC)))
+
+static inline bool
+from_macro_definition_at (location_t loc)
+{
+  return linemap_location_from_macro_definition_p (line_table, loc);
+}
 
 static inline location_t
 get_pure_location (location_t loc)
@@ -109,6 +123,7 @@ get_finish (location_t loc)
 
 extern location_t make_location (location_t caret,
 				 location_t start, location_t finish);
+extern location_t make_location (location_t caret, source_range src_range);
 
 void dump_line_table_statistics (void);
 

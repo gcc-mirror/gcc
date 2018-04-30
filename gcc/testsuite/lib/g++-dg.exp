@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,8 +56,8 @@ proc g++-dg-runtest { testcases flags default-extra-flags } {
 	    }
 	    set option_list { }
 	    foreach x $std_list {
-		# Handle "concepts" as C++1z plus Concepts TS.
-		if { $x eq "concepts" } then { set x "1z -fconcepts" }
+		# Handle "concepts" as C++17 plus Concepts TS.
+		if { $x eq "concepts" } then { set x "17 -fconcepts" }
 		lappend option_list "${std_prefix}$x"
 	    }
 	} else {

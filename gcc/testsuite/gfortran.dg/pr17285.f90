@@ -19,7 +19,7 @@ program pr17285
     number = 0
     read (10, nml = mynml, iostat = ierr)
     if ((ierr /= 0) .or. (any (number /= 42))) &
-      call abort ()
+      STOP 1
   end do
   close(10)
 end program pr17285

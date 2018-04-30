@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "expmed.h"
+#include "profile-count.h"
 #include "optabs.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -39,8 +40,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "common/common-target.h"
 #include "output.h"
+#include "params.h"
 
 static rtx break_out_memory_refs (rtx);
+static void anti_adjust_stack_and_probe_stack_clash (rtx);
 
 
 /* Truncate and perhaps sign-extend C as appropriate for MODE.  */
@@ -48,14 +51,16 @@ static rtx break_out_memory_refs (rtx);
 HOST_WIDE_INT
 trunc_int_for_mode (HOST_WIDE_INT c, machine_mode mode)
 {
-  int width = GET_MODE_PRECISION (mode);
+  /* Not scalar_int_mode because we also allow pointer bound modes.  */
+  scalar_mode smode = as_a <scalar_mode> (mode);
+  int width = GET_MODE_PRECISION (smode);
 
   /* You want to truncate to a _what_?  */
   gcc_assert (SCALAR_INT_MODE_P (mode)
 	      || POINTER_BOUNDS_MODE_P (mode));
 
   /* Canonicalize BImode to 0 and STORE_FLAG_VALUE.  */
-  if (mode == BImode)
+  if (smode == BImode)
     return c & 1 ? STORE_FLAG_VALUE : 0;
 
   /* Sign-extend for the requested mode.  */
@@ -72,13 +77,23 @@ trunc_int_for_mode (HOST_WIDE_INT c, machine_mode mode)
   return c;
 }
 
+/* Likewise for polynomial values, using the sign-extended representation
+   for each individual coefficient.  */
+
+poly_int64
+trunc_int_for_mode (poly_int64 x, machine_mode mode)
+{
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    x.coeffs[i] = trunc_int_for_mode (x.coeffs[i], mode);
+  return x;
+}
+
 /* Return an rtx for the sum of X and the integer C, given that X has
    mode MODE.  INPLACE is true if X can be modified inplace or false
    if it must be treated as immutable.  */
 
 rtx
-plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
-	       bool inplace)
+plus_constant (machine_mode mode, rtx x, poly_int64 c, bool inplace)
 {
   RTX_CODE code;
   rtx y;
@@ -87,7 +102,7 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
 
   gcc_assert (GET_MODE (x) == VOIDmode || GET_MODE (x) == mode);
 
-  if (c == 0)
+  if (known_eq (c, 0))
     return x;
 
  restart:
@@ -175,10 +190,12 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
       break;
 
     default:
+      if (CONST_POLY_INT_P (x))
+	return immed_wide_int_const (const_poly_int_value (x) + c, mode);
       break;
     }
 
-  if (c != 0)
+  if (maybe_ne (c, 0))
     x = gen_rtx_PLUS (mode, x, gen_int_mode (c, mode));
 
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
@@ -205,8 +222,8 @@ eliminate_constant_term (rtx x, rtx *constptr)
 
   /* First handle constants appearing at this level explicitly.  */
   if (CONST_INT_P (XEXP (x, 1))
-      && 0 != (tem = simplify_binary_operation (PLUS, GET_MODE (x), *constptr,
-						XEXP (x, 1)))
+      && (tem = simplify_binary_operation (PLUS, GET_MODE (x), *constptr,
+					   XEXP (x, 1))) != 0
       && CONST_INT_P (tem))
     {
       *constptr = tem;
@@ -217,8 +234,8 @@ eliminate_constant_term (rtx x, rtx *constptr)
   x0 = eliminate_constant_term (XEXP (x, 0), &tem);
   x1 = eliminate_constant_term (XEXP (x, 1), &tem);
   if ((x1 != XEXP (x, 1) || x0 != XEXP (x, 0))
-      && 0 != (tem = simplify_binary_operation (PLUS, GET_MODE (x),
-						*constptr, tem))
+      && (tem = simplify_binary_operation (PLUS, GET_MODE (x),
+					   *constptr, tem)) != 0
       && CONST_INT_P (tem))
     {
       *constptr = tem;
@@ -274,7 +291,7 @@ break_out_memory_refs (rtx x)
    it should return NULL if it can't be simplified without emitting insns.  */
 
 rtx
-convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
+convert_memory_address_addr_space_1 (scalar_int_mode to_mode ATTRIBUTE_UNUSED,
 				     rtx x, addr_space_t as ATTRIBUTE_UNUSED,
 				     bool in_const ATTRIBUTE_UNUSED,
 				     bool no_emit ATTRIBUTE_UNUSED)
@@ -283,7 +300,7 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
   gcc_assert (GET_MODE (x) == to_mode || GET_MODE (x) == VOIDmode);
   return x;
 #else /* defined(POINTERS_EXTEND_UNSIGNED) */
-  machine_mode pointer_mode, address_mode, from_mode;
+  scalar_int_mode pointer_mode, address_mode, from_mode;
   rtx temp;
   enum rtx_code code;
 
@@ -379,7 +396,8 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
    arithmetic insns can be used.  */
 
 rtx
-convert_memory_address_addr_space (machine_mode to_mode, rtx x, addr_space_t as)
+convert_memory_address_addr_space (scalar_int_mode to_mode, rtx x,
+				   addr_space_t as)
 {
   return convert_memory_address_addr_space_1 (to_mode, x, as, false, false);
 }
@@ -393,7 +411,7 @@ rtx
 memory_address_addr_space (machine_mode mode, rtx x, addr_space_t as)
 {
   rtx oldx = x;
-  machine_mode address_mode = targetm.addr_space.address_mode (as);
+  scalar_int_mode address_mode = targetm.addr_space.address_mode (as);
 
   x = convert_memory_address_addr_space (address_mode, x, as);
 
@@ -783,6 +801,7 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
 #ifdef PROMOTE_MODE
   enum tree_code code;
   int unsignedp;
+  scalar_mode smode;
 #endif
 
   /* For libcalls this is invoked without TYPE from the backends
@@ -802,9 +821,11 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
     {
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
     case REAL_TYPE:      case OFFSET_TYPE:     case FIXED_POINT_TYPE:
-      PROMOTE_MODE (mode, unsignedp, type);
+      /* Values of these types always have scalar mode.  */
+      smode = as_a <scalar_mode> (mode);
+      PROMOTE_MODE (smode, unsignedp, type);
       *punsignedp = unsignedp;
-      return mode;
+      return smode;
 
 #ifdef POINTERS_EXTEND_UNSIGNED
     case REFERENCE_TYPE:
@@ -920,7 +941,7 @@ adjust_stack_1 (rtx adjust, bool anti_p)
     }
 
   if (!suppress_reg_args_size)
-    add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+    add_args_size_note (insn, stack_pointer_delta);
 }
 
 /* Adjust the stack pointer by ADJUST (an rtx for a number of bytes).
@@ -1197,7 +1218,6 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
 			unsigned required_align,
 			HOST_WIDE_INT *pstack_usage_size)
 {
-  unsigned extra = 0;
   rtx size = *psize;
 
   /* Ensure the size is in the proper mode.  */
@@ -1233,15 +1253,20 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
      example), so we must preventively align the value.  We leave space
      in SIZE for the hole that might result from the alignment operation.  */
 
-  extra = (required_align - BITS_PER_UNIT) / BITS_PER_UNIT;
-  size = plus_constant (Pmode, size, extra);
-  size = force_operand (size, NULL_RTX);
+  unsigned known_align = REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM);
+  if (known_align == 0)
+    known_align = BITS_PER_UNIT;
+  if (required_align > known_align)
+    {
+      unsigned extra = (required_align - known_align) / BITS_PER_UNIT;
+      size = plus_constant (Pmode, size, extra);
+      size = force_operand (size, NULL_RTX);
+      if (size_align > known_align)
+	size_align = known_align;
 
-  if (flag_stack_usage_info && pstack_usage_size)
-    *pstack_usage_size += extra;
-
-  if (extra && size_align > BITS_PER_UNIT)
-    size_align = BITS_PER_UNIT;
+      if (flag_stack_usage_info && pstack_usage_size)
+	*pstack_usage_size += extra;
+    }
 
   /* Round the size to a multiple of the required stack alignment.
      Since the stack is presumed to be rounded before this allocation,
@@ -1271,6 +1296,29 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
   *psize = size;
 }
 
+/* Return the number of bytes to "protect" on the stack for -fstack-check.
+
+   "protect" in the context of -fstack-check means how many bytes we
+   should always ensure are available on the stack.  More importantly
+   this is how many bytes are skipped when probing the stack.
+
+   On some targets we want to reuse the -fstack-check prologue support
+   to give a degree of protection against stack clashing style attacks.
+
+   In that scenario we do not want to skip bytes before probing as that
+   would render the stack clash protections useless.
+
+   So we never use STACK_CHECK_PROTECT directly.  Instead we indirect though
+   this helper which allows us to provide different values for
+   -fstack-check and -fstack-clash-protection.  */
+HOST_WIDE_INT
+get_stack_check_protect (void)
+{
+  if (flag_stack_clash_protection)
+    return 0;
+ return STACK_CHECK_PROTECT;
+}
+
 /* Return an rtx representing the address of an area of memory dynamically
    pushed on the stack.
 
@@ -1285,6 +1333,9 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
    REQUIRED_ALIGN is the alignment (in bits) required for the region
    of memory.
 
+   MAX_SIZE is an upper bound for SIZE, if SIZE is not constant, or -1 if
+   no such upper bound is known.
+
    If CANNOT_ACCUMULATE is set to TRUE, the caller guarantees that the
    stack space allocated by the generated code cannot be added with itself
    in the course of the execution of the function.  It is always safe to
@@ -1294,7 +1345,9 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
 
 rtx
 allocate_dynamic_stack_space (rtx size, unsigned size_align,
-			      unsigned required_align, bool cannot_accumulate)
+			      unsigned required_align,
+			      HOST_WIDE_INT max_size,
+			      bool cannot_accumulate)
 {
   HOST_WIDE_INT stack_usage_size = -1;
   rtx_code_label *final_label;
@@ -1333,8 +1386,12 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	    }
 	}
 
-      /* If the size is not constant, we can't say anything.  */
-      if (stack_usage_size == -1)
+      /* If the size is not constant, try the maximum size.  */
+      if (stack_usage_size < 0)
+	stack_usage_size = max_size;
+
+      /* If the size is still not constant, we can't say anything.  */
+      if (stack_usage_size < 0)
 	{
 	  current_function_has_unbounded_dynamic_stack_size = 1;
 	  stack_usage_size = 0;
@@ -1401,7 +1458,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       func = init_one_libfunc ("__morestack_allocate_stack_space");
 
       space = emit_library_call_value (func, target, LCT_NORMAL, Pmode,
-				       1, ask, Pmode);
+				       ask, Pmode);
 
       if (available_label == NULL_RTX)
 	return space;
@@ -1418,8 +1475,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
  /* We ought to be called always on the toplevel and stack ought to be aligned
     properly.  */
-  gcc_assert (!(stack_pointer_delta
-		% (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)));
+  gcc_assert (multiple_p (stack_pointer_delta,
+			  PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT));
 
   /* If needed, check that we have the required amount of stack.  Take into
      account what has already been checked.  */
@@ -1429,7 +1486,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     probe_stack_range (STACK_OLD_CHECK_PROTECT + STACK_CHECK_MAX_FRAME_SIZE,
 		       size);
   else if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
-    probe_stack_range (STACK_CHECK_PROTECT, size);
+    probe_stack_range (get_stack_check_protect (), size);
 
   /* Don't let anti_adjust_stack emit notes.  */
   suppress_reg_args_size = true;
@@ -1449,7 +1506,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     }
   else
     {
-      int saved_stack_pointer_delta;
+      poly_int64 saved_stack_pointer_delta;
 
       if (!STACK_GROWS_DOWNWARD)
 	emit_move_insn (target, virtual_stack_dynamic_rtx);
@@ -1482,6 +1539,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
       if (flag_stack_check && STACK_CHECK_MOVING_SP)
 	anti_adjust_stack_and_probe (size, false);
+      else if (flag_stack_clash_protection)
+	anti_adjust_stack_and_probe_stack_clash (size);
       else
 	anti_adjust_stack (size);
 
@@ -1528,7 +1587,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
    of memory.  */
 
 rtx
-get_dynamic_stack_base (HOST_WIDE_INT offset, unsigned required_align)
+get_dynamic_stack_base (poly_int64 offset, unsigned required_align)
 {
   rtx target;
 
@@ -1567,18 +1626,25 @@ void
 emit_stack_probe (rtx address)
 {
   if (targetm.have_probe_stack_address ())
-    emit_insn (targetm.gen_probe_stack_address (address));
+    {
+      struct expand_operand ops[1];
+      insn_code icode = targetm.code_for_probe_stack_address;
+      create_address_operand (ops, address);
+      maybe_legitimize_operands (icode, 0, 1, ops);
+      expand_insn (icode, 1, ops);
+    }
   else
     {
       rtx memref = gen_rtx_MEM (word_mode, address);
 
       MEM_VOLATILE_P (memref) = 1;
+      memref = validize_mem (memref);
 
       /* See if we have an insn to probe the stack.  */
       if (targetm.have_probe_stack ())
-        emit_insn (targetm.gen_probe_stack (memref));
+	emit_insn (targetm.gen_probe_stack (memref));
       else
-        emit_move_insn (memref, const0_rtx);
+	emit_move_insn (memref, const0_rtx);
     }
 }
 
@@ -1614,8 +1680,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 					         stack_pointer_rtx,
 					         plus_constant (Pmode,
 								size, first)));
-      emit_library_call (stack_check_libfunc, LCT_THROW, VOIDmode, 1, addr,
-			 Pmode);
+      emit_library_call (stack_check_libfunc, LCT_THROW, VOIDmode,
+			 addr, Pmode);
     }
 
   /* Next see if we have an insn to check the stack.  */
@@ -1756,6 +1822,238 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
   /* Make sure nothing is scheduled before we are done.  */
   emit_insn (gen_blockage ());
 }
+
+/* Compute parameters for stack clash probing a dynamic stack
+   allocation of SIZE bytes.
+
+   We compute ROUNDED_SIZE, LAST_ADDR, RESIDUAL and PROBE_INTERVAL.
+
+   Additionally we conditionally dump the type of probing that will
+   be needed given the values computed.  */
+
+void
+compute_stack_clash_protection_loop_data (rtx *rounded_size, rtx *last_addr,
+					  rtx *residual,
+					  HOST_WIDE_INT *probe_interval,
+					  rtx size)
+{
+  /* Round SIZE down to STACK_CLASH_PROTECTION_PROBE_INTERVAL */
+  *probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  *rounded_size = simplify_gen_binary (AND, Pmode, size,
+				        GEN_INT (-*probe_interval));
+
+  /* Compute the value of the stack pointer for the last iteration.
+     It's just SP + ROUNDED_SIZE.  */
+  rtx rounded_size_op = force_operand (*rounded_size, NULL_RTX);
+  *last_addr = force_operand (gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
+					      stack_pointer_rtx,
+					      rounded_size_op),
+			      NULL_RTX);
+
+  /* Compute any residuals not allocated by the loop above.  Residuals
+     are just the ROUNDED_SIZE - SIZE.  */
+  *residual = simplify_gen_binary (MINUS, Pmode, size, *rounded_size);
+
+  /* Dump key information to make writing tests easy.  */
+  if (dump_file)
+    {
+      if (*rounded_size == CONST0_RTX (Pmode))
+	fprintf (dump_file,
+		 "Stack clash skipped dynamic allocation and probing loop.\n");
+      else if (CONST_INT_P (*rounded_size)
+	       && INTVAL (*rounded_size) <= 4 * *probe_interval)
+	fprintf (dump_file,
+		 "Stack clash dynamic allocation and probing inline.\n");
+      else if (CONST_INT_P (*rounded_size))
+	fprintf (dump_file,
+		 "Stack clash dynamic allocation and probing in "
+		 "rotated loop.\n");
+      else
+	fprintf (dump_file,
+		 "Stack clash dynamic allocation and probing in loop.\n");
+
+      if (*residual != CONST0_RTX (Pmode))
+	fprintf (dump_file,
+		 "Stack clash dynamic allocation and probing residuals.\n");
+      else
+	fprintf (dump_file,
+		 "Stack clash skipped dynamic allocation and "
+		 "probing residuals.\n");
+    }
+}
+
+/* Emit the start of an allocate/probe loop for stack
+   clash protection.
+
+   LOOP_LAB and END_LAB are returned for use when we emit the
+   end of the loop.
+
+   LAST addr is the value for SP which stops the loop.  */
+void
+emit_stack_clash_protection_probe_loop_start (rtx *loop_lab,
+					      rtx *end_lab,
+					      rtx last_addr,
+					      bool rotated)
+{
+  /* Essentially we want to emit any setup code, the top of loop
+     label and the comparison at the top of the loop.  */
+  *loop_lab = gen_label_rtx ();
+  *end_lab = gen_label_rtx ();
+
+  emit_label (*loop_lab);
+  if (!rotated)
+    emit_cmp_and_jump_insns (stack_pointer_rtx, last_addr, EQ, NULL_RTX,
+			     Pmode, 1, *end_lab);
+}
+
+/* Emit the end of a stack clash probing loop.
+
+   This consists of just the jump back to LOOP_LAB and
+   emitting END_LOOP after the loop.  */
+
+void
+emit_stack_clash_protection_probe_loop_end (rtx loop_lab, rtx end_loop,
+					    rtx last_addr, bool rotated)
+{
+  if (rotated)
+    emit_cmp_and_jump_insns (stack_pointer_rtx, last_addr, NE, NULL_RTX,
+			     Pmode, 1, loop_lab);
+  else
+    emit_jump (loop_lab);
+
+  emit_label (end_loop);
+
+}
+
+/* Adjust the stack pointer by minus SIZE (an rtx for a number of bytes)
+   while probing it.  This pushes when SIZE is positive.  SIZE need not
+   be constant.
+
+   This is subtly different than anti_adjust_stack_and_probe to try and
+   prevent stack-clash attacks
+
+     1. It must assume no knowledge of the probing state, any allocation
+	must probe.
+
+	Consider the case of a 1 byte alloca in a loop.  If the sum of the
+	allocations is large, then this could be used to jump the guard if
+	probes were not emitted.
+
+     2. It never skips probes, whereas anti_adjust_stack_and_probe will
+	skip probes on the first couple PROBE_INTERVALs on the assumption
+	they're done elsewhere.
+
+     3. It only allocates and probes SIZE bytes, it does not need to
+	allocate/probe beyond that because this probing style does not
+	guarantee signal handling capability if the guard is hit.  */
+
+static void
+anti_adjust_stack_and_probe_stack_clash (rtx size)
+{
+  /* First ensure SIZE is Pmode.  */
+  if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
+    size = convert_to_mode (Pmode, size, 1);
+
+  /* We can get here with a constant size on some targets.  */
+  rtx rounded_size, last_addr, residual;
+  HOST_WIDE_INT probe_interval;
+  compute_stack_clash_protection_loop_data (&rounded_size, &last_addr,
+					    &residual, &probe_interval, size);
+
+  if (rounded_size != CONST0_RTX (Pmode))
+    {
+      if (CONST_INT_P (rounded_size)
+	  && INTVAL (rounded_size) <= 4 * probe_interval)
+	{
+	  for (HOST_WIDE_INT i = 0;
+	       i < INTVAL (rounded_size);
+	       i += probe_interval)
+	    {
+	      anti_adjust_stack (GEN_INT (probe_interval));
+
+	      /* The prologue does not probe residuals.  Thus the offset
+		 here to probe just beyond what the prologue had already
+		 allocated.  */
+	      emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					       (probe_interval
+						- GET_MODE_SIZE (word_mode))));
+	      emit_insn (gen_blockage ());
+	    }
+	}
+      else
+	{
+	  rtx loop_lab, end_loop;
+	  bool rotate_loop = CONST_INT_P (rounded_size);
+	  emit_stack_clash_protection_probe_loop_start (&loop_lab, &end_loop,
+							last_addr, rotate_loop);
+
+	  anti_adjust_stack (GEN_INT (probe_interval));
+
+	  /* The prologue does not probe residuals.  Thus the offset here
+	     to probe just beyond what the prologue had already allocated.  */
+	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					   (probe_interval
+					    - GET_MODE_SIZE (word_mode))));
+
+	  emit_stack_clash_protection_probe_loop_end (loop_lab, end_loop,
+						      last_addr, rotate_loop);
+	  emit_insn (gen_blockage ());
+	}
+    }
+
+  if (residual != CONST0_RTX (Pmode))
+    {
+      rtx label = NULL_RTX;
+      /* RESIDUAL could be zero at runtime and in that case *sp could
+	 hold live data.  Furthermore, we do not want to probe into the
+	 red zone.
+
+	 Go ahead and just guard the probe at *sp on RESIDUAL != 0 at
+	 runtime if RESIDUAL is not a compile time constant.  */
+      if (!CONST_INT_P (residual))
+	{
+	  label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (residual, CONST0_RTX (GET_MODE (residual)),
+				   EQ, NULL_RTX, Pmode, 1, label);
+	}
+
+      rtx x = force_reg (Pmode, plus_constant (Pmode, residual,
+					       -GET_MODE_SIZE (word_mode)));
+      anti_adjust_stack (residual);
+      emit_stack_probe (gen_rtx_PLUS (Pmode, stack_pointer_rtx, x));
+      emit_insn (gen_blockage ());
+      if (!CONST_INT_P (residual))
+	emit_label (label);
+    }
+
+  /* Some targets make optimistic assumptions in their prologues about
+     how the caller may have probed the stack.  Make sure we honor
+     those assumptions when needed.  */
+  if (size != CONST0_RTX (Pmode)
+      && targetm.stack_clash_protection_final_dynamic_probe (residual))
+    {
+      /* SIZE could be zero at runtime and in that case *sp could hold
+	 live data.  Furthermore, we don't want to probe into the red
+	 zone.
+
+	 Go ahead and just guard the probe at *sp on SIZE != 0 at runtime
+	 if SIZE is not a compile time constant.  */
+      rtx label = NULL_RTX;
+      if (!CONST_INT_P (size))
+	{
+	  label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (size, CONST0_RTX (GET_MODE (size)),
+				   EQ, NULL_RTX, Pmode, 1, label);
+	}
+
+      emit_stack_probe (stack_pointer_rtx);
+      emit_insn (gen_blockage ());
+      if (!CONST_INT_P (size))
+	emit_label (label);
+    }
+}
+
 
 /* Adjust the stack pointer by minus SIZE (an rtx for a number of bytes)
    while probing it.  This pushes when SIZE is positive.  SIZE need not
@@ -1904,26 +2202,21 @@ hard_function_value (const_tree valtype, const_tree func, const_tree fntype,
   if (REG_P (val)
       && GET_MODE (val) == BLKmode)
     {
-      unsigned HOST_WIDE_INT bytes = int_size_in_bytes (valtype);
-      machine_mode tmpmode;
+      unsigned HOST_WIDE_INT bytes = arg_int_size_in_bytes (valtype);
+      opt_scalar_int_mode tmpmode;
 
       /* int_size_in_bytes can return -1.  We don't need a check here
 	 since the value of bytes will then be large enough that no
 	 mode will match anyway.  */
 
-      for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   tmpmode != VOIDmode;
-	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
+      FOR_EACH_MODE_IN_CLASS (tmpmode, MODE_INT)
 	{
 	  /* Have we found a large enough mode?  */
-	  if (GET_MODE_SIZE (tmpmode) >= bytes)
+	  if (GET_MODE_SIZE (tmpmode.require ()) >= bytes)
 	    break;
 	}
 
-      /* No suitable mode found.  */
-      gcc_assert (tmpmode != VOIDmode);
-
-      PUT_MODE (val, tmpmode);
+      PUT_MODE (val, tmpmode.require ());
     }
   return val;
 }

@@ -1,9 +1,9 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do compile { target c++1z } }
+// { dg-do compile { target c++17 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2017 Free Software Foundation, Inc.
+// Copyright (C) 2017-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,12 @@
 // NB: This file is for testing with NO OTHER INCLUDES.
 
 #include <mutex>
+
+#ifndef __cpp_lib_scoped_lock
+# error "Feature-test macro for scoped_lock missing"
+#elif __cpp_lib_scoped_lock != 201703
+# error "Feature-test macro for scoped_lock has wrong value"
+#endif
 
 void test01()
 {

@@ -15,7 +15,7 @@ import (
 func BenchmarkUDP6LinkLocalUnicast(b *testing.B) {
 	testHookUninstaller.Do(uninstallTestHooks)
 
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		b.Skip("IPv6 is not supported")
 	}
 	ifi := loopbackInterface()
@@ -161,8 +161,13 @@ func testWriteToConn(t *testing.T, raddr string) {
 	}
 	_, _, err = c.(*UDPConn).WriteMsgUDP(b, nil, nil)
 	switch runtime.GOOS {
-	case "nacl", "windows": // see golang.org/issue/9252
+	case "nacl": // see golang.org/issue/9252
 		t.Skipf("not implemented yet on %s", runtime.GOOS)
+	case "windows":
+		if testenv.IsWindowsXP() {
+			t.Log("skipping broken test on Windows XP (see golang.org/issue/23072)")
+			return
+		}
 	default:
 		if err != nil {
 			t.Fatal(err)
@@ -204,8 +209,13 @@ func testWriteToPacketConn(t *testing.T, raddr string) {
 	}
 	_, _, err = c.(*UDPConn).WriteMsgUDP(b, nil, ra)
 	switch runtime.GOOS {
-	case "nacl", "windows": // see golang.org/issue/9252
+	case "nacl": // see golang.org/issue/9252
 		t.Skipf("not implemented yet on %s", runtime.GOOS)
+	case "windows":
+		if testenv.IsWindowsXP() {
+			t.Log("skipping broken test on Windows XP (see golang.org/issue/23072)")
+			return
+		}
 	default:
 		if err != nil {
 			t.Fatal(err)
@@ -279,7 +289,7 @@ func TestUDPConnLocalAndRemoteNames(t *testing.T) {
 func TestIPv6LinkLocalUnicastUDP(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
 
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		t.Skip("IPv6 is not supported")
 	}
 

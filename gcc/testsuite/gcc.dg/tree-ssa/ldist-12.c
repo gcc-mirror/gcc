@@ -18,4 +18,5 @@ int foo (int * __restrict__ ia,
   return oya[22] + oyb[21];
 }
 
-/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 1 "ldist" } } */
+/* Distributing the loop doesn't expose more parallelism.  */
+/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 0 "ldist" } } */

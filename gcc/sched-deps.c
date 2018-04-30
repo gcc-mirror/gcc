@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -2308,7 +2308,7 @@ sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
      If so, mark all of them just like the first.  */
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      int i = hard_regno_nregs[regno][mode];
+      int i = hard_regno_nregs (regno, mode);
       if (ref == SET)
 	{
 	  while (--i >= 0)
@@ -2419,7 +2419,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     {
       if (GET_CODE (dest) == STRICT_LOW_PART
 	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || df_read_modify_subreg_p (dest))
+	 || read_modify_subreg_p (dest))
         {
 	  /* These both read and modify the result.  We must handle
              them as writes to get proper dependencies for following
@@ -2834,6 +2834,15 @@ static void
 sched_macro_fuse_insns (rtx_insn *insn)
 {
   rtx_insn *prev;
+  /* No target hook would return true for debug insn as any of the
+     hook operand, and with very large sequences of only debug insns
+     where on each we call sched_macro_fuse_insns it has quadratic
+     compile time complexity.  */
+  if (DEBUG_INSN_P (insn))
+    return;
+  prev = prev_nonnote_nondebug_insn (insn);
+  if (!prev)
+    return;
 
   if (any_condjump_p (insn))
     {
@@ -2841,27 +2850,20 @@ sched_macro_fuse_insns (rtx_insn *insn)
       rtx cc_reg_1;
       targetm.fixed_condition_code_regs (&condreg1, &condreg2);
       cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
-      prev = prev_nonnote_nondebug_insn (insn);
-      if (!reg_referenced_p (cc_reg_1, PATTERN (insn))
-          || !prev
-          || !modified_in_p (cc_reg_1, prev))
-        return;
+      if (reg_referenced_p (cc_reg_1, PATTERN (insn))
+	  && modified_in_p (cc_reg_1, prev))
+	{
+	  if (targetm.sched.macro_fusion_pair_p (prev, insn))
+	    SCHED_GROUP_P (insn) = 1;
+	  return;
+	}
     }
-  else
+
+  if (single_set (insn) && single_set (prev))
     {
-      rtx insn_set = single_set (insn);
-
-      prev = prev_nonnote_nondebug_insn (insn);
-      if (!prev
-          || !insn_set
-          || !single_set (prev))
-        return;
-
+      if (targetm.sched.macro_fusion_pair_p (prev, insn))
+	SCHED_GROUP_P (insn) = 1;
     }
-
-  if (targetm.sched.macro_fusion_pair_p (prev, insn))
-    SCHED_GROUP_P (insn) = 1;
-
 }
 
 /* Get the implicit reg pending clobbers for INSN and save them in TEMP.  */
@@ -2895,7 +2897,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 			 && code == SET);
 
   /* Group compare and branch insns for macro-fusion.  */
-  if (targetm.sched.macro_fusion_p
+  if (!deps->readonly
+      && targetm.sched.macro_fusion_p
       && targetm.sched.macro_fusion_p ())
     sched_macro_fuse_insns (insn);
 
@@ -2920,6 +2923,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	= alloc_INSN_LIST (insn, deps->sched_before_next_jump);
 
       /* Make sure epilogue insn is scheduled after preceding jumps.  */
+      add_dependence_list (insn, deps->last_pending_memory_flush, 1,
+			   REG_DEP_ANTI, true);
       add_dependence_list (insn, deps->pending_jump_insns, 1, REG_DEP_ANTI,
 			   true);
     }
@@ -3710,7 +3715,8 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
              Since we only have a choice between 'might be clobbered'
              and 'definitely not clobbered', we must include all
              partly call-clobbered registers here.  */
-            else if (HARD_REGNO_CALL_PART_CLOBBERED (i, reg_raw_mode[i])
+	    else if (targetm.hard_regno_call_part_clobbered (i,
+							     reg_raw_mode[i])
                      || TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
               SET_REGNO_REG_SET (reg_pending_clobbers, i);
           /* We don't know what set of fixed registers might be used
@@ -4715,6 +4721,11 @@ parse_add_or_inc (struct mem_inc_info *mii, rtx_insn *insn, bool before_mem)
   bool regs_equal;
 
   if (RTX_FRAME_RELATED_P (insn) || !pat)
+    return false;
+
+  /* Do not allow breaking data dependencies for insns that are marked
+     with REG_STACK_CHECK.  */
+  if (find_reg_note (insn, REG_STACK_CHECK, NULL))
     return false;
 
   /* Result must be single reg.  */

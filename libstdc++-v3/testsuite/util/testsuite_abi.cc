@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -205,6 +205,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.22");
       known_versions.push_back("GLIBCXX_3.4.23");
       known_versions.push_back("GLIBCXX_3.4.24");
+      known_versions.push_back("GLIBCXX_3.4.25");
       known_versions.push_back("CXXABI_1.3");
       known_versions.push_back("CXXABI_LDBL_1.3");
       known_versions.push_back("CXXABI_1.3.1");
@@ -235,7 +236,7 @@ check_version(symbol& test, bool added)
 	test.version_status = symbol::incompatible;
 
       // Check that added symbols are added in the latest pre-release version.
-      bool latestp = (test.version_name == "GLIBCXX_3.4.24"
+      bool latestp = (test.version_name == "GLIBCXX_3.4.25"
 		     || test.version_name == "CXXABI_1.3.11"
 		     || test.version_name == "CXXABI_FLOAT128"
 		     || test.version_name == "CXXABI_TM_1");
@@ -589,21 +590,26 @@ create_symbols(const char* file)
 }
 
 
-const char*
+std::string
 demangle(const std::string& mangled)
 {
-  const char* name;
+  std::string name;
   if (mangled[0] != '_' || mangled[1] != 'Z')
     {
       // This is not a mangled symbol, thus has "C" linkage.
-      name = mangled.c_str();
+      name = mangled;
     }
   else
     {
       // Use __cxa_demangle to demangle.
       int status = 0;
-      name = abi::__cxa_demangle(mangled.c_str(), 0, 0, &status);
-      if (!name)
+      char* ptr = abi::__cxa_demangle(mangled.c_str(), 0, 0, &status);
+      if (ptr)
+	{
+	  name = ptr;
+	  free(ptr);
+	}
+      else
 	{
 	  switch (status)
 	    {

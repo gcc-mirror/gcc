@@ -1,9 +1,9 @@
 // { dg-do assemble  }
 
 struct S {
-  S(int); // { dg-error "with" }
+  S(int); // { dg-message "previous" }
   S(int); // { dg-error "overloaded" } already declared
 
-  ~S();// { dg-error "with" }
+  ~S();// { dg-message "previous" }
   ~S(); // { dg-error "overloaded" } already declared
 };

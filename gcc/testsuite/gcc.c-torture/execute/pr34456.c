@@ -1,4 +1,4 @@
-/* { dg-skip-if "requires qsort" { freestanding } { "*" } { "" } }  */
+/* { dg-skip-if "requires qsort" { freestanding } }  */
 
 #include <stdlib.h>
 

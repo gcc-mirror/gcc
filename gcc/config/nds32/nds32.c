@@ -1,5 +1,5 @@
 /* Subroutines used for code generation of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -20,6 +20,8 @@
 
 /* ------------------------------------------------------------------------ */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -27,6 +29,9 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tree-pass.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -43,6 +48,8 @@
 #include "expr.h"
 #include "tm-constrs.h"
 #include "builtins.h"
+#include "cpplib.h"
+#include "context.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -74,40 +81,244 @@
    NOTE that the base value starting from 1024.  */
 static const char * const nds32_intrinsic_register_names[] =
 {
-  "$PSW", "$IPSW", "$ITYPE", "$IPC"
+  "$CPU_VER",
+  "$ICM_CFG",
+  "$DCM_CFG",
+  "$MMU_CFG",
+  "$MSC_CFG",
+  "$MSC_CFG2",
+  "$CORE_ID",
+  "$FUCOP_EXIST",
+
+  "$PSW",
+  "$IPSW",
+  "$P_IPSW",
+  "$IVB",
+  "$EVA",
+  "$P_EVA",
+  "$ITYPE",
+  "$P_ITYPE",
+
+  "$MERR",
+  "$IPC",
+  "$P_IPC",
+  "$OIPC",
+  "$P_P0",
+  "$P_P1",
+
+  "$INT_MASK",
+  "$INT_MASK2",
+  "$INT_MASK3",
+  "$INT_PEND",
+  "$INT_PEND2",
+  "$INT_PEND3",
+  "$SP_USR",
+  "$SP_PRIV",
+  "$INT_PRI",
+  "$INT_PRI2",
+  "$INT_PRI3",
+  "$INT_PRI4",
+  "$INT_CTRL",
+  "$INT_TRIGGER",
+  "$INT_TRIGGER2",
+  "$INT_GPR_PUSH_DIS",
+
+  "$MMU_CTL",
+  "$L1_PPTB",
+  "$TLB_VPN",
+  "$TLB_DATA",
+  "$TLB_MISC",
+  "$VLPT_IDX",
+  "$ILMB",
+  "$DLMB",
+
+  "$CACHE_CTL",
+  "$HSMP_SADDR",
+  "$HSMP_EADDR",
+  "$SDZ_CTL",
+  "$N12MISC_CTL",
+  "$MISC_CTL",
+  "$ECC_MISC",
+
+  "$BPC0",
+  "$BPC1",
+  "$BPC2",
+  "$BPC3",
+  "$BPC4",
+  "$BPC5",
+  "$BPC6",
+  "$BPC7",
+
+  "$BPA0",
+  "$BPA1",
+  "$BPA2",
+  "$BPA3",
+  "$BPA4",
+  "$BPA5",
+  "$BPA6",
+  "$BPA7",
+
+  "$BPAM0",
+  "$BPAM1",
+  "$BPAM2",
+  "$BPAM3",
+  "$BPAM4",
+  "$BPAM5",
+  "$BPAM6",
+  "$BPAM7",
+
+  "$BPV0",
+  "$BPV1",
+  "$BPV2",
+  "$BPV3",
+  "$BPV4",
+  "$BPV5",
+  "$BPV6",
+  "$BPV7",
+
+  "$BPCID0",
+  "$BPCID1",
+  "$BPCID2",
+  "$BPCID3",
+  "$BPCID4",
+  "$BPCID5",
+  "$BPCID6",
+  "$BPCID7",
+
+  "$EDM_CFG",
+  "$EDMSW",
+  "$EDM_CTL",
+  "$EDM_DTR",
+  "$BPMTC",
+  "$DIMBR",
+
+  "$TECR0",
+  "$TECR1",
+  "$PFMC0",
+  "$PFMC1",
+  "$PFMC2",
+  "$PFM_CTL",
+  "$PFT_CTL",
+  "$HSP_CTL",
+  "$SP_BOUND",
+  "$SP_BOUND_PRIV",
+  "$SP_BASE",
+  "$SP_BASE_PRIV",
+  "$FUCOP_CTL",
+  "$PRUSR_ACC_CTL",
+
+  "$DMA_CFG",
+  "$DMA_GCSW",
+  "$DMA_CHNSEL",
+  "$DMA_ACT",
+  "$DMA_SETUP",
+  "$DMA_ISADDR",
+  "$DMA_ESADDR",
+  "$DMA_TCNT",
+  "$DMA_STATUS",
+  "$DMA_2DSET",
+  "$DMA_2DSCTL",
+  "$DMA_RCNT",
+  "$DMA_HSTATUS",
+
+  "$PC",
+  "$SP_USR1",
+  "$SP_USR2",
+  "$SP_USR3",
+  "$SP_PRIV1",
+  "$SP_PRIV2",
+  "$SP_PRIV3",
+  "$BG_REGION",
+  "$SFCR",
+  "$SIGN",
+  "$ISIGN",
+  "$P_ISIGN",
+  "$IFC_LP",
+  "$ITB"
+};
+
+/* Define instrinsic cctl names.  */
+static const char * const nds32_cctl_names[] =
+{
+  "L1D_VA_FILLCK",
+  "L1D_VA_ULCK",
+  "L1I_VA_FILLCK",
+  "L1I_VA_ULCK",
+
+  "L1D_IX_WBINVAL",
+  "L1D_IX_INVAL",
+  "L1D_IX_WB",
+  "L1I_IX_INVAL",
+
+  "L1D_VA_INVAL",
+  "L1D_VA_WB",
+  "L1D_VA_WBINVAL",
+  "L1I_VA_INVAL",
+
+  "L1D_IX_RTAG",
+  "L1D_IX_RWD",
+  "L1I_IX_RTAG",
+  "L1I_IX_RWD",
+
+  "L1D_IX_WTAG",
+  "L1D_IX_WWD",
+  "L1I_IX_WTAG",
+  "L1I_IX_WWD"
+};
+
+static const char * const nds32_dpref_names[] =
+{
+  "SRD",
+  "MRD",
+  "SWR",
+  "MWR",
+  "PTE",
+  "CLWR"
+};
+
+/* Defining register allocation order for performance.
+   We want to allocate callee-saved registers after others.
+   It may be used by nds32_adjust_reg_alloc_order().  */
+static const int nds32_reg_alloc_order_for_speed[] =
+{
+   0,   1,   2,   3,   4,   5,  16,  17,
+  18,  19,  20,  21,  22,  23,  24,  25,
+  26,  27,   6,   7,   8,   9,  10,  11,
+  12,  13,  14,  15
 };
 
 /* Defining target-specific uses of __attribute__.  */
 static const struct attribute_spec nds32_attribute_table[] =
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
-               function_type_required, handler, affects_type_identity } */
+	       function_type_required, affects_type_identity, handler,
+	       exclude } */
 
   /* The interrupt vid: [0-63]+ (actual vector number starts from 9 to 72).  */
-  { "interrupt",    1, 64, false, false, false, NULL, false },
+  { "interrupt",    1, 64, false, false, false, false, NULL, NULL },
   /* The exception vid: [1-8]+  (actual vector number starts from 1 to 8).  */
-  { "exception",    1,  8, false, false, false, NULL, false },
+  { "exception",    1,  8, false, false, false, false, NULL, NULL },
   /* Argument is user's interrupt numbers.  The vector number is always 0.  */
-  { "reset",        1,  1, false, false, false, NULL, false },
+  { "reset",        1,  1, false, false, false, false, NULL, NULL },
 
   /* The attributes describing isr nested type.  */
-  { "nested",       0,  0, false, false, false, NULL, false },
-  { "not_nested",   0,  0, false, false, false, NULL, false },
-  { "nested_ready", 0,  0, false, false, false, NULL, false },
+  { "nested",       0,  0, false, false, false, false, NULL, NULL },
+  { "not_nested",   0,  0, false, false, false, false, NULL, NULL },
+  { "nested_ready", 0,  0, false, false, false, false, NULL, NULL },
 
   /* The attributes describing isr register save scheme.  */
-  { "save_all",     0,  0, false, false, false, NULL, false },
-  { "partial_save", 0,  0, false, false, false, NULL, false },
+  { "save_all",     0,  0, false, false, false, false, NULL, NULL },
+  { "partial_save", 0,  0, false, false, false, false, NULL, NULL },
 
   /* The attributes used by reset attribute.  */
-  { "nmi",          1,  1, false, false, false, NULL, false },
-  { "warm",         1,  1, false, false, false, NULL, false },
+  { "nmi",          1,  1, false, false, false, false, NULL, NULL },
+  { "warm",         1,  1, false, false, false, false, NULL, NULL },
 
   /* The attribute telling no prologue/epilogue.  */
-  { "naked",        0,  0, false, false, false, NULL, false },
+  { "naked",        0,  0, false, false, false, false, NULL, NULL },
 
   /* The last attribute spec is set to be NULL.  */
-  { NULL,           0,  0, false, false, false, NULL, false }
+  { NULL,           0,  0, false, false, false, false, NULL, NULL }
 };
 
 
@@ -122,11 +333,17 @@ nds32_init_machine_status (void)
   struct machine_function *machine;
   machine = ggc_cleared_alloc<machine_function> ();
 
+  /* Initially assume this function does not use __builtin_eh_return.  */
+  machine->use_eh_return_p = 0;
+
   /* Initially assume this function needs prologue/epilogue.  */
   machine->naked_p = 0;
 
   /* Initially assume this function does NOT use fp_as_gp optimization.  */
   machine->fp_as_gp_p = 0;
+
+  /* Initially this function is not under strictly aligned situation.  */
+  machine->strict_aligned_p = 0;
 
   return machine;
 }
@@ -138,11 +355,42 @@ nds32_compute_stack_frame (void)
 {
   int r;
   int block_size;
+  bool v3pushpop_p;
 
   /* Because nds32_compute_stack_frame() will be called from different place,
      everytime we enter this function, we have to assume this function
      needs prologue/epilogue.  */
   cfun->machine->naked_p = 0;
+
+
+  /* If __builtin_eh_return is used, we better have frame pointer needed
+     so that we can easily locate the stack slot of return address.  */
+  if (crtl->calls_eh_return)
+    {
+      frame_pointer_needed = 1;
+
+      /* We need to mark eh data registers that need to be saved
+	 in the stack.  */
+      cfun->machine->eh_return_data_first_regno = EH_RETURN_DATA_REGNO (0);
+      for (r = 0; EH_RETURN_DATA_REGNO (r) != INVALID_REGNUM; r++)
+	cfun->machine->eh_return_data_last_regno = r;
+
+      cfun->machine->eh_return_data_regs_size
+	= 4 * (cfun->machine->eh_return_data_last_regno
+	       - cfun->machine->eh_return_data_first_regno
+	       + 1);
+      cfun->machine->use_eh_return_p = 1;
+    }
+  else
+    {
+      /* Assigning SP_REGNUM to eh_first_regno and eh_last_regno means we
+	 do not need to handle __builtin_eh_return case in this function.  */
+      cfun->machine->eh_return_data_first_regno = SP_REGNUM;
+      cfun->machine->eh_return_data_last_regno  = SP_REGNUM;
+
+      cfun->machine->eh_return_data_regs_size = 0;
+      cfun->machine->use_eh_return_p = 0;
+    }
 
   /* Get variadic arguments size to prepare pretend arguments and
      we will push them into stack at prologue by ourself.  */
@@ -150,11 +398,11 @@ nds32_compute_stack_frame (void)
   if (cfun->machine->va_args_size != 0)
     {
       cfun->machine->va_args_first_regno
-        = NDS32_GPR_ARG_FIRST_REGNUM
-          + NDS32_MAX_GPR_REGS_FOR_ARGS
-          - (crtl->args.pretend_args_size / UNITS_PER_WORD);
+	= NDS32_GPR_ARG_FIRST_REGNUM
+	  + NDS32_MAX_GPR_REGS_FOR_ARGS
+	  - (crtl->args.pretend_args_size / UNITS_PER_WORD);
       cfun->machine->va_args_last_regno
-        = NDS32_GPR_ARG_FIRST_REGNUM + NDS32_MAX_GPR_REGS_FOR_ARGS - 1;
+	= NDS32_GPR_ARG_FIRST_REGNUM + NDS32_MAX_GPR_REGS_FOR_ARGS - 1;
     }
   else
     {
@@ -188,7 +436,8 @@ nds32_compute_stack_frame (void)
 
   /* If $lp value is required to be saved on stack, it needs 4 bytes space.
      Check whether $lp is ever live.  */
-  cfun->machine->lp_size = (df_regs_ever_live_p (LP_REGNUM)) ? 4 : 0;
+  cfun->machine->lp_size
+    = (flag_always_save_lp || df_regs_ever_live_p (LP_REGNUM)) ? 4 : 0;
 
   /* Initially there is no padding bytes.  */
   cfun->machine->callee_saved_area_gpr_padding_bytes = 0;
@@ -197,6 +446,10 @@ nds32_compute_stack_frame (void)
   cfun->machine->callee_saved_gpr_regs_size = 0;
   cfun->machine->callee_saved_first_gpr_regno = SP_REGNUM;
   cfun->machine->callee_saved_last_gpr_regno  = SP_REGNUM;
+  cfun->machine->callee_saved_fpr_regs_size = 0;
+  cfun->machine->callee_saved_first_fpr_regno = SP_REGNUM;
+  cfun->machine->callee_saved_last_fpr_regno  = SP_REGNUM;
+
   /* Currently, there is no need to check $r28~$r31
      because we will save them in another way.  */
   for (r = 0; r < 28; r++)
@@ -214,6 +467,35 @@ nds32_compute_stack_frame (void)
 	}
     }
 
+  /* Recording fpu callee-saved register.  */
+  if (TARGET_HARD_FLOAT)
+    {
+      for (r = NDS32_FIRST_FPR_REGNUM; r < NDS32_LAST_FPR_REGNUM; r++)
+	{
+	  if (NDS32_REQUIRED_CALLEE_SAVED_P (r))
+	    {
+	      /* Mark the first required callee-saved register.  */
+	      if (cfun->machine->callee_saved_first_fpr_regno == SP_REGNUM)
+		{
+		  /* Make first callee-saved number is even,
+		     bacause we use doubleword access, and this way
+		     promise 8-byte alignemt.  */
+		  if (!NDS32_FPR_REGNO_OK_FOR_DOUBLE (r))
+		    cfun->machine->callee_saved_first_fpr_regno = r - 1;
+		  else
+		    cfun->machine->callee_saved_first_fpr_regno = r;
+		}
+	      cfun->machine->callee_saved_last_fpr_regno = r;
+	    }
+	}
+
+      /* Make last callee-saved register number is odd,
+	 we hope callee-saved register is even.  */
+      int last_fpr = cfun->machine->callee_saved_last_fpr_regno;
+      if (NDS32_FPR_REGNO_OK_FOR_DOUBLE (last_fpr))
+	cfun->machine->callee_saved_last_fpr_regno++;
+    }
+
   /* Check if this function can omit prologue/epilogue code fragment.
      If there is 'naked' attribute in this function,
      we can set 'naked_p' flag to indicate that
@@ -221,42 +503,46 @@ nds32_compute_stack_frame (void)
      Or, if all the following conditions succeed,
      we can set this function 'naked_p' as well:
        condition 1: first_regno == last_regno == SP_REGNUM,
-                    which means we do not have to save
-                    any callee-saved registers.
+		    which means we do not have to save
+		    any callee-saved registers.
        condition 2: Both $lp and $fp are NOT live in this function,
-                    which means we do not need to save them and there
-                    is no outgoing size.
+		    which means we do not need to save them and there
+		    is no outgoing size.
        condition 3: There is no local_size, which means
-                    we do not need to adjust $sp.  */
+		    we do not need to adjust $sp.  */
   if (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
       || (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_last_gpr_regno == SP_REGNUM
+	  && cfun->machine->callee_saved_first_fpr_regno == SP_REGNUM
+	  && cfun->machine->callee_saved_last_fpr_regno == SP_REGNUM
 	  && !df_regs_ever_live_p (FP_REGNUM)
 	  && !df_regs_ever_live_p (LP_REGNUM)
 	  && cfun->machine->local_size == 0))
     {
       /* Set this function 'naked_p' and other functions can check this flag.
-         Note that in nds32 port, the 'naked_p = 1' JUST means there is no
-         callee-saved, local size, and outgoing size.
-         The varargs space and ret instruction may still present in
-         the prologue/epilogue expanding.  */
+	 Note that in nds32 port, the 'naked_p = 1' JUST means there is no
+	 callee-saved, local size, and outgoing size.
+	 The varargs space and ret instruction may still present in
+	 the prologue/epilogue expanding.  */
       cfun->machine->naked_p = 1;
 
       /* No need to save $fp, $gp, and $lp.
-         We should set these value to be zero
-         so that nds32_initial_elimination_offset() can work properly.  */
+	 We should set these value to be zero
+	 so that nds32_initial_elimination_offset() can work properly.  */
       cfun->machine->fp_size = 0;
       cfun->machine->gp_size = 0;
       cfun->machine->lp_size = 0;
 
       /* If stack usage computation is required,
-         we need to provide the static stack size.  */
+	 we need to provide the static stack size.  */
       if (flag_stack_usage_info)
 	current_function_static_stack_size = 0;
 
       /* No need to do following adjustment, return immediately.  */
       return;
     }
+
+  v3pushpop_p = NDS32_V3PUSH_AVAILABLE_P;
 
   /* Adjustment for v3push instructions:
      If we are using v3push (push25/pop25) instructions,
@@ -265,16 +551,14 @@ nds32_compute_stack_frame (void)
      Some results above will be discarded and recomputed.
      Note that it is only available under V3/V3M ISA and we
      DO NOT setup following stuff for isr or variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+  if (v3pushpop_p)
     {
       /* Recompute:
-           cfun->machine->fp_size
-           cfun->machine->gp_size
-           cfun->machine->lp_size
-           cfun->machine->callee_saved_regs_first_regno
-           cfun->machine->callee_saved_regs_last_regno */
+	   cfun->machine->fp_size
+	   cfun->machine->gp_size
+	   cfun->machine->lp_size
+	   cfun->machine->callee_saved_first_gpr_regno
+	   cfun->machine->callee_saved_last_gpr_regno */
 
       /* For v3push instructions, $fp, $gp, and $lp are always saved.  */
       cfun->machine->fp_size = 4;
@@ -317,11 +601,47 @@ nds32_compute_stack_frame (void)
 	}
     }
 
-  /* We have correctly set callee_saved_regs_first_regno
-     and callee_saved_regs_last_regno.
-     Initially, the callee_saved_regs_size is supposed to be 0.
-     As long as callee_saved_regs_last_regno is not SP_REGNUM,
-     we can update callee_saved_regs_size with new size.  */
+  int sp_adjust = cfun->machine->local_size
+		  + cfun->machine->out_args_size
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes
+		  + cfun->machine->callee_saved_fpr_regs_size;
+
+  if (!v3pushpop_p
+      && sp_adjust == 0
+      && !frame_pointer_needed)
+    {
+      block_size = cfun->machine->fp_size
+		   + cfun->machine->gp_size
+		   + cfun->machine->lp_size;
+
+      if (cfun->machine->callee_saved_last_gpr_regno != SP_REGNUM)
+	block_size += (4 * (cfun->machine->callee_saved_last_gpr_regno
+			    - cfun->machine->callee_saved_first_gpr_regno
+			    + 1));
+
+      if (!NDS32_DOUBLE_WORD_ALIGN_P (block_size))
+	{
+	  /* $r14 is last callee save register.  */
+	  if (cfun->machine->callee_saved_last_gpr_regno
+	      < NDS32_LAST_CALLEE_SAVE_GPR_REGNUM)
+	    {
+	      cfun->machine->callee_saved_last_gpr_regno++;
+	    }
+	  else if (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM)
+	    {
+	      cfun->machine->callee_saved_first_gpr_regno
+		= NDS32_FIRST_CALLEE_SAVE_GPR_REGNUM;
+	      cfun->machine->callee_saved_last_gpr_regno
+		= NDS32_FIRST_CALLEE_SAVE_GPR_REGNUM;
+	    }
+	}
+    }
+
+  /* We have correctly set callee_saved_first_gpr_regno
+     and callee_saved_last_gpr_regno.
+     Initially, the callee_saved_gpr_regs_size is supposed to be 0.
+     As long as callee_saved_last_gpr_regno is not SP_REGNUM,
+     we can update callee_saved_gpr_regs_size with new size.  */
   if (cfun->machine->callee_saved_last_gpr_regno != SP_REGNUM)
     {
       /* Compute pushed size of callee-saved registers.  */
@@ -331,10 +651,22 @@ nds32_compute_stack_frame (void)
 	       + 1);
     }
 
+  if (TARGET_HARD_FLOAT)
+    {
+      /* Compute size of callee svaed floating-point registers.  */
+      if (cfun->machine->callee_saved_last_fpr_regno != SP_REGNUM)
+	{
+	  cfun->machine->callee_saved_fpr_regs_size
+	   = 4 * (cfun->machine->callee_saved_last_fpr_regno
+		  - cfun->machine->callee_saved_first_fpr_regno
+		  + 1);
+	}
+    }
+
   /* Important: We need to make sure that
-                (fp_size + gp_size + lp_size + callee_saved_regs_size)
-                is 8-byte alignment.
-                If it is not, calculate the padding bytes.  */
+		(fp_size + gp_size + lp_size + callee_saved_gpr_regs_size)
+		is 8-byte alignment.
+		If it is not, calculate the padding bytes.  */
   block_size = cfun->machine->fp_size
 	       + cfun->machine->gp_size
 	       + cfun->machine->lp_size
@@ -362,14 +694,15 @@ nds32_compute_stack_frame (void)
      "push registers to memory",
      "adjust stack pointer".  */
 static void
-nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
+nds32_emit_stack_push_multiple (unsigned Rb, unsigned Re,
+				bool save_fp_p, bool save_gp_p, bool save_lp_p,
+				bool vaarg_p)
 {
-  int regno;
+  unsigned regno;
   int extra_count;
   int num_use_regs;
   int par_index;
   int offset;
-  int save_fp, save_gp, save_lp;
 
   rtx reg;
   rtx mem;
@@ -382,39 +715,34 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
      necessary information for data analysis,
      so we create a parallel rtx like this:
      (parallel [(set (mem (plus (reg:SI SP_REGNUM) (const_int -32)))
-                     (reg:SI Rb))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -28)))
-                     (reg:SI Rb+1))
-                ...
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -16)))
-                     (reg:SI Re))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -12)))
-                     (reg:SI FP_REGNUM))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -8)))
-                     (reg:SI GP_REGNUM))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -4)))
-                     (reg:SI LP_REGNUM))
-                (set (reg:SI SP_REGNUM)
-                     (plus (reg:SI SP_REGNUM) (const_int -32)))]) */
-
-  /* Determine whether we need to save $fp, $gp, or $lp.  */
-  save_fp = INTVAL (En4) & 0x8;
-  save_gp = INTVAL (En4) & 0x4;
-  save_lp = INTVAL (En4) & 0x2;
+		     (reg:SI Rb))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -28)))
+		     (reg:SI Rb+1))
+		...
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -16)))
+		     (reg:SI Re))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -12)))
+		     (reg:SI FP_REGNUM))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -8)))
+		     (reg:SI GP_REGNUM))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -4)))
+		     (reg:SI LP_REGNUM))
+		(set (reg:SI SP_REGNUM)
+		     (plus (reg:SI SP_REGNUM) (const_int -32)))]) */
 
   /* Calculate the number of registers that will be pushed.  */
   extra_count = 0;
-  if (save_fp)
+  if (save_fp_p)
     extra_count++;
-  if (save_gp)
+  if (save_gp_p)
     extra_count++;
-  if (save_lp)
+  if (save_lp_p)
     extra_count++;
   /* Note that Rb and Re may be SP_REGNUM.  DO NOT count it in.  */
-  if (REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM)
+  if (Rb == SP_REGNUM && Re == SP_REGNUM)
     num_use_regs = extra_count;
   else
-    num_use_regs = REGNO (Re) - REGNO (Rb) + 1 + extra_count;
+    num_use_regs = Re - Rb + 1 + extra_count;
 
   /* In addition to used registers,
      we need one more space for (set sp sp-x) rtx.  */
@@ -426,10 +754,10 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
   offset = -(num_use_regs * 4);
 
   /* Create (set mem regX) from Rb, Rb+1 up to Re.  */
-  for (regno = REGNO (Rb); regno <= (int) REGNO (Re); regno++)
+  for (regno = Rb; regno <= Re; regno++)
     {
       /* Rb and Re may be SP_REGNUM.
-         We need to break this loop immediately.  */
+	 We need to break this loop immediately.  */
       if (regno == SP_REGNUM)
 	break;
 
@@ -445,7 +773,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
     }
 
   /* Create (set mem fp), (set mem gp), and (set mem lp) if necessary.  */
-  if (save_fp)
+  if (save_fp_p)
     {
       reg = gen_rtx_REG (SImode, FP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -457,7 +785,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
       offset = offset + 4;
       par_index++;
     }
-  if (save_gp)
+  if (save_gp_p)
     {
       reg = gen_rtx_REG (SImode, GP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -469,7 +797,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
       offset = offset + 4;
       par_index++;
     }
-  if (save_lp)
+  if (save_lp_p)
     {
       reg = gen_rtx_REG (SImode, LP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -515,14 +843,14 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
      "pop registers from memory",
      "adjust stack pointer".  */
 static void
-nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
+nds32_emit_stack_pop_multiple (unsigned Rb, unsigned Re,
+			       bool save_fp_p, bool save_gp_p, bool save_lp_p)
 {
-  int regno;
+  unsigned regno;
   int extra_count;
   int num_use_regs;
   int par_index;
   int offset;
-  int save_fp, save_gp, save_lp;
 
   rtx reg;
   rtx mem;
@@ -535,39 +863,34 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
      necessary information for data analysis,
      so we create a parallel rtx like this:
      (parallel [(set (reg:SI Rb)
-                     (mem (reg:SI SP_REGNUM)))
-                (set (reg:SI Rb+1)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 4))))
-                ...
-                (set (reg:SI Re)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 16))))
-                (set (reg:SI FP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 20))))
-                (set (reg:SI GP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 24))))
-                (set (reg:SI LP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 28))))
-                (set (reg:SI SP_REGNUM)
-                     (plus (reg:SI SP_REGNUM) (const_int 32)))]) */
-
-  /* Determine whether we need to restore $fp, $gp, or $lp.  */
-  save_fp = INTVAL (En4) & 0x8;
-  save_gp = INTVAL (En4) & 0x4;
-  save_lp = INTVAL (En4) & 0x2;
+		     (mem (reg:SI SP_REGNUM)))
+		(set (reg:SI Rb+1)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 4))))
+		...
+		(set (reg:SI Re)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 16))))
+		(set (reg:SI FP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 20))))
+		(set (reg:SI GP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 24))))
+		(set (reg:SI LP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 28))))
+		(set (reg:SI SP_REGNUM)
+		     (plus (reg:SI SP_REGNUM) (const_int 32)))]) */
 
   /* Calculate the number of registers that will be poped.  */
   extra_count = 0;
-  if (save_fp)
+  if (save_fp_p)
     extra_count++;
-  if (save_gp)
+  if (save_gp_p)
     extra_count++;
-  if (save_lp)
+  if (save_lp_p)
     extra_count++;
   /* Note that Rb and Re may be SP_REGNUM.  DO NOT count it in.  */
-  if (REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM)
+  if (Rb == SP_REGNUM && Re == SP_REGNUM)
     num_use_regs = extra_count;
   else
-    num_use_regs = REGNO (Re) - REGNO (Rb) + 1 + extra_count;
+    num_use_regs = Re - Rb + 1 + extra_count;
 
   /* In addition to used registers,
      we need one more space for (set sp sp+x) rtx.  */
@@ -579,10 +902,10 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
   offset = 0;
 
   /* Create (set regX mem) from Rb, Rb+1 up to Re.  */
-  for (regno = REGNO (Rb); regno <= (int) REGNO (Re); regno++)
+  for (regno = Rb; regno <= Re; regno++)
     {
       /* Rb and Re may be SP_REGNUM.
-         We need to break this loop immediately.  */
+	 We need to break this loop immediately.  */
       if (regno == SP_REGNUM)
 	break;
 
@@ -600,7 +923,7 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
     }
 
   /* Create (set fp mem), (set gp mem), and (set lp mem) if necessary.  */
-  if (save_fp)
+  if (save_fp_p)
     {
       reg = gen_rtx_REG (SImode, FP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -614,7 +937,7 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
 
       dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
     }
-  if (save_gp)
+  if (save_gp_p)
     {
       reg = gen_rtx_REG (SImode, GP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -628,7 +951,7 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
 
       dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
     }
-  if (save_lp)
+  if (save_lp_p)
     {
       reg = gen_rtx_REG (SImode, LP_REGNUM);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -671,12 +994,11 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
      "push registers to memory",
      "adjust stack pointer".  */
 static void
-nds32_emit_stack_v3push (rtx Rb,
-			 rtx Re,
-			 rtx En4 ATTRIBUTE_UNUSED,
-			 rtx imm8u)
+nds32_emit_stack_v3push (unsigned Rb,
+			 unsigned Re,
+			 unsigned imm8u)
 {
-  int regno;
+  unsigned regno;
   int num_use_regs;
   int par_index;
   int offset;
@@ -691,27 +1013,27 @@ nds32_emit_stack_v3push (rtx Rb,
      necessary information for data analysis,
      so we create a parallel rtx like this:
      (parallel [(set (mem (plus (reg:SI SP_REGNUM) (const_int -32)))
-                     (reg:SI Rb))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -28)))
-                     (reg:SI Rb+1))
-                ...
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -16)))
-                     (reg:SI Re))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -12)))
-                     (reg:SI FP_REGNUM))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -8)))
-                     (reg:SI GP_REGNUM))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -4)))
-                     (reg:SI LP_REGNUM))
-                (set (reg:SI SP_REGNUM)
-                     (plus (reg:SI SP_REGNUM) (const_int -32-imm8u)))]) */
+		     (reg:SI Rb))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -28)))
+		     (reg:SI Rb+1))
+		...
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -16)))
+		     (reg:SI Re))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -12)))
+		     (reg:SI FP_REGNUM))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -8)))
+		     (reg:SI GP_REGNUM))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -4)))
+		     (reg:SI LP_REGNUM))
+		(set (reg:SI SP_REGNUM)
+		     (plus (reg:SI SP_REGNUM) (const_int -32-imm8u)))]) */
 
   /* Calculate the number of registers that will be pushed.
      Since $fp, $gp, and $lp is always pushed with v3push instruction,
      we need to count these three registers.
      Under v3push, Rb is $r6, while Re is $r6, $r8, $r10, or $r14.
      So there is no need to worry about Rb=Re=SP_REGNUM case.  */
-  num_use_regs = REGNO (Re) - REGNO (Rb) + 1 + 3;
+  num_use_regs = Re - Rb + 1 + 3;
 
   /* In addition to used registers,
      we need one more space for (set sp sp-x-imm8u) rtx.  */
@@ -725,7 +1047,7 @@ nds32_emit_stack_v3push (rtx Rb,
   /* Create (set mem regX) from Rb, Rb+1 up to Re.
      Under v3push, Rb is $r6, while Re is $r6, $r8, $r10, or $r14.
      So there is no need to worry about Rb=Re=SP_REGNUM case.  */
-  for (regno = REGNO (Rb); regno <= (int) REGNO (Re); regno++)
+  for (regno = Rb; regno <= Re; regno++)
     {
       reg = gen_rtx_REG (SImode, regno);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -777,7 +1099,7 @@ nds32_emit_stack_v3push (rtx Rb,
     = gen_rtx_SET (stack_pointer_rtx,
 		   plus_constant (Pmode,
 				  stack_pointer_rtx,
-				  offset - INTVAL (imm8u)));
+				  offset - imm8u));
   XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
   RTX_FRAME_RELATED_P (adjust_sp_rtx) = 1;
 
@@ -795,12 +1117,11 @@ nds32_emit_stack_v3push (rtx Rb,
      "pop registers from memory",
      "adjust stack pointer".  */
 static void
-nds32_emit_stack_v3pop (rtx Rb,
-			rtx Re,
-			rtx En4 ATTRIBUTE_UNUSED,
-			rtx imm8u)
+nds32_emit_stack_v3pop (unsigned Rb,
+			unsigned Re,
+			unsigned imm8u)
 {
-  int regno;
+  unsigned regno;
   int num_use_regs;
   int par_index;
   int offset;
@@ -816,27 +1137,27 @@ nds32_emit_stack_v3pop (rtx Rb,
      necessary information for data analysis,
      so we create a parallel rtx like this:
      (parallel [(set (reg:SI Rb)
-                     (mem (reg:SI SP_REGNUM)))
-                (set (reg:SI Rb+1)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 4))))
-                ...
-                (set (reg:SI Re)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 16))))
-                (set (reg:SI FP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 20))))
-                (set (reg:SI GP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 24))))
-                (set (reg:SI LP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 28))))
-                (set (reg:SI SP_REGNUM)
-                     (plus (reg:SI SP_REGNUM) (const_int 32+imm8u)))]) */
+		     (mem (reg:SI SP_REGNUM)))
+		(set (reg:SI Rb+1)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 4))))
+		...
+		(set (reg:SI Re)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 16))))
+		(set (reg:SI FP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 20))))
+		(set (reg:SI GP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 24))))
+		(set (reg:SI LP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 28))))
+		(set (reg:SI SP_REGNUM)
+		     (plus (reg:SI SP_REGNUM) (const_int 32+imm8u)))]) */
 
   /* Calculate the number of registers that will be poped.
      Since $fp, $gp, and $lp is always poped with v3pop instruction,
      we need to count these three registers.
      Under v3push, Rb is $r6, while Re is $r6, $r8, $r10, or $r14.
      So there is no need to worry about Rb=Re=SP_REGNUM case.  */
-  num_use_regs = REGNO (Re) - REGNO (Rb) + 1 + 3;
+  num_use_regs = Re - Rb + 1 + 3;
 
   /* In addition to used registers,
      we need one more space for (set sp sp+x+imm8u) rtx.  */
@@ -850,7 +1171,7 @@ nds32_emit_stack_v3pop (rtx Rb,
   /* Create (set regX mem) from Rb, Rb+1 up to Re.
      Under v3pop, Rb is $r6, while Re is $r6, $r8, $r10, or $r14.
      So there is no need to worry about Rb=Re=SP_REGNUM case.  */
-  for (regno = REGNO (Rb); regno <= (int) REGNO (Re); regno++)
+  for (regno = Rb; regno <= Re; regno++)
     {
       reg = gen_rtx_REG (SImode, regno);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
@@ -908,11 +1229,24 @@ nds32_emit_stack_v3pop (rtx Rb,
     = gen_rtx_SET (stack_pointer_rtx,
 		   plus_constant (Pmode,
 				  stack_pointer_rtx,
-				  offset + INTVAL (imm8u)));
+				  offset + imm8u));
   XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
 
-  /* Tell gcc we adjust SP in this insn.  */
-  dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, copy_rtx (adjust_sp_rtx), dwarf);
+  if (frame_pointer_needed)
+    {
+      /* (expr_list:REG_CFA_DEF_CFA (plus:SI (reg/f:SI $sp)
+					     (const_int 0))
+	 mean reset frame pointer to $sp and reset to offset 0.  */
+      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					 const0_rtx);
+      dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
+    }
+  else
+    {
+      /* Tell gcc we adjust SP in this insn.  */
+      dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA,
+			      copy_rtx (adjust_sp_rtx), dwarf);
+    }
 
   parallel_insn = emit_insn (parallel_insn);
 
@@ -934,74 +1268,65 @@ nds32_emit_stack_v3pop (rtx Rb,
    the adjustment value is not able to be fit in the 'addi' instruction.
    One solution is to move value into a register
    and then use 'add' instruction.
-   In practice, we use TA_REGNUM ($r15) to accomplish this purpose.
-   Also, we need to return zero for sp adjustment so that
-   proglogue/epilogue knows there is no need to create 'addi' instruction.  */
-static int
-nds32_force_addi_stack_int (int full_value)
+   In practice, we use TA_REGNUM ($r15) to accomplish this purpose.  */
+static void
+nds32_emit_adjust_frame (rtx to_reg, rtx from_reg, int adjust_value)
 {
-  int adjust_value;
-
   rtx tmp_reg;
-  rtx sp_adjust_insn;
+  rtx frame_adjust_insn;
+  rtx adjust_value_rtx = GEN_INT (adjust_value);
 
-  if (!satisfies_constraint_Is15 (GEN_INT (full_value)))
+  if (adjust_value == 0)
+    return;
+
+  if (!satisfies_constraint_Is15 (adjust_value_rtx))
     {
       /* The value is not able to fit in single addi instruction.
-         Create more instructions of moving value into a register
-         and then add stack pointer with it.  */
+	 Create more instructions of moving value into a register
+	 and then add stack pointer with it.  */
 
       /* $r15 is going to be temporary register to hold the value.  */
       tmp_reg = gen_rtx_REG (SImode, TA_REGNUM);
 
       /* Create one more instruction to move value
-         into the temporary register.  */
-      emit_move_insn (tmp_reg, GEN_INT (full_value));
+	 into the temporary register.  */
+      emit_move_insn (tmp_reg, adjust_value_rtx);
 
       /* Create new 'add' rtx.  */
-      sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-				   stack_pointer_rtx,
-				   tmp_reg);
+      frame_adjust_insn = gen_addsi3 (to_reg,
+				      from_reg,
+				      tmp_reg);
       /* Emit rtx into insn list and receive its transformed insn rtx.  */
-      sp_adjust_insn = emit_insn (sp_adjust_insn);
+      frame_adjust_insn = emit_insn (frame_adjust_insn);
 
-      /* At prologue, we need to tell GCC that this is frame related insn,
-         so that we can consider this instruction to output debug information.
-         If full_value is NEGATIVE, it means this function
-         is invoked by expand_prologue.  */
-      if (full_value < 0)
-	{
-	  /* Because (tmp_reg <- full_value) may be split into two
-	     rtl patterns, we can not set its RTX_FRAME_RELATED_P.
-	     We need to construct another (sp <- sp + full_value)
-	     and then insert it into sp_adjust_insn's reg note to
-	     represent a frame related expression.
-	     GCC knows how to refer it and output debug information.  */
+      /* Because (tmp_reg <- full_value) may be split into two
+	 rtl patterns, we can not set its RTX_FRAME_RELATED_P.
+	 We need to construct another (sp <- sp + full_value)
+	 and then insert it into sp_adjust_insn's reg note to
+	 represent a frame related expression.
+	 GCC knows how to refer it and output debug information.  */
 
-	  rtx plus_rtx;
-	  rtx set_rtx;
+      rtx plus_rtx;
+      rtx set_rtx;
 
-	  plus_rtx = plus_constant (Pmode, stack_pointer_rtx, full_value);
-	  set_rtx = gen_rtx_SET (stack_pointer_rtx, plus_rtx);
-	  add_reg_note (sp_adjust_insn, REG_FRAME_RELATED_EXPR, set_rtx);
-
-	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
-	}
-
-      /* We have used alternative way to adjust stack pointer value.
-         Return zero so that prologue/epilogue
-         will not generate other instructions.  */
-      return 0;
+      plus_rtx = plus_constant (Pmode, from_reg, adjust_value);
+      set_rtx = gen_rtx_SET (to_reg, plus_rtx);
+      add_reg_note (frame_adjust_insn, REG_FRAME_RELATED_EXPR, set_rtx);
     }
   else
     {
-      /* The value is able to fit in addi instruction.
-         However, remember to make it to be positive value
-         because we want to return 'adjustment' result.  */
-      adjust_value = (full_value < 0) ? (-full_value) : (full_value);
-
-      return adjust_value;
+      /* Generate sp adjustment instruction if and only if sp_adjust != 0.  */
+      frame_adjust_insn = gen_addsi3 (to_reg,
+				      from_reg,
+				      adjust_value_rtx);
+      /* Emit rtx into instructions list and receive INSN rtx form.  */
+      frame_adjust_insn = emit_insn (frame_adjust_insn);
     }
+
+    /* The insn rtx 'sp_adjust_insn' will change frame layout.
+       We need to use RTX_FRAME_RELATED_P so that GCC is able to
+       generate CFI (Call Frame Information) stuff.  */
+    RTX_FRAME_RELATED_P (frame_adjust_insn) = 1;
 }
 
 /* Return true if MODE/TYPE need double word alignment.  */
@@ -1030,13 +1355,21 @@ nds32_naked_function_p (tree func)
   return (t != NULL_TREE);
 }
 
+/* Function that determine whether a load postincrement is a good thing to use
+   for a given mode.  */
+bool
+nds32_use_load_post_increment (machine_mode mode)
+{
+  return (GET_MODE_SIZE (mode) <= GET_MODE_SIZE(E_DImode));
+}
+
 /* Function that check if 'X' is a valid address register.
    The variable 'STRICT' is very important to
    make decision for register number.
 
    STRICT : true
      => We are in reload pass or after reload pass.
-        The register number should be strictly limited in general registers.
+	The register number should be strictly limited in general registers.
 
    STRICT : false
      => Before reload pass, we are free to use any register number.  */
@@ -1059,7 +1392,7 @@ nds32_address_register_rtx_p (rtx x, bool strict)
 /* Function that check if 'INDEX' is valid to be a index rtx for address.
 
    OUTER_MODE : Machine mode of outer address rtx.
-        INDEX : Check if this rtx is valid to be a index for address.
+	INDEX : Check if this rtx is valid to be a index for address.
        STRICT : If it is true, we are in reload pass or after reload pass.  */
 static bool
 nds32_legitimate_index_p (machine_mode outer_mode,
@@ -1075,7 +1408,7 @@ nds32_legitimate_index_p (machine_mode outer_mode,
     case REG:
       regno = REGNO (index);
       /* If we are in reload pass or after reload pass,
-         we need to limit it to general register.  */
+	 we need to limit it to general register.  */
       if (strict)
 	return REGNO_OK_FOR_INDEX_P (regno);
       else
@@ -1083,45 +1416,73 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 
     case CONST_INT:
       /* The alignment of the integer value is determined by 'outer_mode'.  */
-      if (GET_MODE_SIZE (outer_mode) == 1)
+      switch (GET_MODE_SIZE (outer_mode))
 	{
+	case 1:
 	  /* Further check if the value is legal for the 'outer_mode'.  */
-	  if (!satisfies_constraint_Is15 (index))
-	    return false;
+	  if (satisfies_constraint_Is15 (index))
+	    return true;
+	  break;
 
-	  /* Pass all test, the value is valid, return true.  */
-	  return true;
-	}
-      if (GET_MODE_SIZE (outer_mode) == 2
-	  && NDS32_HALF_WORD_ALIGN_P (INTVAL (index)))
-	{
+	case 2:
 	  /* Further check if the value is legal for the 'outer_mode'.  */
-	  if (!satisfies_constraint_Is16 (index))
-	    return false;
+	  if (satisfies_constraint_Is16 (index))
+	    {
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
+	      /* Make sure address is half word alignment.  */
+	      else if (NDS32_HALF_WORD_ALIGN_P (INTVAL (index)))
+		return true;
+	    }
+	  break;
 
-	  /* Pass all test, the value is valid, return true.  */
-	  return true;
-	}
-      if (GET_MODE_SIZE (outer_mode) == 4
-	  && NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
-	{
+	case 4:
 	  /* Further check if the value is legal for the 'outer_mode'.  */
-	  if (!satisfies_constraint_Is17 (index))
-	    return false;
+	  if (satisfies_constraint_Is17 (index))
+	    {
+	      if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE))
+		{
+		  if (!satisfies_constraint_Is14 (index))
+		    return false;
+		}
 
-	  /* Pass all test, the value is valid, return true.  */
-	  return true;
-	}
-      if (GET_MODE_SIZE (outer_mode) == 8
-	  && NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
-	{
-	  /* Further check if the value is legal for the 'outer_mode'.  */
-	  if (!satisfies_constraint_Is17 (gen_int_mode (INTVAL (index) + 4,
-							SImode)))
-	    return false;
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
+	      /* Make sure address is word alignment.  */
+	      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
+		return true;
+	    }
+	  break;
 
-	  /* Pass all test, the value is valid, return true.  */
-	  return true;
+	case 8:
+	  if (satisfies_constraint_Is17 (gen_int_mode (INTVAL (index) + 4,
+						       SImode)))
+	    {
+	      if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE))
+		{
+		  if (!satisfies_constraint_Is14 (index))
+		    return false;
+		}
+
+	      /* If it is not under strictly aligned situation,
+		 we can return true without checking alignment.  */
+	      if (!cfun->machine->strict_aligned_p)
+		return true;
+	      /* Make sure address is word alignment.
+		Currently we do not have 64-bit load/store yet,
+		so we will use two 32-bit load/store instructions to do
+		memory access and they are single word alignment.  */
+	      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (index)))
+		return true;
+	    }
+	  break;
+
+	default:
+	  return false;
 	}
 
       return false;
@@ -1135,9 +1496,10 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 	  int multiplier;
 	  multiplier = INTVAL (op1);
 
-	  /* We only allow (mult reg const_int_1)
-	     or (mult reg const_int_2) or (mult reg const_int_4).  */
-	  if (multiplier != 1 && multiplier != 2 && multiplier != 4)
+	  /* We only allow (mult reg const_int_1), (mult reg const_int_2),
+	     (mult reg const_int_4) or (mult reg const_int_8).  */
+	  if (multiplier != 1 && multiplier != 2
+	      && multiplier != 4 && multiplier != 8)
 	    return false;
 
 	  regno = REGNO (op0);
@@ -1162,8 +1524,9 @@ nds32_legitimate_index_p (machine_mode outer_mode,
 	  sv = INTVAL (op1);
 
 	  /* We only allow (ashift reg const_int_0)
-	     or (ashift reg const_int_1) or (ashift reg const_int_2).  */
-	  if (sv != 0 && sv != 1 && sv !=2)
+	     or (ashift reg const_int_1) or (ashift reg const_int_2) or
+	     (ashift reg const_int_3).  */
+	  if (sv != 0 && sv != 1 && sv !=2 && sv != 3)
 	    return false;
 
 	  regno = REGNO (op0);
@@ -1182,9 +1545,121 @@ nds32_legitimate_index_p (machine_mode outer_mode,
     }
 }
 
+static void
+nds32_register_pass (
+  rtl_opt_pass *(*make_pass_func) (gcc::context *),
+  enum pass_positioning_ops pass_pos,
+  const char *ref_pass_name)
+{
+  opt_pass *new_opt_pass = make_pass_func (g);
+
+  struct register_pass_info insert_pass =
+    {
+      new_opt_pass,	/* pass */
+      ref_pass_name,	/* reference_pass_name */
+      1,		/* ref_pass_instance_number */
+      pass_pos		/* po_op */
+    };
+
+  register_pass (&insert_pass);
+}
+
+/* This function is called from nds32_option_override ().
+   All new passes should be registered here.  */
+static void
+nds32_register_passes (void)
+{
+  nds32_register_pass (
+    make_pass_nds32_relax_opt,
+    PASS_POS_INSERT_AFTER,
+    "mach");
+}
+
 /* ------------------------------------------------------------------------ */
 
 /* PART 3: Implement target hook stuff definitions.  */
+
+
+/* Computing the Length of an Insn.
+   Modifies the length assigned to instruction INSN.
+   LEN is the initially computed length of the insn.  */
+int
+nds32_adjust_insn_length (rtx_insn *insn, int length)
+{
+  int adjust_value = 0;
+  switch (recog_memoized (insn))
+    {
+    case CODE_FOR_call_internal:
+    case CODE_FOR_call_value_internal:
+      {
+	if (NDS32_ALIGN_P ())
+	  {
+	    rtx_insn *next_insn = next_active_insn (insn);
+	    if (next_insn && get_attr_length (next_insn) != 2)
+	      adjust_value += 2;
+	  }
+	/* We need insert a nop after a noretun function call
+	   to prevent software breakpoint corrupt the next function. */
+	if (find_reg_note (insn, REG_NORETURN, NULL_RTX))
+	  {
+	    if (TARGET_16_BIT)
+	      adjust_value += 2;
+	    else
+	      adjust_value += 4;
+	  }
+      }
+      return length + adjust_value;
+
+    default:
+      return length;
+    }
+}
+
+/* Storage Layout.  */
+
+/* This function will be called just before expansion into rtl.  */
+static void
+nds32_expand_to_rtl_hook (void)
+{
+  /* We need to set strictly aligned situation.
+     After that, the memory address checking in nds32_legitimate_address_p()
+     will take alignment offset into consideration so that it will not create
+     unaligned [base + offset] access during the rtl optimization.  */
+  cfun->machine->strict_aligned_p = 1;
+}
+
+
+/* Register Usage.  */
+
+static void
+nds32_conditional_register_usage (void)
+{
+  int regno;
+
+  if (TARGET_HARD_FLOAT)
+    {
+      for (regno = NDS32_FIRST_FPR_REGNUM;
+	   regno <= NDS32_LAST_FPR_REGNUM; regno++)
+	{
+	  fixed_regs[regno] = 0;
+	  if (regno < NDS32_FIRST_FPR_REGNUM + NDS32_MAX_FPR_REGS_FOR_ARGS)
+	    call_used_regs[regno] = 1;
+	  else if (regno >= NDS32_FIRST_FPR_REGNUM + 22
+		   && regno < NDS32_FIRST_FPR_REGNUM + 48)
+	    call_used_regs[regno] = 1;
+	  else
+	    call_used_regs[regno] = 0;
+	}
+    }
+  else if (TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+    {
+      for (regno = NDS32_FIRST_FPR_REGNUM;
+	   regno <= NDS32_LAST_FPR_REGNUM;
+	   regno++)
+	fixed_regs[regno] = 0;
+    }
+}
+
 
 /* Register Classes.  */
 
@@ -1201,9 +1676,40 @@ static int
 nds32_register_priority (int hard_regno)
 {
   /* Encourage to use r0-r7 for LRA when optimize for size.  */
-  if (optimize_size && hard_regno < 8)
-    return 4;
-  return 3;
+  if (optimize_size)
+    {
+      if (hard_regno < 8)
+	return 4;
+      else if (hard_regno < 16)
+	return 3;
+      else if (hard_regno < 28)
+	return 2;
+      else
+	return 1;
+    }
+  else
+    {
+      if (hard_regno > 27)
+	return 1;
+      else
+	return 4;
+    }
+}
+
+static bool
+nds32_can_change_mode_class (machine_mode from,
+			     machine_mode to,
+			     reg_class_t rclass)
+{
+  /* Don't spill double-precision register to two singal-precision
+     registers  */
+  if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+       && GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
+    {
+      return !reg_classes_intersect_p (rclass, FP_REGS);
+    }
+
+  return true;
 }
 
 
@@ -1223,8 +1729,8 @@ nds32_register_priority (int hard_regno)
        2. return address
        3. callee-saved registers
        4. <padding bytes> (we will calculte in nds32_compute_stack_frame()
-                           and save it at
-                           cfun->machine->callee_saved_area_padding_bytes)
+			   and save it at
+			   cfun->machine->callee_saved_area_padding_bytes)
 
      [Block B]
        1. local variables
@@ -1242,29 +1748,29 @@ nds32_register_priority (int hard_regno)
    By applying the basic frame/stack/argument pointers concept,
    the layout of a stack frame shoule be like this:
 
-                            |    |
+			    |    |
        old stack pointer ->  ----
-                            |    | \
-                            |    |   saved arguments for
-                            |    |   vararg functions
-                            |    | /
+			    |    | \
+			    |    |   saved arguments for
+			    |    |   vararg functions
+			    |    | /
       hard frame pointer ->   --
       & argument pointer    |    | \
-                            |    |   previous hardware frame pointer
-                            |    |   return address
-                            |    |   callee-saved registers
-                            |    | /
-           frame pointer ->   --
-                            |    | \
-                            |    |   local variables
-                            |    |   and incoming arguments
-                            |    | /
-                              --
-                            |    | \
-                            |    |   outgoing
-                            |    |   arguments
-                            |    | /
-           stack pointer ->  ----
+			    |    |   previous hardware frame pointer
+			    |    |   return address
+			    |    |   callee-saved registers
+			    |    | /
+	   frame pointer ->   --
+			    |    | \
+			    |    |   local variables
+			    |    |   and incoming arguments
+			    |    | /
+			      --
+			    |    | \
+			    |    |   outgoing
+			    |    |   arguments
+			    |    | /
+	   stack pointer ->  ----
 
   $SFP and $AP are used to represent frame pointer and arguments pointer,
   which will be both eliminated as hard frame pointer.  */
@@ -1307,7 +1813,7 @@ nds32_function_arg (cumulative_args_t ca, machine_mode mode,
   if (!named)
     {
       /* If we are under hard float abi, we have arguments passed on the
-         stack and all situation can be handled by GCC itself.  */
+	 stack and all situation can be handled by GCC itself.  */
       if (TARGET_HARD_FLOAT)
 	return NULL_RTX;
 
@@ -1321,7 +1827,7 @@ nds32_function_arg (cumulative_args_t ca, machine_mode mode,
 	}
 
       /* No register available, return NULL_RTX.
-         The compiler will use stack to pass argument instead.  */
+	 The compiler will use stack to pass argument instead.  */
       return NULL_RTX;
     }
 
@@ -1330,14 +1836,34 @@ nds32_function_arg (cumulative_args_t ca, machine_mode mode,
      are different.  */
   if (TARGET_HARD_FLOAT)
     {
-      /* Currently we have not implemented hard float yet.  */
-      gcc_unreachable ();
+      /* For TARGET_HARD_FLOAT calling convention, we use GPR and FPR
+	 to pass argument.  We have to further check TYPE and MODE so
+	 that we can determine which kind of register we shall use.  */
+
+      /* Note that we need to pass argument entirely in registers under
+	 hard float abi.  */
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && NDS32_ARG_ENTIRE_IN_FPR_REG_P (cum->fpr_offset, mode, type))
+	{
+	  /* Pick up the next available FPR register number.  */
+	  regno
+	    = NDS32_AVAILABLE_REGNUM_FOR_FPR_ARG (cum->fpr_offset, mode, type);
+	  return gen_rtx_REG (mode, regno);
+	}
+      else if (GET_MODE_CLASS (mode) != MODE_FLOAT
+	       && NDS32_ARG_ENTIRE_IN_GPR_REG_P (cum->gpr_offset, mode, type))
+	{
+	  /* Pick up the next available GPR register number.  */
+	  regno
+	    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type);
+	  return gen_rtx_REG (mode, regno);
+	}
     }
   else
     {
       /* For !TARGET_HARD_FLOAT calling convention, we always use GPR to pass
-         argument.  Since we allow to pass argument partially in registers,
-         we can just return it if there are still registers available.  */
+	 argument.  Since we allow to pass argument partially in registers,
+	 we can just return it if there are still registers available.  */
       if (NDS32_ARG_PARTIAL_IN_GPR_REG_P (cum->gpr_offset, mode, type))
 	{
 	  /* Pick up the next available register number.  */
@@ -1401,7 +1927,7 @@ nds32_arg_partial_bytes (cumulative_args_t ca, machine_mode mode,
   remaining_reg_count
     = NDS32_MAX_GPR_REGS_FOR_ARGS
       - (NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
-         - NDS32_GPR_ARG_FIRST_REGNUM);
+	 - NDS32_GPR_ARG_FIRST_REGNUM);
 
   /* Note that we have to return the nubmer of bytes, not registers count.  */
   if (needed_reg_count > remaining_reg_count)
@@ -1414,23 +1940,20 @@ static void
 nds32_function_arg_advance (cumulative_args_t ca, machine_mode mode,
 			    const_tree type, bool named)
 {
-  machine_mode sub_mode;
   CUMULATIVE_ARGS *cum = get_cumulative_args (ca);
 
   if (named)
     {
       /* We need to further check TYPE and MODE so that we can determine
-         which kind of register we shall advance.  */
-      if (type && TREE_CODE (type) == COMPLEX_TYPE)
-	sub_mode = TYPE_MODE (TREE_TYPE (type));
-      else
-	sub_mode = mode;
+	 which kind of register we shall advance.  */
 
       /* Under hard float abi, we may advance FPR registers.  */
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (sub_mode) == MODE_FLOAT)
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  /* Currently we have not implemented hard float yet.  */
-	  gcc_unreachable ();
+	  cum->fpr_offset
+	    = NDS32_AVAILABLE_REGNUM_FOR_FPR_ARG (cum->fpr_offset, mode, type)
+	      - NDS32_FPR_ARG_FIRST_REGNUM
+	      + NDS32_NEED_N_REGS_FOR_ARG (mode, type);
 	}
       else
 	{
@@ -1443,9 +1966,9 @@ nds32_function_arg_advance (cumulative_args_t ca, machine_mode mode,
   else
     {
       /* If this nameless argument is NOT under TARGET_HARD_FLOAT,
-         we can advance next register as well so that caller is
-         able to pass arguments in registers and callee must be
-         in charge of pushing all of them into stack.  */
+	 we can advance next register as well so that caller is
+	 able to pass arguments in registers and callee must be
+	 in charge of pushing all of them into stack.  */
       if (!TARGET_HARD_FLOAT)
 	{
 	  cum->gpr_offset
@@ -1477,22 +2000,62 @@ nds32_function_value (const_tree ret_type,
   mode = TYPE_MODE (ret_type);
   unsignedp = TYPE_UNSIGNED (ret_type);
 
-  mode = promote_mode (ret_type, mode, &unsignedp);
+  if (INTEGRAL_TYPE_P (ret_type))
+    mode = promote_mode (ret_type, mode, &unsignedp);
 
-  return gen_rtx_REG (mode, NDS32_GPR_RET_FIRST_REGNUM);
+  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+    return gen_rtx_REG (mode, NDS32_FPR_RET_FIRST_REGNUM);
+  else
+    return gen_rtx_REG (mode, NDS32_GPR_RET_FIRST_REGNUM);
 }
 
 static rtx
 nds32_libcall_value (machine_mode mode,
 		     const_rtx fun ATTRIBUTE_UNUSED)
 {
+  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+    return gen_rtx_REG (mode, NDS32_FPR_RET_FIRST_REGNUM);
+
   return gen_rtx_REG (mode, NDS32_GPR_RET_FIRST_REGNUM);
 }
 
 static bool
 nds32_function_value_regno_p (const unsigned int regno)
 {
-  return (regno == NDS32_GPR_RET_FIRST_REGNUM);
+  if (regno == NDS32_GPR_RET_FIRST_REGNUM
+      || (TARGET_HARD_FLOAT
+	  && regno == NDS32_FPR_RET_FIRST_REGNUM))
+    return true;
+
+  return false;
+}
+
+/* -- How Large Values Are Returned.  */
+
+static bool
+nds32_return_in_memory (const_tree type,
+			const_tree fntype ATTRIBUTE_UNUSED)
+{
+  /* Note that int_size_in_bytes can return -1 if the size can vary
+     or is larger than an integer.  */
+  HOST_WIDE_INT size = int_size_in_bytes (type);
+
+  /* For COMPLEX_TYPE, if the total size cannot be hold within two registers,
+     the return value is supposed to be in memory.  We need to be aware of
+     that the size may be -1.  */
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    if (size < 0 || size > 2 * UNITS_PER_WORD)
+      return true;
+
+  /* If it is BLKmode and the total size cannot be hold within two registers,
+     the return value is supposed to be in memory.  We need to be aware of
+     that the size may be -1.  */
+  if (TYPE_MODE (type) == BLKmode)
+    if (size < 0 || size > 2 * UNITS_PER_WORD)
+      return true;
+
+  /* For other cases, having result in memory is unnecessary.  */
+  return false;
 }
 
 /* -- Function Entry and Exit.  */
@@ -1500,8 +2063,7 @@ nds32_function_value_regno_p (const unsigned int regno)
 /* The content produced from this function
    will be placed before prologue body.  */
 static void
-nds32_asm_function_prologue (FILE *file,
-			     HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+nds32_asm_function_prologue (FILE *file)
 {
   int r;
   const char *func_name;
@@ -1523,7 +2085,7 @@ nds32_asm_function_prologue (FILE *file,
   /* Use df_regs_ever_live_p() to detect if the register
      is ever used in the current function.  */
   fprintf (file, "\t! registers ever_live: ");
-  for (r = 0; r < 32; r++)
+  for (r = 0; r < 65; r++)
     {
       if (df_regs_ever_live_p (r))
 	fprintf (file, "%s, ", reg_names[r]);
@@ -1618,8 +2180,7 @@ nds32_asm_function_begin_epilogue (FILE *file)
 /* The content produced from this function
    will be placed after epilogue body.  */
 static void
-nds32_asm_function_epilogue (FILE *file,
-			     HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+nds32_asm_function_epilogue (FILE *file)
 {
   fprintf (file, "\t! END EPILOGUE\n");
 }
@@ -1643,18 +2204,22 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     {
       if (satisfies_constraint_Is15 (GEN_INT (delta)))
 	{
-	  fprintf (file, "\taddi\t$r%d, $r%d, %ld\n",
+	  fprintf (file, "\taddi\t$r%d, $r%d, " HOST_WIDE_INT_PRINT_DEC "\n",
 		   this_regno, this_regno, delta);
 	}
       else if (satisfies_constraint_Is20 (GEN_INT (delta)))
 	{
-	  fprintf (file, "\tmovi\t$ta, %ld\n", delta);
+	  fprintf (file, "\tmovi\t$ta, " HOST_WIDE_INT_PRINT_DEC "\n", delta);
 	  fprintf (file, "\tadd\t$r%d, $r%d, $ta\n", this_regno, this_regno);
 	}
       else
 	{
-	  fprintf (file, "\tsethi\t$ta, hi20(%ld)\n", delta);
-	  fprintf (file, "\tori\t$ta, $ta, lo12(%ld)\n", delta);
+	  fprintf (file,
+		   "\tsethi\t$ta, hi20(" HOST_WIDE_INT_PRINT_DEC ")\n",
+		   delta);
+	  fprintf (file,
+		   "\tori\t$ta, $ta, lo12(" HOST_WIDE_INT_PRINT_DEC ")\n",
+		   delta);
 	  fprintf (file, "\tadd\t$r%d, $r%d, $ta\n", this_regno, this_regno);
 	}
     }
@@ -1668,12 +2233,32 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
 /* -- Permitting tail calls.  */
 
+/* Return true if it is ok to do sibling call optimization.  */
+static bool
+nds32_function_ok_for_sibcall (tree decl,
+			       tree exp ATTRIBUTE_UNUSED)
+{
+  /* The DECL is NULL if it is an indirect call.  */
+
+  /* 1. Do not apply sibling call if -mv3push is enabled,
+	because pop25 instruction also represents return behavior.
+     2. If this function is a variadic function, do not apply sibling call
+	because the stack layout may be a mess.
+     3. We don't want to apply sibling call optimization for indirect
+	sibcall because the pop behavior in epilogue may pollute the
+	content of caller-saved regsiter when the register is used for
+	indirect sibcall.  */
+  return (!TARGET_V3PUSH
+	  && (cfun->machine->va_args_size == 0)
+	  && decl);
+}
+
 /* Determine whether we need to enable warning for function return check.  */
 static bool
 nds32_warn_func_return (tree decl)
 {
-/* Naked functions are implemented entirely in assembly, including the
-   return sequence, so suppress warnings about this.  */
+  /* Naked functions are implemented entirely in assembly, including the
+     return sequence, so suppress warnings about this.  */
   return !nds32_naked_function_p (decl);
 }
 
@@ -1796,7 +2381,7 @@ nds32_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
     sorry ("a nested function is not supported for reduced registers");
 
   /* STEP 1: Copy trampoline code template into stack,
-             fill up essential data into stack.  */
+	     fill up essential data into stack.  */
 
   /* Extract nested function address rtx.  */
   fnaddr = XEXP (DECL_RTL (fndecl), 0);
@@ -1832,8 +2417,8 @@ nds32_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       && (tramp_align_in_bytes % nds32_cache_block_size) == 0)
     {
       /* Under this condition, the starting address of trampoline
-         must be aligned to the starting address of each cache block
-         and we do not have to worry about cross-boundary issue.  */
+	 must be aligned to the starting address of each cache block
+	 and we do not have to worry about cross-boundary issue.  */
       for (i = 0;
 	   i < (TRAMPOLINE_SIZE + nds32_cache_block_size - 1)
 	       / nds32_cache_block_size;
@@ -1848,10 +2433,10 @@ nds32_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   else if (TRAMPOLINE_SIZE > nds32_cache_block_size)
     {
       /* The starting address of trampoline code
-         may not be aligned to the cache block,
-         so the trampoline code may be across two cache block.
-         We need to sync the last element, which is 4-byte size,
-         of trampoline template.  */
+	 may not be aligned to the cache block,
+	 so the trampoline code may be across two cache block.
+	 We need to sync the last element, which is 4-byte size,
+	 of trampoline template.  */
       for (i = 0;
 	   i < (TRAMPOLINE_SIZE + nds32_cache_block_size - 1)
 	       / nds32_cache_block_size;
@@ -1872,16 +2457,16 @@ nds32_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   else
     {
       /* This is the simplest case.
-         Because TRAMPOLINE_SIZE is less than or
-         equal to nds32_cache_block_size,
-         we can just sync start address and
-         the last element of trampoline code.  */
+	 Because TRAMPOLINE_SIZE is less than or
+	 equal to nds32_cache_block_size,
+	 we can just sync start address and
+	 the last element of trampoline code.  */
 
       /* Sync starting address of tampoline code.  */
       emit_move_insn (tmp_reg, sync_cache_addr);
       emit_insn (isync_insn);
       /* Sync the last element, which is 4-byte size,
-         of trampoline template.  */
+	 of trampoline template.  */
       emit_move_insn (tmp_reg,
 		      plus_constant (Pmode, sync_cache_addr,
 				     TRAMPOLINE_SIZE - 4));
@@ -1899,9 +2484,50 @@ nds32_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 static bool
 nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
+  if (TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+    {
+     /* When using floating-point instructions,
+	we don't allow 'addr' to be [symbol_ref], [CONST] pattern.  */
+      if ((mode == DFmode || mode == SFmode)
+	  && (GET_CODE (x) == SYMBOL_REF
+	  || GET_CODE(x) == CONST))
+	return false;
+
+      /* Allow [post_modify] addressing mode, when using FPU instructions.  */
+      if (GET_CODE (x) == POST_MODIFY
+	  && mode == DFmode)
+	{
+	  if (GET_CODE (XEXP (x, 0)) == REG
+	      && GET_CODE (XEXP (x, 1)) == PLUS)
+	    {
+	      rtx plus_op = XEXP (x, 1);
+	      rtx op0 = XEXP (plus_op, 0);
+	      rtx op1 = XEXP (plus_op, 1);
+
+	      if (nds32_address_register_rtx_p (op0, strict)
+		  && CONST_INT_P (op1))
+		{
+		  if (satisfies_constraint_Is14 (op1))
+		    {
+		      /* If it is not under strictly aligned situation,
+			 we can return true without checking alignment.  */
+		      if (!cfun->machine->strict_aligned_p)
+			return true;
+		      /* Make sure address is word alignment.
+			Currently we do not have 64-bit load/store yet,
+			so we will use two 32-bit load/store instructions to do
+			memory access and they are single word alignment.  */
+		      else if (NDS32_SINGLE_WORD_ALIGN_P (INTVAL (op1)))
+			return true;
+		    }
+		}
+	    }
+	}
+    }
+
   /* For (mem:DI addr) or (mem:DF addr) case,
      we only allow 'addr' to be [reg], [symbol_ref],
-                                [const], or [reg + const_int] pattern.  */
+				[const], or [reg + const_int] pattern.  */
   if (mode == DImode || mode == DFmode)
     {
       /* Allow [Reg + const_int] addressing mode.  */
@@ -1911,10 +2537,16 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	      && nds32_legitimate_index_p (mode, XEXP (x, 1), strict)
 	      && CONST_INT_P (XEXP (x, 1)))
 	    return true;
-
 	  else if (nds32_address_register_rtx_p (XEXP (x, 1), strict)
 		   && nds32_legitimate_index_p (mode, XEXP (x, 0), strict)
 		   && CONST_INT_P (XEXP (x, 0)))
+	    return true;
+	}
+
+      /* Allow [post_inc] and [post_dec] addressing mode.  */
+      if (GET_CODE (x) == POST_INC || GET_CODE (x) == POST_DEC)
+	{
+	  if (nds32_address_register_rtx_p (XEXP (x, 0), strict))
 	    return true;
 	}
 
@@ -1935,15 +2567,15 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
     case SYMBOL_REF:
       /* (mem (symbol_ref A)) => [symbol_ref] */
       /* If -mcmodel=large, the 'symbol_ref' is not a valid address
-         during or after LRA/reload phase.  */
+	 during or after LRA/reload phase.  */
       if (TARGET_CMODEL_LARGE
 	  && (reload_completed
 	      || reload_in_progress
 	      || lra_in_progress))
 	return false;
       /* If -mcmodel=medium and the symbol references to rodata section,
-         the 'symbol_ref' is not a valid address during or after
-         LRA/reload phase.  */
+	 the 'symbol_ref' is not a valid address during or after
+	 LRA/reload phase.  */
       if (TARGET_CMODEL_MEDIUM
 	  && NDS32_SYMBOL_REF_RODATA_P (x)
 	  && (reload_completed
@@ -1955,7 +2587,7 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
     case CONST:
       /* (mem (const (...)))
-         => [ + const_addr ], where const_addr = symbol_ref + const_int */
+	 => [ + const_addr ], where const_addr = symbol_ref + const_int */
       if (GET_CODE (XEXP (x, 0)) == PLUS)
 	{
 	  rtx plus_op = XEXP (x, 0);
@@ -1966,17 +2598,17 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	  if (GET_CODE (op0) == SYMBOL_REF && CONST_INT_P (op1))
 	    {
 	      /* Now we see the [ + const_addr ] pattern, but we need
-	         some further checking.  */
+		 some further checking.  */
 	      /* If -mcmodel=large, the 'const_addr' is not a valid address
-	         during or after LRA/reload phase.  */
+		 during or after LRA/reload phase.  */
 	      if (TARGET_CMODEL_LARGE
 		  && (reload_completed
 		      || reload_in_progress
 		      || lra_in_progress))
 		return false;
 	      /* If -mcmodel=medium and the symbol references to rodata section,
-	         the 'const_addr' is not a valid address during or after
-	         LRA/reload phase.  */
+		 the 'const_addr' is not a valid address during or after
+		 LRA/reload phase.  */
 	      if (TARGET_CMODEL_MEDIUM
 		  && NDS32_SYMBOL_REF_RODATA_P (op0)
 		  && (reload_completed
@@ -1994,9 +2626,9 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
     case POST_MODIFY:
       /* (mem (post_modify (reg) (plus (reg) (reg))))
-         => [Ra], Rb */
+	 => [Ra], Rb */
       /* (mem (post_modify (reg) (plus (reg) (const_int))))
-         => [Ra], const_int */
+	 => [Ra], const_int */
       if (GET_CODE (XEXP (x, 0)) == REG
 	  && GET_CODE (XEXP (x, 1)) == PLUS)
 	{
@@ -2019,7 +2651,7 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
       /* (mem (post_inc reg)) => [Ra], 1/2/4 */
       /* (mem (post_dec reg)) => [Ra], -1/-2/-4 */
       /* The 1/2/4 or -1/-2/-4 have been displayed in nds32.md.
-         We only need to deal with register Ra.  */
+	 We only need to deal with register Ra.  */
       if (nds32_address_register_rtx_p (XEXP (x, 0), strict))
 	return true;
       else
@@ -2027,11 +2659,11 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
     case PLUS:
       /* (mem (plus reg const_int))
-         => [Ra + imm] */
+	 => [Ra + imm] */
       /* (mem (plus reg reg))
-         => [Ra + Rb] */
+	 => [Ra + Rb] */
       /* (mem (plus (mult reg const_int) reg))
-         => [Ra + Rb << sv] */
+	 => [Ra + Rb << sv] */
       if (nds32_address_register_rtx_p (XEXP (x, 0), strict)
 	  && nds32_legitimate_index_p (mode, XEXP (x, 1), strict))
 	return true;
@@ -2057,6 +2689,45 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 }
 
 
+/* Condition Code Status.  */
+
+/* -- Representation of condition codes using registers.  */
+
+static void
+nds32_canonicalize_comparison (int *code,
+			       rtx *op0 ATTRIBUTE_UNUSED,
+			       rtx *op1,
+			       bool op0_preserve_value ATTRIBUTE_UNUSED)
+{
+  /* When the instruction combination pass tries to combine a comparison insn
+     with its previous insns, it also transforms the operator in order to
+     minimize its constant field.  For example, it tries to transform a
+     comparison insn from
+       (set (reg:SI 54)
+	   (ltu:SI (reg:SI 52)
+	       (const_int 10 [0xa])))
+     to
+       (set (reg:SI 54)
+	   (leu:SI (reg:SI 52)
+	       (const_int 9 [0x9])))
+
+     However, the nds32 target only provides instructions supporting the LTU
+     operation directly, and the implementation of the pattern "cbranchsi4"
+     only expands the LTU form.  In order to handle the non-LTU operations
+     generated from passes other than the RTL expansion pass, we have to
+     implement this hook to revert those changes.  Since we only expand the LTU
+     operator in the RTL expansion pass, we might only need to handle the LEU
+     case, unless we find other optimization passes perform more aggressive
+     transformations.  */
+
+  if (*code == LEU && CONST_INT_P (*op1))
+    {
+      *op1 = gen_int_mode (INTVAL (*op1) + 1, SImode);
+      *code = LTU;
+    }
+}
+
+
 /* Describing Relative Costs of Operations.  */
 
 static int
@@ -2064,10 +2735,13 @@ nds32_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t from,
 			  reg_class_t to)
 {
-  if (from == HIGH_REGS || to == HIGH_REGS)
-    return 6;
-
-  return 2;
+  if ((from == FP_REGS && to != FP_REGS)
+      || (from != FP_REGS && to == FP_REGS))
+    return 9;
+  else if (from == HIGH_REGS || to == HIGH_REGS)
+    return optimize_size ? 6 : 2;
+  else
+    return 2;
 }
 
 static int
@@ -2153,7 +2827,10 @@ nds32_asm_file_start (void)
 
   /* Tell assembler which ABI we are using.  */
   fprintf (asm_out_file, "\t! ABI version\n");
-  fprintf (asm_out_file, "\t.abi_2\n");
+  if (TARGET_HARD_FLOAT)
+    fprintf (asm_out_file, "\t.abi_2fp_plus\n");
+  else
+    fprintf (asm_out_file, "\t.abi_2\n");
 
   /* Tell assembler that this asm code is generated by compiler.  */
   fprintf (asm_out_file, "\t! This asm file is generated by compiler\n");
@@ -2182,6 +2859,15 @@ nds32_asm_file_start (void)
   fprintf (asm_out_file, "\t! Endian setting\t: %s\n",
 			 ((TARGET_BIG_ENDIAN) ? "big-endian"
 					      : "little-endian"));
+  fprintf (asm_out_file, "\t! Use SP floating-point instruction\t: %s\n",
+			 ((TARGET_FPU_SINGLE) ? "Yes"
+					      : "No"));
+  fprintf (asm_out_file, "\t! Use DP floating-point instruction\t: %s\n",
+			 ((TARGET_FPU_DOUBLE) ? "Yes"
+					      : "No"));
+  fprintf (asm_out_file, "\t! ABI version\t\t: %s\n",
+			 ((TARGET_HARD_FLOAT) ? "ABI2FP+"
+					      : "ABI2"));
 
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
@@ -2189,8 +2875,14 @@ nds32_asm_file_start (void)
 			 ((TARGET_CMOV) ? "Yes"
 					: "No"));
   fprintf (asm_out_file, "\t! Use performance extension\t: %s\n",
-			 ((TARGET_PERF_EXT) ? "Yes"
+			 ((TARGET_EXT_PERF) ? "Yes"
 					    : "No"));
+  fprintf (asm_out_file, "\t! Use performance extension 2\t: %s\n",
+			 ((TARGET_EXT_PERF2) ? "Yes"
+					     : "No"));
+  fprintf (asm_out_file, "\t! Use string extension\t\t: %s\n",
+			 ((TARGET_EXT_STRING) ? "Yes"
+					      : "No"));
 
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
@@ -2204,10 +2896,18 @@ nds32_asm_file_start (void)
 			 ((TARGET_REDUCED_REGS) ? "Yes"
 						: "No"));
 
+  fprintf (asm_out_file, "\t! Support unaligned access\t\t: %s\n",
+			 (flag_unaligned_access ? "Yes"
+						: "No"));
+
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
   if (optimize_size)
     fprintf (asm_out_file, "\t! Optimization level\t: -Os\n");
+  else if (optimize_fast)
+    fprintf (asm_out_file, "\t! Optimization level\t: -Ofast\n");
+  else if (optimize_debug)
+    fprintf (asm_out_file, "\t! Optimization level\t: -Og\n");
   else
     fprintf (asm_out_file, "\t! Optimization level\t: -O%d\n", optimize);
 
@@ -2244,7 +2944,15 @@ nds32_asm_globalize_label (FILE *stream, const char *name)
 static void
 nds32_print_operand (FILE *stream, rtx x, int code)
 {
-  int op_value;
+  HOST_WIDE_INT op_value = 0;
+  HOST_WIDE_INT one_position;
+  HOST_WIDE_INT zero_position;
+  bool pick_lsb_p = false;
+  bool pick_msb_p = false;
+  int regno;
+
+  if (CONST_INT_P (x))
+    op_value = INTVAL (x);
 
   switch (code)
     {
@@ -2252,22 +2960,63 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       /* Do nothing special.  */
       break;
 
+    case 'b':
+      /* Use exact_log2() to search the 0-bit position.  */
+      gcc_assert (CONST_INT_P (x));
+      zero_position = exact_log2 (~UINTVAL (x) & GET_MODE_MASK (SImode));
+      gcc_assert (zero_position != -1);
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, zero_position);
+
+      /* No need to handle following process, so return immediately.  */
+      return;
+
+    case 'e':
+      gcc_assert (MEM_P (x)
+		  && GET_CODE (XEXP (x, 0)) == PLUS
+		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT);
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (XEXP (XEXP (x, 0), 1)));
+
+      /* No need to handle following process, so return immediately.  */
+      return;
+    case 'B':
+      /* Use exact_log2() to search the 1-bit position.  */
+      gcc_assert (CONST_INT_P (x));
+      one_position = exact_log2 (UINTVAL (x) & GET_MODE_MASK (SImode));
+      gcc_assert (one_position != -1);
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, one_position);
+
+      /* No need to handle following process, so return immediately.  */
+      return;
+
+    case 'L':
+      /* X is supposed to be REG rtx.  */
+      gcc_assert (REG_P (x));
+      /* Claim that we are going to pick LSB part of X.  */
+      pick_lsb_p = true;
+      break;
+
+    case 'H':
+      /* X is supposed to be REG rtx.  */
+      gcc_assert (REG_P (x));
+      /* Claim that we are going to pick MSB part of X.  */
+      pick_msb_p = true;
+      break;
+
     case 'V':
       /* 'x' is supposed to be CONST_INT, get the value.  */
       gcc_assert (CONST_INT_P (x));
-      op_value = INTVAL (x);
 
       /* According to the Andes architecture,
-         the system/user register index range is 0 ~ 1023.
-         In order to avoid conflict between user-specified-integer value
-         and enum-specified-register value,
-         the 'enum nds32_intrinsic_registers' value
-         in nds32_intrinsic.h starts from 1024.  */
+	 the system/user register index range is 0 ~ 1023.
+	 In order to avoid conflict between user-specified-integer value
+	 and enum-specified-register value,
+	 the 'enum nds32_intrinsic_registers' value
+	 in nds32_intrinsic.h starts from 1024.  */
       if (op_value < 1024 && op_value >= 0)
 	{
 	  /* If user gives integer value directly (0~1023),
 	     we just print out the value.  */
-	  fprintf (stream, "%d", op_value);
+	  fprintf (stream, HOST_WIDE_INT_PRINT_DEC, op_value);
 	}
       else if (op_value < 0
 	       || op_value >= ((int) ARRAY_SIZE (nds32_intrinsic_register_names)
@@ -2287,6 +3036,45 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       /* No need to handle following process, so return immediately.  */
       return;
 
+    case 'R': /* cctl valck  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value]);
+      return;
+
+    case 'T': /* cctl idxwbinv  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 4]);
+      return;
+
+    case 'U': /* cctl vawbinv  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 8]);
+      return;
+
+    case 'X': /* cctl idxread  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 12]);
+      return;
+
+    case 'W': /* cctl idxwitre  */
+      /* Note the cctl divide to 5 group and share the same name table.  */
+      if (op_value < 0 || op_value > 4)
+	error ("CCTL intrinsic function subtype out of range!");
+      fprintf (stream, "%s", nds32_cctl_names[op_value + 16]);
+      return;
+
+    case 'Z': /* dpref  */
+      fprintf (stream, "%s", nds32_dpref_names[op_value]);
+      return;
+
     default :
       /* Unknown flag.  */
       output_operand_lossage ("invalid operand output code");
@@ -2301,8 +3089,40 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       break;
 
     case REG:
+      /* Print a Double-precision register name.  */
+      if ((GET_MODE (x) == DImode || GET_MODE (x) == DFmode)
+	  && NDS32_IS_FPR_REGNUM (REGNO (x)))
+	{
+	  regno = REGNO (x);
+	  if (!NDS32_FPR_REGNO_OK_FOR_DOUBLE (regno))
+	    {
+	      output_operand_lossage ("invalid operand for code '%c'", code);
+	      break;
+	    }
+	  fprintf (stream, "$fd%d", (regno - NDS32_FIRST_FPR_REGNUM) >> 1);
+	  break;
+	}
+
+      /* Print LSB or MSB part of register pair if the
+	 constraint modifier 'L' or 'H' is specified.  */
+      if ((GET_MODE (x) == DImode || GET_MODE (x) == DFmode)
+	  && NDS32_IS_GPR_REGNUM (REGNO (x)))
+	{
+	  if ((pick_lsb_p && WORDS_BIG_ENDIAN)
+	      || (pick_msb_p && !WORDS_BIG_ENDIAN))
+	    {
+	      /* If we would like to print out LSB register under big-endian,
+		 or print out MSB register under little-endian, we need to
+		 increase register number.  */
+	      regno = REGNO (x);
+	      regno++;
+	      fputs (reg_names[regno], stream);
+	      break;
+	    }
+	}
+
       /* Forbid using static chain register ($r16)
-         on reduced-set registers configuration.  */
+	 on reduced-set registers configuration.  */
       if (TARGET_REDUCED_REGS
 	  && REGNO (x) == STATIC_CHAIN_REGNUM)
 	sorry ("a nested function is not supported for reduced registers");
@@ -2315,6 +3135,33 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       output_address (GET_MODE (x), XEXP (x, 0));
       break;
 
+    case HIGH:
+      if (GET_CODE (XEXP (x, 0)) == CONST_DOUBLE)
+	{
+	  const REAL_VALUE_TYPE *rv;
+	  long val;
+	  gcc_assert (GET_MODE (x) == SFmode);
+
+	  rv = CONST_DOUBLE_REAL_VALUE (XEXP (x, 0));
+	  REAL_VALUE_TO_TARGET_SINGLE (*rv, val);
+
+	  fprintf (stream, "hi20(0x%lx)", val);
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    case CONST_DOUBLE:
+      const REAL_VALUE_TYPE *rv;
+      long val;
+      gcc_assert (GET_MODE (x) == SFmode);
+
+      rv = CONST_DOUBLE_REAL_VALUE (x);
+      REAL_VALUE_TO_TARGET_SINGLE (*rv, val);
+
+      fprintf (stream, "0x%lx", val);
+      break;
+
     case CODE_LABEL:
     case CONST_INT:
     case CONST:
@@ -2323,8 +3170,8 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 
     default:
       /* Generally, output_addr_const () is able to handle most cases.
-         We want to see what CODE could appear,
-         so we use gcc_unreachable() to stop it.  */
+	 We want to see what CODE could appear,
+	 so we use gcc_unreachable() to stop it.  */
       debug_rtx (x);
       gcc_unreachable ();
       break;
@@ -2349,7 +3196,7 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 
     case REG:
       /* Forbid using static chain register ($r16)
-         on reduced-set registers configuration.  */
+	 on reduced-set registers configuration.  */
       if (TARGET_REDUCED_REGS
 	  && REGNO (x) == STATIC_CHAIN_REGNUM)
 	sorry ("a nested function is not supported for reduced registers");
@@ -2363,13 +3210,13 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
       op1 = XEXP (x, 1);
 
       /* Checking op0, forbid using static chain register ($r16)
-         on reduced-set registers configuration.  */
+	 on reduced-set registers configuration.  */
       if (TARGET_REDUCED_REGS
 	  && REG_P (op0)
 	  && REGNO (op0) == STATIC_CHAIN_REGNUM)
 	sorry ("a nested function is not supported for reduced registers");
       /* Checking op1, forbid using static chain register ($r16)
-         on reduced-set registers configuration.  */
+	 on reduced-set registers configuration.  */
       if (TARGET_REDUCED_REGS
 	  && REG_P (op1)
 	  && REGNO (op1) == STATIC_CHAIN_REGNUM)
@@ -2378,8 +3225,8 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
       if (REG_P (op0) && CONST_INT_P (op1))
 	{
 	  /* [Ra + imm] */
-	  fprintf (stream, "[%s + (%d)]",
-			   reg_names[REGNO (op0)], (int)INTVAL (op1));
+	  fprintf (stream, "[%s + (" HOST_WIDE_INT_PRINT_DEC ")]",
+			   reg_names[REGNO (op0)], INTVAL (op1));
 	}
       else if (REG_P (op0) && REG_P (op1))
 	{
@@ -2392,8 +3239,8 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 	  /* [Ra + Rb << sv]
 	     From observation, the pattern looks like:
 	     (plus:SI (mult:SI (reg:SI 58)
-	                       (const_int 4 [0x4]))
-	              (reg/f:SI 57)) */
+			       (const_int 4 [0x4]))
+		      (reg/f:SI 57)) */
 	  int sv;
 
 	  /* We need to set sv to output shift value.  */
@@ -2403,6 +3250,8 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 	    sv = 1;
 	  else if (INTVAL (XEXP (op0, 1)) == 4)
 	    sv = 2;
+	  else if (INTVAL (XEXP (op0, 1)) == 8)
+	    sv = 3;
 	  else
 	    gcc_unreachable ();
 
@@ -2422,20 +3271,20 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 
     case POST_MODIFY:
       /* (post_modify (regA) (plus (regA) (regB)))
-         (post_modify (regA) (plus (regA) (const_int)))
-         We would like to extract
-         regA and regB (or const_int) from plus rtx.  */
+	 (post_modify (regA) (plus (regA) (const_int)))
+	 We would like to extract
+	 regA and regB (or const_int) from plus rtx.  */
       op0 = XEXP (XEXP (x, 1), 0);
       op1 = XEXP (XEXP (x, 1), 1);
 
       /* Checking op0, forbid using static chain register ($r16)
-         on reduced-set registers configuration.  */
+	 on reduced-set registers configuration.  */
       if (TARGET_REDUCED_REGS
 	  && REG_P (op0)
 	  && REGNO (op0) == STATIC_CHAIN_REGNUM)
 	sorry ("a nested function is not supported for reduced registers");
       /* Checking op1, forbid using static chain register ($r16)
-         on reduced-set registers configuration.  */
+	 on reduced-set registers configuration.  */
       if (TARGET_REDUCED_REGS
 	  && REG_P (op1)
 	  && REGNO (op1) == STATIC_CHAIN_REGNUM)
@@ -2450,8 +3299,8 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
       else if (REG_P (op0) && CONST_INT_P (op1))
 	{
 	  /* [Ra], imm */
-	  fprintf (stream, "[%s], %d",
-			   reg_names[REGNO (op0)], (int)INTVAL (op1));
+	  fprintf (stream, "[%s], " HOST_WIDE_INT_PRINT_DEC,
+			   reg_names[REGNO (op0)], INTVAL (op1));
 	}
       else
 	{
@@ -2467,7 +3316,7 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
       op0 = XEXP (x, 0);
 
       /* Checking op0, forbid using static chain register ($r16)
-         on reduced-set registers configuration.  */
+	 on reduced-set registers configuration.  */
       if (TARGET_REDUCED_REGS
 	  && REG_P (op0)
 	  && REGNO (op0) == STATIC_CHAIN_REGNUM)
@@ -2491,12 +3340,90 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 
     default :
       /* Generally, output_addr_const () is able to handle most cases.
-         We want to see what CODE could appear,
-         so we use gcc_unreachable() to stop it.  */
+	 We want to see what CODE could appear,
+	 so we use gcc_unreachable() to stop it.  */
       debug_rtx (x);
       gcc_unreachable ();
       break;
     }
+}
+
+/* -- Assembler Commands for Exception Regions.  */
+
+static rtx
+nds32_dwarf_register_span (rtx reg)
+{
+  rtx dwarf_high, dwarf_low;
+  rtx dwarf_single;
+  machine_mode mode;
+  int regno;
+
+  mode = GET_MODE (reg);
+  regno = REGNO (reg);
+
+  /* We need to adjust dwarf register information for floating-point registers
+     rather than using default register number mapping.  */
+  if (regno >= NDS32_FIRST_FPR_REGNUM
+      && regno <= NDS32_LAST_FPR_REGNUM)
+    {
+      if (mode == DFmode || mode == SCmode)
+	{
+	  /* By default, GCC maps increasing register numbers to increasing
+	     memory locations, but paired FPRs in NDS32 target are always
+	     big-endian, i.e.:
+
+	       fd0 :  fs0   fs1
+		     (MSB) (LSB)
+
+	     We must return parallel rtx to represent such layout.  */
+	  dwarf_high = gen_rtx_REG (word_mode, regno);
+	  dwarf_low = gen_rtx_REG (word_mode, regno + 1);
+	  return gen_rtx_PARALLEL (VOIDmode,
+				   gen_rtvec (2, dwarf_low, dwarf_high));
+	}
+      else if (mode == DCmode)
+	{
+	  rtx dwarf_high_re = gen_rtx_REG (word_mode, regno);
+	  rtx dwarf_low_re = gen_rtx_REG (word_mode, regno + 1);
+	  rtx dwarf_high_im = gen_rtx_REG (word_mode, regno);
+	  rtx dwarf_low_im = gen_rtx_REG (word_mode, regno + 1);
+	  return gen_rtx_PARALLEL (VOIDmode,
+				   gen_rtvec (4, dwarf_low_re, dwarf_high_re,
+						 dwarf_high_im, dwarf_low_im));
+	}
+      else if (mode == SFmode || mode == SImode)
+	{
+	  /* Create new dwarf information with adjusted register number.  */
+	  dwarf_single = gen_rtx_REG (word_mode, regno);
+	  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, dwarf_single));
+	}
+      else
+	{
+	  /* We should not be here.  */
+	  gcc_unreachable ();
+	}
+    }
+
+  return NULL_RTX;
+}
+
+/* Map internal gcc register numbers to DWARF2 register numbers.  */
+
+unsigned int
+nds32_dbx_register_number (unsigned int regno)
+{
+  /* The nds32 port in GDB maintains a mapping between dwarf register
+     number and displayed register name.  For backward compatibility to
+     previous toolchain, currently our gdb still has four registers
+     (d0.l, d0.h, d1.l, and d1.h) between GPR and FPR while compiler
+     does not count those four registers in its register number table.
+     So we have to add 4 on its register number and then create new
+     dwarf information.  Hopefully we can discard such workaround
+     in the future.  */
+  if (NDS32_IS_FPR_REGNUM (regno))
+    return regno + 4;
+
+  return regno;
 }
 
 
@@ -2544,10 +3471,10 @@ nds32_insert_attributes (tree decl, tree *attributes)
       nds32_check_isr_attrs_conflict (decl, func_attrs);
 
       /* Now we are starting to check valid id value
-         for interrupt/exception/reset.
-         Note that we ONLY check its validity here.
-         To construct isr vector information, it is still performed
-         by nds32_construct_isr_vectors_information().  */
+	 for interrupt/exception/reset.
+	 Note that we ONLY check its validity here.
+	 To construct isr vector information, it is still performed
+	 by nds32_construct_isr_vectors_information().  */
       intr  = lookup_attribute ("interrupt", func_attrs);
       excp  = lookup_attribute ("exception", func_attrs);
       reset = lookup_attribute ("reset", func_attrs);
@@ -2577,8 +3504,8 @@ nds32_insert_attributes (tree decl, tree *attributes)
 	      id = TREE_VALUE (id_list);
 	      /* Issue error if it is not a valid integer value.  */
 	      if (TREE_CODE (id) != INTEGER_CST
-		  || wi::ltu_p (id, lower_bound)
-		  || wi::gtu_p (id, upper_bound))
+		  || wi::ltu_p (wi::to_wide (id), lower_bound)
+		  || wi::gtu_p (wi::to_wide (id), upper_bound))
 		error ("invalid id value for interrupt/exception attribute");
 
 	      /* Advance to next id.  */
@@ -2605,8 +3532,8 @@ nds32_insert_attributes (tree decl, tree *attributes)
 
 	  /* 3. Check valid integer value for reset.  */
 	  if (TREE_CODE (id) != INTEGER_CST
-	      || wi::ltu_p (id, lower_bound)
-	      || wi::gtu_p (id, upper_bound))
+	      || wi::ltu_p (wi::to_wide (id), lower_bound)
+	      || wi::gtu_p (wi::to_wide (id), upper_bound))
 	    error ("invalid id value for reset attribute");
 
 	  /* 4. Check valid function for nmi/warm.  */
@@ -2677,8 +3604,12 @@ nds32_option_override (void)
     {
       /* Under V3M ISA, we need to strictly enable TARGET_REDUCED_REGS.  */
       target_flags |= MASK_REDUCED_REGS;
-      /* Under V3M ISA, we need to strictly disable TARGET_PERF_EXT.  */
-      target_flags &= ~MASK_PERF_EXT;
+      /* Under V3M ISA, we need to strictly disable TARGET_EXT_PERF.  */
+      target_flags &= ~MASK_EXT_PERF;
+      /* Under V3M ISA, we need to strictly disable TARGET_EXT_PERF2.  */
+      target_flags &= ~MASK_EXT_PERF2;
+      /* Under V3M ISA, we need to strictly disable TARGET_EXT_STRING.  */
+      target_flags &= ~MASK_EXT_STRING;
     }
 
   /* See if we are using reduced-set registers:
@@ -2689,7 +3620,7 @@ nds32_option_override (void)
       int r;
 
       /* Prevent register allocator from
-         choosing it as doing register allocation.  */
+	 choosing it as doing register allocation.  */
       for (r = 11; r <= 14; r++)
 	fixed_regs[r] = call_used_regs[r] = 1;
       for (r = 16; r <= 27; r++)
@@ -2702,18 +3633,48 @@ nds32_option_override (void)
       target_flags &= ~MASK_V3PUSH;
     }
 
+  if (TARGET_HARD_FLOAT && !(TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE))
+    {
+      if (nds32_arch_option == ARCH_V3S || nds32_arch_option == ARCH_V3F)
+	error ("Disable FPU ISA, "
+	       "the ABI option must be enable '-mfloat-abi=soft'");
+      else
+	error ("'-mabi=2fp+' option only support when FPU available, "
+	       "must be enable '-mext-fpu-sp' or '-mext-fpu-dp'");
+    }
+
   /* Currently, we don't support PIC code generation yet.  */
   if (flag_pic)
     sorry ("position-independent code not supported");
+
+  nds32_register_passes ();
 }
 
 
 /* Miscellaneous Parameters.  */
 
+static rtx_insn *
+nds32_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
+		     vec<rtx> &inputs ATTRIBUTE_UNUSED,
+		     vec<const char *> &constraints ATTRIBUTE_UNUSED,
+		     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+{
+  clobbers.safe_push (gen_rtx_REG (SImode, TA_REGNUM));
+  SET_HARD_REG_BIT (clobbered_regs, TA_REGNUM);
+  return NULL;
+}
+
 static void
 nds32_init_builtins (void)
 {
   nds32_init_builtins_impl ();
+}
+
+static tree
+nds32_builtin_decl (unsigned code, bool initialize_p)
+{
+  /* Implement in nds32-intrinsic.c.  */
+  return nds32_builtin_decl_impl (code, initialize_p);
 }
 
 static rtx
@@ -2732,6 +3693,100 @@ nds32_expand_builtin (tree exp,
 /* PART 4: Implemet extern function definitions,
            the prototype is in nds32-protos.h.  */
 
+/* Run-time Target Specification.  */
+
+void
+nds32_cpu_cpp_builtins(struct cpp_reader *pfile)
+{
+#define builtin_define(TXT) cpp_define (pfile, TXT)
+#define builtin_assert(TXT) cpp_assert (pfile, TXT)
+  builtin_define ("__nds32__");
+  builtin_define ("__NDS32__");
+
+  if (TARGET_HARD_FLOAT)
+    builtin_define ("__NDS32_ABI_2FP_PLUS__");
+  else
+    builtin_define ("__NDS32_ABI_2__");
+
+  if (TARGET_ISA_V2)
+    builtin_define ("__NDS32_ISA_V2__");
+  if (TARGET_ISA_V3)
+    builtin_define ("__NDS32_ISA_V3__");
+  if (TARGET_ISA_V3M)
+    builtin_define ("__NDS32_ISA_V3M__");
+
+  if (TARGET_FPU_SINGLE)
+    builtin_define ("__NDS32_EXT_FPU_SP__");
+  if (TARGET_FPU_DOUBLE)
+    builtin_define ("__NDS32_EXT_FPU_DP__");
+
+  if (TARGET_EXT_FPU_FMA)
+    builtin_define ("__NDS32_EXT_FPU_FMA__");
+  if (NDS32_EXT_FPU_DOT_E)
+    builtin_define ("__NDS32_EXT_FPU_DOT_E__");
+  if (TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+    {
+      switch (nds32_fp_regnum)
+	{
+	case 0:
+	case 4:
+	  builtin_define ("__NDS32_EXT_FPU_CONFIG_0__");
+	  break;
+	case 1:
+	case 5:
+	  builtin_define ("__NDS32_EXT_FPU_CONFIG_1__");
+	  break;
+	case 2:
+	case 6:
+	  builtin_define ("__NDS32_EXT_FPU_CONFIG_2__");
+	  break;
+	case 3:
+	case 7:
+	  builtin_define ("__NDS32_EXT_FPU_CONFIG_3__");
+	  break;
+	default:
+	  abort ();
+	}
+    }
+
+  if (TARGET_BIG_ENDIAN)
+    builtin_define ("__NDS32_EB__");
+  else
+    builtin_define ("__NDS32_EL__");
+
+  if (TARGET_REDUCED_REGS)
+    builtin_define ("__NDS32_REDUCED_REGS__");
+  if (TARGET_CMOV)
+    builtin_define ("__NDS32_CMOV__");
+  if (TARGET_EXT_PERF)
+    builtin_define ("__NDS32_EXT_PERF__");
+  if (TARGET_EXT_PERF2)
+    builtin_define ("__NDS32_EXT_PERF2__");
+  if (TARGET_EXT_STRING)
+    builtin_define ("__NDS32_EXT_STRING__");
+  if (TARGET_16_BIT)
+    builtin_define ("__NDS32_16_BIT__");
+  if (TARGET_GP_DIRECT)
+    builtin_define ("__NDS32_GP_DIRECT__");
+  if (TARGET_VH)
+    builtin_define ("__NDS32_VH__");
+
+  if (TARGET_BIG_ENDIAN)
+    builtin_define ("__big_endian__");
+
+  builtin_assert ("cpu=nds32");
+  builtin_assert ("machine=nds32");
+
+  if (TARGET_HARD_FLOAT)
+    builtin_define ("__NDS32_ABI_2FP_PLUS");
+  else
+    builtin_define ("__NDS32_ABI_2");
+
+#undef builtin_define
+#undef builtin_assert
+}
+
+
 /* Defining Data Structures for Per-function Information.  */
 
 void
@@ -2744,26 +3799,85 @@ nds32_init_expanders (void)
 
 /* Register Usage.  */
 
+/* -- Order of Allocation of Registers.  */
+
+void
+nds32_adjust_reg_alloc_order (void)
+{
+  const int nds32_reg_alloc_order[] = REG_ALLOC_ORDER;
+
+  /* Copy the default register allocation order, which is designed
+     to optimize for code size.  */
+  memcpy(reg_alloc_order, nds32_reg_alloc_order, sizeof (reg_alloc_order));
+
+  /* Adjust few register allocation order when optimizing for speed.  */
+  if (!optimize_size)
+    {
+      memcpy (reg_alloc_order, nds32_reg_alloc_order_for_speed,
+	      sizeof (nds32_reg_alloc_order_for_speed));
+    }
+}
+
 /* -- How Values Fit in Registers.  */
 
-int
-nds32_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
+static unsigned
+nds32_hard_regno_nregs (unsigned regno ATTRIBUTE_UNUSED,
 			machine_mode mode)
 {
   return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
 }
 
-int
-nds32_hard_regno_mode_ok (int regno, machine_mode mode)
-{
-  /* Restrict double-word quantities to even register pairs.  */
-  if (HARD_REGNO_NREGS (regno, mode) == 1
-      || !((regno) & 1))
-    return 1;
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-  return 0;
+static bool
+nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (regno > FIRST_PSEUDO_REGISTER)
+    return true;
+
+  if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE) && NDS32_IS_FPR_REGNUM (regno))
+    {
+      if (NDS32_IS_EXT_FPR_REGNUM(regno))
+	return (NDS32_FPR_REGNO_OK_FOR_DOUBLE(regno) && (mode == DFmode));
+      else if (mode == SFmode || mode == SImode)
+	return NDS32_FPR_REGNO_OK_FOR_SINGLE (regno);
+      else if (mode == DFmode)
+	return NDS32_FPR_REGNO_OK_FOR_DOUBLE (regno);
+
+      return false;
+    }
+
+  /* Restrict double-word quantities to even register pairs.  */
+  if (regno <= NDS32_LAST_GPR_REGNUM)
+    return (targetm.hard_regno_nregs (regno, mode) == 1
+	    || !((regno) & 1));
+
+  return false;
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.  We can use general registers to
+   tie QI/HI/SI modes together.  */
+
+static bool
+nds32_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  if ((GET_MODE_CLASS (mode1) == MODE_INT
+       && GET_MODE_CLASS (mode2) == MODE_INT)
+      && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD)
+    return true;
+
+  if (GET_MODE_SIZE (mode1) == GET_MODE_SIZE (mode2))
+    {
+      if ((TARGET_FPU_SINGLE && !TARGET_FPU_DOUBLE)
+	  && (mode1 == DFmode || mode2 == DFmode))
+	return false;
+      else
+	return true;
+    }
+
+  return false;
+}
 
 /* Register Classes.  */
 
@@ -2785,7 +3899,14 @@ nds32_regno_reg_class (int regno)
   else if (regno >= 20 && regno <= 31)
     return HIGH_REGS;
   else if (regno == 32 || regno == 33)
-    return FRAME_REGS;
+    {
+      /* $SFP and $AP is FRAME_REGS in fact, However prevent IRA don't
+	 know how to allocate register for $SFP and $AP, just tell IRA they
+	 are GENERAL_REGS, and ARM do this hack too.  */
+      return GENERAL_REGS;
+    }
+  else if (regno >= 34 && regno <= 97)
+    return FP_REGS;
   else
     return NO_REGS;
 }
@@ -2796,14 +3917,39 @@ nds32_regno_reg_class (int regno)
 /* -- Basic Stack Layout.  */
 
 rtx
-nds32_return_addr_rtx (int count,
-		       rtx frameaddr ATTRIBUTE_UNUSED)
+nds32_dynamic_chain_address (rtx frameaddr)
 {
-  /* There is no way to determine the return address
-     if frameaddr is the frame that has 'count' steps
-     up from current frame.  */
+  if (TARGET_V3PUSH)
+    {
+      /* If -mv3push is specified, we push $fp, $gp, and $lp into stack.
+         We can access dynamic chain address from stack by [$fp - 12].  */
+      return plus_constant (Pmode, frameaddr, -12);
+    }
+  else
+    {
+      /* For general case we push $fp and $lp into stack at prologue.
+         We can access dynamic chain address from stack by [$fp - 8].  */
+      return plus_constant (Pmode, frameaddr, -8);
+    }
+}
+
+rtx
+nds32_return_addr_rtx (int count,
+		       rtx frameaddr)
+{
+  int offset;
+  rtx addr;
+
   if (count != 0)
-    return NULL_RTX;
+    {
+      /* In nds32 ABI design, we can expect that $lp is always available
+         from stack by [$fp - 4] location.  */
+      offset = -4;
+      addr = plus_constant (Pmode, frameaddr, offset);
+      addr = memory_address (Pmode, addr);
+
+      return gen_rtx_MEM (Pmode, addr);
+    }
 
   /* If count == 0, it means we are at current frame,
      the return address is $r30 ($lp).  */
@@ -2822,15 +3968,18 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
   nds32_compute_stack_frame ();
 
   /* Remember to consider
-     cfun->machine->callee_saved_area_padding_bytes
+     cfun->machine->callee_saved_area_gpr_padding_bytes and
+     cfun->machine->eh_return_data_regs_size
      when calculating offset.  */
   if (from_reg == ARG_POINTER_REGNUM && to_reg == STACK_POINTER_REGNUM)
     {
       offset = (cfun->machine->fp_size
-	        + cfun->machine->gp_size
+		+ cfun->machine->gp_size
 		+ cfun->machine->lp_size
 		+ cfun->machine->callee_saved_gpr_regs_size
 		+ cfun->machine->callee_saved_area_gpr_padding_bytes
+		+ cfun->machine->callee_saved_fpr_regs_size
+		+ cfun->machine->eh_return_data_regs_size
 		+ cfun->machine->local_size
 		+ cfun->machine->out_args_size);
     }
@@ -2851,7 +4000,9 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
 		       + cfun->machine->gp_size
 		       + cfun->machine->lp_size
 		       + cfun->machine->callee_saved_gpr_regs_size
-		       + cfun->machine->callee_saved_area_gpr_padding_bytes);
+		       + cfun->machine->callee_saved_area_gpr_padding_bytes
+		       + cfun->machine->callee_saved_fpr_regs_size
+		       + cfun->machine->eh_return_data_regs_size);
     }
   else
     {
@@ -2870,10 +4021,11 @@ nds32_init_cumulative_args (CUMULATIVE_ARGS *cum,
 			    tree fndecl ATTRIBUTE_UNUSED,
 			    int n_named_args ATTRIBUTE_UNUSED)
 {
-  /* Initial available registers
-     (in offset, corresponding to NDS32_GPR_ARG_FIRST_REGNUM)
+  /* Initial available registers.  The values are offset against
+     NDS32_GPR_ARG_FIRST_REGNUM and NDS32_FPR_ARG_FIRST_REGNUM
      for passing arguments.  */
   cum->gpr_offset = 0;
+  cum->fpr_offset = 0;
 }
 
 /* -- Function Entry and Exit.  */
@@ -2884,10 +4036,7 @@ nds32_expand_prologue (void)
 {
   int fp_adjust;
   int sp_adjust;
-  int en4_const;
-
-  rtx Rb, Re;
-  rtx fp_adjust_insn, sp_adjust_insn;
+  unsigned Rb, Re;
 
   /* Compute and setup stack frame size.
      The result will be in cfun->machine.  */
@@ -2897,10 +4046,10 @@ nds32_expand_prologue (void)
      registers that hold the unnamed argument value.  */
   if (cfun->machine->va_args_size != 0)
     {
-      Rb = gen_rtx_REG (SImode, cfun->machine->va_args_first_regno);
-      Re = gen_rtx_REG (SImode, cfun->machine->va_args_last_regno);
-      /* No need to push $fp, $gp, or $lp, so use GEN_INT(0).  */
-      nds32_emit_stack_push_multiple (Rb, Re, GEN_INT (0), true);
+      Rb = cfun->machine->va_args_first_regno;
+      Re = cfun->machine->va_args_last_regno;
+      /* No need to push $fp, $gp, or $lp.  */
+      nds32_emit_stack_push_multiple (Rb, Re, false, false, false, true);
 
       /* We may also need to adjust stack pointer for padding bytes
          because varargs may cause $sp not 8-byte aligned.  */
@@ -2908,17 +4057,10 @@ nds32_expand_prologue (void)
 	{
 	  /* Generate sp adjustment instruction.  */
 	  sp_adjust = cfun->machine->va_args_area_padding_bytes;
-	  sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-				       stack_pointer_rtx,
-				       GEN_INT (-1 * sp_adjust));
 
-	  /* Emit rtx into instructions list and receive INSN rtx form.  */
-	  sp_adjust_insn = emit_insn (sp_adjust_insn);
-
-	  /* The insn rtx 'sp_adjust_insn' will change frame layout.
-	     We need to use RTX_FRAME_RELATED_P so that GCC is able to
-	     generate CFI (Call Frame Information) stuff.  */
-	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   -1 * sp_adjust);
 	}
     }
 
@@ -2928,28 +4070,33 @@ nds32_expand_prologue (void)
     return;
 
   /* Get callee_first_regno and callee_last_regno.  */
-  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_first_gpr_regno);
-  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_last_gpr_regno);
-
-  /* nds32_emit_stack_push_multiple(first_regno, last_regno),
-     the pattern 'stack_push_multiple' is implemented in nds32.md.
-     For En4 field, we have to calculate its constant value.
-     Refer to Andes ISA for more information.  */
-  en4_const = 0;
-  if (cfun->machine->fp_size)
-    en4_const += 8;
-  if (cfun->machine->gp_size)
-    en4_const += 4;
-  if (cfun->machine->lp_size)
-    en4_const += 2;
+  Rb = cfun->machine->callee_saved_first_gpr_regno;
+  Re = cfun->machine->callee_saved_last_gpr_regno;
 
   /* If $fp, $gp, $lp, and all callee-save registers are NOT required
      to be saved, we don't have to create multiple push instruction.
      Otherwise, a multiple push instruction is needed.  */
-  if (!(REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM && en4_const == 0))
+  if (!(Rb == SP_REGNUM && Re == SP_REGNUM
+	&& cfun->machine->fp_size == 0
+	&& cfun->machine->gp_size == 0
+	&& cfun->machine->lp_size == 0))
     {
       /* Create multiple push instruction rtx.  */
-      nds32_emit_stack_push_multiple (Rb, Re, GEN_INT (en4_const), false);
+      nds32_emit_stack_push_multiple (
+	Rb, Re,
+	cfun->machine->fp_size, cfun->machine->gp_size, cfun->machine->lp_size,
+	false);
+    }
+
+  /* Save eh data registers.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      Rb = cfun->machine->eh_return_data_first_regno;
+      Re = cfun->machine->eh_return_data_last_regno;
+
+      /* No need to push $fp, $gp, or $lp.
+	 Also, this is not variadic arguments push.  */
+      nds32_emit_stack_push_multiple (Rb, Re, false, false, false, false);
     }
 
   /* Check frame_pointer_needed to see
@@ -2957,47 +4104,95 @@ nds32_expand_prologue (void)
   if (frame_pointer_needed)
     {
       /* adjust $fp = $sp + ($fp size) + ($gp size) + ($lp size)
-                          + (4 * callee-saved-registers)
-         Note: No need to adjust
-               cfun->machine->callee_saved_area_padding_bytes,
-               because, at this point, stack pointer is just
-               at the position after push instruction.  */
+			  + (4 * callee-saved-registers)
+			  + (4 * exception-handling-data-registers)
+	 Note: No need to adjust
+	       cfun->machine->callee_saved_area_gpr_padding_bytes,
+	       because, at this point, stack pointer is just
+	       at the position after push instruction.  */
       fp_adjust = cfun->machine->fp_size
 		  + cfun->machine->gp_size
 		  + cfun->machine->lp_size
-		  + cfun->machine->callee_saved_gpr_regs_size;
-      fp_adjust_insn = gen_addsi3 (hard_frame_pointer_rtx,
-				   stack_pointer_rtx,
-				   GEN_INT (fp_adjust));
-      /* Emit rtx into instructions list and receive INSN rtx form.  */
-      fp_adjust_insn = emit_insn (fp_adjust_insn);
+		  + cfun->machine->callee_saved_gpr_regs_size
+		  + cfun->machine->eh_return_data_regs_size;
 
-      /* The insn rtx 'fp_adjust_insn' will change frame layout.  */
-      RTX_FRAME_RELATED_P (fp_adjust_insn) = 1;
+      nds32_emit_adjust_frame (hard_frame_pointer_rtx,
+			       stack_pointer_rtx,
+			       fp_adjust);
     }
 
-  /* Adjust $sp = $sp - local_size - out_args_size
-                      - callee_saved_area_padding_bytes.  */
-  sp_adjust = cfun->machine->local_size
-	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
-  /* sp_adjust value may be out of range of the addi instruction,
-     create alternative add behavior with TA_REGNUM if necessary,
-     using NEGATIVE value to tell that we are decreasing address.  */
-  sp_adjust = nds32_force_addi_stack_int ( (-1) * sp_adjust);
-  if (sp_adjust)
+  /* Save fpu registers.  */
+  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
     {
-      /* Generate sp adjustment instruction if and only if sp_adjust != 0.  */
-      sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-				   stack_pointer_rtx,
-				   GEN_INT (-1 * sp_adjust));
-      /* Emit rtx into instructions list and receive INSN rtx form.  */
-      sp_adjust_insn = emit_insn (sp_adjust_insn);
+      /* When $sp moved to bottom of stack, we need to check whether
+	 the range of offset in the FPU instruction.  */
+      int fpr_offset = cfun->machine->local_size
+		       + cfun->machine->out_args_size
+		       + cfun->machine->callee_saved_fpr_regs_size;
 
-      /* The insn rtx 'sp_adjust_insn' will change frame layout.
-         We need to use RTX_FRAME_RELATED_P so that GCC is able to
-         generate CFI (Call Frame Information) stuff.  */
-      RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
+      /* Check FPU instruction offset imm14s.  */
+      if (!satisfies_constraint_Is14 (GEN_INT (fpr_offset)))
+	{
+	  int fpr_space = cfun->machine->callee_saved_area_gpr_padding_bytes
+			  + cfun->machine->callee_saved_fpr_regs_size;
+
+	  /* Save fpu registers, need to allocate stack space
+	     for fpu callee registers.  And now $sp position
+	     on callee saved fpr registers.  */
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   -1 * fpr_space);
+
+	  /* Emit fpu store instruction, using [$sp + offset] store
+	     fpu registers.  */
+	  nds32_emit_push_fpr_callee_saved (0);
+
+          /* Adjust $sp = $sp - local_size - out_args_size.  */
+	  sp_adjust = cfun->machine->local_size
+		      + cfun->machine->out_args_size;
+
+	  /* Allocate stack space for local size and out args size.  */
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   -1 * sp_adjust);
+	}
+      else
+	{
+	  /* Offset range in Is14, so $sp moved to bottom of stack.  */
+
+          /* Adjust $sp = $sp - local_size - out_args_size
+			      - callee_saved_area_gpr_padding_bytes
+			      - callee_saved_fpr_regs_size.  */
+	  sp_adjust = cfun->machine->local_size
+		      + cfun->machine->out_args_size
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes
+		      + cfun->machine->callee_saved_fpr_regs_size;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   -1 * sp_adjust);
+
+	  /* Emit fpu store instruction, using [$sp + offset] store
+	     fpu registers.  */
+	  int fpr_position = cfun->machine->out_args_size
+			     + cfun->machine->local_size;
+	  nds32_emit_push_fpr_callee_saved (fpr_position);
+	}
+    }
+  else
+    {
+      /* Adjust $sp = $sp - local_size - out_args_size
+			  - callee_saved_area_gpr_padding_bytes.  */
+      sp_adjust = cfun->machine->local_size
+		  + cfun->machine->out_args_size
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
+
+      /* sp_adjust value may be out of range of the addi instruction,
+	 create alternative add behavior with TA_REGNUM if necessary,
+	 using NEGATIVE value to tell that we are decreasing address.  */
+      nds32_emit_adjust_frame (stack_pointer_rtx,
+			       stack_pointer_rtx,
+			       -1 * sp_adjust);
     }
 
   /* Prevent the instruction scheduler from
@@ -3010,10 +4205,7 @@ void
 nds32_expand_epilogue (bool sibcall_p)
 {
   int sp_adjust;
-  int en4_const;
-
-  rtx Rb, Re;
-  rtx sp_adjust_insn;
+  unsigned Rb, Re;
 
   /* Compute and setup stack frame size.
      The result will be in cfun->machine.  */
@@ -3030,28 +4222,22 @@ nds32_expand_epilogue (bool sibcall_p)
   if (cfun->machine->naked_p)
     {
       /* If this is a variadic function, we do not have to restore argument
-         registers but need to adjust stack pointer back to previous stack
-         frame location before return.  */
+	 registers but need to adjust stack pointer back to previous stack
+	 frame location before return.  */
       if (cfun->machine->va_args_size != 0)
 	{
 	  /* Generate sp adjustment instruction.
 	     We  need to consider padding bytes here.  */
 	  sp_adjust = cfun->machine->va_args_size
 		      + cfun->machine->va_args_area_padding_bytes;
-	  sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-				       stack_pointer_rtx,
-				       GEN_INT (sp_adjust));
-	  /* Emit rtx into instructions list and receive INSN rtx form.  */
-	  sp_adjust_insn = emit_insn (sp_adjust_insn);
 
-	  /* The insn rtx 'sp_adjust_insn' will change frame layout.
-	     We need to use RTX_FRAME_RELATED_P so that GCC is able to
-	     generate CFI (Call Frame Information) stuff.  */
-	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   sp_adjust);
 	}
 
       /* Generate return instruction by using 'return_internal' pattern.
-         Make sure this instruction is after gen_blockage().  */
+	 Make sure this instruction is after gen_blockage().  */
       if (!sibcall_p)
 	emit_jump_insn (gen_return_internal ());
       return;
@@ -3059,81 +4245,123 @@ nds32_expand_epilogue (bool sibcall_p)
 
   if (frame_pointer_needed)
     {
-      /* adjust $sp = $fp - ($fp size) - ($gp size) - ($lp size)
-                          - (4 * callee-saved-registers)
-         Note: No need to adjust
-               cfun->machine->callee_saved_area_padding_bytes,
-               because we want to adjust stack pointer
-               to the position for pop instruction.  */
-      sp_adjust = cfun->machine->fp_size
-		  + cfun->machine->gp_size
-		  + cfun->machine->lp_size
-		  + cfun->machine->callee_saved_gpr_regs_size;
-      sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-				   hard_frame_pointer_rtx,
-				   GEN_INT (-1 * sp_adjust));
-      /* Emit rtx into instructions list and receive INSN rtx form.  */
-      sp_adjust_insn = emit_insn (sp_adjust_insn);
+      /* Restore fpu registers.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  int gpr_padding = cfun->machine->callee_saved_area_gpr_padding_bytes;
 
-      /* The insn rtx 'sp_adjust_insn' will change frame layout.  */
-      RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
+	  /* adjust $sp = $fp - ($fp size) - ($gp size) - ($lp size)
+			      - (4 * callee-saved-registers)
+			      - (4 * exception-handling-data-registers)
+			      - (4 * callee-saved-gpr-registers padding byte)
+			      - (4 * callee-saved-fpr-registers)
+	     Note:  we want to adjust stack pointer
+		    to the position for callee-saved fpr register,
+		    And restore fpu register use .bi instruction to adjust $sp
+		    from callee-saved fpr register to pop instruction.  */
+	  sp_adjust = cfun->machine->fp_size
+		      + cfun->machine->gp_size
+		      + cfun->machine->lp_size
+		      + cfun->machine->callee_saved_gpr_regs_size
+		      + cfun->machine->eh_return_data_regs_size
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes
+		      + cfun->machine->callee_saved_fpr_regs_size;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   hard_frame_pointer_rtx,
+				   -1 * sp_adjust);
+
+	  /* Emit fpu load instruction, using .bi instruction
+	     load fpu registers.  */
+	  nds32_emit_pop_fpr_callee_saved (gpr_padding);
+	}
+      else
+	{
+	  /* adjust $sp = $fp - ($fp size) - ($gp size) - ($lp size)
+			      - (4 * callee-saved-registers)
+			      - (4 * exception-handling-data-registers)
+	     Note: No need to adjust
+		   cfun->machine->callee_saved_area_gpr_padding_bytes,
+		   because we want to adjust stack pointer
+		   to the position for pop instruction.  */
+	  sp_adjust = cfun->machine->fp_size
+		      + cfun->machine->gp_size
+		      + cfun->machine->lp_size
+		      + cfun->machine->callee_saved_gpr_regs_size
+		      + cfun->machine->eh_return_data_regs_size;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   hard_frame_pointer_rtx,
+				   -1 * sp_adjust);
+	}
     }
   else
     {
-      /* If frame pointer is NOT needed,
-         we cannot calculate the sp adjustment from frame pointer.
-         Instead, we calculate the adjustment by local_size,
-         out_args_size, and callee_saved_area_padding_bytes.
-         Notice that such sp adjustment value may be out of range,
-         so we have to deal with it as well.  */
-
-      /* Adjust $sp = $sp + local_size + out_args_size
-                          + callee_saved_area_padding_bytes.  */
-      sp_adjust = cfun->machine->local_size
-		  + cfun->machine->out_args_size
-		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
-      /* sp_adjust value may be out of range of the addi instruction,
-         create alternative add behavior with TA_REGNUM if necessary,
-         using POSITIVE value to tell that we are increasing address.  */
-      sp_adjust = nds32_force_addi_stack_int (sp_adjust);
-      if (sp_adjust)
+      /* Restore fpu registers.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
 	{
-	  /* Generate sp adjustment instruction
-	     if and only if sp_adjust != 0.  */
-	  sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-				       stack_pointer_rtx,
-				       GEN_INT (sp_adjust));
-	  /* Emit rtx into instructions list and receive INSN rtx form.  */
-	  sp_adjust_insn = emit_insn (sp_adjust_insn);
+	  int gpr_padding = cfun->machine->callee_saved_area_gpr_padding_bytes;
 
-	  /* The insn rtx 'sp_adjust_insn' will change frame layout.  */
-	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
+	  /* Adjust $sp = $sp + local_size + out_args_size.  */
+	  sp_adjust = cfun->machine->local_size
+		      + cfun->machine->out_args_size;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   sp_adjust);
+
+	  /* Emit fpu load instruction, using .bi instruction
+	     load fpu registers, and adjust $sp from callee-saved fpr register
+	     to callee-saved gpr register.  */
+	  nds32_emit_pop_fpr_callee_saved (gpr_padding);
+	}
+      else
+	{
+	  /* If frame pointer is NOT needed,
+	     we cannot calculate the sp adjustment from frame pointer.
+	     Instead, we calculate the adjustment by local_size,
+	     out_args_size, and callee_saved_area_gpr_padding_bytes.
+	     Notice that such sp adjustment value may be out of range,
+	     so we have to deal with it as well.  */
+
+	  /* Adjust $sp = $sp + local_size + out_args_size
+			      + callee_saved_area_gpr_padding_bytes.  */
+	  sp_adjust = cfun->machine->local_size
+		      + cfun->machine->out_args_size
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes;
+
+	  nds32_emit_adjust_frame (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   sp_adjust);
 	}
     }
 
-  /* Get callee_first_regno and callee_last_regno.  */
-  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_first_gpr_regno);
-  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_last_gpr_regno);
+  /* Restore eh data registers.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      Rb = cfun->machine->eh_return_data_first_regno;
+      Re = cfun->machine->eh_return_data_last_regno;
 
-  /* nds32_emit_stack_pop_multiple(first_regno, last_regno),
-     the pattern 'stack_pop_multiple' is implementad in nds32.md.
-     For En4 field, we have to calculate its constant value.
-     Refer to Andes ISA for more information.  */
-  en4_const = 0;
-  if (cfun->machine->fp_size)
-    en4_const += 8;
-  if (cfun->machine->gp_size)
-    en4_const += 4;
-  if (cfun->machine->lp_size)
-    en4_const += 2;
+      /* No need to pop $fp, $gp, or $lp.  */
+      nds32_emit_stack_pop_multiple (Rb, Re, false, false, false);
+    }
+
+  /* Get callee_first_regno and callee_last_regno.  */
+  Rb = cfun->machine->callee_saved_first_gpr_regno;
+  Re = cfun->machine->callee_saved_last_gpr_regno;
 
   /* If $fp, $gp, $lp, and all callee-save registers are NOT required
      to be saved, we don't have to create multiple pop instruction.
      Otherwise, a multiple pop instruction is needed.  */
-  if (!(REGNO (Rb) == SP_REGNUM && REGNO (Re) == SP_REGNUM && en4_const == 0))
+  if (!(Rb == SP_REGNUM && Re == SP_REGNUM
+	&& cfun->machine->fp_size == 0
+	&& cfun->machine->gp_size == 0
+	&& cfun->machine->lp_size == 0))
     {
       /* Create multiple pop instruction rtx.  */
-      nds32_emit_stack_pop_multiple (Rb, Re, GEN_INT (en4_const));
+      nds32_emit_stack_pop_multiple (
+	Rb, Re,
+	cfun->machine->fp_size, cfun->machine->gp_size, cfun->machine->lp_size);
     }
 
   /* If this is a variadic function, we do not have to restore argument
@@ -3142,19 +4370,49 @@ nds32_expand_epilogue (bool sibcall_p)
   if (cfun->machine->va_args_size != 0)
     {
       /* Generate sp adjustment instruction.
-         We  need to consider padding bytes here.  */
+	 We need to consider padding bytes here.  */
       sp_adjust = cfun->machine->va_args_size
 		  + cfun->machine->va_args_area_padding_bytes;
-      sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-				   stack_pointer_rtx,
-				   GEN_INT (sp_adjust));
-      /* Emit rtx into instructions list and receive INSN rtx form.  */
-      sp_adjust_insn = emit_insn (sp_adjust_insn);
 
-      /* The insn rtx 'sp_adjust_insn' will change frame layout.
-         We need to use RTX_FRAME_RELATED_P so that GCC is able to
-         generate CFI (Call Frame Information) stuff.  */
-      RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
+      nds32_emit_adjust_frame (stack_pointer_rtx,
+			       stack_pointer_rtx,
+			       sp_adjust);
+    }
+
+  /* If this function uses __builtin_eh_return, make stack adjustment
+     for exception handler.  */
+  if (cfun->machine->use_eh_return_p)
+    {
+      /* We need to unwind the stack by the offset computed by
+	 EH_RETURN_STACKADJ_RTX.  However, at this point the CFA is
+	 based on SP.  Ideally we would update the SP and define the
+	 CFA along the lines of:
+
+	 SP = SP + EH_RETURN_STACKADJ_RTX
+	 (regnote CFA = SP - EH_RETURN_STACKADJ_RTX)
+
+	 However the dwarf emitter only understands a constant
+	 register offset.
+
+	 The solution chosen here is to use the otherwise $ta ($r15)
+	 as a temporary register to hold the current SP value.  The
+	 CFA is described using $ta then SP is modified.  */
+
+      rtx ta_reg;
+      rtx insn;
+
+      ta_reg = gen_rtx_REG (SImode, TA_REGNUM);
+
+      insn = emit_move_insn (ta_reg, stack_pointer_rtx);
+      add_reg_note (insn, REG_CFA_DEF_CFA, ta_reg);
+      RTX_FRAME_RELATED_P (insn) = 1;
+
+      emit_insn (gen_addsi3 (stack_pointer_rtx,
+			     stack_pointer_rtx,
+			     EH_RETURN_STACKADJ_RTX));
+
+      /* Ensure the assignment to $ta does not get optimized away.  */
+      emit_use (ta_reg);
     }
 
   /* Generate return instruction.  */
@@ -3168,13 +4426,15 @@ nds32_expand_prologue_v3push (void)
 {
   int fp_adjust;
   int sp_adjust;
-
-  rtx Rb, Re;
-  rtx fp_adjust_insn, sp_adjust_insn;
+  int fpr_space = 0;
+  unsigned Rb, Re;
 
   /* Compute and setup stack frame size.
      The result will be in cfun->machine.  */
   nds32_compute_stack_frame ();
+
+  if (cfun->machine->callee_saved_gpr_regs_size > 0)
+    df_set_regs_ever_live (FP_REGNUM, 1);
 
   /* If the function is 'naked',
      we do not have to generate prologue code fragment.  */
@@ -3182,14 +4442,15 @@ nds32_expand_prologue_v3push (void)
     return;
 
   /* Get callee_first_regno and callee_last_regno.  */
-  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_first_gpr_regno);
-  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_last_gpr_regno);
+  Rb = cfun->machine->callee_saved_first_gpr_regno;
+  Re = cfun->machine->callee_saved_last_gpr_regno;
 
   /* Calculate sp_adjust first to test if 'push25 Re,imm8u' is available,
      where imm8u has to be 8-byte alignment.  */
   sp_adjust = cfun->machine->local_size
 	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes
+	      + cfun->machine->callee_saved_fpr_regs_size;
 
   if (satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
       && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust))
@@ -3197,92 +4458,112 @@ nds32_expand_prologue_v3push (void)
       /* We can use 'push25 Re,imm8u'.  */
 
       /* nds32_emit_stack_v3push(last_regno, sp_adjust),
-         the pattern 'stack_v3push' is implemented in nds32.md.
-         The (const_int 14) means v3push always push { $fp $gp $lp }.  */
-      nds32_emit_stack_v3push (Rb, Re,
-			       GEN_INT (14), GEN_INT (sp_adjust));
+	 the pattern 'stack_v3push' is implemented in nds32.md.  */
+      nds32_emit_stack_v3push (Rb, Re, sp_adjust);
+
+      /* Save fpu registers.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  /* Calculate fpr position.  */
+	  int fpr_position = cfun->machine->local_size
+			     + cfun->machine->out_args_size;
+	  /* Emit fpu store instruction, using [$sp + offset] store
+	     fpu registers.  */
+	  nds32_emit_push_fpr_callee_saved (fpr_position);
+	}
 
       /* Check frame_pointer_needed to see
-         if we shall emit fp adjustment instruction.  */
+	 if we shall emit fp adjustment instruction.  */
       if (frame_pointer_needed)
 	{
 	  /* adjust $fp = $sp   + 4         ($fp size)
-	                        + 4         ($gp size)
-	                        + 4         ($lp size)
-	                        + (4 * n)   (callee-saved registers)
-	                        + sp_adjust ('push25 Re,imm8u')
+				+ 4         ($gp size)
+				+ 4         ($lp size)
+				+ (4 * n)   (callee-saved registers)
+				+ sp_adjust ('push25 Re,imm8u')
 	     Note: Since we use 'push25 Re,imm8u',
-	           the position of stack pointer is further
-	           changed after push instruction.
-	           Hence, we need to take sp_adjust value
-	           into consideration.  */
+		   the position of stack pointer is further
+		   changed after push instruction.
+		   Hence, we need to take sp_adjust value
+		   into consideration.  */
 	  fp_adjust = cfun->machine->fp_size
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
 		      + cfun->machine->callee_saved_gpr_regs_size
 		      + sp_adjust;
-	  fp_adjust_insn = gen_addsi3 (hard_frame_pointer_rtx,
-				       stack_pointer_rtx,
-				       GEN_INT (fp_adjust));
-	  /* Emit rtx into instructions list and receive INSN rtx form.  */
-	  fp_adjust_insn = emit_insn (fp_adjust_insn);
+
+	  nds32_emit_adjust_frame (hard_frame_pointer_rtx,
+				   stack_pointer_rtx,
+				   fp_adjust);
 	}
     }
   else
     {
-      /* We have to use 'push25 Re,0' and
-         expand one more instruction to adjust $sp later.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  /* Calculate fpr space.  */
+	  fpr_space = cfun->machine->callee_saved_area_gpr_padding_bytes
+		      + cfun->machine->callee_saved_fpr_regs_size;
 
-      /* nds32_emit_stack_v3push(last_regno, sp_adjust),
-         the pattern 'stack_v3push' is implemented in nds32.md.
-         The (const_int 14) means v3push always push { $fp $gp $lp }.  */
-      nds32_emit_stack_v3push (Rb, Re,
-			       GEN_INT (14), GEN_INT (0));
+	  /* We have to use 'push25 Re, fpr_space', to pre-allocate
+	     callee saved fpr registers space.  */
+	  nds32_emit_stack_v3push (Rb, Re, fpr_space);
+	  nds32_emit_push_fpr_callee_saved (0);
+	}
+      else
+	{
+	  /* We have to use 'push25 Re,0' and
+	     expand one more instruction to adjust $sp later.  */
+
+	  /* nds32_emit_stack_v3push(last_regno, sp_adjust),
+	     the pattern 'stack_v3push' is implemented in nds32.md.  */
+	  nds32_emit_stack_v3push (Rb, Re, 0);
+	}
 
       /* Check frame_pointer_needed to see
-         if we shall emit fp adjustment instruction.  */
+	 if we shall emit fp adjustment instruction.  */
       if (frame_pointer_needed)
 	{
 	  /* adjust $fp = $sp + 4        ($fp size)
-	                      + 4        ($gp size)
-	                      + 4        ($lp size)
-	                      + (4 * n)  (callee-saved registers)
+			      + 4        ($gp size)
+			      + 4        ($lp size)
+			      + (4 * n)  (callee-saved registers)
 	     Note: Since we use 'push25 Re,0',
-	           the stack pointer is just at the position
-	           after push instruction.
-	           No need to take sp_adjust into consideration.  */
+		   the stack pointer is just at the position
+		   after push instruction.
+		   No need to take sp_adjust into consideration.  */
 	  fp_adjust = cfun->machine->fp_size
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
 		      + cfun->machine->callee_saved_gpr_regs_size;
-	  fp_adjust_insn = gen_addsi3 (hard_frame_pointer_rtx,
-				       stack_pointer_rtx,
-				       GEN_INT (fp_adjust));
-	  /* Emit rtx into instructions list and receive INSN rtx form.  */
-	  fp_adjust_insn = emit_insn (fp_adjust_insn);
+
+	  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	    {
+	      /* We use 'push25 Re, fpr_space', the $sp is
+		 on callee saved fpr position, so need to consider
+		 fpr space.  */
+	      fp_adjust = fp_adjust + fpr_space;
+	    }
+
+	  nds32_emit_adjust_frame (hard_frame_pointer_rtx,
+				   stack_pointer_rtx,
+				   fp_adjust);
+	}
+
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  /* We use 'push25 Re, fpr_space',
+	     the $sp is on callee saved fpr position,
+	     no need to consider fpr space.  */
+	  sp_adjust = sp_adjust - fpr_space;
 	}
 
       /* Because we use 'push25 Re,0',
-         we need to expand one more instruction to adjust $sp.
-         However, sp_adjust value may be out of range of the addi instruction,
-         create alternative add behavior with TA_REGNUM if necessary,
-         using NEGATIVE value to tell that we are decreasing address.  */
-      sp_adjust = nds32_force_addi_stack_int ( (-1) * sp_adjust);
-      if (sp_adjust)
-	{
-	  /* Generate sp adjustment instruction
-	     if and only if sp_adjust != 0.  */
-	  sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-				       stack_pointer_rtx,
-				       GEN_INT (-1 * sp_adjust));
-	  /* Emit rtx into instructions list and receive INSN rtx form.  */
-	  sp_adjust_insn = emit_insn (sp_adjust_insn);
-
-	  /* The insn rtx 'sp_adjust_insn' will change frame layout.
-	     We need to use RTX_FRAME_RELATED_P so that GCC is able to
-	     generate CFI (Call Frame Information) stuff.  */
-	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;
-	}
+	 we need to expand one more instruction to adjust $sp.
+	 using NEGATIVE value to tell that we are decreasing address.  */
+      nds32_emit_adjust_frame (stack_pointer_rtx,
+			       stack_pointer_rtx,
+			       -1 * sp_adjust);
     }
 
   /* Prevent the instruction scheduler from
@@ -3295,9 +4576,7 @@ void
 nds32_expand_epilogue_v3pop (bool sibcall_p)
 {
   int sp_adjust;
-
-  rtx Rb, Re;
-  rtx sp_adjust_insn;
+  unsigned Rb, Re;
 
   /* Compute and setup stack frame size.
      The result will be in cfun->machine.  */
@@ -3312,21 +4591,22 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
   if (cfun->machine->naked_p)
     {
       /* Generate return instruction by using 'return_internal' pattern.
-         Make sure this instruction is after gen_blockage().  */
+	 Make sure this instruction is after gen_blockage().  */
       if (!sibcall_p)
 	emit_jump_insn (gen_return_internal ());
       return;
     }
 
   /* Get callee_first_regno and callee_last_regno.  */
-  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_first_gpr_regno);
-  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_last_gpr_regno);
+  Rb = cfun->machine->callee_saved_first_gpr_regno;
+  Re = cfun->machine->callee_saved_last_gpr_regno;
 
   /* Calculate sp_adjust first to test if 'pop25 Re,imm8u' is available,
      where imm8u has to be 8-byte alignment.  */
   sp_adjust = cfun->machine->local_size
 	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes
+	      + cfun->machine->callee_saved_fpr_regs_size;
 
   /* We have to consider alloca issue as well.
      If the function does call alloca(), the stack pointer is not fixed.
@@ -3339,38 +4619,65 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
       && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust)
       && !cfun->calls_alloca)
     {
+      /* Restore fpu registers.  */
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  int fpr_position = cfun->machine->local_size
+			     + cfun->machine->out_args_size;
+	  /* Emit fpu load instruction, using [$sp + offset] restore
+	     fpu registers.  */
+	  nds32_emit_v3pop_fpr_callee_saved (fpr_position);
+	}
+
       /* We can use 'pop25 Re,imm8u'.  */
 
       /* nds32_emit_stack_v3pop(last_regno, sp_adjust),
-         the pattern 'stack_v3pop' is implementad in nds32.md.
-         The (const_int 14) means v3pop always pop { $fp $gp $lp }.  */
-      nds32_emit_stack_v3pop (Rb, Re,
-			      GEN_INT (14), GEN_INT (sp_adjust));
+	 the pattern 'stack_v3pop' is implementad in nds32.md.  */
+      nds32_emit_stack_v3pop (Rb, Re, sp_adjust);
     }
   else
     {
       /* We have to use 'pop25 Re,0', and prior to it,
-         we must expand one more instruction to adjust $sp.  */
+	 we must expand one more instruction to adjust $sp.  */
 
       if (frame_pointer_needed)
 	{
 	  /* adjust $sp = $fp - 4        ($fp size)
-	                      - 4        ($gp size)
-	                      - 4        ($lp size)
-	                      - (4 * n)  (callee-saved registers)
+			      - 4        ($gp size)
+			      - 4        ($lp size)
+			      - (4 * n)  (callee-saved registers)
 	     Note: No need to adjust
-	           cfun->machine->callee_saved_area_padding_bytes,
-	           because we want to adjust stack pointer
-	           to the position for pop instruction.  */
+		   cfun->machine->callee_saved_area_gpr_padding_bytes,
+		   because we want to adjust stack pointer
+		   to the position for pop instruction.  */
 	  sp_adjust = cfun->machine->fp_size
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
 		      + cfun->machine->callee_saved_gpr_regs_size;
-	  sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
+
+	  /* Restore fpu registers.  */
+	  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	    {
+	      /* Set $sp to callee saved fpr position, we need to restore
+		 fpr registers.  */
+	      sp_adjust = sp_adjust
+			  + cfun->machine->callee_saved_area_gpr_padding_bytes
+			  + cfun->machine->callee_saved_fpr_regs_size;
+
+	      nds32_emit_adjust_frame (stack_pointer_rtx,
 				       hard_frame_pointer_rtx,
-				       GEN_INT (-1 * sp_adjust));
-	  /* Emit rtx into instructions list and receive INSN rtx form.  */
-	  sp_adjust_insn = emit_insn (sp_adjust_insn);
+				       -1 * sp_adjust);
+
+	      /* Emit fpu load instruction, using [$sp + offset] restore
+		 fpu registers.  */
+	      nds32_emit_v3pop_fpr_callee_saved (0);
+	    }
+	  else
+	    {
+	      nds32_emit_adjust_frame (stack_pointer_rtx,
+				       hard_frame_pointer_rtx,
+				       -1 * sp_adjust);
+	    }
 	}
       else
 	{
@@ -3382,33 +4689,57 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
 	     so we have to deal with it as well.  */
 
 	  /* Adjust $sp = $sp + local_size + out_args_size
-			      + callee_saved_area_padding_bytes.  */
+			      + callee_saved_area_gpr_padding_bytes
+			      + callee_saved_fpr_regs_size.  */
 	  sp_adjust = cfun->machine->local_size
 		      + cfun->machine->out_args_size
-		      + cfun->machine->callee_saved_area_gpr_padding_bytes;
-	  /* sp_adjust value may be out of range of the addi instruction,
-	     create alternative add behavior with TA_REGNUM if necessary,
-	     using POSITIVE value to tell that we are increasing address.  */
-	  sp_adjust = nds32_force_addi_stack_int (sp_adjust);
-	  if (sp_adjust)
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes
+		      + cfun->machine->callee_saved_fpr_regs_size;
+
+	  /* Restore fpu registers.  */
+	  if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
 	    {
-	      /* Generate sp adjustment instruction
-	         if and only if sp_adjust != 0.  */
-	      sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
-					   stack_pointer_rtx,
-					   GEN_INT (sp_adjust));
-	      /* Emit rtx into instructions list and receive INSN rtx form.  */
-	      sp_adjust_insn = emit_insn (sp_adjust_insn);
+	      /* Set $sp to callee saved fpr position, we need to restore
+		 fpr registers.  */
+	      sp_adjust = sp_adjust
+			  - cfun->machine->callee_saved_area_gpr_padding_bytes
+			  - cfun->machine->callee_saved_fpr_regs_size;
+
+	      nds32_emit_adjust_frame (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       sp_adjust);
+
+	      /* Emit fpu load instruction, using [$sp + offset] restore
+		 fpu registers.  */
+	      nds32_emit_v3pop_fpr_callee_saved (0);
+	    }
+	  else
+	    {
+	       /* sp_adjust value may be out of range of the addi instruction,
+		  create alternative add behavior with TA_REGNUM if necessary,
+		  using POSITIVE value to tell that we are increasing
+		  address.  */
+	      nds32_emit_adjust_frame (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       sp_adjust);
 	    }
 	}
 
-      /* nds32_emit_stack_v3pop(last_regno, sp_adjust),
-         the pattern 'stack_v3pop' is implementad in nds32.md.  */
-      /* The (const_int 14) means v3pop always pop { $fp $gp $lp }.  */
-      nds32_emit_stack_v3pop (Rb, Re,
-			      GEN_INT (14), GEN_INT (0));
+      if (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)
+	{
+	  /* We have fpr need to restore, so $sp is set on callee saved fpr
+	     position.  And we use 'pop25 Re, fpr_space' to adjust $sp.  */
+	  int fpr_space = cfun->machine->callee_saved_area_gpr_padding_bytes
+			  + cfun->machine->callee_saved_fpr_regs_size;
+	  nds32_emit_stack_v3pop (Rb, Re, fpr_space);
+	}
+      else
+	{
+	  /* nds32_emit_stack_v3pop(last_regno, sp_adjust),
+	     the pattern 'stack_v3pop' is implementad in nds32.md.  */
+	  nds32_emit_stack_v3pop (Rb, Re, 0);
+	}
     }
-
   /* Generate return instruction.  */
   emit_jump_insn (gen_pop25return ());
 }
@@ -3419,92 +4750,161 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
 int
 nds32_can_use_return_insn (void)
 {
+  int sp_adjust;
+
   /* Prior to reloading, we can't tell how many registers must be saved.
      Thus we can not determine whether this function has null epilogue.  */
   if (!reload_completed)
     return 0;
 
+  sp_adjust = cfun->machine->local_size
+	      + cfun->machine->out_args_size
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes
+	      + cfun->machine->callee_saved_fpr_regs_size;
+  if (!cfun->machine->fp_as_gp_p
+      && satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
+      && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust)
+      && !cfun->calls_alloca
+      && NDS32_V3PUSH_AVAILABLE_P
+      && !(TARGET_HARD_FLOAT
+	   && (cfun->machine->callee_saved_first_fpr_regno != SP_REGNUM)))
+    return 1;
+
   /* If no stack was created, two conditions must be satisfied:
      1. This is a naked function.
-        So there is no callee-saved, local size, or outgoing size.
+	So there is no callee-saved, local size, or outgoing size.
      2. This is NOT a variadic function.
-        So there is no pushing arguement registers into the stack.  */
+	So there is no pushing arguement registers into the stack.  */
   return (cfun->machine->naked_p && (cfun->machine->va_args_size == 0));
+}
+
+scalar_int_mode
+nds32_case_vector_shorten_mode (int min_offset, int max_offset,
+				rtx body ATTRIBUTE_UNUSED)
+{
+  if (min_offset < 0 || max_offset >= 0x2000)
+    return SImode;
+  else
+    {
+      /* The jump table maybe need to 2 byte alignment,
+	 so reserved 1 byte for check max_offset.  */
+      if (max_offset >= 0xff)
+	return HImode;
+      else
+	return QImode;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
 
-/* Function to test 333-form for load/store instructions.
-   This is auxiliary extern function for auxiliary macro in nds32.h.
-   Because it is a little complicated, we use function instead of macro.  */
-bool
-nds32_ls_333_p (rtx rt, rtx ra, rtx imm, machine_mode mode)
-{
-  if (REGNO_REG_CLASS (REGNO (rt)) == LOW_REGS
-      && REGNO_REG_CLASS (REGNO (ra)) == LOW_REGS)
-    {
-      if (GET_MODE_SIZE (mode) == 4)
-	return satisfies_constraint_Iu05 (imm);
-
-      if (GET_MODE_SIZE (mode) == 2)
-	return satisfies_constraint_Iu04 (imm);
-
-      if (GET_MODE_SIZE (mode) == 1)
-	return satisfies_constraint_Iu03 (imm);
-    }
-
-  return false;
-}
-
-
-/* Computing the Length of an Insn.
-   Modifies the length assigned to instruction INSN.
-   LEN is the initially computed length of the insn.  */
-int
-nds32_adjust_insn_length (rtx_insn *insn, int length)
-{
-  rtx src, dst;
-
-  switch (recog_memoized (insn))
-    {
-    case CODE_FOR_move_df:
-    case CODE_FOR_move_di:
-      /* Adjust length of movd44 to 2.  */
-      src = XEXP (PATTERN (insn), 1);
-      dst = XEXP (PATTERN (insn), 0);
-
-      if (REG_P (src)
-	  && REG_P (dst)
-	  && (REGNO (src) % 2) == 0
-	  && (REGNO (dst) % 2) == 0)
-	length = 2;
-      break;
-
-    default:
-      break;
-    }
-
-  return length;
-}
-
-
-/* Return align 2 (log base 2) if the next instruction of LABEL is 4 byte.  */
+/* Return alignment for the label.  */
 int
 nds32_target_alignment (rtx_insn *label)
 {
   rtx_insn *insn;
 
-  if (optimize_size)
+  if (!NDS32_ALIGN_P ())
     return 0;
 
   insn = next_active_insn (label);
 
-  if (insn == 0)
+  /* Always align to 4 byte when first instruction after label is jump
+     instruction since length for that might changed, so let's always align
+     it for make sure we don't lose any perfomance here.  */
+  if (insn == 0
+      || (get_attr_length (insn) == 2
+	  && !JUMP_P (insn) && !CALL_P (insn)))
     return 0;
-  else if ((get_attr_length (insn) % 4) == 0)
-    return 2;
   else
-    return 0;
+    return 2;
+}
+
+/* Return alignment for data.  */
+unsigned int
+nds32_data_alignment (tree data,
+		      unsigned int basic_align)
+{
+  if ((basic_align < BITS_PER_WORD)
+      && (TREE_CODE (data) == ARRAY_TYPE
+	 || TREE_CODE (data) == UNION_TYPE
+	 || TREE_CODE (data) == RECORD_TYPE))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
+}
+
+/* Return alignment for constant value.  */
+static HOST_WIDE_INT
+nds32_constant_alignment (const_tree constant,
+			  HOST_WIDE_INT basic_align)
+{
+  /* Make string literal and constant for constructor to word align.  */
+  if (((TREE_CODE (constant) == STRING_CST
+	|| TREE_CODE (constant) == CONSTRUCTOR
+	|| TREE_CODE (constant) == UNION_TYPE
+	|| TREE_CODE (constant) == RECORD_TYPE
+	|| TREE_CODE (constant) == ARRAY_TYPE)
+       && basic_align < BITS_PER_WORD))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
+}
+
+/* Return alignment for local variable.  */
+unsigned int
+nds32_local_alignment (tree local ATTRIBUTE_UNUSED,
+		       unsigned int basic_align)
+{
+  bool at_least_align_to_word = false;
+  /* Make local array, struct and union at least align to word for make
+     sure it can unroll memcpy when initialize by constant.  */
+  switch (TREE_CODE (local))
+    {
+    case ARRAY_TYPE:
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      at_least_align_to_word = true;
+      break;
+    default:
+      at_least_align_to_word = false;
+      break;
+    }
+  if (at_least_align_to_word
+      && (basic_align < BITS_PER_WORD))
+    return BITS_PER_WORD;
+  else
+    return basic_align;
+}
+
+bool
+nds32_split_double_word_load_store_p(rtx *operands, bool load_p)
+{
+  rtx mem = load_p ? operands[1] : operands[0];
+  /* Do split at split2 if -O0 or schedule 2 not enable.  */
+  if (optimize == 0 || !flag_schedule_insns_after_reload)
+    return !satisfies_constraint_Da (mem) || MEM_VOLATILE_P (mem);
+
+  /* Split double word load store after copy propgation.  */
+  if (current_pass == NULL)
+    return false;
+
+  const char *pass_name = current_pass->name;
+  if (pass_name && ((strcmp (pass_name, "split4") == 0)
+		     || (strcmp (pass_name, "split5") == 0)))
+    return !satisfies_constraint_Da (mem) || MEM_VOLATILE_P (mem);
+
+  return false;
+}
+
+static bool
+nds32_use_blocks_for_constant_p (machine_mode mode,
+				 const_rtx x ATTRIBUTE_UNUSED)
+{
+  if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+      && (mode == DFmode || mode == SFmode))
+    return true;
+  else
+    return false;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -3526,6 +4926,12 @@ nds32_target_alignment (rtx_insn *label)
 #define TARGET_PROMOTE_FUNCTION_MODE \
   default_promote_function_mode_always_promote
 
+#undef TARGET_EXPAND_TO_RTL_HOOK
+#define TARGET_EXPAND_TO_RTL_HOOK nds32_expand_to_rtl_hook
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT nds32_constant_alignment
+
 
 /* Layout of Source Language Data Types.  */
 
@@ -3534,9 +4940,21 @@ nds32_target_alignment (rtx_insn *label)
 
 /* -- Basic Characteristics of Registers.  */
 
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE nds32_conditional_register_usage
+
 /* -- Order of Allocation of Registers.  */
 
 /* -- How Values Fit in Registers.  */
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS nds32_hard_regno_nregs
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK nds32_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P nds32_modes_tieable_p
 
 /* -- Handling Leaf Functions.  */
 
@@ -3550,6 +4968,9 @@ nds32_target_alignment (rtx_insn *label)
 
 #undef TARGET_REGISTER_PRIORITY
 #define TARGET_REGISTER_PRIORITY nds32_register_priority
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS nds32_can_change_mode_class
 
 
 /* Obsolete Macros for Defining Constraints.  */
@@ -3602,6 +5023,9 @@ nds32_target_alignment (rtx_insn *label)
 
 /* -- How Large Values Are Returned.  */
 
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY nds32_return_in_memory
+
 /* -- Caller-Saves Register Allocation.  */
 
 /* -- Function Entry and Exit.  */
@@ -3627,6 +5051,9 @@ nds32_target_alignment (rtx_insn *label)
 /* -- Generating Code for Profiling.  */
 
 /* -- Permitting tail calls.  */
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL nds32_function_ok_for_sibcall
 
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN nds32_warn_func_return
@@ -3669,6 +5096,9 @@ nds32_target_alignment (rtx_insn *label)
 /* -- Representation of condition codes using (cc0).  */
 
 /* -- Representation of condition codes using registers.  */
+
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON nds32_canonicalize_comparison
 
 /* -- Macros to control conditional execution.  */
 
@@ -3739,6 +5169,9 @@ nds32_target_alignment (rtx_insn *label)
 
 /* -- Assembler Commands for Exception Regions.  */
 
+#undef TARGET_DWARF_REGISTER_SPAN
+#define TARGET_DWARF_REGISTER_SPAN nds32_dwarf_register_span
+
 /* -- Assembler Commands for Alignment.  */
 
 
@@ -3752,7 +5185,7 @@ nds32_target_alignment (rtx_insn *label)
 
 /* -- File Names in DBX Format.  */
 
-/* -- Macros for SDB and DWARF Output.  */
+/* -- Macros for DWARF Output.  */
 
 /* -- Macros for VMS Debug Format.  */
 
@@ -3798,11 +5231,21 @@ nds32_target_alignment (rtx_insn *label)
 
 /* Miscellaneous Parameters.  */
 
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST nds32_md_asm_adjust
+
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS nds32_init_builtins
 
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL nds32_builtin_decl
+
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN nds32_expand_builtin
+
+
+#undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P nds32_use_blocks_for_constant_p
 
 
 /* ------------------------------------------------------------------------ */

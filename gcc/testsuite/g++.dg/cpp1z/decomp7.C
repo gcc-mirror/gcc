@@ -10,14 +10,14 @@ template <typename T, typename U>
 void
 foo (T &x, U &y)
 {
-  auto & [ c, d ] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ e, f ] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ g, h, i ] = sa;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto & [ j, k, l ] = sa;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto & [ m, n ] = x;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ o, p ] = x;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ q, r, s ] = y;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto & [ t, u, v ] = y;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto & [ c, d ] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ e, f ] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ g, h, i ] = sa;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto & [ j, k, l ] = sa;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto & [ m, n ] = x;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ o, p ] = x;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ q, r, s ] = y;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto & [ t, u, v ] = y;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
   c += 1;
   e += 2;
   g += 3;

@@ -1,3 +1,233 @@
+2018-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR jit/84288
+	* Make-lang.in ($(LIBGCCJIT_FILENAME)): Add $(EXTRA_GCC_LIBS).
+
+2018-03-09  David Malcolm  <dmalcolm@redhat.com>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR jit/64089
+	PR jit/84288
+	* Make-lang.in (COMMA): New.
+	(LIBGCCJIT_VERSION_SCRIPT_OPTION): New.
+	(LIBGCCJIT_SONAME_OPTION): New.
+	(jit): Move --version-script and -soname linker options to the
+	above.
+
+2018-01-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/81672
+	* jit-recording.h (gcc::jit::recording::union_): Remove fields
+	"m_loc" and "m_name".
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-playback.c (get_type, playback::compile_to_file::copy_file,
+	playback::context::acquire_mutex): Replace Yoda conditions with
+	typical order conditions.
+	* libgccjit.c (gcc_jit_context_new_struct_type,
+	gcc_jit_struct_set_fields, gcc_jit_context_new_union_type,
+	gcc_jit_context_new_function, gcc_jit_timer_pop): Likewise.
+	* jit-builtins.c (matches_builtin): Likewise.
+	* jit-recording.c (recording::compound_type::set_fields,
+	recording::fields::write_reproducer, recording::rvalue::set_scope,
+	recording::function::validate): Likewise.
+	* jit-logging.c (logger::decref): Likewise.
+
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-recording.c
+	(recording::memento_of_new_rvalue_from_const <long>::write_reproducer):
+	Use ; instead of ;;.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-playback.c (add_switch): Build SWITCH_EXPR using build2 instead
+	of build3.  Formatting fixes.  Adjust funciton comment.
+
+2017-11-23  Tom de Vries  <tom@codesourcery.com>
+
+	* libgccjit.c (RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE): Wrap in
+	JIT_{BEGIN,END}_STMT.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst (Running the test suite): Document
+	PRESERVE_EXECUTABLES.
+	(Running under valgrind): Add markup to RUN_UNDER_VALGRIND.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2017-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/expressions.rst (Vector expressions): New
+	section.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_10): New ABI tag.
+	* docs/topics/expressions.rst (Vector expressions): New section.
+	* docs/topics/types.rst (gcc_jit_type_get_vector): Add link to
+	gcc_jit_context_new_rvalue_from_vector.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit:recording::vector_type): New forward
+	decl.
+	* jit-playback.c
+	(gcc::jit::playback::context::new_rvalue_from_vector): New method.
+	* jit-playback.h
+	(gcc::jit::playback::context::new_rvalue_from_vector): New method.
+	* jit-recording.c: In namespace gcc::jit::
+	(class comma_separated_string): New class.
+	(comma_separated_string::comma_separated_string): New ctor,
+	adapted from recording::call::make_debug_string.
+	(comma_separated_string::~comma_separated_string): New dtor.
+	In namespace gcc::jit::recording::
+	(context::new_rvalue_from_vector): New method.
+	(type::get_vector): Update for renaming of memento_of_get_vector.
+	(class memento_of_get_vector): Rename to...
+	(class vector_type): ..this.
+	(memento_of_new_rvalue_from_vector::memento_of_new_rvalue_from_vector):
+	New ctor.
+	(memento_of_new_rvalue_from_vector::replay_into): New method.
+	(memento_of_new_rvalue_from_vector::visit_children): New method.
+	(memento_of_new_rvalue_from_vector::make_debug_string): New
+	method.
+	(memento_of_new_rvalue_from_vector::write_reproducer): New method.
+	(call::make_debug_string): Split out arg-printing code into ctor
+	for comma_separated_string.
+	* jit-recording.h: In namespace gcc::jit::recording::
+	(context::new_rvalue_from_vector): New method.
+	(type::dyn_cast_vector_type): New virtual function.
+	(class memento_of_get_vector): Rename to...
+	(class vector_type): ...this.
+	(vector_type::unqualified): Remove this vfunc override in favor
+	of...
+	(vector_type::get_element_type): ...this new method.
+	(vector_type::get_num_units): New method.
+	(vector_type::dyn_cast_vector_type): New vfunc override.
+	(class memento_of_new_rvalue_from_vector): New class.
+	* libgccjit++.h (gccjit::context::new_rvalue): Add overload for
+	vector of rvalue.
+	* libgccjit.c (gcc_jit_context_new_binary_op): Strip off type
+	qualifications when checking that both operands have same type.
+	(gcc_jit_context_new_rvalue_from_vector): New API entrypoint.
+	* libgccjit.h
+	(LIBGCCJIT_HAVE_gcc_jit_context_new_rvalue_from_vector): New
+	macro.
+	(gcc_jit_context_new_rvalue_from_vector): New API entrypoint.
+	* libgccjit.map (LIBGCCJIT_ABI_10): New ABI tag.
+
+2017-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/expressions.rst (Function calls): Add link to
+	gcc_jit_context_new_function_ptr_type.
+	(Function pointers): Convert to cross-references to
+	function-pointers.rst, moving material there.
+	* docs/topics/function-pointers.rst: New page.
+	* docs/topics/index.rst: Add function-pointers.rst.
+	* docs/topics/types.rst (Function pointer types): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2017-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c
+	(gcc::jit::recording::function_type::is_same_type_as): New function.
+	* jit-recording.h: In namespace gcc::jit::recording::
+	(type::accepts_writes_from): Use is_same_type_as rather than pointer
+	equality.
+	(type::is_same_type_as): New virtual function.
+	(function_type::is_same_type_as): New override.
+
+2017-09-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/expressions.rst (Function pointers): New section.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_9): New tag.
+	* docs/topics/expressions.rst (Function pointers): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (class gcc::jit::recording::function_pointer): New
+	forward decl.
+	* jit-playback.c (gcc::jit::playback::function::get_address): New
+	method.
+	* jit-playback.h (gcc::jit::playback::function::get_address): New
+	method decl.
+	* jit-recording.c: Within namespace gcc::jit::recording...
+	(function::function): Initialize new field "m_fn_ptr_type".
+	(function::get_address): New method.
+	(function_pointer::replay_into): New method.
+	(function_pointer::visit_children): New method.
+	(function_pointer::make_debug_string): New method.
+	(function_pointer::write_reproducer): New method.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(function::get_address): New method.
+	(function): Add field "m_fn_ptr_type".
+	(class function_pointer): New subclass of rvalue.
+	* libgccjit++.h (gccjit::function::get_address): New method.
+	* libgccjit.c (gcc_jit_function_get_address): New function.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_function_get_address): New
+	macro.
+	(gcc_jit_function_get_address): New API entrypoint.
+	* libgccjit.map (LIBGCCJIT_ABI_9): New tag.
+
+2017-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/82174
+	* jit-builtins.c (matches_builtin): Ignore entries with a NULL
+	name.
+
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/46805
+	* dummy-frontend.c (jit_langhook_parse_file): Handle vector types.
+
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c (class gcc::jit::reproducer): Rename field
+	"m_identifiers" to "m_map_memento_to_identifier".  Add field
+	"m_set_identifiers" and struct hash_traits for it.
+	(gcc::jit::reproducer::reproducer): Update for above.
+	(convert_to_identifier): New function.
+	(gcc::jit::reproducer::ensure_identifier_is_unique): New method.
+	(gcc::jit::reproducer::make_identifier): Avoid appending the %p
+	unless necessary for uniqueness.  Update for field renaming.
+	(gcc::jit::reproducer::get_identifier): Update for field renaming.
+
+2017-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/types.rst (Vector types): New section.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_8): New tag.
+	* docs/topics/types.rst (gcc_jit_context_get_type): Fix typo in
+	example.
+	(Vector types): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (gcc::jit::playback::type::get_vector): New
+	method.
+	* jit-playback.h (gcc::jit::playback::type::get_vector): New
+	method.
+	* jit-recording.c: In namespace gcc::jit::recording::
+	(type::get_vector): New method.
+	(memento_of_get_aligned::write_reproducer): Fix typo
+	in leading comment.
+	(memento_of_get_vector::replay_into): New method.
+	(memento_of_get_vector::make_debug_string): New method.
+	(memento_of_get_vector::write_reproducer): New method.
+	* jit-recording.h: In namespace gcc::jit::recording::
+	(type::get_vector): New
+	 method.
+	(class memento_of_get_vector): New class.
+	* libgccjit++.h (gccjit::type::get_vector): New method.
+	* libgccjit.c (gcc_jit_type_get_vector): New public entrypoint.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_type_get_vector): New
+	define.
+	(gcc_jit_type_get_vector): New decl.
+	* libgccjit.map (LIBGCCJIT_ABI_8): New ABI tag.
+
+2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* dummy-frontend.c (jit_langhook_type_for_mode): Remove "enum" before
+	"machine_mode".
+
 2017-04-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/types.rst (gccjit::type::get_const): Remove
@@ -2361,7 +2591,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2017 Free Software Foundation, Inc.
+Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

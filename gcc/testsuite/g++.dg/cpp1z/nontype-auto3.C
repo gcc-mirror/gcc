@@ -1,5 +1,5 @@
 // Testcase from P0127R2
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template<auto n> struct B { decltype(n) f = n; };
 B<5> b1;   // OK: template parameter type is int

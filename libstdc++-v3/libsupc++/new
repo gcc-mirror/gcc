@@ -1,6 +1,6 @@
 // The -*- C++ -*- dynamic memory management header.
 
-// Copyright (C) 1994-2017 Free Software Foundation, Inc.
+// Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 //
@@ -68,7 +68,7 @@ namespace std
   class bad_array_new_length : public bad_alloc
   {
   public:
-    bad_array_new_length() throw() { };
+    bad_array_new_length() throw() { }
 
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
@@ -176,7 +176,7 @@ inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 //@}
 } // extern "C++"
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 #if __GNUC__ >= 7
 #  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
 #elif defined __has_builtin
@@ -192,7 +192,7 @@ namespace std
 #define __cpp_lib_launder 201606
   /// Pointer optimization barrier [ptr.launder]
   template<typename _Tp>
-    constexpr _Tp*
+    [[nodiscard]] constexpr _Tp*
     launder(_Tp* __p) noexcept
     { return __builtin_launder(__p); }
 

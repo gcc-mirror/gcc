@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -449,7 +449,8 @@ setup_reg_mode_hard_regset (void)
     for (hard_regno = 0; hard_regno < FIRST_PSEUDO_REGISTER; hard_regno++)
       {
 	CLEAR_HARD_REG_SET (ira_reg_mode_hard_regset[hard_regno][m]);
-	for (i = hard_regno_nregs[hard_regno][m] - 1; i >= 0; i--)
+	for (i = hard_regno_nregs (hard_regno, (machine_mode) m) - 1;
+	     i >= 0; i--)
 	  if (hard_regno + i < FIRST_PSEUDO_REGISTER)
 	    SET_HARD_REG_BIT (ira_reg_mode_hard_regset[hard_regno][m],
 			      hard_regno + i);
@@ -1508,7 +1509,7 @@ setup_prohibited_class_mode_regs (void)
 	  for (k = ira_class_hard_regs_num[cl] - 1; k >= 0; k--)
 	    {
 	      hard_regno = ira_class_hard_regs[cl][k];
-	      if (! HARD_REGNO_MODE_OK (hard_regno, (machine_mode) j))
+	      if (!targetm.hard_regno_mode_ok (hard_regno, (machine_mode) j))
 		SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
 				  hard_regno);
 	      else if (in_hard_reg_set_p (temp_hard_regset,
@@ -1540,7 +1541,7 @@ clarify_prohibited_class_mode_regs (void)
 	    hard_regno = ira_class_hard_regs[cl][k];
 	    if (TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j], hard_regno))
 	      continue;
-	    nregs = hard_regno_nregs[hard_regno][j];
+	    nregs = hard_regno_nregs (hard_regno, (machine_mode) j);
 	    if (hard_regno + nregs > FIRST_PSEUDO_REGISTER)
 	      {
 		SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
@@ -1577,7 +1578,10 @@ ira_init_register_move_cost (machine_mode mode)
   ira_assert (ira_register_move_cost[mode] == NULL
 	      && ira_may_move_in_cost[mode] == NULL
 	      && ira_may_move_out_cost[mode] == NULL);
-  ira_assert (have_regs_of_mode[mode]);
+  /* Note that we might be asked about the move costs of modes that
+     cannot be stored in any hard register, for example if an inline
+     asm tries to create a register operand with an impossible mode.
+     We therefore can't assert have_regs_of_mode[mode] here.  */
   for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
     for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
       {
@@ -1754,7 +1758,7 @@ setup_prohibited_mode_move_regs (void)
       SET_HARD_REG_SET (ira_prohibited_mode_move_regs[i]);
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
 	{
-	  if (! HARD_REGNO_MODE_OK (j, (machine_mode) i))
+	  if (!targetm.hard_regno_mode_ok (j, (machine_mode) i))
 	    continue;
 	  set_mode_and_regno (test_reg1, (machine_mode) i, j);
 	  set_mode_and_regno (test_reg2, (machine_mode) i, j);
@@ -2285,9 +2289,6 @@ ira_setup_eliminable_regset (void)
 	   && cfun->can_throw_non_call_exceptions)
        || crtl->accesses_prior_frames
        || (SUPPORTS_STACK_ALIGNMENT && crtl->stack_realign_needed)
-       /* We need a frame pointer for all Cilk Plus functions that use
-	  Cilk keywords.  */
-       || (flag_cilkplus && cfun->is_cilk_function)
        || targetm.frame_pointer_required ());
 
     /* The chance that FRAME_POINTER_NEEDED is changed from inspecting
@@ -2509,7 +2510,7 @@ check_allocation (void)
       if (ALLOCNO_CAP_MEMBER (a) != NULL
 	  || (hard_regno = ALLOCNO_HARD_REGNO (a)) < 0)
 	continue;
-      nregs = hard_regno_nregs[hard_regno][ALLOCNO_MODE (a)];
+      nregs = hard_regno_nregs (hard_regno, ALLOCNO_MODE (a));
       if (nregs == 1)
 	/* We allocated a single hard register.  */
 	n = 1;
@@ -2538,9 +2539,8 @@ check_allocation (void)
 	      if (conflict_hard_regno < 0)
 		continue;
 
-	      conflict_nregs
-		= (hard_regno_nregs
-		   [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
+	      conflict_nregs = hard_regno_nregs (conflict_hard_regno,
+						 ALLOCNO_MODE (conflict_a));
 
 	      if (ALLOCNO_NUM_OBJECTS (conflict_a) > 1
 		  && conflict_nregs == ALLOCNO_NUM_OBJECTS (conflict_a))
@@ -3551,7 +3551,8 @@ update_equiv_regs (void)
 	  if (DF_REG_DEF_COUNT (regno) == 1
 	      && note
 	      && !rtx_varies_p (XEXP (note, 0), 0)
-	      && def_dominates_uses (regno))
+	      && (!may_trap_or_fault_p (XEXP (note, 0))
+		  || def_dominates_uses (regno)))
 	    {
 	      rtx note_value = XEXP (note, 0);
 	      remove_note (insn, note);
@@ -3841,9 +3842,9 @@ combine_and_move_insns (void)
 	}
 
       /* Last pass - adjust debug insns referencing cleared regs.  */
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	  if (DEBUG_INSN_P (insn))
+	  if (DEBUG_BIND_INSN_P (insn))
 	    {
 	      rtx old_loc = INSN_VAR_LOCATION_LOC (insn);
 	      INSN_VAR_LOCATION_LOC (insn)
@@ -4039,16 +4040,26 @@ pseudo_for_reload_consideration_p (int regno)
   return (reg_renumber[regno] >= 0 || ira_conflicts_p);
 }
 
-/* Init LIVE_SUBREGS[ALLOCNUM] and LIVE_SUBREGS_USED[ALLOCNUM] using
-   REG to the number of nregs, and INIT_VALUE to get the
-   initialization.  ALLOCNUM need not be the regno of REG.  */
+/* Return true if we can track the individual bytes of subreg X.
+   When returning true, set *OUTER_SIZE to the number of bytes in
+   X itself, *INNER_SIZE to the number of bytes in the inner register
+   and *START to the offset of the first byte.  */
+static bool
+get_subreg_tracking_sizes (rtx x, HOST_WIDE_INT *outer_size,
+			   HOST_WIDE_INT *inner_size, HOST_WIDE_INT *start)
+{
+  rtx reg = regno_reg_rtx[REGNO (SUBREG_REG (x))];
+  return (GET_MODE_SIZE (GET_MODE (x)).is_constant (outer_size)
+	  && GET_MODE_SIZE (GET_MODE (reg)).is_constant (inner_size)
+	  && SUBREG_BYTE (x).is_constant (start));
+}
+
+/* Init LIVE_SUBREGS[ALLOCNUM] and LIVE_SUBREGS_USED[ALLOCNUM] for
+   a register with SIZE bytes, making the register live if INIT_VALUE.  */
 static void
 init_live_subregs (bool init_value, sbitmap *live_subregs,
-		   bitmap live_subregs_used, int allocnum, rtx reg)
+		   bitmap live_subregs_used, int allocnum, int size)
 {
-  unsigned int regno = REGNO (SUBREG_REG (reg));
-  int size = GET_MODE_SIZE (GET_MODE (regno_reg_rtx[regno]));
-
   gcc_assert (size > 0);
 
   /* Been there, done that.  */
@@ -4157,19 +4168,26 @@ build_insn_chain (void)
 			&& (!DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL)))
 		      {
 			rtx reg = DF_REF_REG (def);
+			HOST_WIDE_INT outer_size, inner_size, start;
 
-			/* We can model subregs, but not if they are
-			   wrapped in ZERO_EXTRACTS.  */
+			/* We can usually track the liveness of individual
+			   bytes within a subreg.  The only exceptions are
+			   subregs wrapped in ZERO_EXTRACTs and subregs whose
+			   size is not known; in those cases we need to be
+			   conservative and treat the definition as a partial
+			   definition of the full register rather than a full
+			   definition of a specific part of the register.  */
 			if (GET_CODE (reg) == SUBREG
-			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT))
+			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT)
+			    && get_subreg_tracking_sizes (reg, &outer_size,
+							  &inner_size, &start))
 			  {
-			    unsigned int start = SUBREG_BYTE (reg);
-			    unsigned int last = start
-			      + GET_MODE_SIZE (GET_MODE (reg));
+			    HOST_WIDE_INT last = start + outer_size;
 
 			    init_live_subregs
 			      (bitmap_bit_p (live_relevant_regs, regno),
-			       live_subregs, live_subregs_used, regno, reg);
+			       live_subregs, live_subregs_used, regno,
+			       inner_size);
 
 			    if (!DF_REF_FLAGS_IS_SET
 				(def, DF_REF_STRICT_LOW_PART))
@@ -4254,18 +4272,20 @@ build_insn_chain (void)
 		    if (regno < FIRST_PSEUDO_REGISTER
 			|| pseudo_for_reload_consideration_p (regno))
 		      {
+			HOST_WIDE_INT outer_size, inner_size, start;
 			if (GET_CODE (reg) == SUBREG
 			    && !DF_REF_FLAGS_IS_SET (use,
 						     DF_REF_SIGN_EXTRACT
-						     | DF_REF_ZERO_EXTRACT))
+						     | DF_REF_ZERO_EXTRACT)
+			    && get_subreg_tracking_sizes (reg, &outer_size,
+							  &inner_size, &start))
 			  {
-			    unsigned int start = SUBREG_BYTE (reg);
-			    unsigned int last = start
-			      + GET_MODE_SIZE (GET_MODE (reg));
+			    HOST_WIDE_INT last = start + outer_size;
 
 			    init_live_subregs
 			      (bitmap_bit_p (live_relevant_regs, regno),
-			       live_subregs, live_subregs_used, regno, reg);
+			       live_subregs, live_subregs_used, regno,
+			       inner_size);
 
 			    /* Ignore the paradoxical bits.  */
 			    if (last > SBITMAP_SIZE (live_subregs[regno]))
@@ -4398,6 +4418,12 @@ rtx_moveable_p (rtx *loc, enum op_type type)
 	 as moveable ones.  The insn scheduler also considers them as barrier
 	 for a reason.  */
       return false;
+
+    case ASM_OPERANDS:
+      /* The same is true for volatile asm: it has unknown side effects, it
+         cannot be moved at will.  */
+      if (MEM_VOLATILE_P (x))
+	return false;
 
     default:
       break;
@@ -5530,13 +5556,13 @@ do_reload (void)
      function's frame size is larger than we expect.  */
   if (flag_stack_check == GENERIC_STACK_CHECK)
     {
-      HOST_WIDE_INT size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
+      poly_int64 size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
 
       for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (df_regs_ever_live_p (i) && !fixed_regs[i] && call_used_regs[i])
 	  size += UNITS_PER_WORD;
 
-      if (size > STACK_CHECK_MAX_FRAME_SIZE)
+      if (constant_lower_bound (size) > STACK_CHECK_MAX_FRAME_SIZE)
 	warning (0, "frame size too large for reliable stack checking");
     }
 

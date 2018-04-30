@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,7 +20,7 @@
 #include <memory>
 #include <testsuite_hooks.h>
 
-// C++1z 20.11.2.2.1 shared_ptr constructors [util.smartptr.shared.const]
+// C++17 20.11.2.2.1 shared_ptr constructors [util.smartptr.shared.const]
 
 template<typename To, typename From>
 constexpr bool check()

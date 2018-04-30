@@ -9,5 +9,5 @@ void
 foo (void)
 {
   (char) x = 1; /* { dg-bogus "warning" "warning in place of error" } */
+  /* { dg-error "lvalue" "cast as lvalue" { target *-*-* } .-1 } */
 }
-/* { dg-error "lvalue" "cast as lvalue" { target *-*-* } 11 } */

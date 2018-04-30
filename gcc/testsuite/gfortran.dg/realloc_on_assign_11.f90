@@ -11,26 +11,26 @@
 ! Shape conforms so bounds follow allocation.
   allocate (a(7:9))
   a = reshape( b, shape=[size(b)])
-  if (any ([lbound(a), ubound(a), size(a), shape (a)] .ne. [7,9,3,3])) call abort
+  if (any ([lbound(a), ubound(a), size(a), shape (a)] .ne. [7,9,3,3])) STOP 1
 
   deallocate (a)
 ! 'a' not allocated so lbound defaults to 1.
   a = reshape( b, shape=[size(b)])
-  if (any ([lbound(a), ubound(a), size(a), shape (a)] .ne. [1,3,3,3])) call abort
+  if (any ([lbound(a), ubound(a), size(a), shape (a)] .ne. [1,3,3,3])) STOP 2
 
   deallocate (a)
 ! Shape conforms so bounds follow allocation.
   allocate (a(0:0))
   a(0) = 1
-  if (any ([lbound(a), ubound(a), size(a), shape (a)] .ne. [0,0,1,1])) call abort
+  if (any ([lbound(a), ubound(a), size(a), shape (a)] .ne. [0,0,1,1])) STOP 3
 
 ! 'a' not allocated so lbound defaults to 1.
   e = matmul (c(2:5,:), d(:, 3:4))
-  if (any ([lbound(e), ubound(e), size(e), shape (e)] .ne. [1,1,4,2,8,4,2])) call abort
+  if (any ([lbound(e), ubound(e), size(e), shape (e)] .ne. [1,1,4,2,8,4,2])) STOP 4
   deallocate (e)
 
 ! Shape conforms so bounds follow allocation.
   allocate (e(4:7, 11:12))
   e = matmul (c(2:5,:), d(:, 3:4))
-  if (any ([lbound(e), ubound(e), size(e), shape (e)] .ne. [4,11,7,12,8,4,2])) call abort
+  if (any ([lbound(e), ubound(e), size(e), shape (e)] .ne. [4,11,7,12,8,4,2])) STOP 5
 end

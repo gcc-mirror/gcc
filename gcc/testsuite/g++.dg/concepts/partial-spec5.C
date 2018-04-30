@@ -1,5 +1,5 @@
 // PR c++/67138
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template <class T>
 concept bool _Auto = true;

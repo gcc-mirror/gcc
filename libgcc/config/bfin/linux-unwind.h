@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for Blackfin.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,7 +52,7 @@ bfin_fallback_frame_state (struct _Unwind_Context *context,
 	void *puc;
 	char retcode[8];
 	siginfo_t info;
-	struct ucontext uc;
+	ucontext_t uc;
       } *rt_ = context->cfa;
 
       /* The void * cast is necessary to avoid an aliasing warning.

@@ -7,10 +7,10 @@ struct S { int a; signed char b; float c; } s = { 6, 7, 8.0f };
 int
 main ()
 {
-  auto & [ c, d ] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ e, f ] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ g, h, i ] = s;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto & [ j, k, l ] = s;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto & [ c, d ] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ e, f ] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ g, h, i ] = s;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto & [ j, k, l ] = s;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
   c++;
   d++;
   e += 6;

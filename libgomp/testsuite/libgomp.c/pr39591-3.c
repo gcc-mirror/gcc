@@ -11,7 +11,7 @@ foo (int *array)
 #pragma omp task
   {
     int j;
-    for (j = 0; j < sizeof array / sizeof array[0]; j++)
+    for (j = 0; j < 40; j++)
       if (array[j] != 0x55555555)
 #pragma omp atomic
 	err++;

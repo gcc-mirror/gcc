@@ -41,20 +41,4 @@ bmhi_init (const char *pattern)
     }
 }
 
-char *
-bmhi_search (const char *string, const int stringlen)
-{
-  int i, j;
-  char *s;
-  for (;;)
-    {
-      while (--j >= 0 && (
-			   {
-			   __typeof__ (s[j]) __x = (s[j]);
-			   ((((__ctype_ptr__ +
-			       sizeof (""[__x]))[(int) (__x)]) &
-			     (01 | 02)) ==
-			    02) ? (int) __x - 'a' +
-			   'A' : (int) __x;}) == pat[j]);
-}}
-/* { dg-final { scan-tree-dump-times "Duplicating join block" 2 "split-paths" } } */
+/* { dg-final { scan-tree-dump-times "Duplicating join block" 1 "split-paths" } } */

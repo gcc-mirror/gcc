@@ -1,5 +1,5 @@
 /* Helper routines for memory move and comparison insns.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -16,6 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -183,8 +185,12 @@ expand_block_move (rtx *operands)
   return false;
 }
 
-static const int prob_unlikely = REG_BR_PROB_BASE / 10;
-static const int prob_likely = REG_BR_PROB_BASE / 4;
+static const int prob_unlikely
+  = profile_probability::from_reg_br_prob_base (REG_BR_PROB_BASE / 10)
+    .to_reg_br_prob_note ();
+static const int prob_likely
+  = profile_probability::from_reg_br_prob_base (REG_BR_PROB_BASE / 4)
+    .to_reg_br_prob_note ();
 
 /* Emit code to perform a strcmp.
 
@@ -349,12 +355,13 @@ sh_expand_cmpnstr (rtx *operands)
 
   rtx len = copy_to_mode_reg (SImode, operands[3]);
   int constp = CONST_INT_P (operands[3]);
+  HOST_WIDE_INT bytes = constp ? INTVAL (operands[3]) : 0;
 
   const unsigned int addr1_alignment = MEM_ALIGN (operands[1]) / BITS_PER_UNIT;
   const unsigned int addr2_alignment = MEM_ALIGN (operands[2]) / BITS_PER_UNIT;
 
   /* Loop on a register count.  */
-  if (constp)
+  if (constp && bytes >= 0 && bytes < 32)
     {
       rtx tmp0 = gen_reg_rtx (SImode);
       rtx tmp3 = gen_reg_rtx (SImode);
@@ -363,7 +370,6 @@ sh_expand_cmpnstr (rtx *operands)
       rtx_code_label *L_loop_long = gen_label_rtx ();
       rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
-      int bytes = INTVAL (operands[3]);
       int witers = bytes / 4;
 
       if (witers > 1)

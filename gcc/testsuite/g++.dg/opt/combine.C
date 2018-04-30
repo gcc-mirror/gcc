@@ -1,5 +1,5 @@
 // { dg-do assemble { target fpic } }
-// { dg-options "-O2 -fweb -fPIC -fvisibility=hidden" }
+// { dg-options "-O2 -fweb -fPIC -fvisibility=hidden -Wno-return-type" }
 // { dg-require-visibility "" }
 
 class QBasicAtomicInt
@@ -36,6 +36,7 @@ class QVariant { };
 template<typename T> inline T qvariant_cast (const QVariant &v)
 {
   const int vid = qMetaTypeId<T> ((0)) ;
+  return T();
 };
 class QScriptContext
 {
@@ -70,4 +71,5 @@ QScriptValue QScriptDebuggerBackendPrivate::trace (QScriptContext *context)
 {
   QScriptValue data = context->callee () ;
   QScriptDebuggerBackendPrivate *self = qscriptvalue_cast<QScriptDebuggerBackendPrivate*> (data) ;
+  return QScriptValue();
 }

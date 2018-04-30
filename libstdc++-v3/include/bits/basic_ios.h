@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -157,8 +157,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       setstate(iostate __state)
       { this->clear(this->rdstate() | __state); }
 
-      // Flip the internal state on for the proper state bits, then re
-      // throws the propagated exception if bit also set in
+      // Flip the internal state on for the proper state bits, then
+      // rethrows the propagated exception if bit also set in
       // exceptions().
       void
       _M_setstate(iostate __state)

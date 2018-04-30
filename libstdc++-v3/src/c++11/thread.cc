@@ -1,6 +1,6 @@
 // thread -*- C++ -*-
 
-// Copyright (C) 2008-2017 Free Software Foundation, Inc.
+// Copyright (C) 2008-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -77,20 +77,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     execute_native_thread_routine(void* __p)
     {
       thread::_State_ptr __t{ static_cast<thread::_State*>(__p) };
-
-      __try
-	{
-	  __t->_M_run();
-	}
-      __catch(const __cxxabiv1::__forced_unwind&)
-	{
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{
-	  std::terminate();
-	}
-
+      __t->_M_run();
       return nullptr;
     }
 
@@ -104,20 +91,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       // the thread state to a local object, breaking the reference cycle
       // created in thread::_M_start_thread.
       __local.swap(__t->_M_this_ptr);
-
-      __try
-	{
-	  __t->_M_run();
-	}
-      __catch(const __cxxabiv1::__forced_unwind&)
-	{
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{
-	  std::terminate();
-	}
-
+      __t->_M_run();
       return nullptr;
     }
 #endif
@@ -206,12 +180,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __n;
   }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 namespace this_thread
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   void
   __sleep_for(chrono::seconds __s, chrono::nanoseconds __ns)
   {
@@ -243,10 +213,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ::Sleep(chrono::milliseconds(__s).count() + ms);
 #endif
   }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

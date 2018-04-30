@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -292,18 +292,49 @@ raw_flush (unix_stream *s  __attribute__ ((unused)))
   return 0;
 }
 
+/* Write/read at most 2 GB - 4k chunks at a time. Linux never reads or
+   writes more than this, and there are reports that macOS fails for
+   larger than 2 GB as well.  */
+#define MAX_CHUNK 2147479552
+
 static ssize_t
 raw_read (unix_stream *s, void *buf, ssize_t nbyte)
 {
   /* For read we can't do I/O in a loop like raw_write does, because
      that will break applications that wait for interactive I/O.  We
-     still can loop around EINTR, though.  */
-  while (true)
+     still can loop around EINTR, though.  This however causes a
+     problem for large reads which must be chunked, see comment above.
+     So assume that if the size is larger than the chunk size, we're
+     reading from a file and not the terminal.  */
+  if (nbyte <= MAX_CHUNK)
     {
-      ssize_t trans = read (s->fd, buf, nbyte);
-      if (trans == -1 && errno == EINTR)
-	continue;
-      return trans;
+      while (true)
+	{
+	  ssize_t trans = read (s->fd, buf, nbyte);
+	  if (trans == -1 && errno == EINTR)
+	    continue;
+	  return trans;
+	}
+    }
+  else
+    {
+      ssize_t bytes_left = nbyte;
+      char *buf_st = buf;
+      while (bytes_left > 0)
+	{
+	  ssize_t to_read = bytes_left < MAX_CHUNK ? bytes_left: MAX_CHUNK;
+	  ssize_t trans = read (s->fd, buf_st, to_read);
+	  if (trans == -1)
+	    {
+	      if (errno == EINTR)
+		continue;
+	      else
+		return trans;
+	    }
+	  buf_st += trans;
+	  bytes_left -= trans;
+	}
+      return nbyte - bytes_left;
     }
 }
 
@@ -317,10 +348,13 @@ raw_write (unix_stream *s, const void *buf, ssize_t nbyte)
   buf_st = (char *) buf;
 
   /* We must write in a loop since some systems don't restart system
-     calls in case of a signal.  */
+     calls in case of a signal.  Also some systems might fail outright
+     if we try to write more than 2 GB in a single syscall, so chunk
+     up large writes.  */
   while (bytes_left > 0)
     {
-      trans = write (s->fd, buf_st, bytes_left);
+      ssize_t to_write = bytes_left < MAX_CHUNK ? bytes_left: MAX_CHUNK;
+      trans = write (s->fd, buf_st, to_write);
       if (trans == -1)
 	{
 	  if (errno == EINTR)
@@ -582,6 +616,9 @@ buf_read (unix_stream *s, void *buf, ssize_t nbyte)
 static ssize_t
 buf_write (unix_stream *s, const void *buf, ssize_t nbyte)
 {
+  if (nbyte == 0)
+    return 0;
+
   if (s->ndirty == 0)
     s->buffer_offset = s->logical_offset;
 
@@ -739,7 +776,7 @@ buf_init (unix_stream *s)
 *********************************************************************/
 
 char *
-mem_alloc_r (stream *strm, int *len)
+mem_alloc_r (stream *strm, size_t *len)
 {
   unix_stream *s = (unix_stream *) strm;
   gfc_offset n;
@@ -749,7 +786,7 @@ mem_alloc_r (stream *strm, int *len)
     return NULL;
 
   n = s->buffer_offset + s->active - where;
-  if (*len > n)
+  if ((gfc_offset) *len > n)
     *len = n;
 
   s->logical_offset = where + *len;
@@ -759,7 +796,7 @@ mem_alloc_r (stream *strm, int *len)
 
 
 char *
-mem_alloc_r4 (stream *strm, int *len)
+mem_alloc_r4 (stream *strm, size_t *len)
 {
   unix_stream *s = (unix_stream *) strm;
   gfc_offset n;
@@ -769,7 +806,7 @@ mem_alloc_r4 (stream *strm, int *len)
     return NULL;
 
   n = s->buffer_offset + s->active - where;
-  if (*len > n)
+  if ((gfc_offset) *len > n)
     *len = n;
 
   s->logical_offset = where + *len;
@@ -779,7 +816,7 @@ mem_alloc_r4 (stream *strm, int *len)
 
 
 char *
-mem_alloc_w (stream *strm, int *len)
+mem_alloc_w (stream *strm, size_t *len)
 {
   unix_stream *s = (unix_stream *)strm;
   gfc_offset m;
@@ -800,7 +837,7 @@ mem_alloc_w (stream *strm, int *len)
 
 
 gfc_char4_t *
-mem_alloc_w4 (stream *strm, int *len)
+mem_alloc_w4 (stream *strm, size_t *len)
 {
   unix_stream *s = (unix_stream *)strm;
   gfc_offset m;
@@ -826,7 +863,7 @@ static ssize_t
 mem_read (stream *s, void *buf, ssize_t nbytes)
 {
   void *p;
-  int nb = nbytes;
+  size_t nb = nbytes;
 
   p = mem_alloc_r (s, &nb);
   if (p)
@@ -845,7 +882,7 @@ static ssize_t
 mem_read4 (stream *s, void *buf, ssize_t nbytes)
 {
   void *p;
-  int nb = nbytes;
+  size_t nb = nbytes;
 
   p = mem_alloc_r4 (s, &nb);
   if (p)
@@ -864,7 +901,7 @@ static ssize_t
 mem_write (stream *s, const void *buf, ssize_t nbytes)
 {
   void *p;
-  int nb = nbytes;
+  size_t nb = nbytes;
 
   p = mem_alloc_w (s, &nb);
   if (p)
@@ -883,7 +920,7 @@ static ssize_t
 mem_write4 (stream *s, const void *buf, ssize_t nwords)
 {
   gfc_char4_t *p;
-  int nw = nwords;
+  size_t nw = nwords;
 
   p = mem_alloc_w4 (s, &nw);
   if (p)
@@ -959,8 +996,8 @@ mem_flush (unix_stream *s __attribute__ ((unused)))
 static int
 mem_close (unix_stream *s)
 {
-  free (s);
-
+  if (s)
+    free (s);
   return 0;
 }
 
@@ -1001,7 +1038,7 @@ static const struct stream_vtable mem4_vtable = {
    internal file */
 
 stream *
-open_internal (char *base, int length, gfc_offset offset)
+open_internal (char *base, size_t length, gfc_offset offset)
 {
   unix_stream *s;
 
@@ -1021,7 +1058,7 @@ open_internal (char *base, int length, gfc_offset offset)
    internal file */
 
 stream *
-open_internal4 (char *base, int length, gfc_offset offset)
+open_internal4 (char *base, size_t length, gfc_offset offset)
 {
   unix_stream *s;
 

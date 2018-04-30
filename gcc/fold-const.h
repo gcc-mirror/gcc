@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,6 @@ extern int folding_initializer;
 /* Convert between trees and native memory representation.  */
 extern int native_encode_expr (const_tree, unsigned char *, int, int off = -1);
 extern tree native_interpret_expr (tree, const unsigned char *, int);
-extern bool can_native_encode_type_p (tree);
 
 /* Fold constants as much as possible in an expression.
    Returns the simplified expression.
@@ -49,23 +48,17 @@ extern tree fold_binary_loc (location_t, enum tree_code, tree, tree, tree);
    fold_ternary_loc (UNKNOWN_LOCATION, CODE, T1, T2, T3, T4)
 extern tree fold_ternary_loc (location_t, enum tree_code, tree, tree, tree, tree);
 #define fold_build1(c,t1,t2)\
-   fold_build1_stat_loc (UNKNOWN_LOCATION, c, t1, t2 MEM_STAT_INFO)
-#define fold_build1_loc(l,c,t1,t2)\
-   fold_build1_stat_loc (l, c, t1, t2 MEM_STAT_INFO)
-extern tree fold_build1_stat_loc (location_t, enum tree_code, tree,
-				  tree MEM_STAT_DECL);
+   fold_build1_loc (UNKNOWN_LOCATION, c, t1, t2 MEM_STAT_INFO)
+extern tree fold_build1_loc (location_t, enum tree_code, tree,
+			     tree CXX_MEM_STAT_INFO);
 #define fold_build2(c,t1,t2,t3)\
-   fold_build2_stat_loc (UNKNOWN_LOCATION, c, t1, t2, t3 MEM_STAT_INFO)
-#define fold_build2_loc(l,c,t1,t2,t3)\
-   fold_build2_stat_loc (l, c, t1, t2, t3 MEM_STAT_INFO)
-extern tree fold_build2_stat_loc (location_t, enum tree_code, tree, tree,
-				  tree MEM_STAT_DECL);
+   fold_build2_loc (UNKNOWN_LOCATION, c, t1, t2, t3 MEM_STAT_INFO)
+extern tree fold_build2_loc (location_t, enum tree_code, tree, tree,
+			     tree CXX_MEM_STAT_INFO);
 #define fold_build3(c,t1,t2,t3,t4)\
-   fold_build3_stat_loc (UNKNOWN_LOCATION, c, t1, t2, t3, t4 MEM_STAT_INFO)
-#define fold_build3_loc(l,c,t1,t2,t3,t4)\
-   fold_build3_stat_loc (l, c, t1, t2, t3, t4 MEM_STAT_INFO)
-extern tree fold_build3_stat_loc (location_t, enum tree_code, tree, tree, tree,
-				  tree MEM_STAT_DECL);
+   fold_build3_loc (UNKNOWN_LOCATION, c, t1, t2, t3, t4 MEM_STAT_INFO)
+extern tree fold_build3_loc (location_t, enum tree_code, tree, tree, tree,
+				  tree CXX_MEM_STAT_INFO);
 extern tree fold_build1_initializer_loc (location_t, enum tree_code, tree, tree);
 extern tree fold_build2_initializer_loc (location_t, enum tree_code, tree, tree, tree);
 #define fold_build_call_array(T1,T2,N,T4)\
@@ -88,6 +81,8 @@ extern void fold_undefer_overflow_warnings (bool, const gimple *, int);
 extern void fold_undefer_and_ignore_overflow_warnings (void);
 extern bool fold_deferring_overflow_warnings_p (void);
 extern void fold_overflow_warning (const char*, enum warn_strict_overflow_code);
+extern enum tree_code fold_div_compare (enum tree_code, tree, tree,
+					tree *, tree *, bool *);
 extern int operand_equal_p (const_tree, const_tree, unsigned int);
 extern int multiple_of_p (tree, const_tree, const_tree);
 #define omit_one_operand(T1,T2,T3)\
@@ -119,15 +114,15 @@ extern tree fold_indirect_ref_loc (location_t, tree);
 extern tree build_simple_mem_ref_loc (location_t, tree);
 #define build_simple_mem_ref(T)\
 	build_simple_mem_ref_loc (UNKNOWN_LOCATION, T)
-extern offset_int mem_ref_offset (const_tree);
-extern tree build_invariant_address (tree, tree, HOST_WIDE_INT);
+extern poly_offset_int mem_ref_offset (const_tree);
+extern tree build_invariant_address (tree, tree, poly_int64);
 extern tree constant_boolean_node (bool, tree);
 extern tree div_if_zero_remainder (const_tree, const_tree);
 
 extern bool tree_swap_operands_p (const_tree, const_tree);
 extern enum tree_code swap_tree_comparison (enum tree_code);
 
-extern bool ptr_difference_const (tree, tree, HOST_WIDE_INT *);
+extern bool ptr_difference_const (tree, tree, poly_int64_pod *);
 extern enum tree_code invert_tree_comparison (enum tree_code, bool);
 
 extern bool tree_unary_nonzero_warnv_p (enum tree_code, tree, tree, bool *);
@@ -157,7 +152,7 @@ extern bool may_negate_without_overflow_p (const_tree);
 extern tree round_up_loc (location_t, tree, unsigned int);
 #define round_down(T,N) round_down_loc (UNKNOWN_LOCATION, T, N)
 extern tree round_down_loc (location_t, tree, int);
-extern tree size_int_kind (HOST_WIDE_INT, enum size_type_kind);
+extern tree size_int_kind (poly_int64, enum size_type_kind);
 #define size_binop(CODE,T1,T2)\
    size_binop_loc (UNKNOWN_LOCATION, CODE, T1, T2)
 extern tree size_binop_loc (location_t, enum tree_code, tree, tree);
@@ -175,6 +170,7 @@ extern bool tree_expr_nonnegative_warnv_p (tree, bool *, int = 0);
 extern tree make_range (tree, int *, tree *, tree *, bool *);
 extern tree make_range_step (location_t, enum tree_code, tree, tree, tree,
 			     tree *, tree *, int *, bool *);
+extern tree range_check_type (tree);
 extern tree build_range_check (location_t, tree, tree, int, tree, tree);
 extern bool merge_ranges (int *, tree *, tree *, int, tree, tree, int,
 			  tree, tree);

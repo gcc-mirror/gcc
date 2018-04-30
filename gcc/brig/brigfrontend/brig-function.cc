@@ -1,5 +1,5 @@
 /* brig-function.cc -- declaration of brig_function class.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -38,6 +38,7 @@
 #include "phsa.h"
 #include "tree-pretty-print.h"
 #include "dumpfile.h"
+#include "profile-count.h"
 #include "tree-cfg.h"
 #include "errors.h"
 #include "function.h"
@@ -51,11 +52,10 @@ brig_function::brig_function (const BrigDirectiveExecutable *exec,
     m_context_arg (NULL_TREE), m_group_base_arg (NULL_TREE),
     m_private_base_arg (NULL_TREE), m_ret_value (NULL_TREE),
     m_next_kernarg_offset (0), m_kernarg_max_align (0),
-    m_ret_value_brig_var (NULL), m_has_barriers (false),
-    m_has_allocas (false), m_has_function_calls_with_barriers (false),
-    m_calls_analyzed (false), m_is_wg_function (false),
-    m_has_unexpanded_dp_builtins (false), m_generating_arg_block (false),
-    m_parent (parent)
+    m_ret_value_brig_var (NULL), m_has_barriers (false), m_has_allocas (false),
+    m_has_function_calls_with_barriers (false), m_calls_analyzed (false),
+    m_is_wg_function (false), m_has_unexpanded_dp_builtins (false),
+    m_generating_arg_block (false), m_parent (parent)
 {
   memset (m_regs, 0,
 	  BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT * sizeof (BrigOperandRegister *));
@@ -272,32 +272,59 @@ brig_function::add_local_variable (std::string name, tree type)
   return variable;
 }
 
+/* Return tree type for an HSA register.
+
+   The tree type can be anything (scalar, vector, int, float, etc.)
+   but its size is guaranteed to match the HSA register size.
+
+   HSA registers are untyped but we select a type based on their use
+   to reduce (sometimes unoptimizable) VIEW_CONVERT_EXPR nodes (seems
+   to occur when use or def reaches over current BB).  */
+
+tree
+brig_function::get_tree_type_for_hsa_reg (const BrigOperandRegister *reg) const
+{
+  size_t reg_size = gccbrig_reg_size (reg);
+
+  /* The default type.  */
+  tree type = build_nonstandard_integer_type (reg_size, true);
+
+  if (m_parent->m_fn_regs_use_index.count (m_name) == 0)
+    return type;
+
+  const regs_use_index &index = m_parent->m_fn_regs_use_index[m_name];
+  size_t reg_id = gccbrig_hsa_reg_id (*reg);
+  if (index.count (reg_id) == 0)
+    return type;
+
+  const reg_use_info &info = index.find (reg_id)->second;
+  std::vector<std::pair<tree, size_t> >::const_iterator it
+    = info.m_type_refs.begin ();
+  std::vector<std::pair<tree, size_t> >::const_iterator it_end
+    = info.m_type_refs.end ();
+  size_t max_refs_as_type_count = 0;
+  for (; it != it_end; it++)
+    {
+      size_t type_bit_size = int_size_in_bytes (it->first) * BITS_PER_UNIT;
+      if (type_bit_size != reg_size) continue;
+      if (it->second > max_refs_as_type_count)
+	{
+	  type = it->first;
+	  max_refs_as_type_count = it->second;
+	}
+    }
+
+  return type;
+}
+
 /* Returns a DECL_VAR for the given HSAIL operand register.
    If it has not been created yet for the function being generated,
-   creates it as an unsigned int variable.  */
+   creates it as a type determined by analysis phase.  */
 
 tree
 brig_function::get_m_var_declfor_reg (const BrigOperandRegister *reg)
 {
-  size_t offset = reg->regNum;
-  switch (reg->regKind)
-    {
-    case BRIG_REGISTER_KIND_QUAD:
-      offset
-	+= BRIG_2_TREE_HSAIL_D_REG_COUNT + BRIG_2_TREE_HSAIL_S_REG_COUNT +
-	BRIG_2_TREE_HSAIL_C_REG_COUNT;
-      break;
-    case BRIG_REGISTER_KIND_DOUBLE:
-      offset += BRIG_2_TREE_HSAIL_S_REG_COUNT + BRIG_2_TREE_HSAIL_C_REG_COUNT;
-      break;
-    case BRIG_REGISTER_KIND_SINGLE:
-      offset += BRIG_2_TREE_HSAIL_C_REG_COUNT;
-    case BRIG_REGISTER_KIND_CONTROL:
-      break;
-    default:
-      gcc_unreachable ();
-      break;
-    }
+  size_t offset = gccbrig_hsa_reg_id (*reg);
 
   reg_decl_index_entry *regEntry = m_regs[offset];
   if (regEntry == NULL)
@@ -305,7 +332,7 @@ brig_function::get_m_var_declfor_reg (const BrigOperandRegister *reg)
       size_t reg_size = gccbrig_reg_size (reg);
       tree type;
       if (reg_size > 1)
-	type = build_nonstandard_integer_type (reg_size, true);
+	type = get_tree_type_for_hsa_reg (reg);
       else
 	type = boolean_type_node;
 
@@ -576,20 +603,31 @@ brig_function::emit_launcher_and_metadata ()
 
   tree phsail_launch_kernel_call;
 
+  /* Compute the local group segment frame start pointer.  */
+  tree group_local_offset_temp
+    = create_tmp_var (uint32_type_node, "group_local_offset");
+  tree group_local_offset_arg
+    = build2 (MODIFY_EXPR, uint32_type_node,
+	      group_local_offset_temp,
+	      build_int_cst (uint32_type_node,
+			     m_parent->m_module_group_variables.size()));
+
   /* Emit a launcher depending whether we converted the kernel function to
      a work group function or not.  */
   if (m_is_wg_function)
     phsail_launch_kernel_call
       = call_builtin (builtin_decl_explicit (BUILT_IN_HSAIL_LAUNCH_WG_FUNC),
-		      3, void_type_node,
+		      4, void_type_node,
 		      ptr_type_node, kernel_func_ptr, ptr_type_node,
-		      context_arg, ptr_type_node, group_base_addr_arg);
+		      context_arg, ptr_type_node, group_base_addr_arg,
+		      uint32_type_node, group_local_offset_arg);
   else
     phsail_launch_kernel_call
       = call_builtin (builtin_decl_explicit (BUILT_IN_HSAIL_LAUNCH_KERNEL),
-		      3, void_type_node,
+		      4, void_type_node,
 		      ptr_type_node, kernel_func_ptr, ptr_type_node,
-		      context_arg, ptr_type_node, group_base_addr_arg);
+		      context_arg, ptr_type_node, group_base_addr_arg,
+		      uint32_type_node, group_local_offset_arg);
 
   append_to_statement_list_force (phsail_launch_kernel_call, &stmt_list);
 
@@ -720,4 +758,14 @@ bool
 brig_function::has_function_scope_var (const BrigBase* var) const
 {
   return m_function_scope_vars.find (var) != m_function_scope_vars.end ();
+}
+
+size_t
+brig_function::group_variable_segment_offset (const std::string &name) const
+{
+  if (m_local_group_variables.has_variable (name))
+    return m_local_group_variables.segment_offset (name);
+
+  gcc_assert (m_parent->m_module_group_variables.has_variable (name));
+  return m_parent->m_module_group_variables.segment_offset (name);
 }

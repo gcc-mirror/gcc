@@ -46,6 +46,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   is then called.  After the function returns, the value of all volatile
   registers is verified against the random data and then restored.  */
 
+/* { dg-do run } */
+/* { dg-additional-sources "do-test.S" } */
+/* { dg-additional-options "-Wall" } */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -58,8 +62,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <errno.h>
 #include <ctype.h>
 
-#ifndef __x86_64__
-# error Test only valid on x86_64
+#if !defined(__x86_64__) || !defined(__SSE2__)
+# error Test only valid on x86_64 with -msse2
 #endif
 
 enum reg_data_sets
@@ -143,6 +147,72 @@ static __attribute__((ms_abi)) long
 
 static int arbitrarily_fail;
 static const char *argv0;
+
+
+#define PASTE_STR2(a)		#a
+#define PASTE_STR1(a, b)	PASTE_STR2(a ## b)
+#define PASTE_STR(a, b)		PASTE_STR1(a, b)
+
+#ifdef __USER_LABEL_PREFIX__
+# define ASMNAME(name)		PASTE_STR(__USER_LABEL_PREFIX__, name)
+#else
+# define ASMNAME(name)		#name
+#endif
+
+#ifdef __MACH__
+# define LOAD_TEST_DATA_ADDR(dest) \
+	"	mov	" ASMNAME(test_data) "@GOTPCREL(%%rip), " dest "\n"
+#else
+# define LOAD_TEST_DATA_ADDR(dest) \
+	"	lea	" ASMNAME(test_data) "(%%rip), " dest "\n"
+#endif
+
+#define TEST_DATA_OFFSET(f)	((int)__builtin_offsetof(struct test_data, f))
+
+void __attribute__((naked))
+do_test_body (void)
+{__asm__ (
+	"	# rax, r10 and r11 are usable here.\n"
+	"\n"
+	"	# Save registers.\n"
+		LOAD_TEST_DATA_ADDR("%%rax")
+	"	lea	%p0(%%rax), %%r10\n"
+	"	call	" ASMNAME(regs_to_mem) "\n"
+	"\n"
+	"	# Load registers with random data.\n"
+	"	lea	%p1(%%rax), %%r10\n"
+	"	call	" ASMNAME(mem_to_regs) "\n"
+	"\n"
+	"	# Pop and save original return address.\n"
+	"	pop	%%r10\n"
+	"	mov	%%r10, %p4(%%rax)\n"
+	"\n"
+	"	# Call the test function, after which rcx, rdx and r8-11\n"
+	"	# become usable.\n"
+	"	lea	%p3(%%rax), %%rax\n"
+	"	call	*(%%rax)\n"
+	"\n"
+	"	# Store resulting register values.\n"
+		LOAD_TEST_DATA_ADDR("%%rcx")
+	"	lea	%p2(%%rcx), %%r10\n"
+	"	call	" ASMNAME(regs_to_mem) "\n"
+	"\n"
+	"	# Push the original return address.\n"
+	"	lea	%p4(%%rcx), %%r10\n"
+	"	push	(%%r10)\n"
+	"\n"
+	"	# Restore registers.\n"
+	"	lea	%p0(%%rcx), %%r10\n"
+	"	call	" ASMNAME(mem_to_regs) "\n"
+	"\n"
+	"	retq\n"
+	::
+	"i"(TEST_DATA_OFFSET(regdata[REG_SET_SAVE])),
+	"i"(TEST_DATA_OFFSET(regdata[REG_SET_INPUT])),
+	"i"(TEST_DATA_OFFSET(regdata[REG_SET_OUTPUT])),
+	"i"(TEST_DATA_OFFSET(fn)),
+	"i"(TEST_DATA_OFFSET(retaddr)) : "memory");
+}
 
 static void __attribute__((noinline))
 init_test (void *fn, const char *name, enum alignment_option alignment,

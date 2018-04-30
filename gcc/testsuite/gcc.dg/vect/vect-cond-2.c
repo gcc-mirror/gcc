@@ -39,6 +39,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { ! vect_max_reduc } } } } */
-
-
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */

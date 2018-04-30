@@ -11,7 +11,7 @@ toolexeclib_LTLIBRARIES = libmpx.la
 
 libmpx_la_SOURCES = mpxrt.c mpxrt-utils.c
 
-libmpx_la_CFLAGS = -fPIC
+libmpx_la_CFLAGS = -fPIC $(XCFLAGS)
 libmpx_la_DEPENDENCIES = libmpx.map
 libmpx_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libmpx.map $(link_libmpx) \
                     -version-info `grep -v '^\#' $(srcdir)/libtool-version`

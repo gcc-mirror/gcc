@@ -10,7 +10,7 @@ struct array<T, 0> {
 };
 
 template<typename T, int... Dims>
-int array<T, Dims...>::foo() { }
+int array<T, Dims...>::foo() { return 0; }
 
 template<typename T>
-int array<T, 0>::bar() { }
+int array<T, 0>::bar() { return 0; }

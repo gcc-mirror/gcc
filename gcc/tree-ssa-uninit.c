@@ -1,5 +1,5 @@
 /* Predicate aware uninitialized variable warning.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "params.h"
 #include "tree-cfg.h"
+#include "cfghooks.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables.  The pass first collects the set of
@@ -273,6 +274,11 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	      && gimple_has_location (stmt))
 	    {
 	      tree rhs = gimple_assign_rhs1 (stmt);
+	      tree lhs = gimple_assign_lhs (stmt);
+	      bool has_bit_insert = false;
+	      use_operand_p luse_p;
+	      imm_use_iterator liter;
+
 	      if (TREE_NO_WARNING (rhs))
 		continue;
 
@@ -289,15 +295,35 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 
 	      /* Do not warn if the access is fully outside of the
 	         variable.  */
+	      poly_int64 decl_size;
 	      if (DECL_P (base)
-		  && ref.size != -1
-		  && ref.max_size == ref.size
-		  && (ref.offset + ref.size <= 0
-		      || (ref.offset >= 0
+		  && known_size_p (ref.size)
+		  && ((known_eq (ref.max_size, ref.size)
+		       && known_le (ref.offset + ref.size, 0))
+		      || (known_ge (ref.offset, 0)
 			  && DECL_SIZE (base)
-			  && TREE_CODE (DECL_SIZE (base)) == INTEGER_CST
-			  && compare_tree_int (DECL_SIZE (base),
-					       ref.offset) <= 0)))
+			  && poly_int_tree_p (DECL_SIZE (base), &decl_size)
+			  && known_le (decl_size, ref.offset))))
+		continue;
+
+	      /* Do not warn if the access is then used for a BIT_INSERT_EXPR. */
+	      if (TREE_CODE (lhs) == SSA_NAME)
+	        FOR_EACH_IMM_USE_FAST (luse_p, liter, lhs)
+		  {
+		    gimple *use_stmt = USE_STMT (luse_p);
+                    /* BIT_INSERT_EXPR first operand should not be considered
+		       a use for the purpose of uninit warnings.  */
+		    if (gassign *ass = dyn_cast <gassign *> (use_stmt))
+		      {
+			if (gimple_assign_rhs_code (ass) == BIT_INSERT_EXPR
+			    && luse_p->use == gimple_assign_rhs1_ptr (ass))
+			  {
+			    has_bit_insert = true;
+			    break;
+			  }
+		      }
+		  }
+	      if (has_bit_insert)
 		continue;
 
 	      /* Limit the walking to a constant number of stmts after
@@ -518,9 +544,6 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
   bool found_cd_chain = false;
   size_t cur_chain_len = 0;
 
-  if (EDGE_COUNT (bb->succs) < 2)
-    return false;
-
   if (*num_calls > PARAM_VALUE (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS))
     return false;
   ++*num_calls;
@@ -646,6 +669,11 @@ convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
 	  e = one_cd_chain[j];
 	  guard_bb = e->src;
 	  gsi = gsi_last_bb (guard_bb);
+	  /* Ignore empty forwarder blocks.  */
+	  if (empty_block_p (guard_bb) && single_succ_p (guard_bb))
+	    continue;
+	  /* An empty basic block here is likely a PHI, and is not one
+	     of the cases we handle below.  */
 	  if (gsi_end_p (gsi))
 	    {
 	      has_valid_pred = false;
@@ -891,38 +919,49 @@ find_def_preds (pred_chain_union *preds, gphi *phi)
   return has_valid_pred;
 }
 
+/* Dump a pred_info.  */
+
+static void
+dump_pred_info (pred_info one_pred)
+{
+  if (one_pred.invert)
+    fprintf (dump_file, " (.NOT.) ");
+  print_generic_expr (dump_file, one_pred.pred_lhs);
+  fprintf (dump_file, " %s ", op_symbol_code (one_pred.cond_code));
+  print_generic_expr (dump_file, one_pred.pred_rhs);
+}
+
+/* Dump a pred_chain.  */
+
+static void
+dump_pred_chain (pred_chain one_pred_chain)
+{
+  size_t np = one_pred_chain.length ();
+  for (size_t j = 0; j < np; j++)
+    {
+      dump_pred_info (one_pred_chain[j]);
+      if (j < np - 1)
+	fprintf (dump_file, " (.AND.) ");
+      else
+	fprintf (dump_file, "\n");
+    }
+}
+
 /* Dumps the predicates (PREDS) for USESTMT.  */
 
 static void
 dump_predicates (gimple *usestmt, pred_chain_union preds, const char *msg)
 {
-  size_t i, j;
-  pred_chain one_pred_chain = vNULL;
   fprintf (dump_file, "%s", msg);
-  print_gimple_stmt (dump_file, usestmt, 0);
-  fprintf (dump_file, "is guarded by :\n\n");
-  size_t num_preds = preds.length ();
-  /* Do some dumping here:  */
-  for (i = 0; i < num_preds; i++)
+  if (usestmt)
     {
-      size_t np;
-
-      one_pred_chain = preds[i];
-      np = one_pred_chain.length ();
-
-      for (j = 0; j < np; j++)
-	{
-	  pred_info one_pred = one_pred_chain[j];
-	  if (one_pred.invert)
-	    fprintf (dump_file, " (.NOT.) ");
-	  print_generic_expr (dump_file, one_pred.pred_lhs);
-	  fprintf (dump_file, " %s ", op_symbol_code (one_pred.cond_code));
-	  print_generic_expr (dump_file, one_pred.pred_rhs);
-	  if (j < np - 1)
-	    fprintf (dump_file, " (.AND.) ");
-	  else
-	    fprintf (dump_file, "\n");
-	}
+      print_gimple_stmt (dump_file, usestmt, 0);
+      fprintf (dump_file, "is guarded by :\n\n");
+    }
+  size_t num_preds = preds.length ();
+  for (size_t i = 0; i < num_preds; i++)
+    {
+      dump_pred_chain (preds[i]);
       if (i < num_preds - 1)
 	fprintf (dump_file, "(.OR.)\n");
       else
@@ -1449,8 +1488,8 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
     code2 = invert_tree_comparison (code2, false);
 
   if ((code1 == EQ_EXPR || code1 == BIT_AND_EXPR) && code2 == BIT_AND_EXPR)
-    return wi::eq_p (expr1.pred_rhs,
-		     wi::bit_and (expr1.pred_rhs, expr2.pred_rhs));
+    return (wi::to_wide (expr1.pred_rhs)
+	    == (wi::to_wide (expr1.pred_rhs) & wi::to_wide (expr2.pred_rhs)));
 
   if (code1 != code2 && code2 != NE_EXPR)
     return false;
@@ -2234,12 +2273,19 @@ normalize_preds (pred_chain_union preds, gimple *use_or_def, bool is_use)
 }
 
 /* Return TRUE if PREDICATE can be invalidated by any individual
-   predicate in WORKLIST.  */
+   predicate in USE_GUARD.  */
 
 static bool
 can_one_predicate_be_invalidated_p (pred_info predicate,
 				    pred_chain use_guard)
 {
+  if (dump_file && dump_flags & TDF_DETAILS)
+    {
+      fprintf (dump_file, "Testing if this predicate: ");
+      dump_pred_info (predicate);
+      fprintf (dump_file, "\n...can be invalidated by a USE guard of: ");
+      dump_pred_chain (use_guard);
+    }
   for (size_t i = 0; i < use_guard.length (); ++i)
     {
       /* NOTE: This is a very simple check, and only understands an
@@ -2248,7 +2294,15 @@ can_one_predicate_be_invalidated_p (pred_info predicate,
 	 invalidate with say [i > 5] or [i == 8].  There is certainly
 	 room for improvement here.  */
       if (pred_neg_p (predicate, use_guard[i]))
-	return true;
+	{
+	  if (dump_file && dump_flags & TDF_DETAILS)
+	    {
+	      fprintf (dump_file, "  Predicate was invalidated by: ");
+	      dump_pred_info (use_guard[i]);
+	      fputc ('\n', dump_file);
+	    }
+	  return true;
+	}
     }
   return false;
 }
@@ -2262,12 +2316,22 @@ can_chain_union_be_invalidated_p (pred_chain_union uninit_pred,
 {
   if (uninit_pred.is_empty ())
     return false;
+  if (dump_file && dump_flags & TDF_DETAILS)
+    dump_predicates (NULL, uninit_pred,
+		     "Testing if anything here can be invalidated: ");
   for (size_t i = 0; i < uninit_pred.length (); ++i)
     {
       pred_chain c = uninit_pred[i];
-      for (size_t j = 0; j < c.length (); ++j)
-	if (!can_one_predicate_be_invalidated_p (c[j], use_guard))
-	  return false;
+      size_t j;
+      for (j = 0; j < c.length (); ++j)
+	if (can_one_predicate_be_invalidated_p (c[j], use_guard))
+	  break;
+
+      /* If we were unable to invalidate any predicate in C, then there
+	 is a viable path from entry to the PHI where the PHI takes
+	 an uninitialized value and continues to a use of the PHI.  */
+      if (j == c.length ())
+	return false;
     }
   return true;
 }
@@ -2309,7 +2373,7 @@ uninit_uses_cannot_happen (gphi *phi, unsigned uninit_opnds,
 
       /* Build the control dependency chain for uninit operand `i'...  */
       uninit_preds = vNULL;
-      if (!compute_control_dep_chain (find_dom (e->src),
+      if (!compute_control_dep_chain (ENTRY_BLOCK_PTR_FOR_FN (cfun),
 				      e->src, dep_chains, &num_chains,
 				      &cur_chain, &num_calls))
 	{
@@ -2317,10 +2381,16 @@ uninit_uses_cannot_happen (gphi *phi, unsigned uninit_opnds,
 	  break;
 	}
       /* ...and convert it into a set of predicates.  */
-      convert_control_dep_chain_into_preds (dep_chains, num_chains,
-					    &uninit_preds);
+      bool has_valid_preds
+	= convert_control_dep_chain_into_preds (dep_chains, num_chains,
+						&uninit_preds);
       for (size_t j = 0; j < num_chains; ++j)
 	dep_chains[j].release ();
+      if (!has_valid_preds)
+	{
+	  ret = false;
+	  break;
+	}
       simplify_preds (&uninit_preds, NULL, false);
       uninit_preds = normalize_preds (uninit_preds, NULL, false);
 

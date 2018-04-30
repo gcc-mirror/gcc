@@ -14,20 +14,20 @@ character(len=4) :: str2(2,2)
 
 call test()
 
-call foo(i(8)) ! { dg-warning "too few elements for dummy argument 'a' .3/4." }
+call foo(i(8)) ! { dg-error "too few elements for dummy argument 'a' .3/4." }
 call foo(j(1,1))
-call foo(j(2,1)) ! { dg-warning "too few elements for dummy argument 'a' .3/4." }
-call foo(j(1,2)) ! { dg-warning "too few elements for dummy argument 'a' .2/4." }
+call foo(j(2,1)) ! { dg-error "too few elements for dummy argument 'a' .3/4." }
+call foo(j(1,2)) ! { dg-error "too few elements for dummy argument 'a' .2/4." }
 
 str = 'FORT'
 str2 = 'fort'
-call bar(str(:)(1:2)) ! { dg-warning "too few elements for dummy argument 'c' .4/6." }
-call bar(str(1:2)(1:1)) ! { dg-warning "too few elements for dummy argument 'c' .2/6." }
-call bar(str(2)) ! { dg-warning "too few elements for dummy argument 'c' .4/6." }
+call bar(str(:)(1:2)) ! { dg-error "too few elements for dummy argument 'c' .4/6." }
+call bar(str(1:2)(1:1)) ! { dg-error "too few elements for dummy argument 'c' .2/6." }
+call bar(str(2)) ! { dg-error "too few elements for dummy argument 'c' .4/6." }
 call bar(str(1)(2:1)) ! OK
 call bar(str2(2,1)(4:1)) ! OK
 call bar(str2(1,2)(3:4)) ! OK
-call bar(str2(1,2)(4:4)) ! { dg-warning "too few elements for dummy argument 'c' .5/6." }
+call bar(str2(1,2)(4:4)) ! { dg-error "too few elements for dummy argument 'c' .5/6." }
 contains
   subroutine foo(a)
     integer :: a(4)

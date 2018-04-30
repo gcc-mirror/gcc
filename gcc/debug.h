@@ -1,5 +1,5 @@
 /* Debug hooks for GCC.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -145,7 +145,16 @@ struct gcc_debug_hooks
 
   /* Debug information for imported modules and declarations.  */
   void (* imported_module_or_decl) (tree decl, tree name,
-				    tree context, bool child);
+				    tree context, bool child,
+				    bool implicit);
+
+  /* Return true if a DIE for the tree is available and return a symbol
+     and offset that can be used to refer to it externally.  */
+  bool (* die_ref_for_decl) (tree, const char **, unsigned HOST_WIDE_INT *);
+
+  /* Early debug information for the tree is available at symbol plus
+     offset externally.  */
+  void (* register_external_die) (tree, const char *, unsigned HOST_WIDE_INT);
 
   /* DECL is an inline function, whose body is present, but which is
      not being output at this point.  */
@@ -166,6 +175,9 @@ struct gcc_debug_hooks
 
   /* Called from final_scan_insn for any NOTE_INSN_VAR_LOCATION note.  */
   void (* var_location) (rtx_insn *);
+
+  /* Called from final_scan_insn for any NOTE_INSN_INLINE_ENTRY note.  */
+  void (* inline_entry) (tree block);
 
   /* Called from finalize_size_functions for size functions so that their body
      can be encoded in the debug info to describe the layout of variable-length
@@ -206,15 +218,19 @@ extern void debug_nothing_int_int (unsigned int, unsigned int);
 extern void debug_nothing_tree (tree);
 extern void debug_nothing_tree_tree (tree, tree);
 extern void debug_nothing_tree_int (tree, int);
-extern void debug_nothing_tree_tree_tree_bool (tree, tree, tree, bool);
+extern void debug_nothing_tree_tree_tree_bool_bool (tree, tree, tree,
+						    bool, bool);
 extern bool debug_true_const_tree (const_tree);
 extern void debug_nothing_rtx_insn (rtx_insn *);
 extern void debug_nothing_rtx_code_label (rtx_code_label *);
+extern bool debug_false_tree_charstarstar_uhwistar (tree, const char **,
+						    unsigned HOST_WIDE_INT *);
+extern void debug_nothing_tree_charstar_uhwi (tree, const char *,
+					      unsigned HOST_WIDE_INT);
 
 /* Hooks for various debug formats.  */
 extern const struct gcc_debug_hooks do_nothing_debug_hooks;
 extern const struct gcc_debug_hooks dbx_debug_hooks;
-extern const struct gcc_debug_hooks sdb_debug_hooks;
 extern const struct gcc_debug_hooks xcoff_debug_hooks;
 extern const struct gcc_debug_hooks dwarf2_debug_hooks;
 extern const struct gcc_debug_hooks dwarf2_lineno_debug_hooks;
@@ -228,14 +244,12 @@ extern void dwarf2out_vms_end_prologue (unsigned int, const char *);
 extern void dwarf2out_vms_begin_epilogue (unsigned int, const char *);
 extern void dwarf2out_end_epilogue (unsigned int, const char *);
 extern void dwarf2out_frame_finish (void);
-/* Decide whether we want to emit frame unwind information for the current
-   translation unit.  */
+extern bool dwarf2out_do_eh_frame (void);
 extern bool dwarf2out_do_frame (void);
 extern bool dwarf2out_do_cfi_asm (void);
 extern void dwarf2out_switch_text_section (void);
-
-const char *remap_debug_filename (const char *);
-void add_debug_prefix_map (const char *);
+extern bool dwarf2out_default_as_loc_support (void);
+extern bool dwarf2out_default_as_locview_support (void);
 
 /* For -fdump-go-spec.  */
 

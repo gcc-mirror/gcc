@@ -1,9 +1,16 @@
 /* { dg-require-effective-target section_anchors } */
+/* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 32
+#if VECTOR_BITS > 128
+#define NINTS (VECTOR_BITS / 32)
+#else
+#define NINTS 4
+#endif
+
+#define N (NINTS * 8)
 
 struct s{
   int m;
@@ -17,16 +24,15 @@ struct s2{
 
 struct test1{
   struct s a; /* array a.n is unaligned */
-  int b;
-  int c;
+  int pad[NINTS - 2];
   struct s e; /* array e.n is aligned */
 };
 
 struct test2{
-  struct s2 a; /* array a.n is unaligned */
+  struct s2 a;
   int b;
   int c;
-  struct s2 e; /* array e.n is aligned */
+  struct s2 e;
 };
 
 
@@ -51,13 +57,13 @@ int main1 ()
     }
 
   /* 2. aligned */
-  for (i = 3; i < N-1; i++)
+  for (i = NINTS - 1; i < N - 1; i++)
     {
       tmp1[2].a.n[1][2][i] = 6;
     }
 
   /* check results:  */
-  for (i = 3; i < N-1; i++)
+  for (i = NINTS - 1; i < N - 1; i++)
     {
       if (tmp1[2].a.n[1][2][i] != 6)
         abort ();
@@ -83,18 +89,18 @@ int main1 ()
     }
 
   /* 4. unaligned */
-  for (i = 0; i < N-4; i++)
+  for (i = 0; i < N - NINTS; i++)
     {
-      for (j = 0; j < N-4; j++)
+      for (j = 0; j < N - NINTS; j++)
 	{
           tmp2[2].e.n[1][i][j] = 8;
 	}
     }
 
   /* check results:  */
-  for (i = 0; i < N-4; i++)
+  for (i = 0; i < N - NINTS; i++)
     {
-      for (j = 0; j < N-4; j++)
+      for (j = 0; j < N - NINTS; j++)
 	{
           if (tmp2[2].e.n[1][i][j] != 8)
 	    abort ();
@@ -112,8 +118,6 @@ int main (void)
 } 
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" { target vect_int } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* Alignment forced using versioning until the pass that increases alignment
   is extended to handle structs.  */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target {vect_int && vector_alignment_reachable } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 4 "vect" { target {vect_int && {! vector_alignment_reachable} } } } } */

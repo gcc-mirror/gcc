@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -477,7 +477,7 @@ find_single_block_region (bool ebbs_p)
 
   if (ebbs_p) {
     int probability_cutoff;
-    if (profile_info && flag_branch_probabilities)
+    if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
       probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
     else
       probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY);
@@ -507,7 +507,8 @@ find_single_block_region (bool ebbs_p)
 	    e = find_fallthru_edge (bb->succs);
             if (! e)
               break;
-            if (e->probability <= probability_cutoff)
+            if (e->probability.initialized_p ()
+		&& e->probability.to_reg_br_prob_base () <= probability_cutoff)
               break;
           }
 
@@ -1441,7 +1442,11 @@ compute_dom_prob_ps (int bb)
       FOR_EACH_EDGE (out_edge, out_ei, in_edge->src->succs)
 	bitmap_set_bit (pot_split[bb], EDGE_TO_BIT (out_edge));
 
-      prob[bb] += combine_probabilities (prob[pred_bb], in_edge->probability);
+      prob[bb] += combine_probabilities
+		 (prob[pred_bb],
+		  in_edge->probability.initialized_p ()
+		  ? in_edge->probability.to_reg_br_prob_base ()
+		  : 0);
       // The rounding divide in combine_probabilities can result in an extra
       // probability increment propagating along 50-50 edges. Eventually when
       // the edges re-merge, the accumulated probability can go slightly above
@@ -2492,6 +2497,11 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
       while (insn != head && DEBUG_INSN_P (insn));
     }
 
+  /* Selective scheduling handles control dependencies by itself, and
+     CANT_MOVE flags ensure that other insns will be kept in place.  */
+  if (sel_sched_p ())
+    return;
+
   /* Make sure these insns are scheduled last in their block.  */
   insn = last;
   if (insn != 0)
@@ -2720,9 +2730,7 @@ compute_block_dependences (int bb)
 
   sched_analyze (&tmp_deps, head, tail);
 
-  /* Selective scheduling handles control dependencies by itself.  */
-  if (!sel_sched_p ())
-    add_branch_dependences (head, tail);
+  add_branch_dependences (head, tail);
 
   if (current_nr_blocks > 1)
     propagate_deps (bb, &tmp_deps);
@@ -2832,8 +2840,8 @@ void debug_dependencies (rtx_insn *head, rtx_insn *tail)
 			       : INSN_PRIORITY (insn))
 		: INSN_PRIORITY (insn)),
 	       (sel_sched_p () ? (sched_emulate_haifa_p ? -1
-			       : insn_cost (insn))
-		: insn_cost (insn)));
+			       : insn_sched_cost (insn))
+		: insn_sched_cost (insn)));
 
       if (recog_memoized (insn) < 0)
 	fprintf (sched_dump, "nothing");
@@ -3171,8 +3179,10 @@ schedule_region (int rgn)
 	  sched_rgn_n_insns += sched_n_insns;
 	  realloc_bb_state_array (saved_last_basic_block);
 	  f = find_fallthru_edge (last_bb->succs);
-	  if (f && f->probability * 100 / REG_BR_PROB_BASE >=
-	      PARAM_VALUE (PARAM_SCHED_STATE_EDGE_PROB_CUTOFF))
+	  if (f
+	      && (!f->probability.initialized_p ()
+		  || f->probability.to_reg_br_prob_base () * 100 / REG_BR_PROB_BASE >=
+	             PARAM_VALUE (PARAM_SCHED_STATE_EDGE_PROB_CUTOFF)))
 	    {
 	      memcpy (bb_state[f->dest->index], curr_state,
 		      dfa_state_size);
@@ -3251,10 +3261,10 @@ sched_rgn_init (bool single_blocks_p)
 	free_dominance_info (CDI_DOMINATORS);
     }
 
-  gcc_assert (0 < nr_regions && nr_regions <= n_basic_blocks_for_fn (cfun));
+  gcc_assert (nr_regions > 0 && nr_regions <= n_basic_blocks_for_fn (cfun));
 
-  RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1) +
-			     RGN_NR_BLOCKS (nr_regions - 1));
+  RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1)
+			     + RGN_NR_BLOCKS (nr_regions - 1));
   nr_regions_initial = nr_regions;
 }
 

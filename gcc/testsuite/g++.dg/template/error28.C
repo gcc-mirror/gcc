@@ -1,5 +1,6 @@
 // PR c++/27211
 
-struct A {};
+struct A {}; // { dg-message "defined here" }
 
-template<int> void A::foo(); // { dg-error "member function" }
+template<int> void A::foo(); // { dg-error "no declaration matches" }
+// { dg-message "no functions named" "note" { target *-*-* } .-1 }

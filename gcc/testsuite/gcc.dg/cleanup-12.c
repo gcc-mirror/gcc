@@ -2,8 +2,8 @@
 /* HP-UX libunwind.so doesn't provide _UA_END_OF_STACK */
 /* { dg-do run } */
 /* { dg-options "-O2 -fexceptions" } */
-/* { dg-skip-if "" { "ia64-*-hpux11.*" }  { "*" } { "" } } */
-/* { dg-skip-if "" { ! nonlocal_goto } { "*" } { "" } } */
+/* { dg-skip-if "" { "ia64-*-hpux11.*" } } */
+/* { dg-skip-if "" { ! nonlocal_goto } } */
 /* Verify unwind info in presence of alloca.  */
 
 #include <unwind.h>

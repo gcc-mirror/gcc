@@ -1,2 +1,6 @@
 # This is a support routine for longlong.h, used by libgcc2.c.
 LIB2ADD += $(srcdir)/config/alpha/qrnnd.S
+
+# When GAS-generated unwind tables are created, they get created
+# after the __FRAME_END__ terminator, which causes an ld error.
+CRTSTUFF_T_CFLAGS = -fno-unwind-tables

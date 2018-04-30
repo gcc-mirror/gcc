@@ -1,5 +1,5 @@
 /* Tree-based target query functions relating to optabs
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -146,17 +146,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case FMA_EXPR:
       return fma_optab;
 
-    case REDUC_MAX_EXPR:
-      return TYPE_UNSIGNED (type)
-	     ? reduc_umax_scal_optab : reduc_smax_scal_optab;
-
-    case REDUC_MIN_EXPR:
-      return TYPE_UNSIGNED (type)
-	     ? reduc_umin_scal_optab : reduc_smin_scal_optab;
-
-    case REDUC_PLUS_EXPR:
-      return reduc_plus_scal_optab;
-
     case VEC_WIDEN_MULT_HI_EXPR:
       return TYPE_UNSIGNED (type) ?
 	vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
@@ -210,6 +199,12 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ?
 	vec_pack_ufix_trunc_optab : vec_pack_sfix_trunc_optab;
 
+    case VEC_DUPLICATE_EXPR:
+      return vec_duplicate_optab;
+
+    case VEC_SERIES_EXPR:
+      return vec_series_optab;
+
     default:
       break;
     }
@@ -223,6 +218,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	return TYPE_UNSIGNED (type) ? usadd_optab : ssadd_optab;
       return trapv ? addv_optab : add_optab;
 
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       if (TYPE_SATURATING (type))
 	return TYPE_UNSIGNED (type) ? ussub_optab : sssub_optab;
@@ -331,8 +327,8 @@ expand_vec_cond_expr_p (tree value_type, tree cmp_op_type, enum tree_code code)
 			       TYPE_MODE (cmp_op_type)) != CODE_FOR_nothing)
     return true;
 
-  if (GET_MODE_SIZE (value_mode) != GET_MODE_SIZE (cmp_op_mode)
-      || GET_MODE_NUNITS (value_mode) != GET_MODE_NUNITS (cmp_op_mode))
+  if (maybe_ne (GET_MODE_SIZE (value_mode), GET_MODE_SIZE (cmp_op_mode))
+      || maybe_ne (GET_MODE_NUNITS (value_mode), GET_MODE_NUNITS (cmp_op_mode)))
     return false;
 
   if (get_vcond_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type),
@@ -362,7 +358,7 @@ init_tree_optimization_optabs (tree optnode)
   if (tmp_optabs)
     memset (tmp_optabs, 0, sizeof (struct target_optabs));
   else
-    tmp_optabs = ggc_alloc<target_optabs> ();
+    tmp_optabs = ggc_cleared_alloc<target_optabs> ();
 
   /* Generate a new set of optabs into tmp_optabs.  */
   init_all_optabs (tmp_optabs);
@@ -376,3 +372,18 @@ init_tree_optimization_optabs (tree optnode)
       ggc_free (tmp_optabs);
     }
 }
+
+/* Return TRUE if the target has support for vector right shift of an
+   operand of type TYPE.  If OT_TYPE is OPTAB_DEFAULT, check for existence
+   of a shift by either a scalar or a vector.  Otherwise, check only
+   for a shift that matches OT_TYPE.  */
+
+bool
+target_supports_op_p (tree type, enum tree_code code,
+		      enum optab_subtype ot_subtype)
+{
+  optab ot = optab_for_tree_code (code, type, ot_subtype);
+  return (ot != unknown_optab
+	  && optab_handler (ot, TYPE_MODE (type)) != CODE_FOR_nothing);
+}
+

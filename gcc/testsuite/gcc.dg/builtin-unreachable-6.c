@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fab1" } */
+/* { dg-options "-O2 -fdump-tree-fab1 -fno-tree-dominator-opts -fno-tree-vrp" } */
+/* { dg-require-effective-target label_values } */
 
 void
 foo (int b, int c)
@@ -16,5 +17,5 @@ lab2:
   goto *x;
 }
 
-/* { dg-final { scan-tree-dump-times "lab \\\[\[0-9.\]+%\\\]" 1 "fab1" } } */
+/* { dg-final { scan-tree-dump-times "lab:" 1 "fab1" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_unreachable" 1 "fab1" } } */

@@ -6,7 +6,7 @@ struct __normal_iterator
   typedef int*const *_Iterator;
   int*const * _M_current;
   __normal_iterator(const _Iterator& __i) : _M_current(__i){}
-  const _Iterator& base() const {}
+  const _Iterator& base() const { static _Iterator a; return a; }
 };
 struct string { ~string(){} };
 struct vector 
@@ -26,9 +26,10 @@ inline int Painter::for_each(vector &layout, SliceWindowFunc func)
 {
     for (unsigned int window = 0; window < layout.size();++window)
         (this->*func)();
+    return 0;
 }
 int t;
-int Painter::redraw_window(void) {t = 1;}
+int Painter::redraw_window(void) {t = 1; return 0; }
 string t2(int);
 vector *g(const string&);
 void Painter::tcl_command(void)

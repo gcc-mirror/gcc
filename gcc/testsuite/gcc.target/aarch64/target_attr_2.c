@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-O2 -mcpu=cortex-a57 -ftree-vectorize -fdump-tree-vect-all" } */
+/* { dg-options "-O2 -mcpu=cortex-a57 -march=armv8-a -ftree-vectorize -fdump-tree-vect-all" } */
 
 /* The various ways to turn off simd availability should
    turn off vectorization.  */

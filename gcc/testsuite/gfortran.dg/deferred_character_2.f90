@@ -37,29 +37,29 @@ PROGRAM hello
 !    DO i=1,cant_lineas
 !    WRITE(*,*) array_lineas(i)
 !    ENDDO
-     if (any (array_lineas .ne. array_fijo)) call abort
+     if (any (array_lineas .ne. array_fijo)) STOP 1
 
 ! The following are additional tests beyond that of the original.
 !
 ! Check that allocation with source = another deferred length is OK
      allocate (array_copia, source = array_lineas)
-     if (any (array_copia .ne. array_fijo)) call abort
+     if (any (array_copia .ne. array_fijo)) STOP 2
      deallocate (array_lineas, array_copia)
 
 ! Check that allocation with source = a non-deferred length is OK
      allocate (array_lineas, source = array_fijo)
-     if (any (array_lineas .ne. array_fijo)) call abort
+     if (any (array_lineas .ne. array_fijo)) STOP 3
      deallocate (array_lineas)
 
 ! Check that allocation with MOLD = a non-deferred length is OK
      allocate (array_copia, mold = [array_fijo(:)(1:2), array_fijo(:)(1:2)])
-     if (size (array_copia, 1) .ne. 4) call abort
-     if (LEN (array_copia, 1) .ne. 2) call abort
+     if (size (array_copia, 1) .ne. 4) STOP 4
+     if (LEN (array_copia, 1) .ne. 2) STOP 5
 
 ! Check that allocation with MOLD = another deferred length is OK
      allocate (array_lineas, mold = array_copia)
-     if (size (array_copia, 1) .ne. 4) call abort
-     if (LEN (array_copia, 1) .ne. 2) call abort
+     if (size (array_copia, 1) .ne. 4) STOP 6
+     if (LEN (array_copia, 1) .ne. 2) STOP 7
      deallocate (array_lineas, array_copia)
 
 !    READ(*,*)
@@ -75,10 +75,10 @@ contains
           allocate(character(3) :: test(2))
           test(1) = 'abc'
           test(2) = 'def'
-          if (any (test .ne. ['abc', 'def'])) call abort
+          if (any (test .ne. ['abc', 'def'])) STOP 8
 
           test = ['aa','bb','cc']
-          if (any (test .ne. ['aa', 'bb', 'cc'])) call abort
+          if (any (test .ne. ['aa', 'bb', 'cc'])) STOP 9
 
      end subroutine testdefchar
 

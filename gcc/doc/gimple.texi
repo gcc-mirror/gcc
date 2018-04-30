@@ -1,4 +1,4 @@
-@c Copyright (C) 2008-2017 Free Software Foundation, Inc.
+@c Copyright (C) 2008-2018 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -831,6 +831,21 @@ expression to a variable.
 Return true if g is any of the OpenMP codes.
 @end deftypefn
 
+@deftypefn {GIMPLE function} gimple_debug_begin_stmt_p (gimple g)
+Return true if g is a @code{GIMPLE_DEBUG} that marks the beginning of
+a source statement.
+@end deftypefn
+
+@deftypefn {GIMPLE function} gimple_debug_inline_entry_p (gimple g)
+Return true if g is a @code{GIMPLE_DEBUG} that marks the entry
+point of an inlined function.
+@end deftypefn
+
+@deftypefn {GIMPLE function} gimple_debug_nonbind_marker_p (gimple g)
+Return true if g is a @code{GIMPLE_DEBUG} that marks a program location,
+without any variable binding.
+@end deftypefn
+
 @node Manipulating GIMPLE statements
 @section Manipulating GIMPLE statements
 @cindex Manipulating GIMPLE statements
@@ -1310,11 +1325,13 @@ operand is validated with @code{is_gimple_operand}).
 @end deftypefn
 
 
-@deftypefn {GIMPLE function} gcall *gimple_build_call_from_tree (tree call_expr)
-Build a @code{GIMPLE_CALL} from a @code{CALL_EXPR} node.  The arguments and the
-function are taken from the expression directly.  This routine
-assumes that @code{call_expr} is already in GIMPLE form.  That is, its
-operands are GIMPLE values and the function call needs no further
+@deftypefn {GIMPLE function} gcall *gimple_build_call_from_tree (tree call_expr, @
+tree fnptrtype)
+Build a @code{GIMPLE_CALL} from a @code{CALL_EXPR} node.  The arguments
+and the function are taken from the expression directly.  The type of the
+@code{GIMPLE_CALL} is set from the second parameter passed by a caller.
+This routine assumes that @code{call_expr} is already in GIMPLE form.
+That is, its operands are GIMPLE values and the function call needs no further
 simplification.  All the call flags in @code{call_expr} are copied over
 to the new @code{GIMPLE_CALL}.
 @end deftypefn
@@ -1528,10 +1545,12 @@ Set the conditional @code{COND_STMT} to be of the form 'if (1 == 1)'.
 @subsection @code{GIMPLE_DEBUG}
 @cindex @code{GIMPLE_DEBUG}
 @cindex @code{GIMPLE_DEBUG_BIND}
+@cindex @code{GIMPLE_DEBUG_BEGIN_STMT}
+@cindex @code{GIMPLE_DEBUG_INLINE_ENTRY}
 
 @deftypefn {GIMPLE function} gdebug *gimple_build_debug_bind (tree var, @
 tree value, gimple stmt)
-Build a @code{GIMPLE_DEBUG} statement with @code{GIMPLE_DEBUG_BIND} of
+Build a @code{GIMPLE_DEBUG} statement with @code{GIMPLE_DEBUG_BIND}
 @code{subcode}.  The effect of this statement is to tell debug
 information generation machinery that the value of user variable
 @code{var} is given by @code{value} at that point, and to remain with
@@ -1600,6 +1619,29 @@ that the variable becomes unbound.
 @deftypefn {GIMPLE function} bool gimple_debug_bind_has_value_p (gimple stmt)
 Return @code{TRUE} if @code{stmt} binds a user variable to a value,
 and @code{FALSE} if it unbinds the variable.
+@end deftypefn
+
+@deftypefn {GIMPLE function} gimple gimple_build_debug_begin_stmt (tree block, location_t location)
+Build a @code{GIMPLE_DEBUG} statement with
+@code{GIMPLE_DEBUG_BEGIN_STMT} @code{subcode}.  The effect of this
+statement is to tell debug information generation machinery that the
+user statement at the given @code{location} and @code{block} starts at
+the point at which the statement is inserted.  The intent is that side
+effects (e.g. variable bindings) of all prior user statements are
+observable, and that none of the side effects of subsequent user
+statements are.
+@end deftypefn
+
+@deftypefn {GIMPLE function} gimple gimple_build_debug_inline_entry (tree block, location_t location)
+Build a @code{GIMPLE_DEBUG} statement with
+@code{GIMPLE_DEBUG_INLINE_ENTRY} @code{subcode}.  The effect of this
+statement is to tell debug information generation machinery that a
+function call at @code{location} underwent inline substitution, that
+@code{block} is the enclosing lexical block created for the
+substitution, and that at the point of the program in which the stmt is
+inserted, all parameters for the inlined function are bound to the
+respective arguments, and none of the side effects of its stmts are
+observable.
 @end deftypefn
 
 @node @code{GIMPLE_EH_FILTER}

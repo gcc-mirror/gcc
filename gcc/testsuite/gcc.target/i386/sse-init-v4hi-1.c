@@ -17,13 +17,13 @@ check (__m64 x, unsigned short *v, int j)
   union
     {
       __m64 x;
-      unsigned short i[8];
+      unsigned short i[4];
     } u;
   unsigned int i;
 
   u.x = x;
   
-  for (i = 0; i < sizeof (v) / sizeof (v[0]); i++)
+  for (i = 0; i < sizeof (u) / sizeof (v[0]); i++)
     if (i == j)
       {
 	if (v[i] != u.i[i])

@@ -24,7 +24,7 @@ struct multilevel
    struct t t;
    union u u;
    union u v;
-   char *f;
+   char *f; /* { dg-line multilevel_f } */
 };
 
 struct t T0 = { 1 };		/* { dg-warning "missing init" } */
@@ -42,4 +42,4 @@ struct multilevel M =
   { .n = 9 },			/* { dg-bogus "initialization of union" } */
   /* "string here" */
 };				/* { dg-warning "missing init" } */
-/* { dg-message "declared here" "near init" { target *-*-* } 27 } */
+/* { dg-message "declared here" "near init" { target *-*-* } multilevel_f } */

@@ -1,8 +1,8 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do run { target c++1z } }
+// { dg-do run { target c++17 } }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2017 Free Software Foundation, Inc.
+// Copyright (C) 2017-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,7 +79,7 @@ void test01()
 
   try
     {
-      std::scoped_lock<BasicLockable> l(m, std::adopt_lock);
+      std::scoped_lock<BasicLockable> l(std::adopt_lock, m);
     }
   catch (...)
     {
@@ -113,7 +113,7 @@ void test02()
 
   try
     {
-      std::scoped_lock<Lockable<1>, Lockable<2>> l(m1, m2, std::adopt_lock);
+      std::scoped_lock<Lockable<1>, Lockable<2>> l(std::adopt_lock, m1, m2);
       VERIFY( m1.m.locked );
       VERIFY( m2.m.locked );
     }

@@ -46,11 +46,16 @@ TOC_CMD = r'''
 \makeatother
 '''
 
+with open('copyright.tex', 'r') as fd:
+    copyright = fd.read()
+
 TOC = r'''
+\cleardoublepage
+%s
 \cleardoublepage
 \tableofcontents
 \cleardoublepage\pagestyle{plain}
-'''
+''' % copyright
 
 LATEX_HYPHEN = r'''
 \hyphenpenalty=5000

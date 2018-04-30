@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-Wno-pedantic" }
 
-// Copyright (C) 2012-2017 Free Software Foundation, Inc.
+// Copyright (C) 2012-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,8 @@
 
 int main()
 {
-#if _GLIBCXX_HAVE_COMPLEX_H
+#if _GLIBCXX_HAVE_COMPLEX_H && !defined(__STRICT_ANSI__)
+  // This is a GNU extension.
   double _Complex x = .5;
   double _Complex y = cacos (x);
   (void)y;

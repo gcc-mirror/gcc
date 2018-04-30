@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002-2017 Free Software Foundation, Inc.
+## Copyright (C) 2002-2018 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -60,7 +60,7 @@ GLIBCXX_3.4 {
       std::basic_[t-z]*;
       std::ba[t-z]*;
       std::b[b-z]*;
-      std::c[a-g]*;
+      std::cerr;
 #     std::char_traits;
 #     std::c[i-z]*;
       std::c[i-n]*;
@@ -1953,6 +1953,7 @@ GLIBCXX_3.4.23 {
     # basic_string<C, T, A>::basic_string(const basic_string&, size_type, const A&)
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS4_[jmy]RKS3_;
     _ZNSsC[12]ERKSs[jmy]RKSaIcE;
+    # This should have been _[jmy]RKS1_ not _mRKS1_ (PR libstdc++/81092):
     _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_mRKS1_;
 
 #ifndef HAVE_EXCEPTION_PTR_SINCE_GCC46
@@ -1969,10 +1970,17 @@ GLIBCXX_3.4.23 {
 
 GLIBCXX_3.4.24 {
 
+    # These should have been in GLIBCXX_3.4.23 (PR libstdc++/81092):
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_[jy]RKS1_;
+
+} GLIBCXX_3.4.23;
+
+GLIBCXX_3.4.25 {
+
     # std::random_device::_M_getentropy() const
     _ZNKSt13random_device13_M_getentropyEv;
 
-} GLIBCXX_3.4.23;
+} GLIBCXX_3.4.24;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

@@ -6,5 +6,6 @@ int z;
 
 int main() {
   constexpr int& y = x;
-  [=] { z = y; }();
+  // OK, 'y' is not ODR used
+  [] { z = y; }();
 }

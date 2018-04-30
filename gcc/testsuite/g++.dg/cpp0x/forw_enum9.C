@@ -4,7 +4,7 @@
 template<typename T> struct S1
 {
     enum E1 : int;
-    enum class E2 : int;
+    enum class E2 : T;
 };
 
 template<typename T> enum S1<T>::E1 : int { e1 };

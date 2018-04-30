@@ -1,5 +1,5 @@
 /* Demangler for the D programming language
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Written by Iain Buclaw (ibuclaw@gdcproject.org)
 
 This file is part of the libiberty library.
@@ -249,6 +249,22 @@ dlang_hexdigit (const char *mangled, char *ret)
   mangled += 2;
 
   return mangled;
+}
+
+/* Extract the function calling convention from MANGLED and
+   return 1 on success or 0 on failure.  */
+static int
+dlang_call_convention_p (const char *mangled)
+{
+  switch (*mangled)
+    {
+    case 'F': case 'U': case 'V':
+    case 'W': case 'R': case 'Y':
+      return 1;
+
+    default:
+      return 0;
+    }
 }
 
 /* Demangle the calling convention from MANGLED and append it to DECL.
@@ -600,17 +616,22 @@ dlang_type (string *decl, const char *mangled)
     }
     case 'P': /* pointer (T*) */
       mangled++;
-      /* Function pointer types don't include the trailing asterisk.  */
-      switch (*mangled)
+      if (!dlang_call_convention_p (mangled))
 	{
-	case 'F': case 'U': case 'W':
-	case 'V': case 'R': case 'Y':
-	  mangled = dlang_function_type (decl, mangled);
-	  string_append (decl, "function");
+	  mangled = dlang_type (decl, mangled);
+	  string_append (decl, "*");
 	  return mangled;
 	}
-      mangled = dlang_type (decl, mangled);
-      string_append (decl, "*");
+      /* Fall through */
+    case 'F': /* function T (D) */
+    case 'U': /* function T (C) */
+    case 'W': /* function T (Windows) */
+    case 'V': /* function T (Pascal) */
+    case 'R': /* function T (C++) */
+    case 'Y': /* function T (Objective-C) */
+      /* Function pointer types don't include the trailing asterisk.  */
+      mangled = dlang_function_type (decl, mangled);
+      string_append (decl, "function");
       return mangled;
     case 'I': /* ident T */
     case 'C': /* class T */
@@ -843,7 +864,8 @@ dlang_identifier (string *decl, const char *mangled,
 	  else if (strncmp (mangled, "__initZ", len+1) == 0)
 	    {
 	      /* The static initialiser for a given symbol.  */
-	      string_append (decl, "init$");
+	      string_prepend (decl, "initializer for ");
+	      string_setlength (decl, string_length (decl) - 1);
 	      mangled += len;
 	      return mangled;
 	    }
@@ -1025,9 +1047,6 @@ dlang_parse_integer (string *decl, const char *mangled, char type)
 static const char *
 dlang_parse_real (string *decl, const char *mangled)
 {
-  char buffer[64];
-  int len = 0;
-
   /* Handle NAN and +-INF.  */
   if (strncmp (mangled, "NAN", 3) == 0)
     {
@@ -1051,23 +1070,22 @@ dlang_parse_real (string *decl, const char *mangled)
   /* Hexadecimal prefix and leading bit.  */
   if (*mangled == 'N')
     {
-      buffer[len++] = '-';
+      string_append (decl, "-");
       mangled++;
     }
 
   if (!ISXDIGIT (*mangled))
     return NULL;
 
-  buffer[len++] = '0';
-  buffer[len++] = 'x';
-  buffer[len++] = *mangled;
-  buffer[len++] = '.';
+  string_append (decl, "0x");
+  string_appendn (decl, mangled, 1);
+  string_append (decl, ".");
   mangled++;
 
   /* Significand.  */
   while (ISXDIGIT (*mangled))
     {
-      buffer[len++] = *mangled;
+      string_appendn (decl, mangled, 1);
       mangled++;
     }
 
@@ -1075,26 +1093,21 @@ dlang_parse_real (string *decl, const char *mangled)
   if (*mangled != 'P')
     return NULL;
 
-  buffer[len++] = 'p';
+  string_append (decl, "p");
   mangled++;
 
   if (*mangled == 'N')
     {
-      buffer[len++] = '-';
+      string_append (decl, "-");
       mangled++;
     }
 
   while (ISDIGIT (*mangled))
     {
-      buffer[len++] = *mangled;
+      string_appendn (decl, mangled, 1);
       mangled++;
     }
 
-  /* Write out the demangled hexadecimal, rather than trying to
-     convert the buffer into a floating-point value.  */
-  buffer[len] = '\0';
-  len = strlen (buffer);
-  string_appendn (decl, buffer, len);
   return mangled;
 }
 
@@ -1318,22 +1331,6 @@ dlang_value (string *decl, const char *mangled, const char *name, char type)
     }
 
   return mangled;
-}
-
-/* Extract the function calling convention from MANGLED and
-   return 1 on success or 0 on failure.  */
-static int
-dlang_call_convention_p (const char *mangled)
-{
-  switch (*mangled)
-    {
-    case 'F': case 'U': case 'V':
-    case 'W': case 'R': case 'Y':
-      return 1;
-
-    default:
-      return 0;
-    }
 }
 
 /* Extract and demangle the symbol in MANGLED and append it to DECL.

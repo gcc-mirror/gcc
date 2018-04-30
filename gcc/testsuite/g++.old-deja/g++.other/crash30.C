@@ -8,7 +8,7 @@ struct foo
 };
 
 void foo::x() throw(bar)	// { dg-error "" } parse error
-{				// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } .-1 }
+{				// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } .-1 }
 }
 
 void bar()

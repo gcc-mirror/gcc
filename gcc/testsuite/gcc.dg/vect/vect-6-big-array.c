@@ -12,8 +12,6 @@ float e[N] = {0};
 float b[N];
 float c[N];
 
-volatile int y = 0;
-
 __attribute__ ((noinline))
 int main1 ()
 {
@@ -25,17 +23,13 @@ int main1 ()
       c[i] = i;
       results1[i] = 0;
       results2[i] = 0;
-      /* Avoid vectorization.  */
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
   for (i=0; i<N/2; i++)
     {
       results1[i] = b[i+N/2] * c[i+N/2] - b[i] * c[i];
       results2[i+N/2] = b[i] * c[i+N/2] + b[i+N/2] * c[i];
-      /* Avoid vectorization.  */
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   for (i = 0; i < N/2; i++)

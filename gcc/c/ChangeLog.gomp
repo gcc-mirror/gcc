@@ -48,7 +48,7 @@
 	* c-parser.c (c_parser_omp_target_data): Allow target data
 	with only use_device_ptr clauses.
 
-Copyright (C) 2017 Free Software Foundation, Inc.
+Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

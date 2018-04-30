@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -168,10 +168,11 @@ enum cpp_ttype
 #undef TK
 
 /* C language kind, used when calling cpp_create_reader.  */
-enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11,
-	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC11,
+enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17,
+	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC11, CLK_STDC17,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
-	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX1Z, CLK_CXX1Z, CLK_ASM};
+	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
+	     CLK_GNUCXX2A, CLK_CXX2A, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -477,6 +478,9 @@ struct cpp_options
   /* Nonzero for C++ 2014 Standard digit separators.  */
   unsigned char digit_separators;
 
+  /* Nonzero for C++2a __VA_OPT__ feature.  */
+  unsigned char va_opt;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
@@ -609,6 +613,19 @@ struct cpp_callbacks
 
   /* Callback for providing suggestions for misspelled directives.  */
   const char *(*get_suggestion) (cpp_reader *, const char *, const char *const *);
+
+  /* Callback for when a comment is encountered, giving the location
+     of the opening slash, a pointer to the content (which is not
+     necessarily 0-terminated), and the length of the content.
+     The content contains the opening slash-star (or slash-slash),
+     and for C-style comments contains the closing star-slash.  For
+     C++-style comments it does not include the terminating newline.  */
+  void (*comment) (cpp_reader *, source_location, const unsigned char *,
+		   size_t);
+
+  /* Callback for filename remapping in __FILE__ and __BASE_FILE__ macro
+     expansions.  */
+  const char *(*remap_filename) (const char*);
 };
 
 #ifdef VMS
@@ -702,7 +719,7 @@ enum cpp_builtin_type
   BT_COUNTER,			/* `__COUNTER__' */
   BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
   BT_FIRST_USER,		/* User defined builtin macros.  */
-  BT_LAST_USER = BT_FIRST_USER + 31
+  BT_LAST_USER = BT_FIRST_USER + 63
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -876,6 +893,7 @@ extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 extern bool cpp_fun_like_macro_p (cpp_hashnode *);
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);
+extern source_location cpp_macro_definition_location (cpp_hashnode *);
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 
@@ -1086,9 +1104,9 @@ extern bool cpp_error_at (cpp_reader * pfile, int level,
 			  source_location src_loc, const char *msgid, ...)
   ATTRIBUTE_PRINTF_4;
 
-extern bool cpp_error_at_richloc (cpp_reader * pfile, int level,
-				  rich_location *richloc, const char *msgid,
-				  ...)
+extern bool cpp_error_at (cpp_reader * pfile, int level,
+			  rich_location *richloc, const char *msgid,
+			  ...)
   ATTRIBUTE_PRINTF_4;
 
 /* In lex.c */

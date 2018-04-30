@@ -1,6 +1,6 @@
 // TR2 <bool_set> support files -*- C++ -*-
 
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,10 +33,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr2
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr2
+{
   bool_set::_Bool_set_val
   bool_set::_S_not[4] =
   { _S_true_, _S_false, _S_indet, _S_empty };
@@ -68,9 +68,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { _S_false, _S_true_, _S_indet, _S_empty },
     { _S_indet, _S_indet, _S_indet, _S_empty },
     { _S_empty, _S_empty, _S_empty, _S_empty } };
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 //  I object to these things.

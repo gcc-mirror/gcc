@@ -1,5 +1,5 @@
 // { dg-do assemble }
-// { dg-xfail-if "" { arm-*-pe } { "*" } { "" } }
+// { dg-xfail-if "" { arm-*-pe } }
 // { dg-options "-fexceptions" }
 
 int atoi(const char *);

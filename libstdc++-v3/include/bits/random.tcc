@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,13 +34,13 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /*
    * (Further) implementation-space details.
    */
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     // General case for x = (ax + c) mod m -- use Schrage's algorithm
     // to avoid integer overflow.
     //
@@ -89,10 +89,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	return __result;
       }
 
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     constexpr _UIntType
@@ -1304,6 +1301,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    const double __c2 = __param._M_c2b + __c1;
 	    const double __c3 = __c2 + 1;
 	    const double __c4 = __c3 + 1;
+	    // 1 / 78
+	    const double __178 = 0.0128205128205128205128205128205128L;
 	    // e^(1 / 78)
 	    const double __e178 = 1.0129030479320018583185514777512983L;
 	    const double __c5 = __c4 + __e178;
@@ -1343,7 +1342,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		else if (__u <= __c4)
 		  __x = 0;
 		else if (__u <= __c5)
-		  __x = 1;
+		  {
+		    __x = 1;
+		    // Only in the Errata, see libstdc++/83237.
+		    __w = __178;
+		  }
 		else
 		  {
 		    const double __v = -std::log(1.0 - __aurng());

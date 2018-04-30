@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -381,31 +381,14 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 
-/* On the m68k, ordinary registers hold 32 bits worth;
-   for the 68881 registers, a single register is always enough for
-   anything that can be stored in them at all.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-  ((REGNO) >= 16 ? GET_MODE_NUNITS (MODE)	\
-   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
 /* A C expression that is nonzero if hard register NEW_REG can be
    considered for use as a rename register for OLD_REG register.  */
 
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   m68k_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  m68k_regno_mode_ok ((REGNO), (MODE))
-
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) \
   m68k_secondary_reload_class (CLASS, MODE, X)
-
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
-  (! TARGET_HARD_FLOAT					\
-   || ((GET_MODE_CLASS (MODE1) == MODE_FLOAT		\
-	|| GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)	\
-       == (GET_MODE_CLASS (MODE2) == MODE_FLOAT		\
-	   || GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT)))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -484,11 +467,8 @@ extern enum reg_class regno_reg_class[];
 
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
-#define STARTING_FRAME_OFFSET 0
 
-/* On the 680x0, sp@- in a byte insn really pushes a word.
-   On the ColdFire, sp@- in a byte insn pushes just a byte.  */
-#define PUSH_ROUNDING(BYTES) (TARGET_COLDFIRE ? BYTES : ((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) m68k_push_rounding (BYTES)
 
 #define FIRST_PARM_OFFSET(FNDECL) 8
 
@@ -681,8 +661,6 @@ __transfer_from_trampoline ()					\
 #define DEFAULT_SIGNED_CHAR 1
 #define MOVE_MAX 4
 #define SLOW_BYTE_ACCESS 0
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* The 68020 BFFFO and ColdFire FF1 instructions return 32 for zero. */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)

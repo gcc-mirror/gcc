@@ -266,7 +266,8 @@ compatible.
     <listitem><para>GCC 5.1.0: libstdc++.so.6.0.21</para></listitem>
     <listitem><para>GCC 6.1.0: libstdc++.so.6.0.22</para></listitem>
     <listitem><para>GCC 7.1.0: libstdc++.so.6.0.23</para></listitem>
-    <listitem><para>GCC 8.0.0: libstdc++.so.6.0.24</para></listitem>
+    <listitem><para>GCC 7.2.0: libstdc++.so.6.0.24</para></listitem>
+    <listitem><para>GCC 8.0.0: libstdc++.so.6.0.25</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -335,7 +336,8 @@ compatible.
     <listitem><para>GCC 5.1.0: GLIBCXX_3.4.21, CXXABI_1.3.9</para></listitem>
     <listitem><para>GCC 6.1.0: GLIBCXX_3.4.22, CXXABI_1.3.10</para></listitem>
     <listitem><para>GCC 7.1.0: GLIBCXX_3.4.23, CXXABI_1.3.11</para></listitem>
-    <listitem><para>GCC 8.0.0: GLIBCXX_3.4.24, CXXABI_1.3.11</para></listitem>
+    <listitem><para>GCC 7.2.0: GLIBCXX_3.4.24, CXXABI_1.3.11</para></listitem>
+    <listitem><para>GCC 8.0.0: GLIBCXX_3.4.25, CXXABI_1.3.11</para></listitem>
     </itemizedlist>
     </listitem>
 
@@ -569,6 +571,9 @@ compatible.
     <listitem><para>GCC 3.4.x: include/c++/3.4.x</para></listitem>
     <listitem><para>GCC 4.x.y: include/c++/4.x.y</para></listitem>
     <listitem><para>GCC 5.x.0: include/c++/5.x.0</para></listitem>
+    <listitem><para>GCC 6.x.0: include/c++/6.x.0</para></listitem>
+    <listitem><para>GCC 7.x.0: include/c++/7.x.0</para></listitem>
+    <listitem><para>GCC 8.x.0: include/c++/8.x.0</para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
@@ -1138,7 +1143,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://docs.oracle.com/cd/E23824_01/html/819-0690/index.html">
+	      xlink:href="https://docs.oracle.com/cd/E23824_01/html/819-0690/index.html">
 	Linker and Libraries Guide (document 819-0690)
 	</link>
       </title>
@@ -1148,7 +1153,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://docs.oracle.com/cd/E19422-01/819-3689/">
+	      xlink:href="https://docs.oracle.com/cd/E19422-01/819-3689/">
       Sun Studio 11: C++ Migration Guide (document 819-3689)
 	</link>
       </title>

@@ -46,7 +46,7 @@ CONTAINS
       if (iostat.ne.0) iomsg = "Fail PWF DTzeroth"
     endif
     if (iotype.eq."DTtwo") then
-      if (size(vlist).ne.2) call abort
+      if (size(vlist).ne.2) STOP 1
       WRITE(udfmt,'(A,A,I1,A,I1,A)') '(', 'A', vlist(1),',I', vlist(2), ')'
       WRITE(unit, FMT='(A8,I2)') dtv%name, dtv%age
       if (iostat.ne.0) iomsg = "Fail PWF DTtwo"
@@ -91,7 +91,7 @@ CONTAINS
       if (iostat.ne.0) iomsg = "Fail PWF DTzeroth"
     endif
     if (iotype.eq."DTtwo") then
-      if (size(vlist).ne.2) call abort
+      if (size(vlist).ne.2) STOP 2
       WRITE(udfmt,'(A,A,I1,A,I1,A)') '(', 'A', vlist(1),',I', vlist(2), ')'
       READ(unit, FMT='(A8,I2)') dtv%name, dtv%age
       if (iostat.ne.0) iomsg = "Fail PWF DTtwo"
@@ -129,12 +129,12 @@ PROGRAM test
   astring = "FAILURE"
   write (10, "(DT'zeroth',3x, DT'three'(11,4,10),11x,DT'two'(8,2))", &
          & iostat=myiostat, iomsg=astring) member, chairman, member
-  if (myiostat.ne.0) call abort
-  if (astring.ne."SUCCESS") call abort
+  if (myiostat.ne.0) STOP 3
+  if (astring.ne."SUCCESS") STOP 4
   astring = "FAILURE"
   write (10, *, iostat=myiostat, iomsg=astring) member, chairman, member
-  if (myiostat.ne.0) call abort
-  if (astring.ne."SUCCESS") call abort
+  if (myiostat.ne.0) STOP 5
+  if (astring.ne."SUCCESS") STOP 6
   write(10,*) ! See note below
   rewind(10)
   chairman%name="bogus1"
@@ -143,10 +143,10 @@ PROGRAM test
   member%age=66
   astring = "FAILURE"
   read(10,"(DT'zeroth',3x, DT'three'(11,4,10),11x,DT'two'(8,2))") member, chairman, member
-  if (member%name.ne."George") call abort
-  if (chairman%name.ne."    Charlie") call abort
-  if (member%age.ne.42) call abort
-  if (chairman%age.ne.62) call abort
+  if (member%name.ne."George") STOP 7
+  if (chairman%name.ne."    Charlie") STOP 8
+  if (member%age.ne.42) STOP 9
+  if (chairman%age.ne.62) STOP 10
   chairman%name="bogus1"
   chairman%age=99
   member%name="bogus2"
@@ -156,9 +156,9 @@ PROGRAM test
   ! The user defined procedure reads to the end of the line/file, then finalizing the parent
   ! reads past, so we wrote a blank line above. User needs to address these nuances in their
   ! procedures. (subject to interpretation)
-  if (astring.ne."SUCCESS") call abort
-  if (member%name.ne."George") call abort
-  if (chairman%name.ne."Charlie") call abort
-  if (member%age.ne.42) call abort
-  if (chairman%age.ne.62) call abort
+  if (astring.ne."SUCCESS") STOP 11
+  if (member%name.ne."George") STOP 12
+  if (chairman%name.ne."Charlie") STOP 13
+  if (member%age.ne.42) STOP 14
+  if (chairman%age.ne.62) STOP 15
 END PROGRAM test

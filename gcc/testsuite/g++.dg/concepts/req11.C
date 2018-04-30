@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 // Check that we can evaluate constant requires-expressions
 // as constant expressions, for the curious case when they

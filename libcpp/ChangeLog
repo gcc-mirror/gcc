@@ -1,3 +1,236 @@
+2018-03-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (compare): New function on linenum_type.
+
+2018-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR preprocessor/84517
+	* lex.c (is_macro_not_literal_suffix): New function.
+	(lex_raw_string, lex_string): Use is_macro_not_literal_suffix to
+	decide when to issue -Wliteral-suffix warnings.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/82939
+	* line-map.c (linemap_init): Avoid broken value-init when compiling
+	with GCC 4.2.
+
+2018-02-15  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/83063 - __VA_OPT__ and ##
+	PR preprocessor/83708
+	* macro.c (vaopt_state): Reorder m_last_was_paste before m_state.
+	(vaopt_state::vaopt_state): Adjust.
+	(vaopt_state::update_flags): Add BEGIN and END.
+	(vaopt_state::update): Return them.
+	(copy_paste_flag): Factor out of replace_args.
+	(last_token_is): New.
+	(replace_args): Handle BEGIN and END.  Avoid padding there.
+	(tokens_buff_last_token_ptr): Return NULL if no tokens.
+
+2018-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/69869
+	* traditional.c (skip_macro_block_comment): Return bool, true if
+	the macro block comment is unterminated.
+	(copy_comment): Use return value from skip_macro_block_comment instead
+	of always false.
+
+2018-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (enum cpp_builtin_type): Change BT_LAST_USER from
+	BT_FIRST_USER + 31 to BT_FIRST_USER + 63.
+
+2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
+
+        PR other/70268
+        * include/cpplib.h (cpp_callbacks::remap_filename): New callback.
+        * macro.c (_cpp_builtin_macro_text): Call remap_filename for
+        __FILE__ and __BASE_FILE__.
+
+2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* lex.c (search_line_fast): Remove illegal coercion of an
+	unaligned pointer value to vector pointer type and replace with
+	use of __builtin_vec_vsx_ld () built-in function, which operates
+	on unaligned pointer values.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-12-20  Michael Weiser  <michael.weiser@gmx.de>
+
+	PR preprocessor/83492
+	* lex.c (search_line_fast) [__ARM_NEON && __ARM_64BIT_STATE]:
+	Fix selection of big-endian shift parameters by using
+	__ARM_BIG_ENDIAN.
+
+2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* internal.h (maybe_print_line): Change signature.
+
+2017-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79228
+	* expr.c (interpret_float_suffix): Avoid memcmp.
+	(interpret_int_suffix): Likewise.  Don't check for if.
+
+2017-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79228 - extensions hide C++14 complex literal operators
+	* expr.c (interpret_float_suffix): Ignore 'i' in C++14 and up.
+	(interpret_int_suffix): Likewise.
+
+2017-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82050
+	* include/line-map.h (LINE_MAP_MAX_COLUMN_NUMBER): Move here.
+	* line-map.c (LINE_MAP_MAX_COLUMN_NUMBER): ...from here.
+	(rich_location::maybe_add_fixit): Reject fix-it hints in which
+	the start column exceeds the next column.
+
+2017-11-20  Eric Gallager  <egall@gwmail.gwu.edu>
+
+	PR preprocessor/81794
+	* macro.c (check_trad_stringification): Have warning be controlled
+	by -Wtraditional.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72786
+	* include/cpplib.h (cpp_macro_definition_location): New decl.
+	* macro.c (cpp_macro_definition): New function.
+
+2017-11-13  Tom Tromey  <tom@tromey.com>
+
+	* pch.c (cpp_read_state): Set n__VA_OPT__.
+	* macro.c (vaopt_state): New class.
+	(_cpp_arguments_ok): Check va_opt flag.
+	(replace_args, create_iso_definition): Use vaopt_state.
+	* lex.c (lex_identifier_intern): Possibly issue errors for
+	__VA_OPT__.
+	(lex_identifier): Likewise.
+	(maybe_va_opt_error): New function.
+	* internal.h (struct lexer_state) <va_args_ok>: Update comment.
+	(struct spec_nodes) <n__VA_OPT__>: New field.
+	* init.c (struct lang_flags) <va_opt>: New field.
+	(lang_defaults): Add entries for C++2A.  Update all entries for
+	va_opt.
+	(cpp_set_lang): Initialize va_opt.
+	* include/cpplib.h (struct cpp_options) <va_opt>: New field.
+	* identifiers.c (_cpp_init_hashtable): Initialize n__VA_OPT__.
+
+2017-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (linenum_type): Move this typedef and the
+	comment describing column numbering to near the top of the file.
+
+2017-11-06  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+
+	PR c++/80955
+	* lex.c (lex_string): When checking for a valid macro for the
+	warning related to -Wliteral-suffix (CPP_W_LITERAL_SUFFIX),
+	check that the macro name does not start with an underscore
+	before calling is_macro().
+
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* lex.c (BUF_APPEND): Remove semicolon after
+	"do {} while (0)".
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (_cpp_handle_directive): Update for renaming of
+	cpp_error_at_richloc to cpp_error_at.
+	* errors.c (cpp_diagnostic_at_richloc): Rename to...
+	(cpp_diagnostic_at): ...this, dropping the location_t-based
+	implementation.
+	(cpp_diagnostic): Update for removal of location_t-based
+	cpp_diagnostic_at.
+	(cpp_error_at): Likewise.
+	(cpp_error_at_richloc): Rename to...
+	(cpp_error_at): ...this, and update for renaming of
+	cpp_diagnostic_at_richloc.
+	* include/cpplib.h (cpp_error_at_richloc): Rename to...
+	(cpp_error_at): ...this.
+
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUC17 and CLK_STDC17.
+	* init.c (lang_defaults): Add GNUC17 and STDC17 data.
+	(cpp_init_builtins): Handle C17 value of __STDC_VERSION__.
+
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/82506
+	* macro.c (cpp_quote_string): Escape raw LFs.
+
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* include/cpplib.h (c_lang): Add CXX2A and GNUCXX2A.
+	* init.c (lang_defaults): Add rows for CXX2A and GNUCXX2A.
+	(cpp_init_builtins): Set __cplusplus to 201709L for C++2a.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (enum c_lang): Rename CLK_GNUCXX1Z
+	to CLK_GNUCXX17 and CLK_CXX1Z to CLK_CXX17.
+	* init.c (lang_defaults, cpp_init_builtins): Likewise.
+	* expr.c (cpp_classify_number): Use C++17 instead of C++1z
+	in diagnostics.
+
+2017-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79300
+	* line-map.c (linemap_macro_loc_to_def_point): Preserve range
+	information for macro expansions by delaying resolving ad-hoc
+	locations until within the loop.
+
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79300
+	* include/line-map.h (enum location_aspect): New enum.
+	(linemap_client_expand_location_to_spelling_point): Add
+	enum location_aspect param.
+	* line-map.c (rich_location::get_expanded_location): Update for
+	new param of linemap_client_expand_location_to_spelling_point.
+	(rich_location::maybe_add_fixit): Likewise.
+	(fixit_hint::affects_line_p): Likewise.
+
+2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* line-map.c (location_adhoc_data_update): Perform addition in
+	uintptr_t type rather than char * type.  Read *data using
+	ptrdiff_t type instead of int64_t.
+	(get_combined_adhoc_loc): Change offset type to ptrdiff_t from
+	int64_t.
+
+2017-06-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class rich_location): Document that attempts
+	to delete or replace a range *affecting* multiple lines will fail.
+	* line-map.c (rich_location::maybe_add_fixit): Implement this
+	restriction.
+
+2017-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h
+	(rich_location::fixits_cannot_be_auto_applied): New method.
+	(rich_location::fixits_can_be_auto_applied_p): New accessor.
+	(rich_location::m_fixits_cannot_be_auto_applied): New field.
+	* line-map.c (rich_location::rich_location): Initialize new field.
+
+2017-06-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Add "comment"
+	callback.
+	* lex.c (_cpp_lex_direct): Call the comment callback if non-NULL.
+
 2017-05-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (class rich_location): Update description of
@@ -532,9 +765,9 @@
 	* init.c (cpp_init_source_date_epoch): New function.
 	* internal.h: Added source_date_epoch variable to struct
 	cpp_reader to store a reproducible date.
-	* macro.c (_cpp_builtin_macro_text): Set pfile->date timestamp from 
-	pfile->source_date_epoch instead of localtime if source_date_epoch is 
-	set, to be used for __DATE__ and __TIME__ macros to help reproducible 
+	* macro.c (_cpp_builtin_macro_text): Set pfile->date timestamp from
+	pfile->source_date_epoch instead of localtime if source_date_epoch is
+	set, to be used for __DATE__ and __TIME__ macros to help reproducible
 	builds.
 
 2016-04-13  Bernd Schmidt  <bschmidt@redhat.com>
@@ -5071,7 +5304,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2017 Free Software Foundation, Inc.
+Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -59,10 +59,10 @@ program reduction_2
      vresult = vresult + array(i)
   end do
 
-  if (rg .ne. vresult) call abort
-  if (rw .ne. vresult) call abort
-  if (rv .ne. vresult) call abort
-  if (rc .ne. vresult) call abort
+  if (rg .ne. vresult) STOP 1
+  if (rw .ne. vresult) STOP 2
+  if (rv .ne. vresult) STOP 3
+  if (rc .ne. vresult) STOP 4
 
   !
   ! '*' reductions
@@ -107,10 +107,10 @@ program reduction_2
      vresult = vresult * array(i)
   end do
 
-  if (abs (rg - vresult) .ge. e) call abort
-  if (abs (rw - vresult) .ge. e) call abort
-  if (abs (rv - vresult) .ge. e) call abort
-  if (abs (rc - vresult) .ge. e) call abort
+  if (abs (rg - vresult) .ge. e) STOP 5
+  if (abs (rw - vresult) .ge. e) STOP 6
+  if (abs (rv - vresult) .ge. e) STOP 7
+  if (abs (rc - vresult) .ge. e) STOP 8
 
   !
   ! 'max' reductions
@@ -155,10 +155,10 @@ program reduction_2
      vresult = max (vresult, array(i))
   end do
 
-  if (abs (rg - vresult) .ge. e) call abort
-  if (abs (rw - vresult) .ge. e) call abort
-  if (abs (rg - vresult) .ge. e) call abort
-  if (abs (rc - vresult) .ge. e) call abort
+  if (abs (rg - vresult) .ge. e) STOP 9
+  if (abs (rw - vresult) .ge. e) STOP 10
+  if (abs (rg - vresult) .ge. e) STOP 11
+  if (abs (rc - vresult) .ge. e) STOP 12
 
   !
   ! 'min' reductions
@@ -203,10 +203,10 @@ program reduction_2
      vresult = min (vresult, array(i))
   end do
 
-  if (rg .ne. vresult) call abort
-  if (rv .ne. vresult) call abort
-  if (rw .ne. vresult) call abort
-  if (rc .ne. vresult) call abort
+  if (rg .ne. vresult) STOP 13
+  if (rv .ne. vresult) STOP 14
+  if (rw .ne. vresult) STOP 15
+  if (rc .ne. vresult) STOP 16
 
   !
   ! '.and.' reductions
@@ -251,10 +251,10 @@ program reduction_2
      lvresult = lvresult .and. (array(i) .ge. 5)
   end do
 
-  if (lrg .neqv. lvresult) call abort
-  if (lrw .neqv. lvresult) call abort
-  if (lrv .neqv. lvresult) call abort
-  if (lrc .neqv. lvresult) call abort
+  if (lrg .neqv. lvresult) STOP 17
+  if (lrw .neqv. lvresult) STOP 18
+  if (lrv .neqv. lvresult) STOP 19
+  if (lrc .neqv. lvresult) STOP 20
 
   !
   ! '.or.' reductions
@@ -299,10 +299,10 @@ program reduction_2
      lvresult = lvresult .or. (array(i) .ge. 5)
   end do
 
-  if (lrg .neqv. lvresult) call abort
-  if (lrw .neqv. lvresult) call abort
-  if (lrv .neqv. lvresult) call abort
-  if (lrc .neqv. lvresult) call abort
+  if (lrg .neqv. lvresult) STOP 21
+  if (lrw .neqv. lvresult) STOP 22
+  if (lrv .neqv. lvresult) STOP 23
+  if (lrc .neqv. lvresult) STOP 24
 
   !
   ! '.eqv.' reductions
@@ -347,10 +347,10 @@ program reduction_2
      lvresult = lvresult .eqv. (array(i) .ge. 5)
   end do
 
-  if (lrg .neqv. lvresult) call abort
-  if (lrw .neqv. lvresult) call abort
-  if (lrv .neqv. lvresult) call abort
-  if (lrc .neqv. lvresult) call abort
+  if (lrg .neqv. lvresult) STOP 25
+  if (lrw .neqv. lvresult) STOP 26
+  if (lrv .neqv. lvresult) STOP 27
+  if (lrc .neqv. lvresult) STOP 28
 
   !
   ! '.neqv.' reductions
@@ -395,8 +395,8 @@ program reduction_2
      lvresult = lvresult .neqv. (array(i) .ge. 5)
   end do
 
-  if (lrg .neqv. lvresult) call abort
-  if (lrw .neqv. lvresult) call abort
-  if (lrv .neqv. lvresult) call abort
-  if (lrc .neqv. lvresult) call abort
+  if (lrg .neqv. lvresult) STOP 29
+  if (lrw .neqv. lvresult) STOP 30
+  if (lrv .neqv. lvresult) STOP 31
+  if (lrc .neqv. lvresult) STOP 32
 end program reduction_2

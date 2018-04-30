@@ -32,5 +32,5 @@ c        write(0,*) "interation ",j,": ",len_trim(fmtstr2)
         loopcounter = j
       enddo
       close(10)
-      if (loopcounter /= 74) call abort
+      if (loopcounter /= 74) STOP 1
       end

@@ -22,19 +22,9 @@ unsigned int test2u(unsigned int x)
   return (x ^ 0x1234) ^ (unsigned int)INT_MIN;
 }
 
-int test3(int x)
-{
-  return (x + INT_MIN) ^ 0x1234;
-}
-
 unsigned int test3u(unsigned int x)
 {
   return (x + (unsigned int)INT_MIN) ^ 0x1234;
-}
-
-int test4(int x)
-{
-  return (x ^ 0x1234) + INT_MIN;
 }
 
 unsigned int test4u(unsigned int x)
@@ -42,19 +32,9 @@ unsigned int test4u(unsigned int x)
   return (x ^ 0x1234) + (unsigned int)INT_MIN;
 }
 
-int test5(int x)
-{
-  return (x - INT_MIN) ^ 0x1234;
-}
-
 unsigned int test5u(unsigned int x)
 {
   return (x - (unsigned int)INT_MIN) ^ 0x1234;
-}
-
-int test6(int x)
-{
-  return (x ^ 0x1234) - INT_MIN;
 }
 
 unsigned int test6u(unsigned int x)
@@ -90,25 +70,11 @@ unsigned int test8u(unsigned int x)
   return (x ^ y) ^ z;
 }
 
-int test9(int x)
-{
-  int y = INT_MIN;
-  int z = 0x1234;
-  return (x + y) ^ z;
-}
-
 unsigned int test9u(unsigned int x)
 {
   unsigned int y = (unsigned int)INT_MIN;
   unsigned int z = 0x1234;
   return (x + y) ^ z;
-}
-
-int test10(int x)
-{
-  int y = 0x1234;
-  int z = INT_MIN;
-  return (x ^ y) + z;
 }
 
 unsigned int test10u(unsigned int x)
@@ -118,25 +84,11 @@ unsigned int test10u(unsigned int x)
   return (x ^ y) + z;
 }
 
-int test11(int x)
-{
-  int y = INT_MIN;
-  int z = 0x1234;
-  return (x - y) ^ z;
-}
-
 unsigned int test11u(unsigned int x)
 {
   unsigned int y = (unsigned int)INT_MIN;
   unsigned int z = 0x1234;
   return (x - y) ^ z;
-}
-
-int test12(int x)
-{
-  int y = 0x1234;
-  int z = INT_MIN;
-  return (x ^ y) - z;
 }
 
 unsigned int test12u(unsigned int x)
@@ -153,25 +105,9 @@ void test(int a, int b)
     abort();
   if (test2(a) != b)
     abort();
-  if (test3(a) != b)
-    abort();
-  if (test4(a) != b)
-    abort();
-  if (test5(a) != b)
-    abort();
-  if (test6(a) != b)
-    abort();
   if (test7(a) != b)
     abort();
   if (test8(a) != b)
-    abort();
-  if (test9(a) != b)
-    abort();
-  if (test10(a) != b)
-    abort();
-  if (test11(a) != b)
-    abort();
-  if (test12(a) != b)
     abort();
 }
 

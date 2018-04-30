@@ -12,6 +12,8 @@ extern void *memcpy (void *, const void *, size_t)
   __asm (ASMNAME ("my_memcpy"));
 extern void bcopy (const void *, void *, size_t)
   __asm (ASMNAME ("my_bcopy"));
+extern void *memmove (void *, const void *, size_t)
+  __asm (ASMNAME ("my_memmove"));
 extern void *memset (void *, int, size_t)
   __asm (ASMNAME ("my_memset"));
 extern void bzero (void *, size_t)

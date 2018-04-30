@@ -7,6 +7,6 @@ struct S {
 S s;
 
 void f() {
-  ++s.x = false; // { dg-warning "deprecated" "" { target { ! c++1z } } }
-  // { dg-error "forbidden" "" { target c++1z } .-1 }
+  ++s.x = false; // { dg-warning "deprecated" "" { target { ! c++17 } } }
+  // { dg-error "forbidden" "" { target c++17 } .-1 }
 }

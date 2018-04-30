@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Internet protocol family sockets
-
 package net
 
 import (
 	"context"
+	"sync"
 )
 
 // BUG(rsc,mikio): On DragonFly BSD and OpenBSD, listening on the
@@ -17,25 +16,41 @@ import (
 // both address families are to be supported.
 // See inet6(4) for details.
 
-var (
-	// supportsIPv4 reports whether the platform supports IPv4
-	// networking functionality.
-	supportsIPv4 bool
+type ipStackCapabilities struct {
+	sync.Once             // guards following
+	ipv4Enabled           bool
+	ipv6Enabled           bool
+	ipv4MappedIPv6Enabled bool
+}
 
-	// supportsIPv6 reports whether the platform supports IPv6
-	// networking functionality.
-	supportsIPv6 bool
+var ipStackCaps ipStackCapabilities
 
-	// supportsIPv4map reports whether the platform supports
-	// mapping an IPv4 address inside an IPv6 address at transport
-	// layer protocols. See RFC 4291, RFC 4038 and RFC 3493.
-	supportsIPv4map bool
-)
+// supportsIPv4 reports whether the platform supports IPv4 networking
+// functionality.
+func supportsIPv4() bool {
+	ipStackCaps.Once.Do(ipStackCaps.probe)
+	return ipStackCaps.ipv4Enabled
+}
+
+// supportsIPv6 reports whether the platform supports IPv6 networking
+// functionality.
+func supportsIPv6() bool {
+	ipStackCaps.Once.Do(ipStackCaps.probe)
+	return ipStackCaps.ipv6Enabled
+}
+
+// supportsIPv4map reports whether the platform supports mapping an
+// IPv4 address inside an IPv6 address at transport layer
+// protocols. See RFC 4291, RFC 4038 and RFC 3493.
+func supportsIPv4map() bool {
+	ipStackCaps.Once.Do(ipStackCaps.probe)
+	return ipStackCaps.ipv4MappedIPv6Enabled
+}
 
 // An addrList represents a list of network endpoint addresses.
 type addrList []Addr
 
-// isIPv4 returns true if the Addr contains an IPv4 address.
+// isIPv4 reports whether addr contains an IPv4 address.
 func isIPv4(addr Addr) bool {
 	switch addr := addr.(type) {
 	case *TCPAddr:
@@ -46,6 +61,28 @@ func isIPv4(addr Addr) bool {
 		return addr.IP.To4() != nil
 	}
 	return false
+}
+
+// isNotIPv4 reports whether addr does not contain an IPv4 address.
+func isNotIPv4(addr Addr) bool { return !isIPv4(addr) }
+
+// forResolve returns the most appropriate address in address for
+// a call to ResolveTCPAddr, ResolveUDPAddr, or ResolveIPAddr.
+// IPv4 is preferred, unless addr contains an IPv6 literal.
+func (addrs addrList) forResolve(network, addr string) Addr {
+	var want6 bool
+	switch network {
+	case "ip":
+		// IPv6 literal (addr does NOT contain a port)
+		want6 = count(addr, ':') > 0
+	case "tcp", "udp":
+		// IPv6 literal. (addr contains a port, so look for '[')
+		want6 = count(addr, '[') > 0
+	}
+	if want6 {
+		return addrs.first(isNotIPv4)
+	}
+	return addrs.first(isIPv4)
 }
 
 // first returns the first address which satisfies strategy, or if
@@ -107,10 +144,14 @@ func ipv6only(addr IPAddr) bool {
 }
 
 // SplitHostPort splits a network address of the form "host:port",
-// "[host]:port" or "[ipv6-host%zone]:port" into host or
-// ipv6-host%zone and port. A literal address or host name for IPv6
-// must be enclosed in square brackets, as in "[::1]:80",
-// "[ipv6-host]:http" or "[ipv6-host%zone]:80".
+// "host%zone:port", "[host]:port" or "[host%zone]:port" into host or
+// host%zone and port.
+//
+// A literal IPv6 address in hostport must be enclosed in square
+// brackets, as in "[::1]:80", "[::1%lo0]:80".
+//
+// See func Dial for a description of the hostport parameter, and host
+// and port results.
 func SplitHostPort(hostport string) (host, port string, err error) {
 	const (
 		missingPort   = "missing port in address"
@@ -154,9 +195,6 @@ func SplitHostPort(hostport string) (host, port string, err error) {
 		if byteIndex(host, ':') >= 0 {
 			return addrErr(hostport, tooManyColons)
 		}
-		if byteIndex(host, '%') >= 0 {
-			return addrErr(hostport, "missing brackets in address")
-		}
 	}
 	if byteIndex(hostport[j:], '[') >= 0 {
 		return addrErr(hostport, "unexpected '[' in address")
@@ -181,11 +219,14 @@ func splitHostZone(s string) (host, zone string) {
 }
 
 // JoinHostPort combines host and port into a network address of the
-// form "host:port" or, if host contains a colon or a percent sign,
-// "[host]:port".
+// form "host:port". If host contains a colon, as found in literal
+// IPv6 addresses, then JoinHostPort returns "[host]:port".
+//
+// See func Dial for a description of the host and port parameters.
 func JoinHostPort(host, port string) string {
-	// If host has colons or a percent sign, have to bracket it.
-	if byteIndex(host, ':') >= 0 || byteIndex(host, '%') >= 0 {
+	// We assume that host is a literal IPv6 address if host has
+	// colons.
+	if byteIndex(host, ':') >= 0 {
 		return "[" + host + "]:" + port
 	}
 	return host + ":" + port
@@ -240,6 +281,13 @@ func (r *Resolver) internetAddrList(ctx context.Context, net, addr string) (addr
 		ips = []IPAddr{{IP: ip}}
 	} else if ip, zone := parseIPv6(host, true); ip != nil {
 		ips = []IPAddr{{IP: ip, Zone: zone}}
+		// Issue 18806: if the machine has halfway configured
+		// IPv6 such that it can bind on "::" (IPv6unspecified)
+		// but not connect back to that same address, fall
+		// back to dialing 0.0.0.0.
+		if ip.Equal(IPv6unspecified) {
+			ips = append(ips, IPAddr{IP: IPv4zero})
+		}
 	} else {
 		// Try as a DNS name.
 		ips, err = r.LookupIPAddr(ctx, host)

@@ -1,5 +1,5 @@
 /* File format for coverage information
-   Copyright (C) 1996-2017 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
    Completely remangled by Nathan Sidwell <nathan@codesourcery.com>.
 
@@ -353,6 +353,38 @@ gcov_write_string (const char *string)
       buffer[alloc] = 0; /* place nul terminators.  */
       memcpy (&buffer[1], string, length);
     }
+}
+#endif
+
+#if !IN_LIBGCOV
+/* Write FILENAME to coverage file.  Sets error flag on file
+   error, overflow flag on overflow */
+
+GCOV_LINKAGE void
+gcov_write_filename (const char *filename)
+{
+  if (profile_abs_path_flag && filename && filename[0]
+      && !(IS_DIR_SEPARATOR (filename[0])
+#if HAVE_DOS_BASED_FILE_SYSTEM
+	   || filename[1] == ':'
+#endif
+	  ))
+    {
+      char *buf = getcwd (NULL, 0);
+      if (buf != NULL && buf[0])
+	{
+	  size_t len = strlen (buf);
+	  buf = (char*)xrealloc (buf, len + strlen (filename) + 2);
+	  if (!IS_DIR_SEPARATOR (buf[len - 1]))
+	    strcat (buf, "/");
+	  strcat (buf, filename);
+	  gcov_write_string (buf);
+	  free (buf);
+	  return;
+	}
+    }
+
+  gcov_write_string (filename);
 }
 #endif
 

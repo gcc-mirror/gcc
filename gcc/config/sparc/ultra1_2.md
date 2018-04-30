@@ -1,5 +1,5 @@
 ;; Scheduling description for UltraSPARC-I/II.
-;;   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -263,10 +263,10 @@
 
 (define_insn_reservation "us1_fga_double"
   2
-  (and (and
-         (eq_attr "cpu" "ultrasparc")
-         (eq_attr "type" "fga,visl,vismv"))
-       (eq_attr "fptype" "double"))
+  (and (eq_attr "cpu" "ultrasparc")
+       (ior (and (eq_attr "type" "fga,visl,vismv")
+                 (eq_attr "fptype" "double"))
+            (eq_attr "type" "viscmp")))
   "us1_fpa + us1_fp_double + us1_slotany, nothing")
 
 (define_bypass 1 "us1_fga_double" "us1_fga_double")

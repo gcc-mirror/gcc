@@ -19,50 +19,52 @@ import (
 
 // Event types in the trace, args are given in square brackets.
 const (
-	traceEvNone           = 0  // unused
-	traceEvBatch          = 1  // start of per-P batch of events [pid, timestamp]
-	traceEvFrequency      = 2  // contains tracer timer frequency [frequency (ticks per second)]
-	traceEvStack          = 3  // stack [stack id, number of PCs, array of {PC, func string ID, file string ID, line}]
-	traceEvGomaxprocs     = 4  // current value of GOMAXPROCS [timestamp, GOMAXPROCS, stack id]
-	traceEvProcStart      = 5  // start of P [timestamp, thread id]
-	traceEvProcStop       = 6  // stop of P [timestamp]
-	traceEvGCStart        = 7  // GC start [timestamp, seq, stack id]
-	traceEvGCDone         = 8  // GC done [timestamp]
-	traceEvGCScanStart    = 9  // GC mark termination start [timestamp]
-	traceEvGCScanDone     = 10 // GC mark termination done [timestamp]
-	traceEvGCSweepStart   = 11 // GC sweep start [timestamp, stack id]
-	traceEvGCSweepDone    = 12 // GC sweep done [timestamp]
-	traceEvGoCreate       = 13 // goroutine creation [timestamp, new goroutine id, new stack id, stack id]
-	traceEvGoStart        = 14 // goroutine starts running [timestamp, goroutine id, seq]
-	traceEvGoEnd          = 15 // goroutine ends [timestamp]
-	traceEvGoStop         = 16 // goroutine stops (like in select{}) [timestamp, stack]
-	traceEvGoSched        = 17 // goroutine calls Gosched [timestamp, stack]
-	traceEvGoPreempt      = 18 // goroutine is preempted [timestamp, stack]
-	traceEvGoSleep        = 19 // goroutine calls Sleep [timestamp, stack]
-	traceEvGoBlock        = 20 // goroutine blocks [timestamp, stack]
-	traceEvGoUnblock      = 21 // goroutine is unblocked [timestamp, goroutine id, seq, stack]
-	traceEvGoBlockSend    = 22 // goroutine blocks on chan send [timestamp, stack]
-	traceEvGoBlockRecv    = 23 // goroutine blocks on chan recv [timestamp, stack]
-	traceEvGoBlockSelect  = 24 // goroutine blocks on select [timestamp, stack]
-	traceEvGoBlockSync    = 25 // goroutine blocks on Mutex/RWMutex [timestamp, stack]
-	traceEvGoBlockCond    = 26 // goroutine blocks on Cond [timestamp, stack]
-	traceEvGoBlockNet     = 27 // goroutine blocks on network [timestamp, stack]
-	traceEvGoSysCall      = 28 // syscall enter [timestamp, stack]
-	traceEvGoSysExit      = 29 // syscall exit [timestamp, goroutine id, seq, real timestamp]
-	traceEvGoSysBlock     = 30 // syscall blocks [timestamp]
-	traceEvGoWaiting      = 31 // denotes that goroutine is blocked when tracing starts [timestamp, goroutine id]
-	traceEvGoInSyscall    = 32 // denotes that goroutine is in syscall when tracing starts [timestamp, goroutine id]
-	traceEvHeapAlloc      = 33 // memstats.heap_live change [timestamp, heap_alloc]
-	traceEvNextGC         = 34 // memstats.next_gc change [timestamp, next_gc]
-	traceEvTimerGoroutine = 35 // denotes timer goroutine [timer goroutine id]
-	traceEvFutileWakeup   = 36 // denotes that the previous wakeup of this goroutine was futile [timestamp]
-	traceEvString         = 37 // string dictionary entry [ID, length, string]
-	traceEvGoStartLocal   = 38 // goroutine starts running on the same P as the last event [timestamp, goroutine id]
-	traceEvGoUnblockLocal = 39 // goroutine is unblocked on the same P as the last event [timestamp, goroutine id, stack]
-	traceEvGoSysExitLocal = 40 // syscall exit on the same P as the last event [timestamp, goroutine id, real timestamp]
-	traceEvGoStartLabel   = 41 // goroutine starts running with label [timestamp, goroutine id, seq, label string id]
-	traceEvGoBlockGC      = 42 // goroutine blocks on GC assist [timestamp, stack]
-	traceEvCount          = 43
+	traceEvNone              = 0  // unused
+	traceEvBatch             = 1  // start of per-P batch of events [pid, timestamp]
+	traceEvFrequency         = 2  // contains tracer timer frequency [frequency (ticks per second)]
+	traceEvStack             = 3  // stack [stack id, number of PCs, array of {PC, func string ID, file string ID, line}]
+	traceEvGomaxprocs        = 4  // current value of GOMAXPROCS [timestamp, GOMAXPROCS, stack id]
+	traceEvProcStart         = 5  // start of P [timestamp, thread id]
+	traceEvProcStop          = 6  // stop of P [timestamp]
+	traceEvGCStart           = 7  // GC start [timestamp, seq, stack id]
+	traceEvGCDone            = 8  // GC done [timestamp]
+	traceEvGCSTWStart        = 9  // GC STW start [timestamp, kind]
+	traceEvGCSTWDone         = 10 // GC STW done [timestamp]
+	traceEvGCSweepStart      = 11 // GC sweep start [timestamp, stack id]
+	traceEvGCSweepDone       = 12 // GC sweep done [timestamp, swept, reclaimed]
+	traceEvGoCreate          = 13 // goroutine creation [timestamp, new goroutine id, new stack id, stack id]
+	traceEvGoStart           = 14 // goroutine starts running [timestamp, goroutine id, seq]
+	traceEvGoEnd             = 15 // goroutine ends [timestamp]
+	traceEvGoStop            = 16 // goroutine stops (like in select{}) [timestamp, stack]
+	traceEvGoSched           = 17 // goroutine calls Gosched [timestamp, stack]
+	traceEvGoPreempt         = 18 // goroutine is preempted [timestamp, stack]
+	traceEvGoSleep           = 19 // goroutine calls Sleep [timestamp, stack]
+	traceEvGoBlock           = 20 // goroutine blocks [timestamp, stack]
+	traceEvGoUnblock         = 21 // goroutine is unblocked [timestamp, goroutine id, seq, stack]
+	traceEvGoBlockSend       = 22 // goroutine blocks on chan send [timestamp, stack]
+	traceEvGoBlockRecv       = 23 // goroutine blocks on chan recv [timestamp, stack]
+	traceEvGoBlockSelect     = 24 // goroutine blocks on select [timestamp, stack]
+	traceEvGoBlockSync       = 25 // goroutine blocks on Mutex/RWMutex [timestamp, stack]
+	traceEvGoBlockCond       = 26 // goroutine blocks on Cond [timestamp, stack]
+	traceEvGoBlockNet        = 27 // goroutine blocks on network [timestamp, stack]
+	traceEvGoSysCall         = 28 // syscall enter [timestamp, stack]
+	traceEvGoSysExit         = 29 // syscall exit [timestamp, goroutine id, seq, real timestamp]
+	traceEvGoSysBlock        = 30 // syscall blocks [timestamp]
+	traceEvGoWaiting         = 31 // denotes that goroutine is blocked when tracing starts [timestamp, goroutine id]
+	traceEvGoInSyscall       = 32 // denotes that goroutine is in syscall when tracing starts [timestamp, goroutine id]
+	traceEvHeapAlloc         = 33 // memstats.heap_live change [timestamp, heap_alloc]
+	traceEvNextGC            = 34 // memstats.next_gc change [timestamp, next_gc]
+	traceEvTimerGoroutine    = 35 // denotes timer goroutine [timer goroutine id]
+	traceEvFutileWakeup      = 36 // denotes that the previous wakeup of this goroutine was futile [timestamp]
+	traceEvString            = 37 // string dictionary entry [ID, length, string]
+	traceEvGoStartLocal      = 38 // goroutine starts running on the same P as the last event [timestamp, goroutine id]
+	traceEvGoUnblockLocal    = 39 // goroutine is unblocked on the same P as the last event [timestamp, goroutine id, stack]
+	traceEvGoSysExitLocal    = 40 // syscall exit on the same P as the last event [timestamp, goroutine id, real timestamp]
+	traceEvGoStartLabel      = 41 // goroutine starts running with label [timestamp, goroutine id, seq, label string id]
+	traceEvGoBlockGC         = 42 // goroutine blocks on GC assist [timestamp, stack]
+	traceEvGCMarkAssistStart = 43 // GC mark assist start [timestamp, stack]
+	traceEvGCMarkAssistDone  = 44 // GC mark assist done [timestamp]
+	traceEvCount             = 45
 )
 
 const (
@@ -233,21 +235,21 @@ func StartTrace() error {
 	trace.timeStart = nanotime()
 	trace.headerWritten = false
 	trace.footerWritten = false
-	trace.strings = make(map[string]uint64)
+
+	// string to id mapping
+	//  0 : reserved for an empty string
+	//  remaining: other strings registered by traceString
 	trace.stringSeq = 0
+	trace.strings = make(map[string]uint64)
+
 	trace.seqGC = 0
 	_g_.m.startingtrace = false
 	trace.enabled = true
 
 	// Register runtime goroutine labels.
 	_, pid, bufp := traceAcquireBuffer()
-	buf := (*bufp).ptr()
-	if buf == nil {
-		buf = traceFlush(0).ptr()
-		(*bufp).set(buf)
-	}
 	for i, label := range gcMarkWorkerModeStrings[:] {
-		trace.markWorkerLabels[i], buf = traceString(buf, label)
+		trace.markWorkerLabels[i], bufp = traceString(bufp, pid, label)
 	}
 	traceReleaseBuffer(pid)
 
@@ -275,10 +277,9 @@ func StopTrace() {
 
 	traceGoSched()
 
-	for _, p := range &allp {
-		if p == nil {
-			break
-		}
+	// Loop over all allocated Ps because dead Ps may still have
+	// trace buffers.
+	for _, p := range allp[:cap(allp)] {
 		buf := p.tracebuf
 		if buf != 0 {
 			traceFullQueue(buf)
@@ -311,17 +312,14 @@ func StopTrace() {
 
 	// The world is started but we've set trace.shutdown, so new tracing can't start.
 	// Wait for the trace reader to flush pending buffers and stop.
-	semacquire(&trace.shutdownSema, 0)
+	semacquire(&trace.shutdownSema)
 	if raceenabled {
 		raceacquire(unsafe.Pointer(&trace.shutdownSema))
 	}
 
 	// The lock protects us from races with StartTrace/StopTrace because they do stop-the-world.
 	lock(&trace.lock)
-	for _, p := range &allp {
-		if p == nil {
-			break
-		}
+	for _, p := range allp[:cap(allp)] {
 		if p.tracebuf != 0 {
 			throw("trace: non-empty trace buffer in proc")
 		}
@@ -380,7 +378,7 @@ func ReadTrace() []byte {
 		trace.headerWritten = true
 		trace.lockOwner = nil
 		unlock(&trace.lock)
-		return []byte("go 1.8 trace\x00\x00\x00\x00")
+		return []byte("go 1.10 trace\x00\x00\x00")
 	}
 	// Wait for new data.
 	if trace.fullHead == 0 && !trace.shutdown {
@@ -406,9 +404,12 @@ func ReadTrace() []byte {
 		var data []byte
 		data = append(data, traceEvFrequency|0<<traceArgCountShift)
 		data = traceAppend(data, uint64(freq))
-		if timers.gp != nil {
-			data = append(data, traceEvTimerGoroutine|0<<traceArgCountShift)
-			data = traceAppend(data, uint64(timers.gp.goid))
+		for i := range timers {
+			tb := &timers[i]
+			if tb.gp != nil {
+				data = append(data, traceEvTimerGoroutine|0<<traceArgCountShift)
+				data = traceAppend(data, uint64(tb.gp.goid))
+			}
 		}
 		// This will emit a bunch of full buffers, we will pick them up
 		// on the next iteration.
@@ -512,18 +513,12 @@ func traceEvent(ev byte, skip int, args ...uint64) {
 	buf := (*bufp).ptr()
 	const maxSize = 2 + 5*traceBytesPerNumber // event type, length, sequence, timestamp, stack id and two add params
 	if buf == nil || len(buf.arr)-buf.pos < maxSize {
-		buf = traceFlush(traceBufPtrOf(buf)).ptr()
+		buf = traceFlush(traceBufPtrOf(buf), pid).ptr()
 		(*bufp).set(buf)
 	}
 
 	ticks := uint64(cputicks()) / traceTickDiv
 	tickDiff := ticks - buf.lastTicks
-	if buf.pos == 0 {
-		buf.byte(traceEvBatch | 1<<traceArgCountShift)
-		buf.varint(uint64(pid))
-		buf.varint(ticks)
-		tickDiff = 0
-	}
 	buf.lastTicks = ticks
 	narg := byte(len(args))
 	if skip >= 0 {
@@ -600,7 +595,7 @@ func traceReleaseBuffer(pid int32) {
 }
 
 // traceFlush puts buf onto stack of full buffers and returns an empty buffer.
-func traceFlush(buf traceBufPtr) traceBufPtr {
+func traceFlush(buf traceBufPtr, pid int32) traceBufPtr {
 	owner := trace.lockOwner
 	dolock := owner == nil || owner != getg().m.curg
 	if dolock {
@@ -621,34 +616,51 @@ func traceFlush(buf traceBufPtr) traceBufPtr {
 	bufp := buf.ptr()
 	bufp.link.set(nil)
 	bufp.pos = 0
-	bufp.lastTicks = 0
+
+	// initialize the buffer for a new batch
+	ticks := uint64(cputicks()) / traceTickDiv
+	bufp.lastTicks = ticks
+	bufp.byte(traceEvBatch | 1<<traceArgCountShift)
+	bufp.varint(uint64(pid))
+	bufp.varint(ticks)
+
 	if dolock {
 		unlock(&trace.lock)
 	}
 	return buf
 }
 
-func traceString(buf *traceBuf, s string) (uint64, *traceBuf) {
+// traceString adds a string to the trace.strings and returns the id.
+func traceString(bufp *traceBufPtr, pid int32, s string) (uint64, *traceBufPtr) {
 	if s == "" {
-		return 0, buf
+		return 0, bufp
 	}
 	if id, ok := trace.strings[s]; ok {
-		return id, buf
+		return id, bufp
 	}
 
 	trace.stringSeq++
 	id := trace.stringSeq
 	trace.strings[s] = id
 
+	// memory allocation in above may trigger tracing and
+	// cause *bufp changes. Following code now works with *bufp,
+	// so there must be no memory allocation or any activities
+	// that causes tracing after this point.
+
+	buf := (*bufp).ptr()
 	size := 1 + 2*traceBytesPerNumber + len(s)
-	if len(buf.arr)-buf.pos < size {
-		buf = traceFlush(traceBufPtrOf(buf)).ptr()
+	if buf == nil || len(buf.arr)-buf.pos < size {
+		buf = traceFlush(traceBufPtrOf(buf), pid).ptr()
+		(*bufp).set(buf)
 	}
 	buf.byte(traceEvString)
 	buf.varint(id)
 	buf.varint(uint64(len(s)))
 	buf.pos += copy(buf.arr[buf.pos:], s)
-	return id, buf
+
+	(*bufp).set(buf)
+	return id, bufp
 }
 
 // traceAppend appends v to buf in little-endian-base-128 encoding.
@@ -770,26 +782,28 @@ func (tab *traceStackTable) newStack(n int) *traceStack {
 // releases all memory and resets state.
 func (tab *traceStackTable) dump() {
 	var tmp [(2 + 4*traceStackSize) * traceBytesPerNumber]byte
-	buf := traceFlush(0).ptr()
+	bufp := traceFlush(0, 0)
 	for _, stk := range tab.tab {
 		stk := stk.ptr()
 		for ; stk != nil; stk = stk.link.ptr() {
 			tmpbuf := tmp[:0]
 			tmpbuf = traceAppend(tmpbuf, uint64(stk.id))
-			tmpbuf = traceAppend(tmpbuf, uint64(stk.n))
-			for _, pc := range stk.stack() {
+			frames := stk.stack()
+			tmpbuf = traceAppend(tmpbuf, uint64(len(frames)))
+			for _, f := range frames {
 				var frame traceFrame
-				frame, buf = traceFrameForPC(buf, pc)
-				tmpbuf = traceAppend(tmpbuf, uint64(pc.pc))
+				frame, bufp = traceFrameForPC(bufp, 0, f)
+				tmpbuf = traceAppend(tmpbuf, uint64(f.pc))
 				tmpbuf = traceAppend(tmpbuf, uint64(frame.funcID))
 				tmpbuf = traceAppend(tmpbuf, uint64(frame.fileID))
 				tmpbuf = traceAppend(tmpbuf, uint64(frame.line))
 			}
 			// Now copy to the buffer.
 			size := 1 + traceBytesPerNumber + len(tmpbuf)
-			if len(buf.arr)-buf.pos < size {
-				buf = traceFlush(traceBufPtrOf(buf)).ptr()
+			if buf := bufp.ptr(); len(buf.arr)-buf.pos < size {
+				bufp = traceFlush(bufp, 0)
 			}
+			buf := bufp.ptr()
 			buf.byte(traceEvStack | 3<<traceArgCountShift)
 			buf.varint(uint64(len(tmpbuf)))
 			buf.pos += copy(buf.arr[buf.pos:], tmpbuf)
@@ -797,7 +811,7 @@ func (tab *traceStackTable) dump() {
 	}
 
 	lock(&trace.lock)
-	traceFullQueue(traceBufPtrOf(buf))
+	traceFullQueue(bufp)
 	unlock(&trace.lock)
 
 	tab.mem.drop()
@@ -810,21 +824,25 @@ type traceFrame struct {
 	line   uint64
 }
 
-func traceFrameForPC(buf *traceBuf, loc location) (traceFrame, *traceBuf) {
+// traceFrameForPC records the frame information.
+// It may allocate memory.
+func traceFrameForPC(buf traceBufPtr, pid int32, f location) (traceFrame, traceBufPtr) {
+	bufp := &buf
 	var frame traceFrame
-	fn := loc.function
+
+	fn := f.function
 	const maxLen = 1 << 10
 	if len(fn) > maxLen {
 		fn = fn[len(fn)-maxLen:]
 	}
-	frame.funcID, buf = traceString(buf, fn)
-	file, line := loc.filename, loc.lineno
-	frame.line = uint64(line)
+	frame.funcID, bufp = traceString(bufp, pid, fn)
+	frame.line = uint64(f.lineno)
+	file := f.filename
 	if len(file) > maxLen {
 		file = file[len(file)-maxLen:]
 	}
-	frame.fileID, buf = traceString(buf, file)
-	return frame, buf
+	frame.fileID, bufp = traceString(bufp, pid, file)
+	return frame, (*bufp)
 }
 
 // traceAlloc is a non-thread-safe region allocator.
@@ -913,20 +931,60 @@ func traceGCDone() {
 	traceEvent(traceEvGCDone, -1)
 }
 
-func traceGCScanStart() {
-	traceEvent(traceEvGCScanStart, -1)
+func traceGCSTWStart(kind int) {
+	traceEvent(traceEvGCSTWStart, -1, uint64(kind))
 }
 
-func traceGCScanDone() {
-	traceEvent(traceEvGCScanDone, -1)
+func traceGCSTWDone() {
+	traceEvent(traceEvGCSTWDone, -1)
 }
 
+// traceGCSweepStart prepares to trace a sweep loop. This does not
+// emit any events until traceGCSweepSpan is called.
+//
+// traceGCSweepStart must be paired with traceGCSweepDone and there
+// must be no preemption points between these two calls.
 func traceGCSweepStart() {
-	traceEvent(traceEvGCSweepStart, 1)
+	// Delay the actual GCSweepStart event until the first span
+	// sweep. If we don't sweep anything, don't emit any events.
+	_p_ := getg().m.p.ptr()
+	if _p_.traceSweep {
+		throw("double traceGCSweepStart")
+	}
+	_p_.traceSweep, _p_.traceSwept, _p_.traceReclaimed = true, 0, 0
+}
+
+// traceGCSweepSpan traces the sweep of a single page.
+//
+// This may be called outside a traceGCSweepStart/traceGCSweepDone
+// pair; however, it will not emit any trace events in this case.
+func traceGCSweepSpan(bytesSwept uintptr) {
+	_p_ := getg().m.p.ptr()
+	if _p_.traceSweep {
+		if _p_.traceSwept == 0 {
+			traceEvent(traceEvGCSweepStart, 1)
+		}
+		_p_.traceSwept += bytesSwept
+	}
 }
 
 func traceGCSweepDone() {
-	traceEvent(traceEvGCSweepDone, -1)
+	_p_ := getg().m.p.ptr()
+	if !_p_.traceSweep {
+		throw("missing traceGCSweepStart")
+	}
+	if _p_.traceSwept != 0 {
+		traceEvent(traceEvGCSweepDone, -1, uint64(_p_.traceSwept), uint64(_p_.traceReclaimed))
+	}
+	_p_.traceSweep = false
+}
+
+func traceGCMarkAssistStart() {
+	traceEvent(traceEvGCMarkAssistStart, 1)
+}
+
+func traceGCMarkAssistDone() {
+	traceEvent(traceEvGCMarkAssistDone, -1)
 }
 
 func traceGoCreate(newg *g, pc uintptr) {
@@ -967,7 +1025,7 @@ func traceGoPreempt() {
 	traceEvent(traceEvGoPreempt, 1)
 }
 
-func traceGoPark(traceEv byte, skip int, gp *g) {
+func traceGoPark(traceEv byte, skip int) {
 	if traceEv&traceFutileWakeup != 0 {
 		traceEvent(traceEvFutileWakeup, -1)
 	}

@@ -15,12 +15,6 @@ extern "C" void *memcpy(void *, const void *, size_t);
 // libstdc++ requires a large initialization time allocation for the
 // emergency EH allocation pool.  Add that to the arena size.
 
-// Assume that STACK_SIZE defined implies a system that does not have a
-// large data space either, and additionally that we're not linking against
-// a shared libstdc++ (which requires quite a bit more initialization space).
-#ifdef STACK_SIZE
-const int arena_size = 256 + 8 * 128;
-#else
 #if defined(__FreeBSD__) || defined(__sun__) || defined(__hpux__)
 // FreeBSD, Solaris and HP-UX require even more space at initialization time.
 // FreeBSD 5 now requires over 131072 bytes.
@@ -30,7 +24,6 @@ const int arena_size = 262144 + 72 * 1024;
 // allocations, we scale by the pointer size from the original
 // 32-bit-systems-based estimate.
 const int arena_size = 32768 * ((sizeof (void *) + 3)/4) + 72 * 1024;
-#endif
 #endif
 
 struct object
@@ -95,7 +88,7 @@ extern "C" void *realloc (void *p, size_t size)
 
 void fn_throw()
 #if __cplusplus <= 201402L
-throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   throw 1;
@@ -103,7 +96,7 @@ throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } }
 
 void fn_rethrow()
 #if __cplusplus <= 201402L
-throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   try{fn_throw();}
@@ -113,7 +106,7 @@ throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } }
 
 void fn_catchthrow()
 #if __cplusplus <= 201402L
-throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   try{fn_throw();}

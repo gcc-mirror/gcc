@@ -1,4 +1,4 @@
-/* { dg-skip-if "requires io" { freestanding } { "*" } { "" } }  */
+/* { dg-skip-if "requires io" { freestanding } }  */
 
 /* Program to test gcc's usage of the gofast library.  */
 

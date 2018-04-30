@@ -22,12 +22,12 @@ PROGRAM test
 
   rr=f1(aa,b)
   ! WRITE(*,*) ' rr(1)=', rr(1), '  rr(2)=', rr(2)
-  IF (ANY(rr /= (/ 110, 132 /))) CALL ABORT
+  IF (ANY(rr /= (/ 110, 132 /))) STOP 1
 
   rr=0
   rr=ff(aa,b)
   ! WRITE(*,*) ' rr(1)=', rr(1), '  rr(2)=', rr(2)
-  IF (ANY(rr /= (/ 110, 132 /))) CALL ABORT
+  IF (ANY(rr /= (/ 110, 132 /))) STOP 2
 
 
   b => NULL()
@@ -36,12 +36,12 @@ PROGRAM test
   rr=0
   rr=f1(aa, b)
   ! WRITE(*,*) ' rr(1)=', rr(1), '  rr(2)=', rr(2)
-  IF (ANY(rr /= (/ 110, 132 /))) CALL ABORT
+  IF (ANY(rr /= (/ 110, 132 /))) STOP 3
 
   rr = 0
   rr=ff(aa, b)
   ! WRITE(*,*) ' rr(1)=', rr(1), '  rr(2)=', rr(2)
-  IF (ANY(rr /= (/ 110, 132 /))) CALL ABORT
+  IF (ANY(rr /= (/ 110, 132 /))) STOP 4
 
 
 CONTAINS 

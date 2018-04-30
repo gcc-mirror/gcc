@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-options "-fno-range-check" }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 ! PR fortran/34318
 !
@@ -16,13 +16,13 @@ program a
   use nonordinal
   implicit none
   character(len=20) :: str
-  if (log(abs(inf))  < huge(inf)) call abort()
-  if (log(abs(minf)) < huge(inf)) call abort()
-  if (.not. isnan(nan)) call abort()
+  if (log(abs(inf))  < huge(inf)) STOP 1
+  if (log(abs(minf)) < huge(inf)) STOP 2
+  if (.not. isnan(nan)) STOP 3
   write(str,"(sp,f10.2)") inf
-  if (adjustl(str) /= "+Infinity") call abort()
+  if (adjustl(str) /= "+Infinity") STOP 4
   write(str,*) minf
-  if (adjustl(str) /= "-Infinity") call abort()
+  if (adjustl(str) /= "-Infinity") STOP 5
   write(str,*) nan
-  if (adjustl(str) /= "NaN") call abort()
+  if (adjustl(str) /= "NaN") STOP 6
 end program a

@@ -133,6 +133,7 @@ case "${host}" in
       AC_DEFINE(HAVE_ISNANL)
     fi
     AC_CHECK_FUNCS(__cxa_thread_atexit)
+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     ;;
 
   *-fuchsia*)
@@ -182,7 +183,7 @@ case "${host}" in
 	;;
     esac
     ;;
-  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin*)
+  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris*)
     GLIBCXX_CHECK_COMPILER_FEATURES
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_MATH_SUPPORT
@@ -197,6 +198,7 @@ case "${host}" in
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     ;;
   *-netbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -238,22 +240,6 @@ case "${host}" in
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
-    ;;
-  *-solaris*)
-    GLIBCXX_CHECK_LINKER_FEATURES
-    AC_DEFINE(HAVE_MBSTATE_T)
-    AC_DEFINE(HAVE_FINITE)
-    AC_DEFINE(HAVE_FPCLASS)
-    # All of the dependencies for wide character support are here, so
-    # turn it on. 
-    AC_DEFINE(_GLIBCXX_USE_WCHAR_T) 
-    # These two C99 functions are present only in Solaris >= 10
-    AC_DEFINE(HAVE_STRTOF)
-    AC_DEFINE(HAVE_STRTOLD)
-    AC_DEFINE(HAVE_ISNAN)
-    AC_DEFINE(HAVE_ISNANF)
-    AC_DEFINE(HAVE_MODFF)
-    AC_DEFINE(HAVE_HYPOT)
     ;;
   *-tpf)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'

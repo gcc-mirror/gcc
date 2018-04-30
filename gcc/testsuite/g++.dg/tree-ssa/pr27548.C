@@ -1,6 +1,7 @@
 // PR tree-optimization/27548
 // { dg-do compile }
 // { dg-options "-O1" }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace Gambit
 {

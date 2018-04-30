@@ -1,5 +1,5 @@
 /* IRA hard register and memory cost calculation for allocnos or pseudos.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1138,17 +1138,12 @@ record_address_regs (machine_mode mode, addr_space_t as, rtx x,
 	if (code1 == SUBREG)
 	  arg1 = SUBREG_REG (arg1), code1 = GET_CODE (arg1);
 
-	/* If this machine only allows one register per address, it
-	   must be in the first operand.  */
-	if (MAX_REGS_PER_ADDRESS == 1)
-	  record_address_regs (mode, as, arg0, 0, PLUS, code1, scale);
-
-	/* If index and base registers are the same on this machine,
+	/* If index registers do not appear, or coincide with base registers,
 	   just record registers in any non-constant operands.  We
 	   assume here, as well as in the tests below, that all
 	   addresses are in canonical form.  */
-	else if (INDEX_REG_CLASS
-		 == base_reg_class (VOIDmode, as, PLUS, SCRATCH))
+	if (MAX_REGS_PER_ADDRESS == 1
+	    || INDEX_REG_CLASS == base_reg_class (VOIDmode, as, PLUS, SCRATCH))
 	  {
 	    record_address_regs (mode, as, arg0, context, PLUS, code1, scale);
 	    if (! CONSTANT_P (arg1))
@@ -1373,12 +1368,12 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
       rtx src = SET_SRC (set);
 
       if (GET_CODE (dest) == SUBREG
-	  && (GET_MODE_SIZE (GET_MODE (dest))
-	      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))))
+	  && known_eq (GET_MODE_SIZE (GET_MODE (dest)),
+		       GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))))
 	dest = SUBREG_REG (dest);
       if (GET_CODE (src) == SUBREG
-	  && (GET_MODE_SIZE (GET_MODE (src))
-	      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
+	  && known_eq (GET_MODE_SIZE (GET_MODE (src)),
+		       GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
 	src = SUBREG_REG (src);
       if (REG_P (src) && REG_P (dest)
 	  && find_regno_note (insn, REG_DEAD, REGNO (src))
@@ -1391,7 +1386,7 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
 	  enum reg_class *cost_classes = cost_classes_ptr->classes;
 	  reg_class_t rclass;
-	  int k, nr;
+	  int k;
 
 	  i = regno == (int) REGNO (src) ? 1 : 0;
 	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
@@ -1403,18 +1398,9 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 		{
 		  if (reg_class_size[rclass] == 1)
 		    op_costs[i]->cost[k] = -frequency;
-		  else
-		    {
-		      for (nr = 0;
-			   nr < hard_regno_nregs[other_regno][mode];
-			   nr++)
-			if (! TEST_HARD_REG_BIT (reg_class_contents[rclass],
-						 other_regno + nr))
-			  break;
-		      
-		      if (nr == hard_regno_nregs[other_regno][mode])
-			op_costs[i]->cost[k] = -frequency;
-		    }
+		  else if (in_hard_reg_set_p (reg_class_contents[rclass],
+					      mode, other_regno))
+		    op_costs[i]->cost[k] = -frequency;
 		}
 	    }
 	}
@@ -1485,7 +1471,10 @@ scan_one_insn (rtx_insn *insn)
 	      && targetm.legitimate_constant_p (GET_MODE (SET_DEST (set)),
 						XEXP (note, 0))
 	      && REG_N_SETS (REGNO (SET_DEST (set))) == 1))
-      && general_operand (SET_SRC (set), GET_MODE (SET_SRC (set))))
+      && general_operand (SET_SRC (set), GET_MODE (SET_SRC (set)))
+      /* LRA does not use equiv with a symbol for PIC code.  */
+      && (! ira_use_lra_p || ! pic_offset_table_rtx
+	  || ! contains_symbol_ref_p (XEXP (note, 0))))
     {
       enum reg_class cl = GENERAL_REGS;
       rtx reg = SET_DEST (set);
@@ -1744,7 +1733,7 @@ find_costs_and_classes (FILE *dump_file)
 	  int best_cost, allocno_cost;
 	  enum reg_class best, alt_class;
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[i];
-	  enum reg_class *cost_classes = cost_classes_ptr->classes;
+	  enum reg_class *cost_classes;
 	  int *i_costs = temp_costs->cost;
 	  int i_mem_cost;
 	  int equiv_savings = regno_equiv_gains[i];
@@ -1755,6 +1744,7 @@ find_costs_and_classes (FILE *dump_file)
 		continue;
 	      memcpy (temp_costs, COSTS (costs, i), struct_costs_size);
 	      i_mem_cost = temp_costs->mem_cost;
+	      cost_classes = cost_classes_ptr->classes;
 	    }
 	  else
 	    {
@@ -1762,6 +1752,7 @@ find_costs_and_classes (FILE *dump_file)
 		continue;
 	      memset (temp_costs, 0, struct_costs_size);
 	      i_mem_cost = 0;
+	      cost_classes = cost_classes_ptr->classes;
 	      /* Find cost of all allocnos with the same regno.  */
 	      for (a = ira_regno_allocno_map[i];
 		   a != NULL;
@@ -2339,7 +2330,8 @@ ira_tune_allocno_costs (void)
 						   *crossed_calls_clobber_regs)
 		  && (ira_hard_reg_set_intersection_p (regno, mode,
 						       call_used_reg_set)
-		      || HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
+		      || targetm.hard_regno_call_part_clobbered (regno,
+								 mode)))
 		cost += (ALLOCNO_CALL_FREQ (a)
 			 * (ira_memory_move_cost[mode][rclass][0]
 			    + ira_memory_move_cost[mode][rclass][1]));

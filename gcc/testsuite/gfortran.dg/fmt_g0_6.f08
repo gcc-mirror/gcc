@@ -74,7 +74,7 @@ contains
         end if
         write(s_g, "('''', " // trim(fmt_g) // ",'''')") val
         write(s_f, "('''', " // trim(fmt_f) // ",'''')") val
-        if (s_g /= s_f) call abort
+        if (s_g /= s_f) STOP 1
         !if (s_g /= s_f) then
             !print "(a,g0,a,g0)", "lower=", lower, " upper=", upper
            ! print "(a, ' /= ', a, ' ', a, '/', a, ':', g0)", trim(s_g), trim(s_f), trim(fmt_g), trim(fmt_f), val

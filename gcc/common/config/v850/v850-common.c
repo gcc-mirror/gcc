@@ -1,5 +1,5 @@
 /* Common hooks for NEC V850 series.
-   Copyright (C) 1996-2017 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -111,7 +111,6 @@ v850_handle_option (struct gcc_options *opts,
 
 static const struct default_options v850_option_optimization_table[] =
   {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     /* Note - we no longer enable MASK_EP when optimizing.  This is
        because of a hardware bug which stops the SLD and SST instructions
        from correctly detecting some hazards.  If the user is sure that

@@ -1,5 +1,5 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
    This file is part of GCC.
@@ -82,9 +82,6 @@
 	GNU_USER_TARGET_OS_CPP_BUILTINS();	\
     }						\
   while (0)
-
-#undef  FPUTYPE_DEFAULT
-#define FPUTYPE_DEFAULT "vfp"
 
 /* Call the function profiler with a given profile label.  */
 #undef  ARM_FUNCTION_PROFILER

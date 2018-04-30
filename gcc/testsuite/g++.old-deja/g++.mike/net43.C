@@ -1,9 +1,9 @@
 // { dg-do assemble  }
-// { dg-options "-ffriend-injection" }
+// { dg-options "-ffriend-injection -Wno-deprecated" }
 
 class foo {
  public:
-   friend int operator ^(const foo&, const foo&);
+  friend int operator ^(const foo&, const foo&); // { dg-message "is visible" }
 };
 
 int main ()

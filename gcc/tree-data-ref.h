@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -52,9 +52,49 @@ struct innermost_loop_behavior
   tree init;
   tree step;
 
-  /* Alignment information.  ALIGNED_TO is set to the largest power of two
-     that divides OFFSET.  */
-  tree aligned_to;
+  /* BASE_ADDRESS is known to be misaligned by BASE_MISALIGNMENT bytes
+     from an alignment boundary of BASE_ALIGNMENT bytes.  For example,
+     if we had:
+
+       struct S __attribute__((aligned(16))) { ... };
+
+       char *ptr;
+       ... *(struct S *) (ptr - 4) ...;
+
+     the information would be:
+
+       base_address:      ptr
+       base_aligment:      16
+       base_misalignment:   4
+       init:               -4
+
+     where init cancels the base misalignment.  If instead we had a
+     reference to a particular field:
+
+       struct S __attribute__((aligned(16))) { ... int f; ... };
+
+       char *ptr;
+       ... ((struct S *) (ptr - 4))->f ...;
+
+     the information would be:
+
+       base_address:      ptr
+       base_aligment:      16
+       base_misalignment:   4
+       init:               -4 + offsetof (S, f)
+
+     where base_address + init might also be misaligned, and by a different
+     amount from base_address.  */
+  unsigned int base_alignment;
+  unsigned int base_misalignment;
+
+  /* The largest power of two that divides OFFSET, capped to a suitably
+     high value if the offset is zero.  This is a byte rather than a bit
+     quantity.  */
+  unsigned int offset_alignment;
+
+  /* Likewise for STEP.  */
+  unsigned int step_alignment;
 };
 
 /* Describes the evolutions of indices of the memory reference.  The indices
@@ -119,6 +159,11 @@ struct data_reference
   /* True when the data reference is in RHS of a stmt.  */
   bool is_read;
 
+  /* True when the data reference is conditional within STMT,
+     i.e. if it might not occur even when the statement is executed
+     and runs to completion.  */
+  bool is_conditional_in_stmt;
+
   /* Behavior of the memory reference in the innermost loop.  */
   struct innermost_loop_behavior innermost;
 
@@ -138,15 +183,54 @@ struct data_reference
 #define DR_NUM_DIMENSIONS(DR)      DR_ACCESS_FNS (DR).length ()
 #define DR_IS_READ(DR)             (DR)->is_read
 #define DR_IS_WRITE(DR)            (!DR_IS_READ (DR))
+#define DR_IS_CONDITIONAL_IN_STMT(DR) (DR)->is_conditional_in_stmt
 #define DR_BASE_ADDRESS(DR)        (DR)->innermost.base_address
 #define DR_OFFSET(DR)              (DR)->innermost.offset
 #define DR_INIT(DR)                (DR)->innermost.init
 #define DR_STEP(DR)                (DR)->innermost.step
 #define DR_PTR_INFO(DR)            (DR)->alias.ptr_info
-#define DR_ALIGNED_TO(DR)          (DR)->innermost.aligned_to
+#define DR_BASE_ALIGNMENT(DR)      (DR)->innermost.base_alignment
+#define DR_BASE_MISALIGNMENT(DR)   (DR)->innermost.base_misalignment
+#define DR_OFFSET_ALIGNMENT(DR)    (DR)->innermost.offset_alignment
+#define DR_STEP_ALIGNMENT(DR)      (DR)->innermost.step_alignment
 #define DR_INNERMOST(DR)           (DR)->innermost
 
 typedef struct data_reference *data_reference_p;
+
+/* This struct is used to store the information of a data reference,
+   including the data ref itself and the segment length for aliasing
+   checks.  This is used to merge alias checks.  */
+
+struct dr_with_seg_len
+{
+  dr_with_seg_len (data_reference_p d, tree len, unsigned HOST_WIDE_INT size,
+		   unsigned int a)
+    : dr (d), seg_len (len), access_size (size), align (a) {}
+
+  data_reference_p dr;
+  /* The offset of the last access that needs to be checked minus
+     the offset of the first.  */
+  tree seg_len;
+  /* A value that, when added to abs (SEG_LEN), gives the total number of
+     bytes in the segment.  */
+  poly_uint64 access_size;
+  /* The minimum common alignment of DR's start address, SEG_LEN and
+     ACCESS_SIZE.  */
+  unsigned int align;
+};
+
+/* This struct contains two dr_with_seg_len objects with aliasing data
+   refs.  Two comparisons are generated from them.  */
+
+struct dr_with_seg_len_pair_t
+{
+  dr_with_seg_len_pair_t (const dr_with_seg_len& d1,
+			       const dr_with_seg_len& d2)
+    : first (d1), second (d2) {}
+
+  dr_with_seg_len first;
+  dr_with_seg_len second;
+};
 
 enum data_dependence_direction {
   dir_positive,
@@ -191,6 +275,9 @@ struct conflict_function
 
 struct subscript
 {
+  /* The access functions of the two references.  */
+  tree access_fn[2];
+
   /* A description of the iterations for which the elements are
      accessed twice.  */
   conflict_function *conflicting_iterations_in_a;
@@ -209,6 +296,7 @@ struct subscript
 
 typedef struct subscript *subscript_p;
 
+#define SUB_ACCESS_FN(SUB, I) (SUB)->access_fn[I]
 #define SUB_CONFLICTS_IN_A(SUB) (SUB)->conflicting_iterations_in_a
 #define SUB_CONFLICTS_IN_B(SUB) (SUB)->conflicting_iterations_in_b
 #define SUB_LAST_CONFLICT(SUB) (SUB)->last_conflict
@@ -235,6 +323,13 @@ struct data_dependence_relation
      - when "ARE_DEPENDENT == chrec_dont_know", there may be a dependence,
        but the analyzer cannot be more specific.  */
   tree are_dependent;
+
+  /* If nonnull, COULD_BE_INDEPENDENT_P is true and the accesses are
+     independent when the runtime addresses of OBJECT_A and OBJECT_B
+     are different.  The addresses of both objects are invariant in the
+     loop nest.  */
+  tree object_a;
+  tree object_b;
 
   /* For each subscript in the dependence test, there is an element in
      this array.  This is the attribute that labels the edge A->B of
@@ -264,6 +359,33 @@ struct data_dependence_relation
   /* Set to true when the dependence relation is on the same data
      access.  */
   bool self_reference_p;
+
+  /* True if the dependence described is conservatively correct rather
+     than exact, and if it is still possible for the accesses to be
+     conditionally independent.  For example, the a and b references in:
+
+       struct s *a, *b;
+       for (int i = 0; i < n; ++i)
+         a->f[i] += b->f[i];
+
+     conservatively have a distance vector of (0), for the case in which
+     a == b, but the accesses are independent if a != b.  Similarly,
+     the a and b references in:
+
+       struct s *a, *b;
+       for (int i = 0; i < n; ++i)
+         a[0].f[i] += b[i].f[i];
+
+     conservatively have a distance vector of (0), but they are indepenent
+     when a != b + i.  In contrast, the references in:
+
+       struct s *a;
+       for (int i = 0; i < n; ++i)
+         a->f[i] += a->f[i];
+
+     have the same distance vector of (0), but the accesses can never be
+     independent.  */
+  bool could_be_independent_p;
 };
 
 typedef struct data_dependence_relation *ddr_p;
@@ -272,6 +394,8 @@ typedef struct data_dependence_relation *ddr_p;
 #define DDR_B(DDR) (DDR)->b
 #define DDR_AFFINE_P(DDR) (DDR)->affine_p
 #define DDR_ARE_DEPENDENT(DDR) (DDR)->are_dependent
+#define DDR_OBJECT_A(DDR) (DDR)->object_a
+#define DDR_OBJECT_B(DDR) (DDR)->object_b
 #define DDR_SUBSCRIPTS(DDR) (DDR)->subscripts
 #define DDR_SUBSCRIPT(DDR, I) DDR_SUBSCRIPTS (DDR)[I]
 #define DDR_NUM_SUBSCRIPTS(DDR) DDR_SUBSCRIPTS (DDR).length ()
@@ -294,9 +418,10 @@ typedef struct data_dependence_relation *ddr_p;
 #define DDR_DIST_VECT(DDR, I) \
   DDR_DIST_VECTS (DDR)[I]
 #define DDR_REVERSED_P(DDR) (DDR)->reversed_p
+#define DDR_COULD_BE_INDEPENDENT_P(DDR) (DDR)->could_be_independent_p
 
 
-bool dr_analyze_innermost (struct data_reference *, struct loop *);
+bool dr_analyze_innermost (innermost_loop_behavior *, tree, struct loop *);
 extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       vec<loop_p> *,
 					       vec<data_reference_p> *,
@@ -320,11 +445,12 @@ extern void free_data_ref (data_reference_p);
 extern void free_data_refs (vec<data_reference_p> );
 extern bool find_data_references_in_stmt (struct loop *, gimple *,
 					  vec<data_reference_p> *);
-extern bool graphite_find_data_references_in_stmt (loop_p, loop_p, gimple *,
+extern bool graphite_find_data_references_in_stmt (edge, loop_p, gimple *,
 						   vec<data_reference_p> *);
 tree find_data_references_in_loop (struct loop *, vec<data_reference_p> *);
 bool loop_nest_has_data_refs (loop_p loop);
-struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple *, bool);
+struct data_reference *create_data_ref (edge, loop_p, tree, gimple *, bool,
+					bool);
 extern bool find_loop_nest (struct loop *, vec<loop_p> *);
 extern struct data_dependence_relation *initialize_data_dependence_relation
      (struct data_reference *, struct data_reference *, vec<loop_p>);
@@ -336,11 +462,32 @@ extern bool compute_all_dependences (vec<data_reference_p> ,
 				     vec<loop_p>, bool);
 extern tree find_data_references_in_bb (struct loop *, basic_block,
                                         vec<data_reference_p> *);
+extern unsigned int dr_alignment (innermost_loop_behavior *);
+extern tree get_base_for_alignment (tree, unsigned int *);
+
+/* Return the alignment in bytes that DR is guaranteed to have at all
+   times.  */
+
+inline unsigned int
+dr_alignment (data_reference *dr)
+{
+  return dr_alignment (&DR_INNERMOST (dr));
+}
 
 extern bool dr_may_alias_p (const struct data_reference *,
 			    const struct data_reference *, bool);
 extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
+
+extern bool runtime_alias_check_p (ddr_p, struct loop *, bool);
+extern int data_ref_compare_tree (tree, tree);
+extern void prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *,
+					   poly_uint64);
+extern void create_runtime_alias_checks (struct loop *,
+					 vec<dr_with_seg_len_pair_t> *, tree*);
+extern tree dr_direction_indicator (struct data_reference *);
+extern tree dr_zero_step_indicator (struct data_reference *);
+extern bool dr_known_forward_stride_p (struct data_reference *);
 
 /* Return true when the base objects of data references A and B are
    the same memory object.  */
@@ -369,22 +516,6 @@ same_data_refs (data_reference_p a, data_reference_p b)
 
   for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
     if (!eq_evolutions_p (DR_ACCESS_FN (a, i), DR_ACCESS_FN (b, i)))
-      return false;
-
-  return true;
-}
-
-/* Return true when the DDR contains two data references that have the
-   same access functions.  */
-
-static inline bool
-same_access_functions (const struct data_dependence_relation *ddr)
-{
-  unsigned i;
-
-  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
-    if (!eq_evolutions_p (DR_ACCESS_FN (DDR_A (ddr), i),
-			  DR_ACCESS_FN (DDR_B (ddr), i)))
       return false;
 
   return true;

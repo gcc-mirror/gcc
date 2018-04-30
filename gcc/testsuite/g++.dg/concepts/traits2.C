@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template<typename T>
   concept bool Nothrow_assignable() { return __has_nothrow_assign(T); }

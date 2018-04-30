@@ -60,17 +60,17 @@ struct Egeneric {
 struct infinint {
     void detruit()
 #if __cplusplus <= 201402L
-    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
     ;
     template<class T> void infinint_from(T a)
 #if __cplusplus <= 201402L
-    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
     ;
     infinint(long a = 0)
 #if __cplusplus <= 201402L
-    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
     {
 	try {
@@ -81,7 +81,7 @@ struct infinint {
     }
     ~infinint()
 #if __cplusplus <= 201402L
-    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #else
     noexcept(false)
 #endif

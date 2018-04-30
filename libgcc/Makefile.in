@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005-2017 Free Software Foundation, Inc.
+# Copyright (C) 2005-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -171,7 +171,8 @@ configure_deps = \
 	$(srcdir)/../config/dfp.m4 \
 	$(srcdir)/../config/unwind_ipinfo.m4 \
 	$(srcdir)/../config/gthr.m4 \
-	$(srcdir)/../config/sjlj.m4
+	$(srcdir)/../config/sjlj.m4 \
+	$(srcdir)/../config/cet.m4
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
@@ -253,6 +254,8 @@ LIBGCC2_INCLUDES =
 HOST_LIBGCC2_CFLAGS =
 
 PICFLAG = @PICFLAG@
+
+CET_FLAGS = @CET_FLAGS@
 
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp

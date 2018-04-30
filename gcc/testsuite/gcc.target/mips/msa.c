@@ -1,6 +1,6 @@
 /* Test MIPS MSA ASE instructions */
 /* { dg-do compile } */
-/* { dg-options "-mfp64 -mhard-float -mmsa -fexpensive-optimizations" } */
+/* { dg-options "-mfp64 -mhard-float -mmsa -fexpensive-optimizations -fcommon" } */
 /* { dg-skip-if "madd and msub need combine" { *-*-* } { "-O0" } { "" } } */
 
 /* { dg-final { scan-assembler-times "\t.comm\tv16i8_\\d+,16,16" 3 } } */

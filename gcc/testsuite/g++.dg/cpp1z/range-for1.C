@@ -1,5 +1,5 @@
 // P0184R0: Generalizing the Range-Based For Loop
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 struct A {
   int ar[4];

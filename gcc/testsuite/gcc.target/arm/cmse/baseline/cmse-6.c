@@ -1,6 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_arch_v8m_base_ok } */
-/* { dg-add-options arm_arch_v8m_base } */
 /* { dg-options "-mcmse" }  */
 
 int __attribute__ ((cmse_nonsecure_call)) (*bar) (double);

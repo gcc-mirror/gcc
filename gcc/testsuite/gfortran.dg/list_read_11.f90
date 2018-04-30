@@ -16,12 +16,12 @@ program teststuff
   s1 = repeat('x', len(s1))
   a = 99
   read(11,*)s1,a
-  if (s1 /= "line1" .or. a /= 1) call abort()
+  if (s1 /= "line1" .or. a /= 1) STOP 1
 
   s1 = repeat('x', len(s1))
   read(11,"(a)")s1
   close(11,status="delete")
-  if (s1 /= "line2") call abort()
+  if (s1 /= "line2") STOP 2
 
 
   open(11,file="testcase.txt",form='unformatted',access='stream',status='new')
@@ -33,6 +33,6 @@ program teststuff
   s2 = repeat('x', len(s1))
   read(11,*)s1,s2
   close(11,status="delete")
-  if (s1 /= "word1") call abort()
-  if (s2 /= "word2") call abort()
+  if (s1 /= "word1") STOP 3
+  if (s2 /= "word2") STOP 4
 end program teststuff

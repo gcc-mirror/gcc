@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-stack-check "generic" } */
 /* { dg-options "-O -fstack-check=generic" } */
 
 int main ()

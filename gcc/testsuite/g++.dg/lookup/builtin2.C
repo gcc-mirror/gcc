@@ -14,6 +14,6 @@ namespace std
   using ::toupper;
 }
 
-int f () {
+void f () {
   std::toupper((signed int)'a');
 }

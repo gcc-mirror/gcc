@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2017 Free Software Foundation, Inc.
+// Copyright (C) 2010-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,12 +39,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     class match_results;
 
 _GLIBCXX_END_NAMESPACE_CXX11
-_GLIBCXX_END_NAMESPACE_VERSION
 
 namespace __detail
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   enum class _RegexExecutorPolicy : int
     { _S_auto, _S_alternate };
 
@@ -53,19 +50,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   _RegexExecutorPolicy __policy,
 	   bool __match_mode>
     bool
-    __regex_algo_impl(_BiIter                              __s,
-		      _BiIter                              __e,
+    __regex_algo_impl(_BiIter			      __s,
+		      _BiIter			      __e,
 		      match_results<_BiIter, _Alloc>&      __m,
 		      const basic_regex<_CharT, _TraitsT>& __re,
 		      regex_constants::match_flag_type     __flags);
 
   template<typename, typename, typename, bool>
     class _Executor;
-
-_GLIBCXX_END_NAMESPACE_VERSION
 }
 
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /**
@@ -87,9 +81,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     struct regex_traits
     {
     public:
-      typedef _Ch_type                     	char_type;
-      typedef std::basic_string<char_type> 	string_type;
-      typedef std::locale                  	locale_type;
+      typedef _Ch_type				char_type;
+      typedef std::basic_string<char_type>	string_type;
+      typedef std::locale			locale_type;
     private:
       struct _RegexMask
 	{
@@ -397,8 +391,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		    "regex traits class must have the same char_type");
 
       // types:
-      typedef _Ch_type                            value_type;
-      typedef _Rx_traits                          traits_type;
+      typedef _Ch_type				  value_type;
+      typedef _Rx_traits			  traits_type;
       typedef typename traits_type::string_type   string_type;
       typedef regex_constants::syntax_option_type flag_type;
       typedef typename traits_type::locale_type   locale_type;
@@ -762,30 +756,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _FwdIter>
 	basic_regex(_FwdIter __first, _FwdIter __last, locale_type __loc,
 		    flag_type __f)
-	: _M_flags((__f & (ECMAScript | basic | extended | awk | grep | egrep))
-		   ? __f : (__f | ECMAScript)),
-	_M_loc(std::move(__loc)),
-	_M_automaton(__detail::__compile_nfa<_FwdIter, _Rx_traits>(
+	: _M_flags(__f), _M_loc(std::move(__loc)),
+	_M_automaton(__detail::__compile_nfa<_Rx_traits>(
 	  std::move(__first), std::move(__last), _M_loc, _M_flags))
 	{ }
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
-	friend bool __detail::
-#if _GLIBCXX_INLINE_VERSION
-        __8:: // Required due to PR c++/59256
-#endif
-	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
-                          const basic_regex<_Cp, _Rp>&,
-                          regex_constants::match_flag_type);
+	friend bool
+	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
+				    const basic_regex<_Cp, _Rp>&,
+				    regex_constants::match_flag_type);
 
       template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
 
-      flag_type              _M_flags;
-      locale_type            _M_loc;
-      _AutomatonPtr          _M_automaton;
+      flag_type		_M_flags;
+      locale_type	_M_loc;
+      _AutomatonPtr	_M_automaton;
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _ForwardIterator>
+    basic_regex(_ForwardIterator, _ForwardIterator,
+		regex_constants::syntax_option_type = {})
+      -> basic_regex<typename iterator_traits<_ForwardIterator>::value_type>;
+#endif
 
   /** @brief Standard regular expressions. */
   typedef basic_regex<char>    regex;
@@ -830,8 +826,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     public:
       typedef typename __iter_traits::value_type      	value_type;
       typedef typename __iter_traits::difference_type 	difference_type;
-      typedef _BiIter                                   iterator;
-      typedef std::basic_string<value_type>             string_type;
+      typedef _BiIter				   iterator;
+      typedef std::basic_string<value_type>	     string_type;
 
       bool matched;
 
@@ -916,14 +912,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 
   /** @brief Standard regex submatch over a C-style null-terminated string. */
-  typedef sub_match<const char*>             csub_match;
+  typedef sub_match<const char*>	     csub_match;
 
   /** @brief Standard regex submatch over a standard string. */
   typedef sub_match<string::const_iterator>  ssub_match;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   /** @brief Regex submatch over a C-style null-terminated wide string. */
-  typedef sub_match<const wchar_t*>          wcsub_match;
+  typedef sub_match<const wchar_t*>	  wcsub_match;
 
   /** @brief Regex submatch over a standard wide string. */
   typedef sub_match<wstring::const_iterator> wssub_match;
@@ -1541,16 +1537,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @name 10.? Public Types
        */
       //@{
-      typedef sub_match<_Bi_iter>                          value_type;
-      typedef const value_type&                            const_reference;
-      typedef const_reference                              reference;
-      typedef typename _Base_type::const_iterator          const_iterator;
-      typedef const_iterator                               iterator;
+      typedef sub_match<_Bi_iter>			   value_type;
+      typedef const value_type&				   const_reference;
+      typedef value_type&				   reference;
+      typedef typename _Base_type::const_iterator	   const_iterator;
+      typedef const_iterator				   iterator;
       typedef typename __iter_traits::difference_type	   difference_type;
       typedef typename allocator_traits<_Alloc>::size_type size_type;
-      typedef _Alloc                                       allocator_type;
+      typedef _Alloc					   allocator_type;
       typedef typename __iter_traits::value_type 	   char_type;
-      typedef std::basic_string<char_type>                 string_type;
+      typedef std::basic_string<char_type>		   string_type;
       //@}
 
     public:
@@ -1753,7 +1749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_iterator
       end() const
-      { return _Base_type::end() - 3; }
+      { return _Base_type::end() - (empty() ? 0 : 3); }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
@@ -1865,13 +1861,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
-	friend bool __detail::
-#if _GLIBCXX_INLINE_VERSION
-        __8:: // Required due to PR c++/59256
-#endif
-	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
-                          const basic_regex<_Cp, _Rp>&,
-                          regex_constants::match_flag_type);
+	friend bool
+	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
+				    const basic_regex<_Cp, _Rp>&,
+				    regex_constants::match_flag_type);
 
       void
       _M_resize(unsigned int __size)
@@ -1904,10 +1897,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _Bi_iter _M_begin;
     };
 
-  typedef match_results<const char*>             cmatch;
-  typedef match_results<string::const_iterator>  smatch;
+  typedef match_results<const char*>		 cmatch;
+  typedef match_results<string::const_iterator>	 smatch;
 #ifdef _GLIBCXX_USE_WCHAR_T
-  typedef match_results<const wchar_t*>          wcmatch;
+  typedef match_results<const wchar_t*>		 wcmatch;
   typedef match_results<wstring::const_iterator> wsmatch;
 #endif
 
@@ -1987,11 +1980,11 @@ _GLIBCXX_END_NAMESPACE_CXX11
   template<typename _Bi_iter, typename _Alloc,
 	   typename _Ch_type, typename _Rx_traits>
     inline bool
-    regex_match(_Bi_iter                                 __s,
-		_Bi_iter                                 __e,
-		match_results<_Bi_iter, _Alloc>&         __m,
+    regex_match(_Bi_iter				 __s,
+		_Bi_iter				 __e,
+		match_results<_Bi_iter, _Alloc>&	 __m,
 		const basic_regex<_Ch_type, _Rx_traits>& __re,
-		regex_constants::match_flag_type         __flags
+		regex_constants::match_flag_type	 __flags
 			       = regex_constants::match_default)
     {
       return __detail::__regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
@@ -2445,11 +2438,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     {
     public:
       typedef basic_regex<_Ch_type, _Rx_traits>  regex_type;
-      typedef match_results<_Bi_iter>            value_type;
-      typedef std::ptrdiff_t                     difference_type;
-      typedef const value_type*                  pointer;
-      typedef const value_type&                  reference;
-      typedef std::forward_iterator_tag          iterator_category;
+      typedef match_results<_Bi_iter>	    value_type;
+      typedef std::ptrdiff_t		     difference_type;
+      typedef const value_type*		  pointer;
+      typedef const value_type&		  reference;
+      typedef std::forward_iterator_tag	  iterator_category;
 
       /**
        * @brief Provides a singular iterator, useful for indicating
@@ -2536,18 +2529,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
     private:
-      _Bi_iter                         _M_begin;
-      _Bi_iter                         _M_end;
-      const regex_type*                _M_pregex;
-      regex_constants::match_flag_type _M_flags;
-      match_results<_Bi_iter>          _M_match;
+      _Bi_iter				_M_begin;
+      _Bi_iter				_M_end;
+      const regex_type*			_M_pregex;
+      regex_constants::match_flag_type	_M_flags;
+      match_results<_Bi_iter>		_M_match;
     };
 
-  typedef regex_iterator<const char*>             cregex_iterator;
-  typedef regex_iterator<string::const_iterator>  sregex_iterator;
+  typedef regex_iterator<const char*>			cregex_iterator;
+  typedef regex_iterator<string::const_iterator>	sregex_iterator;
 #ifdef _GLIBCXX_USE_WCHAR_T
-  typedef regex_iterator<const wchar_t*>          wcregex_iterator;
-  typedef regex_iterator<wstring::const_iterator> wsregex_iterator;
+  typedef regex_iterator<const wchar_t*>		wcregex_iterator;
+  typedef regex_iterator<wstring::const_iterator>	wsregex_iterator;
 #endif
 
   // [7.12.2] Class template regex_token_iterator
@@ -2564,12 +2557,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     class regex_token_iterator
     {
     public:
-      typedef basic_regex<_Ch_type, _Rx_traits> regex_type;
-      typedef sub_match<_Bi_iter>               value_type;
-      typedef std::ptrdiff_t                    difference_type;
-      typedef const value_type*                 pointer;
-      typedef const value_type&                 reference;
-      typedef std::forward_iterator_tag         iterator_category;
+      typedef basic_regex<_Ch_type, _Rx_traits>	regex_type;
+      typedef sub_match<_Bi_iter>		value_type;
+      typedef std::ptrdiff_t			difference_type;
+      typedef const value_type*			pointer;
+      typedef const value_type&			reference;
+      typedef std::forward_iterator_tag		iterator_category;
 
     public:
       /**
@@ -2771,25 +2764,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  _M_result = nullptr;
       }
 
-      _Position         _M_position;
-      std::vector<int>  _M_subs;
-      value_type        _M_suffix;
-      std::size_t       _M_n;
-      const value_type* _M_result;
+      _Position		_M_position;
+      std::vector<int>	_M_subs;
+      value_type	_M_suffix;
+      std::size_t	_M_n;
+      const value_type*	_M_result;
 
       // Show whether _M_subs contains -1
-      bool              _M_has_m1;
+      bool		_M_has_m1;
     };
 
   /** @brief Token iterator for C-style NULL-terminated strings. */
-  typedef regex_token_iterator<const char*>             cregex_token_iterator;
+  typedef regex_token_iterator<const char*>		cregex_token_iterator;
 
   /** @brief Token iterator for standard strings. */
-  typedef regex_token_iterator<string::const_iterator>  sregex_token_iterator;
+  typedef regex_token_iterator<string::const_iterator>	sregex_token_iterator;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   /** @brief Token iterator for C-style NULL-terminated wide strings. */
-  typedef regex_token_iterator<const wchar_t*>          wcregex_token_iterator;
+  typedef regex_token_iterator<const wchar_t*>		wcregex_token_iterator;
 
   /** @brief Token iterator for standard wide-character strings. */
   typedef regex_token_iterator<wstring::const_iterator> wsregex_token_iterator;

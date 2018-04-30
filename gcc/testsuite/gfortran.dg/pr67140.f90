@@ -8,5 +8,5 @@ program test
 
   integer(kind=k) :: i = 6
   call mvbits(7_k,2,2,i,0)
-  if (i /= 5) call abort
+  if (i /= 5) STOP 1
 end

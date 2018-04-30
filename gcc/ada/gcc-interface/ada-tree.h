@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -209,21 +209,24 @@ do {							 \
    this is a conflict on the minval field, but there doesn't seem to be
    simple fix, so we'll live with this kludge for now.  */
 #define TYPE_OBJECT_RECORD_TYPE(NODE) \
-  (TYPE_MINVAL (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, ENUMERAL_TYPE)))
+  (TYPE_MIN_VALUE_RAW (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, \
+				    ENUMERAL_TYPE)))
 
 /* For numerical types, this is the GCC lower bound of the type.  The GCC
    type system is based on the invariant that an object X of a given type
    cannot hold at run time a value smaller than its lower bound; otherwise
    the behavior is undefined.  The optimizer takes advantage of this and
    considers that the assertion X >= LB is always true.  */
-#define TYPE_GCC_MIN_VALUE(NODE) (TYPE_MINVAL (NUMERICAL_TYPE_CHECK (NODE)))
+#define TYPE_GCC_MIN_VALUE(NODE) \
+  (TYPE_MIN_VALUE_RAW (NUMERICAL_TYPE_CHECK (NODE)))
 
 /* For numerical types, this is the GCC upper bound of the type.  The GCC
    type system is based on the invariant that an object X of a given type
    cannot hold at run time a value larger than its upper bound; otherwise
    the behavior is undefined.  The optimizer takes advantage of this and
    considers that the assertion X <= UB is always true.  */
-#define TYPE_GCC_MAX_VALUE(NODE) (TYPE_MAXVAL (NUMERICAL_TYPE_CHECK (NODE)))
+#define TYPE_GCC_MAX_VALUE(NODE) \
+  (TYPE_MAX_VALUE_RAW (NUMERICAL_TYPE_CHECK (NODE)))
 
 /* For a FUNCTION_TYPE, if the subprogram has parameters passed by copy in/
    copy out, this is the list of nodes used to specify the return values of
@@ -462,6 +465,11 @@ do {						   \
 /* Nonzero in a FIELD_DECL if it is invariant once set, for example if it is
    a discriminant of a discriminated type without default expression.  */
 #define DECL_INVARIANT_P(NODE) DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE))
+
+/* Nonzero in a FUNCTION_DECL if this is a definition, i.e. if it was created
+   by a call to gnat_to_gnu_entity with definition set to True.  */
+#define DECL_FUNCTION_IS_DEF(NODE) \
+  DECL_LANG_FLAG_4 (FUNCTION_DECL_CHECK (NODE))
 
 /* Nonzero in a VAR_DECL if it is a temporary created to hold the return
    value of a function call or 'reference to a function call.  */

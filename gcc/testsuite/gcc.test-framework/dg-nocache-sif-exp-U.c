@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-DDEFINED" } */
-/* { dg-skip-if "comment" { def_nocache } { "*" } { "" } } */
+/* { dg-skip-if "comment" { def_nocache } } */
 
 int
 main ()

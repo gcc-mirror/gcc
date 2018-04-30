@@ -17,7 +17,7 @@ program arrayio_derived_1
   read(a, *) b
   do i = 1, 5
      if (b(i) /= 256) then
-        call abort ()
+        STOP 1
      end if
   end do
   write(a, *) x ! Just test that the library doesn't abort.
@@ -26,7 +26,7 @@ program arrayio_derived_1
   read(a, *) b
   do i = 1, 5
      if (b(i) /= 256) then
-        call abort ()
+        STOP 2
      end if
   end do
 

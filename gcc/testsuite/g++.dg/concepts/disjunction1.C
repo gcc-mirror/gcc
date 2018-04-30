@@ -1,5 +1,5 @@
 // PR c++/66962
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template <typename> struct remove_cv;
 template <typename> struct is_reference;

@@ -1,5 +1,5 @@
-/* __builtin_ms_va_list is only supported for x86_64 -m64.  */
-/* { dg-skip-if "" { ! {x86_64-*-* && { ! ilp32 } } } } */
+/* __builtin_ms_va_list is only supported for x86 -m64.  */
+/* { dg-skip-if "" { ! { { i?86-*-* x86_64-*-* } && { ! ilp32 } } } } */
 
 #include <stdio.h>
 

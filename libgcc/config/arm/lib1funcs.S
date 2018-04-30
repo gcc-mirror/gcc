@@ -1,7 +1,7 @@
 @ libgcc routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
-/* Copyright (C) 1995-2017 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2018 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -109,7 +109,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #if defined(__ARM_ARCH_8A__) || defined(__ARM_ARCH_8M_BASE__) \
-	|| defined(__ARM_ARCH_8M_MAIN__)
+	|| defined(__ARM_ARCH_8M_MAIN__) || defined(__ARM_ARCH_8R__)
 # define __ARM_ARCH__ 8
 #endif
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -977,7 +977,7 @@ package body Exp_Dist is
                     or else
                       (Is_Generic_Instance (Pkg_Ent)
                          and then Comes_From_Source
-                                    (Get_Package_Instantiation_Node (Pkg_Ent)))
+                                    (Get_Unit_Instantiation_Node (Pkg_Ent)))
                   then
                      Visit_Nested_Pkg (Decl);
                   end if;

@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-fgnu-tm -O0"}
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std __attribute__ ((__visibility__ ("default"))) {
   template<class _T1, class _T2>

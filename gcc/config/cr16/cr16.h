@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for CR16.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
 
    This file is part of GCC.
@@ -114,11 +114,6 @@ while (0)
      && ((ALIGN) < BITS_PER_WORD))               \
      ? (BITS_PER_WORD) : (ALIGN))
 
-/* In CR16 strings are word-aligned; strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(CONSTANT, ALIGN)                            \
-  (((TREE_CODE (CONSTANT) == STRING_CST) && ((ALIGN) < BITS_PER_WORD)) \
-     ? (BITS_PER_WORD) : (ALIGN))
-
 #define STRICT_ALIGNMENT 0
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
@@ -197,21 +192,8 @@ while (0)
 
 /* Returns 1 if the register is longer than word size, 0 otherwise.  */
 #define LONG_REG_P(REGNO)                                                    \
-  (HARD_REGNO_NREGS (REGNO,                                                  \
-		     GET_MODE_WIDER_MODE (smallest_mode_for_size	     \
-					 (BITS_PER_WORD, MODE_INT))) == 1)
-
-#define HARD_REGNO_NREGS(REGNO, MODE)                                         \
- ((REGNO >= CR16_FIRST_DWORD_REGISTER)                                        \
-  ? ((GET_MODE_SIZE (MODE) + CR16_UNITS_PER_DWORD - 1) / CR16_UNITS_PER_DWORD)\
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD       - 1) / UNITS_PER_WORD))
-
-/* Nonzero if it is permissible to store a value of mode @var{mode} in hard
-   register number @var{regno} (or in several registers starting with that
-   one).  On the CR16 architecture, all registers can hold all modes,
-   except that double precision floats (and double ints) must fall on
-   even-register boundaries.  */ 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) cr16_hard_regno_mode_ok (REGNO, MODE)
+  (targetm.hard_regno_nregs (REGNO,                                          \
+			     GET_MODE_WIDER_MODE (word_mode).require ()) == 1)
 
 #define NOTICE_UPDATE_CC(EXP, INSN) \
    notice_update_cc ((EXP))
@@ -251,11 +233,8 @@ while (0)
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME) 			  		\
-  (0 == COUNT)	?  gen_rtx_PLUS (Pmode, gen_rtx_RA, gen_rtx_RA)		\
+  (COUNT == 0)	?  gen_rtx_PLUS (Pmode, gen_rtx_RA, gen_rtx_RA)		\
 		:  const0_rtx
-
-#define MODES_TIEABLE_P(MODE1, MODE2)  \
-  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
 
 enum reg_class
 {
@@ -314,7 +293,7 @@ enum reg_class
 	(CR16_REGNO_OK_FOR_BASE_P(REGNO)  &&	  \
 	  ((GET_MODE_SIZE (MODE) > 4  &&  	  \
 	     (REGNO) < CR16_FIRST_DWORD_REGISTER) \
-	     ? (0 == ((REGNO) & 1)) 		  \
+	     ? (((REGNO) & 1) == 0) 		  \
 	     : 1))
 
 /* TODO: For now lets not support index addressing mode.  */
@@ -370,8 +349,6 @@ enum reg_class
 /* Stack layout and calling conventions.  */
 #define STACK_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET   0
-
 #define STACK_POINTER_REGNUM    15
 
 #define FRAME_POINTER_REGNUM    13
@@ -404,7 +381,7 @@ enum reg_class
 
 #define PUSH_ARGS 1
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) cr16_push_rounding (BYTES)
 
 #ifndef CUMULATIVE_ARGS
 struct cumulative_args
@@ -502,7 +479,7 @@ struct cumulative_args
 
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM, NAME) \
-  asm_fprintf (STREAM, "%U%s", (*targetm.strip_name_encoding) (NAME));
+  asm_fprintf (STREAM, "%U%s", (*targetm.strip_name_encoding) (NAME))
 
 #define ASM_OUTPUT_SYMBOL_REF(STREAM, SYMBOL)   \
   do                                            \
@@ -566,8 +543,6 @@ struct cumulative_args
 #define CASE_VECTOR_MODE  Pmode
 
 #define MOVE_MAX 4
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
 
 #define STORE_FLAG_VALUE  1
 

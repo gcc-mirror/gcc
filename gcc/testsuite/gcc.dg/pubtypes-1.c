@@ -1,6 +1,6 @@
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-options "-O0 -gdwarf-2 -dA -fno-eliminate-unused-debug-types" } */
-/* { dg-skip-if "Unmatchable assembly" { mmix-*-* } { "*" } { "" } } */
+/* { dg-skip-if "Unmatchable assembly" { mmix-*-* } } */
 /* { dg-final { scan-assembler "__debug_pubtypes" } } */
 /* { dg-final { scan-assembler "long+\[ \t\]+0x\[0-9a-f]+\[ \t\]+\[#;]+\[ \t\]+Pub Info Length" } } */
 /* { dg-final { scan-assembler "used_struct\\\\0\"+\[ \t\]+\[#;]+\[ \t\]+external name" } } */

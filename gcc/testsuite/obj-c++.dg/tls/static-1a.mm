@@ -1,4 +1,4 @@
-// { dg-skip-if "Additional Source File"  *-*-* "*" ""  }
+// { dg-skip-if "Additional Source File"  *-*-*  }
 // This is the additional source file for test static-1.mm
 
 struct A

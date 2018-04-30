@@ -68,7 +68,7 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail { vect_no_align || vect_element_align } } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { target { vect_element_align } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 0 "vect" { xfail { vect_element_align } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { target { vect_element_align } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { target { ! vect_element_align } xfail { ! vect_unaligned_possible } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { target { vect_element_align } xfail { ! vect_unaligned_possible } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 0 "vect" { target { { ! vect_element_align } || vect_element_align_preferred} } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { target { vect_element_align && { ! vect_element_align_preferred } } } } } */

@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -262,7 +262,7 @@ static bool move_for_stack_reg (rtx_insn *, stack_ptr, rtx);
 static bool move_nan_for_stack_reg (rtx_insn *, stack_ptr, rtx);
 static int swap_rtx_condition_1 (rtx);
 static int swap_rtx_condition (rtx_insn *);
-static void compare_for_stack_reg (rtx_insn *, stack_ptr, rtx);
+static void compare_for_stack_reg (rtx_insn *, stack_ptr, rtx, bool);
 static bool subst_stack_regs_pat (rtx_insn *, stack_ptr, rtx);
 static void subst_asm_stack_regs (rtx_insn *, stack_ptr);
 static bool subst_stack_regs (rtx_insn *, stack_ptr);
@@ -1105,13 +1105,16 @@ move_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	}
 
       /* The destination ought to be dead.  */
-      gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+      if (get_hard_regnum (regstack, dest) >= FIRST_STACK_REG)
+	gcc_assert (any_malformed_asm);
+      else
+	{
+	  replace_reg (psrc, get_hard_regnum (regstack, src));
 
-      replace_reg (psrc, get_hard_regnum (regstack, src));
-
-      regstack->reg[++regstack->top] = REGNO (dest);
-      SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
-      replace_reg (pdest, FIRST_STACK_REG);
+	  regstack->reg[++regstack->top] = REGNO (dest);
+	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
+	  replace_reg (pdest, FIRST_STACK_REG);
+	}
     }
   else if (STACK_REG_P (src))
     {
@@ -1170,7 +1173,8 @@ move_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	  && XINT (SET_SRC (XVECEXP (pat, 0, 1)), 1) == UNSPEC_TAN)
 	emit_swap_insn (insn, regstack, dest);
       else
-	gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+	gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG
+		    || any_malformed_asm);
 
       gcc_assert (regstack->top < REG_STACK_SIZE);
 
@@ -1325,7 +1329,8 @@ swap_rtx_condition (rtx_insn *insn)
    set up.  */
 
 static void
-compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat_src)
+compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack,
+		       rtx pat_src, bool can_pop_second_op)
 {
   rtx *src1, *src2;
   rtx src1_note, src2_note;
@@ -1366,8 +1371,18 @@ compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat_src)
 
   if (src1_note)
     {
-      pop_stack (regstack, REGNO (XEXP (src1_note, 0)));
-      replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
+      if (*src2 == CONST0_RTX (GET_MODE (*src2)))
+	{
+	  /* This is `ftst' insn that can't pop register.  */
+	  remove_regno_note (insn, REG_DEAD, REGNO (XEXP (src1_note, 0)));
+	  emit_pop_insn (insn, regstack, XEXP (src1_note, 0),
+			 EMIT_AFTER);
+	}
+      else
+	{
+	  pop_stack (regstack, REGNO (XEXP (src1_note, 0)));
+	  replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
+	}
     }
 
   /* If the second operand dies, handle that.  But if the operands are
@@ -1384,7 +1399,7 @@ compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat_src)
 	 at top (FIRST_STACK_REG) now.  */
 
       if (get_hard_regnum (regstack, XEXP (src2_note, 0)) == FIRST_STACK_REG
-	  && src1_note)
+	  && src1_note && can_pop_second_op)
 	{
 	  pop_stack (regstack, REGNO (XEXP (src2_note, 0)));
 	  replace_reg (&XEXP (src2_note, 0), FIRST_STACK_REG + 1);
@@ -1549,10 +1564,6 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 
 	switch (GET_CODE (pat_src))
 	  {
-	  case COMPARE:
-	    compare_for_stack_reg (insn, regstack, pat_src);
-	    break;
-
 	  case CALL:
 	    {
 	      int count;
@@ -1953,29 +1964,33 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 		replace_reg (src2, FIRST_STACK_REG + 1);
 		break;
 
-	      case UNSPEC_SAHF:
-		/* (unspec [(unspec [(compare)] UNSPEC_FNSTSW)] UNSPEC_SAHF)
-		   The combination matches the PPRO fcomi instruction.  */
-
-		pat_src = XVECEXP (pat_src, 0, 0);
-		gcc_assert (GET_CODE (pat_src) == UNSPEC);
-		gcc_assert (XINT (pat_src, 1) == UNSPEC_FNSTSW);
-		/* Fall through.  */
-
 	      case UNSPEC_FNSTSW:
 		/* Combined fcomp+fnstsw generated for doing well with
 		   CSE.  When optimizing this would have been broken
 		   up before now.  */
 
 		pat_src = XVECEXP (pat_src, 0, 0);
-		gcc_assert (GET_CODE (pat_src) == COMPARE);
+		if (GET_CODE (pat_src) == COMPARE)
+		  goto do_compare;
 
-		compare_for_stack_reg (insn, regstack, pat_src);
-		break;
+		/* Fall through.  */
+
+	      case UNSPEC_NOTRAP:
+
+		pat_src = XVECEXP (pat_src, 0, 0);
+		gcc_assert (GET_CODE (pat_src) == COMPARE);
+		goto do_compare;
 
 	      default:
 		gcc_unreachable ();
 	      }
+	    break;
+
+	  case COMPARE:
+	  do_compare:
+	    /* `fcomi' insn can't pop two regs.  */
+	    compare_for_stack_reg (insn, regstack, pat_src,
+				   REGNO (*dest) != FLAGS_REG);
 	    break;
 
 	  case IF_THEN_ELSE:
@@ -2477,7 +2492,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	      enum emit_where where)
 {
   int reg;
-  int update_end = 0;
+  rtx_insn *update_end = NULL;
   int i;
 
   /* Stack adjustments for the first insn in a block update the
@@ -2499,7 +2514,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
   if (where == EMIT_AFTER)
     {
       if (current_block && BB_END (current_block) == insn)
-	update_end = 1;
+	update_end = insn;
       insn = NEXT_INSN (insn);
     }
 
@@ -2674,7 +2689,16 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
     }
 
   if (update_end)
-    BB_END (current_block) = PREV_INSN (insn);
+    {
+      for (update_end = NEXT_INSN (update_end); update_end != insn;
+	   update_end = NEXT_INSN (update_end))
+	{
+	  set_block_for_insn (update_end, current_block);
+	  if (INSN_P (update_end))
+	    df_insn_rescan (update_end);
+	}
+      BB_END (current_block) = PREV_INSN (insn);
+    }
 }
 
 /* Print stack configuration.  */
@@ -2943,14 +2967,9 @@ better_edge (edge e1, edge e2)
   if (!e1)
     return e2;
 
-  if (EDGE_FREQUENCY (e1) > EDGE_FREQUENCY (e2))
+  if (e1->count () > e2->count ())
     return e1;
-  if (EDGE_FREQUENCY (e1) < EDGE_FREQUENCY (e2))
-    return e2;
-
-  if (e1->count > e2->count)
-    return e1;
-  if (e1->count < e2->count)
+  if (e1->count () < e2->count ())
     return e2;
 
   /* Prefer critical edges to minimize inserting compensation code on
@@ -3028,7 +3047,7 @@ convert_regs_1 (basic_block block)
 
       /* Don't bother processing unless there is a stack reg
 	 mentioned or if it's a CALL_INSN.  */
-      if (DEBUG_INSN_P (insn))
+      if (DEBUG_BIND_INSN_P (insn))
 	{
 	  if (starting_stack_p)
 	    debug_insns_with_starting_stack++;
@@ -3068,7 +3087,7 @@ convert_regs_1 (basic_block block)
       for (insn = BB_HEAD (block); debug_insns_with_starting_stack;
 	   insn = NEXT_INSN (insn))
 	{
-	  if (!DEBUG_INSN_P (insn))
+	  if (!DEBUG_BIND_INSN_P (insn))
 	    continue;
 
 	  debug_insns_with_starting_stack--;
@@ -3315,13 +3334,9 @@ reg_to_stack (void)
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
     {
       machine_mode mode;
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
 	FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_COMPLEX_FLOAT)
 	FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
     }
 

@@ -16,5 +16,5 @@ constexpr int i = ai.f();
 constexpr int b = A<B>().f();	// { dg-error "" }
 
 template <class T>
-constexpr int f (T t) { return 42; } // { dg-error "parameter" }
-constexpr int x = f(B());	     // { dg-error "constexpr" }
+constexpr int f (T t) { return 42; }
+constexpr int x = f(B());	     // { dg-error "non-literal" }

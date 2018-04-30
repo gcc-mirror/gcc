@@ -1,4 +1,4 @@
-@c Copyright (C) 1999-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1999-2018 Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
 
@@ -22,8 +22,9 @@ for header files during preprocessing.
 @ifset cppmanual
 @xref{Search Path}.
 @end ifset
-If @var{dir} begins with @samp{=}, then the @samp{=} is replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
+If @var{dir} begins with @samp{=} or @code{$SYSROOT}, then the @samp{=}
+or @code{$SYSROOT} is replaced by the sysroot prefix; see
+@option{--sysroot} and @option{-isysroot}.
 
 Directories specified with @option{-iquote} apply only to the quote 
 form of the directive, @code{@w{#include "@var{file}"}}.

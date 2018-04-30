@@ -1,6 +1,6 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wno-sizeof-array-argument" } */
+/* { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument -Wno-stringop-overflow" } */
 /* { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
@@ -72,6 +72,15 @@ f1 (void *x, int z)
   z += bcmp (x, pa1, sizeof (struct A *));  /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
   z += bcmp (x, pa2, sizeof (PTA));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
   z += bcmp (x, pa3, sizeof (PA));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
+
+  z += bcmp (x, (&a), (sizeof (&a)));	    /* { dg-warning "call is the same expression as the second source; did you mean to remove the addressof" } */
+  z += bcmp (x, (pa1), (sizeof (pa1)));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
+  z += bcmp (x, (pa2), (sizeof pa2));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
+  z += bcmp (x, (pa3), (sizeof (pa3)));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
+  z += bcmp (x, (pa4), (sizeof pa4));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
+  z += bcmp (x, (pa1), (sizeof (struct A *)));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
+  z += bcmp (x, (pa2), (sizeof (PTA)));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
+  z += bcmp (x, (pa3), (sizeof (PA)));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
 
   /* These are correct, no warning.  */
   bzero (&a, sizeof a);

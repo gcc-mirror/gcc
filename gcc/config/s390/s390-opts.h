@@ -1,5 +1,5 @@
 /* Definitions for option handling for IBM S/390.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,9 +38,18 @@ enum processor_type
   PROCESSOR_2817_Z196,
   PROCESSOR_2827_ZEC12,
   PROCESSOR_2964_Z13,
-  PROCESSOR_ARCH12,
+  PROCESSOR_3906_Z14,
   PROCESSOR_NATIVE,
   PROCESSOR_max
 };
 
+
+/* Values for -mindirect-branch and -mfunction-return options.  */
+enum indirect_branch {
+  indirect_branch_unset = 0,
+  indirect_branch_keep,
+  indirect_branch_thunk,
+  indirect_branch_thunk_inline,
+  indirect_branch_thunk_extern
+};
 #endif

@@ -88,8 +88,8 @@ end module udr11
     t%x = t%x + 2 * i
     u%x = u%x + 3 * i
   end do
-  if (j%x /= 5050 .or. k%x /= 30300 .or. l%x /= 15150) call abort
-  if (m%x /= 5050 .or. n%x /= 10100 .or. o%x /= 15150) call abort
-  if (p%x /= 5050 .or. q%x /= 10100 .or. r%x /= 15150) call abort
-  if (s%x /= 5050 .or. t%x /= 10100 .or. u%x /= 15150) call abort
+  if (j%x /= 5050 .or. k%x /= 30300 .or. l%x /= 15150) STOP 1
+  if (m%x /= 5050 .or. n%x /= 10100 .or. o%x /= 15150) STOP 2
+  if (p%x /= 5050 .or. q%x /= 10100 .or. r%x /= 15150) STOP 3
+  if (s%x /= 5050 .or. t%x /= 10100 .or. u%x /= 15150) STOP 4
 end

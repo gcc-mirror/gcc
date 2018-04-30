@@ -2,7 +2,7 @@
 // Origin PR debug/30161
 // { dg-options "-gdwarf-2 -dA" }
 // { dg-final { scan-assembler "DW_TAG_template_type_param" } }
-// { dg-final { scan-assembler "T.*DW_AT_name" } }
+// { dg-final { scan-assembler "T\[^\n\r]* DW_AT_name" } }
 
 template <class T>
 struct vector

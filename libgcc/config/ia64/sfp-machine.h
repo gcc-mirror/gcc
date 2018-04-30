@@ -68,7 +68,7 @@ void __sfp_handle_exceptions (int);
   do {						\
     if (__builtin_expect (_fex, 0))		\
       __sfp_handle_exceptions (_fex);		\
-  } while (0);
+  } while (0)
 
 #define FP_TRAPPING_EXCEPTIONS	(~_fcw & FP_EX_ALL)
 

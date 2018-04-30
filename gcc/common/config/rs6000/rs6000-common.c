@@ -1,5 +1,5 @@
 /* Common hooks for IBM RS/6000.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -31,7 +31,6 @@
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options rs6000_option_optimization_table[] =
   {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     /* Enable -fsched-pressure for first pass instruction scheduling.  */
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
@@ -50,6 +49,15 @@ rs6000_option_init_struct (struct gcc_options *opts)
   /* Enable section anchors by default.  */
   if (!TARGET_MACHO)
     opts->x_flag_section_anchors = 1;
+
+  /* By default, always emit DWARF-2 unwind info.  This allows debugging
+     without maintaining a stack frame back-chain.  It also allows the
+     debugger to find out where on-entry register values are stored at any
+     point in a function, without having to analyze the executable code (which
+     isn't even possible to do in the general case).  */
+#ifdef OBJECT_FORMAT_ELF
+  opts->x_flag_asynchronous_unwind_tables = 1;
+#endif
 }
 
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
@@ -206,15 +214,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	}
       break;
 #endif
-
-    case OPT_mabi_altivec:
-      /* Enabling the AltiVec ABI turns off the SPE ABI.  */
-      opts->x_rs6000_spe_abi = 0;
-      break;
-
-    case OPT_mabi_spe:
-      opts->x_rs6000_altivec_abi = 0;
-      break;
 
     case OPT_mlong_double_:
       if (value != 64 && value != 128)

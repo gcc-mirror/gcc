@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -74,13 +74,55 @@ remove_fallthru_edge (vec<edge, va_gc> *ev)
   return false;
 }
 
+/* Convert a SWTCH with single non-default case to gcond and replace it
+   at GSI.  */
+
+static bool
+convert_single_case_switch (gswitch *swtch, gimple_stmt_iterator &gsi)
+{
+  if (gimple_switch_num_labels (swtch) != 2)
+    return false;
+
+  tree index = gimple_switch_index (swtch);
+  tree default_label = CASE_LABEL (gimple_switch_default_label (swtch));
+  tree label = gimple_switch_label (swtch, 1);
+  tree low = CASE_LOW (label);
+  tree high = CASE_HIGH (label);
+
+  basic_block default_bb = label_to_block_fn (cfun, default_label);
+  basic_block case_bb = label_to_block_fn (cfun, CASE_LABEL (label));
+
+  basic_block bb = gimple_bb (swtch);
+  gcond *cond;
+
+  /* Replace switch statement with condition statement.  */
+  if (high)
+    {
+      tree lhs, rhs;
+      generate_range_test (bb, index, low, high, &lhs, &rhs);
+      cond = gimple_build_cond (LE_EXPR, lhs, rhs, NULL_TREE, NULL_TREE);
+    }
+  else
+    cond = gimple_build_cond (EQ_EXPR, index,
+			      fold_convert (TREE_TYPE (index), low),
+			      NULL_TREE, NULL_TREE);
+
+  gsi_replace (&gsi, cond, true);
+
+  /* Update edges.  */
+  edge case_edge = find_edge (bb, case_bb);
+  edge default_edge = find_edge (bb, default_bb);
+
+  case_edge->flags |= EDGE_TRUE_VALUE;
+  default_edge->flags |= EDGE_FALSE_VALUE;
+  return true;
+}
 
 /* Disconnect an unreachable block in the control expression starting
    at block BB.  */
 
 static bool
-cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
-			    bool first_p)
+cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 {
   edge taken_edge;
   bool retval = false;
@@ -93,29 +135,24 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
       bool warned;
       tree val = NULL_TREE;
 
+      /* Try to convert a switch with just a single non-default case to
+	 GIMPLE condition.  */
+      if (gimple_code (stmt) == GIMPLE_SWITCH
+	  && convert_single_case_switch (as_a<gswitch *> (stmt), gsi))
+	stmt = gsi_stmt (gsi);
+
       fold_defer_overflow_warnings ();
       switch (gimple_code (stmt))
 	{
 	case GIMPLE_COND:
-	  /* During a first iteration on the CFG only remove trivially
-	     dead edges but mark other conditions for re-evaluation.  */
-	  if (first_p)
-	    {
-	      val = const_binop (gimple_cond_code (stmt), boolean_type_node,
-				 gimple_cond_lhs (stmt),
-				 gimple_cond_rhs (stmt));
-	      if (! val)
-		bitmap_set_bit (cfgcleanup_altered_bbs, bb->index);
-	    }
-	  else
-	    {
-	      code_helper rcode;
-	      tree ops[3] = {};
-	      if (gimple_simplify (stmt, &rcode, ops, NULL, no_follow_ssa_edges,
-				   no_follow_ssa_edges)
-		  && rcode == INTEGER_CST)
-		val = ops[0];
-	    }
+	  {
+	    code_helper rcode;
+	    tree ops[3] = {};
+	    if (gimple_simplify (stmt, &rcode, ops, NULL, no_follow_ssa_edges,
+				 no_follow_ssa_edges)
+		&& rcode == INTEGER_CST)
+	      val = ops[0];
+	  }
 	  break;
 
 	case GIMPLE_SWITCH:
@@ -146,7 +183,6 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
 		}
 
 	      taken_edge->probability += e->probability;
-	      taken_edge->count += e->count;
 	      remove_edge_and_dominated_blocks (e);
 	      retval = true;
 	    }
@@ -155,8 +191,6 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
 	}
       if (!warned)
 	fold_undefer_and_ignore_overflow_warnings ();
-      if (taken_edge->probability > REG_BR_PROB_BASE)
-	taken_edge->probability = REG_BR_PROB_BASE;
     }
   else
     taken_edge = single_succ_edge (bb);
@@ -189,7 +223,7 @@ cleanup_call_ctrl_altering_flag (gimple *bb_end)
    true if anything changes.  */
 
 static bool
-cleanup_control_flow_bb (basic_block bb, bool first_p)
+cleanup_control_flow_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   bool retval = false;
@@ -212,7 +246,7 @@ cleanup_control_flow_bb (basic_block bb, bool first_p)
       || gimple_code (stmt) == GIMPLE_SWITCH)
     {
       gcc_checking_assert (gsi_stmt (gsi_last_bb (bb)) == stmt);
-      retval |= cleanup_control_expr_graph (bb, gsi, first_p);
+      retval |= cleanup_control_expr_graph (bb, gsi);
     }
   else if (gimple_code (stmt) == GIMPLE_GOTO
 	   && TREE_CODE (gimple_goto_dest (stmt)) == ADDR_EXPR
@@ -410,7 +444,7 @@ remove_forwarder_block (basic_block bb)
 {
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
-  gimple *label;
+  gimple *stmt;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
   bool can_move_debug_stmts;
@@ -423,9 +457,9 @@ remove_forwarder_block (basic_block bb)
 
   /* If the destination block consists of a nonlocal label or is a
      EH landing pad, do not merge it.  */
-  label = first_stmt (dest);
-  if (label)
-    if (glabel *label_stmt = dyn_cast <glabel *> (label))
+  stmt = first_stmt (dest);
+  if (stmt)
+    if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
       if (DECL_NONLOCAL (gimple_label_label (label_stmt))
 	  || EH_LANDING_PAD_NR (gimple_label_label (label_stmt)) != 0)
 	return false;
@@ -506,35 +540,34 @@ remove_forwarder_block (basic_block bb)
   gsi_to = gsi_start_bb (dest);
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
-      tree decl;
-      label = gsi_stmt (gsi);
-      if (is_gimple_debug (label))
+      stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
 	break;
-      decl = gimple_label_label (as_a <glabel *> (label));
+
+      /* Forwarder blocks can only contain labels and debug stmts, and
+	 labels must come first, so if we get to this point, we know
+	 we're looking at a label.  */
+      tree decl = gimple_label_label (as_a <glabel *> (stmt));
       if (EH_LANDING_PAD_NR (decl) != 0
 	  || DECL_NONLOCAL (decl)
 	  || FORCED_LABEL (decl)
 	  || !DECL_ARTIFICIAL (decl))
-	{
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
-	}
+	gsi_move_before (&gsi, &gsi_to);
       else
 	gsi_next (&gsi);
     }
 
   /* Move debug statements if the destination has a single predecessor.  */
-  if (can_move_debug_stmts)
+  if (can_move_debug_stmts && !gsi_end_p (gsi))
     {
       gsi_to = gsi_after_labels (dest);
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
+      do
 	{
 	  gimple *debug = gsi_stmt (gsi);
-	  if (!is_gimple_debug (debug))
-	    break;
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, debug, GSI_SAME_STMT);
+	  gcc_assert (is_gimple_debug (debug));
+	  gsi_move_before (&gsi, &gsi_to);
 	}
+      while (!gsi_end_p (gsi));
     }
 
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
@@ -638,6 +671,19 @@ fixup_noreturn_call (gimple *stmt)
   return changed;
 }
 
+/* Return true if we want to merge BB1 and BB2 into a single block.  */
+
+static bool
+want_merge_blocks_p (basic_block bb1, basic_block bb2)
+{
+  if (!can_merge_blocks_p (bb1, bb2))
+    return false;
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb1);
+  if (gsi_end_p (gsi) || !stmt_can_terminate_bb_p (gsi_stmt (gsi)))
+    return true;
+  return bb1->count.ok_for_merging (bb2->count);
+}
+
 
 /* Tries to cleanup cfg in basic block BB.  Returns true if anything
    changes.  */
@@ -654,7 +700,7 @@ cleanup_tree_cfg_bb (basic_block bb)
      This happens when we visit BBs in a non-optimal order and
      avoids quadratic behavior with adjusting stmts BB pointer.  */
   if (single_pred_p (bb)
-      && can_merge_blocks_p (single_pred (bb), bb))
+      && want_merge_blocks_p (single_pred (bb), bb))
     /* But make sure we _do_ visit it.  When we remove unreachable paths
        ending in a backedge we fail to mark the destinations predecessors
        as changed.  */
@@ -664,13 +710,52 @@ cleanup_tree_cfg_bb (basic_block bb)
      conditional branches (due to the elimination of single-valued PHI
      nodes).  */
   else if (single_succ_p (bb)
-	   && can_merge_blocks_p (bb, single_succ (bb)))
+	   && want_merge_blocks_p (bb, single_succ (bb)))
     {
       merge_blocks (bb, single_succ (bb));
       return true;
     }
 
   return false;
+}
+
+/* Do cleanup_control_flow_bb in PRE order.  */
+
+static bool
+cleanup_control_flow_pre ()
+{
+  bool retval = false;
+
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
+  bitmap_clear (visited);
+
+  stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs));
+
+  while (! stack.is_empty ())
+    {
+      /* Look at the edge on the top of the stack.  */
+      edge_iterator ei = stack.last ();
+      basic_block dest = ei_edge (ei)->dest;
+
+      if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  && ! bitmap_bit_p (visited, dest->index))
+	{
+	  bitmap_set_bit (visited, dest->index);
+	  retval |= cleanup_control_flow_bb (dest);
+	  if (EDGE_COUNT (dest->succs) > 0)
+	    stack.quick_push (ei_start (dest->succs));
+	}
+      else
+	{
+	  if (!ei_one_before_end_p (ei))
+	    ei_next (&stack.last ());
+	  else
+	    stack.pop ();
+	}
+    }
+
+  return retval;
 }
 
 /* Iterate the cfg cleanups, while anything changes.  */
@@ -693,17 +778,11 @@ cleanup_tree_cfg_1 (void)
   /* We cannot use FOR_EACH_BB_FN for the BB iterations below
      since the basic blocks may get removed.  */
 
-  /* Start by iterating over all basic blocks looking for edge removal
-     opportunities.  Do this first because incoming SSA form may be
-     invalid and we want to avoid performing SSA related tasks such
+  /* Start by iterating over all basic blocks in PRE order looking for
+     edge removal opportunities.  Do this first because incoming SSA form
+     may be invalid and we want to avoid performing SSA related tasks such
      as propgating out a PHI node during BB merging in that state.  */
-  n = last_basic_block_for_fn (cfun);
-  for (i = NUM_FIXED_BLOCKS; i < n; i++)
-    {
-      bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      if (bb)
-	retval |= cleanup_control_flow_bb (bb, true);
-    }
+  retval |= cleanup_control_flow_pre ();
 
   /* After doing the above SSA form should be valid (or an update SSA
      should be required).  */
@@ -730,7 +809,7 @@ cleanup_tree_cfg_1 (void)
       if (!bb)
 	continue;
 
-      retval |= cleanup_control_flow_bb (bb, false);
+      retval |= cleanup_control_flow_bb (bb);
       retval |= cleanup_tree_cfg_bb (bb);
     }
 
@@ -832,14 +911,23 @@ cleanup_tree_cfg_noloop (void)
   changed |= cleanup_tree_cfg_1 ();
 
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
-  compact_blocks ();
+
+  /* Do not renumber blocks if the SCEV cache is active, it is indexed by
+     basic-block numbers.  */
+  if (! scev_initialized_p ())
+    compact_blocks ();
 
   checking_verify_flow_info ();
 
   timevar_pop (TV_TREE_CLEANUP_CFG);
 
   if (changed && current_loops)
-    loops_state_set (LOOPS_NEED_FIXUP);
+    {
+      /* Removing edges and/or blocks may make recorded bounds refer
+         to stale GIMPLE stmts now, so clear them.  */
+      free_numbers_of_iterations_estimates (cfun);
+      loops_state_set (LOOPS_NEED_FIXUP);
+    }
 
   return changed;
 }
@@ -959,7 +1047,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	    {
 	      dest->loop_father->any_upper_bound = false;
 	      dest->loop_father->any_likely_upper_bound = false;
-	      free_numbers_of_iterations_estimates_loop (dest->loop_father);
+	      free_numbers_of_iterations_estimates (dest->loop_father);
 	    }
 	}
 
@@ -1200,7 +1288,8 @@ execute_cleanup_cfg_post_optimizing (void)
     }
   maybe_remove_unreachable_handlers ();
   cleanup_dead_labels ();
-  group_case_labels ();
+  if (group_case_labels ())
+    todo |= TODO_cleanup_cfg;
   if ((flag_compare_debug_opt || flag_compare_debug)
       && flag_dump_final_insns)
     {
@@ -1219,7 +1308,8 @@ execute_cleanup_cfg_post_optimizing (void)
 
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  fprintf (final_output, "\n");
-	  dump_enumerated_decls (final_output, dump_flags | TDF_NOUID);
+	  dump_enumerated_decls (final_output,
+				 dump_flags | TDF_SLIM | TDF_NOUID);
 	  flag_dump_noaddr = save_noaddr;
 	  flag_dump_unnumbered = save_unnumbered;
 	  if (fclose (final_output))

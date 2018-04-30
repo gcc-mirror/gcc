@@ -34,6 +34,7 @@ grep -v '^// ' gen-sysinfo.go | \
   grep -v '^type _timespec ' | \
   grep -v '^type _timestruc_t ' | \
   grep -v '^type _epoll_' | \
+  grep -v '^type _*locale[_ ]' | \
   grep -v 'in6_addr' | \
   grep -v 'sockaddr_in6' | \
   sed -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
@@ -46,6 +47,10 @@ grep -v '^// ' gen-sysinfo.go | \
 # a field of type _in6_addr, but other types depend on _arpcom, so we need to
 # put it back.
 grep '^type _arpcom ' gen-sysinfo.go | \
+  sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
+
+# Same on Solaris for _mld_hdr_t.
+grep '^type _mld_hdr_t ' gen-sysinfo.go | \
   sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
 
 # The errno constants.  These get type Errno.
@@ -310,16 +315,11 @@ upcase_fields () {
 # _user_regs_struct.
 regs=`grep '^type _user_regs_struct struct' gen-sysinfo.go || true`
 if test "$regs" = ""; then
-  # s390
-  regs=`grep '^type __user_regs_struct struct' gen-sysinfo.go || true`
-  if test "$regs" != ""; then
-    # Substructures of __user_regs_struct on s390
-    upcase_fields "__user_psw_struct" "PtracePsw" >> ${OUT} || true
-    upcase_fields "__user_fpregs_struct" "PtraceFpregs" >> ${OUT} || true
-    upcase_fields "__user_per_struct" "PtracePer" >> ${OUT} || true
-  fi
+  # mips*
+  regs=`grep '^type _pt_regs struct' gen-sysinfo.go || true`
 fi
 if test "$regs" != ""; then
+  regs=`echo $regs | sed -e 's/type _pt_regs struct//'`
   regs=`echo $regs |
     sed -e 's/type __*user_regs_struct struct //' -e 's/[{}]//g'`
   regs=`echo $regs | sed -e s'/^ *//'`
@@ -443,6 +443,12 @@ grep '^type _tms ' gen-sysinfo.go | \
       -e 's/tms_cstime/Cstime/' \
     >> ${OUT}
 
+# AIX uses st_timespec struct for stat.
+grep '^type _st_timespec ' gen-sysinfo.go | \
+    sed -e 's/type _st_timespec /type StTimespec /' \
+      -e 's/tv_sec/Sec/' \
+      -e 's/tv_nsec/Nsec/' >> ${OUT}
+
 # The stat type.
 # Prefer largefile variant if available.
 stat=`grep '^type _stat64 ' gen-sysinfo.go || true`
@@ -467,6 +473,7 @@ fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/st_ctim/Ctim/' \
          -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec_t\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
+         -e 's/\([^a-zA-Z0-9_]\)_st_timespec_t\([^a-zA-Z0-9_]\)/\1StTimespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
          -e 's/Godump_[0-9] struct { \([^;]*;\) };/\1/g' \
@@ -485,6 +492,7 @@ fi | sed -e 's/type _dirent64/type Dirent/' \
          -e 's/d_name/Name/' \
          -e 's/]int8/]byte/' \
          -e 's/d_ino/Ino/' \
+         -e 's/d_namlen/Namlen/' \
          -e 's/d_off/Off/' \
          -e 's/d_reclen/Reclen/' \
          -e 's/d_type/Type/' \
@@ -677,9 +685,13 @@ if ! grep "const EAI_OVERFLOW " ${OUT} >/dev/null 2>&1; then
 fi
 
 # The passwd struct.
+# Force uid and gid from int32 to uint32 for consistency; they are
+# int32 on Solaris 10 but uint32 everywhere else including Solaris 11.
 grep '^type _passwd ' gen-sysinfo.go | \
     sed -e 's/_passwd/Passwd/' \
       -e 's/ pw_/ Pw_/g' \
+      -e 's/ Pw_uid int32/ Pw_uid uint32/' \
+      -e 's/ Pw_gid int32/ Pw_gid uint32/' \
     >> ${OUT}
 
 # The group struct.
@@ -1108,8 +1120,16 @@ if test "$timex" != ""; then
 fi
 
 # The rlimit struct.
-grep '^type _rlimit ' gen-sysinfo.go | \
-    sed -e 's/_rlimit/Rlimit/' \
+# On systems that use syscall/libcall_posix_largefile.go, use rlimit64
+# if it exists.
+rlimit="_rlimit"
+if test "${GOOS}" = "aix" || test "${GOOS}" = "linux" || (test "${GOOS}" = "solaris" && (test "${GOARCH}" = "386" || test "${GOARCH}" = "sparc")); then
+  if grep '^type _rlimit64 ' gen-sysinfo.go > /dev/null 2>&1; then
+    rlimit="_rlimit64"
+  fi
+fi
+grep "^type ${rlimit} " gen-sysinfo.go | \
+    sed -e "s/${rlimit}/Rlimit/" \
       -e 's/rlim_cur/Cur/' \
       -e 's/rlim_max/Max/' \
     >> ${OUT}
@@ -1118,7 +1138,13 @@ grep '^type _rlimit ' gen-sysinfo.go | \
 grep '^const _RLIMIT_' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(RLIMIT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RLIM_' gen-sysinfo.go |
+    grep -v '^const _RLIM_INFINITY ' |
     sed -e 's/^\(const \)_\(RLIM_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+if test "${rlimit}" = "_rlimit64" && grep '^const _RLIM64_INFINITY ' gen-sysinfo.go > /dev/null 2>&1; then
+  echo 'const RLIM_INFINITY = _RLIM64_INFINITY' >> ${OUT}
+elif grep '^const _RLIM_INFINITY ' gen-sysinfo.go > /dev/null 2>&1; then
+  echo 'const RLIM_INFINITY = _RLIM_INFINITY' >> ${OUT}
+fi
 
 # The sysinfo struct.
 grep '^type _sysinfo ' gen-sysinfo.go | \
@@ -1293,22 +1319,22 @@ grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr/[16]byte/' \
     >> ${OUT}
 
-# The Solaris 12 _flow_arp_desc_t struct.
+# The Solaris 11.4 _flow_arp_desc_t struct.
 grep '^type _flow_arp_desc_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}
 
-# The Solaris 12 _flow_l3_desc_t struct.
+# The Solaris 11.4 _flow_l3_desc_t struct.
 grep '^type _flow_l3_desc_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}
 
-# The Solaris 12 _mac_ipaddr_t struct.
+# The Solaris 11.3 _mac_ipaddr_t struct.
 grep '^type _mac_ipaddr_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}
 
-# The Solaris 12 _mactun_info_t struct.
+# The Solaris 11.3 _mactun_info_t struct.
 grep '^type _mactun_info_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}

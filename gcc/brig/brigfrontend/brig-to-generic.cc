@@ -1,5 +1,5 @@
 /* brig2tree.cc -- brig to gcc generic/gimple tree conversion
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -45,6 +45,7 @@
 #include "phsa.h"
 #include "tree-pretty-print.h"
 #include "dumpfile.h"
+#include "profile-count.h"
 #include "tree-cfg.h"
 #include "errors.h"
 #include "fold-const.h"
@@ -59,8 +60,8 @@ tree brig_to_generic::s_fp32_type;
 tree brig_to_generic::s_fp64_type;
 
 brig_to_generic::brig_to_generic ()
-  : m_cf (NULL), m_brig (NULL), m_next_group_offset (0),
-    m_next_private_offset (0)
+  : m_cf (NULL), m_analyzing (true), m_total_group_segment_usage (0),
+    m_brig (NULL), m_next_private_offset (0)
 {
   m_globals = NULL_TREE;
 
@@ -123,33 +124,50 @@ public:
   }
 };
 
-/* Parses the given BRIG blob.  */
+class brig_reg_use_analyzer : public brig_code_entry_handler
+{
+public:
+  brig_reg_use_analyzer (brig_to_generic &parent)
+    : brig_code_entry_handler (parent)
+  {
+  }
+
+  size_t
+  operator () (const BrigBase *base)
+  {
+    const BrigInstBase *brig_inst = (const BrigInstBase *) base;
+    analyze_operands (*brig_inst);
+    return base->byteCount;
+  }
+
+};
+
+/* Helper struct for pairing a BrigKind and a BrigCodeEntryHandler that
+   should handle its data.  */
+
+struct code_entry_handler_info
+{
+  BrigKind kind;
+  brig_code_entry_handler *handler;
+};
+
+
+/* Finds the BRIG file sections in the currently processed file.  */
 
 void
-brig_to_generic::parse (const char *brig_blob)
+brig_to_generic::find_brig_sections ()
 {
-  m_brig = brig_blob;
-  m_brig_blobs.push_back (brig_blob);
-
-  const BrigModuleHeader *mheader = (const BrigModuleHeader *) brig_blob;
-
-  if (strncmp (mheader->identification, "HSA BRIG", 8) != 0)
-    fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE
-		 "Unrecognized file format.");
-  if (mheader->brigMajor != 1 || mheader->brigMinor != 0)
-    fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE
-		 "BRIG version not supported. BRIG 1.0 required.");
-
   m_data = m_code = m_operand = NULL;
+  const BrigModuleHeader *mheader = (const BrigModuleHeader *) m_brig;
 
   /* Find the positions of the different sections.  */
   for (uint32_t sec = 0; sec < mheader->sectionCount; ++sec)
     {
       uint64_t offset
-	= ((const uint64_t *) (brig_blob + mheader->sectionIndex))[sec];
+	= ((const uint64_t *) (m_brig + mheader->sectionIndex))[sec];
 
       const BrigSectionHeader *section_header
-	= (const BrigSectionHeader *) (brig_blob + offset);
+	= (const BrigSectionHeader *) (m_brig + offset);
 
       std::string name ((const char *) (&section_header->name),
 			section_header->nameLength);
@@ -181,6 +199,114 @@ brig_to_generic::parse (const char *brig_blob)
     gcc_unreachable ();
   if (m_operand == NULL)
     gcc_unreachable ();
+
+}
+
+/* Does a first pass over the given BRIG to collect data needed for the
+   actual parsing.  Currently this includes only collecting the
+   group segment variable usage to support the experimental HSA PRM feature
+   where group variables can be declared also in module and function scope
+   (in addition to kernel scope).
+*/
+
+void
+brig_to_generic::analyze (const char *brig_blob)
+{
+  const BrigModuleHeader *mheader = (const BrigModuleHeader *) brig_blob;
+
+  if (strncmp (mheader->identification, "HSA BRIG", 8) != 0)
+    fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE
+		 "Unrecognized file format.");
+  if (mheader->brigMajor != 1 || mheader->brigMinor != 0)
+    fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE
+		 "BRIG version not supported. BRIG 1.0 required.");
+
+  m_brig = brig_blob;
+
+  find_brig_sections ();
+
+  brig_directive_variable_handler var_handler (*this);
+  brig_directive_fbarrier_handler fbar_handler (*this);
+  brig_directive_function_handler func_handler (*this);
+  brig_reg_use_analyzer reg_use_analyzer (*this);
+
+  /* Need this for grabbing the module names for mangling the
+     group variable names.  */
+  brig_directive_module_handler module_handler (*this);
+  skipped_entry_handler skipped_handler (*this);
+
+  const BrigSectionHeader *csection_header = (const BrigSectionHeader *) m_code;
+
+  code_entry_handler_info handlers[]
+    = {{BRIG_KIND_INST_BASIC, &reg_use_analyzer},
+       {BRIG_KIND_INST_MOD, &reg_use_analyzer},
+       {BRIG_KIND_INST_CMP, &reg_use_analyzer},
+       {BRIG_KIND_INST_MEM, &reg_use_analyzer},
+       {BRIG_KIND_INST_CVT, &reg_use_analyzer},
+       {BRIG_KIND_INST_SEG_CVT, &reg_use_analyzer},
+       {BRIG_KIND_INST_SEG, &reg_use_analyzer},
+       {BRIG_KIND_INST_ADDR, &reg_use_analyzer},
+       {BRIG_KIND_INST_SOURCE_TYPE, &reg_use_analyzer},
+       {BRIG_KIND_INST_ATOMIC, &reg_use_analyzer},
+       {BRIG_KIND_INST_SIGNAL, &reg_use_analyzer},
+       {BRIG_KIND_INST_BR, &reg_use_analyzer},
+       {BRIG_KIND_INST_LANE, &reg_use_analyzer},
+       {BRIG_KIND_INST_QUEUE, &reg_use_analyzer},
+       {BRIG_KIND_DIRECTIVE_VARIABLE, &var_handler},
+       {BRIG_KIND_DIRECTIVE_FBARRIER, &fbar_handler},
+       {BRIG_KIND_DIRECTIVE_KERNEL, &func_handler},
+       {BRIG_KIND_DIRECTIVE_MODULE, &module_handler},
+       {BRIG_KIND_DIRECTIVE_FUNCTION, &func_handler}};
+
+  m_analyzing = true;
+  for (size_t b = csection_header->headerByteCount; b < m_code_size;)
+    {
+      const BrigBase *entry = (const BrigBase *) (m_code + b);
+
+      brig_code_entry_handler *handler = &skipped_handler;
+
+      if (m_cf != NULL && b >= m_cf->m_brig_def->nextModuleEntry)
+	{
+	  /* The function definition ended.  We can just discard the place
+	     holder function. */
+	  m_total_group_segment_usage += m_cf->m_local_group_variables.size ();
+	  delete m_cf;
+	  m_cf = NULL;
+	}
+
+      /* Find a handler.  */
+      for (size_t i = 0;
+	   i < sizeof (handlers) / sizeof (code_entry_handler_info); ++i)
+	{
+	  if (handlers[i].kind == entry->kind)
+	    handler = handlers[i].handler;
+	}
+
+      int bytes_processed = (*handler) (entry);
+      if (bytes_processed == 0)
+	fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_CORRUPTED_MODULE
+		     "Element with 0 bytes.");
+      b += bytes_processed;
+    }
+
+  if (m_cf != NULL)
+    {
+      m_total_group_segment_usage += m_cf->m_local_group_variables.size ();
+      delete m_cf;
+      m_cf = NULL;
+    }
+
+  m_total_group_segment_usage += m_module_group_variables.size ();
+  m_analyzing = false;
+}
+
+/* Parses the given BRIG blob.  */
+
+void
+brig_to_generic::parse (const char *brig_blob)
+{
+  m_brig = brig_blob;
+  find_brig_sections ();
 
   brig_basic_inst_handler inst_handler (*this);
   brig_branch_inst_handler branch_inst_handler (*this);
@@ -247,7 +373,10 @@ brig_to_generic::parse (const char *brig_blob)
        /* There are no supported pragmas at this moment.  */
        {BRIG_KIND_DIRECTIVE_PRAGMA, &skipped_handler},
        {BRIG_KIND_DIRECTIVE_CONTROL, &control_handler},
-       {BRIG_KIND_DIRECTIVE_EXTENSION, &skipped_handler}};
+       {BRIG_KIND_DIRECTIVE_EXTENSION, &skipped_handler},
+       /* BRIG_KIND_NONE entries are valid anywhere.  They can be used
+	  for patching BRIGs before finalization.  */
+       {BRIG_KIND_NONE, &skipped_handler}};
 
   const BrigSectionHeader *csection_header = (const BrigSectionHeader *) m_code;
 
@@ -268,7 +397,6 @@ brig_to_generic::parse (const char *brig_blob)
 	    handler = handlers[i].handler;
 	}
       b += (*handler) (entry);
-      continue;
     }
 
   finish_function ();
@@ -460,10 +588,14 @@ build_stmt (enum tree_code code, ...)
    than the created reg var type in order to select correct instruction type
    later on.  This function creates the necessary reinterpret type cast from
    a source variable to the destination type.  In case no cast is needed to
-   the same type, SOURCE is returned directly.  */
+   the same type, SOURCE is returned directly.
+
+   In case of mismatched type sizes, casting:
+   - to narrower type the upper bits are clipped and
+   - to wider type the source value is zero extended.  */
 
 tree
-build_reinterpret_cast (tree destination_type, tree source)
+build_resize_convert_view (tree destination_type, tree source)
 {
 
   gcc_assert (source && destination_type && TREE_TYPE (source) != NULL_TREE
@@ -483,23 +615,30 @@ build_reinterpret_cast (tree destination_type, tree source)
   size_t dst_size = int_size_in_bytes (destination_type);
   if (src_size == dst_size)
     return build1 (VIEW_CONVERT_EXPR, destination_type, source);
-  else if (src_size < dst_size)
+  else /* src_size != dst_size  */
     {
       /* The src_size can be smaller at least with f16 scalars which are
 	 stored to 32b register variables.  First convert to an equivalent
 	 size unsigned type, then extend to an unsigned type of the
 	 target width, after which VIEW_CONVERT_EXPR can be used to
 	 force to the target type.  */
-      tree unsigned_temp = build1 (VIEW_CONVERT_EXPR,
-				   get_unsigned_int_type (source_type),
-				   source);
-      return build1 (VIEW_CONVERT_EXPR, destination_type,
-		     convert (get_unsigned_int_type (destination_type),
-			      unsigned_temp));
+      tree resized = convert (get_scalar_unsigned_int_type (destination_type),
+			      build_reinterpret_to_uint (source));
+      gcc_assert ((size_t)int_size_in_bytes (TREE_TYPE (resized)) == dst_size);
+      return build_resize_convert_view (destination_type, resized);
     }
-  else
-    gcc_unreachable ();
-  return NULL_TREE;
+}
+
+/* Reinterprets SOURCE as a scalar unsigned int with the size
+   corresponding to the orignal.  */
+
+tree build_reinterpret_to_uint (tree source)
+{
+  tree src_type = TREE_TYPE (source);
+  if (INTEGRAL_TYPE_P (src_type) && TYPE_UNSIGNED (src_type))
+    return source;
+  tree dest_type = get_scalar_unsigned_int_type (src_type);
+  return build1 (VIEW_CONVERT_EXPR, dest_type, source);
 }
 
 /* Returns the finished brig_function for the given generic FUNC_DECL,
@@ -516,6 +655,29 @@ brig_to_generic::get_finished_function (tree func_decl)
     return (*i).second;
   else
     return NULL;
+}
+
+/* Adds a group variable to a correct book keeping structure depending
+   on its segment.  */
+
+void
+brig_to_generic::add_group_variable (const std::string &name, size_t size,
+				     size_t alignment, bool function_scope)
+{
+  /* Module and function scope group region variables are an experimental
+     feature.  We implement module scope group variables with a separate
+     book keeping inside brig_to_generic which is populated in the 'analyze()'
+     prepass.  This is to ensure we know the group segment offsets when
+     processing the functions that might refer to them.  */
+  if (!function_scope)
+    {
+      if (!m_module_group_variables.has_variable (name))
+	m_module_group_variables.add (name, size, alignment);
+      return;
+    }
+
+  if (!m_cf->m_local_group_variables.has_variable (name))
+    m_cf->m_local_group_variables.add (name, size, alignment);
 }
 
 /* Finalizes the currently handled function.  Should be called before
@@ -566,50 +728,34 @@ brig_to_generic::start_function (tree f)
   m_cf->m_func_decl = f;
 }
 
-/* Appends a new group variable (or an fbarrier) to the current kernel's
-   group segment.  */
-
-void
-brig_to_generic::append_group_variable (const std::string &name, size_t size,
-					size_t alignment)
-{
-  size_t align_padding = m_next_group_offset % alignment == 0 ?
-    0 : (alignment - m_next_group_offset % alignment);
-  m_next_group_offset += align_padding;
-  m_group_offsets[name] = m_next_group_offset;
-  m_next_group_offset += size;
-}
-
-size_t
-brig_to_generic::group_variable_segment_offset (const std::string &name) const
-{
-  var_offset_table::const_iterator i = m_group_offsets.find (name);
-  gcc_assert (i != m_group_offsets.end ());
-  return (*i).second;
-}
-
-/* The size of the group and private segments required by the currently
-   processed kernel.  Private segment size must be multiplied by the
-   number of work-items in the launch, in case of a work-group function.  */
-
-size_t
-brig_to_generic::group_segment_size () const
-{
-  return m_next_group_offset;
-}
-
-/* Appends a new group variable to the current kernel's private segment.  */
+/* Appends a new variable to the current kernel's private segment.  */
 
 void
 brig_to_generic::append_private_variable (const std::string &name,
 					  size_t size, size_t alignment)
 {
+  /* We need to take care of two cases of alignment with private
+     variables because of the layout where the same variable for
+     each work-item is laid out in successive addresses.
+
+     1) Ensure the first work-item's variable is in an aligned
+     offset:  */
   size_t align_padding = m_next_private_offset % alignment == 0 ?
     0 : (alignment - m_next_private_offset % alignment);
+
+  /* 2) Each successive per-work-item copy should be aligned.
+     If the variable has wider alignment than size then we need
+     to add extra padding to ensure it.  The padding must be
+     included in the size to allow per-work-item offset computation
+     to find their own aligned copy.  */
+
+  size_t per_var_padding = size % alignment == 0 ?
+    0 : (alignment - size % alignment);
+  m_private_data_sizes[name] = size + per_var_padding;
+
   m_next_private_offset += align_padding;
   m_private_offsets[name] = m_next_private_offset;
-  m_next_private_offset += size;
-  m_private_data_sizes[name] = size + align_padding;
+  m_next_private_offset += size + per_var_padding;
 }
 
 size_t
@@ -629,13 +775,6 @@ brig_to_generic::has_private_variable (const std::string &name) const
   return i != m_private_data_sizes.end ();
 }
 
-bool
-brig_to_generic::has_group_variable (const std::string &name) const
-{
-  var_offset_table::const_iterator i = m_group_offsets.find (name);
-  return i != m_group_offsets.end ();
-}
-
 size_t
 brig_to_generic::private_variable_size (const std::string &name) const
 {
@@ -644,6 +783,10 @@ brig_to_generic::private_variable_size (const std::string &name) const
   gcc_assert (i != m_private_data_sizes.end ());
   return (*i).second;
 }
+
+
+/* The size of private segment required by a single work-item executing
+   the currently processed kernel.  */
 
 size_t
 brig_to_generic::private_segment_size () const
@@ -676,7 +819,7 @@ call_builtin (tree pdecl, int nargs, tree rettype, ...)
     {
       types[i] = va_arg (ap, tree);
       tree arg = va_arg (ap, tree);
-      args[i] = build_reinterpret_cast (types[i], arg);
+      args[i] = build_resize_convert_view (types[i], arg);
       if (types[i] == error_mark_node || args[i] == error_mark_node)
 	{
 	  delete[] types;
@@ -718,10 +861,11 @@ brig_to_generic::write_globals ()
       cgraph_node::finalize_function (f->m_func_decl, true);
 
       f->m_descriptor.is_kernel = 1;
-      /* TODO: analyze the kernel's actual group and private segment usage
-	 using a call graph.  Now the private and group mem sizes are overly
-	 pessimistic in case of multiple kernels in the same module.  */
-      f->m_descriptor.group_segment_size = group_segment_size ();
+      /* TODO: analyze the kernel's actual private and group segment usage
+	 using call graph.  Now the mem size is overly
+	 pessimistic in case of multiple kernels in the same module.
+      */
+      f->m_descriptor.group_segment_size = m_total_group_segment_usage;
       f->m_descriptor.private_segment_size = private_segment_size ();
 
       /* The kernarg size is rounded up to a multiple of 16 according to
@@ -757,8 +901,6 @@ brig_to_generic::write_globals ()
 
   delete[] vec;
 
-  for (size_t i = 0; i < m_brig_blobs.size (); ++i)
-    delete m_brig_blobs[i];
 }
 
 /* Returns an type with unsigned int elements corresponding to the
@@ -771,7 +913,7 @@ get_unsigned_int_type (tree original_type)
     {
       size_t esize
 	= int_size_in_bytes (TREE_TYPE (original_type)) * BITS_PER_UNIT;
-      size_t ecount = TYPE_VECTOR_SUBPARTS (original_type);
+      poly_uint64 ecount = TYPE_VECTOR_SUBPARTS (original_type);
       return build_vector_type (build_nonstandard_integer_type (esize, true),
 				ecount);
     }
@@ -779,6 +921,16 @@ get_unsigned_int_type (tree original_type)
     return build_nonstandard_integer_type (int_size_in_bytes (original_type)
 					   * BITS_PER_UNIT,
 					   true);
+}
+
+/* Returns a type with unsigned int corresponding to the size
+   ORIGINAL_TYPE.  */
+
+tree
+get_scalar_unsigned_int_type (tree original_type)
+{
+  return build_nonstandard_integer_type (int_size_in_bytes (original_type)
+					 * BITS_PER_UNIT, true);
 }
 
 void
@@ -793,5 +945,24 @@ dump_function (FILE *dump_file, brig_function *f)
       print_generic_decl (dump_file, f->m_func_decl, 0);
       print_generic_expr (dump_file, f->m_current_bind_expr, 0);
       fprintf (dump_file, "\n");
+    }
+}
+
+/* Records use of the BRIG_REG as a TYPE in the current function.  */
+
+void
+brig_to_generic::add_reg_used_as_type (const BrigOperandRegister &brig_reg,
+				       tree type)
+{
+  gcc_assert (m_cf);
+  reg_use_info &info
+    = m_fn_regs_use_index[m_cf->m_name][gccbrig_hsa_reg_id (brig_reg)];
+
+  if (info.m_type_refs_lookup.count (type))
+    info.m_type_refs[info.m_type_refs_lookup[type]].second++;
+  else
+    {
+      info.m_type_refs.push_back (std::make_pair (type, 1));
+      info.m_type_refs_lookup[type] = info.m_type_refs.size () - 1;
     }
 }

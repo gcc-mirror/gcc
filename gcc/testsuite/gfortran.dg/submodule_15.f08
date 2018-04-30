@@ -54,6 +54,5 @@ end submodule
   use A
   integer :: i = 1
   incr = 1
-  if (a3(i) .ne. 11) call abort
+  if (a3(i) .ne. 11) STOP 1
 end
-! { dg-final { cleanup-submodules "a@a_son" } }

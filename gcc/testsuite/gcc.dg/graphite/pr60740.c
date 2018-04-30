@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -floop-interchange" } */
+/* { dg-options "-O2 -floop-nest-optimize" } */
 
 int **db6 = 0;
 

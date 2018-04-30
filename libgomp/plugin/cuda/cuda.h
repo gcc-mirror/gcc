@@ -1,5 +1,5 @@
 /* CUDA API description.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -88,6 +88,7 @@ typedef enum {
   CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES = 4,
   CU_JIT_ERROR_LOG_BUFFER = 5,
   CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES = 6,
+  CU_JIT_OPTIMIZATION_LEVEL = 7,
   CU_JIT_LOG_VERBOSE = 12
 } CUjit_option;
 

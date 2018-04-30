@@ -142,6 +142,9 @@ typedef enum ffi_abi {
 # define FFI_TARGET_SPECIFIC_VARIADIC 1
 # define FFI_EXTRA_CIF_FIELDS unsigned nfixedargs
 #endif
+#if defined (POWERPC_AIX)
+# define FFI_GO_CLOSURES 1
+#endif
 
 /* ppc_closure.S and linux64_closure.S expect this.  */
 #define FFI_PPC_TYPE_LAST FFI_TYPE_POINTER

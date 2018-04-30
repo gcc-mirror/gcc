@@ -10,6 +10,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1999 -pedantic-errors -fhosted" } */
 /* { dg-require-effective-target ptr32plus } */
+/* { dg-additional-options "-DSIGNAL_SUPPRESS" { target { ! signal } } } */
 
 #include <limits.h>
 #include <stdint.h>

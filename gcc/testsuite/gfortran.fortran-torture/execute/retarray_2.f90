@@ -15,6 +15,6 @@ program retarray
   use retarray_2
   integer, dimension(4) :: b, a=(/1,2,3,4/)
   b =  z(a)
-  if (any (b .ne. (/1, 2, 3, 4/))) call abort
+  if (any (b .ne. (/1, 2, 3, 4/))) STOP 1
 end
 

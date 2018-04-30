@@ -1,5 +1,5 @@
 /* brig-code-entry-handler.cc -- a gccbrig base class
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -88,10 +88,17 @@ brig_code_entry_handler::build_code_ref (const BrigBase &ref)
     {
       const BrigDirectiveFbarrier* fbar = (const BrigDirectiveFbarrier*)&ref;
 
-      uint64_t offset = m_parent.group_variable_segment_offset
-	(m_parent.get_mangled_name (fbar));
+      std::string var_name = m_parent.get_mangled_name (fbar);
+      uint64_t offset
+	= m_parent.m_cf->group_variable_segment_offset (var_name);
 
-      return build_int_cst (uint32_type_node, offset);
+      tree local_offset = build_int_cst (uint32_type_node, offset);
+      if (m_parent.m_cf->m_local_group_variables.has_variable (var_name))
+	local_offset
+	  = build2 (PLUS_EXPR, uint64_type_node, local_offset,
+		    convert (uint64_type_node,
+			     m_parent.m_cf->m_group_local_offset_arg));
+      return local_offset;
     }
   else
     gcc_unreachable ();
@@ -130,14 +137,7 @@ brig_code_entry_handler::build_tree_operand (const BrigInstBase &brig_inst,
 	       correct size here so we don't need a separate unpack/pack for it.
 	       fp16-fp32 conversion is done in build_operands ().  */
 	    if (is_input && TREE_TYPE (element) != operand_type)
-	      {
-		if (int_size_in_bytes (TREE_TYPE (element))
-		    == int_size_in_bytes (operand_type)
-		    && !INTEGRAL_TYPE_P (operand_type))
-		  element = build1 (VIEW_CONVERT_EXPR, operand_type, element);
-		else
-		  element = convert (operand_type, element);
-	      }
+	      element = build_resize_convert_view (operand_type, element);
 
 	    CONSTRUCTOR_APPEND_ELT (constructor_vals, NULL_TREE, element);
 	    ++operand_ptr;
@@ -264,9 +264,18 @@ brig_code_entry_handler::build_address_operand
 	}
       else if (segment == BRIG_SEGMENT_GROUP)
 	{
-
-	  uint64_t offset = m_parent.group_variable_segment_offset (var_name);
+	  uint64_t offset
+	    = m_parent.m_cf->group_variable_segment_offset (var_name);
 	  const_offset = build_int_cst (size_type_node, offset);
+
+	  /* If it's a local group variable reference, substract the local
+	     group segment offset to get the group base ptr offset.  */
+	  if (m_parent.m_cf->m_local_group_variables.has_variable (var_name))
+	    const_offset
+	      = build2 (PLUS_EXPR, uint64_type_node, const_offset,
+			convert (uint64_type_node,
+				 m_parent.m_cf->m_group_local_offset_arg));
+
 	}
       else if (segment == BRIG_SEGMENT_PRIVATE || segment == BRIG_SEGMENT_SPILL)
 	{
@@ -352,7 +361,7 @@ brig_code_entry_handler::build_address_operand
 		 to the array object.  */
 
 	      if (POINTER_TYPE_P (TREE_TYPE (arg_var_decl)))
-		symbol_base = build_reinterpret_cast (ptype, arg_var_decl);
+		symbol_base = build_resize_convert_view (ptype, arg_var_decl);
 	      else
 		{
 		  /* In case we are referring to an array (the argument in
@@ -420,7 +429,8 @@ brig_code_entry_handler::build_address_operand
 	= (const BrigOperandRegister *) m_parent.get_brig_operand_entry
 	(addr_operand.reg);
       tree base_reg_var = m_parent.m_cf->get_m_var_declfor_reg (mem_base_reg);
-      var_offset = convert_to_pointer (ptr_type_node, base_reg_var);
+      tree as_uint = build_reinterpret_to_uint (base_reg_var);
+      var_offset = convert_to_pointer (ptr_type_node, as_uint);
 
       gcc_assert (var_offset != NULL_TREE);
     }
@@ -511,7 +521,10 @@ brig_code_entry_handler::build_tree_operand_from_brig
     = ((const uint32_t *) &operand_entries->bytes)[operand_index];
   const BrigBase *operand_data
     = m_parent.get_brig_operand_entry (operand_offset);
-  return build_tree_operand (*brig_inst, *operand_data, operand_type);
+
+  bool inputp = !gccbrig_hsa_opcode_op_output_p (brig_inst->opcode,
+						 operand_index);
+  return build_tree_operand (*brig_inst, *operand_data, operand_type, inputp);
 }
 
 /* Builds a single (scalar) constant initialized element of type
@@ -625,7 +638,8 @@ brig_code_entry_handler::get_tree_cst_for_hsa_operand
 	{
 	  /* In case of vector type elements (or sole vectors),
 	     create a vector ctor.  */
-	  size_t element_count = TYPE_VECTOR_SUBPARTS (tree_element_type);
+	  size_t element_count
+	    = gccbrig_type_vector_subparts (tree_element_type);
 	  if (bytes_left < scalar_element_size * element_count)
 	    fatal_error (UNKNOWN_LOCATION,
 			 "Not enough bytes left for the initializer "
@@ -828,7 +842,7 @@ brig_code_entry_handler::get_comparison_result_type (tree source_type)
       size_t element_size = int_size_in_bytes (TREE_TYPE (source_type));
       return build_vector_type
 	(build_nonstandard_boolean_type (element_size * BITS_PER_UNIT),
-	 TYPE_VECTOR_SUBPARTS (source_type));
+	 gccbrig_type_vector_subparts (source_type));
     }
   else
     return gccbrig_tree_type_for_hsa_type (BRIG_TYPE_B1);
@@ -933,7 +947,8 @@ brig_code_entry_handler::expand_or_call_builtin (BrigOpcode16_t brig_opcode,
 
       tree_stl_vec result_elements;
 
-      for (size_t i = 0; i < TYPE_VECTOR_SUBPARTS (arith_type); ++i)
+      size_t element_count = gccbrig_type_vector_subparts (arith_type);
+      for (size_t i = 0; i < element_count; ++i)
 	{
 	  tree_stl_vec call_operands;
 	  if (operand0_elements.size () > 0)
@@ -975,8 +990,8 @@ brig_code_entry_handler::expand_or_call_builtin (BrigOpcode16_t brig_opcode,
   call_operands.resize (4, NULL_TREE);
   operand_types.resize (4, NULL_TREE);
   for (size_t i = 0; i < operand_count; ++i)
-    call_operands.at (i) = build_reinterpret_cast (operand_types.at (i),
-						   call_operands.at (i));
+    call_operands.at (i) = build_resize_convert_view (operand_types.at (i),
+						      call_operands.at (i));
 
   tree fnptr = build_fold_addr_expr (built_in);
   return build_call_array (TREE_TYPE (TREE_TYPE (built_in)), fnptr,
@@ -1124,6 +1139,28 @@ brig_code_entry_handler::build_h2f_conversion (tree source)
 
 tree_stl_vec
 brig_code_entry_handler::build_operands (const BrigInstBase &brig_inst)
+{
+  return build_or_analyze_operands (brig_inst, false);
+}
+
+void
+brig_code_entry_handler::analyze_operands (const BrigInstBase &brig_inst)
+{
+  build_or_analyze_operands (brig_inst, true);
+}
+
+/* Implements both the build_operands () and analyze_operands () call
+   so changes go in tandem.  Performs build_operands () when ANALYZE
+   is false.  Otherwise, only analyze operands and return empty
+   list.
+
+   If analyzing record each HSA register operand with the
+   corresponding resolved operand tree type to
+   brig_to_generic::m_fn_regs_use_index.  */
+
+tree_stl_vec
+brig_code_entry_handler::
+build_or_analyze_operands (const BrigInstBase &brig_inst, bool analyze)
 {
   /* Flush to zero.  */
   bool ftz = false;
@@ -1292,9 +1329,19 @@ brig_code_entry_handler::build_operands (const BrigInstBase &brig_inst)
 	/* Treat the operands as the storage type at this point.  */
 	operand_type = half_storage_type;
 
+      if (analyze)
+	{
+	  if (operand_data->kind == BRIG_KIND_OPERAND_REGISTER)
+	    {
+	      const BrigOperandRegister &brig_reg
+		= (const BrigOperandRegister &) *operand_data;
+	      m_parent.add_reg_used_as_type (brig_reg, operand_type);
+	    }
+	  continue;
+	}
+
       tree operand = build_tree_operand (brig_inst, *operand_data, operand_type,
 					 !is_output);
-
       gcc_assert (operand);
 
       /* Cast/convert the inputs to correct types as expected by the GENERIC
@@ -1303,36 +1350,17 @@ brig_code_entry_handler::build_operands (const BrigInstBase &brig_inst)
 	{
 	  if (half_to_float)
 	    operand = build_h2f_conversion
-	      (build_reinterpret_cast (half_storage_type, operand));
+	      (build_resize_convert_view (half_storage_type, operand));
 	  else if (TREE_CODE (operand) != LABEL_DECL
 		   && TREE_CODE (operand) != TREE_VEC
 		   && operand_data->kind != BRIG_KIND_OPERAND_ADDRESS
-		   && !VECTOR_TYPE_P (TREE_TYPE (operand)))
+		   && operand_data->kind != BRIG_KIND_OPERAND_OPERAND_LIST)
 	    {
-	      size_t reg_width = int_size_in_bytes (TREE_TYPE (operand));
-	      size_t instr_width = int_size_in_bytes (operand_type);
-	      if (reg_width == instr_width)
-		operand = build_reinterpret_cast (operand_type, operand);
-	      else if (reg_width > instr_width)
-		{
-		  /* Clip the operand because the instruction's bitwidth
-		     is smaller than the HSAIL reg width.  */
-		  if (INTEGRAL_TYPE_P (operand_type))
-		    operand
-		      = convert_to_integer (signed_or_unsigned_type_for
-					    (TYPE_UNSIGNED (operand_type),
-					     operand_type), operand);
-		  else
-		    operand = build_reinterpret_cast (operand_type, operand);
-		}
-	      else if (reg_width < instr_width)
-		/* At least shift amount operands can be read from smaller
-		   registers than the data operands.  */
-		operand = convert (operand_type, operand);
+	      operand = build_resize_convert_view (operand_type, operand);
 	    }
 	  else if (brig_inst.opcode == BRIG_OPCODE_SHUFFLE)
 	    /* Force the operand type to be treated as the raw type.  */
-	    operand = build_reinterpret_cast (operand_type, operand);
+	    operand = build_resize_convert_view (operand_type, operand);
 
 	  if (brig_inst.opcode == BRIG_OPCODE_CMOV && i == 1)
 	    {
@@ -1363,8 +1391,9 @@ tree
 brig_code_entry_handler::build_output_assignment (const BrigInstBase &brig_inst,
 						  tree output, tree inst_expr)
 {
-  /* The destination type might be different from the output register
-     variable type (which is always an unsigned integer type).  */
+  /* The result/input type might be different from the output register
+     variable type (can be any type; see get_m_var_declfor_reg @
+     brig-function.cc).  */
   tree output_type = TREE_TYPE (output);
   tree input_type = TREE_TYPE (inst_expr);
   bool is_fp16 = (brig_inst.type & BRIG_TYPE_BASE_MASK) == BRIG_TYPE_F16
@@ -1405,12 +1434,12 @@ brig_code_entry_handler::build_output_assignment (const BrigInstBase &brig_inst,
     {
       inst_expr = add_temp_var ("before_f2h", inst_expr);
       tree f2h_output = build_f2h_conversion (inst_expr);
-      tree conv_int = convert_to_integer (output_type, f2h_output);
-      tree assign = build2 (MODIFY_EXPR, output_type, output, conv_int);
+      tree conv = build_resize_convert_view (output_type, f2h_output);
+      tree assign = build2 (MODIFY_EXPR, output_type, output, conv);
       m_parent.m_cf->append_statement (assign);
       return assign;
     }
-  else if (VECTOR_TYPE_P (TREE_TYPE (output)))
+  else if (VECTOR_TYPE_P (output_type) && TREE_CODE (output) == CONSTRUCTOR)
     {
       /* Expand/unpack the input value to the given vector elements.  */
       size_t i;
@@ -1423,9 +1452,8 @@ brig_code_entry_handler::build_output_assignment (const BrigInstBase &brig_inst,
 	  tree element_ref
 	    = build3 (BIT_FIELD_REF, element_type, input,
 		      TYPE_SIZE (element_type),
-		      build_int_cst (uint32_type_node,
-				     i * int_size_in_bytes (element_type)
-				     *  BITS_PER_UNIT));
+		      bitsize_int (i * int_size_in_bytes (element_type)
+				   *  BITS_PER_UNIT));
 
 	  last_assign
 	    = build_output_assignment (brig_inst, element, element_ref);
@@ -1439,22 +1467,21 @@ brig_code_entry_handler::build_output_assignment (const BrigInstBase &brig_inst,
 	 bitwidths.  */
       size_t src_width = int_size_in_bytes (input_type);
       size_t dst_width = int_size_in_bytes (output_type);
-
-      if (src_width == dst_width)
+      tree input = inst_expr;
+      /* Integer results are extended to the target register width, using
+	 the same sign as the inst_expr.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (input)) && src_width != dst_width)
 	{
-	  /* A simple bitcast should do.  */
-	  tree bitcast = build_reinterpret_cast (output_type, inst_expr);
-	  tree assign = build2 (MODIFY_EXPR, output_type, output, bitcast);
-	  m_parent.m_cf->append_statement (assign);
-	  return assign;
+	  bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (input));
+	  tree resized_type
+	    = build_nonstandard_integer_type (dst_width * BITS_PER_UNIT,
+					      unsigned_p);
+	  input = convert_to_integer (resized_type, input);
 	}
-      else
-	{
-	  tree conv_int = convert_to_integer (output_type, inst_expr);
-	  tree assign = build2 (MODIFY_EXPR, output_type, output, conv_int);
-	  m_parent.m_cf->append_statement (assign);
-	  return assign;
-	}
+      input = build_resize_convert_view (output_type, input);
+      tree assign = build2 (MODIFY_EXPR, output_type, output, input);
+      m_parent.m_cf->append_statement (assign);
+      return assign;
     }
   return NULL_TREE;
 }
@@ -1488,7 +1515,7 @@ brig_code_entry_handler::unpack (tree value, tree_stl_vec &elements)
       tree element
 	= build3 (BIT_FIELD_REF, input_element_type, value,
 		  TYPE_SIZE (input_element_type),
-		  build_int_cst (unsigned_char_type_node, i * element_size));
+		  bitsize_int(i * element_size));
 
       element = add_temp_var ("scalar", element);
       elements.push_back (element);
@@ -1543,9 +1570,8 @@ tree_element_unary_visitor::operator () (brig_code_entry_handler &handler,
 	{
 	  tree element = build3 (BIT_FIELD_REF, input_element_type, operand,
 				 TYPE_SIZE (input_element_type),
-				 build_int_cst (unsigned_char_type_node,
-						i * element_size
-						* BITS_PER_UNIT));
+				 bitsize_int (i * element_size
+					      * BITS_PER_UNIT));
 
 	  tree output = visit_element (handler, element);
 	  output_element_type = TREE_TYPE (output);
@@ -1594,15 +1620,13 @@ tree_element_binary_visitor::operator () (brig_code_entry_handler &handler,
 
 	  tree element0 = build3 (BIT_FIELD_REF, input_element_type, operand0,
 				  TYPE_SIZE (input_element_type),
-				  build_int_cst (unsigned_char_type_node,
-						 i * element_size
-						 * BITS_PER_UNIT));
+				  bitsize_int (i * element_size
+					       * BITS_PER_UNIT));
 
 	  tree element1 = build3 (BIT_FIELD_REF, input_element_type, operand1,
 				  TYPE_SIZE (input_element_type),
-				  build_int_cst (unsigned_char_type_node,
-						 i * element_size
-						 * BITS_PER_UNIT));
+				  bitsize_int (i * element_size
+					       * BITS_PER_UNIT));
 
 	  tree output = visit_element (handler, element0, element1);
 	  output_element_type = TREE_TYPE (output);
@@ -1660,7 +1684,7 @@ float_to_half::visit_element (brig_code_entry_handler &caller, tree operand)
 {
   tree built_in = builtin_decl_explicit (BUILT_IN_HSAIL_F32_TO_F16);
 
-  tree casted_operand = build_reinterpret_cast (uint32_type_node, operand);
+  tree casted_operand = build_resize_convert_view (uint32_type_node, operand);
 
   tree call = call_builtin (built_in, 1, uint16_type_node, uint32_type_node,
 			    casted_operand);
@@ -1689,7 +1713,7 @@ half_to_float::visit_element (brig_code_entry_handler &caller, tree operand)
 
   tree output = create_tmp_var (const_fp32_type, "fp32out");
   tree casted_result
-    = build_reinterpret_cast (brig_to_generic::s_fp32_type, call);
+    = build_resize_convert_view (brig_to_generic::s_fp32_type, call);
 
   tree assign = build2 (MODIFY_EXPR, TREE_TYPE (output), output, casted_result);
 

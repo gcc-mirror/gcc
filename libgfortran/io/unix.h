@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -108,22 +108,22 @@ internal_proto(compare_files);
 extern stream *open_external (st_parameter_open *, unit_flags *);
 internal_proto(open_external);
 
-extern stream *open_internal (char *, int, gfc_offset);
+extern stream *open_internal (char *, size_t, gfc_offset);
 internal_proto(open_internal);
 
-extern stream *open_internal4 (char *, int, gfc_offset);
+extern stream *open_internal4 (char *, size_t, gfc_offset);
 internal_proto(open_internal4);
 
-extern char *mem_alloc_w (stream *, int *);
+extern char *mem_alloc_w (stream *, size_t *);
 internal_proto(mem_alloc_w);
 
-extern char *mem_alloc_r (stream *, int *);
+extern char *mem_alloc_r (stream *, size_t *);
 internal_proto(mem_alloc_r);
 
-extern gfc_char4_t *mem_alloc_w4 (stream *, int *);
+extern gfc_char4_t *mem_alloc_w4 (stream *, size_t *);
 internal_proto(mem_alloc_w4);
 
-extern char *mem_alloc_r4 (stream *, int *);
+extern char *mem_alloc_r4 (stream *, size_t *);
 internal_proto(mem_alloc_r4);
 
 extern stream *input_stream (void);

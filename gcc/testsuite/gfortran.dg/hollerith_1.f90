@@ -8,6 +8,6 @@
       write(c,8000)
 8000  format(36(2H!)))
       do i = 1,72,2
-         if (c(i:i+1) /= '!)') call abort
+         if (c(i:i+1) /= '!)') STOP 1
       end do
       end

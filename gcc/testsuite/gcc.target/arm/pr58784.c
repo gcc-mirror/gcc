@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "incompatible options" { arm_thumb1 } { "*" } { "" } } */
+/* { dg-skip-if "incompatible options" { arm_thumb1 } } */
 /* { dg-options "-march=armv7-a -mfloat-abi=hard -mfpu=neon -marm -O2" } */
 /* { dg-skip-if "need hardfp ABI" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
 

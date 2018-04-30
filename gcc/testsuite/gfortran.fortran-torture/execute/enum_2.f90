@@ -14,16 +14,16 @@ program main
   end enum
 
 
-  if (red /= 4 ) call abort
-  if (yellow /= (red + 1)) call abort
-  if (blue /= (yellow + 1)) call abort
-  if (green /= (blue + 1)) call abort
+  if (red /= 4 ) STOP 1
+  if (yellow /= (red + 1)) STOP 2
+  if (blue /= (yellow + 1)) STOP 3
+  if (green /= (blue + 1)) STOP 4
   
 
-  if (sun /= -10 ) call abort
-  if (mon /= (sun + 1)) call abort
-  if (tue /= (mon + 1)) call abort
-  if (wed /= 10) call abort
-  if (sat /= (wed+1)) call abort
+  if (sun /= -10 ) STOP 5
+  if (mon /= (sun + 1)) STOP 6
+  if (tue /= (mon + 1)) STOP 7
+  if (wed /= 10) STOP 8
+  if (sat /= (wed+1)) STOP 9
 
 end program main

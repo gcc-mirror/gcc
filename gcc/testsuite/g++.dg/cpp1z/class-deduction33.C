@@ -1,4 +1,4 @@
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <class,class> struct same;
 template <class T> struct same<T,T> {};

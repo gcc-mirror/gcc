@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2017 Free Software Foundation, Inc.
+# Copyright (C) 2011-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -34,6 +34,9 @@ BEGIN {
 
     dir_tiny = "tiny-stack"
     opt_tiny = "msp8"
+
+    dir_rcall = "short-calls"
+    opt_rcall = "mshort-calls"
 
     #    awk Variable         Makefile Variable  
     #  ------------------------------------------
@@ -116,6 +119,8 @@ BEGIN {
     {
       if (dev_attribute[i] == "AVR_SHORT_SP")
         opts = opts "/" opt_tiny
+      if (dev_attribute[i] == "AVR_ISA_RCALL")
+        opts = opts "/" opt_rcall
     }
 
     if (!have[opts])
@@ -140,7 +145,7 @@ END {
 
     # Intended Target: ./gcc/config/avr/t-multilib
 
-    print m_options  " " opt_tiny
-    print m_dirnames " " dir_tiny
+    print m_options  " " opt_tiny " " opt_rcall
+    print m_dirnames " " dir_tiny " " dir_rcall
     print m_required
 }

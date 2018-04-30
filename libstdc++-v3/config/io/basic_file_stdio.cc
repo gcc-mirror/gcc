@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000-2017 Free Software Foundation, Inc.
+// Copyright (C) 2000-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -195,11 +195,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __basic_file* __ret = NULL;
     if (!this->is_open() && __file)
       {
-	int __err;
+	int __err, __save_errno = errno;
+	// POSIX guarantees that fflush sets errno on error, but C doesn't.
 	errno = 0;
 	do
-	  __err = this->sync();
+	  __err = fflush(__file);
 	while (__err && errno == EINTR);
+	errno = __save_errno;
 	if (!__err)
 	  {
 	    _M_cfile = __file;

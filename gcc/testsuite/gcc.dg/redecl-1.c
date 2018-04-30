@@ -52,13 +52,14 @@ void test3(void)
 
 void prime4(void)
 {
-  bar4();			/* { dg-warning "implicit declaration of function" "implicit" } */
+  bar4(); /* { dg-line implicit_bar4 } */
+  /* { dg-warning "implicit declaration of function" "implicit" { target *-*-* } implicit_bar4 } */
 }
 
 void test4(void)
 {
   extern double bar4(double);	/* { dg-error "conflict" } */
-/* { dg-message "note: previous implicit declaration" "previous" { target *-*-* } 55 } */
+/* { dg-message "note: previous implicit declaration" "previous" { target *-*-* } implicit_bar4 } */
 }
 
 /* Implicit decl, clashing with extern at previous function scope.  */

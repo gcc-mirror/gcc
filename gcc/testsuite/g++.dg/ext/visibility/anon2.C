@@ -9,4 +9,4 @@ namespace
   struct A { };
 }
 
-A f () { }
+A f () { return A(); }

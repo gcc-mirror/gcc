@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library Definitions.
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -70,6 +70,17 @@ acc_wait (int async)
   thr->dev->openacc.async_wait_func (async);
 }
 
+/* acc_async_wait is an OpenACC 1.0 compatibility name for acc_wait.  */
+#ifdef HAVE_ATTRIBUTE_ALIAS
+strong_alias (acc_wait, acc_async_wait)
+#else
+void
+acc_async_wait (int async)
+{
+  acc_wait (async);
+}
+#endif
+
 void
 acc_wait_async (int async1, int async2)
 {
@@ -91,6 +102,17 @@ acc_wait_all (void)
 
   thr->dev->openacc.async_wait_all_func ();
 }
+
+/* acc_async_wait_all is an OpenACC 1.0 compatibility name for acc_wait_all.  */
+#ifdef HAVE_ATTRIBUTE_ALIAS
+strong_alias (acc_wait_all, acc_async_wait_all)
+#else
+void
+acc_async_wait_all (void)
+{
+  acc_wait_all ();
+}
+#endif
 
 void
 acc_wait_all_async (int async)

@@ -1,5 +1,5 @@
 /* AVR MCUs.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -299,6 +299,23 @@ AVR_MCU ("atxmega16c4",      ARCH_AVRXMEGA2, AVR_ISA_RMW,  "__AVR_ATxmega16C4__"
 AVR_MCU ("atxmega32a4u",     ARCH_AVRXMEGA2, AVR_ISA_RMW,  "__AVR_ATxmega32A4U__", 0x2000, 0x0, 0x9000)
 AVR_MCU ("atxmega32c4",      ARCH_AVRXMEGA2, AVR_ISA_RMW,  "__AVR_ATxmega32C4__",  0x2000, 0x0, 0x9000)
 AVR_MCU ("atxmega32e5",      ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega32E5__",  0x2000, 0x0, 0x9000)
+/* Xmega, Flash + RAM < 64K, flash visible in RAM address space */
+AVR_MCU ("avrxmega3",        ARCH_AVRXMEGA3, AVR_ISA_NONE,  NULL,                  0x3f00, 0x0, 0x8000)
+AVR_MCU ("attiny212",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny212__",   0x3f80, 0x0, 0x800)
+AVR_MCU ("attiny214",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny214__",   0x3f80, 0x0, 0x800)
+AVR_MCU ("attiny412",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny412__",   0x3f00, 0x0, 0x1000)
+AVR_MCU ("attiny414",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny414__",   0x3f00, 0x0, 0x1000)
+AVR_MCU ("attiny416",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny416__",   0x3f00, 0x0, 0x1000)
+AVR_MCU ("attiny417",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny417__",   0x3f00, 0x0, 0x1000)
+AVR_MCU ("attiny814",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny814__",   0x3e00, 0x0, 0x2000)
+AVR_MCU ("attiny816",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny816__",   0x3e00, 0x0, 0x2000)
+AVR_MCU ("attiny817",        ARCH_AVRXMEGA3, AVR_ISA_RCALL, "__AVR_ATtiny817__",   0x3e00, 0x0, 0x2000)
+AVR_MCU ("attiny1614",       ARCH_AVRXMEGA3, AVR_ISA_NONE,  "__AVR_ATtiny1614__",  0x3800, 0x0, 0x4000)
+AVR_MCU ("attiny1616",       ARCH_AVRXMEGA3, AVR_ISA_NONE,  "__AVR_ATtiny1616__",  0x3800, 0x0, 0x4000)
+AVR_MCU ("attiny1617",       ARCH_AVRXMEGA3, AVR_ISA_NONE,  "__AVR_ATtiny1617__",  0x3800, 0x0, 0x4000)
+AVR_MCU ("attiny3214",       ARCH_AVRXMEGA3, AVR_ISA_NONE,  "__AVR_ATtiny3214__",  0x3800, 0x0, 0x8000)
+AVR_MCU ("attiny3216",       ARCH_AVRXMEGA3, AVR_ISA_NONE,  "__AVR_ATtiny3216__",  0x3800, 0x0, 0x8000)
+AVR_MCU ("attiny3217",       ARCH_AVRXMEGA3, AVR_ISA_NONE,  "__AVR_ATtiny3217__",  0x3800, 0x0, 0x8000)
 /* Xmega, 64K < Flash <= 128K, RAM <= 64K */
 AVR_MCU ("avrxmega4",        ARCH_AVRXMEGA4, AVR_ISA_NONE, NULL,                   0x2000, 0x0, 0x11000)
 AVR_MCU ("atxmega64a3",      ARCH_AVRXMEGA4, AVR_ISA_NONE, "__AVR_ATxmega64A3__",  0x2000, 0x0, 0x11000)

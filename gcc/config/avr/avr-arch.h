@@ -1,6 +1,6 @@
 /* Definitions of types that are used to store AVR architecture and
    device information.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
 This file is part of GCC.
@@ -41,6 +41,7 @@ enum avr_arch_id
   ARCH_AVR6,
   ARCH_AVRTINY,
   ARCH_AVRXMEGA2,
+  ARCH_AVRXMEGA3,
   ARCH_AVRXMEGA4,
   ARCH_AVRXMEGA5,
   ARCH_AVRXMEGA6,
@@ -85,6 +86,9 @@ typedef struct
 
   /* Default start of data section address for architecture.  */
   int default_data_section_start;
+
+  /* Offset where flash memory is seen in RAM address range or 0.  */
+  int flash_pm_offset;
 
   /* Offset between SFR address and RAM address:
      SFR-address = RAM-address - sfr_offset  */
@@ -150,7 +154,16 @@ AVR_ERRATA_SKIP
 
      For information please refer the following respective errata links
        http://www.atmel.com/dyn/resources/prod_documents/doc2494.pdf
-       http://www.atmel.com/dyn/resources/prod_documents/doc1436.pdf  */
+       http://www.atmel.com/dyn/resources/prod_documents/doc1436.pdf
+
+AVR_ISA_RCALL
+  Always use RJMP / RCALL and assume JMP / CALL are not available.
+  This affects multilib selection via specs generation and -mshort-calls.
+  Even if a device like ATtiny417 from avrxmega3 supports JMP / CALL, we
+  assume these instructions are not available and we set the built-in
+  macro __AVR_HAVE_JMP_CALL__ accordingly.  This macro is used to
+  determine a rough estimate of flash size in libgcc, and AVR-LibC uses
+  this macro to determine vector sizes.  */
 
 enum avr_device_specific_features
 {
@@ -158,8 +171,10 @@ enum avr_device_specific_features
   AVR_ISA_RMW     = 0x1, /* device has RMW instructions. */
   AVR_SHORT_SP    = 0x2, /* Stack Pointer has 8 bits width. */
   AVR_ERRATA_SKIP = 0x4, /* device has a core erratum. */
-  AVR_ISA_LDS     = 0x8  /* whether LDS / STS is valid for all data in static
+  AVR_ISA_LDS     = 0x8, /* whether LDS / STS is valid for all data in static
                             storage.  Only useful for reduced Tiny.  */
+  AVR_ISA_RCALL   = 0x10 /* Use RJMP / RCALL even though JMP / CALL
+                            are available (-mshort-calls).  */
 };
 
 /* Map architecture to its texinfo string.  */
@@ -180,7 +195,6 @@ extern const avr_arch_t *avr_arch;
 
 extern const avr_mcu_t avr_mcu_types[];
 
-extern void avr_inform_devices (void);
 extern void avr_inform_core_architectures (void);
 
 #endif /* AVR_ARCH_H */

@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single" } */
-/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } { "*" } { "" } } */
+/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } } */
 
 #define __vector __attribute__((vector_size(8)))
 typedef float __vector __ev64_fs__;

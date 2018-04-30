@@ -1,4 +1,4 @@
-@c Copyright (C) 2014-2017 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2018 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -205,7 +205,7 @@ Captures can also be used for capturing results of sub-expressions.
   (pointer_plus (addr@@2 @@0) INTEGER_CST_P@@1)
   (if (is_gimple_min_invariant (@@2)))
   @{
-    HOST_WIDE_INT off;
+    poly_int64 off;
     tree base = get_addr_base_and_unit_offset (@@0, &off);
     off += tree_to_uhwi (@@1);
     /* Now with that we should be able to simply write

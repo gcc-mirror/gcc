@@ -21,8 +21,25 @@
 	* testsuite/libgomp.c++/for-21.C: New test.
 	* testsuite/libgomp.c++/for-22.C: New test.
 	* testsuite/libgomp.c++/for-23.C: New test.
+
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_target_is_present, omp_target_disassociate_ptr):
+	Change first argument from void * to const void *.
+	(omp_target_memcpy, omp_target_memcpy_rect): Change second argument
+	from void * to const void *.
+	(omp_target_associate_ptr): Change first and second arguments from
+	void * to const void *.
+	* target.c (omp_target_is_present, omp_target_disassociate_ptr):
+	Change ptr argument from void * to const void *.
+	(omp_target_memcpy): Change src argument from void * to const void *.
+	(omp_target_memcpy_rect): Likewise.
+	(omp_target_memcpy_rect_worker): Likewise.  Use const char * casts
+	instead of char * where needed.
+	(omp_target_associate_ptr): Change host_ptr and device_ptr arguments
+	from void * to const void *.
 
-Copyright (C) 2017 Free Software Foundation, Inc.
+Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,5 +1,5 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -377,15 +377,15 @@ get_or_create_ssa_default_def (struct function *fn, tree var)
    true, the storage order of the reference is reversed.  */
 
 tree
-get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
-			 HOST_WIDE_INT *psize,
-			 HOST_WIDE_INT *pmax_size,
+get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
+			 poly_int64_pod *psize,
+			 poly_int64_pod *pmax_size,
 			 bool *preverse)
 {
-  offset_int bitsize = -1;
-  offset_int maxsize;
+  poly_offset_int bitsize = -1;
+  poly_offset_int maxsize;
   tree size_tree = NULL_TREE;
-  offset_int bit_offset = 0;
+  poly_offset_int bit_offset = 0;
   bool seen_variable_array_ref = false;
 
   /* First get the final access size and the storage order from just the
@@ -400,11 +400,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       if (mode == BLKmode)
 	size_tree = TYPE_SIZE (TREE_TYPE (exp));
       else
-	bitsize = int (GET_MODE_BITSIZE (mode));
+	bitsize = GET_MODE_BITSIZE (mode);
     }
   if (size_tree != NULL_TREE
-      && TREE_CODE (size_tree) == INTEGER_CST)
-    bitsize = wi::to_offset (size_tree);
+      && poly_int_tree_p (size_tree))
+    bitsize = wi::to_poly_offset (size_tree);
 
   *preverse = reverse_storage_order_for_component_p (exp);
 
@@ -419,7 +419,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += wi::to_offset (TREE_OPERAND (exp, 2));
+	  bit_offset += wi::to_poly_offset (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -427,10 +427,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	    tree field = TREE_OPERAND (exp, 1);
 	    tree this_offset = component_ref_field_offset (exp);
 
-	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
+	    if (this_offset && poly_int_tree_p (this_offset))
 	      {
-		offset_int woffset = (wi::to_offset (this_offset)
-				      << LOG2_BITS_PER_UNIT);
+		poly_offset_int woffset = (wi::to_poly_offset (this_offset)
+					   << LOG2_BITS_PER_UNIT);
 		woffset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 		bit_offset += woffset;
 
@@ -438,7 +438,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		   referenced the last field of a struct or a union member
 		   then we have to adjust maxsize by the padding at the end
 		   of our field.  */
-		if (seen_variable_array_ref && maxsize != -1)
+		if (seen_variable_array_ref)
 		  {
 		    tree stype = TREE_TYPE (TREE_OPERAND (exp, 0));
 		    tree next = DECL_CHAIN (field);
@@ -450,19 +450,25 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			tree fsize = DECL_SIZE_UNIT (field);
 			tree ssize = TYPE_SIZE_UNIT (stype);
 			if (fsize == NULL
-			    || TREE_CODE (fsize) != INTEGER_CST
+			    || !poly_int_tree_p (fsize)
 			    || ssize == NULL
-			    || TREE_CODE (ssize) != INTEGER_CST)
+			    || !poly_int_tree_p (ssize))
 			  maxsize = -1;
-			else
+			else if (known_size_p (maxsize))
 			  {
-			    offset_int tem = (wi::to_offset (ssize)
-					      - wi::to_offset (fsize));
+			    poly_offset_int tem
+			      = (wi::to_poly_offset (ssize)
+				 - wi::to_poly_offset (fsize));
 			    tem <<= LOG2_BITS_PER_UNIT;
 			    tem -= woffset;
 			    maxsize += tem;
 			  }
 		      }
+		    /* An component ref with an adjacent field up in the
+		       structure hierarchy constrains the size of any variable
+		       array ref lower in the access hierarchy.  */
+		    else
+		      seen_variable_array_ref = false;
 		  }
 	      }
 	    else
@@ -471,10 +477,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		/* We need to adjust maxsize to the whole structure bitsize.
 		   But we can subtract any constant offset seen so far,
 		   because that would get us out of the structure otherwise.  */
-		if (maxsize != -1
+		if (known_size_p (maxsize)
 		    && csize
-		    && TREE_CODE (csize) == INTEGER_CST)
-		  maxsize = wi::to_offset (csize) - bit_offset;
+		    && poly_int_tree_p (csize))
+		  maxsize = wi::to_poly_offset (csize) - bit_offset;
 		else
 		  maxsize = -1;
 	      }
@@ -488,14 +494,15 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	    tree low_bound, unit_size;
 
 	    /* If the resulting bit-offset is constant, track it.  */
-	    if (TREE_CODE (index) == INTEGER_CST
+	    if (poly_int_tree_p (index)
 		&& (low_bound = array_ref_low_bound (exp),
- 		    TREE_CODE (low_bound) == INTEGER_CST)
+		    poly_int_tree_p (low_bound))
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		offset_int woffset
-		  = wi::sext (wi::to_offset (index) - wi::to_offset (low_bound),
+		poly_offset_int woffset
+		  = wi::sext (wi::to_poly_offset (index)
+			      - wi::to_poly_offset (low_bound),
 			      TYPE_PRECISION (TREE_TYPE (index)));
 		woffset *= wi::to_offset (unit_size);
 		woffset <<= LOG2_BITS_PER_UNIT;
@@ -512,10 +519,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		/* We need to adjust maxsize to the whole array bitsize.
 		   But we can subtract any constant offset seen so far,
 		   because that would get us outside of the array otherwise.  */
-		if (maxsize != -1
+		if (known_size_p (maxsize)
 		    && asize
-		    && TREE_CODE (asize) == INTEGER_CST)
-		  maxsize = wi::to_offset (asize) - bit_offset;
+		    && poly_int_tree_p (asize))
+		  maxsize = wi::to_poly_offset (asize) - bit_offset;
 		else
 		  maxsize = -1;
 
@@ -560,11 +567,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	     base type boundary.  This needs to include possible trailing
 	     padding that is there for alignment purposes.  */
 	  if (seen_variable_array_ref
-	      && maxsize != -1
+	      && known_size_p (maxsize)
 	      && (TYPE_SIZE (TREE_TYPE (exp)) == NULL_TREE
-		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST
-		  || (bit_offset + maxsize
-		      == wi::to_offset (TYPE_SIZE (TREE_TYPE (exp))))))
+		  || !poly_int_tree_p (TYPE_SIZE (TREE_TYPE (exp)))
+		  || (maybe_eq
+		      (bit_offset + maxsize,
+		       wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (exp)))))))
 	    maxsize = -1;
 
 	  /* Hand back the decl for MEM[&decl, off].  */
@@ -574,12 +582,13 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
 	      else
 		{
-		  offset_int off = mem_ref_offset (exp);
+		  poly_offset_int off = mem_ref_offset (exp);
 		  off <<= LOG2_BITS_PER_UNIT;
 		  off += bit_offset;
-		  if (wi::fits_shwi_p (off))
+		  poly_int64 off_hwi;
+		  if (off.to_shwi (&off_hwi))
 		    {
-		      bit_offset = off;
+		      bit_offset = off_hwi;
 		      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
 		    }
 		}
@@ -594,7 +603,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
     }
 
  done:
-  if (!wi::fits_shwi_p (bitsize) || wi::neg_p (bitsize))
+  if (!bitsize.to_shwi (psize) || maybe_lt (*psize, 0))
     {
       *poffset = 0;
       *psize = -1;
@@ -603,9 +612,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       return exp;
     }
 
-  *psize = bitsize.to_shwi ();
-
-  if (!wi::fits_shwi_p (bit_offset))
+  /* ???  Due to negative offsets in ARRAY_REF we can end up with
+     negative bit_offset here.  We might want to store a zero offset
+     in this case.  */
+  if (!bit_offset.to_shwi (poffset))
     {
       *poffset = 0;
       *pmax_size = -1;
@@ -617,7 +627,9 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
   if (DECL_P (exp))
     {
-      if (flag_unconstrained_commons && VAR_P (exp) && DECL_COMMON (exp))
+      if (VAR_P (exp)
+	  && ((flag_unconstrained_commons && DECL_COMMON (exp))
+	      || (DECL_EXTERNAL (exp) && seen_variable_array_ref)))
 	{
 	  tree sz_tree = TYPE_SIZE (TREE_TYPE (exp));
 	  /* If size is unknown, or we have read to the end, assume there
@@ -625,38 +637,72 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
 	      || (seen_variable_array_ref
 		  && (sz_tree == NULL_TREE
-		      || TREE_CODE (sz_tree) != INTEGER_CST
-		      || (bit_offset + maxsize == wi::to_offset (sz_tree)))))
+		      || !poly_int_tree_p (sz_tree)
+		      || maybe_eq (bit_offset + maxsize,
+				   wi::to_poly_offset (sz_tree)))))
 	    maxsize = -1;
 	}
       /* If maxsize is unknown adjust it according to the size of the
          base decl.  */
-      else if (maxsize == -1
-	  && DECL_SIZE (exp)
-	  && TREE_CODE (DECL_SIZE (exp)) == INTEGER_CST)
-	maxsize = wi::to_offset (DECL_SIZE (exp)) - bit_offset;
+      else if (!known_size_p (maxsize)
+	       && DECL_SIZE (exp)
+	       && poly_int_tree_p (DECL_SIZE (exp)))
+	maxsize = wi::to_poly_offset (DECL_SIZE (exp)) - bit_offset;
     }
   else if (CONSTANT_CLASS_P (exp))
     {
       /* If maxsize is unknown adjust it according to the size of the
          base type constant.  */
-      if (maxsize == -1
+      if (!known_size_p (maxsize)
 	  && TYPE_SIZE (TREE_TYPE (exp))
-	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST)
-	maxsize = (wi::to_offset (TYPE_SIZE (TREE_TYPE (exp)))
+	  && poly_int_tree_p (TYPE_SIZE (TREE_TYPE (exp))))
+	maxsize = (wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (exp)))
 		   - bit_offset);
     }
 
-  /* ???  Due to negative offsets in ARRAY_REF we can end up with
-     negative bit_offset here.  We might want to store a zero offset
-     in this case.  */
-  *poffset = bit_offset.to_shwi ();
-  if (!wi::fits_shwi_p (maxsize) || wi::neg_p (maxsize))
+  if (!maxsize.to_shwi (pmax_size)
+      || maybe_lt (*pmax_size, 0)
+      || !endpoint_representable_p (*poffset, *pmax_size))
     *pmax_size = -1;
-  else
-    *pmax_size = maxsize.to_shwi ();
+
+  /* Punt if *POFFSET + *PSIZE overflows in HOST_WIDE_INT, the callers don't
+     check for such overflows individually and assume it works.  */
+  if (!endpoint_representable_p (*poffset, *psize))
+    {
+      *poffset = 0;
+      *psize = -1;
+      *pmax_size = -1;
+
+      return exp;
+    }
 
   return exp;
+}
+
+/* Like get_ref_base_and_extent, but for cases in which we only care
+   about constant-width accesses at constant offsets.  Return null
+   if the access is anything else.  */
+
+tree
+get_ref_base_and_extent_hwi (tree exp, HOST_WIDE_INT *poffset,
+			     HOST_WIDE_INT *psize, bool *preverse)
+{
+  poly_int64 offset, size, max_size;
+  HOST_WIDE_INT const_offset, const_size;
+  bool reverse;
+  tree decl = get_ref_base_and_extent (exp, &offset, &size, &max_size,
+				       &reverse);
+  if (!offset.is_constant (&const_offset)
+      || !size.is_constant (&const_size)
+      || const_offset < 0
+      || !known_size_p (max_size)
+      || maybe_ne (max_size, const_size))
+    return NULL_TREE;
+
+  *poffset = const_offset;
+  *psize = const_size;
+  *preverse = reverse;
+  return decl;
 }
 
 /* Returns the base object and a constant BITS_PER_UNIT offset in *POFFSET that
@@ -667,10 +713,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
    its argument or a constant if the argument is known to be constant.  */
 
 tree
-get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
+get_addr_base_and_unit_offset_1 (tree exp, poly_int64_pod *poffset,
 				 tree (*valueize) (tree))
 {
-  HOST_WIDE_INT byte_offset = 0;
+  poly_int64 byte_offset = 0;
 
   /* Compute cumulative byte-offset for nested component-refs and array-refs,
      and find the ultimate containing object.  */
@@ -680,10 +726,13 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	{
 	case BIT_FIELD_REF:
 	  {
-	    HOST_WIDE_INT this_off = TREE_INT_CST_LOW (TREE_OPERAND (exp, 2));
-	    if (this_off % BITS_PER_UNIT)
+	    poly_int64 this_byte_offset;
+	    poly_uint64 this_bit_offset;
+	    if (!poly_int_tree_p (TREE_OPERAND (exp, 2), &this_bit_offset)
+		|| !multiple_p (this_bit_offset, BITS_PER_UNIT,
+				&this_byte_offset))
 	      return NULL_TREE;
-	    byte_offset += this_off / BITS_PER_UNIT;
+	    byte_offset += this_byte_offset;
 	  }
 	  break;
 
@@ -691,15 +740,14 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	  {
 	    tree field = TREE_OPERAND (exp, 1);
 	    tree this_offset = component_ref_field_offset (exp);
-	    HOST_WIDE_INT hthis_offset;
+	    poly_int64 hthis_offset;
 
 	    if (!this_offset
-		|| TREE_CODE (this_offset) != INTEGER_CST
+		|| !poly_int_tree_p (this_offset, &hthis_offset)
 		|| (TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field))
 		    % BITS_PER_UNIT))
 	      return NULL_TREE;
 
-	    hthis_offset = TREE_INT_CST_LOW (this_offset);
 	    hthis_offset += (TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field))
 			     / BITS_PER_UNIT);
 	    byte_offset += hthis_offset;
@@ -717,17 +765,18 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	      index = (*valueize) (index);
 
 	    /* If the resulting bit-offset is constant, track it.  */
-	    if (TREE_CODE (index) == INTEGER_CST
+	    if (poly_int_tree_p (index)
 		&& (low_bound = array_ref_low_bound (exp),
-		    TREE_CODE (low_bound) == INTEGER_CST)
+		    poly_int_tree_p (low_bound))
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		offset_int woffset
-		  = wi::sext (wi::to_offset (index) - wi::to_offset (low_bound),
+		poly_offset_int woffset
+		  = wi::sext (wi::to_poly_offset (index)
+			      - wi::to_poly_offset (low_bound),
 			      TYPE_PRECISION (TREE_TYPE (index)));
 		woffset *= wi::to_offset (unit_size);
-		byte_offset += woffset.to_shwi ();
+		byte_offset += woffset.force_shwi ();
 	      }
 	    else
 	      return NULL_TREE;
@@ -756,8 +805,8 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	      {
 		if (!integer_zerop (TREE_OPERAND (exp, 1)))
 		  {
-		    offset_int off = mem_ref_offset (exp);
-		    byte_offset += off.to_short_addr ();
+		    poly_offset_int off = mem_ref_offset (exp);
+		    byte_offset += off.force_shwi ();
 		  }
 		exp = TREE_OPERAND (base, 0);
 	      }
@@ -778,8 +827,8 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		  return NULL_TREE;
 		if (!integer_zerop (TMR_OFFSET (exp)))
 		  {
-		    offset_int off = mem_ref_offset (exp);
-		    byte_offset += off.to_short_addr ();
+		    poly_offset_int off = mem_ref_offset (exp);
+		    byte_offset += off.force_shwi ();
 		  }
 		exp = TREE_OPERAND (base, 0);
 	      }
@@ -804,7 +853,7 @@ done:
    is not BITS_PER_UNIT-aligned.  */
 
 tree
-get_addr_base_and_unit_offset (tree exp, HOST_WIDE_INT *poffset)
+get_addr_base_and_unit_offset (tree exp, poly_int64_pod *poffset)
 {
   return get_addr_base_and_unit_offset_1 (exp, poffset, NULL);
 }

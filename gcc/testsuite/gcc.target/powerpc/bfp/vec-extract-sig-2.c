@@ -10,5 +10,5 @@ get_significands (__vector double *p)
 {
   __vector double source = *p;
 
-  return __builtin_vec_extract_sig (source);	/* { dg-error "Builtin function __builtin_vsx_extract_sig_dp requires" } */
+  return __builtin_vec_extract_sig (source);	/* { dg-error "builtin function '__builtin_vsx_extract_sig_dp' requires" } */
 }

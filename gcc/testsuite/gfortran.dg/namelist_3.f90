@@ -4,5 +4,5 @@
 program namelist_3
   integer,pointer :: x
   allocate (x)
-  namelist /n/ x ! { dg-error "NAMELIST attribute with POINTER attribute" }
+  namelist /n/ x ! { dg-error "NAMELIST attribute conflicts with POINTER attribute" }
 end program namelist_3

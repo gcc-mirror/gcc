@@ -1,5 +1,5 @@
 /* The Blackfin code generation auxiliary output file.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -25,6 +27,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "memmodel.h"
@@ -2112,16 +2116,30 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
     CALL_INSN_FUNCTION_USAGE (call) = use;
 }
 
-/* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
+/* Implement TARGET_HARD_REGNO_NREGS.  */
 
-int
-hard_regno_mode_ok (int regno, machine_mode mode)
+static unsigned int
+bfin_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (mode == PDImode && (regno == REG_A0 || regno == REG_A1))
+    return 1;
+  if (mode == V2PDImode && (regno == REG_A0 || regno == REG_A1))
+    return 2;
+  return CLASS_MAX_NREGS (GENERAL_REGS, mode);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.
+
+   Do not allow to store a value in REG_CC for any mode.
+   Do not allow to store value in pregs if mode is not SI.  */
+static bool
+bfin_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* Allow only dregs to store value of mode HI or QI */
   enum reg_class rclass = REGNO_REG_CLASS (regno);
 
   if (mode == CCmode)
-    return 0;
+    return false;
 
   if (mode == V2HImode)
     return D_REGNO_P (regno);
@@ -2137,9 +2155,24 @@ hard_regno_mode_ok (int regno, machine_mode mode)
 
   if (mode == SImode
       && TEST_HARD_REG_BIT (reg_class_contents[PROLOGUE_REGS], regno))
-    return 1;
+    return true;
 
   return TEST_HARD_REG_BIT (reg_class_contents[MOST_REGS], regno);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+bfin_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || ((GET_MODE_CLASS (mode1) == MODE_INT
+	       || GET_MODE_CLASS (mode1) == MODE_FLOAT)
+	      && (GET_MODE_CLASS (mode2) == MODE_INT
+		  || GET_MODE_CLASS (mode2) == MODE_FLOAT)
+	      && mode1 != BImode && mode2 != BImode
+	      && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
 }
 
 /* Implements target hook vector_mode_supported_p.  */
@@ -2435,9 +2468,8 @@ cbranch_predicted_taken_p (rtx insn)
 
   if (x)
     {
-      int pred_val = XINT (x, 0);
-
-      return pred_val >= REG_BR_PROB_BASE / 2;
+      return profile_probability::from_reg_br_prob_note (XINT (x, 0))
+	     >= profile_probability::even ();
     }
 
   return 0;
@@ -3288,7 +3320,7 @@ bfin_local_alignment (tree type, unsigned align)
      memcpy can use 32 bit loads/stores.  */
   if (TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && wi::gtu_p (TYPE_SIZE (type), 8)
+      && wi::gtu_p (wi::to_wide (TYPE_SIZE (type)), 8)
       && align < 32)
     return 32;
   return align;
@@ -4875,30 +4907,31 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 /* Table of valid machine attributes.  */
 static const struct attribute_spec bfin_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "interrupt_handler", 0, 0, false, true,  true, handle_int_attribute,
-    false },
-  { "exception_handler", 0, 0, false, true,  true, handle_int_attribute,
-    false },
-  { "nmi_handler", 0, 0, false, true,  true, handle_int_attribute, false },
-  { "nesting", 0, 0, false, true,  true, NULL, false },
-  { "kspisusp", 0, 0, false, true,  true, NULL, false },
-  { "saveall", 0, 0, false, true,  true, NULL, false },
-  { "longcall",  0, 0, false, true,  true,  bfin_handle_longcall_attribute,
-    false },
-  { "shortcall", 0, 0, false, true,  true,  bfin_handle_longcall_attribute,
-    false },
-  { "l1_text", 0, 0, true, false, false,  bfin_handle_l1_text_attribute,
-    false },
-  { "l1_data", 0, 0, true, false, false,  bfin_handle_l1_data_attribute,
-    false },
-  { "l1_data_A", 0, 0, true, false, false, bfin_handle_l1_data_attribute,
-    false },
-  { "l1_data_B", 0, 0, true, false, false,  bfin_handle_l1_data_attribute,
-    false },
-  { "l2", 0, 0, true, false, false,  bfin_handle_l2_attribute, false },
-  { NULL, 0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt_handler", 0, 0, false, true,  true, false,
+    handle_int_attribute, NULL },
+  { "exception_handler", 0, 0, false, true,  true, false,
+    handle_int_attribute, NULL },
+  { "nmi_handler", 0, 0, false, true,  true, false, handle_int_attribute,
+    NULL },
+  { "nesting", 0, 0, false, true,  true, false, NULL, NULL },
+  { "kspisusp", 0, 0, false, true,  true, false, NULL, NULL },
+  { "saveall", 0, 0, false, true,  true, false, NULL, NULL },
+  { "longcall",  0, 0, false, true,  true, false,
+    bfin_handle_longcall_attribute, NULL },
+  { "shortcall", 0, 0, false, true,  true, false,
+    bfin_handle_longcall_attribute, NULL },
+  { "l1_text", 0, 0, true, false, false, false,
+    bfin_handle_l1_text_attribute, NULL },
+  { "l1_data", 0, 0, true, false, false, false,
+    bfin_handle_l1_data_attribute, NULL },
+  { "l1_data_A", 0, 0, true, false, false, false,
+    bfin_handle_l1_data_attribute, NULL },
+  { "l1_data_B", 0, 0, true, false, false, false,
+    bfin_handle_l1_data_attribute, NULL },
+  { "l2", 0, 0, true, false, false, false, bfin_handle_l2_attribute, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Implementation of TARGET_ASM_INTEGER.  When using FD-PIC, we need to
@@ -5843,5 +5876,16 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P bfin_can_use_doloop_p
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS bfin_hard_regno_nregs
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK bfin_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P bfin_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;

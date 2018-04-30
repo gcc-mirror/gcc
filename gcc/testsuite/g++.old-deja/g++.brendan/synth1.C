@@ -1,5 +1,5 @@
 // { dg-do assemble }
-// { dg-xfail-if "" { sparc64-*-elf } { "*" } { "" } }
+// { dg-xfail-if "" { sparc64-*-elf } }
 // { dg-options "-pedantic-errors -g -Wall" }
 // GROUPS passed synthetics
 // Check to make sure that g++ doesn't get freaked out about the use

@@ -1,3 +1,240 @@
+2018-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR lto/81968
+	* simple-object.c (handle_lto_debug_sections): Keep .comment
+	section.
+
+2018-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-demangle.c: Update URL for g++ V3 ABI.
+
+2018-01-20  Eli Zaretskii  <eliz@gnu.org>
+
+	* simple-object-xcoff.c (simple_object_xcoff_find_sections): Use
+	ulong_type to avoid warning about 32-bit shift.
+
+2018-01-11  Richard Biener  <rguenther@suse.de>
+	Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR lto/81968
+	* simple-object-common.h (struct simple_object_functions):
+	Change copy_lto_debug_sections callback signature.
+	* simple-object-elf.c (SHN_HIRESERVE, SHT_SYMTAB_SHNDX,
+	SHF_INFO_LINK): Add defines.
+	(simple_object_elf_copy_lto_debug_sections): Instead of
+	leaving not to be copied sections empty unnamed SHT_NULL
+	remove them from the target section headers and adjust section
+	reference everywhere.  Handle SHN_XINDEX in the symbol table
+	processing properly.
+	* simple-object.c (handle_lto_debug_sections): Change
+	interface to return a modified string and handle renaming
+	of relocation sections.
+
+2018-01-10  Daniel van Gerpen  <daniel@vangerpen.de>
+
+	* argv.c (expandargv): Correct check for dynamically
+	allocated argv.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-01-02  Richard Biener  <rguenther@suse.de>
+
+	PR lto/83452
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_section):
+	Do not use UNDEF locals for removed symbols but instead just
+	define them in the first prevailing section and with no name.
+	Use the same gnu_lto_v1 name for all removed globals we promote to
+	WEAK UNDEFs so hpux can use a stub to provide this symbol.  Clear
+	sh_info and sh_link in removed sections.
+
+2017-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR lto/82757
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Strip two leading _s from the __gnu_lto_* symbols.
+
+2017-10-24  Alan Modra  <amodra@gmail.com>
+
+	PR lto/82687
+	PR lto/82575
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Only make __gnu_lto symbols hidden.
+
+2017-10-20  Alan Modra  <amodra@gmail.com>
+
+	PR lto/82575
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Make discarded non-local symbols weak and hidden.
+
+2017-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/82598
+	* simple-object.c (handle_lto_debug_sections): Copy over also
+	.note.GNU-stack section with unchanged name.
+	* simple-object-elf.c (SHF_EXECINSTR): Define.
+	(simple_object_elf_copy_lto_debug_section): Drop SHF_EXECINSTR bit
+	on .note.GNU-stack section.
+
+2017-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR demangler/82195
+	* cp-demangle.c (d_encoding): Strip return type when name is a
+	LOCAL_NAME.
+	(d_local_name): Strip return type of enclosing TYPED_NAME.
+	* testsuite/demangle-expected: Add and adjust tests.
+
+2017-09-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR demangler/82195
+	* cp-demangle.c (d_name): Revert addition of 'toplevel' parm.
+	(has_return_type): Recurse for DEMANGLE_COMPONENT_LOCAL_NAME.
+	(d_encoding): Revert d_name change.  Use is_fnqual_component_type
+	to strip modifiers that do not belong.
+	(d_special_name, d_class_enum_type): Revert d_name call change.
+	(d_expresion_1): Commonize DEMANGLE_COMPONENT_UNARY building.
+	(d_local_name): Revert parsing of a function type.
+	(d_print_comp_inner): An inner LOCAL_NAME might contain a
+	TEMPLATE.
+	* testsuite/demangle-expected: Add & adjust tests
+
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR demangler/82195
+	* cp-demangle.c (d_name): Add 'toplevel' parm.  Pass to	...
+	(d_local_name): ... here.  Parse trailing function args on nested
+	local_name.
+	(d_encoding, d_special_name, d_class_enum_type): Adjust d_name calls.
+	* testsuite/demangle-expected: Add tests.
+
+2017-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Iterate marking dependent sections necessary.
+
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (is_fnqual_component_type): Reimplement using
+	FNQUAL_COMPONENT_CASE.
+	(d_encoding): Hold bare_function_type in local var.
+	(d_local_name): Build name in both cases and build result once.
+	Collapse switch-if to single conditional.
+	(d_local_name): 
+
+	* testsuite/demangle-expected: Realign blank lines with tests.
+
+2017-09-12  Jiong Wang  <jiong.wang@arm.com>
+
+	* dwarfnames.c (DW_CFA_DUP): New define.
+
+2017-09-01  Martin Liska  <mliska@suse.cz>
+
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Remove duplicite declaration.
+
+2017-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_section):
+	Keep names of removed global symbols.
+
+2017-08-29  Tony Reix  <tony.reix@atos.net>
+
+	* simple-object-xcoff.c (simple_object_xcoff_find_sections):
+	Improve .go_export csect handling.  Don't make assumptions
+	on containing section or number of auxiliary entries.
+
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_section):
+	Adjust field with for sh_type write, set SHF_EXCLUDE only for
+	removed sections.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81925
+	* simple-object-elf.c (simple_object_elf_write_shdr): Adjust
+	type of sh_addralign and sh_entsize and properly write
+	sh_entsize as Elf_Addr.
+	(simple_object_elf_write_to_file): Read sh_entsize as Elf_Addr.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* simple-object-common.h (struct simple_object_functions): Add
+	copy_lto_debug_sections hook.
+	* simple-object.c: Include fcntl.h.
+	(handle_lto_debug_sections): New helper function.
+	(simple_object_copy_lto_debug_sections): New function copying
+	early LTO debug sections to regular debug sections in a new file.
+	(simple_object_start_write): Handle NULL segment_name.
+	* simple-object-coff.c (simple_object_coff_functions): Adjust
+	for not implemented copy_lto_debug_sections hook.
+	* simple-object-mach-o.c (simple_object_mach_o_functions): Likewise.
+	* simple-object-xcoff.c (simple_object_xcoff_functions): Likewise.
+	* simple-object-elf.c (SHT_NULL, SHT_SYMTAB, SHT_RELA, SHT_REL,
+	SHT_GROUP): Add various sectopn header types.
+	(SHF_EXCLUDE): Add flag.
+	(Elf32_External_Sym, Elf64_External_Sym): Add symbol struct.
+	(ELF_ST_BIND, ELF_ST_TYPE, ELF_ST_INFO): Add accessors.
+	(STT_OBJECT, STT_FUNC, STT_TLS, STT_GNU_IFUNC): Add Symbol types.
+	(STV_DEFAULT): Add symbol visibility.
+	(SHN_COMMON): Add special section index name.
+	(struct simple_object_elf_write): New.
+	(simple_object_elf_start_write): Adjust for new private data.
+	(simple_object_elf_write_shdr): Pass in values for all fields
+	we write.
+	(simple_object_elf_write_to_file): Adjust.  Copy from recorded
+	section headers if requested.
+	(simple_object_elf_release_write): Release private data.
+	(simple_object_elf_copy_lto_debug_sections): Copy and rename sections
+	as denoted by PFN and all their dependences, symbols and relocations
+	to the empty destination file.
+	(simple_object_elf_functions): Adjust for copy_lto_debug_sections hook.
+
+2017-07-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* dwarfnames.c (DW_FIRST_IDX, DW_END_IDX, DW_IDX, DW_IDX_DUP): New.
+
+2017-06-07  Tony Reix  <tony.reix@atos.net>
+	    Matthieu Sarter  <matthieu.sarter.external@atos.net>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* simple-object-xcoff.c (simple_object_xcoff_find_sections):
+	Search symbol table for .go_export symbol and apply pfn if found.
+
+2017-05-31  DJ Delorie  <dj@redhat.com>
+
+	* configure.ac (strnlen): Add to AC_CHECK_DECLS.
+	* configure: Likewise.
+	* config.in: Add HACE_DECL_STRNLEN.
+
+2017-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_identifier): Prefix mangled init symbols
+	with `initializer for'.
+	* testsuite/demangle-expected: Update tests.
+
+2017-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_call_convention_p): Move declaration
+	before dlang_type.
+	(dlang_type): Handle function types.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_real): Remove stack buffer, write
+	the demangled hexadecimal directly to string.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-24  Eli Zaretskii  <eliz@gnu.org>
+
+	* waitpid.c (wait) [__MINGW32__]: Define as a macro
+	that calls _cwait, so that this function works on MinGW.
+
 2017-05-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-demangle.c (dlang_hexdigit): New function.

@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2008-2017 Free Software Foundation, Inc.
+// Copyright (C) 2008-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,6 +67,12 @@ test02()
   VERIFY( !a1.owner_before(w1) && !w1.owner_before(a1) );
   std::weak_ptr<A> w2(a2);
   VERIFY( !b1.owner_before(w2) && !w2.owner_before(b1) );
+
+  static_assert( noexcept(a1.owner_before(a0)), "" );
+  static_assert( noexcept(a1.owner_before(b1)), "" );
+  static_assert( noexcept(b1.owner_before(a1)), "" );
+  static_assert( noexcept(a1.owner_before(w1)), "" );
+  static_assert( noexcept(b1.owner_before(w1)), "" );
 }
 
 // Aliasing

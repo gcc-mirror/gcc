@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -38,9 +38,10 @@
    %{static:-Bstatic}				\
    %{shared:-shared}				\
    %{symbolic:-Bsymbolic}			\
-   %{!static:					\
+   %{!static:%{!static-pie:			\
      %{rdynamic:-export-dynamic}		\
-     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
+     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}} \
+   %{static-pie:-Bstatic -pie --no-dynamic-linker -z text} \
    -X						\
    %{mbig-endian:-EB} %{mlittle-endian:-EL}     \
    -maarch64linux%{mabi=ilp32:32}%{mbig-endian:b}"

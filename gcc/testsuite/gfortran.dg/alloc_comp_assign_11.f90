@@ -23,7 +23,7 @@ z = [ x, y ]
 !print *, z(1)%a, z(2)%a, x%A, y%A
 if (any (z(1)%a /= 11) .or. z(2)%a(1) /= 22 .or. any (x%A /= 11)  &
     .or. y%A(1) /= 22)  &
-  call abort()
+  STOP 1
 
 x%A(:) = 444
 y%A(:) = 555
@@ -31,11 +31,11 @@ y%A(:) = 555
 !print *, z(1)%a, z(2)%a, x%A, y%A
 if (any (z(1)%a /= 11) .or. z(2)%a(1) /= 22 .or. any (x%A /= 444)  &
     .or. y%A(1) /= 555)  &
-  call abort()
+  STOP 2
 
 z(:) = [ x, y ]
 !print *, z(1)%a, z(2)%a, x%A, y%A
 if (any (z(1)%a /= 444) .or. z(2)%a(1) /= 555 .or. any (x%A /= 444)  &
     .or. y%A(1) /= 555)  &
-  call abort()
+  STOP 3
 end

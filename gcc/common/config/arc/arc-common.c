@@ -1,5 +1,5 @@
 /* Common hooks for Synopsys DesignWare ARC
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 		Claudiu Zissulescu <Claudiu.Zissulescu@synopsys.com>
@@ -47,7 +47,6 @@ arc_option_init_struct (struct gcc_options *opts)
 static const struct default_options arc_option_optimization_table[] =
   {
     { OPT_LEVELS_SIZE, OPT_fsection_anchors, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_mRcq, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_mRcw, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_msize_level_, NULL, 1 },

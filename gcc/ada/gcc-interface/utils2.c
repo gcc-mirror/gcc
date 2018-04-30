@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -800,7 +800,8 @@ build_load_modify_store (tree dest, tree src, Node_Id gnat_node)
 		{
 		  unsigned int size = tree_to_uhwi (TYPE_SIZE (type));
 		  type = copy_type (type);
-		  SET_TYPE_MODE (type, mode_for_size (size, MODE_INT, 0));
+		  machine_mode mode = int_mode_for_size (size, 0).else_blk ();
+		  SET_TYPE_MODE (type, mode);
 		}
 
 	      /* Create the temporary by inserting a SAVE_EXPR.  */
@@ -1438,8 +1439,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	       the offset to the field.  Otherwise, do this the normal way.  */
 	  if (op_code == ATTR_ADDR_EXPR)
 	    {
-	      HOST_WIDE_INT bitsize;
-	      HOST_WIDE_INT bitpos;
+	      poly_int64 bitsize;
+	      poly_int64 bitpos;
 	      tree offset, inner;
 	      machine_mode mode;
 	      int unsignedp, reversep, volatilep;
@@ -1459,8 +1460,9 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      if (!offset)
 		offset = size_zero_node;
 
-	      offset = size_binop (PLUS_EXPR, offset,
-				   size_int (bitpos / BITS_PER_UNIT));
+	      offset
+		= size_binop (PLUS_EXPR, offset,
+			      size_int (bits_to_bytes_round_down (bitpos)));
 
 	      /* Take the address of INNER, convert it to a pointer to our type
 		 and add the offset.  */
@@ -1786,9 +1788,10 @@ build_call_n_expr (tree fndecl, int n, ...)
    MSG gives the exception's identity for the call to Local_Raise, if any.  */
 
 static tree
-build_goto_raise (tree label, int msg)
+build_goto_raise (Entity_Id gnat_label, int msg)
 {
-  tree gnu_result = build1 (GOTO_EXPR, void_type_node, label);
+  tree gnu_label = gnat_to_gnu_entity (gnat_label, NULL_TREE, false);
+  tree gnu_result = build1 (GOTO_EXPR, void_type_node, gnu_label);
   Entity_Id local_raise = Get_Local_Raise_Call_Entity ();
 
   /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
@@ -1806,6 +1809,7 @@ build_goto_raise (tree label, int msg)
 	= build2 (COMPOUND_EXPR, void_type_node, gnu_call, gnu_result);
     }
 
+  TREE_USED (gnu_label) = 1;
   return gnu_result;
 }
 
@@ -1858,13 +1862,13 @@ expand_sloc (Node_Id gnat_node, tree *filename, tree *line, tree *col)
 tree
 build_call_raise (int msg, Node_Id gnat_node, char kind)
 {
+  Entity_Id gnat_label = get_exception_label (kind);
   tree fndecl = gnat_raise_decls[msg];
-  tree label = get_exception_label (kind);
   tree filename, line;
 
   /* If this is to be done as a goto, handle that case.  */
-  if (label)
-    return build_goto_raise (label, msg);
+  if (Present (gnat_label))
+    return build_goto_raise (gnat_label, msg);
 
   expand_sloc (gnat_node, &filename, &line, NULL);
 
@@ -1882,13 +1886,13 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 tree
 build_call_raise_column (int msg, Node_Id gnat_node, char kind)
 {
+  Entity_Id gnat_label = get_exception_label (kind);
   tree fndecl = gnat_raise_decls_ext[msg];
-  tree label = get_exception_label (kind);
   tree filename, line, col;
 
   /* If this is to be done as a goto, handle that case.  */
-  if (label)
-    return build_goto_raise (label, msg);
+  if (Present (gnat_label))
+    return build_goto_raise (gnat_label, msg);
 
   expand_sloc (gnat_node, &filename, &line, &col);
 
@@ -1907,13 +1911,13 @@ tree
 build_call_raise_range (int msg, Node_Id gnat_node, char kind,
 			tree index, tree first, tree last)
 {
+  Entity_Id gnat_label = get_exception_label (kind);
   tree fndecl = gnat_raise_decls_ext[msg];
-  tree label = get_exception_label (kind);
   tree filename, line, col;
 
   /* If this is to be done as a goto, handle that case.  */
-  if (label)
-    return build_goto_raise (label, msg);
+  if (Present (gnat_label))
+    return build_goto_raise (gnat_label, msg);
 
   expand_sloc (gnat_node, &filename, &line, &col);
 
@@ -1934,8 +1938,8 @@ build_call_raise_range (int msg, Node_Id gnat_node, char kind,
 static int
 compare_elmt_bitpos (const PTR rt1, const PTR rt2)
 {
-  const constructor_elt * const elmt1 = (const constructor_elt * const) rt1;
-  const constructor_elt * const elmt2 = (const constructor_elt * const) rt2;
+  const constructor_elt * const elmt1 = (const constructor_elt *) rt1;
+  const constructor_elt * const elmt2 = (const constructor_elt *) rt2;
   const_tree const field1 = elmt1->index;
   const_tree const field2 = elmt2->index;
   const int ret
@@ -2348,6 +2352,12 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
   /* If the initializer, if present, is a NULL_EXPR, just return a new one.  */
   if (init && TREE_CODE (init) == NULL_EXPR)
     return build1 (NULL_EXPR, result_type, TREE_OPERAND (init, 0));
+
+  /* If we are just annotating types, also return a NULL_EXPR.  */
+  else if (type_annotate_only)
+    return build1 (NULL_EXPR, result_type,
+		   build_call_raise (CE_Range_Check_Failed, gnat_node,
+				     N_Raise_Constraint_Error));
 
   /* If the initializer, if present, is a COND_EXPR, deal with each branch.  */
   else if (init && TREE_CODE (init) == COND_EXPR)

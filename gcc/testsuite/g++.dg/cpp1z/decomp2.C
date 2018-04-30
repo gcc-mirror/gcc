@@ -9,12 +9,12 @@ __complex__ int c = 7 + 8i;
 int
 main ()
 {
-  auto & [ d, e, f, g ] = a;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ h, i, j, k ] = a;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ l, m ] = b;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto & [ n, o ] = b;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto & [ p, q ] = c;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
-  auto [ r, s ] = c;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto & [ d, e, f, g ] = a;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ h, i, j, k ] = a;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ l, m ] = b;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto & [ n, o ] = b;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto & [ p, q ] = c;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
+  auto [ r, s ] = c;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
   d += 10;
   e += 11;
   f += 12;

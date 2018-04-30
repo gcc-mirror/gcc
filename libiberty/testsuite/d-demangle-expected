@@ -587,7 +587,7 @@ demangle.test(scope char() scope function)
 #
 --format=dlang
 _D8demangle4test6__initZ
-demangle.test.init$
+initializer for demangle.test
 #
 --format=dlang
 _D8demangle4test6__vtblZ
@@ -838,6 +838,10 @@ _D8demangle52__T4testVrcN0C4CCCCCCCCCCCCCDP4c0B666666666666666P6Zv
 demangle.test!(-0x0.C4CCCCCCCCCCCCCDp4+0x0.B666666666666666p6i)
 #
 --format=dlang
+_D8demangle91__T4testVde000111222333444555666777888999AAABBBCCCDDDEEEFFFP000111222333444555666777888999Zv
+demangle.test!(0x0.00111222333444555666777888999AAABBBCCCDDDEEEFFFp000111222333444555666777888999)
+#
+--format=dlang
 _D8demangle22__T4testVG3ua3_616263Zv
 demangle.test!("abc")
 #
@@ -880,6 +884,10 @@ demangle.test!(demangle.S(1, 2))
 --format=dlang
 _D8demangle35__T4testVS8demangle1SS2i1a3_616263Zv
 demangle.test!(demangle.S(1, "abc"))
+#
+--format=dlang
+_D8demangle13__T4testTFZaZ6mangleFZv
+demangle.test!(char() function).mangle()
 #
 --format=dlang
 _D8demangle4testMxFZv
@@ -1294,3 +1302,7 @@ std.traits.fqnSym!(std).adjustIdent(immutable(char)[])
 --format=dlang
 _D2rt8lifetime36__T14_d_newarrayOpTS13_d_newarrayiTZ14_d_newarrayOpTFNaNbxC8TypeInfomPmZAv
 rt.lifetime._d_newarrayOpT!(_d_newarrayiT)._d_newarrayOpT(const(TypeInfo), ulong, ulong*)
+#
+--format=dlang
+_D4core8demangle16__T6mangleTFZPvZ6mangleFNaNbNfAxaAaZ11DotSplitter5emptyMxFNaNbNdNiNfZb
+core.demangle.mangle!(void*() function).mangle(const(char)[], char[]).DotSplitter.empty() const

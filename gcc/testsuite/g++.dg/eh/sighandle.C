@@ -12,6 +12,7 @@ void sighandler (int signo, siginfo_t * si, void * uc)
 char * dosegv ()
 {    
   * ((volatile int *)0) = 12;
+  return 0;
 }
 
 int main ()

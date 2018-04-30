@@ -83,7 +83,7 @@ CONTAINS
 
     num = mynum (1.0, 2)
     num = num + 7
-    IF (num%num_real /= 1.0 .OR. num%num_int /= 9) CALL abort ()
+    IF (num%num_real /= 1.0 .OR. num%num_int /= 9) STOP 1
   END SUBROUTINE check_in_module
 
 END MODULE m
@@ -103,21 +103,21 @@ PROGRAM main
   num2 = mynum (2.0, 3)
 
   num3 = num1 + num2
-  IF (num3%num_real /= 3.0 .OR. num3%num_int /= 5) CALL abort ()
+  IF (num3%num_real /= 3.0 .OR. num3%num_int /= 5) STOP 2
 
   num3 = num1 + 5
-  IF (num3%num_real /= 1.0 .OR. num3%num_int /= 7) CALL abort ()
+  IF (num3%num_real /= 1.0 .OR. num3%num_int /= 7) STOP 3
 
   num3 = num1 + (-100.5)
-  IF (num3%num_real /= -99.5 .OR. num3%num_int /= 2) CALL abort ()
+  IF (num3%num_real /= -99.5 .OR. num3%num_int /= 2) STOP 4
 
   num3 = 42
   num3 = -1.2
-  IF (num3%num_real /= -1.2 .OR. num3%num_int /= 42) CALL abort ()
+  IF (num3%num_real /= -1.2 .OR. num3%num_int /= 42) STOP 5
 
   real_var = num3
   int_var = num3
-  IF (real_var /= -1.2 .OR. int_var /= 42) CALL abort ()
+  IF (real_var /= -1.2 .OR. int_var /= 42) STOP 6
 
-  IF (.GET. num1 /= 3.0) CALL abort ()
+  IF (.GET. num1 /= 3.0) STOP 7
 END PROGRAM main

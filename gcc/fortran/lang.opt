@@ -1,5 +1,5 @@
-; Options for the Fortran 95 front end.
-; Copyright (C) 2003-2017 Free Software Foundation, Inc.
+; Options for the Fortran front end.
+; Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -237,9 +237,17 @@ Wconversion-extra
 Fortran Var(warn_conversion_extra) Warning
 Warn about most implicit conversions.
 
+Wdo-subscript
+Fortran Var(warn_do_subscript) Warning LangEnabledBy(Fortran,Wextra)
+Warn about possibly incorrect subscripts in do loops.
+
 Wextra
 Fortran Warning
 ; Documented in common
+
+Wfrontend-loop-interchange
+Fortran Var(flag_warn_frontend_loop_interchange)
+Warn if loops have been interchanged.
 
 Wfunction-elimination
 Fortran Warning Var(warn_function_elimination)
@@ -416,6 +424,10 @@ fcray-pointer
 Fortran Var(flag_cray_pointer)
 Use the Cray Pointer extension.
 
+fc-prototypes
+Fortran Var(flag_c_prototypes)
+Generate C prototypes from BIND(C) declarations.
+
 fd-lines-as-code
 Fortran RejectNegative
 Ignore 'D' in column one in fixed form.
@@ -453,8 +465,16 @@ Fortran Var(flag_default_integer)
 Set the default integer kind to an 8 byte wide type.
 
 fdefault-real-8
-Fortran Var(flag_default_real)
+Fortran Var(flag_default_real_8)
 Set the default real kind to an 8 byte wide type.
+
+fdefault-real-10
+Fortran Var(flag_default_real_10)
+Set the default real kind to an 10 byte wide type.
+
+fdefault-real-16
+Fortran Var(flag_default_real_16)
+Set the default real kind to an 16 byte wide type.
 
 fdollar-ok
 Fortran Var(flag_dollar_ok)
@@ -531,6 +551,10 @@ Allow arbitrary character line width in free mode.
 ffree-line-length-
 Fortran RejectNegative Joined UInteger Var(flag_free_line_length) Init(132)
 -ffree-line-length-<n>	Use n as character line width in free mode.
+
+ffrontend-loop-interchange
+Fortran Var(flag_frontend_loop_interchange) Init(-1)
+Try to interchange loops if profitable.
 
 ffrontend-optimize
 Fortran Var(flag_frontend_optimize) Init(-1)
@@ -777,6 +801,10 @@ Conform to the ISO Fortran 2008 standard.
 std=f2008ts
 Fortran
 Conform to the ISO Fortran 2008 standard including TS 29113.
+
+std=f2018
+Fortran
+Conform to the ISO Fortran 2018 standard.
 
 std=f95
 Fortran

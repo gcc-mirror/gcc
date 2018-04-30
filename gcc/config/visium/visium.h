@@ -1,5 +1,5 @@
 /* Definitions of target machine for Visium.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -235,16 +235,6 @@
    the alignment that the object would ordinarily have.  The value of
    this macro is used instead of that alignment to align the object. */
 #define DATA_ALIGNMENT(TYPE,ALIGN) visium_data_alignment (TYPE, ALIGN)
-
-/* `CONSTANT_ALIGNMENT (CONSTANT, BASIC-ALIGN)`
-
-   If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  CONSTANT is the constant
-   and BASIC-ALIGN is the alignment that the object would ordinarily
-   have.  The value of this macro is used instead of that alignment to
-   align the object. */
-#define CONSTANT_ALIGNMENT(EXP,ALIGN) \
-  visium_data_alignment (TREE_TYPE (EXP), ALIGN)
 
 /* `LOCAL_ALIGNMENT (TYPE, BASIC-ALIGN)`
 
@@ -556,58 +546,12 @@
    50, 51, 52,                             /* flags, arg, frame */ \
    0, 34 }                                 /* r0, f0 */
 
-/* `HARD_REGNO_NREGS (REGNO, MODE)'
-
-   A C expression for the number of consecutive hard registers,
-   starting at register number REGNO, required to hold a value of mode
-   MODE.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-  ((REGNO) == MDB_REGNUM ?                    \
-  ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
 /* `HARD_REGNO_RENAME_OK (OLD_REG, NEW_REG)'
 
    A C expression which is nonzero if hard register NEW_REG can be
    considered for use as a rename register for hard register OLD_REG. */
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   visium_hard_regno_rename_ok (OLD_REG, NEW_REG)
-
-/*  `HARD_REGNO_MODE_OK (REGNO, MODE)'
-
-    A C expression that is nonzero if it is permissible to store a
-    value of mode MODE in hard register number REGNO (or in several
-    registers starting with that one). 
-
-    Modes with sizes which cross from the one register class to the
-    other cannot be allowed. Only single floats are allowed in the
-    floating point registers, and only fixed point values in the EAM
-    registers. */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)                         \
- (GP_REGISTER_P (REGNO) ?                                       \
-     GP_REGISTER_P (REGNO + HARD_REGNO_NREGS (REGNO, MODE) - 1) \
-  : FP_REGISTER_P (REGNO) ?                                     \
-     (MODE) == SFmode || ((MODE) == SImode && TARGET_FPU_IEEE)  \
-  : GET_MODE_CLASS (MODE) == MODE_INT                           \
-    && HARD_REGNO_NREGS (REGNO, MODE) == 1)
-
-/* `MODES_TIEABLE_P (MODE1, MODE2)'
-
-   A C expression that is nonzero if a value of mode MODE1 is
-   accessible in mode MODE2 without copying.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
-   MODE2)' are always the same for any R, then `MODES_TIEABLE_P
-   (MODE1, MODE2)' should be nonzero.  If they differ for any R, you
-   should define this macro to return zero unless some other mechanism
-   ensures the accessibility of the value in a narrower mode.
-
-   You should define this macro to return nonzero in as many cases as
-   possible since doing so will allow GNU CC to perform better
-   register allocation. */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((GET_MODE_CLASS (MODE1) == MODE_INT) \
-  && (GET_MODE_CLASS (MODE2) == MODE_INT))
 
 /* Register Classes
 
@@ -769,36 +713,6 @@ enum reg_class
    registers. */
 #define PREFERRED_RELOAD_CLASS(X,CLASS) CLASS
 
-/*  `CANNOT_CHANGE_MODE_CLASS (from, to, class)
-
-    If defined, a C expression that returns nonzero for a `class' for
-    which a change from mode `from' to mode `to' is invalid.
-
-    It's not obvious from the above that MDB cannot change mode. However
-    difficulties arise from expressions of the form
-
-    (subreg:SI (reg:DI R_MDB) 0)
- 
-    There is no way to convert that reference to a single machine
-    register and, without the following definition, reload will quietly
-    convert it to
- 
-     (reg:SI R_MDB)  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM,TO,CLASS) \
-  (CLASS == MDB ? (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)) : 0)
-
-/* `CLASS_MAX_NREGS (CLASS, MODE)'
-
-   A C expression for the maximum number of consecutive registers of
-   class CLASS needed to hold a value of mode MODE.
-
-   This is closely related to the macro `HARD_REGNO_NREGS'.  In fact,
-   the value of the macro `CLASS_MAX_NREGS (CLASS, MODE)' should be
-   the maximum value of `HARD_REGNO_NREGS (REGNO, MODE)' for all REGNO
-   values in the class CLASS.
-
-   This macro helps control the handling of multiple-word values in
-   the reload pass.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)    \
   ((CLASS) == MDB ?                     \
   ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
@@ -812,17 +726,6 @@ enum reg_class
    Define this macro if pushing a word onto the stack moves the stack
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
-
-/* `STARTING_FRAME_OFFSET'
-
-   Offset from the frame pointer to the first local variable slot to
-   be allocated.
-
-   If `FRAME_GROWS_DOWNWARD', find the next slot's offset by
-   subtracting the first slot's length from `STARTING_FRAME_OFFSET'.
-   Otherwise, it is found by adding the length of the first slot to
-   the value `STARTING_FRAME_OFFSET'. */
-#define STARTING_FRAME_OFFSET 0
 
 /* `FIRST_PARM_OFFSET (FUNDECL)'
 
@@ -1278,21 +1181,6 @@ do									\
    bitfield instructions. */
 #define SHIFT_COUNT_TRUNCATED 0
 
-/* `TRULY_NOOP_TRUNCATION (OUTPREC, INPREC)'
-
-   A C expression which is nonzero if on this machine it is safe to
-   "convert" an integer of INPREC bits to one of OUTPREC bits (where
-   OUTPREC is smaller than INPREC) by merely operating on it as if it
-   had only OUTPREC bits.
-
-   On many machines, this expression can be 1.
-
-   When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for
-   modes for which `MODES_TIEABLE_P' is 0, suboptimal code can result.
-   If this is the case, making `TRULY_NOOP_TRUNCATION' return 0 in
-   such cases may improve things. */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* `STORE_FLAG_VALUE'
 
    A C expression describing the value returned by a comparison
@@ -1528,13 +1416,13 @@ do									\
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)  		\
   switch (GET_MODE (BODY))						\
     {									\
-    case SImode:							\
+    case E_SImode:							\
       asm_fprintf ((STREAM), "\t.long\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case HImode:							\
+    case E_HImode:							\
       asm_fprintf ((STREAM), "\t.word\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case QImode:							\
+    case E_QImode:							\
       asm_fprintf ((STREAM), "\t.byte\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
     default:								\
@@ -1568,7 +1456,7 @@ do									\
    Here we output a word of zero so that jump-tables can be seperated
    in reverse assembly. */
 #define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE) \
-  asm_fprintf (STREAM, "\t.long   0\n");
+  asm_fprintf (STREAM, "\t.long   0\n")
 
 /* Assembler Commands for Alignment
 
@@ -1639,9 +1527,8 @@ do									\
    automatic variable having address X (an RTL expression).  The
    default computation assumes that X is based on the frame-pointer
    and gives the offset from the frame-pointer.  This is required for
-   targets that produce debugging output for DBX or COFF-style
-   debugging output for SDB and allow the frame-pointer to be
-   eliminated when the `-g' options is used. */
+   targets that produce debugging output for DBX and allow the frame-pointer
+   to be eliminated when the `-g' options is used. */
 #define DEBUGGER_AUTO_OFFSET(X) \
   (GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0)
 

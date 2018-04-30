@@ -1,4 +1,4 @@
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 // { dg-do run }
 
 struct base1 { int b1, b2 = 42; };

@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -112,10 +112,7 @@ DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)
     itself or have named members doesn't really have a "scope" per se.
   The TYPE_STUB_DECL field is used as a forward-references to names for
     ENUMERAL_TYPE, RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE nodes;
-    see below.
-  The TYPE_METHODS points to list of all methods associated with the type.
-    It is non-NULL only at main variant of the type and after free_lang_data
-    it may be set to error_mark_node instead of actual list to save memory. */
+    see below.  */
 
 /* The ordering of the following codes is optimized for the checking
    macros in tree.h.  Changing the order will degrade the speed of the
@@ -213,8 +210,9 @@ DEFTREECODE (ARRAY_TYPE, "array_type", tcc_type, 0)
 /* Struct in C, or record in Pascal.  */
 /* Special fields:
    TYPE_FIELDS  chain of FIELD_DECLs for the fields of the struct,
-     and VAR_DECLs, TYPE_DECLs and CONST_DECLs for record-scope variables,
-     types and enumerators.
+     VAR_DECLs, TYPE_DECLs and CONST_DECLs for record-scope variables,
+     types and enumerators and FUNCTION_DECLs for methods associated
+     with the type.
    A few may need to be added for Pascal.  */
 /* See the comment above, before ENUMERAL_TYPE, for how
    forward references to struct tags are handled in C.  */
@@ -293,6 +291,9 @@ DEFTREECODE (VOID_CST, "void_cst", tcc_constant, 0)
    some circumstances.  */
 DEFTREECODE (INTEGER_CST, "integer_cst", tcc_constant, 0)
 
+/* Contents are given by POLY_INT_CST_COEFF.  */
+DEFTREECODE (POLY_INT_CST, "poly_int_cst", tcc_constant, 0)
+
 /* Contents are in TREE_REAL_CST field.  */
 DEFTREECODE (REAL_CST, "real_cst", tcc_constant, 0)
 
@@ -303,7 +304,7 @@ DEFTREECODE (FIXED_CST, "fixed_cst", tcc_constant, 0)
    whose contents are other constant nodes.  */
 DEFTREECODE (COMPLEX_CST, "complex_cst", tcc_constant, 0)
 
-/* Contents are in VECTOR_CST_ELTS field.  */
+/* See generic.texi for details.  */
 DEFTREECODE (VECTOR_CST, "vector_cst", tcc_constant, 0)
 
 /* Contents are TREE_STRING_LENGTH and the actual contents of the string.  */
@@ -383,6 +384,9 @@ DEFTREECODE (RESULT_DECL, "result_decl", tcc_declaration, 0)
 /* A "declaration" of a debug temporary.  It should only appear in
    DEBUG stmts.  */
 DEFTREECODE (DEBUG_EXPR_DECL, "debug_expr_decl", tcc_declaration, 0)
+
+/* A stmt that marks the beginning of a source statement.  */
+DEFTREECODE (DEBUG_BEGIN_STMT, "debug_begin_stmt", tcc_statement, 0)
 
 /* A namespace declaration.  Namespaces appear in DECL_CONTEXT of other
    _DECLs, providing a hierarchy of names.  */
@@ -536,6 +540,19 @@ DEFTREECODE (TARGET_EXPR, "target_expr", tcc_expression, 4)
    1 and 2 are NULL.  The operands are then taken from the cfg edges. */
 DEFTREECODE (COND_EXPR, "cond_expr", tcc_expression, 3)
 
+/* Represents a vector in which every element is equal to operand 0.  */
+DEFTREECODE (VEC_DUPLICATE_EXPR, "vec_duplicate_expr", tcc_unary, 1)
+
+/* Vector series created from a start (base) value and a step.
+
+   A = VEC_SERIES_EXPR (B, C)
+
+   means
+
+   for (i = 0; i < N; i++)
+     A[i] = B + C * i;  */
+DEFTREECODE (VEC_SERIES_EXPR, "vec_series_expr", tcc_binary, 2)
+
 /* Vector conditional expression. It is like COND_EXPR, but with
    vector operands.
 
@@ -677,6 +694,14 @@ DEFTREECODE (MULT_EXPR, "mult_expr", tcc_binary, 2)
 /* Pointer addition.  The first operand is always a pointer and the
    second operand is an integer of type sizetype.  */
 DEFTREECODE (POINTER_PLUS_EXPR, "pointer_plus_expr", tcc_binary, 2)
+
+/* Pointer subtraction.  The two arguments are pointers, and the result
+   is a signed integer of the same precision.  Pointers are interpreted
+   as unsigned, the difference is computed as if in infinite signed
+   precision.  Behavior is undefined if the difference does not fit in
+   the result type.  The result does not depend on the pointer type,
+   it is not divided by the size of the pointed-to type.  */
+DEFTREECODE (POINTER_DIFF_EXPR, "pointer_diff_expr", tcc_binary, 2)
 
 /* Highpart multiplication.  For an integral type with precision B,
    returns bits [2B-1, B] of the full 2*B product.  */
@@ -937,10 +962,8 @@ DEFTREECODE (LOOP_EXPR, "loop_expr", tcc_statement, 1)
    Operand 0 is the expression used to perform the branch,
    Operand 1 is the body of the switch, which probably contains
      CASE_LABEL_EXPRs.  It may also be NULL, in which case operand 2
-     must not be NULL.
-   Operand 2 is either NULL_TREE or a TREE_VEC of the CASE_LABEL_EXPRs
-     of all the cases.  */
-DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 3)
+     must not be NULL.  */
+DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 2)
 
 /* Used to represent a case label.
 
@@ -984,8 +1007,8 @@ DEFTREECODE (SCEV_KNOWN, "scev_known", tcc_expression, 0)
 DEFTREECODE (SCEV_NOT_KNOWN, "scev_not_known", tcc_expression, 0)
 
 /* Polynomial chains of recurrences.
-   Under the form: cr = {CHREC_LEFT (cr), +, CHREC_RIGHT (cr)}.  */
-DEFTREECODE (POLYNOMIAL_CHREC, "polynomial_chrec", tcc_expression, 3)
+   cr = {CHREC_LEFT (cr), +, CHREC_RIGHT (cr)}_CHREC_VARIABLE (cr).  */
+DEFTREECODE (POLYNOMIAL_CHREC, "polynomial_chrec", tcc_expression, 2)
 
 /* Used to chain children of container statements together.
    Use the interface in tree-iterator.h to access this node.  */
@@ -1127,14 +1150,6 @@ DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 7)
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_SIMD, "omp_simd", tcc_statement, 7)
 
-/* Cilk Plus - #pragma simd [clause1 ... clauseN]
-   Operands like for OMP_FOR.  */
-DEFTREECODE (CILK_SIMD, "cilk_simd", tcc_statement, 7)
-
-/* Cilk Plus - _Cilk_for (..)
-   Operands like for OMP_FOR.  */
-DEFTREECODE (CILK_FOR, "cilk_for", tcc_statement, 7)
-
 /* OpenMP - #pragma omp distribute [clause1 ... clauseN]
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_DISTRIBUTE, "omp_distribute", tcc_statement, 7)
@@ -1262,18 +1277,6 @@ DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
 /* TRANSACTION_EXPR tree code.
    Operand 0: BODY: contains body of the transaction.  */
 DEFTREECODE (TRANSACTION_EXPR, "transaction_expr", tcc_expression, 1)
-
-/* Reduction operations.
-   Operations that take a vector of elements and "reduce" it to a scalar
-   result (e.g. summing the elements of the vector, finding the minimum over
-   the vector elements, etc).
-   Operand 0 is a vector.
-   The expression returns a scalar, with type the same as the elements of the
-   vector, holding the result of the reduction of all elements of the operand.
-   */
-DEFTREECODE (REDUC_MAX_EXPR, "reduc_max_expr", tcc_unary, 1)
-DEFTREECODE (REDUC_MIN_EXPR, "reduc_min_expr", tcc_unary, 1)
-DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
 
 /* Widening dot-product.
    The first two arguments are of type t1.
@@ -1413,15 +1416,9 @@ DEFTREECODE (TARGET_OPTION_NODE, "target_option_node", tcc_exceptional, 0)
 
 /* ANNOTATE_EXPR.
    Operand 0 is the expression to be annotated.
-   Operand 1 is the annotation kind.  */
-DEFTREECODE (ANNOTATE_EXPR, "annotate_expr", tcc_expression, 2)
-
-/* Cilk spawn statement
-   Operand 0 is the CALL_EXPR.  */
-DEFTREECODE (CILK_SPAWN_STMT, "cilk_spawn_stmt", tcc_statement, 1)
-
-/* Cilk Sync statement: Does not have any operands.  */
-DEFTREECODE (CILK_SYNC_STMT, "cilk_sync_stmt", tcc_statement, 0)
+   Operand 1 is the annotation kind.
+   Operand 2 is additional data.  */
+DEFTREECODE (ANNOTATE_EXPR, "annotate_expr", tcc_expression, 3)
 
 /*
 Local variables:

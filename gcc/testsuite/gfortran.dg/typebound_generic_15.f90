@@ -14,5 +14,3 @@ module Objects
   end Type
 
 end module
-
-! { dg-final { cleanup-modules "Objects" } }

@@ -17,6 +17,8 @@ C::foo (const A &x, int y)
   C *d = new C (x, y);
   if (d->c == nullptr)
     delete d;
+
+  return 0;
 }
 
 C::~C ()

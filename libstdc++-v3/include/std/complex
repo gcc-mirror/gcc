@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -492,31 +492,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_istream<_CharT, _Traits>&
     operator>>(basic_istream<_CharT, _Traits>& __is, complex<_Tp>& __x)
     {
-      _Tp __re_x, __im_x;
+      bool __fail = true;
       _CharT __ch;
-      __is >> __ch;
-      if (__ch == '(')
+      if (__is >> __ch)
 	{
-	  __is >> __re_x >> __ch;
-	  if (__ch == ',')
+	  if (_Traits::eq(__ch, __is.widen('(')))
 	    {
-	      __is >> __im_x >> __ch;
-	      if (__ch == ')')
-		__x = complex<_Tp>(__re_x, __im_x);
-	      else
-		__is.setstate(ios_base::failbit);
+	      _Tp __u;
+	      if (__is >> __u >> __ch)
+		{
+		  const _CharT __rparen = __is.widen(')');
+		  if (_Traits::eq(__ch, __rparen))
+		    {
+		      __x = __u;
+		      __fail = false;
+		    }
+		  else if (_Traits::eq(__ch, __is.widen(',')))
+		    {
+		      _Tp __v;
+		      if (__is >> __v >> __ch)
+			{
+			  if (_Traits::eq(__ch, __rparen))
+			    {
+			      __x = complex<_Tp>(__u, __v);
+			      __fail = false;
+			    }
+			  else
+			    __is.putback(__ch);
+			}
+		    }
+		  else
+		    __is.putback(__ch);
+		}
 	    }
-	  else if (__ch == ')')
-	    __x = __re_x;
 	  else
-	    __is.setstate(ios_base::failbit);
+	    {
+	      __is.putback(__ch);
+	      _Tp __u;
+	      if (__is >> __u)
+		{
+		  __x = __u;
+		  __fail = false;
+		}
+	    }
 	}
-      else
-	{
-	  __is.putback(__ch);
-	  __is >> __re_x;
-	  __x = __re_x;
-	}
+      if (__fail)
+	__is.setstate(ios_base::failbit);
       return __is;
     }
 
@@ -1937,14 +1958,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::complex<__type>(__x, -__type());
     }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 #if __cplusplus > 201103L
 
 inline namespace literals {
 inline namespace complex_literals {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
 #define __cpp_lib_complex_udls 201309
 
   constexpr std::complex<float>
@@ -1971,12 +1990,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   operator""il(unsigned long long __num)
   { return std::complex<long double>{0.0L, static_cast<long double>(__num)}; }
 
-_GLIBCXX_END_NAMESPACE_VERSION
+#pragma GCC diagnostic pop
 } // inline namespace complex_literals
 } // inline namespace literals
 
 #endif // C++14
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif  // C++11

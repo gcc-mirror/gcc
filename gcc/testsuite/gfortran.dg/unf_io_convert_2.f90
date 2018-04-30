@@ -11,7 +11,7 @@ program main
   write (10) c
   rewind (10)
   read (10) a
-  if (a(1) /= 3.14 .or. a(2) /= 2.71) call abort
+  if (a(1) /= 3.14 .or. a(2) /= 2.71) STOP 1
   close(10,status="delete")
 
   open (10, form="unformatted",convert="big_endian") ! { dg-warning "Extension: CONVERT" }
@@ -20,10 +20,10 @@ program main
   rewind (10)
   read (10) b
   if (any(b /= (/ Z'11', Z'22', Z'33', Z'44', Z'55', Z'66', Z'77', Z'00' /))) &
-    call abort
+    STOP 2
   backspace 10
   read (10) j
-  if (j /= Z'1122334455667700') call abort
+  if (j /= Z'1122334455667700') STOP 3
   close (10, status="delete")
 
   open (10, form="unformatted", convert="little_endian") ! { dg-warning "Extension: CONVERT" }
@@ -31,10 +31,10 @@ program main
   rewind (10)
   read (10) b
   if (any(b /= (/ Z'44', Z'33', Z'22', Z'11', Z'00', Z'77', Z'66', Z'55' /))) &
-    call abort
+    STOP 4
   backspace 10
   read (10) j
-  if (j /= Z'5566770011223344') call abort
+  if (j /= Z'5566770011223344') STOP 5
   close (10, status="delete")
 
 end program main

@@ -1,5 +1,5 @@
 /* Control flow graph analysis code for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -610,7 +610,9 @@ connect_infinite_loops_to_exit (void)
 	break;
 
       basic_block deadend_block = dfs_find_deadend (unvisited_block);
-      make_edge (deadend_block, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
+      edge e = make_edge (deadend_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			  EDGE_FAKE);
+      e->probability = profile_probability::never ();
       dfs.add_bb (deadend_block);
     }
 }
@@ -734,23 +736,24 @@ post_order_compute (int *post_order, bool include_entry_exit,
 basic_block
 dfs_find_deadend (basic_block bb)
 {
-  bitmap visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
+  basic_block next = bb;
 
   for (;;)
     {
-      if (EDGE_COUNT (bb->succs) == 0
-	  || ! bitmap_set_bit (visited, bb->index))
-        {
-          BITMAP_FREE (visited);
-          return bb;
-        }
+      if (EDGE_COUNT (next->succs) == 0)
+	return next;
 
+      if (! bitmap_set_bit (visited, next->index))
+	return bb;
+
+      bb = next;
       /* If we are in an analyzed cycle make sure to try exiting it.
          Note this is a heuristic only and expected to work when loop
 	 fixup is needed as well.  */
       if (! bb->loop_father
 	  || ! loop_outer (bb->loop_father))
-	bb = EDGE_SUCC (bb, 0)->dest;
+	next = EDGE_SUCC (bb, 0)->dest;
       else
 	{
 	  edge_iterator ei;
@@ -758,7 +761,7 @@ dfs_find_deadend (basic_block bb)
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (loop_exit_edge_p (bb->loop_father, e))
 	      break;
-	  bb = e ? e->dest : EDGE_SUCC (bb, 0)->dest;
+	  next = e ? e->dest : EDGE_SUCC (bb, 0)->dest;
 	}
     }
 
@@ -1550,4 +1553,43 @@ single_pred_before_succ_order (void)
 
 #undef MARK_VISITED
 #undef VISITED_P
+}
+
+/* Ignoring loop backedges, if BB has precisely one incoming edge then
+   return that edge.  Otherwise return NULL.
+
+   When IGNORE_NOT_EXECUTABLE is true, also ignore edges that are not marked
+   as executable.  */
+
+edge
+single_pred_edge_ignoring_loop_edges (basic_block bb,
+				      bool ignore_not_executable)
+{
+  edge retval = NULL;
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      /* A loop back edge can be identified by the destination of
+	 the edge dominating the source of the edge.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	continue;
+
+      /* We can safely ignore edges that are not executable.  */
+      if (ignore_not_executable
+	  && (e->flags & EDGE_EXECUTABLE) == 0)
+	continue;
+
+      /* If we have already seen a non-loop edge, then we must have
+	 multiple incoming non-loop edges and thus we return NULL.  */
+      if (retval)
+	return NULL;
+
+      /* This is the first non-loop incoming edge we have found.  Record
+	 it.  */
+      retval = e;
+    }
+
+  return retval;
 }

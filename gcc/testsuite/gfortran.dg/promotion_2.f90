@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdefault-real-8 -fexternal-blas -fdump-tree-original" }
+! { dg-options "-fdefault-real-8 -fexternal-blas -fdump-tree-original -finline-matmul-limit=0" }
 !
 ! PR fortran/54463
 !

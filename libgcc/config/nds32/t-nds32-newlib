@@ -1,5 +1,5 @@
 # Rules of newlib library makefile of Andes NDS32 cpu for GNU compiler
-# Copyright (C) 2012-2017 Free Software Foundation, Inc.
+# Copyright (C) 2012-2018 Free Software Foundation, Inc.
 # Contributed by Andes Technology Corporation.
 #
 # This file is part of GCC.
@@ -19,7 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Compiler flags to use when compiling 'libgcc2.c'
-HOST_LIBGCC2_CFLAGS = -O2
+HOST_LIBGCC2_CFLAGS = -O2 -fwrapv
 
 
 #LIB1ASMSRC   = nds32/lib1asmsrc-newlib.S

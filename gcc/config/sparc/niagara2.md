@@ -1,5 +1,5 @@
 ;; Scheduling description for Niagara-2 and Niagara-3.
-;;   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -111,10 +111,10 @@
 
 (define_insn_reservation "niag2_vis" 6
   (and (eq_attr "cpu" "niagara2")
-    (eq_attr "type" "fga,vismv,visl,fgm_pack,fgm_mul,pdist,edge,edgen,array,gsr"))
+    (eq_attr "type" "fga,vismv,visl,viscmp,fgm_pack,fgm_mul,pdist,edge,edgen,array,bmask,gsr"))
   "niag2_pipe*6")
 
 (define_insn_reservation "niag3_vis" 9
   (and (eq_attr "cpu" "niagara3")
-    (eq_attr "type" "fga,vismv,visl,fgm_pack,fgm_mul,pdist,pdistn,edge,edgen,array,gsr"))
+    (eq_attr "type" "fga,vismv,visl,viscmp,fgm_pack,fgm_mul,pdist,pdistn,edge,edgen,array,bmask,gsr"))
   "niag2_pipe*9")

@@ -1,5 +1,5 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu for GNU C compiler
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -1190,7 +1190,7 @@
 (define_insn "vendrec_insn"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand"  "r")] UNSPEC_ARC_SIMD_VENDREC)]
   "TARGET_SIMD_SET"
-  "vendrec %S0"
+  "vendrec %0"
   [(set_attr "type" "simd_vcontrol")
    (set_attr "length" "4")
    (set_attr "cond" "nocond")])
@@ -1356,7 +1356,7 @@
    }")
 
 (define_insn_and_split "*movv2hi_insn"
-  [(set (match_operand:V2HI 0 "nonimmediate_operand" "=r,r,r,m")
+  [(set (match_operand:V2HI 0 "move_dest_operand" "=r,r,r,m")
 	(match_operand:V2HI 1 "general_operand"       "i,r,m,r"))]
   "(register_operand (operands[0], V2HImode)
     || register_operand (operands[1], V2HImode))"
@@ -1383,19 +1383,18 @@
  [(set (match_operand:V2HI 0 "general_operand" "")
        (match_operand:V2HI 1 "general_operand" ""))]
  ""
-{
- if (!register_operand (operands[0], V2HImode)
-      && !register_operand (operands[1], V2HImode))
-    operands[1] = force_reg (V2HImode, operands[1]);
-})
+ "{
+   if (prepare_move_operands (operands, V2HImode))
+     DONE;
+  }")
 
 (define_expand "mov<mode>"
   [(set (match_operand:VWH 0 "move_dest_operand" "")
 	(match_operand:VWH 1 "general_operand" ""))]
   ""
   "{
-    if (GET_CODE (operands[0]) == MEM)
-     operands[1] = force_reg (<MODE>mode, operands[1]);
+    if (prepare_move_operands (operands, <MODE>mode))
+     DONE;
    }")
 
 (define_insn_and_split "*mov<mode>_insn"
@@ -1440,11 +1439,10 @@
  [(set (match_operand:VWH 0 "general_operand" "")
        (match_operand:VWH 1 "general_operand" ""))]
  ""
-{
- if (!register_operand (operands[0], <MODE>mode)
-      && !register_operand (operands[1], <MODE>mode))
-    operands[1] = force_reg (<MODE>mode, operands[1]);
-})
+ "{
+   if (prepare_move_operands (operands, <MODE>mode))
+     DONE;
+  }")
 
 (define_insn "bswapv2hi2"
   [(set (match_operand:V2HI 0 "register_operand" "=r,r")

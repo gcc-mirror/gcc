@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "-O2 -flto --param partial-inlining-entry-probability=101" } */
+/* { dg-options "-O2 -flto --param partial-inlining-entry-probability=100" } */
 /* { dg-require-effective-target lto } */
 
 extern void abort(void);

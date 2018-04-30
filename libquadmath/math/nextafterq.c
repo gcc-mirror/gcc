@@ -13,6 +13,7 @@
  * ====================================================
  */
 
+#include <errno.h>
 #include "quadmath-imp.h"
 
 __float128
@@ -54,9 +55,15 @@ nextafterq (__float128 x, __float128 y)
 	    }
 	}
 	hy = hx&0x7fff000000000000LL;
-	if(hy==0x7fff000000000000LL) return x+x;/* overflow  */
+	if(hy==0x7fff000000000000LL) {
+	    __float128 u = x + x;		/* overflow  */
+	    math_force_eval (u);
+	    errno = ERANGE;
+	}
 	if(hy==0) {
-	    /* here we should raise an underflow flag */
+	    __float128 u = x*x;			/* underflow */
+	    math_force_eval (u);		/* raise underflow flag */
+	    errno = ERANGE;
 	}
 	SET_FLT128_WORDS64(x,hx,lx);
 	return x;

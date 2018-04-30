@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2016, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2018, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -126,7 +126,7 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
 
 */
 
-#if defined (WINNT) || defined (__CYGWIN__) || defined(__DJGPP__)
+#if defined (WINNT) || defined (__CYGWIN__) || defined (__DJGPP__)
 
 const char __gnat_text_translation_required = 1;
 
@@ -137,7 +137,7 @@ const char __gnat_text_translation_required = 1;
 #define WIN_SETMODE _setmode
 #endif
 
-#if defined(__DJGPP__)
+#if defined (__DJGPP__)
 #include <io.h>
 #define _setmode setmode
 #endif /* __DJGPP__ */
@@ -154,7 +154,7 @@ __gnat_set_text_mode (int handle)
   WIN_SETMODE (handle, O_TEXT);
 }
 
-#ifdef __DJGPP__
+#if defined (__CYGWIN__) || defined (__DJGPP__)
 void
 __gnat_set_mode (int handle, int mode)
 {
@@ -317,7 +317,8 @@ __gnat_ttyname (int filedes)
   || defined (__MACHTEN__) || defined (__hpux__) || defined (_AIX) \
   || (defined (__svr4__) && defined (__i386__)) || defined (__Lynx__) \
   || defined (__CYGWIN__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
-  || defined (__GLIBC__) || defined (__APPLE__) || defined (__DragonFly__)
+  || defined (__GLIBC__) || defined (__APPLE__) || defined (__DragonFly__) \
+  || defined (__QNX__)
 
 # ifdef __MINGW32__
 #  if OLD_MINGW
@@ -369,7 +370,8 @@ getc_immediate_common (FILE *stream,
     || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (__hpux__) \
     || defined (_AIX) || (defined (__svr4__) && defined (__i386__)) \
     || defined (__Lynx__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
-    || defined (__GLIBC__) || defined (__APPLE__) || defined (__DragonFly__)
+    || defined (__GLIBC__) || defined (__APPLE__) || defined (__DragonFly__) \
+    || defined (__QNX__)
   char c;
   int nread;
   int good_one = 0;
@@ -389,7 +391,8 @@ getc_immediate_common (FILE *stream,
     || defined (__MACHTEN__) || defined (__hpux__) \
     || defined (_AIX) || (defined (__svr4__) && defined (__i386__)) \
     || defined (__Lynx__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
-    || defined (__GLIBC__) || defined (__APPLE__) || defined (__DragonFly__)
+    || defined (__GLIBC__) || defined (__APPLE__) || defined (__DragonFly__) \
+    || defined (__QNX__)
       eof_ch = termios_rec.c_cc[VEOF];
 
       /* If waiting (i.e. Get_Immediate (Char)), set MIN = 1 and wait for
@@ -826,7 +829,7 @@ __gnat_localtime_tzoff (const time_t *timer ATTRIBUTE_UNUSED,
 
 #elif defined (__APPLE__) || defined (__FreeBSD__) || defined (__linux__) \
   || defined (__GLIBC__) || defined (__DragonFly__) || defined (__OpenBSD__) \
-  || defined(__DJGPP__)
+  || defined (__DJGPP__) || defined (__QNX__)
 {
   localtime_r (timer, &tp);
   *off = tp.tm_gmtoff;
@@ -918,6 +921,89 @@ __gnat_is_file_not_found_error (int errno_val) {
         return 0;
    }
 }
+
+#if defined (__linux__)
+
+/* Note well: If this code is modified, it should be tested by hand,
+   because automated testing doesn't exercise it.
+*/
+
+/* HAVE_CAPABILITY is supposed to be defined if sys/capability.h exists on the
+   system where this is being compiled. If this macro is defined, we #include
+   the header. Otherwise we have the relevant declarations textually here.
+*/
+
+#if defined (HAVE_CAPABILITY)
+#include <sys/capability.h>
+#else
+
+/* HAVE_CAPABILITY is not defined, so sys/capability.h does might not exist. */
+
+typedef struct _cap_struct *cap_t;
+typedef enum {
+    CAP_CLEAR=0,
+    CAP_SET=1
+} cap_flag_value_t;
+#define CAP_SYS_NICE         23
+typedef enum {
+    CAP_EFFECTIVE=0,                        /* Specifies the effective flag */
+    CAP_PERMITTED=1,                        /* Specifies the permitted flag */
+    CAP_INHERITABLE=2                     /* Specifies the inheritable flag */
+} cap_flag_t;
+
+typedef int cap_value_t;
+
+extern cap_t   cap_get_proc(void);
+extern int     cap_get_flag(cap_t, cap_value_t, cap_flag_t, cap_flag_value_t *);
+extern int     cap_free(void *);
+
+#endif
+
+/* __gnat_has_cap_sys_nice returns 1 if the current process has the
+   CAP_SYS_NICE capability. This capability is necessary to use the
+   Ceiling_Locking policy. Returns 0 otherwise. Note that this is
+   defined only for Linux.
+*/
+
+/* Define these as weak symbols, so if support for capabilities is not present,
+   programs can still link. On Ubuntu, support for capabilities can be
+   installed via "sudo apt-get --assume-yes install libcap-dev".
+   In addition, the user must link with "-lcap", or else these
+   symbols will be 0, and __gnat_has_cap_sys_nice will return 0.
+*/
+
+static cap_t cap_get_proc_weak(void)
+  __attribute__ ((weakref ("cap_get_proc")));
+static int cap_get_flag_weak(cap_t, cap_value_t, cap_flag_t, cap_flag_value_t *)
+  __attribute__ ((weakref ("cap_get_flag")));
+static int cap_free_weak(void *)
+  __attribute__ ((weakref ("cap_free")));
+
+int
+__gnat_has_cap_sys_nice () {
+  /* If the address of cap_get_proc_weak is 0, this means support for
+     capabilities is not present, so we return 0. */
+  if (&cap_get_proc_weak == 0)
+    return 0;
+
+  cap_t caps = cap_get_proc_weak();
+  if (caps == NULL)
+    return 0;
+
+  cap_flag_value_t value;
+
+  if (cap_get_flag_weak(caps, CAP_SYS_NICE, CAP_EFFECTIVE, &value) == -1)
+    return 0;
+
+  if (cap_free_weak(caps) == -1)
+    return 0;
+
+  if (value == CAP_SET)
+    return 1;
+
+  return 0;
+}
+#endif
 
 #ifdef __ANDROID__
 

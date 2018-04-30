@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for libgccjit.so.
-#   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -51,6 +51,19 @@ LIBGCCJIT_FILENAME = \
 LIBGCCJIT_LINKER_NAME_SYMLINK = $(LIBGCCJIT_LINKER_NAME)
 LIBGCCJIT_SONAME_SYMLINK = $(LIBGCCJIT_SONAME)
 
+# Conditionalize the use of the LD_VERSION_SCRIPT_OPTION and
+# LD_SONAME_OPTION depending if configure found them, using $(if)
+# We have to define a COMMA here, otherwise the commas in the "true"
+# result are treated as separators by the $(if).
+COMMA := ,
+LIBGCCJIT_VERSION_SCRIPT_OPTION = \
+	$(if $(LD_VERSION_SCRIPT_OPTION),\
+	  -Wl$(COMMA)$(LD_VERSION_SCRIPT_OPTION)$(COMMA)$(srcdir)/jit/libgccjit.map)
+
+LIBGCCJIT_SONAME_OPTION = \
+	$(if $(LD_SONAME_OPTION), \
+	     -Wl$(COMMA)$(LD_SONAME_OPTION)$(COMMA)$(LIBGCCJIT_SONAME))
+
 jit: $(LIBGCCJIT_FILENAME) \
 	$(LIBGCCJIT_SYMLINK) \
 	$(LIBGCCJIT_LINKER_NAME_SYMLINK) \
@@ -83,10 +96,10 @@ $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	$(EXTRA_GCC_OBJS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
-	     $(CPPLIB) $(LIBDECNUMBER) $(LIBS) $(BACKENDLIBS) \
+	     $(CPPLIB) $(LIBDECNUMBER) $(EXTRA_GCC_LIBS) $(LIBS) $(BACKENDLIBS) \
 	     $(EXTRA_GCC_OBJS) \
-	     -Wl,--version-script=$(srcdir)/jit/libgccjit.map \
-	     -Wl,-soname,$(LIBGCCJIT_SONAME)
+	     $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
+	     $(LIBGCCJIT_SONAME_OPTION)
 
 $(LIBGCCJIT_SONAME_SYMLINK): $(LIBGCCJIT_FILENAME)
 	ln -sf $(LIBGCCJIT_FILENAME) $(LIBGCCJIT_SONAME_SYMLINK)

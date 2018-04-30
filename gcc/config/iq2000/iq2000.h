@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    Vitesse IQ2000 processors
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -96,10 +96,6 @@
 	|| TREE_CODE (TYPE) == UNION_TYPE				\
 	|| TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 #define EMPTY_FIELD_BOUNDARY 32
 
 #define STRUCTURE_SIZE_BOUNDARY 8
@@ -160,21 +156,6 @@
 }
 
 
-/* How Values Fit in Registers.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 			\
- ((REGNO_REG_CLASS (REGNO) == GR_REGS)				\
-  ? ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) <= 4     	\
-  : ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) == 4)
-
-#define MODES_TIEABLE_P(MODE1, MODE2)				\
-  ((GET_MODE_CLASS (MODE1) == MODE_FLOAT ||			\
-    GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)		\
-   == (GET_MODE_CLASS (MODE2) == MODE_FLOAT ||			\
-       GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT))
 
 #define AVOID_CCMODE_COPIES
 
@@ -233,9 +214,6 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 0
-
-#define STARTING_FRAME_OFFSET						\
-  (crtl->outgoing_args_size)
 
 /* Use the default value zero.  */
 /* #define STACK_POINTER_OFFSET 0 */
@@ -318,16 +296,6 @@ typedef struct iq2000_args
    For a library call, FNTYPE is 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   init_cumulative_args (& CUM, FNTYPE, LIBNAME)				\
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE)				\
-  (! BYTES_BIG_ENDIAN							\
-   ? upward								\
-   : (((MODE) == BLKmode						\
-       ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
-	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT))\
-       : (GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY			\
-	  && (GET_MODE_CLASS (MODE) == MODE_INT)))			\
-      ? downward : upward))
 
 #define FUNCTION_ARG_REGNO_P(N)						\
   (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST))			
@@ -550,8 +518,6 @@ while (0)
 #define MAX_MOVE_MAX 8
 
 #define SHIFT_COUNT_TRUNCATED 1
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define STORE_FLAG_VALUE 1
 

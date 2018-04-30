@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,7 +220,8 @@ package body Errutil is
             Serious  => Is_Serious_Error,
             Uncond   => Is_Unconditional_Msg,
             Msg_Cont => Continuation,
-            Deleted  => False));
+            Deleted  => False,
+            Node     => Empty));
 
       Cur_Msg  := Errors.Last;
       Prev_Msg := No_Error_Msg;

@@ -33,16 +33,16 @@ program prog
   dat = date_m(1)
 
   xx = file_info(date_m(-1))  ! This always worked - a constructor
-  if (xx%date%month /= -1) call abort
+  if (xx%date%month /= -1) STOP 1
 
   xx = file_info(dat)         ! This was the original PR - a variable
-  if (xx%date%month /= 1) call abort
+  if (xx%date%month /= 1) STOP 2
 
   xx = file_info(foo(2))      ! ...functions were also broken
-  if (xx%date%month /= 2) call abort
+  if (xx%date%month /= 2) STOP 3
 
   xx = file_info(christmas)   ! ...and parameters
-  if (xx%date%month /= 12) call abort
+  if (xx%date%month /= 12) STOP 4
 
 
 contains

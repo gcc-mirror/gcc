@@ -157,6 +157,7 @@ func (d *decoder) parseIHDR(length uint32) error {
 		return FormatError("invalid interlace method")
 	}
 	d.interlace = int(d.tmp[12])
+
 	w := int32(binary.BigEndian.Uint32(d.tmp[0:4]))
 	h := int32(binary.BigEndian.Uint32(d.tmp[4:8]))
 	if w <= 0 || h <= 0 {
@@ -166,6 +167,11 @@ func (d *decoder) parseIHDR(length uint32) error {
 	if nPixels != int64(int(nPixels)) {
 		return UnsupportedError("dimension overflow")
 	}
+	// There can be up to 8 bytes per pixel, for 16 bits per channel RGBA.
+	if nPixels != (nPixels*8)/8 {
+		return UnsupportedError("dimension overflow")
+	}
+
 	d.cb = cbInvalid
 	d.depth = int(d.tmp[8])
 	switch d.depth {
@@ -613,12 +619,19 @@ func (d *decoder) readImagePass(r io.Reader, pass int, allocateOnly bool) (image
 			}
 		case cbG8:
 			if d.useTransparent {
-				// Match error from Go 1.7 and earlier.
-				// Go 1.9 will decode this properly.
-				return nil, chunkOrderError
+				ty := d.transparent[1]
+				for x := 0; x < width; x++ {
+					ycol := cdat[x]
+					acol := uint8(0xff)
+					if ycol == ty {
+						acol = 0x00
+					}
+					nrgba.SetNRGBA(x, y, color.NRGBA{ycol, ycol, ycol, acol})
+				}
+			} else {
+				copy(gray.Pix[pixOffset:], cdat)
+				pixOffset += gray.Stride
 			}
-			copy(gray.Pix[pixOffset:], cdat)
-			pixOffset += gray.Stride
 		case cbGA8:
 			for x := 0; x < width; x++ {
 				ycol := cdat[2*x+0]

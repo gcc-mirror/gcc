@@ -1,5 +1,5 @@
 /* Operations with affine combinations of trees.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "ssa.h"
 #include "tree-pretty-print.h"
 #include "fold-const.h"
 #include "tree-affine.h"
@@ -33,8 +34,16 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
-widest_int
+static widest_int
 wide_int_ext_for_comb (const widest_int &cst, tree type)
+{
+  return wi::sext (cst, TYPE_PRECISION (type));
+}
+
+/* Likewise for polynomial offsets.  */
+
+static poly_widest_int
+wide_int_ext_for_comb (const poly_widest_int &cst, tree type)
 {
   return wi::sext (cst, TYPE_PRECISION (type));
 }
@@ -56,7 +65,7 @@ aff_combination_zero (aff_tree *comb, tree type)
 /* Sets COMB to CST.  */
 
 void
-aff_combination_const (aff_tree *comb, tree type, const widest_int &cst)
+aff_combination_const (aff_tree *comb, tree type, const poly_widest_int &cst)
 {
   aff_combination_zero (comb, type);
   comb->offset = wide_int_ext_for_comb (cst, comb->type);;
@@ -189,7 +198,7 @@ aff_combination_add_elt (aff_tree *comb, tree elt, const widest_int &scale_in)
 /* Adds CST to C.  */
 
 static void
-aff_combination_add_cst (aff_tree *c, const widest_int &cst)
+aff_combination_add_cst (aff_tree *c, const poly_widest_int &cst)
 {
   c->offset = wide_int_ext_for_comb (c->offset + cst, c->type);
 }
@@ -258,7 +267,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
   aff_tree tmp;
   enum tree_code code;
   tree cst, core, toffset;
-  HOST_WIDE_INT bitpos, bitsize;
+  poly_int64 bitpos, bitsize, bytepos;
   machine_mode mode;
   int unsignedp, reversep, volatilep;
 
@@ -267,10 +276,6 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
   code = TREE_CODE (expr);
   switch (code)
     {
-    case INTEGER_CST:
-      aff_combination_const (comb, type, wi::to_widest (expr));
-      return;
-
     case POINTER_PLUS_EXPR:
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
       tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp);
@@ -319,12 +324,13 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       core = get_inner_reference (TREE_OPERAND (expr, 0), &bitsize, &bitpos,
 				  &toffset, &mode, &unsignedp, &reversep,
 				  &volatilep);
-      if (bitpos % BITS_PER_UNIT != 0)
+      if (!multiple_p (bitpos, BITS_PER_UNIT, &bytepos))
 	break;
-      aff_combination_const (comb, type, bitpos / BITS_PER_UNIT);
+      aff_combination_const (comb, type, bytepos);
       if (TREE_CODE (core) == MEM_REF)
 	{
-	  aff_combination_add_cst (comb, wi::to_widest (TREE_OPERAND (core, 1)));
+	  tree mem_offset = TREE_OPERAND (core, 1);
+	  aff_combination_add_cst (comb, wi::to_poly_widest (mem_offset));
 	  core = TREE_OPERAND (core, 0);
 	}
       else
@@ -363,8 +369,73 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       aff_combination_add (comb, &tmp);
       return;
 
-    default:
+    CASE_CONVERT:
+      {
+	tree otype = TREE_TYPE (expr);
+	tree inner = TREE_OPERAND (expr, 0);
+	tree itype = TREE_TYPE (inner);
+	enum tree_code icode = TREE_CODE (inner);
+
+	/* In principle this is a valid folding, but it isn't necessarily
+	   an optimization, so do it here and not in fold_unary.  */
+	if ((icode == PLUS_EXPR || icode == MINUS_EXPR || icode == MULT_EXPR)
+	    && TREE_CODE (itype) == INTEGER_TYPE
+	    && TREE_CODE (otype) == INTEGER_TYPE
+	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype))
+	  {
+	    tree op0 = TREE_OPERAND (inner, 0), op1 = TREE_OPERAND (inner, 1);
+
+	    /* If inner type has undefined overflow behavior, fold conversion
+	       for below two cases:
+		 (T1)(X *+- CST) -> (T1)X *+- (T1)CST
+		 (T1)(X + X)     -> (T1)X + (T1)X.  */
+	    if (TYPE_OVERFLOW_UNDEFINED (itype)
+		&& (TREE_CODE (op1) == INTEGER_CST
+		    || (icode == PLUS_EXPR && operand_equal_p (op0, op1, 0))))
+	      {
+		op0 = fold_convert (otype, op0);
+		op1 = fold_convert (otype, op1);
+		expr = fold_build2 (icode, otype, op0, op1);
+		tree_to_aff_combination (expr, type, comb);
+		return;
+	      }
+	    wide_int minv, maxv;
+	    /* If inner type has wrapping overflow behavior, fold conversion
+	       for below case:
+		 (T1)(X - CST) -> (T1)X - (T1)CST
+	       if X - CST doesn't overflow by range information.  Also handle
+	       (T1)(X + CST) as (T1)(X - (-CST)).  */
+	    if (TYPE_UNSIGNED (itype)
+		&& TYPE_OVERFLOW_WRAPS (itype)
+		&& TREE_CODE (op0) == SSA_NAME
+		&& TREE_CODE (op1) == INTEGER_CST
+		&& icode != MULT_EXPR
+		&& get_range_info (op0, &minv, &maxv) == VR_RANGE)
+	      {
+		if (icode == PLUS_EXPR)
+		  op1 = wide_int_to_tree (itype, -wi::to_wide (op1));
+		if (wi::geu_p (minv, wi::to_wide (op1)))
+		  {
+		    op0 = fold_convert (otype, op0);
+		    op1 = fold_convert (otype, op1);
+		    expr = fold_build2 (MINUS_EXPR, otype, op0, op1);
+		    tree_to_aff_combination (expr, type, comb);
+		    return;
+		  }
+	      }
+	  }
+      }
       break;
+
+    default:
+      {
+	if (poly_int_tree_p (expr))
+	  {
+	    aff_combination_const (comb, type, wi::to_poly_widest (expr));
+	    return;
+	  }
+	break;
+      }
     }
 
   aff_combination_elt (comb, type, expr);
@@ -419,7 +490,8 @@ aff_combination_to_tree (aff_tree *comb)
 {
   tree type = comb->type, base = NULL_TREE, expr = NULL_TREE;
   unsigned i;
-  widest_int off, sgn;
+  poly_widest_int off;
+  int sgn;
 
   gcc_assert (comb->n == MAX_AFF_ELTS || comb->rest == NULL_TREE);
 
@@ -443,7 +515,7 @@ aff_combination_to_tree (aff_tree *comb)
 
   /* Ensure that we get x - 1, not x + (-1) or x + 0xff..f if x is
      unsigned.  */
-  if (wi::neg_p (comb->offset))
+  if (known_lt (comb->offset, 0))
     {
       off = -comb->offset;
       sgn = -1;
@@ -529,7 +601,19 @@ aff_combination_add_product (aff_tree *c, const widest_int &coef, tree val,
     }
 
   if (val)
-    aff_combination_add_elt (r, val, coef * c->offset);
+    {
+      if (c->offset.is_constant ())
+	/* Access coeffs[0] directly, for efficiency.  */
+	aff_combination_add_elt (r, val, coef * c->offset.coeffs[0]);
+      else
+	{
+	  /* c->offset is polynomial, so multiply VAL rather than COEF
+	     by it.  */
+	  tree offset = wide_int_to_tree (TREE_TYPE (val), c->offset);
+	  val = fold_build2 (MULT_EXPR, TREE_TYPE (val), val, offset);
+	  aff_combination_add_elt (r, val, coef);
+	}
+    }
   else
     aff_combination_add_cst (r, coef * c->offset);
 }
@@ -548,7 +632,15 @@ aff_combination_mult (aff_tree *c1, aff_tree *c2, aff_tree *r)
     aff_combination_add_product (c1, c2->elts[i].coef, c2->elts[i].val, r);
   if (c2->rest)
     aff_combination_add_product (c1, 1, c2->rest, r);
-  aff_combination_add_product (c1, c2->offset, NULL, r);
+  if (c2->offset.is_constant ())
+    /* Access coeffs[0] directly, for efficiency.  */
+    aff_combination_add_product (c1, c2->offset.coeffs[0], NULL, r);
+  else
+    {
+      /* c2->offset is polynomial, so do the multiplication in tree form.  */
+      tree offset = wide_int_to_tree (c2->type, c2->offset);
+      aff_combination_add_product (c1, 1, offset, r);
+    }
 }
 
 /* Returns the element of COMB whose value is VAL, or NULL if no such
@@ -639,28 +731,10 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	  exp = XNEW (struct name_expansion);
 	  exp->in_progress = 1;
 	  *slot = exp;
-	  /* In principle this is a generally valid folding, but
-	     it is not unconditionally an optimization, so do it
-	     here and not in fold_unary.  */
-	  /* Convert (T1)(X *+- CST) into (T1)X *+- (T1)CST if T1 is wider
-	     than the type of X and overflow for the type of X is
-	     undefined.  */
-	  if (e != name
-	      && INTEGRAL_TYPE_P (type)
-	      && INTEGRAL_TYPE_P (TREE_TYPE (name))
-	      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (name))
-	      && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (name))
-	      && (code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR)
-	      && TREE_CODE (gimple_assign_rhs2 (def)) == INTEGER_CST)
-	    rhs = fold_build2 (code, type,
-			       fold_convert (type, gimple_assign_rhs1 (def)),
-			       fold_convert (type, gimple_assign_rhs2 (def)));
-	  else
-	    {
-	      rhs = gimple_assign_rhs_to_tree (def);
-	      if (e != name)
-		rhs = fold_convert (type, rhs);
-	    }
+	  rhs = gimple_assign_rhs_to_tree (def);
+	  if (e != name)
+	    rhs = fold_convert (type, rhs);
+
 	  tree_to_aff_combination_expand (rhs, comb->type, &current, cache);
 	  exp->expansion = current;
 	  exp->in_progress = 0;
@@ -735,27 +809,28 @@ free_affine_expand_cache (hash_map<tree, name_expansion *> **cache)
    is set to true.  */
 
 static bool
-wide_int_constant_multiple_p (const widest_int &val, const widest_int &div,
-			      bool *mult_set, widest_int *mult)
+wide_int_constant_multiple_p (const poly_widest_int &val,
+			      const poly_widest_int &div,
+			      bool *mult_set, poly_widest_int *mult)
 {
-  widest_int rem, cst;
+  poly_widest_int rem, cst;
 
-  if (val == 0)
+  if (known_eq (val, 0))
     {
-      if (*mult_set && *mult != 0)
+      if (*mult_set && maybe_ne (*mult, 0))
 	return false;
       *mult_set = true;
       *mult = 0;
       return true;
     }
 
-  if (div == 0)
+  if (maybe_eq (div, 0))
     return false;
 
-  if (!wi::multiple_of_p (val, div, SIGNED, &cst))
+  if (!multiple_p (val, div, &cst))
     return false;
 
-  if (*mult_set && *mult != cst)
+  if (*mult_set && maybe_ne (*mult, cst))
     return false;
 
   *mult_set = true;
@@ -768,12 +843,12 @@ wide_int_constant_multiple_p (const widest_int &val, const widest_int &div,
 
 bool
 aff_combination_constant_multiple_p (aff_tree *val, aff_tree *div,
-				     widest_int *mult)
+				     poly_widest_int *mult)
 {
   bool mult_set = false;
   unsigned i;
 
-  if (val->n == 0 && val->offset == 0)
+  if (val->n == 0 && known_eq (val->offset, 0))
     {
       *mult = 0;
       return true;
@@ -853,9 +928,9 @@ debug_aff (aff_tree *val)
    which REF refers.  */
 
 tree
-get_inner_reference_aff (tree ref, aff_tree *addr, widest_int *size)
+get_inner_reference_aff (tree ref, aff_tree *addr, poly_widest_int *size)
 {
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   tree toff;
   machine_mode mode;
   int uns, rev, vol;
@@ -874,10 +949,10 @@ get_inner_reference_aff (tree ref, aff_tree *addr, widest_int *size)
       aff_combination_add (addr, &tmp);
     }
 
-  aff_combination_const (&tmp, sizetype, bitpos / BITS_PER_UNIT);
+  aff_combination_const (&tmp, sizetype, bits_to_bytes_round_down (bitpos));
   aff_combination_add (addr, &tmp);
 
-  *size = (bitsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+  *size = bits_to_bytes_round_up (bitsize);
 
   return base;
 }
@@ -886,23 +961,26 @@ get_inner_reference_aff (tree ref, aff_tree *addr, widest_int *size)
    size SIZE2 at position DIFF cannot overlap.  */
 
 bool
-aff_comb_cannot_overlap_p (aff_tree *diff, const widest_int &size1,
-			   const widest_int &size2)
+aff_comb_cannot_overlap_p (aff_tree *diff, const poly_widest_int &size1,
+			   const poly_widest_int &size2)
 {
   /* Unless the difference is a constant, we fail.  */
   if (diff->n != 0)
     return false;
 
-  if (wi::neg_p (diff->offset))
+  if (!ordered_p (diff->offset, 0))
+    return false;
+
+  if (maybe_lt (diff->offset, 0))
     {
       /* The second object is before the first one, we succeed if the last
 	 element of the second object is before the start of the first one.  */
-      return wi::neg_p (diff->offset + size2 - 1);
+      return known_le (diff->offset + size2, 0);
     }
   else
     {
       /* We succeed if the second object starts after the first one ends.  */
-      return size1 <= diff->offset;
+      return known_le (size1, diff->offset);
     }
 }
 

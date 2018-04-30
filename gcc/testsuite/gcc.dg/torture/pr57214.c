@@ -15,7 +15,7 @@ bar (_Bool b)
       b = 1;
       baz ();
       x = 0;
-      int i;
+      unsigned int i;
       while (buf[i] && i)
 	i++;
       foo ();

@@ -35,7 +35,7 @@ frexpq (__float128 x, int *eptr)
   GET_FLT128_WORDS64(hx,lx,x);
   ix = 0x7fffffffffffffffULL&hx;
   *eptr = 0;
-  if(ix>=0x7fff000000000000ULL||((ix|lx)==0)) return x;	/* 0,inf,nan */
+  if(ix>=0x7fff000000000000ULL||((ix|lx)==0)) return x + x;/* 0,inf,nan */
   if (ix<0x0001000000000000ULL) {		/* subnormal */
     x *= two114;
     GET_FLT128_MSW64(hx,x);

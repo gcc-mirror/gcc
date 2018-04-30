@@ -427,122 +427,6 @@ fix = {
 };
 
 /*
- * Make VxWorks stdint.h a bit more compliant - add typedefs
- */
-fix = {
-    hackname    = AAB_vxworks_stdint;
-    files       = stdint.h;
-    mach        = "*-*-vxworks*";
-        
-    replace     = <<- _EndOfHeader_
-	#ifndef _STDINT_H
-	#define _STDINT_H
-	/* get int*_t, uint*_t */
-	#include <types/vxTypes.h>
-	
-	/* get legacy vxworks types for compatibility */
-	#include <types/vxTypesOld.h>
-	
-	typedef long intptr_t;
-	typedef unsigned long uintptr_t;
-	
-	typedef int64_t intmax_t;
-	typedef uint64_t uintmax_t;
-	
-	typedef int8_t int_least8_t;
-	typedef int16_t int_least16_t;
-	typedef int32_t int_least32_t;
-	typedef int64_t int_least64_t;
-	
-	typedef uint8_t uint_least8_t;
-	typedef uint16_t uint_least16_t;
-	typedef uint32_t uint_least32_t;
-	typedef uint64_t uint_least64_t;
-	
-	typedef int8_t int_fast8_t;
-	typedef int int_fast16_t;
-	typedef int32_t int_fast32_t;
-	typedef int64_t int_fast64_t;
-	
-	typedef uint8_t uint_fast8_t;
-	typedef unsigned int uint_fast16_t;
-	typedef uint32_t uint_fast32_t;
-	typedef uint64_t uint_fast64_t;
-	
-	/* Ranges */
-	#define UINT8_MAX (~(uint8_t)0)
-	#define UINT8_MIN 0
-	#define UINT16_MAX (~(uint16_t)0)
-	#define UINT16_MIN 0
-	#define UINT32_MAX (~(uint32_t)0)
-	#define UINT32_MIN 0
-	#define UINT64_MAX (~(uint64_t)0)
-	#define UINT64_MIN 0
-	
-	#define UINTPTR_MAX (~(uintptr_t)0)
-	#define UINTPTR_MIN 0
-	
-	/* Need to do int_fast16_t as well, as type
-	   size may be architecture dependent */
-	#define UINT_FAST16_MAX (~(uint_fast16_t)0)
-	#define UINT_FAST16_MAX 0
-	
-	#define INT8_MAX (UINT8_MAX>>1)
-	#define INT8_MIN (INT8_MAX+1)
-	#define INT16_MAX (UINT16_MAX>>1)
-	#define INT16_MIN (INT16_MAX+1)
-	#define INT32_MAX (UINT32_MAX>>1)
-	#define INT32_MIN (INT32_MAX+1)
-	#define INT64_MAX (UINT64_MAX>>1)
-	#define INT64_MIN (INT64_MAX+1)
-	
-	#define INTPTR_MAX (UINTPTR_MAX>>1)
-	#define INTPTR_MIN (INTPTR_MAX+1)	
-	
-	#define INT_FAST16_MAX (UINT_FAST16_MAX>>1)
-	#define INT_FAST16_MIN (INT_FAST16_MAX+1)
-	
-	/* now define equiv. constants */
-	#define UINT_FAST8_MAX UINT8_MAX
-	#define UINT_FAST8_MIN UINT_FAST8_MIN
-	#define INT_FAST8_MAX INT8_MAX
-	#define INT_FAST8_MIN INT8_MIN
-	#define UINT_FAST32_MAX UINT32_MAX
-	#define UINT_FAST32_MIN UINT32_MIN
-	#define INT_FAST32_MAX INT32_MAX
-	#define INT_FAST32_MIN INT32_MIN
-	#define UINT_FAST64_MAX UINT64_MAX
-	#define UINT_FAST64_MIN UINT64_MIN
-	#define INT_FAST64_MAX INT64_MAX
-	#define INT_FAST64_MIN INT64_MIN
-	
-	#define UINT_LEAST8_MAX UINT8_MAX
-	#define UINT_LEAST8_MIN UINT8_MIN
-	#define INT_LEAST8_MAX INT8_MAX
-	#define INT_LEAST8_MIN INT8_MIN
-	#define UINT_LEAST16_MAX UINT16_MAX
-	#define UINT_LEAST16_MIN UINT16_MIN
-	#define INT_LEAST16_MAX INT16_MAX
-	#define INT_LEAST16_MIN INT16_MIN
-	#define UINT_LEAST32_MAX UINT32_MAX
-	#define UINT_LEAST32_MIN UINT32_MIN
-	#define INT_LEAST32_MAX INT32_MAX
-	#define INT_LEAST32_MIN INT32_MIN
-	#define UINT_LEAST64_MAX UINT64_MAX
-	#define UINT_LEAST64_MIN UINT64_MIN
-	#define INT_LEAST64_MAX INT64_MAX
-	#define INT_LEAST64_MIN INT64_MIN
-	
-	#define UINTMAX_MAX UINT64_MAX
-	#define UINTMAX_MIN UINT64_MIN
-	#define INTMAX_MAX INT64_MAX
-	#define INTMAX_MIN INT64_MIN
-	
-	#endif
-	_EndOfHeader_;
-};
-
-/*
  *  This hack makes makes unistd.h more POSIX-compliant on VxWorks
  */
 fix = {
@@ -952,6 +836,26 @@ fix = {
     c_fix     = format;
     c_fix_arg = "extern void *valloc(size_t) __asm__(\"__linux_valloc\");";
     test_text = "#define valloc __linux_valloc";
+};
+
+fix = {
+    hackname  = aix_stdlib_vec_malloc;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "#define[ \t]+malloc[ \t]+vec_malloc";
+    c_fix     = format;
+    c_fix_arg = "extern void *malloc(size_t) __asm__(\"vec_malloc\");";
+    test_text = "#define malloc vec_malloc";
+};
+
+fix = {
+    hackname  = aix_stdlib_vec_calloc;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "#define[ \t]+calloc[ \t]+vec_calloc";
+    c_fix     = format;
+    c_fix_arg = "extern void *calloc(size_t, size_t) __asm__(\"vec_calloc\");";
+    test_text = "#define calloc vec_calloc";
 };
 
 /*

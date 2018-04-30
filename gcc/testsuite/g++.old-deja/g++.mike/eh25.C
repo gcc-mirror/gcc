@@ -12,7 +12,7 @@ struct A {
   A() { }
   ~A()
 #if __cplusplus <= 201402L
-  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #else
   noexcept(false)
 #endif
@@ -22,6 +22,7 @@ struct A {
   }
 };
 
+int
 main() {
   try {
     try {

@@ -1,5 +1,5 @@
 ;; ARMv8-A crypto patterns.
-;; Copyright (C) 2013-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2018 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -81,7 +81,7 @@
          UNSPEC_VMULLP64))]
   "TARGET_CRYPTO"
   "vmull.p64\\t%q0, %P1, %P2"
-  [(set_attr "type" "neon_mul_d_long")]
+  [(set_attr "type" "crypto_pmull")]
 )
 
 (define_insn "crypto_<crypto_pattern>"

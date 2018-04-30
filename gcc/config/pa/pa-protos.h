@@ -1,5 +1,5 @@
 /* Prototypes for pa.c functions used in the md file & elsewhere.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -71,12 +71,6 @@ extern rtx pa_legitimize_reload_address (rtx, machine_mode,
 
 extern rtx pa_return_addr_rtx (int, rtx);
 
-#ifdef ARGS_SIZE_RTX
-/* expr.h defines ARGS_SIZE_RTX and `enum direction' */
-#ifdef TREE_CODE
-extern enum direction pa_function_arg_padding (machine_mode, const_tree);
-#endif
-#endif /* ARGS_SIZE_RTX */
 extern int pa_insn_refs_are_delayed (rtx_insn *);
 extern rtx pa_get_deferred_plabel (rtx);
 extern rtx pa_maybe_emit_compare_and_swap_exchange_loop (rtx, rtx, rtx);
@@ -91,7 +85,7 @@ extern int pa_shadd_constant_p (int);
 extern int pa_zdepi_cint_p (unsigned HOST_WIDE_INT);
 
 extern void pa_output_ascii (FILE *, const char *, int);
-extern HOST_WIDE_INT pa_compute_frame_size (HOST_WIDE_INT, int *);
+extern HOST_WIDE_INT pa_compute_frame_size (poly_int64, int *);
 extern void pa_expand_prologue (void);
 extern void pa_expand_epilogue (void);
 extern bool pa_can_use_return_insn (void);
@@ -112,9 +106,7 @@ extern void pa_asm_output_aligned_local (FILE *, const char *,
 					 unsigned HOST_WIDE_INT,
 					 unsigned int);
 extern void pa_hpux_asm_output_external (FILE *, tree, const char *);
-extern bool pa_cannot_change_mode_class (machine_mode, machine_mode,
-					 enum reg_class);
-extern bool pa_modes_tieable_p (machine_mode, machine_mode);
 extern HOST_WIDE_INT pa_initial_elimination_offset (int, int);
+extern HOST_WIDE_INT pa_function_arg_size (machine_mode, const_tree);
 
 extern const int pa_magic_milli[];

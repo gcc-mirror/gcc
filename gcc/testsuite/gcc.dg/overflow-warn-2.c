@@ -47,10 +47,10 @@ static int sc = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } 
    constants.  The third has the overflow in an unevaluated
    subexpression, so is a null pointer constant.  */
 void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
-/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } .-1 } */
+/* { dg-warning "initialization of 'void \\*' from 'int' makes pointer from integer without a cast" "null" { target *-*-* } .-1 } */
 void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-error "initializer element is not computable at load time" "constant" { target *-*-* } .-1 } */
-/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
+/* { dg-error "initializer element is not constant" "constant" { target *-*-* } .-1 } */
+/* { dg-warning "initialization of 'void \\*' from 'int' makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
 void *r = (1 ? 0 : INT_MAX+1);
 
 void
@@ -86,21 +86,21 @@ h2 (void)
 {
   fsc (SCHAR_MAX + 1);
   /* { dg-warning "passing argument 1 of 'fsc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
-  fsc (SCHAR_MIN - 1); /* { dg-warning "overflow in implicit constant conversion" } */
+  fsc (SCHAR_MIN - 1); /* { dg-warning "overflow in conversion from .int. to .signed char. changes value" } */
   /* { dg-warning "passing argument 1 of 'fsc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
   fsc (UCHAR_MAX);
   /* { dg-warning "passing argument 1 of 'fsc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
-  fsc (UCHAR_MAX + 1); /* { dg-warning "overflow in implicit constant conversion" } */
+  fsc (UCHAR_MAX + 1); /* { dg-warning "overflow in conversion from 'int' to 'signed char' changes value " } */
   /* { dg-warning "passing argument 1 of 'fsc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
   fuc (-1);
   /* { dg-warning "passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
-  fuc (UCHAR_MAX + 1); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
+  fuc (UCHAR_MAX + 1); /* { dg-warning "unsigned conversion from .int. to .unsigned char. changes value " } */
   /* { dg-warning "passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
   fuc (SCHAR_MIN);
   /* { dg-warning "passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
-  fuc (SCHAR_MIN - 1); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
+  fuc (SCHAR_MIN - 1); /* { dg-warning "unsigned conversion from .int. to .unsigned char. changes value " } */
   /* { dg-warning "passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
-  fuc (-UCHAR_MAX); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
+  fuc (-UCHAR_MAX); /* { dg-warning "unsigned conversion from .int. to .unsigned char. changes value" } */
   /* { dg-warning "passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } .-1 } */
 }
 

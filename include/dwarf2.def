@@ -1,7 +1,7 @@
 /* -*- c -*-
    Declarations and definitions of codes relating to the DWARF2 and
    DWARF3 symbolic debugging information formats.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -443,6 +443,8 @@ DW_AT (DW_AT_GNU_pubtypes, 0x2135)
 /* Attribute for discriminator.
    See http://gcc.gnu.org/wiki/Discriminator  */
 DW_AT (DW_AT_GNU_discriminator, 0x2136)
+DW_AT (DW_AT_GNU_locviews, 0x2137)
+DW_AT (DW_AT_GNU_entry_view, 0x2138)
 /* VMS extensions.  */
 DW_AT (DW_AT_VMS_rtnbeg_pd_address, 0x2201)
 /* GNAT extensions.  */
@@ -778,7 +780,20 @@ DW_CFA (DW_CFA_MIPS_advance_loc8, 0x1d)
 /* GNU extensions.
    NOTE: DW_CFA_GNU_window_save is multiplexed on Sparc and AArch64.  */
 DW_CFA (DW_CFA_GNU_window_save, 0x2d)
+DW_CFA_DUP (DW_CFA_AARCH64_negate_ra_state, 0x2d)
 DW_CFA (DW_CFA_GNU_args_size, 0x2e)
 DW_CFA (DW_CFA_GNU_negative_offset_extended, 0x2f)
 
 DW_END_CFA
+
+/* Index attributes in the Abbreviations Table.  */
+DW_FIRST_IDX (DW_IDX_compile_unit, 1)
+DW_IDX (DW_IDX_type_unit, 2)
+DW_IDX (DW_IDX_die_offset, 3)
+DW_IDX (DW_IDX_parent, 4)
+DW_IDX (DW_IDX_type_hash, 5)
+DW_IDX_DUP (DW_IDX_lo_user, 0x2000)
+DW_IDX (DW_IDX_hi_user, 0x3fff)
+DW_IDX (DW_IDX_GNU_internal, 0x2000)
+DW_IDX (DW_IDX_GNU_external, 0x2001)
+DW_END_IDX

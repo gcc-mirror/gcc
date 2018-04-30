@@ -1,9 +1,9 @@
 /* { dg-do run } */
+/* { dg-require-effective-target trampolines } */
 
 extern void abort (void);
 extern void exit (int);
 
-#ifndef NO_TRAMPOLINES
 static void recursive (int n, void (*proc) (void))
 {
   __label__ l1;
@@ -33,6 +33,3 @@ int main ()
   recursive (10, abort);
   abort ();
 }
-#else
-int main () { return 0; }
-#endif

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Csets;    use Csets;
-with Opt;      use Opt;
-with Osint;    use Osint;
-with Output;   use Output;
+with Csets;         use Csets;
+with Opt;
+with Osint;         use Osint;
+with Output;        use Output;
+with System.OS_Lib; use System.OS_Lib;
 
 package body Targparm is
    use ASCII;
@@ -156,8 +157,9 @@ package body Targparm is
       Set_NUA : Set_NUA_Type := null;
       Set_NUP : Set_NUP_Type := null)
    is
-      Text : Source_Buffer_Ptr;
+      FD   : File_Descriptor;
       Hi   : Source_Ptr;
+      Text : Source_Buffer_Ptr;
 
    begin
       if Parameters_Obtained then
@@ -167,11 +169,17 @@ package body Targparm is
       Name_Buffer (1 .. 10) := "system.ads";
       Name_Len := 10;
 
-      Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
+      Read_Source_File (Name_Find, 0, Hi, Text, FD);
 
       if Null_Source_Buffer_Ptr (Text) then
          Write_Line ("fatal error, run-time library not installed correctly");
-         Write_Line ("cannot locate file system.ads");
+
+         if FD = Null_FD then
+            Write_Line ("cannot locate file system.ads");
+         else
+            Write_Line ("no read access for file system.ads");
+         end if;
+
          raise Unrecoverable_Error;
       end if;
 
@@ -793,7 +801,7 @@ package body Targparm is
                   Result := (System_Text (P) = 'T');
 
                   case K is
-                     when AAM => AAMP_On_Target                      := Result;
+                     when AAM => null;
                      when ACR => Always_Compatible_Rep_On_Target     := Result;
                      when ASD => Atomic_Sync_Default_On_Target       := Result;
                      when BDC => Backend_Divide_Checks_On_Target     := Result;
@@ -803,7 +811,7 @@ package body Targparm is
                      when D32 => Duration_32_Bits_On_Target          := Result;
                      when DEN => Denorm_On_Target                    := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
-                     when FEL => Frontend_Layout_On_Target           := Result;
+                     when FEL => null;
                      when FEX => Frontend_Exceptions_On_Target       := Result;
                      when FFO => Fractional_Fixed_Ops_On_Target      := Result;
                      when MOV => Machine_Overflows_On_Target         := Result;

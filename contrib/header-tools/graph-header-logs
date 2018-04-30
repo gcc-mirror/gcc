@@ -25,9 +25,12 @@ depstring = ("In file included from", "                 from")
 
 # indentation indicates nesting levels of included files
 ignore = [ "coretypes_h",
-             "machmode_h",
+             "insn_modes_h",
              "signop_h",
              "wide_int_h",
+             "wide_int_print_h",
+             "insn_modes_inline_h",
+             "machmode_h",
              "double_int_h",
              "real_h",
              "fixed_value_h",

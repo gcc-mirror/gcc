@@ -1,6 +1,6 @@
 /* Process the ObjC-specific declarations and variables for 
    the Objective-C++ compiler.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -62,14 +62,11 @@ extern tree objcp_end_compound_stmt (tree, int);
 #undef TYPE_OBJC_INFO
 #define TYPE_OBJC_INFO(TYPE) LANG_TYPE_CLASS_CHECK (TYPE)->objc_info
 #undef SIZEOF_OBJC_TYPE_LANG_SPECIFIC
-#define SIZEOF_OBJC_TYPE_LANG_SPECIFIC sizeof (struct lang_type_class)
+#define SIZEOF_OBJC_TYPE_LANG_SPECIFIC sizeof (struct lang_type)
 #undef ALLOC_OBJC_TYPE_LANG_SPECIFIC
-#define ALLOC_OBJC_TYPE_LANG_SPECIFIC(NODE)				\
-  do {									\
-    TYPE_LANG_SPECIFIC (NODE) = (struct lang_type *) \
-      ggc_internal_cleared_alloc (sizeof (struct lang_type_class));	\
-    TYPE_LANG_SPECIFIC (NODE)->u.c.h.is_lang_type_class = 1;		\
-  } while (0)
+#define ALLOC_OBJC_TYPE_LANG_SPECIFIC(NODE)			\
+  (TYPE_LANG_SPECIFIC (NODE) = (struct lang_type *)		\
+   ggc_internal_cleared_alloc (SIZEOF_OBJC_TYPE_LANG_SPECIFIC))
 
 #define OBJCP_ORIGINAL_FUNCTION(name, args) 	(name)args
 

@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -147,6 +147,11 @@ public:
 
   rvalue *
   new_string_literal (const char *value);
+
+  rvalue *
+  new_rvalue_from_vector (location *loc,
+			  vector_type *type,
+			  rvalue **elements);
 
   rvalue *
   new_unary_op (location *loc,
@@ -474,6 +479,7 @@ public:
   type *get_const ();
   type *get_volatile ();
   type *get_aligned (size_t alignment_in_bytes);
+  type *get_vector (size_t num_units);
 
   /* Get the type obtained when dereferencing this type.
 
@@ -485,12 +491,18 @@ public:
   virtual function_type *dyn_cast_function_type () { return NULL; }
   virtual function_type *as_a_function_type() { gcc_unreachable (); return NULL; }
   virtual struct_ *dyn_cast_struct () { return NULL; }
+  virtual vector_type *dyn_cast_vector_type () { return NULL; }
 
   /* Is it typesafe to copy to this type from rtype?  */
   virtual bool accepts_writes_from (type *rtype)
   {
     gcc_assert (rtype);
-    return this->unqualified () == rtype->unqualified ();
+    return this->unqualified ()->is_same_type_as (rtype->unqualified ());
+  }
+
+  virtual bool is_same_type_as (type *other)
+  {
+    return this == other;
   }
 
   /* Strip off "const" etc */
@@ -600,8 +612,8 @@ private:
   type *m_other_type;
 };
 
-/* A decorated version of a type, for get_const, get_volatile and
-   get_aligned.  */
+/* A decorated version of a type, for get_const, get_volatile,
+   get_aligned, and get_vector.  */
 
 class decorated_type : public type
 {
@@ -683,6 +695,30 @@ private:
   size_t m_alignment_in_bytes;
 };
 
+/* Result of "gcc_jit_type_get_vector".  */
+class vector_type : public decorated_type
+{
+public:
+  vector_type (type *other_type, size_t num_units)
+  : decorated_type (other_type),
+    m_num_units (num_units) {}
+
+  size_t get_num_units () const { return m_num_units; }
+
+  vector_type *dyn_cast_vector_type () FINAL OVERRIDE { return this; }
+
+  type *get_element_type () { return m_other_type; }
+
+  void replay_into (replayer *) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  size_t m_num_units;
+};
+
 class array_type : public type
 {
  public:
@@ -728,6 +764,8 @@ public:
   type *dereference () FINAL OVERRIDE;
   function_type *dyn_cast_function_type () FINAL OVERRIDE { return this; }
   function_type *as_a_function_type () FINAL OVERRIDE { return this; }
+
+  bool is_same_type_as (type *other) FINAL OVERRIDE;
 
   bool is_int () const FINAL OVERRIDE { return false; }
   bool is_float () const FINAL OVERRIDE { return false; }
@@ -894,10 +932,6 @@ public:
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
-
-private:
-  location *m_loc;
-  string *m_name;
 };
 
 /* An abstract base class for operations that visit all rvalues within an
@@ -1123,6 +1157,8 @@ public:
 
   void dump_to_dot (const char *path);
 
+  rvalue *get_address (location *loc);
+
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
@@ -1137,6 +1173,7 @@ private:
   enum built_in_function m_builtin_id;
   auto_vec<local *> m_locals;
   auto_vec<block *> m_blocks;
+  type *m_fn_ptr_type;
 };
 
 class block : public memento
@@ -1324,6 +1361,31 @@ private:
 
 private:
   string *m_value;
+};
+
+class memento_of_new_rvalue_from_vector : public rvalue
+{
+public:
+  memento_of_new_rvalue_from_vector (context *ctxt,
+				     location *loc,
+				     vector_type *type,
+				     rvalue **elements);
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+  void visit_children (rvalue_visitor *) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_PRIMARY;
+  }
+
+private:
+  vector_type *m_vector_type;
+  auto_vec<rvalue *> m_elements;
 };
 
 class unary_op : public rvalue
@@ -1675,6 +1737,32 @@ private:
 
 private:
   lvalue *m_lvalue;
+};
+
+class function_pointer : public rvalue
+{
+public:
+  function_pointer (context *ctxt,
+		    location *loc,
+		    function *fn,
+		    type *type)
+  : rvalue (ctxt, loc, type),
+    m_fn (fn) {}
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+  void visit_children (rvalue_visitor *v) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_UNARY;
+  }
+
+private:
+  function *m_fn;
 };
 
 class local : public lvalue

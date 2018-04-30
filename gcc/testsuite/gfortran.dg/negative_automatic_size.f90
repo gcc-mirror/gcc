@@ -16,14 +16,14 @@ end
 subroutine jackal (b, c)
   integer :: b, c
   integer :: jello(b:c), cake(1:2, b:c), soda(b:c, 1:2)
-  if (lbound (jello, 1) <= ubound (jello, 1)) call abort ()
-  if (size (jello) /= 0) call abort ()
+  if (lbound (jello, 1) <= ubound (jello, 1)) STOP 1
+  if (size (jello) /= 0) STOP 2
 
-  if (.not.any(lbound (cake) <= ubound (cake))) call abort ()
-  if (size (cake) /= 0) call abort ()
+  if (.not.any(lbound (cake) <= ubound (cake))) STOP 3
+  if (size (cake) /= 0) STOP 4
 
   if ((lbound (soda, 1) > ubound (soda, 1)) .and. &
-      (lbound (soda, 2) > ubound (soda, 2))) call abort ()
-  if (size (soda) /= 0) call abort ()
+      (lbound (soda, 2) > ubound (soda, 2))) STOP 5
+  if (size (soda) /= 0) STOP 6
 
 end subroutine jackal

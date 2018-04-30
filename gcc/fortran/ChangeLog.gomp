@@ -3,7 +3,7 @@
 	* trans-openmp.c (gfc_trans_omp_taskgroup): Build OMP_TASKGROUP using
 	make_node instead of build1_loc.
 
-Copyright (C) 2017 Free Software Foundation, Inc.
+Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

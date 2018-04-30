@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, NetBSD/arm ELF version.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
    This file is part of GCC.
@@ -153,7 +153,3 @@ do									\
     (void) sysarch (0, &s);						\
   }									\
 while (0)
-
-#undef FPUTYPE_DEFAULT
-#define FPUTYPE_DEFAULT "vfp"
-

@@ -1,5 +1,6 @@
 extern "C" double sin (double);
 typedef double UnaryFunType (double);
+#pragma GCC diagnostic ignored "-Wreturn-type"
 class A
 {
 public:

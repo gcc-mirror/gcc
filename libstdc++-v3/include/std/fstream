@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,6 +47,14 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#if __cplusplus >= 201703L
+  // Enable if _Path is a filesystem::path or experimental::filesystem::path
+  template<typename _Path, typename _Result = _Path, typename _Path2
+	   = decltype(std::declval<_Path&>().make_preferred().filename())>
+    using _If_fs_path = enable_if_t<is_same_v<_Path, _Path2>, _Result>;
+#endif // C++17
+
 
   // [27.8.1.1] template class basic_filebuf
   /**
@@ -306,7 +314,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __filebuf_type*
       open(const std::string& __s, ios_base::openmode __mode)
       { return open(__s.c_str(), __mode); }
-#endif
+
+#if __cplusplus >= 201703L
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file, as a filesystem::path.
+       *  @param  __mode  The open mode flags.
+       *  @return  @c this on success, NULL on failure
+       */
+      template<typename _Path>
+	_If_fs_path<_Path, __filebuf_type*>
+	open(const _Path& __s, ios_base::openmode __mode)
+	{ return open(__s.c_str(), __mode); }
+#endif // C++17
+#endif // C++11
 
       /**
        *  @brief  Closes the currently associated file.
@@ -487,9 +508,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
        *  @c ios_base::in is automatically included in @a __mode.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       explicit
       basic_ifstream(const char* __s, ios_base::openmode __mode = ios_base::in)
@@ -516,13 +534,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->open(__s, __mode);
       }
 
+#if __cplusplus >= 201703L
+      /**
+       *  @param  Create an input file stream.
+       *  @param  __s  filesystem::path specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       *
+       *  @c ios_base::in is automatically included in @a __mode.
+       */
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
+	basic_ifstream(const _Path& __s,
+		       ios_base::openmode __mode = ios_base::in)
+	: basic_ifstream(__s.c_str(), __mode)
+	{ }
+#endif // C++17
+
       basic_ifstream(const basic_ifstream&) = delete;
 
       basic_ifstream(basic_ifstream&& __rhs)
       : __istream_type(std::move(__rhs)),
       _M_filebuf(std::move(__rhs._M_filebuf))
       { __istream_type::set_rdbuf(&_M_filebuf); }
-#endif
+#endif // C++11
 
       /**
        *  @brief  The destructor does nothing.
@@ -587,9 +620,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c std::basic_filebuf::open(s,__mode|in).  If that function
        *  fails, @c failbit is set in the stream's error state.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       void
       open(const char* __s, ios_base::openmode __mode = ios_base::in)
@@ -621,7 +651,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // 409. Closing an fstream should clear error state
 	  this->clear();
       }
-#endif
+
+#if __cplusplus >= 201703L
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file, as a filesystem::path.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode|in).  If that function
+       *  fails, @c failbit is set in the stream's error state.
+       */
+      template<typename _Path>
+	_If_fs_path<_Path, void>
+	open(const _Path& __s, ios_base::openmode __mode = ios_base::in)
+	{ open(__s.c_str(), __mode); }
+#endif // C++17
+#endif // C++11
 
       /**
        *  @brief  Close the file.
@@ -687,15 +732,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  Null terminated string specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::out | @c ios_base::trunc is automatically included in
-       *  @a __mode.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
+       *  @c ios_base::out is automatically included in @a __mode.
        */
       explicit
       basic_ofstream(const char* __s,
-		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
+		     ios_base::openmode __mode = ios_base::out)
       : __ostream_type(), _M_filebuf()
       {
 	this->init(&_M_filebuf);
@@ -708,17 +749,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  std::string specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::out | @c ios_base::trunc is automatically included in
-       *  @a __mode.
+       *  @c ios_base::out is automatically included in @a __mode.
        */
       explicit
       basic_ofstream(const std::string& __s,
-		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
+		     ios_base::openmode __mode = ios_base::out)
       : __ostream_type(), _M_filebuf()
       {
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
       }
+
+#if __cplusplus >= 201703L
+      /**
+       *  @param  Create an output file stream.
+       *  @param  __s  filesystem::path specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       *
+       *  @c ios_base::out is automatically included in @a __mode.
+       */
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
+	basic_ofstream(const _Path& __s,
+		       ios_base::openmode __mode = ios_base::out)
+	: basic_ofstream(__s.c_str(), __mode)
+	{ }
+#endif // C++17
 
       basic_ofstream(const basic_ofstream&) = delete;
 
@@ -789,15 +844,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  The name of the file.
        *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(__s,__mode|out|trunc).  If that
+       *  Calls @c std::basic_filebuf::open(__s,__mode|out).  If that
        *  function fails, @c failbit is set in the stream's error state.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       void
-      open(const char* __s,
-	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
+      open(const char* __s, ios_base::openmode __mode = ios_base::out)
       {
 	if (!_M_filebuf.open(__s, __mode | ios_base::out))
 	  this->setstate(ios_base::failbit);
@@ -813,12 +864,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  The name of the file.
        *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(s,mode|out|trunc).  If that
+       *  Calls @c std::basic_filebuf::open(s,mode|out).  If that
        *  function fails, @c failbit is set in the stream's error state.
        */
       void
-      open(const std::string& __s,
-	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
+      open(const std::string& __s, ios_base::openmode __mode = ios_base::out)
       {
 	if (!_M_filebuf.open(__s, __mode | ios_base::out))
 	  this->setstate(ios_base::failbit);
@@ -827,7 +877,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // 409. Closing an fstream should clear error state
 	  this->clear();
       }
-#endif
+
+#if __cplusplus >= 201703L
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file, as a filesystem::path.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode|out).  If that
+       *  function fails, @c failbit is set in the stream's error state.
+       */
+      template<typename _Path>
+	_If_fs_path<_Path, void>
+	open(const _Path& __s, ios_base::openmode __mode = ios_base::out)
+	{ open(__s.c_str(), __mode); }
+#endif // C++17
+#endif // C++11
 
       /**
        *  @brief  Close the file.
@@ -894,9 +959,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Create an input/output file stream.
        *  @param  __s  Null terminated string specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       explicit
       basic_fstream(const char* __s,
@@ -921,6 +983,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
       }
+
+#if __cplusplus >= 201703L
+      /**
+       *  @param  Create an input/output file stream.
+       *  @param  __s  filesystem::path specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       */
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
+	basic_fstream(const _Path& __s,
+		      ios_base::openmode __mode = ios_base::in | ios_base::out)
+	: basic_fstream(__s.c_str(), __mode)
+	{ }
+#endif // C++17
 
       basic_fstream(const basic_fstream&) = delete;
 
@@ -993,9 +1068,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c std::basic_filebuf::open(__s,__mode).  If that
        *  function fails, @c failbit is set in the stream's error state.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       void
       open(const char* __s,
@@ -1029,7 +1101,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // 409. Closing an fstream should clear error state
 	  this->clear();
       }
-#endif
+
+#if __cplusplus >= 201703L
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file, as a filesystem::path.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode).  If that
+       *  function fails, @c failbit is set in the stream's error state.
+       */
+      template<typename _Path>
+	_If_fs_path<_Path, void>
+	open(const _Path& __s,
+	     ios_base::openmode __mode = ios_base::in | ios_base::out)
+	{ open(__s.c_str(), __mode); }
+#endif // C++17
+#endif // C++11
 
       /**
        *  @brief  Close the file.

@@ -1,12 +1,12 @@
 #!/bin/sh
 
 # This filters GCC source before Doxygen can get confused by it;
-# this script is listed in the doxyfile. The output is not very
+# this script is listed in the doxyfile.  The output is not very
 # pretty, but at least we get output that Doxygen can understand.
 #
-# $1 is a source file of some kind. The source we wish doxygen to
+# $1 is a source file of some kind.  The source we wish doxygen to
 # process is put on stdout.
 
 dir=`dirname $0`
-perl $dir/filter_params.pl < $1 | perl $dir/filter_knr2ansi.pl 
+python $dir/filter_params.py $1
 exit 0

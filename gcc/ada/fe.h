@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -56,7 +56,9 @@ extern char Fold_Lower[], Fold_Upper[];
 
 /* debug: */
 
-#define Debug_Flag_NN debug__debug_flag_nn
+#define Debug_Flag_Dot_R	debug__debug_flag_dot_r
+#define Debug_Flag_NN		debug__debug_flag_nn
+extern Boolean Debug_Flag_Dot_R;
 extern Boolean Debug_Flag_NN;
 
 /* einfo: */
@@ -107,10 +109,12 @@ extern Nat       Serious_Errors_Detected;
 #define Get_Local_Raise_Call_Entity exp_ch11__get_local_raise_call_entity
 #define Get_RT_Exception_Entity exp_ch11__get_rt_exception_entity
 #define Get_RT_Exception_Name exp_ch11__get_rt_exception_name
+#define Warn_If_No_Local_Raise exp_ch11__warn_if_no_local_raise
 
 extern Entity_Id Get_Local_Raise_Call_Entity (void);
 extern Entity_Id Get_RT_Exception_Entity (int);
 extern void Get_RT_Exception_Name (int);
+extern void Warn_If_No_Local_Raise (int);
 
 /* exp_code:  */
 
@@ -241,12 +245,6 @@ extern Entity_Id  First_Stored_Discriminant    (Entity_Id);
 extern Entity_Id  First_Subtype                (Entity_Id);
 extern Boolean    Is_By_Reference_Type         (Entity_Id);
 extern Boolean    Is_Derived_Type              (Entity_Id);
-
-/* sem_elim: */
-
-#define Eliminate_Error_Msg    sem_elim__eliminate_error_msg
-
-extern void Eliminate_Error_Msg (Node_Id, Entity_Id);
 
 /* sem_eval: */
 

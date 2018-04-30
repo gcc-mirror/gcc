@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1487,7 +1487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       virtual
-      ~ctype_byname() { };
+      ~ctype_byname() { }
     };
 
   /// 22.2.1.4  Class ctype_byname specializations.
@@ -2486,7 +2486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 
       /// Destructor.
       virtual
-      ~num_put() { };
+      ~num_put() { }
 
       //@{
       /**

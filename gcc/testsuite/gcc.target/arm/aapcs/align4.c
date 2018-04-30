@@ -2,7 +2,8 @@
 
 /* { dg-do run { target arm_eabi } } */
 /* { dg-require-effective-target arm32 } */
-/* { dg-require-effective-target arm_neon_ok  } */
+/* { dg-require-effective-target arm_neon_ok } */
+/* { dg-require-effective-target arm_neon_hw } */
 /* { dg-options "-O" } */
 /* { dg-add-options arm_neon } */
 

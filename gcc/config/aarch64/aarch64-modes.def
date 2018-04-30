@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -30,11 +30,28 @@ FLOAT_MODE (HF, 2, 0);
 ADJUST_FLOAT_FORMAT (HF, &ieee_half_format);
 
 /* Vector modes.  */
+
+VECTOR_BOOL_MODE (VNx16BI, 16, 2);
+VECTOR_BOOL_MODE (VNx8BI, 8, 2);
+VECTOR_BOOL_MODE (VNx4BI, 4, 2);
+VECTOR_BOOL_MODE (VNx2BI, 2, 2);
+
+ADJUST_NUNITS (VNx16BI, aarch64_sve_vg * 8);
+ADJUST_NUNITS (VNx8BI, aarch64_sve_vg * 4);
+ADJUST_NUNITS (VNx4BI, aarch64_sve_vg * 2);
+ADJUST_NUNITS (VNx2BI, aarch64_sve_vg);
+
+ADJUST_ALIGNMENT (VNx16BI, 2);
+ADJUST_ALIGNMENT (VNx8BI, 2);
+ADJUST_ALIGNMENT (VNx4BI, 2);
+ADJUST_ALIGNMENT (VNx2BI, 2);
+
 VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI.  */
 VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI.  */
 VECTOR_MODES (FLOAT, 8);      /*                 V2SF.  */
 VECTOR_MODES (FLOAT, 16);     /*            V4SF V2DF.  */
 VECTOR_MODE (FLOAT, DF, 1);   /*                 V1DF.  */
+VECTOR_MODE (FLOAT, HF, 2);   /*                 V2HF.  */
 
 /* Oct Int: 256-bit integer mode needed for 32-byte vector arguments.  */
 INT_MODE (OI, 32);
@@ -44,15 +61,46 @@ INT_MODE (OI, 32);
 INT_MODE (CI, 48);
 INT_MODE (XI, 64);
 
-/* Vector modes for register lists.  */
-VECTOR_MODES (INT, 32);		/* V32QI V16HI V8SI V4DI.  */
-VECTOR_MODES (FLOAT, 32);	/* V8SF V4DF.  */
+/* Define SVE modes for NVECS vectors.  VB, VH, VS and VD are the prefixes
+   for 8-bit, 16-bit, 32-bit and 64-bit elements respectively.  It isn't
+   strictly necessary to set the alignment here, since the default would
+   be clamped to BIGGEST_ALIGNMENT anyhow, but it seems clearer.  */
+#define SVE_MODES(NVECS, VB, VH, VS, VD) \
+  VECTOR_MODES_WITH_PREFIX (VNx, INT, 16 * NVECS); \
+  VECTOR_MODES_WITH_PREFIX (VNx, FLOAT, 16 * NVECS); \
+  \
+  ADJUST_NUNITS (VB##QI, aarch64_sve_vg * NVECS * 8); \
+  ADJUST_NUNITS (VH##HI, aarch64_sve_vg * NVECS * 4); \
+  ADJUST_NUNITS (VS##SI, aarch64_sve_vg * NVECS * 2); \
+  ADJUST_NUNITS (VD##DI, aarch64_sve_vg * NVECS); \
+  ADJUST_NUNITS (VH##HF, aarch64_sve_vg * NVECS * 4); \
+  ADJUST_NUNITS (VS##SF, aarch64_sve_vg * NVECS * 2); \
+  ADJUST_NUNITS (VD##DF, aarch64_sve_vg * NVECS); \
+  \
+  ADJUST_ALIGNMENT (VB##QI, 16); \
+  ADJUST_ALIGNMENT (VH##HI, 16); \
+  ADJUST_ALIGNMENT (VS##SI, 16); \
+  ADJUST_ALIGNMENT (VD##DI, 16); \
+  ADJUST_ALIGNMENT (VH##HF, 16); \
+  ADJUST_ALIGNMENT (VS##SF, 16); \
+  ADJUST_ALIGNMENT (VD##DF, 16);
 
-VECTOR_MODES (INT, 48);		/* V32QI V16HI V8SI V4DI.  */
-VECTOR_MODES (FLOAT, 48);	/* V8SF V4DF.  */
-
-VECTOR_MODES (INT, 64);		/* V32QI V16HI V8SI V4DI.  */
-VECTOR_MODES (FLOAT, 64);	/* V8SF V4DF.  */
+/* Give SVE vectors the names normally used for 256-bit vectors.
+   The actual number depends on command-line flags.  */
+SVE_MODES (1, VNx16, VNx8, VNx4, VNx2)
+SVE_MODES (2, VNx32, VNx16, VNx8, VNx4)
+SVE_MODES (3, VNx48, VNx24, VNx12, VNx6)
+SVE_MODES (4, VNx64, VNx32, VNx16, VNx8)
 
 /* Quad float: 128-bit floating mode for long doubles.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);
+
+/* A 4-tuple of SVE vectors with the maximum -msve-vector-bits= setting.
+   Note that this is a limit only on the compile-time sizes of modes;
+   it is not a limit on the runtime sizes, since VL-agnostic code
+   must work with arbitary vector lengths.  */
+#define MAX_BITSIZE_MODE_ANY_MODE (2048 * 4)
+
+/* Coefficient 1 is multiplied by the number of 128-bit chunks in an
+   SVE vector (referred to as "VQ") minus one.  */
+#define NUM_POLY_INT_COEFFS 2

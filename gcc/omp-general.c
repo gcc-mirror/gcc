@@ -1,7 +1,7 @@
 /* General types and functions that are uselful for processing of OpenMP,
    OpenACC and similar directivers at various stages of compilation.
 
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,7 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "langhooks.h"
 #include "omp-general.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 tree
 omp_find_clause (tree clauses, enum omp_clause_code kind)
@@ -142,8 +143,6 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->sched_modifiers = 0;
   fd->chunk_size = NULL_TREE;
   fd->simd_schedule = false;
-  if (gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_CILKFOR)
-    fd->sched_kind = OMP_CLAUSE_SCHEDULE_CILKFOR;
   collapse_iter = NULL;
   collapse_count = NULL;
 
@@ -254,14 +253,13 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       gcc_assert (loop->cond_code != NE_EXPR
 		  || (gimple_omp_for_kind (for_stmt)
 		      != GF_OMP_FOR_KIND_OACC_LOOP));
+      omp_adjust_for_condition (loc, &loop->cond_code, &loop->n2);
+
       t = gimple_omp_for_incr (for_stmt, i);
       gcc_assert (TREE_OPERAND (t, 0) == var);
       loop->step = omp_get_for_step_from_incr (loc, t);
 
-      if (loop->cond_code == NE_EXPR
-          && fd->sched_kind != OMP_CLAUSE_SCHEDULE_CILKFOR
-          && (!simd || (gimple_omp_for_kind (for_stmt)
-			!= GF_OMP_FOR_KIND_CILKSIMD)))
+      if (loop->cond_code == NE_EXPR)
 	{
 	  gcc_assert (TREE_CODE (loop->step) == INTEGER_CST);
 	  if (TREE_CODE (TREE_TYPE (loop->v)) == INTEGER_TYPE)
@@ -454,28 +452,31 @@ omp_build_barrier (tree lhs)
 
 /* Return maximum possible vectorization factor for the target.  */
 
-int
+poly_uint64
 omp_max_vf (void)
 {
   if (!optimize
       || optimize_debug
       || !flag_tree_loop_optimize
       || (!flag_tree_loop_vectorize
-	  && (global_options_set.x_flag_tree_loop_vectorize
-	      || global_options_set.x_flag_tree_vectorize)))
+	  && global_options_set.x_flag_tree_loop_vectorize))
     return 1;
 
-  int vf = 1;
-  int vs = targetm.vectorize.autovectorize_vector_sizes ();
-  if (vs)
-    vf = 1 << floor_log2 (vs);
-  else
+  auto_vector_sizes sizes;
+  targetm.vectorize.autovectorize_vector_sizes (&sizes);
+  if (!sizes.is_empty ())
     {
-      machine_mode vqimode = targetm.vectorize.preferred_simd_mode (QImode);
-      if (GET_MODE_CLASS (vqimode) == MODE_VECTOR_INT)
-	vf = GET_MODE_NUNITS (vqimode);
+      poly_uint64 vf = 0;
+      for (unsigned int i = 0; i < sizes.length (); ++i)
+	vf = ordered_max (vf, sizes[i]);
+      return vf;
     }
-  return vf;
+
+  machine_mode vqimode = targetm.vectorize.preferred_simd_mode (QImode);
+  if (GET_MODE_CLASS (vqimode) == MODE_VECTOR_INT)
+    return GET_MODE_NUNITS (vqimode);
+
+  return 1;
 }
 
 /* Return maximum SIMT width if offloading may target SIMT hardware.  */
@@ -642,6 +643,16 @@ tree
 oacc_get_fn_attrib (tree fn)
 {
   return lookup_attribute (OACC_FN_ATTRIB, DECL_ATTRIBUTES (fn));
+}
+
+/* Return true if FN is an OpenMP or OpenACC offloading function.  */
+
+bool
+offloading_function_p (tree fn)
+{
+  tree attrs = DECL_ATTRIBUTES (fn);
+  return (lookup_attribute ("omp declare target", attrs)
+	  || lookup_attribute ("omp target entrypoint", attrs));
 }
 
 /* Extract an oacc execution dimension from FN.  FN must be an

@@ -1,5 +1,5 @@
 /* Natural loop discovery code for GNU compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -296,13 +296,25 @@ establish_preds (struct loop *loop, struct loop *father)
 
 /* Add LOOP to the loop hierarchy tree where FATHER is father of the
    added loop.  If LOOP has some children, take care of that their
-   pred field will be initialized correctly.  */
+   pred field will be initialized correctly.  If AFTER is non-null
+   then it's expected it's a pointer into FATHERs inner sibling
+   list and LOOP is added behind AFTER, otherwise it's added in front
+   of FATHERs siblings.  */
 
 void
-flow_loop_tree_node_add (struct loop *father, struct loop *loop)
+flow_loop_tree_node_add (struct loop *father, struct loop *loop,
+			 struct loop *after)
 {
-  loop->next = father->inner;
-  father->inner = loop;
+  if (after)
+    {
+      loop->next = after->next;
+      after->next = loop;
+    }
+  else
+    {
+      loop->next = father->inner;
+      father->inner = loop;
+    }
 
   establish_preds (loop, father);
 }
@@ -521,6 +533,58 @@ flow_loops_find (struct loops *loops)
   return loops;
 }
 
+/* qsort helper for sort_sibling_loops.  */
+
+static int *sort_sibling_loops_cmp_rpo;
+static int
+sort_sibling_loops_cmp (const void *la_, const void *lb_)
+{
+  const struct loop *la = *(const struct loop * const *)la_;
+  const struct loop *lb = *(const struct loop * const *)lb_;
+  return (sort_sibling_loops_cmp_rpo[la->header->index]
+	  - sort_sibling_loops_cmp_rpo[lb->header->index]);
+}
+
+/* Sort sibling loops in RPO order.  */
+
+void
+sort_sibling_loops (function *fn)
+{
+  /* Match flow_loops_find in the order we sort sibling loops.  */
+  sort_sibling_loops_cmp_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  int *rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  pre_and_rev_post_order_compute_fn (fn, NULL, rc_order, false);
+  for (int i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; ++i)
+    sort_sibling_loops_cmp_rpo[rc_order[i]] = i;
+  free (rc_order);
+
+  auto_vec<loop_p, 3> siblings;
+  loop_p loop;
+  FOR_EACH_LOOP_FN (fn, loop, LI_INCLUDE_ROOT)
+    if (loop->inner && loop->inner->next)
+      {
+	loop_p sibling = loop->inner;
+	do
+	  {
+	    siblings.safe_push (sibling);
+	    sibling = sibling->next;
+	  }
+	while (sibling);
+	siblings.qsort (sort_sibling_loops_cmp);
+	loop_p *siblingp = &loop->inner;
+	for (unsigned i = 0; i < siblings.length (); ++i)
+	  {
+	    *siblingp = siblings[i];
+	    siblingp = &(*siblingp)->next;
+	  }
+	*siblingp = NULL;
+	siblings.truncate (0);
+      }
+
+  free (sort_sibling_loops_cmp_rpo);
+  sort_sibling_loops_cmp_rpo = NULL;
+}
+
 /* Ratio of frequencies of edges so that one of more latch edges is
    considered to belong to inner loop with same header.  */
 #define HEAVY_EDGE_RATIO 8
@@ -543,20 +607,20 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
 {
   unsigned i;
   edge e, me = NULL;
-  gcov_type mcount = 0, tcount = 0;
+  profile_count mcount = profile_count::zero (), tcount = profile_count::zero ();
 
   FOR_EACH_VEC_ELT (latches, i, e)
     {
-      if (e->count > mcount)
+      if (e->count ()> mcount)
 	{
 	  me = e;
-	  mcount = e->count;
+	  mcount = e->count();
 	}
-      tcount += e->count;
+      tcount += e->count();
     }
 
-  if (tcount < HEAVY_EDGE_MIN_SAMPLES
-      || (tcount - mcount) * HEAVY_EDGE_RATIO > tcount)
+  if (!tcount.initialized_p () || !(tcount.ipa () > HEAVY_EDGE_MIN_SAMPLES)
+      || (tcount - mcount).apply_scale (HEAVY_EDGE_RATIO, 1) > tcount)
     return NULL;
 
   if (dump_file)
@@ -1661,11 +1725,18 @@ loop_preheader_edge (const struct loop *loop)
   edge e;
   edge_iterator ei;
 
-  gcc_assert (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS));
+  gcc_assert (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS)
+	      && ! loops_state_satisfies_p (LOOPS_MAY_HAVE_MULTIPLE_LATCHES));
 
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     if (e->src != loop->latch)
       break;
+
+  if (! e)
+    {
+      gcc_assert (! loop_outer (loop));
+      return single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+    }
 
   return e;
 }
@@ -1899,7 +1970,7 @@ get_estimated_loop_iterations (struct loop *loop, widest_int *nit)
      profile.  */
   if (!loop->any_estimate)
     {
-      if (loop->header->count)
+      if (loop->header->count.reliable_p ())
 	{
           *nit = gcov_type_to_wide_int
 		   (expected_loop_iterations_unbounded (loop) + 1);

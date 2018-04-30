@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-O2 -march=armv8-a+crc+crypto" } */
+/* { dg-options "-O2 -march=armv8-a+crc+crypto -mcpu=generic" } */
 
 #include "arm_acle.h"
 

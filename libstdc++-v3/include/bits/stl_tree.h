@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -448,6 +448,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef __gnu_cxx::__alloc_traits<_Node_allocator> _Alloc_traits;
 
+#if __cplusplus >= 201103L
+      static_assert(__is_invocable<_Compare&, const _Key&, const _Key&>{},
+	  "comparison object must be invocable with two arguments of key type");
+# if __cplusplus >= 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2542. Missing const requirements for associative containers
+      static_assert(is_invocable_v<const _Compare&, const _Key&, const _Key&>,
+	  "comparison object must be invocable as const");
+# endif // C++17
+#endif // C++11
+
     protected:
       typedef _Rb_tree_node_base* 		_Base_ptr;
       typedef const _Rb_tree_node_base* 	_Const_Base_ptr;
@@ -572,11 +583,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Node_allocator&
       _M_get_Node_allocator() _GLIBCXX_NOEXCEPT
-      { return *static_cast<_Node_allocator*>(&this->_M_impl); }
+      { return this->_M_impl; }
 
       const _Node_allocator&
       _M_get_Node_allocator() const _GLIBCXX_NOEXCEPT
-      { return *static_cast<const _Node_allocator*>(&this->_M_impl); }
+      { return this->_M_impl; }
 
       allocator_type
       get_allocator() const _GLIBCXX_NOEXCEPT
@@ -685,13 +696,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  typedef _Rb_tree_key_compare<_Key_compare> _Base_key_compare;
 
-#if __cplusplus < 201103L
 	  _Rb_tree_impl()
+	    _GLIBCXX_NOEXCEPT_IF(
+		is_nothrow_default_constructible<_Node_allocator>::value
+		&& is_nothrow_default_constructible<_Base_key_compare>::value )
+	  : _Node_allocator()
 	  { }
-#else
-	  _Rb_tree_impl() = default;
-	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
-#endif
 
 	  _Rb_tree_impl(const _Rb_tree_impl& __x)
 	  : _Node_allocator(_Alloc_traits::_S_select_on_copy(__x))
@@ -703,6 +713,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  : _Node_allocator(__a), _Base_key_compare(__comp)
 	  { }
 #else
+	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
+
 	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
 	  : _Node_allocator(std::move(__a)), _Base_key_compare(__comp)
 	  { }

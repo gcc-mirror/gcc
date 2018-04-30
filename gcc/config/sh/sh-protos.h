@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -68,7 +68,7 @@ extern bool sh_expand_strlen  (rtx *);
 extern void sh_expand_setmem (rtx *);
 extern enum rtx_code prepare_cbranch_operands (rtx *, machine_mode mode,
 					       enum rtx_code comparison);
-extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int);
+extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison);
 extern bool expand_cbranchdi4 (rtx *operands, enum rtx_code comparison);
 extern void sh_emit_scc_to_t (enum rtx_code, rtx, rtx);
 extern void sh_emit_compare_and_branch (rtx *, machine_mode);
@@ -120,10 +120,10 @@ struct set_of_reg
   rtx set_src;
 };
 
-/* Given a reg rtx and a start insn, try to find the insn that sets the
-   specified reg by using the specified insn stepping function, such as 
-   'prev_nonnote_insn_bb'.  When the insn is found, try to extract the rtx
-   of the reg set.  */
+/* Given a reg rtx and a start insn, try to find the insn that sets
+   the specified reg by using the specified insn stepping function,
+   such as 'prev_nonnote_nondebug_insn_bb'.  When the insn is found,
+   try to extract the rtx of the reg set.  */
 template <typename F> inline set_of_reg
 sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
 		    bool ignore_reg_reg_copies = false)
@@ -324,8 +324,6 @@ extern bool sh_cfun_interrupt_handler_p (void);
 extern bool sh_cfun_resbank_handler_p (void);
 extern bool sh_attr_renesas_p (const_tree);
 extern bool sh_cfun_attr_renesas_p (void);
-extern bool sh_cannot_change_mode_class
-	      (machine_mode, machine_mode, enum reg_class);
 extern bool sh_small_register_classes_for_mode_p (machine_mode);
 extern void sh_mark_label (rtx, int);
 extern bool check_use_sfunc_addr (rtx_insn *, rtx);
@@ -361,7 +359,6 @@ extern bool sh_loads_bankedreg_p (rtx);
 extern int sh2a_get_function_vector_number (rtx);
 extern bool sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
-extern bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
 extern machine_mode sh_hard_regno_caller_save_mode (unsigned int, unsigned int,
 						    machine_mode);
 extern bool sh_can_use_simple_return_p (void);

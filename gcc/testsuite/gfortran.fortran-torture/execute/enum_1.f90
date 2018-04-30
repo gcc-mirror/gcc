@@ -14,15 +14,15 @@ program main
   end enum
 
 
-  if (red /= 0 ) call abort
-  if (yellow /= 1) call abort
-  if (blue /= 2) call abort
-  if (green /= 3) call abort
+  if (red /= 0 ) STOP 1
+  if (yellow /= 1) STOP 2
+  if (blue /= 2) STOP 3
+  if (green /= 3) STOP 4
 
-  if (a /= 0 ) call abort
-  if (b /= 1) call abort
-  if (c /= 10) call abort
-  if (d /= 11) call abort
+  if (a /= 0 ) STOP 5
+  if (b /= 1) STOP 6
+  if (c /= 10) STOP 7
+  if (d /= 11) STOP 8
 
   
 end program main

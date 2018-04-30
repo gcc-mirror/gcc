@@ -16,7 +16,7 @@
 // defined to no larger than the size of an unsigned int, or where
 // PCC_BITFIELD_TYPE_MATTERS is defined.  Add skips below for targets that
 // do not have that property.
-// { dg-skip-if "" { mmix-knuth-mmixware } { "*" } { "" } }
+// { dg-skip-if "" { mmix-knuth-mmixware } }
 
 
 #include <stdio.h>

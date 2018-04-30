@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Joseph Myers <jsm28@cam.ac.uk>.
 
 This file is part of GCC.
@@ -18,7 +18,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This header provides a declarative way of describing the attributes
-   that are applied to some functions by default.
+   that are applied to some built-in functions by default.  Attributes
+   that are meant to be used by user-defined functions but aren't used
+   by any built-ins, or attributes that apply to types or variables
+   but not to functions need not and should not be defined here.
 
    Before including this header, you must define the following macros.
    In each case where there is an ENUM, it is an identifier used to
@@ -85,7 +88,9 @@ DEF_LIST_INT_INT (5,0)
 DEF_LIST_INT_INT (5,6)
 #undef DEF_LIST_INT_INT
 
-/* Construct trees for identifiers.  */
+/* Construct trees for identifiers used in built-in function attributes.
+   The construction contributes to startup costs so only attributes that
+   are used to define built-ins should be defined here.  */
 DEF_ATTR_IDENT (ATTR_ALLOC_SIZE, "alloc_size")
 DEF_ATTR_IDENT (ATTR_COLD, "cold")
 DEF_ATTR_IDENT (ATTR_CONST, "const")
@@ -136,6 +141,8 @@ DEF_ATTR_TREE_LIST (ATTR_NORETURN_NOTHROW_LIST, ATTR_NORETURN,	\
 			ATTR_NULL, ATTR_NOTHROW_LIST)
 DEF_ATTR_TREE_LIST (ATTR_NORETURN_NOTHROW_LEAF_LIST, ATTR_NORETURN,\
 			ATTR_NULL, ATTR_NOTHROW_LEAF_LIST)
+DEF_ATTR_TREE_LIST (ATTR_NORETURN_NOTHROW_LEAF_COLD_LIST, ATTR_COLD,\
+			ATTR_NULL, ATTR_NORETURN_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_RT_NOTHROW_LEAF_LIST, ATTR_RETURNS_TWICE,\
 			ATTR_NULL, ATTR_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_COLD_NOTHROW_LEAF_LIST, ATTR_COLD,\
@@ -144,6 +151,8 @@ DEF_ATTR_TREE_LIST (ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST, ATTR_COLD,\
 			ATTR_NULL, ATTR_NORETURN_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST, ATTR_CONST,\
 			ATTR_NULL, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_ATTR_TREE_LIST (ATTR_CONST_NORETURN_NOTHROW_LEAF_COLD_LIST, ATTR_COLD,\
+			ATTR_NULL, ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_LIST, ATTR_MALLOC,	\
 			ATTR_NULL, ATTR_NOTHROW_LIST)
 DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_LEAF_LIST, ATTR_MALLOC,	\
@@ -387,6 +396,9 @@ DEF_ATTR_TREE_LIST (ATTR_TMPURE_NOTHROW_LEAF_LIST,
 		    ATTR_TM_TMPURE, ATTR_NULL, ATTR_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST,
 		    ATTR_TM_TMPURE, ATTR_NULL, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_ATTR_TREE_LIST (ATTR_TMPURE_NORETURN_NOTHROW_LEAF_COLD_LIST,
+		    ATTR_COLD, ATTR_NULL,
+		    ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST)
 
 /* Construct a tree for a format_arg attribute.  */
 #define DEF_FORMAT_ARG_ATTRIBUTE(FA)					\

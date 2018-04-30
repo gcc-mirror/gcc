@@ -1,7 +1,7 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wno-sizeof-array-argument" } */
-/* { dg-options "-Wall -Wno-sizeof-array-argument -Wno-c++-compat" { target c } } */
+/* { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument" } */
+/* { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument -Wno-c++-compat" { target c } } */
 /* { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;

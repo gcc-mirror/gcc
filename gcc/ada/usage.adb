@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,6 +302,11 @@ begin
    Write_Switch_Char ("h");
    Write_Line ("Output this usage (help) information");
 
+   --  Line for -gnatH switch
+
+   Write_Switch_Char ("H");
+   Write_Line ("Legacy elaboration checking mode enabled");
+
    --  Line for -gnati switch
 
    Write_Switch_Char ("i?");
@@ -316,6 +321,11 @@ begin
 
    Write_Switch_Char ("jnn");
    Write_Line ("Format error and warning messages to fit nn character lines");
+
+   --  Line for -gnatJ switch
+
+   Write_Switch_Char ("J");
+   Write_Line ("Relaxed elaboration checking mode enabled");
 
    --  Line for -gnatk switch
 
@@ -392,7 +402,7 @@ begin
 
    Write_Switch_Char ("R?");
    Write_Line
-     ("List rep info (?=0/1/2/3/m for none/types/all/variable/mechanisms)");
+     ("List rep info (?=0/1/2/3/e/m for none/types/all/symbolic/ext/mech)");
    Write_Switch_Char ("R?s");
    Write_Line ("List rep info to file.rep instead of standard output");
 
@@ -549,6 +559,10 @@ begin
                                                   "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &
                                                   "missing parenthesis");
+   Write_Line ("        .q+  turn on warnings for questionable layout of " &
+                                                  "record types");
+   Write_Line ("        .Q*  turn off warnings for questionable layout of " &
+                                                  "record types");
    Write_Line ("        r+   turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        .r+  turn on warnings for object renaming function");

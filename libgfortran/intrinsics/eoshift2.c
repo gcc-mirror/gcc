@@ -1,5 +1,5 @@
 /* Generic implementation of the EOSHIFT intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,12 +26,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <string.h>
 
-/* TODO: make this work for large shifts when
-   sizeof(int) < sizeof (index_type).  */
 
 static void
 eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
-	  int shift, const gfc_array_char *bound, int which,
+	  index_type shift, const gfc_array_char *bound, int which,
 	  const char *filler, index_type filler_len)
 {
   /* r.* indicates the return array.  */
@@ -74,7 +72,7 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
       int i;
 
       ret->offset = 0;
-      ret->dtype = array->dtype;
+      GFC_DTYPE_COPY(ret,array);
 
       /* xmallocarray allocates a single byte for zero size.  */
       ret->base_addr = xmallocarray (arraysize, size);
@@ -181,12 +179,23 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
           src = sptr;
           dest = &rptr[-shift * roffset];
         }
-      for (n = 0; n < len; n++)
-        {
-          memcpy (dest, src, size);
-          dest += roffset;
-          src += soffset;
-        }
+
+      /* If the elements are contiguous, perform a single block move.  */
+      if (soffset == size && roffset == size)
+	{
+	  size_t chunk = size * len;
+	  memcpy (dest, src, chunk);
+	  dest += chunk;
+	}
+      else
+	{
+	  for (n = 0; n < len; n++)
+	    {
+	      memcpy (dest, src, size);
+	      dest += roffset;
+	      src += soffset;
+	    }
+	}
       if (shift >= 0)
         {
           n = shift;

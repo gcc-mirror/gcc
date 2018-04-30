@@ -6,10 +6,10 @@
 
 #include <float.h>
 
-int a = DBL_MAX; /* { dg-warning "overflow in implicit constant conversion" } */
+int a = DBL_MAX; /* { dg-warning "overflow in conversion" } */
 /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
 int b = (int) DBL_MAX; /* { dg-error "overflow" } */
-unsigned int c = -1.0; /* { dg-warning "overflow in implicit constant conversion" } */
+unsigned int c = -1.0; /* { dg-warning "overflow in conversion" } */
 /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
 unsigned int d = (unsigned)-1.0; /* { dg-error "overflow" } */
 
@@ -31,5 +31,5 @@ int h1 = (0 ? 0 >> -1: 0);
 
 int i = -1 << 0;
 
-int j[1] = { DBL_MAX }; /* { dg-warning "overflow in implicit constant conversion" } */
+int j[1] = { DBL_MAX }; /* { dg-warning "overflow in conversion" } */
 /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */

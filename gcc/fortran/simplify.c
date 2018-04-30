@@ -1,5 +1,5 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -25,10 +25,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "arith.h"
 #include "intrinsic.h"
+#include "match.h"
 #include "target-memory.h"
 #include "constructor.h"
 #include "version.h"	/* For version_string.  */
 
+/* Prototypes.  */
+
+static int min_max_choose (gfc_expr *, gfc_expr *, int);
 
 gfc_expr gfc_bad_expr;
 
@@ -227,7 +231,8 @@ convert_boz (gfc_expr *x, int kind)
 }
 
 
-/* Test that the expression is an constant array.  */
+/* Test that the expression is a constant array, simplifying if
+   we are dealing with a parameter array.  */
 
 static bool
 is_constant_array_expr (gfc_expr *e)
@@ -236,6 +241,10 @@ is_constant_array_expr (gfc_expr *e)
 
   if (e == NULL)
     return true;
+
+  if (e->expr_type == EXPR_VARIABLE && e->rank > 0
+      && e->symtree->n.sym->attr.flavor == FL_PARAMETER)
+    gfc_simplify_expr (e, 1);
 
   if (e->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (e))
     return false;
@@ -247,6 +256,31 @@ is_constant_array_expr (gfc_expr *e)
       return false;
 
   return true;
+}
+
+/* Test for a size zero array.  */
+bool
+gfc_is_size_zero_array (gfc_expr *array)
+{
+
+  if (array->rank == 0)
+    return false;
+
+  if (array->expr_type == EXPR_VARIABLE && array->rank > 0
+      && array->symtree->n.sym->attr.flavor == FL_PARAMETER
+      && array->shape != NULL)
+    {
+      for (int i = 0; i < array->rank; i++)
+	if (mpz_cmp_si (array->shape[i], 0) <= 0)
+	  return true;
+
+      return false;
+    }
+
+  if (array->expr_type == EXPR_ARRAY)
+    return array->value.constructor == NULL;
+
+  return false;
 }
 
 
@@ -267,7 +301,7 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
   else if (e && e->expr_type == EXPR_CONSTANT)
     {
       int i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
-      int length;
+      HOST_WIDE_INT length;
       gfc_char_t *string;
 
       switch (e->ts.type)
@@ -305,14 +339,14 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 	    if (init == INT_MIN)
 	      {
 		gfc_expr *len = gfc_simplify_len (array, NULL);
-		gfc_extract_int (len, &length);
+		gfc_extract_hwi (len, &length);
 		string = gfc_get_wide_string (length + 1);
 		gfc_wide_memset (string, 0, length);
 	      }
 	    else if (init == INT_MAX)
 	      {
 		gfc_expr *len = gfc_simplify_len (array, NULL);
-		gfc_extract_int (len, &length);
+		gfc_extract_hwi (len, &length);
 		string = gfc_get_wide_string (length + 1);
 		gfc_wide_memset (string, 255, length);
 	      }
@@ -346,9 +380,14 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 {
   gfc_expr *result, *a, *b, *c;
 
-  result = gfc_get_constant_expr (matrix_a->ts.type, matrix_a->ts.kind,
-				  &matrix_a->where);
-  init_result_expr (result, 0, NULL);
+  /* Set result to an INTEGER(1) 0 for numeric types and .false. for
+     LOGICAL.  Mixed-mode math in the loop will promote result to the
+     correct type and kind.  */
+  if (matrix_a->ts.type == BT_LOGICAL)
+    result = gfc_get_logical_expr (gfc_default_logical_kind, NULL, false);
+  else
+    result = gfc_get_int_expr (1, NULL, 0);
+  result->where = matrix_a->where;
 
   a = gfc_constructor_lookup_expr (matrix_a->value.constructor, offset_a);
   b = gfc_constructor_lookup_expr (matrix_b->value.constructor, offset_b);
@@ -431,7 +470,8 @@ typedef gfc_expr* (*transformational_op)(gfc_expr*, gfc_expr*);
    Interface and implementation mimics arith functions as
    gfc_add, gfc_multiply, etc.  */
 
-static gfc_expr* gfc_count (gfc_expr *op1, gfc_expr *op2)
+static gfc_expr *
+gfc_count (gfc_expr *op1, gfc_expr *op2)
 {
   gfc_expr *result;
 
@@ -587,7 +627,7 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
       n += 1;
     }
 
-  done = false;
+  done = resultsize <= 0;
   base = arrayvec;
   dest = resultvec;
   while (!done)
@@ -649,8 +689,11 @@ simplify_transformation (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
 			 int init_val, transformational_op op)
 {
   gfc_expr *result;
+  bool size_zero;
 
-  if (!is_constant_array_expr (array)
+  size_zero = gfc_is_size_zero_array (array);
+
+  if (!(is_constant_array_expr (array) || size_zero)
       || !gfc_is_constant_expr (dim))
     return NULL;
 
@@ -661,7 +704,10 @@ simplify_transformation (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
 
   result = transformational_result (array, dim, array->ts.type,
 				    array->ts.kind, &array->where);
-  init_result_expr (result, init_val, NULL);
+  init_result_expr (result, init_val, array);
+
+  if (size_zero)
+    return result;
 
   return !dim || array->rank == 1 ?
     simplify_transformation_to_scalar (result, array, mask, op) :
@@ -1920,8 +1966,11 @@ gfc_expr *
 gfc_simplify_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
 {
   gfc_expr *result;
+  bool size_zero;
 
-  if (!is_constant_array_expr (mask)
+  size_zero = gfc_is_size_zero_array (mask);
+
+  if (!(is_constant_array_expr (mask) || size_zero)
       || !gfc_is_constant_expr (dim)
       || !gfc_is_constant_expr (kind))
     return NULL;
@@ -1934,6 +1983,9 @@ gfc_simplify_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
 
   init_result_expr (result, 0, NULL);
 
+  if (size_zero)
+    return result;
+
   /* Passing MASK twice, once as data array, once as mask.
      Whenever gfc_count is called, '1' is added to the result.  */
   return !dim || mask->rank == 1 ?
@@ -1941,92 +1993,212 @@ gfc_simplify_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
     simplify_transformation_to_array (result, mask, dim, mask, gfc_count, NULL);
 }
 
+/* Simplification routine for cshift. This works by copying the array
+   expressions into a one-dimensional array, shuffling the values into another
+   one-dimensional array and creating the new array expression from this.  The
+   shuffling part is basically taken from the library routine.  */
 
 gfc_expr *
 gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
 {
-  gfc_expr *a, *result;
-  int dm;
+  gfc_expr *result;
+  int which;
+  gfc_expr **arrayvec, **resultvec;
+  gfc_expr **rptr, **sptr;
+  mpz_t size;
+  size_t arraysize, shiftsize, i;
+  gfc_constructor *array_ctor, *shift_ctor;
+  ssize_t *shiftvec, *hptr;
+  ssize_t shift_val, len;
+  ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+    hs_ex[GFC_MAX_DIMENSIONS],
+    hstride[GFC_MAX_DIMENSIONS], sstride[GFC_MAX_DIMENSIONS],
+    a_extent[GFC_MAX_DIMENSIONS], a_stride[GFC_MAX_DIMENSIONS],
+    h_extent[GFC_MAX_DIMENSIONS],
+    ss_ex[GFC_MAX_DIMENSIONS];
+  ssize_t rsoffset;
+  int d, n;
+  bool continue_loop;
+  gfc_expr **src, **dest;
 
-  /* DIM is only useful for rank > 1, but deal with it here as one can
-     set DIM = 1 for rank = 1.  */
+  if (!is_constant_array_expr (array))
+    return NULL;
+
+  if (shift->rank > 0)
+    gfc_simplify_expr (shift, 1);
+
+  if (!gfc_is_constant_expr (shift))
+    return NULL;
+
+  /* Make dim zero-based.  */
   if (dim)
     {
       if (!gfc_is_constant_expr (dim))
 	return NULL;
-      dm = mpz_get_si (dim->value.integer);
+      which = mpz_get_si (dim->value.integer) - 1;
     }
   else
-    dm = 1;
+    which = 0;
 
-  /* Copy array into 'a', simplify it, and then test for a constant array.  */
-  a = gfc_copy_expr (array);
-  gfc_simplify_expr (a, 0);
-  if (!is_constant_array_expr (a))
+  gfc_array_size (array, &size);
+  arraysize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  result = gfc_get_array_expr (array->ts.type, array->ts.kind, &array->where);
+  result->shape = gfc_copy_shape (array->shape, array->rank);
+  result->rank = array->rank;
+  result->ts.u.derived = array->ts.u.derived;
+
+  if (arraysize == 0)
+    return result;
+
+  arrayvec = XCNEWVEC (gfc_expr *, arraysize);
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  for (i = 0; i < arraysize; i++)
     {
-      gfc_free_expr (a);
-      return NULL;
+      arrayvec[i] = array_ctor->expr;
+      array_ctor = gfc_constructor_next (array_ctor);
     }
 
-  if (a->rank == 1)
+  resultvec = XCNEWVEC (gfc_expr *, arraysize);
+
+  extent[0] = 1;
+  count[0] = 0;
+
+  for (d=0; d < array->rank; d++)
     {
-      gfc_constructor *ca, *cr;
-      mpz_t size;
-      int i, j, shft, sz;
+      a_extent[d] = mpz_get_si (array->shape[d]);
+      a_stride[d] = d == 0 ? 1 : a_stride[d-1] * a_extent[d-1];
+    }
 
-      if (!gfc_is_constant_expr (shift))
-	{
-	  gfc_free_expr (a);
-	  return NULL;
-	}
-
-      shft = mpz_get_si (shift->value.integer);
-
-      /*  Case (i):  If ARRAY has rank one, element i of the result is
-	  ARRAY (1 + MODULO (i + SHIFT - 1, SIZE (ARRAY))).  */
-
-      mpz_init (size);
-      gfc_array_size (a, &size);
-      sz = mpz_get_si (size);
+  if (shift->rank > 0)
+    {
+      gfc_array_size (shift, &size);
+      shiftsize = mpz_get_ui (size);
       mpz_clear (size);
-
-      /* Adjust shft to deal with right or left shifts. */
-      shft = shft < 0 ? 1 - shft : shft;
-
-      /* Special case: Shift to the original order!  */
-      if (sz == 0 || shft % sz == 0)
-	return a;
-
-      result = gfc_copy_expr (a);
-      cr = gfc_constructor_first (result->value.constructor);
-      for (i = 0; i < sz; i++, cr = gfc_constructor_next (cr))
+      shiftvec = XCNEWVEC (ssize_t, shiftsize);
+      shift_ctor = gfc_constructor_first (shift->value.constructor);
+      for (d = 0; d < shift->rank; d++)
 	{
-	  j = (i + shft) % sz;
-	  ca = gfc_constructor_first (a->value.constructor);
-	  while (j-- > 0)
-	    ca = gfc_constructor_next (ca);
-	  cr->expr = gfc_copy_expr (ca->expr);
+	  h_extent[d] = mpz_get_si (shift->shape[d]);
+	  hstride[d] = d == 0 ? 1 : hstride[d-1] * h_extent[d-1];
 	}
+    }
+  else
+    shiftvec = NULL;
 
-      gfc_free_expr (a);
-      return result;
+  /* Shut up compiler */
+  len = 1;
+  rsoffset = 1;
+
+  n = 0;
+  for (d=0; d < array->rank; d++)
+    {
+      if (d == which)
+	{
+	  rsoffset = a_stride[d];
+	  len = a_extent[d];
+	}
+      else
+	{
+	  count[n] = 0;
+	  extent[n] = a_extent[d];
+	  sstride[n] = a_stride[d];
+	  ss_ex[n] = sstride[n] * extent[n];
+	  if (shiftvec)
+	    hs_ex[n] = hstride[n] * extent[n];
+	  n++;
+	}
+    }
+
+  if (shiftvec)
+    {
+      for (i = 0; i < shiftsize; i++)
+	{
+	  ssize_t val;
+	  val = mpz_get_si (shift_ctor->expr->value.integer);
+	  val = val % len;
+	  if (val < 0)
+	    val += len;
+	  shiftvec[i] = val;
+	  shift_ctor = gfc_constructor_next (shift_ctor);
+	}
+      shift_val = 0;
     }
   else
     {
-      /* FIXME: Deal with rank > 1 arrays.  For now, don't leak memory.  */
-
-      /* GCC bootstrap is too stupid to realize that the above code for dm
-	 is correct.  First, dim can be specified for a rank 1 array.  It is
-	 not needed in this nor used here.  Second, the code is simply waiting
-	 for someone to implement rank > 1 simplification.   For now, add a
-	 pessimization to the code that has a zero valid reason to be here.  */
-      if (dm > array->rank)
-	gcc_unreachable ();
-
-      gfc_free_expr (a);
+      shift_val = mpz_get_si (shift->value.integer);
+      shift_val = shift_val % len;
+      if (shift_val < 0)
+	shift_val += len;
     }
 
-  return NULL;
+  continue_loop = true;
+  d = array->rank;
+  rptr = resultvec;
+  sptr = arrayvec;
+  hptr = shiftvec;
+
+  while (continue_loop)
+    {
+      ssize_t sh;
+      if (shiftvec)
+	sh = *hptr;
+      else
+	sh = shift_val;
+
+      src = &sptr[sh * rsoffset];
+      dest = rptr;
+      for (n = 0; n < len - sh; n++)
+	{
+	  *dest = *src;
+	  dest += rsoffset;
+	  src += rsoffset;
+	}
+      src = sptr;
+      for ( n = 0; n < sh; n++)
+	{
+	  *dest = *src;
+	  dest += rsoffset;
+	  src += rsoffset;
+	}
+      rptr += sstride[0];
+      sptr += sstride[0];
+      if (shiftvec)
+	hptr += hstride[0];
+      count[0]++;
+      n = 0;
+      while (count[n] == extent[n])
+	{
+	  count[n] = 0;
+	  rptr -= ss_ex[n];
+	  sptr -= ss_ex[n];
+	  if (shiftvec)
+	    hptr -= hs_ex[n];
+	  n++;
+	  if (n >= d - 1)
+	    {
+	      continue_loop = false;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      rptr += sstride[n];
+	      sptr += sstride[n];
+	      if (shiftvec)
+		hptr += hstride[n];
+	    }
+	}
+    }
+
+  for (i = 0; i < arraysize; i++)
+    {
+      gfc_constructor_append_expr (&result->value.constructor,
+				   gfc_copy_expr (resultvec[i]),
+				   NULL);
+    }
+  return result;
 }
 
 
@@ -2124,22 +2296,19 @@ gfc_simplify_dim (gfc_expr *x, gfc_expr *y)
 gfc_expr*
 gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 {
-
-  gfc_expr temp;
+  /* If vector_a is a zero-sized array, the result is 0 for INTEGER,
+     REAL, and COMPLEX types and .false. for LOGICAL.  */
+  if (vector_a->shape && mpz_get_si (vector_a->shape[0]) == 0)
+    {
+      if (vector_a->ts.type == BT_LOGICAL)
+	return gfc_get_logical_expr (gfc_default_logical_kind, NULL, false);
+      else
+	return gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
+    }
 
   if (!is_constant_array_expr (vector_a)
       || !is_constant_array_expr (vector_b))
     return NULL;
-
-  gcc_assert (vector_a->rank == 1);
-  gcc_assert (vector_b->rank == 1);
-
-  temp.expr_type = EXPR_OP;
-  gfc_clear_ts (&temp.ts);
-  temp.value.op.op = INTRINSIC_NONE;
-  temp.value.op.op1 = vector_a;
-  temp.value.op.op2 = vector_b;
-  gfc_type_convert_binary (&temp, 1);
 
   return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0, true);
 }
@@ -2217,6 +2386,271 @@ gfc_simplify_dshiftl (gfc_expr *arg1, gfc_expr *arg2, gfc_expr *shiftarg)
   return simplify_dshift (arg1, arg2, shiftarg, false);
 }
 
+
+gfc_expr *
+gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
+		   gfc_expr *dim)
+{
+  bool temp_boundary;
+  gfc_expr *bnd;
+  gfc_expr *result;
+  int which;
+  gfc_expr **arrayvec, **resultvec;
+  gfc_expr **rptr, **sptr;
+  mpz_t size;
+  size_t arraysize, i;
+  gfc_constructor *array_ctor, *shift_ctor, *bnd_ctor;
+  ssize_t shift_val, len;
+  ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+    sstride[GFC_MAX_DIMENSIONS], a_extent[GFC_MAX_DIMENSIONS],
+    a_stride[GFC_MAX_DIMENSIONS], ss_ex[GFC_MAX_DIMENSIONS];
+  ssize_t rsoffset;
+  int d, n;
+  bool continue_loop;
+  gfc_expr **src, **dest;
+  size_t s_len;
+
+  if (!is_constant_array_expr (array))
+    return NULL;
+
+  if (shift->rank > 0)
+    gfc_simplify_expr (shift, 1);
+
+  if (!gfc_is_constant_expr (shift))
+    return NULL;
+
+  if (boundary)
+    {
+      if (boundary->rank > 0)
+	gfc_simplify_expr (boundary, 1);
+
+      if (!gfc_is_constant_expr (boundary))
+	  return NULL;
+    }
+
+  if (dim)
+    {
+      if (!gfc_is_constant_expr (dim))
+	return NULL;
+      which = mpz_get_si (dim->value.integer) - 1;
+    }
+  else
+    which = 0;
+
+  s_len = 0;
+  if (boundary == NULL)
+    {
+      temp_boundary = true;
+      switch (array->ts.type)
+	{
+
+	case BT_INTEGER:
+	  bnd = gfc_get_int_expr (array->ts.kind, NULL, 0);
+	  break;
+
+	case BT_LOGICAL:
+	  bnd = gfc_get_logical_expr (array->ts.kind, NULL, 0);
+	  break;
+
+	case BT_REAL:
+	  bnd = gfc_get_constant_expr (array->ts.type, array->ts.kind, &gfc_current_locus);
+	  mpfr_set_ui (bnd->value.real, 0, GFC_RND_MODE);
+	  break;
+
+	case BT_COMPLEX:
+	  bnd = gfc_get_constant_expr (array->ts.type, array->ts.kind, &gfc_current_locus);
+	  mpc_set_ui (bnd->value.complex, 0, GFC_RND_MODE);
+	  break;
+
+	case BT_CHARACTER:
+	  s_len = mpz_get_ui (array->ts.u.cl->length->value.integer);
+	  bnd = gfc_get_character_expr (array->ts.kind, &gfc_current_locus, NULL, s_len);
+	  break;
+
+	default:
+	  gcc_unreachable();
+
+	}
+    }
+  else
+    {
+      temp_boundary = false;
+      bnd = boundary;
+    }
+
+  gfc_array_size (array, &size);
+  arraysize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  result = gfc_get_array_expr (array->ts.type, array->ts.kind, &array->where);
+  result->shape = gfc_copy_shape (array->shape, array->rank);
+  result->rank = array->rank;
+  result->ts = array->ts;
+
+  if (arraysize == 0)
+    goto final;
+
+  arrayvec = XCNEWVEC (gfc_expr *, arraysize);
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  for (i = 0; i < arraysize; i++)
+    {
+      arrayvec[i] = array_ctor->expr;
+      array_ctor = gfc_constructor_next (array_ctor);
+    }
+
+  resultvec = XCNEWVEC (gfc_expr *, arraysize);
+
+  extent[0] = 1;
+  count[0] = 0;
+
+  for (d=0; d < array->rank; d++)
+    {
+      a_extent[d] = mpz_get_si (array->shape[d]);
+      a_stride[d] = d == 0 ? 1 : a_stride[d-1] * a_extent[d-1];
+    }
+
+  if (shift->rank > 0)
+    {
+      shift_ctor = gfc_constructor_first (shift->value.constructor);
+      shift_val = 0;
+    }
+  else
+    {
+      shift_ctor = NULL;
+      shift_val = mpz_get_si (shift->value.integer);
+    }
+
+  if (bnd->rank > 0)
+    bnd_ctor = gfc_constructor_first (bnd->value.constructor);
+  else
+    bnd_ctor = NULL;
+
+  /* Shut up compiler */
+  len = 1;
+  rsoffset = 1;
+
+  n = 0;
+  for (d=0; d < array->rank; d++)
+    {
+      if (d == which)
+	{
+	  rsoffset = a_stride[d];
+	  len = a_extent[d];
+	}
+      else
+	{
+	  count[n] = 0;
+	  extent[n] = a_extent[d];
+	  sstride[n] = a_stride[d];
+	  ss_ex[n] = sstride[n] * extent[n];
+	  n++;
+	}
+    }
+
+  continue_loop = true;
+  d = array->rank;
+  rptr = resultvec;
+  sptr = arrayvec;
+
+  while (continue_loop)
+    {
+      ssize_t sh, delta;
+
+      if (shift_ctor)
+	sh = mpz_get_si (shift_ctor->expr->value.integer);
+      else
+	sh = shift_val;
+
+      if (( sh >= 0 ? sh : -sh ) > len)
+	{
+	  delta = len;
+	  sh = len;
+	}
+      else
+	delta = (sh >= 0) ? sh: -sh;
+
+      if (sh > 0)
+        {
+          src = &sptr[delta * rsoffset];
+          dest = rptr;
+        }
+      else
+        {
+          src = sptr;
+          dest = &rptr[delta * rsoffset];
+        }
+
+      for (n = 0; n < len - delta; n++)
+	{
+	  *dest = *src;
+	  dest += rsoffset;
+	  src += rsoffset;
+	}
+
+      if (sh < 0)
+        dest = rptr;
+
+      n = delta;
+
+      if (bnd_ctor)
+	{
+	  while (n--)
+	    {
+	      *dest = gfc_copy_expr (bnd_ctor->expr);
+	      dest += rsoffset;
+	    }
+	}
+      else
+	{
+	  while (n--)
+	    {
+	      *dest = gfc_copy_expr (bnd);
+	      dest += rsoffset;
+	    }
+	}
+      rptr += sstride[0];
+      sptr += sstride[0];
+      if (shift_ctor)
+	shift_ctor =  gfc_constructor_next (shift_ctor);
+
+      if (bnd_ctor)
+	bnd_ctor = gfc_constructor_next (bnd_ctor);
+
+      count[0]++;
+      n = 0;
+      while (count[n] == extent[n])
+	{
+	  count[n] = 0;
+	  rptr -= ss_ex[n];
+	  sptr -= ss_ex[n];
+	  n++;
+	  if (n >= d - 1)
+	    {
+	      continue_loop = false;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      rptr += sstride[n];
+	      sptr += sstride[n];
+	    }
+	}
+    }
+
+  for (i = 0; i < arraysize; i++)
+    {
+      gfc_constructor_append_expr (&result->value.constructor,
+				   gfc_copy_expr (resultvec[i]),
+				   NULL);
+    }
+
+ final:
+  if (temp_boundary)
+    gfc_free_expr (bnd);
+
+  return result;
+}
 
 gfc_expr *
 gfc_simplify_erf (gfc_expr *x)
@@ -2497,6 +2931,30 @@ gfc_simplify_failed_or_stopped_images (gfc_expr *team ATTRIBUTE_UNUSED,
 
 
 gfc_expr *
+gfc_simplify_get_team (gfc_expr *level ATTRIBUTE_UNUSED)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_current_locus = *gfc_current_intrinsic_where;
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return &gfc_bad_expr;
+    }
+
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    {
+      gfc_expr *result;
+      result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind, &gfc_current_locus);
+      result->rank = 0;
+      return result;
+    }
+
+  /* For fcoarray = lib no simplification is possible, because it is not known
+     what images failed or are stopped at compile time.  */
+  return NULL;
+}
+
+
+gfc_expr *
 gfc_simplify_float (gfc_expr *a)
 {
   gfc_expr *result;
@@ -2662,7 +3120,7 @@ gfc_simplify_fraction (gfc_expr *x)
 
 #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
 
-  /* MPFR versions before 3.1.0 do not include mpfr_frexp.  
+  /* MPFR versions before 3.1.0 do not include mpfr_frexp.
      TODO: remove the kludge when MPFR 3.1.0 or newer will be required */
 
   if (mpfr_sgn (x->value.real) == 0)
@@ -4021,7 +4479,7 @@ gfc_expr *
 gfc_simplify_len_trim (gfc_expr *e, gfc_expr *kind)
 {
   gfc_expr *result;
-  int count, len, i;
+  size_t count, len, i;
   int k = get_kind (BT_INTEGER, kind, "LEN_TRIM", gfc_default_integer_kind);
 
   if (k == -1)
@@ -4196,10 +4654,23 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       || !is_constant_array_expr (matrix_b))
     return NULL;
 
-  gcc_assert (gfc_compare_types (&matrix_a->ts, &matrix_b->ts));
-  result = gfc_get_array_expr (matrix_a->ts.type,
-			       matrix_a->ts.kind,
-			       &matrix_a->where);
+  /* MATMUL should do mixed-mode arithmetic.  Set the result type.  */
+  if (matrix_a->ts.type != matrix_b->ts.type)
+    {
+      gfc_expr e;
+      e.expr_type = EXPR_OP;
+      gfc_clear_ts (&e.ts);
+      e.value.op.op = INTRINSIC_NONE;
+      e.value.op.op1 = matrix_a;
+      e.value.op.op2 = matrix_b;
+      gfc_type_convert_binary (&e, 1);
+      result = gfc_get_array_expr (e.ts.type, e.ts.kind, &matrix_a->where);
+    }
+  else
+    {
+      result = gfc_get_array_expr (matrix_a->ts.type, matrix_a->ts.kind,
+				   &matrix_a->where);
+    }
 
   if (matrix_a->rank == 1 && matrix_b->rank == 2)
     {
@@ -4405,25 +4876,34 @@ gfc_simplify_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask_expr)
 
 /* Selects between current value and extremum for simplify_min_max
    and simplify_minval_maxval.  */
-static void
+static int
 min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
 {
+  int ret;
+
   switch (arg->ts.type)
     {
       case BT_INTEGER:
-	if (mpz_cmp (arg->value.integer,
-			extremum->value.integer) * sign > 0)
-	mpz_set (extremum->value.integer, arg->value.integer);
+	ret = mpz_cmp (arg->value.integer,
+		       extremum->value.integer) * sign;
+	if (ret > 0)
+	  mpz_set (extremum->value.integer, arg->value.integer);
 	break;
 
       case BT_REAL:
-	/* We need to use mpfr_min and mpfr_max to treat NaN properly.  */
-	if (sign > 0)
-	  mpfr_max (extremum->value.real, extremum->value.real,
-		      arg->value.real, GFC_RND_MODE);
+	if (mpfr_nan_p (extremum->value.real))
+	  {
+	    ret = 1;
+	    mpfr_set (extremum->value.real, arg->value.real, GFC_RND_MODE);
+	  }
+	else if (mpfr_nan_p (arg->value.real))
+	  ret = -1;
 	else
-	  mpfr_min (extremum->value.real, extremum->value.real,
-		      arg->value.real, GFC_RND_MODE);
+	  {
+	    ret = mpfr_cmp (arg->value.real, extremum->value.real) * sign;
+	    if (ret > 0)
+	      mpfr_set (extremum->value.real, arg->value.real, GFC_RND_MODE);
+	  }
 	break;
 
       case BT_CHARACTER:
@@ -4442,8 +4922,8 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
 	    LENGTH(extremum) = LENGTH(arg);
 	    free (tmp);
 	  }
-
-	if (gfc_compare_string (arg, extremum) * sign > 0)
+	ret = gfc_compare_string (arg, extremum) * sign;
+	if (ret > 0)
 	  {
 	    free (STRING(extremum));
 	    STRING(extremum) = gfc_get_wide_string (LENGTH(extremum) + 1);
@@ -4460,6 +4940,7 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
       default:
 	gfc_internal_error ("simplify_min_max(): Bad type in arglist");
     }
+  return ret;
 }
 
 
@@ -4534,69 +5015,423 @@ gfc_simplify_max (gfc_expr *e)
   return simplify_min_max (e, 1);
 }
 
-
-/* This is a simplified version of simplify_min_max to provide
-   simplification of minval and maxval for a vector.  */
+/* Helper function for gfc_simplify_minval.  */
 
 static gfc_expr *
-simplify_minval_maxval (gfc_expr *expr, int sign)
+gfc_min (gfc_expr *op1, gfc_expr *op2)
 {
-  gfc_constructor *c, *extremum;
-  gfc_intrinsic_sym * specific;
-
-  extremum = NULL;
-  specific = expr->value.function.isym;
-
-  for (c = gfc_constructor_first (expr->value.constructor);
-       c; c = gfc_constructor_next (c))
-    {
-      if (c->expr->expr_type != EXPR_CONSTANT)
-	return NULL;
-
-      if (extremum == NULL)
-	{
-	  extremum = c;
-	  continue;
-	}
-
-      min_max_choose (c->expr, extremum->expr, sign);
-     }
-
-  if (extremum == NULL)
-    return NULL;
-
-  /* Convert to the correct type and kind.  */
-  if (expr->ts.type != BT_UNKNOWN)
-    return gfc_convert_constant (extremum->expr,
-	expr->ts.type, expr->ts.kind);
-
-  if (specific->ts.type != BT_UNKNOWN)
-    return gfc_convert_constant (extremum->expr,
-	specific->ts.type, specific->ts.kind);
-
-  return gfc_copy_expr (extremum->expr);
+  min_max_choose (op1, op2, -1);
+  gfc_free_expr (op1);
+  return op2;
 }
 
+/* Simplify minval for constant arrays.  */
 
 gfc_expr *
 gfc_simplify_minval (gfc_expr *array, gfc_expr* dim, gfc_expr *mask)
 {
-  if (array->expr_type != EXPR_ARRAY || array->rank != 1 || dim || mask)
-    return NULL;
-
-  return simplify_minval_maxval (array, -1);
+  return simplify_transformation (array, dim, mask, INT_MAX, gfc_min);
 }
 
+/* Helper function for gfc_simplify_maxval.  */
+
+static gfc_expr *
+gfc_max (gfc_expr *op1, gfc_expr *op2)
+{
+  min_max_choose (op1, op2, 1);
+  gfc_free_expr (op1);
+  return op2;
+}
+
+
+/* Simplify maxval for constant arrays.  */
 
 gfc_expr *
 gfc_simplify_maxval (gfc_expr *array, gfc_expr* dim, gfc_expr *mask)
 {
-  if (array->expr_type != EXPR_ARRAY || array->rank != 1 || dim || mask)
-    return NULL;
-
-  return simplify_minval_maxval (array, 1);
+  return simplify_transformation (array, dim, mask, INT_MIN, gfc_max);
 }
 
+
+/* Transform minloc or maxloc of an array, according to MASK,
+   to the scalar result.  This code is mostly identical to
+   simplify_transformation_to_scalar.  */
+
+static gfc_expr *
+simplify_minmaxloc_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *mask,
+			      gfc_expr *extremum, int sign)
+{
+  gfc_expr *a, *m;
+  gfc_constructor *array_ctor, *mask_ctor;
+  mpz_t count;
+
+  mpz_set_si (result->value.integer, 0);
+
+
+  /* Shortcut for constant .FALSE. MASK.  */
+  if (mask
+      && mask->expr_type == EXPR_CONSTANT
+      && !mask->value.logical)
+    return result;
+
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  if (mask && mask->expr_type == EXPR_ARRAY)
+    mask_ctor = gfc_constructor_first (mask->value.constructor);
+  else
+    mask_ctor = NULL;
+
+  mpz_init_set_si (count, 0);
+  while (array_ctor)
+    {
+      mpz_add_ui (count, count, 1);
+      a = array_ctor->expr;
+      array_ctor = gfc_constructor_next (array_ctor);
+      /* A constant MASK equals .TRUE. here and can be ignored.  */
+      if (mask_ctor)
+	{
+	  m = mask_ctor->expr;
+	  mask_ctor = gfc_constructor_next (mask_ctor);
+	  if (!m->value.logical)
+	    continue;
+	}
+      if (min_max_choose (a, extremum, sign) > 0)
+	mpz_set (result->value.integer, count);
+    }
+  mpz_clear (count);
+  gfc_free_expr (extremum);
+  return result;
+}
+
+/* Simplify minloc / maxloc in the absence of a dim argument.  */
+
+static gfc_expr *
+simplify_minmaxloc_nodim (gfc_expr *result, gfc_expr *extremum,
+			  gfc_expr *array, gfc_expr *mask, int sign)
+{
+  ssize_t res[GFC_MAX_DIMENSIONS];
+  int i, n;
+  gfc_constructor *result_ctor, *array_ctor, *mask_ctor;
+  ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+    sstride[GFC_MAX_DIMENSIONS];
+  gfc_expr *a, *m;
+  bool continue_loop;
+  bool ma;
+
+  for (i = 0; i<array->rank; i++)
+    res[i] = -1;
+
+  /* Shortcut for constant .FALSE. MASK.  */
+  if (mask
+      && mask->expr_type == EXPR_CONSTANT
+      && !mask->value.logical)
+    goto finish;
+
+  for (i = 0; i < array->rank; i++)
+    {
+      count[i] = 0;
+      sstride[i] = (i == 0) ? 1 : sstride[i-1] * mpz_get_si (array->shape[i-1]);
+      extent[i] = mpz_get_si (array->shape[i]);
+      if (extent[i] <= 0)
+	goto finish;
+    }
+
+  continue_loop = true;
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  if (mask && mask->rank > 0)
+    mask_ctor = gfc_constructor_first (mask->value.constructor);
+  else
+    mask_ctor = NULL;
+
+  /* Loop over the array elements (and mask), keeping track of
+     the indices to return.  */
+  while (continue_loop)
+    {
+      do
+	{
+	  a = array_ctor->expr;
+	  if (mask_ctor)
+	    {
+	      m = mask_ctor->expr;
+	      ma = m->value.logical;
+	      mask_ctor = gfc_constructor_next (mask_ctor);
+	    }
+	  else
+	    ma = true;
+
+	  if (ma && min_max_choose (a, extremum, sign) > 0)
+	    {
+	      for (i = 0; i<array->rank; i++)
+		res[i] = count[i];
+	    }
+	  array_ctor = gfc_constructor_next (array_ctor);
+	  count[0] ++;
+	} while (count[0] != extent[0]);
+      n = 0;
+      do
+	{
+	  /* When we get to the end of a dimension, reset it and increment
+	     the next dimension.  */
+	  count[n] = 0;
+	  n++;
+	  if (n >= array->rank)
+	    {
+	      continue_loop = false;
+	      break;
+	    }
+	  else
+	    count[n] ++;
+	} while (count[n] == extent[n]);
+    }
+
+ finish:
+  gfc_free_expr (extremum);
+  result_ctor = gfc_constructor_first (result->value.constructor);
+  for (i = 0; i<array->rank; i++)
+    {
+      gfc_expr *r_expr;
+      r_expr = result_ctor->expr;
+      mpz_set_si (r_expr->value.integer, res[i] + 1);
+      result_ctor = gfc_constructor_next (result_ctor);
+    }
+  return result;
+}
+
+/* Helper function for gfc_simplify_minmaxloc - build an array
+   expression with n elements.  */
+
+static gfc_expr *
+new_array (bt type, int kind, int n, locus *where)
+{
+  gfc_expr *result;
+  int i;
+
+  result = gfc_get_array_expr (type, kind, where);
+  result->rank = 1;
+  result->shape = gfc_get_shape(1);
+  mpz_init_set_si (result->shape[0], n);
+  for (i = 0; i < n; i++)
+    {
+      gfc_constructor_append_expr (&result->value.constructor,
+				   gfc_get_constant_expr (type, kind, where),
+				   NULL);
+    }
+
+  return result;
+}
+
+/* Simplify minloc and maxloc. This code is mostly identical to
+   simplify_transformation_to_array.  */
+
+static gfc_expr *
+simplify_minmaxloc_to_array (gfc_expr *result, gfc_expr *array,
+			     gfc_expr *dim, gfc_expr *mask,
+			     gfc_expr *extremum, int sign)
+{
+  mpz_t size;
+  int done, i, n, arraysize, resultsize, dim_index, dim_extent, dim_stride;
+  gfc_expr **arrayvec, **resultvec, **base, **src, **dest;
+  gfc_constructor *array_ctor, *mask_ctor, *result_ctor;
+
+  int count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+      sstride[GFC_MAX_DIMENSIONS], dstride[GFC_MAX_DIMENSIONS],
+      tmpstride[GFC_MAX_DIMENSIONS];
+
+  /* Shortcut for constant .FALSE. MASK.  */
+  if (mask
+      && mask->expr_type == EXPR_CONSTANT
+      && !mask->value.logical)
+    return result;
+
+  /* Build an indexed table for array element expressions to minimize
+     linked-list traversal. Masked elements are set to NULL.  */
+  gfc_array_size (array, &size);
+  arraysize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  arrayvec = XCNEWVEC (gfc_expr*, arraysize);
+
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  mask_ctor = NULL;
+  if (mask && mask->expr_type == EXPR_ARRAY)
+    mask_ctor = gfc_constructor_first (mask->value.constructor);
+
+  for (i = 0; i < arraysize; ++i)
+    {
+      arrayvec[i] = array_ctor->expr;
+      array_ctor = gfc_constructor_next (array_ctor);
+
+      if (mask_ctor)
+	{
+	  if (!mask_ctor->expr->value.logical)
+	    arrayvec[i] = NULL;
+
+	  mask_ctor = gfc_constructor_next (mask_ctor);
+	}
+    }
+
+  /* Same for the result expression.  */
+  gfc_array_size (result, &size);
+  resultsize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  resultvec = XCNEWVEC (gfc_expr*, resultsize);
+  result_ctor = gfc_constructor_first (result->value.constructor);
+  for (i = 0; i < resultsize; ++i)
+    {
+      resultvec[i] = result_ctor->expr;
+      result_ctor = gfc_constructor_next (result_ctor);
+    }
+
+  gfc_extract_int (dim, &dim_index);
+  dim_index -= 1;               /* zero-base index */
+  dim_extent = 0;
+  dim_stride = 0;
+
+  for (i = 0, n = 0; i < array->rank; ++i)
+    {
+      count[i] = 0;
+      tmpstride[i] = (i == 0) ? 1 : tmpstride[i-1] * mpz_get_si (array->shape[i-1]);
+      if (i == dim_index)
+	{
+	  dim_extent = mpz_get_si (array->shape[i]);
+	  dim_stride = tmpstride[i];
+	  continue;
+	}
+
+      extent[n] = mpz_get_si (array->shape[i]);
+      sstride[n] = tmpstride[i];
+      dstride[n] = (n == 0) ? 1 : dstride[n-1] * extent[n-1];
+      n += 1;
+    }
+
+  done = resultsize <= 0;
+  base = arrayvec;
+  dest = resultvec;
+  while (!done)
+    {
+      gfc_expr *ex;
+      ex = gfc_copy_expr (extremum);
+      for (src = base, n = 0; n < dim_extent; src += dim_stride, ++n)
+	{
+	  if (*src && min_max_choose (*src, ex, sign) > 0)
+	    mpz_set_si ((*dest)->value.integer, n + 1);
+	}
+
+      count[0]++;
+      base += sstride[0];
+      dest += dstride[0];
+      gfc_free_expr (ex);
+
+      n = 0;
+      while (!done && count[n] == extent[n])
+	{
+	  count[n] = 0;
+	  base -= sstride[n] * extent[n];
+	  dest -= dstride[n] * extent[n];
+
+	  n++;
+	  if (n < result->rank)
+	    {
+	      /* If the nested loop is unrolled GFC_MAX_DIMENSIONS
+		 times, we'd warn for the last iteration, because the
+		 array index will have already been incremented to the
+		 array sizes, and we can't tell that this must make
+		 the test against result->rank false, because ranks
+		 must not exceed GFC_MAX_DIMENSIONS.  */
+	      GCC_DIAGNOSTIC_PUSH_IGNORED (-Warray-bounds)
+	      count[n]++;
+	      base += sstride[n];
+	      dest += dstride[n];
+	      GCC_DIAGNOSTIC_POP
+	    }
+	  else
+	    done = true;
+       }
+    }
+
+  /* Place updated expression in result constructor.  */
+  result_ctor = gfc_constructor_first (result->value.constructor);
+  for (i = 0; i < resultsize; ++i)
+    {
+      result_ctor->expr = resultvec[i];
+      result_ctor = gfc_constructor_next (result_ctor);
+    }
+
+  free (arrayvec);
+  free (resultvec);
+  free (extremum);
+  return result;
+}
+
+/* Simplify minloc and maxloc for constant arrays.  */
+
+gfc_expr *
+gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
+			gfc_expr *kind, int sign)
+{
+  gfc_expr *result;
+  gfc_expr *extremum;
+  int ikind;
+  int init_val;
+
+  if (!is_constant_array_expr (array)
+      || !gfc_is_constant_expr (dim))
+    return NULL;
+
+  if (mask
+      && !is_constant_array_expr (mask)
+      && mask->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (kind)
+    {
+      if (gfc_extract_int (kind, &ikind, -1))
+	return NULL;
+    }
+  else
+    ikind = gfc_default_integer_kind;
+
+  if (sign < 0)
+    init_val = INT_MAX;
+  else if (sign > 0)
+    init_val = INT_MIN;
+  else
+    gcc_unreachable();
+
+  extremum = gfc_get_constant_expr (array->ts.type, array->ts.kind, &array->where);
+  init_result_expr (extremum, init_val, array);
+
+  if (dim)
+    {
+      result = transformational_result (array, dim, BT_INTEGER,
+					ikind, &array->where);
+      init_result_expr (result, 0, array);
+
+      if (array->rank == 1)
+	return simplify_minmaxloc_to_scalar (result, array, mask, extremum, sign);
+      else
+	return simplify_minmaxloc_to_array (result, array, dim, mask, extremum, sign);
+    }
+  else
+    {
+      result = new_array (BT_INTEGER, ikind, array->rank, &array->where);
+      return simplify_minmaxloc_nodim (result, extremum, array, mask, sign);
+    }
+}
+
+gfc_expr *
+gfc_simplify_minloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *kind,
+		     gfc_expr *back ATTRIBUTE_UNUSED)
+{
+  return gfc_simplify_minmaxloc (array, dim, mask, kind, -1);
+}
+
+gfc_expr *
+gfc_simplify_maxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *kind,
+		     gfc_expr *back ATTRIBUTE_UNUSED)
+{
+  return gfc_simplify_minmaxloc (array, dim, mask, kind, 1);
+}
 
 gfc_expr *
 gfc_simplify_maxexponent (gfc_expr *x)
@@ -4859,13 +5694,19 @@ gfc_expr *
 gfc_simplify_norm2 (gfc_expr *e, gfc_expr *dim)
 {
   gfc_expr *result;
+  bool size_zero;
 
-  if (!is_constant_array_expr (e)
+  size_zero = gfc_is_size_zero_array (e);
+
+  if (!(is_constant_array_expr (e) || size_zero)
       || (dim != NULL && !gfc_is_constant_expr (dim)))
     return NULL;
 
   result = transformational_result (e, dim, e->ts.type, e->ts.kind, &e->where);
   init_result_expr (result, 0, NULL);
+
+  if (size_zero)
+    return result;
 
   if (!dim || e->rank == 1)
     {
@@ -5226,7 +6067,7 @@ gfc_expr *
 gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
 {
   gfc_expr *result;
-  int i, j, len, ncop, nlen;
+  gfc_charlen_t len;
   mpz_t ncopies;
   bool have_length = false;
 
@@ -5246,7 +6087,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   if (e->ts.u.cl && e->ts.u.cl->length
 	&& e->ts.u.cl->length->expr_type == EXPR_CONSTANT)
     {
-      len = mpz_get_si (e->ts.u.cl->length->value.integer);
+      len = gfc_mpz_get_hwi (e->ts.u.cl->length->value.integer);
       have_length = true;
     }
   else if (e->expr_type == EXPR_CONSTANT
@@ -5282,7 +6123,8 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
 	}
       else
 	{
-	  mpz_init_set_si (mlen, len);
+	  mpz_init (mlen);
+	  gfc_mpz_set_hwi (mlen, len);
 	  mpz_tdiv_q (max, gfc_integer_kinds[i].huge, mlen);
 	  mpz_clear (mlen);
 	}
@@ -5306,11 +6148,12 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
+  HOST_WIDE_INT ncop;
   if (len ||
       (e->ts.u.cl->length &&
        mpz_sgn (e->ts.u.cl->length->value.integer) != 0))
     {
-      bool fail = gfc_extract_int (n, &ncop);
+      bool fail = gfc_extract_hwi (n, &ncop);
       gcc_assert (!fail);
     }
   else
@@ -5320,11 +6163,22 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
     return gfc_get_character_expr (e->ts.kind, &e->where, NULL, 0);
 
   len = e->value.character.length;
-  nlen = ncop * len;
+  gfc_charlen_t nlen = ncop * len;
+
+  /* Here's a semi-arbitrary limit. If the string is longer than 1 GB
+     (2**28 elements * 4 bytes (wide chars) per element) defer to
+     runtime instead of consuming (unbounded) memory and CPU at
+     compile time.  */
+  if (nlen > 268435456)
+    {
+      gfc_warning_now (0, "Evaluation of string longer than 2**28 at %L"
+		       " deferred to runtime, expect bugs", &e->where);
+      return NULL;
+    }
 
   result = gfc_get_character_expr (e->ts.kind, &e->where, NULL, nlen);
-  for (i = 0; i < ncop; i++)
-    for (j = 0; j < len; j++)
+  for (size_t i = 0; i < (size_t) ncop; i++)
+    for (size_t j = 0; j < (size_t) len; j++)
       result->value.character.string[j+i*len]= e->value.character.string[j];
 
   result->value.character.string[nlen] = '\0';	/* For debugger */
@@ -6560,19 +7414,20 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   unsigned char *buffer;
   size_t result_length;
 
-
-  if (!gfc_is_constant_expr (source)
-	|| (gfc_init_expr_flag && !gfc_is_constant_expr (mold))
-	|| !gfc_is_constant_expr (size))
+  if (!gfc_is_constant_expr (source) || !gfc_is_constant_expr (size))
     return NULL;
 
-  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size, 
+  if (!gfc_resolve_expr (mold))
+    return NULL;
+  if (gfc_init_expr_flag && !gfc_is_constant_expr (mold))
+    return NULL;
+
+  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size,
 				     &result_size, &result_length))
     return NULL;
 
   /* Calculate the size of the source.  */
-  if (source->expr_type == EXPR_ARRAY
-      && !gfc_array_size (source, &tmp))
+  if (source->expr_type == EXPR_ARRAY && !gfc_array_size (source, &tmp))
     gfc_internal_error ("Failure getting length of a constant array.");
 
   /* Create an empty new expression with the appropriate characteristics.  */
@@ -6580,7 +7435,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 				  &source->where);
   result->ts = mold->ts;
 
-  mold_element = mold->expr_type == EXPR_ARRAY
+  mold_element = (mold->expr_type == EXPR_ARRAY && mold->value.constructor)
 		 ? gfc_constructor_first (mold->value.constructor)->expr
 		 : mold;
 
@@ -7024,8 +7879,8 @@ gfc_simplify_xor (gfc_expr *x, gfc_expr *y)
 gfc_expr *
 gfc_convert_constant (gfc_expr *e, bt type, int kind)
 {
-  gfc_expr *g, *result, *(*f) (gfc_expr *, int);
-  gfc_constructor *c;
+  gfc_expr *result, *(*f) (gfc_expr *, int);
+  gfc_constructor *c, *t;
 
   switch (e->ts.type)
     {
@@ -7126,6 +7981,13 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	}
       break;
 
+    case BT_CHARACTER:
+      if (type == BT_CHARACTER)
+	f = gfc_character2character;
+      else
+	goto oops;
+      break;
+
     default:
     oops:
       gfc_internal_error ("gfc_convert_constant(): Unexpected type");
@@ -7154,26 +8016,25 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	{
 	  gfc_expr *tmp;
 	  if (c->iterator == NULL)
-	    tmp = f (c->expr, kind);
-	  else
 	    {
-	      g = gfc_convert_constant (c->expr, type, kind);
-	      if (g == &gfc_bad_expr)
-	        {
-		  gfc_free_expr (result);
-		  return g;
-		}
-	      tmp = g;
+	      if (c->expr->expr_type == EXPR_ARRAY)
+		tmp = gfc_convert_constant (c->expr, type, kind);
+	      else
+		tmp = f (c->expr, kind);
 	    }
+	  else
+	    tmp = gfc_convert_constant (c->expr, type, kind);
 
-	  if (tmp == NULL)
+	  if (tmp == NULL || tmp == &gfc_bad_expr)
 	    {
 	      gfc_free_expr (result);
 	      return NULL;
 	    }
 
-	  gfc_constructor_append_expr (&result->value.constructor,
-				       tmp, &c->where);
+	  t = gfc_constructor_append_expr (&result->value.constructor,
+					   tmp, &c->where);
+	  if (c->iterator)
+	    t->iterator = gfc_copy_iterator (c->iterator);
 	}
 
       break;

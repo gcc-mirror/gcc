@@ -23,10 +23,10 @@ program streamtest5
   do i=1,1229
     do j=0,9
       read(10) k
-      if (k.ne.j) call abort()
+      if (k.ne.j) STOP 1
     end do
     read(10) tchar
-    if (tchar.ne.lf) call abort()
+    if (tchar.ne.lf) STOP 2
   end do
   close(10,status="delete")
 end program streamtest5

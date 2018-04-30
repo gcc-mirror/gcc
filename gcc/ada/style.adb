@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -166,7 +166,7 @@ package body Style is
                   Error_Msg_Node_1 := Def;
                   Error_Msg_Sloc := Sloc (Def);
                   Error_Msg -- CODEFIX
-                    ("(style) bad casing of & declared#", Sref);
+                    ("(style) bad casing of & declared#", Sref, Ref);
                   return;
 
                --  Else end of identifiers, and they match
@@ -288,6 +288,12 @@ package body Style is
          if Nkind (N) = N_Subprogram_Body then
             Error_Msg_NE -- CODEFIX
               ("(style) missing OVERRIDING indicator in body of&", N, E);
+
+         elsif Nkind (N) = N_Abstract_Subprogram_Declaration then
+            Error_Msg_NE -- CODEFIX
+              ("(style) missing OVERRIDING indicator in declaration of&",
+                Specification (N), E);
+
          else
             Error_Msg_NE -- CODEFIX
               ("(style) missing OVERRIDING indicator in declaration of&",

@@ -30,6 +30,7 @@ parser.add_argument('location', metavar = 'dump_file',
 parser.add_argument('-s', '--sorting', dest = 'sorting',
     choices = ['branches', 'branch-hitrate', 'hitrate', 'coverage', 'name'],
     default = 'branches')
+parser.add_argument('-d', '--def-file', help = 'path to predict.def')
 
 args = parser.parse_args()
 
@@ -56,6 +57,9 @@ for b in sorted(benchmarks):
     sys.stdout.flush()
     p = [os.path.join(os.path.dirname(script_location), 'analyze_brprob.py'),
         temp.name, '--sorting', args.sorting]
+    if args.def_file != None:
+        p += ['-d', args.def_file]
+
     p = subprocess.check_call(p)
     sys.stdout.flush()
 

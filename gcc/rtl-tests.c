@@ -1,5 +1,5 @@
 /* Unit tests for RTL-handling.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "opts.h"
-#include "signop.h"
 #include "hash-set.h"
 #include "fixed-value.h"
 #include "alias.h"
@@ -229,6 +228,62 @@ test_uncond_jump ()
 		      jump_insn);
 }
 
+template<unsigned int N>
+struct const_poly_int_tests
+{
+  static void run ();
+};
+
+template<>
+struct const_poly_int_tests<1>
+{
+  static void run () {}
+};
+
+/* Test various CONST_POLY_INT properties.  */
+
+template<unsigned int N>
+void
+const_poly_int_tests<N>::run ()
+{
+  rtx x1 = gen_int_mode (poly_int64 (1, 1), QImode);
+  rtx x255 = gen_int_mode (poly_int64 (1, 255), QImode);
+
+  /* Test that constants are unique.  */
+  ASSERT_EQ (x1, gen_int_mode (poly_int64 (1, 1), QImode));
+  ASSERT_NE (x1, gen_int_mode (poly_int64 (1, 1), HImode));
+  ASSERT_NE (x1, x255);
+
+  /* Test const_poly_int_value.  */
+  ASSERT_KNOWN_EQ (const_poly_int_value (x1), poly_int64 (1, 1));
+  ASSERT_KNOWN_EQ (const_poly_int_value (x255), poly_int64 (1, -1));
+
+  /* Test rtx_to_poly_int64.  */
+  ASSERT_KNOWN_EQ (rtx_to_poly_int64 (x1), poly_int64 (1, 1));
+  ASSERT_KNOWN_EQ (rtx_to_poly_int64 (x255), poly_int64 (1, -1));
+  ASSERT_MAYBE_NE (rtx_to_poly_int64 (x255), poly_int64 (1, 255));
+
+  /* Test plus_constant of a symbol.  */
+  rtx symbol = gen_rtx_SYMBOL_REF (Pmode, "foo");
+  rtx offset1 = gen_int_mode (poly_int64 (9, 11), Pmode);
+  rtx sum1 = gen_rtx_CONST (Pmode, gen_rtx_PLUS (Pmode, symbol, offset1));
+  ASSERT_RTX_EQ (plus_constant (Pmode, symbol, poly_int64 (9, 11)), sum1);
+
+  /* Test plus_constant of a CONST.  */
+  rtx offset2 = gen_int_mode (poly_int64 (12, 20), Pmode);
+  rtx sum2 = gen_rtx_CONST (Pmode, gen_rtx_PLUS (Pmode, symbol, offset2));
+  ASSERT_RTX_EQ (plus_constant (Pmode, sum1, poly_int64 (3, 9)), sum2);
+
+  /* Test a cancelling plus_constant.  */
+  ASSERT_EQ (plus_constant (Pmode, sum2, poly_int64 (-12, -20)), symbol);
+
+  /* Test plus_constant on integer constants.  */
+  ASSERT_EQ (plus_constant (QImode, const1_rtx, poly_int64 (4, -2)),
+	     gen_int_mode (poly_int64 (5, -2), QImode));
+  ASSERT_EQ (plus_constant (QImode, x1, poly_int64 (4, -2)),
+	     gen_int_mode (poly_int64 (5, -1), QImode));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -239,6 +294,7 @@ rtl_tests_c_tests ()
   test_dumping_rtx_reuse ();
   test_single_set ();
   test_uncond_jump ();
+  const_poly_int_tests<NUM_POLY_INT_COEFFS>::run ();
 
   /* Purge state.  */
   set_first_insn (NULL);

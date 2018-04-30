@@ -29,10 +29,10 @@ foo (char *s, size_t m, const struct tm *tp)
   /* Bad uses of %E and %O.  */
   strftime (s, m, "%EEY", tp); /* { dg-warning "multiple|repeated" "multiple %E/%O" } */
   strftime (s, m, "%EOy", tp); /* { dg-warning "multiple|together" "multiple %E/%O" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } .-1 } */
   strftime (s, m, "%OEy", tp); /* { dg-warning "multiple|together" "multiple %E/%O" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } .-1 } */
   strftime (s, m, "%OOV", tp); /* { dg-warning "multiple|repeated" "multiple %E/%O" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 31 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 32 } */
   strftime (s, m, "%Ea", tp); /* { dg-warning "flag|modifier" "bad %Ea" } */
   strftime (s, m, "%EA", tp); /* { dg-warning "flag|modifier" "bad %EA" } */
   strftime (s, m, "%Eb", tp); /* { dg-warning "flag|modifier" "bad %Eb" } */

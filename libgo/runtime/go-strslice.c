@@ -18,10 +18,13 @@ __go_string_slice (String s, intgo start, intgo end)
   if (start > len || end < start || end > len)
     runtime_panicstring ("string index out of bounds");
   ret.len = end - start;
-  // If the length of the new string is zero, don't adjust the str
-  // field.  This ensures that we don't create a pointer to the next
-  // memory block, and thus keep it live unnecessarily.
-  if (ret.len > 0)
+  // If the length of the new string is zero, the str field doesn't
+  // matter, so just set it to nil.  This avoids the problem of
+  // s.str + start pointing just past the end of the string,
+  // which may keep the next memory block alive unnecessarily.
+  if (ret.len == 0)
+    ret.str = nil;
+  else
     ret.str = s.str + start;
   return ret;
 }

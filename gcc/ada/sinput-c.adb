@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,8 +27,6 @@ with Debug;  use Debug;
 with Opt;    use Opt;
 with Output; use Output;
 with System; use System;
-
-with Ada.Unchecked_Conversion;
 
 pragma Warnings (Off);
 --  This package is used also by gnatcoll

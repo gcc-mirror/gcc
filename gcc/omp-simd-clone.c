@@ -1,6 +1,6 @@
 /* OMP constructs' SIMD clone supporting code.
 
-Copyright (C) 2005-2017 Free Software Foundation, Inc.
+Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,10 +45,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "cfgloop.h"
 #include "symbol-summary.h"
-#include "ipa-prop.h"
+#include "ipa-param-manipulation.h"
 #include "tree-eh.h"
 #include "varasm.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "omp-simd-clone.h"
 
+/* Return the number of elements in vector type VECTYPE, which is associated
+   with a SIMD clone.  At present these always have a constant length.  */
+
+static unsigned HOST_WIDE_INT
+simd_clone_subparts (tree vectype)
+{
+  return TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
+}
 
 /* Allocate a fresh `simd_clone' and return it.  NARGS is the number
    of arguments to reserve space for.  */
@@ -111,19 +122,10 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
   if (n > 0 && args.last () == void_type_node)
     n--;
 
-  /* To distinguish from an OpenMP simd clone, Cilk Plus functions to
-     be cloned have a distinctive artificial label in addition to "omp
-     declare simd".  */
-  bool cilk_clone
-    = (flag_cilkplus
-       && lookup_attribute ("cilk simd function",
-			    DECL_ATTRIBUTES (node->decl)));
-
   /* Allocate one more than needed just in case this is an in-branch
      clone which will require a mask argument.  */
   struct cgraph_simd_clone *clone_info = simd_clone_struct_alloc (n + 1);
   clone_info->nargs = n;
-  clone_info->cilk_elemental = cilk_clone;
 
   if (!clauses)
     goto out;
@@ -417,8 +419,7 @@ simd_clone_mangle (struct cgraph_node *node,
      if the simdlen is assumed to be 8 for the first one, etc.  */
   for (struct cgraph_node *clone = node->simd_clones; clone;
        clone = clone->simdclone->next_clone)
-    if (strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (clone->decl)),
-		str) == 0)
+    if (id_equal (DECL_ASSEMBLER_NAME (clone->decl), str))
       return NULL_TREE;
 
   return get_identifier (str);
@@ -455,6 +456,8 @@ simd_clone_create (struct cgraph_node *old_node)
   if (new_node == NULL)
     return new_node;
 
+  DECL_BUILT_IN_CLASS (new_node->decl) = NOT_BUILT_IN;
+  DECL_FUNCTION_CODE (new_node->decl) = (enum built_in_function) 0;
   TREE_PUBLIC (new_node->decl) = TREE_PUBLIC (old_node->decl);
   DECL_COMDAT (new_node->decl) = DECL_COMDAT (old_node->decl);
   DECL_WEAK (new_node->decl) = DECL_WEAK (old_node->decl);
@@ -496,7 +499,7 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
     veclen = node->simdclone->vecsize_int;
   else
     veclen = node->simdclone->vecsize_float;
-  veclen /= GET_MODE_BITSIZE (TYPE_MODE (t));
+  veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (t));
   if (veclen > node->simdclone->simdlen)
     veclen = node->simdclone->simdlen;
   if (POINTER_TYPE_P (t))
@@ -606,7 +609,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	    veclen = sc->vecsize_int;
 	  else
 	    veclen = sc->vecsize_float;
-	  veclen /= GET_MODE_BITSIZE (TYPE_MODE (parm_type));
+	  veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (parm_type));
 	  if (veclen > sc->simdlen)
 	    veclen = sc->simdlen;
 	  adj.arg_prefix = "simd";
@@ -650,7 +653,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	veclen = sc->vecsize_int;
       else
 	veclen = sc->vecsize_float;
-      veclen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
+      veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
       if (veclen > sc->simdlen)
 	veclen = sc->simdlen;
       if (sc->mask_mode != VOIDmode)
@@ -770,7 +773,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 	    }
 	  continue;
 	}
-      if (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg)) == node->simdclone->simdlen)
+      if (simd_clone_subparts (TREE_TYPE (arg)) == node->simdclone->simdlen)
 	{
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
 	  tree ptr = build_fold_addr_expr (array);
@@ -781,7 +784,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 	}
       else
 	{
-	  unsigned int simdlen = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg));
+	  unsigned int simdlen = simd_clone_subparts (TREE_TYPE (arg));
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
 	  for (k = 0; k < node->simdclone->simdlen; k += simdlen)
 	    {
@@ -792,8 +795,8 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 		  arg = DECL_CHAIN (arg);
 		  j++;
 		}
-	      elemsize
-		= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (arg))));
+	      tree elemtype = TREE_TYPE (TREE_TYPE (arg));
+	      elemsize = GET_MODE_SIZE (SCALAR_TYPE_MODE (elemtype));
 	      tree t = build2 (MEM_REF, TREE_TYPE (arg), ptr,
 			       build_int_cst (ptype, k * elemsize));
 	      t = build2 (MODIFY_EXPR, TREE_TYPE (t), t, arg);
@@ -927,8 +930,8 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 		  iter,
 		  NULL_TREE, NULL_TREE);
       if (adjustments[j].op == IPA_PARM_OP_NONE
-	  && TYPE_VECTOR_SUBPARTS (vectype) < node->simdclone->simdlen)
-	j += node->simdclone->simdlen / TYPE_VECTOR_SUBPARTS (vectype) - 1;
+	  && simd_clone_subparts (vectype) < node->simdclone->simdlen)
+	j += node->simdclone->simdlen / simd_clone_subparts (vectype) - 1;
     }
 
   l = adjustments.length ();
@@ -1132,6 +1135,7 @@ simd_clone_adjust (struct cgraph_node *node)
     {
       basic_block orig_exit = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), 0)->src;
       incr_bb = create_empty_bb (orig_exit);
+      incr_bb->count = profile_count::zero ();
       add_bb_to_loop (incr_bb, body_bb->loop_father);
       /* The succ of orig_exit was EXIT_BLOCK_PTR_FOR_FN (cfun), with an empty
 	 flag.  Set it now to be a FALLTHRU_EDGE.  */
@@ -1142,18 +1146,19 @@ simd_clone_adjust (struct cgraph_node *node)
 	{
 	  edge e = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), i);
 	  redirect_edge_succ (e, incr_bb);
+	  incr_bb->count += e->count ();
 	}
     }
   else if (node->simdclone->inbranch)
     {
       incr_bb = create_empty_bb (entry_bb);
+      incr_bb->count = profile_count::zero ();
       add_bb_to_loop (incr_bb, body_bb->loop_father);
     }
 
   if (incr_bb)
     {
-      edge e = make_edge (incr_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-      e->probability = REG_BR_PROB_BASE;
+      make_single_succ_edge (incr_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
       gsi = gsi_last_bb (incr_bb);
       iter2 = make_ssa_name (iter);
       g = gimple_build_assign (iter2, PLUS_EXPR, iter1,
@@ -1227,7 +1232,7 @@ simd_clone_adjust (struct cgraph_node *node)
 			      mask_array, iter1, NULL, NULL);
 	  g = gimple_build_assign (mask, aref);
 	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
-	  int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (aref)));
+	  int bitsize = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (aref)));
 	  if (!INTEGRAL_TYPE_P (TREE_TYPE (aref)))
 	    {
 	      aref = build1 (VIEW_CONVERT_EXPR,
@@ -1242,8 +1247,12 @@ simd_clone_adjust (struct cgraph_node *node)
       g = gimple_build_cond (EQ_EXPR, mask, build_zero_cst (TREE_TYPE (mask)),
 			     NULL, NULL);
       gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
-      make_edge (loop->header, incr_bb, EDGE_TRUE_VALUE);
-      FALLTHRU_EDGE (loop->header)->flags = EDGE_FALSE_VALUE;
+      edge e = make_edge (loop->header, incr_bb, EDGE_TRUE_VALUE);
+      e->probability = profile_probability::unlikely ().guessed ();
+      incr_bb->count += e->count ();
+      edge fallthru = FALLTHRU_EDGE (loop->header);
+      fallthru->flags = EDGE_FALSE_VALUE;
+      fallthru->probability = profile_probability::likely ().guessed ();
     }
 
   basic_block latch_bb = NULL;
@@ -1265,7 +1274,10 @@ simd_clone_adjust (struct cgraph_node *node)
 
       redirect_edge_succ (FALLTHRU_EDGE (latch_bb), body_bb);
 
-      make_edge (incr_bb, new_exit_bb, EDGE_FALSE_VALUE);
+      edge new_e = make_edge (incr_bb, new_exit_bb, EDGE_FALSE_VALUE);
+
+      /* FIXME: Do we need to distribute probabilities for the conditional? */
+      new_e->probability = profile_probability::guessed_never ();
       /* The successor of incr_bb is already pointing to latch_bb; just
 	 change the flags.
 	 make_edge (incr_bb, latch_bb, EDGE_TRUE_VALUE);  */
@@ -1380,10 +1392,8 @@ simd_clone_adjust (struct cgraph_node *node)
 	      (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)), seq);
 
 	    entry_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-	    int freq = compute_call_stmt_bb_frequency (current_function_decl,
-						       entry_bb);
 	    node->create_edge (cgraph_node::get_create (fn),
-			       call, entry_bb->count, freq);
+			       call, entry_bb->count);
 
 	    imm_use_iterator iter;
 	    use_operand_p use_p;
@@ -1561,7 +1571,7 @@ simd_clone_adjust (struct cgraph_node *node)
 /* If the function in NODE is tagged as an elemental SIMD function,
    create the appropriate SIMD clones.  */
 
-static void
+void
 expand_simd_clones (struct cgraph_node *node)
 {
   tree attr = lookup_attribute ("omp declare simd",

@@ -11,7 +11,7 @@ namespace N
 }
 
 N::A f2;              // { dg-error "1:invalid use of template-name 'N::A' without an argument list" "" { target c++14_down } }
-				// { dg-error "deduction|no match" "" { target c++1z } .-1 }
+				// { dg-error "deduction|no match" "" { target c++17 } .-1 }
 N::INVALID f3;        // { dg-error "4:'INVALID' in namespace 'N' does not name a type" }
 N::C::INVALID f4;     // { dg-error "7:'INVALID' in 'struct N::C' does not name a type" }
 N::K f6;              // { dg-error "4:'K' in namespace 'N' does not name a type" }

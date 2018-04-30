@@ -1,5 +1,5 @@
 /* { dg-require-effective-target ptr32plus } */
-/* { dg-skip-if "The array is too big" { "avr-*-*" "pdp11-*-*" } { "*" } { "" } } */ 
+/* { dg-skip-if "The array is too big" { "avr-*-*" "pdp11-*-*" } } */ 
 char paths[1024];
 static void x264_slicetype_path(char (*best_paths)[250], int n, int length)
 {

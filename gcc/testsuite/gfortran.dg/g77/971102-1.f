@@ -7,6 +7,6 @@ c { dg-do run }
        do i=3,i
          j = j+i
        end do
-       if (i.ne.7) call abort()
+       if (i.ne.7) STOP 1
        print *, i,j
        end

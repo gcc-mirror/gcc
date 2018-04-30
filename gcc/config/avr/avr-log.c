@@ -1,5 +1,5 @@
 /* Subroutines for log output for Atmel AVR back end.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -84,7 +86,7 @@ avr_vdump (FILE *stream, const char *caller, ...)
 {
   va_list ap;
         
-  if (NULL == stream && dump_file)
+  if (stream == NULL && dump_file)
     stream = dump_file;
 
   va_start (ap, caller);
@@ -146,7 +148,13 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
               }
 
             case 'T':
-              print_node_brief (file, "", va_arg (ap, tree), 3);
+              {
+                tree t = va_arg (ap, tree);
+                if (NULL_TREE == t)
+                  fprintf (file, "<NULL-TREE>");
+                else
+                  print_node_brief (file, "", t, 3);
+              }
               break;
 
             case 'd':
@@ -286,15 +294,15 @@ avr_log_set_avr_log (void)
       str[0] = ',';
       strcat (stpcpy (str+1, avr_log_details), ",");
 
-      all |= NULL != strstr (str, ",all,");
-      info = NULL != strstr (str, ",?,");
+      all |= strstr (str, ",all,") != NULL;
+      info = strstr (str, ",?,") != NULL;
 
       if (info)
         fprintf (stderr, "\n-mlog=");
 
 #define SET_DUMP_DETAIL(S)                                       \
       do {                                                       \
-        avr_log.S = (all || NULL != strstr (str, "," #S ","));   \
+	avr_log.S = (all || strstr (str, "," #S ",") != NULL);   \
         if (info)                                                \
           fprintf (stderr, #S ",");                              \
       } while (0)
@@ -302,6 +310,7 @@ avr_log_set_avr_log (void)
       SET_DUMP_DETAIL (address_cost);
       SET_DUMP_DETAIL (builtin);
       SET_DUMP_DETAIL (constraints);
+      SET_DUMP_DETAIL (insn_addresses);
       SET_DUMP_DETAIL (legitimate_address_p);
       SET_DUMP_DETAIL (legitimize_address);
       SET_DUMP_DETAIL (legitimize_reload_address);

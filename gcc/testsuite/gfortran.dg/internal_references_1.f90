@@ -11,7 +11,7 @@ module m
   implicit none
 contains
 
-  subroutine p (i)   ! { dg-error "is already defined" }
+  subroutine p (i)   ! { dg-error "(1)" }
     integer :: i
   end subroutine
 
@@ -22,14 +22,15 @@ end module
 !
 ! PR25124 - would happily ignore the declaration of foo in the main program.
 program test
-real :: foo, x      ! { dg-error "explicit interface and must not have attributes declared" }
+real :: foo, x
 x = bar ()          ! This is OK because it is a regular reference.
 x = foo ()
 contains
-    function foo () ! { dg-error "explicit interface and must not have attributes declared" }
+    function foo () ! { dg-error "explicit interface from a previous" }
       foo = 1.0
     end function foo
     function bar ()
       bar = 1.0
     end function bar
 end program test
+

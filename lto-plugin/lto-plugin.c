@@ -1,5 +1,5 @@
 /* LTO plugin for gold and/or GNU ld.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Rafael Avila de Espindola (espindola@google.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -975,17 +975,16 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 
   if (file->offset != 0)
     {
-      char *objname;
       /* We pass the offset of the actual file, not the archive header.
          Can't use PRIx64, because that's C99, so we have to print the
-	 64-bit hex int as two 32-bit ones. */
-      int lo, hi, t;
+	 64-bit hex int as two 32-bit ones.  Use xasprintf instead of
+	 asprintf because asprintf doesn't work as expected on some older
+	 mingw32 hosts.  */
+      int lo, hi;
       lo = file->offset & 0xffffffff;
       hi = ((int64_t)file->offset >> 32) & 0xffffffff;
-      t = hi ? asprintf (&objname, "%s@0x%x%08x", file->name, lo, hi)
-	     : asprintf (&objname, "%s@0x%x", file->name, lo);
-      check (t >= 0, LDPL_FATAL, "asprintf failed");
-      lto_file.name = objname;
+      lto_file.name = hi ? xasprintf ("%s@0x%x%08x", file->name, hi, lo)
+      			 : xasprintf ("%s@0x%x", file->name, lo);
     }
   else
     {

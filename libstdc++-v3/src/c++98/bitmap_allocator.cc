@@ -1,6 +1,6 @@
 // Bitmap Allocator. Out of line function definitions. -*- C++ -*-
 
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,9 +26,10 @@
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template class __mini_vector<
       std::pair<bitmap_allocator<char>::_Alloc_block*,
 		bitmap_allocator<char>::_Alloc_block*> >;
@@ -41,10 +42,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 
     template size_t** __lower_bound(size_t**, size_t**, size_t const&,
 				    free_list::_LT_pointer_compare);
-  _GLIBCXX_END_NAMESPACE_VERSION
   }
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   size_t*
   free_list::

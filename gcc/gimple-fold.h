@@ -1,6 +1,6 @@
 /* Gimple folding definitions.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 extern tree create_tmp_reg_or_ssa_name (tree, gimple *stmt = NULL);
 extern tree canonicalize_constructor_val (tree, tree);
 extern tree get_symbol_constant_value (tree);
-extern bool get_range_strlen (tree, tree[2]);
+extern bool get_range_strlen (tree, tree[2], bool = false);
 extern tree get_maxval_strlen (tree, int);
 extern void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
 extern bool fold_stmt (gimple_stmt_iterator *);
@@ -44,8 +44,7 @@ extern tree follow_single_use_edges (tree);
 extern tree gimple_fold_stmt_to_constant_1 (gimple *, tree (*) (tree),
 					    tree (*) (tree) = no_follow_ssa_edges);
 extern tree gimple_fold_stmt_to_constant (gimple *, tree (*) (tree));
-extern tree fold_ctor_reference (tree, tree, unsigned HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT, tree);
+extern tree fold_ctor_reference (tree, tree, poly_uint64, poly_uint64, tree);
 extern tree fold_const_aggregate_ref_1 (tree, tree (*) (tree));
 extern tree fold_const_aggregate_ref (tree);
 extern tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree,
@@ -58,6 +57,7 @@ extern bool gimple_fold_builtin_sprintf (gimple_stmt_iterator *);
 extern bool gimple_fold_builtin_snprintf (gimple_stmt_iterator *);
 extern bool arith_code_with_undefined_signed_overflow (tree_code);
 extern gimple_seq rewrite_to_defined_overflow (gimple *);
+extern void replace_call_with_value (gimple_stmt_iterator *, tree);
 
 /* gimple_build, functionally matching fold_buildN, outputs stmts
    int the provided sequence, matching and simplifying them on-the-fly.
@@ -124,6 +124,23 @@ inline tree
 gimple_convert_to_ptrofftype (gimple_seq *seq, tree op)
 {
   return gimple_convert_to_ptrofftype (seq, UNKNOWN_LOCATION, op);
+}
+
+extern tree gimple_build_vector_from_val (gimple_seq *, location_t, tree,
+					  tree);
+inline tree
+gimple_build_vector_from_val (gimple_seq *seq, tree type, tree op)
+{
+  return gimple_build_vector_from_val (seq, UNKNOWN_LOCATION, type, op);
+}
+
+class tree_vector_builder;
+extern tree gimple_build_vector (gimple_seq *, location_t,
+				 tree_vector_builder *);
+inline tree
+gimple_build_vector (gimple_seq *seq, tree_vector_builder *builder)
+{
+  return gimple_build_vector (seq, UNKNOWN_LOCATION, builder);
 }
 
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);

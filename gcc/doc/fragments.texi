@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -160,10 +160,12 @@ A reuse rule is comprised of two parts connected by equality sign.  The left
 part is the option set used to build multilib and the right part is the option
 set that will reuse this multilib.  Both parts should only use options
 specified in @code{MULTILIB_OPTIONS} and the equality signs found in options
-name should be replaced with periods.  The order of options in the left part
-matters and should be same with those specified in @code{MULTILIB_REQUIRED} or
-aligned with the order in @code{MULTILIB_OPTIONS}.  There is no such limitation
-for options in the right part as we don't build multilib from them.
+name should be replaced with periods.  An explicit period in the rule can be
+escaped by preceding it with a backslash.  The order of options in the left
+part matters and should be same with those specified in
+@code{MULTILIB_REQUIRED} or aligned with the order in @code{MULTILIB_OPTIONS}.
+There is no such limitation for options in the right part as we don't build
+multilib from them.
 
 @code{MULTILIB_REUSE} is different from @code{MULTILIB_MATCHES} in that it
 sets up relations between two option sets rather than two options.  Here is an

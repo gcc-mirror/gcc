@@ -1,6 +1,6 @@
 // C++11 <type_traits> -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,12 +71,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr _Tp                  value = __v;
       typedef _Tp                           value_type;
       typedef integral_constant<_Tp, __v>   type;
-      constexpr operator value_type() const { return value; }
+      constexpr operator value_type() const noexcept { return value; }
 #if __cplusplus > 201103L
 
 #define __cpp_lib_integral_constant_callable 201304
 
-      constexpr value_type operator()() const { return value; }
+      constexpr value_type operator()() const noexcept { return value; }
 #endif
     };
 
@@ -151,10 +151,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Pp>
     struct __not_
-    : public integral_constant<bool, !_Pp::value>
+    : public __bool_constant<!bool(_Pp::value)>
     { };
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 
 #define __cpp_lib_logical_traits 201510
 
@@ -174,18 +174,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   template<typename... _Bn>
-    inline constexpr bool conjunction_v
-    = conjunction<_Bn...>::value;
+    inline constexpr bool conjunction_v = conjunction<_Bn...>::value;
 
   template<typename... _Bn>
-    inline constexpr bool disjunction_v
-    = disjunction<_Bn...>::value;
+    inline constexpr bool disjunction_v = disjunction<_Bn...>::value;
 
   template<typename _Pp>
-    inline constexpr bool negation_v
-    = negation<_Pp>::value;
+    inline constexpr bool negation_v = negation<_Pp>::value;
 
-#endif
+#endif // C++17
 
   // For several sfinae-friendly trait implementations we transport both the
   // result information (as the member type) and the failure information (no
@@ -754,15 +751,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Destructible and constructible type properties.
 
-  template<typename>
-    struct add_rvalue_reference;
-
   /**
    *  @brief  Utility to simplify expressions used in unevaluated operands
    *  @ingroup utilities
    */
+
+  template<typename _Tp, typename _Up = _Tp&&>
+    _Up
+    __declval(int);
+
   template<typename _Tp>
-    typename add_rvalue_reference<_Tp>::type declval() noexcept;
+    _Tp
+    __declval(long);
+
+  template<typename _Tp>
+    auto declval() noexcept -> decltype(__declval<_Tp>(0));
 
   template<typename, unsigned = 0>
     struct extent;
@@ -2079,16 +2082,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __declval_protector
     {
       static const bool __stop = false;
-      static typename add_rvalue_reference<_Tp>::type __delegate();
     };
 
   template<typename _Tp>
-    inline typename add_rvalue_reference<_Tp>::type
-    declval() noexcept
+    auto declval() noexcept -> decltype(__declval<_Tp>(0))
     {
       static_assert(__declval_protector<_Tp>::__stop,
 		    "declval() must not be used!");
-      return __declval_protector<_Tp>::__delegate();
+      return __declval<_Tp>(0);
     }
 
   /// result_of
@@ -2655,7 +2656,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void operator=(__nonesuch const&) = delete;
   };
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_is_invocable 201703
 
   /// std::invoke_result
@@ -2687,10 +2688,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              __call_is_nothrow_<_Fn, _ArgTypes...>>::type
     { };
 
+  template<typename _Result, typename _Ret, typename = void>
+    struct __is_nt_invocable_impl : false_type { };
+
+  template<typename _Result, typename _Ret>
+    struct __is_nt_invocable_impl<_Result, _Ret,
+				  __void_t<typename _Result::type>>
+    : __or_<is_void<_Ret>,
+	    __and_<is_convertible<typename _Result::type, _Ret>,
+		   is_nothrow_constructible<_Ret, typename _Result::type>>>
+    { };
+
   /// std::is_nothrow_invocable_r
   template<typename _Ret, typename _Fn, typename... _ArgTypes>
     struct is_nothrow_invocable_r
-    : __and_<__is_invocable_impl<__invoke_result<_Fn, _ArgTypes...>, _Ret>,
+    : __and_<__is_nt_invocable_impl<__invoke_result<_Fn, _ArgTypes...>, _Ret>,
              __call_is_nothrow_<_Fn, _ArgTypes...>>::type
     { };
 
@@ -2714,7 +2726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       = is_nothrow_invocable_r<_Fn, _Args...>::value;
 #endif // C++17
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_type_trait_variable_templates 201510L
 template <typename _Tp>
   inline constexpr bool is_void_v = is_void<_Tp>::value;
@@ -2873,14 +2885,16 @@ template <typename _Base, typename _Derived>
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 
-#ifdef __has_builtin
-# if !__has_builtin(__has_unique_object_representations)
-// Try not to break non-GNU compilers that don't support the built-in:
-#  define _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP 1
+#if __GNUC__ >= 7
+# define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
+#elif defined(__is_identifier)
+// For non-GNU compilers:
+# if ! __is_identifier(__has_unique_object_representations)
+#  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
 # endif
 #endif
 
-#ifndef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
+#ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
   /// has_unique_object_representations
   template<typename _Tp>
@@ -2889,14 +2903,18 @@ template <typename _From, typename _To>
       remove_cv_t<remove_all_extents_t<_Tp>>
       )>
     { };
+
+  template<typename _Tp>
+    inline constexpr bool has_unique_object_representations_v
+      = has_unique_object_representations<_Tp>::value;
 #endif
-#undef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
+#undef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 
 #if __GNUC__ >= 7
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-#elif defined __has_builtin
+#elif defined(__is_identifier)
 // For non-GNU compilers:
-# if __has_builtin(__is_aggregate)
+# if ! __is_identifier(__is_aggregate)
 #  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # endif
 #endif
@@ -2915,6 +2933,16 @@ template <typename _From, typename _To>
 #undef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 
 #endif // C++17
+
+#if __cplusplus > 201703L
+  /// Byte order
+  enum class endian
+  {
+    little = __ORDER_LITTLE_ENDIAN__,
+    big    = __ORDER_BIG_ENDIAN__,
+    native = __BYTE_ORDER__
+  };
+#endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

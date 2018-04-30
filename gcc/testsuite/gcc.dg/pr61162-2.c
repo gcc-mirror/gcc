@@ -8,7 +8,7 @@ struct s { int a; };
 enum e
 fn1 (void)
 {
-  return 0; /* { dg-warning "10:enum conversion in return" } */
+  return 0; /* { dg-warning "10:enum conversion from 'int' to 'enum e' in return" } */
 }
 
 int
@@ -26,19 +26,19 @@ fn3 (void)
 int
 fn4 (int *a)
 {
-  return a; /* { dg-warning "10:return makes integer from pointer without a cast" } */
+  return a; /* { dg-warning "10:returning 'int \\*' from a function with return type 'int' makes integer from pointer without a cast" } */
 }
 
 int *
 fn5 (int a)
 {
-  return a; /* { dg-warning "10:return makes pointer from integer without a cast" } */
+  return a; /* { dg-warning "10:returning 'int' from a function with return type 'int \\*' makes pointer from integer without a cast" } */
 }
 
 unsigned int *
 fn6 (int *i)
 {
-  return i; /* { dg-warning "10:pointer targets in return differ" } */
+  return i; /* { dg-warning "10:pointer targets in returning 'int \\*' from a function with return type 'unsigned int \\*' differ" } */
 }
 
 void *

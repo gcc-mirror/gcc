@@ -56,4 +56,3 @@ program main
      call sub(undeclared)
   end do
 end program main
-! { dg-final { cleanup-modules "foo" } }

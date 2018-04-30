@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Zack Weinberg <zack@codesourcery.com>
 
 This file is part of GCC.
@@ -70,7 +70,7 @@ __gthread_once (__gthread_once_t *guard, void (*func)(void))
       /* This can happen on powerpc, which is using all 32 bits
 	 of the gthread_once_t structure.  */
       if (guard->done)
-	return;
+	return 0;
 #endif
       taskDelay (1);
     }

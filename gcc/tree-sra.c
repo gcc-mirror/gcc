@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -97,6 +97,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "symbol-summary.h"
+#include "ipa-param-manipulation.h"
 #include "ipa-prop.h"
 #include "params.h"
 #include "dbgcnt.h"
@@ -470,7 +471,7 @@ dump_access_tree_1 (FILE *f, struct access *access, int level)
       int i;
 
       for (i = 0; i < level; i++)
-	fputs ("* ", dump_file);
+	fputs ("* ", f);
 
       dump_access (f, access, true);
 
@@ -627,7 +628,7 @@ relink_to_new_repr (struct access *new_racc, struct access *old_racc)
 static void
 add_access_to_work_queue (struct access *access)
 {
-  if (!access->grp_queued)
+  if (access->first_link && !access->grp_queued)
     {
       gcc_assert (!access->next_queued);
       access->next_queued = work_queue_head;
@@ -694,21 +695,9 @@ static bool constant_decl_p (tree decl)
   return VAR_P (decl) && DECL_IN_CONSTANT_POOL (decl);
 }
 
-
-/* Mark LHS of assign links out of ACCESS and its children as written to.  */
-
-static void
-process_subtree_disqualification (struct access *access)
-{
-  struct access *child;
-  for (struct assign_link *link = access->first_link; link; link = link->next)
-    link->lacc->grp_write = true;
-  for (child = access->first_child; child; child = child->next_sibling)
-    process_subtree_disqualification (child);
-}
-
 /* Remove DECL from candidates for SRA and write REASON to the dump file if
    there is one.  */
+
 static void
 disqualify_candidate (tree decl, const char *reason)
 {
@@ -722,13 +711,6 @@ disqualify_candidate (tree decl, const char *reason)
       fprintf (dump_file, "! Disqualifying ");
       print_generic_expr (dump_file, decl);
       fprintf (dump_file, " - %s\n", reason);
-    }
-
-  struct access *access = get_first_repr_for_decl (decl);
-  while (access)
-    {
-      process_subtree_disqualification (access);
-      access = access->next_grp;
     }
 }
 
@@ -884,11 +866,20 @@ static struct access *
 create_access (tree expr, gimple *stmt, bool write)
 {
   struct access *access;
+  poly_int64 poffset, psize, pmax_size;
   HOST_WIDE_INT offset, size, max_size;
   tree base = expr;
   bool reverse, ptr, unscalarizable_region = false;
 
-  base = get_ref_base_and_extent (expr, &offset, &size, &max_size, &reverse);
+  base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
+				  &reverse);
+  if (!poffset.is_constant (&offset)
+      || !psize.is_constant (&size)
+      || !pmax_size.is_constant (&max_size))
+    {
+      disqualify_candidate (base, "Encountered a polynomial-sized access.");
+      return NULL;
+    }
 
   if (sra_mode == SRA_MODE_EARLY_IPA
       && TREE_CODE (base) == MEM_REF)
@@ -1159,6 +1150,33 @@ contains_view_convert_expr_p (const_tree ref)
   return false;
 }
 
+/* Return true if REF contains a VIEW_CONVERT_EXPR or a MEM_REF that performs
+   type conversion or a COMPONENT_REF with a bit-field field declaration.  */
+
+static bool
+contains_vce_or_bfcref_p (const_tree ref)
+{
+  while (handled_component_p (ref))
+    {
+      if (TREE_CODE (ref) == VIEW_CONVERT_EXPR
+	  || (TREE_CODE (ref) == COMPONENT_REF
+	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1))))
+	return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+
+  if (TREE_CODE (ref) != MEM_REF
+      || TREE_CODE (TREE_OPERAND (ref, 0)) != ADDR_EXPR)
+    return false;
+
+  tree mem = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (ref))
+      != TYPE_MAIN_VARIANT (TREE_TYPE (mem)))
+    return true;
+
+  return false;
+}
+
 /* Search the given tree for a declaration by skipping handled components and
    exclude it from the candidates.  */
 
@@ -1194,11 +1212,17 @@ build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
   else
     partial_ref = false;
 
+  if (storage_order_barrier_p (expr))
+    {
+      disqualify_base_of_expr (expr, "storage order barrier.");
+      return NULL;
+    }
+
   /* We need to dive through V_C_Es in order to get the size of its parameter
      and not the result type.  Ada produces such statements.  We are also
      capable of handling the topmost V_C_E but not any of those buried in other
      handled components.  */
-  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR && !storage_order_barrier_p (expr))
+  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
   if (contains_view_convert_expr_p (expr))
@@ -1351,7 +1375,14 @@ build_accesses_from_assign (gimple *stmt)
       racc->grp_assignment_read = 1;
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
-	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
+	{
+	  if (contains_vce_or_bfcref_p (rhs))
+	    bitmap_set_bit (cannot_scalarize_away_bitmap,
+			    DECL_UID (racc->base));
+	  else
+	    bitmap_set_bit (should_scalarize_away_bitmap,
+			    DECL_UID (racc->base));
+	}
       if (storage_order_barrier_p (lhs))
 	racc->grp_unscalarizable_region = 1;
     }
@@ -1372,6 +1403,8 @@ build_accesses_from_assign (gimple *stmt)
       link->lacc = lacc;
       link->racc = racc;
       add_link_to_rhs (racc, link);
+      add_access_to_work_queue (racc);
+
       /* Let's delay marking the areas as written until propagation of accesses
 	 across link, unless the nature of rhs tells us that its data comes
 	 from elsewhere.  */
@@ -1553,19 +1586,20 @@ compare_access_positions (const void *a, const void *b)
 	       && TREE_CODE (f2->type) != COMPLEX_TYPE
 	       && TREE_CODE (f2->type) != VECTOR_TYPE)
 	return -1;
+      /* Put any integral type before any non-integral type.  When splicing, we
+	 make sure that those with insufficient precision and occupying the
+	 same space are not scalarized.  */
+      else if (INTEGRAL_TYPE_P (f1->type)
+	       && !INTEGRAL_TYPE_P (f2->type))
+	return -1;
+      else if (!INTEGRAL_TYPE_P (f1->type)
+	       && INTEGRAL_TYPE_P (f2->type))
+	return 1;
       /* Put the integral type with the bigger precision first.  */
       else if (INTEGRAL_TYPE_P (f1->type)
-	       && INTEGRAL_TYPE_P (f2->type))
+	       && INTEGRAL_TYPE_P (f2->type)
+	       && (TYPE_PRECISION (f2->type) != TYPE_PRECISION (f1->type)))
 	return TYPE_PRECISION (f2->type) - TYPE_PRECISION (f1->type);
-      /* Put any integral type with non-full precision last.  */
-      else if (INTEGRAL_TYPE_P (f1->type)
-	       && (TREE_INT_CST_LOW (TYPE_SIZE (f1->type))
-		   != TYPE_PRECISION (f1->type)))
-	return 1;
-      else if (INTEGRAL_TYPE_P (f2->type)
-	       && (TREE_INT_CST_LOW (TYPE_SIZE (f2->type))
-		   != TYPE_PRECISION (f2->type)))
-	return -1;
       /* Stabilize the sort.  */
       return TYPE_UID (f1->type) - TYPE_UID (f2->type);
     }
@@ -1672,14 +1706,14 @@ make_fancy_name (tree expr)
    of handling bitfields.  */
 
 tree
-build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
+build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
 		      bool reverse, tree exp_type, gimple_stmt_iterator *gsi,
 		      bool insert_after)
 {
   tree prev_base = base;
   tree off;
   tree mem_ref;
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   unsigned HOST_WIDE_INT misalign;
   unsigned int align;
 
@@ -1690,7 +1724,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 				     TYPE_QUALS (exp_type)
 				     | ENCODE_QUAL_ADDR_SPACE (as));
 
-  gcc_checking_assert (offset % BITS_PER_UNIT == 0);
+  poly_int64 byte_offset = exact_div (offset, BITS_PER_UNIT);
   get_object_alignment_1 (base, &align, &misalign);
   base = get_addr_base_and_unit_offset (base, &base_offset);
 
@@ -1712,27 +1746,26 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
       else
 	gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 
-      off = build_int_cst (reference_alias_ptr_type (prev_base),
-			   offset / BITS_PER_UNIT);
+      off = build_int_cst (reference_alias_ptr_type (prev_base), byte_offset);
       base = tmp;
     }
   else if (TREE_CODE (base) == MEM_REF)
     {
       off = build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)),
-			   base_offset + offset / BITS_PER_UNIT);
+			   base_offset + byte_offset);
       off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1), off);
       base = unshare_expr (TREE_OPERAND (base, 0));
     }
   else
     {
       off = build_int_cst (reference_alias_ptr_type (prev_base),
-			   base_offset + offset / BITS_PER_UNIT);
+			   base_offset + byte_offset);
       base = build_fold_addr_expr (unshare_expr (base));
     }
 
-  misalign = (misalign + offset) & (align - 1);
-  if (misalign != 0)
-    align = least_bit_hwi (misalign);
+  unsigned int align_bound = known_alignment (misalign + offset);
+  if (align_bound != 0)
+    align = MIN (align, align_bound);
   if (align != TYPE_ALIGN (exp_type))
     exp_type = build_aligned_type (exp_type, align);
 
@@ -1787,7 +1820,7 @@ static tree
 build_debug_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 			   struct access *model)
 {
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   tree off;
 
   if (TREE_CODE (model->expr) == COMPONENT_REF
@@ -2066,6 +2099,11 @@ sort_and_splice_var_accesses (tree var)
       bool grp_partial_lhs = access->grp_partial_lhs;
       bool first_scalar = is_gimple_reg_type (access->type);
       bool unscalarizable_region = access->grp_unscalarizable_region;
+      bool bf_non_full_precision
+	= (INTEGRAL_TYPE_P (access->type)
+	   && TYPE_PRECISION (access->type) != access->size
+	   && TREE_CODE (access->expr) == COMPONENT_REF
+	   && DECL_BIT_FIELD (TREE_OPERAND (access->expr, 1)));
 
       if (first || access->offset >= high)
 	{
@@ -2113,6 +2151,22 @@ sort_and_splice_var_accesses (tree var)
 	     this combination of size and offset, the comparison function
 	     should have put the scalars first.  */
 	  gcc_assert (first_scalar || !is_gimple_reg_type (ac2->type));
+	  /* It also prefers integral types to non-integral.  However, when the
+	     precision of the selected type does not span the entire area and
+	     should also be used for a non-integer (i.e. float), we must not
+	     let that happen.  Normally analyze_access_subtree expands the type
+	     to cover the entire area but for bit-fields it doesn't.  */
+	  if (bf_non_full_precision && !INTEGRAL_TYPE_P (ac2->type))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Cannot scalarize the following access "
+			   "because insufficient precision integer type was "
+			   "selected.\n  ");
+		  dump_access (dump_file, access, false);
+		}
+	      unscalarizable_region = true;
+	    }
 	  ac2->group_representative = access;
 	  j++;
 	}
@@ -2131,8 +2185,6 @@ sort_and_splice_var_accesses (tree var)
       access->grp_total_scalarization = total_scalarization;
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
-      if (access->first_link)
-	add_access_to_work_queue (access);
 
       *prev_acc_ptr = access;
       prev_acc_ptr = &access->next_grp;
@@ -2468,7 +2520,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  gcc_checking_assert (!root->grp_scalar_read
 			       && !root->grp_assignment_read);
 	  sth_created = true;
-	  if (MAY_HAVE_DEBUG_STMTS)
+	  if (MAY_HAVE_DEBUG_BIND_STMTS)
 	    {
 	      root->grp_to_be_debug_replaced = 1;
 	      root->replacement_decl = create_access_replacement (root);
@@ -2578,9 +2630,28 @@ create_artificial_child_access (struct access *parent, struct access *model,
 }
 
 
-/* Propagate all subaccesses of RACC across an assignment link to LACC. Return
-   true if any new subaccess was created.  Additionally, if RACC is a scalar
-   access but LACC is not, change the type of the latter, if possible.  */
+/* Beginning with ACCESS, traverse its whole access subtree and mark all
+   sub-trees as written to.  If any of them has not been marked so previously
+   and has assignment links leading from it, re-enqueue it.  */
+
+static void
+subtree_mark_written_and_enqueue (struct access *access)
+{
+  if (access->grp_write)
+    return;
+  access->grp_write = true;
+  add_access_to_work_queue (access);
+
+  struct access *child;
+  for (child = access->first_child; child; child = child->next_sibling)
+    subtree_mark_written_and_enqueue (child);
+}
+
+/* Propagate subaccesses and grp_write flags of RACC across an assignment link
+   to LACC.  Enqueue sub-accesses as necessary so that the write flag is
+   propagated transitively.  Return true if anything changed.  Additionally, if
+   RACC is a scalar access but LACC is not, change the type of the latter, if
+   possible.  */
 
 static bool
 propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
@@ -2596,7 +2667,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       gcc_checking_assert (!comes_initialized_p (racc->base));
       if (racc->grp_write)
 	{
-	  lacc->grp_write = true;
+	  subtree_mark_written_and_enqueue (lacc);
 	  ret = true;
 	}
     }
@@ -2605,13 +2676,21 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       || lacc->grp_unscalarizable_region
       || racc->grp_unscalarizable_region)
     {
-      ret |= !lacc->grp_write;
-      lacc->grp_write = true;
+      if (!lacc->grp_write)
+	{
+	  ret = true;
+	  subtree_mark_written_and_enqueue (lacc);
+	}
       return ret;
     }
 
   if (is_gimple_reg_type (racc->type))
     {
+      if (!lacc->grp_write)
+	{
+	  ret = true;
+	  subtree_mark_written_and_enqueue (lacc);
+	}
       if (!lacc->first_child && !racc->first_child)
 	{
 	  tree t = lacc->base;
@@ -2636,21 +2715,15 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       struct access *new_acc = NULL;
       HOST_WIDE_INT norm_offset = rchild->offset + norm_delta;
 
-      if (rchild->grp_unscalarizable_region)
-	{
-	  lacc->grp_write = true;
-	  continue;
-	}
-
       if (child_would_conflict_in_lacc (lacc, norm_offset, rchild->size,
 					&new_acc))
 	{
 	  if (new_acc)
 	    {
-	      if (!new_acc->grp_write
-		  && (lacc->grp_write || rchild->grp_write))
+	      if (!new_acc->grp_write && rchild->grp_write)
 		{
-		  new_acc ->grp_write = true;
+		  gcc_assert (!lacc->grp_write);
+		  subtree_mark_written_and_enqueue (new_acc);
 		  ret = true;
 		}
 
@@ -2660,7 +2733,23 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 		ret |= propagate_subaccesses_across_link (new_acc, rchild);
 	    }
 	  else
-	    lacc->grp_write = true;
+	    {
+	      if (!lacc->grp_write)
+		{
+		  ret = true;
+		  subtree_mark_written_and_enqueue (lacc);
+		}
+	    }
+	  continue;
+	}
+
+      if (rchild->grp_unscalarizable_region)
+	{
+	  if (rchild->grp_write && !lacc->grp_write)
+	    {
+	      ret = true;
+	      subtree_mark_written_and_enqueue (lacc);
+	    }
 	  continue;
 	}
 
@@ -2668,12 +2757,12 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
 						lacc->grp_write
 						|| rchild->grp_write);
-      if (new_acc)
-	{
-	  ret = true;
-	  if (racc->first_child)
-	    propagate_subaccesses_across_link (new_acc, rchild);
-	}
+      gcc_checking_assert (new_acc);
+      if (racc->first_child)
+	propagate_subaccesses_across_link (new_acc, rchild);
+
+      add_access_to_work_queue (lacc);
+      ret = true;
     }
 
   return ret;
@@ -2689,6 +2778,8 @@ propagate_all_subaccesses (void)
       struct access *racc = pop_access_from_work_queue ();
       struct assign_link *link;
 
+      if (racc->group_representative)
+	racc= racc->group_representative;
       gcc_assert (racc->first_link);
 
       for (link = racc->first_link; link; link = link->next)
@@ -2698,14 +2789,23 @@ propagate_all_subaccesses (void)
 	  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (lacc->base)))
 	    continue;
 	  lacc = lacc->group_representative;
-	  if (propagate_subaccesses_across_link (lacc, racc))
+
+	  bool reque_parents = false;
+	  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (racc->base)))
+	    {
+	      if (!lacc->grp_write)
+		{
+		  subtree_mark_written_and_enqueue (lacc);
+		  reque_parents = true;
+		}
+	    }
+	  else if (propagate_subaccesses_across_link (lacc, racc))
+	    reque_parents = true;
+
+	  if (reque_parents)
 	    do
 	      {
-		if (lacc->first_link)
-		  {
-		    add_access_to_work_queue (lacc);
-		    break;
-		  }
+		add_access_to_work_queue (lacc);
 		lacc = lacc->parent;
 	      }
 	    while (lacc);
@@ -2991,7 +3091,8 @@ clobber_subtree (struct access *access, gimple_stmt_iterator *gsi,
 static struct access *
 get_access_for_expr (tree expr)
 {
-  HOST_WIDE_INT offset, size, max_size;
+  poly_int64 poffset, psize, pmax_size;
+  HOST_WIDE_INT offset, max_size;
   tree base;
   bool reverse;
 
@@ -3001,8 +3102,12 @@ get_access_for_expr (tree expr)
   if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
-  base = get_ref_base_and_extent (expr, &offset, &size, &max_size, &reverse);
-  if (max_size == -1 || !DECL_P (base))
+  base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
+				  &reverse);
+  if (!known_size_p (pmax_size)
+      || !pmax_size.is_constant (&max_size)
+      || !poffset.is_constant (&offset)
+      || !DECL_P (base))
     return NULL;
 
   if (!bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
@@ -3356,24 +3461,6 @@ get_repl_default_def_ssa_name (struct access *racc)
   if (!racc->replacement_decl)
     racc->replacement_decl = create_access_replacement (racc);
   return get_or_create_ssa_default_def (cfun, racc->replacement_decl);
-}
-
-/* Return true if REF has an VIEW_CONVERT_EXPR or a COMPONENT_REF with a
-   bit-field field declaration somewhere in it.  */
-
-static inline bool
-contains_vce_or_bfcref_p (const_tree ref)
-{
-  while (handled_component_p (ref))
-    {
-      if (TREE_CODE (ref) == VIEW_CONVERT_EXPR
-	  || (TREE_CODE (ref) == COMPONENT_REF
-	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1))))
-	return true;
-      ref = TREE_OPERAND (ref, 0);
-    }
-
-  return false;
 }
 
 /* Examine both sides of the assignment statement pointed to by STMT, replace
@@ -4395,7 +4482,7 @@ static struct access *
 splice_param_accesses (tree parm, bool *ro_grp)
 {
   int i, j, access_count, group_count;
-  int agg_size, total_size = 0;
+  int total_size = 0;
   struct access *access, *res, **prev_acc_ptr = &res;
   vec<access_p> *access_vec;
 
@@ -4462,13 +4549,6 @@ splice_param_accesses (tree parm, bool *ro_grp)
       i = j;
     }
 
-  if (POINTER_TYPE_P (TREE_TYPE (parm)))
-    agg_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (parm))));
-  else
-    agg_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (parm)));
-  if (total_size >= agg_size)
-    return NULL;
-
   gcc_assert (group_count > 0);
   return res;
 }
@@ -4479,7 +4559,7 @@ splice_param_accesses (tree parm, bool *ro_grp)
 static int
 decide_one_param_reduction (struct access *repr)
 {
-  int total_size, cur_parm_size, agg_size, new_param_count, parm_size_limit;
+  HOST_WIDE_INT total_size, cur_parm_size;
   bool by_ref;
   tree parm;
 
@@ -4488,15 +4568,9 @@ decide_one_param_reduction (struct access *repr)
   gcc_assert (cur_parm_size > 0);
 
   if (POINTER_TYPE_P (TREE_TYPE (parm)))
-    {
-      by_ref = true;
-      agg_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (parm))));
-    }
+    by_ref = true;
   else
-    {
-      by_ref = false;
-      agg_size = cur_parm_size;
-    }
+    by_ref = false;
 
   if (dump_file)
     {
@@ -4509,7 +4583,7 @@ decide_one_param_reduction (struct access *repr)
     }
 
   total_size = 0;
-  new_param_count = 0;
+  int new_param_count = 0;
 
   for (; repr; repr = repr->next_grp)
     {
@@ -4537,22 +4611,28 @@ decide_one_param_reduction (struct access *repr)
 
   gcc_assert (new_param_count > 0);
 
-  if (optimize_function_for_size_p (cfun))
-    parm_size_limit = cur_parm_size;
-  else
-    parm_size_limit = (PARAM_VALUE (PARAM_IPA_SRA_PTR_GROWTH_FACTOR)
-                       * cur_parm_size);
-
-  if (total_size < agg_size
-      && total_size <= parm_size_limit)
+  if (!by_ref)
     {
-      if (dump_file)
-	fprintf (dump_file, "    ....will be split into %i components\n",
-		 new_param_count);
-      return new_param_count;
+      if (total_size >= cur_parm_size)
+	return 0;
     }
   else
-    return 0;
+    {
+      int parm_num_limit;
+      if (optimize_function_for_size_p (cfun))
+	parm_num_limit = 1;
+      else
+	parm_num_limit = PARAM_VALUE (PARAM_IPA_SRA_PTR_GROWTH_FACTOR);
+
+      if (new_param_count > parm_num_limit
+	  || total_size > (parm_num_limit * cur_parm_size))
+	return 0;
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "    ....will be split into %i components\n",
+	     new_param_count);
+  return new_param_count;
 }
 
 /* The order of the following enums is important, we need to do extra work for
@@ -5318,12 +5398,12 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 	      continue;
 
 	  tree offset;
-	  HOST_WIDE_INT bitsize, bitpos;
+	  poly_int64 bitsize, bitpos;
 	  machine_mode mode;
 	  int unsignedp, reversep, volatilep = 0;
 	  get_inner_reference (arg, &bitsize, &bitpos, &offset, &mode,
 			       &unsignedp, &reversep, &volatilep);
-	  if (bitpos % BITS_PER_UNIT)
+	  if (!multiple_p (bitpos, BITS_PER_UNIT))
 	    {
 	      iscc->bad_arg_alignment = true;
 	      return true;

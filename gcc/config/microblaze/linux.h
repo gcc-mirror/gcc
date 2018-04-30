@@ -1,5 +1,5 @@
 /* Definitions for MicroBlaze running Linux.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -57,3 +57,5 @@
 /* For the microblaze-*-linux* subtarget.  */
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
+
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack

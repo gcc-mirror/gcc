@@ -1,5 +1,5 @@
 /* { dg-do compile { target { { powerpc*-*-* } && ilp32 } } } */
-/* { dg-skip-if "" { powerpc*-*-aix* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-mcpu=power7 -O2" } */
 /* { dg-final { scan-assembler-times "addze" 1 } } */

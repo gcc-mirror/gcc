@@ -3,5 +3,5 @@
 /* { dg-options "-Woverflow" } */
 
 unsigned char rx_async(unsigned char p) {
-    return p & 512; /* { dg-warning "overflow in implicit constant conversion" } */
+    return p & 512; /* { dg-warning "overflow in conversion from .int. to .unsigned char. changes value" } */
 }

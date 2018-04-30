@@ -1,6 +1,6 @@
 // std::__detail definitions -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace tr1
   {
 #include "../shared/hashtable-aux.cc"
   }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }

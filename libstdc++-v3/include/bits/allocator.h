@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @tparam  _Tp  Type of allocated object.
    */
   template<typename _Tp>
-    class allocator: public __allocator_base<_Tp>
+    class allocator : public __allocator_base<_Tp>
     {
    public:
       typedef size_t     size_type;
@@ -164,6 +164,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const allocator<_Tp>&, const allocator<_Tp>&)
     _GLIBCXX_USE_NOEXCEPT
     { return false; }
+
+  // Invalid allocator<cv T> partial specializations.
+  // allocator_traits::rebind_alloc can be used to form a valid allocator type.
+  template<typename _Tp>
+    class allocator<const _Tp>
+    {
+    public:
+      typedef _Tp value_type;
+      template<typename _Up> allocator(const allocator<_Up>&) { }
+    };
+
+  template<typename _Tp>
+    class allocator<volatile _Tp>
+    {
+    public:
+      typedef _Tp value_type;
+      template<typename _Up> allocator(const allocator<_Up>&) { }
+    };
+
+  template<typename _Tp>
+    class allocator<const volatile _Tp>
+    {
+    public:
+      typedef _Tp value_type;
+      template<typename _Up> allocator(const allocator<_Up>&) { }
+    };
 
   /// @} group allocator
 

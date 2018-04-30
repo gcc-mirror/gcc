@@ -2,7 +2,7 @@
 
 // Utility subroutines for the C++ library testsuite.
 //
-// Copyright (C) 2002-2017 Free Software Foundation, Inc.
+// Copyright (C) 2002-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -131,8 +131,11 @@ namespace __gnu_test
   verify_demangle(const char* mangled, const char* wanted)
   {
     int status = 0;
-    const char* s = abi::__cxa_demangle(mangled, 0, 0, &status);
-    if (!s)
+    const char* s = 0;
+    char* demangled = abi::__cxa_demangle(mangled, 0, 0, &status);
+    if (demangled)
+      s = demangled;
+    else
       {
 	switch (status)
 	  {
@@ -156,6 +159,7 @@ namespace __gnu_test
     std::string w(wanted);
     if (w != s)
       std::__throw_runtime_error(s);
+    free(demangled);
   }
 
   void

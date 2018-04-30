@@ -1,7 +1,7 @@
 /* This file contains routines to construct OpenACC and OpenMP constructs,
    called from parsing in the C and C++ front ends.
 
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>,
 		  Diego Novillo <dnovillo@redhat.com>.
 
@@ -119,6 +119,10 @@ c_finish_omp_ordered (location_t loc, tree clauses, tree stmt)
   tree t = make_node (OMP_ORDERED);
   TREE_TYPE (t) = void_type_node;
   OMP_ORDERED_BODY (t) = stmt;
+  if (!flag_openmp	/* flag_openmp_simd */
+      && (OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_SIMD
+	  || OMP_CLAUSE_CHAIN (clauses)))
+    clauses = build_omp_clause (loc, OMP_CLAUSE_SIMD);
   OMP_ORDERED_CLAUSES (t) = clauses;
   SET_EXPR_LOCATION (t, loc);
   return add_stmt (t);
@@ -184,6 +188,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 		     bool test)
 {
   tree x, type, addr, pre = NULL_TREE;
+  HOST_WIDE_INT bitpos = 0, bitsize = 0;
 
   if (lhs == error_mark_node || rhs == error_mark_node
       || v == error_mark_node || lhs1 == error_mark_node
@@ -212,6 +217,29 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     opcode = TRUNC_DIV_EXPR;
 
   /* ??? Validate that rhs does not overlap lhs.  */
+  tree blhs = NULL;
+  if (TREE_CODE (lhs) == COMPONENT_REF
+      && TREE_CODE (TREE_OPERAND (lhs, 1)) == FIELD_DECL
+      && DECL_C_BIT_FIELD (TREE_OPERAND (lhs, 1))
+      && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (lhs, 1)))
+    {
+      tree field = TREE_OPERAND (lhs, 1);
+      tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+      if (tree_fits_uhwi_p (DECL_FIELD_OFFSET (field))
+	  && tree_fits_uhwi_p (DECL_FIELD_OFFSET (repr)))
+	bitpos = (tree_to_uhwi (DECL_FIELD_OFFSET (field))
+		  - tree_to_uhwi (DECL_FIELD_OFFSET (repr))) * BITS_PER_UNIT;
+      else
+	bitpos = 0;
+      bitpos += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
+		 - tree_to_uhwi (DECL_FIELD_BIT_OFFSET (repr)));
+      gcc_assert (tree_fits_shwi_p (DECL_SIZE (field)));
+      bitsize = tree_to_shwi (DECL_SIZE (field));
+      blhs = lhs;
+      type = TREE_TYPE (repr);
+      lhs = build3 (COMPONENT_REF, TREE_TYPE (repr), TREE_OPERAND (lhs, 0),
+		    repr, TREE_OPERAND (lhs, 2));
+    }
 
   /* Take and save the address of the lhs.  From then on we'll reference it
      via indirection.  */
@@ -231,13 +259,18 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       DECL_CONTEXT (var) = current_function_decl;
       addr = build4 (TARGET_EXPR, TREE_TYPE (addr), var, addr, NULL, NULL);
     }
+  tree orig_lhs = lhs;
   lhs = build_indirect_ref (loc, addr, RO_NULL);
+  tree new_lhs = lhs;
 
   if (code == OMP_ATOMIC_READ)
     {
       x = build1 (OMP_ATOMIC_READ, type, addr);
       SET_EXPR_LOCATION (x, loc);
       OMP_ATOMIC_SEQ_CST (x) = seq_cst;
+      if (blhs)
+	x = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), x,
+			bitsize_int (bitsize), bitsize_int (bitpos));
       return build_modify_expr (loc, v, NULL_TREE, NOP_EXPR,
 				loc, x, NULL_TREE);
     }
@@ -245,14 +278,25 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   /* There are lots of warnings, errors, and conversions that need to happen
      in the course of interpreting a statement.  Use the normal mechanisms
      to do this, and then take it apart again.  */
-  if (swapped)
+  if (blhs)
     {
-      rhs = build_binary_op (loc, opcode, rhs, lhs, 1);
+      lhs = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), lhs,
+			bitsize_int (bitsize), bitsize_int (bitpos));
+      if (swapped)
+	rhs = build_binary_op (loc, opcode, rhs, lhs, true);
+      else if (opcode != NOP_EXPR)
+	rhs = build_binary_op (loc, opcode, lhs, rhs, true);
+      opcode = NOP_EXPR;
+    }
+  else if (swapped)
+    {
+      rhs = build_binary_op (loc, opcode, rhs, lhs, true);
       opcode = NOP_EXPR;
     }
   bool save = in_late_binary_op;
   in_late_binary_op = true;
-  x = build_modify_expr (loc, lhs, NULL_TREE, opcode, loc, rhs, NULL_TREE);
+  x = build_modify_expr (loc, blhs ? blhs : lhs, NULL_TREE, opcode,
+			 loc, rhs, NULL_TREE);
   in_late_binary_op = save;
   if (x == error_mark_node)
     return error_mark_node;
@@ -265,6 +309,10 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   gcc_assert (TREE_CODE (x) == MODIFY_EXPR);
   rhs = TREE_OPERAND (x, 1);
 
+  if (blhs)
+    rhs = build3_loc (loc, BIT_INSERT_EXPR, type, new_lhs,
+		      rhs, bitsize_int (bitpos));
+
   /* Punt the actual generation of atomic operations to common code.  */
   if (code == OMP_ATOMIC)
     type = void_type_node;
@@ -276,8 +324,8 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
      location, just diagnose different variables.  */
   if (rhs1
       && VAR_P (rhs1)
-      && VAR_P (lhs)
-      && rhs1 != lhs
+      && VAR_P (orig_lhs)
+      && rhs1 != orig_lhs
       && !test)
     {
       if (code == OMP_ATOMIC)
@@ -289,29 +337,57 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       return error_mark_node;
     }
 
+  if (lhs1
+      && lhs1 != orig_lhs
+      && TREE_CODE (lhs1) == COMPONENT_REF
+      && TREE_CODE (TREE_OPERAND (lhs1, 1)) == FIELD_DECL
+      && DECL_C_BIT_FIELD (TREE_OPERAND (lhs1, 1))
+      && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (lhs1, 1)))
+    {
+      tree field = TREE_OPERAND (lhs1, 1);
+      tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+      lhs1 = build3 (COMPONENT_REF, TREE_TYPE (repr), TREE_OPERAND (lhs1, 0),
+		     repr, TREE_OPERAND (lhs1, 2));
+    }
+  if (rhs1
+      && rhs1 != orig_lhs
+      && TREE_CODE (rhs1) == COMPONENT_REF
+      && TREE_CODE (TREE_OPERAND (rhs1, 1)) == FIELD_DECL
+      && DECL_C_BIT_FIELD (TREE_OPERAND (rhs1, 1))
+      && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (rhs1, 1)))
+    {
+      tree field = TREE_OPERAND (rhs1, 1);
+      tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+      rhs1 = build3 (COMPONENT_REF, TREE_TYPE (repr), TREE_OPERAND (rhs1, 0),
+		     repr, TREE_OPERAND (rhs1, 2));
+    }
+
   if (code != OMP_ATOMIC)
     {
       /* Generally it is hard to prove lhs1 and lhs are the same memory
 	 location, just diagnose different variables.  */
-      if (lhs1 && VAR_P (lhs1) && VAR_P (lhs))
+      if (lhs1 && VAR_P (lhs1) && VAR_P (orig_lhs))
 	{
-	  if (lhs1 != lhs && !test)
+	  if (lhs1 != orig_lhs && !test)
 	    {
 	      error_at (loc, "%<#pragma omp atomic capture%> uses two "
 			     "different variables for memory");
 	      return error_mark_node;
 	    }
 	}
+      if (blhs)
+	x = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), x,
+			bitsize_int (bitsize), bitsize_int (bitpos));
       x = build_modify_expr (loc, v, NULL_TREE, NOP_EXPR,
 			     loc, x, NULL_TREE);
-      if (rhs1 && rhs1 != lhs)
+      if (rhs1 && rhs1 != orig_lhs)
 	{
 	  tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, false);
 	  if (rhs1addr == error_mark_node)
 	    return error_mark_node;
 	  x = omit_one_operand_loc (loc, type, x, rhs1addr);
 	}
-      if (lhs1 && lhs1 != lhs)
+      if (lhs1 && lhs1 != orig_lhs)
 	{
 	  tree lhs1addr = build_unary_op (loc, ADDR_EXPR, lhs1, false);
 	  if (lhs1addr == error_mark_node)
@@ -326,7 +402,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 	    }
 	}
     }
-  else if (rhs1 && rhs1 != lhs)
+  else if (rhs1 && rhs1 != orig_lhs)
     {
       tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, false);
       if (rhs1addr == error_mark_node)
@@ -463,10 +539,6 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
   bool fail = false;
   int i;
 
-  if ((code == CILK_SIMD || code == CILK_FOR)
-      && !c_check_cilk_loop (locus, TREE_VEC_ELT (declv, 0)))
-    fail = true;
-
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (initv));
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (condv));
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (incrv));
@@ -534,6 +606,12 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	{
 	  bool cond_ok = false;
 
+	  /* E.g. C sizeof (vla) could add COMPOUND_EXPRs with
+	     evaluation of the vla VAR_DECL.  We need to readd
+	     them to the non-decl operand.  See PR45784.  */
+	  while (TREE_CODE (cond) == COMPOUND_EXPR)
+	    cond = TREE_OPERAND (cond, 1);
+
 	  if (EXPR_HAS_LOCATION (cond))
 	    elocus = EXPR_LOCATION (cond);
 
@@ -592,8 +670,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		{
 		  if (!INTEGRAL_TYPE_P (TREE_TYPE (decl)))
 		    {
-		      if (code != CILK_SIMD && code != CILK_FOR
-			  && (code == OACC_LOOP || TREE_CODE (cond) == EQ_EXPR))
+		      if (code == OACC_LOOP || TREE_CODE (cond) == EQ_EXPR)
 			cond_ok = false;
 		    }
 		  else if (operand_equal_p (TREE_OPERAND (cond, 1),
@@ -606,10 +683,23 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 					    0))
 		    TREE_SET_CODE (cond, TREE_CODE (cond) == NE_EXPR
 					 ? LT_EXPR : GE_EXPR);
-		  else if (code != CILK_SIMD && code != CILK_FOR
-			   && (code == OACC_LOOP
-			       || TREE_CODE (cond) == EQ_EXPR))
+		  else if (code == OACC_LOOP || TREE_CODE (cond) == EQ_EXPR)
 		    cond_ok = false;
+		}
+
+	      if (cond_ok && TREE_VEC_ELT (condv, i) != cond)
+		{
+		  tree ce = NULL_TREE, *pce = &ce;
+		  tree type = TREE_TYPE (TREE_OPERAND (cond, 1));
+		  for (tree c = TREE_VEC_ELT (condv, i); c != cond;
+		       c = TREE_OPERAND (c, 1))
+		    {
+		      *pce = build2 (COMPOUND_EXPR, type, TREE_OPERAND (c, 0),
+				     TREE_OPERAND (cond, 1));
+		      pce = &TREE_OPERAND (*pce, 1);
+		    }
+		  TREE_OPERAND (cond, 1) = ce;
+		  TREE_VEC_ELT (condv, i) = cond;
 		}
 	    }
 
@@ -647,8 +737,6 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	      if (!fail
 		  && TREE_CODE (cond) == NE_EXPR
 		  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
-		  && code != CILK_SIMD
-		  && code != CILK_FOR
 		  && TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)))
 		  && (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))))
 		      != INTEGER_CST))
@@ -698,9 +786,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		}
 	      if (!fail
 		  && incr_ok
-		  && TREE_CODE (cond) == NE_EXPR
-		  && code != CILK_SIMD
-		  && code != CILK_FOR)
+		  && TREE_CODE (cond) == NE_EXPR)
 		{
 		  tree i = TREE_OPERAND (incr, 1);
 		  i = TREE_OPERAND (i, TREE_OPERAND (i, 0) == decl);

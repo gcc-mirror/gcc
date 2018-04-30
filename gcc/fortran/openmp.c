@@ -1,5 +1,5 @@
 /* OpenMP directive matching and resolving.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek
 
 This file is part of GCC.
@@ -1318,23 +1318,21 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else if (gfc_match_omp_variable_list (" val (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_VAL;
 	      else if (gfc_match_omp_variable_list (" uval (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_UVAL;
 	      else if (gfc_match_omp_variable_list ("",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, &end_colon, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_DEFAULT;
 	      else
 		{
-		  gfc_free_omp_namelist (*head);
 		  gfc_current_locus = old_loc;
-		  *head = NULL;
 		  break;
 		}
 	      if (linear_op != OMP_LINEAR_DEFAULT)
@@ -2185,8 +2183,7 @@ gfc_match_oacc_wait (void)
 	  }
 
 	if (!gfc_resolve_expr (el->expr)
-	    || el->expr->ts.type != BT_INTEGER || el->expr->rank != 0
-	    || el->expr->expr_type != EXPR_CONSTANT)
+	    || el->expr->ts.type != BT_INTEGER || el->expr->rank != 0)
 	  {
 	    gfc_error ("WAIT clause at %L requires a scalar INTEGER expression",
 		       &el->expr->where);
@@ -2295,7 +2292,8 @@ gfc_match_oacc_routine (void)
 	  if (st)
 	    {
 	      sym = st->n.sym;
-	      if (strcmp (sym->name, gfc_current_ns->proc_name->name) == 0)
+	      if (gfc_current_ns->proc_name != NULL
+		  && strcmp (sym->name, gfc_current_ns->proc_name->name) == 0)
 	        sym = NULL;
 	    }
 
@@ -4381,7 +4379,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    else
 		      resolve_oacc_data_clauses (n->sym, n->where, name);
 		  }
-		else if (list != OMP_CLAUSE_DEPEND
+		else if (list != OMP_LIST_DEPEND
 			 && n->sym->as
 			 && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array %qs in %s clause at %L",
@@ -5262,7 +5260,7 @@ resolve_omp_atomic (gfc_code *code)
 }
 
 
-struct fortran_omp_context
+static struct fortran_omp_context
 {
   gfc_code *code;
   hash_set<gfc_symbol *> *sharing_clauses;
@@ -5345,6 +5343,8 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TASKLOOP:
+    case EXEC_OMP_TASKLOOP_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
@@ -5390,8 +5390,11 @@ gfc_omp_restore_state (struct gfc_omp_saved_state *state)
    construct, where they are predetermined private.  */
 
 void
-gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
+gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym, bool add_clause)
 {
+  if (omp_current_ctx == NULL)
+    return;
+
   int i = omp_current_do_collapse;
   gfc_code *c = omp_current_do_code;
 
@@ -5410,9 +5413,6 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
       c = c->block->next;
     }
 
-  if (omp_current_ctx == NULL)
-    return;
-
   /* An openacc context may represent a data clause.  Abort if so.  */
   if (!omp_current_ctx->is_openmp && !oacc_is_loop (omp_current_ctx->code))
     return;
@@ -5421,7 +5421,7 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
       && omp_current_ctx->sharing_clauses->contains (sym))
     return;
 
-  if (! omp_current_ctx->private_iterators->add (sym))
+  if (! omp_current_ctx->private_iterators->add (sym) && add_clause)
     {
       gfc_omp_clauses *omp_clauses = omp_current_ctx->code->ext.omp_clauses;
       gfc_omp_namelist *p;
@@ -5433,6 +5433,22 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
     }
 }
 
+static void
+handle_local_var (gfc_symbol *sym)
+{
+  if (sym->attr.flavor != FL_VARIABLE
+      || sym->as != NULL
+      || (sym->ts.type != BT_INTEGER && sym->ts.type != BT_REAL))
+    return;
+  gfc_resolve_do_iterator (sym->ns->code, sym, false);
+}
+
+void
+gfc_resolve_omp_local_vars (gfc_namespace *ns)
+{
+  if (omp_current_ctx)
+    gfc_traverse_ns (ns, handle_local_var);
+}
 
 static void
 resolve_omp_do (gfc_code *code)
@@ -5584,8 +5600,6 @@ resolve_omp_do (gfc_code *code)
 			     "iteration space at %L", name, &do_code->loc);
 		  break;
 		}
-	      if (j < i)
-		break;
 	      do_code2 = do_code2->block->next;
 	    }
 	}
@@ -5749,12 +5763,10 @@ resolve_oacc_nested_loops (gfc_code *code, gfc_code* do_code, int collapse,
 		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->end)
 		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->step))
 		{
-		  gfc_error ("!$ACC LOOP %s loops don't form rectangular iteration space at %L",
-			     clause, &do_code->loc);
+		  gfc_error ("!$ACC LOOP %s loops don't form rectangular "
+			     "iteration space at %L", clause, &do_code->loc);
 		  break;
 		}
-	      if (j < i)
-		break;
 	      do_code2 = do_code2->block->next;
 	    }
 	}

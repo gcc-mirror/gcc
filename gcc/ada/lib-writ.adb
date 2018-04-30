@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,6 +96,8 @@ package body Lib.Writ is
          Main_CPU               => -1,
          Munit_Index            => 0,
          No_Elab_Code_All       => False,
+         Primary_Stack_Count    => 0,
+         Sec_Stack_Count        => 0,
          Serial_Number          => 0,
          Version                => 0,
          Error_Location         => No_Location,
@@ -157,6 +159,8 @@ package body Lib.Writ is
          Main_CPU               => -1,
          Munit_Index            => 0,
          No_Elab_Code_All       => False,
+         Primary_Stack_Count    => 0,
+         Sec_Stack_Count        => 0,
          Serial_Number          => 0,
          Version                => 0,
          Error_Location         => No_Location,
@@ -211,9 +215,9 @@ package body Lib.Writ is
       --  Array of flags to show which units have Elaborate_All_Desirable set
 
       type Yes_No is (Unknown, Yes, No);
-      Implicit_With : array (Units.First .. Last_Unit) of Yes_No;
+      Has_Implicit_With : array (Units.First .. Last_Unit) of Yes_No;
       --  Indicates if an implicit with has been given for the unit. Yes if
-      --  certainly present, no if certainly absent, unkonwn if not known.
+      --  certainly present, No if certainly absent, Unknown if not known.
 
       Sdep_Table : Unit_Ref_Table (1 .. Pos (Last_Unit - Units.First + 2));
       --  Sorted table of source dependencies. One extra entry in case we
@@ -231,8 +235,8 @@ package body Lib.Writ is
       -----------------------
 
       procedure Collect_Withs (Cunit : Node_Id);
-      --  Collect with lines for entries in the context clause of the
-      --  given compilation unit, Cunit.
+      --  Collect with lines for entries in the context clause of the given
+      --  compilation unit, Cunit.
 
       procedure Update_Tables_From_ALI_File;
       --  Given an up to date ALI file (see Up_To_Date_ALI_file_Exists
@@ -257,8 +261,46 @@ package body Lib.Writ is
       -------------------
 
       procedure Collect_Withs (Cunit : Node_Id) is
+         function Is_Implicit_With_Clause (Clause : Node_Id) return Boolean;
+         pragma Inline (Is_Implicit_With_Clause);
+         --  Determine whether a with clause denoted by Clause is implicit
+
+         -----------------------------
+         -- Is_Implicit_With_Clause --
+         -----------------------------
+
+         function Is_Implicit_With_Clause (Clause : Node_Id) return Boolean is
+         begin
+            --  With clauses created for ancestor units are marked as internal,
+            --  however, they emulate the semantics in Ada RM 10.1.2 (6/2),
+            --  where
+            --
+            --    with A.B;
+            --
+            --  is almost equivalent to
+            --
+            --    with A;
+            --    with A.B;
+            --
+            --  For ALI encoding purposes, they are considered to be explicit.
+            --  Note that the clauses cannot be marked as explicit because they
+            --  will be subjected to various checks related to with clauses and
+            --  possibly cause false positives.
+
+            if Parent_With (Clause) then
+               return False;
+
+            else
+               return Implicit_With (Clause);
+            end if;
+         end Is_Implicit_With_Clause;
+
+         --  Local variables
+
          Item : Node_Id;
          Unum : Unit_Number_Type;
+
+      --  Start of processing for Collect_Withs
 
       begin
          Item := First (Context_Items (Cunit));
@@ -296,12 +338,28 @@ package body Lib.Writ is
                   Set_From_Limited_With (Cunit_Entity (Unum));
                end if;
 
-               if Implicit_With (Unum) /= Yes then
-                  if Implicit_With_From_Instantiation (Item) then
-                     Implicit_With (Unum) := Yes;
+               if Is_Implicit_With_Clause (Item) then
+
+                  --  A previous explicit with clause withs the unit. Retain
+                  --  this classification, as it reflects the source relations
+                  --  between units.
+
+                  if Has_Implicit_With (Unum) = No then
+                     null;
+
+                  --  Otherwise this is either the first time any clause withs
+                  --  the unit, or the unit is already implicitly withed.
+
                   else
-                     Implicit_With (Unum) := No;
+                     Has_Implicit_With (Unum) := Yes;
                   end if;
+
+               --  Otherwise the current with clause is explicit. Such clauses
+               --  take precedence over existing implicit clauses because they
+               --  reflect the source relations between unit.
+
+               else
+                  Has_Implicit_With (Unum) := No;
                end if;
             end if;
 
@@ -569,7 +627,7 @@ package body Lib.Writ is
             Elab_All_Flags     (J) := False;
             Elab_Des_Flags     (J) := False;
             Elab_All_Des_Flags (J) := False;
-            Implicit_With      (J) := Unknown;
+            Has_Implicit_With  (J) := Unknown;
          end loop;
 
          Collect_Withs (Unode);
@@ -615,6 +673,19 @@ package body Lib.Writ is
          end if;
 
          Write_With_Lines;
+
+         --  Generate task stack lines
+
+         if Primary_Stack_Count (Unit_Num) > 0
+           or else Sec_Stack_Count (Unit_Num) > 0
+         then
+            Write_Info_Initiate ('T');
+            Write_Info_Char (' ');
+            Write_Info_Int (Primary_Stack_Count (Unit_Num));
+            Write_Info_Char (' ');
+            Write_Info_Int (Sec_Stack_Count (Unit_Num));
+            Write_Info_EOL;
+         end if;
 
          --  Generate the linker option lines
 
@@ -677,7 +748,7 @@ package body Lib.Writ is
                   Write_Info_Initiate ('N');
                   Write_Info_Char (' ');
 
-                  case Pragma_Name_Unmapped (N) is
+                  case Pragma_Name (N) is
                      when Name_Annotate =>
                         C := 'A';
                      when Name_Comment =>
@@ -836,13 +907,16 @@ package body Lib.Writ is
             Uname := Units.Table (Unum).Unit_Name;
             Fname := Units.Table (Unum).Unit_File_Name;
 
-            if Implicit_With (Unum) = Yes then
-               Write_Info_Initiate ('Z');
+            --  Limited with clauses must be processed first because they are
+            --  the most specific among the three kinds.
 
-            elsif Ekind (Cunit_Entity (Unum)) = E_Package
+            if Ekind (Cunit_Entity (Unum)) = E_Package
               and then From_Limited_With (Cunit_Entity (Unum))
             then
                Write_Info_Initiate ('Y');
+
+            elsif Has_Implicit_With (Unum) = Yes then
+               Write_Info_Initiate ('Z');
 
             else
                Write_Info_Initiate ('W');
@@ -1194,6 +1268,10 @@ package body Lib.Writ is
          Write_Info_Char (Partition_Elaboration_Policy);
       end if;
 
+      if No_Component_Reordering_Config then
+         Write_Info_Str (" NC");
+      end if;
+
       if not Object then
          Write_Info_Str (" NO");
       end if;
@@ -1460,7 +1538,7 @@ package body Lib.Writ is
 
             --  Normal case of a unit entry with a source index
 
-            if Sind /= No_Source_File then
+            if Sind > No_Source_File then
                Fname := File_Name (Sind);
 
                --  Ensure that on platforms where the file names are not case
@@ -1544,14 +1622,6 @@ package body Lib.Writ is
       if Generate_SCO then
          SCO_Record_Filtered;
          SCO_Output;
-      end if;
-
-      --  Output SPARK cross-reference information if needed
-
-      if Opt.Xref_Active and then GNATprove_Mode then
-         SPARK_Specific.Collect_SPARK_Xrefs (Sdep_Table => Sdep_Table,
-                                             Num_Sdep   => Num_Sdep);
-         SPARK_Specific.Output_SPARK_Xrefs;
       end if;
 
       --  Output final blank line and we are done. This final blank line is

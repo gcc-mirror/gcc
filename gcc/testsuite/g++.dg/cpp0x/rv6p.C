@@ -3,7 +3,7 @@
 // Test overload resolution among reference types
 
 // { dg-do compile { target c++11 } }
-// { dg-skip-if "packed attribute missing for struct one/three/five/seven" { "epiphany-*-*" } { "*" } { "" } }
+// { dg-skip-if "packed attribute missing for struct one/three/five/seven" { "epiphany-*-*" } }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

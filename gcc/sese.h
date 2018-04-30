@@ -1,5 +1,5 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -22,14 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SESE_H
 #define GCC_SESE_H
 
-typedef hash_map<tree, tree> parameter_rename_map_t;
-typedef hash_map<basic_block, vec<basic_block> > bb_map_t;
-typedef hash_map<tree, vec<tree> > rename_map_t;
 typedef struct ifsese_s *ifsese;
-/* First phi is the new codegenerated phi second one is original phi.  */
-typedef std::pair <gphi *, gphi *> phi_rename;
-/* First edge is the init edge and second is the back edge w.r.t. a loop.  */
-typedef std::pair<edge, edge> init_back_edge_pair_t;
 
 /* A Single Entry, Single Exit region is a part of the CFG delimited
    by two edges.  */
@@ -83,29 +76,20 @@ typedef struct sese_info_t
   /* The SESE region.  */
   sese_l region;
 
+  /* Liveout vars.  */
+  bitmap liveout;
+
+  /* Liveout in debug stmts.  */
+  bitmap debug_liveout;
+
   /* Parameters used within the SCOP.  */
   vec<tree> params;
 
-  /* Maps an old name to one or more new names.  When there are several new
-     names, one has to select the definition corresponding to the immediate
-     dominator.  */
-  rename_map_t *rename_map;
-
-  /* Parameters to be renamed.  */
-  parameter_rename_map_t *parameter_rename_map;
-
-  /* Loops completely contained in this SESE.  */
-  vec<loop_p> loop_nest;
+  /* Maps an old name to a new decl.  */
+  hash_map<tree, tree> *rename_map;
 
   /* Basic blocks contained in this SESE.  */
   vec<basic_block> bbs;
-
-  /* Copied basic blocks indexed by the original bb.  */
-  bb_map_t *copied_bb_map;
-
-  /* A vector of phi nodes to be updated when all arguments are available.  The
-     pair contains first the old_phi and second the new_phi.  */
-  vec<phi_rename> incomplete_phis;
 
   /* The condition region generated for this sese.  */
   ifsese if_region;
@@ -119,6 +103,8 @@ extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
 extern tree scalar_evolution_in_region (const sese_l &, loop_p, tree);
 extern bool scev_analyzable_p (tree, sese_l &);
 extern bool invariant_in_sese_p_rec (tree, const sese_l &, bool *);
+extern void sese_build_liveouts (sese_info_p);
+extern bool sese_trivially_empty_bb_p (basic_block);
 
 /* The number of parameters in REGION. */
 
@@ -134,20 +120,6 @@ sese_nb_params (sese_info_p region)
 static inline bool
 bb_in_region (const_basic_block bb, const_basic_block entry, const_basic_block exit)
 {
-  /* FIXME: PR67842.  */
-#if 0
-  if (flag_checking)
-    {
-      edge e;
-      edge_iterator ei;
-
-      /* Check that there are no edges coming in the region: all the
-	 predecessors of EXIT are dominated by ENTRY.  */
-      FOR_EACH_EDGE (e, ei, exit->preds)
-	gcc_assert (dominated_by_p (CDI_DOMINATORS, e->src, entry));
-    }
-#endif
-
   return dominated_by_p (CDI_DOMINATORS, bb, entry)
 	 && !(dominated_by_p (CDI_DOMINATORS, bb, exit)
 	      && !dominated_by_p (CDI_DOMINATORS, entry, exit));
@@ -233,7 +205,6 @@ typedef struct ifsese_s {
   sese_info_p false_region;
 } *ifsese;
 
-extern void if_region_set_false_region (ifsese, sese_info_p);
 extern ifsese move_sese_in_condition (sese_info_p);
 extern void set_ifsese_condition (ifsese, tree);
 extern edge get_true_edge_from_guard_bb (basic_block);
@@ -255,19 +226,6 @@ static inline basic_block
 if_region_get_condition_block (ifsese if_region)
 {
   return if_region_entry (if_region)->dest;
-}
-
-/* Free and compute again all the dominators information.  */
-
-static inline void
-recompute_all_dominators (void)
-{
-  mark_irreducible_loops ();
-  free_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  free_dominance_info (CDI_POST_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 }
 
 typedef std::pair <gimple *, tree> scalar_use;

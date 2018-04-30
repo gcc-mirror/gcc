@@ -5,7 +5,7 @@
 void f (__attribute__((altivec (vector__))) signed int * a,
 	__attribute__((altivec (vector__))) signed int * const b);
 
-int
+void
 foo (void)
 {
   __attribute__((altivec (vector__))) signed int a[1], b[1];

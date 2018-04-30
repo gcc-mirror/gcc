@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Torvald Riegel <triegel@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -138,7 +138,11 @@ struct ml_mg : public method_group
     // This store is only executed while holding the serial lock, so relaxed
     // memory order is sufficient here.  Same holds for the memset.
     time.store(0, memory_order_relaxed);
-    memset(orecs, 0, sizeof(atomic<gtm_word>) * L2O_ORECS);
+    // The memset below isn't strictly kosher because it bypasses
+    // the non-trivial assignment operator defined by std::atomic.  Using
+    // a local void* is enough to prevent GCC from warning for this.
+    void *p = orecs;
+    memset(p, 0, sizeof(atomic<gtm_word>) * L2O_ORECS);
   }
 };
 

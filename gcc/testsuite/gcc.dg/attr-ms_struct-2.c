@@ -1,5 +1,5 @@
 /* Test for MS structure sizes.  */
-/* { dg-do run { target *-*-mingw* *-*-cygwin* i?86-*-darwin* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-std=gnu99" } */
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com> and
                   Reva Cuthbertson <reva@cup.hp.com>
 
@@ -124,10 +124,6 @@ do {								\
   (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0));	\
   ASM_OUTPUT_TYPE_DIRECTIVE (FILE, XSTR (FUN, 0), "function");	\
 } while (0)
-
-#undef FUNCTION_ARG_PADDING
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-	ia64_hpux_function_arg_padding ((MODE), (TYPE))
 
 #undef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN (!AGGREGATE_TYPE_P (type))

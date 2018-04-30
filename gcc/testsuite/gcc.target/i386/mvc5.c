@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
 /* { dg-options "-fno-inline" } */
-/* { dg-final { scan-assembler-times "foo.ifunc" 6 } } */
+/* { dg-final { scan-assembler "foo,foo.resolver" } } */
 
 __attribute__((target_clones("default","avx","avx2")))
 int

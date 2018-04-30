@@ -46,19 +46,34 @@ namespace __asan {
 
 void InitializePlatformInterceptors() {}
 void InitializePlatformExceptionHandlers() {}
-
-bool PlatformHasDifferentMemcpyAndMemmove() {
-  // On OS X 10.7 memcpy() and memmove() are both resolved
-  // into memmove$VARIANT$sse42.
-  // See also https://github.com/google/sanitizers/issues/34.
-  // TODO(glider): need to check dynamically that memcpy() and memmove() are
-  // actually the same function.
-  return GetMacosVersion() == MACOS_VERSION_SNOW_LEOPARD;
-}
+bool IsSystemHeapAddress (uptr addr) { return false; }
 
 // No-op. Mac does not support static linkage anyway.
 void *AsanDoesNotSupportStaticLinkage() {
   return 0;
+}
+
+uptr FindDynamicShadowStart() {
+  uptr granularity = GetMmapGranularity();
+  uptr alignment = 8 * granularity;
+  uptr left_padding = granularity;
+  uptr space_size = kHighShadowEnd + left_padding;
+
+  uptr largest_gap_found = 0;
+  uptr shadow_start = FindAvailableMemoryRange(space_size, alignment,
+                                               granularity, &largest_gap_found);
+  // If the shadow doesn't fit, restrict the address space to make it fit.
+  if (shadow_start == 0) {
+    uptr new_max_vm = RoundDownTo(largest_gap_found << SHADOW_SCALE, alignment);
+    RestrictMemoryToMaxAddress(new_max_vm);
+    kHighMemEnd = new_max_vm - 1;
+    space_size = kHighShadowEnd + left_padding;
+    shadow_start =
+        FindAvailableMemoryRange(space_size, alignment, granularity, nullptr);
+  }
+  CHECK_NE((uptr)0, shadow_start);
+  CHECK(IsAligned(shadow_start, alignment));
+  return shadow_start;
 }
 
 // No-op. Mac does not support static linkage anyway.
@@ -145,7 +160,8 @@ void asan_register_worker_thread(int parent_tid, StackTrace *stack) {
     t = AsanThread::Create(/* start_routine */ nullptr, /* arg */ nullptr,
                            parent_tid, stack, /* detached */ true);
     t->Init();
-    asanThreadRegistry().StartThread(t->tid(), 0, 0);
+    asanThreadRegistry().StartThread(t->tid(), GetTid(),
+                                     /* workerthread */ true, 0);
     SetCurrentThread(t);
   }
 }

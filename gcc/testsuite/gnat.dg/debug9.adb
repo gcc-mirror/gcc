@@ -7,7 +7,7 @@
 --  some hackish way to check that types are output in the proper context (i.e.
 --  at global or local scope).
 --
---  { dg-skip-if "No dwarf-4 support" { hppa*-*-hpux* } "*" "" }
+--  { dg-skip-if "No dwarf-4 support" { hppa*-*-hpux* } }
 --  { dg-options "-cargs -gdwarf-4 -fdebug-types-section -dA -margs" }
 --  { dg-final { scan-assembler-times "\\(DIE \\(0x\[a-f0-9\]*\\) DW_TAG_type_unit\\)" 0 } }
 

@@ -28,17 +28,29 @@ import sys
 import re
 import unittest
 
-try:
-    from termcolor import colored
-except ImportError:
-    print('termcolor module is missing (run: pip3 install termcolor)')
-    exit(3)
+def import_pip3(*args):
+    missing=[]
+    for (module, names) in args:
+        try:
+            lib = __import__(module)
+        except ImportError:
+            missing.append(module)
+            continue
+        if not isinstance(names, list):
+            names=[names]
+        for name in names:
+            globals()[name]=getattr(lib, name)
+    if len(missing) > 0:
+        missing_and_sep = ' and '.join(missing)
+        missing_space_sep = ' '.join(missing)
+        print('%s %s missing (run: pip3 install %s)'
+              % (missing_and_sep,
+                 ("module is" if len(missing) == 1 else "modules are"),
+                 missing_space_sep))
+        exit(3)
 
-try:
-    from unidiff import PatchSet
-except ImportError:
-    print('unidiff module is missing (run: pip3 install unidiff)')
-    exit(3)
+import_pip3(('termcolor', 'colored'),
+            ('unidiff', 'PatchSet'))
 
 from itertools import *
 
@@ -92,6 +104,7 @@ class TrailingWhitespaceCheck:
         self.re = re.compile('(\s+)$')
 
     def check(self, filename, lineno, line):
+        assert(len(line) == 0 or line[-1] != '\n')
         m = self.re.search(line)
         if m != None:
             return CheckError(filename, lineno,
@@ -211,7 +224,19 @@ class LineLengthTest(unittest.TestCase):
         self.assertEqual(r.console_error,
             self.check.limit * 'a' + error_string(' = 123;'))
 
-def check_GNU_style_file(file, format):
+class TrailingWhitespaceTest(unittest.TestCase):
+    def setUp(self):
+        self.check = TrailingWhitespaceCheck()
+
+    def test_trailing_whitespace_check_basic(self):
+        r = self.check.check('foo', 123, 'a = 123;')
+        self.assertIsNone(r)
+        r = self.check.check('foo', 123, 'a = 123; ')
+        self.assertIsNotNone(r)
+        r = self.check.check('foo', 123, 'a = 123;\t')
+        self.assertIsNotNone(r)
+
+def check_GNU_style_file(file, file_encoding, format):
     checks = [LineLengthCheck(), SpacesCheck(), TrailingWhitespaceCheck(),
         SentenceSeparatorCheck(), SentenceEndOfCommentCheck(),
         SentenceDotEndCheck(), FunctionParenthesisCheck(),
@@ -219,8 +244,7 @@ def check_GNU_style_file(file, format):
         BracesOnSeparateLineCheck(), TrailinigOperatorCheck()]
     errors = []
 
-    with open(file, 'rb') as diff_file:
-        patch = PatchSet(diff_file, encoding = 'utf-8')
+    patch = PatchSet(file, encoding=file_encoding)
 
     for pfile in patch.added_files + patch.modified_files:
         t = pfile.target_file.lstrip('b/')
@@ -233,7 +257,8 @@ def check_GNU_style_file(file, format):
             for line in hunk:
                 if line.is_added and line.target_line_no != None:
                     for check in checks:
-                        e = check.check(t, line.target_line_no, line.value)
+                        line_chomp = line.value.replace('\n', '')
+                        e = check.check(t, line.target_line_no, line_chomp)
                         if e != None:
                             errors.append(e)
 

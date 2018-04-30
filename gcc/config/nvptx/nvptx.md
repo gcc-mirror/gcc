@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -55,6 +55,7 @@
    UNSPECV_CAS
    UNSPECV_XCHG
    UNSPECV_BARSYNC
+   UNSPECV_MEMBAR
    UNSPECV_DIM_POS
 
    UNSPECV_FORK
@@ -184,6 +185,7 @@
 (define_mode_iterator SDCM [SC DC])
 (define_mode_iterator BITS [SI SF])
 (define_mode_iterator BITD [DI DF])
+(define_mode_iterator VECIM [V2SI V2DI])
 
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
@@ -199,6 +201,20 @@
    %.\\tmov%t0\\t%0, %1;
    %.\\tsetp.eq.u32\\t%0, 1, 0;
    %.\\tsetp.eq.u32\\t%0, 1, 1;")
+
+(define_insn "*mov<mode>_insn"
+  [(set (match_operand:VECIM 0 "nonimmediate_operand" "=R,R,m")
+	(match_operand:VECIM 1 "general_operand" "Ri,m,R"))]
+  "!MEM_P (operands[0]) || REG_P (operands[1])"
+{
+  if (which_alternative == 1)
+    return "%.\\tld%A1%u1\\t%0, %1;";
+  if (which_alternative == 2)
+    return "%.\\tst%A0%u0\\t%0, %1;";
+
+  return nvptx_output_mov_insn (operands[0], operands[1]);
+}
+  [(set_attr "subregs_ok" "true")])
 
 (define_insn "*mov<mode>_insn"
   [(set (match_operand:QHSDIM 0 "nonimmediate_operand" "=R,R,m")
@@ -242,6 +258,20 @@
   ""
   "%.\\tmov%t0\\t%0, %%ar%1;")
 
+ (define_expand "mov<mode>"
+  [(set (match_operand:VECIM 0 "nonimmediate_operand" "")
+	(match_operand:VECIM 1 "general_operand" ""))]
+  ""
+{
+  if (MEM_P (operands[0]) && !REG_P (operands[1]))
+    {
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      emit_move_insn (tmp, operands[1]);
+      emit_move_insn (operands[0], tmp);
+      DONE;
+    }
+})
+
 (define_expand "mov<mode>"
   [(set (match_operand:QHSDISDFM 0 "nonimmediate_operand" "")
 	(match_operand:QHSDISDFM 1 "general_operand" ""))]
@@ -254,6 +284,9 @@
       emit_move_insn (operands[0], tmp);
       DONE;
     }
+
+  if (GET_CODE (operands[1]) == LABEL_REF)
+    sorry ("target cannot support label values");
 })
 
 (define_insn "zero_extendqihi2"
@@ -962,6 +995,20 @@
   ""
   "")
 
+(define_insn "exit"
+  [(const_int 1)]
+  ""
+  "exit;")
+
+(define_insn "fake_nop"
+  [(const_int 2)]
+  ""
+  "{
+     .reg .u32 %%nop_src;
+     .reg .u32 %%nop_dst;
+     mov.u32 %%nop_dst, %%nop_src;
+   }")
+
 (define_insn "return"
   [(return)]
   ""
@@ -1411,6 +1458,27 @@
 		    UNSPECV_BARSYNC)]
   ""
   "\\tbar.sync\\t%0;"
+  [(set_attr "predicable" "false")])
+
+(define_expand "memory_barrier"
+  [(set (match_dup 0)
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR))]
+  ""
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+;; Ptx defines the memory barriers membar.cta, membar.gl and membar.sys
+;; (corresponding to cuda functions threadfence_block, threadfence and
+;; threadfence_system).  For the insn memory_barrier we use membar.sys.  This
+;; may be overconservative, but before using membar.gl instead we'll need to
+;; explain in detail why it's safe to use.  For now, use membar.sys.
+(define_insn "*memory_barrier"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR))]
+  ""
+  "\\tmembar.sys;"
   [(set_attr "predicable" "false")])
 
 (define_insn "nvptx_nounroll"

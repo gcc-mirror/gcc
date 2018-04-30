@@ -1,4 +1,5 @@
-#ifndef NO_LABEL_VALUES
+/* { dg-require-effective-target label_values } */
+
 int
 x (int i)
 {
@@ -21,7 +22,3 @@ main (void)
 
   exit (0);
 }
-#else
-int
-main (void) { exit (0); }
-#endif

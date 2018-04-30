@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler, Lattice Mico32 architecture.
    Contributed by Jon Beniston <jon@beniston.com>
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -99,11 +99,6 @@ do {                                                    \
 
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* Make arrays and structures word-aligned to allow faster copying etc.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
   ((((ALIGN) < BITS_PER_WORD)						\
@@ -163,17 +158,6 @@ do {                                                    \
   0, 0, 0, 0, 0, 0, 0, 0,   \
   0, 0, 1, 0, 1, 0, 1, 1}
 
-#define HARD_REGNO_NREGS(REGNO, MODE)                                   \
-    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) G_REG_P(REGNO)
-
-#define MODES_TIEABLE_P(MODE1, MODE2)           \
-(      GET_MODE_CLASS (MODE1) == MODE_INT		\
-    && GET_MODE_CLASS (MODE2) == MODE_INT		\
-    && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
-    && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD)
-
 #define AVOID_CCMODE_COPIES
 
 /*----------------------------------*/
@@ -219,8 +203,6 @@ enum reg_class
 #define FRAME_GROWS_DOWNWARD 1
 
 #define STACK_POINTER_OFFSET (UNITS_PER_WORD)
-
-#define STARTING_FRAME_OFFSET (UNITS_PER_WORD)
 
 #define FIRST_PARM_OFFSET(FNDECL) (UNITS_PER_WORD)
 
@@ -529,8 +511,6 @@ do {                                                            \
 #define MAX_MOVE_MAX    4
 
 #define SHIFT_COUNT_TRUNCATED 1
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define Pmode SImode
 

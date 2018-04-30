@@ -1,5 +1,5 @@
 /* Header file for SSA dominator optimizations.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -116,6 +116,112 @@ vuse_eq (ao_ref *, tree vuse1, unsigned int cnt, void *data)
   return NULL;
 }
 
+/* We looked for STMT in the hash table, but did not find it.
+
+   If STMT is an assignment from a binary operator, we may know something
+   about the operands relationship to each other which would allow
+   us to derive a constant value for the RHS of STMT.  */
+
+tree
+avail_exprs_stack::simplify_binary_operation (gimple *stmt,
+					      class expr_hash_elt element)
+{
+  if (is_gimple_assign (stmt))
+    {
+      struct hashable_expr *expr = element.expr ();
+      if (expr->kind == EXPR_BINARY)
+	{
+	  enum tree_code code = expr->ops.binary.op;
+
+	  switch (code)
+	    {
+	    /* For these cases, if we know the operands
+	       are equal, then we know the result.  */
+	    case MIN_EXPR:
+	    case MAX_EXPR:
+	    case BIT_IOR_EXPR:
+	    case BIT_AND_EXPR:
+	    case BIT_XOR_EXPR:
+	    case MINUS_EXPR:
+	    case TRUNC_DIV_EXPR:
+	    case CEIL_DIV_EXPR:
+	    case FLOOR_DIV_EXPR:
+	    case ROUND_DIV_EXPR:
+	    case EXACT_DIV_EXPR:
+	    case TRUNC_MOD_EXPR:
+	    case CEIL_MOD_EXPR:
+	    case FLOOR_MOD_EXPR:
+	    case ROUND_MOD_EXPR:
+	      {
+		/* Build a simple equality expr and query the hash table
+		   for it.  */
+		struct hashable_expr expr;
+		expr.type = boolean_type_node;
+		expr.kind = EXPR_BINARY;
+		expr.ops.binary.op = EQ_EXPR;
+		expr.ops.binary.opnd0 = gimple_assign_rhs1 (stmt);
+		expr.ops.binary.opnd1 = gimple_assign_rhs2 (stmt);
+		class expr_hash_elt element2 (&expr, NULL_TREE);
+		expr_hash_elt **slot
+		  = m_avail_exprs->find_slot (&element2, NO_INSERT);
+		tree result_type = TREE_TYPE (gimple_assign_lhs (stmt));
+
+		/* If the query was successful and returned a nonzero
+		   result, then we know that the operands of the binary
+		   expression are the same.  In many cases this allows
+		   us to compute a constant result of the expression
+		   at compile time, even if we do not know the exact
+		   values of the operands.  */
+		if (slot && *slot && integer_onep ((*slot)->lhs ()))
+		  {
+		    switch (code)
+		      {
+		      case MIN_EXPR:
+		      case MAX_EXPR:
+		      case BIT_IOR_EXPR:
+		      case BIT_AND_EXPR:
+			return gimple_assign_rhs1 (stmt);
+
+		      case MINUS_EXPR:
+			/* This is unsafe for certain floats even in non-IEEE
+			   formats.  In IEEE, it is unsafe because it does
+			   wrong for NaNs.  */
+			if (FLOAT_TYPE_P (result_type)
+			    && HONOR_NANS (result_type))
+			  break;
+			/* FALLTHRU */
+		      case BIT_XOR_EXPR:
+		      case TRUNC_MOD_EXPR:
+		      case CEIL_MOD_EXPR:
+		      case FLOOR_MOD_EXPR:
+		      case ROUND_MOD_EXPR:
+			return build_zero_cst (result_type);
+
+		      case TRUNC_DIV_EXPR:
+		      case CEIL_DIV_EXPR:
+		      case FLOOR_DIV_EXPR:
+		      case ROUND_DIV_EXPR:
+		      case EXACT_DIV_EXPR:
+			/* Avoid _Fract types where we can't build 1.  */
+			if (ALL_FRACT_MODE_P (TYPE_MODE (result_type)))
+			  break;
+			return build_one_cst (result_type);
+
+		      default:
+			gcc_unreachable ();
+		      }
+		  }
+		break;
+	      }
+
+	    default:
+	      break;
+	    }
+	}
+    }
+  return NULL_TREE;
+}
+
 /* Search for an existing instance of STMT in the AVAIL_EXPRS_STACK table.
    If found, return its LHS. Otherwise insert STMT in the table and
    return NULL_TREE.
@@ -160,11 +266,26 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p)
     }
   else if (*slot == NULL)
     {
+      /* If we did not find the expression in the hash table, we may still
+	 be able to produce a result for some expressions.  */
+      tree retval = avail_exprs_stack::simplify_binary_operation (stmt,
+								  element);
+
+      /* We have, in effect, allocated *SLOT for ELEMENT at this point.
+	 We must initialize *SLOT to a real entry, even if we found a
+	 way to prove ELEMENT was a constant after not finding ELEMENT
+	 in the hash table.
+
+	 An uninitialized or empty slot is an indication no prior objects
+	 entered into the hash table had a hash collection with ELEMENT.
+
+	 If we fail to do so and had such entries in the table, they
+	 would become unreachable.  */
       class expr_hash_elt *element2 = new expr_hash_elt (element);
       *slot = element2;
 
       record_expr (element2, NULL, '2');
-      return NULL_TREE;
+      return retval;
     }
 
   /* If we found a redundant memory operation do an alias walk to
@@ -369,13 +490,13 @@ avail_expr_hash (class expr_hash_elt *p)
 	     Dealing with both MEM_REF and ARRAY_REF allows us not to care
 	     about equivalence with other statements not considered here.  */
 	  bool reverse;
-	  HOST_WIDE_INT offset, size, max_size;
+	  poly_int64 offset, size, max_size;
 	  tree base = get_ref_base_and_extent (t, &offset, &size, &max_size,
 					       &reverse);
 	  /* Strictly, we could try to normalize variable-sized accesses too,
 	    but here we just deal with the common case.  */
-	  if (size != -1
-	      && size == max_size)
+	  if (known_size_p (max_size)
+	      && known_eq (size, max_size))
 	    {
 	      enum tree_code code = MEM_REF;
 	      hstate.add_object (code);
@@ -409,26 +530,26 @@ equal_mem_array_ref_p (tree t0, tree t1)
   if (!types_compatible_p (TREE_TYPE (t0), TREE_TYPE (t1)))
     return false;
   bool rev0;
-  HOST_WIDE_INT off0, sz0, max0;
+  poly_int64 off0, sz0, max0;
   tree base0 = get_ref_base_and_extent (t0, &off0, &sz0, &max0, &rev0);
-  if (sz0 == -1
-      || sz0 != max0)
+  if (!known_size_p (max0)
+      || maybe_ne (sz0, max0))
     return false;
 
   bool rev1;
-  HOST_WIDE_INT off1, sz1, max1;
+  poly_int64 off1, sz1, max1;
   tree base1 = get_ref_base_and_extent (t1, &off1, &sz1, &max1, &rev1);
-  if (sz1 == -1
-      || sz1 != max1)
+  if (!known_size_p (max1)
+      || maybe_ne (sz1, max1))
     return false;
 
   if (rev0 != rev1)
     return false;
 
   /* Types were compatible, so this is a sanity check.  */
-  gcc_assert (sz0 == sz1);
+  gcc_assert (known_eq (sz0, sz1));
 
-  return (off0 == off1) && operand_equal_p (base0, base1, 0);
+  return known_eq (off0, off1) && operand_equal_p (base0, base1, 0);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are
@@ -501,6 +622,15 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
 	  || !operand_equal_p (expr0->ops.ternary.opnd2,
 			       expr1->ops.ternary.opnd2, 0))
 	return false;
+
+      /* BIT_INSERT_EXPR has an implict operand as the type precision
+         of op1.  Need to check to make sure they are the same.  */
+      if (expr0->ops.ternary.op == BIT_INSERT_EXPR
+	  && TREE_CODE (expr0->ops.ternary.opnd1) == INTEGER_CST
+          && TREE_CODE (expr1->ops.ternary.opnd1) == INTEGER_CST
+          && TYPE_PRECISION (TREE_TYPE (expr0->ops.ternary.opnd1))
+              != TYPE_PRECISION (TREE_TYPE (expr1->ops.ternary.opnd1)))
+        return false;
 
       if (operand_equal_p (expr0->ops.ternary.opnd0,
 			   expr1->ops.ternary.opnd0, 0)

@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -568,7 +568,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
     {
       vc m_nl, m_cr, m_bs, m_qm;
 
-      data = *((const vc *)s);
+      data = __builtin_vec_vsx_ld (0, s);
       s += 16;
 
       m_nl = (vc) __builtin_vec_cmpeq(data, repl_nl);
@@ -772,7 +772,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   const uint8x16_t repl_qm = vdupq_n_u8 ('?');
   const uint8x16_t xmask = (uint8x16_t) vdupq_n_u64 (0x8040201008040201ULL);
 
-#ifdef __AARCH64EB
+#ifdef __ARM_BIG_ENDIAN
   const int16x8_t shift = {8, 8, 8, 8, 0, 0, 0, 0};
 #else
   const int16x8_t shift = {0, 0, 0, 0, 8, 8, 8, 8};
@@ -1352,6 +1352,28 @@ forms_identifier_p (cpp_reader *pfile, int first,
   return false;
 }
 
+/* Helper function to issue error about improper __VA_OPT__ use.  */
+static void
+maybe_va_opt_error (cpp_reader *pfile)
+{
+  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, va_opt))
+    {
+      /* __VA_OPT__ should not be accepted at all, but allow it in
+	 system headers.  */
+      if (!cpp_in_system_header (pfile))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "__VA_OPT__ is not available until C++2a");
+    }
+  else if (!pfile->state.va_args_ok)
+    {
+      /* __VA_OPT__ should only appear in the replacement list of a
+	 variadic macro.  */
+      cpp_error (pfile, CPP_DL_PEDWARN,
+		 "__VA_OPT__ can only appear in the expansion"
+		 " of a C++2a variadic macro");
+    }
+}
+
 /* Helper function to get the cpp_hashnode of the identifier BASE.  */
 static cpp_hashnode *
 lex_identifier_intern (cpp_reader *pfile, const uchar *base)
@@ -1395,6 +1417,9 @@ lex_identifier_intern (cpp_reader *pfile, const uchar *base)
 		       "__VA_ARGS__ can only appear in the expansion"
 		       " of a C99 variadic macro");
 	}
+
+      if (result == pfile->spec_nodes.n__VA_OPT__)
+	maybe_va_opt_error (pfile);
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
@@ -1484,6 +1509,11 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 		       "__VA_ARGS__ can only appear in the expansion"
 		       " of a C99 variadic macro");
 	}
+
+      /* __VA_OPT__ should only appear in the replacement list of a
+	 variadic macro.  */
+      if (result == pfile->spec_nodes.n__VA_OPT__)
+	maybe_va_opt_error (pfile);
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
@@ -1600,6 +1630,21 @@ is_macro(cpp_reader *pfile, const uchar *base)
   return !result ? false : (result->type == NT_MACRO);
 }
 
+/* Returns true if a literal suffix does not have the expected form
+   and is defined as a macro.  */
+
+static bool
+is_macro_not_literal_suffix(cpp_reader *pfile, const uchar *base)
+{
+  /* User-defined literals outside of namespace std must start with a single
+     underscore, so assume anything of that form really is a UDL suffix.
+     We don't need to worry about UDLs defined inside namespace std because
+     their names are reserved, so cannot be used as macro names in valid
+     programs.  */
+  if (base[0] == '_' && base[1] != '_')
+    return false;
+  return is_macro (pfile, base);
+}
 
 /* Lexes a raw string.  The stored string contains the spelling, including
    double quotes, delimiter string, '(' and ')', any leading
@@ -1647,7 +1692,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		    (const uchar *)(STR), (LEN));		\
 	    temp_buffer_len += (LEN);				\
 	  }							\
-      } while (0);
+      } while (0)
 
   orig_base = base;
   ++cur;
@@ -1870,9 +1915,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
     {
       /* If a string format macro, say from inttypes.h, is placed touching
 	 a string literal it could be parsed as a C++11 user-defined string
-	 literal thus breaking the program.
-	 Try to identify macros with is_macro. A warning is issued. */
-      if (is_macro (pfile, cur))
+	 literal thus breaking the program.  */
+      if (is_macro_not_literal_suffix (pfile, cur))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
@@ -2000,9 +2044,8 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
     {
       /* If a string format macro, say from inttypes.h, is placed touching
 	 a string literal it could be parsed as a C++11 user-defined string
-	 literal thus breaking the program.
-	 Try to identify macros with is_macro. A warning is issued. */
-      if (is_macro (pfile, cur))
+	 literal thus breaking the program.  */
+      if (is_macro_not_literal_suffix (pfile, cur))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
@@ -2888,6 +2931,13 @@ _cpp_lex_direct (cpp_reader *pfile)
 
       if (fallthrough_comment_p (pfile, comment_start))
 	fallthrough_comment = true;
+
+      if (pfile->cb.comment)
+	{
+	  size_t len = pfile->buffer->cur - comment_start;
+	  pfile->cb.comment (pfile, result->src_loc, comment_start - 1,
+			     len + 1);
+	}
 
       if (!pfile->state.save_comments)
 	{

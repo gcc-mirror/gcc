@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Testing</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, test, testsuite, performance, conformance, ABI, exception safety" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="internals.html" title="Porting to New Hardware or Operating Systems" /><link rel="next" href="abi.html" title="ABI Policy and Guidelines" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Testing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Testing</title><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><meta name="keywords" content="ISO C++, test, testsuite, performance, conformance, ABI, exception safety" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="internals.html" title="Porting to New Hardware or Operating Systems" /><link rel="next" href="abi.html" title="ABI Policy and Guidelines" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Testing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
   Porting and Maintenance
   
 </th><td width="20%" align="right"> <a accesskey="n" href="abi.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.setup.test"></a>Testing</h2></div></div></div><p>
@@ -327,13 +327,13 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
       For example, to run the tests with
       <code class="option">-O1 -D_GLIBCXX_ASSERTIONS</code>
       you could use:
-</p><pre class="programlisting">    make RUNTESTFLAGS=--target_board=unix/-O1/-D_GLIBCXX_ASSERTIONS</pre><p>
+</p><pre class="programlisting">    make check RUNTESTFLAGS=--target_board=unix/-O1/-D_GLIBCXX_ASSERTIONS</pre><p>
     </p><p>
       The <code class="option">--target_board</code> option can also be used to run the
       tests multiple times in different variations. For example, to run the
       entire testsuite three times using <code class="option">-O3</code> but with
       different <code class="option">-std</code> options:
-</p><pre class="programlisting">    make 'RUNTESTFLAGS=--target_board=unix/-O3\"{-std=gnu++98,-std=gnu++11,-std=gnu++14}\"'</pre><p>
+</p><pre class="programlisting">    make check 'RUNTESTFLAGS=--target_board=unix/-O3\"{-std=gnu++98,-std=gnu++11,-std=gnu++14}\"'</pre><p>
       N.B. that set of variations could also be written as
       <code class="literal">unix/-O3\"{-std=gnu++98,-std=gnu++11,}\"</code> so that
       the third variation would use the default for <code class="option">-std</code>
@@ -392,15 +392,23 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
     Tests that need to perform runtime checks should use the
     <code class="literal">VERIFY</code> macro, defined in the
     <code class="filename">&lt;testsuite_hooks.h&gt;</code> header.
-    This usually expands to the standard <code class="literal">assert</code> macro, but
-    allows targets to define it to something different. In order to support
-    the alternative expansions of <code class="literal">VERIFY</code>, before any
-    use of the macro there must be a variable called <code class="varname">test</code>
-    in scope, which is usually defined like so (the attribute avoids
+    This expands to a custom assertion using
+    <code class="function">__builtin_printf</code> and
+    <code class="function">__builtin_abort</code>
+    (to avoid using <code class="literal">assert</code> and being affected by
+    <code class="literal">NDEBUG</code>).
+   </p><p>
+    Prior to GCC 7.1, <code class="literal">VERIFY</code> was defined differently.
+    It usually expanded to the standard <code class="literal">assert</code> macro, but
+    allowed targets to define it to something different. In order to support
+    the alternative expansions of <code class="literal">VERIFY</code>, before any use
+    of the macro there needed to be a variable called <code class="varname">test</code>
+    in scope, which was usually defined like so (the attribute avoids
     warnings about an unused variable):
     </p><pre class="programlisting">
     bool test __attribute__((unused)) = true;
     </pre><p>
+    This is no longer needed, and should not be added to new tests.
    </p><p>
     The testsuite uses the DejaGnu framework to compile and run the tests.
     Test cases are normal C++ files which contain special directives in

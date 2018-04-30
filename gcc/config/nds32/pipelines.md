@@ -1,5 +1,5 @@
 ;; Pipeline descriptions of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -18,12 +18,41 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_automaton "nds32_machine")
+;; ------------------------------------------------------------------------
+;; Include N7 pipeline settings.
+;; ------------------------------------------------------------------------
+(include "nds32-n7.md")
 
-(define_cpu_unit "general_unit" "nds32_machine")
+
+;; ------------------------------------------------------------------------
+;; Include N8 pipeline settings.
+;; ------------------------------------------------------------------------
+(include "nds32-n8.md")
+
+
+;; ------------------------------------------------------------------------
+;; Include E8 pipeline settings.
+;; ------------------------------------------------------------------------
+(include "nds32-e8.md")
+
+
+;; ------------------------------------------------------------------------
+;; Include N9/N10 pipeline settings.
+;; ------------------------------------------------------------------------
+(include "nds32-n9-3r2w.md")
+(include "nds32-n9-2r1w.md")
+
+
+;; ------------------------------------------------------------------------
+;; Define simple pipeline settings.
+;; ------------------------------------------------------------------------
+
+(define_automaton "nds32_simple_machine")
+
+(define_cpu_unit "simple_unit" "nds32_simple_machine")
 
 (define_insn_reservation "simple_insn" 1
-			 (eq_attr "type" "unknown,load,store,move,alu,compare,branch,call,misc")
-			 "general_unit")
+  (eq_attr "pipeline_model" "simple")
+  "simple_unit")
 
 ;; ------------------------------------------------------------------------

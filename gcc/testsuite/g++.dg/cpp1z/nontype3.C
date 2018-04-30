@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 #ifndef __cpp_nontype_template_args
 #error __cpp_nontype_template_args not defined

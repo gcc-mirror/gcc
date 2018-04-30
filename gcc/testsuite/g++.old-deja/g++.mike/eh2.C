@@ -63,12 +63,10 @@ f(Vector& v) {
   }
 }
 
+int
 main() {
   Vector v(10);
 
   f( v );
   return 1;
 }
-
-
-

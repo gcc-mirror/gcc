@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -368,17 +368,6 @@ extern int cris_cpu_version;
      ? (BASIC_ALIGN < 32 ? 32 : BASIC_ALIGN)			\
      : (BASIC_ALIGN < 16 ? 16 : BASIC_ALIGN)) : BASIC_ALIGN)
 
-/* Note that CONSTANT_ALIGNMENT has the effect of making gcc believe that
-   ALL references to constant stuff (in code segment, like strings) has
-   this alignment.  That is a rather rushed assumption.  Luckily we do not
-   care about the "alignment" operand to builtin memcpy (only place where
-   it counts), so it doesn't affect any bad spots.  */
-#define CONSTANT_ALIGNMENT(CONSTANT, BASIC_ALIGN)		\
- (TARGET_CONST_ALIGN						\
-  ? (TARGET_ALIGN_BY_32						\
-     ? (BASIC_ALIGN < 32 ? 32 : BASIC_ALIGN)			\
-     : (BASIC_ALIGN < 16 ? 16 : BASIC_ALIGN)) : BASIC_ALIGN)
-
 /* FIXME: Define LOCAL_ALIGNMENT for word and dword or arrays and
    structures (if -mstack-align=), and check that it is good.  */
 
@@ -467,29 +456,6 @@ extern int cris_cpu_version;
    apparently more common.  */
 #define REG_ALLOC_ORDER_V32 \
  {15, 9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 17, 16, 14, 18, 19}
-
-
-/* Node: Values in Registers */
-
-/* The VOIDmode test is so we can omit mode on anonymous insns.  FIXME:
-   Still needed in 2.9x, at least for Axis-20000319.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)	\
- (MODE == VOIDmode \
-  ? 1 : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
-/* CRIS permits all registers to hold all modes.  Well, except for the
-   condition-code register.  And we can't hold larger-than-register size
-   modes in the last special register that can hold a full 32 bits.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)		\
- (((MODE) == CCmode				\
-   || (REGNO) != CRIS_CC0_REGNUM)		\
-  && (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD	\
-      || ((REGNO) != CRIS_MOF_REGNUM && (REGNO) != CRIS_ACR_REGNUM)))
-
-/* Because CCmode isn't covered by the "narrower mode" statement in
-   tm.texi, we can still say all modes are tieable despite not having an
-   always 1 HARD_REGNO_MODE_OK.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
 
 
 /* Node: Leaf Functions */
@@ -622,10 +588,6 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
-
-/* It seems to be indicated in the code (at least 2.1) that this is
-   better a constant, and best 0.  */
-#define STARTING_FRAME_OFFSET 0
 
 #define FIRST_PARM_OFFSET(FNDECL) 0
 
@@ -1036,7 +998,7 @@ enum cris_symbol_type
 /* (no definitions) */
 
 
-/* Node: SDB and DWARF */
+/* Node: DWARF */
 /* (no definitions) */
 
 /* Node: Misc */
@@ -1060,8 +1022,6 @@ enum cris_symbol_type
 #define MOVE_MAX 4
 
 /* Maybe SHIFT_COUNT_TRUNCATED is safe to define?  FIXME: Check later.  */
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)

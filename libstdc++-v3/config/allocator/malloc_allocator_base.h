@@ -1,6 +1,6 @@
 // Base to std::allocator -*- C++ -*-
 
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,6 +50,10 @@ namespace std
 #else
 // Define malloc_allocator as the base class to std::allocator.
 # define __allocator_base  __gnu_cxx::malloc_allocator
+#endif
+
+#if defined(__SANITIZE_ADDRESS__) && !defined(_GLIBCXX_SANITIZE_STD_ALLOCATOR)
+# define _GLIBCXX_SANITIZE_STD_ALLOCATOR 1
 #endif
 
 #endif

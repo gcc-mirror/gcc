@@ -1,5 +1,5 @@
 /* jit-builtins.c -- Handling of builtin functions during JIT-compilation.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -68,29 +68,28 @@ matches_builtin (const char *in_name,
 		 const struct builtin_data& bd)
 {
   const bool debug = 0;
-  gcc_assert (bd.name);
+
+  /* Ignore entries with a NULL name.  */
+  if (!bd.name)
+    return false;
 
   if (debug)
     fprintf (stderr, "seen builtin: %s\n", bd.name);
 
-  if (0 == strcmp (bd.name, in_name))
-    {
-      return true;
-    }
+  if (strcmp (bd.name, in_name) == 0)
+    return true;
 
   if (bd.both_p)
     {
       /* Then the macros in builtins.def gave a "__builtin_"
 	 prefix to bd.name, but we should also recognize the form
 	 without the prefix.  */
-      gcc_assert (0 == strncmp (bd.name, prefix, prefix_len));
+      gcc_assert (strncmp (bd.name, prefix, prefix_len) == 0);
       if (debug)
 	fprintf (stderr, "testing without prefix as: %s\n",
 		 bd.name + prefix_len);
-      if (0 == strcmp (bd.name + prefix_len, in_name))
-	{
-	  return true;
-	}
+      if (strcmp (bd.name + prefix_len, in_name) == 0)
+	return true;
     }
 
   return false;

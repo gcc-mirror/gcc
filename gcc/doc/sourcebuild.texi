@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2017 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -822,6 +822,34 @@ manual needs to be installed as info for this to work, or to be a
 chapter of this manual.
 @end itemize
 
+The @file{@var{machine}.h} header is included very early in GCC's
+standard sequence of header files, while @file{@var{machine}-protos.h}
+is included late in the sequence.  Thus @file{@var{machine}-protos.h}
+can include declarations referencing types that are not defined when
+@file{@var{machine}.h} is included, specifically including those from
+@file{rtl.h} and @file{tree.h}.  Since both RTL and tree types may not
+be available in every context where @file{@var{machine}-protos.h} is
+included, in this file you should guard declarations using these types
+inside appropriate @code{#ifdef RTX_CODE} or @code{#ifdef TREE_CODE}
+conditional code segments.
+
+If the backend uses shared data structures that require @code{GTY} markers 
+for garbage collection (@pxref{Type Information}), you must declare those
+in @file{@var{machine}.h} rather than @file{@var{machine}-protos.h}.  
+Any definitions required for building libgcc must also go in
+@file{@var{machine}.h}.
+
+GCC uses the macro @code{IN_TARGET_CODE} to distinguish between
+machine-specific @file{.c} and @file{.cc} files and
+machine-independent @file{.c} and @file{.cc} files.  Machine-specific
+files should use the directive:
+
+@example
+#define IN_TARGET_CODE 1
+@end example
+
+before including @code{config.h}.
+
 If the back end is added to the official GCC source repository, the
 following are also necessary:
 
@@ -1357,6 +1385,12 @@ Target has runtime support for any options added with
 @item fortran_integer_16
 Target supports Fortran @code{integer} that is 16 bytes or longer.
 
+@item fortran_real_10
+Target supports Fortran @code{real} that is 10 bytes or longer.
+
+@item fortran_real_16
+Target supports Fortran @code{real} that is 16 bytes or longer.
+
 @item fortran_large_int
 Target supports Fortran @code{integer} kinds larger than @code{integer(8)}.
 
@@ -1367,6 +1401,10 @@ Target supports Fortran @code{real} kinds larger than @code{real(8)}.
 @subsubsection Vector-specific attributes
 
 @table @code
+@item vect_align_stack_vars
+The target's ABI allows stack variables to be aligned to the preferred
+vector alignment.
+
 @item vect_condition
 Target supports vector conditional operations.
 
@@ -1377,8 +1415,18 @@ have different type from the value operands.
 @item vect_double
 Target supports hardware vectors of @code{double}.
 
+@item vect_element_align_preferred
+The target's preferred vector alignment is the same as the element
+alignment.
+
 @item vect_float
-Target supports hardware vectors of @code{float}.
+Target supports hardware vectors of @code{float} when
+@option{-funsafe-math-optimizations} is in effect.
+
+@item vect_float_strict
+Target supports hardware vectors of @code{float} when
+@option{-funsafe-math-optimizations} is not in effect.
+This implies @code{vect_float}.
 
 @item vect_int
 Target supports hardware vectors of @code{int}.
@@ -1389,6 +1437,16 @@ Target supports hardware vectors of @code{long}.
 @item vect_long_long
 Target supports hardware vectors of @code{long long}.
 
+@item vect_fully_masked
+Target supports fully-masked (also known as fully-predicated) loops,
+so that vector loops can handle partial as well as full vectors.
+
+@item vect_masked_store
+Target supports vector masked stores.
+
+@item vect_scatter_store
+Target supports vector scatter stores.
+
 @item vect_aligned_arrays
 Target aligns arrays to vector alignment boundary.
 
@@ -1397,6 +1455,9 @@ Target supports a vector misalign access.
 
 @item vect_no_align
 Target does not support a vector alignment mechanism.
+
+@item vect_peeling_profitable
+Target might require to peel loops for alignment purposes.
 
 @item vect_no_int_min_max
 Target does not support a vector min and max instruction on @code{int}.
@@ -1415,6 +1476,9 @@ Target supports @code{vector short} multiplication.
 
 @item vect_int_mult
 Target supports @code{vector int} multiplication.
+
+@item vect_long_mult
+Target supports 64 bit @code{vector long} multiplication.
 
 @item vect_extract_even_odd
 Target supports vector even/odd element extraction.
@@ -1436,8 +1500,42 @@ element types.
 @item vect_perm
 Target supports vector permutation.
 
+@item vect_perm_byte
+Target supports permutation of vectors with 8-bit elements.
+
+@item vect_perm_short
+Target supports permutation of vectors with 16-bit elements.
+
+@item vect_perm3_byte
+Target supports permutation of vectors with 8-bit elements, and for the
+default vector length it is possible to permute:
+@example
+@{ a0, a1, a2, b0, b1, b2, @dots{} @}
+@end example
+to:
+@example
+@{ a0, a0, a0, b0, b0, b0, @dots{} @}
+@{ a1, a1, a1, b1, b1, b1, @dots{} @}
+@{ a2, a2, a2, b2, b2, b2, @dots{} @}
+@end example
+using only two-vector permutes, regardless of how long the sequence is.
+
+@item vect_perm3_int
+Like @code{vect_perm3_byte}, but for 32-bit elements.
+
+@item vect_perm3_short
+Like @code{vect_perm3_byte}, but for 16-bit elements.
+
 @item vect_shift
 Target supports a hardware vector shift operation.
+
+@item vect_unaligned_possible
+Target prefers vectors to have an alignment greater than element
+alignment, but also allows unaligned vector accesses in some
+circumstances.
+
+@item vect_variable_length
+Target has variable-length vectors.
 
 @item vect_widen_sum_hi_to_si
 Target supports a vector widening summation of @code{short} operands
@@ -1499,8 +1597,26 @@ Target supports conversion from @code{float} to @code{signed int}.
 @item vect_floatuint_cvt
 Target supports conversion from @code{float} to @code{unsigned int}.
 
+@item vect_intdouble_cvt
+Target supports conversion from @code{signed int} to @code{double}.
+
+@item vect_doubleint_cvt
+Target supports conversion from @code{double} to @code{signed int}.
+
 @item vect_max_reduc
 Target supports max reduction for vectors.
+
+@item vect_sizes_16B_8B
+Target supports 16- and 8-bytes vectors.
+
+@item vect_sizes_32B_16B
+Target supports 32- and 16-bytes vectors.
+
+@item vect_logical_reduc
+Target supports AND, IOR and XOR reduction on vectors.
+
+@item vect_fold_extract_last
+Target supports the @code{fold_extract_last} optab.
 @end table
 
 @subsubsection Thread Local Storage attributes
@@ -1557,6 +1673,10 @@ ARM target adheres to the VFP and Advanced SIMD Register Arguments
 variant of the ABI for the ARM Architecture (as selected with
 @code{-mfloat-abi=hard}).
 
+@item arm_softfloat
+ARM target uses the soft-float ABI with no floating-point instructions
+used whatsoever (as selected with @code{-mfloat-abi=soft}).
+
 @item arm_hard_vfp_ok
 ARM target supports @code{-mfpu=vfp -mfloat-abi=hard}.
 Some multilibs may be incompatible with these options.
@@ -1581,6 +1701,12 @@ Test system supports executing NEON v2 instructions.
 @anchor{arm_neon_ok}
 ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp} or compatible
 options.  Some multilibs may be incompatible with these options.
+
+@item arm_neon_ok_no_float_abi
+@anchor{arm_neon_ok_no_float_abi}
+ARM Target supports NEON with @code{-mfpu=neon}, but without any
+-mfloat-abi= option.  Some multilibs may be incompatible with this
+option.
 
 @item arm_neonv2_ok
 @anchor{arm_neonv2_ok}
@@ -1639,11 +1765,11 @@ Some multilibs may be incompatible with these options.
 
 @item arm_v8_1a_neon_ok
 @anchor{arm_v8_1a_neon_ok}
-ARM target supports options to generate ARMv8.1 Adv.SIMD instructions.
+ARM target supports options to generate ARMv8.1-A Adv.SIMD instructions.
 Some multilibs may be incompatible with these options.
 
 @item arm_v8_1a_neon_hw
-ARM target supports executing ARMv8.1 Adv.SIMD instructions.  Some
+ARM target supports executing ARMv8.1-A Adv.SIMD instructions.  Some
 multilibs may be incompatible with the options needed.  Implies
 arm_v8_1a_neon_ok.
 
@@ -1652,25 +1778,42 @@ ARM target supports acquire-release instructions.
 
 @item arm_v8_2a_fp16_scalar_ok
 @anchor{arm_v8_2a_fp16_scalar_ok}
-ARM target supports options to generate instructions for ARMv8.2 and
+ARM target supports options to generate instructions for ARMv8.2-A and
 scalar instructions from the FP16 extension.  Some multilibs may be
 incompatible with these options.
 
 @item arm_v8_2a_fp16_scalar_hw
-ARM target supports executing instructions for ARMv8.2 and scalar
+ARM target supports executing instructions for ARMv8.2-A and scalar
 instructions from the FP16 extension.  Some multilibs may be
 incompatible with these options.  Implies arm_v8_2a_fp16_neon_ok.
 
 @item arm_v8_2a_fp16_neon_ok
 @anchor{arm_v8_2a_fp16_neon_ok}
-ARM target supports options to generate instructions from ARMv8.2 with
+ARM target supports options to generate instructions from ARMv8.2-A with
 the FP16 extension.  Some multilibs may be incompatible with these
 options.  Implies arm_v8_2a_fp16_scalar_ok.
 
 @item arm_v8_2a_fp16_neon_hw
-ARM target supports executing instructions from ARMv8.2 with the FP16
+ARM target supports executing instructions from ARMv8.2-A with the FP16
 extension.  Some multilibs may be incompatible with these options.
 Implies arm_v8_2a_fp16_neon_ok and arm_v8_2a_fp16_scalar_hw.
+
+@item arm_v8_2a_dotprod_neon_ok
+@anchor{arm_v8_2a_dotprod_neon_ok}
+ARM target supports options to generate instructions from ARMv8.2-A with
+the Dot Product extension. Some multilibs may be incompatible with these
+options.
+
+@item arm_v8_2a_dotprod_neon_hw
+ARM target supports executing instructions from ARMv8.2-A with the Dot
+Product extension. Some multilibs may be incompatible with these options.
+Implies arm_v8_2a_dotprod_neon_ok.
+
+@item arm_fp16fml_neon_ok
+@anchor{arm_fp16fml_neon_ok}
+ARM target supports extensions to generate the @code{VFMAL} and @code{VFMLS}
+half-precision floating-point instructions available from ARMv8.2-A and
+onwards.  Some multilibs may be incompatible with these options.
 
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
@@ -1840,11 +1983,26 @@ PowerPC target supports executing VSX instructions (ISA 2.06).
 
 @c Please keep this table sorted alphabetically.
 @table @code
+@item autoincdec
+Target supports autoincrement/decrement addressing.
+
 @item avx
 Target supports compiling @code{avx} instructions.
 
 @item avx_runtime
 Target supports the execution of @code{avx} instructions.
+
+@item avx2
+Target supports compiling @code{avx2} instructions.
+
+@item avx2_runtime
+Target supports the execution of @code{avx2} instructions.
+
+@item avx512f
+Target supports compiling @code{avx512f} instructions.
+
+@item avx512f_runtime
+Target supports the execution of @code{avx512f} instructions.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
@@ -1898,6 +2056,9 @@ or @code{EM_SPARCV9} executables.
 
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
+
+@item xorsign
+Target supports the xorsign optab expansion.
 
 @end table
 
@@ -1973,6 +2134,9 @@ time) should be run on this target.  This can be enabled by setting the
 Test system runs executables on a simulator (i.e. slowly) rather than
 hardware (i.e. fast).
 
+@item signal
+Target has @code{signal.h}.
+
 @item stabs
 Target supports the stabs debugging format.
 
@@ -2009,8 +2173,8 @@ Target supports wide characters.
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 
-@item cilkplus_runtime
-Target supports the Cilk Plus runtime library.
+@item branch_cost
+Target supports @option{-branch-cost=N}.
 
 @item cxa_atexit
 Target uses @code{__cxa_atexit}.
@@ -2092,6 +2256,12 @@ Target supports section anchors.
 
 @item short_enums
 Target defaults to short enums.
+
+@item stack_size
+@anchor{stack_size_et}
+Target has limited stack size.  The stack size limit can be obtained using the
+STACK_SIZE macro defined by @ref{stack_size_ao,,@code{dg-add-options} feature
+@code{stack_size}}.
 
 @item static
 Target supports @option{-static}.
@@ -2235,21 +2405,31 @@ arm vfp3 floating point support; see
 the @ref{arm_vfp3_ok,,arm_vfp3_ok effective target keyword}.
 
 @item arm_v8_1a_neon
-Add options for ARMv8.1 with Adv.SIMD support, if this is supported
+Add options for ARMv8.1-A with Adv.SIMD support, if this is supported
 by the target; see the @ref{arm_v8_1a_neon_ok,,arm_v8_1a_neon_ok}
 effective target keyword.
 
 @item arm_v8_2a_fp16_scalar
-Add options for ARMv8.2 with scalar FP16 support, if this is
+Add options for ARMv8.2-A with scalar FP16 support, if this is
 supported by the target; see the
 @ref{arm_v8_2a_fp16_scalar_ok,,arm_v8_2a_fp16_scalar_ok} effective
 target keyword.
 
 @item arm_v8_2a_fp16_neon
-Add options for ARMv8.2 with Adv.SIMD FP16 support, if this is
+Add options for ARMv8.2-A with Adv.SIMD FP16 support, if this is
 supported by the target; see the
 @ref{arm_v8_2a_fp16_neon_ok,,arm_v8_2a_fp16_neon_ok} effective target
 keyword.
+
+@item arm_v8_2a_dotprod_neon
+Add options for ARMv8.2-A with Adv.SIMD Dot Product support, if this is
+supported by the target; see the
+@ref{arm_v8_2a_dotprod_neon_ok} effective target keyword.
+
+@item arm_fp16fml_neon
+Add options to enable generation of the @code{VFMAL} and @code{VFMSL}
+instructions, if this is supported by the target; see the
+@ref{arm_fp16fml_neon_ok} effective target keyword.
 
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind
@@ -2272,6 +2452,12 @@ compliance mode.
 @code{mips16} function attributes.
 Only MIPS targets support this feature, and only then in certain modes.
 
+@item stack_size
+@anchor{stack_size_ao}
+Add the flags needed to define macro STACK_SIZE and set it to the stack size
+limit associated with the @ref{stack_size_et,,@code{stack_size} effective
+target}.
+
 @item tls
 Add the target-specific flags needed to use thread-local storage.
 @end table
@@ -2289,6 +2475,14 @@ the codeset to convert to.
 @item dg-require-profiling @var{profopt}
 Skip the test if the target does not support profiling with option
 @var{profopt}.
+
+@item dg-require-stack-check @var{check}
+Skip the test if the target does not support the @code{-fstack-check}
+option.  If @var{check} is @code{""}, support for @code{-fstack-check}
+is checked, for @code{-fstack-check=("@var{check}")} otherwise.
+
+@item dg-require-stack-size @var{size}
+Skip the test if the target does not support a stack size of @var{size}.
 
 @item dg-require-visibility @var{vis}
 Skip the test if the target does not support the @code{visibility} attribute.
@@ -2604,7 +2798,7 @@ you wish to test for the presence or absence of compiler warnings.
 While special options can be set, and tests disabled on specific
 platforms, by the use of @file{.x} files, mostly these test cases
 should not contain platform dependencies.  FIXME: discuss how defines
-such as @code{NO_LABEL_VALUES} and @code{STACK_SIZE} are used.
+such as @code{STACK_SIZE} are used.
 @item gcc.c-torture/execute
 This testsuite contains test cases that should compile, link and run;
 otherwise the same comments as for @file{gcc.c-torture/compile} apply.

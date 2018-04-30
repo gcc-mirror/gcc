@@ -9,5 +9,6 @@ g (int *p)
   extern void f (void *);
 
   void *q = __builtin_alloca (p); /* { dg-warning "passing argument 1" } */
+  /* { dg-warning "unbounded use of 'alloca'" "unbounded" { target *-*-* } .-1 } */
   f (q);
 }

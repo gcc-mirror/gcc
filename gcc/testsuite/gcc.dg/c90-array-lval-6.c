@@ -12,5 +12,5 @@ extern struct s foo(void);
 void bar(void)
 {
   char *ptr = foo().c; /* { dg-bogus "warning" "warning in place of error" } */
+  /* { dg-error "non-lvalue" "array not decaying to lvalue" { target *-*-* } .-1 } */
 }
-/* { dg-error "non-lvalue" "array not decaying to lvalue" { target *-*-* } 14 } */

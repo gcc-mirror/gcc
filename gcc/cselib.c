@@ -1,5 +1,5 @@
 /* Common subexpression elimination library for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -530,7 +530,8 @@ cselib_reset_table (unsigned int num)
       n_used_regs = new_used_regs;
       used_regs[0] = regno;
       max_value_regs
-	= hard_regno_nregs[regno][GET_MODE (cfa_base_preserved_val->locs->loc)];
+	= hard_regno_nregs (regno,
+			    GET_MODE (cfa_base_preserved_val->locs->loc));
     }
   else
     {
@@ -804,14 +805,14 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
       if (memmode == VOIDmode)
 	return x;
 
-      *off = GEN_INT (-GET_MODE_SIZE (memmode));
+      *off = gen_int_mode (-GET_MODE_SIZE (memmode), GET_MODE (x));
       return XEXP (x, 0);
 
     case PRE_INC:
       if (memmode == VOIDmode)
 	return x;
 
-      *off = GEN_INT (GET_MODE_SIZE (memmode));
+      *off = gen_int_mode (GET_MODE_SIZE (memmode), GET_MODE (x));
       return XEXP (x, 0);
 
     case PRE_MODIFY:
@@ -986,6 +987,11 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode, int depth)
 	    return 0;
 	  break;
 
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return 0;
+	  break;
+
 	case 'V':
 	case 'E':
 	  /* Two vectors must have the same length.  */
@@ -1062,6 +1068,7 @@ static unsigned int
 cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 {
   cselib_val *e;
+  poly_int64 offset;
   int i, j;
   enum rtx_code code;
   const char *fmt;
@@ -1127,6 +1134,15 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 	hash += CONST_WIDE_INT_ELT (x, i);
       return hash;
 
+    case CONST_POLY_INT:
+      {
+	inchash::hash h;
+	h.add_int (hash);
+	for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	  h.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+	return h.end ();
+      }
+
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
@@ -1148,11 +1164,11 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 	int units;
 	rtx elt;
 
-	units = CONST_VECTOR_NUNITS (x);
+	units = const_vector_encoded_nelts (x);
 
 	for (i = 0; i < units; ++i)
 	  {
-	    elt = CONST_VECTOR_ELT (x, i);
+	    elt = CONST_VECTOR_ENCODED_ELT (x, i);
 	    hash += cselib_hash_rtx (elt, 0, memmode);
 	  }
 
@@ -1188,14 +1204,15 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
     case PRE_INC:
       /* We can't compute these without knowing the MEM mode.  */
       gcc_assert (memmode != VOIDmode);
-      i = GET_MODE_SIZE (memmode);
+      offset = GET_MODE_SIZE (memmode);
       if (code == PRE_DEC)
-	i = -i;
+	offset = -offset;
       /* Adjust the hash so that (mem:MEMMODE (pre_* (reg))) hashes
 	 like (mem:MEMMODE (plus (reg) (const_int I))).  */
       hash += (unsigned) PLUS - (unsigned)code
 	+ cselib_hash_rtx (XEXP (x, 0), create, memmode)
-	+ cselib_hash_rtx (GEN_INT (i), create, memmode);
+	+ cselib_hash_rtx (gen_int_mode (offset, GET_MODE (x)),
+			   create, memmode);
       return hash ? hash : 1 + (unsigned) PLUS;
 
     case PRE_MODIFY:
@@ -1266,6 +1283,10 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 
 	case 'i':
 	  hash += XINT (x, i);
+	  break;
+
+	case 'p':
+	  hash += constant_lower_bound (SUBREG_BYTE (x));
 	  break;
 
 	case '0':
@@ -1852,6 +1873,7 @@ cselib_subst_to_values (rtx x, machine_mode memmode)
   struct elt_list *l;
   rtx copy = x;
   int i;
+  poly_int64 offset;
 
   switch (code)
     {
@@ -1888,11 +1910,11 @@ cselib_subst_to_values (rtx x, machine_mode memmode)
     case PRE_DEC:
     case PRE_INC:
       gcc_assert (memmode != VOIDmode);
-      i = GET_MODE_SIZE (memmode);
+      offset = GET_MODE_SIZE (memmode);
       if (code == PRE_DEC)
-	i = -i;
+	offset = -offset;
       return cselib_subst_to_values (plus_constant (GET_MODE (x),
-						    XEXP (x, 0), i),
+						    XEXP (x, 0), offset),
 				     memmode);
 
     case PRE_MODIFY:
@@ -2001,7 +2023,7 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 
       if (i < FIRST_PSEUDO_REGISTER)
 	{
-	  unsigned int n = hard_regno_nregs[i][mode];
+	  unsigned int n = hard_regno_nregs (i, mode);
 
 	  if (n > max_value_regs)
 	    max_value_regs = n;
@@ -2009,6 +2031,8 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 
       e = new_cselib_val (next_uid, GET_MODE (x), x);
       new_elt_loc_list (e, x);
+
+      scalar_int_mode int_mode;
       if (REG_VALUES (i) == 0)
 	{
 	  /* Maintain the invariant that the first entry of
@@ -2018,27 +2042,27 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 	  REG_VALUES (i) = new_elt_list (REG_VALUES (i), NULL);
 	}
       else if (cselib_preserve_constants
-	       && GET_MODE_CLASS (mode) == MODE_INT)
+	       && is_int_mode (mode, &int_mode))
 	{
 	  /* During var-tracking, try harder to find equivalences
 	     for SUBREGs.  If a setter sets say a DImode register
 	     and user uses that register only in SImode, add a lowpart
 	     subreg location.  */
 	  struct elt_list *lwider = NULL;
+	  scalar_int_mode lmode;
 	  l = REG_VALUES (i);
 	  if (l && l->elt == NULL)
 	    l = l->next;
 	  for (; l; l = l->next)
-	    if (GET_MODE_CLASS (GET_MODE (l->elt->val_rtx)) == MODE_INT
-		&& GET_MODE_SIZE (GET_MODE (l->elt->val_rtx))
-		   > GET_MODE_SIZE (mode)
+	    if (is_int_mode (GET_MODE (l->elt->val_rtx), &lmode)
+		&& GET_MODE_SIZE (lmode) > GET_MODE_SIZE (int_mode)
 		&& (lwider == NULL
-		    || GET_MODE_SIZE (GET_MODE (l->elt->val_rtx))
-		       < GET_MODE_SIZE (GET_MODE (lwider->elt->val_rtx))))
+		    || partial_subreg_p (lmode,
+					 GET_MODE (lwider->elt->val_rtx))))
 	      {
 		struct elt_loc_list *el;
 		if (i < FIRST_PSEUDO_REGISTER
-		    && hard_regno_nregs[i][GET_MODE (l->elt->val_rtx)] != 1)
+		    && hard_regno_nregs (i, lmode) != 1)
 		  continue;
 		for (el = l->elt->locs; el; el = el->next)
 		  if (!REG_P (el->loc))
@@ -2048,7 +2072,7 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 	      }
 	  if (lwider)
 	    {
-	      rtx sub = lowpart_subreg (mode, lwider->elt->val_rtx,
+	      rtx sub = lowpart_subreg (int_mode, lwider->elt->val_rtx,
 					GET_MODE (lwider->elt->val_rtx));
 	      if (sub)
 		new_elt_loc_list (e, sub);
@@ -2478,6 +2502,7 @@ cselib_record_sets (rtx_insn *insn)
   rtx body = PATTERN (insn);
   rtx cond = 0;
   int n_sets_before_autoinc;
+  int n_strict_low_parts = 0;
   struct cselib_record_autoinc_data data;
 
   body = PATTERN (insn);
@@ -2532,6 +2557,7 @@ cselib_record_sets (rtx_insn *insn)
   for (i = 0; i < n_sets; i++)
     {
       rtx dest = sets[i].dest;
+      rtx orig = dest;
 
       /* A STRICT_LOW_PART can be ignored; we'll record the equivalence for
          the low part after invalidating any knowledge about larger modes.  */
@@ -2556,6 +2582,55 @@ cselib_record_sets (rtx_insn *insn)
 	    }
 	  else
 	    sets[i].dest_addr_elt = 0;
+	}
+
+      /* Improve handling of STRICT_LOW_PART if the current value is known
+	 to be const0_rtx, then the low bits will be set to dest and higher
+	 bits will remain zero.  Used in code like:
+
+	 {di:SI=0;clobber flags:CC;}
+	 flags:CCNO=cmp(bx:SI,0)
+	 strict_low_part(di:QI)=flags:CCNO<=0
+
+	 where we can note both that di:QI=flags:CCNO<=0 and
+	 also that because di:SI is known to be 0 and strict_low_part(di:QI)
+	 preserves the upper bits that di:SI=zero_extend(flags:CCNO<=0).  */
+      scalar_int_mode mode;
+      if (dest != orig
+	  && cselib_record_sets_hook
+	  && REG_P (dest)
+	  && HARD_REGISTER_P (dest)
+	  && is_a <scalar_int_mode> (GET_MODE (dest), &mode)
+	  && n_sets + n_strict_low_parts < MAX_SETS)
+	{
+	  opt_scalar_int_mode wider_mode_iter;
+	  FOR_EACH_WIDER_MODE (wider_mode_iter, mode)
+	    {
+	      scalar_int_mode wider_mode = wider_mode_iter.require ();
+	      if (GET_MODE_PRECISION (wider_mode) > BITS_PER_WORD)
+		break;
+
+	      rtx reg = gen_lowpart (wider_mode, dest);
+	      if (!REG_P (reg))
+		break;
+
+	      cselib_val *v = cselib_lookup (reg, wider_mode, 0, VOIDmode);
+	      if (!v)
+		continue;
+
+	      struct elt_loc_list *l;
+	      for (l = v->locs; l; l = l->next)
+		if (l->loc == const0_rtx)
+		  break;
+
+	      if (!l)
+		continue;
+
+	      sets[n_sets + n_strict_low_parts].dest = reg;
+	      sets[n_sets + n_strict_low_parts].src = dest;
+	      sets[n_sets + n_strict_low_parts++].src_elt = sets[i].src_elt;
+	      break;
+	    }
 	}
     }
 
@@ -2600,6 +2675,20 @@ cselib_record_sets (rtx_insn *insn)
       if (REG_P (dest)
 	  || (MEM_P (dest) && cselib_record_memory))
 	cselib_record_set (dest, sets[i].src_elt, sets[i].dest_addr_elt);
+    }
+
+  /* And deal with STRICT_LOW_PART.  */
+  for (i = 0; i < n_strict_low_parts; i++)
+    {
+      if (! PRESERVED_VALUE_P (sets[n_sets + i].src_elt->val_rtx))
+	continue;
+      machine_mode dest_mode = GET_MODE (sets[n_sets + i].dest);
+      cselib_val *v
+	= cselib_lookup (sets[n_sets + i].dest, dest_mode, 1, VOIDmode);
+      cselib_preserve_value (v);
+      rtx r = gen_rtx_ZERO_EXTEND (dest_mode,
+				   sets[n_sets + i].src_elt->val_rtx);
+      cselib_add_permanent_equiv (v, r, insn);
     }
 }
 
@@ -2660,8 +2749,8 @@ cselib_process_insn (rtx_insn *insn)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (call_used_regs[i]
 	    || (REG_VALUES (i) && REG_VALUES (i)->elt
-		&& HARD_REGNO_CALL_PART_CLOBBERED (i,
-		      GET_MODE (REG_VALUES (i)->elt->val_rtx))))
+		&& (targetm.hard_regno_call_part_clobbered
+		    (i, GET_MODE (REG_VALUES (i)->elt->val_rtx)))))
 	  cselib_invalidate_regno (i, reg_raw_mode[i]);
 
       /* Since it is not clear how cselib is going to be used, be

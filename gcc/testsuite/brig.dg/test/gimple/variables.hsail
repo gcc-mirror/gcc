@@ -3,7 +3,7 @@ module &module:1:0:$full:$large:$default;
 /* Tests for different variable scopes and address spaces. */
 
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-gimple" } */
+/* { dg-options "-fdump-tree-gimple -fdump-tree-original" } */
 
 prog align(256) private_u32 &prog_private;
 private_u32 &mod_private;
@@ -29,7 +29,10 @@ prog function &subfunction(arg_u32 %return_value)(arg_u32 %arg) {
      ld_private_u32 $s200, [%func_private];
      st_private_u32 $s200, [&prog_private];
 
+/* { dg-final { scan-tree-dump "__group_base_addr \\\+ \\\(0 \\\+" "original" } } */
      ld_group_u32 $s203, [%func_group];
+
+/* { dg-final { scan-tree-dump "__group_base_addr \\\+ 0" "original" } } */
      st_group_u32 $s203, [&prog_group];
 
      ld_global_u32 $s204, [%func_global];
@@ -103,8 +106,6 @@ prog kernel &kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
  func_group @8		(1)
  kern_group @12		(3)
 */
-
-/* { dg-final { scan-tree-dump "\\\+ 8;.*\\\+ 12;.*\\\+ 4;" "gimple" } } */
 
 /* The "mangling" of the global and readonly vars. */
 /* { dg-final { scan-tree-dump "\[ \]*prog_global = s204;" "gimple" } } */

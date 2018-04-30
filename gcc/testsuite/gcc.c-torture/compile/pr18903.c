@@ -1,8 +1,9 @@
+/* { dg-require-effective-target label_values } */
+
 /* We were ICEing in bsi_after_labels because 
    we had a BB which did not have a lablel.
    PR middle-end/18903 */
 
-#ifndef NO_LABEL_VALUES
 void g (int s, int f)
 {
   &&ff;
@@ -12,6 +13,3 @@ void g (int s, int f)
   f = s;
   end:;
 }
-#else
-int g;
-#endif

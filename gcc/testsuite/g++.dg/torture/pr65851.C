@@ -16,6 +16,7 @@ class C : A {
 public:
   unsigned long write(const char *p1, unsigned long p2) {
     m_string.push_range(p1 + p2);
+    return 0;
   }
 };
 char *write_signed_decimal_backward(bool) {

@@ -8,5 +8,5 @@ struct XalanCProcessor
           ParseOptionType getParseOption(void);
 };
 typedef XalanCProcessor::ParseOptionType ParseOptionType;
-ParseOptionType XalanCProcessor::getParseOption(void) {}
+ParseOptionType XalanCProcessor::getParseOption(void) { return ParseOptionType(); }
 

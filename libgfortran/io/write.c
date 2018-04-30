@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -235,7 +235,7 @@ write_utf8_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
    is set to the appropriate size to allocate.  */
 
 static void
-write_check_cc (st_parameter_dt *dtp, const char **source, int *alloc_len)
+write_check_cc (st_parameter_dt *dtp, const char **source, size_t *alloc_len)
 {
   /* Only valid for CARRIAGECONTROL=FORTRAN.  */
   if (dtp->u.p.current_unit->flags.cc != CC_FORTRAN
@@ -311,7 +311,7 @@ write_check_cc (st_parameter_dt *dtp, const char **source, int *alloc_len)
    after the start-of-record string was inserted.  */
 
 static char *
-write_cc (st_parameter_dt *dtp, char *p, int *source_len)
+write_cc (st_parameter_dt *dtp, char *p, size_t *source_len)
 {
   /* Only valid for CARRIAGECONTROL=FORTRAN.  */
   if (dtp->u.p.current_unit->flags.cc != CC_FORTRAN || source_len == NULL)
@@ -360,14 +360,15 @@ write_cc (st_parameter_dt *dtp, char *p, int *source_len)
 }
 
 void
-write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
+
+write_a (st_parameter_dt *dtp, const fnode *f, const char *source, size_t len)
 {
-  int wlen;
+  size_t wlen;
   char *p;
 
   wlen = f->u.string.length < 0
 	 || (f->format == FMT_G && f->u.string.length == 0)
-	 ? len : f->u.string.length;
+    ? len : (size_t) f->u.string.length;
 
 #ifdef HAVE_CRLF
   /* If this is formatted STREAM IO convert any embedded line feed characters
@@ -376,7 +377,7 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
   if (is_stream_io (dtp))
     {
       const char crlf[] = "\r\n";
-      int i, q, bytes;
+      size_t q, bytes;
       q = bytes = 0;
 
       /* Write out any padding if needed.  */
@@ -389,7 +390,7 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 	}
 
       /* Scan the source string looking for '\n' and convert it if found.  */
-      for (i = 0; i < wlen; i++)
+      for (size_t i = 0; i < wlen; i++)
 	{
 	  if (source[i] == '\n')
 	    {
@@ -471,14 +472,14 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
    to the UTF-8 encoded string before writing out.  */
 
 void
-write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
+write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, size_t len)
 {
-  int wlen;
+  size_t wlen;
   gfc_char4_t *q;
 
   wlen = f->u.string.length < 0
 	 || (f->format == FMT_G && f->u.string.length == 0)
-	 ? len : f->u.string.length;
+    ? len : (size_t) f->u.string.length;
 
   q = (gfc_char4_t *) source;
 #ifdef HAVE_CRLF
@@ -488,7 +489,7 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
   if (is_stream_io (dtp))
     {
       const gfc_char4_t crlf[] = {0x000d,0x000a};
-      int i, bytes;
+      size_t bytes;
       gfc_char4_t *qq;
       bytes = 0;
 
@@ -504,7 +505,7 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
 
       /* Scan the source string looking for '\n' and convert it if found.  */
       qq = (gfc_char4_t *) source;
-      for (i = 0; i < wlen; i++)
+      for (size_t i = 0; i < wlen; i++)
 	{
 	  if (qq[i] == '\n')
 	    {
@@ -870,8 +871,11 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 	  goto done;
 	}
 
-      memset4 (p4, ' ', nblank);
-      p4 += nblank;
+      if (!dtp->u.p.namelist_mode)
+	{
+	  memset4 (p4, ' ', nblank);
+	  p4 += nblank;
+	}
 
       switch (sign)
 	{
@@ -890,6 +894,12 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 
       memcpy4 (p4, q, digits);
       return;
+
+      if (dtp->u.p.namelist_mode)
+	{
+	  p4 += digits;
+	  memset4 (p4, ' ', nblank);
+	}
     }
 
   if (nblank < 0)
@@ -898,8 +908,11 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
       goto done;
     }
 
-  memset (p, ' ', nblank);
-  p += nblank;
+  if (!dtp->u.p.namelist_mode)
+    {
+      memset (p, ' ', nblank);
+      p += nblank;
+    }
 
   switch (sign)
     {
@@ -917,6 +930,12 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
   p += nzero;
 
   memcpy (p, q, digits);
+
+  if (dtp->u.p.namelist_mode)
+    {
+      p += digits;
+      memset (p, ' ', nblank);
+    }
 
  done:
   return;
@@ -986,7 +1005,7 @@ btoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
   int i, j;
 
   q = buffer;
-  if (big_endian)
+  if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     {
       const char *p = s;
       for (i = 0; i < len; i++)
@@ -1051,7 +1070,7 @@ otoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
   *q = '\0';
   i = k = octet = 0;
 
-  if (big_endian)
+  if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     {
       const char *p = s + len - 1;
       char c = *p;
@@ -1126,7 +1145,7 @@ ztoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
 
   q = buffer;
 
-  if (big_endian)
+  if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     {
       const char *p = s;
       for (i = 0; i < len; i++)
@@ -1300,17 +1319,12 @@ write_logical (st_parameter_dt *dtp, const char *source, int length)
 /* Write a list-directed integer value.  */
 
 static void
-write_integer (st_parameter_dt *dtp, const char *source, int length)
+write_integer (st_parameter_dt *dtp, const char *source, int kind)
 {
-  char *p;
-  const char *q;
-  int digits;
   int width;
-  char itoa_buf[GFC_ITOA_BUF_SIZE];
+  fnode f;
 
-  q = gfc_itoa (extract_int (source, length), itoa_buf, sizeof (itoa_buf));
-
-  switch (length)
+  switch (kind)
     {
     case 1:
       width = 4;
@@ -1332,41 +1346,9 @@ write_integer (st_parameter_dt *dtp, const char *source, int length)
       width = 0;
       break;
     }
-
-  digits = strlen (q);
-
-  if (width < digits)
-    width = digits;
-  p = write_block (dtp, width);
-  if (p == NULL)
-    return;
-
-  if (unlikely (is_char4_unit (dtp)))
-    {
-      gfc_char4_t *p4 = (gfc_char4_t *) p;
-      if (dtp->u.p.no_leading_blank)
-	{
-	  memcpy4 (p4, q, digits);
-	  memset4 (p4 + digits, ' ', width - digits);
-	}
-      else
-	{
-	  memset4 (p4, ' ', width - digits);
-	  memcpy4 (p4 + width - digits, q, digits);
-	}
-      return;
-    }
-
-  if (dtp->u.p.no_leading_blank)
-    {
-      memcpy (p, q, digits);
-      memset (p + digits, ' ', width - digits);
-    }
-  else
-    {
-      memset (p, ' ', width - digits);
-      memcpy (p + width - digits, q, digits);
-    }
+  f.u.integer.w = width;
+  f.u.integer.m = -1;
+  write_decimal (dtp, &f, source, kind, (void *) gfc_itoa);
 }
 
 
@@ -1377,9 +1359,9 @@ write_integer (st_parameter_dt *dtp, const char *source, int length)
 #define NODELIM 0
 
 static void
-write_character (st_parameter_dt *dtp, const char *source, int kind, int length, int mode)
+write_character (st_parameter_dt *dtp, const char *source, int kind, size_t length, int mode)
 {
-  int i, extra;
+  size_t extra;
   char *p, d;
 
   if (mode == DELIM)
@@ -1408,7 +1390,7 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length,
 	{
 	  extra = 2;
 
-	  for (i = 0; i < length; i++)
+	  for (size_t i = 0; i < length; i++)
 	    if (source[i] == d)
 	      extra++;
 	}
@@ -1428,7 +1410,7 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length,
 	    {
 	      *p4++ = d4;
 
-	      for (i = 0; i < length; i++)
+	      for (size_t i = 0; i < length; i++)
 		{
 		  *p4++ = (gfc_char4_t) source[i];
 		  if (source[i] == d)
@@ -1446,7 +1428,7 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length,
 	{
 	  *p++ = d;
 
-	  for (i = 0; i < length; i++)
+	  for (size_t i = 0; i < length; i++)
             {
               *p++ = source[i];
               if (source[i] == d)
@@ -1537,8 +1519,9 @@ select_buffer (st_parameter_dt *dtp, const fnode *f, int precision,
 {
   char *result;
   
-  /* The buffer needs at least one more byte to allow room for normalizing.  */
-  *size = size_from_kind (dtp, f, kind) + precision + 1;
+  /* The buffer needs at least one more byte to allow room for
+     normalizing and 1 to hold null terminator.  */
+  *size = size_from_kind (dtp, f, kind) + precision + 1 + 1;
 
   if (*size > BUF_STACK_SZ)
      result = xmalloc (*size);
@@ -1552,7 +1535,7 @@ select_string (st_parameter_dt *dtp, const fnode *f, char *buf, size_t *size,
 	       int kind)
 {
   char *result;
-  *size = size_from_kind (dtp, f, kind) + f->u.real.d;
+  *size = size_from_kind (dtp, f, kind) + f->u.real.d + 1;
   if (*size > BUF_STACK_SZ)
      result = xmalloc (*size);
   else
@@ -1809,9 +1792,11 @@ write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
                            precision, buf_size, result1, &res_len1);
   get_float_string (dtp, &f, source + size / 2 , kind, 0, buffer,
                            precision, buf_size, result2, &res_len2);
-  lblanks = width - res_len1 - res_len2 - 3;
-
-  write_x (dtp, lblanks, lblanks);
+  if (!dtp->u.p.namelist_mode)
+    {
+      lblanks = width - res_len1 - res_len2 - 3;
+      write_x (dtp, lblanks, lblanks);
+    }
   write_char (dtp, '(');
   write_float_string (dtp, result1, res_len1);
   write_char (dtp, semi_comma);
@@ -1901,7 +1886,7 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 	  gfc_charlen_type child_iomsg_len;
 	  int noiostat;
 	  int *child_iostat = NULL;
-	  gfc_array_i4 vlist;
+	  gfc_full_array_i4 vlist;
 
 	  GFC_DESCRIPTOR_DATA(&vlist) = NULL;
 	  GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
@@ -2226,7 +2211,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 		  gfc_charlen_type child_iomsg_len;
 		  int noiostat;
 		  int *child_iostat = NULL;
-		  gfc_array_i4 vlist;
+		  gfc_full_array_i4 vlist;
 		  formatted_dtio dtio_ptr = (formatted_dtio)obj->dtio_sub;
 
 		  GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
@@ -2248,16 +2233,11 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 		      child_iomsg_len = IOMSG_LEN;
 		    }
 
-		  /* If writing to an internal unit, stash it to allow
-		     the child procedure to access it.  */
-		  if (is_internal_unit (dtp))
-		    stash_internal_unit (dtp);
-		      
 		  /* Call the user defined formatted WRITE procedure.  */
 		  dtp->u.p.current_unit->child_dtio++;
 		  if (obj->type == BT_DERIVED)
 		    {
-		      // build a class container
+		      /* Build a class container.  */
 		      gfc_class list_obj;
 		      list_obj.data = p;
 		      list_obj.vptr = obj->vtable;
@@ -2394,7 +2374,6 @@ void
 namelist_write (st_parameter_dt *dtp)
 {
   namelist_info *t1, *t2, *dummy = NULL;
-  index_type i;
   index_type dummy_offset = 0;
   char c;
   char *dummy_name = NULL;
@@ -2416,7 +2395,7 @@ namelist_write (st_parameter_dt *dtp)
   write_character (dtp, "&", 1, 1, NODELIM);
 
   /* Write namelist name in upper case - f95 std.  */
-  for (i = 0 ;i < dtp->namelist_name_len ;i++ )
+  for (gfc_charlen_type i = 0; i < dtp->namelist_name_len; i++ )
     {
       c = toupper ((int) dtp->namelist_name[i]);
       write_character (dtp, &c, 1 ,1, NODELIM);

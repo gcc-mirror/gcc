@@ -21,7 +21,7 @@ enum e {
   E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
   /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
   /* Again, overflow in evaluated subexpression.  */
-  E6 = 0 * (INT_MAX + 1), /* { dg-warning "integer overflow in expression" } */
+  E6 = 0 * (INT_MAX + 1), /* { dg-warning "integer overflow in expression of type .int. results in .-\[0-9\]+." } */
   /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
   /* A cast does not constitute overflow in conversion.  */
   E7 = (char) INT_MAX
@@ -53,10 +53,10 @@ static int sc = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } 
    subexpression, so is a null pointer constant.  */
 void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
 /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
-/* { dg-error "initialization makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
+/* { dg-error "initialization of 'void \\*' from 'int' makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
 void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-error "initializer element is not computable at load time" "constant" { target *-*-* } .-1 } */
-/* { dg-error "initialization makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
+/* { dg-error "initializer element is not constant" "constant" { target *-*-* } .-1 } */
+/* { dg-error "initialization of 'void \\*' from 'int' makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
 void *r = (1 ? 0 : INT_MAX+1);
 
 void
@@ -91,15 +91,15 @@ void fsc (signed char);
 void
 h2 (void)
 {
-  fsc (SCHAR_MAX + 1); /* { dg-warning "overflow in implicit constant conversion" } */
-  fsc (SCHAR_MIN - 1); /* { dg-warning "overflow in implicit constant conversion" } */
-  fsc (UCHAR_MAX); /* { dg-warning "overflow in implicit constant conversion" } */
-  fsc (UCHAR_MAX + 1); /* { dg-warning "overflow in implicit constant conversion" } */
+  fsc (SCHAR_MAX + 1); /* { dg-warning "overflow in conversion from .int. to .signed char. changes value" } */
+  fsc (SCHAR_MIN - 1); /* { dg-warning "overflow in conversion" } */
+  fsc (UCHAR_MAX); /* { dg-warning "overflow in conversion" } */
+  fsc (UCHAR_MAX + 1); /* { dg-warning "overflow in conversion" } */
   fuc (-1);
-  fuc (UCHAR_MAX + 1); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
+  fuc (UCHAR_MAX + 1); /* { dg-warning "unsigned conversion from .int. to .unsigned char. changes value" } */
   fuc (SCHAR_MIN);
-  fuc (SCHAR_MIN - 1); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
-  fuc (-UCHAR_MAX); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
+  fuc (SCHAR_MIN - 1); /* { dg-warning "unsigned conversion" } */
+  fuc (-UCHAR_MAX); /* { dg-warning "unsigned conversion" } */
 }
 
 void fui (unsigned int);

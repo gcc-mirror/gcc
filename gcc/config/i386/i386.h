@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -85,8 +85,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX5124FMAPS_P(x) TARGET_ISA_AVX5124FMAPS_P(x)
 #define TARGET_AVX5124VNNIW	TARGET_ISA_AVX5124VNNIW
 #define TARGET_AVX5124VNNIW_P(x) TARGET_ISA_AVX5124VNNIW_P(x)
+#define TARGET_AVX512VBMI2	TARGET_ISA_AVX512VBMI2
+#define TARGET_AVX512VBMI2_P(x) TARGET_ISA_AVX512VBMI2_P(x)
 #define TARGET_AVX512VPOPCNTDQ	TARGET_ISA_AVX512VPOPCNTDQ
 #define TARGET_AVX512VPOPCNTDQ_P(x) TARGET_ISA_AVX512VPOPCNTDQ_P(x)
+#define TARGET_AVX512VNNI	TARGET_ISA_AVX512VNNI
+#define TARGET_AVX512VNNI_P(x) TARGET_ISA_AVX512VNNI_P(x)
+#define TARGET_AVX512BITALG	TARGET_ISA_AVX512BITALG
+#define TARGET_AVX512BITALG_P(x) TARGET_ISA_AVX512BITALG_P(x)
 #define TARGET_FMA	TARGET_ISA_FMA
 #define TARGET_FMA_P(x)	TARGET_ISA_FMA_P(x)
 #define TARGET_SSE4A	TARGET_ISA_SSE4A
@@ -97,13 +103,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_XOP_P(x)	TARGET_ISA_XOP_P(x)
 #define TARGET_LWP	TARGET_ISA_LWP
 #define TARGET_LWP_P(x)	TARGET_ISA_LWP_P(x)
-#define TARGET_ROUND	TARGET_ISA_ROUND
 #define TARGET_ABM	TARGET_ISA_ABM
 #define TARGET_ABM_P(x)	TARGET_ISA_ABM_P(x)
+#define TARGET_PCONFIG	TARGET_ISA_PCONFIG
+#define TARGET_PCONFIG_P(x)	TARGET_ISA_PCONFIG_P(x)
+#define TARGET_WBNOINVD	TARGET_ISA_WBNOINVD
+#define TARGET_WBNOINVD_P(x)	TARGET_ISA_WBNOINVD_P(x)
 #define TARGET_SGX	TARGET_ISA_SGX
 #define TARGET_SGX_P(x)	TARGET_ISA_SGX_P(x)
 #define TARGET_RDPID	TARGET_ISA_RDPID
 #define TARGET_RDPID_P(x)	TARGET_ISA_RDPID_P(x)
+#define TARGET_GFNI	TARGET_ISA_GFNI
+#define TARGET_GFNI_P(x)	TARGET_ISA_GFNI_P(x)
+#define TARGET_VAES	TARGET_ISA_VAES
+#define TARGET_VAES_P(x)	TARGET_ISA_VAES_P(x)
+#define TARGET_VPCLMULQDQ	TARGET_ISA_VPCLMULQDQ
+#define TARGET_VPCLMULQDQ_P(x)	TARGET_ISA_VPCLMULQDQ_P(x)
 #define TARGET_BMI	TARGET_ISA_BMI
 #define TARGET_BMI_P(x)	TARGET_ISA_BMI_P(x)
 #define TARGET_BMI2	TARGET_ISA_BMI2
@@ -168,6 +183,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_MWAITX_P(x)	TARGET_ISA_MWAITX_P(x)
 #define TARGET_PKU	TARGET_ISA_PKU
 #define TARGET_PKU_P(x)	TARGET_ISA_PKU_P(x)
+#define TARGET_SHSTK	TARGET_ISA_SHSTK
+#define TARGET_SHSTK_P(x)	TARGET_ISA_SHSTK_P(x)
+#define TARGET_MOVDIRI	TARGET_ISA_MOVDIRI
+#define TARGET_MOVDIRI_P(x) TARGET_ISA_MOVDIRI_P(x)
+#define TARGET_MOVDIR64B	TARGET_ISA_MOVDIR64B
+#define TARGET_MOVDIR64B_P(x) TARGET_ISA_MOVDIR64B_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -175,10 +196,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_X32_P(x)	TARGET_ABI_X32_P(x)
 #define TARGET_16BIT	TARGET_CODE16
 #define TARGET_16BIT_P(x)	TARGET_CODE16_P(x)
-
-/* SSE4.1 defines round instructions */
-#define	OPTION_MASK_ISA_ROUND	OPTION_MASK_ISA_SSE4_1
-#define	TARGET_ISA_ROUND	((ix86_isa_flags & OPTION_MASK_ISA_ROUND) != 0)
 
 #include "config/vxworks-dummy.h"
 
@@ -241,13 +258,21 @@ struct processor_costs {
 				   in SImode and DImode */
   const int mmx_store[2];	/* cost of storing MMX register
 				   in SImode and DImode */
-  const int sse_move;		/* cost of moving SSE register.  */
-  const int sse_load[3];	/* cost of loading SSE register
-				   in SImode, DImode and TImode*/
-  const int sse_store[3];	/* cost of storing SSE register
-				   in SImode, DImode and TImode*/
+  const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
+	    zmm_move;
+  const int sse_load[5];	/* cost of loading SSE register
+				   in 32bit, 64bit, 128bit, 256bit and 512bit */
+  const int sse_unaligned_load[5];/* cost of unaligned load.  */
+  const int sse_store[5];	/* cost of storing SSE register
+				   in SImode, DImode and TImode.  */
+  const int sse_unaligned_store[5];/* cost of unaligned store.  */
   const int mmxsse_to_integer;	/* cost of moving mmxsse register to
-				   integer and vice versa.  */
+				   integer.  */
+  const int ssemmx_to_integer;  /* cost of moving integer to mmxsse register. */
+  const int gather_static, gather_per_elt; /* Cost of gather load is computed
+				   as static + per_item * nelts. */
+  const int scatter_static, scatter_per_elt; /* Cost of gather store is
+				   computed as static + per_item * nelts.  */
   const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
   const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
   const int prefetch_block;	/* bytes moved to cache for prefetch.  */
@@ -262,19 +287,24 @@ struct processor_costs {
   const int fsqrt;		/* cost of FSQRT instruction.  */
 				/* Specify what algorithm
 				   to use for stringops on unknown size.  */
+  const int sse_op;		/* cost of cheap SSE instruction.  */
+  const int addss;		/* cost of ADDSS/SD SUBSS/SD instructions.  */
+  const int mulss;		/* cost of MULSS instructions.  */
+  const int mulsd;		/* cost of MULSD instructions.  */
+  const int fmass;		/* cost of FMASS instructions.  */
+  const int fmasd;		/* cost of FMASD instructions.  */
+  const int divss;		/* cost of DIVSS instructions.  */
+  const int divsd;		/* cost of DIVSD instructions.  */
+  const int sqrtss;		/* cost of SQRTSS instructions.  */
+  const int sqrtsd;		/* cost of SQRTSD instructions.  */
+  const int reassoc_int, reassoc_fp, reassoc_vec_int, reassoc_vec_fp;
+				/* Specify reassociation width for integer,
+				   fp, vector integer and vector fp
+				   operations.  Generally should correspond
+				   to number of instructions executed in
+				   parallel.  See also
+				   ix86_reassociation_width.  */
   struct stringop_algs *memcpy, *memset;
-  const int scalar_stmt_cost;   /* Cost of any scalar operation, excluding
-				   load and store.  */
-  const int scalar_load_cost;   /* Cost of scalar load.  */
-  const int scalar_store_cost;  /* Cost of scalar store.  */
-  const int vec_stmt_cost;      /* Cost of any vector operation, excluding
-                                   load, store, vector-to-scalar and
-                                   scalar-to-vector operation.  */
-  const int vec_to_scalar_cost;    /* Cost of vect-to-scalar operation.  */
-  const int scalar_to_vec_cost;    /* Cost of scalar-to-vector operation.  */
-  const int vec_align_load_cost;   /* Cost of aligned vector load.  */
-  const int vec_unalign_load_cost; /* Cost of unaligned vector load.  */
-  const int vec_store_cost;        /* Cost of vector store.  */
   const int cond_taken_branch_cost;    /* Cost of taken branch for vectorizer
 					  cost model.  */
   const int cond_not_taken_branch_cost;/* Cost of not taken branch for
@@ -356,7 +386,12 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BONNELL (ix86_tune == PROCESSOR_BONNELL)
 #define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
 #define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
+#define TARGET_KNM (ix86_tune == PROCESSOR_KNM)
+#define TARGET_SKYLAKE (ix86_tune == PROCESSOR_SKYLAKE)
 #define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
+#define TARGET_CANNONLAKE (ix86_tune == PROCESSOR_CANNONLAKE)
+#define TARGET_ICELAKE_CLIENT (ix86_tune == PROCESSOR_ICELAKE_CLIENT)
+#define TARGET_ICELAKE_SERVER (ix86_tune == PROCESSOR_ICELAKE_SERVER)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
@@ -470,10 +505,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_USE_VECTOR_CONVERTS]
 #define TARGET_SLOW_PSHUFB \
 	ix86_tune_features[X86_TUNE_SLOW_PSHUFB]
-#define TARGET_VECTOR_PARALLEL_EXECUTION \
-	ix86_tune_features[X86_TUNE_VECTOR_PARALLEL_EXECUTION]
 #define TARGET_AVOID_4BYTE_PREFIXES \
 	ix86_tune_features[X86_TUNE_AVOID_4BYTE_PREFIXES]
+#define TARGET_USE_GATHER \
+	ix86_tune_features[X86_TUNE_USE_GATHER]
 #define TARGET_FUSE_CMP_AND_BRANCH_32 \
 	ix86_tune_features[X86_TUNE_FUSE_CMP_AND_BRANCH_32]
 #define TARGET_FUSE_CMP_AND_BRANCH_64 \
@@ -492,10 +527,6 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL]
 #define TARGET_AVX128_OPTIMAL \
 	ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
-#define TARGET_REASSOC_INT_TO_PARALLEL \
-	ix86_tune_features[X86_TUNE_REASSOC_INT_TO_PARALLEL]
-#define TARGET_REASSOC_FP_TO_PARALLEL \
-	ix86_tune_features[X86_TUNE_REASSOC_FP_TO_PARALLEL]
 #define TARGET_GENERAL_REGS_SSE_SPILL \
 	ix86_tune_features[X86_TUNE_GENERAL_REGS_SSE_SPILL]
 #define TARGET_AVOID_MEM_OPND_FOR_CMOVE \
@@ -508,6 +539,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
 #define TARGET_ONE_IF_CONV_INSN \
 	ix86_tune_features[X86_TUNE_ONE_IF_CONV_INSN]
+#define TARGET_EMIT_VZEROUPPER \
+	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -852,20 +885,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   x86_field_alignment ((TYPE), (COMPUTED))
 #endif
 
-/* If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  EXP is the constant
-   and ALIGN is the alignment that the object would ordinarily have.
-   The value of this macro is used instead of that alignment to align
-   the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that `strcpy' calls that copy
-   constants can be done inline.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) ix86_constant_alignment ((EXP), (ALIGN))
-
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
    the object would ordinarily have.  The value of this macro is used
@@ -1078,25 +1097,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define OVERRIDE_ABI_FORMAT(FNDECL) ix86_call_abi_override (FNDECL)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   Actually there are no two word move instructions for consecutive
-   registers.  And only registers 0-3 may have mov byte instructions
-   applied to them.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (GENERAL_REGNO_P (REGNO)						\
-   ? ((MODE) == XFmode							\
-      ? (TARGET_64BIT ? 2 : 3)						\
-      : ((MODE) == XCmode						\
-	 ? (TARGET_64BIT ? 4 : 6)					\
-	 : CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)))		\
-   : (COMPLEX_MODE_P (MODE) ? 2 :					\
-      (((MODE == V64SFmode) || (MODE == V64SImode)) ? 4 : 1)))
-
 #define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE)			\
   (TARGET_128BIT_LONG_DOUBLE && !TARGET_64BIT				\
    && GENERAL_REGNO_P (REGNO)						\
@@ -1120,6 +1120,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
    || (MODE) == V4TImode)
+
+#define VALID_AVX512F_REG_OR_XI_MODE(MODE)				\
+  (VALID_AVX512F_REG_MODE (MODE) || (MODE) == XImode)
 
 #define VALID_AVX512VL_128_REG_MODE(MODE)				\
   ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
@@ -1186,19 +1189,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
 		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)	\
-   ix86_hard_regno_mode_ok ((REGNO), (MODE))
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ix86_modes_tieable_p ((MODE1), (MODE2))
-
 /* It is possible to write patterns to move flags; but until someone
    does it,  */
 #define AVOID_CCMODE_COPIES
@@ -1218,12 +1208,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    : (MODE) == QImode && !(ANY_QI_REGNO_P (REGNO)			\
 			   || MASK_REGNO_P (REGNO)) ? SImode		\
    : (MODE))
-
-/* The only ABI that saves SSE registers across calls is Win64 (thus no
-   need to check the current ABI here), and with AVX enabled Win64 only
-   guarantees that the low 16 bytes are saved.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)             \
-  (SSE_REGNO_P (REGNO) && GET_MODE_SIZE (MODE) > 16)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -1561,24 +1545,6 @@ enum reg_class
 
 #define INDEX_REG_CLASS INDEX_REGS
 #define BASE_REG_CLASS GENERAL_REGS
-
-/* If we are copying between general and FP registers, we need a memory
-   location. The same is true for SSE and MMX registers.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  ix86_secondary_memory_needed ((CLASS1), (CLASS2), (MODE), 1)
-
-/* Get_secondary_mem widens integral modes to BITS_PER_WORD.
-   There is no need to emit full 64 bit move on 64 bit targets
-   for integral modes that can be moved using 32 bit move.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)			\
-  (GET_MODE_BITSIZE (MODE) < 32 && INTEGRAL_MODE_P (MODE)	\
-   ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
-   : MODE)
-
-/* Return a class of registers that cannot change FROM mode to TO mode.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  ix86_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1592,21 +1558,7 @@ enum reg_class
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 0
-
-/* If we generate an insn to push BYTES bytes, this says how many the stack
-   pointer really advances by.  On 386, we have pushw instruction that
-   decrements by exactly 2 no matter what the position was, there is no pushb.
-
-   But as CIE data alignment factor on this arch is -4 for 32bit targets
-   and -8 for 64bit targets, we need to make sure all stack pointer adjustments
-   are in multiple of 4 for 32bit targets and 8 for 64bit targets.  */
-
-#define PUSH_ROUNDING(BYTES) ROUND_UP ((BYTES), UNITS_PER_WORD)
+#define PUSH_ROUNDING(BYTES) ix86_push_rounding (BYTES)
 
 /* If defined, the maximum amount of space required for outgoing arguments
    will be computed and placed into the variable `crtl->outgoing_args_size'.
@@ -1700,6 +1652,8 @@ typedef struct ix86_args {
   int warn_avx;			/* True when we want to warn about AVX ABI.  */
   int warn_sse;			/* True when we want to warn about SSE ABI.  */
   int warn_mmx;			/* True when we want to warn about MMX ABI.  */
+  int warn_empty;		/* True when we want to warn about empty classes
+				   passing ABI change.  */
   int sse_regno;		/* next available sse register number */
   int mmx_words;		/* # mmx words passed so far */
   int mmx_nregs;		/* # mmx registers available for passing */
@@ -1765,7 +1719,7 @@ typedef struct ix86_args {
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 24 : 10)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 28 : 14)
 
 /* Definitions for register eliminations.
 
@@ -1972,10 +1926,6 @@ typedef struct ix86_args {
 
 /* #define SHIFT_COUNT_TRUNCATED */
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* A macro to update M and UNSIGNEDP when an object whose type is
    TYPE and which has the specified mode and signedness is to be
    stored in a register.  This macro is only called when TYPE is a
@@ -1995,6 +1945,17 @@ do {							\
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 #define Pmode (ix86_pmode == PMODE_DI ? DImode : SImode)
+
+/* Supply a definition of STACK_SAVEAREA_MODE for emit_stack_save.
+   NONLOCAL needs space to save both shadow stack and stack pointers.
+
+   FIXME: We only need to save and restore stack pointer in ptr_mode.
+   But expand_builtin_setjmp_setup and expand_builtin_longjmp use Pmode
+   to save and restore stack pointer.  See
+   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84150
+ */
+#define STACK_SAVEAREA_MODE(LEVEL)			\
+  ((LEVEL) == SAVE_NONLOCAL ? (TARGET_64BIT ? TImode : DImode) : Pmode)
 
 /* Specify the machine mode that bounds have.  */
 #define BNDmode (ix86_pmode == PMODE_DI ? BND64mode : BND32mode)
@@ -2040,20 +2001,6 @@ do {							\
 
 /* Nonzero if access to memory by shorts is slow and undesirable.  */
 #define SLOW_SHORT_ACCESS 0
-
-/* Define this macro to be the value 1 if unaligned accesses have a
-   cost many times greater than aligned accesses, for example if they
-   are emulated in a trap handler.
-
-   When this macro is nonzero, the compiler will act as if
-   `STRICT_ALIGNMENT' were nonzero when generating code for block
-   moves.  This can cause significantly more instructions to be
-   produced.  Therefore, do not set this macro nonzero if unaligned
-   accesses only add a cycle or two to the time for a memory access.
-
-   If the value of this macro is always zero, it need not be defined.  */
-
-/* #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 0 */
 
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.
@@ -2163,13 +2110,9 @@ extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
 extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
 extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 
-extern unsigned const x86_64_ms_sysv_extra_clobbered_registers[12];
-#define NUM_X86_64_MS_CLOBBERED_REGS \
-  (ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers))
-
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM))
+  gen_rtx_MEM (Pmode, stack_pointer_rtx)
 
 /* After the prologue, RA is at -4(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
@@ -2181,8 +2124,15 @@ extern unsigned const x86_64_ms_sysv_extra_clobbered_registers[12];
 /* PC is dbx register 8; let's use that column for RA.  */
 #define DWARF_FRAME_RETURN_COLUMN 	(TARGET_64BIT ? 16 : 8)
 
-/* Before the prologue, the top of the frame is at 4(%esp).  */
-#define INCOMING_FRAME_SP_OFFSET UNITS_PER_WORD
+/* Before the prologue, there are return address and error code for
+   exception handler on the top of the frame.  */
+#define INCOMING_FRAME_SP_OFFSET \
+  (cfun->machine->func_type == TYPE_EXCEPTION \
+   ? 2 * UNITS_PER_WORD : UNITS_PER_WORD)
+
+/* The value of INCOMING_FRAME_SP_OFFSET the assembler assumes in
+   .cfi_startproc.  */
+#define DEFAULT_INCOMING_FRAME_SP_OFFSET UNITS_PER_WORD
 
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N)	((N) <= DX_REG ? (N) : INVALID_REGNUM)
@@ -2200,29 +2150,33 @@ extern unsigned const x86_64_ms_sysv_extra_clobbered_registers[12];
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)       		\
   asm_preferred_eh_data_format ((CODE), (GLOBAL))
 
-/* This is how to output an insn to push a register on the stack.
-   It need not be very fast code.  */
+/* These are a couple of extensions to the formats accepted
+   by asm_fprintf:
+     %z prints out opcode suffix for word-mode instruction
+     %r prints out word-mode name for reg_names[arg]  */
+#define ASM_FPRINTF_EXTENSIONS(FILE, ARGS, P)		\
+  case 'z':						\
+    fputc (TARGET_64BIT ? 'q' : 'l', (FILE));		\
+    break;						\
+							\
+  case 'r':						\
+    {							\
+      unsigned int regno = va_arg ((ARGS), int);	\
+      if (LEGACY_INT_REGNO_P (regno))			\
+	fputc (TARGET_64BIT ? 'r' : 'e', (FILE));	\
+      fputs (reg_names[regno], (FILE));			\
+      break;						\
+    }
 
-#define ASM_OUTPUT_REG_PUSH(FILE, REGNO)  \
-do {									\
-  if (TARGET_64BIT)							\
-    asm_fprintf ((FILE), "\tpush{q}\t%%r%s\n",				\
-		 reg_names[(REGNO)] + (REX_INT_REGNO_P (REGNO) != 0));	\
-  else									\
-    asm_fprintf ((FILE), "\tpush{l}\t%%e%s\n", reg_names[(REGNO)]);	\
-} while (0)
+/* This is how to output an insn to push a register on the stack.  */
 
-/* This is how to output an insn to pop a register from the stack.
-   It need not be very fast code.  */
+#define ASM_OUTPUT_REG_PUSH(FILE, REGNO)		\
+  asm_fprintf ((FILE), "\tpush%z\t%%%r\n", (REGNO))
+
+/* This is how to output an insn to pop a register from the stack.  */
 
 #define ASM_OUTPUT_REG_POP(FILE, REGNO)  \
-do {									\
-  if (TARGET_64BIT)							\
-    asm_fprintf ((FILE), "\tpop{q}\t%%r%s\n",				\
-		 reg_names[(REGNO)] + (REX_INT_REGNO_P (REGNO) != 0));	\
-  else									\
-    asm_fprintf ((FILE), "\tpop{l}\t%%e%s\n", reg_names[(REGNO)]);	\
-} while (0)
+  asm_fprintf ((FILE), "\tpop%z\t%%%r\n", (REGNO))
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
@@ -2326,7 +2280,12 @@ enum processor_type
   PROCESSOR_BONNELL,
   PROCESSOR_SILVERMONT,
   PROCESSOR_KNL,
+  PROCESSOR_KNM,
+  PROCESSOR_SKYLAKE,
   PROCESSOR_SKYLAKE_AVX512,
+  PROCESSOR_CANNONLAKE,
+  PROCESSOR_ICELAKE_CLIENT,
+  PROCESSOR_ICELAKE_SERVER,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
@@ -2448,9 +2407,76 @@ enum avx_u128_state
 
 #define FASTCALL_PREFIX '@'
 
-/* Machine specific frame tracking during prologue/epilogue generation.  */
-
 #ifndef USED_FOR_TARGET
+/* Structure describing stack frame layout.
+   Stack grows downward:
+
+   [arguments]
+					<- ARG_POINTER
+   saved pc
+
+   saved static chain			if ix86_static_chain_on_stack
+
+   saved frame pointer			if frame_pointer_needed
+					<- HARD_FRAME_POINTER
+   [saved regs]
+					<- reg_save_offset
+   [padding0]
+					<- stack_realign_offset
+   [saved SSE regs]
+	OR
+   [stub-saved registers for ms x64 --> sysv clobbers
+			<- Start of out-of-line, stub-saved/restored regs
+			   (see libgcc/config/i386/(sav|res)ms64*.S)
+     [XMM6-15]
+     [RSI]
+     [RDI]
+     [?RBX]		only if RBX is clobbered
+     [?RBP]		only if RBP and RBX are clobbered
+     [?R12]		only if R12 and all previous regs are clobbered
+     [?R13]		only if R13 and all previous regs are clobbered
+     [?R14]		only if R14 and all previous regs are clobbered
+     [?R15]		only if R15 and all previous regs are clobbered
+			<- end of stub-saved/restored regs
+     [padding1]
+   ]
+					<- sse_reg_save_offset
+   [padding2]
+		       |		<- FRAME_POINTER
+   [va_arg registers]  |
+		       |
+   [frame]	       |
+		       |
+   [padding2]	       | = to_allocate
+					<- STACK_POINTER
+  */
+struct GTY(()) ix86_frame
+{
+  int nsseregs;
+  int nregs;
+  int va_arg_size;
+  int red_zone_size;
+  int outgoing_arguments_size;
+
+  /* The offsets relative to ARG_POINTER.  */
+  HOST_WIDE_INT frame_pointer_offset;
+  HOST_WIDE_INT hard_frame_pointer_offset;
+  HOST_WIDE_INT stack_pointer_offset;
+  HOST_WIDE_INT hfp_save_offset;
+  HOST_WIDE_INT reg_save_offset;
+  HOST_WIDE_INT stack_realign_allocate;
+  HOST_WIDE_INT stack_realign_offset;
+  HOST_WIDE_INT sse_reg_save_offset;
+
+  /* When save_regs_using_mov is set, emit prologue using
+     move instead of push instructions.  */
+  bool save_regs_using_mov;
+};
+
+/* Machine specific frame tracking during prologue/epilogue generation.  All
+   values are positive, but since the x86 stack grows downward, are subtratced
+   from the CFA to produce a valid address.  */
+
 struct GTY(()) machine_frame_state
 {
   /* This pair tracks the currently active CFA as reg+offset.  When reg
@@ -2487,13 +2513,19 @@ struct GTY(()) machine_frame_state
 
   /* Indicates whether the stack pointer has been re-aligned.  When set,
      SP/FP continue to be relative to the CFA, but the stack pointer
-     should only be used for offsets >= sp_realigned_offset, while
-     the frame pointer should be used for offsets < sp_realigned_offset.
+     should only be used for offsets > sp_realigned_offset, while
+     the frame pointer should be used for offsets <= sp_realigned_fp_last.
      The flags realigned and sp_realigned are mutually exclusive.  */
   BOOL_BITFIELD sp_realigned : 1;
 
-  /* If sp_realigned is set, this is the offset from the CFA that the
-     stack pointer was realigned to.  */
+  /* If sp_realigned is set, this is the last valid offset from the CFA
+     that can be used for access with the frame pointer.  */
+  HOST_WIDE_INT sp_realigned_fp_last;
+
+  /* If sp_realigned is set, this is the offset from the CFA that the stack
+     pointer was realigned, and may or may not be equal to sp_realigned_fp_last.
+     Access via the stack pointer is only valid for offsets that are greater than
+     this value.  */
   HOST_WIDE_INT sp_realigned_offset;
 };
 
@@ -2515,14 +2547,12 @@ enum function_type
 
 struct GTY(()) machine_function {
   struct stack_local_entry *stack_locals;
-  const char *some_ld_name;
   int varargs_gpr_size;
   int varargs_fpr_size;
   int optimize_mode_switching[MAX_386_ENTITIES];
 
-  /* Number of saved registers USE_FAST_PROLOGUE_EPILOGUE
-     has been computed for.  */
-  int use_fast_prologue_epilogue_nregs;
+  /* Cached initial frame layout for the current function.  */
+  struct ix86_frame frame;
 
   /* For -fsplit-stack support: A stack local which holds a pointer to
      the stack arguments for a function with a variable number of
@@ -2567,6 +2597,16 @@ struct GTY(()) machine_function {
   /* Function type.  */
   ENUM_BITFIELD(function_type) func_type : 2;
 
+  /* How to generate indirec branch.  */
+  ENUM_BITFIELD(indirect_branch) indirect_branch_type : 3;
+
+  /* If true, the current function has local indirect jumps, like
+     "indirect_jump" or "tablejump".  */
+  BOOL_BITFIELD has_local_indirect_jump : 1;
+
+  /* How to generate function return.  */
+  ENUM_BITFIELD(indirect_branch) function_return_type : 3;
+
   /* If true, the current function is a function specified with
      the "interrupt" or "no_caller_saved_registers" attribute.  */
   BOOL_BITFIELD no_caller_saved_registers : 1;
@@ -2579,22 +2619,24 @@ struct GTY(()) machine_function {
   BOOL_BITFIELD arg_reg_available : 1;
 
   /* If true, we're out-of-lining reg save/restore for regs clobbered
-     by ms_abi functions calling a sysv function.  */
+     by 64-bit ms_abi functions calling a sysv_abi function.  */
   BOOL_BITFIELD call_ms2sysv : 1;
 
   /* If true, the incoming 16-byte aligned stack has an offset (of 8) and
-     needs padding.  */
+     needs padding prior to out-of-line stub save/restore area.  */
   BOOL_BITFIELD call_ms2sysv_pad_in : 1;
-
-  /* If true, the size of the stub save area plus inline int reg saves will
-     result in an 8 byte offset, so needs padding.  */
-  BOOL_BITFIELD call_ms2sysv_pad_out : 1;
 
   /* This is the number of extra registers saved by stub (valid range is
      0-6). Each additional register is only saved/restored by the stubs
      if all successive ones are. (Will always be zero when using a hard
      frame pointer.) */
   unsigned int call_ms2sysv_extra_regs:3;
+
+  /* Nonzero if the function places outgoing arguments on stack.  */
+  BOOL_BITFIELD outgoing_args_on_stack : 1;
+
+  /* The largest alignment, in bytes, of stack slot actually used.  */
+  unsigned int max_used_stack_alignment;
 
   /* During prologue/epilogue generation, the current frame state.
      Otherwise, the frame state at the end of the prologue.  */
@@ -2620,6 +2662,7 @@ struct GTY(()) machine_function {
 #define ix86_current_function_calls_tls_descriptor \
   (ix86_tls_descriptor_calls_expanded_in_cfun && df_regs_ever_live_p (SP_REG))
 #define ix86_static_chain_on_stack (cfun->machine->static_chain_on_stack)
+#define ix86_red_zone_size (cfun->machine->frame.red_zone_size)
 
 /* Control behavior of x86_file_start.  */
 #define X86_FILE_START_VERSION_DIRECTIVE false
@@ -2680,6 +2723,16 @@ extern void debug_dispatch_window (int);
 #define TARGET_RECIP_SQRT	((recip_mask & RECIP_MASK_SQRT) != 0)
 #define TARGET_RECIP_VEC_DIV	((recip_mask & RECIP_MASK_VEC_DIV) != 0)
 #define TARGET_RECIP_VEC_SQRT	((recip_mask & RECIP_MASK_VEC_SQRT) != 0)
+
+/* Use 128-bit AVX instructions in the auto-vectorizer.  */
+#define TARGET_PREFER_AVX128	(prefer_vector_width_type == PVW_AVX128)
+/* Use 256-bit AVX instructions in the auto-vectorizer.  */
+#define TARGET_PREFER_AVX256	(TARGET_PREFER_AVX128 \
+				 || prefer_vector_width_type == PVW_AVX256)
+
+#define TARGET_INDIRECT_BRANCH_REGISTER \
+  (ix86_indirect_branch_register \
+   || cfun->machine->indirect_branch_type != indirect_branch_keep)
 
 #define IX86_HLE_ACQUIRE (1 << 16)
 #define IX86_HLE_RELEASE (1 << 17)

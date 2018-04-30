@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -715,6 +715,13 @@ package Sinput is
    --  Writes out internal tables to current tree file using the relevant
    --  Table.Tree_Write routines.
 
+   procedure Clear_Source_File_Table;
+   --  This procedure frees memory allocated in the Source_File table (in the
+   --  private). It should only be used when it is guaranteed that all source
+   --  files that have been loaded so far will not be accessed before being
+   --  reloaded. It is intended for tools that parse several times sources,
+   --  to avoid memory leaks.
+
 private
    pragma Inline (File_Name);
    pragma Inline (Full_File_Name);
@@ -747,6 +754,8 @@ private
    pragma Inline (Last_Source_File);
    pragma Inline (Num_Source_Files);
    pragma Inline (Num_Source_Lines);
+
+   pragma Inline (Line_Start);
 
    No_Instance_Id : constant Instance_Id := 0;
 

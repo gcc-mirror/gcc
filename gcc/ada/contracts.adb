@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,16 +52,6 @@ with SCIL_LL;  use SCIL_LL;
 with Tbuild;   use Tbuild;
 
 package body Contracts is
-
-   procedure Analyze_Contracts
-     (L          : List_Id;
-      Freeze_Nod : Node_Id;
-      Freeze_Id  : Entity_Id);
-   --  Subsidiary to the one parameter version of Analyze_Contracts and routine
-   --  Analyze_Previous_Constracts. Analyze the contracts of all constructs in
-   --  the list L. If Freeze_Nod is set, then the analysis stops when the node
-   --  is reached. Freeze_Id is the entity of some related context which caused
-   --  freezing up to node Freeze_Nod.
 
    procedure Build_And_Analyze_Contract_Only_Subprograms (L : List_Id);
    --  (CodePeer): Subsidiary procedure to Analyze_Contracts which builds the
@@ -351,31 +341,15 @@ package body Contracts is
    -----------------------
 
    procedure Analyze_Contracts (L : List_Id) is
+      Decl : Node_Id;
+
    begin
       if CodePeer_Mode and then Debug_Flag_Dot_KK then
          Build_And_Analyze_Contract_Only_Subprograms (L);
       end if;
 
-      Analyze_Contracts (L, Freeze_Nod => Empty, Freeze_Id => Empty);
-   end Analyze_Contracts;
-
-   procedure Analyze_Contracts
-     (L          : List_Id;
-      Freeze_Nod : Node_Id;
-      Freeze_Id  : Entity_Id)
-   is
-      Decl : Node_Id;
-
-   begin
       Decl := First (L);
       while Present (Decl) loop
-
-         --  The caller requests that the traversal stops at a particular node
-         --  that causes contract "freezing".
-
-         if Present (Freeze_Nod) and then Decl = Freeze_Nod then
-            exit;
-         end if;
 
          --  Entry or subprogram declarations
 
@@ -388,7 +362,7 @@ package body Contracts is
                Subp_Id : constant Entity_Id := Defining_Entity (Decl);
 
             begin
-               Analyze_Entry_Or_Subprogram_Contract (Subp_Id, Freeze_Id);
+               Analyze_Entry_Or_Subprogram_Contract (Subp_Id);
 
                --  If analysis of a class-wide pre/postcondition indicates
                --  that a class-wide clone is needed, analyze its declaration
@@ -410,9 +384,7 @@ package body Contracts is
          --  Objects
 
          elsif Nkind (Decl) = N_Object_Declaration then
-            Analyze_Object_Contract
-              (Obj_Id    => Defining_Entity (Decl),
-               Freeze_Id => Freeze_Id);
+            Analyze_Object_Contract (Defining_Entity (Decl));
 
          --  Protected units
 
@@ -433,8 +405,9 @@ package body Contracts is
          then
             Analyze_Task_Contract (Defining_Entity (Decl));
 
-         --  For type declarations, we need to do the pre-analysis of
-         --  Iterable aspect specifications.
+         --  For type declarations, we need to do the pre-analysis of Iterable
+         --  aspect specifications.
+
          --  Other type aspects need to be resolved here???
 
          elsif Nkind (Decl) = N_Private_Type_Declaration
@@ -443,6 +416,7 @@ package body Contracts is
             declare
                E  : constant Entity_Id := Defining_Identifier (Decl);
                It : constant Node_Id   := Find_Aspect (E, Aspect_Iterable);
+
             begin
                if Present (It) then
                   Validate_Iterable_Aspect (E, It);
@@ -1125,76 +1099,6 @@ package body Contracts is
             Gen_Id => Pack_Id);
       end if;
    end Analyze_Package_Contract;
-
-   --------------------------------
-   -- Analyze_Previous_Contracts --
-   --------------------------------
-
-   procedure Analyze_Previous_Contracts (Body_Decl : Node_Id) is
-      Body_Id   : constant Entity_Id := Defining_Entity (Body_Decl);
-      Orig_Decl : constant Node_Id   := Original_Node (Body_Decl);
-
-      Par : Node_Id;
-
-   begin
-      --  A body that is in the process of being inlined appears from source,
-      --  but carries name _parent. Such a body does not cause "freezing" of
-      --  contracts.
-
-      if Chars (Body_Id) = Name_uParent then
-         return;
-      end if;
-
-      --  Climb the parent chain looking for an enclosing package body. Do not
-      --  use the scope stack, as a body uses the entity of its corresponding
-      --  spec.
-
-      Par := Parent (Body_Decl);
-      while Present (Par) loop
-         if Nkind (Par) = N_Package_Body then
-            Analyze_Package_Body_Contract
-              (Body_Id   => Defining_Entity (Par),
-               Freeze_Id => Defining_Entity (Body_Decl));
-
-            exit;
-
-         --  Do not look for an enclosing package body when the construct which
-         --  causes freezing is a body generated for an expression function and
-         --  it appears within a package spec. This ensures that the traversal
-         --  will not reach too far up the parent chain and attempt to freeze a
-         --  package body which should not be frozen.
-
-         --    package body Enclosing_Body
-         --      with Refined_State => (State => Var)
-         --    is
-         --       package Nested is
-         --          type Some_Type is ...;
-         --          function Cause_Freezing return ...;
-         --       private
-         --          function Cause_Freezing is (...);
-         --       end Nested;
-         --
-         --       Var : Nested.Some_Type;
-
-         elsif Nkind (Par) = N_Package_Declaration
-           and then Nkind (Orig_Decl) = N_Expression_Function
-         then
-            exit;
-         end if;
-
-         Par := Parent (Par);
-      end loop;
-
-      --  Analyze the contracts of all eligible construct up to the body which
-      --  caused the "freezing".
-
-      if Is_List_Member (Body_Decl) then
-         Analyze_Contracts
-           (L          => List_Containing (Body_Decl),
-            Freeze_Nod => Body_Decl,
-            Freeze_Id  => Body_Id);
-      end if;
-   end Analyze_Previous_Contracts;
 
    --------------------------------
    -- Analyze_Protected_Contract --
@@ -2393,6 +2297,11 @@ package body Contracts is
             end if;
          end Process_Contract_Cases_For;
 
+         pragma Unmodified (Stmts);
+         --  Stmts is passed as IN OUT to signal that the list can be updated,
+         --  even if the corresponding integer value representing the list does
+         --  not change.
+
       --  Start of processing for Process_Contract_Cases
 
       begin
@@ -2534,6 +2443,11 @@ package body Contracts is
                end if;
             end loop;
          end Process_Spec_Postconditions;
+
+         pragma Unmodified (Stmts);
+         --  Stmts is passed as IN OUT to signal that the list can be updated,
+         --  even if the corresponding integer value representing the list does
+         --  not change.
 
       --  Start of processing for Process_Postconditions
 
@@ -3086,6 +3000,187 @@ package body Contracts is
          End_Scope;
       end if;
    end Expand_Subprogram_Contract;
+
+   -------------------------------
+   -- Freeze_Previous_Contracts --
+   -------------------------------
+
+   procedure Freeze_Previous_Contracts (Body_Decl : Node_Id) is
+      function Causes_Contract_Freezing (N : Node_Id) return Boolean;
+      pragma Inline (Causes_Contract_Freezing);
+      --  Determine whether arbitrary node N causes contract freezing
+
+      procedure Freeze_Contracts;
+      pragma Inline (Freeze_Contracts);
+      --  Freeze the contracts of all eligible constructs which precede body
+      --  Body_Decl.
+
+      procedure Freeze_Enclosing_Package_Body;
+      pragma Inline (Freeze_Enclosing_Package_Body);
+      --  Freeze the contract of the nearest package body (if any) which
+      --  encloses body Body_Decl.
+
+      ------------------------------
+      -- Causes_Contract_Freezing --
+      ------------------------------
+
+      function Causes_Contract_Freezing (N : Node_Id) return Boolean is
+      begin
+         return Nkind_In (N, N_Entry_Body,
+                             N_Package_Body,
+                             N_Protected_Body,
+                             N_Subprogram_Body,
+                             N_Subprogram_Body_Stub,
+                             N_Task_Body);
+      end Causes_Contract_Freezing;
+
+      ----------------------
+      -- Freeze_Contracts --
+      ----------------------
+
+      procedure Freeze_Contracts is
+         Body_Id : constant Entity_Id := Defining_Entity (Body_Decl);
+         Decl    : Node_Id;
+
+      begin
+         --  Nothing to do when the body which causes freezing does not appear
+         --  in a declarative list because there cannot possibly be constructs
+         --  with contracts.
+
+         if not Is_List_Member (Body_Decl) then
+            return;
+         end if;
+
+         --  Inspect the declarations preceding the body, and freeze individual
+         --  contracts of eligible constructs.
+
+         Decl := Prev (Body_Decl);
+         while Present (Decl) loop
+
+            --  Stop the traversal when a preceding construct that causes
+            --  freezing is encountered as there is no point in refreezing
+            --  the already frozen constructs.
+
+            if Causes_Contract_Freezing (Decl) then
+               exit;
+
+            --  Entry or subprogram declarations
+
+            elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
+                                  N_Entry_Declaration,
+                                  N_Generic_Subprogram_Declaration,
+                                  N_Subprogram_Declaration)
+            then
+               Analyze_Entry_Or_Subprogram_Contract
+                 (Subp_Id   => Defining_Entity (Decl),
+                  Freeze_Id => Body_Id);
+
+            --  Objects
+
+            elsif Nkind (Decl) = N_Object_Declaration then
+               Analyze_Object_Contract
+                 (Obj_Id    => Defining_Entity (Decl),
+                  Freeze_Id => Body_Id);
+
+            --  Protected units
+
+            elsif Nkind_In (Decl, N_Protected_Type_Declaration,
+                                  N_Single_Protected_Declaration)
+            then
+               Analyze_Protected_Contract (Defining_Entity (Decl));
+
+            --  Subprogram body stubs
+
+            elsif Nkind (Decl) = N_Subprogram_Body_Stub then
+               Analyze_Subprogram_Body_Stub_Contract (Defining_Entity (Decl));
+
+            --  Task units
+
+            elsif Nkind_In (Decl, N_Single_Task_Declaration,
+                                  N_Task_Type_Declaration)
+            then
+               Analyze_Task_Contract (Defining_Entity (Decl));
+            end if;
+
+            Prev (Decl);
+         end loop;
+      end Freeze_Contracts;
+
+      -----------------------------------
+      -- Freeze_Enclosing_Package_Body --
+      -----------------------------------
+
+      procedure Freeze_Enclosing_Package_Body is
+         Orig_Decl : constant Node_Id := Original_Node (Body_Decl);
+         Par       : Node_Id;
+
+      begin
+         --  Climb the parent chain looking for an enclosing package body. Do
+         --  not use the scope stack, because a body utilizes the entity of its
+         --  corresponding spec.
+
+         Par := Parent (Body_Decl);
+         while Present (Par) loop
+            if Nkind (Par) = N_Package_Body then
+               Analyze_Package_Body_Contract
+                 (Body_Id   => Defining_Entity (Par),
+                  Freeze_Id => Defining_Entity (Body_Decl));
+
+               exit;
+
+            --  Do not look for an enclosing package body when the construct
+            --  which causes freezing is a body generated for an expression
+            --  function and it appears within a package spec. This ensures
+            --  that the traversal will not reach too far up the parent chain
+            --  and attempt to freeze a package body which must not be frozen.
+
+            --    package body Enclosing_Body
+            --      with Refined_State => (State => Var)
+            --    is
+            --       package Nested is
+            --          type Some_Type is ...;
+            --          function Cause_Freezing return ...;
+            --       private
+            --          function Cause_Freezing is (...);
+            --       end Nested;
+            --
+            --       Var : Nested.Some_Type;
+
+            elsif Nkind (Par) = N_Package_Declaration
+              and then Nkind (Orig_Decl) = N_Expression_Function
+            then
+               exit;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+      end Freeze_Enclosing_Package_Body;
+
+      --  Local variables
+
+      Body_Id : constant Entity_Id := Defining_Entity (Body_Decl);
+
+   --  Start of processing for Freeze_Previous_Contracts
+
+   begin
+      pragma Assert (Causes_Contract_Freezing (Body_Decl));
+
+      --  A body that is in the process of being inlined appears from source,
+      --  but carries name _parent. Such a body does not cause freezing of
+      --  contracts.
+
+      if Chars (Body_Id) = Name_uParent then
+         return;
+      end if;
+
+      Freeze_Enclosing_Package_Body;
+      Freeze_Contracts;
+   end Freeze_Previous_Contracts;
 
    ---------------------------------
    -- Inherit_Subprogram_Contract --

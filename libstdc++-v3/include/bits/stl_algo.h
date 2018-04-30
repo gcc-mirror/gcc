@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -180,7 +180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _InputIterator
     __find_if_not_n(_InputIterator __first, _Distance& __len, _Predicate __pred)
     {
-      for (; __len; --__len, ++__first)
+      for (; __len; --__len,  (void) ++__first)
 	if (!__pred(__first))
 	  break;
       return __first;
@@ -3857,8 +3857,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++11
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   /**
@@ -4464,7 +4462,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    __typeof__(__gen())>)
 
       for (__decltype(__n + 0) __niter = __n;
-	   __niter > 0; --__niter, ++__first)
+	   __niter > 0; --__niter, (void) ++__first)
 	*__first = __gen();
       return __first;
     }
@@ -5831,13 +5829,15 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 		    "sample size must be an integer type");
 
       typename iterator_traits<_PopulationIterator>::difference_type __d = __n;
-      return std::__sample(__first, __last, __pop_cat{}, __out, __samp_cat{},
-			   __d, std::forward<_UniformRandomBitGenerator>(__g));
+      return _GLIBCXX_STD_A::
+	__sample(__first, __last, __pop_cat{}, __out, __samp_cat{}, __d,
+		 std::forward<_UniformRandomBitGenerator>(__g));
     }
 #endif // C++17
 #endif // C++14
 
 _GLIBCXX_END_NAMESPACE_ALGO
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif /* _STL_ALGO_H */

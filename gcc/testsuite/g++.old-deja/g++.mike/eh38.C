@@ -10,6 +10,7 @@ public:
   }
 } b(42);
 
+int
 main() {
   try {
     throw &b;

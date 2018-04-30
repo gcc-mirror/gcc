@@ -45,6 +45,11 @@
 // not checkmarked, and is the dead encoding.
 // These properties must be preserved when modifying the encoding.
 //
+// The bitmap for noscan spans is not maintained. Code must ensure
+// that an object is scannable before consulting its bitmap by
+// checking either the noscan bit in the span or by consulting its
+// type's information.
+//
 // Checkmarks
 //
 // In a concurrent garbage collector, one worries about failing to mark
@@ -134,13 +139,9 @@ func subtract1(p *byte) *byte {
 	return (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) - 1))
 }
 
-// mHeap_MapBits is called each time arena_used is extended.
-// It maps any additional bitmap memory needed for the new arena memory.
-// It must be called with the expected new value of arena_used,
-// *before* h.arena_used has been updated.
-// Waiting to update arena_used until after the memory has been mapped
-// avoids faults when other threads try access the bitmap immediately
-// after observing the change to arena_used.
+// mapBits maps any additional bitmap memory needed for the new arena memory.
+//
+// Don't call this directly. Call mheap.setArenaUsed.
 //
 //go:nowritebarrier
 func (h *mheap) mapBits(arena_used uintptr) {
@@ -186,10 +187,8 @@ type markBits struct {
 
 //go:nosplit
 func (s *mspan) allocBitsForIndex(allocBitIndex uintptr) markBits {
-	whichByte := allocBitIndex / 8
-	whichBit := allocBitIndex % 8
-	bytePtr := addb(s.allocBits, whichByte)
-	return markBits{bytePtr, uint8(1 << whichBit), allocBitIndex}
+	bytep, mask := s.allocBits.bitp(allocBitIndex)
+	return markBits{bytep, mask, allocBitIndex}
 }
 
 // refillaCache takes 8 bytes s.allocBits starting at whichByte
@@ -197,7 +196,7 @@ func (s *mspan) allocBitsForIndex(allocBitIndex uintptr) markBits {
 // can be used. It then places these 8 bytes into the cached 64 bit
 // s.allocCache.
 func (s *mspan) refillAllocCache(whichByte uintptr) {
-	bytes := (*[8]uint8)(unsafe.Pointer(addb(s.allocBits, whichByte)))
+	bytes := (*[8]uint8)(unsafe.Pointer(s.allocBits.bytep(whichByte)))
 	aCache := uint64(0)
 	aCache |= uint64(bytes[0])
 	aCache |= uint64(bytes[1]) << (1 * 8)
@@ -248,7 +247,7 @@ func (s *mspan) nextFreeIndex() uintptr {
 		return snelems
 	}
 
-	s.allocCache >>= (bitIndex + 1)
+	s.allocCache >>= uint(bitIndex + 1)
 	sfreeindex = result + 1
 
 	if sfreeindex%64 == 0 && sfreeindex != snelems {
@@ -269,10 +268,8 @@ func (s *mspan) isFree(index uintptr) bool {
 	if index < s.freeindex {
 		return false
 	}
-	whichByte := index / 8
-	whichBit := index % 8
-	byteVal := *addb(s.allocBits, whichByte)
-	return byteVal&uint8(1<<whichBit) == 0
+	bytep, mask := s.allocBits.bitp(index)
+	return *bytep&mask == 0
 }
 
 func (s *mspan) objIndex(p uintptr) uintptr {
@@ -294,14 +291,12 @@ func markBitsForAddr(p uintptr) markBits {
 }
 
 func (s *mspan) markBitsForIndex(objIndex uintptr) markBits {
-	whichByte := objIndex / 8
-	bitMask := uint8(1 << (objIndex % 8)) // low 3 bits hold the bit index
-	bytePtr := addb(s.gcmarkBits, whichByte)
-	return markBits{bytePtr, bitMask, objIndex}
+	bytep, mask := s.gcmarkBits.bitp(objIndex)
+	return markBits{bytep, mask, objIndex}
 }
 
 func (s *mspan) markBitsForBase() markBits {
-	return markBits{s.gcmarkBits, uint8(1), 0}
+	return markBits{(*uint8)(s.gcmarkBits), uint8(1), 0}
 }
 
 // isMarked reports whether mark bit m is set.
@@ -330,11 +325,6 @@ func (m markBits) clearMarked() {
 	// We used to be clever here and use a non-atomic update in certain
 	// cases, but it's not worth the risk.
 	atomic.And8(m.bytep, ^m.mask)
-}
-
-// clearMarkedNonAtomic clears the marked bit non-atomically.
-func (m markBits) clearMarkedNonAtomic() {
-	*m.bytep ^= m.mask
 }
 
 // markBitsForSpan returns the markBits for the span base address base.
@@ -374,6 +364,7 @@ func heapBitsForAddr(addr uintptr) heapBits {
 // heapBitsForSpan returns the heapBits for the span base address base.
 func heapBitsForSpan(base uintptr) (hbits heapBits) {
 	if base < mheap_.arena_start || base >= mheap_.arena_used {
+		print("runtime: base ", hex(base), " not in range [", hex(mheap_.arena_start), ",", hex(mheap_.arena_used), ")\n")
 		throw("heapBitsForSpan: base out of range")
 	}
 	return heapBitsForAddr(base)
@@ -403,7 +394,7 @@ func heapBitsForObject(p, refBase, refOff uintptr, forStack bool) (base uintptr,
 	// Consult the span table to find the block beginning.
 	s = mheap_.spans[idx]
 	if s == nil || p < s.base() || p >= s.limit || s.state != mSpanInUse {
-		if s == nil || s.state == _MSpanStack || forStack {
+		if s == nil || s.state == _MSpanManual || forStack {
 			// If s is nil, the virtual address has never been part of the heap.
 			// This pointer may be to some mmap'd region, so we allow it.
 			// Pointers into stacks are also ok, the runtime manages these explicitly.
@@ -433,6 +424,7 @@ func heapBitsForObject(p, refBase, refOff uintptr, forStack bool) (base uintptr,
 				print("runtime: found in object at *(", hex(refBase), "+", hex(refOff), ")\n")
 				gcDumpObject("object", refBase, refOff)
 			}
+			getg().m.traceback = 2
 			throw("found bad pointer in Go heap (incorrect use of unsafe or cgo?)")
 		}
 		return
@@ -471,11 +463,6 @@ func heapBitsForObject(p, refBase, refOff uintptr, forStack bool) (base uintptr,
 	return
 }
 
-// prefetch the bits.
-func (h heapBits) prefetch() {
-	prefetchnta(uintptr(unsafe.Pointer((h.bitp))))
-}
-
 // next returns the heapBits describing the next pointer-sized word in memory.
 // That is, if h describes address p, h.next() describes p+ptrSize.
 // Note that next does not modify h. The caller must record the result.
@@ -502,6 +489,9 @@ func (h heapBits) forward(n uintptr) heapBits {
 // The caller can test morePointers and isPointer by &-ing with bitScan and bitPointer.
 // The result includes in its higher bits the bits for subsequent words
 // described by the same bitmap byte.
+//
+// nosplit because it is used during write barriers and must not be preempted.
+//go:nosplit
 func (h heapBits) bits() uint32 {
 	// The (shift & 31) eliminates a test and conditional branch
 	// from the generated code.
@@ -521,16 +511,6 @@ func (h heapBits) morePointers() bool {
 //go:nosplit
 func (h heapBits) isPointer() bool {
 	return h.bits()&bitPointer != 0
-}
-
-// hasPointers reports whether the given object has any pointers.
-// It must be told how large the object at h is for efficiency.
-// h must describe the initial word of the object.
-func (h heapBits) hasPointers(size uintptr) bool {
-	if size == sys.PtrSize { // 1-word objects are always pointers
-		return true
-	}
-	return (*h.bitp>>h.shift)&bitScan != 0
 }
 
 // isCheckmarked reports whether the heap bits have the checkmarked bit set.
@@ -560,12 +540,13 @@ func (h heapBits) setCheckmarked(size uintptr) {
 	atomic.Or8(h.bitp, bitScan<<(heapBitsShift+h.shift))
 }
 
-// bulkBarrierPreWrite executes writebarrierptr_prewrite1
+// bulkBarrierPreWrite executes a write barrier
 // for every pointer slot in the memory range [src, src+size),
 // using pointer/scalar information from [dst, dst+size).
 // This executes the write barriers necessary before a memmove.
 // src, dst, and size must be pointer-aligned.
 // The range [dst, dst+size) must lie within a single object.
+// It does not perform the actual writes.
 //
 // As a special case, src == 0 indicates that this is being used for a
 // memclr. bulkBarrierPreWrite will pass 0 for the src of each write
@@ -611,12 +592,15 @@ func bulkBarrierPreWrite(dst, src, size uintptr) {
 		return
 	}
 
+	buf := &getg().m.p.ptr().wbBuf
 	h := heapBitsForAddr(dst)
 	if src == 0 {
 		for i := uintptr(0); i < size; i += sys.PtrSize {
 			if h.isPointer() {
 				dstx := (*uintptr)(unsafe.Pointer(dst + i))
-				writebarrierptr_prewrite1(dstx, 0)
+				if !buf.putFast(*dstx, 0) {
+					wbBufFlush(nil, 0)
+				}
 			}
 			h = h.next()
 		}
@@ -625,7 +609,9 @@ func bulkBarrierPreWrite(dst, src, size uintptr) {
 			if h.isPointer() {
 				dstx := (*uintptr)(unsafe.Pointer(dst + i))
 				srcx := (*uintptr)(unsafe.Pointer(src + i))
-				writebarrierptr_prewrite1(dstx, *srcx)
+				if !buf.putFast(*dstx, *srcx) {
+					wbBufFlush(nil, 0)
+				}
 			}
 			h = h.next()
 		}
@@ -645,6 +631,7 @@ func bulkBarrierBitmap(dst, src, size, maskOffset uintptr, bits *uint8) {
 	bits = addb(bits, word/8)
 	mask := uint8(1) << (word % 8)
 
+	buf := &getg().m.p.ptr().wbBuf
 	for i := uintptr(0); i < size; i += sys.PtrSize {
 		if mask == 0 {
 			bits = addb(bits, 1)
@@ -658,10 +645,14 @@ func bulkBarrierBitmap(dst, src, size, maskOffset uintptr, bits *uint8) {
 		if *bits&mask != 0 {
 			dstx := (*uintptr)(unsafe.Pointer(dst + i))
 			if src == 0 {
-				writebarrierptr_prewrite1(dstx, 0)
+				if !buf.putFast(*dstx, 0) {
+					wbBufFlush(nil, 0)
+				}
 			} else {
 				srcx := (*uintptr)(unsafe.Pointer(src + i))
-				writebarrierptr_prewrite1(dstx, *srcx)
+				if !buf.putFast(*dstx, *srcx) {
+					wbBufFlush(nil, 0)
+				}
 			}
 		}
 		mask <<= 1
@@ -838,23 +829,23 @@ var oneBitCount = [256]uint8{
 	4, 5, 5, 6, 5, 6, 6, 7,
 	5, 6, 6, 7, 6, 7, 7, 8}
 
-// countFree runs through the mark bits in a span and counts the number of free objects
-// in the span.
+// countAlloc returns the number of objects allocated in span s by
+// scanning the allocation bitmap.
 // TODO:(rlh) Use popcount intrinsic.
-func (s *mspan) countFree() int {
+func (s *mspan) countAlloc() int {
 	count := 0
 	maxIndex := s.nelems / 8
 	for i := uintptr(0); i < maxIndex; i++ {
-		mrkBits := *addb(s.gcmarkBits, i)
+		mrkBits := *s.gcmarkBits.bytep(i)
 		count += int(oneBitCount[mrkBits])
 	}
 	if bitsInLastByte := s.nelems % 8; bitsInLastByte != 0 {
-		mrkBits := *addb(s.gcmarkBits, maxIndex)
+		mrkBits := *s.gcmarkBits.bytep(maxIndex)
 		mask := uint8((1 << bitsInLastByte) - 1)
 		bits := mrkBits & mask
 		count += int(oneBitCount[bits])
 	}
-	return int(s.nelems) - count
+	return count
 }
 
 // heapBitsSetType records that the new allocation [x, x+size)
@@ -1075,7 +1066,9 @@ func heapBitsSetType(x, size, dataSize uintptr, typ *_type) {
 					endnb += endnb
 				}
 				// Truncate to a multiple of original ptrmask.
-				endnb = maxBits / nb * nb
+				// Because nb+nb <= maxBits, nb fits in a byte.
+				// Byte division is cheaper than uintptr division.
+				endnb = uintptr(maxBits/byte(nb)) * nb
 				pbits &= 1<<endnb - 1
 				b = pbits
 				nb = endnb
@@ -1351,13 +1344,6 @@ Phase4:
 			unlock(&debugPtrmask.lock)
 		}
 	}
-}
-
-// heapBitsSetTypeNoScan marks x as noscan by setting the first word
-// of x in the heap bitmap to scalar/dead.
-func heapBitsSetTypeNoScan(x uintptr) {
-	h := heapBitsForAddr(uintptr(x))
-	*h.bitp &^= (bitPointer | bitScan) << h.shift
 }
 
 var debugPtrmask struct {

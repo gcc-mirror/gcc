@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
@@ -273,13 +273,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 
 #define STACK_SIZE_MODE (Pmode)
 
-/* Vector arguments are left-justified when placed on the stack during
-   parameter passing.  */
-#define FUNCTION_ARG_PADDING(MODE, TYPE)			\
-  (s390_function_arg_vector ((MODE), (TYPE))			\
-   ? upward							\
-   : DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE)))
-
 #ifndef IN_LIBGCC2
 
 /* Width of a word, in units (bytes).  */
@@ -322,7 +315,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define EMPTY_FIELD_BOUNDARY 32
 
 /* Alignment on even addresses for LARL instruction.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) (ALIGN) < 16 ? 16 : (ALIGN)
 #define DATA_ABI_ALIGNMENT(TYPE, ALIGN) (ALIGN) < 16 ? 16 : (ALIGN)
 
 /* Alignment is not required by the hardware.  */
@@ -476,59 +468,13 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
      15, 32, 33, 34, 35, 36, 37 }
 
 
-/* Fitting values into registers.  */
-
-/* Integer modes <= word size fit into any GPR.
-   Integer modes > word size fit into successive GPRs, starting with
-   an even-numbered register.
-   SImode and DImode fit into FPRs as well.
-
-   Floating point modes <= word size fit into any FPR or GPR.
-   Floating point modes > word size (i.e. DFmode on 32-bit) fit
-   into any FPR, or an even-odd GPR pair.
-   TFmode fits only into an even-odd FPR pair.
-
-   Complex floating point modes fit either into two FPRs, or into
-   successive GPRs (again starting with an even number).
-   TCmode fits only into two successive even-odd FPR pairs.
-
-   Condition code modes fit only into the CC register.  */
-
-/* Because all registers in a class have the same size HARD_REGNO_NREGS
-   is equivalent to CLASS_MAX_NREGS.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)                           \
-  s390_class_max_nregs (REGNO_REG_CLASS (REGNO), (MODE))
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)         \
-  s390_hard_regno_mode_ok ((REGNO), (MODE))
-
 #define HARD_REGNO_RENAME_OK(FROM, TO)          \
   s390_hard_regno_rename_ok ((FROM), (TO))
-
-#define MODES_TIEABLE_P(MODE1, MODE2)		\
-   (((MODE1) == SFmode || (MODE1) == DFmode)	\
-   == ((MODE2) == SFmode || (MODE2) == DFmode))
-
-/* When generating code that runs in z/Architecture mode,
-   but conforms to the 31-bit ABI, GPRs can hold 8 bytes;
-   the ABI guarantees only that the lower 4 bytes are
-   saved across calls, however.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
-  ((!TARGET_64BIT && TARGET_ZARCH					\
-    && GET_MODE_SIZE (MODE) > 4						\
-    && (((REGNO) >= 6 && (REGNO) <= 15) || (REGNO) == 32))		\
-   || (TARGET_VX							\
-       && GET_MODE_SIZE (MODE) > 8					\
-       && (((TARGET_64BIT && (REGNO) >= 24 && (REGNO) <= 31))		\
-	   || (!TARGET_64BIT && ((REGNO) == 18 || (REGNO) == 19)))))
 
 /* Maximum number of registers to represent a value of mode MODE
    in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
   s390_class_max_nregs ((CLASS), (MODE))
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		        \
-  s390_cannot_change_mode_class ((FROM), (TO), (CLASS))
 
 /* We can reverse a CC mode safely if we know whether it comes from a
    floating point compare or not.  With the vector modes it is encoded
@@ -627,36 +573,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
 
 
-/* We need secondary memory to move data between GPRs and FPRs.
-
-   - With DFP the ldgr lgdr instructions are available.  Due to the
-     different alignment we cannot use them for SFmode.  For 31 bit a
-     64 bit value in GPR would be a register pair so here we still
-     need to go via memory.
-
-   - With z13 we can do the SF/SImode moves with vlgvf.  Due to the
-     overlapping of FPRs and VRs we still disallow TF/TD modes to be
-     in full VRs so as before also on z13 we do these moves via
-     memory.
-
-     FIXME: Should we try splitting it into two vlgvg's/vlvg's instead?  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (((reg_classes_intersect_p ((CLASS1), VEC_REGS)			\
-     && reg_classes_intersect_p ((CLASS2), GENERAL_REGS))		\
-    || (reg_classes_intersect_p ((CLASS1), GENERAL_REGS)		\
-	&& reg_classes_intersect_p ((CLASS2), VEC_REGS)))		\
-   && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (MODE) != 8)	\
-   && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (MODE)			\
-			  && GET_MODE_SIZE (MODE) > 8)))
-
-/* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on 64bit
-   because the movsi and movsf patterns don't handle r/f moves.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
- (GET_MODE_BITSIZE (MODE) < 32				\
-  ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)	\
-  : (MODE))
-
-
 /* Stack layout and calling conventions.  */
 
 /* Our stack grows from higher to lower addresses.  However, local variables
@@ -673,9 +589,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 
 /* Offset from stack-pointer to first location of outgoing args.  */
 #define STACK_POINTER_OFFSET (TARGET_64BIT ? 160 : 96)
-
-/* Offset within stack frame to start allocating local variables at.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.  */
@@ -946,6 +859,10 @@ CUMULATIVE_ARGS;
 
 #define LEGITIMATE_PIC_OPERAND_P(X)  legitimate_pic_operand_p (X)
 
+#ifndef TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE
+#define TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE 1
+#endif
+
 
 /* Assembler file format.  */
 
@@ -1042,14 +959,10 @@ do {									\
    tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_64BIT ? DImode : SImode)
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
-
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode ((machine_mode) (TARGET_64BIT ? DImode : SImode))
+#define Pmode (TARGET_64BIT ? DImode : SImode)
 
 /* This is -1 for "pointer mode" extend.  See ptr_extend in s390.md.  */
 #define POINTERS_EXTEND_UNSIGNED -1
@@ -1119,5 +1032,125 @@ extern const int processor_flags_table[];
   do {						\
     s390_register_target_pragmas ();		\
   } while (0)
+
+#ifndef USED_FOR_TARGET
+/* The following structure is embedded in the machine
+   specific part of struct function.  */
+
+struct GTY (()) s390_frame_layout
+{
+  /* Offset within stack frame.  */
+  HOST_WIDE_INT gprs_offset;
+  HOST_WIDE_INT f0_offset;
+  HOST_WIDE_INT f4_offset;
+  HOST_WIDE_INT f8_offset;
+  HOST_WIDE_INT backchain_offset;
+
+  /* Number of first and last gpr where slots in the register
+     save area are reserved for.  */
+  int first_save_gpr_slot;
+  int last_save_gpr_slot;
+
+  /* Location (FP register number) where GPRs (r0-r15) should
+     be saved to.
+      0 - does not need to be saved at all
+     -1 - stack slot  */
+#define SAVE_SLOT_NONE   0
+#define SAVE_SLOT_STACK -1
+  signed char gpr_save_slots[16];
+
+  /* Number of first and last gpr to be saved, restored.  */
+  int first_save_gpr;
+  int first_restore_gpr;
+  int last_save_gpr;
+  int last_restore_gpr;
+
+  /* Bits standing for floating point registers. Set, if the
+     respective register has to be saved. Starting with reg 16 (f0)
+     at the rightmost bit.
+     Bit 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+     fpr 15 13 11  9 14 12 10  8  7  5  3  1  6  4  2  0
+     reg 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16  */
+  unsigned int fpr_bitmap;
+
+  /* Number of floating point registers f8-f15 which must be saved.  */
+  int high_fprs;
+
+  /* Set if return address needs to be saved.
+     This flag is set by s390_return_addr_rtx if it could not use
+     the initial value of r14 and therefore depends on r14 saved
+     to the stack.  */
+  bool save_return_addr_p;
+
+  /* Size of stack frame.  */
+  HOST_WIDE_INT frame_size;
+};
+
+
+/* Define the structure for the machine field in struct function.  */
+
+struct GTY(()) machine_function
+{
+  struct s390_frame_layout frame_layout;
+
+  /* Literal pool base register.  */
+  rtx base_reg;
+
+  /* True if we may need to perform branch splitting.  */
+  bool split_branches_pending_p;
+
+  bool has_landing_pad_p;
+
+  /* True if the current function may contain a tbegin clobbering
+     FPRs.  */
+  bool tbegin_p;
+
+  /* For -fsplit-stack support: A stack local which holds a pointer to
+     the stack arguments for a function with a variable number of
+     arguments.  This is set at the start of the function and is used
+     to initialize the overflow_arg_area field of the va_list
+     structure.  */
+  rtx split_stack_varargs_pointer;
+
+  enum indirect_branch indirect_branch_jump;
+  enum indirect_branch indirect_branch_call;
+
+  enum indirect_branch function_return_mem;
+  enum indirect_branch function_return_reg;
+};
+#endif
+
+#define TARGET_INDIRECT_BRANCH_NOBP_RET_OPTION				\
+  (cfun->machine->function_return_reg != indirect_branch_keep		\
+   || cfun->machine->function_return_mem != indirect_branch_keep)
+
+#define TARGET_INDIRECT_BRANCH_NOBP_RET					\
+  ((cfun->machine->function_return_reg != indirect_branch_keep		\
+    && !s390_return_addr_from_memory ())				\
+   || (cfun->machine->function_return_mem != indirect_branch_keep	\
+       && s390_return_addr_from_memory ()))
+
+#define TARGET_INDIRECT_BRANCH_NOBP_JUMP				\
+  (cfun->machine->indirect_branch_jump != indirect_branch_keep)
+
+#define TARGET_INDIRECT_BRANCH_NOBP_JUMP_THUNK				\
+  (cfun->machine->indirect_branch_jump == indirect_branch_thunk		\
+   || cfun->machine->indirect_branch_jump == indirect_branch_thunk_extern)
+
+#define TARGET_INDIRECT_BRANCH_NOBP_JUMP_INLINE_THUNK			\
+  (cfun->machine->indirect_branch_jump == indirect_branch_thunk_inline)
+
+#define TARGET_INDIRECT_BRANCH_NOBP_CALL			\
+  (cfun->machine->indirect_branch_call != indirect_branch_keep)
+
+#ifndef TARGET_DEFAULT_INDIRECT_BRANCH_TABLE
+#define TARGET_DEFAULT_INDIRECT_BRANCH_TABLE 0
+#endif
+
+#define TARGET_INDIRECT_BRANCH_THUNK_NAME_EXRL "__s390_indirect_jump_r%d"
+#define TARGET_INDIRECT_BRANCH_THUNK_NAME_EX   "__s390_indirect_jump_r%duse_r%d"
+
+#define TARGET_INDIRECT_BRANCH_TABLE s390_indirect_branch_table
+
 
 #endif /* S390_H */

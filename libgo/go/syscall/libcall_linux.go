@@ -212,7 +212,7 @@ func Accept4(fd int, flags int) (nfd int, sa Sockaddr, err error) {
 //flock(fd _C_int, how _C_int) _C_int
 
 //sys	Fstatfs(fd int, buf *Statfs_t) (err error)
-//fstatfs(fd _C_int, buf *Statfs_t) _C_int
+//fstatfs64(fd _C_int, buf *Statfs_t) _C_int
 
 func Gettid() (tid int) {
 	r1, _, _ := Syscall(SYS_GETTID, 0, 0, 0)
@@ -360,7 +360,7 @@ func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n i
 }
 
 //sys	Statfs(path string, buf *Statfs_t) (err error)
-//statfs(path *byte, buf *Statfs_t) _C_int
+//statfs64(path *byte, buf *Statfs_t) _C_int
 
 //sys	SyncFileRange(fd int, off int64, n int64, flags int) (err error)
 //sync_file_range(fd _C_int, off Offset_t, n Offset_t, flags _C_uint) _C_int

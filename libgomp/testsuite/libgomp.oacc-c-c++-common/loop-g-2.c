@@ -15,7 +15,7 @@ int main ()
   for (ix = 0; ix < N;ix++)
     ary[ix] = -1;
   
-#pragma acc parallel num_gangs(32) vector_length(32) copy(ary) copy(ondev)
+#pragma acc parallel num_gangs(32) copy(ary) copy(ondev)
   {
 #pragma acc loop gang (static:1)
     for (unsigned ix = 0; ix < N; ix++)

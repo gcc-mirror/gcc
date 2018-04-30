@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1828,6 +1828,9 @@ package body Sem_Eval is
 
             return True;
 
+         elsif Nkind (Op) = N_Qualified_Expression then
+            return Compile_Time_Known_Value_Or_Aggr (Expression (Op));
+
          --  All other types of values are not known at compile time
 
          else
@@ -2298,7 +2301,7 @@ package body Sem_Eval is
          Left_Str   : constant Node_Id := Get_String_Val (Left);
          Left_Len   : Nat;
          Right_Str  : constant Node_Id := Get_String_Val (Right);
-         Folded_Val : String_Id;
+         Folded_Val : String_Id        := No_String;
 
       begin
          --  Establish new string literal, and store left operand. We make
@@ -4196,6 +4199,12 @@ package body Sem_Eval is
          pragma Assert (Is_Fixed_Point_Type (Underlying_Type (Etype (N))));
          Val := Corresponding_Integer_Value (N);
 
+      --  The NULL access value
+
+      elsif Kind = N_Null then
+         pragma Assert (Is_Access_Type (Underlying_Type (Etype (N))));
+         Val := Uint_0;
+
       --  Otherwise must be character literal
 
       else
@@ -4746,19 +4755,33 @@ package body Sem_Eval is
    -------------------
 
    function Is_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean is
-      Typ : constant Entity_Id := Etype (Lo);
-
    begin
-      if not Compile_Time_Known_Value (Lo)
-        or else not Compile_Time_Known_Value (Hi)
+      if Compile_Time_Known_Value (Lo)
+        and then Compile_Time_Known_Value (Hi)
       then
-         return False;
-      end if;
+         declare
+            Typ      :          Entity_Id := Etype (Lo);
+            Full_Typ : constant Entity_Id := Full_View (Typ);
+         begin
+            --  When called from the frontend, as part of the analysis of
+            --  potentially static expressions, Typ will be the full view of a
+            --  type with all the info needed to answer this query. When called
+            --  from the backend, for example to know whether a range of a loop
+            --  is null, Typ might be a private type and we need to explicitly
+            --  switch to its corresponding full view to access the same info.
 
-      if Is_Discrete_Type (Typ) then
-         return Expr_Value (Lo) > Expr_Value (Hi);
-      else pragma Assert (Is_Real_Type (Typ));
-         return Expr_Value_R (Lo) > Expr_Value_R (Hi);
+            if Present (Full_Typ) then
+               Typ := Full_Typ;
+            end if;
+
+            if Is_Discrete_Type (Typ) then
+               return Expr_Value (Lo) > Expr_Value (Hi);
+            else pragma Assert (Is_Real_Type (Typ));
+               return Expr_Value_R (Lo) > Expr_Value_R (Hi);
+            end if;
+         end;
+      else
+         return False;
       end if;
    end Is_Null_Range;
 
@@ -5321,20 +5344,35 @@ package body Sem_Eval is
    --------------------
 
    function Not_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean is
-      Typ : constant Entity_Id := Etype (Lo);
-
    begin
-      if not Compile_Time_Known_Value (Lo)
-        or else not Compile_Time_Known_Value (Hi)
+      if Compile_Time_Known_Value (Lo)
+        and then Compile_Time_Known_Value (Hi)
       then
+         declare
+            Typ      :          Entity_Id := Etype (Lo);
+            Full_Typ : constant Entity_Id := Full_View (Typ);
+         begin
+            --  When called from the frontend, as part of the analysis of
+            --  potentially static expressions, Typ will be the full view of a
+            --  type with all the info needed to answer this query. When called
+            --  from the backend, for example to know whether a range of a loop
+            --  is null, Typ might be a private type and we need to explicitly
+            --  switch to its corresponding full view to access the same info.
+
+            if Present (Full_Typ) then
+               Typ := Full_Typ;
+            end if;
+
+            if Is_Discrete_Type (Typ) then
+               return Expr_Value (Lo) <= Expr_Value (Hi);
+            else pragma Assert (Is_Real_Type (Typ));
+               return Expr_Value_R (Lo) <= Expr_Value_R (Hi);
+            end if;
+         end;
+      else
          return False;
       end if;
 
-      if Is_Discrete_Type (Typ) then
-         return Expr_Value (Lo) <= Expr_Value (Hi);
-      else pragma Assert (Is_Real_Type (Typ));
-         return Expr_Value_R (Lo) <= Expr_Value_R (Hi);
-      end if;
    end Not_Null_Range;
 
    -------------
@@ -5764,8 +5802,9 @@ package body Sem_Eval is
 
       --  No match if sizes different (from use of 'Object_Size). This test
       --  is excluded if Formal_Derived_Matching is True, as the base types
-      --  can be different in that case and typically have different sizes
-      --  (and Esizes can be set when Frontend_Layout_On_Target is True).
+      --  can be different in that case and typically have different sizes.
+      --  ??? Frontend_Layout_On_Target used to set Esizes but this is no
+      --  longer the case, consider removing the last test below.
 
       elsif not Formal_Derived_Matching
         and then Known_Static_Esize (T1)

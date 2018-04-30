@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build !cgo,!windows,!plan9,!android
+// +build !cgo,!windows,!plan9 android
 
 package user
 
@@ -15,7 +15,6 @@ import (
 )
 
 func init() {
-	userImplemented = false
 	groupImplemented = false
 }
 
@@ -27,7 +26,9 @@ func current() (*User, error) {
 		Name:     "", // ignored
 		HomeDir:  os.Getenv("HOME"),
 	}
-	if runtime.GOOS == "nacl" {
+	// On NaCL and Android, return a dummy user instead of failing.
+	switch runtime.GOOS {
+	case "nacl":
 		if u.Uid == "" {
 			u.Uid = "1"
 		}
@@ -35,7 +36,17 @@ func current() (*User, error) {
 			u.Username = "nacl"
 		}
 		if u.HomeDir == "" {
-			u.HomeDir = "/home/nacl"
+			u.HomeDir = "/"
+		}
+	case "android":
+		if u.Uid == "" {
+			u.Uid = "1"
+		}
+		if u.Username == "" {
+			u.Username = "android"
+		}
+		if u.HomeDir == "" {
+			u.HomeDir = "/sdcard"
 		}
 	}
 	// cgo isn't available, but if we found the minimum information
@@ -46,23 +57,10 @@ func current() (*User, error) {
 	return u, fmt.Errorf("user: Current not implemented on %s/%s", runtime.GOOS, runtime.GOARCH)
 }
 
-func lookupUser(username string) (*User, error) {
-	return nil, errors.New("user: Lookup requires cgo")
-}
-
-func lookupUserId(uid string) (*User, error) {
-	return nil, errors.New("user: LookupId requires cgo")
-}
-
-func lookupGroup(groupname string) (*Group, error) {
-	return nil, errors.New("user: LookupGroup requires cgo")
-}
-
-func lookupGroupId(string) (*Group, error) {
-	return nil, errors.New("user: LookupGroupId requires cgo")
-}
-
 func listGroups(*User) ([]string, error) {
+	if runtime.GOOS == "android" {
+		return nil, errors.New("user: GroupIds not implemented on Android")
+	}
 	return nil, errors.New("user: GroupIds requires cgo")
 }
 

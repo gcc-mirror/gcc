@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2017 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1037,6 +1037,7 @@ As this example indicates, the operands are zero-indexed.
 @tindex COMPLEX_CST
 @tindex VECTOR_CST
 @tindex STRING_CST
+@tindex POLY_INT_CST
 @findex TREE_STRING_LENGTH
 @findex TREE_STRING_POINTER
 
@@ -1084,10 +1085,77 @@ These nodes are used to represent complex number constants, that is a
 imaginary parts respectively.
 
 @item VECTOR_CST
-These nodes are used to represent vector constants, whose parts are
-constant nodes.  Each individual constant node is either an integer or a
-double constant node.  The first operand is a @code{TREE_LIST} of the
-constant nodes and is accessed through @code{TREE_VECTOR_CST_ELTS}.
+These nodes are used to represent vector constants.  Each vector
+constant @var{v} is treated as a specific instance of an arbitrary-length
+sequence that itself contains @samp{VECTOR_CST_NPATTERNS (@var{v})}
+interleaved patterns.  Each pattern has the form:
+
+@smallexample
+@{ @var{base0}, @var{base1}, @var{base1} + @var{step}, @var{base1} + @var{step} * 2, @dots{} @}
+@end smallexample
+
+The first three elements in each pattern are enough to determine the
+values of the other elements.  However, if all @var{step}s are zero,
+only the first two elements are needed.  If in addition each @var{base1}
+is equal to the corresponding @var{base0}, only the first element in
+each pattern is needed.  The number of encoded elements per pattern
+is given by @samp{VECTOR_CST_NELTS_PER_PATTERN (@var{v})}.
+
+For example, the constant:
+
+@smallexample
+@{ 0, 1, 2, 6, 3, 8, 4, 10, 5, 12, 6, 14, 7, 16, 8, 18 @}
+@end smallexample
+
+is interpreted as an interleaving of the sequences:
+
+@smallexample
+@{ 0, 2, 3, 4, 5, 6, 7, 8 @}
+@{ 1, 6, 8, 10, 12, 14, 16, 18 @}
+@end smallexample
+
+where the sequences are represented by the following patterns:
+
+@smallexample
+@var{base0} == 0, @var{base1} == 2, @var{step} == 1
+@var{base0} == 1, @var{base1} == 6, @var{step} == 2
+@end smallexample
+
+In this case:
+
+@smallexample
+VECTOR_CST_NPATTERNS (@var{v}) == 2
+VECTOR_CST_NELTS_PER_PATTERN (@var{v}) == 3
+@end smallexample
+
+The vector is therefore encoded using the first 6 elements
+(@samp{@{ 0, 1, 2, 6, 3, 8 @}}), with the remaining 10 elements
+being implicit extensions of them.
+
+Sometimes this scheme can create two possible encodings of the same
+vector.  For example @{ 0, 1 @} could be seen as two patterns with
+one element each or one pattern with two elements (@var{base0} and
+@var{base1}).  The canonical encoding is always the one with the
+fewest patterns or (if both encodings have the same number of
+petterns) the one with the fewest encoded elements.
+
+@samp{vector_cst_encoding_nelts (@var{v})} gives the total number of
+encoded elements in @var{v}, which is 6 in the example above.
+@code{VECTOR_CST_ENCODED_ELTS (@var{v})} gives a pointer to the elements
+encoded in @var{v} and @code{VECTOR_CST_ENCODED_ELT (@var{v}, @var{i})}
+accesses the value of encoded element @var{i}.
+
+@samp{VECTOR_CST_DUPLICATE_P (@var{v})} is true if @var{v} simply contains
+repeated instances of @samp{VECTOR_CST_NPATTERNS (@var{v})} values.  This is
+a shorthand for testing @samp{VECTOR_CST_NELTS_PER_PATTERN (@var{v}) == 1}.
+
+@samp{VECTOR_CST_STEPPED_P (@var{v})} is true if at least one
+pattern in @var{v} has a nonzero step.  This is a shorthand for
+testing @samp{VECTOR_CST_NELTS_PER_PATTERN (@var{v}) == 3}.
+
+The utility function @code{vector_cst_elt} gives the value of an
+arbitrary index as a @code{tree}.  @code{vector_cst_int_elt} gives
+the same value as a @code{wide_int}.
 
 @item STRING_CST
 These nodes represent string-constants.  The @code{TREE_STRING_LENGTH}
@@ -1107,6 +1175,16 @@ of the @code{STRING_CST}.
 
 FIXME: The formats of string constants are not well-defined when the
 target system bytes are not the same width as host system bytes.
+
+@item POLY_INT_CST
+These nodes represent invariants that depend on some target-specific
+runtime parameters.  They consist of @code{NUM_POLY_INT_COEFFS}
+coefficients, with the first coefficient being the constant term and
+the others being multipliers that are applied to the runtime parameters.
+
+@code{POLY_INT_CST_ELT (@var{x}, @var{i})} references coefficient number
+@var{i} of @code{POLY_INT_CST} node @var{x}.  Each coefficient is an
+@code{INTEGER_CST}.
 
 @end table
 
@@ -1224,6 +1302,7 @@ the byte offset of the field, but should not be used directly; call
 @tindex TRUTH_OR_EXPR
 @tindex TRUTH_XOR_EXPR
 @tindex POINTER_PLUS_EXPR
+@tindex POINTER_DIFF_EXPR
 @tindex PLUS_EXPR
 @tindex MINUS_EXPR
 @tindex MULT_EXPR
@@ -1413,8 +1492,16 @@ always of @code{BOOLEAN_TYPE} or @code{INTEGER_TYPE}.
 @item POINTER_PLUS_EXPR
 This node represents pointer arithmetic.  The first operand is always
 a pointer/reference type.  The second operand is always an unsigned
-integer type compatible with sizetype.  This is the only binary
-arithmetic operand that can operate on pointer types.
+integer type compatible with sizetype.  This and POINTER_DIFF_EXPR are
+the only binary arithmetic operators that can operate on pointer types.
+
+@item POINTER_DIFF_EXPR
+This node represents pointer subtraction.  The two operands always
+have pointer/reference type.  It returns a signed integer of the same
+precision as the pointers.  The behavior is undefined if the difference
+of the two pointers, seen as infinite precision non-negative integers,
+does not fit in the result type.  The result does not depend on the
+pointer type, it is not divided by the size of the pointed-to type.
 
 @item PLUS_EXPR
 @itemx MINUS_EXPR
@@ -1557,10 +1644,10 @@ represented conveniently as @code{(i >= 0 && i < 10) ? i : abort()}.
 As a GNU extension, the C language front-ends allow the second
 operand of the @code{?:} operator may be omitted in the source.
 For example, @code{x ? : 3} is equivalent to @code{x ? x : 3},
-assuming that @code{x} is an expression without side-effects.
+assuming that @code{x} is an expression without side effects.
 In the tree representation, however, the second operand is always
 present, possibly protected by @code{SAVE_EXPR} if the first
-argument does cause side-effects.
+argument does cause side effects.
 
 @item CALL_EXPR
 These nodes are used to represent calls to functions, including
@@ -1645,10 +1732,10 @@ by the @code{COMPOUND_LITERAL_EXPR_DECL} macro.
 @item SAVE_EXPR
 
 A @code{SAVE_EXPR} represents an expression (possibly involving
-side-effects) that is used more than once.  The side-effects should
+side effects) that is used more than once.  The side effects should
 occur only the first time the expression is evaluated.  Subsequent uses
 should just reuse the computed value.  The first operand to the
-@code{SAVE_EXPR} is the expression to evaluate.  The side-effects should
+@code{SAVE_EXPR} is the expression to evaluate.  The side effects should
 be executed where the @code{SAVE_EXPR} is first encountered in a
 depth-first preorder traversal of the expression tree.
 
@@ -1686,12 +1773,14 @@ its sole argument yields the representation for @code{ap}.
 @item ANNOTATE_EXPR
 This node is used to attach markers to an expression. The first operand
 is the annotated expression, the second is an @code{INTEGER_CST} with
-a value from @code{enum annot_expr_kind}.
+a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @end table
 
 
 @node Vectors
 @subsection Vectors
+@tindex VEC_DUPLICATE_EXPR
+@tindex VEC_SERIES_EXPR
 @tindex VEC_LSHIFT_EXPR
 @tindex VEC_RSHIFT_EXPR
 @tindex VEC_WIDEN_MULT_HI_EXPR
@@ -1703,9 +1792,22 @@ a value from @code{enum annot_expr_kind}.
 @tindex VEC_PACK_TRUNC_EXPR
 @tindex VEC_PACK_SAT_EXPR
 @tindex VEC_PACK_FIX_TRUNC_EXPR
+@tindex VEC_COND_EXPR
 @tindex SAD_EXPR
 
 @table @code
+@item VEC_DUPLICATE_EXPR
+This node has a single operand and represents a vector in which every
+element is equal to that operand.
+
+@item VEC_SERIES_EXPR
+This node represents a vector formed from a scalar base and step,
+given as the first and second operands respectively.  Element @var{i}
+of the result is equal to @samp{@var{base} + @var{i}*@var{step}}.
+
+This node is restricted to integral types, in order to avoid
+specifying the rounding behavior for floating-point types.
+
 @item VEC_LSHIFT_EXPR
 @itemx VEC_RSHIFT_EXPR
 These nodes represent whole vector left and right shifts, respectively.
@@ -1930,6 +2032,11 @@ case 2 ... 5:
 The first value will be @code{CASE_LOW}, while the second will be
 @code{CASE_HIGH}.
 
+@item DEBUG_BEGIN_STMT
+
+Marks the beginning of a source statement, for purposes of debug
+information generation.
+
 @end table
 
 
@@ -2115,9 +2222,9 @@ of the form @code{VAR @{<,>,<=,>=@} N2}.
 Operand @code{OMP_FOR_INCR} is the loop index increment of the
 form @code{VAR @{+=,-=@} INCR}.
 
-Operand @code{OMP_FOR_PRE_BODY} contains side-effect code from
+Operand @code{OMP_FOR_PRE_BODY} contains side effect code from
 operands @code{OMP_FOR_INIT}, @code{OMP_FOR_COND} and
-@code{OMP_FOR_INC}.  These side-effects are part of the
+@code{OMP_FOR_INC}.  These side effects are part of the
 @code{OMP_FOR} block but must be evaluated before the start of
 loop body.
 
@@ -2126,7 +2233,7 @@ which is implicitly private to each thread.  Bounds
 @code{N1} and @code{N2} and the increment expression
 @code{INCR} are required to be loop invariant integer
 expressions that are evaluated without any synchronization. The
-evaluation order, frequency of evaluation and side-effects are
+evaluation order, frequency of evaluation and side effects are
 unspecified by the standard.
 
 @item OMP_SECTIONS
@@ -2251,7 +2358,7 @@ compilation.
 @tindex OACC_UPDATE
 
 All the statements starting with @code{OACC_} represent directives and
-clauses used by the OpenACC API @w{@uref{http://www.openacc.org/}}.
+clauses used by the OpenACC API @w{@uref{https://www.openacc.org}}.
 
 @table @code
 @item OACC_CACHE
@@ -2820,7 +2927,6 @@ This function cannot be used with namespaces that have
 @findex BINFO_TYPE
 @findex TYPE_FIELDS
 @findex TYPE_VFIELD
-@findex TYPE_METHODS
 
 Besides namespaces, the other high-level scoping construct in C++ is the
 class.  (Throughout this manual the term @dfn{class} is used to mean the
@@ -2837,7 +2943,7 @@ macro to discern whether or not a particular type is a @code{class} as
 opposed to a @code{struct}.  This macro will be true only for classes
 declared with the @code{class} tag.
 
-Almost all non-function members are available on the @code{TYPE_FIELDS}
+Almost all members are available on the @code{TYPE_FIELDS}
 list.  Given one member, the next can be found by following the
 @code{TREE_CHAIN}.  You should not depend in any way on the order in
 which fields appear on this list.  All nodes on this list will be
@@ -2849,21 +2955,17 @@ list, if the enumeration type was declared in the class.  (Of course,
 the @code{TYPE_DECL} for the enumeration type will appear here as well.)
 There are no entries for base classes on this list.  In particular,
 there is no @code{FIELD_DECL} for the ``base-class portion'' of an
-object.
+object.  If a function member is overloaded, each of the overloaded
+functions appears; no @code{OVERLOAD} nodes appear on the @code{TYPE_FIELDS}
+list.  Implicitly declared functions (including default constructors,
+copy constructors, assignment operators, and destructors) will appear on
+this list as well.
 
 The @code{TYPE_VFIELD} is a compiler-generated field used to point to
 virtual function tables.  It may or may not appear on the
 @code{TYPE_FIELDS} list.  However, back ends should handle the
 @code{TYPE_VFIELD} just like all the entries on the @code{TYPE_FIELDS}
 list.
-
-The function members are available on the @code{TYPE_METHODS} list.
-Again, subsequent members are found by following the @code{TREE_CHAIN}
-field.  If a function is overloaded, each of the overloaded functions
-appears; no @code{OVERLOAD} nodes appear on the @code{TYPE_METHODS}
-list.  Implicitly declared functions (including default constructors,
-copy constructors, assignment operators, and destructors) will appear on
-this list as well.
 
 Every class has an associated @dfn{binfo}, which can be obtained with
 @code{TYPE_BINFO}.  Binfos are used to represent base-classes.  The
@@ -3229,30 +3331,6 @@ several statements chained together.
 
 Used to represent a @code{break} statement.  There are no additional
 fields.
-
-@item CILK_SPAWN_STMT
-
-Used to represent a spawning function in the Cilk Plus language extension.  
-This tree has one field that holds the name of the spawning function.
-@code{_Cilk_spawn} can be written in C in the following way:
-
-@smallexample
-@code{_Cilk_spawn} <function_name> (<parameters>);
-@end smallexample
-
-Detailed description for usage and functionality of @code{_Cilk_spawn} can be 
-found at @uref{https://www.cilkplus.org}.
-
-@item CILK_SYNC_STMT
-
-This statement is part of the Cilk Plus language extension.  It indicates that
-the current function cannot continue in parallel with its spawned children.  
-There are no additional fields.  @code{_Cilk_sync} can be written in C in the 
-following way:
-
-@smallexample
-@code{_Cilk_sync};
-@end smallexample
 
 @item CLEANUP_STMT
 

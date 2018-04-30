@@ -2,6 +2,8 @@ m4_include(../config/acx.m4)
 m4_include(../config/no-executables.m4)
 m4_include(../config/math.m4)
 m4_include(../config/ax_check_define.m4)
+m4_include(../config/enable.m4)
+m4_include(../config/cet.m4)
 
 dnl Check that we have a working GNU Fortran compiler
 AC_DEFUN([LIBGFOR_WORKING_GFORTRAN], [
@@ -450,5 +452,61 @@ AC_DEFUN([LIBGFOR_CHECK_AVX512F], [
 	AC_DEFINE(HAVE_AVX512F, 1,
 	[Define if AVX512f instructions can be compiled.]),
 	[])
+  CFLAGS="$ac_save_CFLAGS"
+])
+
+dnl Check for FMA3
+dnl
+AC_DEFUN([LIBGFOR_CHECK_FMA3], [
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mfma -mno-fma4"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
+	{
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
+        }]], [[]])],
+	AC_DEFINE(HAVE_FMA3, 1,
+	[Define if FMA3 instructions can be compiled.]),
+	[])
+  CFLAGS="$ac_save_CFLAGS"
+])
+
+dnl Check for FMA4
+dnl
+AC_DEFUN([LIBGFOR_CHECK_FMA4], [
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mfma4 -mno-fma"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
+	{
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
+        }]], [[]])],
+	AC_DEFINE(HAVE_FMA4, 1,
+	[Define if FMA4 instructions can be compiled.]),
+	[])
+  CFLAGS="$ac_save_CFLAGS"
+])
+
+dnl Check for -mprefer-avx128
+dnl This also defines an automake conditional.
+AC_DEFUN([LIBGFOR_CHECK_AVX128], [
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mavx -mprefer-avx128"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        void foo()
+	{
+        }]], [[]])],
+	AC_DEFINE(HAVE_AVX128, 1,
+	[Define if -mprefer-avx128 is supported.])
+	AM_CONDITIONAL([HAVE_AVX128],true),
+	[AM_CONDITIONAL([HAVE_AVX128],false)])
   CFLAGS="$ac_save_CFLAGS"
 ])

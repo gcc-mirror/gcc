@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,15 +58,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __g);
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
   /*
    * Implementation-space details.
    */
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     template<typename _UIntType, size_t __w,
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>
@@ -189,10 +185,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	_Engine& _M_g;
       };
 
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @addtogroup random_generators Random Number Generators
@@ -520,7 +513,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       static constexpr result_type
       min()
-      { return 0; };
+      { return 0; }
 
       /**
        * @brief Gets the largest possible value in the output range.
@@ -2650,7 +2643,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       void
       param(const param_type& __param)
-      { _M_param = __param; }
+      {
+	_M_param = __param;
+	typedef typename std::gamma_distribution<result_type>::param_type
+	  param_type;
+	_M_gd.param(param_type{__param.n() / 2});
+      }
 
       /**
        * @brief Returns the greatest lower bound value of the distribution.

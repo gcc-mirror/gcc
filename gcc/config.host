@@ -1,5 +1,5 @@
 # GCC host-specific configuration file.
-# Copyright (C) 1997-2017 Free Software Foundation, Inc.
+# Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -144,6 +144,10 @@ case ${host} in
   rs6000-*-* \
   | powerpc*-*-* )
     case ${target} in
+      powerpc*-*-*spe*)
+        host_extra_gcc_objs="driver-powerpcspe.o"
+        host_xmake_file="${host_xmake_file} powerpcspe/x-powerpcspe"
+        ;;
       rs6000-*-* \
       | powerpc*-*-* )
         host_extra_gcc_objs="driver-rs6000.o"

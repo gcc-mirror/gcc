@@ -27,19 +27,19 @@
 ! Check with interface from contained function
   obj%ppc => fcn
   base=obj%ppc(2)
-  if (base/=4) call abort
+  if (base/=4) STOP 1
   call foo (obj%ppc,3)
 
 ! Check with abstract interface
   obj%ppc1 => obj%ppc
   base=obj%ppc1(4)
-  if (base/=8) call abort
+  if (base/=8) STOP 1
   call foo (obj%ppc1,5)
 
 ! Check compatibility components with non-components  
   f => obj%ppc
   base=f(6)
-  if (base/=12) call abort
+  if (base/=12) STOP 1
   call foo (f,7)
 
 contains
@@ -52,7 +52,7 @@ contains
   subroutine foo (arg, i)
     procedure (fcn), pointer :: arg
     integer :: i
-    if (arg(i)/=2*i) call abort
+    if (arg(i)/=2*i) STOP 1
   end subroutine
 
 end

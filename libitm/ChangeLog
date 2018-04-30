@@ -1,3 +1,58 @@
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/x86/sjlj.S (_ITM_beginTransaction): Add
+	(__CET__ & 2) != 0 check for shadow stack.
+	(GTM_longjmp): Likewise.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85489
+	* config/x86/sjlj.S (GTM_longjmp): Replace jle/jg with jbe/ja.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libitm.texi: Bump @copying's copyright year.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Add enable.m4 and cet.m4.
+	* config/x86/sjlj.S: Include cet.h.
+	(_ITM_beginTransaction): Add _CET_ENDBR.
+	Save Shadow Stack pointer.
+	(GTM_longjmp): Add _CET_ENDBR. Restore Shadow Stack pointer.
+	* config/x86/target.h (struct gtm_jmpbuf):
+	Add new field for Shadow Stack pointer.
+	* configure: Regenerate.
+	* configure.ac: Set CET_FLAGS. Update XCFLAGS.
+	* configure.ac: Update libtool_VERSION for x86.
+	* testsuite/Makefile.in: Regenerate.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* libitm/config/x86/target.h: Add new field (ssp).
+	* libitm/config/x86/sjlj.S: Change offsets.
+
 2017-05-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libitm.exp: Load scanlang.exp.
@@ -2040,7 +2095,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2017 Free Software Foundation, Inc.
+Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

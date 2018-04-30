@@ -1,6 +1,7 @@
 /* { dg-options "-Wno-abi" {target arm_eabi} } */
 /* { dg-do run } */
-/* { dg-skip-if "Stack alignment is too small" { hppa*-*-hpux* } "*" "" } */
+/* { dg-skip-if "Stack alignment is too small" { hppa*-*-hpux* } } */
+/* { dg-require-effective-target alloca } */
 
 #include <stdarg.h>
 #include "check.h"
@@ -31,7 +32,7 @@ struct B {};
 void
 test (va_list arg)
 #if __cplusplus <= 201402L
-throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   char *p;

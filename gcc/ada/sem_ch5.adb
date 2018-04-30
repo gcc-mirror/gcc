@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,17 +101,16 @@ package body Sem_Ch5 is
 
    procedure Analyze_Assignment (N : Node_Id) is
       Lhs : constant Node_Id := Name (N);
-      Rhs : constant Node_Id := Expression (N);
-
-      Decl : Node_Id;
-      T1   : Entity_Id;
-      T2   : Entity_Id;
-
-      Save_Full_Analysis : Boolean := False;  -- initialize to prevent warning
+      Rhs : Node_Id          := Expression (N);
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it is not
       --  a variable. This routine issues an appropriate diagnostic.
+
+      function Is_Protected_Part_Of_Constituent
+        (Nod : Node_Id) return Boolean;
+      --  Determine whether arbitrary node Nod denotes a Part_Of constituent of
+      --  a single protected type.
 
       procedure Kill_Lhs;
       --  This is called to kill current value settings of a simple variable
@@ -125,6 +124,31 @@ package body Sem_Ch5 is
       --  Opnd is either the Lhs or Rhs of the assignment, and Opnd_Type is the
       --  nominal subtype. This procedure is used to deal with cases where the
       --  nominal subtype must be replaced by the actual subtype.
+
+      procedure Transform_BIP_Assignment (Typ : Entity_Id);
+      function Should_Transform_BIP_Assignment
+        (Typ : Entity_Id) return Boolean;
+      --  If the right-hand side of an assignment statement is a build-in-place
+      --  call we cannot build in place, so we insert a temp initialized with
+      --  the call, and transform the assignment statement to copy the temp.
+      --  Transform_BIP_Assignment does the tranformation, and
+      --  Should_Transform_BIP_Assignment determines whether we should.
+      --  The same goes for qualified expressions and conversions whose
+      --  operand is such a call.
+      --
+      --  This is only for nonlimited types; assignment statements are illegal
+      --  for limited types, but are generated internally for aggregates and
+      --  init procs. These limited-type are not really assignment statements
+      --  -- conceptually, they are initializations, so should not be
+      --  transformed.
+      --
+      --  Similarly, for nonlimited types, aggregates and init procs generate
+      --  assignment statements that are really initializations. These are
+      --  marked No_Ctrl_Actions.
+
+      function Within_Function return Boolean;
+      --  Determine whether the current scope is a function or appears within
+      --  one.
 
       -------------------------------
       -- Diagnose_Non_Variable_Lhs --
@@ -155,11 +179,7 @@ package body Sem_Ch5 is
                --  of single protected types, the private component appears
                --  directly.
 
-               elsif (Is_Prival (Ent)
-                       and then
-                         (Ekind (Current_Scope) = E_Function
-                           or else Ekind (Enclosing_Dynamic_Scope
-                                            (Current_Scope)) = E_Function))
+               elsif (Is_Prival (Ent) and then Within_Function)
                    or else
                      (Ekind (Ent) = E_Component
                        and then Is_Protected_Type (Scope (Ent)))
@@ -207,6 +227,39 @@ package body Sem_Ch5 is
          Error_Msg_N ("left hand side of assignment must be a variable", N);
       end Diagnose_Non_Variable_Lhs;
 
+      --------------------------------------
+      -- Is_Protected_Part_Of_Constituent --
+      --------------------------------------
+
+      function Is_Protected_Part_Of_Constituent
+        (Nod : Node_Id) return Boolean
+      is
+         Encap_Id : Entity_Id;
+         Var_Id   : Entity_Id;
+
+      begin
+         --  Abstract states and variables may act as Part_Of constituents of
+         --  single protected types, however only variables can be modified by
+         --  an assignment.
+
+         if Is_Entity_Name (Nod) then
+            Var_Id := Entity (Nod);
+
+            if Present (Var_Id) and then Ekind (Var_Id) = E_Variable then
+               Encap_Id := Encapsulating_State (Var_Id);
+
+               --  To qualify, the node must denote a reference to a variable
+               --  whose encapsulating state is a single protected object.
+
+               return
+                 Present (Encap_Id)
+                   and then Is_Single_Protected_Object (Encap_Id);
+            end if;
+         end if;
+
+         return False;
+      end Is_Protected_Part_Of_Constituent;
+
       --------------
       -- Kill_Lhs --
       --------------
@@ -232,6 +285,8 @@ package body Sem_Ch5 is
         (Opnd      : Node_Id;
          Opnd_Type : in out Entity_Id)
       is
+         Decl : Node_Id;
+
       begin
          Require_Entity (Opnd);
 
@@ -249,9 +304,9 @@ package body Sem_Ch5 is
                       or else
                         (Ekind (Entity (Opnd)) = E_Variable
                           and then Nkind (Parent (Entity (Opnd))) =
-                                            N_Object_Renaming_Declaration
+                                     N_Object_Renaming_Declaration
                           and then Nkind (Parent (Parent (Entity (Opnd)))) =
-                                            N_Accept_Statement))
+                                     N_Accept_Statement))
          then
             Opnd_Type := Get_Actual_Subtype (Opnd);
 
@@ -282,7 +337,118 @@ package body Sem_Ch5 is
          end if;
       end Set_Assignment_Type;
 
+      -------------------------------------
+      -- Should_Transform_BIP_Assignment --
+      -------------------------------------
+
+      function Should_Transform_BIP_Assignment
+        (Typ : Entity_Id) return Boolean
+      is
+         Result : Boolean;
+
+      begin
+         if Expander_Active
+           and then not Is_Limited_View (Typ)
+           and then Is_Build_In_Place_Result_Type (Typ)
+           and then not No_Ctrl_Actions (N)
+         then
+            --  This function is called early, before name resolution is
+            --  complete, so we have to deal with things that might turn into
+            --  function calls later. N_Function_Call and N_Op nodes are the
+            --  obvious case. An N_Identifier or N_Expanded_Name is a
+            --  parameterless function call if it denotes a function.
+            --  Finally, an attribute reference can be a function call.
+
+            case Nkind (Unqual_Conv (Rhs)) is
+               when N_Function_Call
+                  | N_Op
+               =>
+                  Result := True;
+
+               when N_Expanded_Name
+                  | N_Identifier
+               =>
+                  case Ekind (Entity (Unqual_Conv (Rhs))) is
+                     when E_Function
+                        | E_Operator
+                     =>
+                        Result := True;
+
+                     when others =>
+                        Result := False;
+                  end case;
+
+               when N_Attribute_Reference =>
+                  Result := Attribute_Name (Unqual_Conv (Rhs)) = Name_Input;
+                  --  T'Input will turn into a call whose result type is T
+
+               when others =>
+                  Result := False;
+            end case;
+         else
+            Result := False;
+         end if;
+
+         return Result;
+      end Should_Transform_BIP_Assignment;
+
+      ------------------------------
+      -- Transform_BIP_Assignment --
+      ------------------------------
+
+      procedure Transform_BIP_Assignment (Typ : Entity_Id) is
+
+         --  Tranform "X : [constant] T := F (...);" into:
+         --
+         --     Temp : constant T := F (...);
+         --     X := Temp;
+
+         Loc      : constant Source_Ptr := Sloc (N);
+         Def_Id   : constant Entity_Id  := Make_Temporary (Loc, 'Y', Rhs);
+         Obj_Decl : constant Node_Id    :=
+                      Make_Object_Declaration (Loc,
+                        Defining_Identifier => Def_Id,
+                        Constant_Present    => True,
+                        Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                        Expression          => Rhs,
+                        Has_Init_Expression => True);
+
+      begin
+         Set_Etype (Def_Id, Typ);
+         Set_Expression (N, New_Occurrence_Of (Def_Id, Loc));
+
+         --  At this point, Rhs is no longer equal to Expression (N), so:
+
+         Rhs := Expression (N);
+
+         Insert_Action (N, Obj_Decl);
+      end Transform_BIP_Assignment;
+
+      ---------------------
+      -- Within_Function --
+      ---------------------
+
+      function Within_Function return Boolean is
+         Scop_Id : constant Entity_Id := Current_Scope;
+
+      begin
+         if Ekind (Scop_Id) = E_Function then
+            return True;
+
+         elsif Ekind (Enclosing_Dynamic_Scope (Scop_Id)) = E_Function then
+            return True;
+         end if;
+
+         return False;
+      end Within_Function;
+
       --  Local variables
+
+      T1 : Entity_Id;
+      T2 : Entity_Id;
+
+      Save_Full_Analysis : Boolean := False;
+      --  Force initialization to facilitate static analysis
 
       Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
       --  Save the Ghost mode to restore on exit
@@ -291,6 +457,15 @@ package body Sem_Ch5 is
 
    begin
       Mark_Coextensions (N, Rhs);
+
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => N,
+         Checks => True,
+         Modes  => True);
 
       --  Analyze the target of the assignment first in case the expression
       --  contains references to Ghost entities. The checks that verify the
@@ -360,8 +535,9 @@ package body Sem_Ch5 is
                   null;
 
                elsif Has_Compatible_Type (Rhs, It.Typ) then
-                  if T1 /= Any_Type then
-
+                  if T1 = Any_Type then
+                     T1 := It.Typ;
+                  else
                      --  An explicit dereference is overloaded if the prefix
                      --  is. Try to remove the ambiguity on the prefix, the
                      --  error will be posted there if the ambiguity is real.
@@ -412,8 +588,6 @@ package body Sem_Ch5 is
                           ("ambiguous left-hand side in assignment", Lhs);
                         exit;
                      end if;
-                  else
-                     T1 := It.Typ;
                   end if;
                end if;
 
@@ -429,12 +603,60 @@ package body Sem_Ch5 is
          end if;
       end if;
 
+      --  Deal with build-in-place calls for nonlimited types. We don't do this
+      --  later, because resolving the rhs tranforms it incorrectly for build-
+      --  in-place.
+
+      if Should_Transform_BIP_Assignment (Typ => T1) then
+
+         --  In certain cases involving user-defined concatenation operators,
+         --  we need to resolve the right-hand side before transforming the
+         --  assignment.
+
+         case Nkind (Unqual_Conv (Rhs)) is
+            when N_Function_Call =>
+               declare
+                  Actual     : Node_Id :=
+                    First (Parameter_Associations (Unqual_Conv (Rhs)));
+                  Actual_Exp : Node_Id;
+
+               begin
+                  while Present (Actual) loop
+                     if Nkind (Actual) = N_Parameter_Association then
+                        Actual_Exp := Explicit_Actual_Parameter (Actual);
+                     else
+                        Actual_Exp := Actual;
+                     end if;
+
+                     if Nkind (Actual_Exp) = N_Op_Concat then
+                        Resolve (Rhs, T1);
+                        exit;
+                     end if;
+
+                     Next (Actual);
+                  end loop;
+               end;
+
+            when N_Attribute_Reference
+               | N_Expanded_Name
+               | N_Identifier
+               | N_Op
+            =>
+               null;
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+         Transform_BIP_Assignment (Typ => T1);
+      end if;
+
+      pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
+
       --  The resulting assignment type is T1, so now we will resolve the left
       --  hand side of the assignment using this determined type.
 
       Resolve (Lhs, T1);
-
-      --  Cases where Lhs is not a variable
 
       --  Cases where Lhs is not a variable. In an instance or an inlined body
       --  no need for further check because assignment was legal in template.
@@ -547,6 +769,15 @@ package body Sem_Ch5 is
            ("target of assignment operation must not be abstract", Lhs);
       end if;
 
+      --  Variables which are Part_Of constituents of single protected types
+      --  behave in similar fashion to protected components. Such variables
+      --  cannot be modified by protected functions.
+
+      if Is_Protected_Part_Of_Constituent (Lhs) and then Within_Function then
+         Error_Msg_N
+           ("protected function cannot modify protected object", Lhs);
+      end if;
+
       --  Resolution may have updated the subtype, in case the left-hand side
       --  is a private protected component. Use the correct subtype to avoid
       --  scoping issues in the back-end.
@@ -580,7 +811,25 @@ package body Sem_Ch5 is
 
       Set_Assignment_Type (Lhs, T1);
 
-      Resolve (Rhs, T1);
+      --  If the target of the assignment is an entity of a mutable type and
+      --  the expression is a conditional expression, its alternatives can be
+      --  of different subtypes of the nominal type of the LHS, so they must be
+      --  resolved with the base type, given that their subtype may differ from
+      --  that of the target mutable object.
+
+      if Is_Entity_Name (Lhs)
+        and then Ekind_In (Entity (Lhs), E_In_Out_Parameter,
+                                         E_Out_Parameter,
+                                         E_Variable)
+        and then Is_Composite_Type (T1)
+        and then not Is_Constrained (Etype (Entity (Lhs)))
+        and then Nkind_In (Rhs, N_If_Expression, N_Case_Expression)
+      then
+         Resolve (Rhs, Base_Type (T1));
+
+      else
+         Resolve (Rhs, T1);
+      end if;
 
       --  This is the point at which we check for an unset reference
 
@@ -806,9 +1055,15 @@ package body Sem_Ch5 is
 
       --  Check elaboration warning for left side if not in elab code
 
-      if not In_Subprogram_Or_Concurrent_Unit then
+      if Legacy_Elaboration_Checks
+        and not In_Subprogram_Or_Concurrent_Unit
+      then
          Check_Elab_Assign (Lhs);
       end if;
+
+      --  Save the scenario for later examination by the ABE Processing phase
+
+      Record_Elaboration_Scenario (N);
 
       --  Set Referenced_As_LHS if appropriate. We only set this flag if the
       --  assignment is a source assignment in the extended main source unit.
@@ -821,14 +1076,16 @@ package body Sem_Ch5 is
          Set_Referenced_Modified (Lhs, Out_Param => False);
       end if;
 
-      --  RM 7.3.2 (12/3): An assignment to a view conversion (from a type
-      --  to one of its ancestors) requires an invariant check. Apply check
-      --  only if expression comes from source, otherwise it will be applied
-      --  when value is assigned to source entity.
+      --  RM 7.3.2 (12/3): An assignment to a view conversion (from a type to
+      --  one of its ancestors) requires an invariant check. Apply check only
+      --  if expression comes from source, otherwise it will be applied when
+      --  value is assigned to source entity. This is not done in GNATprove
+      --  mode, as GNATprove handles invariant checks itself.
 
       if Nkind (Lhs) = N_Type_Conversion
         and then Has_Invariants (Etype (Expression (Lhs)))
         and then Comes_From_Source (Expression (Lhs))
+        and then not GNATprove_Mode
       then
          Insert_After (N, Make_Invariant_Call (Expression (Lhs)));
       end if;
@@ -947,9 +1204,13 @@ package body Sem_Ch5 is
       --  the context of the assignment statement. Restore the expander mode
       --  now so that assignment statement can be properly expanded.
 
-      if Nkind (N) = N_Assignment_Statement and then Has_Target_Names (N) then
-         Expander_Mode_Restore;
-         Full_Analysis := Save_Full_Analysis;
+      if Nkind (N) = N_Assignment_Statement then
+         if Has_Target_Names (N) then
+            Expander_Mode_Restore;
+            Full_Analysis := Save_Full_Analysis;
+         end if;
+
+         pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
       end if;
    end Analyze_Assignment;
 
@@ -1112,6 +1373,7 @@ package body Sem_Ch5 is
          end if;
 
          Check_References (Ent);
+         Update_Use_Clause_Chain;
          End_Scope;
 
          if Unblocked_Exit_Count = 0 then
@@ -1812,12 +2074,20 @@ package body Sem_Ch5 is
 
       procedure Check_Reverse_Iteration (Typ : Entity_Id) is
       begin
-         if Reverse_Present (N)
-           and then not Is_Array_Type (Typ)
-           and then not Is_Reversible_Iterator (Typ)
-         then
-            Error_Msg_NE
-              ("container type does not support reverse iteration", N, Typ);
+         if Reverse_Present (N) then
+            if Is_Array_Type (Typ)
+              or else Is_Reversible_Iterator (Typ)
+              or else
+                (Present (Find_Aspect (Typ, Aspect_Iterable))
+                  and then
+                    Present
+                      (Get_Iterable_Type_Primitive (Typ, Name_Previous)))
+            then
+               null;
+            else
+               Error_Msg_NE
+                 ("container type does not support reverse iteration", N, Typ);
+            end if;
          end if;
       end Check_Reverse_Iteration;
 
@@ -1902,8 +2172,8 @@ package body Sem_Ch5 is
 
       Preanalyze_Range (Iter_Name);
 
-      --  Set the kind of the loop variable, which is not visible within
-      --  the iterator name.
+      --  Set the kind of the loop variable, which is not visible within the
+      --  iterator name.
 
       Set_Ekind (Def_Id, E_Variable);
 
@@ -1926,13 +2196,13 @@ package body Sem_Ch5 is
 
             begin
                if No (Iterator) then
-                  null;   --  error reported below.
+                  null;  --  error reported below
 
                elsif not Is_Overloaded (Iterator) then
                   Check_Reverse_Iteration (Etype (Iterator));
 
-               --  If Iterator is overloaded, use reversible iterator if
-               --  one is available.
+               --  If Iterator is overloaded, use reversible iterator if one is
+               --  available.
 
                elsif Is_Overloaded (Iterator) then
                   Get_First_Interp (Iterator, I, It);
@@ -2178,6 +2448,7 @@ package body Sem_Ch5 is
                        ("missing Element primitive for iteration", N);
                   else
                      Set_Etype (Def_Id, Etype (Elt));
+                     Check_Reverse_Iteration (Typ);
                   end if;
                end;
 
@@ -2495,7 +2766,10 @@ package body Sem_Ch5 is
                & "iteration", Discrete_Subtype_Definition (N),
                T, Suggest_Static => True);
 
-         elsif Inside_A_Generic and then Is_Generic_Formal (T) then
+         elsif Inside_A_Generic
+           and then Is_Generic_Formal (T)
+           and then Is_Discrete_Type (T)
+         then
             Set_No_Dynamic_Predicate_On_Actual (T);
          end if;
       end Check_Predicate_Use;
@@ -3488,8 +3762,7 @@ package body Sem_Ch5 is
          end if;
 
       else
-
-         --  Pre-Ada2012 for-loops and while loops.
+         --  Pre-Ada2012 for-loops and while loops
 
          Analyze_Statements (Statements (N));
       end if;
@@ -3727,7 +4000,8 @@ package body Sem_Ch5 is
                      Check_SPARK_05_Restriction
                        ("unreachable code is not allowed", Error_Node);
                   else
-                     Error_Msg ("??unreachable code!", Sloc (Error_Node));
+                     Error_Msg
+                       ("??unreachable code!", Sloc (Error_Node), Error_Node);
                   end if;
                end if;
 

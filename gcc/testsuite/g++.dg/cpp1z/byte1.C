@@ -1,5 +1,5 @@
 // Test for std::byte aliasing properties.
-// { dg-options "-std=c++1z -O3" }
+// { dg-options "-std=c++17 -O3" }
 
 #include <cstddef>
 

@@ -81,6 +81,9 @@
 /* Define if AVX instructions can be compiled. */
 #undef HAVE_AVX
 
+/* Define if -mprefer-avx128 is supported. */
+#undef HAVE_AVX128
+
 /* Define if AVX2 instructions can be compiled. */
 #undef HAVE_AVX2
 
@@ -374,6 +377,12 @@
 
 /* Define to 1 if you have the `floorl' function. */
 #undef HAVE_FLOORL
+
+/* Define if FMA3 instructions can be compiled. */
+#undef HAVE_FMA3
+
+/* Define if FMA4 instructions can be compiled. */
+#undef HAVE_FMA4
 
 /* Define to 1 if you have the `fmod' function. */
 #undef HAVE_FMOD

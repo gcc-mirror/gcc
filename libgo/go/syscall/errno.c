@@ -11,11 +11,11 @@
 /* errno is typically a macro. These functions set 
    and get errno specific to the libc being used.  */
 
-uintptr_t GetErrno() __asm__ (GOSYM_PREFIX "syscall.GetErrno");
+uintptr_t GetErrno(void) __asm__ (GOSYM_PREFIX "syscall.GetErrno");
 void SetErrno(uintptr_t) __asm__ (GOSYM_PREFIX "syscall.SetErrno");
 
 uintptr_t
-GetErrno()
+GetErrno(void)
 {
   return (uintptr_t) errno;
 }

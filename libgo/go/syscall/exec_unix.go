@@ -163,9 +163,10 @@ func SetNonblock(fd int, nonblocking bool) (err error) {
 // Credential holds user and group identities to be assumed
 // by a child process started by StartProcess.
 type Credential struct {
-	Uid    uint32   // User ID.
-	Gid    uint32   // Group ID.
-	Groups []uint32 // Supplementary group IDs.
+	Uid         uint32   // User ID.
+	Gid         uint32   // Group ID.
+	Groups      []uint32 // Supplementary group IDs.
+	NoSetGroups bool     // If true, don't set supplementary groups
 }
 
 // ProcAttr holds attributes that will be applied to a new process started
@@ -292,6 +293,14 @@ func StartProcess(argv0 string, argv []string, attr *ProcAttr) (pid int, handle 
 	return pid, 0, err
 }
 
+// Implemented in runtime package.
+func runtime_BeforeExec()
+func runtime_AfterExec()
+
+// execveSolaris is non-nil on Solaris, set to execve in exec_solaris.go; this
+// avoids a build dependency for other platforms.
+var execveSolaris func(path uintptr, argv uintptr, envp uintptr) (err Errno)
+
 // Exec invokes the execve(2) system call.
 func Exec(argv0 string, argv []string, envv []string) (err error) {
 	argv0p, err := BytePtrFromString(argv0)
@@ -306,6 +315,9 @@ func Exec(argv0 string, argv []string, envv []string) (err error) {
 	if err != nil {
 		return err
 	}
+	runtime_BeforeExec()
+
 	err1 := raw_execve(argv0p, &argvp[0], &envvp[0])
+	runtime_AfterExec()
 	return Errno(err1)
 }

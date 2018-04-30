@@ -4,10 +4,12 @@
 
 #define a!		/* { dg-warning "missing whitespace" } */
 #define b"		/* { dg-warning "missing whitespace" } */
+/* { dg-error "missing terminating" "" { target *-*-* } .-1 } */
 #define c#		/* { dg-warning "missing whitespace" } */
 #define d%		/* { dg-warning "missing whitespace" } */
 #define e&		/* { dg-warning "missing whitespace" } */
 #define f'		/* { dg-warning "missing whitespace" } */
+/* { dg-error "missing terminating" "" { target *-*-* } .-1 } */
 #define g)		/* { dg-warning "missing whitespace" } */
 #define h*		/* { dg-warning "missing whitespace" } */
 #define i+		/* { dg-warning "missing whitespace" } */
@@ -59,5 +61,3 @@
 #define ag"abc"		/* { dg-warning "missing whitespace" } */
 
 int dummy;
-/* { dg-error "missing terminating" "" { target *-*-* } 6 } */
-/* { dg-error "missing terminating" "" { target *-*-* } 10 } */

@@ -4,7 +4,12 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+/* N / 2 bytes has to be worth vectorizing even with peeling.  */
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS * 4 / 8)
+#else
 #define N 64
+#endif
 
 struct t{
   int k[N];
@@ -89,4 +94,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail vect_element_align_preferred } } } */

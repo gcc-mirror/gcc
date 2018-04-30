@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is free software; you can redistribute it and/or modify it
@@ -55,7 +55,7 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
   struct rt_sigframe
   {
     siginfo_t info;
-    struct ucontext uc;
+    ucontext_t uc;
   };
 
   struct rt_sigframe *rt_;

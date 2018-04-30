@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -222,10 +222,87 @@ gomp_affinity_finalize_place_list (bool quiet)
   return true;
 }
 
+static void
+gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
+			    cpu_set_t *copy, char *name, bool quiet)
+{
+  size_t prefix_len = sizeof ("/sys/devices/system/cpu/cpu") - 1;
+  FILE *f;
+  char *line = NULL;
+  size_t linelen = 0;
+  unsigned long i, max = 8 * gomp_cpuset_size;
+
+  for (i = 0; i < max && gomp_places_list_len < count; i++)
+    if (CPU_ISSET_S (i, gomp_cpuset_size, copy))
+      {
+	sprintf (name + prefix_len, "%lu/topology/%s_siblings_list",
+		 i, this_level == 3 ? "core" : "thread");
+	f = fopen (name, "r");
+	if (f == NULL)
+	  {
+	    CPU_CLR_S (i, gomp_cpuset_size, copy);
+	    continue;
+	  }
+	if (getline (&line, &linelen, f) > 0)
+	  {
+	    char *p = line;
+	    void *pl = gomp_places_list[gomp_places_list_len];
+	    if (level == this_level)
+	      gomp_affinity_init_place (pl);
+	    while (*p && *p != '\n')
+	      {
+		unsigned long first, last;
+		errno = 0;
+		first = strtoul (p, &p, 10);
+		if (errno)
+		  break;
+		last = first;
+		if (*p == '-')
+		  {
+		    errno = 0;
+		    last = strtoul (p + 1, &p, 10);
+		    if (errno || last < first)
+		      break;
+		  }
+		for (; first <= last; first++)
+		  if (!CPU_ISSET_S (first, gomp_cpuset_size, copy))
+		    continue;
+		  else if (this_level == 3 && level < this_level)
+		    gomp_affinity_init_level_1 (level, 2, count, copy,
+						name, quiet);
+		  else
+		    {
+		      if (level == 1)
+			{
+			  pl = gomp_places_list[gomp_places_list_len];
+			  gomp_affinity_init_place (pl);
+			}
+		      if (gomp_affinity_add_cpus (pl, first, 1, 0, true))
+			{
+			  CPU_CLR_S (first, gomp_cpuset_size, copy);
+			  if (level == 1)
+			    gomp_places_list_len++;
+			}
+		    }
+		if (*p == ',')
+		  ++p;
+	      }
+	    if (level == this_level
+		&& !CPU_ISSET_S (i, gomp_cpuset_size, copy))
+	      gomp_places_list_len++;
+	    CPU_CLR_S (i, gomp_cpuset_size, copy);
+	  }
+	fclose (f);
+      }
+  free (line);
+}
+
 bool
 gomp_affinity_init_level (int level, unsigned long count, bool quiet)
 {
-  unsigned long i, max = 8 * gomp_cpuset_size;
+  char name[sizeof ("/sys/devices/system/cpu/cpu/topology/"
+		    "thread_siblings_list") + 3 * sizeof (unsigned long)];
+  cpu_set_t *copy;
 
   if (gomp_cpusetp)
     {
@@ -238,90 +315,20 @@ gomp_affinity_init_level (int level, unsigned long count, bool quiet)
   gomp_places_list_len = 0;
   if (gomp_places_list == NULL)
     return false;
-  /* SMT (threads).  */
-  if (level == 1)
-    {
-      for (i = 0; i < max && gomp_places_list_len < count; i++)
-	if (CPU_ISSET_S (i, gomp_cpuset_size, gomp_cpusetp))
-	  {
-	    gomp_affinity_init_place (gomp_places_list[gomp_places_list_len]);
-	    gomp_affinity_add_cpus (gomp_places_list[gomp_places_list_len],
-				    i, 1, 0, true);
-	    ++gomp_places_list_len;
-	  }
-      return true;
-    }
-  else
-    {
-      char name[sizeof ("/sys/devices/system/cpu/cpu/topology/"
-			"thread_siblings_list") + 3 * sizeof (unsigned long)];
-      size_t prefix_len = sizeof ("/sys/devices/system/cpu/cpu") - 1;
-      cpu_set_t *copy = gomp_alloca (gomp_cpuset_size);
-      FILE *f;
-      char *line = NULL;
-      size_t linelen = 0;
 
-      memcpy (name, "/sys/devices/system/cpu/cpu", prefix_len);
-      memcpy (copy, gomp_cpusetp, gomp_cpuset_size);
-      for (i = 0; i < max && gomp_places_list_len < count; i++)
-	if (CPU_ISSET_S (i, gomp_cpuset_size, copy))
-	  {
-	    sprintf (name + prefix_len, "%lu/topology/%s_siblings_list",
-		     i, level == 2 ? "thread" : "core");
-	    f = fopen (name, "r");
-	    if (f != NULL)
-	      {
-		if (getline (&line, &linelen, f) > 0)
-		  {
-		    char *p = line;
-		    bool seen_i = false;
-		    void *pl = gomp_places_list[gomp_places_list_len];
-		    gomp_affinity_init_place (pl);
-		    while (*p && *p != '\n')
-		      {
-			unsigned long first, last;
-			errno = 0;
-			first = strtoul (p, &p, 10);
-			if (errno)
-			  break;
-			last = first;
-			if (*p == '-')
-			  {
-			    errno = 0;
-			    last = strtoul (p + 1, &p, 10);
-			    if (errno || last < first)
-			      break;
-			  }
-			for (; first <= last; first++)
-			  if (CPU_ISSET_S (first, gomp_cpuset_size, copy)
-			      && gomp_affinity_add_cpus (pl, first, 1, 0,
-							 true))
-			    {
-			      CPU_CLR_S (first, gomp_cpuset_size, copy);
-			      if (first == i)
-				seen_i = true;
-			    }
-			if (*p == ',')
-			  ++p;
-		      }
-		    if (seen_i)
-		      gomp_places_list_len++;
-		  }
-		fclose (f);
-	      }
-	  }
-      if (gomp_places_list_len == 0)
-	{
-	  if (!quiet)
-	    gomp_error ("Error reading %s topology",
-			level == 2 ? "core" : "socket");
-	  free (gomp_places_list);
-	  gomp_places_list = NULL;
-	  return false;
-	}
-      return true;
+  copy = gomp_alloca (gomp_cpuset_size);
+  strcpy (name, "/sys/devices/system/cpu/cpu");
+  memcpy (copy, gomp_cpusetp, gomp_cpuset_size);
+  gomp_affinity_init_level_1 (level, 3, count, copy, name, quiet);
+  if (gomp_places_list_len == 0)
+    {
+      if (!quiet)
+	gomp_error ("Error reading core/socket topology");
+      free (gomp_places_list);
+      gomp_places_list = NULL;
+      return false;
     }
-  return false;
+  return true;
 }
 
 void

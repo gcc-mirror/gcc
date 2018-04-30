@@ -22,8 +22,8 @@ end module foo
 
 program test
   use foo
-  if(len(pop(0)) /= 0) call abort()
-  if(len(pop(1)) /= 1) call abort()
-  if(len(push(0)) /= 0) call abort()
-  if(len(push(1)) /= 1) call abort()
+  if(len(pop(0)) /= 0) STOP 1
+  if(len(pop(1)) /= 1) STOP 2
+  if(len(push(0)) /= 0) STOP 3
+  if(len(push(1)) /= 1) STOP 4
 end program

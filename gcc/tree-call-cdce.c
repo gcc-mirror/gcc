@@ -1,5 +1,5 @@
 /* Conditional Dead Call Elimination pass for the GNU compiler.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
@@ -314,6 +314,7 @@ can_test_argument_range (gcall *call)
     CASE_FLT_FN (BUILT_IN_POW10):
     /* Sqrt.  */
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
       return check_builtin_call (call);
     /* Special one: two argument pow.  */
     case BUILT_IN_POW:
@@ -342,6 +343,7 @@ edom_only_function (gcall *call)
     CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
     CASE_FLT_FN (BUILT_IN_SIN):
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
     CASE_FLT_FN (BUILT_IN_FMOD):
     CASE_FLT_FN (BUILT_IN_REMAINDER):
       return true;
@@ -703,6 +705,7 @@ get_no_error_domain (enum built_in_function fnc)
                          308, true, false);
     /* sqrt: [0, +inf)  */
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
       return get_domain (0, true, true,
                          0, false, false);
     default:
@@ -751,10 +754,6 @@ gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
 
   return;
 }
-
-
-/* Probability of the branch (to the call) is taken.  */
-#define ERR_PROB 0.01
 
 /* Shrink-wrap BI_CALL so that it is only called when one of the NCONDS
    conditions in CONDS is false.  */
@@ -906,8 +905,7 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
 
      Here we take the second approach because it's slightly simpler
      and because it's easy to see that it doesn't lose profile counts.  */
-  bi_call_bb->count = 0;
-  bi_call_bb->frequency = 0;
+  bi_call_bb->count = profile_count::zero ();
   while (!edges.is_empty ())
     {
       edge_pair e = edges.pop ();
@@ -916,23 +914,14 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       basic_block src_bb = call_edge->src;
       gcc_assert (src_bb == nocall_edge->src);
 
-      call_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
-      call_edge->count = apply_probability (src_bb->count,
-					    call_edge->probability);
-      nocall_edge->probability = inverse_probability (call_edge->probability);
-      nocall_edge->count = src_bb->count - call_edge->count;
+      call_edge->probability = profile_probability::very_unlikely ();
+      nocall_edge->probability = profile_probability::always ()
+				 - call_edge->probability;
 
-      unsigned int call_frequency = apply_probability (src_bb->frequency,
-						       call_edge->probability);
-
-      bi_call_bb->count += call_edge->count;
-      bi_call_bb->frequency += call_frequency;
+      bi_call_bb->count += call_edge->count ();
 
       if (nocall_edge->dest != join_tgt_bb)
-	{
-	  nocall_edge->dest->count = nocall_edge->count;
-	  nocall_edge->dest->frequency = src_bb->frequency - call_frequency;
-	}
+	nocall_edge->dest->count = src_bb->count - bi_call_bb->count;
     }
 
   if (dom_info_available_p (CDI_DOMINATORS))
@@ -1022,6 +1011,7 @@ use_internal_fn (gcall *call)
     args.safe_push (gimple_call_arg (call, i));
   gcall *new_call = gimple_build_call_internal_vec (ifn, args);
   gimple_set_location (new_call, gimple_location (call));
+  gimple_call_set_nothrow (new_call, gimple_call_nothrow_p (call));
 
   /* Transfer the LHS to the new call.  */
   tree lhs = gimple_call_lhs (call);

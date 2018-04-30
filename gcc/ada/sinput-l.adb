@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,8 +44,6 @@ with Snames;   use Snames;
 with System;   use System;
 
 with System.OS_Lib; use System.OS_Lib;
-
-with Unchecked_Conversion;
 
 package body Sinput.L is
 
@@ -103,7 +101,7 @@ package body Sinput.L is
       --  case, but in practice there seem to be some nodes that get copied
       --  twice, and this is a defence against that happening.
 
-      if Factor.Lo <= Loc and then Loc <= Factor.Hi then
+      if Loc in Factor.Lo .. Factor.Hi then
          Set_Sloc (N, Loc + Factor.Adjust);
       end if;
    end Adjust_Instantiation_Sloc;
@@ -143,7 +141,8 @@ package body Sinput.L is
       Xnew := Source_File.Last;
 
       if Debug_Flag_L then
-         Write_Str ("Create_Instantiation_Source: created source ");
+         Write_Eol;
+         Write_Str ("*** Create_Instantiation_Source: created source ");
          Write_Int (Int (Xnew));
          Write_Line ("");
       end if;
@@ -250,8 +249,7 @@ package body Sinput.L is
          end;
 
          if Debug_Flag_L then
-            Write_Eol;
-            Write_Str ("*** Create instantiation source for ");
+            Write_Str ("  for ");
 
             if Nkind (Dnod) in N_Proper_Body
               and then Was_Originally_Stub (Dnod)
@@ -289,10 +287,6 @@ package body Sinput.L is
             end if;
 
             Write_Name (Chars (Template_Id));
-            Write_Eol;
-
-            Write_Str ("  new source index = ");
-            Write_Int (Int (Xnew));
             Write_Eol;
 
             Write_Str ("  copying from file name = ");
@@ -360,10 +354,11 @@ package body Sinput.L is
      (N : File_Name_Type;
       T : Osint.File_Type) return Source_File_Index
    is
+      FD  : File_Descriptor;
+      Hi  : Source_Ptr;
+      Lo  : Source_Ptr;
       Src : Source_Buffer_Ptr;
       X   : Source_File_Index;
-      Lo  : Source_Ptr;
-      Hi  : Source_Ptr;
 
       Preprocessing_Needed : Boolean := False;
 
@@ -401,11 +396,11 @@ package body Sinput.L is
       X := Source_File.Last;
 
       if Debug_Flag_L then
+         Write_Eol;
          Write_Str ("Sinput.L.Load_File: created source ");
          Write_Int (Int (X));
          Write_Str (" for ");
          Write_Str (Get_Name_String (N));
-         Write_Line ("");
       end if;
 
       --  Compute starting index, respecting alignment requirement
@@ -417,12 +412,16 @@ package body Sinput.L is
                   Source_Align) * Source_Align;
       end if;
 
-      Osint.Read_Source_File (N, Lo, Hi, Src, T);
+      Osint.Read_Source_File (N, Lo, Hi, Src, FD, T);
 
       if Null_Source_Buffer_Ptr (Src) then
          Source_File.Decrement_Last;
-         return No_Source_File;
 
+         if FD = Null_FD then
+            return No_Source_File;
+         else
+            return No_Access_To_Source_File;
+         end if;
       else
          if Debug_Flag_L then
             Write_Eol;

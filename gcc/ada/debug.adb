@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,13 +69,13 @@ package body Debug is
    --  dC   Output debugging information on check suppression
    --  dD   Delete elaboration checks in inner level routines
    --  dE   Apply elaboration checks to predefined units
-   --  dF   Front end data layout enabled
+   --  dF   Perform the new SPARK checking rules for pointer aliasing
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
-   --  dJ
+   --  dJ   Prepend subprogram name in messages
    --  dK   Kill all error messages
-   --  dL   Output trace information on elaboration checking
+   --  dL   Ignore external calls from instances for elaboration
    --  dM   Assume all variables are modified (no current values)
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
@@ -108,14 +108,14 @@ package body Debug is
    --  d.o  Conservative elaboration order for indirect calls
    --  d.p  Use original Ada 95 semantics for Bit_Order (disable AI95-0133)
    --  d.q  Suppress optimizations on imported 'in'
-   --  d.r  Enable OK_To_Reorder_Components in non-variant records
+   --  d.r  Disable reordering of components in record types
    --  d.s  Strict secondary stack management
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u  Enable Modify_Tree_For_C (update tree for c)
-   --  d.v  Enable OK_To_Reorder_Components in variant records
+   --  d.v  Enforce SPARK elaboration rules in SPARK code
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
-   --  d.y
+   --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
    --  d.A  Read/write Aspect_Specifications hash table to tree
@@ -145,6 +145,60 @@ package body Debug is
    --  d.Y
    --  d.Z  Do not enable expansion in configurable run-time mode
 
+   --  d_a  Stop elaboration checks on accept or select statement
+   --  d_b
+   --  d_c
+   --  d_d
+   --  d_e  Ignore entry calls and requeue statements for elaboration
+   --  d_f
+   --  d_g
+   --  d_h
+   --  d_i  Ignore activations and calls to instances for elaboration
+   --  d_j
+   --  d_k
+   --  d_l
+   --  d_m
+   --  d_n
+   --  d_o
+   --  d_p  Ignore assertion pragmas for elaboration
+   --  d_q
+   --  d_r
+   --  d_s
+   --  d_t
+   --  d_u
+   --  d_v
+   --  d_w
+   --  d_x
+   --  d_y
+   --  d_z
+
+   --  d_A
+   --  d_B
+   --  d_C
+   --  d_D
+   --  d_E
+   --  d_F
+   --  d_G
+   --  d_H
+   --  d_I
+   --  d_J
+   --  d_K
+   --  d_L  Output trace information on elaboration checking
+   --  d_M
+   --  d_N
+   --  d_O
+   --  d_P
+   --  d_Q
+   --  d_R
+   --  d_S
+   --  d_T
+   --  d_U
+   --  d_V
+   --  d_W
+   --  d_X
+   --  d_Y
+   --  d_Z
+
    --  d1   Error msgs have node numbers where possible
    --  d2   Eliminate error flags in verbose form error messages
    --  d3   Dump bad node in Comperr on an abort
@@ -161,9 +215,19 @@ package body Debug is
    --  d.4  Do not delete generated C file in case of errors
    --  d.5  Do not generate imported subprogram definitions in C code
    --  d.6  Do not avoid declaring unreferenced types in C code
-   --  d.7
+   --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
    --  d.8
-   --  d.9
+   --  d.9  Disable build-in-place for nonlimited types
+
+   --  d_1
+   --  d_2
+   --  d_3
+   --  d_4
+   --  d_5
+   --  d_6
+   --  d_7
+   --  d_8
+   --  d_9
 
    --  Debug flags for binder (GNATBIND)
 
@@ -357,7 +421,7 @@ package body Debug is
    --       information for all internal type and object entities, as well
    --       as all user defined type and object entities including private
    --       and incomplete types. This debug switch also automatically sets
-   --       the equivalent of -gnatR3m.
+   --       the equivalent of -gnatRm.
 
    --  dB   Output debug encodings for types and variants. See Exp_Dbug for
    --       exact form of the generated output.
@@ -383,9 +447,10 @@ package body Debug is
    --  dE   Apply compile time elaboration checking for with relations between
    --       predefined units. Normally no checks are made.
 
-   --  dF   Front end data layout enabled. Normally front end data layout
-   --       is only enabled if the target parameter Backend_Layout is False.
-   --       This debugging switch enables it unconditionally.
+   --  dF   Perform the new SPARK checking rules for pointer aliasing. This is
+   --       only activated in GNATprove mode and on SPARK code. These rules are
+   --       not yet part of the official SPARK language, but are expected to be
+   --       included in a future version of SPARK.
 
    --  dG   Generate all warnings. Normally Errout suppresses warnings on
    --       units that are not part of the main extended source, and also
@@ -404,14 +469,18 @@ package body Debug is
    --       is used in the fixed bugs run to minimize system and version
    --       dependency in filed -gnatD or -gnatG output.
 
+   --  dJ   Prepend the name of the enclosing subprogram in compiler messages
+   --       (errors, warnings, style checks). This is useful in particular to
+   --       integrate compiler warnings in static analysis tools such as
+   --       CodePeer.
+
    --  dK   Kill all error messages. This debug flag suppresses the output
    --       of all error messages. It is used in regression tests where the
    --       error messages are target dependent and irrelevant.
 
-   --  dL   Output trace information on elaboration checking. This debug
-   --       switch causes output to be generated showing each call or
-   --       instantiation as it is checked, and the progress of the recursive
-   --       trace through elaboration calls at compile time.
+   --  dL   The compiler ignores calls in instances and invoke subprograms
+   --       which are external to the instance for both the static and dynamic
+   --       elaboration models.
 
    --  dM   Assume all variables have been modified, and ignore current value
    --       indications. This debug flag disconnects the tracking of constant
@@ -548,7 +617,7 @@ package body Debug is
 
    --  d.l  Use Ada 95 semantics for limited function returns. This may be
    --       used to work around the incompatibility introduced by AI-318-2.
-   --       It is useful only in -gnat05 mode.
+   --       It is useful only in Ada 2005 and later.
 
    --  d.m  When -gnatl is used, the normal output includes full listings of
    --       all files in the extended main source (body/spec/subunits). If this
@@ -574,8 +643,7 @@ package body Debug is
    --       optimizations. This option should not be used; the correct solution
    --       is to declare the parameter 'in out'.
 
-   --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
-   --       base types that have no discriminants.
+   --  d.r  Do not reorder components in record types.
 
    --  d.s  The compiler no longer attempts to optimize the calls to secondary
    --       stack management routines SS_Mark and SS_Release. As a result, each
@@ -596,8 +664,12 @@ package body Debug is
    --  d.u  Sets Modify_Tree_For_C mode in which tree is modified to make it
    --       easier to generate code using a C compiler.
 
-   --  d.v  Forces the flag OK_To_Reorder_Components to be set in all record
-   --       base types that have at least one discriminant (v = variant).
+   --  d.v  This flag enforces the elaboration rules defined in the SPARK
+   --       Reference Manual, chapter 7.7, to all SPARK code within a unit. As
+   --       a result, constructs which violate the rules in chapter 7.7 are no
+   --       longer accepted, even if the implementation is able to statically
+   --       ensure that accepting these constructs does not introduce the
+   --       possibility of failing an elaboration check.
 
    --  d.w  This flag turns off the scanning of loops to detect possible
    --       infinite loops.
@@ -606,6 +678,12 @@ package body Debug is
    --       handlers to be eliminated from the generated code. They are still
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
+
+   --  d.y  Disable implicit pragma Elaborate_All on task bodies. When a task
+   --       body calls a procedure in the same package, and that procedure
+   --       calls a procedure in another package, the static elaboration
+   --       machinery adds an implicit Elaborate_All on the other package. This
+   --       switch disables the addition of the implicit pragma in such cases.
 
    --  d.z  Restore previous front-end support for Inline_Always. In default
    --       mode, for targets that use the GCC back end, Inline_Always is
@@ -744,6 +822,28 @@ package body Debug is
    --       case if debug flag -gnatd.Z is used. This is to deal with the case
    --       where we discover difficulties in this new processing.
 
+   --  d_a  The compiler stops the examination of a task body once it reaches
+   --       an accept or select statement for the static elaboration model. The
+   --       behavior is similar to that of No_Entry_Calls_In_Elaboration_Code,
+   --       but does not penalize actual entry calls in elaboration code.
+
+   --  d_e  The compiler ignores simple entry calls, asynchronous transfer of
+   --       control, conditional entry calls, timed entry calls, and requeue
+   --       statements in both the static and dynamic elaboration models.
+
+   --  d_i  The compiler ignores calls and task activations when they target a
+   --       subprogram or task type defined in an external instance for both
+   --       the static and dynamic elaboration models.
+
+   --  d_p  The compiler ignores calls to subprograms which verify the run-time
+   --       semantics of invariants and postconditions in both the static and
+   --       dynamic elaboration models.
+
+   --  d_L  Output trace information on elaboration checking. This debug switch
+   --       causes output to be generated showing each call or instantiation as
+   --       it is checked, and the progress of the recursive trace through
+   --       elaboration calls at compile time.
+
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
    --       debugging errors caused by expanded code, where the source location
@@ -811,6 +911,15 @@ package body Debug is
    --  d.6  By default the C back-end avoids declaring types that are not
    --       referenced by the generated C code. This debug flag restores the
    --       output of all the types.
+
+   --  d.7  Indicates (to gnat2scil) that CodePeer is being invoked as a
+   --       prover by the SPARK tools and that therefore gnat2scil should
+   --       avoid SCIL generation strategies which can introduce soundness
+   --       issues (e.g., assuming that a low bound of an array parameter
+   --       of an unconstrained subtype belongs to the index subtype).
+
+   --  d.9  Enable build-in-place for function calls returning some nonlimited
+   --       types.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --
@@ -920,7 +1029,7 @@ package body Debug is
    --------------------
 
    procedure Set_Debug_Flag (C : Character; Val : Boolean := True) is
-      subtype Dig is Character range '1' .. '9';
+      subtype Dig  is Character range '1' .. '9';
       subtype LLet is Character range 'a' .. 'z';
       subtype ULet is Character range 'A' .. 'Z';
 
@@ -1066,7 +1175,7 @@ package body Debug is
    ---------------------------
 
    procedure Set_Dotted_Debug_Flag (C : Character; Val : Boolean := True) is
-      subtype Dig is Character range '1' .. '9';
+      subtype Dig  is Character range '1' .. '9';
       subtype LLet is Character range 'a' .. 'z';
       subtype ULet is Character range 'A' .. 'Z';
 
@@ -1206,5 +1315,154 @@ package body Debug is
          end case;
       end if;
    end Set_Dotted_Debug_Flag;
+
+   --------------------------------
+   -- Set_Underscored_Debug_Flag --
+   --------------------------------
+
+   procedure Set_Underscored_Debug_Flag
+     (C   : Character;
+      Val : Boolean := True)
+   is
+      subtype Dig  is Character range '1' .. '9';
+      subtype LLet is Character range 'a' .. 'z';
+      subtype ULet is Character range 'A' .. 'Z';
+
+   begin
+      if C in Dig then
+         case Dig (C) is
+            when '1' =>
+               Debug_Flag_Underscore_1 := Val;
+            when '2' =>
+               Debug_Flag_Underscore_2 := Val;
+            when '3' =>
+               Debug_Flag_Underscore_3 := Val;
+            when '4' =>
+               Debug_Flag_Underscore_4 := Val;
+            when '5' =>
+               Debug_Flag_Underscore_5 := Val;
+            when '6' =>
+               Debug_Flag_Underscore_6 := Val;
+            when '7' =>
+               Debug_Flag_Underscore_7 := Val;
+            when '8' =>
+               Debug_Flag_Underscore_8 := Val;
+            when '9' =>
+               Debug_Flag_Underscore_9 := Val;
+         end case;
+
+      elsif C in ULet then
+         case ULet (C) is
+            when 'A' =>
+               Debug_Flag_Underscore_AA := Val;
+            when 'B' =>
+               Debug_Flag_Underscore_BB := Val;
+            when 'C' =>
+               Debug_Flag_Underscore_CC := Val;
+            when 'D' =>
+               Debug_Flag_Underscore_DD := Val;
+            when 'E' =>
+               Debug_Flag_Underscore_EE := Val;
+            when 'F' =>
+               Debug_Flag_Underscore_FF := Val;
+            when 'G' =>
+               Debug_Flag_Underscore_GG := Val;
+            when 'H' =>
+               Debug_Flag_Underscore_HH := Val;
+            when 'I' =>
+               Debug_Flag_Underscore_II := Val;
+            when 'J' =>
+               Debug_Flag_Underscore_JJ := Val;
+            when 'K' =>
+               Debug_Flag_Underscore_KK := Val;
+            when 'L' =>
+               Debug_Flag_Underscore_LL := Val;
+            when 'M' =>
+               Debug_Flag_Underscore_MM := Val;
+            when 'N' =>
+               Debug_Flag_Underscore_NN := Val;
+            when 'O' =>
+               Debug_Flag_Underscore_OO := Val;
+            when 'P' =>
+               Debug_Flag_Underscore_PP := Val;
+            when 'Q' =>
+               Debug_Flag_Underscore_QQ := Val;
+            when 'R' =>
+               Debug_Flag_Underscore_RR := Val;
+            when 'S' =>
+               Debug_Flag_Underscore_SS := Val;
+            when 'T' =>
+               Debug_Flag_Underscore_TT := Val;
+            when 'U' =>
+               Debug_Flag_Underscore_UU := Val;
+            when 'V' =>
+               Debug_Flag_Underscore_VV := Val;
+            when 'W' =>
+               Debug_Flag_Underscore_WW := Val;
+            when 'X' =>
+               Debug_Flag_Underscore_XX := Val;
+            when 'Y' =>
+               Debug_Flag_Underscore_YY := Val;
+            when 'Z' =>
+               Debug_Flag_Underscore_ZZ := Val;
+         end case;
+
+      else
+         case LLet (C) is
+            when 'a' =>
+               Debug_Flag_Underscore_A := Val;
+            when 'b' =>
+               Debug_Flag_Underscore_B := Val;
+            when 'c' =>
+               Debug_Flag_Underscore_C := Val;
+            when 'd' =>
+               Debug_Flag_Underscore_D := Val;
+            when 'e' =>
+               Debug_Flag_Underscore_E := Val;
+            when 'f' =>
+               Debug_Flag_Underscore_F := Val;
+            when 'g' =>
+               Debug_Flag_Underscore_G := Val;
+            when 'h' =>
+               Debug_Flag_Underscore_H := Val;
+            when 'i' =>
+               Debug_Flag_Underscore_I := Val;
+            when 'j' =>
+               Debug_Flag_Underscore_J := Val;
+            when 'k' =>
+               Debug_Flag_Underscore_K := Val;
+            when 'l' =>
+               Debug_Flag_Underscore_L := Val;
+            when 'm' =>
+               Debug_Flag_Underscore_M := Val;
+            when 'n' =>
+               Debug_Flag_Underscore_N := Val;
+            when 'o' =>
+               Debug_Flag_Underscore_O := Val;
+            when 'p' =>
+               Debug_Flag_Underscore_P := Val;
+            when 'q' =>
+               Debug_Flag_Underscore_Q := Val;
+            when 'r' =>
+               Debug_Flag_Underscore_R := Val;
+            when 's' =>
+               Debug_Flag_Underscore_S := Val;
+            when 't' =>
+               Debug_Flag_Underscore_T := Val;
+            when 'u' =>
+               Debug_Flag_Underscore_U := Val;
+            when 'v' =>
+               Debug_Flag_Underscore_V := Val;
+            when 'w' =>
+               Debug_Flag_Underscore_W := Val;
+            when 'x' =>
+               Debug_Flag_Underscore_X := Val;
+            when 'y' =>
+               Debug_Flag_Underscore_Y := Val;
+            when 'z' =>
+               Debug_Flag_Underscore_Z := Val;
+         end case;
+      end if;
+   end Set_Underscored_Debug_Flag;
 
 end Debug;

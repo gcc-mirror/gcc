@@ -1,5 +1,5 @@
 /* Dependency analysis
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of GCC.
@@ -1431,17 +1431,17 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
   r_stride = r_ar->stride[n];
 
   /* If l_start is NULL take it from array specifier.  */
-  if (NULL == l_start && IS_ARRAY_EXPLICIT (l_ar->as))
+  if (l_start == NULL && IS_ARRAY_EXPLICIT (l_ar->as))
     l_start = l_ar->as->lower[n];
   /* If l_end is NULL take it from array specifier.  */
-  if (NULL == l_end && IS_ARRAY_EXPLICIT (l_ar->as))
+  if (l_end == NULL && IS_ARRAY_EXPLICIT (l_ar->as))
     l_end = l_ar->as->upper[n];
 
   /* If r_start is NULL take it from array specifier.  */
-  if (NULL == r_start && IS_ARRAY_EXPLICIT (r_ar->as))
+  if (r_start == NULL && IS_ARRAY_EXPLICIT (r_ar->as))
     r_start = r_ar->as->lower[n];
   /* If r_end is NULL take it from array specifier.  */
-  if (NULL == r_end && IS_ARRAY_EXPLICIT (r_ar->as))
+  if (r_end == NULL && IS_ARRAY_EXPLICIT (r_ar->as))
     r_end = r_ar->as->upper[n];
 
   /* Determine whether the l_stride is positive or negative.  */
@@ -2238,8 +2238,9 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 	    break;
 
 	  /* Exactly matching and forward overlapping ranges don't cause a
-	     dependency.  */
-	  if (fin_dep < GFC_DEP_BACKWARD)
+	     dependency, when they are not part of a coarray ref.  */
+	  if (fin_dep < GFC_DEP_BACKWARD
+	      && lref->u.ar.codimen == 0 && rref->u.ar.codimen == 0)
 	    return 0;
 
 	  /* Keep checking.  We only have a dependency if

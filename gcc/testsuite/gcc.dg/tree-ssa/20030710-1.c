@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom2" } */
+/* { dg-options "-O1 -fdump-tree-phicprop1" } */
 
 extern void abort (void);
 extern void blah (void);
@@ -42,14 +42,14 @@ record_component_aliases (type)
 /* The call to blah should have been eliminated.  If the call is not
    eliminated, then dominator optimizations failed and it'll be
    impossible to delete other unnecessary code.  */
-/* { dg-final { scan-tree-dump-not "blah \\(\\)" "dom2" } } */
+/* { dg-final { scan-tree-dump-not "blah \\(\\)" "phicprop1" } } */
   
 /* There should be two IF conditionals.  */
-/* { dg-final { scan-tree-dump-times "if " 2 "dom2"} } */
+/* { dg-final { scan-tree-dump-times "if " 2 "phicprop1"} } */
                                                                                 
 /* There should be a single load of type.binfo.  */
-/* { dg-final { scan-tree-dump-times "type\\.binfo" 1 "dom2"} } */
+/* { dg-final { scan-tree-dump-times "type\\.binfo" 1 "phicprop1"} } */
 
 /* There should be two loads of vec.length.  */
-/* { dg-final { scan-tree-dump-times "vec.length" 2 "dom2"} } */
+/* { dg-final { scan-tree-dump-times "vec.length" 2 "phicprop1"} } */
 

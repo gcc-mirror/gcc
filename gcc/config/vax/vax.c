@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for VAX.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -24,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -58,8 +62,9 @@ static rtx vax_struct_value_rtx (tree, int);
 static rtx vax_builtin_setjmp_frame_value (void);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
-static int vax_return_pops_args (tree, tree, int);
+static poly_int64 vax_return_pops_args (tree, tree, poly_int64);
 static bool vax_mode_dependent_address_p (const_rtx, addr_space_t);
+static HOST_WIDE_INT vax_starting_frame_offset (void);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -117,6 +122,9 @@ static bool vax_mode_dependent_address_p (const_rtx, addr_space_t);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE vax_option_override
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET vax_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -206,7 +214,7 @@ vax_expand_prologue (void)
 
   /* Allocate the local stack frame.  */
   size = get_frame_size ();
-  size -= STARTING_FRAME_OFFSET;
+  size -= vax_starting_frame_offset ();
   emit_insn (gen_addsi3 (stack_pointer_rtx,
 			 stack_pointer_rtx, GEN_INT (-size)));
 
@@ -820,18 +828,18 @@ vax_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MULT:
       switch (mode)
 	{
-	case DFmode:
+	case E_DFmode:
 	  *total = 16;		/* 4 on VAX 9000 */
 	  break;
-	case SFmode:
+	case E_SFmode:
 	  *total = 9;		/* 4 on VAX 9000, 12 on VAX 2 */
 	  break;
-	case DImode:
+	case E_DImode:
 	  *total = 16;		/* 6 on VAX 9000, 28 on VAX 2 */
 	  break;
-	case SImode:
-	case HImode:
-	case QImode:
+	case E_SImode:
+	case E_HImode:
+	case E_QImode:
 	  *total = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
 	  break;
 	default:
@@ -1142,7 +1150,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 
   switch (mode)
     {
-    case DImode:
+    case E_DImode:
       if (operands[1] == const0_rtx)
 	return "clrq %0";
       if (TARGET_QMATH && optimize_size
@@ -1255,7 +1263,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	}
       return "movq %1,%0";
 
-    case SImode:
+    case E_SImode:
       if (symbolic_operand (operands[1], SImode))
 	{
 	  if (push_operand (operands[0], SImode))
@@ -1298,7 +1306,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	return "pushl %1";
       return "movl %1,%0";
 
-    case HImode:
+    case E_HImode:
       if (CONST_INT_P (operands[1]))
 	{
 	  HOST_WIDE_INT i = INTVAL (operands[1]);
@@ -1315,7 +1323,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	}
       return "movw %1,%0";
 
-    case QImode:
+    case E_QImode:
       if (CONST_INT_P (operands[1]))
 	{
 	  HOST_WIDE_INT i = INTVAL (operands[1]);
@@ -1350,7 +1358,7 @@ vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 {
   switch (mode)
     {
-    case DImode:
+    case E_DImode:
       {
 	rtx low[3];
 	const char *pattern;
@@ -1436,7 +1444,7 @@ vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 	return "adwc %2,%0";
       }
 
-    case SImode:
+    case E_SImode:
       if (rtx_equal_p (operands[0], operands[1]))
 	{
 	  if (operands[2] == const1_rtx)
@@ -1512,7 +1520,7 @@ vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 
       return "addl3 %1,%2,%0";
 
-    case HImode:
+    case E_HImode:
       if (rtx_equal_p (operands[0], operands[1]))
 	{
 	  if (operands[2] == const1_rtx)
@@ -1531,7 +1539,7 @@ vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 	return "subw3 $%n2,%1,%0";
       return "addw3 %1,%2,%0";
 
-    case QImode:
+    case E_QImode:
       if (rtx_equal_p (operands[0], operands[1]))
 	{
 	  if (operands[2] == const1_rtx)
@@ -1560,7 +1568,7 @@ vax_output_int_subtract (rtx insn, rtx *operands, machine_mode mode)
 {
   switch (mode)
     {
-    case DImode:
+    case E_DImode:
       {
 	rtx low[3];
 	const char *pattern;
@@ -2021,7 +2029,7 @@ adjacent_operands_p (rtx lo, rtx hi, machine_mode mode)
   if (REG_P (lo))
     return mode == SImode && REGNO (lo) + 1 == REGNO (hi);
   if (CONST_INT_P (lo))
-    return INTVAL (hi) == 0 && 0 <= INTVAL (lo) && INTVAL (lo) < 64;
+    return INTVAL (hi) == 0 && UINTVAL (lo) < 64;
   if (CONST_INT_P (lo))
     return mode != SImode;
 
@@ -2132,11 +2140,11 @@ vax_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
    On the VAX, the RET insn pops a maximum of 255 args for any function.  */
 
-static int
+static poly_int64
 vax_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
-		      tree funtype ATTRIBUTE_UNUSED, int size)
+		      tree funtype ATTRIBUTE_UNUSED, poly_int64 size)
 {
-  return size > 255 * 4 ? 0 : size;
+  return size > 255 * 4 ? 0 : (HOST_WIDE_INT) size;
 }
 
 /* Define where to put the arguments to a function.
@@ -2177,3 +2185,12 @@ vax_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   ? (GET_MODE_SIZE (mode) + 3) & ~3
 	   : (int_size_in_bytes (type) + 3) & ~3);
 }
+
+static HOST_WIDE_INT
+vax_starting_frame_offset (void)
+{
+  /* On ELF targets, reserve the top of the stack for exception handler
+     stackadj value.  */
+  return TARGET_ELF ? -4 : 0;
+}
+

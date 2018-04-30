@@ -42,8 +42,7 @@ end submodule testson
   use test
   integer :: x = 5
   call sub1(x)
-  if (x .ne. 10) call abort
+  if (x .ne. 10) STOP 1
   x = 10
-  if (fcn1 (x) .ne. 0) call abort
+  if (fcn1 (x) .ne. 0) STOP 2
 end
-! { dg-final { cleanup-submodules "test@testson" } }

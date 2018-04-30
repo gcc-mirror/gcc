@@ -1,6 +1,6 @@
 // istream classes -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,28 +48,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       ios_base::iostate __err = ios_base::goodbit;
       if (__in.good())
-	{
-	  if (__in.tie())
-	    __in.tie()->flush();
-	  if (!__noskip && bool(__in.flags() & ios_base::skipws))
-	    {
-	      const __int_type __eof = traits_type::eof();
-	      __streambuf_type* __sb = __in.rdbuf();
-	      __int_type __c = __sb->sgetc();
+	__try
+	  {
+	    if (__in.tie())
+	      __in.tie()->flush();
+	    if (!__noskip && bool(__in.flags() & ios_base::skipws))
+	      {
+		const __int_type __eof = traits_type::eof();
+		__streambuf_type* __sb = __in.rdbuf();
+		__int_type __c = __sb->sgetc();
 
-	      const __ctype_type& __ct = __check_facet(__in._M_ctype);
-	      while (!traits_type::eq_int_type(__c, __eof)
-		     && __ct.is(ctype_base::space, 
-				traits_type::to_char_type(__c)))
-		__c = __sb->snextc();
+		const __ctype_type& __ct = __check_facet(__in._M_ctype);
+		while (!traits_type::eq_int_type(__c, __eof)
+		       && __ct.is(ctype_base::space,
+				  traits_type::to_char_type(__c)))
+		  __c = __sb->snextc();
 
-	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 195. Should basic_istream::sentry's constructor ever
-	      // set eofbit?
-	      if (traits_type::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
-	    }
-	}
+		// _GLIBCXX_RESOLVE_LIB_DEFECTS
+		// 195. Should basic_istream::sentry's constructor ever
+		// set eofbit?
+		if (traits_type::eq_int_type(__c, __eof))
+		  __err |= ios_base::eofbit;
+	      }
+	  }
+	__catch(__cxxabiv1::__forced_unwind&)
+	  {
+	    __in._M_setstate(ios_base::badbit);
+	    __throw_exception_again;
+	  }
+	__catch(...)
+	  { __in._M_setstate(ios_base::badbit); }
 
       if (__in.good() && __err == ios_base::goodbit)
 	_M_ok = true;

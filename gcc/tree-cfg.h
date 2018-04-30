@@ -1,5 +1,5 @@
 /* Data and Control Flow Analysis for Trees.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -36,8 +36,8 @@ extern void end_recording_case_labels (void);
 extern basic_block label_to_block_fn (struct function *, tree);
 #define label_to_block(t) (label_to_block_fn (cfun, t))
 extern void cleanup_dead_labels (void);
-extern void group_case_labels_stmt (gswitch *);
-extern void group_case_labels (void);
+extern bool group_case_labels_stmt (gswitch *);
+extern bool group_case_labels (void);
 extern void replace_uses_by (tree, tree);
 extern basic_block single_noncomplex_succ (basic_block bb);
 extern void notice_special_calls (gcall *);
@@ -77,6 +77,7 @@ extern void gather_blocks_in_sese_region (basic_block entry, basic_block exit,
 					  vec<basic_block> *bbs_p);
 extern void verify_sese (basic_block, basic_block, vec<basic_block> *);
 extern bool gather_ssa_name_hash_map_from (tree const &, tree const &, void *);
+extern void fold_loop_internal_call (gimple *, tree);
 extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block, tree);
 extern void dump_function_to_file (tree, FILE *, dump_flags_t);
@@ -104,10 +105,13 @@ extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern unsigned int execute_fixup_cfg (void);
 extern unsigned int split_critical_edges (void);
-extern basic_block insert_cond_bb (basic_block, gimple *, gimple *);
+extern basic_block insert_cond_bb (basic_block, gimple *, gimple *,
+				   profile_probability);
 extern bool gimple_find_sub_bbs (gimple_seq, gimple_stmt_iterator *);
 extern bool extract_true_false_controlled_edges (basic_block, basic_block,
 						 edge *, edge *);
+extern void generate_range_test (basic_block bb, tree index, tree low,
+				 tree high, tree *lhs, tree *rhs);
 
 /* Return true if the LHS of a call should be removed.  */
 

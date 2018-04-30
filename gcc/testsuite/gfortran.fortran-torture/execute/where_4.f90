@@ -9,5 +9,5 @@ program where_4
    where (b .ne. 0)
       a(:) = a(5:1:-1)
    endwhere
-   if (any (a .ne. (/5, 2, 3, 4, 1/))) call abort
+   if (any (a .ne. (/5, 2, 3, 4, 1/))) STOP 1
 end program

@@ -3,6 +3,5 @@
 /* { dg-options { -trigraphs -Wall } } */
 
 #error "BUG??!"
-
-/* { dg-error "BUG" "" { target *-*-* } 5 } */
-/* { dg-warning "trigraph" "" { target *-*-* } 5 } */
+/* { dg-error "BUG" "" { target *-*-* } .-1 } */
+/* { dg-warning "trigraph" "" { target *-*-* } .-2 } */

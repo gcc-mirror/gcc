@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -30,6 +32,7 @@
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "expmed.h"
 #include "optabs.h"
 #include "regs.h"
@@ -144,23 +147,24 @@ static inline bool current_function_has_lr_slot (void);
    interrupt -- specifies this function is an interrupt handler.   */
 static const struct attribute_spec visium_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  {"interrupt", 0, 0, true, false, false, visium_handle_interrupt_attr, false},
-  {NULL, 0, 0, false, false, false, NULL, false}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true, false, false, false, visium_handle_interrupt_attr,
+    NULL},
+  { NULL, 0, 0, false, false, false, false, NULL, NULL },
 };
 
 static struct machine_function *visium_init_machine_status (void);
 
 /* Target hooks and TARGET_INITIALIZER  */
 
-static bool visium_pass_by_reference (cumulative_args_t, enum machine_mode,
+static bool visium_pass_by_reference (cumulative_args_t, machine_mode,
 				      const_tree, bool);
 
-static rtx visium_function_arg (cumulative_args_t, enum machine_mode,
+static rtx visium_function_arg (cumulative_args_t, machine_mode,
 				const_tree, bool);
 
-static void visium_function_arg_advance (cumulative_args_t, enum machine_mode,
+static void visium_function_arg_advance (cumulative_args_t, machine_mode,
 					 const_tree, bool);
 
 static bool visium_return_in_memory (const_tree, const_tree fntype);
@@ -168,10 +172,10 @@ static bool visium_return_in_memory (const_tree, const_tree fntype);
 static rtx visium_function_value (const_tree, const_tree fn_decl_or_type,
 				  bool);
 
-static rtx visium_libcall_value (enum machine_mode, const_rtx);
+static rtx visium_libcall_value (machine_mode, const_rtx);
 
 static void visium_setup_incoming_varargs (cumulative_args_t,
-					   enum machine_mode,
+					   machine_mode,
 					   tree, int *, int);
 
 static void visium_va_start (tree valist, rtx nextarg);
@@ -188,9 +192,9 @@ static rtx_insn *visium_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				       vec<const char *> &,
 				       vec<rtx> &, HARD_REG_SET &);
 
-static bool visium_legitimate_constant_p (enum machine_mode, rtx);
+static bool visium_legitimate_constant_p (machine_mode, rtx);
 
-static bool visium_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool visium_legitimate_address_p (machine_mode, rtx, bool);
 
 static bool visium_print_operand_punct_valid_p (unsigned char);
 static void visium_print_operand (FILE *, rtx, int);
@@ -198,10 +202,10 @@ static void visium_print_operand_address (FILE *, machine_mode, rtx);
 
 static void visium_conditional_register_usage (void);
 
-static rtx visium_legitimize_address (rtx, rtx, enum machine_mode);
+static rtx visium_legitimize_address (rtx, rtx, machine_mode);
 
 static reg_class_t visium_secondary_reload (bool, rtx, reg_class_t,
-					    enum machine_mode,
+					    machine_mode,
 					    secondary_reload_info *);
 
 static bool visium_class_likely_spilled_p (reg_class_t);
@@ -214,10 +218,10 @@ static int visium_adjust_priority (rtx_insn *, int);
 
 static int visium_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 
-static int visium_register_move_cost (enum machine_mode, reg_class_t,
+static int visium_register_move_cost (machine_mode, reg_class_t,
 				      reg_class_t);
 
-static int visium_memory_move_cost (enum machine_mode, reg_class_t, bool);
+static int visium_memory_move_cost (machine_mode, reg_class_t, bool);
 
 static bool visium_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 
@@ -226,6 +230,17 @@ static void visium_option_override (void);
 static void visium_init_libfuncs (void);
 
 static unsigned int visium_reorg (void);
+
+static unsigned int visium_hard_regno_nregs (unsigned int, machine_mode);
+
+static bool visium_hard_regno_mode_ok (unsigned int, machine_mode);
+
+static bool visium_modes_tieable_p (machine_mode, machine_mode);
+
+static bool visium_can_change_mode_class (machine_mode, machine_mode,
+					  reg_class_t);
+
+static HOST_WIDE_INT visium_constant_alignment (const_tree, HOST_WIDE_INT);
 
 /* Setup the global target hooks structure.  */
 
@@ -337,6 +352,21 @@ static unsigned int visium_reorg (void);
 
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM FLAGS_REGNUM
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS visium_hard_regno_nregs
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK visium_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P visium_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS visium_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT visium_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -786,7 +816,7 @@ visium_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
    X is guaranteed to satisfy the CONSTANT_P predicate.  */
 
 static bool
-visium_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+visium_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED,
 			      rtx x ATTRIBUTE_UNUSED)
 {
   return true;
@@ -812,6 +842,14 @@ visium_data_alignment (tree type, unsigned int align)
   return align;
 }
 
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+visium_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  return visium_data_alignment (TREE_TYPE (exp), align);
+}
+
 /* Helper function for HARD_REGNO_RENAME_OK (FROM, TO).  Return non-zero if
    it is OK to rename a hard register FROM to another hard register TO.  */
 
@@ -835,6 +873,45 @@ visium_hard_regno_rename_ok (unsigned int from ATTRIBUTE_UNUSED,
   return 1;
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+visium_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno == MDB_REGNUM)
+    return CEIL (GET_MODE_SIZE (mode), 2 * UNITS_PER_WORD);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.
+
+   Modes with sizes which cross from the one register class to the
+   other cannot be allowed. Only single floats are allowed in the
+   floating point registers, and only fixed point values in the EAM
+   registers. */
+
+static bool
+visium_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (GP_REGISTER_P (regno))
+    return GP_REGISTER_P (end_hard_regno (mode, regno) - 1);
+
+  if (FP_REGISTER_P (regno))
+    return mode == SFmode || (mode == SImode && TARGET_FPU_IEEE);
+
+  return (GET_MODE_CLASS (mode) == MODE_INT
+	  && visium_hard_regno_nregs (regno, mode) == 1);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+visium_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT);
+}
+
 /* Return true if it is ok to do sibling call optimization for the specified
    call expression EXP.  DECL will be the called function, or NULL if this
    is an indirect call.  */
@@ -849,7 +926,7 @@ visium_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 /* Prepare operands for a move define_expand in MODE.  */
 
 void
-prepare_move_operands (rtx *operands, enum machine_mode mode)
+prepare_move_operands (rtx *operands, machine_mode mode)
 {
   /* If the output is not a register, the input must be.  */
   if (GET_CODE (operands[0]) == MEM && !reg_or_0_operand (operands[1], mode))
@@ -859,7 +936,7 @@ prepare_move_operands (rtx *operands, enum machine_mode mode)
 /* Return true if the operands are valid for a simple move insn.  */
 
 bool
-ok_for_simple_move_operands (rtx *operands, enum machine_mode mode)
+ok_for_simple_move_operands (rtx *operands, machine_mode mode)
 {
   /* One of the operands must be a register.  */
   if (!register_operand (operands[0], mode)
@@ -878,7 +955,7 @@ ok_for_simple_move_operands (rtx *operands, enum machine_mode mode)
 /* Return true if the operands are valid for a simple move strict insn.  */
 
 bool
-ok_for_simple_move_strict_operands (rtx *operands, enum machine_mode mode)
+ok_for_simple_move_strict_operands (rtx *operands, machine_mode mode)
 {
   /* Once the flags are exposed, no simple moves between integer registers.
      Note that, in QImode only, a zero source counts as an integer register
@@ -896,7 +973,7 @@ ok_for_simple_move_strict_operands (rtx *operands, enum machine_mode mode)
    insn.  */
 
 bool
-ok_for_simple_arith_logic_operands (rtx *, enum machine_mode)
+ok_for_simple_arith_logic_operands (rtx *, machine_mode)
 {
   /* Once the flags are exposed, no simple arithmetic or logical operations
      between integer registers.  */
@@ -1244,7 +1321,7 @@ visium_reorg (void)
 
 static bool
 visium_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type,
 			  bool named ATTRIBUTE_UNUSED)
 {
@@ -1265,7 +1342,7 @@ visium_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
    in general registers.  */
 
 static rtx
-visium_function_arg (cumulative_args_t pcum_v, enum machine_mode mode,
+visium_function_arg (cumulative_args_t pcum_v, machine_mode mode,
 		     const_tree type ATTRIBUTE_UNUSED,
 		     bool named ATTRIBUTE_UNUSED)
 {
@@ -1303,7 +1380,7 @@ visium_function_arg (cumulative_args_t pcum_v, enum machine_mode mode,
 
 static void
 visium_function_arg_advance (cumulative_args_t pcum_v,
-			     enum machine_mode mode,
+			     machine_mode mode,
 			     const_tree type ATTRIBUTE_UNUSED,
 			     bool named)
 {
@@ -1355,7 +1432,7 @@ visium_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 /* Define how scalar values are returned.  */
 
 static rtx
-visium_function_value_1 (enum machine_mode mode)
+visium_function_value_1 (machine_mode mode)
 {
   /* Scalar or complex single precision floating point values
      are returned in floating register f1.  */
@@ -1385,7 +1462,7 @@ visium_function_value (const_tree ret_type,
    be returned.  */
 
 static rtx
-visium_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+visium_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 {
   return visium_function_value_1 (mode);
 }
@@ -1395,7 +1472,7 @@ visium_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 
 static void
 visium_setup_incoming_varargs (cumulative_args_t pcum_v,
-			       enum machine_mode mode,
+			       machine_mode mode,
 			       tree type,
 			       int *pretend_size ATTRIBUTE_UNUSED,
 			       int no_rtl)
@@ -1711,25 +1788,25 @@ visium_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
    address of a memory access in mode MODE.  */
 
 static bool
-rtx_ok_for_offset_p (enum machine_mode mode, rtx op)
+rtx_ok_for_offset_p (machine_mode mode, rtx op)
 {
   if (!CONST_INT_P (op) || INTVAL (op) < 0)
     return false;
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       return INTVAL (op) <= 31;
 
-    case HImode:
+    case E_HImode:
       return (INTVAL (op) % 2) == 0 && INTVAL (op) < 63;
 
-    case SImode:
-    case SFmode:
+    case E_SImode:
+    case E_SFmode:
       return (INTVAL (op) % 4) == 0 && INTVAL (op) < 127;
 
-    case DImode:
-    case DFmode:
+    case E_DImode:
+    case E_DFmode:
       return (INTVAL (op) % 4) == 0 && INTVAL (op) < 123;
 
     default:
@@ -1759,7 +1836,7 @@ rtx_ok_for_offset_p (enum machine_mode mode, rtx op)
    kind of register is required.  */
 
 static bool
-visium_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+visium_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   rtx base;
   unsigned int regno;
@@ -1832,7 +1909,7 @@ visium_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 
 static rtx
 visium_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			   enum machine_mode mode)
+			   machine_mode mode)
 {
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 1)) == CONST_INT
@@ -1845,7 +1922,7 @@ visium_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (4 < size && 0x80 < size + offset - offset_base)
+      if (size > 4 && size + offset - offset_base > 0x80)
 	offset_base = offset & ~0x3f;
       if (offset_base != 0 && offset_base != offset && (offset & mask1) == 0)
 	{
@@ -1866,7 +1943,7 @@ visium_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
    that need reloading are indicated by calling push_reload.  */
 
 rtx
-visium_legitimize_reload_address (rtx x, enum machine_mode mode, int opnum,
+visium_legitimize_reload_address (rtx x, machine_mode mode, int opnum,
 				  int type, int ind ATTRIBUTE_UNUSED)
 {
   rtx newrtx, tem = NULL_RTX;
@@ -1891,7 +1968,7 @@ visium_legitimize_reload_address (rtx x, enum machine_mode mode, int opnum,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (4 < size && 0x80 < size + offset - offset_base)
+      if (size > 4 && size + offset - offset_base > 0x80)
 	offset_base = offset & ~0x3f;
 
       if (offset_base && (offset & mask1) == 0)
@@ -1915,7 +1992,7 @@ visium_legitimize_reload_address (rtx x, enum machine_mode mode, int opnum,
    relative to that.  */
 
 static int
-visium_register_move_cost (enum machine_mode mode, reg_class_t from,
+visium_register_move_cost (machine_mode mode, reg_class_t from,
 			   reg_class_t to)
 {
   const int numwords = (GET_MODE_SIZE (mode) <= UNITS_PER_WORD) ? 1 : 2;
@@ -1934,7 +2011,7 @@ visium_register_move_cost (enum machine_mode mode, reg_class_t from,
    visium_register_move_cost.  */
 
 static int
-visium_memory_move_cost (enum machine_mode mode,
+visium_memory_move_cost (machine_mode mode,
 			 reg_class_t to ATTRIBUTE_UNUSED,
 			 bool in)
 {
@@ -2042,7 +2119,7 @@ visium_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
 /* Split a double move of OPERANDS in MODE.  */
 
 void
-visium_split_double_move (rtx *operands, enum machine_mode mode)
+visium_split_double_move (rtx *operands, machine_mode mode)
 {
   bool swap = false;
 
@@ -2152,7 +2229,7 @@ visium_split_double_add (enum rtx_code code, rtx op0, rtx op1, rtx op2)
 /* Expand a copysign of OPERANDS in MODE.  */
 
 void
-visium_expand_copysign (rtx *operands, enum machine_mode mode)
+visium_expand_copysign (rtx *operands, machine_mode mode)
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -2206,7 +2283,7 @@ visium_expand_copysign (rtx *operands, enum machine_mode mode)
    generated code.  */
 
 void
-visium_expand_int_cstore (rtx *operands, enum machine_mode mode)
+visium_expand_int_cstore (rtx *operands, machine_mode mode)
 {
   enum rtx_code code = GET_CODE (operands[1]);
   rtx op0 = operands[0], op1 = operands[2], op2 = operands[3], sltu;
@@ -2265,7 +2342,7 @@ visium_expand_int_cstore (rtx *operands, enum machine_mode mode)
 
 void
 visium_expand_fp_cstore (rtx *operands,
-			 enum machine_mode mode ATTRIBUTE_UNUSED)
+			 machine_mode mode ATTRIBUTE_UNUSED)
 {
   enum rtx_code code = GET_CODE (operands[1]);
   rtx op0 = operands[0], op1 = operands[2], op2 = operands[3], slt;
@@ -2314,7 +2391,7 @@ void
 visium_split_cstore (enum rtx_code op_code, rtx op0, rtx op1,
 		     enum rtx_code code, rtx op2, rtx op3)
 {
-  enum machine_mode cc_mode = visium_select_cc_mode (code, op2, op3);
+  machine_mode cc_mode = visium_select_cc_mode (code, op2, op3);
 
   /* If a FP cstore was reversed, then it was originally UNGE/UNLE.  */
   if (cc_mode == CCFPEmode && (op_code == NEG || op_code == MINUS))
@@ -2379,7 +2456,7 @@ expand_block_move_4 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
       emit_insn (insn);
     }
   else
-    emit_library_call (long_int_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+    emit_library_call (long_int_memcpy_libfunc, LCT_NORMAL, VOIDmode,
 		       dst_reg, Pmode,
 		       src_reg, Pmode,
 		       convert_to_mode (TYPE_MODE (sizetype),
@@ -2415,7 +2492,7 @@ expand_block_move_2 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
   unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
   unsigned int rem = bytes % 2;
 
-  emit_library_call (wrd_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (wrd_memcpy_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2439,7 +2516,7 @@ expand_block_move_2 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
 static void
 expand_block_move_1 (rtx dst_reg, rtx src_reg, rtx bytes_rtx)
 {
-  emit_library_call (byt_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (byt_memcpy_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2458,7 +2535,7 @@ expand_block_set_4 (rtx dst, rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
   unsigned int rem = bytes % 4;
 
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (long_int_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (long_int_memset_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2504,7 +2581,7 @@ expand_block_set_2 (rtx dst, rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
   unsigned int rem = bytes % 2;
 
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (wrd_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (wrd_memset_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2528,7 +2605,7 @@ static void
 expand_block_set_1 (rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
 {
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (byt_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (byt_memset_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2680,7 +2757,7 @@ visium_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 					     GEN_INT (0xffff), NULL_RTX),
 				 0x04940000));
 
-  emit_library_call (set_trampoline_parity_libfunc, LCT_NORMAL, VOIDmode, 1,
+  emit_library_call (set_trampoline_parity_libfunc, LCT_NORMAL, VOIDmode,
 		     addr, SImode);
 }
 
@@ -2720,7 +2797,7 @@ visium_profile_hook (void)
 {
   visium_frame_needed = true;
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "mcount"), LCT_NORMAL,
-		     VOIDmode, 0);
+		     VOIDmode);
 }
 
 /* A C expression whose value is RTL representing the address in a stack frame
@@ -2792,7 +2869,7 @@ visium_init_expanders (void)
 /* Given a comparison code (EQ, NE, etc.) and the operands of a COMPARE,
    return the mode to be used for the comparison.  */
 
-enum machine_mode
+machine_mode
 visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 {
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
@@ -2864,12 +2941,6 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
       /* This is a btst, the result is in C instead of Z.  */
       return CCCmode;
 
-    case CONST_INT:
-      /* This is a degenerate case, typically an uninitialized variable.  */
-      gcc_assert (op0 == constm1_rtx);
-
-      /* ... fall through ... */
-
     case REG:
     case AND:
     case IOR:
@@ -2886,6 +2957,17 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	 when applied to a comparison with zero.  */
       return CCmode;
 
+    /* ??? Cater to the junk RTXes sent by try_merge_compare.  */
+    case ASM_OPERANDS:
+    case CALL:
+    case CONST_INT:
+    case LO_SUM:
+    case HIGH:
+    case MEM:
+    case UNSPEC:
+    case ZERO_EXTEND:
+      return CCmode;
+
     default:
       gcc_unreachable ();
     }
@@ -2896,7 +2978,7 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 void
 visium_split_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 {
-  enum machine_mode cc_mode = visium_select_cc_mode (code, op0, op1);
+  machine_mode cc_mode = visium_select_cc_mode (code, op0, op1);
   rtx flags = gen_rtx_REG (cc_mode, FLAGS_REGNUM);
 
   rtx x = gen_rtx_COMPARE (cc_mode, op0, op1);
@@ -3012,10 +3094,9 @@ output_branch (rtx label, const char *cond, rtx_insn *insn)
 	  if (final_sequence)
 	    {
 	      rtx_insn *delay = NEXT_INSN (insn);
-	      int seen;
 	      gcc_assert (delay);
 
-	      final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	      final_scan_insn (delay, asm_out_file, optimize, 0, NULL);
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
 	    }
@@ -3091,7 +3172,7 @@ output_ubranch (rtx label, rtx_insn *insn)
    should reverse the sense of the comparison.  INSN is the instruction.  */
 
 const char *
-output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
+output_cbranch (rtx label, enum rtx_code code, machine_mode cc_mode,
 		int reversed, rtx_insn *insn)
 {
   const char *cond;
@@ -3299,7 +3380,7 @@ visium_print_operand (FILE *file, rtx op, int letter)
    whose address is ADDR.  */
 
 static void
-visium_print_operand_address (FILE *file, enum machine_mode mode, rtx addr)
+visium_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -3322,18 +3403,18 @@ visium_print_operand_address (FILE *file, enum machine_mode mode, rtx addr)
 		HOST_WIDE_INT val = INTVAL (y);
 		switch (mode)
 		  {
-		  case SImode:
-		  case DImode:
-		  case SFmode:
-		  case DFmode:
+		  case E_SImode:
+		  case E_DImode:
+		  case E_SFmode:
+		  case E_DFmode:
 		    val >>= 2;
 		    break;
 
-		  case HImode:
+		  case E_HImode:
 		    val >>= 1;
 		    break;
 
-		  case QImode:
+		  case E_QImode:
 		  default:
 		    break;
 		  }
@@ -4180,7 +4261,7 @@ visium_can_use_return_insn_p (void)
 static reg_class_t
 visium_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 			 reg_class_t rclass,
-			 enum machine_mode mode ATTRIBUTE_UNUSED,
+			 machine_mode mode ATTRIBUTE_UNUSED,
 			 secondary_reload_info *sri ATTRIBUTE_UNUSED)
 {
   int regno = true_regnum (x);
@@ -4236,6 +4317,26 @@ reg_or_subreg_regno (rtx op)
     regno = INVALID_REGNUM;
 
   return regno;
+}
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.
+
+   It's not obvious from the documentation of the hook that MDB cannot
+   change mode.  However difficulties arise from expressions of the form
+
+   (subreg:SI (reg:DI R_MDB) 0)
+
+   There is no way to convert that reference to a single machine
+   register and, without the following definition, reload will quietly
+   convert it to
+
+   (reg:SI R_MDB).  */
+
+static bool
+visium_can_change_mode_class (machine_mode from, machine_mode to,
+			      reg_class_t rclass)
+{
+  return (rclass != MDB || GET_MODE_SIZE (from) == GET_MODE_SIZE (to));
 }
 
 #include "gt-visium.h"

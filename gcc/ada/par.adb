@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -867,7 +867,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    -------------
 
    package Ch8 is
-      function P_Use_Clause                           return Node_Id;
+      procedure P_Use_Clause (Item_List : List_Id);
    end Ch8;
 
    -------------

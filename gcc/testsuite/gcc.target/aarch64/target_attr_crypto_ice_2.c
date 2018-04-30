@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=thunderx+nofp" } */
+/* { dg-options "-O2 -mcpu=thunderx+nofp -march=armv8-a" } */
 
 /* Make sure that we don't ICE when dealing with vector parameters
    in a simd-tagged function within a non-simd translation unit.  */

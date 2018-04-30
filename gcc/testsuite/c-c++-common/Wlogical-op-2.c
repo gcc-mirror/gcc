@@ -9,4 +9,5 @@ fn (int a, int b)
     return a;
   if ((a + 1) || (a + 1)) /* { dg-warning "logical .or. of equal expressions" } */
     return b;
+  return -1;
 }

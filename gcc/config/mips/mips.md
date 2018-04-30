@@ -1,5 +1,5 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
-;;  Copyright (C) 1989-2017 Free Software Foundation, Inc.
+;;  Copyright (C) 1989-2018 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -162,7 +162,6 @@
   [(TLS_GET_TP_REGNUM		3)
    (GET_FCSR_REGNUM		2)
    (SET_FCSR_REGNUM		4)
-   (MIPS16_T_REGNUM		24)
    (PIC_FUNCTION_ADDR_REGNUM	25)
    (RETURN_ADDR_REGNUM		31)
    (CPRESTORE_SLOT_REGNUM	76)
@@ -917,6 +916,11 @@
 (define_mode_attr UNITMODE [(SF "SF") (DF "DF") (V2SF "SF") (V4SF "SF")
 			    (V16QI "QI") (V8HI "HI") (V4SI "SI") (V2DI "DI")
 			    (V2DF "DF")])
+
+;; As above, but in lower case.
+(define_mode_attr unitmode [(SF "sf") (DF "df") (V2SF "sf") (V4SF "sf")
+			    (V16QI "qi") (V8QI "qi") (V8HI "hi") (V4HI "hi")
+			    (V4SI "si") (V2SI "si") (V2DI "di") (V2DF "df")])
 
 ;; This attribute gives the integer mode that has the same size as a
 ;; fixed-point mode.
@@ -3238,9 +3242,9 @@
 		 (match_operand:GPR 2 "and_reg_operand")))])
 
 ;; The middle-end is not allowed to convert ANDing with 0xffff_ffff into a
-;; zero_extendsidi2 because of TRULY_NOOP_TRUNCATION, so handle these here.
-;; Note that this variant does not trigger for SI mode because we require
-;; a 64-bit HOST_WIDE_INT and 0xffff_ffff wouldn't be a canonical
+;; zero_extendsidi2 because of TARGET_TRULY_NOOP_TRUNCATION, so handle these
+;; here.  Note that this variant does not trigger for SI mode because we
+;; require a 64-bit HOST_WIDE_INT and 0xffff_ffff wouldn't be a canonical
 ;; sign-extended SImode value.
 ;;
 ;; These are possible combinations for operand 1 and 2.  The table
@@ -3422,7 +3426,7 @@
 ;; modes is a no-op, as it is for most other GCC ports.  Truncating
 ;; DImode values to SImode is not a no-op for TARGET_64BIT since we
 ;; need to make sure that the lower 32 bits are properly sign-extended
-;; (see TRULY_NOOP_TRUNCATION).  Truncating DImode values into modes
+;; (see TARGET_TRULY_NOOP_TRUNCATION).  Truncating DImode values into modes
 ;; smaller than SImode is equivalent to two separate truncations:
 ;;
 ;;                        A       B
@@ -3640,7 +3644,7 @@
 ;; Those for integer source operand are ordered widest source type first.
 
 ;; When TARGET_64BIT, all SImode integer and accumulator registers
-;; should already be in sign-extended form (see TRULY_NOOP_TRUNCATION
+;; should already be in sign-extended form (see TARGET_TRULY_NOOP_TRUNCATION
 ;; and truncdisi2).  We can therefore get rid of register->register
 ;; instructions if we constrain the source to be in the same register as
 ;; the destination.
@@ -6389,68 +6393,57 @@
   if (!arith_operand (operands[0], SImode))
     operands[0] = force_reg (SImode, operands[0]);
 
-  operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
-
+  emit_cmp_and_jump_insns (operands[0], operands[2], GTU,
+			   NULL_RTX, SImode, 1, operands[4]);
   emit_jump_insn (PMODE_INSN (gen_casesi_internal_mips16,
-			      (operands[0], operands[2],
-			       operands[3], operands[4])));
-
+			      (operands[0], operands[3])));
   DONE;
 })
 
 (define_insn "casesi_internal_mips16_<mode>"
   [(set (pc)
-     (if_then_else
-       (ltu (match_operand:SI 0 "register_operand" "d")
-	    (match_operand:SI 1 "arith_operand" "dI"))
-       (unspec:P
-        [(match_dup 0)
-	 (label_ref (match_operand 2 "" ""))]
-	UNSPEC_CASESI_DISPATCH)
-       (label_ref (match_operand 3 "" ""))))
-   (clobber (match_scratch:P 4 "=d"))
-   (clobber (match_scratch:P 5 "=d"))
-   (clobber (reg:SI MIPS16_T_REGNUM))]
+	(unspec:P [(match_operand:SI 0 "register_operand" "d")
+		   (label_ref (match_operand 1 "" ""))]
+	 UNSPEC_CASESI_DISPATCH))
+   (clobber (match_scratch:P 2 "=d"))
+   (clobber (match_scratch:P 3 "=d"))]
   "TARGET_MIPS16_SHORT_JUMP_TABLES"
 {
-  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[2])));
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[1])));
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
-  
-  output_asm_insn ("sltu\t%0, %1", operands);
-  output_asm_insn ("bteqz\t%3", operands);
-  
+
   switch (GET_MODE (diff_vec))
     {
-    case HImode:
-      output_asm_insn ("sll\t%5, %0, 1", operands);
-      output_asm_insn ("<d>la\t%4, %2", operands);
-      output_asm_insn ("<d>addu\t%5, %4, %5", operands);
-      output_asm_insn ("lh\t%5, 0(%5)", operands);
+    case E_HImode:
+      output_asm_insn ("sll\t%3,%0,1", operands);
+      output_asm_insn ("<d>la\t%2,%1", operands);
+      output_asm_insn ("<d>addu\t%3,%2,%3", operands);
+      output_asm_insn ("lh\t%3,0(%3)", operands);
       break;
 
-    case SImode:
-      output_asm_insn ("sll\t%5, %0, 2", operands);
-      output_asm_insn ("<d>la\t%4, %2", operands);
-      output_asm_insn ("<d>addu\t%5, %4, %5", operands);
-      output_asm_insn ("lw\t%5, 0(%5)", operands);
+    case E_SImode:
+      output_asm_insn ("sll\t%3,%0,2", operands);
+      output_asm_insn ("<d>la\t%2,%1", operands);
+      output_asm_insn ("<d>addu\t%3,%2,%3", operands);
+      output_asm_insn ("lw\t%3,0(%3)", operands);
       break;
 
     default:
       gcc_unreachable ();
     }
 
-  output_asm_insn ("<d>addu\t%4, %4, %5", operands);
+  output_asm_insn ("<d>addu\t%2,%2,%3", operands);
 
   if (GENERATE_MIPS16E)
-    return "jrc\t%4";
+    return "jrc\t%2";
   else
-    return "jr\t%4";
+    return "jr\t%2";
 }
   [(set (attr "insn_count")
 	(if_then_else (match_test "GENERATE_MIPS16E")
-		      (const_string "10")
-		      (const_string "11")))])
+		      (const_string "6")
+		      (const_string "7")))])
 
 ;; For TARGET_USE_GOT, we save the gp in the jmp_buf as well.
 ;; While it is possible to either pull it off the stack (in the
@@ -7370,7 +7363,7 @@
 {
   gcc_assert (GET_CODE (operands[0]) == CONST_DOUBLE);
   assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
-		 GET_MODE (operands[0]),
+		 as_a <scalar_float_mode> (GET_MODE (operands[0])),
 		 GET_MODE_BITSIZE (GET_MODE (operands[0])));
   return "";
 }

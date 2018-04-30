@@ -1,3 +1,5 @@
+/* { dg-add-options stack_size } */
+
 void
 bcopy1 (s, d, c)
      long long *s;

@@ -3,4 +3,4 @@
 /* { dg-do preprocess } */
 
 #if 0
-#endif //  /* { dg-warning "extra tokens" } */
+#endif //  /* { dg-warning "-:extra tokens" } */

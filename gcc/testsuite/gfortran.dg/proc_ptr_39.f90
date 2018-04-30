@@ -17,5 +17,3 @@ program Test
   use Module1
   use Module2
 end program
-
-! { dg-final { cleanup-modules "Module1 Module2" } }

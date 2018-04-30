@@ -9,21 +9,21 @@
       x = 555.25
       
       write (line,str,iostat=istat, iomsg=msg) 1.0d0, 1.234
-      if (istat.ne.0) call abort
-      if (line.ne."   1.000000000000000D+001.E+00") call abort
+      if (istat.ne.0) STOP 1
+      if (line.ne."   1.000000000000000D+001.E+00") STOP 2
       
       write (line,'(1pd24.15e6)',iostat=istat, iomsg=msg) 1.0d0, 1.234 ! { dg-warning "Period required" }
-      if (istat.ne.0) call abort
-      if (line.ne."   1.000000000000000D+001.E+00") call abort
+      if (istat.ne.0) STOP 3
+      if (line.ne."   1.000000000000000D+001.E+00") STOP 4
 
       str = '(1pd0.15)'
       write (line,str,iostat=istat, iomsg=msg) 1.0d0
-      if (istat.ne.5006 .or. msg(1:15).ne."Positive width ") call abort
+      if (istat.ne.5006 .or. msg(1:15).ne."Positive width ") STOP 5
       read (*,str,iostat=istat, iomsg=msg) x
-      if (istat.ne.5006 .or. msg(1:15).ne."Positive width ") call abort
-      if (x.ne.555.25) call abort
+      if (istat.ne.5006 .or. msg(1:15).ne."Positive width ") STOP 6
+      if (x.ne.555.25) STOP 7
       
       write (line,'(1pd24.15e11.3)') 1.0d0, 1.234
-      if (line.ne."   1.000000000000000D+00  1.234E+00") call abort
+      if (line.ne."   1.000000000000000D+00  1.234E+00") STOP 8
       
       end

@@ -1,5 +1,5 @@
 /* Miscellaneous stuff that doesn't fit anywhere else.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
+#include "spellcheck.h"
+#include "tree.h"
 
 
 /* Initialize a typespec to unknown.  */
@@ -154,7 +156,8 @@ gfc_typename (gfc_typespec *ts)
       sprintf (buffer, "TYPE(%s)", ts->u.derived->name);
       break;
     case BT_CLASS:
-      ts = &ts->u.derived->components->ts;
+      if (ts->u.derived->components)
+	ts = &ts->u.derived->components->ts;
       if (ts->u.derived->attr.unlimited_polymorphic)
 	sprintf (buffer, "CLASS(*)");
       else
@@ -279,4 +282,64 @@ get_c_kind(const char *c_kind_name, CInteropKind_t kinds_table[])
       return index;
 
   return ISOCBINDING_INVALID;
+}
+
+
+/* For a given name TYPO, determine the best candidate from CANDIDATES
+   perusing Levenshtein distance.  Frees CANDIDATES before returning.  */
+
+const char *
+gfc_closest_fuzzy_match (const char *typo, char **candidates)
+{
+  /* Determine closest match.  */
+  const char *best = NULL;
+  char **cand = candidates;
+  edit_distance_t best_distance = MAX_EDIT_DISTANCE;
+  const size_t tl = strlen (typo);
+
+  while (cand && *cand)
+    {
+      edit_distance_t dist = levenshtein_distance (typo, tl, *cand,
+	  strlen (*cand));
+      if (dist < best_distance)
+	{
+	   best_distance = dist;
+	   best = *cand;
+	}
+      cand++;
+    }
+  /* If more than half of the letters were misspelled, the suggestion is
+     likely to be meaningless.  */
+  if (best)
+    {
+      unsigned int cutoff = MAX (tl, strlen (best)) / 2;
+
+      if (best_distance > cutoff)
+	{
+	  XDELETEVEC (candidates);
+	  return NULL;
+	}
+      XDELETEVEC (candidates);
+    }
+  return best;
+}
+
+/* Convert between GMP integers (mpz_t) and HOST_WIDE_INT.  */
+
+HOST_WIDE_INT
+gfc_mpz_get_hwi (mpz_t op)
+{
+  /* Using long_long_integer_type_node as that is the integer type
+     node that closest matches HOST_WIDE_INT; both are guaranteed to
+     be at least 64 bits.  */
+  const wide_int w = wi::from_mpz (long_long_integer_type_node, op, true);
+  return w.to_shwi ();
+}
+
+
+void
+gfc_mpz_set_hwi (mpz_t rop, const HOST_WIDE_INT op)
+{
+  const wide_int w = wi::shwi (op, HOST_BITS_PER_WIDE_INT);
+  wi::to_mpz (w, rop, SIGNED);
 }

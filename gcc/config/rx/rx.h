@@ -1,5 +1,5 @@
 /* GCC backend definitions for the Renesas RX processor.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -169,9 +169,6 @@
 #define HAS_LONG_UNCOND_BRANCH		0
 
 #define MOVE_MAX 			4
-#define STARTING_FRAME_OFFSET		0
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)   1
 
 #define HAVE_PRE_DECREMENT		1
 #define HAVE_POST_INCREMENT		1
@@ -329,18 +326,6 @@ typedef unsigned int CUMULATIVE_ARGS;
 
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
     fprintf (FILE, "\tbsr\t__mcount\n");
-
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   CLASS_MAX_NREGS (0, MODE)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)				\
-  (REGNO_REG_CLASS (REGNO) == GR_REGS)
-
-#define MODES_TIEABLE_P(MODE1, MODE2)				\
-  (   (   GET_MODE_CLASS (MODE1) == MODE_FLOAT			\
-       || GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)		\
-   == (   GET_MODE_CLASS (MODE2) == MODE_FLOAT			\
-       || GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT))
 
 
 #define REGISTER_NAMES						\

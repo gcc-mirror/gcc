@@ -9,7 +9,7 @@
 
 #include "counter-2.h" /* { dg-warning "not used because `__COUNTER__' is invalid" } */
 /* { dg-error "counter-2.h: No such file or directory" "no such file" { target *-*-* } 0 } */
-/* { dg-error "one or more PCH files were found, but they were invalid" "invalid files" { target *-*-* } 10 } */
+/* { dg-error "one or more PCH files were found, but they were invalid" "invalid files" { target *-*-* } .-2 } */
 /* { dg-message "terminated" "" { target *-*-* } 0 } */
 
 int main(void) 

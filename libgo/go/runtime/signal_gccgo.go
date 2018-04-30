@@ -13,24 +13,31 @@ import (
 // Functions for gccgo to support signal handling. In the gc runtime
 // these are written in OS-specific files and in assembler.
 
+//go:noescape
 //extern sigaction
 func sigaction(signum uint32, act *_sigaction, oact *_sigaction) int32
 
+//go:noescape
 //extern sigprocmask
 func sigprocmask(how int32, set *sigset, oldset *sigset) int32
 
+//go:noescape
 //extern sigfillset
 func sigfillset(set *sigset) int32
 
+//go:noescape
 //extern sigemptyset
 func sigemptyset(set *sigset) int32
 
+//go:noescape
 //extern sigaddset
 func c_sigaddset(set *sigset, signum uint32) int32
 
+//go:noescape
 //extern sigdelset
 func c_sigdelset(set *sigset, signum uint32) int32
 
+//go:noescape
 //extern sigaltstack
 func sigaltstack(ss *_stack_t, oss *_stack_t) int32
 
@@ -43,13 +50,9 @@ func getpid() _pid_t
 //extern kill
 func kill(pid _pid_t, sig uint32) int32
 
+//go:noescape
 //extern setitimer
 func setitimer(which int32, new *_itimerval, old *_itimerval) int32
-
-type sigTabT struct {
-	flags int32
-	name  string
-}
 
 type sigctxt struct {
 	info *_siginfo_t

@@ -1,6 +1,6 @@
 /* Routines for emitting GIMPLE to a file stream.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -209,8 +209,7 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 				: LTO_bb0);
 
   streamer_write_uhwi (ob, bb->index);
-  streamer_write_gcov_count (ob, bb->count);
-  streamer_write_hwi (ob, bb->frequency);
+  bb->count.stream_out (ob);
   streamer_write_hwi (ob, bb->flags);
 
   if (!gsi_end_p (bsi) || phi_nodes (bb))

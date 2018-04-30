@@ -22,6 +22,7 @@ void f3() {
 }
 #endif
 
+int
 main() {
   f.bar(foo::red);
 }

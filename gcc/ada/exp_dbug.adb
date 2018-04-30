@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc;    use Alloc;
+with Alloc;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -426,11 +426,20 @@ package body Exp_Dbug is
 
             when N_Selected_Component =>
                declare
-                  First_Bit : constant Uint :=
-                                Normalized_First_Bit
-                                  (Entity (Selector_Name (Ren)));
+                  Sel_Id    : constant Entity_Id :=
+                                Entity (Selector_Name (Ren));
+                  First_Bit : Uint;
 
                begin
+                  --  If the renaming involves a call to a primitive function,
+                  --  we are out of the scope of renaming encodings. We will
+                  --  very likely create a variable to hold the renamed value
+                  --  anyway, so the renaming entity will be available in
+                  --  debuggers.
+
+                  exit when not Ekind_In (Sel_Id, E_Component, E_Discriminant);
+
+                  First_Bit := Normalized_First_Bit (Sel_Id);
                   Enable :=
                     Enable
                       or else Is_Packed

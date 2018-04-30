@@ -13,25 +13,25 @@
 
 !if (DOT_PRODUCT ((/ (1.0, 2.0), (2.0, 3.0) /), (/ (1.0, 1.0), (1.0, 4.0) /))   &
 !   /= SUM (CONJG ((/ (1.0, 2.0), (2.0, 3.0) /))*(/ (1.0, 1.0), (1.0, 4.0) /))) &
-!   call abort ()
+!   STOP 1
 !
 !if (ANY (MATMUL ((/ (1.0, 2.0), (2.0, 3.0) /),                                 &
 !                 RESHAPE ((/ (1.0, 1.0), (1.0, 4.0) /),(/2, 1/))) /=           &
 !         SUM ((/ (1.0, 2.0), (2.0, 3.0) /)*(/ (1.0, 1.0), (1.0, 4.0) /))))     &
-!    call abort ()      
+!    STOP 2      
 
 
 if (DOT_PRODUCT ((/ (1.0, 2.0), (2.0, 3.0) /), (/ (1.0, 1.0), (1.0, 4.0) /))  &
     /= CONJG (cmplx(1.0, 2.0)) * cmplx(1.0, 1.0)                              &
      + CONJG (cmplx(2.0, 3.0)) * cmplx(1.0, 4.0)) &
-  call abort ()
+  STOP 3
 
 if (ANY (MATMUL ((/ (1.0, 2.0), (2.0, 3.0) /),                                &
                  RESHAPE ((/ (1.0, 1.0), (1.0, 4.0) /),(/2, 1/)))             &
          /= cmplx(1.0, 2.0) * cmplx(1.0, 1.0)                                 &
           + cmplx(2.0, 3.0) * cmplx(1.0, 4.0)))                               &
-  call abort ()      
+  STOP 4      
 end
 
 
-! { dg-final { scan-tree-dump-not "abort" "original" } }
+! { dg-final { scan-tree-dump-not "_gfortran_stop" "original" } }

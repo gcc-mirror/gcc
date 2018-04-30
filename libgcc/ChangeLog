@@ -1,3 +1,708 @@
+2018-04-27  Andreas Tobler  <andreast@gcc.gnu.org>
+	    Maryse Levavasseur <maryse.levavasseur@stormshield.eu>
+
+	PR libgcc/84292
+	* config/arm/freebsd-atomic.c (SYNC_OP_AND_FETCH_N): Fix the
+	op_and_fetch to return the right result.
+
+2018-04-27  Alan Modra  <amodra@gmail.com>
+
+	PR libgcc/85532
+	* config/rs6000/t-crtstuff (CRTSTUFF_T_CFLAGS): Add
+	-fno-asynchronous-unwind-tables.
+
+2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/sfp-machine.h: Fix settings for NDS32_ABI_2FP_PLUS.
+	* config/nds32/t-nds32-newlib (HOST_LIBGCC2_CFLAGS): Use -fwrapv.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux-unwind.h: Add (__CET__ & 2) != 0 check
+	when including "config/i386/shadow-stack-unwind.h".
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85456
+	* config/rs6000/_powikf2.c: New file.  Add support for the
+	__builtin_powil function when long double is IEEE 128-bit floating
+	point.
+	* config/rs6000/float128-ifunc.c (__powikf2_resolve): Add
+	__powikf2 support.
+	(__powikf2): Likewise.
+	* config/rs6000/quad-float128.h (__powikf2_sw): Likewise.
+	(__powikf2_hw): Likewise.
+	(__powikf2): Likewise.
+	* config/rs6000/t-float128 (fp128_ppc_funcs): Likewise.
+	* config/rs6000/t-float128-hw (fp128_hw_func): Likewise.
+	(_powikf2-hw.c): Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* unwind-generic.h (_Unwind_Frames_Increment): New.
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Likewise.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Increment frame
+	count with _Unwind_Frames_Increment.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85379
+	* config/i386/morestack.S (__stack_split_initialize): Add
+	_CET_ENDBR.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84945
+	* config/i386/cpuinfo.c (set_feature): Wrap into do while (0) to avoid
+	-Wdangling-else warnings.  Mask shift counts to avoid
+	-Wshift-count-negative and -Wshift-count-overflow false positives.
+
+2018-04-06  Ruslan Bukin  <br@bsdpad.com>
+
+	* config.host (riscv*-*-freebsd*): Add RISC-V FreeBSD support.
+
+2018-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85100
+	* config/i386/cpuinfo.c (XCR_XFEATURE_ENABLED_MASK): New.
+	(XSTATE_FP): Likewise.
+	(XSTATE_SSE): Likewise.
+	(XSTATE_YMM): Likewise.
+	(XSTATE_OPMASK): Likewise.
+	(XSTATE_ZMM): Likewise.
+	(XSTATE_HI_ZMM): Likewise.
+	(XCR_AVX_ENABLED_MASK): Likewise.
+	(XCR_AVX512F_ENABLED_MASK): Likewise.
+	(get_available_features): Enable AVX and AVX512 features only
+	if their states are supported by OSXSAVE.
+
+2018-03-22  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/85025
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Fix a typo, tmp => 255.
+
+2018-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84945
+	* config/i386/cpuinfo.h (__cpu_features2): Declare.
+	* config/i386/cpuinfo.c (__cpu_features2): New variable for
+	ifndef SHARED only.
+	(set_feature): Define.
+	(get_available_features): Use set_feature macro.  Set __cpu_features2
+	to the second word of features ifndef SHARED.
+
+2018-03-15  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.c (get_available_features): Add
+	FEATURE_AVX512VBMI2, FEATURE_GFNI, FEATURE_VPCLMULQDQ,
+	FEATURE_AVX512VNNI, FEATURE_AVX512BITALG.
+	* config/i386/cpuinfo.h (processor_features): Add FEATURE_AVX512VBMI2,
+	FEATURE_GFNI, FEATURE_VPCLMULQDQ, FEATURE_AVX512VNNI,
+	FEATURE_AVX512BITALG.
+
+2018-03-14  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.h (processor_subtypes): Split up icelake on
+	icelake client and icelake server.
+
+2018-03-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (_dl_read_access_allowed): New.
+	(__canonicalize_funcptr_for_compare): Use it.
+	
+2018-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83917
+	* configure.ac (AS_HIDDEN_DIRECTIVE): AC_DEFINE_UNQUOTED this to
+	$asm_hidden_op if visibility ("hidden") attribute works.
+	(HAVE_AS_CFI_SECTIONS): New AC_DEFINE.
+	* config/i386/i386-asm.h: Don't include auto-host.h.
+	(PACKAGE_VERSION, PACKAGE_NAME, PACKAGE_STRING, PACKAGE_TARNAME,
+	PACKAGE_URL): Don't undefine.
+	(USE_GAS_CFI_DIRECTIVES): Don't use nor define this macro, instead
+	guard cfi_startproc only on ifdef __GCC_HAVE_DWARF2_CFI_ASM.
+	(FN_HIDDEN): Change guard from #ifdef HAVE_GAS_HIDDEN to
+	#ifdef AS_HIDDEN_DIRECTIVE, use AS_HIDDEN_DIRECTIVE macro in the
+	definition instead of hardcoded .hidden.
+	* config/i386/cygwin.S: Include i386-asm.h first before .cfi_sections
+	directive.  Use #ifdef HAVE_AS_CFI_SECTIONS rather than
+	#ifdef HAVE_GAS_CFI_SECTIONS_DIRECTIVE to guard .cfi_sections.
+	(USE_GAS_CFI_DIRECTIVES): Don't define.
+	* configure: Regenerated.
+	* config.in: Likewise.
+
+2018-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83917
+	* config/i386/i386-asm.h (PACKAGE_VERSION, PACKAGE_NAME,
+	PACKAGE_STRING, PACKAGE_TARNAME, PACKAGE_URL): Undefine between
+	inclusion of auto-target.h and auto-host.h.
+	(USE_GAS_CFI_DIRECTIVES): Define if not defined already based on
+	__GCC_HAVE_DWARF2_CFI_ASM.
+	(cfi_startproc, cfi_endproc, cfi_adjust_cfa_offset,
+	cfi_def_cfa_register, cfi_def_cfa, cfi_register, cfi_offset, cfi_push,
+	cfi_pop): Define.
+	* config/i386/cygwin.S: Don't include auto-host.h here, just
+	define USE_GAS_CFI_DIRECTIVES to 1 or 0 and include i386-asm.h.
+	(cfi_startproc, cfi_endproc, cfi_adjust_cfa_offset,
+	cfi_def_cfa_register, cfi_register, cfi_push, cfi_pop): Remove.
+	* config/i386/resms64fx.h: Add cfi_* directives.
+	* config/i386/resms64x.h: Likewise.
+
+2018-02-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__adddf3_aux): Add
+	.literal_position directive.
+	* config/xtensa/ieee754-sf.S (__addsf3_aux): Likewise.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-16  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Include cetintrin.h not x86intrin.h.
+
+2018-02-08  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Use new _get_ssp and _inc_ssp intrinsics.
+
+2018-02-02  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.h (processor_subtypes): Add INTEL_COREI7_ICELAKE.
+
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib1funcs.S (__udivmodsi4): Use safe version for RF16
+	option.
+	(__divsi3): Use RF16 safe registers.
+	(__modsi3): Likewise.
+
+2018-01-23  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__addsf3, __subsf3, __mulsf3)
+	(__divsf3): Make NaN return value quiet.
+	* config/xtensa/ieee754-sf.S (__adddf3, __subdf3, __muldf3)
+	(__divdf3): Make NaN return value quiet.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/anddi3.S: New assembly file.
+	* config/rl78/t-rl78: Added anddi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/umindi3.S: New assembly file.
+	* config/rl78/t-rl78: Added umindi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/smindi3.S: New assembly file.
+	* config/rl78/t-rl78: Added smindi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+ 
+	* config/rl78/smaxdi3.S: New assembly file.
+	* config/rl78/t-rl78: Added smaxdi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+ 
+	* config/rl78/umaxdi3.S: New assembly file.
+	* config/rl78/t-rl78: Added umaxdi3.S to LIB2ADD.
+	
+2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR lto/83452
+	* config/pa/stublib.c (L_gnu_lto_v1): New stub definition.
+	* config/pa/t-stublib (gnu_lto_v1-stub.o): Add make fragment.
+	
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/value-unwind.h (aarch64_vg): New function.
+	(DWARF_LAZY_REGISTER_VALUE): Define.
+	* unwind-dw2.c (_Unwind_GetGR): Use DWARF_LAZY_REGISTER_VALUE
+	to provide a fallback register value.
+
+2018-01-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/quad-float128.h (IBM128_TYPE): Explicitly use
+	__ibm128, instead of trying to use long double.
+	(CVT_FLOAT128_TO_IBM128): Use TFtype instead of __float128 to
+	accomidate -mabi=ieeelongdouble multilibs.
+	(CVT_IBM128_TO_FLOAT128): Likewise.
+	* config/rs6000/ibm-ldouble.c (IBM128_TYPE): New macro to define
+	the appropriate IBM extended double type.
+	(__gcc_qadd): Change all occurances of long double to IBM128_TYPE.
+	(__gcc_qsub): Likewise.
+	(__gcc_qmul): Likewise.
+	(__gcc_qdiv): Likewise.
+	(pack_ldouble): Likewise.
+	(__gcc_qneg): Likewise.
+	(__gcc_qeq): Likewise.
+	(__gcc_qne): Likewise.
+	(__gcc_qge): Likewise.
+	(__gcc_qle): Likewise.
+	(__gcc_stoq): Likewise.
+	(__gcc_dtoq): Likewise.
+	(__gcc_itoq): Likewise.
+	(__gcc_utoq): Likewise.
+	(__gcc_qunord): Likewise.
+	* config/rs6000/_mulkc3.c (toplevel): Include soft-fp.h and
+	quad-float128.h for the definitions.
+	(COPYSIGN): Use the f128 version instead of the q version.
+	(INFINITY): Likewise.
+	(__mulkc3): Use TFmode/TCmode for float128 scalar/complex types.
+	* config/rs6000/_divkc3.c (toplevel): Include soft-fp.h and
+	quad-float128.h for the definitions.
+	(COPYSIGN): Use the f128 version instead of the q version.
+	(INFINITY): Likewise.
+	(FABS): Likewise.
+	(__divkc3): Use TFmode/TCmode for float128 scalar/complex types.
+	* config/rs6000/extendkftf2-sw.c (__extendkftf2_sw): Likewise.
+	* config/rs6000/trunctfkf2-sw.c (__trunctfkf2_sw): Likewise.
+
+2018-01-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.host (epiphany-*-elf*): Add (epiphany-*-rtems*)
+	configuration.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-12-12  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/riscv/t-elf: Use multi3.c instead of multi3.S.
+	* config/riscv/multi3.c: New file.
+	* config/riscv/multi3.S: Remove.
+
+2017-12-08  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/div.S: Use FUNC_* macros.
+	* config/riscv/muldi3.S, config/riscv/multi3.S: Likewise
+	* config/riscv/save-restore.S: Likewise.
+	* config/riscv/riscv-asm.h: New.
+
+2017-11-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/_mulkc3.c (__mulkc3): Add forward declaration.
+	* config/rs6000/_divkc3.c (__divkc3): Likewise.
+
+	PR libgcc/83112
+	* config/rs6000/float128-ifunc.c (__addkf3_resolve): Use the
+	correct type for all ifunc resolvers to silence -Wattribute-alias
+	warnings.  Eliminate the forward declaration of the resolver
+	functions which is no longer needed.
+	(__subkf3_resolve): Likewise.
+	(__mulkf3_resolve): Likewise.
+	(__divkf3_resolve): Likewise.
+	(__negkf2_resolve): Likewise.
+	(__eqkf2_resolve): Likewise.
+	(__nekf2_resolve): Likewise.
+	(__gekf2_resolve): Likewise.
+	(__gtkf2_resolve): Likewise.
+	(__lekf2_resolve): Likewise.
+	(__ltkf2_resolve): Likewise.
+	(__unordkf2_resolve): Likewise.
+	(__extendsfkf2_resolve): Likewise.
+	(__extenddfkf2_resolve): Likewise.
+	(__trunckfsf2_resolve): Likewise.
+	(__trunckfdf2_resolve): Likewise.
+	(__fixkfsi_resolve): Likewise.
+	(__fixkfdi_resolve): Likewise.
+	(__fixunskfsi_resolve): Likewise.
+	(__fixunskfdi_resolve): Likewise.
+	(__floatsikf_resolve): Likewise.
+	(__floatdikf_resolve): Likewise.
+	(__floatunsikf_resolve): Likewise.
+	(__floatundikf_resolve): Likewise.
+	(__extendkftf2_resolve): Likewise.
+	(__trunctfkf2_resolve): Likewise.
+
+	PR libgcc/83103
+	* config/rs6000/quad-float128.h (TF): Don't define if long double
+	is IEEE 128-bit floating point.
+	(TCtype): Define as either TCmode or KCmode, depending on whether
+	long double is IEEE 128-bit floating point.
+	(__mulkc3_sw): Add declarations for software/hardware versions of
+	complex multiply/divide.
+	(__divkc3_sw): Likewise.
+	(__mulkc3_hw): Likewise.
+	(__divkc3_hw): Likewise.
+	* config/rs6000/_mulkc3.c (_mulkc3): If we are building ifunc
+	handlers to switch between using software emulation and hardware
+	float128 instructions, build the complex multiply/divide functions
+	for both software and hardware support.
+	* config/rs6000/_divkc3.c (_divkc3): Likewise.
+	* config/rs6000/float128-ifunc.c (__mulkc3_resolve): Likewise.
+	(__divkc3_resolve): Likewise.
+	(__mulkc3): Likewise.
+	(__divkc3): Likewise.
+	* config/rs6000/t-float128-hw (fp128_hardfp_src): Likewise.
+	(fp128_hw_src): Likewise.
+	(fp128_hw_static_obj): Likewise.
+	(fp128_hw_shared_obj): Likewise.
+	(_mulkc3-hw.c): Create _mulkc3-hw.c and _divkc3-hw.c from
+	_mulkc3.c and _divkc3.c, changing the function name.
+	(_divkc3-hw.c): Likewise.
+	* config/rs6000/t-float128 (clean-float128): Delete _mulkc3-hw.c
+	and _divkc3-hw.c.
+
+2017-11-26  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Handle cannonlake.
+	* config/i386/cpuinfo.h (processor_subtypes): Add
+	INTEL_COREI7_CANNONLAKE.
+
+2017-11-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR bootstrap/83015
+	* config/cr16/unwind-cr16.c (uw_install_context): Add FRAMES
+	parameter.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise
+	* config/ia64/unwind-ia64.c: Add frames parameter.
+	* unwind-sjlj.c: Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* config/i386/linux-unwind.h: Include
+	config/i386/shadow-stack-unwind.h.
+	* config/i386/shadow-stack-unwind.h: New file.
+	* unwind-dw2.c: (uw_install_context): Add a frame parameter and
+	pass it to _Unwind_Frames_Extra.
+	* unwind-generic.h (_Unwind_Frames_Extra): New.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Add frames_p
+	parameter. Add local variable frames to count number of frames.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+	(_Unwind_RaiseException): Add local variable frames to count
+	number of frames, pass it to _Unwind_RaiseException_Phase2 and
+	uw_install_context.
+	(_Unwind_ForcedUnwind): Likewise.
+	(_Unwind_Resume): Likewise.
+	(_Unwind_Resume_or_Rethrow): Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in (configure_deps): Add $(srcdir)/../config/cet.m4.
+	(CET_FLAGS): New.
+	* config/i386/morestack.S: Include <cet.h>.
+	(__morestack_large_model): Add _CET_ENDBR at function entrance.
+	* config/i386/resms64.h: Include <cet.h>.
+	* config/i386/resms64f.h: Likewise.
+	* config/i386/resms64fx.h: Likewise.
+	* config/i386/resms64x.h: Likewise.
+	* config/i386/savms64.h: Likewise.
+	* config/i386/savms64f.h: Likewise.
+	* config/i386/t-linux (HOST_LIBGCC2_CFLAGS): Add $(CET_FLAGS).
+	(CRTSTUFF_T_CFLAGS): Likewise.
+	* configure.ac: Include ../config/cet.m4.
+	Set and substitute CET_FLAGS.
+	* configure: Regenerated.
+
+2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (*-*-solaris2*): Adapt comment for Solaris 12
+	renaming.
+	* config/sol2/crtpg.c (__start_crt_compiler): Likewise.
+	* configure.ac (libgcc_cv_solaris_crts): Likewise.
+	* configure: Regenerate.
+
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
+	* config/rs6000/aix-unwind.h (REGISTER_CFA_OFFSET_FOR): Remove semicolon
+	after "do {} while (0)".
+
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* config/aarch64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Remove
+	semicolon after "do {} while (0)".
+	* config/i386/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/ia64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/mips/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/rs6000/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+
+2017-11-04  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	PR libgcc/82635
+	* config/i386/freebsd-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Use a
+	sysctl to determine whether we're in a trampoline.
+	Keep the pattern matching method for systems without
+	KERN_PROC_SIGTRAMP sysctl.
+
+2017-11-03  Cupertino Miranda  <cmiranda@synopsys.com>
+	    Vineet Gupta <vgupta@synopsys.com>
+
+	* config.host (arc*-*-linux*): Set md_unwind_header variable.
+	* config/arc/linux-unwind-reg.def: New file.
+	* config/arc/linux-unwind-reg.h: Likewise.
+
+2017-10-23  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/subdi3.S: New assembly file.
+	* config/rl78/t-rl78: Added subdi3.S to LIB2ADD.
+
+2017-10-13  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/adddi3.S: New assembly file.
+	* config/rl78/t-rl78: Added adddi3.S to LIB2ADD.
+
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82274
+	* libgcc2.c (__mulvDI3): If both operands have
+	the same highpart of -1 and the topmost bit of lowpart is 0,
+	multiplication overflows even if both lowparts are 0.
+
+2017-09-28  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/crti-hw.S: Add watchdog vector, FT930 IRQ support.
+
+2017-09-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/microblaze/crti.S, config/microblaze/crtn.S,
+	config/microblaze/divsi3.S, config/microblaze/moddi3.S,
+	config/microblaze/modsi3.S, config/microblaze/muldi3_hard.S,
+	config/microblaze/mulsi3.S,
+	config/microblaze/stack_overflow_exit.S,
+	config/microblaze/udivsi3.S, config/microblaze/umodsi3.S,
+	config/pa/milli64.S: Add .note.GNU-stack section.
+
+2017-09-23  Daniel Santos  <daniel.santos@pobox.com>
+
+	* configure.ac: Add Check for HAVE_AS_AVX.
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* config/i386/i386-asm.h: Include auto-target.h from libgcc.
+	(SSE_SAVE, SSE_RESTORE): Emit .byte sequence for !HAVE_AS_AVX.
+	Correct out-of-date comments.
+
+2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_KNM.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Knights Mill.
+
+2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config/i386/i386-asm.h (PASTE2): New macro.
+	(ASMNAME): Modify to use PASTE2.
+	(MS2SYSV_STUB_PREFIX): New macro for isa prefix.
+	(MS2SYSV_STUB_BEGIN, MS2SYSV_STUB_END): New macros for stub headers.
+	* config/i386/resms64.S: Rename to a header file, use MS2SYSV_STUB_BEGIN
+	instead of HIDDEN_FUNC and MS2SYSV_STUB_END instead of FUNC_END.
+	* config/i386/resms64f.S: Likewise.
+	* config/i386/resms64fx.S: Likewise.
+	* config/i386/resms64x.S: Likewise.
+	* config/i386/savms64.S: Likewise.
+	* config/i386/savms64f.S: Likewise.
+	* config/i386/avx_resms64.S: New file that only defines a macro and
+	includes it's corresponding header file.
+	* config/i386/avx_resms64f.S: Likewise.
+	* config/i386/avx_resms64fx.S: Likewise.
+	* config/i386/avx_resms64x.S: Likewise.
+	* config/i386/avx_savms64.S: Likewise.
+	* config/i386/avx_savms64f.S: Likewise.
+	* config/i386/sse_resms64.S: Likewise.
+	* config/i386/sse_resms64f.S: Likewise.
+	* config/i386/sse_resms64fx.S: Likewise.
+	* config/i386/sse_resms64x.S: Likewise.
+	* config/i386/sse_savms64.S: Likewise.
+	* config/i386/sse_savms64f.S: Likewise.
+	* config/i386/t-msabi: Modified to add avx and sse versions of stubs.
+
+2017-09-01  Olivier Hainque  <hainque@adacore.com>
+	* config.host (*-*-vxworks7): Widen scope to vxworks7*.
+
+2017-08-31  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc-wrs-vxworks|vxworksae|vxworksmils): Now
+	match as powerpc-wrs-vxworks*.
+
+2017-08-07  Jonathan Yong  <10walls@gmail.com>
+
+	* config.host (*-cygwin): Include file from mingw
+	config/i386/enable-execute-stack-mingw32.c
+
+2017-08-01  Jerome Lambourg  <lambourg@adacore.com>
+            Doug Rupp  <rupp@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (arm-wrs-vxworks*): Rework to handle arm-wrs-vxworks7
+	as well as arm-wrs-vxworks.
+	* config/arm/t-vxworks7: New file.  Add unwind-arm-vxworks.c to
+	LIB2ADDEH.
+	* config/arm/unwind-arm-vxworks.c: New file. Provide dummy
+	__exidx_start and __exidx_end for downloadable modules.
+
+2017-08-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Start with -I. after -nostdinc.
+	* config/t-vxworks7: Likewise.
+
+2017-08-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Instead of redefining LIB2ADD,
+	augment LIB2ADDEH with vxlib.c and vxlib-tls.c.
+
+2017-07-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/ibm-ldouble.c: Disable if defined __rtems__.
+
+2017-07-24  Daniel Santos  <daniel.santos@pobox.com>
+
+	PR testsuite/80759
+	* config.host: include i386/t-msabi for darwin and solaris.
+	* config/i386/i386-asm.h
+	(ELFFN): Rename to FN_TYPE.
+	(FN_SIZE): New macro.
+	(FN_HIDDEN): Likewise.
+	(ASMNAME): Likewise.
+	(FUNC_START): Rename to FUNC_BEGIN, use ASMNAME, replace .global with
+	.globl.
+	(HIDDEN_FUNC): Use ASMNAME and .globl instead of .global.
+	(SSE_SAVE): Convert to cpp macro, hard-code offset (always 0x60).
+	* config/i386/resms64.S: Use SSE_SAVE as cpp macro instead of gas
+	.macro.
+	* config/i386/resms64f.S: Likewise.
+	* config/i386/resms64fx.S: Likewise.
+	* config/i386/resms64x.S: Likewise.
+	* config/i386/savms64.S: Likewise.
+	* config/i386/savms64f.S: Likewise.
+
+2017-07-19  John Marino  <gnugcc@marino.st>
+
+	* config/i386/dragonfly-unwind.h: Handle sigtramp relocation.
+
+2017-07-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81193
+	* configure.ac (PowerPC float128 hardware support): Test whether
+	we can use __builtin_cpu_supports before enabling the ifunc
+	handler.
+	* configure: Regenerate.
+
+2017-07-10  Vineet Gupta <vgupta@synopsys.com>
+
+	* config.host: Remove uclibc from arc target spec.
+
+2017-07-09  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config.host (*-*-netbsd*): Remove check for aout NetBSD releases.
+
+2017-07-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/float128-ifunc.c: Don't include auxv.h.
+	(have_ieee_hw_p): Delete function.
+	(SW_OR_HW) Use __builtin_cpu_supports().
+
+2017-07-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/lib1funcs.S: Defined __ARM_ARCH__ to 8 for ARMv8-R.
+
+2017-07-03  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks7: New file, really.
+
+2017-06-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state),
+	config/alpha/linux-unwind.h (alpha_fallback_frame_state),
+	config/bfin/linux-unwind.h (bfin_fallback_frame_state),
+	config/i386/linux-unwind.h (x86_64_fallback_frame_state,
+	x86_fallback_frame_state), config/m68k/linux-unwind.h (struct
+	uw_ucontext), config/nios2/linux-unwind.h (struct nios2_ucontext),
+	config/pa/linux-unwind.h (pa32_fallback_frame_state),
+	config/riscv/linux-unwind.h (riscv_fallback_frame_state),
+	config/sh/linux-unwind.h (sh_fallback_frame_state),
+	config/tilepro/linux-unwind.h (tile_fallback_frame_state),
+	config/xtensa/linux-unwind.h (xtensa_fallback_frame_state): Use
+	ucontext_t instead of struct ucontext.
+
+2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config.host (i*86-wrs-vxworks7): Handle new acceptable triplet.
+	(x86_64-wrs-vxworks7): Likewise.
+
+2017-06-27  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks7: New file.
+	* config.host (*-*-vxworks7): Use it.
+
+2017-06-22  Matt Turner  <mattst88@gmail.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Add Kaby Lake models to
+	skylake case.
+
+2017-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR gcov-profile/81080
+	* configure.ac: Add AC_SYS_LARGEFILE.
+	* libgcov.h: Include auto-target.h before tsystem.h to pick
+	up _FILE_OFFSET_BITS which might differ for multilibs.
+	* config.in: Regenerate.
+	* configure: Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/cmse_nonsecure_call.S: Explicitly set the FPU.
+
+2017-06-09  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2):
+	Reset __gcov_indirect_call_callee to NULL.
+
+2017-06-08  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Add path to wrn/coreip to
+	the set of -I options, support for direct inclusions of net/uio.h
+	by VxWorks header files via ioLib.h.
+
+2017-06-07  Tony Reix  <tony.reix@atos.net>
+	    Matthieu Sarter  <matthieu.sarter.external@atos.net>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+        * config/rs6000/aix-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Define
+        unconditionally.
+        (ucontext_for): Add 64-bit AIX 6.1, 7.1, 7.2 support.  Add 32-bit
+        AIX 7.2 support.
+
+2017-06-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxlib.c (__gthread_once): Add missing value to
+	return statement.
+
+2017-05-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Remove extraneous
+	dollar sign before $(MULTIDIR).
+
+2017-05-26  Richard Henderson  <rth@redhat.com>
+
+	PR libgcc/80037
+	* config/alpha/t-alpha (CRTSTUFF_T_CFLAGS): New.
+
 2017-05-17  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/arm/unwind-arm.h: Make _Unwind_GetIP, _Unwind_GetIPInfo and
@@ -8457,7 +9162,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2017 Free Software Foundation, Inc.
+Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -5,7 +5,7 @@
 struct A {
   template <class T> A (T)
 #if __cplusplus <= 201402L
-  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
   ;
 };
@@ -13,7 +13,7 @@ struct B {
   B (B&) throw ();
   template <class T> B (T)
 #if __cplusplus <= 201402L
-  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
   ;
 };

@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-require-weak "" } */
 /* { dg-options "-fno-common" } */
-/* { dg-skip-if "" { x86_64-*-mingw* } { "*" } { "" } } */
+/* { dg-skip-if "" { x86_64-*-mingw* } } */
 /* NVPTX's definition of weak looks different to normal.  */
-/* { dg-skip-if "" { nvptx-*-* } { "*" } { "" } } */
+/* { dg-skip-if "" { nvptx-*-* } } */
 
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1a" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1b" } } */

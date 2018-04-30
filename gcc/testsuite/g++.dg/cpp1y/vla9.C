@@ -25,7 +25,7 @@ int main(){
     fa[0][1]=1.8;
     auto fx=[&](){
         for(int c=0; c<2; c++){
-            printf("use me", fa[0][c]);	// { dg-error "capture of variable-size type" }
+            printf("use me", fa[0][c]);	// { dg-prune-output "sorry" }
         }
     };
     call(fx);

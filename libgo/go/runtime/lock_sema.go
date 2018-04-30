@@ -83,7 +83,7 @@ Loop:
 			// for this lock, chained through m->nextwaitm.
 			// Queue this M.
 			for {
-				gp.m.nextwaitm = v &^ mutex_locked
+				gp.m.nextwaitm = muintptr(v &^ mutex_locked)
 				if atomic.Casuintptr(&l.key, v, uintptr(unsafe.Pointer(gp.m))|mutex_locked) {
 					break
 				}
@@ -115,8 +115,8 @@ func unlock(l *mutex) {
 		} else {
 			// Other M's are waiting for the lock.
 			// Dequeue an M.
-			mp = (*m)(unsafe.Pointer(v &^ mutex_locked))
-			if atomic.Casuintptr(&l.key, v, mp.nextwaitm) {
+			mp = muintptr(v &^ mutex_locked).ptr()
+			if atomic.Casuintptr(&l.key, v, uintptr(mp.nextwaitm)) {
 				// Dequeued an M.  Wake it.
 				semawakeup(mp)
 				break
@@ -152,7 +152,7 @@ func notewakeup(n *note) {
 	case v == 0:
 		// Nothing was waiting. Done.
 	case v == mutex_locked:
-		// Two notewakeups!  Not allowed.
+		// Two notewakeups! Not allowed.
 		throw("notewakeup - double wakeup")
 	default:
 		// Must be the waiting m. Wake it up.
@@ -175,7 +175,16 @@ func notesleep(n *note) {
 	}
 	// Queued. Sleep.
 	gp.m.blocked = true
-	semasleep(-1)
+	if *cgo_yield == nil {
+		semasleep(-1)
+	} else {
+		// Sleep for an arbitrary-but-moderate interval to poll libc interceptors.
+		const ns = 10e6
+		for atomic.Loaduintptr(&n.key) == 0 {
+			semasleep(ns)
+			asmcgocall(*cgo_yield, nil)
+		}
+	}
 	gp.m.blocked = false
 }
 
@@ -198,7 +207,15 @@ func notetsleep_internal(n *note, ns int64, gp *g, deadline int64) bool {
 	if ns < 0 {
 		// Queued. Sleep.
 		gp.m.blocked = true
-		semasleep(-1)
+		if *cgo_yield == nil {
+			semasleep(-1)
+		} else {
+			// Sleep in arbitrary-but-moderate intervals to poll libc interceptors.
+			const ns = 10e6
+			for semasleep(ns) < 0 {
+				asmcgocall(*cgo_yield, nil)
+			}
+		}
 		gp.m.blocked = false
 		return true
 	}
@@ -207,11 +224,17 @@ func notetsleep_internal(n *note, ns int64, gp *g, deadline int64) bool {
 	for {
 		// Registered. Sleep.
 		gp.m.blocked = true
+		if *cgo_yield != nil && ns > 10e6 {
+			ns = 10e6
+		}
 		if semasleep(ns) >= 0 {
 			gp.m.blocked = false
 			// Acquired semaphore, semawakeup unregistered us.
 			// Done.
 			return true
+		}
+		if *cgo_yield != nil {
+			asmcgocall(*cgo_yield, nil)
 		}
 		gp.m.blocked = false
 		// Interrupted or timed out. Still registered. Semaphore not acquired.

@@ -6,5 +6,5 @@
 
 int f(unsigned a, int b)
 {
-  return a < b;  /* { dg-warning "signed and unsigned" } */
+  return a < b;  /* { dg-warning "comparison of integer expressions of different signedness" } */
 }

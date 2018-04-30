@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -Warray-bounds -fdump-tree-cunroll-details" } */
+/* { dg-options "-O3 -Warray-bounds -fno-tree-vectorize -fdump-tree-cunroll-details" } */
 int a[3];
 int b[4];
 int

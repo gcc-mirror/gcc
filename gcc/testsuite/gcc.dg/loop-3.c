@@ -4,6 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 /* { dg-options "-O3 -mtune=i386" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-add-options stack_size } */
 
 #if defined(STACK_SIZE) && (STACK_SIZE < 65536)
 # define BYTEMEM_SIZE 10000L

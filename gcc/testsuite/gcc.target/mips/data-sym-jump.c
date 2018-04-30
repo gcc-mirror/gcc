@@ -25,7 +25,7 @@ frob (int i)
 
 /* Expect assembly like:
 
-	la	$2, $L4
+	la	$2,$L4
 						# Anything goes here.
 	.type	__jump_frob_4, @object		# Symbol # must match label.
 __jump_frob_4:					# The symbol must match.
@@ -47,4 +47,4 @@ __jend_frob_4:					# The symbol must match.
 
    that is `__jump_*'/`__jend_*' symbols inserted around a jump table.  */
 
-/* { dg-final { scan-assembler "\tla\t\\\$\[0-9\]+, (.L(\[0-9\]+))\n.*\t\\.type\t(__jump_frob_\\2), @object\n\\3:\n\\1:\n(?:\t\\.(?:half|word)\t.L\[0-9\]+-\\1\n)\{11\}\t\\.type\t(__jend_frob_\\2), @function\n\\4:\n\t\\.insn\n" } } */
+/* { dg-final { scan-assembler "\tla\t\\\$\[0-9\]+,(.L(\[0-9\]+))\n.*\t\\.type\t(__jump_frob_\\2), @object\n\\3:\n\\1:\n(?:\t\\.(?:half|word)\t.L\[0-9\]+-\\1\n)\{11\}\t\\.type\t(__jend_frob_\\2), @function\n\\4:\n\t\\.insn\n" } } */

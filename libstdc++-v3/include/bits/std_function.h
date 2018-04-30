@@ -1,6 +1,6 @@
 // Implementation of std::function -*- C++ -*-
 
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,25 +47,6 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  /**
-   * Derives from @c unary_function or @c binary_function, or perhaps
-   * nothing, depending on the number of arguments provided. The
-   * primary template is the basis case, which derives nothing.
-   */
-  template<typename _Res, typename... _ArgTypes>
-    struct _Maybe_unary_or_binary_function { };
-
-  /// Derives from @c unary_function, as appropriate.
-  template<typename _Res, typename _T1>
-    struct _Maybe_unary_or_binary_function<_Res, _T1>
-    : std::unary_function<_T1, _Res> { };
-
-  /// Derives from @c binary_function, as appropriate.
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Maybe_unary_or_binary_function<_Res, _T1, _T2>
-    : std::binary_function<_T1, _T2, _Res> { };
-
 
   /**
    *  @brief Exception class thrown when class template function's
@@ -438,7 +419,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The newly-created %function contains the target of @a __x
        *  (if it has one).
        */
-      function(function&& __x) : _Function_base()
+      function(function&& __x) noexcept : _Function_base()
       {
 	__x.swap(*this);
       }
@@ -495,7 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  object, then this operation will not throw an %exception.
        */
       function&
-      operator=(function&& __x)
+      operator=(function&& __x) noexcept
       {
 	function(std::move(__x)).swap(*this);
 	return *this;

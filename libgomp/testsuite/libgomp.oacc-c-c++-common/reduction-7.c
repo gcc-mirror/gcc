@@ -183,7 +183,7 @@ void gwv_np_4()
   float res = 0, mres = 0, hres = 0, hmres = 0;
 
   for (i = 0; i < 32768; i++)
-    arr[i] = i;
+    arr[i] = i % (32768 / 64);
 
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
   {
@@ -219,7 +219,10 @@ void gwv_np_4()
 	  hmres = arr[j * 1024 + (1023 - i)];
       }
 
+  assert (hres <= 16777216);
   assert (res == hres);
+
+  assert (hmres <= 16777216);
   assert (mres == hmres);
 }
 

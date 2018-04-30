@@ -1,6 +1,6 @@
 // <thread> -*- C++ -*-
 
-// Copyright (C) 2008-2017 Free Software Foundation, Inc.
+// Copyright (C) 2008-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -243,21 +243,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return _M_invoke(_Indices()); }
       };
 
-    // Alias for _Invoker<tuple<DECAY_COPY(_Tp)...>>
     template<typename... _Tp>
-      using __invoker_type
-	= _Invoker<decltype(std::make_tuple(std::declval<_Tp>()...))>;
+      using __decayed_tuple = tuple<typename std::decay<_Tp>::type...>;
 
   public:
-    // Returns a call wrapper that does
-    // INVOKE(DECAY_COPY(__callable), DECAY_COPY(__args)).
+    // Returns a call wrapper that stores
+    // tuple{DECAY_COPY(__callable), DECAY_COPY(__args)...}.
     template<typename _Callable, typename... _Args>
-      static __invoker_type<_Callable, _Args...>
+      static _Invoker<__decayed_tuple<_Callable, _Args...>>
       __make_invoker(_Callable&& __callable, _Args&&... __args)
       {
-	return { {
-	    std::make_tuple(std::forward<_Callable>(__callable),
-			    std::forward<_Args>(__args)...)
+	return { __decayed_tuple<_Callable, _Args...>{
+	    std::forward<_Callable>(__callable), std::forward<_Args>(__args)...
 	} };
       }
   };
@@ -321,16 +318,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __out << __id._M_thread;
     }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
   /** @namespace std::this_thread
    *  @brief ISO C++ 2011 entities sub-namespace for thread.
    *  30.3.2 Namespace this_thread.
    */
   namespace this_thread
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /// get_id
     inline thread::id
     get_id() noexcept
@@ -398,12 +391,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	    __now = _Clock::now();
 	  }
       }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   }
 
   // @} group threads
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

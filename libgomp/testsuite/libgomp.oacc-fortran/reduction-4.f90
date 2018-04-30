@@ -57,10 +57,10 @@ program reduction_4
      vresult = vresult + REAL(array(i))
   end do
 
-  if (rg .ne. vresult) call abort
-  if (rw .ne. vresult) call abort
-  if (rv .ne. vresult) call abort
-  if (rc .ne. vresult) call abort
+  if (rg .ne. vresult) STOP 1
+  if (rw .ne. vresult) STOP 2
+  if (rv .ne. vresult) STOP 3
+  if (rc .ne. vresult) STOP 4
 
   !
   ! '*' reductions
@@ -105,8 +105,8 @@ program reduction_4
      vresult = vresult * REAL(array(i))
   end do
 
-  if (rg .ne. vresult) call abort
-  if (rw .ne. vresult) call abort
-  if (rv .ne. vresult) call abort
-  if (rc .ne. vresult) call abort
+  if (rg .ne. vresult) STOP 5
+  if (rw .ne. vresult) STOP 6
+  if (rv .ne. vresult) STOP 7
+  if (rc .ne. vresult) STOP 8
 end program reduction_4

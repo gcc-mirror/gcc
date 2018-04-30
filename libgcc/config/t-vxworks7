@@ -1,0 +1,17 @@
+# Don't build libgcc.a with debug info
+LIBGCC2_DEBUG_CFLAGS =
+
+# Extra libgcc2 modules used by gthr-vxworks.h functions
+LIB2ADDEH += $(srcdir)/config/vxlib.c $(srcdir)/config/vxlib-tls.c
+
+# This ensures that the correct target headers are used; some VxWorks
+# system headers have names that collide with GCC's internal (host)
+# headers, e.g. regs.h. Make sure the local libgcc headers still
+# prevail (e.g. unwind.h).
+LIBGCC2_INCLUDES = -nostdinc \
+  -I. -I$(VSB_DIR)/h -I$(VSB_DIR)/share/h \
+  `case "/$(MULTIDIR)" in \
+      */mrtp*) echo -I$(VSB_DIR)/usr/h/public -I$(VSB_DIR)/usr/h ;; \
+      *) echo -I$(VSB_DIR)/krnl/h/system -I$(VSB_DIR)/krnl/h/public ;; \
+   esac`
+

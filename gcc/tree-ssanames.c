@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
+#include "cfgloop.h"
+#include "tree-scalar-evolution.h"
 
 /* Rewriting a function into SSA form can create a huge number of SSA_NAMEs,
    many of which may be thrown away shortly after their creation if jumps
@@ -241,6 +243,9 @@ verify_ssaname_freelists (struct function *fun)
 void
 flush_ssaname_freelist (void)
 {
+  /* If there were any SSA names released reset the SCEV cache.  */
+  if (! vec_safe_is_empty (FREE_SSANAMES_QUEUE (cfun)))
+    scev_reset_htab ();
   vec_safe_splice (FREE_SSANAMES (cfun), FREE_SSANAMES_QUEUE (cfun));
   vec_safe_truncate (FREE_SSANAMES_QUEUE (cfun), 0);
 }
@@ -320,11 +325,14 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
   return t;
 }
 
-/* Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name NAME.  */
+/* Helper function for set_range_info.
+
+   Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name
+   NAME.  */
 
 void
-set_range_info (tree name, enum value_range_type range_type,
-		const wide_int_ref &min, const wide_int_ref &max)
+set_range_info_raw (tree name, enum value_range_type range_type,
+		    const wide_int_ref &min, const wide_int_ref &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);
@@ -360,6 +368,34 @@ set_range_info (tree name, enum value_range_type range_type,
     }
 }
 
+/* Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name
+   NAME while making sure we don't store useless range info.  */
+
+void
+set_range_info (tree name, enum value_range_type range_type,
+		const wide_int_ref &min, const wide_int_ref &max)
+{
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+
+  /* A range of the entire domain is really no range at all.  */
+  tree type = TREE_TYPE (name);
+  if (min == wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type))
+      && max == wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type)))
+    {
+      range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+      if (ri == NULL)
+	return;
+      if (ri->get_nonzero_bits () == -1)
+	{
+	  ggc_free (ri);
+	  SSA_NAME_RANGE_INFO (name) = NULL;
+	  return;
+	}
+    }
+
+  set_range_info_raw (name, range_type, min, max);
+}
+
 
 /* Gets range information MIN, MAX and returns enum value_range_type
    corresponding to tree ssa_name NAME.  enum value_range_type returned
@@ -374,7 +410,7 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
 
   /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
      with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
-  if (!ri || (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (name)))
+  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
 	      > 2 * HOST_BITS_PER_WIDE_INT))
     return VR_VARYING;
 
@@ -419,20 +455,29 @@ set_nonzero_bits (tree name, const wide_int_ref &mask)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   if (SSA_NAME_RANGE_INFO (name) == NULL)
-    set_range_info (name, VR_RANGE,
-		    TYPE_MIN_VALUE (TREE_TYPE (name)),
-		    TYPE_MAX_VALUE (TREE_TYPE (name)));
+    {
+      if (mask == -1)
+	return;
+      set_range_info_raw (name, VR_RANGE,
+			  wi::to_wide (TYPE_MIN_VALUE (TREE_TYPE (name))),
+			  wi::to_wide (TYPE_MAX_VALUE (TREE_TYPE (name))));
+    }
   range_info_def *ri = SSA_NAME_RANGE_INFO (name);
   ri->set_nonzero_bits (mask);
 }
 
 /* Return a widest_int with potentially non-zero bits in SSA_NAME
-   NAME, or -1 if unknown.  */
+   NAME, the constant for INTEGER_CST, or -1 if unknown.  */
 
 wide_int
 get_nonzero_bits (const_tree name)
 {
-  unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
+  if (TREE_CODE (name) == INTEGER_CST)
+    return wi::to_wide (name);
+
+  /* Use element_precision instead of TYPE_PRECISION so complex and
+     vector types get a non-zero precision.  */
+  unsigned int precision = element_precision (TREE_TYPE (name));
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
@@ -522,7 +567,7 @@ release_ssa_name_fn (struct function *fn, tree var)
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
       use_operand_p imm = &(SSA_NAME_IMM_USE_NODE (var));
 
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	insert_debug_temp_for_var_def (NULL, var);
 
       if (flag_checking)
@@ -603,13 +648,16 @@ set_ptr_info_alignment (struct ptr_info_def *pi, unsigned int align,
    misalignment by INCREMENT modulo its current alignment.  */
 
 void
-adjust_ptr_info_misalignment (struct ptr_info_def *pi,
-			      unsigned int increment)
+adjust_ptr_info_misalignment (struct ptr_info_def *pi, poly_uint64 increment)
 {
   if (pi->align != 0)
     {
-      pi->misalign += increment;
-      pi->misalign &= (pi->align - 1);
+      increment += pi->misalign;
+      if (!known_misalignment (increment, pi->align, &pi->misalign))
+	{
+	  pi->align = known_alignment (increment);
+	  pi->misalign = 0;
+	}
     }
 }
 

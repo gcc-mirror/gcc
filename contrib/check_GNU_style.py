@@ -21,6 +21,7 @@
 # <http://www.gnu.org/licenses/>.  */
 
 import argparse
+import sys
 from check_GNU_style_lib import check_GNU_style_file
 
 def main():
@@ -30,6 +31,13 @@ def main():
         help = 'Display format',
         choices = ['stdio', 'quickfix'])
     args = parser.parse_args()
-    check_GNU_style_file(args.file, args.format)
+    filename = args.file
+    format = args.format
+
+    if filename == '-':
+        check_GNU_style_file(sys.stdin, None, format)
+    else:
+        with open(filename, 'rb') as diff_file:
+            check_GNU_style_file(diff_file, 'utf-8', format)
 
 main()

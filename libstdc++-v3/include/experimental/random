@@ -1,6 +1,6 @@
 // <experimental/random> -*- C++ -*-
 
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,10 +33,10 @@
 #include <experimental/bits/lfts_config.h>
 
 namespace std {
-namespace experimental {
-inline namespace fundamentals_v2 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace experimental {
+inline namespace fundamentals_v2 {
 #define __cpp_lib_experimental_randint 201511
 
   inline std::default_random_engine&
@@ -71,10 +71,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     _S_randint_engine().seed(__value);
   }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif

@@ -1,6 +1,6 @@
 /* Prototypes and data structures used for implementing functions for
    finding files relative to GCC binaries.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,7 +41,6 @@ extern void find_file_set_debug (bool);
 extern char *find_a_file (struct path_prefix *, const char *, int);
 extern void add_prefix (struct path_prefix *, const char *);
 extern void add_prefix_begin (struct path_prefix *, const char *);
-extern void remove_prefix (const char *prefix, struct path_prefix *);
 extern void prefix_from_env (const char *, struct path_prefix *);
 extern void prefix_from_string (const char *, struct path_prefix *);
 

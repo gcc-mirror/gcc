@@ -13,6 +13,6 @@ program streamtest
   anarray = 0.0
   read(10, pos=1) anarray
   anarray = abs(anarray - 3.14159)
-  if (any(anarray.gt.0.00001)) call abort()
+  if (any(anarray.gt.0.00001)) STOP 1
   close(10,status="delete")
 end program streamtest

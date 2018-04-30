@@ -1,6 +1,6 @@
 // { dg-do run { target fpic } }
 // { dg-options "-fPIC" }
-// { dg-skip-if "requires unsupported run-time relocation" { spu-*-* } { "*" } { "" } }
+// { dg-skip-if "requires unsupported run-time relocation" { spu-*-* } }
 // Test that non-variadic function calls using thunks and PIC work right.
 
 struct A {
@@ -40,10 +40,13 @@ void* test(MMixin& anExample)
   return anExample.MixinFunc(1,A(0)).p;
 }
 
+int
 main ()
 {
   CExample c;
 
   if (test(c) != &c)
     return 1;
+
+  return 0;
 }

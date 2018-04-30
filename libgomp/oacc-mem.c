@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -514,11 +514,33 @@ acc_present_or_create (void *h, size_t s)
   return present_create_copy (FLAG_PRESENT | FLAG_CREATE, h, s);
 }
 
+/* acc_pcreate is acc_present_or_create by a different name.  */
+#ifdef HAVE_ATTRIBUTE_ALIAS
+strong_alias (acc_present_or_create, acc_pcreate)
+#else
+void *
+acc_pcreate (void *h, size_t s)
+{
+  return acc_present_or_create (h, s);
+}
+#endif
+
 void *
 acc_present_or_copyin (void *h, size_t s)
 {
   return present_create_copy (FLAG_PRESENT | FLAG_CREATE | FLAG_COPY, h, s);
 }
+
+/* acc_pcopyin is acc_present_or_copyin by a different name.  */
+#ifdef HAVE_ATTRIBUTE_ALIAS
+strong_alias (acc_present_or_copyin, acc_pcopyin)
+#else
+void *
+acc_pcopyin (void *h, size_t s)
+{
+  return acc_present_or_copyin (h, s);
+}
+#endif
 
 #define FLAG_COPYOUT (1 << 0)
 

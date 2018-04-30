@@ -1,5 +1,5 @@
 /* Generic implementation of the EOSHIFT intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,12 +26,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <string.h>
 
-/* TODO: make this work for large shifts when
-   sizeof(int) < sizeof (index_type).  */
 
 static void
 eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
-	  int shift, const char * pbound, int which, index_type size,
+	  index_type shift, const char * pbound, int which, index_type size,
 	  const char *filler, index_type filler_len)
 {
   /* r.* indicates the return array.  */
@@ -53,7 +51,8 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
   index_type len;
   index_type n;
   index_type arraysize;
-
+  bool do_blocked;
+  
   /* The compiler cannot figure out that these are set, initialize
      them to avoid warnings.  */
   len = 0;
@@ -67,7 +66,7 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
       int i;
 
       ret->offset = 0;
-      ret->dtype = array->dtype;
+      GFC_DTYPE_COPY(ret,array);
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
@@ -102,38 +101,93 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
   count[0] = 0;
   sstride[0] = -1;
   rstride[0] = -1;
-  n = 0;
-  for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)
-    {
-      if (dim == which)
-        {
-          roffset = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
-          if (roffset == 0)
-            roffset = size;
-          soffset = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
-          if (soffset == 0)
-            soffset = size;
-          len = GFC_DESCRIPTOR_EXTENT(array,dim);
-        }
-      else
-        {
-          count[n] = 0;
-          extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
-          rstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
-          sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
-          n++;
-        }
-    }
-  if (sstride[0] == 0)
-    sstride[0] = size;
-  if (rstride[0] == 0)
-    rstride[0] = size;
 
-  dim = GFC_DESCRIPTOR_RANK (array);
-  rstride0 = rstride[0];
-  sstride0 = sstride[0];
-  rptr = ret->base_addr;
-  sptr = array->base_addr;
+  if (which > 0)
+    {
+      /* Test if both ret and array are contiguous.  */
+      index_type r_ex, a_ex;
+      r_ex = 1;
+      a_ex = 1;
+      do_blocked = true;
+      dim = GFC_DESCRIPTOR_RANK (array);
+      for (n = 0; n < dim; n ++)
+	{
+	  index_type rs, as;
+	  rs = GFC_DESCRIPTOR_STRIDE (ret, n);
+	  if (rs != r_ex)
+	    {
+	      do_blocked = false;
+	      break;
+	    }
+	  as = GFC_DESCRIPTOR_STRIDE (array, n);
+	  if (as != a_ex)
+	    {
+	      do_blocked = false;
+	      break;
+	    }
+	  r_ex *= GFC_DESCRIPTOR_EXTENT (ret, n);
+	  a_ex *= GFC_DESCRIPTOR_EXTENT (array, n);
+	}
+    }
+  else
+    do_blocked = false;
+
+  n = 0;
+
+  if (do_blocked)
+    {
+      /* For contiguous arrays, use the relationship that
+
+         dimension(n1,n2,n3) :: a, b
+	 b = eoshift(a,sh,3)
+
+         can be dealt with as if
+
+	 dimension(n1*n2*n3) :: an, bn
+	 bn = eoshift(a,sh*n1*n2,1)
+
+	 so a block move can be used for dim>1.  */
+      len = GFC_DESCRIPTOR_STRIDE(array, which)
+	* GFC_DESCRIPTOR_EXTENT(array, which);
+      shift *= GFC_DESCRIPTOR_STRIDE(array, which);
+      roffset = size;
+      soffset = size;
+      for (dim = which + 1; dim < GFC_DESCRIPTOR_RANK (array); dim++)
+	{
+	  count[n] = 0;
+	  extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
+	  rstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
+	  sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
+	  n++;
+	}
+      count[n] = 0;
+      dim = GFC_DESCRIPTOR_RANK (array) - which;
+    }
+  else
+    {
+      for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)
+	{
+	  if (dim == which)
+	    {
+	      roffset = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
+	      if (roffset == 0)
+		roffset = size;
+	      soffset = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
+	      if (soffset == 0)
+		soffset = size;
+	      len = GFC_DESCRIPTOR_EXTENT(array,dim);
+	    }
+	  else
+	    {
+	      count[n] = 0;
+	      extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
+	      rstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
+	      sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
+	      n++;
+	    }
+	}
+      dim = GFC_DESCRIPTOR_RANK (array);
+    }
 
   if ((shift >= 0 ? shift : -shift) > len)
     {
@@ -148,6 +202,11 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
 	len = len + shift;
     }
 
+  rstride0 = rstride[0];
+  sstride0 = sstride[0];
+  rptr = ret->base_addr;
+  sptr = array->base_addr;
+
   while (rptr)
     {
       /* Do the shift for this dimension.  */
@@ -161,12 +220,23 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
           src = sptr;
           dest = &rptr[-shift * roffset];
         }
-      for (n = 0; n < len; n++)
-        {
-          memcpy (dest, src, size);
-          dest += roffset;
-          src += soffset;
-        }
+      /* If the elements are contiguous, perform a single block move.  */
+
+      if (soffset == size && roffset == size)
+	{
+	  size_t chunk = size * len;
+	  memcpy (dest, src, chunk);
+	  dest += chunk;
+	}
+      else
+	{
+	  for (n = 0; n < len; n++)
+	    {
+	      memcpy (dest, src, size);
+	      dest += roffset;
+	      src += soffset;
+	    }
+	}
       if (shift >= 0)
         {
           n = shift;

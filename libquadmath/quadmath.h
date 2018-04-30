@@ -29,7 +29,11 @@ extern "C" {
 
 /* Define the complex type corresponding to __float128
    ("_Complex __float128" is not allowed) */
+#if (!defined(_ARCH_PPC)) || defined(__LONG_DOUBLE_IEEE128__)
 typedef _Complex float __attribute__((mode(TC))) __complex128;
+#else
+typedef _Complex float __attribute__((mode(KC))) __complex128;
+#endif
 
 #ifdef __cplusplus
 # define __quadmath_throw throw ()

@@ -1,4 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-ifunc "" } */
 
 __attribute__((target_clones("avx","arch=slm","default")))
 __attribute__((target("avx")))

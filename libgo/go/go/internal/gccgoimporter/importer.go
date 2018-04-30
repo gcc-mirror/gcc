@@ -8,12 +8,14 @@ package gccgoimporter // import "go/internal/gccgoimporter"
 import (
 	"bytes"
 	"debug/elf"
+	"debug/xcoff"
 	"fmt"
 	"go/types"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -66,11 +68,12 @@ const (
 	gccgov2Magic    = "v2;\n"
 	goimporterMagic = "\n$$ "
 	archiveMagic    = "!<ar"
+	aixbigafMagic   = "<big"
 )
 
-// Opens the export data file at the given path. If this is an ELF file,
+// Opens the export data file at the given path. If this is an object file,
 // searches for and opens the .go_export section. If this is an archive,
-// reads the export data from the first member, which is assumed to be an ELF file.
+// reads the export data from the first member, which is assumed to be an object file.
 // This is intended to replicate the logic in gofrontend.
 func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err error) {
 	f, err := os.Open(fpath)
@@ -90,43 +93,60 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 		return
 	}
 
-	var elfreader io.ReaderAt
+	var objreader io.ReaderAt
 	switch string(magic[:]) {
 	case gccgov1Magic, gccgov2Magic, goimporterMagic:
 		// Raw export data.
 		reader = f
 		return
 
-	case archiveMagic:
+	case archiveMagic, aixbigafMagic:
 		// TODO(pcc): Read the archive directly instead of using "ar".
 		f.Close()
 		closer = nil
+		var cmd *exec.Cmd
 
-		cmd := exec.Command("ar", "p", fpath)
+		if runtime.GOOS == "aix" && runtime.GOARCH == "ppc64" {
+			// AIX puts both 32-bit and 64-bit objects in the same archive.
+			// Tell the AIX "ar" command to only care about 64-bit objects.
+			cmd = exec.Command("ar", "-X64", "p", fpath)
+		} else {
+			cmd = exec.Command("ar", "p", fpath)
+		}
 		var out []byte
 		out, err = cmd.Output()
 		if err != nil {
 			return
 		}
 
-		elfreader = bytes.NewReader(out)
+		objreader = bytes.NewReader(out)
 
 	default:
-		elfreader = f
+		objreader = f
 	}
 
-	ef, err := elf.NewFile(elfreader)
-	if err != nil {
+	ef, err := elf.NewFile(objreader)
+	if err == nil {
+		sec := ef.Section(".go_export")
+		if sec == nil {
+			err = fmt.Errorf("%s: .go_export section not found", fpath)
+			return
+		}
+		reader = sec.Open()
 		return
 	}
 
-	sec := ef.Section(".go_export")
-	if sec == nil {
-		err = fmt.Errorf("%s: .go_export section not found", fpath)
+	xf, err := xcoff.NewFile(objreader)
+	if err == nil {
+		sdat := xf.CSect(".go_export")
+		if sdat == nil {
+			err = fmt.Errorf("%s: .go_export section not found", fpath)
+			return
+		}
+		reader = bytes.NewReader(sdat)
 		return
 	}
 
-	reader = sec.Open()
 	return
 }
 
@@ -137,25 +157,53 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 // the map entry. Otherwise, the importer must load the package data for the
 // given path into a new *Package, record it in imports map, and return the
 // package.
-type Importer func(imports map[string]*types.Package, path string) (*types.Package, error)
+type Importer func(imports map[string]*types.Package, path, srcDir string, lookup func(string) (io.ReadCloser, error)) (*types.Package, error)
 
 func GetImporter(searchpaths []string, initmap map[*types.Package]InitData) Importer {
-	return func(imports map[string]*types.Package, pkgpath string) (pkg *types.Package, err error) {
+	return func(imports map[string]*types.Package, pkgpath, srcDir string, lookup func(string) (io.ReadCloser, error)) (pkg *types.Package, err error) {
+		// TODO(gri): Use srcDir.
+		// Or not. It's possible that srcDir will fade in importance as
+		// the go command and other tools provide a translation table
+		// for relative imports (like ./foo or vendored imports).
 		if pkgpath == "unsafe" {
 			return types.Unsafe, nil
 		}
 
-		fpath, err := findExportFile(searchpaths, pkgpath)
-		if err != nil {
-			return
+		var reader io.ReadSeeker
+		var fpath string
+		if lookup != nil {
+			if p := imports[pkgpath]; p != nil && p.Complete() {
+				return p, nil
+			}
+			rc, err := lookup(pkgpath)
+			if err == nil {
+				defer rc.Close()
+				rs, ok := rc.(io.ReadSeeker)
+				if !ok {
+					return nil, fmt.Errorf("gccgo importer requires lookup to return an io.ReadSeeker, have %T", rc)
+				}
+				reader = rs
+				fpath = "<lookup " + pkgpath + ">"
+				// Take name from Name method (like on os.File) if present.
+				if n, ok := rc.(interface{ Name() string }); ok {
+					fpath = n.Name()
+				}
+			}
 		}
+		if reader == nil {
+			fpath, err = findExportFile(searchpaths, pkgpath)
+			if err != nil {
+				return nil, err
+			}
 
-		reader, closer, err := openExportFile(fpath)
-		if err != nil {
-			return
-		}
-		if closer != nil {
-			defer closer.Close()
+			r, closer, err := openExportFile(fpath)
+			if err != nil {
+				return nil, err
+			}
+			if closer != nil {
+				defer closer.Close()
+			}
+			reader = r
 		}
 
 		var magic [4]byte

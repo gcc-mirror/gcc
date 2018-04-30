@@ -2,7 +2,9 @@
 
 STAGE2_CFLAGS += -flto=jobserver -frandom-seed=1
 STAGE3_CFLAGS += -flto=jobserver -frandom-seed=1
-STAGEprofile_CFLAGS += -fno-lto
+STAGEprofile_CFLAGS += -flto=jobserver -frandom-seed=1
+STAGEtrain_CFLAGS += -flto=jobserver -frandom-seed=1
+STAGEfeedback_CFLAGS += -flto=jobserver -frandom-seed=1
 
 # assumes the host supports the linker plugin
 LTO_AR = $$r/$(HOST_SUBDIR)/prev-gcc/gcc-ar$(exeext) -B$$r/$(HOST_SUBDIR)/prev-gcc/

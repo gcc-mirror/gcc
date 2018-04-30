@@ -1,1579 +1,185 @@
-2017-05-23  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
-	    Jonathan Wakely  <jwakely@redhat.com>
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
-	PR libstdc++/67578
-	* acinclude.m4: Bump libtool_VERSION.
-	* config/abi/pre/gnu.ver: Create GLIBCXX_3.4.24 with new symbol.
-	* config.h.in: Regenerate.
-	* configure: Regenerate.
-	* configure.ac: Add test for <linux/random.h>.
-	* doc/xml/manual/abi.xml: Document new library version.
-	* include/bits/random.h (random_device::entropy)
-	[_GLIBCXX_USE_RANDOM_TR1]: Add call to new _M_getentropy member.
-	(random_device::_M_getentropy): Declare.
-	* src/c++11/random.cc (random_device::_M_getentropy): Define.
-	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.24 to known
-	versions, and make it the latest version.
-
-2017-05-23  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
-
-	PR libstdc++/67214
-	* include/bits/locale_facets.tcc (num_get::_M_extract_int): Add
-	explicit conversion to avoid signed overflow.
-
-2017-05-19  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/80796
-	* include/bits/stl_algo.h (search): Add new overload for C++17.
-	* testsuite/25_algorithms/search/searcher.cc: New.
-
-2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/80478
-	* include/std/functional (_Mem_fn_traits_base): Add specializations
-	for noexcept member function types.
-	* testsuite/20_util/function_objects/mem_fn/80478.cc: New test.
-
-2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
-
-	* doc/xml/manual/policy_data_structures.xml: Fix typo.
-	* doc/xml/manual/test_policy_data_structures.xml: Likewise.
-	* doc/html/*: Regenerate.
-
-	* doc/xml/manual/abi.xml: Document latest library versions.
-	* doc/xml/manual/build_hacking.xml: Document requirement to update
-	abi.xml when bumping library versions.
-	* doc/html/*: Regenerate.
-
-2017-05-17  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/bits/refwrap.h: Fix Doxygen warning.
-	* include/bits/specfun.h: Likewise.
-	* include/bits/std_function.h: Likewise.
-	* include/bits/stl_algo.h (set_union, set_intersection)
-	(set_difference, set_symmetric_difference): Add Doxygen @param tags
-	for output iterator parameters.
-	* include/bits/stl_iterator.h (inserter): Add Doxygen @param tag for
-	iterator parameter.
-	* include/std/mutex (try_lock, lock): Change Mutex to Lockable in
-	Doxygen comments.
-
-2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Implement new C++ intrinsics __is_assignable and __is_constructible.
-	* include/std/type_traits (__do_is_static_castable_impl): Remove.
-	(__is_static_castable_impl, __is_static_castable_safe): Likewise.
-	(__is_static_castable, __do_is_direct_constructible_impl): Likewise.
-	(__is_direct_constructible_impl): Likewise.
-	(__is_direct_constructible_new_safe): Likewise.
-	(__is_base_to_derived_ref, __is_lvalue_to_rvalue_ref): Likewise.
-	(__is_direct_constructible_ref_cast): Likewise.
-	(__is_direct_constructible_new, __is_direct_constructible): Likewise.
-	(__do_is_nary_constructible_impl): Likewise.
-	(__is_nary_constructible_impl, __is_nary_constructible): Likewise.
-	(__is_constructible_impl): Likewise.
-	(is_constructible): Call the intrinsic.
-	(__is_assignable_helper): Remove.
-	(is_assignable): Call the intrinsic.
-	(is_trivially_constructible): Likewise.
-	(__is_trivially_copy_constructible_impl): New.
-	(is_trivially_copy_constructible): Use it.
-	(__is_trivially_move_constructible_impl): New.
-	(is_trivially_move_constructible): Use it.
-	(is_trivially_assignable): Call the intrinsic.
-	(__is_trivially_copy_assignable_impl): New.
-	(is_trivially_copy_assignable): Use it.
-	(__is_trivially_move_assignable_impl): New.
-	(is_trivially_move_assignable): Use it.
-	(testsuite/20_util/declval/requirements/1_neg.cc): Adjust.
-	(testsuite/20_util/is_trivially_copy_assignable/value.cc):
-	Add test for void.
-	(testsuite/20_util/is_trivially_copy_constructible/value.cc): Likewise.
-	(testsuite/20_util/is_trivially_move_assignable/value.cc): Likewise.
-	(testsuite/20_util/is_trivially_move_constructible/value.cc): Likewise.
-	(testsuite/20_util/make_signed/requirements/typedefs_neg.cc): Adjust.
-	(testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc):
-	Likewise.
-
-2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
-
-	* testsuite/experimental/source_location/1.cc: Change expected result
-	for source_location::current() used in default member initializer.
-
-	* doc/xml/manual/status_cxx2017.xml: Update status table.
-	* doc/html/*: Regenerate.
-	* include/Makefile.am: Add new header.
-	* include/Makefile.in: Regenerate.
-	* include/experimental/source_location: New header implementing N4519.
-	* testsuite/experimental/source_location/1.cc: New test.
-
-	PR libstdc++/80285
-	* include/bits/shared_ptr_base.h [!__cpp_rtti] (type_info): Declare
-	outside versioned namespace.
-
-	* configure: Regenerate.
-
-2017-05-16  Marc Glisse  <marc.glisse@inria.fr>
-
-	* include/std/optional (_Optional_base::_M_get): Check precondition.
-	* testsuite/20_util/optional/cons/value_neg.cc: Update line numbers.
-
-2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
-
-	* doc/xml/manual/appendix_contributing.xml: Link to test docs and
-	note higher DejaGnu version requirement.
-	* doc/html/*: Regenerate.
-
-	* doc/xml/manual/appendix_contributing.xml: Link to the list of bad
-	identifiers.
-	* doc/html/*: Regenerate.
-
-2017-05-15  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/80761
-	* include/bits/node_handle.h (_Node_insert_return): Reorder members.
-	(tuple_size, tuple_element): Remove partial specializations.
-	* include/bits/stl_tree.h (_Rb_tree::insert_return_type): Use
-	const_iterator for std::set.
-	* testsuite/23_containers/map/modifiers/extract.cc: New.
-	* testsuite/23_containers/set/modifiers/extract.cc: New.
-	* testsuite/23_containers/unordered_map/modifiers/extract.cc: New.
-	* testsuite/23_containers/unordered_set/modifiers/extract.cc: New.
-
-2017-05-12  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/78939
-	* include/std/utility (tuple_size<cv T>): Only define partial
-	specializations when tuple_size<T>::value is valid.
-	* testsuite/20_util/tuple/78939.cc: New.
-	* testsuite/20_util/tuple/cv_tuple_size_neg.cc: New.
-
-2017-05-11  François Dumont  <fdumont@gcc.gnu.org>
-
-	* include/bits/stl_tree.h [_GLIBCXX_INLINE_VERSION]
-	(_Rb_tree_impl<>): Remove _Is_pod_comparator
-	template parameter.
-
-	* include/debug/formatter.h [_GLIBCXX_INLINE_VERSION]
-	(__gnu_debug::_Error_formatter::_Parameter::_M_print_field): Remove.
-	(__gnu_debug::_Error_formatter::_Parameter::_M_print_description):
-	Remove.
-	(__gnu_debug::_Error_formatter::_M_format_word): Remove.
-	(__gnu_debug::_Error_formatter::_M_print_word): Remove.
-	(__gnu_debug::_Error_formatter::_M_print_string): Remove.
-	(__gnu_debug::_Error_formatter::_M_get_max_length): Remove.
-	* src/c++11/debug.cc: Adapt.
-	* config/abi/pre/gnu-versioned-namespace.ver: Adapt.
-
-2017-05-11  Jonathan Wakely  <jwakely@redhat.com>
-
-	* doc/xml/manual/allocator.xml: Fix ViewCVS URLs.
-	* doc/xml/manual/mt_allocator.xml: Likewise.
-	* doc/html/*: Regenerate.
-
-	PR libstdc++/80285
-	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti): Define
-	function to get unique fake std::type_info reference.
-	(_Sp_counted_ptr_inplace::_M_get_deleter) [!__cpp_rtti]: Compare to
-	_S_ti() fake reference.
-	(__shared_ptr(_Sp_make_shared_tag, const Alloc&, Args&&...)): Share
-	single implementation with or without RTTI enable.
-	[!__cpp_rtti]: Pass fake reference to _M_get_deleter.
-	* testsuite/20_util/shared_ptr/creation/alloc.cc: Change expected
-	allocation and deallocation counts.
-	* testsuite/20_util/shared_ptr/creation/single_allocation.cc: New.
-	* testsuite/20_util/shared_ptr/creation/single_allocation_no_rtti.cc:
-	New.
-
-2017-05-10  François Dumont  <fdumont@gcc.gnu.org>
-
-	Bump version namespace.
-	* config/abi/pre/gnu-versioned-namespace.ver: Bump version namespace
-	from __7 to __8. Bump GLIBCXX_7.0 to GLIBCXX_8.0.
-	* acinclude.m4 (libtool_VERSION): Bump to 8:0:0.
-	* include/bits/c++config: Adapt.
-	* include/bits/regex.h: Adapt.
-	* include/experimental/bits/fs_fwd.h: Adapt.
-	* include/experimental/bits/lfts_config.h: Adapt.
-	* include/std/variant: Adapt.
-	* python/libstdcxx/v6/printers.py: Adapt.
-	* testsuite/libstdc++-prettyprinters/48362.cc: Adapt.
-
-	* include/bits/stl_algobase.h (std::__iter_swap<false>): Remove
-	_GLIBCXX_MOVE usage.
-
-2017-05-09  Jason Merrill  <jason@redhat.com>
-
-	* testsuite/24_iterators/container_access.cc (test03): Make il3 static.
-
-2017-05-08  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/std/optional: Use a separate static_assert per condition.
-	* testsuite/20_util/optional/cons/value_neg.cc: Update dg-error line
-	numbers.
-
-	* doc/xml/manual/mt_allocator.xml: Clarify deallocation behaviour.
-	* doc/html/*: Regenerate.
-
-2017-05-02  Hugo Beauzée-Luyssen <hugo@beauzee.fr>
-
-	PR libstdc++/69506
-	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_USE_WEAK_REF): Define.
-
-2017-04-29  François Dumont  <fdumont@gcc.gnu.org>
-
-	* testsuite/libstdc++-prettyprinters/48362.cc: Replace a regexp-test
-	by a note-test.
-
-2017-04-28  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/80553
-	* include/bits/stl_construct.h (_Destroy, _Destroy_n): Add static
-	assertions to ensure type is destructible.
-	(destroy_at, destroy, destroy_n): Move from stl_uninitialized.h.
-	* include/bits/stl_uninitialized.h (destroy_at, destroy, destroy_n):
-	Move to stl_construct.h.
-	* testsuite/20_util/specialized_algorithms/memory_management_tools/
-	destroy_neg.cc: New test.
-	* testsuite/23_containers/vector/cons/destructible_neg.cc: New test.
-
-	* testsuite/17_intro/headers/c++1998/stdc++_assert_neg.cc: Remove
-	superfluous "" in dg-error.
-
-2017-04-28  Tom de Vries  <tom@codesourcery.com>
-
-	* testsuite/17_intro/headers/c++1998/stdc++_assert_neg.cc: Remove
-	superfluous '{ target *-*-* }' in dg-(error|warning|message|bogus).
-
-2017-04-27  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/ext/pb_ds/detail/list_update_map_/iterators_fn_imps.hpp
-	(PB_DS_CLASS_C_DEC::end()): Remove redundant const in cast type.
-	* testsuite/util/testsuite_rng.h (twister_rand_gen::get_prob()):
-	Likewise.
-
-2017-04-26  Jonathan Wakely  <jwakely@redhat.com>
-
-	* testsuite/23_containers/deque/allocator/move_assign-2.cc: Improve
-	comment. Ensure first test works because allocator type propagates and
-	not because is_always_equal is true.
-	* testsuite/23_containers/vector/52591.cc: Likewise. Restore original
-	testcase that instantiates the move-assignment operator.
-
-2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/80506
-	* include/bits/random.tcc (gamma_distribution::operator()): Fix magic
-	number used in loop condition.
-
-	PR libstdc++/80504
-	* include/bits/refwrap.h (ref, cref): Qualify calls.
-	* testsuite/20_util/reference_wrapper/80504.cc: New test.
-
-	PR libstdc++/80493
-	* include/experimental/optional (optional::swap): Fix exception
-	specification.
-
-2017-04-21  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/80316
-	* include/std/future (_State_baseV2::_Setter::operator()): Remove
-	_S_check calls that are done after the pointer to the shared state is
-	already dereferenced.
-	(_State_baseV2::_Setter<_Res, void>): Define specialization for void
-	as partial specialization so it can be defined within the definition
-	of _State_baseV2.
-	(_State_baseV2::__setter): Call _S_check.
-	(_State_baseV2::__setter(promise<void>*)): Add overload for use by
-	promise<void>::set_value and promise<void>::set_value_at_thread_exit.
-	(promise<T>, promise<T&>, promise<void>): Make _State a friend.
-	(_State_baseV2::_Setter<void, void>): Remove explicit specialization.
-	(promise<void>::set_value, promise<void>::set_value_at_thread_exit):
-	Use new __setter overload.
-	* testsuite/30_threads/promise/members/at_thread_exit2.cc: New test.
-	* testsuite/30_threads/promise/members/set_exception.cc: Test
-	promise<T&> and promise<void> specializations.
-	* testsuite/30_threads/promise/members/set_exception2.cc: Likewise.
-	Test for no_state error condition.
-	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
-
-	* include/backward/auto_ptr.h: Ignore deprecated warnings from use
-	of auto_ptr.
-	* include/bits/shared_ptr.h: Likewise.
-	* include/bits/shared_ptr_base.h: Likewise.
-	* include/bits/unique_ptr.h: Likewise.
-	* libstdc++-v3/testsuite/20_util/default_delete/48631_neg.cc: Adjust
-	dg-error lineno.
-	* libstdc++-v3/testsuite/20_util/default_delete/void_neg.cc: Likewise.
-	* libstdc++-v3/testsuite/20_util/unique_ptr/assign/48635_neg.cc:
-	Likewise.
-	* libstdc++-v3/testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc:
-	Likewise.
-
-2017-04-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
-
-	PR libstdc++/68397 std::tr1::expint fails ... long double arguments.
-	* include/tr1/exp_integral.tcc: Increase iteration limits.
-	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/
-	pr68397.cc: New test.
-	* testsuite/special_functions/14_expint/pr68397.cc: New test.
-
-2017-04-20  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79862
-	* include/std/atomic [!_GLIBCXX_USE_C99_STDINT_TR1] (atomic_int8_t)
-	(atomic_uint8_t, atomic_int16_t, atomic_uint16_t, atomic_int32_t,
-	(atomic_uint32_t, atomic_int64_t, atomic_uint64_t)
-	(atomic_int_least8_t, atomic_uint_least8_t, atomic_int_least16_t)
-	(atomic_uint_least16_t, atomic_int_least32_t, atomic_uint_least32_t)
-	(atomic_int_least64_t, atomic_uint_least64_t, atomic_int_fast8_t)
-	(atomic_uint_fast8_t, atomic_int_fast16_t, atomic_uint_fast16_t)
-	(atomic_int_fast32_t, atomic_uint_fast32_t, atomic_int_fast64_t)
-	(atomic_uint_fast64_t, atomic_intmax_t, atomic_uintmax_t): Don't
-	define.
-
-2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
-
-	* doc/xml/manual/abi.xml: Rephrase one of the references to the
-	Itanium C++ ABI.
-	* doc/xml/manual/test.xml: Document DejaGnu 1.5.3 requirement.
-	* doc/html/*: Regenerate.
-
-	* libsupc++/new: Update comment on #endif directive.
-
-	PR libstdc++/80448
-	* include/experimental/bits/fs_dir.h (directory_iterator)
-	(recursive_directory_iterator): Remove noexcept from defaulted
-	constructors.
-
-	PR libstdc++/80446
-	* include/std/type_traits (is_aggregate): Change __has_builtin checks.
-	* libsupc++/new (launder): Likewise.
-
-2017-04-18  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/std/functional (default_searcher, __boyer_moore_array_base)
-	(__is_std_equal_to, __boyer_moore_base_t, boyer_moore_searcher)
-	(boyer_moore_horspool_searcher): Remove redundant namespace
-	qualification.
-	(default_searcher::operator()): Construct return value early and
-	advance second member in-place.
-	(boyer_moore_horspool_searcher::operator()): Increment random access
-	iterator directly instead of using std::next.
-	(boyer_moore_searcher::operator()): Fix return value.
-	* testsuite/20_util/function_objects/searchers.cc: Check both parts
-	of return values.
-
-2017-04-12  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/faq.xml: Update reference link to C++ ABI for Itanium.
-	* doc/xml/manual/abi.xml. Ditto (thrice).
-
-2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
-
-	* doc/xml/manual/status_cxx2017.xml: Remove duplicate table entry.
-	* doc/html/*: Regenerate.
-
-	* testsuite/20_util/reference_wrapper/invoke.cc: Uncomment tests
-	that no longer fail.
-
-	* include/bits/ios_base.h: Correct comment.
-	* testsuite/util/testsuite_hooks.h: Likewise.
-
-	* doc/xml/manual/status_cxx2017.xml: Update C++17 status table.
-	* doc/xml/manual/appendix_contributing.xml (contrib.organization): Add
-	directories for debug, parallel and profile headers.
-	* doc/html/*: Regenerate.
-
-	* include/bits/char_traits.h (__gnu_cxx::char_traits): Add
-	_GLIBCXX14_CONSTEXPR on assign, compare, find, and length.
-	(std::char_traits<char>, std::char_traits<wchar_t>): Add
-	_GLIBCXX17_CONSTEXPR on assign.
-	(std::char_traits<char16_t>, std::char_traits<char32_t>): Add
-	_GLIBCXX17_CONSTEXPR on assign, compare, find, and length.
-	* testsuite/21_strings/char_traits/requirements/
-	constexpr_functions_c++17.cc: New test.
-
-2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	PR libstdc++/79141
-	* include/bits/stl_pair.h (__nonesuch_no_braces): New.
-	(operator=(typename conditional<
-	__and_<is_copy_assignable<_T1>,
-	is_copy_assignable<_T2>>::value,
-	const pair&, const __nonesuch&>::type)): Change __nonesuch
-	to __nonesuch_no_braces.
-	(operator=(typename conditional<
-	__not_<__and_<is_copy_assignable<_T1>,
-	is_copy_assignable<_T2>>>::value,
-	const pair&, const __nonesuch&>::type)): Likewise.
-	(operator=(typename conditional<
-	__and_<is_move_assignable<_T1>,
-	is_move_assignable<_T2>>::value,
-	pair&&, __nonesuch&&>::type)): Likewise.
-	* testsuite/20_util/pair/79141.cc: New.
-
-2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Implement std::is_aggregate.
-	* include/std/type_traits (is_aggregate, is_aggregate_v): New.
-	* testsuite/20_util/is_aggregate/requirements/explicit_instantiation.cc:
-	New.
-	* testsuite/20_util/is_aggregate/requirements/typedefs.cc: Likewise.
-	* testsuite/20_util/is_aggregate/value.cc: Likewise.
-
-2017-03-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Adjust optional's pretty printer for LWG 2900.
-	* python/libstdcxx/v6/printers.py (StdExpOptionalPrinter.__init__):
-	Look at the nested payload in case of non-experimental optional.
-
-2017-03-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Implement LWG 2900, The copy and move constructors
-	of optional are not constexpr.
-	* include/std/optional (_Optional_payload): New.
-	(_Optional_base): Remove the bool parameter.
-	(_Optional_base<_Tp, false>): Remove.
-	(_Optional_base()): Adjust.
-	(_Optional_base(nullopt_t)): Likewise.
-	(_Optional_base(in_place_t, _Args&&...)): Likewise.
-	(_Optional_base(in_place_t, initializer_list<_Up>, _Args&&...)):
-	Likewise.
-	(_Optional_base(const _Optional_base&)): Likewise.
-	(_Optional_base(_Optional_base&&)): Likewise.
-	(operator=(const _Optional_base&)): Likewise.
-	(operator=(_Optional_base&&)): Likewise.
-	(~_Optional_base()): Remove.
-	(_M_is_engaged()): Adjust.
-	(_M_get()): Likewise.
-	(_M_construct(_Args&&...)): Likewise.
-	(_M_destruct()): Likewise.
-	(_M_reset()): Likewise.
-	(_Optional_base::_Empty_byte): Remove.
-	(_Optional_base::_M_empty): Remove.
-	(_Optional_base::_M_payload): Adjust.
-	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
-	* testsuite/20_util/optional/constexpr/cons/value.cc: Add tests.
-
-2017-03-28  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/80137
-	* include/bits/random.tcc (generate_canonical): Use std::nextafter
-	or numeric_limits::epsilon() to reduce out-of-range values.
-	* testsuite/26_numerics/random/uniform_real_distribution/operators/
-	64351.cc: Verify complexity requirement is met.
-
-	* doc/xml/manual/abi.xml: Add xml:id anchor.
-	* doc/xml/manual/using.xml (manual.intro.using.macros): Document
-	_GLIBCXX_RELEASE. Link to new anchor for __GLIBCXX__ notes.
-	(concurrency.io.structure): Add markup.
-	* doc/html/*: Regenerate.
-
-	PR libstdc++/80229
-	* include/bits/shared_ptr_base.h
-	(__shared_ptr::_M_enable_shared_from_this_with): Change parameters to
-	non-const and then use remove_cv to get unqualified type.
-	* testsuite/20_util/enable_shared_from_this/members/const.cc: Don't
-	cast away constness on object created const.
-	* testsuite/20_util/shared_ptr/cons/80229.cc: New test.
-
-2017-03-26  Markus Trippelsdorf  <markus@trippelsdorf.de>
-
-	PR libstdc++/80183
-	* include/bits/stl_tree.h:
-	(_Rb_tree_header::_M_move_data(_Rb_tree_header&)): Also save _M_color.
-
-2017-03-23  Jonathan Wakely  <jwakely@redhat.com>
-
-	* testsuite/23_containers/array/tuple_interface/
-	tuple_element_debug_neg.cc: Adjust dg-error.
-	* testsuite/23_containers/list/operations/78389.cc: Fix less-than to
-	define a valid strict weak ordering.
-	* testsuite/23_containers/priority_queue/67085.cc: Disable test for
-	Debug Mode, due to debug checks making extra copies of predicate.
-	* testsuite/ext/pb_ds/regression/priority_queue_binary_heap-62045.cc:
-	Likewise.
-
-	* doc/xml/faq.xml: Add link.
-	* doc/xml/manual/backwards_compatibility.xml: Remove outdated
-	information on pre-ISO headers. Replace broken link to C++ FAQ Lite.
-	* doc/xml/manual/io.xml: Update broken link.
-	* doc/html/*: Regenerate.
-
-2017-03-23  Daniel Kruegler  <daniel.kruegler@gmail.com>
-
-	Implement LWG 2686, Why is std::hash specialized for error_code,
-	but not error_condition?
-	* include/std/system_error (hash<error_condition>): Define for C++17.
-	* testsuite/20_util/hash/operators/size_t.cc (hash<error_condition>):
-	Instantiate test for error_condition.
-	* testsuite/20_util/hash/requirements/explicit_instantiation.cc
-	(hash<error_condition>): Instantiate hash<error_condition>.
-
-	* include/bits/c++config (_GLIBCXX17_INLINE): Define.
-	* include/bits/regex_constants.h (All std::regex_constants constants):
-	Add _GLIBCXX17_INLINE as per P0607R0.
-	* include/bits/std_mutex.h (defer_lock, try_to_lock, adopt_lock):
-	Likewise.
-	* include/bits/stl_pair.h (piecewise_construct): Likewise.
-	* include/bits/uses_allocator.h (allocator_arg, uses_allocator_v)
-	(__is_uses_allocator_constructible_v)
-	(__is_nothrow_uses_allocator_constructible_v): Likewise.
-	* include/std/chrono (treat_as_floating_point_v): Likewise.
-	* include/std/functional (is_bind_expression_v, is_placeholder_v):
-	Likewise.
-	* include/std/optional (nullopt): Likewise.
-	* include/std/ratio (ratio_equal_v, ratio_not_equal_v, ratio_less_v)
-	ratio_less_equal_v, ratio_greater_v, ratio_greater_equal_v): Likewise.
-	* include/std/system_error (is_error_code_enum_v)
-	(is_error_condition_enum_v): Likewise.
-	* include/std/tuple (tuple_size_v, ignore): Likewise.
-	(ignore): Declare ignore constexpr as per LWG 2773, declare assignment
-	constexpr as per LWG 2933.
-	* include/std/type_traits (All variable templates): Add
-	_GLIBCXX17_INLINE as per P0607R0.
-	* include/std/variant (variant_size_v, variant_npos, __index_of_v)
-	(__tuple_count_v, __exactly_once): Likewise.
-	* testsuite/18_support/headers/new/synopsis.cc
-	(hardware_destructive_interference_size)
-	(hardware_constructive_interference_size): Likewise for commented-out
-	variables.
-	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Add new
-	test function for constexpr std::ignore (LWG 2773).
-	* testsuite/20_util/tuple/creation_functions/constexpr_cpp14.cc: New
-	test for LWG 2933.
-
-2017-03-22  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/bits/shared_ptr.h (shared_ptr, weak_ptr): Add deduction
-	guides for C++17.
-	* include/bits/std_function.h (function): Likewise.
-	* include/bits/stl_pair.h (pair): Likewise.
-	* include/debug/array (__gnu_debug::array): Likewise.
-	* include/std/array (array): Likewise.
-	* include/std/functional (make_default_searcher)
-	(make_boyer_moore_searcher, make_boyer_moore_horspool_searcher):
-	Remove generator functions.
-	* include/std/tuple (tuple): Add deduction guides.
-	* include/std/valarray (valarray): Likewise.
-	* testsuite/20_util/function_objects/searchers.cc: Adjust to use
-	class template argument deduction instead of generator functions.
-	* testsuite/20_util/function/cons/deduction.cc: New test.
-	* testsuite/20_util/optional/cons/deduction_guide.cc: Rename to ...
-	* testsuite/20_util/optional/cons/deduction.cc: ... here.
-	* testsuite/20_util/pair/cons/deduction.cc: New test.
-	* testsuite/20_util/shared_ptr/cons/deduction.cc: New test.
-	* testsuite/20_util/tuple/cons/deduction.cc: New test.
-	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust dg-error.
-	* testsuite/20_util/unique_ptr/cons/deduction_neg.cc: New test.
-	* testsuite/20_util/weak_ptr/cons/deduction.cc: New test.
-	* testsuite/23_containers/array/cons/deduction.cc: New test.
-	* testsuite/23_containers/array/cons/deduction_neg.cc: New test.
-	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
-	Adjust dg-error.
-	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Likewise.
-	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
-	Likewise.
-	* testsuite/26_numerics/valarray/deduction.cc: New test.
-	* testsuite/30_threads/lock_guard/cons/deduction.cc: New test.
-	* testsuite/30_threads/scoped_lock/cons/deduction.cc: New test.
-	* testsuite/30_threads/unique_lock/cons/deduction.cc: New test.
-
-2017-03-20  François Dumont  <fdumont@gcc.gnu.org>
-
-	* include/bits/stl_deque.h (deque): Access allocator value_type only if
-	concept checks are enabled.
-	* include/bits/stl_stack.h (stack): Likewise.
-	* include/bits/stl_vector.h (vector): Likewise.
-	* include/bits/stl_list.h (list): Likewise and check
-	_SGIAssignableConcept only in C++03.
-	* include/bits/stl_map.h (map): Likewise.
-	* include/bits/stl_set.h (set): Likewise.
-	* include/bits/stl_multimap.h (multimap): Likewise.
-	* include/bits/stl_multiset.h (multiset): Likewise.
-	* include/bits/stl_queue.h (queue, priority_queue): Likewise.
-
-2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/appendix_contributing.xml: Convert link to
-	ansi.org to https.
-	Update link to the C++ standard at ansi.org.
-
-	* doc/xml/faq.xml: Remove information redundant with the above;
-	instead add a reference.
-
-2017-03-17  Jonathan Wakely  <jwakely@redhat.com>
-
-	* src/c++11/codecvt.cc (range): Add non-type template parameter and
-	define oerloaded operators for reading and writing code units.
-	(range<Elem, false>): Define partial specialization for accessing
-	wide characters in potentially unaligned byte ranges.
-	(ucs2_span(const char16_t*, const char16_t*, ...))
-	(ucs4_span(const char16_t*, const char16_t*, ...)): Change parameters
-	to range<const char16_t, false> in order to avoid unaligned reads.
-	(__codecvt_utf16_base<char16_t>::do_out)
-	(__codecvt_utf16_base<char32_t>::do_out)
-	(__codecvt_utf16_base<wchar_t>::do_out): Use range specialization for
-	unaligned data to avoid unaligned writes.
-	(__codecvt_utf16_base<char16_t>::do_in)
-	(__codecvt_utf16_base<char32_t>::do_in)
-	(__codecvt_utf16_base<wchar_t>::do_in): Likewise for writes. Return
-	error if there are unprocessable trailing bytes.
-	(__codecvt_utf16_base<char16_t>::do_length)
-	(__codecvt_utf16_base<char32_t>::do_length)
-	(__codecvt_utf16_base<wchar_t>::do_length): Pass arguments of type
-	range<const char16_t, false> to span functions.
-	* testsuite/22_locale/codecvt/codecvt_utf16/misaligned.cc: New test.
-
-2017-03-16  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79980
-	* src/c++11/codecvt.cc (to_integer(codecvt_mode)): Fix target type.
-
-	PR libstdc++/80041
-	* src/c++11/codecvt.cc (__codecvt_utf16_base<wchar_t>::do_out)
-	(__codecvt_utf16_base<wchar_t>::do_in): Convert char arguments to
-	char16_t to work with UTF-16 instead of UTF-8.
-	* testsuite/22_locale/codecvt/codecvt_utf16/80041.cc: New test.
-
-	* src/c++11/codecvt.cc (codecvt<char16_t, char, mbstate_t>)
-	(codecvt<char32_t, char, mbstate_t>, __codecvt_utf8_base<char16_t>)
-	(__codecvt_utf8_base<char32_t>, __codecvt_utf8_base<wchar_t>)
-	(__codecvt_utf16_base<char16_t>, __codecvt_utf16_base<char32_t>)
-	(__codecvt_utf16_base<wchar_t>, __codecvt_utf8_utf16_base<char16_t>)
-	(__codecvt_utf8_utf16_base<char32_t>)
-	(__codecvt_utf8_utf16_base<wchar_t>): Fix do_encoding() and
-	do_max_length() return values.
-	* testsuite/22_locale/codecvt/codecvt_utf16/members.cc: New test.
-	* testsuite/22_locale/codecvt/codecvt_utf8/members.cc: New test.
-	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/members.cc: New test.
-
-	PR libstdc++/79980
-	* include/bits/locale_conv.h (__do_str_codecvt): Set __count on
-	error path.
-	* src/c++11/codecvt.cc (operator&=, operator|=, operator~): Overloads
-	for manipulating codecvt_mode values.
-	(read_utf16_bom): Compare input to BOM constants instead of integral
-	constants that depend on endianness.  Take mode parameter by
-	reference and adjust it, to distinguish between no BOM present and
-	UTF-16BE BOM present.
-	(ucs4_in, ucs2_span, ucs4_span): Adjust calls to read_utf16_bom.
-	(surrogates): New enumeration type.
-	(utf16_in, utf16_out): Add surrogates parameter to choose between
-	UTF-16 and UCS2 behaviour.
-	(utf16_span, ucs2_span): Use std::min not std::max.
-	(ucs2_out): Use std::min not std::max.  Disallow surrogate pairs.
-	(ucs2_in): Likewise. Adjust calls to read_utf16_bom.
-	* testsuite/22_locale/codecvt/codecvt_utf16/79980.cc: New test.
-	* testsuite/22_locale/codecvt/codecvt_utf8/79980.cc: New test.
-
-	PR libstdc++/79511
-	* src/c++11/codecvt.cc (write_utf16_code_point): Don't write 0xffff
-	as a surrogate pair.
-	(__codecvt_utf8_utf16_base<char32_t>::do_in): Use native endianness
-	for internal representation.
-	(__codecvt_utf8_utf16_base<wchar_t>::do_in): Likewise.
-	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/79511.cc: New test.
-
-	PR libstdc++/80064
-	* include/bits/stl_heap.h (__is_heap, push_heap, __adjust_heap)
-	(pop_heap, make_heap, sort_heap, is_heap_until, is_heap): Cope with
-	invalid instantiations using function types for _Compare argument.
-	* testsuite/25_algorithms/make_heap/80064.cc: New test.
-
-	PR libstdc++/67440
-	* python/libstdcxx/v6/printers.py (find_type): Avoid gdb.Type.name
-	for GDB 7.6 compatibility, use gdb.Type.unqualified instead.
-
-2017-03-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Implement LWG 2857, {variant,optional,any}::emplace should
-	return the constructed value.
-	* include/std/any (emplace(_Args&&...)): Change the return type and
-	return a reference to the constructed value.
-	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
-	* include/std/optional (emplace(_Args&&...)): Likewise.
-	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
-	* include/std/variant (emplace<_Tp>(_Args&&...)): Likewise.
-	(emplace<_Tp>(initializer_list<_Up>, _Args&&...)): Likewise.
-	(emplace<_Np>(_Args&&...)): Likewise.
-	(emplace<_Np>(initializer_list<_Up>, _Args&&...)): Likewise.
-	* testsuite/20_util/any/assign/emplace.cc: Add tests for
-	checking the return value of emplace.
-	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust.
-	* testsuite/20_util/optional/assignment/6.cc: Add tests for
-	checking the return value of emplace.
-	* testsuite/20_util/variant/run.cc: Likewise.
-
-2017-03-15  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
-
-	PR libstdc++/62045
-	* include/ext/pb_ds/qdetail/binary_heap_/binary_heap_.hpp
-	(is_heap): Remove.
-	(push_heap): Remove the wrong checking using is_heap.
-	(make_heap): Remove the assertion using is_heap.
-	* include/ext/pb_ds/detail/binary_heap_/insert_fn_imps.hpp
-	(modify): Ditto.
-	(resize_for_insert_if_needed): Add PB_DS_ASSERT_VALID after
-	calling make_heap.
-
-2017-03-15  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/62045
-	* testsuite/ext/pb_ds/regression/priority_queue_binary_heap-62045.cc:
-	New test.
-	* testsuite/ext/pb_ds/regression/priority_queues.cc: Fix copy&paste
-	error in comment.
-
-2017-03-15  Jonathan Wakely  <jwakely@redhat.com>
-
-	* acinclude.m4 (GLIBCXX_CHECK_S_ISREG_OR_S_IFREG): Fix typo in
-	comment.
-	* config.h.in: Regenerate.
-	* configure: Regenerate.
-	* doc/Makefile.in: Regenerate.
-
-2017-03-14  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79162
-	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
-	(basic_string<C,T,A>::operator=(basic_string_view<C,T>)): Replace
-	with a constrained template.
-	[!_GLIBCXX_USE_CXX11_ABI]
-	(basic_string<C,T,A>::operator=(basic_string_view<C,T>)): Likewise.
-	* testsuite/21_strings/basic_string/cons/char/79162.cc: New test.
-	* testsuite/21_strings/basic_string/cons/wchar_t/79162.cc: New test.
-
-2017-03-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	PR libstdc++/80034
-	* include/bits/list.tcc (merge(list&&)): Use const for the size_t
-	in the catch-block.
-	(merge(list&&, _StrictWeakOrdering)): Likewise.
-	* testsuite/23_containers/list/operations/80034.cc: New.
-
-2017-03-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Implement LWG 2806, Base class of bad_optional_access.
-	* include/std/optional (bad_optional_access):
-	Derive from std::exception.
-	(bad_optional_access::bad_optional_access): Adjust.
-	(bad_optional_access::what): New.
-	(__throw_bad_optional_access(const char*)):
-	Remove the parameter and adjust calls.
-	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
-	* testsuite/20_util/optional/typedefs.cc: Likewise.
-
-2017-03-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Implement LWG 2934, optional<const T> doesn't compare with T.
-	* include/std/optional
-	(operator==(const optional<_Tp>&, const optional<_Tp>&)):
-	Turn into operator==(const optional<_Tp>&, const optional<_Up>&).
-	(operator!=(const optional<_Tp>&, const optional<_Tp>&)):
-	Turn into operator!=(const optional<_Tp>&, const optional<_Up>&).
-	(operator<(const optional<_Tp>&, const optional<_Tp>&)):
-	Turn into operator<(const optional<_Tp>&, const optional<_Up>&.
-	(operator>(const optional<_Tp>&, const optional<_Tp>&)):
-	Turn into operator>(const optional<_Tp>&, const optional<_Up>&.
-	(operator<=(const optional<_Tp>&, const optional<_Tp>&)):
-	Turn into operator<=(const optional<_Tp>&, const optional<_Up>&).
-	(operator>=(const optional<_Tp>&, const optional<_Tp>&)):
-	Turn into operator>=(const optional<_Tp>&, const optional<_Up>&).
-	(operator==(const optional<_Tp>&, const _Tp&)):
-	Turn into operator==(const optional<_Tp>&, const _Up&).
-	(operator==(const _Tp&, const optional<_Tp>&)):
-	Turn into operator==(const _Up&, const optional<_Tp>&).
-	(operator!=(const optional<_Tp>&, const _Tp&)):
-	Turn into operator!=(const optional<_Tp>&, const _Up&).
-	(operator!=(const _Tp&, const optional<_Tp>&)):
-	Turn into operator!=(const _Up&, const optional<_Tp>&).
-	(operator<(const optional<_Tp>&, const _Tp&)):
-	Turn into operator<(const optional<_Tp>&, const _Up&).
-	(operator<(const _Tp&, const optional<_Tp>&)):
-	Turn into operator<(const _Up&, const optional<_Tp>&).
-	(operator>(const optional<_Tp>&, const _Tp&)):
-	Turn into operator>(const optional<_Tp>&, const _Up&).
-	(operator>(const _Tp&, const optional<_Tp>&)):
-	Turn into operator>(const _Up&, const optional<_Tp>&).
-	(operator<=(const optional<_Tp>&, const _Tp&)):
-	Turn into operator<=(const optional<_Tp>&, const _Up&).
-	(operator<=(const _Tp&, const optional<_Tp>&)):
-	Turn into operator<=(const _Up&, const optional<_Tp>&).
-	(operator>=(const optional<_Tp>&, const _Tp&)):
-	Turn into operator>=(const optional<_Tp>&, const _Up&).
-	(operator>=(const _Tp&, const optional<_Tp>&)):
-	Turn into operator>=(const _Up&, const optional<_Tp>&).
-	* testsuite/20_util/optional/relops/7.cc: New.
-
-2017-03-10  Jonathan Wakely  <jwakely@redhat.com>
-
-	* testsuite/17_intro/names.cc: Undefine macros that clash with
-	identifiers in AIX system headers.
-
-	* include/bits/invoke.h (__invoke): Use __invoke_result instead of
-	result_of, and __is_nothrow_invocable instead of
-	__is_nothrow_callable.
-	* include/bits/shared_ptr_base.h (__shared_ptr): Use __is_invocable
-	instead of __is_callable.
-	* include/std/functional (invoke): use invoke_result_t instead of
-	result_of_t and is_nothrow_invocable instead of is_nothrow_callable.
-	(_Not_fn): Use __invoke_result instead of result_of.
-	* include/std/type_traits (__result_of_memobj, __result_of_memfun):
-	Remove partial specializations for reference_wrapper types.
-	(__result_of_impl): Use __inv_unwrap to strip reference_wrapper.
-	(__invoke_result): Define replacement for result_of and then use it to
-	define result_of.
-	(__is_callable_impl, __is_callable, __is_nothrow_callable): Replace
-	with __is_invocable_impl, __is_invocable, and __is_nothrow_invocable
-	respectively.
-	(invoke_result, invoke_result_t): Define for C++17.
-	(is_callable, is_nothrow_callable): Replace with is_invocable,
-	is_invocable_r, is_nothrow_invocable, and is_nothrow_invocable_r.
-	(is_callable_v, is_nothrow_callable_v): Replace with is_invocable_v,
-	is_invocable_r_v, is_nothrow_invocable_v, and is_nothrow_invocable_r_v.
-	* include/std/variant (hash<variant<T...>>): Use is_nothrow_invocable_v
-	instead of is_nothrow_callable_v.
-	* testsuite/20_util/function_objects/invoke/59768.cc: Remove unused
-	main function.
-	* testsuite/20_util/function_objects/not_fn/1.cc: Use is_invocable
-	instead of is_callable.
-	* testsuite/20_util/is_callable/*: Rename directory and adjust tests
-	to use new traits.
-	* testsuite/20_util/is_nothrow_callable/*: Likewise.
-	* testsuite/20_util/optional/hash.cc: Use is_invocable_v instead of
-	is_callable.
-	* testsuite/20_util/variant/hash.cc: Likewise.
-
-2017-03-10  George Lander  <george.lander@arm.com>
-
-	* acinclude.m4 (glibcxx_cv_obsolete_isnan): Define
-	_GLIBCXX_INCLUDE_NEXT_C_HEADERS before including math.h.
-	* configure: Regenerate.
-
-2017-03-09  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/std/functional (_Not_fn): Define macro to simplify
-	repetitive function definitions.
-
-	* doc/xml/manual/status_cxx2017.xml: Document std::byte support.
-	* include/c_global/cstddef (std::byte): Define for C++17.
-	* testsuite/18_support/byte/global_neg.cc: New test.
-	* testsuite/18_support/byte/ops.cc: New test.
-	* testsuite/18_support/byte/requirements.cc: New test.
-
-2017-03-05  Jonathan Wakely  <jwakely@redhat.com>
-
-	* doc/xml/manual/status_cxx2017.xml: Document P0156R2 status.
-	* doc/html/*: Regenerate.
-	* include/std/mutex (scoped_lock): Implement new C++17 template.
-	* testsuite/30_threads/scoped_lock/cons/1.cc: New test.
-	* testsuite/30_threads/scoped_lock/requirements/
-	explicit_instantiation.cc: New test.
-	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc: New test.
-
-2017-03-02  Gerald Pfeifer  <gerald@pfeifer.com>
-	    François Dumont  <frs.dumont@gmail.com>
-	    Jonathan Wakely  <jwakely@redhat.com>
-
-	* doc/xml/manual/debug_mode.xml: Update and simplify note
-	on link- and run-time coexistence.
-
-2017-03-02  Jonathan Wakely  <jwakely@redhat.com>
-
-	* testsuite/17_intro/headers/names.cc: Rename to ...
-	* testsuite/17_intro/names.cc: ... here.
-
-	PR libstdc++/79789
-	* include/bits/hashtable_policy.h (__clp2): Use reserved names for
-	parameters and local variables.
-	* include/bits/ios_base.h (make_error_code, make_error_condition):
-	Likewise.
-	* include/bits/list.tcc (list::sort): Likewise.
-	* include/bits/mask_array.h (mask_array): Likewise.
-	* include/bits/regex.h (regex_token_iterator): Likewise.
-	* include/bits/slice_array.h (slice_array): Likewise.
-	* include/bits/stl_algo.h (__sample): Likewise.
-	* include/std/memory (undeclare_no_pointers): Likewise.
-	* include/std/type_traits (is_callable_v, is_nothrow_callable_v):
-	Likewise.
-	* libsupc++/exception_ptr.h (__dest_thunk): Likewise.
-	* testsuite/17_intro/headers/names.cc: New test.
-
-	PR libstdc++/79798
-	* include/std/functional (bind::_Res_type_impl): Fix incorrect use of
-	result_of that loses top-level cv-qualifiers.
-	* testsuite/20_util/bind/79798.cc: New test.
-
-2017-03-01  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/documentation_hacking.xml: Tweak link to
-	doxygen.org.
-
-2017-02-23  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/experimental/iterator: Include <iterator>.
-	* testsuite/experimental/iterator/requirements.cc: Check for contents
-	of <iterator>.
-
-2017-02-19  Dinka Ranns  <dinka.ranns@googlemail.com>
-
-	C++17 GB50 resolution
-	* include/std/chrono (duration::operator++()): Add
-	_GLIBCXX17_CONSTEXPR.
-	(duration::operator++(int)): Likewise.
-	(duration::operator--()): Likewise.
-	(duration::operator--(int)): Likewise.
-	(duration::operator+=(const duration&)): Likewise.
-	(duration::operator-=(const duration&)): Likewise.
-	(duration::operator*=(const rep&)): Likewise.
-	(duration::operator/=(const rep&)): Likewise.
-	(duration::operator%=(const rep&)): Likewise.
-	(duration::operator%=(const duration&)): Likewise.
-	(time_point::operator+=(const duration&)): Likewise.
-	(time_point::operator-=(const duration&)): Likewise.
-	* testsuite/20_util/duration/arithmetic/constexpr_c++17.cc: New test.
-	* testsuite/20_util/duration/literals/range.cc: Adjust dg-error.
-	* testsuite/20_util/time_point/arithmetic/constexpr.cc: New test.
-
-2017-02-19  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/debug.xml: Adjust link to ThreadSanitizer.
-
-2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/io.xml: Update link to groups.google.com.
-	Tweak link description.
-
-2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/profile_mode.xml: Fix link.
-
-2017-02-16  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/policy_data_structures.xml: Simplify and
-	standardize references to boost.org.
-	* doc/xml/manual/policy_data_structures_biblio.xml: Ditto.
-	* doc/xml/manual/shared_ptr.xml: Ditto.
-
-2017-02-16  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/60936
-	* src/c++11/snprintf_lite.cc (__concat_size_t): Calculate length
-	written to buffer, not length remaining in buffer.
-
-2017-02-15  Tim Shen  <timshen@google.com>
-
-	PR libstdc++/78723
-	* include/std/variant (operator<(), operator>(), operator<=(),
-	operator>=(), operator==(), operator!=()): Implement P0393R3.
-	* testsuite/20_util/variant/compile.cc: Adjust tests.
-	* testsuite/20_util/variant/run.cc: Adjust tests.
-
-2017-02-15  Tim Shen  <timshen@google.com>
-
-	PR libstdc++/79513
-	* include/std/variant (visit()): Forward variant types to the return
-	type detection code.
-	* testsuite/20_util/variant/compile.cc: Add test cases.
-
-2017-02-13  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR libstdc++/79348
-	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
-
-2017-02-13  Jakub Jelinek  <jakub@redhat.com>
-
-	PR libstdc++/79348
-	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
-	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Likewise.
-	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Likewise.
-	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
-	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Likewise.
-	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Likewise.
-	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt: Likewise.
-	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Likewise.
-	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Likewise.
-
-2017-02-13  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79486
-	* include/std/future (__future_base::_Task_state::_M_run)
-	(__future_base::_Task_state::_M_run_delayed): Use lvalue types in
-	result_of expressions.
-	* testsuite/30_threads/packaged_task/79486.cc: New.
-
-2017-02-11  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79467
-	* include/bits/shared_ptr_base.h (__shared_ptr(_Yp*, _Deleter))
-	(__shared_ptr(_Yp*, _Deleter, _Alloc)): Use lvalue types in
-	__is_callable check.
-	* testsuite/20_util/shared_ptr/cons/79467.cc: New.
-
-	* include/bits/atomic_base.h: Re-indent.
-
-2017-02-10  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/profile_mode.xml: Update a paper reference.
-
-2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* src/c++11/snprintf_lite.cc (__err): Use https for bug reporting.
-
-2017-02-08  Jonathan Wakely  <jwakely@redhat.com>
-
-	* doc/xml/manual/policy_data_structures.xml: Fix spelling of author's
-	name.
-	* doc/xml/manual/policy_data_structures_biblio.xml: Likewise. Remove
-	broken links to texts that are no longer online.
-	* doc/xml/manual/profile_mode.xml: Update links to CGO 2009 paper and
-	LCPC 2006 paper.
-	* doc/xml/manual/using.xml: Update links to memory model information.
-	* doc/xml/manual/using_exceptions.xml: Update link to "Appendix E:
-	Standard-Library Exception Safety".
-	* doc/html/*: Regenerate.
-
-2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/profile_mode.xml: Unbreak link to
-	"Optimizing Sorting with Machine Learning Algorithms".
-
-2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* src/c++11/snprintf_lite.cc (__err): Update bug reporting URL.
-
-2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/abi.xml: Update link to "Sun Studio 11: C++
-	Migration Guide".
-
-2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/html/ext/lwg-active.html: Remove.
-	* doc/html/ext/lwg-closed.html: Ditto.
-	* doc/html/ext/lwg-defects.html: Ditto.
-
-	* doc/Makefile.am (xml_extradir): Remove.
-	(xml_extra): Ditto.
-	(stamp-html-docbook-lwg): Remove recipe...
-	(stamp-html-docbook-data): ...and its use here.
-	* doc/Makefile.in: Regenerate.
-
-	* doc/xml/manual/intro.xml: Shorten two paragraphs explaining
-	the relationship to the upstream working group.
-	Replace a local link to ../ext/lwg-active.html by the upstream one.
-	Replace all reference to ../ext/lwg-defects.html by a new entity
-	&DR; which refers to the upstream address.
-
-2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/status_cxx2017.xml: Fix link to N4284.
-
-2017-02-06  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79323
-	* testsuite/20_util/duration/literals/range.cc: Prune extra output
-	at -O0.
-
-2017-02-06  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/documentation_hacking.xml: Update URL of the
-	DocBook Element Reference.  Use that term as link description
-	instead of "online".
-	epubcheck has moved to GitHub.
-	Remove obsolete link to DocBook Publishing Tools.
-
-2017-02-03  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/66145
-	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Restore ABI override
-	so new ios::failure can be caught even when old ABI is the default.
-	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
-	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
-	exceptions_failbit.cc: Likewise.
-	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
-	exceptions_failbit.cc: Likewise.
-	* testsuite/27_io/basic_istream/extractors_other/char/
-	exceptions_null.cc: Likewise.
-	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
-	exceptions_null.cc: Likewise.
-	* testsuite/27_io/basic_istream/sentry/char/12297.cc: Likewise.
-	* testsuite/27_io/basic_istream/sentry/wchar_t/12297.cc: Likewise.
-	* testsuite/27_io/basic_ostream/inserters_other/char/
-	exceptions_null.cc: Likewise.
-	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
-	exceptions_null.cc: Likewise.
-	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
-
-	PR libstdc++/60936
-	* src/c++11/Makefile.am: Add new files.
-	* src/c++11/Makefile.in: Regenerate.
-	* src/c++11/cow-string-inst.cc [!_GLIBCXX_USE_CXX11_ABI]
-	(operator<<, operator>>, getline): Move explicit instantiations to ...
-	* src/c++11/cow-string-io-inst.cc: ... new file.
-	* src/c++11/cow-wstring-inst.cc [!_GLIBCXX_USE_CXX11_ABI]
-	(operator<<, operator>>, getline): Move explicit instantiations to ...
-	* src/c++11/cow-wstring-io-inst.cc: ... new file.
-	* src/c++11/functexcept.cc (__throw_ios_failure, __throw_system_error)
-	(__throw_future_error, __throw_bad_function_call):
-	(__throw_regex_error): Move functions for C++11 exceptions to the
-	files that define the exception types.
-	* src/c++11/functional.cc (__throw_bad_function_call): Move here.
-	* src/c++11/future.cc (__throw_future_error): Likewise.
-	* src/c++11/ios.cc (__throw_ios_failure): Likewise.
-	* src/c++11/regex.cc (__throw_regex_error): Likewise.
-	* src/c++11/snprintf_lite.cc (__concat_size_t): Print decimal
-	representation directly instead of calling __int_to_char.
-	* src/c++11/sso_string.cc (__sso_string): New file for definition
-	of __sso_string type.
-	* src/c++11/string-io-inst.cc [_GLIBCXX_USE_CXX11_ABI]: New file for
-	explicit instantiations of narrow string I/O functions.
-	* src/c++11/system_error.cc (__throw_system_error): Move here.
-	(__sso_string): Move to new file.
-	* src/c++11/wstring-io-inst.cc [_GLIBCXX_USE_CXX11_ABI]: New file for
-	explicit instantiations of wide string I/O functions.
-	* src/c++98/misc-inst.cc [_GLIBCXX_USE_CXX11_ABI] (operator<<)
-	(operator>>, getline): Remove explicit instantiations from here.
-
-2017-02-02  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
-
-2017-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
-
-	* configure.host: Separate Solaris/SPARC and x86 baselines.
-	* config/abi/post/solaris2.10/baseline_symbols.txt: Move ...
-	* config/abi/post/sparc-solaris2.10/baseline_symbols.txt: ... here.
-	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Move ...
-	* config/abi/post/sparc-solaris2.10/sparcv9/baseline_symbols.txt:
-	... here.
-	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Move ...
-	* config/abi/post/i386-solaris2.10/amd64/baseline_symbols.txt: ... here.
-	* config/abi/post/i386-solaris2.10/baseline_symbols.txt: New file.
-	* config/abi/post/solaris2.11/baseline_symbols.txt: Move ...
-	* config/abi/post/sparc-solaris2.11/baseline_symbols.txt: ... here.
-	* config/abi/post/solaris2.11/sparcv9/baseline_symbols.txt: Move ...
-	* config/abi/post/sparc-solaris2.11/sparcv9/baseline_symbols.txt:
-	... here.
-	* config/abi/post/solaris2.11/amd64/baseline_symbols.txt: Move ...
-	* config/abi/post/i386-solaris2.11/amd64/baseline_symbols.txt: ... here.
-	* config/abi/post/i386-solaris2.11/baseline_symbols.txt: New file.
-
-	* config/abi/post/solaris2.10/baseline_symbols.txt: Regenerate.
-	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
-	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
-	* config/abi/post/solaris2.11/baseline_symbols.txt: Likewise.
-	* config/abi/post/solaris2.11/amd64/baseline_symbols.txt: Likewise.
-	* config/abi/post/solaris2.11/sparcv9/baseline_symbols.txt: Likewise.
-
-2017-02-01  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/78346
-	* include/bits/predefined_ops.h (_Iter_equals_iter): Store iterator
-	not its referent.
-	(_Iter_comp_to_iter): Likewise.
-	* testsuite/25_algorithms/search/78346.cc: New test.
-
-	PR libstdc++/79254
-	* config/abi/pre/gnu.ver: Remove recently added symbols.
-	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
-	(basic_string::_M_copy_assign): Remove.
-	(basic_string::operator=(const basic_string&)): Don't dispatch to
-	_M_copy_assign. If source object is small just deallocate, otherwise
-	perform new allocation before making any changes.
-	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI]
-	(basic_string::_M_copy_assign(const basic_string&, true_type)):
-	Remove.
-	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
-	Test cases where the allocators are equal or the string is small.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
-	Likewise.
-
-2017-01-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Implement LWG 2825, LWG 2756 breaks class template argument
-	deduction for optional.
-	* include/std/optional: Add a deduction guide.
-	* testsuite/20_util/optional/cons/deduction_guide.cc: New.
-
-2017-01-27  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79254
-	* config/abi/pre/gnu.ver: Add new symbols.
-	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
-	(basic_string::_M_copy_assign): New overloaded functions to perform
-	copy assignment.
-	(basic_string::operator=(const basic_string&)): Dispatch to
-	_M_copy_assign.
-	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI]
-	(basic_string::_M_copy_assign(const basic_string&, true_type)):
-	Define, performing rollback on exception.
-	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
-	Test exception-safety guarantee.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
-	Likewise.
-	* testsuite/util/testsuite_allocator.h (uneq_allocator::swap): Make
-	std::swap visible.
-
-2017-01-26  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/70607
-	* include/tr1/complex (conj): Remove using-declaration and restore
-	overloads, reverting previous change.
-
-	* testsuite/23_containers/list/operations/78389.cc: Fix for C++11
-	mode.
-	* testsuite/23_containers/priority_queue/requirements/constructible.cc:
-	Mark as unsupported in C++98 mode.
-	* testsuite/23_containers/queue/requirements/constructible.cc:
-	Likewise.
-	* testsuite/23_containers/stack/requirements/constructible.cc:
-	Likewise.
-	* testsuite/25_algorithms/make_heap/movable.cc: Fix for C++11 mode.
-
-	PR libstdc++/79243
-	* include/bits/c++config (literals::string_view_literals::__7): Add.
-	Only declare versioned namespaces for the relevant C++ dialects.
-	* include/experimental/bits/erase_if.h (fundamentals_v2::__detail):
-	Add versioning macros.
-	* include/experimental/bits/lfts_config.h:
-	(fundamentals_v1::__detail::__7, fundamentals_v2::__detail::__7): Add.
-	* include/experimental/string_view (fundamentals_v2::__detail):
-	Add versioning macros.
-	(fundamentals_v2::__detail::__identity): Remove.
-	(fundamentals_v2::__detail::__idt): Use common_type instead of
-	__detail::__identity.
-	* include/std/string_view (__detail::__identity, __detail::__idt):
-	Likewise.
-	(literals::string_view_literals): Fix nesting of versioning macros.
-
-	PR libstdc++/79190
-	* libsupc++/del_opa.cc (operator delete(void*, std::align_val_t))
-	[!_GLIBCXX_HAVE_ALIGNED_ALLOC && !_GLIBCXX_HAVE_POSIX_MEMALIGN
-	&& !_GLIBCXX_HAVE_MEMALIGN && !_GLIBCXX_HAVE__ALIGNED_MALLOC]:
-	Retrieve original pointer value allocated by malloc.
-	* libsupc++/new_opa.cc [!_GLIBCXX_HAVE_ALIGNED_ALLOC
-	&& !_GLIBCXX_HAVE_POSIX_MEMALIGN && !_GLIBCXX_HAVE_MEMALIGN
-	&& !_GLIBCXX_HAVE__ALIGNED_MALLOC] (aligned_alloc(size_t, size_t)):
-	Define, adjusting pointer value allocated by malloc and storing for
-	retrieval by operator delete.
-
-2017-01-26  Jakub Jelinek  <jakub@redhat.com>
-
-	* libsupc++/eh_atomics.h: Update copyright years.
-	* testsuite/20_util/unique_ptr/cons/default.cc: Update copyright years.
-
-2017-01-25  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/61791
-	PR libstdc++/70607
-	* include/std/complex (real(T), imag(T)): Add _GLIBCXX_CONSTEXPR.
-	(proj(T), conj(T)): Change return types per DR 1522.
-	* include/tr1/complex (conj): Remove overloads and use std::conj.
-	* testsuite/26_numerics/complex/dr781_dr1137.cc: Rename to...
-	* testsuite/26_numerics/complex/dr781.cc: ... this, and update.
-	* testsuite/26_numerics/complex/value_operations/constexpr2.cc: Test
-	real(T) and imag(T). Allow testing for C++11 too.
-
-2017-01-24  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79206
-	* include/experimental/string_view (operator==): Check sizes first.
-	* include/std/string_view (operator==): Likewise.
-
-2017-01-23  Jonathan Wakely  <jwakely@redhat.com>
-
-	* testsuite/experimental/array/make_array.cc: Restore <functional>
-	inclusion.
-
-2017-01-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
-
-	* testsuite/29_atomics/atomic/69301.cc: Require atomic builtins.
-
-2017-01-23  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79195
-	* include/experimental/array (__make_array_elem): New class template
-	and partial specialization.
-	(__is_reference_wrapper): Move into __make_array_elem specialization.
-	(make_array): Use __make_array_elem to determine element type and move
-	static assertion into specialization. Qualify std::forward call.
-	(to_array): Add exception specifiation.
-	* testsuite/experimental/array/make_array.cc: Test argument types
-	without a common type.
-	* testsuite/experimental/array/neg.cc: Adjust expected error message.
-
-2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/debug.xml: code.google.com uses https now.
-
-2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/test.xml: Fix link into gccint online manual.
-
-2017-01-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Make poisoned hashes SFINAE away the call operator of the hash.
-	* include/bits/functional_hash.h
-	(__poison_hash::__enable_hash_call): New.
-	* include/std/optional (__optional_hash_call_base): New.
-	(hash<optional<_Tp>>): Derive from the new base,
-	move the hash function into that base.
-	* include/std/variant (__variant_hash_call_base_impl): New.
-	(__variant_hash_call_base): Likewise.
-	(hash<variant<_Types...>>): Derive from the new base,
-	move the hash function into that base.
-	* testsuite/20_util/optional/hash.cc: Add tests for is_callable.
-	* testsuite/20_util/variant/hash.cc: Likewise.
-
-2017-01-20  Joe Seymour  <joe.s@somniumtech.com>
-
-	* acinclude.m4 (GLIBCXX_CHECK_SIZE_T_MANGLING): Support uint20_t.
-	* configure: Regenerate.
-
-2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/69240
-	* include/bits/random.h (uniform_real_distribution::param_type)
-	(normal_distribution::param_type, lognormal_distribution::param_type)
-	(gamma_distribution::param_type, chi_squared_distribution::param_type)
-	(cauchy_distribution::param_type, fisher_f_distribution::param_type)
-	(student_t_distribution::param_type)
-	(bernoulli_distribution::param_type, binomial_distribution::param_type)
-	(geometric_distribution::param_type)
-	(negative_binomial_distribution::param_type)
-	(poisson_distribution::param_type)
-	(exponential_distribution::param_type)
-	(weibull_distribution::param_type)
-	(extreme_value_distribution::param_type)
-	(discrete_distribution::param_type)
-	(piecewise_constant_distribution::param_type)
-	(piecewise_linear_distribution::param_type): Define operator!=.
-	* include/bits/uniform_int_dist.h
-	(uniform_int_distribution::param_type): Likewise.
-	* include/ext/random (beta_distribution::param_type)
-	(rice_distribution::param_type, nakagami_distribution::param_type)
-	(pareto_distribution::param_type, k_distribution::param_type)
-	(arcsine_distribution::param_type, hoyt_distribution::param_type)
-	(triangular_distribution::param_type)
-	(von_mises_distribution::param_type)
-	(hypergeometric_distribution::param_type)
-	(logistic_distribution::param_type)
-	(uniform_on_sphere_distribution::param_type)
-	(uniform_inside_sphere_distribution::param_type): Likewise.
-	* testsuite/26_numerics/random/bernoulli_distribution/cons/parms.cc:
-	Test construction with param_type.
-	* testsuite/26_numerics/random/binomial_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/cauchy_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/chi_squared_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/exponential_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/extreme_value_distribution/cons/
-	parms.cc: Likewise.
-	* testsuite/26_numerics/random/fisher_f_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/gamma_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/geometric_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/lognormal_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/negative_binomial_distribution/cons/
-	parms.cc: Likewise.
-	* testsuite/26_numerics/random/normal_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/poisson_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/student_t_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/uniform_int_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/uniform_real_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/26_numerics/random/weibull_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/ext/random/arcsine_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/beta_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/hoyt_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/hypergeometric_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/ext/random/k_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/logistic_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/nakagami_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/normal_mv_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/pareto_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/rice_distribution/cons/parms.cc: Likewise.
-	* testsuite/ext/random/triangular_distribution/cons/parms.cc:
-	Likewise.
-	* testsuite/ext/random/uniform_inside_sphere_distribution/cons/
-	parms.cc: Likewise.
-	* testsuite/ext/random/von_mises_distribution/cons/parms.cc: Likewise.
-
-	PR libstdc++/72792
-	* include/bits/alloc_traits.h (__allocator_traits_base::__diff_type)
-	(__allocator_traits_base::__size_type): Remove.
-	(allocator_traits::_Ptr): New class template to detect const and void
-	pointer types without instantiating pointer_traits::rebind
-	unnecessarily.
-	(allocator_traits::_Diff): Likewise for detecting difference_type.
-	(allocator_traits::_Size): New class template to detect size_type
-	without instantiating make_unsigned unnecessarily.
-	* include/bits/ptr_traits.h (pointer_traits::element_type): Use
-	__detected_or_t instead of __detected_or_t_.
-	* include/std/type_traits (__detected_or_t_): Remove.
-	* testsuite/20_util/allocator_traits/members/pointers.cc: New test.
-
-	PR libstdc++/72792
-	PR libstdc++/72793
-	* include/bits/alloc_traits.h (__allocator_traits_base::__rebind):
-	Replace with class template using void_t.
-	(__alloc_rebind): Define in terms of
-	__allocator_traits_base::__rebind.
-	(allocator_traits): Remove unconditional static_assert for
-	rebind_alloc.
-	* include/bits/ptr_traits.h (__replace_first_arg): Remove type member.
-	(pointer_traits::__rebind): Replace with class template using void_t.
-	(pointer_traits::rebind): Define in terms of __rebind.
-	(pointer_traits): Remove unconditional static_assert for rebind.
-	* testsuite/20_util/allocator_traits/members/rebind_alloc.cc: New test.
-	* testsuite/20_util/pointer_traits/rebind.cc: New test.
-
-	PR libstdc++/69321
-	* include/experimental/any (__any_caster): Avoid instantiating
-	manager function for types that can't be stored in any.
-	* include/std/any (__any_caster): Likewise.
-	* testsuite/20_util/any/misc/any_cast.cc: Test non-copyable type.
-	* testsuite/experimental/any/misc/any_cast.cc: Likewise.
-
-	PR libstdc++/64903
-	* include/bits/stl_algo.h (is_partitioned): Use increment instead of
-	std::advance.
-
-2017-01-19  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/79156
-	* include/bits/shared_ptr_base.h (__enable_shared_from_this_base):
-	Fix return type.
-	(__enable_shared_from_this): Declare __shared_ptr as a friend.
-	* testsuite/ext/shared_ptr/1.cc: New test.
-
-	PR libstdc++/64903
-	* include/bits/stl_algo.h (is_partitioned): Don't retest the partition
-	point.
-	* testsuite/25_algorithms/is_partitioned/2.cc: New test.
-
-	* doc/xml/manual/abi.xml: Fix typo.
-	* doc/html/manual/abi.html: Likewise.
-
-	PR libstdc++/67085
-	* include/bits/predefined_ops.h (_Iter_less_val, _Val_less_iter): Add
-	converting constructors from _Iter_less_iter.
-	(_Iter_comp_val, _Val_comp_iter): Add converting constructors from
-	_Iter_comp_iter.
-	(__iter_comp_val(_Iter_comp_iter<C>): Use converting constructor.
-	(__val_comp_iter(_Iter_comp_iter<C>): Likewise.
-	* include/bits/stl_heap.h (__is_heap_until, __push_heap, __pop_heap)
-	(__make_heap, __sort_heap): Change _Compare parameters to references.
-	(__is_heap, push_heap, __adjust_heap, __pop_heap, pop_heap)
-	(__make_heap, make_heap, sort_heap, is_heap_until): Pass comparison
-	functions as lvalues.
-	(is_heap): Call __is_heap_until directly to avoid copying __comp.
-	* testsuite/23_containers/priority_queue/67085.cc: Adjust test to
-	count copies during construction with empty sequence.
-
-	PR libstdc++/67085
-	* include/bits/stl_heap.h (__is_heap): Use _GLIBCXX_MOVE.
-	(__make_heap, __sort_heap): Don't use _GLIBCXX_MOVE inside loops.
-	* testsuite/23_containers/priority_queue/67085.cc: Adjust expected
-	number of copies.
-	* testsuite/25_algorithms/make_heap/movable.cc: New test.
-
-	PR libstdc++/67085
-	* include/bits/stl_heap.h (push_heap, __adjust_heap, __pop_heap)
-	(pop_heap, __make_heap, make_heap, __sort_heap, sort_heap): Use
-	_GLIBCXX_MOVE when passing comparison function to other functions.
-	(is_heap_until, is_heap): Use std::move when passing comparison
-	function.
-	* testsuite/23_containers/priority_queue/67085.cc: New test.
-
-	PR libstdc++/78905
-	* doc/xml/manual/abi.xml (abi.versioning.history): Add markup to
-	macro names, filenames, and literal values. Document _GLIBCXX_RELEASE.
-	Document that the deprecated _GLIBCXX_VERSION macro was removed for
-	the 4.0.0 release.
-	* doc/html/*: Regenerate.
-	* include/Makefile.am (_GLIBCXX_RELEASE): Set value.
-	* include/Makefile.in: Regenerate.
-	* include/bits/c++config (_GLIBCXX_RELEASE): Add #define.
-	* testsuite/ext/profile/mutex_extensions_neg.cc: Use lineno of 0 in
-	dg-error.
-
-2017-01-18  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/69301
-	* include/std/atomic (atomic<T>::load, atomic<T>::exchange): Use
-	aligned buffer instead of default-initialized variable.
-	* testsuite/29_atomics/atomic/69301.cc: New test.
-	* include/experimental/memory (observer_ptr::release): Use reserved
-	name.
-	* include/ext/pointer.h (_Pointer_adapter::operator++(int))
-	(_Pointer_adapter::operator--(int)): Likewise.
-
-	PR libstdc++/68925
-	* include/experimental/random (randint): Use temporary instead of
-	thread_local static.
-
-2017-01-17  Joshua Conner  <joshconner@google.com>
-
-	* crossconfig.m4: Add fuchsia OS.
-	* configure: Regenerate.
-
-2017-01-17  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/69699
-	* doc/xml/manual/abi.xml (abi.versioning.history): Explain why the
-	__GLIBCXX__ macro is not useful. Remove redundant date information
-	and link to the GCC release timeline.
-	(abi.versioning.active): Move partial sentence into the previous
-	paragraph.
-	* doc/html/*: Regenerate.
-
-	PR libstdc++/79114
-	* libsupc++/nested_exception.h (throw_with_nested): Use decay instead
-	of remove_reference.
-	* testsuite/18_support/nested_exception/79114.cc: New test.
-
-2017-01-17  Jakub Jelinek  <jakub@redhat.com>
-
-	PR other/79046
-	* configure.ac: Add GCC_BASE_VER.
-	* fragment.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
-	get version from BASE-VER file.
-	* po/Makefile.in: Regenerated.
-	* libsupc++/Makefile.in: Regenerated.
-	* testsuite/Makefile.in: Regenerated.
-	* src/Makefile.in: Regenerated.
 	* configure: Regenerated.
-	* Makefile.in: Regenerated.
-	* include/Makefile.in: Regenerated.
-	* doc/Makefile.in: Regenerated.
-	* python/Makefile.in: Regenerated.
-	* src/c++11/Makefile.in: Regenerated.
-	* src/c++98/Makefile.in: Regenerated.
-	* src/filesystem/Makefile.in: Regenerated.
 
-2017-01-16  Jonathan Wakely  <jwakely@redhat.com>
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
 
-	PR libstdc++/66145
-	* src/c++11/functexcept.cc: Use new ABI for std::ios_base::failure
-	exceptions.
-	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Don't override ABI
-	for test, so new ios::failure can be caught.
+	* configure: Regenerated.
+
+2018-04-18  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/85442
+	* src/c++11/Makefile.am: Don't generate debuginfo again for
+	cxx11-ios_failure-lt.s and cxx11-ios_failure.s files.
+	* src/c++11/Makefile.in: Regenerate.
+
+2018-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84442
+	* testsuite/30_threads/thread/cons/terminate.cc
+	[!_GLIBCXX_USE_C99_STDLIB] : Use _exit or std::exit instead of _Exit.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/file_status/1.cc: Add
+	-DUSE_FILESYSTEM_TS to dg-options.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/pop.cc: Likewise.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/absolute.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/canonical.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/copy_file.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/create_symlink.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/current_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/equivalent.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/exists.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/file_size.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/permissions.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/remove.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/status.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/append/path.cc: Likewise.
+	* testsuite/experimental/filesystem/path/assign/assign.cc: Likewise.
+	* testsuite/experimental/filesystem/path/assign/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/path/compare/compare.cc: Likewise.
+	* testsuite/experimental/filesystem/path/compare/path.cc: Likewise.
+	* testsuite/experimental/filesystem/path/compare/strings.cc: Likewise.
+	* testsuite/experimental/filesystem/path/concat/path.cc: Likewise.
+	* testsuite/experimental/filesystem/path/concat/strings.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/default.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/construct/locale.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/range.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/string_view.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_name.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/stem.cc: Likewise.
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc: Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/clear.cc: Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/make_preferred.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/remove_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/swap.cc: Likewise.
+	* testsuite/experimental/filesystem/path/native/string.cc: Likewise.
+	* testsuite/experimental/filesystem/path/nonmember/hash_value.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/empty.cc: Likewise.
+	* testsuite/experimental/filesystem/path/query/has_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_name.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_stem.cc: Likewise.
+	* testsuite/experimental/filesystem/path/query/is_relative.cc:
+	Likewise.
+
+2018-04-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Fix sed command.
+	* src/c++11/Makefile.in: Regenerate.
+
+	* src/c++11/Makefile.am: Rewrite sed rule to be less fragile and to
+	handle mangled names starting with double underscores on darwin.
+	* src/c++11/Makefile.in: Regenerate.
+
+2018-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Fix comment.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cxx11-ios_failure.cc: Fix comment.
+	* src/c++98/ios_failure.cc: Likewise.
+
+	* src/c++11/ios.cc: Remove redundant macro definition.
+
+2018-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document header locations in recent
+	releases.
+	* doc/xml/manual/evolution.xml: Add API changes since GCC 5.
+	* doc/xml/manual/spine.xml: Update copyright years.
+	* doc/xml/manual/strings.xml: Adjust tolower example to avoid
+	undefined behaviour.
+	* doc/xml/manual/test.xml: Update outdated notes on VERIFY in tests.
+	* doc/html/*: Regenerate.
+
+2018-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Update links to archived copy of SGI STL docs.
+	* doc/xml/manual/backwards_compatibility.xml: Likewise.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/policy_data_structures_biblio.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Likewise.
+
+	PR libstdc++/85222
+	* src/c++11/Makefile.am [ENABLE_DUAL_ABI]: Add special rules for
+	cxx11-ios_failure.cc to rewrite type info for __ios_failure.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cxx11-ios_failure.cc (__ios_failure, __iosfail_type_info):
+	New types.
+	[_GLIBCXX_USE_DUAL_ABI] (__throw_ios_failure): Define here.
+	* src/c++11/ios.cc (__throw_ios_failure): Remove definition.
+	* src/c++98/ios_failure.cc (__construct_ios_failure)
+	(__destroy_ios_failure, is_ios_failure_handler): New functions.
+	[!_GLIBCXX_USE_DUAL_ABI] (__throw_ios_failure): Define here.
+	* testsuite/27_io/ios_base/failure/dual_abi.cc: New.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Revert changes to
+	handler types, to always catch std::ios_base::failure.
 	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
 	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
 	exceptions_failbit.cc: Likewise.
@@ -1591,432 +197,485 @@
 	exceptions_null.cc: Likewise.
 	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
 
-	PR libstdc++/78702
-	* include/bits/locale_classes.h (locale::facet::__shim): Change from
-	private to protected.
-	* src/c++11/cxx11-shim_facets.cc (__shim_accessor): Define helper to
-	make locale::facet::__shim accessible.
+2018-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
-2017-01-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Qualify
+	__get calls to avoid ADL and avoid ambiguity due to Clang bug.
 
-	PR libstdc++/78389
-	* include/bits/list.tcc (merge(list&&)): Fix backwards size adjustments.
-	(merge(list&&, _StrictWeakOrdering)): Likewise.
-	* testsuite/23_containers/list/operations/78389.cc: Add
-	better test for the sizes.
+2018-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
-2017-01-14  Jonathan Wakely  <jwakely@redhat.com>
+	PR libstdc++/85183
+	* include/std/variant (_Move_assign_base::operator=): Fix incorrect
+	value categories.
+	* testsuite/20_util/variant/85183.cc: New.
 
-	* testsuite/23_containers/array/specialized_algorithms/swap_cxx17.cc:
-	Skip test when -D_GLIBCXX_PROFILE mode is included in options.
-	* testsuite/23_containers/map/modifiers/extract.cc: Likewise.
-	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc:
+2018-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__get): Qualify calls to avoid ADL.
+	(__select_index): Adjust whitespace.
+	(variant): Add using-declaration to workaround Clang bug.
+
+2018-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85040
+	* include/bits/stl_function.h (greater::__not_overloaded)
+	(less::__not_overloaded, greater_equal::__not_overloaded)
+	(less_equal::__not_overloaded): Fix ambiguous specializations.
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: Add
+	tests for type with overloaded operators.
+
+2018-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/77691
+	* testsuite/experimental/memory_resource/resource_adaptor.cc:
+	xfail execution on 32-bit Solaris/x86.
+
+2018-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: Use
+	VERIFY instead of assert.
+	* testsuite/20_util/hash/84998.cc: New test.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc: New
+	copy of test adjusted for Debug Mode.
+	* testsuite/23_containers/vector/cons/destructible_neg.cc: Do not run
+	test in Debug Mode.
+
+2018-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/84998
+	* include/bits/stl_bvector.h: Fix std::hash friend declaration.
+	* include/std/bitset: Likewise.
+	* include/bits/stl_map.h (std::map<>): Fix _Rb_tree_merge_helper friend
+	declaration.
+	* include/bits/stl_multimap.h (std::multimap<>): Likewise.
+	* include/bits/stl_multiset.h (std::multiset<>): Likewise.
+	* include/bits/stl_set.h (std::set<>): Likewise.
+	* include/bits/unordered_map.h (std::unordered_map<>): Fix
+	_Hash_merge_helper friend declaration.
+	(std::unordered_multimap<>): Likewise.
+	* include/bits/unordered_set.h (std::unordered_set<>): Likewise.
+	(std::unordered_multiset<>): Likewise.
+
+2018-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/api.xml: www.fsf.org has moved to https. Also omit
+	trailing slash for domain level link.
+	* doc/xml/faq.xml: Ditto.
+	* doc/xml/manual/appendix_free.xml (software): Ditto.
+	* doc/xml/manual/intro.xml: Ditto.
+	* doc/xml/manual/spine.xml: Ditto.
+	* doc/xml/spine.xml: Ditto.
+
+2018-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Adjust link to
+	docbook.org.
+
+2018-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: Adjust
+	to compile as C++98.
+
+2018-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78420
+	* include/bits/stl_function.h (greater<_Tp*>, less<_Tp*>)
+	(greater_equal<_Tp*>, less_equal<_Tp>*): Add partial specializations
+	to ensure total order for pointers.
+	(greater<void>, less<void>, greater_equal<void>, less_equal<void>):
+	Add operator() overloads for pointer arguments and make generic
+	overloads dispatch to new _S_cmp functions when comparisons would
+	use built-in operators for pointers.
+	* testsuite/20_util/function_objects/comparisons_pointer.cc: New.
+
+2018-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84773
+	PR libstdc++/83662
+	* crossconfig.m4: Check for aligned_alloc etc. on freebsd and mingw32.
+	* configure: Regenerate.
+	* include/c_global/cstdlib [_GLIBCXX_HAVE_ALIGNED_ALLOC]
+	(aligned_alloc): Add using-declaration.
+	* testsuite/18_support/aligned_alloc/aligned_alloc.cc: New test.
+
+2018-03-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
+	Fix std::_Fwd_list_iterator and std::_Fwd_list_const_iterator printers
+	registration.
+
+2018-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84769
+	* include/std/variant (get<_Tp, _Types...>, get_if<_Tp, _Types...>):
+	Qualify calls to get<_Np, Types...> and get_if<_Np, _Types...>.
+
+	src/filesystem/ops.cc (create_dir): Pass error_code to is_directory.
+	src/filesystem/std-ops.cc (create_dir): Likewise.
+
+2018-03-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (NodeIteratorPrinter): New.
+	(StdListIteratorPrinter): Inherit from latter.
+	(StdFwdListIteratorPrinter): New, inherit from latter.
+	(StdDebugIteratorPrinter.to_string): Use non-debug iterator printer
+	when iterator has no associated container.
+	(build_libstdcxx_dictionary): Add __gnu_cxx::_Fwd_list_iterator and
+	__gnu_cxx::_Fwd_list_const_iterator printers. Remove __norm namespace
+	registrations.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Adapt.
+	* testsuite/libstdc++-prettyprinters/debug_cxx11.cc: Adapt.
+
+2018-03-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/84601
+	* include/std/optional (_Optional_payload): Split into multiple
+	specializations that can handle different cases of trivial or
+	non-trivial assignment operators.
+	* testsuite/20_util/optional/84601.cc: New.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
+
+2018-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84671
+	* include/bits/parse_numbers.h (_Number_help): Add partial
+	specialization to handle digit separators. Adjust partial
+	specialization for recursion temrination to require _Pow == 1ULL.
+	* testsuite/20_util/duration/literals/84671.cc: New
+
+2018-02-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement the missing bits of LWG 2769
+	* include/std/any (any_cast(const any&)): Add static_assert.
+	(any_cast(any&)): Likewise.
+	(any_cast(any&&)): Likewise, and remove the handling
+	for copyable-but-not-movable type.
+	* testsuite/20_util/any/misc/any_cast.cc: Adjust.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Likewise, and
+	add new tests.
+
+2018-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84532
+	* include/std/thread (thread::__make_invoker): Construct tuple
+	directly instead of using make_tuple.
+	* testsuite/30_threads/async/84532.cc: New.
+	* testsuite/30_threads/thread/84532.cc: New.
+
+2018-02-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/ext/aligned_buffer.h [_GLIBCXX_INLINE_VERSION]
+	(template<> __aligned_buffer): Define as __aligned_membuf alias.
+
+2018-02-19  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81797
+	* configure.ac (INCLUDE_DIR_NOTPARALLEL): Define.
+	* configure: Regenerate.
+	* include/Makefile.am (INCLUDE_DIR_NOTPARALLEL): Add .NOTPARALLEL when
+	defined.
+	* include/Makefile.in: Regenerate.
+
+2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83833
+	* testsuite/26_numerics/random/chi_squared_distribution/83833.cc:
+	Add -ffloat-store to options for m68k and ia32.
+
+	* doc/xml/faq.xml: Update copyright years.
+	* doc/html/*: Regenerate.
+
+	PR libstdc++/83658
+	* include/std/any (any::__do_emplace): Only set _M_manager after
+	constructing the contained object.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/any/modifiers/83658.cc: New test.
+
+2018-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81076
+	* include/c_global/cstddef (__byte_operand): Define primary template.
+	* testsuite/18_support/byte/81076.cc: New test.
+
+2018-01-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/ext/special_functions/airy_ai/check_nan.cc: Fix
+	dg-options and dg-add-options order.
+	* testsuite/ext/special_functions/airy_bi/check_nan.cc: Likewise.
+	* testsuite/ext/special_functions/conf_hyperg/check_nan.cc:
 	Likewise.
-	* testsuite/23_containers/map/modifiers/try_emplace/1.cc: Likewise.
-	* testsuite/23_containers/multimap/modifiers/extract.cc: Likewise.
-	* testsuite/23_containers/multiset/modifiers/extract.cc: Likewise.
-	* testsuite/23_containers/set/modifiers/extract.cc: Likewise.
-	* testsuite/23_containers/unordered_map/modifiers/extract.cc:
+	* testsuite/ext/special_functions/hyperg/check_nan.cc: Likewise.
+	* testsuite/special_functions/01_assoc_laguerre/check_nan.cc:
 	Likewise.
-	* testsuite/23_containers/unordered_multimap/modifiers/extract.cc::
+	* testsuite/special_functions/02_assoc_legendre/check_nan.cc:
 	Likewise.
-	* testsuite/23_containers/unordered_multiset/modifiers/extract.cc::
+	* testsuite/special_functions/03_beta/check_nan.cc: Likewise.
+	* testsuite/special_functions/04_comp_ellint_1/check_nan.cc:
 	Likewise.
-	* testsuite/23_containers/unordered_set/modifiers/extract.cc:
+	* testsuite/special_functions/05_comp_ellint_2/check_nan.cc:
 	Likewise.
-	* testsuite/23_containers/vector/modifiers/insert_vs_emplace.cc:
+	* testsuite/special_functions/06_comp_ellint_3/check_nan.cc:
 	Likewise.
-	* testsuite/25_algorithms/binary_search/partitioned.cc: Likewise.
-	* testsuite/25_algorithms/equal_range/partitioned.cc: Likewise.
-	* testsuite/25_algorithms/lexicographical_compare/71545.cc: Likewise.
-	* testsuite/25_algorithms/lower_bound/partitioned.cc: Likewise.
-	* testsuite/25_algorithms/upper_bound/partitioned.cc: Likewise.
-	* testsuite/libstdc++-prettyprinters/cxx11.cc: Likewise.
-	* testsuite/libstdc++-prettyprinters/cxx17.cc: Likewise.
-	* testsuite/libstdc++-prettyprinters/debug.cc: Likewise.
-	* testsuite/libstdc++-prettyprinters/debug_cxx11.cc: Likewise.
-	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
-	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise.
-	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
-	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+	* testsuite/special_functions/06_comp_ellint_3/pr66689.cc:
+	Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/08_cyl_bessel_j/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/09_cyl_bessel_k/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/10_cyl_neumann/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/11_ellint_1/check_nan.cc: Likewise.
+	* testsuite/special_functions/12_ellint_2/check_nan.cc: Likewise.
+	* testsuite/special_functions/13_ellint_3/check_nan.cc: Likewise.
+	* testsuite/special_functions/13_ellint_3/pr66689.cc: Likewise.
+	* testsuite/special_functions/14_expint/check_nan.cc: Likewise.
+	* testsuite/special_functions/15_hermite/check_nan.cc: Likewise.
+	* testsuite/special_functions/16_laguerre/check_nan.cc: Likewise.
+	* testsuite/special_functions/17_legendre/check_nan.cc: Likewise.
+	* testsuite/special_functions/18_riemann_zeta/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/19_sph_bessel/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/20_sph_legendre/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/21_sph_neumann/check_nan.cc:
+	Likewise.
 
-2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
+2018-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR libstdc++/65411
-	* config/io/basic_file_stdio.cc (__basic_file<char>::close()): Don't
-	retry fclose on EINTR.
+	* configure.ac (AC_CHECK_HEADERS): Add linux/types.h.  Conditionally
+	include linux/types.h when checking linux/random.h header.
+	* config.h.in: Regenerate.
+	* configure: Ditto.
+	* src/c++11/random.cc: Conditionally include linux/types.h.
 
-	* include/profile/base.h: Remove unused header that leads to header
-	cycle in C++17 mode.
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
-	PR libstdc++/79075
-	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI] (basic_string):
-	Make _If_sv private.
-	[!_GLIBCXX_USE_CXX11_ABI] (basic_string): Add member functions taking
-	basic_string_view arguments.
+	* testsuite/17_intro/names.cc: Undefine 'y' on SPARC/Linux.
 
-	PR libstdc++/79075
-	* testsuite/lib/libstdc++.exp (check_v3_target_filesystem_ts): Remove
-	redundant option from cxxflags.
-	(check_effective_target_cxx11-abi): Define.
-	* testsuite/21_strings/basic_string/allocator/71964.cc: Use cxx11-abi
-	effective target.
-	* testsuite/21_strings/basic_string/allocator/char/copy.cc: Likewise.
-	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/char/minimal.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/char/move.cc: Likewise.
-	* testsuite/21_strings/basic_string/allocator/char/move_assign.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/char/noexcept.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/char/swap.cc: Likewise.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/copy.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/minimal.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/move.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/move_assign.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/noexcept.cc:
-	Likewise.
-	* testsuite/21_strings/basic_string/allocator/wchar_t/swap.cc:
-	Likewise.
-	* testsuite/23_containers/list/61347.cc: Likewise.
-	* testsuite/27_io/basic_fstream/cons/base.cc: Likewise.
-	* testsuite/27_io/ios_base/failure/cxx11.cc: Likewise.
+2018-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
-2017-01-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	PR libstdc++/83834
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Replace std::c[a-g]* wildcard
+	pattern with exact match for std::cerr.
 
-	PR libstdc++/78389
-	* include/bits/list.tcc (merge(list&&)):
-	Adjust list sizes if the comparator throws.
-	(merge(list&&, _StrictWeakOrdering)): Likewise.
-	(sort()): Splice elements back from the scratch buffers
-	if the comparator throws.
-	(sort(_StrictWeakOrdering)): Likewise.
-	* testsuite/23_containers/list/operations/78389.cc: New.
+2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
-2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
+	PR libstdc++/83833
+	* include/bits/random.h (chi_squared_distribution::param): Update
+	gamma distribution parameter.
+	* testsuite/26_numerics/random/chi_squared_distribution/83833.cc: New
+	test.
 
-	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Mark
-	XFAIL for C++17 until node reinsertion supports fancy pointers.
+	PR libstdc++/83830
+	* include/std/type_traits (has_unique_object_representations_v): Add
+	variable template.
+	* testsuite/20_util/has_unique_object_representations/value.cc: Check
+	variable template.
 
-	PR libstdc++/78361
-	* testsuite/20_util/add_pointer/value.cc: Test forming function
-	pointers.
+2018-01-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
-2017-01-13  Michael Brune  <lucdanton@free.fr>
-
-	PR libstdc++/78361
-	* include/std/type_traits (__is_referenceable): Handle noexcept
-	function types.
-
-2017-01-12  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/77528
-	* include/bits/stl_queue.h (queue, priority_queue): Remove default
-	member-initializers and define default constructors as templates with
-	constraints.
-	* include/bits/stl_stack.h (stack): Likewise.
-	* testsuite/23_containers/priority_queue/requirements/constructible.cc:
+	Make optional conditionally
+	trivially_{copy,move}_{constructible,assignable}
+	* include/std/optional (_Optional_payload): Fix the comment in
+	the class head and turn into a primary and one specialization.
+	(_Optional_payload::_M_engaged): Strike the NSDMI.
+	(_Optional_payload<_Tp, false>::operator=(const _Optional_payload&)):
 	New.
-	* testsuite/23_containers/priority_queue/requirements/
-	explicit_instantiation/1.cc: Test more instantiations.
-	* testsuite/23_containers/priority_queue/requirements/
-	explicit_instantiation/1_c++98.cc: Likewise.
-	* testsuite/23_containers/queue/requirements/constructible.cc: New.
-	* testsuite/23_containers/stack/requirements/constructible.cc: New.
+	(_Optional_payload<_Tp, false>::operator=(_Optional_payload&&)):
+	Likewise.
+	(_Optional_payload<_Tp, false>::_M_get): Likewise.
+	(_Optional_payload<_Tp, false>::_M_reset): Likewise.
+	(_Optional_base_impl): Likewise.
+	(_Optional_base): Turn into a primary and three specializations.
+	(optional(nullopt)): Change the base init.
+	* testsuite/20_util/optional/assignment/8.cc: New.
+	* testsuite/20_util/optional/cons/trivial.cc: Likewise.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
 
-	PR libstdc++/66284
-	* doc/xml/manual/intro.xml: Document LWG 2781 change.
-	* doc/html/*: Regenerate.
-	* include/std/functional (_Function_base::_Ref_manager): Remove.
-	(_Function_handler): Remove partial specializations for
-	reference_wrapper.
-	(function::target): Remove special case for const qualification.
-	* testsuite/20_util/function/6.cc: Adjust tests for target type.
-	* testsuite/20_util/function/7.cc: Likewise.
-	* testsuite/20_util/function/8.cc: Likewise.
+2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
-2017-01-11  Jonathan Wakely  <jwakely@redhat.com>
+	PR libstdc++/80276
+	* python/libstdcxx/v6/printers.py (strip_inline_namespaces): New.
+	(get_template_arg_list): New.
+	(StdVariantPrinter._template_args): Remove, use get_template_arg_list
+	instead.
+	(TemplateTypePrinter): Rewrite to work with gdb.Type objects instead
+	of strings and regular expressions.
+	(add_one_template_type_printer): Adapt to new TemplateTypePrinter.
+	(FilteringTypePrinter): Add docstring. Match using startswith. Use
+	strip_inline_namespaces instead of strip_versioned_namespace.
+	(add_one_type_printer): Prepend namespace to match argument.
+	(register_type_printers): Add type printers for char16_t and char32_t
+	string types and for types using cxx11 ABI. Update calls to
+	add_one_template_type_printer to provide default argument dicts.
+	* testsuite/libstdc++-prettyprinters/80276.cc: New test.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Remove tests for
+	basic_string<unsigned char> and basic_string<signed char>.
+	* testsuite/libstdc++-prettyprinters/whatis2.cc: Duplicate whatis.cc
+	to test local variables, without overriding _GLIBCXX_USE_CXX11_ABI.
 
-	PR libstdc++/78134
-	* include/bits/stl_map.h (map::lower_bound, map::upper_bound)
-	(map::equal_range): Fix return type of heterogeneous overloads.
-	* include/bits/stl_multimap.h (multimap::lower_bound)
-	(multimap::upper_bound, multimap::equal_range): Likewise.
-	* include/bits/stl_multiset.h (multiset::lower_bound)
-	(multiset::upper_bound, multiset::equal_range): Likewise.
-	* include/bits/stl_set.h (set::lower_bound, set::upper_bound)
-	(set::equal_range): Likewise.
-	* testsuite/23_containers/map/operations/2.cc
-	* testsuite/23_containers/multimap/operations/2.cc
-	* testsuite/23_containers/multiset/operations/2.cc
-	* testsuite/23_containers/set/operations/2.cc
+2018-01-14  Andreas Schwab  <schwab@linux-m68k.org>
 
-	PR libstdc++/78273
-	* include/bits/stl_map.h (map::count<_Kt>(const _Kt&)): Don't assume
-	the heterogeneous comparison can only find one match.
-	* include/bits/stl_set.h (set::count<_Kt>(const _Kt&)): Likewise.
-	* testsuite/23_containers/map/operations/2.cc: Test count works with
-	comparison function that just partitions rather than sorting.
-	* testsuite/23_containers/set/operations/2.cc: Likewise.
+	PR libstdc++/81092
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
 
-2017-01-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
+2018-01-13  Tim Shen  <timshen@google.com>
 
-	Reduce the size of variant, it doesn't need an index of
-	type size_t internally.
-	* include/std/variant (parse_numbers.h): New include.
-	(__select_index): New.
-	(_Variant_storage<false, _Types...>::_M_reset_impl): Use
-	_index_type for comparison with variant_npos.
-	(_Variant_storage<false, _Types...>::__index_type): New.
-	(_Variant_storage<false, _Types...>::_M_index): Change the
-	type from size_t to __index_type.
-	(_Variant_storage<true, _Types...>::__index_type): New.
-	(_Variant_storage<true, _Types...>::_M_index): Change the
-	type from size_t to __index_type.
-	(_Variant_base::_M_valid): Use _Storage::__index_type
-	for comparison with variant_npos.
-	(variant::index): Use _Base::_Storage::__index_type
-	for comparison with variant_npos.
-	* testsuite/20_util/variant/index_type.cc: New.
+	PR libstdc++/83601
+	* include/bits/regex.tcc (regex_replace): Fix escaping in sed.
+	* testsuite/28_regex/algorithms/regex_replace/char/pr83601.cc: Tests.
+	* testsuite/28_regex/algorithms/regex_replace/wchar_t/pr83601.cc: Tests.
 
-2017-01-10  Jonathan Wakely  <jwakely@redhat.com>
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* testsuite/18_support/exception_ptr/60612-unexpected.cc: Adjust
-	effective target selector to prevent running in C++17 mode.
+	PR libstdc++/64054
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/hexfloat.cc:
+	Remove dg-xfail-run-if.
 
-	PR libstdc++/77528
-	* include/bits/stl_queue.h (queue::c): Add default member initializer.
-	(queue::queue()): Add constructor and define as defaulted.
-	(queue::queue(_Sequence&&)): Remove default argument.
-	(priority_queue::c, priority_queue::comp): Add default member
-	initializers.
-	(priority_queue::priority_queue()): Add constructor and define as
-	defaulted.
-	(priority_queue::priority_queue(const _Compare&, _Sequence&&)):
-	Remove default argument for first parameter.
-	* include/bits/stl_stack.h (stack::c): Add default member initializer.
-	(stack::stack()): Add constructor and define as defaulted.
-	(stack::stack(const _Sequence&)): Remove default argument.
-	* testsuite/23_containers/priority_queue/requirements/
-	explicit_instantiation/1.cc: Test explicit instantiation with
-	non-DefaultConstructible sequence.
-	* testsuite/23_containers/priority_queue/77528.cc: New test.
-	* testsuite/23_containers/priority_queue/requirements/
-	explicit_instantiation/1_c++0x.cc: Replace with 1_c++98.cc.
-	* testsuite/23_containers/queue/77528.cc: New test.
-	* testsuite/23_containers/queue/requirements/explicit_instantiation/
-	1.cc: Test explicit instantiation with non-DefaultConstructible
-	sequence.
-	* testsuite/23_containers/queue/requirements/explicit_instantiation/
-	1_c++0x.cc: Replace with 1_c++98.cc.
-	* testsuite/23_containers/stack/77528.cc: New test.
-	* testsuite/23_containers/stack/requirements/explicit_instantiation/
-	1.cc: Test explicit instantiation with non-DefaultConstructible
-	sequence.
-	* testsuite/23_containers/stack/requirements/explicit_instantiation/
-	1_c++0x.cc: Replace with 1_c++98.cc.
+2018-01-10  François Dumont  <fdumont@gcc.gnu.org>
 
-2017-01-10  Felipe Magno de Almeida <felipe@expertisesolutions.com.br>
+	* include/bits/forward_list.h
+	(_Fwd_list_node_base(_Fwd_list_node_base&&)): New.
+	(_Fwd_list_node_base& operator=(_Fwd_list_node_base&&)): New.
+	(_Fwd_list_node_base(const _Fwd_list_node_base&)): Explicit delete.
+	(_Fwd_list_node_base& operator=(const _Fwd_list_node_base&)): Likewise.
+	(_Fwd_list_impl()): Add noexcept qualification.
+	(_Fwd_list_impl(const _Node_alloc_type&)): Delete.
+	(_Fwd_list_impl(_Fwd_list_impl&&)): New, default.
+	(_Fwd_list_impl(_Fwd_list_impl&&, _Node_alloc_type&&)): New.
+	(_Fwd_list_base()): Default.
+	(_Fwd_list_base(_Fwd_list_base&&, _Node_alloc_type&&, true_type)): New.
+	(_Fwd_list_base(_Fwd_list_base&&)): Default.
+	(forward_list<>()): Default.
+	(forward_list<>(forward_list&&)): Default.
+	(forward_list(forward_list&&, _Node_alloc_type&&, false_type)): New.
+	(forward_list(forward_list&&, _Node_alloc_type&&, true_type)): New.
+	(forward_list(forward_list&&, const _Alloc&)): Adapt to use latters.
+	* include/bits/forward_list.tcc
+	(_Fwd_list_base(_Fwd_list_base&&, _Node_alloc_type&&)): Adapt to use
+	_M_impl._M_head move assignment.
+	(forward_list<>::merge(forward_list<>&&, _Comp)): Likewise.
+	* testsuite/23_containers/forward_list/allocator/default_init.cc: New.
 
-	* include/bits/locale_facets_nonio.tcc
-	(time_get::_M_extract_via_format): Avoid compilation errors with
-	non-standard struct tm.
+2018-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
-2017-01-10  François Dumont  <fdumont@gcc.gnu.org>
+	PR libstdc++/80276
+	* python/libstdcxx/v6/printers.py (SharedPointerPrinter)
+	(UniquePointerPrinter): Print correct template argument, not type of
+	the pointer.
+	(TemplateTypePrinter._recognizer.recognize): Handle failure to lookup
+	a type.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Test unique_ptr of
+	array type.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Test shared_ptr and
+	weak_ptr of array types.
+
+2018-01-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/83709
+	* include/bits/hashtable_policy.h
+	(__distance_fwd(_Iterator, _Iterator, input_iterator_tag)): Return 1 if
+	__first != __last.
+	(_Insert_base::_M_insert_range(_Ite, _Ite, _NodeGetter, true_type)): New.
+	(_Insert_base::_M_insert_range(_Ite, _Ite, _NodeGetter, false_type)):
+	Add false_type parameter.
+	(_Insert_base::insert): Adapt.
+	* include/bits/hashtable.h (_Hashtable::operator=(initializzr_list<>)):
+	Adapt.
+	(_Hashtable::_M_insert(_Arg&&, const _NodeGen&, true_type, size_t)):
+	 Add __n_elt parameter, defaulted to 1.
+	(_Hashtable::_M_insert_unique_node): Likewise. Use it to call rehash
+	policy _M_need_rehash.
+	(_Hashtable::_M_merge_unique): Pass target number of elements to add to
+	produce only 1 rehash if necessary.
+	* testsuite/23_containers/unordered_map/insert/83709.cc: New.
+	* testsuite/23_containers/unordered_set/insert/83709.cc: New.
+
+2018-01-09  Juraj Oršulić  <juraj.orsulic@fer.hr>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
-	* python/libstdcxx/v6/printers.py (_versioned_namespace): Define.
-	(is_specialization, strip_versioned_namespace): New helpers functions
-	to work with symbols in the versioned namespace.
-	(Printer.add_version): Add second name using versioned namespace.
-	(add_one_template_type_printer, add_one_type_printer): Add second
-	type printers using versioned namespace.
-	(register_type_printers): Add template type printer for basic_string.
-	(build_libstdcxx_dictionary): Remove dead code.
-	* python/libstdcxx/v6/xmethods.py: Make all matchers look for
-	versioned namespace.
-	* testsuite/libstdc++-prettyprinters/48362.cc: Adjust expected
-	results.
-	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+	PR libstdc++/59253 (partial)
+	* python/libstdcxx/v6/printers.py (SmartPtrIterator): Common iterator
+	type for pointer stored by shared_ptr, weak_ptr and unique_ptr.
+	(SharedPointerPrinter, UniquePointerPrinter): Treat stored values as
+	children.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Update expected output
+	of unique_ptr printer.
+	* testsuite/libstdc++-prettyprinters/shared_ptr.cc: Update expected
+	output of shared_ptr printer.
 
-2017-01-09  Jonathan Wakely  <jwakely@redhat.com>
+2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
-	PR libstdc++/79017
-	* acinclude.m4 (GLIBCXX_CHECK_C99_TR1): Check for llrint and llround
-	functions separately on darwin and if they're missing define
-	_GLIBCXX_NO_C99_ROUNDING_FUNCS.
-	* config.h.in: Regenerate.
-	* configure: Regenerate.
-	* include/c_global/cmath [_GLIBCXX_NO_C99_ROUNDING_FUNCS] (llrint)
-	(llrintf, llrintl, llround, llroundf, llroundl): Do not define.
+	PR libstdc++/83626
+	* src/filesystem/ops.cc (remove(const path&, error_code&)): Remove
+	unnecessary symlink_status call.
+	(remove_all(const path&, error_code&)): Use filesystem::remove.
+	* src/filesystem/std-ops.cc: Likewise.
 
-	* testsuite/30_threads/condition_variable/members/3.cc: Use new macro
-	to detect correct thread_local destructors.
-	* testsuite/util/testsuite_hooks.h (CORRECT_THREAD_LOCAL_DTORS):
-	Define.
+	PR libstdc++/83279
+	* src/filesystem/std-ops.cc  (do_copy_file): Use non-null offset with
+	sendfile.
 
-2017-01-09  Jonathan Wakely  <jwakely@redhat.com>
-	    Aditya Kumar  <hiraditya@msn.com>
+	PR libstdc++/83626
+	* src/filesystem/ops.cc (remove(const path&, error_code&)): Do not
+	report an error for ENOENT.
+	(remove_all(const path&)): Fix type of result variable.
+	(remove_all(const path&, error_code&)): Use non-throwing increment
+	for directory iterator. Call POSIX remove directly to avoid redundant
+	calls to symlink_status. Do not report errors for ENOENT.
+	* src/filesystem/std-ops.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Test throwing
+	overload.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
 
-	PR libstdc++/66414
-	* include/bits/basic_string.tcc
-	(basic_string::find(const CharT*, size_type, size_type)): Optimize.
+2018-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
-2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
+	PR libstdc++/83626
+	* src/filesystem/ops.cc (remove(const path&, error_code&))): Remove
+	redundant call to ec.clear().
+	(remove_all(const path&, error_code&))): Do not return an error for
+	non-existent paths.
+	* src/filesystem/std-ops.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove.cc: New test.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Fix expected
+	results for non-existent paths.
+	* testsuite/experimental/filesystem/operations/remove.cc: New test.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: Fix
+	expected results for non-existent paths.
 
-	* testsuite/21_strings/basic_string/operations/find/char/6.cc: New.
-	* testsuite/21_strings/basic_string/operations/find/wchar_t/6.cc: New.
+	* include/bits/fs_ops.h (exists(const path&, error_code&))): Only
+	check status_known once.
+	* include/experimental/bits/fs_ops.h: Likewise.
 
-	* testsuite/util/performance/priority_queue/mem_usage/pop_test.hpp:
-	Include <cassert> header.
+	PR libstdc++/83607
+	* include/std/functional (__is_byte_like): New trait.
+	(__is_std_equal_to): Remove.
+	(__boyer_moore_base_t): Use __is_byte_like instead of
+	__is_std_equal_to.
+	* include/experimental/functional (__is_std_equal_to): Remove.
+	(__boyer_moore_base_t): Use __is_byte_like instead of
+	__is_std_equal_to.
+	* testsuite/20_util/function_objects/83607.cc: New test.
 
-	PR libstdc++/78968
-	* crossconfig.m4: Check for __cxa_thread_atexit on *-*-freebsd*.
-	* configure: Regenerate.
+2018-01-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
-2017-01-06  Barrett Adair  <barrettellisadair@gmail.com>
-	    Jonathan Wakely  <jwakely@redhat.com>
+	Protect optional's deduction guide with the feature macro
+	* include/std/optional: Use the feature macro.
 
-	* include/std/variant (variant, swap): Replace __and_ usage with fold
-	expressions.
-
-2017-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
-
-	PR go/78978
-	* acinclude.m4 (GLIBCXX_CHECK_ASSEMBLER_HWCAP): Remove.
-	* configure.ac: Call GCC_CHECK_ASSEMBLER_HWCAP instead of
-	GLIBCXX_CHECK_ASSEMBLER_HWCAP.
-	* fragment.am (CONFIG_CXXFLAGS): Use HWCAP_CFLAGS instead of
-	HWCAP_FLAGS.
-	* aclocal.m4: Regenerate.
-	* configure: Regenerate.
-	* Makefile.in, doc/Makefile.in, include/Makefile.in,
-	libsupc++/Makefile.in, po/Makefile.in, python/Makefile.in,
-	src/Makefile.in, src/c++11/Makefile.in, src/c++98/Makefile.in,
-	src/filesystem/Makefile.in, testsuite/Makefile.in: Regenerate.
-
-2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/bits/c++config (_GLIBCXX_ASSERTIONS): Avoid redefinition.
-
-	PR libstdc++/78991
-	* include/bits/predefined_ops.h (_Iter_comp_iter, _Iter_comp_val)
-	(_Val_comp_iter, _Iter_equals_val, _Iter_pred, _Iter_comp_to_val)
-	(_Iter_comp_to_iter, _Iter_negate): Make constructors explicit and
-	move function objects.
-	(__iter_comp_iter, __iter_comp_val, __val_comp_iter, __pred_iter)
-	(__iter_comp_val, __iter_comp_iter, __negate): Move function objects.
-	* testsuite/25_algorithms/sort/78991.cc: New test.
-
-2017-01-05  Jonathan Wakely  <jwakely@redhat.com>
-
-	* include/bits/std_function.h (function::_Signature_type): Remove.
-	(function::function(_Functor)): Adjust.
-
-2017-01-05  Tim Shen  <timshen@google.com>
-
-	PR libstdc++/78996
-	* include/std/variant (__gen_vtable_impl): rename __unused to
-	__dimensions to avoid naming conflict.
-
-2017-01-04  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/78968
-	* config.h.in: Regenerate.
-	* configure: Likewise.
-	* configure.ac: Check for __cxa_thread_atexit.
-	* libsupc++/atexit_thread.cc [_GLIBCXX_HAVE___CXA_THREAD_ATEXIT]:
-	Don't define __cxa_thread_atexit if libc provides it.
-
-2017-01-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
-
-	Implement 2801, Default-constructibility of unique_ptr.
-	* include/bits/unique_ptr.h (__uniq_ptr_impl::_DeleterConstraint): New.
-	(unique_ptr::_DeleterConstraint): Likewise.
-	(unique_ptr()): Constrain.
-	(unique_ptr(pointer)): Likewise.
-	(unique_ptr(nullptr_t)): Likewise.
-	(unique_ptr<_Tp[], _Dp>::_DeleterConstraint): New.
-	(unique_ptr<_Tp[], _Dp>::unique_ptr()): Constrain.
-	(unique_ptr<_Tp[], _Dp>::unique_ptr(_Up)): Likewise.
-	(unique_ptr<_Tp[], _Dp>::unique_ptr(nullptr_t)): Likewise.
-	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust.
-	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: Likewise.
-	* testsuite/20_util/unique_ptr/cons/default.cc: New.
-	* testsuite/20_util/unique_ptr/cons/ptr_deleter_neg.cc: Adjust.
-
-2017-01-04  Pauli Nieminen  <suokkos@gmail.com>
-	    Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/64735
-	* acinclude.m4 (GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER): Define.
-	* config.h.in: Regenerate.
-	* config/abi/pre/gnu.ver [HAVE_EXCEPTION_PTR_SINCE_GCC46]
-	(GLIBCXX_3.4.15, GLIBCXX_3.4.21, CXXABI_1.3.3, CXXABI_1.3.5): Make
-	exports for exception_ptr, nested_exception, and future conditional.
-	[HAVE_EXCEPTION_PTR_SINCE_GCC46] (GLIBCXX_3.4.23, CXXABI_1.3.11): Add
-	exports for exception_ptr, nested_exception, and future conditional.
-	* configure: Regenerate.
-	* configure.ac: Use GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER.
-	* include/std/future: Remove check for ATOMIC_INT_LOCK_FREE
-	* libsupc++/eh_atomics.h: New file for internal use only.
-	(__eh_atomic_inc, __eh_atomic_dec): New.
-	* libsupc++/eh_ptr.cc (exception_ptr::_M_addref)
-	(exception_ptr::_M_release) (__gxx_dependent_exception_cleanup)
-	(rethrow_exception): Use eh_atomics.h reference counting helpers.
-	* libsupc++/eh_throw.cc (__gxx_exception_cleanup): Likewise.
-	* libsupc++/eh_tm.cc (free_any_cxa_exception): Likewise.
-	* libsupc++/exception: Remove check for ATOMIC_INT_LOCK_FREE.
-	* libsupc++/exception_ptr.h: Likewise.
-	* libsupc++/guard.cc: Include header for ATOMIC_INT_LOCK_FREE macro.
-	* libsupc++/nested_exception.cc: Remove check for
-	ATOMIC_INT_LOCK_FREE.
-	* libsupc++/nested_exception.h: Likewise.
-	* src/c++11/future.cc: Likewise.
-	* testsuite/18_support/exception_ptr/*: Remove atomic builtins checks.
-	* testsuite/18_support/nested_exception/*: Likewise.
-	* testsuite/30_threads/async/*: Likewise.
-	* testsuite/30_threads/future/*: Likewise.
-	* testsuite/30_threads/headers/future/types_std_c++0x.cc: Likewise.
-	* testsuite/30_threads/packaged_task/*: Likewise.
-	* testsuite/30_threads/promise/*: Likewise.
-	* testsuite/30_threads/shared_future/*: Likewise.
-
-2017-01-03  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/manual/documentation_hacking.xml: sourceforge.net now
-	defaults to https; adjust reference.
-
-2017-01-03  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR libstdc++/78956
-	* include/std/thread (thread(const thread&&)): Add deleted
-	constructor.
-	* testsuite/30_threads/thread/cons/lwg2097.cc: New test.
-
-	* doc/xml/manual/spine.xml: Update copyright years.
-	* doc/xml/manual/build_hacking.xml: Fix spelling of libbuilddir.
-	* doc/xml/manual/test.xml: Likewise.
-	* doc/html/*: Regenerate.
-
-2017-01-01  Gerald Pfeifer  <gerald@pfeifer.com>
-
-	* doc/xml/faq.xml: Update address of C++ ABI link.
-	* doc/xml/manual/abi.xml: Ditto.
-
-2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
 
-Copyright (C) 2017 Free Software Foundation, Inc.
+Copyright (C) 2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

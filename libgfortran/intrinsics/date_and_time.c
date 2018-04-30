@@ -1,5 +1,5 @@
 /* Implementation of the DATE_AND_TIME intrinsic.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Steven Bosscher.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -267,13 +267,14 @@ secnds (GFC_REAL_4 *x)
   GFC_INTEGER_4 values[VALUES_SIZE];
   GFC_REAL_4 temp1, temp2;
 
-  /* Make the INTEGER*4 array for passing to date_and_time.  */
-  gfc_array_i4 *avalues = xmalloc (sizeof (gfc_array_i4));
+  /* Make the INTEGER*4 array for passing to date_and_time, with enough space
+   for a rank-one array.  */
+  gfc_array_i4 *avalues = xmalloc (sizeof (gfc_array_i4)
+				   + sizeof (descriptor_dimension));
   avalues->base_addr = &values[0];
-  GFC_DESCRIPTOR_DTYPE (avalues) = ((BT_REAL << GFC_DTYPE_TYPE_SHIFT)
-				        & GFC_DTYPE_TYPE_MASK) +
-				    (4 << GFC_DTYPE_SIZE_SHIFT);
-
+  GFC_DESCRIPTOR_DTYPE (avalues).type = BT_REAL;
+  GFC_DESCRIPTOR_DTYPE (avalues).elem_len = 4;
+  GFC_DESCRIPTOR_DTYPE (avalues).rank = 1;
   GFC_DIMENSION_SET(avalues->dim[0], 0, 7, 1);
 
   date_and_time (NULL, NULL, NULL, avalues, 0, 0, 0);

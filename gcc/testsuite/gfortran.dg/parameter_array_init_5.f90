@@ -13,9 +13,9 @@ contains
     parameter(parm=(/'xo ','yo ','ag ','xr ','yr '/))
 
     str =    'XXXXXXXXXXXXXXXXXXXX'
-    if(str /='XXXXXXXXXXXXXXXXXXXX') call abort()
+    if(str /='XXXXXXXXXXXXXXXXXXXX') STOP 1
     write(str,*) parm
-    if(str /= ' xo yo ag xr yr') call abort()
+    if(str /= ' xo yo ag xr yr') STOP 2
     end subroutine SR
 end Module BUG3
 !

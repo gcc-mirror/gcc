@@ -1,5 +1,5 @@
 /* brig-util.cc -- gccbrig utility functions
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -26,6 +26,35 @@ along with GCC; see the file COPYING3.  If not see
 #include "brig-util.h"
 #include "errors.h"
 #include "diagnostic-core.h"
+#include "print-tree.h"
+
+bool
+group_variable_offset_index::has_variable (const std::string &name) const
+{
+  varname_offset_table::const_iterator i = m_group_offsets.find (name);
+  return i != m_group_offsets.end ();
+}
+
+/* Adds a new group segment variable.  */
+
+void
+group_variable_offset_index::add (const std::string &name, size_t size,
+				  size_t alignment)
+{
+  size_t align_padding = m_next_group_offset % alignment == 0 ?
+    0 : (alignment - m_next_group_offset % alignment);
+  m_next_group_offset += align_padding;
+  m_group_offsets[name] = m_next_group_offset;
+  m_next_group_offset += size;
+}
+
+size_t
+group_variable_offset_index::segment_offset (const std::string &name) const
+{
+  varname_offset_table::const_iterator i = m_group_offsets.find (name);
+  gcc_assert (i != m_group_offsets.end ());
+  return (*i).second;
+}
 
 /* Return true if operand number OPNUM of instruction with OPCODE is an output.
    False if it is an input.  Some code reused from Martin Jambor's gcc-hsa
@@ -444,4 +473,93 @@ gccbrig_tree_type_for_hsa_type (BrigType16_t brig_type)
 
   /* Drop const qualifiers.  */
   return tree_type;
+}
+
+/* Calculates numeric identifier for the HSA register REG.
+
+   Returned value is bound to [0, BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT].  */
+
+size_t
+gccbrig_hsa_reg_id (const BrigOperandRegister &reg)
+{
+  size_t offset = reg.regNum;
+  switch (reg.regKind)
+    {
+    case BRIG_REGISTER_KIND_QUAD:
+      offset
+	+= BRIG_2_TREE_HSAIL_D_REG_COUNT + BRIG_2_TREE_HSAIL_S_REG_COUNT
+	+ BRIG_2_TREE_HSAIL_C_REG_COUNT;
+      break;
+    case BRIG_REGISTER_KIND_DOUBLE:
+      offset += BRIG_2_TREE_HSAIL_S_REG_COUNT + BRIG_2_TREE_HSAIL_C_REG_COUNT;
+      break;
+    case BRIG_REGISTER_KIND_SINGLE:
+      offset += BRIG_2_TREE_HSAIL_C_REG_COUNT;
+    case BRIG_REGISTER_KIND_CONTROL:
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+  return offset;
+}
+
+std::string
+gccbrig_hsa_reg_name_from_id (size_t reg_id)
+{
+  char reg_name[32];
+  long unsigned int reg_hash = (long unsigned int) reg_id;
+  if (reg_hash < BRIG_2_TREE_HSAIL_C_REG_COUNT)
+    {
+      sprintf (reg_name, "$c%lu", reg_hash);
+      return reg_name;
+    }
+
+  reg_hash -= BRIG_2_TREE_HSAIL_C_REG_COUNT;
+  if (reg_hash < BRIG_2_TREE_HSAIL_S_REG_COUNT)
+    {
+      sprintf (reg_name, "$s%lu", reg_hash);
+      return reg_name;
+    }
+
+  reg_hash -= BRIG_2_TREE_HSAIL_S_REG_COUNT;
+  if (reg_hash < BRIG_2_TREE_HSAIL_D_REG_COUNT)
+    {
+      sprintf (reg_name, "$d%lu", reg_hash);
+      return reg_name;
+    }
+
+   reg_hash -= BRIG_2_TREE_HSAIL_D_REG_COUNT;
+   if (reg_hash < BRIG_2_TREE_HSAIL_Q_REG_COUNT)
+    {
+      sprintf (reg_name, "$q%lu", reg_hash);
+      return reg_name;
+    }
+
+  gcc_unreachable ();
+  return "$??";
+}
+
+/* Prints statistics of register usage to stdout.  */
+
+void
+gccbrig_print_reg_use_info (FILE *dump, const regs_use_index &info)
+{
+  regs_use_index::const_iterator begin_it = info.begin ();
+  regs_use_index::const_iterator end_it = info.end ();
+  for (regs_use_index::const_iterator it = begin_it; it != end_it; it++)
+    {
+      std::string hsa_reg = gccbrig_hsa_reg_name_from_id (it->first);
+      printf ("%s:\n", hsa_reg.c_str ());
+      const reg_use_info &info = it->second;
+      typedef std::vector<std::pair<tree, size_t> >::const_iterator reg_use_it;
+      reg_use_it begin_it2 = info.m_type_refs.begin ();
+      reg_use_it end_it2 = info.m_type_refs.end ();
+      for (reg_use_it it2 = begin_it2; it2 != end_it2; it2++)
+	{
+	  fprintf (dump, "(%lu) ", (long unsigned int) it2->second);
+	  print_node_brief (dump, "", it2->first, 0);
+	  fprintf (dump, "\n");
+	}
+    }
 }

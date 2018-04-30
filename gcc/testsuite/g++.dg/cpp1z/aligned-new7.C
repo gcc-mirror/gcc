@@ -1,5 +1,5 @@
 // PR c++/77742
-// { dg-options "-Wall -std=c++1z" }
+// { dg-options "-Wall -std=c++17" }
 
 #include <new>
 

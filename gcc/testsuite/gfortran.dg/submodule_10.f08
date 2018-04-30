@@ -167,5 +167,3 @@ program testlk
 
   stop
 end program testlk
-! { dg-final { cleanup-submodules "error_mod@error_impl_mod" } }
-

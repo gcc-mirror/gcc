@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++17" }
 
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,12 +30,12 @@ void test01()
   VERIFY( y == 3 );
   VERIFY( z == 4 );
 
-  const int xc = std::clamp(1, 2, 4, std::greater<int>());
-  const int yc = std::clamp(3, 2, 4, std::greater<int>());
-  const int zc = std::clamp(5, 2, 4, std::greater<int>());
-  VERIFY( xc == 4 );
-  VERIFY( yc == 2 );
-  VERIFY( zc == 2 );
+  const int xc = std::clamp(1, 4, 2, std::greater<int>());
+  const int yc = std::clamp(3, 4, 2, std::greater<int>());
+  const int zc = std::clamp(5, 4, 2, std::greater<int>());
+  VERIFY( xc == 2 );
+  VERIFY( yc == 3 );
+  VERIFY( zc == 4 );
 }
 
 int

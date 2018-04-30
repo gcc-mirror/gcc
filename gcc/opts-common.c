@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
+
+/* An option that is undocumented, that takes a joined argument, and
+   that doesn't fit any of the classes of uses (language/common,
+   driver, target) is assumed to be a prefix used to catch
+   e.g. negated options, and stop them from being further shortened to
+   a prefix that could use the negated option as an argument.  For
+   example, we want -gno-statement-frontiers to be taken as a negation
+   of -gstatement-frontiers, but without catching the gno- prefix and
+   signaling it's to be used for option remapping, it would end up
+   backtracked to g with no-statemnet-frontiers as the debug level.  */
+
+static bool
+remapping_prefix_p (const struct cl_option *opt)
+{
+  return opt->flags & CL_UNDOCUMENTED
+    && opt->flags & CL_JOINED
+    && !(opt->flags & (CL_DRIVER | CL_TARGET | CL_COMMON | CL_LANG_ALL));
+}
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and
@@ -97,6 +115,9 @@ find_opt (const char *input, unsigned int lang_mask)
 	  /* If language is OK, return it.  */
 	  if (opt->flags & lang_mask)
 	    return mn;
+
+	  if (remapping_prefix_p (opt))
+	    return OPT_SPECIAL_unknown;
 
 	  /* If we haven't remembered a prior match, remember this
 	     one.  Any prior match is necessarily better.  */
@@ -286,7 +307,8 @@ generate_canonical_option (size_t opt_index, const char *arg, int value,
 
   if (value == 0
       && !option->cl_reject_negative
-      && (opt_text[1] == 'W' || opt_text[1] == 'f' || opt_text[1] == 'm'))
+      && (opt_text[1] == 'W' || opt_text[1] == 'f'
+	  || opt_text[1] == 'g' || opt_text[1] == 'm'))
     {
       char *t = XOBNEWVEC (&opts_obstack, char, option->opt_len + 5);
       t[0] = '-';
@@ -349,6 +371,7 @@ static const struct option_map option_map[] =
   {
     { "-Wno-", NULL, "-W", false, true },
     { "-fno-", NULL, "-f", false, true },
+    { "-gno-", NULL, "-g", false, true },
     { "-mno-", NULL, "-m", false, true },
     { "--debug=", NULL, "-g", false, false },
     { "--machine-", NULL, "-m", true, false },
@@ -394,6 +417,8 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
   gcc_assert (candidates);
   gcc_assert (option);
   gcc_assert (opt_text);
+  if (remapping_prefix_p (option))
+    return;
   candidates->safe_push (xstrdup (opt_text + 1));
   for (unsigned i = 0; i < ARRAY_SIZE (option_map); i++)
     {
@@ -661,6 +686,11 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       value = integral_argument (arg);
       if (value == -1)
 	errors |= CL_ERR_UINT_ARG;
+
+      /* Reject value out of a range.  */
+      if (option->range_max != -1
+	  && (value < option->range_min || value > option->range_max))
+	errors |= CL_ERR_INT_RANGE_ARG;
     }
 
   /* If the switch takes an enumerated argument, convert it.  */
@@ -988,7 +1018,8 @@ handle_option (struct gcc_options *opts,
       {
 	if (!handlers->handlers[i].handler (opts, opts_set, decoded,
 					    lang_mask, kind, loc,
-					    handlers, dc))
+					    handlers, dc,
+					    handlers->target_option_override_hook))
 	  return false;
       }
   
@@ -1134,6 +1165,13 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
     {
       error_at (loc, "argument to %qs should be a non-negative integer",
 		option->opt_text);
+      return true;
+    }
+
+  if (errors & CL_ERR_INT_RANGE_ARG)
+    {
+      error_at (loc, "argument to %qs is not between %d and %d",
+		option->opt_text, option->range_min, option->range_max);
       return true;
     }
 

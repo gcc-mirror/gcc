@@ -1,6 +1,6 @@
 /* Target macros for arc*-elf targets.
 
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,3 +58,18 @@ along with GCC; see the file COPYING3.  If not see
 /* Bare-metal toolchains do not need a thread pointer register.  */
 #undef TARGET_ARC_TP_REGNO_DEFAULT
 #define TARGET_ARC_TP_REGNO_DEFAULT -1
+
+/* Indexed loads are default.  */
+#undef TARGET_INDEXED_LOADS_DEFAULT
+#define TARGET_INDEXED_LOADS_DEFAULT 1
+
+/* Pre/post modify with register displacement are default.  */
+#undef TARGET_AUTO_MODIFY_REG_DEFAULT
+#define TARGET_AUTO_MODIFY_REG_DEFAULT 1
+
+/* Build attribute: procedure call standard.  */
+#undef ATTRIBUTE_PCS
+#define ATTRIBUTE_PCS 2
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END arc_file_end

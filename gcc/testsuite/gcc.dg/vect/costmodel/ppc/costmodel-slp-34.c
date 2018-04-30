@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-skip-if "cost too high" { powerpc*le-*-* } { "*" } { "" } } */
+/* { dg-skip-if "cost too high" { powerpc*le-*-* } } */
 
 #include <stdarg.h>
 #include "../../tree-vect.h"

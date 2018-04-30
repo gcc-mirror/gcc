@@ -920,6 +920,35 @@ verify_get_address (gcc_jit_result *result)
 }
 
 /**********************************************************************
+ Vector values
+ **********************************************************************/
+
+static void
+make_test_of_vectors (gcc_jit_context *ctxt)
+{
+  gcc_jit_type *scalar_type;
+  gcc_jit_type *vec_type;
+  gcc_jit_rvalue *elements[4];
+
+  scalar_type = gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
+
+  vec_type = gcc_jit_type_get_vector (scalar_type, 4);
+
+  elements[0] = gcc_jit_context_new_rvalue_from_int (ctxt, scalar_type, 1);
+  elements[1] = gcc_jit_context_new_rvalue_from_int (ctxt, scalar_type, -2);
+  elements[2] = gcc_jit_context_new_rvalue_from_int (ctxt, scalar_type, 3);
+  elements[3] = gcc_jit_context_new_rvalue_from_int (ctxt, scalar_type, -4);
+
+  gcc_jit_rvalue *vec_rvalue
+    = gcc_jit_context_new_rvalue_from_vector (ctxt, NULL, vec_type,
+					      4, elements);
+  CHECK_STRING_VALUE (
+    gcc_jit_object_get_debug_string (
+      gcc_jit_rvalue_as_object (vec_rvalue)),
+    "{(int)1, (int)-2, (int)3, (int)-4}");
+}
+
+/**********************************************************************
  Code for harness
  **********************************************************************/
 
@@ -932,6 +961,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
   make_tests_of_casts (ctxt);
   make_tests_of_dereferences (ctxt);
   make_test_of_get_address (ctxt);
+  make_test_of_vectors (ctxt);
 }
 
 void

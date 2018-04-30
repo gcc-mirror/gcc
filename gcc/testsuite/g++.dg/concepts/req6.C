@@ -1,10 +1,10 @@
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 struct X { };
 int operator==(X, X) { return 0; }
 
 template<typename T>
-  concept bool C1() { return X(); }
+  concept bool C1() { return X(); } // { dg-error "bool" }
 
 template<C1 T>
   void h(T) { } // OK until used.

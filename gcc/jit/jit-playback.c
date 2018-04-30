@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -211,10 +211,9 @@ playback::context::
 get_type (enum gcc_jit_types type_)
 {
   tree type_node = get_tree_node_for_type (type_);
-  if (NULL == type_node)
+  if (type_node == NULL)
     {
-      add_error (NULL,
-		 "unrecognized (enum gcc_jit_types) value: %i", type_);
+      add_error (NULL, "unrecognized (enum gcc_jit_types) value: %i", type_);
       return NULL;
     }
 
@@ -627,6 +626,22 @@ new_string_literal (const char *value)
   tree t_addr = build1 (ADDR_EXPR, m_const_char_ptr, t_str);
 
   return new rvalue (this, t_addr);
+}
+
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   vector.  */
+
+playback::rvalue *
+playback::context::new_rvalue_from_vector (location *,
+					   type *type,
+					   const auto_vec<rvalue *> &elements)
+{
+  vec<constructor_elt, va_gc> *v;
+  vec_alloc (v, elements.length ());
+  for (unsigned i = 0; i < elements.length (); ++i)
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elements[i]->as_tree ());
+  tree t_ctor = build_constructor (type->as_tree (), v);
+  return new rvalue (this, t_ctor);
 }
 
 /* Coerce a tree expression into a boolean tree expression.  */
@@ -1110,6 +1125,17 @@ get_aligned (size_t alignment_in_bytes) const
   return new type (t_new_type);
 }
 
+/* Construct a playback::type instance (wrapping a tree)
+   for the given vector type.  */
+
+playback::type *
+playback::type::
+get_vector (size_t num_units) const
+{
+  tree t_new_type = build_vector_type (m_inner, num_units);
+  return new type (t_new_type);
+}
+
 /* Construct a playback::lvalue instance (wrapping a tree) for a
    field access.  */
 
@@ -1343,6 +1369,20 @@ new_block (const char *name)
   block *result = new playback::block (this, name);
   m_blocks.safe_push (result);
   return result;
+}
+
+/* Construct a playback::rvalue instance wrapping an ADDR_EXPR for
+   this playback::function.  */
+
+playback::rvalue *
+playback::function::get_address (location *loc)
+{
+  tree t_fndecl = as_fndecl ();
+  tree t_fntype = TREE_TYPE (t_fndecl);
+  tree t_fnptr = build1 (ADDR_EXPR, build_pointer_type (t_fntype), t_fndecl);
+  if (loc)
+    m_ctxt->set_tree_location (t_fnptr, loc);
+  return new rvalue (m_ctxt, t_fnptr);
 }
 
 /* Build a statement list for the function as a whole out of the
@@ -1648,12 +1688,7 @@ add_case (tree *ptr_t_switch_body,
 
 /* Add a switch statement to the function's statement list.
 
-   My initial attempt at implementing this constructed a TREE_VEC
-   of the cases and set it as SWITCH_LABELS (switch_expr).  However,
-   gimplify.c:gimplify_switch_expr is set up to deal with SWITCH_BODY, and
-   doesn't have any logic for gimplifying SWITCH_LABELS.
-
-   Hence we create a switch body, and populate it with case labels, each
+   We create a switch body, and populate it with case labels, each
    followed by a goto to the desired block.  */
 
 void
@@ -1681,18 +1716,12 @@ add_switch (location *loc,
     {
       tree t_low_value = c->m_min_value->as_tree ();
       tree t_high_value = c->m_max_value->as_tree ();
-      add_case (&t_switch_body,
-		t_low_value,
-		t_high_value,
-		c->m_dest_block);
+      add_case (&t_switch_body, t_low_value, t_high_value, c->m_dest_block);
     }
   /* Default label. */
-  add_case (&t_switch_body,
-	    NULL_TREE, NULL_TREE,
-	    default_block);
+  add_case (&t_switch_body, NULL_TREE, NULL_TREE, default_block);
 
-  tree switch_stmt = build3 (SWITCH_EXPR, t_type, t_expr,
-			     t_switch_body, NULL_TREE);
+  tree switch_stmt = build2 (SWITCH_EXPR, t_type, t_expr, t_switch_body);
   if (loc)
     set_tree_location (switch_stmt, loc);
   add_stmt (switch_stmt);
@@ -2019,7 +2048,7 @@ playback::compile_to_file::copy_file (const char *src_path,
   /* Use stat on the filedescriptor to get the mode,
      so that we can copy it over (in particular, the
      "executable" bits).  */
-  if (-1 == fstat (fileno (f_in), &stat_buf))
+  if (fstat (fileno (f_in), &stat_buf) == -1)
     {
       add_error (NULL,
 		 "unable to fstat %s: %s",
@@ -2083,7 +2112,7 @@ playback::compile_to_file::copy_file (const char *src_path,
 
   /* Set the permissions of the copy to those of the original file,
      in particular the "executable" bits.  */
-  if (-1 == fchmod (fileno (f_out), stat_buf.st_mode))
+  if (fchmod (fileno (f_out), stat_buf.st_mode) == -1)
     add_error (NULL,
 	       "error setting mode of %s: %s",
 	       dst_path,
@@ -2109,7 +2138,7 @@ playback::context::acquire_mutex ()
   /* Acquire the big GCC mutex. */
   JIT_LOG_SCOPE (get_logger ());
   pthread_mutex_lock (&jit_mutex);
-  gcc_assert (NULL == active_playback_ctxt);
+  gcc_assert (active_playback_ctxt == NULL);
   active_playback_ctxt = this;
 }
 

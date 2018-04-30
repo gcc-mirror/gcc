@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -28,6 +28,14 @@ struct edge_growth_cache_entry
   sreal time, nonspec_time;
   int size;
   ipa_hints hints;
+
+  edge_growth_cache_entry()
+    : size (0), hints (0) {}
+
+  edge_growth_cache_entry(int64_t time, int64_t nonspec_time,
+			  int size, ipa_hints hints)
+    : time (time), nonspec_time (nonspec_time), size (size),
+      hints (hints) {}
 };
 
 extern vec<edge_growth_cache_entry> edge_growth_cache;
@@ -51,8 +59,7 @@ bool inline_account_function_p (struct cgraph_node *node);
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge *> *, int *, bool,
 		  bool *callee_removed = NULL);
 unsigned int inline_transform (struct cgraph_node *);
-void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *,
-			  int freq_scale);
+void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *);
 
 extern int ncalls_inlined;
 extern int nfunctions_inlined;
@@ -116,7 +123,7 @@ reset_edge_growth_cache (struct cgraph_edge *edge)
 {
   if ((int)edge_growth_cache.length () > edge->uid)
     {
-      struct edge_growth_cache_entry zero = {0, 0, 0, 0};
+      struct edge_growth_cache_entry zero (0, 0, 0, 0);
       edge_growth_cache[edge->uid] = zero;
     }
 }

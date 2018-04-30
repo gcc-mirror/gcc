@@ -5,6 +5,7 @@
 package runtime_test
 
 import (
+	"flag"
 	"io"
 	. "runtime"
 	"runtime/debug"
@@ -12,6 +13,8 @@ import (
 	"testing"
 	"unsafe"
 )
+
+var flagQuick = flag.Bool("quick", false, "skip slow tests, for second run in all.bash")
 
 func init() {
 	// We're testing the runtime, so make tracebacks show things
@@ -50,6 +53,23 @@ func BenchmarkIfaceCmpNil100(b *testing.B) {
 	}
 }
 
+var efaceCmp1 interface{}
+var efaceCmp2 interface{}
+
+func BenchmarkEfaceCmpDiff(b *testing.B) {
+	x := 5
+	efaceCmp1 = &x
+	y := 6
+	efaceCmp2 = &y
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 100; j++ {
+			if efaceCmp1 == efaceCmp2 {
+				b.Fatal("bad comparison")
+			}
+		}
+	}
+}
+
 func BenchmarkDefer(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		defer1()
@@ -62,7 +82,6 @@ func defer1() {
 			panic("bad recover")
 		}
 	}(1, 2, 3)
-	return
 }
 
 func BenchmarkDefer10(b *testing.B) {
@@ -180,9 +199,9 @@ func eqstring_generic(s1, s2 string) bool {
 }
 
 func TestEqString(t *testing.T) {
-	// This isn't really an exhaustive test of eqstring, it's
+	// This isn't really an exhaustive test of == on strings, it's
 	// just a convenient way of documenting (via eqstring_generic)
-	// what eqstring does.
+	// what == does.
 	s := []string{
 		"",
 		"a",
@@ -197,7 +216,7 @@ func TestEqString(t *testing.T) {
 			x := s1 == s2
 			y := eqstring_generic(s1, s2)
 			if x != y {
-				t.Errorf(`eqstring("%s","%s") = %t, want %t`, s1, s2, x, y)
+				t.Errorf(`("%s" == "%s") = %t, want %t`, s1, s2, x, y)
 			}
 		}
 	}

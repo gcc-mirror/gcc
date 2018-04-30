@@ -1,5 +1,5 @@
 /* Find near-matches for strings and identifiers.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -175,6 +175,13 @@ class best_match
     if (m_best_distance == 0)
       return NULL;
 
+    return m_best_candidate;
+  }
+
+  /* Get the closest candidate so far, without applying any filtering.  */
+
+  candidate_t blithely_get_best_candidate () const
+  {
     return m_best_candidate;
   }
 

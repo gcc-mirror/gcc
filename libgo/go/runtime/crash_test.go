@@ -32,25 +32,6 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
-func testEnv(cmd *exec.Cmd) *exec.Cmd {
-	if cmd.Env != nil {
-		panic("environment already set")
-	}
-	for _, env := range os.Environ() {
-		// Exclude GODEBUG from the environment to prevent its output
-		// from breaking tests that are trying to parse other command output.
-		if strings.HasPrefix(env, "GODEBUG=") {
-			continue
-		}
-		// Exclude GOTRACEBACK for the same reason.
-		if strings.HasPrefix(env, "GOTRACEBACK=") {
-			continue
-		}
-		cmd.Env = append(cmd.Env, env)
-	}
-	return cmd
-}
-
 var testprog struct {
 	sync.Mutex
 	dir    string
@@ -62,7 +43,11 @@ type buildexe struct {
 	err error
 }
 
-func runTestProg(t *testing.T, binary, name string) string {
+func runTestProg(t *testing.T, binary, name string, env ...string) string {
+	if *flagQuick {
+		t.Skip("-quick")
+	}
+
 	testenv.MustHaveGoBuild(t)
 
 	exe, err := buildTestProg(t, binary)
@@ -70,7 +55,11 @@ func runTestProg(t *testing.T, binary, name string) string {
 		t.Fatal(err)
 	}
 
-	cmd := testEnv(exec.Command(exe, name))
+	cmd := testenv.CleanCmdEnv(exec.Command(exe, name))
+	cmd.Env = append(cmd.Env, env...)
+	if testing.Short() {
+		cmd.Env = append(cmd.Env, "RUNTIME_TEST_SHORT=1")
+	}
 	var b bytes.Buffer
 	cmd.Stdout = &b
 	cmd.Stderr = &b
@@ -111,6 +100,10 @@ func runTestProg(t *testing.T, binary, name string) string {
 }
 
 func buildTestProg(t *testing.T, binary string, flags ...string) (string, error) {
+	if *flagQuick {
+		t.Skip("-quick")
+	}
+
 	checkStaleRuntime(t)
 
 	testprog.Lock()
@@ -139,7 +132,7 @@ func buildTestProg(t *testing.T, binary string, flags ...string) (string, error)
 	exe := filepath.Join(testprog.dir, name+".exe")
 	cmd := exec.Command(testenv.GoToolPath(t), append([]string{"build", "-o", exe}, flags...)...)
 	cmd.Dir = "testdata/" + binary
-	out, err := testEnv(cmd).CombinedOutput()
+	out, err := testenv.CleanCmdEnv(cmd).CombinedOutput()
 	if err != nil {
 		target.err = fmt.Errorf("building %s %v: %v\n%s", binary, flags, err, out)
 		testprog.target[name] = target
@@ -157,13 +150,22 @@ var (
 
 func checkStaleRuntime(t *testing.T) {
 	staleRuntimeOnce.Do(func() {
+		if runtime.Compiler == "gccgo" {
+			return
+		}
 		// 'go run' uses the installed copy of runtime.a, which may be out of date.
-		out, err := testEnv(exec.Command(testenv.GoToolPath(t), "list", "-f", "{{.Stale}}", "runtime")).CombinedOutput()
+		out, err := testenv.CleanCmdEnv(exec.Command(testenv.GoToolPath(t), "list", "-gcflags=all="+os.Getenv("GO_GCFLAGS"), "-f", "{{.Stale}}", "runtime")).CombinedOutput()
 		if err != nil {
 			staleRuntimeErr = fmt.Errorf("failed to execute 'go list': %v\n%v", err, string(out))
 			return
 		}
 		if string(out) != "false\n" {
+			t.Logf("go list -f {{.Stale}} runtime:\n%s", out)
+			out, err := testenv.CleanCmdEnv(exec.Command(testenv.GoToolPath(t), "list", "-gcflags=all="+os.Getenv("GO_GCFLAGS"), "-f", "{{.StaleReason}}", "runtime")).CombinedOutput()
+			if err != nil {
+				t.Logf("go list -f {{.StaleReason}} failed: %v", err)
+			}
+			t.Logf("go list -f {{.StaleReason}} runtime:\n%s", out)
 			staleRuntimeErr = fmt.Errorf("Stale runtime.a. Run 'go install runtime'.")
 		}
 	})
@@ -225,6 +227,9 @@ func TestGoexitDeadlock(t *testing.T) {
 }
 
 func TestStackOverflow(t *testing.T) {
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not do stack overflow checking")
+	}
 	output := runTestProg(t, "testprog", "StackOverflow")
 	want := "runtime: goroutine stack exceeds 1474560-byte limit\nfatal error: stack overflow"
 	if !strings.HasPrefix(output, want) {
@@ -302,7 +307,10 @@ func TestNoHelperGoroutines(t *testing.T) {
 
 func TestBreakpoint(t *testing.T) {
 	output := runTestProg(t, "testprog", "Breakpoint")
-	want := "runtime.Breakpoint()"
+	// If runtime.Breakpoint() is inlined, then the stack trace prints
+	// "runtime.Breakpoint(...)" instead of "runtime.Breakpoint()".
+	// For gccgo, no parens.
+	want := "runtime.Breakpoint"
 	if !strings.Contains(output, want) {
 		t.Fatalf("output:\n%s\n\nwant output containing: %s", output, want)
 	}
@@ -419,8 +427,16 @@ func TestPanicTraceback(t *testing.T) {
 
 	// Check functions in the traceback.
 	fns := []string{"main.pt1.func1", "panic", "main.pt2.func1", "panic", "main.pt2", "main.pt1"}
+	if runtime.Compiler == "gccgo" {
+		fns = []string{"main.pt1..func1", "panic", "main.pt2..func1", "panic", "main.pt2", "main.pt1"}
+	}
 	for _, fn := range fns {
-		re := regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(fn) + `\(.*\n`)
+		var re *regexp.Regexp
+		if runtime.Compiler != "gccgo" {
+			re = regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(fn) + `\(.*\n`)
+		} else {
+			re = regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(fn) + `.*\n`)
+		}
 		idx := re.FindStringIndex(output)
 		if idx == nil {
 			t.Fatalf("expected %q function in traceback:\n%s", fn, output)
@@ -454,41 +470,49 @@ func TestPanicLoop(t *testing.T) {
 
 func TestMemPprof(t *testing.T) {
 	testenv.MustHaveGoRun(t)
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo may not have the pprof tool")
+	}
 
 	exe, err := buildTestProg(t, "testprog")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	got, err := testEnv(exec.Command(exe, "MemProf")).CombinedOutput()
+	got, err := testenv.CleanCmdEnv(exec.Command(exe, "MemProf")).CombinedOutput()
 	if err != nil {
 		t.Fatal(err)
 	}
 	fn := strings.TrimSpace(string(got))
 	defer os.Remove(fn)
 
-	cmd := testEnv(exec.Command(testenv.GoToolPath(t), "tool", "pprof", "-alloc_space", "-top", exe, fn))
-
-	found := false
-	for i, e := range cmd.Env {
-		if strings.HasPrefix(e, "PPROF_TMPDIR=") {
-			cmd.Env[i] = "PPROF_TMPDIR=" + os.TempDir()
-			found = true
-			break
+	for try := 0; try < 2; try++ {
+		cmd := testenv.CleanCmdEnv(exec.Command(testenv.GoToolPath(t), "tool", "pprof", "-alloc_space", "-top"))
+		// Check that pprof works both with and without explicit executable on command line.
+		if try == 0 {
+			cmd.Args = append(cmd.Args, exe, fn)
+		} else {
+			cmd.Args = append(cmd.Args, fn)
 		}
-	}
-	if !found {
-		cmd.Env = append(cmd.Env, "PPROF_TMPDIR="+os.TempDir())
-	}
+		found := false
+		for i, e := range cmd.Env {
+			if strings.HasPrefix(e, "PPROF_TMPDIR=") {
+				cmd.Env[i] = "PPROF_TMPDIR=" + os.TempDir()
+				found = true
+				break
+			}
+		}
+		if !found {
+			cmd.Env = append(cmd.Env, "PPROF_TMPDIR="+os.TempDir())
+		}
 
-	top, err := cmd.CombinedOutput()
-	t.Logf("%s", top)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Contains(top, []byte("MemProf")) {
-		t.Error("missing MemProf in pprof output")
+		top, err := cmd.CombinedOutput()
+		t.Logf("%s:\n%s", cmd.Args, top)
+		if err != nil {
+			t.Error(err)
+		} else if !bytes.Contains(top, []byte("MemProf")) {
+			t.Error("missing MemProf in pprof output")
+		}
 	}
 }
 
@@ -525,5 +549,106 @@ func TestConcurrentMapIterateWrite(t *testing.T) {
 	want := "fatal error: concurrent map iteration and map write"
 	if !strings.HasPrefix(output, want) {
 		t.Fatalf("output does not start with %q:\n%s", want, output)
+	}
+}
+
+type point struct {
+	x, y *int
+}
+
+func (p *point) negate() {
+	*p.x = *p.x * -1
+	*p.y = *p.y * -1
+}
+
+// Test for issue #10152.
+func TestPanicInlined(t *testing.T) {
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatalf("recover failed")
+		}
+		buf := make([]byte, 2048)
+		n := runtime.Stack(buf, false)
+		buf = buf[:n]
+		want := []byte("(*point).negate(")
+		if runtime.Compiler == "gccgo" {
+			want = []byte("point.negate")
+		}
+		if !bytes.Contains(buf, want) {
+			t.Logf("%s", buf)
+			t.Fatalf("expecting stack trace to contain call to %s", want)
+		}
+	}()
+
+	pt := new(point)
+	pt.negate()
+}
+
+// Test for issues #3934 and #20018.
+// We want to delay exiting until a panic print is complete.
+func TestPanicRace(t *testing.T) {
+	testenv.MustHaveGoRun(t)
+
+	exe, err := buildTestProg(t, "testprog")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// The test is intentionally racy, and in my testing does not
+	// produce the expected output about 0.05% of the time.
+	// So run the program in a loop and only fail the test if we
+	// get the wrong output ten times in a row.
+	const tries = 10
+retry:
+	for i := 0; i < tries; i++ {
+		got, err := testenv.CleanCmdEnv(exec.Command(exe, "PanicRace")).CombinedOutput()
+		if err == nil {
+			t.Logf("try %d: program exited successfully, should have failed", i+1)
+			continue
+		}
+
+		if i > 0 {
+			t.Logf("try %d:\n", i+1)
+		}
+		t.Logf("%s\n", got)
+
+		wants := []string{
+			"panic: crash",
+			"PanicRace",
+			"created by ",
+		}
+		if runtime.Compiler == "gccgo" {
+			// gccgo will dump a function name like main.$nested30.
+			// Match on the file name instead.
+			wants[1] = "panicrace"
+		}
+		for _, want := range wants {
+			if !bytes.Contains(got, []byte(want)) {
+				t.Logf("did not find expected string %q", want)
+				continue retry
+			}
+		}
+
+		// Test generated expected output.
+		return
+	}
+	t.Errorf("test ran %d times without producing expected output", tries)
+}
+
+func TestBadTraceback(t *testing.T) {
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not do a hex dump")
+	}
+	output := runTestProg(t, "testprog", "BadTraceback")
+	for _, want := range []string{
+		"runtime: unexpected return pc",
+		"called from 0xbad",
+		"00000bad",    // Smashed LR in hex dump
+		"<main.badLR", // Symbolization in hex dump (badLR1 or badLR2)
+	} {
+		if !strings.Contains(output, want) {
+			t.Errorf("output does not contain %q:\n%s", want, output)
+		}
 	}
 }

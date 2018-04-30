@@ -1,6 +1,6 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wno-sizeof-array-argument -Wno-stringop-overflow" } */
+/* { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument -Wno-stringop-overflow -Wno-stringop-truncation" } */
 /* Test just twice, once with -O0 non-fortified, once with -O2 fortified.  */
 /* { dg-skip-if "" { *-*-* }  { "*" } { "-O0" "-O2" } } */
 /* { dg-skip-if "" { *-*-* }  { "-flto" } { "" } } */
@@ -149,6 +149,15 @@ f1 (void *x, int z)
   z += memcmp (x, pa1, sizeof (struct A *));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
   z += memcmp (x, pa2, sizeof (PTA));       /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
   z += memcmp (x, pa3, sizeof (PA));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
+
+  z += memcmp (x, (&a), (sizeof (&a)));	    /* { dg-warning "call is the same expression as the second source; did you mean to remove the addressof" } */
+  z += memcmp (x, (pa1), (sizeof (pa1)));   /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
+  z += memcmp (x, (pa2), (sizeof pa2));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
+  z += memcmp (x, (pa3), (sizeof (pa3)));   /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
+  z += memcmp (x, (pa4), (sizeof pa4));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
+  z += memcmp (x, (pa1), (sizeof (struct A *)));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
+  z += memcmp (x, (pa2), (sizeof (PTA)));   /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
+  z += memcmp (x, (pa3), (sizeof (PA)));    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
 
   /* These are correct, no warning.  */
   memset (&a, 0, sizeof a);
@@ -695,12 +704,17 @@ f4 (char *x, char **y, int z, char w[64])
   strncat (w, s2, sizeof (w));		    /* { dg-warning "call is the same expression as the destination; did you mean to provide an explicit length" } */
   stpncpy (w, s1, sizeof (w));		    /* { dg-warning "call is the same expression as the destination; did you mean to provide an explicit length" } */
 
-  /* These are correct, no warning.  */
+  /* These are pointless when the destination is large enough, and
+     cause overflow otherwise.  If the copies are guaranteed to be
+     safe the calls might as well be replaced by strcat(), strcpy(),
+     or memcpy().  */
   const char s3[] = "foobarbaz";
   const char s4[] = "abcde12345678";
-  strncpy (x, s3, sizeof (s3));
-  strncat (x, s4, sizeof (s4));
-  stpncpy (x, s3, sizeof (s3));
+  strncpy (x, s3, sizeof (s3));             /* { dg-warning "call is the same expression as the source; did you mean to use the size of the destination?" } */
+  strncat (x, s4, sizeof (s4));             /* { dg-warning "call is the same expression as the source; did you mean to use the size of the destination?" } */
+  stpncpy (x, s3, sizeof (s3));             /* { dg-warning "call is the same expression as the source; did you mean to use the size of the destination?" } */
+
+  /* These are correct, no warning.  */
   y[1] = strndup (s3, sizeof (s3));
   z += strncmp (s3, s4, sizeof (s3));
   z += strncmp (s3, s4, sizeof (s4));

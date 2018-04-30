@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-ifunc "" } */
 /* { dg-options "-O3" } */
 /* { dg-final { scan-assembler "vpshufb" } } */
 /* { dg-final { scan-assembler "punpcklbw" } } */

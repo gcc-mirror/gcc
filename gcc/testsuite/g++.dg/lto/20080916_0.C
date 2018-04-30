@@ -9,4 +9,6 @@ class ios_base   {
 };
 
 ios_base& g() {
+    static ios_base a;
+    return a;
 }

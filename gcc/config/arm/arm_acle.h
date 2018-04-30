@@ -1,6 +1,6 @@
 /* ARM Non-NEON ACLE intrinsics include file.
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -173,7 +173,10 @@ __arm_mrrc2 (const unsigned int __coproc, const unsigned int __opc1,
 #endif /*  __ARM_ARCH >= 5.  */
 #endif /* (!__thumb__ || __thumb2__) &&  __ARM_ARCH >= 4.  */
 
-#ifdef __ARM_FEATURE_CRC32
+#pragma GCC push_options
+#if __ARM_ARCH >= 8
+#pragma GCC target ("arch=armv8-a+crc")
+
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 __crc32b (uint32_t __a, uint8_t __b)
 {
@@ -232,7 +235,8 @@ __crc32cd (uint32_t __a, uint64_t __b)
 }
 #endif
 
-#endif
+#endif /* __ARM_ARCH >= 8.  */
+#pragma GCC pop_options
 
 #ifdef __cplusplus
 }

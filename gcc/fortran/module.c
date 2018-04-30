@@ -1,6 +1,6 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, if you want it to be
    recognized.  */
-#define MOD_VERSION "14"
+#define MOD_VERSION "15"
 
 
 /* Structure that describes a position within a module file.  */
@@ -143,7 +143,7 @@ enum gfc_wsym_state
 typedef struct pointer_info
 {
   BBT_HEADER (pointer_info);
-  int integer;
+  HOST_WIDE_INT integer;
   pointer_t type;
 
   /* The first component of each member of the union is the pointer
@@ -368,7 +368,7 @@ get_pointer (void *gp)
    creating the node if not found.  */
 
 static pointer_info *
-get_integer (int integer)
+get_integer (HOST_WIDE_INT integer)
 {
   pointer_info *p, t;
   int c;
@@ -468,7 +468,7 @@ associate_integer_pointer (pointer_info *p, void *gp)
    sometime later.  Returns the pointer_info structure.  */
 
 static pointer_info *
-add_fixup (int integer, void *gp)
+add_fixup (HOST_WIDE_INT integer, void *gp)
 {
   pointer_info *p;
   fixup_t *f;
@@ -1145,7 +1145,7 @@ static atom_type last_atom;
 
 #define MAX_ATOM_SIZE 100
 
-static int atom_int;
+static HOST_WIDE_INT atom_int;
 static char *atom_string, atom_name[MAX_ATOM_SIZE];
 
 
@@ -1275,7 +1275,7 @@ parse_string (void)
 }
 
 
-/* Parse a small integer.  */
+/* Parse an integer. Should fit in a HOST_WIDE_INT.  */
 
 static void
 parse_integer (int c)
@@ -1292,8 +1292,6 @@ parse_integer (int c)
 	}
 
       atom_int = 10 * atom_int + c - '0';
-      if (atom_int > 99999999)
-	bad_module ("Integer overflow");
     }
 
 }
@@ -1635,11 +1633,12 @@ write_char (char out)
 static void
 write_atom (atom_type atom, const void *v)
 {
-  char buffer[20];
+  char buffer[32];
 
   /* Workaround -Wmaybe-uninitialized false positive during
      profiledbootstrap by initializing them.  */
-  int i = 0, len;
+  int len;
+  HOST_WIDE_INT i = 0;
   const char *p;
 
   switch (atom)
@@ -1658,11 +1657,9 @@ write_atom (atom_type atom, const void *v)
       break;
 
     case ATOM_INTEGER:
-      i = *((const int *) v);
-      if (i < 0)
-	gfc_internal_error ("write_atom(): Writing negative integer");
+      i = *((const HOST_WIDE_INT *) v);
 
-      sprintf (buffer, "%d", i);
+      snprintf (buffer, sizeof (buffer), HOST_WIDE_INT_PRINT_DEC, i);
       p = buffer;
       break;
 
@@ -1770,11 +1767,26 @@ static void
 mio_integer (int *ip)
 {
   if (iomode == IO_OUTPUT)
-    write_atom (ATOM_INTEGER, ip);
+    {
+      HOST_WIDE_INT hwi = *ip;
+      write_atom (ATOM_INTEGER, &hwi);
+    }
   else
     {
       require_atom (ATOM_INTEGER);
       *ip = atom_int;
+    }
+}
+
+static void
+mio_hwi (HOST_WIDE_INT *hwi)
+{
+  if (iomode == IO_OUTPUT)
+    write_atom (ATOM_INTEGER, hwi);
+  else
+    {
+      require_atom (ATOM_INTEGER);
+      *hwi = atom_int;
     }
 }
 
@@ -1787,7 +1799,7 @@ mio_intrinsic_op (gfc_intrinsic_op* op)
   /* FIXME: Would be nicer to do this via the operators symbolic name.  */
   if (iomode == IO_OUTPUT)
     {
-      int converted = (int) *op;
+      HOST_WIDE_INT converted = (HOST_WIDE_INT) *op;
       write_atom (ATOM_INTEGER, &converted);
     }
   else
@@ -1998,7 +2010,8 @@ enum ab_attribute
   AB_ARRAY_OUTER_DEPENDENCY, AB_MODULE_PROCEDURE, AB_OACC_DECLARE_CREATE,
   AB_OACC_DECLARE_COPYIN, AB_OACC_DECLARE_DEVICEPTR,
   AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK,
-  AB_OMP_DECLARE_TARGET_LINK
+  AB_OMP_DECLARE_TARGET_LINK, AB_PDT_KIND, AB_PDT_LEN, AB_PDT_TYPE,
+  AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING
 };
 
 static const mstring attr_bits[] =
@@ -2062,6 +2075,12 @@ static const mstring attr_bits[] =
     minit ("OACC_DECLARE_DEVICE_RESIDENT", AB_OACC_DECLARE_DEVICE_RESIDENT),
     minit ("OACC_DECLARE_LINK", AB_OACC_DECLARE_LINK),
     minit ("OMP_DECLARE_TARGET_LINK", AB_OMP_DECLARE_TARGET_LINK),
+    minit ("PDT_KIND", AB_PDT_KIND),
+    minit ("PDT_LEN", AB_PDT_LEN),
+    minit ("PDT_TYPE", AB_PDT_TYPE),
+    minit ("PDT_TEMPLATE", AB_PDT_TEMPLATE),
+    minit ("PDT_ARRAY", AB_PDT_ARRAY),
+    minit ("PDT_STRING", AB_PDT_STRING),
     minit (NULL, -1)
 };
 
@@ -2260,6 +2279,18 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_OACC_DECLARE_LINK, attr_bits);
       if (attr->omp_declare_target_link)
 	MIO_NAME (ab_attribute) (AB_OMP_DECLARE_TARGET_LINK, attr_bits);
+      if (attr->pdt_kind)
+	MIO_NAME (ab_attribute) (AB_PDT_KIND, attr_bits);
+      if (attr->pdt_len)
+	MIO_NAME (ab_attribute) (AB_PDT_LEN, attr_bits);
+      if (attr->pdt_type)
+	MIO_NAME (ab_attribute) (AB_PDT_TYPE, attr_bits);
+      if (attr->pdt_template)
+	MIO_NAME (ab_attribute) (AB_PDT_TEMPLATE, attr_bits);
+      if (attr->pdt_array)
+	MIO_NAME (ab_attribute) (AB_PDT_ARRAY, attr_bits);
+      if (attr->pdt_string)
+	MIO_NAME (ab_attribute) (AB_PDT_STRING, attr_bits);
 
       mio_rparen ();
 
@@ -2452,6 +2483,24 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_OACC_DECLARE_LINK:
 	      attr->oacc_declare_link = 1;
+	      break;
+	    case AB_PDT_KIND:
+	      attr->pdt_kind = 1;
+	      break;
+	    case AB_PDT_LEN:
+	      attr->pdt_len = 1;
+	      break;
+	    case AB_PDT_TYPE:
+	      attr->pdt_type = 1;
+	      break;
+	    case AB_PDT_TEMPLATE:
+	      attr->pdt_template = 1;
+	      break;
+	    case AB_PDT_ARRAY:
+	      attr->pdt_array = 1;
+	      break;
+	    case AB_PDT_STRING:
+	      attr->pdt_string = 1;
 	      break;
 	    }
 	}
@@ -2682,7 +2731,7 @@ mio_array_ref (gfc_array_ref *ar)
     {
       for (i = 0; i < ar->dimen; i++)
 	{
-	  int tmp = (int)ar->dimen_type[i];
+	  HOST_WIDE_INT tmp = (HOST_WIDE_INT)ar->dimen_type[i];
 	  write_atom (ATOM_INTEGER, &tmp);
 	}
     }
@@ -2719,7 +2768,8 @@ mio_pointer_ref (void *gp)
   if (iomode == IO_OUTPUT)
     {
       p = get_pointer (*((char **) gp));
-      write_atom (ATOM_INTEGER, &p->integer);
+      HOST_WIDE_INT hwi = p->integer;
+      write_atom (ATOM_INTEGER, &hwi);
     }
   else
     {
@@ -2751,23 +2801,24 @@ mio_component_ref (gfc_component **cp)
 static void mio_namespace_ref (gfc_namespace **nsp);
 static void mio_formal_arglist (gfc_formal_arglist **formal);
 static void mio_typebound_proc (gfc_typebound_proc** proc);
+static void mio_actual_arglist (gfc_actual_arglist **ap, bool pdt);
 
 static void
 mio_component (gfc_component *c, int vtype)
 {
   pointer_info *p;
-  int n;
 
   mio_lparen ();
 
   if (iomode == IO_OUTPUT)
     {
       p = get_pointer (c);
-      mio_integer (&p->integer);
+      mio_hwi (&p->integer);
     }
   else
     {
-      mio_integer (&n);
+      HOST_WIDE_INT n;
+      mio_hwi (&n);
       p = get_integer (n);
       associate_integer_pointer (p, c);
     }
@@ -2778,6 +2829,12 @@ mio_component (gfc_component *c, int vtype)
   mio_pool_string (&c->name);
   mio_typespec (&c->ts);
   mio_array_spec (&c->as);
+
+  /* PDT templates store the expression for the kind of a component here.  */
+  mio_expr (&c->kind_expr);
+
+  /* PDT types store the component specification list here. */
+  mio_actual_arglist (&c->param_list, true);
 
   mio_symbol_attribute (&c->attr);
   if (c->ts.type == BT_CLASS)
@@ -2834,17 +2891,19 @@ mio_component_list (gfc_component **cp, int vtype)
 
 
 static void
-mio_actual_arg (gfc_actual_arglist *a)
+mio_actual_arg (gfc_actual_arglist *a, bool pdt)
 {
   mio_lparen ();
   mio_pool_string (&a->name);
   mio_expr (&a->expr);
+  if (pdt)
+    mio_integer ((int *)&a->spec_type);
   mio_rparen ();
 }
 
 
 static void
-mio_actual_arglist (gfc_actual_arglist **ap)
+mio_actual_arglist (gfc_actual_arglist **ap, bool pdt)
 {
   gfc_actual_arglist *a, *tail;
 
@@ -2853,7 +2912,7 @@ mio_actual_arglist (gfc_actual_arglist **ap)
   if (iomode == IO_OUTPUT)
     {
       for (a = *ap; a; a = a->next)
-	mio_actual_arg (a);
+	mio_actual_arg (a, pdt);
 
     }
   else
@@ -2873,7 +2932,7 @@ mio_actual_arglist (gfc_actual_arglist **ap)
 	    tail->next = a;
 
 	  tail = a;
-	  mio_actual_arg (a);
+	  mio_actual_arg (a, pdt);
 	}
     }
 
@@ -3384,6 +3443,7 @@ fix_mio_expr (gfc_expr *e)
 static void
 mio_expr (gfc_expr **ep)
 {
+  HOST_WIDE_INT hwi;
   gfc_expr *e;
   atom_type t;
   int flag;
@@ -3498,7 +3558,7 @@ mio_expr (gfc_expr **ep)
 
     case EXPR_FUNCTION:
       mio_symtree_ref (&e->symtree);
-      mio_actual_arglist (&e->value.function.actual);
+      mio_actual_arglist (&e->value.function.actual, false);
 
       if (iomode == IO_OUTPUT)
 	{
@@ -3598,7 +3658,9 @@ mio_expr (gfc_expr **ep)
 	  break;
 
 	case BT_CHARACTER:
-	  mio_integer (&e->value.character.length);
+	  hwi = e->value.character.length;
+	  mio_hwi (&hwi);
+	  e->value.character.length = hwi;
 	  e->value.character.string
 	    = CONST_CAST (gfc_char_t *,
 			  mio_allocated_wide_string (e->value.character.string,
@@ -3619,6 +3681,9 @@ mio_expr (gfc_expr **ep)
       gcc_unreachable ();
       break;
     }
+
+  /* PDT types store the expression specification list here. */
+  mio_actual_arglist (&e->param_list, true);
 
   mio_rparen ();
 }
@@ -3998,7 +4063,24 @@ mio_full_f2k_derived (gfc_symbol *sym)
     {
       if (peek_atom () != ATOM_RPAREN)
 	{
+	  gfc_namespace *ns;
+
 	  sym->f2k_derived = gfc_get_namespace (NULL, 0);
+
+	  /* PDT templates make use of the mechanisms for formal args
+	     and so the parameter symbols are stored in the formal
+	     namespace.  Transfer the sym_root to f2k_derived and then
+	     free the formal namespace since it is uneeded.  */
+	  if (sym->attr.pdt_template && sym->formal && sym->formal->sym)
+	    {
+	      ns = sym->formal->sym->ns;
+	      sym->f2k_derived->sym_root = ns->sym_root;
+	      ns->sym_root = NULL;
+	      ns->refs++;
+	      gfc_free_namespace (ns);
+	      ns = NULL;
+	    }
+
 	  mio_f2k_derived (sym->f2k_derived);
 	}
       else
@@ -4146,7 +4228,7 @@ mio_omp_udr_expr (gfc_omp_udr *udr, gfc_symbol **sym1, gfc_symbol **sym2,
 	  int flag;
 	  mio_name (1, omp_declare_reduction_stmt);
 	  mio_symtree_ref (&ns->code->symtree);
-	  mio_actual_arglist (&ns->code->ext.actual);
+	  mio_actual_arglist (&ns->code->ext.actual, false);
 
 	  flag = ns->code->resolved_isym != NULL;
 	  mio_integer (&flag);
@@ -4188,7 +4270,7 @@ mio_omp_udr_expr (gfc_omp_udr *udr, gfc_symbol **sym1, gfc_symbol **sym2,
 	  int flag;
 	  ns->code = gfc_get_code (EXEC_CALL);
 	  mio_symtree_ref (&ns->code->symtree);
-	  mio_actual_arglist (&ns->code->ext.actual);
+	  mio_actual_arglist (&ns->code->ext.actual, false);
 
 	  mio_integer (&flag);
 	  if (flag)
@@ -4257,6 +4339,9 @@ mio_symbol (gfc_symbol *sym)
 
   /* Load/save the f2k_derived namespace of a derived-type symbol.  */
   mio_full_f2k_derived (sym);
+
+  /* PDT types store the symbol specification list here. */
+  mio_actual_arglist (&sym->param_list, true);
 
   mio_namelist (sym);
 
@@ -5877,7 +5962,7 @@ write_symtree (gfc_symtree *st)
 
   mio_pool_string (&st->name);
   mio_integer (&st->ambiguous);
-  mio_integer (&p->integer);
+  mio_hwi (&p->integer);
 }
 
 
@@ -6063,8 +6148,10 @@ dump_module (const char *name, int dump_flag)
     gfc_fatal_error ("Can't open module file %qs for writing at %C: %s",
 		     filename_tmp, xstrerror (errno));
 
+  /* Use lbasename to ensure module files are reproducible regardless
+     of the build path (see the reproducible builds project).  */
   gzprintf (module_fp, "GFORTRAN module version '%s' created from %s\n",
-	    MOD_VERSION, gfc_source_file);
+	    MOD_VERSION, lbasename (gfc_source_file));
 
   /* Write the module itself.  */
   iomode = IO_OUTPUT;
@@ -6684,7 +6771,7 @@ use_iso_fortran_env_module (void)
 				   "standard", symbol[i].name, &u->where))
 	        continue;
 
-	      if ((flag_default_integer || flag_default_real)
+	      if ((flag_default_integer || flag_default_real_8)
 		  && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)
 		gfc_warning_now (0, "Use of the NUMERIC_STORAGE_SIZE named "
 				 "constant from intrinsic module "
@@ -6751,7 +6838,7 @@ use_iso_fortran_env_module (void)
 	  if ((gfc_option.allow_std & symbol[i].standard) == 0)
 	    continue;
 
-	  if ((flag_default_integer || flag_default_real)
+	  if ((flag_default_integer || flag_default_real_8)
 	      && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)
 	    gfc_warning_now (0,
 			     "Use of the NUMERIC_STORAGE_SIZE named constant "
