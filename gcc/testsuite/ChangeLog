@@ -1,5 +1,12 @@
 2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* gcc.target/arc/interrupt-8.c: Update test.
+	* gcc.target/arc/loop-4.c: Likewise.
+	* gcc.target/arc/loop-hazard-1.c: Likewise.
+	* gcc.target/arc/sdata-3.c: Likewise.
+
+2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* gcc.target/arc/store-merge-1.c: New test.
 	* gcc.target/arc/add_n-combine.c: Update test.
 

@@ -1,6 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-do compile } */
-/* { dg-options "-Os" } */
+/* { dg-options "-Os -fbranch-count-reg" } */
 
 
 void fn1(void *p1, int p2, int p3)

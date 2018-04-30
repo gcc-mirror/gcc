@@ -1,5 +1,41 @@
 2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc-protos.h (prepare_extend_operands): Remove.
+	(small_data_pattern): Likewise.
+	(arc_rewrite_small_data): Likewise.
+	* config/arc/arc.c (LEGITIMATE_SMALL_DATA_OFFSET_P): Remove.
+	(LEGITIMATE_SMALL_DATA_ADDRESS_P): Likewise.
+	(get_symbol_alignment): New function.
+	(legitimate_small_data_address_p): Likewise.
+	(legitimate_scaled_address): Update, call
+	legitimate_small_data_address_p.
+	(output_sdata): New static variable.
+	(arc_print_operand): Update how we handle small data operands.
+	(arc_print_operand_address): Likewise.
+	(arc_legitimate_address_p): Update, use
+	legitimate_small_data_address_p.
+	(arc_rewrite_small_data_p): Remove.
+	(arc_rewrite_small_data_1): Likewise.
+	(arc_rewrite_small_data): Likewise.
+	(small_data_pattern): Likewise.
+	(compact_sda_memory_operand): Update to use
+	legitimate_small_data_address_p and get_symbol_alignment.
+	(prepare_move_operands): Don't rewite sdata pattern.
+	(prepare_extend_operands): Remove.
+	* config/arc/arc.md (zero_extendqihi2): Don't rewrite sdata
+	pattern.
+	(zero_extendqisi2): Likewise.
+	(zero_extendhisi2): Likewise.
+	(extendqihi2): Likewise.
+	(extendqisi2): Likewise.
+	(extendhisi2): Likewise.
+	(addsi3): Likewise.
+	(subsi3): Likewise.
+	(andsi3): Likewise.
+	* config/arc/constraints.md (Usd): Change it to memory constraint.
+
+2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_split_move): Allow signed 6-bit constants
 	as source of std instructions.
 	* config/arc/arc.md (movsi_insn): Update pattern predicate to
