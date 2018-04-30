@@ -1,3 +1,29 @@
+2018-04-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/pr66689 - comp_ellint_3 and ellint_3 return garbage values
+	* include/tr1/ell_integral.tcc: Correct the nu sign convention
+	in ellint_3 and comp_ellint_3.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/check_value.cc: Regen with correct values.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	14_ellint_3/check_value.cc: Ditto.
+	* testsuite/special_functions/06_comp_ellint_3/check_value.cc: Ditto.
+	* testsuite/special_functions/13_ellint_3/check_value.cc: Ditto.
+	* testsuite/special_functions/06_comp_ellint_3/pr66689.cc: New.
+	* testsuite/special_functions/13_ellint_3/pr66689.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/pr66689.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	14_ellint_3/pr66689.cc: New.
+
+2018-04-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/68397 std::tr1::expint fails ... long double arguments.
+	* include/tr1/exp_integral.tcc: Increase iteration limits.
+	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/
+	pr68397.cc: New test.
+	* testsuite/special_functions/14_expint/pr68397.cc: New test.
+
 2018-04-18  Jonathan Wakely  <jwakely@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
