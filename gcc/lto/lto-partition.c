@@ -42,6 +42,24 @@ vec<ltrans_partition> ltrans_partitions;
 static void add_symbol_to_partition (ltrans_partition part, symtab_node *node);
 
 
+/* Helper for qsort; compare partitions and return one with smaller order.  */
+
+static int
+cmp_partitions_order (const void *a, const void *b)
+{
+  const struct ltrans_partition_def *pa
+     = *(struct ltrans_partition_def *const *)a;
+  const struct ltrans_partition_def *pb
+     = *(struct ltrans_partition_def *const *)b;
+  int ordera = -1, orderb = -1;
+
+  if (lto_symtab_encoder_size (pa->encoder))
+    ordera = lto_symtab_encoder_deref (pa->encoder, 0)->order;
+  if (lto_symtab_encoder_size (pb->encoder))
+    orderb = lto_symtab_encoder_deref (pb->encoder, 0)->order;
+  return orderb - ordera;
+}
+
 /* Create new partition with name NAME.  */
 
 static ltrans_partition
@@ -334,6 +352,9 @@ lto_1_to_1_map (void)
   if (!npartitions)
     new_partition ("empty");
 
+  /* Order partitions by order of symbols because they are linked into binary
+     that way.  */
+  ltrans_partitions.qsort (cmp_partitions_order);
 }
 
 /* Maximal partitioning.  Put every new symbol into new partition if possible.  */

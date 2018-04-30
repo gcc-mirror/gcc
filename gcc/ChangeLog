@@ -1,3 +1,10 @@
+2018-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto-wrapper.c (ltrans_priorities): New static var.
+	(cmp_priority): New.
+	(run_gcc): Read priorities and if doing parallel build order
+	the Makefile by them.
+
 2018-04-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.h (builtins_location_check): Convert to a STATIC_ASSERT.

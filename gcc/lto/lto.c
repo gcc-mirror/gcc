@@ -2327,38 +2327,6 @@ free_section_data (struct lto_file_decl_data *file_data ATTRIBUTE_UNUSED,
 
 static lto_file *current_lto_file;
 
-/* Helper for qsort; compare partitions and return one with smaller size.
-   We sort from greatest to smallest so parallel build doesn't stale on the
-   longest compilation being executed too late.  */
-
-static int
-cmp_partitions_size (const void *a, const void *b)
-{
-  const struct ltrans_partition_def *pa
-     = *(struct ltrans_partition_def *const *)a;
-  const struct ltrans_partition_def *pb
-     = *(struct ltrans_partition_def *const *)b;
-  return pb->insns - pa->insns;
-}
-
-/* Helper for qsort; compare partitions and return one with smaller order.  */
-
-static int
-cmp_partitions_order (const void *a, const void *b)
-{
-  const struct ltrans_partition_def *pa
-     = *(struct ltrans_partition_def *const *)a;
-  const struct ltrans_partition_def *pb
-     = *(struct ltrans_partition_def *const *)b;
-  int ordera = -1, orderb = -1;
-
-  if (lto_symtab_encoder_size (pa->encoder))
-    ordera = lto_symtab_encoder_deref (pa->encoder, 0)->order;
-  if (lto_symtab_encoder_size (pb->encoder))
-    orderb = lto_symtab_encoder_deref (pb->encoder, 0)->order;
-  return orderb - ordera;
-}
-
 /* Actually stream out ENCODER into TEMP_FILENAME.  */
 
 static void
@@ -2468,7 +2436,8 @@ lto_wpa_write_files (void)
   ltrans_partition part;
   FILE *ltrans_output_list_stream;
   char *temp_filename;
-  vec <char *>temp_filenames = vNULL;
+  auto_vec <char *>temp_filenames;
+  auto_vec <int>temp_priority;
   size_t blen;
 
   /* Open the LTRANS output list.  */
@@ -2495,15 +2464,6 @@ lto_wpa_write_files (void)
   blen = strlen (temp_filename);
 
   n_sets = ltrans_partitions.length ();
-
-  /* Sort partitions by size so small ones are compiled last.
-     FIXME: Even when not reordering we may want to output one list for parallel make
-     and other for final link command.  */
-
-  if (!flag_profile_reorder_functions || !flag_profile_use)
-    ltrans_partitions.qsort (flag_toplevel_reorder
-			   ? cmp_partitions_size
-			   : cmp_partitions_order);
 
   for (i = 0; i < n_sets; i++)
     {
@@ -2556,6 +2516,7 @@ lto_wpa_write_files (void)
 
       part->encoder = NULL;
 
+      temp_priority.safe_push (part->insns);
       temp_filenames.safe_push (xstrdup (temp_filename));
     }
   ltrans_output_list_stream = fopen (ltrans_output_list, "w");
@@ -2565,13 +2526,13 @@ lto_wpa_write_files (void)
   for (i = 0; i < n_sets; i++)
     {
       unsigned int len = strlen (temp_filenames[i]);
-      if (fwrite (temp_filenames[i], 1, len, ltrans_output_list_stream) < len
+      if (fprintf (ltrans_output_list_stream, "%i\n", temp_priority[i]) < 0
+	  || fwrite (temp_filenames[i], 1, len, ltrans_output_list_stream) < len
 	  || fwrite ("\n", 1, 1, ltrans_output_list_stream) < 1)
 	fatal_error (input_location, "writing to LTRANS output list %s: %m",
 		     ltrans_output_list);
      free (temp_filenames[i]);
     }
-  temp_filenames.release();
 
   lto_stats.num_output_files += n_sets;
 
