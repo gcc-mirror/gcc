@@ -5558,8 +5558,13 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       ret = gimplify_expr (to_p, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
       if (ret == GS_ERROR)
 	return ret;
-      gcc_assert (!want_value
-		  && (VAR_P (*to_p) || TREE_CODE (*to_p) == MEM_REF));
+      gcc_assert (!want_value);
+      if (!VAR_P (*to_p) && TREE_CODE (*to_p) != MEM_REF)
+	{
+	  tree addr = get_initialized_tmp_var (build_fold_addr_expr (*to_p),
+					       pre_p, post_p);
+	  *to_p = build_simple_mem_ref_loc (EXPR_LOCATION (*to_p), addr);
+	}
       gimplify_seq_add_stmt (pre_p, gimple_build_assign (*to_p, *from_p));
       *expr_p = NULL;
       return GS_ALL_DONE;
