@@ -1,5 +1,8 @@
 2018-04-30  Jason Merrill  <jason@redhat.com>
 
+	* init.c (build_dtor_call): Use build_special_member_call.
+	(build_delete): Remove redundant uses of save_addr.
+
 	* decl.c (build_clobber_this): Use build_clobber.
 
 2018-04-27  Jakub Jelinek  <jakub@redhat.com>
