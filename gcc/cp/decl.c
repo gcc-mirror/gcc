@@ -14874,8 +14874,7 @@ build_clobber_this ()
   if (!vbases)
     ctype = CLASSTYPE_AS_BASE (ctype);
 
-  tree clobber = build_constructor (ctype, NULL);
-  TREE_THIS_VOLATILE (clobber) = true;
+  tree clobber = build_clobber (ctype);
 
   tree thisref = current_class_ref;
   if (ctype != current_class_type)
