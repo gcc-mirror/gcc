@@ -3499,10 +3499,8 @@ get_corrected_substring (const substring_loc &fmt_loc,
   if (caret.column > finish.column)
     return NULL;
 
-  int line_width;
-  const char *line = location_get_source_line (start.file, start.line,
-					       &line_width);
-  if (line == NULL)
+  char_span line = location_get_source_line (start.file, start.line);
+  if (!line)
     return NULL;
 
   /* If we got this far, then we have the line containing the
@@ -3511,9 +3509,9 @@ get_corrected_substring (const substring_loc &fmt_loc,
      Generate a trimmed copy, containing the prefix part of the conversion
      specification, up to the (but not including) the length modifier.
      In the above example, this would be "%-+*.*".  */
-  const char *current_content = line + start.column - 1;
   int length_up_to_type = caret.column - start.column;
-  char *prefix = xstrndup (current_content, length_up_to_type);
+  char_span prefix_span = line.subspan (start.column - 1, length_up_to_type);
+  char *prefix = prefix_span.xstrdup ();
 
   /* Now attempt to generate a suggestion for the rest of the specification
      (length modifier and conversion char), based on ARG_TYPE and

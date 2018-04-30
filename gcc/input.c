@@ -741,29 +741,27 @@ read_line_num (fcache *c, size_t line_num,
    The line is not nul-terminated.  The returned pointer is only
    valid until the next call of location_get_source_line.
    Note that the line can contain several null characters,
-   so LINE_LEN, if non-null, points to the actual length of the line.
-   If the function fails, NULL is returned.  */
+   so the returned value's length has the actual length of the line.
+   If the function fails, a NULL char_span is returned.  */
 
-const char *
-location_get_source_line (const char *file_path, int line,
-			  int *line_len)
+char_span
+location_get_source_line (const char *file_path, int line)
 {
   char *buffer = NULL;
   ssize_t len;
 
   if (line == 0)
-    return NULL;
+    return char_span (NULL, 0);
 
   fcache *c = lookup_or_add_file_to_cache_tab (file_path);
   if (c == NULL)
-    return NULL;
+    return char_span (NULL, 0);
 
   bool read = read_line_num (c, line, &buffer, &len);
+  if (!read)
+    return char_span (NULL, 0);
 
-  if (read && line_len)
-    *line_len = len;
-
-  return read ? buffer : NULL;
+  return char_span (buffer, len);
 }
 
 /* Determine if FILE_PATH missing a trailing newline on its final line.
@@ -1121,25 +1119,23 @@ dump_location_info (FILE *stream)
 	    {
 	      /* Beginning of a new source line: draw the line.  */
 
-	      int line_size;
-	      const char *line_text = location_get_source_line (exploc.file,
-								exploc.line,
-								&line_size);
+	      char_span line_text = location_get_source_line (exploc.file,
+							      exploc.line);
 	      if (!line_text)
 		break;
 	      fprintf (stream,
 		       "%s:%3i|loc:%5i|%.*s\n",
 		       exploc.file, exploc.line,
 		       loc,
-		       line_size, line_text);
+		       (int)line_text.length (), line_text.get_buffer ());
 
 	      /* "loc" is at column 0, which means "the whole line".
 		 Render the locations *within* the line, by underlining
 		 it, showing the source_location numeric values
 		 at each column.  */
-	      int max_col = (1 << map->m_column_and_range_bits) - 1;
-	      if (max_col > line_size)
-		max_col = line_size + 1;
+	      size_t max_col = (1 << map->m_column_and_range_bits) - 1;
+	      if (max_col > line_text.length ())
+		max_col = line_text.length () + 1;
 
 	      int indent = 14 + strlen (exploc.file);
 
@@ -1426,28 +1422,27 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
       if (start.column > finish.column)
 	return "range endpoints are reversed";
 
-      int line_width;
-      const char *line = location_get_source_line (start.file, start.line,
-						   &line_width);
-      if (line == NULL)
+      char_span line = location_get_source_line (start.file, start.line);
+      if (!line)
 	return "unable to read source line";
 
       /* Determine the location of the literal (including quotes
 	 and leading prefix chars, such as the 'u' in a u""
 	 token).  */
-      const char *literal = line + start.column - 1;
-      int literal_length = finish.column - start.column + 1;
+      size_t literal_length = finish.column - start.column + 1;
 
       /* Ensure that we don't crash if we got the wrong location.  */
-      if (line_width < (start.column - 1 + literal_length))
+      if (line.length () < (start.column - 1 + literal_length))
 	return "line is not wide enough";
+
+      char_span literal = line.subspan (start.column - 1, literal_length);
 
       cpp_string from;
       from.len = literal_length;
       /* Make a copy of the literal, to avoid having to rely on
 	 the lifetime of the copy of the line within the cache.
 	 This will be released by the auto_cpp_string_vec dtor.  */
-      from.text = XDUPVEC (unsigned char, literal, literal_length);
+      from.text = (unsigned char *)literal.xstrdup ();
       strs.safe_push (from);
 
       /* For very long lines, a new linemap could have started
@@ -1908,24 +1903,23 @@ test_reading_source_line ()
 			"This is the 3rd line");
 
   /* Read back a specific line from the tempfile.  */
-  int line_size;
-  const char *source_line = location_get_source_line (tmp.get_filename (),
-						      3, &line_size);
-  ASSERT_TRUE (source_line != NULL);
-  ASSERT_EQ (20, line_size);
+  char_span source_line = location_get_source_line (tmp.get_filename (), 3);
+  ASSERT_TRUE (source_line);
+  ASSERT_TRUE (source_line.get_buffer () != NULL);
+  ASSERT_EQ (20, source_line.length ());
   ASSERT_TRUE (!strncmp ("This is the 3rd line",
-			 source_line, line_size));
+			 source_line.get_buffer (), source_line.length ()));
 
-  source_line = location_get_source_line (tmp.get_filename (),
-					  2, &line_size);
-  ASSERT_TRUE (source_line != NULL);
-  ASSERT_EQ (21, line_size);
+  source_line = location_get_source_line (tmp.get_filename (), 2);
+  ASSERT_TRUE (source_line);
+  ASSERT_TRUE (source_line.get_buffer () != NULL);
+  ASSERT_EQ (21, source_line.length ());
   ASSERT_TRUE (!strncmp ("This is the test text",
-			 source_line, line_size));
+			 source_line.get_buffer (), source_line.length ()));
 
-  source_line = location_get_source_line (tmp.get_filename (),
-					  4, &line_size);
-  ASSERT_TRUE (source_line == NULL);
+  source_line = location_get_source_line (tmp.get_filename (), 4);
+  ASSERT_FALSE (source_line);
+  ASSERT_TRUE (source_line.get_buffer () == NULL);
 }
 
 /* Tests of lexing.  */

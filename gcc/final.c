@@ -2216,14 +2216,13 @@ asm_show_source (const char *filename, int linenum)
   if (!filename)
     return;
 
-  int line_size;
-  const char *line = location_get_source_line (filename, linenum, &line_size);
+  char_span line = location_get_source_line (filename, linenum);
   if (!line)
     return;
 
   fprintf (asm_out_file, "%s %s:%i: ", ASM_COMMENT_START, filename, linenum);
-  /* "line" is not 0-terminated, so we must use line_size.  */
-  fwrite (line, 1, line_size, asm_out_file);
+  /* "line" is not 0-terminated, so we must use its length.  */
+  fwrite (line.get_buffer (), 1, line.length (), asm_out_file);
   fputc ('\n', asm_out_file);
 }
 
