@@ -1,5 +1,9 @@
 2018-04-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84701 - unsigned typeof.
+	* decl.c (grokdeclarator): Overhaul diagnostics for invalid use
+	of long/short/signed/unsigned.
+
 	PR c++/85305 - pack in lambda init-capture.
 	* parser.c (cp_parser_initializer): Add subexpression_p parm; don't
 	check_for_bare_parameter_packs in a subexpression.
