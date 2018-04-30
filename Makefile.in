@@ -536,14 +536,14 @@ STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
 STAGE1_TFLAGS += -fno-checking
 STAGE2_CFLAGS += -fno-checking
 STAGE2_TFLAGS += -fno-checking
-STAGE3_CFLAGS += -fchecking
-STAGE3_TFLAGS += -fchecking
+STAGE3_CFLAGS += -fchecking=1
+STAGE3_TFLAGS += -fchecking=1
 
 STAGEprofile_CFLAGS = $(STAGE2_CFLAGS) -fprofile-generate
 STAGEprofile_TFLAGS = $(STAGE2_TFLAGS)
 
-STAGEtrain_CFLAGS = $(filter-out -fchecking,$(STAGE3_CFLAGS))
-STAGEtrain_TFLAGS = $(filter-out -fchecking,$(STAGE3_TFLAGS))
+STAGEtrain_CFLAGS = $(filter-out -fchecking=1,$(STAGE3_CFLAGS))
+STAGEtrain_TFLAGS = $(filter-out -fchecking=1,$(STAGE3_TFLAGS))
 
 STAGEfeedback_CFLAGS = $(STAGE4_CFLAGS) -fprofile-use
 STAGEfeedback_TFLAGS = $(STAGE4_TFLAGS)

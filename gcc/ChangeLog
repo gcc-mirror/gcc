@@ -1,5 +1,10 @@
 2018-04-30  Richard Biener  <rguenther@suse.de>
 
+	PR bootstrap/85571
+	* dwarf2out.c (gen_producer_string): Ignore -fchecking[=].
+
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/28364
 	PR tree-optimization/85275
 	* tree-ssa-loop-ch.c (ch_base::copy_headers): Stop after
