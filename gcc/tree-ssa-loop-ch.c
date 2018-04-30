@@ -340,6 +340,11 @@ ch_base::copy_headers (function *fun)
 	  bbs[n_bbs++] = header;
 	  gcc_assert (bbs_size > n_bbs);
 	  header = exit->dest;
+	  /* Make sure to stop copying after we copied the first exit test.
+	     Without further heuristics we do not want to rotate the loop
+	     any further.  */
+	  if (loop_exits_from_bb_p (loop, exit->src))
+	    break;
 	}
 
       if (!exit)

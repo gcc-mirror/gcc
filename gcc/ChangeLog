@@ -1,3 +1,10 @@
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/28364
+	PR tree-optimization/85275
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Stop after
+	copying first exit test.
+
 2018-04-28  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2out.c (dwarf2out_finish): Add .debug_addr table header for
