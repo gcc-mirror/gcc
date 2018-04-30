@@ -186,36 +186,36 @@ class test_runner
    alphabetical order.  */
 extern void attribute_c_tests ();
 extern void bitmap_c_tests ();
-extern void sbitmap_c_tests ();
 extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
 extern void edit_context_c_tests ();
 extern void et_forest_c_tests ();
-extern void fold_const_c_tests ();
 extern void fibonacci_heap_c_tests ();
+extern void fold_const_c_tests ();
 extern void function_tests_c_tests ();
-extern void gimple_c_tests ();
 extern void ggc_tests_c_tests ();
+extern void gimple_c_tests ();
 extern void hash_map_tests_c_tests ();
 extern void hash_set_tests_c_tests ();
 extern void input_c_tests ();
+extern void predict_c_tests ();
 extern void pretty_print_c_tests ();
 extern void read_rtl_function_c_tests ();
 extern void rtl_tests_c_tests ();
+extern void sbitmap_c_tests ();
 extern void selftest_c_tests ();
+extern void simplify_rtx_c_tests ();
 extern void spellcheck_c_tests ();
 extern void spellcheck_tree_c_tests ();
 extern void sreal_c_tests ();
 extern void store_merging_c_tests ();
-extern void typed_splay_tree_c_tests ();
 extern void tree_c_tests ();
 extern void tree_cfg_c_tests ();
+extern void typed_splay_tree_c_tests ();
 extern void unique_ptr_tests_cc_tests ();
 extern void vec_c_tests ();
-extern void wide_int_cc_tests ();
-extern void predict_c_tests ();
-extern void simplify_rtx_c_tests ();
 extern void vec_perm_indices_c_tests ();
+extern void wide_int_cc_tests ();
 
 extern int num_passes;
 

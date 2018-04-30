@@ -1,3 +1,8 @@
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.h: Fix alphabetization of per-source-file selftest
+	declarations.
+
 2018-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61982 - dead stores to destroyed objects.
