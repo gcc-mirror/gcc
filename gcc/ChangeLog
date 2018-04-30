@@ -1,3 +1,8 @@
+2018-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (-fpie, -fPIE): Fix grammar and clarify
+	interaction with -pie.
+
 2018-04-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest.h: Fix alphabetization of per-source-file selftest
