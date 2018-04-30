@@ -7253,7 +7253,7 @@ with a linker that can produce GDB@ index version 7.
 When using DWARF Version 4 or higher, type DIEs can be put into
 their own @code{.debug_types} section instead of making them part of the
 @code{.debug_info} section.  It is more efficient to put them in a separate
-comdat sections since the linker can then remove duplicates.
+comdat section since the linker can then remove duplicates.
 But not all DWARF consumers support @code{.debug_types} sections yet
 and on some objects @code{.debug_types} produces larger instead of smaller
 debugging information.

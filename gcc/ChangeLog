@@ -1,3 +1,7 @@
+2018-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (-fdebug-types-section): Fix grammar.
+
 2018-04-30  Nathan Sidwell  <nathan@acm.org>
 	    Sandra Loosemore <sandra@codesourcery.com>
 
