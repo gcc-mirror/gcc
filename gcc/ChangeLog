@@ -1,3 +1,13 @@
+2018-05-01  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2018-04-16  Cesar Philippidis  <cesar@codesourcery.com>
+		    Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/84955
+	* omp-expand.c (expand_oacc_for): Add dummy false branch for
+	tiled basic blocks without omp continue statements.
+
 2018-04-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
