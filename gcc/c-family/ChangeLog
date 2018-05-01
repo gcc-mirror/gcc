@@ -1,3 +1,12 @@
+2018-05-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84258
+	* c-format.c (struct format_check_results): Add field
+	"number_non_char".
+	(check_format_info): Initialize it, and warn if encountered.
+	(check_format_arg): Distinguish between wide char and
+	everything else when detecting arrays of non-char.
+
 2018-04-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c (get_corrected_substring): Update for
