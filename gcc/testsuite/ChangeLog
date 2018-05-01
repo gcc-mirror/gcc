@@ -1,5 +1,17 @@
 2018-04-30  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/85523
+	* gcc.dg/plugin/diagnostic-test-show-locus-generate-patch.c
+	(test_add_fixit_insert_formatted_single_line): New function.
+	(test_add_fixit_insert_formatted_multiline): New function.
+	Extend expected output of generated patch to include fix-it hints
+	for these.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Include
+	"gcc-rich-location.h".  Add test coverage for
+	gcc_rich_location::add_fixit_insert_formatted.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
 	(test_show_locus): Update for location_get_source_line returning a
 	char_span.  Use char_span for handling words in the

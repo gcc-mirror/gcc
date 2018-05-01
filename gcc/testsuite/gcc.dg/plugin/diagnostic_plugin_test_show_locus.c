@@ -60,6 +60,7 @@
 #include "diagnostic.h"
 #include "context.h"
 #include "print-tree.h"
+#include "gcc-rich-location.h"
 
 int plugin_is_GPL_compatible;
 
@@ -332,6 +333,29 @@ test_show_locus (function *fun)
 	warning_at (&richloc, 0, "warning 2");
       }
     }  
+
+  /* Tests of gcc_rich_location::add_fixit_insert_formatted.  */
+
+  if (0 == strcmp (fnname, "test_add_fixit_insert_formatted_single_line"))
+    {
+      const int line = fnstart_line + 1;
+      location_t insertion_point = get_loc (line, 3);
+      location_t indent = get_loc (line, 2);
+      gcc_rich_location richloc (insertion_point);
+      richloc.add_fixit_insert_formatted ("INSERTED-CONTENT",
+					  insertion_point, indent);
+      inform (&richloc, "single-line insertion");
+    }
+
+  if (0 == strcmp (fnname, "test_add_fixit_insert_formatted_multiline"))
+    {
+      location_t insertion_point = fun->function_end_locus;
+      location_t indent = get_loc (fnstart_line + 1, 2);
+      gcc_rich_location richloc (insertion_point);
+      richloc.add_fixit_insert_formatted ("INSERTED-CONTENT",
+					  insertion_point, indent);
+      inform (&richloc, "multiline insertion");
+    }
 
   /* Example of two carets where both carets appear to have an off-by-one
      error appearing one column early.

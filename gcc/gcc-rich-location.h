@@ -61,6 +61,42 @@ class gcc_rich_location : public rich_location
      Implemented in diagnostic-show-locus.c.  */
 
   bool add_location_if_nearby (location_t loc);
+
+  /* Add a fix-it hint suggesting the insertion of CONTENT before
+     INSERTION_POINT.
+
+     Attempt to handle formatting: if INSERTION_POINT is the first thing on
+     its line, and INDENT is sufficiently sane, then add CONTENT on its own
+     line, using the indentation of INDENT.
+     Otherwise, add CONTENT directly before INSERTION_POINT.
+
+     For example, adding "CONTENT;" with the closing brace as the insertion
+     point and using "INDENT;" for indentation:
+
+       if ()
+         {
+           INDENT;
+         }
+
+     would lead to:
+
+       if ()
+         {
+           INDENT;
+           CONTENT;
+         }
+
+     but adding it to:
+
+       if () {INDENT;}
+
+     would lead to:
+
+       if () {INDENT;CONTENT;}
+  */
+  void add_fixit_insert_formatted (const char *content,
+				   location_t insertion_point,
+				   location_t indent);
 };
 
 #endif /* GCC_RICH_LOCATION_H */
