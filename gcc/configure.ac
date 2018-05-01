@@ -5517,11 +5517,25 @@ if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_as_needed=yes
+    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 28; then
+      gcc_cv_ld_as_needed_option='--push-state --as-needed'
+      gcc_cv_ld_no_as_needed_option='--pop-state'
+    fi
   fi
 elif test x$gcc_cv_ld != x; then
   # Check if linker supports --as-needed and --no-as-needed options
   if $gcc_cv_ld --help 2>&1 | grep as-needed > /dev/null; then
     gcc_cv_ld_as_needed=yes
+    if $gcc_cv_ld --help 2>&1 | grep push-state > /dev/null \
+       && $gcc_cv_ld --help 2>&1 | grep pop-state > /dev/null \
+       && echo "$ld_ver" | grep GNU > /dev/null \
+       && test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -ge 28; then
+      # Use these options only when both ld.bfd and ld.gold support
+      # --push-state/--pop-state, which unfortunately wasn't added
+      # at the same time.
+      gcc_cv_ld_as_needed_option='--push-state --as-needed'
+      gcc_cv_ld_no_as_needed_option='--pop-state'
+    fi
   fi
   case "$target:$gnu_ld" in
     *-*-solaris2*:no)
