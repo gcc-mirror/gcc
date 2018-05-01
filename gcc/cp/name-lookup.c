@@ -2527,6 +2527,10 @@ check_extern_c_conflict (tree decl)
   if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
     return;
 
+  /* This only applies to decls at namespace scope.  */
+  if (!DECL_NAMESPACE_SCOPE_P (decl))
+    return;
+
   if (!extern_c_decls)
     extern_c_decls = hash_table<named_decl_hash>::create_ggc (127);
 
