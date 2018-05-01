@@ -52,7 +52,10 @@ for x in index.html specific.html prerequisites.html download.html configure.htm
 do
     define=`echo $x | sed -e 's/\.//g'`
     echo "define = $define"
-    $MAKEINFO --no-number-sections -I $SOURCEDIR -I $SOURCEDIR/include -I $DESTDIR $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/$x
+    $MAKEINFO --no-number-sections -I $SOURCEDIR -I $SOURCEDIR/include -I $DESTDIR $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/temp.html
+    # Use sed to work around makeinfo 4.7 brokenness.
+    sed -e 's/_002d/-/g' -e 's/_002a/*/g' $DESTDIR/temp.html > $DESTDIR/$x
+    rm $DESTDIR/temp.html
 done
 
 rm $DESTDIR/gcc-vers.texi
