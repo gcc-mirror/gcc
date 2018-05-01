@@ -1,3 +1,8 @@
+2018-05-01  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/85143
+	* match.pd (A<B&A<C): Extend to BIT_IOR_EXPR.
+
 2018-05-01  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/85451
