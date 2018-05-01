@@ -1,3 +1,8 @@
+2018-05-01  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+        PR tree-optimization/82665
+	* gcc.dg/tree-ssa/pr82665.c: New test.
+
 2018-04-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85523
