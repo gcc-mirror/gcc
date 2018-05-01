@@ -1,6 +1,7 @@
 // { dg-module-do run }
 
-// indirect references to import, template member case
+// indirect references to import, template member non-template or
+// non-template member of template cases
 
 export module foo;
 // { dg-module-bmi foo }

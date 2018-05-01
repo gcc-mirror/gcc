@@ -5058,7 +5058,7 @@ trees_out::tree_decl (tree decl, bool force, int owner)
 	  if (!dep_walk_p ())
 	    i (tt_inst);
 	  tree_ctx (tpl, -1);
-	  tree_node (TI_ARGS (ti));
+	  tree_node (INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti)));
 	  kind = "instantiation";
 	  goto insert;
 	}
