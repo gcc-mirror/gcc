@@ -1,3 +1,21 @@
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (assert_streq): Rename "expected" and "actual" to
+	"val1" and "val2".  Extend NULL-handling to cover both inputs
+	symmetrically, while still requiring both to be non-NULL for a pass.
+	* selftest.h (assert_streq): Rename "expected" and "actual" to
+	"val1" and "val2".
+	(ASSERT_EQ): Likewise.
+	(ASSERT_EQ_AT): Likewise.
+	(ASSERT_KNOWN_EQ): Likewise.
+	(ASSERT_KNOWN_EQ_AT): Likewise.
+	(ASSERT_NE): Likewise.
+	(ASSERT_MAYBE_NE): Likewise.
+	(ASSERT_MAYBE_NE_AT): Likewise.
+	(ASSERT_STREQ): Likewise.  Clarify that both must be non-NULL for
+	the assertion to pass.
+	(ASSERT_STREQ_AT): Likewise.
+
 2018-04-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (-fpie, -fPIE): Fix grammar and clarify
