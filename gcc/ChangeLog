@@ -1,3 +1,14 @@
+2018-05-01  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/83786
+	* vec.h	(VEC_ORDERED_REMOVE_IF, VEC_ORDERED_REMOVE_IF_FROM_TO): Define.
+	* vec.c (test_ordered_remove_if): New function.
+	(vec_c_tests): Call test_ordered_remove_if.
+	* dwarf2cfi.c (connect_traces): Use VEC_ORDERED_REMOVE_IF_FROM_TO.
+	* lto-streamer-out.c (prune_offload_funcs): Use VEC_ORDERED_REMOVE_IF.
+	* tree-vect-patterns.c (vect_pattern_recog_1): Use
+	VEC_ORDERED_REMOVE_IF.
+
 2018-05-01  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/82665

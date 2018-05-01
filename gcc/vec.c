@@ -382,6 +382,51 @@ test_ordered_remove ()
   ASSERT_EQ (9, v.length ());
 }
 
+/* Verify that vec::ordered_remove_if works correctly.  */
+
+static void
+test_ordered_remove_if (void)
+{
+  auto_vec <int> v;
+  safe_push_range (v, 0, 10);
+  unsigned ix, ix2;
+  int *elem_ptr;
+  VEC_ORDERED_REMOVE_IF (v, ix, ix2, elem_ptr,
+			 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (8, v[6]);
+  ASSERT_EQ (8, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 0, 6,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (7, v[6]);
+  ASSERT_EQ (9, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 0, 5,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 8, 10,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (5, v[5]);
+  ASSERT_EQ (6, v[6]);
+  ASSERT_EQ (10, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF (v, ix, ix2, elem_ptr, *elem_ptr == 5);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (7, v[6]);
+  ASSERT_EQ (9, v.length ());
+}
+
 /* Verify that vec::unordered_remove works correctly.  */
 
 static void
@@ -443,6 +488,7 @@ vec_c_tests ()
   test_pop ();
   test_safe_insert ();
   test_ordered_remove ();
+  test_ordered_remove_if ();
   test_unordered_remove ();
   test_block_remove ();
   test_qsort ();

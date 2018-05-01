@@ -2719,7 +2719,7 @@ before_next_cfi_note (rtx_insn *start)
 static void
 connect_traces (void)
 {
-  unsigned i, n = trace_info.length ();
+  unsigned i, n;
   dw_trace_info *prev_ti, *ti;
 
   /* ??? Ideally, we should have both queued and processed every trace.
@@ -2730,20 +2730,15 @@ connect_traces (void)
      these are not "real" instructions, and should not be considered.
      This could be generically useful for tablejump data as well.  */
   /* Remove all unprocessed traces from the list.  */
-  for (i = n - 1; i > 0; --i)
-    {
-      ti = &trace_info[i];
-      if (ti->beg_row == NULL)
-	{
-	  trace_info.ordered_remove (i);
-	  n -= 1;
-	}
-      else
-	gcc_assert (ti->end_row != NULL);
-    }
+  unsigned ix, ix2;
+  VEC_ORDERED_REMOVE_IF_FROM_TO (trace_info, ix, ix2, ti, 1,
+				 trace_info.length (), ti->beg_row == NULL);
+  FOR_EACH_VEC_ELT (trace_info, ix, ti)
+    gcc_assert (ti->end_row != NULL);
 
   /* Work from the end back to the beginning.  This lets us easily insert
      remember/restore_state notes in the correct order wrt other notes.  */
+  n = trace_info.length ();
   prev_ti = &trace_info[n - 1];
   for (i = n - 1; i > 0; --i)
     {
