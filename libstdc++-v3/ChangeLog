@@ -1,3 +1,16 @@
+2018-05-01  Tulio Magno Quites Machado Filho  <tuliom@linux.vnet.ibm.com>
+
+	PR libstdc++/84654
+	* acinclude.m4: Set ENABLE_FLOAT128 instead of _GLIBCXX_USE_FLOAT128.
+	* config.h.in: Remove references to _GLIBCXX_USE_FLOAT128.
+	* configure: Regenerate.
+	* include/Makefile.am: Replace the value of _GLIBCXX_USE_FLOAT128
+	based on ENABLE_FLOAT128.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Define _GLIBCXX_USE_FLOAT128.
+	[!defined(__FLOAT128__) && !defined(__SIZEOF_FLOAT128__)]: Undefine
+	_GLIBCXX_USE_FLOAT128.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
