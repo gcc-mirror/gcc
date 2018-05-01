@@ -65,6 +65,7 @@ static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 static char *ltrans_output_file;
 static char *flto_out;
 static unsigned int nr;
+static int *ltrans_priorities;
 static char **input_names;
 static char **output_names;
 static char **offload_names;
@@ -1018,6 +1019,13 @@ debug_objcopy (const char *infile)
   return outfile;
 }
 
+/* Helper for qsort: compare priorities for parallel compilation.  */
+
+int
+cmp_priority (const void *a, const void *b)
+{
+  return *((const int *)b)-*((const int *)a);
+}
 
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
@@ -1477,6 +1485,7 @@ cont1:
       FILE *stream = fopen (ltrans_output_file, "r");
       FILE *mstream = NULL;
       struct obstack env_obstack;
+      int priority;
 
       if (!stream)
 	fatal_error (input_location, "fopen: %s: %m", ltrans_output_file);
@@ -1492,6 +1501,14 @@ cont1:
 	  size_t len;
 
 	  buf = input_name;
+          if (fscanf (stream, "%i\n", &priority) != 1)
+	    {
+	      if (!feof (stream))
+	        fatal_error (input_location,
+		             "Corrupted ltrans output file %s",
+			     ltrans_output_file);
+	      break;
+	    }
 cont:
 	  if (!fgets (buf, piece, stream))
 	    break;
@@ -1508,8 +1525,12 @@ cont:
 	    output_name = &input_name[1];
 
 	  nr++;
+	  ltrans_priorities
+	     = (int *)xrealloc (ltrans_priorities, nr * sizeof (int) * 2);
 	  input_names = (char **)xrealloc (input_names, nr * sizeof (char *));
 	  output_names = (char **)xrealloc (output_names, nr * sizeof (char *));
+	  ltrans_priorities[(nr-1)*2] = priority;
+	  ltrans_priorities[(nr-1)*2+1] = nr-1;
 	  input_names[nr-1] = input_name;
 	  output_names[nr-1] = output_name;
 	}
@@ -1521,6 +1542,7 @@ cont:
 	{
 	  makefile = make_temp_file (".mk");
 	  mstream = fopen (makefile, "w");
+	  qsort (ltrans_priorities, nr, sizeof (int) * 2, cmp_priority);
 	}
 
       /* Execute the LTRANS stage for each input file (or prepare a
@@ -1586,7 +1608,10 @@ cont:
 
 	  fprintf (mstream, "all:");
 	  for (i = 0; i < nr; ++i)
-	    fprintf (mstream, " \\\n\t%s", output_names[i]);
+	    {
+	      int j = ltrans_priorities[i*2 + 1];
+	      fprintf (mstream, " \\\n\t%s", output_names[j]);
+	    }
 	  fprintf (mstream, "\n");
 	  fclose (mstream);
 	  if (!jobserver)
@@ -1630,6 +1655,7 @@ cont:
 	  free (input_names[i]);
 	}
       nr = 0;
+      free (ltrans_priorities);
       free (output_names);
       free (input_names);
       free (list_option_full);

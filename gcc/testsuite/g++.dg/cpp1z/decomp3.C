@@ -29,7 +29,7 @@ test (A &b, B c)
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
   __restrict auto [ t ] = c;		// { dg-error "invalid use of 'restrict'" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
-  long long auto [ u ] = c;		// { dg-error "'long long' invalid for 'structured binding'" }
+  long long auto [ u ] = c;		// { dg-error "'long long' specified with 'auto'" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
   virtual auto [ v ] = c;		// { dg-error "'virtual' outside class declaration" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }

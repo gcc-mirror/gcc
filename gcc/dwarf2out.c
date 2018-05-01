@@ -1724,6 +1724,11 @@ dwarf_AT (enum dwarf_attribute at)
 	return DW_AT_GNU_dwo_name;
       break;
 
+    case DW_AT_addr_base:
+      if (dwarf_version < 5)
+	return DW_AT_GNU_addr_base;
+      break;
+
     default:
       break;
     }
@@ -11106,7 +11111,7 @@ add_top_level_skeleton_die_attrs (dw_die_ref die)
   if (comp_dir != NULL)
     add_skeleton_AT_string (die, DW_AT_comp_dir, comp_dir);
   add_AT_pubnames (die);
-  add_AT_lineptr (die, DW_AT_GNU_addr_base, debug_addr_section_label);
+  add_AT_lineptr (die, dwarf_AT (DW_AT_addr_base), debug_addr_section_label);
 }
 
 /* Output skeleton debug sections that point to the dwo file.  */
@@ -24229,6 +24234,8 @@ gen_producer_string (void)
       case OPT_fmacro_prefix_map_:
       case OPT_ffile_prefix_map_:
       case OPT_fcompare_debug:
+      case OPT_fchecking:
+      case OPT_fchecking_:
 	/* Ignore these.  */
 	continue;
       default:
@@ -31293,6 +31300,24 @@ dwarf2out_finish (const char *)
 	}
 
       switch_to_section (debug_addr_section);
+      /* GNU DebugFission https://gcc.gnu.org/wiki/DebugFission
+	 which GCC uses to implement -gsplit-dwarf as DWARF GNU extension
+	 before DWARF5, didn't have a header for .debug_addr units.
+	 DWARF5 specifies a small header when address tables are used.  */
+      if (dwarf_version >= 5)
+	{
+	  unsigned long addrs_length
+	    = addr_index_table->elements () * DWARF2_ADDR_SIZE + 4;
+
+	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	    dw2_asm_output_data (4, 0xffffffff,
+				 "Escape value for 64-bit DWARF extension");
+	  dw2_asm_output_data (DWARF_OFFSET_SIZE, addrs_length,
+			       "Length of Address Unit");
+	  dw2_asm_output_data (2, 5, "DWARF addr version");
+	  dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Size of Address");
+	  dw2_asm_output_data (1, 0, "Size of Segment Descriptor");
+	}
       ASM_OUTPUT_LABEL (asm_out_file, debug_addr_section_label);
       output_addr_table ();
     }

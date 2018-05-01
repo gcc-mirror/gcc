@@ -3,12 +3,11 @@
 
 struct A
 {
-  void foo() noexcept;
+  constexpr int foo() const noexcept { return 1; }
 };
 
-template<typename T> void bar(T);
+constexpr auto p = static_cast<int (A::*)() const>(&A::foo);
+constexpr int i = (A().*p)();
 
-void baz()
-{
-  bar(static_cast<void(A::*)()>(&A::foo));
-}
+#define SA(X) static_assert((X),#X)
+SA(i == 1);

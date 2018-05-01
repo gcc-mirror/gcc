@@ -10,9 +10,13 @@ short g_c;
 char g_d;
 
 #define TEST(name, optype)			\
-  void test_ ## name (optype x)			\
+  optype testLD_ ## name (optype x)		\
   {						\
-    g_ ## name += x;				\
+    return g_ ## name + x;			\
+  }						\
+  void testST_ ## name (optype x)		\
+  {						\
+    g_ ## name = x;				\
   }
 
 TEST (a, int)

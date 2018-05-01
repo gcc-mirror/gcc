@@ -1,3 +1,274 @@
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85523
+	* gcc-rich-location.c (blank_line_before_p): New function.
+	(use_new_line): New function.
+	(gcc_rich_location::add_fixit_insert_formatted): New function.
+	* gcc-rich-location.h
+	(gcc_rich_location::add_fixit_insert_formatted): New function.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (assert_streq): Rename "expected" and "actual" to
+	"val1" and "val2".  Extend NULL-handling to cover both inputs
+	symmetrically, while still requiring both to be non-NULL for a pass.
+	* selftest.h (assert_streq): Rename "expected" and "actual" to
+	"val1" and "val2".
+	(ASSERT_EQ): Likewise.
+	(ASSERT_EQ_AT): Likewise.
+	(ASSERT_KNOWN_EQ): Likewise.
+	(ASSERT_KNOWN_EQ_AT): Likewise.
+	(ASSERT_NE): Likewise.
+	(ASSERT_MAYBE_NE): Likewise.
+	(ASSERT_MAYBE_NE_AT): Likewise.
+	(ASSERT_STREQ): Likewise.  Clarify that both must be non-NULL for
+	the assertion to pass.
+	(ASSERT_STREQ_AT): Likewise.
+
+2018-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (-fpie, -fPIE): Fix grammar and clarify
+	interaction with -pie.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.h: Fix alphabetization of per-source-file selftest
+	declarations.
+
+2018-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61982 - dead stores to destroyed objects.
+	* gimplify.c (gimplify_modify_expr): Simplify complex lvalue on LHS
+	of clobber.
+
+2018-04-30  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_clobber): New.
+	* tree.h: Declare it.
+	* gimplify.c (gimplify_bind_expr, gimplify_target_expr): Use it.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::layout): Update for
+	location_get_source_line returning a char_span.
+	(struct char_span): Move to input.h.
+	(struct correction): Update for fields in char_span becoming
+	private.
+	(struct source_line): Update for location_get_source_line
+	returning a char_span.
+	(layout::print_line): Likewise.
+	* edit-context.c (edited_file::print_content): Likewise.
+	(edited_file::print_diff_hunk): Likewise.
+	(edited_file::print_run_of_changed_lines): Likewise.
+	(edited_file::get_num_lines): Likewise.
+	(edited_line::edited_line): Likewise.
+	* final.c (asm_show_source): Likewise.
+	* input.c (location_get_source_line): Convert return type
+	from const char * to char_span, losing the final "line_len"
+	param.
+	(dump_location_info): Update for the above.
+	(get_substring_ranges_for_loc): Likewise.  Use a char_span
+	when handling the literal within the line.
+	(test_reading_source_line): Update for location_get_source_line
+	returning a char_span.
+	* input.h (class char_span): Move here from
+	diagnostic-show-locus.c, converting from a struct to a class.
+	Make data members private.
+	(char_span::operator bool): New.
+	(char_span::length): New.
+	(char_span::get_buffer): New.
+	(char_span::operator[]): New.
+	(char_span::subspan): Make const.
+	(char_span::xstrdup): New.
+	(location_get_source_line): Convert return type from const char *
+	to char_span, losing the final "line_size" param.
+
+2018-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto-wrapper.c (ltrans_priorities): New static var.
+	(cmp_priority): New.
+	(run_gcc): Read priorities and if doing parallel build order
+	the Makefile by them.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.h (builtins_location_check): Convert to a STATIC_ASSERT.
+
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_address): Remove base argument, add
+	flag whether to check TREE_ADDRESSABLE and do that.
+	(verify_expr): Remove.
+	(verify_types_in_gimple_reference): Add pieces from verify_expr.
+	(verify_gimple_assign_single): Likewise.
+	(verify_gimple_switch): Likewise.
+	(verify_expr_location_1): Dereference tp once.  Add (disabled)
+	piece from verify_expr.
+	(verify_gimple_in_cfg): Do not call verify_expr on all ops.
+
+2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/linux.h (CLEAR_INSN_CACHE): Define.
+
+2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (prepare_extend_operands): Remove.
+	(small_data_pattern): Likewise.
+	(arc_rewrite_small_data): Likewise.
+	* config/arc/arc.c (LEGITIMATE_SMALL_DATA_OFFSET_P): Remove.
+	(LEGITIMATE_SMALL_DATA_ADDRESS_P): Likewise.
+	(get_symbol_alignment): New function.
+	(legitimate_small_data_address_p): Likewise.
+	(legitimate_scaled_address): Update, call
+	legitimate_small_data_address_p.
+	(output_sdata): New static variable.
+	(arc_print_operand): Update how we handle small data operands.
+	(arc_print_operand_address): Likewise.
+	(arc_legitimate_address_p): Update, use
+	legitimate_small_data_address_p.
+	(arc_rewrite_small_data_p): Remove.
+	(arc_rewrite_small_data_1): Likewise.
+	(arc_rewrite_small_data): Likewise.
+	(small_data_pattern): Likewise.
+	(compact_sda_memory_operand): Update to use
+	legitimate_small_data_address_p and get_symbol_alignment.
+	(prepare_move_operands): Don't rewite sdata pattern.
+	(prepare_extend_operands): Remove.
+	* config/arc/arc.md (zero_extendqihi2): Don't rewrite sdata
+	pattern.
+	(zero_extendqisi2): Likewise.
+	(zero_extendhisi2): Likewise.
+	(extendqihi2): Likewise.
+	(extendqisi2): Likewise.
+	(extendhisi2): Likewise.
+	(addsi3): Likewise.
+	(subsi3): Likewise.
+	(andsi3): Likewise.
+	* config/arc/constraints.md (Usd): Change it to memory constraint.
+
+2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_split_move): Allow signed 6-bit constants
+	as source of std instructions.
+	* config/arc/arc.md (movsi_insn): Update pattern predicate to
+	allow 6-bit constants as source for store instructions.
+	(movdi_insn): Update instruction pattern to allow 6-bit constants
+	as source for store instructions.
+
+2018-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (-fdebug-types-section): Fix grammar.
+
+2018-04-30  Nathan Sidwell  <nathan@acm.org>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	* dumpfile.c (dump_open): Allow '-' for stdout.
+	* doc/invoke.texi (Developer Options): Document dump filename
+	determination early.  Document stdin/stdout selection.
+
+2018-04-30 Andrew Sadek  <andrew.sadek.se@gmail.com>
+
+	Microblaze Target: PIC data text relative
+
+	* config/microblaze/microblaze.opt: add new option -mpic-data-text-rel.
+	* config/microblaze/microblaze-protos.h (microblaze_constant_address_p):
+	Add declaration.
+	* gcc/config/microblaze/microblaze.h (microblaze_constant_address_p):
+	CONSTANT_ADDRESS_P definition to microblaze_constant_address_p.
+	* config/microblaze/microblaze.c (TARGET_PIC_DATA_TEXT_REL):
+	New addressing mode for data-text relative position indepenedent code.
+	(microblaze_classify_unspec): add 'UNSPEC_TEXT' case ->
+	'ADDRESS_SYMBOLIC_TXT_REL'.
+	(microblaze_classify_address): Add handling for UNSPEC + CONST_INT.
+	(microblaze_legitimate_pic_operand): Exclude function calls from
+	pic operands in case of TARGET_PIC_DATA_TEXT_REL option.
+	(microblaze_legitimize_address): Generate 'UNSPEC_TEXT' for all possible
+	addresses cases.
+	(microblaze_address_insns): Add 'ADDRESS_SYMBOLIC_TXT_REL' case.
+	(print_operand): Add 'ADDRESS_SYMBOLIC_TXT_REL' case.
+	(print_operand_address): Add 'ADDRESS_SYMBOLIC_TXT_REL' case + handling
+	for 'address + offset'.
+	(microblaze_expand_prologue): Add new function prologue call for
+	'r20' assignation.
+	(microblaze_asm_generate_pic_addr_dif_vec): Override new target hook
+	'TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC' to disable address diff vector
+	table in case of TARGET_PIC_DATA_TEXT_REL.
+	(expand_pic_symbol_ref): Add handling for 'UNSPEC_TEXT'.
+	* gcc/config/microblaze/microblaze.md (TARGET_PIC_DATA_TEXT_REL):
+	Add new macros 'UNSPEC_TEXT',
+	'UNSPEC_SET_TEXT' + add rule for setting r20 in function prologue
+	+ exclude function calls from 'UNSPEC_PLT' in case of data text
+	relative mode.
+	* doc/tm.texi.in (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC): Add
+	new target hook for generating address diff vector tables in case of
+	flag_pic.
+	* doc/tm.texi : Regenerate.
+	* stmt.c (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC): Append new condition
+	'targetm.asm_out.generate_pic_addr_diff_vec' to flag_pic in case
+	of addr diff vector generation.
+	* target.def (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC): Add
+	target hook definition.
+	* targhooks.h, gcc/targhooks.c (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC):
+	Add default function for generate_pic_addr_diff_vec -> flag_pic.
+	* doc/invoke.texi (Add new pic option): Add new microblaze pic
+	option for data text relative.
+
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-chrec.h (evolution_function_is_constant_p): Remove
+	redundant check.
+	* tree-cfg.c (tree_node_can_be_shared): Re-order checks.
+
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85571
+	* dwarf2out.c (gen_producer_string): Ignore -fchecking[=].
+
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/28364
+	PR tree-optimization/85275
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Stop after
+	copying first exit test.
+
+2018-04-28  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (dwarf2out_finish): Add .debug_addr table header for
+	dwarf_version >= 5.
+	(dwarf_AT): Handle DW_AT_addr_base.
+	(add_top_level_skeleton_die_attrs): Use dwarf_AT for DW_AT_addr_base.
+
+2018-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/84431
+	* config/i386/i386.md (*ashl<dwi>3_doubleword_mask): New pattern.
+	(*ashl<dwi>3_doubleword_mask_1): Ditto.
+	(*<shift_insn><dwi>3_doubleword_mask): Ditto.
+	(*<shift_insn><dwi>3_doubleword_mask_1): Ditto.
+
+2018-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_phi): Take a gphi * argument.
+	(verify_gimple_in_cfg): Rename visited_stmts to visited_throwing_stmts
+	to reflect use.  Only add interesting stmts.
+
+2018-04-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/85549
+	* ipa-cp.c (find_aggregate_values_for_callers_subset): Make sure
+	the jump function allows for passing through aggregate values.
+
+2018-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.h (in_system_header_at): Convert from macro to inline
+	function.
+	(from_macro_expansion_at): Likewise.
+	(from_macro_definition_at): Likewise.
+
+2018-04-27  Jeff Law  <law@redhat.com>
+
+	* config.gcc: Mark tile* targets as deprecated/obsolete.
+
 2018-04-27  Richard Biener  <rguenther@suse.de>
 
 	* config/aarch64/aarch64.c: Simplify ap.__stack advance and

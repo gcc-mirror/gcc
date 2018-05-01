@@ -507,6 +507,18 @@ in read-only sections even in executables.",
  int, (void),
  default_reloc_rw_mask)
 
+ /* Return a flag for either generating ADDR_DIF_VEC table
+ or ADDR_VEC table for jumps in case of -fPIC/-fPIE.  */
+DEFHOOK
+(generate_pic_addr_diff_vec,
+"Return true to generate ADDR_DIF_VEC table\n\
+or false to generate ADDR_VEC table for jumps in case of -fPIC.\n\
+\n\
+The default version of this function returns true if flag_pic\n\
+equals true and false otherwise",
+ bool, (void),
+ default_generate_pic_addr_diff_vec)
+
  /* Return a section for EXP.  It may be a DECL or a constant.  RELOC
     is nonzero if runtime relocations must be applied; bit 1 will be
     set if the runtime relocations require non-local name resolution.

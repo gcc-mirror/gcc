@@ -96,22 +96,6 @@ HARD_REG_SET overrideregs;
 		      ? 0 \
 		      : -(-GET_MODE_SIZE (MODE) | -4) >> 1)))
 
-#define LEGITIMATE_SMALL_DATA_OFFSET_P(X)				\
-  (GET_CODE (X) == CONST						\
-   && GET_CODE (XEXP ((X), 0)) == PLUS					\
-   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == SYMBOL_REF			\
-   && SYMBOL_REF_SMALL_P (XEXP (XEXP ((X), 0), 0))			\
-   && GET_CODE (XEXP(XEXP ((X), 0), 1)) == CONST_INT			\
-   && INTVAL (XEXP (XEXP ((X), 0), 1)) <= g_switch_value)
-
-#define LEGITIMATE_SMALL_DATA_ADDRESS_P(X)				\
-  (GET_CODE (X) == PLUS							\
-     && REG_P (XEXP ((X), 0))						\
-     && REGNO (XEXP ((X), 0)) == SDATA_BASE_REGNUM			\
-     && ((GET_CODE (XEXP ((X), 1)) == SYMBOL_REF			\
-	    && SYMBOL_REF_SMALL_P (XEXP ((X), 1)))			\
-	 || LEGITIMATE_SMALL_DATA_OFFSET_P (XEXP ((X), 1))))
-
 /* Array of valid operand punctuation characters.  */
 char arc_punct_chars[256];
 
@@ -308,6 +292,60 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 /* Globally visible information about currently selected cpu.  */
 const arc_cpu_t *arc_selected_cpu;
 
+/* Given a symbol RTX (const (symb <+ const_int>), returns its
+   alignment.  */
+
+static int
+get_symbol_alignment (rtx x)
+{
+  tree decl = NULL_TREE;
+  int align = 0;
+
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      decl = SYMBOL_REF_DECL (x);
+      break;
+    case CONST:
+      return get_symbol_alignment (XEXP (x, 0));
+    case PLUS:
+      gcc_assert (CONST_INT_P (XEXP (x, 1)));
+      return get_symbol_alignment (XEXP (x, 0));
+    default:
+      return 0;
+    }
+
+  if (decl)
+    align = DECL_ALIGN (decl);
+  align = align / BITS_PER_UNIT;
+  return align;
+}
+
+/* Return true if x is ok to be used as a small data address.  */
+
+static bool
+legitimate_small_data_address_p (rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case CONST:
+      return legitimate_small_data_address_p (XEXP (x, 0));
+    case SYMBOL_REF:
+      return SYMBOL_REF_SMALL_P (x);
+    case PLUS:
+      {
+	bool p0 = (GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
+	  && SYMBOL_REF_SMALL_P (XEXP (x, 0));
+	bool p1 = CONST_INT_P (XEXP (x, 1))
+	  && (INTVAL (XEXP (x, 1)) <= g_switch_value);
+	return p0 && p1;
+      }
+    default:
+      return false;
+    }
+}
+
+/* TRUE if op is an scaled address.  */
 static bool
 legitimate_scaled_address_p (machine_mode mode, rtx op, bool strict)
 {
@@ -352,14 +390,13 @@ legitimate_scaled_address_p (machine_mode mode, rtx op, bool strict)
 	return true;
       return false;
     }
+
+  /* Scalled addresses for sdata is done other places.  */
+  if (legitimate_small_data_address_p (op))
+    return false;
+
   if (CONSTANT_P (XEXP (op, 1)))
-    {
-      /* Scalled addresses for sdata is done other places.  */
-      if (GET_CODE (XEXP (op, 1)) == SYMBOL_REF
-	  && SYMBOL_REF_SMALL_P (XEXP (op, 1)))
-	return false;
       return true;
-    }
 
   return false;
 }
@@ -3762,6 +3799,9 @@ arc_add_jli_section (rtx pat)
    reset when we output the scaled address.  */
 static int output_scaled = 0;
 
+/* Set when we force sdata output.  */
+static int output_sdata = 0;
+
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    For `%' followed by punctuation, CODE is the punctuation and X is null.  */
@@ -4114,24 +4154,24 @@ arc_print_operand (FILE *file, rtx x, int code)
 		  fputs (".as", file);
 		  output_scaled = 1;
 		}
-	      else if (LEGITIMATE_SMALL_DATA_ADDRESS_P (addr)
-		       && GET_MODE_SIZE (GET_MODE (x)) > 1)
+	      break;
+	    case SYMBOL_REF:
+	    case CONST:
+	      if (legitimate_small_data_address_p (addr)
+		  && GET_MODE_SIZE (GET_MODE (x)) > 1)
 		{
-		  tree decl = NULL_TREE;
-		  int align = 0;
-		  if (GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
-		    decl = SYMBOL_REF_DECL (XEXP (addr, 1));
-		  else if (GET_CODE (XEXP (XEXP (XEXP (addr, 1), 0), 0))
-			   == SYMBOL_REF)
-		    decl = SYMBOL_REF_DECL (XEXP (XEXP (XEXP (addr, 1), 0), 0));
-		  if (decl)
-		    align = DECL_ALIGN (decl);
-		  align = align / BITS_PER_UNIT;
-		  if ((GET_MODE_SIZE (GET_MODE (x)) == 2)
-		      && align && ((align & 1) == 0))
-		    fputs (".as", file);
-		  if ((GET_MODE_SIZE (GET_MODE (x)) >= 4)
-		      && align && ((align & 3) == 0))
+		  int align = get_symbol_alignment (addr);
+		  int mask = 0;
+		  switch (GET_MODE (x))
+		    {
+		    case E_HImode:
+		      mask = 1;
+		      break;
+		    default:
+		      mask = 3;
+		      break;
+		    }
+		  if (align && ((align & mask) == 0))
 		    fputs (".as", file);
 		}
 	      break;
@@ -4250,6 +4290,9 @@ arc_print_operand (FILE *file, rtx x, int code)
 	rtx addr = XEXP (x, 0);
 	int size = GET_MODE_SIZE (GET_MODE (x));
 
+	if (legitimate_small_data_address_p (addr))
+	  output_sdata = 1;
+
 	fputc ('[', file);
 
 	switch (GET_CODE (addr))
@@ -4310,26 +4353,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 		  || XINT (XEXP (XEXP (x, 0), 0), 1) == UNSPEC_TLS_GD)))
 	arc_output_pic_addr_const (file, x, code);
       else
-	{
-	  /* FIXME: Dirty way to handle @var@sda+const. Shd be handled
-	     with asm_output_symbol_ref */
-	  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS)
-	    {
-	      x = XEXP (x, 0);
-	      output_addr_const (file, XEXP (x, 0));
-	      if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF && SYMBOL_REF_SMALL_P (XEXP (x, 0)))
-		fprintf (file, "@sda");
-
-	      if (GET_CODE (XEXP (x, 1)) != CONST_INT
-		  || INTVAL (XEXP (x, 1)) >= 0)
-		fprintf (file, "+");
-	      output_addr_const (file, XEXP (x, 1));
-	    }
-	  else
-	    output_addr_const (file, x);
-	}
-      if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_SMALL_P (x))
-	fprintf (file, "@sda");
+	output_addr_const (file, x);
       break;
     }
 }
@@ -4346,10 +4370,13 @@ arc_print_operand_address (FILE *file , rtx addr)
     case REG :
       fputs (reg_names[REGNO (addr)], file);
       break;
-    case SYMBOL_REF :
+    case SYMBOL_REF:
+      if (output_sdata)
+	fputs ("gp,", file);
       output_addr_const (file, addr);
-      if (SYMBOL_REF_SMALL_P (addr))
-	fprintf (file, "@sda");
+      if (output_sdata)
+	fputs ("@sda", file);
+      output_sdata = 0;
       break;
     case PLUS :
       if (GET_CODE (XEXP (addr, 0)) == MULT)
@@ -6170,7 +6197,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
      return true;
   if (legitimate_scaled_address_p (mode, x, strict))
     return true;
-  if (LEGITIMATE_SMALL_DATA_ADDRESS_P (x))
+  if (legitimate_small_data_address_p (x))
      return true;
   if (GET_CODE (x) == CONST_INT && LARGE_INT (INTVAL (x)))
      return true;
@@ -7973,98 +8000,9 @@ arc_in_small_data_p (const_tree decl)
   return false;
 }
 
-/* Return true if X is a small data address that can be rewritten
-   as a gp+symref.  */
-
-static bool
-arc_rewrite_small_data_p (const_rtx x)
-{
-  if (GET_CODE (x) == CONST)
-    x = XEXP (x, 0);
-
-  if (GET_CODE (x) == PLUS)
-    {
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	x = XEXP (x, 0);
-    }
-
-  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_SMALL_P (x))
-    {
-      gcc_assert (SYMBOL_REF_TLS_MODEL (x) == 0);
-      return true;
-    }
-  return false;
-}
-
-/* If possible, rewrite OP so that it refers to small data using
-   explicit relocations.  */
-
-static rtx
-arc_rewrite_small_data_1 (rtx op)
-{
-  rtx rgp = gen_rtx_REG (Pmode, SDATA_BASE_REGNUM);
-  op = copy_insn (op);
-  subrtx_ptr_iterator::array_type array;
-  FOR_EACH_SUBRTX_PTR (iter, array, &op, ALL)
-    {
-      rtx *loc = *iter;
-      if (arc_rewrite_small_data_p (*loc))
-	{
-	  *loc = gen_rtx_PLUS (Pmode, rgp, *loc);
-	  iter.skip_subrtxes ();
-	}
-      else if (GET_CODE (*loc) == PLUS
-	       && rtx_equal_p (XEXP (*loc, 0), rgp))
-	iter.skip_subrtxes ();
-    }
-  return op;
-}
-
-rtx
-arc_rewrite_small_data (rtx op)
-{
-  op = arc_rewrite_small_data_1 (op);
-
-  /* Check if we fit small data constraints.  */
-  if (MEM_P (op)
-      && !LEGITIMATE_SMALL_DATA_ADDRESS_P (XEXP (op, 0)))
-    {
-      rtx addr = XEXP (op, 0);
-      rtx tmp = gen_reg_rtx (Pmode);
-      emit_move_insn (tmp, addr);
-      op = replace_equiv_address_nv (op, tmp);
-    }
-  return op;
-}
-
-/* Return true if OP refers to small data symbols directly, not through
-   a PLUS.  */
-
-bool
-small_data_pattern (rtx op, machine_mode)
-{
-  if (GET_CODE (op) == SEQUENCE)
-    return false;
-
-  rtx rgp = gen_rtx_REG (Pmode, SDATA_BASE_REGNUM);
-  subrtx_iterator::array_type array;
-  FOR_EACH_SUBRTX (iter, array, op, ALL)
-    {
-      const_rtx x = *iter;
-      if (GET_CODE (x) == PLUS
-	  && rtx_equal_p (XEXP (x, 0), rgp))
-	iter.skip_subrtxes ();
-      else if (arc_rewrite_small_data_p (x))
-	return true;
-    }
-  return false;
-}
-
 /* Return true if OP is an acceptable memory operand for ARCompact
    16-bit gp-relative load instructions.
-   op shd look like : [r26, symref@sda]
-   i.e. (mem (plus (reg 26) (symref with smalldata flag set))
-  */
+*/
 /* volatile cache option still to be handled.  */
 
 bool
@@ -8072,7 +8010,6 @@ compact_sda_memory_operand (rtx op, machine_mode mode, bool short_p)
 {
   rtx addr;
   int size;
-  tree decl = NULL_TREE;
   int align = 0;
   int mask = 0;
 
@@ -8092,7 +8029,7 @@ compact_sda_memory_operand (rtx op, machine_mode mode, bool short_p)
   /* Decode the address now.  */
   addr = XEXP (op, 0);
 
-  if (!LEGITIMATE_SMALL_DATA_ADDRESS_P (addr))
+  if (!legitimate_small_data_address_p (addr))
     return false;
 
   if (!short_p || size == 1)
@@ -8100,14 +8037,7 @@ compact_sda_memory_operand (rtx op, machine_mode mode, bool short_p)
 
   /* Now check for the alignment, the short loads using gp require the
      addresses to be aligned.  */
-  if (GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
-    decl = SYMBOL_REF_DECL (XEXP (addr, 1));
-  else if (GET_CODE (XEXP (XEXP (XEXP (addr, 1), 0), 0)) == SYMBOL_REF)
-    decl = SYMBOL_REF_DECL (XEXP (XEXP (XEXP (addr, 1), 0), 0));
-  if (decl)
-    align = DECL_ALIGN (decl);
-  align = align / BITS_PER_UNIT;
-
+  align = get_symbol_alignment (addr);
   switch (mode)
     {
     case E_HImode:
@@ -8581,11 +8511,6 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 	}
     }
 
-  /* We used to do this only for MODE_INT Modes, but addresses to floating
-     point variables may well be in the small data section.  */
-  if (!TARGET_NO_SDATA_SET && small_data_pattern (operands[0], Pmode))
-    operands[0] = arc_rewrite_small_data (operands[0]);
-
   if (mode == SImode && SYMBOLIC_CONST (operands[1]))
     {
       prepare_pic_move (operands, SImode);
@@ -8593,29 +8518,6 @@ prepare_move_operands (rtx *operands, machine_mode mode)
       /* Disable any REG_EQUALs associated with the symref
 	 otherwise the optimization pass undoes the work done
 	 here and references the variable directly.  */
-    }
-
-  if (GET_CODE (operands[0]) != MEM
-      && !TARGET_NO_SDATA_SET
-      && small_data_pattern (operands[1], Pmode))
-    {
-      /* This is to take care of address calculations involving sdata
-	 variables.  */
-      operands[1] = arc_rewrite_small_data (operands[1]);
-
-      emit_insn (gen_rtx_SET (operands[0],operands[1]));
-      /* ??? This note is useless, since it only restates the set itself.
-	 We should rather use the original SYMBOL_REF.  However, there is
-	 the problem that we are lying to the compiler about these
-	 SYMBOL_REFs to start with.  symbol@sda should be encoded specially
-	 so that we can tell it apart from an actual symbol.  */
-      set_unique_reg_note (get_last_insn (), REG_EQUAL, operands[1]);
-
-      /* Take care of the REG_EQUAL note that will be attached to mark the
-	 output reg equal to the initial symbol_ref after this code is
-	 executed.  */
-      emit_move_insn (operands[0], operands[0]);
-      return true;
     }
 
   if (MEM_P (operands[0])
@@ -8658,31 +8560,6 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 	}
     }
 
-  return false;
-}
-
-/* Prepare OPERANDS for an extension using CODE to OMODE.
-   Return true iff the move has been emitted.  */
-
-bool
-prepare_extend_operands (rtx *operands, enum rtx_code code,
-			 machine_mode omode)
-{
-  if (!TARGET_NO_SDATA_SET && small_data_pattern (operands[1], Pmode))
-    {
-      /* This is to take care of address calculations involving sdata
-	 variables.  */
-      operands[1]
-	= gen_rtx_fmt_e (code, omode, arc_rewrite_small_data (operands[1]));
-      emit_insn (gen_rtx_SET (operands[0], operands[1]));
-      set_unique_reg_note (get_last_insn (), REG_EQUAL, operands[1]);
-
-      /* Take care of the REG_EQUAL note that will be attached to mark the
-	 output reg equal to the initial extension after this code is
-	 executed.  */
-      emit_move_insn (operands[0], operands[0]);
-      return true;
-    }
   return false;
 }
 
@@ -9651,7 +9528,8 @@ arc_split_move (rtx *operands)
 
   if (TARGET_LL64
       && ((memory_operand (operands[0], mode)
-	   && even_register_operand (operands[1], mode))
+	   && (even_register_operand (operands[1], mode)
+	       || satisfies_constraint_Cm3 (operands[1])))
 	  || (memory_operand (operands[1], mode)
 	      && even_register_operand (operands[0], mode))))
     {

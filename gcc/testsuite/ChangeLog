@@ -1,3 +1,99 @@
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85523
+	* gcc.dg/plugin/diagnostic-test-show-locus-generate-patch.c
+	(test_add_fixit_insert_formatted_single_line): New function.
+	(test_add_fixit_insert_formatted_multiline): New function.
+	Extend expected output of generated patch to include fix-it hints
+	for these.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Include
+	"gcc-rich-location.h".  Add test coverage for
+	gcc_rich_location::add_fixit_insert_formatted.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Update for location_get_source_line returning a
+	char_span.  Use char_span for handling words in the
+	"test_many_nested_locations" fix-it example.
+
+2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/interrupt-8.c: Update test.
+	* gcc.target/arc/loop-4.c: Likewise.
+	* gcc.target/arc/loop-hazard-1.c: Likewise.
+	* gcc.target/arc/sdata-3.c: Likewise.
+
+2018-04-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/store-merge-1.c: New test.
+	* gcc.target/arc/add_n-combine.c: Update test.
+
+2018-04-30 Andrew Sadek  <andrew.sadek.se@gmail.com>
+
+	Microblaze Target: PIC data text relative
+
+	* gcc.target/microblaze/others/data_var1.c: Include
+	PIC case of r20 base register.
+	* gcc.target/microblaze/others/data_var2.c: Ditto.
+	* gcc.target/microblaze/others/picdtr.c: Add new
+	test case for -mpic-is-data-text-relative.
+	* gcc.target/microblaze/others/sdata_var1.c: Add
+	* gcc.target/microblaze/others/sdata_var2.c: Ditto.
+	* gcc.target/microblaze/others/sdata_var3.c: Ditto.
+	* gcc.target/microblaze/others/sdata_var4.c: Ditto.
+	* gcc.target/microblaze/others/sdata_var5.c: Ditto.
+	* gcc.target/microblaze/others/sdata_var6.c: Ditto.
+	* gcc.target/microblaze/others/string_cst1_gpopt.c:
+	Ditto.
+	* gcc.target/microblaze/others/string_cst2_gpopt.c:
+	Ditto.
+
+2018-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/28364
+	PR tree-optimization/85275
+	* gcc.dg/tree-ssa/copy-headers-5.c: New testcase.
+	* gcc.dg/tree-ssa/predcom-8.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-13.c: Rewrite to gimple testcase.
+	* gcc.dg/tree-ssa/ivopt_mult_1.c: XFAIL.
+	* gcc.dg/tree-ssa/ivopt_mult_1g.c: Add gimple variant that
+	still passes.
+	* gcc.dg/tree-ssa/ivopt_mult_2.c: XFAIL.
+	* gcc.dg/tree-ssa/ivopt_mult_2g.c: Add gimple variant that
+	still passes.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust.
+	* gcc.dg/tree-ssa/20030710-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030711-1.c: Likewise.
+
+2018-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/84431
+	* gcc.target/i386/pr84431.c: New test.
+
+2018-04-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/85549
+	* g++.dg/ipa/pr85549.C: New test.
+
+2018-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85553
+	* g++.dg/cpp0x/Wzero-as-null-pointer-constant-3.C: Add dg-bogus
+	directive.
+	* g++.dg/cpp0x/constexpr-85553.C: New test.
+
+2018-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85515
+	* g++.dg/pr85515-1.C: New test.
+	* g++.dg/pr85515-2.C: New test.
+
+2018-04-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84691
+	* g++.dg/cpp0x/friend3.C: New.
+
 2018-04-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/82518

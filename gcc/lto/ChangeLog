@@ -1,3 +1,26 @@
+2018-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (cmp_partitions_size): Remove.
+	(lto_wpa_write_files): Also output priorities; do not sort partitions.
+	(cmp_partition_order): Move to ...
+	* lto-partition.c (cmp_partition_order): ...
+	(lto_1_to_1_map): Sort partitions.
+
+2018-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Fix sanity check.
+
+2018-04-19  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c: Include sreal.h
+	(add_symbol_to_partition_1): Use size instead of self_size
+	for size estimate.
+	(account_reference_p): New.
+	(lto_balanced_map): Use 64bit arithmetics for size calculatoins; cleanup;
+	fix accounting errors in boundary size; add debug output; combine cost
+	as cost/size instead of cost/internal; reduce the partitioning error to
+	+- 1/8 of the parttion size.
+
 2018-04-19  Martin Liska  <mliska@suse.cz>
 
 	* lto-symtab.c (lto_symtab_resolve_symbols): Do not bail out

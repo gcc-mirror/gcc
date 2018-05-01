@@ -1,3 +1,60 @@
+2018-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84701 - unsigned typeof.
+	* decl.c (grokdeclarator): Overhaul diagnostics for invalid use
+	of long/short/signed/unsigned.
+
+	PR c++/85305 - pack in lambda init-capture.
+	* parser.c (cp_parser_initializer): Add subexpression_p parm; don't
+	check_for_bare_parameter_packs in a subexpression.
+	(cp_parser_lambda_introducer): Use it.
+
+	PR c++/61982 - dead stores to destroyed objects.
+	* call.c (build_trivial_dtor_call): New, assigns a clobber.
+	(build_over_call, build_special_member_call): Use it.
+	* cp-tree.h: Declare it.
+	* init.c (build_delete): Remove trivial path.
+
+	* init.c (build_dtor_call): Use build_special_member_call.
+	(build_delete): Remove redundant uses of save_addr.
+
+	* decl.c (build_clobber_this): Use build_clobber.
+
+2018-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85553
+	* init.c (build_zero_init_1): For zero initialization of
+	NULLPTR_TYPE_P type use build_int_cst directly.
+
+2018-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85515
+	* name-lookup.c (consider_binding_level): Skip compiler-generated
+	variables.
+	* search.c (lookup_field_fuzzy_info::fuzzy_lookup_field): Flatten
+	nested if statements into a series of rejection tests.  Reject
+	lambda-ignored entities as suggestions.
+
+2018-04-27  Jason Merrill  <jason@redhat.com>
+
+	* cvt.c (cp_fold_convert): Use convert_ptrmem.
+	* typeck.c (convert_ptrmem): Add a NOP even if no adjustment.
+
+2018-04-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84691
+	* decl.c (grokdeclarator): Clear friendp upon definition in local
+	class definition error.
+
+2018-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85545 - ICE with noexcept PMF conversion.
+	* cvt.c (cp_fold_convert): Pass PMF CONSTRUCTORs to
+	build_ptrmemfunc.
+	* typeck.c (build_ptrmemfunc): Don't build a NOP_EXPR for zero
+	adjustment.
+	(build_ptrmemfunc_access_expr): Special-case CONSTRUCTORs.
+
 2018-04-27  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (convert_ptrmem): Move local var decls to initialization.
