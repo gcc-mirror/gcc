@@ -1,5 +1,14 @@
 2018-04-30  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/85523
+	* gcc-rich-location.c (blank_line_before_p): New function.
+	(use_new_line): New function.
+	(gcc_rich_location::add_fixit_insert_formatted): New function.
+	* gcc-rich-location.h
+	(gcc_rich_location::add_fixit_insert_formatted): New function.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* selftest.c (assert_streq): Rename "expected" and "actual" to
 	"val1" and "val2".  Extend NULL-handling to cover both inputs
 	symmetrically, while still requiring both to be non-NULL for a pass.
