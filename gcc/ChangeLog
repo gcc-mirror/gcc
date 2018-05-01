@@ -1,5 +1,10 @@
 2018-05-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.ac (LD_AS_NEEDED_OPTION, LD_NO_AS_NEEDED_OPTION): Use
+	--push-state --as-needed and --pop-state instead of --as-needed and
+	--no-as-needed if ld supports it.
+	* configure: Regenerated.
+
 	PR web/85578
 	* doc/install.texi2html: Replace _002d with - and _002a with * in
 	generated html files using sed.
