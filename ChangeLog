@@ -1,3 +1,8 @@
+2018-05-01  Francois H. Theron  <francois.theron@netronome.com>
+
+	* configure.ac: Added "nfp" target.
+	* configure: Regenerate.
+
 2018-04-30  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/85571

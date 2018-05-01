@@ -1108,6 +1108,10 @@ case "${target}" in
   mt-*-*)
     noconfigdirs="$noconfigdirs sim"
     ;;
+  nfp-*-*)
+    noconfigdirs="$noconfigdirs ld gas gdb gprof sim"
+    noconfigdirs="$noconfigdirs $target_libraries"
+    ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs gprof"
