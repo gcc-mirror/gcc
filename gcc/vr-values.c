@@ -793,6 +793,39 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 
   extract_range_from_binary_expr_1 (vr, code, expr_type, &vr0, &vr1);
 
+  /* Set value_range for n in following sequence:
+     def = __builtin_memchr (arg, 0, sz)
+     n = def - arg
+     Here the range for n can be set to [0, PTRDIFF_MAX - 1]. */
+
+  if (vr->type == VR_VARYING
+      && code == POINTER_DIFF_EXPR
+      && TREE_CODE (op0) == SSA_NAME
+      && TREE_CODE (op1) == SSA_NAME)
+    {
+      tree op0_ptype = TREE_TYPE (TREE_TYPE (op0));
+      tree op1_ptype = TREE_TYPE (TREE_TYPE (op1));
+      gcall *call_stmt = NULL;
+
+      if (TYPE_MODE (op0_ptype) == TYPE_MODE (char_type_node)
+	  && TYPE_PRECISION (op0_ptype) == TYPE_PRECISION (char_type_node)
+	  && TYPE_MODE (op1_ptype) == TYPE_MODE (char_type_node)
+	  && TYPE_PRECISION (op1_ptype) == TYPE_PRECISION (char_type_node)
+	  && (call_stmt = dyn_cast<gcall *>(SSA_NAME_DEF_STMT (op0)))
+	  && gimple_call_builtin_p (call_stmt, BUILT_IN_MEMCHR)
+	  && operand_equal_p (op0, gimple_call_lhs (call_stmt), 0)
+	  && operand_equal_p (op1, gimple_call_arg (call_stmt, 0), 0)
+	  && integer_zerop (gimple_call_arg (call_stmt, 1)))
+	    {
+	      tree max = vrp_val_max (ptrdiff_type_node);
+	      wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
+	      tree range_min = build_zero_cst (expr_type);
+	      tree range_max = wide_int_to_tree (expr_type, wmax - 1);
+	      set_value_range (vr, VR_RANGE, range_min, range_max, NULL);
+	      return;
+	    }
+     }
+
   /* Try harder for PLUS and MINUS if the range of one operand is symbolic
      and based on the other operand, for example if it was deduced from a
      symbolic comparison.  When a bound of the range of the first operand

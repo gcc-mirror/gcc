@@ -1,3 +1,9 @@
+2018-05-01  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/82665
+	* vr-values.c (vr_values::extract_range_from_binary_expr): Handle
+	pointer subtraction where arguments come from a memchr call.
+
 2018-05-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (LD_AS_NEEDED_OPTION, LD_NO_AS_NEEDED_OPTION): Use
