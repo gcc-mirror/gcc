@@ -1,5 +1,9 @@
 2018-05-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* Make-lang.in (c++.install-common): Install wrapper into
+	libexecsubdir.
+
 	Merge trunk r184995.
 
 2018-04-30  Nathan Sidwell  <nathan@acm.org>
