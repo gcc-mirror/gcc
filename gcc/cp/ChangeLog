@@ -1,5 +1,8 @@
 2018-04-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85580 - extern "C" and local variables
+	* name-lookup.c (check_extern_c_conflict): Ignore local decls.
+
 	PR c++/84701 - unsigned typeof.
 	* decl.c (grokdeclarator): Overhaul diagnostics for invalid use
 	of long/short/signed/unsigned.
