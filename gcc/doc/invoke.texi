@@ -29209,15 +29209,19 @@ different forms:
 @item @var{module}=@var{BMI-file}
 When the argument contains a @code{=}, it is a direct mapping from
 module name to BMI file.  When importing, the specified module, the
-named BMI file will be read.
+named BMI file will be read.  The BMI filename is relative to the
+mapping file being read (or the current directory, when specified
+directly in the option).
 
 @item @var{mapping-file}
-Without the @code{=}, it is a plain file name.  The file is read for
-mappings to add.  Each active line of the file may be of either of
-these two forms, so indirect mapping files are permitted.  White space
-is ignored.  If the first word of a line is @code{G++Module}, the next
-word is taken to be a prefix word.  After this, lines that do not
-start with the prefix are ignored.
+Without the @code{=}, it is a plain file name.  If the filename is
+relative, it is first looked relative to any containing mapping file,
+or the current directory for the outermost one.  Then the module path
+is searched.  The file is read for mappings to add.  Each active line
+of the file may be of either of these two forms, so indirect mapping
+files are permitted.  White space is ignored.  If the first word of a
+line is @code{G++Module}, the next word is taken to be a prefix word.
+After this, lines that do not start with the prefix are ignored.
 
 Lines beginning with @code{#} are usually comments.  One exception is
 that the prefix may be specified by the forst word of the comment.
@@ -29229,9 +29233,17 @@ Makefiles, without disturbing the file's usual reader.
 
 @end itemize
 
-The @option{-fmodule-path=@var{dir}} option ...
+The @option{-fmodule-path=@var{dir}} option adds directories to a
+module search path.  This path is searched for BMI files and for
+mapping files.  A default value is read from the @var{CXX_MODULE_PATH}
+environment variable.
 
-The @option{-fmodule-prefix=@var{dir}} option ...
+The @option{-fmodule-prefix=@var{dir}} option can be used to insert a
+prefix string between any module file names and their containing
+directory.  Both those specified in mapping files and found via the
+module path are affected.  This prefix may be used to separate sets of
+BMIs build with different and conflicting options, such as
+@samp{debug} and @samp{release} builds.
 
 The @option{-fmodule-wrapper=@var{program}} option ...
 

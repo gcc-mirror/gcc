@@ -6279,10 +6279,6 @@ module_state::occupy (location_t l, tree maybe_vec)
     }
 
   vec_name = maybe_vec;
-
-  if (!filename)
-    filename = make_module_filename (IDENTIFIER_POINTER (name),
-				     IDENTIFIER_LENGTH (name), true);
 }
 
 /* Set enter or leave the module.
@@ -8085,46 +8081,57 @@ module_interface_p ()
 	  && (*module_state::modules)[MODULE_PURVIEW]->exported);
 }
 
+/* Search the module path for a file NAME.  Sets NAME and NAME_LEN to
+   the found file name.    */
+
 static FILE *
-search_module_path (char *&name, size_t &name_len,
-		    const char *rel, size_t rel_len)
+find_file (char *&name, size_t &name_len, const char *rel, size_t rel_len,
+	   bool bmi, bool search)
 {
   char *buffer = XNEWVEC (char, (rel_len > module_path_max
 				 ? rel_len : module_path_max) + name_len + 2);
-  char *ptr = buffer;
-
-  if (!IS_ABSOLUTE_PATH (name) && rel_len)
+  const cpp_dir *dir = NULL;
+  do
     {
-      memcpy (ptr, rel, rel_len);
-      ptr += rel_len;
-    }
-  memcpy (ptr, name, name_len + 1);
-  if (FILE *stream = fopen (buffer, "r"))
-    {
-      name = buffer;
-      name_len += (ptr - buffer);
-      return stream;
-    }
+      char *ptr = buffer;
+      if (!dir)
+	{
+	  /* First look relative to REL or CWD.  */
+	  if (!IS_ABSOLUTE_PATH (name) && rel_len)
+	    {
+	      memcpy (ptr, rel, rel_len);
+	      ptr += rel_len;
+	    }
+	}
+      else if (dir->len != 1 || dir->name[0] != '.')
+	{
+	  /* Don't prepend '.'.  */
+	  memcpy (ptr, dir->name, dir->len);
+	  ptr += dir->len;
+	  *ptr++ = DIR_SEPARATOR;
+	}
+      else if (!rel_len)
+	/* We'll have already looked on the first iteration.  */
+	ptr = NULL;
 
-  if (!IS_ABSOLUTE_PATH (name))
-    for (const cpp_dir *dir = module_path; dir; dir = dir->next)
-      {
-	ptr = buffer;
-	/* Don't prepend '.'.  */
-	if (dir->len != 1 || dir->name[0] != '.')
-	  {
-	    memcpy (ptr, dir->name, dir->len);
-	    ptr += dir->len;
-	    *ptr++ = DIR_SEPARATOR;
-	  }
-	memcpy (ptr, name, name_len + 1);
-	if (FILE *stream = fopen (buffer, "r"))
-	  {
-	    name = buffer;
-	    name_len += (ptr - buffer);
-	    return stream;
-	  }
-      }
+      if (ptr)
+	{
+	  memcpy (ptr, name, name_len + 1);
+	  if (FILE *stream = fopen (buffer, bmi ? "rb" : "r"))
+	    {
+	      if (bmi)
+		XDELETEVEC (name);
+	      name = buffer;
+	      name_len += (ptr - buffer);
+	      return stream;
+	    }
+	}
+      if (dir)
+	dir = dir->next;
+      else if (search && !IS_ABSOLUTE_PATH (name))
+	dir = module_path;
+    }
+  while (dir);
 
   XDELETEVEC (buffer);
   return NULL;
@@ -8133,9 +8140,20 @@ search_module_path (char *&name, size_t &name_len,
 static FILE *
 find_module_file (module_state *state)
 {
-  FILE *stream = fopen (state->filename, "rb");
-  if (stream || errno != ENOENT || !module_wrapper)
+  bool search = !state->filename;
+  if (search)
+    state->filename = make_module_filename (IDENTIFIER_POINTER (state->name),
+					    IDENTIFIER_LENGTH (state->name),
+					    true);
+
+  size_t name_len = strlen (state->filename);
+  FILE *stream = find_file (state->filename, name_len, NULL, 0, true, search);
+  if (stream || errno != ENOENT)
     return stream;
+
+  /* If there's a wrapper, invoke it.  */
+  if (!module_wrapper)
+    return NULL;
 
   inform (state->loc, "installing module %qE (%qs)",
 	  state->name, state->filename);
@@ -8325,7 +8343,7 @@ add_module_mapping (const char *arg, const char *rel = NULL,
   bool ok = false;
   char *name = const_cast <char *> (arg);
   size_t name_len = strlen (name);
-  if (FILE *stream = search_module_path (name, name_len, rel, rel_len))
+  if (FILE *stream = find_file (name, name_len, rel, rel_len, false, true))
     {
       /* Find the directory component of PATH.  This will fail if we
          give an absolute names in the root directory.  Why would you
@@ -8648,6 +8666,10 @@ finish_module ()
 
   if (!errorcount)
     {
+      if (!state->filename)
+	state->filename = make_module_filename (IDENTIFIER_POINTER (state->name),
+						IDENTIFIER_LENGTH (state->name),
+						true);
       FILE *stream = fopen (state->filename, "wb");
       int e = errno;
       location_t saved_loc = input_location;

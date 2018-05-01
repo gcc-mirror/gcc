@@ -1,6 +1,15 @@
 2018-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::occupy): Do not set filename here.
+	(search_module_path): Rename to ...
+	(find_file): ... here.  Search for bmis too.
+	(find_module_file): Use find_file.
+	(add_module_mapping, finish_module): Adjust.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document search path and prefix.
+
+	gcc/cp/
 	* Make-lang.in (c++.install-common): Install wrapper into
 	libexecsubdir.
 
