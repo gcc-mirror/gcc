@@ -1,6 +1,14 @@
 2018-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_out::tree_{type,decl,ctx}): Separate need_body
+	and owner args.
+	(trees_{in,out}::core_vals): Don't stream TYPE_CONTEXT.
+	(trees_in::finish_type, module_state::read_class_def): Reconstruct
+	it here.
+	(trees_out::tree_binfo): Use tree_ctx.
+
+	gcc/cp/
 	* module.c (trees_out::tree_decl): Write innermost args.
 	gcc/testsuite/
 	* g++.dg/modules/indirect-4_[abc].C: New.

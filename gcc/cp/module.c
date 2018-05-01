@@ -2181,13 +2181,13 @@ public:
 
 public:
   void tree_node (tree);
-  void tree_value (tree, bool);
-  // FIXME 'owner' is wrong idiom, we should figure it out on each
-  // call, simply passing in a 'looking inside' flag
-  bool tree_decl (tree, bool, int owner = -1);
-  bool tree_type (tree, bool, int owner = -1);
+  void tree_value (tree, bool force);
+  bool tree_decl (tree, bool force, bool need_body,
+		  unsigned owner = MODULE_UNKNOWN);
+  bool tree_type (tree, bool force, bool need_body,
+		  unsigned owner = MODULE_UNKNOWN);
   int tree_ref (tree);
-  void tree_ctx (tree, int owner = MODULE_PURVIEW);
+  void tree_ctx (tree, bool need_body, unsigned owner = MODULE_UNKNOWN);
 
 public:
   static void instrument ();
@@ -3837,7 +3837,7 @@ trees_out::core_vals (tree t)
     {
       /* Write this early, for better log information.  */
       WT (t->decl_minimal.name);
-      tree_ctx (t->decl_minimal.context);
+      tree_ctx (t->decl_minimal.context, true, MODULE_PURVIEW);
 
       if (!dep_walk_p ())
 	loc (t->decl_minimal.locus);
@@ -3846,10 +3846,8 @@ trees_out::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       /* Likewise, stream the name first.  */
-      tree name = t->type_common.name;
-      WT (name);
-      tree_ctx (t->type_common.context,
-		name && DECL_P (name) ? MAYBE_DECL_MODULE_OWNER (name) : -1);
+      WT (t->type_common.name);
+      /* type_common.context is reconstructed by finish_type.  */
 
       /* By construction we want to make sure we have the canonical
 	 and main variants already in the type table, so emit them
@@ -4257,7 +4255,6 @@ trees_in::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       RT (t->type_common.name);
-      RT (t->type_common.context);
 
       RT (t->type_common.main_variant);
       RT (t->type_common.canonical);
@@ -4758,13 +4755,7 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
   else
     {
       dom = BINFO_TYPE (binfo);
-
-      tree_node (dom);
-      // FIXME:Until I have something like tree_decl, make sure we
-      // note we want the internals of a namespace-scope class.
-      if (dep_walk_p () &&
-	  TREE_CODE (CP_DECL_CONTEXT (TYPE_NAME (dom))) == NAMESPACE_DECL)
-	dep_hash->add_dependency (TYPE_NAME (dom), true);
+      tree_ctx (dom, false, true);
 
       if (!dep_walk_p ())
 	{
@@ -4971,15 +4962,17 @@ trees_out::tree_ref (tree t)
    known).  Write it out.  */
 
 void
-trees_out::tree_ctx (tree ctx, int owner)
+trees_out::tree_ctx (tree ctx, bool need_body, unsigned module)
 {
+  // FIXME: If we met this before but !need_body, we need to do
+  // something to record that we now need the body.
   int ref = tree_ref (ctx);
   if (ref)
     {
       bool force = ref < 0;
       if (TYPE_P (ctx)
-	  ? tree_type (ctx, force, owner)
-	  : tree_decl (ctx, force, owner))
+	  ? tree_type (ctx, force, need_body, module)
+	  : tree_decl (ctx, force, need_body, module))
 	tree_value (ctx, force);
     }
 }
@@ -4990,16 +4983,15 @@ trees_out::tree_ctx (tree ctx, int owner)
    should write this decl by value.  */
 
 bool
-trees_out::tree_decl (tree decl, bool force, int owner)
+trees_out::tree_decl (tree decl, bool force, bool need_body, unsigned owner)
 {
   gcc_checking_assert (DECL_P (decl));
 
   if (force)
     {
       /* If we requested by-value, this better not be an import.  */
-      gcc_assert ((owner >= 0 && owner <= MODULE_IMPORT_BASE)
-		  || (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
-		      <= MODULE_IMPORT_BASE));
+      gcc_assert (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
+		  <= MODULE_IMPORT_BASE);
       return true;
     }
 
@@ -5008,7 +5000,7 @@ trees_out::tree_decl (tree decl, bool force, int owner)
     {
       /* If we cannot name this, it better be the inner-most decl we
 	 asked about.  */
-      gcc_assert (owner < 0);
+      gcc_assert (!need_body);
       return true;
     }
 
@@ -5021,9 +5013,8 @@ trees_out::tree_decl (tree decl, bool force, int owner)
       && !DECL_MEMBER_TEMPLATE_P (decl))
     {
       /* An implicit member template, we should not meet as an import.  */
-      gcc_assert ((owner >= 0 && owner <= MODULE_IMPORT_BASE)
-		  || (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
-		      <= MODULE_IMPORT_BASE));
+      gcc_assert (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
+		  <= MODULE_IMPORT_BASE);
       return true;
     }
 
@@ -5057,9 +5048,10 @@ trees_out::tree_decl (tree decl, bool force, int owner)
 	{
 	  if (!dep_walk_p ())
 	    i (tt_inst);
-	  tree_ctx (tpl, -1);
+	  tree_ctx (tpl, false);
 	  tree_node (INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti)));
 	  kind = "instantiation";
+	  owner = MODULE_UNKNOWN;
 	  goto insert;
 	}
     }
@@ -5070,13 +5062,11 @@ trees_out::tree_decl (tree decl, bool force, int owner)
   else
     gcc_unreachable ();
 
-
   {
-    bool is_ctx = owner >= 0;
-    if (!is_ctx)
+    /* Find the owning module and determine what to do.  */
+    if (owner == MODULE_UNKNOWN)
       {
-	/* The innermost decl.  Find its owning module and determine
-	   what to do.  */
+	/* Find the owning module and determine what to do.  */
 	gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 
 	tree owner_decl = get_module_owner (decl);
@@ -5088,7 +5078,7 @@ trees_out::tree_decl (tree decl, bool force, int owner)
 		    || TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
 		    || DECL_MEMBER_TEMPLATE_P (decl)
 		    || owner < MODULE_IMPORT_BASE);
-
+    
 	if (TREE_CODE (owner_decl) == FUNCTION_DECL
 	    && owner_decl != decl
 	    && (TREE_CODE (decl) != TEMPLATE_DECL
@@ -5113,15 +5103,15 @@ trees_out::tree_decl (tree decl, bool force, int owner)
 	i (tt_named_decl);
 	u (TREE_CODE (decl));
 	u (owner);
-	tree_ctx (ctx, owner);
+	tree_ctx (ctx, true, owner);
       }
     else if (!is_import)
       {
 	/* Build out dependencies.  */
 	if (TREE_CODE (ctx) != NAMESPACE_DECL)
-	  tree_ctx (ctx, owner);
+	  tree_ctx (ctx, true, owner);
 	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
-	  dep_hash->add_dependency (decl, is_ctx);
+	  dep_hash->add_dependency (decl, need_body);
       }
 
     tree name = DECL_NAME (decl);
@@ -5137,8 +5127,8 @@ trees_out::tree_decl (tree decl, bool force, int owner)
  insert:
   int tag = insert (decl);
   if (!dep_walk_p ())
-    dump () && dump ("Wrote %s:%d %C:%N@%I", kind, tag, TREE_CODE (decl),
-		     decl, owner < 0 ? NULL_TREE : module_name (owner));
+    dump () && dump ("Wrote %s:%d %C:%N@%I", kind, tag, TREE_CODE (decl), decl,
+		     owner == MODULE_UNKNOWN ? NULL_TREE : module_name (owner));
 
   if (tree type = TREE_TYPE (decl))
     {
@@ -5157,7 +5147,7 @@ trees_out::tree_decl (tree decl, bool force, int owner)
 }
 
 bool
-trees_out::tree_type (tree type, bool force, int owner)
+trees_out::tree_type (tree type, bool force, bool need_body, unsigned owner)
 {
   gcc_assert (TYPE_P (type));
   if (force)
@@ -5171,7 +5161,7 @@ trees_out::tree_type (tree type, bool force, int owner)
 	  i (tt_as_base);
 	  dump () && dump ("Writing as_base for %N", TYPE_CONTEXT (type));
 	}
-      tree_ctx (TYPE_NAME (TYPE_CONTEXT (type)), owner);
+      tree_ctx (TYPE_NAME (TYPE_CONTEXT (type)), true, owner);
       return false;
     }
 
@@ -5190,7 +5180,7 @@ trees_out::tree_type (tree type, bool force, int owner)
 	  dump () && dump ("Writing interstitial named type %C:%N%S",
 			   TREE_CODE (name), name, name);
 	}
-      tree_ctx (name, owner);
+      tree_ctx (name, need_body, owner);
       if (!dep_walk_p ())
 	dump () && dump ("Wrote named type %C:%N%S",
 			 TREE_CODE (name), name, name);
@@ -5349,10 +5339,10 @@ trees_out::tree_node (tree t)
 	}
     }
 
-  if (TYPE_P (t) && !tree_type (t, force))
+  if (TYPE_P (t) && !tree_type (t, force, false))
     goto done;
 
-  if (DECL_P (t) && !tree_decl (t, force))
+  if (DECL_P (t) && !tree_decl (t, force, false))
     goto done;
 
   /* Otherwise by value */
@@ -5644,6 +5634,9 @@ tree
 trees_in::finish_type (tree type)
 {
   tree main = TYPE_MAIN_VARIANT (type);
+
+  if (TYPE_NAME (type))
+    TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_NAME (type));
 
   if (main != type)
     {
@@ -6969,8 +6962,11 @@ module_state::read_class_def (trees_in &in, tree type)
       tree as_base = in.tree_node ();
       CLASSTYPE_AS_BASE (type) = as_base;
       if (as_base && as_base != type)
-	read_class_def (in, as_base);
-      
+	{
+	  TYPE_CONTEXT (as_base) = type;
+	  read_class_def (in, as_base);
+	}
+
       /* Read the vtables.  */
       // FIXME: via read_var_def?
       tree vtables = in.chained_decls ();
@@ -7243,7 +7239,7 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
       dump () && dump (b->is_binding () ? "Writing decls of %P"
 		       : "Writing definition %N",
 		       b->get_container (), b->get_name ());
-      sec.tree_ctx (b->get_container ());
+      sec.tree_ctx (b->get_container (), false, MODULE_PURVIEW);
       if (b->is_binding ())
 	{
 	  sec.tree_node (b->get_name ());
