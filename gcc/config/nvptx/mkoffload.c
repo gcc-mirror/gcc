@@ -454,7 +454,8 @@ main (int argc, char **argv)
 
   if (!found)
     fatal_error (input_location,
-		 "offload compiler %s not found", GCC_INSTALL_NAME);
+		 "offload compiler %s not found (consider using '-B')",
+		 GCC_INSTALL_NAME);
 
   /* We may be called with all the arguments stored in some file and
      passed with @file.  Expand them into argv before processing.  */
