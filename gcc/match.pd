@@ -4514,10 +4514,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Transform (@0 < @1 and @0 < @2) to use min, 
    (@0 > @1 and @0 > @2) to use max */
-(for op (lt le gt ge)
-     ext (min min max max)
+(for logic (bit_and bit_and bit_and bit_and bit_ior bit_ior bit_ior bit_ior)
+     op    (lt      le      gt      ge      lt      le      gt      ge     )
+     ext   (min     min     max     max     max     max     min     min    )
  (simplify
-  (bit_and (op:cs @0 @1) (op:cs @0 @2))
+  (logic (op:cs @0 @1) (op:cs @0 @2))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && TREE_CODE (@0) != INTEGER_CST)
    (op @0 (ext @1 @2)))))
