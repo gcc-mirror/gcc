@@ -1,3 +1,8 @@
+2018-05-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84258
+	* c-c++-common/Wformat-pr84258.c: New test.
+
 2018-05-01  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
         PR tree-optimization/82665
