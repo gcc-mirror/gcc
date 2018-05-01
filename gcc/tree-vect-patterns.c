@@ -4483,7 +4483,6 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   tree type_in, type_out;
   enum tree_code code;
   int i;
-  gimple *next;
 
   stmts_to_replace->truncate (0);
   stmts_to_replace->quick_push (stmt);
@@ -4545,9 +4544,12 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   /* Patterns cannot be vectorized using SLP, because they change the order of
      computation.  */
   if (loop_vinfo)
-    FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTIONS (loop_vinfo), i, next)
-      if (next == stmt)
-        LOOP_VINFO_REDUCTIONS (loop_vinfo).ordered_remove (i);
+    {
+      unsigned ix, ix2;
+      gimple **elem_ptr;
+      VEC_ORDERED_REMOVE_IF (LOOP_VINFO_REDUCTIONS (loop_vinfo), ix, ix2,
+			     elem_ptr, *elem_ptr == stmt);
+    }
 
   /* It is possible that additional pattern stmts are created and inserted in
      STMTS_TO_REPLACE.  We create a stmt_info for each of them, and mark the
