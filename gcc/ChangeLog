@@ -1,5 +1,11 @@
 2018-05-01  Tom de Vries  <tom@codesourcery.com>
 
+	PR lto/85451
+	* config/nvptx/mkoffload.c (main): Suggest using -B in "offload compiler
+	not found" error message.
+
+2018-05-01  Tom de Vries  <tom@codesourcery.com>
+
 	PR other/83786
 	* vec.h	(VEC_ORDERED_REMOVE_IF, VEC_ORDERED_REMOVE_IF_FROM_TO): Define.
 	* vec.c (test_ordered_remove_if): New function.
