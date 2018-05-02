@@ -1,4 +1,10 @@
-extern "C" void abort ();
+/* { dg-additional-options "-std=gnu99" { target c } } */
+
+extern
+#ifdef __cplusplus
+"C"
+#endif
+void abort ();
 
 #define M(x, y, z) O(x, y, z)
 #define O(x, y, z) x ## _ ## y ## _ ## z
@@ -9,7 +15,7 @@ extern "C" void abort ();
 #define G d
 #define S
 #define N(x) M(x, G, normal)
-#include "../libgomp.c/for-2.h"
+#include "for-2.h"
 #undef S
 #undef N
 #undef F
@@ -19,7 +25,7 @@ extern "C" void abort ();
 #define G d_ds128
 #define S dist_schedule(static, 128)
 #define N(x) M(x, G, normal)
-#include "../libgomp.c/for-2.h"
+#include "for-2.h"
 #undef S
 #undef N
 #undef F
@@ -29,7 +35,7 @@ extern "C" void abort ();
 #define G ds
 #define S
 #define N(x) M(x, G, normal)
-#include "../libgomp.c/for-2.h"
+#include "for-2.h"
 #undef S
 #undef N
 #undef F
@@ -39,7 +45,7 @@ extern "C" void abort ();
 #define G ds_ds128
 #define S dist_schedule(static, 128)
 #define N(x) M(x, G, normal)
-#include "../libgomp.c/for-2.h"
+#include "for-2.h"
 #undef S
 #undef N
 #undef F
@@ -47,25 +53,25 @@ extern "C" void abort ();
 
 #define F distribute parallel for
 #define G dpf
-#include "../libgomp.c/for-1.h"
+#include "for-1.h"
 #undef F
 #undef G
 
 #define F distribute parallel for dist_schedule(static, 128)
 #define G dpf_ds128
-#include "../libgomp.c/for-1.h"
+#include "for-1.h"
 #undef F
 #undef G
 
 #define F distribute parallel for simd
 #define G dpfs
-#include "../libgomp.c/for-1.h"
+#include "for-1.h"
 #undef F
 #undef G
 
 #define F distribute parallel for simd dist_schedule(static, 128)
 #define G dpfs_ds128
-#include "../libgomp.c/for-1.h"
+#include "for-1.h"
 #undef F
 #undef G
 

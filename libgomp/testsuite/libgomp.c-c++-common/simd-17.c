@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-msse2" { target sse2_runtime } } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
-/* { dg-additional-options "-std=c99" } */
+/* { dg-additional-options "-std=c99" { target c } } */
 
 static inline void
 foo (int *b, int *i, int *j, int x)
