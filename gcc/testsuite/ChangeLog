@@ -1,3 +1,11 @@
+2018-05-02  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/30552
+	* gcc.dg/noncompile/pr30552-1.c: New test.
+	* gcc.dg/noncompile/pr30552-2.c: New test.
+	* gcc.dg/noncompile/pr30552-3.c: New test.
+	* gcc.dg/noncompile/pr30552-4.c: New test.
+
 2018-05-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85597
