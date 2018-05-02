@@ -2008,16 +2008,12 @@ public:
 public:
   struct tarjan
   {
-    auto_vec<depset *> &binds;
-    auto_vec<depset *> &spaces;
-    auto_vec<depset *> &defs;
+    auto_vec<depset *> *result;
     vec<depset *> stack;
     unsigned index;
 
-    tarjan (auto_vec<depset *> &binds, auto_vec<depset *> &spaces,
-	    auto_vec<depset *> &defs)
-      : binds (binds), spaces (spaces), defs (defs),
-	stack (), index (0)
+    tarjan (auto_vec<depset *> &result)
+      : result (&result), stack (), index (0)
     {
     }
     ~tarjan () 
@@ -2345,8 +2341,8 @@ struct GTY(()) module_state {
   static void write_namespaces (elf_out *to, depset::hash &table,
 				auto_vec<depset *> &spaces, unsigned *crc_ptr);
   bool read_namespaces (auto_vec<tree> &spaces);
-  unsigned write_cluster (elf_out *to, auto_vec<depset *> &sccs,
-			  unsigned from, unsigned *crc_ptr);
+  void write_cluster (elf_out *to, depset *depsets[],
+		      unsigned size, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
  public:
@@ -5980,17 +5976,7 @@ depset::tarjan::connect (depset *v)
 
   if (v->section == v->cluster)
     {
-      /* Root of a new SCC.  If it is a (singleton) namespace, put it on the
-	 spaces vector.  If it is a singleton non-binding, put it on
-	 the defs vector.  Otherwise it's a binding.  */
-      auto_vec<depset *> *vec = &binds;
-      if (stack.last () == v)
-	{
-	  if (!v->is_binding ())
-	    vec = &defs;
-	  else if (TREE_CODE (v->get_naming_decl ()) == NAMESPACE_DECL)
-	    vec = &spaces;
-	}
+      /* Root of a new SCC.  Push all the members onto the result list. */
 
       unsigned num = v->cluster | ~(~0u >> 1);
       depset *p;
@@ -5998,7 +5984,7 @@ depset::tarjan::connect (depset *v)
 	{
 	  p = stack.pop ();
 	  p->cluster = num;
-	  vec->safe_push (p);
+	  result->quick_push (p);
 	}
       while (p != v);
     }
@@ -7179,10 +7165,10 @@ module_state::read_definition (trees_in &in, tree decl)
   return false;
 }
 
-/* Compare bindings in a cluster.  Definitions are less than bindings.  */
+/* Compare members of a cluster.  Definitions are less than bindings.  */
 
 static int
-bind_cmp (const void *a_, const void *b_)
+cluster_cmp (const void *a_, const void *b_)
 {
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
@@ -7199,25 +7185,36 @@ bind_cmp (const void *a_, const void *b_)
   return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
 }
 
+/* Find the size of the cluster at SCCS[FROM].  Returns zero if we're
+   at the end.  */
+
+static unsigned
+cluster_size (auto_vec<depset *> &sccs, unsigned from)
+{
+  unsigned size = 0;
+
+  if (from < sccs.length ())
+    for (unsigned cluster = sccs[from]->get_cluster ();
+	 from != sccs.length () && sccs[from]->get_cluster () == cluster; from++)
+      size++;
+
+  return size;
+}
+
 /* Write a cluster of depsets starting at SCCS[FROM], return index of next
    cluster.  */
 
-unsigned
-module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
-			     unsigned from, unsigned *crc_ptr)
+void
+module_state::write_cluster (elf_out *to, depset *scc[],
+			     unsigned size, unsigned *crc_ptr)
 {
-  unsigned cluster = sccs[from]->get_cluster ();
-
   trees_out sec (this, global_vec);
   sec.begin ();
-  unsigned end;
+  unsigned cluster = scc[0]->get_cluster ();
 
-  /* Find the size of the cluster and mark every member as walkable.  */
-  for (end = from; end != sccs.length (); end++)
+  for (unsigned ix = 0; ix != size; ix++)
     {
-      depset *b = sccs[end];
-      if (b->get_cluster () != cluster)
-	break;
+      depset *b = scc[ix];
       if (b->is_binding ())
 	for (unsigned ix = b->decls.length (); ix--;)
 	  sec.mark_node (b->decls[ix]);
@@ -7225,17 +7222,14 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
 	mark_definition (sec, b->get_decl ());
     }
 
-  /* Sort the cluster.  */
-  qsort (&sccs[from], end - from, sizeof (depset *), bind_cmp);
-
   dump () && dump ("Writing SCC:%u bindings:%u",
-		   cluster & (~0U >> 1), end - from);
+		   cluster & (~0U >> 1), size);
   dump.indent ();
 
   /* Now write every member.  */
-  for (unsigned ix = from; ix != end; ix++)
+  for (unsigned ix = 0; ix != size; ix++)
     {
-      depset *b = sccs[ix];
+      depset *b = scc[ix];
       dump () && dump (b->is_binding () ? "Writing decls of %P"
 		       : "Writing definition %N",
 		       b->get_container (), b->get_name ());
@@ -7259,18 +7253,16 @@ module_state::write_cluster (elf_out *to, auto_vec<depset *> &sccs,
      friendliness.  Because of cluster sorting, this will prefer a
      definition -- and thus we'll not be confused by naming an
      unscoped enum constant.  */
-  tree naming_decl = sccs[from]->get_naming_decl ();
+  tree naming_decl = scc[0]->get_naming_decl ();
   unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
 
   /* Record the section number in each depset.  */
-  for (unsigned ix = from; ix != end; ix++)
-    sccs[ix]->section = snum;
+  for (unsigned ix = size; ix--;)
+    scc[ix]->section = snum;
 
   dump.outdent ();
   dump () && dump ("Wrote SCC:%u section:%u (%N)", cluster & (~0U >> 1),
 		   snum, naming_decl);
-
-  return end;
 }
 
 /* Read a cluster from section SNUM.  */
@@ -7655,8 +7647,8 @@ module_state::write (elf_out *to)
   find_dependencies (table);
 
   /* Find the SCCs. */
-  auto_vec<depset *> binds, spaces, defs;
-  depset::tarjan connector (binds, spaces, defs);
+  auto_vec<depset *> sccs (table.size ());
+  depset::tarjan connector (sccs);
 
   /* Iteration over the hash table is an unspecified ordering.  That's
      good (for now) because it'll give us some random code coverage.
@@ -7670,17 +7662,26 @@ module_state::write (elf_out *to)
 	connector.connect (v);
     }
 
-  /* Sort the namespaces.  */
-  (spaces.qsort) (space_cmp);
+  auto_vec<depset *> spaces;
 
   /* Write the binding clusters.  */
   range.first = to->get_num_sections ();
-  for (unsigned ix = 0; ix != binds.length ();)
-    ix = write_cluster (to, binds, ix, &crc);
+  for (unsigned size, ix = 0; (size = cluster_size (sccs, ix)) != 0; ix += size)
+    {
+      depset **base = &sccs[ix];
+
+      if (size == 1 && TREE_CODE ((*base)->get_naming_decl ()) == NAMESPACE_DECL)
+	spaces.safe_push (*base);
+      else
+	{
+	  qsort (base, size, sizeof (depset *), cluster_cmp);
+	  write_cluster (to, base, size, &crc);
+	}
+    }
   range.second = to->get_num_sections ();
 
-  // FIXME:write the defs.
-  gcc_assert (!defs.length ());
+  /* Sort the namespaces.  */
+  (spaces.qsort) (space_cmp);
 
   /* Write the namespace hierarchy. */
   write_namespaces (to, table, spaces, &crc);

@@ -1,3 +1,13 @@
+2018-05-02  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (depset::tarjan): Replace binds, spaces & defs fields
+	with plain result field.
+	(depset::tarjan::connect): Don't categorize SCCs here.
+	(cluster_size): New.
+	(module_state::write_cluster): Take SIZE arg.
+	(module_state::write): Use cluster_size, split out namespaces here.
+
 2018-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
