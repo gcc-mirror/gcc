@@ -1,3 +1,7 @@
+2018-05-02  Release Manager
+
+	* GCC 8.1.0 released.
+
 2018-02-03  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::fill_in_struct): Mark struct types as

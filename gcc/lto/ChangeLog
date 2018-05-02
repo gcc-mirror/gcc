@@ -1,3 +1,7 @@
+2018-05-02  Release Manager
+
+	* GCC 8.1.0 released.
+
 2018-04-19  Martin Liska  <mliska@suse.cz>
 
 	* lto-symtab.c (lto_symtab_resolve_symbols): Do not bail out

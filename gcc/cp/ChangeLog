@@ -1,3 +1,7 @@
+2018-05-02  Release Manager
+
+	* GCC 8.1.0 released.
+
 2018-05-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85587 - error with scoped enum in template.

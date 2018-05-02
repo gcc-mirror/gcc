@@ -1,3 +1,7 @@
+2018-05-02  Release Manager
+
+	* GCC 8.1.0 released.
+
 2018-02-09  Alexandre Oliva <aoliva@redhat.com>
 
 	* dwarf2.def (DW_AT_GNU_entry_view): New.
