@@ -690,11 +690,6 @@
 (define_predicate "easy_vector_constant"
   (match_code "const_vector")
 {
-  /* As the paired vectors are actually FPRs it seems that there is
-     no easy way to load a CONST_VECTOR without using memory.  */
-  if (TARGET_PAIRED_FLOAT)
-    return false;
-
   /* Because IEEE 128-bit floating point is considered a vector type
      in order to pass it in VSX registers, it might use this function
      instead of easy_fp_constant.  */

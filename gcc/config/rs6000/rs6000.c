@@ -1271,7 +1271,6 @@ struct processor_costs ppca2_cost = {
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE) \
@@ -1298,9 +1297,6 @@ struct processor_costs ppca2_cost = {
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)  \
   { NAME, ICODE, MASK, ATTR },
 
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)  \
-  { NAME, ICODE, MASK, ATTR },
-
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)  \
   { NAME, ICODE, MASK, ATTR },
 
@@ -1324,7 +1320,6 @@ static const struct rs6000_builtin_info_type rs6000_builtin_info[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 /* Support for -mveclibabi=<xxx> to control which vector library to use.  */
@@ -1359,8 +1354,6 @@ static tree builtin_function_type (machine_mode, machine_mode,
 				   machine_mode, machine_mode,
 				   enum rs6000_builtins, const char *name);
 static void rs6000_common_init_builtins (void);
-static void paired_init_builtins (void);
-static rtx paired_expand_predicate_builtin (enum insn_code, tree, rtx);
 static void htm_init_builtins (void);
 static rs6000_stack_t *rs6000_stack_info (void);
 static void is_altivec_return_reg (rtx, void *);
@@ -2117,10 +2110,6 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
 	    return 1;
 	}
 
-      if (PAIRED_SIMD_REGNO_P (regno) && TARGET_PAIRED_FLOAT
-	  && PAIRED_VECTOR_MODE (mode))
-	return 1;
-
       return 0;
     }
 
@@ -2188,11 +2177,6 @@ rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   if (GET_MODE_CLASS (mode1) == MODE_CC)
     return GET_MODE_CLASS (mode2) == MODE_CC;
   if (GET_MODE_CLASS (mode2) == MODE_CC)
-    return false;
-
-  if (PAIRED_VECTOR_MODE (mode1))
-    return PAIRED_VECTOR_MODE (mode2);
-  if (PAIRED_VECTOR_MODE (mode2))
     return false;
 
   return true;
@@ -2311,7 +2295,6 @@ rs6000_debug_vector_unit (enum rs6000_vector v)
     case VECTOR_ALTIVEC:   ret = "altivec";   break;
     case VECTOR_VSX:	   ret = "vsx";       break;
     case VECTOR_P8_VECTOR: ret = "p8_vector"; break;
-    case VECTOR_PAIRED:	   ret = "paired";    break;
     case VECTOR_OTHER:	   ret = "other";     break;
     default:		   ret = "unknown";   break;
     }
@@ -2525,7 +2508,6 @@ rs6000_debug_reg_global (void)
     SDmode,
     DDmode,
     TDmode,
-    V2SImode,
     V16QImode,
     V8HImode,
     V4SImode,
@@ -2536,7 +2518,6 @@ rs6000_debug_reg_global (void)
     V8SImode,
     V4DImode,
     V2TImode,
-    V2SFmode,
     V4SFmode,
     V2DFmode,
     V8SFmode,
@@ -3257,8 +3238,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_vector_align[TImode] = align64;
     }
 
-  /* TODO add paired floating point vector support.  */
-
   /* Register class constraints for the constraints that depend on compile
      switches. When the VSX code was added, different constraints were added
      based on the type (DFmode, V2DFmode, V4SFmode).  For the vector types, all
@@ -3896,7 +3875,7 @@ darwin_rs6000_override_options (void)
 
 /* Return the builtin mask of the various options used that could affect which
    builtins were used.  In the past we used target_flags, but we've run out of
-   bits, and some options like PAIRED are no longer in target_flags.  */
+   bits, and some options are no longer in target_flags.  */
 
 HOST_WIDE_INT
 rs6000_builtin_mask_calculate (void)
@@ -3904,7 +3883,6 @@ rs6000_builtin_mask_calculate (void)
   return (((TARGET_ALTIVEC)		    ? RS6000_BTM_ALTIVEC   : 0)
 	  | ((TARGET_CMPB)		    ? RS6000_BTM_CMPB	   : 0)
 	  | ((TARGET_VSX)		    ? RS6000_BTM_VSX	   : 0)
-	  | ((TARGET_PAIRED_FLOAT)	    ? RS6000_BTM_PAIRED	   : 0)
 	  | ((TARGET_FRE)		    ? RS6000_BTM_FRE	   : 0)
 	  | ((TARGET_FRES)		    ? RS6000_BTM_FRES	   : 0)
 	  | ((TARGET_FRSQRTE)		    ? RS6000_BTM_FRSQRTE   : 0)
@@ -4277,8 +4255,6 @@ rs6000_option_override_internal (bool global_init_p)
 	      rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
 	    }
 	}
-      else if (TARGET_PAIRED_FLOAT)
-	msg = N_("-mvsx and -mpaired are incompatible");
       else if (TARGET_AVOID_XFORM > 0)
 	msg = N_("-mvsx needs indexed addressing");
       else if (!TARGET_ALTIVEC && (rs6000_isa_flags_explicit
@@ -5266,7 +5242,7 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Set the builtin mask of the various options used that could affect which
      builtins were used.  In the past we used target_flags, but we've run out
-     of bits, and some options like PAIRED are no longer in target_flags.  */
+     of bits, and some options are no longer in target_flags.  */
   rs6000_builtin_mask = rs6000_builtin_mask_calculate ();
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
     rs6000_print_builtin_options (stderr, 0, "builtin mask",
@@ -5593,9 +5569,6 @@ rs6000_preferred_simd_mode (scalar_mode mode)
 	return V16QImode;
       default:;
       }
-  if (TARGET_PAIRED_FLOAT
-      && mode == SFmode)
-    return V2SFmode;
   return word_mode;
 }
 
@@ -6272,8 +6245,8 @@ num_insns_constant (rtx op, machine_mode mode)
 
 /* Interpret element ELT of the CONST_VECTOR OP as an integer value.
    If the mode of OP is MODE_VECTOR_INT, this simply returns the
-   corresponding element of the vector, but for V4SFmode and V2SFmode,
-   the corresponding "float" is interpreted as an SImode integer.  */
+   corresponding element of the vector, but for V4SFmode, the
+   corresponding "float" is interpreted as an SImode integer.  */
 
 HOST_WIDE_INT
 const_vector_elt_as_int (rtx op, unsigned int elt)
@@ -6285,8 +6258,7 @@ const_vector_elt_as_int (rtx op, unsigned int elt)
 	      && GET_MODE (op) != V2DFmode);
 
   tmp = CONST_VECTOR_ELT (op, elt);
-  if (GET_MODE (op) == V4SFmode
-      || GET_MODE (op) == V2SFmode)
+  if (GET_MODE (op) == V4SFmode)
     tmp = gen_lowpart (SImode, tmp);
   return INTVAL (tmp);
 }
@@ -6788,156 +6760,6 @@ output_vec_const_move (rtx *operands)
     }
 
   gcc_unreachable ();
-}
-
-/* Initialize TARGET of vector PAIRED to VALS.  */
-
-void
-paired_expand_vector_init (rtx target, rtx vals)
-{
-  machine_mode mode = GET_MODE (target);
-  int n_elts = GET_MODE_NUNITS (mode);
-  int n_var = 0;
-  rtx x, new_rtx, tmp, constant_op, op1, op2;
-  int i;
-
-  for (i = 0; i < n_elts; ++i)
-    {
-      x = XVECEXP (vals, 0, i);
-      if (!(CONST_SCALAR_INT_P (x) || CONST_DOUBLE_P (x) || CONST_FIXED_P (x)))
-	++n_var;
-    }
-  if (n_var == 0)
-    {
-      /* Load from constant pool.  */
-      emit_move_insn (target, gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0)));
-      return;
-    }
-
-  if (n_var == 2)
-    {
-      /* The vector is initialized only with non-constants.  */
-      new_rtx = gen_rtx_VEC_CONCAT (V2SFmode, XVECEXP (vals, 0, 0),
-				XVECEXP (vals, 0, 1));
-
-      emit_move_insn (target, new_rtx);
-      return;
-    }
-  
-  /* One field is non-constant and the other one is a constant.  Load the
-     constant from the constant pool and use ps_merge instruction to
-     construct the whole vector.  */
-  op1 = XVECEXP (vals, 0, 0);
-  op2 = XVECEXP (vals, 0, 1);
-
-  constant_op = (CONSTANT_P (op1)) ? op1 : op2;
-
-  tmp = gen_reg_rtx (GET_MODE (constant_op));
-  emit_move_insn (tmp, constant_op);
-
-  if (CONSTANT_P (op1))
-    new_rtx = gen_rtx_VEC_CONCAT (V2SFmode, tmp, op2);
-  else
-    new_rtx = gen_rtx_VEC_CONCAT (V2SFmode, op1, tmp);
-
-  emit_move_insn (target, new_rtx);
-}
-
-void
-paired_expand_vector_move (rtx operands[])
-{
-  rtx op0 = operands[0], op1 = operands[1];
-
-  emit_move_insn (op0, op1);
-}
-
-/* Emit vector compare for code RCODE.  DEST is destination, OP1 and
-   OP2 are two VEC_COND_EXPR operands, CC_OP0 and CC_OP1 are the two
-   operands for the relation operation COND.  This is a recursive
-   function.  */
-
-static void
-paired_emit_vector_compare (enum rtx_code rcode,
-                            rtx dest, rtx op0, rtx op1,
-                            rtx cc_op0, rtx cc_op1)
-{
-  rtx tmp = gen_reg_rtx (V2SFmode);
-  rtx tmp1, max, min;
-
-  gcc_assert (TARGET_PAIRED_FLOAT);
-  gcc_assert (GET_MODE (op0) == GET_MODE (op1));
-
-  switch (rcode)
-    {
-    case LT:
-    case LTU:
-      paired_emit_vector_compare (GE, dest, op1, op0, cc_op0, cc_op1);
-      return;
-    case GE:
-    case GEU:
-      emit_insn (gen_subv2sf3 (tmp, cc_op0, cc_op1));
-      emit_insn (gen_selv2sf4 (dest, tmp, op0, op1, CONST0_RTX (SFmode)));
-      return;
-    case LE:
-    case LEU:
-      paired_emit_vector_compare (GE, dest, op0, op1, cc_op1, cc_op0);
-      return;
-    case GT:
-      paired_emit_vector_compare (LE, dest, op1, op0, cc_op0, cc_op1);
-      return;
-    case EQ:
-      tmp1 = gen_reg_rtx (V2SFmode);
-      max = gen_reg_rtx (V2SFmode);
-      min = gen_reg_rtx (V2SFmode);
-      gen_reg_rtx (V2SFmode);
-      
-      emit_insn (gen_subv2sf3 (tmp, cc_op0, cc_op1));
-      emit_insn (gen_selv2sf4
-                 (max, tmp, cc_op0, cc_op1, CONST0_RTX (SFmode)));
-      emit_insn (gen_subv2sf3 (tmp, cc_op1, cc_op0));
-      emit_insn (gen_selv2sf4
-                 (min, tmp, cc_op0, cc_op1, CONST0_RTX (SFmode)));
-      emit_insn (gen_subv2sf3 (tmp1, min, max));
-      emit_insn (gen_selv2sf4 (dest, tmp1, op0, op1, CONST0_RTX (SFmode)));
-      return;
-    case NE:
-      paired_emit_vector_compare (EQ, dest, op1, op0, cc_op0, cc_op1);
-      return;
-    case UNLE:
-      paired_emit_vector_compare (LE, dest, op1, op0, cc_op0, cc_op1);
-      return;
-    case UNLT:
-      paired_emit_vector_compare (LT, dest, op1, op0, cc_op0, cc_op1);
-      return;
-    case UNGE:
-      paired_emit_vector_compare (GE, dest, op1, op0, cc_op0, cc_op1);
-      return;
-    case UNGT:
-      paired_emit_vector_compare (GT, dest, op1, op0, cc_op0, cc_op1);
-      return;
-    default:
-      gcc_unreachable ();
-    }
-
-  return;
-}
-
-/* Emit vector conditional expression.
-   DEST is destination. OP1 and OP2 are two VEC_COND_EXPR operands.
-   CC_OP0 and CC_OP1 are the two operands for the relation operation COND.  */
-
-int
-paired_emit_vector_cond_expr (rtx dest, rtx op1, rtx op2,
-			      rtx cond, rtx cc_op0, rtx cc_op1)
-{
-  enum rtx_code rcode = GET_CODE (cond);
-
-  if (!TARGET_PAIRED_FLOAT)
-    return 0;
-
-  paired_emit_vector_compare (rcode, dest, op1, op2, cc_op0, cc_op1);
-
-  return 1;
 }
 
 /* Initialize vector TARGET to VALS.  */
@@ -7869,16 +7691,8 @@ rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
 {
   if (how != align_opt)
     {
-      if (TREE_CODE (type) == VECTOR_TYPE)
-	{
-	  if (TARGET_PAIRED_FLOAT && PAIRED_VECTOR_MODE (TYPE_MODE (type)))
-	    {
-	      if (align < 64)
-		align = 64;
-	    }
-	  else if (align < 128)
-	    align = 128;
-	}
+      if (TREE_CODE (type) == VECTOR_TYPE && align < 128)
+	align = 128;
     }
 
   if (how != align_abi)
@@ -8293,13 +8107,6 @@ reg_offset_addressing_ok_p (machine_mode mode)
 	return mode_supports_vsx_dform_quad (mode);
       break;
 
-    case E_V2SImode:
-    case E_V2SFmode:
-       /* Paired vector modes.  Only reg+reg addressing is valid.  */
-      if (TARGET_PAIRED_FLOAT)
-        return false;
-      break;
-
     case E_SDmode:
       /* If we can do direct load/stores of SDmode, restrict it to reg+reg
 	 addressing for the LFIWZX and STFIWX instructions.  */
@@ -8541,11 +8348,6 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
   extra = 0;
   switch (mode)
     {
-    case E_V2SImode:
-    case E_V2SFmode:
-      /* Paired single modes: offset addressing isn't valid.  */
-      return false;
-
     case E_DFmode:
     case E_DDmode:
     case E_DImode:
@@ -8763,8 +8565,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1)) + 0x8000)
-	  >= 0x10000 - extra)
-      && !PAIRED_VECTOR_MODE (mode))
+	  >= 0x10000 - extra))
     {
       HOST_WIDE_INT high_int, low_int;
       rtx sum;
@@ -8788,33 +8589,6 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
     {
       return gen_rtx_PLUS (Pmode, XEXP (x, 0),
 			   force_reg (Pmode, force_operand (XEXP (x, 1), 0)));
-    }
-  else if (PAIRED_VECTOR_MODE (mode))
-    {
-      if (mode == DImode)
-	return x;
-      /* We accept [reg + reg].  */
-
-      if (GET_CODE (x) == PLUS)
-       {
-         rtx op1 = XEXP (x, 0);
-         rtx op2 = XEXP (x, 1);
-         rtx y;
-
-         op1 = force_reg (Pmode, op1);
-         op2 = force_reg (Pmode, op2);
-
-         /* We can't always do [reg + reg] for these, because [reg +
-            reg + offset] is not a legitimate addressing mode.  */
-         y = gen_rtx_PLUS (Pmode, op1, op2);
-
-         if ((GET_MODE_SIZE (mode) > 8 || mode == DDmode) && REG_P (op2))
-           return force_reg (Pmode, y);
-         else
-           return y;
-       }
-
-      return force_reg (Pmode, x);
     }
   else if ((TARGET_ELF
 #if TARGET_MACHO
@@ -9548,7 +9322,6 @@ rs6000_legitimize_reload_address (rtx x, machine_mode mode,
       && INT_REG_OK_FOR_BASE_P (XEXP (x, 0), 1)
       && CONST_INT_P (XEXP (x, 1))
       && reg_offset_p
-      && !PAIRED_VECTOR_MODE (mode)
       && (quad_offset_p || !VECTOR_MODE_P (mode) || VECTOR_MEM_NONE_P (mode)))
     {
       HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
@@ -9589,7 +9362,6 @@ rs6000_legitimize_reload_address (rtx x, machine_mode mode,
       && reg_offset_p
       && !quad_offset_p
       && (!VECTOR_MODE_P (mode) || VECTOR_MEM_NONE_P (mode))
-      && !PAIRED_VECTOR_MODE (mode)
 #if TARGET_MACHO
       && DEFAULT_ABI == ABI_DARWIN
       && (flag_pic || MACHO_DYNAMIC_NO_PIC_P)
@@ -10745,8 +10517,6 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
     case E_V8HImode:
     case E_V4SFmode:
     case E_V4SImode:
-    case E_V2SFmode:
-    case E_V2SImode:
     case E_V2DFmode:
     case E_V2DImode:
     case E_V1TImode:
@@ -11386,8 +11156,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 			      == long_double_type_node))))
 		rs6000_passes_long_double = true;
 	    }
-	  if (ALTIVEC_OR_VSX_VECTOR_MODE (return_mode)
-	      || PAIRED_VECTOR_MODE (return_mode))
+	  if (ALTIVEC_OR_VSX_VECTOR_MODE (return_mode))
 	    rs6000_passes_vector = true;
 	}
     }
@@ -11560,10 +11329,9 @@ rs6000_function_arg_boundary (machine_mode mode, const_tree type)
     return 64;
   else if (FLOAT128_VECTOR_P (mode))
     return 128;
-  else if (PAIRED_VECTOR_MODE (mode)
-	   || (type && TREE_CODE (type) == VECTOR_TYPE
-	       && int_size_in_bytes (type) >= 8
-	       && int_size_in_bytes (type) < 16))
+  else if (type && TREE_CODE (type) == VECTOR_TYPE
+	   && int_size_in_bytes (type) >= 8
+	   && int_size_in_bytes (type) < 16)
     return 64;
   else if (ALTIVEC_OR_VSX_VECTOR_MODE (elt_mode)
 	   || (type && TREE_CODE (type) == VECTOR_TYPE
@@ -11839,10 +11607,7 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 		      && TYPE_MAIN_VARIANT (type) == long_double_type_node)))
 	    rs6000_passes_long_double = true;
 	}
-      if ((named && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
-	  || (PAIRED_VECTOR_MODE (mode)
-	      && !cum->stdarg
-	      && cum->sysv_gregno <= GP_ARG_MAX_REG))
+      if (named && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
 	rs6000_passes_vector = true;
     }
 #endif
@@ -13629,7 +13394,6 @@ def_builtin (const char *name, tree type, enum rs6000_builtins code)
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
@@ -13642,7 +13406,6 @@ def_builtin (const char *name, tree type, enum rs6000_builtins code)
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 static const struct builtin_description bdesc_3arg[] =
@@ -13660,7 +13423,6 @@ static const struct builtin_description bdesc_3arg[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
@@ -13673,7 +13435,6 @@ static const struct builtin_description bdesc_3arg[] =
 
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 static const struct builtin_description bdesc_dst[] =
@@ -13691,7 +13452,6 @@ static const struct builtin_description bdesc_dst[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
@@ -13704,7 +13464,6 @@ static const struct builtin_description bdesc_dst[] =
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 static const struct builtin_description bdesc_2arg[] =
@@ -13720,7 +13479,6 @@ static const struct builtin_description bdesc_2arg[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
@@ -13733,42 +13491,11 @@ static const struct builtin_description bdesc_2arg[] =
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE) \
   { MASK, ICODE, NAME, ENUM },
 
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 /* AltiVec predicates.  */
 
 static const struct builtin_description bdesc_altivec_preds[] =
-{
-#include "rs6000-builtin.def"
-};
-
-/* PAIRED predicates.  */
-#undef RS6000_BUILTIN_0
-#undef RS6000_BUILTIN_1
-#undef RS6000_BUILTIN_2
-#undef RS6000_BUILTIN_3
-#undef RS6000_BUILTIN_A
-#undef RS6000_BUILTIN_D
-#undef RS6000_BUILTIN_H
-#undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
-#undef RS6000_BUILTIN_X
-
-#define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE) \
-  { MASK, ICODE, NAME, ENUM },
-
-#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
-
-static const struct builtin_description bdesc_paired_preds[] =
 {
 #include "rs6000-builtin.def"
 };
@@ -13783,7 +13510,6 @@ static const struct builtin_description bdesc_paired_preds[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
@@ -13796,7 +13522,6 @@ static const struct builtin_description bdesc_paired_preds[] =
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 static const struct builtin_description bdesc_abs[] =
@@ -13815,7 +13540,6 @@ static const struct builtin_description bdesc_abs[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
@@ -13828,7 +13552,6 @@ static const struct builtin_description bdesc_abs[] =
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 static const struct builtin_description bdesc_1arg[] =
@@ -13846,7 +13569,6 @@ static const struct builtin_description bdesc_1arg[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE) \
@@ -13859,7 +13581,6 @@ static const struct builtin_description bdesc_1arg[] =
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 static const struct builtin_description bdesc_0arg[] =
@@ -13876,7 +13597,6 @@ static const struct builtin_description bdesc_0arg[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
@@ -13889,7 +13609,6 @@ static const struct builtin_description bdesc_0arg[] =
   { MASK, ICODE, NAME, ENUM },
 
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE)
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 
 static const struct builtin_description bdesc_htm[] =
@@ -13905,7 +13624,6 @@ static const struct builtin_description bdesc_htm[] =
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 
 /* Return true if a builtin function is overloaded.  */
 bool
@@ -14252,52 +13970,6 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
-static rtx
-paired_expand_lv_builtin (enum insn_code icode, tree exp, rtx target)
-{
-  rtx pat, addr;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  machine_mode tmode = insn_data[icode].operand[0].mode;
-  machine_mode mode0 = Pmode;
-  machine_mode mode1 = Pmode;
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-
-  if (icode == CODE_FOR_nothing)
-    /* Builtin not supported on this processor.  */
-    return 0;
-
-  /* If we got invalid arguments bail out before generating bad rtl.  */
-  if (arg0 == error_mark_node || arg1 == error_mark_node)
-    return const0_rtx;
-
-  if (target == 0
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
-
-  op1 = copy_to_mode_reg (mode1, op1);
-
-  if (op0 == const0_rtx)
-    {
-      addr = gen_rtx_MEM (tmode, op1);
-    }
-  else
-    {
-      op0 = copy_to_mode_reg (mode0, op0);
-      addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op0, op1));
-    }
-
-  pat = GEN_FCN (icode) (target, addr);
-
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-
-  return target;
-}
-
 /* Return a constant vector for use as a little-endian permute control vector
    to reverse the order of elements of the given vector mode.  */
 static rtx
@@ -14512,47 +14184,6 @@ altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
     }
 
   return target;
-}
-
-static rtx
-paired_expand_stv_builtin (enum insn_code icode, tree exp)
-{
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  tree arg2 = CALL_EXPR_ARG (exp, 2);
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-  rtx op2 = expand_normal (arg2);
-  rtx pat, addr;
-  machine_mode tmode = insn_data[icode].operand[0].mode;
-  machine_mode mode1 = Pmode;
-  machine_mode mode2 = Pmode;
-
-  /* Invalid arguments.  Bail before doing anything stoopid!  */
-  if (arg0 == error_mark_node
-      || arg1 == error_mark_node
-      || arg2 == error_mark_node)
-    return const0_rtx;
-
-  if (! (*insn_data[icode].operand[1].predicate) (op0, tmode))
-    op0 = copy_to_mode_reg (tmode, op0);
-
-  op2 = copy_to_mode_reg (mode2, op2);
-
-  if (op1 == const0_rtx)
-    {
-      addr = gen_rtx_MEM (tmode, op2);
-    }
-  else
-    {
-      op1 = copy_to_mode_reg (mode1, op1);
-      addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op1, op2));
-    }
-
-  pat = GEN_FCN (icode) (addr, op0);
-  if (pat)
-    emit_insn (pat);
-  return NULL_RTX;
 }
 
 static rtx
@@ -15182,10 +14813,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
   if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
     op2 = copy_to_mode_reg (mode2, op2);
 
-  if (TARGET_PAIRED_FLOAT && icode == CODE_FOR_selv2sf4)
-    pat = GEN_FCN (icode) (target, op0, op1, op2, CONST0_RTX (SFmode));
-  else 
-    pat = GEN_FCN (icode) (target, op0, op1, op2);
+  pat = GEN_FCN (icode) (target, op0, op1, op2);
   if (! pat)
     return 0;
   emit_insn (pat);
@@ -15798,113 +15426,6 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
   return NULL_RTX;
 }
 
-/* Expand the builtin in EXP and store the result in TARGET.  Store
-   true in *EXPANDEDP if we found a builtin to expand.  */
-static rtx
-paired_expand_builtin (tree exp, rtx target, bool * expandedp)
-{
-  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  enum rs6000_builtins fcode = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
-  const struct builtin_description *d;
-  size_t i;
-
-  *expandedp = true;
-
-  switch (fcode)
-    {
-    case PAIRED_BUILTIN_STX:
-      return paired_expand_stv_builtin (CODE_FOR_paired_stx, exp);
-    case PAIRED_BUILTIN_LX:
-      return paired_expand_lv_builtin (CODE_FOR_paired_lx, exp, target);
-    default:
-      break;
-      /* Fall through.  */
-    }
-
-  /* Expand the paired predicates.  */
-  d = bdesc_paired_preds;
-  for (i = 0; i < ARRAY_SIZE (bdesc_paired_preds); i++, d++)
-    if (d->code == fcode)
-      return paired_expand_predicate_builtin (d->icode, exp, target);
-
-  *expandedp = false;
-  return NULL_RTX;
-}
-
-static rtx
-paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
-{
-  rtx pat, scratch, tmp;
-  tree form = CALL_EXPR_ARG (exp, 0);
-  tree arg0 = CALL_EXPR_ARG (exp, 1);
-  tree arg1 = CALL_EXPR_ARG (exp, 2);
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-  machine_mode mode0 = insn_data[icode].operand[1].mode;
-  machine_mode mode1 = insn_data[icode].operand[2].mode;
-  int form_int;
-  enum rtx_code code;
-
-  if (TREE_CODE (form) != INTEGER_CST)
-    {
-      error ("argument 1 of %s must be a constant",
-	     "__builtin_paired_predicate");
-      return const0_rtx;
-    }
-  else
-    form_int = TREE_INT_CST_LOW (form);
-
-  gcc_assert (mode0 == mode1);
-
-  if (arg0 == error_mark_node || arg1 == error_mark_node)
-    return const0_rtx;
-
-  if (target == 0
-      || GET_MODE (target) != SImode
-      || !(*insn_data[icode].operand[0].predicate) (target, SImode))
-    target = gen_reg_rtx (SImode);
-  if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-  if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-
-  scratch = gen_reg_rtx (CCFPmode);
-
-  pat = GEN_FCN (icode) (scratch, op0, op1);
-  if (!pat)
-    return const0_rtx;
-
-  emit_insn (pat);
-
-  switch (form_int)
-    {
-      /* LT bit.  */
-    case 0:
-      code = LT;
-      break;
-      /* GT bit.  */
-    case 1:
-      code = GT;
-      break;
-      /* EQ bit.  */
-    case 2:
-      code = EQ;
-      break;
-      /* UN bit.  */
-    case 3:
-      emit_insn (gen_move_from_CR_ov_bit (target, scratch));
-      return target;
-    default:
-      error ("argument 1 of %qs is out of range",
-	     "__builtin_paired_predicate");
-      return const0_rtx;
-    }
-
-  tmp = gen_rtx_fmt_ee (code, SImode, scratch, const0_rtx);
-  emit_move_insn (target, tmp);
-  return target;
-}
-
 /* Check whether a builtin function is supported in this target
    configuration.  */
 bool
@@ -15936,8 +15457,6 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
     error ("builtin function %qs requires the %qs option", name, "-mhtm");
   else if ((fnmask & RS6000_BTM_ALTIVEC) != 0)
     error ("builtin function %qs requires the %qs option", name, "-maltivec");
-  else if ((fnmask & RS6000_BTM_PAIRED) != 0)
-    error ("builtin function %qs requires the %qs option", name, "-mpaired");
   else if ((fnmask & (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
 	   == (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
     error ("builtin function %qs requires the %qs and %qs options",
@@ -16856,13 +16375,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if (success)
 	return ret;
     }
-  if (TARGET_PAIRED_FLOAT)
-    {
-      ret = paired_expand_builtin (exp, target, &success);
-
-      if (success)
-	return ret;
-    }  
   if (TARGET_HTM)
     {
       ret = htm_expand_builtin (exp, target, &success);
@@ -16929,13 +16441,10 @@ rs6000_init_builtins (void)
   machine_mode mode;
 
   if (TARGET_DEBUG_BUILTIN)
-    fprintf (stderr, "rs6000_init_builtins%s%s%s\n",
-	     (TARGET_PAIRED_FLOAT) ? ", paired"	 : "",
+    fprintf (stderr, "rs6000_init_builtins%s%s\n",
 	     (TARGET_ALTIVEC)	   ? ", altivec" : "",
 	     (TARGET_VSX)	   ? ", vsx"	 : "");
 
-  V2SI_type_node = build_vector_type (intSI_type_node, 2);
-  V2SF_type_node = build_vector_type (float_type_node, 2);
   V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64 ? "__vector long"
 				       : "__vector long long",
 				       intDI_type_node, 2);
@@ -16959,9 +16468,6 @@ rs6000_init_builtins (void)
 				       : "__vector unsigned long long",
 				       unsigned_intDI_type_node, 2);
 
-  opaque_V2SF_type_node = build_opaque_vector_type (float_type_node, 2);
-  opaque_V2SI_type_node = build_opaque_vector_type (intSI_type_node, 2);
-  opaque_p_V2SI_type_node = build_pointer_type (opaque_V2SI_type_node);
   opaque_V4SI_type_node = build_opaque_vector_type (intSI_type_node, 4);
 
   const_str_type_node
@@ -17069,8 +16575,6 @@ rs6000_init_builtins (void)
   builtin_mode_to_type[TDmode][0] = dfloat128_type_node;
   builtin_mode_to_type[V1TImode][0] = V1TI_type_node;
   builtin_mode_to_type[V1TImode][1] = unsigned_V1TI_type_node;
-  builtin_mode_to_type[V2SImode][0] = V2SI_type_node;
-  builtin_mode_to_type[V2SFmode][0] = V2SF_type_node;
   builtin_mode_to_type[V2DImode][0] = V2DI_type_node;
   builtin_mode_to_type[V2DImode][1] = unsigned_V2DI_type_node;
   builtin_mode_to_type[V2DFmode][0] = V2DF_type_node;
@@ -17107,19 +16611,15 @@ rs6000_init_builtins (void)
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
 
-  /* Paired builtins are only available if you build a compiler with the
-     appropriate options, so only create those builtins with the appropriate
-     compiler option.  Create Altivec and VSX builtins on machines with at
-     least the general purpose extensions (970 and newer) to allow the use of
+  /* Create Altivec and VSX builtins on machines with at least the
+     general purpose extensions (970 and newer) to allow the use of
      the target attribute.  */
-  if (TARGET_PAIRED_FLOAT)
-    paired_init_builtins ();
   if (TARGET_EXTRA_BUILTINS)
     altivec_init_builtins ();
   if (TARGET_HTM)
     htm_init_builtins ();
 
-  if (TARGET_EXTRA_BUILTINS || TARGET_PAIRED_FLOAT)
+  if (TARGET_EXTRA_BUILTINS)
     rs6000_common_init_builtins ();
 
   ftype = builtin_function_type (DFmode, DFmode, DFmode, VOIDmode,
@@ -17201,78 +16701,6 @@ rs6000_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
     }
 
   return rs6000_builtin_decls[code];
-}
-
-static void
-paired_init_builtins (void)
-{
-  const struct builtin_description *d;
-  size_t i;
-  HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
-
-   tree int_ftype_int_v2sf_v2sf
-    = build_function_type_list (integer_type_node,
-                                integer_type_node,
-                                V2SF_type_node,
-                                V2SF_type_node,
-                                NULL_TREE);
-  tree pcfloat_type_node =
-    build_pointer_type (build_qualified_type
-			(float_type_node, TYPE_QUAL_CONST));
-
-  tree v2sf_ftype_long_pcfloat = build_function_type_list (V2SF_type_node,
-							   long_integer_type_node,
-							   pcfloat_type_node,
-							   NULL_TREE);
-  tree void_ftype_v2sf_long_pcfloat =
-    build_function_type_list (void_type_node,
-			      V2SF_type_node,
-			      long_integer_type_node,
-			      pcfloat_type_node,
-			      NULL_TREE);
-
-
-  def_builtin ("__builtin_paired_lx", v2sf_ftype_long_pcfloat,
-	       PAIRED_BUILTIN_LX);
-
-
-  def_builtin ("__builtin_paired_stx", void_ftype_v2sf_long_pcfloat,
-	       PAIRED_BUILTIN_STX);
-
-  /* Predicates.  */
-  d = bdesc_paired_preds;
-  for (i = 0; i < ARRAY_SIZE (bdesc_paired_preds); ++i, d++)
-    {
-      tree type;
-      HOST_WIDE_INT mask = d->mask;
-
-      if ((mask & builtin_mask) != mask)
-	{
-	  if (TARGET_DEBUG_BUILTIN)
-	    fprintf (stderr, "paired_init_builtins, skip predicate %s\n",
-		     d->name);
-	  continue;
-	}
-
-      /* Cannot define builtin if the instruction is disabled.  */
-      gcc_assert (d->icode != CODE_FOR_nothing);
-
-      if (TARGET_DEBUG_BUILTIN)
-	fprintf (stderr, "paired pred #%d, insn = %s [%d], mode = %s\n",
-		 (int)i, get_insn_name (d->icode), (int)d->icode,
-		 GET_MODE_NAME (insn_data[d->icode].operand[1].mode));
-
-      switch (insn_data[d->icode].operand[1].mode)
-	{
-	case E_V2SFmode:
-	  type = int_ftype_int_v2sf_v2sf;
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-
-      def_builtin (d->name, type, d->code);
-    }
 }
 
 static void
@@ -18260,23 +17688,11 @@ rs6000_common_init_builtins (void)
   tree opaque_ftype_opaque = NULL_TREE;
   tree opaque_ftype_opaque_opaque = NULL_TREE;
   tree opaque_ftype_opaque_opaque_opaque = NULL_TREE;
-  tree v2si_ftype = NULL_TREE;
-  tree v2si_ftype_qi = NULL_TREE;
-  tree v2si_ftype_v2si_qi = NULL_TREE;
-  tree v2si_ftype_int_qi = NULL_TREE;
   HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
 
-  if (!TARGET_PAIRED_FLOAT)
-    {
-      builtin_mode_to_type[V2SImode][0] = opaque_V2SI_type_node;
-      builtin_mode_to_type[V2SFmode][0] = opaque_V2SF_type_node;
-    }
-
-  /* Paired builtins are only available if you build a compiler with the
-     appropriate options, so only create those builtins with the appropriate
-     compiler option.  Create Altivec and VSX builtins on machines with at
-     least the general purpose extensions (970 and newer) to allow the use of
-     the target attribute..  */
+  /* Create Altivec and VSX builtins on machines with at least the
+     general purpose extensions (970 and newer) to allow the use of
+     the target attribute.  */
 
   if (TARGET_EXTRA_BUILTINS)
     builtin_mask |= RS6000_BTM_COMMON;
@@ -18385,30 +17801,8 @@ rs6000_common_init_builtins (void)
           mode1 = insn_data[icode].operand[1].mode;
           mode2 = insn_data[icode].operand[2].mode;
 
-	  if (mode0 == V2SImode && mode1 == V2SImode && mode2 == QImode)
-	    {
-	      if (! (type = v2si_ftype_v2si_qi))
-		type = v2si_ftype_v2si_qi
-		  = build_function_type_list (opaque_V2SI_type_node,
-					      opaque_V2SI_type_node,
-					      char_type_node,
-					      NULL_TREE);
-	    }
-
-	  else if (mode0 == V2SImode && GET_MODE_CLASS (mode1) == MODE_INT
-		   && mode2 == QImode)
-	    {
-	      if (! (type = v2si_ftype_int_qi))
-		type = v2si_ftype_int_qi
-		  = build_function_type_list (opaque_V2SI_type_node,
-					      integer_type_node,
-					      char_type_node,
-					      NULL_TREE);
-	    }
-
-	  else
-	    type = builtin_function_type (mode0, mode1, mode2, VOIDmode,
-					  d->code, d->name);
+	  type = builtin_function_type (mode0, mode1, mode2, VOIDmode,
+					d->code, d->name);
 	}
 
       def_builtin (d->name, type, d->code);
@@ -18461,18 +17855,8 @@ rs6000_common_init_builtins (void)
           mode0 = insn_data[icode].operand[0].mode;
           mode1 = insn_data[icode].operand[1].mode;
 
-	  if (mode0 == V2SImode && mode1 == QImode)
-	    {
-	      if (! (type = v2si_ftype_qi))
-		type = v2si_ftype_qi
-		  = build_function_type_list (opaque_V2SI_type_node,
-					      char_type_node,
-					      NULL_TREE);
-	    }
-
-	  else
-	    type = builtin_function_type (mode0, mode1, VOIDmode, VOIDmode,
-					  d->code, d->name);
+	  type = builtin_function_type (mode0, mode1, VOIDmode, VOIDmode,
+					d->code, d->name);
 	}
 
       def_builtin (d->name, type, d->code);
@@ -18518,20 +17902,8 @@ rs6000_common_init_builtins (void)
 	      continue;
 	    }
 	  mode0 = insn_data[icode].operand[0].mode;
-	  if (mode0 == V2SImode)
-	    {
-	      /* code for paired single */
-	      if (! (type = v2si_ftype))
-		{
-		  v2si_ftype
-		    = build_function_type_list (opaque_V2SI_type_node, 
-						NULL_TREE);
-		  type = v2si_ftype;
-		}
-	    }
-	  else
-	    type = builtin_function_type (mode0, VOIDmode, VOIDmode, VOIDmode,
-					  d->code, d->name);
+	  type = builtin_function_type (mode0, VOIDmode, VOIDmode, VOIDmode,
+					d->code, d->name);
 	}
       def_builtin (d->name, type, d->code);
     }
@@ -35954,7 +35326,7 @@ altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
   return false;
 }
 
-/* Expand a Paired Single or VSX Permute Doubleword constant permutation.
+/* Expand a VSX Permute Doubleword constant permutation.
    Return true if we match an efficient implementation.  */
 
 static bool
@@ -36020,9 +35392,7 @@ rs6000_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
     return true;
 
   /* Check for ps_merge* or xxpermdi insns.  */
-  if ((vmode == V2SFmode && TARGET_PAIRED_FLOAT)
-      || ((vmode == V2DFmode || vmode == V2DImode)
-	  && VECTOR_MEM_VSX_P (vmode)))
+  if ((vmode == V2DFmode || vmode == V2DImode) && VECTOR_MEM_VSX_P (vmode))
     {
       if (testing_p)
 	{
@@ -36477,14 +35847,10 @@ rs6000_scalar_mode_supported_p (scalar_mode mode)
 static bool
 rs6000_vector_mode_supported_p (machine_mode mode)
 {
-
-  if (TARGET_PAIRED_FLOAT && PAIRED_VECTOR_MODE (mode))
-    return true;
-
   /* There is no vector form for IEEE 128-bit.  If we return true for IEEE
      128-bit, the compiler might try to widen IEEE 128-bit to IBM
      double-double.  */
-  else if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode) && !FLOAT128_IEEE_P (mode))
+  if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode) && !FLOAT128_IEEE_P (mode))
     return true;
 
   else
@@ -36678,7 +36044,6 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
 {
   { "altivec",		 RS6000_BTM_ALTIVEC,	false, false },
   { "vsx",		 RS6000_BTM_VSX,	false, false },
-  { "paired",		 RS6000_BTM_PAIRED,	false, false },
   { "fre",		 RS6000_BTM_FRE,	false, false },
   { "fres",		 RS6000_BTM_FRES,	false, false },
   { "frsqrte",		 RS6000_BTM_FRSQRTE,	false, false },
@@ -36715,9 +36080,6 @@ static struct rs6000_opt_var const rs6000_opt_vars[] =
   { "avoid-indexed-addresses",
     offsetof (struct gcc_options, x_TARGET_AVOID_XFORM),
     offsetof (struct cl_target_option, x_TARGET_AVOID_XFORM) },
-  { "paired",
-    offsetof (struct gcc_options, x_rs6000_paired_float),
-    offsetof (struct cl_target_option, x_rs6000_paired_float), },
   { "longcall",
     offsetof (struct gcc_options, x_rs6000_default_long_calls),
     offsetof (struct cl_target_option, x_rs6000_default_long_calls), },

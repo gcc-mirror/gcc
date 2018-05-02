@@ -1,3 +1,34 @@
+2018-05-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.gcc (powerpc*-*-*): Remove paired.h.  Unsupport the
+	powerpc*-*-linux*paired* target.
+	* config/rs6000/750cl.h: Delete.
+	* config/rs6000/paired.h: Delete.
+	* config/rs6000/paired.md: Delete.
+	* config/rs6000/predicates.md (easy_vector_constant): Remove paired
+	float support.
+	* config/rs6000/rs6000-builtin.def: Remove paired float support.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Update
+	comment.  Remove paired float support.
+	* config/rs6000/rs6000-modes.def: Remove V2SF and V2SI.
+	* config/rs6000/rs6000-opts.h (enum rs6000_vector): Delete
+	VECTOR_PAIRED.
+	* config/rs6000/rs6000-protos.h (paired_expand_vector_init,
+	paired_emit_vector_cond_expr, paired_expand_vector_move): Delete
+	declarations.
+	* config/rs6000/rs6000.c: Remove paired float support.
+	(paired_expand_vector_init, paired_expand_vector_move,
+	paired_emit_vector_compare, paired_emit_vector_cond_expr,
+	(paired_expand_lv_builtin, paired_expand_stv_builtin,
+	paired_expand_builtin, paired_expand_predicate_builtin,
+	paired_init_builtins): Delete.
+	* config/rs6000/rs6000.h: Remove paired float support.
+	* config/rs6000/rs6000.md: Remove paired float support.
+	(move_from_CR_ov_bit): Delete.
+	* config/rs6000/rs6000.opt (mpaired): Delete.
+	* config/rs6000/t-rs6000: Remove paired.md from MD_INCLUDES.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete -mpaired.
+
 2018-05-02  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85567

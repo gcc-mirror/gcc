@@ -149,7 +149,6 @@ enum rs6000_vector {
   VECTOR_ALTIVEC,		/* Use altivec for vector processing */
   VECTOR_VSX,			/* Use VSX for vector processing */
   VECTOR_P8_VECTOR,		/* Use ISA 2.07 VSX for vector processing */
-  VECTOR_PAIRED,		/* Use paired floating point for vectors */
   VECTOR_OTHER			/* Some other vector unit */
 };
 

@@ -357,10 +357,6 @@ misel=yes
 Target RejectNegative Alias(misel) Warn(%<-misel=yes%> is deprecated; use %<-misel%> instead)
 Deprecated option.  Use -misel instead.
 
-mpaired
-Target Var(rs6000_paired_float) Save
-Generate PPC750CL paired-single instructions.
-
 mdebug=
 Target RejectNegative Joined
 -mdebug=	Enable debug output.

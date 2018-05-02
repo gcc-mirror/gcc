@@ -494,17 +494,14 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	or TARGET_DOUBLE_FLOAT are turned off.  Hereafter, the
 	OPTION_MASK_VSX flag is considered to have been turned off
 	explicitly.
-     3. If TARGET_PAIRED_FLOAT was enabled.  Hereafter, the
-	OPTION_MASK_VSX flag is considered to have been turned off
-	explicitly.
-     4. If TARGET_AVOID_XFORM is turned on explicitly at the outermost
+     3. If TARGET_AVOID_XFORM is turned on explicitly at the outermost
 	compilation context, or if it is turned on by any means in an
 	inner compilation context.  Hereafter, the OPTION_MASK_VSX
 	flag is considered to have been turned off explicitly.
-     5. If TARGET_ALTIVEC was explicitly disabled.  Hereafter, the
+     4. If TARGET_ALTIVEC was explicitly disabled.  Hereafter, the
 	OPTION_MASK_VSX flag is considered to have been turned off
 	explicitly.
-     6. If an inner context (as introduced by
+     5. If an inner context (as introduced by
 	__attribute__((__target__())) or #pragma GCC target()
 	requests a target that normally enables the
 	OPTION_MASK_VSX flag but the outer-most "main target"
@@ -590,10 +587,6 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "__FLOAT128_HARDWARE__");
 
   /* options from the builtin masks.  */
-  /* Note that RS6000_BTM_PAIRED is enabled only if
-     TARGET_PAIRED_FLOAT is enabled (e.g. -mpaired).  */
-  if ((bu_mask & RS6000_BTM_PAIRED) != 0)
-    rs6000_define_or_undefine_macro (define_p, "__PAIRED__");
   /* Note that RS6000_BTM_CELL is enabled only if (rs6000_cpu ==
      PROCESSOR_CELL) (e.g. -mcpu=cell).  */
   if ((bu_mask & RS6000_BTM_CELL) != 0)
