@@ -1,3 +1,8 @@
+2018-05-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/85586
+	* gcc.dg/vect/pr85586.c: New test.
+
 2018-05-01  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/85143

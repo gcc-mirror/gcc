@@ -305,9 +305,11 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
     return false;
 
   /* We do not have to consider dependences between accesses that belong
-     to the same group.  */
+     to the same group, unless the stride could be smaller than the
+     group size.  */
   if (GROUP_FIRST_ELEMENT (stmtinfo_a)
-      && GROUP_FIRST_ELEMENT (stmtinfo_a) == GROUP_FIRST_ELEMENT (stmtinfo_b))
+      && GROUP_FIRST_ELEMENT (stmtinfo_a) == GROUP_FIRST_ELEMENT (stmtinfo_b)
+      && !STMT_VINFO_STRIDED_P (stmtinfo_a))
     return false;
 
   /* Even if we have an anti-dependence then, as the vectorized loop covers at
