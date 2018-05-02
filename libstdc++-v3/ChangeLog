@@ -1,5 +1,12 @@
 2018-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/68197
+	* include/bits/ios_base.h (ios_base::iword, ios_base::pword): Cast
+	indices to unsigned.
+	* src/c++11/ios.cc (ios_base::_M_grow_words): Treat negative indices
+	as failure. Refactor error handling.
+	* testsuite/27_io/ios_base/storage/68197.cc: New.
+
 	PR libstdc++/57997
 	PR libstdc++/83860
 	* include/bits/gslice_array.h (gslice_array): Define default

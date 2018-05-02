@@ -109,37 +109,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   ios_base::register_callback(event_callback __fn, int __index)
   { _M_callbacks = new _Callback_list(__fn, __index, _M_callbacks); }
 
-  // 27.4.2.5  iword/pword storage
+  // 27.4.2.5 [ios.base.storage] iword/pword storage
   ios_base::_Words&
   ios_base::_M_grow_words(int __ix, bool __iword)
   {
     // Precondition: _M_word_size <= __ix
     int __newsize = _S_local_word_size;
     _Words* __words = _M_local_word;
-    if (__ix > _S_local_word_size - 1)
+    const char* __error = nullptr;
+    if ((unsigned)__ix >= (unsigned)numeric_limits<int>::max())
+      __error = __N("ios_base::_M_grow_words is not valid");
+    else if (__ix > _S_local_word_size - 1)
       {
-	if (__ix < numeric_limits<int>::max())
+	__newsize = __ix + 1;
+	/* We still need to catch bad_alloc even though we use
+	   a nothrow new, because the new-expression can throw
+	   a bad_array_new_length.  */
+	__try
+	  { __words = new (std::nothrow) _Words[__newsize]; }
+	__catch(const std::bad_alloc&)
+	  { __words = nullptr; }
+	if (!__words)
+	  __error = __N("ios_base::_M_grow_words allocation failed");
+	else
 	  {
-	    __newsize = __ix + 1;
-	    /* We still need to catch bad_alloc even though we use
-	       a nothrow new, because the new-expression can throw
-	       a bad_array_new_length.  */
-	    __try
-	      { __words = new (std::nothrow) _Words[__newsize]; }
-	    __catch(const std::bad_alloc&)
-	      { __words = nullptr; }
-	    if (!__words)
-	      {
-		_M_streambuf_state |= badbit;
-		if (_M_streambuf_state & _M_exception)
-		  __throw_ios_failure(__N("ios_base::_M_grow_words "
-					  "allocation failed"));
-		if (__iword)
-		  _M_word_zero._M_iword = 0;
-		else
-		  _M_word_zero._M_pword = 0;
-		return _M_word_zero;
-	      }
 	    for (int __i = 0; __i < _M_word_size; __i++)
 	      __words[__i] = _M_word[__i];
 	    if (_M_word && _M_word != _M_local_word)
@@ -148,17 +141,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_M_word = 0;
 	      }
 	  }
+      }
+    if (__error)
+      {
+	_M_streambuf_state |= badbit;
+	if (_M_streambuf_state & _M_exception)
+	  __throw_ios_failure(__error);
+	if (__iword)
+	  _M_word_zero._M_iword = 0;
 	else
-	  {
-	    _M_streambuf_state |= badbit;
-	    if (_M_streambuf_state & _M_exception)
-	      __throw_ios_failure(__N("ios_base::_M_grow_words is not valid"));
-	    if (__iword)
-	      _M_word_zero._M_iword = 0;
-	    else
-	      _M_word_zero._M_pword = 0;
-	    return _M_word_zero;
-	  }
+	  _M_word_zero._M_pword = 0;
+	return _M_word_zero;
       }
     _M_word = __words;
     _M_word_size = __newsize;
