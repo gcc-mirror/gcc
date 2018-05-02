@@ -30,6 +30,7 @@
 #include "builtins.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
+#include "ssa-range.h"
 #include "gimple-ssa-warn-restrict.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
@@ -117,9 +118,78 @@ pass_wrestrict::execute (function *fun)
   calculate_dominance_info (CDI_DOMINATORS);
 
   wrestrict_dom_walker walker;
+  path_ranger ranger;
+  /* FIXME: Remove me before merge.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    ranger.exercise (dump_file);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   return 0;
+}
+
+/* FIXME: This is a overloaded reimplementation of get_size_range()
+   from calls.c adapted to the ranger.  It's here because if we put it
+   in calls.c, we have to include ssa-range.h from everything that
+   includes calls.c, which is basically the world-- including some
+   annoying c-family/ bits.  */
+
+bool
+get_size_range (gcall *call, tree exp, tree range[2], bool allow_zero = false)
+{
+  if (tree_fits_uhwi_p (exp))
+    {
+      /* EXP is a constant.  */
+      range[0] = range[1] = exp;
+      return true;
+    }
+
+  tree exptype = TREE_TYPE (exp);
+  bool integral = INTEGRAL_TYPE_P (exptype);
+  path_ranger ranger;
+  irange r;
+
+  if (TREE_CODE (exp) != SSA_NAME
+      || !integral
+      || !ranger.path_range_on_stmt (r, exp, call))
+    {
+      /* Use the full range of the type of the expression when
+	 no value range information is available.  */
+      if (integral)
+	{
+	  range[0] = TYPE_MIN_VALUE (exptype);
+	  range[1] = TYPE_MAX_VALUE (exptype);
+	  return true;
+	}
+
+      range[0] = NULL_TREE;
+      range[1] = NULL_TREE;
+      return false;
+    }
+
+  /* Remove negative numbers from the range.  */
+  bool signed_p = !TYPE_UNSIGNED (exptype);
+  irange positives;
+  range_positives (&positives, exptype, allow_zero);
+  if (signed_p && !positives.intersect (r).empty_p ())
+    {
+      /* Remove the unknown parts of a multi-range.
+	 This will transform [5,10][20,MAX] into [5,10].  */
+      if (positives.num_pairs () > 1
+	  && positives.upper_bound () == wi::to_wide (TYPE_MAX_VALUE (exptype)))
+	positives.remove_pair (positives.num_pairs () - 1);
+
+      range[0] = wide_int_to_tree (exptype, positives.lower_bound ());
+      range[1] = wide_int_to_tree (exptype, positives.upper_bound ());
+    }
+  else
+    {
+      /* If removing the negative numbers didn't give us anything
+	 back, the entire range was negative.  Leave things as they
+	 are, and let the caller sort it out.  */
+      range[0] = wide_int_to_tree (exptype, r.lower_bound ());
+      range[1] = wide_int_to_tree (exptype, r.upper_bound ());
+    }
+  return true;
 }
 
 /* Description of a memory reference by a built-in function.  This
@@ -155,11 +225,12 @@ struct builtin_memref
      only the destination reference is.  */
   bool strbounded_p;
 
-  builtin_memref (tree, tree);
+  builtin_memref (gcall *, tree, tree);
 
   tree offset_out_of_bounds (int, offset_int[2]) const;
 
 private:
+  gcall *call;
 
   /* Ctor helper to set or extend OFFRANGE based on argument.  */
   void extend_offset_range (tree);
@@ -226,7 +297,7 @@ class builtin_access
    a size SIZE in bytes.  If SIZE is NULL_TREE then the size is assumed
    to be unknown.  */
 
-builtin_memref::builtin_memref (tree expr, tree size)
+builtin_memref::builtin_memref (gcall *_call, tree expr, tree size)
 : ptr (expr),
   ref (),
   base (),
@@ -234,7 +305,8 @@ builtin_memref::builtin_memref (tree expr, tree size)
   refoff (HOST_WIDE_INT_MIN),
   offrange (),
   sizrange (),
-  strbounded_p ()
+  strbounded_p (),
+  call (_call)
 {
   /* Unfortunately, wide_int default ctor is a no-op so array members
      of the type must be set individually.  */
@@ -252,7 +324,7 @@ builtin_memref::builtin_memref (tree expr, tree size)
       tree range[2];
       /* Determine the size range, allowing for the result to be [0, 0]
 	 for SIZE in the anti-range ~[0, N] where N >= PTRDIFF_MAX.  */
-      get_size_range (size, range, true);
+      get_size_range (call, size, range, true);
       sizrange[0] = wi::to_offset (range[0]);
       sizrange[1] = wi::to_offset (range[1]);
       /* get_size_range returns SIZE_MAX for the maximum size.
@@ -287,6 +359,43 @@ builtin_memref::builtin_memref (tree expr, tree size)
     }
 }
 
+/* Get the range SSA would have if control flowed to STMT.  If a
+   suitable range is found, and it is not the entire range, return TRUE
+   and store it in R.  */
+
+static inline bool
+maybe_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
+{
+  /* Don't call the ranger if we have no CFG.  */
+  if (DECL_SAVED_TREE (cfun->decl))
+    return false;
+  path_ranger ranger;
+  return ranger.path_range_on_stmt (r, ssa, stmt);
+}
+
+/* Return true if the range in R is the inverse of a range and store
+   the inverse of the range in ANTI.  This is a temporary measure to
+   mimic what ANTI_RANGEs were, so we don't have to rewrite this pass
+   to use iranges instead of lower/upper bound ranges (FIXME ??).  */
+
+static bool
+anti_range_p (const irange &r, irange &anti)
+{
+  tree type = r.get_type ();
+  unsigned int precision = TYPE_PRECISION (type);
+  wide_int min = wi::min_value (precision, TYPE_SIGN (type));
+  wide_int max = wi::max_value (precision, TYPE_SIGN (type));
+  // Note: VR_ANTI_RANGE([3,10]) ==> [-MIN,2][11,MAX]
+  if (r.num_pairs () == 2
+      && r.lower_bound () == min && r.upper_bound () == max)
+    {
+      anti = irange_invert (r);
+      gcc_assert (anti.num_pairs () == 1);
+      return true;
+    }
+  return false;
+}
+
 /* Ctor helper to set or extend OFFRANGE based on the OFFSET argument.  */
 
 void
@@ -308,7 +417,28 @@ builtin_memref::extend_offset_range (tree offset)
   if (TREE_CODE (offset) == SSA_NAME)
     {
       wide_int min, max;
-      value_range_type rng = get_range_info (offset, &min, &max);
+      value_range_type rng;
+      irange r;
+      if (maybe_get_range_on_stmt (r, offset, call))
+	{
+	  irange anti;
+	  if (anti_range_p (r, anti))
+	    {
+	      rng = VR_ANTI_RANGE;
+	      r = anti;
+	    }
+	  else
+	    rng = VR_RANGE;
+	  min = r.lower_bound ();
+	  max = r.upper_bound ();
+	}
+      else
+	{
+	  tree type = TREE_TYPE (offset);
+	  rng = VR_RANGE;
+	  min = wi::to_wide (TYPE_MIN_VALUE (type));
+	  max = wi::to_wide (TYPE_MAX_VALUE (type));
+	}
       if (rng == VR_RANGE)
 	{
 	  offrange[0] += offset_int::from (min, SIGNED);
@@ -704,7 +834,7 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
     {
       tree size = gimple_call_arg (call, sizeargno);
       tree range[2];
-      if (get_size_range (size, range, true))
+      if (get_size_range (call, size, range, true))
 	{
 	  bounds[0] = wi::to_offset (range[0]);
 	  bounds[1] = wi::to_offset (range[1]);
@@ -1850,8 +1980,8 @@ check_bounds_or_overlap (gcall *call, tree dst, tree src, tree dstsize,
 
   tree func = gimple_call_fndecl (call);
 
-  builtin_memref dstref (dst, dstsize);
-  builtin_memref srcref (src, srcsize);
+  builtin_memref dstref (call, dst, dstsize);
+  builtin_memref srcref (call, src, srcsize);
 
   builtin_access acs (call, dstref, srcref);
 

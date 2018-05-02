@@ -177,7 +177,15 @@ irange::set_range (tree ssa)
       set_range_for_type (t);
       return;
     }
-  set_range_for_type (t);
+
+  /* Use global range info if available.  */
+  wide_int min, max;
+  enum value_range_type kind = get_range_info (ssa, &min, &max);
+  if (kind == VR_VARYING)
+    set_range_for_type (t);
+  else
+    set_range (t, min, max,
+	       kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
 //  irange_storage *storage = SSA_NAME_RANGE_INFO (ssa);
 //  set_range (storage, t);
 }
@@ -1025,12 +1033,15 @@ range_non_zero (irange *r, tree type)
   return make_irange_not (r, zero, type);
 }
 
-/* Set the range of R to the set of positive numbers starting at START.  */
+/* Set the range of R to the set of positive numbers.  If ALLOW_ZERO
+   is TRUE, zero counts as a positive number, otherwise the positives
+   start at 1.  */
 
 void
-range_positives (irange *r, tree type, unsigned int start)
+range_positives (irange *r, tree type, bool allow_zero)
 {
-  r->set_range (type, build_int_cst (type, start), TYPE_MAX_VALUE (type));
+  r->set_range (type, build_int_cst (type, allow_zero ? 0 : 1),
+		TYPE_MAX_VALUE (type));
 }
 
 #ifdef CHECKING_P
