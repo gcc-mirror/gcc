@@ -1,3 +1,8 @@
+2018-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85597
+	* gcc.dg/vect/pr85597.c: New testcase.
+
 2018-05-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/85106
