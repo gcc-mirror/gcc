@@ -1,3 +1,9 @@
+2018-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85567
+	* gimplify.c (gimplify_save_expr): When in SSA form allow
+	SAVE_EXPRs to compute to SSA vars.
+
 2018-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85582
