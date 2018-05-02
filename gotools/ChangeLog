@@ -1,3 +1,7 @@
+2018-05-02  Release Manager
+
+	* GCC 8.1.0 released.
+
 2018-21-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* Makefile.am (check-runtime): Pass -test.timeout

@@ -1,3 +1,7 @@
+2018-05-02  Release Manager
+
+	* GCC 8.1.0 released.
+
 2018-05-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85586
