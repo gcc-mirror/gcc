@@ -286,7 +286,7 @@ p
 esac
 
 # Check for known version control systems.
-if [ -d .git ]; then
+if [ -d .git ] || [ -f .git ]; then
     GCC_GIT=${GCC_GIT-${GIT-git}}
     vcs_type="git"
 elif [ -d .hg ]; then
