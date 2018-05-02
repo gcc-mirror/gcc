@@ -1,5 +1,8 @@
 2018-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/backward/strstream_move.cc: Remove duplicate function
+	call.
+
 	PR libstdc++/69608
 	* include/backward/strstream (strstreambuf): Define move constructor
 	and move assignment operator.
