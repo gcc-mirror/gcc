@@ -1,3 +1,13 @@
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2018-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85519
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Reduce
+	recursion depth from 25 to 23.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
 2018-05-02  Release Manager
 
 	* GCC 8.1.0 released.
