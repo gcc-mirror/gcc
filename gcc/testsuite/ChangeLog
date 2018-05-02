@@ -1,3 +1,8 @@
+2018-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85582
+	* gcc.c-torture/execute/pr85582-3.c: New test.
+
 2018-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
