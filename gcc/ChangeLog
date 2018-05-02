@@ -1,3 +1,11 @@
+2018-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85582
+	* config/i386/i386.md (*ashl<dwi>3_doubleword_mask,
+	*ashl<dwi>3_doubleword_mask_1, *<shift_insn><dwi>3_doubleword_mask,
+	*<shift_insn><dwi>3_doubleword_mask_1): If and[sq]i3 is needed, don't
+	clobber operands[2], instead use a new pseudo.  Formatting fixes.
+
 2018-05-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85586
