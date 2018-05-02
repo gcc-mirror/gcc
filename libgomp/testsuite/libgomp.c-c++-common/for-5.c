@@ -1,6 +1,10 @@
-/* { dg-additional-options "-std=gnu99" } */
+/* { dg-additional-options "-std=gnu99" { target c } } */
 
-extern void abort ();
+extern
+#ifdef __cplusplus
+"C"
+#endif
+void abort ();
 
 #define M(x, y, z) O(x, y, z)
 #define O(x, y, z) x ## _ ## y ## _ ## z

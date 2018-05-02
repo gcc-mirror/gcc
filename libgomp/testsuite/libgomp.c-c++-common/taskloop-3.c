@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -std=c99" } */
+/* { dg-options "-O2" } */
+/* { dg-additional-options "-std=c99" { target c } } */
 
 int g;
 int a[1024];

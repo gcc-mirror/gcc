@@ -1,4 +1,10 @@
-extern "C" void abort ();
+/* { dg-additional-options "-std=gnu99" { target c } } */
+
+extern
+#ifdef __cplusplus
+"C"
+#endif
+void abort (void);
 
 #define M(x, y, z) O(x, y, z)
 #define O(x, y, z) x ## _ ## y ## _ ## z
@@ -7,7 +13,7 @@ extern "C" void abort ();
 #define G simd
 #define S
 #define N(x) M(x, G, normal)
-#include "../libgomp.c/for-2.h"
+#include "for-2.h"
 #undef S
 #undef N
 #undef F
@@ -15,7 +21,7 @@ extern "C" void abort ();
 
 #define F parallel for simd
 #define G pf_simd
-#include "../libgomp.c/for-1.h"
+#include "for-1.h"
 #undef F
 #undef G
 
@@ -23,7 +29,7 @@ extern "C" void abort ();
 #define SC static
 #define F for simd
 #define G f_simd
-#include "../libgomp.c/for-1.h"
+#include "for-1.h"
 #undef F
 #undef G
 #undef SC
