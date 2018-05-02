@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1-b20180401\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-03-29 23:05+0000\n"
-"PO-Revision-Date: 2018-04-07 11:09+0200\n"
+"PO-Revision-Date: 2018-05-02 18:50+0200\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -19043,113 +19043,105 @@ msgstr "el argumento de %<alloca%> es cero"
 
 #: gimple-ssa-warn-restrict.c:1402
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr "%G%qD al acceder %wu byte en los desplazamientos %s y %s solapa %wu byte en el desplazamiento %s"
+msgstr "%G%qD accediendo %wu byte en los desplazamientos %s y %s solapa %wu byte en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1404
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr "%G%qD al acceder %wu byte en los desplazamientos %s y %s solapa %wu bytes en el desplazamiento %s"
+msgstr "%G%qD accediendo %wu byte en los desplazamientos %s y %s solapa %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1408
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr "%G%qD al acceder %wu bytes en los desplazamientos %s y %s solapa %wu byte en el desplazamiento %s"
+msgstr "%G%qD accediendo %wu bytes en los desplazamientos %s y %s solapa %wu byte en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1410
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr "%G%qD al acceder %wu bytes en los desplazamientos %s y %s solapa %wu bytes en el desplazamiento %s"
+msgstr "%G%qD accediendo %wu bytes en los desplazamientos %s y %s solapa %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1417
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
 msgid_plural "%G%qD accessing %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr[0] "%G%qD al acceder %wu byte en los desplazamientos %s y %s solapa entre %wu y %wu bytes en el desplazamiento %s"
-msgstr[1] "%G%qD al acceder %wu bytes en los desplazamientos %s y %s solapa entre %wu y %wu bytes en el desplazamiento %s"
+msgstr[0] "%G%qD accediendo %wu byte en los desplazamientos %s y %s solapa entre %wu y %wu bytes en el desplazamiento %s"
+msgstr[1] "%G%qD accediendo %wu bytes en los desplazamientos %s y %s solapa entre %wu y %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1427
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu or more bytes at offset %s"
 msgid_plural "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr[0] "%G%qD al acceder %wu byte en los desplazamientos %s y %s solapa %wu o más bytes en el desplazamiento %s"
-msgstr[1] "%G%qD al acceder %wu bytes en los desplazamientos %s y %s solapa %wu o más bytes en el desplazamiento %s"
+msgstr[0] "%G%qD accediendo %wu byte en los desplazamientos %s y %s solapa %wu o más bytes en el desplazamiento %s"
+msgstr[1] "%G%qD accediendo %wu bytes en los desplazamientos %s y %s solapa %wu o más bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1440
-#, fuzzy
-#| msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
 msgid_plural "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr[0] "%K%qD: escribir entre %wu y %wu bytes en una región de tamaño %wu desborda el destino"
-msgstr[1] "%K%qD: escribir entre %wu y %wu bytes en una región de tamaño %wu desborda el destino"
+msgstr[0] "%G%qD accediendo entre %wu y %wu bytes en los desplazamientos %s y %s solapa %wu byte en el desplazamiento %s"
+msgstr[1] "%G%qD accediendo entre %wu y %wu bytes en los desplazamientos %s y %s solapa %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1450
-#, fuzzy
-#| msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr "directiva %<%.*s%> escribiendo entre %wu y %wu bytes en una región de un tamaño entre %wu y %wu"
+msgstr "%G%qD accediendo entre %wu y %wu bytes en los desplazamientos %s y %s solapa entre %wu y %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1458
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD accediendo entre %wu y %wu bytes en los desplazamientos %s y %s solapa %wu o más bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1471
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu byte at offset %s"
 msgid_plural "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%G%qD accediendo %wu o más bytes en los desplazamientos %s y %s solapa %wu byte en el desplazamiento %s"
+msgstr[1] "%G%qD accediendo %wu o más bytes en los desplazamientos %s y %s solapa %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1479
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD accediendo %wu o más bytes en los desplazamientos %s y %s solapa entre %wu y %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1486
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD accediendo %wu o más bytes en los desplazamientos %s y %s solapa %wu o más bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1514
 msgid "%G%qD accessing %wu byte may overlap %wu byte"
 msgid_plural "%G%qD accessing %wu bytes may overlap %wu byte"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%G%qD accediendo %wu byte puede solapar %wu byte"
+msgstr[1] "%G%qD accediendo %wu bytes puede solapar %wu byte"
 
 #: gimple-ssa-warn-restrict.c:1521
 msgid "%G%qD accessing %wu byte at offsets %s and %s may overlap %wu byte at offset %s"
 msgid_plural "%G%qD accessing %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%G%qD accediendo %wu byte en los desplazamientos %s y %s puede solapar %wu byte en el desplazamiento %s"
+msgstr[1] "%G%qD accediendo %wu bytes en los desplazamientos %s y %s puede solapar %wu byte en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1532
 msgid "%G%qD accessing %wu byte may overlap up to %wu bytes"
 msgid_plural "%G%qD accessing %wu bytes may overlap up to %wu bytes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%G%qD accediendo %wu byte puede solapar hasta %wu bytes"
+msgstr[1] "%G%qD accediendo %wu bytes puede solapar hasta %wu bytes"
 
 #: gimple-ssa-warn-restrict.c:1539
 msgid "%G%qD accessing %wu byte at offsets %s and %s may overlap up to %wu bytes at offset %s"
 msgid_plural "%G%qD accessing %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%G%qD accediendo %wu byte en los desplazamientos %s y %s puede solapar hasta %wu bytes en el desplazamiento %s"
+msgstr[1] "%G%qD accediendo %wu bytes en los desplazamientos %s y %s puede solapar hasta %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1552
-#, fuzzy
-#| msgid "%K%qD: specified size between %wu and %wu exceeds maximum object size %wu"
 msgid "%G%qD accessing between %wu and %wu bytes may overlap %wu byte"
 msgid_plural "%G%qD accessing between %wu and %wu bytes may overlap up to %wu bytes"
-msgstr[0] "%K%qD: el tamaño especificado entre %wu y %wu excede el tamaño de objeto máximo %wu"
-msgstr[1] "%K%qD: el tamaño especificado entre %wu y %wu excede el tamaño de objeto máximo %wu"
+msgstr[0] "%G%qD accediendo entre %wu y %wu bytes puede solapar %wu byte"
+msgstr[1] "%G%qD accediendo entre %wu y %wu bytes puede solapar %wu bytes"
 
 #: gimple-ssa-warn-restrict.c:1559
-#, fuzzy
-#| msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
 msgid_plural "%G%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr[0] "%K%qD: escribir entre %wu y %wu bytes en una región de tamaño %wu desborda el destino"
-msgstr[1] "%K%qD: escribir entre %wu y %wu bytes en una región de tamaño %wu desborda el destino"
+msgstr[0] "%G%qD accediendo entre %wu y %wu bytes en los desplazamientos %s y %s puede solapar %wu byte en el desplazamiento %s"
+msgstr[1] "%G%qD accediendo entre %wu y %wu bytes en los desplazamientos %s y %s puede solapar hasta %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1571
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s may overlap %wu byte at offset %s"
 msgid_plural "%G%qD accessing %wu or more bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%G%qD accediendo %wu o más bytes en los desplazamientos %s y %s puede solapar %wu byte en el desplazamiento %s"
+msgstr[1] "%G%qD accediendo %wu o más bytes en los desplazamientos %s y %s puede solapar hasta %wu bytes en el desplazamiento %s"
 
 #: gimple-ssa-warn-restrict.c:1631
 msgid "%G%qD pointer overflow between offset %s and size %s accessing array %qD with type %qT"
-msgstr ""
+msgstr "%G%qD desborda puntero entre el desplazamiento %s y el tamaño %s accediendo al array %qD con el tipo %qT"
 
 #: gimple-ssa-warn-restrict.c:1635
 #, gcc-internal-format
@@ -20141,16 +20133,14 @@ msgid "single target_clones attribute is ignored"
 msgstr "se descarta el atributo sencillo target_clones"
 
 #: multiple_target.c:332
-#, fuzzy, gcc-internal-format
-#| msgid "default target_clones attribute was not set"
+#, gcc-internal-format
 msgid "clones for %<target_clones%> attribute cannot be created"
-msgstr "no se ha especificado el atributo target_clones predefinido"
+msgstr "no se pueden crear los clones para el atributo %<target_clones%>"
 
 #: multiple_target.c:335
-#, fuzzy, gcc-internal-format
-#| msgid "function %q+F can never be copied because it uses variable sized variables"
+#, gcc-internal-format
 msgid "function %q+F can never be copied because it has %<noclone%> attribute"
-msgstr "la función %q+F nunca se puede copiar porque usa variables de tamaño variable"
+msgstr "la función %q+F nunca se puede copiar porque tiene atributo %<noclone%>"
 
 #: multiple_target.c:352
 #, gcc-internal-format
@@ -20631,28 +20621,24 @@ msgid "transactional memory is not supported with %<-fsanitize=kernel-address%>"
 msgstr "la memoria transaccional no se admite con %<-fsanitize=kernel-address%>"
 
 #: opts.c:1048
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-malign-loops=%d is not between 0 and %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "-falign-loops=%d is not between 0 and %d"
-msgstr "-malign-loops=%d no está entre 0 y %d"
+msgstr "-falign-loops=%d no está entre 0 y %d"
 
 #: opts.c:1052
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-malign-jumps=%d is not between 0 and %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "-falign-jumps=%d is not between 0 and %d"
-msgstr "-malign-jumps=%d no está entre 0 y %d"
+msgstr "-falign-jumps=%d no está entre 0 y %d"
 
 #: opts.c:1056
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-malign-functions=%d is not between 0 and %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "-falign-functions=%d is not between 0 and %d"
-msgstr "-malign-functions=%d no está entre 0 y %d"
+msgstr "-falign-functions=%d no está entre 0 y %d"
 
 #: opts.c:1060
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-malign-loops=%d is not between 0 and %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "-falign-labels=%d is not between 0 and %d"
-msgstr "-malign-loops=%d no está entre 0 y %d"
+msgstr "-falign-labels=%d no está entre 0 y %d"
 
 #: opts.c:1471
 #, gcc-internal-format
@@ -20695,8 +20681,7 @@ msgid "HSA has not been enabled during configuration"
 msgstr "HSA no se activó durante la configuración"
 
 #: opts.c:2226
-#, fuzzy, gcc-internal-format
-#| msgid "-foffload-abi option can be specified only for offload compiler"
+#, gcc-internal-format
 msgid "%<-foffload-abi%> option can be specified only for offload compiler"
 msgstr "la opción %<-foffload-abi%> solo puede especificarse para compilador de descarga"
 
@@ -22969,32 +22954,24 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: tree-ssa-strlen.c:1989
-#, fuzzy
-#| msgid "%qD output truncated copying %E byte from a string of length %wu"
 msgid "%G%qD output truncated copying %E byte from a string of length %wu"
 msgid_plural "%G%qD output truncated copying %E bytes from a string of length %wu"
-msgstr[0] "salida de %qD truncada copiando %E byte desde una cadena de longitud %wu"
-msgstr[1] "salida de %qD truncada copiando %E byte desde una cadena de longitud %wu"
+msgstr[0] "salida de %G%qD truncada copiando %E byte desde una cadena de longitud %wu"
+msgstr[1] "salida de %G%qD truncada copiando %E bytes desde una cadena de longitud %wu"
 
 #: tree-ssa-strlen.c:1996
-#, fuzzy
-#| msgid "%qD output truncated copying between %wu and %wu bytes from a string of length %wu"
 msgid "%G%qD output truncated copying between %wu and %wu bytes from a string of length %wu"
-msgstr "salida de %qD truncada copiando entre %wu y %wu bytes desde una cadena de longitud %wu"
+msgstr "salida de %G%qD truncada copiando entre %wu y %wu bytes desde una cadena de longitud %wu"
 
 #: tree-ssa-strlen.c:2008
-#, fuzzy
-#| msgid "%qD output may be truncated copying %E byte from a string of length %wu"
 msgid "%G%qD output may be truncated copying %E byte from a string of length %wu"
 msgid_plural "%G%qD output may be truncated copying %E bytes from a string of length %wu"
-msgstr[0] "la salida de %qD puede ser truncada copiando %E byte desde una cadena de longitud %wu"
-msgstr[1] "la salida de %qD puede ser truncada copiando %E byte desde una cadena de longitud %wu"
+msgstr[0] "la salida de %G%qD puede truncarse copiando %E byte desde una cadena de longitud %wu"
+msgstr[1] "la salida de %G%qD puede truncarse copiando %E bytes desde una cadena de longitud %wu"
 
 #: tree-ssa-strlen.c:2015 tree-ssa-strlen.c:2029
-#, fuzzy
-#| msgid "%qD output may be truncated copying between %wu and %wu bytes from a string of length %wu"
 msgid "%G%qD output may be truncated copying between %wu and %wu bytes from a string of length %wu"
-msgstr "salida de %qD puede ser truncada copiando entre %wu y %wu bytes desde una cadena de longitud %wu"
+msgstr "la salida de %G%qD puede truncarse copiando entre %wu y %wu bytes desde una cadena de longitud %wu"
 
 #: tree-ssa-strlen.c:2150
 #, fuzzy
@@ -23003,10 +22980,8 @@ msgid "%G%qD output truncated before terminating nul copying as many bytes from 
 msgstr "la salida %qE podría truncarse antes del último carácter de formato"
 
 #: tree-ssa-strlen.c:2156
-#, fuzzy
-#| msgid "%K%qD: specified bound %wu exceeds the size %wu of the destination"
 msgid "%G%qD specified bound depends on the length of the source argument"
-msgstr "%K%qD: el límite %wu especificado excede el tamaño %wu del destino"
+msgstr "%G%qD: el límite especificado depende de la longitud del argumento origen"
 
 #: tree-ssa-strlen.c:2163
 #, gcc-internal-format
@@ -23918,10 +23893,9 @@ msgid "%qE attribute only affects top level objects"
 msgstr "el atributo %qE solamente afecta a objetos de alto nivel"
 
 #: c-family/c-attribs.c:1198 c-family/c-attribs.c:2682
-#, fuzzy, gcc-internal-format
-#| msgid "using result of function returning %<void%>"
+#, gcc-internal-format
 msgid "%qE attribute on function returning %<void%>"
-msgstr "se usa el resultado de una función que devuelve %<void%>"
+msgstr "atributo %qE en una función que devuelve %<void%>"
 
 #: c-family/c-attribs.c:1221 c-family/c-pragma.c:419
 #, gcc-internal-format
@@ -24287,14 +24261,12 @@ msgid "nonnull argument references non-pointer operand (argument %lu, operand %l
 msgstr "un argumento que no es nulo hace referencia a un operando que no es puntero (argumento %lu, operando %lu)"
 
 #: c-family/c-attribs.c:3208
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored for field of type %qT"
+#, gcc-internal-format
 msgid "%qE attribute ignored on objects of type %qT"
-msgstr "se descarta el atributo %qE para el campo de tipo %qT"
+msgstr "se descarta el atributo %qE en objetos de tipo %qT"
 
 #: c-family/c-attribs.c:3216
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute doesn't apply to functions"
+#, gcc-internal-format
 msgid "%qE attribute does not apply to functions"
 msgstr "el atributo %qE no se aplica a funciones"
 
