@@ -7930,7 +7930,10 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  brace_loc = c_parser_peek_token (parser)->location;
 	  c_parser_consume_token (parser);
-	  if (!building_stmt_list_p ())
+	  /* If we've not yet started the current function's statement list,
+	     or we're in the parameter scope of an old-style function
+	     declaration, statement expressions are not allowed.  */
+	  if (!building_stmt_list_p () || old_style_parameter_scope ())
 	    {
 	      error_at (loc, "braced-group within expression allowed "
 			"only inside a function");

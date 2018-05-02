@@ -155,6 +155,9 @@ extern c_token * c_parser_tokens_buf (c_parser *parser, unsigned n);
 extern bool c_parser_error (c_parser *parser);
 extern void c_parser_set_error (c_parser *parser, bool);
 
+/* A bit of a hack to have this here.  It would be better in a c-decl.h.  */
+extern bool old_style_parameter_scope (void);
+
 /* Return true if the next token from PARSER has the indicated
    TYPE.  */
 
