@@ -1,3 +1,9 @@
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/85451
+	* lto-wrapper.c (compile_offload_image): Add "could not find mkoffload"
+	error message.
+
 2018-05-01  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/85143
