@@ -126,6 +126,13 @@ case $goarch in
 		;;
 	esac
 	;;
+    nios2)
+        family=NIOS2
+        cachelinesize=32
+        minframesize=16
+        pcquantum=4
+        ptrsize=4
+        ;;
     ppc)
 	family=PPC
 	bigendian=true
