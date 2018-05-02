@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "builtins.h"
+#include "ssa-range.h"
 
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
@@ -1397,6 +1398,69 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
   range[0] = wide_int_to_tree (exptype, min);
   range[1] = wide_int_to_tree (exptype, max);
 
+  return true;
+}
+
+/* Ranger version of the above.  CALL is a statement indicating the
+   point in the IL from where we want to inquire about the range.  EXP
+   does not need to appear within CALL.  */
+
+bool
+get_size_range (gcall *call, tree exp, tree range[2], bool allow_zero)
+{
+  if (tree_fits_uhwi_p (exp))
+    {
+      /* EXP is a constant.  */
+      range[0] = range[1] = exp;
+      return true;
+    }
+
+  tree exptype = TREE_TYPE (exp);
+  bool integral = INTEGRAL_TYPE_P (exptype);
+  path_ranger ranger;
+  irange r;
+
+  if (TREE_CODE (exp) != SSA_NAME
+      || !integral
+      || !ranger.path_range_on_stmt (r, exp, call))
+    {
+      /* Use the full range of the type of the expression when
+	 no value range information is available.  */
+      if (integral)
+	{
+	  range[0] = TYPE_MIN_VALUE (exptype);
+	  range[1] = TYPE_MAX_VALUE (exptype);
+	  return true;
+	}
+
+      range[0] = NULL_TREE;
+      range[1] = NULL_TREE;
+      return false;
+    }
+
+  /* Remove negative numbers from the range.  */
+  bool signed_p = !TYPE_UNSIGNED (exptype);
+  irange positives;
+  range_positives (&positives, exptype, allow_zero);
+  if (signed_p && !positives.intersect (r).empty_p ())
+    {
+      /* Remove the unknown parts of a multi-range.
+	 This will transform [5,10][20,MAX] into [5,10].  */
+      if (positives.num_pairs () > 1
+	  && positives.upper_bound () == wi::to_wide (TYPE_MAX_VALUE (exptype)))
+	positives.remove_pair (positives.num_pairs () - 1);
+
+      range[0] = wide_int_to_tree (exptype, positives.lower_bound ());
+      range[1] = wide_int_to_tree (exptype, positives.upper_bound ());
+    }
+  else
+    {
+      /* If removing the negative numbers didn't give us anything
+	 back, the entire range was negative.  Leave things as they
+	 are, and let the caller sort it out.  */
+      range[0] = wide_int_to_tree (exptype, r.lower_bound ());
+      range[1] = wide_int_to_tree (exptype, r.upper_bound ());
+    }
   return true;
 }
 
