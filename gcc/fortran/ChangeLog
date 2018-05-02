@@ -1,3 +1,8 @@
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/82428
+	* f95-lang.c (DEF_GOACC_BUILTIN_ONLY): Define.
+
 2018-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85520

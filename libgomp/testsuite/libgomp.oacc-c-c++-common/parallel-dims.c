@@ -3,6 +3,7 @@
 
 #include <limits.h>
 #include <openacc.h>
+#include <gomp-constants.h>
 
 /* TODO: "(int) acc_device_*" casts because of the C++ acc_on_device wrapper
    not behaving as expected for -O0.  */
@@ -12,11 +13,7 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_gang ()
   if (acc_on_device ((int) acc_device_host))
     return 0;
   else if (acc_on_device ((int) acc_device_nvidia))
-    {
-      unsigned int r;
-      asm volatile ("mov.u32 %0,%%ctaid.x;" : "=r" (r));
-      return r;
-    }
+    return __builtin_goacc_parlevel_id (GOMP_DIM_GANG);
   else
     __builtin_abort ();
 }
@@ -27,11 +24,7 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_worker ()
   if (acc_on_device ((int) acc_device_host))
     return 0;
   else if (acc_on_device ((int) acc_device_nvidia))
-    {
-      unsigned int r;
-      asm volatile ("mov.u32 %0,%%tid.y;" : "=r" (r));
-      return r;
-    }
+    return __builtin_goacc_parlevel_id (GOMP_DIM_WORKER);
   else
     __builtin_abort ();
 }
@@ -42,11 +35,7 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_vector ()
   if (acc_on_device ((int) acc_device_host))
     return 0;
   else if (acc_on_device ((int) acc_device_nvidia))
-    {
-      unsigned int r;
-      asm volatile ("mov.u32 %0,%%tid.x;" : "=r" (r));
-      return r;
-    }
+    return __builtin_goacc_parlevel_id (GOMP_DIM_VECTOR);
   else
     __builtin_abort ();
 }
