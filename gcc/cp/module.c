@@ -109,6 +109,8 @@ Classes used:
    trees_out : bytes_out - tree writer
 
    depset - dependency set
+   depset::hash - hash table of depsets
+   depset::tarjan - SCC determinator
 
    module_state - module object   */
 
@@ -1862,25 +1864,35 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 struct module_state;
 
 /* A dependency set.  These are not quite the decl-sets of the TS.  We
-   use them for two things
+   only record namespace-scope decls here.   A depset can be one of:
 
-   1) All the decls hanging off a namespace binding.  Keyed by
-   {ns,name} tuple.  The dependencies are the dependencies of the
-   declarations -- not any definition.
+   1) A namespace binding, keyed by {ns,name} tuple.  The
+   dependencies are the declarations on that binding.
 
-   2) A definition that needs emitting.  Keyed by {decl,NULL}.  Here
-   the dependencies are those of the definition.  One dependency will
-   be the depset of the declaration itself.
+   2) A namespace-scope declaration, keyed by {decl,NULL} tuple.  The
+   dependencies are those of the declaration.  One of which will be
+   the namespace-binding's depset.
 
-*/
+   3) A namespace-scope definition, keyed by {decl,decl} tuple.  The
+   dependencies are those of the definition.  One of which will be the
+   declaration's depset.
+
+   If a depset is dependent on a namespace-scope decl, we add depset
+   #2 to the dependencies.  If its dependent on the body of such a decl,
+   we add depset #3 to the dependencies.  */
 
 class depset
 {
-  tree container; /* Container of this depset  */
 public:
-  vec<tree> decls; /* Decls in set.  Unless CONTAINER is not a namespace  */
+  typedef std::pair<tree,tree> key_type;
+
+private:
+  key_type key;
+
+public:
   vec<depset *> deps;  /* Depsets in this TU we reference.  */
 
+public:
   unsigned cluster; /* Strongly connected cluster.  */
   /* During dependency determination, the cluster field is a visited flag.  */
   unsigned section; /* Section written to.  */
@@ -1888,36 +1900,75 @@ public:
      position on the DECLS vector that has been walked -- item can be
      put back on the worklist.
      During SCC construction, it is lowlink.  */
+public:
+  inline operator const key_type & () const
+  {
+    return key;
+  }
+  /* A binding key -- NAMESPACE_DECL & IDENTIFIER.  */
+  inline static key_type binding_key (tree decl, tree name)
+  {
+    gcc_checking_assert (TREE_CODE (decl) == NAMESPACE_DECL
+			 && TREE_CODE (name) == IDENTIFIER_NODE);
+    return key_type (decl, name);
+  }
+  /* A declaration key -- namespace-scope DECL.  */
+  inline static key_type decl_key (tree decl)
+  {
+    gcc_checking_assert (TREE_CODE
+			 (CP_DECL_CONTEXT
+			  (TREE_CODE (decl) == CONST_DECL
+			   && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+			   && DECL_CONTEXT (decl) == TREE_TYPE (decl)
+			   ? TYPE_NAME (TREE_TYPE (decl)) : decl))
+			 == NAMESPACE_DECL);
+    return key_type (decl, NULL_TREE);
+  }
+  /* A definition key -- namespace-scope DECL.  */
+  inline static key_type defn_key (tree defn)
+  {
+    gcc_checking_assert (TREE_CODE (defn) != NAMESPACE_DECL
+			 || DECL_NAMESPACE_ALIAS (defn));
+    /* Create a decl key.  */
+    key_type res = decl_key (defn);
+    /* And turn it into a defn key.  */
+    res.second = res.first;
+    return res;
+  }
 
 public:
-  depset (tree container);
+  depset (const key_type &key);
   ~depset ();
 
 public:
-  tree get_container () const
+  bool is_binding () const
   {
-    return container;
+    return !is_decl () && !is_defn ();
   }
+  bool is_decl () const
+  {
+    return !key.second;
+  }
+  bool is_defn () const
+  {
+    return key.first == key.second;
+  }
+
+public:
   tree get_decl () const
   {
-    gcc_assert (decls.length () == 1);
-    return decls[0];
-  }
-  tree get_naming_decl () const
-  {
-    return decls[0];
+    return key.first;
   }
   tree get_name () const
   {
-    return DECL_NAME (get_naming_decl ());
+    gcc_checking_assert (is_binding ());
+    return key.second;
   }
+
+public:
   unsigned get_cluster () const
   {
     return cluster;
-  }
-  bool is_binding () const
-  {
-    return TREE_CODE (container) == NAMESPACE_DECL;
   }
 
 public:
@@ -1927,7 +1978,7 @@ public:
     /* Each entry is a pointer to a binding. */
     typedef depset *value_type;
     /* We lookup by container:maybe-identifier pair.  */
-    typedef std::pair<tree,tree> compare_type;
+    typedef key_type compare_type;
 
     /* Hash by pointer value.  */
     inline static hashval_t hash (tree container, tree name)
@@ -1940,18 +1991,19 @@ public:
     /* hash and equality for compare_type.  */
     inline static hashval_t hash (const compare_type &p)
     {
-      return hash (p.first, p.second);
+      hashval_t a = pointer_hash<tree_node>::hash (p.first);
+      hashval_t b = pointer_hash<tree_node>::hash (p.second);
+      return iterative_hash_hashval_t (a, b);
     }
     inline static bool equal (const value_type b, const compare_type &p)
     {
-      return (b->container == p.first
-	      && DECL_NAME (b->decls[0]) == p.second);
+      return b->key == p;
     }
 
     /* (re)hasher for a binding itself.  */
     inline static hashval_t hash (const value_type b)
     {
-      return hash (b->container, DECL_NAME (b->decls[0]));
+      return hash (b->key);
     }
     static inline void mark_empty (value_type &p) {p = NULL;}
     static inline bool is_empty (value_type p) {return !p;}
@@ -1988,16 +2040,22 @@ public:
     }
 
   private:
-    depset **maybe_insert (tree ns, tree name, bool = true);
-    depset *maybe_add_definition (depset *binding, tree decl);
+    void insert (depset *d)
+    {
+      depset **slot = maybe_insert (*d);
+      gcc_checking_assert (!*slot);
+      *slot = d;
+    }
+    depset **maybe_insert (const key_type &, bool = true);
+    depset *maybe_add_declaration (tree decl);
+    depset *add_definition (depset *decl_dep);
 
   public:
-    /* Find a depset by containing namespace and name.  */
-    depset *find (tree ns, tree name);
+    depset *find (const key_type &);
 
   public:
-    void add_dependency (tree decl, bool needs_def = false);
-    void add_decls (tree ns, tree name, auto_vec<tree> &decls);
+    void add_dependency (tree decl, bool looking_inside = false);
+    tree add_binding (tree ns, tree name, auto_vec<tree> &decls);
     depset *get_work ()
     {
       current = worklist.length () ? worklist.pop () : NULL;
@@ -2026,9 +2084,8 @@ public:
   };
 };
 
-depset::depset (tree cont)
-  :container (cont),
-   decls (), deps (), cluster (0), section (0)
+depset::depset (const key_type &key)
+  :key (key), deps (), cluster (0), section (0)
 {
 }
 
@@ -2178,12 +2235,12 @@ public:
 public:
   void tree_node (tree);
   void tree_value (tree, bool force);
-  bool tree_decl (tree, bool force, bool need_body,
+  bool tree_decl (tree, bool force, bool looking_inside,
 		  unsigned owner = MODULE_UNKNOWN);
-  bool tree_type (tree, bool force, bool need_body,
+  bool tree_type (tree, bool force, bool looking_inside,
 		  unsigned owner = MODULE_UNKNOWN);
   int tree_ref (tree);
-  void tree_ctx (tree, bool need_body, unsigned owner = MODULE_UNKNOWN);
+  void tree_ctx (tree, bool looing_inside, unsigned owner = MODULE_UNKNOWN);
 
 public:
   static void instrument ();
@@ -4958,7 +5015,7 @@ trees_out::tree_ref (tree t)
    known).  Write it out.  */
 
 void
-trees_out::tree_ctx (tree ctx, bool need_body, unsigned module)
+trees_out::tree_ctx (tree ctx, bool looking_inside, unsigned module)
 {
   // FIXME: If we met this before but !need_body, we need to do
   // something to record that we now need the body.
@@ -4967,8 +5024,8 @@ trees_out::tree_ctx (tree ctx, bool need_body, unsigned module)
     {
       bool force = ref < 0;
       if (TYPE_P (ctx)
-	  ? tree_type (ctx, force, need_body, module)
-	  : tree_decl (ctx, force, need_body, module))
+	  ? tree_type (ctx, force, looking_inside, module)
+	  : tree_decl (ctx, force, looking_inside, module))
 	tree_value (ctx, force);
     }
 }
@@ -4979,7 +5036,7 @@ trees_out::tree_ctx (tree ctx, bool need_body, unsigned module)
    should write this decl by value.  */
 
 bool
-trees_out::tree_decl (tree decl, bool force, bool need_body, unsigned owner)
+trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner)
 {
   gcc_checking_assert (DECL_P (decl));
 
@@ -4996,7 +5053,7 @@ trees_out::tree_decl (tree decl, bool force, bool need_body, unsigned owner)
     {
       /* If we cannot name this, it better be the inner-most decl we
 	 asked about.  */
-      gcc_assert (!need_body);
+      gcc_assert (!looking_inside);
       return true;
     }
 
@@ -5107,7 +5164,7 @@ trees_out::tree_decl (tree decl, bool force, bool need_body, unsigned owner)
 	if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, owner);
 	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
-	  dep_hash->add_dependency (decl, need_body);
+	  dep_hash->add_dependency (decl, looking_inside);
       }
 
     tree name = DECL_NAME (decl);
@@ -5143,7 +5200,7 @@ trees_out::tree_decl (tree decl, bool force, bool need_body, unsigned owner)
 }
 
 bool
-trees_out::tree_type (tree type, bool force, bool need_body, unsigned owner)
+trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner)
 {
   gcc_assert (TYPE_P (type));
   if (force)
@@ -5176,7 +5233,7 @@ trees_out::tree_type (tree type, bool force, bool need_body, unsigned owner)
 	  dump () && dump ("Writing interstitial named type %C:%N%S",
 			   TREE_CODE (name), name, name);
 	}
-      tree_ctx (name, need_body, owner);
+      tree_ctx (name, looking_inside, owner);
       if (!dep_walk_p ())
 	dump () && dump ("Wrote named type %C:%N%S",
 			 TREE_CODE (name), name, name);
@@ -5773,28 +5830,24 @@ has_definition (tree decl)
 /* Lookup and maybe add a depset of CONTAINER and NAME.  */
 
 depset **
-depset::hash::maybe_insert (tree container, tree name, bool insert)
+depset::hash::maybe_insert (const key_type &key, bool insert)
 {
-  traits::compare_type cmp (container, name);
-  depset **slot = find_slot_with_hash (cmp, traits::hash (cmp),
+  depset **slot = find_slot_with_hash (key, traits::hash (key),
 				       insert ? INSERT : NO_INSERT);
 
   return slot;
 }
 
 depset *
-depset::hash::find (tree ns, tree name)
+depset::hash::find (const key_type &key)
 {
-  depset **slot = maybe_insert (ns, name, false);
+  depset **slot = maybe_insert (key, false);
 
   return slot ? *slot : NULL;
 }
 
-/* DECL has just been added to BINDING, or declared within in BINDING.
-   If we need a definition of DECL, add it to the hash table unless
-   it's already there.  Create a dependency on BINDING.  Add to
-   worklist too.  Return the definition's depsetm, if we create one.
-   Otherwise return the binding.
+/* DECL_DEP is a depset of a decl.  Add a depset for its definition,
+   and return it.
 
    NOTE:For the moment we make the declaration's depset depend on the
    defintion's.  Thus forcing them into the same cluster and writing
@@ -5802,45 +5855,34 @@ depset::hash::find (tree ns, tree name)
    functions about why that's important.  */
 
 depset *
-depset::hash::maybe_add_definition (depset *binding, tree decl)
+depset::hash::add_definition (depset *decl_dep)
 {
-  if (!has_definition (decl))
-    return binding;
+  gcc_checking_assert (decl_dep->is_decl ());
 
-  depset **slot = maybe_insert (decl, DECL_NAME (decl), true);
-  depset *dep = *slot;
-  if (dep)
-    gcc_assert (dep->get_naming_decl () == decl);
-  else
+  tree decl = decl_dep->get_decl ();
+  key_type key = defn_key (decl);
+  depset **slot = maybe_insert (key, true);
+  depset *defn_dep = *slot;
+  if (!defn_dep)
     {
       dump () && dump ("Need definition of %N", decl);
-      dep = new depset (decl);
-      dep->decls.reserve_exact (1);
-      dep->decls.quick_push (decl);
-      /* It depends on the binding.  */
-      dep->deps.safe_push (binding);
+      defn_dep = new depset (key);
+      *slot = defn_dep;
+      worklist.safe_push (defn_dep);
 
-      *slot = dep;
-      worklist.safe_push (dep);
+      /* It depends on the decl.  */
+      defn_dep->deps.safe_push (decl_dep);
 
       // FIXME:Make the binding depend on the definition, until I figure
       // out how to lazily load it.
-      binding->deps.safe_push (dep);
+      decl_dep->deps.safe_push (defn_dep);
     }
 
-  return dep;
+  return defn_dep;
 }
 
-/* DECL is a newly discovered dependency.  Append it to its depset
-   binding in the hash table (creating an entry if there isn't one).
-   Push it into the worklist, if it's not there.  We use
-   depset::section to indicate where we've got to.
-
-   Add the DECL's binding to the current depset, if the binding was
-   not already there.
-
-   A definition's depset naturally depends on its declaration's
-   depset.
+/* DECL is a newly discovered dependency of current.  Append it to
+   current's depset.  Push it into the worklist, if it's not there.
 
    NOTE:DECLs added here that are not export/module linkage (i.e. all
    !NEEDS_DEP cases), need not actually be added into the named
@@ -5850,94 +5892,106 @@ depset::hash::maybe_add_definition (depset *binding, tree decl)
    by a different, module-specific, mechanism.  */
 
 void
-depset::hash::add_dependency (tree decl, bool needs_def)
+depset::hash::add_dependency (tree decl, bool looking_inside)
 {
-  if (!DECL_CONTEXT (decl))
-    /* We can't be dependent on something with no context.  */
-    return;
-
-  tree ctx = CP_DECL_CONTEXT (decl);
-  gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-  depset **slot = maybe_insert (ctx, DECL_NAME (decl));
+  key_type key = decl_key (decl);
+  depset **slot = maybe_insert (key);
   depset *dep = *slot;
-  bool is_new = true;
-
   if (!dep)
-    /* Create an entry.  */
-    *slot = dep = new depset (ctx);
-  else
     {
-      for (unsigned ix = dep->decls.length (); ix--;)
-	if (dep->decls[ix] == decl)
-	  {
-	    is_new = false;
-	    break;
-	  }
-      /* Only internal linkage things should be new (export/module
-	 linkage should have been added by add_writables).  */
-      gcc_assert (!(MAYBE_DECL_MODULE_PURVIEW_P (decl) && TREE_PUBLIC (decl))
-		  || !is_new);
+      *slot = dep = new depset (key);
+      worklist.safe_push (dep);
+
+      if (TREE_CODE (decl) != NAMESPACE_DECL
+	  || DECL_NAMESPACE_ALIAS (decl))
+	{
+	  // FIXME:For the moment, the decl's depset is dependent on the
+	  // namespace binding depset, and vice-versa
+	  /* Only internal linkage things should be new (export/module
+	     linkage should have been added by add_writables).  */
+	  gcc_assert (!(MAYBE_DECL_MODULE_PURVIEW_P (decl)
+			&& TREE_PUBLIC (decl)));
+
+	  key_type b_key = binding_key (CP_DECL_CONTEXT (decl),
+					DECL_NAME (decl));
+	  slot = maybe_insert (b_key);
+	  depset *bind_dep = *slot;
+	  if (!bind_dep)
+	    {
+	      *slot = bind_dep = new depset (b_key);
+	      dump () && dump ("New binding %P added",
+			       bind_dep->get_decl (), bind_dep->get_name ());
+	    }
+	  bind_dep->deps.safe_push (dep);
+	  dep->deps.safe_push (bind_dep);
+	}
     }
 
-  if (is_new)
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
+    looking_inside = false;
+  else if (looking_inside || has_definition (decl))
     {
-      /* A newly needed decl of this binding.  */
-      dump () && dump ("New binding dependency %N added", decl);
-
-      if (dep->section == dep->decls.length ())
-	/* Add (back) to worklist, so we figure this decl's dependencies. */
-	worklist.safe_push (dep);
-      dep->decls.safe_push (decl);
+      depset *defn_dep = add_definition (dep);
+      if (looking_inside)
+	dep = defn_dep;
     }
 
-  if (is_new || needs_def)
-    dep = maybe_add_definition (dep, decl);
+  /* A newly discovered dependency. */
+  dump () && dump ("Dependency on %s %N added",
+		   looking_inside ? "definition" : "declaration", decl);
+  current->deps.safe_push (dep);
 
-  if (!dep->cluster)
-    {
-      /* A newly discovered dependency. */
-      dump () && dump (dep->is_binding () ? "Dependency %P added"
-		       : "Definition dependency %N added",
-		       dep->get_container (), dep->get_name ());
-      dep->cluster = true;
-      current->deps.safe_push (dep);
-      if (current->is_binding ()
-	  && TREE_CODE (decl) == TYPE_DECL
-	  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
-	  && CP_DECL_CONTEXT (current->decls[0]) == TREE_TYPE (decl))
-	/* Unscoped enum values are pushed into the containing
-	   scope.  Insert a dependency to the current binding, if it
-	   is one of the enum constants.  */
-	dep->deps.safe_push (current);
-    }
+  if (TREE_CODE (decl) == TYPE_DECL
+      && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+      && CP_DECL_CONTEXT (current->get_decl ()) == TREE_TYPE (decl))
+    /* Unscoped enum values are pushed into the containing
+       scope.  Insert a dependency to the current binding, if it
+       is one of the enum constants.  */
+    dep->deps.safe_push (current);
 }
 
 /* DECLS is a vector of decls that must be written out (export or
-   module-linkage).  Create a new depset and insert into the hash
-   table.  */
+   module-linkage).  Create the relevant depsets for the binding and
+   its conents.  If a member is a namespace, return that.   */
 
-void
-depset::hash::add_decls (tree ns, tree name, auto_vec<tree> &decls)
+tree
+depset::hash::add_binding (tree ns, tree name, auto_vec<tree> &decls)
 {
-  depset *b = new depset (ns);
+  tree res = NULL_TREE;
+  depset *bind = new depset (binding_key (ns, name));
 
-  b->decls.reserve_exact (decls.length ());
+  bind->deps.reserve_exact (decls.length ());
   /* Reverse ordering, so exported things are first.  */
   for (unsigned ix = decls.length (); ix--;)
     {
       tree decl = decls[ix];
 
       gcc_checking_assert (DECL_P (decl));
-      b->decls.quick_push (decl);
-      maybe_add_definition (b, decl);
+      depset *dep = new depset (decl_key (decl));
+      insert (dep);
+      worklist.safe_push (dep);
+      if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
+	{
+	  gcc_checking_assert (!res);
+	  res = decl;
+	}
+      else
+	{
+	  bind->deps.quick_push (dep);
+	  dep->deps.safe_push (bind);
+	  if (has_definition (decl))
+	    add_definition (dep);
+	}
     }
 
-  depset **slot = maybe_insert (ns, name);
-  gcc_assert (!*slot);
-  *slot = b;
-  worklist.safe_push (b);
+  if (bind->deps.length ())
+    insert (bind);
+  else
+    delete bind;
+
+  return res;
 }
-	      
+
 /* Core of TARJAN's algorithm to find Strongly Connected Components
    within a graph.  See https://en.wikipedia.org/wiki/
    Tarjan%27s_strongly_connected_components_algorithm for details.
@@ -7178,11 +7232,27 @@ cluster_cmp (const void *a_, const void *b_)
     /* Exactly one is a binding.  It is the greater.  */
     return a_bind ? +1 : -1;
 
-  /* Both bindings or both non-bindings.  Order by UID of first decl.  */
-  tree a_decl = a->decls[0];
-  tree b_decl = b->decls[0];
+  if (!a_bind)
+    {
+      /* Neither is a binding.  */
+      bool a_decl = a->is_decl ();
+      if (a_decl != b->is_decl ())
+	/* Exactly one is a decl.  It is the greater.  */
+	return a_decl ? +1 : -1;
+    }
 
-  return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
+  tree a_decl = a->get_decl ();
+  tree b_decl = b->get_decl ();
+  if (a_decl != b_decl)
+    /* Different decls, order by their UID.  */
+    return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
+
+  /* Different bindings in the same namespace.  Order by identifier
+     hash (hey, it's a consistent number).  */
+  gcc_checking_assert (a_bind);
+  return (IDENTIFIER_HASH_VALUE (a->get_name ())
+	  < IDENTIFIER_HASH_VALUE (b->get_name ())
+	  ? -1 : +1);
 }
 
 /* Find the size of the cluster at SCCS[FROM].  Returns zero if we're
@@ -7215,14 +7285,21 @@ module_state::write_cluster (elf_out *to, depset *scc[],
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
-      if (b->is_binding ())
-	for (unsigned ix = b->decls.length (); ix--;)
-	  sec.mark_node (b->decls[ix]);
-      else
+      if (b->is_defn ())
 	mark_definition (sec, b->get_decl ());
+      else if (b->is_decl ())
+	;// FIXME: for the moment, we'll also be on a binding in the
+	 // same cluster
+      else
+	{
+	  // FIXME: Won't one of these be the containing namepace?
+	  gcc_checking_assert (b->is_binding ());
+	  for (unsigned ix = b->deps.length (); ix--;)
+	    sec.mark_node (b->deps[ix]->get_decl ());
+	}
     }
 
-  dump () && dump ("Writing SCC:%u bindings:%u",
+  dump () && dump ("Writing SCC:%u %u depsets",
 		   cluster & (~0U >> 1), size);
   dump.indent ();
 
@@ -7230,30 +7307,40 @@ module_state::write_cluster (elf_out *to, depset *scc[],
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
-      dump () && dump (b->is_binding () ? "Writing decls of %P"
-		       : "Writing definition %N",
-		       b->get_container (), b->get_name ());
-      sec.tree_ctx (b->get_container (), false, MODULE_PURVIEW);
-      if (b->is_binding ())
+      dump () && dump (b->is_decl () ? "Writing declaration %N"
+		       : b->is_defn () ? "Writing definition %N"
+		       : "Writing binding %P",
+		       b->get_decl (),
+		       b->is_binding () ? b->get_name () : NULL_TREE);
+      if (b->is_decl ())
+	{
+	  // FIXME: We should also be on a binding list
+	  // voldemort and promoted linkage entities will eventually be different
+	  gcc_checking_assert (TREE_VISITED (b->get_decl ()));
+	  continue;
+	}
+
+      sec.tree_ctx (b->get_decl (), false, MODULE_PURVIEW);
+      if (b->is_defn ())
+	write_definition (sec, b->get_decl ());
+      else
 	{
 	  sec.tree_node (b->get_name ());
 	  /* Write in forward order, so reading will see the
 	     exports first, thus building the overload chain will be
 	     optimized.  */
-	  for (unsigned jx = 0; jx != b->decls.length (); jx++)
-	    sec.tree_node (b->decls[jx]);
+	  for (unsigned jx = 0; jx != b->deps.length (); jx++)
+	    sec.tree_node (b->deps[jx]->get_decl ());
 	  /* Terminate the list.  */
 	  sec.tree_node (NULL);
 	}
-      else
-	write_definition (sec, b->get_decl ());
     }
 
   /* We don't find this by name, use the first decl's name for human
      friendliness.  Because of cluster sorting, this will prefer a
      definition -- and thus we'll not be confused by naming an
      unscoped enum constant.  */
-  tree naming_decl = scc[0]->get_naming_decl ();
+  tree naming_decl = scc[0]->get_decl ();
   unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
 
   /* Record the section number in each depset.  */
@@ -7363,9 +7450,9 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       b->section = ix + 1;
       b->cluster = 0;
       unsigned ctx_num = 0;
-      tree ctx = b->get_container ();
+      tree ctx = CP_DECL_CONTEXT (ns);
       if (ctx != global_namespace)
-	ctx_num = table.find (CP_DECL_CONTEXT (ctx), DECL_NAME (ctx))->section;
+	ctx_num = table.find (depset::decl_key (ctx))->section;
       dump () && dump ("Writing namespace %N %u::%u", ns, ctx_num, b->section);
 
       sec.u (to->name (DECL_NAME (ns)));
@@ -7443,9 +7530,9 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
       if (b->is_binding () && b->cluster)
 	{
 	  unsigned ns_num = 0;
-	  tree ns = b->get_container ();
+	  tree ns = b->get_decl ();
 	  if (ns != global_namespace)
-	    ns_num = table.find (CP_DECL_CONTEXT (ns), DECL_NAME (ns))->section;
+	    ns_num = table.find (depset::decl_key (ns))->section;
 	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
 			   b->section);
 	  sec.u (to->name (b->get_name ()));
@@ -7518,23 +7605,22 @@ module_state::add_writables (depset::hash &table, tree ns)
       tree bind = *iter;
 
       if (TREE_CODE (bind) == MODULE_VECTOR)
-	bind = (MODULE_VECTOR_CLUSTER
-		(bind, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
-		.slots[MODULE_SLOT_CURRENT % MODULE_VECTOR_SLOTS_PER_CLUSTER]);
+	{
+	  bind = (MODULE_VECTOR_CLUSTER
+		  (bind, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
+		  .slots[MODULE_SLOT_CURRENT % MODULE_VECTOR_SLOTS_PER_CLUSTER]);
+	  if (!bind)
+	    continue;
+	}
 
-      if (!bind)
-	continue;
-
-      /* Walk inner namespace.  */
-      if (TREE_CODE (bind) == NAMESPACE_DECL
-	  && !DECL_NAMESPACE_ALIAS (bind)
-	  && TREE_PUBLIC (bind))
-	add_writables (table, bind);
-  
       if (tree name = extract_module_decls (bind, decls))
 	{
 	  dump () && dump ("Writable bindings at %P", ns, name);
-	  table.add_decls (ns, name, decls);
+	  if (tree inner = table.add_binding (ns, name, decls))
+	    {
+	      gcc_checking_assert (TREE_PUBLIC (inner));
+	      add_writables (table, inner);
+	    }
 	  decls.truncate (0);
 	}
     }
@@ -7553,52 +7639,16 @@ module_state::find_dependencies (depset::hash &table)
     {
       walker.begin (&table);
 
-      /* Walk the new decls since last time.  */
-      unsigned from = d->section;
-      unsigned to = d->decls.length ();
-      d->section = to;
-
-      gcc_assert (d->is_binding () ? from < to : !from && to == 1);
-      dump () && dump (!d->is_binding () ? "Definition of %N" : from + 1 == to
-		       ? "Bindings of %P[%u]" : "Bindings of %P[%u-%u)",
-		       d->get_container (), d->get_name (), from, to);
+      gcc_checking_assert (!d->is_binding ());
+      dump () && dump ("%s %N", d->is_decl () ? "Declaration" : "Definition",
+		       d->get_decl ());
       dump.indent ();
-
-      /* Mark the depset's decls and known deps.  */
-      d->cluster = true;
-      if (d->is_binding ())
-	for (unsigned ix = to; ix--;)
-	  walker.mark_node (d->decls[ix], ix >= from);
-      else
+      walker.mark_node (d->get_decl (), true);
+      if (d->is_defn ())
 	mark_definition (walker, d->get_decl ());
-      for (unsigned ix = d->deps.length (); ix--;)
-	{
-	  depset *dep = d->deps[ix];
-	  gcc_assert (!dep->cluster);
-	  dep->cluster = true;
-	  if (dep->is_binding ())
-	    for (unsigned jx = dep->decls.length (); jx--;)
-	      walker.mark_node (dep->decls[jx], false);
-	  else
-	    walker.mark_node (dep->get_decl ());
-	}
-
-      /* Analyse them.  */
-      if (d->is_binding ())
-	for (unsigned ix = from; ix != to; ix++)
-	  {
-	    tree decl = d->decls[ix];
-	    dump () && dump ("Analysing declarations of %N", decl);
-	    if (TREE_CODE (decl) != NAMESPACE_DECL)
-	      walker.tree_node (decl);
-	  }
-      else
+      walker.tree_node (d->get_decl ());
+      if (d->is_defn ())
 	write_definition (walker, d->get_decl ());
-
-      /* Unmark.  */
-      d->cluster = false;
-      for (unsigned ix = d->deps.length (); ix--;)
-	d->deps[ix]->cluster = false;
       dump.outdent ();
       walker.end ();
     }
@@ -7616,7 +7666,7 @@ space_cmp (const void *a_, const void *b_)
   tree ns_b = b->get_decl ();
 
   /* Deeper namespaces come after shallower ones.  */
-  if (int delta = SCOPE_DEPTH (ns_a) - SCOPE_DEPTH (ns_b))
+  if (int delta = int (SCOPE_DEPTH (ns_a)) - int (SCOPE_DEPTH (ns_b)))
     return delta;
 
   /* Otherwise order by UID for consistent results.  */
@@ -7670,7 +7720,8 @@ module_state::write (elf_out *to)
     {
       depset **base = &sccs[ix];
 
-      if (size == 1 && TREE_CODE ((*base)->get_naming_decl ()) == NAMESPACE_DECL)
+      if (size == 1 && (*base)->is_decl ()
+	  && TREE_CODE ((*base)->get_decl ()) == NAMESPACE_DECL)
 	spaces.safe_push (*base);
       else
 	{

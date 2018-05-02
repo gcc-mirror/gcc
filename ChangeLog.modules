@@ -1,5 +1,19 @@
 2018-05-02  Nathan Sidwell  <nathan@acm.org>
 
+	Fragment depsets more.
+	gcc/cp/
+	* module.c (depset): Replace container & decls with key.  Adjust
+	hashing etc.
+	(depset::{binding,decl,defn}_key): New.
+	(depset::is_{binding,decl,defn}): New.
+	(depset::hash::{maybe_insert,find}): Take a key.
+	(depset::hash::add_definition): Reimplement.
+	(depset::hash::add_dependency): Reimplement.
+	(depset::hash::add_binding): Reimplement.
+	(cluster_cmp): Extend.
+	(module_state::write_{cluster,namespaces,bindings}): Adjust.
+	(module_state::{add_writables,find_dependencies}): Adjust.
+
 	gcc/cp/
 	* module.c (depset::tarjan): Replace binds, spaces & defs fields
 	with plain result field.
