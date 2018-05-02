@@ -2,6 +2,10 @@
 
 	* GCC 8.1.0 released.
 
+2018-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 8.
+
 2018-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* test_summary: Match possible single quotes in configure path.
