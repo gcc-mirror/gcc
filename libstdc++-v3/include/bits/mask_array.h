@@ -131,8 +131,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _Array<bool> _M_mask;
       const _Array<_Tp>  _M_array;
 
+#if __cplusplus < 201103L
       // not implemented
       mask_array();
+#else
+    public:
+      mask_array() = delete;
+#endif
     };
 
   template<typename _Tp>
