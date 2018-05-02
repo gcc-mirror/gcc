@@ -273,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	pointer __cur(this->_M_impl._M_start);
 	for (; __first != __last && __cur != this->_M_impl._M_finish;
-	     ++__cur, ++__first)
+	     ++__cur, (void)++__first)
 	  *__cur = *__first;
 	if (__first == __last)
 	  _M_erase_at_end(__cur);

@@ -1,3 +1,15 @@
+2018-05-02  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/deque.tcc (deque<>::_M_assign_aux): Cast to void to
+	ensure overloaded comma not used.
+	* include/bits/list.tcc (list<>::_M_assign_dispatch): Likewise.
+	* include/bits/vector.tcc (vector<>::_M_assign_aux): Likewise.
+	* include/bits/stl_bvector.h (vector<bool>::_M_assign_aux): Likewise.
+	* testsuite/23_containers/deque/modifiers/assign/1.cc: New.
+	* testsuite/23_containers/list/modifiers/assign/1.cc: New.
+	* testsuite/23_containers/vector/bool/modifiers/assign/1.cc: New.
+	* testsuite/23_containers/vector/modifiers/assign/1.cc: New.
+
 2018-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/68197
