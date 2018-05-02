@@ -1,3 +1,8 @@
+2018-05-01  Sriraman Tallam  <tmsriram@google.com>
+
+	* plugin-api.h: Add plugin API to get the list of wrap
+	symbols.
+
 2018-02-09  Alexandre Oliva <aoliva@redhat.com>
 
 	* dwarf2.def (DW_AT_GNU_entry_view): New.
