@@ -1,3 +1,8 @@
+2018-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85567
+	* gcc.dg/torture/pr85567.c: New testcase.
+
 2018-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85582
