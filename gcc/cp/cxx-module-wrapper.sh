@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Wrapper to rebuild a missing C++ module BMI
 

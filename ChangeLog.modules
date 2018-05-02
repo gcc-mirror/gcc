@@ -1,5 +1,8 @@
 2018-05-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cxx-module-wrapper.sh: Require bash.
+
 	Fragment depsets more.
 	gcc/cp/
 	* module.c (depset): Replace container & decls with key.  Adjust
