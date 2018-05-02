@@ -1,3 +1,10 @@
+2018-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/68374
+	* name-lookup.c (check_local_shadow): Don't handle static old
+	declarations in the block handling locals shadowing locals.
+
 2018-05-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85587 - error with scoped enum in template.
