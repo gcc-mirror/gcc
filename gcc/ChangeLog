@@ -1,3 +1,13 @@
+2018-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85582
+	* config/i386/i386.md (*ashl<dwi>3_doubleword_mask,
+	*ashl<dwi>3_doubleword_mask_1, *<shift_insn><dwi>3_doubleword_mask,
+	*<shift_insn><dwi>3_doubleword_mask_1): In condition require that
+	the highest significant bit of the shift count mask is clear.  In
+	check whether and[sq]i3 is needed verify that all significant bits
+	of the shift count other than the highest are set.
+
 2018-05-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/82428
