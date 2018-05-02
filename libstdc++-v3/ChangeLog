@@ -1,3 +1,11 @@
+2018-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69608
+	* include/backward/strstream (strstreambuf): Define move constructor
+	and move assignment operator.
+	(istrstream, ostrstream, strstream): Likewise.
+	* testsuite/backward/strstream_move.cc: New.
+
 2018-05-01  Tulio Magno Quites Machado Filho  <tuliom@linux.vnet.ibm.com>
 
 	PR libstdc++/84654
