@@ -8809,6 +8809,26 @@ proc force_conventional_output_for { test } {
     }
 }
 
+# Record that dg-final test scan-ltrans-tree-dump* requires -flto-partition=one
+# in order to force a single partition, allowing scan-ltrans-tree-dump* to scan
+# a dump file *.exe.ltrans0.*.
+
+proc scan-ltrans-tree-dump_required_options {} {
+    return "-flto-partition=one"
+}
+proc scan-ltrans-tree-dump-times_required_options {} {
+    return "-flto-partition=one"
+}
+proc scan-ltrans-tree-dump-not_required_options {} {
+    return "-flto-partition=one"
+}
+proc scan-ltrans-tree-dump-dem_required_options {} {
+    return "-flto-partition=one"
+}
+proc scan-ltrans-tree-dump-dem-not_required_options {} {
+    return "-flto-partition=one"
+}
+
 # Return 1 if the x86-64 target supports PIE with copy reloc, 0
 # otherwise.  Cache the result.
 

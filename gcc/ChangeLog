@@ -2,6 +2,12 @@
 
 	PR testsuite/85106
 	* doc/sourcebuild.texi (Commands for use in dg-final, Scan optimization
+	dump files): Add ltrans-tree.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* doc/sourcebuild.texi (Commands for use in dg-final, Scan optimization
 	dump files): Add wpa-ipa.
 
 2018-05-02  Segher Boessenkool  <segher@kernel.crashing.org>
