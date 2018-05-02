@@ -79,21 +79,10 @@ pass_wrestrict::gate (function *fun ATTRIBUTE_UNUSED)
   return warn_array_bounds != 0 || warn_restrict != 0;
 }
 
-/* Class to walk the basic blocks of a function in dominator order.  */
-class wrestrict_dom_walker : public dom_walker
-{
- public:
-  wrestrict_dom_walker () : dom_walker (CDI_DOMINATORS) {}
+static void check_call (gcall *);
 
-  edge before_dom_children (basic_block) FINAL OVERRIDE;
-  bool handle_gimple_call (gimple_stmt_iterator *);
-
- private:
-  void check_call (gcall *);
-};
-
-edge
-wrestrict_dom_walker::before_dom_children (basic_block bb)
+static void
+wrestrict_walk (basic_block bb)
 {
   /* Iterate over statements, looking for function calls.  */
   for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
@@ -106,26 +95,16 @@ wrestrict_dom_walker::before_dom_children (basic_block bb)
       if (gcall *call = as_a <gcall *> (stmt))
 	check_call (call);
     }
-
-  return NULL;
 }
-
-/* Execute the pass for function FUN, walking in dominator order.  */
 
 unsigned
 pass_wrestrict::execute (function *fun)
 {
-  /* FIXME: Remove me before merge.  */
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      path_ranger ranger;
-      ranger.exercise (dump_file);
-    }
-
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  wrestrict_dom_walker walker;
-  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  basic_block bb;
+  /* Note: This used to be a domwalk, but was likely doing so because
+     it needed evrp for range information.  */
+  FOR_EACH_BB_FN (bb, fun)
+    wrestrict_walk (bb);
 
   return 0;
 }
@@ -1789,8 +1768,8 @@ maybe_diag_offset_bounds (location_t loc, gcall *call, tree func, int strict,
 /* Check a CALL statement for restrict-violations and issue warnings
    if/when appropriate.  */
 
-void
-wrestrict_dom_walker::check_call (gcall *call)
+static void
+check_call (gcall *call)
 {
   /* Avoid checking the call if it has already been diagnosed for
      some reason.  */
