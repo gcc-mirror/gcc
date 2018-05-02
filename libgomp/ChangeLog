@@ -1,5 +1,34 @@
 2018-05-02  Tom de Vries  <tom@codesourcery.com>
 
+	PR libgomp/82428
+	* testsuite/libgomp.oacc-c-c++-common/gang-static-2.c: Use
+	__builtin_goacc_parlevel_{id,size}.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-g-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-g-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/tile-1.c: Same.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
 	PR testsuite/85106
 	* testsuite/lib/libgomp.exp: Include scanltranstree.exp.
 

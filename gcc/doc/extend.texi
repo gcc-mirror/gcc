@@ -12437,6 +12437,16 @@ Aarch64.  This function is mainly useful when writing inline assembly
 code.
 @end deftypefn
 
+@deftypefn {Built-in Function} int __builtin_goacc_parlevel_id (int x)
+Returns the openacc gang, worker or vector id depending on whether @var{x} is
+0, 1 or 2.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_goacc_parlevel_size (int x)
+Returns the openacc gang, worker or vector size depending on whether @var{x} is
+0, 1 or 2.
+@end deftypefn
+
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
 

@@ -214,6 +214,10 @@ along with GCC; see the file COPYING3.  If not see
 #define DEF_GOACC_BUILTIN_COMPILER(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
 	       flag_openacc, true, true, ATTRS, false, true)
+#undef DEF_GOACC_BUILTIN_ONLY
+#define DEF_GOACC_BUILTIN_ONLY(ENUM, NAME, TYPE, ATTRS) \
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, BT_LAST,    \
+	       false, false, true, ATTRS, false, flag_openacc)
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \

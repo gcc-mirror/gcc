@@ -71,6 +71,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "intl.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
+#include "gomp-constants.h"
+#include "omp-general.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -6628,6 +6630,71 @@ expand_stack_save (void)
   return ret;
 }
 
+/* Emit code to get the openacc gang, worker or vector id or size.  */
+
+static rtx
+expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
+{
+  const char *name;
+  rtx fallback_retval;
+  rtx_insn *(*gen_fn) (rtx, rtx);
+  switch (DECL_FUNCTION_CODE (get_callee_fndecl (exp)))
+    {
+    case BUILT_IN_GOACC_PARLEVEL_ID:
+      name = "__builtin_goacc_parlevel_id";
+      fallback_retval = const0_rtx;
+      gen_fn = targetm.gen_oacc_dim_pos;
+      break;
+    case BUILT_IN_GOACC_PARLEVEL_SIZE:
+      name = "__builtin_goacc_parlevel_size";
+      fallback_retval = const1_rtx;
+      gen_fn = targetm.gen_oacc_dim_size;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (oacc_get_fn_attrib (current_function_decl) == NULL_TREE)
+    {
+      error ("%qs only supported in OpenACC code", name);
+      return const0_rtx;
+    }
+
+  tree arg = CALL_EXPR_ARG (exp, 0);
+  if (TREE_CODE (arg) != INTEGER_CST)
+    {
+      error ("non-constant argument 0 to %qs", name);
+      return const0_rtx;
+    }
+
+  int dim = TREE_INT_CST_LOW (arg);
+  switch (dim)
+    {
+    case GOMP_DIM_GANG:
+    case GOMP_DIM_WORKER:
+    case GOMP_DIM_VECTOR:
+      break;
+    default:
+      error ("illegal argument 0 to %qs", name);
+      return const0_rtx;
+    }
+
+  if (ignore)
+    return target;
+
+  if (!targetm.have_oacc_dim_size ())
+    {
+      emit_move_insn (target, fallback_retval);
+      return target;
+    }
+
+  rtx reg = MEM_P (target) ? gen_reg_rtx (GET_MODE (target)) : target;
+  emit_insn (gen_fn (reg, GEN_INT (dim)));
+  if (reg != target)
+    emit_move_insn (target, reg);
+
+  return target;
+}
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -7757,6 +7824,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       /* Do library call, if we failed to expand the builtin when
 	 folding.  */
       break;
+
+    case BUILT_IN_GOACC_PARLEVEL_ID:
+    case BUILT_IN_GOACC_PARLEVEL_SIZE:
+      return expand_builtin_goacc_parlevel_id_size (exp, target, ignore);
 
     default:	/* just do library call, if unknown builtin */
       break;
