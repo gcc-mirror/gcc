@@ -1,4 +1,4 @@
-#   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+#   Copyright (C) 2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,22 +25,23 @@ load_lib scandump.exp
 # Argument 0 is the regexp to match
 # Argument 1 is the name of the dumped ipa pass
 # Argument 2 handles expected failures and the like
-proc scan-ipa-dump { args } {
+proc scan-wpa-ipa-dump { args } {
 
     if { [llength $args] < 2 } {
-	error "scan-ipa-dump: too few arguments"
+	error "scan-wpa-ipa-dump: too few arguments"
 	return
     }
     if { [llength $args] > 3 } {
-	error "scan-ipa-dump: too many arguments"
+	error "scan-wpa-ipa-dump: too many arguments"
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump "ipa" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" "" [lindex $args 2]
+	scan-dump "wpa-ipa" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa" \
+		  [lindex $args 2]
     } else {
-	scan-dump "ipa" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ""
+	scan-dump "wpa-ipa" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa"
     }
 }
 
@@ -49,23 +50,23 @@ proc scan-ipa-dump { args } {
 # Argument 1 is number of times the regexp must be found
 # Argument 2 is the name of the dumped ipa pass
 # Argument 3 handles expected failures and the like
-proc scan-ipa-dump-times { args } {
+proc scan-wpa-ipa-dump-times { args } {
 
     if { [llength $args] < 3 } {
-	error "scan-ipa-dump: too few arguments"
+	error "scan-wpa-ipa-dump-times: too few arguments"
 	return
     }
     if { [llength $args] > 4 } {
-	error "scan-ipa-dump: too many arguments"
+	error "scan-wpa-ipa-dump-times: too many arguments"
 	return
     }
     if { [llength $args] >= 4 } {
-	scan-dump-times "ipa" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" "" \
+	scan-dump-times "wpa-ipa" [lindex $args 0] [lindex $args 1] \
+			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" ".exe.wpa" \
 			[lindex $args 3]
     } else {
-	scan-dump-times "ipa" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" ""
+	scan-dump-times "wpa-ipa" [lindex $args 0] [lindex $args 1] \
+			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" ".exe.wpa"
     }
 }
 
@@ -74,23 +75,23 @@ proc scan-ipa-dump-times { args } {
 # Argument 0 is the regexp to match
 # Argument 1 is the name of the dumped ipa pass
 # Argument 2 handles expected failures and the like
-proc scan-ipa-dump-not { args } {
+proc scan-wpa-ipa-dump-not { args } {
 
     if { [llength $args] < 2 } {
-	error "scan-ipa-dump-not: too few arguments"
+	error "scan-wpa-ipa-dump-not: too few arguments"
 	return
     }
     if { [llength $args] > 3 } {
-	error "scan-ipa-dump-not: too many arguments"
+	error "scan-wpa-ipa-dump-not: too many arguments"
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump-not "ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" "" \
+	scan-dump-not "wpa-ipa" [lindex $args 0] \
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa" \
 		      [lindex $args 2]
     } else {
-	scan-dump-not "ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ""
+	scan-dump-not "wpa-ipa" [lindex $args 0] \
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa"
     }
 }
 
@@ -100,23 +101,23 @@ proc scan-ipa-dump-not { args } {
 # Argument 0 is the regexp to match
 # Argument 1 is the name of the dumped ipa pass
 # Argument 2 handles expected failures and the like
-proc scan-ipa-dump-dem { args } {
+proc scan-wpa-ipa-dump-dem { args } {
 
     if { [llength $args] < 2 } {
-	error "scan-ipa-dump-dem: too few arguments"
+	error "scan-wpa-ipa-dump-dem: too few arguments"
 	return
     }
     if { [llength $args] > 3 } {
-	error "scan-ipa-dump-dem: too many arguments"
+	error "scan-wpa-ipa-dump-dem: too many arguments"
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump-dem "ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" "" \
+	scan-dump-dem "wpa-ipa" [lindex $args 0] \
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa" \
 		      [lindex $args 2]
     } else {
-	scan-dump-dem "ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ""
+	scan-dump-dem "wpa-ipa" [lindex $args 0] \
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa"
     }
 }
 
@@ -125,22 +126,22 @@ proc scan-ipa-dump-dem { args } {
 # Argument 0 is the regexp to match
 # Argument 1 is the name of the dumped ipa pass
 # Argument 2 handles expected failures and the like
-proc scan-ipa-dump-dem-not { args } {
+proc scan-wpa-ipa-dump-dem-not { args } {
 
     if { [llength $args] < 2 } {
-	error "scan-ipa-dump-dem-not: too few arguments"
+	error "scan-wpa-ipa-dump-dem-not: too few arguments"
 	return
     }
     if { [llength $args] > 3 } {
-	error "scan-ipa-dump-dem-not: too many arguments"
+	error "scan-wpa-ipa-dump-dem-not: too many arguments"
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump-dem-not "ipa" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" "" \
+	scan-dump-dem-not "wpa-ipa" [lindex $args 0] \
+			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa" \
 			  [lindex $args 2]
     } else {
-	scan-dump-dem-not "ipa" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ""
+	scan-dump-dem-not "wpa-ipa" [lindex $args 0] \
+			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".exe.wpa"
     }
 }

@@ -1,3 +1,8 @@
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libgomp.exp: Include scanwpaipa.exp.
+
 2018-04-29  Julian Brown  <julian@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
 
