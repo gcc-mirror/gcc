@@ -67,10 +67,6 @@
 #define PPC405_ERRATUM77 0
 #endif
 
-#ifndef TARGET_PAIRED_FLOAT
-#define TARGET_PAIRED_FLOAT 0
-#endif
-
 #ifdef HAVE_AS_POPCNTB
 #define ASM_CPU_POWER5_SPEC "-mpower5"
 #else
@@ -695,19 +691,16 @@ extern int rs6000_vector_align[];
 /* For power systems, we want to enable Altivec and VSX builtins even if the
    user did not use -maltivec or -mvsx to allow the builtins to be used inside
    of #pragma GCC target or the target attribute to change the code level for a
-   given system.  The Paired builtins are only enabled if you configure the
-   compiler for those builtins, and those machines don't support altivec or
-   VSX.  */
+   given system.  */
 
-#define TARGET_EXTRA_BUILTINS	(!TARGET_PAIRED_FLOAT			 \
-				 && ((TARGET_POWERPC64			 \
-				      || TARGET_PPC_GPOPT /* 970/power4 */ \
-				      || TARGET_POPCNTB	  /* ISA 2.02 */ \
-				      || TARGET_CMPB	  /* ISA 2.05 */ \
-				      || TARGET_POPCNTD	  /* ISA 2.06 */ \
-				      || TARGET_ALTIVEC			 \
-				      || TARGET_VSX			 \
-				      || TARGET_HARD_FLOAT)))
+#define TARGET_EXTRA_BUILTINS	(TARGET_POWERPC64			 \
+				 || TARGET_PPC_GPOPT /* 970/power4 */	 \
+				 || TARGET_POPCNTB   /* ISA 2.02 */	 \
+				 || TARGET_CMPB      /* ISA 2.05 */	 \
+				 || TARGET_POPCNTD   /* ISA 2.06 */	 \
+				 || TARGET_ALTIVEC			 \
+				 || TARGET_VSX				 \
+				 || TARGET_HARD_FLOAT)
 
 /* E500 cores only support plain "sync", not lwsync.  */
 #define TARGET_NO_LWSYNC (rs6000_cpu == PROCESSOR_PPC8540 \
@@ -863,7 +856,6 @@ extern unsigned char rs6000_recip_bits[];
 #define UNITS_PER_FP_WORD 8
 #define UNITS_PER_ALTIVEC_WORD 16
 #define UNITS_PER_VSX_WORD 16
-#define UNITS_PER_PAIRED_WORD 8
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
@@ -1169,9 +1161,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define INT_REGNO_P(N) \
   ((N) <= 31 || (N) == ARG_POINTER_REGNUM || (N) == FRAME_POINTER_REGNUM)
 
-/* PAIRED SIMD registers are just the FPRs.  */
-#define PAIRED_SIMD_REGNO_P(N) ((N) >= 32 && (N) <= 63)
-
 /* True if register is the CA register.  */
 #define CA_REGNO_P(N) ((N) == CA_REGNO)
 
@@ -1231,9 +1220,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define ALTIVEC_OR_VSX_VECTOR_MODE(MODE)				\
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
    || (MODE) == V2DImode || (MODE) == V1TImode)
-
-#define PAIRED_VECTOR_MODE(MODE)        \
-         ((MODE) == V2SFmode)            
 
 /* Post-reload, we can't use any new AltiVec registers, as we already
    emitted the vrsave mask.  */
@@ -2484,8 +2470,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTC_SAT		RS6000_BTC_MISC	/* saturate sets VSCR.  */
 
 /* Builtin targets.  For now, we reuse the masks for those options that are in
-   target flags, and pick two random bits for paired and ldbl128, which
-   aren't in target_flags.  */
+   target flags, and pick a random bit for ldbl128, which isn't in
+   target_flags.  */
 #define RS6000_BTM_ALWAYS	0		/* Always enabled.  */
 #define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
 #define RS6000_BTM_CMPB		MASK_CMPB	/* ISA 2.05: compare bytes.  */
@@ -2495,7 +2481,6 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_P9_MISC	MASK_P9_MISC	/* ISA 3.0 misc. non-vector */
 #define RS6000_BTM_CRYPTO	MASK_CRYPTO	/* crypto funcs.  */
 #define RS6000_BTM_HTM		MASK_HTM	/* hardware TM funcs.  */
-#define RS6000_BTM_PAIRED	MASK_MULHW	/* 750CL paired insns.  */
 #define RS6000_BTM_FRE		MASK_POPCNTB	/* FRE instruction.  */
 #define RS6000_BTM_FRES		MASK_PPC_GFXOPT	/* FRES instruction.  */
 #define RS6000_BTM_FRSQRTE	MASK_PPC_GFXOPT	/* FRSQRTE instruction.  */
@@ -2541,7 +2526,6 @@ extern int frame_pointer_needed;
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
@@ -2552,7 +2536,6 @@ extern int frame_pointer_needed;
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 
 enum rs6000_builtins
@@ -2570,20 +2553,14 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 enum rs6000_builtin_type_index
 {
   RS6000_BTI_NOT_OPAQUE,
-  RS6000_BTI_opaque_V2SI,
-  RS6000_BTI_opaque_V2SF,
-  RS6000_BTI_opaque_p_V2SI,
   RS6000_BTI_opaque_V4SI,
   RS6000_BTI_V16QI,              /* __vector signed char */
   RS6000_BTI_V1TI,
-  RS6000_BTI_V2SI,
-  RS6000_BTI_V2SF,
   RS6000_BTI_V2DI,
   RS6000_BTI_V2DF,
   RS6000_BTI_V4HI,
@@ -2638,16 +2615,11 @@ enum rs6000_builtin_type_index
 };
 
 
-#define opaque_V2SI_type_node         (rs6000_builtin_types[RS6000_BTI_opaque_V2SI])
-#define opaque_V2SF_type_node         (rs6000_builtin_types[RS6000_BTI_opaque_V2SF])
-#define opaque_p_V2SI_type_node       (rs6000_builtin_types[RS6000_BTI_opaque_p_V2SI])
 #define opaque_V4SI_type_node         (rs6000_builtin_types[RS6000_BTI_opaque_V4SI])
 #define V16QI_type_node               (rs6000_builtin_types[RS6000_BTI_V16QI])
 #define V1TI_type_node                (rs6000_builtin_types[RS6000_BTI_V1TI])
 #define V2DI_type_node                (rs6000_builtin_types[RS6000_BTI_V2DI])
 #define V2DF_type_node                (rs6000_builtin_types[RS6000_BTI_V2DF])
-#define V2SI_type_node                (rs6000_builtin_types[RS6000_BTI_V2SI])
-#define V2SF_type_node                (rs6000_builtin_types[RS6000_BTI_V2SF])
 #define V4HI_type_node                (rs6000_builtin_types[RS6000_BTI_V4HI])
 #define V4SI_type_node                (rs6000_builtin_types[RS6000_BTI_V4SI])
 #define V4SF_type_node                (rs6000_builtin_types[RS6000_BTI_V4SF])

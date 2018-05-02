@@ -473,7 +473,6 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
-	extra_headers="${extra_headers} paired.h"
 	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
 	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
@@ -2502,11 +2501,11 @@ powerpc*-*-linux*)
 	    all) maybe_biarch=yes ;;
 	esac
 	case ${target} in
-	    powerpc64*-*-linux*spe* | powerpc64*-*-linux*paired*)
+	    powerpc64*-*-linux*spe* | powerpc*-*-linux*paired*)
 		echo "*** Configuration ${target} not supported" 1>&2
 		exit 1
 		;;
-	    powerpc*-*-linux*spe* | powerpc*-*-linux*paired*)
+	    powerpc*-*-linux*spe*)
 		maybe_biarch=
 		;;
 	esac
@@ -2552,8 +2551,6 @@ powerpc*-*-linux*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
 	    powerpc*-*-linux*spe*)
 		tm_file="${tm_file} ${cpu_type}/linuxspe.h ${cpu_type}/e500.h" ;;
-	    powerpc*-*-linux*paired*)
-		tm_file="${tm_file} rs6000/750cl.h" ;;
 	esac
 	case ${target} in
 	    *-linux*-musl*)
