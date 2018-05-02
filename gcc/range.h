@@ -95,7 +95,6 @@ class irange
   void set_range (tree t, int x, int y, kind rt = PLAIN);
   void set_range_for_type (tree);
 
-  bool anti_range_p (irange &anti) const;
   bool overflow_p () const { return overflow && !TYPE_OVERFLOW_WRAPS (type); }
   void set_overflow () { overflow = true; }
   void clear_overflow () { overflow = false; }
