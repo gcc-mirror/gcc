@@ -1,3 +1,9 @@
+2018-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85582
+	* gcc.c-torture/execute/pr85582-1.c: New test.
+	* gcc.c-torture/execute/pr85582-2.c: New test.
+
 2018-05-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85586
