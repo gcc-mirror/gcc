@@ -1,3 +1,7 @@
+2018-05-02  Alan Modra  <amodra@gmail.com>
+
+	* ansidecl.h (ATTRIBUTE_NONSTRING): Define.
+
 2018-05-01  Sriraman Tallam  <tmsriram@google.com>
 
 	* plugin-api.h: Add plugin API to get the list of wrap
