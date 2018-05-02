@@ -1147,33 +1147,8 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
       pthread_mutex_lock (&ptx_dev_lock);
       if (!default_dims[0])
 	{
-	  const char *var_name = "GOMP_OPENACC_DIM";
-	  /* We only read the environment variable once.  You can't
-	     change it in the middle of execution.  The syntax  is
-	     the same as for the -fopenacc-dim compilation option.  */
-	  const char *env_var = getenv (var_name);
-	  notify_var (var_name, env_var);
-	  if (env_var)
-	    {
-	      const char *pos = env_var;
-
-	      for (i = 0; *pos && i != GOMP_DIM_MAX; i++)
-		{
-		  if (i && *pos++ != ':')
-		    break;
-		  if (*pos != ':')
-		    {
-		      const char *eptr;
-
-		      errno = 0;
-		      long val = strtol (pos, (char **)&eptr, 10);
-		      if (errno || val < 0 || (unsigned)val != val)
-			break;
-		      default_dims[i] = (int)val;
-		      pos = eptr;
-		    }
-		}
-	    }
+	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
+	    default_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
 
 	  int warp_size, block_size, dev_size, cpu_size;
 	  CUdevice dev = nvptx_thread()->ptx_dev->dev;

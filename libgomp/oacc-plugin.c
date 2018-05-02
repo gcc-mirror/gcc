@@ -49,3 +49,14 @@ GOMP_PLUGIN_acc_thread (void)
   struct goacc_thread *thr = goacc_thread ();
   return thr ? thr->target_tls : NULL;
 }
+
+int
+GOMP_PLUGIN_acc_default_dim (unsigned int i)
+{
+  if (i >= GOMP_DIM_MAX)
+    {
+      gomp_fatal ("invalid dimension argument: %d", i);
+      return -1;
+    }
+  return goacc_default_dims[i];
+}

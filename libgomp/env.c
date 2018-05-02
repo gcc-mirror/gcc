@@ -90,6 +90,7 @@ int gomp_debug_var;
 unsigned int gomp_num_teams_var;
 char *goacc_device_type;
 int goacc_device_num;
+int goacc_default_dims[GOMP_DIM_MAX];
 
 #ifndef LIBGOMP_OFFLOADED_ONLY
 
@@ -1066,6 +1067,36 @@ parse_acc_device_type (void)
 }
 
 static void
+parse_gomp_openacc_dim (void)
+{
+  /* The syntax is the same as for the -fopenacc-dim compilation option.  */
+  const char *var_name = "GOMP_OPENACC_DIM";
+  const char *env_var = getenv (var_name);
+  if (!env_var)
+    return;
+
+  const char *pos = env_var;
+  int i;
+  for (i = 0; *pos && i != GOMP_DIM_MAX; i++)
+    {
+      if (i && *pos++ != ':')
+	break;
+
+      if (*pos == ':')
+	continue;
+
+      const char *eptr;
+      errno = 0;
+      long val = strtol (pos, (char **)&eptr, 10);
+      if (errno || val < 0 || (unsigned)val != val)
+	break;
+
+      goacc_default_dims[i] = (int)val;
+      pos = eptr;
+    }
+}
+
+static void
 handle_omp_display_env (unsigned long stacksize, int wait_policy)
 {
   const char *env;
@@ -1336,6 +1367,7 @@ initialize_env (void)
     goacc_device_num = 0;
 
   parse_acc_device_type ();
+  parse_gomp_openacc_dim ();
 
   goacc_runtime_initialize ();
 }
