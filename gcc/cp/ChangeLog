@@ -1,3 +1,9 @@
+2018-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85587 - error with scoped enum in template.
+	* semantics.c (finish_qualified_id_expr): Don't return an
+	unqualified IDENTIFIER_NODE.
+
 2018-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85580 - extern "C" and local variables

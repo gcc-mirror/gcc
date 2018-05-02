@@ -2061,7 +2061,8 @@ finish_qualified_id_expr (tree qualifying_class,
     }
 
   /* No need to check access within an enum.  */
-  if (TREE_CODE (qualifying_class) == ENUMERAL_TYPE)
+  if (TREE_CODE (qualifying_class) == ENUMERAL_TYPE
+      && TREE_CODE (expr) != IDENTIFIER_NODE)
     return expr;
 
   /* Within the scope of a class, turn references to non-static
