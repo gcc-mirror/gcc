@@ -1,6 +1,18 @@
 2018-05-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/85106
+	* gcc.dg/ipa/ipa-icf-38.c: Use scan-ltrans-tree-dump.
+	* lib/scanltranstree.exp: New file.
+	* lib/target-supports.exp (scan-ltrans-tree-dump_required_options)
+	(scan-ltrans-tree-dump-times_required_options)
+	(scan-ltrans-tree-dump-not_required_options)
+	(scan-ltrans-tree-dump-dem_required_options)
+	(scan-ltrans-tree-dump-dem-not_required_options): New proc.
+	* lib/gcc-dg.exp: Include scanltranstree.exp.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
 	* gcc.dg/ipa/ipa-icf-38.c: New test.
 	* gcc.dg/ipa/ipa-icf-38a.c: New test.
 	* lib/scandump.exp (dump-base): New proc.
