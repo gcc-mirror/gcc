@@ -128,8 +128,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       gslice_array(_Array<_Tp>, const valarray<size_t>&);
 
+#if __cplusplus < 201103L
       // not implemented
       gslice_array();
+#else
+    public:
+      gslice_array() = delete;
+#endif
     };
 
   template<typename _Tp>

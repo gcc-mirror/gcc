@@ -38,6 +38,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __detail
+{
   //
   // gslice_array closure.
   //
@@ -59,8 +61,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_index.size(); }
 
     private:
-      const _Dom&	      _M_expr;
-      const valarray<size_t>& _M_index;
+      typename _ValArrayRef<_Dom>::__type	_M_expr;
+      const valarray<size_t>&			_M_index;
     };
 
   template<typename _Tp>
@@ -128,8 +130,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_index.size(); }
 
     private:
-      const _Dom&	      _M_expr;
-      const valarray<size_t>& _M_index;
+      typename _ValArrayRef<_Dom>::__type	_M_expr;
+      const valarray<size_t>&			_M_index;
     };
 
   template<class _Dom>
@@ -153,6 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _IClos (const valarray<_Tp>& __a, const valarray<size_t>& __i)
       : _Base (__a, __i) {}
     };
+} // namespace __detail
   
   //
   // class _Expr

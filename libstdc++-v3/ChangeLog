@@ -1,5 +1,28 @@
 2018-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/57997
+	PR libstdc++/83860
+	* include/bits/gslice_array.h (gslice_array): Define default
+	constructor as deleted, as per C++11 standard.
+	* include/bits/mask_array.h (mask_array): Likewise.
+	* include/bits/slice_array.h (slice_array): Likewise.
+	* include/bits/valarray_after.h (_GBase, _GClos, _IBase, _IClos): Move
+	to namespace __detail.
+	(_GBase::_M_expr, _IBase::_M_expr): Use _ValArrayRef for type of data
+	members.
+	* include/bits/valarray_before.h (_ValArrayRef): New helper for type
+	of data members in closure objects.
+	(_FunBase, _ValFunClos, _RefFunClos, _UnBase, _UnClos, _BinBase)
+	(_BinBase2, _BinBase1, _BinClos, _SBase, _SClos): Move to namespace
+	__detail.
+	(_FunBase::_M_expr, _UnBase::_M_expr, _BinBase::_M_expr1)
+	(_BinBase::_M_expr2, _BinBase2::_M_expr1, _BinBase1::_M_expr2)
+	(_SBase::_M_expr): Use _ValArrayRef for type of data members.
+	* include/std/valarray (_UnClos, _BinClos, _SClos, _GClos, _IClos)
+	(_ValFunClos, _RefFunClos): Move to namespace __detail and add
+	using-declarations to namespace std.
+	* testsuite/26_numerics/valarray/83860.cc: New.
+
 	* testsuite/backward/strstream_move.cc: Remove duplicate function
 	call.
 

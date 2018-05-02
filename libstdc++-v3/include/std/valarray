@@ -51,6 +51,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp1, typename _Tp2>
     class _ValArray;
 
+namespace __detail
+{
   template<class _Oper, template<class, class> class _Meta, class _Dom>
     struct _UnClos;
 
@@ -74,6 +76,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<template<class, class> class _Meta, class _Dom>
     class _RefFunClos;
+} // namespace __detail
+
+  using __detail::_UnClos;
+  using __detail::_BinClos;
+  using __detail::_SClos;
+  using __detail::_GClos;
+  using __detail::_IClos;
+  using __detail::_ValFunClos;
+  using __detail::_RefFunClos;
 
   template<class _Tp> class valarray;   // An array of type _Tp
   class slice;                          // BLAS-like slice out of an array
