@@ -1,5 +1,15 @@
 2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/84535
+	* include/std/thread (thread::__not_same): New SFINAE helper.
+	(thread::thread(_Callable&&, _Args&&...)): Add SFINAE constraint that
+	first argument is not a std::thread. Add static assertion to check
+	INVOKE expression is valid.
+	(thread::thread(thread&), thread::thread(const thread&&)): Remove.
+	(thread::_Invoke::_M_invoke, thread::_Invoke::operator()): Use
+	__invoke_result for return types and remove exception specifications.
+	* testsuite/30_threads/thread/cons/84535.cc: New.
+
 	* include/std/future (__async_result_of): Use __invoke_result instead
 	of result_of.
 
