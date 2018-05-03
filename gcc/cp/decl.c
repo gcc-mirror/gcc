@@ -4175,9 +4175,6 @@ cxx_init_decl_processing (void)
   if (!flag_new_for_scope)
     warning_at (UNKNOWN_LOCATION, OPT_Wdeprecated,
 		"%<-fno-for-scope%> is deprecated");
-  if (flag_friend_injection)
-    warning_at (UNKNOWN_LOCATION, OPT_Wdeprecated,
-		"%<-ffriend-injection%> is deprecated");
 
   c_common_nodes_and_builtins ();
 

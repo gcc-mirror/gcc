@@ -193,7 +193,6 @@ in the following sections.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
--ffriend-injection @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
@@ -2447,18 +2446,6 @@ This deduction was implemented as a possible extension to the
 originally proposed semantics for the C++11 standard, but was not part
 of the final standard, so it is disabled by default.  This option is
 deprecated, and may be removed in a future version of G++.
-
-@item -ffriend-injection
-@opindex ffriend-injection
-Inject friend functions into the enclosing namespace, so that they are
-visible outside the scope of the class in which they are declared.
-Friend functions were documented to work this way in the old Annotated
-C++ Reference Manual.  
-However, in ISO C++ a friend function that is not declared
-in an enclosing scope can only be found using argument dependent
-lookup.  GCC defaults to the standard behavior.
-
-This option is deprecated and will be removed.
 
 @item -fno-elide-constructors
 @opindex fno-elide-constructors

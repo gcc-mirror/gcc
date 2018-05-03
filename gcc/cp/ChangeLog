@@ -1,3 +1,8 @@
+2018-05-03  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (cxx_init_decl_processing): Remove flag_friend_injection.
+	* name-lookup.c (do_pushdecl): Likewise.
+
 2018-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 

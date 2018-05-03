@@ -23846,8 +23846,7 @@ that are now deprecated or have been removed:
 @table @code
 
 @item -fno-for-scope
-@itemx -ffriend-injection
-These two options provide compatibility with pre-standard C++.
+This option provides compatibility with pre-standard C++.
 @xref{Backwards Compatibility}.
 
 @end table
@@ -23906,11 +23905,6 @@ The behavior is deprecated, only available with @option{-std=c++98}
 @option{-std=gnu++98} languages and you must use the
 @option{-fpermissive} option to enable it.  The behavior will be
 removed.
-
-@item Friend Injection
-The @option{-ffriend-injection} option makes injected friends visible
-to regular name lookup, unlike standard C++.  This option is
-deprecated and will be removed.
 
 @item Implicit C language
 Old C system header files did not contain an @code{extern "C" @{@dots{}@}}
