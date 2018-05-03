@@ -1,3 +1,10 @@
+2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85632 use uintmax_t for arithmetic
+	* src/filesystem/ops.cc (experimental::filesystem::space): Perform
+	arithmetic in result type.
+	* testsuite/experimental/filesystem/operations/space.cc: New.
+
 2018-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
