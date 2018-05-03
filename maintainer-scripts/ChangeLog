@@ -1,3 +1,10 @@
+2018-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/85622
+	* gcc_release: For -f, verify contrib/gennews has the major version
+	pages listed and both index.html and changes.html have been updated
+	for the new release.
+
 2018-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Enable snapshots from gcc-8-branch.
