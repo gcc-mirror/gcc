@@ -1,3 +1,10 @@
+2018-05-03  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (cluster_size): Delete.
+	(module_state::write_{cluster,namespaces,bindings}): Adjust.
+	(module_state::write): Precalculate section numbers.
+
 2018-05-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

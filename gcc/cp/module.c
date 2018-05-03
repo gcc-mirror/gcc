@@ -1900,6 +1900,7 @@ public:
      position on the DECLS vector that has been walked -- item can be
      put back on the worklist.
      During SCC construction, it is lowlink.  */
+
 public:
   inline operator const key_type & () const
   {
@@ -1963,12 +1964,6 @@ public:
   {
     gcc_checking_assert (is_binding ());
     return key.second;
-  }
-
-public:
-  unsigned get_cluster () const
-  {
-    return cluster;
   }
 
 public:
@@ -7255,22 +7250,6 @@ cluster_cmp (const void *a_, const void *b_)
 	  ? -1 : +1);
 }
 
-/* Find the size of the cluster at SCCS[FROM].  Returns zero if we're
-   at the end.  */
-
-static unsigned
-cluster_size (auto_vec<depset *> &sccs, unsigned from)
-{
-  unsigned size = 0;
-
-  if (from < sccs.length ())
-    for (unsigned cluster = sccs[from]->get_cluster ();
-	 from != sccs.length () && sccs[from]->get_cluster () == cluster; from++)
-      size++;
-
-  return size;
-}
-
 /* Write a cluster of depsets starting at SCCS[FROM], return index of next
    cluster.  */
 
@@ -7280,8 +7259,11 @@ module_state::write_cluster (elf_out *to, depset *scc[],
 {
   trees_out sec (this, global_vec);
   sec.begin ();
-  unsigned cluster = scc[0]->get_cluster ();
 
+  dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
+  dump.indent ();
+
+  /* Mark members for walking.  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
@@ -7292,16 +7274,11 @@ module_state::write_cluster (elf_out *to, depset *scc[],
 	 // same cluster
       else
 	{
-	  // FIXME: Won't one of these be the containing namepace?
 	  gcc_checking_assert (b->is_binding ());
 	  for (unsigned ix = b->deps.length (); ix--;)
 	    sec.mark_node (b->deps[ix]->get_decl ());
 	}
     }
-
-  dump () && dump ("Writing SCC:%u %u depsets",
-		   cluster & (~0U >> 1), size);
-  dump.indent ();
 
   /* Now write every member.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -7343,13 +7320,11 @@ module_state::write_cluster (elf_out *to, depset *scc[],
   tree naming_decl = scc[0]->get_decl ();
   unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
 
-  /* Record the section number in each depset.  */
   for (unsigned ix = size; ix--;)
-    scc[ix]->section = snum;
+    gcc_checking_assert (scc[ix]->section == snum);
 
   dump.outdent ();
-  dump () && dump ("Wrote SCC:%u section:%u (%N)", cluster & (~0U >> 1),
-		   snum, naming_decl);
+  dump () && dump ("Wrote SCC:%u section:%N", scc[0]->section, naming_decl);
 }
 
 /* Read a cluster from section SNUM.  */
@@ -7448,7 +7423,6 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
 			   && (TREE_PUBLIC (ns) == DECL_MODULE_EXPORT_P (ns)));
 
       b->section = ix + 1;
-      b->cluster = 0;
       unsigned ctx_num = 0;
       tree ctx = CP_DECL_CONTEXT (ns);
       if (ctx != global_namespace)
@@ -7527,7 +7501,7 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
   for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
     {
       depset *b = *iter;
-      if (b->is_binding () && b->cluster)
+      if (b->is_binding ())
 	{
 	  unsigned ns_num = 0;
 	  tree ns = b->get_decl ();
@@ -7686,7 +7660,6 @@ void
 module_state::write (elf_out *to)
 {
   unsigned crc = 0;
-  range_t range;
 
   write_readme (to);
   depset::hash table (200);
@@ -7712,29 +7685,60 @@ module_state::write (elf_out *to)
 	connector.connect (v);
     }
 
-  auto_vec<depset *> spaces;
-
-  /* Write the binding clusters.  */
-  range.first = to->get_num_sections ();
-  for (unsigned size, ix = 0; (size = cluster_size (sccs, ix)) != 0; ix += size)
+  unsigned n_spaces = 0;
+  range_t range;
+  range.first = range.second = to->get_num_sections ();
+  for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
 
-      if (size == 1 && (*base)->is_decl ()
-	  && TREE_CODE ((*base)->get_decl ()) == NAMESPACE_DECL)
-	spaces.safe_push (*base);
+      for (size = 1; ix + size < sccs.length (); size++)
+	if (base[size]->cluster != base[0]->cluster)
+	  break;
+      qsort (base, size, sizeof (depset *), cluster_cmp);
+
+      if (size == 1 && base[0]->is_decl ()
+	  && TREE_CODE (base[0]->get_decl ()) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (base[0]->get_decl ()))
+	{
+	  /* A namespace decl.  */
+	  base[0]->section = 0;
+	  n_spaces++;
+	}
       else
 	{
-	  qsort (base, size, sizeof (depset *), cluster_cmp);
-	  write_cluster (to, base, size, &crc);
+	  /* Set the section number.  */
+	  for (unsigned jx = size; jx--;)
+	    {
+	      gcc_assert (base[jx]->is_binding ()
+			  || TREE_CODE (base[jx]->get_decl ()) != NAMESPACE_DECL
+			  || DECL_NAMESPACE_ALIAS (base[jx]->get_decl ()));
+	      base[jx]->section = range.second;
+	      base[jx]->cluster = 0;
+	    }
+	  range.second++;
 	}
+      /* Save the size in the first member's cluster slot.  */
+      base[0]->cluster = size;
     }
-  range.second = to->get_num_sections ();
 
-  /* Sort the namespaces.  */
+  /* Write the clusters.  */
+  auto_vec<depset *> spaces (n_spaces);
+  for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
+    {
+      depset **base = &sccs[ix];
+      size = base[0]->cluster;
+
+      if (!base[0]->section)
+	spaces.quick_push (base[0]);
+      else
+	write_cluster (to, base, size, &crc);
+    }
+  gcc_assert (range.second == to->get_num_sections ()
+	      && spaces.length () == n_spaces);
+
+  /* Write the namespaces.  */
   (spaces.qsort) (space_cmp);
-
-  /* Write the namespace hierarchy. */
   write_namespaces (to, table, spaces, &crc);
 
   /* Write the bindings themselves.  */
