@@ -1,5 +1,8 @@
 2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/future (__async_result_of): Use __invoke_result instead
+	of result_of.
+
 	* include/std/any (any_cast): Use __remove_cvref_t.
 	* include/std/tuple (__make_tuple): Likewise.
 	* include/std/type_traits (__remove_cvref_t): Define.
