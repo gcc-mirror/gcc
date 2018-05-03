@@ -1,5 +1,11 @@
 2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/remove_cvref/requirements/alias_decl.cc: New.
+	* testsuite/20_util/remove_cvref/requirements/explicit_instantiation.cc:
+	New.
+	* testsuite/20_util/remove_cvref/value.cc: New.
+	* testsuite/20_util/remove_cvref/value_ext.cc: New.
+
 	PR libstdc++/84087 LWG DR 2268 basic_string default arguments
 	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI=1]
 	(append(const basic_string&, size_type, size_type)
