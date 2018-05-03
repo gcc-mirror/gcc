@@ -1034,7 +1034,6 @@ func TestGoInstallRebuildsStalePackagesInOtherGOPATH(t *testing.T) {
 }
 
 func TestGoInstallDetectsRemovedFiles(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not yet support package build IDs")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -1104,7 +1103,6 @@ func TestGoInstallErrorOnCrossCompileToBin(t *testing.T) {
 }
 
 func TestGoInstallDetectsRemovedFilesInPackageMain(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not yet support package build IDs")
 	tooSlow(t)
 	tg := testgo(t)
 	defer tg.cleanup()
