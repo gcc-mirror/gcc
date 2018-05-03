@@ -1389,7 +1389,7 @@ namespace __variant
 
       using _Result_type =
 	decltype(std::forward<_Visitor>(__visitor)(
-	    get<0>(std::forward<_Variants>(__variants))...));
+	    std::get<0>(std::forward<_Variants>(__variants))...));
 
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
 	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
