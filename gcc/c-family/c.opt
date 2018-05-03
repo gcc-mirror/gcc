@@ -1494,8 +1494,7 @@ C++ ObjC++ Var(flag_new_inheriting_ctors) Init(1)
 Implement C++17 inheriting constructor semantics.
 
 ffriend-injection
-C++ ObjC++ Var(flag_friend_injection)
-Inject friend functions into enclosing namespace.
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fkeep-inline-dllexport
 C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)

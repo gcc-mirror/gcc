@@ -1,3 +1,11 @@
+2018-05-03  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/extend.texi (Deprecated Features): Remove
+	-ffriend-injection.
+	(Backwards Compatibility): Likewise.
+	* doc/invoke.texi (C++ Language Options): Likewise.
+	(C++ Dialect Options): Likewise.
+
 2018-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85530
