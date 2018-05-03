@@ -979,9 +979,13 @@ c_cpp_builtins (cpp_reader *pfile)
       if (flag_concepts)
 	cpp_define (pfile, "__cpp_concepts=201507");
       if (flag_modules)
-	/* FIXME: get clarification about such a define.  */
-	/* 201704 - export module Foo; // == interface  */
-	cpp_define (pfile, "__cpp_modules=201704");
+	{
+	  /* FIXME: get clarification about such a define.  */
+	  /* 201804 - module; p0713  */
+	  cpp_define (pfile, "__cpp_modules=201804");
+	  cpp_define (pfile, flag_modules < 0 ? "__cpp_modules_atom"
+		      : "__cpp_modules_ts");
+	}
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */

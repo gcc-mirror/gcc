@@ -1,5 +1,12 @@
 2018-05-03  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family
+	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_modules value,
+	define __cpp_modules_{ts,atom} as selected.
+	gcc/testsuite/
+	* g++.dg/modules/atom-check-1_a.C: Check for __cpp_modules_atom.
+	* g++.dg/modules/atom-check-1_b.C: Check for __cpp_modules_ts.
+
 	gcc/cp/
 	* module.c (cluster_size): Delete.
 	(module_state::write_{cluster,namespaces,bindings}): Adjust.
