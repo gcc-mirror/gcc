@@ -1,3 +1,10 @@
+2018-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85615
+	* tree-ssa-threadupdate.c (thread_block_1): Only allow exits
+	to loops not nested in BBs loop father to avoid creating multi-entry
+	loops.
+
 2018-05-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR tree-optimization/70291

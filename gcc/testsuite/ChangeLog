@@ -1,3 +1,8 @@
+2018-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85615
+	* gcc.dg/torture/pr85615.c: New testcase.
+
 2018-05-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR tree-optimization/70291
