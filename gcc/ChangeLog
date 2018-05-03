@@ -1,3 +1,9 @@
+2018-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85530
+	* config/i386/avx512fintrin.h (_mm512_mullox_epi64,
+	_mm512_mask_mullox_epi64): New intrinsics.
+
 2018-05-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/85106

@@ -567,6 +567,20 @@ _mm512_mask_mullo_epi32 (__m512i __W, __mmask16 __M, __m512i __A, __m512i __B)
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mullox_epi64 (__m512i __A, __m512i __B)
+{
+  return (__m512i) ((__v8du) __A * (__v8du) __B);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_mullox_epi64 (__m512i __W, __mmask8 __M, __m512i __A, __m512i __B)
+{
+  return _mm512_mask_mov_epi64 (__W, __M, _mm512_mullox_epi64 (__A, __B));
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_sllv_epi32 (__m512i __X, __m512i __Y)
 {
   return (__m512i) __builtin_ia32_psllv16si_mask ((__v16si) __X,
