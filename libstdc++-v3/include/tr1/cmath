@@ -1160,10 +1160,6 @@ namespace tr1
   using std::comp_ellint_3l;
   using std::comp_ellint_3;
 
-  using __gnu_cxx::conf_hypergf;
-  using __gnu_cxx::conf_hypergl;
-  using __gnu_cxx::conf_hyperg;
-
   using std::cyl_bessel_if;
   using std::cyl_bessel_il;
   using std::cyl_bessel_i;
@@ -1199,10 +1195,6 @@ namespace tr1
   using std::hermitef;
   using std::hermitel;
   using std::hermite;
-
-  using __gnu_cxx::hypergf;
-  using __gnu_cxx::hypergl;
-  using __gnu_cxx::hyperg;
 
   using std::laguerref;
   using std::laguerrel;
@@ -1246,7 +1238,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #include <tr1/beta_function.tcc>
 #include <tr1/ell_integral.tcc>
 #include <tr1/exp_integral.tcc>
-#include <tr1/hypergeometric.tcc>
 #include <tr1/legendre_function.tcc>
 #include <tr1/modified_bessel_func.tcc>
 #include <tr1/poly_hermite.tcc>
@@ -1369,23 +1360,6 @@ namespace tr1
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Tpn>::__type __type;
       return __detail::__comp_ellint_3<__type>(__k, __nu);
-    }
-
-  inline float
-  conf_hypergf(float __a, float __c, float __x)
-  { return __detail::__conf_hyperg<float>(__a, __c, __x); }
-
-  inline long double
-  conf_hypergl(long double __a, long double __c, long double __x)
-  { return __detail::__conf_hyperg<long double>(__a, __c, __x); }
-
-  ///  5.2.1.7  Confluent hypergeometric functions.
-  template<typename _Tpa, typename _Tpc, typename _Tp>
-    inline typename __gnu_cxx::__promote_3<_Tpa, _Tpc, _Tp>::__type
-    conf_hyperg(_Tpa __a, _Tpc __c, _Tp __x)
-    {
-      typedef typename __gnu_cxx::__promote_3<_Tpa, _Tpc, _Tp>::__type __type;
-      return __detail::__conf_hyperg<__type>(__a, __c, __x);
     }
 
   inline float
@@ -1542,23 +1516,6 @@ namespace tr1
     }
 
   inline float
-  hypergf(float __a, float __b, float __c, float __x)
-  { return __detail::__hyperg<float>(__a, __b, __c, __x); }
-
-  inline long double
-  hypergl(long double __a, long double __b, long double __c, long double __x)
-  { return __detail::__hyperg<long double>(__a, __b, __c, __x); }
-
-  ///  5.2.1.17  Hypergeometric functions.
-  template<typename _Tpa, typename _Tpb, typename _Tpc, typename _Tp>
-    inline typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type
-    hyperg(_Tpa __a, _Tpb __b, _Tpc __c, _Tp __x)
-    {
-      typedef typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type __type;
-      return __detail::__hyperg<__type>(__a, __b, __c, __x);
-    }
-
-  inline float
   laguerref(unsigned int __n, float __x)
   { return __detail::__laguerre<float>(__n, __x); }
 
@@ -1667,5 +1624,78 @@ namespace tr1
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#if _GLIBCXX_USE_STD_SPEC_FUNCS && !defined(__STRICT_ANSI__)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+namespace tr1
+{
+  using __gnu_cxx::conf_hypergf;
+  using __gnu_cxx::conf_hypergl;
+  using __gnu_cxx::conf_hyperg;
+
+  using __gnu_cxx::hypergf;
+  using __gnu_cxx::hypergl;
+  using __gnu_cxx::hyperg;
+} // namespace tr1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#else // ! (_GLIBCXX_USE_STD_SPEC_FUNCS && !defined(__STRICT_ANSI__))
+
+#include <bits/stl_algobase.h>
+#include <limits>
+#include <tr1/type_traits>
+
+#include <tr1/hypergeometric.tcc>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+namespace tr1
+{
+  inline float
+  conf_hypergf(float __a, float __c, float __x)
+  { return __detail::__conf_hyperg<float>(__a, __c, __x); }
+
+  inline long double
+  conf_hypergl(long double __a, long double __c, long double __x)
+  { return __detail::__conf_hyperg<long double>(__a, __c, __x); }
+
+  ///  5.2.1.7  Confluent hypergeometric functions.
+  template<typename _Tpa, typename _Tpc, typename _Tp>
+    inline typename __gnu_cxx::__promote_3<_Tpa, _Tpc, _Tp>::__type
+    conf_hyperg(_Tpa __a, _Tpc __c, _Tp __x)
+    {
+      typedef typename __gnu_cxx::__promote_3<_Tpa, _Tpc, _Tp>::__type __type;
+      return __detail::__conf_hyperg<__type>(__a, __c, __x);
+    }
+
+  inline float
+  hypergf(float __a, float __b, float __c, float __x)
+  { return __detail::__hyperg<float>(__a, __b, __c, __x); }
+
+  inline long double
+  hypergl(long double __a, long double __b, long double __c, long double __x)
+  { return __detail::__hyperg<long double>(__a, __b, __c, __x); }
+
+  ///  5.2.1.17  Hypergeometric functions.
+  template<typename _Tpa, typename _Tpb, typename _Tpc, typename _Tp>
+    inline typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type
+    hyperg(_Tpa __a, _Tpb __b, _Tpc __c, _Tp __x)
+    {
+      typedef typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type __type;
+      return __detail::__hyperg<__type>(__a, __b, __c, __x);
+    }
+
+} // namespace tr1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // _GLIBCXX_USE_STD_SPEC_FUNCS && !defined(__STRICT_ANSI__)
 
 #endif // _GLIBCXX_TR1_CMATH

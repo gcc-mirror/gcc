@@ -1,5 +1,14 @@
 2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/82644
+	* include/tr1/cmath [__STRICT_ANSI__] (hypergf, hypergl, hyperg): Use
+	inline definitions instead of using-declarations.
+	[__STRICT_ANSI__] (conf_hypergf, conf_hypergl, conf_hyperg): Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	07_conf_hyperg/compile_cxx17.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	17_hyperg/compile_cxx17.cc: New.
+
 	PR libstdc++/84769
 	* include/std/variant (visit): Qualify std::get call.
 
