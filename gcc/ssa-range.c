@@ -455,6 +455,8 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   basic_block bb = gimple_bb (g);
   bool res;
 
+  if (name && !valid_irange_ssa (name))
+    return false;
   if (is_a <gphi *> (g))
     {
       gphi *phi = as_a <gphi *> (g);
@@ -869,7 +871,8 @@ path_ranger::exercise (FILE *output)
 	  printed = false;
 	  for (x = 1; x < num_ssa_names; x++)
 	    {
-	      if (ssa_name(x) && has_global_ssa_range (range, ssa_name (x)))
+	      if (ssa_name(x) && has_global_ssa_range (range, ssa_name (x))
+		  && !range.range_for_type_p ())
 	        {
 		  gimple *s = SSA_NAME_DEF_STMT (ssa_name (x));
 		  if (s && gimple_bb (s) == bb)

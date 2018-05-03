@@ -68,8 +68,10 @@ argument_ok_to_propagate (tree name)
 static unsigned int
 execute_ranger_vrp ()
 {
+  bool details = dump_file && (dump_flags & TDF_DETAILS);
   // Create a temp ranger and exercise it before running in order to get a
   // listing in the dump file, and to fully exercise the code.
+  if (details)
   { 
     path_ranger e;
     e.exercise (dump_file);

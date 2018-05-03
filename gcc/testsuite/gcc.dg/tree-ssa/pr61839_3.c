@@ -1,6 +1,6 @@
 /* PR tree-optimization/61839.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdisable-tree-thread1 -fdump-tree-vrp1 -fdump-tree-optimized" } */
 
 __attribute__ ((noinline))
 int foo (int a, unsigned b)

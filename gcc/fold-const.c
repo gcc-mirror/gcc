@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
+#include "wide-int-aux.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -962,146 +963,6 @@ int_binop_types_match_p (enum tree_code code, const_tree type1, const_tree type2
 
 /* Subroutine of int_const_binop_1 that handles two INTEGER_CSTs.  */
 
-bool
-wide_int_const_binop (enum tree_code code, wide_int& res, const wide_int& arg1,
-		      const wide_int& arg2, signop sign, bool& overflow)
-{
-  wide_int tmp;
-  overflow = false;
-  switch (code)
-    {
-    case BIT_IOR_EXPR:
-      res = wi::bit_or (arg1, arg2);
-      break;
-
-    case BIT_XOR_EXPR:
-      res = wi::bit_xor (arg1, arg2);
-      break;
-
-    case BIT_AND_EXPR:
-      res = wi::bit_and (arg1, arg2);
-      break;
-
-    case RSHIFT_EXPR:
-    case LSHIFT_EXPR:
-      if (wi::neg_p (arg2))
-	{
-	  tmp = -arg2;
-	  if (code == RSHIFT_EXPR)
-	    code = LSHIFT_EXPR;
-	  else
-	    code = RSHIFT_EXPR;
-	}
-      else
-        tmp = arg2;
-
-      if (code == RSHIFT_EXPR)
-	/* It's unclear from the C standard whether shifts can overflow.
-	   The following code ignores overflow; perhaps a C standard
-	   interpretation ruling is needed.  */
-	res = wi::rshift (arg1, tmp, sign);
-      else
-	res = wi::lshift (arg1, tmp);
-      break;
-
-    case RROTATE_EXPR:
-    case LROTATE_EXPR:
-      if (wi::neg_p (arg2))
-	{
-	  tmp = -arg2;
-	  if (code == RROTATE_EXPR)
-	    code = LROTATE_EXPR;
-	  else
-	    code = RROTATE_EXPR;
-	}
-      else
-        tmp = arg2;
-
-      if (code == RROTATE_EXPR)
-	res = wi::rrotate (arg1, tmp);
-      else
-	res = wi::lrotate (arg1, tmp);
-      break;
-
-    case PLUS_EXPR:
-      res = wi::add (arg1, arg2, sign, &overflow);
-      break;
-
-    case MINUS_EXPR:
-      res = wi::sub (arg1, arg2, sign, &overflow);
-      break;
-
-    case MULT_EXPR:
-      res = wi::mul (arg1, arg2, sign, &overflow);
-      break;
-
-    case MULT_HIGHPART_EXPR:
-      res = wi::mul_high (arg1, arg2, sign);
-      break;
-
-    case TRUNC_DIV_EXPR:
-    case EXACT_DIV_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::div_trunc (arg1, arg2, sign, &overflow);
-      break;
-
-    case FLOOR_DIV_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::div_floor (arg1, arg2, sign, &overflow);
-      break;
-
-    case CEIL_DIV_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::div_ceil (arg1, arg2, sign, &overflow);
-      break;
-
-    case ROUND_DIV_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::div_round (arg1, arg2, sign, &overflow);
-      break;
-
-    case TRUNC_MOD_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::mod_trunc (arg1, arg2, sign, &overflow);
-      break;
-
-    case FLOOR_MOD_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::mod_floor (arg1, arg2, sign, &overflow);
-      break;
-
-    case CEIL_MOD_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::mod_ceil (arg1, arg2, sign, &overflow);
-      break;
-
-    case ROUND_MOD_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::mod_round (arg1, arg2, sign, &overflow);
-      break;
-
-    case MIN_EXPR:
-      res = wi::min (arg1, arg2, sign);
-      break;
-
-    case MAX_EXPR:
-      res = wi::max (arg1, arg2, sign);
-      break;
-
-    default:
-      return false;
-    }
-
-  return true;
-}
 
 static tree
 int_const_binop_2 (enum tree_code code, const_tree parg1, const_tree parg2,
@@ -1116,7 +977,7 @@ int_const_binop_2 (enum tree_code code, const_tree parg1, const_tree parg2,
   wi::tree_to_wide_ref arg1 = wi::to_wide (parg1);
   wide_int arg2 = wi::to_wide (parg2, TYPE_PRECISION (type));
 
-  if (!wide_int_const_binop (code, res, arg1, arg2, sign, overflow))
+  if (!wide_int_binop (code, res, arg1, arg2, sign, overflow))
     return NULL_TREE;
 
   t = force_fit_type (type, res, overflowable,

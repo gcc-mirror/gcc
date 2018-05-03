@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 #include "tree-vrp.h"
-#include "fold-const.h"
+#include "wide-int-aux.h"
 
 inline wide_int
 max_limit (const_tree type)
@@ -719,48 +719,22 @@ operator_ge::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 /*  -----------------------------------------------------------------------  */
 
 static bool
-do_multiplicative (enum tree_code code, signop s, irange& r,
-		   const wide_int& lh_lb, const wide_int lh_ub,
-		   const wide_int& rh_lb, const wide_int &rh_ub) 
+do_cross_product_irange (enum tree_code code, signop s, irange& r,
+			 const wide_int& lh_lb, const wide_int& lh_ub,
+			 const wide_int& rh_lb, const wide_int& rh_ub) 
 {
-  bool ov;
-  wide_int new_lb, new_ub, tmp;
+  wide_int new_lb, new_ub;
 
-  // Compute the 4 cross operations and their minimum and maximum value.
-  if (!wide_int_const_binop (code, new_lb, lh_lb, rh_lb, s, ov) || ov)
-    return false;
-  new_ub = new_lb;
-
-  if (!wide_int_const_binop (code, tmp, lh_lb, rh_ub, s, ov) || ov)
-    return false;
-  if (wi::lt_p (tmp, new_lb, s))
-    new_lb = tmp;
-  else
-    if (wi::gt_p (tmp, new_ub, s))
-      new_ub = tmp;
-
-  if (!wide_int_const_binop (code, tmp, lh_ub, rh_lb, s, ov) || ov)
-    return false;
-  if (wi::lt_p (tmp, new_lb, s))
-    new_lb = tmp;
-  else
-    if (wi::gt_p (tmp, new_ub, s))
-      new_ub = tmp;
-
-  if (!wide_int_const_binop (code, tmp, lh_ub, rh_ub, s, ov) || ov)
-    return false;
-  if (wi::lt_p (tmp, new_lb, s))
-    new_lb = tmp;
-  else
-    if (wi::gt_p (tmp, new_ub, s))
-    new_ub = tmp;
-
-  r.union_ (new_lb, new_ub);
-  return true;
+  if (do_cross_product (code, s, new_lb, new_ub, lh_lb, lh_ub, rh_lb, rh_ub))
+    {
+      r.union_ (new_lb, new_ub);
+      return true;
+    }
+  return false;
 }
 
 static bool
-op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
+op_wi (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
        const wide_int lh_ub, const wide_int& rh_lb, const wide_int &rh_ub) 
 {
   wide_int new_lb, new_ub, tmp;
@@ -769,14 +743,103 @@ op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
   switch (code)
     {
     case PLUS_EXPR:
-      wide_int_const_binop (code, new_lb, lh_lb, rh_lb, s, ov_lb);
-      wide_int_const_binop (code, new_ub, lh_ub, rh_ub, s, ov_ub);
-      break;
+      wide_int_binop (code, new_lb, lh_lb, rh_lb, s, ov_lb);
+      wide_int_binop (code, new_ub, lh_ub, rh_ub, s, ov_ub);
+      // Double Integral overflow calculations work fine, If one of the two
+      // operands is a constant.  ie   [0, 100] + ([MAXINT-1),(MAXINT-1)] 
+      // Otherwise we don't know if the overflows "overflow" into each other.
+      if (!ov_lb || !ov_ub || wi::eq_p (lh_lb, lh_ub)
+	  || wi::eq_p (rh_lb, rh_ub))
+	{
+	  add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
+	  return true;
+	}
+      return false;
 
     case MINUS_EXPR:
-      wide_int_const_binop (code, new_lb, lh_lb, rh_ub, s, ov_lb);
-      wide_int_const_binop (code, new_ub, lh_ub, rh_lb, s, ov_ub);
-      break;
+      wide_int_binop (code, new_lb, lh_lb, rh_ub, s, ov_lb);
+      wide_int_binop (code, new_ub, lh_ub, rh_lb, s, ov_ub);
+      if (!ov_lb || !ov_ub || wi::eq_p (lh_lb, lh_ub)
+	  || wi::eq_p (rh_lb, rh_ub))
+	{
+	  add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
+	  return true;
+	}
+      return false;
+
+    case RSHIFT_EXPR:
+      return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
+
+    case LSHIFT_EXPR:
+      {
+        int prec = TYPE_PRECISION (r.get_type ());
+	int shift = wi::extract_uhwi (rh_ub, 0, rh_ub.get_precision ());
+        // If rh is a constant, just do a multiply
+        if (wi::eq_p (rh_lb, rh_ub))
+	  {
+	    bool save_flag = flag_wrapv;
+	    bool res;
+	    flag_wrapv = 1;
+	    tmp = wi::set_bit_in_zero (shift, prec);
+	    res = op_wi (MULT_EXPR, s, r, lh_lb, lh_ub, tmp, tmp);
+	    flag_wrapv = save_flag;
+	    return res;
+	  }
+	// Check to see if the shift might overflow.
+	int overflow_pos = prec;
+	int bound_shift;
+	bool in_bounds = false;
+
+	if (s == SIGNED)
+	  overflow_pos--;
+
+        /* If bound_shift == HOST_BITS_PER_WIDE_INT, the llshift can
+           overflow.  However, for that to happen, rh_ub needs to be
+           zero, which means RH is a singleton range of zero, which
+           means it should be handled by the previous if-clause.  */
+	bound_shift = overflow_pos - shift;
+	tmp = wi::set_bit_in_zero (bound_shift, prec);
+	wide_int complement = ~(tmp - 1);
+
+	if (s == UNSIGNED)
+	  {
+	    new_lb = tmp;
+	    new_ub = complement;
+	    if (wi::ltu_p (lh_ub, new_lb))
+	      {
+	      /* [5, 6] << [1, 2] == [10, 24].  */
+	      /* We're shifting out only zeroes, the value increases
+		 monotonically.  */
+	      in_bounds = true;
+	      }
+	    else if (wi::ltu_p (new_ub, lh_lb))
+	      {
+		/* [0xffffff00, 0xffffffff] << [1, 2]
+		   == [0xfffffc00, 0xfffffffe].  */
+		/* We're shifting out only ones, the value decreases
+		   monotonically.  */
+		in_bounds = true;
+	      }
+	  }
+	else
+	  {
+	    new_lb = complement;
+	    new_ub = tmp;
+	    if (wi::lts_p (lh_ub, new_ub) && wi::lts_p (new_lb, lh_lb))
+	      {
+		/* For non-negative numbers, we're shifting out only
+		   zeroes, the value increases monotonically.
+		   For negative numbers, we're shifting out only ones, the
+		   value decreases monotomically.  */
+		in_bounds = true;
+	      }
+	  }
+
+	if (in_bounds)
+	  return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb,
+					  rh_ub);
+	return false;
+      }
 
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
@@ -785,7 +848,7 @@ op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
     case CEIL_DIV_EXPR:
       // if zero is not a possible result, do the operation
       if (wi::lt_p (0, rh_lb, s) || wi::lt_p (rh_ub, 0, s))
-	return do_multiplicative (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
+	return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
       
       // If divide by zero is allowed, do nothing.
       if (cfun->can_throw_non_call_exceptions)
@@ -796,13 +859,13 @@ op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
       if (wi::ne_p (rh_lb, 0))
         {
 	  tmp = wi::minus_one (rh_lb.get_precision ());
-	  if (!do_multiplicative (code, s, r, lh_lb, lh_ub, rh_lb, tmp))
+	  if (!do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb, tmp))
 	    return false;
 	}
       if (wi::ne_p (rh_ub, 0))
         {
 	  tmp = wi::one (rh_ub.get_precision ());
-	  if (!do_multiplicative (code, s, r, lh_lb, lh_ub, tmp, rh_ub))
+	  if (!do_cross_product_irange (code, s, r, lh_lb, lh_ub, tmp, rh_ub))
 	    return false;
 	}
       // If nothing was done at all, the dividsor must be [0,0] and 
@@ -812,20 +875,12 @@ op_ii (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
       return true;
       
     case MULT_EXPR:
-      return do_multiplicative (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
+      return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
 
     default:
-      return false;
+      break;
     }
 
-  // Double Integral overflow calculations work fine, IF one of the two
-  // operands is a constant.  ie   [0, 100] + ([MAXINT-1),(MAXINT-1)] 
-  // Otherwise we don't know if the overflows "overflow" into each other.
-  if (!ov_lb || !ov_ub || wi::eq_p (lh_lb, lh_ub) || wi::eq_p (rh_lb, rh_ub))
-    {
-      add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
-      return true;
-    }
   return false;
 }
 
@@ -834,13 +889,11 @@ static bool
 op_ir (enum tree_code code, irange& r, const wide_int& lh, const irange& rh)
 {
   unsigned x;
-  tree type = rh.get_type ();
-  signop s = TYPE_SIGN (type);
-
-  r.clear (type);
+  signop s = TYPE_SIGN (r.get_type ());
+  r.clear (r.get_type ());
   for (x = 0; x < rh.num_pairs () ; x++)
     {
-      if (!op_ii (code, s, r, lh, lh, rh.lower_bound (x), rh.upper_bound (x)))
+      if (!op_wi (code, s, r, lh, lh, rh.lower_bound (x), rh.upper_bound (x)))
         return false;
     }
   return true;
@@ -851,13 +904,12 @@ static bool
 op_ri (enum tree_code code, irange& r, const irange& lh, const wide_int& rh)
 {
   unsigned x;
-  tree type = lh.get_type ();
-  signop s = TYPE_SIGN (type);
+  signop s = TYPE_SIGN (r.get_type ());
 
-  r.clear (type);
+  r.clear (r.get_type ());
   for (x = 0; x < lh.num_pairs () ; x++)
     {
-      if (!op_ii (code, s, r, lh.lower_bound (x), lh.upper_bound (x), rh, rh))
+      if (!op_wi (code, s, r, lh.lower_bound (x), lh.upper_bound (x), rh, rh))
         return false;
     }
   return true;
@@ -868,12 +920,12 @@ static bool
 op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 {
   bool res = false;
+  tree type = lh.get_type ();
+  // Clear and set result type.
+  r.clear (type);
 
   if (lh.empty_p () || rh.empty_p ())
-    {
-      r.clear (lh.get_type ());
-      return true;
-    }
+    return true;
 
   if (lh.overflow_p() || rh.overflow_p ())
     return false;
@@ -887,15 +939,12 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 
   if (!res)
     {
-      tree type = lh.get_type ();
       signop s = TYPE_SIGN (type);
-      r.clear (lh.get_type ());
-
-      res = op_ii (code, s, r, lh.lower_bound (), lh.upper_bound (),
+      res = op_wi (code, s, r, lh.lower_bound (), lh.upper_bound (),
 		   rh.lower_bound (), rh.upper_bound ());
     }
 
-  return res;
+  return res && !r.range_for_type_p ();
 }
 
 
@@ -1046,6 +1095,74 @@ operator_exact_divide::op1_irange (irange& r,
   return false;
 }
 
+
+class operator_shift : public basic_operator
+{
+public:
+  operator_shift (enum tree_code c) : basic_operator (c) { }
+  virtual bool fold_range (irange& r, const irange& op1,
+                           const irange& op2) const;
+  virtual bool op1_irange (irange& r, const irange& lhs,
+			   const irange& op2) const;
+};
+
+operator_shift op_lshift (LSHIFT_EXPR);
+operator_shift op_rshift (RSHIFT_EXPR);
+
+bool
+operator_shift::fold_range (irange& r, const irange& op1,
+                           const irange& op2) const 
+{
+  tree t1 = op1.get_type ();
+  if (empty_range_check (r, op1, op2, t1))
+    return true;
+  
+  // Negative shifts are undefined, as well as shift >= precision
+  if (wi::lt_p (op2.lower_bound (), 0, TYPE_SIGN (op2.get_type ())))
+    return false;
+  if (wi::ge_p (op2.upper_bound (), TYPE_PRECISION (t1), UNSIGNED))
+    return false;
+
+  return basic_operator::fold_range (r, op1, op2);
+}
+
+bool
+operator_shift::op1_irange (irange& r, const irange& lhs,
+			    const irange& op2) const
+{
+  tree type = lhs.get_type ();
+  wide_int w2;
+  if (empty_range_check (r, lhs, op2, type))
+    return true;
+
+  // Negative shifts are undefined, as well as shift >= precision
+  if (wi::lt_p (op2.lower_bound (), 0, TYPE_SIGN (op2.get_type ())))
+    return false;
+  if (wi::ge_p (op2.upper_bound (), TYPE_PRECISION (type), UNSIGNED))
+    return false;
+
+  return false;
+#if 0
+  // Check if the calculation can be done without overflows.
+  // and if so, adjust the bounds to allow for 1's that may have been shifted
+  // out.
+  wide_int mask;
+  if (code == LSHIFT_EXPR)
+    {
+      res = op_rr (RSHIFT_EXPR, r, lhs, w2);
+      if (res)
+        {
+	  mask = wi::mask (op, true, r.get_precision ());
+	}
+    }
+  else
+    {
+      res = op_rr (LSHIFT_EXPR, r, lhs, w2);
+    }
+
+  return res;
+#endif
+}
 
 
 /*  ----------------------------------------------------------------------  */
@@ -1754,9 +1871,9 @@ operator_min_max::fold_range (irange& r, const irange& lh,
   // intersect the union with the max/min values of both to get a set of values.
   // This allows   MIN  ([1,5][20,30] , [0,4][18,60])  to produce 
   // [0,5][18,30]  rather than [0,30]
-  wide_int_const_binop (code, lb, lh.lower_bound (), rh.lower_bound (),
+  wide_int_binop (code, lb, lh.lower_bound (), rh.lower_bound (),
 			TYPE_SIGN (type), ov);
-  wide_int_const_binop (code, ub, lh.upper_bound (), rh.upper_bound (),
+  wide_int_binop (code, ub, lh.upper_bound (), rh.upper_bound (),
 			TYPE_SIGN (type), ov);
   r.intersect (irange (type, lb, ub));
   return true;
@@ -1861,6 +1978,9 @@ irange_op_table::irange_op_table ()
   irange_tree[MIN_EXPR] = &op_min;
   irange_tree[MAX_EXPR] = &op_max;
   irange_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
+
+  irange_tree[LSHIFT_EXPR] = &op_lshift;
+  irange_tree[RSHIFT_EXPR] = &op_rshift;
 }
 
 /* The table is hidden and accessed via a simple extern function.  */

@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "vr-values.h"
 #include "builtins.h"
+#include "wide-int-aux.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -970,113 +971,33 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
 {
   bool overflow = false;
   signop sign = TYPE_SIGN (TREE_TYPE (val1));
+  wide_int w1 = wi::to_wide (val1);
+  wide_int w2 = wi::to_wide (val2);
 
   switch (code)
     {
     case RSHIFT_EXPR:
     case LSHIFT_EXPR:
       {
-	wide_int wval2 = wi::to_wide (val2, TYPE_PRECISION (TREE_TYPE (val1)));
-	if (wi::neg_p (wval2))
-	  {
-	    wval2 = -wval2;
-	    if (code == RSHIFT_EXPR)
-	      code = LSHIFT_EXPR;
-	    else
-	      code = RSHIFT_EXPR;
-	  }
-
-	if (code == RSHIFT_EXPR)
-	  /* It's unclear from the C standard whether shifts can overflow.
-	     The following code ignores overflow; perhaps a C standard
-	     interpretation ruling is needed.  */
-	  *res = wi::rshift (wi::to_wide (val1), wval2, sign);
-	else
-	  *res = wi::lshift (wi::to_wide (val1), wval2);
+	w2 = wi::to_wide (val2, TYPE_PRECISION (TREE_TYPE (val1)));
+	if (!range_binop (code, *res, w1, w2, sign, overflow, false))
+	  return false;
 	break;
       }
 
-    case MULT_EXPR:
-      *res = wi::mul (wi::to_wide (val1),
-		      wi::to_wide (val2), sign, &overflow);
-      break;
-
+    case ROUND_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      if (val2 == 0)
+    case MULT_EXPR:
+      if (!range_binop (code, *res, w1, w2, sign, overflow,
+          TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1))))
 	return false;
-      else
-	*res = wi::div_trunc (wi::to_wide (val1),
-			      wi::to_wide (val2), sign, &overflow);
-      break;
-
-    case FLOOR_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      *res = wi::div_floor (wi::to_wide (val1),
-			    wi::to_wide (val2), sign, &overflow);
-      break;
-
-    case CEIL_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      *res = wi::div_ceil (wi::to_wide (val1),
-			   wi::to_wide (val2), sign, &overflow);
-      break;
-
-    case ROUND_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      *res = wi::div_round (wi::to_wide (val1),
-			    wi::to_wide (val2), sign, &overflow);
       break;
 
     default:
       gcc_unreachable ();
-    }
-
-  if (overflow
-      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
-    {
-      /* If the operation overflowed return -INF or +INF depending
-	 on the operation and the combination of signs of the operands.  */
-      int sgn1 = tree_int_cst_sgn (val1);
-      int sgn2 = tree_int_cst_sgn (val2);
-
-      /* Notice that we only need to handle the restricted set of
-	 operations handled by extract_range_from_binary_expr.
-	 Among them, only multiplication, addition and subtraction
-	 can yield overflow without overflown operands because we
-	 are working with integral types only... except in the
-	 case VAL1 = -INF and VAL2 = -1 which overflows to +INF
-	 for division too.  */
-
-      /* For multiplication, the sign of the overflow is given
-	 by the comparison of the signs of the operands.  */
-      if ((code == MULT_EXPR && sgn1 == sgn2)
-          /* For addition, the operands must be of the same sign
-	     to yield an overflow.  Its sign is therefore that
-	     of one of the operands, for example the first.  */
-	  || (code == PLUS_EXPR && sgn1 >= 0)
-	  /* For subtraction, operands must be of
-	     different signs to yield an overflow.  Its sign is
-	     therefore that of the first operand or the opposite of
-	     that of the second operand.  A first operand of 0 counts
-	     as positive here, for the corner case 0 - (-INF), which
-	     overflows, but must yield +INF.  */
-	  || (code == MINUS_EXPR && sgn1 >= 0)
-	  /* For division, the only case is -INF / -1 = +INF.  */
-	  || code == TRUNC_DIV_EXPR
-	  || code == FLOOR_DIV_EXPR
-	  || code == CEIL_DIV_EXPR
-	  || code == EXACT_DIV_EXPR
-	  || code == ROUND_DIV_EXPR)
-	*res = wi::max_value (TYPE_PRECISION (TREE_TYPE (val1)),
-			      TYPE_SIGN (TREE_TYPE (val1)));
-      else
-	*res = wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
-			      TYPE_SIGN (TREE_TYPE (val1)));
-      return true;
     }
 
   return !overflow;
@@ -1087,7 +1008,7 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
    bitmask if some bit is unset, it means for all numbers in the range
    the bit is 0, otherwise it might be 0 or 1.  In *MUST_BE_NONZERO
    bitmask if some bit is set, it means for all numbers in the range
-   the bit is 1, otherwise it might be 0 or 1.  */
+f (   the bit is 1, otherwise it might be 0 or 1.  */
 
 void
 zero_nonzero_bits_from_bounds (signop sign, const wide_int& lb,
