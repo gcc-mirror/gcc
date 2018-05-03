@@ -22,10 +22,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-
-#ifdef __MINGW32__
-#include"random_mingw.cc"
-#else
 #define _GLIBCXX_USE_CXX11_ABI 1
 #include <random>
 
@@ -213,5 +209,4 @@ namespace std _GLIBCXX_VISIBILITY(default)
     0x9d2c5680UL, 15,
     0xefc60000UL, 18, 1812433253UL>;
 }
-#endif
 #endif
