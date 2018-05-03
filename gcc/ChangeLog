@@ -1,3 +1,17 @@
+2018-05-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/70291
+	* tree-complex.c (expand_complex_libcall): Add type, inplace_p
+	arguments.  Change return type to tree.  Emit libcall as a new
+	statement rather than replacing existing one when inplace_p is true.
+	(expand_complex_multiplication_components): New function.
+	(expand_complex_multiplication): Expand floating-point complex
+	multiplication using the above.
+	(expand_complex_division): Rename inner_type parameter to type.
+	Update expand_complex_libcall call-site.
+	(expand_complex_operations_1): Update expand_complex_multiplication
+	and expand_complex_division call-sites.
+
 2018-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85582
