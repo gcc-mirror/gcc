@@ -1,3 +1,12 @@
+2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/any (any_cast): Use __remove_cvref_t.
+	* include/std/tuple (__make_tuple): Likewise.
+	* include/std/type_traits (__remove_cvref_t): Define.
+	(__result_of_memobj, __result_of_memfun): Use __remove_cvref_t.
+	[__cplusplus > 201703L] (remove_cvref, remove_cvref_t): Define.
+	* include/std/variant (__erased_hash): Use __remove_cvref_t.
+
 2018-05-02  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/deque.tcc (deque<>::_M_assign_aux): Cast to void to

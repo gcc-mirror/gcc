@@ -289,7 +289,7 @@ namespace __variant
     size_t
     __erased_hash(void* __t)
     {
-      return std::hash<remove_cv_t<remove_reference_t<_Tp>>>{}(
+      return std::hash<__remove_cvref_t<_Tp>>{}(
 	  __variant::__ref_cast<_Tp>(__t));
     }
 
