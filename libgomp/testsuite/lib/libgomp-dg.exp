@@ -1,4 +1,12 @@
 proc libgomp-dg-test { prog do_what extra_tool_flags } {
+    # Force the dumpbase for test.c to test.o, such that scan-offload-*-dump
+    # will work.
+    foreach opt $extra_tool_flags {
+	if { [regexp ^-foffload=-fdump- $opt] } {
+	    lappend extra_tool_flags "-save-temps"
+	}
+    }
+
     return [gcc-dg-test-1 libgomp_target_compile $prog $do_what $extra_tool_flags]
 }
 
