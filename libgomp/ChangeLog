@@ -1,3 +1,11 @@
+2018-05-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libgomp-dg.exp (libgomp-dg-test): Add save-temps to
+	extra_tool_flags if it contains an -foffload=-fdump-* flag.
+	* testsuite/lib/libgomp.exp: Include scanoffloadtree.exp.
+	* testsuite/libgomp.oacc-c/vec.c: Use scan-offload-tree-dump.
+
 2018-05-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/85411

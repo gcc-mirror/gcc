@@ -2589,7 +2589,7 @@ assembly output.
 @subsubsection Scan optimization dump files
 
 These commands are available for @var{kind} of @code{tree}, @code{ltrans-tree},
-@code{rtl}, @code{ipa}, and @code{wpa-ipa}.
+@code{offload-tree}, @code{rtl}, @code{ipa}, and @code{wpa-ipa}.
 
 @table @code
 @item scan-@var{kind}-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]

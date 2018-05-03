@@ -1,3 +1,8 @@
+2018-05-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* lib/scanoffloadtree.exp: New file.
+
 2018-05-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85615
