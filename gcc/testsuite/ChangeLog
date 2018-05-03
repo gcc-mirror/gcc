@@ -1,3 +1,8 @@
+2018-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/85579
+	* fortran.dg/pr51434.f90: Truncate transfer argument.
+
 2018-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85582
