@@ -1,3 +1,26 @@
+2018-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_defaultmap_kind): New.
+	(struct tree_omp_clause): Add subcode.defaultmap_kind.
+	* tree.h (OMP_CLAUSE_DEFAULTMAP_KIND, OMP_CLAUSE_DEFAULTMAP_CATEGORY,
+	OMP_CLAUSE_DEFAULTMAP_BEHAVIOR, OMP_CLAUSE_DEFAULTMAP_SET_KIND):
+	Define.
+	* tree-pretty-print.c (dump_omp_clause): Handle new kinds of
+	OMP_CLAUSE_DEFAULTMAP.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_MAP_ALLOC_ONLY
+	and GOVD_MAP_FROM_ONLY.
+	(enum gimplify_defaultmap_kind): New.
+	(struct gimplify_omp_ctx): Remove target_map_scalars_firstprivate and
+	target_map_pointers_as_0len_arrays members, add defaultmap.
+	(new_omp_context): Initialize defaultmap member.
+	(omp_firstprivatize_variable): Test ctx->defaultmap[GDMK_SCALAR]
+	instead of ctx->omp_firstprivatize_variable.
+	(computable_teams_clause): Likewise.
+	(omp_notice_variable): Handle new defaultmap clause kinds.
+	(gimplify_scan_omp_clauses): Likewise.
+	(gimplify_adjust_omp_clauses_1): Handle GOVD_MAP_ALLOC_ONLY
+	and GOVD_MAP_FROM_ONLY.
+
 2017-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_omp_for): Move OMP_CLAUSE_REDUCTION

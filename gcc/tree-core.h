@@ -507,6 +507,25 @@ enum omp_clause_default_kind {
   OMP_CLAUSE_DEFAULT_LAST
 };
 
+enum omp_clause_defaultmap_kind {
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALLOCATABLE,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK = 7,
+  OMP_CLAUSE_DEFAULTMAP_ALLOC = 1 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_TO = 2 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_FROM = 3 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_TOFROM = 4 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE
+    = 5 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_NONE = 6 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_DEFAULT
+    = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_MASK = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1)
+};
+
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
    type.  */
@@ -1476,6 +1495,7 @@ struct GTY(()) tree_omp_clause {
     enum tree_code                 reduction_code;
     enum omp_clause_linear_kind    linear_kind;
     enum tree_code                 if_modifier;
+    enum omp_clause_defaultmap_kind defaultmap_kind;
     /* The dimension a OMP_CLAUSE__GRIDDIM_ clause of a gridified target
        construct describes.  */
     unsigned int		   dimension;

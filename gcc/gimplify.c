@@ -105,6 +105,12 @@ enum gimplify_omp_var_data
   /* Flag for GOVD_MAP: must be present already.  */
   GOVD_MAP_FORCE_PRESENT = 524288,
 
+  /* Flag for GOVD_MAP: only allocate.  */
+  GOVD_MAP_ALLOC_ONLY = 1048576,
+
+  /* Flag for GOVD_MAP: only copy back.  */
+  GOVD_MAP_FROM_ONLY = 2097152,
+
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
 			   | GOVD_LOCAL)
@@ -176,6 +182,14 @@ struct gimplify_ctx
   unsigned in_switch_expr : 1;
 };
 
+enum gimplify_defaultmap_kind
+{
+  GDMK_SCALAR,
+  GDMK_AGGREGATE,
+  GDMK_ALLOCATABLE,
+  GDMK_POINTER
+};
+
 struct gimplify_omp_ctx
 {
   struct gimplify_omp_ctx *outer_context;
@@ -188,9 +202,8 @@ struct gimplify_omp_ctx
   enum omp_region_type region_type;
   bool combined_loop;
   bool distribute;
-  bool target_map_scalars_firstprivate;
-  bool target_map_pointers_as_0len_arrays;
   bool target_firstprivatize_array_bases;
+  int defaultmap[4];
 };
 
 static struct gimplify_ctx *gimplify_ctxp;
@@ -413,6 +426,10 @@ new_omp_context (enum omp_region_type region_type)
     c->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   else
     c->default_kind = OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+  c->defaultmap[GDMK_SCALAR] = GOVD_MAP;
+  c->defaultmap[GDMK_AGGREGATE] = GOVD_MAP;
+  c->defaultmap[GDMK_ALLOCATABLE] = GOVD_MAP;
+  c->defaultmap[GDMK_POINTER] = GOVD_MAP;
 
   return c;
 }
@@ -6685,7 +6702,7 @@ omp_firstprivatize_variable (struct gimplify_omp_ctx *ctx, tree decl)
 	}
       else if ((ctx->region_type & ORT_TARGET) != 0)
 	{
-	  if (ctx->target_map_scalars_firstprivate)
+	  if (ctx->defaultmap[GDMK_SCALAR] & GOVD_FIRSTPRIVATE)
 	    omp_add_variable (ctx, decl, GOVD_FIRSTPRIVATE);
 	  else
 	    omp_add_variable (ctx, decl, GOVD_MAP | GOVD_MAP_TO_ONLY);
@@ -7217,11 +7234,9 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
       if (n == NULL)
 	{
 	  unsigned nflags = flags;
-	  if (ctx->target_map_pointers_as_0len_arrays
-	      || ctx->target_map_scalars_firstprivate)
+	  if ((ctx->region_type & ORT_ACC) == 0)
 	    {
 	      bool is_declare_target = false;
-	      bool is_scalar = false;
 	      if (is_global_var (decl)
 		  && varpool_node::get_create (decl)->offloadable)
 		{
@@ -7238,18 +7253,34 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 		    }
 		  is_declare_target = octx == NULL;
 		}
-	      if (!is_declare_target && ctx->target_map_scalars_firstprivate)
-		is_scalar = lang_hooks.decls.omp_scalar_p (decl);
-	      if (is_declare_target)
-		;
-	      else if (ctx->target_map_pointers_as_0len_arrays
-		       && (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
-			   || (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE
-			       && TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
-				  == POINTER_TYPE)))
-		nflags |= GOVD_MAP | GOVD_MAP_0LEN_ARRAY;
-	      else if (is_scalar)
-		nflags |= GOVD_FIRSTPRIVATE;
+	      if (!is_declare_target)
+		{
+		  int gdmk;
+		  if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+		      || (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE
+			  && (TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
+			      == POINTER_TYPE)))
+		    gdmk = GDMK_POINTER;
+		  else if (lang_hooks.decls.omp_scalar_p (decl))
+		    gdmk = GDMK_SCALAR;
+		  else
+		    gdmk = GDMK_AGGREGATE;
+		  if (ctx->defaultmap[gdmk] == 0)
+		    {
+		      tree d = lang_hooks.decls.omp_report_decl (decl);
+		      error ("%qE not specified in enclosing %<target%>",
+			     DECL_NAME (d));
+		      error_at (ctx->location, "enclosing %<target%>");
+		    }
+		  else if (ctx->defaultmap[gdmk]
+			   & (GOVD_MAP_0LEN_ARRAY | GOVD_FIRSTPRIVATE))
+		    nflags |= ctx->defaultmap[gdmk];
+		  else
+		    {
+		      gcc_assert (ctx->defaultmap[gdmk] & GOVD_MAP);
+		      nflags |= ctx->defaultmap[gdmk] & ~GOVD_MAP;
+		    }
+		}
 	    }
 
 	  struct gimplify_omp_ctx *octx = ctx->outer_context;
@@ -7280,28 +7311,28 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 		}
 	    }
 
-	  {
-	    tree type = TREE_TYPE (decl);
+	  if ((nflags & ~(GOVD_MAP_TO_ONLY | GOVD_MAP_FROM_ONLY
+			  | GOVD_MAP_ALLOC_ONLY)) == flags)
+	    {
+	      tree type = TREE_TYPE (decl);
 
-	    if (nflags == flags
-		&& gimplify_omp_ctxp->target_firstprivatize_array_bases
-		&& lang_hooks.decls.omp_privatize_by_reference (decl))
-	      type = TREE_TYPE (type);
-	    if (nflags == flags
-		&& !lang_hooks.types.omp_mappable_type (type))
-	      {
-		error ("%qD referenced in target region does not have "
-		       "a mappable type", decl);
-		nflags |= GOVD_MAP | GOVD_EXPLICIT;
-	      }
-	    else if (nflags == flags)
-	      {
-		if ((ctx->region_type & ORT_ACC) != 0)
-		  nflags = oacc_default_clause (ctx, decl, flags);
-		else
-		  nflags |= GOVD_MAP;
-	      }
-	  }
+	      if (gimplify_omp_ctxp->target_firstprivatize_array_bases
+		  && lang_hooks.decls.omp_privatize_by_reference (decl))
+		type = TREE_TYPE (type);
+	      if (!lang_hooks.types.omp_mappable_type (type))
+		{
+		  error ("%qD referenced in target region does not have "
+			 "a mappable type", decl);
+		  nflags |= GOVD_MAP | GOVD_EXPLICIT;
+		}
+	      else
+		{
+		  if ((ctx->region_type & ORT_ACC) != 0)
+		    nflags = oacc_default_clause (ctx, decl, flags);
+		  else
+		    nflags |= GOVD_MAP;
+		}
+	    }
 	found_outer:
 	  omp_add_variable (ctx, decl, nflags);
 	}
@@ -7545,8 +7576,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
   if (code == OMP_TARGET)
     {
       if (!lang_GNU_Fortran ())
-	ctx->target_map_pointers_as_0len_arrays = true;
-      ctx->target_map_scalars_firstprivate = true;
+	ctx->defaultmap[GDMK_POINTER] = GOVD_MAP | GOVD_MAP_0LEN_ARRAY;
+      ctx->defaultmap[GDMK_SCALAR] = GOVD_FIRSTPRIVATE;
     }
   if (!lang_GNU_Fortran ())
     switch (code)
@@ -8599,7 +8630,69 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  break;
 
 	case OMP_CLAUSE_DEFAULTMAP:
-	  ctx->target_map_scalars_firstprivate = false;
+	  enum gimplify_defaultmap_kind gdmkmin, gdmkmax;
+	  switch (OMP_CLAUSE_DEFAULTMAP_CATEGORY (c))
+	    {
+	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
+	      gdmkmin = GDMK_SCALAR;
+	      gdmkmax = GDMK_POINTER;
+	      break;
+	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR:
+	      gdmkmin = gdmkmax = GDMK_SCALAR;
+	      break;
+	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE:
+	      gdmkmin = gdmkmax = GDMK_AGGREGATE;
+	      break;
+	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALLOCATABLE:
+	      gdmkmin = gdmkmax = GDMK_ALLOCATABLE;
+	      break;
+	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER:
+	      gdmkmin = gdmkmax = GDMK_POINTER;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  for (int gdmk = gdmkmin; gdmk <= gdmkmax; gdmk++)
+	    switch (OMP_CLAUSE_DEFAULTMAP_BEHAVIOR (c))
+	      {
+	      case OMP_CLAUSE_DEFAULTMAP_ALLOC:
+		ctx->defaultmap[gdmk] = GOVD_MAP | GOVD_MAP_ALLOC_ONLY;
+		break;
+	      case OMP_CLAUSE_DEFAULTMAP_TO:
+		ctx->defaultmap[gdmk] = GOVD_MAP | GOVD_MAP_TO_ONLY;
+		break;
+	      case OMP_CLAUSE_DEFAULTMAP_FROM:
+		ctx->defaultmap[gdmk] = GOVD_MAP | GOVD_MAP_FROM_ONLY;
+		break;
+	      case OMP_CLAUSE_DEFAULTMAP_TOFROM:
+		ctx->defaultmap[gdmk] = GOVD_MAP;
+		break;
+	      case OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE:
+		ctx->defaultmap[gdmk] = GOVD_FIRSTPRIVATE;
+		break;
+	      case OMP_CLAUSE_DEFAULTMAP_NONE:
+		ctx->defaultmap[gdmk] = 0;
+		break;
+	      case OMP_CLAUSE_DEFAULTMAP_DEFAULT:
+		switch (gdmk)
+		  {
+		  case GDMK_SCALAR:
+		    ctx->defaultmap[gdmk] = GOVD_FIRSTPRIVATE;
+		    break;
+		  case GDMK_AGGREGATE:
+		  case GDMK_ALLOCATABLE:
+		    ctx->defaultmap[gdmk] = GOVD_MAP;
+		    break;
+		  case GDMK_POINTER:
+		    ctx->defaultmap[gdmk] = GOVD_MAP | GOVD_MAP_0LEN_ARRAY;
+		    break;
+		  default:
+		    gcc_unreachable ();
+		  }
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -8898,7 +8991,9 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       /* Not all combinations of these GOVD_MAP flags are actually valid.  */
       switch (flags & (GOVD_MAP_TO_ONLY
 		       | GOVD_MAP_FORCE
-		       | GOVD_MAP_FORCE_PRESENT))
+		       | GOVD_MAP_FORCE_PRESENT
+		       | GOVD_MAP_ALLOC_ONLY
+		       | GOVD_MAP_FROM_ONLY))
 	{
 	case 0:
 	  kind = GOMP_MAP_TOFROM;
@@ -8908,6 +9003,12 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  break;
 	case GOVD_MAP_TO_ONLY:
 	  kind = GOMP_MAP_TO;
+	  break;
+	case GOVD_MAP_FROM_ONLY:
+	  kind = GOMP_MAP_FROM;
+	  break;
+	case GOVD_MAP_ALLOC_ONLY:
+	  kind = GOMP_MAP_ALLOC;
 	  break;
 	case GOVD_MAP_TO_ONLY | GOVD_MAP_FORCE:
 	  kind = GOMP_MAP_TO | GOMP_MAP_FLAG_FORCE;
@@ -10589,7 +10690,7 @@ computable_teams_clause (tree *tp, int *walk_subtrees, void *)
 			     (splay_tree_key) *tp);
       if (n == NULL)
 	{
-	  if (gimplify_omp_ctxp->target_map_scalars_firstprivate)
+	  if (gimplify_omp_ctxp->defaultmap[GDMK_SCALAR] & GOVD_FIRSTPRIVATE)
 	    return NULL_TREE;
 	  return *tp;
 	}

@@ -32567,7 +32567,10 @@ cp_parser_omp_clause_hint (cp_parser *parser, tree list,
 }
 
 /* OpenMP 4.5:
-   defaultmap ( tofrom : scalar ) */
+   defaultmap ( tofrom : scalar )
+
+   OpenMP 5.0:
+   defaultmap ( implicit-behavior [ : variable-category ] ) */
 
 static tree
 cp_parser_omp_clause_defaultmap (cp_parser *parser, tree list,
@@ -32575,47 +32578,163 @@ cp_parser_omp_clause_defaultmap (cp_parser *parser, tree list,
 {
   tree c, id;
   const char *p;
+  enum omp_clause_defaultmap_kind behavior = OMP_CLAUSE_DEFAULTMAP_DEFAULT;
+  enum omp_clause_defaultmap_kind category
+    = OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
 
-  if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_DEFAULT))
+    p = "default";
+  else if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
-      cp_parser_error (parser, "expected %<tofrom%>");
+    invalid_behavior:
+      cp_parser_error (parser, "expected %<alloc%>, %<to%>, %<from%>, "
+			       "%<tofrom%>, %<firstprivate%>, %<none%> "
+			       "or %<default%>");
       goto out_err;
     }
-  id = cp_lexer_peek_token (parser->lexer)->u.value;
-  p = IDENTIFIER_POINTER (id);
-  if (strcmp (p, "tofrom") != 0)
+  else
     {
-      cp_parser_error (parser, "expected %<tofrom%>");
-      goto out_err;
+      id = cp_lexer_peek_token (parser->lexer)->u.value;
+      p = IDENTIFIER_POINTER (id);
     }
-  cp_lexer_consume_token (parser->lexer);
-  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
-    goto out_err;
 
-  if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  switch (p[0])
     {
-      cp_parser_error (parser, "expected %<scalar%>");
-      goto out_err;
-    }
-  id = cp_lexer_peek_token (parser->lexer)->u.value;
-  p = IDENTIFIER_POINTER (id);
-  if (strcmp (p, "scalar") != 0)
-    {
-      cp_parser_error (parser, "expected %<scalar%>");
-      goto out_err;
+    case 'a':
+      if (strcmp ("alloc", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_ALLOC;
+      else
+	goto invalid_behavior;
+      break;
+
+    case 'd':
+      if (strcmp ("default", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_DEFAULT;
+      else
+	goto invalid_behavior;
+      break;
+
+    case 'f':
+      if (strcmp ("firstprivate", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE;
+      else if (strcmp ("from", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_FROM;
+      else
+	goto invalid_behavior;
+      break;
+
+    case 'n':
+      if (strcmp ("none", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_NONE;
+      else
+	goto invalid_behavior;
+      break;
+
+    case 't':
+      if (strcmp ("tofrom", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_TOFROM;
+      else if (strcmp ("to", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_TO;
+      else
+	goto invalid_behavior;
+      break;
+
+    default:
+      goto invalid_behavior;
     }
   cp_lexer_consume_token (parser->lexer);
+
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+    {
+      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+	goto out_err;
+
+      if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	invalid_category:
+	  cp_parser_error (parser, "expected %<scalar%>, %<aggregate%> or "
+				   "%<pointer%>");
+	  goto out_err;
+	}
+      id = cp_lexer_peek_token (parser->lexer)->u.value;
+      p = IDENTIFIER_POINTER (id);
+
+      switch (p[0])
+	{
+	case 'a':
+	  if (strcmp ("aggregate", p) == 0)
+	    category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE;
+	  else
+	    goto invalid_category;
+	  break;
+
+	case 'p':
+	  if (strcmp ("pointer", p) == 0)
+	    category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER;
+	  else
+	    goto invalid_category;
+	  break;
+
+	case 's':
+	  if (strcmp ("scalar", p) == 0)
+	    category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR;
+	  else
+	    goto invalid_category;
+	  break;
+
+	default:
+	  goto invalid_category;
+	}
+
+      cp_lexer_consume_token (parser->lexer);
+    }
   if (!parens.require_close (parser))
     goto out_err;
 
-  check_no_duplicate_clause (list, OMP_CLAUSE_DEFAULTMAP, "defaultmap",
-			     location);
+  for (c = list; c ; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEFAULTMAP
+	&& (category == OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED
+	    || OMP_CLAUSE_DEFAULTMAP_CATEGORY (c) == category
+	    || (OMP_CLAUSE_DEFAULTMAP_CATEGORY (c)
+		== OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED)))
+      {
+	enum omp_clause_defaultmap_kind cat = category;
+	location_t loc = OMP_CLAUSE_LOCATION (c);
+	if (cat == OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED)
+	  cat = OMP_CLAUSE_DEFAULTMAP_CATEGORY (c);
+	p = NULL;
+	switch (cat)
+	  {
+	  case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
+	    p = NULL;
+	    break;
+	  case OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE:
+	    p = "aggregate";
+	    break;
+	  case OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER:
+	    p = "pointer";
+	    break;
+	  case OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR:
+	    p = "scalar";
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	if (p)
+	  error_at (loc, "too many %<defaultmap%> clauses with %qs category",
+		    p);
+	else
+	  error_at (loc, "too many %<defaultmap%> clauses with unspecified "
+			 "category");
+	break;
+      }
 
   c = build_omp_clause (location, OMP_CLAUSE_DEFAULTMAP);
+  OMP_CLAUSE_DEFAULTMAP_SET_KIND (c, behavior, category);
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 

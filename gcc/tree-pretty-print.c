@@ -901,7 +901,53 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
 
     case OMP_CLAUSE_DEFAULTMAP:
-      pp_string (pp, "defaultmap(tofrom:scalar)");
+      pp_string (pp, "defaultmap(");
+      switch (OMP_CLAUSE_DEFAULTMAP_BEHAVIOR (clause))
+	{
+	case OMP_CLAUSE_DEFAULTMAP_ALLOC:
+	  pp_string (pp, "alloc");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_TO:
+	  pp_string (pp, "to");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_FROM:
+	  pp_string (pp, "from");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_TOFROM:
+	  pp_string (pp, "tofrom");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE:
+	  pp_string (pp, "firstprivate");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_NONE:
+	  pp_string (pp, "none");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_DEFAULT:
+	  pp_string (pp, "default");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      switch (OMP_CLAUSE_DEFAULTMAP_CATEGORY (clause))
+	{
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR:
+	  pp_string (pp, ":scalar");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE:
+	  pp_string (pp, ":aggregate");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALLOCATABLE:
+	  pp_string (pp, ":allocatable");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER:
+	  pp_string (pp, ":pointer");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      pp_right_paren (pp);
       break;
 
     case OMP_CLAUSE__SIMDUID_:

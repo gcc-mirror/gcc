@@ -1,3 +1,9 @@
+2018-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/defaultmap-1.c: New test.
+	* c-c++-common/gomp/defaultmap-2.c: New test.
+	* c-c++-common/gomp/defaultmap-3.c: New test.
+
 2017-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/for-1.c: New test.
