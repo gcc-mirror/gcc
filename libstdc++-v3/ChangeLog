@@ -1,5 +1,8 @@
 2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/84769
+	* include/std/variant (visit): Qualify std::get call.
+
 	PR libstdc++/85632 use uintmax_t for arithmetic
 	* src/filesystem/ops.cc (experimental::filesystem::space): Perform
 	arithmetic in result type.
