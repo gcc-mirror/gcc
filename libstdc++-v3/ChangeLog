@@ -1,3 +1,10 @@
+2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85632 use uintmax_t for arithmetic
+	* src/filesystem/ops.cc (experimental::filesystem::space): Perform
+	arithmetic in result type.
+	* testsuite/experimental/filesystem/operations/space.cc: New.
+
 2018-04-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/pr66689 - comp_ellint_3 and ellint_3 return garbage values
