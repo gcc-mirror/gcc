@@ -4601,6 +4601,9 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 			       auto_delete, use_global_delete, complain);
     }
 
+  bool deleting = (auto_delete == sfk_deleting_destructor);
+  gcc_assert (deleting == !(flags & LOOKUP_DESTRUCTOR));
+
   if (TYPE_PTR_P (otype))
     {
       addr = mark_rvalue_use (addr);
@@ -4628,7 +4631,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 			  "declared when the class is defined");
 		}
 	    }
-	  else if (auto_delete == sfk_deleting_destructor && warn_delnonvdtor
+	  else if (deleting && warn_delnonvdtor
 	           && MAYBE_CLASS_TYPE_P (type) && !CLASSTYPE_FINAL (type)
 		   && TYPE_POLYMORPHIC_P (type))
 	    {
@@ -4664,9 +4667,9 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       addr = convert_force (build_pointer_type (type), addr, 0, complain);
     }
 
-  tree head = NULL_TREE;
-  tree do_delete = NULL_TREE;
-  tree ifexp;
+  if (deleting)
+    /* We will use ADDR multiple times so we must save it.  */
+    addr = save_expr (addr);
 
   bool virtual_p = false;
   if (type_build_dtor_call (type))
@@ -4676,13 +4679,18 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       virtual_p = DECL_VIRTUAL_P (CLASSTYPE_DESTRUCTOR (type));
     }
 
+  tree head = NULL_TREE;
+  tree do_delete = NULL_TREE;
+
+  if (!deleting)
+    {
+      /* Leave do_delete null.  */
+    }
   /* For `::delete x', we must not use the deleting destructor
      since then we would not be sure to get the global `operator
      delete'.  */
-  if (use_global_delete && auto_delete == sfk_deleting_destructor)
+  else if (use_global_delete)
     {
-      /* We will use ADDR multiple times so we must save it.  */
-      addr = save_expr (addr);
       head = get_target_expr (build_headof (addr));
       /* Delete the object.  */
       do_delete = build_op_delete_call (DELETE_EXPR,
@@ -4699,11 +4707,8 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   /* If the destructor is non-virtual, there is no deleting
      variant.  Instead, we must explicitly call the appropriate
      `operator delete' here.  */
-  else if (!virtual_p
-	   && auto_delete == sfk_deleting_destructor)
+  else if (!virtual_p)
     {
-      /* We will use ADDR multiple times so we must save it.  */
-      addr = save_expr (addr);
       /* Build the call.  */
       do_delete = build_op_delete_call (DELETE_EXPR,
 					addr,
@@ -4715,8 +4720,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       /* Call the complete object destructor.  */
       auto_delete = sfk_complete_destructor;
     }
-  else if (auto_delete == sfk_deleting_destructor
-	   && TYPE_GETS_REG_DELETE (type))
+  else if (TYPE_GETS_REG_DELETE (type))
     {
       /* Make sure we have access to the member op delete, even though
 	 we'll actually be calling it from the destructor.  */
@@ -4735,6 +4739,9 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   if (expr == error_mark_node)
     return error_mark_node;
 
+  if (!deleting)
+    return expr;
+
   if (do_delete && !TREE_SIDE_EFFECTS (expr))
     expr = do_delete;
   else if (do_delete)
@@ -4750,24 +4757,20 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   if (head)
     expr = build2 (COMPOUND_EXPR, void_type_node, head, expr);
 
-  if (flags & LOOKUP_DESTRUCTOR)
-    /* Explicit destructor call; don't check for null pointer.  */
-    ifexp = integer_one_node;
-  else
-    {
-      /* Handle deleting a null pointer.  */
-      warning_sentinel s (warn_address);
-      ifexp = cp_build_binary_op (input_location, NE_EXPR, addr,
-				  nullptr_node, complain);
-      if (ifexp == error_mark_node)
-	return error_mark_node;
-      /* This is a compiler generated comparison, don't emit
-	 e.g. -Wnonnull-compare warning for it.  */
-      else if (TREE_CODE (ifexp) == NE_EXPR)
-	TREE_NO_WARNING (ifexp) = 1;
-    }
+  /* Handle deleting a null pointer.  */
+  warning_sentinel s (warn_address);
+  tree ifexp = cp_build_binary_op (input_location, NE_EXPR, addr,
+				   nullptr_node, complain);
+  ifexp = cp_fully_fold (ifexp);
 
-  if (ifexp != integer_one_node)
+  if (ifexp == error_mark_node)
+    return error_mark_node;
+  /* This is a compiler generated comparison, don't emit
+     e.g. -Wnonnull-compare warning for it.  */
+  else if (TREE_CODE (ifexp) == NE_EXPR)
+    TREE_NO_WARNING (ifexp) = 1;
+
+  if (!integer_nonzerop (ifexp))
     expr = build3 (COND_EXPR, void_type_node, ifexp, expr, void_node);
 
   return expr;

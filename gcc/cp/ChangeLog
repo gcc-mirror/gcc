@@ -1,3 +1,8 @@
+2018-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85600 - virtual delete failure.
+	* init.c (build_delete): Always save_expr when deleting.
+
 2018-05-03  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (cxx_init_decl_processing): Remove flag_friend_injection.
