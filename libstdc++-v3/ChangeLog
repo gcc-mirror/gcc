@@ -1,5 +1,22 @@
 2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/84087 LWG DR 2268 basic_string default arguments
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI=1]
+	(append(const basic_string&, size_type, size_type)
+	(assign(const basic_string&, size_type, size_type)
+	(insert(size_type, const basic_string&, size_type, size_type)
+	(replace(size_type,size_type,const basic_string&,size_type,size_type)
+	(compare(size_type,size_type,constbasic_string&,size_type,size_type)):
+	Add default arguments (LWG 2268).
+	[_GLIBCXX_USE_CXX11_ABI=0]
+	(append(const basic_string&, size_type, size_type)
+	(assign(const basic_string&, size_type, size_type)
+	(insert(size_type, const basic_string&, size_type, size_type)
+	(replace(size_type,size_type,const basic_string&,size_type,size_type)
+	(compare(size_type,size_type,constbasic_string&,size_type,size_type)):
+	Likewise.
+	* testsuite/21_strings/basic_string/dr2268.cc: New test.
+
 	PR libstdc++/84535
 	* include/std/thread (thread::__not_same): New SFINAE helper.
 	(thread::thread(_Callable&&, _Args&&...)): Add SFINAE constraint that
