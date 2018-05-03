@@ -1,5 +1,13 @@
 2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/85632 use uintmax_t for arithmetic
+	* src/filesystem/ops.cc (experimental::filesystem::space): Perform
+	arithmetic in result type.
+	* src/filesystem/std-ops.cc (filesystem::space): Likewise.
+	* testsuite/27_io/filesystem/operations/space.cc: Check total capacity
+	is greater than free space.
+	* testsuite/experimental/filesystem/operations/space.cc: New.
+
 	* testsuite/20_util/remove_cvref/requirements/alias_decl.cc: New.
 	* testsuite/20_util/remove_cvref/requirements/explicit_instantiation.cc:
 	New.
