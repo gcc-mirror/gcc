@@ -1499,8 +1499,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Returns the std::tuple equivalent of a tuple-like type.
   template<typename _Tuple>
     struct __make_tuple
-    : public __do_make_tuple<typename std::remove_cv
-            <typename std::remove_reference<_Tuple>::type>::type>
+    : public __do_make_tuple<__remove_cvref_t<_Tuple>>
     { };
 
   // Combines several std::tuple's into a single one.
