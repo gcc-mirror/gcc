@@ -1378,10 +1378,11 @@ fs::space(const path& p, error_code& ec) noexcept
       ec.assign(errno, std::generic_category());
   else
     {
+      uintmax_t fragment_size = f.f_frsize;
       info = space_info{
-	f.f_blocks * f.f_frsize,
-	f.f_bfree * f.f_frsize,
-	f.f_bavail * f.f_frsize
+	f.f_blocks * fragment_size,
+	f.f_bfree * fragment_size,
+	f.f_bavail * fragment_size
       };
       ec.clear();
     }
