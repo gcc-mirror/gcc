@@ -7016,6 +7016,16 @@ Array_type::verify_length()
       return false;
     }
 
+  // For array types, the length expression can be an untyped constant
+  // representable as an int, but we don't allow explicitly non-integer
+  // values such as "float64(10)". See issues #13485 and #13486.
+  if (this->length_->type()->integer_type() == NULL
+      && !this->length_->type()->is_error_type())
+    {
+      go_error_at(this->length_->location(), "invalid array bound");
+      return false;
+    }
+
   Numeric_constant nc;
   if (!this->length_->numeric_constant_value(&nc))
     {
