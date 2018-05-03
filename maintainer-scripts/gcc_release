@@ -9,7 +9,7 @@
 # Contents:
 #   Script to create a GCC release.
 #
-# Copyright (c) 2001-2015 Free Software Foundation.
+# Copyright (c) 2001-2018 Free Software Foundation.
 #
 # This file is part of GCC.
 #
@@ -109,6 +109,36 @@ build_sources() {
 
     ${SVN} -q co "${SVNROOT}/${SVNBRANCH}" "`basename ${SOURCE_DIRECTORY}`" ||\
            error "Could not check out release sources"
+
+    grep -q "gcc-${RELEASE_MAJOR}/index.html gcc-${RELEASE_MAJOR}/changes.html" \
+	 ${SOURCE_DIRECTORY}/contrib/gennews ||\
+	   error "New release not listed in contrib/gennews"
+
+    ${SOURCE_DIRECTORY}/contrib/gennews > NEWS ||\
+	   error "Could not regenerate NEWS files"
+
+    grep -q "no releases of GCC ${RELEASE_MAJOR} have yet been made" NEWS &&\
+	   error "gcc-${RELEASE_MAJOR}/index.html has not been updated yet"
+
+    grep -q "GCC ${RELEASE_MAJOR} has not been released yet" NEWS &&\
+	   error "gcc-${RELEASE_MAJOR}/changes.html has not been updated yet"
+
+    thisindex="http:\/\/gcc.gnu.org\/gcc-${RELEASE_MAJOR}\/index.html"
+    thischanges="http:\/\/gcc.gnu.org\/gcc-${RELEASE_MAJOR}\/changes.html"
+    previndex="http:\/\/gcc.gnu.org\/gcc-`expr ${RELEASE_MAJOR} - 1`\/index.html"
+    sed -n -e "/^${thisindex}/,/^${thischanges}/p" NEWS |\
+	   sed -n -e "/Release History/,/References and Acknowledgments/p" |\
+	   grep -q "GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
+	   error "GCC ${RELEASE_MAJOR}.${RELEASE_MINOR} not mentioned "\
+		 "in gcc-${RELEASE_MAJOR}/index.html"
+
+    sed -n -e "/^${thischanges}/,/^${previndex}/p" NEWS |\
+	   grep -q "^GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
+	   error "GCC ${RELEASE_MAJOR}.${RELEASE_MINOR} not mentioned "\
+		 "in gcc-${RELEASE_MAJOR}/changes.html"
+
+    rm -f NEWS
+
     svnciargs=""
     for x in `changedir ${SOURCE_DIRECTORY} && \
 	      find . -name ChangeLog`; do
