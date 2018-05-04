@@ -1,3 +1,12 @@
+2018-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from trunk.
+	2018-04-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/85512
+	* config/aarch64/constraints.md (Usg): Limit to 31.
+	(Usj): Limit to 63.
+
 2018-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 8.1.1.
