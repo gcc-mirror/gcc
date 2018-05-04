@@ -1,3 +1,9 @@
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig-builtins.def: Add consts to ptrs etc. in BRIG builtin defs.
+	To improve optimization opportunities.
+	* builtin-types.def: The new needed builtin types for the above.
+
 2018-05-04  Richard Biener  <rguenther@suse.de>
 
 	* bb-reorder.c (sanitize_hot_paths): Release hot_bbs_to_check.

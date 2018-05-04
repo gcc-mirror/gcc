@@ -59,7 +59,7 @@ brig_lane_inst_handler::operator () (const BrigBase *base)
       elements.push_back (zero_cst);
       elements.push_back (zero_cst);
 
-      expr = pack (elements);
+      expr = m_parent.m_cf->pack (elements);
     }
   else if (inst.base.opcode == BRIG_OPCODE_ACTIVELANEPERMUTE)
     {

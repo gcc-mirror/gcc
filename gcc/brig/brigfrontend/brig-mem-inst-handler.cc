@@ -63,7 +63,7 @@ brig_mem_inst_handler::build_mem_access (const BrigInstBase *brig_inst,
     {
       /* Add a temporary variable so there won't be multiple
 	 reads in case of vector unpack.  */
-      mem_ref = add_temp_var ("mem_read", mem_ref);
+      mem_ref = m_parent.m_cf->add_temp_var ("mem_read", mem_ref);
       return build_output_assignment (*brig_inst, data, mem_ref);
     }
   else
@@ -95,8 +95,9 @@ brig_mem_inst_handler::operator () (const BrigBase *base)
       inputs.push_back (operands[1]);
       inputs.push_back (align_opr);
       tree builtin_call
-	= expand_or_call_builtin (BRIG_OPCODE_ALLOCA, BRIG_TYPE_U32,
-				  uint32_type_node, inputs);
+	= m_parent.m_cf->expand_or_call_builtin (BRIG_OPCODE_ALLOCA,
+						 BRIG_TYPE_U32,
+						 uint32_type_node, inputs);
       build_output_assignment (*brig_inst, operands[0], builtin_call);
       m_parent.m_cf->m_has_allocas = true;
       return base->byteCount;
