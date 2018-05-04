@@ -289,6 +289,7 @@ unsigned const char omp_clause_num_ops[] =
   3, /* OMP_CLAUSE_LINEAR  */
   2, /* OMP_CLAUSE_ALIGNED  */
   1, /* OMP_CLAUSE_DEPEND  */
+  1, /* OMP_CLAUSE_NONTEMPORAL  */
   1, /* OMP_CLAUSE_UNIFORM  */
   1, /* OMP_CLAUSE_TO_DECLARE  */
   1, /* OMP_CLAUSE_LINK  */
@@ -362,6 +363,7 @@ const char * const omp_clause_code_name[] =
   "linear",
   "aligned",
   "depend",
+  "nontemporal",
   "uniform",
   "to",
   "link",
@@ -11528,6 +11530,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_UNIFORM:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_NONTEMPORAL:
 	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DEVICE:

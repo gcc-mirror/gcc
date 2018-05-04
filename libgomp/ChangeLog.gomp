@@ -1,5 +1,8 @@
 2018-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c/cancel-for-2.c (foo): Use cancel modifier
+	in some cases.
+
 	* omp.h.in (enum omp_lock_hint_t): Renamed to ...
 	(enum omp_sync_hint_t): ... this.  Define omp_sync_hint_*
 	enumerators using numbers and omp_lock_hint_* as their aliases.

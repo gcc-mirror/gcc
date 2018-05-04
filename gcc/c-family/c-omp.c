@@ -1185,6 +1185,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_ALIGNED:
+	case OMP_CLAUSE_NONTEMPORAL:
 	  s = C_OMP_CLAUSE_SPLIT_SIMD;
 	  break;
 	case OMP_CLAUSE_GRAINSIZE:
@@ -1484,6 +1485,74 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	  break;
 	case OMP_CLAUSE_IF:
+	  if (OMP_CLAUSE_IF_MODIFIER (clauses) != ERROR_MARK)
+	    {
+	      s = C_OMP_CLAUSE_SPLIT_COUNT;
+	      switch (OMP_CLAUSE_IF_MODIFIER (clauses))
+		{
+		case OMP_PARALLEL:
+		  if ((mask & (OMP_CLAUSE_MASK_1
+			       << PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
+		    s = C_OMP_CLAUSE_SPLIT_PARALLEL;
+		  break;
+		case OMP_SIMD:
+		  if (code == OMP_SIMD)
+		    s = C_OMP_CLAUSE_SPLIT_SIMD;
+		  break;
+		case OMP_TASKLOOP:
+		  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
+		      != 0)
+		    s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+		  break;
+		case OMP_TARGET:
+		  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP))
+		      != 0)
+		    s = C_OMP_CLAUSE_SPLIT_TARGET;
+		  break;
+		default:
+		  break;
+		}
+	      if (s != C_OMP_CLAUSE_SPLIT_COUNT)
+		break;
+	      /* Error-recovery here, invalid if-modifier specified, add the
+		 clause to just one construct.  */
+	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)) != 0)
+		s = C_OMP_CLAUSE_SPLIT_TARGET;
+	      else if ((mask & (OMP_CLAUSE_MASK_1
+				<< PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
+		s = C_OMP_CLAUSE_SPLIT_PARALLEL;
+	      else if ((mask & (OMP_CLAUSE_MASK_1
+				<< PRAGMA_OMP_CLAUSE_NOGROUP)) != 0)
+		s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	      else if (code == OMP_SIMD)
+		s = C_OMP_CLAUSE_SPLIT_SIMD;
+	      else
+		gcc_unreachable ();
+	      break;
+	    }
+	  /* Otherwise, duplicate if clause to all constructs.  */
+	  if (code == OMP_SIMD)
+	    {
+	      if ((mask & ((OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)
+			   | (OMP_CLAUSE_MASK_1
+			      << PRAGMA_OMP_CLAUSE_NUM_THREADS)
+			   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP)))
+		  != 0)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_IF);
+		  OMP_CLAUSE_IF_MODIFIER (c)
+		    = OMP_CLAUSE_IF_MODIFIER (clauses);
+		  OMP_CLAUSE_IF_EXPR (c) = OMP_CLAUSE_IF_EXPR (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
+		  cclauses[C_OMP_CLAUSE_SPLIT_SIMD] = c;
+		}
+	      else
+		{
+		  s = C_OMP_CLAUSE_SPLIT_SIMD;
+		  break;
+		}
+	    }
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
 	      != 0)
 	    s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
@@ -1493,29 +1562,14 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	      if ((mask & (OMP_CLAUSE_MASK_1
 			   << PRAGMA_OMP_CLAUSE_MAP)) != 0)
 		{
-		  if (OMP_CLAUSE_IF_MODIFIER (clauses) == OMP_PARALLEL)
-		    s = C_OMP_CLAUSE_SPLIT_PARALLEL;
-		  else if (OMP_CLAUSE_IF_MODIFIER (clauses) == OMP_TARGET)
-		    s = C_OMP_CLAUSE_SPLIT_TARGET;
-		  else if (OMP_CLAUSE_IF_MODIFIER (clauses) == ERROR_MARK)
-		    {
-		      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
-					    OMP_CLAUSE_IF);
-		      OMP_CLAUSE_IF_MODIFIER (c)
-			= OMP_CLAUSE_IF_MODIFIER (clauses);
-		      OMP_CLAUSE_IF_EXPR (c) = OMP_CLAUSE_IF_EXPR (clauses);
-		      OMP_CLAUSE_CHAIN (c)
-			= cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
-		      cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = c;
-		      s = C_OMP_CLAUSE_SPLIT_PARALLEL;
-		    }
-		  else
-		    {
-		      error_at (OMP_CLAUSE_LOCATION (clauses),
-				"expected %<parallel%> or %<target%> %<if%> "
-				"clause modifier");
-		      continue;
-		    }
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_IF);
+		  OMP_CLAUSE_IF_MODIFIER (c)
+		    = OMP_CLAUSE_IF_MODIFIER (clauses);
+		  OMP_CLAUSE_IF_EXPR (c) = OMP_CLAUSE_IF_EXPR (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = c;
+		  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 		}
 	      else
 		s = C_OMP_CLAUSE_SPLIT_PARALLEL;

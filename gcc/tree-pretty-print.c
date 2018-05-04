@@ -434,6 +434,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_LINK:
       name = "link";
       goto print_remap;
+    case OMP_CLAUSE_NONTEMPORAL:
+      name = "nontemporal";
+      goto print_remap;
   print_remap:
       pp_string (pp, name);
       pp_left_paren (pp);
@@ -465,7 +468,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       switch (OMP_CLAUSE_IF_MODIFIER (clause))
 	{
 	case ERROR_MARK: break;
+	case VOID_CST: pp_string (pp, "cancel:"); break;
 	case OMP_PARALLEL: pp_string (pp, "parallel:"); break;
+	case OMP_SIMD: pp_string (pp, "simd:"); break;
 	case OMP_TASK: pp_string (pp, "task:"); break;
 	case OMP_TASKLOOP: pp_string (pp, "taskloop:"); break;
 	case OMP_TARGET_DATA: pp_string (pp, "target data:"); break;

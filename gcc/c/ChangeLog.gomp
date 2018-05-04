@@ -1,3 +1,14 @@
+2018-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle nontemporal clause.
+	(c_parser_omp_clause_if): Handle cancel and simd modifiers.
+	(c_parser_omp_clause_nontemporal): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_NONTEMPORAL.
+	(OMP_SIMD_CLAUSE_MASK): Add if and nontemporal clauses.
+	* c-typeck.c (c_finish_omp_cancel): Diagnose if clause with modifier
+	other than cancel.
+	(c_finish_omp_clauses): Handle OMP_CLAUSE_NONTEMPORAL.
+
 2018-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_defaultmap): Parse new kinds of

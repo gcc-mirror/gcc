@@ -1,3 +1,10 @@
+2018-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Handle OMP_CLAUSE_NONTEMPORAL.  Handle
+	splitting OMP_CLAUSE_IF also to OMP_SIMD.
+	* c-pragma.h (enum pragma_omp_clause): Add
+	PRAGMA_OMP_CLAUSE_NONTEMPORAL.
+
 2017-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_finish_omp_for): Add FINAL_P argument.

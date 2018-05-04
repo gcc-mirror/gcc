@@ -1,3 +1,23 @@
+2018-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_NONTEMPORAL.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add nontemporal
+	clause entries.
+	(walk_tree_1): Handle OMP_CLAUSE_NONTEMPORAL.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_NONTEMPORAL.
+	(gimplify_scan_omp_clauses): Handle cancel and simd
+	OMP_CLAUSE_IF_MODIFIERs.  Handle OMP_CLAUSE_NONTEMPORAL.
+	(gimplify_adjust_omp_clauses_1): Ignore GOVD_NONTEMPORAL.
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_NONTEMPORAL.
+	* omp-grid.c (grid_eliminate_combined_simd_part): Formatting fix.
+	Fix comment typos.
+	* tree-nested.c (convert_local_omp_clauses): Handle
+	OMP_CLAUSE_NONTEMPORAL.
+	(convert_nonlocal_omp_clauses): Likewise.  Remove useless test.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_NONTEMPORAL.
+	Handle cancel and simd OMP_CLAUSE_IF_MODIFIERs.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_NONTEMPORAL.
+
 2018-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_defaultmap_kind): New.

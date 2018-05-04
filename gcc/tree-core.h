@@ -293,6 +293,9 @@ enum omp_clause_code {
   /* OpenMP clause: depend ({in,out,inout}:variable-list).  */
   OMP_CLAUSE_DEPEND,
 
+  /* OpenMP clause: nontemporal (variable-list).  */
+  OMP_CLAUSE_NONTEMPORAL,
+
   /* OpenMP clause: uniform (argument-list).  */
   OMP_CLAUSE_UNIFORM,
 

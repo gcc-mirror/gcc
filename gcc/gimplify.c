@@ -111,6 +111,8 @@ enum gimplify_omp_var_data
   /* Flag for GOVD_MAP: only copy back.  */
   GOVD_MAP_FROM_ONLY = 2097152,
 
+  GOVD_NONTEMPORAL = 4194304,
+
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
 			   | GOVD_LOCAL)
@@ -8558,7 +8560,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      for (int i = 0; i < 2; i++)
 		switch (i ? OMP_CLAUSE_IF_MODIFIER (c) : code)
 		  {
+		  case VOID_CST: p[i] = "cancel"; break;
 		  case OMP_PARALLEL: p[i] = "parallel"; break;
+		  case OMP_SIMD: p[i] = "simd"; break;
 		  case OMP_TASK: p[i] = "task"; break;
 		  case OMP_TASKLOOP: p[i] = "taskloop"; break;
 		  case OMP_TARGET_DATA: p[i] = "target data"; break;
@@ -8711,6 +8715,16 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  if (!is_global_var (decl)
 	      && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
 	    omp_add_variable (ctx, decl, GOVD_ALIGNED);
+	  break;
+
+	case OMP_CLAUSE_NONTEMPORAL:
+	  decl = OMP_CLAUSE_DECL (c);
+	  if (error_operand_p (decl))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  omp_add_variable (ctx, decl, GOVD_NONTEMPORAL);
 	  break;
 
 	case OMP_CLAUSE_DEFAULT:
@@ -8937,7 +8951,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
     }
   else if (flags & GOVD_LASTPRIVATE)
     code = OMP_CLAUSE_LASTPRIVATE;
-  else if (flags & GOVD_ALIGNED)
+  else if (flags & (GOVD_ALIGNED | GOVD_NONTEMPORAL))
     return 0;
   else
     gcc_unreachable ();
@@ -9232,6 +9246,12 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      if (n != NULL && (n->value & GOVD_DATA_SHARE_CLASS) != 0)
 		remove = true;
 	    }
+	  break;
+
+	case OMP_CLAUSE_NONTEMPORAL:
+	  decl = OMP_CLAUSE_DECL (c);
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  remove = n == NULL || !(n->value & GOVD_SEEN);
 	  break;
 
 	case OMP_CLAUSE_MAP:

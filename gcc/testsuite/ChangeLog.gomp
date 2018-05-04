@@ -1,3 +1,11 @@
+2018-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/if-1.c (foo): Add some further tests.
+	* c-c++-common/gomp/if-2.c (foo): Likewise.  Expect slightly different
+	diagnostics wording in one case.
+	* c-c++-common/gomp/if-3.c: New test.
+	* c-c++-common/gomp/nontemporal-1.c: New test.
+
 2018-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/defaultmap-1.c: New test.

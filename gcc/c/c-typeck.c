@@ -12349,6 +12349,11 @@ c_finish_omp_cancel (location_t loc, tree clauses)
   tree ifc = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (ifc != NULL_TREE)
     {
+      if (OMP_CLAUSE_IF_MODIFIER (ifc) != ERROR_MARK
+	  && OMP_CLAUSE_IF_MODIFIER (ifc) != VOID_CST)
+	error_at (OMP_CLAUSE_LOCATION (ifc),
+		  "expected %<cancel%> %<if%> clause modifier");
+
       tree type = TREE_TYPE (OMP_CLAUSE_IF_EXPR (ifc));
       ifc = fold_build2_loc (OMP_CLAUSE_LOCATION (ifc), NE_EXPR,
 			     boolean_type_node, OMP_CLAUSE_IF_EXPR (ifc),
@@ -13519,6 +13524,16 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else
 	    bitmap_set_bit (&aligned_head, DECL_UID (t));
+	  break;
+
+	case OMP_CLAUSE_NONTEMPORAL:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE is not a variable in %<nontemporal%> clause", t);
+	      remove = true;
+	    }
 	  break;
 
 	case OMP_CLAUSE_DEPEND:

@@ -6613,6 +6613,20 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  break;
 
+	case OMP_CLAUSE_NONTEMPORAL:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	    {
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
+		break;
+	      if (DECL_P (t))
+		error ("%qD is not a variable in %<nontemporal%> clause", t);
+	      else
+		error ("%qE is not a variable in %<nontemporal%> clause", t);
+	      remove = true;
+	    }
+	  break;
+
 	case OMP_CLAUSE_DEPEND:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (t == NULL_TREE)
@@ -8540,6 +8554,11 @@ finish_omp_cancel (tree clauses)
   tree ifc = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (ifc != NULL_TREE)
     {
+      if (OMP_CLAUSE_IF_MODIFIER (ifc) != ERROR_MARK
+	  && OMP_CLAUSE_IF_MODIFIER (ifc) != VOID_CST)
+	error_at (OMP_CLAUSE_LOCATION (ifc),
+		  "expected %<cancel%> %<if%> clause modifier");
+
       tree type = TREE_TYPE (OMP_CLAUSE_IF_EXPR (ifc));
       ifc = fold_build2_loc (OMP_CLAUSE_LOCATION (ifc), NE_EXPR,
 			     boolean_type_node, OMP_CLAUSE_IF_EXPR (ifc),

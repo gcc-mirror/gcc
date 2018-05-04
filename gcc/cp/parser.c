@@ -31339,6 +31339,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'n':
 	  if (!strcmp ("nogroup", p))
 	    result = PRAGMA_OMP_CLAUSE_NOGROUP;
+	  else if (!strcmp ("nontemporal", p))
+	    result = PRAGMA_OMP_CLAUSE_NONTEMPORAL;
 	  else if (!strcmp ("notinbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_NOTINBRANCH;
 	  else if (!strcmp ("nowait", p))
@@ -32233,7 +32235,11 @@ cp_parser_omp_clause_final (cp_parser *parser, tree list, location_t location)
 
    directive-name-modifier:
      parallel | task | taskloop | target data | target | target update
-     | target enter data | target exit data  */
+     | target enter data | target exit data
+
+   OpenMP 5.0:
+   directive-name-modifier:
+     ... | simd | cancel  */
 
 static tree
 cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location,
@@ -32252,8 +32258,12 @@ cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location,
       const char *p = IDENTIFIER_POINTER (id);
       int n = 2;
 
-      if (strcmp ("parallel", p) == 0)
+      if (strcmp ("cancel", p) == 0)
+	if_modifier = VOID_CST;
+      else if (strcmp ("parallel", p) == 0)
 	if_modifier = OMP_PARALLEL;
+      else if (strcmp ("simd", p) == 0)
+	if_modifier = OMP_SIMD;
       else if (strcmp ("task", p) == 0)
 	if_modifier = OMP_TASK;
       else if (strcmp ("taskloop", p) == 0)
@@ -32340,7 +32350,9 @@ cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location,
 	    const char *p = NULL;
 	    switch (if_modifier)
 	      {
+	      case VOID_CST: p = "cancel"; break;
 	      case OMP_PARALLEL: p = "parallel"; break;
+	      case OMP_SIMD: p = "simd"; break;
 	      case OMP_TASK: p = "task"; break;
 	      case OMP_TASKLOOP: p = "taskloop"; break;
 	      case OMP_TARGET_DATA: p = "target data"; break;
@@ -34211,6 +34223,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 						 clauses, token->location);
 	  c_name = "inbranch";
 	  break;
+	case PRAGMA_OMP_CLAUSE_NONTEMPORAL:
+	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_NONTEMPORAL,
+					    clauses);
+	  c_name = "nontemporal";
+	  break;
 	case PRAGMA_OMP_CLAUSE_NOTINBRANCH:
 	  clauses = cp_parser_omp_clause_branch (parser,
 						 OMP_CLAUSE_NOTINBRANCH,
@@ -35628,7 +35645,9 @@ cp_omp_split_clauses (location_t loc, enum tree_code code,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NONTEMPORAL))
 
 static tree
 cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
