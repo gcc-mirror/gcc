@@ -80,6 +80,10 @@ brig_directive_function_handler::operator () (const BrigBase *base)
   if (m_parent.m_analyzing)
     return bytes_consumed;
 
+  /* There can be multiple forward declarations of the same function.
+     Skip all but the first one.  */
+  if (!is_definition && m_parent.function_decl (func_name) != NULL_TREE)
+    return bytes_consumed;
   tree fndecl;
   tree ret_value = NULL_TREE;
 
