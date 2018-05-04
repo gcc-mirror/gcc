@@ -1,5 +1,10 @@
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
+	* brig/brigfrontend/brig-code-entry-handler.cc: The modulo in
+	ID computation should not be needed.
+
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
 	* brig/brig-lang.c: Add support for whole program
 	optimizations by marking the kernels externally visible.
 	* brig/brigfrontend/brig-branch-inst-handler.cc: See above.
