@@ -1595,14 +1595,7 @@ func init() {
 	}
 }
 
-func getToolDir() string {
-	if runtime.Compiler == "gccgo" {
-		return envOr("GCCGOTOOLDIR", runtime.GCCGOTOOLDIR)
-	} else {
-		return filepath.Join(runtime.GOROOT(), "pkg/tool/"+runtime.GOOS+"_"+runtime.GOARCH)
-	}
-}
-
+// ToolDir is the directory containing build tools.
 var ToolDir = getToolDir()
 
 // IsLocalImport reports whether the import path is
