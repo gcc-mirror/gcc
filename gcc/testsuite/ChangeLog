@@ -1,3 +1,11 @@
+2018-05-04 Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/vsx-vector-6.h (foo): Add test for vec_max,
+	vec_trunc.
+	* gcc.target/powerpc/vsx-vector-6-le.c (dg-final): Update xvcmpeqdp,
+	xvcmpgtdp, xvcmpgedp counts. Add xxsel counts.
+	* gcc.target/powerpc/vsx-vector-6-be.c (dg-final): Update xvcmpgtdp,
+	xvcmpgedp counts. Add xxsel counts.
+
 2018-05-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85627
