@@ -1,3 +1,4 @@
+// { dg-additional-options "-fdump-lang-module" }
 export module PiL;
 // { dg-module-bmi PiL }
 

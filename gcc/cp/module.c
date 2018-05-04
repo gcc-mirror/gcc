@@ -2239,6 +2239,7 @@ public:
 		  unsigned owner = MODULE_UNKNOWN);
   bool tree_type (tree, bool force, bool looking_inside,
 		  unsigned owner = MODULE_UNKNOWN);
+  void maybe_tag_decl_type (tree decl);
   int tree_ref (tree);
   void tree_ctx (tree, bool looing_inside, unsigned owner = MODULE_UNKNOWN);
 
@@ -5011,7 +5012,8 @@ trees_out::tree_ref (tree t)
   if (TREE_VISITED (t))
     {
       /* An already-visited tree.  It must be in the map.  */
-      int val = *tree_map.get (t);
+      int *val_ptr = tree_map.get (t);
+      int val = *val_ptr;
 
       if (!val)
 	/* An entry we should walk into.  */
@@ -5038,6 +5040,10 @@ trees_out::tree_ref (tree t)
 	    {
 	      val -= FIXED_LIMIT;
 	      i (tt_voldemort), u (val);
+	      /* Turn it into a regular reference.  */
+	      *val_ptr = --ref_num;
+	      dump () && dump ("Converting voldemort to %d", *val_ptr);
+	      maybe_tag_decl_type (t);
 	      kind = "voldemort";
 	    }
 	  
@@ -5222,20 +5228,28 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
     dump () && dump ("Wrote %s:%d %C:%N@%I", kind, tag, TREE_CODE (decl), decl,
 		     owner == MODULE_UNKNOWN ? NULL_TREE : module_name (owner));
 
+  maybe_tag_decl_type (decl);
+
+  return false;
+}
+
+/* We've just emitted DECL,  tag its type too.  */
+
+void
+trees_out::maybe_tag_decl_type (tree decl)
+{
   if (tree type = TREE_TYPE (decl))
     {
       /* Make sure the imported type is in the map too.  */
-      tag = maybe_insert (type);
+      int tag = maybe_insert (type);
       if (!dep_walk_p ())
 	{
 	  u (tag != 0);
 	  if (tag)
-	    dump () && dump ("Wrote named type:%d %C:%N%S", tag,
+	    dump () && dump ("Wrote decl's type:%d %C:%N%S", tag,
 			     TREE_CODE (type), type, type);
 	}
     }
-
-  return false;
 }
 
 bool
@@ -7464,7 +7478,7 @@ module_state::read_cluster (unsigned snum)
 	case ct_unnamed:
 	  {
 	    unsigned index = sec.u ();
-	    if (vec_safe_length (unnamed) < index)
+	    if (index < vec_safe_length (unnamed))
 	      (*unnamed)[index] = decl;
 	    else
 	      sec.set_overrun ();
@@ -7741,6 +7755,9 @@ module_state::read_unnamed (unsigned count, const range_t &range)
   if (!sec.begin (from, MOD_SNAME_PFX ".vld"))
     return false;
 
+  dump () && dump ("Reading unnamed");
+  dump.indent ();
+
   gcc_assert (!unnamed);
   unnamed = NULL;
   vec_safe_reserve (unnamed, count);
@@ -7756,6 +7773,7 @@ module_state::read_unnamed (unsigned count, const range_t &range)
       dump () && dump ("Unnamed %u section:%u", ix, snum);
 
       mc_slot s;
+      s = NULL_TREE;
       s.set_lazy (snum);
       unnamed->quick_push (s);
     }

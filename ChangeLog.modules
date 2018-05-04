@@ -1,6 +1,13 @@
 2018-05-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_out::maybe_tag_decl_type): New, broken out of ...
+	(trees_out::tree_decl): ... here. Call it.
+	(trees_out::tree_ref): Use it.
+	gcc/testsuite/
+	* g++.dg/modules/unnamed-1_[ab].C: New.
+
+	gcc/cp/
 	* ptree.c (cxx_print_decl): Show module.
 	* module.c (tree_tags): Add tt_voldemort.
 	(FIXED_LIMIT): New.
