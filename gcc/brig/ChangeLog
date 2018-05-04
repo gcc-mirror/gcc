@@ -1,5 +1,9 @@
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
+	* brig/brigfrontend/brig-basic-inst-handler.cc:  Fix handling of NOPs.
+
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
 	Add flag -fassume-phsa that is on by default. If -fno-assume-phsa
 	is given, these optimizations are disabled.  With this flag, gccbrig
 	can generate GENERIC that assumes we are targeting a phsa-runtime

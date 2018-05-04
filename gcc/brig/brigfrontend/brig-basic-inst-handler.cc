@@ -447,6 +447,8 @@ size_t
 brig_basic_inst_handler::operator () (const BrigBase *base)
 {
   const BrigInstBase *brig_inst = (const BrigInstBase *) base;
+  if (brig_inst->opcode == BRIG_OPCODE_NOP)
+    return base->byteCount;
 
   tree_stl_vec operands = build_operands (*brig_inst);
 
@@ -466,11 +468,9 @@ brig_basic_inst_handler::operator () (const BrigBase *base)
 
   BrigType16_t brig_inst_type = brig_inst->type;
 
-  if (brig_inst->opcode == BRIG_OPCODE_NOP)
-    return base->byteCount;
-  else if (brig_inst->opcode == BRIG_OPCODE_FIRSTBIT
-	   || brig_inst->opcode == BRIG_OPCODE_LASTBIT
-	   || brig_inst->opcode == BRIG_OPCODE_SAD)
+  if (brig_inst->opcode == BRIG_OPCODE_FIRSTBIT
+      || brig_inst->opcode == BRIG_OPCODE_LASTBIT
+      || brig_inst->opcode == BRIG_OPCODE_SAD)
     /* These instructions are reported to be always 32b in HSAIL, but we want
        to treat them according to their input argument's type to select the
        correct instruction/builtin.  */
