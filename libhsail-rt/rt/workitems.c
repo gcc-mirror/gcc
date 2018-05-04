@@ -63,6 +63,12 @@ static clock_t start_time;
 #define FIBER_STACK_SIZE (64*1024)
 #define GROUP_SEGMENT_ALIGN 256
 
+/* Preserve this amount of additional space in the alloca stack as we need to
+   store the alloca frame pointer to the alloca frame, thus must preserve
+   space for it.  This thus supports at most 1024 functions with allocas in
+   a call chain.  */
+#define ALLOCA_OVERHEAD 1024*4
+
 uint32_t __hsail_workitemabsid (uint32_t dim, PHSAWorkItem *context);
 
 uint32_t __hsail_workitemid (uint32_t dim, PHSAWorkItem *context);
@@ -246,7 +252,7 @@ phsa_execute_wi_gang (PHSAKernelLaunchData *context, void *group_base_ptr,
 	   != 0)
     phsa_fatal_error (3);
 
-  wg.alloca_stack_p = wg.private_segment_total_size;
+  wg.alloca_stack_p = wg.private_segment_total_size + ALLOCA_OVERHEAD;
   wg.alloca_frame_p = wg.alloca_stack_p;
   wg.initial_group_offset = group_local_offset;
 
@@ -446,7 +452,7 @@ phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr,
 	   != 0)
     phsa_fatal_error (3);
 
-  wg.alloca_stack_p = dp->private_segment_size * wg_size;
+  wg.alloca_stack_p = dp->private_segment_size * wg_size + ALLOCA_OVERHEAD;
   wg.alloca_frame_p = wg.alloca_stack_p;
 
   wg.private_base_ptr = private_base_ptr;
@@ -867,9 +873,12 @@ uint32_t
 __hsail_alloca (uint32_t size, uint32_t align, PHSAWorkItem *wi)
 {
   volatile PHSAWorkGroup *wg = wi->wg;
-  uint32_t new_pos = wg->alloca_stack_p - size;
+  int64_t new_pos = wg->alloca_stack_p - size;
   while (new_pos % align != 0)
     new_pos--;
+  if (new_pos < 0)
+    phsa_fatal_error (2);
+
   wg->alloca_stack_p = new_pos;
 
 #ifdef DEBUG_ALLOCA
