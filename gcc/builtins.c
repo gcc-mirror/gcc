@@ -6682,6 +6682,9 @@ expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
   if (ignore)
     return target;
 
+  if (target == NULL_RTX)
+    target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+
   if (!targetm.have_oacc_dim_size ())
     {
       emit_move_insn (target, fallback_retval);
