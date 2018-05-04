@@ -62,7 +62,6 @@ ffi_prep_types_linux64 (ffi_abi abi)
 #endif
 
 
-#if _CALL_ELF == 2
 static unsigned int
 discover_homogeneous_aggregate (const ffi_type *t, unsigned int *elnum)
 {
@@ -86,8 +85,13 @@ discover_homogeneous_aggregate (const ffi_type *t, unsigned int *elnum)
 	      return 0;
 	    base_elt = el_elt;
 	    total_elnum += el_elnum;
+#if _CALL_ELF == 2
 	    if (total_elnum > 8)
 	      return 0;
+#else
+	    if (total_elnum > 1)
+	      return 0;
+#endif
 	    el++;
 	  }
 	*elnum = total_elnum;
@@ -98,7 +102,6 @@ discover_homogeneous_aggregate (const ffi_type *t, unsigned int *elnum)
       return 0;
     }
 }
-#endif
 
 
 /* Perform machine dependent cif processing */
@@ -109,9 +112,7 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
   unsigned bytes;
   unsigned i, fparg_count = 0, intarg_count = 0;
   unsigned flags = cif->flags;
-#if _CALL_ELF == 2
   unsigned int elt, elnum;
-#endif
 
 #if FFI_TYPE_LONGDOUBLE == FFI_TYPE_DOUBLE
   /* If compiled without long double support..  */
@@ -157,6 +158,7 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
       /* Fall through.  */
     case FFI_TYPE_UINT64:
     case FFI_TYPE_SINT64:
+    case FFI_TYPE_POINTER:
       flags |= FLAG_RETURNS_64BITS;
       break;
 
@@ -222,7 +224,6 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
 		intarg_count = ALIGN (intarg_count, align);
 	    }
 	  intarg_count += ((*ptr)->size + 7) / 8;
-#if _CALL_ELF == 2
 	  elt = discover_homogeneous_aggregate (*ptr, &elnum);
 	  if (elt)
 	    {
@@ -231,7 +232,6 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
 		flags |= FLAG_ARG_NEEDS_PSAVE;
 	    }
 	  else
-#endif
 	    {
 	      if (intarg_count > NUM_GPR_ARG_REGISTERS64)
 		flags |= FLAG_ARG_NEEDS_PSAVE;
@@ -449,9 +449,7 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
        i < nargs;
        i++, ptr++, p_argv.v++)
     {
-#if _CALL_ELF == 2
       unsigned int elt, elnum;
-#endif
 
       switch ((*ptr)->type)
 	{
@@ -494,6 +492,7 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 	  /* Fall through.  */
 #endif
 	case FFI_TYPE_DOUBLE:
+	do_double:
 	  double_tmp = **p_argv.d;
 	  if (fparg_count < NUM_FPR_ARG_REGISTERS64 && i < nfixedargs)
 	    {
@@ -512,17 +511,30 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 	  break;
 
 	case FFI_TYPE_FLOAT:
+	do_float:
 	  double_tmp = **p_argv.f;
 	  if (fparg_count < NUM_FPR_ARG_REGISTERS64 && i < nfixedargs)
 	    {
 	      *fpr_base.d++ = double_tmp;
 #if _CALL_ELF != 2
 	      if ((flags & FLAG_COMPAT) != 0)
-		*next_arg.f = (float) double_tmp;
+		{
+# ifndef __LITTLE_ENDIAN__
+		  next_arg.f[1] = (float) double_tmp;
+# else
+		  next_arg.f[0] = (float) double_tmp;
+# endif
+		}
 #endif
 	    }
 	  else
-	    *next_arg.f = (float) double_tmp;
+	    {
+# ifndef __LITTLE_ENDIAN__
+	      next_arg.f[1] = (float) double_tmp;
+# else
+	      next_arg.f[0] = (float) double_tmp;
+# endif
+	    }
 	  if (++next_arg.ul == gpr_end.ul)
 	    next_arg.ul = rest.ul;
 	  fparg_count++;
@@ -538,10 +550,10 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 	      if (align > 1)
 		next_arg.p = ALIGN (next_arg.p, align);
 	    }
-#if _CALL_ELF == 2
 	  elt = discover_homogeneous_aggregate (*ptr, &elnum);
 	  if (elt)
 	    {
+#if _CALL_ELF == 2
 	      union {
 		void *v;
 		float *f;
@@ -583,9 +595,14 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 		    fparg_count++;
 		  }
 		while (--elnum != 0);
+#else
+	      if (elt == FFI_TYPE_FLOAT)
+		goto do_float;
+	      else
+		goto do_double;
+#endif
 	    }
 	  else
-#endif
 	    {
 	      words = ((*ptr)->size + 7) / 8;
 	      if (next_arg.ul >= gpr_base.ul && next_arg.ul + words > gpr_end.ul)
@@ -796,12 +813,10 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 	      if (align > 1)
 		pst = (unsigned long *) ALIGN ((size_t) pst, align);
 	    }
-	  elt = 0;
-#if _CALL_ELF == 2
 	  elt = discover_homogeneous_aggregate (arg_types[i], &elnum);
-#endif
 	  if (elt)
 	    {
+#if _CALL_ELF == 2
 	      union {
 		void *v;
 		unsigned long *ul;
@@ -853,6 +868,12 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 		    }
 		  while (--elnum != 0);
 		}
+#else
+	      if (elt == FFI_TYPE_FLOAT)
+		goto do_float;
+	      else
+		goto do_double;
+#endif
 	    }
 	  else
 	    {
@@ -894,6 +915,7 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 	  /* Fall through.  */
 #endif
 	case FFI_TYPE_DOUBLE:
+	do_double:
 	  /* On the outgoing stack all values are aligned to 8 */
 	  /* there are 13 64bit floating point registers */
 
@@ -908,6 +930,7 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 	  break;
 
 	case FFI_TYPE_FLOAT:
+	do_float:
 	  if (pfr < end_pfr && i < nfixedargs)
 	    {
 	      /* Float values are stored as doubles in the
@@ -917,7 +940,13 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 	      pfr++;
 	    }
 	  else
-	    avalue[i] = pst;
+	    {
+#ifndef __LITTLE_ENDIAN__
+	      avalue[i] = (char *) pst + 4;
+#else
+	      avalue[i] = pst;
+#endif
+	    }
 	  pst++;
 	  break;
 
