@@ -151,7 +151,7 @@ int module_dump_id;
 #define MOD_FNAME_DOT '-' /* Dots convert to ... */
 
 /* Prefix for section names.  */
-#define MOD_SNAME_PFX ".gnu.c++"
+#define MOD_SNAME_PFX "gnu.c++"
 
 /* Get the version of this compiler.  This is negative, when it is a
    date-time stamp indicating experimentalness of the system.  See
@@ -2356,27 +2356,27 @@ struct GTY(()) module_state {
 
  private:
   /* Serialize various definitions. */
-  static void mark_definition (trees_out &out, tree decl);
+  static void mark_definition (trees_out &out, tree decl, bool include_decl);
   static void write_definition (trees_out &out, tree decl);
   bool read_definition (trees_in &in, tree decl);
 
-  static void mark_template_def (trees_out &out, tree decl);
+  static void mark_template_def (trees_out &out, tree decl, bool include_decl);
   static void write_template_def (trees_out &out, tree decl);
   bool read_template_def (trees_in &in, tree decl);
 
-  static void mark_function_def (trees_out &out, tree decl);
+  static void mark_function_def (trees_out &out, tree decl, bool include_decl);
   static void write_function_def (trees_out &out, tree decl);
   bool read_function_def (trees_in &in, tree decl);
 
-  static void mark_var_def (trees_out &out, tree decl);
+  static void mark_var_def (trees_out &out, tree decl, bool include_decl);
   static void write_var_def (trees_out &out, tree decl);
   bool read_var_def (trees_in &in, tree decl);
 
-  static void mark_class_def (trees_out &out, tree type);
+  static void mark_class_def (trees_out &out, tree type, bool include_decl);
   static void write_class_def (trees_out &out, tree type);
   bool read_class_def (trees_in &in, tree decl);
 
-  static void mark_enum_def (trees_out &out, tree type);
+  static void mark_enum_def (trees_out &out, tree type, bool include_decl);
   static void write_enum_def (trees_out &out, tree type);
   bool read_enum_def (trees_in &in, tree decl);
 
@@ -6459,7 +6459,7 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
 
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
-  cfg.end (to, to->name (MOD_SNAME_PFX ".config"), &crc);
+  cfg.end (to, to->name (MOD_SNAME_PFX ".cfg"), &crc);
   dump () && dump ("Writing CRC=%x", crc);
 }
 
@@ -6468,7 +6468,7 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
 {
   bytes_in cfg;
 
-  if (!cfg.begin (from, MOD_SNAME_PFX ".config"))
+  if (!cfg.begin (from, MOD_SNAME_PFX ".cfg"))
     return false;
 
   /* Check version.  */
@@ -6626,7 +6626,7 @@ module_state::write_function_def (trees_out &out, tree decl)
 }
 
 void
-module_state::mark_function_def (trees_out &, tree)
+module_state::mark_function_def (trees_out &, tree, bool)
 {
 }
 
@@ -6691,7 +6691,7 @@ module_state::write_var_def (trees_out &out, tree decl)
 }
 
 void
-module_state::mark_var_def (trees_out &, tree)
+module_state::mark_var_def (trees_out &, tree, bool)
 {
 }
 
@@ -6901,13 +6901,13 @@ module_state::write_class_def (trees_out &out, tree type)
 }
 
 void
-module_state::mark_class_def (trees_out &out, tree type)
+module_state::mark_class_def (trees_out &out, tree type, bool)
 {
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
       out.mark_node (member, true);
       if (has_definition (member))
-	mark_definition (out, member);
+	mark_definition (out, member, true);
     }
 
   if (TYPE_LANG_SPECIFIC (type))
@@ -6916,19 +6916,19 @@ module_state::mark_class_def (trees_out &out, tree type)
       if (as_base && as_base != type)
 	{
 	  out.mark_node (as_base, true);
-	  mark_class_def (out, as_base);
+	  mark_class_def (out, as_base, true);
 	}
 
       for (tree vtables = CLASSTYPE_VTABLES (type);
 	   vtables; vtables = TREE_CHAIN (vtables))
 	{
 	  out.mark_node (vtables, true);
-	  mark_var_def (out, vtables);
+	  mark_var_def (out, vtables, true);
 	}
     }
 }
 
-/* Nop sorted needed for resorting the member vec.  */
+/* Nop sorting, needed for resorting the member vec.  */
 
 static void
 nop (void *, void *)
@@ -7040,7 +7040,7 @@ module_state::write_enum_def (trees_out &out, tree type)
 }
 
 void
-module_state::mark_enum_def (trees_out &out, tree type)
+module_state::mark_enum_def (trees_out &out, tree type, bool)
 {
   if (!UNSCOPED_ENUM_P (type))
     for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
@@ -7074,7 +7074,7 @@ module_state::write_template_def (trees_out &out, tree decl)
 }
 
 void
-module_state::mark_template_def (trees_out &out, tree decl)
+module_state::mark_template_def (trees_out &out, tree decl, bool include_decl)
 {
   tree res = DECL_TEMPLATE_RESULT (decl);
   if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
@@ -7090,7 +7090,7 @@ module_state::mark_template_def (trees_out &out, tree decl)
 	gcc_assert (DECL_CONTEXT (member) == TREE_TYPE (decl));
 	out.mark_node (member);
       }
-  mark_definition (out, res);
+  mark_definition (out, res, include_decl);
 }
 
 bool
@@ -7144,7 +7144,7 @@ module_state::write_definition (trees_out &out, tree decl)
 /* Mark the body of DECL.  */
 
 void
-module_state::mark_definition (trees_out &out, tree decl)
+module_state::mark_definition (trees_out &out, tree decl, bool include_decl)
 {
   switch (TREE_CODE (decl))
     {
@@ -7152,15 +7152,15 @@ module_state::mark_definition (trees_out &out, tree decl)
       gcc_unreachable ();
 
     case TEMPLATE_DECL:
-      mark_template_def (out, decl);
+      mark_template_def (out, decl, include_decl);
       break;
 
     case FUNCTION_DECL:
-      mark_function_def (out, decl);
+      mark_function_def (out, decl, include_decl);
       break;
 
     case VAR_DECL:
-      mark_var_def (out, decl);
+      mark_var_def (out, decl, include_decl);
       break;
 
     case TYPE_DECL:
@@ -7169,9 +7169,9 @@ module_state::mark_definition (trees_out &out, tree decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  mark_enum_def (out, type);
+	  mark_enum_def (out, type, include_decl);
 	else
-	  mark_class_def (out, type);
+	  mark_class_def (out, type, include_decl);
       }
       break;
     }
@@ -7214,7 +7214,9 @@ module_state::read_definition (trees_in &in, tree decl)
   return false;
 }
 
-/* Compare members of a cluster.  Definitions are less than bindings.  */
+/* Compare members of a cluster.  Order decls before defns before
+   bindings.  depsets of the same kind can be arbitrary, but we want
+   something stable.   */
 
 static int
 cluster_cmp (const void *a_, const void *b_)
@@ -7222,36 +7224,47 @@ cluster_cmp (const void *a_, const void *b_)
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
 
-  bool a_bind = a->is_binding ();
-  if (a_bind != b->is_binding ())
-    /* Exactly one is a binding.  It is the greater.  */
-    return a_bind ? +1 : -1;
+  bool is_decl = a->is_decl ();
+  if (is_decl != b->is_decl ())
+    /* Exactly one is a decl.  It comes first.  */
+    return is_decl ? -1 : +1;
 
-  if (!a_bind)
+  if (!is_decl)
     {
-      /* Neither is a binding.  */
-      bool a_decl = a->is_decl ();
-      if (a_decl != b->is_decl ())
-	/* Exactly one is a decl.  It is the greater.  */
-	return a_decl ? +1 : -1;
+      /* Neither is a decl.  Try defns.  */
+      bool is_defn = a->is_defn ();
+      if (is_defn != b->is_defn ())
+	/* Exactly one is a defn.  It comes first.  */
+	return is_defn ? -1 : +1;
     }
 
+  /* They are both the same kind.  Order for qsort stability.  */
   tree a_decl = a->get_decl ();
   tree b_decl = b->get_decl ();
+
   if (a_decl != b_decl)
     /* Different decls, order by their UID.  */
     return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
 
-  /* Different bindings in the same namespace.  Order by identifier
-     hash (hey, it's a consistent number).  */
-  gcc_checking_assert (a_bind);
+  /* Same decl.  They must be bindings.  Order by identifier hash
+     (hey, it's a consistent number).  */
+  gcc_checking_assert (a->is_binding ());
   return (IDENTIFIER_HASH_VALUE (a->get_name ())
 	  < IDENTIFIER_HASH_VALUE (b->get_name ())
 	  ? -1 : +1);
 }
 
-/* Write a cluster of depsets starting at SCCS[FROM], return index of next
-   cluster.  */
+/* Contents of a cluster.  */
+enum cluster_tag
+  {
+    ct_decl,	/* A decl.  */
+    ct_defn,	/* A defn.  */
+    ct_bind,	/* A binding.  */
+    ct_hwm
+  };
+
+/* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
+   decls, then defns then bindings.  */
 
 void
 module_state::write_cluster (elf_out *to, depset *scc[],
@@ -7267,16 +7280,19 @@ module_state::write_cluster (elf_out *to, depset *scc[],
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
-      if (b->is_defn ())
-	mark_definition (sec, b->get_decl ());
-      else if (b->is_decl ())
-	;// FIXME: for the moment, we'll also be on a binding in the
-	 // same cluster
+      if (b->is_decl ())
+	sec.mark_node (b->get_decl ());
+      else if (b->is_defn ())
+	{
+	  // FIXME:we rely on the decl and defn being in the same cluster
+	  gcc_assert (TREE_VISITED (b->get_decl ()));
+	  mark_definition (sec, b->get_decl (), TREE_VISITED (b->get_decl ()));
+	}
       else
 	{
 	  gcc_checking_assert (b->is_binding ());
 	  for (unsigned ix = b->deps.length (); ix--;)
-	    sec.mark_node (b->deps[ix]->get_decl ());
+	    gcc_checking_assert (TREE_VISITED (b->deps[ix]->get_decl ()));
 	}
     }
 
@@ -7289,19 +7305,36 @@ module_state::write_cluster (elf_out *to, depset *scc[],
 		       : "Writing binding %P",
 		       b->get_decl (),
 		       b->is_binding () ? b->get_name () : NULL_TREE);
+      tree d = b->get_decl ();
+#if 0
+      // FIXME:Violated by global module entities that I get wrong
+      gcc_checking_assert ((TREE_CODE (d) == NAMESPACE_DECL
+			    && !DECL_NAMESPACE_ALIAS (d)
+			    && TREE_PUBLIC (d))
+			   || DECL_MODULE_OWNER (d) == MODULE_PURVIEW);
+#endif
+      cluster_tag ct;
       if (b->is_decl ())
-	{
-	  // FIXME: We should also be on a binding list
-	  // voldemort and promoted linkage entities will eventually be different
-	  gcc_checking_assert (TREE_VISITED (b->get_decl ()));
-	  continue;
-	}
-
-      sec.tree_ctx (b->get_decl (), false, MODULE_PURVIEW);
-      if (b->is_defn ())
-	write_definition (sec, b->get_decl ());
+	ct = ct_decl;
+      else if (b->is_defn ())
+	ct = ct_defn;
       else
+	ct = ct_bind;
+      sec.u (ct);
+      sec.tree_ctx (d, false, MODULE_PURVIEW);
+      switch (ct)
 	{
+	default:
+	  gcc_unreachable ();
+
+	case ct_decl:
+	  break;
+
+	case ct_defn:
+	  write_definition (sec, b->get_decl ());
+	  break;
+
+	case ct_bind:
 	  sec.tree_node (b->get_name ());
 	  /* Write in forward order, so reading will see the
 	     exports first, thus building the overload chain will be
@@ -7313,10 +7346,9 @@ module_state::write_cluster (elf_out *to, depset *scc[],
 	}
     }
 
-  /* We don't find this by name, use the first decl's name for human
-     friendliness.  Because of cluster sorting, this will prefer a
-     definition -- and thus we'll not be confused by naming an
-     unscoped enum constant.  */
+  /* We don't find the section by name.  Use the first decl's name for
+     human friendliness.  Because of cluster sorting, this will prefer
+     a decl.  */
   tree naming_decl = scc[0]->get_decl ();
   unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
 
@@ -7341,51 +7373,75 @@ module_state::read_cluster (unsigned snum)
   dump.indent ();
   while (sec.more_p ())
     {
+      unsigned ct = cluster_tag (sec.u ());
+      if (ct >= ct_hwm)
+	{
+	  sec.set_overrun ();
+	  break;
+	}
+
       tree ctx = sec.tree_node ();
       if (!ctx)
 	break;
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	{
-	  /* A set of namespace bindings.  */
-	  tree name = sec.tree_node ();
-	  tree decls = NULL_TREE;
-	  tree type = NULL_TREE;
 
-	  while (tree decl = sec.tree_node ())
-	    {
-	      if (TREE_CODE (decl) == TYPE_DECL)
-		{
-		  if (type)
-		    sec.set_overrun ();
-		  type = decl;
-		}
-	      else if (decls
-		       || (TREE_CODE (decl) == TEMPLATE_DECL
-			   && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
-			       == FUNCTION_DECL)))
-		{
-		  if (!DECL_DECLARES_FUNCTION_P (decl)
-		      || (decls
-			  && TREE_CODE (decls) != OVERLOAD
-			  && TREE_CODE (decls) != FUNCTION_DECL))
-		    sec.set_overrun ();
-		  decls = ovl_make (decl, decls);
-		  if (DECL_MODULE_EXPORT_P (decl))
-		    OVL_EXPORT_P (decls) = true;
-		}
-	      else
-		decls = decl;
-	    }
-	  if (!set_module_binding (ctx, name, mod, decls, type))
-	    break;
-	}
-      else
+      switch (ct)
 	{
+	default:
+	  sec.set_overrun ();
+	  goto break2;
+
+	case ct_decl:
+	  break;
+
+	case ct_defn:
 	  /* A definition.  */
 	  if (!read_definition (sec, ctx))
-	    break;
+	    goto break2;
+	  break;
+
+	case ct_bind:
+	  {
+	    /* A set of namespace bindings.  */
+	    tree name = sec.tree_node ();
+	    tree decls = NULL_TREE;
+	    tree type = NULL_TREE;
+
+	    while (tree decl = sec.tree_node ())
+	      {
+		if (TREE_CODE (decl) == TYPE_DECL)
+		  {
+		    if (type)
+		      sec.set_overrun ();
+		    type = decl;
+		  }
+		else if (decls
+			 || (TREE_CODE (decl) == TEMPLATE_DECL
+			     && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
+				 == FUNCTION_DECL)))
+		  {
+		    if (!DECL_DECLARES_FUNCTION_P (decl)
+			|| (decls
+			    && TREE_CODE (decls) != OVERLOAD
+			    && TREE_CODE (decls) != FUNCTION_DECL))
+		      sec.set_overrun ();
+		    decls = ovl_make (decl, decls);
+		    if (DECL_MODULE_EXPORT_P (decl))
+		      OVL_EXPORT_P (decls) = true;
+		  }
+		else
+		  decls = decl;
+	      }
+
+	    if (!set_module_binding (ctx, name, mod, decls, type))
+	      {
+		sec.set_overrun ();
+		goto break2;
+	      }
+	  }
+	  break;
 	}
     }
+ break2:
   dump.outdent ();
 
   if (!sec.end (from))
@@ -7395,7 +7451,7 @@ module_state::read_cluster (unsigned snum)
 }
 
 /* SPACES is a sorted vector of namespaces.  Write out the namespaces
-   to MOD_SNAME_PFX.namespace section.
+   to MOD_SNAME_PFX.nms section.
 
    Each namespace is:
      u:name,
@@ -7436,7 +7492,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       sec.u (DECL_NAMESPACE_INLINE_P (ns));
     }
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".namespace"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
   dump.outdent ();
 }
 
@@ -7448,7 +7504,7 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
 {
   bytes_in sec;
 
-  if (!sec.begin (from, MOD_SNAME_PFX ".namespace"))
+  if (!sec.begin (from, MOD_SNAME_PFX ".nms"))
     return false;
 
   dump () && dump ("Reading namespaces");
@@ -7515,7 +7571,7 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
 	}
     }
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".bind"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".bnd"), crc_p);
   dump.outdent ();
 }
 
@@ -7526,7 +7582,7 @@ module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
 {
   bytes_in sec;
 
-  if (!sec.begin (from, MOD_SNAME_PFX ".bind"))
+  if (!sec.begin (from, MOD_SNAME_PFX ".bnd"))
     return false;
 
   dump () && dump ("Reading binding table");
@@ -7617,12 +7673,15 @@ module_state::find_dependencies (depset::hash &table)
       dump () && dump ("%s %N", d->is_decl () ? "Declaration" : "Definition",
 		       d->get_decl ());
       dump.indent ();
+      // FIXME:always mark the decl
       walker.mark_node (d->get_decl (), true);
       if (d->is_defn ())
-	mark_definition (walker, d->get_decl ());
+	{
+	  mark_definition (walker, d->get_decl (),
+			   TREE_VISITED (d->get_decl ()));
+	  write_definition (walker, d->get_decl ());
+	}
       walker.tree_node (d->get_decl ());
-      if (d->is_defn ())
-	write_definition (walker, d->get_decl ());
       dump.outdent ();
       walker.end ();
     }
@@ -7649,11 +7708,10 @@ space_cmp (const void *a_, const void *b_)
 
 /* Use ELROND format to record the following sections:
      1     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
-     2     MOD_SNAME_PFX.context  : context data
-     [3-N) qualified-names	  : binding value(s)
-     N     MOD_SNAME_PFX.namespace : namespace hierarchy
-     N+1   MOD_SNAME_PFX.bind     : binding table
-     N+2   MOD_SNAME_PFX.config   : config data
+     [2-N) qualified-names	  : binding value(s)
+     N     MOD_SNAME_PFX.nms 	  : namespace hierarchy
+     N+1   MOD_SNAME_PFX.bnd      : binding table
+     N+2   MOD_SNAME_PFX.cfg      : config data
 */
 
 void
@@ -7695,6 +7753,8 @@ module_state::write (elf_out *to)
       for (size = 1; ix + size < sccs.length (); size++)
 	if (base[size]->cluster != base[0]->cluster)
 	  break;
+
+      /* Sort for the ordering write_cluster needs.  */
       qsort (base, size, sizeof (depset *), cluster_cmp);
 
       if (size == 1 && base[0]->is_decl ()

@@ -1,3 +1,14 @@
+2018-05-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (module_state::mark_definition): Add include_decl arg.
+	(module_state::mark_{template,function,var,class,enum}_def): Likewise.
+	(cluster_cmp): Reorder decl < defn < bind.
+	(enum cluster_tag): New.
+	(module_state::{read,write}_cluster): Use it.
+	gcc/testsuite/
+	* g++.dg/modules/scc-1.C: Adjust.
+
 2018-05-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family
