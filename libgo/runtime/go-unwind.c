@@ -197,10 +197,6 @@ read_sleb128 (const uint8_t *p, _sleb128_t *val)
 
 #define ROUND_UP_TO_PVB(x) (x + sizeof(void *) - 1) &- sizeof(void *)
 
-#define COPY_AND_ADVANCE(dst, ptr, typ) \
-  (dst = *((const typ*)ptr),            \
-   ptr += sizeof(typ))
-
 static inline const uint8_t *
 read_encoded_value (struct _Unwind_Context *context, uint8_t encoding,
                     const uint8_t *p, _Unwind_Ptr *val)
@@ -221,17 +217,53 @@ read_encoded_value (struct _Unwind_Context *context, uint8_t encoding,
       switch (encoding & 0x0f)
         {
           case DW_EH_PE_sdata2:
+            {
+              int16_t result;
+              __builtin_memcpy (&result, p, sizeof(int16_t));
+              decoded = result;
+              p += sizeof(int16_t);
+              break;
+            }
           case DW_EH_PE_udata2:
-            COPY_AND_ADVANCE (decoded, p, uint16_t);
-            break;
+            {
+              uint16_t result;
+              __builtin_memcpy (&result, p, sizeof(uint16_t));
+              decoded = result;
+              p += sizeof(uint16_t);
+              break;
+            }
           case DW_EH_PE_sdata4:
+            {
+              int32_t result;
+              __builtin_memcpy (&result, p, sizeof(int32_t));
+              decoded = result;
+              p += sizeof(int32_t);
+              break;
+            }
           case DW_EH_PE_udata4:
-            COPY_AND_ADVANCE (decoded, p, uint32_t);
-            break;
+            {
+              uint32_t result;
+              __builtin_memcpy (&result, p, sizeof(uint32_t));
+              decoded = result;
+              p += sizeof(uint32_t);
+              break;
+            }
           case DW_EH_PE_sdata8:
+            {
+              int64_t result;
+              __builtin_memcpy (&result, p, sizeof(int64_t));
+              decoded = result;
+              p += sizeof(int64_t);
+              break;
+            }
           case DW_EH_PE_udata8:
-            COPY_AND_ADVANCE (decoded, p, uint64_t);
-            break;
+            {
+              uint64_t result;
+              __builtin_memcpy (&result, p, sizeof(uint64_t));
+              decoded = result;
+              p += sizeof(uint64_t);
+              break;
+            }
           case DW_EH_PE_uleb128:
             {
               _uleb128_t value;
@@ -247,7 +279,7 @@ read_encoded_value (struct _Unwind_Context *context, uint8_t encoding,
               break;
             }
           case DW_EH_PE_absptr:
-            decoded = (_Unwind_Internal_Ptr)(*(const void *const *)p);
+            __builtin_memcpy (&decoded, (const void *)p, sizeof(const void*));
             p += sizeof(void *);
             break;
           default:
