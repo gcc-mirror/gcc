@@ -57,7 +57,7 @@ static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 
-/* This file is based on Go frontent'd go-lang.c and gogo-tree.cc.  */
+/* This file is based on Go frontend's go-lang.c and gogo-tree.cc.  */
 
 /* If -v set.  */
 
@@ -123,7 +123,7 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
   /* If we set this to one, the whole program optimizations internalize
      all global variables, making them invisible to the dyn loader (and
      thus the HSA runtime implementation).  */
-  opts->x_flag_whole_program = 0;
+  opts->x_flag_whole_program = 1;
 
   /* The builtin math functions should not set errno.  */
   opts->x_flag_errno_math = 0;

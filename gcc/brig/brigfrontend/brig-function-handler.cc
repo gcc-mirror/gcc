@@ -132,6 +132,14 @@ brig_directive_function_handler::operator () (const BrigBase *base)
       DECL_RESULT (fndecl) = resdecl;
       DECL_CONTEXT (resdecl) = fndecl;
       DECL_EXTERNAL (fndecl) = 0;
+
+      /* Aggressive inlining to the kernel function is usually a good
+	 idea with offlined functionality to enchance SIMD execution on
+	 GPUs and vector units.  */
+
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("flatten"), NULL,
+		     DECL_ATTRIBUTES (fndecl));
     }
   else
     {
@@ -228,6 +236,8 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 
       vec_safe_push (args, ptr_type_node);
       vec_safe_push (args, ptr_type_node);
+      vec_safe_push (args, ptr_type_node);
+      vec_safe_push (args, ptr_type_node);
 
       fndecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, name_identifier,
 			   build_function_type_vec (ret_type, args));
@@ -295,21 +305,21 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 
   DECL_SAVED_TREE (fndecl) = bind_expr;
 
-  /* Try to preserve the functions across IPA.  */
-  DECL_PRESERVE_P (fndecl) = 1;
-  TREE_SIDE_EFFECTS (fndecl) = 1;
-
-  TREE_ADDRESSABLE (fndecl) = 1;
+  set_externally_visible (fndecl);
 
   if (base->kind == BRIG_KIND_DIRECTIVE_FUNCTION)
     {
-      TREE_STATIC (fndecl) = 1;
+      TREE_STATIC (fndecl) = 0;
       TREE_PUBLIC (fndecl) = 1;
+      DECL_EXTERNAL (fndecl) = 0;
+      DECL_DECLARED_INLINE_P (fndecl) = 1;
     }
   else if (base->kind == BRIG_KIND_DIRECTIVE_KERNEL)
     {
-      TREE_STATIC (fndecl) = 1;
+      TREE_STATIC (fndecl) = 0;
       TREE_PUBLIC (fndecl) = 1;
+      DECL_EXTERNAL (fndecl) = 0;
+      set_externally_visible (fndecl);
     }
   else if (base->kind == BRIG_KIND_DIRECTIVE_SIGNATURE)
     {
@@ -349,8 +359,12 @@ brig_directive_function_handler::operator () (const BrigBase *base)
   m_parent.add_function_decl (func_name, fndecl);
   m_parent.append_global (fndecl);
 
+
   if (!is_definition)
-    return bytes_consumed;
+    {
+      DECL_EXTERNAL (fndecl) = 1;
+      return bytes_consumed;
+    }
 
   m_parent.start_function (fndecl);
 

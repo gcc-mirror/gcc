@@ -74,6 +74,7 @@ public:
   tree global_variable (const std::string &name) const;
   void add_global_variable (const std::string &name, tree var_decl);
   void add_host_def_var_ptr (const std::string &name, tree var_decl);
+  void add_decl_call (tree call);
 
   void start_function (tree f);
   void finish_function ();
@@ -152,6 +153,10 @@ private:
 
   label_index m_global_variables;
 
+  /* Calls to declarations to be fixed in the end of processing to call
+     defs instead.  */
+  std::vector<tree> m_decl_call;
+
   /* The size of each private variable, including the alignment padding.  */
   std::map<std::string, size_t> m_private_data_sizes;
 
@@ -226,6 +231,9 @@ tree build_stmt (enum tree_code code, ...);
 tree get_unsigned_int_type (tree type);
 
 tree get_scalar_unsigned_int_type (tree type);
+void set_externally_visible (tree decl);
+
+void set_inline (tree decl);
 
 void dump_function (FILE *dump_file, brig_function *f);
 

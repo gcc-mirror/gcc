@@ -27,6 +27,7 @@
 #include "brig-util.h"
 #include "print-tree.h"
 #include "diagnostic-core.h"
+#include "brig-to-generic.h"
 
 tree
 brig_directive_variable_handler::build_variable
@@ -206,6 +207,8 @@ brig_directive_variable_handler::operator () (const BrigBase *base)
 	     so we can get their address from the Runtime API.  */
 	  DECL_CONTEXT (var_decl) = NULL_TREE;
 	  TREE_STATIC (var_decl) = 1;
+	  TREE_PUBLIC (var_decl) = 1;
+	  set_externally_visible (var_decl);
 	  m_parent.add_global_variable (var_name, var_decl);
 	}
     }
