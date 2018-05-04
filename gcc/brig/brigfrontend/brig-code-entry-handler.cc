@@ -1048,7 +1048,6 @@ brig_code_entry_handler::expand_builtin (BrigOpcode16_t brig_opcode,
       tree local_id_var = m_parent.m_cf->m_local_id_vars[dim];
       tree wg_id_var = m_parent.m_cf->m_wg_id_vars[dim];
       tree wg_size_var = m_parent.m_cf->m_wg_size_vars[dim];
-      tree grid_size_var = m_parent.m_cf->m_grid_size_vars[dim];
 
       tree wg_id_x_wg_size = build2 (MULT_EXPR, uint32_type_node,
 				     convert (uint32_type_node, wg_id_var),
@@ -1056,15 +1055,8 @@ brig_code_entry_handler::expand_builtin (BrigOpcode16_t brig_opcode,
       tree sum
 	= build2 (PLUS_EXPR, uint32_type_node, wg_id_x_wg_size, local_id_var);
 
-      /* We need a modulo here because of work-groups which have dimensions
-	 larger than the grid size :( TO CHECK: is this really allowed in the
-	 specs?  */
-      tree modulo
-	= build2 (TRUNC_MOD_EXPR, uint32_type_node, sum, grid_size_var);
-
       return add_temp_var (std::string ("workitemabsid_")
-			     + (char) ((int) 'x' + dim),
-			   modulo);
+			   + (char) ((int) 'x' + dim), sum);
     }
   else if (brig_opcode == BRIG_OPCODE_WORKITEMFLATID)
     {
