@@ -1279,7 +1279,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 
   /* If it was a DEC Ada specific condtiion, make it GNAT otherwise
      keep the old facility.  */
-  if (sigargs [1] & FAC_MASK == DECADA_M_FACILITY)
+  if ((sigargs [1] & FAC_MASK) == DECADA_M_FACILITY)
     SYS$PUTMSG (sigargs, copy_msg, &gnat_facility,
 	        (unsigned long long ) message);
   else
