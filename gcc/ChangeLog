@@ -1,3 +1,9 @@
+2018-05-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/85639
+	* builtins.c (expand_builtin_goacc_parlevel_id_size): Handle null target
+	if ignore == 0.
+
 2018-05-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85627
