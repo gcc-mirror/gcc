@@ -54,7 +54,6 @@ typedef void (*gccbrigKernelFunc) (unsigned char *, void *, void *, uint32_t,
 */
 typedef struct
 {
-
   /* Data set by the HSA Runtime's kernel launcher.  */
   hsa_kernel_dispatch_packet_t *dp;
 

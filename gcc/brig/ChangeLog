@@ -1,5 +1,48 @@
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
+	Add flag -fassume-phsa that is on by default. If -fno-assume-phsa
+	is given, these optimizations are disabled.  With this flag, gccbrig
+	can generate GENERIC that assumes we are targeting a phsa-runtime
+	based implementation, which allows us to expose the work-item context
+	accesses to retrieve WI IDs etc.  which helps optimizers.
+	First optimization that takes advantage of this is to get rid of
+	the setworkitemid calls whenever we have non-inlined calls that
+	use IDs internally.  Other optimizations added in this commit:
+	- expand absoluteid to similar level of simplicity as workitemid.
+	At the moment absoluteid is the best indexing ID to end up with
+	WG vectorization.
+	- propagate ID variables closer to their uses. This is mainly
+	to avoid known useless casts, which confuse at least scalar
+	evolution analysis.
+	- use signed long long for storing IDs. Unsigned integers have
+	defined wraparound semantics, which confuse at least scalar
+	evolution analysis, leading to unvectorizable WI loops.
+	- also refactor some BRIG function generation helpers to brig_function.
+	- no point in having the wi-loop as a for-loop. It's really
+	a do...while and SCEV can analyze it just fine still.
+	- add consts to ptrs etc. in BRIG builtin defs.
+	Improves optimization opportunities.
+	- add qualifiers to generated function parameters.
+	Const and restrict on the hidden local/private pointers,
+	the arg buffer and the context pointer help some optimizations.
+	* brig/brigfrontend/brig-basic-inst-handler.cc: See above.
+	* brig/brigfrontend/brig-branch-inst-handler.cc: See above.
+	* brig/brigfrontend/brig-cmp-inst-handler.cc: See above.
+	* brig/brigfrontend/brig-code-entry-handler.cc: See above.
+	* brig/brigfrontend/brig-code-entry-handler.h: See above.
+	* brig/brigfrontend/brig-control-handler.cc: See above.
+	* brig/brigfrontend/brig-cvt-inst-handler.cc: See above.
+	* brig/brigfrontend/brig-function-handler.cc: See above.
+	* brig/brigfrontend/brig-function.cc: See above.
+	* brig/brigfrontend/brig-function.h: See above.
+	* brig/brigfrontend/brig-label-handler.cc: See above.
+	* brig/brigfrontend/brig-lane-inst-handler.cc: See above.
+	* brig/brigfrontend/brig-mem-inst-handler.cc: See above.
+	* brig/brigfrontend/phsa.h: See above.
+	* brig/lang.opt: See above.
+
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
 	* brig/brigfrontend/brig-function-handler.cc: Skip multiple forward
 	declarations of the same function.
 

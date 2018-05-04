@@ -45,11 +45,6 @@
 
 typedef struct
 {
-  /* The group id of the currently executed WG.  */
-  size_t x;
-  size_t y;
-  size_t z;
-
   /* This is 1 in case there are more work groups to execute.
      If 0, the work-item threads should finish themselves.  */
   int more_wgs;
@@ -89,6 +84,16 @@ typedef struct
      stack frame.  Initialized to point outside the private segment.  */
   uint32_t alloca_frame_p;
 
+  /* The group id of the currently executed WG.  This is for fiber based
+     execution.  The group ids are duplicated also to the per WI context
+     struct for simplified single pointer access in the GCCBRIG produced
+     code.
+   */
+
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+
 } PHSAWorkGroup;
 
 /* Data identifying a single work-item, passed to the work-item thread in case
@@ -96,17 +101,42 @@ typedef struct
 
 typedef struct
 {
+  /* NOTE: These members STARTing here should not be moved as they are
+     accessed directly by code emitted by BRIG FE.   */
+
+  /* The local id of the current WI. */
+
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+
+  /* The group id of the currently executed WG.  */
+
+  uint32_t group_x;
+  uint32_t group_y;
+  uint32_t group_z;
+
+  /* The local size of a complete WG.  */
+
+  uint32_t wg_size_x;
+  uint32_t wg_size_y;
+  uint32_t wg_size_z;
+
+  /* The local size of the current WG.  */
+
+  uint32_t cur_wg_size_x;
+  uint32_t cur_wg_size_y;
+  uint32_t cur_wg_size_z;
+
+  /* NOTE: Fixed members END here.  */
+
   PHSAKernelLaunchData *launch_data;
   /* Identifies and keeps book of the currently executed WG of the WI swarm.  */
   volatile PHSAWorkGroup *wg;
-  /* The local id of the current WI.  */
-  size_t x;
-  size_t y;
-  size_t z;
 #ifdef HAVE_FIBERS
   fiber_t fiber;
 #endif
-} PHSAWorkItem;
+} __attribute__((packed)) PHSAWorkItem;
 
 
 #endif

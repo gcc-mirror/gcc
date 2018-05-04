@@ -1,4 +1,9 @@
-2018-05-04 Carl Love  <cel@us.ibm.com>
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* testsuite/brig.dg/test/gimple/smoke_test.hsail: Fix the test
+	to match the currently produced gimple.
+
+2018-05-04  Carl Love  <cel@us.ibm.com>
 	* gcc.target/powerpc/vsx-vector-6.h (foo): Add test for vec_max,
 	vec_trunc.
 	* gcc.target/powerpc/vsx-vector-6-le.c (dg-final): Update xvcmpeqdp,

@@ -35,8 +35,6 @@ class tree_element_unary_visitor;
 class brig_code_entry_handler : public brig_entry_handler
 {
 public:
-  typedef std::map<std::pair<BrigOpcode16_t, BrigType16_t>, tree> builtin_map;
-
   brig_code_entry_handler (brig_to_generic &parent);
 
   /* Handles the brig_code data at the given pointer and adds it to the
@@ -51,8 +49,6 @@ protected:
   tree get_tree_expr_type_for_hsa_type (BrigType16_t brig_type) const;
   tree get_tree_cst_for_hsa_operand (const BrigOperandConstantBytes *brigConst,
 				     tree type) const;
-  tree get_builtin_for_hsa_opcode (tree type, BrigOpcode16_t brig_opcode,
-				   BrigType16_t brig_type) const;
   tree get_comparison_result_type (tree source_type);
 
   tree build_code_ref (const BrigBase &ref);
@@ -73,16 +69,6 @@ protected:
 
   bool needs_workitem_context_data (BrigOpcode16_t brig_opcode) const;
 
-  void unpack (tree value, tree_stl_vec &elements);
-  tree pack (tree_stl_vec &elements);
-
-  bool can_expand_builtin (BrigOpcode16_t brig_opcode) const;
-  tree expand_builtin (BrigOpcode16_t brig_opcode, tree_stl_vec &operands);
-
-  tree expand_or_call_builtin (BrigOpcode16_t brig_opcode,
-			       BrigType16_t brig_type, tree arith_type,
-			       tree_stl_vec &operands);
-
   tree add_temp_var (std::string name, tree expr);
 
   tree build_f2h_conversion (tree source);
@@ -99,10 +85,6 @@ protected:
   HOST_WIDE_INT int_constant_value (tree node);
 
   tree extend_int (tree input, tree dest_type, tree src_type);
-
-  /* HSAIL-specific builtin functions not yet integrated to gcc.  */
-
-  static builtin_map s_custom_builtins;
 
 private:
 
@@ -299,9 +281,6 @@ private:
 
   tree build_unpack_lo_or_hi (BrigOpcode16_t brig_opcode, tree arith_type,
 			      tree_stl_vec &operands);
-
-  tree_code get_tree_code_for_hsa_opcode (BrigOpcode16_t brig_opcode,
-					  BrigType16_t brig_type) const;
 };
 
 class brig_cvt_inst_handler : public brig_inst_mod_handler

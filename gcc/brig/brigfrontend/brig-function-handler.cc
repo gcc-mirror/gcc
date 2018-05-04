@@ -93,6 +93,25 @@ brig_directive_function_handler::operator () (const BrigBase *base)
      represent HSAIL registers.  */
   tree bind_expr = build3 (BIND_EXPR, void_type_node, NULL, stmt_list, NULL);
 
+  tree restrict_char_ptr
+    = build_qualified_type (build_pointer_type (char_type_node),
+			    TYPE_QUAL_RESTRICT);
+  tree restrict_void_ptr
+    = build_qualified_type (build_pointer_type (void_type_node),
+			    TYPE_QUAL_RESTRICT);
+
+  tree restrict_const_char_ptr
+    = build_qualified_type (build_pointer_type
+			    (build_qualified_type (char_type_node,
+						   TYPE_QUAL_CONST)),
+			    TYPE_QUAL_RESTRICT);
+
+  tree restrict_const_void_ptr
+    = build_qualified_type (build_pointer_type
+			    (build_qualified_type (void_type_node,
+						   TYPE_QUAL_CONST)),
+			    TYPE_QUAL_RESTRICT);
+
   if (is_kernel)
     {
       tree name_identifier
@@ -107,12 +126,11 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 	 3) a void* parameter that contains the first flat address of the group
 	 region allocated to the current work-group.  */
 
-      tree char_ptr_type_node = build_pointer_type (char_type_node);
       fndecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, name_identifier,
 			   build_function_type_list (void_type_node,
-						     char_ptr_type_node,
-						     ptr_type_node,
-						     ptr_type_node, NULL_TREE));
+						     restrict_const_char_ptr,
+						     restrict_void_ptr,
+						     restrict_char_ptr, NULL_TREE));
 
       SET_DECL_ASSEMBLER_NAME (fndecl, name_identifier);
 
@@ -125,9 +143,10 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 	= gccbrig_get_target_addr_space_id (BRIG_SEGMENT_KERNARG);
 
       tree arg_arg = build_decl (UNKNOWN_LOCATION, PARM_DECL,
-				 get_identifier ("__args"), char_ptr_type_node);
+				 get_identifier ("__args"),
+				 restrict_const_char_ptr);
       DECL_ARGUMENTS (fndecl) = arg_arg;
-      DECL_ARG_TYPE (arg_arg) = char_ptr_type_node;
+      DECL_ARG_TYPE (arg_arg) = restrict_const_char_ptr;
       DECL_CONTEXT (arg_arg) = fndecl;
       DECL_ARTIFICIAL (arg_arg) = 1;
       TREE_READONLY (arg_arg) = 1;
@@ -189,7 +208,7 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 	      if (arg_decls == NULL_TREE)
 		arg_decls = arg_var;
 	      else
-		chainon (arg_decls, arg_var);
+		arg_decls = chainon (arg_decls, arg_var);
 
 	      m_parent.m_cf->add_arg_variable (brigVar, arg_var);
 
@@ -230,18 +249,13 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 	      vec_safe_push (args, TREE_TYPE (arg_var));
 
 	      m_parent.m_cf->add_arg_variable (brigVar, arg_var);
-
-	      if (arg_decls == NULL_TREE)
-		arg_decls = arg_var;
-	      else
-		chainon (arg_decls, arg_var);
+	      arg_decls = chainon (arg_decls, arg_var);
 	    }
 	}
-
-      vec_safe_push (args, ptr_type_node);
-      vec_safe_push (args, ptr_type_node);
-      vec_safe_push (args, ptr_type_node);
-      vec_safe_push (args, ptr_type_node);
+      vec_safe_push (args, restrict_void_ptr);
+      vec_safe_push (args, restrict_char_ptr);
+      vec_safe_push (args, uint32_type_node);
+      vec_safe_push (args, restrict_char_ptr);
 
       fndecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, name_identifier,
 			   build_function_type_vec (ret_type, args));
@@ -254,26 +268,30 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 
   /* All functions need the hidden __context argument passed on
      because they might call WI-specific functions which need
-     the context info.  */
+     the context info.  Only kernels can write it, if they need
+     to update the local ids in the work-item loop.  */
+
+  tree context_arg_type
+    = true ? restrict_void_ptr : restrict_const_void_ptr;
   tree context_arg = build_decl (UNKNOWN_LOCATION, PARM_DECL,
-				 get_identifier ("__context"), ptr_type_node);
-  if (DECL_ARGUMENTS (fndecl) == NULL_TREE)
-    DECL_ARGUMENTS (fndecl) = context_arg;
-  else
-    chainon (DECL_ARGUMENTS (fndecl), context_arg);
+				 get_identifier ("__context"),
+				 context_arg_type);
+  DECL_ARGUMENTS (fndecl) = chainon (DECL_ARGUMENTS (fndecl), context_arg);
   DECL_CONTEXT (context_arg) = fndecl;
-  DECL_ARG_TYPE (context_arg) = ptr_type_node;
+  DECL_ARG_TYPE (context_arg) = context_arg_type;
   DECL_ARTIFICIAL (context_arg) = 1;
   TREE_READONLY (context_arg) = 1;
   TREE_USED (context_arg) = 1;
+  m_parent.m_cf->m_context_arg = context_arg;
 
   /* They can also access group memory, so we need to pass the
      group pointer along too.  */
   tree group_base_arg
     = build_decl (UNKNOWN_LOCATION, PARM_DECL,
-		  get_identifier ("__group_base_addr"), ptr_type_node);
-  chainon (DECL_ARGUMENTS (fndecl), group_base_arg);
-  DECL_ARG_TYPE (group_base_arg) = ptr_type_node;
+		  get_identifier ("__group_base_addr"),
+		  restrict_char_ptr);
+  DECL_ARGUMENTS (fndecl) = chainon (DECL_ARGUMENTS (fndecl), group_base_arg);
+  DECL_ARG_TYPE (group_base_arg) = restrict_char_ptr;
   DECL_CONTEXT (group_base_arg) = fndecl;
   DECL_ARTIFICIAL (group_base_arg) = 1;
   TREE_READONLY (group_base_arg) = 1;
@@ -288,7 +306,7 @@ brig_directive_function_handler::operator () (const BrigBase *base)
   tree group_local_offset_arg
     = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		  get_identifier ("__group_local_offset"), uint32_type_node);
-  chainon (DECL_ARGUMENTS (fndecl), group_local_offset_arg);
+  DECL_ARGUMENTS (fndecl) = chainon (DECL_ARGUMENTS (fndecl), group_local_offset_arg);
   DECL_ARG_TYPE (group_local_offset_arg) = uint32_type_node;
   DECL_CONTEXT (group_local_offset_arg) = fndecl;
   DECL_ARTIFICIAL (group_local_offset_arg) = 1;
@@ -299,17 +317,16 @@ brig_directive_function_handler::operator () (const BrigBase *base)
   /* Same for private.  */
   tree private_base_arg
     = build_decl (UNKNOWN_LOCATION, PARM_DECL,
-		  get_identifier ("__private_base_addr"), ptr_type_node);
-  chainon (DECL_ARGUMENTS (fndecl), private_base_arg);
-  DECL_ARG_TYPE (private_base_arg) = ptr_type_node;
+		  get_identifier ("__private_base_addr"), restrict_char_ptr);
+  DECL_ARGUMENTS (fndecl) = chainon (DECL_ARGUMENTS (fndecl), private_base_arg);
+  DECL_ARG_TYPE (private_base_arg) = restrict_char_ptr;
   DECL_CONTEXT (private_base_arg) = fndecl;
   DECL_ARTIFICIAL (private_base_arg) = 1;
   TREE_READONLY (private_base_arg) = 1;
   TREE_USED (private_base_arg) = 1;
+  m_parent.m_cf->m_private_base_arg = private_base_arg;
 
   DECL_SAVED_TREE (fndecl) = bind_expr;
-
-  set_externally_visible (fndecl);
 
   if (base->kind == BRIG_KIND_DIRECTIVE_FUNCTION)
     {
@@ -317,6 +334,8 @@ brig_directive_function_handler::operator () (const BrigBase *base)
       TREE_PUBLIC (fndecl) = 1;
       DECL_EXTERNAL (fndecl) = 0;
       DECL_DECLARED_INLINE_P (fndecl) = 1;
+      set_inline (fndecl);
+      set_externally_visible (fndecl);
     }
   else if (base->kind == BRIG_KIND_DIRECTIVE_KERNEL)
     {
@@ -330,6 +349,7 @@ brig_directive_function_handler::operator () (const BrigBase *base)
       TREE_STATIC (fndecl) = 0;
       TREE_PUBLIC (fndecl) = 1;
       DECL_EXTERNAL (fndecl) = 1;
+      set_inline (fndecl);
     }
   else if (base->kind == BRIG_KIND_DIRECTIVE_INDIRECT_FUNCTION)
     {
@@ -371,11 +391,8 @@ brig_directive_function_handler::operator () (const BrigBase *base)
     }
 
   m_parent.start_function (fndecl);
-
   m_parent.m_cf->m_func_decl = fndecl;
   m_parent.m_cf->m_current_bind_expr = bind_expr;
-  m_parent.m_cf->m_context_arg = context_arg;
-  m_parent.m_cf->m_private_base_arg = private_base_arg;
 
   if (ret_value != NULL_TREE && TREE_TYPE (ret_value) != void_type_node)
     {
