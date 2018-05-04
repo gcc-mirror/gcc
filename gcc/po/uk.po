@@ -5,10 +5,10 @@
 # Yuri Chornoivan <yurchor@ukr.net>, 2015, 2016, 2017, 2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 8.1-b20180401\n"
+"Project-Id-Version: gcc 8.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-05-01 20:30+0000\n"
-"PO-Revision-Date: 2018-04-04 20:22+0200\n"
+"PO-Revision-Date: 2018-05-04 16:12+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "Language: uk\n"
@@ -12559,22 +12559,16 @@ msgid "Guide linker to relax instructions."
 msgstr ""
 
 #: config/nds32/nds32.opt:314
-#, fuzzy
-#| msgid "Generate string extension instructions."
 msgid "Generate floating-point multiply-accumulation instructions."
-msgstr "Створити інструкції розширення рядків."
+msgstr "Створити інструкції накопичення множення для чисел із рухомою крапкою."
 
 #: config/nds32/nds32.opt:318
-#, fuzzy
-#| msgid "Generate string extension instructions."
 msgid "Generate single-precision floating-point instructions."
-msgstr "Створити інструкції розширення рядків."
+msgstr "Створити інструкції одинарної точності для чисел із рухомою крапкою."
 
 #: config/nds32/nds32.opt:322
-#, fuzzy
-#| msgid "Generate string extension instructions."
 msgid "Generate double-precision floating-point instructions."
-msgstr "Створити інструкції розширення рядків."
+msgstr "Створити інструкції подвійної точності для чисел із рухомою крапкою."
 
 #: config/nds32/nds32.opt:326
 msgid "Always save $lp in the stack."
@@ -20131,10 +20125,9 @@ msgid "default %<target_clones%> attribute was not set"
 msgstr ""
 
 #: multiple_target.c:343
-#, fuzzy, gcc-internal-format
-#| msgid "argument of %qE attribute ignored"
+#, gcc-internal-format
 msgid "single %<target_clones%> attribute is ignored"
-msgstr "аргумент атрибута %qE проігноровано"
+msgstr "одинарний атрибут %<target_clones%> ігнорується"
 
 #: multiple_target.c:351
 #, gcc-internal-format
@@ -30345,16 +30338,14 @@ msgid "this builtin function not support on the v3m toolchain"
 msgstr ""
 
 #: config/nds32/nds32-intrinsic.c:736
-#, fuzzy, gcc-internal-format
-#| msgid "Generate string extension instructions."
+#, gcc-internal-format
 msgid "don't support performance extension instructions"
-msgstr "Створити інструкції розширення рядків."
+msgstr "не підтримувати інструкції розширеної швидкодії"
 
 #: config/nds32/nds32-intrinsic.c:748
-#, fuzzy, gcc-internal-format
-#| msgid "Generate string extension instructions."
+#, gcc-internal-format
 msgid "don't support performance extension version 2 instructions"
-msgstr "Створити інструкції розширення рядків."
+msgstr "не підтримувати інструкції розширеної швидкодії версії 2"
 
 #: config/nds32/nds32-intrinsic.c:760
 #, gcc-internal-format
@@ -32005,10 +31996,9 @@ msgid "builtin %qs only accepts 1 argument"
 msgstr ""
 
 #: config/rs6000/rs6000-c.c:7054
-#, fuzzy, gcc-internal-format
-#| msgid "%qs requires %qs"
+#, gcc-internal-format
 msgid "builtin %qs requires builtin %qs"
-msgstr "%qs потребує %qs"
+msgstr "вбудований код %qs потребує вбудованого коду %qs"
 
 #: config/rs6000/rs6000-c.c:7058
 #, gcc-internal-format
@@ -40743,10 +40733,9 @@ msgid "cannot decompose class type %qT because it has an anonymous union member"
 msgstr ""
 
 #: cp/decl.c:7339
-#, fuzzy, gcc-internal-format
-#| msgid "cannot decompose union type %qT"
+#, gcc-internal-format
 msgid "cannot decompose inaccessible member %qD of %qT"
-msgstr "не вдалося розкласти тип об'єднання %qT"
+msgstr "неможливо розкласти недоступний член %qD %qT"
 
 #: cp/decl.c:7365
 #, gcc-internal-format
@@ -47301,12 +47290,12 @@ msgstr ""
 #: cp/pt.c:18367
 #, gcc-internal-format
 msgid "use %<this->%D%> instead"
-msgstr ""
+msgstr "скористайтеся краще %<this->%D%>"
 
 #: cp/pt.c:18370
 #, gcc-internal-format
 msgid "use %<%T::%D%> instead"
-msgstr ""
+msgstr "скористайтеся краще %<%T::%D%>"
 
 #: cp/pt.c:18375
 #, gcc-internal-format
@@ -47316,12 +47305,12 @@ msgstr ""
 #: cp/pt.c:18712
 #, gcc-internal-format
 msgid "%qT is not a class or namespace"
-msgstr ""
+msgstr "%qT не є класом або простором назв"
 
 #: cp/pt.c:18715
 #, gcc-internal-format
 msgid "%qD is not a class or namespace"
-msgstr ""
+msgstr "%qD не є класом або простором назв"
 
 #: cp/pt.c:19026
 #, gcc-internal-format
@@ -47336,12 +47325,12 @@ msgstr ""
 #: cp/pt.c:19038
 #, gcc-internal-format
 msgid "%qT is a variably modified type"
-msgstr ""
+msgstr "%qT є змінним за змінними типом"
 
 #: cp/pt.c:19053
 #, gcc-internal-format
 msgid "integral expression %qE is not constant"
-msgstr ""
+msgstr "інтегральний вираз %qE не є сталою"
 
 #: cp/pt.c:19071
 #, gcc-internal-format
@@ -47430,7 +47419,7 @@ msgstr ""
 #: cp/pt.c:23536
 #, gcc-internal-format
 msgid "exception specification of %qD depends on itself"
-msgstr ""
+msgstr "специфікація виключення %qD залежить від самої себе"
 
 #. [temp.explicit]
 #.
@@ -47452,7 +47441,7 @@ msgstr ""
 #: cp/pt.c:24418
 #, gcc-internal-format
 msgid "invalid template non-type parameter"
-msgstr ""
+msgstr "некоректний шаблон нетипізованого параметра"
 
 #: cp/pt.c:24420
 #, gcc-internal-format
@@ -47517,7 +47506,7 @@ msgstr ""
 #: cp/pt.c:26748
 #, gcc-internal-format
 msgid "unable to deduce %qT from %qE"
-msgstr ""
+msgstr "не вдалося вивести %qT з %qE"
 
 #: cp/pt.c:26781
 #, gcc-internal-format
@@ -47540,20 +47529,19 @@ msgid "deduced expression type does not satisfy placeholder constraints"
 msgstr ""
 
 #: cp/pt.c:26912
-#, fuzzy, gcc-internal-format
-#| msgid "missing template arguments"
+#, gcc-internal-format
 msgid "invalid use of %qT in template argument"
-msgstr "пропущено аргументи шаблона"
+msgstr "некоректне використання %qT в аргументі шаблона"
 
 #: cp/repo.c:113
 #, gcc-internal-format
 msgid "-frepo must be used with -c"
-msgstr ""
+msgstr "-frepo слід використовувати разом із -c"
 
 #: cp/repo.c:203
 #, gcc-internal-format, gfc-internal-format
 msgid "mysterious repository information in %s"
-msgstr ""
+msgstr "загадкові дані щодо сховища у %s"
 
 #: cp/repo.c:221
 #, gcc-internal-format
@@ -47563,17 +47551,17 @@ msgstr ""
 #: cp/rtti.c:313
 #, gcc-internal-format
 msgid "cannot use %<typeid%> with -fno-rtti"
-msgstr ""
+msgstr "не можна використовувати %<typeid%> разом із -fno-rtti"
 
 #: cp/rtti.c:322
 #, gcc-internal-format
 msgid "must %<#include <typeinfo>%> before using %<typeid%>"
-msgstr ""
+msgstr "слід використовувати %<#include <typeinfo>%> до використання %<typeid%>"
 
 #: cp/rtti.c:425
 #, gcc-internal-format
 msgid "cannot create type information for type %qT because it involves types of variable size"
-msgstr ""
+msgstr "не вдалося створити дані щодо типу для типу %qT, оскільки до нього включено типи змінного розміру"
 
 #: cp/rtti.c:515
 #, gcc-internal-format
