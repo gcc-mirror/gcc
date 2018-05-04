@@ -463,44 +463,6 @@ mprioritize-restricted-insns=
 Target RejectNegative Joined UInteger Var(rs6000_sched_restricted_insns_priority) Save
 Specify scheduling priority for dispatch slot restricted insns.
 
-msingle-float
-Target RejectNegative Var(rs6000_single_float) Save
-Single-precision floating point unit.
-
-mdouble-float
-Target RejectNegative Var(rs6000_double_float) Save
-Double-precision floating point unit.
-
-msimple-fpu
-Target RejectNegative Var(rs6000_simple_fpu) Save
-Floating point unit does not support divide & sqrt.
-
-mfpu=
-Target RejectNegative Joined Enum(fpu_type_t) Var(rs6000_fpu_type) Init(FPU_NONE)
--mfpu=	Specify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu).
-
-Enum
-Name(fpu_type_t) Type(enum fpu_type_t)
-
-EnumValue
-Enum(fpu_type_t) String(none) Value(FPU_NONE)
-
-EnumValue
-Enum(fpu_type_t) String(sp_lite) Value(FPU_SF_LITE)
-
-EnumValue
-Enum(fpu_type_t) String(dp_lite) Value(FPU_DF_LITE)
-
-EnumValue
-Enum(fpu_type_t) String(sp_full) Value(FPU_SF_FULL)
-
-EnumValue
-Enum(fpu_type_t) String(dp_full) Value(FPU_DF_FULL)
-
-mxilinx-fpu
-Target Var(rs6000_xilinx_fpu) Save
-Specify Xilinx FPU.
-
 mpointers-to-nested-functions
 Target Report Var(TARGET_POINTERS_TO_NESTED_FUNCTIONS) Init(1) Save
 Use r11 to hold the static link in calls to functions via pointers.

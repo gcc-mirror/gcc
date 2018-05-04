@@ -490,8 +490,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
      the following conditions:
      1. The operating system does not support saving of AltiVec
 	registers (OS_MISSING_ALTIVEC).
-     2. If any of the options TARGET_HARD_FLOAT, TARGET_SINGLE_FLOAT,
-	or TARGET_DOUBLE_FLOAT are turned off.  Hereafter, the
+     2. If the option TARGET_HARD_FLOAT is turned off.  Hereafter, the
 	OPTION_MASK_VSX flag is considered to have been turned off
 	explicitly.
      3. If TARGET_AVOID_XFORM is turned on explicitly at the outermost
@@ -635,7 +634,7 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 	  cpp_get_callbacks (pfile)->macro_to_expand = rs6000_macro_to_expand;
 	}
     }
-  if (!TARGET_HARD_FLOAT || !TARGET_DOUBLE_FLOAT)
+  if (!TARGET_HARD_FLOAT)
     builtin_define ("_SOFT_DOUBLE");
   /* Used by lwarx/stwcx. errata work-around.  */
   if (rs6000_cpu == PROCESSOR_PPC405)
@@ -766,26 +765,6 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       || DEFAULT_ABI == ABI_ELFv2
       || (DEFAULT_ABI == ABI_AIX && !rs6000_compat_align_parm))
     builtin_define ("__STRUCT_PARM_ALIGN__=16");
-
-  /* Generate defines for Xilinx FPU. */
-  if (rs6000_xilinx_fpu) 
-    {
-      builtin_define ("_XFPU");
-      if (rs6000_single_float && ! rs6000_double_float)
-	{
-	  if (rs6000_simple_fpu) 
-	    builtin_define ("_XFPU_SP_LITE"); 
-	  else 
-	    builtin_define ("_XFPU_SP_FULL");
-	}
-      if (rs6000_double_float)
-	{
-	  if (rs6000_simple_fpu) 
-	    builtin_define ("_XFPU_DP_LITE");
-	  else
-	    builtin_define ("_XFPU_DP_FULL");
-        }
-    }
 }
 
 

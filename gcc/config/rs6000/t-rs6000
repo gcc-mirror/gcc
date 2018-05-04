@@ -61,7 +61,6 @@ MD_INCLUDES = $(srcdir)/config/rs6000/rs64.md \
 	$(srcdir)/config/rs6000/power8.md \
 	$(srcdir)/config/rs6000/power9.md \
 	$(srcdir)/config/rs6000/cell.md \
-	$(srcdir)/config/rs6000/xfpu.md \
 	$(srcdir)/config/rs6000/a2.md \
 	$(srcdir)/config/rs6000/predicates.md \
 	$(srcdir)/config/rs6000/constraints.md \

@@ -214,37 +214,21 @@
 				 (V4SF "vecfloat")
 				 (DF   "fp")])
 
-(define_mode_attr VSfptype_simple [(V2DF "fp_addsub_d")
-				   (V4SF "fp_addsub_s")
-				   (DF   "fp_addsub_d")])
-
 ;; Appropriate type for multiply ops
 (define_mode_attr VStype_mul	[(V2DF "vecdouble")
 				 (V4SF "vecfloat")
 				 (DF   "dmul")])
-
-(define_mode_attr VSfptype_mul	[(V2DF "fp_mul_d")
-				 (V4SF "fp_mul_s")
-				 (DF   "fp_mul_d")])
 
 ;; Appropriate type for divide ops.
 (define_mode_attr VStype_div	[(V2DF "vecdiv")
 				 (V4SF "vecfdiv")
 				 (DF   "ddiv")])
 
-(define_mode_attr VSfptype_div	[(V2DF "fp_div_d")
-				 (V4SF "fp_div_s")
-				 (DF   "fp_div_d")])
-
 ;; Appropriate type for sqrt ops.  For now, just lump the vector sqrt with
 ;; the scalar sqrt
 (define_mode_attr VStype_sqrt	[(V2DF "dsqrt")
 				 (V4SF "ssqrt")
 				 (DF   "dsqrt")])
-
-(define_mode_attr VSfptype_sqrt	[(V2DF "fp_sqrt_d")
-				 (V4SF "fp_sqrt_s")
-				 (DF   "fp_sqrt_d")])
 
 ;; Iterator and modes for sp<->dp conversions
 ;; Because scalar SF values are represented internally as double, use the
@@ -1612,8 +1596,7 @@
 		    (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvadd<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_sub<mode>3"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -1621,8 +1604,7 @@
 		     (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvsub<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_mul<mode>3"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -1630,8 +1612,7 @@
 		    (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvmul<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_mul>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 ; Emulate vector with scalar for vec_mul in V2DImode
 (define_insn_and_split "vsx_mul_v2di"
@@ -1679,8 +1660,7 @@
 		   (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvdiv<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_div>")
-   (set_attr "fp_type" "<VSfptype_div>")])
+  [(set_attr "type" "<VStype_div>")])
 
 ; Emulate vector with scalar for vec_div in V2DImode
 (define_insn_and_split "vsx_div_v2di"
@@ -1812,8 +1792,7 @@
 		   UNSPEC_VSX_TDIV))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>tdiv<VSs> %0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_fre<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -1821,24 +1800,21 @@
 		      UNSPEC_FRES))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvre<VSs> %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_neg<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
         (neg:VSX_F (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvneg<VSs> %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_abs<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
         (abs:VSX_F (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvabs<VSs> %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_nabs<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -1847,8 +1823,7 @@
 	  (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,<VSa>"))))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvnabs<VSs> %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_smax<mode>3"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -1856,8 +1831,7 @@
 		    (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvmax<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_smin<mode>3"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -1865,16 +1839,14 @@
 		    (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvmin<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_sqrt<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
         (sqrt:VSX_F (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvsqrt<VSs> %x0,%x1"
-  [(set_attr "type" "<VStype_sqrt>")
-   (set_attr "fp_type" "<VSfptype_sqrt>")])
+  [(set_attr "type" "<VStype_sqrt>")])
 
 (define_insn "*vsx_rsqrte<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -1882,8 +1854,7 @@
 		      UNSPEC_RSQRT))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvrsqrte<VSs> %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 ;; *tsqrt* returning the fg flag
 (define_expand "vsx_tsqrt<mode>2_fg"
@@ -1917,8 +1888,7 @@
 		     UNSPEC_VSX_TSQRT))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>tsqrt<VSs> %0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 ;; Fused vector multiply/add instructions. Support the classical Altivec
 ;; versions of fma, which allows the target to be a separate register from the
@@ -1982,8 +1952,7 @@
    xvnmaddm<VSs> %x0,%x1,%x3
    xvnmadda<VSs> %x0,%x1,%x2
    xvnmaddm<VSs> %x0,%x1,%x3"
-  [(set_attr "type" "<VStype_mul>")
-   (set_attr "fp_type" "<VSfptype_mul>")])
+  [(set_attr "type" "<VStype_mul>")])
 
 (define_insn "*vsx_nfmsv4sf4"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wf,wf,?wa,?wa,v")
@@ -2025,8 +1994,7 @@
 		  (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcmpeq<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_gt<mode>"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -2034,8 +2002,7 @@
 		  (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcmpgt<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_ge<mode>"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -2043,8 +2010,7 @@
 		  (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcmpge<VSs> %x0,%x1,%x2"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 ;; Compare vectors producing a vector result and a predicate, setting CR6 to
 ;; indicate a combined status
@@ -2119,8 +2085,7 @@
 	 UNSPEC_COPYSIGN))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcpsgn<VSs> %x0,%x2,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 ;; For the conversions, limit the register class for the integer value to be
 ;; the fprs because we don't want to add the altivec registers to movdi/movsi.
@@ -2133,32 +2098,28 @@
 	(float:VSX_F (match_operand:<VSI> 1 "gpc_reg_operand" "<VSr2>,<VSr3>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcvsx<VSc><VSs> %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_floatuns<VSi><mode>2"
   [(set (match_operand:VSX_F 0 "gpc_reg_operand" "=<VSr>,?<VSa>")
 	(unsigned_float:VSX_F (match_operand:<VSI> 1 "gpc_reg_operand" "<VSr2>,<VSr3>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcvux<VSc><VSs> %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_fix_trunc<mode><VSi>2"
   [(set (match_operand:<VSI> 0 "gpc_reg_operand" "=<VSr2>,?<VSr3>")
 	(fix:<VSI> (match_operand:VSX_F 1 "gpc_reg_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>cv<VSs>sx<VSc>s %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_fixuns_trunc<mode><VSi>2"
   [(set (match_operand:<VSI> 0 "gpc_reg_operand" "=<VSr2>,?<VSr3>")
 	(unsigned_fix:<VSI> (match_operand:VSX_F 1 "gpc_reg_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>cv<VSs>ux<VSc>s %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 ;; Math rounding functions
 (define_insn "vsx_x<VSv>r<VSs>i"
@@ -2167,8 +2128,7 @@
 		      UNSPEC_VSX_ROUND_I))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>r<VSs>i %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_x<VSv>r<VSs>ic"
   [(set (match_operand:VSX_B 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -2176,16 +2136,14 @@
 		      UNSPEC_VSX_ROUND_IC))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>r<VSs>ic %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_btrunc<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
 	(fix:VSX_F (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvr<VSs>iz %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_b2trunc<mode>2"
   [(set (match_operand:VSX_B 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -2193,8 +2151,7 @@
 		      UNSPEC_FRIZ))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>r<VSs>iz %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_floor<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -2202,8 +2159,7 @@
 		      UNSPEC_FRIM))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvr<VSs>im %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "vsx_ceil<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -2211,8 +2167,7 @@
 		      UNSPEC_FRIP))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvr<VSs>ip %x0,%x1"
-  [(set_attr "type" "<VStype_simple>")
-   (set_attr "fp_type" "<VSfptype_simple>")])
+  [(set_attr "type" "<VStype_simple>")])
 
 
 ;; VSX convert to/from double vector
@@ -2867,12 +2822,11 @@
 	(float:V2DF
 	 (fix:V2DI
 	  (match_operand:V2DF 1 "vsx_register_operand" "wd,?wa"))))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
+  "TARGET_HARD_FLOAT
    && VECTOR_UNIT_VSX_P (V2DFmode) && flag_unsafe_math_optimizations
    && !flag_trapping_math && TARGET_FRIZ"
   "xvrdpiz %x0,%x1"
-  [(set_attr "type" "vecdouble")
-   (set_attr "fp_type" "fp_addsub_d")])
+  [(set_attr "type" "vecdouble")])
 
 
 ;; Permute operations
