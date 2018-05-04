@@ -1,3 +1,12 @@
+2018-05-04  Richard Biener  <rguenther@suse.de>
+
+	* bb-reorder.c (sanitize_hot_paths): Release hot_bbs_to_check.
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::output_merged_store): Remove redundant create,
+	release split_store vector contents on failure.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Avoid leaking
+	scalar stmt vector on cache hit.
+
 2018-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* common/config/rs6000/rs6000-common.c (rs6000_handle_option): Remove

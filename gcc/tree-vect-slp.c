@@ -4064,15 +4064,15 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 
   /* See if we have already vectorized the same set of stmts and reuse their
      vectorized stmts.  */
-  slp_tree &leader
-    = bst_map->get_or_insert (SLP_TREE_SCALAR_STMTS (node).copy ());
-  if (leader)
+  if (slp_tree *leader = bst_map->get (SLP_TREE_SCALAR_STMTS (node)))
     {
-      SLP_TREE_VEC_STMTS (node).safe_splice (SLP_TREE_VEC_STMTS (leader));
+      SLP_TREE_VEC_STMTS (node).safe_splice (SLP_TREE_VEC_STMTS (*leader));
+      SLP_TREE_NUMBER_OF_VEC_STMTS (node)
+	= SLP_TREE_NUMBER_OF_VEC_STMTS (*leader);
       return false;
     }
 
-  leader = node;
+  bst_map->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     vect_schedule_slp_instance (child, instance, bst_map);
 
