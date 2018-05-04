@@ -703,8 +703,7 @@ update_complex_assignment (gimple_stmt_iterator *gsi, tree r, tree i)
   if (maybe_clean_eh_stmt (stmt))
     gimple_purge_dead_eh_edges (gimple_bb (stmt));
 
-  if (gimple_in_ssa_p (cfun))
-    update_complex_components (gsi, gsi_stmt (*gsi), r, i);
+  update_complex_components (gsi, gsi_stmt (*gsi), r, i);
 }
 
 
@@ -1006,37 +1005,44 @@ expand_complex_libcall (gimple_stmt_iterator *gsi, tree type, tree ar, tree ai,
   else
     gcc_unreachable ();
   fn = builtin_decl_explicit (bcode);
-
   stmt = gimple_build_call (fn, 4, ar, ai, br, bi);
-
 
   if (inplace_p)
     {
       gimple *old_stmt = gsi_stmt (*gsi);
+      gimple_call_set_nothrow (stmt, !stmt_could_throw_p (old_stmt));
       lhs = gimple_assign_lhs (old_stmt);
       gimple_call_set_lhs (stmt, lhs);
-      update_stmt (stmt);
-      gsi_replace (gsi, stmt, false);
-
-      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
-	gimple_purge_dead_eh_edges (gsi_bb (*gsi));
+      gsi_replace (gsi, stmt, true);
 
       type = TREE_TYPE (type);
-      update_complex_components (gsi, stmt,
-				  build1 (REALPART_EXPR, type, lhs),
-				  build1 (IMAGPART_EXPR, type, lhs));
+      if (stmt_can_throw_internal (stmt))
+	{
+	  edge_iterator ei;
+	  edge e;
+	  FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
+	      if (!(e->flags & EDGE_EH))
+		break;
+	  basic_block bb = split_edge (e);
+	  gimple_stmt_iterator gsi2 = gsi_start_bb (bb);
+	  update_complex_components (&gsi2, stmt,
+				     build1 (REALPART_EXPR, type, lhs),
+				     build1 (IMAGPART_EXPR, type, lhs));
+	  return NULL_TREE;
+	}
+      else
+	update_complex_components (gsi, stmt,
+				   build1 (REALPART_EXPR, type, lhs),
+				   build1 (IMAGPART_EXPR, type, lhs));
       SSA_NAME_DEF_STMT (lhs) = stmt;
       return NULL_TREE;
     }
 
-  lhs = create_tmp_var (type);
+  gimple_call_set_nothrow (stmt, true);
+  lhs = make_ssa_name (type);
   gimple_call_set_lhs (stmt, lhs);
-
-  lhs = make_ssa_name (lhs, stmt);
-  gimple_call_set_lhs (stmt, lhs);
-
-  update_stmt (stmt);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+
   return lhs;
 }
 
@@ -1265,14 +1271,8 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
       gimple *stmt;
       tree cond, tmp;
 
-      tmp = create_tmp_var (boolean_type_node);
+      tmp = make_ssa_name (boolean_type_node);
       stmt = gimple_build_assign (tmp, compare);
-      if (gimple_in_ssa_p (cfun))
-	{
-	  tmp = make_ssa_name (tmp, stmt);
-	  gimple_assign_set_lhs (stmt, tmp);
-	}
-
       gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 
       cond = fold_build2_loc (gimple_location (stmt),
@@ -1698,25 +1698,20 @@ expand_complex_operations_1 (gimple_stmt_iterator *gsi)
   else
     br = bi = NULL_TREE;
 
-  if (gimple_in_ssa_p (cfun))
-    {
-      al = find_lattice_value (ac);
-      if (al == UNINITIALIZED)
-	al = VARYING;
+  al = find_lattice_value (ac);
+  if (al == UNINITIALIZED)
+    al = VARYING;
 
-      if (TREE_CODE_CLASS (code) == tcc_unary)
-	bl = UNINITIALIZED;
-      else if (ac == bc)
-	bl = al;
-      else
-	{
-	  bl = find_lattice_value (bc);
-	  if (bl == UNINITIALIZED)
-	    bl = VARYING;
-	}
-    }
+  if (TREE_CODE_CLASS (code) == tcc_unary)
+    bl = UNINITIALIZED;
+  else if (ac == bc)
+    bl = al;
   else
-    al = bl = VARYING;
+    {
+      bl = find_lattice_value (bc);
+      if (bl == UNINITIALIZED)
+	bl = VARYING;
+    }
 
   switch (code)
     {
@@ -1788,6 +1783,8 @@ tree_lower_complex (void)
   for (i = 0; i < n_bbs; i++)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
+      if (!bb)
+	continue;
       update_phi_components (bb);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	expand_complex_operations_1 (&gsi);

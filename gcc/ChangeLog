@@ -1,5 +1,16 @@
 2018-05-04  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/85627
+	* tree-complex.c (update_complex_assignment): We are always in SSA form.
+	(expand_complex_div_wide): Likewise.
+	(expand_complex_operations_1): Likewise.
+	(expand_complex_libcall): Preserve EH info of the original stmt.
+	(tree_lower_complex): Handle removed blocks.
+	* tree.c (build_common_builtin_nodes): Do not set ECF_NOTRHOW
+	on complex multiplication and division libcall builtins.
+
+2018-05-04  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/85574
 	* fold-const.c (negate_expr_p): Restrict negation of operand
 	zero of a division to when we know that can happen without

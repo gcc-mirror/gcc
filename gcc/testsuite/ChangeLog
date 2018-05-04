@@ -1,5 +1,10 @@
 2018-05-04  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/85627
+	* g++.dg/torture/pr85627.C: New testcase.
+
+2018-05-04  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/85574
 	* gcc.dg/torture/pr85574.c: New testcase.
 	* gcc.dg/torture/pr57656.c: Use dg-additional-options.
