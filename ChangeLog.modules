@@ -1,6 +1,26 @@
 2018-05-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* ptree.c (cxx_print_decl): Show module.
+	* module.c (tree_tags): Add tt_voldemort.
+	(FIXED_LIMIT): New.
+	(trees_out::maybe_mark_unnamed): New.
+	(module_state::unnamed): New field.
+	(module_state::{read,write}_unnamed): New.
+	(module_state::{read,write}_config): Serialize unnamed count.
+	(module_state::{read,write}_cluster): Determine unnamedness.
+	(trees_out::tree_ref): Check for unnamed.
+	(trees_in::tree_node): Add tt_voldemort.
+	(depset::hash::add_dependency): Don't add decl to its binding.
+	(cluster_cmp): Reorder, again.
+	(cluster_tag): Add ct_unnamed.
+	(module_state::{read,write}): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/namespace-2.C: Adjust scan.
+	* g++.dg/modules/unnamed-[12].C: New.
+	* g++.dg/modules/scc-1.C: Unadjust.
+
+	gcc/cp/
 	* module.c (module_state::mark_definition): Add include_decl arg.
 	(module_state::mark_{template,function,var,class,enum}_def): Likewise.
 	(cluster_cmp): Reorder decl < defn < bind.

@@ -2101,6 +2101,7 @@ enum tree_tag
     tt_tinfo_typedef,	/* Typeinfo typedef.  */
     tt_named_type,	/* TYPE_DECL for type.  */
     tt_named_decl,  	/* Named decl. */
+    tt_voldemort,	/* An unnameable decl.  */
     tt_inst,		/* A template instantiation.  */
     tt_binfo,		/* A BINFO.  */
     tt_as_base,		/* An As-Base type.  */
@@ -2162,6 +2163,9 @@ trees_in::~trees_in ()
 {
 }
 
+/* Limit on number of fixed trees.  An arbtrary constant.  */
+#define FIXED_LIMIT 1000
+
 /* Tree stream writer.  */
 class trees_out : public bytes_out {
   typedef bytes_out parent;
@@ -2196,6 +2200,7 @@ public:
   void begin (depset::hash *);
   void end ();
   void mark_node (tree, bool walk_into = true);
+  void maybe_mark_unnamed (tree, unsigned);
 
 private:
   void tag (int rt)
@@ -2289,8 +2294,9 @@ struct GTY(()) module_state {
   tree name;		/* Name of the module.  */
   tree vec_name;  	/* Name as a vector.  */
 
-  vec<unsigned, va_gc_atomic> *remap; /* Module owner remapping.  */
-  elf_in *GTY((skip)) from;     /* Lazy loading info (not implemented) */
+  vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
+  vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
+  elf_in *GTY((skip)) from;     /* Lazy loading.  */
 
   char *filename;	/* Filename */
   char *srcname;	/* Source name, if available.  */
@@ -2351,8 +2357,9 @@ struct GTY(()) module_state {
   void write_readme (elf_out *to);
 
   /* The configuration.  */
-  void write_config (elf_out *to, const range_t &sec_range, unsigned crc);
-  bool read_config (range_t &sec_range, unsigned *crc_ptr);
+  void write_config (elf_out *to, const range_t &sec_range,
+		     unsigned unnamed, unsigned crc);
+  bool read_config (range_t &sec_range, unsigned &unnamed, unsigned *crc_ptr);
 
  private:
   /* Serialize various definitions. */
@@ -2387,15 +2394,22 @@ struct GTY(()) module_state {
   static void add_writables (depset::hash &table, tree ns);
   /* Build dependency graph of hash table.  */
   void find_dependencies (depset::hash &table);
+
   static void write_bindings (elf_out *to, depset::hash &table,
 			      unsigned *crc_ptr);
   bool read_bindings (auto_vec<tree> &spaces, const range_t &range);
+
   static void write_namespaces (elf_out *to, depset::hash &table,
 				auto_vec<depset *> &spaces, unsigned *crc_ptr);
   bool read_namespaces (auto_vec<tree> &spaces);
-  void write_cluster (elf_out *to, depset *depsets[],
-		      unsigned size, unsigned *crc_ptr);
+
+  void write_cluster (elf_out *to, depset *depsets[], unsigned size,
+		      unsigned &unnamed, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
+
+  void write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
+		      unsigned count, unsigned *crc_ptr);
+  bool read_unnamed (unsigned count, const range_t &range);
 
  public:
   /* Import a module.  Possibly ourselves.  */
@@ -2434,7 +2448,7 @@ struct GTY(()) module_state {
 module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (name), vec_name (NULL_TREE),
-    remap (NULL), from (NULL),
+    remap (NULL), unnamed (NULL), from (NULL),
     filename (NULL), srcname (NULL), loc (UNKNOWN_LOCATION),
     lazy (0), loading (~0u), lru (0), mod (MODULE_UNKNOWN), crc (0)
 {
@@ -2952,7 +2966,7 @@ trees_out::unmark_trees ()
     }
 }
 
-/* Insert a decl into the map.  If INTO is true, mark it to be walked
+/* Insert a DECL into the map.  If INTO is true, mark it to be walked
    into by value.  Otherwise give it a fixed ref num -- it doesn't
    matter which.  May be called on the same node multiple times,
    seting INTO is sticky.  */
@@ -2977,6 +2991,21 @@ trees_out::mark_node (tree decl, bool into)
      reverse does not need to be checked for.)  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     mark_node (DECL_TEMPLATE_RESULT (decl), into);
+}
+
+/* Insert DECL into the map as unnamed decl INDEX, unless it's already
+   there.  */
+
+void
+trees_out::maybe_mark_unnamed (tree decl, unsigned index)
+{
+  gcc_checking_assert (DECL_P (decl));
+  if (!TREE_VISITED (decl))
+    {
+      bool existed = tree_map.put (decl, index + FIXED_LIMIT);
+      gcc_checking_assert (!existed);
+      TREE_VISITED (decl) = true;
+    }
 }
 
 /* Insert T into the map, return its back reference number.  */
@@ -4990,14 +5019,29 @@ trees_out::tree_ref (tree t)
 
       if (!dep_walk_p ())
 	{
+	  const char *kind;
+
 	  refs++;
 	  if (val <= tt_backref)
-	    /* Back reference -> -ve number  */
-	    i (val);
+	    {
+	      /* Back reference -> -ve number  */
+	      i (val);
+	      kind = "backref";
+	    }
+	  else if (val < FIXED_LIMIT)
+	    {
+	      /* Fixed reference -> tt_fixed */
+	      i (tt_fixed), u (--val);
+	      kind = "fixed";
+	    }
 	  else
-	    /* Fixed reference -> tt_fixed */
-	    i (tt_fixed), u (--val);
-	  dump () && dump ("Wrote %s:%d %C:%N%S", val < 0 ? "backref" : "fixed",
+	    {
+	      val -= FIXED_LIMIT;
+	      i (tt_voldemort), u (val);
+	      kind = "voldemort";
+	    }
+	  
+	  dump () && dump ("Wrote %s:%d %C:%N%S", kind,
 			   val, TREE_CODE (t), t, t);
 	}
       return 0;
@@ -5535,7 +5579,24 @@ trees_in::tree_node ()
 	kind = "Instantiation";
 	owner = tpl ? MAYBE_DECL_MODULE_OWNER (tpl) : 0;
       }
-      goto finish_tpl;
+      goto finish_decl;
+
+    case tt_voldemort:
+      {
+	/* A voldemort decl.  */
+	unsigned index = u ();
+	if (index < vec_safe_length (state->unnamed))
+	  {
+	    mc_slot *slot = &(*state->unnamed)[index];
+
+	    if (slot->is_lazy ())
+	      state->lazy_load (NULL, NULL, slot, false);
+	    res = *slot;
+	  }
+	kind = "Voldemort";
+	owner = state->mod;
+      }
+      goto finish_decl;
 
     case tt_named_decl:
       {
@@ -5562,7 +5623,7 @@ trees_in::tree_node ()
 
 	kind = owner != state->mod ?  "Imported" : "Named";
       }
-      finish_tpl:
+      finish_decl:
       {
 	int tag = insert (res);
 	if (res)
@@ -5896,30 +5957,6 @@ depset::hash::add_dependency (tree decl, bool looking_inside)
     {
       *slot = dep = new depset (key);
       worklist.safe_push (dep);
-
-      if (TREE_CODE (decl) != NAMESPACE_DECL
-	  || DECL_NAMESPACE_ALIAS (decl))
-	{
-	  // FIXME:For the moment, the decl's depset is dependent on the
-	  // namespace binding depset, and vice-versa
-	  /* Only internal linkage things should be new (export/module
-	     linkage should have been added by add_writables).  */
-	  gcc_assert (!(MAYBE_DECL_MODULE_PURVIEW_P (decl)
-			&& TREE_PUBLIC (decl)));
-
-	  key_type b_key = binding_key (CP_DECL_CONTEXT (decl),
-					DECL_NAME (decl));
-	  slot = maybe_insert (b_key);
-	  depset *bind_dep = *slot;
-	  if (!bind_dep)
-	    {
-	      *slot = bind_dep = new depset (b_key);
-	      dump () && dump ("New binding %P added",
-			       bind_dep->get_decl (), bind_dep->get_name ());
-	    }
-	  bind_dep->deps.safe_push (dep);
-	  dep->deps.safe_push (bind_dep);
-	}
     }
 
   if (TREE_CODE (decl) == NAMESPACE_DECL)
@@ -6168,6 +6205,7 @@ module_state::init ()
 	  dump () && dump ("+%u", v);
 	}
     }
+  gcc_assert (global_vec->length () < FIXED_LIMIT);
   global_crc = crc32_unsigned (crc, global_vec->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
 		     global_vec->length (), global_crc);
@@ -6206,6 +6244,8 @@ module_state::release (bool at_eof)
 
   vec_free (remap);
   remap = NULL;
+  vec_free (unnamed);
+  unnamed = NULL;
   if (from)
     {
       from->end ();
@@ -6394,13 +6434,14 @@ module_state::write_readme (elf_out *to)
    } imports[N]
    u:decl-section-lwm
    u:decl-section-hwm
+   u:unnamed
    // FIXME CPU,ABI and similar tags
    // FIXME Optimization and similar tags
 */
 
 void
 module_state::write_config (elf_out *to, const range_t &sec_range,
-			    unsigned inner_crc)
+			    unsigned unnamed, unsigned inner_crc)
 {
   bytes_out cfg;
 
@@ -6457,6 +6498,9 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
   cfg.u (sec_range.first);
   cfg.u (sec_range.second);
 
+  dump () && dump ("Unnamed %u decls", unnamed);
+  cfg.u (unnamed);
+
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
   cfg.end (to, to->name (MOD_SNAME_PFX ".cfg"), &crc);
@@ -6464,7 +6508,8 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
 }
 
 bool
-module_state::read_config (range_t &sec_range, unsigned *expected_crc)
+module_state::read_config (range_t &sec_range, unsigned &unnamed,
+			   unsigned *expected_crc)
 {
   bytes_in cfg;
 
@@ -6597,6 +6642,9 @@ module_state::read_config (range_t &sec_range, unsigned *expected_crc)
   sec_range.second = cfg.u ();
   dump () && dump ("Declaration sections are [%u,%u)",
 		   sec_range.first, sec_range.second);
+
+  unnamed = cfg.u ();
+  dump () && dump ("%u unnamed decls", unnamed);
 
   if (sec_range.first > sec_range.second
       || sec_range.second > from->get_num_sections ())
@@ -7214,9 +7262,9 @@ module_state::read_definition (trees_in &in, tree decl)
   return false;
 }
 
-/* Compare members of a cluster.  Order decls before defns before
-   bindings.  depsets of the same kind can be arbitrary, but we want
-   something stable.   */
+/* Compare members of a cluster.  Order bind < decl < defn.  depsets
+   of the same kind can be arbitrary, but we want something
+   stable.  */
 
 static int
 cluster_cmp (const void *a_, const void *b_)
@@ -7224,18 +7272,18 @@ cluster_cmp (const void *a_, const void *b_)
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
 
-  bool is_decl = a->is_decl ();
-  if (is_decl != b->is_decl ())
-    /* Exactly one is a decl.  It comes first.  */
-    return is_decl ? -1 : +1;
+  bool is_defn = a->is_defn ();
+  if (is_defn != b->is_defn ())
+    /* Exactly one is a defn.  It comes last.  */
+    return is_defn ? +1 : -11;
 
-  if (!is_decl)
+  if (!is_defn)
     {
-      /* Neither is a decl.  Try defns.  */
-      bool is_defn = a->is_defn ();
-      if (is_defn != b->is_defn ())
-	/* Exactly one is a defn.  It comes first.  */
-	return is_defn ? -1 : +1;
+      /* Neither is a defn.  Try decls.  */
+      bool is_decl = a->is_decl ();
+      if (is_decl != b->is_decl ())
+	/* Exactly one is a decl.  It comes last.  */
+	return is_decl ? +1 : -1;
     }
 
   /* They are both the same kind.  Order for qsort stability.  */
@@ -7260,15 +7308,16 @@ enum cluster_tag
     ct_decl,	/* A decl.  */
     ct_defn,	/* A defn.  */
     ct_bind,	/* A binding.  */
+    ct_unnamed, /* An unnamed decl.  */
     ct_hwm
   };
 
 /* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
-   decls, then defns then bindings.  */
+   bindings < decls < defns.  */
 
 void
-module_state::write_cluster (elf_out *to, depset *scc[],
-			     unsigned size, unsigned *crc_ptr)
+module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
+			     unsigned &unnamed, unsigned *crc_ptr)
 {
   trees_out sec (this, global_vec);
   sec.begin ();
@@ -7280,8 +7329,18 @@ module_state::write_cluster (elf_out *to, depset *scc[],
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
+
       if (b->is_decl ())
-	sec.mark_node (b->get_decl ());
+	{
+	  if (!TREE_VISITED (b->get_decl ()))
+	    {
+	      /* There is no binding for this decl.  It is therefore
+		 not findable by name.  */
+	      dump () && dump ("Unnamed %u %N", unnamed, b->get_decl ());
+	      b->cluster = ++unnamed;
+	      sec.mark_node (b->get_decl ());
+	    }
+	}
       else if (b->is_defn ())
 	{
 	  // FIXME:we rely on the decl and defn being in the same cluster
@@ -7291,9 +7350,18 @@ module_state::write_cluster (elf_out *to, depset *scc[],
       else
 	{
 	  gcc_checking_assert (b->is_binding ());
-	  for (unsigned ix = b->deps.length (); ix--;)
-	    gcc_checking_assert (TREE_VISITED (b->deps[ix]->get_decl ()));
+	  for (unsigned jx = b->deps.length (); jx--;)
+	    sec.mark_node (b->deps[jx]->get_decl ());
 	}
+
+      if (unnamed && !b->is_binding ())
+	/* Preseed any unnamed decls we're dependent on.  */
+	for (unsigned jx = 0; jx != b->deps.length (); jx++)
+	  {
+	    depset *d = b->deps[jx];
+	    if (d->cluster)
+	      sec.maybe_mark_unnamed (d->get_decl (), d->cluster - 1);
+	  }
     }
 
   /* Now write every member.  */
@@ -7315,7 +7383,7 @@ module_state::write_cluster (elf_out *to, depset *scc[],
 #endif
       cluster_tag ct;
       if (b->is_decl ())
-	ct = ct_decl;
+	ct = b->cluster ? ct_unnamed : ct_decl;
       else if (b->is_defn ())
 	ct = ct_defn;
       else
@@ -7326,6 +7394,10 @@ module_state::write_cluster (elf_out *to, depset *scc[],
 	{
 	default:
 	  gcc_unreachable ();
+
+	case ct_unnamed:
+	  sec.u (b->cluster - 1);
+	  break;
 
 	case ct_decl:
 	  break;
@@ -7346,10 +7418,9 @@ module_state::write_cluster (elf_out *to, depset *scc[],
 	}
     }
 
-  /* We don't find the section by name.  Use the first decl's name for
-     human friendliness.  Because of cluster sorting, this will prefer
-     a decl.  */
-  tree naming_decl = scc[0]->get_decl ();
+  /* We don't find the section by name.  Use depset's decl's name for
+     human friendliness.  Choose a non-binding.  */
+  tree naming_decl = scc[size-1]->get_decl ();
   unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
 
   for (unsigned ix = size; ix--;)
@@ -7380,8 +7451,8 @@ module_state::read_cluster (unsigned snum)
 	  break;
 	}
 
-      tree ctx = sec.tree_node ();
-      if (!ctx)
+      tree decl = sec.tree_node ();
+      if (!decl)
 	break;
 
       switch (ct)
@@ -7390,12 +7461,22 @@ module_state::read_cluster (unsigned snum)
 	  sec.set_overrun ();
 	  goto break2;
 
+	case ct_unnamed:
+	  {
+	    unsigned index = sec.u ();
+	    if (vec_safe_length (unnamed) < index)
+	      (*unnamed)[index] = decl;
+	    else
+	      sec.set_overrun ();
+	  }
+	  break;
+
 	case ct_decl:
 	  break;
 
 	case ct_defn:
 	  /* A definition.  */
-	  if (!read_definition (sec, ctx))
+	  if (!read_definition (sec, decl))
 	    goto break2;
 	  break;
 
@@ -7432,7 +7513,7 @@ module_state::read_cluster (unsigned snum)
 		  decls = decl;
 	      }
 
-	    if (!set_module_binding (ctx, name, mod, decls, type))
+	    if (!set_module_binding (decl, name, mod, decls, type))
 	      {
 		sec.set_overrun ();
 		goto break2;
@@ -7483,7 +7564,8 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       tree ctx = CP_DECL_CONTEXT (ns);
       if (ctx != global_namespace)
 	ctx_num = table.find (depset::decl_key (ctx))->section;
-      dump () && dump ("Writing namespace %N %u::%u", ns, ctx_num, b->section);
+      dump () && dump ("Writing namespace %u %N parent:%u",
+		       b->section, ns, ctx_num);
 
       sec.u (to->name (DECL_NAME (ns)));
       sec.u (ctx_num);
@@ -7604,7 +7686,78 @@ module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
       if (mod >= MODULE_IMPORT_BASE
 	  && !import_module_binding (ctx, id, mod, snum))
 	break;
-      // FIXME:Do something with snum
+    }
+
+  dump.outdent ();
+  if (!sec.end (from))
+    return false;
+  return true;
+}
+
+/* Write the unnamed table to MOD_SNAME_PFX.vdm
+
+   Each entry is a section number.  */
+
+void
+module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
+			     unsigned count, unsigned *crc_p)
+{
+  if (!count)
+    return;
+
+  dump () && dump ("Writing unnamed");
+  dump.indent ();
+
+  bytes_out sec;
+  sec.begin ();
+
+  unsigned current = 0;
+  for (unsigned ix = 0; ix < depsets.length (); ix++)
+    {
+      depset *d = depsets[ix];
+
+      if (d->cluster)
+	{
+	  dump () && dump ("Unnamed %d %N section:%u",
+			   current, d->get_decl (), d->section);
+	  current++;
+	  gcc_checking_assert (d->cluster == current);
+	  sec.u (d->section);
+	}
+      }
+  gcc_assert (count == current);
+  sec.end (to, to->name (MOD_SNAME_PFX ".vld"), crc_p);
+  dump.outdent ();
+}
+
+bool
+module_state::read_unnamed (unsigned count, const range_t &range)
+{
+  if (!count)
+    return true;
+
+  bytes_in sec;
+
+  if (!sec.begin (from, MOD_SNAME_PFX ".vld"))
+    return false;
+
+  gcc_assert (!unnamed);
+  unnamed = NULL;
+  vec_safe_reserve (unnamed, count);
+  for (unsigned ix = 0; ix != count; ix++)
+    {
+      unsigned snum = sec.u ();
+
+      if (snum < range.first || snum >= range.second)
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
+
+      dump () && dump ("Unnamed %u section:%u", ix, snum);
+
+      mc_slot s;
+      s.set_lazy (snum);
+      unnamed->quick_push (s);
     }
 
   dump.outdent ();
@@ -7784,15 +7937,19 @@ module_state::write (elf_out *to)
 
   /* Write the clusters.  */
   auto_vec<depset *> spaces (n_spaces);
+  unsigned unnamed = 0;
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
       size = base[0]->cluster;
 
+      /* Cluster is now used to number unnamed decls.  */
+      base[0]->cluster = 0;
+
       if (!base[0]->section)
 	spaces.quick_push (base[0]);
       else
-	write_cluster (to, base, size, &crc);
+	write_cluster (to, base, size, unnamed, &crc);
     }
   gcc_assert (range.second == to->get_num_sections ()
 	      && spaces.length () == n_spaces);
@@ -7804,8 +7961,11 @@ module_state::write (elf_out *to)
   /* Write the bindings themselves.  */
   write_bindings (to, table, &crc);
 
+  /* Write the unnamed.  */
+  write_unnamed (to, sccs, unnamed, &crc);
+
   /* And finish up.  */
-  write_config (to, range, crc);
+  write_config (to, range, unnamed, crc);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_num_sections ());
@@ -7824,8 +7984,9 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
     return;
 
   range_t range;
+  unsigned unnamed;
 
-  if (!read_config (range, crc_ptr))
+  if (!read_config (range, unnamed, crc_ptr))
     return;
 
   /* Determine the module's number.  */
@@ -7860,6 +8021,10 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
 
   /* And the bindings.  */
   if (!read_bindings (spaces, range))
+    return;
+
+  /* And unnamed.  */
+  if (!read_unnamed (unnamed, range))
     return;
 
   /* We're done with the string and non-decl sections now.  */

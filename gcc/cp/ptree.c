@@ -55,6 +55,11 @@ cxx_print_decl (FILE *file, tree node, int indent)
       fprintf (file, " full-name \"%s\"",
 	       decl_as_string (node, TFF_TEMPLATE_HEADER));
     }
+  if (unsigned mod = MAYBE_DECL_MODULE_OWNER (node))
+    {
+      indent_to (file, indent + 3);
+      fprintf (file, " module %s", IDENTIFIER_POINTER (module_name (mod)));
+    }
 
   indent_to (file, indent + 3);
   if (DECL_EXTERNAL (node) && DECL_NOT_REALLY_EXTERN (node))
