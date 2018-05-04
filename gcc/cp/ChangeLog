@@ -1,3 +1,10 @@
+2018-05-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85305 - pack in lambda init-capture.
+	* parser.c (cp_parser_initializer): Add subexpression_p parm; don't
+	check_for_bare_parameter_packs in a subexpression.
+	(cp_parser_lambda_introducer): Use it.
+
 2018-05-02  Release Manager
 
 	* GCC 8.1.0 released.
