@@ -1,5 +1,10 @@
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
+	* brig/brigfrontend/brig-function-handler.cc: Skip multiple forward
+	declarations of the same function.
+
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
 	* brig/brig-lang.c: Do not allow optimizations based on known C
 	builtins.
 
