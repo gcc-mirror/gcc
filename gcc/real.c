@@ -5048,6 +5048,102 @@ real_isinteger (const REAL_VALUE_TYPE *c, HOST_WIDE_INT *int_out)
   return false;
 }
 
+/* Calculate nextafter (X, Y) or nexttoward (X, Y).  Return true if
+   underflow or overflow needs to be raised.  */
+
+bool
+real_nextafter (REAL_VALUE_TYPE *r, format_helper fmt,
+		const REAL_VALUE_TYPE *x, const REAL_VALUE_TYPE *y)
+{
+  int cmp = do_compare (x, y, 2);
+  /* If either operand is NaN, return qNaN.  */
+  if (cmp == 2)
+    {
+      get_canonical_qnan (r, 0);
+      return false;
+    }
+  /* If x == y, return y cast to target type.  */
+  if (cmp == 0)
+    {
+      real_convert (r, fmt, y);
+      return false;
+    }
+
+  if (x->cl == rvc_zero)
+    {
+      get_zero (r, y->sign);
+      r->cl = rvc_normal;
+      SET_REAL_EXP (r, fmt->emin - fmt->p + 1);
+      r->sig[SIGSZ - 1] = SIG_MSB;
+      return false;
+    }
+
+  int np2 = SIGNIFICAND_BITS - fmt->p;
+  /* For denormals adjust np2 correspondingly.  */
+  if (x->cl == rvc_normal && REAL_EXP (x) < fmt->emin)
+    np2 += fmt->emin - REAL_EXP (x);
+
+  REAL_VALUE_TYPE u;
+  get_zero (r, x->sign);
+  get_zero (&u, 0);
+  set_significand_bit (&u, np2);
+  r->cl = rvc_normal;
+  SET_REAL_EXP (r, REAL_EXP (x));
+
+  if (x->cl == rvc_inf)
+    {
+      bool borrow = sub_significands (r, r, &u, 0);
+      gcc_assert (borrow);
+      SET_REAL_EXP (r, fmt->emax);
+    }
+  else if (cmp == (x->sign ? 1 : -1))
+    {
+      if (add_significands (r, x, &u))
+	{
+	  /* Overflow.  Means the significand had been all ones, and
+	     is now all zeros.  Need to increase the exponent, and
+	     possibly re-normalize it.  */
+	  SET_REAL_EXP (r, REAL_EXP (r) + 1);
+	  if (REAL_EXP (r) > fmt->emax)
+	    {
+	      get_inf (r, x->sign);
+	      return true;
+	    }
+	  r->sig[SIGSZ - 1] = SIG_MSB;
+	}
+    }
+  else
+    {
+      if (REAL_EXP (x) > fmt->emin && x->sig[SIGSZ - 1] == SIG_MSB)
+	{
+	  int i;
+	  for (i = SIGSZ - 2; i >= 0; i--)
+	    if (x->sig[i])
+	      break;
+	  if (i < 0)
+	    {
+	      /* When mantissa is 1.0, we need to subtract only
+		 half of u: nextafter (1.0, 0.0) is 1.0 - __DBL_EPSILON__ / 2
+		 rather than 1.0 - __DBL_EPSILON__.  */
+	      clear_significand_bit (&u, np2);
+	      np2--;
+	      set_significand_bit (&u, np2);
+	    }
+	}
+      sub_significands (r, x, &u, 0);
+    }
+
+  /* Clear out trailing garbage.  */
+  clear_significand_below (r, np2);
+  normalize (r);
+  if (REAL_EXP (r) <= fmt->emin - fmt->p)
+    {
+      get_zero (r, x->sign);
+      return true;
+    }
+  return r->cl == rvc_zero;
+}
+
 /* Write into BUF the maximum representable finite floating-point
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  LEN is the size of BUF, and the buffer must be large
