@@ -148,11 +148,6 @@
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_fpdiv*46,titan_fpwb")
 
-(define_insn_reservation "titan_fp_single" 12
-  (and (eq_attr "fp_type" "fp_addsub_s,fp_mul_s,fp_maddsub_s")       
-       (eq_attr "cpu" "titan"))
-  "titan_issue,titan_fp0*2,nothing*10,titan_fpwb")
-
 ;; Make sure the "titan_fp" rule stays last, as it's a catch all for
 ;; double-precision and unclassified (e.g. fsel) FP-instructions
 (define_insn_reservation "titan_fp" 10

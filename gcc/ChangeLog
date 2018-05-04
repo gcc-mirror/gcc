@@ -1,3 +1,61 @@
+2018-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option): Remove
+	Xilinx FP support.
+	* config.gcc (powerpc-xilinx-eabi*): Remove.
+	* config/rs6000/predicates.md (easy_fp_constant): Remove Xilinx FP
+	support.
+	(fusion_addis_mem_combo_load): Ditto.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Remove Xilinx
+	FP support.
+	(rs6000_cpu_cpp_builtins): Ditto.
+	* config/rs6000/rs6000-linux.c
+	(rs6000_linux_float_exceptions_rounding_supported_p): Ditto.
+	* config/rs6000/rs6000-opts.h (enum fpu_type_t): Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Remove Xilinx FP
+	support.
+	(rs6000_setup_reg_addr_masks): Ditto.
+	(rs6000_init_hard_regno_mode_ok): Ditto.
+	(rs6000_option_override_internal): Ditto.
+	(legitimate_lo_sum_address_p): Ditto.
+	(rs6000_legitimize_address): Ditto.
+	(rs6000_legitimize_reload_address): Ditto.
+	(rs6000_legitimate_address_p): Ditto.
+	(abi_v4_pass_in_fpr): Ditto.
+	(setup_incoming_varargs): Ditto.
+	(rs6000_gimplify_va_arg): Ditto.
+	(rs6000_split_multireg_move): Ditto.
+	(rs6000_savres_strategy): Ditto.
+	(rs6000_emit_prologue_components): Ditto.
+	(rs6000_emit_epilogue_components): Ditto.
+	(rs6000_emit_prologue): Ditto.
+	(rs6000_emit_epilogue): Ditto.
+	(rs6000_elf_file_end): Ditto.
+	(rs6000_function_value): Ditto.
+	(rs6000_libcall_value): Ditto.
+	* config/rs6000/rs6000.h: Ditto.
+	(TARGET_MINMAX_SF, TARGET_MINMAX_DF): Delete, merge to ...
+	(TARGET_MINMAX): ... this.  New.
+	(TARGET_SF_FPR, TARGET_DF_FPR, TARGET_SF_INSN, TARGET_DF_INSN): Delete.
+	* config/rs6000/rs6000.md: Remove Xilinx FP support.
+	(*movsi_internal1_single): Delete.
+	* config/rs6000/rs6000.opt (msingle-float, mdouble-float, msimple-fpu,
+	mfpu=, mxilinx-fpu): Delete.
+	* config/rs6000/singlefp.h: Delete.
+	* config/rs6000/sysv4.h: Remove Xilinx FP support.
+	* config/rs6000/t-rs6000: Ditto.
+	* config/rs6000/t-xilinx: Delete.
+	* gcc/config/rs6000/titan.md: Adjust for fp_type removal.
+	* gcc/config/rs6000/vsx.md: Remove Xilinx FP support.
+	(VStype_simple): Delete.
+	(VSfptype_simple, VSfptype_mul, VSfptype_div, VSfptype_sqrt): Delete.
+	* config/rs6000/xfpu.h: Delete.
+	* config/rs6000/xfpu.md: Delete.
+	* config/rs6000/xilinx.h: Delete.
+	* config/rs6000/xilinx.opt: Delete.
+	* gcc/doc/invoke.texi (RS/6000 and PowerPC Options): Remove
+	-msingle-float, -mdouble-float, -msimple-fpu, -mfpu=, and -mxilinx-fpu.
+
 2018-05-04  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/85639

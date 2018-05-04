@@ -2841,12 +2841,6 @@ rs6000_debug_reg_global (void)
   if (rs6000_darwin64_abi)
     fprintf (stderr, DEBUG_FMT_S, "darwin64_abi", "true");
 
-  fprintf (stderr, DEBUG_FMT_S, "single_float",
-	   (TARGET_SINGLE_FLOAT ? "true" : "false"));
-
-  fprintf (stderr, DEBUG_FMT_S, "double_float",
-	   (TARGET_DOUBLE_FLOAT ? "true" : "false"));
-
   fprintf (stderr, DEBUG_FMT_S, "soft_float",
 	   (TARGET_SOFT_FLOAT ? "true" : "false"));
 
@@ -3002,7 +2996,7 @@ rs6000_setup_reg_addr_masks (void)
 
 		    case E_DFmode:
 		    case E_DDmode:
-		      if (TARGET_DF_INSN)
+		      if (TARGET_HARD_FLOAT)
 			addr_mask |= RELOAD_REG_PRE_MODIFY;
 		      break;
 		    }
@@ -3278,10 +3272,10 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wK - Altivec register if QImode/HImode are allowed in VSX registers.  */
 
   if (TARGET_HARD_FLOAT)
-    rs6000_constraints[RS6000_CONSTRAINT_f] = FLOAT_REGS;	/* SFmode  */
-
-  if (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-    rs6000_constraints[RS6000_CONSTRAINT_d]  = FLOAT_REGS;	/* DFmode  */
+    {
+      rs6000_constraints[RS6000_CONSTRAINT_f] = FLOAT_REGS;	/* SFmode  */
+      rs6000_constraints[RS6000_CONSTRAINT_d] = FLOAT_REGS;	/* DFmode  */
+    }
 
   if (TARGET_VSX)
     {
@@ -3652,10 +3646,8 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       reg_addr[DImode].fused_toc = true;
       if (TARGET_HARD_FLOAT)
 	{
-	  if (TARGET_SINGLE_FLOAT)
-	    reg_addr[SFmode].fused_toc = true;
-	  if (TARGET_DOUBLE_FLOAT)
-	    reg_addr[DFmode].fused_toc = true;
+	  reg_addr[SFmode].fused_toc = true;
+	  reg_addr[DFmode].fused_toc = true;
 	}
     }
 
@@ -4245,7 +4237,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_VSX)
     {
       const char *msg = NULL;
-      if (!TARGET_HARD_FLOAT || !TARGET_SINGLE_FLOAT || !TARGET_DOUBLE_FLOAT)
+      if (!TARGET_HARD_FLOAT)
 	{
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
 	    msg = N_("-mvsx requires hardware floating point");
@@ -4798,16 +4790,6 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "after subtarget", rs6000_isa_flags);
 
-  if (main_target_opt)
-    {
-      if (main_target_opt->x_rs6000_single_float != rs6000_single_float)
-	error ("target attribute or pragma changes single precision floating "
-	       "point");
-      if (main_target_opt->x_rs6000_double_float != rs6000_double_float)
-	error ("target attribute or pragma changes double precision floating "
-	       "point");
-    }
-
   rs6000_always_hint = (rs6000_tune != PROCESSOR_POWER4
 			&& rs6000_tune != PROCESSOR_POWER5
 			&& rs6000_tune != PROCESSOR_POWER6
@@ -5174,12 +5156,6 @@ rs6000_option_override_internal (bool global_init_p)
       if (DEFAULT_ABI != ABI_V4)
 	targetm.expand_builtin_va_start = NULL;
     }
-
-  /* Set up single/double float flags.  
-     If TARGET_HARD_FLOAT is set, but neither single or double is set, 
-     then set both flags. */
-  if (TARGET_HARD_FLOAT && rs6000_single_float == 0 && rs6000_double_float == 0)
-    rs6000_single_float = rs6000_double_float = 1;
 
   /* If not explicitly specified via option, decide whether to generate indexed
      load/store instructions.  A value of -1 indicates that the
@@ -8474,8 +8450,7 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
 	return false;
       if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
 	  && !(/* ??? Assume floating point reg based on mode?  */
-	       TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-	       && (mode == DFmode || mode == DDmode)))
+	       TARGET_HARD_FLOAT && (mode == DFmode || mode == DDmode)))
 	return false;
 
       return CONSTANT_P (x) || large_toc_ok;
@@ -8583,8 +8558,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && GET_MODE_NUNITS (mode) == 1
 	   && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	       || (/* ??? Assume floating point reg based on mode?  */
-		   (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-		   && (mode == DFmode || mode == DDmode)))
+		   TARGET_HARD_FLOAT && (mode == DFmode || mode == DDmode)))
 	   && !avoiding_indexed_address_p (mode))
     {
       return gen_rtx_PLUS (Pmode, XEXP (x, 0),
@@ -8605,8 +8579,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && GET_MODE_NUNITS (mode) == 1
 	   && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	       || (/* ??? Assume floating point reg based on mode?  */
-		   (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-		   && (mode == DFmode || mode == DDmode))))
+		   TARGET_HARD_FLOAT && (mode == DFmode || mode == DDmode))))
     {
       rtx reg = gen_reg_rtx (Pmode);
       if (TARGET_ELF)
@@ -9396,7 +9369,7 @@ rs6000_legitimize_reload_address (rtx x, machine_mode mode,
       && mode != PTImode
       && (mode != DImode || TARGET_POWERPC64)
       && ((mode != DFmode && mode != DDmode) || TARGET_POWERPC64
-	  || (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)))
+	  || TARGET_HARD_FLOAT))
     {
 #if TARGET_MACHO
       if (flag_pic)
@@ -9577,7 +9550,7 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
   if (rs6000_legitimate_offset_address_p (mode, x, reg_ok_strict, false))
     return 1;
   if (!FLOAT128_2REG_P (mode)
-      && ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+      && (TARGET_HARD_FLOAT
 	  || TARGET_POWERPC64
 	  || (mode != DFmode && mode != DDmode))
       && (TARGET_POWERPC64 || mode != DImode)
@@ -11231,9 +11204,9 @@ abi_v4_pass_in_fpr (machine_mode mode, bool named)
 {
   if (!TARGET_HARD_FLOAT)
     return false;
-  if (TARGET_DOUBLE_FLOAT && mode == DFmode)
+  if (mode == DFmode)
     return true;
-  if (TARGET_SINGLE_FLOAT && mode == SFmode && named)
+  if (mode == SFmode && named)
     return true;
   /* ABI_V4 passes complex IBM long double in 8 gprs.
      Stupid, but we can't change the ABI now.  */
@@ -12901,17 +12874,14 @@ setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 	   fregno <= FP_ARG_V4_MAX_REG && nregs < cfun->va_list_fpr_size;
 	   fregno++, off += UNITS_PER_FP_WORD, nregs++)
 	{
-	  mem = gen_rtx_MEM ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-			      ? DFmode : SFmode, 
+	  mem = gen_rtx_MEM (TARGET_HARD_FLOAT ? DFmode : SFmode,
                              plus_constant (Pmode, save_area, off));
   	  MEM_NOTRAP_P (mem) = 1;
   	  set_mem_alias_set (mem, set);
 	  set_mem_align (mem, GET_MODE_ALIGNMENT (
-			 (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-			  ? DFmode : SFmode));
+			 TARGET_HARD_FLOAT ? DFmode : SFmode));
 	  emit_move_insn (mem, gen_rtx_REG (
-                          (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-			   ? DFmode : SFmode, fregno));
+                          TARGET_HARD_FLOAT ? DFmode : SFmode, fregno));
 	}
 
       emit_label (lab);
@@ -13181,8 +13151,8 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       /* FP args go in FP registers, if present.  */
       reg = fpr;
       n_reg = (size + 7) / 8;
-      sav_ofs = ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT) ? 8 : 4) * 4;
-      sav_scale = ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT) ? 8 : 4);
+      sav_ofs = (TARGET_HARD_FLOAT ? 8 : 4) * 4;
+      sav_scale = (TARGET_HARD_FLOAT ? 8 : 4);
       if (mode != SFmode && mode != SDmode)
 	align = 8;
     }
@@ -23321,8 +23291,8 @@ rs6000_split_multireg_move (rtx dst, rtx src)
   mode = GET_MODE (dst);
   nregs = hard_regno_nregs (reg, mode);
   if (FP_REGNO_P (reg))
-    reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode : 
-	((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT) ? DFmode : SFmode);
+    reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode :
+	(TARGET_HARD_FLOAT ? DFmode : SFmode);
   else if (ALTIVEC_REGNO_P (reg))
     reg_mode = V16QImode;
   else
@@ -23784,10 +23754,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
   if (info->first_gp_reg_save == 32)
     strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
 
-  if (info->first_fp_reg_save == 64
-      /* The out-of-line FP routines use double-precision stores;
-	 we can't use those routines if we don't have such stores.  */
-      || (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT))
+  if (info->first_fp_reg_save == 64)
     strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
 
   if (info->first_altivec_reg_save == LAST_ALTIVEC_REGNO + 1)
@@ -26178,8 +26145,7 @@ rs6000_emit_prologue_components (sbitmap components)
 
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
-  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-			     ? DFmode : SFmode;
+  machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
   int fp_reg_size = 8;
 
   /* Prologue for LR.  */
@@ -26260,8 +26226,7 @@ rs6000_emit_epilogue_components (sbitmap components)
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
 
-  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-			     ? DFmode : SFmode;
+  machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
   int fp_reg_size = 8;
 
   /* Epilogue for the FPRs.  */
@@ -26419,8 +26384,7 @@ rs6000_emit_prologue (void)
   rs6000_stack_t *info = rs6000_stack_info ();
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
-  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-			     ? DFmode : SFmode;
+  machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
   int fp_reg_size = 8;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   rtx frame_reg_rtx = sp_reg_rtx;
@@ -26564,8 +26528,7 @@ rs6000_emit_prologue (void)
 	 properly.  */
       for (i = 0; i < 64 - info->first_fp_reg_save; i++)
 	RTVEC_ELT (p, j++)
-	  = gen_frame_store (gen_rtx_REG (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-					  ? DFmode : SFmode,
+	  = gen_frame_store (gen_rtx_REG (TARGET_HARD_FLOAT ? DFmode : SFmode,
 					  info->first_fp_reg_save + i),
 			     frame_reg_rtx,
 			     info->fp_save_offset + frame_off + 8 * i);
@@ -27657,8 +27620,7 @@ rs6000_emit_epilogue (int sibcall)
   rtx cr_save_reg = NULL_RTX;
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
-  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-			     ? DFmode : SFmode;
+  machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
   int fp_reg_size = 8;
   int i;
   bool exit_func;
@@ -27760,8 +27722,7 @@ rs6000_emit_epilogue (int sibcall)
 	}
       for (i = 0; info->first_fp_reg_save + i <= 63; i++)
 	{
-	  rtx reg = gen_rtx_REG ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-				  ? DFmode : SFmode),
+	  rtx reg = gen_rtx_REG (TARGET_HARD_FLOAT ? DFmode : SFmode,
 				 info->first_fp_reg_save + i);
 	  RTVEC_ELT (p, j++)
 	    = gen_frame_load (reg, frame_reg_rtx, info->fp_save_offset + 8 * i);
@@ -33223,10 +33184,8 @@ rs6000_elf_file_end (void)
     {
       int fp;
 
-      if (TARGET_DF_FPR)
+      if (TARGET_HARD_FLOAT)
 	fp = 1;
-      else if (TARGET_SF_FPR)
-	fp = 3;
       else
 	fp = 2;
       if (rs6000_passes_long_double)
@@ -35617,8 +35576,7 @@ rs6000_function_value (const_tree valtype,
     /* _Decimal128 must use an even/odd register pair.  */
     regno = (mode == TDmode) ? FP_ARG_RETURN + 1 : FP_ARG_RETURN;
   else if (SCALAR_FLOAT_TYPE_P (valtype) && TARGET_HARD_FLOAT
-	   && !FLOAT128_VECTOR_P (mode)
-	   && ((TARGET_SINGLE_FLOAT && (mode == SFmode)) || TARGET_DOUBLE_FLOAT))
+	   && !FLOAT128_VECTOR_P (mode))
     regno = FP_ARG_RETURN;
   else if (TREE_CODE (valtype) == COMPLEX_TYPE
 	   && targetm.calls.split_complex_arg)
@@ -35650,9 +35608,7 @@ rs6000_libcall_value (machine_mode mode)
   if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT)
     /* _Decimal128 must use an even/odd register pair.  */
     regno = (mode == TDmode) ? FP_ARG_RETURN + 1 : FP_ARG_RETURN;
-  else if (SCALAR_FLOAT_MODE_NOT_VECTOR_P (mode)
-	   && TARGET_HARD_FLOAT
-           && ((TARGET_SINGLE_FLOAT && mode == SFmode) || TARGET_DOUBLE_FLOAT))
+  else if (SCALAR_FLOAT_MODE_NOT_VECTOR_P (mode) && TARGET_HARD_FLOAT)
     regno = FP_ARG_RETURN;
   /* VSX is a superset of Altivec and adds V2DImode/V2DFmode.  Since the same
      return register is used in both cases, and we won't see V2DImode/V2DFmode

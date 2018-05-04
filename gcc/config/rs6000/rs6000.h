@@ -378,15 +378,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define TARGET_DEFAULT (MASK_MULTIPLE)
 
-/* FPU operations supported. 
-   Each use of TARGET_SINGLE_FLOAT or TARGET_DOUBLE_FLOAT must 
-   also test TARGET_HARD_FLOAT.  */
-#define TARGET_SINGLE_FLOAT 1
-#define TARGET_DOUBLE_FLOAT 1
-#define TARGET_SINGLE_FPU   0
-#define TARGET_SIMPLE_FPU   0
-#define TARGET_XILINX_FPU   0
-
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON    PROCESSOR_PPC601
 #define PROCESSOR_POWERPC   PROCESSOR_PPC604
@@ -567,14 +558,12 @@ extern int rs6000_vector_align[];
 #endif
 
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
-   Enable 32-bit fcfid's on any of the switches for newer ISA machines or
-   XILINX.  */
+   Enable 32-bit fcfid's on any of the switches for newer ISA machines.  */
 #define TARGET_FCFID	(TARGET_POWERPC64				\
 			 || TARGET_PPC_GPOPT	/* 970/power4 */	\
 			 || TARGET_POPCNTB	/* ISA 2.02 */		\
 			 || TARGET_CMPB		/* ISA 2.05 */		\
-			 || TARGET_POPCNTD	/* ISA 2.06 */		\
-			 || TARGET_XILINX_FPU)
+			 || TARGET_POPCNTD)	/* ISA 2.06 */
 
 #define TARGET_FCTIDZ	TARGET_FCFID
 #define TARGET_STFIWX	TARGET_PPC_GFXOPT
@@ -622,11 +611,8 @@ extern int rs6000_vector_align[];
 /* ISA 3.0 has new min/max functions that don't need fast math that are being
    phased in.  Min/max using FSEL or XSMAXDP/XSMINDP do not return the correct
    answers if the arguments are not in the normal range.  */
-#define TARGET_MINMAX_SF	(TARGET_SF_FPR && TARGET_PPC_GFXOPT	\
-				 && (TARGET_P9_MINMAX || !flag_trapping_math))
-
-#define TARGET_MINMAX_DF	(TARGET_DF_FPR && TARGET_PPC_GFXOPT	\
-				 && (TARGET_P9_MINMAX || !flag_trapping_math))
+#define TARGET_MINMAX	(TARGET_HARD_FLOAT && TARGET_PPC_GFXOPT		\
+			 && (TARGET_P9_MINMAX || !flag_trapping_math))
 
 /* In switching from using target_flags to using rs6000_isa_flags, the options
    machinery creates OPTION_MASK_<xxx> instead of MASK_<xxx>.  For now map
@@ -707,26 +693,16 @@ extern int rs6000_vector_align[];
 			  || rs6000_cpu == PROCESSOR_PPC8548)
 
 
-/* Whether SF/DF operations are supported by the normal floating point unit
-   (or the vector/scalar unit).  */
-#define TARGET_SF_FPR	(TARGET_HARD_FLOAT && TARGET_SINGLE_FLOAT)
-#define TARGET_DF_FPR	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-
-/* Whether SF/DF operations are supported by any hardware.  */
-#define TARGET_SF_INSN	TARGET_SF_FPR
-#define TARGET_DF_INSN	TARGET_DF_FPR
-
 /* Which machine supports the various reciprocal estimate instructions.  */
-#define TARGET_FRES	(TARGET_HARD_FLOAT && TARGET_PPC_GFXOPT \
-			 && TARGET_SINGLE_FLOAT)
+#define TARGET_FRES	(TARGET_HARD_FLOAT && TARGET_PPC_GFXOPT)
 
-#define TARGET_FRE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT \
+#define TARGET_FRE	(TARGET_HARD_FLOAT \
 			 && (TARGET_POPCNTB || VECTOR_UNIT_VSX_P (DFmode)))
 
 #define TARGET_FRSQRTES	(TARGET_HARD_FLOAT && TARGET_POPCNTB \
-			 && TARGET_PPC_GFXOPT && TARGET_SINGLE_FLOAT)
+			 && TARGET_PPC_GFXOPT)
 
-#define TARGET_FRSQRTE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT \
+#define TARGET_FRSQRTE	(TARGET_HARD_FLOAT \
 			 && (TARGET_PPC_GFXOPT || VECTOR_UNIT_VSX_P (DFmode)))
 
 /* Conditions to allow TOC fusion for loading/storing integers.  */
@@ -740,9 +716,7 @@ extern int rs6000_vector_align[];
 				 && TARGET_TOC_FUSION			\
 				 && (TARGET_CMODEL != CMODEL_SMALL)	\
 				 && TARGET_POWERPC64			\
-				 && TARGET_HARD_FLOAT			\
-				 && TARGET_SINGLE_FLOAT			\
-				 && TARGET_DOUBLE_FLOAT)
+				 && TARGET_HARD_FLOAT)
 
 /* Macro to say whether we can do optimizations where we need to do parts of
    the calculation in 64-bit GPRs and then is transfered to the vector

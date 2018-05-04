@@ -70,17 +70,6 @@ enum processor_type
 };
 
 
-/* FP processor type.  */
-enum fpu_type_t
-{
-  FPU_NONE,			/* No FPU */
-  FPU_SF_LITE,			/* Limited Single Precision FPU */
-  FPU_DF_LITE,			/* Limited Double Precision FPU */
-  FPU_SF_FULL,			/* Full Single Precision FPU */
-  FPU_DF_FULL			/* Full Double Single Precision FPU */
-};
-
-
 /* Types of costly dependences.  */
 enum rs6000_dependence_cost
 {

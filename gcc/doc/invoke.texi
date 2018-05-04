@@ -1065,7 +1065,6 @@ See RS/6000 and PowerPC Options.
 -m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
 -malign-power  -malign-natural @gol
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
--msingle-float  -mdouble-float  -msimple-fpu @gol
 -mupdate  -mno-update @gol
 -mavoid-indexed-addresses  -mno-avoid-indexed-addresses @gol
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align @gol
@@ -23340,8 +23339,8 @@ following options:
 
 @gccoptlist{-maltivec  -mfprnd  -mhard-float  -mmfcrf  -mmultiple @gol
 -mpopcntb -mpopcntd  -mpowerpc64 @gol
--mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
--msimple-fpu  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
+-mpowerpc-gpopt  -mpowerpc-gfxopt @gol
+-mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
 -mcrypto -mhtm -mpower8-fusion -mpower8-vector @gol
 -mquad-memory -mquad-memory-atomic -mfloat128 -mfloat128-hardware}
 
@@ -23659,30 +23658,6 @@ is not supported.
 Generate code that does not use (uses) the floating-point register set.
 Software floating-point emulation is provided if you use the
 @option{-msoft-float} option, and pass the option to GCC when linking.
-
-@item -msingle-float
-@itemx -mdouble-float
-@opindex msingle-float
-@opindex mdouble-float
-Generate code for single- or double-precision floating-point operations.
-@option{-mdouble-float} implies @option{-msingle-float}.
-
-@item -msimple-fpu
-@opindex msimple-fpu
-Do not generate @code{sqrt} and @code{div} instructions for hardware
-floating-point unit.
-
-@item -mfpu=@var{name}
-@opindex mfpu
-Specify type of floating-point unit.  Valid values for @var{name} are
-@samp{sp_lite} (equivalent to @option{-msingle-float -msimple-fpu}),
-@samp{dp_lite} (equivalent to @option{-mdouble-float -msimple-fpu}),
-@samp{sp_full} (equivalent to @option{-msingle-float}),
-and @samp{dp_full} (equivalent to @option{-mdouble-float}).
-
-@item -mxilinx-fpu
-@opindex mxilinx-fpu
-Perform optimizations for the floating-point unit on Xilinx PPC 405/440.
 
 @item -mmultiple
 @itemx -mno-multiple
