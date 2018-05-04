@@ -1,5 +1,10 @@
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
+	* brig/brig-lang.c: Do not allow optimizations based on known C
+	builtins.
+
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
 	* brig/brig-lang.c: Allow controlling strict aliasing from
 	cmd line.
 
