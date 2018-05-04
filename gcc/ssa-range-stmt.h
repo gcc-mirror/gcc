@@ -111,21 +111,6 @@ range_stmt::get_code () const
 }
 
 inline tree
-range_stmt::operand1 () const
-{
-  switch (gimple_code (g))
-    {
-      case GIMPLE_COND:
-        return gimple_cond_lhs (g);
-      case GIMPLE_ASSIGN:
-        return gimple_assign_rhs1 (g);
-      default:
-        break;
-    }
-  return NULL;
-}
-
-inline tree
 range_stmt::operand2 () const
 {
   switch (gimple_code (g))

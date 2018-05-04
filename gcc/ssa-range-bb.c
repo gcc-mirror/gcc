@@ -392,11 +392,21 @@ block_ranger::get_operand_range (irange& r, tree op,
     if (TREE_CODE (op) == SSA_NAME)
       r = op;
     else
-      if (TYPE_P (op))
-	r.set_range_for_type (op);
+      if (TREE_CODE (op) == ADDR_EXPR)
+        {
+	  bool ov;
+	  // handle &var which can show up in phi arguments
+	  if (tree_single_nonzero_warnv_p (op, &ov))
+	    r.set_range (TREE_TYPE (op), 0, 0, irange::INVERSE);
+	  else
+	    r.set_range_for_type (TREE_TYPE (op));
+	}
       else
-        /* Default to range for the type of the expression.   */
-	r.set_range_for_type (TREE_TYPE (op));
+	if (TYPE_P (op))
+	  r.set_range_for_type (op);
+	else
+	  /* Default to range for the type of the expression.   */
+	  r.set_range_for_type (TREE_TYPE (op));
 
   return true;
 }

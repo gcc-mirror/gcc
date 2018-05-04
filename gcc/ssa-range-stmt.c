@@ -44,6 +44,41 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "wide-int.h"
 #include "ssa-range-stmt.h"
+#include "fold-const.h"
+
+tree
+range_stmt::operand1 () const
+{
+  switch (gimple_code (g))
+    {
+      case GIMPLE_COND:
+        return gimple_cond_lhs (g);
+      case GIMPLE_ASSIGN:
+	if (get_code() == ADDR_EXPR)
+	  {
+	    // If the base address is an SSA_NAME, return it. 
+	    // if its range is non-zero, then we know the pointer is non-zero
+	    bool strict_ov;
+	    tree expr = gimple_assign_rhs1 (g);
+	    tree base = get_base_address (TREE_OPERAND (expr, 0));
+	    if (base != NULL_TREE && TREE_CODE (base) == MEM_REF
+		&& TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+	      return TREE_OPERAND (base, 0);
+	    
+	    // Otherwise, check to see if the RHS is always non-null
+	    // and return a constant that will equate to a non-zero range
+	    if (tree_single_nonzero_warnv_p (expr, &strict_ov))
+	      return integer_one_node;
+	    // Otherwise not something we care about, just return the RHS
+	    // and validate_stmt will reject this statement.
+	    return expr;
+	  }
+	return gimple_assign_rhs1 (g);
+      default:
+        break;
+    }
+  return NULL;
+}
 
 
 /* Validate that the statement and all operands of this expression are

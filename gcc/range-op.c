@@ -1923,6 +1923,38 @@ operator_min_max::op2_irange (irange& r, const irange& lhs,
 
 
 
+class operator_addr_expr : public irange_operator
+{
+public:
+  virtual void dump (FILE *f) const;
+
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+} op_addr;
+
+void 
+operator_addr_expr::dump (FILE *f) const
+{
+  fprintf (f, " ADDR_EXPR ");
+}
+
+bool
+operator_addr_expr::fold_range (irange& r, const irange& lh,
+			  const irange& rh) const
+{
+  if (empty_range_check (r, lh, rh, rh.get_type ()))
+    return true;
+
+  // Return a non-null pointer of the LHS type (passed in op2)
+  if (lh.zero_p ())
+    r.set_range (rh.get_type (), 0, 0);
+  else
+    if (!lh.contains_p (0))
+      r.set_range (rh.get_type (), 0, 0, irange::INVERSE);
+    else
+      return false;
+  return true;
+}
 
 /*  ----------------------------------------------------------------------  */
 
@@ -1981,6 +2013,8 @@ irange_op_table::irange_op_table ()
 
   irange_tree[LSHIFT_EXPR] = &op_lshift;
   irange_tree[RSHIFT_EXPR] = &op_rshift;
+
+  irange_tree[ADDR_EXPR] = &op_addr;
 }
 
 /* The table is hidden and accessed via a simple extern function.  */
