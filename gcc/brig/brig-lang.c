@@ -136,6 +136,8 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
   opts->x_flag_signed_zeros = 1;
 
   opts->x_optimize = 3;
+
+  flag_no_builtin = 1;
 }
 
 /* Handle Brig specific options.  Return 0 if we didn't do anything.  */
@@ -635,9 +637,11 @@ builtin_type_for_size (int size, bool unsignedp)
 
 static void
 def_builtin_1 (enum built_in_function fncode, const char *name,
-	       enum built_in_class fnclass, tree fntype, tree libtype,
-	       bool both_p, bool fallback_p, bool nonansi_p,
-	       tree fnattrs, bool implicit_p)
+	       enum built_in_class fnclass ATTRIBUTE_UNUSED,
+	       tree fntype, tree libtype ATTRIBUTE_UNUSED,
+	       bool both_p ATTRIBUTE_UNUSED, bool fallback_p,
+	       bool nonansi_p ATTRIBUTE_UNUSED, tree fnattrs,
+	       bool implicit_p)
 {
   tree decl;
   const char *libname;
@@ -649,12 +653,6 @@ def_builtin_1 (enum built_in_function fncode, const char *name,
   decl = add_builtin_function (name, fntype, fncode, fnclass,
 			       (fallback_p ? libname : NULL),
 			       fnattrs);
-
-  if (both_p
-      && !flag_no_builtin
-      && !(nonansi_p && flag_no_nonansi_builtin))
-    add_builtin_function (libname, libtype, fncode, fnclass,
-			  NULL, fnattrs);
 
   set_builtin_decl (fncode, decl, implicit_p);
 }
