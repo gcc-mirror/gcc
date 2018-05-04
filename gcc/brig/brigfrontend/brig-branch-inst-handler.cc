@@ -150,6 +150,8 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	}
 
       m_parent.m_cf->m_called_functions.push_back (func_ref);
+      if (DECL_EXTERNAL (func_ref))
+	m_parent.add_decl_call (call);
 
       return base->byteCount;
     }

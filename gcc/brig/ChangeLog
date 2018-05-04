@@ -1,3 +1,14 @@
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig/brig-lang.c: Add support for whole program
+	optimizations by marking the kernels externally visible.
+	* brig/brigfrontend/brig-branch-inst-handler.cc: See above.
+	* brig/brigfrontend/brig-function-handler.cc: See above.
+	* brig/brigfrontend/brig-function.cc: See above.
+	* brig/brigfrontend/brig-to-generic.cc: See above.
+	* brig/brigfrontend/brig-to-generic.h: See above.
+	* brig/brigfrontend/brig-variable-handler.h: See above.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
