@@ -1,3 +1,13 @@
+2018-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (enum omp_lock_hint_t): Renamed to ...
+	(enum omp_sync_hint_t): ... this.  Define omp_sync_hint_*
+	enumerators using numbers and omp_lock_hint_* as their aliases.
+	(omp_lock_hint_t): New typedef.  Rename to ...
+	(omp_sync_hint_t): ... this.
+	(omp_init_lock_with_hint, omp_init_nest_lock_with_hint): Use
+	omp_sync_hint_t instead of omp_lock_hint_t.
+
 2017-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/for-2.h: If CONDNE macro is defined, define
