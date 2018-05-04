@@ -1,3 +1,16 @@
+2018-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85642 fix is_nothrow_default_constructible<optional<T>>
+	* include/std/optional (_Optional_payload): Add noexcept to default
+	constructor. Re-indent.
+	(_Optional_payload<_Tp, true, true, true>): Likewise. Add noexcept to
+	constructor for copying disengaged payloads.
+	(_Optional_payload<_Tp, true, false, true>): Likewise.
+	(_Optional_payload<_Tp, true, true, false>): Likewise.
+	(_Optional_payload<_Tp, true, false, false>): Likewise.
+	* testsuite/20_util/optional/cons/85642.cc: New.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust dg-error lines.
+
 2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/82644
