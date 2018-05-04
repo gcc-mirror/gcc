@@ -1,3 +1,14 @@
+2018-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/85466
+	* real.h (real_nextafter): Declare.
+	* real.c (real_nextafter): New function.
+	* fold-const-call.c (fold_const_nextafter): New function.
+	(fold_const_call_sss): Call it for CASE_CFN_NEXTAFTER and
+	CASE_CFN_NEXTTOWARD.
+	(fold_const_call_1): For CASE_CFN_NEXTTOWARD call fold_const_call_sss
+	even when arg1_mode is different from arg0_mode.
+
 2018-05-03  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/extend.texi (Deprecated Features): Remove
