@@ -92,11 +92,12 @@ var (
 // Update build context to use our computed GOROOT.
 func init() {
 	BuildContext.GOROOT = GOROOT
-	// Note that we must use runtime.GOOS and runtime.GOARCH here,
-	// as the tool directory does not move based on environment variables.
-	// This matches the initialization of ToolDir in go/build,
-	// except for using GOROOT rather than runtime.GOROOT().
 	if runtime.Compiler != "gccgo" {
+		// Note that we must use runtime.GOOS and runtime.GOARCH here,
+		// as the tool directory does not move based on environment
+		// variables. This matches the initialization of ToolDir in
+		// go/build, except for using GOROOT rather than
+		// runtime.GOROOT.
 		build.ToolDir = filepath.Join(GOROOT, "pkg/tool/"+runtime.GOOS+"_"+runtime.GOARCH)
 	}
 }
@@ -107,6 +108,8 @@ func findGOROOT() string {
 	}
 	def := filepath.Clean(runtime.GOROOT())
 	if runtime.Compiler == "gccgo" {
+		// gccgo has no real GOROOT, and it certainly doesn't
+		// depend on the executable's location.
 		return def
 	}
 	exe, err := os.Executable()

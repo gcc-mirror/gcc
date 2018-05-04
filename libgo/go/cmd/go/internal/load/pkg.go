@@ -13,7 +13,6 @@ import (
 	"os"
 	pathpkg "path"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"unicode"
@@ -976,7 +975,7 @@ func (p *Package) load(stk *ImportStack, bp *build.Package, err error) {
 			// This is for 'go tool'.
 			// Override all the usual logic and force it into the tool directory.
 			if cfg.BuildToolchainName == "gccgo" {
-				p.Target = filepath.Join(runtime.GCCGOTOOLDIR, elem)
+				p.Target = filepath.Join(base.ToolDir, elem)
 			} else {
 				p.Target = filepath.Join(cfg.GOROOTpkg, "tool", full)
 			}
