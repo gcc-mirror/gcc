@@ -1,3 +1,11 @@
+2018-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85574
+	* fold-const.c (negate_expr_p): Restrict negation of operand
+	zero of a division to when we know that can happen without
+	overflow.
+	(fold_negate_expr_1): Likewise.
+
 2018-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/85466
