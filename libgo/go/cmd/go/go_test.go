@@ -3221,7 +3221,6 @@ func TestGoGetInternalWildcard(t *testing.T) {
 }
 
 func TestGoVetWithExternalTests(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not have vet")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.makeTempdir()
@@ -3231,7 +3230,6 @@ func TestGoVetWithExternalTests(t *testing.T) {
 }
 
 func TestGoVetWithTags(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not have vet")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.makeTempdir()
@@ -3241,7 +3239,6 @@ func TestGoVetWithTags(t *testing.T) {
 }
 
 func TestGoVetWithFlagsOn(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not have vet")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.makeTempdir()
@@ -3251,7 +3248,6 @@ func TestGoVetWithFlagsOn(t *testing.T) {
 }
 
 func TestGoVetWithFlagsOff(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not have vet")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.makeTempdir()
