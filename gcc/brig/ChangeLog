@@ -1,5 +1,10 @@
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
+	* brig/brig-lang.c: Allow controlling strict aliasing from
+	cmd line.
+
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
 	* brig/brigfrontend/brig-code-entry-handler.cc: The modulo in
 	ID computation should not be needed.
 

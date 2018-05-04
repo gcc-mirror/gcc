@@ -167,9 +167,15 @@ brig_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
 
-  /* gccbrig casts pointers around like crazy, TBAA produces
-     broken code if not force disabling it.  */
-  flag_strict_aliasing = 0;
+  /* gccbrig casts pointers around like crazy, TBAA might produce broken
+     code if not disabling it by default.  Some PRM conformance tests such
+     as prm/core/memory/ordinary/ld/ld_u16 fail currently with strict
+     aliasing (to fix).  It can be enabled from the command line for cases
+     that are known not to break the C style aliasing requirements.  */
+  if (!global_options_set.x_flag_strict_aliasing)
+    flag_strict_aliasing = 0;
+  else
+    flag_strict_aliasing = global_options.x_flag_strict_aliasing;
 
   /* Returning false means that the backend should be used.  */
   return false;
