@@ -1930,6 +1930,8 @@ public:
 
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
+  virtual bool op1_irange (irange& r, const irange& lhs,
+			   const irange& op2) const;
 } op_addr;
 
 void 
@@ -1956,6 +1958,14 @@ operator_addr_expr::fold_range (irange& r, const irange& lh,
   return true;
 }
 
+// The same functionality for fold() applies to op1_range...
+// effectively copying the non-nullness.
+bool
+operator_addr_expr::op1_irange (irange& r, const irange& lhs,
+			        const irange& op2) const
+{
+  return operator_addr_expr::fold_range (r, lhs, op2);
+}
 /*  ----------------------------------------------------------------------  */
 
 /* Create the irange operator table as a local object in this file, and the
