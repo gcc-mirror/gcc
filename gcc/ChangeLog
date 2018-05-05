@@ -1,3 +1,16 @@
+2018-05-05  Roland McGrath  <mcgrathr@google.com>
+
+	PR other/77609
+	* varasm.c (default_section_type_flags): Set SECTION_NOTYPE for
+	any section for which we don't know a specific type it should have,
+	regardless of name.  Previously this was done only for the exact
+	names ".init_array", ".fini_array", and ".preinit_array".
+	(default_elf_asm_named_section): Add comment about
+	relationship with default_section_type_flags and SECTION_NOTYPE.
+	(get_section): Don't consider it a type conflict if one side has
+	SECTION_NOTYPE and the other doesn't, as long as neither has the
+	SECTION_BSS et al used in the default_section_type_flags logic.
+
 2018-05-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/85653

@@ -296,6 +296,17 @@ get_section (const char *name, unsigned int flags, tree decl)
   else
     {
       sect = *slot;
+      /* It is fine if one of the sections has SECTION_NOTYPE as long as
+         the other has none of the contrary flags (see the logic at the end
+         of default_section_type_flags, below).  */
+      if (((sect->common.flags ^ flags) & SECTION_NOTYPE)
+          && !((sect->common.flags | flags)
+               & (SECTION_CODE | SECTION_BSS | SECTION_TLS | SECTION_ENTSIZE
+                  | (HAVE_COMDAT_GROUP ? SECTION_LINKONCE : 0))))
+        {
+          sect->common.flags |= SECTION_NOTYPE;
+          flags |= SECTION_NOTYPE;
+        }
       if ((sect->common.flags & ~SECTION_DECLARED) != flags
 	  && ((sect->common.flags | flags) & SECTION_OVERRIDE) == 0)
 	{
@@ -6360,15 +6371,23 @@ default_section_type_flags (tree decl, const char *name, int reloc)
       || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
     flags |= SECTION_TLS | SECTION_BSS;
 
-  /* These three sections have special ELF types.  They are neither
-     SHT_PROGBITS nor SHT_NOBITS, so when changing sections we don't
-     want to print a section type (@progbits or @nobits).  If someone
-     is silly enough to emit code or TLS variables to one of these
-     sections, then don't handle them specially.  */
-  if (!(flags & (SECTION_CODE | SECTION_BSS | SECTION_TLS))
-      && (strcmp (name, ".init_array") == 0
-	  || strcmp (name, ".fini_array") == 0
-	  || strcmp (name, ".preinit_array") == 0))
+  /* Various sections have special ELF types that the assembler will
+     assign by default based on the name.  They are neither SHT_PROGBITS
+     nor SHT_NOBITS, so when changing sections we don't want to print a
+     section type (@progbits or @nobits).  Rather than duplicating the
+     assembler's knowledge of what those special name patterns are, just
+     let the assembler choose the type if we don't know a specific
+     reason to set it to something other than the default.  SHT_PROGBITS
+     is the default for sections whose name is not specially known to
+     the assembler, so it does no harm to leave the choice to the
+     assembler when @progbits is the best thing we know to use.  If
+     someone is silly enough to emit code or TLS variables to one of
+     these sections, then don't handle them specially.
+
+     default_elf_asm_named_section (below) handles the BSS, TLS, ENTSIZE, and
+     LINKONCE cases when NOTYPE is not set, so leave those to its logic.  */
+  if (!(flags & (SECTION_CODE | SECTION_BSS | SECTION_TLS | SECTION_ENTSIZE))
+      && !(HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE)))
     flags |= SECTION_NOTYPE;
 
   return flags;
@@ -6454,6 +6473,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
   fprintf (asm_out_file, "\t.section\t%s,\"%s\"", name, flagchars);
 
+  /* default_section_type_flags (above) knows which flags need special
+     handling here, and sets NOTYPE when none of these apply so that the
+     assembler's logic for default types can apply to user-chosen
+     section names.  */
   if (!(flags & SECTION_NOTYPE))
     {
       const char *type;
