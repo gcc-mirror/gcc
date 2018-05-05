@@ -1,3 +1,13 @@
+2018-05-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85653
+	* config/nvptx/nvptx.c (WORKAROUND_PTXJIT_BUG_3): Define.
+	(workaround_barsyncs): New function.
+	(nvptx_reorg): Use workaround_barsyncs.
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add UNSPECV_MEMBAR.
+	(define_expand "nvptx_membar_cta"): New define_expand.
+	(define_insn "*nvptx_membar_cta"): New insn.
+
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brig-builtins.def: Add consts to ptrs etc. in BRIG builtin defs.
