@@ -15,5 +15,7 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Unnamed 0 section:2} module } }
+// { dg-final { scan-lang-dump {> Voldemort decl '::counter'} module } }
+// { dg-final { scan-lang-dump {Inserted horcrux:-1 '::counter'} module } }
+// { dg-final { scan-lang-dump {Read backref:-1 '::counter'} module } }
 // { dg-final { scan-lang-dump {>Lazily loading ''@'PiL' section:2} module } }
-// { dg-final { scan-lang-dump {Voldemort:-11 var_decl:'::counter'@PiL} module } }

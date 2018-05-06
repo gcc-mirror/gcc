@@ -15,6 +15,7 @@ export inline int hwm ()
 }
 
 // { dg-final { scan-lang-dump {Unnamed 0 '::counter'} module } }
-// { dg-final { scan-lang-dump {Wrote voldemort:0 var_decl:'::counter'} module } }
+// { dg-final { scan-lang-dump {Created horcrux:0 for '::counter'} module } }
+// { dg-final { scan-lang-dump {Wrote backref:-1 var_decl:'::counter'} module } }
 // { dg-final { scan-lang-dump {Unnamed 0 '::counter' section:} module } }
 // { dg-final { scan-lang-dump {Unnamed 1 decl} module } }

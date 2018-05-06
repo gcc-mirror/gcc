@@ -2101,7 +2101,6 @@ enum tree_tag
     tt_tinfo_typedef,	/* Typeinfo typedef.  */
     tt_named_type,	/* TYPE_DECL for type.  */
     tt_named_decl,  	/* Named decl. */
-    tt_voldemort,	/* An unnameable decl.  */
     tt_inst,		/* A template instantiation.  */
     tt_binfo,		/* A BINFO.  */
     tt_as_base,		/* An As-Base type.  */
@@ -2163,9 +2162,6 @@ trees_in::~trees_in ()
 {
 }
 
-/* Limit on number of fixed trees.  An arbtrary constant.  */
-#define FIXED_LIMIT 1000
-
 /* Tree stream writer.  */
 class trees_out : public bytes_out {
   typedef bytes_out parent;
@@ -2200,7 +2196,6 @@ public:
   void begin (depset::hash *);
   void end ();
   void mark_node (tree, bool walk_into = true);
-  void maybe_mark_unnamed (tree, unsigned);
 
 private:
   void tag (int rt)
@@ -2208,9 +2203,9 @@ private:
     records++;
     i (rt);
   }
+public:
   int insert (tree);
   int maybe_insert (tree);
-public:
   int force_insert (tree, bool);
 private:
   void start (tree_code, tree);
@@ -2239,7 +2234,6 @@ public:
 		  unsigned owner = MODULE_UNKNOWN);
   bool tree_type (tree, bool force, bool looking_inside,
 		  unsigned owner = MODULE_UNKNOWN);
-  void maybe_tag_decl_type (tree decl);
   int tree_ref (tree);
   void tree_ctx (tree, bool looing_inside, unsigned owner = MODULE_UNKNOWN);
 
@@ -2992,21 +2986,6 @@ trees_out::mark_node (tree decl, bool into)
      reverse does not need to be checked for.)  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     mark_node (DECL_TEMPLATE_RESULT (decl), into);
-}
-
-/* Insert DECL into the map as unnamed decl INDEX, unless it's already
-   there.  */
-
-void
-trees_out::maybe_mark_unnamed (tree decl, unsigned index)
-{
-  gcc_checking_assert (DECL_P (decl));
-  if (!TREE_VISITED (decl))
-    {
-      bool existed = tree_map.put (decl, index + FIXED_LIMIT);
-      gcc_checking_assert (!existed);
-      TREE_VISITED (decl) = true;
-    }
 }
 
 /* Insert T into the map, return its back reference number.  */
@@ -5030,21 +5009,11 @@ trees_out::tree_ref (tree t)
 	      i (val);
 	      kind = "backref";
 	    }
-	  else if (val < FIXED_LIMIT)
+	  else
 	    {
 	      /* Fixed reference -> tt_fixed */
 	      i (tt_fixed), u (--val);
 	      kind = "fixed";
-	    }
-	  else
-	    {
-	      val -= FIXED_LIMIT;
-	      i (tt_voldemort), u (val);
-	      /* Turn it into a regular reference.  */
-	      *val_ptr = --ref_num;
-	      dump () && dump ("Converting voldemort to %d", *val_ptr);
-	      maybe_tag_decl_type (t);
-	      kind = "voldemort";
 	    }
 	  
 	  dump () && dump ("Wrote %s:%d %C:%N%S", kind,
@@ -5228,16 +5197,6 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
     dump () && dump ("Wrote %s:%d %C:%N@%I", kind, tag, TREE_CODE (decl), decl,
 		     owner == MODULE_UNKNOWN ? NULL_TREE : module_name (owner));
 
-  maybe_tag_decl_type (decl);
-
-  return false;
-}
-
-/* We've just emitted DECL,  tag its type too.  */
-
-void
-trees_out::maybe_tag_decl_type (tree decl)
-{
   if (tree type = TREE_TYPE (decl))
     {
       /* Make sure the imported type is in the map too.  */
@@ -5250,6 +5209,8 @@ trees_out::maybe_tag_decl_type (tree decl)
 			     TREE_CODE (type), type, type);
 	}
     }
+
+  return false;
 }
 
 bool
@@ -5592,23 +5553,6 @@ trees_in::tree_node ()
 	  }
 	kind = "Instantiation";
 	owner = tpl ? MAYBE_DECL_MODULE_OWNER (tpl) : 0;
-      }
-      goto finish_decl;
-
-    case tt_voldemort:
-      {
-	/* A voldemort decl.  */
-	unsigned index = u ();
-	if (index < vec_safe_length (state->unnamed))
-	  {
-	    mc_slot *slot = &(*state->unnamed)[index];
-
-	    if (slot->is_lazy ())
-	      state->lazy_load (NULL, NULL, slot, false);
-	    res = *slot;
-	  }
-	kind = "Voldemort";
-	owner = state->mod;
       }
       goto finish_decl;
 
@@ -6219,7 +6163,6 @@ module_state::init ()
 	  dump () && dump ("+%u", v);
 	}
     }
-  gcc_assert (global_vec->length () < FIXED_LIMIT);
   global_crc = crc32_unsigned (crc, global_vec->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
 		     global_vec->length (), global_crc);
@@ -7322,7 +7265,8 @@ enum cluster_tag
     ct_decl,	/* A decl.  */
     ct_defn,	/* A defn.  */
     ct_bind,	/* A binding.  */
-    ct_unnamed, /* An unnamed decl.  */
+    ct_voldemort,  /* An unnamed decl.  */
+    ct_horcrux,	   /* Preseed reference to unnamed decl.  */
     ct_hwm
   };
 
@@ -7338,6 +7282,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
   dump.indent ();
+
+  unsigned unnamed_hwm = unnamed;
 
   /* Mark members for walking.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -7368,13 +7314,24 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    sec.mark_node (b->deps[jx]->get_decl ());
 	}
 
+      // FIXME: A flag in depset should tell us we have these
       if (unnamed && !b->is_binding ())
 	/* Preseed any unnamed decls we're dependent on.  */
 	for (unsigned jx = 0; jx != b->deps.length (); jx++)
 	  {
 	    depset *d = b->deps[jx];
-	    if (d->cluster)
-	      sec.maybe_mark_unnamed (d->get_decl (), d->cluster - 1);
+	    tree u_decl = d->get_decl ();
+	    if (!TREE_VISITED (u_decl)
+		&& d->cluster && d->cluster <= unnamed_hwm)
+	      {
+		sec.u (ct_horcrux);
+		sec.u (d->cluster - 1);
+		sec.insert (u_decl);
+		int type_tag = sec.maybe_insert (TREE_TYPE (u_decl));
+		sec.u (type_tag != 0);
+		dump () && dump ("Created horcrux:%u for %N",
+				 d->cluster - 1, u_decl);
+	      }
 	  }
     }
 
@@ -7397,7 +7354,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 #endif
       cluster_tag ct;
       if (b->is_decl ())
-	ct = b->cluster ? ct_unnamed : ct_decl;
+	ct = b->cluster ? ct_voldemort : ct_decl;
       else if (b->is_defn ())
 	ct = ct_defn;
       else
@@ -7409,7 +7366,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	default:
 	  gcc_unreachable ();
 
-	case ct_unnamed:
+	case ct_voldemort:
 	  sec.u (b->cluster - 1);
 	  break;
 
@@ -7465,9 +7422,13 @@ module_state::read_cluster (unsigned snum)
 	  break;
 	}
 
-      tree decl = sec.tree_node ();
-      if (!decl)
-	break;
+      tree decl = NULL_TREE;
+      if (ct != ct_horcrux)
+	{
+	  decl = sec.tree_node ();
+	  if (!decl)
+	    break;
+	}
 
       switch (ct)
 	{
@@ -7475,11 +7436,34 @@ module_state::read_cluster (unsigned snum)
 	  sec.set_overrun ();
 	  goto break2;
 
-	case ct_unnamed:
+	case ct_horcrux:
 	  {
 	    unsigned index = sec.u ();
 	    if (index < vec_safe_length (unnamed))
-	      (*unnamed)[index] = decl;
+	      {
+		mc_slot *slot = &(*unnamed)[index];
+
+		if (slot->is_lazy ())
+		  lazy_load (NULL, NULL, slot, false);
+		decl = *slot;
+		unsigned tag = sec.insert (decl);
+		if (sec.u ())
+		  sec.insert (TREE_TYPE (decl));
+		dump () && dump ("Inserted horcrux:%d %N", tag, decl);
+	      }
+	    else
+	      sec.set_overrun ();
+	  }
+	  break;
+
+	case ct_voldemort:
+	  {
+	    unsigned index = sec.u ();
+	    if (index < vec_safe_length (unnamed))
+	      {
+		(*unnamed)[index] = decl;
+		dump () && dump ("Voldemort decl %N", decl);
+	      }
 	    else
 	      sec.set_overrun ();
 	  }
@@ -7530,6 +7514,7 @@ module_state::read_cluster (unsigned snum)
 	    if (!set_module_binding (decl, name, mod, decls, type))
 	      {
 		sec.set_overrun ();
+		dump () && dump ("Binding of %P", decl, name);
 		goto break2;
 	      }
 	  }

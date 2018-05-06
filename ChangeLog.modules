@@ -1,3 +1,20 @@
+2018-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	Horcruxes!
+	gcc/cp/
+	* module.c (FIXED_LIMIT): Remove.
+	(trees_out::{,maybe_}insert): Make public.
+	(trees_out::maybe_mark_unnamed): Delete.
+	(trees_out::tree_ref): Remove voldemort handling.
+	(trees_in::tree_node): Likewise.
+	(tree_tag): Remove tt_voldemort.
+	(trees_out::maybe_tag_decl_type): Move back into ..
+	(trees_out::tree_decl): ... here.
+	(cluster_tag): Add voldemort & horcruxes.
+	(module_state::{read,write}_cluster): Deal with horcruxes.
+	gcc/testsuite/
+	* g++.dg/modules/unnamed-1_[ab].C: Adjust scans.
+
 2018-05-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
