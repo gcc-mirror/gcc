@@ -1,3 +1,10 @@
+2018-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85659
+	* cfgexpand.c (expand_asm_stmt): Don't create a temporary if
+	the type is addressable.  Don't force op into register if it has
+	BLKmode.
+
 2018-05-05  Roland McGrath  <mcgrathr@google.com>
 
 	PR other/77609
