@@ -1,3 +1,10 @@
+2018-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85659
+	* g++.dg/ext/asm14.C: New test.
+	* g++.dg/ext/asm15.C: New test.
+	* g++.dg/ext/asm16.C: New test.
+
 2018-05-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/85507
