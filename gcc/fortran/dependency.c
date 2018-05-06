@@ -2238,9 +2238,8 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 	    break;
 
 	  /* Exactly matching and forward overlapping ranges don't cause a
-	     dependency, when they are not part of a coarray ref.  */
-	  if (fin_dep < GFC_DEP_BACKWARD
-	      && lref->u.ar.codimen == 0 && rref->u.ar.codimen == 0)
+	     dependency.  */
+	  if (fin_dep < GFC_DEP_BACKWARD)
 	    return 0;
 
 	  /* Keep checking.  We only have a dependency if
