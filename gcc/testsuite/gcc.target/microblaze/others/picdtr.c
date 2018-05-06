@@ -78,7 +78,7 @@ int main() {
 
 }
 
-/* { dg-options "-fPIE -mpic-data-text-rel -save-temps" } */
+/* { dg-options "-fPIE -mpic-data-is-text-relative -save-temps" } */
 /* { dg-do run } */
 
 #define TEST_VAR(var,val) (var) = (val); if( (var) != (val)) return 0;
