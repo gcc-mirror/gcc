@@ -1,3 +1,11 @@
+2018-05-06  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/85507
+	* dependency.c (gfc_dep_resolver): Revert looking at coarray dimension
+	introduced by r259385.
+	* trans-intrinsic.c (conv_caf_send): Always report a dependency for
+	same variables in coarray assignments.
+
 2018-05-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/82428
