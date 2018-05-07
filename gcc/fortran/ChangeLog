@@ -1,3 +1,8 @@
+2018-05-07  Jeff Law  <law@redhat.comg>
+
+	* scanner.c (preprocessor_line): Call linemap_add after a line
+	directive that changes the current filename.
+
 2018-05-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/85507

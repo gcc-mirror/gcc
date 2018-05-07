@@ -1,3 +1,7 @@
+2018-05-07  Jeff Law  <law@redhat.com>
+
+	* gfortran.dg/linefile.f90: New test.
+
 2018-05-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.dg/nextafter-2.c: Add c99_runtime effective target
