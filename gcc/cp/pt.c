@@ -13683,9 +13683,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  }
 	if (VAR_P (r))
 	  {
-	    /* Even if the original location is out of scope, the
-	       newly substituted one is not.  */
-	    DECL_DEAD_FOR_LOCAL (r) = 0;
 	    DECL_INITIALIZED_P (r) = 0;
 	    DECL_TEMPLATE_INSTANTIATED (r) = 0;
 	    if (type == error_mark_node)

@@ -1441,8 +1441,7 @@ fexternal-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffor-scope
-C++ ObjC++ Var(flag_new_for_scope) Init(1)
-Scope of for-init-statement variables is local to the loop.
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffreestanding
 C ObjC C++ ObjC++

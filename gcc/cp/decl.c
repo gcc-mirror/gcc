@@ -576,9 +576,7 @@ poplevel (int keep, int reverse, int functionbody)
   tree subblocks;
   tree block;
   tree decl;
-  int leaving_for_scope;
   scope_kind kind;
-  unsigned ix;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
  restart:
@@ -639,12 +637,6 @@ poplevel (int keep, int reverse, int functionbody)
     for (link = subblocks; link; link = BLOCK_CHAIN (link))
       BLOCK_SUPERCONTEXT (link) = block;
 
-  /* We still support the old for-scope rules, whereby the variables
-     in a init statement were in scope after the for-statement ended.
-     We only use the new rules if flag_new_for_scope is nonzero.  */
-  leaving_for_scope
-    = current_binding_level->kind == sk_for && flag_new_for_scope;
-
   /* Before we remove the declarations first check for unused variables.  */
   if ((warn_unused_variable || warn_unused_but_set_variable)
       && current_binding_level->kind != sk_template_parms
@@ -704,83 +696,12 @@ poplevel (int keep, int reverse, int functionbody)
       decl = TREE_CODE (link) == TREE_LIST ? TREE_VALUE (link) : link;
       tree name = OVL_NAME (decl);
 
-      if (leaving_for_scope && VAR_P (decl)
-	  /* It's hard to make this ARM compatibility hack play nicely with
-	     lambdas, and it really isn't necessary in C++11 mode.  */
-	  && cxx_dialect < cxx11
-	  && name)
-	{
-	  cxx_binding *ob = outer_binding (name,
-					   IDENTIFIER_BINDING (name),
-					   /*class_p=*/true);
-	  tree ns_binding = NULL_TREE;
-	  if (!ob)
-	    ns_binding = get_namespace_binding (current_namespace, name);
-
-	  if (ob && ob->scope == current_binding_level->level_chain)
-	    /* We have something like:
-
-		 int i;
-		 for (int i; ;);
-
-	       and we are leaving the `for' scope.  There's no reason to
-	       keep the binding of the inner `i' in this case.  */
-	    ;
-	  else if ((ob && (TREE_CODE (ob->value) == TYPE_DECL))
-		   || (ns_binding && TREE_CODE (ns_binding) == TYPE_DECL))
-	    /* Here, we have something like:
-
-		 typedef int I;
-
-		 void f () {
-		   for (int I; ;);
-		 }
-
-	       We must pop the for-scope binding so we know what's a
-	       type and what isn't.  */
-	    ;
-	  else
-	    {
-	      /* Mark this VAR_DECL as dead so that we can tell we left it
-		 there only for backward compatibility.  */
-	      DECL_DEAD_FOR_LOCAL (link) = 1;
-
-	      /* Keep track of what should have happened when we
-		 popped the binding.  */
-	      if (ob && ob->value)
-		{
-		  SET_DECL_SHADOWED_FOR_VAR (link, ob->value);
-		  DECL_HAS_SHADOWED_FOR_VAR_P (link) = 1;
-		}
-
-	      /* Add it to the list of dead variables in the next
-		 outermost binding to that we can remove these when we
-		 leave that binding.  */
-	      vec_safe_push (
-		  current_binding_level->level_chain->dead_vars_from_for,
-		  link);
-
-	      /* Although we don't pop the cxx_binding, we do clear
-		 its SCOPE since the scope is going away now.  */
-	      IDENTIFIER_BINDING (name)->scope
-		= current_binding_level->level_chain;
-
-	      /* Don't remove the binding. */
-	      name = NULL_TREE;
-	    }
-	}
       /* Remove the binding.  */
       if (TREE_CODE (decl) == LABEL_DECL)
 	pop_local_label (name, decl);
       else
 	pop_local_binding (name, decl);
     }
-
-  /* Remove declarations for any `for' variables from inner scopes
-     that we kept around.  */
-  FOR_EACH_VEC_SAFE_ELT_REVERSE (current_binding_level->dead_vars_from_for,
-			         ix, decl)
-    pop_local_binding (DECL_NAME (decl), decl);
 
   /* Restore the IDENTIFIER_TYPE_VALUEs.  */
   for (link = current_binding_level->type_shadowed;
@@ -4170,11 +4091,6 @@ cxx_init_decl_processing (void)
   pop_namespace ();
 
   flag_noexcept_type = (cxx_dialect >= cxx17);
-  /* There's no fixed location for <command-line>, the current
-     location is <builtins>, which is somewhat confusing.  */
-  if (!flag_new_for_scope)
-    warning_at (UNKNOWN_LOCATION, OPT_Wdeprecated,
-		"%<-fno-for-scope%> is deprecated");
 
   c_common_nodes_and_builtins ();
 

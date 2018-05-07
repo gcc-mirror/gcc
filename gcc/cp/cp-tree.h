@@ -447,8 +447,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    6: TYPE_DEPENDENT_P_VALID
 
    Usage of DECL_LANG_FLAG_?:
-   0: DECL_ERROR_REPORTED (in VAR_DECL).
-      DECL_TEMPLATE_PARM_P (in PARM_DECL, CONST_DECL, TYPE_DECL, or TEMPLATE_DECL)
+   0: DECL_TEMPLATE_PARM_P (in PARM_DECL, CONST_DECL, TYPE_DECL, or TEMPLATE_DECL)
       DECL_LOCAL_FUNCTION_P (in FUNCTION_DECL)
       DECL_MUTABLE_P (in FIELD_DECL)
       DECL_DEPENDENT_P (in USING_DECL)
@@ -475,8 +474,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
       DECL_FIELD_IS_BASE (in FIELD_DECL)
       TYPE_DECL_ALIAS_P (in TYPE_DECL)
-   7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
-      DECL_THUNK_P (in a member FUNCTION_DECL)
+   7: DECL_THUNK_P (in a member FUNCTION_DECL)
       DECL_NORMAL_CAPTURE_P (in FIELD_DECL)
    8: DECL_DECLARED_CONSTEXPR_P (in VAR_DECL, FUNCTION_DECL)
 
@@ -3212,9 +3210,6 @@ struct GTY(()) lang_decl {
    was inherited from a template parameter, not explicitly indicated.  */
 #define ABI_TAG_IMPLICIT(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
 
-extern tree decl_shadowed_for_var_lookup (tree);
-extern void decl_shadowed_for_var_insert (tree, tree);
-
 /* Non zero if this is a using decl for a dependent scope. */
 #define DECL_DEPENDENT_P(NODE) DECL_LANG_FLAG_0 (USING_DECL_CHECK (NODE))
 
@@ -3226,19 +3221,6 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* Non zero if the using decl refers to a dependent type.  */
 #define USING_DECL_TYPENAME_P(NODE) DECL_LANG_FLAG_1 (USING_DECL_CHECK (NODE))
-
-/* In a VAR_DECL, true if we have a shadowed local variable
-   in the shadowed var table for this VAR_DECL.  */
-#define DECL_HAS_SHADOWED_FOR_VAR_P(NODE) \
-  (VAR_DECL_CHECK (NODE)->decl_with_vis.shadowed_for_var_p)
-
-/* In a VAR_DECL for a variable declared in a for statement,
-   this is the shadowed (local) variable.  */
-#define DECL_SHADOWED_FOR_VAR(NODE) \
-  (DECL_HAS_SHADOWED_FOR_VAR_P(NODE) ? decl_shadowed_for_var_lookup (NODE) : NULL)
-
-#define SET_DECL_SHADOWED_FOR_VAR(NODE, VAL) \
-  (decl_shadowed_for_var_insert (NODE, VAL))
 
 /* In a FUNCTION_DECL, this is nonzero if this function was defined in
    the class definition.  We have saved away the text of the function,
@@ -3843,14 +3825,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero if this class has a virtual function table pointer.  */
 #define TYPE_CONTAINS_VPTR_P(NODE)		\
   (TYPE_POLYMORPHIC_P (NODE) || CLASSTYPE_VBASECLASSES (NODE))
-
-/* This flag is true of a local VAR_DECL if it was declared in a for
-   statement, but we are no longer in the scope of the for.  */
-#define DECL_DEAD_FOR_LOCAL(NODE) DECL_LANG_FLAG_7 (VAR_DECL_CHECK (NODE))
-
-/* This flag is set on a VAR_DECL that is a DECL_DEAD_FOR_LOCAL
-   if we already emitted a warning about using it.  */
-#define DECL_ERROR_REPORTED(NODE) DECL_LANG_FLAG_0 (VAR_DECL_CHECK (NODE))
 
 /* Nonzero if NODE is a FUNCTION_DECL (for a function with global
    scope) declared in a local scope.  */
@@ -6232,7 +6206,6 @@ extern tree strip_fnptr_conv			(tree);
 /* in name-lookup.c */
 extern void maybe_push_cleanup_level		(tree);
 extern tree make_anon_name			(void);
-extern tree check_for_out_of_scope_variable	(tree);
 extern tree maybe_push_decl			(tree);
 extern tree current_decl_namespace		(void);
 
@@ -7403,7 +7376,6 @@ extern size_t cp_tree_size			(enum tree_code);
 extern bool cp_var_mod_type_p			(tree, tree);
 extern void cxx_initialize_diagnostics		(diagnostic_context *);
 extern int cxx_types_compatible_p		(tree, tree);
-extern void init_shadowed_var_for_decl		(void);
 extern bool cxx_block_may_fallthru		(const_tree);
 
 /* in cp-gimplify.c */

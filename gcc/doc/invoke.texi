@@ -195,7 +195,7 @@ in the following sections.
 -fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
--ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
+-fno-gnu-keywords @gol
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
@@ -2489,21 +2489,6 @@ another TU), they can avoid this overhead with the
 On targets that support symbol aliases, the default is
 @option{-fextern-tls-init}.  On targets that do not support symbol
 aliases, the default is @option{-fno-extern-tls-init}.
-
-@item -ffor-scope
-@itemx -fno-for-scope
-@opindex ffor-scope
-@opindex fno-for-scope
-If @option{-ffor-scope} is specified, the scope of variables declared in
-a @i{for-init-statement} is limited to the @code{for} loop itself,
-as specified by the C++ standard.
-If @option{-fno-for-scope} is specified, the scope of variables declared in
-a @i{for-init-statement} extends to the end of the enclosing scope,
-as was the case in old versions of G++, and other (traditional)
-implementations of C++.
-
-This option is deprecated and the associated non-standard
-functionality will be removed.
 
 @item -fno-gnu-keywords
 @opindex fno-gnu-keywords
