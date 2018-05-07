@@ -1,5 +1,8 @@
 2018-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/using.xml (table.cmd_options): Document that the
+	C++17 Filesystem implementation also needs -lstdc++fs.
+
 	PR libstdc++/85671
 	* include/bits/fs_path.h (operator/): Permit copy elision.
 	* include/experimental/bits/fs_path.h (operator/): Likewise.
