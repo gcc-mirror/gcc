@@ -1,5 +1,10 @@
 2018-05-07  Luis Machado  <luis.machado@linaro.org>
 
+	* config/aarch64/aarch64.c (qdf24xx_prefetch_tune) <l2_cache_size>: Set
+	to 512.
+
+2018-05-07  Luis Machado  <luis.machado@linaro.org>
+
 	gcc/
 	* config/aarch64/aarch64-protos.h (cpu_prefetch_tune)
 	<prefetch_dynamic_strides>: New const bool field.
