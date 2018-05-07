@@ -3,6 +3,13 @@
 	Backport from mainline.
 	2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_print_operand): Set op_value ealier.
+
+2018-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	Backport from mainline.
+	2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.h (ASM_APP_ON): Add missing newline character.
 
 2018-05-06  Jakub Jelinek  <jakub@redhat.com>
