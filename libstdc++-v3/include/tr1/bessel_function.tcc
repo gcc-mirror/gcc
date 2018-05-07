@@ -353,47 +353,21 @@ namespace tr1
      *   @param  __x   The argument of the Bessel functions.
      *   @param  __Jnu  The output Bessel function of the first kind.
      *   @param  __Nnu  The output Neumann function (Bessel function of the second kind).
-     *
-     *  Adapted for libstdc++ from GNU GSL version 2.4 specfunc/bessel_j.c
-     *  Copyright (C) 1996,1997,1998,1999,2000,2001,2002,2003 Gerard Jungman
      */
     template <typename _Tp>
     void
     __cyl_bessel_jn_asymp(_Tp __nu, _Tp __x, _Tp & __Jnu, _Tp & __Nnu)
     {
       const _Tp __mu   = _Tp(4) * __nu * __nu;
-      const _Tp __8x = _Tp(8) * __x;
-
-      _Tp __P = _Tp(0);
-      _Tp __Q = _Tp(0);
-
-      _Tp k = _Tp(0);
-      _Tp __term = _Tp(1);
-
-      int __epsP = 0;
-      int __epsQ = 0;
-
-      _Tp __eps = std::numeric_limits<_Tp>::epsilon();
-
-      do
-        {
-          __term *= (k == 0) ? _Tp(1) : -(__mu - (2 * k - 1) * (2 * k - 1)) / (k * __8x);
-          __epsP = std::abs(__term) < std::abs(__eps * __P);
-          __P += __term;
-
-          k++;
-
-          __term *= (__mu - (2 * k - 1) * (2 * k - 1)) / (k * __8x);
-          __epsQ = std::abs(__term) < std::abs(__eps * __Q);
-          __Q += __term;
-
-          if (__epsP && __epsQ && k > __nu / 2.)
-            break;
-
-          k++;
-        }
-      while (k < 1000);
-
+      const _Tp __mum1 = __mu - _Tp(1);
+      const _Tp __mum9 = __mu - _Tp(9);
+      const _Tp __mum25 = __mu - _Tp(25);
+      const _Tp __mum49 = __mu - _Tp(49);
+      const _Tp __xx = _Tp(64) * __x * __x;
+      const _Tp __P = _Tp(1) - __mum1 * __mum9 / (_Tp(2) * __xx)
+                    * (_Tp(1) - __mum25 * __mum49 / (_Tp(12) * __xx));
+      const _Tp __Q = __mum1 / (_Tp(8) * __x)
+                    * (_Tp(1) - __mum9 * __mum25 / (_Tp(6) * __xx));
 
       const _Tp __chi = __x - (__nu + _Tp(0.5L))
                             * __numeric_constants<_Tp>::__pi_2();
