@@ -3,6 +3,16 @@
 	Backport from mainline.
 	2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-predicates.c (nds32_can_use_bclr_p): Mask with
+	GET_MODE_MASK before any checking.
+	(nds32_can_use_bset_p): Likewise.
+	(nds32_can_use_btgl_p): Likewise.
+
+2018-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	Backport from mainline.
+	2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-doubleword.md: New define_split pattern for
 	illegal register number.
 
