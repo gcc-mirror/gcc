@@ -99,7 +99,9 @@
       <entry><literal>-lstdc++fs</literal></entry>
       <entry>Linking to <filename class="libraryfile">libstdc++fs</filename>
         is required for use of the Filesystem library extensions in
-        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>.
+        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>
+        and the C++17 Filesystem library in
+        <filename class="headerfile">&lt;filesystem&gt;</filename>.
       </entry>
     </row>
 
