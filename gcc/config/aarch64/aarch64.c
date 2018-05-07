@@ -568,7 +568,7 @@ static const cpu_prefetch_tune qdf24xx_prefetch_tune =
   4,			/* num_slots  */
   32,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
-  1024,			/* l2_cache_size  */
+  512,			/* l2_cache_size  */
   false,		/* prefetch_dynamic_strides */
   2048,			/* minimum_stride */
   3			/* default_opt_level  */
