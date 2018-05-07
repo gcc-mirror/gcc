@@ -3,6 +3,14 @@
 	Backport from mainline.
 	2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-doubleword.md: New define_split pattern for
+	illegal register number.
+
+2018-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	Backport from mainline.
+	2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_print_operand): Set op_value ealier.
 
 2018-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>

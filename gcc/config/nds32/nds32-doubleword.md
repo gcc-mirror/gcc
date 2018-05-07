@@ -118,6 +118,24 @@
      ])
    (set_attr "feature" " v1, v1,  v1,  v1,   v1,   v1,    fpu,    fpu,    fpu,    fpu,    fpu")])
 
+;; Split move_di pattern when the hard register is odd.
+(define_split
+  [(set (match_operand:DIDF 0 "register_operand" "")
+	(match_operand:DIDF 1 "register_operand" ""))]
+  "(NDS32_IS_GPR_REGNUM (REGNO (operands[0]))
+    && ((REGNO (operands[0]) & 0x1) == 1))
+   || (NDS32_IS_GPR_REGNUM (REGNO (operands[1]))
+       && ((REGNO (operands[1]) & 0x1) == 1))"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+  {
+     operands[2] = gen_lowpart (SImode, operands[0]);
+     operands[4] = gen_highpart (SImode, operands[0]);
+     operands[3] = gen_lowpart (SImode, operands[1]);
+     operands[5] = gen_highpart (SImode, operands[1]);
+  }
+)
+
 (define_split
   [(set (match_operand:DIDF 0 "register_operand"     "")
 	(match_operand:DIDF 1 "const_double_operand" ""))]
