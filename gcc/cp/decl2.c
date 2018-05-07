@@ -1939,10 +1939,13 @@ vague_linkage_p (tree decl)
 {
   if (!TREE_PUBLIC (decl))
     {
-      /* maybe_thunk_body clears TREE_PUBLIC on the maybe-in-charge 'tor
-	 variants, check one of the "clones" for the real linkage.  */
+      /* maybe_thunk_body clears TREE_PUBLIC and DECL_ABSTRACT_P on the
+	 maybe-in-charge 'tor variants; in that case we need to check one of
+	 the "clones" for the real linkage.  But only in that case; before
+	 maybe_clone_body we haven't yet copied the linkage to the clones.  */
       if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
 	   || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
+	  && !DECL_ABSTRACT_P (decl)
 	  && DECL_CHAIN (decl)
 	  && DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)))
 	return vague_linkage_p (DECL_CHAIN (decl));
@@ -2422,21 +2425,8 @@ determine_visibility (tree decl)
 	    }
 
 	  /* Local classes in templates have CLASSTYPE_USE_TEMPLATE set,
-	     but have no TEMPLATE_INFO.  Their containing template
-	     function does, and the local class could be constrained
-	     by that.  */
-	  if (DECL_LANG_SPECIFIC (fn) && DECL_USE_TEMPLATE (fn))
-	    template_decl = fn;
-	  else if (template_decl)
-	    {
-	      /* FN must be a regenerated lambda function, since they don't
-		 have template arguments.  Find a containing non-lambda
-		 template instantiation.  */
-	      tree ctx = fn;
-	      while (ctx && !get_template_info (ctx))
-		ctx = get_containing_scope (ctx);
-	      template_decl = ctx;
-	    }
+	     but have no TEMPLATE_INFO, so don't try to check it.  */
+	  template_decl = NULL_TREE;
 	}
       else if (VAR_P (decl) && DECL_TINFO_P (decl)
 	       && flag_visibility_ms_compat)
