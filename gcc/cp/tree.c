@@ -1051,8 +1051,10 @@ build_array_of_n_type (tree elt, int n)
   return build_cplus_array_type (elt, build_index_type (size_int (n - 1)));
 }
 
-/* True iff T is an N3639 array of runtime bound (VLA).  These were
-   approved for C++14 but then removed.  */
+/* True iff T is an N3639 array of runtime bound (VLA).  These were approved
+   for C++14 but then removed.  This should only be used for N3639
+   specifically; code wondering more generally if something is a VLA should use
+   vla_type_p.  */
 
 bool
 array_of_runtime_bound_p (tree t)
@@ -1067,6 +1069,23 @@ array_of_runtime_bound_p (tree t)
   tree max = TYPE_MAX_VALUE (dom);
   return (!potential_rvalue_constant_expression (max)
 	  || (!value_dependent_expression_p (max) && !TREE_CONSTANT (max)));
+}
+
+/* True iff T is a variable length array.  */
+
+bool
+vla_type_p (tree t)
+{
+  for (; t && TREE_CODE (t) == ARRAY_TYPE;
+       t = TREE_TYPE (t))
+    if (tree dom = TYPE_DOMAIN (t))
+      {
+	tree max = TYPE_MAX_VALUE (dom);
+	if (!potential_rvalue_constant_expression (max)
+	    || (!value_dependent_expression_p (max) && !TREE_CONSTANT (max)))
+	  return true;
+      }
+  return false;
 }
 
 /* Return a reference type node referring to TO_TYPE.  If RVAL is
