@@ -658,6 +658,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case OMP_CLAUSE_DEPEND_INOUT:
 	  pp_string (pp, "inout");
 	  break;
+	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+	  pp_string (pp, "mutexinoutset");
+	  break;
 	case OMP_CLAUSE_DEPEND_SOURCE:
 	  pp_string (pp, "source)");
 	  return;

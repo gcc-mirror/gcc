@@ -13822,6 +13822,8 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
 	kind = OMP_CLAUSE_DEPEND_IN;
       else if (strcmp ("inout", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_INOUT;
+      else if (strcmp ("mutexinoutset", p) == 0)
+	kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
       else if (strcmp ("out", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_OUT;
       else if (strcmp ("source", p) == 0)

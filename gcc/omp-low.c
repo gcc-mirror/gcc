@@ -7351,6 +7351,7 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 	  break;
 	case OMP_CLAUSE_DEPEND_OUT:
 	case OMP_CLAUSE_DEPEND_INOUT:
+	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 	  n_out++;
 	  break;
 	case OMP_CLAUSE_DEPEND_SOURCE:
