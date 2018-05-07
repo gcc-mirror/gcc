@@ -5,7 +5,6 @@
 
 2018-05-07  Luis Machado  <luis.machado@linaro.org>
 
-	gcc/
 	* config/aarch64/aarch64-protos.h (cpu_prefetch_tune)
 	<prefetch_dynamic_strides>: New const bool field.
 	* config/aarch64/aarch64.c (generic_prefetch_tune): Update to include
@@ -25,7 +24,6 @@
 
 2018-05-07  Luis Machado  <luis.machado@linaro.org>
 
-	gcc/
 	* config/aarch64/aarch64-protos.h (cpu_prefetch_tune)
 	<minimum_stride>: New const int field.
 	* config/aarch64/aarch64.c (generic_prefetch_tune): Update to include
