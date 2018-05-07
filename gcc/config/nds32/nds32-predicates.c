@@ -360,12 +360,13 @@ int
 nds32_can_use_bclr_p (int ival)
 {
   int one_bit_count;
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (SImode);
 
   /* Calculate the number of 1-bit of (~ival), if there is only one 1-bit,
      it means the original ival has only one 0-bit,
      So it is ok to perform 'bclr' operation.  */
 
-  one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (~ival));
+  one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (~ival) & mask);
 
   /* 'bclr' is a performance extension instruction.  */
   return (TARGET_EXT_PERF && (one_bit_count == 1));
@@ -376,11 +377,12 @@ int
 nds32_can_use_bset_p (int ival)
 {
   int one_bit_count;
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (SImode);
 
   /* Caculate the number of 1-bit of ival, if there is only one 1-bit,
      it is ok to perform 'bset' operation.  */
 
-  one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (ival));
+  one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (ival) & mask);
 
   /* 'bset' is a performance extension instruction.  */
   return (TARGET_EXT_PERF && (one_bit_count == 1));
@@ -391,11 +393,12 @@ int
 nds32_can_use_btgl_p (int ival)
 {
   int one_bit_count;
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (SImode);
 
   /* Caculate the number of 1-bit of ival, if there is only one 1-bit,
      it is ok to perform 'btgl' operation.  */
 
-  one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (ival));
+  one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (ival) & mask);
 
   /* 'btgl' is a performance extension instruction.  */
   return (TARGET_EXT_PERF && (one_bit_count == 1));
