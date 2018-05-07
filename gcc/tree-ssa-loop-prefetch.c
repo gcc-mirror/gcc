@@ -992,6 +992,22 @@ prune_by_reuse (struct mem_ref_group *groups)
 static bool
 should_issue_prefetch_p (struct mem_ref *ref)
 {
+  /* Some processors may have a hardware prefetcher that may conflict with
+     prefetch hints for a range of strides.  Make sure we don't issue
+     prefetches for such cases if the stride is within this particular
+     range.  */
+  if (cst_and_fits_in_hwi (ref->group->step)
+      && absu_hwi (int_cst_value (ref->group->step)) < PREFETCH_MINIMUM_STRIDE)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Step for reference %u:%u (%d) is less than the mininum "
+		 "required stride of %d\n",
+		 ref->group->uid, ref->uid, int_cst_value (ref->group->step),
+		 PREFETCH_MINIMUM_STRIDE);
+      return false;
+    }
+
   /* For now do not issue prefetches for only first few of the
      iterations.  */
   if (ref->prefetch_before != PREFETCH_ALL)
