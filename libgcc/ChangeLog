@@ -1,3 +1,11 @@
+2018-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	Backport from mainline.
+	2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/sfp-machine.h: Fix settings for NDS32_ABI_2FP_PLUS.
+	* config/nds32/t-nds32-newlib (HOST_LIBGCC2_CFLAGS): Use -fwrapv.
+
 2018-05-02  Release Manager
 
 	* GCC 8.1.0 released.
