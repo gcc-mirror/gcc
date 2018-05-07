@@ -1,3 +1,32 @@
+2018-05-07  Nathan Sidwell  <nathan@acm.org>
+
+	Remove fno-for-scope
+	* cp-tree.h (DECL_ERROR_REPORTED, DECL_DEAD_FOR_LOCAL)
+	(DECL_HAS_SHADOWED_FOR_VAR_P, DECL_SHADOWED_FOR_VAR)
+	(SET_DECL_SHADOWED_FOR_VAR): Delete.
+	(decl_shadowed_for_var_lookup, decl_shadowed_for_var_insert)
+	(check_for_out_of_scope_variable, init_shadowed_var_for_decl):
+	Don't declare.
+	* name-lookup.h (struct cp_binding_level): Remove
+	dead_vars_from_for field.
+	* cp-lang.c (cp_init_ts): Delete.
+	(LANG_HOOKS_INIT_TS): Override to cp_common_init_ts.
+	* cp-objcp-common.c (shadowed_var_for_decl): Delete.
+	(decl_shadowed_for_var_lookup, decl_shadowed_for_var_insert)
+	(init_shadowed_var_for_decl): Delete.
+	* decl.c (poplevel): Remove shadowed for var handling.
+	(cxx_init_decl_processing): Remove -ffor-scope deprecation.
+	* name-lookup.c (find_local_binding): Remove shadowed for var
+	handling.
+	(check_local_shadow): Likewise.
+	(check_for_out_of_scope_variable): Delete.
+	* parser.c (cp_parser_primary_expression): Remove shadowed for var
+	handling.
+	* pt.c (tsubst_decl): Remove DECL_DEAD_FOR_LOCAL setting.
+	* semantics.c (begin_for_scope): Always have a scope.
+	(begin_for_stmt, finish_for_stmt): Remove ARM-for scope handling.
+	(begin_range_for_stmt, finish_id_expression): Likewise.
+
 2018-05-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85618 - ICE with initialized VLA.

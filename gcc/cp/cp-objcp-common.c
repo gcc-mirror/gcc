@@ -298,43 +298,6 @@ has_c_linkage (const_tree decl)
   return DECL_EXTERN_C_P (decl);
 }
 
-static GTY ((cache))
-     hash_table<tree_decl_map_cache_hasher> *shadowed_var_for_decl;
-
-/* Lookup a shadowed var for FROM, and return it if we find one.  */
-
-tree
-decl_shadowed_for_var_lookup (tree from)
-{
-  struct tree_decl_map *h, in;
-  in.base.from = from;
-
-  h = shadowed_var_for_decl->find_with_hash (&in, DECL_UID (from));
-  if (h)
-    return h->to;
-  return NULL_TREE;
-}
-
-/* Insert a mapping FROM->TO in the shadowed var hashtable.  */
-
-void
-decl_shadowed_for_var_insert (tree from, tree to)
-{
-  struct tree_decl_map *h;
-
-  h = ggc_alloc<tree_decl_map> ();
-  h->base.from = from;
-  h->to = to;
-  *shadowed_var_for_decl->find_slot_with_hash (h, DECL_UID (from), INSERT) = h;
-}
-
-void
-init_shadowed_var_for_decl (void)
-{
-  shadowed_var_for_decl
-    = hash_table<tree_decl_map_cache_hasher>::create_ggc (512);
-}
-
 /* Return true if stmt can fall through.  Used by block_may_fallthru
    default case.  */
 

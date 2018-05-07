@@ -934,9 +934,7 @@ finish_return_stmt (tree expr)
 tree
 begin_for_scope (tree *init)
 {
-  tree scope = NULL_TREE;
-  if (flag_new_for_scope)
-    scope = do_pushlevel (sk_for);
+  tree scope = do_pushlevel (sk_for);
 
   if (processing_template_decl)
     *init = push_stmt_list ();
@@ -960,10 +958,10 @@ begin_for_stmt (tree scope, tree init)
 
   if (scope == NULL_TREE)
     {
-      gcc_assert (!init || !flag_new_for_scope);
-      if (!init)
-	scope = begin_for_scope (&init);
+      gcc_assert (!init);
+      scope = begin_for_scope (&init);
     }
+
   FOR_INIT_STMT (r) = init;
   FOR_SCOPE (r) = scope;
 
@@ -1057,16 +1055,12 @@ finish_for_stmt (tree for_stmt)
     FOR_BODY (for_stmt) = do_poplevel (FOR_BODY (for_stmt));
 
   /* Pop the scope for the body of the loop.  */
-  if (flag_new_for_scope)
-    {
-      tree scope;
-      tree *scope_ptr = (TREE_CODE (for_stmt) == RANGE_FOR_STMT
-			 ? &RANGE_FOR_SCOPE (for_stmt)
-			 : &FOR_SCOPE (for_stmt));
-      scope = *scope_ptr;
-      *scope_ptr = NULL;
-      add_stmt (do_poplevel (scope));
-    }
+  tree *scope_ptr = (TREE_CODE (for_stmt) == RANGE_FOR_STMT
+		     ? &RANGE_FOR_SCOPE (for_stmt)
+		     : &FOR_SCOPE (for_stmt));
+  tree scope = *scope_ptr;
+  *scope_ptr = NULL;
+  add_stmt (do_poplevel (scope));
 }
 
 /* Begin a range-for-statement.  Returns a new RANGE_FOR_STMT.
@@ -1077,18 +1071,15 @@ finish_for_stmt (tree for_stmt)
 tree
 begin_range_for_stmt (tree scope, tree init)
 {
-  tree r;
-
   begin_maybe_infinite_loop (boolean_false_node);
 
-  r = build_stmt (input_location, RANGE_FOR_STMT,
-		  NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
+  tree r = build_stmt (input_location, RANGE_FOR_STMT,
+		       NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
-      gcc_assert (!init || !flag_new_for_scope);
-      if (!init)
-	scope = begin_for_scope (&init);
+      gcc_assert (!init);
+      scope = begin_for_scope (&init);
     }
 
   /* RANGE_FOR_STMTs do not use nor save the init tree, so we
@@ -3560,11 +3551,6 @@ finish_id_expression (tree id_expression,
 	  else
 	    decl = id_expression;
 	}
-      /* If DECL is a variable that would be out of scope under
-	 ANSI/ISO rules, but in scope in the ARM, name lookup
-	 will succeed.  Issue a diagnostic here.  */
-      else
-	decl = check_for_out_of_scope_variable (decl);
 
       /* Remember that the name was used in the definition of
 	 the current class so that we can check later to see if

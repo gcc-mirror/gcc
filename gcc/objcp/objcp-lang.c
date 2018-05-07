@@ -87,8 +87,6 @@ objcxx_init_ts (void)
 {
   objc_common_init_ts ();
   cp_common_init_ts ();
-
-  init_shadowed_var_for_decl ();
 }
 
 #include "gtype-objcp.h"

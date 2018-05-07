@@ -5585,27 +5585,10 @@ cp_parser_primary_expression (cp_parser *parser,
 	    if (parser->local_variables_forbidden_p
 		&& local_variable_p (decl))
 	      {
-		/* It might be that we only found DECL because we are
-		   trying to be generous with pre-ISO scoping rules.
-		   For example, consider:
-
-		     int i;
-		     void g() {
-		       for (int i = 0; i < 10; ++i) {}
-		       extern void f(int j = i);
-		     }
-
-		   Here, name look up will originally find the out
-		   of scope `i'.  We need to issue a warning message,
-		   but then use the global `i'.  */
-		decl = check_for_out_of_scope_variable (decl);
-		if (local_variable_p (decl))
-		  {
-		    error_at (id_expr_token->location,
-			      "local variable %qD may not appear in this context",
-			      decl.get_value ());
-		    return error_mark_node;
-		  }
+		error_at (id_expr_token->location,
+			  "local variable %qD may not appear in this context",
+			  decl.get_value ());
+		return error_mark_node;
 	      }
 	  }
 

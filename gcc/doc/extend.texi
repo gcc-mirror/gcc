@@ -23840,17 +23840,6 @@ superior alternatives.  Using the old features might cause a warning in
 some cases that the feature will be dropped in the future.  In other
 cases, the feature might be gone already.
 
-While the list below is not exhaustive, it documents some of the options
-that are now deprecated or have been removed:
-
-@table @code
-
-@item -fno-for-scope
-This option provides compatibility with pre-standard C++.
-@xref{Backwards Compatibility}.
-
-@end table
-
 G++ allows a virtual function returning @samp{void *} to be overridden
 by one returning a different pointer type.  This extension to the
 covariant return type rules is now deprecated and will be removed from a
@@ -23893,18 +23882,6 @@ liable to disappear in future versions of G++.} They should be considered
 deprecated.   @xref{Deprecated Features}.
 
 @table @code
-@item For scope
-If a variable is declared at for scope, it used to remain in scope
-until the end of the scope that contained the for statement (rather
-than just within the for scope).  The deprecated
-@option{-fno-for-scope} option enables this non-standard behavior.
-Without the option, G++ retains this, but issues a warning, if such a
-variable is accessed outside the for scope.
-
-The behavior is deprecated, only available with @option{-std=c++98}
-@option{-std=gnu++98} languages and you must use the
-@option{-fpermissive} option to enable it.  The behavior will be
-removed.
 
 @item Implicit C language
 Old C system header files did not contain an @code{extern "C" @{@dots{}@}}
@@ -23912,6 +23889,7 @@ scope to set the language.  On such systems, all header files are
 implicitly scoped inside a C language scope.  Also, an empty prototype
 @code{()} is treated as an unspecified number of arguments, rather
 than no arguments, as C++ demands.
+
 @end table
 
 @c  LocalWords:  emph deftypefn builtin ARCv2EM SIMD builtins msimd

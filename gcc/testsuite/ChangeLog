@@ -1,3 +1,10 @@
+2018-05-07  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/range-for10.C: Delete.
+	* g++.dg/ext/forscope1.C: Delete.
+	* g++.dg/ext/forscope2.C: Delete.
+	* g++.dg/template/for1.C: Delete.
+
 2018-05-07  Jeff Law  <law@redhat.com>
 
 	* gfortran.dg/linefile.f90: New test.
