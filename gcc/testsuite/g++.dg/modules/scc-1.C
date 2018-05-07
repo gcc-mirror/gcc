@@ -10,7 +10,7 @@ export int bar (int = baz (1));
 
 // The ordering depends on hash table iteration, which is address-dependent
 
-// { dg-final { scan-lang-dump {  Writing:-2 function_decl:'::ba[rz]'} "module" } }
-// { dg-final { scan-lang-dump {  *\.\.* Writing:-[0-9]* function_decl:'::ba[rz]'} "module" } }
-// { dg-final { scan-lang-dump {  *\.\.* Wrote backref:-2 function_decl:'::ba[rz]'} "module" } }
-// { dg-final { scan-lang-dump {  Wrote backref:-[0-9]* function_decl:'::ba[rz]'} "module" } }
+// { dg-final { scan-lang-dump { Writing:-1 function_decl:'::ba[rz]' .exported.} "module" } }
+// { dg-final { scan-lang-dump { Writing:-[0-9]* function_decl:'::ba[rz]' .exported.} "module" } }
+// { dg-final { scan-lang-dump { *\.\.* Wrote backref:-1 function_decl:'::ba[rz]'} "module" } }
+// { dg-final { scan-lang-dump { Wrote backref:-[0-9]* function_decl:'::ba[rz]'} "module" } }

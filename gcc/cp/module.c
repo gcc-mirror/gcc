@@ -1894,8 +1894,10 @@ public:
   vec<depset *> deps;  /* Depsets in this TU we reference.  */
 
 public:
-  unsigned cluster; /* Strongly connected cluster.  */
-  unsigned section; /* Section written to.  */
+  unsigned cluster : 31; /* Strongly connected cluster.  */
+  bool is_unnamed : 1;   /* This decl is not found by name.  */
+  unsigned section : 31; /* Section written to.  */
+  bool refs_unnamed : 1;  /* A dependency is not found by name.  */
   /* During SCC construction, section is lowlink, until the depset is
      removed from the stack.   */
 
@@ -2078,7 +2080,8 @@ public:
 };
 
 depset::depset (const key_type &key)
-  :key (key), deps (), cluster (0), section (0)
+  :key (key), deps (), cluster (0), is_unnamed (false),
+   section (0), refs_unnamed (false)
 {
 }
 
@@ -5913,7 +5916,12 @@ depset::hash::add_dependency (tree decl, bool looking_inside)
     {
       *slot = dep = new depset (key);
       worklist.safe_push (dep);
+      /* Any depset created at this point is not found by name.  */
+      dep->is_unnamed = true;
     }
+
+  if (dep->is_unnamed)
+    current->refs_unnamed = true;
 
   if (TREE_CODE (decl) == NAMESPACE_DECL)
     looking_inside = false;
@@ -7216,7 +7224,7 @@ module_state::read_definition (trees_in &in, tree decl)
   return false;
 }
 
-/* Compare members of a cluster.  Order bind < decl < defn.  depsets
+/* Compare members of a cluster.  Order decl < defn < bind.  depsets
    of the same kind can be arbitrary, but we want something
    stable.  */
 
@@ -7226,18 +7234,18 @@ cluster_cmp (const void *a_, const void *b_)
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
 
-  bool is_defn = a->is_defn ();
-  if (is_defn != b->is_defn ())
-    /* Exactly one is a defn.  It comes last.  */
-    return is_defn ? +1 : -11;
+  bool is_decl = a->is_decl ();
+  if (is_decl != b->is_decl ())
+    /* Exactly one is a decl.  It comes first.  */
+    return is_decl ? -1 : +1;
 
-  if (!is_defn)
+  if (!is_decl)
     {
-      /* Neither is a defn.  Try decls.  */
-      bool is_decl = a->is_decl ();
-      if (is_decl != b->is_decl ())
-	/* Exactly one is a decl.  It comes last.  */
-	return is_decl ? +1 : -1;
+      /* Neither is a decl, try order-by-defn.  */
+      bool is_defn = a->is_defn ();
+      if (is_defn != b->is_defn ())
+	/* Exactly one is a defn.  It comes first.  */
+	return is_defn ? -1 : +1;
     }
 
   /* They are both the same kind.  Order for qsort stability.  */
@@ -7268,7 +7276,7 @@ enum cluster_tag
   };
 
 /* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
-   bindings < decls < defns.  */
+   decls < defns < bindings.  */
 
 void
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
@@ -7289,14 +7297,15 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
       if (b->is_decl ())
 	{
-	  if (!TREE_VISITED (b->get_decl ()))
+	  if (b->is_unnamed)
 	    {
 	      /* There is no binding for this decl.  It is therefore
-		 not findable by name.  */
+		 not findable by name.  Determine its horcrux
+		 number.  */
 	      dump () && dump ("Unnamed %u %N", unnamed, b->get_decl ());
 	      b->cluster = ++unnamed;
-	      sec.mark_node (b->get_decl ());
 	    }
+	  sec.mark_node (b->get_decl ());
 	}
       else if (b->is_defn ())
 	{
@@ -7310,27 +7319,34 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  for (unsigned jx = b->deps.length (); jx--;)
 	    sec.mark_node (b->deps[jx]->get_decl ());
 	}
-
-      // FIXME: A flag in depset should tell us we have these
-      if (unnamed && !b->is_binding ())
-	/* Preseed any unnamed decls we're dependent on.  */
-	for (unsigned jx = 0; jx != b->deps.length (); jx++)
-	  {
-	    depset *d = b->deps[jx];
-	    tree u_decl = d->get_decl ();
-	    if (!TREE_VISITED (u_decl)
-		&& d->cluster && d->cluster <= unnamed_hwm)
-	      {
-		sec.u (ct_horcrux);
-		sec.u (d->cluster - 1);
-		sec.insert (u_decl);
-		int type_tag = sec.maybe_insert (TREE_TYPE (u_decl));
-		sec.u (type_tag != 0);
-		dump () && dump ("Created horcrux:%u for %N",
-				 d->cluster - 1, u_decl);
-	      }
-	  }
     }
+
+  if (unnamed_hwm)
+    /* Preseed any unnamed decls we're dependent on.  */
+    for (unsigned ix = 0; ix != size; ix++)
+      if (scc[ix]->refs_unnamed)
+	{
+	  depset *b = scc[ix];
+
+	  for (unsigned jx = 0; jx != b->deps.length (); jx++)
+	    {
+	      depset *d = b->deps[jx];
+	      if (d->is_unnamed && d->cluster <= unnamed_hwm)
+		{
+		  tree u_decl = d->get_decl ();
+		  if (!TREE_VISITED (u_decl))
+		    {
+		      sec.u (ct_horcrux);
+		      sec.u (d->cluster - 1);
+		      sec.insert (u_decl);
+		      int type_tag = sec.maybe_insert (TREE_TYPE (u_decl));
+		      sec.u (type_tag != 0);
+		      dump () && dump ("Created horcrux:%u for %N",
+				       d->cluster - 1, u_decl);
+		    }
+		}
+	    }
+	}
 
   /* Now write every member.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -7351,7 +7367,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 #endif
       cluster_tag ct;
       if (b->is_decl ())
-	ct = b->cluster ? ct_voldemort : ct_decl;
+	ct = b->is_unnamed ? ct_voldemort : ct_decl;
       else if (b->is_defn ())
 	ct = ct_defn;
       else
@@ -7388,7 +7404,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   /* We don't find the section by name.  Use depset's decl's name for
      human friendliness.  Choose a non-binding.  */
-  tree naming_decl = scc[size-1]->get_decl ();
+  tree naming_decl = scc[0]->get_decl ();
   unsigned snum = sec.end (to, to->named_decl (naming_decl), crc_ptr);
 
   for (unsigned ix = size; ix--;)

@@ -1,6 +1,14 @@
 2018-05-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (depset): Add is_unnamed and refs_unnamed flags.
+	(depset::hash::add_dependency): Set them here.
+	(cluster_cmp): Change order again.
+	(module_state::write_cluster): Check refs_unnamed here.
+	gcc/testsuite.
+	* g++.dg/modules/scc-1.C: Readjust.
+
+	gcc/cp/
 	* module.c (depset::tarjan::connect): Use section==0 for done, not
 	top bit of cluster.
 	gcc/testsuite/
