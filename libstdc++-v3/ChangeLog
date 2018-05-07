@@ -1,3 +1,9 @@
+2018-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85671
+	* include/bits/fs_path.h (operator/): Permit copy elision.
+	* include/experimental/bits/fs_path.h (operator/): Likewise.
+
 2018-05-07  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Moar PR libstdc++/80506
