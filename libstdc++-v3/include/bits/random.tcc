@@ -2408,7 +2408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __v = __v * __v * __v;
 		  __u = __aurng();
 		}
-	      while (__u > result_type(1.0) - 0.331 * __n * __n * __n * __n
+	      while (__u > result_type(1.0) - 0.0331 * __n * __n * __n * __n
 		     && (std::log(__u) > (0.5 * __n * __n + __a1
 					  * (1.0 - __v + std::log(__v)))));
 
@@ -2429,7 +2429,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __v = __v * __v * __v;
 		  __u = __aurng();
 		}
-	      while (__u > result_type(1.0) - 0.331 * __n * __n * __n * __n
+	      while (__u > result_type(1.0) - 0.0331 * __n * __n * __n * __n
 		     && (std::log(__u) > (0.5 * __n * __n + __a1
 					  * (1.0 - __v + std::log(__v)))));
 
