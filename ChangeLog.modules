@@ -1,3 +1,11 @@
+2018-05-07  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (depset::tarjan::connect): Use section==0 for done, not
+	top bit of cluster.
+	gcc/testsuite/
+	* g++.dg/modules/unnamed-1_b.C: Fix scan.
+
 2018-05-06  Nathan Sidwell  <nathan@acm.org>
 
 	Horcruxes!

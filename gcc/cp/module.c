@@ -77,19 +77,20 @@ along with GCC; see the file COPYING3.  If not see
    introduce indirection via section symbols, but that would require
    defining a relocation type.
 
-   References to decls not in the same SCC are by several different
-   mechanisms.  All decls from other modules are like this (we cannot
-   form an SCC containing one of them).  Decls from the same module in
-   a different SCC are also like this.
+   References to decls not in the same SCC are by two different
+   mechanisms.  The simplest is for extern or module linkage entities,
+   which are by module, context, name & type.  We look in exactly that
+   scope, potentially lazily load it.  Other cases are by a per-module
+   vector of such decls.  Again, slots in this may be lazily loaded.
+   The three cases are:
 
-   * The simplest is for nameable exports, which are by context, name &
-   type.
+   * Local linkage entities, which will be subject to linkage
+   promotion.  FIXME: Linkage promotion not implemented.
 
-   * Next are non-exported decls referenced from (bodies of) exported
-   decls.  Currently not handled properly.
+   * Global module entity.  We must merge global decls across
+   modules.  FIXME: Not implemented
 
-   * Finally there are voldemort types, for instance lambdas returned
-   from functions.  Currently not handled at all.
+   * Voldemort types.  FIXME: Not implemented
 
 Classes used:
 
@@ -1894,12 +1895,9 @@ public:
 
 public:
   unsigned cluster; /* Strongly connected cluster.  */
-  /* During dependency determination, the cluster field is a visited flag.  */
   unsigned section; /* Section written to.  */
-  /* During dependency determination the section field marks the
-     position on the DECLS vector that has been walked -- item can be
-     put back on the worklist.
-     During SCC construction, it is lowlink.  */
+  /* During SCC construction, section is lowlink, until the depset is
+     removed from the stack.   */
 
 public:
   inline operator const key_type & () const
@@ -6004,30 +6002,29 @@ depset::tarjan::connect (depset *v)
   for (unsigned ix = v->deps.length (); ix--;)
     {
       depset *dep = v->deps[ix];
+      unsigned lwm = dep->cluster;
       if (!dep->cluster)
 	{
 	  /* A new node.  Connect it.  */
 	  connect (dep);
-	  if (v->section > dep->section)
-	    v->section = dep->section;
+	  lwm = dep->section;
 	}
-      else if (v->section > dep->cluster)
-	/* Because we set the top bit of dep->cluster when removing
-	   from the stack, we don't need to explicitly check that
-	   dep is not in the stack, the above comparison will DTRT.  */
-	v->section = dep->cluster;
+
+      if (dep->section && v->section > lwm)
+	v->section = lwm;
     }
 
   if (v->section == v->cluster)
     {
       /* Root of a new SCC.  Push all the members onto the result list. */
 
-      unsigned num = v->cluster | ~(~0u >> 1);
+      unsigned num = v->cluster;
       depset *p;
       do
 	{
 	  p = stack.pop ();
 	  p->cluster = num;
+	  p->section = 0;
 	  result->quick_push (p);
 	}
       while (p != v);
