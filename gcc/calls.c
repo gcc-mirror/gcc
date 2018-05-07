@@ -1301,112 +1301,15 @@ alloc_max_size (void)
    returning a range of [0, 0] for a size in an anti-range [1, N] where
    N > PTRDIFF_MAX.  A zero range is a (nearly) invalid argument to
    allocation functions like malloc but it is a valid argument to
-   functions like memset.  */
+   functions like memset.
+
+   CALL is a statement indicating the point in the IL from where we
+   want to inquire about the range.  EXP does not need to appear
+   within CALL.  */
 
 bool
-get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
-{
-  if (tree_fits_uhwi_p (exp))
-    {
-      /* EXP is a constant.  */
-      range[0] = range[1] = exp;
-      return true;
-    }
-
-  tree exptype = TREE_TYPE (exp);
-  bool integral = INTEGRAL_TYPE_P (exptype);
-
-  wide_int min, max;
-  enum value_range_type range_type;
-
-  if (TREE_CODE (exp) == SSA_NAME && integral)
-    range_type = get_range_info (exp, &min, &max);
-  else
-    range_type = VR_VARYING;
-
-  if (range_type == VR_VARYING)
-    {
-      if (integral)
-	{
-	  /* Use the full range of the type of the expression when
-	     no value range information is available.  */
-	  range[0] = TYPE_MIN_VALUE (exptype);
-	  range[1] = TYPE_MAX_VALUE (exptype);
-	  return true;
-	}
-
-      range[0] = NULL_TREE;
-      range[1] = NULL_TREE;
-      return false;
-    }
-
-  unsigned expprec = TYPE_PRECISION (exptype);
-
-  bool signed_p = !TYPE_UNSIGNED (exptype);
-
-  if (range_type == VR_ANTI_RANGE)
-    {
-      if (signed_p)
-	{
-	  if (wi::les_p (max, 0))
-	    {
-	      /* EXP is not in a strictly negative range.  That means
-		 it must be in some (not necessarily strictly) positive
-		 range which includes zero.  Since in signed to unsigned
-		 conversions negative values end up converted to large
-		 positive values, and otherwise they are not valid sizes,
-		 the resulting range is in both cases [0, TYPE_MAX].  */
-	      min = wi::zero (expprec);
-	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
-	    }
-	  else if (wi::les_p (min - 1, 0))
-	    {
-	      /* EXP is not in a negative-positive range.  That means EXP
-		 is either negative, or greater than max.  Since negative
-		 sizes are invalid make the range [MAX + 1, TYPE_MAX].  */
-	      min = max + 1;
-	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
-	    }
-	  else
-	    {
-	      max = min - 1;
-	      min = wi::zero (expprec);
-	    }
-	}
-      else if (wi::eq_p (0, min - 1))
-	{
-	  /* EXP is unsigned and not in the range [1, MAX].  That means
-	     it's either zero or greater than MAX.  Even though 0 would
-	     normally be detected by -Walloc-zero, unless ALLOW_ZERO
-	     is true, set the range to [MAX, TYPE_MAX] so that when MAX
-	     is greater than the limit the whole range is diagnosed.  */
-	  if (allow_zero)
-	    min = max = wi::zero (expprec);
-	  else
-	    {
-	      min = max + 1;
-	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
-	    }
-	}
-      else
-	{
-	  max = min - 1;
-	  min = wi::zero (expprec);
-	}
-    }
-
-  range[0] = wide_int_to_tree (exptype, min);
-  range[1] = wide_int_to_tree (exptype, max);
-
-  return true;
-}
-
-/* Ranger version of the above.  CALL is a statement indicating the
-   point in the IL from where we want to inquire about the range.  EXP
-   does not need to appear within CALL.  */
-
-bool
-get_size_range (gcall *call, tree exp, tree range[2], bool allow_zero)
+get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
+		gcall *call /* = NULL */)
 {
   if (tree_fits_uhwi_p (exp))
     {
@@ -1420,9 +1323,18 @@ get_size_range (gcall *call, tree exp, tree range[2], bool allow_zero)
   path_ranger ranger;
   irange r;
 
-  if (TREE_CODE (exp) != SSA_NAME
-      || !integral
-      || !ranger.path_range_on_stmt (r, exp, call))
+  /* If we don't have a ranger, use global range info.  */
+  if (!call
+      && TREE_CODE (exp) == SSA_NAME && integral
+      && SSA_NAME_RANGE_INFO (exp))
+    {
+      wide_int min, max;
+      enum value_range_type kind = get_range_info (exp, &min, &max);
+      value_range_to_irange (r, exptype, kind, min, max);
+    }
+  else if (TREE_CODE (exp) != SSA_NAME
+	   || !integral
+	   || !ranger.path_range_on_stmt (r, exp, call))
     {
       /* Use the full range of the type of the expression when
 	 no value range information is available.  */
@@ -1438,29 +1350,45 @@ get_size_range (gcall *call, tree exp, tree range[2], bool allow_zero)
       return false;
     }
 
-  /* Remove negative numbers from the range.  */
-  bool signed_p = !TYPE_UNSIGNED (exptype);
-  irange positives;
-  range_positives (&positives, exptype, allow_zero);
-  if (signed_p && !positives.intersect (r).empty_p ())
+  /* Special case for ~[1,MAX].  This means it's either zero or
+     greater than MAX.  Even though 0 would normally be detected by
+     -Walloc-zero, unless ALLOW_ZERO is true, set the range to [MAX,
+     TYPE_MAX] so that when MAX is greater than the limit the whole
+     range is diagnosed.  */
+  if (r.num_pairs () > 1
+      && r.lower_bound (0) == wi::to_wide (TYPE_MIN_VALUE (exptype))
+      && r.upper_bound (0) == wi::zero (TYPE_PRECISION (exptype)))
     {
-      /* Remove the unknown parts of a multi-range.
-	 This will transform [5,10][20,MAX] into [5,10].  */
-      if (positives.num_pairs () > 1
-	  && positives.upper_bound () == wi::to_wide (TYPE_MAX_VALUE (exptype)))
-	positives.remove_pair (positives.num_pairs () - 1);
-
-      range[0] = wide_int_to_tree (exptype, positives.lower_bound ());
-      range[1] = wide_int_to_tree (exptype, positives.upper_bound ());
-    }
-  else
-    {
-      /* If removing the negative numbers didn't give us anything
-	 back, the entire range was negative.  Leave things as they
-	 are, and let the caller sort it out.  */
+      if (allow_zero)
+	range_zero (&r, exptype);
+      else
+	r.remove_pair (0);
       range[0] = wide_int_to_tree (exptype, r.lower_bound ());
       range[1] = wide_int_to_tree (exptype, r.upper_bound ());
+      return true;
     }
+
+  /* EXP may not be in a strictly negative range, since in signed to
+     unsigned conversions negative values end up converted to large
+     positive values.  Remove the extreme ends of the range that may
+     have come from conversions.  */
+  if (!TYPE_UNSIGNED (exptype) && r.num_pairs () > 1)
+    {
+      if (r.lower_bound (0) == wi::to_wide (TYPE_MIN_VALUE (exptype)))
+	{
+	  irange positives, orig = r;
+	  range_positives (&positives, exptype);
+	  r.intersect (positives);
+	  if (r.empty_p ())
+	    r = orig;
+	}
+      /* This will transform [5,10][20,MAX] into [5,10].  */
+      else if (r.upper_bound () == wi::to_wide (TYPE_MAX_VALUE (exptype)))
+	r.remove_pair (r.num_pairs () - 1);
+    }
+
+  range[0] = wide_int_to_tree (exptype, r.lower_bound ());
+  range[1] = wide_int_to_tree (exptype, r.upper_bound ());
   return true;
 }
 

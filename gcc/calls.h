@@ -40,8 +40,7 @@ extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
 extern void maybe_warn_alloc_args_overflow (tree, tree, tree[2], int[2]);
 extern tree get_attr_nonstring_decl (tree, tree * = NULL);
 extern void maybe_warn_nonstring_arg (tree, tree);
-extern bool get_size_range (tree, tree[2], bool = false);
-extern bool get_size_range (gcall *, tree, tree[2], bool = false);
+extern bool get_size_range (tree, tree[2], bool = false, gcall * = NULL);
 extern rtx rtx_for_static_chain (const_tree, bool);
 
 #endif // GCC_CALLS_H

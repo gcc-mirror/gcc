@@ -167,25 +167,15 @@ void
 irange::set_range (tree ssa)
 {
   tree t = TREE_TYPE (ssa);
-  gcc_assert (TREE_CODE (ssa) == SSA_NAME && (INTEGRAL_TYPE_P (t)
-					      || POINTER_TYPE_P (t)));
-  if (!SSA_NAME_RANGE_INFO (ssa)
-      /* Pointers do not have range info in SSA_NAME_RANGE_INFO, so
-	 just return range_for_type in this case.  */
-      || POINTER_TYPE_P (t))
+  gcc_assert (INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t));
+  if (!SSA_NAME_RANGE_INFO (ssa) || POINTER_TYPE_P (t))
     {
       set_range_for_type (t);
       return;
     }
-
-  /* Use global range info if available.  */
   wide_int min, max;
   enum value_range_type kind = get_range_info (ssa, &min, &max);
-  if (kind == VR_VARYING)
-    set_range_for_type (t);
-  else
-    set_range (t, min, max,
-	       kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
+  value_range_to_irange (*this, t, kind, min, max);
 //  irange_storage *storage = SSA_NAME_RANGE_INFO (ssa);
 //  set_range (storage, t);
 }
@@ -1033,15 +1023,25 @@ range_non_zero (irange *r, tree type)
   return make_irange_not (r, zero, type);
 }
 
-/* Set the range of R to the set of positive numbers.  If ALLOW_ZERO
-   is TRUE, zero counts as a positive number, otherwise the positives
-   start at 1.  */
+/* Convert irange  to a value_range_type.  */
 
-void
-range_positives (irange *r, tree type, bool allow_zero)
+enum value_range_type
+irange_to_value_range (const irange &r, wide_int &min, wide_int &max)
 {
-  r->set_range (type, build_int_cst (type, allow_zero ? 0 : 1),
-		TYPE_MAX_VALUE (type));
+  tree type = r.get_type ();
+  unsigned int precision = TYPE_PRECISION (type);
+  if (r.num_pairs () == 2
+      && r.lower_bound () == wi::min_value (precision, TYPE_SIGN (type))
+      && r.upper_bound () == wi::max_value (precision, TYPE_SIGN (type)))
+    {
+      irange tmp = irange_invert (r);
+      min = tmp.lower_bound ();
+      max = tmp.upper_bound ();
+      return VR_ANTI_RANGE;
+    }
+  min = r.lower_bound ();
+  max = r.upper_bound ();
+  return VR_RANGE;
 }
 
 #ifdef CHECKING_P
@@ -1543,6 +1543,14 @@ irange_tests ()
   r0 = irange (integer_type_node, 0, 0);
   r0.invert ();
   ASSERT_TRUE (r0.non_zero_p ());
+
+  /* Test irange / value_range conversion functions.  */
+  wide_int min, max;
+  r0.set_range (integer_type_node, 10, 20, irange::INVERSE);
+  ASSERT_TRUE (irange_to_value_range (r0, min, max) == VR_ANTI_RANGE);
+  ASSERT_TRUE (wi::eq_p (10, min) && wi::eq_p (20, max));
+  value_range_to_irange (r1, integer_type_node, VR_ANTI_RANGE, min, max);
+  ASSERT_TRUE (r0 == r1);
 }
 
 } // namespace selftest

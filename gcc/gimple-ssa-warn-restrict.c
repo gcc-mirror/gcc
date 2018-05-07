@@ -241,7 +241,7 @@ builtin_memref::builtin_memref (gcall *_call, tree expr, tree size)
       tree range[2];
       /* Determine the size range, allowing for the result to be [0, 0]
 	 for SIZE in the anti-range ~[0, N] where N >= PTRDIFF_MAX.  */
-      get_size_range (call, size, range, true);
+      get_size_range (size, range, true, call);
       sizrange[0] = wi::to_offset (range[0]);
       sizrange[1] = wi::to_offset (range[1]);
       /* get_size_range returns SIZE_MAX for the maximum size.
@@ -751,7 +751,7 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
     {
       tree size = gimple_call_arg (call, sizeargno);
       tree range[2];
-      if (get_size_range (call, size, range, true))
+      if (get_size_range (size, range, true, call))
 	{
 	  bounds[0] = wi::to_offset (range[0]);
 	  bounds[1] = wi::to_offset (range[1]);

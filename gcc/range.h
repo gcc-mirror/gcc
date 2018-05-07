@@ -196,7 +196,12 @@ irange irange_invert (const irange &r1)
 void range_zero (irange *r, tree type);
 void range_one (irange *r, tree type);
 bool range_non_zero (irange *r, tree type);
-void range_positives (irange *r, tree type, bool);
+static inline void
+range_positives (irange *r, tree type)
+{
+  r->set_range (type, build_int_cst (type, 0), TYPE_MAX_VALUE (type));
+}
+enum value_range_type irange_to_value_range (wide_int &, wide_int &);
 
 /* An irange is inefficient when it comes to memory, so this class is
    used to store iranges in memory (off of an SSA_NAME likely).  It is
@@ -314,6 +319,23 @@ tree valid_irange_ssa (tree t)
       && valid_irange_type (TREE_TYPE (t)))
     return t;
   return NULL_TREE;
+}
+
+/* Convert a value_range to an irange and store it in R.
+   TYPE is the SSA type.
+   KIND, MIN, and MAX are as in a value_range.  */
+
+static inline void
+value_range_to_irange (irange &r,
+		       tree type, enum value_range_type kind,
+		       const wide_int &min, const wide_int &max)
+{
+  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
+  if (kind == VR_VARYING || POINTER_TYPE_P (type))
+    r.set_range_for_type (type);
+  else
+    r.set_range (type, min, max,
+		 kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
 }
 
 #endif // GCC_RANGE_H
