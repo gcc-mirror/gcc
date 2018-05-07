@@ -230,6 +230,9 @@ struct cpu_prefetch_tune
   const int l1_cache_size;
   const int l1_cache_line_size;
   const int l2_cache_size;
+  /* The minimum constant stride beyond which we should use prefetch
+     hints for.  */
+  const int minimum_stride;
   const int default_opt_level;
 };
 

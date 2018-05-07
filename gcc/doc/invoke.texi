@@ -10733,6 +10733,21 @@ The size of L1 cache, in kilobytes.
 @item l2-cache-size
 The size of L2 cache, in kilobytes.
 
+@item prefetch-minimum-stride
+Minimum constant stride, in bytes, to start using prefetch hints for.  If
+the stride is less than this threshold, prefetch hints will not be issued.
+
+This setting is useful for processors that have hardware prefetchers, in
+which case there may be conflicts between the hardware prefetchers and
+the software prefetchers.  If the hardware prefetchers have a maximum
+stride they can handle, it should be used here to improve the use of
+software prefetchers.
+
+A value of -1, the default, means we don't have a threshold and therefore
+prefetch hints can be issued for any constant stride.
+
+This setting is only useful for strides that are known and constant.
+
 @item loop-interchange-max-num-stmts
 The maximum number of stmts in a loop to be interchanged.
 
