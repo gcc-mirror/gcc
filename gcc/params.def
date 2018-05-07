@@ -790,6 +790,15 @@ DEFPARAM (PARAM_L2_CACHE_SIZE,
 	  "The size of L2 cache.",
 	  512, 0, 0)
 
+/* Whether software prefetch hints should be issued for non-constant
+   strides.  */
+
+DEFPARAM (PARAM_PREFETCH_DYNAMIC_STRIDES,
+	  "prefetch-dynamic-strides",
+	  "Whether software prefetch hints should be issued for non-constant "
+	  "strides.",
+	  1, 0, 1)
+
 /* The minimum constant stride beyond which we should use prefetch hints
    for.  */
 

@@ -992,6 +992,16 @@ prune_by_reuse (struct mem_ref_group *groups)
 static bool
 should_issue_prefetch_p (struct mem_ref *ref)
 {
+  /* Do we want to issue prefetches for non-constant strides?  */
+  if (!cst_and_fits_in_hwi (ref->group->step) && PREFETCH_DYNAMIC_STRIDES == 0)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Skipping non-constant step for reference %u:%u\n",
+		 ref->group->uid, ref->uid);
+      return false;
+    }
+
   /* Some processors may have a hardware prefetcher that may conflict with
      prefetch hints for a range of strides.  Make sure we don't issue
      prefetches for such cases if the stride is within this particular
