@@ -1,3 +1,7 @@
+2018-05-07  Amaan Cheval  <amaan.cheval@gmail.com>
+
+	* config.host (x86_64-*-rtems*): Build crti.o and crtn.o.
+
 2018-04-27  Andreas Tobler  <andreast@gcc.gnu.org>
 	    Maryse Levavasseur <maryse.levavasseur@stormshield.eu>
 
