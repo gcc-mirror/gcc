@@ -1,5 +1,11 @@
 2018-05-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85646 - lambda visibility.
+	* decl2.c (determine_visibility): Don't mess with template arguments
+	from the containing scope.
+	(vague_linkage_p): Check DECL_ABSTRACT_P before looking at a 'tor
+	thunk.
+
 	PR c++/85618 - ICE with initialized VLA.
 	* tree.c (vla_type_p): New.
 	* typeck2.c (store_init_value, split_nonconstant_init_1): Check it
