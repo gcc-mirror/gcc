@@ -1,3 +1,8 @@
+2018-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70563
+	* g++.dg/cpp0x/sfinae62.C: New.
+
 2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/aarch64/sve/vcond_6.c (LOOP): Unconditionally
