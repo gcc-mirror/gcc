@@ -33477,6 +33477,37 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    }
 	  break;
 
+	case IX86_BUILTIN_MOVMSKPS:
+	case IX86_BUILTIN_PMOVMSKB:
+	case IX86_BUILTIN_MOVMSKPD:
+	case IX86_BUILTIN_PMOVMSKB128:
+	case IX86_BUILTIN_MOVMSKPD256:
+	case IX86_BUILTIN_MOVMSKPS256:
+	case IX86_BUILTIN_PMOVMSKB256:
+	  gcc_assert (n_args == 1);
+	  if (TREE_CODE (args[0]) == VECTOR_CST)
+	    {
+	      HOST_WIDE_INT res = 0;
+	      for (unsigned i = 0; i < VECTOR_CST_NELTS (args[0]); ++i)
+		{
+		  tree e = VECTOR_CST_ELT (args[0], i);
+		  if (TREE_CODE (e) == INTEGER_CST && !TREE_OVERFLOW (e))
+		    {
+		      if (wi::neg_p (wi::to_wide (e)))
+			res |= HOST_WIDE_INT_1 << i;
+		    }
+		  else if (TREE_CODE (e) == REAL_CST && !TREE_OVERFLOW (e))
+		    {
+		      if (TREE_REAL_CST (e).sign)
+			res |= HOST_WIDE_INT_1 << i;
+		    }
+		  else
+		    return NULL_TREE;
+		}
+	      return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), res);
+	    }
+	  break;
+
 	default:
 	  break;
 	}
