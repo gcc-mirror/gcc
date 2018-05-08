@@ -1,3 +1,12 @@
+2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/vcond_6.c: Do not expect any ANDs.
+	XFAIL the BIC test.
+	* gcc.target/aarch64/sve/vcond_7.c: New test.
+	* gcc.target/aarch64/sve/vcond_7_run.c: Likewise.
+
 2018-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70563
