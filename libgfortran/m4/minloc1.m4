@@ -42,6 +42,8 @@ ARRAY_FUNCTION(0,
 #endif
 	result = 1;',
 `#if defined ('atype_nan`)
+     	   for (n = 0; n < len; n++, src += delta)
+	     {
 		if (*src <= minval)
 		  {
 		    minval = *src;
@@ -49,14 +51,26 @@ ARRAY_FUNCTION(0,
 		    break;
 		  }
 	      }
-	    for (; n < len; n++, src += delta)
-	      {
+#else
+	    n = 0;
 #endif
-		if (*src < minval)
-		  {
-		    minval = *src;
-		    result = (rtype_name)n + 1;
-		  }')
+	    if (back)
+	      for (; n < len; n++, src += delta)
+	        {
+		  if (unlikely (*src <= minval))
+		    {
+		      minval = *src;
+		      result = (rtype_name)n + 1;
+		    }
+		}
+	    else
+	      for (; n < len; n++, src += delta)
+	        {
+		  if (unlikely (*src < minval))
+		    {
+		      minval = *src;
+		      result = (rtype_name) n + 1;
+		    }')
 
 MASKED_ARRAY_FUNCTION(0,
 `	atype_name minval;
@@ -88,13 +102,23 @@ MASKED_ARRAY_FUNCTION(0,
 	      result = result2;
 	    else
 #endif
-	    for (; n < len; n++, src += delta, msrc += mdelta)
-	      {
-		if (*msrc && *src < minval)
+	    if (back)
+	      for (; n < len; n++, src += delta, msrc += mdelta)
+	      	{
+		  if (*msrc && unlikely (*src <= minval))
+		    {
+		      minval = *src;
+		      result = (rtype_name)n + 1;
+		    }
+		}
+	      else
+	        for (; n < len; n++, src += delta, msrc += mdelta)
 		  {
-		    minval = *src;
-		    result = (rtype_name)n + 1;
-		  }', `')
+		    if (*msrc && unlikely (*src < minval))
+		      {
+		        minval = *src;
+			result = (rtype_name) n + 1;
+		      }')
 
 SCALAR_ARRAY_FUNCTION(0)
 

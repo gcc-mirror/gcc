@@ -51,10 +51,6 @@ maxval_r8 (gfc_array_r8 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
-#ifdef HAVE_BACK_ARG
-  assert(back == 0);
-#endif
-
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
@@ -158,8 +154,10 @@ maxval_r8 (gfc_array_r8 * const restrict retarray,
 	  *dest = -GFC_REAL_8_HUGE;
 	else
 	  {
+#if ! defined HAVE_BACK_ARG
 	    for (n = 0; n < len; n++, src += delta)
 	      {
+#endif
 
 #if defined (GFC_REAL_8_QUIET_NAN)
 		if (*src >= result)
@@ -236,9 +234,6 @@ mmaxval_r8 (gfc_array_r8 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 

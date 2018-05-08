@@ -1,3 +1,24 @@
+2018-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* check.c (gfc_check_minmaxloc): Remove error for BACK not being
+	implemented.  Use gfc_logical_4_kind for BACK.
+	* simplify.c (min_max_choose): Add optional argument back_val.
+	Handle it.
+	(simplify_minmaxloc_to_scalar): Add argument back_val. Pass
+	back_val to min_max_choose.
+	(simplify_minmaxloc_to_nodim): Likewise.
+	(simplify_minmaxloc_to_array): Likewise.
+	(gfc_simplify_minmaxloc): Add argument back, handle it.
+	Pass back_val to specific simplification functions.
+	(gfc_simplify_minloc): Remove ATTRIBUTE_UNUSED from argument back,
+	pass it on to gfc_simplify_minmaxloc.
+	(gfc_simplify_maxloc): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Adjust
+	comment. If BACK is true, use greater or equal (or lesser or
+	equal) insteal of greater (or lesser). Mark the condition of
+	having found a value which exceeds the limit as unlikely.
+
 2018-05-07  Jeff Law  <law@redhat.comg>
 
 	* scanner.c (preprocessor_line): Call linemap_add after a line
