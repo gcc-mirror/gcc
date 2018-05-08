@@ -1,3 +1,10 @@
+2018-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84588
+	* parser.c (cp_parser_parameter_declaration_list): When the
+	entire parameter-declaration-list is erroneous maybe call
+	abort_fully_implicit_template.
+
 2018-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85695
