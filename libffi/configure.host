@@ -195,6 +195,11 @@ case "${host}" in
 	TARGET=POWERPC; TARGETDIR=powerpc
 	;;
 
+  riscv*-*)
+	TARGET=RISCV; TARGETDIR=riscv
+	SOURCES="ffi.c sysv.S"
+	;;
+
   s390-*-* | s390x-*-*)
 	TARGET=S390; TARGETDIR=s390
 	SOURCES="ffi.c sysv.S"
