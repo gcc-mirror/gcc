@@ -736,7 +736,7 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
       && !instantiation_dependent_expression_p (cond)
       /* Wait until instantiation time, since only then COND has been
 	 converted to bool.  */
-      && TREE_TYPE (cond) == boolean_type_node)
+      && TYPE_MAIN_VARIANT (TREE_TYPE (cond)) == boolean_type_node)
     {
       cond = instantiate_non_dependent_expr (cond);
       cond = cxx_constant_value (cond, NULL_TREE);
