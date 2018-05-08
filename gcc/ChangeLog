@@ -1,4 +1,13 @@
 2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*pred_cmp<cmp_op><mode>_combine)
+	(*pred_cmp<cmp_op><mode>, *fcm<cmp_op><mode>_and_combine)
+	(*fcmuo<mode>_and_combine, *fcm<cmp_op><mode>_and)
+	(*fcmuo<mode>_and): New patterns.
+
+2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/iterators.md (UNSPEC_COND_LO, UNSPEC_COND_LS)
 	(UNSPEC_COND_HI, UNSPEC_COND_HS, UNSPEC_COND_UO): Delete.
