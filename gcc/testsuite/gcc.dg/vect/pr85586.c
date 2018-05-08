@@ -40,4 +40,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" { target vect_int } } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" { target { { ! vect_no_align } && vect_int } } } } */
