@@ -463,7 +463,7 @@ function gen_opt () {
 function check_cpu (name) {
     exts = split (name, extensions, "+")
 
-    if (! extensions[1] in cpu_cnames) {
+    if (! (extensions[1] in cpu_cnames)) {
 	return "error"
     }
 
@@ -477,15 +477,16 @@ function check_cpu (name) {
 }
 
 function check_fpu (name) {
-    if (name in fpu_cnames) {
-	print fpu_cnames[name]
-    } else print "error"
+    if (! (name in fpu_cnames)) {
+	return "error"
+    }
+    return fpu_cnames[name]
 }
 
 function check_arch (name) {
     exts = split (name, extensions, "+")
 
-    if (! extensions[1] in arch_isa) {
+    if (! (extensions[1] in arch_isa)) {
 	return "error"
     }
 
@@ -600,10 +601,10 @@ BEGIN {
 /^end arch / {
     if (NF != 3) fatal("syntax: end arch <name>")
     if (arch_name != $3) fatal("mimatched end arch")
-    if (! arch_name in arch_tune_for) {
+    if (! (arch_name in arch_tune_for)) {
 	fatal("arch definition lacks a \"tune for\" statement")
     }
-    if (! arch_name in arch_isa) {
+    if (! (arch_name in arch_isa)) {
 	fatal("arch definition lacks an \"isa\" statement")
     }
     arch_list = arch_list " " arch_name
@@ -742,7 +743,7 @@ BEGIN {
 	cpu_cnames[cpu_name] = cpu_name
 	gsub(/[-+.]/, "_", cpu_cnames[cpu_name])
     }
-    if (! cpu_name in cpu_arch) fatal("cpu definition lacks an architecture")
+    if (! (cpu_name in cpu_arch)) fatal("cpu definition lacks an architecture")
     cpu_list = cpu_list " " cpu_name
     cpu_name = ""
     parse_ok = 1
@@ -776,6 +777,6 @@ END {
 	print check_arch(target[2])
     } else if (cmd ~ /^chkfpu /) {
 	split (cmd, target)
-	check_fpu(target[2])
+	print check_fpu(target[2])
     } else fatal("unrecognized command: "cmd)
 }
