@@ -467,8 +467,10 @@ namespace __gnu_debug
 #endif
 
   private:
-    _Error_formatter(const char* __file, unsigned int __line)
+    _Error_formatter(const char* __file, unsigned int __line,
+		     const char* __function)
     : _M_file(__file), _M_line(__line), _M_num_parameters(0), _M_text(0)
+    , _M_function(__function)
     { }
 
 #if !_GLIBCXX_INLINE_VERSION
@@ -483,12 +485,13 @@ namespace __gnu_debug
     _Parameter		_M_parameters[__max_parameters];
     unsigned int	_M_num_parameters;
     const char*		_M_text;
+    const char*		_M_function;
 
   public:
     static _Error_formatter&
-    _M_at(const char* __file, unsigned int __line)
+    _S_at(const char* __file, unsigned int __line, const char* __function)
     {
-      static _Error_formatter __formatter(__file, __line);
+      static _Error_formatter __formatter(__file, __line, __function);
       return __formatter;
     }
   };

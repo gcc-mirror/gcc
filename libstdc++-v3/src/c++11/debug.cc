@@ -923,9 +923,9 @@ namespace
 	    continue;
 	  }
 
-	if (*start != '%')
+	if (!num_parameters || *start != '%')
 	  {
-	    // Normal char.
+	    // Normal char or no parameter to look for.
 	    buf[bufindex++] = *start++;
 	    continue;
 	  }
@@ -1033,6 +1033,15 @@ namespace __gnu_debug
 
     if (ctx._M_max_length)
       ctx._M_wordwrap = true;
+
+    if (_M_function)
+      {
+	print_literal(ctx, "In function:\n");
+	print_string(ctx, _M_function, nullptr, 0);
+	print_literal(ctx, "\n");
+	ctx._M_first_line = true;
+	print_literal(ctx, "\n");
+      }
 
     print_literal(ctx, "Error: ");
 

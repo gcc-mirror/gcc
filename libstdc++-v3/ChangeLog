@@ -1,3 +1,14 @@
+2018-05-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (_Error_formatter::_M_function): New.
+	(_Error_formatter(const char*, unsigned int)): Adapt.
+	(_Error_formatter::_M_at): Rename in...
+	(_Error_formatter::_S_at): ...that and adapt.
+	* include/debug/macros.h (_GLIBCXX_DEBUG_VERIFY_AT_F): New.
+	(_GLIBCXX_DEBUG_VERIFY_AT, _GLIBCXX_DEBUG_VERIFY): Adapt.
+	* src/c++11/debug.cc (_Error_formatter::_M_error): Render _M_function
+	when available.
+
 2018-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex_automaton.h (_NFA_base::_M_paren_stack, _NFA):
