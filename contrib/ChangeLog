@@ -1,3 +1,8 @@
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85571
+	* compare-lto: New script derived from compare-debug.
+
 2018-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Add files for GCC 8.

@@ -1,3 +1,9 @@
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85571
+	* bootstrap-lto-noplugin.mk: Disable compare.
+	* bootstrap-lto.mk: Supply contrib/compare-lto for do-compare.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/85490
