@@ -140,6 +140,11 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      /* Silvermont.  */
 	      __cpu_model.__cpu_type = INTEL_SILVERMONT;
 	      break;
+	    case 0x5c:
+	    case 0x5f:
+	      /* Goldmont.  */
+	      __cpu_model.__cpu_type = INTEL_GOLDMONT;
+	      break;
 	    case 0x57:
 	      /* Knights Landing.  */
 	      __cpu_model.__cpu_type = INTEL_KNL;

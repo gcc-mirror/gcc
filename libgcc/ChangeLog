@@ -1,3 +1,8 @@
+2018-05-08  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_GOLDMONT.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Goldmont.
+
 2018-05-07  Amaan Cheval  <amaan.cheval@gmail.com>
 
 	* config.host (x86_64-*-rtems*): Build crti.o and crtn.o.
