@@ -1,5 +1,50 @@
 2018-05-08  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/debug/macros.h (__glibcxx_check_valid_range_at): New.
+	* include/debug/functions.h (__check_valid_range): Use latter.
+	* include/debug/macros.h (__glibcxx_check_valid_constructor_range): New,
+	use latter.
+	* include/debug/deque
+	(deque::deque<_Iter>(_Iter, _Iter, const _Alloc&)): Use latter.
+	* include/debug/forward_list
+	(forward_list::forward_list<_Iter>(_Iter, _Iter, const _Alloc&)):
+	Likewise.
+	* include/debug/list
+	(list::list<_Iter>(_Iter, _Iter, const _Alloc&)): Likewise.
+	* include/debug/list
+	(list::list<_Iter>(_Iter, _Iter, const _Alloc&)): Likewise.
+	* include/debug/map.h
+	(map::map<_Iter>(_Iter, _Iter, const _Alloc&)): Likewise.
+	(map::map<_Iter>(_Iter, _Iter, const _Compare&, const _Alloc&)):
+	Likewise.
+	* include/debug/multimap.h
+	(multimap::multimap<_Iter>(_Iter, _Iter, const _Alloc&)): Likewise.
+	(multimap::multimap<_Iter>(_Iter, _Iter, const _Compare&,
+	const _Alloc&)): Likewise.
+	* include/debug/set.h
+	(set::set<_Iter>(_Iter, _Iter, const _Alloc&)): Likewise.
+	(set::set<_Iter>(_Iter, _Iter, const _Compare&, const _Alloc&)):
+	Likewise.
+	* include/debug/multiset.h
+	(multiset::multiset<_Iter>(_Iter, _Iter, const _Alloc&)): Likewise.
+	(multiset::multiset<_Iter>(_Iter, _Iter, const _Compare&,
+	const _Alloc&)): Likewise.
+	* include/debug/string
+	(basic_string::basic_string<_Iter>(_Iter, _Iter, const _Alloc&)):
+	Likewise.
+	* include/debug/unordered_map
+	(unordered_map::unordered_map<_Iter>(_Iter, _Iter, const _Alloc&)):
+	Likewise.
+	(unordered_multimap::unordered_multimap<_Iter>(_Iter, _Iter,
+	const _Alloc&)): Likewise.
+	* include/debug/unordered_set
+	(unordered_set::unordered_set<_Iter>(_Iter, _Iter, const _Alloc&)):
+	Likewise.
+	(unordered_multiset::unordered_multiset<_Iter>(_Iter, _Iter,
+	const _Alloc&)): Likewise.
+	* include/debug/vector
+	(vector::vector<_Iter>(_Iter, _Iter, const _Alloc&)): Use latter.
+
 	* include/debug/formatter.h (_Error_formatter::_M_function): New.
 	(_Error_formatter(const char*, unsigned int)): Adapt.
 	(_Error_formatter::_M_at): Rename in...
