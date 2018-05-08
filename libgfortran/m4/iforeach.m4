@@ -21,7 +21,6 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   index_type rank;
   index_type n;
 
-  assert(back == 0);
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -66,8 +65,6 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 define(START_FOREACH_BLOCK,
 `  while (base)
     {
-      do
-	{
 	  /* Implementation start.  */
 ')dnl
 define(FINISH_FOREACH_FUNCTION,
@@ -126,7 +123,6 @@ void
   index_type n;
   int mask_kind;
 
-  assert(back == 0);
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");

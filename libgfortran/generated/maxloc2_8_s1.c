@@ -53,7 +53,6 @@ maxloc2_8_s1 (gfc_array_s1 * const restrict array, GFC_LOGICAL_4 back, gfc_charl
   const GFC_INTEGER_1 *maxval;
   index_type i;
 
-  assert(back == 0);
   extent = GFC_DESCRIPTOR_EXTENT(array,0);
   if (extent <= 0)
     return 0;
@@ -62,15 +61,16 @@ maxloc2_8_s1 (gfc_array_s1 * const restrict array, GFC_LOGICAL_4 back, gfc_charl
 
   ret = 1;
   src = array->base_addr;
-  maxval = src;
-  for (i=2; i<=extent; i++)
+  maxval = NULL;
+  for (i=1; i<=extent; i++)
     {
-      src += sstride;
-      if (compare_fcn (src, maxval, len) > 0)
+      if (maxval == NULL || (back ? compare_fcn (src, maxval, len) >= 0 :
+      	 	    	    	    compare_fcn (src, maxval, len) > 0))
       {
 	 ret = i;
 	 maxval = src;
       }
+      src += sstride;
     }
   return ret;
 }
@@ -95,7 +95,6 @@ mmaxloc2_8_s1 (gfc_array_s1 * const restrict array,
   int mask_kind;
   index_type mstride;
 
-  assert(back == 0);
   extent = GFC_DESCRIPTOR_EXTENT(array,0);
   if (extent <= 0)
     return 0;
@@ -133,7 +132,8 @@ mmaxloc2_8_s1 (gfc_array_s1 * const restrict array,
 
   for (i=j+1; i<=extent; i++)
     {
-      if (*mbase && compare_fcn (src, maxval, len) > 0)
+      if (*mbase && (back ? compare_fcn (src, maxval, len) >= 0 :
+      	 	    	   compare_fcn (src, maxval, len) > 0))
       {
 	 ret = i;
 	 maxval = src;

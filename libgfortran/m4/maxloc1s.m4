@@ -34,9 +34,10 @@ include(ifunction-s.m4)dnl
 
 ARRAY_FUNCTION(0,
 `	const atype_name *maxval;
-	maxval = base;
-	result = 1;',
-`		if (compare_fcn (src, maxval, string_len) > 0)
+	maxval = NULL;
+	result = 0;',
+`		if (maxval == NULL || (back ? compare_fcn (src, maxval, string_len) >= 0 :
+		   	      	      	      compare_fcn (src, maxval, string_len) > 0))
 		  {
 		    maxval = src;
 		    result = (rtype_name)n + 1;
@@ -55,7 +56,8 @@ MASKED_ARRAY_FUNCTION(0,
 	    }
 	    for (; n < len; n++, src += delta, msrc += mdelta)
 	      {
-		if (*msrc && compare_fcn (src, maxval, string_len) > 0)
+		if (*msrc && (back ? compare_fcn (src, maxval, string_len) >= 0 :
+		   	     	     compare_fcn (src, maxval, string_len) > 0))
 		  {
 		    maxval = src;
 		    result = (rtype_name)n + 1;
