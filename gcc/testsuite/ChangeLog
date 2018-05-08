@@ -1,3 +1,8 @@
+2018-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57429
+	* g++.dg/cpp0x/deleted14.C: New.
+
 2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
