@@ -1,3 +1,8 @@
+2018-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85695
+	* semantics.c (finish_if_stmt_cond): See through typedefs.
+
 2018-05-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85646 - lambda visibility.
