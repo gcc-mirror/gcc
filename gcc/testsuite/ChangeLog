@@ -1,3 +1,9 @@
+2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR testsuite/85586
+	* gcc.dg/vect/pr85586.c: Restrict LOOP VECTORIZED test to
+	!vect_no_align.
+
 2018-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57429
