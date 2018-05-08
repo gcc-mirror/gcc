@@ -60,11 +60,22 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__valid_range(_First, _Last),	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
+#define __glibcxx_check_valid_range_at(_First,_Last,_File,_Line,_Func)	\
+_GLIBCXX_DEBUG_VERIFY_AT_F(__gnu_debug::__valid_range(_First, _Last),	\
+			   _M_message(__gnu_debug::__msg_valid_range)	\
+			   ._M_iterator(_First, #_First)		\
+			   ._M_iterator(_Last, #_Last),			\
+			   _File,_Line,_Func)
+
 #define __glibcxx_check_valid_range2(_First,_Last,_Dist)		\
 _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__valid_range(_First, _Last, _Dist),	\
 		      _M_message(__gnu_debug::__msg_valid_range)	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
+
+#define __glibcxx_check_valid_constructor_range(_First,_Last)		\
+  __gnu_debug::__check_valid_range(_First, _Last,			\
+				   __FILE__, __LINE__, __PRETTY_FUNCTION__)
 
 // Verify that [_First, _Last) forms a non-empty iterator range.
 #define __glibcxx_check_non_empty_range(_First,_Last)			\
