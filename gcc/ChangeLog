@@ -1,5 +1,12 @@
 2018-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85572
+	* config/i386/i386.c (ix86_expand_sse2_abs): Handle E_V2DImode and
+	E_V4DImode.
+	* config/i386/sse.md (abs<mode>2): Use VI_AVX2 iterator instead of
+	VI1248_AVX512VL_AVX512BW.  Handle V2DImode and V4DImode if not
+	TARGET_AVX512VL using ix86_expand_sse2_abs.  Formatting fixes.
+
 	PR target/85317
 	* config/i386/i386.c (ix86_fold_builtin): Handle
 	IX86_BUILTIN_{,P}MOVMSK{PS,PD,B}{,128,256}.

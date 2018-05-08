@@ -1,5 +1,11 @@
 2018-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85572
+	* g++.dg/other/sse2-pr85572-1.C: New test.
+	* g++.dg/other/sse2-pr85572-2.C: New test.
+	* g++.dg/other/sse4-pr85572-1.C: New test.
+	* g++.dg/other/avx2-pr85572-1.C: New test.
+
 	PR target/85317
 	* gcc.target/i386/pr85317.c: New test.
 	* gcc.target/i386/avx2-vpmovmskb-2.c (avx2_test): Add asm volatile

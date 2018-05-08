@@ -15211,12 +15211,14 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "abs<mode>2"
-  [(set (match_operand:VI1248_AVX512VL_AVX512BW 0 "register_operand")
-	(abs:VI1248_AVX512VL_AVX512BW
-	  (match_operand:VI1248_AVX512VL_AVX512BW 1 "vector_operand")))]
+  [(set (match_operand:VI_AVX2 0 "register_operand")
+	(abs:VI_AVX2
+	  (match_operand:VI_AVX2 1 "vector_operand")))]
   "TARGET_SSE2"
 {
-  if (!TARGET_SSSE3)
+  if (!TARGET_SSSE3
+      || ((<MODE>mode == V2DImode || <MODE>mode == V4DImode)
+	  && !TARGET_AVX512VL))
     {
       ix86_expand_sse2_abs (operands[0], operands[1]);
       DONE;
