@@ -1,5 +1,8 @@
 2018-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex_automaton.h (_NFA_base::_M_paren_stack, _NFA):
+	Use normal std::vector even in Debug Mode.
+
 	PR libstdc++/85672
 	* include/Makefile.am [!ENABLE_FLOAT128]: Change c++config.h entry
 	to #undef _GLIBCXX_USE_FLOAT128 instead of defining it to zero.
