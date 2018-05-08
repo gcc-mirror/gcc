@@ -1663,9 +1663,9 @@ stamp-host: ${host_headers} ${bits_host_headers} ${ext_host_headers} ${host_head
 @ENABLE_ALLOCATOR_NEW_FALSE@	echo 0 > stamp-allocator-new
 
 @ENABLE_FLOAT128_TRUE@stamp-float128:
-@ENABLE_FLOAT128_TRUE@	echo 1 > stamp-float128
+@ENABLE_FLOAT128_TRUE@	echo 'define _GLIBCXX_USE_FLOAT128 1' > stamp-float128
 @ENABLE_FLOAT128_FALSE@stamp-float128:
-@ENABLE_FLOAT128_FALSE@	echo 0 > stamp-float128
+@ENABLE_FLOAT128_FALSE@	echo 'undef _GLIBCXX_USE_FLOAT128' > stamp-float128
 
 # NB: The non-empty default ldbl_compat works around an AIX sed
 # oddity, see libstdc++/31957 for details.
@@ -1701,7 +1701,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	-e "s,define _GLIBCXX_USE_DUAL_ABI, define _GLIBCXX_USE_DUAL_ABI $$dualabi," \
 	-e "s,define _GLIBCXX_USE_CXX11_ABI, define _GLIBCXX_USE_CXX11_ABI $$cxx11abi," \
 	-e "s,define _GLIBCXX_USE_ALLOCATOR_NEW, define _GLIBCXX_USE_ALLOCATOR_NEW $$allocatornew," \
-	-e "s,define _GLIBCXX_USE_FLOAT128, define _GLIBCXX_USE_FLOAT128 $$float128," \
+	-e "s,define _GLIBCXX_USE_FLOAT128,$$float128," \
 	-e "$$ldbl_compat" \
 	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \

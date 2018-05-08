@@ -610,9 +610,8 @@ namespace std
 #endif
 
 /* Define if __float128 is supported on this host. */
+#if defined(__FLOAT128__) || defined(__SIZEOF_FLOAT128__)
 #define _GLIBCXX_USE_FLOAT128
-#if !defined(__FLOAT128__) && !defined(__SIZEOF_FLOAT128__)
-#undef _GLIBCXX_USE_FLOAT128
 #endif
 
 // End of prewritten config; the settings discovered at configure time follow.

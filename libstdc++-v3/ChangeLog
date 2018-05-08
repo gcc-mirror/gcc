@@ -1,3 +1,12 @@
+2018-05-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85672
+	* include/Makefile.am [!ENABLE_FLOAT128]: Change c++config.h entry
+	to #undef _GLIBCXX_USE_FLOAT128 instead of defining it to zero.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config (_GLIBCXX_USE_FLOAT128): Move definition
+	within conditional block.
+
 2018-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/using.xml (table.cmd_options): Document that the
