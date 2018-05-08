@@ -1,5 +1,23 @@
 2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* g++.dg/other/sve_const_pred_1.C: Rename to...
+	* g++.target/aarch64/sve/const_pred_1.C: ...this.  Remove aarch64
+	target selectors and explicit -march options.
+	* g++.dg/other/sve_const_pred_2.C: Rename to...
+	* g++.target/aarch64/sve/const_pred_2.C: ...this and adjust likewise.
+	* g++.dg/other/sve_const_pred_3.C: Rename to...
+	* g++.target/aarch64/sve/const_pred_3.C: ...this and adjust likewise.
+	* g++.dg/other/sve_const_pred_4.C: Rename to...
+	* g++.target/aarch64/sve/const_pred_4.C: ...this and adjust likewise.
+	* g++.dg/other/sve_tls_2.C: Rename to...
+	* g++.target/aarch64/sve/tls_2.C: ...this and adjust likewise.
+	* g++.dg/other/sve_vcond_1.C: Rename to...
+	* g++.target/aarch64/sve/vcond_1.C: ...this and adjust likewise.
+	* g++.dg/other/sve_vcond_1_run.C: Rename to...
+	* g++.target/aarch64/sve/vcond_1_run.C: ...this and adjust likewise.
+
+2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR testsuite/85586
 	* gcc.dg/vect/pr85586.c: Restrict LOOP VECTORIZED test to
 	!vect_no_align.

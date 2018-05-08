@@ -1,5 +1,5 @@
-/* { dg-do compile { target aarch64*-*-* } } */
-/* { dg-options "-O2 -march=armv8.2-a+sve -msve-vector-bits=256" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -msve-vector-bits=256" } */
 
 #include <stdint.h>
 

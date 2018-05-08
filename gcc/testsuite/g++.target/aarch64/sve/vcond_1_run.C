@@ -1,6 +1,6 @@
 /* { dg-do run { target aarch64_sve_hw } } */
-/* { dg-options "-O -march=armv8.2-a+sve" } */
-/* { dg-options "-O -march=armv8.2-a+sve -msve-vector-bits=256" { target aarch64_sve256_hw } } */
+/* { dg-options "-O" } */
+/* { dg-options "-O -msve-vector-bits=256" { target aarch64_sve256_hw } } */
 
 #include "sve_vcond_1.c"
 
