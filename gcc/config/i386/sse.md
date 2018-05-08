@@ -581,6 +581,9 @@
 (define_mode_attr ssequartermode
   [(V16SF "V4SF") (V8DF "V2DF") (V16SI "V4SI") (V8DI "V2DI")])
 
+(define_mode_attr ssequarterinsnmode
+  [(V16SF "V4SF") (V8DF "V2DF") (V16SI "TI") (V8DI "TI")])
+
 (define_mode_attr ssedoublemodelower
   [(V16QI "v16hi") (V32QI "v32hi") (V64QI "v64hi")
    (V8HI "v8si")   (V16HI "v16si") (V32HI "v32si")
@@ -12720,6 +12723,40 @@
      operands[4], operands[5]));
   DONE;
 })
+
+(define_insn "*<extract_type>_vinsert<shuffletype><extract_suf>_0"
+  [(set (match_operand:AVX512_VEC 0 "register_operand" "=v,x,Yv")
+	(vec_merge:AVX512_VEC
+	  (match_operand:AVX512_VEC 1 "reg_or_0_operand" "v,C,C")
+	  (vec_duplicate:AVX512_VEC
+		(match_operand:<ssequartermode> 2 "nonimmediate_operand" "vm,xm,vm"))
+	  (match_operand:SI 3 "const_int_operand" "n,n,n")))]
+  "TARGET_AVX512F
+   && (INTVAL (operands[3])
+       == (GET_MODE_UNIT_SIZE (<MODE>mode) == 4 ? 0xFFF0 : 0xFC))"
+{
+  if (which_alternative == 0)
+    return "vinsert<shuffletype><extract_suf>\t{$0, %2, %1, %0|%0, %1, %2, 0}";
+  switch (<MODE>mode)
+    {
+    case E_V8DFmode:
+      return "vmovapd\t{%2, %x0|%x0, %2}";
+    case E_V16SFmode:
+      return "vmovaps\t{%2, %x0|%x0, %2}";
+    case E_V8DImode:
+      return which_alternative == 2 ? "vmovdqa64\t{%2, %x0|%x0, %2}"
+				    : "vmovdqa\t{%2, %x0|%x0, %2}";
+    case E_V16SImode:
+      return which_alternative == 2 ? "vmovdqa32\t{%2, %x0|%x0, %2}"
+				    : "vmovdqa\t{%2, %x0|%x0, %2}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "sselog,ssemov,ssemov")
+   (set_attr "length_immediate" "1,0,0")
+   (set_attr "prefix" "evex,vex,evex")
+   (set_attr "mode" "<sseinsnmode>,<ssequarterinsnmode>,<ssequarterinsnmode>")])
 
 (define_insn "<mask_codefor><extract_type>_vinsert<shuffletype><extract_suf>_1<mask_name>"
   [(set (match_operand:AVX512_VEC 0 "register_operand" "=v")

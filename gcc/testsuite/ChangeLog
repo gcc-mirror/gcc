@@ -1,3 +1,9 @@
+2018-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85480
+	* gcc.target/i386/avx512dq-pr85480-1.c: New test.
+	* gcc.target/i386/avx512dq-pr85480-2.c: New test.
+
 2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* g++.dg/other/sve_const_pred_1.C: Rename to...

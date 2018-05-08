@@ -1,3 +1,9 @@
+2018-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85480
+	* config/i386/sse.md (ssequaterinsnmode): New mode attribute.
+	(*<extract_type>_vinsert<shuffletype><extract_suf>_0): New pattern.
+
 2018-05-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/85658
