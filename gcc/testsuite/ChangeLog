@@ -1,3 +1,9 @@
+2018-05-08  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Test goldmont.
+	* gcc.target/i386/funcspec-56.inc: Tests for arch=goldmont and
+	arch=silvermont.
+
 2018-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85572

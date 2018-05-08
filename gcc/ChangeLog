@@ -1,3 +1,25 @@
+2018-05-08  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config.gcc: Support "goldmont".
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect "goldmont".
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_GOLDMONT.
+	* config/i386/i386.c (m_GOLDMONT): Define.
+	(processor_target_table): Add "goldmont".
+	(PTA_GOLDMONT): Define.
+	(ix86_lea_outperforms): Add TARGET_GOLDMONT.
+	(get_builtin_code_for_version): Handle PROCESSOR_GOLDMONT.
+	(fold_builtin_cpu): Add M_INTEL_GOLDMONT.
+	(fold_builtin_cpu): Add "goldmont".
+	(ix86_add_stmt_cost): Add TARGET_GOLDMONT.
+	(ix86_option_override_internal): Add "goldmont".
+	* config/i386/i386.h (processor_costs): Define TARGET_GOLDMONT.
+	(processor_type): Add PROCESSOR_GOLDMONT.
+	* config/i386/i386.md: Add CPU "glm".
+	* config/i386/glm.md: New file.
+	* config/i386/x86-tune.def: Add m_GOLDMONT.
+	* doc/invoke.texi: Add goldmont as x86 -march=/-mtune= CPU type.
+
 2018-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85572

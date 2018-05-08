@@ -174,6 +174,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__silvermont");
       def_or_undef (parse_in, "__silvermont__");
       break;
+    case PROCESSOR_GOLDMONT:
+      def_or_undef (parse_in, "__goldmont");
+      def_or_undef (parse_in, "__goldmont__");
+      break;
     case PROCESSOR_KNL:
       def_or_undef (parse_in, "__knl");
       def_or_undef (parse_in, "__knl__");
@@ -310,6 +314,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_SILVERMONT:
       def_or_undef (parse_in, "__tune_slm__");
       def_or_undef (parse_in, "__tune_silvermont__");
+      break;
+    case PROCESSOR_GOLDMONT:
+      def_or_undef (parse_in, "__tune_goldmont__");
       break;
     case PROCESSOR_KNL:
       def_or_undef (parse_in, "__tune_knl__");
