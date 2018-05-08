@@ -1,6 +1,6 @@
-/* { dg-do compile { target aarch64*-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target tls } */
-/* { dg-options "-O2 -march=armv8.2-a+sve -fPIC -msve-vector-bits=256" } */
+/* { dg-options "-O2 -fPIC -msve-vector-bits=256" } */
 
 #include <stdint.h>
 
