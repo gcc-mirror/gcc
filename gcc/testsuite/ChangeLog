@@ -1,3 +1,9 @@
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85588
+	* gcc.dg/torture/pr85574.c: Rename to...
+	* gcc.dg/torture/pr85588.c: ... this.
+
 2018-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54613
