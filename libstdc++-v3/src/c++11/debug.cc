@@ -40,6 +40,10 @@
 
 #include <cxxabi.h> // for __cxa_demangle
 
+#if defined _GLIBCXX_HAVE_EXECINFO_H
+# include <execinfo.h> // for backtrace
+#endif
+
 #include "mutex_pool.h"
 
 using namespace std;
@@ -1042,6 +1046,29 @@ namespace __gnu_debug
 	ctx._M_first_line = true;
 	print_literal(ctx, "\n");
       }
+
+#if defined _GLIBCXX_HAVE_EXECINFO_H
+    {
+      void* stack[32];
+      int nb = backtrace(stack, 32);
+
+      // Note that we skip current method symbol.
+      if (nb > 1)
+	{
+	  print_literal(ctx, "Backtrace:\n");
+	  auto symbols = backtrace_symbols(stack, nb);
+	  for (int i = 1; i < nb; ++i)
+	    {
+	      print_word(ctx, symbols[i]);
+	      print_literal(ctx, "\n");
+	    }
+
+	  free(symbols);
+	  ctx._M_first_line = true;
+	  print_literal(ctx, "\n");
+	}
+    }
+#endif
 
     print_literal(ctx, "Error: ");
 

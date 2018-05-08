@@ -1,5 +1,9 @@
 2018-05-08  François Dumont  <fdumont@gcc.gnu.org>
 
+	* src/c++11/debug.cc [_GLIBCXX_HAVE_EXECINFO_H]: Include execinfo.h.
+	[_GLIBCXX_HAVE_EXECINFO_H](_Error_formatter::_M_error): Render
+	backtrace.
+
 	* include/debug/macros.h (__glibcxx_check_valid_range_at): New.
 	* include/debug/functions.h (__check_valid_range): Use latter.
 	* include/debug/macros.h (__glibcxx_check_valid_constructor_range): New,
