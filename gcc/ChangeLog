@@ -1,3 +1,13 @@
+2018-05-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/85658
+	* config/arm/parsecpu.awk (check_cpu): Fix operator precedence.
+	(check_arch): Likewise.
+	(check_fpu): Return the result rather than printing it.
+	(end arch): Fix operator precedence.
+	(end cpu): Likewise.
+	(END): Print the result from check_fpu.
+
 2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
