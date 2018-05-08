@@ -1,3 +1,6 @@
+2018-05-08  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/builtins-8-p9-runnable.c: Add new test file.
+
 2018-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84588
