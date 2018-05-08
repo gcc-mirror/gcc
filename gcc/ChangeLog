@@ -1,5 +1,9 @@
 2018-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85317
+	* config/i386/i386.c (ix86_fold_builtin): Handle
+	IX86_BUILTIN_{,P}MOVMSK{PS,PD,B}{,128,256}.
+
 	PR target/85480
 	* config/i386/sse.md (ssequaterinsnmode): New mode attribute.
 	(*<extract_type>_vinsert<shuffletype><extract_suf>_0): New pattern.

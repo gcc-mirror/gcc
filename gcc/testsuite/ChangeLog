@@ -1,5 +1,10 @@
 2018-05-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85317
+	* gcc.target/i386/pr85317.c: New test.
+	* gcc.target/i386/avx2-vpmovmskb-2.c (avx2_test): Add asm volatile
+	optimization barrier to avoid optimizing away the expected insn.
+
 	PR target/85480
 	* gcc.target/i386/avx512dq-pr85480-1.c: New test.
 	* gcc.target/i386/avx512dq-pr85480-2.c: New test.
