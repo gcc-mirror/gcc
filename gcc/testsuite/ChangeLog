@@ -1,3 +1,10 @@
+2018-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85683
+	* gcc.target/i386/pr49095.c: Add -masm=att to dg-options.  Add
+	scan-assembler-times checking that except for [fh]*xor other functions
+	don't use any load instructions.
+
 2018-05-08  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* gcc.target/i386/builtin_target.c: Test goldmont.
