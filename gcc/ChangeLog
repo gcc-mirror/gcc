@@ -1,3 +1,20 @@
+2018-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC Built-in Functions): Rename this
+	subsection.
+	(Basic PowerPC Built-in Functions): The new name of the
+	subsection previously known as "PowerPC Built-in Functions".
+	(Basic PowerPC Built-in Functions Available on all Configurations):
+	New subsubsection.
+	(Basic PowerPC Built-in Functions Available on ISA 2.05): New
+	subsubsection.
+	(Basic PowerPC Built-in Functions Available on ISA 2.06): New
+	subsubsection.
+	(Basic PowerPC Built-in Functions Available on ISA 2.07): New
+	subsubsection.
+	(Basic PowerPC Built-in Functions Available on ISA 3.0): New
+	subsubsection.
+
 2018-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85683
