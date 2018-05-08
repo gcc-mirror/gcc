@@ -1,3 +1,43 @@
+2018-05-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/iterators.md (UNSPEC_COND_LO, UNSPEC_COND_LS)
+	(UNSPEC_COND_HI, UNSPEC_COND_HS, UNSPEC_COND_UO): Delete.
+	(SVE_INT_CMP, SVE_FP_CMP): New code iterators.
+	(cmp_op, sve_imm_con): New code attributes.
+	(SVE_COND_INT_CMP, imm_con): Delete.
+	(cmp_op): Remove above unspecs from int attribute.
+	* config/aarch64/aarch64-sve.md (*vec_cmp<cmp_op>_<mode>): Rename
+	to...
+	(*cmp<cmp_op><mode>): ...this.  Use UNSPEC_MERGE_PTRUE instead of
+	comparison-specific unspecs.
+	(*vec_cmp<cmp_op>_<mode>_ptest): Rename to...
+	(*cmp<cmp_op><mode>_ptest): ...this and adjust likewise.
+	(*vec_cmp<cmp_op>_<mode>_cc): Rename to...
+	(*cmp<cmp_op><mode>_cc): ...this and adjust likewise.
+	(*vec_fcm<cmp_op><mode>): Rename to...
+	(*fcm<cmp_op><mode>): ...this and adjust likewise.
+	(*vec_fcmuo<mode>): Rename to...
+	(*fcmuo<mode>): ...this and adjust likewise.
+	(*pred_fcm<cmp_op><mode>): New pattern.
+	* config/aarch64/aarch64.c (aarch64_emit_unop, aarch64_emit_binop)
+	(aarch64_emit_sve_ptrue_op, aarch64_emit_sve_ptrue_op_cc): New
+	functions.
+	(aarch64_unspec_cond_code): Remove handling of LTU, GTU, LEU, GEU
+	and UNORDERED.
+	(aarch64_gen_unspec_cond, aarch64_emit_unspec_cond): Delete.
+	(aarch64_emit_sve_predicated_cond): New function.
+	(aarch64_expand_sve_vec_cmp_int): Use aarch64_emit_sve_ptrue_op_cc.
+	(aarch64_emit_unspec_cond_or): Replace with...
+	(aarch64_emit_sve_or_conds): ...this new function.  Use
+	aarch64_emit_sve_ptrue_op for the individual comparisons and
+	aarch64_emit_binop to OR them together.
+	(aarch64_emit_inverted_unspec_cond): Replace with...
+	(aarch64_emit_sve_inverted_cond): ...this new function.  Use
+	aarch64_emit_sve_ptrue_op for the comparison and
+	aarch64_emit_unop to invert the result.
+	(aarch64_expand_sve_vec_cmp_float): Update after the above
+	changes.  Use aarch64_emit_sve_ptrue_op for native comparisons.
+
 2018-05-07  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/invoke.texi (C++ Dialect Options): Remove -ffor-scope.

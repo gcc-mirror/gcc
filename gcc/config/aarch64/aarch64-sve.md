@@ -1292,14 +1292,15 @@
   }
 )
 
-;; Predicated integer comparison.
-(define_insn "*vec_cmp<cmp_op>_<mode>"
+;; Integer comparisons predicated with a PTRUE.
+(define_insn "*cmp<cmp_op><mode>"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (match_operand:SVE_I 2 "register_operand" "w, w")
-	   (match_operand:SVE_I 3 "aarch64_sve_cmp_<imm_con>_operand" "<imm_con>, w")]
-	  SVE_COND_INT_CMP))
+	   (SVE_INT_CMP:<VPRED>
+	     (match_operand:SVE_I 2 "register_operand" "w, w")
+	     (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+	  UNSPEC_MERGE_PTRUE))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_SVE"
   "@
@@ -1307,17 +1308,19 @@
    cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
 
-;; Predicated integer comparison in which only the flags result is interesting.
-(define_insn "*vec_cmp<cmp_op>_<mode>_ptest"
+;; Integer comparisons predicated with a PTRUE in which only the flags result
+;; is interesting.
+(define_insn "*cmp<cmp_op><mode>_ptest"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	  (unspec:SI
 	    [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	     (unspec:<VPRED>
 	       [(match_dup 1)
-	        (match_operand:SVE_I 2 "register_operand" "w, w")
-		(match_operand:SVE_I 3 "aarch64_sve_cmp_<imm_con>_operand" "<imm_con>, w")]
-	       SVE_COND_INT_CMP)]
+		(SVE_INT_CMP:<VPRED>
+		  (match_operand:SVE_I 2 "register_operand" "w, w")
+		  (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+	       UNSPEC_MERGE_PTRUE)]
 	    UNSPEC_PTEST_PTRUE)
 	  (const_int 0)))
    (clobber (match_scratch:<VPRED> 0 "=Upa, Upa"))]
@@ -1327,35 +1330,64 @@
    cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
 
-;; Predicated comparison in which both the flag and predicate results
-;; are interesting.
-(define_insn "*vec_cmp<cmp_op>_<mode>_cc"
+;; Integer comparisons predicated with a PTRUE in which both the flag and
+;; predicate results are interesting.
+(define_insn "*cmp<cmp_op><mode>_cc"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	  (unspec:SI
 	    [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	     (unspec:<VPRED>
 	       [(match_dup 1)
-		(match_operand:SVE_I 2 "register_operand" "w, w")
-		(match_operand:SVE_I 3 "aarch64_sve_cmp_<imm_con>_operand" "<imm_con>, w")]
-	       SVE_COND_INT_CMP)]
+		(SVE_INT_CMP:<VPRED>
+		  (match_operand:SVE_I 2 "register_operand" "w, w")
+		  (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+	       UNSPEC_MERGE_PTRUE)]
 	    UNSPEC_PTEST_PTRUE)
 	  (const_int 0)))
    (set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
 	  [(match_dup 1)
-	   (match_dup 2)
-	   (match_dup 3)]
-	  SVE_COND_INT_CMP))]
+	   (SVE_INT_CMP:<VPRED>
+	     (match_dup 2)
+	     (match_dup 3))]
+	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   "@
    cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
    cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
 
-;; Predicated floating-point comparison (excluding FCMUO, which doesn't
-;; allow #0.0 as an operand).
-(define_insn "*vec_fcm<cmp_op><mode>"
+;; Floating-point comparisons predicated with a PTRUE.
+(define_insn "*fcm<cmp_op><mode>"
+  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
+	(unspec:<VPRED>
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (SVE_FP_CMP:<VPRED>
+	     (match_operand:SVE_F 2 "register_operand" "w, w")
+	     (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "Dz, w"))]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  "@
+   fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #0.0
+   fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+)
+
+(define_insn "*fcmuo<mode>"
+  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
+	(unspec:<VPRED>
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (unordered:<VPRED>
+	     (match_operand:SVE_F 2 "register_operand" "w")
+	     (match_operand:SVE_F 3 "register_operand" "w"))]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  "fcmuo\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+)
+
+;; Predicated floating-point comparisons.  We don't need a version
+;; of this for unordered comparisons.
+(define_insn "*pred_fcm<cmp_op><mode>"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
@@ -1366,18 +1398,6 @@
   "@
    fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #0.0
    fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
-)
-
-;; Predicated FCMUO.
-(define_insn "*vec_fcmuo<mode>"
-  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
-	(unspec:<VPRED>
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (match_operand:SVE_F 2 "register_operand" "w")
-	   (match_operand:SVE_F 3 "register_operand" "w")]
-	  UNSPEC_COND_UO))]
-  "TARGET_SVE"
-  "fcmuo\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
 
 ;; vcond_mask operand order: true, false, mask

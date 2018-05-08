@@ -455,11 +455,6 @@
     UNSPEC_COND_NE	; Used in aarch64-sve.md.
     UNSPEC_COND_GE	; Used in aarch64-sve.md.
     UNSPEC_COND_GT	; Used in aarch64-sve.md.
-    UNSPEC_COND_LO	; Used in aarch64-sve.md.
-    UNSPEC_COND_LS	; Used in aarch64-sve.md.
-    UNSPEC_COND_HS	; Used in aarch64-sve.md.
-    UNSPEC_COND_HI	; Used in aarch64-sve.md.
-    UNSPEC_COND_UO	; Used in aarch64-sve.md.
     UNSPEC_LASTB	; Used in aarch64-sve.md.
 ])
 
@@ -1189,6 +1184,12 @@
 ;; SVE floating-point unary operations.
 (define_code_iterator SVE_FP_UNARY [neg abs sqrt])
 
+;; SVE integer comparisons.
+(define_code_iterator SVE_INT_CMP [lt le eq ne ge gt ltu leu geu gtu])
+
+;; SVE floating-point comparisons.
+(define_code_iterator SVE_FP_CMP [lt le eq ne ge gt])
+
 ;; -------------------------------------------------------------------
 ;; Code Attributes
 ;; -------------------------------------------------------------------
@@ -1251,6 +1252,18 @@
 (define_code_attr CMP [(lt "LT") (le "LE") (eq "EQ") (ge "GE") (gt "GT")
 			(ltu "LTU") (leu "LEU") (ne "NE") (geu "GEU")
 			(gtu "GTU")])
+
+;; The AArch64 condition associated with an rtl comparison code.
+(define_code_attr cmp_op [(lt "lt")
+			  (le "le")
+			  (eq "eq")
+			  (ne "ne")
+			  (ge "ge")
+			  (gt "gt")
+			  (ltu "lo")
+			  (leu "ls")
+			  (geu "hs")
+			  (gtu "hi")])
 
 (define_code_attr fix_trunc_optab [(fix "fix_trunc")
 				   (unsigned_fix "fixuns_trunc")])
@@ -1357,6 +1370,18 @@
 			     (neg "fneg")
 			     (abs "fabs")
 			     (sqrt "fsqrt")])
+
+;; The SVE immediate constraint to use for an rtl code.
+(define_code_attr sve_imm_con [(eq "vsc")
+			       (ne "vsc")
+			       (lt "vsc")
+			       (ge "vsc")
+			       (le "vsc")
+			       (gt "vsc")
+			       (ltu "vsd")
+			       (leu "vsd")
+			       (geu "vsd")
+			       (gtu "vsd")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators.
@@ -1482,12 +1507,6 @@
 				      UNSPEC_COND_EOR])
 
 (define_int_iterator SVE_COND_FP_OP [UNSPEC_COND_ADD UNSPEC_COND_SUB])
-
-(define_int_iterator SVE_COND_INT_CMP [UNSPEC_COND_LT UNSPEC_COND_LE
-				       UNSPEC_COND_EQ UNSPEC_COND_NE
-				       UNSPEC_COND_GE UNSPEC_COND_GT
-				       UNSPEC_COND_LO UNSPEC_COND_LS
-				       UNSPEC_COND_HS UNSPEC_COND_HI])
 
 (define_int_iterator SVE_COND_FP_CMP [UNSPEC_COND_LT UNSPEC_COND_LE
 				      UNSPEC_COND_EQ UNSPEC_COND_NE
@@ -1730,23 +1749,7 @@
 			 (UNSPEC_COND_EQ "eq")
 			 (UNSPEC_COND_NE "ne")
 			 (UNSPEC_COND_GE "ge")
-			 (UNSPEC_COND_GT "gt")
-			 (UNSPEC_COND_LO "lo")
-			 (UNSPEC_COND_LS "ls")
-			 (UNSPEC_COND_HS "hs")
-			 (UNSPEC_COND_HI "hi")])
-
-;; The constraint to use for an UNSPEC_COND_<xx>.
-(define_int_attr imm_con [(UNSPEC_COND_EQ "vsc")
-			  (UNSPEC_COND_NE "vsc")
-			  (UNSPEC_COND_LT "vsc")
-			  (UNSPEC_COND_GE "vsc")
-			  (UNSPEC_COND_LE "vsc")
-			  (UNSPEC_COND_GT "vsc")
-			  (UNSPEC_COND_LO "vsd")
-			  (UNSPEC_COND_LS "vsd")
-			  (UNSPEC_COND_HS "vsd")
-			  (UNSPEC_COND_HI "vsd")])
+			 (UNSPEC_COND_GT "gt")])
 
 (define_int_attr sve_int_op [(UNSPEC_COND_ADD "add")
 			     (UNSPEC_COND_SUB "sub")

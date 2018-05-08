@@ -1873,6 +1873,27 @@ aarch64_emit_move (rtx dest, rtx src)
 	  : emit_move_insn_1 (dest, src));
 }
 
+/* Apply UNOPTAB to OP and store the result in DEST.  */
+
+static void
+aarch64_emit_unop (rtx dest, optab unoptab, rtx op)
+{
+  rtx tmp = expand_unop (GET_MODE (dest), unoptab, op, dest, 0);
+  if (dest != tmp)
+    emit_move_insn (dest, tmp);
+}
+
+/* Apply BINOPTAB to OP0 and OP1 and store the result in DEST.  */
+
+static void
+aarch64_emit_binop (rtx dest, optab binoptab, rtx op0, rtx op1)
+{
+  rtx tmp = expand_binop (GET_MODE (dest), binoptab, op0, op1, dest, 0,
+			  OPTAB_DIRECT);
+  if (dest != tmp)
+    emit_move_insn (dest, tmp);
+}
+
 /* Split a 128-bit move operation into two 64-bit move operations,
    taking care to handle partial overlap of register to register
    copies.  Special cases are needed when moving between GP regs and
@@ -15675,6 +15696,34 @@ aarch64_sve_cmp_operand_p (rtx_code op_code, rtx x)
     }
 }
 
+/* Use predicated SVE instructions to implement the equivalent of:
+
+     (set TARGET OP)
+
+   given that PTRUE is an all-true predicate of the appropriate mode.  */
+
+static void
+aarch64_emit_sve_ptrue_op (rtx target, rtx ptrue, rtx op)
+{
+  rtx unspec = gen_rtx_UNSPEC (GET_MODE (target),
+			       gen_rtvec (2, ptrue, op),
+			       UNSPEC_MERGE_PTRUE);
+  rtx_insn *insn = emit_set_insn (target, unspec);
+  set_unique_reg_note (insn, REG_EQUAL, copy_rtx (op));
+}
+
+/* Likewise, but also clobber the condition codes.  */
+
+static void
+aarch64_emit_sve_ptrue_op_cc (rtx target, rtx ptrue, rtx op)
+{
+  rtx unspec = gen_rtx_UNSPEC (GET_MODE (target),
+			       gen_rtvec (2, ptrue, op),
+			       UNSPEC_MERGE_PTRUE);
+  rtx_insn *insn = emit_insn (gen_set_clobber_cc (target, unspec));
+  set_unique_reg_note (insn, REG_EQUAL, copy_rtx (op));
+}
+
 /* Return the UNSPEC_COND_* code for comparison CODE.  */
 
 static unsigned int
@@ -15694,35 +15743,33 @@ aarch64_unspec_cond_code (rtx_code code)
       return UNSPEC_COND_LE;
     case GE:
       return UNSPEC_COND_GE;
-    case LTU:
-      return UNSPEC_COND_LO;
-    case GTU:
-      return UNSPEC_COND_HI;
-    case LEU:
-      return UNSPEC_COND_LS;
-    case GEU:
-      return UNSPEC_COND_HS;
-    case UNORDERED:
-      return UNSPEC_COND_UO;
     default:
       gcc_unreachable ();
     }
 }
 
-/* Return an (unspec:PRED_MODE [PRED OP0 OP1] UNSPEC_COND_<X>) expression,
-   where <X> is the operation associated with comparison CODE.  */
+/* Emit:
 
-static rtx
-aarch64_gen_unspec_cond (rtx_code code, machine_mode pred_mode,
-			 rtx pred, rtx op0, rtx op1)
+      (set TARGET (unspec [PRED OP0 OP1] UNSPEC_COND_<X>))
+
+   where <X> is the operation associated with comparison CODE.  This form
+   of instruction is used when (and (CODE OP0 OP1) PRED) would have different
+   semantics, such as when PRED might not be all-true and when comparing
+   inactive lanes could have side effects.  */
+
+static void
+aarch64_emit_sve_predicated_cond (rtx target, rtx_code code,
+				  rtx pred, rtx op0, rtx op1)
 {
-  rtvec vec = gen_rtvec (3, pred, op0, op1);
-  return gen_rtx_UNSPEC (pred_mode, vec, aarch64_unspec_cond_code (code));
+  rtx unspec = gen_rtx_UNSPEC (GET_MODE (pred),
+			       gen_rtvec (3, pred, op0, op1),
+			       aarch64_unspec_cond_code (code));
+  emit_set_insn (target, unspec);
 }
 
-/* Expand an SVE integer comparison:
+/* Expand an SVE integer comparison using the SVE equivalent of:
 
-     TARGET = CODE (OP0, OP1).  */
+     (set TARGET (CODE OP0 OP1)).  */
 
 void
 aarch64_expand_sve_vec_cmp_int (rtx target, rtx_code code, rtx op0, rtx op1)
@@ -15734,78 +15781,53 @@ aarch64_expand_sve_vec_cmp_int (rtx target, rtx_code code, rtx op0, rtx op1)
     op1 = force_reg (data_mode, op1);
 
   rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
-  rtx unspec = aarch64_gen_unspec_cond (code, pred_mode, ptrue, op0, op1);
-  emit_insn (gen_set_clobber_cc (target, unspec));
+  rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
+  aarch64_emit_sve_ptrue_op_cc (target, ptrue, cond);
 }
 
-/* Emit an instruction:
+/* Emit the SVE equivalent of:
 
-      (set TARGET (unspec:PRED_MODE [PRED OP0 OP1] UNSPEC_COND_<X>))
+      (set TMP1 (CODE1 OP0 OP1))
+      (set TMP2 (CODE2 OP0 OP1))
+      (set TARGET (ior:PRED_MODE TMP1 TMP2))
 
-   where <X> is the operation associated with comparison CODE.  */
-
-static void
-aarch64_emit_unspec_cond (rtx target, rtx_code code, machine_mode pred_mode,
-			  rtx pred, rtx op0, rtx op1)
-{
-  rtx unspec = aarch64_gen_unspec_cond (code, pred_mode, pred, op0, op1);
-  emit_set_insn (target, unspec);
-}
-
-/* Emit:
-
-      (set TMP1 (unspec:PRED_MODE [PTRUE OP0 OP1] UNSPEC_COND_<X1>))
-      (set TMP2 (unspec:PRED_MODE [PTRUE OP0 OP1] UNSPEC_COND_<X2>))
-      (set TARGET (and:PRED_MODE (ior:PRED_MODE TMP1 TMP2) PTRUE))
-
-   where <Xi> is the operation associated with comparison CODEi.  */
+   PTRUE is an all-true predicate with the same mode as TARGET.  */
 
 static void
-aarch64_emit_unspec_cond_or (rtx target, rtx_code code1, rtx_code code2,
-			     machine_mode pred_mode, rtx ptrue,
-			     rtx op0, rtx op1)
+aarch64_emit_sve_or_conds (rtx target, rtx_code code1, rtx_code code2,
+			   rtx ptrue, rtx op0, rtx op1)
 {
+  machine_mode pred_mode = GET_MODE (ptrue);
   rtx tmp1 = gen_reg_rtx (pred_mode);
-  aarch64_emit_unspec_cond (tmp1, code1, pred_mode, ptrue, op0, op1);
+  aarch64_emit_sve_ptrue_op (tmp1, ptrue,
+			     gen_rtx_fmt_ee (code1, pred_mode, op0, op1));
   rtx tmp2 = gen_reg_rtx (pred_mode);
-  aarch64_emit_unspec_cond (tmp2, code2, pred_mode, ptrue, op0, op1);
-  emit_set_insn (target, gen_rtx_AND (pred_mode,
-				      gen_rtx_IOR (pred_mode, tmp1, tmp2),
-				      ptrue));
+  aarch64_emit_sve_ptrue_op (tmp2, ptrue,
+			     gen_rtx_fmt_ee (code2, pred_mode, op0, op1));
+  aarch64_emit_binop (target, ior_optab, tmp1, tmp2);
 }
 
-/* If CAN_INVERT_P, emit an instruction:
+/* Emit the SVE equivalent of:
 
-      (set TARGET (unspec:PRED_MODE [PRED OP0 OP1] UNSPEC_COND_<X>))
+      (set TMP (CODE OP0 OP1))
+      (set TARGET (not TMP))
 
-   where <X> is the operation associated with comparison CODE.  Otherwise
-   emit:
-
-      (set TMP (unspec:PRED_MODE [PRED OP0 OP1] UNSPEC_COND_<X>))
-      (set TARGET (and:PRED_MODE (not:PRED_MODE TMP) PTRUE))
-
-   where the second instructions sets TARGET to the inverse of TMP.  */
+   PTRUE is an all-true predicate with the same mode as TARGET.  */
 
 static void
-aarch64_emit_inverted_unspec_cond (rtx target, rtx_code code,
-				   machine_mode pred_mode, rtx ptrue, rtx pred,
-				   rtx op0, rtx op1, bool can_invert_p)
+aarch64_emit_sve_inverted_cond (rtx target, rtx ptrue, rtx_code code,
+				rtx op0, rtx op1)
 {
-  if (can_invert_p)
-    aarch64_emit_unspec_cond (target, code, pred_mode, pred, op0, op1);
-  else
-    {
-      rtx tmp = gen_reg_rtx (pred_mode);
-      aarch64_emit_unspec_cond (tmp, code, pred_mode, pred, op0, op1);
-      emit_set_insn (target, gen_rtx_AND (pred_mode,
-					  gen_rtx_NOT (pred_mode, tmp),
-					  ptrue));
-    }
+  machine_mode pred_mode = GET_MODE (ptrue);
+  rtx tmp = gen_reg_rtx (pred_mode);
+  aarch64_emit_sve_ptrue_op (tmp, ptrue,
+			     gen_rtx_fmt_ee (code, pred_mode, op0, op1));
+  aarch64_emit_unop (target, one_cmpl_optab, tmp);
 }
 
-/* Expand an SVE floating-point comparison:
+/* Expand an SVE floating-point comparison using the SVE equivalent of:
 
-     TARGET = CODE (OP0, OP1)
+     (set TARGET (CODE OP0 OP1))
 
    If CAN_INVERT_P is true, the caller can also handle inverted results;
    return true if the result is in fact inverted.  */
@@ -15823,30 +15845,23 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
     case UNORDERED:
       /* UNORDERED has no immediate form.  */
       op1 = force_reg (data_mode, op1);
-      aarch64_emit_unspec_cond (target, code, pred_mode, ptrue, op0, op1);
-      return false;
-
+      /* fall through */
     case LT:
     case LE:
     case GT:
     case GE:
     case EQ:
     case NE:
-      /* There is native support for the comparison.  */
-      aarch64_emit_unspec_cond (target, code, pred_mode, ptrue, op0, op1);
-      return false;
-
-    case ORDERED:
-      /* There is native support for the inverse comparison.  */
-      op1 = force_reg (data_mode, op1);
-      aarch64_emit_inverted_unspec_cond (target, UNORDERED,
-					 pred_mode, ptrue, ptrue, op0, op1,
-					 can_invert_p);
-      return can_invert_p;
+      {
+	/* There is native support for the comparison.  */
+	rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
+	aarch64_emit_sve_ptrue_op (target, ptrue, cond);
+	return false;
+      }
 
     case LTGT:
       /* This is a trapping operation (LT or GT).  */
-      aarch64_emit_unspec_cond_or (target, LT, GT, pred_mode, ptrue, op0, op1);
+      aarch64_emit_sve_or_conds (target, LT, GT, ptrue, op0, op1);
       return false;
 
     case UNEQ:
@@ -15854,38 +15869,59 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
 	{
 	  /* This would trap for signaling NaNs.  */
 	  op1 = force_reg (data_mode, op1);
-	  aarch64_emit_unspec_cond_or (target, UNORDERED, EQ,
-				       pred_mode, ptrue, op0, op1);
+	  aarch64_emit_sve_or_conds (target, UNORDERED, EQ, ptrue, op0, op1);
 	  return false;
 	}
       /* fall through */
-
     case UNLT:
     case UNLE:
     case UNGT:
     case UNGE:
-      {
-	rtx ordered = ptrue;
-	if (flag_trapping_math)
-	  {
-	    /* Only compare the elements that are known to be ordered.  */
-	    ordered = gen_reg_rtx (pred_mode);
-	    op1 = force_reg (data_mode, op1);
-	    aarch64_emit_inverted_unspec_cond (ordered, UNORDERED, pred_mode,
-					       ptrue, ptrue, op0, op1, false);
-	  }
-	if (code == UNEQ)
-	  code = NE;
-	else
-	  code = reverse_condition_maybe_unordered (code);
-	aarch64_emit_inverted_unspec_cond (target, code, pred_mode, ptrue,
-					   ordered, op0, op1, can_invert_p);
-	return can_invert_p;
-      }
+      if (flag_trapping_math)
+	{
+	  /* Work out which elements are ordered.  */
+	  rtx ordered = gen_reg_rtx (pred_mode);
+	  op1 = force_reg (data_mode, op1);
+	  aarch64_emit_sve_inverted_cond (ordered, ptrue, UNORDERED, op0, op1);
+
+	  /* Test the opposite condition for the ordered elements,
+	     then invert the result.  */
+	  if (code == UNEQ)
+	    code = NE;
+	  else
+	    code = reverse_condition_maybe_unordered (code);
+	  if (can_invert_p)
+	    {
+	      aarch64_emit_sve_predicated_cond (target, code,
+						ordered, op0, op1);
+	      return true;
+	    }
+	  rtx tmp = gen_reg_rtx (pred_mode);
+	  aarch64_emit_sve_predicated_cond (tmp, code, ordered, op0, op1);
+	  aarch64_emit_unop (target, one_cmpl_optab, tmp);
+	  return false;
+	}
+      break;
+
+    case ORDERED:
+      /* ORDERED has no immediate form.  */
+      op1 = force_reg (data_mode, op1);
+      break;
 
     default:
       gcc_unreachable ();
     }
+
+  /* There is native support for the inverse comparison.  */
+  code = reverse_condition_maybe_unordered (code);
+  if (can_invert_p)
+    {
+      rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
+      aarch64_emit_sve_ptrue_op (target, ptrue, cond);
+      return true;
+    }
+  aarch64_emit_sve_inverted_cond (target, ptrue, code, op0, op1);
+  return false;
 }
 
 /* Expand an SVE vcond pattern with operands OPS.  DATA_MODE is the mode
