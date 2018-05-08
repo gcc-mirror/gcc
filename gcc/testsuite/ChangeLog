@@ -1,3 +1,8 @@
+2018-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80691
+	* g++.dg/cpp0x/narrowing1.C: New.
+
 2018-05-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85588
