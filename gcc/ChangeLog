@@ -1,3 +1,20 @@
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-05-04  Richard Biener  <rguenther@suse.de>
+
+	* bb-reorder.c (sanitize_hot_paths): Release hot_bbs_to_check.
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::output_merged_store): Remove redundant create,
+	release split_store vector contents on failure.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Avoid leaking
+	scalar stmt vector on cache hit.
+
+	2018-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85627
+	* tree-complex.c (tree_lower_complex): Handle removed blocks.
+
 2018-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	Backport from mainline.

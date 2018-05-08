@@ -1692,6 +1692,8 @@ tree_lower_complex (void)
   for (i = 0; i < n_bbs; i++)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
+      if (!bb)
+	continue;
       update_phi_components (bb);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	expand_complex_operations_1 (&gsi);

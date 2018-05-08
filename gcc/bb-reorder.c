@@ -1572,6 +1572,7 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
           hot_bbs_to_check.safe_push (reach_bb);
         }
     }
+  hot_bbs_to_check.release ();
 
   return cold_bb_count;
 }
