@@ -38,16 +38,20 @@
  * the user error and where the error is reported.
  *
  */
-#define _GLIBCXX_DEBUG_VERIFY_AT(_Condition,_ErrorMessage,_File,_Line)	\
+#define _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond,_ErrMsg,_File,_Line,_Func)	\
   do									\
   {									\
-    if (! (_Condition))							\
-      __gnu_debug::_Error_formatter::_M_at(_File, _Line)		\
-	  ._ErrorMessage._M_error();					\
+    if (! (_Cond))							\
+      __gnu_debug::_Error_formatter::_S_at(_File, _Line, _Func)		\
+	._ErrMsg._M_error();						\
   } while (false)
 
-#define _GLIBCXX_DEBUG_VERIFY(_Condition,_ErrorMessage)			\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Condition,_ErrorMessage,__FILE__,__LINE__)
+#define _GLIBCXX_DEBUG_VERIFY_AT(_Cond,_ErrMsg,_File,_Line)		\
+  _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond,_ErrMsg,_File,_Line,__PRETTY_FUNCTION__)
+
+#define _GLIBCXX_DEBUG_VERIFY(_Cond,_ErrMsg)				\
+  _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond, _ErrMsg, __FILE__, __LINE__,	\
+			     __PRETTY_FUNCTION__)
 
 // Verify that [_First, _Last) forms a valid iterator range.
 #define __glibcxx_check_valid_range(_First,_Last)			\
