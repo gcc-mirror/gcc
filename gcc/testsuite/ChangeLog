@@ -1,3 +1,11 @@
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85627
+	* g++.dg/torture/pr85627.C: New testcase.
+
 2018-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85659

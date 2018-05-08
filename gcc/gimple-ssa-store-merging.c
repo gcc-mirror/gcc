@@ -3343,6 +3343,8 @@ invert_op (split_store *split_store, int idx, tree int_type, tree &mask)
 bool
 imm_store_chain_info::output_merged_store (merged_store_group *group)
 {
+  split_store *split_store;
+  unsigned int i;
   unsigned HOST_WIDE_INT start_byte_pos
     = group->bitregion_start / BITS_PER_UNIT;
 
@@ -3351,7 +3353,6 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
     return false;
 
   auto_vec<struct split_store *, 32> split_stores;
-  split_stores.create (0);
   bool allow_unaligned_store
     = !STRICT_ALIGNMENT && PARAM_VALUE (PARAM_STORE_MERGING_ALLOW_UNALIGNED);
   bool allow_unaligned_load = allow_unaligned_store;
@@ -3378,6 +3379,8 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	fprintf (dump_file, "Exceeded original number of stmts (%u)."
 			    "  Not profitable to emit new sequence.\n",
 		 orig_num_stmts);
+      FOR_EACH_VEC_ELT (split_stores, i, split_store)
+	delete split_store;
       return false;
     }
   if (total_orig <= total_new)
@@ -3389,6 +3392,8 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 			    " not larger than estimated number of new"
 			    " stmts (%u).\n",
 		 total_orig, total_new);
+      FOR_EACH_VEC_ELT (split_stores, i, split_store)
+	delete split_store;
       return false;
     }
 
@@ -3453,8 +3458,6 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
     }
 
   gimple *stmt = NULL;
-  split_store *split_store;
-  unsigned int i;
   auto_vec<gimple *, 32> orig_stmts;
   gimple_seq this_seq;
   tree addr = force_gimple_operand_1 (unshare_expr (base_addr), &this_seq,
