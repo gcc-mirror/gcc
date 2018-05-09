@@ -97,7 +97,8 @@ class bb_paths
   bool range_of_path (irange &r, vec<basic_block> &path,
 		      edge start_edge = NULL)
   {
-    return ranger.path_range (r, name, path, path_ranger::REVERSE, start_edge);
+    return ranger.path_range_list (r, name, path, path_ranger::REVERSE,
+				   start_edge);
   }
   /* Attempt to fold STMT given VAR and its known range VAR_RANGE.
      Store the resulting range in R and return TRUE if R is non
@@ -105,7 +106,7 @@ class bb_paths
   bool range_of_folded_stmt (irange &r, gimple *stmt, tree var,
 			     const irange var_range)
   {
-    return ranger.range_of_def (r, stmt, var, var_range);
+    return ranger.range_of_stmt (r, stmt, var, var_range);
   }
   /* Return the ultimate SSA name for which NAME depends on.  */
   tree terminal_name (void)

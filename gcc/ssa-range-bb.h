@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SSA_RANGE_BB_H
 #define GCC_SSA_RANGE_BB_H
 
-#include "range.h"
-#include "range-op.h"
 #include "ssa-range-stmt.h"
 
 /* This is the primary interface class for the range generator at the basic
@@ -48,6 +46,7 @@ class block_ranger
 			    const irange& lhs);
 protected:
   virtual bool get_operand_range (irange& r, tree op, gimple *s = NULL);
+  gimple *ssa_name_same_bb_p (tree name, basic_block bb);
 public:
   block_ranger ();
   ~block_ranger ();
@@ -56,14 +55,28 @@ public:
   bool range_p (basic_block bb, tree name);
   /* What is the static calculated range of NAME on outgoing edge E.  */
   bool range_on_edge (irange& r, tree name, edge e);
-  /* What infomation does stmt g provide about the lhs.  */
-  bool range_of_def (irange& r, gimple *g);
-  /* What does g provide about the lhs if NAME has RANGE_FOR_NAME.  */
-  bool range_of_def (irange& r, gimple *g, tree name,
+  /* Evaluate statement G.  */
+  bool range_of_stmt (irange& r, gimple *g);
+  /* Evaluate statement G assuming entry only via edge E */
+  bool range_of_stmt (irange& r, gimple *g, edge e);
+  /* Evaluate statement G if NAME has RANGE_FOR_NAME.  */
+  bool range_of_stmt (irange& r, gimple *g, tree name,
 		     const irange& range_for_name);
   tree single_import (tree name);
   void dump (FILE *f);
   void exercise (FILE *f);
 };
+
+
+// If NAME is defined in block BB, return the gimple statement pointer, 
+// otherwise return NULL>
+inline gimple *
+block_ranger::ssa_name_same_bb_p (tree name, basic_block bb)
+{
+  gimple *g = SSA_NAME_DEF_STMT (name);
+  if (!g || gimple_bb (g) != bb)
+   return NULL;
+  return g;
+}
 
 #endif /* GCC_SSA_RANGE_BB_H */

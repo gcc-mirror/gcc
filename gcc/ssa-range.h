@@ -41,17 +41,16 @@ private:
 
   void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
   void determine_block (tree name, basic_block bb, basic_block def_bb);
-  bool path_range_reverse (irange &r, tree name, const vec<basic_block> &);
-  bool path_fold_stmt (irange &r, range_stmt rn, basic_block bb,
-		       edge e = NULL);
+  bool path_range_list_reverse (irange &r, tree name, const vec<basic_block> &);
   bool process_phi (irange &r, gphi *phi);
   bool path_get_operand (irange &r, tree name, basic_block bb);
-protected:
+
   void dump_global_ssa_range (FILE *f);
   bool has_global_ssa_range (irange& r, tree name);
   bool get_global_ssa_range (irange& r, tree name);
   void set_global_ssa_range (tree name, const irange&r);
   void clear_global_ssa_range (tree name);
+protected:
   virtual bool get_operand_range (irange &r, tree op, gimple *s = NULL);
 public:
   enum path_range_direction { FORWARD, REVERSE };
@@ -66,10 +65,8 @@ public:
   // get the value of NAME as it would be used on this stmt.
   bool path_range_on_stmt (irange&r, tree name, gimple *g);
 
-  bool path_range (irange &r, tree name, const vec<basic_block> &bbs,
-		   enum path_range_direction, edge start_edge = NULL);
-  // Evaluate statement G within a BB assuming entry was via edge E.
-  bool path_range_of_def (irange& r, gimple *g, edge e);
+  bool path_range_list (irange &r, tree name, const vec<basic_block> &bbs,
+		        enum path_range_direction, edge start_edge = NULL);
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */

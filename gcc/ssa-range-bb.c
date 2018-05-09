@@ -750,9 +750,9 @@ block_ranger::exercise (FILE *output)
 // the operands.  If it can be evaluated, TRUE is returned
 // and the range is returned in R.  */
 bool
-block_ranger::range_of_def (irange& r, gimple *g)
+block_ranger::range_of_stmt (irange& r, gimple *g)
 {
-  range_stmt rn (g);
+  range_stmt rn(g);
   irange r1, r2;
 
   /* If we don't understand the stmt... */
@@ -762,19 +762,65 @@ block_ranger::range_of_def (irange& r, gimple *g)
   tree op1 = rn.operand1 ();
   tree op2 = rn.operand2 ();
 
-  get_operand_range (r1, op1);
+  block_ranger::get_operand_range (r1, op1);
   if (op2)
     return rn.fold (r, r1);
 
-  get_operand_range (r2, op2);
+  block_ranger::get_operand_range (r2, op2);
   return rn.fold (r, r1, r2);
+}
+
+
+// Attempt to evaluate NAME within the basic block it is defined assuming the
+// block was entered via edge E.
+bool
+block_ranger::range_of_stmt (irange &r, gimple *g, edge e)
+{
+  basic_block bb = gimple_bb (g);
+  irange range_op1, range_op2;
+
+  /* THe edge provided must be an incoming edge to this BB.  */
+  gcc_assert (e->dest == bb);
+
+  // Note that since we are remaining within BB, we do not attempt to further
+  // evaluate any of the arguments of a PHI at this point.
+  // For the moment, just pick up any cheap edge information.
+  if (is_a <gphi *> (g))
+    {
+      tree arg;
+      gphi *phi = as_a <gphi *> (g);
+      gcc_assert (e->dest == bb);
+      arg = gimple_phi_arg_def (phi, e->dest_idx);
+      // Pick up anything simple we might know about the incoming edge. 
+      if (!range_on_edge (r, arg, e))
+	return block_ranger::get_operand_range (r, arg);
+      return true;
+    }
+
+  range_stmt rn(g);
+  if (!rn.valid())
+    return false; 
+
+  if (!rn.ssa_operand1 () || !ssa_name_same_bb_p (rn.ssa_operand1 (), bb) ||
+      !range_of_stmt (range_op1, SSA_NAME_DEF_STMT (rn.ssa_operand1 ()), e))
+    block_ranger::get_operand_range (range_op1, rn.operand1 ());
+
+  // If this is a unary operation, call fold now.  
+  if (!rn.operand2 ())
+    return rn.fold (r, range_op1);
+
+  if (!rn.ssa_operand2 () || !ssa_name_same_bb_p (rn.ssa_operand2 (), bb) ||
+      !range_of_stmt (range_op2, SSA_NAME_DEF_STMT (rn.ssa_operand2 ()), e))
+    block_ranger::get_operand_range (range_op2, rn.operand2 ());
+
+  return rn.fold (r, range_op1, range_op2);
 }
 
 // This method will attempt to evaluate the statement G by replacing any
 // occurrence of ssa_name NAME with the RANGE_OF_NAME. If it can be
 // evaluated, TRUE is returned and the resulting range returned in R. 
 bool
-block_ranger::range_of_def (irange& r, gimple *g, tree name,
+block_ranger::range_of_stmt (irange& r, gimple *g, tree name,
 			    const irange& range_of_name)
 {
   range_stmt rn (g);
@@ -790,7 +836,7 @@ block_ranger::range_of_def (irange& r, gimple *g, tree name,
   if (op1 == name)
     r1 = range_of_name;
   else
-    get_operand_range (r1, op1);
+    block_ranger::get_operand_range (r1, op1);
 
   if (!op2)
     return rn.fold (r, r1);
@@ -798,7 +844,7 @@ block_ranger::range_of_def (irange& r, gimple *g, tree name,
   if (op2 == name)
     r2 = range_of_name;
   else
-    get_operand_range (r2, op2);
+    block_ranger::get_operand_range (r2, op2);
 
   return rn.fold (r, r1, r2);
 }

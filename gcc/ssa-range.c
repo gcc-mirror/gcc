@@ -47,19 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range.h"
 #include "ssa-range-global.h"
 
-
-// If NAME is defined in block BB, return the gimple statement pointer, 
-// otherwise return NULL>
-static inline gimple *
-ssa_name_same_bb_p (tree name, basic_block bb)
-{
-  gimple *g = SSA_NAME_DEF_STMT (name);
-  if (!g || gimple_bb (g) != bb)
-   return NULL;
-  return g;
-}
-
-
 // This class implements a cache of ranges indexed by basic block.
 // It represents all that is known about an SSA_NAME on entry to each block
 // It caches a range-for-type ranger so it doesnt need to be reformed all
@@ -564,11 +551,11 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
 
   if (name)
     {
-      // If there is a LHS< and a result, set the global cache.
+      // If there is a LHS and a result, set the global cache.
+      // Clear it if there was no range.
       if (res)
 	set_global_ssa_range (name, r);
       else
-        // Clear it if there was no range.
 	clear_global_ssa_range (name);
     }
   if (res)
@@ -627,60 +614,6 @@ path_ranger::get_operand_range (irange&r, tree op, gimple *s)
     return path_get_operand (r, op, gimple_bb (s));
 }
 
-
-bool
-path_ranger::path_fold_stmt (irange &r, range_stmt rn, basic_block bb, edge e)
-{
-  irange range_op1, range_op2;
-
-  if (!rn.ssa_operand1 () || !ssa_name_same_bb_p (rn.ssa_operand1 (), bb) ||
-      !path_range_of_def (range_op1, SSA_NAME_DEF_STMT (rn.ssa_operand1 ()), e))
-    get_operand_range (range_op1, rn.operand1 ());
-
-  // If this is a unary operation, call fold now.  
-  if (!rn.operand2 ())
-    return rn.fold (r, range_op1);
-
-  if (!rn.ssa_operand2 () || !ssa_name_same_bb_p (rn.ssa_operand2 (), bb) ||
-      !path_range_of_def (range_op2,
-			  SSA_NAME_DEF_STMT (rn.ssa_operand2 ()), e))
-    get_operand_range (range_op2, rn.operand2 ());
-
-  return rn.fold (r, range_op1, range_op2);
-}
-
-// Attempt to evaluate NAME within the basic block it is defined assuming the
-// block was entered via edge E.
-bool
-path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
-{
-  basic_block bb = gimple_bb (g);
-  tree arg;
-
-  /* THe edge provided must be an incoming edge to this BB.  */
-  gcc_assert (e->dest == bb);
-
-  // Note that since we are remaining within BB, we do not attempt to further
-  // evaluate any of the arguments of a PHI at this point.
-  // For the moment, just pick up any cheap edge information.
-  if (is_a <gphi *> (g))
-    {
-      gphi *phi = as_a <gphi *> (g);
-      gcc_assert (e->dest == bb);
-      arg = gimple_phi_arg_def (phi, e->dest_idx);
-      // Pick up anything simple we might know about the incoming edge. 
-      if (!range_on_edge (r, arg, e))
-	return block_ranger::get_operand_range (r, arg);
-      return true;
-    }
-
-  range_stmt rn(g);
-  if (!rn.valid())
-    return false; 
-  return path_fold_stmt (r, rn, bb, e);
-}
-
-
 // Calculate the known range for NAME on a path of basic blocks in
 // BBS.  If such a range exists, store it in R and return TRUE,
 // otherwise return FALSE.
@@ -692,8 +625,8 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 // into account, such edge is START_EDGE.  Otherwise, START_EDGE is
 // set to NULL.  
 bool
-path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs,
-			 enum path_range_direction dir, edge start_edge)
+path_ranger::path_range_list (irange &r, tree name, const vec<basic_block> &bbs,
+			      enum path_range_direction dir, edge start_edge)
 {
   if (bbs.is_empty ())
     return false;
@@ -716,14 +649,14 @@ path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs,
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
   if (gimple_bb (def_stmt) == first_bb && start_edge)
     {
-      if (!path_range_of_def (r, def_stmt, start_edge))
+      if (!range_of_stmt (r, def_stmt, start_edge))
 	get_global_ssa_range (r, name);
     }
   else
     get_global_ssa_range (r, name);
 
   if (dir == REVERSE)
-    return path_range_reverse (r, name, bbs);
+    return path_range_list_reverse (r, name, bbs);
 
   for (unsigned i = 1; i < bbs.length (); ++i)
     {
@@ -731,7 +664,7 @@ path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs,
       gcc_assert (e);
       irange redge;
       if (range_on_edge (redge, name, e))
-      r.intersect (redge);
+	r.intersect (redge);
     }
 
   return !r.range_for_type_p ();
@@ -744,8 +677,8 @@ path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs,
    BBS[LEN-1] is the DEF of NAME.  */
 
 bool
-path_ranger::path_range_reverse (irange &r, tree name,
-				 const vec<basic_block> &bbs)
+path_ranger::path_range_list_reverse (irange &r, tree name,
+				      const vec<basic_block> &bbs)
 {
   for (int i = bbs.length () - 1; i > 0; --i)
     {
