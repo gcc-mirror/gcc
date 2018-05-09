@@ -2886,18 +2886,17 @@ vect_slp_analyze_operations (vec_info *vinfo)
    and return it.  Do not account defs that are marked in LIFE and
    update LIFE according to uses of NODE.  */
 
-static unsigned
+static void 
 vect_bb_slp_scalar_cost (basic_block bb,
-			 slp_tree node, vec<bool, va_heap> *life)
+			 slp_tree node, vec<bool, va_heap> *life,
+			 stmt_vector_for_cost *cost_vec)
 {
-  unsigned scalar_cost = 0;
   unsigned i;
   gimple *stmt;
   slp_tree child;
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
     {
-      unsigned stmt_cost;
       ssa_op_iter op_iter;
       def_operand_p def_p;
       stmt_vec_info stmt_info;
@@ -2933,17 +2932,17 @@ vect_bb_slp_scalar_cost (basic_block bb,
       gimple_set_visited (stmt, true);
 
       stmt_info = vinfo_for_stmt (stmt);
+      vect_cost_for_stmt kind;
       if (STMT_VINFO_DATA_REF (stmt_info))
         {
           if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
-            stmt_cost = vect_get_stmt_cost (scalar_load);
+	    kind = scalar_load;
           else
-            stmt_cost = vect_get_stmt_cost (scalar_store);
+	    kind = scalar_store;
         }
       else
-        stmt_cost = vect_get_stmt_cost (scalar_stmt);
-
-      scalar_cost += stmt_cost;
+	kind = scalar_stmt;
+      record_stmt_cost (cost_vec, 1, kind, stmt_info, 0, vect_body);
     }
 
   auto_vec<bool, 20> subtree_life;
@@ -2954,12 +2953,10 @@ vect_bb_slp_scalar_cost (basic_block bb,
 	  /* Do not directly pass LIFE to the recursive call, copy it to
 	     confine changes in the callee to the current child/subtree.  */
 	  subtree_life.safe_splice (*life);
-	  scalar_cost += vect_bb_slp_scalar_cost (bb, child, &subtree_life);
+	  vect_bb_slp_scalar_cost (bb, child, &subtree_life, cost_vec);
 	  subtree_life.truncate (0);
 	}
     }
-
-  return scalar_cost;
 }
 
 /* Check if vectorization of the basic block is profitable.  */
@@ -2974,14 +2971,30 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   unsigned int vec_prologue_cost = 0, vec_epilogue_cost = 0;
 
   /* Calculate scalar cost.  */
+  stmt_vector_for_cost scalar_costs;
+  scalar_costs.create (0);
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       auto_vec<bool, 20> life;
       life.safe_grow_cleared (SLP_INSTANCE_GROUP_SIZE (instance));
-      scalar_cost += vect_bb_slp_scalar_cost (BB_VINFO_BB (bb_vinfo),
-					      SLP_INSTANCE_TREE (instance),
-					      &life);
+      vect_bb_slp_scalar_cost (BB_VINFO_BB (bb_vinfo),
+			       SLP_INSTANCE_TREE (instance),
+			       &life, &scalar_costs);
     }
+  void *target_cost_data = init_cost (NULL);
+  stmt_info_for_cost *si;
+  FOR_EACH_VEC_ELT (scalar_costs, i, si)
+    {
+      struct _stmt_vec_info *stmt_info
+	  = si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
+      (void) add_stmt_cost (target_cost_data, si->count,
+			    si->kind, stmt_info, si->misalign,
+			    vect_body);
+    }
+  scalar_costs.release ();
+  unsigned dummy;
+  finish_cost (target_cost_data, &dummy, &scalar_cost, &dummy);
+  destroy_cost_data (target_cost_data);
 
   /* Unset visited flag.  */
   for (gimple_stmt_iterator gsi = bb_vinfo->region_begin;
