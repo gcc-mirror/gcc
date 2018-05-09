@@ -54,5 +54,5 @@ TEST_ALL (LOOP)
    and then use NOT, but the original BIC sequence is better.  It's a fairly
    niche failure though.  We'd handle most other types of comparison by
    using the inverse operation instead of a separate NOT.  */
-/* { dg-final { scan-assembler-times {\tbic\tp[0-9]+\.b, p[0-9]+/z, p[0-9]+\.b, p[0-9]+\.b} 3 { xfail *-*-* } } */
+/* { dg-final { scan-assembler-times {\tbic\tp[0-9]+\.b, p[0-9]+/z, p[0-9]+\.b, p[0-9]+\.b} 3 { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-times {\torn\tp[0-9]+\.b, p[0-9]+/z, p[0-9]+\.b, p[0-9]+\.b} 3 } } */
