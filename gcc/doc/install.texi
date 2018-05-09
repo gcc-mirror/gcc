@@ -1072,8 +1072,8 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for arm*-*-*, sh*-*-* and x86-64-*-linux*.  The accepted values and meaning
-for each target is given below.
+for arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The accepted
+values and meaning for each target is given below.
 
 @table @code
 @item arm*-*-*
@@ -1127,6 +1127,13 @@ and @code{rmprofile}.
 @code{-mfloat-abi=softfp}@*
 @code{-mfloat-abi=hard}
 @end multitable
+
+@item riscv*-*-*
+@var{list} is a single ABI name.  The target architecture must be either
+@code{rv32gc} or @code{rv64gc}.  This will build a single multilib for the
+specified architecture and ABI pair.  If @code{--with-multilib-list} is not
+given, then a default set of multilibs is selected based on the value of
+@option{--target}.  This is usually a large set of multilibs.
 
 @item sh*-*-*
 @var{list} is a comma separated list of CPU names.  These must be of the

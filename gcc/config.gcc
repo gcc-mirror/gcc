@@ -4121,6 +4121,58 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+
+		# Handle --with-multilib-list.
+		if test "x${with_multilib_list}" != xdefault; then
+			tm_file="${tm_file} riscv/withmultilib.h"
+			tmake_file="${tmake_file} riscv/t-withmultilib"
+
+			case ${with_multilib_list} in
+			ilp32 | ilp32f | ilp32d \
+			| lp64 | lp64f | lp64d )
+				TM_MULTILIB_CONFIG="${with_arch},${with_multilib_list}"
+				;;
+			*)
+				echo "--with-multilib-list=${with_multilib_list} not supported."
+				exit 1
+			esac
+
+			# Define macros to select the default multilib.
+			case ${with_arch} in
+			rv32gc)
+				tm_defines="${tm_defines} TARGET_MLIB_ARCH=1"
+				;;
+			rv64gc)
+				tm_defines="${tm_defines} TARGET_MLIB_ARCH=2"
+				;;
+			*)
+				echo "unsupported --with-arch for --with-multilib-list"
+				exit 1
+			esac
+			case ${with_abi} in
+			ilp32)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=1"
+				;;
+			ilp32f)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=2"
+				;;
+			ilp32d)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=3"
+				;;
+			lp64)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=4"
+				;;
+			lp64f)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=5"
+				;;
+			lp64d)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=6"
+				;;
+			*)
+				echo "unsupported --with-abi for --with-multilib"
+				exit 1
+			esac
+		fi
 		;;
 
 	mips*-*-*)
