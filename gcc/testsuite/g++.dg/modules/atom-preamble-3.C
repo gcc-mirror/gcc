@@ -1,5 +1,5 @@
 // { dg-additional-options -fmodules-atom }
 
-#define export export  // { dg-error "" }
-export module malcolm; // { dg-error "" }
-
+#define import import  // { dg-message "ended here" }
+// { dg-error "must be within module preamble" "" { target *-*-* } .-1 }
+import malcolm; 

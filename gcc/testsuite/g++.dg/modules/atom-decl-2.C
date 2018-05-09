@@ -1,6 +1,6 @@
 // { dg-options "-fmodules-atom" }
 
 export module thing;
-int i;
-import baz; // { dg-error "expected" }
+int i; // { dg-message "ended here" }
+import baz; // { dg-error "must be within module preamble" }
 

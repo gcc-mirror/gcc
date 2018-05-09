@@ -12548,6 +12548,9 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 
 /* Modules */
 
+/* Record where the atom preamble ends, for better diagnostic.  */
+static location_t module_preamble_end_loc;
+
 /* Parse a module-name,
    identifier
    module-name . identifier
@@ -12614,7 +12617,7 @@ static bool
 cp_parser_module_declaration (cp_parser *parser, bool maybe_global,
 			      bool exporting)
 {
-  cp_lexer_consume_token (parser->lexer);
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
 
   if (maybe_global && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
@@ -12625,6 +12628,17 @@ cp_parser_module_declaration (cp_parser *parser, bool maybe_global,
 
   cp_expr name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
+
+  if (module_preamble_end_loc)
+    {
+      error_at (token->location,
+		"module declaration must be within module preamble");
+      inform (module_preamble_end_loc, "module preamble ended here");
+      name = NULL_TREE;
+    }
+  
+  if (!modules_atom_p ())
+    module_preamble_end_loc = cp_lexer_peek_token (parser->lexer)->location;
 
   if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
     return false;
@@ -12666,6 +12680,12 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
 
   if (!name)
     ;
+  else if (modules_atom_p () && module_preamble_end_loc)
+    {
+      error_at (token->location,
+		"import declaration must be within module preamble");
+      inform (module_preamble_end_loc, "module preamble ended here");
+    }
   else if (!check_module_outermost (token, "module-import"))
     gcc_assert (!modules_atom_p ());
   else if (TREE_CODE (*name) == STRING_CST)
@@ -12735,6 +12755,85 @@ cp_parser_module_proclamation (cp_parser *parser)
   pop_module_export (prev);
 }
 
+/* Read and parse an atom preamble.  */
+
+static void
+cp_parser_module_preamble (cp_parser *parser)
+{
+  cp_lexer *lexer = parser->lexer;
+
+  for (bool first = true;; first = false)
+    {
+      unsigned lwm = lexer->buffer->length ();
+      bool exporting_p = false;
+
+    another:
+      /* Peeking does not do macro expansion.  */
+      const cpp_token *cpp_tok = cpp_peek_token (parse_in, exporting_p);
+
+      // FIXME:#pragma?
+
+      if (cpp_tok->type != CPP_NAME)
+	break;
+      if (cpp_tok->val.node.node->type == NT_MACRO)
+	break;
+      tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (cpp_tok->val.node.node));
+      if (!IDENTIFIER_KEYWORD_P (ident))
+	break;
+      int keyword = C_RID_CODE (ident);
+      if (!exporting_p && keyword == RID_EXPORT)
+	{
+	  /* Leading 'export' */
+	  exporting_p = true;
+	  goto another;
+	}
+      if (!(keyword == RID_IMPORT
+	    || (first && keyword == RID_MODULE)))
+	break;
+      
+      /* We've peeked export? (module|import), so now fill buffer with
+	 tokens until ';'.  */
+      cp_token tok;
+      int ix = 1 + exporting_p;
+      do 
+	{
+	  if (!ix)
+	    cpp_enable_filename_token (parse_in, true);
+	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, &tok);
+	  vec_safe_push (lexer->buffer, tok);
+	  if (!ix)
+	    cpp_enable_filename_token (parse_in, false);
+	  ix--;
+	  if (tok.type == CPP_SEMICOLON)
+	    {
+	      if (linemap_location_from_macro_expansion_p
+		  (line_table, tok.location))
+		warning_at (tok.location, 0,
+			 "module preamble declaration ends inside macro");
+	      break;
+	    }
+	}
+      while (tok.type != CPP_EOF);
+
+      if (tok.type != CPP_EOF)
+	vec_safe_push (lexer->buffer, eof_token);
+
+      lexer->next_token = &(*lexer->buffer)[lwm + exporting_p];
+      lexer->last_token = &lexer->buffer->last ();
+
+      if (lexer->next_token->keyword == RID_MODULE)
+	cp_parser_module_declaration (parser, false, exporting_p);
+      else
+	cp_parser_import_declaration (parser, exporting_p);
+
+      /* Remove the extra EOF token.  */
+      if (tok.type != CPP_EOF)
+	lexer->buffer->pop ();
+    }
+
+  // FIXME:     module_atom_preamble_end ();
+}
+
 /* Declarations [gram.dcl.dcl] */
 
 /* Parse an optional declaration-sequence.  TOP_LEVEL is true, if this
@@ -12788,7 +12887,6 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 	     true on entry if this is toplevel.  */
 	  bool exporting = token->keyword == RID_EXPORT;
 
-	  in_global = !top_level;
 	  if (cp_lexer_nth_token_is_keyword (parser->lexer, 1 + exporting,
 					     RID_MODULE))
 	    {
@@ -12807,6 +12905,11 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 		(parser, maybe_global, exporting);
 
 	      continue;
+	    }
+	  else if (top_level)
+	    {
+	      in_global = false;
+	      module_preamble_end_loc = token->location;
 	    }
 	}
 
@@ -12910,7 +13013,7 @@ cp_parser_declaration (cp_parser* parser)
       else
 	cp_parser_explicit_instantiation (parser);
     }
-  else if (token1.keyword == RID_IMPORT && !modules_atom_p ())
+  else if (token1.keyword == RID_IMPORT)
     cp_parser_import_declaration (parser);
   /* If the next token is `export', it's new-style modules or
      old-style template.  */
@@ -12921,6 +13024,10 @@ cp_parser_declaration (cp_parser* parser)
       else
 	cp_parser_module_export (parser);
     }
+  else if (token1.keyword == RID_MODULE)
+    /* This is ill-formed, but parse for diagnostics.  */
+    cp_parser_module_declaration (parser, false, false);
+
   /* If the next token is `extern', 'static' or 'inline' and the one
      after that is `template', we have a GNU extended explicit
      instantiation directive.  */
@@ -38825,10 +38932,6 @@ cp_parser_initial_pragma (cp_token *first_token)
   while (first_token->type != CPP_PRAGMA_EOL && first_token->type != CPP_EOF)
     cp_lexer_get_preprocessor_token (0, first_token);
 
-  if (modules_p ())
-    error_at (first_token->location,
-	      "PCH is incompatible with C++ modules");
-
   /* Now actually load the PCH file.  */
   if (name)
     c_common_pch_pragma (parse_in, TREE_STRING_POINTER (name));
@@ -39216,83 +39319,6 @@ pragma_lex (tree *value, location_t *loc)
   return ret;
 }
 
-/* Read and parse an atom preamble.  */
-
-static void
-cp_parser_module_preamble (cp_parser *parser)
-{
-  cp_lexer *lexer = parser->lexer;
-
-  for (bool first = true;; first = false)
-    {
-      unsigned lwm = lexer->buffer->length ();
-      bool exporting_p = false;
-
-    another:
-      /* Peeking does not do macro expansion.  */
-      const cpp_token *cpp_tok = cpp_peek_token (parse_in, exporting_p);
-
-      // FIXME:#pragma?
-
-      if (cpp_tok->type != CPP_NAME)
-	break;
-      if (cpp_tok->val.node.node->type == NT_MACRO)
-	break;
-      tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (cpp_tok->val.node.node));
-      if (!IDENTIFIER_KEYWORD_P (ident))
-	break;
-      int keyword = C_RID_CODE (ident);
-      if (!exporting_p && keyword == RID_EXPORT)
-	{
-	  /* Leading 'export' */
-	  exporting_p = true;
-	  goto another;
-	}
-      if (!(keyword == RID_IMPORT
-	    || (first && keyword == RID_MODULE)))
-	break;
-      
-      /* We've peeked export? (module|import), so now fill buffer with
-	 tokens until ';'.  */
-      cp_token tok;
-      int ix = 1 + exporting_p;
-      do 
-	{
-	  cp_lexer_get_preprocessor_token (!ix ? C_LEX_FILENAME
-					   : C_LEX_STRING_NO_JOIN, &tok);
-	  vec_safe_push (lexer->buffer, tok);
-	  ix--;
-	  if (tok.type == CPP_SEMICOLON)
-	    {
-	      // FIXME:How to tell if from macro?
-	      if (false)
-		error_at (tok.location,
-			  "module preamble declaration ends inside macro");
-	      break;
-	    }
-	}
-      while (tok.type != CPP_EOF);
-
-      if (tok.type != CPP_EOF)
-	vec_safe_push (lexer->buffer, eof_token);
-
-      lexer->next_token = &(*lexer->buffer)[lwm + exporting_p];
-      lexer->last_token = &lexer->buffer->last ();
-
-      if (lexer->next_token->keyword == RID_MODULE)
-	cp_parser_module_declaration (parser, false, exporting_p);
-      else
-	cp_parser_import_declaration (parser, exporting_p);
-
-      /* Remove the extra EOF token.  */
-      if (tok.type != CPP_EOF)
-	lexer->buffer->pop ();
-    }
-
-  /* End of preamble.  Commit module state.  */
-  // FIXME:     module_atom_preamble_end ();
-}
-
 /* Fill the lexer with tokens from the preprocessor.  *FIRST is the
    intial token found by cp_parser_initial_pragma.  */
 
@@ -39349,6 +39375,8 @@ c_parse_file (void)
       if (modules_atom_p ())
 	cp_parser_module_preamble (the_parser);
       cp_lexer_get_preprocessor_token (0, &first);
+      if (modules_atom_p ())
+	module_preamble_end_loc = first.location;
     }
 
   cp_parser_fill_main (the_parser, &first);

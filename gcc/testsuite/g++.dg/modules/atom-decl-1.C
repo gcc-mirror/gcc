@@ -1,5 +1,5 @@
 // { dg-options "-fmodules-atom" }
 
-int i;
+int i; // { dg-message "ended here" }
 
-module thing; // { dg-error "expected" }
+module thing; // { dg-error "within module preamble" }

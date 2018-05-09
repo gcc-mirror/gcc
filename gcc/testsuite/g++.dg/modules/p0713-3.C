@@ -1,2 +1,2 @@
-int k;
-module frob; // { dg-error "expected" }
+int k; // { dg-message "ended here" }
+module frob; // { dg-error "must be within" }

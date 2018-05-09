@@ -1,3 +1,25 @@
+2018-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp/parser.c (module_preamble_end_loc): New var.
+	(cp_parser_module_declaration): Check it.
+	(cp_parser_import_declaration): Likewise.
+	(cp_parser_module_preamble): Deal with FILENAME enabling.
+	(cp_parser_declaration_seq_op): Set it.
+	(cp_parser_declaration): Parse out-of-preamble module & import
+	decls.
+	(cp_parser_initial_pragma): Don't check modules here.
+	(c_parse_file): Set module_preamble_end_loc.
+	gcc/c-family/
+	* c-lex.c (c_lex_with_flags): Remove C_LEX_FILENAME handling.
+	* c-pragma.h (C_LEX_FILENAME): Delete.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-[123].C: Adjust.
+	* g++.dg/modules/atom-preamble-3.C
+	* g++.dg/modules/atom-preamble-4.C: New.
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+	* g++.dg/modules/p0713-[23].C: Adjust.
+
 2018-05-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
