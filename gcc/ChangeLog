@@ -1,3 +1,15 @@
+2018-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/85638
+	* bb-reorder.c: Include common/common-target.h.
+	(create_forwarder_block): New function extracted from...
+	(fix_up_crossing_landing_pad): ...here.  Rename into...
+	(dw2_fix_up_crossing_landing_pad): ...this.
+	(sjlj_fix_up_crossing_landing_pad): New function.
+	(find_rarely_executed_basic_blocks_and_crossing_edges): In SJLJ mode,
+	call sjlj_fix_up_crossing_landing_pad if there are incoming EH edges
+	from both partitions and exit the loop after one iteration.
+
 2018-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Revert:
