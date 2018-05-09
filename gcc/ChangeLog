@@ -1,3 +1,11 @@
+2018-05-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Fill a cost
+	vector.
+	(vect_bb_vectorization_profitable_p): Adjust.  Compute
+	actual scalar cost using the cost vector and the add_stmt_cost
+	machinery.
+
 2018-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/85645
