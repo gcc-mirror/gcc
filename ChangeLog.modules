@@ -1,5 +1,12 @@
 2018-05-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (module_state::get_module): Add insert arg.
+	(module_state::{read,write}_config): Stream direct imports first.
+	gcc/testsuite/
+	* g++.dg/modules/import-1_[ce].C: Adjust.
+	* g++.dg/modules/mod-imp-1_[cd].C: Adjust.
+
 	Add -EE
 	gcc/cp/
 	* cp-lang.c (atom_preamble_fsm): New.

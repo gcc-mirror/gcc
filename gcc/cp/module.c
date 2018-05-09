@@ -2418,7 +2418,8 @@ struct GTY(()) module_state {
  public:
   static void init ();
   static void fini ();
-  static module_state *get_module (tree name, module_state * = NULL);
+  static module_state *get_module (tree name, module_state * = NULL,
+				   bool insert = true);
   static void print_map ();
 
  public:
@@ -6042,12 +6043,16 @@ depset::tarjan::connect (depset *v)
 /* Find or create module NAME in the hash table.  */
 
 module_state *
-module_state::get_module (tree name, module_state *dflt)
+module_state::get_module (tree name, module_state *dflt, bool insert)
 {
   module_state **slot
-    = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), INSERT);
-  module_state *state = *slot;
+    = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
+				 insert ? INSERT : NO_INSERT);
 
+  if (!slot)
+    return NULL;
+
+  module_state *state = *slot;
   if (dflt)
     {
       /* Don't overwrite occupied default.  */
@@ -6385,15 +6390,25 @@ module_state::write_readme (elf_out *to)
    u:module-name
    u:<target-triplet>
    u:<host-triplet>
+
    u:global_vec->length()
    u32:global_crc
-   u:import-num
+
+   u:modules->length ()
    {
-     b:imported
-     b:exported
-     u32:crc
+     u:index
      u:name
-   } imports[N]
+     u:exported
+     u32:crc
+   } direct-imports[N]
+   u:0
+   {
+     u:index
+     s:name
+     u32:crc
+   } indirect-imports[N]
+   u:0
+
    u:decl-section-lwm
    u:decl-section-hwm
    u:unnamed
@@ -6437,23 +6452,40 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
   cfg.u (global_vec->length ());
   cfg.u32 (global_crc);
 
-  /* Total number of modules.  */
   cfg.u (modules->length ());
-  /* Write the imports, in forward order.  */
+  /* Write the direct imports.  */
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
-      dump () && dump ("Writing %simport %I (crc=%x)",
-		       state->exported ? "export " :
-		       state->imported ? "" : "indirect ",
-		       state->name, state->crc);
-      cfg.b (state->imported);
-      cfg.b (state->exported);
-      cfg.bflush ();
-      cfg.u32 (state->crc);
-      unsigned name = to->name (state->name);
-      cfg.u (name);
+      if (state->imported)
+	{
+	  dump () && dump ("Writing %simport:%u %I (crc=%x)",
+			   state->exported ? "exported " : "",
+			   ix, state->name, state->crc);
+	  unsigned name = to->name (state->name);
+	  cfg.u (ix);
+	  cfg.u (name);
+	  cfg.u (state->exported);
+	  cfg.u32 (state->crc);
+	}
     }
+  cfg.u (0);
+
+  /* Write the indirect imports.  */
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
+    {
+      module_state *state = (*modules)[ix];
+      if (!state->imported)
+	{
+	  dump () && dump ("Writing indirect import:%u %I (crc=%x)",
+			   ix, state->name, state->crc);
+	  unsigned name = to->name (state->name);
+	  cfg.u (ix);
+	  cfg.u (name);
+	  cfg.u32 (state->crc);
+	}
+    }
+  cfg.u (0);
 
   dump () && dump ("Declaration sections are [%u,%u)",
 		   sec_range.first, sec_range.second);
@@ -6568,37 +6600,53 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   gcc_assert (!remap);
   remap = NULL;
   vec_safe_reserve (remap, imports);
-
-  /* Allocate the reserved slots.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
+  for (unsigned ix = imports; ix--;)
     remap->quick_push (0);
 
-  /* Read the import table in forward order.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < imports; ix++)
+  /* Read the direct imports.  */
+  while (unsigned ix = cfg.u ())
     {
-      bool imported = cfg.b ();
-      bool exported = cfg.b ();
-      cfg.bflush ();
-      unsigned crc = cfg.u32 ();
       tree name = get_identifier (from->name (cfg.u ()));
+      bool exported = cfg.u ();
+      unsigned crc = cfg.u32 ();
 
-      dump () && dump ("Nested %simport %I",
-		       exported ? "export " : imported ? "" : "indirect ", name);
+      if (ix >= remap->length () || ix < MODULE_IMPORT_BASE || (*remap)[ix])
+	goto fail;
       module_state *imp = do_import (input_location, name, /*unit_p=*/false,
-				     /*import_p=*/imported, &crc);
+				     /*import_p=*/true, &crc);
       if (!imp)
 	{
 	  from->set_error (elf::E_BAD_IMPORT);
 	  goto fail;
 	}
-      remap->quick_push (imp->mod);
-      if (imported)
-	{
-	  dump () && dump ("Direct %simport %I %u",
-			   exported ? "export " : "", name, imp->mod);
-	  set_import (imp, exported);
-	}
+      dump () && dump ("Read %simport:%u %I->%u",
+		       exported ? "exported " : "", ix, name, imp->mod);
+      (*remap)[ix] = imp->mod;
+      set_import (imp, exported);
+      imports--;
     }
+
+  /* Read the indirect imports.  */
+  while (unsigned ix = cfg.u ())
+    {
+      tree name = get_identifier (from->name (cfg.u ()));
+      unsigned crc = cfg.u32 ();
+
+      module_state *imp = get_module (name, NULL, false);
+      if (ix >= remap->length () || ix < MODULE_IMPORT_BASE || (*remap)[ix]
+	  || !imp || imp->crc != crc)
+	{
+	  error ("indirect import %qE %s", name,
+		 imp ? "has CRC mismatch" : "is not already loaded");
+	  goto fail;
+	}
+      dump () && dump ("Indirect import:%u %I->%u", ix, name, imp->mod);
+      (*remap)[ix] = imp->mod;
+      imports--;
+    }
+
+  if (imports != MODULE_IMPORT_BASE)
+    goto fail;
 
   sec_range.first = cfg.u ();
   sec_range.second = cfg.u ();
