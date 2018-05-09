@@ -1,3 +1,8 @@
+2018-05-09  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/aarch64/store_lane_spill_1.c: New test.
+	* gcc.target/aarch64/sve/store_lane_spill_1.c: Likewise.
+
 2018-05-08  Carl Love  <cel@us.ibm.com>
 	* gcc.target/powerpc/builtins-8-p9-runnable.c: Add new test file.
 

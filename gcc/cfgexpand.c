@@ -3582,6 +3582,26 @@ expand_return (tree retval, tree bounds)
     }
 }
 
+/* Expand a clobber of LHS.  If LHS is stored it in a multi-part
+   register, tell the rtl optimizers that its value is no longer
+   needed.  */
+
+static void
+expand_clobber (tree lhs)
+{
+  if (DECL_P (lhs))
+    {
+      rtx decl_rtl = DECL_RTL_IF_SET (lhs);
+      if (decl_rtl && REG_P (decl_rtl))
+	{
+	  machine_mode decl_mode = GET_MODE (decl_rtl);
+	  if (maybe_gt (GET_MODE_SIZE (decl_mode),
+			REGMODE_NATURAL_SIZE (decl_mode)))
+	    emit_clobber (decl_rtl);
+	}
+    }
+}
+
 /* A subroutine of expand_gimple_stmt, expanding one gimple statement
    STMT that doesn't require special handling for outgoing edges.  That
    is no tailcalls and no GIMPLE_COND.  */
@@ -3687,7 +3707,7 @@ expand_gimple_stmt_1 (gimple *stmt)
 	    if (TREE_CLOBBER_P (rhs))
 	      /* This is a clobber to mark the going out of scope for
 		 this LHS.  */
-	      ;
+	      expand_clobber (lhs);
 	    else
 	      expand_assignment (lhs, rhs,
 				 gimple_assign_nontemporal_move_p (

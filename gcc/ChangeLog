@@ -1,3 +1,14 @@
+2018-05-09  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* cfgexpand.c (expand_clobber): New function.
+	(expand_gimple_stmt_1): Use it.
+	* tree-vect-stmts.c (vect_clobber_variable): New function,
+	split out from...
+	(vectorizable_simd_clone_call): ...here.
+	(vectorizable_store): Emit a clobber either side of an
+	IFN_STORE_LANES sequence.
+	(vectorizable_load): Emit a clobber after an IFN_LOAD_LANES sequence.
+
 2018-05-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/85626
