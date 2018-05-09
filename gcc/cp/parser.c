@@ -21344,8 +21344,6 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 	{
 	  *is_error = true;
 	  parameters = error_mark_node;
-	  if (parser->fully_implicit_function_template_p)
-	    abort_fully_implicit_template (parser);
 	  break;
 	}
 
