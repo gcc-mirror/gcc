@@ -1,3 +1,11 @@
+2018-05-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_Base_manager::_M_get_pointer):
+	Use constexpr if in C++17 mode.
+	(_Base_manager::_M_clone(_Any_data&, const _Any_data&, true_type)):
+	Copy from const object.
+	* testsuite/20_util/function/cons/non_copyconstructible.cc: New.
+
 2018-05-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* src/c++11/debug.cc [_GLIBCXX_HAVE_EXECINFO_H]: Include execinfo.h.
