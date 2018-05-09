@@ -633,6 +633,8 @@ func runTest(cmd *base.Command, args []string) {
 		a := &work.Action{Mode: "go test -i"}
 		for _, p := range load.PackagesForBuild(all) {
 			if cfg.BuildToolchainName == "gccgo" && p.Standard {
+				// gccgo's standard library packages
+				// can not be reinstalled.
 				continue
 			}
 			a.Deps = append(a.Deps, b.CompileAction(work.ModeInstall, work.ModeInstall, p))
@@ -862,9 +864,6 @@ func builderTest(b *work.Builder, p *load.Package) (buildAction, runAction, prin
 			pmain.Internal.Imports = append(pmain.Internal.Imports, ptest)
 		} else {
 			p1 := load.LoadImport(dep, "", nil, &stk, nil, 0)
-			if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-				continue
-			}
 			if p1.Error != nil {
 				return nil, nil, nil, p1.Error
 			}

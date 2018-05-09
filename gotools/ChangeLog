@@ -1,3 +1,8 @@
+2018-05-09  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-go-tool): Don't copy zstdpkglist.go.
+	* Makefile.in: Rebuild.
+
 2018-05-04  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/85630

@@ -234,18 +234,9 @@ func (b *Builder) gccgoToolID(name, language string) (string, error) {
 	// compile an empty file on standard input.
 	cmdline := str.StringList(cfg.BuildToolexec, name, "-###", "-x", language, "-c", "-")
 	cmd := exec.Command(cmdline[0], cmdline[1:]...)
-
-	// Strip any LANG or LC_ environment variables, and force
-	// LANG=C, so that we get the untranslated output.
-	var env []string
-	for _, e := range os.Environ() {
-		if !strings.HasPrefix(e, "LANG=") && !strings.HasPrefix(e, "LC_") {
-			env = append(env, e)
-		}
-	}
-	env = append(env, "LANG=C")
-
-	cmd.Env = base.EnvForDir(cmd.Dir, env)
+	cmd.Env = base.EnvForDir(cmd.Dir, os.Environ())
+	// Force untranslated output so that we see the string "version".
+	cmd.Env = append(cmd.Env, "LC_ALL=C")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("%s: %v; output: %q", name, err, out)
