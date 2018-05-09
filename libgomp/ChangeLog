@@ -1,5 +1,11 @@
 2018-05-09  Tom de Vries  <tom@codesourcery.com>
 
+	PR libgomp/82901
+	* oacc-parallel.c (GOACC_declare): Use GOMP_ASYNC_SYNC as async argument
+	to GOACC_enter_exit_data.
+
+2018-05-09  Tom de Vries  <tom@codesourcery.com>
+
 	PR libgomp/83792
 	* oacc-int.h (async_valid_stream_id_p, async_valid_p)
 	(async_synchronous_p): New function.
