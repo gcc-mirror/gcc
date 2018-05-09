@@ -24,18 +24,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 
-/* This class is used summarize expressions that are supported by the
-   irange_operator class, and provide an interface to the operators on
-   the expression.  
+/* This class is used to summarize gimple statements that are supported by the
+   irange_operator class, and provide an interface to range operations on
+   the statement.
 
-   The contents of the stmt are abstracted away from gimple (or any other IL)
+   The contents of the statement which may be of interest to range operations 
+   are made available with simple queries.
 
-   The expression or its operands can be resolved to a range if 2 of the
-   3 operands have ranges supplied for them. 
+   Current support is for unary and binary statements.  The expression or its
+   operands can be resolved to a range if 2 of the 3 operands have ranges
+   supplied for them. 
    
-   This class is not meant to be cached in any way, just utilized within the
-   range engine to communicate required components of an expression.  */
-
+   This class is intended to be a lightweight overlay of a 'gimple *'
+   pointer, and can be passed by value. It can be created from a gimple stmt
+   and converted back to a gimple statement by default.  */
 
 class range_stmt
 {
@@ -104,12 +106,20 @@ range_stmt::valid () const
   return g != NULL;
 }
 
+inline 
+range_stmt::operator gimple *() const
+{
+  return g;
+}
+
 inline tree_code
 range_stmt::get_code () const
 {
   return gimple_expr_code (g);
 }
 
+/* Return the second operand of the statement, if there is one.  Otherwise
+   return NULL_TREE*/
 inline tree
 range_stmt::operand2 () const
 {
@@ -121,26 +131,32 @@ range_stmt::operand2 () const
         if (gimple_num_ops (g) >= 3)
 	  return gimple_assign_rhs2 (g);
 	else
-	  return NULL;
+	  return NULL_TREE;
       default:
         break;
     }
-  return NULL;
+  return NULL_TREE;
 }
 
+/* Return the first operand of the statement, if it is a valid SSA_NAME which
+   is supported by class irange. Otherwise return NULL_TREE.  */
 inline tree
 range_stmt::ssa_operand1() const
 {
   tree op1 = operand1 ();
+  /* Validate statement has confirmed this SSA_NAME is a valid kind.  */
   if (op1 && TREE_CODE (op1) == SSA_NAME)
     return op1;
   return NULL_TREE;
 }
 
+/* Return the second operand of the statement, if it is a valid SSA_NAME which
+   is supported by class irange. Otherwise return NULL_TREE.  */
 inline tree
 range_stmt::ssa_operand2 () const
 {
   tree op2 = operand2 ();
+  /* Validate statement has confirmed this SSA_NAME is a valid kind.  */
   if (op2 && TREE_CODE (op2) == SSA_NAME)
     return op2;
   return NULL_TREE;
@@ -152,9 +168,4 @@ range_stmt::handler () const
   return irange_op_handler (get_code ());
 }
 
-inline 
-range_stmt::operator gimple *() const
-{
-  return g;
-}
 #endif /* GCC_SSA_RANGE_STMT_H */

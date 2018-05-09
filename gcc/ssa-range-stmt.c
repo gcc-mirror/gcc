@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range-stmt.h"
 #include "fold-const.h"
 
+/* Return the First operand of the statement if it is a valid SSA_NAME which
+   is supported by class irange. Otherwise return NULL_TREE.  */
 tree
 range_stmt::operand1 () const
 {
@@ -54,32 +56,32 @@ range_stmt::operand1 () const
       case GIMPLE_COND:
         return gimple_cond_lhs (g);
       case GIMPLE_ASSIGN:
-	if (get_code() == ADDR_EXPR)
-	  {
-	    // If the base address is an SSA_NAME, return it. 
-	    // if its range is non-zero, then we know the pointer is non-zero
-	    bool strict_ov;
-	    tree expr = gimple_assign_rhs1 (g);
-	    tree base = get_base_address (TREE_OPERAND (expr, 0));
-	    if (base != NULL_TREE && TREE_CODE (base) == MEM_REF
-		&& TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
-	      return TREE_OPERAND (base, 0);
-	    
-	    // Otherwise, check to see if the RHS is always non-null
-	    // and return a constant that will equate to a non-zero range
-	    if (tree_single_nonzero_warnv_p (expr, &strict_ov))
-	      return integer_one_node;
-	    // Otherwise not something we care about, just return the RHS
-	    // and validate_stmt will reject this statement.
-	    return expr;
-	  }
-	return gimple_assign_rhs1 (g);
+        {
+	  tree expr = gimple_assign_rhs1 (g);
+	  if (get_code() == ADDR_EXPR)
+	    {
+	      // If the base address is an SSA_NAME, return it. 
+	      // if its range is non-zero, then we know the pointer is non-zero.
+	      bool strict_ov;
+	      tree base = get_base_address (TREE_OPERAND (expr, 0));
+	      if (base != NULL_TREE && TREE_CODE (base) == MEM_REF
+		  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+		return TREE_OPERAND (base, 0);
+	      
+	      // Otherwise, check to see if the RHS is always non-null
+	      // and return a constant that will equate to a non-zero range.
+	      if (tree_single_nonzero_warnv_p (expr, &strict_ov))
+		return integer_one_node;
+	      // Otherwise this is not something complex we care about. Return
+	      // the RHS and allow validate_stmt to have a look.
+	    }
+	  return expr;
+	}
       default:
         break;
     }
   return NULL;
 }
-
 
 /* Validate that the statement and all operands of this expression are
    operable on iranges. If it is valid, set the stmt pointer.  */
@@ -109,6 +111,7 @@ range_stmt::validate_stmt (gimple *s)
 
       if (ssa1 || (TREE_CODE (op1) == INTEGER_CST && !TREE_OVERFLOW (op1))) 
 	{
+	  // IF this is a unary operation, we are done. 
 	  if (!op2)
 	   return;
 	  if (ssa2 || (TREE_CODE (op2) == INTEGER_CST && !TREE_OVERFLOW (op2)))
@@ -119,7 +122,7 @@ range_stmt::validate_stmt (gimple *s)
 }
 
 
-/* Return TRUE if CODE with operands of type TYPE is a boolean
+/* Return TRUE if code with operands of type TYPE is a boolean
    evaluation.  These are important to identify as both sides of a logical
    binary expression must be evaluated in order to calculate a range.  */
 bool
@@ -134,6 +137,7 @@ range_stmt::logical_expr_p () const
 
       case BIT_AND_EXPR:
       case BIT_IOR_EXPR:
+        // Bitwise operations on single bits are logical too.
         if (types_compatible_p (TREE_TYPE (operand1 ()), boolean_type_node))
 	  return true;
 	break;
@@ -236,7 +240,6 @@ range_stmt::fold_logical (irange& r, const irange& lhs, const irange& op1_true,
 /* This method will attempt to resolve a unary expression with value R1 to
    a range.  If the expression can be resolved, true is returned, and the
    range is returned in RES.  */
-
 bool
 range_stmt::fold (irange &res, const irange& r1) const
 {
@@ -254,7 +257,6 @@ range_stmt::fold (irange &res, const irange& r1) const
 /* This method will attempt to resolve a binary expression with operand
    values R1 tnd R2 to a range.  If the expression can be resolved, true is
    returned, and the range is returned in RES.  */
-
 bool
 range_stmt::fold (irange &res, const irange& r1, const irange& r2) const
 {
@@ -270,6 +272,7 @@ bool
 range_stmt::op1_irange (irange& r, const irange& lhs_range) const
 {  
   irange type_range;
+  // An empty range is viral, so return an empty range.
   if (lhs_range.empty_p ())
     {
       r.clear (TREE_TYPE (operand1 ()));
@@ -288,6 +291,7 @@ range_stmt::op1_irange (irange& r, const irange& lhs_range,
 			const irange& op2_range) const
 {  
   gcc_assert (operand2 () != NULL);
+  // An empty range is viral, so return an empty range.
   if (op2_range.empty_p () || lhs_range.empty_p ())
     {
       r.clear (op2_range.get_type ());
@@ -304,6 +308,7 @@ bool
 range_stmt::op2_irange (irange& r, const irange& lhs_range,
 			const irange& op1_range) const
 {  
+  // An empty range is viral, so return an empty range.
   if (op1_range.empty_p () || lhs_range.empty_p ())
     {
       r.clear (op1_range.get_type ());

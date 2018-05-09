@@ -35,6 +35,12 @@ range_compatible_p (tree t1, tree t2)
 {
   if (POINTER_TYPE_P (t1) && POINTER_TYPE_P (t2))
     return true;
+
+  // FORTRAN has different precision booleans that trigger a false
+  // from types_compatble_p
+  if (TREE_CODE (t1) == BOOLEAN_TYPE && TREE_CODE (t2) == BOOLEAN_TYPE)
+      return true;
+
   return types_compatible_p (t1, t2);
 }
 

@@ -27,20 +27,27 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This is the primary interface class for the range generator at the basic
    block level. It allows the client to query a range for an ssa-name within
-   a basic block, either on an outgoing edge, or on an individual statement.  */
+   a basic block, either on an outgoing edge, or on an individual statement. 
+   
+   It is lightweight to declare, but for each basic block that is queried, it
+   will scan some or all of the statements in the block to determine what
+   ssa-names can have range information generated for them.  THis will
+   prevent constantly rescanning a block.
+   
+   THis is primarily of use to the path_ranger found in ssa-range.[ch] which
+   builds on top of this to find ranges across the CFG.  */
 
 class block_ranger
 {
   class gori_map *gori; 	/* Generates Outgoing Range Info.  */
-  irange bool_zero;
-  irange bool_one;
+  irange bool_zero;		/* Bolean zero cached.  */
+  irange bool_one;		/* Bolean true cached.  */
   bool process_logical (range_stmt stmt, irange& r, tree name,
 			const irange& lhs);
   bool get_range_from_stmt (range_stmt stmt, irange& r, tree name,
 			    const irange& lhs);
 protected:
   virtual bool get_operand_range (irange& r, tree op, gimple *s = NULL);
-  void normalize_bool_type (irange& r1, irange& r2);
 public:
   block_ranger ();
   ~block_ranger ();
@@ -54,7 +61,6 @@ public:
   /* What does g provide about the lhs if NAME has RANGE_FOR_NAME.  */
   bool range_of_def (irange& r, gimple *g, tree name,
 		     const irange& range_for_name);
-
   tree single_import (tree name);
   void dump (FILE *f);
   void exercise (FILE *f);

@@ -24,7 +24,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range-bb.h"
 
 /* This class utilizes the basic block GORI map and is used to query the range
-   of SSA_NAMEs across multiple basic blocks and edges.  */
+   of SSA_NAMEs across multiple basic blocks and edges.  It builds a cache
+   of range on entry to blocks.  ALL work is done
+   on-demand so it is relatively lightweight until used.
+   
+   There is a global ssa-name table implemented within path_ranger via 
+   a set of protected global_ssa_name routines.  These are here until such
+   time that there is a global irange table for real.  
+   */
+
 class path_ranger : public block_ranger
 {
 private:
@@ -34,7 +42,7 @@ private:
   void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
   void determine_block (tree name, basic_block bb, basic_block def_bb);
   bool path_range_reverse (irange &r, tree name, const vec<basic_block> &);
-  bool path_fold_stmt (irange &r, range_stmt &rn, basic_block bb,
+  bool path_fold_stmt (irange &r, range_stmt rn, basic_block bb,
 		       edge e = NULL);
   bool process_phi (irange &r, gphi *phi);
   bool path_get_operand (irange &r, tree name, basic_block bb);
@@ -60,8 +68,7 @@ public:
 
   bool path_range (irange &r, tree name, const vec<basic_block> &bbs,
 		   enum path_range_direction, edge start_edge = NULL);
-  // Evaluate expression within a BB as much as possible.
-  bool path_range_of_def (irange& r, gimple *g);
+  // Evaluate statement G within a BB assuming entry was via edge E.
   bool path_range_of_def (irange& r, gimple *g, edge e);
 
   void dump (FILE *f);
