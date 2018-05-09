@@ -39222,21 +39222,21 @@ static void
 cp_parser_module_preamble (cp_parser *parser)
 {
   cp_lexer *lexer = parser->lexer;
-  // FIXME:Tell the preprocessor to reserve export, import & module
+
   for (bool first = true;; first = false)
     {
       unsigned lwm = lexer->buffer->length ();
       bool exporting_p = false;
 
     another:
-      /* Peeking does not do macro expansion, but none of the 3
-         preamble tokens we care about here can be macros or the
-         expansion of same.  */
+      /* Peeking does not do macro expansion.  */
       const cpp_token *cpp_tok = cpp_peek_token (parse_in, exporting_p);
 
       // FIXME:#pragma?
 
       if (cpp_tok->type != CPP_NAME)
+	break;
+      if (cpp_tok->val.node.node->type == NT_MACRO)
 	break;
       tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (cpp_tok->val.node.node));
       if (!IDENTIFIER_KEYWORD_P (ident))
@@ -39288,7 +39288,7 @@ cp_parser_module_preamble (cp_parser *parser)
       if (tok.type != CPP_EOF)
 	lexer->buffer->pop ();
     }
-  
+
   /* End of preamble.  Commit module state.  */
   // FIXME:     module_atom_preamble_end ();
 }

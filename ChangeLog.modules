@@ -1,6 +1,11 @@
 2018-05-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* parser.c (cp_parser_module_preamble): Check for macros
+	gcc/testsuite/
+	* g++.dg/modules/atom-preamble-3.C: New.
+
+	gcc/cp/
 	* parser.c (cp_parser_module_preamble): New.
 	(cp_parser_fill_main): Remove atom parsing here.
 	(c_parse_file): Adjust.
