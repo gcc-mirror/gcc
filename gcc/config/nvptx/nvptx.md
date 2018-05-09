@@ -1101,14 +1101,14 @@
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
   ""
-  "trap;")
+  "trap; exit;")
 
 (define_insn "trap_if_true"
   [(trap_if (ne (match_operand:BI 0 "nvptx_register_operand" "R")
 		(const_int 0))
 	    (const_int 0))]
   ""
-  "%j0 trap;"
+  "%j0 trap; %j0 exit;"
   [(set_attr "predicable" "false")])
 
 (define_insn "trap_if_false"
@@ -1116,7 +1116,7 @@
 		(const_int 0))
 	    (const_int 0))]
   ""
-  "%J0 trap;"
+  "%J0 trap; %J0 exit;"
   [(set_attr "predicable" "false")])
 
 (define_expand "ctrap<mode>4"

@@ -1,3 +1,9 @@
+2018-05-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85626
+	* config/nvptx/nvptx.md (define_insn "trap", define_insn "trap_if_true")
+	(define_insn "trap_if_false"): Add exit after trap.
+
 2018-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/85638
