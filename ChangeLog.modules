@@ -1,3 +1,13 @@
+2018-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* parser.c (cp_parser_module_preamble): New.
+	(cp_parser_fill_main): Remove atom parsing here.
+	(c_parse_file): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/atom-preamble-1.C: New.
+	* g++.dg/modules/atom-preamble-2_[ab].C: New.
+
 2018-05-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
