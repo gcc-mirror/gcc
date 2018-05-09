@@ -6630,8 +6630,6 @@ extern bool maybe_reject_flexarray_init		(tree, tree);
 
 /* in lex.c */
 extern void cxx_dup_lang_specific_decl		(tree);
-extern void yyungetc				(int, int);
-
 extern tree unqualified_name_lookup_error	(tree,
 						 location_t = UNKNOWN_LOCATION);
 extern tree unqualified_fn_lookup_error		(cp_expr);
@@ -6653,6 +6651,7 @@ extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
 extern void module_file_nest			(const char *name);
+extern int atom_preamble_prefix_len		(bool, cpp_reader *);
 
 /* in method.c */
 extern void init_method				(void);

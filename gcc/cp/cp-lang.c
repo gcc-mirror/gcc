@@ -35,6 +35,7 @@ static tree cp_eh_personality (void);
 static tree get_template_innermost_arguments_folded (const_tree);
 static tree get_template_argument_pack_elems_folded (const_tree);
 static tree cxx_enum_underlying_base_type (const_tree);
+static int atom_preamble_fsm (int, cpp_reader *, const cpp_token *);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -78,6 +79,8 @@ static tree cxx_enum_underlying_base_type (const_tree);
 #define LANG_HOOKS_EH_RUNTIME_TYPE build_eh_type_type
 #undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
+#undef LANG_HOOKS_PREPROCESS_PREAMBLE
+#define LANG_HOOKS_PREPROCESS_PREAMBLE atom_preamble_fsm
 
 #if CHECKING_P
 #undef LANG_HOOKS_RUN_LANG_SELFTESTS
@@ -232,6 +235,33 @@ tree cxx_enum_underlying_base_type (const_tree type)
                                 TYPE_UNSIGNED (underlying_type));
 
   return underlying_type;
+}
+
+/* Determine whether the preprocessor should read the next token or
+   not.  Returns -1 to inactivate and 0 when we're done.  */
+
+static int
+atom_preamble_fsm (int state, cpp_reader *pfile, const cpp_token *prev)
+{
+  if (prev)
+    {
+      if ((state & 0xf) == 2)
+	cpp_enable_filename_token (pfile, false);
+      if (prev->type == CPP_SEMICOLON)
+	state = 0x10;
+      else
+	{
+	  if (state > 1)
+	    state--;
+	  if (state == 2)
+	    cpp_enable_filename_token (pfile, true);
+	  return state;
+	}
+    }
+  else if (!flag_module_preamble)
+    return -1;
+
+  return atom_preamble_prefix_len (!state, pfile);
 }
 
 #if CHECKING_P

@@ -1517,12 +1517,16 @@ C++ ObjC++ Driver RejectNegative Var(flag_modules,-1) Integer
 Enable C++ modules-atom (experimental)
 
 fno-modules
-C++ ObjC++ Driver RejectNegative Var(flag_modules,0) Integer
+C++ ObjC++ Driver Undocumented RejectNegative Var(flag_modules,0) Integer
 ;; undocumented
+
+EE
+Driver C++ RejectNegative Var(flag_module_preamble)
+Preprocess atom module preamble
 
 fmodule-lazy
 C++ ObjC++ Driver Var(flag_module_lazy) Init(1)
-Enable lazy module importing.
+Enable lazy module importing
 
 fmodule-map-dump
 C++ ObjC++

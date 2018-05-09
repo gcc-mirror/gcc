@@ -1,5 +1,28 @@
 2018-05-09  Nathan Sidwell  <nathan@acm.org>
 
+	Add -EE
+	gcc/cp/
+	* cp-lang.c (atom_preamble_fsm): New.
+	(LANG_HOOKS_PREPROCESS_PREAMBLE): Override.
+	* cp-tree.h (atom_preamble_prefix_len): Declare.
+	* lang-specs.h (@c++): Pass -EE when preprocessing.
+	* lex.c (atom_preamble_prefix): New.  Broken out of ...
+	* parser.c (cp_parser_module_preamble): ... here.  Use it.
+	* module.c (handle_module_option): EE implies atom.
+	gcc/c-family/
+	* c-ppoutput.c: Include langhook.h.
+	(scan_translation_unit): Use lang_hooks.preprocess_preamble.
+	* c.opt (EE): New.
+	gcc/
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_PREAMBLE): Define.
+	(LANG_HOOKS_INITIALIZER): Add it.
+	* langhooks.h (struct lang_hooks): Add preprocess_preamble.
+	* doc/cppopts.texi (EE): Document.
+	* doc/invoke.texi (Preprocessor Options): Add -EE.
+	(C++ Modules): Document -EE.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-preamble-[123].C: New.
+
 	gcc/cp/
 	* cp/parser.c (module_preamble_end_loc): New var.
 	(cp_parser_module_declaration): Check it.

@@ -12765,45 +12765,22 @@ cp_parser_module_preamble (cp_parser *parser)
   for (bool first = true;; first = false)
     {
       unsigned lwm = lexer->buffer->length ();
-      bool exporting_p = false;
+      int pfx = atom_preamble_prefix_len (first, parse_in);
 
-    another:
-      /* Peeking does not do macro expansion.  */
-      const cpp_token *cpp_tok = cpp_peek_token (parse_in, exporting_p);
+      if (!pfx)
+	break;
 
-      // FIXME:#pragma?
-
-      if (cpp_tok->type != CPP_NAME)
-	break;
-      if (cpp_tok->val.node.node->type == NT_MACRO)
-	break;
-      tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (cpp_tok->val.node.node));
-      if (!IDENTIFIER_KEYWORD_P (ident))
-	break;
-      int keyword = C_RID_CODE (ident);
-      if (!exporting_p && keyword == RID_EXPORT)
-	{
-	  /* Leading 'export' */
-	  exporting_p = true;
-	  goto another;
-	}
-      if (!(keyword == RID_IMPORT
-	    || (first && keyword == RID_MODULE)))
-	break;
-      
-      /* We've peeked export? (module|import), so now fill buffer with
-	 tokens until ';'.  */
+      bool exporting_p = pfx > 3;
       cp_token tok;
-      int ix = 1 + exporting_p;
-      do 
+      do
 	{
-	  if (!ix)
+	  pfx--;
+	  if (pfx == 1)
 	    cpp_enable_filename_token (parse_in, true);
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, &tok);
-	  vec_safe_push (lexer->buffer, tok);
-	  if (!ix)
+	  if (pfx == 1)
 	    cpp_enable_filename_token (parse_in, false);
-	  ix--;
+	  vec_safe_push (lexer->buffer, tok);
 	  if (tok.type == CPP_SEMICOLON)
 	    {
 	      if (linemap_location_from_macro_expansion_p
@@ -12817,7 +12794,6 @@ cp_parser_module_preamble (cp_parser *parser)
 
       if (tok.type != CPP_EOF)
 	vec_safe_push (lexer->buffer, eof_token);
-
       lexer->next_token = &(*lexer->buffer)[lwm + exporting_p];
       lexer->last_token = &lexer->buffer->last ();
 

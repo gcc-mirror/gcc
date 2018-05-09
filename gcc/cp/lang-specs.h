@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 			       %W{o*:--output-pch=%*}}%V}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",
-    "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}\
+    "%{E|M|MM:cc1plus -E %{EE} %(cpp_options) %2 %(cpp_debug_options)}\
      %{!E:%{!M:%{!MM:\
        %{save-temps*|no-integrated-cpp:cc1plus -E\
 		%(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}\

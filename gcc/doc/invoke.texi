@@ -485,6 +485,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-A@var{question}=@var{answer} @gol
 -A-@var{question}@r{[}=@var{answer}@r{]} @gol
 -C  -CC  -D@var{macro}@r{[}=@var{defn}@r{]} @gol
+-EE @gol
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
@@ -29251,6 +29252,12 @@ The @option{-fno-module-lazy} option disables lazy module loading.
 Usually importing a module will load minimal information, defering the
 bulk of the loading to the point at which name-lookup inspects a
 particular namespace-scope name.
+
+The @option{-EE} option may be added when preprocessing with
+@option{-E}.  This causes preprocessing to terminate once the Atom
+preamble is processed.  Build systems may need to determine the set of
+imports a compilation needed, and this allows that without the expense
+of preprocessing the complete source.
 
 The @option{--param lazy-modules=@var{n}} parameter controls the
 limit on the number of concurrently open module files during lazy

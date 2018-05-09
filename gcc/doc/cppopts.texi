@@ -411,6 +411,13 @@ the source line.
 
 The @option{-CC} option is generally used to support lint comments.
 
+@item -EE
+@opindex EE
+Just preprocess the atom module preamble.  This consists of the module
+declaration (if present) and the import declarations.  Preprocessing
+is terminated just before the first token that cannot be part of the
+preamble.
+
 @item -P
 @opindex P
 Inhibit generation of linemarkers in the output from the preprocessor.

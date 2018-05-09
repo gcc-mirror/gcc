@@ -8995,6 +8995,11 @@ handle_module_option (unsigned code, const char *arg, int)
 {
   switch (opt_code (code))
     {
+    case OPT_EE:
+      /* Force atom.  */
+      flag_modules = -1;
+      return true;
+
     case OPT_fmodule_path_:
       add_path (xstrdup (arg), INC_CXX_MPATH, true, true);
       return true;

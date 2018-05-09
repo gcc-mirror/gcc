@@ -21,6 +21,7 @@
 #include "coretypes.h"
 #include "c-common.h"		/* For flags.  */
 #include "../libcpp/internal.h"
+#include "langhooks.h"
 #include "c-pragma.h"		/* For parse_in.  */
 #include "file-prefix-map.h"    /* remap_macro_filename()  */
 
@@ -175,12 +176,20 @@ scan_translation_unit (cpp_reader *pfile)
       && !flag_no_line_commands;
   bool in_pragma = false;
   bool line_marker_emitted = false;
+  int prefix = lang_hooks.preprocess_preamble ? 0 : -1;
 
   print.source = NULL;
-  for (;;)
+  for (const cpp_token *token = NULL;;)
     {
       source_location loc;
-      const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
+
+      if (prefix >= 0)
+	{
+	  prefix = lang_hooks.preprocess_preamble (prefix, pfile, token);
+	  if (!prefix)
+	    break;
+	}
+      token = cpp_get_token_with_location (pfile, &loc);
 
       if (token->type == CPP_PADDING)
 	{

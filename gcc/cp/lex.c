@@ -367,6 +367,46 @@ interface_strcmp (const char* s)
   return 1;
 }
 
+/* If the preprocessor is peeking at a possible atom module preamble
+   declaration, return count of tokens until the module name.
+   Otherwise zero.  */
+
+int
+atom_preamble_prefix_len (bool first, cpp_reader *pfile)
+{
+  /* Peeking at a possible start?  */
+  bool exporting_p = false;
+ another:
+  /* Peeking does not do macro expansion.  */
+  const cpp_token *cpp_tok = cpp_peek_token (pfile, exporting_p);
+
+  // FIXME:#pragma?
+
+  if (cpp_tok->type != CPP_NAME)
+    return 0;
+  
+  if (cpp_tok->val.node.node->type == NT_MACRO)
+    return 0;
+
+  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (cpp_tok->val.node.node));
+  if (!IDENTIFIER_KEYWORD_P (ident))
+    return 0;
+
+  int keyword = C_RID_CODE (ident);
+  if (!exporting_p && keyword == RID_EXPORT)
+    {
+      /* Leading 'export' */
+      exporting_p = true;
+      goto another;
+    }
+
+  if (!(keyword == RID_IMPORT
+	|| (first && keyword == RID_MODULE)))
+    return 0;
+
+  return 3 + exporting_p;
+}
+
 
 
 /* Parse a #pragma whose sole argument is a string constant.
