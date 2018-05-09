@@ -1,6 +1,12 @@
 2018-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/85645
+	* regrename.c (build_def_use): Also kill the chains that include the
+	destination of a REG_CFA_REGISTER note.
+
+2018-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/85645
 	*  regcprop.c (copyprop_hardreg_forward_1): Don't propagate into an
 	insn that has a REG_CFA_REGISTER note.
 
