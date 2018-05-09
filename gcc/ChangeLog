@@ -1,6 +1,12 @@
 2018-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/85645
+	* config/rs6000/rs6000.c (rs6000_emit_prologue_components): Put a SET
+	in the REG_CFA_REGISTER note for LR, don't leave it empty.
+
+2018-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/85645
 	* shrink-wrap.c (spread_components): Return a boolean saying if
 	anything was changed.
 	(try_shrink_wrapping_separate): Iterate spread_components until
