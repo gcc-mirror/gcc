@@ -183,7 +183,7 @@ GOACC_parallel_keyed (int device, void (*fn) (void *),
 			      async, dims, tgt);
 
   /* If running synchronously, unmap immediately.  */
-  if (async < acc_async_noval)
+  if (async_synchronous_p (async))
     gomp_unmap_vars (tgt, true);
   else
     tgt->device_descr->openacc.register_async_cleanup_func (tgt, async);
