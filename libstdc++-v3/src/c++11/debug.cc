@@ -720,7 +720,10 @@ namespace
 		"dereferenceable (start-of-sequence)",
 		"dereferenceable",
 		"past-the-end",
-		"before-begin"
+		"before-begin",
+		"dereferenceable (start-of-reverse-sequence)",
+		"dereferenceable (reverse)",
+		"past-the-reverse-end"
 	      };
 	    print_word(ctx, state_names[iterator._M_state]);
 	  }
