@@ -1,3 +1,11 @@
+2018-05-09  Jim Wilson  <jimw@sifive.com>
+
+	PR target/84797
+	* config.gcc (riscv*-*-*): Handle --with-multilib-list.
+	* config/riscv/t-withmultilib: New.
+	* config/riscv/withmultilib.h: New.
+	* doc/install.texi: Document RISC-V --with-multilib-list support.
+
 2018-05-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Fill a cost
