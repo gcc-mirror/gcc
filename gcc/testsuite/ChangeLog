@@ -1,3 +1,7 @@
+2018-05-09  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.target/aarch64/sve/vcond_6.c: Add missing brace.
+
 2018-05-09  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/aarch64/store_lane_spill_1.c: New test.
