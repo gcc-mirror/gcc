@@ -1,3 +1,15 @@
+2018-05-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/83792
+	* oacc-int.h (async_valid_stream_id_p, async_valid_p)
+	(async_synchronous_p): New function.
+	* oacc-async.c (acc_async_test, acc_wait, acc_wait_all_async): Use
+	async_valid_p.
+	* oacc-cuda.c (acc_get_cuda_stream, acc_set_cuda_stream): Use
+	async_valid_stream_id_p.
+	* oacc-mem.c (gomp_acc_remove_pointer): Use async_synchronous_p.
+	* oacc-parallel.c (GOACC_parallel_keyed): Same.
+
 2018-05-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/85677
