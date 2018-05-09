@@ -1,3 +1,10 @@
+2018-05-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85706 - class deduction under decltype
+	* pt.c (for_each_template_parm_r): Handle DECLTYPE_TYPE.  Clear
+	*walk_subtrees whether or not we walked into the operand.
+	(type_uses_auto): Only look at deduced contexts.
+
 2018-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85695
