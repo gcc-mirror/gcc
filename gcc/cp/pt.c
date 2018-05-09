@@ -9829,6 +9829,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       break;
 
     case TYPEOF_TYPE:
+    case DECLTYPE_TYPE:
     case UNDERLYING_TYPE:
       if (pfd->include_nondeduced_p
 	  && for_each_template_parm (TYPE_VALUES_RAW (t), fn, data,
@@ -9836,6 +9837,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 				     pfd->include_nondeduced_p,
 				     pfd->any_fn))
 	return error_mark_node;
+      *walk_subtrees = false;
       break;
 
     case FUNCTION_DECL:
@@ -26862,7 +26864,7 @@ type_uses_auto (tree type)
 	 them.  */
       if (uses_template_parms (type))
 	return for_each_template_parm (type, is_auto_r, /*data*/NULL,
-				       /*visited*/NULL, /*nondeduced*/true);
+				       /*visited*/NULL, /*nondeduced*/false);
       else
 	return NULL_TREE;
     }
