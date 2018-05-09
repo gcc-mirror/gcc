@@ -223,9 +223,6 @@ func (p *Package) copyBuild(pp *build.Package) {
 	// TODO? Target
 	p.Goroot = pp.Goroot
 	p.Standard = p.Goroot && p.ImportPath != "" && isStandardImportPath(p.ImportPath)
-	if cfg.BuildToolchainName == "gccgo" {
-		p.Standard = stdpkg[p.ImportPath]
-	}
 	p.GoFiles = pp.GoFiles
 	p.CgoFiles = pp.CgoFiles
 	p.IgnoredGoFiles = pp.IgnoredGoFiles
@@ -894,13 +891,6 @@ var foldPath = make(map[string]string)
 func (p *Package) load(stk *ImportStack, bp *build.Package, err error) {
 	p.copyBuild(bp)
 
-	// When using gccgo the go/build package will not be able to
-	// find a standard package. It would be nicer to not get that
-	// error, but go/build doesn't know stdpkg.
-	if cfg.BuildToolchainName == "gccgo" && err != nil && p.Standard {
-		err = nil
-	}
-
 	// Decide whether p was listed on the command line.
 	// Given that load is called while processing the command line,
 	// you might think we could simply pass a flag down into load
@@ -1096,9 +1086,6 @@ func (p *Package) load(stk *ImportStack, bp *build.Package, err error) {
 			continue
 		}
 		p1 := LoadImport(path, p.Dir, p, stk, p.Internal.Build.ImportPos[path], UseVendor)
-		if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-			continue
-		}
 		if p.Standard && p.Error == nil && !p1.Standard && p1.Error == nil {
 			p.Error = &PackageError{
 				ImportStack: stk.Copy(),
@@ -1610,9 +1597,6 @@ func GetTestPackagesFor(p *Package, forceTest bool) (ptest, pxtest *Package, err
 	rawTestImports := str.StringList(p.TestImports)
 	for i, path := range p.TestImports {
 		p1 := LoadImport(path, p.Dir, p, &stk, p.Internal.Build.TestImportPos[path], UseVendor)
-		if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-			continue
-		}
 		if p1.Error != nil {
 			return nil, nil, p1.Error
 		}
@@ -1641,9 +1625,6 @@ func GetTestPackagesFor(p *Package, forceTest bool) (ptest, pxtest *Package, err
 	rawXTestImports := str.StringList(p.XTestImports)
 	for i, path := range p.XTestImports {
 		p1 := LoadImport(path, p.Dir, p, &stk, p.Internal.Build.XTestImportPos[path], UseVendor)
-		if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-			continue
-		}
 		if p1.Error != nil {
 			return nil, nil, p1.Error
 		}
