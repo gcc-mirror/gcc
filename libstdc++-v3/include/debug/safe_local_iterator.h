@@ -54,14 +54,6 @@ namespace __gnu_debug
       typedef typename _Sequence::const_local_iterator _Const_local_iterator;
       typedef typename _Sequence::size_type size_type;
 
-      /// Determine if this is a constant iterator.
-      bool
-      _M_constant() const
-      {
-	return std::__are_same<_Const_local_iterator,
-			       _Safe_local_iterator>::__value;
-      }
-
       typedef std::iterator_traits<_Iterator> _Traits;
 
       struct _Attach_single
@@ -92,7 +84,7 @@ namespace __gnu_debug
        */
       _Safe_local_iterator(const _Iterator& __i,
 			   const _Safe_sequence_base* __cont)
-      : _Iter_base(__i), _Safe_base(__cont, _M_constant())
+      : _Iter_base(__i), _Safe_base(__cont, _S_constant())
       {
 	_GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			      _M_message(__msg_init_singular)
@@ -278,6 +270,15 @@ namespace __gnu_debug
       }
 
       // ------ Utilities ------
+
+      /// Determine if this is a constant iterator.
+      static bool
+      _S_constant()
+      {
+	return std::__are_same<_Const_local_iterator,
+			       _Safe_local_iterator>::__value;
+      }
+
       /**
        * @brief Return the underlying iterator
        */
@@ -302,12 +303,12 @@ namespace __gnu_debug
       /** Attach iterator to the given sequence. */
       void
       _M_attach(_Safe_sequence_base* __seq)
-      { _Safe_base::_M_attach(__seq, _M_constant()); }
+      { _Safe_base::_M_attach(__seq, _S_constant()); }
 
       /** Likewise, but not thread-safe. */
       void
       _M_attach_single(_Safe_sequence_base* __seq)
-      { _Safe_base::_M_attach_single(__seq, _M_constant()); }
+      { _Safe_base::_M_attach_single(__seq, _S_constant()); }
 
       /// Is the iterator dereferenceable?
       bool

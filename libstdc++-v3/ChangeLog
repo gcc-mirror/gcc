@@ -1,3 +1,35 @@
+2018-05-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_M_constant()):
+	Rename in...
+	(_Safe_iterator<>::_S_constant()): ...that.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<>::_M_constant()): Rename in...
+	(_Safe_local_iterator<>::_S_constant()): ...that.
+	* include/debug/formatter.h: Remove bits/cpp_type_traits.h include.
+	(_Iterator_state::__rbegin): New.
+	(_Iterator_state::__rmiddle): New.
+	(_Iterator_state::__rend): New.
+	(_Parameter::_Parameter(const _Safe_iterator<>&, const char*,
+	_Is_iterator)): Use _Safe_iterator<>::_S_constant. Grab normal underlying
+	iterator type.
+	(_Parameter::_Parameter(const _Safe_local_iterator<>&, const char*,
+	_Is_iterator)): Likewise.
+	(_Parameter::_S_reverse_state(_Iterator_state)): New.
+        (_Parameter(__gnu_cxx::__normal_iterator<> const&, const char*,
+	_Is_iterator)): New.
+	(_Parameter(std::reverse_iterator<> const&, const char*,
+	_Is_iterator)): New.
+	(_Parameter(std::reverse_iterator<_Safe_iterator<>> const&,
+	const char*, _Is_iterator)): New.
+	(_Parameter(std::move_iterator<> const&, const char*, _Is_iterator):
+	New.
+	(_Parameter(std::move_iterator<_Safe_iterator<>> const&, const char*,
+	_Is_iterator)): New.
+	* testsuite/24_iterators/move_iterator/debug_neg.cc: New.
+	* testsuite/24_iterators/normal_iterator/debug_neg.cc: New.
+	* testsuite/24_iterators/reverse_iterator/debug_neg.cc: New.
+
 2018-05-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/std_function.h (_Base_manager::_M_get_pointer):
