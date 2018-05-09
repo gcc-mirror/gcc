@@ -1,6 +1,14 @@
 2018-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/85645
+	* shrink-wrap.c (spread_components): Return a boolean saying if
+	anything was changed.
+	(try_shrink_wrapping_separate): Iterate spread_components until
+	nothing changes anymore.
+
+2018-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/85645
 	* regrename.c (build_def_use): Also kill the chains that include the
 	destination of a REG_CFA_REGISTER note.
 
