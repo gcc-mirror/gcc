@@ -1,3 +1,7 @@
+2018-05-09  Joshua Watt <jpewhacker@gmail.com>
+
+        * ax_pthread.m4: Add file.
+
 2018-05-08  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/85571
