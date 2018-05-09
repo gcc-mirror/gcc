@@ -26151,10 +26151,11 @@ rs6000_emit_prologue_components (sbitmap components)
   /* Prologue for LR.  */
   if (bitmap_bit_p (components, 0))
     {
+      rtx lr = gen_rtx_REG (reg_mode, LR_REGNO);
       rtx reg = gen_rtx_REG (reg_mode, 0);
-      rtx_insn *insn = emit_move_insn (reg, gen_rtx_REG (reg_mode, LR_REGNO));
+      rtx_insn *insn = emit_move_insn (reg, lr);
       RTX_FRAME_RELATED_P (insn) = 1;
-      add_reg_note (insn, REG_CFA_REGISTER, NULL);
+      add_reg_note (insn, REG_CFA_REGISTER, gen_rtx_SET (reg, lr));
 
       int offset = info->lr_save_offset;
       if (info->push_p)
@@ -26162,7 +26163,6 @@ rs6000_emit_prologue_components (sbitmap components)
 
       insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
       RTX_FRAME_RELATED_P (insn) = 1;
-      rtx lr = gen_rtx_REG (reg_mode, LR_REGNO);
       rtx mem = copy_rtx (SET_DEST (single_set (insn)));
       add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, lr));
     }
