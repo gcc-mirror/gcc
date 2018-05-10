@@ -59,7 +59,7 @@ extern __inline long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _xgetbv (unsigned int __A)
 {
-  __builtin_ia32_xgetbv (__A);
+  return __builtin_ia32_xgetbv (__A);
 }
 
 #ifdef __x86_64__
