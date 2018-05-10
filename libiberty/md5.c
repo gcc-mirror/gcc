@@ -231,7 +231,7 @@ md5_process_bytes (const void *buffer, size_t len, struct md5_ctx *ctx)
   /* Process available complete blocks.  */
   if (len > 64)
     {
-#if !_STRING_ARCH_unaligned
+#if !_STRING_ARCH_unaligned || defined UBSAN_BOOTSTRAP
 /* To check alignment gcc has an appropriate operator.  Other
    compilers don't.  */
 # if __GNUC__ >= 2

@@ -1,3 +1,8 @@
+2018-05-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/64914
+	* bootstrap-ubsan.mk: Define UBSAN_BOOTSTRAP.
+
 2018-05-09  Joshua Watt <jpewhacker@gmail.com>
 
         * ax_pthread.m4: Add file.
