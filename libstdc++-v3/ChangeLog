@@ -1,3 +1,13 @@
+2018-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85729
+	* include/bits/c++config.h (__replacement_assert): Add linkage
+	specification.
+	* include/bits/std_abs.h: Add comment to closing brace of block.
+	* include/c_global/cstddef: Add linkage specification.
+	* include/c_global/cstring: Likewise.
+	* include/c_global/cwchar: Likewise.
+
 2018-05-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_iterator.h (_Safe_iterator<>::_M_constant()):

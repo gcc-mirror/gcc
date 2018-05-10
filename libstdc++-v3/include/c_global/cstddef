@@ -49,13 +49,15 @@
 #include <bits/c++config.h>
 #include <stddef.h>
 
+extern "C++"
+{
 #if __cplusplus >= 201103L
 namespace std
 {
   // We handle size_t, ptrdiff_t, and nullptr_t in c++config.h.
   using ::max_align_t;
 }
-#endif
+#endif // C++11
 
 #if __cplusplus >= 201703L
 namespace std
@@ -186,6 +188,7 @@ namespace std
     { return _IntegerType(__b); }
 
 } // namespace std
-#endif
+#endif // C++17
+} // extern "C++"
 
 #endif // _GLIBCXX_CSTDDEF
