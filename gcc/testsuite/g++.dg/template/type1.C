@@ -4,5 +4,5 @@ struct A {
   template <class T> struct B { static int c; };
 };
 
-int A::B::c;			// { dg-error "parameters" }
+int A::B::c;			// { dg-error "arguments" }
 int A::C::d;			// { dg-error "declared" }

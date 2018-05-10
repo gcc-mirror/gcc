@@ -4007,9 +4007,9 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
       if (complain & tf_error)
 	{
 	  if (TYPE_P (arg))
-	    error ("expansion pattern %qT contains no argument packs", arg);
+	    error ("expansion pattern %qT contains no parameter packs", arg);
 	  else
-	    error ("expansion pattern %qE contains no argument packs", arg);
+	    error ("expansion pattern %qE contains no parameter packs", arg);
 	}
       return error_mark_node;
     }
