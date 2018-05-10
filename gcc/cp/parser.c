@@ -22930,20 +22930,7 @@ cp_parser_class_head (cp_parser* parser,
       /* Otherwise, count the number of templates used in TYPE and its
 	 containing scopes.  */
       else
-	{
-	  tree scope;
-
-	  for (scope = TREE_TYPE (type);
-	       scope && TREE_CODE (scope) != NAMESPACE_DECL;
-	       scope = get_containing_scope (scope))
-	    if (TYPE_P (scope)
-		&& CLASS_TYPE_P (scope)
-		&& CLASSTYPE_TEMPLATE_INFO (scope)
-		&& PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (scope))
-		&& (!CLASSTYPE_TEMPLATE_SPECIALIZATION (scope)
-		    || uses_template_parms (CLASSTYPE_TI_ARGS (scope))))
-	      ++num_templates;
-	}
+	num_templates = num_template_headers_for_class (TREE_TYPE (type));
     }
   /* Otherwise, the identifier is optional.  */
   else

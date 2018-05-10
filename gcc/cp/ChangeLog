@@ -1,5 +1,7 @@
 2018-05-09  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_class_head): Use num_template_headers_for_class.
+
 	* pt.c (instantiate_decl): Make sure we aren't trying to do a nested
 	instantiation in template context.
 
