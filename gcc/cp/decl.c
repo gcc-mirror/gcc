@@ -3756,7 +3756,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   if (TREE_CODE (name) == TEMPLATE_DECL)
     {
       if (complain & tf_error)
-	error ("%qD used without template parameters", name);
+	error ("%qD used without template arguments", name);
       return error_mark_node;
     }
   gcc_assert (identifier_p (name));

@@ -6346,7 +6346,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 						    token->location);
 		      if (TREE_CODE (decl) == TEMPLATE_DECL)
 			error_at (token->location,
-				  "%qD used without template parameters",
+				  "%qD used without template arguments",
 				  decl);
 		      else if (ambiguous_decls)
 			{
