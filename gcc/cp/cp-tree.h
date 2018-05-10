@@ -2731,7 +2731,7 @@ struct GTY(()) lang_decl {
 /* For FUNCTION_DECLs and TEMPLATE_DECLs: nonzero means that this function
    is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) \
-  IDENTIFIER_CTOR_P (DECL_NAME (NODE))
+  DECL_CXX_CONSTRUCTOR_P (STRIP_TEMPLATE (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
    object.  */
@@ -2760,7 +2760,7 @@ struct GTY(()) lang_decl {
 /* Nonzero if NODE (a FUNCTION_DECL or TEMPLATE_DECL)
    is a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
-  IDENTIFIER_DTOR_P (DECL_NAME (NODE))
+  DECL_CXX_DESTRUCTOR_P (STRIP_TEMPLATE (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
    specialized in-charge constructor, in-charge deleting constructor,

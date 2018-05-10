@@ -1,5 +1,8 @@
 2018-05-09  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (DECL_CONSTRUCTOR_P): Use DECL_CXX_CONSTRUCTOR_P.
+	(DECL_DESTRUCTOR_P): Use DECL_CXX_DESTRUCTOR_P.
+
 	Core issue 2310 - conversion to base of incomplete type.
 	* class.c (build_base_path): Check COMPLETE_TYPE_P for source type.
 
