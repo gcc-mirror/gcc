@@ -1560,12 +1560,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	      goto skip;
 	    }
 	}
-      /* Otherwise, if T is a reference type, a prvalue temporary of the
-	 type referenced by T is copy-list-initialized or
-	 direct-list-initialized, depending on the kind of initialization
-	 for the reference, and the reference is bound to that temporary. */
-      conv = implicit_conversion (to, from, expr, c_cast_p,
-				  flags|LOOKUP_NO_TEMP_BIND, complain);
+      /* Otherwise, if T is a reference type, a prvalue temporary of the type
+	 referenced by T is copy-list-initialized, and the reference is bound
+	 to that temporary. */
+      CONSTRUCTOR_IS_DIRECT_INIT (expr) = false;
     skip:;
     }
 
