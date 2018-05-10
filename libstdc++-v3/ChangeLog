@@ -1,3 +1,8 @@
+2018-05-10  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/regex_compiler.h (_S_cache_size): Change from
+	function to variable.
+
 2018-05-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/83140 - assoc_legendre returns negated value when m is odd
