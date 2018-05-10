@@ -1,3 +1,11 @@
+2018-05-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68846
+	* gfortran.dg/temporary_3.f90 : New test.
+
+	PR fortran/70864
+	* gfortran.dg/temporary_2.f90 : New test.
+
 2018-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.dg/vmx/extract-be-order.c: Delete testcase.
@@ -210,7 +218,7 @@
 
 2018-05-06  Andrew Sadek  <andrew.sadek.se@gmail.com>
 
-	* gcc.target/microblaze/others/picdtr.c: Add test for 
+	* gcc.target/microblaze/others/picdtr.c: Add test for
 	 -fPIE -mpic-data-is-text-relative.
 
 2018-05-06  Andre Vehreschild  <vehre@gcc.gnu.org>

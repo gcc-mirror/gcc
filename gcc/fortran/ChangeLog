@@ -1,3 +1,10 @@
+2018-05-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68846
+	PR fortran/70864
+	* resolve.c (get_temp_from_expr): The temporary must not have
+	dummy or intent attributes.
+
 2018-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54613
