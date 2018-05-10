@@ -1822,6 +1822,109 @@ operator_pointer_plus::fold_range (irange& r, const irange& lh,
   return true;
 }
 
+class operator_abs : public irange_operator
+{
+  tree_code code;
+ public:
+  virtual void dump (FILE *f) const;
+
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_irange (irange& r, const irange& lhs,
+			   const irange& op2) const;
+
+ private:
+  bool protected_negate (wide_int &, tree, const wide_int &) const;
+} op_abs;
+
+void
+operator_abs::dump (FILE *f) const
+{
+  fprintf (f, " ABS ");
+}
+
+/* Negate that can handle flipping MIN/MAX extremes.
+
+   X is the value to negate with a type of TYPE.
+   RES is where to put the result.
+
+   Returns FALSE if the value being negated is MIN and signed overflow
+   is allowed, in which case negation is undefined.  */
+
+bool
+operator_abs::protected_negate (wide_int &res, tree type,
+				const wide_int &x) const
+{
+  if (x == wi::to_wide (TYPE_MIN_VALUE (type)))
+    {
+      // -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't
+      // get a useful range.  */
+      if (!TYPE_OVERFLOW_UNDEFINED (type))
+	return false;
+      res = wi::to_wide (TYPE_MAX_VALUE (type));
+    }
+  else
+    res = -x;
+  return true;
+}
+
+bool
+operator_abs::fold_range (irange& r, const irange& lh, const irange& rh) const
+{
+  tree type = rh.get_type ();
+  if (empty_range_check (r, lh, rh, type))
+    return true;
+  if (TYPE_UNSIGNED (type))
+    {
+      r = lh;
+      return true;
+    }
+
+  // To calculate the ABS of a range, flip the sign bit on all the
+  // negative parts of the range, and then swap the upper/lower
+  // bounds.  The positive parts remain as is.  For example:
+  // ABS([-50, -20][6, 10]) => [20,50][6,10] => [6,10][20,50]
+  // ABS([-50,5][80,90]) => [1,50][0,5][80,90] => [0,50][80,90].
+  irange negatives, positives;
+  range_positives (&positives, type);
+  range_negatives (&negatives, type);
+  positives.intersect (lh);
+  negatives.intersect (lh);
+  for (unsigned i = 0; i < negatives.num_pairs (); ++i)
+    {
+      wide_int lb, ub;
+      if (!protected_negate (lb, type, negatives.lower_bound (i))
+	  || !protected_negate (ub, type, negatives.upper_bound (i)))
+	return false;
+      positives.union_ (ub, lb);
+    }
+  r = positives;
+  return true;
+}
+
+bool
+operator_abs::op1_irange (irange& r, const irange& lhs, const irange& op2) const
+{
+  tree type = lhs.get_type ();
+  if (empty_range_check (r, lhs, op2, type))
+    return true;
+  if (TYPE_UNSIGNED (type))
+    {
+      r = lhs;
+      return true;
+    }
+  // Start with the positives because negatives are an impossible result.
+  irange positives;
+  range_positives (&positives, type);
+  positives.intersect (lhs);
+  r = positives;
+  // Then add the negative of each pair:
+  // ABS(op1) = [5,20] would yield op1 => [-20,-5][5,20].
+  for (unsigned i = 0; i < positives.num_pairs (); ++i)
+    r.union_ (-positives.upper_bound (i), -positives.lower_bound (i));
+  return true;
+}
+
 class operator_min_max : public irange_operator
 {
   tree_code code;
@@ -2017,6 +2120,7 @@ irange_op_table::irange_op_table ()
   irange_tree[INTEGER_CST] = &op_integer_cst;
   irange_tree[SSA_NAME] = &op_ssa_name;
 
+  irange_tree[ABS_EXPR] = &op_abs;
   irange_tree[MIN_EXPR] = &op_min;
   irange_tree[MAX_EXPR] = &op_max;
   irange_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
