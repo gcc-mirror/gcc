@@ -5017,7 +5017,7 @@ vbase_has_user_provided_move_assign (tree type)
     for (ovl_iterator iter (get_class_binding_direct
 			    (type, assign_op_identifier));
 	 iter; ++iter)
-      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
+      if (user_provided_p (*iter) && move_fn_p (*iter))
 	return true;
 
   /* Do any of its bases?  */

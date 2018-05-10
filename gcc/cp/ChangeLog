@@ -1,5 +1,8 @@
 2018-05-09  Jason Merrill  <jason@redhat.com>
 
+	* class.c (vbase_has_user_provided_move_assign): Use
+	user_provided_p.
+
 	* lambda.c (lambda_expr_this_capture): Improve logic.
 
 	* decl.c (make_typename_type): s/parameters/arguments/.
