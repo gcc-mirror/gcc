@@ -452,10 +452,9 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "__RECIP_PRECISION__");
   /* Note that the OPTION_MASK_ALTIVEC flag is automatically turned on
      in any of the following conditions:
-     1. The command line specifies either -maltivec=le or -maltivec=be.
-     2. The operating system is Darwin and it is configured for 64
+     1. The operating system is Darwin and it is configured for 64
 	bit.  (See darwin_rs6000_override_options.)
-     3. The operating system is Darwin and the operating system
+     2. The operating system is Darwin and the operating system
 	version is 10.5 or higher and the user has not explicitly
 	disabled ALTIVEC by specifying -mcpu=G3 or -mno-altivec and
 	the compiler is not producing code for integration within the
@@ -750,7 +749,7 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     }
 
   /* Vector element order.  */
-  if (BYTES_BIG_ENDIAN || (rs6000_altivec_element_order == 2))
+  if (BYTES_BIG_ENDIAN)
     builtin_define ("__VEC_ELEMENT_REG_ORDER__=__ORDER_BIG_ENDIAN__");
   else
     builtin_define ("__VEC_ELEMENT_REG_ORDER__=__ORDER_LITTLE_ENDIAN__");
@@ -6121,11 +6120,11 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	     (int)fcode, IDENTIFIER_POINTER (DECL_NAME (fndecl)));
  
   /* vec_lvsl and vec_lvsr are deprecated for use with LE element order.  */
-  if (fcode == ALTIVEC_BUILTIN_VEC_LVSL && !VECTOR_ELT_ORDER_BIG)
+  if (fcode == ALTIVEC_BUILTIN_VEC_LVSL && !BYTES_BIG_ENDIAN)
     warning (OPT_Wdeprecated,
 	     "vec_lvsl is deprecated for little endian; use "
 	     "assignment for unaligned loads and stores");
-  else if (fcode == ALTIVEC_BUILTIN_VEC_LVSR && !VECTOR_ELT_ORDER_BIG)
+  else if (fcode == ALTIVEC_BUILTIN_VEC_LVSR && !BYTES_BIG_ENDIAN)
     warning (OPT_Wdeprecated,
 	     "vec_lvsr is deprecated for little endian; use "
 	     "assignment for unaligned loads and stores");
@@ -6537,17 +6536,6 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
 	goto bad;
 
-      /* If we are targeting little-endian, but -maltivec=be has been
-	 specified to override the element order, adjust the element
-	 number accordingly.  */
-      if (!BYTES_BIG_ENDIAN && rs6000_altivec_element_order == 2)
-	{
-	  unsigned int last_elem = TYPE_VECTOR_SUBPARTS (arg1_type) - 1;
-	  arg2 = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (arg2),
-				  build_int_cstu (TREE_TYPE (arg2), last_elem),
-				  arg2);
-	}
-
       /* See if we can optimize vec_extracts with the current VSX instruction
 	 set.  */
       mode = TYPE_MODE (arg1_type);
@@ -6718,17 +6706,6 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	goto bad;
       if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
 	goto bad;
-
-      /* If we are targeting little-endian, but -maltivec=be has been
-	 specified to override the element order, adjust the element
-	 number accordingly.  */
-      if (!BYTES_BIG_ENDIAN && rs6000_altivec_element_order == 2)
-	{
-	  unsigned int last_elem = TYPE_VECTOR_SUBPARTS (arg1_type) - 1;
-	  arg2 = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (arg2),
-				  build_int_cstu (TREE_TYPE (arg2), last_elem),
-				  arg2);
-	}
 
       /* If we can use the VSX xxpermdi instruction, use that for insert.  */
       mode = TYPE_MODE (arg1_type);

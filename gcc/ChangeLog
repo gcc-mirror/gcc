@@ -1,3 +1,71 @@
+2018-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (altivec_vmrghb, altivec_vmrghh,
+	altivec_vmrghw, altivec_vmrglb, altivec_vmrglh, altivec_vmrglw): Remove
+	-maltivec=be support.
+	(vec_widen_umult_even_v16qi, vec_widen_smult_even_v16qi,
+	vec_widen_umult_even_v8hi, vec_widen_smult_even_v8hi,
+	vec_widen_umult_even_v4si, vec_widen_smult_even_v4si,
+	vec_widen_umult_odd_v16qi, vec_widen_smult_odd_v16qi,
+	vec_widen_umult_odd_v8hi, vec_widen_smult_odd_v8hi,
+	vec_widen_umult_odd_v4si, vec_widen_smult_odd_v4si, altivec_vpkpx,
+	altivec_vpks<VI_char>ss, altivec_vpks<VI_char>us,
+	altivec_vpku<VI_char>us, altivec_vpku<VI_char>um, altivec_vsum2sws,
+	altivec_vsumsws): Adjust.
+	(altivec_vspltb *altivec_vspltb_internal, altivec_vsplth,
+	*altivec_vsplth_internal, altivec_vspltw, *altivec_vspltw_internal,
+	altivec_vspltsf, *altivec_vspltsf_internal): Remove -maltivec=be
+	support.
+	(altivec_vperm_<mode>, altivec_vperm_<mode>_uns,
+	altivec_vupkhs<VU_char>, altivec_vupkls<VU_char>, altivec_vupkhpx,
+	altivec_vupklpx, altivec_lvsl, altivec_lvsr): Adjust.
+	(altivec_lve<VI_char>x): Delete expand.
+	(*altivec_lve<VI_char>x_internal): Rename to...
+	(altivec_lve<VI_char>x): ... this.
+	(altivec_lvxl_<mode>): Delete expand.
+	(*altivec_lvxl_<mode>_internal): Rename to ...
+	(altivec_lvxl_<mode>): ... this.
+	(altivec_stvxl_<mode>): Delete expand.
+	(*altivec_stvxl_<mode>_internal): Rename to ...
+	(altivec_stvxl_<mode>): ... this.
+	(altivec_stve<VI_char>x): Delete expand.
+	(*altivec_stve<VI_char>x_internal): Rename to ...
+	(altivec_stve<VI_char>x): ... this.
+	(doublee<mode>2, unsdoubleev4si2, doubleo<mode>2, unsdoubleov4si2,
+	doubleh<mode>2, unsdoublehv4si2, doublel<mode>2, unsdoublelv4si2,
+	reduc_plus_scal_<mode>): Adjust.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Adjust
+	comment.
+	(rs6000_cpu_cpp_builtins): Adjust.
+	(altivec_resolve_overloaded_builtin): Remove -maltivec=be support.
+	* config/rs6000/rs6000-protos.h (altivec_expand_lvx_be,
+	altivec_expand_stvx_be, altivec_expand_stvex_be): Delete.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Remove
+	-maltivec=be support.
+	(rs6000_split_vec_extract_var): Adjust.
+	(rs6000_split_v4si_init): Adjust.
+	(swap_selector_for_mode): Delete.
+	(altivec_expand_lvx_be, altivec_expand_stvx_be,
+	altivec_expand_stvex_be): Delete.
+	(altivec_expand_lv_builtin, altivec_expand_stv_builtin): Remove
+	-maltivec=be support.
+	(rs6000_gimple_fold_builtin): Ditto.
+	(rs6000_generate_float2_double_code, rs6000_generate_float2_code):
+	Adjust.
+	* config/rs6000/rs6000.h (VECTOR_ELT_ORDER_BIG): Delete.
+	(TARGET_DIRECT_MOVE_64BIT): Adjust.
+	* config/rs6000/rs6000.md (split for extendsidi2 for vectors): Adjust.
+	* config/rs6000/rs6000.opt (maltivec=le, maltivec=be): Delete.
+	* config/rs6000/vsx.md (floate<mode>, unsfloatev2di, floato<mode>,
+	unsfloatov2di, vsignedo_v2df, vsignede_v2df, vunsignedo_v2df,
+	vunsignede_v2df, vsx_extract_<mode>_p9, *vsx_extract_si,
+	*vsx_extract_<mode>_p8, *vsx_extract_si_<uns>float_df,
+	*vsx_extract_si_<uns>float_<mode>, vsx_set_<mode>_p9, vsx_set_v4sf_p9,
+	*vsx_insert_extract_v4sf_p9, *vsx_insert_extract_v4sf_p9_2, and an
+	anonymous split): Adjust.
+	(vsx_mergel_<mode>, vsx_mergeh_<mode>): Remove -maltivec=be support.
+	(vsx_xxspltd_<mode>, extract4b, insert4b): Adjust.
+
 2018-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (gcc_gxx_include_dir_add_sysroot): Set it to 1 only

@@ -4000,13 +4000,6 @@ rs6000_option_override_internal (bool global_init_p)
   if (global_init_p)
     rs6000_isa_flags_explicit = global_options_set.x_rs6000_isa_flags;
 
-  /* We plan to deprecate the -maltivec=be option.  For now, just
-     issue a warning message.  */
-  if (global_init_p
-      && rs6000_altivec_element_order == 2)
-    warning (0, "%qs command-line option is deprecated",
-	     "-maltivec=be");
-
   /* On 64-bit Darwin, power alignment is ABI-incompatible with some C
      library functions, so warn about it. The flag may be useful for
      performance studies from time to time though, so don't disable it
@@ -4216,18 +4209,6 @@ rs6000_option_override_internal (bool global_init_p)
   if (!BYTES_BIG_ENDIAN
       && !(processor_target_table[tune_index].target_enable & OPTION_MASK_HTM))
     rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_STRICT_ALIGN;
-
-  /* -maltivec={le,be} implies -maltivec.  */
-  if (rs6000_altivec_element_order != 0)
-    rs6000_isa_flags |= OPTION_MASK_ALTIVEC;
-
-  /* Disallow -maltivec=le in big endian mode for now.  This is not
-     known to be useful for anyone.  */
-  if (BYTES_BIG_ENDIAN && rs6000_altivec_element_order == 1)
-    {
-      warning (0, N_("-maltivec=le not allowed for big-endian targets"));
-      rs6000_altivec_element_order = 0;
-    }
 
   if (!rs6000_fold_gimple)
      fprintf (stderr,
@@ -7442,7 +7423,7 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 	  rtx element_si = gen_rtx_REG (SImode, element_regno);
 
 	  if (mode == V16QImode)
-	    emit_insn (VECTOR_ELT_ORDER_BIG
+	    emit_insn (BYTES_BIG_ENDIAN
 		       ? gen_vextublx (dest_si, element_si, src)
 		       : gen_vextubrx (dest_si, element_si, src));
 
@@ -7450,7 +7431,7 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 	    {
 	      rtx tmp_gpr_si = gen_rtx_REG (SImode, REGNO (tmp_gpr));
 	      emit_insn (gen_ashlsi3 (tmp_gpr_si, element_si, const1_rtx));
-	      emit_insn (VECTOR_ELT_ORDER_BIG
+	      emit_insn (BYTES_BIG_ENDIAN
 			 ? gen_vextuhlx (dest_si, tmp_gpr_si, src)
 			 : gen_vextuhrx (dest_si, tmp_gpr_si, src));
 	    }
@@ -7460,7 +7441,7 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 	    {
 	      rtx tmp_gpr_si = gen_rtx_REG (SImode, REGNO (tmp_gpr));
 	      emit_insn (gen_ashlsi3 (tmp_gpr_si, element_si, const2_rtx));
-	      emit_insn (VECTOR_ELT_ORDER_BIG
+	      emit_insn (BYTES_BIG_ENDIAN
 			 ? gen_vextuwlx (dest_si, tmp_gpr_si, src)
 			 : gen_vextuwrx (dest_si, tmp_gpr_si, src));
 	    }
@@ -7477,7 +7458,7 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 	 byte shift into a bit shift).  */
       if (scalar_size == 8)
 	{
-	  if (!VECTOR_ELT_ORDER_BIG)
+	  if (!BYTES_BIG_ENDIAN)
 	    {
 	      emit_insn (gen_xordi3 (tmp_gpr, element, const1_rtx));
 	      element2 = tmp_gpr;
@@ -7496,7 +7477,7 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 	}
       else
 	{
-	  if (!VECTOR_ELT_ORDER_BIG)
+	  if (!BYTES_BIG_ENDIAN)
 	    {
 	      rtx num_ele_m1 = GEN_INT (GET_MODE_NUNITS (mode) - 1);
 
@@ -7647,7 +7628,6 @@ rs6000_split_v4si_init (rtx operands[])
 	{
 	  rtx di_lo = gen_rtx_REG (DImode, d_regno + 1);
 	  rtx di_hi = gen_rtx_REG (DImode, d_regno);
-	  gcc_assert (!VECTOR_ELT_ORDER_BIG);
 	  rs6000_split_v4si_init_di_reg (di_lo, scalar4, scalar3, tmp1);
 	  rs6000_split_v4si_init_di_reg (di_hi, scalar2, scalar1, tmp2);
 	}
@@ -13940,46 +13920,6 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
-/* Return a constant vector for use as a little-endian permute control vector
-   to reverse the order of elements of the given vector mode.  */
-static rtx
-swap_selector_for_mode (machine_mode mode)
-{
-  /* These are little endian vectors, so their elements are reversed
-     from what you would normally expect for a permute control vector.  */
-  unsigned int swap2[16] = {7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8};
-  unsigned int swap4[16] = {3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
-  unsigned int swap8[16] = {1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14};
-  unsigned int swap16[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-  unsigned int *swaparray, i;
-  rtx perm[16];
-
-  switch (mode)
-    {
-    case E_V2DFmode:
-    case E_V2DImode:
-      swaparray = swap2;
-      break;
-    case E_V4SFmode:
-    case E_V4SImode:
-      swaparray = swap4;
-      break;
-    case E_V8HImode:
-      swaparray = swap8;
-      break;
-    case E_V16QImode:
-      swaparray = swap16;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  for (i = 0; i < 16; ++i)
-    perm[i] = GEN_INT (swaparray[i]);
-
-  return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm)));
-}
-
 rtx
 swap_endian_selector_for_mode (machine_mode mode)
 {
@@ -14016,60 +13956,6 @@ swap_endian_selector_for_mode (machine_mode mode)
 
   return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode,
 						     gen_rtvec_v (16, perm)));
-}
-
-/* Generate code for an "lvxl", or "lve*x" built-in for a little endian target
-   with -maltivec=be specified.  Issue the load followed by an element-
-   reversing permute.  */
-void
-altivec_expand_lvx_be (rtx op0, rtx op1, machine_mode mode, unsigned unspec)
-{
-  rtx tmp = gen_reg_rtx (mode);
-  rtx load = gen_rtx_SET (tmp, op1);
-  rtx lvx = gen_rtx_UNSPEC (mode, gen_rtvec (1, const0_rtx), unspec);
-  rtx par = gen_rtx_PARALLEL (mode, gen_rtvec (2, load, lvx));
-  rtx sel = swap_selector_for_mode (mode);
-  rtx vperm = gen_rtx_UNSPEC (mode, gen_rtvec (3, tmp, tmp, sel), UNSPEC_VPERM);
-
-  gcc_assert (REG_P (op0));
-  emit_insn (par);
-  emit_insn (gen_rtx_SET (op0, vperm));
-}
-
-/* Generate code for a "stvxl" built-in for a little endian target with
-   -maltivec=be specified.  Issue the store preceded by an element-reversing
-   permute.  */
-void
-altivec_expand_stvx_be (rtx op0, rtx op1, machine_mode mode, unsigned unspec)
-{
-  rtx tmp = gen_reg_rtx (mode);
-  rtx store = gen_rtx_SET (op0, tmp);
-  rtx stvx = gen_rtx_UNSPEC (mode, gen_rtvec (1, const0_rtx), unspec);
-  rtx par = gen_rtx_PARALLEL (mode, gen_rtvec (2, store, stvx));
-  rtx sel = swap_selector_for_mode (mode);
-  rtx vperm;
-
-  gcc_assert (REG_P (op1));
-  vperm = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op1, sel), UNSPEC_VPERM);
-  emit_insn (gen_rtx_SET (tmp, vperm));
-  emit_insn (par);
-}
-
-/* Generate code for a "stve*x" built-in for a little endian target with -maltivec=be
-   specified.  Issue the store preceded by an element-reversing permute.  */
-void
-altivec_expand_stvex_be (rtx op0, rtx op1, machine_mode mode, unsigned unspec)
-{
-  machine_mode inner_mode = GET_MODE_INNER (mode);
-  rtx tmp = gen_reg_rtx (mode);
-  rtx stvx = gen_rtx_UNSPEC (inner_mode, gen_rtvec (1, tmp), unspec);
-  rtx sel = swap_selector_for_mode (mode);
-  rtx vperm;
-
-  gcc_assert (REG_P (op1));
-  vperm = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op1, sel), UNSPEC_VPERM);
-  emit_insn (gen_rtx_SET (tmp, vperm));
-  emit_insn (gen_rtx_SET (op0, stvx));
 }
 
 static rtx
@@ -14121,20 +14007,7 @@ altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
       addr = gen_rtx_AND (Pmode, rawaddr, gen_rtx_CONST_INT (Pmode, -16));
       addr = gen_rtx_MEM (blk ? BLKmode : tmode, addr);
 
-      /* For -maltivec=be, emit the load and follow it up with a
-	 permute to swap the elements.  */
-      if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
-	{
-	  rtx temp = gen_reg_rtx (tmode);
-	  emit_insn (gen_rtx_SET (temp, addr));
-
-	  rtx sel = swap_selector_for_mode (tmode);
-	  rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, temp, temp, sel),
-				      UNSPEC_VPERM);
-	  emit_insn (gen_rtx_SET (target, vperm));
-	}
-      else
-	emit_insn (gen_rtx_SET (target, addr));
+      emit_insn (gen_rtx_SET (target, addr));
     }
   else
     {
@@ -14240,19 +14113,7 @@ altivec_expand_stv_builtin (enum insn_code icode, tree exp)
 
       op0 = copy_to_mode_reg (tmode, op0);
 
-      /* For -maltivec=be, emit a permute to swap the elements, followed
-	by the store.  */
-     if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
-	{
-	  rtx temp = gen_reg_rtx (tmode);
-	  rtx sel = swap_selector_for_mode (tmode);
-	  rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, op0, op0, sel),
-				      UNSPEC_VPERM);
-	  emit_insn (gen_rtx_SET (temp, vperm));
-	  emit_insn (gen_rtx_SET (addr, temp));
-	}
-      else
-	emit_insn (gen_rtx_SET (addr, op0));
+      emit_insn (gen_rtx_SET (addr, op0));
     }
   else
     {
@@ -15937,9 +15798,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       {
 	arg0 = gimple_call_arg (stmt, 0);  // offset
 	arg1 = gimple_call_arg (stmt, 1);  // address
-	/* Do not fold for -maltivec=be on LE targets.  */
-	if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
-	  return false;
 	lhs = gimple_call_lhs (stmt);
 	location_t loc = gimple_location (stmt);
 	/* Since arg1 may be cast to a different type, just use ptr_type_node
@@ -15976,9 +15834,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_STVX_V2DI:
     case ALTIVEC_BUILTIN_STVX_V2DF:
       {
-	/* Do not fold for -maltivec=be on LE targets.  */
-	if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
-	  return false;
 	arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
 	arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
 	tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
@@ -16119,9 +15974,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_XXMRGLW_4SI:
     case ALTIVEC_BUILTIN_VMRGLB:
     case VSX_BUILTIN_VEC_MERGEL_V2DI:
-	/* Do not fold for -maltivec=be on LE targets.  */
-	if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
-	  return false;
 	fold_mergehl_helper (gsi, stmt, 1);
 	return true;
     /* vec_mergeh (integrals).  */
@@ -16130,9 +15982,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_XXMRGHW_4SI:
     case ALTIVEC_BUILTIN_VMRGHB:
     case VSX_BUILTIN_VEC_MERGEH_V2DI:
-	/* Do not fold for -maltivec=be on LE targets.  */
-	if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
-	  return false;
 	fold_mergehl_helper (gsi, stmt, 0);
 	return true;
     default:
@@ -38768,7 +38617,7 @@ rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
      rtx_tmp2[0] rtx_tmp3[0] rtx_tmp2[1] rtx_tmp3[0].
      Setup rtx_tmp0 and rtx_tmp1 to ensure the order of the elements after the
      vmrgew instruction will be correct.  */
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     {
        emit_insn (gen_vsx_xxpermdi_v2df_be (rtx_tmp0, src1, src2,
 					    GEN_INT (0)));
@@ -38787,7 +38636,7 @@ rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
   emit_insn (gen_vsx_xvcdpsp (rtx_tmp2, rtx_tmp0));
   emit_insn (gen_vsx_xvcdpsp (rtx_tmp3, rtx_tmp1));
 
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));
   else
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp3, rtx_tmp2));
@@ -38805,7 +38654,7 @@ rs6000_generate_float2_code (bool signed_convert, rtx dst, rtx src1, rtx src2)
      rtx_tmp2[0] rtx_tmp3[0] rtx_tmp2[1] rtx_tmp3[0].
      Setup rtx_tmp0 and rtx_tmp1 to ensure the order of the elements after the
      vmrgew instruction will be correct.  */
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     {
       emit_insn (gen_vsx_xxpermdi_v2di_be (rtx_tmp0, src1, src2, GEN_INT (0)));
       emit_insn (gen_vsx_xxpermdi_v2di_be (rtx_tmp1, src1, src2, GEN_INT (3)));
@@ -38830,7 +38679,7 @@ rs6000_generate_float2_code (bool signed_convert, rtx dst, rtx src1, rtx src2)
        emit_insn (gen_vsx_xvcvuxdsp (rtx_tmp3, rtx_tmp1));
     }
 
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));
   else
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp3, rtx_tmp2));
