@@ -2299,13 +2299,12 @@ handle_visibility_attribute (tree *node, tree name, tree args,
 
 static tree
 handle_tls_model_attribute (tree *node, tree name, tree args,
-			    int ARG_UNUSED (flags), bool *no_add_attrs)
+			    int ARG_UNUSED (flags),
+			    bool *ARG_UNUSED (no_add_attrs))
 {
   tree id;
   tree decl = *node;
   enum tls_model kind;
-
-  *no_add_attrs = true;
 
   if (!VAR_P (decl) || !DECL_THREAD_LOCAL_P (decl))
     {
