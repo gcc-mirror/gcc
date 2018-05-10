@@ -473,7 +473,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  && (op1 = get_base_address (op0)) != NULL_TREE
 	  && INDIRECT_REF_P (op1)
 	  && TREE_CONSTANT (TREE_OPERAND (op1, 0)))
-	ret = fold_convert_loc (loc, TREE_TYPE (expr), fold_offsetof_1 (op0));
+	ret = fold_offsetof (op0, TREE_TYPE (expr));
       else if (op0 != orig_op0 || in_init)
 	ret = in_init
 	  ? fold_build1_initializer_loc (loc, code, TREE_TYPE (expr), op0)

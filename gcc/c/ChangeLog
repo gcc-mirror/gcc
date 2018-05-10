@@ -1,3 +1,13 @@
+2018-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85662
+	* c-fold.c (c_fully_fold_internal): Use fold_offsetof rather than
+	fold_offsetof_1, pass TREE_TYPE (expr) as TYPE to it and drop the
+	fold_convert_loc.
+	* c-typeck.c (build_unary_op): Use fold_offsetof rather than
+	fold_offsetof_1, pass argtype as TYPE to it and drop the
+	fold_convert_loc.
+
 2018-05-02  David Pagan  <dave.pagan@oracle.com>
 
 	PR c/30552
