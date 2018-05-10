@@ -23886,6 +23886,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     push_to_top_level ();
   else
     {
+      gcc_assert (!processing_template_decl);
       push_function_context ();
       cp_unevaluated_operand = 0;
       c_inhibit_evaluation_warnings = 0;

@@ -1,5 +1,8 @@
 2018-05-09  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (instantiate_decl): Make sure we aren't trying to do a nested
+	instantiation in template context.
+
 	* class.c (vbase_has_user_provided_move_assign): Use
 	user_provided_p.
 
