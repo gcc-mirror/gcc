@@ -1,3 +1,10 @@
+2018-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/85400
+	* decl2.c (adjust_var_decl_tls_model): New static function.
+	(comdat_linkage): Call it on a variable.
+	(maybe_make_one_only): Likewise.
+
 2018-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85713
