@@ -205,6 +205,11 @@ no)	;;
 *)	gcc_gxx_include_dir=$with_gxx_include_dir ;;
 esac])
 
+# If both --with-sysroot and --with-gxx-include-dir are passed, we interpolate
+# the former in the latter and, upon success, compute gcc_gxx_include_dir as
+# relative to the sysroot.
+gcc_gxx_include_dir_add_sysroot=0
+
 # This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
 if test x${gcc_gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
@@ -216,15 +221,10 @@ if test x${gcc_gxx_include_dir} = x; then
     fi
     gcc_gxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libstdcxx_incdir"
   fi
-fi
-
-gcc_gxx_include_dir_add_sysroot=0
-if test "${with_sysroot+set}" = set; then
+elif test "${with_sysroot+set}" = set; then
   gcc_gxx_without_sysroot=`expr "${gcc_gxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
   if test "${gcc_gxx_without_sysroot}"; then
-    if test x${with_sysroot} != x/; then
-      gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
-    fi
+    gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
     gcc_gxx_include_dir_add_sysroot=1
   fi
 fi
