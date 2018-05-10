@@ -512,15 +512,6 @@ extern int rs6000_vector_align[];
    ? rs6000_vector_align[(MODE)]					\
    : (int)GET_MODE_BITSIZE ((MODE)))
 
-/* Determine the element order to use for vector instructions.  By
-   default we use big-endian element order when targeting big-endian,
-   and little-endian element order when targeting little-endian.  For
-   programs being ported from BE Power to LE Power, it can sometimes
-   be useful to use big-endian element order when targeting little-endian.
-   This is set via -maltivec=be, for example.  */
-#define VECTOR_ELT_ORDER_BIG                                  \
-  (BYTES_BIG_ENDIAN || (rs6000_altivec_element_order == 2))
-
 /* Element number of the 64-bit value in a 128-bit vector that can be accessed
    with scalar instructions.  */
 #define VECTOR_ELEMENT_SCALAR_64BIT	((BYTES_BIG_ENDIAN) ? 0 : 1)
@@ -720,12 +711,10 @@ extern int rs6000_vector_align[];
 
 /* Macro to say whether we can do optimizations where we need to do parts of
    the calculation in 64-bit GPRs and then is transfered to the vector
-   registers.  Do not allow -maltivec=be for these optimizations, because it
-   adds to the complexity of the code.  */
+   registers.  */
 #define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
 					 && TARGET_P8_VECTOR		\
-					 && TARGET_POWERPC64		\
-					 && (rs6000_altivec_element_order != 2))
+					 && TARGET_POWERPC64)
 
 /* Whether the various reciprocal divide/square root estimate instructions
    exist, and whether we should automatically generate code for the instruction

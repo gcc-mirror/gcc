@@ -1,3 +1,33 @@
+2018-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/vmx/extract-be-order.c: Delete testcase.
+	* gcc.dg/vmx/extract-vsx-be-order.c: Delete testcase.
+	* gcc.dg/vmx/insert-be-order.c: Delete testcase.
+	* gcc.dg/vmx/insert-vsx-be-order.c: Delete testcase.
+	* gcc.dg/vmx/ld-be-order.c: Delete testcase.
+	* gcc.dg/vmx/ld-vsx-be-order.c: Delete testcase.
+	* gcc.dg/vmx/lde-be-order.c: Delete testcase.
+	* gcc.dg/vmx/ldl-be-order.c: Delete testcase.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: Delete testcase.
+	* gcc.dg/vmx/merge-be-order.c: Delete testcase.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Delete testcase.
+	* gcc.dg/vmx/mult-even-odd-be-order.c: Delete testcase.
+	* gcc.dg/vmx/pack-be-order.c: Delete testcase.
+	* gcc.dg/vmx/perm-be-order.c: Delete testcase.
+	* gcc.dg/vmx/splat-be-order.c: Delete testcase.
+	* gcc.dg/vmx/splat-vsx-be-order.c: Delete testcase.
+	* gcc.dg/vmx/st-be-order.c: Delete testcase.
+	* gcc.dg/vmx/st-vsx-be-order.c: Delete testcase.
+	* gcc.dg/vmx/ste-be-order.c: Delete testcase.
+	* gcc.dg/vmx/stl-be-order.c: Delete testcase.
+	* gcc.dg/vmx/stl-vsx-be-order.c: Delete testcase.
+	* gcc.dg/vmx/sum2s-be-order.c: Delete testcase.
+	* gcc.dg/vmx/unpack-be-order.c: Delete testcase.
+	* gcc.dg/vmx/vsums-be-order.c: Delete testcase.
+	* gcc.target/powerpc/vec-setup-be-double.c: Delete testcase.
+	* gcc.target/powerpc/vec-setup-be-long.c: Delete testcase.
+	* gcc.target/powerpc/vec-setup.h: Remove -maltivec=be support.
+
 2018-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/85699

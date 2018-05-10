@@ -10,8 +10,7 @@
    The endian support is:
 
 	big endian
-	little endian with little endian element ordering
-	little endian with big endian element ordering.  */
+	little endian.  */
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -63,21 +62,12 @@ static int errors = 0;
 #define FMT	"lld"
 #endif
 
-/* Macros to order the left/right values correctly.  Note, -maltivec=be does
-   not change the order for static initializations, so we have to handle it
-   specially.  */
+/* Macros to order the left/right values correctly.  */
 
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define INIT_ORDER(A, B)	(TYPE) A, (TYPE) B
 #define ELEMENT_ORDER(A, B)	(TYPE) A, (TYPE) B
 #define ENDIAN			"-mbig"
-
-#elif __VEC_ELEMENT_REG_ORDER__ == __ORDER_BIG_ENDIAN__
-#define NO_ARRAY
-#define INIT_ORDER(A, B)	(TYPE) B, (TYPE) A
-#define ELEMENT_ORDER(A, B)	(TYPE) A, (TYPE) B
-#define ENDIAN			"-mlittle -maltivec=be"
-
 #else
 #define INIT_ORDER(A, B)	(TYPE) B, (TYPE) A
 #define ELEMENT_ORDER(A, B)	(TYPE) B, (TYPE) A
@@ -201,7 +191,6 @@ concat_extract_nn (vector TYPE a, vector TYPE b, size_t i, size_t j)
   return (vector TYPE) { vec_extract (a, i), vec_extract (b, j) };
 }
 
-#ifndef NO_ARRAY
 __attribute__((__noinline__))
 static vector TYPE
 array_0 (vector TYPE v, TYPE a)
@@ -236,7 +225,6 @@ array_01b (TYPE a, TYPE b)
   v[1] = b;
   return v;
 }
-#endif
 
 int
 main (void)
@@ -245,9 +233,7 @@ main (void)
   vector TYPE b = (vector TYPE) { THREE, FOUR };
   size_t i, j;
 
-#ifndef NO_ARRAY
   vector TYPE z = (vector TYPE) { ZERO,  ZERO };
-#endif
 
   DEBUG2 ("Endian: %s, type: %s\n", ENDIAN, STYPE);
   DEBUG0 ("\nStatic/global initialization\n");
@@ -268,7 +254,6 @@ main (void)
   vector_check (a, ELEMENT_ORDER (1, 2));
   vector_check (b, ELEMENT_ORDER (3, 4));
 
-#ifndef NO_ARRAY
   DEBUG0 ("\nTesting array syntax\n");
   vector_check (array_0   (a, FIVE),      ELEMENT_ORDER (5, 2));
   vector_check (array_1   (b, SIX),       ELEMENT_ORDER (3, 6));
@@ -279,9 +264,6 @@ main (void)
   vector_check (array_1   (b, six),       ELEMENT_ORDER (3, 6));
   vector_check (array_01  (z, five, six), ELEMENT_ORDER (5, 6));
   vector_check (array_01b (five, six),    ELEMENT_ORDER (5, 6));
-#else
-  DEBUG0 ("\nSkipping array syntax on -maltivec=be\n");
-#endif
 
   DEBUG0 ("\nTesting concat and extract\n");
   vector_check (concat_extract_00 (a, b), INIT_ORDER (1, 3));

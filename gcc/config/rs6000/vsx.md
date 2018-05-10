@@ -2557,7 +2557,7 @@
    (use (match_operand:VSX_D 1 "register_operand" "wa"))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
 {
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     {
       /* Shift left one word to put even word correct location */
       rtx rtx_tmp;
@@ -2582,7 +2582,7 @@
    (use (match_operand:V2DI 1 "register_operand" "wa"))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
 {
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     {
       /* Shift left one word to put even word correct location */
       rtx rtx_tmp;
@@ -2607,7 +2607,7 @@
    (use (match_operand:VSX_D 1 "register_operand" "wa"))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
 {
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     emit_insn (gen_vsx_xvcv<VF_sxddp>sp (operands[0], operands[1]));
   else
     {
@@ -2631,7 +2631,7 @@
   (use (match_operand:V2DI 1 "register_operand" "wa"))]
  "VECTOR_UNIT_VSX_P (V4SFmode)"
 {
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     emit_insn (gen_vsx_xvcvuxdsp (operands[0], operands[1]));
   else
     {
@@ -2674,7 +2674,7 @@
 	(match_operand:V2DF 1 "register_operand" "wa"))]
   "TARGET_VSX"
 {
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     {
       rtx rtx_tmp;
       rtx rtx_val = GEN_INT (12);
@@ -2706,7 +2706,7 @@
 	(match_operand:V2DF 1 "register_operand" "v"))]
   "TARGET_VSX"
 {
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     /* Big endian word numbering for words in operand is 0 1
        Result words 0 is where they need to be.  */
     emit_insn (gen_vsx_xvcvdpsxws (operands[0], operands[1]));
@@ -2758,7 +2758,7 @@
 	(match_operand:V2DF 1 "register_operand" "v"))]
   "TARGET_VSX"
 {
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     {
       rtx rtx_tmp;
       rtx rtx_val = GEN_INT (12);
@@ -2790,7 +2790,7 @@
 	(match_operand:V2DF 1 "register_operand" "v"))]
   "TARGET_VSX"
 {
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     /* Big endian word numbering for words in operand is 0 1
        Result words 0 is where they need to be.  */
     emit_insn (gen_vsx_xvcvdpuxws (operands[0], operands[1]));
@@ -3498,7 +3498,7 @@
   else
     {
       HOST_WIDE_INT elt = INTVAL (operands[2]);
-      HOST_WIDE_INT elt_adj = (!VECTOR_ELT_ORDER_BIG
+      HOST_WIDE_INT elt_adj = (!BYTES_BIG_ENDIAN
 			       ? GET_MODE_NUNITS (<MODE>mode) - 1 - elt
 			       : elt);
 
@@ -3530,7 +3530,7 @@
   HOST_WIDE_INT offset = INTVAL (op2) * GET_MODE_UNIT_SIZE (<MODE>mode);
 
   emit_move_insn (op3, GEN_INT (offset));
-  if (VECTOR_ELT_ORDER_BIG)
+  if (BYTES_BIG_ENDIAN)
     emit_insn (gen_vextu<wd>lx (op0_si, op3, op1));
   else
     emit_insn (gen_vextu<wd>rx (op0_si, op3, op1));
@@ -3593,7 +3593,7 @@
   rtx vec_tmp = operands[3];
   int value;
 
-  if (!VECTOR_ELT_ORDER_BIG)
+  if (!BYTES_BIG_ENDIAN)
     element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
@@ -3644,7 +3644,7 @@
   rtx vec_tmp = operands[3];
   int value;
 
-  if (!VECTOR_ELT_ORDER_BIG)
+  if (!BYTES_BIG_ENDIAN)
     element = GEN_INT (GET_MODE_NUNITS (<MODE>mode) - 1 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
@@ -3752,7 +3752,7 @@
   rtx v4si_tmp = operands[3];
   int value;
 
-  if (!VECTOR_ELT_ORDER_BIG)
+  if (!BYTES_BIG_ENDIAN)
     element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
@@ -3795,7 +3795,7 @@
   rtx df_tmp = operands[4];
   int value;
 
-  if (!VECTOR_ELT_ORDER_BIG)
+  if (!BYTES_BIG_ENDIAN)
     element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
@@ -3895,7 +3895,7 @@
   int ele = INTVAL (operands[3]);
   int nunits = GET_MODE_NUNITS (<MODE>mode);
 
-  if (!VECTOR_ELT_ORDER_BIG)
+  if (!BYTES_BIG_ENDIAN)
     ele = nunits - 1 - ele;
 
   operands[3] = GEN_INT (GET_MODE_SIZE (<VS_scalar>mode) * ele);
@@ -3934,7 +3934,7 @@
 
   operands[5] = gen_rtx_REG (V4SFmode, tmp_regno);
   operands[6] = gen_rtx_REG (V4SImode, tmp_regno);
-  operands[7] = GEN_INT (VECTOR_ELT_ORDER_BIG ? 1 : 2);
+  operands[7] = GEN_INT (BYTES_BIG_ENDIAN ? 1 : 2);
   operands[8] = gen_rtx_REG (V4SImode, reg_or_subregno (operands[0]));
 }
   [(set_attr "type" "vecperm")
@@ -3980,11 +3980,11 @@
 	  (match_operand:QI 4 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))]
   "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_POWERPC64
-   && (INTVAL (operands[3]) == (VECTOR_ELT_ORDER_BIG ? 1 : 2))"
+   && (INTVAL (operands[3]) == (BYTES_BIG_ENDIAN ? 1 : 2))"
 {
   int ele = INTVAL (operands[4]);
 
-  if (!VECTOR_ELT_ORDER_BIG)
+  if (!BYTES_BIG_ENDIAN)
     ele = GET_MODE_NUNITS (V4SFmode) - 1 - ele;
 
   operands[4] = GEN_INT (GET_MODE_SIZE (SFmode) * ele);
@@ -4008,7 +4008,7 @@
    (clobber (match_scratch:SI 5 "=&wJwK"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && VECTOR_MEM_VSX_P (V4SImode)
    && TARGET_P9_VECTOR && TARGET_POWERPC64
-   && (INTVAL (operands[3]) != (VECTOR_ELT_ORDER_BIG ? 1 : 2))"
+   && (INTVAL (operands[3]) != (BYTES_BIG_ENDIAN ? 1 : 2))"
   "#"
   "&& 1"
   [(parallel [(set (match_dup 5)
@@ -4037,21 +4037,8 @@
    (use (match_operand:VSX_D 2 "vsx_register_operand"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  rtvec v;
-  rtx x;
-
-  /* Special handling for LE with -maltivec=be.  */
-  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
-    {
-      v = gen_rtvec (2, GEN_INT (0), GEN_INT (2));
-      x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[2], operands[1]);
-    }
-  else
-    {
-      v = gen_rtvec (2, GEN_INT (1), GEN_INT (3));
-      x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[1], operands[2]);
-    }
-
+  rtvec v = gen_rtvec (2, GEN_INT (1), GEN_INT (3));
+  rtx x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[1], operands[2]);
   x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
   emit_insn (gen_rtx_SET (operands[0], x));
   DONE;
@@ -4063,21 +4050,8 @@
    (use (match_operand:VSX_D 2 "vsx_register_operand"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  rtvec v;
-  rtx x;
-
-  /* Special handling for LE with -maltivec=be.  */
-  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
-    {
-      v = gen_rtvec (2, GEN_INT (1), GEN_INT (3));
-      x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[2], operands[1]);
-    }
-  else
-    {
-      v = gen_rtvec (2, GEN_INT (0), GEN_INT (2));
-      x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[1], operands[2]);
-    }
-
+  rtvec v = gen_rtvec (2, GEN_INT (0), GEN_INT (2));
+  rtx x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[1], operands[2]);
   x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
   emit_insn (gen_rtx_SET (operands[0], x));
   DONE;
@@ -4209,8 +4183,8 @@
                       UNSPEC_VSX_XXSPLTD))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  if ((VECTOR_ELT_ORDER_BIG && INTVAL (operands[2]) == 0)
-      || (!VECTOR_ELT_ORDER_BIG && INTVAL (operands[2]) == 1))
+  if ((BYTES_BIG_ENDIAN && INTVAL (operands[2]) == 0)
+      || (!BYTES_BIG_ENDIAN && INTVAL (operands[2]) == 1))
     return "xxpermdi %x0,%x1,%x1,0";
   else
     return "xxpermdi %x0,%x1,%x1,3";
@@ -5161,7 +5135,7 @@
                     UNSPEC_XXEXTRACTUW))]
   "TARGET_P9_VECTOR"
 {
-  if (!VECTOR_ELT_ORDER_BIG)
+  if (!BYTES_BIG_ENDIAN)
     operands[2] = GEN_INT (12 - INTVAL (operands[2]));
 
   return "xxextractuw %x0,%x1,%2";
@@ -5175,7 +5149,7 @@
 		   UNSPEC_XXINSERTW))]
   "TARGET_P9_VECTOR"
 {
-  if (!VECTOR_ELT_ORDER_BIG)
+  if (!BYTES_BIG_ENDIAN)
     {
       rtx op1 = operands[1];
       rtx v4si_tmp = gen_reg_rtx (V4SImode);
