@@ -1,3 +1,9 @@
+2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/70870
+	* data.c (gfc_assign_data_value): Check that a data object does
+	not also have default initialization.
+
 2018-05-10  Marek Polacek  <polacek@redhat.com>
 
 	PR fortran/85735
