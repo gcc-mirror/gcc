@@ -201,6 +201,11 @@ range_positives (irange *r, tree type)
 {
   r->set_range (type, build_int_cst (type, 0), TYPE_MAX_VALUE (type));
 }
+static inline void
+range_negatives (irange *r, tree type)
+{
+  r->set_range (type, TYPE_MIN_VALUE (type), build_int_cst (type, -1));
+}
 enum value_range_type irange_to_value_range (wide_int &, wide_int &);
 
 /* An irange is inefficient when it comes to memory, so this class is
