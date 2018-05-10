@@ -1,5 +1,7 @@
 2018-05-09  Jason Merrill  <jason@redhat.com>
 
+	* lambda.c (lambda_expr_this_capture): Improve logic.
+
 	* decl.c (make_typename_type): s/parameters/arguments/.
 	* parser.c (cp_parser_nested_name_specifier_opt): Likewise.
 	* pt.c (make_pack_expansion): Correct error message.
