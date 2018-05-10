@@ -1,3 +1,8 @@
+2018-05-10  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000.md (prefetch): Generate ISA 2.06 instructions
+	dcbtt and dcbtstt if operands[2] is 0.
+
 2018-05-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/85693
