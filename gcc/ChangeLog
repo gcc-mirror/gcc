@@ -1,3 +1,23 @@
+2018-05-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (mode_supports_dq_form): Rename
+	mode_supports_vsx_dform_quad to mode_supports_dq_form.
+	(mode_supports_vsx_dform_quad): Likewise.
+	(mode_supports_vmx_dform): Move these functions to be next to the
+	other mode_supports functions.
+	(mode_supports_dq_form): Likewise.
+	(quad_address_p): Change calls of mode_supports_vsx_dform_quad to
+	mode_supports_dq_form.
+	(reg_offset_addressing_ok_p): Likewise.
+	(offsettable_ok_by_alignment): Likewise.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(legitimate_lo_sum_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_secondary_reload_inner): Likewise.
+	(rs6000_preferred_reload_class): Likewise.
+	(rs6000_output_move_128bit): Likewise.
+
 2018-05-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_builtin) <case IX86_BUILTIN_RDPID>:
