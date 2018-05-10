@@ -20,6 +20,9 @@ long double nexttowardl (long double, long double);
 #ifndef NEED_EXC
 #define NEED_EXC 0
 #endif
+#ifndef NO_LONG_DOUBLE
+#define NO_LONG_DOUBLE (__LDBL_MANT_DIG__ == 106)
+#endif
 
 #define TEST(name, fn, type, L1, L2, l1, l2, MIN1,			     \
 	     MAX1, DENORM_MIN1, EPSILON1, MIN2, MAX2, DENORM_MIN2)	     \
@@ -129,7 +132,7 @@ TEST (test1, nextafterf, float, F, F, f, f, __FLT_MIN__, __FLT_MAX__,
 TEST (test2, nextafter, double, , , , , __DBL_MIN__, __DBL_MAX__,
       __DBL_DENORM_MIN__, __DBL_EPSILON__, __DBL_MIN__, __DBL_MAX__,
       __DBL_DENORM_MIN__)
-#if __LDBL_MANT_DIG__ != 106
+#if !NO_LONG_DOUBLE
 TEST (test3, nextafterl, long double, L, L, l, l, __LDBL_MIN__, __LDBL_MAX__,
       __LDBL_DENORM_MIN__, __LDBL_EPSILON__, __LDBL_MIN__, __LDBL_MAX__,
       __LDBL_DENORM_MIN__)
@@ -149,7 +152,7 @@ main ()
 {
   test1 ();
   test2 ();
-#if __LDBL_MANT_DIG__ != 106
+#if !NO_LONG_DOUBLE
   test3 ();
   test4 ();
   test5 ();

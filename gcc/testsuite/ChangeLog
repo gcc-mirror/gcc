@@ -1,3 +1,11 @@
+2018-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85699
+	* gcc.dg/nextafter-1.c (NO_LONG_DOUBLE): Define if not defined.  Use
+	!NO_LONG_DOUBLE instead of __LDBL_MANT_DIG__ != 106.
+	* gcc.dg/nextafter-2.c: Include stdlib.h.  For glibc < 2.24 define
+	NO_LONG_DOUBLE to 1 before including nextafter-1.c.
+
 2018-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/tls/pr85400.C: New test.
