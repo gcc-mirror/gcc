@@ -1,3 +1,11 @@
+2018-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Link to C++17 status. Add note to outdated answer.
+	* doc/xml/manual/debug_mode.xml: Add array and forward_list to list
+	of C++11 containers with Debug Mode support.
+	* doc/xml/manual/using.xml: Document Dual ABI for ios_base::failure.
+	* doc/html/*: Regenerate.
+
 2018-05-10  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/regex_compiler.h (_S_cache_size): Change from
@@ -41,7 +49,7 @@
 	(_Parameter::_Parameter(const _Safe_local_iterator<>&, const char*,
 	_Is_iterator)): Likewise.
 	(_Parameter::_S_reverse_state(_Iterator_state)): New.
-        (_Parameter(__gnu_cxx::__normal_iterator<> const&, const char*,
+	(_Parameter(__gnu_cxx::__normal_iterator<> const&, const char*,
 	_Is_iterator)): New.
 	(_Parameter(std::reverse_iterator<> const&, const char*,
 	_Is_iterator)): New.
