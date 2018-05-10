@@ -1,3 +1,7 @@
+2018-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/xgetsetbv.c: Check also variable arguments.
+
 2018-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85662
