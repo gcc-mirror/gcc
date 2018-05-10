@@ -1,3 +1,8 @@
+2018-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR fortran/85735
+	* options.c (gfc_post_options): Set main_input_filename.
+
 2018-05-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54613

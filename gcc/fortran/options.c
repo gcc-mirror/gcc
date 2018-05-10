@@ -313,6 +313,7 @@ gfc_post_options (const char **pfilename)
       if (gfc_current_form == FORM_UNKNOWN)
 	{
 	  gfc_current_form = FORM_FREE;
+	  main_input_filename = filename;
 	  gfc_warning_now (0, "Reading file %qs as free form", 
 			   (filename[0] == '\0') ? "<stdin>" : filename);
 	}
