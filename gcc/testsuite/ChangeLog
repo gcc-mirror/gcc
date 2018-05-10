@@ -1,3 +1,8 @@
+2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/70870
+	* gfortran.dg/pr70870_1.f90: New test.
+
 2018-05-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/xgetsetbv.c: Check also variable arguments.
