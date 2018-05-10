@@ -1,3 +1,9 @@
+2018-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (gcc_gxx_include_dir_add_sysroot): Set it to 1 only
+	when --with-gxx-include-dir is also specified.
+	* configure: Regenerate.
+
 2018-05-09  Jim Wilson  <jimw@sifive.com>
 
 	PR target/84797
