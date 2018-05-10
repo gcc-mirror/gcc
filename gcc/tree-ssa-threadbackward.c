@@ -242,10 +242,6 @@ bb_paths::prune_irrelevant_range_blocks (vec <basic_block> &path)
       edge e;
 
       gcc_assert (e = find_edge (path[i], path[i - 1]));
-      /* ?? When the path ranger can understand copies, we should look
-	 into using it instead of gori.  For instance, we may not have
-	 a range here, but the path ranger may realize that earlier
-	 than E we have a range because of a copy??.  */
       if (ranger.range_on_edge (r, name, e))
 	{
 	  /* Remove anything that came before here.  */
