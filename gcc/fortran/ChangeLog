@@ -1,3 +1,8 @@
+2018-05-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* intrinsic.texi: Document BACK for MINLOC and MAXLOC.
+
 2018-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68846
