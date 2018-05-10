@@ -1,3 +1,8 @@
+2018-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85693
+	* config/i386/sse.md (usadv64qi): New expander.
+
 2018-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/altivec.md (altivec_vmrghb, altivec_vmrghh,

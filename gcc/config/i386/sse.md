@@ -10878,6 +10878,21 @@
   DONE;
 })
 
+(define_expand "usadv64qi"
+  [(match_operand:V16SI 0 "register_operand")
+   (match_operand:V64QI 1 "register_operand")
+   (match_operand:V64QI 2 "nonimmediate_operand")
+   (match_operand:V16SI 3 "nonimmediate_operand")]
+  "TARGET_AVX512BW"
+{
+  rtx t1 = gen_reg_rtx (V8DImode);
+  rtx t2 = gen_reg_rtx (V16SImode);
+  emit_insn (gen_avx512f_psadbw (t1, operands[1], operands[2]));
+  convert_move (t2, t1, 0);
+  emit_insn (gen_addv16si3 (operands[0], t2, operands[3]));
+  DONE;
+})
+
 (define_insn "<mask_codefor>ashr<mode>3<mask_name>"
   [(set (match_operand:VI248_AVX512BW_1 0 "register_operand" "=v,v")
 	(ashiftrt:VI248_AVX512BW_1
