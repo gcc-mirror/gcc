@@ -1,3 +1,8 @@
+2018-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85662
+	* g++.dg/ext/offsetof2.C: New test.
+
 2018-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68846

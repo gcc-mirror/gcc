@@ -2232,7 +2232,7 @@ cp_fold (tree x)
 	      val = TREE_OPERAND (val, 0);
 	      STRIP_NOPS (val);
 	      if (TREE_CODE (val) == INTEGER_CST)
-		return fold_convert (TREE_TYPE (x), fold_offsetof_1 (op0));
+		return fold_offsetof (op0, TREE_TYPE (x));
 	    }
 	}
       goto finish_unary;

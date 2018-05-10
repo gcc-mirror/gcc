@@ -4676,7 +4676,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
       if (val && INDIRECT_REF_P (val)
           && TREE_CONSTANT (TREE_OPERAND (val, 0)))
 	{
-	  ret = fold_convert_loc (location, argtype, fold_offsetof_1 (arg));
+	  ret = fold_offsetof (arg, argtype);
 	  goto return_build_unary_op;
 	}
 
