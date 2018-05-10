@@ -2046,7 +2046,8 @@ got_charlen:
 	  else
 	    return true;
 
-	  gcc_assert (current_length != -1);
+	  if (current_length < 0)
+	    current_length = 0;
 
 	  if (found_length == -1)
 	    found_length = current_length;
