@@ -438,7 +438,7 @@ namespace std
 {
   // Avoid the use of assert, because we're trying to keep the <cassert>
   // include out of the mix.
-  inline void
+  extern "C++" inline void
   __replacement_assert(const char* __file, int __line,
 		       const char* __function, const char* __condition)
   {

@@ -68,6 +68,8 @@
 #undef strtok
 #undef strxfrm
 
+extern "C++"
+{
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -119,5 +121,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+} // extern "C++"
 
 #endif

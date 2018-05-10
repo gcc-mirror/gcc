@@ -132,6 +132,8 @@ namespace std
 
 #if _GLIBCXX_USE_WCHAR_T
 
+extern "C++"
+{
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -231,6 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+} // extern "C++"
 
 #if _GLIBCXX_USE_C99_WCHAR
 
