@@ -384,7 +384,8 @@ i[34567]86-*-*)
 		       avx512vbmi2vlintrin.h avx512vnniintrin.h
 		       avx512vnnivlintrin.h vaesintrin.h vpclmulqdqintrin.h
 		       avx512vpopcntdqvlintrin.h avx512bitalgintrin.h
-		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h"
+		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h
+		       waitpkgintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -413,7 +414,8 @@ x86_64-*-*)
 		       avx512vbmi2vlintrin.h avx512vnniintrin.h
 		       avx512vnnivlintrin.h vaesintrin.h vpclmulqdqintrin.h
 		       avx512vpopcntdqvlintrin.h avx512bitalgintrin.h
-		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h"
+		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h
+		       waitpkgintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
