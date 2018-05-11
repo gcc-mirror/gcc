@@ -22,12 +22,8 @@
 # Eventually this should be a portable compiled program, like
 # lto-wrapper.
 
-# FIXME this is a Quick and Dirty Hack.  It is not robust
-# The API is not stable and can change at a moment's notice.
-# It'd be nice to inform the driver that we're compiling
-# an additional file, so it doesn't compile it itself
-# It'd also be nice to do some kind of locking so parallel makes 'just work'
-
+VERSION=@VERSION@
+test "$VERSION" != '@'VERSION'@' || VERSION=0
 progname=${0##*/}
 main=
 verbose=false
@@ -80,11 +76,11 @@ while read cmd arg0 arg1 ; do
     resp=
     case "$cmd" in
 	(HELO)
-	    if test $arg0 = 0 ; then
+	    if test $arg0 = $VERSION ; then
 		main="$arg1"
 		resp="200 OK"
 	    else
-		resp="520 Bad Version"
+		resp="520 Bad Version (expect $VERSION)"
 	    fi
 	    ;;
 	(IMPT)

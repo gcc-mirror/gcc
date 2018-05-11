@@ -124,6 +124,9 @@ Classes used:
 #define MODULE_STAMP 0
 #endif
 
+/* Oracle Protocol version.  Very new.  */
+#define ORACLE_VERSION 0
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -6630,7 +6633,9 @@ oracle_init ()
   setvbuf (oracle_write, NULL, _IOLBF, 0);
 
   dump () && dump ("Initialized oracle");
-  fprintf (oracle_write, "HELO 0 %s\n", main_input_filename);
+  fprintf (oracle_write, "HELO %d %s\n",
+	   MODULE_STAMP ? -version2date (get_version ()) : ORACLE_VERSION,
+	   main_input_filename);
   char *resp;
   int code = oracle_response (resp);
   if (code != 200)

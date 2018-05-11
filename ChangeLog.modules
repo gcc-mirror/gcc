@@ -1,5 +1,13 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* Make-lang.in (cxx-module-oracle): Sed version.
+	(cxx_module-wrapper): Delete.
+	* cxx-module-oracle: Allow dev versions.
+	* cxx_module-wrapper: Delete.
+	* module.c (ORACLE_VERSION): New.
+	(oracle_init): Use MODULE_STAMP if available.
+
 	A more conventional protocol
 	gcc/
 	* doc/invoke.texi (C++ Modules): Update oracle protocol.
