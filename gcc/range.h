@@ -336,7 +336,7 @@ value_range_to_irange (irange &r,
 		       const wide_int &min, const wide_int &max)
 {
   gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
-  if (kind == VR_VARYING || POINTER_TYPE_P (type))
+  if (kind == VR_VARYING || kind == VR_UNDEFINED)
     r.set_range_for_type (type);
   else
     r.set_range (type, min, max,
