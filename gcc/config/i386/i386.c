@@ -2772,7 +2772,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mclzero",	OPTION_MASK_ISA_CLZERO },
     { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
-    { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B }
+    { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
+    { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -3455,6 +3456,7 @@ ix86_option_override_internal (bool main_args_p,
   const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
   const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
   const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
+  const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
 
   const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
     | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
@@ -5387,6 +5389,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("vpclmulqdq", OPT_mvpclmulqdq),
     IX86_ATTR_ISA ("movdiri", OPT_mmovdiri),
     IX86_ATTR_ISA ("movdir64b", OPT_mmovdir64b),
+    IX86_ATTR_ISA ("waitpkg", OPT_mwaitpkg),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -30642,6 +30645,9 @@ enum ix86_builtins
   IX86_BUILTIN_CLFLUSH,
   IX86_BUILTIN_MONITOR,
   IX86_BUILTIN_MWAIT,
+  IX86_BUILTIN_UMONITOR,
+  IX86_BUILTIN_UMWAIT,
+  IX86_BUILTIN_TPAUSE,
   IX86_BUILTIN_CLZERO,
   IX86_BUILTIN_VEC_INIT_V2SI,
   IX86_BUILTIN_VEC_INIT_V4HI,
@@ -31972,6 +31978,14 @@ ix86_init_mmx_sse_builtins (void)
   /* CLZERO.  */
   def_builtin2 (OPTION_MASK_ISA_CLZERO, "__builtin_ia32_clzero",
 		VOID_FTYPE_PCVOID, IX86_BUILTIN_CLZERO);
+
+  /* WAITPKG.  */
+  def_builtin2 (OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_umonitor",
+	       VOID_FTYPE_PVOID, IX86_BUILTIN_UMONITOR);
+  def_builtin2 (OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_umwait",
+	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_UMWAIT);
+  def_builtin2 (OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_tpause",
+	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_TPAUSE);
 
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
@@ -37047,6 +37061,82 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	op2 = copy_to_mode_reg (SImode, op2);
       emit_insn (gen_mwaitx (op0, op1, op2));
       return 0;
+
+    case IX86_BUILTIN_UMONITOR:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+
+      op0 = ix86_zero_extend_to_Pmode (op0);
+
+      insn = (TARGET_64BIT
+	      ? gen_umonitor_di (op0)
+	      : gen_umonitor_si (op0));
+
+      emit_insn (insn);
+      return 0;
+
+    case IX86_BUILTIN_UMWAIT:
+    case IX86_BUILTIN_TPAUSE:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+
+      if (!REG_P (op0))
+	op0 = copy_to_mode_reg (SImode, op0);
+
+      op1 = force_reg (DImode, op1);
+
+      if (TARGET_64BIT)
+	{
+	  op2 = expand_simple_binop (DImode, LSHIFTRT, op1, GEN_INT (32),
+				     NULL, 1, OPTAB_DIRECT);
+	  switch (fcode)
+	    {
+	    case IX86_BUILTIN_UMWAIT:
+	      icode = CODE_FOR_umwait_rex64;
+	      break;
+	    case IX86_BUILTIN_TPAUSE:
+	      icode = CODE_FOR_tpause_rex64;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  op2 = gen_lowpart (SImode, op2);
+	  op1 = gen_lowpart (SImode, op1);
+	  pat = GEN_FCN (icode) (op0, op1, op2);
+	}
+      else
+	{
+	  switch (fcode)
+	    {
+	    case IX86_BUILTIN_UMWAIT:
+	      icode = CODE_FOR_umwait;
+	      break;
+	    case IX86_BUILTIN_TPAUSE:
+	      icode = CODE_FOR_tpause;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  pat = GEN_FCN (icode) (op0, op1);
+	}
+
+      if (!pat)
+	return 0;
+
+      emit_insn (pat);
+
+      if (target == 0
+	  || !register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+
+      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCCmode, FLAGS_REG),
+			const0_rtx);
+      emit_insn (gen_rtx_SET (target, pat));
+
+      return target;
 
     case IX86_BUILTIN_CLZERO:
       arg0 = CALL_EXPR_ARG (exp, 0);

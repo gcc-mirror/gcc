@@ -1,3 +1,8 @@
+2018-05-11  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/tpause-1.c: New test.
+	* gcc.target/i386/umonitor-1.c: New test.
+
 2018-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/85696

@@ -101,6 +101,8 @@
 
 #include <pkuintrin.h>
 
+#include <waitpkgintrin.h>
+
 #endif /* __iamcu__ */
 
 #endif /* _X86INTRIN_H_INCLUDED */

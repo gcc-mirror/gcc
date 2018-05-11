@@ -1258,7 +1258,7 @@ See RS/6000 and PowerPC Options.
 -mprefetchwt1  -mclflushopt  -mxsavec  -mxsaves @gol
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  @gol
--mmwaitx  -mclzero  -mpku  -mthreads -mgfni  -mvaes  @gol
+-mmwaitx  -mclzero  -mpku  -mthreads -mgfni  -mvaes  -mwaitpkg @gol
 -mshstk -mforce-indirect-call -mavx512vbmi2 @gol
 -mvpclmulqdq -mavx512bitalg -mmovdiri -mmovdir64b -mavx512vpopcntdq @gol
 -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
@@ -27246,6 +27246,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mvaes
 @opindex mvaes
 @need 200
+@itemx -mwaitpkg
+@opindex -mwaitpkg
+@need 200
 @itemx -mvpclmulqdq
 @opindex mvpclmulqdq
 @need 200
@@ -27263,7 +27266,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
-AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2, VAES,
+AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2, VAES, WAITPKG,
 FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU, IBT, SHSTK, AVX512VBMI2,
 GFNI, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
 AVX512VPOPCNTDQ3DNow!@: or enhanced 3DNow!@: extended instruction sets.

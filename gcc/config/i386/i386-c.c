@@ -516,6 +516,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__MOVDIRI__");
   if (isa_flag2 & OPTION_MASK_ISA_MOVDIR64B)
     def_or_undef (parse_in, "__MOVDIR64B__");
+  if (isa_flag2 & OPTION_MASK_ISA_WAITPKG)
+    def_or_undef (parse_in, "__WAITPKG__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
