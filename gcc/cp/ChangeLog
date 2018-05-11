@@ -1,4 +1,8 @@
-2018-05-09  Jason Merrill  <jason@redhat.com>
+2018-05-10  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cp_finish_decl): Don't instantiate auto variable.
+	(check_static_variable_definition): Allow auto.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Likewise.
 
 	* cp-tree.h (DECL_CONSTRUCTOR_P): Use DECL_CXX_CONSTRUCTOR_P.
 	(DECL_DESTRUCTOR_P): Use DECL_CXX_DESTRUCTOR_P.
