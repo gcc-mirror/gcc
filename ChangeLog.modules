@@ -1,6 +1,12 @@
 2018-05-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c: Include socket headers.
+	(oracle_init): Create and connect local or ipv6 socket.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document oracle socket options.
+
+	gcc/cp/
 	* module.c (module_prefix): Delete.
 	(make_module_filename): Don't handle it.
 	(handle_module_option): Nor here.

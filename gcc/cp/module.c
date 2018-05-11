@@ -141,6 +141,11 @@ Classes used:
 #include "tree-diagnostic.h"
 #include "params.h"
 
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
 /* Id for dumping module information.  */
 int module_dump_id;
 
@@ -6266,7 +6271,9 @@ module_state::announce (const char *what) const
     DONE module-name -> no response
  */
 
-/* Create the oracle streams.  Return true if there is an oracle.  */
+/* Create the oracle streams.  Return true if there is an oracle.
+   Yes, I'm embedding some client-side socket handling in the
+   compiler!   */
 
 static bool
 oracle_init ()
@@ -6285,18 +6292,96 @@ oracle_init ()
 
   /* Try a file number or pair of same.  */
   char *endp;
-  unsigned long fin, fout;
+  int fd = -1;
+  size_t len = strlen (module_oracle);
+  unsigned count = 0;
+  char *writable = XNEWVEC (char, len + 1);
+  memcpy (writable, module_oracle, len + 1);
 
-  fin = strtoul (module_oracle, &endp, 10);
-  if (*endp == ':')
-    fout = strtoul (endp + 1, &endp, 10);
-  else if (!*endp)
-    fout = dup (fin);
+  for (char *ptr = writable; *ptr; ptr++)
+    if (ISSPACE (*ptr))
+      {
+	while (ISSPACE (ptr[1]))
+	  ptr++;
+	count++;
+      }
+  unsigned long lfd = strtoul (module_oracle, &endp, 10);
+  if (!*endp && lfd != ULONG_MAX)
+    fd = int (lfd);
 
-  if (!*endp && fin != ULONG_MAX && fout != ULONG_MAX)
+  if (fd < 0 && !count)
     {
-      oracle_read = fdopen (fin, "r+");
-      oracle_write = fdopen (fout, "w+");
+      /* There are no spaces in it, try opening a socket.  */
+      int port = -1;
+      union saddr {
+	sa_family_t fam;
+	sockaddr_un un;
+	sockaddr_in6 in6;
+      } saddr;
+      size_t saddr_len = 0;
+
+      saddr.fam = AF_UNSPEC;
+      if (IS_ABSOLUTE_PATH (writable))
+	{
+	  /* An absolute path is treated as a local domain socket.  */
+	  if (len < sizeof (saddr.un.sun_path))
+	    {
+	      memset (&saddr.un, 0, sizeof (saddr.un));
+	      saddr.un.sun_family = AF_UNIX;
+	      memcpy (saddr.un.sun_path, writable, len + 1);
+	    }
+	  saddr_len = offsetof (union saddr, un.sun_path) + len + 1;
+	}
+      else if (char *colon = (char *)memrchr (writable, ':', len))
+	{
+	  port = strtoul (colon + 1, &endp, 10);
+	  if (!*endp && port < 0x10000)
+	    {
+	      /* Ends in ':number', treat as ipv6 domain socket.  */
+	      *colon = 0;
+	      if (struct hostent *hent
+		  = gethostbyname2 (colon != writable ? writable : "localhost",
+				    AF_INET6))
+		{
+		  memset (&saddr.in6, 0, sizeof (saddr.in6));
+		  saddr.in6.sin6_family = AF_INET6;
+		  saddr.in6.sin6_port = htons (port);
+		  memcpy (&saddr.in6.sin6_addr, hent->h_addr, hent->h_length);
+		}
+	      saddr_len = sizeof (saddr.in6);
+	    }
+	}
+
+      if (saddr.fam != AF_UNSPEC)
+	{
+	  fd = socket (saddr.fam, SOCK_STREAM, 0);
+	  if (fd < 0 || connect (fd, (sockaddr *)&saddr, saddr_len) < 0)
+	    {
+	      err = errno;
+	      errmsg = "connecting socket";
+	      if (fd >= 0)
+		close (fd);
+	      fd = -1;
+	    }
+	}
+      else if (saddr_len)
+	{
+	  free (writable);
+	  writable = NULL;
+	  errmsg = "resolving address";
+	}
+    }
+
+  if (fd >= 0)
+    {
+      /* We were given a fileno, or sucessfuly created a socket.  */
+      int fd2 = dup (fd);
+      if (fd2 >= 0)
+	{
+	  oracle_read = fdopen (fd, "r+");
+	  oracle_write = fdopen (fd2, "w+");
+	}
+
       if (!oracle_read || !oracle_write)
 	{
 	  err = errno;
@@ -6308,21 +6393,10 @@ oracle_init ()
 	  oracle_read = oracle_write = NULL;
 	}
     }
-  else
+  else if (writable)
     {
       /* Split module_oracle at white-space.  No space-containing args
 	 for you!  */
-      unsigned count = 0;
-      char *writable = xstrdup (module_oracle);
-
-      for (char *ptr = writable; *ptr; ptr++)
-	if (ISSPACE (*ptr))
-	  {
-	    while (ISSPACE (ptr[1]))
-	      ptr++;
-	    count++;
-	  }
-
       char **argv = XALLOCAVEC (char *, count + 2);
       count = 0;
 
@@ -6330,6 +6404,8 @@ oracle_init ()
 	{
 	  while (ISSPACE (*ptr))
 	    ptr++;
+	  if (!*ptr)
+	    break;
 	  argv[count++] = ptr;
 	  while (*ptr && !ISSPACE (*ptr))
 	    ptr++;
@@ -6420,6 +6496,10 @@ oracle_fini ()
   oracle_read = oracle_write = NULL;
   module_oracle = NULL;
 }
+
+/* Read a response from the oracle.  Return pointer to buffer ending
+   in NUL (not LF NUL).  Buffer is owned by this routine and reused on
+   subsequent responses.  Return NULL on error.  */
 
 static char *
 oracle_response ()

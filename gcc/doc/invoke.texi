@@ -2570,7 +2570,6 @@ used, then read mappings from @var{file}.
 Disable module importing.
 
 @item -fmodule-oracle=@var{fd}
-@itemx -fmodule-oracle=@var{fd:fd}
 @itemx -fmodule-oracle=@var{[hostname]:port}
 @itemx -fmodule-oracle=@var{program}
 @itemx -fmodule-oracle=@var{/pathname}
@@ -29209,19 +29208,24 @@ may have one of the following forms:
 
 @itemize
 
-@item @samp{number[:number]}
-The numbers are file numbers, which the spawning environment must have
-made available. The first is written to, and the second is read from.
+@item @samp{number}
+A file number associated with a streaming socket.  The spawning
+environment must have made available.
 
 @item @samp{[hostname]:port}
 A hostname, which defaults to @samp{localhost} and a port number to
-connect to. FIXME:Not implemented, use @samp{ncat hostname port} as a
-workaround.
+connect to.  IPv6 is used.
+
+@item @samp{absolutepath}
+A local domain socket.
 
 @item @samp{program args...}
 A program to spawn, and communicate with on its stdin/stdout files.
 Arguments are separated by white space, (it is not possible for one of
-the arguments delivered to the program to contain a space).
+the arguments delivered to the program to contain a space).  If there
+are no arguments and the program is either an absolute path, or ends
+in @samp{:number}, it will be interpretted as a socket.  You may add
+leading or trailing whitespace to disambiguate.
 
 @end itemize
 
