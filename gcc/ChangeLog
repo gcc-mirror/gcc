@@ -1,3 +1,9 @@
+2018-05-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/85655
+	* ipa-cp.c (intersect_with_plats): Check that the lattice contains
+	single const.
+
 2018-05-11  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/85733
