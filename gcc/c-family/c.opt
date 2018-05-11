@@ -1544,10 +1544,6 @@ fmodule-path=
 C++ ObjC++ Joined RejectNegative
 -fmodule-path=<directory> Append <directory> to module search path
 
-fmodule-prefix=
-C++ ObjC++ Joined RejectNegative
--fmodule-prefix=<directory>  Directory component to prefix all module files.
-
 fmodule-wrapper=
 C++ ObjC++ JoinedOrMissing RejectNegative
 -fmodule-wrapper=<program> Invoke <program> for missing binary module interface

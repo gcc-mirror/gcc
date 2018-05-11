@@ -1,5 +1,15 @@
 2018-05-10  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (module_prefix): Delete.
+	(make_module_filename): Don't handle it.
+	(handle_module_option): Nor here.
+	gcc/c-family/
+	* c.opt (fmodule-prefix): Delete.
+	gcc/
+	* doc/invoke.texi (C++ Dialect Options): Remove -fmodule-prefix.
+	(C++ Modules): Remove -fmodule-prefix
+
 	Oracle!
 	gcc/cp/
 	* Make-lang.in (cxx-module-oracle): New rule.

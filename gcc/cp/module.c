@@ -2474,8 +2474,6 @@ bool module_state_hash::equal (const value_type existing,
 
 /* Binary module interface output file name. */
 static const char *module_output;
-/* Pathfragment inserted before module filename.  */
-static const char *module_prefix;
 /* Set of module-file arguments to process on initialization.  */
 static vec<const char *, va_heap> module_file_args;
 /* The module wrapper script.  */
@@ -6256,13 +6254,19 @@ module_state::announce (const char *what) const
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 }
 
-/*  MAIN version mainfile\n -> no response
-    INCL header-name\n -> IMPT header-name module-name\n
-    			  INCL header-name
-    IMPT module-name\n -> MAP module-name file-name\n
-    EXPT module-name\n -> MAP module-name file-name\n
-    DONE module-name\n -> no response
+/*  Module oracle protocol:
+    
+    MAIN version mainfile -> no response
+    INCL header-name -> IMPT header-name module-name
+    			INCL header-name
+    [+]IMPT module-name -> MAP module-name file-name
+    			   MAP module-name
+    <blankline>      -> delayed IMPT responses
+    EXPT module-name -> MAP module-name file-name
+    DONE module-name -> no response
  */
+
+/* Create the oracle streams.  Return true if there is an oracle.  */
 
 static bool
 oracle_init ()
@@ -6480,8 +6484,6 @@ oracle_done (tree name)
   fprintf (oracle_write, "DONE %s\n", IDENTIFIER_POINTER (name));
 }
 
-/* Create the oracle streams.  Return true if there is an oracle.  */
-
 /* Create a module file name from NAME, length NAME_LEN.  NAME might
    not be NUL-terminated.  FROM_IDENT is true if NAME is the
    module-name, false if it is already filenamey.  */
@@ -6489,17 +6491,10 @@ oracle_done (tree name)
 static char *
 make_module_filename (const char *name, size_t name_len, bool from_ident)
 {
-  size_t pfx_len = module_prefix ? strlen (module_prefix) : 0;
   size_t sfx_len = from_ident ? strlen (MOD_FNAME_SFX) : 0;
-  char *res = XNEWVEC (char, name_len + sfx_len + pfx_len + (pfx_len != 0) + 1);
+  char *res = XNEWVEC (char, name_len + sfx_len + 1);
   char *ptr = res;
 
-  if (pfx_len)
-    {
-      memcpy (ptr, module_prefix, pfx_len);
-      ptr += pfx_len;
-      *ptr++ = DIR_SEPARATOR;
-    }
   memcpy (ptr, name, name_len);
   ptr[name_len] = 0;
   if (from_ident)
@@ -9313,10 +9308,6 @@ handle_module_option (unsigned code, const char *arg, int)
 
     case OPT_fmodule_oracle_:
       module_oracle = arg;
-      return true;
-
-    case OPT_fmodule_prefix_:
-      module_prefix = arg;
       return true;
 
     case OPT_fmodule_wrapper_:

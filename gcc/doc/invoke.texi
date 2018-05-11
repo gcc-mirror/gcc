@@ -2590,10 +2590,6 @@ Append @var{dir} to the module-map search path.  The ':' separated
 directory list in @env{CXX_MODULE_PATH} is appended after explicitly
 specified directories.
 
-@item -fmodule-prefix=@var{dir}
-@opindex fmodule-prefix
-Prefix all relative compiled module interface filenames with @var{dir}.
-
 @item -fmodule-wrapper=@var{program}
 @opindex fmodule-wrapper
 If a compiled module interface file is not present, this program is
@@ -29312,13 +29308,6 @@ The @option{-fmodule-path=@var{dir}} option adds directories to a
 module search path.  This path is searched for BMI files and for
 mapping files.  A default value is read from the @var{CXX_MODULE_PATH}
 environment variable.
-
-The @option{-fmodule-prefix=@var{dir}} option can be used to insert a
-prefix string between any module file names and their containing
-directory.  Both those specified in mapping files and found via the
-module path are affected.  This prefix may be used to separate sets of
-BMIs build with different and conflicting options, such as
-@samp{debug} and @samp{release} builds.
 
 The @option{-fmodule-wrapper=@var{program}} option ...
 
