@@ -1,3 +1,10 @@
+2018-05-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/83687
+	* config/arm/neon.md (neon_vabd<mode>_2): Use VCVTF mode iterator.
+	Remove integer-related logic from pattern.
+	(neon_vabd<mode>_3): Likewise.
+
 2018-04-25  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
