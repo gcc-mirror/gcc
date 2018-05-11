@@ -7297,7 +7297,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	  if (VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	    share_name = "threadprivate";
-	  else switch (cxx_omp_predetermined_sharing (t))
+	  else switch (cxx_omp_predetermined_sharing_1 (t))
 	    {
 	    case OMP_CLAUSE_DEFAULT_UNSPECIFIED:
 	      break;
