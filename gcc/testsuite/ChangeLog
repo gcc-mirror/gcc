@@ -1,3 +1,8 @@
+2018-05-11  Martin Liska  <mliska@suse.cz>
+
+        PR sanitizer/85556
+	* c-c++-common/ubsan/attrib-6.c: New test.
+
 2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85687

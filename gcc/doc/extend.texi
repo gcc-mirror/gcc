@@ -2977,6 +2977,8 @@ mentioned in @var{sanitize_option}.  A list of values acceptable by
 @smallexample
 void __attribute__ ((no_sanitize ("alignment", "object-size")))
 f () @{ /* @r{Do something.} */; @}
+void __attribute__ ((no_sanitize ("alignment,object-size")))
+g () @{ /* @r{Do something.} */; @}
 @end smallexample
 
 @item no_sanitize_address
