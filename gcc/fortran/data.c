@@ -489,6 +489,15 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
     }
   else
     {
+      if (lvalue->ts.type == BT_DERIVED
+	  && gfc_has_default_initializer (lvalue->ts.u.derived))
+	{
+	  gfc_error ("Nonpointer object %qs with default initialization "
+		     "shall not appear in a DATA statement at %L", 
+		     symbol->name, &lvalue->where);
+	  return false;
+	}
+
       /* Overwriting an existing initializer is non-standard but usually only
 	 provokes a warning from other compilers.  */
       if (init != NULL)
