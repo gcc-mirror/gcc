@@ -165,10 +165,6 @@ int module_dump_id;
 /* We have a few more special module owners.  */
 #define MODULE_UNKNOWN (~0U)    /* Not yet known.  */
 
-/* Mangling for module files.  */
-#define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
-#define MOD_FNAME_DOT '-' /* Dots convert to ... */
-
 /* Prefix for section names.  */
 #define MOD_SNAME_PFX "gnu.c++"
 
@@ -2313,7 +2309,6 @@ struct GTY(()) module_state {
   elf_in *GTY((skip)) from;     /* Lazy loading.  */
 
   char *filename;	/* Filename */
-  char *srcname;	/* Source name, if available.  */
   location_t loc;	/* Its location.  */
 
   unsigned lazy;	/* Number of lazy sections yet to read.  */
@@ -2438,8 +2433,6 @@ struct GTY(()) module_state {
   static void fini ();
   static module_state *get_module (tree name, module_state * = NULL,
 				   bool insert = true);
-  static void print_map ();
-
  public:
   /* Vector indexed by OWNER.  */
   static vec<module_state *, va_gc> *modules;
@@ -2464,7 +2457,7 @@ module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (name), vec_name (NULL_TREE),
     remap (NULL), unnamed (NULL), from (NULL),
-    filename (NULL), srcname (NULL), loc (UNKNOWN_LOCATION),
+    filename (NULL), loc (UNKNOWN_LOCATION),
     lazy (0), loading (~0u), lru (0), mod (MODULE_UNKNOWN), crc (0)
 {
   imported = exported = false;
@@ -6214,9 +6207,6 @@ module_state::release (bool at_eof)
       exports = NULL;
     }
 
-  XDELETEVEC (srcname);
-  srcname = NULL;
-
   vec_free (remap);
   remap = NULL;
   vec_free (unnamed);
@@ -6226,22 +6216,6 @@ module_state::release (bool at_eof)
       from->end ();
       delete from;
       from = NULL;
-    }
-}
-
-void
-module_state::print_map ()
-{
-  fprintf (stdout, "Module Map:\n");
-  hash_table<module_state_hash>::iterator end (hash->end ());
-  for (hash_table<module_state_hash>::iterator iter (hash->begin ());
-       iter != end; ++iter)
-    {
-      module_state *state = *iter;
-      if (state->name)
-	fprintf (stdout, state->srcname ? "%s=%s ;%s\n" : "%s=%s\n",
-		 IDENTIFIER_POINTER (state->name), state->filename,
-		 state->srcname);
     }
 }
 
@@ -6638,12 +6612,22 @@ oracle_init ()
   return true;
 }
 
-static char *
-oracle_query_module (tree name, bool rnw)
+static FILE *
+oracle_module_file (module_state *state, bool rnw)
 {
-  dump () && dump ("Querying oracle for %N", name);
+  gcc_assert (!state->filename);
+  dump () && dump ("Querying oracle for %N", state->name);
+  if (!oracle_read && !oracle_init ())
+    {
+      /* This seems the most appropriate error to simulate if there's
+	 no oracle.  */
+    failed:
+      errno = ENOMSG;
+      return NULL;
+    }
+
   const char *cmd = rnw ? "IMPT" : "EXPT";
-  fprintf (oracle_write, "%s %s\n", cmd, IDENTIFIER_POINTER (name));
+  fprintf (oracle_write, "%s %s\n", cmd, IDENTIFIER_POINTER (state->name));
 
   char *resp;
   int code = oracle_response (resp);
@@ -6651,21 +6635,24 @@ oracle_query_module (tree name, bool rnw)
   if (code != 250 && code != 550)
     {
       oracle_unexpected (cmd, code, resp);
-      return NULL;
+      goto failed;
     }
 
-  if (strncmp (resp, IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name))
-      || (code == 550 && resp[IDENTIFIER_LENGTH (name)])
-      || (code == 250 && !ISSPACE (resp[IDENTIFIER_LENGTH (name)])))
+  if (strncmp (resp, IDENTIFIER_POINTER (state->name)
+	       , IDENTIFIER_LENGTH (state->name))
+      || (code == 550 && resp[IDENTIFIER_LENGTH (state->name)])
+      || (code == 250 && !ISSPACE (resp[IDENTIFIER_LENGTH (state->name)])))
     {
       oracle_malformed (cmd, code, resp);
-      return NULL;
+      goto failed;
     }
 
   if (code == 550)
-    return NULL;
+    goto failed;
 
-  return xstrdup (resp + IDENTIFIER_LENGTH (name) + 1);
+  state->filename = xstrdup (resp + IDENTIFIER_LENGTH (state->name) + 1);
+
+  return fopen (state->filename, rnw ? "rb" : "wb");
 }
 
 static void
@@ -6673,30 +6660,6 @@ oracle_done (tree name)
 {
   dump () && dump ("Completed oracle");
   fprintf (oracle_write, "DONE %s\n", IDENTIFIER_POINTER (name));
-}
-
-/* Create a module file name from NAME, length NAME_LEN.  NAME might
-   not be NUL-terminated.  FROM_IDENT is true if NAME is the
-   module-name, false if it is already filenamey.  */
-
-static char *
-make_module_filename (const char *name, size_t name_len, bool from_ident)
-{
-  size_t sfx_len = from_ident ? strlen (MOD_FNAME_SFX) : 0;
-  char *res = XNEWVEC (char, name_len + sfx_len + 1);
-  char *ptr = res;
-
-  memcpy (ptr, name, name_len);
-  ptr[name_len] = 0;
-  if (from_ident)
-    {
-      strcpy (ptr + name_len, MOD_FNAME_SFX);
-      if (MOD_FNAME_DOT != '.')
-	for (; name_len--; ptr++)
-	  if (*ptr == '.')
-	    *ptr = MOD_FNAME_DOT;
-    }
-  return res;
 }
 
 /* Set VEC_NAME fields from incoming VNAME, which may be a regular
@@ -6783,7 +6746,7 @@ module_state::write_readme (elf_out *to)
 
   /* Module information.  */
   readme.printf ("module:%s", IDENTIFIER_POINTER (name));
-  readme.printf ("source:%s", srcname);
+  readme.printf ("source:%s", main_input_filename);
 
   /* Its direct imports.  */
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
@@ -8838,92 +8801,6 @@ module_interface_p ()
 	  && (*module_state::modules)[MODULE_PURVIEW]->exported);
 }
 
-/* Search the module path for a file NAME.  Sets NAME and NAME_LEN to
-   the found file name.    */
-
-static FILE *
-find_file (char *&name, size_t &name_len, const char *rel, size_t rel_len,
-	   bool bmi, bool search)
-{
-  char *buffer = XNEWVEC (char, (rel_len) + name_len + 2);
-  const cpp_dir *dir = NULL;
-  do
-    {
-      char *ptr = buffer;
-      if (!dir)
-	{
-	  /* First look relative to REL or CWD.  */
-	  if (!IS_ABSOLUTE_PATH (name) && rel_len)
-	    {
-	      memcpy (ptr, rel, rel_len);
-	      ptr += rel_len;
-	    }
-	}
-      else if (dir->len != 1 || dir->name[0] != '.')
-	{
-	  /* Don't prepend '.'.  */
-	  memcpy (ptr, dir->name, dir->len);
-	  ptr += dir->len;
-	  *ptr++ = DIR_SEPARATOR;
-	}
-      else if (!rel_len)
-	/* We'll have already looked on the first iteration.  */
-	ptr = NULL;
-
-      if (ptr)
-	{
-	  memcpy (ptr, name, name_len + 1);
-	  if (FILE *stream = fopen (buffer, bmi ? "rb" : "r"))
-	    {
-	      if (bmi)
-		XDELETEVEC (name);
-	      name = buffer;
-	      name_len += (ptr - buffer);
-	      return stream;
-	    }
-	}
-      if (dir)
-	dir = dir->next;
-      else if (search && !IS_ABSOLUTE_PATH (name))
-	dir = NULL;
-    }
-  while (dir);
-
-  XDELETEVEC (buffer);
-  return NULL;
-}
-
-static FILE *
-oracle_stream (module_state *state, bool rnw)
-{
-  if (state->filename || (!oracle_read && !oracle_init ()))
-    return NULL;
-
-  state->filename = oracle_query_module (state->name, rnw);
-
-  return fopen (state->filename, rnw ? "rb" : "wb");
-}
-
-static FILE *
-find_module_file (module_state *state)
-{
-  if (FILE *stream = oracle_stream (state, true))
-    return stream;
-
-  bool search = !state->filename;
-  if (search)
-    state->filename = make_module_filename (IDENTIFIER_POINTER (state->name),
-					    IDENTIFIER_LENGTH (state->name),
-					    true);
-
-  size_t name_len = strlen (state->filename);
-  FILE *stream = find_file (state->filename, name_len, NULL, 0, true, search);
-  if (stream || errno != ENOENT)
-    return stream;
-
-  return NULL;
-}
-
 /* Import the module NAME into the current TU.  If MODULE_P is
    true, we're part of module NAME, and EXPORT_P indicates if
    we're the exporting init (true), or not (false).  If MODULE_P
@@ -8981,7 +8858,6 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	      /* We're the exporting module unit, so not loading anything.  */
 	      state->exported = true;
 	      state->mod = MODULE_PURVIEW;
-	      state->srcname = xstrdup (main_input_filename);
 	    }
 	}
       else if (!export_p)
@@ -8998,7 +8874,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  unsigned n = dump.push (state);
 	  if (!lazy_open)
 	    freeze_an_elf ();
-	  FILE *stream = find_module_file (state);
+	  FILE *stream = oracle_module_file (state, true);
 	  int e = errno;
 
 	  state->push_location ();
@@ -9163,17 +9039,7 @@ finish_module ()
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];
   if (state && state->exported && !errorcount)
     {
-      FILE *stream = NULL;
-      if (!state->filename)
-	{
-	  stream = oracle_stream (state, false);
-	  if (!stream)
-	    state->filename = make_module_filename (IDENTIFIER_POINTER (state->name),
-						    IDENTIFIER_LENGTH (state->name),
-						    true);
-	}
-      if (!stream)
-	stream = fopen (state->filename, "wb");
+      FILE *stream = oracle_module_file (state, false);
 
       int e = errno;
       location_t saved_loc = input_location;

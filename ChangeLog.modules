@@ -1,6 +1,17 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
-	Kill -fmodule-output -- use the oracle.
+	Remove remaining knowledge of module file names.
+	gcc/cp/
+	* module.c (MOD_FNAME_SFX, MOD_FNAME_DOT): Delete.
+	(module_state): Remove srcname.
+	(module_state::print_map): Delete.
+	(oracle_query_module, oracle_stream, find_module_file): Merge to ...
+	(oracle_module_file): ... this.
+	(make_module_file, find_file): Delete.
+	(module_state::do_import): Adjust.
+	(finish_module): Likewise.
+
+	(Kill -fmodule-output -- use the oracle.
 	gcc/c-family/
 	* c.opt (fmodule-output): Delete.
 	gcc/
