@@ -1,5 +1,8 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c
+	* config.in: Rebuilt too.
+
 	gcc/
 	* diagnostic-core.h (fullname): Declare.
 	* diagnostic.c (fullname): Define.

@@ -1960,6 +1960,18 @@
 #endif
 
 
+/* Define if AF_INET6 supported by host. */
+#ifndef USED_FOR_TARGET
+#undef HOST_HAS_AF_INET6
+#endif
+
+
+/* Define if AF_UNIX supported by host. */
+#ifndef USED_FOR_TARGET
+#undef HOST_HAS_AF_UNIX
+#endif
+
+
 /* Define if F_SETLKW supported by fcntl. */
 #ifndef USED_FOR_TARGET
 #undef HOST_HAS_F_SETLKW
