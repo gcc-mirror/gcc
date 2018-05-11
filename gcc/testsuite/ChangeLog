@@ -1,3 +1,8 @@
+2018-05-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/85655
+	* g++.dg/lto/pr85655_0.C: New test.
+
 2018-05-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68846
