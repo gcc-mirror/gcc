@@ -1,3 +1,8 @@
+2018-05-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/85655
+	* g++.dg/lto/pr85655_0.C: New test.
+
 2018-05-11  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/tpause-1.c: New test.
