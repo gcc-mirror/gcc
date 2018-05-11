@@ -791,9 +791,6 @@ c_common_post_options (const char **pfilename)
   C_COMMON_OVERRIDE_OPTIONS;
 #endif
 
-  if (flag_modules)
-    clean_cxx_module_path (parse_in, verbose);
-
   /* Excess precision other than "fast" requires front-end
      support.  */
   if (c_dialect_cxx ())

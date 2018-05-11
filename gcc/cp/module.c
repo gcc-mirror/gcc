@@ -2496,10 +2496,6 @@ static const char *module_output;
 static vec<const char *, va_heap> module_file_args;
 /* Print out the module map.  */
 static bool module_map_dump;
-/* Module search path.  */
-static cpp_dir *module_path;
-/* Longest module path.  */
-static size_t module_path_max;
 /* Oracle name.  */
 static const char *module_oracle;
 static FILE *oracle_read, *oracle_write;
@@ -8855,8 +8851,7 @@ static FILE *
 find_file (char *&name, size_t &name_len, const char *rel, size_t rel_len,
 	   bool bmi, bool search)
 {
-  char *buffer = XNEWVEC (char, (rel_len > module_path_max
-				 ? rel_len : module_path_max) + name_len + 2);
+  char *buffer = XNEWVEC (char, (rel_len) + name_len + 2);
   const cpp_dir *dir = NULL;
   do
     {
@@ -8896,7 +8891,7 @@ find_file (char *&name, size_t &name_len, const char *rel, size_t rel_len,
       if (dir)
 	dir = dir->next;
       else if (search && !IS_ABSOLUTE_PATH (name))
-	dir = module_path;
+	dir = NULL;
     }
   while (dir);
 
@@ -9351,11 +9346,6 @@ init_module_processing ()
 
   module_state::init ();
 
-  module_path = get_added_cpp_dirs (INC_CXX_MPATH);
-  for (const cpp_dir *path = module_path; path; path = path->next)
-    if (path->len > module_path_max)
-      module_path_max = path->len;
-
   for (unsigned ix = 0; ix != module_file_args.length (); ix++)
     if (!add_module_mapping (module_file_args[ix]))
       break;
@@ -9433,10 +9423,6 @@ handle_module_option (unsigned code, const char *arg, int)
     case OPT_EE:
       /* Force atom.  */
       flag_modules = -1;
-      return true;
-
-    case OPT_fmodule_path_:
-      add_path (xstrdup (arg), INC_CXX_MPATH, true, true);
       return true;
 
     case OPT_fmodule_output_:

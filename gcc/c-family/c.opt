@@ -1540,10 +1540,6 @@ fmodule-output=
 C++ ObjC++ Joined RejectNegative MissingArgError(missing filename after %qs)
 -fmodule-output=<file> Write the binary module interface into <file>.
 
-fmodule-path=
-C++ ObjC++ Joined RejectNegative
--fmodule-path=<directory> Append <directory> to module search path
-
 fmodule-file=
 C++ ObjC++ Joined RejectNegative MissingArgError(missing module map after %qs)
 -fmodule-file=[<name>=]<file> Map from <name> to <file>, or read mapping file <file>

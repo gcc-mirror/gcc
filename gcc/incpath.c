@@ -511,27 +511,6 @@ get_added_cpp_dirs (incpath_kind chain)
   return heads[chain];
 }
 
-/* Clean out duplicates from the module include path.  Prepend ROOT,
-   if it is non-null.  */
-
-void
-clean_cxx_module_path (cpp_reader *pfile, bool verbose)
-{
-  /* Append any environment path.  */
-  add_env_var_paths ("CXX_MODULE_PATH", INC_CXX_MPATH);
-  
-  heads[INC_CXX_MPATH] = remove_duplicates (pfile, heads[INC_CXX_MPATH],
-					    NULL, NULL, verbose);
-
-  if (verbose)
-    {
-      fprintf (stderr, _("C++ modules path starts here:\n"));
-      for (cpp_dir *path = heads[INC_CXX_MPATH]; path; path = path->next)
-	fprintf (stderr, " %s\n", path->name);
-      fprintf (stderr, _("End of search list\n"));
-    }
-}
-
 #if !(defined TARGET_EXTRA_INCLUDES) || !(defined TARGET_EXTRA_PRE_INCLUDES)
 static void hook_void_charptr_charptr_int (const char *sysroot ATTRIBUTE_UNUSED,
 					   const char *iprefix ATTRIBUTE_UNUSED,

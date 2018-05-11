@@ -1,5 +1,21 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	Kill -fmodule-path and CXX_MODULE_PATH -- use the oracle.
+	gcc/
+	* doc/invoke.texi (C++ Dialect Options): Remove -fmodule-path.
+	(C++ Modules): Likewise.
+	* incpath.h (INC_CXX_MPATH): Delete.
+	(clean_cxx_module_path): Delete.
+	* incpath.c (clean_cxx_module_path): Delete.
+	gcc/c-family/
+	* c-opts.c (c_common_post_options): Don't clean_cxx_module_path.
+	* c.opt (fmodule-path): Delete.
+	gcc/cp/
+	* module.c (module_path, module_path_max): Drop.
+	(find_file): Adjust.
+	(init_module_processing): Drop module path init.
+	(handle_module_option): Drop module_path.
+
 	gcc/cp/
 	* Make-lang.in (cxx-module-oracle): Sed version.
 	(cxx_module-wrapper): Delete.

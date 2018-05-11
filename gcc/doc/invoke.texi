@@ -2583,12 +2583,6 @@ environment variable, and if that is unset, a default is provided.
 Write the binary module interface into @var{file}.  This option is
 only valid when compiling a module interface unit.
 
-@item -fmodule-path=@var{dir}
-@opindex fmodule-path
-Append @var{dir} to the module-map search path.  The ':' separated
-directory list in @env{CXX_MODULE_PATH} is appended after explicitly
-specified directories.
-
 @item -fms-extensions
 @opindex fms-extensions
 Disable Wpedantic warnings about constructs used in MFC, such as implicit
@@ -29302,11 +29296,6 @@ The prefix allows you to embed mappings in other files, such as
 Makefiles, without disturbing the file's usual reader.
 
 @end itemize
-
-The @option{-fmodule-path=@var{dir}} option adds directories to a
-module search path.  This path is searched for BMI files and for
-mapping files.  A default value is read from the @var{CXX_MODULE_PATH}
-environment variable.
 
 The @option{-fno-module-lazy} option disables lazy module loading.
 Usually importing a module will load minimal information, defering the
