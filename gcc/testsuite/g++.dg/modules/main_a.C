@@ -1,10 +1,10 @@
 // { dg-module-do run { target *-*-* } "main-aux.s" }
-// { dg-options "-fmodules-ts -fmodule-file=helgen=hell.x\\;main-aux.cc" }
-// Relies on CXX_MODULE_WRAPPER functionality, setting options above
-// overrides the default -fmodule-wrapper=
+// Relies on default oracle functionality
+// { dg-additional-options -fmodules-ts }
 
-import helgen;
-// { dg-module-bmi "=hell.x" }
+import main.aux;
+// { dg-module-bmi "main.aux" }
+
 int main (void)
 {
   greeter ("world");

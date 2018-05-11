@@ -58,7 +58,11 @@ static bool diagnostic_n_impl (rich_location *, int, unsigned HOST_WIDE_INT,
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 static void real_abort (void) ATTRIBUTE_NORETURN;
 
-/* Name of program invoked, sans directories.  */
+/* Name of program, with directories (if there were any).  */
+
+const char *fullname;
+
+/* Name of program invoked, sans directories, points into fullname  */
 
 const char *progname;
 

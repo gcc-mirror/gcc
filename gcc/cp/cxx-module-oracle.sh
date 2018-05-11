@@ -42,7 +42,6 @@ compile () {
     for arg in $(eval echo $COLLECT_GCC_OPTIONS)
     do
 	$ign || case "$arg" in
-	    (-v) verbose=true ;;
 	    (-S) action=-S ; ign=true ;;
 	    (-c) ign=true ;;
 	    (-o) ign=true ;;
@@ -78,20 +77,26 @@ done
 
 while read cmd args ; do
     $verbose && echo "$progname< $cmd $args" >&2
+    resp=
     case "$cmd" in
 	(HELO) main="${args#0 }";;
 	(IMPT)
-	    file=$(echo $args | tr . -).nms
-	    if ! test -e $file && ! compile $args ; then
-	       file=
+	    resp="MAP $args"
+	    file=$(echo $args | tr . -)
+	    if test -e $file.nms || compile $file ; then
+	       resp+=" $file.nms"
 	    fi
-	    $verbose && echo "$progname> MAP $args $file" >&2
-	    echo "MAP $args $file" ;;
+	    ;;
 	(EXPT)
 	    file=$(echo $args | tr . -).nms
-	    $verbose && echo "$progname> MAP $args $file" >&2
-	    echo "MAP $args $file" ;;
+	    resp="MAP $args"
+	    resp+=" $file"
+	    ;;
 	(DONE)  ;;
 	(*) echo "Unknown command '$cmd'" >&2 ; exit 1 ;;
     esac
+    if test "$resp" ; then
+	$verbose && echo "$progname> $resp" >&2
+	echo "$resp"
+    fi
 done

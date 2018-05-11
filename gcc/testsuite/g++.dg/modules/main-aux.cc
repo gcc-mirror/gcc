@@ -1,9 +1,9 @@
-// Used by main.C
+// Used by main_a.C
 
 module;
 
 extern "C" int printf (const char *, ...);
-export module helgen;
+export module main.aux;
 
 export void greeter (const char *name)
 {

@@ -1,6 +1,18 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
+	* diagnostic-core.h (fullname): Declare.
+	* diagnostic.c (fullname): Define.
+	* toplev.c (general_init): Set it.
+	gcc/cp/
+	* cxx-module-oracle.sh: More messages.
+	* module.c (oracle_init): When defaulting, expect to be next to
+	cc1plus.
+	(oracle_stream): Always try and init the oracle.
+	gcc/testsuite/
+	* g++.dg/modules/main_a.C: Adjust for oracle use.
+
+	gcc/
 	* configure.ac: Check for AF_UNIX and AF_INET6.
 	* configure: Rebuilt.
 	* doc/invoke.texi (C++ Modules): Update oracle.

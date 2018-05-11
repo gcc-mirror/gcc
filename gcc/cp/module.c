@@ -142,7 +142,7 @@ Classes used:
 #include "params.h"
 
 #if defined (HOST_HAS_AF_UNIX) || defined (HOST_HAS_AF_INET6)
-#define HOST_HAS_AF 1
+# define HOST_HAS_AF 1
 # include <sys/socket.h>
 # ifdef HOST_HAS_AF_UNIX
 #  include <sys/un.h>
@@ -6289,17 +6289,27 @@ oracle_init ()
 
   if (!module_oracle || !module_oracle[0])
     module_oracle = getenv ("CXX_MODULE_ORACLE");
-  if (!module_oracle || !module_oracle[0])
+  bool defaulting = !module_oracle || !module_oracle[0];
+  if (defaulting)
     module_oracle = "cxx-module-oracle";
 
+  if (!quiet_flag)
+    {
+      if (pp_needs_newline (global_dc->printer))
+	{
+	  pp_needs_newline (global_dc->printer) = false;
+	  fprintf (stderr, "\n");
+	}
+      fprintf (stderr, "%s oracle:%s\n", progname, module_oracle);
+    }
+    
   dump () && dump ("Initializing oracle %s", module_oracle);
 
   int err = 0;
   const char *errmsg = NULL;
 
-  /* Try a file number or pair of same.  */
-  char *endp;
-  int fd = -1;
+  /* First copy and count white space -- we use that to distinguish
+     programs that look like a socket name.  */
   size_t len = strlen (module_oracle);
   unsigned count = 0;
   char *writable = XNEWVEC (char, len + 1);
@@ -6312,11 +6322,19 @@ oracle_init ()
 	  ptr++;
 	count++;
       }
-  unsigned long lfd = strtoul (module_oracle, &endp, 10);
-  if (!*endp && lfd != ULONG_MAX)
-    fd = int (lfd);
 
-  if (fd < 0 && !count)
+  int fd = -1;
+
+  /* Try a file number or pair of same.  */
+  char *endp;
+  if (!defaulting)
+    {
+      unsigned long lfd = strtoul (module_oracle, &endp, 10);
+      if (!*endp && lfd != ULONG_MAX)
+	fd = int (lfd);
+    }
+
+  if (!defaulting && fd < 0 && !count)
     {
       /* There are no spaces in it, try opening a socket.  */
       int port = -1;
@@ -6334,7 +6352,7 @@ oracle_init ()
       size_t saddr_len = 0;
 
 #ifdef HOST_HAS_AF
-      saddr.fam = NO_AF;
+      saddr.fam = AF_UNSPEC;
 #endif
       if (IS_ABSOLUTE_PATH (writable))
 	{
@@ -6459,8 +6477,27 @@ oracle_init ()
 	  errmsg = "connecting input";
 	}
       else
-	errmsg = pex_run (oracle_pex, PEX_SEARCH, argv[0],
-			  argv, NULL, NULL, &err);
+	{
+	  char *argv0 = argv[0];
+	  int flags = PEX_SEARCH;
+
+	  if (defaulting && fullname != progname)
+	    {
+	      /* Prepend the invoking path.  */
+	      gcc_checking_assert (count == 1 && argv[0] == writable);
+	      argv[0] = const_cast <char *> (module_oracle);
+	      free (writable);
+
+	      size_t dir_len = progname - fullname;
+	      writable = XNEWVEC (char, dir_len + len + 1);
+	      memcpy (writable, fullname, dir_len);
+	      memcpy (writable + dir_len, module_oracle, len + 1);
+	      argv0 = writable;
+	      flags = 0;
+	    }
+	  errmsg = pex_run (oracle_pex, flags, argv0,
+			    argv, NULL, NULL, &err);
+	}
 
       if (!errmsg)
 	{
@@ -6525,8 +6562,7 @@ oracle_fini ()
 	error ("module oracle %qs exit status %d",
 	       module_oracle, WEXITSTATUS (status));
     }
-    
-  if (oracle_read)
+  else if (oracle_read)
     fclose (oracle_read);
 
   oracle_read = oracle_write = NULL;
@@ -6586,7 +6622,7 @@ oracle_query_module (tree name, bool rnw)
       const char *ptr = resp + 4 + IDENTIFIER_LENGTH (name);
       if (ptr[0] == ' ' && ptr[1])
 	return xstrdup (ptr + 1);
-      else if ((ptr[0] == ' ' && !ptr[1]) || &ptr[0])
+      else if (!ptr[0])
 	return NULL;
     }
   error ("unexpected response %qs from module oracle", resp);
@@ -8822,7 +8858,7 @@ find_file (char *&name, size_t &name_len, const char *rel, size_t rel_len,
 static FILE *
 oracle_stream (module_state *state, bool rnw)
 {
-  if (state->filename || !module_oracle || (!oracle_read && !oracle_init ()))
+  if (state->filename || (!oracle_read && !oracle_init ()))
     return NULL;
 
   state->filename = oracle_query_module (state->name, rnw);
