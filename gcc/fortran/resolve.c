@@ -10503,6 +10503,8 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
   tmp->n.sym->attr.function = 0;
   tmp->n.sym->attr.result = 0;
   tmp->n.sym->attr.flavor = FL_VARIABLE;
+  tmp->n.sym->attr.dummy = 0;
+  tmp->n.sym->attr.intent = INTENT_UNKNOWN;
 
   if (as)
     {
