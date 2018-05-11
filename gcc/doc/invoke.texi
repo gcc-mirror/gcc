@@ -2558,12 +2558,6 @@ C++ for Modules'' or for p0947:``Another Take On Modules''.  See
 @pxref{C++ Modules} for more details.  The @option{-fno-modules} is
 usually not needed, as that is the default.  For now.
 
-@item -fmodule-file=@r{[}@var{name}=@r{]}@var{file}
-@opindex fmodule-file
-If the @var{name}=@var{file} form is used, then the binary interface
-for module @var{name} is in @var{file}.  If the @var{file} form is
-used, then read mappings from @var{file}.
-
 @item -fno-module-lazy
 @opindex fno-module-lazy
 @opindex fmodule-lazy
@@ -29177,19 +29171,11 @@ encoding the exported declarations of the module.  Importing a module
 reads in the BMI.  The dependency graph of imports is a Directed
 Acyclic Graph (DAG).
 
-Modules have distinct names.  There is a default mapping between
-module names and BMI files, but this may be overridden by various
-command options and auxilary files.
-
-By default the BMI file is named from the module name, replacing any
-@code{.} characters with @code{-}, and appending a New Module System
-(@code{.nms}) suffix.  The BMI files are created and searched for in
-the current directory.
-
-A query oracle can be provided with the
-@option{-fmodule-oracle=@var{val}} option.  The oracle provides a
-line-based server interface that the compiler queries.  The operand
-may have one of the following forms:
+A query oracle provides a line-based server the compiler queries to
+determine the mapping between module names and BMI files.  It is also
+used to build BMIs on demand.  A specific oracle may be specified with
+the @option{-fmodule-oracle=@var{val}} option.  The operand may have
+one of the following forms:
 
 @itemize
 
@@ -29263,39 +29249,6 @@ When compiling a module interface, the
 @option{-fmodule-output=@var{file}} option may be used to override the
 default.  It is an error to use this option when not compiling a
 module interface.
-
-Mappings from module names to BMI files may be specified with the
-@option{-fmodule-file=@var{mapping}} option.  This has two
-different forms:
-
-@itemize
-
-@item @var{module}=@var{BMI-file}
-When the argument contains a @code{=}, it is a direct mapping from
-module name to BMI file.  When importing, the specified module, the
-named BMI file will be read.  The BMI filename is relative to the
-mapping file being read (or the current directory, when specified
-directly in the option).
-
-@item @var{mapping-file}
-Without the @code{=}, it is a plain file name.  If the filename is
-relative, it is first looked relative to any containing mapping file,
-or the current directory for the outermost one.  Then the module path
-is searched.  The file is read for mappings to add.  Each active line
-of the file may be of either of these two forms, so indirect mapping
-files are permitted.  White space is ignored.  If the first word of a
-line is @code{G++Module}, the next word is taken to be a prefix word.
-After this, lines that do not start with the prefix are ignored.
-
-Lines beginning with @code{#} are usually comments.  One exception is
-that the prefix may be specified by the forst word of the comment.
-Also if a prefix has been specified, then the prefix is looked for in
-comments too.
-
-The prefix allows you to embed mappings in other files, such as
-Makefiles, without disturbing the file's usual reader.
-
-@end itemize
 
 The @option{-fno-module-lazy} option disables lazy module loading.
 Usually importing a module will load minimal information, defering the

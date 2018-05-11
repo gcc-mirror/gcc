@@ -1532,17 +1532,9 @@ fmodule-lazy
 C++ ObjC++ Driver Var(flag_module_lazy) Init(1)
 Enable lazy module importing
 
-fmodule-map-dump
-C++ ObjC++
-Print the module map
-
 fmodule-output=
 C++ ObjC++ Joined RejectNegative MissingArgError(missing filename after %qs)
 -fmodule-output=<file> Write the binary module interface into <file>.
-
-fmodule-file=
-C++ ObjC++ Joined RejectNegative MissingArgError(missing module map after %qs)
--fmodule-file=[<name>=]<file> Map from <name> to <file>, or read mapping file <file>
 
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)

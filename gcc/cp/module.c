@@ -2492,10 +2492,6 @@ bool module_state_hash::equal (const value_type existing,
 
 /* Binary module interface output file name. */
 static const char *module_output;
-/* Set of module-file arguments to process on initialization.  */
-static vec<const char *, va_heap> module_file_args;
-/* Print out the module map.  */
-static bool module_map_dump;
 /* Oracle name.  */
 static const char *module_oracle;
 static FILE *oracle_read, *oracle_write;
@@ -8930,188 +8926,6 @@ find_module_file (module_state *state)
   return NULL;
 }
 
-static bool
-add_module_mapping (const char *arg, const char *rel, size_t rel_len,
-		    unsigned depth);
-
-/* File of mappings, another DSL.  Each line is ...
-   <ws>#*<ws>*G++Module <word> -- define marker <word>
-   <ws>#*<ws>*<word><ws><map> -- a map
-   <ws>#<anything>  -- comment ignored
-   <ws>*        -- ignored
-   <map>        -- if <word> not defined, a map else ignored
-*/
-
-// FIXME really need a cmdline loc
-#define MAP_LOC BUILTINS_LOCATION
-
-static bool
-parse_module_mapping (char *line, const char *rel, size_t rel_len,
-		      unsigned depth, char *&marker)
-{
-  bool comment = false;
-
-  /* Skip leading whitespace and comment markers.  */
-  while (*line == '#' ? (comment = true) : ISSPACE (*line))
-    line++;
-
-  if (comment || marker)
-    {
-      /* Look for marker or definition.  */
-      char *pos = line;
-      while (*pos && !ISSPACE (*pos))
-	pos++;
-      const char *tag = marker ? marker : "G++Module";
-      if (strncmp (line, tag, pos - line)
-	  || size_t (pos - line) != strlen (tag))
-	/* Not interested.  */
-	return true;
-
-      /* Seen the tag, either set marker or accept line  */
-      line = pos;
-      /* Skip whitespace.  */
-      while (ISSPACE (*line))
-	line++;
-      if (!marker)
-	{
-	  /* Define a marker string.  */
-	  pos = line;
-	  /* Scan word.  */
-	  while (*pos && !ISSPACE (*pos))
-	    pos++;
-	  *pos = 0;
-	  marker = xstrdup (line);
-	  /* We're now done with the line.  */
-	  return true;
-	}
-    }
-
-  if (!*line)
-    return true;
-
-  /* Process line as a mapping.  */
-  return add_module_mapping (line, rel, rel_len, depth);
-}
-
-/* Add a module name to binary interface file mapping
-   <name>=<file> -> mapping
-   <file> -> file of mappings (recursive)
-
-   We don't detect loops. */
-
-static bool
-add_module_mapping (const char *arg, const char *rel = NULL,
-		    size_t rel_len = 0, unsigned depth = 0)
-{
-  if (++depth >= 15)
-    {
-      /* Possible loop.  I hope 15 levels is deep enough.  */
-      error_at (MAP_LOC, "module files too deeply nested");
-      return false;
-    }
-  if (const char *eq = strchr (arg, '='))
-    {
-      /* A single mapping.  */
-      if (eq == arg || !eq[1])
-	{
-	  error_at (MAP_LOC, "module file map %qs is malformed", arg);
-	  return false;
-	}
-
-      tree name = get_identifier_with_length (arg, eq - arg);
-      module_state *state = module_state::get_module (name);
-
-      /* Do not override already set mappings.  */
-      if (!state->filename)
-	{
-	  const char *pos = eq + 1;
-	  while (*pos && !ISSPACE (*pos) && *pos != ';')
-	    pos++;
-	  state->filename = make_module_filename (eq + 1, pos - eq - 1, false);
-	  while (ISSPACE (*pos))
-	    pos++;
-	  if (*pos == ';')
-	    {
-	      do
-		pos++;
-	      while (*pos && ISSPACE (*pos));
-	      size_t len = 0;
-	      while (pos[len] && !ISSPACE (pos[len]))
-		len++;
-	      state->srcname = XNEWVEC (char, len + 1);
-	      memcpy (state->srcname, pos, len);
-	      state->srcname[len] = 0;
-	      pos += len;
-	      while (ISSPACE (*pos))
-		pos++;
-	    }
-	  if (*pos)
-	    {
-	      error_at (MAP_LOC,
-			"module file map %qs has unexpected trailing %qs",
-			arg, pos);
-	      return false;
-	    }
-	}
-
-      return true;
-    }
-
-  bool ok = false;
-  char *name = const_cast <char *> (arg);
-  size_t name_len = strlen (name);
-  if (FILE *stream = find_file (name, name_len, rel, rel_len, false, true))
-    {
-      /* Find the directory component of PATH.  This will fail if we
-         give an absolute names in the root directory.  Why would you
-         do that?  */
-      while (name_len && !IS_DIR_SEPARATOR (name[name_len - 1]))
-	name_len--;
-
-      /* Exercise buffer expansion.  */
-      size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
-      char *buffer = XNEWVEC (char, size);
-      size_t pos = 0;
-      unsigned line = 0;
-      char *marker = NULL;
-      while (fgets (buffer + pos, size - pos, stream))
-	{
-	  pos += strlen (buffer + pos);
-	  if (buffer[pos - 1] != '\n')
-	    {
-	      size *= 2;
-	      buffer = XRESIZEVEC (char, buffer, size);
-	    }
-	  else
-	    {
-	      buffer[pos - 1] = 0;
-	      pos = 0;
-	      line++;
-	      if (!parse_module_mapping (buffer, name, name_len,
-					 depth, marker))
-		{
-		  inform (MAP_LOC, "from module map file %s:%d", name, line);
-		  goto fail;
-		}
-	    }
-	}
-      if (ferror (stream))
-	error_at (MAP_LOC, "failed to read module map file %qs: %m", name);
-      else
-	ok = true;
-
-    fail:
-      free (marker);
-      fclose (stream);
-      XDELETEVEC (buffer);
-      XDELETEVEC (name);
-    }
-  else
-    error_at (MAP_LOC, "module-file %qs not found: %m", name);
-
-  return ok;
-}
-
 /* Import the module NAME into the current TU.  If MODULE_P is
    true, we're part of module NAME, and EXPORT_P indicates if
    we're the exporting init (true), or not (false).  If MODULE_P
@@ -9345,14 +9159,6 @@ init_module_processing ()
     error ("modules and PCH are incompatible");
 
   module_state::init ();
-
-  for (unsigned ix = 0; ix != module_file_args.length (); ix++)
-    if (!add_module_mapping (module_file_args[ix]))
-      break;
-  module_file_args.release ();
-
-  if (module_map_dump)
-    module_state::print_map ();
 }
 
 /* Finalize the module at end of parsing.  */
@@ -9431,14 +9237,6 @@ handle_module_option (unsigned code, const char *arg, int)
 
     case OPT_fmodule_oracle_:
       module_oracle = arg;
-      return true;
-
-    case OPT_fmodule_file_:
-      module_file_args.safe_push (arg);
-      return true;
-
-    case OPT_fmodule_map_dump:
-      module_map_dump = true;
       return true;
 
     default:

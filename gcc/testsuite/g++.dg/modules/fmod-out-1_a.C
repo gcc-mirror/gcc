@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-output=blinky -fmodule-file=frob=ignored" }
+// { dg-additional-options "-fmodule-output=frob.nms" }
 
 export module frob;
-// { dg-module-bmi "=blinky" }
+// { dg-module-bmi "=frob.nms" }

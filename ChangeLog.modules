@@ -1,5 +1,22 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	Kill -fmodule-file -- use the oracle.
+	gcc/c-family/
+	* c.opt (fmodule-map-dump): Delete.
+	(fmodule-file): Delete.
+	gcc/cp/
+	* module.c (module_file_args, module_map_dump): Delete.
+	(parse_module_mapping): Delete.
+	(add_module_mapping): Delete.
+	(init_module_processing): Delete module map init.
+	(handle_module_option): Delete module map options.
+	gcc/
+	* doc/invoke.texi (C++ Dialect Options): Delete -fmodule-file.
+	(C++ Modules): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/fmod-file-1_[ab].C: Delete.
+	* g++.dg/modules/fmod-out-1_[ab].C: Adjust.
+
 	Kill -fmodule-path and CXX_MODULE_PATH -- use the oracle.
 	gcc/
 	* doc/invoke.texi (C++ Dialect Options): Remove -fmodule-path.
