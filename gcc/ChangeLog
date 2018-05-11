@@ -1,3 +1,15 @@
+2018-05-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/85606
+	* config/arm/arm-cpus.in: Add comment that ARMv6-m and ARMv6S-m are now
+	equivalent.
+	(cortex-m0): Use armv6s-m isa.
+	(cortex-m0plus): Likewise.
+	(cortex-m1): Likewise.
+	(cortex-m0.small-multiply): Likewise.
+	(cortex-m0plus.small-multiply): Likewise.
+	(cortex-m1.small-multiply): Likewise.
+
 2018-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/85638
