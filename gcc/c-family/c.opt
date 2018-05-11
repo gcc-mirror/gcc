@@ -1520,6 +1520,10 @@ fno-modules
 C++ ObjC++ Driver Undocumented RejectNegative Var(flag_modules,0) Integer
 ;; undocumented
 
+fmodule-oracle=
+C++ ObjC++ Driver Joined RejectNegaive MissingArgError(missing oracle)
+-fmodule-oracle=<n|file|cmd> Oracle for module files
+
 EE
 Driver C++ RejectNegative Var(flag_module_preamble)
 Preprocess atom module preamble

@@ -1,3 +1,21 @@
+2018-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	Oracle!
+	gcc/cp/
+	* Make-lang.in (cxx-module-oracle): New rule.
+	* cxx-module-oracle.sh: New.
+	* module.c (module_oracle): New flag.
+	(oracle_read, oracle_write, oracle_pex): New vars.
+	(oracle_init, oracle_fini, oracle_response, oracle_query_module)
+	(oracle_done, oracle_stream): New.
+	(find_module_file, finish_module): Use oracle.
+	(handle_module_option): Store oracle option.
+	gcc/
+	* doc/invoke.texi (C++ Dialect Options): Add -fmodule-oracle.
+	(C++ Modules): Document oracle.
+	gcc/c-family/
+	* c.opt (fmodule-oracle=): New.
+
 2018-05-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

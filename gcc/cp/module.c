@@ -2486,6 +2486,10 @@ static bool module_map_dump;
 static cpp_dir *module_path;
 /* Longest module path.  */
 static size_t module_path_max;
+/* Oracle name.  */
+static const char *module_oracle;
+static FILE *oracle_read, *oracle_write;
+static pex_obj *oracle_pex;
 
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
@@ -6252,6 +6256,232 @@ module_state::announce (const char *what) const
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 }
 
+/*  MAIN version mainfile\n -> no response
+    INCL header-name\n -> IMPT header-name module-name\n
+    			  INCL header-name
+    IMPT module-name\n -> MAP module-name file-name\n
+    EXPT module-name\n -> MAP module-name file-name\n
+    DONE module-name\n -> no response
+ */
+
+static bool
+oracle_init ()
+{
+  gcc_assert (!oracle_read);
+
+  if (!module_oracle || !module_oracle[0])
+    module_oracle = getenv ("CXX_MODULE_ORACLE");
+  if (!module_oracle || !module_oracle[0])
+    module_oracle = "cxx-module-oracle";
+
+  dump () && dump ("Initializing oracle %s", module_oracle);
+
+  int err = 0;
+  const char *errmsg = NULL;
+
+  /* Try a file number or pair of same.  */
+  char *endp;
+  unsigned long fin, fout;
+
+  fin = strtoul (module_oracle, &endp, 10);
+  if (*endp == ':')
+    fout = strtoul (endp + 1, &endp, 10);
+  else if (!*endp)
+    fout = dup (fin);
+
+  if (!*endp && fin != ULONG_MAX && fout != ULONG_MAX)
+    {
+      oracle_read = fdopen (fin, "r+");
+      oracle_write = fdopen (fout, "w+");
+      if (!oracle_read || !oracle_write)
+	{
+	  err = errno;
+	  errmsg = "connecting streams";
+	  if (oracle_read)
+	    fclose (oracle_read);
+	  if (oracle_write)
+	    fclose (oracle_write);
+	  oracle_read = oracle_write = NULL;
+	}
+    }
+  else
+    {
+      /* Split module_oracle at white-space.  No space-containing args
+	 for you!  */
+      unsigned count = 0;
+      char *writable = xstrdup (module_oracle);
+
+      for (char *ptr = writable; *ptr; ptr++)
+	if (ISSPACE (*ptr))
+	  {
+	    while (ISSPACE (ptr[1]))
+	      ptr++;
+	    count++;
+	  }
+
+      char **argv = XALLOCAVEC (char *, count + 2);
+      count = 0;
+
+      for (char *ptr = writable; ; ptr++)
+	{
+	  while (ISSPACE (*ptr))
+	    ptr++;
+	  argv[count++] = ptr;
+	  while (*ptr && !ISSPACE (*ptr))
+	    ptr++;
+	  if (!*ptr)
+	    break;
+	  *ptr = 0;
+	}
+      argv[count] = NULL;
+
+      oracle_pex = pex_init (PEX_USE_PIPES, argv[0], NULL);
+      if (!oracle_pex)
+	{
+	  err = errno;
+	  errmsg = "creating";
+	}
+
+      if (!errmsg)
+	{
+	  oracle_write = pex_input_pipe (oracle_pex, false);
+	  if (!oracle_write)
+	    {
+	      err = errno;
+	      errmsg = "connecting input";
+	    }
+	  else
+	    errmsg = pex_run (oracle_pex, PEX_SEARCH, argv[0],
+			      argv, NULL, NULL, &err);
+	}
+
+      if (!errmsg)
+	{
+	  oracle_read = pex_read_output (oracle_pex, false);
+	  if (!oracle_read)
+	    {
+	      err = errno;
+	      errmsg = "connecting output";
+	      fclose (oracle_write);
+	      oracle_write = NULL;
+	    }
+	  if (!errmsg)
+	    /* Only remember the command.  */
+	    module_oracle = argv[0];
+	}
+    }
+
+  if (errmsg)
+    {
+      errno = err;
+      error ("failed %s creating module oracle %qs: %m", errmsg, module_oracle);
+      return false;
+    }
+
+  /* Line buffering.  */
+  setvbuf (oracle_read, NULL, _IOLBF, 0);
+  setvbuf (oracle_write, NULL, _IOLBF, 0);
+
+  dump () && dump ("Initialized oracle");
+  fprintf (oracle_write, "MAIN 0 %s\n", main_input_filename);
+
+  return true;
+}
+
+static void
+oracle_fini ()
+{
+  if (oracle_write)
+    fclose (oracle_write);
+
+  if (oracle_pex)
+    {
+      int status;
+
+      pex_get_status (oracle_pex, 1, &status);
+      pex_free (oracle_pex);
+      oracle_pex = NULL;
+
+      if (WIFSIGNALED (status))
+	error ("module oracle %qs died by signal %s",
+	       module_oracle, strsignal (WTERMSIG (status)));
+      else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
+	error ("module oracle %qs exit status %d",
+	       module_oracle, WEXITSTATUS (status));
+    }
+    
+  if (oracle_read)
+    fclose (oracle_read);
+
+  oracle_read = oracle_write = NULL;
+  module_oracle = NULL;
+}
+
+static char *
+oracle_response ()
+{
+  /* Exercise buffer expansion.  */
+  static size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
+  static char *buffer = NULL;
+  size_t pos = 0;
+
+  if (!buffer)
+    buffer = XNEWVEC (char, size);
+
+ more:
+  if (!fgets (buffer + pos, size - pos, oracle_read))
+    {
+      error ("unexpected %s from module oracle %qs",
+	     ferror (oracle_read) ? "error" : "end of file", module_oracle);
+      oracle_fini ();
+      return NULL;
+    }
+
+  pos += strlen (buffer + pos);
+  if (buffer[pos - 1] != '\n')
+    {
+      size *= 2;
+      buffer = XRESIZEVEC (char, buffer, size);
+      goto more;
+    }
+
+  buffer[pos - 1] = 0;
+  return buffer;
+}
+
+static char *
+oracle_query_module (tree name, bool rnw)
+{
+  dump () && dump ("Querying oracle for %N", name);
+  fprintf (oracle_write, "%sPT %s\n", rnw ? "IM" : "EX",
+	   IDENTIFIER_POINTER (name));
+
+  char *resp = oracle_response ();
+  if (!resp)
+    return NULL;
+  else if (strncmp (resp, "MAP ", 4) == 0
+	   && strncmp (resp + 4, IDENTIFIER_POINTER (name),
+		       IDENTIFIER_LENGTH (name)) == 0)
+    {
+      const char *ptr = resp + 4 + IDENTIFIER_LENGTH (name);
+      if (ptr[0] == ' ' && ptr[1])
+	return xstrdup (ptr + 1);
+      else if ((ptr[0] == ' ' && !ptr[1]) || &ptr[0])
+	return NULL;
+    }
+  error ("unexpected response %qs from module oracle", resp);
+  return NULL;
+}
+
+static void
+oracle_done (tree name)
+{
+  dump () && dump ("Completed oracle");
+  fprintf (oracle_write, "DONE %s\n", IDENTIFIER_POINTER (name));
+}
+
+/* Create the oracle streams.  Return true if there is an oracle.  */
+
 /* Create a module file name from NAME, length NAME_LEN.  NAME might
    not be NUL-terminated.  FROM_IDENT is true if NAME is the
    module-name, false if it is already filenamey.  */
@@ -8479,8 +8709,22 @@ find_file (char *&name, size_t &name_len, const char *rel, size_t rel_len,
 }
 
 static FILE *
+oracle_stream (module_state *state, bool rnw)
+{
+  if (state->filename || !module_oracle || (!oracle_read && !oracle_init ()))
+    return NULL;
+
+  state->filename = oracle_query_module (state->name, rnw);
+
+  return fopen (state->filename, rnw ? "rb" : "wb");
+}
+
+static FILE *
 find_module_file (module_state *state)
 {
+  if (FILE *stream = oracle_stream (state, true))
+    return stream;
+
   bool search = !state->filename;
   if (search)
     state->filename = make_module_filename (IDENTIFIER_POINTER (state->name),
@@ -9002,16 +9246,21 @@ finish_module ()
       if (module_output)
 	error ("%<-fmodule-output%> specified for"
 	       " non-module interface compilation");
-      return;
     }
-
-  if (!errorcount)
+  else if (!errorcount)
     {
+      FILE *stream = NULL;
       if (!state->filename)
-	state->filename = make_module_filename (IDENTIFIER_POINTER (state->name),
-						IDENTIFIER_LENGTH (state->name),
-						true);
-      FILE *stream = fopen (state->filename, "wb");
+	{
+	  stream = oracle_stream (state, false);
+	  if (!stream)
+	    state->filename = make_module_filename (IDENTIFIER_POINTER (state->name),
+						    IDENTIFIER_LENGTH (state->name),
+						    true);
+	}
+      if (!stream)
+	stream = fopen (state->filename, "wb");
+
       int e = errno;
       location_t saved_loc = input_location;
       input_location = state->loc;
@@ -9027,12 +9276,18 @@ finish_module ()
 
       dump.pop (n);
       input_location = saved_loc;
+      if (oracle_write && !errorcount)
+	oracle_done (state->name);
     }
 
-  if (errorcount)
-    unlink (state->filename);
+  if (state)
+    {
+      if (state->exported && state->filename && errorcount)
+	unlink (state->filename);
+      state->release ();
+    }
 
-  state->release ();
+  oracle_fini ();
 }
 
 /* If CODE is a module option, handle it & return true.  Otherwise
@@ -9054,6 +9309,10 @@ handle_module_option (unsigned code, const char *arg, int)
 
     case OPT_fmodule_output_:
       module_output = arg;
+      return true;
+
+    case OPT_fmodule_oracle_:
+      module_oracle = arg;
       return true;
 
     case OPT_fmodule_prefix_:

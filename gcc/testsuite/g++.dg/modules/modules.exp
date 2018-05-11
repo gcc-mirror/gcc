@@ -14,7 +14,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 #
-# Contributed by Nathan Sidwell <nathan@acm.org>
+# Contributed by Nathan Sidwell <nathan@acm.org> while at Facebook
 
 
 # Test C++ modules, which requires multiple TUs

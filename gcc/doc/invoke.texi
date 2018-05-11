@@ -2569,6 +2569,16 @@ used, then read mappings from @var{file}.
 @opindex fmodule-lazy
 Disable module importing.
 
+@item -fmodule-oracle=@var{fd}
+@itemx -fmodule-oracle=@var{fd:fd}
+@itemx -fmodule-oracle=@var{[hostname]:port}
+@itemx -fmodule-oracle=@var{program}
+@itemx -fmodule-oracle=@var{/pathname}
+@opindex fmodule-oracle
+An oracle to query for module name to filename mappings.  If
+unspecified a default oracle is looked for in the CXX_MODULE_ORACLE
+environment variable, and if that is unset, a default is provided.
+
 @item -fmodule-output=@var{file}
 @opindex fmodule-output
 Write the binary module interface into @var{file}.  This option is
@@ -29195,6 +29205,70 @@ By default the BMI file is named from the module name, replacing any
 @code{.} characters with @code{-}, and appending a New Module System
 (@code{.nms}) suffix.  The BMI files are created and searched for in
 the current directory.
+
+A query oracle can be provided with the
+@option{-fmodule-oracle=@var{val}} option.  The oracle provides a
+line-based server interface that the compiler queries.  The operand
+may have one of the following forms:
+
+@itemize
+
+@item @samp{number[:number]}
+The numbers are file numbers, which the spawning environment must have
+made available. The first is written to, and the second is read from.
+
+@item @samp{[hostname]:port}
+A hostname, which defaults to @samp{localhost} and a port number to
+connect to. FIXME:Not implemented, use @samp{ncat hostname port} as a
+workaround.
+
+@item @samp{program args...}
+A program to spawn, and communicate with on its stdin/stdout files.
+Arguments are separated by white space, (it is not possible for one of
+the arguments delivered to the program to contain a space).
+
+@end itemize
+
+The oracle is connected to lazily, when the first module mapping is
+required.  The server should accept and respond to the following
+commands:
+
+@itemize
+
+@item @samp{MAIN} @var{version} @var{main-filename}
+This is the first command.  @var{version} is currently @code{0}.  It
+informs the server of the name of the source file being compiled.  No
+response is given.
+
+@item [+]@samp{IMPT} @var{module-name}
+The compilation need to import @var{module-name}, including the case
+of a module implementation unit.  If a leading @code{+} is given a
+response should be deferred until the compiler emits a blank line.  At
+that point all deferred queries should respond, in arbitrary order.
+Each response is @code{MAP @var{module-name} @var{bmi-filename}}, if the
+BMI is available.  If a BMI is not available (for instance its
+compilation failed), the response should be @code{MAP
+@var{module-name}}.  Such a response will cause compilation to terminate.
+
+@item @samp{EXPT} @var{module-name}
+The compilation is of a module interface unit, and will generate a BMI
+for @var{module-name}.  The response should be @code{MAP @var{module-name}
+@var{bmi-filename}}.
+
+@item @samp{DONE} @var{module-name}
+The compilation has succesfully produced a BMI file for
+@var{module-name}.  No response is needed.  Note that the compilation
+may not have completed the object-file generation of the interface unit.
+
+@end itemize
+
+The default oracle generates BMI files in the current directory,
+mapping @code{.} to @code{-} and appending a @samp{.nms} suffix.  It will
+also attempt to build a BMI, if one is not available for @code{IMPT}
+commands by looking for a source file in the same directory as the
+main source file with a @code{.cc}, @code{.C} or @code{.ccm} suffix.
+
+It is expected that build systems will provide their own oracles.
 
 When compiling a module interface, the
 @option{-fmodule-output=@var{file}} option may be used to override the
