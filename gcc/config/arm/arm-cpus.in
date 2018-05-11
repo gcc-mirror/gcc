@@ -446,6 +446,8 @@ begin arch armv6-m
  isa ARMv6m
 end arch armv6-m
 
+# This is now equivalent to armv6-m, but we keep it because some
+# versions of GAS still distinguish between the two.
 begin arch armv6s-m
  tune for cortex-m1
  base 6M
@@ -1168,21 +1170,21 @@ end cpu arm1156t2f-s
 begin cpu cortex-m1
  cname cortexm1
  tune flags LDSCHED
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m1
 
 begin cpu cortex-m0
  cname cortexm0
  tune flags LDSCHED
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m0
 
 begin cpu cortex-m0plus
  cname cortexm0plus
  tune flags LDSCHED
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m0plus
 
@@ -1192,7 +1194,7 @@ begin cpu cortex-m1.small-multiply
  cname cortexm1smallmultiply
  tune for cortex-m1
  tune flags LDSCHED SMALLMUL
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m1.small-multiply
 
@@ -1200,7 +1202,7 @@ begin cpu cortex-m0.small-multiply
  cname cortexm0smallmultiply
  tune for cortex-m0
  tune flags LDSCHED SMALLMUL
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m0.small-multiply
 
@@ -1208,7 +1210,7 @@ begin cpu cortex-m0plus.small-multiply
  cname cortexm0plussmallmultiply
  tune for cortex-m0plus
  tune flags LDSCHED SMALLMUL
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m0plus.small-multiply
 
