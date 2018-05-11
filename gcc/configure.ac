@@ -1394,6 +1394,44 @@ if test $ac_cv_f_setlkw = yes; then
   [Define if F_SETLKW supported by fcntl.])
 fi
 
+# Check for AF_UNIX networking
+AC_CACHE_CHECK(for AF_UNIX, ac_cv_host_af_unix, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>]],[[
+sockaddr_un un;
+un.sun_family = AF_UNSPEC;
+int fd = socket (AF_UNIX, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&un, sizeof (un));]])],
+[ac_cv_host_af_unix=yes],
+[ac_cv_host_af_unix=no])])
+if test $ac_cv_host_af_unix = yes; then
+  AC_DEFINE(HOST_HAS_AF_UNIX, 1,
+  [Define if AF_UNIX supported by host.])
+fi
+
+# Check for AF_INET6 networking
+AC_CACHE_CHECK(for AF_INET6, ac_cv_host_af_inet6, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>]],[[
+sockaddr_in6 in6;
+in6.sin6_family = AF_UNSPEC;
+hostent *hent = gethostbyname2 ("localhost", AF_INET6);
+const char *str = hstrerror (h_errno);
+int fd = socket (AF_INET6, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&in6, sizeof (in6));]])],
+[ac_cv_host_af_inet6=yes],
+[ac_cv_host_af_inet6=no])])
+if test $ac_cv_host_af_inet6 = yes; then
+  AC_DEFINE(HOST_HAS_AF_INET6, 1,
+  [Define if AF_INET6 supported by host.])
+fi
+
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"
 CXXFLAGS="$saved_CXXFLAGS"

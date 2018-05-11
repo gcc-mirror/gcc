@@ -79,7 +79,7 @@ done
 while read cmd args ; do
     $verbose && echo "$progname< $cmd $args" >&2
     case "$cmd" in
-	(MAIN) main="${args#0 }";;
+	(HELO) main="${args#0 }";;
 	(IMPT)
 	    file=$(echo $args | tr . -).nms
 	    if ! test -e $file && ! compile $args ; then

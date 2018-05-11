@@ -141,10 +141,17 @@ Classes used:
 #include "tree-diagnostic.h"
 #include "params.h"
 
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#if defined (HOST_HAS_AF_UNIX) || defined (HOST_HAS_AF_INET6)
+#define HOST_HAS_AF 1
+# include <sys/socket.h>
+# ifdef HOST_HAS_AF_UNIX
+#  include <sys/un.h>
+# endif
+# include <netinet/in.h>
+# ifdef HOST_HAS_AF_INET6
+#  include <netdb.h>
+# endif
+#endif
 
 /* Id for dumping module information.  */
 int module_dump_id;
@@ -6261,7 +6268,7 @@ module_state::announce (const char *what) const
 
 /*  Module oracle protocol:
     
-    MAIN version mainfile -> no response
+    HELO version mainfile -> no response
     INCL header-name -> IMPT header-name module-name
     			INCL header-name
     [+]IMPT module-name -> MAP module-name file-name
@@ -6313,17 +6320,26 @@ oracle_init ()
     {
       /* There are no spaces in it, try opening a socket.  */
       int port = -1;
+#ifdef HOST_HAS_AF
       union saddr {
 	sa_family_t fam;
+#ifdef HOST_HAS_AF_UNIX
 	sockaddr_un un;
+#endif
+#ifdef HOST_HAS_AF_INET6
 	sockaddr_in6 in6;
+#endif
       } saddr;
+#endif
       size_t saddr_len = 0;
 
-      saddr.fam = AF_UNSPEC;
+#ifdef HOST_HAS_AF
+      saddr.fam = NO_AF;
+#endif
       if (IS_ABSOLUTE_PATH (writable))
 	{
 	  /* An absolute path is treated as a local domain socket.  */
+#ifdef HOST_HAS_AF_UNIX
 	  if (len < sizeof (saddr.un.sun_path))
 	    {
 	      memset (&saddr.un, 0, sizeof (saddr.un));
@@ -6331,6 +6347,10 @@ oracle_init ()
 	      memcpy (saddr.un.sun_path, writable, len + 1);
 	    }
 	  saddr_len = offsetof (union saddr, un.sun_path) + len + 1;
+#else
+	  saddr_len = 1;
+	  errmsg = "unix protocol unsupported";
+#endif
 	}
       else if (char *colon = (char *)memrchr (writable, ':', len))
 	{
@@ -6339,6 +6359,7 @@ oracle_init ()
 	    {
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
 	      *colon = 0;
+#ifdef HOST_HAS_AF_INET6
 	      if (struct hostent *hent
 		  = gethostbyname2 (colon != writable ? writable : "localhost",
 				    AF_INET6))
@@ -6348,10 +6369,17 @@ oracle_init ()
 		  saddr.in6.sin6_port = htons (port);
 		  memcpy (&saddr.in6.sin6_addr, hent->h_addr, hent->h_length);
 		}
+	      else
+		errno = -h_errno;
 	      saddr_len = sizeof (saddr.in6);
+#else
+	      saddr_len = 1;
+	      errmsg = "ipv6 protocol unsupported";
+#endif
 	    }
 	}
 
+#ifdef HOST_HAS_AF
       if (saddr.fam != AF_UNSPEC)
 	{
 	  fd = socket (saddr.fam, SOCK_STREAM, 0);
@@ -6364,17 +6392,25 @@ oracle_init ()
 	      fd = -1;
 	    }
 	}
-      else if (saddr_len)
-	{
-	  free (writable);
-	  writable = NULL;
-	  errmsg = "resolving address";
-	}
+      else
+#endif
+	if (saddr_len)
+	  {
+	    free (writable);
+	    writable = NULL;
+	    if (!errmsg)
+	      {
+		err = errno;
+		errmsg = "resolving address";
+	      }
+	  }
     }
 
   if (fd >= 0)
     {
       /* We were given a fileno, or sucessfuly created a socket.  */
+      gcc_assert (!errmsg);
+
       int fd2 = dup (fd);
       if (fd2 >= 0)
 	{
@@ -6393,7 +6429,7 @@ oracle_init ()
 	  oracle_read = oracle_write = NULL;
 	}
     }
-  else if (writable)
+  else if (!errmsg)
     {
       /* Split module_oracle at white-space.  No space-containing args
 	 for you!  */
@@ -6416,24 +6452,15 @@ oracle_init ()
       argv[count] = NULL;
 
       oracle_pex = pex_init (PEX_USE_PIPES, argv[0], NULL);
-      if (!oracle_pex)
+      oracle_write = pex_input_pipe (oracle_pex, false);
+      if (!oracle_write)
 	{
 	  err = errno;
-	  errmsg = "creating";
+	  errmsg = "connecting input";
 	}
-
-      if (!errmsg)
-	{
-	  oracle_write = pex_input_pipe (oracle_pex, false);
-	  if (!oracle_write)
-	    {
-	      err = errno;
-	      errmsg = "connecting input";
-	    }
-	  else
-	    errmsg = pex_run (oracle_pex, PEX_SEARCH, argv[0],
-			      argv, NULL, NULL, &err);
-	}
+      else
+	errmsg = pex_run (oracle_pex, PEX_SEARCH, argv[0],
+			  argv, NULL, NULL, &err);
 
       if (!errmsg)
 	{
@@ -6445,16 +6472,25 @@ oracle_init ()
 	      fclose (oracle_write);
 	      oracle_write = NULL;
 	    }
+
 	  if (!errmsg)
-	    /* Only remember the command.  */
+	    /* Only remember the command for future diagnostics.  */
 	    module_oracle = argv[0];
 	}
     }
 
   if (errmsg)
     {
-      errno = err;
-      error ("failed %s creating module oracle %qs: %m", errmsg, module_oracle);
+      error ("failed %s of module oracle %qs", errmsg, module_oracle);
+      if (err)
+	{
+	  errno = err;
+#ifdef HOST_HAS_AF_INET6
+	  inform (input_location, err < 0 ? "%s" : "%m", hstrerror (-err));
+#else
+	  inform (input_location, "%m");
+#endif
+	}
       return false;
     }
 
@@ -6463,7 +6499,7 @@ oracle_init ()
   setvbuf (oracle_write, NULL, _IOLBF, 0);
 
   dump () && dump ("Initialized oracle");
-  fprintf (oracle_write, "MAIN 0 %s\n", main_input_filename);
+  fprintf (oracle_write, "HELO 0 %s\n", main_input_filename);
 
   return true;
 }
@@ -8858,8 +8894,9 @@ find_module_file (module_state *state)
 
   if (errmsg)
     {
+      error_at (state->loc, "%s %qs", errmsg, argv[0]);
       errno = err;
-      error_at (state->loc, "%s %qs %m", errmsg, argv[0]);
+      inform (state->loc, "%m");
     }
   else if (WIFSIGNALED (status))
     error_at (state->loc, "module wrapper %qs died by signal %s",

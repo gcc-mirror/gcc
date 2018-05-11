@@ -11403,6 +11403,90 @@ $as_echo "#define HOST_HAS_F_SETLKW 1" >>confdefs.h
 
 fi
 
+# Check for AF_UNIX networking
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for AF_UNIX" >&5
+$as_echo_n "checking for AF_UNIX... " >&6; }
+if test "${ac_cv_host_af_unix+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+int
+main ()
+{
+
+sockaddr_un un;
+un.sun_family = AF_UNSPEC;
+int fd = socket (AF_UNIX, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&un, sizeof (un));
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_host_af_unix=yes
+else
+  ac_cv_host_af_unix=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host_af_unix" >&5
+$as_echo "$ac_cv_host_af_unix" >&6; }
+if test $ac_cv_host_af_unix = yes; then
+
+$as_echo "#define HOST_HAS_AF_UNIX 1" >>confdefs.h
+
+fi
+
+# Check for AF_INET6 networking
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for AF_INET6" >&5
+$as_echo_n "checking for AF_INET6... " >&6; }
+if test "${ac_cv_host_af_inet6+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+int
+main ()
+{
+
+sockaddr_in6 in6;
+in6.sin6_family = AF_UNSPEC;
+hostent *hent = gethostbyname2 ("localhost", AF_INET6);
+const char *str = hstrerror (h_errno);
+int fd = socket (AF_INET6, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&in6, sizeof (in6));
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_host_af_inet6=yes
+else
+  ac_cv_host_af_inet6=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host_af_inet6" >&5
+$as_echo "$ac_cv_host_af_inet6" >&6; }
+if test $ac_cv_host_af_inet6 = yes; then
+
+$as_echo "#define HOST_HAS_AF_INET6 1" >>confdefs.h
+
+fi
+
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"
 CXXFLAGS="$saved_CXXFLAGS"
@@ -18450,7 +18534,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18451 "configure"
+#line 18537 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18556,7 +18640,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18557 "configure"
+#line 18643 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

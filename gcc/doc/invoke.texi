@@ -29230,12 +29230,16 @@ leading or trailing whitespace to disambiguate.
 @end itemize
 
 The oracle is connected to lazily, when the first module mapping is
-required.  The server should accept and respond to the following
-commands:
+required.  The networking protocols are only supported on hosts that
+provide networking.  If no oracle is specified, the
+@var{CXX_MODULE_ORACLE} environment variable is inspected.  If that is
+empty or unset, a default is provided.
+
+The server should accept and respond to the following commands:
 
 @itemize
 
-@item @samp{MAIN} @var{version} @var{main-filename}
+@item @samp{HELO} @var{version} @var{main-filename}
 This is the first command.  @var{version} is currently @code{0}.  It
 informs the server of the name of the source file being compiled.  No
 response is given.
