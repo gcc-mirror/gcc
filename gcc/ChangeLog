@@ -1,5 +1,10 @@
 2018-05-11  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/85733
+	* config/arm/arm-cpus.in (fgroup ARMv6m): Add be8 feature.
+
+2018-05-11  Richard Earnshaw  <rearnsha@arm.com>
+
 	PR target/85606
 	* config/arm/arm-cpus.in: Add comment that ARMv6-m and ARMv6S-m are now
 	equivalent.

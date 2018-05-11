@@ -234,7 +234,7 @@ define fgroup ARMv6zk     ARMv6k
 define fgroup ARMv6t2     ARMv6 thumb2
 # This is suspect.  ARMv6-m doesn't really pull in any useful features
 # from ARMv5* or ARMv6.
-define fgroup ARMv6m      mode32 armv3m armv4 thumb armv5 armv5e armv6
+define fgroup ARMv6m      mode32 armv3m armv4 thumb armv5 armv5e armv6 be8
 # This is suspect, the 'common' ARMv7 subset excludes the thumb2 'DSP' and
 # integer SIMD instructions that are in ARMv6T2.  */
 define fgroup ARMv7       ARMv6m thumb2 armv7
