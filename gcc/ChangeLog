@@ -1,3 +1,10 @@
+2018-05-11  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85692
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Try two
+	source permute as well.
+
 2018-05-11  Martin Liska  <mliska@suse.cz>
 
         PR sanitizer/85556
