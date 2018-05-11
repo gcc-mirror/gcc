@@ -3894,8 +3894,11 @@ gfc_check_rank (gfc_expr *a)
 		  ? a->value.function.esym->result->attr.pointer
 		  : a->symtree->n.sym->result->attr.pointer;
 
-  if (a->expr_type == EXPR_OP || a->expr_type == EXPR_NULL
-      || a->expr_type == EXPR_COMPCALL|| a->expr_type == EXPR_PPC
+  if (a->expr_type == EXPR_OP
+      || a->expr_type == EXPR_NULL
+      || a->expr_type == EXPR_COMPCALL
+      || a->expr_type == EXPR_PPC
+      || a->ts.type == BT_PROCEDURE
       || !is_variable)
     {
       gfc_error ("The argument of the RANK intrinsic at %L must be a data "
