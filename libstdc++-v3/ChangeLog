@@ -17,9 +17,9 @@
 	* include/tr1/legendre_function.tcc (__assoc_legendre_p): Add __phase
 	argument defaulted to +1.  Doxy comments on same.
 	* testsuite/special_functions/02_assoc_legendre/
-	check_assoc_legendre.cc: Regen.
+	check_value.cc: Regen.
 	* testsuite/tr1/5_numerical_facilities/special_functions/
-	02_assoc_legendre/check_tr1_assoc_legendre.cc: Regen.
+	02_assoc_legendre/check_value.cc: Regen.
 
 2018-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
