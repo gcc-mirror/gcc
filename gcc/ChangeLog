@@ -1,3 +1,8 @@
+2018-05-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/85733
+	* config/arm/arm-cpus.in (fgroup ARMv6m): Add be8 feature.
+
 2018-05-11  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_WAITPKG_SET,
