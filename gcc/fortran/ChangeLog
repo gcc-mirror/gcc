@@ -1,3 +1,9 @@
+2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85687
+	Backport from trunk
+	* check.c (gfc_check_rank): Check that the argument is a data object.
+
 2018-05-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/85507
