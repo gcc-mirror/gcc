@@ -75,25 +75,44 @@ while test "$#" != 0 ; do
     shift
 done
 
-while read cmd args ; do
-    $verbose && echo "$progname< $cmd $args" >&2
+while read cmd arg0 arg1 ; do
+    $verbose && echo "$progname< $cmd $arg0 $arg1" >&2
     resp=
     case "$cmd" in
-	(HELO) main="${args#0 }";;
+	(HELO)
+	    if test $arg0 = 0 ; then
+		main="$arg1"
+		resp="200 OK"
+	    else
+		resp="520 Bad Version"
+	    fi
+	    ;;
 	(IMPT)
-	    resp="MAP $args"
-	    file=$(echo $args | tr . -)
+	    file=$(echo $arg0 | tr . -)
 	    if test -e $file.nms || compile $file ; then
-	       resp+=" $file.nms"
+		resp="250 $arg0 $file.nms"
+	    else
+		resp="550 $arg0"
 	    fi
 	    ;;
 	(EXPT)
-	    file=$(echo $args | tr . -).nms
-	    resp="MAP $args"
-	    resp+=" $file"
+	    file=$(echo $arg0 | tr . -)
+	    resp="250 $arg0 $file.nms"
 	    ;;
 	(DONE)  ;;
-	(*) echo "Unknown command '$cmd'" >&2 ; exit 1 ;;
+	(HELP)
+	    case "$arg0" in
+		(HELO) resp="HELO <ver> <src>" ;;
+		(IMPT) resp="IMPT <module>" ;;
+		(EXPT) resp="EXPT <module>" ;;
+		(DONE) resp="DONE <module>" ;;
+		(*) resp="201 HELO, IMPT, EXPT, DONE" ;;
+	    esac
+	    ;;
+	(*)
+	    echo "Unknown command '$cmd'" >&2
+	    resp="501 Bad Request"
+	    ;;
     esac
     if test "$resp" ; then
 	$verbose && echo "$progname> $resp" >&2

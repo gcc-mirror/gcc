@@ -29232,22 +29232,22 @@ The server should accept and respond to the following commands:
 
 @item @samp{HELO} @var{version} @var{main-filename}
 This is the first command.  @var{version} is currently @code{0}.  It
-informs the server of the name of the source file being compiled.  No
-response is given.
+informs the server of the name of the source file being compiled.
+Response is either '200 Ok', or '520 Bad Version'.
 
 @item [+]@samp{IMPT} @var{module-name}
 The compilation need to import @var{module-name}, including the case
 of a module implementation unit.  If a leading @code{+} is given a
 response should be deferred until the compiler emits a blank line.  At
 that point all deferred queries should respond, in arbitrary order.
-Each response is @code{MAP @var{module-name} @var{bmi-filename}}, if the
+Each response is @code{250 @var{module-name} @var{bmi-filename}}, if the
 BMI is available.  If a BMI is not available (for instance its
-compilation failed), the response should be @code{MAP
+compilation failed), the response should be @code{550
 @var{module-name}}.  Such a response will cause compilation to terminate.
 
 @item @samp{EXPT} @var{module-name}
 The compilation is of a module interface unit, and will generate a BMI
-for @var{module-name}.  The response should be @code{MAP @var{module-name}
+for @var{module-name}.  The response should be @code{250 @var{module-name}
 @var{bmi-filename}}.
 
 @item @samp{DONE} @var{module-name}

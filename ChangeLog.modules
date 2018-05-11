@@ -1,5 +1,15 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	A more conventional protocol
+	gcc/
+	* doc/invoke.texi (C++ Modules): Update oracle protocol.
+	gcc/cp/
+	* cxx-module-oracle.sh: Update protocol.
+	* module.c (oracle_response): Parse response.
+	(oracle_unexpected, oracle_malformed): New.
+	(oracle_init): Check version.
+	(oracle_query_module): Update.
+
 	Kill module wrapper -- you should use the oracle.
 	gcc/
 	* doc/invoke.texi (C++ Dialect Options): Remove -fmodule-wrapper.

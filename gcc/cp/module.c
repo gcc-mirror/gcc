@@ -6267,15 +6267,109 @@ module_state::announce (const char *what) const
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 }
 
+/* Close down the oracle.  Mark it as not restartable.  */
+
+static void
+oracle_fini ()
+{
+  if (oracle_write)
+    fclose (oracle_write);
+
+  if (oracle_pex)
+    {
+      int status;
+
+      pex_get_status (oracle_pex, 1, &status);
+      pex_free (oracle_pex);
+      oracle_pex = NULL;
+
+      if (WIFSIGNALED (status))
+	error ("module oracle %qs died by signal %s",
+	       module_oracle, strsignal (WTERMSIG (status)));
+      else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
+	error ("module oracle %qs exit status %d",
+	       module_oracle, WEXITSTATUS (status));
+    }
+  else if (oracle_read)
+    fclose (oracle_read);
+
+  oracle_read = oracle_write = NULL;
+  module_oracle = "";
+}
+
+/* Read a response from the oracle.  Return the numeric code and
+   remaining response buffer.  The buffer is owned by this routine and
+   reused on subsequent responses.  Return 0 on error.  */
+
+static int
+oracle_response (char *&resp)
+{
+  /* Exercise buffer expansion.  */
+  static size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
+  static char *buffer = NULL;
+  size_t pos = 0;
+
+  if (!buffer)
+    buffer = XNEWVEC (char, size);
+
+ more:
+  if (!fgets (buffer + pos, size - pos, oracle_read))
+    {
+      const char *err = ferror (oracle_read) ? "error" : "end of file";
+      resp = const_cast <char *> (err);
+      error ("unexpected %s from module oracle %qs", err, module_oracle);
+      oracle_fini ();
+      return 0;
+    }
+
+  pos += strlen (buffer + pos);
+  if (buffer[pos - 1] != '\n')
+    {
+      size *= 2;
+      buffer = XRESIZEVEC (char, buffer, size);
+      goto more;
+    }
+
+  buffer[pos - 1] = 0;
+  char *ptr = buffer;
+  char *endp;
+  unsigned long code = strtoul (ptr, &endp, 10);
+  if (endp != ptr && ISSPACE (*endp) && code < 1000)
+    {
+      /* Skip whitespace.  */
+      for (ptr = endp; ISSPACE (*ptr); ptr++)
+	continue;
+    }
+  else
+    code = 0;
+  resp = ptr;
+  return code;
+}
+
+static void
+oracle_unexpected (const char *cmd, int code, char *resp)
+{
+  error ("unexpected oracle %s: %d %qs", cmd, code, resp);
+  oracle_fini ();
+}
+
+static void
+oracle_malformed (const char *cmd, int code, char *resp)
+{
+  error ("malformed oracle %s: %d %qs", cmd, code, resp);
+  oracle_fini ();
+}
+
 /*  Module oracle protocol:
     
-    HELO version mainfile -> no response
-    INCL header-name -> IMPT header-name module-name
-    			INCL header-name
-    [+]IMPT module-name -> MAP module-name file-name
-    			   MAP module-name
-    <blankline>      -> delayed IMPT responses
-    EXPT module-name -> MAP module-name file-name
+    HELO version mainfile -> 200/520 response
+    INCL header-name -> TBD header-name module-name
+    			TBD header-name
+    [+]IMPT module-name -> 250 module-name file-name
+    			   550 module-name
+			   TBD module-name
+    TBD          -> delayed IMPT responses
+    EXPT module-name -> 250 module-name file-name
     DONE module-name -> no response
  */
 
@@ -6288,7 +6382,10 @@ oracle_init ()
 {
   gcc_assert (!oracle_read);
 
-  if (!module_oracle || !module_oracle[0])
+  if (module_oracle && !module_oracle[0])
+    return false;
+
+  if (!module_oracle)
     module_oracle = getenv ("CXX_MODULE_ORACLE");
   bool defaulting = !module_oracle || !module_oracle[0];
   if (defaulting)
@@ -6374,7 +6471,7 @@ oracle_init ()
       else if (char *colon = (char *)memrchr (writable, ':', len))
 	{
 	  port = strtoul (colon + 1, &endp, 10);
-	  if (!*endp && port < 0x10000)
+	  if (!*endp)
 	    {
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
 	      *colon = 0;
@@ -6524,7 +6621,7 @@ oracle_init ()
       inform (input_location, err < 0 ? "%s" : err > 0 ? "%m"
 	      : "here's a nickel, kid.  Get yourself a real computer",
 	      hstrerror (-err));
-
+      oracle_fini ();
       return false;
     }
 
@@ -6534,96 +6631,46 @@ oracle_init ()
 
   dump () && dump ("Initialized oracle");
   fprintf (oracle_write, "HELO 0 %s\n", main_input_filename);
+  char *resp;
+  int code = oracle_response (resp);
+  if (code != 200)
+    {
+      /* Magic eight ball says 'no'.  */
+      oracle_unexpected ("HELO", code, resp);
+      return false;
+    }
 
   return true;
-}
-
-static void
-oracle_fini ()
-{
-  if (oracle_write)
-    fclose (oracle_write);
-
-  if (oracle_pex)
-    {
-      int status;
-
-      pex_get_status (oracle_pex, 1, &status);
-      pex_free (oracle_pex);
-      oracle_pex = NULL;
-
-      if (WIFSIGNALED (status))
-	error ("module oracle %qs died by signal %s",
-	       module_oracle, strsignal (WTERMSIG (status)));
-      else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-	error ("module oracle %qs exit status %d",
-	       module_oracle, WEXITSTATUS (status));
-    }
-  else if (oracle_read)
-    fclose (oracle_read);
-
-  oracle_read = oracle_write = NULL;
-  module_oracle = NULL;
-}
-
-/* Read a response from the oracle.  Return pointer to buffer ending
-   in NUL (not LF NUL).  Buffer is owned by this routine and reused on
-   subsequent responses.  Return NULL on error.  */
-
-static char *
-oracle_response ()
-{
-  /* Exercise buffer expansion.  */
-  static size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
-  static char *buffer = NULL;
-  size_t pos = 0;
-
-  if (!buffer)
-    buffer = XNEWVEC (char, size);
-
- more:
-  if (!fgets (buffer + pos, size - pos, oracle_read))
-    {
-      error ("unexpected %s from module oracle %qs",
-	     ferror (oracle_read) ? "error" : "end of file", module_oracle);
-      oracle_fini ();
-      return NULL;
-    }
-
-  pos += strlen (buffer + pos);
-  if (buffer[pos - 1] != '\n')
-    {
-      size *= 2;
-      buffer = XRESIZEVEC (char, buffer, size);
-      goto more;
-    }
-
-  buffer[pos - 1] = 0;
-  return buffer;
 }
 
 static char *
 oracle_query_module (tree name, bool rnw)
 {
   dump () && dump ("Querying oracle for %N", name);
-  fprintf (oracle_write, "%sPT %s\n", rnw ? "IM" : "EX",
-	   IDENTIFIER_POINTER (name));
+  const char *cmd = rnw ? "IMPT" : "EXPT";
+  fprintf (oracle_write, "%s %s\n", cmd, IDENTIFIER_POINTER (name));
 
-  char *resp = oracle_response ();
-  if (!resp)
-    return NULL;
-  else if (strncmp (resp, "MAP ", 4) == 0
-	   && strncmp (resp + 4, IDENTIFIER_POINTER (name),
-		       IDENTIFIER_LENGTH (name)) == 0)
+  char *resp;
+  int code = oracle_response (resp);
+
+  if (code != 250 && code != 550)
     {
-      const char *ptr = resp + 4 + IDENTIFIER_LENGTH (name);
-      if (ptr[0] == ' ' && ptr[1])
-	return xstrdup (ptr + 1);
-      else if (!ptr[0])
-	return NULL;
+      oracle_unexpected (cmd, code, resp);
+      return NULL;
     }
-  error ("unexpected response %qs from module oracle", resp);
-  return NULL;
+
+  if (strncmp (resp, IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name))
+      || (code == 550 && resp[IDENTIFIER_LENGTH (name)])
+      || (code == 250 && !ISSPACE (resp[IDENTIFIER_LENGTH (name)])))
+    {
+      oracle_malformed (cmd, code, resp);
+      return NULL;
+    }
+
+  if (code == 550)
+    return NULL;
+
+  return xstrdup (resp + IDENTIFIER_LENGTH (name) + 1);
 }
 
 static void
