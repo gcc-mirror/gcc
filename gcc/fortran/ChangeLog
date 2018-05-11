@@ -1,5 +1,12 @@
 2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/70870
+	Backport from trunk
+	* data.c (gfc_assign_data_value): Check that a data object does
+	not also have default initialization.
+
+2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/85521
 	Backport from trunk
 	* array.c (gfc_resolve_character_array_constructor): Substrings
