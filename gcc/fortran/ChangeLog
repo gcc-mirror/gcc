@@ -1,5 +1,12 @@
 2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/85521
+	Backport from trunk
+	* array.c (gfc_resolve_character_array_constructor): Substrings
+	with upper bound smaller than lower bound are zero length strings.
+
+2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/85687
 	Backport from trunk
 	* check.c (gfc_check_rank): Check that the argument is a data object.
