@@ -152,6 +152,9 @@ Classes used:
 #  include <netdb.h>
 # endif
 #endif
+#ifndef HOST_HAS_AF_INET6
+# define hstrerror(X) ""
+#endif
 
 /* Id for dumping module information.  */
 int module_dump_id;
@@ -2488,8 +2491,6 @@ bool module_state_hash::equal (const value_type existing,
 static const char *module_output;
 /* Set of module-file arguments to process on initialization.  */
 static vec<const char *, va_heap> module_file_args;
-/* The module wrapper script.  */
-static const char *module_wrapper;
 /* Print out the module map.  */
 static bool module_map_dump;
 /* Module search path.  */
@@ -6519,15 +6520,11 @@ oracle_init ()
   if (errmsg)
     {
       error ("failed %s of module oracle %qs", errmsg, module_oracle);
-      if (err)
-	{
-	  errno = err;
-#ifdef HOST_HAS_AF_INET6
-	  inform (input_location, err < 0 ? "%s" : "%m", hstrerror (-err));
-#else
-	  inform (input_location, "%m");
-#endif
-	}
+      errno = err;
+      inform (input_location, err < 0 ? "%s" : err > 0 ? "%m"
+	      : "here's a nickel, kid.  Get yourself a real computer",
+	      hstrerror (-err));
+
       return false;
     }
 
@@ -8883,67 +8880,7 @@ find_module_file (module_state *state)
   if (stream || errno != ENOENT)
     return stream;
 
-  /* If there's a wrapper, invoke it.  */
-  if (!module_wrapper)
-    return NULL;
-
-  inform (state->loc, "installing module %qE (%qs)",
-	  state->name, state->filename);
-
-  /* wrapper <module-name> <module-bmi-file> <srcname> <main_input_filename> */
-  unsigned len = 0;
-  const char *argv[6];
-  argv[len++] = module_wrapper;
-  argv[len++] = IDENTIFIER_POINTER (state->name);
-  argv[len++] = state->filename;
-  argv[len++] = state->srcname ? state->srcname : "";
-  argv[len++] = main_input_filename;
-
-  if (!quiet_flag)
-    {
-      if (pp_needs_newline (global_dc->printer))
-	{
-	  pp_needs_newline (global_dc->printer) = false;
-	  fprintf (stderr, "\n");
-	}
-      fprintf (stderr, "%s module wrapper:", progname);
-      for (unsigned ix = 0; ix != len; ix++)
-	fprintf (stderr, "%s'%s'", &" "[!ix], argv[ix]);
-      fprintf (stderr, "\n");
-      fflush (stderr);
-    }
-  argv[len] = NULL;
-
-  int err;
-  const char *errmsg = NULL;
-  int status;
-  pex_obj *pex = pex_init (0, progname, NULL);
-  if (pex)
-    errmsg = pex_run (pex, PEX_LAST | PEX_SEARCH, argv[0],
-		      const_cast <char **> (argv), NULL, NULL, &err);
-
-  if (!pex || (!errmsg && !pex_get_status (pex, 1, &status)))
-    errmsg = "cannot invoke";
-  pex_free (pex);
-
-  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
-
-  if (errmsg)
-    {
-      error_at (state->loc, "%s %qs", errmsg, argv[0]);
-      errno = err;
-      inform (state->loc, "%m");
-    }
-  else if (WIFSIGNALED (status))
-    error_at (state->loc, "module wrapper %qs died by signal %s",
-	      argv[0], strsignal (WTERMSIG (status)));
-  else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-    error_at (state->loc, "module wrapper %qs exit status %d",
-	      argv[0], WEXITSTATUS (status));
-  else
-    inform (state->loc, "installed module %qE", state->name);
-
-  return fopen (state->filename, "rb");
+  return NULL;
 }
 
 static bool
@@ -9367,11 +9304,6 @@ init_module_processing ()
     if (path->len > module_path_max)
       module_path_max = path->len;
 
-  if (!module_wrapper)
-    module_wrapper = getenv ("CXX_MODULE_WRAPPER");
-  if (module_wrapper && !module_wrapper[0])
-    module_wrapper = NULL;
-
   for (unsigned ix = 0; ix != module_file_args.length (); ix++)
     if (!add_module_mapping (module_file_args[ix]))
       break;
@@ -9461,10 +9393,6 @@ handle_module_option (unsigned code, const char *arg, int)
 
     case OPT_fmodule_oracle_:
       module_oracle = arg;
-      return true;
-
-    case OPT_fmodule_wrapper_:
-      module_wrapper = arg;
       return true;
 
     case OPT_fmodule_file_:

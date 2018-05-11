@@ -36,7 +36,7 @@ if ![info exists DEFAULT_CXXFLAGS] then {
     set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
 }
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
-lappend DEFAULT_MODFLAGS "-std=c++17" "-fmodule-wrapper="
+lappend DEFAULT_MODFLAGS "-std=c++17"
 setenv CXX_MODULE_PATH "$srcdir/$subdir"
 dg-init
 

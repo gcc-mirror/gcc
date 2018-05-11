@@ -1,5 +1,24 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	Kill module wrapper -- you should use the oracle.
+	gcc/
+	* doc/invoke.texi (C++ Dialect Options): Remove -fmodule-wrapper.
+	* gcc.h (driver::maybe_putenv_CXX_MODULE_WRAPPER): Delete decl.
+	* gcc.c (maybe_putenv_CXX_MODULE_WRAPPER): Delete.
+	(driver::main): Don't call it.
+	gcc/cp/
+	* module.c (module_wrapper): Delete.
+	(find_module_file): Drop wrapper spawning.
+	(init_module_processing): Drop wrapper initialization.
+	(handle_module_option): Drop wrapper option.
+	gcc/c-family/
+	* c.opt (fmodule-wrapper=): Delete.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp (DEFAULT_MODFLAGS): Drop -fmodule-wrapper.
+	* g++.dg/modules/main-[123]-aux.cc: Delete.
+	* g++.dg/modules/main-[123]-map: Delete.
+	* g++.dg/modules/main-[123]_a.C: Delete.
+
 	gcc/c
 	* config.in: Rebuilt too.
 
