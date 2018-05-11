@@ -2572,11 +2572,6 @@ An oracle to query for module name to filename mappings.  If
 unspecified a default oracle is looked for in the CXX_MODULE_ORACLE
 environment variable, and if that is unset, a default is provided.
 
-@item -fmodule-output=@var{file}
-@opindex fmodule-output
-Write the binary module interface into @var{file}.  This option is
-only valid when compiling a module interface unit.
-
 @item -fms-extensions
 @opindex fms-extensions
 Disable Wpedantic warnings about constructs used in MFC, such as implicit
@@ -29244,11 +29239,6 @@ commands by looking for a source file in the same directory as the
 main source file with a @code{.cc}, @code{.C} or @code{.ccm} suffix.
 
 It is expected that build systems will provide their own oracles.
-
-When compiling a module interface, the
-@option{-fmodule-output=@var{file}} option may be used to override the
-default.  It is an error to use this option when not compiling a
-module interface.
 
 The @option{-fno-module-lazy} option disables lazy module loading.
 Usually importing a module will load minimal information, defering the

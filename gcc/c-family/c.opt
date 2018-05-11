@@ -1532,10 +1532,6 @@ fmodule-lazy
 C++ ObjC++ Driver Var(flag_module_lazy) Init(1)
 Enable lazy module importing
 
-fmodule-output=
-C++ ObjC++ Joined RejectNegative MissingArgError(missing filename after %qs)
--fmodule-output=<file> Write the binary module interface into <file>.
-
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions.

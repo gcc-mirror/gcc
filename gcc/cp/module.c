@@ -2490,8 +2490,6 @@ bool module_state_hash::equal (const value_type existing,
 
 /* Some flag values: */
 
-/* Binary module interface output file name. */
-static const char *module_output;
 /* Oracle name.  */
 static const char *module_oracle;
 static FILE *oracle_read, *oracle_write;
@@ -8983,12 +8981,6 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	      /* We're the exporting module unit, so not loading anything.  */
 	      state->exported = true;
 	      state->mod = MODULE_PURVIEW;
-	      if (module_output)
-		{
-		  free (state->filename);
-		  state->filename = xstrdup (module_output);
-		  module_output = NULL;
-		}
 	      state->srcname = xstrdup (main_input_filename);
 	    }
 	}
@@ -9169,13 +9161,7 @@ finish_module ()
   module_state::fini ();
 
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];
-  if (!state || !state->exported)
-    {
-      if (module_output)
-	error ("%<-fmodule-output%> specified for"
-	       " non-module interface compilation");
-    }
-  else if (!errorcount)
+  if (state && state->exported && !errorcount)
     {
       FILE *stream = NULL;
       if (!state->filename)
@@ -9229,10 +9215,6 @@ handle_module_option (unsigned code, const char *arg, int)
     case OPT_EE:
       /* Force atom.  */
       flag_modules = -1;
-      return true;
-
-    case OPT_fmodule_output_:
-      module_output = arg;
       return true;
 
     case OPT_fmodule_oracle_:

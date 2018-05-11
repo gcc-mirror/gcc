@@ -1,5 +1,19 @@
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	Kill -fmodule-output -- use the oracle.
+	gcc/c-family/
+	* c.opt (fmodule-output): Delete.
+	gcc/
+	* doc/invoke.texi (C++ Dialect Options): Delete -fmodule-output.
+	(C++ Modules): Likewise.
+	gcc/cp
+	* module.c (module_output): Delete.
+	(module_state::do_import): Don't check it.
+	(finish_module): Likewise.
+	(handle_module_options): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/fmod-out-1_[ab].C: Delete.
+
 	Kill -fmodule-file -- use the oracle.
 	gcc/c-family/
 	* c.opt (fmodule-map-dump): Delete.
