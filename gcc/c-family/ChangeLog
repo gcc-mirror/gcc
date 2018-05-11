@@ -1,3 +1,9 @@
+2018-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85696
+	* c-omp.c (c_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for artificial vars with integral type.
+
 2018-05-11  Martin Liska  <mliska@suse.cz>
 
         PR sanitizer/85556

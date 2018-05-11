@@ -1,3 +1,13 @@
+2018-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85696
+	* cp-tree.h (cxx_omp_predetermined_sharing_1): New prototype.
+	* cp-gimplify.c (cxx_omp_predetermined_sharing): New wrapper around
+	cxx_omp_predetermined_sharing_1.  Rename old function to ...
+	(cxx_omp_predetermined_sharing_1): ... this.
+	* semantics.c (finish_omp_clauses): Use cxx_omp_predetermined_sharing_1
+	instead of cxx_omp_predetermined_sharing.
+
 2018-05-10  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_finish_decl): Don't instantiate auto variable.
