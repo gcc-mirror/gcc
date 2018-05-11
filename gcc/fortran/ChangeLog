@@ -1,3 +1,11 @@
+2018-05-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68846
+	PR fortran/70864
+	Backport from trunk
+	* resolve.c (get_temp_from_expr): The temporary must not have
+	dummy or intent attributes.
+
 2018-05-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/85507
