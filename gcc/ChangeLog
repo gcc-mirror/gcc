@@ -1,3 +1,9 @@
+2018-05-11  Martin Liska  <mliska@suse.cz>
+
+        PR sanitizer/85556
+	* doc/extend.texi: Document LLVM style format for no_sanitize
+	attribute.
+
 2018-05-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (mode_supports_dq_form): Rename

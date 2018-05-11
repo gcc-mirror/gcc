@@ -1,3 +1,9 @@
+2018-05-11  Martin Liska  <mliska@suse.cz>
+
+        PR sanitizer/85556
+	* c-attribs.c (handle_no_sanitize_attribute): Iterate all
+	TREE_LIST values.
+
 2018-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85662
