@@ -303,7 +303,6 @@ gimple_assign_nonzero_p (gimple *stmt)
 }
 
 /* Return true if STMT is known to compute a non-zero value.  */
-
 static bool
 gimple_stmt_nonzero_p (gimple *stmt)
 {
@@ -313,35 +312,9 @@ gimple_stmt_nonzero_p (gimple *stmt)
       return gimple_assign_nonzero_p (stmt);
     case GIMPLE_CALL:
       {
-	tree fndecl = gimple_call_fndecl (stmt);
-	if (!fndecl) return false;
-	if (flag_delete_null_pointer_checks && !flag_check_new
-	    && DECL_IS_OPERATOR_NEW (fndecl)
-	    && !TREE_NOTHROW (fndecl))
-	  return true;
-	/* References are always non-NULL.  */
-	if (flag_delete_null_pointer_checks
-	    && TREE_CODE (TREE_TYPE (fndecl)) == REFERENCE_TYPE)
-	  return true;
-	if (flag_delete_null_pointer_checks && 
-	    lookup_attribute ("returns_nonnull",
-			      TYPE_ATTRIBUTES (gimple_call_fntype (stmt))))
-	  return true;
-
-	gcall *call_stmt = as_a<gcall *> (stmt);
-	unsigned rf = gimple_call_return_flags (call_stmt);
-	if (rf & ERF_RETURNS_ARG)
-	  {
-	    unsigned argnum = rf & ERF_RETURN_ARG_MASK;
-	    if (argnum < gimple_call_num_args (call_stmt))
-	      {
-		tree arg = gimple_call_arg (call_stmt, argnum);
-		if (SSA_VAR_P (arg)
-		    && infer_nonnull_range_by_attribute (stmt, arg))
-		  return true;
-	      }
-	  }
-	return gimple_alloca_call_p (stmt);
+        gcall *call_stmt = as_a<gcall *> (stmt);
+	return (gimple_call_nonnull_result (call_stmt)
+		|| gimple_call_nonnull_arg (call_stmt));
       }
     default:
       gcc_unreachable ();

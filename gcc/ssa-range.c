@@ -493,6 +493,18 @@ path_ranger::process_phi (irange &r, gphi *phi)
   return true;
 }
 
+bool
+path_ranger::process_call (irange& r, gimple *call)
+{
+  gcall *call_stmt = as_a<gcall *> (call);
+  if (gimple_call_nonnull_result (call_stmt))
+    {
+      r.set_range (gimple_call_return_type (call_stmt), 0, 0, irange::INVERSE);
+      return true;
+    }
+  return false;
+}
+
 
 // External API. Evaluate statement G, and return the result in R.
 // Return false if it cannot be evaluated, or would return range_for_type.
@@ -516,6 +528,10 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
         return !r.range_for_type_p ();
       return false;
     }
+
+  // Look for nonnull results and other such things here.
+  if (gimple_code (g) == GIMPLE_CALL)
+    return process_call (r, g);
  
   // Not all statements have a LHS.  */
   if (name)
@@ -581,6 +597,7 @@ path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
 
 
 // Determine a range for NAME in basic block BB, returning the result in R.
+// If name if not defined in BB, find the range on entry to this block.
 bool
 path_ranger::path_get_operand (irange &r, tree name, basic_block bb)
 {
