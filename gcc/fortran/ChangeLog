@@ -1,3 +1,8 @@
+2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85542
+	* expr.c (check_inquiry): Avoid NULL pointer dereference.
+ 
 2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85687
