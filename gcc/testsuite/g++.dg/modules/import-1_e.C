@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module" }
-// { dg-final { scan-lang-dump "Read exported import:2 Bar->2" "module" } }
-// { dg-final { scan-lang-dump "Read exported import:3 Baz->3" "module" } }
+// { dg-final { scan-lang-dump "Read import:2 Bar->2" "module" } }
+// { dg-final { scan-lang-dump "Read import:3 Baz->3" "module" } }
 import Foo;
 
 int main ()

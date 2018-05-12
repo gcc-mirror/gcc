@@ -48,3 +48,6 @@ int main ()
 
 // { dg-final { scan-lang-dump {Lazily loading '::bar::Plain_Const_Three'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {Lazily loading '::bar::Scoped_Const_Three'@'bar' section} module } }
+
+// { dg-final { scan-lang-dump {Querying oracle for 'bar'} module } }
+// { dg-final { scan-lang-dump-not {Querying oracle for 'foo'} module } }

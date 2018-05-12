@@ -1,3 +1,23 @@
+2018-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	Direct import filenames are stored.
+	gcc/cp/
+	* module.c (bytes_out::str): Add overload.
+	(bytes_in::str): Robustify.
+	(module_state::{read,write}_imports): New.
+	(noisy_p): New.
+	(module_state::announce, oracle_init): Use noisy_p.
+	(oracle_module_file): Rename to ...
+	(oracle_module_filename): ... here.  Adjust parms, return
+	filename.
+	(module_state::write_readme): Write import filename.
+	(module_state::{read,write}_config): Use {read,write}_imports.
+	(module_state::do_import): Add FILENAME arg, adjust.
+	(finish_module): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/import-1_e.C: Adjust scan.
+	* g++.dg/modules/indirect-1_c.C: Verify no query on indirect import.
+
 2018-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	Remove remaining knowledge of module file names.

@@ -1411,6 +1411,10 @@ public:
   void z (size_t s);	/* Write size_t.  */
   void wi (HOST_WIDE_INT); /* Write HOST_WIDE_INT.  */
   void wu (unsigned HOST_WIDE_INT);  /* Write unsigned HOST_WIDE_INT.  */
+  void str (const char *ptr)
+  {
+    str (ptr, strlen (ptr));
+  }
   void str (const char *, size_t);  /* Write string of known length.  */
   void buf (const char *, size_t);  /* Write fixed length buffer.  */
   /* Format a NUL-terminated raw string.  */
@@ -1782,9 +1786,10 @@ bytes_in::str (size_t *len_p)
   /* We're about to trust some user data.  */
   if (overrun)
     len = 0;
-  *len_p = len;
+  if (len_p)
+    *len_p = len;
   const char *str = buf (len + 1);
-  if (str[len])
+  if (!str || str[len])
     {
       set_overrun ();
       str = "";
@@ -2365,6 +2370,10 @@ struct GTY(()) module_state {
   /* The README, for human consumption.  */
   void write_readme (elf_out *to);
 
+  /* Import tables. */
+  void write_imports (bytes_out &cfg, bool direct_p);
+  int read_imports (bytes_in &cfg, bool direct_p);
+
   /* The configuration.  */
   void write_config (elf_out *to, const range_t &sec_range,
 		     unsigned unnamed, unsigned crc);
@@ -2423,7 +2432,9 @@ struct GTY(()) module_state {
  public:
   /* Import a module.  Possibly ourselves.  */
   static module_state *do_import (location_t, tree, bool module_unit_p,
-				  bool import_export_p, unsigned * = NULL);
+				  bool import_export_p,
+				  const char *filename = NULL,
+				  unsigned * = NULL);
 
  private:
   static int maybe_add_global (tree, unsigned &);
@@ -2858,6 +2869,18 @@ dumper::operator () (const char *format, ...)
       dumps->bol = true;
       fputc ('\n', dumps->stream);
     }
+  return true;
+}
+
+static bool
+noisy_p ()
+{
+  if (quiet_flag)
+    return false;
+
+  pp_needs_newline (global_dc->printer) = true;
+  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+
   return true;
 }
 
@@ -6224,14 +6247,12 @@ module_state::release (bool at_eof)
 void
 module_state::announce (const char *what) const
 {
-  if (quiet_flag)
-    return;
-
-  fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
-	   what, IDENTIFIER_POINTER (name), mod);
-  fflush (stderr);
-  pp_needs_newline (global_dc->printer) = true;
-  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+  if (noisy_p ())
+    {
+      fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
+	       what, IDENTIFIER_POINTER (name), mod);
+      fflush (stderr);
+    }
 }
 
 /* Close down the oracle.  Mark it as not restartable.  */
@@ -6358,16 +6379,12 @@ oracle_init ()
   if (defaulting)
     module_oracle = "cxx-module-oracle";
 
-  if (!quiet_flag)
+  if (noisy_p ())
     {
-      if (pp_needs_newline (global_dc->printer))
-	{
-	  pp_needs_newline (global_dc->printer) = false;
-	  fprintf (stderr, "\n");
-	}
-      fprintf (stderr, "%s oracle:%s\n", progname, module_oracle);
+      fprintf (stderr, " oracle:%s", module_oracle);
+      fflush (stderr);
     }
-    
+
   dump () && dump ("Initializing oracle %s", module_oracle);
 
   int err = 0;
@@ -6612,47 +6629,57 @@ oracle_init ()
   return true;
 }
 
-static FILE *
-oracle_module_file (module_state *state, bool rnw)
+/* Query the oracle for the BMI for module NAME, to be read or writen,
+   depending on RNW.  A default may be provided with FILENAME.  */
+
+static char *
+oracle_module_filename (tree name, bool rnw, const char *filename = NULL)
 {
-  gcc_assert (!state->filename);
-  dump () && dump ("Querying oracle for %N", state->name);
-  if (!oracle_read && !oracle_init ())
+  if (!filename)
     {
-      /* This seems the most appropriate error to simulate if there's
-	 no oracle.  */
-    failed:
-      errno = ENOMSG;
-      return NULL;
+      if (!oracle_read && !oracle_init ())
+	{
+	  /* This seems the most appropriate error to simulate if there's
+	     no oracle.  */
+	failed:
+	  errno = ENOMSG;
+	  return NULL;
+	}
+
+      dump () && dump ("Querying oracle for %N", name);
+      if (noisy_p ())
+	{
+	  fprintf (stderr, " query:%s", IDENTIFIER_POINTER (name));
+	  fflush (stderr);
+	}
+
+      const char *cmd = rnw ? "IMPT" : "EXPT";
+      fprintf (oracle_write, "%s %s\n", cmd, IDENTIFIER_POINTER (name));
+
+      char *resp;
+      int code = oracle_response (resp);
+
+      if (code != 250 && code != 550)
+	{
+	  oracle_unexpected (cmd, code, resp);
+	  goto failed;
+	}
+
+      if (strncmp (resp, IDENTIFIER_POINTER (name)
+		   , IDENTIFIER_LENGTH (name))
+	  || (code == 550 && resp[IDENTIFIER_LENGTH (name)])
+	  || (code == 250 && !ISSPACE (resp[IDENTIFIER_LENGTH (name)])))
+	{
+	  oracle_malformed (cmd, code, resp);
+	  goto failed;
+	}
+
+      if (code == 550)
+	goto failed;
+      filename = resp + IDENTIFIER_LENGTH (name) + 1;
     }
 
-  const char *cmd = rnw ? "IMPT" : "EXPT";
-  fprintf (oracle_write, "%s %s\n", cmd, IDENTIFIER_POINTER (state->name));
-
-  char *resp;
-  int code = oracle_response (resp);
-
-  if (code != 250 && code != 550)
-    {
-      oracle_unexpected (cmd, code, resp);
-      goto failed;
-    }
-
-  if (strncmp (resp, IDENTIFIER_POINTER (state->name)
-	       , IDENTIFIER_LENGTH (state->name))
-      || (code == 550 && resp[IDENTIFIER_LENGTH (state->name)])
-      || (code == 250 && !ISSPACE (resp[IDENTIFIER_LENGTH (state->name)])))
-    {
-      oracle_malformed (cmd, code, resp);
-      goto failed;
-    }
-
-  if (code == 550)
-    goto failed;
-
-  state->filename = xstrdup (resp + IDENTIFIER_LENGTH (state->name) + 1);
-
-  return fopen (state->filename, rnw ? "rb" : "wb");
+  return xstrdup (filename);
 }
 
 static void
@@ -6753,10 +6780,99 @@ module_state::write_readme (elf_out *to)
     {
       module_state *state = (*modules)[ix];
       if (state->imported)
-	readme.printf ("import:%s", IDENTIFIER_POINTER (state->name));
+	readme.printf ("import:%s %s",
+		       IDENTIFIER_POINTER (state->name), state->filename);
     }
 
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
+}
+
+/* Write the direct or indirect imports.
+   {
+     u:index
+     s:name
+     u32:crc
+     s:filename (direct)
+     u:exported (direct)
+   } imports[N]
+   u:0
+ */
+
+void
+module_state::write_imports (bytes_out &cfg, bool direct)
+{
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
+    {
+      module_state *state = (*modules)[ix];
+      if (state->imported == direct)
+	{
+	  dump () && dump ("Writing %simport:%u %I (crc=%x)",
+			   !direct ? "indirect "
+			   : state->exported ? "exported " : "",
+			   ix, state->name, state->crc);
+	  cfg.u (ix);
+	  cfg.str (IDENTIFIER_POINTER (state->name),
+		   IDENTIFIER_LENGTH (state->name));
+	  cfg.u32 (state->crc);
+	  if (direct)
+	    {
+	      cfg.str (state->filename);
+	      cfg.u (state->exported);
+	    }
+	}
+    }
+  cfg.u (0);
+}
+
+int
+module_state::read_imports (bytes_in &cfg, bool direct)
+{
+  unsigned count = 0;
+  for (unsigned ix; (ix = cfg.u ()); count++)
+    {
+      if (ix >= remap->length () || ix < MODULE_IMPORT_BASE || (*remap)[ix])
+	return -1;
+
+      size_t len;
+      const char *name_str = cfg.str (&len);
+      tree name = get_identifier_with_length (name_str, len);
+      unsigned crc = cfg.u32 ();
+      module_state *imp;
+
+      if (direct)
+	{
+	  const char *filename_str = cfg.str ();
+	  bool exported = cfg.u ();
+
+	  if (cfg.get_overrun ())
+	    return -1;
+	  imp = do_import (input_location, name, /*unit_p=*/false,
+			   /*import_p=*/true, filename_str, &crc);
+	  if (!imp)
+	    {
+	      from->set_error (elf::E_BAD_IMPORT);
+	      return -1;
+	    }
+	  set_import (imp, exported);
+	}
+      else
+	{
+	  imp = get_module (name, NULL, false);
+	  if (!imp || imp->crc != crc)
+	    {
+	      error ("indirect import %qE %s", name,
+		     imp ? "has CRC mismatch" : "is not already loaded");
+	      return -1;
+	    }
+	}
+      (*remap)[ix] = imp->mod;
+      dump () && dump ("Read %simport:%u %I->%u",
+		       !direct ? "indirect "
+		       : imp->exported ? "exported " : "", ix,
+		       imp->name, imp->mod);
+    }
+
+  return count;
 }
 
 /* Tool configuration:  MOD_SNAME_PFX .config
@@ -6774,19 +6890,8 @@ module_state::write_readme (elf_out *to)
    u32:global_crc
 
    u:modules->length ()
-   {
-     u:index
-     u:name
-     u:exported
-     u32:crc
-   } direct-imports[N]
-   u:0
-   {
-     u:index
-     s:name
-     u32:crc
-   } indirect-imports[N]
-   u:0
+   direct-imports
+   indirect-imports
 
    u:decl-section-lwm
    u:decl-section-hwm
@@ -6832,39 +6937,10 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
   cfg.u32 (global_crc);
 
   cfg.u (modules->length ());
-  /* Write the direct imports.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
-    {
-      module_state *state = (*modules)[ix];
-      if (state->imported)
-	{
-	  dump () && dump ("Writing %simport:%u %I (crc=%x)",
-			   state->exported ? "exported " : "",
-			   ix, state->name, state->crc);
-	  unsigned name = to->name (state->name);
-	  cfg.u (ix);
-	  cfg.u (name);
-	  cfg.u (state->exported);
-	  cfg.u32 (state->crc);
-	}
-    }
-  cfg.u (0);
 
-  /* Write the indirect imports.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
-    {
-      module_state *state = (*modules)[ix];
-      if (!state->imported)
-	{
-	  dump () && dump ("Writing indirect import:%u %I (crc=%x)",
-			   ix, state->name, state->crc);
-	  unsigned name = to->name (state->name);
-	  cfg.u (ix);
-	  cfg.u (name);
-	  cfg.u32 (state->crc);
-	}
-    }
-  cfg.u (0);
+  /* Write the imports.  */
+  write_imports (cfg, true);
+  write_imports (cfg, false);
 
   dump () && dump ("Declaration sections are [%u,%u)",
 		   sec_range.first, sec_range.second);
@@ -6982,49 +7058,14 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   for (unsigned ix = imports; ix--;)
     remap->quick_push (0);
 
-  /* Read the direct imports.  */
-  while (unsigned ix = cfg.u ())
-    {
-      tree name = get_identifier (from->name (cfg.u ()));
-      bool exported = cfg.u ();
-      unsigned crc = cfg.u32 ();
-
-      if (ix >= remap->length () || ix < MODULE_IMPORT_BASE || (*remap)[ix])
-	goto fail;
-      module_state *imp = do_import (input_location, name, /*unit_p=*/false,
-				     /*import_p=*/true, &crc);
-      if (!imp)
-	{
-	  from->set_error (elf::E_BAD_IMPORT);
-	  goto fail;
-	}
-      dump () && dump ("Read %simport:%u %I->%u",
-		       exported ? "exported " : "", ix, name, imp->mod);
-      (*remap)[ix] = imp->mod;
-      set_import (imp, exported);
-      imports--;
-    }
-
-  /* Read the indirect imports.  */
-  while (unsigned ix = cfg.u ())
-    {
-      tree name = get_identifier (from->name (cfg.u ()));
-      unsigned crc = cfg.u32 ();
-
-      module_state *imp = get_module (name, NULL, false);
-      if (ix >= remap->length () || ix < MODULE_IMPORT_BASE || (*remap)[ix]
-	  || !imp || imp->crc != crc)
-	{
-	  error ("indirect import %qE %s", name,
-		 imp ? "has CRC mismatch" : "is not already loaded");
-	  goto fail;
-	}
-      dump () && dump ("Indirect import:%u %I->%u", ix, name, imp->mod);
-      (*remap)[ix] = imp->mod;
-      imports--;
-    }
-
-  if (imports != MODULE_IMPORT_BASE)
+  /* Read the imports.  */
+  int direct = read_imports (cfg, true);
+  if (direct < 0)
+    goto fail;
+  int indirect = read_imports (cfg, false);
+  if (indirect < 0)
+    goto fail;
+  if (unsigned (direct) + unsigned (indirect) + MODULE_IMPORT_BASE != imports)
     goto fail;
 
   sec_range.first = cfg.u ();
@@ -8813,7 +8854,7 @@ module_interface_p ()
 
 module_state *
 module_state::do_import (location_t loc, tree name, bool module_p,
-			 bool export_p, unsigned *crc_ptr)
+			 bool export_p, char const *filename, unsigned *crc_ptr)
 {
   gcc_assert (global_namespace == current_scope ());
 
@@ -8874,7 +8915,12 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  unsigned n = dump.push (state);
 	  if (!lazy_open)
 	    freeze_an_elf ();
-	  FILE *stream = oracle_module_file (state, true);
+
+	  gcc_assert (!state->filename);
+	  state->filename
+	    = oracle_module_filename (state->name, true, filename);
+	  
+	  FILE *stream = state->filename ? fopen (state->filename, "rb") : NULL;
 	  int e = errno;
 
 	  state->push_location ();
@@ -9039,8 +9085,8 @@ finish_module ()
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];
   if (state && state->exported && !errorcount)
     {
-      FILE *stream = oracle_module_file (state, false);
-
+      state->filename = oracle_module_filename (state->name, false);
+      FILE *stream = state->filename ? fopen (state->filename, "wb") : NULL;
       int e = errno;
       location_t saved_loc = input_location;
       input_location = state->loc;
