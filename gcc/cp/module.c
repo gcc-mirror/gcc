@@ -2495,8 +2495,10 @@ bool module_state_hash::equal (const value_type existing,
 /* Some flag values: */
 
 /* Server name.  */
-static const char *module_server;
+static char *module_server;
+/* Server read & write streams.  */
 static FILE *server_read, *server_write;
+/* And its executable controller.  */
 static pex_obj *server_pex;
 
 /* Global trees.  */
@@ -6282,7 +6284,8 @@ server_fini ()
     fclose (server_read);
 
   server_read = server_write = NULL;
-  module_server = "";
+  /* Force not restartable -- that would be annoying to continually fail.  */
+  module_server = const_cast<char *> ("");
 }
 
 /* Read a response from the server.  Return the numeric code and
@@ -6349,6 +6352,8 @@ server_malformed (const char *cmd, int code, char *resp)
 }
 
 /*  Module server protocol:
+
+    FIXME:Need to think more about this.
     
     HELO version mainfile -> 200/520 response
     INCL header-name -> TBD header-name module-name
@@ -6362,8 +6367,8 @@ server_malformed (const char *cmd, int code, char *resp)
  */
 
 /* Create the server streams.  Return true if there is a server.  Yes,
-   I'm embedding some client-side socket handling in the compiler.
-   At least it's not ipv4.  */
+   I'm embedding some client-side socket handling in the compiler.  At
+   least it's not ipv4.  */
 
 static bool
 server_init ()
@@ -6371,13 +6376,18 @@ server_init ()
   gcc_assert (!server_read);
 
   if (module_server && !module_server[0])
+    /* We previously failed to start.  Don't try again.  */
     return false;
 
   if (!module_server)
-    module_server = getenv ("CXX_MODULE_SERVER");
+    {
+      char const *env = getenv ("CXX_MODULE_SERVER");
+      if (env && env[0])
+	module_server = xstrdup (env);
+    }
   bool defaulting = !module_server || !module_server[0];
   if (defaulting)
-    module_server = "cxx-module-server";
+    module_server = const_cast<char *> ("cxx-module-server");
 
   if (noisy_p ())
     {
@@ -6394,10 +6404,8 @@ server_init ()
      programs that look like a socket name.  */
   size_t len = strlen (module_server);
   unsigned count = 0;
-  char *writable = XNEWVEC (char, len + 1);
-  memcpy (writable, module_server, len + 1);
 
-  for (char *ptr = writable; *ptr; ptr++)
+  for (char *ptr = module_server; *ptr; ptr++)
     if (ISSPACE (*ptr))
       {
 	while (ISSPACE (ptr[1]))
@@ -6436,7 +6444,7 @@ server_init ()
 #ifdef HOST_HAS_AF
       saddr.fam = AF_UNSPEC;
 #endif
-      if (IS_ABSOLUTE_PATH (writable))
+      if (IS_ABSOLUTE_PATH (module_server))
 	{
 	  /* An absolute path is treated as a local domain socket.  */
 #ifdef HOST_HAS_AF_UNIX
@@ -6444,7 +6452,7 @@ server_init ()
 	    {
 	      memset (&saddr.un, 0, sizeof (saddr.un));
 	      saddr.un.sun_family = AF_UNIX;
-	      memcpy (saddr.un.sun_path, writable, len + 1);
+	      memcpy (saddr.un.sun_path, module_server, len + 1);
 	    }
 	  saddr_len = offsetof (union saddr, un.sun_path) + len + 1;
 #else
@@ -6452,7 +6460,7 @@ server_init ()
 	  errmsg = "unix protocol unsupported";
 #endif
 	}
-      else if (char *colon = (char *)memrchr (writable, ':', len))
+      else if (char *colon = (char *)memrchr (module_server, ':', len))
 	{
 	  port = strtoul (colon + 1, &endp, 10);
 	  if (!*endp)
@@ -6460,9 +6468,11 @@ server_init ()
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
 	      *colon = 0;
 #ifdef HOST_HAS_AF_INET6
-	      if (struct hostent *hent
-		  = gethostbyname2 (colon != writable ? writable : "localhost",
-				    AF_INET6))
+	      if (port >= 0x10000)
+		errno = EINVAL; /* Seems plausible.  */
+	      else if (struct hostent *hent
+		  = gethostbyname2 (colon != module_server
+				    ? module_server : "localhost", AF_INET6))
 		{
 		  memset (&saddr.in6, 0, sizeof (saddr.in6));
 		  saddr.in6.sin6_family = AF_INET6;
@@ -6494,15 +6504,10 @@ server_init ()
 	}
       else
 #endif
-	if (saddr_len)
+	if (saddr_len && !errmsg)
 	  {
-	    free (writable);
-	    writable = NULL;
-	    if (!errmsg)
-	      {
-		err = errno;
-		errmsg = "resolving address";
-	      }
+	    err = errno;
+	    errmsg = "resolving address";
 	  }
     }
 
@@ -6536,7 +6541,7 @@ server_init ()
       char **argv = XALLOCAVEC (char *, count + 2);
       count = 0;
 
-      for (char *ptr = writable; ; ptr++)
+      for (char *ptr = module_server; ; ptr++)
 	{
 	  while (ISSPACE (*ptr))
 	    ptr++;
@@ -6566,19 +6571,19 @@ server_init ()
 	  if (defaulting && fullname != progname)
 	    {
 	      /* Prepend the invoking path.  */
-	      gcc_checking_assert (count == 1 && argv[0] == writable);
+	      gcc_checking_assert (count == 1 && argv[0] == module_server);
 	      argv[0] = const_cast <char *> (module_server);
-	      free (writable);
 
 	      size_t dir_len = progname - fullname;
-	      writable = XNEWVEC (char, dir_len + len + 1);
-	      memcpy (writable, fullname, dir_len);
-	      memcpy (writable + dir_len, module_server, len + 1);
-	      argv0 = writable;
+	      argv0 = XNEWVEC (char, dir_len + len + 1);
+	      memcpy (argv0, fullname, dir_len);
+	      memcpy (argv0 + dir_len, module_server, len + 1);
 	      flags = 0;
 	    }
 	  errmsg = pex_run (server_pex, flags, argv0,
 			    argv, NULL, NULL, &err);
+	  if (!flags)
+	    free (argv0);
 	}
 
       if (!errmsg)
@@ -9130,7 +9135,8 @@ handle_module_option (unsigned code, const char *arg, int)
       return true;
 
     case OPT_fmodule_server_:
-      module_server = arg;
+      /* I'ma gonna write into you.  */
+      module_server = const_cast<char *> (arg);
       return true;
 
     default:

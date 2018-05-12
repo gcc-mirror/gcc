@@ -1,5 +1,11 @@
 2018-05-12  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (module_server): Make pointer to non-const.
+	(server_fini, handle_module_option): Add const_cast.
+	(server_init): Write into module_server.  strdup if it came from
+	environment.
+
 	Rename oracle->server, thanks Richard Smith
 	gcc/
 	* doc/invoke.texi (fmodule-oracle): Rename.
