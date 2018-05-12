@@ -1,3 +1,9 @@
+2018-05-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85542
+	Backport from trunk
+	* expr.c (check_inquiry): Avoid NULL pointer dereference.
+ 
 2018-05-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68846
