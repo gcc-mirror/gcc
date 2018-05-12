@@ -1,5 +1,18 @@
 2018-05-12  Nathan Sidwell  <nathan@acm.org>
 
+	Rename oracle->server, thanks Richard Smith
+	gcc/
+	* doc/invoke.texi (fmodule-oracle): Rename.
+	gcc/c-family/
+	* c.opt (fmodule-oracle): Rename.
+	gcc/cp/
+	* Make-lang.in (cxx-module-oracle): Rename.
+	* cxx-module-oracle.sh: Rename.
+	* module.c (ORACLE_VERSION, module_oracle, oracle_read)
+	(oracle_write, oracle_pex): Rename.
+	(oracle_fini, oracle_init, oracle_response, oracle_unexpected)
+	(oracle_malformed, oracle_module_filename, oracle_done): Rename.
+
 	Direct import filenames are stored.
 	gcc/cp/
 	* module.c (bytes_out::str): Add overload.

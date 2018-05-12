@@ -46,7 +46,7 @@ CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h ope
 # Note that it would be nice to move the dependency on g++
 # into the C++ rule, but that needs a little bit of work
 # to do the right thing within all.cross.
-c++: cc1plus$(exeext) cxx-module-oracle$(exeext)
+c++: cc1plus$(exeext) cxx-module-server$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: c++
@@ -61,13 +61,13 @@ ifeq ($(DEVPHASE_c),experimental)
 # We want to rebuild module if the source dir changes
 cp/module.o : $(srcdir)/cp
 version.o : $(srcdir)/cp/module.c
-cxx-module-oracle$(exeext) : $(srcdir)/cp
+cxx-module-server$(exeext) : $(srcdir)/cp
 MODULE_STAMP := $(shell date -r $(srcdir)/cp '+%Y%m%d-%H%M')
 ifneq ($(REVISION_s),"\"\"")
 # Wedge the MODULE_STAMP into REVISION_s so that it turns up in -v invocations
 # Remember, Make thinks of REVISION_s as a set of space-separated words
 REVISION_s := $(patsubst %\"",%:$(MODULE_STAMP)\"",$(REVISION_s))
-ORACLE_SED = s/@VERSION@/-$(firstword $(subst -, ,$(MODULE_STAMP)))/
+SERVER_SED = s/@VERSION@/-$(firstword $(subst -, ,$(MODULE_STAMP)))/
 endif
 CFLAGS-cp/module.o += -DMODULE_STAMP=$(subst -,,$(MODULE_STAMP))LL
 endif
@@ -113,8 +113,8 @@ $(CXX_AND_OBJCXX_OBJS): CFLAGS += -fauto-profile=cc1plus.fda
 $(CXX_AND_OBJCXX_OBJS): cc1plus.fda
 endif
 
-cxx-module-oracle$(exeext):cp/cxx-module-oracle.sh
-	sed -e '$(ORACLE_SED)' <$< >$@
+cxx-module-server$(exeext):cp/cxx-module-server.sh
+	sed -e '$(SERVER_SED)' <$< >$@
 	chmod +x $@
 
 # Language-specific object files for C++.
@@ -236,10 +236,10 @@ c++.install-common: installdirs
 	    fi ; \
 	  fi; \
 	fi
-	rm -f $(DESTDIR)$(libexecsubdir)/cxx-module-oracle$(exeext)
-	$(INSTALL_PROGRAM) cxx-module-oracle$(exeext) \
-	  $(DESTDIR)$(libexecsubdir)/cxx-module-oracle$(exeext)
-	chmod a+x $(DESTDIR)$(libexecsubdir)/cxx-module-oracle$(exeext)
+	rm -f $(DESTDIR)$(libexecsubdir)/cxx-module-server$(exeext)
+	$(INSTALL_PROGRAM) cxx-module-server$(exeext) \
+	  $(DESTDIR)$(libexecsubdir)/cxx-module-server$(exeext)
+	chmod a+x $(DESTDIR)$(libexecsubdir)/cxx-module-server$(exeext)
 
 # We can't use links because not everyone supports them.  So just copy the
 # manpage.
@@ -285,7 +285,7 @@ c++.mostlyclean:
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
 	-rm -f xg++$(exeext) g++-cross$(exeext) cc1plus$(exeext) cc1plus.fda
-	-rm -f cxx-module-oracle
+	-rm -f cxx-module-server
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile

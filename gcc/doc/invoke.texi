@@ -2563,13 +2563,13 @@ usually not needed, as that is the default.  For now.
 @opindex fmodule-lazy
 Disable module importing.
 
-@item -fmodule-oracle=@var{fd}
-@itemx -fmodule-oracle=@var{[hostname]:port}
-@itemx -fmodule-oracle=@var{program}
-@itemx -fmodule-oracle=@var{/pathname}
-@opindex fmodule-oracle
+@item -fmodule-server=@var{fd}
+@itemx -fmodule-server=@var{[hostname]:port}
+@itemx -fmodule-server=@var{program}
+@itemx -fmodule-server=@var{/pathname}
+@opindex fmodule-server
 An oracle to query for module name to filename mappings.  If
-unspecified a default oracle is looked for in the CXX_MODULE_ORACLE
+unspecified a default oracle is looked for in the CXX_MODULE_SERVER
 environment variable, and if that is unset, a default is provided.
 
 @item -fms-extensions
@@ -29166,11 +29166,11 @@ encoding the exported declarations of the module.  Importing a module
 reads in the BMI.  The dependency graph of imports is a Directed
 Acyclic Graph (DAG).
 
-A query oracle provides a line-based server the compiler queries to
-determine the mapping between module names and BMI files.  It is also
-used to build BMIs on demand.  A specific oracle may be specified with
-the @option{-fmodule-oracle=@var{val}} option.  The operand may have
-one of the following forms:
+A query oracle provides a line-based server that the compiler queries
+to determine the mapping between module names and BMI files.  It is
+also used to build BMIs on demand.  A specific oracle may be specified
+with the @option{-fmodule-server=@var{val}} option.  The operand may
+have one of the following forms:
 
 @itemize
 

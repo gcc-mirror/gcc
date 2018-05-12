@@ -1,5 +1,5 @@
 // { dg-module-do run { target *-*-* } "main-aux.s" }
-// Relies on default oracle functionality
+// Relies on default server functionality
 // { dg-additional-options -fmodules-ts }
 
 import main.aux;

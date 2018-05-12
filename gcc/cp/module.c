@@ -124,8 +124,8 @@ Classes used:
 #define MODULE_STAMP 0
 #endif
 
-/* Oracle Protocol version.  Very new.  */
-#define ORACLE_VERSION 0
+/* Server Protocol version.  Very new.  */
+#define SERVER_VERSION 0
 
 #include "config.h"
 #include "system.h"
@@ -2494,10 +2494,10 @@ bool module_state_hash::equal (const value_type existing,
 
 /* Some flag values: */
 
-/* Oracle name.  */
-static const char *module_oracle;
-static FILE *oracle_read, *oracle_write;
-static pex_obj *oracle_pex;
+/* Server name.  */
+static const char *module_server;
+static FILE *server_read, *server_write;
+static pex_obj *server_pex;
 
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
@@ -6255,42 +6255,42 @@ module_state::announce (const char *what) const
     }
 }
 
-/* Close down the oracle.  Mark it as not restartable.  */
+/* Close down the server.  Mark it as not restartable.  */
 
 static void
-oracle_fini ()
+server_fini ()
 {
-  if (oracle_write)
-    fclose (oracle_write);
+  if (server_write)
+    fclose (server_write);
 
-  if (oracle_pex)
+  if (server_pex)
     {
       int status;
 
-      pex_get_status (oracle_pex, 1, &status);
-      pex_free (oracle_pex);
-      oracle_pex = NULL;
+      pex_get_status (server_pex, 1, &status);
+      pex_free (server_pex);
+      server_pex = NULL;
 
       if (WIFSIGNALED (status))
-	error ("module oracle %qs died by signal %s",
-	       module_oracle, strsignal (WTERMSIG (status)));
+	error ("module server %qs died by signal %s",
+	       module_server, strsignal (WTERMSIG (status)));
       else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-	error ("module oracle %qs exit status %d",
-	       module_oracle, WEXITSTATUS (status));
+	error ("module server %qs exit status %d",
+	       module_server, WEXITSTATUS (status));
     }
-  else if (oracle_read)
-    fclose (oracle_read);
+  else if (server_read)
+    fclose (server_read);
 
-  oracle_read = oracle_write = NULL;
-  module_oracle = "";
+  server_read = server_write = NULL;
+  module_server = "";
 }
 
-/* Read a response from the oracle.  Return the numeric code and
+/* Read a response from the server.  Return the numeric code and
    remaining response buffer.  The buffer is owned by this routine and
    reused on subsequent responses.  Return 0 on error.  */
 
 static int
-oracle_response (char *&resp)
+server_response (char *&resp)
 {
   /* Exercise buffer expansion.  */
   static size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
@@ -6301,12 +6301,12 @@ oracle_response (char *&resp)
     buffer = XNEWVEC (char, size);
 
  more:
-  if (!fgets (buffer + pos, size - pos, oracle_read))
+  if (!fgets (buffer + pos, size - pos, server_read))
     {
-      const char *err = ferror (oracle_read) ? "error" : "end of file";
+      const char *err = ferror (server_read) ? "error" : "end of file";
       resp = const_cast <char *> (err);
-      error ("unexpected %s from module oracle %qs", err, module_oracle);
-      oracle_fini ();
+      error ("unexpected %s from module server %qs", err, module_server);
+      server_fini ();
       return 0;
     }
 
@@ -6335,20 +6335,20 @@ oracle_response (char *&resp)
 }
 
 static void
-oracle_unexpected (const char *cmd, int code, char *resp)
+server_unexpected (const char *cmd, int code, char *resp)
 {
-  error ("unexpected oracle %s: %d %qs", cmd, code, resp);
-  oracle_fini ();
+  error ("unexpected server %s: %d %qs", cmd, code, resp);
+  server_fini ();
 }
 
 static void
-oracle_malformed (const char *cmd, int code, char *resp)
+server_malformed (const char *cmd, int code, char *resp)
 {
-  error ("malformed oracle %s: %d %qs", cmd, code, resp);
-  oracle_fini ();
+  error ("malformed server %s: %d %qs", cmd, code, resp);
+  server_fini ();
 }
 
-/*  Module oracle protocol:
+/*  Module server protocol:
     
     HELO version mainfile -> 200/520 response
     INCL header-name -> TBD header-name module-name
@@ -6361,41 +6361,41 @@ oracle_malformed (const char *cmd, int code, char *resp)
     DONE module-name -> no response
  */
 
-/* Create the oracle streams.  Return true if there is an oracle.
-   Yes, I'm embedding some client-side socket handling in the
-   compiler!   */
+/* Create the server streams.  Return true if there is a server.  Yes,
+   I'm embedding some client-side socket handling in the compiler.
+   At least it's not ipv4.  */
 
 static bool
-oracle_init ()
+server_init ()
 {
-  gcc_assert (!oracle_read);
+  gcc_assert (!server_read);
 
-  if (module_oracle && !module_oracle[0])
+  if (module_server && !module_server[0])
     return false;
 
-  if (!module_oracle)
-    module_oracle = getenv ("CXX_MODULE_ORACLE");
-  bool defaulting = !module_oracle || !module_oracle[0];
+  if (!module_server)
+    module_server = getenv ("CXX_MODULE_SERVER");
+  bool defaulting = !module_server || !module_server[0];
   if (defaulting)
-    module_oracle = "cxx-module-oracle";
+    module_server = "cxx-module-server";
 
   if (noisy_p ())
     {
-      fprintf (stderr, " oracle:%s", module_oracle);
+      fprintf (stderr, " server:%s", module_server);
       fflush (stderr);
     }
 
-  dump () && dump ("Initializing oracle %s", module_oracle);
+  dump () && dump ("Initializing server %s", module_server);
 
   int err = 0;
   const char *errmsg = NULL;
 
   /* First copy and count white space -- we use that to distinguish
      programs that look like a socket name.  */
-  size_t len = strlen (module_oracle);
+  size_t len = strlen (module_server);
   unsigned count = 0;
   char *writable = XNEWVEC (char, len + 1);
-  memcpy (writable, module_oracle, len + 1);
+  memcpy (writable, module_server, len + 1);
 
   for (char *ptr = writable; *ptr; ptr++)
     if (ISSPACE (*ptr))
@@ -6411,7 +6411,7 @@ oracle_init ()
   char *endp;
   if (!defaulting)
     {
-      unsigned long lfd = strtoul (module_oracle, &endp, 10);
+      unsigned long lfd = strtoul (module_server, &endp, 10);
       if (!*endp && lfd != ULONG_MAX)
 	fd = int (lfd);
     }
@@ -6514,24 +6514,24 @@ oracle_init ()
       int fd2 = dup (fd);
       if (fd2 >= 0)
 	{
-	  oracle_read = fdopen (fd, "r+");
-	  oracle_write = fdopen (fd2, "w+");
+	  server_read = fdopen (fd, "r+");
+	  server_write = fdopen (fd2, "w+");
 	}
 
-      if (!oracle_read || !oracle_write)
+      if (!server_read || !server_write)
 	{
 	  err = errno;
 	  errmsg = "connecting streams";
-	  if (oracle_read)
-	    fclose (oracle_read);
-	  if (oracle_write)
-	    fclose (oracle_write);
-	  oracle_read = oracle_write = NULL;
+	  if (server_read)
+	    fclose (server_read);
+	  if (server_write)
+	    fclose (server_write);
+	  server_read = server_write = NULL;
 	}
     }
   else if (!errmsg)
     {
-      /* Split module_oracle at white-space.  No space-containing args
+      /* Split module_server at white-space.  No space-containing args
 	 for you!  */
       char **argv = XALLOCAVEC (char *, count + 2);
       count = 0;
@@ -6551,9 +6551,9 @@ oracle_init ()
 	}
       argv[count] = NULL;
 
-      oracle_pex = pex_init (PEX_USE_PIPES, argv[0], NULL);
-      oracle_write = pex_input_pipe (oracle_pex, false);
-      if (!oracle_write)
+      server_pex = pex_init (PEX_USE_PIPES, argv[0], NULL);
+      server_write = pex_input_pipe (server_pex, false);
+      if (!server_write)
 	{
 	  err = errno;
 	  errmsg = "connecting input";
@@ -6567,86 +6567,86 @@ oracle_init ()
 	    {
 	      /* Prepend the invoking path.  */
 	      gcc_checking_assert (count == 1 && argv[0] == writable);
-	      argv[0] = const_cast <char *> (module_oracle);
+	      argv[0] = const_cast <char *> (module_server);
 	      free (writable);
 
 	      size_t dir_len = progname - fullname;
 	      writable = XNEWVEC (char, dir_len + len + 1);
 	      memcpy (writable, fullname, dir_len);
-	      memcpy (writable + dir_len, module_oracle, len + 1);
+	      memcpy (writable + dir_len, module_server, len + 1);
 	      argv0 = writable;
 	      flags = 0;
 	    }
-	  errmsg = pex_run (oracle_pex, flags, argv0,
+	  errmsg = pex_run (server_pex, flags, argv0,
 			    argv, NULL, NULL, &err);
 	}
 
       if (!errmsg)
 	{
-	  oracle_read = pex_read_output (oracle_pex, false);
-	  if (!oracle_read)
+	  server_read = pex_read_output (server_pex, false);
+	  if (!server_read)
 	    {
 	      err = errno;
 	      errmsg = "connecting output";
-	      fclose (oracle_write);
-	      oracle_write = NULL;
+	      fclose (server_write);
+	      server_write = NULL;
 	    }
 
 	  if (!errmsg)
 	    /* Only remember the command for future diagnostics.  */
-	    module_oracle = argv[0];
+	    module_server = argv[0];
 	}
     }
 
   if (errmsg)
     {
-      error ("failed %s of module oracle %qs", errmsg, module_oracle);
+      error ("failed %s of module server %qs", errmsg, module_server);
       errno = err;
       inform (input_location, err < 0 ? "%s" : err > 0 ? "%m"
 	      : "here's a nickel, kid.  Get yourself a real computer",
 	      hstrerror (-err));
-      oracle_fini ();
+      server_fini ();
       return false;
     }
 
   /* Line buffering.  */
-  setvbuf (oracle_read, NULL, _IOLBF, 0);
-  setvbuf (oracle_write, NULL, _IOLBF, 0);
+  setvbuf (server_read, NULL, _IOLBF, 0);
+  setvbuf (server_write, NULL, _IOLBF, 0);
 
-  dump () && dump ("Initialized oracle");
-  fprintf (oracle_write, "HELO %d %s\n",
-	   MODULE_STAMP ? -version2date (get_version ()) : ORACLE_VERSION,
+  dump () && dump ("Initialized server");
+  fprintf (server_write, "HELO %d %s\n",
+	   MODULE_STAMP ? -version2date (get_version ()) : SERVER_VERSION,
 	   main_input_filename);
   char *resp;
-  int code = oracle_response (resp);
+  int code = server_response (resp);
   if (code != 200)
     {
       /* Magic eight ball says 'no'.  */
-      oracle_unexpected ("HELO", code, resp);
+      server_unexpected ("HELO", code, resp);
       return false;
     }
 
   return true;
 }
 
-/* Query the oracle for the BMI for module NAME, to be read or writen,
+/* Query the server for the BMI for module NAME, to be read or writen,
    depending on RNW.  A default may be provided with FILENAME.  */
 
 static char *
-oracle_module_filename (tree name, bool rnw, const char *filename = NULL)
+server_module_filename (tree name, bool rnw, const char *filename = NULL)
 {
   if (!filename)
     {
-      if (!oracle_read && !oracle_init ())
+      if (!server_read && !server_init ())
 	{
 	  /* This seems the most appropriate error to simulate if there's
-	     no oracle.  */
+	     no server.  */
 	failed:
 	  errno = ENOMSG;
 	  return NULL;
 	}
 
-      dump () && dump ("Querying oracle for %N", name);
+      dump () && dump ("Querying server for %N", name);
       if (noisy_p ())
 	{
 	  fprintf (stderr, " query:%s", IDENTIFIER_POINTER (name));
@@ -6654,14 +6654,14 @@ oracle_module_filename (tree name, bool rnw, const char *filename = NULL)
 	}
 
       const char *cmd = rnw ? "IMPT" : "EXPT";
-      fprintf (oracle_write, "%s %s\n", cmd, IDENTIFIER_POINTER (name));
+      fprintf (server_write, "%s %s\n", cmd, IDENTIFIER_POINTER (name));
 
       char *resp;
-      int code = oracle_response (resp);
+      int code = server_response (resp);
 
       if (code != 250 && code != 550)
 	{
-	  oracle_unexpected (cmd, code, resp);
+	  server_unexpected (cmd, code, resp);
 	  goto failed;
 	}
 
@@ -6670,7 +6670,7 @@ oracle_module_filename (tree name, bool rnw, const char *filename = NULL)
 	  || (code == 550 && resp[IDENTIFIER_LENGTH (name)])
 	  || (code == 250 && !ISSPACE (resp[IDENTIFIER_LENGTH (name)])))
 	{
-	  oracle_malformed (cmd, code, resp);
+	  server_malformed (cmd, code, resp);
 	  goto failed;
 	}
 
@@ -6683,10 +6683,10 @@ oracle_module_filename (tree name, bool rnw, const char *filename = NULL)
 }
 
 static void
-oracle_done (tree name)
+server_done (tree name)
 {
-  dump () && dump ("Completed oracle");
-  fprintf (oracle_write, "DONE %s\n", IDENTIFIER_POINTER (name));
+  dump () && dump ("Completed server");
+  fprintf (server_write, "DONE %s\n", IDENTIFIER_POINTER (name));
 }
 
 /* Set VEC_NAME fields from incoming VNAME, which may be a regular
@@ -8918,7 +8918,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 
 	  gcc_assert (!state->filename);
 	  state->filename
-	    = oracle_module_filename (state->name, true, filename);
+	    = server_module_filename (state->name, true, filename);
 	  
 	  FILE *stream = state->filename ? fopen (state->filename, "rb") : NULL;
 	  int e = errno;
@@ -9085,7 +9085,7 @@ finish_module ()
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];
   if (state && state->exported && !errorcount)
     {
-      state->filename = oracle_module_filename (state->name, false);
+      state->filename = server_module_filename (state->name, false);
       FILE *stream = state->filename ? fopen (state->filename, "wb") : NULL;
       int e = errno;
       location_t saved_loc = input_location;
@@ -9102,8 +9102,8 @@ finish_module ()
 
       dump.pop (n);
       input_location = saved_loc;
-      if (oracle_write && !errorcount)
-	oracle_done (state->name);
+      if (server_write && !errorcount)
+	server_done (state->name);
     }
 
   if (state)
@@ -9113,7 +9113,7 @@ finish_module ()
       state->release ();
     }
 
-  oracle_fini ();
+  server_fini ();
 }
 
 /* If CODE is a module option, handle it & return true.  Otherwise
@@ -9129,8 +9129,8 @@ handle_module_option (unsigned code, const char *arg, int)
       flag_modules = -1;
       return true;
 
-    case OPT_fmodule_oracle_:
-      module_oracle = arg;
+    case OPT_fmodule_server_:
+      module_server = arg;
       return true;
 
     default:
