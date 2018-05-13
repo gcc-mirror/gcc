@@ -1076,7 +1076,7 @@ BUILD_LIBS = $(BUILD_LIBIBERTY)
 
 BUILD_RTL = build/rtl.o build/read-rtl.o build/ggc-none.o \
 	    build/vec.o build/min-insn-modes.o build/gensupport.o \
-	    build/print-rtl.o build/hash-table.o
+	    build/print-rtl.o build/hash-table.o build/sort.o
 BUILD_MD = build/read-md.o
 BUILD_ERRORS = build/errors.o
 
@@ -1611,7 +1611,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 	pretty-print.o intl.o \
 	sbitmap.o \
 	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
-	selftest.o selftest-diagnostic.o
+	selftest.o selftest-diagnostic.o sort.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
@@ -2681,6 +2681,7 @@ build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(VEC_H)	\
   $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/hash-table.o : hash-table.c $(BCONFIG_H) $(SYSTEM_H)		\
   $(CORETYPES_H) $(HASH_TABLE_H) $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
+build/sort.o : sort.cc $(BCONFIG_H) $(SYSTEM_H)
 build/inchash.o : inchash.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
   $(HASHTAB_H) inchash.h
 build/gencondmd.o : build/gencondmd.c $(BCONFIG_H) $(SYSTEM_H)		\
@@ -2817,7 +2818,7 @@ build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 
 build/genrecog$(build_exeext) : build/hash-table.o build/inchash.o
 build/gencfn-macros$(build_exeext) : build/hash-table.o build/vec.o \
-  build/ggc-none.o
+  build/ggc-none.o build/sort.o
 
 # For stage1 and when cross-compiling use the build libcpp which is
 # built with NLS disabled.  For stage2+ use the host library and
@@ -2831,7 +2832,7 @@ build/genmatch$(build_exeext): BUILD_LIBS += $(LIBINTL) $(LIBICONV)
 endif
 
 build/genmatch$(build_exeext) : $(BUILD_CPPLIB) \
-  $(BUILD_ERRORS) build/vec.o build/hash-table.o
+  $(BUILD_ERRORS) build/vec.o build/hash-table.o build/sort.o
 
 # These programs are not linked with the MD reader.
 build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \

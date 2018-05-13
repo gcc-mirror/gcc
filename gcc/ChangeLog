@@ -1,3 +1,14 @@
+2018-05-13  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sort.cc: New file.
+	* system.h [!CHECKING_P] (qsort): Redirect to gcc_qsort.
+	* vec.c (qsort_chk): Use gcc_qsort.
+	* Makefile.in (OBJS-libcommon): Add sort.o.
+	(build/sort.o): New target.  Use it...
+	(BUILD_RTL): ... here, and...
+	(build/gencfn-macros): ... here, and...
+	(build/genmatch): ... here.
+
 2018-05-13  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
