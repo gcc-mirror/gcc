@@ -335,6 +335,103 @@ movd44_even_dep_p (rtx_insn *insn, rtx def_reg)
   return false;
 }
 
+/* Check if INSN is a wext insn consuming DEF_REG.  */
+bool
+wext_odd_dep_p (rtx insn, rtx def_reg)
+{
+  rtx shift_rtx = XEXP (SET_SRC (PATTERN (insn)), 0);
+  rtx use_reg = XEXP (shift_rtx, 0);
+  rtx pos_rtx = XEXP (shift_rtx, 1);
+
+  if (REG_P (pos_rtx) && reg_overlap_p (def_reg, pos_rtx))
+    return true;
+
+  if (GET_MODE (def_reg) == DImode)
+    return reg_overlap_p (def_reg, use_reg);
+
+  gcc_assert (REG_P (def_reg) || GET_CODE (def_reg) == SUBREG);
+  gcc_assert (REG_P (use_reg));
+
+  if (REG_P (def_reg))
+    {
+      if (!TARGET_BIG_ENDIAN)
+	return REGNO (def_reg) == REGNO (use_reg) + 1;
+      else
+	return  REGNO (def_reg) == REGNO (use_reg);
+    }
+
+  if (GET_CODE (def_reg) == SUBREG)
+    {
+      if (!reg_overlap_p (def_reg, use_reg))
+	return false;
+
+      if (!TARGET_BIG_ENDIAN)
+	return SUBREG_BYTE (def_reg) == 4;
+      else
+	return SUBREG_BYTE (def_reg) == 0;
+    }
+
+  return false;
+}
+
+/* Check if INSN is a bpick insn consuming DEF_REG.  */
+bool
+bpick_ra_rb_dep_p (rtx insn, rtx def_reg)
+{
+  rtx ior_rtx = SET_SRC (PATTERN (insn));
+  rtx and1_rtx = XEXP (ior_rtx, 0);
+  rtx and2_rtx = XEXP (ior_rtx, 1);
+  rtx reg1_0 = XEXP (and1_rtx, 0);
+  rtx reg1_1 = XEXP (and1_rtx, 1);
+  rtx reg2_0 = XEXP (and2_rtx, 0);
+  rtx reg2_1 = XEXP (and2_rtx, 1);
+
+  if (GET_CODE (reg1_0) == NOT)
+    {
+      if (rtx_equal_p (reg1_0, reg2_0))
+	return reg_overlap_p (def_reg, reg1_1)
+	       || reg_overlap_p (def_reg, reg2_1);
+
+      if (rtx_equal_p (reg1_0, reg2_1))
+	return reg_overlap_p (def_reg, reg1_1)
+	       || reg_overlap_p (def_reg, reg2_0);
+    }
+
+  if (GET_CODE (reg1_1) == NOT)
+    {
+      if (rtx_equal_p (reg1_1, reg2_0))
+	return reg_overlap_p (def_reg, reg1_0)
+	       || reg_overlap_p (def_reg, reg2_1);
+
+      if (rtx_equal_p (reg1_1, reg2_1))
+	return reg_overlap_p (def_reg, reg1_0)
+	       || reg_overlap_p (def_reg, reg2_0);
+    }
+
+  if (GET_CODE (reg2_0) == NOT)
+    {
+      if (rtx_equal_p (reg2_0, reg1_0))
+	return reg_overlap_p (def_reg, reg2_1)
+	       || reg_overlap_p (def_reg, reg1_1);
+
+      if (rtx_equal_p (reg2_0, reg1_1))
+	return reg_overlap_p (def_reg, reg2_1)
+	       || reg_overlap_p (def_reg, reg1_0);
+    }
+
+  if (GET_CODE (reg2_1) == NOT)
+    {
+      if (rtx_equal_p (reg2_1, reg1_0))
+	return reg_overlap_p (def_reg, reg2_0)
+	       || reg_overlap_p (def_reg, reg1_1);
+
+      if (rtx_equal_p (reg2_1, reg1_1))
+	return reg_overlap_p (def_reg, reg2_0)
+	       || reg_overlap_p (def_reg, reg1_0);
+    }
+
+  gcc_unreachable ();
+}
 } // namespace scheduling
 } // namespace nds32
 
@@ -375,8 +472,7 @@ n7_consumed_by_ii_dep_p (rtx_insn *consumer, rtx def_reg)
       operations in order to write two registers. We have to check the
       dependency from the producer to the first micro-operation.  */
     case TYPE_DIV:
-      if (INSN_CODE (consumer) == CODE_FOR_divmodsi4
-	  || INSN_CODE (consumer) == CODE_FOR_udivmodsi4)
+      if (divmod_p (consumer))
 	use_rtx = SET_SRC (parallel_element (consumer, 0));
       else
 	use_rtx = SET_SRC (PATTERN (consumer));
@@ -506,8 +602,7 @@ n8_consumed_by_ex_p (rtx_insn *consumer, rtx def_reg)
       operations in order to write two registers. We have to check the
       dependency from the producer to the first micro-operation.  */
     case TYPE_DIV:
-      if (INSN_CODE (consumer) == CODE_FOR_divmodsi4
-	  || INSN_CODE (consumer) == CODE_FOR_udivmodsi4)
+      if (divmod_p (consumer))
 	use_rtx = SET_SRC (parallel_element (consumer, 0));
       else
 	use_rtx = SET_SRC (PATTERN (consumer));
@@ -606,8 +701,7 @@ n9_2r1w_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
       break;
 
     case TYPE_DIV:
-      if (INSN_CODE (consumer) == CODE_FOR_divmodsi4
-	  || INSN_CODE (consumer) == CODE_FOR_udivmodsi4)
+      if (divmod_p (consumer))
 	use_rtx = SET_SRC (parallel_element (consumer, 0));
       else
 	use_rtx = SET_SRC (PATTERN (consumer));
@@ -706,8 +800,7 @@ n9_3r2w_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
       We have to check the dependency from the producer to the first
       micro-operation.  */
     case TYPE_DIV:
-      if (INSN_CODE (consumer) == CODE_FOR_divmodsi4
-	  || INSN_CODE (consumer) == CODE_FOR_udivmodsi4)
+      if (divmod_p (consumer))
 	use_rtx = SET_SRC (parallel_element (consumer, 0));
       else
 	use_rtx = SET_SRC (PATTERN (consumer));
@@ -744,6 +837,86 @@ n9_3r2w_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
   return false;
 }
 
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at EX.  */
+bool
+n10_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
+{
+  rtx use_rtx;
+
+  switch (get_attr_type (consumer))
+    {
+    case TYPE_ALU:
+    case TYPE_PBSAD:
+    case TYPE_MUL:
+    case TYPE_DALU:
+    case TYPE_DALU64:
+    case TYPE_DMUL:
+    case TYPE_DPACK:
+    case TYPE_DINSB:
+    case TYPE_DCMP:
+    case TYPE_DCLIP:
+    case TYPE_DALUROUND:
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_ALU_SHIFT:
+      use_rtx = extract_shift_reg (consumer);
+      break;
+
+    case TYPE_PBSADA:
+      return pbsada_insn_ra_rb_dep_reg_p (consumer, def_reg);
+
+    case TYPE_MAC:
+    case TYPE_DMAC:
+      use_rtx = extract_mac_non_acc_rtx (consumer);
+      break;
+
+   /* Some special instructions, divmodsi4 and udivmodsi4, produce two
+      results, the quotient and the remainder.  */
+    case TYPE_DIV:
+      if (divmod_p (consumer))
+	use_rtx = SET_SRC (parallel_element (consumer, 0));
+      else
+	use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_DWEXT:
+      return wext_odd_dep_p (consumer, def_reg);
+
+    case TYPE_DBPICK:
+      return bpick_ra_rb_dep_p (consumer, def_reg);
+
+    case TYPE_MMU:
+      if (GET_CODE (PATTERN (consumer)) == SET)
+	use_rtx = SET_SRC (PATTERN (consumer));
+      else
+	return true;
+      break;
+
+    case TYPE_LOAD:
+    case TYPE_STORE:
+      use_rtx = extract_mem_rtx (consumer);
+      break;
+
+    case TYPE_LOAD_MULTIPLE:
+    case TYPE_STORE_MULTIPLE:
+      use_rtx = extract_base_reg (consumer);
+      break;
+
+    case TYPE_BRANCH:
+      use_rtx = PATTERN (consumer);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (reg_overlap_p (def_reg, use_rtx))
+    return true;
+
+  return false;
+}
 
 } // anonymous namespace
 
@@ -837,8 +1010,7 @@ nds32_n8_ex_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
       break;
 
     case TYPE_DIV:
-      if (INSN_CODE (producer) == CODE_FOR_divmodsi4
-	  || INSN_CODE (producer) == CODE_FOR_udivmodsi4)
+      if (divmod_p (producer))
 	def_reg = SET_DEST (parallel_element (producer, 1));
       else
 	def_reg = SET_DEST (PATTERN (producer));
@@ -969,8 +1141,7 @@ nds32_e8_ex_to_ii_p (rtx_insn *producer, rtx_insn *consumer)
       break;
 
     case TYPE_DIV:
-      if (INSN_CODE (producer) == CODE_FOR_divmodsi4
-	  || INSN_CODE (producer) == CODE_FOR_udivmodsi4)
+      if (divmod_p (producer))
 	{
 	  rtx def_reg1 = SET_DEST (parallel_element (producer, 0));
 	  rtx def_reg2 = SET_DEST (parallel_element (producer, 1));
@@ -1073,8 +1244,7 @@ nds32_n9_3r2w_mm_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
       results, the quotient and the remainder.  We have to handle them
       individually.  */
     case TYPE_DIV:
-      if (INSN_CODE (producer) == CODE_FOR_divmodsi4
-	  || INSN_CODE (producer) == CODE_FOR_udivmodsi4)
+      if (divmod_p (producer))
 	{
 	  rtx def_reg1 = SET_DEST (parallel_element (producer, 0));
 	  rtx def_reg2 = SET_DEST (parallel_element (producer, 1));
@@ -1132,4 +1302,73 @@ nds32_n9_last_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
     return n9_3r2w_consumed_by_ex_dep_p (consumer, last_def_reg);
 }
 
+/* Guard functions for N10 cores.  */
+
+/* Check dependencies from EX to EX (ADDR_OUT -> ADDR_IN).  */
+bool
+nds32_n10_ex_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  gcc_assert (get_attr_type (producer) == TYPE_FLOAD
+	      || get_attr_type (producer) == TYPE_FSTORE);
+  gcc_assert (get_attr_type (consumer) == TYPE_FLOAD
+	      || get_attr_type (consumer) == TYPE_FSTORE);
+
+  if (!post_update_insn_p (producer))
+    return false;
+
+  return reg_overlap_p (extract_base_reg (producer),
+			extract_mem_rtx (consumer));
+}
+
+/* Check dependencies from MM to EX.  */
+bool
+nds32_n10_mm_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg;
+
+  switch (get_attr_type (producer))
+    {
+    case TYPE_LOAD:
+    case TYPE_MUL:
+    case TYPE_MAC:
+    case TYPE_DALU64:
+    case TYPE_DMUL:
+    case TYPE_DMAC:
+    case TYPE_DALUROUND:
+    case TYPE_DBPICK:
+    case TYPE_DWEXT:
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+   /* Some special instructions, divmodsi4 and udivmodsi4, produce two
+      results, the quotient and the remainder.  We have to handle them
+      individually.  */
+    case TYPE_DIV:
+      if (divmod_p (producer))
+	{
+	  rtx def_reg1 = SET_DEST (parallel_element (producer, 0));
+	  rtx def_reg2 = SET_DEST (parallel_element (producer, 1));
+
+	  return (n10_consumed_by_ex_dep_p (consumer, def_reg1)
+		  || n10_consumed_by_ex_dep_p (consumer, def_reg2));
+	}
+
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+    return n10_consumed_by_ex_dep_p (consumer, def_reg);
+}
+
+/* Check dependencies from LMW(N, N) to EX.  */
+bool
+nds32_n10_last_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  return n10_consumed_by_ex_dep_p (consumer, last_def_reg);
+}
 /* ------------------------------------------------------------------------ */

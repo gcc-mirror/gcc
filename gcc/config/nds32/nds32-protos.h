@@ -121,6 +121,9 @@ extern bool nds32_n9_2r1w_mm_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n9_3r2w_mm_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n9_last_load_to_ex_p (rtx_insn *, rtx_insn *);
 
+extern bool nds32_n10_ex_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n10_mm_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n10_last_load_to_ex_p (rtx_insn *, rtx_insn *);
 
 /* Auxiliary functions for stack operation predicate checking.  */
 
@@ -299,6 +302,8 @@ bool movd44_insn_p (rtx_insn *);
 rtx extract_movd44_odd_reg (rtx_insn *);
 
 rtx extract_mac_non_acc_rtx (rtx_insn *);
+
+bool divmod_p (rtx_insn *);
 
 rtx extract_branch_target_rtx (rtx_insn *);
 rtx extract_branch_condition_rtx (rtx_insn *);

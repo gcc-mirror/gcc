@@ -243,6 +243,51 @@ EnumValue
 Enum(nds32_cpu_type) String(n968a) Value(CPU_N9)
 
 EnumValue
+Enum(nds32_cpu_type) String(n10) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1033) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1033a) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1033-fpu) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1033-spu) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1068) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1068a) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1068-fpu) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1068a-fpu) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1068-spu) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1068a-spu) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(d10) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(d1088) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(d1088-fpu) Value(CPU_N10)
+
+EnumValue
+Enum(nds32_cpu_type) String(d1088-spu) Value(CPU_N10)
+
+EnumValue
 Enum(nds32_cpu_type) String(simple) Value(CPU_SIMPLE)
 
 mconfig-fpu=

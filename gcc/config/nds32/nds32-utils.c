@@ -424,6 +424,19 @@ extract_mac_non_acc_rtx (rtx_insn *insn)
     }
 }
 
+/* Check if the DIV insn needs two write ports.  */
+bool
+divmod_p (rtx_insn *insn)
+{
+  gcc_assert (get_attr_type (insn) == TYPE_DIV);
+
+  if (INSN_CODE (insn) == CODE_FOR_divmodsi4
+      || INSN_CODE (insn) == CODE_FOR_udivmodsi4)
+    return true;
+
+  return false;
+}
+
 /* Extract the rtx representing the branch target to help recognize
    data hazards.  */
 rtx
