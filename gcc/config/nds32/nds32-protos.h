@@ -125,6 +125,13 @@ extern bool nds32_n10_ex_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n10_mm_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n10_last_load_to_ex_p (rtx_insn *, rtx_insn *);
 
+extern bool nds32_n13_e2_to_e1_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n13_load_to_e1_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n13_load_to_e2_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n13_last_load_to_e1_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n13_last_load_to_e2_p (rtx_insn *, rtx_insn *);
+extern bool nds32_n13_last_two_load_to_e1_p (rtx_insn *, rtx_insn *);
+
 /* Auxiliary functions for stack operation predicate checking.  */
 
 extern bool nds32_valid_stack_push_pop_p (rtx, bool);

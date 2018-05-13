@@ -306,6 +306,19 @@ pbsada_insn_ra_rb_dep_reg_p (rtx pbsada_insn, rtx def_reg)
   return false;
 }
 
+/* Determine if the latency is occured when the consumer PBSADA_INSN uses the
+   value of DEF_REG in its Rt field.  */
+bool
+pbsada_insn_rt_dep_reg_p (rtx pbsada_insn, rtx def_reg)
+{
+  rtx pbsada_rt = SET_DEST (PATTERN (pbsada_insn));
+
+  if (rtx_equal_p (def_reg, pbsada_rt))
+    return true;
+
+  return false;
+}
+
 /* Check if INSN is a movd44 insn consuming DEF_REG.  */
 bool
 movd44_even_dep_p (rtx_insn *insn, rtx def_reg)
@@ -918,6 +931,153 @@ n10_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
   return false;
 }
 
+/* Check dependencies from any stages to ALU_E1 (E1).  This is a helper
+   function of n13_consumed_by_e1_dep_p ().  */
+bool
+n13_alu_e1_insn_dep_reg_p (rtx_insn *alu_e1_insn, rtx def_reg)
+{
+  rtx unspec_rtx, operand_ra, operand_rb;
+  rtx src_rtx, dst_rtx;
+
+  switch (INSN_CODE (alu_e1_insn))
+    {
+    /* BSP and BSE are supported by built-in functions, the corresponding
+       patterns are formed by UNSPEC RTXs.  We have to handle them
+       individually.  */
+    case CODE_FOR_unspec_bsp:
+    case CODE_FOR_unspec_bse:
+      unspec_rtx = SET_SRC (parallel_element (alu_e1_insn, 0));
+      gcc_assert (GET_CODE (unspec_rtx) == UNSPEC);
+
+      operand_ra = XVECEXP (unspec_rtx, 0, 0);
+      operand_rb = XVECEXP (unspec_rtx, 0, 1);
+
+      if (rtx_equal_p (def_reg, operand_ra)
+	  || rtx_equal_p (def_reg, operand_rb))
+	return true;
+
+      return false;
+
+    /* Unlink general ALU instructions, MOVD44 requires operands at E1.  */
+    case CODE_FOR_move_di:
+    case CODE_FOR_move_df:
+      src_rtx = SET_SRC (PATTERN (alu_e1_insn));
+      dst_rtx = SET_DEST (PATTERN (alu_e1_insn));
+
+      if (REG_P (dst_rtx) && REG_P (src_rtx)
+	  && rtx_equal_p (src_rtx, def_reg))
+	return true;
+
+      return false;
+
+    default:
+      return false;
+    }
+}
+
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at E1.  Because the address generation unti is
+   at E1, the address input should be ready at E1.  Note that the branch
+   target is also a kind of addresses, so we have to check it.  */
+bool
+n13_consumed_by_e1_dep_p (rtx_insn *consumer, rtx def_reg)
+{
+  rtx use_rtx;
+
+  switch (get_attr_type (consumer))
+    {
+    /* ALU_E1 */
+    case TYPE_ALU:
+      return n13_alu_e1_insn_dep_reg_p (consumer, def_reg);
+
+    case TYPE_PBSADA:
+      return pbsada_insn_ra_rb_dep_reg_p (consumer, def_reg);
+
+    case TYPE_PBSAD:
+    case TYPE_MUL:
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_MAC:
+      use_rtx = extract_mac_non_acc_rtx (consumer);
+      break;
+
+    case TYPE_DIV:
+      if (divmod_p (consumer))
+	use_rtx = SET_SRC (parallel_element (consumer, 0));
+      else
+	use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_MMU:
+      if (GET_CODE (PATTERN (consumer)) == SET)
+	use_rtx = SET_SRC (PATTERN (consumer));
+      else
+	return true;
+      break;
+
+    case TYPE_BRANCH:
+      use_rtx = extract_branch_target_rtx (consumer);
+      break;
+
+    case TYPE_LOAD:
+    case TYPE_STORE:
+      use_rtx = extract_mem_rtx (consumer);
+      break;
+
+    case TYPE_LOAD_MULTIPLE:
+    case TYPE_STORE_MULTIPLE:
+      use_rtx = extract_base_reg (consumer);
+      break;
+
+    default:
+      return false;
+    }
+
+  if (reg_overlap_p (def_reg, use_rtx))
+    return true;
+
+  return false;
+}
+
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at E2.  */
+bool
+n13_consumed_by_e2_dep_p (rtx_insn *consumer, rtx def_reg)
+{
+  rtx use_rtx;
+
+  switch (get_attr_type (consumer))
+    {
+    case TYPE_ALU:
+    case TYPE_STORE:
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_ALU_SHIFT:
+      use_rtx = extract_shift_reg (consumer);
+      break;
+
+    case TYPE_PBSADA:
+      return pbsada_insn_rt_dep_reg_p (consumer, def_reg);
+
+    case TYPE_STORE_MULTIPLE:
+      use_rtx = extract_nth_access_rtx (consumer, 0);
+      break;
+
+    case TYPE_BRANCH:
+      use_rtx = extract_branch_condition_rtx (consumer);
+      break;
+
+    default:
+      gcc_unreachable();
+    }
+
+  if (reg_overlap_p (def_reg, use_rtx))
+    return true;
+
+  return false;
+}
 } // anonymous namespace
 
 /* ------------------------------------------------------------------------ */
@@ -1370,5 +1530,116 @@ nds32_n10_last_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
   rtx last_def_reg = extract_nth_access_reg (producer, -1);
 
   return n10_consumed_by_ex_dep_p (consumer, last_def_reg);
+}
+
+/* Guard functions for N12/N13 cores.  */
+
+/* Check dependencies from E2 to E1.  */
+bool
+nds32_n13_e2_to_e1_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg;
+
+  switch (get_attr_type (producer))
+    {
+    /* Only post-update load/store instructions are considered.  These
+       instructions produces address output at E2.  */
+    case TYPE_LOAD:
+    case TYPE_STORE:
+    case TYPE_LOAD_MULTIPLE:
+    case TYPE_STORE_MULTIPLE:
+      if (!post_update_insn_p (producer))
+	return false;
+
+      def_reg = extract_base_reg (producer);
+      break;
+
+    case TYPE_ALU:
+    case TYPE_ALU_SHIFT:
+    case TYPE_PBSAD:
+    case TYPE_PBSADA:
+    case TYPE_MUL:
+    case TYPE_MAC:
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    case TYPE_BRANCH:
+      return true;
+
+    case TYPE_DIV:
+      /* Some special instructions, divmodsi4 and udivmodsi4, produce two
+	 results, the quotient and the remainder.  We have to handle them
+	 individually.  */
+      if (divmod_p (producer))
+	{
+	  rtx def_reg1 = SET_DEST (parallel_element (producer, 0));
+	  rtx def_reg2 = SET_DEST (parallel_element (producer, 1));
+
+	  return (n13_consumed_by_e1_dep_p (consumer, def_reg1)
+		  || n13_consumed_by_e1_dep_p (consumer, def_reg2));
+	}
+
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return n13_consumed_by_e1_dep_p (consumer, def_reg);
+}
+
+/* Check dependencies from Load-Store Unit (E3) to E1.  */
+bool
+nds32_n13_load_to_e1_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg = SET_DEST (PATTERN (producer));
+
+  gcc_assert (get_attr_type (producer) == TYPE_LOAD);
+  gcc_assert (REG_P (def_reg) || GET_CODE (def_reg) == SUBREG);
+
+  return n13_consumed_by_e1_dep_p (consumer, def_reg);
+}
+
+/* Check dependencies from Load-Store Unit (E3) to E2.  */
+bool
+nds32_n13_load_to_e2_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg = SET_DEST (PATTERN (producer));
+
+  gcc_assert (get_attr_type (producer) == TYPE_LOAD);
+  gcc_assert (REG_P (def_reg) || GET_CODE (def_reg) == SUBREG);
+
+  return n13_consumed_by_e2_dep_p (consumer, def_reg);
+}
+
+/* Check dependencies from LMW(N, N) to E1.  */
+bool
+nds32_n13_last_load_to_e1_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  return n13_consumed_by_e1_dep_p (consumer, last_def_reg);
+}
+
+/* Check dependencies from LMW(N, N) to E2.  */
+bool
+nds32_n13_last_load_to_e2_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  return n13_consumed_by_e2_dep_p (consumer, last_def_reg);
+}
+
+/* Check dependencies from LMW(N, N-1) to E2.  */
+bool
+nds32_n13_last_two_load_to_e1_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx last_two_def_reg = extract_nth_access_reg (producer, -2);
+
+  if (last_two_def_reg == NULL_RTX)
+    return false;
+
+  return n13_consumed_by_e1_dep_p (consumer, last_two_def_reg);
 }
 /* ------------------------------------------------------------------------ */
