@@ -261,6 +261,118 @@ output_cond_branch_compare_zero (int code, const char *suffix,
   output_asm_insn (pattern, operands);
 }
 
+static void
+nds32_split_shiftrtdi3 (rtx dst, rtx src, rtx shiftamount, bool logic_shift_p)
+{
+  rtx src_high_part;
+  rtx dst_high_part, dst_low_part;
+
+  dst_high_part = nds32_di_high_part_subreg (dst);
+  src_high_part = nds32_di_high_part_subreg (src);
+  dst_low_part = nds32_di_low_part_subreg (dst);
+
+  if (CONST_INT_P (shiftamount))
+    {
+      if (INTVAL (shiftamount) < 32)
+	{
+	  if (logic_shift_p)
+	    {
+	      emit_insn (gen_uwext (dst_low_part, src,
+						  shiftamount));
+	      emit_insn (gen_lshrsi3 (dst_high_part, src_high_part,
+						     shiftamount));
+	    }
+	  else
+	    {
+	      emit_insn (gen_wext (dst_low_part, src,
+						 shiftamount));
+	      emit_insn (gen_ashrsi3 (dst_high_part, src_high_part,
+						     shiftamount));
+	    }
+	}
+      else
+	{
+	  rtx new_shift_amout = gen_int_mode(INTVAL (shiftamount) - 32, SImode);
+
+	  if (logic_shift_p)
+	    {
+	      emit_insn (gen_lshrsi3 (dst_low_part, src_high_part,
+						    new_shift_amout));
+	      emit_move_insn (dst_high_part, const0_rtx);
+	    }
+	  else
+	    {
+	      emit_insn (gen_ashrsi3 (dst_low_part, src_high_part,
+						    new_shift_amout));
+	      emit_insn (gen_ashrsi3 (dst_high_part, src_high_part,
+						     GEN_INT (31)));
+	    }
+	}
+    }
+  else
+    {
+      rtx dst_low_part_l32, dst_high_part_l32;
+      rtx dst_low_part_g32, dst_high_part_g32;
+      rtx new_shift_amout, select_reg;
+      dst_low_part_l32 = gen_reg_rtx (SImode);
+      dst_high_part_l32 = gen_reg_rtx (SImode);
+      dst_low_part_g32 = gen_reg_rtx (SImode);
+      dst_high_part_g32 = gen_reg_rtx (SImode);
+      new_shift_amout = gen_reg_rtx (SImode);
+      select_reg = gen_reg_rtx (SImode);
+
+      emit_insn (gen_andsi3 (shiftamount, shiftamount, GEN_INT (0x3f)));
+
+      if (logic_shift_p)
+	{
+	  /*
+	     if (shiftamount < 32)
+	       dst_low_part = wext (src, shiftamount)
+	       dst_high_part = src_high_part >> shiftamount
+	     else
+	       dst_low_part = src_high_part >> (shiftamount & 0x1f)
+	       dst_high_part = 0
+	  */
+	  emit_insn (gen_uwext (dst_low_part_l32, src, shiftamount));
+	  emit_insn (gen_lshrsi3 (dst_high_part_l32, src_high_part,
+						     shiftamount));
+
+	  emit_insn (gen_andsi3 (new_shift_amout, shiftamount, GEN_INT (0x1f)));
+	  emit_insn (gen_lshrsi3 (dst_low_part_g32, src_high_part,
+						    new_shift_amout));
+	  emit_move_insn (dst_high_part_g32, const0_rtx);
+	}
+      else
+	{
+	  /*
+	     if (shiftamount < 32)
+	       dst_low_part = wext (src, shiftamount)
+	       dst_high_part = src_high_part >> shiftamount
+	     else
+	       dst_low_part = src_high_part >> (shiftamount & 0x1f)
+	       # shift 31 for sign extend
+	       dst_high_part = src_high_part >> 31
+	  */
+	  emit_insn (gen_wext (dst_low_part_l32, src, shiftamount));
+	  emit_insn (gen_ashrsi3 (dst_high_part_l32, src_high_part,
+						     shiftamount));
+
+	  emit_insn (gen_andsi3 (new_shift_amout, shiftamount, GEN_INT (0x1f)));
+	  emit_insn (gen_ashrsi3 (dst_low_part_g32, src_high_part,
+						    new_shift_amout));
+	  emit_insn (gen_ashrsi3 (dst_high_part_g32, src_high_part,
+						     GEN_INT (31)));
+	}
+
+      emit_insn (gen_slt_compare (select_reg, shiftamount, GEN_INT (32)));
+
+      emit_insn (gen_cmovnsi (dst_low_part, select_reg,
+			      dst_low_part_l32, dst_low_part_g32));
+      emit_insn (gen_cmovnsi (dst_high_part, select_reg,
+			      dst_high_part_l32, dst_high_part_g32));
+  }
+}
+
 /* ------------------------------------------------------------------------ */
 
 /* Auxiliary function for expand RTL pattern.  */
@@ -1193,6 +1305,58 @@ nds32_emit_v3pop_fpr_callee_saved (int base)
       RTX_FRAME_RELATED_P (fpu_insn) = 1;
       REG_NOTES (fpu_insn) = dwarf;
     }
+}
+
+enum nds32_expand_result_type
+nds32_expand_extv (rtx *operands)
+{
+  gcc_assert (CONST_INT_P (operands[2]) && CONST_INT_P (operands[3]));
+  HOST_WIDE_INT width = INTVAL (operands[2]);
+  HOST_WIDE_INT bitpos = INTVAL (operands[3]);
+  rtx dst = operands[0];
+  rtx src = operands[1];
+
+  if (MEM_P (src)
+      && width == 32
+      && (bitpos % BITS_PER_UNIT)  == 0
+      && GET_MODE_BITSIZE (GET_MODE (dst)) == width)
+    {
+      rtx newmem = adjust_address (src, GET_MODE (dst),
+				   bitpos / BITS_PER_UNIT);
+
+      rtx base_addr = force_reg (Pmode, XEXP (newmem, 0));
+
+      emit_insn (gen_unaligned_loadsi (dst, base_addr));
+
+      return EXPAND_DONE;
+    }
+  return EXPAND_FAIL;
+}
+
+enum nds32_expand_result_type
+nds32_expand_insv (rtx *operands)
+{
+  gcc_assert (CONST_INT_P (operands[1]) && CONST_INT_P (operands[2]));
+  HOST_WIDE_INT width = INTVAL (operands[1]);
+  HOST_WIDE_INT bitpos = INTVAL (operands[2]);
+  rtx dst = operands[0];
+  rtx src = operands[3];
+
+  if (MEM_P (dst)
+      && width == 32
+      && (bitpos % BITS_PER_UNIT)  == 0
+      && GET_MODE_BITSIZE (GET_MODE (src)) == width)
+    {
+      rtx newmem = adjust_address (dst, GET_MODE (src),
+				      bitpos / BITS_PER_UNIT);
+
+      rtx base_addr = force_reg (Pmode, XEXP (newmem, 0));
+
+      emit_insn (gen_unaligned_storesi (base_addr, src));
+
+      return EXPAND_DONE;
+    }
+  return EXPAND_FAIL;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -2424,7 +2588,10 @@ nds32_expand_unaligned_load (rtx *operands, enum machine_mode mode)
     }
   else
     {
-      reg[0] = operands[0];
+      if (VECTOR_MODE_P (mode))
+	reg[0] = gen_reg_rtx (SImode);
+      else
+	reg[0] = operands[0];
     }
 
   for (num_reg = (mode == DImode) ? 2 : 1; num_reg > 0; num_reg--)
@@ -2466,6 +2633,8 @@ nds32_expand_unaligned_load (rtx *operands, enum machine_mode mode)
 	  offset = offset + offset_adj;
 	}
     }
+    if (VECTOR_MODE_P (mode))
+      convert_move (operands[0], reg[0], false);
 }
 
 void
@@ -2508,7 +2677,13 @@ nds32_expand_unaligned_store (rtx *operands, enum machine_mode mode)
     }
   else
     {
-      reg[0] = operands[1];
+      if (VECTOR_MODE_P (mode))
+	{
+	  reg[0] = gen_reg_rtx (SImode);
+	  convert_move (reg[0], operands[1], false);
+	}
+      else
+	reg[0] = operands[1];
     }
 
   for (num_reg = (mode == DImode) ? 2 : 1; num_reg > 0; num_reg--)
@@ -2765,6 +2940,36 @@ nds32_output_cbranchsi4_greater_less_zero (rtx_insn *insn, rtx *operands)
   return "";
 }
 
+const char *
+nds32_output_unpkd8 (rtx output, rtx input,
+		     rtx high_idx_rtx, rtx low_idx_rtx,
+		     bool signed_p)
+{
+  char pattern[100];
+  rtx output_operands[2];
+  HOST_WIDE_INT high_idx, low_idx;
+  high_idx = INTVAL (high_idx_rtx);
+  low_idx = INTVAL (low_idx_rtx);
+
+  gcc_assert (high_idx >= 0 && high_idx <= 3);
+  gcc_assert (low_idx >= 0 && low_idx <= 3);
+
+  /* We only have 10, 20, 30 and 31.  */
+  if ((low_idx != 0 || high_idx == 0) &&
+      !(low_idx == 1 && high_idx == 3))
+    return "#";
+
+  char sign_char = signed_p ? 's' : 'z';
+
+  sprintf (pattern,
+	   "%cunpkd8" HOST_WIDE_INT_PRINT_DEC HOST_WIDE_INT_PRINT_DEC "\t%%0, %%1",
+	   sign_char, high_idx, low_idx);
+  output_operands[0] = output;
+  output_operands[1] = input;
+  output_asm_insn (pattern, output_operands);
+  return "";
+}
+
 /* Return true if SYMBOL_REF X binds locally.  */
 
 static bool
@@ -2813,6 +3018,91 @@ nds32_output_call (rtx insn, rtx *operands, rtx symbol, const char *long_call,
 
   output_asm_insn (pattern, operands);
   return "";
+}
+
+bool
+nds32_need_split_sms_p (rtx in0_idx0, rtx in1_idx0,
+			rtx in0_idx1, rtx in1_idx1)
+{
+  /* smds or smdrs.  */
+  if (INTVAL (in0_idx0) == INTVAL (in1_idx0)
+      && INTVAL (in0_idx1) == INTVAL (in1_idx1)
+      && INTVAL (in0_idx0) != INTVAL (in0_idx1))
+    return false;
+
+  /* smxds.  */
+  if (INTVAL (in0_idx0) != INTVAL (in0_idx1)
+      && INTVAL (in1_idx0) != INTVAL (in1_idx1))
+    return false;
+
+  return true;
+}
+
+const char *
+nds32_output_sms (rtx in0_idx0, rtx in1_idx0,
+		  rtx in0_idx1, rtx in1_idx1)
+{
+  if (nds32_need_split_sms_p (in0_idx0, in1_idx0,
+			      in0_idx1, in1_idx1))
+    return "#";
+  /* out = in0[in0_idx0] * in1[in1_idx0] - in0[in0_idx1] * in1[in1_idx1] */
+
+  /* smds or smdrs.  */
+  if (INTVAL (in0_idx0) == INTVAL (in1_idx0)
+      && INTVAL (in0_idx1) == INTVAL (in1_idx1)
+      && INTVAL (in0_idx0) != INTVAL (in0_idx1))
+    {
+      if (INTVAL (in0_idx0) == 0)
+	{
+	  if (TARGET_BIG_ENDIAN)
+	    return "smds\t%0, %1, %2";
+	  else
+	    return "smdrs\t%0, %1, %2";
+	}
+      else
+	{
+	  if (TARGET_BIG_ENDIAN)
+	    return "smdrs\t%0, %1, %2";
+	  else
+	    return "smds\t%0, %1, %2";
+	}
+    }
+
+  if (INTVAL (in0_idx0) != INTVAL (in0_idx1)
+      && INTVAL (in1_idx0) != INTVAL (in1_idx1))
+    {
+      if (INTVAL (in0_idx0) == 1)
+	{
+	  if (TARGET_BIG_ENDIAN)
+	    return "smxds\t%0, %2, %1";
+	  else
+	    return "smxds\t%0, %1, %2";
+	}
+      else
+	{
+	  if (TARGET_BIG_ENDIAN)
+	    return "smxds\t%0, %1, %2";
+	  else
+	    return "smxds\t%0, %2, %1";
+	}
+    }
+
+  gcc_unreachable ();
+  return "";
+}
+
+void
+nds32_split_sms (rtx out, rtx in0, rtx in1,
+		 rtx in0_idx0, rtx in1_idx0,
+		 rtx in0_idx1, rtx in1_idx1)
+{
+  rtx result0 = gen_reg_rtx (SImode);
+  rtx result1 = gen_reg_rtx (SImode);
+  emit_insn (gen_mulhisi3v (result0, in0, in1,
+			    in0_idx0, in1_idx0));
+  emit_insn (gen_mulhisi3v (result1, in0, in1,
+			    in0_idx1, in1_idx1));
+  emit_insn (gen_subsi3 (out, result0, result1));
 }
 
 /* Spilt a doubleword instrucion to two single word instructions.  */
@@ -2924,6 +3214,192 @@ nds32_spilt_doubleword (rtx *operands, bool load_p)
     }
 }
 
+void
+nds32_split_ashiftdi3 (rtx dst, rtx src, rtx shiftamount)
+{
+  rtx src_high_part, src_low_part;
+  rtx dst_high_part, dst_low_part;
+
+  dst_high_part = nds32_di_high_part_subreg (dst);
+  dst_low_part = nds32_di_low_part_subreg (dst);
+
+  src_high_part = nds32_di_high_part_subreg (src);
+  src_low_part = nds32_di_low_part_subreg (src);
+
+  /* We need to handle shift more than 32 bit!!!! */
+  if (CONST_INT_P (shiftamount))
+    {
+      if (INTVAL (shiftamount) < 32)
+	{
+	  rtx ext_start;
+	  ext_start = gen_int_mode(32 - INTVAL (shiftamount), SImode);
+
+	  emit_insn (gen_wext (dst_high_part, src, ext_start));
+	  emit_insn (gen_ashlsi3 (dst_low_part, src_low_part, shiftamount));
+	}
+      else
+	{
+	  rtx new_shift_amout = gen_int_mode(INTVAL (shiftamount) - 32, SImode);
+
+	  emit_insn (gen_ashlsi3 (dst_high_part, src_low_part,
+						 new_shift_amout));
+
+	  emit_move_insn (dst_low_part, GEN_INT (0));
+	}
+    }
+  else
+    {
+      rtx dst_low_part_l32, dst_high_part_l32;
+      rtx dst_low_part_g32, dst_high_part_g32;
+      rtx new_shift_amout, select_reg;
+      dst_low_part_l32 = gen_reg_rtx (SImode);
+      dst_high_part_l32 = gen_reg_rtx (SImode);
+      dst_low_part_g32 = gen_reg_rtx (SImode);
+      dst_high_part_g32 = gen_reg_rtx (SImode);
+      new_shift_amout = gen_reg_rtx (SImode);
+      select_reg = gen_reg_rtx (SImode);
+
+      rtx ext_start;
+      ext_start = gen_reg_rtx (SImode);
+
+      /*
+	 if (shiftamount < 32)
+	   dst_low_part = src_low_part << shiftamout
+	   dst_high_part = wext (src, 32 - shiftamount)
+	   # wext can't handle wext (src, 32) since it's only take rb[0:4]
+	   # for extract.
+	   dst_high_part = shiftamount == 0 ? src_high_part : dst_high_part
+	 else
+	   dst_low_part = 0
+	   dst_high_part = src_low_part << shiftamount & 0x1f
+      */
+
+      emit_insn (gen_subsi3 (ext_start,
+			     gen_int_mode (32, SImode),
+			     shiftamount));
+      emit_insn (gen_wext (dst_high_part_l32, src, ext_start));
+
+      /* Handle for shiftamout == 0.  */
+      emit_insn (gen_cmovzsi (dst_high_part_l32, shiftamount,
+			      src_high_part, dst_high_part_l32));
+
+      emit_insn (gen_ashlsi3 (dst_low_part_l32, src_low_part, shiftamount));
+
+      emit_move_insn (dst_low_part_g32, const0_rtx);
+      emit_insn (gen_andsi3 (new_shift_amout, shiftamount, GEN_INT (0x1f)));
+      emit_insn (gen_ashlsi3 (dst_high_part_g32, src_low_part,
+						 new_shift_amout));
+
+      emit_insn (gen_slt_compare (select_reg, shiftamount, GEN_INT (32)));
+
+      emit_insn (gen_cmovnsi (dst_low_part, select_reg,
+			      dst_low_part_l32, dst_low_part_g32));
+      emit_insn (gen_cmovnsi (dst_high_part, select_reg,
+			      dst_high_part_l32, dst_high_part_g32));
+    }
+}
+
+void
+nds32_split_ashiftrtdi3 (rtx dst, rtx src, rtx shiftamount)
+{
+  nds32_split_shiftrtdi3 (dst, src, shiftamount, false);
+}
+
+void
+nds32_split_lshiftrtdi3 (rtx dst, rtx src, rtx shiftamount)
+{
+  nds32_split_shiftrtdi3 (dst, src, shiftamount, true);
+}
+
+void
+nds32_split_rotatertdi3 (rtx dst, rtx src, rtx shiftamount)
+{
+  rtx dst_low_part_l32, dst_high_part_l32;
+  rtx dst_low_part_g32, dst_high_part_g32;
+  rtx select_reg, low5bit, low5bit_inv, minus32sa;
+  rtx dst_low_part_g32_tmph;
+  rtx dst_low_part_g32_tmpl;
+  rtx dst_high_part_l32_tmph;
+  rtx dst_high_part_l32_tmpl;
+
+  rtx src_low_part, src_high_part;
+  rtx dst_high_part, dst_low_part;
+
+  shiftamount = force_reg (SImode, shiftamount);
+
+  emit_insn (gen_andsi3 (shiftamount,
+			 shiftamount,
+			 gen_int_mode (0x3f, SImode)));
+
+  dst_high_part = nds32_di_high_part_subreg (dst);
+  dst_low_part = nds32_di_low_part_subreg (dst);
+
+  src_high_part = nds32_di_high_part_subreg (src);
+  src_low_part = nds32_di_low_part_subreg (src);
+
+  dst_low_part_l32 = gen_reg_rtx (SImode);
+  dst_high_part_l32 = gen_reg_rtx (SImode);
+  dst_low_part_g32 = gen_reg_rtx (SImode);
+  dst_high_part_g32 = gen_reg_rtx (SImode);
+  low5bit = gen_reg_rtx (SImode);
+  low5bit_inv = gen_reg_rtx (SImode);
+  minus32sa = gen_reg_rtx (SImode);
+  select_reg = gen_reg_rtx (SImode);
+
+  dst_low_part_g32_tmph = gen_reg_rtx (SImode);
+  dst_low_part_g32_tmpl = gen_reg_rtx (SImode);
+
+  dst_high_part_l32_tmph = gen_reg_rtx (SImode);
+  dst_high_part_l32_tmpl = gen_reg_rtx (SImode);
+
+  emit_insn (gen_slt_compare (select_reg, shiftamount, GEN_INT (32)));
+
+  /* if shiftamount < 32
+       dst_low_part = wext(src, shiftamount)
+     else
+       dst_low_part = ((src_high_part >> (shiftamount & 0x1f))
+		       | (src_low_part << (32 - (shiftamount & 0x1f))))
+  */
+  emit_insn (gen_andsi3 (low5bit, shiftamount, gen_int_mode (0x1f, SImode)));
+  emit_insn (gen_subsi3 (low5bit_inv, gen_int_mode (32, SImode), low5bit));
+
+  emit_insn (gen_wext (dst_low_part_l32, src, shiftamount));
+
+  emit_insn (gen_lshrsi3 (dst_low_part_g32_tmpl, src_high_part, low5bit));
+  emit_insn (gen_ashlsi3 (dst_low_part_g32_tmph, src_low_part, low5bit_inv));
+
+  emit_insn (gen_iorsi3 (dst_low_part_g32,
+			 dst_low_part_g32_tmpl,
+			 dst_low_part_g32_tmph));
+
+  emit_insn (gen_cmovnsi (dst_low_part, select_reg,
+			  dst_low_part_l32, dst_low_part_g32));
+
+  /* if shiftamount < 32
+       dst_high_part = ((src_high_part >> shiftamount)
+			| (src_low_part << (32 - shiftamount)))
+       dst_high_part = shiftamount == 0 ? src_high_part : dst_high_part
+     else
+       dst_high_part = wext(src, shiftamount & 0x1f)
+  */
+
+  emit_insn (gen_subsi3 (minus32sa, gen_int_mode (32, SImode), shiftamount));
+
+  emit_insn (gen_lshrsi3 (dst_high_part_l32_tmpl, src_high_part, shiftamount));
+  emit_insn (gen_ashlsi3 (dst_high_part_l32_tmph, src_low_part, minus32sa));
+
+  emit_insn (gen_iorsi3 (dst_high_part_l32,
+			 dst_high_part_l32_tmpl,
+			 dst_high_part_l32_tmph));
+
+  emit_insn (gen_cmovzsi (dst_high_part_l32, shiftamount,
+			  src_high_part, dst_high_part_l32));
+
+  emit_insn (gen_wext (dst_high_part_g32, src, low5bit));
+
+  emit_insn (gen_cmovnsi (dst_high_part, select_reg,
+			  dst_high_part_l32, dst_high_part_g32));
+}
 /* Return true X is need use long call.  */
 bool
 nds32_long_call_p (rtx symbol)
@@ -2975,4 +3451,23 @@ nds32_expand_constant (machine_mode mode, HOST_WIDE_INT val,
       emit_move_insn (temp, GEN_INT (val));
       emit_move_insn (target, gen_rtx_fmt_ee (AND, mode, source, temp));
     }
+}
+
+/* Auxiliary functions for manipulation DI mode.  */
+rtx nds32_di_high_part_subreg(rtx reg)
+{
+  unsigned high_part_offset = subreg_highpart_offset (SImode, DImode);
+
+  return simplify_gen_subreg (
+	   SImode, reg,
+	   DImode, high_part_offset);
+}
+
+rtx nds32_di_low_part_subreg(rtx reg)
+{
+  unsigned low_part_offset = subreg_lowpart_offset (SImode, DImode);
+
+  return simplify_gen_subreg (
+	   SImode, reg,
+	   DImode, low_part_offset);
 }

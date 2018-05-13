@@ -413,6 +413,7 @@ extract_mac_non_acc_rtx (rtx_insn *insn)
   switch (get_attr_type (insn))
     {
     case TYPE_MAC:
+    case TYPE_DMAC:
       if (REG_P (XEXP (exp, 0)))
 	return XEXP (exp, 1);
       else

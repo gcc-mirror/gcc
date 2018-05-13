@@ -1987,6 +1987,16 @@ nds32_function_arg_boundary (machine_mode mode, const_tree type)
 	  : PARM_BOUNDARY);
 }
 
+bool
+nds32_vector_mode_supported_p (machine_mode mode)
+{
+  if (mode == V4QImode
+      || mode == V2HImode)
+    return NDS32_EXT_DSP_P ();
+
+  return false;
+}
+
 /* -- How Scalar Function Values Are Returned.  */
 
 static rtx
@@ -2688,6 +2698,23 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
     }
 }
 
+static machine_mode
+nds32_vectorize_preferred_simd_mode (scalar_mode mode)
+{
+  if (!NDS32_EXT_DSP_P ())
+    return word_mode;
+
+  switch (mode)
+    {
+    case E_QImode:
+      return V4QImode;
+    case E_HImode:
+      return V2HImode;
+    default:
+      return word_mode;
+    }
+}
+
 
 /* Condition Code Status.  */
 
@@ -2978,6 +3005,18 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 
       /* No need to handle following process, so return immediately.  */
       return;
+
+    case 'v':
+      gcc_assert (CONST_INT_P (x)
+		  && (INTVAL (x) == 0
+		      || INTVAL (x) == 8
+		      || INTVAL (x) == 16
+		      || INTVAL (x) == 24));
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) / 8);
+
+      /* No need to handle following process, so return immediately.  */
+      return;
+
     case 'B':
       /* Use exact_log2() to search the 1-bit position.  */
       gcc_assert (CONST_INT_P (x));
@@ -3168,6 +3207,10 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       output_addr_const (stream, x);
       break;
 
+    case CONST_VECTOR:
+      fprintf (stream, HOST_WIDE_INT_PRINT_HEX, const_vector_to_hwint (x));
+      break;
+
     default:
       /* Generally, output_addr_const () is able to handle most cases.
 	 We want to see what CODE could appear,
@@ -3259,6 +3302,20 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 			   reg_names[REGNO (op1)],
 			   reg_names[REGNO (XEXP (op0, 0))],
 			   sv);
+	}
+      else if (GET_CODE (op0) == ASHIFT && REG_P (op1))
+	{
+	  /* [Ra + Rb << sv]
+	     In normal, ASHIFT can be converted to MULT like above case.
+	     But when the address rtx does not go through canonicalize_address
+	     defined in fwprop, we'll need this case.  */
+	  int sv = INTVAL (XEXP (op0, 1));
+	  gcc_assert (sv <= 3 && sv >=0);
+
+	  fprintf (stream, "[%s + %s << %d]",
+		   reg_names[REGNO (op1)],
+		   reg_names[REGNO (XEXP (op0, 0))],
+		   sv);
 	}
       else
 	{
@@ -3770,6 +3827,8 @@ nds32_cpu_cpp_builtins(struct cpp_reader *pfile)
     builtin_define ("__NDS32_GP_DIRECT__");
   if (TARGET_VH)
     builtin_define ("__NDS32_VH__");
+  if (NDS32_EXT_DSP_P ())
+    builtin_define ("__NDS32_EXT_DSP__");
 
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__big_endian__");
@@ -5010,6 +5069,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY nds32_function_arg_boundary
 
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P nds32_vector_mode_supported_p
+
 /* -- How Scalar Function Values Are Returned.  */
 
 #undef TARGET_FUNCTION_VALUE
@@ -5086,6 +5148,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P nds32_legitimate_address_p
+
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE nds32_vectorize_preferred_simd_mode
 
 
 /* Anchored Addresses.  */

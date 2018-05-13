@@ -90,6 +90,10 @@ mcmov
 Target Report Mask(CMOV)
 Generate conditional move instructions.
 
+mhw-abs
+Target Report Mask(HW_ABS)
+Generate hardware abs instructions.
+
 mext-perf
 Target Report Mask(EXT_PERF)
 Generate performance extension instructions.
@@ -101,6 +105,10 @@ Generate performance extension version 2 instructions.
 mext-string
 Target Report Mask(EXT_STRING)
 Generate string extension instructions.
+
+mext-dsp
+Target Report Mask(EXT_DSP)
+Generate DSP extension instructions.
 
 mv3push
 Target Report Mask(V3PUSH)
@@ -320,6 +328,10 @@ Generate single-precision floating-point instructions.
 mext-fpu-dp
 Target Report Mask(FPU_DOUBLE)
 Generate double-precision floating-point instructions.
+
+mforce-no-ext-dsp
+Target Undocumented Report Mask(FORCE_NO_EXT_DSP)
+Force disable hardware loop, even use -mext-dsp.
 
 malways-save-lp
 Target Var(flag_always_save_lp) Init(0)

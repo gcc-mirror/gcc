@@ -2346,6 +2346,11 @@ nds32be-*-*)
 	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
 	tmake_file="nds32/t-nds32 nds32/t-mlibs"
+
+	# Handle --with-ext-dsp
+	if test x${with_ext_dsp} = xyes; then
+		tm_defines="${tm_defines} TARGET_DEFAULT_EXT_DSP=1"
+	fi
 	;;
 nios2-*-*)
 	tm_file="elfos.h ${tm_file}"

@@ -68,12 +68,13 @@
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
   "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,pbsad,pbsada,mul,mac,div,branch,mmu,misc,\
-   falu,fmuls,fmuld,fmacs,fmacd,fdivs,fdivd,fsqrts,fsqrtd,fcmp,fabs,fcpy,fcmov,fmfsr,fmfdr,fmtsr,fmtdr,fload,fstore"
+   falu,fmuls,fmuld,fmacs,fmacd,fdivs,fdivd,fsqrts,fsqrtd,fcmp,fabs,fcpy,fcmov,fmfsr,fmfdr,fmtsr,fmtdr,fload,fstore,\
+   dalu,dalu64,daluround,dcmp,dclip,dmul,dmac,dinsb,dpack,dbpick,dwext"
   (const_string "unknown"))
 
 ;; Insn sub-type
 (define_attr "subtype"
-  "simple,shift"
+  "simple,shift,saturation"
   (const_string "simple"))
 
 ;; Length, in bytes, default is 4-bytes.
@@ -133,6 +134,7 @@
 
 ;; ----------------------------------------------------------------------------
 
+(include "nds32-dspext.md")
 
 ;; Move instructions.
 
@@ -351,13 +353,58 @@
 
 
 ;; ----------------------------------------------------------------------------
+(define_expand "extv"
+  [(set (match_operand 0 "register_operand" "")
+        (sign_extract (match_operand 1 "nonimmediate_operand" "")
+                      (match_operand 2 "const_int_operand" "")
+                      (match_operand 3 "const_int_operand" "")))]
+  ""
+{
+  enum nds32_expand_result_type result = nds32_expand_extv (operands);
+  switch (result)
+    {
+    case EXPAND_DONE:
+      DONE;
+      break;
+    case EXPAND_FAIL:
+      FAIL;
+      break;
+    case EXPAND_CREATE_TEMPLATE:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+})
+
+(define_expand "insv"
+  [(set (zero_extract (match_operand 0 "nonimmediate_operand" "")
+                      (match_operand 1 "const_int_operand" "")
+                      (match_operand 2 "const_int_operand" ""))
+        (match_operand 3 "register_operand" ""))]
+  ""
+{
+  enum nds32_expand_result_type result = nds32_expand_insv (operands);
+  switch (result)
+    {
+    case EXPAND_DONE:
+      DONE;
+      break;
+    case EXPAND_FAIL:
+      FAIL;
+      break;
+    case EXPAND_CREATE_TEMPLATE:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+})
 
 ;; Arithmetic instructions.
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand"               "=   d,   l,   d,   l, d, l,   k,   l,    r, r")
 	(plus:SI (match_operand:SI 1 "register_operand"      "%   0,   l,   0,   l, 0, l,   0,   k,    r, r")
-		 (match_operand:SI 2 "nds32_rimm15s_operand" " In05,In03,Iu05,Iu03, r, l,Is10,Iu06, Is15, r")))]
+		 (match_operand:SI 2 "nds32_rimm15s_operand" " In05,In03,Iu05,Iu03, r, l,Is10,IU06, Is15, r")))]
   ""
 {
   switch (which_alternative)
