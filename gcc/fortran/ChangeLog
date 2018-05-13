@@ -1,3 +1,9 @@
+2018-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/63529
+	* gfortran.texi: Clarify documentation for Cray pointer and
+	assumed-sized array.
+
 2018-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/85742
