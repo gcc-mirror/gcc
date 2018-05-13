@@ -1518,6 +1518,8 @@ gfc_get_dtype_rank_type (int rank, tree etype)
   tree field;
   vec<constructor_elt, va_gc> *v = NULL;
 
+  size = TYPE_SIZE_UNIT (etype);
+
   switch (TREE_CODE (etype))
     {
     case INTEGER_TYPE:
@@ -1546,21 +1548,23 @@ gfc_get_dtype_rank_type (int rank, tree etype)
     /* We will never have arrays of arrays.  */
     case ARRAY_TYPE:
       n = BT_CHARACTER;
+      if (size == NULL_TREE)
+	size = TYPE_SIZE_UNIT (TREE_TYPE (etype));
       break;
 
     case POINTER_TYPE:
       n = BT_ASSUMED;
+      if (TREE_CODE (TREE_TYPE (etype)) != VOID_TYPE)
+	size = TYPE_SIZE_UNIT (TREE_TYPE (etype));
+      else
+	size = build_int_cst (size_type_node, 0);
     break;
 
     default:
       /* TODO: Don't do dtype for temporary descriptorless arrays.  */
-      /* We can strange array types for temporary arrays.  */
+      /* We can encounter strange array types for temporary arrays.  */
       return gfc_index_zero_node;
     }
-
-  size = TYPE_SIZE_UNIT (etype);
-  if (n == BT_CHARACTER && size == NULL_TREE)
-    size = TYPE_SIZE_UNIT (TREE_TYPE (etype));
 
   tmp = get_dtype_type_node ();
   field = gfc_advance_chain (TYPE_FIELDS (tmp),
