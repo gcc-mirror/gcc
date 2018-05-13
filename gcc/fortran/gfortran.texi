@@ -1906,10 +1906,12 @@ or,
         pointer ( <pointer1> , <pointee1> ), ( <pointer2> , <pointee2> ), ...
 @end smallexample
 The pointer is an integer that is intended to hold a memory address.
-The pointee may be an array or scalar.  A pointee can be an assumed
-size array---that is, the last dimension may be left unspecified by
-using a @code{*} in place of a value---but a pointee cannot be an
-assumed shape array.  No space is allocated for the pointee.
+The pointee may be an array or scalar.
+If an assumed-size array is permitted within the scoping unit, a
+pointee can be an assumed-size array.
+That is, the last dimension may be left unspecified by using a @code{*}
+in place of a value. A pointee cannot be an assumed shape array.
+No space is allocated for the pointee.
 
 The pointee may have its type declared before or after the pointer
 statement, and its array specification (if any) may be declared
