@@ -73,6 +73,11 @@ extern unsigned int nds32_dbx_register_number (unsigned int);
 
 extern bool nds32_valid_smw_lwm_base_p (rtx);
 
+/* Auxiliary functions for manipulation DI mode.  */
+
+extern rtx nds32_di_high_part_subreg(rtx);
+extern rtx nds32_di_low_part_subreg(rtx);
+
 /* Auxiliary functions for expanding rtl used in nds32-multiple.md.  */
 
 extern rtx nds32_expand_load_multiple (int, int, rtx, rtx, bool, rtx *);
@@ -159,6 +164,10 @@ extern void nds32_expand_float_cstore (rtx *);
 extern enum nds32_expand_result_type nds32_expand_movcc (rtx *);
 extern void nds32_expand_float_movcc (rtx *);
 
+/* Auxiliary functions for expand extv/insv instruction.  */
+
+extern enum nds32_expand_result_type nds32_expand_extv (rtx *);
+extern enum nds32_expand_result_type nds32_expand_insv (rtx *);
 
 /* Auxiliary functions to identify long-call symbol.  */
 extern bool nds32_long_call_p (rtx);
@@ -193,6 +202,8 @@ extern const char *nds32_output_cbranchsi4_equality_reg_or_const_int (rtx_insn *
 								      rtx *);
 extern const char *nds32_output_cbranchsi4_greater_less_zero (rtx_insn *, rtx *);
 
+extern const char *nds32_output_unpkd8 (rtx, rtx, rtx, rtx, bool);
+
 extern const char *nds32_output_call (rtx, rtx *, rtx,
 				      const char *, const char *, bool);
 
@@ -203,9 +214,19 @@ extern const char *nds32_output_stack_push (rtx);
 extern const char *nds32_output_stack_pop (rtx);
 extern const char *nds32_output_return (void);
 
+
+/* Auxiliary functions to split/output sms pattern.  */
+extern bool nds32_need_split_sms_p (rtx, rtx, rtx, rtx);
+extern const char *nds32_output_sms (rtx, rtx, rtx, rtx);
+extern void nds32_split_sms (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+
 /* Auxiliary functions to split double word RTX pattern.  */
 
 extern void nds32_spilt_doubleword (rtx *, bool);
+extern void nds32_split_ashiftdi3 (rtx, rtx, rtx);
+extern void nds32_split_ashiftrtdi3 (rtx, rtx, rtx);
+extern void nds32_split_lshiftrtdi3 (rtx, rtx, rtx);
+extern void nds32_split_rotatertdi3 (rtx, rtx, rtx);
 
 /* Auxiliary functions to split large constant RTX pattern.  */
 
@@ -245,6 +266,14 @@ extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 
 /* Auxiliary functions for pre-define marco.  */
 extern void nds32_cpu_cpp_builtins(struct cpp_reader *);
+
+/* Auxiliary functions for const_vector's constraints.  */
+
+extern HOST_WIDE_INT const_vector_to_hwint (rtx);
+extern bool nds32_valid_CVp5_p (rtx);
+extern bool nds32_valid_CVs5_p (rtx);
+extern bool nds32_valid_CVs2_p (rtx);
+extern bool nds32_valid_CVhi_p (rtx);
 
 extern bool nds32_split_double_word_load_store_p (rtx *,bool);
 

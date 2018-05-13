@@ -1,3 +1,36 @@
+2018-05-13  Monk Chiang  <sh.chiang04@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config.gcc (nds32be-*-*): Handle --with-ext-dsp.
+	* config/nds32/constants.md (unspec_element, unspec_volatile_element):
+	Add enum values for DSP extension instructions.
+	* config/nds32/constraints.md (Iu06, IU06, CVp5, CVs5, CVs2, CVhi):
+	New constraints.
+	* config/nds32/iterators.md (shifts, shiftrt, sat_plus, all_plus,
+	sat_minus, all_minus, plus_minus, extend, sumax, sumin, sumin_max):
+	New code iterators.
+	(su, zs, uk, opcode, add_rsub, add_sub): New code attributes.
+	* config/nds32/nds32-dspext.md: New file for DSP implementation.
+	* config/nds32/nds32-intrinsic.c: Implementation of DSP extension.
+	* config/nds32/nds32-intrinsic.md: Likewise.
+	* config/nds32/nds32_intrinsic.h: Likewise.
+	* config/nds32/nds32-md-auxiliary.c: Likewise.
+	* config/nds32/nds32-memory-manipulation.c: Consider DSP extension.
+	* config/nds32/nds32-predicates.c (const_vector_to_hwint): New.
+	(nds32_valid_CVp5_p, nds32_valid_CVs5_p): New.
+	(nds32_valid_CVs2_p, nds32_valid_CVhi_p): New.
+	* config/nds32/nds32-protos.h: New declarations for DSP extension.
+	* config/nds32/nds32-utils.c (extract_mac_non_acc_rtx): New case
+	TYPE_DMAC in switch statement.
+	* config/nds32/nds32.c: New checking and implementation for DSP
+	extension instructions.
+	* config/nds32/nds32.h: Likewise.
+	* config/nds32/nds32.md: Likewise.
+	* config/nds32/nds32.opt (mhw-abs, mext-dsp): New options.
+	* config/nds32/predicates.md: Implement new predicates for DSP
+	extension.
+
 2018-05-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (mov<mode>_softfloat, FMOVE32):

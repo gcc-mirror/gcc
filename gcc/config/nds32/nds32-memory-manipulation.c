@@ -449,29 +449,44 @@ nds32_gen_dup_4_byte_to_word_value (rtx value)
     }
   else
     {
-      /* ! prepare word
-	 andi    $tmp1, $value, 0xff       ! $tmp1  <- 0x000000ab
-	 slli    $tmp2, $tmp1, 8           ! $tmp2  <- 0x0000ab00
-	 or      $tmp3, $tmp1, $tmp2       ! $tmp3  <- 0x0000abab
-	 slli    $tmp4, $tmp3, 16          ! $tmp4  <- 0xabab0000
-	 or      $val4word, $tmp3, $tmp4   ! $value4word  <- 0xabababab  */
+      if (NDS32_EXT_DSP_P ())
+	{
+	  /* ! prepare word
+	     insb    $tmp, $value, 1         ! $tmp  <- 0x0000abab
+	     pkbb16  $tmp6, $tmp2, $tmp2   ! $value4word  <- 0xabababab */
+	  rtx tmp = gen_reg_rtx (SImode);
 
-      rtx tmp1, tmp2, tmp3, tmp4, final_value;
-      tmp1 = expand_binop (SImode, and_optab, value,
-			   gen_int_mode (0xff, SImode),
-			   NULL_RTX, 0, OPTAB_WIDEN);
-      tmp2 = expand_binop (SImode, ashl_optab, tmp1,
-			   gen_int_mode (8, SImode),
-			   NULL_RTX, 0, OPTAB_WIDEN);
-      tmp3 = expand_binop (SImode, ior_optab, tmp1, tmp2,
-			   NULL_RTX, 0, OPTAB_WIDEN);
-      tmp4 = expand_binop (SImode, ashl_optab, tmp3,
-			   gen_int_mode (16, SImode),
-			   NULL_RTX, 0, OPTAB_WIDEN);
+	  convert_move (tmp, value, true);
 
-      final_value = expand_binop (SImode, ior_optab, tmp3, tmp4,
-				  NULL_RTX, 0, OPTAB_WIDEN);
-      emit_move_insn (value4word, final_value);
+	  emit_insn (
+	    gen_insvsi_internal (tmp, gen_int_mode (0x8, SImode), tmp));
+
+	  emit_insn (gen_pkbbsi_1 (value4word, tmp, tmp));
+	}
+      else
+	{
+	  /* ! prepare word
+	     andi    $tmp1, $value, 0xff       ! $tmp1  <- 0x000000ab
+	     slli    $tmp2, $tmp1, 8           ! $tmp2  <- 0x0000ab00
+	     or      $tmp3, $tmp1, $tmp2       ! $tmp3  <- 0x0000abab
+	     slli    $tmp4, $tmp3, 16          ! $tmp4  <- 0xabab0000
+	     or      $val4word, $tmp3, $tmp4   ! $value4word  <- 0xabababab  */
+
+	  rtx tmp1, tmp2, tmp3, tmp4;
+	  tmp1 = expand_binop (SImode, and_optab, value,
+			       gen_int_mode (0xff, SImode),
+			       NULL_RTX, 0, OPTAB_WIDEN);
+	  tmp2 = expand_binop (SImode, ashl_optab, tmp1,
+			       gen_int_mode (8, SImode),
+			       NULL_RTX, 0, OPTAB_WIDEN);
+	  tmp3 = expand_binop (SImode, ior_optab, tmp1, tmp2,
+			       NULL_RTX, 0, OPTAB_WIDEN);
+	  tmp4 = expand_binop (SImode, ashl_optab, tmp3,
+			       gen_int_mode (16, SImode),
+			       NULL_RTX, 0, OPTAB_WIDEN);
+
+	  emit_insn (gen_iorsi3 (value4word, tmp3, tmp4));
+	}
     }
 
   return value4word;
