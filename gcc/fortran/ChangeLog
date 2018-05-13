@@ -1,3 +1,11 @@
+2018-05-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85742
+	* trans-types.c (gfc_get_dtype_rank_type): Reorder evaluation
+	of 'size'. If the element type is a pointer use the size of the
+	TREE_TYPE of the type, unless it is VOID_TYPE. In this latter
+	case, set the size to zero.
+
 2018-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.h: Remove prototype.
@@ -7,7 +15,7 @@
 
 	PR fortran/85542
 	* expr.c (check_inquiry): Avoid NULL pointer dereference.
- 
+
 2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85687
