@@ -1,9 +1,17 @@
+2018-05-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68846
+	PR fortran/70864
+	Backport from trunk
+	* resolve.c (get_temp_from_expr): The temporary must not have
+	dummy or intent attributes.
+
 2018-05-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85542
 	Backport from trunk
 	* expr.c (check_inquiry): Avoid NULL pointer dereference.
- 
+
 2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/70870
