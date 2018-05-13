@@ -1,3 +1,8 @@
+2018-05-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/80165
+	* testsuite/20_util/variant/80165.cc: New.
+
 2018-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml: Link to C++17 status. Add note to outdated answer.
