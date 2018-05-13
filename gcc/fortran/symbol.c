@@ -3484,22 +3484,6 @@ find_common_symtree (gfc_symtree *st, gfc_common_head *head)
 }
 
 
-/* Clear the given storage, and make it the current change set for registering
-   changed symbols.  Its contents are freed after a call to
-   gfc_restore_last_undo_checkpoint or gfc_drop_last_undo_checkpoint, but
-   it is up to the caller to free the storage itself.  It is usually a local
-   variable, so there is nothing to do anyway.  */
-
-void
-gfc_new_undo_checkpoint (gfc_undo_change_set &chg_syms)
-{
-  chg_syms.syms = vNULL;
-  chg_syms.tbps = vNULL;
-  chg_syms.previous = latest_undo_chgset;
-  latest_undo_chgset = &chg_syms;
-}
-
-
 /* Restore previous state of symbol.  Just copy simple stuff.  */
 
 static void
