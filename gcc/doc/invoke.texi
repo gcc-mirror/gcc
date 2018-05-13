@@ -29166,11 +29166,11 @@ encoding the exported declarations of the module.  Importing a module
 reads in the BMI.  The dependency graph of imports is a Directed
 Acyclic Graph (DAG).
 
-A query oracle provides a line-based server that the compiler queries
-to determine the mapping between module names and BMI files.  It is
-also used to build BMIs on demand.  A specific oracle may be specified
-with the @option{-fmodule-server=@var{val}} option.  The operand may
-have one of the following forms:
+An oracle provides a line-based server that the compiler queries to
+determine the mapping between module names and BMI files.  It is also
+used to build BMIs on demand.  A specific oracle may be specified with
+the @option{-fmodule-server=@var{val}} option.  The operand may have
+one of the following forms:
 
 @itemize
 
@@ -29198,39 +29198,112 @@ leading or trailing whitespace to disambiguate.
 The oracle is connected to lazily, when the first module mapping is
 required.  The networking protocols are only supported on hosts that
 provide networking.  If no oracle is specified, the
-@var{CXX_MODULE_ORACLE} environment variable is inspected.  If that is
+@var{CXX_MODULE_SERVER} environment variable is inspected.  If that is
 empty or unset, a default is provided.
 
-The server should accept and respond to the following commands:
+Messages consiste of whitespace-separated tokens.  This implicitly
+means filenames containing whitespace are not supported.  Each line is
+terminated by a line-feed (0xa) character.  The server should accept
+and respond to the following commands:
 
 @itemize
 
-@item @samp{HELO} @var{version} @var{main-filename}
-This is the first command.  @var{version} is currently @code{0}.  It
-informs the server of the name of the source file being compiled.
-Response is either '200 Ok', or '520 Bad Version'.
+@item @samp{HELLO} @var{$ver} @var{$srcpath}
+This is the first command.  It informs the server of the name of the
+source file being compiled.  Response is either `@samp{OK}
+@var{$ver}', or `@samp{ERROR} @var{$errormsg}'.
 
-@item [+]@samp{IMPT} @var{module-name}
-The compilation need to import @var{module-name}, including the case
-of a module implementation unit.  If a leading @code{+} is given a
-response should be deferred until the compiler emits a blank line.  At
-that point all deferred queries should respond, in arbitrary order.
-Each response is @code{250 @var{module-name} @var{bmi-filename}}, if the
-BMI is available.  If a BMI is not available (for instance its
-compilation failed), the response should be @code{550
-@var{module-name}}.  Such a response will cause compilation to terminate.
+@item @samp{HELLO} @var{$ver} @var{$srcbase} @var{$srcpath}
+FIXME
 
-@item @samp{EXPT} @var{module-name}
+@item [@samp{DEFER}] @var{$query} @var{$module} [@var{$from}]
+A query for an import (including for a module implementation unit).
+The @var{$query} may be a combination of @samp{BMI}, @samp{SEARCH} or
+@samp{PATH}, concatentated with @samp{|}.  The response should be one
+of `@samp{BMI} @var{$bmipath}', `@samp{SEARCH} @var{$srcbase}' or
+``@samp{PATH} @var{$srcpath}' respectively.  If the request is not
+fulfilable, the response is `@samp{ERROR} [@var{msg}]'.  Usually an
+error response will cause compilation to terminate.  When the query is
+multiplicative, the first possible response should be give.  If
+@samp{DEFER} is used, the response may be deferred and
+`@samp{DEFERRED}' is the immediate response.  (Deferred queries have
+not been implemented.)
+
+@item @samp{EXPORT} @var{$module}
 The compilation is of a module interface unit, and will generate a BMI
-for @var{module-name}.  The response should be @code{250 @var{module-name}
-@var{bmi-filename}}.
+for @var{module-name}.  The response should be `@samp{BMI} @var{bmifile}'.
 
-@item @samp{DONE} @var{module-name}
+@item @samp{DONE} @var{$module}
 The compilation has succesfully produced a BMI file for
-@var{module-name}.  No response is needed.  Note that the compilation
-may not have completed the object-file generation of the interface unit.
+@var{module-name}.  The response should be `@samp{OK}'.  Note that the
+compilation may not have completed the object-file generation of the
+interface unit.
+
+@item @samp{DEFERRED}
+Request for a deferred response.  There must be at least one
+outstanding import query.  The response is as for a non-deferred
+query, except it is prefixed by `@samp{DEFERRED} @var{$module}', so it
+may be linked to the orignal request.
+
+@item @samp{INCLUDE} @var{$header} @var{$from}
+A @code{#include} directive for @var{$header} is about to be processed
+while preprocessing @var{$from}, in legacy header mode.  The response
+informs the compiler how to treat the inclusion.  A response of
+`@samp{INCLUDE}' causes textual inclusion.  A response of
+`@samp{IMPORT}' causes importation.  (A subsequent import query will
+be forthcoming.)  (This is not implemented.)
+
+@item @samp{HELP} [@var{$cmd}]
+A help request.  The response is `@samp{HELP} @var{$msg}'.
 
 @end itemize
+
+It is recommended that any unrecognized command, causes a @samp{HELP}
+response.
+
+The following metavariables were used:
+
+@itemize
+
+@item @var{$ver}
+A numeric version number.
+
+@item @var{$srcpath}
+A path to a source file.
+
+@item @var{$srcbase}
+A basename of a source file to search for.
+
+@item @var{$module}
+A module name.  Legacy header module names are surrounded by @code{<>}
+or @code{""} pairs
+
+@item @var{$from}
+The source path of the file containing the import or include.
+
+@item @var{$bmipath}
+Pathname of a BMI file.
+
+@item @var{$msg}
+A human readable message.  This may contain whitespace.
+
+@end itemize
+
+A project-specific oracle is expected to be provided by the build
+system that invokes the compiler.  It is not expected that a
+general-purpose server is provided for all compilations.  As such, the
+server will know the build configuration, the compiler it invoked, and
+the environment (such as working directory) in which that is
+operating.  As it may parallelize builds, several compilations may
+connect to the same socket.  The @var{$srcpath} token of the
+@samp{HELLO} command will allow it to distinguish between different
+connections.
+
+When delivering paths to the compiler, paths relative to the
+compiler's working directory should be used.  A compiler may embed the
+path to a nested BMI file in an output BMI.  Such a path reduces the
+server traffic, but may require the build system to recreate the same
+directory structure across parellelized build systems.
 
 The default oracle generates BMI files in the current directory,
 mapping @code{.} to @code{-} and appending a @samp{.nms} suffix.  It will

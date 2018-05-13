@@ -59,7 +59,7 @@ compile () {
 
     $verbose && echo "$progname: compiling module interface $module ($src)" >&2
     cmd+=" $action $src"
-    $cmd
+    $cmd || echo "compilation $src failed"
 }
 
 while test "$#" != 0 ; do
@@ -75,39 +75,45 @@ while read cmd arg0 arg1 ; do
     $verbose && echo "$progname< $cmd $arg0 $arg1" >&2
     resp=
     case "$cmd" in
-	(HELO)
+	(HELLO)
 	    if test $arg0 = $VERSION ; then
 		main="$arg1"
-		resp="200 OK"
+		resp="HELLO $VERSION"
 	    else
-		resp="520 Bad Version (expect $VERSION)"
+		resp="ERROR Bad Version (expect $VERSION)"
 	    fi
 	    ;;
-	(IMPT)
+	(BMI)
 	    file=$(echo $arg0 | tr . -)
-	    if test -e $file.nms || compile $file ; then
-		resp="250 $arg0 $file.nms"
+	    comp=
+	    if ! test -e $file.nms ; then
+		resp=$(compile $file)
+	    fi
+	    if test -e $file.nms ; then
+		resp="BMI $file.nms"
 	    else
-		resp="550 $arg0"
+		resp="ERROR $resp"
 	    fi
 	    ;;
-	(EXPT)
+	(EXPORT)
 	    file=$(echo $arg0 | tr . -)
-	    resp="250 $arg0 $file.nms"
+	    resp="BMI $file.nms"
 	    ;;
-	(DONE)  ;;
+	(DONE)
+	    resp="OK"
+	    ;;
 	(HELP)
 	    case "$arg0" in
-		(HELO) resp="HELO <ver> <src>" ;;
-		(IMPT) resp="IMPT <module>" ;;
-		(EXPT) resp="EXPT <module>" ;;
+		(HELLO) resp="HELLO <ver> <src>" ;;
+		(BMI) resp="BMI <module>" ;;
+		(EXPORT) resp="EXPORT <module>" ;;
 		(DONE) resp="DONE <module>" ;;
-		(*) resp="201 HELO, IMPT, EXPT, DONE" ;;
+		(*) resp="HELP HELLO, BMI, EXPORT, DONE" ;;
 	    esac
 	    ;;
 	(*)
 	    echo "Unknown command '$cmd'" >&2
-	    resp="501 Bad Request"
+	    resp="ERROR Bad Request"
 	    ;;
     esac
     if test "$resp" ; then

@@ -1135,76 +1135,77 @@ elf_out::begin ()
 bool
 elf_out::end ()
 {
-  /* Write the string table.  */
-  unsigned strndx = strings.write (this);
-
-  uint32_t shoff = pad ();
-  unsigned shnum = sections->length ();
-
-  /* Write section table */
-  for (unsigned ix = 0; ix != sections->length (); ix++)
+  if (stream)
     {
-      const isection *isec = &(*sections)[ix];
-      section section;
-      memset (&section, 0, sizeof (section));
-      section.name = isec->name;
-      section.type = isec->type;
-      section.offset = isec->offset;
-      section.size = isec->size;
-      section.flags = isec->flags;
-      section.entsize = 0;
-      if (isec->flags & SHF_STRINGS)
-	section.entsize = 1;
+      /* Write the string table.  */
+      unsigned strndx = strings.write (this);
 
-      if (!ix)
+      uint32_t shoff = pad ();
+      unsigned shnum = sections->length ();
+
+      /* Write section table */
+      for (unsigned ix = 0; ix != sections->length (); ix++)
 	{
-	  /* Store escape values in section[0].  */
-	  if (strndx >= SHN_LORESERVE)
+	  const isection *isec = &(*sections)[ix];
+	  section section;
+	  memset (&section, 0, sizeof (section));
+	  section.name = isec->name;
+	  section.type = isec->type;
+	  section.offset = isec->offset;
+	  section.size = isec->size;
+	  section.flags = isec->flags;
+	  section.entsize = 0;
+	  if (isec->flags & SHF_STRINGS)
+	    section.entsize = 1;
+
+	  if (!ix)
 	    {
-	      section.link = strndx;
-	      strndx = SHN_XINDEX;
+	      /* Store escape values in section[0].  */
+	      if (strndx >= SHN_LORESERVE)
+		{
+		  section.link = strndx;
+		  strndx = SHN_XINDEX;
+		}
+	      if (shnum >= SHN_LORESERVE)
+		{
+		  section.size = shnum;
+		  shnum = SHN_XINDEX;
+		}
 	    }
-	  if (shnum >= SHN_LORESERVE)
-	    {
-	      section.size = shnum;
-	      shnum = SHN_XINDEX;
-	    }
+
+	  if (!write (&section, sizeof (section)))
+	    break;
 	}
 
-      if (!write (&section, sizeof (section)))
-	goto out;
+      /* Write header.  */
+      if (fseek (stream, 0, SEEK_SET))
+	set_error (errno);
+      else
+	{
+	  /* Write the correct header now.  */
+	  header header;
+	  memset (&header, 0, sizeof (header));
+	  header.ident.magic[0] = 0x7f;
+	  header.ident.magic[1] = 'E';	/* Elrond */
+	  header.ident.magic[2] = 'L';	/* is an */
+	  header.ident.magic[3] = 'F';	/* elf.  */
+	  header.ident.klass = MY_CLASS;
+	  header.ident.data =  MY_ENDIAN;
+	  header.ident.version = EV_CURRENT;
+	  header.ident.osabi = OSABI_NONE;
+	  header.type = ET_NONE;
+	  header.machine = EM_NONE;
+	  header.version = EV_CURRENT;
+	  header.shoff = shoff;
+	  header.ehsize = sizeof (header);
+	  header.shentsize = sizeof (section);
+	  header.shnum = shnum;
+	  header.shstrndx = strndx;
+
+	  write (&header, sizeof (header));
+	}
     }
 
-  /* Write header.  */
-  if (fseek (stream, 0, SEEK_SET))
-    {
-      set_error (errno);
-      goto out;
-    }
-
-  /* Write the correct header now.  */
-  header header;
-  memset (&header, 0, sizeof (header));
-  header.ident.magic[0] = 0x7f;
-  header.ident.magic[1] = 'E';	/* Elrond */
-  header.ident.magic[2] = 'L';	/* is an */
-  header.ident.magic[3] = 'F';	/* elf.  */
-  header.ident.klass = MY_CLASS;
-  header.ident.data =  MY_ENDIAN;
-  header.ident.version = EV_CURRENT;
-  header.ident.osabi = OSABI_NONE;
-  header.type = ET_NONE;
-  header.machine = EM_NONE;
-  header.version = EV_CURRENT;
-  header.shoff = shoff;
-  header.ehsize = sizeof (header);
-  header.shentsize = sizeof (section);
-  header.shnum = shnum;
-  header.shstrndx = strndx;
-
-  write (&header, sizeof (header));
-
- out:
   return parent::end ();
 }
 
@@ -6288,67 +6289,132 @@ server_fini ()
   module_server = const_cast<char *> ("");
 }
 
+// FIXME: I should probably objectify this
+static size_t server_size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
+static char *server_buffer = NULL;
+static char *server_pos = NULL;
+static char *server_end = NULL;
+
 /* Read a response from the server.  Return the numeric code and
    remaining response buffer.  The buffer is owned by this routine and
    reused on subsequent responses.  Return 0 on error.  */
 
-static int
-server_response (char *&resp)
+static bool
+server_response ()
 {
   /* Exercise buffer expansion.  */
-  static size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
-  static char *buffer = NULL;
   size_t pos = 0;
+  char *buffer = server_buffer;
 
   if (!buffer)
-    buffer = XNEWVEC (char, size);
+    buffer = XNEWVEC (char, server_size);
 
  more:
-  if (!fgets (buffer + pos, size - pos, server_read))
+  if (!fgets (buffer + pos, server_size - pos, server_read))
     {
       const char *err = ferror (server_read) ? "error" : "end of file";
-      resp = const_cast <char *> (err);
       error ("unexpected %s from module server %qs", err, module_server);
       server_fini ();
-      return 0;
-    }
-
-  pos += strlen (buffer + pos);
-  if (buffer[pos - 1] != '\n')
-    {
-      size *= 2;
-      buffer = XRESIZEVEC (char, buffer, size);
-      goto more;
-    }
-
-  buffer[pos - 1] = 0;
-  char *ptr = buffer;
-  char *endp;
-  unsigned long code = strtoul (ptr, &endp, 10);
-  if (endp != ptr && ISSPACE (*endp) && code < 1000)
-    {
-      /* Skip whitespace.  */
-      for (ptr = endp; ISSPACE (*ptr); ptr++)
-	continue;
+      pos = 0;
     }
   else
-    code = 0;
-  resp = ptr;
-  return code;
+    {
+      pos += strlen (buffer + pos);
+      if (buffer[pos - 1] != '\n')
+	{
+	  server_size *= 2;
+	  buffer = XRESIZEVEC (char, buffer, server_size);
+	  goto more;
+	}
+      pos--;
+    }
+
+  buffer[pos] = 0;
+  server_buffer = buffer;
+  server_end = server_buffer + pos;
+  while (ISSPACE (*buffer))
+    buffer++;
+  server_pos = buffer;
+
+  return true;
 }
 
 static void
-server_unexpected (const char *cmd, int code, char *resp)
+server_unexpected ()
 {
-  error ("unexpected server %s: %d %qs", cmd, code, resp);
-  server_fini ();
+  for (char *pos = server_buffer; pos != server_pos; pos++)
+    if (!*pos)
+      *pos = ' ';
+  error ("unexpected server response %qs", server_buffer);
+}
+
+static char *
+server_token (bool all = false)
+{
+  char *pos = server_pos;
+
+  if (all)
+    server_pos = server_end;
+  else
+    {
+      char *end = pos;
+      while (end != server_end && !ISSPACE (*end))
+	end++;
+
+      if (end != server_end)
+	{
+	  *end++ = 0;
+	  while (end != server_end && ISSPACE (*end))
+	    end++;
+	}
+      server_pos = end;
+      if (pos == server_pos)
+	{
+	  server_unexpected ();
+	  pos = NULL;
+	}
+    }
+
+  return pos;
+}
+
+static bool
+server_end_p ()
+{
+  return server_pos == server_end;
 }
 
 static void
-server_malformed (const char *cmd, int code, char *resp)
+server_error ()
 {
-  error ("malformed server %s: %d %qs", cmd, code, resp);
-  server_fini ();
+  char *err = server_token (true);
+  error ("server error %qs", err ? err : "unspecfied");
+}
+
+static int
+server_word (const char *option, ...)
+{
+  if (const char *tok = server_token ())
+    {
+      va_list args;
+      int count = 0;
+
+      va_start (args, option);
+      do
+	{
+	  if (!strcmp (option, tok))
+	    {
+	      va_end (args);
+	      return count;
+	    }
+	  count++;
+	  option = va_arg (args, const char *);
+	}
+      while (option);
+      va_end (args);
+      server_unexpected ();
+    }
+  return -1;
 }
 
 /*  Module server protocol:
@@ -6619,15 +6685,29 @@ server_init ()
   setvbuf (server_write, NULL, _IOLBF, 0);
 
   dump () && dump ("Initialized server");
-  fprintf (server_write, "HELO %d %s\n",
+  fprintf (server_write, "HELLO %d %s\n",
 	   MODULE_STAMP ? -version2date (get_version ()) : SERVER_VERSION,
 	   main_input_filename);
-  char *resp;
-  int code = server_response (resp);
-  if (code != 200)
+  if (!server_response ())
+    return false;
+
+  switch (server_word ("HELLO", "ERROR", NULL))
     {
-      /* Magic eight ball says 'no'.  */
-      server_unexpected ("HELO", code, resp);
+    default:
+      return false;
+
+    case 0: /* HELLO $ver */
+      {
+	char *ver = server_token ();
+	if (!ver)
+	  return false;
+	dump () && dump ("Connected to server version %s", ver);
+      }
+      break;
+
+    case 1: /* ERROR $msg */
+      server_error ();
+      server_fini ();
       return false;
     }
 
@@ -6644,10 +6724,8 @@ server_module_filename (tree name, bool rnw, const char *filename = NULL)
     {
       if (!server_read && !server_init ())
 	{
-	  /* This seems the most appropriate error to simulate if there's
-	     no server.  */
 	failed:
-	  errno = ENOMSG;
+	  errno = ENOENT;
 	  return NULL;
 	}
 
@@ -6658,30 +6736,26 @@ server_module_filename (tree name, bool rnw, const char *filename = NULL)
 	  fflush (stderr);
 	}
 
-      const char *cmd = rnw ? "IMPT" : "EXPT";
+      const char *cmd = rnw ? "BMI" : "EXPORT";
       fprintf (server_write, "%s %s\n", cmd, IDENTIFIER_POINTER (name));
-
-      char *resp;
-      int code = server_response (resp);
-
-      if (code != 250 && code != 550)
-	{
-	  server_unexpected (cmd, code, resp);
-	  goto failed;
-	}
-
-      if (strncmp (resp, IDENTIFIER_POINTER (name)
-		   , IDENTIFIER_LENGTH (name))
-	  || (code == 550 && resp[IDENTIFIER_LENGTH (name)])
-	  || (code == 250 && !ISSPACE (resp[IDENTIFIER_LENGTH (name)])))
-	{
-	  server_malformed (cmd, code, resp);
-	  goto failed;
-	}
-
-      if (code == 550)
+      if (!server_response ())
 	goto failed;
-      filename = resp + IDENTIFIER_LENGTH (name) + 1;
+      switch (server_word ("BMI", "ERROR", NULL))
+	{
+	default:
+	  goto failed;
+
+	case 0: /* BMI $bmifile  */
+	  filename = server_token ();
+	  if (!filename)
+	    goto failed;
+	  break;
+
+	case 1: /* ERROR $msg */
+	  if (!server_end_p ())
+	    server_error ();
+	  goto failed;
+	}
     }
 
   return xstrdup (filename);
@@ -6692,6 +6766,8 @@ server_done (tree name)
 {
   dump () && dump ("Completed server");
   fprintf (server_write, "DONE %s\n", IDENTIFIER_POINTER (name));
+  if (server_response ())
+    server_word ("OK", NULL);
 }
 
 /* Set VEC_NAME fields from incoming VNAME, which may be a regular
@@ -8603,7 +8679,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
     release (false);
 
   if (e && outermost)
-    fatal_error (loc, "declining opportunity to proceed into weeds");
+    fatal_error (loc, "jumping off the crazy train to crashville");
 
   return e;
 }
@@ -8924,7 +9000,6 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  gcc_assert (!state->filename);
 	  state->filename
 	    = server_module_filename (state->name, true, filename);
-	  
 	  FILE *stream = state->filename ? fopen (state->filename, "rb") : NULL;
 	  int e = errno;
 

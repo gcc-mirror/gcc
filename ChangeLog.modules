@@ -1,3 +1,18 @@
+2018-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	Redo the server protocol.
+	gcc/cp/
+	*cxx-module-server.sh: Update protocol.
+	* module.c (elf_out::end): Protect from NULL stream.
+	(server_size, server_buffer, server_pos, server_end): New.
+	(server_response, server_token, server_word): New.
+	(server_end_p): New.
+	(server_malformed): Delete.
+	(server_init, server_module_filename, server_done): Adjust.
+	(module_state::do_import): Adjust.
+	gcc/
+	* doc/invoke (C++ Modules): Update server protocol.
+
 2018-05-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
