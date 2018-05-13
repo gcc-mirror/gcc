@@ -931,6 +931,88 @@ n10_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
   return false;
 }
 
+/* Check the dependency between the producer defining DEF_REG and CONSUMER
+   requiring input operand at EX.  */
+bool
+gw_consumed_by_ex_dep_p (rtx_insn *consumer, rtx def_reg)
+{
+  rtx use_rtx;
+
+  switch (get_attr_type (consumer))
+    {
+    case TYPE_ALU:
+    case TYPE_PBSAD:
+    case TYPE_MUL:
+    case TYPE_DALU:
+    case TYPE_DALU64:
+    case TYPE_DMUL:
+    case TYPE_DPACK:
+    case TYPE_DINSB:
+    case TYPE_DCMP:
+    case TYPE_DCLIP:
+    case TYPE_DALUROUND:
+      use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_ALU_SHIFT:
+      use_rtx = extract_shift_reg (consumer);
+      break;
+
+    case TYPE_PBSADA:
+      return pbsada_insn_ra_rb_dep_reg_p (consumer, def_reg);
+
+    case TYPE_MAC:
+    case TYPE_DMAC:
+      use_rtx = extract_mac_non_acc_rtx (consumer);
+      break;
+
+   /* Some special instructions, divmodsi4 and udivmodsi4, produce two
+      results, the quotient and the remainder.  We have to check the
+      dependency from the producer to the first micro-operation.  */
+    case TYPE_DIV:
+      if (divmod_p (consumer))
+	use_rtx = SET_SRC (parallel_element (consumer, 0));
+      else
+	use_rtx = SET_SRC (PATTERN (consumer));
+      break;
+
+    case TYPE_DWEXT:
+      return wext_odd_dep_p (consumer, def_reg);
+
+    case TYPE_DBPICK:
+      return bpick_ra_rb_dep_p (consumer, def_reg);
+
+    case TYPE_MMU:
+      if (GET_CODE (PATTERN (consumer)) == SET)
+	use_rtx = SET_SRC (PATTERN (consumer));
+      else
+	return true;
+      break;
+
+    case TYPE_LOAD:
+    case TYPE_STORE:
+      use_rtx = extract_mem_rtx (consumer);
+      break;
+
+    case TYPE_LOAD_MULTIPLE:
+    case TYPE_STORE_MULTIPLE:
+      use_rtx = extract_base_reg (consumer);
+      break;
+
+    case TYPE_BRANCH:
+      use_rtx = PATTERN (consumer);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (reg_overlap_p (def_reg, use_rtx))
+    return true;
+
+  return false;
+}
+
 /* Check dependencies from any stages to ALU_E1 (E1).  This is a helper
    function of n13_consumed_by_e1_dep_p ().  */
 bool
@@ -1530,6 +1612,67 @@ nds32_n10_last_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
   rtx last_def_reg = extract_nth_access_reg (producer, -1);
 
   return n10_consumed_by_ex_dep_p (consumer, last_def_reg);
+}
+
+/* Guard functions for Graywolf cores.  */
+
+/* Check dependencies from EX to EX (ADDR_OUT -> ADDR_IN).  */
+bool
+nds32_gw_ex_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  return nds32_n10_ex_to_ex_p (producer, consumer);
+}
+
+/* Check dependencies from MM to EX.  */
+bool
+nds32_gw_mm_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx def_reg;
+
+  switch (get_attr_type (producer))
+    {
+    case TYPE_LOAD:
+    case TYPE_MUL:
+    case TYPE_MAC:
+    case TYPE_DALU64:
+    case TYPE_DMUL:
+    case TYPE_DMAC:
+    case TYPE_DALUROUND:
+    case TYPE_DBPICK:
+    case TYPE_DWEXT:
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+   /* Some special instructions, divmodsi4 and udivmodsi4, produce two
+      results, the quotient and the remainder.  We have to handle them
+      individually.  */
+    case TYPE_DIV:
+      if (divmod_p (producer))
+	{
+	  rtx def_reg1 = SET_DEST (parallel_element (producer, 0));
+	  rtx def_reg2 = SET_DEST (parallel_element (producer, 1));
+
+	  return (gw_consumed_by_ex_dep_p (consumer, def_reg1)
+		  || gw_consumed_by_ex_dep_p (consumer, def_reg2));
+	}
+
+      def_reg = SET_DEST (PATTERN (producer));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+    return gw_consumed_by_ex_dep_p (consumer, def_reg);
+}
+
+/* Check dependencies from LMW(N, N) to EX.  */
+bool
+nds32_gw_last_load_to_ex_p (rtx_insn *producer, rtx_insn *consumer)
+{
+  rtx last_def_reg = extract_nth_access_reg (producer, -1);
+
+  return gw_consumed_by_ex_dep_p (consumer, last_def_reg);
 }
 
 /* Guard functions for N12/N13 cores.  */

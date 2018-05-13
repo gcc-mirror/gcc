@@ -288,6 +288,27 @@ EnumValue
 Enum(nds32_cpu_type) String(d1088-spu) Value(CPU_N10)
 
 EnumValue
+Enum(nds32_cpu_type) Undocumented String(graywolf) Value(CPU_GRAYWOLF)
+
+EnumValue
+Enum(nds32_cpu_type) String(n15) Value(CPU_GRAYWOLF)
+
+EnumValue
+Enum(nds32_cpu_type) String(d15) Value(CPU_GRAYWOLF)
+
+EnumValue
+Enum(nds32_cpu_type) String(n15s) Value(CPU_GRAYWOLF)
+
+EnumValue
+Enum(nds32_cpu_type) String(d15s) Value(CPU_GRAYWOLF)
+
+EnumValue
+Enum(nds32_cpu_type) String(n15f) Value(CPU_GRAYWOLF)
+
+EnumValue
+Enum(nds32_cpu_type) String(d15f) Value(CPU_GRAYWOLF)
+
+EnumValue
 Enum(nds32_cpu_type) String(n12) Value(CPU_N12)
 
 EnumValue
