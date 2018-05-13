@@ -1,3 +1,8 @@
+2018-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.h: Remove prototype.
+	* symbol.c (gfc_new_undo_checkpoint): Remove unused function.
+
 2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85542
