@@ -215,7 +215,7 @@ void
 qsort_chk (void *base, size_t n, size_t size,
 	   int (*cmp)(const void *, const void *))
 {
-  (qsort) (base, n, size, cmp);
+  gcc_qsort (base, n, size, cmp);
 #if 0
 #define LIM(n) (n)
 #else
