@@ -56,12 +56,13 @@
 ;; ------------------------------------------------------------------------
 
 ;; CPU pipeline model.
-(define_attr "pipeline_model" "n7,n8,e8,n9,simple"
+(define_attr "pipeline_model" "n7,n8,e8,n9,n10,simple"
   (const
     (cond [(match_test "nds32_cpu_option == CPU_N7")  (const_string "n7")
 	   (match_test "nds32_cpu_option == CPU_E8")  (const_string "e8")
 	   (match_test "nds32_cpu_option == CPU_N6 || nds32_cpu_option == CPU_N8")  (const_string "n8")
 	   (match_test "nds32_cpu_option == CPU_N9")  (const_string "n9")
+	   (match_test "nds32_cpu_option == CPU_N10") (const_string "n10")
 	   (match_test "nds32_cpu_option == CPU_SIMPLE") (const_string "simple")]
 	  (const_string "n9"))))
 
