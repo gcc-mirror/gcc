@@ -1,6 +1,19 @@
 2018-05-13  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config.gcc (nds32*-*-*): Check that n12/n13 are valid to --with-cpu.
+	* config/nds32/nds32-n13.md: New file.
+	* config/nds32/nds32-opts.h (nds32_cpu_type): Add CPU_N12 and CPU_N13.
+	* config/nds32/nds32-pipelines-auxiliary.c: Implementation for n12/n13
+	pipeline.
+	* config/nds32/nds32-protos.h: More declarations for n12/n13 pipeline.
+	* config/nds32/nds32.md (pipeline_model): Add n13.
+	* config/nds32/nds32.opt (mcpu): Support n12/n13 pipeline cpus.
+	* config/nds32/pipelines.md: Include n13 settings.
+
+2018-05-13  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config.gcc (nds32*-*-*): Check that n10/d10 are valid to --with-cpu.
 	* config/nds32/nds32-n10.md: New file.
 	* config/nds32/nds32-opts.h (nds32_cpu_type): Add CPU_N10.

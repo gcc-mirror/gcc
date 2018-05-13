@@ -288,6 +288,33 @@ EnumValue
 Enum(nds32_cpu_type) String(d1088-spu) Value(CPU_N10)
 
 EnumValue
+Enum(nds32_cpu_type) String(n12) Value(CPU_N12)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1213) Value(CPU_N12)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1233) Value(CPU_N12)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1233-fpu) Value(CPU_N12)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1233-spu) Value(CPU_N12)
+
+EnumValue
+Enum(nds32_cpu_type) String(n13) Value(CPU_N13)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1337) Value(CPU_N13)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1337-fpu) Value(CPU_N13)
+
+EnumValue
+Enum(nds32_cpu_type) String(n1337-spu) Value(CPU_N13)
+
+EnumValue
 Enum(nds32_cpu_type) String(simple) Value(CPU_SIMPLE)
 
 mconfig-fpu=
