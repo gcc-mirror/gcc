@@ -125,6 +125,10 @@ extern bool nds32_n10_ex_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n10_mm_to_ex_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n10_last_load_to_ex_p (rtx_insn *, rtx_insn *);
 
+extern bool nds32_gw_ex_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_gw_mm_to_ex_p (rtx_insn *, rtx_insn *);
+extern bool nds32_gw_last_load_to_ex_p (rtx_insn *, rtx_insn *);
+
 extern bool nds32_n13_e2_to_e1_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n13_load_to_e1_p (rtx_insn *, rtx_insn *);
 extern bool nds32_n13_load_to_e2_p (rtx_insn *, rtx_insn *);
@@ -297,11 +301,13 @@ bool load_single_p (rtx_insn *);
 bool store_single_p (rtx_insn *);
 bool load_double_p (rtx_insn *);
 bool store_double_p (rtx_insn *);
+bool store_offset_reg_p (rtx_insn *);
 bool post_update_insn_p (rtx_insn *);
 bool immed_offset_p (rtx);
 int find_post_update_rtx (rtx_insn *);
 rtx extract_mem_rtx (rtx_insn *);
 rtx extract_base_reg (rtx_insn *);
+rtx extract_offset_rtx (rtx_insn *);
 
 rtx extract_shift_reg (rtx);
 

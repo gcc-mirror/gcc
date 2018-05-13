@@ -43,6 +43,7 @@ enum nds32_cpu_type
   CPU_E8,
   CPU_N9,
   CPU_N10,
+  CPU_GRAYWOLF,
   CPU_N12,
   CPU_N13,
   CPU_SIMPLE
