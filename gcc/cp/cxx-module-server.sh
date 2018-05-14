@@ -33,6 +33,11 @@ compile () {
     local module=$1
     local ign=false
     local cmd="$COLLECT_GCC"
+
+    if test -z "$cmd" ; then
+	echo "not inferior of compiler driver"
+	return
+    fi
     local action=-c
     local arg
     for arg in $(eval echo $COLLECT_GCC_OPTIONS)
@@ -54,7 +59,8 @@ compile () {
     src="${src#./}"
 
     if test -z "$src" -o ! -e "$src" ; then
-	return 1
+	echo "cannot find module source"
+	return
     fi
 
     $verbose && echo "$progname: compiling module interface $module ($src)" >&2
@@ -71,20 +77,20 @@ while test "$#" != 0 ; do
     shift
 done
 
-while read cmd arg0 arg1 ; do
-    $verbose && echo "$progname< $cmd $arg0 $arg1" >&2
+while read -a args -p "moracle>" ; do
+    $verbose && echo "$progname< ${args[@]}" >&2
     resp=
-    case "$cmd" in
+    case "${args[0]}" in
 	(HELLO)
-	    if test $arg0 = $VERSION ; then
-		main="$arg1"
+	    if test "${args[1]}" = $VERSION ; then
+		main="${args[2]}"
 		resp="HELLO $VERSION"
 	    else
 		resp="ERROR Bad Version (expect $VERSION)"
 	    fi
 	    ;;
 	(BMI)
-	    file=$(echo $arg0 | tr . -)
+	    file=$(echo ${args[1]} | tr . -)
 	    comp=
 	    if ! test -e $file.nms ; then
 		resp=$(compile $file)
@@ -96,23 +102,23 @@ while read cmd arg0 arg1 ; do
 	    fi
 	    ;;
 	(EXPORT)
-	    file=$(echo $arg0 | tr . -)
+	    file=$(echo ${args[1]} | tr . -)
 	    resp="BMI $file.nms"
 	    ;;
 	(DONE)
 	    resp="OK"
 	    ;;
 	(HELP)
-	    case "$arg0" in
+	    case "${args[1]}" in
 		(HELLO) resp="HELLO <ver> <src>" ;;
-		(BMI) resp="BMI <module>" ;;
+		(BMI) resp="BMI <module> [<from>]" ;;
 		(EXPORT) resp="EXPORT <module>" ;;
 		(DONE) resp="DONE <module>" ;;
 		(*) resp="HELP HELLO, BMI, EXPORT, DONE" ;;
 	    esac
 	    ;;
 	(*)
-	    echo "Unknown command '$cmd'" >&2
+	    echo "Unknown command '${args[0]}'" >&2
 	    resp="ERROR Bad Request"
 	    ;;
     esac

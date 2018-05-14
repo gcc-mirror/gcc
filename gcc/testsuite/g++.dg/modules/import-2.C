@@ -3,6 +3,7 @@
 // { dg-module-bmi "!bob" }
 
 import bob;  // { dg-error "failed to import" }
-// { dg-error "jumping off" "" { target *-*-* } .-1 }
+// { dg-prune-output "fatal error:" }
+// { dg-prune-output "server error" }
 // { dg-prune-output "compilation terminated" }
 

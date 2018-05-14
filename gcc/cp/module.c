@@ -6417,19 +6417,23 @@ server_word (const char *option, ...)
   return -1;
 }
 
-/*  Module server protocol:
+/*  Module server protocol non-canonical precis:
 
-    FIXME:Need to think more about this.
-    
-    HELO version mainfile -> 200/520 response
-    INCL header-name -> TBD header-name module-name
-    			TBD header-name
-    [+]IMPT module-name -> 250 module-name file-name
-    			   550 module-name
-			   TBD module-name
-    TBD          -> delayed IMPT responses
-    EXPT module-name -> 250 module-name file-name
-    DONE module-name -> no response
+    HELLO version mainfile
+    	-> HELLO/ERROR response
+    INCUDE header-name from
+    	-> INCLUDE/IMPORT reponse
+    [DEFER] BMI|SEARCH|PATH module-name from
+    	-> BMI bmipath
+	-> SEARCH srcbase
+	-> PATH srcpath
+	-> ERROR
+    DEFERRED
+	-> deferred response
+    EXPORT module-name
+    	-> BMI bmipath
+    DONE module-name
+    	-> OK
  */
 
 /* Create the server streams.  Return true if there is a server.  Yes,
@@ -6736,8 +6740,12 @@ server_module_filename (tree name, bool rnw, const char *filename = NULL)
 	  fflush (stderr);
 	}
 
-      const char *cmd = rnw ? "BMI" : "EXPORT";
-      fprintf (server_write, "%s %s\n", cmd, IDENTIFIER_POINTER (name));
+      const char *cmd, *from;
+      if (rnw)
+	cmd = "BMI", from = LOCATION_FILE (input_location);
+      else
+	cmd = "EXPORT", from = "";
+      fprintf (server_write, "%s %s %s\n", cmd, IDENTIFIER_POINTER (name), from);
       if (!server_response ())
 	goto failed;
       switch (server_word ("BMI", "ERROR", NULL))

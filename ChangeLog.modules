@@ -1,3 +1,13 @@
+2018-05-14  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* doc/invoke.texi (C++ Modules): Clarify server docs.
+	gcc/cp/
+	* cxx-module-server.sh: Robustify.
+	* module.c (server_module_filename): Send from location.
+	gcc/testsuite/
+	* g++.dg/modules/import-2.C: Tweak.
+
 2018-05-13  Nathan Sidwell  <nathan@acm.org>
 
 	Redo the server protocol.

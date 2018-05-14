@@ -29180,18 +29180,23 @@ environment must have made available.
 
 @item @samp{[hostname]:port}
 A hostname, which defaults to @samp{localhost} and a port number to
-connect to.  IPv6 is used.
+connect to.  IPv6 is used.  If your host lacks ipv6, this form is
+non-functional.  If you must use ipv4, you may use
+@samp{-fmodule-server='ncat ipv4host port'}.
 
 @item @samp{absolutepath}
-A local domain socket.
+A local domain socket.  If your host lacks local domain sockets, this
+form is non-functional.
 
 @item @samp{program args...}
-A program to spawn, and communicate with on its stdin/stdout files.
-Arguments are separated by white space, (it is not possible for one of
-the arguments delivered to the program to contain a space).  If there
-are no arguments and the program is either an absolute path, or ends
-in @samp{:number}, it will be interpretted as a socket.  You may add
-leading or trailing whitespace to disambiguate.
+A program to spawn, and communicate with on its stdin/stdout streams.
+The user's @var{PATH} is searched for the program.  Arguments are
+separated by white space, (it is not possible for one of the arguments
+delivered to the program to contain a space, FIXME:Think about wide
+chars etc, URL encoding?).  There is an ambiguity, if the option value
+is solely an absolute path.  In that case it is interpretted as a
+local domain socket.  You may add leading or trailing whitespace to
+have it interpretted as a program to execute.
 
 @end itemize
 
@@ -29258,8 +29263,8 @@ A help request.  The response is `@samp{HELP} @var{$msg}'.
 
 @end itemize
 
-It is recommended that any unrecognized command, causes a @samp{HELP}
-response.
+It is recommended that any unrecognized command causes an @samp{ERROR}
+response with a suitable message.
 
 The following metavariables were used:
 
