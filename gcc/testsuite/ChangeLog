@@ -1,3 +1,8 @@
+2018-05-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/crypto-fuse-1.c: New test.
+	* gcc.target/aarch64/crypto-fuse-2.c: Likewise.
+
 2018-05-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/vmov_n_1.c: Update test.

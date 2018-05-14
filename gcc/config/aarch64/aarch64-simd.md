@@ -5821,6 +5821,44 @@
       (const_string "yes")])]
 )
 
+;; When AESE/AESMC fusion is enabled we really want to keep the two together
+;; and enforce the register dependency without scheduling or register
+;; allocation messing up the order or introducing moves inbetween.
+;;  Mash the two together during combine.
+
+(define_insn "*aarch64_crypto_aese_fused"
+  [(set (match_operand:V16QI 0 "register_operand" "=&w")
+	(unspec:V16QI
+	  [(unspec:V16QI
+	    [(match_operand:V16QI 1 "register_operand" "0")
+	     (match_operand:V16QI 2 "register_operand" "w")] UNSPEC_AESE)
+	  ] UNSPEC_AESMC))]
+  "TARGET_SIMD && TARGET_AES
+   && aarch64_fusion_enabled_p (AARCH64_FUSE_AES_AESMC)"
+  "aese\\t%0.16b, %2.16b\;aesmc\\t%0.16b, %0.16b"
+  [(set_attr "type" "crypto_aese")
+   (set_attr "length" "8")]
+)
+
+;; When AESD/AESIMC fusion is enabled we really want to keep the two together
+;; and enforce the register dependency without scheduling or register
+;; allocation messing up the order or introducing moves inbetween.
+;;  Mash the two together during combine.
+
+(define_insn "*aarch64_crypto_aesd_fused"
+  [(set (match_operand:V16QI 0 "register_operand" "=&w")
+	(unspec:V16QI
+	  [(unspec:V16QI
+	    [(match_operand:V16QI 1 "register_operand" "0")
+	     (match_operand:V16QI 2 "register_operand" "w")] UNSPEC_AESD)
+	  ] UNSPEC_AESIMC))]
+  "TARGET_SIMD && TARGET_AES
+   && aarch64_fusion_enabled_p (AARCH64_FUSE_AES_AESMC)"
+  "aesd\\t%0.16b, %2.16b\;aesimc\\t%0.16b, %0.16b"
+  [(set_attr "type" "crypto_aese")
+   (set_attr "length" "8")]
+)
+
 ;; sha1
 
 (define_insn "aarch64_crypto_sha1hsi"
