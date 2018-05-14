@@ -425,6 +425,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_vpclmulqdq = 0;
   unsigned int has_movdiri = 0, has_movdir64b = 0;
   unsigned int has_waitpkg = 0;
+  unsigned int has_cldemote = 0;
 
   bool arch;
 
@@ -522,6 +523,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512bitalg = ecx & bit_AVX512BITALG;
       has_movdiri = ecx & bit_MOVDIRI;
       has_movdir64b = ecx & bit_MOVDIR64B;
+      has_cldemote = ecx & bit_CLDEMOTE;
 
       has_avx5124vnniw = edx & bit_AVX5124VNNIW;
       has_avx5124fmaps = edx & bit_AVX5124FMAPS;
@@ -1111,6 +1113,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *movdiri = has_movdiri ? " -mmovdiri" : " -mno-movdiri";
       const char *movdir64b = has_movdir64b ? " -mmovdir64b" : " -mno-movdir64b";
       const char *waitpkg = has_waitpkg ? " -mwaitpkg" : " -mno-waitpkg";
+      const char *cldemote = has_cldemote ? " -mcldemote" : " -mno-cldemote";
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, sgx, bmi2,
@@ -1123,7 +1126,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			avx512ifma, avx512vbmi, avx5124fmaps, avx5124vnniw,
 			clwb, mwaitx, clzero, pku, rdpid, gfni, shstk,
 			avx512vbmi2, avx512vnni, vaes, vpclmulqdq,
-			avx512bitalg, movdiri, movdir64b, waitpkg, NULL);
+			avx512bitalg, movdiri, movdir64b, waitpkg, cldemote,
+			NULL);
     }
 
 done:

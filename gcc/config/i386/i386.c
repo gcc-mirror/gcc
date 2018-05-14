@@ -2773,7 +2773,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mclzero",	OPTION_MASK_ISA_CLZERO },
     { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
     { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
-    { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG }
+    { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
+    { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -5390,6 +5391,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("movdiri", OPT_mmovdiri),
     IX86_ATTR_ISA ("movdir64b", OPT_mmovdir64b),
     IX86_ATTR_ISA ("waitpkg", OPT_mwaitpkg),
+    IX86_ATTR_ISA ("cldemote", OPT_mcldemote),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -30649,6 +30651,7 @@ enum ix86_builtins
   IX86_BUILTIN_UMWAIT,
   IX86_BUILTIN_TPAUSE,
   IX86_BUILTIN_CLZERO,
+  IX86_BUILTIN_CLDEMOTE,
   IX86_BUILTIN_VEC_INIT_V2SI,
   IX86_BUILTIN_VEC_INIT_V4HI,
   IX86_BUILTIN_VEC_INIT_V8QI,
@@ -31986,6 +31989,10 @@ ix86_init_mmx_sse_builtins (void)
 	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_UMWAIT);
   def_builtin2 (OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_tpause",
 	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_TPAUSE);
+
+  /* CLDEMOTE.  */
+  def_builtin2 (OPTION_MASK_ISA_CLDEMOTE, "__builtin_ia32_cldemote",
+	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLDEMOTE);
 
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
@@ -37144,6 +37151,16 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (!REG_P (op0))
 	op0 = ix86_zero_extend_to_Pmode (op0);
       emit_insn (ix86_gen_clzero (op0));
+      return 0;
+
+    case IX86_BUILTIN_CLDEMOTE:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      icode = CODE_FOR_cldemote;
+      if (!insn_data[icode].operand[0].predicate (op0, Pmode))
+	op0 = ix86_zero_extend_to_Pmode (op0);
+
+      emit_insn (gen_cldemote (op0));
       return 0;
 
     case IX86_BUILTIN_VEC_INIT_V2SI:

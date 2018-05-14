@@ -110,6 +110,7 @@
 #define bit_RDPID	(1 << 22)
 #define bit_MOVDIRI	(1 << 27)
 #define bit_MOVDIR64B	(1 << 28)
+#define bit_CLDEMOTE	(1 << 25)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)

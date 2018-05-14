@@ -1,3 +1,27 @@
+2018-05-14  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_CLDEMOTE_SET,
+	OPTION_MASK_ISA_CLDEMOTE_UNSET): New defines.
+	(ix86_handle_option): Handle -mcldemote.
+	* config.gcc: New header.
+	* config/i386/cldemoteintrin.h: New file.
+	* config/i386/cpuid.h (bit_CLDEMOTE): New bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	-mcldemote.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	OPTION_MASK_ISA_CLDEMOTE.
+	* config/i386/i386.c (ix86_target_string): Add -mcldemote.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(enum ix86_builtins): Add IX86_BUILTIN_CLDEMOTE.
+	(ix86_init_mmx_sse_builtins): Define __builtin_ia32_cldemote.
+	(ix86_expand_builtin): Expand IX86_BUILTIN_CLDEMOTE.
+	* config/i386/i386.h (TARGET_CLDEMOTE, TARGET_CLDEMOTE_P): New.
+	* config/i386/i386.md (UNSPECV_CLDEMOTE): New.
+	(cldemote): New.
+	* config/i386/i386.opt: Add -mcldemote.
+	* config/i386/x86intrin.h: New header.
+	* doc/invoke.texi: Add -mcldemote.
+
 2018-05-14  Richard Biener  <rguenther@suse.de>
 
 	* doc/match-and-simplify.texi: Adjust :s documentation.

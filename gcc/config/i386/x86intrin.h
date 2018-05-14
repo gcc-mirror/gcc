@@ -103,6 +103,8 @@
 
 #include <waitpkgintrin.h>
 
+#include <cldemoteintrin.h>
+
 #endif /* __iamcu__ */
 
 #endif /* _X86INTRIN_H_INCLUDED */
