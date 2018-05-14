@@ -1,3 +1,11 @@
+2018-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85756
+	* config/i386/i386.md: Disallow non-commutative arithmetics in
+	last twpeephole for mem {+,-,&,|,^}= x; mem != 0 after cmpelim
+	optimization.  Use COMMUTATIVE_ARITH_P test rather than != MINUS
+	in the peephole2 before it.
+
 2018-05-14  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_CLDEMOTE_SET,

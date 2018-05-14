@@ -1,3 +1,7 @@
+2018-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/pr85756.c: New test.
+
 2018-05-14  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/cldemote-1.c: New test.
