@@ -1,5 +1,9 @@
 2018-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/67554
+	* include/bits/valarray_array.h (_Array_copy_ctor<_Tp, true>)
+	(_Array_copier<_Tp, true>): Do not pass null pointers to memcpy.
+
 	PR libstdc++/82966
 	* include/bits/node_handle.h (_Node_handle_common::_M_swap): Use value
 	instead of type.
