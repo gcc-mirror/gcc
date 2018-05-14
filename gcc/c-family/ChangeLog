@@ -1,3 +1,8 @@
+2018-05-09  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (valid_array_size_p): Add complain parameter.
+	* c-common.h: ...which defaults to true.
+
 2018-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/85696

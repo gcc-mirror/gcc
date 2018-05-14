@@ -14788,6 +14788,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	r = build_cplus_array_type (type, domain);
 
+	if (!valid_array_size_p (input_location, r, in_decl,
+				 (complain & tf_error)))
+	  return error_mark_node;
+
 	if (TYPE_USER_ALIGN (t))
 	  {
 	    SET_TYPE_ALIGN (r, TYPE_ALIGN (t));
@@ -18146,6 +18150,9 @@ tsubst_copy_and_build (tree t,
 		  vec_safe_push (init_vec, TREE_VALUE (init));
 	      }
 	  }
+
+	/* Avoid passing an enclosing decl to valid_array_size_p.  */
+	in_decl = NULL_TREE;
 
 	tree op1 = tsubst (TREE_OPERAND (t, 1), args, complain, in_decl);
 	tree op2 = RECUR (TREE_OPERAND (t, 2));
