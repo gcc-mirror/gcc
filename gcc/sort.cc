@@ -62,29 +62,29 @@ struct sort_ctx
 static void
 reorder23 (sort_ctx *c, char *e0, char *e1, char *e2)
 {
-#define REORDER_23(SIZE, STRIDE, OFFSET)        \
-do {                                            \
-  size_t t0, t1;                                \
-  memcpy (&t0, e0 + OFFSET, SIZE);              \
-  memcpy (&t1, e1 + OFFSET, SIZE);              \
-  char *out = c->out + OFFSET;                  \
-  if (likely (c->n == 3))                       \
-    memcpy (out + 2*STRIDE, e2 + OFFSET, SIZE); \
-  memcpy (out, &t0, SIZE); out += STRIDE;       \
-  memcpy (out, &t1, SIZE);                      \
+#define REORDER_23(TYPE, STRIDE, OFFSET)                 \
+do {                                                     \
+  TYPE t0, t1;                                           \
+  memcpy (&t0, e0 + OFFSET, sizeof (TYPE));              \
+  memcpy (&t1, e1 + OFFSET, sizeof (TYPE));              \
+  char *out = c->out + OFFSET;                           \
+  if (likely (c->n == 3))                                \
+    memcpy (out + 2*STRIDE, e2 + OFFSET, sizeof (TYPE)); \
+  memcpy (out, &t0, sizeof (TYPE)); out += STRIDE;       \
+  memcpy (out, &t1, sizeof (TYPE));                      \
 } while (0)
 
-  if (sizeof (size_t) == 8 && likely (c->size == 8))
-    REORDER_23 (8, 8, 0);
-  else if (likely (c->size == 4))
-    REORDER_23 (4, 4, 0);
+  if (likely (c->size == sizeof (size_t)))
+    REORDER_23 (size_t, sizeof (size_t), 0);
+  else if (likely (c->size == sizeof (int)))
+    REORDER_23 (int, sizeof (int), 0);
   else
     {
       size_t offset = 0, step = sizeof (size_t);
       for (; offset + step <= c->size; offset += step)
-	REORDER_23 (step, c->size, offset);
+	REORDER_23 (size_t, c->size, offset);
       for (; offset < c->size; offset++)
-	REORDER_23 (1, c->size, offset);
+	REORDER_23 (char, c->size, offset);
     }
 }
 
@@ -92,33 +92,33 @@ do {                                            \
 static void
 reorder45 (sort_ctx *c, char *e0, char *e1, char *e2, char *e3, char *e4)
 {
-#define REORDER_45(SIZE, STRIDE, OFFSET)        \
-do {                                            \
-  size_t t0, t1, t2, t3;                        \
-  memcpy (&t0, e0 + OFFSET, SIZE);              \
-  memcpy (&t1, e1 + OFFSET, SIZE);              \
-  memcpy (&t2, e2 + OFFSET, SIZE);              \
-  memcpy (&t3, e3 + OFFSET, SIZE);              \
-  char *out = c->out + OFFSET;                  \
-  if (likely (c->n == 5))                       \
-    memcpy (out + 4*STRIDE, e4 + OFFSET, SIZE); \
-  memcpy (out, &t0, SIZE); out += STRIDE;       \
-  memcpy (out, &t1, SIZE); out += STRIDE;       \
-  memcpy (out, &t2, SIZE); out += STRIDE;       \
-  memcpy (out, &t3, SIZE);                      \
+#define REORDER_45(TYPE, STRIDE, OFFSET)                 \
+do {                                                     \
+  TYPE t0, t1, t2, t3;                                   \
+  memcpy (&t0, e0 + OFFSET, sizeof (TYPE));              \
+  memcpy (&t1, e1 + OFFSET, sizeof (TYPE));              \
+  memcpy (&t2, e2 + OFFSET, sizeof (TYPE));              \
+  memcpy (&t3, e3 + OFFSET, sizeof (TYPE));              \
+  char *out = c->out + OFFSET;                           \
+  if (likely (c->n == 5))                                \
+    memcpy (out + 4*STRIDE, e4 + OFFSET, sizeof (TYPE)); \
+  memcpy (out, &t0, sizeof (TYPE)); out += STRIDE;       \
+  memcpy (out, &t1, sizeof (TYPE)); out += STRIDE;       \
+  memcpy (out, &t2, sizeof (TYPE)); out += STRIDE;       \
+  memcpy (out, &t3, sizeof (TYPE));                      \
 } while (0)
 
-  if (sizeof (size_t) == 8 && likely (c->size == 8))
-    REORDER_45 (8, 8, 0);
-  else if (likely(c->size == 4))
-    REORDER_45 (4, 4, 0);
+  if (likely (c->size == sizeof (size_t)))
+    REORDER_45 (size_t, sizeof (size_t), 0);
+  else if (likely(c->size == sizeof (int)))
+    REORDER_45 (int,  sizeof (int), 0);
   else
     {
       size_t offset = 0, step = sizeof (size_t);
       for (; offset + step <= c->size; offset += step)
-	REORDER_45 (step, c->size, offset);
+	REORDER_45 (size_t, c->size, offset);
       for (; offset < c->size; offset++)
-	REORDER_45 (1, c->size, offset);
+	REORDER_45 (char, c->size, offset);
     }
 }
 
