@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	using std::swap;
 	swap(_M_ptr, __nh._M_ptr);
-	if (_AllocTraits::propagate_on_container_swap
+	if (_AllocTraits::propagate_on_container_swap::value
 	    || !_M_alloc || !__nh._M_alloc)
 	  _M_alloc.swap(__nh._M_alloc);
 	else
