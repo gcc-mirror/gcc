@@ -1,3 +1,10 @@
+2018-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82966
+	* include/bits/node_handle.h (_Node_handle_common::_M_swap): Use value
+	instead of type.
+	* testsuite/23_containers/set/modifiers/node_swap.cc: New.
+
 2018-05-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/80165
