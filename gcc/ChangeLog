@@ -1,3 +1,19 @@
+2018-05-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (mov<mode>): Remove '*' in alternatives.
+	(movsi_aarch64): Likewise.
+	(load_pairsi): Likewise.
+	(load_pairdi): Likewise.
+	(store_pairsi): Likewise.
+	(store_pairdi): Likewise.
+	(load_pairsf): Likewise.
+	(load_pairdf): Likewise.
+	(store_pairsf): Likewise.
+	(store_pairdf): Likewise.
+	(zero_extend): Likewise.
+	(trunc): Swap alternatives.
+	(fcvt_target): Add '?' to prefer w over r.
+
 2018-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85756

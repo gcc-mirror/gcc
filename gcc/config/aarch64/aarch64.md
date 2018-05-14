@@ -928,8 +928,8 @@
 )
 
 (define_insn "*mov<mode>_aarch64"
-  [(set (match_operand:SHORT 0 "nonimmediate_operand" "=r,r,   *w,r ,r,*w, m, m, r,*w,*w")
-	(match_operand:SHORT 1 "aarch64_mov_operand"  " r,M,D<hq>,Usv,m, m,rZ,*w,*w, r,*w"))]
+  [(set (match_operand:SHORT 0 "nonimmediate_operand" "=r,r,    w,r  ,r,w, m,m,r,w,w")
+	(match_operand:SHORT 1 "aarch64_mov_operand"  " r,M,D<hq>,Usv,m,m,rZ,w,w,r,w"))]
   "(register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_zero (operands[1], <MODE>mode))"
 {
@@ -995,7 +995,7 @@
 
 (define_insn_and_split "*movsi_aarch64"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r, r,w, m, m,  r,  r, w,r,w, w")
-	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv,m,m,rZ,*w,Usa,Ush,rZ,w,w,Ds"))]
+	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv,m,m,rZ,w,Usa,Ush,rZ,w,w,Ds"))]
   "(register_operand (operands[0], SImode)
     || aarch64_reg_or_zero (operands[1], SImode))"
   "@
@@ -1302,9 +1302,9 @@
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
 (define_insn "load_pairsi"
-  [(set (match_operand:SI 0 "register_operand" "=r,*w")
+  [(set (match_operand:SI 0 "register_operand" "=r,w")
 	(match_operand:SI 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:SI 2 "register_operand" "=r,*w")
+   (set (match_operand:SI 2 "register_operand" "=r,w")
 	(match_operand:SI 3 "memory_operand" "m,m"))]
   "rtx_equal_p (XEXP (operands[3], 0),
 		plus_constant (Pmode,
@@ -1318,9 +1318,9 @@
 )
 
 (define_insn "load_pairdi"
-  [(set (match_operand:DI 0 "register_operand" "=r,*w")
+  [(set (match_operand:DI 0 "register_operand" "=r,w")
 	(match_operand:DI 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:DI 2 "register_operand" "=r,*w")
+   (set (match_operand:DI 2 "register_operand" "=r,w")
 	(match_operand:DI 3 "memory_operand" "m,m"))]
   "rtx_equal_p (XEXP (operands[3], 0),
 		plus_constant (Pmode,
@@ -1338,9 +1338,9 @@
 ;; fairly lax checking on the second memory operation.
 (define_insn "store_pairsi"
   [(set (match_operand:SI 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:SI 1 "aarch64_reg_or_zero" "rZ,*w"))
+	(match_operand:SI 1 "aarch64_reg_or_zero" "rZ,w"))
    (set (match_operand:SI 2 "memory_operand" "=m,m")
-	(match_operand:SI 3 "aarch64_reg_or_zero" "rZ,*w"))]
+	(match_operand:SI 3 "aarch64_reg_or_zero" "rZ,w"))]
   "rtx_equal_p (XEXP (operands[2], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[0], 0),
@@ -1354,9 +1354,9 @@
 
 (define_insn "store_pairdi"
   [(set (match_operand:DI 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:DI 1 "aarch64_reg_or_zero" "rZ,*w"))
+	(match_operand:DI 1 "aarch64_reg_or_zero" "rZ,w"))
    (set (match_operand:DI 2 "memory_operand" "=m,m")
-	(match_operand:DI 3 "aarch64_reg_or_zero" "rZ,*w"))]
+	(match_operand:DI 3 "aarch64_reg_or_zero" "rZ,w"))]
   "rtx_equal_p (XEXP (operands[2], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[0], 0),
@@ -1371,9 +1371,9 @@
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
 (define_insn "load_pairsf"
-  [(set (match_operand:SF 0 "register_operand" "=w,*r")
+  [(set (match_operand:SF 0 "register_operand" "=w,r")
 	(match_operand:SF 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:SF 2 "register_operand" "=w,*r")
+   (set (match_operand:SF 2 "register_operand" "=w,r")
 	(match_operand:SF 3 "memory_operand" "m,m"))]
   "rtx_equal_p (XEXP (operands[3], 0),
 		plus_constant (Pmode,
@@ -1387,9 +1387,9 @@
 )
 
 (define_insn "load_pairdf"
-  [(set (match_operand:DF 0 "register_operand" "=w,*r")
+  [(set (match_operand:DF 0 "register_operand" "=w,r")
 	(match_operand:DF 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:DF 2 "register_operand" "=w,*r")
+   (set (match_operand:DF 2 "register_operand" "=w,r")
 	(match_operand:DF 3 "memory_operand" "m,m"))]
   "rtx_equal_p (XEXP (operands[3], 0),
 		plus_constant (Pmode,
@@ -1406,9 +1406,9 @@
 ;; fairly lax checking on the second memory operation.
 (define_insn "store_pairsf"
   [(set (match_operand:SF 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:SF 1 "aarch64_reg_or_fp_zero" "w,*rY"))
+	(match_operand:SF 1 "aarch64_reg_or_fp_zero" "w,rY"))
    (set (match_operand:SF 2 "memory_operand" "=m,m")
-	(match_operand:SF 3 "aarch64_reg_or_fp_zero" "w,*rY"))]
+	(match_operand:SF 3 "aarch64_reg_or_fp_zero" "w,rY"))]
   "rtx_equal_p (XEXP (operands[2], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[0], 0),
@@ -1422,9 +1422,9 @@
 
 (define_insn "store_pairdf"
   [(set (match_operand:DF 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:DF 1 "aarch64_reg_or_fp_zero" "w,*rY"))
+	(match_operand:DF 1 "aarch64_reg_or_fp_zero" "w,rY"))
    (set (match_operand:DF 2 "memory_operand" "=m,m")
-	(match_operand:DF 3 "aarch64_reg_or_fp_zero" "w,*rY"))]
+	(match_operand:DF 3 "aarch64_reg_or_fp_zero" "w,rY"))]
   "rtx_equal_p (XEXP (operands[2], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[0], 0),
@@ -1575,7 +1575,7 @@
 )
 
 (define_insn "*zero_extend<SHORT:mode><GPI:mode>2_aarch64"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r,*w")
+  [(set (match_operand:GPI 0 "register_operand" "=r,r,w")
         (zero_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand" "r,m,m")))]
   ""
   "@
@@ -5083,13 +5083,13 @@
 ;; and making r = w more expensive
 
 (define_insn "<optab>_trunc<fcvt_target><GPI:mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=?r,w")
+  [(set (match_operand:GPI 0 "register_operand" "=w,?r")
 	(FIXUORS:GPI (match_operand:<FCVT_TARGET> 1 "register_operand" "w,w")))]
   "TARGET_FLOAT"
   "@
-   fcvtz<su>\t%<w>0, %<s>1
-   fcvtz<su>\t%<s>0, %<s>1"
-  [(set_attr "type" "f_cvtf2i,neon_fp_to_int_s")]
+   fcvtz<su>\t%<s>0, %<s>1
+   fcvtz<su>\t%<w>0, %<s>1"
+  [(set_attr "type" "neon_fp_to_int_s,f_cvtf2i")]
 )
 
 ;; Convert HF -> SI or DI
@@ -5115,7 +5115,7 @@
 
 (define_insn "<optab><fcvt_target><GPF:mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w,w")
-        (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand" "w,r")))]
+        (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand" "w,?r")))]
   "TARGET_FLOAT"
   "@
    <su_optab>cvtf\t%<GPF:s>0, %<s>1
