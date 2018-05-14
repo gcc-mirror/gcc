@@ -1248,7 +1248,7 @@ extern tree find_inv_trees (tree *, int *, void *);
 extern tree replace_inv_trees (tree *, int *, void *);
 
 extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
-extern bool valid_array_size_p (location_t, tree, tree);
+extern bool valid_array_size_p (location_t, tree, tree, bool = true);
 
 /* In c-warn.c.  */
 extern void constant_expression_warning (tree);

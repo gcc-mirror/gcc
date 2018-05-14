@@ -7872,17 +7872,20 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
    the name of the array, or NULL_TREE for unnamed arrays.  */
 
 bool
-valid_array_size_p (location_t loc, tree type, tree name)
+valid_array_size_p (location_t loc, tree type, tree name, bool complain)
 {
   if (type != error_mark_node
       && COMPLETE_TYPE_P (type)
       && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
       && !valid_constant_size_p (TYPE_SIZE_UNIT (type)))
     {
-      if (name)
-	error_at (loc, "size of array %qE is too large", name);
-      else
-	error_at (loc, "size of unnamed array is too large");
+      if (complain)
+	{
+	  if (name)
+	    error_at (loc, "size of array %qE is too large", name);
+	  else
+	    error_at (loc, "size of unnamed array is too large");
+	}
       return false;
     }
   return true;

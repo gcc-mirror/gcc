@@ -1,3 +1,8 @@
+2018-05-14  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst) [ARRAY_TYPE]: Check valid_array_size_p.
+	(tsubst_copy_and_build) [NEW_EXPR]: Clear in_decl.
+
 2018-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/85696
