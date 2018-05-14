@@ -3054,7 +3054,7 @@ one_inheriting_sig (tree t, tree ctor, tree *parms, int nparms)
   if (nparms == 0)
     return;
   if (nparms == 1
-      && TREE_CODE (parms[0]) == REFERENCE_TYPE)
+      && TYPE_REF_P (parms[0]))
     {
       tree parm = TYPE_MAIN_VARIANT (TREE_TYPE (parms[0]));
       if (parm == t || parm == DECL_CONTEXT (ctor))
@@ -3463,7 +3463,7 @@ check_field_decls (tree t, tree *access_decls,
 		     "a member of a union", x);
 	      continue;
 	    }
-	  if (TREE_CODE (type) == REFERENCE_TYPE
+	  if (TYPE_REF_P (type)
 	      && TREE_CODE (x) == FIELD_DECL)
 	    {
 	      error ("non-static data member %q+D in a union may not "
@@ -3517,7 +3517,7 @@ check_field_decls (tree t, tree *access_decls,
 	CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 
       /* If this is of reference type, check if it needs an init.  */
-      if (TREE_CODE (type) == REFERENCE_TYPE)
+      if (TYPE_REF_P (type))
 	{
 	  CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
 	  CLASSTYPE_NON_STD_LAYOUT (t) = 1;
@@ -3595,7 +3595,7 @@ check_field_decls (tree t, tree *access_decls,
 		     "and %<mutable%>", x);
 	      continue;
 	    }
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TYPE_REF_P (type))
 	    {
 	      error ("member %q+D cannot be declared as a %<mutable%> "
 		     "reference", x);
@@ -5594,7 +5594,7 @@ check_bases_and_members (tree t)
 	    continue;
 
 	  type = TREE_TYPE (field);
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TYPE_REF_P (type))
 	    warning_at (DECL_SOURCE_LOCATION (field),
 			OPT_Wuninitialized, "non-static reference %q#D "
 			"in class without a constructor", field);
@@ -6454,8 +6454,8 @@ find_flexarrays (tree t, flexmems_t *fmem, bool base_p,
 	 members if it hasn't been yet.  */
       tree eltype = fldtype;
       while (TREE_CODE (eltype) == ARRAY_TYPE
-	     || TREE_CODE (eltype) == POINTER_TYPE
-	     || TREE_CODE (eltype) == REFERENCE_TYPE)
+	     || TYPE_PTR_P (eltype)
+	     || TYPE_REF_P (eltype))
 	eltype = TREE_TYPE (eltype);
 
       if (RECORD_OR_UNION_TYPE_P (eltype))
@@ -7069,7 +7069,7 @@ finish_struct (tree t, tree attributes)
       if (processing_template_decl)
 	{
 	  tree f = next_initializable_field (TYPE_FIELDS (t));
-	  if (f && TREE_CODE (TREE_TYPE (f)) == POINTER_TYPE)
+	  if (f && TYPE_PTR_P (TREE_TYPE (f)))
 	    {
 	      f = next_initializable_field (DECL_CHAIN (f));
 	      if (f && same_type_p (TREE_TYPE (f), size_type_node))
@@ -7214,7 +7214,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	      return TREE_TYPE (TREE_TYPE (instance));
 	    }
 	}
-      else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
+      else if (TYPE_REF_P (TREE_TYPE (instance)))
 	{
 	  /* We only need one hash table because it is always left empty.  */
 	  if (!fixed_type_or_null_ref_ht)

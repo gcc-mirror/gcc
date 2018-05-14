@@ -674,7 +674,7 @@ poplevel (int keep, int reverse, int functionbody)
 	      }
 	    else if (DECL_CONTEXT (decl) == current_function_decl
 		     // For -Wunused-but-set-variable leave references alone.
-		     && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
+		     && !TYPE_REF_P (TREE_TYPE (decl))
 		     && errorcount == unused_but_set_errorcount)
 	      {
 		if (!DECL_NAME (decl) && DECL_DECOMPOSITION_P (decl))
@@ -5562,7 +5562,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
      external linkage and must be initialized. ($8.4; $12.1)'' ARM
      7.1.6 */
   if (VAR_P (decl)
-      && TREE_CODE (type) != REFERENCE_TYPE
+      && !TYPE_REF_P (type)
       && (constexpr_context_p
 	  || CP_TYPE_CONST_P (type) || var_in_constexpr_fn (decl))
       && !DECL_NONTRIVIALLY_INITIALIZED_P (decl))
@@ -6265,7 +6265,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 
   if (TREE_CODE (decl) == CONST_DECL)
     {
-      gcc_assert (TREE_CODE (type) != REFERENCE_TYPE);
+      gcc_assert (!TYPE_REF_P (type));
 
       DECL_INITIAL (decl) = init;
 
@@ -6275,9 +6275,9 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
   else if (!init && DECL_REALLY_EXTERN (decl))
     ;
   else if (init || type_build_ctor_call (type)
-	   || TREE_CODE (type) == REFERENCE_TYPE)
+	   || TYPE_REF_P (type))
     {
-      if (TREE_CODE (type) == REFERENCE_TYPE)
+      if (TYPE_REF_P (type))
 	{
 	  init = grok_reference_init (decl, type, init, flags);
 	  flags |= LOOKUP_ALREADY_DIGESTED;
@@ -6616,7 +6616,7 @@ initialize_local_var (tree decl, tree init)
 	  gcc_assert (TREE_OPERAND (init, 0) == decl);
 	  DECL_INITIAL (decl) = rinit;
 
-	  if (warn_init_self && TREE_CODE (type) == REFERENCE_TYPE)
+	  if (warn_init_self && TYPE_REF_P (type))
 	    {
 	      STRIP_NOPS (rinit);
 	      if (rinit == decl)
@@ -6889,7 +6889,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       /* If DECL is a reference, then we want to know whether init is a
 	 reference constant; init_const_expr_p as passed tells us whether
 	 it's an rvalue constant.  */
-      if (TREE_CODE (type) == REFERENCE_TYPE)
+      if (TYPE_REF_P (type))
 	init_const_expr_p = potential_constant_expression (init);
       if (init_const_expr_p)
 	{
@@ -6898,7 +6898,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
 	  if (decl_maybe_constant_var_p (decl)
 	      /* FIXME setting TREE_CONSTANT on refs breaks the back end.  */
-	      && TREE_CODE (type) != REFERENCE_TYPE)
+	      && !TYPE_REF_P (type))
 	    TREE_CONSTANT (decl) = 1;
 	}
     }
@@ -6935,7 +6935,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
       else if (init
 	       && init_const_expr_p
-	       && TREE_CODE (type) != REFERENCE_TYPE
+	       && !TYPE_REF_P (type)
 	       && decl_maybe_constant_var_p (decl)
 	       && !(dep_init = value_dependent_init_p (init)))
 	{
@@ -7004,7 +7004,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   /* A reference will be modified here, as it is initialized.  */
   if (! DECL_EXTERNAL (decl)
       && TREE_READONLY (decl)
-      && TREE_CODE (type) == REFERENCE_TYPE)
+      && TYPE_REF_P (type))
     {
       was_readonly = 1;
       TREE_READONLY (decl) = 0;
@@ -7345,7 +7345,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
 
   /* [The id-expression] e is an lvalue if the type of the entity e is an
      lvalue reference and an xvalue otherwise.  */
-  if (TREE_CODE (etype) != REFERENCE_TYPE
+  if (!TYPE_REF_P (etype)
       || TYPE_REF_IS_RVALUE (etype))
     e = move (e);
 
@@ -7488,7 +7488,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
   tree type = TREE_TYPE (decl);
   tree dexp = decl;
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     {
       dexp = convert_from_reference (dexp);
       type = complete_type (TREE_TYPE (type));
@@ -11298,7 +11298,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  /* Filter out pointers-to-references and references-to-references.
 	     We can get these if a TYPE_DECL is used.  */
 
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TYPE_REF_P (type))
 	    {
 	      if (declarator->kind != cdk_reference)
 		{
@@ -11404,7 +11404,7 @@ grokdeclarator (const cp_declarator *declarator,
               */
 	      if (VOID_TYPE_P (type))
 		/* We already gave an error.  */;
-	      else if (TREE_CODE (type) == REFERENCE_TYPE)
+	      else if (TYPE_REF_P (type))
 		{
 		  if (declarator->u.reference.rvalue_ref)
 		    /* Leave type alone.  */;
@@ -11485,7 +11485,7 @@ grokdeclarator (const cp_declarator *declarator,
       /* DR1688 says that a `constexpr' specifier in combination with
 	 `volatile' is valid.  */
 
-      if (TREE_CODE (type) != REFERENCE_TYPE)
+      if (!TYPE_REF_P (type))
 	{
 	  type_quals |= TYPE_QUAL_CONST;
 	  type = cp_build_qualified_type (type, type_quals);
@@ -11668,7 +11668,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  error ("const %qs cannot be declared %<mutable%>", name);
 	  storage_class = sc_none;
 	}
-      else if (TREE_CODE (type) == REFERENCE_TYPE)
+      else if (TYPE_REF_P (type))
 	{
 	  permerror (input_location, "reference %qs cannot be declared "
 	             "%<mutable%>", name);
@@ -12894,7 +12894,7 @@ copy_fn_p (const_tree d)
       /* Pass by value copy assignment operator.  */
       result = -1;
     }
-  else if (TREE_CODE (arg_type) == REFERENCE_TYPE
+  else if (TYPE_REF_P (arg_type)
 	   && !TYPE_REF_IS_RVALUE (arg_type)
 	   && TYPE_MAIN_VARIANT (TREE_TYPE (arg_type)) == DECL_CONTEXT (d))
     {
@@ -12962,7 +12962,7 @@ move_signature_fn_p (const_tree d)
   if (arg_type == error_mark_node)
     return 0;
 
-  if (TREE_CODE (arg_type) == REFERENCE_TYPE
+  if (TYPE_REF_P (arg_type)
       && TYPE_REF_IS_RVALUE (arg_type)
       && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (arg_type)),
                       DECL_CONTEXT (d)))
@@ -13334,7 +13334,7 @@ grok_op_properties (tree decl, bool complain)
       && warn_conversion)
     {
       tree t = TREE_TYPE (name);
-      int ref = (TREE_CODE (t) == REFERENCE_TYPE);
+      int ref = TYPE_REF_P (t);
 
       if (ref)
 	t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
@@ -13388,14 +13388,14 @@ grok_op_properties (tree decl, bool complain)
     {
       tree arg = TREE_VALUE (argtypes);
       tree ret = TREE_TYPE (TREE_TYPE (decl));
-      if (methodp || TREE_CODE (arg) == REFERENCE_TYPE)
+      if (methodp || TYPE_REF_P (arg))
 	arg = TREE_TYPE (arg);
       arg = TYPE_MAIN_VARIANT (arg);
 
       if (operator_code == PREINCREMENT_EXPR
 	  || operator_code == PREDECREMENT_EXPR)
 	{
-	  if (TREE_CODE (ret) != REFERENCE_TYPE
+	  if (!TYPE_REF_P (ret)
 	      || !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ret)), arg))
 	    warning (OPT_Weffc__, "prefix %qD should return %qT", decl,
 		     build_reference_type (arg));
@@ -13414,7 +13414,7 @@ grok_op_properties (tree decl, bool complain)
 	  || operator_code == TRUNC_DIV_EXPR
 	  || operator_code == MULT_EXPR
 	  || operator_code == TRUNC_MOD_EXPR)
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
+      && TYPE_REF_P (TREE_TYPE (TREE_TYPE (decl))))
     warning (OPT_Weffc__, "%qD should return by value", decl);
 
   return true;
@@ -15822,7 +15822,7 @@ finish_function (bool inline_p)
 	    && !TREE_NO_WARNING (decl)
 	    && !DECL_IN_SYSTEM_HEADER (decl)
 	    && TREE_TYPE (decl) != error_mark_node
-	    && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
+	    && !TYPE_REF_P (TREE_TYPE (decl))
 	    && (!CLASS_TYPE_P (TREE_TYPE (decl))
 	        || !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
 	  warning_at (DECL_SOURCE_LOCATION (decl),

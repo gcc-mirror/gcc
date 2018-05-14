@@ -1,3 +1,75 @@
+2018-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (TYPE_REF_P): New.
+	(TYPE_OBJ_P, TYPE_REF_OBJ_P, TYPE_REFFN_P): Update.
+	* call.c (build_list_conv, build_aggr_conv, standard_conversion,
+	direct_reference_binding, reference_binding, implicit_conversion,
+	add_builtin_candidate, build_user_type_conversion_1, build_op_call_1,
+	build_new_op_1, build_x_va_arg, conv_binds_ref_to_prvalue,
+	build_over_call, perform_implicit_conversion_flags,
+	extend_ref_init_temps, type_has_extended_temps): Use it.
+	* class.c (one_inheriting_sig, check_field_decls,
+	check_bases_and_members, find_flexarrays, finish_struct,
+	fixed_type_or_null): Likewise.
+	* constexpr.c (literal_type_p, cxx_bind_parameters_in_call,
+	non_const_var_error, cxx_eval_constant_expression,
+	potential_constant_expression_1): Likewise.
+	* cp-gimplify.c (omp_var_to_track, omp_cxx_notice_variable,
+	cp_genericize_r, cxx_omp_privatize_by_reference,
+	cxx_omp_const_qual_no_mutable, cxx_omp_finish_clause,
+	cp_fold_maybe_rvalue): Likewise.
+	* cp-ubsan.c (cp_ubsan_maybe_instrument_downcast): Likewise.
+	* cvt.c (build_up_reference, convert_to_reference,
+	convert_from_reference, convert_to_void, noexcept_conv_p,
+	fnptr_conv_p): Likewise.
+	* decl.c (poplevel, check_for_uninitialized_const_var,
+	check_initializer, initialize_local_var, cp_finish_decl,
+	get_tuple_decomp_init, cp_finish_decomp, grokdeclarator, copy_fn_p,
+	move_signature_fn_p, grok_op_properties, finish_function): Likewise.
+	* decl2.c (grok_array_decl, cp_reconstruct_complex_type,
+	decl_maybe_constant_var_p): Likewise.
+	* error.c (dump_type_prefix, dump_expr): Likewise.
+	* except.c (initialize_handler_parm, complete_ptr_ref_or_void_ptr_p,
+	is_admissible_throw_operand_or_catch_parameter): Likewise.
+	* expr.c (mark_use): Likewise.
+	* init.c (build_zero_init_1, build_value_init_noctor,
+	perform_member_init, diagnose_uninitialized_cst_or_ref_member_1,
+	build_new, build_delete): Likewise.
+	* lambda.c (build_lambda_object): Likewise.
+	* mangle.c (write_expression, write_template_arg): Likewise.
+	* method.c (forward_parm, do_build_copy_constructor,
+	do_build_copy_assign, build_stub_object, constructible_expr,
+	walk_field_subobs): Likewise.
+	* parser.c (cp_parser_omp_for_loop_init,
+	cp_parser_omp_declare_reduction_exprs,
+	cp_parser_omp_declare_reduction): Likewise.
+	* pt.c (convert_nontype_argument_function, convert_nontype_argument,
+	convert_template_argument, tsubst_pack_expansion,
+	tsubst_function_decl, tsubst_decl, tsubst, tsubst_copy_and_build,
+	maybe_adjust_types_for_deduction, check_cv_quals_for_unify, unify,
+	more_specialized_fn, invalid_nontype_parm_type_p, dependent_type_p_r,
+	value_dependent_expression_p, build_deduction_guide): Likewise.
+	* semantics.c (finish_handler_parms, finish_non_static_data_member,
+	finish_compound_literal, omp_privatize_field,
+	handle_omp_array_sections_1, handle_omp_array_sections,
+	cp_check_omp_declare_reduction, finish_omp_reduction_clause,
+	finish_omp_declare_simd_methods, cp_finish_omp_clause_depend_sink,
+	finish_omp_clauses, finish_decltype_type, capture_decltype,
+	finish_builtin_launder): Likewise.
+	* tree.c (lvalue_kind, cp_build_reference_type, move,
+	cp_build_qualified_type_real, stabilize_expr, stabilize_init): Likewise.
+	* typeck.c (cxx_safe_arg_type_equiv_p, build_class_member_access_expr,
+	cp_build_indirect_ref_1, convert_arguments, warn_for_null_address,
+	cp_build_addr_expr_1, maybe_warn_about_useless_cast,
+	build_static_cast_1, build_static_cast, build_reinterpret_cast_1,
+	build_const_cast_1, cp_build_c_cast, cp_build_modify_expr,
+	convert_for_initialization,
+	maybe_warn_about_returning_address_of_local, check_return_expr,
+	cp_type_quals, casts_away_constness, non_reference): Likewise.
+	* typeck2.c (cxx_readonly_error, store_init_value,
+	process_init_constructor_record, build_x_arrow, build_functional_cast,
+	add_exception_specifier): Likewise.
+
 2018-05-14  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst) [ARRAY_TYPE]: Check valid_array_size_p.

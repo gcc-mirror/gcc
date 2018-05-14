@@ -306,7 +306,7 @@ initialize_handler_parm (tree decl, tree exp)
 
   /* Since pointers are passed by value, initialize a reference to
      pointer catch parm with the address of the temporary.  */
-  if (TREE_CODE (init_type) == REFERENCE_TYPE
+  if (TYPE_REF_P (init_type)
       && TYPE_PTR_P (TREE_TYPE (init_type)))
     exp = cp_build_addr_expr (exp, tf_warning_or_error);
 
@@ -802,7 +802,7 @@ complete_ptr_ref_or_void_ptr_p (tree type, tree from)
 
   /* Or a pointer or ref to one, or cv void *.  */
   is_ptr = TYPE_PTR_P (type);
-  if (is_ptr || TREE_CODE (type) == REFERENCE_TYPE)
+  if (is_ptr || TYPE_REF_P (type))
     {
       tree core = TREE_TYPE (type);
 
@@ -846,7 +846,7 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
   else if (abstract_virtuals_error (is_throw ? ACU_THROW : ACU_CATCH, type))
     return false;
   else if (!is_throw
-	   && TREE_CODE (type) == REFERENCE_TYPE
+	   && TYPE_REF_P (type)
 	   && TYPE_REF_IS_RVALUE (type))
     {
       error ("cannot declare catch parameter to be of rvalue "

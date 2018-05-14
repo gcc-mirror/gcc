@@ -287,7 +287,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
     init = build_zero_cst (type);
   else
     {
-      gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+      gcc_assert (TYPE_REF_P (type));
       init = build_zero_cst (type);
     }
 
@@ -502,7 +502,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	error ("value-initialization of function type %qT", type);
       return error_mark_node;
     }
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
+  else if (TYPE_REF_P (type))
     {
       if (complain & tf_error)
 	error ("value-initialization of reference type %qT", type);
@@ -751,7 +751,7 @@ perform_member_init (tree member, tree init)
 	}
     }
   else if (init
-	   && (TREE_CODE (type) == REFERENCE_TYPE
+	   && (TYPE_REF_P (type)
 	       /* Pre-digested NSDMI.  */
 	       || (((TREE_CODE (init) == CONSTRUCTOR
 		     && TREE_TYPE (init) == type)
@@ -856,7 +856,7 @@ perform_member_init (tree member, tree init)
 	{
 	  tree core_type;
 	  /* member traversal: note it leaves init NULL */
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TYPE_REF_P (type))
 	    {
 	      if (permerror (DECL_SOURCE_LOCATION (current_function_decl),
 			     "uninitialized reference member in %q#T", type))
@@ -2368,7 +2368,7 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
       if (type_has_user_provided_constructor (field_type))
 	continue;
 
-      if (TREE_CODE (field_type) == REFERENCE_TYPE)
+      if (TYPE_REF_P (field_type))
 	{
 	  ++ error_count;
 	  if (complain)
@@ -3659,7 +3659,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
   /* ``A reference cannot be created by the new operator.  A reference
      is not an object (8.2.2, 8.4.3), so a pointer to it could not be
      returned by new.'' ARM 5.3.3 */
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     {
       if (complain & tf_error)
         error ("new cannot be applied to a reference type");
@@ -4586,7 +4586,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (type) == POINTER_TYPE)
+  if (TYPE_PTR_P (type))
     type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 
   if (TREE_CODE (type) == ARRAY_TYPE)

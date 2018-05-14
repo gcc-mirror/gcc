@@ -65,7 +65,7 @@ lvalue_kind (const_tree ref)
     return lvalue_kind (TREE_OPERAND (ref, 0));
 
   if (TREE_TYPE (ref)
-      && TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
+      && TYPE_REF_P (TREE_TYPE (ref)))
     {
       /* unnamed rvalue references are rvalues */
       if (TYPE_REF_IS_RVALUE (TREE_TYPE (ref))
@@ -1100,7 +1100,7 @@ cp_build_reference_type (tree to_type, bool rval)
   if (to_type == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (to_type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (to_type))
     {
       rval = rval && TYPE_REF_IS_RVALUE (to_type);
       to_type = TREE_TYPE (to_type);
@@ -1148,7 +1148,7 @@ tree
 move (tree expr)
 {
   tree type = TREE_TYPE (expr);
-  gcc_assert (TREE_CODE (type) != REFERENCE_TYPE);
+  gcc_assert (!TYPE_REF_P (type));
   type = cp_build_reference_type (type, /*rval*/true);
   return build_static_cast (type, expr, tf_warning_or_error);
 }
@@ -1260,11 +1260,11 @@ cp_build_qualified_type_real (tree type,
      [dcl.ref], [dcl.fct].  This used to be an error, but as of DR 295
      (in CD1) we always ignore extra cv-quals on functions.  */
   if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
-      && (TREE_CODE (type) == REFERENCE_TYPE
+      && (TYPE_REF_P (type)
 	  || TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE))
     {
-      if (TREE_CODE (type) == REFERENCE_TYPE)
+      if (TYPE_REF_P (type))
 	bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
       type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
     }
@@ -5126,7 +5126,7 @@ stabilize_expr (tree exp, tree* initp)
     }
   /* There are no expressions with REFERENCE_TYPE, but there can be call
      arguments with such a type; just treat it as a pointer.  */
-  else if (TREE_CODE (TREE_TYPE (exp)) == REFERENCE_TYPE
+  else if (TYPE_REF_P (TREE_TYPE (exp))
 	   || SCALAR_TYPE_P (TREE_TYPE (exp))
 	   || !glvalue_p (exp))
     {
@@ -5287,7 +5287,7 @@ stabilize_init (tree init, tree *initp)
 	{
 	  tree type = TREE_TYPE (ce->value);
 	  tree subinit;
-	  if (TREE_CODE (type) == REFERENCE_TYPE
+	  if (TYPE_REF_P (type)
 	      || SCALAR_TYPE_P (type))
 	    ce->value = stabilize_expr (ce->value, &subinit);
 	  else if (!stabilize_init (ce->value, &subinit))

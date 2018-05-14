@@ -322,7 +322,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl,
   tree argtype = TREE_TYPE (arg);
   tree target_type = TREE_TYPE (type);
 
-  gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+  gcc_assert (TYPE_REF_P (type));
 
   if ((flags & DIRECT_BIND) && ! lvalue_p (arg))
     {
@@ -429,8 +429,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 
   intype = TREE_TYPE (expr);
 
-  gcc_assert (TREE_CODE (intype) != REFERENCE_TYPE);
-  gcc_assert (TREE_CODE (reftype) == REFERENCE_TYPE);
+  gcc_assert (!TYPE_REF_P (intype));
+  gcc_assert (TYPE_REF_P (reftype));
 
   intype = TYPE_MAIN_VARIANT (intype);
 
@@ -533,7 +533,7 @@ tree
 convert_from_reference (tree val)
 {
   if (TREE_TYPE (val)
-      && TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
+      && TYPE_REF_P (TREE_TYPE (val)))
     {
       tree t = TREE_TYPE (TREE_TYPE (val));
       tree ref = build1 (INDIRECT_REF, t, val);
@@ -1163,8 +1163,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
     case INDIRECT_REF:
       {
 	tree type = TREE_TYPE (expr);
-	int is_reference = TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
-			   == REFERENCE_TYPE;
+	int is_reference = TYPE_REF_P (TREE_TYPE (TREE_OPERAND (expr, 0)));
 	int is_volatile = TYPE_VOLATILE (type);
 	int is_complete = COMPLETE_TYPE_P (complete_type (type));
 
@@ -2011,8 +2010,8 @@ noexcept_conv_p (tree to, tree from)
       t = TYPE_PTRMEMFUNC_FN_TYPE (t);
       f = TYPE_PTRMEMFUNC_FN_TYPE (f);
     }
-  if (TREE_CODE (t) == POINTER_TYPE
-      && TREE_CODE (f) == POINTER_TYPE)
+  if (TYPE_PTR_P (t)
+      && TYPE_PTR_P (f))
     {
       t = TREE_TYPE (t);
       f = TREE_TYPE (f);
@@ -2042,8 +2041,8 @@ fnptr_conv_p (tree to, tree from)
       t = TYPE_PTRMEMFUNC_FN_TYPE (t);
       f = TYPE_PTRMEMFUNC_FN_TYPE (f);
     }
-  if (TREE_CODE (t) == POINTER_TYPE
-      && TREE_CODE (f) == POINTER_TYPE)
+  if (TYPE_PTR_P (t)
+      && TYPE_PTR_P (f))
     {
       t = TREE_TYPE (t);
       f = TREE_TYPE (f);

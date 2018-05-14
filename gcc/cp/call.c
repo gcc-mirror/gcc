@@ -814,7 +814,7 @@ build_list_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   flags |= LOOKUP_NO_NARROWING;
 
   /* Can't make an array of these types.  */
-  if (TREE_CODE (elttype) == REFERENCE_TYPE
+  if (TYPE_REF_P (elttype)
       || TREE_CODE (elttype) == FUNCTION_TYPE
       || VOID_TYPE_P (elttype))
     return NULL;
@@ -915,7 +915,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	val = CONSTRUCTOR_ELT (ctor, i)->value;
       else if (DECL_INITIAL (field))
 	val = get_nsdmi (field, /*ctor*/false, complain);
-      else if (TREE_CODE (ftype) == REFERENCE_TYPE)
+      else if (TYPE_REF_P (ftype))
 	/* Value-initialization of reference is ill-formed.  */
 	return NULL;
       else
@@ -1105,7 +1105,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   tree qualified_to;
 
   to = non_reference (to);
-  if (TREE_CODE (from) == REFERENCE_TYPE)
+  if (TYPE_REF_P (from))
     {
       fromref = true;
       from = TREE_TYPE (from);
@@ -1475,8 +1475,8 @@ direct_reference_binding (tree type, conversion *conv)
 {
   tree t;
 
-  gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
-  gcc_assert (TREE_CODE (conv->type) != REFERENCE_TYPE);
+  gcc_assert (TYPE_REF_P (type));
+  gcc_assert (!TYPE_REF_P (conv->type));
 
   t = TREE_TYPE (type);
 
@@ -1567,7 +1567,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
     skip:;
     }
 
-  if (TREE_CODE (from) == REFERENCE_TYPE)
+  if (TYPE_REF_P (from))
     {
       from = TREE_TYPE (from);
       if (!TYPE_REF_IS_RVALUE (rfrom)
@@ -1633,7 +1633,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
       conv = build_identity_conv (tfrom, expr);
       conv = direct_reference_binding (rto, conv);
 
-      if (TREE_CODE (rfrom) == REFERENCE_TYPE)
+      if (TYPE_REF_P (rfrom))
 	/* Handle rvalue reference to function properly.  */
 	conv->rvaluedness_matches_p
 	  = (TYPE_REF_IS_RVALUE (rto) == TYPE_REF_IS_RVALUE (rfrom));
@@ -1835,7 +1835,7 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
       from = TREE_TYPE (expr);
     }
 
-  if (TREE_CODE (to) == REFERENCE_TYPE)
+  if (TYPE_REF_P (to))
     conv = reference_binding (to, from, expr, c_cast_p, flags, complain);
   else
     conv = standard_conversion (to, from, expr, c_cast_p, flags, complain);
@@ -2845,7 +2845,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
      we need candidates for both of them.  */
   if (type2 && !same_type_p (type1, type2)
       && TREE_CODE (type1) == TREE_CODE (type2)
-      && (TREE_CODE (type1) == REFERENCE_TYPE
+      && (TYPE_REF_P (type1)
 	  || (TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
 	  || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2))
 	  || TYPE_PTRMEMFUNC_P (type1)
@@ -3007,11 +3007,11 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	      type = TREE_TYPE (convs);
 
 	      if (i == 0 && ref1
-		  && (TREE_CODE (type) != REFERENCE_TYPE
+		  && (!TYPE_REF_P (type)
 		      || CP_TYPE_CONST_P (TREE_TYPE (type))))
 		continue;
 
-	      if (code == COND_EXPR && TREE_CODE (type) == REFERENCE_TYPE)
+	      if (code == COND_EXPR && TYPE_REF_P (type))
 		vec_safe_push (types[i], type);
 
 	      type = non_reference (type);
@@ -3818,7 +3818,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 
 	     We represent this in the conversion sequence with an
 	     rvalue conversion, which means a constructor call.  */
-	  if (TREE_CODE (totype) != REFERENCE_TYPE
+	  if (!TYPE_REF_P (totype)
 	      && !(convflags & LOOKUP_NO_TEMP_BIND))
 	    cand->second_conv
 	      = build_conv (ck_rvalue, totype, cand->second_conv);
@@ -3842,7 +3842,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	 find a direct binding, so don't even consider temporaries.  If
 	 we don't find a direct binding, the caller will try again to
 	 look for a temporary binding.  */
-      if (TREE_CODE (totype) == REFERENCE_TYPE)
+      if (TYPE_REF_P (totype))
 	convflags |= LOOKUP_NO_TEMP_BIND;
 
       old_candidates = candidates;
@@ -4514,7 +4514,7 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
       if (TYPE_PTRFN_P (totype)
 	  || TYPE_REFFN_P (totype)
-	  || (TREE_CODE (totype) == REFERENCE_TYPE
+	  || (TYPE_REF_P (totype)
 	      && TYPE_PTRFN_P (TREE_TYPE (totype))))
 	for (ovl_iterator iter (TREE_VALUE (convs)); iter; ++iter)
 	  {
@@ -5733,7 +5733,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 	    {
 	      parmtype = TREE_VALUE (parmlist);
 
-	      if (TREE_CODE (parmtype) == REFERENCE_TYPE)
+	      if (TYPE_REF_P (parmtype))
 		parmtype = TREE_TYPE (parmtype);
 	      if (TREE_CODE (TREE_TYPE (args[i])) == ENUMERAL_TYPE
 		  && (same_type_ignoring_top_level_qualifiers_p
@@ -7246,7 +7246,7 @@ build_x_va_arg (source_location loc, tree expr, tree type)
 
   expr = mark_lvalue_use (expr);
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     {
       error ("cannot receive reference type %qT through %<...%>", type);
       return error_mark_node;
@@ -7618,7 +7618,7 @@ conv_binds_ref_to_prvalue (conversion *c)
 
   if (c->kind == ck_rvalue)
     return true;
-  if (c->kind == ck_user && TREE_CODE (c->type) != REFERENCE_TYPE)
+  if (c->kind == ck_user && !TYPE_REF_P (c->type))
     return true;
   if (c->kind == ck_identity && c->u.expr
       && TREE_CODE (c->u.expr) == TARGET_EXPR)
@@ -7862,7 +7862,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	     reference to the object’s type (possibly cv-qualified)...." */
 	  gcc_assert (!(complain & tf_error));
 	  tree ptype = convs[0]->type;
-	  if (TREE_CODE (ptype) != REFERENCE_TYPE
+	  if (!TYPE_REF_P (ptype)
 	      || !TYPE_REF_IS_RVALUE (ptype)
 	      || CONVERSION_RANK (convs[0]) > cr_exact)
 	    return error_mark_node;
@@ -8097,7 +8097,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  /* For -Wformat undo the implicit passing by hidden reference
 	     done by convert_arg_to_ellipsis.  */
 	  if (TREE_CODE (argarray[j]) == ADDR_EXPR
-	      && TREE_CODE (TREE_TYPE (argarray[j])) == REFERENCE_TYPE)
+	      && TYPE_REF_P (TREE_TYPE (argarray[j])))
 	    fargs[j] = TREE_OPERAND (argarray[j], 0);
 	  else
 	    fargs[j] = maybe_constant_value (argarray[j]);
@@ -8153,12 +8153,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       targ = arg;
       /* Strip the reference binding for the constructor parameter.  */
       if (CONVERT_EXPR_P (targ)
-	  && TREE_CODE (TREE_TYPE (targ)) == REFERENCE_TYPE)
+	  && TYPE_REF_P (TREE_TYPE (targ)))
 	targ = TREE_OPERAND (targ, 0);
       /* But don't strip any other reference bindings; binding a temporary to a
 	 reference prevents copy elision.  */
       while ((CONVERT_EXPR_P (targ)
-	      && TREE_CODE (TREE_TYPE (targ)) != REFERENCE_TYPE)
+	      && !TYPE_REF_P (TREE_TYPE (targ)))
 	     || TREE_CODE (targ) == NON_LVALUE_EXPR)
 	targ = TREE_OPERAND (targ, 0);
       if (TREE_CODE (targ) == ADDR_EXPR)
@@ -10672,7 +10672,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
   void *p;
   location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     expr = mark_lvalue_use (expr);
   else
     expr = mark_rvalue_use (expr);
@@ -11094,7 +11094,7 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups)
   tree type = TREE_TYPE (init);
   if (processing_template_decl)
     return init;
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     init = extend_ref_init_temps_1 (decl, init, cleanups);
   else
     {
@@ -11136,7 +11136,7 @@ bool
 type_has_extended_temps (tree type)
 {
   type = strip_array_types (type);
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     return true;
   if (CLASS_TYPE_P (type))
     {

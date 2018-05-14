@@ -462,7 +462,7 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
       if (array_expr == error_mark_node || index_exp == error_mark_node)
 	error ("ambiguous conversion for array subscript");
 
-      if (TREE_CODE (TREE_TYPE (array_expr)) == POINTER_TYPE)
+      if (TYPE_PTR_P (TREE_TYPE (array_expr)))
 	array_expr = mark_rvalue_use (array_expr);
       else
 	array_expr = mark_lvalue_use_nonread (array_expr);
@@ -1345,7 +1345,7 @@ cp_reconstruct_complex_type (tree type, tree bottom)
       outer = build_pointer_type_for_mode (inner, TYPE_MODE (type),
 					   TYPE_REF_CAN_ALIAS_ALL (type));
     }
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
+  else if (TYPE_REF_P (type))
     {
       inner = cp_reconstruct_complex_type (TREE_TYPE (type), bottom);
       outer = build_reference_type_for_mode (inner, TYPE_MODE (type),
@@ -4275,7 +4275,7 @@ decl_maybe_constant_var_p (tree decl)
   if (DECL_HAS_VALUE_EXPR_P (decl))
     /* A proxy isn't constant.  */
     return false;
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     /* References can be constant.  */;
   else if (CP_TYPE_CONST_NON_VOLATILE_P (type)
 	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
