@@ -1,3 +1,30 @@
+2018-05-14  Jason Merrill  <jason@redhat.com>
+
+	Handle TYPE_HAS_LATE_RETURN_TYPE like ref-qualifier and eh spec.
+	* tree.c (build_cp_fntype_variant): New.
+	(build_ref_qualified_type, build_exception_variant)
+	(strip_typedefs, cxx_copy_lang_qualifiers): Use it.
+	(cxx_type_hash_eq, cp_check_qualified_type): Check
+	TYPE_HAS_LATE_RETURN_TYPE.
+	(cp_build_type_attribute_variant): Check cxx_type_hash_eq.
+	(cp_build_qualified_type_real): No need to preserve C++ qualifiers.
+	* class.c (build_clone): Use cxx_copy_lang_qualifiers.
+	(adjust_clone_args): Likewise.
+	* decl.c (grokfndecl): Add late_return_type_p parameter.  Use
+	build_cp_fntype_variant.
+	(grokdeclarator): Pass late_return_type_p to grokfndecl.
+	(check_function_type): Use cxx_copy_lang_qualifiers.
+	(static_fn_type): Use cxx_copy_lang_qualifiers.
+	* decl2.c (build_memfn_type, maybe_retrofit_in_chrg)
+	(cp_reconstruct_complex_type, coerce_new_type, coerce_delete_type)
+	(change_return_type): Use cxx_copy_lang_qualifiers.
+	* mangle.c (write_type): Use cxx_copy_lang_qualifiers.
+	* parser.c (cp_parser_lambda_declarator_opt): Represent an explicit
+	return type on the declarator like a normal trailing return type.
+	* pt.c (tsubst_function_type): Use build_cp_fntype_variant.
+	(copy_default_args_to_explicit_spec): Use cxx_copy_lang_qualifiers.
+	* typeck.c (merge_types): Use build_cp_fntype_variant.
+
 2018-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (TYPE_REF_P): New.

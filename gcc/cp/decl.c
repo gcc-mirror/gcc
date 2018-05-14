@@ -8592,6 +8592,7 @@ grokfndecl (tree ctype,
 	    bool deletedp,
 	    special_function_kind sfk,
 	    bool funcdef_flag,
+	    bool late_return_type_p,
 	    int template_count,
 	    tree in_namespace,
 	    tree* attrlist,
@@ -8611,10 +8612,7 @@ grokfndecl (tree ctype,
       return NULL_TREE;
     }
 
-  if (rqual)
-    type = build_ref_qualified_type (type, rqual);
-  if (raises)
-    type = build_exception_variant (type, raises);
+  type = build_cp_fntype_variant (type, rqual, raises, late_return_type_p);
 
   decl = build_lang_decl (FUNCTION_DECL, declarator, type);
 
@@ -12136,9 +12134,6 @@ grokdeclarator (const cp_declarator *declarator,
 	    publicp = (! friendp || ! staticp)
 	      && function_context == NULL_TREE;
 
-	    if (late_return_type_p)
-	      TYPE_HAS_LATE_RETURN_TYPE (type) = 1;
-
 	    decl = grokfndecl (ctype, type,
 			       TREE_CODE (unqualified_id) != TEMPLATE_ID_EXPR
 			       ? unqualified_id : dname,
@@ -12149,7 +12144,8 @@ grokdeclarator (const cp_declarator *declarator,
 			       friendp ? -1 : 0, friendp, publicp,
                                inlinep | (2 * constexpr_p) | (4 * concept_p),
 			       initialized == SD_DELETED, sfk,
-			       funcdef_flag, template_count, in_namespace,
+			       funcdef_flag, late_return_type_p,
+			       template_count, in_namespace,
 			       attrlist, declarator->id_loc);
             decl = set_virt_specifiers (decl, virt_specifiers);
 	    if (decl == NULL_TREE)
@@ -12386,9 +12382,6 @@ grokdeclarator (const cp_declarator *declarator,
 	publicp = (ctype != NULL_TREE
 		   || storage_class != sc_static);
 
-	if (late_return_type_p)
-	  TYPE_HAS_LATE_RETURN_TYPE (type) = 1;
-
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
                            reqs, virtualp, flags, memfn_quals, rqual, raises,
 			   1, friendp,
@@ -12397,6 +12390,7 @@ grokdeclarator (const cp_declarator *declarator,
 			   initialized == SD_DELETED,
                            sfk,
                            funcdef_flag,
+			   late_return_type_p,
 			   template_count, in_namespace, attrlist,
 			   declarator->id_loc);
 	if (decl == NULL_TREE)
@@ -14753,11 +14747,9 @@ check_function_type (tree decl, tree current_function_parms)
 					     TREE_CHAIN (args));
       else
 	fntype = build_function_type (void_type_node, args);
-      fntype
-	= build_exception_variant (fntype,
-				   TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)));
       fntype = (cp_build_type_attribute_variant
 		(fntype, TYPE_ATTRIBUTES (TREE_TYPE (decl))));
+      fntype = cxx_copy_lang_qualifiers (fntype, TREE_TYPE (decl));
       TREE_TYPE (decl) = fntype;
     }
   else
@@ -16161,15 +16153,11 @@ static_fn_type (tree memfntype)
     return memfntype;
   gcc_assert (TREE_CODE (memfntype) == METHOD_TYPE);
   args = TYPE_ARG_TYPES (memfntype);
-  cp_ref_qualifier rqual = type_memfn_rqual (memfntype);
   fntype = build_function_type (TREE_TYPE (memfntype), TREE_CHAIN (args));
-  fntype = apply_memfn_quals (fntype, type_memfn_quals (memfntype), rqual);
+  fntype = apply_memfn_quals (fntype, type_memfn_quals (memfntype));
   fntype = (cp_build_type_attribute_variant
 	    (fntype, TYPE_ATTRIBUTES (memfntype)));
-  fntype = (build_exception_variant
-	    (fntype, TYPE_RAISES_EXCEPTIONS (memfntype)));
-  if (TYPE_HAS_LATE_RETURN_TYPE (memfntype))
-    TYPE_HAS_LATE_RETURN_TYPE (fntype) = 1;
+  fntype = cxx_copy_lang_qualifiers (fntype, memfntype);
   return fntype;
 }
 

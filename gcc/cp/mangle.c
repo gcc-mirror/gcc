@@ -2155,11 +2155,7 @@ write_type (tree type)
       type = TYPE_MAIN_VARIANT (type);
       if (TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE)
-	{
-	  type = build_ref_qualified_type (type, type_memfn_rqual (type_orig));
-	  type = build_exception_variant (type,
-					  TYPE_RAISES_EXCEPTIONS (type_orig));
-	}
+	type = cxx_copy_lang_qualifiers (type, type_orig);
 
       /* According to the C++ ABI, some library classes are passed the
 	 same as the scalar type of their single member and use the same

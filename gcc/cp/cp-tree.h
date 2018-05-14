@@ -7103,6 +7103,7 @@ extern tree ovl_scope				(tree);
 extern const char *cxx_printable_name		(tree, int);
 extern const char *cxx_printable_name_translate	(tree, int);
 extern tree canonical_eh_spec			(tree);
+extern tree build_cp_fntype_variant		(tree, cp_ref_qualifier, tree, bool);
 extern tree build_exception_variant		(tree, tree);
 extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
@@ -7262,7 +7263,8 @@ extern tree build_ptrmemfunc			(tree, tree, int, bool,
 extern int cp_type_quals			(const_tree);
 extern int type_memfn_quals			(const_tree);
 extern cp_ref_qualifier type_memfn_rqual	(const_tree);
-extern tree apply_memfn_quals			(tree, cp_cv_quals, cp_ref_qualifier);
+extern tree apply_memfn_quals			(tree, cp_cv_quals,
+						 cp_ref_qualifier = REF_QUAL_NONE);
 extern bool cp_has_mutable_p			(const_tree);
 extern bool at_least_as_qualified_p		(const_tree, const_tree);
 extern void cp_apply_type_quals_to_decl		(int, tree);

@@ -10563,11 +10563,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     void *p;
 
     clear_decl_specs (&return_type_specs);
-    if (return_type)
-      return_type_specs.type = return_type;
-    else
-      /* Maybe we will deduce the return type later.  */
-      return_type_specs.type = make_auto ();
+    return_type_specs.type = make_auto ();
 
     if (lambda_specs.locations[ds_constexpr])
       {
@@ -10593,6 +10589,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
                                        /*late_return_type=*/NULL_TREE,
                                        /*requires_clause*/NULL_TREE);
     declarator->id_loc = LAMBDA_EXPR_LOCATION (lambda_expr);
+    if (return_type)
+      declarator->u.function.late_return_type = return_type;
 
     fco = grokmethod (&return_type_specs,
 		      declarator,
@@ -10603,8 +10601,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
 	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
-	if (return_type)
-	  TYPE_HAS_LATE_RETURN_TYPE (TREE_TYPE (fco)) = 1;
       }
     if (template_param_list)
       {
