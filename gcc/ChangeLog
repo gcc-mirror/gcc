@@ -1,3 +1,8 @@
+2018-05-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete @itemx for
+	-mreadonly-in-sdata.
+
 2018-05-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (*aarch64_crypto_aese_fused):

@@ -24059,7 +24059,6 @@ in the @code{.data} section, and all uninitialized data in the
 @code{.bss} section.
 
 @item -mreadonly-in-sdata
-@itemx -mreadonly-in-sdata
 @opindex mreadonly-in-sdata
 @opindex mno-readonly-in-sdata
 Put read-only objects in the @code{.sdata} section as well.  This is the
