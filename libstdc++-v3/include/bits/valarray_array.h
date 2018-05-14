@@ -152,7 +152,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       inline static void
       _S_do_it(const _Tp* __b, const _Tp* __e, _Tp* __restrict__ __o)
-      { __builtin_memcpy(__o, __b, (__e - __b) * sizeof(_Tp)); }
+      {
+	if (__b)
+	  __builtin_memcpy(__o, __b, (__e - __b) * sizeof(_Tp));
+      }
     };
 
   template<typename _Tp>
@@ -258,7 +261,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       inline static void
       _S_do_it(const _Tp* __restrict__ __a, size_t __n, _Tp* __restrict__ __b)
-      { __builtin_memcpy(__b, __a, __n * sizeof (_Tp)); }
+      {
+	if (__n != 0)
+	  __builtin_memcpy(__b, __a, __n * sizeof (_Tp));
+      }
     };
 
   // Copy a plain array __a[<__n>] into a play array __b[<>]
