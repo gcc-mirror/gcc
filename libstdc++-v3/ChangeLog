@@ -1,5 +1,12 @@
 2018-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81256
+	* include/bits/fstream.tcc (basic_filebuf::close): Do not swallow
+	exceptions from _M_terminate_output().
+	* include/std/fstream (basic_filebuf::~basic_filebuf): Swallow any
+	exceptions from close().
+	* testsuite/27_io/basic_filebuf/close/81256.cc: New.
+
 	* include/bits/valarray_array.h (__valarray_get_memory): Remove.
 	(__valarray_get_storage): Call operator new directly. Remove ignored
 	top-level restrict qualifier and add malloc attribute instead.

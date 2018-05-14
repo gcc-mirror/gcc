@@ -239,13 +239,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (!_M_terminate_output())
 	      __testfail = true;
 	  }
-	__catch(__cxxabiv1::__forced_unwind&)
+	__catch(...)
 	  {
 	    _M_file.close();
 	    __throw_exception_again;
 	  }
-	__catch(...)
-	  { __testfail = true; }
       }
 
       if (!_M_file.close())
