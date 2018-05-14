@@ -4469,13 +4469,8 @@ build_clone (tree fn, tree name)
      type.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (clone))
     {
-      tree basetype;
-      tree parmtypes;
-      tree exceptions;
-
-      exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (clone));
-      basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
-      parmtypes = TYPE_ARG_TYPES (TREE_TYPE (clone));
+      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
+      tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (clone));
       /* Skip the `this' parameter.  */
       parmtypes = TREE_CHAIN (parmtypes);
       /* Skip the in-charge parameter.  */
@@ -4494,12 +4489,11 @@ build_clone (tree fn, tree name)
 	= build_method_type_directly (basetype,
 				      TREE_TYPE (TREE_TYPE (clone)),
 				      parmtypes);
-      if (exceptions)
-	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone),
-						     exceptions);
       TREE_TYPE (clone)
 	= cp_build_type_attribute_variant (TREE_TYPE (clone),
 					   TYPE_ATTRIBUTES (TREE_TYPE (fn)));
+      TREE_TYPE (clone)
+	= cxx_copy_lang_qualifiers (TREE_TYPE (clone), TREE_TYPE (fn));
     }
 
   /* Copy the function parameters.  */
@@ -4687,11 +4681,6 @@ adjust_clone_args (tree decl)
 	    {
 	      /* A default parameter has been added. Adjust the
 		 clone's parameters.  */
-	      tree exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (clone));
-	      tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (clone));
-	      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
-	      tree type;
-
 	      clone_parms = orig_decl_parms;
 
 	      if (DECL_HAS_VTT_PARM_P (clone))
@@ -4701,13 +4690,15 @@ adjust_clone_args (tree decl)
 					   clone_parms);
 		  TREE_TYPE (clone_parms) = TREE_TYPE (orig_clone_parms);
 		}
-	      type = build_method_type_directly (basetype,
-						 TREE_TYPE (TREE_TYPE (clone)),
-						 clone_parms);
-	      if (exceptions)
-		type = build_exception_variant (type, exceptions);
-	      if (attrs)
+
+	      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
+	      tree type
+		= build_method_type_directly (basetype,
+					      TREE_TYPE (TREE_TYPE (clone)),
+					      clone_parms);
+	      if (tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (clone)))
 		type = cp_build_type_attribute_variant (type, attrs);
+	      type = cxx_copy_lang_qualifiers (type, TREE_TYPE (clone));
 	      TREE_TYPE (clone) = type;
 
 	      clone_parms = NULL_TREE;

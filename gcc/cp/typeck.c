@@ -830,8 +830,6 @@ merge_types (tree t1, tree t2)
 	tree p1 = TYPE_ARG_TYPES (t1);
 	tree p2 = TYPE_ARG_TYPES (t2);
 	tree parms;
-	tree rval, raises;
-	bool late_return_type_p = TYPE_HAS_LATE_RETURN_TYPE (t1);
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (valtype == TREE_TYPE (t1) && ! p2)
@@ -847,17 +845,17 @@ merge_types (tree t1, tree t2)
 	else
 	  parms = commonparms (p1, p2);
 
-	rval = build_function_type (valtype, parms);
-	gcc_assert (type_memfn_quals (t1) == type_memfn_quals (t2));
-	gcc_assert (type_memfn_rqual (t1) == type_memfn_rqual (t2));
-	rval = apply_memfn_quals (rval,
-				  type_memfn_quals (t1),
-				  type_memfn_rqual (t1));
-	raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
-					     TYPE_RAISES_EXCEPTIONS (t2));
-	t1 = build_exception_variant (rval, raises);
-	if (late_return_type_p)
-	  TYPE_HAS_LATE_RETURN_TYPE (t1) = 1;
+	cp_cv_quals quals = type_memfn_quals (t1);
+	cp_ref_qualifier rqual = type_memfn_rqual (t1);
+	gcc_assert (quals == type_memfn_quals (t2));
+	gcc_assert (rqual == type_memfn_rqual (t2));
+
+	tree rval = build_function_type (valtype, parms);
+	rval = apply_memfn_quals (rval, quals);
+	tree raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
+						  TYPE_RAISES_EXCEPTIONS (t2));
+	bool late_return_type_p = TYPE_HAS_LATE_RETURN_TYPE (t1);
+	t1 = build_cp_fntype_variant (rval, rqual, raises, late_return_type_p);
 	break;
       }
 
@@ -871,7 +869,6 @@ merge_types (tree t1, tree t2)
 	cp_ref_qualifier rqual = type_memfn_rqual (t1);
 	tree t3;
 	bool late_return_type_1_p = TYPE_HAS_LATE_RETURN_TYPE (t1);
-	bool late_return_type_2_p = TYPE_HAS_LATE_RETURN_TYPE (t2);
 
 	/* If this was a member function type, get back to the
 	   original type of type member function (i.e., without
@@ -883,12 +880,7 @@ merge_types (tree t1, tree t2)
 	t3 = merge_types (t1, t2);
 	t3 = build_method_type_directly (basetype, TREE_TYPE (t3),
 					 TYPE_ARG_TYPES (t3));
-	t1 = build_exception_variant (t3, raises);
-	t1 = build_ref_qualified_type (t1, rqual);
-	if (late_return_type_1_p)
-	  TYPE_HAS_LATE_RETURN_TYPE (t1) = 1;
-	if (late_return_type_2_p)
-	  TYPE_HAS_LATE_RETURN_TYPE (t2) = 1;
+	t1 = build_cp_fntype_variant (t3, rqual, raises, late_return_type_1_p);
 	break;
       }
 

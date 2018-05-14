@@ -2528,11 +2528,7 @@ copy_default_args_to_explicit_spec (tree decl)
 				    new_spec_types);
   new_type = cp_build_type_attribute_variant (new_type,
 					      TYPE_ATTRIBUTES (old_type));
-  new_type = build_exception_variant (new_type,
-				      TYPE_RAISES_EXCEPTIONS (old_type));
-
-  if (TYPE_HAS_LATE_RETURN_TYPE (old_type))
-    TYPE_HAS_LATE_RETURN_TYPE (new_type) = 1;
+  new_type = cxx_copy_lang_qualifiers (new_type, old_type);
 
   TREE_TYPE (decl) = new_type;
 }
@@ -14020,9 +14016,7 @@ tsubst_function_type (tree t,
   if (TREE_CODE (t) == FUNCTION_TYPE)
     {
       fntype = build_function_type (return_type, arg_types);
-      fntype = apply_memfn_quals (fntype,
-				  type_memfn_quals (t),
-				  type_memfn_rqual (t));
+      fntype = apply_memfn_quals (fntype, type_memfn_quals (t));
     }
   else
     {
@@ -14046,12 +14040,13 @@ tsubst_function_type (tree t,
 
       fntype = build_method_type_directly (r, return_type,
 					   TREE_CHAIN (arg_types));
-      fntype = build_ref_qualified_type (fntype, type_memfn_rqual (t));
     }
   fntype = cp_build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
 
-  if (late_return_type_p)
-    TYPE_HAS_LATE_RETURN_TYPE (fntype) = 1;
+  /* See comment above.  */
+  tree raises = NULL_TREE;
+  cp_ref_qualifier rqual = type_memfn_rqual (t);
+  fntype = build_cp_fntype_variant (fntype, rqual, raises, late_return_type_p);
 
   return fntype;
 }
