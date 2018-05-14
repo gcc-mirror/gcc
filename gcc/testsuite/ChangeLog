@@ -1,3 +1,9 @@
+2018-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/85756
+	* gnat.dg/opt70.adb: New test.
+	* gnat.dg/opt70_pkg.ad[sb]: New helper.
+
 2018-05-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/crypto-fuse-1.c: New test.
