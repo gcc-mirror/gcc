@@ -784,13 +784,13 @@ dump_type_prefix (cxx_pretty_printer *pp, tree t, int flags)
 	  }
 	if (TYPE_PTR_P (t))
 	  pp_star (pp);
-	else if (TREE_CODE (t) == REFERENCE_TYPE)
-	{
-	  if (TYPE_REF_IS_RVALUE (t))
-	    pp_ampersand_ampersand (pp);
-	  else
-	    pp_ampersand (pp);
-	}
+	else if (TYPE_REF_P (t))
+	  {
+	    if (TYPE_REF_IS_RVALUE (t))
+	      pp_ampersand_ampersand (pp);
+	    else
+	      pp_ampersand (pp);
+	  }
 	pp->padding = pp_before;
 	pp_cxx_cv_qualifier_seq (pp, t);
       }
@@ -2271,7 +2271,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	    if (!is_this_parameter (ob))
 	      {
 		dump_expr (pp, ob, flags | TFF_EXPR_IN_PARENS);
-		if (TREE_CODE (TREE_TYPE (ob)) == REFERENCE_TYPE)
+		if (TYPE_REF_P (TREE_TYPE (ob)))
 		  pp_cxx_dot (pp);
 		else
 		  pp_cxx_arrow (pp);
@@ -2305,7 +2305,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	     shouldn't print the `&' doing so indicates to the user
 	     that the expression has pointer type.  */
 	  || (TREE_TYPE (t)
-	      && TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE))
+	      && TYPE_REF_P (TREE_TYPE (t))))
 	dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       else if (TREE_CODE (TREE_OPERAND (t, 0)) == LABEL_DECL)
 	dump_unary_op (pp, "&&", t, flags);
@@ -2417,7 +2417,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	    && same_type_p (TREE_TYPE (optype),
 			    TREE_TYPE (ttype)))
 	  {
-	    if (TREE_CODE (ttype) == REFERENCE_TYPE)
+	    if (TYPE_REF_P (ttype))
 	      {
 		STRIP_NOPS (op);
 		if (TREE_CODE (op) == ADDR_EXPR)

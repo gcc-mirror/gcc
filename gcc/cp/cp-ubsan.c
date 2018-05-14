@@ -265,7 +265,7 @@ cp_ubsan_maybe_instrument_downcast (location_t loc, tree type,
     return NULL_TREE;
 
   return cp_ubsan_maybe_instrument_vptr (loc, op, TREE_TYPE (type), true,
-					 TREE_CODE (type) == POINTER_TYPE
+					 TYPE_PTR_P (type)
 					 ? UBSAN_DOWNCAST_POINTER
 					 : UBSAN_DOWNCAST_REFERENCE);
 }

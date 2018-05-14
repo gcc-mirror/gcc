@@ -3621,8 +3621,7 @@ struct GTY(()) lang_decl {
 #define REFERENCE_REF_P(NODE)				\
   (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
-   && (TREE_CODE (TREE_TYPE (TREE_OPERAND ((NODE), 0)))	\
-       == REFERENCE_TYPE))
+   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND ((NODE), 0))))
 
 /* True if NODE is a REFERENCE_TYPE which is OK to instantiate to be a
    reference to VLA type, because it's used for VLA capture.  */
@@ -4227,9 +4226,14 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Returns true if NODE is a pointer-to-data-member.  */
 #define TYPE_PTRDATAMEM_P(NODE)			\
   (TREE_CODE (NODE) == OFFSET_TYPE)
+
 /* Returns true if NODE is a pointer.  */
 #define TYPE_PTR_P(NODE)			\
   (TREE_CODE (NODE) == POINTER_TYPE)
+
+/* Returns true if NODE is a reference.  */
+#define TYPE_REF_P(NODE)			\
+  (TREE_CODE (NODE) == REFERENCE_TYPE)
 
 /* Returns true if NODE is an object type:
 
@@ -4240,7 +4244,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
    Keep these checks in ascending order, for speed.  */
 #define TYPE_OBJ_P(NODE)			\
-  (TREE_CODE (NODE) != REFERENCE_TYPE		\
+  (!TYPE_REF_P (NODE)				\
    && !VOID_TYPE_P (NODE)  		        \
    && TREE_CODE (NODE) != FUNCTION_TYPE		\
    && TREE_CODE (NODE) != METHOD_TYPE)
@@ -4253,7 +4257,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Returns true if NODE is a reference to an object.  Keep these checks
    in ascending tree code order.  */
 #define TYPE_REF_OBJ_P(NODE)					\
-  (TREE_CODE (NODE) == REFERENCE_TYPE && TYPE_OBJ_P (TREE_TYPE (NODE)))
+  (TYPE_REF_P (NODE) && TYPE_OBJ_P (TREE_TYPE (NODE)))
 
 /* Returns true if NODE is a pointer to an object, or a pointer to
    void.  Keep these checks in ascending tree code order.  */
@@ -4269,7 +4273,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Returns true if NODE is a reference to function type.  */
 #define TYPE_REFFN_P(NODE)				\
-  (TREE_CODE (NODE) == REFERENCE_TYPE			\
+  (TYPE_REF_P (NODE)					\
    && TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE)
 
 /* Returns true if NODE is a pointer to member function type.  */

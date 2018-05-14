@@ -874,7 +874,7 @@ omp_var_to_track (tree decl)
   tree type = TREE_TYPE (decl);
   if (is_invisiref_parm (decl))
     type = TREE_TYPE (type);
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
+  else if (TYPE_REF_P (type))
     type = TREE_TYPE (type);
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
@@ -928,7 +928,7 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 	      tree type = TREE_TYPE (decl);
 	      if (is_invisiref_parm (decl))
 		type = TREE_TYPE (type);
-	      else if (TREE_CODE (type) == REFERENCE_TYPE)
+	      else if (TYPE_REF_P (type))
 		type = TREE_TYPE (type);
 	      while (TREE_CODE (type) == ARRAY_TYPE)
 		type = TREE_TYPE (type);
@@ -1091,7 +1091,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     }
 
   if (TREE_CODE (stmt) == INTEGER_CST
-      && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE
+      && TYPE_REF_P (TREE_TYPE (stmt))
       && (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
       && !wtd->no_sanitize_p)
     {
@@ -1486,7 +1486,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case NOP_EXPR:
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT)
-	  && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE)
+	  && TYPE_REF_P (TREE_TYPE (stmt)))
 	ubsan_maybe_instrument_reference (stmt_p);
       break;
 
@@ -1513,8 +1513,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  else if (fn == NULL_TREE
 		   && CALL_EXPR_IFN (stmt) == IFN_UBSAN_NULL
 		   && TREE_CODE (CALL_EXPR_ARG (stmt, 0)) == INTEGER_CST
-		   && (TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (stmt, 0)))
-		       == REFERENCE_TYPE))
+		   && TYPE_REF_P (TREE_TYPE (CALL_EXPR_ARG (stmt, 0))))
 	    *walk_subtrees = 0;
 	}
       /* Fall through.  */
@@ -1907,7 +1906,7 @@ cxx_omp_clause_dtor (tree clause, tree decl)
 bool
 cxx_omp_privatize_by_reference (const_tree decl)
 {
-  return (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE
+  return (TYPE_REF_P (TREE_TYPE (decl))
 	  || is_invisiref_parm (decl));
 }
 
@@ -1916,7 +1915,7 @@ bool
 cxx_omp_const_qual_no_mutable (tree decl)
 {
   tree type = TREE_TYPE (decl);
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     {
       if (!is_invisiref_parm (decl))
 	return false;
@@ -2017,7 +2016,7 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
   inner_type = TREE_TYPE (decl);
   if (decl == error_mark_node)
     make_shared = true;
-  else if (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE)
+  else if (TYPE_REF_P (TREE_TYPE (decl)))
     inner_type = TREE_TYPE (inner_type);
 
   /* We're interested in the base element, not arrays.  */
@@ -2065,7 +2064,7 @@ cp_fold_maybe_rvalue (tree x, bool rval)
     {
       x = cp_fold (x);
       if (rval && DECL_P (x)
-	  && TREE_CODE (TREE_TYPE (x)) != REFERENCE_TYPE)
+	  && !TYPE_REF_P (TREE_TYPE (x)))
 	{
 	  tree v = decl_constant_value (x);
 	  if (v != x && v != error_mark_node)

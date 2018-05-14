@@ -90,7 +90,7 @@ build_lambda_object (tree lambda_expr)
 	val = build_array_copy (val);
       else if (DECL_NORMAL_CAPTURE_P (field)
 	       && !DECL_VLA_CAPTURE_P (field)
-	       && TREE_CODE (TREE_TYPE (field)) != REFERENCE_TYPE)
+	       && !TYPE_REF_P (TREE_TYPE (field)))
 	{
 	  /* "the entities that are captured by copy are used to
 	     direct-initialize each corresponding non-static data

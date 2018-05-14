@@ -3071,7 +3071,7 @@ write_expression (tree expr)
     }
   else if (INDIRECT_REF_P (expr)
 	   && TREE_TYPE (TREE_OPERAND (expr, 0))
-	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == REFERENCE_TYPE)
+	   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
     {
       write_expression (TREE_OPERAND (expr, 0));
     }
@@ -3209,7 +3209,7 @@ write_expression (tree expr)
 	 don't actually want to output a mangling code for the `&'.  */
       if (TREE_CODE (expr) == ADDR_EXPR
 	  && TREE_TYPE (expr)
-	  && TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
+	  && TYPE_REF_P (TREE_TYPE (expr)))
 	{
 	  expr = TREE_OPERAND (expr, 0);
 	  if (DECL_P (expr))
@@ -3473,7 +3473,7 @@ write_template_arg (tree node)
   if (REFERENCE_REF_P (node))
     node = TREE_OPERAND (node, 0);
   if (TREE_CODE (node) == NOP_EXPR
-      && TREE_CODE (TREE_TYPE (node)) == REFERENCE_TYPE)
+      && TYPE_REF_P (TREE_TYPE (node)))
     {
       /* Template parameters can be of reference type. To maintain
 	 internal consistency, such arguments use a conversion from

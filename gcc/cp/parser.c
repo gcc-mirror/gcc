@@ -34954,7 +34954,7 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
 	      init = cp_parser_assignment_expression (parser);
 
 	    non_class:
-	      if (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE)
+	      if (TYPE_REF_P (TREE_TYPE (decl)))
 		init = error_mark_node;
 	      else
 		cp_finish_decl (decl, NULL_TREE,
@@ -37417,7 +37417,7 @@ static bool
 cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
 {
   tree type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
-  gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+  gcc_assert (TYPE_REF_P (type));
   type = TREE_TYPE (type);
   tree omp_out = build_lang_decl (VAR_DECL, get_identifier ("omp_out"), type);
   DECL_ARTIFICIAL (omp_out) = 1;
@@ -37656,7 +37656,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	       || TREE_CODE (type) == ARRAY_TYPE)
 	error_at (loc, "function or array type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
-      else if (TREE_CODE (type) == REFERENCE_TYPE)
+      else if (TYPE_REF_P (type))
 	error_at (loc, "reference type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
       else if (TYPE_QUALS_NO_ADDR_SPACE (type))
