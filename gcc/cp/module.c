@@ -113,7 +113,9 @@ Classes used:
    depset::hash - hash table of depsets
    depset::tarjan - SCC determinator
 
-   module_state - module object   */
+   module_state - module object
+
+   module_server - server object  */
 
 /* MODULE_STAMP is a #define passed in from the Makefile.  When
    present, it is used for version stamping the binary files, and
@@ -2496,11 +2498,7 @@ bool module_state_hash::equal (const value_type existing,
 /* Some flag values: */
 
 /* Server name.  */
-static char *module_server;
-/* Server read & write streams.  */
-static FILE *server_read, *server_write;
-/* And its executable controller.  */
-static pex_obj *server_pex;
+static char *module_server_name;
 
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
@@ -2524,6 +2522,70 @@ vec<module_state *, va_gc> GTY(()) *module_state::modules;
 
 /* Has of module state, findable by NAME. */
 hash_table<module_state_hash> *module_state::hash;
+
+/* Server to query and inform of modular compilations.  This is a
+   singleton.  */
+class module_server {
+  char *name;
+  FILE *from;  /* Read from server.  */
+  FILE *to;	/* Write to server.  */
+  pex_obj *pex; /* If it's a subprocess.  */
+
+  char *buffer; /* Line buffer.  */
+  size_t size;  /* Allocated size of buffer.  */
+  char *pos;	/* Read point in buffer.  */
+  char *end;	/* Ending NUL byte.  */
+
+private:
+  /* Construction always succeeds, but may result in a dead server.  */
+  module_server (char *connection);
+  ~module_server ()
+  {
+    if (from)
+      kill ();
+  }
+
+private:
+  void kill ();
+  static module_server *make (char *);
+
+public:
+  static module_server *get ()
+  {
+    if (!server)
+      server = make (module_server_name);
+    return server->from ? server : NULL;
+  }
+  static void fini ()
+  {
+    delete server;
+    server = NULL;
+  }   
+
+public:
+  char *import_query (tree name, location_t from);
+  char *export_query (tree name);
+  bool export_done (tree name);
+
+private:
+  bool handshake (const char *main_src);
+  char *import_export_query (const char *, tree name, const char *);
+  void get_response ();
+  char *response_token ();
+  int response_word (const char *, ...);
+  void response_error ();
+  void response_unexpected ();
+  bool response_end_p () const
+  {
+    return pos == end;
+  }
+
+private:
+  static module_server *server;
+};
+
+/* Our module server (created lazily).  */
+module_server *module_server::server;
 
 /* A dumping machinery.  */
 
@@ -6258,224 +6320,38 @@ module_state::announce (const char *what) const
     }
 }
 
-/* Close down the server.  Mark it as not restartable.  */
+/* Create a server.  The server may be dead.  Yes, I'm embedding some
+   client-side socket handling in the compiler.  At least it's not
+   ipv4.  */
 
-static void
-server_fini ()
+module_server::module_server (char *option)
+  : name (option), from (NULL), to (NULL), pex (NULL),
+    /* Exercise buffer expansion code.  */
+    buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL)
 {
-  if (server_write)
-    fclose (server_write);
-
-  if (server_pex)
-    {
-      int status;
-
-      pex_get_status (server_pex, 1, &status);
-      pex_free (server_pex);
-      server_pex = NULL;
-
-      if (WIFSIGNALED (status))
-	error ("module server %qs died by signal %s",
-	       module_server, strsignal (WTERMSIG (status)));
-      else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-	error ("module server %qs exit status %d",
-	       module_server, WEXITSTATUS (status));
-    }
-  else if (server_read)
-    fclose (server_read);
-
-  server_read = server_write = NULL;
-  /* Force not restartable -- that would be annoying to continually fail.  */
-  module_server = const_cast<char *> ("");
-}
-
-// FIXME: I should probably objectify this
-static size_t server_size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
-static char *server_buffer = NULL;
-static char *server_pos = NULL;
-static char *server_end = NULL;
-
-/* Read a response from the server.  Return the numeric code and
-   remaining response buffer.  The buffer is owned by this routine and
-   reused on subsequent responses.  Return 0 on error.  */
-
-static bool
-server_response ()
-{
-  /* Exercise buffer expansion.  */
-  size_t pos = 0;
-  char *buffer = server_buffer;
-
-  if (!buffer)
-    buffer = XNEWVEC (char, server_size);
-
- more:
-  if (!fgets (buffer + pos, server_size - pos, server_read))
-    {
-      const char *err = ferror (server_read) ? "error" : "end of file";
-      error ("unexpected %s from module server %qs", err, module_server);
-      server_fini ();
-      pos = 0;
-    }
-  else
-    {
-      pos += strlen (buffer + pos);
-      if (buffer[pos - 1] != '\n')
-	{
-	  server_size *= 2;
-	  buffer = XRESIZEVEC (char, buffer, server_size);
-	  goto more;
-	}
-      pos--;
-    }
-
-  buffer[pos] = 0;
-  server_buffer = buffer;
-  server_end = server_buffer + pos;
-  while (ISSPACE (*buffer))
-    buffer++;
-  server_pos = buffer;
-
-  return true;
-}
-
-static void
-server_unexpected ()
-{
-  for (char *pos = server_buffer; pos != server_pos; pos++)
-    if (!*pos)
-      *pos = ' ';
-  error ("unexpected server response %qs", server_buffer);
-}
-
-static char *
-server_token (bool all = false)
-{
-  char *pos = server_pos;
-
-  if (all)
-    server_pos = server_end;
-  else
-    {
-      char *end = pos;
-      while (end != server_end && !ISSPACE (*end))
-	end++;
-
-      if (end != server_end)
-	{
-	  *end++ = 0;
-	  while (end != server_end && ISSPACE (*end))
-	    end++;
-	}
-      server_pos = end;
-      if (pos == server_pos)
-	{
-	  server_unexpected ();
-	  pos = NULL;
-	}
-    }
-
-  return pos;
-}
-
-static bool
-server_end_p ()
-{
-  return server_pos == server_end;
-}
-
-static void
-server_error ()
-{
-  char *err = server_token (true);
-  error ("server error %qs", err ? err : "unspecfied");
-}
-
-static int
-server_word (const char *option, ...)
-{
-  if (const char *tok = server_token ())
-    {
-      va_list args;
-      int count = 0;
-
-      va_start (args, option);
-      do
-	{
-	  if (!strcmp (option, tok))
-	    {
-	      va_end (args);
-	      return count;
-	    }
-	  count++;
-	  option = va_arg (args, const char *);
-	}
-      while (option);
-      va_end (args);
-      server_unexpected ();
-    }
-  return -1;
-}
-
-/*  Module server protocol non-canonical precis:
-
-    HELLO version mainfile
-    	-> HELLO/ERROR response
-    INCUDE header-name from
-    	-> INCLUDE/IMPORT reponse
-    [DEFER] BMI|SEARCH|PATH module-name from
-    	-> BMI bmipath
-	-> SEARCH srcbase
-	-> PATH srcpath
-	-> ERROR
-    DEFERRED
-	-> deferred response
-    EXPORT module-name
-    	-> BMI bmipath
-    DONE module-name
-    	-> OK
- */
-
-/* Create the server streams.  Return true if there is a server.  Yes,
-   I'm embedding some client-side socket handling in the compiler.  At
-   least it's not ipv4.  */
-
-static bool
-server_init ()
-{
-  gcc_assert (!server_read);
-
-  if (module_server && !module_server[0])
-    /* We previously failed to start.  Don't try again.  */
-    return false;
-
-  if (!module_server)
-    {
-      char const *env = getenv ("CXX_MODULE_SERVER");
-      if (env && env[0])
-	module_server = xstrdup (env);
-    }
-  bool defaulting = !module_server || !module_server[0];
+  pex = NULL;
+  
+  bool defaulting = !option;
   if (defaulting)
-    module_server = const_cast<char *> ("cxx-module-server");
+    option = const_cast<char *> ("cxx-module-server");
 
   if (noisy_p ())
     {
-      fprintf (stderr, " server:%s", module_server);
+      fprintf (stderr, " server:%s", option);
       fflush (stderr);
     }
 
-  dump () && dump ("Initializing server %s", module_server);
+  dump () && dump ("Initializing server %s", option);
 
   int err = 0;
   const char *errmsg = NULL;
 
   /* First copy and count white space -- we use that to distinguish
      programs that look like a socket name.  */
-  size_t len = strlen (module_server);
+  size_t len = strlen (option);
   unsigned count = 0;
 
-  for (char *ptr = module_server; *ptr; ptr++)
+  for (char *ptr = option; *ptr; ptr++)
     if (ISSPACE (*ptr))
       {
 	while (ISSPACE (ptr[1]))
@@ -6489,7 +6365,7 @@ server_init ()
   char *endp;
   if (!defaulting)
     {
-      unsigned long lfd = strtoul (module_server, &endp, 10);
+      unsigned long lfd = strtoul (option, &endp, 10);
       if (!*endp && lfd != ULONG_MAX)
 	fd = int (lfd);
     }
@@ -6514,7 +6390,7 @@ server_init ()
 #ifdef HOST_HAS_AF
       saddr.fam = AF_UNSPEC;
 #endif
-      if (IS_ABSOLUTE_PATH (module_server))
+      if (IS_ABSOLUTE_PATH (option))
 	{
 	  /* An absolute path is treated as a local domain socket.  */
 #ifdef HOST_HAS_AF_UNIX
@@ -6522,7 +6398,7 @@ server_init ()
 	    {
 	      memset (&saddr.un, 0, sizeof (saddr.un));
 	      saddr.un.sun_family = AF_UNIX;
-	      memcpy (saddr.un.sun_path, module_server, len + 1);
+	      memcpy (saddr.un.sun_path, option, len + 1);
 	    }
 	  saddr_len = offsetof (union saddr, un.sun_path) + len + 1;
 #else
@@ -6530,7 +6406,7 @@ server_init ()
 	  errmsg = "unix protocol unsupported";
 #endif
 	}
-      else if (char *colon = (char *)memrchr (module_server, ':', len))
+      else if (char *colon = (char *)memrchr (option, ':', len))
 	{
 	  port = strtoul (colon + 1, &endp, 10);
 	  if (!*endp)
@@ -6541,8 +6417,8 @@ server_init ()
 	      if (port >= 0x10000)
 		errno = EINVAL; /* Seems plausible.  */
 	      else if (struct hostent *hent
-		  = gethostbyname2 (colon != module_server
-				    ? module_server : "localhost", AF_INET6))
+		  = gethostbyname2 (colon != option
+				    ? option : "localhost", AF_INET6))
 		{
 		  memset (&saddr.in6, 0, sizeof (saddr.in6));
 		  saddr.in6.sin6_family = AF_INET6;
@@ -6589,19 +6465,19 @@ server_init ()
       int fd2 = dup (fd);
       if (fd2 >= 0)
 	{
-	  server_read = fdopen (fd, "r+");
-	  server_write = fdopen (fd2, "w+");
+	  from = fdopen (fd, "r+");
+	  to = fdopen (fd2, "w+");
 	}
 
-      if (!server_read || !server_write)
+      if (!from || !to)
 	{
 	  err = errno;
 	  errmsg = "connecting streams";
-	  if (server_read)
-	    fclose (server_read);
-	  if (server_write)
-	    fclose (server_write);
-	  server_read = server_write = NULL;
+	  if (from)
+	    fclose (from);
+	  if (to)
+	    fclose (to);
+	  from = to = NULL;
 	}
     }
   else if (!errmsg)
@@ -6611,7 +6487,7 @@ server_init ()
       char **argv = XALLOCAVEC (char *, count + 2);
       count = 0;
 
-      for (char *ptr = module_server; ; ptr++)
+      for (char *ptr = option; ; ptr++)
 	{
 	  while (ISSPACE (*ptr))
 	    ptr++;
@@ -6626,9 +6502,9 @@ server_init ()
 	}
       argv[count] = NULL;
 
-      server_pex = pex_init (PEX_USE_PIPES, argv[0], NULL);
-      server_write = pex_input_pipe (server_pex, false);
-      if (!server_write)
+      pex = pex_init (PEX_USE_PIPES, argv[0], NULL);
+      to = pex_input_pipe (pex, false);
+      if (!to)
 	{
 	  err = errno;
 	  errmsg = "connecting input";
@@ -6641,141 +6517,308 @@ server_init ()
 	  if (defaulting && fullname != progname)
 	    {
 	      /* Prepend the invoking path.  */
-	      gcc_checking_assert (count == 1 && argv[0] == module_server);
-	      argv[0] = const_cast <char *> (module_server);
+	      gcc_checking_assert (count == 1 && argv[0] == option);
 
 	      size_t dir_len = progname - fullname;
 	      argv0 = XNEWVEC (char, dir_len + len + 1);
 	      memcpy (argv0, fullname, dir_len);
-	      memcpy (argv0 + dir_len, module_server, len + 1);
+	      memcpy (argv0 + dir_len, argv[0], len + 1);
 	      flags = 0;
 	    }
-	  errmsg = pex_run (server_pex, flags, argv0,
-			    argv, NULL, NULL, &err);
+	  errmsg = pex_run (pex, flags, argv0, argv, NULL, NULL, &err);
 	  if (!flags)
 	    free (argv0);
 	}
 
+      name = argv[0];
       if (!errmsg)
 	{
-	  server_read = pex_read_output (server_pex, false);
-	  if (!server_read)
+	  from = pex_read_output (pex, false);
+	  if (!from)
 	    {
 	      err = errno;
 	      errmsg = "connecting output";
-	      fclose (server_write);
-	      server_write = NULL;
+	      fclose (to);
+	      to = NULL;
 	    }
-
-	  if (!errmsg)
-	    /* Only remember the command for future diagnostics.  */
-	    module_server = argv[0];
 	}
     }
 
   if (errmsg)
     {
-      error ("failed %s of module server %qs", errmsg, module_server);
+      error ("failed %s of module server %qs", errmsg, option);
       errno = err;
       inform (input_location, err < 0 ? "%s" : err > 0 ? "%m"
 	      : "here's a nickel, kid.  Get yourself a real computer",
 	      hstrerror (-err));
-      server_fini ();
-      return false;
+      kill ();
+      return;
     }
 
   /* Line buffering.  */
-  setvbuf (server_read, NULL, _IOLBF, 0);
-  setvbuf (server_write, NULL, _IOLBF, 0);
+  setvbuf (from, NULL, _IOLBF, 0);
+  setvbuf (to, NULL, _IOLBF, 0);
 
+  /* We have a live server.  Say Hello.  */
   dump () && dump ("Initialized server");
-  fprintf (server_write, "HELLO %d %s\n",
-	   MODULE_STAMP ? -version2date (get_version ()) : SERVER_VERSION,
-	   main_input_filename);
-  if (!server_response ())
-    return false;
 
-  switch (server_word ("HELLO", "ERROR", NULL))
+  if (!handshake (main_input_filename))
+    kill ();
+}
+
+/* Close down the server.  Mark it as not restartable.  */
+
+void
+module_server::kill ()
+{
+  if (to)
+    fclose (to);
+
+  if (pex)
+    {
+      int status;
+
+      pex_get_status (pex, 1, &status);
+      pex_free (pex);
+      pex = NULL;
+
+      if (WIFSIGNALED (status))
+	error ("module server %qs died by signal %s",
+	       name, strsignal (WTERMSIG (status)));
+      else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
+	error ("module server %qs exit status %d",
+	       name, WEXITSTATUS (status));
+    }
+  else if (from)
+    fclose (from);
+
+  from = to = NULL;
+}
+
+/* Create a new server connecting to OPTION.  */
+
+module_server *
+module_server::make (char *option)
+{
+  if (!option)
+    if (char const *env = getenv ("CXX_MODULE_SERVER"))
+      if (env[0])
+	option = xstrdup (env);
+
+  return new module_server (option);
+}
+
+/* Read a response from the server.   Server may die.  */
+
+void
+module_server::get_response ()
+{
+  size_t off = 0;
+
+  if (!buffer)
+    buffer = XNEWVEC (char, size);
+
+ more:
+  if (!fgets (buffer + off, size - off, from))
+    {
+      const char *err = ferror (from) ? "error" : "end of file";
+      error ("unexpected %s from module server %qs", err, name);
+      kill ();
+      off = 0;
+    }
+  else
+    {
+      off += strlen (buffer + off);
+      if (buffer[off - 1] != '\n')
+	{
+	  size *= 2;
+	  buffer = XRESIZEVEC (char, buffer, size);
+	  goto more;
+	}
+      off--;
+    }
+
+  buffer[off] = 0;
+  end = buffer + off;
+  while (ISSPACE (*buffer))
+    buffer++;
+  pos = buffer;
+}
+
+void
+module_server::response_unexpected ()
+{
+  /* Restore the whitespace we zapped tokenizing.  */
+  for (char *ptr = buffer; ptr != pos; ptr++)
+    if (!*ptr)
+      *ptr = ' ';
+  error ("unexpected server response %qs", buffer);
+}
+
+void
+module_server::response_error ()
+{
+  error ("server error %qs", pos != end ? pos : "unspecfied");
+  pos = end;
+}
+
+char *
+module_server::response_token ()
+{
+  char *ptr = pos;
+
+  if (ptr == end)
+    {
+      response_unexpected ();
+      ptr = NULL;
+    }
+  else
+    {
+      char *eptr = ptr;
+      while (eptr != end && !ISSPACE (*eptr))
+	eptr++;
+
+      if (eptr != end)
+	{
+	  *eptr++ = 0;
+	  while (eptr != end && ISSPACE (*eptr))
+	    eptr++;
+	}
+      pos = eptr;
+    }
+
+  return ptr;
+}
+
+int
+module_server::response_word (const char *option, ...)
+{
+  if (const char *tok = response_token ())
+    {
+      va_list args;
+      int count = 0;
+
+      va_start (args, option);
+      do
+	{
+	  if (!strcmp (option, tok))
+	    {
+	      va_end (args);
+	      return count;
+	    }
+	  count++;
+	  option = va_arg (args, const char *);
+	}
+      while (option);
+      va_end (args);
+      response_unexpected ();
+    }
+  return -1;
+}
+
+/*  Module server protocol non-canonical precis:
+
+    HELLO version mainfile
+    	-> HELLO/ERROR response
+    INCLUDE header-name from
+    	-> INCLUDE/IMPORT reponse
+    [DEFER] BMI|SEARCH|PATH module-name from
+    	-> BMI bmipath
+	-> SEARCH srcbase
+	-> PATH srcpath
+	-> ERROR
+    DEFERRED
+	-> deferred response
+    EXPORT module-name
+    	-> BMI bmipath
+    DONE module-name
+    	-> OK
+ */
+
+/* Start handshake.  */
+
+bool
+module_server::handshake (const char *main_file)
+{
+  fprintf (to, "HELLO %d %s\n",
+	   MODULE_STAMP ? -version2date (get_version ()) : SERVER_VERSION,
+	   main_file);
+
+  get_response ();
+  switch (response_word ("HELLO", "ERROR", NULL))
     {
     default:
       return false;
 
     case 0: /* HELLO $ver */
-      {
-	char *ver = server_token ();
-	if (!ver)
-	  return false;
+      if (char *ver = response_token ())
 	dump () && dump ("Connected to server version %s", ver);
-      }
       break;
 
     case 1: /* ERROR $msg */
-      server_error ();
-      server_fini ();
+      response_error ();
       return false;
     }
 
   return true;
 }
 
-/* Query the server for the BMI for module NAME, to be read or writen,
-   depending on RNW.  A default may be provided with FILENAME.  */
-
-static char *
-server_module_filename (tree name, bool rnw, const char *filename = NULL)
+char *
+module_server::import_export_query (const char *query, tree name, const char *loc)
 {
-  if (!filename)
+  dump () && dump ("Query %s %N", query, name);
+  if (noisy_p ())
     {
-      if (!server_read && !server_init ())
-	{
-	failed:
-	  errno = ENOENT;
-	  return NULL;
-	}
-
-      dump () && dump ("Querying server for %N", name);
-      if (noisy_p ())
-	{
-	  fprintf (stderr, " query:%s", IDENTIFIER_POINTER (name));
-	  fflush (stderr);
-	}
-
-      const char *cmd, *from;
-      if (rnw)
-	cmd = "BMI", from = LOCATION_FILE (input_location);
-      else
-	cmd = "EXPORT", from = "";
-      fprintf (server_write, "%s %s %s\n", cmd, IDENTIFIER_POINTER (name), from);
-      if (!server_response ())
-	goto failed;
-      switch (server_word ("BMI", "ERROR", NULL))
-	{
-	default:
-	  goto failed;
-
-	case 0: /* BMI $bmifile  */
-	  filename = server_token ();
-	  if (!filename)
-	    goto failed;
-	  break;
-
-	case 1: /* ERROR $msg */
-	  if (!server_end_p ())
-	    server_error ();
-	  goto failed;
-	}
+      fprintf (stderr, " query:%s", IDENTIFIER_POINTER (name));
+      fflush (stderr);
     }
 
-  return xstrdup (filename);
+  fprintf (to, "%s %s %s\n", query, IDENTIFIER_POINTER (name), loc);
+  get_response ();
+  char *filename = NULL;
+
+  switch (response_word ("BMI", "ERROR", NULL))
+    {
+    default:
+      break;
+
+    case 0: /* BMI $bmifile  */
+      filename = response_token ();
+      break;
+
+    case 1: /* ERROR $msg */
+      if (!response_end_p ())
+	response_error ();
+      break;
+    }
+  return filename;
 }
 
-static void
-server_done (tree name)
+/* Import query.  */
+
+char *
+module_server::import_query (tree name, location_t loc)
+{
+  return import_export_query ("BMI", name, LOCATION_FILE (loc));
+}
+
+/* Export query.  */
+
+char *
+module_server::export_query (tree name)
+{
+  return import_export_query ("EXPORT", name, "");
+}
+
+/* Export done.  */
+
+bool
+module_server::export_done (tree name)
 {
   dump () && dump ("Completed server");
-  fprintf (server_write, "DONE %s\n", IDENTIFIER_POINTER (name));
-  if (server_response ())
-    server_word ("OK", NULL);
+  fprintf (to, "DONE %s\n", IDENTIFIER_POINTER (name));
+  get_response ();
+  return response_word ("OK", NULL) == 0;
 }
 
 /* Set VEC_NAME fields from incoming VNAME, which may be a regular
@@ -9006,10 +9049,17 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	    freeze_an_elf ();
 
 	  gcc_assert (!state->filename);
-	  state->filename
-	    = server_module_filename (state->name, true, filename);
-	  FILE *stream = state->filename ? fopen (state->filename, "rb") : NULL;
-	  int e = errno;
+	  if (!filename)
+	    if (module_server *server = module_server::get ())
+	      filename = server->import_query (state->name, input_location);
+	  FILE *stream = NULL;
+	  int e = ENOENT;
+	  if (filename)
+	    {
+	      state->filename = xstrdup (filename);
+	      stream = fopen (state->filename, "rb");
+	      e = errno;
+	    }
 
 	  state->push_location ();
 	  state->announce ("importing");
@@ -9173,9 +9223,18 @@ finish_module ()
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];
   if (state && state->exported && !errorcount)
     {
-      state->filename = server_module_filename (state->name, false);
-      FILE *stream = state->filename ? fopen (state->filename, "wb") : NULL;
-      int e = errno;
+      module_server *server = module_server::get ();
+      char *filename = NULL;
+      if (server)
+	filename = server->export_query (state->name);
+      FILE *stream = NULL;
+      int e = ENOENT;
+      if (filename)
+	{
+	  state->filename = xstrdup (filename);
+	  stream = fopen (state->filename, "wb");
+	  e = errno;
+	}
       location_t saved_loc = input_location;
       input_location = state->loc;
       unsigned n = dump.push (state);
@@ -9190,8 +9249,8 @@ finish_module ()
 
       dump.pop (n);
       input_location = saved_loc;
-      if (server_write && !errorcount)
-	server_done (state->name);
+      if (server && !errorcount)
+	server->export_done (state->name);
     }
 
   if (state)
@@ -9201,7 +9260,7 @@ finish_module ()
       state->release ();
     }
 
-  server_fini ();
+  module_server::fini ();
 }
 
 /* If CODE is a module option, handle it & return true.  Otherwise
@@ -9219,7 +9278,7 @@ handle_module_option (unsigned code, const char *arg, int)
 
     case OPT_fmodule_server_:
       /* I'ma gonna write into you.  */
-      module_server = const_cast<char *> (arg);
+      module_server_name = const_cast<char *> (arg);
       return true;
 
     default:

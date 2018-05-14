@@ -1,5 +1,18 @@
 2018-05-14  Nathan Sidwell  <nathan@acm.org>
 
+	Objectify module server.
+	gcc/cp/
+	* module.c (class module_server): New.
+	(server_read, server_write, server_pex, server_size)
+	(server_buffer, server_pos, server_end)
+	(server_response, server_token, server_word, server_unexpected)
+	(server_error, server_init, server_fini): Move into module_server class.
+	(server_module_filename): Delete.
+	(module_state::do_import): Use module_server::import_query.
+	(finish_module): Use module_server::export_{query,done}.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-1_c.C: Tweak.
+
 	gcc/
 	* doc/invoke.texi (C++ Modules): Clarify server docs.
 	gcc/cp/
