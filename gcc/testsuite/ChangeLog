@@ -1,5 +1,6 @@
 2018-05-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85756
 	* gcc.c-torture/execute/pr85756.c: New test.
 
 2018-05-14  Sebastian Peryt  <sebastian.peryt@intel.com>
