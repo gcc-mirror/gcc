@@ -2481,9 +2481,20 @@ _cpp_token_from_context_at (cpp_context *context, int index)
 const cpp_token *
 cpp_peek_token (cpp_reader *pfile, int index)
 {
+  return cpp_peek_token_with_location (pfile, index, NULL);
+}
+
+/* Look ahead in the input stream.  Record if we peeked past certain
+   directives.  */
+const cpp_token *
+cpp_peek_token_with_location (cpp_reader *pfile, int index,
+			      source_location *peeked_directive)
+{
   cpp_context *context = pfile->context;
   const cpp_token *peektok;
-  int count;
+
+  if (!index)
+    pfile->peeked_directive = 0;
 
   /* First, scan through any pending cpp_context objects.  */
   while (context->prev)
@@ -2491,36 +2502,44 @@ cpp_peek_token (cpp_reader *pfile, int index)
       ptrdiff_t sz = _cpp_remaining_tokens_num_in_context (context);
 
       if (index < (int) sz)
-        return _cpp_token_from_context_at (context, index);
+	{
+	  peektok = _cpp_token_from_context_at (context, index);
+	  goto out;
+	}
+
       index -= (int) sz;
       context = context->prev;
     }
 
   /* We will have to read some new tokens after all (and do so
      without invalidating preceding tokens).  */
-  count = index;
-  pfile->keep_tokens++;
+  {
+    /* For peeked tokens temporarily disable line_change reporting,
+       until the tokens are parsed for real.  */
+    void (*line_change) (cpp_reader *, const cpp_token *, int)
+      = pfile->cb.line_change;
+    int count = 0;
 
-  /* For peeked tokens temporarily disable line_change reporting,
-     until the tokens are parsed for real.  */
-  void (*line_change) (cpp_reader *, const cpp_token *, int)
-    = pfile->cb.line_change;
-  pfile->cb.line_change = NULL;
+    pfile->keep_tokens++;
+    pfile->cb.line_change = NULL;
 
-  do
-    {
-      peektok = _cpp_lex_token (pfile);
-      if (peektok->type == CPP_EOF)
-	{
-	  index--;
+    while (count <= index)
+      {
+	count++;
+	peektok = _cpp_lex_token (pfile);
+	if (peektok->type == CPP_EOF)
 	  break;
-	}
-    }
-  while (index--);
+      }
 
-  _cpp_backup_tokens_direct (pfile, count - index);
-  pfile->keep_tokens--;
-  pfile->cb.line_change = line_change;
+    _cpp_backup_tokens_direct (pfile, count);
+    pfile->keep_tokens--;
+    pfile->cb.line_change = line_change;
+  }
+  
+ out:
+  /* Record if we peeked past a directive.  */
+  if (peeked_directive)
+    *peeked_directive = pfile->peeked_directive;
 
   return peektok;
 }

@@ -897,6 +897,8 @@ extern const unsigned char *cpp_macro_definition (cpp_reader *,
 extern source_location cpp_macro_definition_location (cpp_hashnode *);
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
+extern const cpp_token *cpp_peek_token_with_location (cpp_reader *, int,
+						      source_location *);
 extern bool cpp_in_macro_expansion_p (cpp_reader *);
 
 /* Evaluate a CPP_*CHAR* token.  */
@@ -930,6 +932,8 @@ extern void cpp_unassert (cpp_reader *, const char *);
 
 /* Undefine all macros and assertions.  */
 extern void cpp_undef_all (cpp_reader *);
+
+extern void cpp_pop_directives (cpp_reader *, bool);
 
 extern cpp_buffer *cpp_push_buffer (cpp_reader *, const unsigned char *,
 				    size_t, int);

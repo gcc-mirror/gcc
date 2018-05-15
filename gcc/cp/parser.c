@@ -12762,17 +12762,20 @@ cp_parser_module_preamble (cp_parser *parser)
 {
   cp_lexer *lexer = parser->lexer;
 
-  for (bool first = true;; first = false)
+  for (unsigned state = 0;;)
     {
       unsigned lwm = lexer->buffer->length ();
-      unsigned state = atom_preamble_prefix_peek (first, parse_in);
+      state = atom_preamble_prefix_peek (state, parse_in);
 
       if (!state)
 	break;
 
+      unsigned next_state = state & 0x10;
+      state &= 0xf;
       bool exporting_p = state == 4;
       bool pragma_p = state == 8;
       cp_token tok;
+
       while (state)
 	{
 	  /* This will swallow comments for us.  */
@@ -12781,6 +12784,7 @@ cp_parser_module_preamble (cp_parser *parser)
 					     tok.location);
 	  vec_safe_push (lexer->buffer, tok);
 	}
+      state = next_state;
 
       if (tok.type != CPP_EOF)
 	vec_safe_push (lexer->buffer, eof_token);

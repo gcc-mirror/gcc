@@ -415,6 +415,10 @@ struct cpp_reader
   /* If in_directive, the directive if known.  */
   const struct directive *directive;
 
+  /* When peeking, this is the location of the first directive we read
+     past (excluding #line, #endif, #elsif #elsifdef) */
+  source_location peeked_directive;
+
   /* Token generated while handling a directive, if any. */
   cpp_token directive_result;
 

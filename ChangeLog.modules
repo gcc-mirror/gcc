@@ -1,5 +1,24 @@
 2018-05-15  Nathan Sidwell  <nathan@acm.org>
 
+	Detect cpp directives at end of preamble
+	libcpp/
+	* include/cpplib.h (cpp_peek_token_with_location): Declare.
+	(cpp_pop_directives): Declare.
+	* internal.h (struct cpp_reader): Add peeked_directive field.
+	* directives.c (PEEKED): New.
+	(DIRECTIVE_TABLE): Add it.
+	(_cpp_handle_directive): Set peeked_directive.
+	(cpp_pop_directives): New.
+	* lex.c (cpp_peek_token): Wrapper around ...
+	(cpp_peek_token_with_location): ... this.
+	gcc/cp/
+	* cp-lang.c (atom_preamble_fsm): Update for new state transitions.
+	* lex.c (atom_preamble_prefix_peek): Check peeked directives.
+	* parser.c (cp_parser_module_preamble): Update.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-preamble-1.C: Add diag
+	* g++.dg/modules/cpp-preamble-[678].C: New.
+
 	libcpp/
 	* include/cpplib.h (cpp_in_macro_expansion_p): Declare.
 	* macro.c (in_macro_expansion_p): Rename to ...

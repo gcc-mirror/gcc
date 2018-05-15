@@ -372,20 +372,29 @@ interface_strcmp (const char* s)
    Otherwise zero.  */
 
 unsigned
-atom_preamble_prefix_peek (bool first, cpp_reader *pfile)
+atom_preamble_prefix_peek (bool only_import, cpp_reader *pfile)
 {
   /* Peeking at a possible start?  */
   bool exporting_p = false;
+  source_location dir_loc;
+  unsigned lookahead = 0;
+
  another:
   /* Peeking does not do macro expansion, but does do #if & #include
      expansion.  */
-  const cpp_token *cpp_tok = cpp_peek_token (pfile, exporting_p);
+  const cpp_token *cpp_tok
+    = cpp_peek_token_with_location (pfile, lookahead, &dir_loc);
+  lookahead++;
   if (cpp_tok->type == CPP_COMMENT)
     /* Comments come through in -C mode.  */
     goto another;
 
+  if (cpp_tok->type == CPP_PADDING)
+    /* Comments come through in -C mode.  */
+    goto another;
+
   if (!exporting_p && cpp_tok->type == CPP_PRAGMA)
-    return 8;
+    return (only_import ? 0x10 : 0) | 8;
 
   if (cpp_tok->type != CPP_NAME)
     {
@@ -394,7 +403,12 @@ atom_preamble_prefix_peek (bool first, cpp_reader *pfile)
 	 to peek cpp_tok, the end was ambiguous and we went too far.
 	 The user should place a bare semicolon to mark the end of the
 	 preamble.  */
-  
+      // FIXME: We should respawn the compiler telling it when to stop.
+      if (dir_loc && only_import)
+	warning_at (dir_loc, 0,
+		    "module preamble ended immediately before"
+		    " preprocessor directive");
+
       return 0;
     }  
 
@@ -414,10 +428,10 @@ atom_preamble_prefix_peek (bool first, cpp_reader *pfile)
     }
 
   if (!(keyword == RID_IMPORT
-	|| (first && keyword == RID_MODULE)))
+	|| (!only_import && keyword == RID_MODULE)))
     goto not_preamble;
 
-  return 3 + exporting_p;
+  return 0x10 + 3 + exporting_p;
 }
 
 /* We've just eaten a token TOK_TYPE.  Figure out the next state and
