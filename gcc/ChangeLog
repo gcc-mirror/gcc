@@ -1,3 +1,14 @@
+2018-05-13  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (dwarf_OP): Handle DW_OP_addrx and DW_OP_constx.
+	(size_of_loc_descr): Likewise.
+	(output_loc_operands): Likewise.
+	(output_loc_operands_raw): Likewise.
+	(dw_addr_op): Use dwarf_OP () for DW_OP_constx and DW_OP_addrx.
+	(resolve_addr_in_expr): Handle DW_OP_addrx and DW_OP_constx.
+	(hash_loc_operands): Likewise.
+	(compare_loc_operands): Likewise.
+
 2018-05-14  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2out.c (count_index_addrs): New function.
