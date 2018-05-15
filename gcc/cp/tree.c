@@ -5012,8 +5012,7 @@ decl_linkage (tree decl)
 
   /* maybe_thunk_body clears TREE_PUBLIC on the maybe-in-charge 'tor variants,
      check one of the "clones" for the real linkage.  */
-  if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
-       || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
+  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl)
       && DECL_CHAIN (decl)
       && DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)))
     return decl_linkage (DECL_CHAIN (decl));

@@ -2422,8 +2422,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   fixup_type_variants (type);
 
   maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);
-  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
-      || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
+  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (fn))
     /* Create appropriate clones.  */
     clone_function_decl (fn, /*update_methods=*/true);
 

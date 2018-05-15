@@ -3862,8 +3862,7 @@ mangle_decl (const tree decl)
   if (id != DECL_NAME (decl)
       /* Don't do this for a fake symbol we aren't going to emit anyway.  */
       && TREE_CODE (decl) != TYPE_DECL
-      && !DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
-      && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
+      && !DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
     {
       int save_ver = flag_abi_version;
       tree id2 = NULL_TREE;

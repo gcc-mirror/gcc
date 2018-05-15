@@ -2783,6 +2783,12 @@ struct GTY(()) lang_decl {
 #define DECL_DELETING_DESTRUCTOR_P(NODE)		\
   (DECL_NAME (NODE) == deleting_dtor_identifier)
 
+/* Nonzero if either DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P or
+   DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P is true of NODE.  */
+#define DECL_MAYBE_IN_CHARGE_CDTOR_P(NODE)              \
+  (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (NODE)            \
+   || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (NODE))
+
 /* Nonzero if NODE (a FUNCTION_DECL) is a cloned constructor or
    destructor.  */
 #define DECL_CLONED_FUNCTION_P(NODE) (!!decl_cloned_function_p (NODE, true))
@@ -2800,8 +2806,7 @@ struct GTY(()) lang_decl {
   */
 #define FOR_EACH_CLONE(CLONE, FN)			\
   if (!(TREE_CODE (FN) == FUNCTION_DECL			\
-	&& (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (FN)	\
-	    || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (FN))))\
+	&& DECL_MAYBE_IN_CHARGE_CDTOR_P (FN)))          \
     ;							\
   else							\
     for (CLONE = DECL_CHAIN (FN);			\
