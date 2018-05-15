@@ -22,7 +22,6 @@
 // 8.4.9 path decomposition [path.decompose]
 
 #include <experimental/filesystem>
-#include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_fs.h>
 
