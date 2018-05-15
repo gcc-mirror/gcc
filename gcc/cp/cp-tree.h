@@ -6653,7 +6653,7 @@ extern bool in_main_input_context		(void);
 extern void module_file_nest			(const char *name);
 extern unsigned atom_preamble_prefix_peek	(bool, cpp_reader *);
 extern unsigned atom_preamble_prefix_next	(unsigned, cpp_reader *,
-						 unsigned);
+						 unsigned, source_location);
 
 /* in method.c */
 extern void init_method				(void);

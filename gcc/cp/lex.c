@@ -424,7 +424,8 @@ atom_preamble_prefix_peek (bool first, cpp_reader *pfile)
    return it.  State 0 means peek again.  */
 
 unsigned
-atom_preamble_prefix_next (unsigned state, cpp_reader *pfile, unsigned tok_type)
+atom_preamble_prefix_next (unsigned state, cpp_reader *pfile,
+			   unsigned ptype, source_location ploc)
 {
   gcc_checking_assert (state);
 
@@ -432,17 +433,17 @@ atom_preamble_prefix_next (unsigned state, cpp_reader *pfile, unsigned tok_type)
     /* Potentially ate a module name, stop filename tokenizing.  */
     cpp_enable_filename_token (pfile, false);
 
-  if (tok_type == CPP_EOF)
+  if (ptype == CPP_EOF)
     return 0;
   else if (state == 8)
     {
-      if (tok_type != CPP_PRAGMA_EOL)
+      if (ptype != CPP_PRAGMA_EOL)
 	return state;
     }
-  else if (tok_type != CPP_SEMICOLON)
+  else if (ptype != CPP_SEMICOLON)
     {
       /* Eat the next token.  */
-      if (state != 1 && tok_type != CPP_COMMENT && tok_type != CPP_PADDING)
+      if (state != 1 && ptype != CPP_COMMENT && ptype != CPP_PADDING)
 	state--;
 
       if (state == 2)
@@ -450,6 +451,8 @@ atom_preamble_prefix_next (unsigned state, cpp_reader *pfile, unsigned tok_type)
 	cpp_enable_filename_token (pfile, true);
       return state;
     }
+  else if (cpp_in_macro_expansion_p (pfile))
+    warning_at (ploc, 0, "module preamble declaration ends inside macro");
 
   return 0;
 }

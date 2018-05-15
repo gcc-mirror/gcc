@@ -1,5 +1,25 @@
 2018-05-15  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/cpplib.h (cpp_in_macro_expansion_p): Declare.
+	* macro.c (in_macro_expansion_p): Rename to ...
+	(cpp_in_macro_expansion_p): ... here.  Externalize.
+	(cpp_get_token_1): Adjust.
+	* internal.h: Update docs.
+	gcc/
+	* langhooks.h (struct lang_hooks): Adjust preprocess_preamble.
+	gcc/c-family/
+	* c-ppoutput.c (scan_translation_unit): Pass token location to
+	preamble hook.
+	gcc/cp/
+	* cp-lang.c (atom_preamble_fsm): Pass token loc through.
+	* cp-tree.h (atom_preamble_prefix_next): Take token loc.
+	* lex.c (atom_preamble_prefix_next): Take token loc.  Warn if
+	ending inside macro.
+	* parser.c (cp_parser_module_preamble): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-preamble-5.C: New.
+
 	gcc/
 	* langhooks.h (struct lang_hooks): Adjust preprocess_preamble.
 	gcc/cp/

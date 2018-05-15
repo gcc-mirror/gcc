@@ -12777,15 +12777,10 @@ cp_parser_module_preamble (cp_parser *parser)
 	{
 	  /* This will swallow comments for us.  */
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, &tok);
-	  state = atom_preamble_prefix_next (state, parse_in, tok.type);
+	  state = atom_preamble_prefix_next (state, parse_in, tok.type,
+					     tok.location);
 	  vec_safe_push (lexer->buffer, tok);
 	}
-
-      if (tok.type == CPP_SEMICOLON
-	  && (linemap_location_from_macro_expansion_p
-	      (line_table, tok.location)))
-	warning_at (tok.location, 0,
-		    "module preamble declaration ends inside macro");
 
       if (tok.type != CPP_EOF)
 	vec_safe_push (lexer->buffer, eof_token);

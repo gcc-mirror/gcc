@@ -424,13 +424,13 @@ struct cpp_reader
 
   /* This is the node representing the macro being expanded at
      top-level.  The value of this data member is valid iff
-     in_macro_expansion_p() returns TRUE.  */
+     cpp_in_macro_expansion_p() returns TRUE.  */
   cpp_hashnode *top_most_macro_node;
 
   /* Nonzero if we are about to expand a macro.  Note that if we are
      really expanding a macro, the function macro_of_context returns
      the macro being expanded and this flag is set to false.  Client
-     code should use the function in_macro_expansion_p to know if we
+     code should use the function cpp_in_macro_expansion_p to know if we
      are either about to expand a macro, or are actually expanding
      one.  */
   bool about_to_expand_macro_p;

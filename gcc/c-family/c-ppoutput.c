@@ -179,13 +179,14 @@ scan_translation_unit (cpp_reader *pfile)
   int prefix = lang_hooks.preprocess_preamble ? 0 : -1;
 
   print.source = NULL;
-  for (unsigned tok_type = 0;;)
+  source_location loc = UNKNOWN_LOCATION;
+  cpp_ttype tok_type = N_TTYPES;
+  for (;;)
     {
-      source_location loc;
 
       if (prefix >= 0)
 	{
-	  prefix = lang_hooks.preprocess_preamble (prefix, pfile, tok_type);
+	  prefix = lang_hooks.preprocess_preamble (prefix, pfile, tok_type, loc);
 	  if (!prefix)
 	    break;
 	}

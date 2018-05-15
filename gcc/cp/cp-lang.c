@@ -35,7 +35,7 @@ static tree cp_eh_personality (void);
 static tree get_template_innermost_arguments_folded (const_tree);
 static tree get_template_argument_pack_elems_folded (const_tree);
 static tree cxx_enum_underlying_base_type (const_tree);
-static int atom_preamble_fsm (int, cpp_reader *, unsigned);
+static int atom_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -240,11 +240,12 @@ tree cxx_enum_underlying_base_type (const_tree type)
 /*  ATOM preamble finite state machine.  */
 
 static int
-atom_preamble_fsm (int state, cpp_reader *pfile, unsigned prev_tok)
+atom_preamble_fsm (int state, cpp_reader *pfile,
+		   unsigned ptype, source_location ploc)
 {
   if (state)
     {
-      state = atom_preamble_prefix_next (state, pfile, prev_tok);
+      state = atom_preamble_prefix_next (state, pfile, ptype, ploc);
       if (state)
 	return state;
     }

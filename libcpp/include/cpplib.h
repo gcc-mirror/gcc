@@ -897,6 +897,7 @@ extern const unsigned char *cpp_macro_definition (cpp_reader *,
 extern source_location cpp_macro_definition_location (cpp_hashnode *);
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
+extern bool cpp_in_macro_expansion_p (cpp_reader *);
 
 /* Evaluate a CPP_*CHAR* token.  */
 extern cppchar_t cpp_interpret_charconst (cpp_reader *, const cpp_token *,
