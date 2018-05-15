@@ -1,3 +1,9 @@
+2018-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64372 - CWG 1560, gratuitous lvalue-rvalue conversion in ?:
+	* call.c (build_conditional_expr_1): Don't force_rvalue when one arm
+	is a throw-expression.
+
 2018-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (DECL_MAYBE_IN_CHARGE_CDTOR_P): New.
