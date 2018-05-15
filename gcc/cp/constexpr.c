@@ -2936,6 +2936,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
   bool pre_init = false;
   unsigned HOST_WIDE_INT i;
+  tsubst_flags_t complain = ctx->quiet ? tf_none : tf_warning_or_error;
 
   /* For the default constructor, build up a call to the default
      constructor of the element type.  We only need to handle class types
@@ -2946,7 +2947,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
     /* We only do this at the lowest level.  */;
   else if (value_init)
     {
-      init = build_value_init (elttype, tf_warning_or_error);
+      init = build_value_init (elttype, complain);
       pre_init = true;
     }
   else if (!init)
@@ -2954,7 +2955,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       vec<tree, va_gc> *argvec = make_tree_vector ();
       init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&argvec, elttype, LOOKUP_NORMAL,
-					tf_warning_or_error);
+					complain);
       release_tree_vector (argvec);
       init = build_aggr_init_expr (TREE_TYPE (init), init);
       pre_init = true;
@@ -2981,8 +2982,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	      reuse = i == 0;
 	    }
 	  else
-	    eltinit = cp_build_array_ref (input_location, init, idx,
-					  tf_warning_or_error);
+	    eltinit = cp_build_array_ref (input_location, init, idx, complain);
 	  eltinit = cxx_eval_vec_init_1 (&new_ctx, elttype, eltinit, value_init,
 					 lval,
 					 non_constant_p, overflow_p);
@@ -3000,11 +3000,10 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  /* Copying an element.  */
 	  gcc_assert (same_type_ignoring_top_level_qualifiers_p
 		      (atype, TREE_TYPE (init)));
-	  eltinit = cp_build_array_ref (input_location, init, idx,
-					tf_warning_or_error);
+	  eltinit = cp_build_array_ref (input_location, init, idx, complain);
 	  if (!lvalue_p (init))
 	    eltinit = move (eltinit);
-	  eltinit = force_rvalue (eltinit, tf_warning_or_error);
+	  eltinit = force_rvalue (eltinit, complain);
 	  eltinit = cxx_eval_constant_expression (&new_ctx, eltinit, lval,
 						  non_constant_p, overflow_p);
 	}
