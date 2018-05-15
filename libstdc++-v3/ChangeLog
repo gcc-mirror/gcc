@@ -1,5 +1,13 @@
 2018-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83891
+	* include/bits/fs_path.h (path::is_absolute()): Use same definition
+	for all operating systems.
+	* include/experimental/bits/fs_path.h (path::is_absolute()): Likewise.
+	* testsuite/27_io/filesystem/path/query/is_absolute.cc: New.
+	* testsuite/27_io/filesystem/path/query/is_relative.cc: Fix comment.
+	* testsuite/experimental/filesystem/path/query/is_absolute.cc: New.
+
 	* testsuite/27_io/filesystem/path/decompose/extension.cc: Remove
 	unused <vector> header.
 	* testsuite/27_io/filesystem/path/query/empty.cc: Likewise.
