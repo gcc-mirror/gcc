@@ -1933,8 +1933,7 @@ vague_linkage_p (tree decl)
 	 maybe-in-charge 'tor variants; in that case we need to check one of
 	 the "clones" for the real linkage.  But only in that case; before
 	 maybe_clone_body we haven't yet copied the linkage to the clones.  */
-      if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
-	   || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
+      if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl)
 	  && !DECL_ABSTRACT_P (decl)
 	  && DECL_CHAIN (decl)
 	  && DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)))

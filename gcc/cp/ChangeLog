@@ -1,3 +1,15 @@
+2018-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (DECL_MAYBE_IN_CHARGE_CDTOR_P): New.
+	(FOR_EACH_CLONE): Update.
+	* decl.c (grokdeclarator): Use it.
+	* decl2.c (vague_linkage_p): Likewise.
+	* mangle.c (mangle_decl): Likewise.
+	* method.c (lazily_declare_fn): Likewise.
+	* optimize.c (can_alias_cdtor, maybe_clone_body): Likewise.
+	* repo.c (repo_emit_p): Likewise.
+	* tree.c (decl_linkage): Likewise.
+
 2018-05-14  Jason Merrill  <jason@redhat.com>
 
 	Handle TYPE_HAS_LATE_RETURN_TYPE like ref-qualifier and eh spec.
