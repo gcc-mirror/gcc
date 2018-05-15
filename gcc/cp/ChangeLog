@@ -1,5 +1,7 @@
 2018-05-15  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_vec_init_1): Pass tf_none if ctx->quiet.
+
 	PR c++/64372 - CWG 1560, gratuitous lvalue-rvalue conversion in ?:
 	* call.c (build_conditional_expr_1): Don't force_rvalue when one arm
 	is a throw-expression.
