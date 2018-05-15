@@ -1,3 +1,11 @@
+2018-05-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dse.c (dse_classify_store): Remove use_stmt parameter,
+	add by_clobber_p one.  Change algorithm to collect all defs
+	representing uses we need to walk and try reducing them to
+	a single one before failing.
+	(dse_dom_walker::dse_optimize_stmt): Adjust.
+
 2018-05-13  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2out.c (dwarf_OP): Handle DW_OP_addrx and DW_OP_constx.

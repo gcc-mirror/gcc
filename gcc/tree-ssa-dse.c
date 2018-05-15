@@ -516,18 +516,21 @@ live_bytes_read (ao_ref use_ref, ao_ref *ref, sbitmap live)
 }
 
 /* A helper of dse_optimize_stmt.
-   Given a GIMPLE_ASSIGN in STMT that writes to REF, find a candidate
-   statement *USE_STMT that may prove STMT to be dead.
-   Return TRUE if the above conditions are met, otherwise FALSE.  */
+   Given a GIMPLE_ASSIGN in STMT that writes to REF, classify it
+   according to downstream uses and defs.  Sets *BY_CLOBBER_P to true
+   if only clobber statements influenced the classification result.
+   Returns the classification.  */
 
 static dse_store_status
-dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
-		    bool byte_tracking_enabled, sbitmap live_bytes)
+dse_classify_store (ao_ref *ref, gimple *stmt,
+		    bool byte_tracking_enabled, sbitmap live_bytes,
+		    bool *by_clobber_p = NULL)
 {
   gimple *temp;
   unsigned cnt = 0;
 
-  *use_stmt = NULL;
+  if (by_clobber_p)
+    *by_clobber_p = true;
 
   /* Find the first dominated statement that clobbers (part of) the
      memory stmt stores to with no intermediate statement that may use
@@ -551,7 +554,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
       else
 	defvar = gimple_vdef (temp);
       defvar_def = temp;
-      temp = NULL;
+      auto_vec<gimple *, 10> defs;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
 	  cnt++;
@@ -569,9 +572,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
 	     See gcc.c-torture/execute/20051110-*.c.  */
 	  else if (gimple_code (use_stmt) == GIMPLE_PHI)
 	    {
-	      if (temp
-		  /* Make sure we are not in a loop latch block.  */
-		  || gimple_bb (stmt) == gimple_bb (use_stmt)
+	      /* Make sure we are not in a loop latch block.  */
+	      if (gimple_bb (stmt) == gimple_bb (use_stmt)
 		  || dominated_by_p (CDI_DOMINATORS,
 				     gimple_bb (stmt), gimple_bb (use_stmt))
 		  /* We can look through PHIs to regions post-dominating
@@ -589,7 +591,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
 		  && !dominated_by_p (CDI_DOMINATORS,
 				      gimple_bb (defvar_def),
 				      gimple_bb (use_stmt)))
-		temp = use_stmt;
+		defs.safe_push (use_stmt);
 	    }
 	  /* If the statement is a use the store is not dead.  */
 	  else if (ref_maybe_used_by_stmt_p (use_stmt, ref))
@@ -597,7 +599,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
 	      /* Handle common cases where we can easily build an ao_ref
 		 structure for USE_STMT and in doing so we find that the
 		 references hit non-live bytes and thus can be ignored.  */
-	      if (byte_tracking_enabled && (!gimple_vdef (use_stmt) || !temp))
+	      if (byte_tracking_enabled
+		  && (!gimple_vdef (use_stmt) || defs.is_empty ()))
 		{
 		  if (is_gimple_assign (use_stmt))
 		    {
@@ -613,7 +616,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
 			  /* If this statement has a VDEF, then it is the
 			     first store we have seen, so walk through it.  */
 			  if (gimple_vdef (use_stmt))
-			    temp = use_stmt;
+			    defs.safe_push (use_stmt);
 			  continue;
 			}
 		    }
@@ -622,17 +625,10 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
 	      fail = true;
 	      BREAK_FROM_IMM_USE_STMT (ui);
 	    }
-	  /* If this is a store, remember it or bail out if we have
-	     multiple ones (the will be in different CFG parts then).  */
+	  /* If this is a store, remember it as we possibly need to walk the
+	     defs uses.  */
 	  else if (gimple_vdef (use_stmt))
-	    {
-	      if (temp)
-		{
-		  fail = true;
-		  BREAK_FROM_IMM_USE_STMT (ui);
-		}
-	      temp = use_stmt;
-	    }
+	    defs.safe_push (use_stmt);
 	}
 
       if (fail)
@@ -647,25 +643,54 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
       /* If we didn't find any definition this means the store is dead
          if it isn't a store to global reachable memory.  In this case
 	 just pretend the stmt makes itself dead.  Otherwise fail.  */
-      if (!temp)
+      if (defs.is_empty ())
 	{
 	  if (ref_may_alias_global_p (ref))
 	    return DSE_STORE_LIVE;
 
-	  temp = stmt;
-	  break;
+	  if (by_clobber_p)
+	    *by_clobber_p = false;
+	  return DSE_STORE_DEAD;
 	}
 
-      if (byte_tracking_enabled && temp)
-	clear_bytes_written_by (live_bytes, temp, ref);
-    }
-  /* Continue walking until we reach a full kill as a single statement
-     or there are no more live bytes.  */
-  while (!stmt_kills_ref_p (temp, ref)
-	 && !(byte_tracking_enabled && bitmap_empty_p (live_bytes)));
+      /* Process defs and remove paths starting with a kill from further
+         processing.  */
+      for (unsigned i = 0; i < defs.length (); ++i)
+	if (stmt_kills_ref_p (defs[i], ref))
+	  {
+	    if (by_clobber_p && !gimple_clobber_p (defs[i]))
+	      *by_clobber_p = false;
+	    defs.unordered_remove (i);
+	  }
 
-  *use_stmt = temp;
-  return DSE_STORE_DEAD;
+      /* If all defs kill the ref we are done.  */
+      if (defs.is_empty ())
+	return DSE_STORE_DEAD;
+      /* If more than one def survives fail.  */
+      if (defs.length () > 1)
+	{
+	  /* STMT might be partially dead and we may be able to reduce
+	     how many memory locations it stores into.  */
+	  if (byte_tracking_enabled && !gimple_clobber_p (stmt))
+	    return DSE_STORE_MAYBE_PARTIAL_DEAD;
+	  return DSE_STORE_LIVE;
+	}
+      temp = defs[0];
+
+      /* Track partial kills.  */
+      if (byte_tracking_enabled)
+	{
+	  clear_bytes_written_by (live_bytes, temp, ref);
+	  if (bitmap_empty_p (live_bytes))
+	    {
+	      if (by_clobber_p && !gimple_clobber_p (temp))
+		*by_clobber_p = false;
+	      return DSE_STORE_DEAD;
+	    }
+	}
+    }
+  /* Continue walking until there are no more live bytes.  */
+  while (1);
 }
 
 
@@ -795,11 +820,10 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 		  return;
 		}
 
-	      gimple *use_stmt;
 	      enum dse_store_status store_status;
 	      m_byte_tracking_enabled
 		= setup_live_bytes_from_ref (&ref, m_live_bytes);
-	      store_status = dse_classify_store (&ref, stmt, &use_stmt,
+	      store_status = dse_classify_store (&ref, stmt,
 						 m_byte_tracking_enabled,
 						 m_live_bytes);
 	      if (store_status == DSE_STORE_LIVE)
@@ -823,20 +847,20 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 
   if (is_gimple_assign (stmt))
     {
-      gimple *use_stmt;
+      bool by_clobber_p = false;
 
       /* Self-assignments are zombies.  */
       if (operand_equal_p (gimple_assign_rhs1 (stmt),
 			   gimple_assign_lhs (stmt), 0))
-	use_stmt = stmt;
+	;
       else
 	{
 	  m_byte_tracking_enabled
 	    = setup_live_bytes_from_ref (&ref, m_live_bytes);
 	  enum dse_store_status store_status;
-	  store_status = dse_classify_store (&ref, stmt, &use_stmt,
+	  store_status = dse_classify_store (&ref, stmt,
 					     m_byte_tracking_enabled,
-					     m_live_bytes);
+					     m_live_bytes, &by_clobber_p);
 	  if (store_status == DSE_STORE_LIVE)
 	    return;
 
@@ -852,7 +876,7 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
       /* But only remove *this_2(D) ={v} {CLOBBER} if killed by
 	 another clobber stmt.  */
       if (gimple_clobber_p (stmt)
-	  && !gimple_clobber_p (use_stmt))
+	  && !by_clobber_p)
 	return;
 
       delete_dead_assignment (gsi);
