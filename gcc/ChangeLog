@@ -1,3 +1,9 @@
+2018-05-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR ipa/85734
+	* ipa-pure-const.c (warn_function_malloc): Pass value of known_finite param
+	as true in call to suggest_attribute.
+
 2018-05-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete @itemx for

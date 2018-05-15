@@ -249,7 +249,7 @@ warn_function_malloc (tree decl)
   static hash_set<tree> *warned_about;
   warned_about
     = suggest_attribute (OPT_Wsuggest_attribute_malloc, decl,
-			 false, warned_about, "malloc");
+			 true, warned_about, "malloc");
 }
 
 /* Emit suggestion about __attribute__((noreturn)) for DECL.  */

@@ -1,3 +1,8 @@
+2018-05-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR ipa/85734
+	* gcc.dg/ipa/pr85734.c: New test.
+
 2018-05-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/85756
