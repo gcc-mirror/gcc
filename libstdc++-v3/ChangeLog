@@ -1,5 +1,40 @@
 2018-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/path/decompose/extension.cc: Remove
+	unused <vector> header.
+	* testsuite/27_io/filesystem/path/query/empty.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_extension.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_filename.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_parent_path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_relative_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_name.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/has_stem.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/is_relative.cc: Likewise.
+	* testsuite/experimental/filesystem/path/decompose/extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/empty.cc: Likewise.
+	* testsuite/experimental/filesystem/path/query/has_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_name.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_stem.cc: Likewise.
+	* testsuite/experimental/filesystem/path/query/is_relative.cc:
+	Likewise.
+
 	PR libstdc++/84159
 	* include/bits/fs_path.h (path::operator/=, path::append): Construct
 	temporary path before calling _M_append.
