@@ -85,6 +85,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(16 % sizeof(_UIntType) == 0,
 		    "UIntType size must divide 16");
 
+      template<typename _Sseq>
+	using _If_seed_seq
+	  = typename std::enable_if<std::__detail::__is_seed_seq<
+	    _Sseq, simd_fast_mersenne_twister_engine, result_type>::value
+	    >::type;
+
     public:
       static constexpr size_t state_size = _M_nstate * (16
 							/ sizeof(result_type));
@@ -95,10 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       simd_fast_mersenne_twister_engine(result_type __sd = default_seed)
       { seed(__sd); }
 
-      template<typename _Sseq, typename = typename
-	std::enable_if<!std::is_same<_Sseq,
-				     simd_fast_mersenne_twister_engine>::value>
-	       ::type>
+      template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
 	explicit
 	simd_fast_mersenne_twister_engine(_Sseq& __q)
 	{ seed(__q); }
@@ -107,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       seed(result_type __sd = default_seed);
 
       template<typename _Sseq>
-	typename std::enable_if<std::is_class<_Sseq>::value>::type
+	_If_seed_seq<_Sseq>
 	seed(_Sseq& __q);
 
       static constexpr result_type
