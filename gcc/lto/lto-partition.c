@@ -439,12 +439,27 @@ account_reference_p (symtab_node *n1, symtab_node *n2)
 {
   if (cgraph_node *cnode = dyn_cast <cgraph_node *> (n1))
     n1 = cnode;
+  /* Do not account references from aliases - they are never split across
+     partitions.  */
+  if (n1->alias)
+    return false;
   /* Do not account recursion - the code below will handle it incorrectly
-     otherwise.  Also do not account references to external symbols.
-     They will never become local.  */
+     otherwise.  Do not account references to external symbols: they will
+     never become local.  Finally do not account references to duplicated
+     symbols: they will be always local.  */
   if (n1 == n2 
-      || DECL_EXTERNAL (n2->decl)
-      || !n2->definition)
+      || !n2->definition
+      || n2->get_partitioning_class () != SYMBOL_PARTITION)
+    return false;
+  /* If referring node is external symbol do not account it to boundary
+     cost. Those are added into units only to enable possible constant
+     folding and devirtulization.
+
+     Here we do not know if it will ever be added to some partition
+     (this is decided by compute_ltrans_boundary) and second it is not
+     that likely that constant folding will actually use the reference.  */
+  if (contained_in_symbol (n1)
+	->get_partitioning_class () == SYMBOL_EXTERNAL)
     return false;
   return true;
 }
