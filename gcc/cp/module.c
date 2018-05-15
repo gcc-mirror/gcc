@@ -2201,12 +2201,15 @@ public:
   ~trees_out ();
 
 public:
-  /* True if only figuring dependencies.  */
-  bool dep_walk_p () const
+  bool streaming_p () const
   {
-    return dep_hash != NULL;
+    return !dep_hash;
   }
-
+  bool depending_p () const
+  {
+    return dep_hash;
+  }
+  
 private:
   void mark_trees ();
   void unmark_trees ();
@@ -2218,6 +2221,8 @@ public:
 public:
   void begin (depset::hash *);
   void end ();
+
+public:
   void mark_node (tree, bool walk_into = true);
 
 private:
@@ -2230,6 +2235,7 @@ public:
   int insert (tree);
   int maybe_insert (tree);
   int force_insert (tree, bool);
+
 private:
   void start (tree_code, tree);
   void loc (location_t);
@@ -2992,7 +2998,7 @@ trees_out::begin ()
 unsigned
 trees_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 {
-  gcc_checking_assert (!dep_walk_p ());
+  gcc_checking_assert (streaming_p ());
 
   unmark_trees ();
   return parent::end (sink, name, crc_ptr);
@@ -3158,7 +3164,7 @@ void
 trees_out::tree_vec (vec<tree, va_gc> *v)
 {
   unsigned len = vec_safe_length (v);
-  if (!dep_walk_p ())
+  if (streaming_p ())
     u (len);
   if (len)
     for (unsigned ix = 0; ix != len; ix++)
@@ -3184,7 +3190,7 @@ void
 trees_out::tree_pair_vec (vec<tree_pair_s, va_gc> *v)
 {
   unsigned len = vec_safe_length (v);
-  if (!dep_walk_p ())
+  if (streaming_p ())
     u (len);
   if (len)
     for (unsigned ix = 0; ix != len; ix++)
@@ -3964,7 +3970,7 @@ trees_out::core_vals (tree t)
       /* Length written earlier.  */
       break;
     case CALL_EXPR:
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	WU (t->base.u.ifn);
       break;
     case SSA_NAME:
@@ -3987,7 +3993,7 @@ trees_out::core_vals (tree t)
       WT (t->decl_minimal.name);
       tree_ctx (t->decl_minimal.context, true, MODULE_PURVIEW);
 
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	loc (t->decl_minimal.locus);
     }
 
@@ -4006,7 +4012,7 @@ trees_out::core_vals (tree t)
       /* type_common.next_variant is internally manipulated.  */
       /* type_common.pointer_to, type_common.reference_to.  */
 
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  WU (t->type_common.precision);
 	  WU (t->type_common.contains_placeholder_bits);
@@ -4025,7 +4031,7 @@ trees_out::core_vals (tree t)
     {
       if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
 	WT (t->typed.type);
-      else if (!dep_walk_p ())
+      else if (streaming_p ())
 	{
 	  // FIXME it'd be nice if we could make TREE_TYPE of the
 	  // enum's underlying type point to the original integral
@@ -4049,7 +4055,7 @@ trees_out::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
-    if (!dep_walk_p ())
+    if (streaming_p ())
       {
 	unsigned num = TREE_INT_CST_EXT_NUNITS (t);
 	for (unsigned ix = 0; ix != num; ix++)
@@ -4076,7 +4082,7 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  WU (t->decl_common.mode);
 	  WU (t->decl_common.off_align);
@@ -4117,7 +4123,7 @@ trees_out::core_vals (tree t)
     {} // FIXME?
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
-    if (!dep_walk_p ())
+    if (streaming_p ())
       {
 	WT (t->decl_with_vis.assembler_name);
 	WU (t->decl_with_vis.visibility);
@@ -4136,7 +4142,7 @@ trees_out::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
-    if (!dep_walk_p ())
+    if (streaming_p ())
       {
 	WU (t->label_decl.label_decl_uid);
 	WU (t->label_decl.eh_landing_pad_nr);
@@ -4249,7 +4255,7 @@ trees_out::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     {
       unsigned len = vec_safe_length (t->constructor.elts);
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	WU (len);
       if (len)
 	for (unsigned ix = 0; ix != len; ix++)
@@ -4279,7 +4285,7 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_TPI:
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  WU (((lang_tree_node *)t)->tpi.index);
 	  WU (((lang_tree_node *)t)->tpi.level);
@@ -4758,7 +4764,7 @@ trees_out::lang_decl_vals (tree t)
       gcc_unreachable ();
 
     case lds_fn:  /* lang_decl_fn.  */
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
 	    WU (lang->u.fn.ovl_op_code);
@@ -4780,7 +4786,7 @@ trees_out::lang_decl_vals (tree t)
       break;
 
     case lds_parm:  /* lang_decl_parm.  */
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  WU (lang->u.parm.level);
 	  WU (lang->u.parm.index);
@@ -4853,7 +4859,7 @@ trees_out::lang_type_vals (tree t)
   const struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
 #define WU(X) (u (X))
 #define WT(X) (tree_node (X))
-  if (!dep_walk_p ())
+  if (streaming_p ())
     WU (lang->align);
   // FIXME:This is a property of the befriender
   WT (lang->befriending_classes);
@@ -4883,7 +4889,7 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
     {
       bool is_virt = BINFO_VIRTUAL_P (binfo);
       dom = tree_binfo (inh, depth + !via_virt, is_virt || via_virt);
-      if (!via_virt && !dep_walk_p ())
+      if (!via_virt && streaming_p ())
 	{
 	  vec<tree, va_gc> *binfo_vec;
 	  if (is_virt)
@@ -4905,7 +4911,7 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
       dom = BINFO_TYPE (binfo);
       tree_ctx (dom, false, true);
 
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  dump () && dump ("Wrote dominating BINFO %N", dom);
 	  i (via_virt ? -depth : depth);
@@ -4975,7 +4981,7 @@ trees_out::tree_node_raw (tree t)
       else
 	gcc_assert (TYPE_LANG_SPECIFIC (t)
 		    == TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  b (specific);
 	  if (specific && VAR_P (t))
@@ -4983,7 +4989,7 @@ trees_out::tree_node_raw (tree t)
 	}
     }
 
-  if (!dep_walk_p ())
+  if (streaming_p ())
     {
       core_bools (t);
       if (specific)
@@ -5070,7 +5076,7 @@ trees_out::tree_ref (tree t)
 {
   if (!t)
     {
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  /* NULL_TREE -> tt_null.  */
 	  nulls++;
@@ -5089,7 +5095,7 @@ trees_out::tree_ref (tree t)
 	/* An entry we should walk into.  */
 	return -1;
 
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  const char *kind;
 
@@ -5106,7 +5112,7 @@ trees_out::tree_ref (tree t)
 	      i (tt_fixed), u (--val);
 	      kind = "fixed";
 	    }
-	  
+
 	  dump () && dump ("Wrote %s:%d %C:%N%S", kind,
 			   val, TREE_CODE (t), t, t);
 	}
@@ -5204,7 +5210,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
       if (!RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (tpl)))
 	  || DECL_MEMBER_TEMPLATE_P (tpl))
 	{
-	  if (!dep_walk_p ())
+	  if (streaming_p ())
 	    i (tt_inst);
 	  tree_ctx (tpl, false);
 	  tree_node (INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti)));
@@ -5256,7 +5262,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
     tree ctx = CP_DECL_CONTEXT (decl);
 
     /* A named decl -> tt_named_decl.  */
-    if (!dep_walk_p ())
+    if (streaming_p ())
       {
 	i (tt_named_decl);
 	u (TREE_CODE (decl));
@@ -5284,7 +5290,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 
  insert:
   int tag = insert (decl);
-  if (!dep_walk_p ())
+  if (streaming_p ())
     dump () && dump ("Wrote %s:%d %C:%N@%I", kind, tag, TREE_CODE (decl), decl,
 		     owner == MODULE_UNKNOWN ? NULL_TREE : module_name (owner));
 
@@ -5292,7 +5298,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
     {
       /* Make sure the imported type is in the map too.  */
       int tag = maybe_insert (type);
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  u (tag != 0);
 	  if (tag)
@@ -5314,7 +5320,7 @@ trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner
   if (IS_FAKE_BASE_TYPE (type))
     {
       /* A fake base type -> tt_as_base.  */
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  i (tt_as_base);
 	  dump () && dump ("Writing as_base for %N", TYPE_CONTEXT (type));
@@ -5332,14 +5338,14 @@ trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner
       /* Make sure this is not a named builtin. We should find
 	 those some other way to be canonically correct.  */
       gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  i (tt_named_type);
 	  dump () && dump ("Writing interstitial named type %C:%N%S",
 			   TREE_CODE (name), name, name);
 	}
       tree_ctx (name, looking_inside, owner);
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	dump () && dump ("Wrote named type %C:%N%S",
 			 TREE_CODE (name), name, name);
 
@@ -5359,7 +5365,7 @@ trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner
 void
 trees_out::tree_value (tree t, bool force)
 {
-  if (!dep_walk_p ())
+  if (streaming_p ())
     {
       /* A new node -> tt_node.  */
       tree_code code = TREE_CODE (t);
@@ -5372,12 +5378,12 @@ trees_out::tree_value (tree t, bool force)
     }
 
   int tag = force_insert (t, force);
-  if (!dep_walk_p ())
+  if (streaming_p ())
     dump () && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
 		     TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration
 		     && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
   tree_node_raw (t);
-  if (!dep_walk_p ())
+  if (streaming_p ())
     dump () && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
 }
 
@@ -5404,15 +5410,15 @@ trees_out::tree_node (tree t)
       /* An identifier node -> tt_id or, tt_conv_id.  */
       bool conv_op = IDENTIFIER_CONV_OP_P (t);
 
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	i (conv_op ? tt_conv_id : tt_id);
       if (conv_op)
 	tree_node (TREE_TYPE (t));
-      else if (!dep_walk_p ())
+      else if (streaming_p ())
 	str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
 
       int tag = insert (t);
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	dump () && dump ("Written:%d %sidentifier:%N",
 			 tag, conv_op ? "conv_op_" : "",
 			 conv_op ? TREE_TYPE (t) : t);
@@ -5425,14 +5431,14 @@ trees_out::tree_node (tree t)
       /* A BINFO -> tt_binfo.
 	 We must do this by reference.  We stream the binfo tree
 	 itself when streaming its owning RECORD_TYPE.  */
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	i (tt_binfo);
       tree_binfo (t, 0, false);
 
       /* If the dominating type was an import, we will not have put this
 	 in the map.  Do that now.  */
       int tag = maybe_insert (t);
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  u (tag != 0);
 	  if (tag)
@@ -5448,11 +5454,11 @@ trees_out::tree_node (tree t)
 	 TREE_TYPE.  */
       gcc_assert (!force);
       tree type = TREE_TYPE (DECL_NAME (t));
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	i (tt_tinfo_var);
       tree_node (type);
       int tag = insert (t);
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	dump () && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
       goto done;
     }
@@ -5463,13 +5469,13 @@ trees_out::tree_node (tree t)
       gcc_assert (!force);
       unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (t));
 
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	{
 	  i (tt_tinfo_typedef);
 	  u (ix);
 	}
       unsigned tag = insert (t);
-      if (!dep_walk_p ())
+      if (streaming_p ())
 	dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
       goto done;
     }
@@ -5485,7 +5491,7 @@ trees_out::tree_node (tree t)
 	       vtables; ix++, vtables = DECL_CHAIN (vtables))
 	    if (vtables == t)
 	      {
-		if (!dep_walk_p ())
+		if (streaming_p ())
 		  {
 		    u (tt_vtable);
 		    u (ix);
@@ -7330,10 +7336,11 @@ module_state::write_binfos (trees_out &out, tree type)
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
       out.tree_node (BINFO_TYPE (child));
+      // FIXME:The assertion in this comment is wrong
       /* We might have tagged the binfo during a by-reference walk.
 	 Force a new tag now.  */
       int tag = out.force_insert (child, TREE_VISITED (child));
-      if (!out.dep_walk_p ())
+      if (out.streaming_p ())
 	{
 	  out.u (BINFO_N_BASE_BINFOS (child));
 
@@ -7344,7 +7351,7 @@ module_state::write_binfos (trees_out &out, tree type)
 
   out.tree_node (NULL_TREE);
 
-  if (!out.dep_walk_p ())
+  if (out.streaming_p ())
     {
       if (TYPE_LANG_SPECIFIC (type))
 	{
@@ -7468,7 +7475,7 @@ module_state::write_class_def (trees_out &out, tree type)
 	 reader won't know at this point.  */
       // FIXME Think about better ordering
       int has_vptr = TYPE_CONTAINS_VPTR_P (type);
-      if (!out.dep_walk_p ())
+      if (out.streaming_p ())
 	out.i (has_vptr);
       if (has_vptr)
 	{
@@ -7717,7 +7724,7 @@ module_state::read_template_def (trees_in &in, tree decl)
 void
 module_state::write_definition (trees_out &out, tree decl)
 {
-  if (!out.dep_walk_p ())
+  if (out.streaming_p ())
     dump () && dump ("Writing definition %C:%N", TREE_CODE (decl), decl);
 
   switch (TREE_CODE (decl))

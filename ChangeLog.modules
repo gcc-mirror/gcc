@@ -1,3 +1,9 @@
+2018-05-15  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (trees_out::dep_walk_p): Replace with ...
+	(trees_out::{streaming,depending}_p): ... these.  Update callers.
+
 2018-05-14  Nathan Sidwell  <nathan@acm.org>
 
 	Objectify module server.
