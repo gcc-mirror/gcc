@@ -919,11 +919,13 @@ malloc_candidate_p (function *fun, bool ipa)
 #define DUMP_AND_RETURN(reason)  \
 {  \
   if (dump_file && (dump_flags & TDF_DETAILS))  \
-    fprintf (dump_file, "%s", (reason));  \
+    fprintf (dump_file, "\n%s is not a malloc candidate, reason: %s\n", \
+	     (node->name()), (reason));  \
   return false;  \
 }
 
-  if (EDGE_COUNT (exit_block->preds) == 0)
+  if (EDGE_COUNT (exit_block->preds) == 0
+      || !flag_delete_null_pointer_checks)
     return false;
 
   FOR_EACH_EDGE (e, ei, exit_block->preds)
@@ -937,6 +939,9 @@ malloc_candidate_p (function *fun, bool ipa)
       tree retval = gimple_return_retval (ret_stmt);
       if (!retval)
 	DUMP_AND_RETURN("No return value.")
+
+      if (integer_zerop (retval))
+	continue;
 
       if (TREE_CODE (retval) != SSA_NAME
 	  || TREE_CODE (TREE_TYPE (retval)) != POINTER_TYPE)
@@ -970,11 +975,14 @@ malloc_candidate_p (function *fun, bool ipa)
 	for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
 	  {
 	    tree arg = gimple_phi_arg_def (phi, i);
+	    if (integer_zerop (arg))
+	      continue;
+
 	    if (TREE_CODE (arg) != SSA_NAME)
-	      DUMP_AND_RETURN("phi arg is not SSA_NAME.")
-	    if (!(arg == null_pointer_node || check_retval_uses (arg, phi)))
-	      DUMP_AND_RETURN("phi arg has uses outside phi"
-			      " and comparisons against 0.")
+	      DUMP_AND_RETURN ("phi arg is not SSA_NAME.");
+	    if (!check_retval_uses (arg, phi))
+	      DUMP_AND_RETURN ("phi arg has uses outside phi"
+			       " and comparisons against 0.")
 
 	    gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 	    gcall *call_stmt = dyn_cast<gcall *> (arg_def);
