@@ -1,3 +1,8 @@
+2018-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__gen_vtable_impl::__visit_invoke): Qualify
+	__invoke to prevent ADL.
+
 2018-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81256
