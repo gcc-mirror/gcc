@@ -28820,6 +28820,19 @@ output_addr_table_entry (addr_table_entry **slot, unsigned int *cur_index)
   return 1;
 }
 
+/* A helper function for dwarf2out_finish.  Counts the number
+   of indexed addresses.  Must match the logic of the functions
+   output_addr_table_entry above.  */
+int
+count_index_addrs (addr_table_entry **slot, unsigned int *last_idx)
+{
+  addr_table_entry *entry = *slot;
+
+  if (entry->refcount > 0)
+    *last_idx += 1;
+  return 1;
+}
+
 /* Produce the .debug_addr section.  */
 
 static void
@@ -31306,8 +31319,12 @@ dwarf2out_finish (const char *)
 	 DWARF5 specifies a small header when address tables are used.  */
       if (dwarf_version >= 5)
 	{
-	  unsigned long addrs_length
-	    = addr_index_table->elements () * DWARF2_ADDR_SIZE + 4;
+	  unsigned int last_idx = 0;
+	  unsigned long addrs_length;
+
+	  addr_index_table->traverse_noresize
+	    <unsigned int *, count_index_addrs> (&last_idx);
+	  addrs_length = last_idx * DWARF2_ADDR_SIZE + 4;
 
 	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
 	    dw2_asm_output_data (4, 0xffffffff,
