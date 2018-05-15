@@ -1,5 +1,16 @@
 2018-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/84159
+	* include/bits/fs_path.h (path::operator/=, path::append): Construct
+	temporary path before calling _M_append.
+	(path::_M_append): Change parameter to path and implement C++17
+	semantics.
+	* testsuite/27_io/filesystem/path/append/path.cc: Add helper function
+	and more examples from the standard.
+	* testsuite/27_io/filesystem/path/append/source.cc: New.
+	* testsuite/27_io/filesystem/path/decompose/filename.cc: Add comment.
+	* testsuite/27_io/filesystem/path/nonmember/append.cc: New.
+
 	* include/std/variant (__gen_vtable_impl::__visit_invoke): Qualify
 	__invoke to prevent ADL.
 
