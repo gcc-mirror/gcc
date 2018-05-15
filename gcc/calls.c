@@ -1586,8 +1586,12 @@ get_attr_nonstring_decl (tree expr, tree *ref)
   if (ref)
     *ref = decl;
 
-  if (TREE_CODE (decl) == COMPONENT_REF)
+  if (TREE_CODE (decl) == ARRAY_REF)
+    decl = TREE_OPERAND (decl, 0);
+  else if (TREE_CODE (decl) == COMPONENT_REF)
     decl = TREE_OPERAND (decl, 1);
+  else if (TREE_CODE (decl) == MEM_REF)
+    return get_attr_nonstring_decl (TREE_OPERAND (decl, 0), ref);
 
   if (DECL_P (decl)
       && lookup_attribute ("nonstring", DECL_ATTRIBUTES (decl)))
