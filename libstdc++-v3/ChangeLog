@@ -1,5 +1,35 @@
 2018-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/85749
+	* include/bits/random.h (__detail::__is_seed_seq): New SFINAE helper.
+	(linear_congruential_engine, mersenne_twister_engine)
+	(subtract_with_carry_engine, discard_block_engine)
+	(independent_bits_engine, shuffle_order_engine): Use __is_seed_seq to
+	constrain function templates taking seed sequences.
+	* include/bits/random.tcc (linear_congruential_engine::seed(_Sseq&))
+	(mersenne_twister_engine::seed(_Sseq&))
+	(subtract_with_carry_engine::seed(_Sseq&)): Change return types to
+	match declarations.
+	* include/ext/random (simd_fast_mersenne_twister_engine): Use
+	__is_seed_seq to constrain function templates taking seed sequences.
+	* include/ext/random.tcc (simd_fast_mersenne_twister_engine::seed):
+	Change return type to match declaration.
+	* testsuite/26_numerics/random/discard_block_engine/cons/seed_seq2.cc:
+	New.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	seed_seq2.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	seed_seq2.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	seed_seq2.cc: New.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error lineno.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/seed_seq2.cc:
+	New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	seed_seq2.cc: New.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/cons/
+	seed_seq2.cc: New.
+
 	PR libstdc++/83891
 	* include/bits/fs_path.h (path::is_absolute()): Use same definition
 	for all operating systems.
