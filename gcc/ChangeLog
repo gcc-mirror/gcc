@@ -1,5 +1,11 @@
 2018-05-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
+	PR tree-optimization/83648
+	* ipa-pure-const.c (malloc_candidate_p): Allow function with NULL
+	return value as malloc candidate.
+
+2018-05-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
 	PR ipa/85734
 	* ipa-pure-const.c (warn_function_malloc): Pass value of known_finite param
 	as true in call to suggest_attribute.
