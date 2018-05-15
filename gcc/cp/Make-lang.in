@@ -61,13 +61,11 @@ ifeq ($(DEVPHASE_c),experimental)
 # We want to rebuild module if the source dir changes
 cp/module.o : $(srcdir)/cp
 version.o : $(srcdir)/cp/module.c
-cxx-module-server$(exeext) : $(srcdir)/cp
 MODULE_STAMP := $(shell date -r $(srcdir)/cp '+%Y%m%d-%H%M')
 ifneq ($(REVISION_s),"\"\"")
 # Wedge the MODULE_STAMP into REVISION_s so that it turns up in -v invocations
 # Remember, Make thinks of REVISION_s as a set of space-separated words
 REVISION_s := $(patsubst %\"",%:$(MODULE_STAMP)\"",$(REVISION_s))
-SERVER_SED = s/@VERSION@/-$(firstword $(subst -, ,$(MODULE_STAMP)))/
 endif
 CFLAGS-cp/module.o += -DMODULE_STAMP=$(subst -,,$(MODULE_STAMP))LL
 endif
@@ -114,7 +112,7 @@ $(CXX_AND_OBJCXX_OBJS): cc1plus.fda
 endif
 
 cxx-module-server$(exeext):cp/cxx-module-server.sh
-	sed -e '$(SERVER_SED)' <$< >$@
+	cp $< $@
 	chmod +x $@
 
 # Language-specific object files for C++.

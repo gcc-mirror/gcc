@@ -22,8 +22,7 @@
 # Eventually this should be a portable compiled program, like
 # lto-wrapper.
 
-VERSION=@VERSION@
-test "$VERSION" != '@'VERSION'@' || VERSION=0
+VERSION=0
 progname=${0##*/}
 main=
 verbose=false

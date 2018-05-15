@@ -6746,9 +6746,7 @@ module_server::response_word (const char *option, ...)
 bool
 module_server::handshake (const char *main_file)
 {
-  fprintf (to, "HELLO %d %s\n",
-	   MODULE_STAMP ? -version2date (get_version ()) : SERVER_VERSION,
-	   main_file);
+  fprintf (to, "HELLO %d %s\n", SERVER_VERSION, main_file);
 
   get_response ();
   switch (response_word ("HELLO", "ERROR", NULL))

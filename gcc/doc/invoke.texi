@@ -29271,7 +29271,7 @@ The following metavariables were used:
 @itemize
 
 @item @var{$ver}
-A numeric version number.
+A numeric version number, currently 0.
 
 @item @var{$srcpath}
 A path to a source file.
