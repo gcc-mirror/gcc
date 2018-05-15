@@ -1,3 +1,8 @@
+2018-05-15  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/85643
+	* calls.c (get_attr_nonstring_decl): Handle MEM_REF.
+
 2018-05-15  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-dse.c (dse_classify_store): Remove use_stmt parameter,
