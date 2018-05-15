@@ -265,20 +265,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     template <class _Source>
       _Path<_Source>&
       operator/=(_Source const& __source)
-      { return append(__source); }
+      { return _M_append(path(__source)); }
 
     template<typename _Source>
       _Path<_Source>&
       append(_Source const& __source)
-      {
-	return _M_append(_S_convert(_S_range_begin(__source),
-				    _S_range_end(__source)));
-      }
+      { return _M_append(path(__source)); }
 
     template<typename _InputIterator>
       _Path<_InputIterator, _InputIterator>&
       append(_InputIterator __first, _InputIterator __last)
-      { return _M_append(_S_convert(__first, __last)); }
+      { return _M_append(path(__first, __last)); }
 
     // concatenation
 
@@ -406,17 +403,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     enum class _Split { _Stem, _Extension };
 
-    path& _M_append(string_type&& __str)
+    path&
+    _M_append(path __p)
     {
+      if (__p.is_absolute())
+	operator=(std::move(__p));
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      operator/=(path(std::move(__str)));
-#else
-      if (!_M_pathname.empty() && !_S_is_dir_sep(_M_pathname.back())
-	  && (__str.empty() || !_S_is_dir_sep(__str.front())))
-	_M_pathname += preferred_separator;
-      _M_pathname += __str;
-      _M_split_cmpts();
+      else if (__p.has_root_name() && __p.root_name() != root_name())
+	operator=(std::move(__p));
 #endif
+      else
+	operator/=(const_cast<const path&>(__p));
       return *this;
     }
 
