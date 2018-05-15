@@ -12765,39 +12765,36 @@ cp_parser_module_preamble (cp_parser *parser)
   for (bool first = true;; first = false)
     {
       unsigned lwm = lexer->buffer->length ();
-      int pfx = atom_preamble_prefix_len (first, parse_in);
+      unsigned state = atom_preamble_prefix_peek (first, parse_in);
 
-      if (!pfx)
+      if (!state)
 	break;
 
-      bool exporting_p = pfx > 3;
+      bool exporting_p = state == 4;
+      bool pragma_p = state == 8;
       cp_token tok;
-      do
+      while (state)
 	{
-	  pfx--;
-	  if (pfx == 1)
-	    cpp_enable_filename_token (parse_in, true);
+	  /* This will swallow comments for us.  */
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, &tok);
-	  if (pfx == 1)
-	    cpp_enable_filename_token (parse_in, false);
+	  state = atom_preamble_prefix_next (state, parse_in, tok.type);
 	  vec_safe_push (lexer->buffer, tok);
-	  if (tok.type == CPP_SEMICOLON)
-	    {
-	      if (linemap_location_from_macro_expansion_p
-		  (line_table, tok.location))
-		warning_at (tok.location, 0,
-			 "module preamble declaration ends inside macro");
-	      break;
-	    }
 	}
-      while (tok.type != CPP_EOF);
+
+      if (tok.type == CPP_SEMICOLON
+	  && (linemap_location_from_macro_expansion_p
+	      (line_table, tok.location)))
+	warning_at (tok.location, 0,
+		    "module preamble declaration ends inside macro");
 
       if (tok.type != CPP_EOF)
 	vec_safe_push (lexer->buffer, eof_token);
       lexer->next_token = &(*lexer->buffer)[lwm + exporting_p];
       lexer->last_token = &lexer->buffer->last ();
 
-      if (lexer->next_token->keyword == RID_MODULE)
+      if (pragma_p)
+	cp_parser_pragma (parser, pragma_external, NULL);
+      else if (lexer->next_token->keyword == RID_MODULE)
 	cp_parser_module_declaration (parser, false, exporting_p);
       else
 	cp_parser_import_declaration (parser, exporting_p);

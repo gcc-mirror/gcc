@@ -35,7 +35,7 @@ static tree cp_eh_personality (void);
 static tree get_template_innermost_arguments_folded (const_tree);
 static tree get_template_argument_pack_elems_folded (const_tree);
 static tree cxx_enum_underlying_base_type (const_tree);
-static int atom_preamble_fsm (int, cpp_reader *, const cpp_token *);
+static int atom_preamble_fsm (int, cpp_reader *, unsigned);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -237,31 +237,23 @@ tree cxx_enum_underlying_base_type (const_tree type)
   return underlying_type;
 }
 
-/* Determine whether the preprocessor should read the next token or
-   not.  Returns -1 to inactivate and 0 when we're done.  */
+/*  ATOM preamble finite state machine.  */
 
 static int
-atom_preamble_fsm (int state, cpp_reader *pfile, const cpp_token *prev)
+atom_preamble_fsm (int state, cpp_reader *pfile, unsigned prev_tok)
 {
-  if (prev)
+  if (state)
     {
-      if ((state & 0xf) == 2)
-	cpp_enable_filename_token (pfile, false);
-      if (prev->type == CPP_SEMICOLON)
-	state = 0x10;
-      else
-	{
-	  if (state > 1)
-	    state--;
-	  if (state == 2)
-	    cpp_enable_filename_token (pfile, true);
-	  return state;
-	}
+      state = atom_preamble_prefix_next (state, pfile, prev_tok);
+      if (state)
+	return state;
     }
   else if (!flag_module_preamble)
     return -1;
+  else
+    state = 1;
 
-  return atom_preamble_prefix_len (!state, pfile);
+  return atom_preamble_prefix_peek (state, pfile);
 }
 
 #if CHECKING_P

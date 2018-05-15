@@ -1,5 +1,21 @@
 2018-05-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* langhooks.h (struct lang_hooks): Adjust preprocess_preamble.
+	gcc/cp/
+	* cp-tree.h (atom_preamble_prefix_{peek,next}): Declare.
+	* cp-lang.c (atom_preambls_fsm): Adjust args.  Use
+	atom_preamble_prefix_{peek,next}.
+	* lex.c (atom_preamble_prefix_len): Turn into ...
+	(atom_preamble_prefix_peek): ... this.
+	(atom_preamble_prefx_next): New.
+	* parser.c (cp_parser_module_preamble): Adjust.
+	gcc/c-family/
+	* c-ppoutput.c (scan_translation_unit): Adjust
+	gcc/testsuite/
+	* g++.dg/modules/atom-preamble-2_c.C: New.
+	* g++.dg/modules/cpp-preamble-4.C: New.
+
 	gcc/cp/
 	* Make-lang.in: Dont sed server version
 	* module.c: Use fixed server version.

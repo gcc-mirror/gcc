@@ -179,17 +179,18 @@ scan_translation_unit (cpp_reader *pfile)
   int prefix = lang_hooks.preprocess_preamble ? 0 : -1;
 
   print.source = NULL;
-  for (const cpp_token *token = NULL;;)
+  for (unsigned tok_type = 0;;)
     {
       source_location loc;
 
       if (prefix >= 0)
 	{
-	  prefix = lang_hooks.preprocess_preamble (prefix, pfile, token);
+	  prefix = lang_hooks.preprocess_preamble (prefix, pfile, tok_type);
 	  if (!prefix)
 	    break;
 	}
-      token = cpp_get_token_with_location (pfile, &loc);
+      const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
+      tok_type = token->type;
 
       if (token->type == CPP_PADDING)
 	{

@@ -331,7 +331,7 @@ struct lang_hooks
   void (*initialize_diagnostics) (diagnostic_context *);
 
   /* State machine for determining the early end of a preprocess.  */
-  int (*preprocess_preamble) (int, cpp_reader *, const cpp_token *);
+  int (*preprocess_preamble) (int, cpp_reader *, unsigned);
 
   /* Register language-specific dumps.  */
   void (*register_dumps) (gcc::dump_manager *);

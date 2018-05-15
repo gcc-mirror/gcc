@@ -368,29 +368,42 @@ interface_strcmp (const char* s)
 }
 
 /* If the preprocessor is peeking at a possible atom module preamble
-   declaration, return count of tokens until the module name.
+   return a non-zero state cookie for atom_preamble_prefix_next.
    Otherwise zero.  */
 
-int
-atom_preamble_prefix_len (bool first, cpp_reader *pfile)
+unsigned
+atom_preamble_prefix_peek (bool first, cpp_reader *pfile)
 {
   /* Peeking at a possible start?  */
   bool exporting_p = false;
  another:
-  /* Peeking does not do macro expansion.  */
+  /* Peeking does not do macro expansion, but does do #if & #include
+     expansion.  */
   const cpp_token *cpp_tok = cpp_peek_token (pfile, exporting_p);
+  if (cpp_tok->type == CPP_COMMENT)
+    /* Comments come through in -C mode.  */
+    goto another;
 
-  // FIXME:#pragma?
+  if (!exporting_p && cpp_tok->type == CPP_PRAGMA)
+    return 8;
 
   if (cpp_tok->type != CPP_NAME)
-    return 0;
+    {
+    not_preamble:
+      /* If we opened (and maybe closed) any #if or #includes in order
+	 to peek cpp_tok, the end was ambiguous and we went too far.
+	 The user should place a bare semicolon to mark the end of the
+	 preamble.  */
   
+      return 0;
+    }  
+
   if (cpp_tok->val.node.node->type == NT_MACRO)
-    return 0;
+    goto not_preamble;
 
   tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (cpp_tok->val.node.node));
   if (!IDENTIFIER_KEYWORD_P (ident))
-    return 0;
+    goto not_preamble;
 
   int keyword = C_RID_CODE (ident);
   if (!exporting_p && keyword == RID_EXPORT)
@@ -402,12 +415,44 @@ atom_preamble_prefix_len (bool first, cpp_reader *pfile)
 
   if (!(keyword == RID_IMPORT
 	|| (first && keyword == RID_MODULE)))
-    return 0;
+    goto not_preamble;
 
   return 3 + exporting_p;
 }
 
-
+/* We've just eaten a token TOK_TYPE.  Figure out the next state and
+   return it.  State 0 means peek again.  */
+
+unsigned
+atom_preamble_prefix_next (unsigned state, cpp_reader *pfile, unsigned tok_type)
+{
+  gcc_checking_assert (state);
+
+  if (state == 2)
+    /* Potentially ate a module name, stop filename tokenizing.  */
+    cpp_enable_filename_token (pfile, false);
+
+  if (tok_type == CPP_EOF)
+    return 0;
+  else if (state == 8)
+    {
+      if (tok_type != CPP_PRAGMA_EOL)
+	return state;
+    }
+  else if (tok_type != CPP_SEMICOLON)
+    {
+      /* Eat the next token.  */
+      if (state != 1 && tok_type != CPP_COMMENT && tok_type != CPP_PADDING)
+	state--;
+
+      if (state == 2)
+	/* Next is module name, permit filename token.  */
+	cpp_enable_filename_token (pfile, true);
+      return state;
+    }
+
+  return 0;
+}
 
 /* Parse a #pragma whose sole argument is a string constant.
    If OPT is true, the argument is optional.  */

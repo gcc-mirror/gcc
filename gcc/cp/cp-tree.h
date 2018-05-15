@@ -6651,7 +6651,9 @@ extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
 extern void module_file_nest			(const char *name);
-extern int atom_preamble_prefix_len		(bool, cpp_reader *);
+extern unsigned atom_preamble_prefix_peek	(bool, cpp_reader *);
+extern unsigned atom_preamble_prefix_next	(unsigned, cpp_reader *,
+						 unsigned);
 
 /* in method.c */
 extern void init_method				(void);
