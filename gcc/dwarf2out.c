@@ -28772,6 +28772,19 @@ output_index_string (indirect_string_node **h, unsigned int *cur_idx)
   return 1;
 }
 
+/* A helper function for output_indirect_strings.  Counts the number
+   of index strings offsets.  Must match the logic of the functions
+   output_index_string[_offsets] above.  */
+int
+count_index_strings (indirect_string_node **h, unsigned int *last_idx)
+{
+  struct indirect_string_node *node = *h;
+
+  if (node->form == dwarf_FORM (DW_FORM_strx) && node->refcount > 0)
+    *last_idx += 1;
+  return 1;
+}
+
 /* A helper function for dwarf2out_finish called through
    htab_traverse.  Emit one queued .debug_str string.  */
 
@@ -28809,6 +28822,33 @@ output_indirect_strings (void)
 					  output_indirect_string> (DW_FORM_strp);
 
       switch_to_section (debug_str_offsets_section);
+      /* For DWARF5 the .debug_str_offsets[.dwo] section needs a unit
+	 header.  Note that we don't need to generate a label to the
+	 actual index table following the header here, because this is
+	 for the split dwarf case only.  In an .dwo file there is only
+	 one string offsets table (and one debug info section).  But
+	 if we would start using string offset tables for the main (or
+	 skeleton) unit, then we have to add a DW_AT_str_offsets_base
+	 pointing to the actual index after the header.  Split dwarf
+	 units will never have a string offsets base attribute.  When
+	 a split unit is moved into a .dwp file the string offsets can
+	 be found through the .debug_cu_index section table.  */
+      if (dwarf_version >= 5)
+	{
+	  unsigned int last_idx = 0;
+	  unsigned long str_offsets_length;
+
+	  debug_str_hash->traverse_noresize
+	    <unsigned int *, count_index_strings> (&last_idx);
+	  str_offsets_length = last_idx * DWARF_OFFSET_SIZE + 4;
+	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	    dw2_asm_output_data (4, 0xffffffff,
+				 "Escape value for 64-bit DWARF extension");
+	  dw2_asm_output_data (DWARF_OFFSET_SIZE, str_offsets_length,
+			       "Length of string offsets unit");
+	  dw2_asm_output_data (2, 5, "DWARF string offsets version");
+	  dw2_asm_output_data (2, 0, "Header zero padding");
+	}
       debug_str_hash->traverse_noresize
 	<unsigned int *, output_index_string_offset> (&offset);
       switch_to_section (debug_str_dwo_section);
