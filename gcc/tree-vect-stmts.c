@@ -10520,3 +10520,311 @@ vect_gen_while_not (gimple_seq *seq, tree mask_type, tree start_index,
   gimple_seq_add_stmt (seq, call);
   return gimple_build (seq, BIT_NOT_EXPR, mask_type, tmp);
 }
+
+/* Try to compute the vector types required to vectorize STMT_INFO,
+   returning true on success and false if vectorization isn't possible.
+
+   On success:
+
+   - Set *STMT_VECTYPE_OUT to:
+     - NULL_TREE if the statement doesn't need to be vectorized;
+     - boolean_type_node if the statement is a boolean operation whose
+       vector type can only be determined once all the other vector types
+       are known; and
+     - the equivalent of STMT_VINFO_VECTYPE otherwise.
+
+   - Set *NUNITS_VECTYPE_OUT to the vector type that contains the maximum
+     number of units needed to vectorize STMT_INFO, or NULL_TREE if the
+     statement does not help to determine the overall number of units.  */
+
+bool
+vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
+				tree *stmt_vectype_out,
+				tree *nunits_vectype_out)
+{
+  gimple *stmt = stmt_info->stmt;
+
+  *stmt_vectype_out = NULL_TREE;
+  *nunits_vectype_out = NULL_TREE;
+
+  if (gimple_get_lhs (stmt) == NULL_TREE
+      /* MASK_STORE has no lhs, but is ok.  */
+      && !gimple_call_internal_p (stmt, IFN_MASK_STORE))
+    {
+      if (is_a <gcall *> (stmt))
+	{
+	  /* Ignore calls with no lhs.  These must be calls to
+	     #pragma omp simd functions, and what vectorization factor
+	     it really needs can't be determined until
+	     vectorizable_simd_clone_call.  */
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "defer to SIMD clone analysis.\n");
+	  return true;
+	}
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "not vectorized: irregular stmt.");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	}
+      return false;
+    }
+
+  if (VECTOR_MODE_P (TYPE_MODE (gimple_expr_type (stmt))))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "not vectorized: vector stmt in loop:");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	}
+      return false;
+    }
+
+  tree vectype;
+  tree scalar_type = NULL_TREE;
+  if (STMT_VINFO_VECTYPE (stmt_info))
+    *stmt_vectype_out = vectype = STMT_VINFO_VECTYPE (stmt_info);
+  else
+    {
+      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
+      if (gimple_call_internal_p (stmt, IFN_MASK_STORE))
+	scalar_type = TREE_TYPE (gimple_call_arg (stmt, 3));
+      else
+	scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
+
+      /* Pure bool ops don't participate in number-of-units computation.
+	 For comparisons use the types being compared.  */
+      if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type)
+	  && is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) != COND_EXPR)
+	{
+	  *stmt_vectype_out = boolean_type_node;
+
+	  tree rhs1 = gimple_assign_rhs1 (stmt);
+	  if (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison
+	      && !VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (rhs1)))
+	    scalar_type = TREE_TYPE (rhs1);
+	  else
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "pure bool operation.\n");
+	      return true;
+	    }
+	}
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "get vectype for scalar type:  ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+      vectype = get_vectype_for_scalar_type (scalar_type);
+      if (!vectype)
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "not vectorized: unsupported data-type ");
+	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				 scalar_type);
+	      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+	    }
+	  return false;
+	}
+
+      if (!*stmt_vectype_out)
+	*stmt_vectype_out = vectype;
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+    }
+
+  /* Don't try to compute scalar types if the stmt produces a boolean
+     vector; use the existing vector type instead.  */
+  tree nunits_vectype;
+  if (VECTOR_BOOLEAN_TYPE_P (vectype))
+    nunits_vectype = vectype;
+  else
+    {
+      /* The number of units is set according to the smallest scalar
+	 type (or the largest vector size, but we only support one
+	 vector size per vectorization).  */
+      if (*stmt_vectype_out != boolean_type_node)
+	{
+	  HOST_WIDE_INT dummy;
+	  scalar_type = vect_get_smallest_scalar_type (stmt, &dummy, &dummy);
+	}
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "get vectype for scalar type:  ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+      nunits_vectype = get_vectype_for_scalar_type (scalar_type);
+    }
+  if (!nunits_vectype)
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "not vectorized: unsupported data-type ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, scalar_type);
+	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+	}
+      return false;
+    }
+
+  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
+		GET_MODE_SIZE (TYPE_MODE (nunits_vectype))))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "not vectorized: different sized vector "
+			   "types in statement, ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, vectype);
+	  dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, nunits_vectype);
+	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+	}
+      return false;
+    }
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, nunits_vectype);
+      dump_printf (MSG_NOTE, "\n");
+
+      dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
+      dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (nunits_vectype));
+      dump_printf (MSG_NOTE, "\n");
+    }
+
+  *nunits_vectype_out = nunits_vectype;
+  return true;
+}
+
+/* Try to determine the correct vector type for STMT_INFO, which is a
+   statement that produces a scalar boolean result.  Return the vector
+   type on success, otherwise return NULL_TREE.  */
+
+tree
+vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
+{
+  gimple *stmt = stmt_info->stmt;
+  tree mask_type = NULL;
+  tree vectype, scalar_type;
+
+  if (is_gimple_assign (stmt)
+      && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison
+      && !VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
+    {
+      scalar_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+      mask_type = get_mask_type_for_scalar_type (scalar_type);
+
+      if (!mask_type)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: unsupported mask\n");
+	  return NULL_TREE;
+	}
+    }
+  else
+    {
+      tree rhs;
+      ssa_op_iter iter;
+      gimple *def_stmt;
+      enum vect_def_type dt;
+
+      FOR_EACH_SSA_TREE_OPERAND (rhs, stmt, iter, SSA_OP_USE)
+	{
+	  if (!vect_is_simple_use (rhs, stmt_info->vinfo,
+				   &def_stmt, &dt, &vectype))
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "not vectorized: can't compute mask type "
+				   "for statement, ");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt,
+				    0);
+		}
+	      return NULL_TREE;
+	    }
+
+	  /* No vectype probably means external definition.
+	     Allow it in case there is another operand which
+	     allows to determine mask type.  */
+	  if (!vectype)
+	    continue;
+
+	  if (!mask_type)
+	    mask_type = vectype;
+	  else if (maybe_ne (TYPE_VECTOR_SUBPARTS (mask_type),
+			     TYPE_VECTOR_SUBPARTS (vectype)))
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "not vectorized: different sized masks "
+				   "types in statement, ");
+		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				     mask_type);
+		  dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
+		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				     vectype);
+		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+		}
+	      return NULL_TREE;
+	    }
+	  else if (VECTOR_BOOLEAN_TYPE_P (mask_type)
+		   != VECTOR_BOOLEAN_TYPE_P (vectype))
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "not vectorized: mixed mask and "
+				   "nonmask vector types in statement, ");
+		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				     mask_type);
+		  dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
+		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				     vectype);
+		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+		}
+	      return NULL_TREE;
+	    }
+	}
+
+      /* We may compare boolean value loaded as vector of integers.
+	 Fix mask_type in such case.  */
+      if (mask_type
+	  && !VECTOR_BOOLEAN_TYPE_P (mask_type)
+	  && gimple_code (stmt) == GIMPLE_ASSIGN
+	  && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
+	mask_type = build_same_sized_truth_vector_type (mask_type);
+    }
+
+  /* No mask_type should mean loop invariant predicate.
+     This is probably a subject for optimization in if-conversion.  */
+  if (!mask_type && dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+		       "not vectorized: can't compute mask type "
+		       "for statement, ");
+      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+    }
+  return mask_type;
+}

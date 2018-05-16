@@ -1,3 +1,22 @@
+2018-05-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vectorizer.h (vect_get_vector_types_for_stmt): Declare.
+	(vect_get_mask_type_for_stmt): Likewise.
+	* tree-vect-slp.c (vect_two_operations_perm_ok_p): New function,
+	split out from...
+	(vect_build_slp_tree_1): ...here.  Use vect_get_vector_types_for_stmt
+	to determine the statement's vector type and the vector type that
+	should be used for calculating nunits.  Deal with cases in which
+	the type has to be deferred.
+	(vect_slp_analyze_node_operations): Use vect_get_vector_types_for_stmt
+	and vect_get_mask_type_for_stmt to calculate STMT_VINFO_VECTYPE.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt_1)
+	(vect_determine_vf_for_stmt): New functions, split out from...
+	(vect_determine_vectorization_factor): ...here.
+	* tree-vect-stmts.c (vect_get_vector_types_for_stmt)
+	(vect_get_mask_type_for_stmt): New functions, split out from
+	vect_determine_vectorization_factor.
+
 2018-05-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_assign_ternary): Properly

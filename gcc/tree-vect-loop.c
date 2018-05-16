@@ -155,6 +155,108 @@ along with GCC; see the file COPYING3.  If not see
 
 static void vect_estimate_min_profitable_iters (loop_vec_info, int *, int *);
 
+/* Subroutine of vect_determine_vf_for_stmt that handles only one
+   statement.  VECTYPE_MAYBE_SET_P is true if STMT_VINFO_VECTYPE
+   may already be set for general statements (not just data refs).  */
+
+static bool
+vect_determine_vf_for_stmt_1 (stmt_vec_info stmt_info,
+			      bool vectype_maybe_set_p,
+			      poly_uint64 *vf,
+			      vec<stmt_vec_info > *mask_producers)
+{
+  gimple *stmt = stmt_info->stmt;
+
+  if ((!STMT_VINFO_RELEVANT_P (stmt_info)
+       && !STMT_VINFO_LIVE_P (stmt_info))
+      || gimple_clobber_p (stmt))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "skip.\n");
+      return true;
+    }
+
+  tree stmt_vectype, nunits_vectype;
+  if (!vect_get_vector_types_for_stmt (stmt_info, &stmt_vectype,
+				       &nunits_vectype))
+    return false;
+
+  if (stmt_vectype)
+    {
+      if (STMT_VINFO_VECTYPE (stmt_info))
+	/* The only case when a vectype had been already set is for stmts
+	   that contain a data ref, or for "pattern-stmts" (stmts generated
+	   by the vectorizer to represent/replace a certain idiom).  */
+	gcc_assert ((STMT_VINFO_DATA_REF (stmt_info)
+		     || vectype_maybe_set_p)
+		    && STMT_VINFO_VECTYPE (stmt_info) == stmt_vectype);
+      else if (stmt_vectype == boolean_type_node)
+	mask_producers->safe_push (stmt_info);
+      else
+	STMT_VINFO_VECTYPE (stmt_info) = stmt_vectype;
+    }
+
+  if (nunits_vectype)
+    vect_update_max_nunits (vf, nunits_vectype);
+
+  return true;
+}
+
+/* Subroutine of vect_determine_vectorization_factor.  Set the vector
+   types of STMT_INFO and all attached pattern statements and update
+   the vectorization factor VF accordingly.  If some of the statements
+   produce a mask result whose vector type can only be calculated later,
+   add them to MASK_PRODUCERS.  Return true on success or false if
+   something prevented vectorization.  */
+
+static bool
+vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
+			    vec<stmt_vec_info > *mask_producers)
+{
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
+    }
+  if (!vect_determine_vf_for_stmt_1 (stmt_info, false, vf, mask_producers))
+    return false;
+
+  if (STMT_VINFO_IN_PATTERN_P (stmt_info)
+      && STMT_VINFO_RELATED_STMT (stmt_info))
+    {
+      stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+
+      /* If a pattern statement has def stmts, analyze them too.  */
+      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
+      for (gimple_stmt_iterator si = gsi_start (pattern_def_seq);
+	   !gsi_end_p (si); gsi_next (&si))
+	{
+	  stmt_vec_info def_stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "==> examining pattern def stmt: ");
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
+				def_stmt_info->stmt, 0);
+	    }
+	  if (!vect_determine_vf_for_stmt_1 (def_stmt_info, true,
+					     vf, mask_producers))
+	    return false;
+	}
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "==> examining pattern statement: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
+	}
+      if (!vect_determine_vf_for_stmt_1 (stmt_info, true, vf, mask_producers))
+	return false;
+    }
+
+  return true;
+}
+
 /* Function vect_determine_vectorization_factor
 
    Determine the vectorization factor (VF).  VF is the number of data elements
@@ -192,12 +294,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   tree vectype;
   stmt_vec_info stmt_info;
   unsigned i;
-  HOST_WIDE_INT dummy;
-  gimple *stmt, *pattern_stmt = NULL;
-  gimple_seq pattern_def_seq = NULL;
-  gimple_stmt_iterator pattern_def_si = gsi_none ();
-  bool analyze_pattern_stmt = false;
-  bool bool_result;
   auto_vec<stmt_vec_info> mask_producers;
 
   if (dump_enabled_p ())
@@ -269,304 +365,13 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	    }
 	}
 
-      for (gimple_stmt_iterator si = gsi_start_bb (bb);
-	   !gsi_end_p (si) || analyze_pattern_stmt;)
-        {
-          tree vf_vectype;
-
-          if (analyze_pattern_stmt)
-	    stmt = pattern_stmt;
-          else
-            stmt = gsi_stmt (si);
-
-          stmt_info = vinfo_for_stmt (stmt);
-
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-                               "==> examining statement: ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-	    }
-
-	  gcc_assert (stmt_info);
-
-	  /* Skip stmts which do not need to be vectorized.  */
-	  if ((!STMT_VINFO_RELEVANT_P (stmt_info)
-	       && !STMT_VINFO_LIVE_P (stmt_info))
-	      || gimple_clobber_p (stmt))
-            {
-              if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-                  && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
-                  && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
-                      || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
-                {
-                  stmt = pattern_stmt;
-                  stmt_info = vinfo_for_stmt (pattern_stmt);
-                  if (dump_enabled_p ())
-                    {
-                      dump_printf_loc (MSG_NOTE, vect_location,
-                                       "==> examining pattern statement: ");
-                      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-                    }
-                }
-              else
-	        {
-	          if (dump_enabled_p ())
-	            dump_printf_loc (MSG_NOTE, vect_location, "skip.\n");
-                  gsi_next (&si);
-	          continue;
-                }
-	    }
-          else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-                   && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
-                   && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
-                       || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
-            analyze_pattern_stmt = true;
-
-	  /* If a pattern statement has def stmts, analyze them too.  */
-	  if (is_pattern_stmt_p (stmt_info))
-	    {
-	      if (pattern_def_seq == NULL)
-		{
-		  pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-		  pattern_def_si = gsi_start (pattern_def_seq);
-		}
-	      else if (!gsi_end_p (pattern_def_si))
-		gsi_next (&pattern_def_si);
-	      if (pattern_def_seq != NULL)
-		{
-		  gimple *pattern_def_stmt = NULL;
-		  stmt_vec_info pattern_def_stmt_info = NULL;
-
-		  while (!gsi_end_p (pattern_def_si))
-		    {
-		      pattern_def_stmt = gsi_stmt (pattern_def_si);
-		      pattern_def_stmt_info
-			= vinfo_for_stmt (pattern_def_stmt);
-		      if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
-			  || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
-			break;
-		      gsi_next (&pattern_def_si);
-		    }
-
-		  if (!gsi_end_p (pattern_def_si))
-		    {
-		      if (dump_enabled_p ())
-			{
-			  dump_printf_loc (MSG_NOTE, vect_location,
-                                           "==> examining pattern def stmt: ");
-			  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
-                                            pattern_def_stmt, 0);
-			}
-
-		      stmt = pattern_def_stmt;
-		      stmt_info = pattern_def_stmt_info;
-		    }
-		  else
-		    {
-		      pattern_def_si = gsi_none ();
-		      analyze_pattern_stmt = false;
-		    }
-		}
-	      else
-		analyze_pattern_stmt = false;
-	    }
-
-	  if (gimple_get_lhs (stmt) == NULL_TREE
-	      /* MASK_STORE has no lhs, but is ok.  */
-	      && (!is_gimple_call (stmt)
-		  || !gimple_call_internal_p (stmt)
-		  || gimple_call_internal_fn (stmt) != IFN_MASK_STORE))
-	    {
-	      if (is_gimple_call (stmt))
-		{
-		  /* Ignore calls with no lhs.  These must be calls to
-		     #pragma omp simd functions, and what vectorization factor
-		     it really needs can't be determined until
-		     vectorizable_simd_clone_call.  */
-		  if (!analyze_pattern_stmt && gsi_end_p (pattern_def_si))
-		    {
-		      pattern_def_seq = NULL;
-		      gsi_next (&si);
-		    }
-		  continue;
-		}
-	      if (dump_enabled_p ())
-		{
-	          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                   "not vectorized: irregular stmt.");
-		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,  TDF_SLIM, stmt,
-                                    0);
-		}
-	      return false;
-	    }
-
-	  if (VECTOR_MODE_P (TYPE_MODE (gimple_expr_type (stmt))))
-	    {
-	      if (dump_enabled_p ())
-	        {
-	          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                   "not vectorized: vector stmt in loop:");
-	          dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-	        }
-	      return false;
-	    }
-
-	  bool_result = false;
-
-	  if (STMT_VINFO_VECTYPE (stmt_info))
-	    {
-	      /* The only case when a vectype had been already set is for stmts
-	         that contain a dataref, or for "pattern-stmts" (stmts
-		 generated by the vectorizer to represent/replace a certain
-		 idiom).  */
-	      gcc_assert (STMT_VINFO_DATA_REF (stmt_info)
-			  || is_pattern_stmt_p (stmt_info)
-			  || !gsi_end_p (pattern_def_si));
-	      vectype = STMT_VINFO_VECTYPE (stmt_info);
-	    }
-	  else
-	    {
-	      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
-	      if (gimple_call_internal_p (stmt, IFN_MASK_STORE))
-		scalar_type = TREE_TYPE (gimple_call_arg (stmt, 3));
-	      else
-		scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
-
-	      /* Bool ops don't participate in vectorization factor
-		 computation.  For comparison use compared types to
-		 compute a factor.  */
-	      if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type)
-		  && is_gimple_assign (stmt)
-		  && gimple_assign_rhs_code (stmt) != COND_EXPR)
-		{
-		  if (STMT_VINFO_RELEVANT_P (stmt_info)
-		      || STMT_VINFO_LIVE_P (stmt_info))
-		    mask_producers.safe_push (stmt_info);
-		  bool_result = true;
-
-		  if (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
-		      == tcc_comparison
-		      && !VECT_SCALAR_BOOLEAN_TYPE_P
-			    (TREE_TYPE (gimple_assign_rhs1 (stmt))))
-		    scalar_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-		  else
-		    {
-		      if (!analyze_pattern_stmt && gsi_end_p (pattern_def_si))
-			{
-			  pattern_def_seq = NULL;
-			  gsi_next (&si);
-			}
-		      continue;
-		    }
-		}
-
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location,
-                                   "get vectype for scalar type:  ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-                  dump_printf (MSG_NOTE, "\n");
-		}
-	      vectype = get_vectype_for_scalar_type (scalar_type);
-	      if (!vectype)
-		{
-		  if (dump_enabled_p ())
-		    {
-		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                       "not vectorized: unsupported "
-                                       "data-type ");
-		      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                         scalar_type);
-                      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		    }
-		  return false;
-		}
-
-	      if (!bool_result)
-		STMT_VINFO_VECTYPE (stmt_info) = vectype;
-
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
-                  dump_printf (MSG_NOTE, "\n");
-		}
-            }
-
-	  /* Don't try to compute VF out scalar types if we stmt
-	     produces boolean vector.  Use result vectype instead.  */
-	  if (VECTOR_BOOLEAN_TYPE_P (vectype))
-	    vf_vectype = vectype;
-	  else
-	    {
-	      /* The vectorization factor is according to the smallest
-		 scalar type (or the largest vector size, but we only
-		 support one vector size per loop).  */
-	      if (!bool_result)
-		scalar_type = vect_get_smallest_scalar_type (stmt, &dummy,
-							     &dummy);
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location,
-				   "get vectype for scalar type:  ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-		  dump_printf (MSG_NOTE, "\n");
-		}
-	      vf_vectype = get_vectype_for_scalar_type (scalar_type);
-	    }
-	  if (!vf_vectype)
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                   "not vectorized: unsupported data-type ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                     scalar_type);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		}
-	      return false;
-	    }
-
-	  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
-			GET_MODE_SIZE (TYPE_MODE (vf_vectype))))
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                   "not vectorized: different sized vector "
-                                   "types in statement, ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                     vectype);
-		  dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                     vf_vectype);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		}
-	      return false;
-	    }
-
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, vf_vectype);
-              dump_printf (MSG_NOTE, "\n");
-	    }
-
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
-	      dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (vf_vectype));
-	      dump_printf (MSG_NOTE, "\n");
-	    }
-
-	  vect_update_max_nunits (&vectorization_factor, vf_vectype);
-
-	  if (!analyze_pattern_stmt && gsi_end_p (pattern_def_si))
-	    {
-	      pattern_def_seq = NULL;
-	      gsi_next (&si);
-	    }
+      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
+	   gsi_next (&si))
+	{
+	  stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  if (!vect_determine_vf_for_stmt (stmt_info, &vectorization_factor,
+					   &mask_producers))
+	    return false;
         }
     }
 
@@ -589,119 +394,11 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
   for (i = 0; i < mask_producers.length (); i++)
     {
-      tree mask_type = NULL;
-
-      stmt = STMT_VINFO_STMT (mask_producers[i]);
-
-      if (is_gimple_assign (stmt)
-	  && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison
-	  && !VECT_SCALAR_BOOLEAN_TYPE_P
-				      (TREE_TYPE (gimple_assign_rhs1 (stmt))))
-	{
-	  scalar_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-	  mask_type = get_mask_type_for_scalar_type (scalar_type);
-
-	  if (!mask_type)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "not vectorized: unsupported mask\n");
-	      return false;
-	    }
-	}
-      else
-	{
-	  tree rhs;
-	  ssa_op_iter iter;
-	  gimple *def_stmt;
-	  enum vect_def_type dt;
-
-	  FOR_EACH_SSA_TREE_OPERAND (rhs, stmt, iter, SSA_OP_USE)
-	    {
-	      if (!vect_is_simple_use (rhs, mask_producers[i]->vinfo,
-				       &def_stmt, &dt, &vectype))
-		{
-		  if (dump_enabled_p ())
-		    {
-		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				       "not vectorized: can't compute mask type "
-				       "for statement, ");
-		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,  TDF_SLIM, stmt,
-					0);
-		    }
-		  return false;
-		}
-
-	      /* No vectype probably means external definition.
-		 Allow it in case there is another operand which
-		 allows to determine mask type.  */
-	      if (!vectype)
-		continue;
-
-	      if (!mask_type)
-		mask_type = vectype;
-	      else if (maybe_ne (TYPE_VECTOR_SUBPARTS (mask_type),
-				 TYPE_VECTOR_SUBPARTS (vectype)))
-		{
-		  if (dump_enabled_p ())
-		    {
-		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				       "not vectorized: different sized masks "
-				       "types in statement, ");
-		      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-					 mask_type);
-		      dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
-		      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-					 vectype);
-		      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		    }
-		  return false;
-		}
-	      else if (VECTOR_BOOLEAN_TYPE_P (mask_type)
-		       != VECTOR_BOOLEAN_TYPE_P (vectype))
-		{
-		  if (dump_enabled_p ())
-		    {
-		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				       "not vectorized: mixed mask and "
-				       "nonmask vector types in statement, ");
-		      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-					 mask_type);
-		      dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
-		      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-					 vectype);
-		      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		    }
-		  return false;
-		}
-	    }
-
-	  /* We may compare boolean value loaded as vector of integers.
-	     Fix mask_type in such case.  */
-	  if (mask_type
-	      && !VECTOR_BOOLEAN_TYPE_P (mask_type)
-	      && gimple_code (stmt) == GIMPLE_ASSIGN
-	      && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
-	    mask_type = build_same_sized_truth_vector_type (mask_type);
-	}
-
-      /* No mask_type should mean loop invariant predicate.
-	 This is probably a subject for optimization in
-	 if-conversion.  */
+      stmt_info = mask_producers[i];
+      tree mask_type = vect_get_mask_type_for_stmt (stmt_info);
       if (!mask_type)
-	{
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "not vectorized: can't compute mask type "
-			       "for statement, ");
-	      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,  TDF_SLIM, stmt,
-				0);
-	    }
-	  return false;
-	}
-
-      STMT_VINFO_VECTYPE (mask_producers[i]) = mask_type;
+	return false;
+      STMT_VINFO_VECTYPE (stmt_info) = mask_type;
     }
 
   return true;
