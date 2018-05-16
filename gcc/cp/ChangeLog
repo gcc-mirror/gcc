@@ -1,5 +1,8 @@
 2018-05-15  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (cp_expr): Remove copy constructor.
+	* mangle.c (struct releasing_vec): Declare copy constructor.
+
 	* constexpr.c (cxx_eval_vec_init_1): Pass tf_none if ctx->quiet.
 
 	PR c++/64372 - CWG 1560, gratuitous lvalue-rvalue conversion in ?:

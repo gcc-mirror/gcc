@@ -59,9 +59,6 @@ public:
   cp_expr (tree value, location_t loc):
     m_value (value), m_loc (loc) {}
 
-  cp_expr (const cp_expr &other) :
-    m_value (other.m_value), m_loc (other.m_loc) {}
-
   /* Implicit conversions to tree.  */
   operator tree () const { return m_value; }
   tree & operator* () { return m_value; }
