@@ -1,3 +1,15 @@
+2018-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (fma<mode>4): Change into expand pattern.
+	(fnma<mode>4): Likewise.
+	(fms<mode>4): Likewise.
+	(fnms<mode>4): Likewise.
+	(aarch64_fma<mode>4): Rename insn, reorder accumulator operand.
+	(aarch64_fnma<mode>4): Likewise.
+	(aarch64_fms<mode>4): Likewise.
+	(aarch64_fnms<mode>4): Likewise.
+	(aarch64_fnmadd<mode>4): Likewise.
+
 2018-05-16  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (warn_deprecated_use): Return bool.  Simplify logic.
