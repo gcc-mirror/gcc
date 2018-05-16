@@ -1,3 +1,10 @@
+2018-05-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/aarch64/sve/vcond_10.c: New test.
+	* gcc.target/aarch64/sve/vcond_10_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_11.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_11_run.c: Likewise.
+
 2018-05-15  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/85753

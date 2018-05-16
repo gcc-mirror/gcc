@@ -608,6 +608,33 @@ vect_record_max_nunits (vec_info *vinfo, gimple *stmt, unsigned int group_size,
   return true;
 }
 
+/* STMTS is a group of GROUP_SIZE SLP statements in which some
+   statements do the same operation as the first statement and in which
+   the others do ALT_STMT_CODE.  Return true if we can take one vector
+   of the first operation and one vector of the second and permute them
+   to get the required result.  VECTYPE is the type of the vector that
+   would be permuted.  */
+
+static bool
+vect_two_operations_perm_ok_p (vec<gimple *> stmts, unsigned int group_size,
+			       tree vectype, tree_code alt_stmt_code)
+{
+  unsigned HOST_WIDE_INT count;
+  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&count))
+    return false;
+
+  vec_perm_builder sel (count, count, 1);
+  for (unsigned int i = 0; i < count; ++i)
+    {
+      unsigned int elt = i;
+      if (gimple_assign_rhs_code (stmts[i % group_size]) == alt_stmt_code)
+	elt += count;
+      sel.quick_push (elt);
+    }
+  vec_perm_indices indices (sel, 2, count);
+  return can_vec_perm_const_p (TYPE_MODE (vectype), indices);
+}
+
 /* Verify if the scalar stmts STMTS are isomorphic, require data
    permutation or are of unsupported types of operation.  Return
    true if they are, otherwise return false and indicate in *MATCHES
@@ -636,17 +663,17 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   enum tree_code first_cond_code = ERROR_MARK;
   tree lhs;
   bool need_same_oprnds = false;
-  tree vectype = NULL_TREE, scalar_type, first_op1 = NULL_TREE;
+  tree vectype = NULL_TREE, first_op1 = NULL_TREE;
   optab optab;
   int icode;
   machine_mode optab_op2_mode;
   machine_mode vec_mode;
-  HOST_WIDE_INT dummy;
   gimple *first_load = NULL, *prev_first_load = NULL;
 
   /* For every stmt in NODE find its def stmt/s.  */
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
+      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
       swap[i] = 0;
       matches[i] = false;
 
@@ -685,15 +712,19 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  return false;
 	}
 
-      scalar_type = vect_get_smallest_scalar_type (stmt, &dummy, &dummy);
-      vectype = get_vectype_for_scalar_type (scalar_type);
-      if (!vect_record_max_nunits (vinfo, stmt, group_size, vectype,
-				   max_nunits))
+      tree nunits_vectype;
+      if (!vect_get_vector_types_for_stmt (stmt_info, &vectype,
+					   &nunits_vectype)
+	  || (nunits_vectype
+	      && !vect_record_max_nunits (vinfo, stmt, group_size,
+					  nunits_vectype, max_nunits)))
 	{
 	  /* Fatal mismatch.  */
 	  matches[0] = false;
-          return false;
-        }
+	  return false;
+	}
+
+      gcc_assert (vectype);
 
       if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
@@ -730,6 +761,17 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      || rhs_code == LROTATE_EXPR
 	      || rhs_code == RROTATE_EXPR)
 	    {
+	      if (vectype == boolean_type_node)
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: shift of a"
+				     " boolean.\n");
+		  /* Fatal mismatch.  */
+		  matches[0] = false;
+		  return false;
+		}
+
 	      vec_mode = TYPE_MODE (vectype);
 
 	      /* First see if we have a vector/vector shift.  */
@@ -973,29 +1015,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
   /* If we allowed a two-operation SLP node verify the target can cope
      with the permute we are going to use.  */
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   if (alt_stmt_code != ERROR_MARK
       && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
     {
-      unsigned HOST_WIDE_INT count;
-      if (!nunits.is_constant (&count))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Build SLP failed: different operations "
-			     "not allowed with variable-length SLP.\n");
-	  return false;
-	}
-      vec_perm_builder sel (count, count, 1);
-      for (i = 0; i < count; ++i)
-	{
-	  unsigned int elt = i;
-	  if (gimple_assign_rhs_code (stmts[i % group_size]) == alt_stmt_code)
-	    elt += count;
-	  sel.quick_push (elt);
-	}
-      vec_perm_indices indices (sel, 2, count);
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
+      if (vectype == boolean_type_node
+	  || !vect_two_operations_perm_ok_p (stmts, group_size,
+					     vectype, alt_stmt_code))
 	{
 	  for (i = 0; i < group_size; ++i)
 	    if (gimple_assign_rhs_code (stmts[i]) == alt_stmt_code)
@@ -2759,36 +2784,18 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   if (bb_vinfo
       && ! STMT_VINFO_DATA_REF (stmt_info))
     {
-      gcc_assert (PURE_SLP_STMT (stmt_info));
-
-      tree scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
-      if (dump_enabled_p ())
+      tree vectype, nunits_vectype;
+      if (!vect_get_vector_types_for_stmt (stmt_info, &vectype,
+					   &nunits_vectype))
+	/* We checked this when building the node.  */
+	gcc_unreachable ();
+      if (vectype == boolean_type_node)
 	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "get vectype for scalar type:  ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-	  dump_printf (MSG_NOTE, "\n");
-	}
-
-      tree vectype = get_vectype_for_scalar_type (scalar_type);
-      if (!vectype)
-	{
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "not SLPed: unsupported data-type ");
-	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				 scalar_type);
-	      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-	    }
-	  return false;
-	}
-
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location, "vectype:  ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
-	  dump_printf (MSG_NOTE, "\n");
+	  vectype = vect_get_mask_type_for_stmt (stmt_info);
+	  if (!vectype)
+	    /* vect_get_mask_type_for_stmt has already explained the
+	       failure.  */
+	    return false;
 	}
 
       gimple *sstmt;
