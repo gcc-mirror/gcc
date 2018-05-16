@@ -1,3 +1,12 @@
+2018-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83149
+	Backport from trunk
+	* trans-decl.c (gfc_finish_var_decl): Test sym->ns->proc_name
+	before accessing its components.
+	* trans-types.c (gfc_sym_type): If a character result has null
+	backend_decl, try the procedure symbol..
+
 2018-16-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83898
