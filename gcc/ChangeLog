@@ -1,3 +1,15 @@
+2018-05-16  Richard Biener  <rguenther@suse.de>
+
+	* params.def (PARAM_DSE_MAX_ALIAS_QUERIES_PER_STORE): New param.
+	* doc/invoke.texi (dse-max-alias-queries-per-store): Document.
+	* tree-ssa-dse.c: Include tree-ssa-loop.h.
+	(check_name): New callback.
+	(dse_classify_store): Track cycles via a visited bitmap of PHI
+	defs and simplify handling of in-loop and across loop dead stores
+	and properly fail for loop-variant refs.  Handle byte-tracking with
+	multiple defs.  Use PARAM_DSE_MAX_ALIAS_QUERIES_PER_STORE for
+	limiting the walk.
+
 2018-05-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vectorizer.h (vect_get_vector_types_for_stmt): Declare.
