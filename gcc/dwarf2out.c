@@ -246,7 +246,7 @@ static GTY (()) hash_table<indirect_string_hasher> *debug_line_str_hash;
    That is, the comp_dir and dwo_name will appear in both places.
 
    2) Strings can use four forms: DW_FORM_string, DW_FORM_strp,
-   DW_FORM_line_strp or DW_FORM_GNU_str_index.
+   DW_FORM_line_strp or DW_FORM_strx/GNU_str_index.
 
    3) GCC chooses the form to use late, depending on the size and
    reference count.
@@ -1765,6 +1765,28 @@ dwarf_TAG (enum dwarf_tag tag)
       break;
     }
   return tag;
+}
+
+/* And similarly for forms.  */
+static inline enum dwarf_form
+dwarf_FORM (enum dwarf_form form)
+{
+  switch (form)
+    {
+    case DW_FORM_addrx:
+      if (dwarf_version < 5)
+	return DW_FORM_GNU_addr_index;
+      break;
+
+    case DW_FORM_strx:
+      if (dwarf_version < 5)
+	return DW_FORM_GNU_str_index;
+      break;
+
+    default:
+      break;
+    }
+  return form;
 }
 
 static unsigned long int get_base_type_offset (dw_die_ref);
@@ -4403,8 +4425,8 @@ AT_class (dw_attr_node *a)
 }
 
 /* Return the index for any attribute that will be referenced with a
-   DW_FORM_GNU_addr_index or DW_FORM_GNU_str_index.  String indices
-   are stored in dw_attr_val.v.val_str for reference counting
+   DW_FORM_addrx/GNU_addr_index or DW_FORM_strx/GNU_str_index.  String
+   indices are stored in dw_attr_val.v.val_str for reference counting
    pruning.  */
 
 static inline unsigned int
@@ -4668,7 +4690,7 @@ set_indirect_string (struct indirect_string_node *node)
   /* Already indirect is a no op.  */
   if (node->form == DW_FORM_strp
       || node->form == DW_FORM_line_strp
-      || node->form == DW_FORM_GNU_str_index)
+      || node->form == dwarf_FORM (DW_FORM_strx))
     {
       gcc_assert (node->label);
       return;
@@ -4684,7 +4706,7 @@ set_indirect_string (struct indirect_string_node *node)
     }
   else
     {
-      node->form = DW_FORM_GNU_str_index;
+      node->form = dwarf_FORM (DW_FORM_strx);
       node->index = NO_INDEX_ASSIGNED;
     }
 }
@@ -4697,7 +4719,7 @@ int
 reset_indirect_string (indirect_string_node **h, void *)
 {
   struct indirect_string_node *node = *h;
-  if (node->form == DW_FORM_strp || node->form == DW_FORM_GNU_str_index)
+  if (node->form == DW_FORM_strp || node->form == dwarf_FORM (DW_FORM_strx))
     {
       free (node->label);
       node->label = NULL;
@@ -9435,7 +9457,7 @@ size_of_die (dw_die_ref die)
           form = AT_string_form (a);
 	  if (form == DW_FORM_strp || form == DW_FORM_line_strp)
 	    size += DWARF_OFFSET_SIZE;
-	  else if (form == DW_FORM_GNU_str_index)
+	  else if (form == dwarf_FORM (DW_FORM_strx))
 	    size += size_of_uleb128 (AT_index (a));
 	  else
 	    size += strlen (a->dw_attr_val.v.val_str->str) + 1;
@@ -9682,7 +9704,7 @@ value_format (dw_attr_node *a)
 	case DW_AT_entry_pc:
 	case DW_AT_trampoline:
           return (AT_index (a) == NOT_INDEXED
-                  ? DW_FORM_addr : DW_FORM_GNU_addr_index);
+                  ? DW_FORM_addr : dwarf_FORM (DW_FORM_addrx));
 	default:
 	  break;
 	}
@@ -9855,7 +9877,7 @@ value_format (dw_attr_node *a)
       return DW_FORM_data;
     case dw_val_class_lbl_id:
       return (AT_index (a) == NOT_INDEXED
-              ? DW_FORM_addr : DW_FORM_GNU_addr_index);
+              ? DW_FORM_addr : dwarf_FORM (DW_FORM_addrx));
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
     case dw_val_class_loclistsptr:
@@ -10823,7 +10845,7 @@ output_die (dw_die_ref die)
 				   a->dw_attr_val.v.val_str->label,
 				   debug_line_str_section,
 				   "%s: \"%s\"", name, AT_string (a));
-          else if (a->dw_attr_val.v.val_str->form == DW_FORM_GNU_str_index)
+          else if (a->dw_attr_val.v.val_str->form == dwarf_FORM (DW_FORM_strx))
             dw2_asm_output_data_uleb128 (AT_index (a),
                                          "%s: \"%s\"", name, AT_string (a));
           else
@@ -11104,7 +11126,7 @@ add_skeleton_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind,
 
   node = find_AT_string_in_table (str, skeleton_debug_str_hash);
   find_string_form (node);
-  if (node->form == DW_FORM_GNU_str_index)
+  if (node->form == dwarf_FORM (DW_FORM_strx))
     node->form = DW_FORM_strp;
 
   attr.dw_attr = attr_kind;
@@ -28070,7 +28092,7 @@ output_macinfo_op (macinfo_entry *ref)
       node = find_AT_string (ref->info);
       gcc_assert (node
 		  && (node->form == DW_FORM_strp
-		      || node->form == DW_FORM_GNU_str_index));
+		      || node->form == dwarf_form (DW_FORM_strx)));
       dw2_asm_output_data (1, ref->code,
 			   ref->code == DW_MACRO_define_strp
 			   ? "Define macro strp"
@@ -28701,7 +28723,7 @@ index_string (indirect_string_node **h, unsigned int *index)
   indirect_string_node *node = *h;
 
   find_string_form (node);
-  if (node->form == DW_FORM_GNU_str_index && node->refcount > 0)
+  if (node->form == dwarf_FORM (DW_FORM_strx) && node->refcount > 0)
     {
       gcc_assert (node->index == NO_INDEX_ASSIGNED);
       node->index = *index;
@@ -28719,7 +28741,7 @@ output_index_string_offset (indirect_string_node **h, unsigned int *offset)
 {
   indirect_string_node *node = *h;
 
-  if (node->form == DW_FORM_GNU_str_index && node->refcount > 0)
+  if (node->form == dwarf_FORM (DW_FORM_strx) && node->refcount > 0)
     {
       /* Assert that this node has been assigned an index.  */
       gcc_assert (node->index != NO_INDEX_ASSIGNED
@@ -28739,7 +28761,7 @@ output_index_string (indirect_string_node **h, unsigned int *cur_idx)
 {
   struct indirect_string_node *node = *h;
 
-  if (node->form == DW_FORM_GNU_str_index && node->refcount > 0)
+  if (node->form == dwarf_FORM (DW_FORM_strx) && node->refcount > 0)
     {
       /* Assert that the strings are output in the same order as their
          indexes were assigned.  */
