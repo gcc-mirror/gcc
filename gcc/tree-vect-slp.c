@@ -112,6 +112,7 @@ vect_create_new_slp_node (vec<gimple *> scalar_stmts)
   node = XNEW (struct _slp_tree);
   SLP_TREE_SCALAR_STMTS (node) = scalar_stmts;
   SLP_TREE_VEC_STMTS (node).create (0);
+  SLP_TREE_NUMBER_OF_VEC_STMTS (node) = 0;
   SLP_TREE_CHILDREN (node).create (nops);
   SLP_TREE_LOAD_PERMUTATION (node) = vNULL;
   SLP_TREE_TWO_OPERATORS (node) = false;
@@ -1084,6 +1085,10 @@ bst_traits::equal (value_type existing, value_type candidate)
 typedef hash_set <vec <gimple *>, bst_traits> scalar_stmts_set_t;
 static scalar_stmts_set_t *bst_fail;
 
+typedef hash_map <vec <gimple *>, slp_tree,
+		  simple_hashmap_traits <bst_traits, slp_tree> >
+  scalar_stmts_to_slp_tree_map_t;
+
 static slp_tree
 vect_build_slp_tree_2 (vec_info *vinfo,
 		       vec<gimple *> stmts, unsigned int group_size,
@@ -1819,285 +1824,6 @@ vect_find_last_scalar_stmt_in_slp (slp_tree node)
   return last;
 }
 
-/* Compute the cost for the SLP node NODE in the SLP instance INSTANCE.  */
-
-static void
-vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
-			 stmt_vector_for_cost *prologue_cost_vec,
-			 stmt_vector_for_cost *body_cost_vec,
-			 unsigned ncopies_for_cost,
-			 scalar_stmts_set_t* visited)
-{
-  unsigned i, j;
-  slp_tree child;
-  gimple *stmt;
-  stmt_vec_info stmt_info;
-  tree lhs;
-
-  /* If we already costed the exact same set of scalar stmts we're done.
-     We share the generated vector stmts for those.  */
-  if (visited->contains (SLP_TREE_SCALAR_STMTS (node)))
-    return;
-
-  visited->add (SLP_TREE_SCALAR_STMTS (node).copy ());
-
-  /* Recurse down the SLP tree.  */
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
-      vect_analyze_slp_cost_1 (instance, child, prologue_cost_vec,
-			       body_cost_vec, ncopies_for_cost, visited);
-
-  /* Look at the first scalar stmt to determine the cost.  */
-  stmt = SLP_TREE_SCALAR_STMTS (node)[0];
-  stmt_info = vinfo_for_stmt (stmt);
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    {
-      vect_memory_access_type memory_access_type
-	= (STMT_VINFO_STRIDED_P (stmt_info)
-	   ? VMAT_STRIDED_SLP
-	   : VMAT_CONTIGUOUS);
-      if (DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
-	vect_model_store_cost (stmt_info, ncopies_for_cost,
-			       memory_access_type, VLS_STORE,
-			       node, prologue_cost_vec, body_cost_vec);
-      else
-	{
-	  gcc_checking_assert (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)));
-	  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
-	    {
-	      /* If the load is permuted then the alignment is determined by
-		 the first group element not by the first scalar stmt DR.  */
-	      stmt = GROUP_FIRST_ELEMENT (stmt_info);
-	      stmt_info = vinfo_for_stmt (stmt);
-	      /* Record the cost for the permutation.  */
-	      unsigned n_perms;
-	      vect_transform_slp_perm_load (node, vNULL, NULL,
-					    ncopies_for_cost, instance, true,
-					    &n_perms);
-	      record_stmt_cost (body_cost_vec, n_perms, vec_perm,
-				stmt_info, 0, vect_body);
-	      unsigned assumed_nunits
-		= vect_nunits_for_cost (STMT_VINFO_VECTYPE (stmt_info));
-	      /* And adjust the number of loads performed.  This handles
-	         redundancies as well as loads that are later dead.  */
-	      auto_sbitmap perm (GROUP_SIZE (stmt_info));
-	      bitmap_clear (perm);
-	      for (i = 0; i < SLP_TREE_LOAD_PERMUTATION (node).length (); ++i)
-		bitmap_set_bit (perm, SLP_TREE_LOAD_PERMUTATION (node)[i]);
-	      ncopies_for_cost = 0;
-	      bool load_seen = false;
-	      for (i = 0; i < GROUP_SIZE (stmt_info); ++i)
-		{
-		  if (i % assumed_nunits == 0)
-		    {
-		      if (load_seen)
-			ncopies_for_cost++;
-		      load_seen = false;
-		    }
-		  if (bitmap_bit_p (perm, i))
-		    load_seen = true;
-		}
-	      if (load_seen)
-		ncopies_for_cost++;
-	      gcc_assert (ncopies_for_cost
-			  <= (GROUP_SIZE (stmt_info) - GROUP_GAP (stmt_info)
-			      + assumed_nunits - 1) / assumed_nunits);
-	      poly_uint64 uf = SLP_INSTANCE_UNROLLING_FACTOR (instance);
-	      ncopies_for_cost *= estimated_poly_value (uf);
-	    }
-	  /* Record the cost for the vector loads.  */
-	  vect_model_load_cost (stmt_info, ncopies_for_cost,
-				memory_access_type, node, prologue_cost_vec,
-				body_cost_vec);
-	  return;
-	}
-    }
-  else if (STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type)
-    {
-      /* ncopies_for_cost is the number of IVs we generate.  */
-      record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
-			stmt_info, 0, vect_body);
-
-      /* Prologue cost for the initial values and step vector.  */
-      record_stmt_cost (prologue_cost_vec, ncopies_for_cost,
-			CONSTANT_CLASS_P
-			  (STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED
-			     (stmt_info))
-			? vector_load : vec_construct,
-			stmt_info, 0, vect_prologue);
-      record_stmt_cost (prologue_cost_vec, 1,
-			CONSTANT_CLASS_P
-			  (STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info))
-			? vector_load : vec_construct,
-			stmt_info, 0, vect_prologue);
-      
-      /* ???  No easy way to get at the actual number of vector stmts
-         to be geneated and thus the derived IVs.  */
-    }
-  else
-    {
-      record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
-			stmt_info, 0, vect_body);
-      if (SLP_TREE_TWO_OPERATORS (node))
-	{
-	  record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
-			    stmt_info, 0, vect_body);
-	  record_stmt_cost (body_cost_vec, ncopies_for_cost, vec_perm,
-			    stmt_info, 0, vect_body);
-	}
-    }
-
-  /* Push SLP node def-type to stmts.  */
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (child), j, stmt)
-	STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) = SLP_TREE_DEF_TYPE (child);
-
-  /* Scan operands and account for prologue cost of constants/externals.
-     ???  This over-estimates cost for multiple uses and should be
-     re-engineered.  */
-  stmt = SLP_TREE_SCALAR_STMTS (node)[0];
-  lhs = gimple_get_lhs (stmt);
-  for (i = 0; i < gimple_num_ops (stmt); ++i)
-    {
-      tree op = gimple_op (stmt, i);
-      gimple *def_stmt;
-      enum vect_def_type dt;
-      if (!op || op == lhs)
-	continue;
-      if (vect_is_simple_use (op, stmt_info->vinfo, &def_stmt, &dt)
-	  && (dt == vect_constant_def || dt == vect_external_def))
-	{
-	  /* Without looking at the actual initializer a vector of
-	     constants can be implemented as load from the constant pool.
-	     When all elements are the same we can use a splat.  */
-	  tree vectype = get_vectype_for_scalar_type (TREE_TYPE (op));
-	  unsigned group_size = SLP_TREE_SCALAR_STMTS (node).length ();
-	  unsigned num_vects_to_check;
-	  unsigned HOST_WIDE_INT const_nunits;
-	  unsigned nelt_limit;
-	  if (TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
-	      && ! multiple_p (const_nunits, group_size))
-	    {
-	      num_vects_to_check = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
-	      nelt_limit = const_nunits;
-	    }
-	  else
-	    {
-	      /* If either the vector has variable length or the vectors
-	         are composed of repeated whole groups we only need to
-		 cost construction once.  All vectors will be the same.  */
-	      num_vects_to_check = 1;
-	      nelt_limit = group_size;
-	    }
-	  tree elt = NULL_TREE;
-	  unsigned nelt = 0;
-	  for (unsigned j = 0; j < num_vects_to_check * nelt_limit; ++j)
-	    {
-	      unsigned si = j % group_size;
-	      if (nelt == 0)
-		elt = gimple_op (SLP_TREE_SCALAR_STMTS (node)[si], i);
-	      /* ???  We're just tracking whether all operands of a single
-		 vector initializer are the same, ideally we'd check if
-		 we emitted the same one already.  */
-	      else if (elt != gimple_op (SLP_TREE_SCALAR_STMTS (node)[si], i))
-		elt = NULL_TREE;
-	      nelt++;
-	      if (nelt == nelt_limit)
-		{
-		  /* ???  We need to pass down stmt_info for a vector type
-		     even if it points to the wrong stmt.  */
-		  record_stmt_cost (prologue_cost_vec, 1,
-				    dt == vect_external_def
-				    ? (elt ? scalar_to_vec : vec_construct)
-				    : vector_load,
-				    stmt_info, 0, vect_prologue);
-		  nelt = 0;
-		}
-	    }
-	}
-    }
-
-  /* Restore stmt def-types.  */
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (child), j, stmt)
-	STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) = vect_internal_def;
-}
-
-/* Compute the cost for the SLP instance INSTANCE.  */
-
-static void
-vect_analyze_slp_cost (slp_instance instance, void *data, scalar_stmts_set_t *visited)
-{
-  stmt_vector_for_cost body_cost_vec, prologue_cost_vec;
-  unsigned ncopies_for_cost;
-  stmt_info_for_cost *si;
-  unsigned i;
-
-  /* Calculate the number of vector stmts to create based on the unrolling
-     factor (number of vectors is 1 if NUNITS >= GROUP_SIZE, and is
-     GROUP_SIZE / NUNITS otherwise.  */
-  unsigned group_size = SLP_INSTANCE_GROUP_SIZE (instance);
-  slp_tree node = SLP_INSTANCE_TREE (instance);
-  stmt_vec_info stmt_info = vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]);
-  /* Get the estimated vectorization factor, which is always one for
-     basic-block vectorization.  */
-  unsigned int assumed_vf;
-  if (STMT_VINFO_LOOP_VINFO (stmt_info))
-    assumed_vf = vect_vf_for_cost (STMT_VINFO_LOOP_VINFO (stmt_info));
-  else
-    assumed_vf = 1;
-  /* For reductions look at a reduction operand in case the reduction
-     operation is widening like DOT_PROD or SAD.  */
-  tree vectype_for_cost = STMT_VINFO_VECTYPE (stmt_info);
-  if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    {
-      gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0];
-      switch (gimple_assign_rhs_code (stmt))
-	{
-	case DOT_PROD_EXPR:
-	case SAD_EXPR:
-	  vectype_for_cost = get_vectype_for_scalar_type
-	    (TREE_TYPE (gimple_assign_rhs1 (stmt)));
-	  break;
-	default:;
-	}
-    }
-  unsigned int assumed_nunits = vect_nunits_for_cost (vectype_for_cost);
-  ncopies_for_cost = (least_common_multiple (assumed_nunits,
-					     group_size * assumed_vf)
-		      / assumed_nunits);
-
-  prologue_cost_vec.create (10);
-  body_cost_vec.create (10);
-  vect_analyze_slp_cost_1 (instance, SLP_INSTANCE_TREE (instance),
-			   &prologue_cost_vec, &body_cost_vec,
-			   ncopies_for_cost, visited);
-
-  /* Record the prologue costs, which were delayed until we were
-     sure that SLP was successful.  */
-  FOR_EACH_VEC_ELT (prologue_cost_vec, i, si)
-    {
-      struct _stmt_vec_info *stmt_info
-	= si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
-      (void) add_stmt_cost (data, si->count, si->kind, stmt_info,
-			    si->misalign, vect_prologue);
-    }
-
-  /* Record the instance's instructions in the target cost model.  */
-  FOR_EACH_VEC_ELT (body_cost_vec, i, si)
-    {
-      struct _stmt_vec_info *stmt_info
-	= si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
-      (void) add_stmt_cost (data, si->count, si->kind, stmt_info,
-			    si->misalign, vect_body);
-    }
-
-  prologue_cost_vec.release ();
-  body_cost_vec.release ();
-}
-
 /* Splits a group of stores, currently beginning at FIRST_STMT, into two groups:
    one (still beginning at FIRST_STMT) of size GROUP1_SIZE (also containing
    the first GROUP1_SIZE stmts, since stores are consecutive), the second
@@ -2758,7 +2484,10 @@ _bb_vec_info::~_bb_vec_info ()
 
 static bool
 vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
-				  slp_instance node_instance)
+				  slp_instance node_instance,
+				  scalar_stmts_to_slp_tree_map_t *visited,
+				  scalar_stmts_to_slp_tree_map_t *lvisited,
+				  stmt_vector_for_cost *cost_vec)
 {
   bool dummy;
   int i, j;
@@ -2768,8 +2497,25 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     return true;
 
+  /* If we already analyzed the exact same set of scalar stmts we're done.
+     We share the generated vector stmts for those.  */
+  slp_tree *leader;
+  if ((leader = visited->get (SLP_TREE_SCALAR_STMTS (node)))
+      || (leader = lvisited->get (SLP_TREE_SCALAR_STMTS (node))))
+    {
+      SLP_TREE_NUMBER_OF_VEC_STMTS (node)
+	= SLP_TREE_NUMBER_OF_VEC_STMTS (*leader);
+      return true;
+    }
+
+  /* The SLP graph is acyclic so not caching whether we failed or succeeded
+     doesn't result in any issue since we throw away the lvisited set
+     when we fail.  */
+  lvisited->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
+
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (!vect_slp_analyze_node_operations (vinfo, child, node_instance))
+    if (!vect_slp_analyze_node_operations (vinfo, child, node_instance,
+					   visited, lvisited, cost_vec))
       return false;
 
   stmt = SLP_TREE_SCALAR_STMTS (node)[0];
@@ -2831,7 +2577,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
       STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0]))
 	= SLP_TREE_DEF_TYPE (child);
-  bool res = vect_analyze_stmt (stmt, &dummy, node, node_instance);
+  bool res = vect_analyze_stmt (stmt, &dummy, node, node_instance, cost_vec);
   /* Restore def-types.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
@@ -2857,11 +2603,17 @@ vect_slp_analyze_operations (vec_info *vinfo)
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "=== vect_slp_analyze_operations ===\n");
 
+  scalar_stmts_to_slp_tree_map_t *visited
+    = new scalar_stmts_to_slp_tree_map_t ();
   for (i = 0; vinfo->slp_instances.iterate (i, &instance); )
     {
+      scalar_stmts_to_slp_tree_map_t lvisited;
+      stmt_vector_for_cost cost_vec;
+      cost_vec.create (2);
       if (!vect_slp_analyze_node_operations (vinfo,
 					     SLP_INSTANCE_TREE (instance),
-					     instance))
+					     instance, visited, &lvisited,
+					     &cost_vec))
         {
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "removing SLP instance operations starting from: ");
@@ -2870,19 +2622,19 @@ vect_slp_analyze_operations (vec_info *vinfo)
 			      (SLP_INSTANCE_TREE (instance))[0], 0);
 	  vect_free_slp_instance (instance);
           vinfo->slp_instances.ordered_remove (i);
+	  cost_vec.release ();
 	}
       else
-	i++;
+	{
+	  for (scalar_stmts_to_slp_tree_map_t::iterator x = lvisited.begin();
+	       x != lvisited.end(); ++x)
+	    visited->put ((*x).first.copy (), (*x).second);
+	  i++;
+
+	  add_stmt_costs (vinfo->target_cost_data, &cost_vec);
+	  cost_vec.release ();
+	}
     }
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_analyze_slp_cost ===\n");
-
-  /* Compute the costs of the SLP instances.  */
-  scalar_stmts_set_t *visited = new scalar_stmts_set_t ();
-  for (i = 0; vinfo->slp_instances.iterate (i, &instance); ++i)
-    vect_analyze_slp_cost (instance, vinfo->target_cost_data, visited);
   delete visited;
 
   return !vinfo->slp_instances.is_empty ();
@@ -2989,15 +2741,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
 			       &life, &scalar_costs);
     }
   void *target_cost_data = init_cost (NULL);
-  stmt_info_for_cost *si;
-  FOR_EACH_VEC_ELT (scalar_costs, i, si)
-    {
-      struct _stmt_vec_info *stmt_info
-	  = si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
-      (void) add_stmt_cost (target_cost_data, si->count,
-			    si->kind, stmt_info, si->misalign,
-			    vect_body);
-    }
+  add_stmt_costs (target_cost_data, &scalar_costs);
   scalar_costs.release ();
   unsigned dummy;
   finish_cost (target_cost_data, &dummy, &scalar_cost, &dummy);
@@ -4060,10 +3804,6 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   return true;
 }
 
-typedef hash_map <vec <gimple *>, slp_tree,
-		  simple_hashmap_traits <bst_traits, slp_tree> >
-  scalar_stmts_to_slp_tree_map_t;
-
 /* Vectorize SLP instance tree in postorder.  */
 
 static bool
@@ -4087,8 +3827,6 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   if (slp_tree *leader = bst_map->get (SLP_TREE_SCALAR_STMTS (node)))
     {
       SLP_TREE_VEC_STMTS (node).safe_splice (SLP_TREE_VEC_STMTS (*leader));
-      SLP_TREE_NUMBER_OF_VEC_STMTS (node)
-	= SLP_TREE_NUMBER_OF_VEC_STMTS (*leader);
       return false;
     }
 
@@ -4110,6 +3848,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   group_size = SLP_INSTANCE_GROUP_SIZE (instance);
 
+  gcc_assert (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
   if (!SLP_TREE_VEC_STMTS (node).exists ())
     SLP_TREE_VEC_STMTS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
 
