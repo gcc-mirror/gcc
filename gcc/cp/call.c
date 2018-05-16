@@ -319,15 +319,17 @@ build_call_n (tree function, int n, ...)
 void
 set_flags_from_callee (tree call)
 {
-  bool nothrow;
-  tree decl = get_callee_fndecl (call);
+  /* Handle both CALL_EXPRs and AGGR_INIT_EXPRs.  */
+  tree decl = cp_get_callee_fndecl_nofold (call);
 
   /* We check both the decl and the type; a function may be known not to
      throw without being declared throw().  */
-  nothrow = decl && TREE_NOTHROW (decl);
-  if (CALL_EXPR_FN (call))
-    nothrow |= TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (call))));
-  else if (internal_fn_flags (CALL_EXPR_IFN (call)) & ECF_NOTHROW)
+  bool nothrow = decl && TREE_NOTHROW (decl);
+  tree callee = cp_get_callee (call);
+  if (callee)
+    nothrow |= TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (callee)));
+  else if (TREE_CODE (call) == CALL_EXPR
+	   && internal_fn_flags (CALL_EXPR_IFN (call)) & ECF_NOTHROW)
     nothrow = true;
 
   if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
