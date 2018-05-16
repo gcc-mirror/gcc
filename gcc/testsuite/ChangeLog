@@ -1,4 +1,11 @@
+2018-05-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85363
+	* g++.dg/cpp0x/initlist-throw1.C: New test.
+	* g++.dg/cpp0x/initlist-throw2.C: New test.
+
 2018-05-16 Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/vsx-vector-6-be.c: Remove file.
 	* gcc.target/powerpc/vsx-vector-6-be.p7.c: New test file.
 	* gcc.target/powerpc/vsx-vector-6-be.p8.c: New test file.
