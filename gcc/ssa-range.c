@@ -47,6 +47,86 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range.h"
 #include "ssa-range-global.h"
 
+
+class non_null_ref
+{
+private:
+  vec <bitmap> m_nn;
+  void process_name (tree name);
+public:
+  non_null_ref ();
+  ~non_null_ref ();
+  bool non_null_deref_p (tree name, basic_block bb);
+};
+
+non_null_ref::non_null_ref ()
+{
+  m_nn.create (0);
+  m_nn.safe_grow_cleared (num_ssa_names);
+}
+
+non_null_ref::~non_null_ref ()
+{
+  unsigned x;
+  for (x = 0; x< m_nn.length (); x++)
+    if (m_nn[x])
+      BITMAP_FREE (m_nn[x]);
+}
+
+void
+non_null_ref::process_name (tree name)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  bitmap b;
+
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+    return;
+
+  // Already processed if a bitmap has been allocated.
+  if (m_nn[v])
+    return;
+
+  b = BITMAP_ALLOC (NULL);
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+    {
+      gimple *s = USE_STMT (use_p);
+      unsigned index = gimple_bb (s)->index;
+      tree value;
+      enum tree_code comp_code;
+
+      // IF bit is already set for this block, dont bother looking again.
+      if (bitmap_bit_p (b, index))
+        continue;
+
+      // If we can infer a != 0 range, then set the bit for this BB
+      if (infer_value_range (s, name, &comp_code, &value))
+        {
+	  if (comp_code == NE_EXPR && integer_zerop (value))
+	    bitmap_set_bit (b, index);
+	}
+    }
+
+  m_nn[v] = b;
+}
+
+bool
+non_null_ref::non_null_deref_p (tree name, basic_block bb)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+    return false;
+
+  if (!m_nn[v])
+    process_name (name);
+
+  return bitmap_bit_p (m_nn[v], bb->index);
+}
+
+
+
 // This class implements a cache of ranges indexed by basic block.
 // It represents all that is known about an SSA_NAME on entry to each block
 // It caches a range-for-type ranger so it doesnt need to be reformed all
@@ -227,6 +307,7 @@ path_ranger::path_ranger ()
 {
   block_cache = new block_range_cache ();
   globals = new ssa_global_cache ();
+  non_null = new non_null_ref ();
 }
 
 // Deallocate path_ranger members.
@@ -234,6 +315,7 @@ path_ranger::~path_ranger ()
 {
   delete block_cache;
   delete globals;
+  delete non_null;
 }
 
 // Print everything known about the global cache to file F.
@@ -297,6 +379,22 @@ path_ranger::clear_global_ssa_range (tree name)
   globals->clear_global_range (name);
 }
 
+// Return true if there is a non-null dereference of name in BB somewhere and
+// return the non-null range in R.
+inline bool
+path_ranger::non_null_deref_in_block (irange &r, tree name, basic_block bb)
+{
+  tree type = TREE_TYPE (name);
+  if (!POINTER_TYPE_P (type))
+    return false;
+  if (non_null->non_null_deref_p (name, bb))
+    {
+      r.set_range (type, 0, 0, irange::INVERSE);
+      return true;
+    }
+  return false;
+}
+
 // Make sure that the range-on-entry cache for NAME is set for block BB.
 // Work back thourgh the CFG to DEF_BB ensuring the range is calculated 
 // on the block/edges leading back to that point.
@@ -343,6 +441,11 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
 								   src);
 	  gcc_assert (res);
 	}
+
+      // If there is no range yet, and the previous block has a pointer
+      // dereference, adjust the range.
+      if (pred_range.range_for_type_p ())
+        non_null_deref_in_block (pred_range, name, src);
 
       // If the predecessor block refines the range on the incoming edge,
       // apply it to the range on entry value from that block.
@@ -440,6 +543,11 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
     // entry to the block. 
     if (!path_range_entry (r, name, bb))
       r.set_range (name);
+
+  // If result is range for type, see if there is a non-null reference
+  // somewhere in this block. 
+  if (r.range_for_type_p ())
+    non_null_deref_in_block (r, name, bb);
 
   // Now intersect the initial range with what NAME evaluates to on this edge.
   irange edge_range;
@@ -617,6 +725,10 @@ path_ranger::path_get_operand (irange &r, tree name, basic_block bb)
 
   if (path_range_entry (r, name, bb))
     return true;
+  // See if there is anon-null dereference.
+  if (non_null_deref_in_block (r, name, bb))
+    return true;
+
   return block_ranger::get_operand_range (r, name);
 }
 
@@ -811,6 +923,20 @@ path_ranger::exercise (FILE *output)
 		      printed = true;
 		    }
 		}
+	      else
+		// Check for a pointer and it is dereferences in this block
+		// and it had no range coming in.
+		if (ssa_name (x)
+		    && non_null->non_null_deref_p (ssa_name(x), bb)
+		    && !path_range_entry (range, ssa_name (x), bb))
+		  {
+		    if (!printed)
+		      fprintf (output, "     -- Ranges Defined -- :\n");
+		    fprintf (output, "     ");
+		    print_generic_expr (output, ssa_name (x), 0);
+		    fprintf (output, "  : non-null due to deref in block\n");
+		    printed = true;
+		  }
 	    }
 	  if (printed)
 	    fprintf (output, "\n");
