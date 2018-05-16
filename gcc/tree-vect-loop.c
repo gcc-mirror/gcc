@@ -1528,6 +1528,9 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "=== vect_analyze_loop_operations ===\n");
 
+  stmt_vector_for_cost cost_vec;
+  cost_vec.create (2);
+
   for (i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
@@ -1613,18 +1616,20 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
               need_to_vectorize = true;
               if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
 		  && ! PURE_SLP_STMT (stmt_info))
-                ok = vectorizable_induction (phi, NULL, NULL, NULL);
+                ok = vectorizable_induction (phi, NULL, NULL, NULL, &cost_vec);
 	      else if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
 			|| STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
 		       && ! PURE_SLP_STMT (stmt_info))
-		ok = vectorizable_reduction (phi, NULL, NULL, NULL, NULL);
+		ok = vectorizable_reduction (phi, NULL, NULL, NULL, NULL,
+					     &cost_vec);
             }
 
 	  /* SLP PHIs are tested by vect_slp_analyze_node_operations.  */
 	  if (ok
 	      && STMT_VINFO_LIVE_P (stmt_info)
 	      && !PURE_SLP_STMT (stmt_info))
-	    ok = vectorizable_live_operation (phi, NULL, NULL, -1, NULL);
+	    ok = vectorizable_live_operation (phi, NULL, NULL, -1, NULL,
+					      &cost_vec);
 
           if (!ok)
             {
@@ -1644,10 +1649,14 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
         {
 	  gimple *stmt = gsi_stmt (si);
 	  if (!gimple_clobber_p (stmt)
-	      && !vect_analyze_stmt (stmt, &need_to_vectorize, NULL, NULL))
+	      && !vect_analyze_stmt (stmt, &need_to_vectorize, NULL, NULL,
+				     &cost_vec))
 	    return false;
         }
     } /* bbs */
+
+  add_stmt_costs (loop_vinfo->target_cost_data, &cost_vec);
+  cost_vec.release ();
 
   /* All operations in the loop are either irrelevant (deal with loop
      control, or dead), or only used outside the loop and can be moved
@@ -3840,7 +3849,7 @@ have_whole_vector_shift (machine_mode mode)
 
 static void
 vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
-			   int ncopies)
+			   int ncopies, stmt_vector_for_cost *cost_vec)
 {
   int prologue_cost = 0, epilogue_cost = 0, inside_cost;
   enum tree_code code;
@@ -3850,15 +3859,9 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
   machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
-  void *target_cost_data;
 
   if (loop_vinfo)
-    {
-      loop = LOOP_VINFO_LOOP (loop_vinfo);
-      target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
-    }
-  else
-    target_cost_data = BB_VINFO_TARGET_COST_DATA (STMT_VINFO_BB_VINFO (stmt_info));
+    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   /* Condition reductions generate two reductions in the loop.  */
   vect_reduction_type reduction_type
@@ -3883,18 +3886,18 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
 
       if (reduction_type == EXTRACT_LAST_REDUCTION || reduc_fn != IFN_LAST)
 	/* Count one reduction-like operation per vector.  */
-	inside_cost = add_stmt_cost (target_cost_data, ncopies, vec_to_scalar,
-				     stmt_info, 0, vect_body);
+	inside_cost = record_stmt_cost (cost_vec, ncopies, vec_to_scalar,
+					stmt_info, 0, vect_body);
       else
 	{
 	  /* Use NELEMENTS extracts and NELEMENTS scalar ops.  */
 	  unsigned int nelements = ncopies * vect_nunits_for_cost (vectype);
-	  inside_cost = add_stmt_cost (target_cost_data,  nelements,
-				       vec_to_scalar, stmt_info, 0,
-				       vect_body);
-	  inside_cost += add_stmt_cost (target_cost_data,  nelements,
-					scalar_stmt, stmt_info, 0,
-					vect_body);
+	  inside_cost = record_stmt_cost (cost_vec, nelements,
+					  vec_to_scalar, stmt_info, 0,
+					  vect_body);
+	  inside_cost += record_stmt_cost (cost_vec, nelements,
+					   scalar_stmt, stmt_info, 0,
+					   vect_body);
 	}
     }
   else
@@ -3904,13 +3907,13 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
 	 initial result of the data reduction, initial value of the index
 	 reduction.  */
       int prologue_stmts = reduction_type == COND_REDUCTION ? 4 : 1;
-      prologue_cost += add_stmt_cost (target_cost_data, prologue_stmts,
-				      scalar_to_vec, stmt_info, 0,
-				      vect_prologue);
+      prologue_cost += record_stmt_cost (cost_vec, prologue_stmts,
+					 scalar_to_vec, stmt_info, 0,
+					 vect_prologue);
 
       /* Cost of reduction op inside loop.  */
-      inside_cost = add_stmt_cost (target_cost_data, ncopies, vector_stmt,
-				   stmt_info, 0, vect_body);
+      inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
+				      stmt_info, 0, vect_body);
     }
 
   /* Determine cost of epilogue code.
@@ -3925,41 +3928,41 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
 	  if (reduction_type == COND_REDUCTION)
 	    {
 	      /* An EQ stmt and an COND_EXPR stmt.  */
-	      epilogue_cost += add_stmt_cost (target_cost_data, 2,
-					      vector_stmt, stmt_info, 0,
-					      vect_epilogue);
+	      epilogue_cost += record_stmt_cost (cost_vec, 2,
+						 vector_stmt, stmt_info, 0,
+						 vect_epilogue);
 	      /* Reduction of the max index and a reduction of the found
 		 values.  */
-	      epilogue_cost += add_stmt_cost (target_cost_data, 2,
-					      vec_to_scalar, stmt_info, 0,
-					      vect_epilogue);
+	      epilogue_cost += record_stmt_cost (cost_vec, 2,
+						 vec_to_scalar, stmt_info, 0,
+						 vect_epilogue);
 	      /* A broadcast of the max value.  */
-	      epilogue_cost += add_stmt_cost (target_cost_data, 1,
-					      scalar_to_vec, stmt_info, 0,
-					      vect_epilogue);
+	      epilogue_cost += record_stmt_cost (cost_vec, 1,
+						 scalar_to_vec, stmt_info, 0,
+						 vect_epilogue);
 	    }
 	  else
 	    {
-	      epilogue_cost += add_stmt_cost (target_cost_data, 1, vector_stmt,
-					      stmt_info, 0, vect_epilogue);
-	      epilogue_cost += add_stmt_cost (target_cost_data, 1,
-					      vec_to_scalar, stmt_info, 0,
-					      vect_epilogue);
+	      epilogue_cost += record_stmt_cost (cost_vec, 1, vector_stmt,
+						 stmt_info, 0, vect_epilogue);
+	      epilogue_cost += record_stmt_cost (cost_vec, 1,
+						 vec_to_scalar, stmt_info, 0,
+						 vect_epilogue);
 	    }
 	}
       else if (reduction_type == COND_REDUCTION)
 	{
 	  unsigned estimated_nunits = vect_nunits_for_cost (vectype);
 	  /* Extraction of scalar elements.  */
-	  epilogue_cost += add_stmt_cost (target_cost_data,
-					  2 * estimated_nunits,
-					  vec_to_scalar, stmt_info, 0,
-					  vect_epilogue);
+	  epilogue_cost += record_stmt_cost (cost_vec,
+					     2 * estimated_nunits,
+					     vec_to_scalar, stmt_info, 0,
+					     vect_epilogue);
 	  /* Scalar max reductions via COND_EXPR / MAX_EXPR.  */
-	  epilogue_cost += add_stmt_cost (target_cost_data,
-					  2 * estimated_nunits - 3,
-					  scalar_stmt, stmt_info, 0,
-					  vect_epilogue);
+	  epilogue_cost += record_stmt_cost (cost_vec,
+					     2 * estimated_nunits - 3,
+					     scalar_stmt, stmt_info, 0,
+					     vect_epilogue);
 	}
       else if (reduction_type == EXTRACT_LAST_REDUCTION
 	       || reduction_type == FOLD_LEFT_REDUCTION)
@@ -3986,21 +3989,21 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
 	    {
 	      /* Final reduction via vector shifts and the reduction operator.
 		 Also requires scalar extract.  */
-	      epilogue_cost += add_stmt_cost (target_cost_data,
-					      exact_log2 (nelements) * 2,
-					      vector_stmt, stmt_info, 0,
-					      vect_epilogue);
-	      epilogue_cost += add_stmt_cost (target_cost_data, 1,
-					      vec_to_scalar, stmt_info, 0,
-					      vect_epilogue);
+	      epilogue_cost += record_stmt_cost (cost_vec,
+						 exact_log2 (nelements) * 2,
+						 vector_stmt, stmt_info, 0,
+						 vect_epilogue);
+	      epilogue_cost += record_stmt_cost (cost_vec, 1,
+						 vec_to_scalar, stmt_info, 0,
+						 vect_epilogue);
 	    }	  
 	  else
 	    /* Use extracts and reduction op for final reduction.  For N
 	       elements, we have N extracts and N-1 reduction ops.  */
-	    epilogue_cost += add_stmt_cost (target_cost_data, 
-					    nelements + nelements - 1,
-					    vector_stmt, stmt_info, 0,
-					    vect_epilogue);
+	    epilogue_cost += record_stmt_cost (cost_vec, 
+					       nelements + nelements - 1,
+					       vector_stmt, stmt_info, 0,
+					       vect_epilogue);
 	}
     }
 
@@ -4017,22 +4020,21 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
    Models cost for induction operations.  */
 
 static void
-vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
+vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies,
+			   stmt_vector_for_cost *cost_vec)
 {
-  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
   unsigned inside_cost, prologue_cost;
 
   if (PURE_SLP_STMT (stmt_info))
     return;
 
   /* loop cost for vec_loop.  */
-  inside_cost = add_stmt_cost (target_cost_data, ncopies, vector_stmt,
-			       stmt_info, 0, vect_body);
+  inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
+				  stmt_info, 0, vect_body);
 
   /* prologue cost for vec_init and vec_step.  */
-  prologue_cost = add_stmt_cost (target_cost_data, 2, scalar_to_vec,
-				 stmt_info, 0, vect_prologue);
+  prologue_cost = record_stmt_cost (cost_vec, 2, scalar_to_vec,
+				    stmt_info, 0, vect_prologue);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -6124,7 +6126,8 @@ is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
 bool
 vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 			gimple **vec_stmt, slp_tree slp_node,
-			slp_instance slp_node_instance)
+			slp_instance slp_node_instance,
+			stmt_vector_for_cost *cost_vec)
 {
   tree vec_dest;
   tree scalar_dest;
@@ -6633,7 +6636,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       /* Only call during the analysis stage, otherwise we'll lose
 	 STMT_VINFO_TYPE.  */
       if (!vec_stmt && !vectorizable_condition (stmt, gsi, NULL,
-						ops[reduc_index], 0, NULL))
+						ops[reduc_index], 0, NULL,
+						cost_vec))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7055,7 +7059,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!vec_stmt) /* transformation not required.  */
     {
       if (first_p)
-	vect_model_reduction_cost (stmt_info, reduc_fn, ncopies);
+	vect_model_reduction_cost (stmt_info, reduc_fn, ncopies, cost_vec);
       if (loop_vinfo && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	{
 	  if (reduction_type != FOLD_LEFT_REDUCTION
@@ -7109,7 +7113,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       gcc_assert (!slp_node);
       return vectorizable_condition (stmt, gsi, vec_stmt,
-				     NULL, reduc_index, NULL);
+				     NULL, reduc_index, NULL, NULL);
     }
 
   /* Create the destination vector  */
@@ -7142,7 +7146,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
           gcc_assert (!slp_node);
           vectorizable_condition (stmt, gsi, vec_stmt, 
                                   PHI_RESULT (phis[0]), 
-                                  reduc_index, NULL);
+                                  reduc_index, NULL, NULL);
           /* Multiple types are not supported for condition.  */
           break;
         }
@@ -7327,7 +7331,8 @@ vect_worthwhile_without_simd_p (vec_info *vinfo, tree_code code)
 bool
 vectorizable_induction (gimple *phi,
 			gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
-			gimple **vec_stmt, slp_tree slp_node)
+			gimple **vec_stmt, slp_tree slp_node,
+			stmt_vector_for_cost *cost_vec)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -7448,7 +7453,7 @@ vectorizable_induction (gimple *phi,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
                          "=== vectorizable_induction ===\n");
-      vect_model_induction_cost (stmt_info, ncopies);
+      vect_model_induction_cost (stmt_info, ncopies, cost_vec);
       return true;
     }
 
@@ -7882,7 +7887,8 @@ bool
 vectorizable_live_operation (gimple *stmt,
 			     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 			     slp_tree slp_node, int slp_index,
-			     gimple **vec_stmt)
+			     gimple **vec_stmt,
+			     stmt_vector_for_cost *)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);

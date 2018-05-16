@@ -1,5 +1,63 @@
 2018-05-16  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (struct stmt_info_for_cost): Add where member.
+	(dump_stmt_cost): Declare.
+	(add_stmt_cost): Dump cost we add.
+	(add_stmt_costs): New function.
+	(vect_model_simple_cost, vect_model_store_cost, vect_model_load_cost):
+	No longer exported.
+	(vect_analyze_stmt): Adjust prototype.
+	(vectorizable_condition): Likewise.
+	(vectorizable_live_operation): Likewise.
+	(vectorizable_reduction): Likewise.
+	(vectorizable_induction): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Create local
+	cost vector to pass to vectorizable_ and record afterwards.
+	(vect_model_reduction_cost): Take cost vector argument and adjust.
+	(vect_model_induction_cost): Likewise.
+	(vectorizable_reduction): Likewise.
+	(vectorizable_induction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-slp.c (vect_create_new_slp_node): Initialize
+	SLP_TREE_NUMBER_OF_VEC_STMTS.
+	(vect_analyze_slp_cost_1): Remove.
+	(vect_analyze_slp_cost): Likewise.
+	(vect_slp_analyze_node_operations): Take visited args and
+	a target cost vector.  Avoid processing already visited stmt sets.
+	(vect_slp_analyze_operations): Use a local cost vector to gather
+	costs and register those of non-discarded instances.
+	(vect_bb_vectorization_profitable_p): Use add_stmt_costs.
+	(vect_schedule_slp_instance): Remove copying of
+	SLP_TREE_NUMBER_OF_VEC_STMTS.  Instead assert that it is not
+	zero.
+	* tree-vect-stmts.c (record_stmt_cost): Remove path directly
+	adding cost.  Record cost entry location.
+	(vect_prologue_cost_for_slp_op): Function to compute cost of
+	a constant or invariant generated for SLP vect in the prologue,
+	split out from vect_analyze_slp_cost_1.
+	(vect_model_simple_cost): Make static.  Adjust for SLP costing.
+	(vect_model_promotion_demotion_cost): Likewise.
+	(vect_model_store_cost): Likewise, make static.
+	(vect_model_load_cost): Likewise.
+	(vectorizable_bswap): Add cost vector arg and adjust.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+	(can_vectorize_live_stmts): Likewise.
+	(vect_analyze_stmt): Likewise.
+	(vect_transform_stmt): Adjust calls to vectorizable_*.
+	* tree-vectorizer.c: Include gimple-pretty-print.h.
+	(dump_stmt_cost): New function.
+
+2018-05-16  Richard Biener  <rguenther@suse.de>
+
 	* params.def (PARAM_DSE_MAX_ALIAS_QUERIES_PER_STORE): New param.
 	* doc/invoke.texi (dse-max-alias-queries-per-store): Document.
 	* tree-ssa-dse.c: Include tree-ssa-loop.h.
