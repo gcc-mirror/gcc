@@ -3338,7 +3338,10 @@ build_array_ref (tree desc, tree offset, tree decl, tree vptr)
     {
       type = gfc_get_element_type (type);
       tmp = TREE_OPERAND (cdecl, 0);
-      tmp = gfc_get_class_array_ref (offset, tmp, NULL_TREE);
+      /* Note that the fourth argument in this call has been set false.
+	 should any character dynamic types come this way, the 'len'
+	 field of the unlimited object will not be used.  */
+      tmp = gfc_get_class_array_ref (offset, tmp, NULL_TREE, false);
       tmp = fold_convert (build_pointer_type (type), tmp);
       tmp = build_fold_indirect_ref_loc (input_location, tmp);
       return tmp;
@@ -8649,6 +8652,31 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		}
 
 	      gfc_init_block (&tmpblock);
+
+	      gfc_add_modify (&tmpblock, gfc_class_vptr_get (dcmp),
+			      gfc_class_vptr_get (comp));
+
+	      /* Copy the unlimited '_len' field. If it is greater than zero
+		 (ie. a character(_len)), multiply it by size and use this
+		 for the malloc call.  */
+	      if (UNLIMITED_POLY (c))
+		{
+		  tree ctmp;
+		  gfc_add_modify (&tmpblock, gfc_class_len_get (dcmp),
+				  gfc_class_len_get (comp));
+
+		  size = gfc_evaluate_now (size, &tmpblock);
+		  tmp = gfc_class_len_get (comp);
+		  ctmp = fold_build2_loc (input_location, MULT_EXPR,
+					  size_type_node, size,
+					  fold_convert (size_type_node, tmp));
+		  tmp = fold_build2_loc (input_location, GT_EXPR,
+					 logical_type_node, tmp,
+					 build_zero_cst (TREE_TYPE (tmp)));
+		  size = fold_build3_loc (input_location, COND_EXPR,
+					  size_type_node, tmp, ctmp, size);
+		  size = gfc_evaluate_now (size, &tmpblock);
+		}
 
 	      /* Coarray component have to have the same allocation status and
 		 shape/type-parameter/effective-type on the LHS and RHS of an

@@ -1,9 +1,23 @@
+2018-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84546
+	Backport from trunk
+	* trans-array.c (structure_alloc_comps): Make sure that the
+	vptr is copied and that the unlimited polymorphic _len is used
+	to compute the size to be allocated.
+	(build_array_ref): Set the 'unlimited' argument false in the
+	call to gfc_get_class_array_ref.
+	* trans-expr.c (gfc_get_class_array_ref): If unlimited, use the
+	unlimited polymorphic _len for the offset to the element.
+	(gfc_copy_class_to_class): Set the new 'unlimited' argument.
+	* trans.h : Add the boolean 'unlimited' to the prototype.
+
 2018-05-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85542
 	Backport from trunk
 	* expr.c (check_inquiry): Avoid NULL pointer dereference.
- 
+
 2018-05-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68846
