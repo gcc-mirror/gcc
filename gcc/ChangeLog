@@ -1,3 +1,8 @@
+2018-05-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_assign_ternary): Properly
+	verify the [VEC_]COND_EXPR embedded comparison.
+
 2018-05-15  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/85753
