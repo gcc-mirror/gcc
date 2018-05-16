@@ -10439,6 +10439,11 @@ Average number of iterations of a loop.
 Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
 Larger values may result in larger compilation times.
 
+@item dse-max-alias-queries-per-store
+Maximum number of queries into the alias oracle per store.
+Larger values result in larger compilation times and may result in more
+removed dead stores.
+
 @item scev-max-expr-size
 Bound on size of expressions used in the scalar evolutions analyzer.
 Large expressions slow the analyzer.

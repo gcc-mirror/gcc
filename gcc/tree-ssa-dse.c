@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "params.h"
 #include "alias.h"
+#include "tree-ssa-loop.h"
 
 /* This file implements dead store elimination.
 
@@ -515,6 +516,21 @@ live_bytes_read (ao_ref use_ref, ao_ref *ref, sbitmap live)
   return true;
 }
 
+/* Callback for dse_classify_store calling for_each_index.  Verify that
+   indices are invariant in the loop with backedge PHI in basic-block DATA.  */
+
+static bool
+check_name (tree, tree *idx, void *data)
+{
+  basic_block phi_bb = (basic_block) data;
+  if (TREE_CODE (*idx) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (*idx)
+      && dominated_by_p (CDI_DOMINATORS, gimple_bb (SSA_NAME_DEF_STMT (*idx)),
+			 phi_bb))
+    return false;
+  return true;
+}
+
 /* A helper of dse_optimize_stmt.
    Given a GIMPLE_ASSIGN in STMT that writes to REF, classify it
    according to downstream uses and defs.  Sets *BY_CLOBBER_P to true
@@ -527,7 +543,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 		    bool *by_clobber_p = NULL)
 {
   gimple *temp;
-  unsigned cnt = 0;
+  int cnt = 0;
+  auto_bitmap visited;
 
   if (by_clobber_p)
     *by_clobber_p = true;
@@ -539,58 +556,50 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
   temp = stmt;
   do
     {
-      gimple *use_stmt, *defvar_def;
+      gimple *use_stmt;
       imm_use_iterator ui;
       bool fail = false;
       tree defvar;
 
-      /* Limit stmt walking to be linear in the number of possibly
-         dead stores.  */
-      if (++cnt > 256)
-	return DSE_STORE_LIVE;
-
       if (gimple_code (temp) == GIMPLE_PHI)
-	defvar = PHI_RESULT (temp);
+	{
+	  /* If we visit this PHI by following a backedge then we have to
+	     make sure ref->ref only refers to SSA names that are invariant
+	     with respect to the loop represented by this PHI node.  */
+	  if (dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt),
+			      gimple_bb (temp))
+	      && !for_each_index (ref->ref ? &ref->ref : &ref->base,
+				  check_name, gimple_bb (temp)))
+	    return DSE_STORE_LIVE;
+	  defvar = PHI_RESULT (temp);
+	  bitmap_set_bit (visited, SSA_NAME_VERSION (defvar));
+	}
       else
 	defvar = gimple_vdef (temp);
-      defvar_def = temp;
       auto_vec<gimple *, 10> defs;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
-	  cnt++;
-
-	  /* If we ever reach our DSE candidate stmt again fail.  We
-	     cannot handle dead stores in loops.  */
-	  if (use_stmt == stmt)
+	  /* Limit stmt walking.  */
+	  if (++cnt > PARAM_VALUE (PARAM_DSE_MAX_ALIAS_QUERIES_PER_STORE))
 	    {
 	      fail = true;
 	      BREAK_FROM_IMM_USE_STMT (ui);
 	    }
+
+	  /* We have visited ourselves already so ignore STMT for the
+	     purpose of chaining.  */
+	  if (use_stmt == stmt)
+	    ;
 	  /* In simple cases we can look through PHI nodes, but we
 	     have to be careful with loops and with memory references
 	     containing operands that are also operands of PHI nodes.
 	     See gcc.c-torture/execute/20051110-*.c.  */
 	  else if (gimple_code (use_stmt) == GIMPLE_PHI)
 	    {
-	      /* Make sure we are not in a loop latch block.  */
-	      if (gimple_bb (stmt) == gimple_bb (use_stmt)
-		  || dominated_by_p (CDI_DOMINATORS,
-				     gimple_bb (stmt), gimple_bb (use_stmt))
-		  /* We can look through PHIs to regions post-dominating
-		     the DSE candidate stmt.  */
-		  || !dominated_by_p (CDI_POST_DOMINATORS,
-				      gimple_bb (stmt), gimple_bb (use_stmt)))
-		{
-		  fail = true;
-		  BREAK_FROM_IMM_USE_STMT (ui);
-		}
-	      /* Do not consider the PHI as use if it dominates the
-	         stmt defining the virtual operand we are processing,
-		 we have processed it already in this case.  */
-	      if (gimple_bb (defvar_def) != gimple_bb (use_stmt)
-		  && !dominated_by_p (CDI_DOMINATORS,
-				      gimple_bb (defvar_def),
-				      gimple_bb (use_stmt)))
+	      /* If we already visited this PHI ignore it for further
+		 processing.  */
+	      if (!bitmap_bit_p (visited,
+				 SSA_NAME_VERSION (PHI_RESULT (use_stmt))))
 		defs.safe_push (use_stmt);
 	    }
 	  /* If the statement is a use the store is not dead.  */
@@ -600,25 +609,20 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 		 structure for USE_STMT and in doing so we find that the
 		 references hit non-live bytes and thus can be ignored.  */
 	      if (byte_tracking_enabled
-		  && (!gimple_vdef (use_stmt) || defs.is_empty ()))
+		  && is_gimple_assign (use_stmt))
 		{
-		  if (is_gimple_assign (use_stmt))
+		  ao_ref use_ref;
+		  ao_ref_init (&use_ref, gimple_assign_rhs1 (use_stmt));
+		  if (valid_ao_ref_for_dse (&use_ref)
+		      && use_ref.base == ref->base
+		      && known_eq (use_ref.size, use_ref.max_size)
+		      && !live_bytes_read (use_ref, ref, live_bytes))
 		    {
-		      /* Other cases were noted as non-aliasing by
-			 the call to ref_maybe_used_by_stmt_p.  */
-		      ao_ref use_ref;
-		      ao_ref_init (&use_ref, gimple_assign_rhs1 (use_stmt));
-		      if (valid_ao_ref_for_dse (&use_ref)
-			  && use_ref.base == ref->base
-			  && known_eq (use_ref.size, use_ref.max_size)
-			  && !live_bytes_read (use_ref, ref, live_bytes))
-			{
-			  /* If this statement has a VDEF, then it is the
-			     first store we have seen, so walk through it.  */
-			  if (gimple_vdef (use_stmt))
-			    defs.safe_push (use_stmt);
-			  continue;
-			}
+		      /* If this is a store, remember it as we possibly
+			 need to walk the defs uses.  */
+		      if (gimple_vdef (use_stmt))
+			defs.safe_push (use_stmt);
+		      continue;
 		    }
 		}
 
