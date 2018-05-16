@@ -1,3 +1,10 @@
+2018-05-16 Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/vsx-vector-6-be.c: Remove file.
+	* gcc.target/powerpc/vsx-vector-6-be.p7.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-be.p8.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-le.c (dg-final): Update counts for
+	xvcmpeqdp., xvcmpgtdp., xvcmpgedp., xxlxor, xvrdpi.
+
 2018-05-16  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-dse-32.c: New testcase.
