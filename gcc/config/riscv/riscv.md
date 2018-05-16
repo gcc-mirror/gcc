@@ -1504,7 +1504,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
-(define_insn_and_split "<optab>si3_mask"
+(define_insn_and_split "*<optab>si3_mask"
   [(set (match_operand:SI     0 "register_operand" "= r")
 	(any_shift:SI
 	    (match_operand:SI 1 "register_operand" "  r")
@@ -1523,7 +1523,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
-(define_insn_and_split "<optab>si3_mask_1"
+(define_insn_and_split "*<optab>si3_mask_1"
   [(set (match_operand:SI     0 "register_operand" "= r")
 	(any_shift:SI
 	    (match_operand:SI 1 "register_operand" "  r")
@@ -1559,7 +1559,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "<optab>di3_mask"
+(define_insn_and_split "*<optab>di3_mask"
   [(set (match_operand:DI     0 "register_operand" "= r")
 	(any_shift:DI
 	    (match_operand:DI 1 "register_operand" "  r")
@@ -1579,7 +1579,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "<optab>di3_mask_1"
+(define_insn_and_split "*<optab>di3_mask_1"
   [(set (match_operand:DI     0 "register_operand" "= r")
 	(any_shift:DI
 	    (match_operand:DI 1 "register_operand" "  r")

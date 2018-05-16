@@ -1,3 +1,9 @@
+2018-05-16  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (<optab>si3_mask, <optab>si3_mask_1): Prepend
+	asterisk to name.
+	(<optab>di3_mask, <optab>di3_mask_1): Likewise.
+
 2018-05-16  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2out.c (count_index_strings): New function.
