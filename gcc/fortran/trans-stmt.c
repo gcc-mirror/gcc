@@ -1541,7 +1541,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
       desc = sym->backend_decl;
       cst_array_ctor = e->expr_type == EXPR_ARRAY
-	      && gfc_constant_array_constructor_p (e->value.constructor);
+	      && gfc_constant_array_constructor_p (e->value.constructor)
+	      && e->ts.type != BT_CHARACTER;
 
       /* If association is to an expression, evaluate it and create temporary.
 	 Otherwise, get descriptor of target for pointer assignment.  */

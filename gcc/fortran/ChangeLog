@@ -1,3 +1,10 @@
+2018-16-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83898
+	Backport from trunk
+	* trans-stmt.c (trans_associate_var): Do not set cst_array_ctor
+	for characters.
+
 2018-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68846

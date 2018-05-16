@@ -1,3 +1,9 @@
+2018-16-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83898
+	Backport from trunk
+	* gfortran.dg/associate_33.f03 : New test.
+
 2018-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68846
