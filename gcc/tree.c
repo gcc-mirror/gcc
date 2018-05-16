@@ -12420,14 +12420,16 @@ typedef_variant_p (const_tree type)
   return is_typedef_decl (TYPE_NAME (type));
 }
 
-/* Warn about a use of an identifier which was marked deprecated.  */
-void
+/* Warn about a use of an identifier which was marked deprecated.  Returns
+   whether a warning was given.  */
+
+bool
 warn_deprecated_use (tree node, tree attr)
 {
   const char *msg;
 
   if (node == 0 || !warn_deprecated_decl)
-    return;
+    return false;
 
   if (!attr)
     {
@@ -12450,7 +12452,7 @@ warn_deprecated_use (tree node, tree attr)
   else
     msg = NULL;
 
-  bool w;
+  bool w = false;
   if (DECL_P (node))
     {
       if (msg)
@@ -12476,49 +12478,29 @@ warn_deprecated_use (tree node, tree attr)
 	    what = DECL_NAME (TYPE_NAME (node));
 	}
 
-      if (decl)
+      if (what)
 	{
-	  if (what)
-	    {
-	      if (msg)
-		w = warning (OPT_Wdeprecated_declarations,
-			     "%qE is deprecated: %s", what, msg);
-	      else
-		w = warning (OPT_Wdeprecated_declarations,
-			     "%qE is deprecated", what);
-	    }
+	  if (msg)
+	    w = warning (OPT_Wdeprecated_declarations,
+			 "%qE is deprecated: %s", what, msg);
 	  else
-	    {
-	      if (msg)
-		w = warning (OPT_Wdeprecated_declarations,
-			     "type is deprecated: %s", msg);
-	      else
-		w = warning (OPT_Wdeprecated_declarations,
-			     "type is deprecated");
-	    }
-	  if (w)
-	    inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	    w = warning (OPT_Wdeprecated_declarations,
+			 "%qE is deprecated", what);
 	}
       else
 	{
-	  if (what)
-	    {
-	      if (msg)
-		warning (OPT_Wdeprecated_declarations, "%qE is deprecated: %s",
-			 what, msg);
-	      else
-		warning (OPT_Wdeprecated_declarations, "%qE is deprecated", what);
-	    }
+	  if (msg)
+	    w = warning (OPT_Wdeprecated_declarations,
+			 "type is deprecated: %s", msg);
 	  else
-	    {
-	      if (msg)
-		warning (OPT_Wdeprecated_declarations, "type is deprecated: %s",
-			 msg);
-	      else
-		warning (OPT_Wdeprecated_declarations, "type is deprecated");
-	    }
+	    w = warning (OPT_Wdeprecated_declarations,
+			 "type is deprecated");
 	}
+      if (w && decl)
+	inform (DECL_SOURCE_LOCATION (decl), "declared here");
     }
+
+  return w;
 }
 
 /* Return true if REF has a COMPONENT_REF with a bit-field field declaration

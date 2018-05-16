@@ -1,3 +1,7 @@
+2018-05-16  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (warn_deprecated_use): Return bool.  Simplify logic.
+
 2018-05-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (struct stmt_info_for_cost): Add where member.
