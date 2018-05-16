@@ -372,12 +372,17 @@ interface_strcmp (const char* s)
    Otherwise zero.  */
 
 unsigned
-atom_preamble_prefix_peek (bool only_import, cpp_reader *pfile)
+atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 {
+  static int count;
   /* Peeking at a possible start?  */
   bool exporting_p = false;
   source_location dir_loc;
   unsigned lookahead = 0;
+
+  if (count == flag_module_preamble)
+    /* We're forcibly done.  */
+    return 0;
 
  another:
   /* Peeking does not do macro expansion, but does do #if & #include
@@ -401,13 +406,31 @@ atom_preamble_prefix_peek (bool only_import, cpp_reader *pfile)
     not_preamble:
       /* If we opened (and maybe closed) any #if or #includes in order
 	 to peek cpp_tok, the end was ambiguous and we went too far.
-	 The user should place a bare semicolon to mark the end of the
+	 We're required to back track and restart preprocessing from
+	 just after the previous import.  (Because imported #defines
+	 may affect that.)  However (a) performance is allowed to
+	 totally suck doing that, and (b) we're allowed to encourage
+	 the user to place a bare semicolon marking the end of the
 	 preamble.  */
-      // FIXME: We should respawn the compiler telling it when to stop.
       if (dir_loc && only_import)
-	warning_at (dir_loc, 0,
-		    "module preamble ended immediately before"
-		    " preprocessor directive");
+	{
+	  /* Don't attempt rescanning if we emitted any diagnostics.
+	     We'll just be repeating ourselves.  */
+	  bool no_rescan = errorcount || warningcount || werrorcount;
+
+	  warning_at (dir_loc, 0,
+		      "module preamble ended immediately before"
+		      " preprocessor directive");
+	  if (for_parser)
+	    {
+	      inform (dir_loc, "explicitly mark the end with an earlier %<;%>");
+	      if (!no_rescan)
+		/* This never returns, if successful.  */
+		maybe_repeat_preamble (cpp_tok->src_loc, count, pfile);
+	      /* In some cases we cannot rescan.  */
+	      inform (cpp_tok->src_loc, "cannot rescan preamble");
+	    }
+	}
 
       return 0;
     }  
@@ -430,6 +453,8 @@ atom_preamble_prefix_peek (bool only_import, cpp_reader *pfile)
   if (!(keyword == RID_IMPORT
 	|| (!only_import && keyword == RID_MODULE)))
     goto not_preamble;
+
+  count++;
 
   return 0x10 + 3 + exporting_p;
 }

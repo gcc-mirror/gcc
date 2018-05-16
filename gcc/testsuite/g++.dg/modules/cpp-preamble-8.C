@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options -EE }
+// { dg-additional-options -fmodule-preamble }
 
 #if 1
 #include "cpp-preamble-8.h"

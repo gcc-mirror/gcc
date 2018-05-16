@@ -250,13 +250,10 @@ atom_preamble_fsm (int state, cpp_reader *pfile,
       if (new_state)
 	return (state & 0x10) | new_state;
     }
-  else if (!flag_module_preamble)
+  else if (flag_module_preamble < 0)
     return -1;
 
-  state = atom_preamble_prefix_peek (state & 0x10, pfile);
-  if (!state)
-    cpp_pop_directives (pfile, true);
-  return state;
+  return atom_preamble_prefix_peek (false, state & 0x10, pfile);
 }
 
 #if CHECKING_P

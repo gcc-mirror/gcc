@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options -EE }
+// { dg-additional-options -fmodule-preamble }
 
 module bob;
 import <stdio.h>;

@@ -183,12 +183,16 @@ scan_translation_unit (cpp_reader *pfile)
   cpp_ttype tok_type = N_TTYPES;
   for (;;)
     {
-
       if (prefix >= 0)
 	{
 	  prefix = lang_hooks.preprocess_preamble (prefix, pfile, tok_type, loc);
 	  if (!prefix)
-	    break;
+	    {
+	      /* We're bailing out, possibly in the middle of a #if
+		 nest.  We don't want that to cause problems.  */
+	      cpp_pop_directives (pfile, true);
+	      break;
+	    }
 	}
       const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
       tok_type = token->type;

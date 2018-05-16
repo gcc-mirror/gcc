@@ -1508,6 +1508,7 @@ flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
+; I couldn't get Alias to work, but this approach does.
 fmodules-ts
 C++ ObjC++ Driver RejectNegative Var(flag_modules,+1) Integer
 Enable c++ modules-ts (experimental)
@@ -1521,12 +1522,15 @@ C++ ObjC++ Driver Undocumented RejectNegative Var(flag_modules,0) Integer
 ;; undocumented
 
 fmodule-server=
-C++ ObjC++ Driver Joined RejectNegaive MissingArgError(missing server)
+C++ ObjC++ Driver Joined RejectNegative MissingArgError(missing server)
 -fmodule-server=<n|file|cmd> Server for module name mappings
 
-EE
-Driver C++ RejectNegative Var(flag_module_preamble)
-Preprocess atom module preamble
+fmodule-preamble
+Driver C++ Var(flag_module_preamble,65535,-1) Integer
+Stop after preprocessing atom module preamble
+
+fmodule-preamble=
+C++ Undocumented RejectNegative Joined Var(flag_module_preamble) Integer Init(-1) MissingArgError(missing preamble length)
 
 fmodule-lazy
 C++ ObjC++ Driver Var(flag_module_lazy) Init(1)

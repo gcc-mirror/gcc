@@ -145,6 +145,7 @@ Classes used:
 #include "version.h"
 #include "tree-diagnostic.h"
 #include "params.h"
+#include "toplev.h"
 
 #if defined (HOST_HAS_AF_UNIX) || defined (HOST_HAS_AF_INET6)
 # define HOST_HAS_AF 1
@@ -2504,7 +2505,7 @@ bool module_state_hash::equal (const value_type existing,
 /* Some flag values: */
 
 /* Server name.  */
-static char *module_server_name;
+static const char *module_server_name;
 
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
@@ -2544,7 +2545,7 @@ class module_server {
 
 private:
   /* Construction always succeeds, but may result in a dead server.  */
-  module_server (char *connection);
+  module_server (const char *connection);
   ~module_server ()
   {
     if (from)
@@ -2553,7 +2554,7 @@ private:
 
 private:
   void kill ();
-  static module_server *make (char *);
+  static module_server *make (const char *);
 
 public:
   static module_server *get ()
@@ -2562,11 +2563,13 @@ public:
       server = make (module_server_name);
     return server->from ? server : NULL;
   }
-  static void fini ()
+  static void fini (bool reset = false)
   {
+    if (server && reset)
+      server->reset ();
     delete server;
     server = NULL;
-  }   
+  }
 
 public:
   char *import_query (tree name, location_t from);
@@ -2574,6 +2577,7 @@ public:
   bool export_done (tree name);
 
 private:
+  void reset ();
   bool handshake (const char *main_src);
   char *import_export_query (const char *, tree name, const char *);
   void get_response ();
@@ -6244,6 +6248,10 @@ module_state::init ()
     }
   dump () && dump ("Lazy limit is %u", lazy_open);
 
+  if (modules_atom_p () && flag_module_preamble >= 0
+      && flag_module_preamble < 65536)
+    dump () && dump ("Preamble ends after %d", flag_module_preamble);
+
   /* Construct the global tree array.  This is an array of unique
      global trees (& types).  */
   // FIXME:Some slots are lazily allocated, we must move them to
@@ -6330,8 +6338,8 @@ module_state::announce (const char *what) const
    client-side socket handling in the compiler.  At least it's not
    ipv4.  */
 
-module_server::module_server (char *option)
-  : name (option), from (NULL), to (NULL), pex (NULL),
+module_server::module_server (const char *option)
+  : name (NULL), from (NULL), to (NULL), pex (NULL),
     /* Exercise buffer expansion code.  */
     buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL)
 {
@@ -6339,7 +6347,7 @@ module_server::module_server (char *option)
   
   bool defaulting = !option;
   if (defaulting)
-    option = const_cast<char *> ("cxx-module-server");
+    option = "cxx-module-server";
 
   if (noisy_p ())
     {
@@ -6354,29 +6362,38 @@ module_server::module_server (char *option)
 
   /* First copy and count white space -- we use that to distinguish
      programs that look like a socket name.  */
-  size_t len = strlen (option);
+  char *writable;
   unsigned count = 0;
 
-  for (char *ptr = option; *ptr; ptr++)
-    if (ISSPACE (*ptr))
+  for (writable = const_cast <char *> (option); *writable; writable++)
+    if (ISSPACE (*writable))
       {
-	while (ISSPACE (ptr[1]))
-	  ptr++;
+	while (ISSPACE (writable[1]))
+	  writable++;
 	count++;
       }
+  size_t len = writable - option;
+  writable = XNEWVEC (char, len + 1);
+  memcpy (writable, option, len + 1);
 
-  int fd = -1;
+  int fd_in = -1, fd_out = -1;
 
   /* Try a file number or pair of same.  */
   char *endp;
   if (!defaulting)
     {
-      unsigned long lfd = strtoul (option, &endp, 10);
-      if (!*endp && lfd != ULONG_MAX)
-	fd = int (lfd);
+      unsigned long lfd_in = strtoul (option, &endp, 10);
+      unsigned long lfd_out = lfd_in;
+      if (*endp == ',')
+	lfd_out = strtoul (endp + 1, &endp, 10);
+      if (!*endp && lfd_in != ULONG_MAX && lfd_out != ULONG_MAX)
+	{
+	  fd_in = int (lfd_in);
+	  fd_out = int (lfd_out);
+	}
     }
 
-  if (!defaulting && fd < 0 && !count)
+  if (!defaulting && fd_in < 0 && !count)
     {
       /* There are no spaces in it, try opening a socket.  */
       int port = -1;
@@ -6412,7 +6429,7 @@ module_server::module_server (char *option)
 	  errmsg = "unix protocol unsupported";
 #endif
 	}
-      else if (char *colon = (char *)memrchr (option, ':', len))
+      else if (char *colon = (char *)memrchr (writable, ':', len))
 	{
 	  port = strtoul (colon + 1, &endp, 10);
 	  if (!*endp)
@@ -6423,8 +6440,8 @@ module_server::module_server (char *option)
 	      if (port >= 0x10000)
 		errno = EINVAL; /* Seems plausible.  */
 	      else if (struct hostent *hent
-		  = gethostbyname2 (colon != option
-				    ? option : "localhost", AF_INET6))
+		  = gethostbyname2 (colon != writable
+				    ? writable : "localhost", AF_INET6))
 		{
 		  memset (&saddr.in6, 0, sizeof (saddr.in6));
 		  saddr.in6.sin6_family = AF_INET6;
@@ -6444,14 +6461,14 @@ module_server::module_server (char *option)
 #ifdef HOST_HAS_AF
       if (saddr.fam != AF_UNSPEC)
 	{
-	  fd = socket (saddr.fam, SOCK_STREAM, 0);
-	  if (fd < 0 || connect (fd, (sockaddr *)&saddr, saddr_len) < 0)
+	  fd_in = socket (saddr.fam, SOCK_STREAM, 0);
+	  if (fd_in < 0 || connect (fd_in, (sockaddr *)&saddr, saddr_len) < 0)
 	    {
 	      err = errno;
 	      errmsg = "connecting socket";
-	      if (fd >= 0)
-		close (fd);
-	      fd = -1;
+	      if (fd_in >= 0)
+		close (fd_in);
+	      fd_in = -1;
 	    }
 	}
       else
@@ -6463,17 +6480,23 @@ module_server::module_server (char *option)
 	  }
     }
 
-  if (fd >= 0)
+  if (fd_in >= 0)
     {
-      /* We were given a fileno, or sucessfuly created a socket.  */
+      /* We were given filenums, or sucessfuly created a socket.  */
       gcc_assert (!errmsg);
 
-      int fd2 = dup (fd);
-      if (fd2 >= 0)
-	{
-	  from = fdopen (fd, "r+");
-	  to = fdopen (fd2, "w+");
-	}
+      if (fd_out < 0 && flag_module_preamble < 0)
+	/* We were given filenums.  We must dup both of them in case
+	   we have to rescan the preamble.  */
+	fd_in = dup (fd_in);
+      else
+	fd_out = fd_in;
+
+      fd_out = dup (fd_out);
+      if (fd_in >= 0)
+	from = fdopen (fd_in, "r+");
+      if (fd_out >= 0)
+	  to = fdopen (fd_out, "w+");
 
       if (!from || !to)
 	{
@@ -6488,12 +6511,12 @@ module_server::module_server (char *option)
     }
   else if (!errmsg)
     {
-      /* Split module_server at white-space.  No space-containing args
+      /* Split writable at white-space.  No space-containing args
 	 for you!  */
       char **argv = XALLOCAVEC (char *, count + 2);
       count = 0;
 
-      for (char *ptr = option; ; ptr++)
+      for (char *ptr = writable; ; ptr++)
 	{
 	  while (ISSPACE (*ptr))
 	    ptr++;
@@ -6508,7 +6531,10 @@ module_server::module_server (char *option)
 	}
       argv[count] = NULL;
 
-      pex = pex_init (PEX_USE_PIPES, argv[0], NULL);
+      /* Record just the command.  */
+      name = argv[0];
+
+      pex = pex_init (PEX_USE_PIPES, name, NULL);
       to = pex_input_pipe (pex, false);
       if (!to)
 	{
@@ -6517,26 +6543,24 @@ module_server::module_server (char *option)
 	}
       else
 	{
-	  char *argv0 = argv[0];
 	  int flags = PEX_SEARCH;
 
 	  if (defaulting && fullname != progname)
 	    {
 	      /* Prepend the invoking path.  */
-	      gcc_checking_assert (count == 1 && argv[0] == option);
+	      gcc_checking_assert (count == 1 && argv[0] == name);
 
 	      size_t dir_len = progname - fullname;
-	      argv0 = XNEWVEC (char, dir_len + len + 1);
-	      memcpy (argv0, fullname, dir_len);
-	      memcpy (argv0 + dir_len, argv[0], len + 1);
+	      argv[0] = XNEWVEC (char, dir_len + len + 1);
+	      memcpy (argv[0], fullname, dir_len);
+	      memcpy (argv[0] + dir_len, name, len + 1);
 	      flags = 0;
 	    }
-	  errmsg = pex_run (pex, flags, argv0, argv, NULL, NULL, &err);
+	  errmsg = pex_run (pex, flags, argv[0], argv, NULL, NULL, &err);
 	  if (!flags)
-	    free (argv0);
+	    free (argv[0]);
 	}
 
-      name = argv[0];
       if (!errmsg)
 	{
 	  from = pex_read_output (pex, false);
@@ -6604,12 +6628,12 @@ module_server::kill ()
 /* Create a new server connecting to OPTION.  */
 
 module_server *
-module_server::make (char *option)
+module_server::make (const char *option)
 {
   if (!option)
     if (char const *env = getenv ("CXX_MODULE_SERVER"))
       if (env[0])
-	option = xstrdup (env);
+	option = env;
 
   return new module_server (option);
 }
@@ -6739,7 +6763,15 @@ module_server::response_word (const char *option, ...)
     	-> BMI bmipath
     DONE module-name
     	-> OK
+    RESET
+        No response
  */
+
+void
+module_server::reset ()
+{
+  fprintf (to, "RESET\n");
+}
 
 /* Start handshake.  */
 
@@ -9268,22 +9300,60 @@ finish_module ()
   module_server::fini ();
 }
 
+void
+maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
+{
+  if (flag_module_preamble >= 0)
+    /* Something went wrong.  Don't try again.  */
+    return;
+
+  if (strcmp (main_input_filename, "-") == 0)
+    /* We cannot rescan stdin.  */
+    return;
+
+#ifdef HAVE_EXECV
+  /* Exec ourselves with a magic 'stop-here' option.  */
+  dump.push (NULL);
+  dump () && dump ("About to reexec with prefix length %u", count);
+  module_state::fini ();
+  module_server::fini (true);
+  /* The preprocessor does not leave files open, so we can ignore the
+     pfile arg.  */
+  
+  int argc = original_argc;
+  char **argv = XNEWVEC (char *, argc + 2 + 7);
+  memcpy (argv, original_argv, argc * sizeof (char *));
+
+  /* Use the extra space for the new option.  */
+  char *fpreamble = reinterpret_cast <char *> (&argv[argc + 2]);
+  argv[argc++] = fpreamble;
+  argv[argc] = NULL;
+
+  sprintf (fpreamble, "-fmodule-preamble=%d", count);
+
+  dump.pop (0);
+  /* It was all a bad dream ...  */
+  execv (argv[0], argv);
+  fatal_error (loc, "I was stung by a Space Bee");
+#endif
+}
+
 /* If CODE is a module option, handle it & return true.  Otherwise
    return false.  */
 
 bool
-handle_module_option (unsigned code, const char *arg, int)
+handle_module_option (unsigned code, const char *str, int num)
 {
   switch (opt_code (code))
     {
-    case OPT_EE:
-      /* Force atom.  */
-      flag_modules = -1;
+    case OPT_fmodule_server_:
+      module_server_name = str;
       return true;
 
-    case OPT_fmodule_server_:
-      /* I'ma gonna write into you.  */
-      module_server_name = const_cast<char *> (arg);
+    case OPT_fmodule_preamble_:
+      /* Force atom.  */
+      flag_modules = -1;
+      flag_module_preamble = num;
       return true;
 
     default:

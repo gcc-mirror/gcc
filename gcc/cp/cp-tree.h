@@ -6651,7 +6651,7 @@ extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
 extern void module_file_nest			(const char *name);
-extern unsigned atom_preamble_prefix_peek	(bool, cpp_reader *);
+extern unsigned atom_preamble_prefix_peek	(bool, bool, cpp_reader *);
 extern unsigned atom_preamble_prefix_next	(unsigned, cpp_reader *,
 						 unsigned, source_location);
 
@@ -6706,6 +6706,7 @@ extern void import_module (const cp_expr &, bool, tree);
 extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
+extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.c */

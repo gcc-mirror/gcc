@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options -EE }
+// { dg-additional-options -fmodule-preamble }
 
 // no imports, so no problem.
 #if 1

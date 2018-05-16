@@ -485,11 +485,11 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-A@var{question}=@var{answer} @gol
 -A-@var{question}@r{[}=@var{answer}@r{]} @gol
 -C  -CC  -D@var{macro}@r{[}=@var{defn}@r{]} @gol
--EE @gol
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset} -fmacro-prefix-map=@var{old}=@var{new}  @gol
+-finput-charset=@var{charset} -fmodule-prefix @gol
+-fmacro-prefix-map=@var{old}=@var{new}  @gol
 -fno-canonical-system-headers @gol -fpch-deps  -fpch-preprocess  @gol
 -fpreprocessed -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
@@ -29175,8 +29175,12 @@ one of the following forms:
 @itemize
 
 @item @samp{number}
-A file number associated with a streaming socket.  The spawning
-environment must have made available.
+A file number associated with a bidirectional streaming socket.  The spawning
+environment must have made this available.
+
+@item @samp{number,number}
+Two file numbers associated with read and write pipes.  The spawning
+environment must have made these available.
 
 @item @samp{[hostname]:port}
 A hostname, which defaults to @samp{localhost} and a port number to
@@ -29220,6 +29224,10 @@ source file being compiled.  Response is either `@samp{OK}
 
 @item @samp{HELLO} @var{$ver} @var{$srcbase} @var{$srcpath}
 FIXME
+
+@item @samp{RESET}
+This command resets the server.  There is no response.  It is used
+if a preamble rescan is needed.
 
 @item [@samp{DEFER}] @var{$query} @var{$module} [@var{$from}]
 A query for an import (including for a module implementation unit).
@@ -29323,7 +29331,7 @@ Usually importing a module will load minimal information, defering the
 bulk of the loading to the point at which name-lookup inspects a
 particular namespace-scope name.
 
-The @option{-EE} option may be added when preprocessing with
+The @option{-fmodule-prefix} option may be added when preprocessing with
 @option{-E}.  This causes preprocessing to terminate once the Atom
 preamble is processed.  Build systems may need to determine the set of
 imports a compilation needed, and this allows that without the expense

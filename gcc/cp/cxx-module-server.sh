@@ -76,10 +76,14 @@ while test "$#" != 0 ; do
     shift
 done
 
-while read -a args -p "moracle>" ; do
+# module oracle -> modacle
+while read -a args -p "modacle>" ; do
     $verbose && echo "$progname< ${args[@]}" >&2
     resp=
     case "${args[0]}" in
+	(RESET)
+	    main=""
+	    ;;
 	(HELLO)
 	    if test "${args[1]}" = $VERSION ; then
 		main="${args[2]}"

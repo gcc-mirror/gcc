@@ -147,6 +147,10 @@ unsigned local_tick;
 /* Random number for this compilation */
 HOST_WIDE_INT random_seed;
 
+/* The original argc & argv when invoked.  */
+int original_argc;
+char **original_argv;
+
 /* -f flags.  */
 
 /* When non-NULL, indicates that whenever space is allocated on the
@@ -2216,6 +2220,8 @@ toplev::main (int argc, char **argv)
      Increase stack size limits if possible.  */
   stack_limit_increase (64 * 1024 * 1024);
 
+  original_argc = argc;
+  original_argv = argv;
   expandargv (&argc, &argv);
 
   /* Initialization of GCC's environment, and diagnostics.  */

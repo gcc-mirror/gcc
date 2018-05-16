@@ -1,3 +1,43 @@
+2018-05-16  Nathan Sidwell  <nathan@acm.org>
+
+	Preamble rescanning!
+	gcc/
+	* configure.ac: Look for execv.
+	* config.in, configure: Rebuilt.
+	* toplev.h (original_argc, original_argv): Declare.
+	* toplev.c (original_argc, original_argv): Declare.
+	(toplev::main): Set them.
+	doc/invoke.texi (EE) Rename to ...
+	(fmodule-preamble): ... this.
+	(C++ Modules): Document RESET message.  Document N,N.
+	gcc/c-family/
+	* c.opt (EE): Rename to ...
+	(fmodule-preamble) ... here.
+	(fmodule-preamble=): New hidden option.
+	* c-ppoutput.c (scan_translation_unit): Use cpp_pop_directives.
+	gcc/cp/
+	* cp-tree.h (atom_preamble_prefix_peek): Add from-parser parm.
+	(maybe_repeat_preamble): Declare.
+	* cp-lang.c (atom_preamble_fsm): Adjust.
+	* cxx-module-server.sh (RESET): New command.
+	* lang-specs.h (@c++): Adjust EE->fmodule-preamble.
+	* lex.c (atom_preamble_prefix_peek): Add from-parser parm.  Check
+	flag_module_preamble.  Call maybe_repeat_preamble.
+	* module.c: #include "toplev.h"
+	(module_server_name): Is const.
+	(module_server::module_server): Copy command.  Support N,N for two
+	pipes.
+	(module_server::make): Adjust.
+	(module_server::reset): New.
+	(module_server::fini): Add reset arg.  Reset.
+	(maybe_repeat_preamble): New.
+	(handle_module_option): Adjust.
+	* parser.c (cp_parser_module_preamble): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-preamble-[1-8].C: Adjust options.
+	* g++.dg/modules/atom-rescan-1.C: New.
+	* g++.dg/modules/atom-no-rescan-1.C: New.
+
 2018-05-15  Nathan Sidwell  <nathan@acm.org>
 
 	Detect cpp directives at end of preamble
