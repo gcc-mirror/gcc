@@ -1,3 +1,8 @@
+2018-05-16  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (ipa_free_all_edge_args): Remove.
+	* ipa-prop.h (ipa_free_all_edge_args): Likewise.
+
 2018-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md (fma<mode>4): Change into expand pattern.
