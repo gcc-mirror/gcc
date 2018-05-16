@@ -1,3 +1,8 @@
+2018-05-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000.md (prefetch): Generate ISA 2.06 instructions
+	dcbt and dcbtstt with TH=16 if operands[2] is 0 and Power 8 or newer.
+
 2018-05-16  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_free_all_edge_args): Remove.
