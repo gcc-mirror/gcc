@@ -1,3 +1,18 @@
+2018-05-16  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (dwarf_FORM): New function.
+	(set_indirect_string): Use dwarf_FORM.
+	(reset_indirect_string): Likewise.
+	(size_of_die): Likewise.
+	(value_format): Likewise.
+	(output_die): Likewise.
+	(add_skeleton_AT_string): Likewise.
+	(output_macinfo_op): Likewise.
+	(index_string): Likewise.
+	(output_index_string_offset): Likewise.
+	(output_index_string): Likewise.
+	(count_index_strings): Likewise.
+
 2018-05-16  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000.md (prefetch): Generate ISA 2.06 instructions
