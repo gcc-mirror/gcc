@@ -571,10 +571,12 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
      function scope.  */
   if (current_function_decl != NULL_TREE)
     {
-      if (sym->ns->proc_name->backend_decl == current_function_decl
-	  || sym->result == sym)
+      if (sym->ns->proc_name
+	  && (sym->ns->proc_name->backend_decl == current_function_decl
+	      || sym->result == sym))
 	gfc_add_decl_to_function (decl);
-      else if (sym->ns->proc_name->attr.flavor == FL_LABEL)
+      else if (sym->ns->proc_name
+	       && sym->ns->proc_name->attr.flavor == FL_LABEL)
 	/* This is a BLOCK construct.  */
 	add_decl_as_local (decl);
       else
@@ -646,7 +648,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
     }
 
   /* Keep variables larger than max-stack-var-size off stack.  */
-  if (!sym->ns->proc_name->attr.recursive
+  if (sym->ns->proc_name && !sym->ns->proc_name->attr.recursive
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))
       && !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
 	 /* Put variable length auto array pointers always into stack.  */

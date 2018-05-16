@@ -2167,6 +2167,14 @@ gfc_sym_type (gfc_symbol * sym)
   if (sym->backend_decl && !sym->attr.function)
     return TREE_TYPE (sym->backend_decl);
 
+  if (sym->attr.result
+      && sym->ts.type == BT_CHARACTER
+      && sym->ts.u.cl->backend_decl == NULL_TREE
+      && sym->ns->proc_name
+      && sym->ns->proc_name->ts.u.cl
+      && sym->ns->proc_name->ts.u.cl->backend_decl != NULL_TREE)
+    sym->ts.u.cl->backend_decl = sym->ns->proc_name->ts.u.cl->backend_decl;
+
   if (sym->ts.type == BT_CHARACTER
       && ((sym->attr.function && sym->attr.is_bind_c)
 	  || (sym->attr.result
