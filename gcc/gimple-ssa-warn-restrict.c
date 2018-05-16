@@ -263,27 +263,29 @@ builtin_memref::builtin_memref (tree expr, tree size)
   else
     sizrange[1] = maxobjsize;
 
+  if (!DECL_P (base))
+    return;
+
+  /* If the offset could be in the range of the referenced object
+     constrain its bounds so neither exceeds those of the object.  */
+  if (offrange[0] < 0 && offrange[1] > 0)
+    offrange[0] = 0;
+
+  offset_int maxoff = maxobjsize;
   tree basetype = TREE_TYPE (base);
-  if (DECL_P (base) && TREE_CODE (basetype) == ARRAY_TYPE)
+  if (TREE_CODE (basetype) == ARRAY_TYPE
+      && ref
+      && array_at_struct_end_p (ref))
+    ;   /* Use the maximum possible offset for last member arrays.  */
+  else if (tree basesize = TYPE_SIZE_UNIT (basetype))
+    maxoff = wi::to_offset (basesize);
+
+  if (offrange[0] >= 0)
     {
-      /* If the offset could be in range of the referenced object
-	 constrain its bounds so neither exceeds those of the object.  */
-      if (offrange[0] < 0 && offrange[1] > 0)
-	offrange[0] = 0;
-
-      offset_int maxoff = maxobjsize;
-      if (ref && array_at_struct_end_p (ref))
-	;   /* Use the maximum possible offset for last member arrays.  */
-      else if (tree basesize = TYPE_SIZE_UNIT (basetype))
-	maxoff = wi::to_offset (basesize);
-
-      if (offrange[0] >= 0)
-	{
-	  if (offrange[1] < 0)
-	    offrange[1] = offrange[0] <= maxoff ? maxoff : maxobjsize;
-	  else if (offrange[0] <= maxoff && offrange[1] > maxoff)
-	    offrange[1] = maxoff;
-	}
+      if (offrange[1] < 0)
+	offrange[1] = offrange[0] <= maxoff ? maxoff : maxobjsize;
+      else if (offrange[0] <= maxoff && offrange[1] > maxoff)
+	offrange[1] = maxoff;
     }
 }
 

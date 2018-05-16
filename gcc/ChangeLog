@@ -1,5 +1,11 @@
 2018-05-15  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/85753
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): Handle
+	RECORD_TYPE in addition to ARRAY_TYPE.
+
+2018-05-15  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/85643
 	* calls.c (get_attr_nonstring_decl): Handle MEM_REF.
 
