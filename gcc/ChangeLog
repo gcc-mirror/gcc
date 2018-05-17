@@ -1,3 +1,12 @@
+2018-05-17  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2018-05-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/85655
+	* ipa-cp.c (intersect_with_plats): Check that the lattice contains
+	single const.
+
 2018-05-01  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
