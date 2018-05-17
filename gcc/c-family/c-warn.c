@@ -98,10 +98,10 @@ overflow_warning (location_t loc, tree value, tree expr)
 
     case REAL_CST:
       warnfmt = (expr
-		 ? G_ ("floating point overflow in expression %qE "
-		       "of type %qT results in %qE")
-		 : G_ ("floating point overflow in expression of type %qT "
-		       "results in %qE"));
+		 ? G_("floating point overflow in expression %qE "
+		      "of type %qT results in %qE")
+		 : G_("floating point overflow in expression of type %qT "
+		      "results in %qE"));
       break;
 
     case FIXED_CST:
