@@ -1,3 +1,11 @@
+2018-05-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gimple-parser.c: Include internal-fn.h.
+	(c_parser_gimple_statement): Treat a leading CPP_DOT as a call.
+	(c_parser_gimple_call_internal): New function.
+	(c_parser_gimple_postfix_expression): Use it to handle CPP_DOT.
+	Fix typos in comment.
+
 2018-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85662

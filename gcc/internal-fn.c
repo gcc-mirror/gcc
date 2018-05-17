@@ -64,6 +64,26 @@ const int internal_fn_flags_array[] = {
   0
 };
 
+/* Return the internal function called NAME, or IFN_LAST if there's
+   no such function.  */
+
+internal_fn
+lookup_internal_fn (const char *name)
+{
+  typedef hash_map<nofree_string_hash, internal_fn> name_to_fn_map_type;
+  static name_to_fn_map_type *name_to_fn_map;
+
+  if (!name_to_fn_map)
+    {
+      name_to_fn_map = new name_to_fn_map_type (IFN_LAST);
+      for (unsigned int i = 0; i < IFN_LAST; ++i)
+	name_to_fn_map->put (internal_fn_name (internal_fn (i)),
+			     internal_fn (i));
+    }
+  internal_fn *entry = name_to_fn_map->get (name);
+  return entry ? *entry : IFN_LAST;
+}
+
 /* Fnspec of each internal function, indexed by function number.  */
 const_tree internal_fn_fnspec_array[IFN_LAST + 1];
 

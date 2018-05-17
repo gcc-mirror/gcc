@@ -1,3 +1,10 @@
+2018-05-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/gimplefe-28.c: New test.
+	* gcc.dg/asan/use-after-scope-9.c: Adjust expected output for
+	internal function calls.
+	* gcc.dg/goacc/loop-processing-1.c: Likewise.
+
 2018-05-17  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/plugin/ggcplug.c (plugin_init): Do not use

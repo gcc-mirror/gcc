@@ -1,5 +1,16 @@
 2018-05-17  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* internal-fn.h (lookup_internal_fn): Declare
+	* internal-fn.c (lookup_internal_fn): New function.
+	* gimple.c (gimple_build_call_from_tree): Handle calls to
+	internal functions.
+	* gimple-pretty-print.c (dump_gimple_call): Print "." before
+	internal function names.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-scopedtables.c (expr_hash_elt::print): Likewise.
+
+2018-05-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gimple-fold.h (gimple_build): Make the function forms take
 	combined_fn rather than built_in_function.
 	(gimple_simplify): Likewise.

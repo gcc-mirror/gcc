@@ -2262,7 +2262,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       if (CALL_EXPR_FN (node) != NULL_TREE)
 	print_call_name (pp, CALL_EXPR_FN (node), flags);
       else
-	pp_string (pp, internal_fn_name (CALL_EXPR_IFN (node)));
+	{
+	  pp_dot (pp);
+	  pp_string (pp, internal_fn_name (CALL_EXPR_IFN (node)));
+	}
 
       /* Print parameters.  */
       pp_space (pp);
