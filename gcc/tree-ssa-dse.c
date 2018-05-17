@@ -577,6 +577,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
       else
 	defvar = gimple_vdef (temp);
       auto_vec<gimple *, 10> defs;
+      gimple *phi_def = NULL;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
 	  /* Limit stmt walking.  */
@@ -600,7 +601,10 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 		 processing.  */
 	      if (!bitmap_bit_p (visited,
 				 SSA_NAME_VERSION (PHI_RESULT (use_stmt))))
-		defs.safe_push (use_stmt);
+		{
+		  defs.safe_push (use_stmt);
+		  phi_def = use_stmt;
+		}
 	    }
 	  /* If the statement is a use the store is not dead.  */
 	  else if (ref_maybe_used_by_stmt_p (use_stmt, ref))
@@ -657,15 +661,31 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	  return DSE_STORE_DEAD;
 	}
 
-      /* Process defs and remove paths starting with a kill from further
-         processing.  */
+      /* Process defs and remove those we need not process further.  */
       for (unsigned i = 0; i < defs.length (); ++i)
-	if (stmt_kills_ref_p (defs[i], ref))
-	  {
-	    if (by_clobber_p && !gimple_clobber_p (defs[i]))
-	      *by_clobber_p = false;
+	{
+	  gimple *def = defs[i];
+	  gimple *use_stmt;
+	  use_operand_p use_p;
+	  /* If the path to check starts with a kill we do not need to
+	     process it further.
+	     ???  With byte tracking we need only kill the bytes currently
+	     live.  */
+	  if (stmt_kills_ref_p (def, ref))
+	    {
+	      if (by_clobber_p && !gimple_clobber_p (def))
+		*by_clobber_p = false;
+	      defs.unordered_remove (i);
+	    }
+	  /* In addition to kills we can remove defs whose only use
+	     is another def in defs.  That can only ever be PHIs of which
+	     we track a single for simplicity reasons (we fail for multiple
+	     PHIs anyways).  */
+	  else if (gimple_code (def) != GIMPLE_PHI
+		   && single_imm_use (gimple_vdef (def), &use_p, &use_stmt)
+		   && use_stmt == phi_def)
 	    defs.unordered_remove (i);
-	  }
+	}
 
       /* If all defs kill the ref we are done.  */
       if (defs.is_empty ())
