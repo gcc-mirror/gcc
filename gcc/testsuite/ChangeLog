@@ -1,3 +1,8 @@
+2018-05-17  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/switch-qi.c: New.
+	* gcc.target/riscv/switch-si.c: New.
+
 2018-05-17  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/85698

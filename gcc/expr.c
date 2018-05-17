@@ -11782,11 +11782,26 @@ do_tablejump (rtx index, machine_mode mode, rtx range, rtx table_label,
     emit_cmp_and_jump_insns (index, range, GTU, NULL_RTX, mode, 1,
 			     default_label, default_probability);
 
-
   /* If index is in range, it must fit in Pmode.
      Convert to Pmode so we can index with it.  */
   if (mode != Pmode)
-    index = convert_to_mode (Pmode, index, 1);
+    {
+      unsigned int width;
+
+      /* We know the value of INDEX is between 0 and RANGE.  If we have a
+	 sign-extended subreg, and RANGE does not have the sign bit set, then
+	 we have a value that is valid for both sign and zero extension.  In
+	 this case, we get better code if we sign extend.  */
+      if (GET_CODE (index) == SUBREG
+	  && SUBREG_PROMOTED_VAR_P (index)
+	  && SUBREG_PROMOTED_SIGNED_P (index)
+	  && ((width = GET_MODE_PRECISION (as_a <scalar_int_mode> (mode)))
+	      <= HOST_BITS_PER_WIDE_INT)
+	  && ! (UINTVAL (range) & (HOST_WIDE_INT_1U << (width - 1))))
+	index = convert_to_mode (Pmode, index, 0);
+      else
+	index = convert_to_mode (Pmode, index, 1);
+    }
 
   /* Don't let a MEM slip through, because then INDEX that comes
      out of PIC_CASE_VECTOR_ADDRESS won't be a valid address,

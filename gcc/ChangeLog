@@ -1,3 +1,13 @@
+2018-05-17  Jim Wilson  <jimw@sifive.com>
+
+	* expr.c (do_tablejump): When converting index to Pmode, if we have a
+	sign extended promoted subreg, and the range does not have the sign bit
+	set, then do a sign extend.
+
+	* config/riscv/riscv.c (riscv_extend_comparands): In unsigned QImode
+	test, check for sign extended subreg and/or constant operands, and
+	do a sign extend in that case.
+
 2018-05-17  Steve Ellcey  <sellcey@cavium.com>
 
 	* config/aarch64/thunderx2t99.md (thunderx2t99_ls_both): Delete.
