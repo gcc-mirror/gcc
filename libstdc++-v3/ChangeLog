@@ -1,5 +1,10 @@
 2018-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/85818
+	* src/filesystem/path.cc (path::preferred_separator): Add used
+	attribute.
+	* testsuite/experimental/filesystem/path/preferred_separator.cc: New.
+
 	PR libstdc++/85812
 	* libsupc++/cxxabi_init_exception.h (__cxa_free_exception): Declare.
 	* libsupc++/exception_ptr.h (make_exception_ptr) [__cpp_exceptions]:
