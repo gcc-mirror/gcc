@@ -1,6 +1,10 @@
 2018-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85323
+	* config/i386/i386.c (ix86_fold_builtin): Handle masked shifts
+	even if the mask is not all ones.
+
+	PR target/85323
 	* config/i386/i386.c (ix86_fold_builtin): Fold shift builtins by
 	vector.
 	(ix86_gimple_fold_builtin): Likewise.
