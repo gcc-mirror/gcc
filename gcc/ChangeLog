@@ -1,3 +1,13 @@
+2018-05-17  James Greenhalgh  <james.greenhalgh@arm.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init): Modify
+	code generation for cases where splatting a value is not useful.
+	* simplify-rtx.c (simplify_ternary_operation): Simplify
+	vec_merge across a vec_duplicate and a paradoxical subreg forming a vector
+	mode to a vec_concat.
+
+
 2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* config.gcc: Support "goldmont-plus".
