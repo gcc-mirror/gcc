@@ -1,3 +1,8 @@
+2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/arm/arm_cmse.h (cmse_nsfptr_create, cmse_is_nsfptr): Remove
+	#include <stdint.h>.  Replace intptr_t with __INTPTR_TYPE__.
+
 2018-05-17  Pat Haugen  <pthaugen@us.ibm.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>
 

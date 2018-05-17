@@ -1,3 +1,8 @@
+2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/arm/cmse.c (cmse_check_address_range): Replace
+	UINTPTR_MAX with __UINTPTR_MAX__ and uintptr_t with __UINTPTR_TYPE__.
+
 2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* config/i386/cpuinfo.h (processor_types): Add INTEL_GOLDMONT_PLUS.
