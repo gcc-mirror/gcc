@@ -1,3 +1,8 @@
+2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
+	
+	* gcc.target/i386/builtin_target.c: Test goldmont-plus.
+	* gcc.target/i386/funcspec-56.inc: Tests for arch=goldmont-plus.
+
 2018-05-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85757

@@ -145,6 +145,10 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      /* Goldmont.  */
 	      __cpu_model.__cpu_type = INTEL_GOLDMONT;
 	      break;
+	    case 0x7a:
+	      /* Goldmont Plus.  */
+	      __cpu_model.__cpu_type = INTEL_GOLDMONT_PLUS;
+	      break;
 	    case 0x57:
 	      /* Knights Landing.  */
 	      __cpu_model.__cpu_type = INTEL_KNL;

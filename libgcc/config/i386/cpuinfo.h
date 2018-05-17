@@ -49,6 +49,7 @@ enum processor_types
   AMDFAM17H,
   INTEL_KNM,
   INTEL_GOLDMONT,
+  INTEL_GOLDMONT_PLUS,
   CPU_TYPE_MAX
 };
 

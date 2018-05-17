@@ -1,3 +1,24 @@
+2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config.gcc: Support "goldmont-plus".
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	"goldmont-plus".
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_GOLDMONT_PLUS.
+	* config/i386/i386.c (m_GOLDMONT_PLUS): Define.
+	(processor_target_table): Add "goldmont-plus".
+	(PTA_GOLDMONT_PLUS): Define.
+	(ix86_lea_outperforms): Add TARGET_GOLDMONT_PLUS.
+	(get_builtin_code_for_version): Handle PROCESSOR_GOLDMONT_PLUS.
+	(fold_builtin_cpu): Add M_INTEL_GOLDMONT_PLUS.
+	(fold_builtin_cpu): Add "goldmont-plus".
+	(ix86_add_stmt_cost): Add TARGET_GOLDMONT_PLUS.
+	(ix86_option_override_internal): Add "goldmont-plus".
+	* config/i386/i386.h (processor_costs): Define TARGET_GOLDMONT_PLUS.
+	(processor_type): Add PROCESSOR_GOLDMONT_PLUS.
+	* config/i386/x86-tune.def: Add m_GOLDMONT_PLUS.
+	* doc/invoke.texi: Add goldmont-plus as x86 -march=/-mtune= CPU type.
+
 2018-05-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85757

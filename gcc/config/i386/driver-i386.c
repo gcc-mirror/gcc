@@ -764,6 +764,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  /* Goldmont.  */
 	  cpu = "goldmont";
 	  break;
+	case 0x7a:
+	  /* Goldmont Plus.  */
+	  cpu = "goldmont-plus";
+	  break;
 	case 0x0f:
 	  /* Merom.  */
 	case 0x17:
@@ -868,7 +872,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		cpu = "sandybridge";
 	      else if (has_sse4_2)
 		{
-		  if (has_xsave)
+		  if (has_sgx)
+		    /* Assume Goldmont Plus.  */
+		    cpu = "goldmont-plus";
+		  else if (has_xsave)
 		    /* Assume Goldmont.  */
 		    cpu = "goldmont";
 		  else if (has_movbe)
