@@ -1,3 +1,16 @@
+2018-05-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gimple-fold.h (gimple_build): Make the function forms take
+	combined_fn rather than built_in_function.
+	(gimple_simplify): Likewise.
+	* gimple-match-head.c (gimple_simplify): Likewise.
+	* gimple-fold.c (gimple_build): Likewise.
+	* tree-vect-loop.c (get_initial_def_for_reduction): Use gimple_build
+	rather than gimple_build_call_internal.
+	(get_initial_defs_for_reduction): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_live_operation): Likewise.
+
 2018-05-17  Martin Liska  <mliska@suse.cz>
 
 	* gimple-ssa-sprintf.c (format_directive): Do not use

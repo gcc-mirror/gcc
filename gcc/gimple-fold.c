@@ -7204,14 +7204,20 @@ gimple_build (gimple_seq *seq, location_t loc,
    statements possibly defining it to SEQ.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc,
-	      enum built_in_function fn, tree type, tree arg0)
+gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
+	      tree type, tree arg0)
 {
   tree res = gimple_simplify (fn, type, arg0, seq, gimple_build_valueize);
   if (!res)
     {
-      tree decl = builtin_decl_implicit (fn);
-      gimple *stmt = gimple_build_call (decl, 1, arg0);
+      gcall *stmt;
+      if (internal_fn_p (fn))
+	stmt = gimple_build_call_internal (as_internal_fn (fn), 1, arg0);
+      else
+	{
+	  tree decl = builtin_decl_implicit (as_builtin_fn (fn));
+	  stmt = gimple_build_call (decl, 1, arg0);
+	}
       if (!VOID_TYPE_P (type))
 	{
 	  res = create_tmp_reg_or_ssa_name (type);
@@ -7230,14 +7236,20 @@ gimple_build (gimple_seq *seq, location_t loc,
    statements possibly defining it to SEQ.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc,
-	      enum built_in_function fn, tree type, tree arg0, tree arg1)
+gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
+	      tree type, tree arg0, tree arg1)
 {
   tree res = gimple_simplify (fn, type, arg0, arg1, seq, gimple_build_valueize);
   if (!res)
     {
-      tree decl = builtin_decl_implicit (fn);
-      gimple *stmt = gimple_build_call (decl, 2, arg0, arg1);
+      gcall *stmt;
+      if (internal_fn_p (fn))
+	stmt = gimple_build_call_internal (as_internal_fn (fn), 2, arg0, arg1);
+      else
+	{
+	  tree decl = builtin_decl_implicit (as_builtin_fn (fn));
+	  stmt = gimple_build_call (decl, 2, arg0, arg1);
+	}
       if (!VOID_TYPE_P (type))
 	{
 	  res = create_tmp_reg_or_ssa_name (type);
@@ -7256,16 +7268,22 @@ gimple_build (gimple_seq *seq, location_t loc,
    statements possibly defining it to SEQ.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc,
-	      enum built_in_function fn, tree type,
-	      tree arg0, tree arg1, tree arg2)
+gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
+	      tree type, tree arg0, tree arg1, tree arg2)
 {
   tree res = gimple_simplify (fn, type, arg0, arg1, arg2,
 			      seq, gimple_build_valueize);
   if (!res)
     {
-      tree decl = builtin_decl_implicit (fn);
-      gimple *stmt = gimple_build_call (decl, 3, arg0, arg1, arg2);
+      gcall *stmt;
+      if (internal_fn_p (fn))
+	stmt = gimple_build_call_internal (as_internal_fn (fn),
+					   3, arg0, arg1, arg2);
+      else
+	{
+	  tree decl = builtin_decl_implicit (as_builtin_fn (fn));
+	  stmt = gimple_build_call (decl, 3, arg0, arg1, arg2);
+	}
       if (!VOID_TYPE_P (type))
 	{
 	  res = create_tmp_reg_or_ssa_name (type);

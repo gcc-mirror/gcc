@@ -478,55 +478,53 @@ gimple_simplify (enum tree_code code, tree type,
   return maybe_push_res_to_seq (rcode, type, ops, seq);
 }
 
-/* Builtin function with one argument.  */
+/* Builtin or internal function with one argument.  */
 
 tree
-gimple_simplify (enum built_in_function fn, tree type,
+gimple_simplify (combined_fn fn, tree type,
 		 tree arg0,
 		 gimple_seq *seq, tree (*valueize)(tree))
 {
   if (constant_for_folding (arg0))
     {
-      tree res = fold_const_call (as_combined_fn (fn), type, arg0);
+      tree res = fold_const_call (fn, type, arg0);
       if (res && CONSTANT_CLASS_P (res))
 	return res;
     }
 
   code_helper rcode;
   tree ops[3] = {};
-  if (!gimple_simplify (&rcode, ops, seq, valueize,
-			as_combined_fn (fn), type, arg0))
+  if (!gimple_simplify (&rcode, ops, seq, valueize, fn, type, arg0))
     return NULL_TREE;
   return maybe_push_res_to_seq (rcode, type, ops, seq);
 }
 
-/* Builtin function with two arguments.  */
+/* Builtin or internal function with two arguments.  */
 
 tree
-gimple_simplify (enum built_in_function fn, tree type,
+gimple_simplify (combined_fn fn, tree type,
 		 tree arg0, tree arg1,
 		 gimple_seq *seq, tree (*valueize)(tree))
 {
   if (constant_for_folding (arg0)
       && constant_for_folding (arg1))
     {
-      tree res = fold_const_call (as_combined_fn (fn), type, arg0, arg1);
+      tree res = fold_const_call (fn, type, arg0, arg1);
       if (res && CONSTANT_CLASS_P (res))
 	return res;
     }
 
   code_helper rcode;
   tree ops[3] = {};
-  if (!gimple_simplify (&rcode, ops, seq, valueize,
-			as_combined_fn (fn), type, arg0, arg1))
+  if (!gimple_simplify (&rcode, ops, seq, valueize, fn, type, arg0, arg1))
     return NULL_TREE;
   return maybe_push_res_to_seq (rcode, type, ops, seq);
 }
 
-/* Builtin function with three arguments.  */
+/* Builtin or internal function with three arguments.  */
 
 tree
-gimple_simplify (enum built_in_function fn, tree type,
+gimple_simplify (combined_fn fn, tree type,
 		 tree arg0, tree arg1, tree arg2,
 		 gimple_seq *seq, tree (*valueize)(tree))
 {
@@ -534,7 +532,7 @@ gimple_simplify (enum built_in_function fn, tree type,
       && constant_for_folding (arg1)
       && constant_for_folding (arg2))
     {
-      tree res = fold_const_call (as_combined_fn (fn), type, arg0, arg1, arg2);
+      tree res = fold_const_call (fn, type, arg0, arg1, arg2);
       if (res && CONSTANT_CLASS_P (res))
 	return res;
     }
@@ -542,7 +540,7 @@ gimple_simplify (enum built_in_function fn, tree type,
   code_helper rcode;
   tree ops[3] = {};
   if (!gimple_simplify (&rcode, ops, seq, valueize,
-			as_combined_fn (fn), type, arg0, arg1, arg2))
+			fn, type, arg0, arg1, arg2))
     return NULL_TREE;
   return maybe_push_res_to_seq (rcode, type, ops, seq);
 }
