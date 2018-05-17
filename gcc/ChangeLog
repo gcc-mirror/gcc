@@ -1,3 +1,38 @@
+2018-05-17  Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/thunderx2t99.md (thunderx2t99_ls_both): Delete.
+	(thunderx2t99_multiple): Delete psuedo-units from used cpus.
+	Add untyped.
+	(thunderx2t99_alu_shift): Remove alu_shift_reg, alus_shift_reg.
+	Change logics_shift_reg to logics_shift_imm.
+	(thunderx2t99_fp_loadpair_basic): Delete.
+	(thunderx2t99_fp_storepair_basic): Delete.
+	(thunderx2t99_asimd_int): Add neon_sub and neon_sub_q types.
+	(thunderx2t99_asimd_polynomial): Delete.
+	(thunderx2t99_asimd_fp_simple): Add neon_fp_mul_s_scalar_q
+	and neon_fp_mul_d_scalar_q.
+	(thunderx2t99_asimd_fp_conv): Add *int_to_fp* types.
+	(thunderx2t99_asimd_misc): Delete neon_dup and neon_dup_q.
+	(thunderx2t99_asimd_recip_step): Add missing *sqrt* types.
+	(thunderx2t99_asimd_lut): Add missing tbl types.
+	(thunderx2t99_asimd_ext): Delete.
+	(thunderx2t99_asimd_load1_1_mult): Delete.
+	(thunderx2t99_asimd_load1_2_mult): Delete.
+	(thunderx2t99_asimd_load1_ldp): New.
+	(thunderx2t99_asimd_load1): New.
+	(thunderx2t99_asimd_load2): Add missing *load2* types.
+	(thunderx2t99_asimd_load3): New.
+	(thunderx2t99_asimd_load4): New.
+	(thunderx2t99_asimd_store1_1_mult): Delete.
+	(thunderx2t99_asimd_store1_2_mult): Delete.
+	(thunderx2t99_asimd_store2_mult): Delete.
+	(thunderx2t99_asimd_store2_onelane): Delete.
+	(thunderx2t99_asimd_store_stp): New.
+	(thunderx2t99_asimd_store1): New.
+	(thunderx2t99_asimd_store2): New.
+	(thunderx2t99_asimd_store3): New.
+	(thunderx2t99_asimd_store4): New.
+
 2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/arm/arm_cmse.h (cmse_nsfptr_create, cmse_is_nsfptr): Remove

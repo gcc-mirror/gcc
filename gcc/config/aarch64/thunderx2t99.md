@@ -54,8 +54,6 @@
 (define_reservation "thunderx2t99_ls01" "thunderx2t99_ls0|thunderx2t99_ls1")
 (define_reservation "thunderx2t99_f01" "thunderx2t99_f0|thunderx2t99_f1")
 
-(define_reservation "thunderx2t99_ls_both" "thunderx2t99_ls0+thunderx2t99_ls1")
-
 ; A load with delay in the ls0/ls1 pipes.
 (define_reservation "thunderx2t99_l0delay" "thunderx2t99_ls0,\
 				      thunderx2t99_ls0d1,thunderx2t99_ls0d2,\
@@ -86,12 +84,10 @@
 
 (define_insn_reservation "thunderx2t99_multiple" 1
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "multiple"))
+       (eq_attr "type" "multiple,untyped"))
   "thunderx2t99_i0+thunderx2t99_i1+thunderx2t99_i2+thunderx2t99_ls0+\
    thunderx2t99_ls1+thunderx2t99_sd+thunderx2t99_i1m1+thunderx2t99_i1m2+\
-   thunderx2t99_i1m3+thunderx2t99_ls0d1+thunderx2t99_ls0d2+thunderx2t99_ls0d3+\
-   thunderx2t99_ls1d1+thunderx2t99_ls1d2+thunderx2t99_ls1d3+thunderx2t99_f0+\
-   thunderx2t99_f1")
+   thunderx2t99_i1m3+thunderx2t99_f0+thunderx2t99_f1")
 
 ;; Integer arithmetic/logic instructions.
 
@@ -113,9 +109,9 @@
 
 (define_insn_reservation "thunderx2t99_alu_shift" 2
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "alu_shift_imm,alu_ext,alu_shift_reg,\
-			alus_shift_imm,alus_ext,alus_shift_reg,\
-			logic_shift_imm,logics_shift_reg"))
+       (eq_attr "type" "alu_shift_imm,alu_ext,\
+			alus_shift_imm,alus_ext,\
+			logic_shift_imm,logics_shift_imm"))
   "thunderx2t99_i012,thunderx2t99_i012")
 
 (define_insn_reservation "thunderx2t99_div" 13
@@ -228,20 +224,10 @@
        (eq_attr "type" "f_loads,f_loadd"))
   "thunderx2t99_ls01")
 
-(define_insn_reservation "thunderx2t99_fp_loadpair_basic" 4
-  (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_load1_2reg"))
-  "thunderx2t99_ls01*2")
-
 (define_insn_reservation "thunderx2t99_fp_store_basic" 1
   (and (eq_attr "tune" "thunderx2t99")
        (eq_attr "type" "f_stores,f_stored"))
   "thunderx2t99_ls01,thunderx2t99_sd")
-
-(define_insn_reservation "thunderx2t99_fp_storepair_basic" 1
-  (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_store1_2reg"))
-  "thunderx2t99_ls01,(thunderx2t99_ls01+thunderx2t99_sd),thunderx2t99_sd")
 
 ;; ASIMD integer instructions.
 
@@ -251,6 +237,7 @@
 			neon_arith_acc,neon_arith_acc_q,\
 			neon_abs,neon_abs_q,\
 			neon_add,neon_add_q,\
+			neon_sub,neon_sub_q,\
 			neon_neg,neon_neg_q,\
 			neon_add_long,neon_add_widen,\
 			neon_add_halve,neon_add_halve_q,\
@@ -301,11 +288,6 @@
        (eq_attr "type" "neon_logic,neon_logic_q"))
   "thunderx2t99_f01")
 
-(define_insn_reservation "thunderx2t99_asimd_polynomial" 5
-  (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_mul_d_long"))
-  "thunderx2t99_f01")
-
 ;; ASIMD floating-point instructions.
 
 (define_insn_reservation "thunderx2t99_asimd_fp_simple" 5
@@ -332,6 +314,7 @@
 			neon_fp_reduc_add_s_q,neon_fp_reduc_add_d_q,\
 			neon_fp_mul_s,neon_fp_mul_d,\
 			neon_fp_mul_s_q,neon_fp_mul_d_q,\
+			neon_fp_mul_s_scalar_q,neon_fp_mul_d_scalar_q,\
 			neon_fp_mla_s,neon_fp_mla_d,\
 			neon_fp_mla_s_q,neon_fp_mla_d_q"))
   "thunderx2t99_f01")
@@ -341,6 +324,8 @@
        (eq_attr "type" "neon_fp_cvt_widen_s,neon_fp_cvt_narrow_d_q,\
 			neon_fp_to_int_s,neon_fp_to_int_d,\
 			neon_fp_to_int_s_q,neon_fp_to_int_d_q,\
+			neon_int_to_fp_s,neon_int_to_fp_d,\
+			neon_int_to_fp_s_q,neon_int_to_fp_d_q,\
 			neon_fp_round_s,neon_fp_round_d,\
 			neon_fp_round_s_q,neon_fp_round_d_q"))
   "thunderx2t99_f01")
@@ -373,7 +358,6 @@
 			neon_fp_recpx_s,neon_fp_recpx_d,\
 			neon_fp_recpx_s_q,neon_fp_recpx_d_q,\
 			neon_rev,neon_rev_q,\
-			neon_dup,neon_dup_q,\
 			neon_permute,neon_permute_q"))
   "thunderx2t99_f01")
 
@@ -381,23 +365,23 @@
   (and (eq_attr "tune" "thunderx2t99")
        (eq_attr "type" "neon_fp_recps_s,neon_fp_recps_s_q,\
 			neon_fp_recps_d,neon_fp_recps_d_q,\
+			neon_fp_sqrt_s,neon_fp_sqrt_s_q,\
+			neon_fp_sqrt_d,neon_fp_sqrt_d_q,\
+			neon_fp_rsqrte_s, neon_fp_rsqrte_s_q,\
+			neon_fp_rsqrte_d, neon_fp_rsqrte_d_q,\
 			neon_fp_rsqrts_s, neon_fp_rsqrts_s_q,\
 			neon_fp_rsqrts_d, neon_fp_rsqrts_d_q"))
   "thunderx2t99_f01")
 
 (define_insn_reservation "thunderx2t99_asimd_lut" 8
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_tbl1,neon_tbl1_q,neon_tbl2_q"))
+       (eq_attr "type" "neon_tbl1,neon_tbl1_q,neon_tbl2,neon_tbl2_q,\
+			neon_tbl3,neon_tbl3_q,neon_tbl4,neon_tbl4_q"))
   "thunderx2t99_f01")
 
 (define_insn_reservation "thunderx2t99_asimd_elt_to_gr" 6
   (and (eq_attr "tune" "thunderx2t99")
        (eq_attr "type" "neon_to_gp,neon_to_gp_q"))
-  "thunderx2t99_f01")
-
-(define_insn_reservation "thunderx2t99_asimd_ext" 7
-  (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_shift_imm_narrow_q,neon_sat_shift_imm_narrow_q"))
   "thunderx2t99_f01")
 
 ;; ASIMD load instructions.
@@ -406,15 +390,18 @@
 ; but the cycle timing of unit allocation is not necessarily accurate (because
 ; insns are split into uops, and those may be issued out-of-order).
 
-(define_insn_reservation "thunderx2t99_asimd_load1_1_mult" 4
+(define_insn_reservation "thunderx2t99_asimd_load1_ldp" 5
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_load1_1reg,neon_load1_1reg_q"))
-  "thunderx2t99_ls01")
+       (eq_attr "type" "neon_ldp,neon_ldp_q"))
+  "thunderx2t99_i012,thunderx2t99_ls01")
 
-(define_insn_reservation "thunderx2t99_asimd_load1_2_mult" 4
+(define_insn_reservation "thunderx2t99_asimd_load1" 4
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_load1_2reg,neon_load1_2reg_q"))
-  "thunderx2t99_ls_both")
+       (eq_attr "type" "neon_load1_1reg,neon_load1_1reg_q,\
+			neon_load1_2reg,neon_load1_2reg_q,\
+			neon_load1_3reg,neon_load1_3reg_q,\
+			neon_load1_4reg,neon_load1_4reg_q"))
+  "thunderx2t99_ls01")
 
 (define_insn_reservation "thunderx2t99_asimd_load1_onelane" 5
   (and (eq_attr "tune" "thunderx2t99")
@@ -431,36 +418,59 @@
        (eq_attr "type" "neon_load2_2reg,neon_load2_2reg_q,\
 			neon_load2_one_lane,neon_load2_one_lane_q,\
 			neon_load2_all_lanes,neon_load2_all_lanes_q"))
-  "(thunderx2t99_l0delay,thunderx2t99_f01)|(thunderx2t99_l1delay,\
-    thunderx2t99_f01)")
+  "thunderx2t99_l01delay,thunderx2t99_f01")
+
+(define_insn_reservation "thunderx2t99_asimd_load3" 7
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "neon_load3_3reg,neon_load3_3reg_q,\
+			neon_load3_one_lane,neon_load3_one_lane_q,\
+			neon_load3_all_lanes,neon_load3_all_lanes_q"))
+  "thunderx2t99_l01delay,thunderx2t99_f01")
+
+(define_insn_reservation "thunderx2t99_asimd_load4" 8
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "neon_load4_4reg,neon_load4_4reg_q,\
+			neon_load4_one_lane,neon_load4_one_lane_q,\
+			neon_load4_all_lanes,neon_load4_all_lanes_q"))
+  "thunderx2t99_l01delay,thunderx2t99_f01")
 
 ;; ASIMD store instructions.
 
 ; Same note applies as for ASIMD load instructions.
 
-(define_insn_reservation "thunderx2t99_asimd_store1_1_mult" 1
+(define_insn_reservation "thunderx2t99_asimd_store_stp" 1
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_store1_1reg,neon_store1_1reg_q"))
-  "thunderx2t99_ls01")
+       (eq_attr "type" "neon_stp,neon_stp_q"))
+  "thunderx2t99_ls01,thunderx2t99_sd")
 
-(define_insn_reservation "thunderx2t99_asimd_store1_2_mult" 1
+(define_insn_reservation "thunderx2t99_asimd_store1" 1
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_store1_2reg,neon_store1_2reg_q"))
-  "thunderx2t99_ls_both")
+       (eq_attr "type" "neon_store1_1reg,neon_store1_1reg_q,\
+			neon_store1_2reg,neon_store1_2reg_q,\
+			neon_store1_3reg,neon_store1_4reg"))
+  "thunderx2t99_ls01")
 
 (define_insn_reservation "thunderx2t99_asimd_store1_onelane" 1
   (and (eq_attr "tune" "thunderx2t99")
        (eq_attr "type" "neon_store1_one_lane,neon_store1_one_lane_q"))
   "thunderx2t99_ls01,thunderx2t99_f01")
 
-(define_insn_reservation "thunderx2t99_asimd_store2_mult" 1
+(define_insn_reservation "thunderx2t99_asimd_store2" 1
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_store2_2reg,neon_store2_2reg_q"))
-  "thunderx2t99_ls_both,thunderx2t99_f01")
+       (eq_attr "type" "neon_store2_2reg,neon_store2_2reg_q,\
+			neon_store2_one_lane,neon_store2_one_lane_q"))
+  "thunderx2t99_ls01,thunderx2t99_f01")
 
-(define_insn_reservation "thunderx2t99_asimd_store2_onelane" 1
+(define_insn_reservation "thunderx2t99_asimd_store3" 1
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "neon_store2_one_lane,neon_store2_one_lane_q"))
+       (eq_attr "type" "neon_store3_3reg,neon_store3_3reg_q,\
+			neon_store3_one_lane,neon_store3_one_lane_q"))
+  "thunderx2t99_ls01,thunderx2t99_f01")
+
+(define_insn_reservation "thunderx2t99_asimd_store4" 1
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "neon_store4_4reg,neon_store4_4reg_q,\
+			neon_store4_one_lane,neon_store4_one_lane_q"))
   "thunderx2t99_ls01,thunderx2t99_f01")
 
 ;; Crypto extensions.
