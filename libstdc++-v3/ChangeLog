@@ -1,3 +1,12 @@
+2018-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85812
+	* libsupc++/cxxabi_init_exception.h (__cxa_free_exception): Declare.
+	* libsupc++/exception_ptr.h (make_exception_ptr) [__cpp_exceptions]:
+	Refactor to separate non-throwing and throwing implementations.
+	[__cpp_rtti && !_GLIBCXX_HAVE_CDTOR_CALLABI]: Deallocate the memory
+	if constructing the object throws.
+
 2018-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85749
