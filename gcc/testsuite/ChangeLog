@@ -1,5 +1,10 @@
 2018-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85323
+	* gcc.target/i386/pr85323-1.c: New test.
+	* gcc.target/i386/pr85323-2.c: New test.
+	* gcc.target/i386/pr85323-3.c: New test.
+
 	* gcc.target/i386/avx512f-set-v32hi-1.c: New test.
 	* gcc.target/i386/avx512f-set-v32hi-2.c: New test.
 	* gcc.target/i386/avx512f-set-v32hi-3.c: New test.
