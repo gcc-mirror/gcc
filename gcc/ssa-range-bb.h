@@ -44,9 +44,9 @@ class block_ranger
 			const irange& lhs);
   bool get_range_from_stmt (range_stmt stmt, irange& r, tree name,
 			    const irange& lhs);
+  gimple *ssa_name_same_bb_p (tree name, basic_block bb);
 protected:
   virtual bool get_operand_range (irange& r, tree op, gimple *s = NULL);
-  gimple *ssa_name_same_bb_p (tree name, basic_block bb);
 public:
   block_ranger ();
   ~block_ranger ();

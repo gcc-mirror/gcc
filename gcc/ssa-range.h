@@ -45,7 +45,6 @@ private:
   bool path_range_list_reverse (irange &r, tree name, const vec<basic_block> &);
   bool process_phi (irange &r, gphi *phi);
   bool process_call (irange &r, gimple *call);
-  bool path_get_operand (irange &r, tree name, basic_block bb);
   bool non_null_deref_in_block (irange &r, tree name, basic_block bb);
 
   void dump_global_ssa_range (FILE *f);

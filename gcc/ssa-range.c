@@ -622,7 +622,6 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   tree name = gimple_get_lhs (g);
   irange range_op1, range_op2;
   range_stmt rn;
-  basic_block bb = gimple_bb (g);
   bool res;
 
   if (name && !valid_irange_ssa (name))
@@ -658,7 +657,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
     return false;
 
   // Evaluate operand 1.
-  if (!path_get_operand (range_op1, rn.operand1 (), bb))
+  if (!get_operand_range (range_op1, rn.operand1 (), g))
     return false;
     
   // If this is a unary operation, call fold now.  
@@ -667,7 +666,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   else
     {
       // Evaluate the second operand.
-      if (!path_get_operand (range_op2, rn.operand2 (), bb))
+      if (!get_operand_range (range_op2, rn.operand2 (), g))
 	return false;
       // And attempt to evaluate the expression.
       res = rn.fold (r, range_op1, range_op2);
@@ -698,49 +697,40 @@ path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
   if (!g || !valid_irange_ssa (name))
     return false;
 
-  if (path_get_operand (r, name, gimple_bb (g)))
+  if (get_operand_range (r, name, g))
     return !r.range_for_type_p ();
   return false;
 }
 
-
-// Determine a range for NAME in basic block BB, returning the result in R.
-// If name if not defined in BB, find the range on entry to this block.
-bool
-path_ranger::path_get_operand (irange &r, tree name, basic_block bb)
-{
-  if (!valid_irange_ssa (name))
-    return block_ranger::get_operand_range (r, name);
-    
-  // check if the defining statement is in the same block.
-  gimple *s = ssa_name_same_bb_p (name, bb);
-  if (s)
-    {
-      // This means NAME is defined in the same block, simply try to extract 
-      // a range from that statement. 
-      if (!path_range_stmt (r, s))
-	return block_ranger::get_operand_range (r, name);
-      return true;
-    }
-
-  if (path_range_entry (r, name, bb))
-    return true;
-  // See if there is anon-null dereference.
-  if (non_null_deref_in_block (r, name, bb))
-    return true;
-
-  return block_ranger::get_operand_range (r, name);
-}
-
-// Return the range of expression OP on statement S in range R.
+// Determine a range for OP on stmt S, returning the result in R.
+// If OP is not defined in BB, find the range on entry to this block.
 bool
 path_ranger::get_operand_range (irange&r, tree op, gimple *s)
 {
-  // If there is no statement, refer back to the block ranger processing.
-  if (!s)
-    return block_ranger::get_operand_range (r, op, s);
-  else
-    return path_get_operand (r, op, gimple_bb (s));
+  // If there is a statement, and a valid ssa_name, try to find a range.
+  if (s && valid_irange_ssa (op))
+    {
+      basic_block bb = gimple_bb (s);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (op);
+      // if name is defined in this block, try to get an range from S.
+      if (def_stmt && gimple_bb (def_stmt) == bb)
+	{
+	  if (path_range_stmt (r, def_stmt))
+	    return true;
+	}
+      else
+	// Otherwise OP comes from outside this block, try range on entry.
+	if (path_range_entry (r, op, bb))
+	  return true;
+
+      // No range yet, see if there is a dereference in the block.
+      if (non_null_deref_in_block (r, op, bb))
+	return true;
+    }
+
+  // Fall back to the default.
+  return block_ranger::get_operand_range (r, op);
+ 
 }
 
 // Calculate the known range for NAME on a path of basic blocks in
