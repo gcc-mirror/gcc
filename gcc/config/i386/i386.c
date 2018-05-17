@@ -33398,6 +33398,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
 				   DECL_FUNCTION_CODE (fndecl);
       enum rtx_code rcode;
       bool is_vshift;
+      unsigned HOST_WIDE_INT mask;
 
       switch (fn_code)
 	{
@@ -33741,17 +33742,21 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	  gcc_assert (n_args >= 2);
 	  if (TREE_CODE (args[0]) != VECTOR_CST)
 	    break;
+	  mask = HOST_WIDE_INT_M1U;
 	  if (n_args > 2)
 	    {
-	      /* This is masked shift.  Only optimize if the mask is all
-		 ones.  */
+	      /* This is masked shift.  */
 	      if (!tree_fits_uhwi_p (args[n_args - 1])
 		  || TREE_SIDE_EFFECTS (args[n_args - 2]))
 		break;
-	      unsigned HOST_WIDE_INT mask = tree_to_uhwi (args[n_args - 1]);
+	      mask = tree_to_uhwi (args[n_args - 1]);
 	      unsigned elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0]));
-	      if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
+	      mask |= HOST_WIDE_INT_M1U << elems;
+	      if (mask != HOST_WIDE_INT_M1U
+		  && TREE_CODE (args[n_args - 2]) != VECTOR_CST)
 		break;
+	      if (mask == (HOST_WIDE_INT_M1U << elems))
+		return args[n_args - 2];
 	    }
 	  if (is_vshift && TREE_CODE (args[1]) != VECTOR_CST)
 	    break;
@@ -33759,17 +33764,25 @@ ix86_fold_builtin (tree fndecl, int n_args,
 			  : ix86_vector_shift_count (args[1])))
 	    {
 	      unsigned HOST_WIDE_INT count = tree_to_uhwi (tem);
-	      if (count == 0)
+	      unsigned HOST_WIDE_INT prec
+		= TYPE_PRECISION (TREE_TYPE (TREE_TYPE (args[0])));
+	      if (count == 0 && mask == HOST_WIDE_INT_M1U)
 		return args[0];
-	      if (count >= TYPE_PRECISION (TREE_TYPE (TREE_TYPE (args[0]))))
+	      if (count >= prec)
 		{
-		  if (rcode != ASHIFTRT)
+		  if (rcode == ASHIFTRT)
+		    count = prec - 1;
+		  else if (mask == HOST_WIDE_INT_M1U)
 		    return build_zero_cst (TREE_TYPE (args[0]));
-		  count = TYPE_PRECISION (TREE_TYPE (TREE_TYPE (args[0]))) - 1;
 		}
 	      tree countt = NULL_TREE;
 	      if (!is_vshift)
-		countt = build_int_cst (integer_type_node, count);
+		{
+		  if (count >= prec)
+		    countt = integer_zero_node;
+		  else
+		    countt = build_int_cst (integer_type_node, count);
+		}
 	      tree_vector_builder builder;
 	      builder.new_unary_operation (TREE_TYPE (args[0]), args[0],
 					   false);
@@ -33788,8 +33801,6 @@ ix86_fold_builtin (tree fndecl, int n_args,
 		      if (TREE_CODE (countt) != INTEGER_CST
 			  || TREE_OVERFLOW (countt))
 			return NULL_TREE;
-		      int prec
-			= TYPE_PRECISION (TREE_TYPE (TREE_TYPE (args[0])));
 		      if (wi::neg_p (wi::to_wide (countt))
 			  || wi::to_widest (countt) >= prec)
 			{
@@ -33803,6 +33814,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 			    }
 			}
 		    }
+		  else if (count >= prec)
+		    elt = build_zero_cst (TREE_TYPE (elt));
 		  elt = const_binop (rcode == ASHIFT
 				     ? LSHIFT_EXPR : RSHIFT_EXPR,
 				     TREE_TYPE (elt), elt, countt);
@@ -33810,6 +33823,13 @@ ix86_fold_builtin (tree fndecl, int n_args,
 		    return NULL_TREE;
 		  if (rcode == LSHIFTRT)
 		    elt = fold_convert (type, elt);
+		  if ((mask & (HOST_WIDE_INT_1U << i)) == 0)
+		    {
+		      elt = VECTOR_CST_ELT (args[n_args - 2], i);
+		      if (TREE_CODE (elt) != INTEGER_CST
+			  || TREE_OVERFLOW (elt))
+			return NULL_TREE;
+		    }
 		  builder.quick_push (elt);
 		}
 	      return builder.build ();
