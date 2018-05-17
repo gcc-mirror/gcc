@@ -1,3 +1,10 @@
+2018-05-17  Bin Cheng  <bin.cheng@arm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85793
+	* tree-vect-stmts.c (vectorizable_load): Handle 1 element-wise load
+	for VMAT_ELEMENTWISE.
+
 2018-05-17  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* internal-fn.h (lookup_internal_fn): Declare
