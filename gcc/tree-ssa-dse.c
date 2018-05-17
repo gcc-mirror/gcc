@@ -662,7 +662,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	}
 
       /* Process defs and remove those we need not process further.  */
-      for (unsigned i = 0; i < defs.length (); ++i)
+      for (unsigned i = 0; i < defs.length ();)
 	{
 	  gimple *def = defs[i];
 	  gimple *use_stmt;
@@ -680,11 +680,18 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	  /* In addition to kills we can remove defs whose only use
 	     is another def in defs.  That can only ever be PHIs of which
 	     we track a single for simplicity reasons (we fail for multiple
-	     PHIs anyways).  */
+	     PHIs anyways).  We can also ignore defs that feed only into
+	     already visited PHIs.  */
 	  else if (gimple_code (def) != GIMPLE_PHI
 		   && single_imm_use (gimple_vdef (def), &use_p, &use_stmt)
-		   && use_stmt == phi_def)
+		   && (use_stmt == phi_def
+		       || (gimple_code (use_stmt) == GIMPLE_PHI
+			   && bitmap_bit_p (visited,
+					    SSA_NAME_VERSION
+					      (PHI_RESULT (use_stmt))))))
 	    defs.unordered_remove (i);
+	  else
+	    ++i;
 	}
 
       /* If all defs kill the ref we are done.  */
