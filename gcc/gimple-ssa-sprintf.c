@@ -2933,12 +2933,12 @@ format_directive (const sprintf_dom_walker::call_info &info,
       else
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
 			  fmtres.range.min > target_int_max ()
-			  ? G_ ("%<%.*s%> directive output between %wu and "
-				"%wu bytes causes result to exceed "
-				"%<INT_MAX%>")
-			  : G_ ("%<%.*s%> directive output between %wu and "
-				"%wu bytes may cause result to exceed "
-				"%<INT_MAX%>"), dirlen,
+			  ? G_("%<%.*s%> directive output between %wu and "
+			       "%wu bytes causes result to exceed "
+			       "%<INT_MAX%>")
+			  : G_("%<%.*s%> directive output between %wu and "
+			       "%wu bytes may cause result to exceed "
+			       "%<INT_MAX%>"), dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min, fmtres.range.max);
     }
