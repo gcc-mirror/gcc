@@ -1,3 +1,10 @@
+2018-05-17  Pat Haugen  <pthaugen@us.ibm.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/85698
+	* config/rs6000/rs6000.c (rs6000_output_move_128bit): Check dest
+	operand.
+
 2018-05-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-dse.c (dse_classify_store): Fix iterator increment

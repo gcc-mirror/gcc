@@ -1,3 +1,8 @@
+2018-05-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/85698
+	* gcc.target/powerpc/pr85698.c: New test.
+
 2018-05-17  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-fre-63.c: New testcase.
