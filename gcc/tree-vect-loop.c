@@ -4181,12 +4181,10 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
 	else if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ())
 	  {
 	    /* Option2 (variable length): the first element is INIT_VAL.  */
-	    init_def = build_vector_from_val (vectype, def_for_init);
-	    gcall *call = gimple_build_call_internal (IFN_VEC_SHL_INSERT,
-						      2, init_def, init_val);
-	    init_def = make_ssa_name (vectype);
-	    gimple_call_set_lhs (call, init_def);
-	    gimple_seq_add_stmt (&stmts, call);
+	    init_def = gimple_build_vector_from_val (&stmts, vectype,
+						     def_for_init);
+	    init_def = gimple_build (&stmts, CFN_VEC_SHL_INSERT,
+				     vectype, init_def, init_val);
 	  }
 	else
 	  {
@@ -4329,11 +4327,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 		  while (k > 0)
 		    {
 		      k -= 1;
-		      gcall *call = gimple_build_call_internal
-			(IFN_VEC_SHL_INSERT, 2, init, elts[k]);
-		      init = make_ssa_name (vector_type);
-		      gimple_call_set_lhs (call, init);
-		      gimple_seq_add_stmt (&ctor_seq, call);
+		      init = gimple_build (&ctor_seq, CFN_VEC_SHL_INSERT,
+					   vector_type, init, elts[k]);
 		    }
 		}
 	      else
@@ -5236,10 +5231,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 				   sel, new_phi_result, vector_identity);
 
 	  /* Do the reduction and convert it to the appropriate type.  */
-	  gcall *call = gimple_build_call_internal (reduc_fn, 1, vec);
-	  tree scalar = make_ssa_name (TREE_TYPE (vectype));
-	  gimple_call_set_lhs (call, scalar);
-	  gimple_seq_add_stmt (&seq, call);
+	  tree scalar = gimple_build (&seq, as_combined_fn (reduc_fn),
+				      TREE_TYPE (vectype), vec);
 	  scalar = gimple_convert (&seq, scalar_type, scalar);
 	  scalar_results.safe_push (scalar);
 	}
@@ -8054,13 +8047,10 @@ vectorizable_live_operation (gimple *stmt,
 	 the loop mask for the final iteration.  */
       gcc_assert (ncopies == 1 && !slp_node);
       tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
-      tree scalar_res = make_ssa_name (scalar_type);
       tree mask = vect_get_loop_mask (gsi, &LOOP_VINFO_MASKS (loop_vinfo),
 				      1, vectype, 0);
-      gcall *new_stmt = gimple_build_call_internal (IFN_EXTRACT_LAST,
-						    2, mask, vec_lhs);
-      gimple_call_set_lhs (new_stmt, scalar_res);
-      gimple_seq_add_stmt (&stmts, new_stmt);
+      tree scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST,
+				      scalar_type, mask, vec_lhs);
 
       /* Convert the extracted vector element to the required scalar type.  */
       new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
