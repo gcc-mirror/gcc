@@ -33,7 +33,7 @@ using fs::path;
 
 fs::filesystem_error::~filesystem_error() = default;
 
-constexpr path::value_type path::preferred_separator;
+constexpr path::value_type path::preferred_separator [[gnu::used]];
 
 path&
 path::remove_filename()
