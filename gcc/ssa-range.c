@@ -47,6 +47,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range.h"
 #include "ssa-range-global.h"
 
+// Class used to track non-null references of an ssa-name
+// A vector of bitmaps indexed by ssa-name is maintained. When indexed by 
+// Basic Block, an on-bit indicates there is a non-null dereference for
+// that ssa_name in that basic block.
+//
+// There is a single API: no_null_deref_p(name, bb) which takes care of making
+// sure its a pointer type and allocated the bitmap and populating it if needed.
+//
+// In order to populate the bitmap, a quick run of all the immediate uses
+// are made and the statement checkd to see if a non-null dereference is made
+// on that statement.
 
 class non_null_ref
 {
@@ -59,12 +70,14 @@ public:
   bool non_null_deref_p (tree name, basic_block bb);
 };
 
+// During contructor, Allocate the vector of ssa_names.
 non_null_ref::non_null_ref ()
 {
   m_nn.create (0);
   m_nn.safe_grow_cleared (num_ssa_names);
 }
 
+// Free any bitmaps which were allocated,a swell as the vector itself.
 non_null_ref::~non_null_ref ()
 {
   unsigned x;
@@ -73,6 +86,7 @@ non_null_ref::~non_null_ref ()
       BITMAP_FREE (m_nn[x]);
 }
 
+// Allocate an populate the bitmap for NAME.
 void
 non_null_ref::process_name (tree name)
 {
@@ -81,6 +95,7 @@ non_null_ref::process_name (tree name)
   imm_use_iterator iter;
   bitmap b;
 
+  // Only tracked for pointers.
   if (!POINTER_TYPE_P (TREE_TYPE (name)))
     return;
 
@@ -97,7 +112,7 @@ non_null_ref::process_name (tree name)
       tree value;
       enum tree_code comp_code;
 
-      // IF bit is already set for this block, dont bother looking again.
+      // If bit is already set for this block, dont bother looking again.
       if (bitmap_bit_p (b, index))
         continue;
 
@@ -112,6 +127,8 @@ non_null_ref::process_name (tree name)
   m_nn[v] = b;
 }
 
+// Return true if NAME has a non-null dereference in block bb.  If this is the
+// first query for NAME, calculate the summary first.
 bool
 non_null_ref::non_null_deref_p (tree name, basic_block bb)
 {
@@ -124,7 +141,6 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb)
 
   return bitmap_bit_p (m_nn[v], bb->index);
 }
-
 
 
 // This class implements a cache of ranges indexed by basic block.
@@ -691,9 +707,6 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
 bool
 path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
 {
-  // Eventually we'll have to look at statements in the block to track non-null
-  // pointers properly, but for now, we just want to know either the value
-  // calculated in this block, or the range on entry.
   if (!g || !valid_irange_ssa (name))
     return false;
 
@@ -724,6 +737,13 @@ path_ranger::get_operand_range (irange&r, tree op, gimple *s)
 	  return true;
 
       // No range yet, see if there is a dereference in the block.
+      // We don't care if it's between the def and a use within a block
+      // because the entire block must be executed anyway.
+      // FIXME:?? For non-call exceptions we could have a statement throw
+      // which causes an early block exit. 
+      // in which case we may need to walk from S back to the def/top of block
+      // to make sure the deref happens between S and there before claiming 
+      // there is a deref.   
       if (non_null_deref_in_block (r, op, bb))
 	return true;
     }
