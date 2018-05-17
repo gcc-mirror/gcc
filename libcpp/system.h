@@ -438,6 +438,10 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 /* Some compilers do not allow the use of unsigned char in bitfields.  */
 #define BOOL_BITFIELD unsigned int
 
+#ifdef __cplusplus
+#include <new>
+#endif
+
 /* Poison identifiers we do not want to use.  */
 #if (GCC_VERSION >= 3000)
 #undef calloc
