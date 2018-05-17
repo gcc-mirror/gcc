@@ -1,6 +1,11 @@
 2018-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85323
+	* gcc.target/i386/pr85323-4.c: New test.
+	* gcc.target/i386/pr85323-5.c: New test.
+	* gcc.target/i386/pr85323-6.c: New test.
+
+	PR target/85323
 	* gcc.target/i386/pr85323-1.c: New test.
 	* gcc.target/i386/pr85323-2.c: New test.
 	* gcc.target/i386/pr85323-3.c: New test.
