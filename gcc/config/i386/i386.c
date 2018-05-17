@@ -33397,6 +33397,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
       enum ix86_builtins fn_code = (enum ix86_builtins)
 				   DECL_FUNCTION_CODE (fndecl);
       enum rtx_code rcode;
+      bool is_vshift;
 
       switch (fn_code)
 	{
@@ -33615,6 +33616,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	case IX86_BUILTIN_PSLLWI256_MASK:
 	case IX86_BUILTIN_PSLLWI512_MASK:
 	  rcode = ASHIFT;
+	  is_vshift = false;
 	  goto do_shift;
 	case IX86_BUILTIN_PSRAD:
 	case IX86_BUILTIN_PSRAD128:
@@ -33647,6 +33649,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	case IX86_BUILTIN_PSRAWI256_MASK:
 	case IX86_BUILTIN_PSRAWI512:
 	  rcode = ASHIFTRT;
+	  is_vshift = false;
 	  goto do_shift;
 	case IX86_BUILTIN_PSRLD:
 	case IX86_BUILTIN_PSRLD128:
@@ -33685,6 +33688,53 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	case IX86_BUILTIN_PSRLWI256_MASK:
 	case IX86_BUILTIN_PSRLWI512:
 	  rcode = LSHIFTRT;
+	  is_vshift = false;
+	  goto do_shift;
+	case IX86_BUILTIN_PSLLVV16HI:
+	case IX86_BUILTIN_PSLLVV16SI:
+	case IX86_BUILTIN_PSLLVV2DI:
+	case IX86_BUILTIN_PSLLVV2DI_MASK:
+	case IX86_BUILTIN_PSLLVV32HI:
+	case IX86_BUILTIN_PSLLVV4DI:
+	case IX86_BUILTIN_PSLLVV4DI_MASK:
+	case IX86_BUILTIN_PSLLVV4SI:
+	case IX86_BUILTIN_PSLLVV4SI_MASK:
+	case IX86_BUILTIN_PSLLVV8DI:
+	case IX86_BUILTIN_PSLLVV8HI:
+	case IX86_BUILTIN_PSLLVV8SI:
+	case IX86_BUILTIN_PSLLVV8SI_MASK:
+	  rcode = ASHIFT;
+	  is_vshift = true;
+	  goto do_shift;
+	case IX86_BUILTIN_PSRAVQ128:
+	case IX86_BUILTIN_PSRAVQ256:
+	case IX86_BUILTIN_PSRAVV16HI:
+	case IX86_BUILTIN_PSRAVV16SI:
+	case IX86_BUILTIN_PSRAVV32HI:
+	case IX86_BUILTIN_PSRAVV4SI:
+	case IX86_BUILTIN_PSRAVV4SI_MASK:
+	case IX86_BUILTIN_PSRAVV8DI:
+	case IX86_BUILTIN_PSRAVV8HI:
+	case IX86_BUILTIN_PSRAVV8SI:
+	case IX86_BUILTIN_PSRAVV8SI_MASK:
+	  rcode = ASHIFTRT;
+	  is_vshift = true;
+	  goto do_shift;
+	case IX86_BUILTIN_PSRLVV16HI:
+	case IX86_BUILTIN_PSRLVV16SI:
+	case IX86_BUILTIN_PSRLVV2DI:
+	case IX86_BUILTIN_PSRLVV2DI_MASK:
+	case IX86_BUILTIN_PSRLVV32HI:
+	case IX86_BUILTIN_PSRLVV4DI:
+	case IX86_BUILTIN_PSRLVV4DI_MASK:
+	case IX86_BUILTIN_PSRLVV4SI:
+	case IX86_BUILTIN_PSRLVV4SI_MASK:
+	case IX86_BUILTIN_PSRLVV8DI:
+	case IX86_BUILTIN_PSRLVV8HI:
+	case IX86_BUILTIN_PSRLVV8SI:
+	case IX86_BUILTIN_PSRLVV8SI_MASK:
+	  rcode = LSHIFTRT;
+	  is_vshift = true;
 	  goto do_shift;
 
 	do_shift:
@@ -33703,7 +33753,10 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	      if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
 		break;
 	    }
-	  if (tree tem = ix86_vector_shift_count (args[1]))
+	  if (is_vshift && TREE_CODE (args[1]) != VECTOR_CST)
+	    break;
+	  if (tree tem = (is_vshift ? integer_one_node
+			  : ix86_vector_shift_count (args[1])))
 	    {
 	      unsigned HOST_WIDE_INT count = tree_to_uhwi (tem);
 	      if (count == 0)
@@ -33714,7 +33767,9 @@ ix86_fold_builtin (tree fndecl, int n_args,
 		    return build_zero_cst (TREE_TYPE (args[0]));
 		  count = TYPE_PRECISION (TREE_TYPE (TREE_TYPE (args[0]))) - 1;
 		}
-	      tree countt = build_int_cst (integer_type_node, count);
+	      tree countt = NULL_TREE;
+	      if (!is_vshift)
+		countt = build_int_cst (integer_type_node, count);
 	      tree_vector_builder builder;
 	      builder.new_unary_operation (TREE_TYPE (args[0]), args[0],
 					   false);
@@ -33727,9 +33782,30 @@ ix86_fold_builtin (tree fndecl, int n_args,
 		  tree type = TREE_TYPE (elt);
 		  if (rcode == LSHIFTRT)
 		    elt = fold_convert (unsigned_type_for (type), elt);
+		  if (is_vshift)
+		    {
+		      countt = VECTOR_CST_ELT (args[1], i);
+		      if (TREE_CODE (countt) != INTEGER_CST
+			  || TREE_OVERFLOW (countt))
+			return NULL_TREE;
+		      int prec
+			= TYPE_PRECISION (TREE_TYPE (TREE_TYPE (args[0])));
+		      if (wi::neg_p (wi::to_wide (countt))
+			  || wi::to_widest (countt) >= prec)
+			{
+			  if (rcode == ASHIFTRT)
+			    countt = build_int_cst (TREE_TYPE (countt),
+						    prec - 1);
+			  else
+			    {
+			      elt = build_zero_cst (TREE_TYPE (elt));
+			      countt = build_zero_cst (TREE_TYPE (countt));
+			    }
+			}
+		    }
 		  elt = const_binop (rcode == ASHIFT
-				     ? LSHIFT_EXPR : RSHIFT_EXPR, TREE_TYPE (elt),
-				     elt, countt);
+				     ? LSHIFT_EXPR : RSHIFT_EXPR,
+				     TREE_TYPE (elt), elt, countt);
 		  if (!elt || TREE_CODE (elt) != INTEGER_CST)
 		    return NULL_TREE;
 		  if (rcode == LSHIFTRT)
@@ -33767,6 +33843,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree arg0, arg1;
   enum rtx_code rcode;
   unsigned HOST_WIDE_INT count;
+  bool is_vshift;
 
   switch (fn_code)
     {
@@ -33883,6 +33960,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case IX86_BUILTIN_PSLLWI256_MASK:
     case IX86_BUILTIN_PSLLWI512_MASK:
       rcode = ASHIFT;
+      is_vshift = false;
       goto do_shift;
     case IX86_BUILTIN_PSRAD:
     case IX86_BUILTIN_PSRAD128:
@@ -33915,6 +33993,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case IX86_BUILTIN_PSRAWI256_MASK:
     case IX86_BUILTIN_PSRAWI512:
       rcode = ASHIFTRT;
+      is_vshift = false;
       goto do_shift;
     case IX86_BUILTIN_PSRLD:
     case IX86_BUILTIN_PSRLD128:
@@ -33953,6 +34032,53 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case IX86_BUILTIN_PSRLWI256_MASK:
     case IX86_BUILTIN_PSRLWI512:
       rcode = LSHIFTRT;
+      is_vshift = false;
+      goto do_shift;
+    case IX86_BUILTIN_PSLLVV16HI:
+    case IX86_BUILTIN_PSLLVV16SI:
+    case IX86_BUILTIN_PSLLVV2DI:
+    case IX86_BUILTIN_PSLLVV2DI_MASK:
+    case IX86_BUILTIN_PSLLVV32HI:
+    case IX86_BUILTIN_PSLLVV4DI:
+    case IX86_BUILTIN_PSLLVV4DI_MASK:
+    case IX86_BUILTIN_PSLLVV4SI:
+    case IX86_BUILTIN_PSLLVV4SI_MASK:
+    case IX86_BUILTIN_PSLLVV8DI:
+    case IX86_BUILTIN_PSLLVV8HI:
+    case IX86_BUILTIN_PSLLVV8SI:
+    case IX86_BUILTIN_PSLLVV8SI_MASK:
+      rcode = ASHIFT;
+      is_vshift = true;
+      goto do_shift;
+    case IX86_BUILTIN_PSRAVQ128:
+    case IX86_BUILTIN_PSRAVQ256:
+    case IX86_BUILTIN_PSRAVV16HI:
+    case IX86_BUILTIN_PSRAVV16SI:
+    case IX86_BUILTIN_PSRAVV32HI:
+    case IX86_BUILTIN_PSRAVV4SI:
+    case IX86_BUILTIN_PSRAVV4SI_MASK:
+    case IX86_BUILTIN_PSRAVV8DI:
+    case IX86_BUILTIN_PSRAVV8HI:
+    case IX86_BUILTIN_PSRAVV8SI:
+    case IX86_BUILTIN_PSRAVV8SI_MASK:
+      rcode = ASHIFTRT;
+      is_vshift = true;
+      goto do_shift;
+    case IX86_BUILTIN_PSRLVV16HI:
+    case IX86_BUILTIN_PSRLVV16SI:
+    case IX86_BUILTIN_PSRLVV2DI:
+    case IX86_BUILTIN_PSRLVV2DI_MASK:
+    case IX86_BUILTIN_PSRLVV32HI:
+    case IX86_BUILTIN_PSRLVV4DI:
+    case IX86_BUILTIN_PSRLVV4DI_MASK:
+    case IX86_BUILTIN_PSRLVV4SI:
+    case IX86_BUILTIN_PSRLVV4SI_MASK:
+    case IX86_BUILTIN_PSRLVV8DI:
+    case IX86_BUILTIN_PSRLVV8HI:
+    case IX86_BUILTIN_PSRLVV8SI:
+    case IX86_BUILTIN_PSRLVV8SI_MASK:
+      rcode = LSHIFTRT;
+      is_vshift = true;
       goto do_shift;
 
     do_shift:
@@ -33970,10 +34096,31 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
 	    break;
 	}
-      arg1 = ix86_vector_shift_count (arg1);
-      if (!arg1)
-	break;
-      count = tree_to_uhwi (arg1);
+      if (is_vshift)
+	{
+	  if (TREE_CODE (arg1) != VECTOR_CST)
+	    break;
+	  count = TYPE_PRECISION (TREE_TYPE (TREE_TYPE (arg0)));
+	  if (integer_zerop (arg1))
+	    count = 0;
+	  else if (rcode == ASHIFTRT)
+	    break;
+	  else
+	    for (unsigned int i = 0; i < VECTOR_CST_NELTS (arg1); ++i)
+	      {
+		tree elt = VECTOR_CST_ELT (arg1, i);
+		if (!wi::neg_p (wi::to_wide (elt))
+		    && wi::to_widest (elt) < count)
+		  return false;
+	      }
+	}
+      else
+	{
+	  arg1 = ix86_vector_shift_count (arg1);
+	  if (!arg1)
+	    break;
+	  count = tree_to_uhwi (arg1);
+	}
       if (count == 0)
 	{
 	  /* Just return the first argument for shift by 0.  */
