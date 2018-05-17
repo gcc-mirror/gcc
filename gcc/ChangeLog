@@ -1,3 +1,8 @@
+2018-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/avx512fintrin.h (_mm512_set_epi16, _mm512_set_epi8,
+	_mm512_setzero): New intrinsics.
+
 2018-05-17  James Greenhalgh  <james.greenhalgh@arm.com>
             Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -6,7 +11,6 @@
 	* simplify-rtx.c (simplify_ternary_operation): Simplify
 	vec_merge across a vec_duplicate and a paradoxical subreg forming a vector
 	mode to a vec_concat.
-
 
 2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
 

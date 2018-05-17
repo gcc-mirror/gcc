@@ -1,3 +1,17 @@
+2018-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512f-set-v32hi-1.c: New test.
+	* gcc.target/i386/avx512f-set-v32hi-2.c: New test.
+	* gcc.target/i386/avx512f-set-v32hi-3.c: New test.
+	* gcc.target/i386/avx512f-set-v32hi-4.c: New test.
+	* gcc.target/i386/avx512f-set-v32hi-5.c: New test.
+	* gcc.target/i386/avx512f-set-v64qi-1.c: New test.
+	* gcc.target/i386/avx512f-set-v64qi-2.c: New test.
+	* gcc.target/i386/avx512f-set-v64qi-3.c: New test.
+	* gcc.target/i386/avx512f-set-v64qi-4.c: New test.
+	* gcc.target/i386/avx512f-set-v64qi-5.c: New test.
+	* gcc.target/i386/avx512f-setzero-1.c: New test.
+
 2018-05-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect-slp-dup.c: New.
