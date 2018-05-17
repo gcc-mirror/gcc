@@ -1,5 +1,11 @@
 2018-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/85323
+	* config/i386/i386.c: Include tree-vector-builder.h.
+	(ix86_vector_shift_count): New function.
+	(ix86_fold_builtin): Fold shift builtins by scalar count.
+	(ix86_gimple_fold_builtin): Likewise.
+
 	* config/i386/avx512fintrin.h (_mm512_set_epi16, _mm512_set_epi8,
 	_mm512_setzero): New intrinsics.
 
