@@ -62,6 +62,9 @@ namespace __cxxabiv1
       void*
       __cxa_allocate_exception(size_t) _GLIBCXX_NOTHROW;
 
+      void
+      __cxa_free_exception(void*) _GLIBCXX_NOTHROW;
+
       // Initialize exception (this is a GNU extension)
       __cxa_refcounted_exception*
       __cxa_init_primary_exception(void *object, std::type_info *tinfo,
