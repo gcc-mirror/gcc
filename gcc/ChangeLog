@@ -1,3 +1,9 @@
+2018-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85757
+	* tree-ssa-dse.c (dse_classify_store): Record a PHI def and
+	remove defs that only feed that PHI from further processing.
+
 2018-05-16  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.md (<optab>si3_mask, <optab>si3_mask_1): Prepend
