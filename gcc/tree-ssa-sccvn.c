@@ -1958,23 +1958,75 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
      1) Memset.  */
   if (is_gimple_reg_type (vr->type)
       && gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET)
-      && integer_zerop (gimple_call_arg (def_stmt, 1))
+      && (integer_zerop (gimple_call_arg (def_stmt, 1))
+	  || (INTEGRAL_TYPE_P (vr->type) && known_eq (ref->size, 8)))
       && poly_int_tree_p (gimple_call_arg (def_stmt, 2))
-      && TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR)
+      && (TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR
+	  || TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME))
     {
-      tree ref2 = TREE_OPERAND (gimple_call_arg (def_stmt, 0), 0);
       tree base2;
       poly_int64 offset2, size2, maxsize2;
       bool reverse;
-      base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &maxsize2,
-				       &reverse);
-      tree len = gimple_call_arg (def_stmt, 2);
-      if (known_size_p (maxsize2)
-	  && operand_equal_p (base, base2, 0)
-	  && known_subrange_p (offset, maxsize, offset2,
-			       wi::to_poly_offset (len) << LOG2_BITS_PER_UNIT))
+      tree ref2 = gimple_call_arg (def_stmt, 0);
+      if (TREE_CODE (ref2) == SSA_NAME)
 	{
-	  tree val = build_zero_cst (vr->type);
+	  ref2 = SSA_VAL (ref2);
+	  if (TREE_CODE (ref2) == SSA_NAME
+	      && (TREE_CODE (base) != MEM_REF
+		  || TREE_OPERAND (base, 0) != ref2))
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (ref2);
+	      if (gimple_assign_single_p (def_stmt)
+		  && gimple_assign_rhs_code (def_stmt) == ADDR_EXPR)
+		ref2 = gimple_assign_rhs1 (def_stmt);
+	    }
+	}
+      if (TREE_CODE (ref2) == ADDR_EXPR)
+	{
+	  ref2 = TREE_OPERAND (ref2, 0);
+	  base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &maxsize2,
+					   &reverse);
+	  if (!known_size_p (maxsize2)
+	      || !operand_equal_p (base, base2, OEP_ADDRESS_OF))
+	    return (void *)-1;
+	}
+      else if (TREE_CODE (ref2) == SSA_NAME)
+	{
+	  poly_int64 soff;
+	  if (TREE_CODE (base) != MEM_REF
+	      || !(mem_ref_offset (base) << LOG2_BITS_PER_UNIT).to_shwi (&soff))
+	    return (void *)-1;
+	  offset += soff;
+	  offset2 = 0;
+	  if (TREE_OPERAND (base, 0) != ref2)
+	    {
+	      gimple *def = SSA_NAME_DEF_STMT (ref2);
+	      if (is_gimple_assign (def)
+		  && gimple_assign_rhs_code (def) == POINTER_PLUS_EXPR
+		  && gimple_assign_rhs1 (def) == TREE_OPERAND (base, 0)
+		  && poly_int_tree_p (gimple_assign_rhs2 (def))
+		  && (wi::to_poly_offset (gimple_assign_rhs2 (def))
+		      << LOG2_BITS_PER_UNIT).to_shwi (&offset2))
+		{
+		  ref2 = gimple_assign_rhs1 (def);
+		  if (TREE_CODE (ref2) == SSA_NAME)
+		    ref2 = SSA_VAL (ref2);
+		}
+	      else
+		return (void *)-1;
+	    }
+	}
+      else
+	return (void *)-1;
+      tree len = gimple_call_arg (def_stmt, 2);
+      if (known_subrange_p (offset, maxsize, offset2,
+			    wi::to_poly_offset (len) << LOG2_BITS_PER_UNIT))
+	{
+	  tree val;
+	  if (integer_zerop (gimple_call_arg (def_stmt, 1)))
+	    val = build_zero_cst (vr->type);
+	  else
+	    val = fold_convert (vr->type, gimple_call_arg (def_stmt, 1));
 	  return vn_reference_lookup_or_insert_for_pieces
 	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
