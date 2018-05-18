@@ -132,6 +132,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       allocator(const allocator& __a) throw()
       : __allocator_base<_Tp>(__a) { }
+#if __cplusplus >= 201103L
+      // Avoid implicit deprecation.
+      allocator& operator=(const allocator&) = default;
+#endif
 
       template<typename _Tp1>
 	allocator(const allocator<_Tp1>&) throw() { }

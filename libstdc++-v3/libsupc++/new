@@ -56,6 +56,11 @@ namespace std
   public:
     bad_alloc() throw() { }
 
+#if __cplusplus >= 201103L
+    bad_alloc(const bad_alloc&) = default;
+    bad_alloc& operator=(const bad_alloc&) = default;
+#endif
+
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_alloc() throw();
