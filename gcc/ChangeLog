@@ -1,3 +1,8 @@
+2018-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/85838
+	* config/sparc/sparc.c (sparc_expand_builtin): Always initialize op[0].
+
 2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cpus.in (armv3m, mode32): Delete features.
