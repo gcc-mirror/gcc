@@ -317,6 +317,7 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_simduid_cleanup);
       NEXT_PASS (pass_lower_vector_ssa);
+      NEXT_PASS (pass_lower_switch);
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_sprintf_length, true);
       NEXT_PASS (pass_reassoc, false /* insert_powi_p */);
@@ -362,6 +363,7 @@ along with GCC; see the file COPYING3.  If not see
       /* Lower remaining pieces of GIMPLE.  */
       NEXT_PASS (pass_lower_complex);
       NEXT_PASS (pass_lower_vector_ssa);
+      NEXT_PASS (pass_lower_switch);
       /* Perform simple scalar cleanup which is constant/copy propagation.  */
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_post_ipa_warn);
@@ -397,6 +399,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_vaarg);
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_lower_complex_O0);
+  NEXT_PASS (pass_lower_switch_O0);
   NEXT_PASS (pass_sancov_O0);
   NEXT_PASS (pass_lower_switch);
   NEXT_PASS (pass_asan_O0);

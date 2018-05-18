@@ -1691,9 +1691,6 @@ typedef case_node *case_node_ptr;
 static basic_block emit_case_nodes (basic_block, tree, case_node_ptr,
 				    basic_block, tree, profile_probability,
 				    tree, hash_map<tree, tree> *);
-static bool node_has_low_bound (case_node_ptr, tree);
-static bool node_has_high_bound (case_node_ptr, tree);
-static bool node_is_bounded (case_node_ptr, tree);
 
 /* Return the smallest number of different values for which it is best to use a
    jump-table instead of a tree of conditional branches.  */
@@ -2169,10 +2166,31 @@ try_switch_expansion (gswitch *stmt)
 
 namespace {
 
-const pass_data pass_data_lower_switch =
+template <bool O0> class pass_lower_switch: public gimple_opt_pass
 {
-  GIMPLE_PASS, /* type */
-  "switchlower", /* name */
+public:
+  pass_lower_switch (gcc::context *ctxt) : gimple_opt_pass (data, ctxt) {}
+
+  static const pass_data data;
+  opt_pass *
+  clone ()
+  {
+    return new pass_lower_switch<O0> (m_ctxt);
+  }
+
+  virtual bool
+  gate (function *)
+  {
+    return !O0 || !optimize;
+  }
+
+  virtual unsigned int execute (function *fun);
+}; // class pass_lower_switch
+
+template <bool O0>
+const pass_data pass_lower_switch<O0>::data = {
+  GIMPLE_PASS,		       /* type */
+  O0 ? "switchlower_O0" : "switchlower", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_TREE_SWITCH_LOWERING, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -2182,21 +2200,9 @@ const pass_data pass_data_lower_switch =
   TODO_update_ssa | TODO_cleanup_cfg, /* todo_flags_finish */
 };
 
-class pass_lower_switch : public gimple_opt_pass
-{
-public:
-  pass_lower_switch (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_lower_switch, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *) { return true; }
-  virtual unsigned int execute (function *);
-
-}; // class pass_lower_switch
-
+template <bool O0>
 unsigned int
-pass_lower_switch::execute (function *fun)
+pass_lower_switch<O0>::execute (function *fun)
 {
   basic_block bb;
   bool expanded = false;
@@ -2234,33 +2240,14 @@ pass_lower_switch::execute (function *fun)
 } // anon namespace
 
 gimple_opt_pass *
+make_pass_lower_switch_O0 (gcc::context *ctxt)
+{
+  return new pass_lower_switch<true> (ctxt);
+}
+gimple_opt_pass *
 make_pass_lower_switch (gcc::context *ctxt)
 {
-  return new pass_lower_switch (ctxt);
-}
-
-/* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.
-   PROB is the probability of jumping to LABEL.  */
-static basic_block
-do_jump_if_equal (basic_block bb, tree op0, tree op1, basic_block label_bb,
-		  profile_probability prob, hash_map<tree, tree> *phi_mapping)
-{
-  gcond *cond = gimple_build_cond (EQ_EXPR, op0, op1, NULL_TREE, NULL_TREE);
-  gimple_stmt_iterator gsi = gsi_last_bb (bb);
-  gsi_insert_before (&gsi, cond, GSI_SAME_STMT);
-
-  gcc_assert (single_succ_p (bb));
-
-  /* Make a new basic block where false branch will take place.  */
-  edge false_edge = split_block (bb, cond);
-  false_edge->flags = EDGE_FALSE_VALUE;
-  false_edge->probability = prob.invert ();
-
-  edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
-  fix_phi_operands_for_edge (true_edge, phi_mapping);
-  true_edge->probability = prob;
-
-  return false_edge->dest;
+  return new pass_lower_switch<false> (ctxt);
 }
 
 /* Generate code to compare X with Y so that the condition codes are
@@ -2323,28 +2310,7 @@ conditional_probability (profile_probability target_prob,
 /* Emit step-by-step code to select a case for the value of INDEX.
    The thus generated decision tree follows the form of the
    case-node binary tree NODE, whose nodes represent test conditions.
-   INDEX_TYPE is the type of the index of the switch.
-
-   Care is taken to prune redundant tests from the decision tree
-   by detecting any boundary conditions already checked by
-   emitted rtx.  (See node_has_high_bound, node_has_low_bound
-   and node_is_bounded, above.)
-
-   Where the test conditions can be shown to be redundant we emit
-   an unconditional jump to the target code.  As a further
-   optimization, the subordinates of a tree node are examined to
-   check for bounded nodes.  In this case conditional and/or
-   unconditional jumps as a result of the boundary check for the
-   current node are arranged to target the subordinates associated
-   code for out of bound conditions on the current node.
-
-   We can assume that when control reaches the code generated here,
-   the index value has already been compared with the parents
-   of this node, and determined to be on the same side of each parent
-   as this node is.  Thus, if this node tests for the value 51,
-   and a parent tested for 52, we don't need to consider
-   the possibility of a value greater than 51.  If another parent
-   tests for the value 50, then this node need not test anything.  */
+   INDEX_TYPE is the type of the index of the switch.  */
 
 static basic_block
 emit_case_nodes (basic_block bb, tree index, case_node_ptr node,
@@ -2352,482 +2318,44 @@ emit_case_nodes (basic_block bb, tree index, case_node_ptr node,
 		 profile_probability default_prob, tree index_type,
 		 hash_map<tree, tree> *phi_mapping)
 {
-  /* If INDEX has an unsigned type, we must make unsigned branches.  */
-  profile_probability probability;
-  profile_probability prob = node->prob, subtree_prob = node->subtree_prob;
+  /* If node is null, we are done.  */
+  if (node == NULL)
+    return bb;
 
-  /* See if our parents have already tested everything for us.
-     If they have, emit an unconditional jump for this node.  */
-  if (node_is_bounded (node, index_type))
-    {
-      emit_jump (bb, node->case_bb, phi_mapping);
-      return NULL;
-    }
+  /* Branch to a label where we will handle it later.  */
+  basic_block test_bb = split_edge (single_succ_edge (bb));
+  redirect_edge_succ (single_pred_edge (test_bb),
+		      single_succ_edge (bb)->dest);
 
-  else if (tree_int_cst_equal (node->low, node->high))
-    {
-      probability = conditional_probability (prob, subtree_prob + default_prob);
-      /* Node is single valued.  First see if the index expression matches
-	 this node and then check our children, if any.  */
-      bb = do_jump_if_equal (bb, index, node->low, node->case_bb, probability,
-			     phi_mapping);
-      /* Since this case is taken at this point, reduce its weight from
-	 subtree_weight.  */
-      subtree_prob -= prob;
-      if (node->right != 0 && node->left != 0)
-	{
-	  /* This node has children on both sides.
-	     Dispatch to one side or the other
-	     by comparing the index value with this node's value.
-	     If one subtree is bounded, check that one first,
-	     so we can avoid real branches in the tree.  */
+  profile_probability probability
+    = node->right ? node->right->subtree_prob : profile_probability::never ();
+  probability
+    = conditional_probability (probability + default_prob.apply_scale (1, 2),
+			       node->subtree_prob + default_prob);
+  bb = emit_cmp_and_jump_insns (bb, index, node->high, GT_EXPR,
+				test_bb, probability, phi_mapping);
+  default_prob = default_prob.apply_scale (1, 2);
 
-	  if (node_is_bounded (node->right, index_type))
-	    {
-	      probability
-		= conditional_probability (node->right->prob,
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, index, node->high, GT_EXPR,
-					    node->right->case_bb, probability,
-					    phi_mapping);
-	      bb = emit_case_nodes (bb, index, node->left, default_bb,
-				    default_label, default_prob, index_type,
-				    phi_mapping);
-	    }
-
-	  else if (node_is_bounded (node->left, index_type))
-	    {
-	      probability
-		= conditional_probability (node->left->prob,
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, index, node->high, LT_EXPR,
-					    node->left->case_bb, probability,
-					    phi_mapping);
-	      bb = emit_case_nodes (bb, index, node->right, default_bb,
-				    default_label, default_prob, index_type,
-				    phi_mapping);
-	    }
-
-	  /* If both children are single-valued cases with no
-	     children, finish up all the work.  This way, we can save
-	     one ordered comparison.  */
-	  else if (tree_int_cst_equal (node->right->low, node->right->high)
-		   && node->right->left == 0 && node->right->right == 0
-		   && tree_int_cst_equal (node->left->low, node->left->high)
-		   && node->left->left == 0 && node->left->right == 0)
-	    {
-	      /* Neither node is bounded.  First distinguish the two sides;
-		 then emit the code for one side at a time.  */
-
-	      /* See if the value matches what the right hand side
-		 wants.  */
-	      probability
-		= conditional_probability (node->right->prob,
-					   subtree_prob + default_prob);
-	      bb = do_jump_if_equal (bb, index, node->right->low,
-				     node->right->case_bb, probability,
-				     phi_mapping);
-
-	      /* See if the value matches what the left hand side
-		 wants.  */
-	      probability
-		= conditional_probability (node->left->prob,
-					   subtree_prob + default_prob);
-	      bb = do_jump_if_equal (bb, index, node->left->low,
-				     node->left->case_bb, probability,
-				     phi_mapping);
-	    }
-
-	  else
-	    {
-	      /* Neither node is bounded.  First distinguish the two sides;
-		 then emit the code for one side at a time.  */
-
-	      basic_block test_bb = split_edge (single_succ_edge (bb));
-	      redirect_edge_succ (single_pred_edge (test_bb),
-				  single_succ_edge (bb)->dest);
-
-	      /* The default label could be reached either through the right
-		 subtree or the left subtree.  Divide the probability
-		 equally.  */
-	      probability
-		= conditional_probability (node->right->subtree_prob
-					     + default_prob.apply_scale (1, 2),
-					   subtree_prob + default_prob);
-	      /* See if the value is on the right.  */
-	      bb = emit_cmp_and_jump_insns (bb, index, node->high, GT_EXPR,
-					    test_bb, probability, phi_mapping);
-	      default_prob = default_prob.apply_scale (1, 2);
-
-	      /* Value must be on the left.
-		 Handle the left-hand subtree.  */
-	      bb = emit_case_nodes (bb, index, node->left, default_bb,
-				    default_label, default_prob, index_type,
-				    phi_mapping);
-	      /* If left-hand subtree does nothing,
-		 go to default.  */
-
-	      if (bb && default_bb)
-		emit_jump (bb, default_bb, phi_mapping);
-
-	      /* Code branches here for the right-hand subtree.  */
-	      bb = emit_case_nodes (test_bb, index, node->right, default_bb,
-				    default_label, default_prob, index_type,
-				    phi_mapping);
-	    }
-	}
-      else if (node->right != 0 && node->left == 0)
-	{
-	  /* Here we have a right child but no left so we issue a conditional
-	     branch to default and process the right child.
-
-	     Omit the conditional branch to default if the right child
-	     does not have any children and is single valued; it would
-	     cost too much space to save so little time.  */
-
-	  if (node->right->right || node->right->left
-	      || !tree_int_cst_equal (node->right->low, node->right->high))
-	    {
-	      if (!node_has_low_bound (node, index_type))
-		{
-		  probability
-		    = conditional_probability (default_prob.apply_scale (1, 2),
-					       subtree_prob + default_prob);
-		  bb = emit_cmp_and_jump_insns (bb, index, node->high, LT_EXPR,
-						default_bb, probability,
-						phi_mapping);
-		  default_prob = default_prob.apply_scale (1, 2);
-		}
-
-	      bb = emit_case_nodes (bb, index, node->right, default_bb,
-				    default_label, default_prob, index_type,
-				    phi_mapping);
-	    }
-	  else
-	    {
-	      probability
-		= conditional_probability (node->right->subtree_prob,
-					   subtree_prob + default_prob);
-	      /* We cannot process node->right normally
-		 since we haven't ruled out the numbers less than
-		 this node's value.  So handle node->right explicitly.  */
-	      bb = do_jump_if_equal (bb, index, node->right->low,
-				     node->right->case_bb, probability,
-				     phi_mapping);
-	    }
-	}
-
-      else if (node->right == 0 && node->left != 0)
-	{
-	  /* Just one subtree, on the left.  */
-	  if (node->left->left || node->left->right
-	      || !tree_int_cst_equal (node->left->low, node->left->high))
-	    {
-	      if (!node_has_high_bound (node, index_type))
-		{
-		  probability
-		    = conditional_probability (default_prob.apply_scale (1, 2),
-					       subtree_prob + default_prob);
-		  bb = emit_cmp_and_jump_insns (bb, index, node->high, GT_EXPR,
-						default_bb, probability,
-						phi_mapping);
-		  default_prob = default_prob.apply_scale (1, 2);
-		}
-
-	      bb = emit_case_nodes (bb, index, node->left, default_bb,
-				    default_label, default_prob, index_type,
-				    phi_mapping);
-	    }
-	  else
-	    {
-	      probability
-		= conditional_probability (node->left->subtree_prob,
-					   subtree_prob + default_prob);
-	      /* We cannot process node->left normally
-		 since we haven't ruled out the numbers less than
-		 this node's value.  So handle node->left explicitly.  */
-	      do_jump_if_equal (bb, index, node->left->low, node->left->case_bb,
-				probability, phi_mapping);
-	    }
-	}
-    }
-  else
-    {
-      /* Node is a range.  These cases are very similar to those for a single
-	 value, except that we do not start by testing whether this node
-	 is the one to branch to.  */
-
-      if (node->right != 0 && node->left != 0)
-	{
-	  /* Node has subtrees on both sides.
-	     If the right-hand subtree is bounded,
-	     test for it first, since we can go straight there.
-	     Otherwise, we need to make a branch in the control structure,
-	     then handle the two subtrees.  */
-	  basic_block test_bb = NULL;
-
-	  if (node_is_bounded (node->right, index_type))
-	    {
-	      /* Right hand node is fully bounded so we can eliminate any
-		 testing and branch directly to the target code.  */
-	      probability
-		= conditional_probability (node->right->subtree_prob,
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, index, node->high, GT_EXPR,
-					    node->right->case_bb, probability,
-					    phi_mapping);
-	    }
-	  else
-	    {
-	      /* Right hand node requires testing.
-		 Branch to a label where we will handle it later.  */
-
-	      test_bb = split_edge (single_succ_edge (bb));
-	      redirect_edge_succ (single_pred_edge (test_bb),
-				  single_succ_edge (bb)->dest);
-
-	      probability
-		= conditional_probability (node->right->subtree_prob
-					     + default_prob.apply_scale (1, 2),
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, index, node->high, GT_EXPR,
-					    test_bb, probability, phi_mapping);
-	      default_prob = default_prob.apply_scale (1, 2);
-	    }
-
-	  /* Value belongs to this node or to the left-hand subtree.  */
-
-	  probability
-	    = conditional_probability (prob, subtree_prob + default_prob);
-	  bb = emit_cmp_and_jump_insns (bb, index, node->low, GE_EXPR,
-					node->case_bb, probability,
-					phi_mapping);
-
-	  /* Handle the left-hand subtree.  */
-	  bb = emit_case_nodes (bb, index, node->left, default_bb,
-				default_label, default_prob, index_type,
+  /* Value belongs to this node or to the left-hand subtree.  */
+  probability
+    = conditional_probability (node->prob, node->subtree_prob + default_prob);
+  bb = emit_cmp_and_jump_insns (bb, index, node->low, GE_EXPR,
+				node->case_bb, probability,
 				phi_mapping);
 
-	  /* If right node had to be handled later, do that now.  */
-	  if (test_bb)
-	    {
-	      /* If the left-hand subtree fell through,
-		 don't let it fall into the right-hand subtree.  */
-	      if (bb && default_bb)
-		emit_jump (bb, default_bb, phi_mapping);
+  /* Handle the left-hand subtree.  */
+  bb = emit_case_nodes (bb, index, node->left, default_bb,
+			default_label, default_prob, index_type,
+			phi_mapping);
 
-	      bb = emit_case_nodes (test_bb, index, node->right, default_bb,
-				    default_label, default_prob, index_type,
-				    phi_mapping);
-	    }
-	}
+  /* If the left-hand subtree fell through,
+     don't let it fall into the right-hand subtree.  */
+  if (default_bb)
+    emit_jump (bb, default_bb, phi_mapping);
 
-      else if (node->right != 0 && node->left == 0)
-	{
-	  /* Deal with values to the left of this node,
-	     if they are possible.  */
-	  if (!node_has_low_bound (node, index_type))
-	    {
-	      probability
-		= conditional_probability (default_prob.apply_scale (1, 2),
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, index, node->low, LT_EXPR,
-					    default_bb, probability,
-					    phi_mapping);
-	      default_prob = default_prob.apply_scale (1, 2);
-	    }
-
-	  /* Value belongs to this node or to the right-hand subtree.  */
-
-	  probability
-	    = conditional_probability (prob, subtree_prob + default_prob);
-	  bb = emit_cmp_and_jump_insns (bb, index, node->high, LE_EXPR,
-					node->case_bb, probability,
-					phi_mapping);
-
-	  bb = emit_case_nodes (bb, index, node->right, default_bb,
-				default_label, default_prob, index_type,
-				phi_mapping);
-	}
-
-      else if (node->right == 0 && node->left != 0)
-	{
-	  /* Deal with values to the right of this node,
-	     if they are possible.  */
-	  if (!node_has_high_bound (node, index_type))
-	    {
-	      probability
-		= conditional_probability (default_prob.apply_scale (1, 2),
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, index, node->high, GT_EXPR,
-					    default_bb, probability,
-					    phi_mapping);
-	      default_prob = default_prob.apply_scale (1, 2);
-	    }
-
-	  /* Value belongs to this node or to the left-hand subtree.  */
-
-	  probability
-	    = conditional_probability (prob, subtree_prob + default_prob);
-	  bb = emit_cmp_and_jump_insns (bb, index, node->low, GE_EXPR,
-					node->case_bb, probability,
-					phi_mapping);
-
-	  bb = emit_case_nodes (bb, index, node->left, default_bb,
-				default_label, default_prob, index_type,
-				phi_mapping);
-	}
-
-      else
-	{
-	  /* Node has no children so we check low and high bounds to remove
-	     redundant tests.  Only one of the bounds can exist,
-	     since otherwise this node is bounded--a case tested already.  */
-	  bool high_bound = node_has_high_bound (node, index_type);
-	  bool low_bound = node_has_low_bound (node, index_type);
-
-	  if (!high_bound && low_bound)
-	    {
-	      probability
-		= conditional_probability (default_prob,
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, index, node->high, GT_EXPR,
-					    default_bb, probability,
-					    phi_mapping);
-	    }
-
-	  else if (!low_bound && high_bound)
-	    {
-	      probability
-		= conditional_probability (default_prob,
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, index, node->low, LT_EXPR,
-					    default_bb, probability,
-					    phi_mapping);
-	    }
-	  else if (!low_bound && !high_bound)
-	    {
-	      tree lhs, rhs;
-	      generate_range_test (bb, index, node->low, node->high,
-				   &lhs, &rhs);
-	      probability
-		= conditional_probability (default_prob,
-					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, lhs, rhs, GT_EXPR,
-					    default_bb, probability,
-					    phi_mapping);
-	    }
-
-	  emit_jump (bb, node->case_bb, phi_mapping);
-	  return NULL;
-	}
-    }
+  bb = emit_case_nodes (test_bb, index, node->right, default_bb,
+			default_label, default_prob, index_type,
+			phi_mapping);
 
   return bb;
-}
-
-/* Search the parent sections of the case node tree
-   to see if a test for the lower bound of NODE would be redundant.
-   INDEX_TYPE is the type of the index expression.
-
-   The instructions to generate the case decision tree are
-   output in the same order as nodes are processed so it is
-   known that if a parent node checks the range of the current
-   node minus one that the current node is bounded at its lower
-   span.  Thus the test would be redundant.  */
-
-static bool
-node_has_low_bound (case_node_ptr node, tree index_type)
-{
-  tree low_minus_one;
-  case_node_ptr pnode;
-
-  /* If the lower bound of this node is the lowest value in the index type,
-     we need not test it.  */
-
-  if (tree_int_cst_equal (node->low, TYPE_MIN_VALUE (index_type)))
-    return true;
-
-  /* If this node has a left branch, the value at the left must be less
-     than that at this node, so it cannot be bounded at the bottom and
-     we need not bother testing any further.  */
-
-  if (node->left)
-    return false;
-
-  low_minus_one = fold_build2 (MINUS_EXPR, TREE_TYPE (node->low), node->low,
-			       build_int_cst (TREE_TYPE (node->low), 1));
-
-  /* If the subtraction above overflowed, we can't verify anything.
-     Otherwise, look for a parent that tests our value - 1.  */
-
-  if (!tree_int_cst_lt (low_minus_one, node->low))
-    return false;
-
-  for (pnode = node->parent; pnode; pnode = pnode->parent)
-    if (tree_int_cst_equal (low_minus_one, pnode->high))
-      return true;
-
-  return false;
-}
-
-/* Search the parent sections of the case node tree
-   to see if a test for the upper bound of NODE would be redundant.
-   INDEX_TYPE is the type of the index expression.
-
-   The instructions to generate the case decision tree are
-   output in the same order as nodes are processed so it is
-   known that if a parent node checks the range of the current
-   node plus one that the current node is bounded at its upper
-   span.  Thus the test would be redundant.  */
-
-static bool
-node_has_high_bound (case_node_ptr node, tree index_type)
-{
-  tree high_plus_one;
-  case_node_ptr pnode;
-
-  /* If there is no upper bound, obviously no test is needed.  */
-
-  if (TYPE_MAX_VALUE (index_type) == NULL)
-    return true;
-
-  /* If the upper bound of this node is the highest value in the type
-     of the index expression, we need not test against it.  */
-
-  if (tree_int_cst_equal (node->high, TYPE_MAX_VALUE (index_type)))
-    return true;
-
-  /* If this node has a right branch, the value at the right must be greater
-     than that at this node, so it cannot be bounded at the top and
-     we need not bother testing any further.  */
-
-  if (node->right)
-    return false;
-
-  high_plus_one = fold_build2 (PLUS_EXPR, TREE_TYPE (node->high), node->high,
-			       build_int_cst (TREE_TYPE (node->high), 1));
-
-  /* If the addition above overflowed, we can't verify anything.
-     Otherwise, look for a parent that tests our value + 1.  */
-
-  if (!tree_int_cst_lt (node->high, high_plus_one))
-    return false;
-
-  for (pnode = node->parent; pnode; pnode = pnode->parent)
-    if (tree_int_cst_equal (high_plus_one, pnode->low))
-      return true;
-
-  return false;
-}
-
-/* Search the parent sections of the
-   case node tree to see if both tests for the upper and lower
-   bounds of NODE would be redundant.  */
-
-static bool
-node_is_bounded (case_node_ptr node, tree index_type)
-{
-  return (node_has_low_bound (node, index_type)
-	  && node_has_high_bound (node, index_type));
 }
