@@ -11592,6 +11592,8 @@ sparc_expand_builtin (tree exp, rtx target,
       else
 	op[0] = target;
     }
+  else
+    op[0] = NULL_RTX;
 
   FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
     {
