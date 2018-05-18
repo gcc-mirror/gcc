@@ -1,3 +1,17 @@
+2018-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85098
+	* include/bits/regex.h [__cplusplus < 201703L] (basic_regex::icase)
+	(basic_regex::nosubs, basic_regex::optimize, basic_regex::collate)
+	(basic_regex::ECMAScript, basic_regex::basic, basic_regex::extended)
+	(basic_regex::awk, basic_regex::grep, basic_regex::egrep): Add
+	definitions.
+	* include/bits/regex_automaton.h (_NFA::_M_insert_state): Adjust
+	whitespace.
+	* include/bits/regex_compiler.tcc (__INSERT_REGEX_MATCHER): Add
+	braces around body of do-while.
+	* testsuite/28_regex/basic_regex/85098.cc: New
+
 2018-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85818
