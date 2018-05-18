@@ -1,3 +1,19 @@
+2018-05-18  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/stl_deque.h (_Deque_iterator): Constrain constructor
+	for conversion to const_iterator.  Add defaulted copy ops.
+	* libsupc++/new (bad_alloc): Add defaulted copy ops.
+	* libsupc++/exception.h (exception): Add defaulted copy ops.
+	* include/std/system_error (system_error): Add defaulted copy ops.
+	* include/std/stdexcept (domain_error, invalid_argument)
+	(length_error, out_of_range, range_error, overflow_error)
+	(underflow_error): Add defaulted copy ops.
+	* include/bits/stl_iterator.h (reverse_iterator): Add defaulted
+	copy assignment.
+	* include/bits/allocator.h (allocator): Add defaulted copy assignment.
+	* include/ext/throw_allocator.h (condition_base): Add defaulted
+	default and copy ctor and copy assignment.
+
 2018-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85098
