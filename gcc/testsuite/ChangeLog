@@ -1,3 +1,12 @@
+2018-05-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dse-35.c: New testcase.
+	* gcc.dg/graphite/scop-10.c: Adjust to avoid dead code.
+	* gcc.dg/graphite/scop-6.c: Likewise.
+	* gcc.dg/graphite/scop-7.c: Likewise.
+	* gcc.dg/graphite/scop-8.c: Likewise.
+	* gcc.dg/graphite/scop-9.c: Likewise.
+
 2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/vect-init-ld1.c: New test.
