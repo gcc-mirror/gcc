@@ -1,3 +1,8 @@
+2018-05-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c++/85782
+	* c-c++-common/goacc/pr85782.c: New test.
+
 2018-05-18  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/aarch64/sve/slp_5.c: Remove xfail for tld1d and tld2d.
