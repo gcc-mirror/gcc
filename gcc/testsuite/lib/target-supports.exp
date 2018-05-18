@@ -4096,12 +4096,11 @@ proc check_effective_target_arm_fp16_hw { } {
 # extension (eg. ARMv8.1-A) since there is no macro defined for them.  See
 # how only __ARM_ARCH_8A__ is checked for ARMv8.1-A.
 # Usage: /* { dg-require-effective-target arm_arch_v5_ok } */
-#        /* { dg-add-options arm_arch_v5 } */
-#	 /* { dg-require-effective-target arm_arch_v5_multilib } */
+#        /* { dg-add-options arm_arch_v5t } */
+#	 /* { dg-require-effective-target arm_arch_v5t_multilib } */
 foreach { armfunc armflag armdefs } {
 	v4 "-march=armv4 -marm" __ARM_ARCH_4__
 	v4t "-march=armv4t" __ARM_ARCH_4T__
-	v5 "-march=armv5 -marm" __ARM_ARCH_5__
 	v5t "-march=armv5t" __ARM_ARCH_5T__
 	v5te "-march=armv5te" __ARM_ARCH_5TE__
 	v6 "-march=armv6" __ARM_ARCH_6__

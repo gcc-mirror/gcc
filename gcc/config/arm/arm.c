@@ -859,11 +859,8 @@ int arm_arch4 = 0;
 /* Nonzero if this chip supports the ARM Architecture 4t extensions.  */
 int arm_arch4t = 0;
 
-/* Nonzero if this chip supports the ARM Architecture 5 extensions.  */
-int arm_arch5 = 0;
-
-/* Nonzero if this chip supports the ARM Architecture 5E extensions.  */
-int arm_arch5e = 0;
+/* Nonzero if this chip supports the ARM Architecture 5T extensions.  */
+int arm_arch5t = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 5TE extensions.  */
 int arm_arch5te = 0;
@@ -3642,10 +3639,8 @@ arm_option_reconfigure_globals (void)
   arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_armv3m);
   arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv4);
   arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5);
-  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5e);
-  arm_arch5te = arm_arch5e
-    && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
+  arm_arch5t =  bitmap_bit_p (arm_active_target.isa, isa_bit_armv5t);
+  arm_arch5te = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5te);
   arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6);
   arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6k);
   arm_arch_notm = bitmap_bit_p (arm_active_target.isa, isa_bit_notm);
@@ -3694,7 +3689,7 @@ arm_option_reconfigure_globals (void)
 void
 arm_options_perform_arch_sanity_checks (void)
 {
-  /* V5 code we generate is completely interworking capable, so we turn off
+  /* V5T code we generate is completely interworking capable, so we turn off
      TARGET_INTERWORK here to avoid many tests later on.  */
 
   /* XXX However, we must pass the right pre-processor defines to CPP
@@ -3702,7 +3697,7 @@ arm_options_perform_arch_sanity_checks (void)
   if (TARGET_INTERWORK)
     arm_cpp_interwork = 1;
 
-  if (arm_arch5)
+  if (arm_arch5t)
     target_flags &= ~MASK_INTERWORK;
 
   if (TARGET_IWMMXT && !ARM_DOUBLEWORD_ALIGN)
@@ -4061,10 +4056,10 @@ use_return_insn (int iscond, rtx sibling)
      the other registers, since that is never slower than executing
      another instruction.
 
-     We test for !arm_arch5 here, because code for any architecture
+     We test for !arm_arch5t here, because code for any architecture
      less than this could potentially be run on one of the buggy
      chips.  */
-  if (stack_adjust == 4 && !arm_arch5 && TARGET_ARM)
+  if (stack_adjust == 4 && !arm_arch5t && TARGET_ARM)
     {
       /* Validate that r3 is a call-clobbered register (always true in
 	 the default abi) ...  */
@@ -18097,7 +18092,7 @@ arm_emit_call_insn (rtx pat, rtx addr, bool sibcall)
 const char *
 output_call (rtx *operands)
 {
-  gcc_assert (!arm_arch5); /* Patterns should call blx <reg> directly.  */
+  gcc_assert (!arm_arch5t); /* Patterns should call blx <reg> directly.  */
 
   /* Handle calls to lr using ip (which may be clobbered in subr anyway).  */
   if (REGNO (operands[0]) == LR_REGNUM)
@@ -19732,7 +19727,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	      stack_adjust = offsets->outgoing_args - offsets->saved_regs;
 	      gcc_assert (stack_adjust == 0 || stack_adjust == 4);
 
-	      if (stack_adjust && arm_arch5 && TARGET_ARM)
+	      if (stack_adjust && arm_arch5t && TARGET_ARM)
 		  sprintf (instr, "ldmib%s\t%%|sp, {", conditional);
 	      else
 		{
@@ -19807,7 +19802,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	  break;
 
 	case ARM_FT_INTERWORKED:
-	  gcc_assert (arm_arch5 || arm_arch4t);
+	  gcc_assert (arm_arch5t || arm_arch4t);
 	  sprintf (instr, "bx%s\t%%|lr", conditional);
 	  break;
 
@@ -19855,7 +19850,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	      snprintf (instr, sizeof (instr), "bxns\t%%|lr");
 	    }
 	  /* Use bx if it's available.  */
-	  else if (arm_arch5 || arm_arch4t)
+	  else if (arm_arch5t || arm_arch4t)
 	    sprintf (instr, "bx%s\t%%|lr", conditional);
 	  else
 	    sprintf (instr, "mov%s\t%%|pc, %%|lr", conditional);
@@ -23459,7 +23454,7 @@ arm_final_prescan_insn (rtx_insn *insn)
 		 used since they make interworking inefficient (the
 		 linker can't transform BL<cond> into BLX).  That's
 		 only a problem if the machine has BLX.  */
-	      if (arm_arch5)
+	      if (arm_arch5t)
 		{
 		  fail = TRUE;
 		  break;
@@ -31433,7 +31428,7 @@ arm_coproc_builtin_available (enum unspecv builtin)
       case VUNSPEC_MRC2:
 	/* Only present in ARMv5*, ARMv6 (but not ARMv6-M), ARMv7* and
 	   ARMv8-{A,M}.  */
-	if (arm_arch5)
+	if (arm_arch5t)
 	  return true;
 	break;
       case VUNSPEC_MCRR:

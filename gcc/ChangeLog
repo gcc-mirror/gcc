@@ -1,3 +1,57 @@
+2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cpus.in (armv5, armv5e): Delete features.
+	(armv5t, armv5te): New features.
+	(ARMv5, ARMv5e): Delete fgroups.
+	(ARMv5t, ARMv5te): Adjust for above changes.
+	(ARMv6m): Likewise.
+	(armv5, armv5e): Delete arches.
+	* config/arm/arm.md (*call_reg_armv5): Use arm_arch5t instead of
+	arm_arch5.
+	(*call_reg_arm): Likewise.
+	(*call_value_reg_armv5): Likewise.
+	(*call_value_reg_arm): Likewise.
+	(*call_symbol): Likewise.
+	(*call_value_symbol): Likewise.
+	(*sibcall_insn): Likewise.
+	(*sibcall_value_insn): Likewise.
+	(clzsi2): Likewise.
+	(prefetch): Likewise.
+	(define_split and define_peephole2 dependent on arm_arch5):
+	Likewise.
+	* config/arm/arm.h (TARGET_LDRD): Use arm_arch5te instead of
+	arm_arch5e.
+	(TARGET_ARM_QBIT): Likewise.
+	(TARGET_DSP_MULTIPLY): Likewise.
+	(enum base_architecture): Delete BASE_ARCH_5, BASE_ARCH_5E.
+	(arm_arch5, arm_arch5e): Delete.
+	(arm_arch5t, arm_arch5te): Declare.
+	* config/arm/arm.c (arm_arch5, arm_arch5e): Delete.
+	(arm_arch5t): Declare.
+	(arm_option_reconfigure_globals): Update for the above.
+	(arm_options_perform_arch_sanity_checks): Update comment, replace
+	use of arm_arch5 with arm_arch5t.
+	(use_return_insn): Likewise.
+	(arm_emit_call_insn): Likewise.
+	(output_return_instruction): Likewise.
+	(arm_final_prescan_insn): Likewise.
+	(arm_coproc_builtin_available): Likewise.
+	* config/arm/arm-c.c (arm_cpu_builtins): Replace arm_arch5 and
+	arm_arch5e with arm_arch5t and arm_arch5te.
+	* config/arm/arm-protos.h (arm_arch5, arm_arch5e): Delete.
+	(arm_arch5t, arm_arch5te): Declare.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/t-arm-elf: Remove references to armv5, armv5e.
+	* config/arm/t-multilib: Likewise.
+	* config/arm/thumb1.md (*call_reg_thumb1_v5): Check arm_arch5t
+	instead of arm_arch5.
+	(*call_reg_thumb1): Likewise.
+	(*call_value_reg_thumb1_v5): Likewise.
+	(*call_value_reg_thumb1): Likewise.
+	* config/arm/vxworks.h (TARGET_OS_CPP_BUILTINS): Remove now
+	unreachable path.
+	* doc/invoke.texi (ARM Options): Remove references to armv5, armv5e.
+
 2018-05-18  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/84846
