@@ -60,14 +60,14 @@ define feature mode32
 # Architecture rel 4
 define feature armv4
 
-# Architecture rel 5
-define feature armv5
-
 # Thumb aware.
 define feature thumb
 
-# Architecture rel 5e.
-define feature armv5e
+# Architecture rel 5t.
+define feature armv5t
+
+# Architecture rel 5te.
+define feature armv5te
 
 # XScale.
 define feature xscale
@@ -220,10 +220,8 @@ define fgroup ARMv3       ARMv2 mode32
 define fgroup ARMv3m      ARMv3 armv3m
 define fgroup ARMv4       ARMv3m armv4
 define fgroup ARMv4t      ARMv4 thumb
-define fgroup ARMv5       ARMv4 armv5
-define fgroup ARMv5t      ARMv5 thumb
-define fgroup ARMv5e      ARMv5 armv5e
-define fgroup ARMv5te     ARMv5e thumb
+define fgroup ARMv5t      ARMv4t armv5t
+define fgroup ARMv5te     ARMv5t armv5te
 define fgroup ARMv5tej    ARMv5te
 define fgroup ARMv6       ARMv5te armv6 be8
 define fgroup ARMv6j      ARMv6
@@ -234,7 +232,7 @@ define fgroup ARMv6zk     ARMv6k
 define fgroup ARMv6t2     ARMv6 thumb2
 # This is suspect.  ARMv6-m doesn't really pull in any useful features
 # from ARMv5* or ARMv6.
-define fgroup ARMv6m      mode32 armv3m armv4 thumb armv5 armv5e armv6 be8
+define fgroup ARMv6m      mode32 armv3m armv4 thumb armv5t armv5te armv6 be8
 # This is suspect, the 'common' ARMv7 subset excludes the thumb2 'DSP' and
 # integer SIMD instructions that are in ARMv6T2.  */
 define fgroup ARMv7       ARMv6m thumb2 armv7
@@ -325,29 +323,12 @@ begin arch armv4t
  isa ARMv4t
 end arch armv4t
 
-begin arch armv5
- tune for arm10tdmi
- tune flags CO_PROC
- base 5
- isa ARMv5
-end arch armv5
-
 begin arch armv5t
  tune for arm10tdmi
  tune flags CO_PROC
  base 5T
  isa ARMv5t
 end arch armv5t
-
-begin arch armv5e
- tune for arm1026ej-s
- tune flags CO_PROC
- base 5E
- isa ARMv5e
- option fp add VFPv2 FP_DBL
- optalias vfpv2 fp
- option nofp remove ALL_FP
-end arch armv5e
 
 begin arch armv5te
  tune for arm1026ej-s

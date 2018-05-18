@@ -1,3 +1,7 @@
+2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/libunwind.S: Update comment relating to armv5.
+
 2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/arm/cmse.c (cmse_check_address_range): Replace

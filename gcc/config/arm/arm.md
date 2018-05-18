@@ -8087,7 +8087,7 @@
          (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && arm_arch5 && !SIBLING_CALL_P (insn)"
+  "TARGET_ARM && arm_arch5t && !SIBLING_CALL_P (insn)"
   "blx%?\\t%0"
   [(set_attr "type" "call")]
 )
@@ -8097,7 +8097,7 @@
          (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
+  "TARGET_ARM && !arm_arch5t && !SIBLING_CALL_P (insn)"
   "*
   return output_call (operands);
   "
@@ -8179,7 +8179,7 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && arm_arch5 && !SIBLING_CALL_P (insn)"
+  "TARGET_ARM && arm_arch5t && !SIBLING_CALL_P (insn)"
   "blx%?\\t%1"
   [(set_attr "type" "call")]
 )
@@ -8190,7 +8190,7 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
+  "TARGET_ARM && !arm_arch5t && !SIBLING_CALL_P (insn)"
   "*
   return output_call (&operands[1]);
   "
@@ -8216,7 +8216,7 @@
 
    /* Switch mode now when possible.  */
    if (SYMBOL_REF_DECL (op) && !TREE_PUBLIC (SYMBOL_REF_DECL (op))
-        && arm_arch5 && arm_change_mode_p (SYMBOL_REF_DECL (op)))
+	&& arm_arch5t && arm_change_mode_p (SYMBOL_REF_DECL (op)))
       return NEED_PLT_RELOC ? \"blx%?\\t%a0(PLT)\" : \"blx%?\\t(%a0)\";
 
     return NEED_PLT_RELOC ? \"bl%?\\t%a0(PLT)\" : \"bl%?\\t%a0\";
@@ -8240,7 +8240,7 @@
 
    /* Switch mode now when possible.  */
    if (SYMBOL_REF_DECL (op) && !TREE_PUBLIC (SYMBOL_REF_DECL (op))
-        && arm_arch5 && arm_change_mode_p (SYMBOL_REF_DECL (op)))
+	&& arm_arch5t && arm_change_mode_p (SYMBOL_REF_DECL (op)))
       return NEED_PLT_RELOC ? \"blx%?\\t%a1(PLT)\" : \"blx%?\\t(%a1)\";
 
     return NEED_PLT_RELOC ? \"bl%?\\t%a1(PLT)\" : \"bl%?\\t%a1\";
@@ -8325,7 +8325,7 @@
     return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
   else
     {
-      if (arm_arch5 || arm_arch4t)
+      if (arm_arch5t || arm_arch4t)
 	return \"bx%?\\t%0\\t%@ indirect register sibling call\";
       else
 	return \"mov%?\\t%|pc, %0\\t%@ indirect register sibling call\";
@@ -8346,7 +8346,7 @@
    return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
   else
     {
-      if (arm_arch5 || arm_arch4t)
+      if (arm_arch5t || arm_arch4t)
 	return \"bx%?\\t%1\";
       else
 	return \"mov%?\\t%|pc, %1\\t@ indirect sibling call \";
@@ -8984,7 +8984,7 @@
 	(eq:SI (match_operand:SI 1 "s_register_operand" "")
 	       (const_int 0)))
    (clobber (reg:CC CC_REGNUM))]
-  "arm_arch5 && TARGET_32BIT"
+  "arm_arch5t && TARGET_32BIT"
   [(set (match_dup 0) (clz:SI (match_dup 1)))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (const_int 5)))]
 )
@@ -9077,7 +9077,7 @@
 	      (set (match_operand:SI 0 "register_operand" "") (const_int 0)))
    (cond_exec (eq (reg:CC CC_REGNUM) (const_int 0))
 	      (set (match_dup 0) (const_int 1)))]
-  "arm_arch5 && TARGET_32BIT && peep2_regno_dead_p (3, CC_REGNUM)"
+  "arm_arch5t && TARGET_32BIT && peep2_regno_dead_p (3, CC_REGNUM)"
   [(set (match_dup 0) (clz:SI (match_dup 1)))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (const_int 5)))]
 )
@@ -9116,7 +9116,7 @@
 	      (set (match_operand:SI 0 "register_operand" "") (const_int 0)))
    (cond_exec (eq (reg:CC CC_REGNUM) (const_int 0))
 	      (set (match_dup 0) (const_int 1)))]
-  "arm_arch5 && TARGET_32BIT && peep2_regno_dead_p (3, CC_REGNUM)
+  "arm_arch5t && TARGET_32BIT && peep2_regno_dead_p (3, CC_REGNUM)
   && !(TARGET_THUMB2 && optimize_insn_for_size_p ())"
   [(set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (clz:SI (match_dup 0)))
@@ -11273,7 +11273,7 @@
 (define_insn "clzsi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(clz:SI (match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_32BIT && arm_arch5"
+  "TARGET_32BIT && arm_arch5t"
   "clz%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "clz")])
@@ -11309,7 +11309,7 @@
   [(prefetch (match_operand:SI 0 "address_operand" "p")
 	     (match_operand:SI 1 "" "")
 	     (match_operand:SI 2 "" ""))]
-  "TARGET_32BIT && arm_arch5e"
+  "TARGET_32BIT && arm_arch5te"
   "pld\\t%a0"
   [(set_attr "type" "load_4")]
 )

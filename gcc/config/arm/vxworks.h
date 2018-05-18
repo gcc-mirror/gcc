@@ -60,13 +60,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	else					\
 	  builtin_define ("CPU=ARMARCH6");	\
       }						\
-    else if (arm_arch5)				\
-      {						\
-	if (TARGET_THUMB)			\
-	  builtin_define ("CPU=ARMARCH5_T");	\
-	else					\
-	  builtin_define ("CPU=ARMARCH5");	\
-      }						\
+    else if (arm_arch5t)				\
+	builtin_define ("CPU=ARMARCH5_T");	\
     else if (arm_arch4)				\
       {						\
 	if (TARGET_THUMB)			\
