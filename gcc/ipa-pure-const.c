@@ -940,9 +940,6 @@ malloc_candidate_p (function *fun, bool ipa)
       if (!retval)
 	DUMP_AND_RETURN("No return value.")
 
-      if (integer_zerop (retval))
-	continue;
-
       if (TREE_CODE (retval) != SSA_NAME
 	  || TREE_CODE (TREE_TYPE (retval)) != POINTER_TYPE)
 	DUMP_AND_RETURN("Return value is not SSA_NAME or not a pointer type.")
@@ -972,37 +969,44 @@ malloc_candidate_p (function *fun, bool ipa)
 	}
 
       else if (gphi *phi = dyn_cast<gphi *> (def))
-	for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
-	  {
-	    tree arg = gimple_phi_arg_def (phi, i);
-	    if (integer_zerop (arg))
-	      continue;
+	{
+	  bool all_args_zero = true;
+	  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	    {
+	      tree arg = gimple_phi_arg_def (phi, i);
+	      if (integer_zerop (arg))
+		continue;
 
-	    if (TREE_CODE (arg) != SSA_NAME)
-	      DUMP_AND_RETURN ("phi arg is not SSA_NAME.");
-	    if (!check_retval_uses (arg, phi))
-	      DUMP_AND_RETURN ("phi arg has uses outside phi"
-			       " and comparisons against 0.")
+	      all_args_zero = false;
+	      if (TREE_CODE (arg) != SSA_NAME)
+		DUMP_AND_RETURN ("phi arg is not SSA_NAME.");
+	      if (!check_retval_uses (arg, phi))
+		DUMP_AND_RETURN ("phi arg has uses outside phi"
+				 " and comparisons against 0.")
 
-	    gimple *arg_def = SSA_NAME_DEF_STMT (arg);
-	    gcall *call_stmt = dyn_cast<gcall *> (arg_def);
-	    if (!call_stmt)
-	      return false;
-	    tree callee_decl = gimple_call_fndecl (call_stmt);
-	    if (!callee_decl)
-	      return false;
-	    if (!ipa && !DECL_IS_MALLOC (callee_decl))
-	      DUMP_AND_RETURN("callee_decl does not have malloc attribute for"
-			      " non-ipa mode.")
+	      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	      gcall *call_stmt = dyn_cast<gcall *> (arg_def);
+	      if (!call_stmt)
+		return false;
+	      tree callee_decl = gimple_call_fndecl (call_stmt);
+	      if (!callee_decl)
+		return false;
+	      if (!ipa && !DECL_IS_MALLOC (callee_decl))
+		DUMP_AND_RETURN("callee_decl does not have malloc attribute"
+				" for non-ipa mode.")
 
-	    cgraph_edge *cs = node->get_edge (call_stmt);
-	    if (cs)
-	      {
-		ipa_call_summary *es = ipa_call_summaries->get (cs);
-		gcc_assert (es);
-		es->is_return_callee_uncaptured = true;
-	      }
-	  }
+	      cgraph_edge *cs = node->get_edge (call_stmt);
+	      if (cs)
+		{
+		  ipa_call_summary *es = ipa_call_summaries->get (cs);
+		  gcc_assert (es);
+		  es->is_return_callee_uncaptured = true;
+		}
+	    }
+
+	  if (all_args_zero)
+	    DUMP_AND_RETURN ("Return value is a phi with all args equal to 0.");
+	}
 
       else
 	DUMP_AND_RETURN("def_stmt of return value is not a call or phi-stmt.")

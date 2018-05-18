@@ -1,3 +1,9 @@
+2018-05-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/85817
+	* gcc.dg/tree-ssa/pr83648.c: Change scan-tree-dump to
+	scan-tree-dump-not for h.
+
 2018-05-18  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr21559.c: Adjust.
