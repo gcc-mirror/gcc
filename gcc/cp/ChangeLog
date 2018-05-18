@@ -1,3 +1,8 @@
+2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* constexpr.c (cxx_eval_constant_expression): Remove FMA_EXPR handling.
+	(potential_constant_expression_1): Likewise.
+
 2018-05-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85363

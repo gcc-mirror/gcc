@@ -4202,7 +4202,6 @@ expand_debug_expr (tree exp)
 	case SAD_EXPR:
 	case WIDEN_MULT_PLUS_EXPR:
 	case WIDEN_MULT_MINUS_EXPR:
-	case FMA_EXPR:
 	  goto ternary;
 
 	case TRUTH_ANDIF_EXPR:
@@ -5189,9 +5188,6 @@ expand_debug_expr (tree exp)
 				      ? ASHIFT : PLUS, mode, op0, op1);
 	}
       return NULL;
-
-    case FMA_EXPR:
-      return simplify_gen_ternary (FMA, mode, inner_mode, op0, op1, op2);
 
     default:
     flag_unsupported:

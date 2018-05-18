@@ -241,6 +241,20 @@ enum internal_fn {
   IFN_LAST
 };
 
+enum combined_fn {
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
+  CFN_##ENUM = int (ENUM),
+#include "builtins.def"
+
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
+  CFN_##CODE = int (END_BUILTINS) + int (IFN_##CODE),
+#include "internal-fn.def"
+
+  CFN_LAST
+};
+
+#include "case-cfn-macros.h"
+
 /* Return true if CODE represents a commutative tree code.  Otherwise
    return false.  */
 bool
@@ -288,7 +302,6 @@ commutative_ternary_tree_code (enum tree_code code)
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
     case DOT_PROD_EXPR:
-    case FMA_EXPR:
       return true;
 
     default:
@@ -448,6 +461,44 @@ inline bool
 is_a_helper <user_id *>::test (id_base *id)
 {
   return id->kind == id_base::USER;
+}
+
+/* If ID has a pair of consecutive, commutative operands, return the
+   index of the first, otherwise return -1.  */
+
+static int
+commutative_op (id_base *id)
+{
+  if (operator_id *code = dyn_cast <operator_id *> (id))
+    {
+      if (commutative_tree_code (code->code)
+	  || commutative_ternary_tree_code (code->code))
+	return 0;
+      return -1;
+    }
+  if (fn_id *fn = dyn_cast <fn_id *> (id))
+    switch (fn->fn)
+      {
+      CASE_CFN_FMA:
+      case CFN_FMS:
+      case CFN_FNMA:
+      case CFN_FNMS:
+	return 0;
+
+      default:
+	return -1;
+      }
+  if (user_id *uid = dyn_cast<user_id *> (id))
+    {
+      int res = commutative_op (uid->substitutes[0]);
+      if (res < 0)
+	return 0;
+      for (unsigned i = 1; i < uid->substitutes.length (); ++i)
+	if (res != commutative_op (uid->substitutes[i]))
+	  return -1;
+      return res;
+    }
+  return -1;
 }
 
 /* Add a predicate identifier to the hash.  */
@@ -946,6 +997,9 @@ commutate (operand *op, vec<vec<user_id *> > &for_vec)
   if (!e->is_commutative)
     return ret;
 
+  /* The operation is always binary if it isn't inherently commutative.  */
+  int natural_opno = commutative_op (e->operation);
+  unsigned int opno = natural_opno >= 0 ? natural_opno : 0;
   for (unsigned i = 0; i < result.length (); ++i)
     {
       expr *ne = new expr (e);
@@ -994,9 +1048,11 @@ commutate (operand *op, vec<vec<user_id *> > &for_vec)
 	    }
 	}
       ne->is_commutative = false;
-      // result[i].length () is 2 since e->operation is binary
-      for (unsigned j = result[i].length (); j; --j)
-	ne->append_op (result[i][j-1]);
+      for (unsigned j = 0; j < result[i].length (); ++j)
+	{
+	  int old_j = (j == opno ? opno + 1 : j == opno + 1 ? opno : j);
+	  ne->append_op (result[i][old_j]);
+	}
       ret.safe_push (ne);
     }
 
@@ -2759,24 +2815,18 @@ dt_operand::gen_gimple_expr (FILE *f, int indent)
   /* While the toplevel operands are canonicalized by the caller
      after valueizing operands of sub-expressions we have to
      re-canonicalize operand order.  */
-  if (operator_id *code = dyn_cast <operator_id *> (id))
+  int opno = commutative_op (id);
+  if (opno >= 0)
     {
-      /* ???  We can't canonicalize tcc_comparison operands here
-         because that requires changing the comparison code which
-	 we already matched...  */
-      if (commutative_tree_code (code->code)
-	  || commutative_ternary_tree_code (code->code))
-	{
-	  char child_opname0[20], child_opname1[20];
-	  gen_opname (child_opname0, 0);
-	  gen_opname (child_opname1, 1);
-	  fprintf_indent (f, indent,
-			  "if (tree_swap_operands_p (%s, %s))\n",
-			  child_opname0, child_opname1);
-	  fprintf_indent (f, indent,
-			  "  std::swap (%s, %s);\n",
-			  child_opname0, child_opname1);
-	}
+      char child_opname0[20], child_opname1[20];
+      gen_opname (child_opname0, opno);
+      gen_opname (child_opname1, opno + 1);
+      fprintf_indent (f, indent,
+		      "if (tree_swap_operands_p (%s, %s))\n",
+		      child_opname0, child_opname1);
+      fprintf_indent (f, indent,
+		      "  std::swap (%s, %s);\n",
+		      child_opname0, child_opname1);
     }
 
   return n_braces;
@@ -4217,11 +4267,14 @@ parser::parse_expr ()
 		      e->operation->id, e->operation->nargs, e->ops.length ());
 	  if (is_commutative)
 	    {
-	      if (e->ops.length () == 2)
+	      if (e->ops.length () == 2
+		  || commutative_op (e->operation) >= 0)
 		e->is_commutative = true;
 	      else
-		fatal_at (token, "only binary operators or function with "
-			  "two arguments can be marked commutative");
+		fatal_at (token, "only binary operators or functions with "
+			  "two arguments can be marked commutative, "
+			  "unless the operation is known to be inherently "
+			  "commutative");
 	    }
 	  e->expr_type = expr_type;
 	  return op;

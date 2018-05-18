@@ -1606,6 +1606,26 @@ fold_const_call_ssss (real_value *result, combined_fn fn,
     CASE_CFN_FMA_FN:
       return do_mpfr_arg3 (result, mpfr_fma, arg0, arg1, arg2, format);
 
+    case CFN_FMS:
+      {
+	real_value new_arg2 = real_value_negate (arg2);
+	return do_mpfr_arg3 (result, mpfr_fma, arg0, arg1, &new_arg2, format);
+      }
+
+    case CFN_FNMA:
+      {
+	real_value new_arg0 = real_value_negate (arg0);
+	return do_mpfr_arg3 (result, mpfr_fma, &new_arg0, arg1, arg2, format);
+      }
+
+    case CFN_FNMS:
+      {
+	real_value new_arg0 = real_value_negate (arg0);
+	real_value new_arg2 = real_value_negate (arg2);
+	return do_mpfr_arg3 (result, mpfr_fma, &new_arg0, arg1,
+			     &new_arg2, format);
+      }
+
     default:
       return false;
     }
@@ -1718,21 +1738,4 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
     default:
       return fold_const_call_1 (fn, type, arg0, arg1, arg2);
     }
-}
-
-/* Fold a fma operation with arguments ARG[012].  */
-
-tree
-fold_fma (location_t, tree type, tree arg0, tree arg1, tree arg2)
-{
-  REAL_VALUE_TYPE result;
-  if (real_cst_p (arg0)
-      && real_cst_p (arg1)
-      && real_cst_p (arg2)
-      && do_mpfr_arg3 (&result, mpfr_fma, TREE_REAL_CST_PTR (arg0),
-		       TREE_REAL_CST_PTR (arg1), TREE_REAL_CST_PTR (arg2),
-		       REAL_MODE_FORMAT (TYPE_MODE (type))))
-    return build_real (type, result);
-
-  return NULL_TREE;
 }

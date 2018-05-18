@@ -1,3 +1,61 @@
+2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/sourcebuild.texi (scalar_all_fma): Document.
+	* tree.def (FMA_EXPR): Delete.
+	* internal-fn.def (FMA, FMS, FNMA, FNMS): New internal functions.
+	* internal-fn.c (ternary_direct): New macro.
+	(expand_ternary_optab_fn): Likewise.
+	(direct_ternary_optab_supported_p): Likewise.
+	* Makefile.in (build/genmatch.o): Depend on case-fn-macros.h.
+	* builtins.c (fold_builtin_fma): Delete.
+	(fold_builtin_3): Don't call it.
+	* cfgexpand.c (expand_debug_expr): Remove FMA_EXPR handling.
+	* expr.c (expand_expr_real_2): Likewise.
+	* fold-const.c (operand_equal_p): Likewise.
+	(fold_ternary_loc): Likewise.
+	* gimple-pretty-print.c (dump_ternary_rhs): Likewise.
+	* gimple.c (DEFTREECODE): Likewise.
+	* gimplify.c (gimplify_expr): Likewise.
+	* optabs-tree.c (optab_for_tree_code): Likewise.
+	* tree-cfg.c (verify_gimple_assign_ternary): Likewise.
+	* tree-eh.c (operation_could_trap_p): Likewise.
+	(stmt_could_throw_1_p): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	(op_code_prio): Likewise.
+	* tree-ssa-loop-im.c (stmt_cost): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree.c (commutative_ternary_tree_code, add_expr): Likewise.
+	* fold-const-call.h (fold_fma): Delete.
+	* fold-const-call.c (fold_const_call_ssss): Handle CFN_FMS,
+	CFN_FNMA and CFN_FNMS.
+	(fold_fma): Delete.
+	* genmatch.c (combined_fn): New enum.
+	(commutative_ternary_tree_code): Remove FMA_EXPR handling.
+	(commutative_op): New function.
+	(commutate): Use it.  Handle more than 2 operands.
+	(dt_operand::gen_gimple_expr): Use commutative_op.
+	(parser::parse_expr): Allow :c to be used with non-binary
+	operators if the commutative operand is known.
+	* gimple-ssa-backprop.c (backprop::process_builtin_call_use): Handle
+	CFN_FMS, CFN_FNMA and CFN_FNMS.
+	(backprop::process_assign_use): Remove FMA_EXPR handling.
+	* hsa-gen.c (gen_hsa_insns_for_operation_assignment): Likewise.
+	(gen_hsa_fma): New function.
+	(gen_hsa_insn_for_internal_fn_call): Use it for IFN_FMA, IFN_FMS,
+	IFN_FNMA and IFN_FNMS.
+	* match.pd: Add folds for IFN_FMS, IFN_FNMA and IFN_FNMS.
+	* gimple-fold.h (follow_all_ssa_edges): Declare.
+	* gimple-fold.c (follow_all_ssa_edges): New function.
+	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Use the
+	gimple_build interface and use follow_all_ssa_edges to fold the result.
+	(convert_mult_to_fma): Use direct_internal_fn_suppoerted_p
+	instead of checking for optabs directly.
+	* config/i386/i386.c (ix86_add_stmt_cost): Recognize FMAs as calls
+	rather than FMA_EXPRs.
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Create a
+	call to IFN_FMA instead of an FMA_EXPR.
+
 2018-05-17  Jim Wilson  <jimw@sifive.com>
 
 	* expr.c (do_tablejump): When converting index to Pmode, if we have a

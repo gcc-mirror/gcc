@@ -1,3 +1,21 @@
+2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_scalar_all_fma):
+	New proc.
+	* gcc.dg/fma-1.c: New test.
+	* gcc.dg/fma-2.c: Likewise.
+	* gcc.dg/fma-3.c: Likewise.
+	* gcc.dg/fma-4.c: Likewise.
+	* gcc.dg/fma-5.c: Likewise.
+	* gcc.dg/fma-6.c: Likewise.
+	* gcc.dg/fma-7.c: Likewise.
+	* gcc.dg/gimplefe-26.c: Use .FMA instead of __FMA and require
+	scalar_all_fma.
+	* gfortran.dg/reassoc_7.f: Pass -ffp-contract=off.
+	* gfortran.dg/reassoc_8.f: Likewise.
+	* gfortran.dg/reassoc_9.f: Likewise.
+	* gfortran.dg/reassoc_10.f: Likewise.
+
 2018-05-17  Jim Wilson  <jimw@sifive.com>
 
 	* gcc.target/riscv/switch-qi.c: New.

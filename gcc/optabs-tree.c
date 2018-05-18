@@ -143,9 +143,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	      : (TYPE_SATURATING (type)
 		 ? ssmsub_widen_optab : smsub_widen_optab));
 
-    case FMA_EXPR:
-      return fma_optab;
-
     case VEC_WIDEN_MULT_HI_EXPR:
       return TYPE_UNSIGNED (type) ?
 	vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
