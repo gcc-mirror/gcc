@@ -4967,6 +4967,14 @@ follow_single_use_edges (tree val)
   return val;
 }
 
+/* Valueization callback that follows all SSA edges.  */
+
+tree
+follow_all_ssa_edges (tree val)
+{
+  return val;
+}
+
 /* Fold the statement pointed to by GSI.  In some cases, this function may
    replace the whole statement with a new one.  Returns true iff folding
    makes any changes.

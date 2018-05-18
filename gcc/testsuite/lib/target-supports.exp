@@ -2879,6 +2879,13 @@ proc check_effective_target_base_quadfloat_support { } {
     return 1
 }
 
+# Return 1 if the target supports all four forms of fused multiply-add
+# (fma, fms, fnma, and fnms) for both float and double.
+
+proc check_effective_target_scalar_all_fma { } {
+    return [istarget aarch64*-*-*]
+}
+
 # Return 1 if the target supports compiling fixed-point,
 # 0 otherwise.
 

@@ -15880,7 +15880,9 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	arg1 = gimple_call_arg (stmt, 1);
 	tree arg2 = gimple_call_arg (stmt, 2);
 	lhs = gimple_call_lhs (stmt);
-	gimple *g = gimple_build_assign (lhs, FMA_EXPR, arg0, arg1, arg2);
+	gcall *g = gimple_build_call_internal (IFN_FMA, 3, arg0, arg1, arg2);
+	gimple_call_set_lhs (g, lhs);
+	gimple_call_set_nothrow (g, true);
 	gimple_set_location (g, gimple_location (stmt));
 	gsi_replace (gsi, g, true);
 	return true;

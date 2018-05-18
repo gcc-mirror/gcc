@@ -110,6 +110,7 @@ init_internal_fns ()
 #define scatter_store_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
+#define ternary_direct { 0, 0, true }
 #define cond_unary_direct { 1, 1, true }
 #define cond_binary_direct { 1, 1, true }
 #define while_direct { 0, 2, false }
@@ -2982,6 +2983,9 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_binary_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
+#define expand_ternary_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+
 #define expand_cond_unary_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
@@ -3067,6 +3071,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 
 #define direct_unary_optab_supported_p direct_optab_supported_p
 #define direct_binary_optab_supported_p direct_optab_supported_p
+#define direct_ternary_optab_supported_p direct_optab_supported_p
 #define direct_cond_unary_optab_supported_p direct_optab_supported_p
 #define direct_cond_binary_optab_supported_p direct_optab_supported_p
 #define direct_mask_load_optab_supported_p direct_optab_supported_p

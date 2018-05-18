@@ -2251,6 +2251,11 @@ Target supports @option{-pie}, @option{-fpie} and @option{-fPIE}.
 @item rdynamic
 Target supports @option{-rdynamic}.
 
+@item scalar_all_fma
+Target supports all four fused multiply-add optabs for both @code{float}
+and @code{double}.  These optabs are: @code{fma_optab}, @code{fms_optab},
+@code{fnma_optab} and @code{fnms_optab}.
+
 @item section_anchors
 Target supports section anchors.
 

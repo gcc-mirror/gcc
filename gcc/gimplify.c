@@ -12086,7 +12086,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 	  break;
 
-	case FMA_EXPR:
 	case VEC_PERM_EXPR:
 	  /* Classified as tcc_expression.  */
 	  goto expr_3;

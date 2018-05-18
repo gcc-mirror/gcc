@@ -3297,7 +3297,6 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case TRUTH_ORIF_EXPR:
 	  return OP_SAME (0) && OP_SAME (1);
 
-	case FMA_EXPR:
 	case WIDEN_MULT_PLUS_EXPR:
 	case WIDEN_MULT_MINUS_EXPR:
 	  if (!OP_SAME (2))
@@ -11707,17 +11706,6 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	}
 
       return NULL_TREE;
-
-    case FMA_EXPR:
-      /* For integers we can decompose the FMA if possible.  */
-      if (TREE_CODE (arg0) == INTEGER_CST
-	  && TREE_CODE (arg1) == INTEGER_CST)
-	return fold_build2_loc (loc, PLUS_EXPR, type,
-				const_binop (MULT_EXPR, arg0, arg1), arg2);
-      if (integer_zerop (arg2))
-	return fold_build2_loc (loc, MULT_EXPR, type, arg0, arg1);
-
-      return fold_fma (loc, type, arg0, arg1, arg2);
 
     case VEC_PERM_EXPR:
       if (TREE_CODE (arg2) == VECTOR_CST)

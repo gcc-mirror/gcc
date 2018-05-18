@@ -1,3 +1,11 @@
+2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* brigfrontend/brig-function.cc
+	(brig_function::get_builtin_for_hsa_opcode): Use BUILT_IN_FMA
+	for BRIG_OPCODE_FMA.
+	(brig_function::get_tree_code_for_hsa_opcode): Treat BUILT_IN_FMA
+	as a call.
+
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brig/brigfrontend/brig-basic-inst-handler.cc:  Fix handling of NOPs.

@@ -493,7 +493,6 @@ stmt_cost (gimple *stmt)
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
     case DOT_PROD_EXPR:
-    case FMA_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:

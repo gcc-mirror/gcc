@@ -51133,19 +51133,20 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
   tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = - 1;
 
+  bool fp = false;
+  machine_mode mode = TImode;
+
+  if (vectype != NULL)
+    {
+      fp = FLOAT_TYPE_P (vectype);
+      mode = TYPE_MODE (vectype);
+    }
+
   if ((kind == vector_stmt || kind == scalar_stmt)
       && stmt_info
       && stmt_info->stmt && gimple_code (stmt_info->stmt) == GIMPLE_ASSIGN)
     {
       tree_code subcode = gimple_assign_rhs_code (stmt_info->stmt);
-      bool fp = false;
-      machine_mode mode = TImode;
-
-      if (vectype != NULL)
-	{
-	  fp = FLOAT_TYPE_P (vectype);
-	  mode = TYPE_MODE (vectype);
-	}
       /*machine_mode inner_mode = mode;
       if (VECTOR_MODE_P (mode))
 	inner_mode = GET_MODE_INNER (mode);*/
@@ -51175,12 +51176,6 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	case WIDEN_MULT_EXPR:
 	case MULT_HIGHPART_EXPR:
 	  stmt_cost = ix86_multiplication_cost (ix86_cost, mode);
-	  break;
-	case FMA_EXPR:
-          stmt_cost = ix86_vec_cost (mode,
-				     mode == SFmode ? ix86_cost->fmass
-				     : ix86_cost->fmasd,
-				     true);
 	  break;
 	case NEGATE_EXPR:
 	  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
@@ -51244,6 +51239,24 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	  break;
 	}
     }
+
+  combined_fn cfn;
+  if ((kind == vector_stmt || kind == scalar_stmt)
+      && stmt_info
+      && stmt_info->stmt
+      && (cfn = gimple_call_combined_fn (stmt_info->stmt)) != CFN_LAST)
+    switch (cfn)
+      {
+      case CFN_FMA:
+	stmt_cost = ix86_vec_cost (mode,
+				   mode == SFmode ? ix86_cost->fmass
+				   : ix86_cost->fmasd,
+				   true);
+	break;
+      default:
+	break;
+      }
+
   /* If we do elementwise loads into a vector then we are bound by
      latency and execution resources for the many scalar loads
      (AGU and load ports).  Try to account for this by scaling the
