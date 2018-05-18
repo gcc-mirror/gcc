@@ -1,3 +1,8 @@
+2018-05-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-dfa.c (get_ref_base_and_extent): Use range-info to refine
+	results when processing array refs with variable index.
+
 2018-05-18  Toon Moene  <toon@moene.org>
 
 	* doc/invoke.texi: Move -floop-unroll-and-jam documentation
