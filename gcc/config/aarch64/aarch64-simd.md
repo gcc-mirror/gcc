@@ -694,11 +694,11 @@
 )
 
 (define_insn "aarch64_simd_vec_set<mode>"
-  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w,w,w")
-        (vec_merge:VDQ_BHSI
-	    (vec_duplicate:VDQ_BHSI
-		(match_operand:<VEL> 1 "aarch64_simd_general_operand" "r,w,Utv"))
-	    (match_operand:VDQ_BHSI 3 "register_operand" "0,0,0")
+  [(set (match_operand:VALL_F16 0 "register_operand" "=w,w,w")
+	(vec_merge:VALL_F16
+	    (vec_duplicate:VALL_F16
+		(match_operand:<VEL> 1 "aarch64_simd_general_operand" "w,?r,Utv"))
+	    (match_operand:VALL_F16 3 "register_operand" "0,0,0")
 	    (match_operand:SI 2 "immediate_operand" "i,i,i")))]
   "TARGET_SIMD"
   {
@@ -707,16 +707,16 @@
    switch (which_alternative)
      {
      case 0:
-	return "ins\\t%0.<Vetype>[%p2], %w1";
-     case 1:
 	return "ins\\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
+     case 1:
+	return "ins\\t%0.<Vetype>[%p2], %<vwcore>1";
      case 2:
         return "ld1\\t{%0.<Vetype>}[%p2], %1";
      default:
 	gcc_unreachable ();
      }
   }
-  [(set_attr "type" "neon_from_gp<q>, neon_ins<q>, neon_load1_one_lane<q>")]
+  [(set_attr "type" "neon_ins<q>, neon_from_gp<q>, neon_load1_one_lane<q>")]
 )
 
 (define_insn "*aarch64_simd_vec_copy_lane<mode>"
@@ -1030,19 +1030,6 @@
   }
 )
 
-(define_expand "vec_set<mode>"
-  [(match_operand:VDQ_BHSI 0 "register_operand")
-   (match_operand:<VEL> 1 "register_operand")
-   (match_operand:SI 2 "immediate_operand")]
-  "TARGET_SIMD"
-  {
-    HOST_WIDE_INT elem = (HOST_WIDE_INT) 1 << INTVAL (operands[2]);
-    emit_insn (gen_aarch64_simd_vec_set<mode> (operands[0], operands[1],
-					    GEN_INT (elem), operands[0]));
-    DONE;
-  }
-)
-
 ;; For 64-bit modes we use ushl/r, as this does not require a SIMD zero.
 (define_insn "vec_shr_<mode>"
   [(set (match_operand:VD 0 "register_operand" "=w")
@@ -1059,62 +1046,8 @@
   [(set_attr "type" "neon_shift_imm")]
 )
 
-(define_insn "aarch64_simd_vec_setv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "=w,w")
-        (vec_merge:V2DI
-	    (vec_duplicate:V2DI
-		(match_operand:DI 1 "register_operand" "r,w"))
-	    (match_operand:V2DI 3 "register_operand" "0,0")
-	    (match_operand:SI 2 "immediate_operand" "i,i")))]
-  "TARGET_SIMD"
-  {
-    int elt = ENDIAN_LANE_N (2, exact_log2 (INTVAL (operands[2])));
-    operands[2] = GEN_INT ((HOST_WIDE_INT) 1 << elt);
-    switch (which_alternative)
-      {
-      case 0:
-	return "ins\\t%0.d[%p2], %1";
-      case 1:
-        return "ins\\t%0.d[%p2], %1.d[0]";
-      default:
-	gcc_unreachable ();
-      }
-  }
-  [(set_attr "type" "neon_from_gp, neon_ins_q")]
-)
-
-(define_expand "vec_setv2di"
-  [(match_operand:V2DI 0 "register_operand")
-   (match_operand:DI 1 "register_operand")
-   (match_operand:SI 2 "immediate_operand")]
-  "TARGET_SIMD"
-  {
-    HOST_WIDE_INT elem = (HOST_WIDE_INT) 1 << INTVAL (operands[2]);
-    emit_insn (gen_aarch64_simd_vec_setv2di (operands[0], operands[1],
-					  GEN_INT (elem), operands[0]));
-    DONE;
-  }
-)
-
-(define_insn "aarch64_simd_vec_set<mode>"
-  [(set (match_operand:VDQF_F16 0 "register_operand" "=w")
-	(vec_merge:VDQF_F16
-	    (vec_duplicate:VDQF_F16
-		(match_operand:<VEL> 1 "register_operand" "w"))
-	    (match_operand:VDQF_F16 3 "register_operand" "0")
-	    (match_operand:SI 2 "immediate_operand" "i")))]
-  "TARGET_SIMD"
-  {
-    int elt = ENDIAN_LANE_N (<nunits>, exact_log2 (INTVAL (operands[2])));
-
-    operands[2] = GEN_INT ((HOST_WIDE_INT)1 << elt);
-    return "ins\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
-  }
-  [(set_attr "type" "neon_ins<q>")]
-)
-
 (define_expand "vec_set<mode>"
-  [(match_operand:VDQF_F16 0 "register_operand" "+w")
+  [(match_operand:VALL_F16 0 "register_operand" "+w")
    (match_operand:<VEL> 1 "register_operand" "w")
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_SIMD"
