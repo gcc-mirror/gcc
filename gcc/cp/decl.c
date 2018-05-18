@@ -10388,18 +10388,12 @@ grokdeclarator (const cp_declarator *declarator,
       type = NULL_TREE;
       type_was_error_mark_node = true;
     }
-  /* If the entire declaration is itself tagged as deprecated then
-     suppress reports of deprecated items.  */
-  if (type && TREE_DEPRECATED (type)
-      && deprecated_state != DEPRECATED_SUPPRESS)
-    cp_warn_deprecated_use (type);
+  cp_warn_deprecated_use (type);
   if (type && TREE_CODE (type) == TYPE_DECL)
     {
       typedef_decl = type;
       type = TREE_TYPE (typedef_decl);
-      if (TREE_DEPRECATED (type)
-	  && DECL_ARTIFICIAL (typedef_decl)
-	  && deprecated_state != DEPRECATED_SUPPRESS)
+      if (DECL_ARTIFICIAL (typedef_decl))
 	cp_warn_deprecated_use (type);
     }
   /* No type at all: default to `int', and set DEFAULTED_INT

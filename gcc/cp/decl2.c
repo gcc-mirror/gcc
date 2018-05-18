@@ -5173,6 +5173,55 @@ maybe_instantiate_decl (tree decl)
     }
 }
 
+/* Maybe warn if DECL is deprecated, subject to COMPLAIN.  Returns whether or
+   not a warning was emitted.  */
+
+bool
+cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
+{
+  if (!(complain & tf_warning) || !decl
+      || deprecated_state == DEPRECATED_SUPPRESS)
+    return false;
+
+  if (!TREE_DEPRECATED (decl))
+    {
+      /* Perhaps this is a deprecated typedef.  */
+      if (TYPE_P (decl) && TYPE_NAME (decl))
+	decl = TYPE_NAME (decl);
+
+      if (!TREE_DEPRECATED (decl))
+	return false;
+    }
+
+  /* Don't warn within members of a deprecated type.  */
+  if (TYPE_P (decl)
+      && currently_open_class (decl))
+    return false;
+
+  bool warned = false;
+  if (cxx_dialect >= cxx11
+      && DECL_P (decl)
+      && DECL_ARTIFICIAL (decl)
+      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+      && copy_fn_p (decl))
+    {
+      warned = warning (OPT_Wdeprecated_copy,
+			"implicitly-declared %qD is deprecated", decl);
+      if (warned)
+	{
+	  tree ctx = DECL_CONTEXT (decl);
+	  tree other = classtype_has_user_copy_or_dtor (ctx);
+	  inform (DECL_SOURCE_LOCATION (other),
+		  "because %qT has user-provided %qD",
+		  ctx, other);
+	}
+    }
+  else
+    warned = warn_deprecated_use (decl, NULL_TREE);
+
+  return warned;
+}
+
 /* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  Return false if something goes
@@ -5237,9 +5286,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       return false;
     }
 
-  if (TREE_DEPRECATED (decl) && (complain & tf_warning)
-      && deprecated_state != DEPRECATED_SUPPRESS)
-    warn_deprecated_use (decl, NULL_TREE);
+  cp_warn_deprecated_use (decl, complain);
 
   /* We can only check DECL_ODR_USED on variables or functions with
      DECL_LANG_SPECIFIC set, and these are also the only decls that we

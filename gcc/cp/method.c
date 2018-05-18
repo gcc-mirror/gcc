@@ -2394,8 +2394,19 @@ lazily_declare_fn (special_function_kind sfk, tree type)
      move assignment operator, the implicitly declared copy constructor is
      defined as deleted.... */
   if ((sfk == sfk_copy_assignment || sfk == sfk_copy_constructor)
-      && classtype_has_move_assign_or_move_ctor_p (type, true))
-    DECL_DELETED_FN (fn) = true;
+      && cxx_dialect >= cxx11)
+    {
+      if (classtype_has_move_assign_or_move_ctor_p (type, true))
+	DECL_DELETED_FN (fn) = true;
+      else if (classtype_has_user_copy_or_dtor (type))
+	/* The implicit definition of a copy constructor as defaulted is
+	   deprecated if the class has a user-declared copy assignment operator
+	   or a user-declared destructor. The implicit definition of a copy
+	   assignment operator as defaulted is deprecated if the class has a
+	   user-declared copy constructor or a user-declared destructor (15.4,
+	   15.8).  */
+	TREE_DEPRECATED (fn) = true;
+    }
 
   /* Destructors and assignment operators may be virtual.  */
   if (sfk == sfk_destructor

@@ -464,6 +464,11 @@ Wdeprecated
 C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used.
 
+Wdeprecated-copy
+C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wall)
+Mark implicitly-declared copy operations as deprecated if the class has a
+user-provided copy operation or destructor.
+
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers.
