@@ -1,3 +1,7 @@
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
+	* passes.def: Remove a redundant pass.
+
 2018-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/85838
