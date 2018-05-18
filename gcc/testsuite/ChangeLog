@@ -1,3 +1,11 @@
+2018-05-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	Backport from mainline
+	2018-05-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c++/85782
+	* c-c++-common/goacc/pr85782.c: New test.
+
 2018-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/85742

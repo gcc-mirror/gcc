@@ -1,3 +1,11 @@
+2018-05-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	Backport from mainline
+	2018-05-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c++/85782
+	* testsuite/libgomp.oacc-c-c++-common/pr85782.c: New test.
+
 2018-05-02  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
