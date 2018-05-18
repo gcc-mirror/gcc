@@ -15904,9 +15904,7 @@ Permissible names are:
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
-Thumb execution state, are recognized but support is deprecated:
-@samp{armv2}, @samp{armv2a}, @samp{armv3}, @samp{armv3m},
-@samp{armv4}.
+Thumb execution state, are recognized but support is deprecated: @samp{armv4}.
 
 Many of the architectures support extensions.  These can be added by
 appending @samp{+@var{extension}} to the architecture name.  Extension

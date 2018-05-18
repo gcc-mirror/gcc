@@ -850,9 +850,6 @@ struct arm_build_target arm_active_target;
 /* The following are used in the arm.md file as equivalents to bits
    in the above two flag variables.  */
 
-/* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
-int arm_arch3m = 0;
-
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 int arm_arch4 = 0;
 
@@ -3002,7 +2999,8 @@ arm_option_override_internal (struct gcc_options *opts,
   if (TARGET_INTERWORK && !bitmap_bit_p (arm_active_target.isa, isa_bit_thumb))
     {
       /* The default is to enable interworking, so this warning message would
-	 be confusing to users who have just compiled with, eg, -march=armv3.  */
+	 be confusing to users who have just compiled with
+	 eg, -march=armv4.  */
       /* warning (0, "ignoring -minterwork because target CPU does not support THUMB"); */
       opts->x_target_flags &= ~MASK_INTERWORK;
     }
@@ -3236,7 +3234,6 @@ arm_configure_build_target (struct arm_build_target *target,
       if (TARGET_INTERWORK || TARGET_THUMB)
 	{
 	  bitmap_set_bit (sought_isa, isa_bit_thumb);
-	  bitmap_set_bit (sought_isa, isa_bit_mode32);
 
 	  /* There are no ARM processors that support both APCS-26 and
 	     interworking.  Therefore we forcibly remove MODE26 from
@@ -3636,7 +3633,6 @@ arm_option_reconfigure_globals (void)
 
   /* Initialize boolean versions of the architectural flags, for use
      in the arm.md file.  */
-  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_armv3m);
   arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv4);
   arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch5t =  bitmap_bit_p (arm_active_target.isa, isa_bit_armv5t);
@@ -10005,8 +10001,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
       if (mode == DImode)
 	{
-	  if (arm_arch3m
-	      && GET_CODE (XEXP (x, 0)) == MULT
+	  if (GET_CODE (XEXP (x, 0)) == MULT
 	      && ((GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
 		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == ZERO_EXTEND)
 		  || (GET_CODE (XEXP (XEXP (x, 0), 0)) == SIGN_EXTEND
@@ -10204,11 +10199,10 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
       if (mode == DImode)
 	{
-	  if (arm_arch3m
-	      && ((GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-		   && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
-		  || (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
-		      && GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)))
+	  if ((GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+		&& GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	       || (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+		   && GET_CODE (XEXP (x, 1)) == SIGN_EXTEND))
 	    {
 	      if (speed_p)
 		*cost += extra_cost->mult[1].extend;

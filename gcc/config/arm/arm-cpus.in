@@ -48,14 +48,8 @@
 
 # Features - general convention: all lower case.
 
-# Extended multiply
-define feature armv3m
-
 # 26-bit mode support
 define feature mode26
-
-# 32-bit mode support
-define feature mode32
 
 # Architecture rel 4
 define feature armv4
@@ -215,10 +209,7 @@ define fgroup ALL_FPU_INTERNAL	vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD_I
 # -mfpu support.
 define fgroup ALL_FP	fp16 ALL_FPU_INTERNAL
 
-define fgroup ARMv2       notm
-define fgroup ARMv3       ARMv2 mode32
-define fgroup ARMv3m      ARMv3 armv3m
-define fgroup ARMv4       ARMv3m armv4
+define fgroup ARMv4       armv4 notm
 define fgroup ARMv4t      ARMv4 thumb
 define fgroup ARMv5t      ARMv4t armv5t
 define fgroup ARMv5te     ARMv5t armv5te
@@ -232,7 +223,7 @@ define fgroup ARMv6zk     ARMv6k
 define fgroup ARMv6t2     ARMv6 thumb2
 # This is suspect.  ARMv6-m doesn't really pull in any useful features
 # from ARMv5* or ARMv6.
-define fgroup ARMv6m      mode32 armv3m armv4 thumb armv5t armv5te armv6 be8
+define fgroup ARMv6m      armv4 thumb armv5t armv5te armv6 be8
 # This is suspect, the 'common' ARMv7 subset excludes the thumb2 'DSP' and
 # integer SIMD instructions that are in ARMv6T2.  */
 define fgroup ARMv7       ARMv6m thumb2 armv7
@@ -278,34 +269,6 @@ define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd
 #   isa <isa-flags-list>
 # end arch <name>
 #
-
-begin arch armv2
- tune for arm2
- tune flags CO_PROC NO_MODE32
- base 2
- isa ARMv2 mode26
-end arch armv2
-
-begin arch armv2a
- tune for arm2
- tune flags CO_PROC NO_MODE32
- base 2
- isa ARMv2 mode26
-end arch armv2a
-
-begin arch armv3
- tune for arm6
- tune flags CO_PROC
- base 3
- isa ARMv3 mode26
-end arch armv3
-
-begin arch armv3m
- tune for arm7m
- tune flags CO_PROC
- base 3M
- isa ARMv3m mode26
-end arch armv3m
 
 begin arch armv4
  tune for arm7tdmi
@@ -674,154 +637,6 @@ end arch iwmmxt2
 # Each add option must have a distinct feature set and each remove
 # option must similarly have a distinct feature set.  Option aliases can be
 # added with the optalias statement
-
-# V2/V2A Architecture Processors
-begin cpu arm2
- tune flags CO_PROC NO_MODE32
- architecture armv2
- costs slowmul
-end cpu arm2
-
-begin cpu arm250
- tune flags CO_PROC NO_MODE32
- architecture armv2
- costs slowmul
-end cpu arm250
-
-begin cpu arm3
- tune flags CO_PROC NO_MODE32
- architecture armv2
- costs slowmul
-end cpu arm3
-
-
-# V3 Architecture Processors
-begin cpu arm6
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm6
-
-begin cpu arm60
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm60
-
-begin cpu arm600
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm600
-
-begin cpu arm610
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm610
-
-begin cpu arm620
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm620
-
-begin cpu arm7
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm7
-
-begin cpu arm7d
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm7d
-
-begin cpu arm7di
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm7di
-
-begin cpu arm70
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm70
-
-begin cpu arm700
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm700
-
-begin cpu arm700i
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm700i
-
-begin cpu arm710
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm710
-
-begin cpu arm720
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm720
-
-begin cpu arm710c
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm710c
-
-begin cpu arm7100
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm7100
-
-begin cpu arm7500
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm7500
-
-# Doesn't have an external co-proc, but does have embedded FPA
-# (the FPA part is no-longer supported).
-begin cpu arm7500fe
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm7500fe
-
-
-# V3M Architecture Processors
-# arm7m doesn't exist on its own, but only with "D", (and "I"), but
-# those don't alter the code, so arm7m is sometimes used.
-begin cpu arm7m
- tune flags CO_PROC
- architecture armv3m
- costs fastmul
-end cpu arm7m
-
-begin cpu arm7dm
- tune flags CO_PROC
- architecture armv3m
- costs fastmul
-end cpu arm7dm
-
-begin cpu arm7dmi
- tune flags CO_PROC
- architecture armv3m
- costs fastmul
-end cpu arm7dmi
-
 
 # V4 Architecture Processors
 begin cpu arm8

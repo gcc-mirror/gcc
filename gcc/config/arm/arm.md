@@ -1754,7 +1754,7 @@
 	  (sign_extend:DI (match_operand:SI 1 "s_register_operand" ""))
 	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "")))
 	 (match_operand:DI 3 "s_register_operand" "")))]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
   "")
 
 (define_insn "*mulsidi3adddi"
@@ -1764,7 +1764,7 @@
 	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "%r"))
 	  (sign_extend:DI (match_operand:SI 3 "s_register_operand" "r")))
 	 (match_operand:DI 1 "s_register_operand" "0")))]
-  "TARGET_32BIT && arm_arch3m && !arm_arch6"
+  "TARGET_32BIT && !arm_arch6"
   "smlal%?\\t%Q0, %R0, %3, %2"
   [(set_attr "type" "smlal")
    (set_attr "predicable" "yes")]
@@ -1794,7 +1794,7 @@
 	(mult:DI
 	 (sign_extend:DI (match_operand:SI 1 "s_register_operand" ""))
 	 (sign_extend:DI (match_operand:SI 2 "s_register_operand" ""))))]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
   ""
 )
 
@@ -1803,7 +1803,7 @@
 	(mult:DI
 	 (sign_extend:DI (match_operand:SI 1 "s_register_operand" "%r"))
 	 (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
-  "TARGET_32BIT && arm_arch3m && !arm_arch6"
+  "TARGET_32BIT && !arm_arch6"
   "smull%?\\t%Q0, %R0, %1, %2"
   [(set_attr "type" "smull")
    (set_attr "predicable" "yes")]
@@ -1825,7 +1825,7 @@
 	(mult:DI
 	 (zero_extend:DI (match_operand:SI 1 "s_register_operand" ""))
 	 (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))))]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
   ""
 )
 
@@ -1834,7 +1834,7 @@
 	(mult:DI
 	 (zero_extend:DI (match_operand:SI 1 "s_register_operand" "%r"))
 	 (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
-  "TARGET_32BIT && arm_arch3m && !arm_arch6"
+  "TARGET_32BIT && !arm_arch6"
   "umull%?\\t%Q0, %R0, %1, %2"
   [(set_attr "type" "umull")
    (set_attr "predicable" "yes")]
@@ -1858,7 +1858,7 @@
 	  (zero_extend:DI (match_operand:SI 1 "s_register_operand" ""))
 	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "")))
 	 (match_operand:DI 3 "s_register_operand" "")))]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
   "")
 
 (define_insn "*umulsidi3adddi"
@@ -1868,7 +1868,7 @@
 	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "%r"))
 	  (zero_extend:DI (match_operand:SI 3 "s_register_operand" "r")))
 	 (match_operand:DI 1 "s_register_operand" "0")))]
-  "TARGET_32BIT && arm_arch3m && !arm_arch6"
+  "TARGET_32BIT && !arm_arch6"
   "umlal%?\\t%Q0, %R0, %3, %2"
   [(set_attr "type" "umlal")
    (set_attr "predicable" "yes")]
@@ -1897,7 +1897,7 @@
 	     (sign_extend:DI (match_operand:SI 2 "s_register_operand" "")))
 	    (const_int 32))))
      (clobber (match_scratch:SI 3 ""))])]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
   ""
 )
 
@@ -1910,7 +1910,7 @@
 	   (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r,r")))
 	  (const_int 32))))
    (clobber (match_scratch:SI 3 "=&r,&r"))]
-  "TARGET_32BIT && arm_arch3m && !arm_arch6"
+  "TARGET_32BIT && !arm_arch6"
   "smull%?\\t%3, %0, %2, %1"
   [(set_attr "type" "smull")
    (set_attr "predicable" "yes")]
@@ -1941,7 +1941,7 @@
 	      (zero_extend:DI (match_operand:SI 2 "s_register_operand" "")))
 	    (const_int 32))))
      (clobber (match_scratch:SI 3 ""))])]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
   ""
 )
 
@@ -1954,7 +1954,7 @@
 	   (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r,r")))
 	  (const_int 32))))
    (clobber (match_scratch:SI 3 "=&r,&r"))]
-  "TARGET_32BIT && arm_arch3m && !arm_arch6"
+  "TARGET_32BIT && !arm_arch6"
   "umull%?\\t%3, %0, %2, %1"
   [(set_attr "type" "umull")
    (set_attr "predicable" "yes")]

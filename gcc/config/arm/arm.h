@@ -399,9 +399,6 @@ enum base_architecture
 /* The major revision number of the ARM Architecture implemented by the target.  */
 extern enum base_architecture arm_base_arch;
 
-/* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
-extern int arm_arch3m;
-
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 extern int arm_arch4;
 
