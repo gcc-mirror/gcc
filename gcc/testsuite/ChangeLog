@@ -1,3 +1,7 @@
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/pr68766.c: Change pruned output.
+
 2018-05-18  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR c++/85782
