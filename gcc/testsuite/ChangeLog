@@ -1,3 +1,7 @@
+2018-05-18  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/sve/slp_5.c: Remove xfail for tld1d and tld2d.
+
 2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/pr62554.c: Delete.
