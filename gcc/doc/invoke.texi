@@ -8866,6 +8866,13 @@ for (int i = 0; i < N; i++)
     for (int j = 0; j < N; j++)
       c[i][j] = c[i][j] + a[i][k]*b[k][j];
 @end smallexample
+This flag is enabled by default at @option{-O3}.
+
+@item -floop-unroll-and-jam
+@opindex floop-unroll-and-jam
+Apply unroll and jam transformations on feasible loops.  In a loop
+nest this unrolls the outer loop by some factor and fuses the resulting
+multiple inner loops.  This flag is enabled by default at @option{-O3}.
 
 @item -ftree-loop-im
 @opindex ftree-loop-im
@@ -10037,12 +10044,6 @@ for one side of the iteration space and false for the other.
 @opindex funswitch-loops
 Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
-
-@item -floop-unroll-and-jam
-@opindex floop-unroll-and-jam
-Apply unroll and jam transformations on feasible loops.  In a loop
-nest this unrolls the outer loop by some factor and fuses the resulting
-multiple inner loops.
 
 @item -ffunction-sections
 @itemx -fdata-sections
