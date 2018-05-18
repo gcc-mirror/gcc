@@ -115,7 +115,10 @@ Classes used:
 
    module_state - module object
 
-   module_server - server object  */
+   module_server - server object
+
+   I have a confession: tri-valued bools are not the worst thing in
+   this file.  */
 
 /* MODULE_STAMP is a #define passed in from the Makefile.  When
    present, it is used for version stamping the binary files, and
@@ -128,6 +131,9 @@ Classes used:
 
 /* Server Protocol version.  Very new.  */
 #define SERVER_VERSION 0
+
+// FIXME:Transition
+#define IMMEDIATE_DEFNS 1
 
 #include "config.h"
 #include "system.h"
@@ -2072,7 +2078,7 @@ public:
     }
     depset **maybe_insert (const key_type &, bool = true);
     depset *maybe_add_declaration (tree decl);
-    depset *add_definition (depset *decl_dep);
+    depset *add_definition (depset *decl_dep, bool deferrable);
 
   public:
     depset *find (const key_type &);
@@ -5893,10 +5899,12 @@ trees_in::finish_type (tree type)
   return type;
 }
 
-/* Return true if DECL has a definition that would be interesting to
-   write out.  */
+/* Return non-zero if DECL has a definition that would be interesting to
+   write out.  Returns < 0 if the definition should be written with
+   the declaration.  Returns > 0 if the definiton can be written
+   separately.  */
 
-static bool
+static int
 has_definition (tree decl)
 {
  again:
@@ -5910,6 +5918,7 @@ has_definition (tree decl)
       goto again;
 
     case FUNCTION_DECL:
+      /* Functions can be written separately.  */
       if (!DECL_INITIAL (decl))
 	/* Not defined.  */
 	break;
@@ -5917,30 +5926,43 @@ has_definition (tree decl)
       if (DECL_TEMPLATE_INFO (decl))
 	{
 	  if (!(DECL_USE_TEMPLATE (decl) & 1))
-	    return true;
+	    return +1;
 	}
       else if (DECL_DECLARED_INLINE_P (decl))
-	return true;
+	return +1;
       break;
 
     case VAR_DECL:
+      /* Variables should be written inline.  */
       if (!DECL_INITIAL (decl))
 	/* Nothing to define.  */
 	break;
 
       if (TREE_CONSTANT (decl))
-	return true;
+	return -1;
 
       break;
 
     case TYPE_DECL:
-      if (!DECL_IMPLICIT_TYPEDEF_P (decl))
-	break;
+      {
+	if (!DECL_IMPLICIT_TYPEDEF_P (decl))
+	  break;
 
-      if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
-	  ? TYPE_VALUES (TREE_TYPE (decl))
-	  : TYPE_FIELDS (TREE_TYPE (decl)))
-	return true;
+	tree type = TREE_TYPE (decl);
+	if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  {
+	    /* Enumerations should be written inline.  (Probably just
+	       unscoped need this, but harmless otherwise.)  */
+	    if (TYPE_VALUES (type))
+	      return -1;
+	  }
+	else
+	  {
+	    /* Classes can be written separately.  */
+	    if (TYPE_FIELDS (type))
+	      return +1;
+	  }
+      }
       break;
     }
 
@@ -5967,7 +5989,8 @@ depset::hash::find (const key_type &key)
 }
 
 /* DECL_DEP is a depset of a decl.  Add a depset for its definition,
-   and return it.
+   and return it.  If DEFERRABLE is true, the definition may be saved
+   separately.
 
    NOTE:For the moment we make the declaration's depset depend on the
    defintion's.  Thus forcing them into the same cluster and writing
@@ -5975,7 +5998,7 @@ depset::hash::find (const key_type &key)
    functions about why that's important.  */
 
 depset *
-depset::hash::add_definition (depset *decl_dep)
+depset::hash::add_definition (depset *decl_dep, bool deferrable)
 {
   gcc_checking_assert (decl_dep->is_decl ());
 
@@ -5985,7 +6008,8 @@ depset::hash::add_definition (depset *decl_dep)
   depset *defn_dep = *slot;
   if (!defn_dep)
     {
-      dump () && dump ("Need definition of %N", decl);
+      dump () && dump ("Need%s definition of %N",
+		       deferrable ? " deferrable" : "", decl);
       defn_dep = new depset (key);
       *slot = defn_dep;
       worklist.safe_push (defn_dep);
@@ -5993,9 +6017,8 @@ depset::hash::add_definition (depset *decl_dep)
       /* It depends on the decl.  */
       defn_dep->deps.safe_push (decl_dep);
 
-      // FIXME:Make the binding depend on the definition, until I figure
-      // out how to lazily load it.
-      decl_dep->deps.safe_push (defn_dep);
+      if (IMMEDIATE_DEFNS || !deferrable)
+	decl_dep->deps.safe_push (defn_dep);
     }
 
   return defn_dep;
@@ -6028,18 +6051,25 @@ depset::hash::add_dependency (tree decl, bool looking_inside)
   if (dep->is_unnamed)
     current->refs_unnamed = true;
 
-  if (TREE_CODE (decl) == NAMESPACE_DECL)
-    looking_inside = false;
-  else if (looking_inside || has_definition (decl))
+  int has_def = 0;
+  if (TREE_CODE (decl) != NAMESPACE_DECL)
     {
-      depset *defn_dep = add_definition (dep);
       if (looking_inside)
-	dep = defn_dep;
+	has_def = -1;
+      else
+	has_def = has_definition (decl);
+
+      if (has_def)
+	{
+	  depset *defn_dep = add_definition (dep, has_def >= 0);
+	  if (looking_inside)
+	    dep = defn_dep;
+	}
     }
 
   /* A newly discovered dependency. */
   dump () && dump ("Dependency on %s %N added",
-		   looking_inside ? "definition" : "declaration", decl);
+		   has_def ? "definition" : "declaration", decl);
   current->deps.safe_push (dep);
 
   if (TREE_CODE (decl) == TYPE_DECL
@@ -6080,8 +6110,8 @@ depset::hash::add_binding (tree ns, tree name, auto_vec<tree> &decls)
 	{
 	  bind->deps.quick_push (dep);
 	  dep->deps.safe_push (bind);
-	  if (has_definition (decl))
-	    add_definition (dep);
+	  if (int has_def = has_definition (decl))
+	    add_definition (dep, has_def >= 0);
 	}
     }
 
@@ -8482,18 +8512,17 @@ module_state::find_dependencies (depset::hash &table)
       walker.begin (&table);
 
       gcc_checking_assert (!d->is_binding ());
+      tree decl = d->get_decl ();
       dump () && dump ("%s %N", d->is_decl () ? "Declaration" : "Definition",
-		       d->get_decl ());
+		       decl);
       dump.indent ();
-      // FIXME:always mark the decl
-      walker.mark_node (d->get_decl (), true);
+      walker.mark_node (decl, true);
       if (d->is_defn ())
 	{
-	  mark_definition (walker, d->get_decl (),
-			   TREE_VISITED (d->get_decl ()));
-	  write_definition (walker, d->get_decl ());
+	  mark_definition (walker, decl, TREE_VISITED (decl));
+	  write_definition (walker, decl);
 	}
-      walker.tree_node (d->get_decl ());
+      walker.tree_node (decl);
       dump.outdent ();
       walker.end ();
     }

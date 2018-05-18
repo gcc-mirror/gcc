@@ -1,5 +1,11 @@
 2018-05-18  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (depset::hash::add_definition): Add DEFERRABLE parm.
+	(has_definition): Return tristate.
+	(depset::hash::add_{dependency,binding}): Adjust.
+	(module_state::find_dependencies): Refactor.
+
 	Add lazy_module_defn cookie.
 	* cp-tree.h (DECL_MODULE_LAXY_DEGN, MAYBE_DECL_MODULE_LAZY_DEFN): New.
 	(struct lang_decl_min): Add lazy_module_defn field.
