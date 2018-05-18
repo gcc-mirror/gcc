@@ -42,11 +42,11 @@ TEST_ALL (VEC_PERM)
 /* { dg-final { scan-assembler-times {\tld1b\t} 1 } } */
 /* { dg-final { scan-assembler-times {\tld1h\t} 2 } } */
 /* { dg-final { scan-assembler-times {\tld1w\t} 3 } } */
-/* { dg-final { scan-assembler-times {\tld1d\t} 3 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tld1d\t} 3 } } */
 /* { dg-final { scan-assembler-not {\tld2b\t} } } */
 /* { dg-final { scan-assembler-not {\tld2h\t} } } */
 /* { dg-final { scan-assembler-not {\tld2w\t} } } */
-/* { dg-final { scan-assembler-not {\tld2d\t} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not {\tld2d\t} } } */
 /* { dg-final { scan-assembler-times {\tuaddv\td[0-9]+, p[0-7], z[0-9]+\.b} 4 { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-times {\tuaddv\td[0-9]+, p[0-7], z[0-9]+\.h} 4 { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-times {\tuaddv\td[0-9]+, p[0-7], z[0-9]+\.b} 2 } } */
