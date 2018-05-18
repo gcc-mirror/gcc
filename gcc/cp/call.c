@@ -8168,21 +8168,30 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 		    /* See unsafe_copy_elision_p.  */
 		    || DECL_BASE_CONSTRUCTOR_P (fn));
 
-      /* [class.copy]: the copy constructor is implicitly defined even if
-	 the implementation elided its use.  */
-      if (!trivial && !force_elide)
+      fa = argarray[0];
+      bool unsafe = unsafe_copy_elision_p (fa, arg);
+      bool eliding_temp = (TREE_CODE (arg) == TARGET_EXPR && !unsafe);
+
+      /* [class.copy]: the copy constructor is implicitly defined even if the
+	 implementation elided its use.  But don't warn about deprecation when
+	 eliding a temporary, as then no copy is actually performed.  */
+      warning_sentinel s (warn_deprecated_copy, eliding_temp);
+      if (force_elide)
+	/* The language says this isn't called.  */;
+      else if (!trivial)
 	{
 	  if (!mark_used (fn, complain) && !(complain & tf_error))
 	    return error_mark_node;
 	  already_used = true;
 	}
+      else
+	cp_warn_deprecated_use (fn, complain);
 
       /* If we're creating a temp and we already have one, don't create a
 	 new one.  If we're not creating a temp but we get one, use
 	 INIT_EXPR to collapse the temp into our target.  Otherwise, if the
 	 ctor is trivial, do a bitwise copy with a simple TARGET_EXPR for a
 	 temp or an INIT_EXPR otherwise.  */
-      fa = argarray[0];
       if (is_dummy_object (fa))
 	{
 	  if (TREE_CODE (arg) == TARGET_EXPR)
@@ -8191,7 +8200,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return force_target_expr (DECL_CONTEXT (fn), arg, complain);
 	}
       else if ((trivial || TREE_CODE (arg) == TARGET_EXPR)
-	       && !unsafe_copy_elision_p (fa, arg))
+	       && !unsafe)
 	{
 	  tree to = cp_stabilize_reference (cp_build_fold_indirect_ref (fa));
 
@@ -8240,6 +8249,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  val = build2 (COMPOUND_EXPR, TREE_TYPE (to), t, to);
           TREE_NO_WARNING (val) = 1;
 	}
+
+      cp_warn_deprecated_use (fn, complain);
 
       return val;
     }

@@ -1,3 +1,19 @@
+2018-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58407 - deprecated implicit copy ops.
+	* call.c (build_over_call): Warn about deprecated trivial fns.
+	* class.c (classtype_has_user_copy_or_dtor): New.
+	(type_build_ctor_call): Check TREE_DEPRECATED.
+	(type_build_dtor_call): Likewise.
+	* decl2.c (cp_warn_deprecated_use): Move from tree.c.
+	Add checks.  Return bool.  Handle -Wdeprecated-copy.
+	(mark_used): Use it.
+	* decl.c (grokdeclarator): Remove redundant checks.
+	* typeck2.c (build_functional_cast): Likewise.
+	* method.c (lazily_declare_fn): Mark deprecated copy ops.
+	* init.c (build_aggr_init): Only set TREE_USED if there are
+	side-effects.
+
 2018-05-18  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR c++/85782

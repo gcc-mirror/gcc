@@ -213,7 +213,8 @@ in the following sections.
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
 -Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
--Wdelete-non-virtual-dtor  -Wliteral-suffix  -Wmultiple-inheritance @gol
+-Wdelete-non-virtual-dtor -Wdeprecated-copy  -Wliteral-suffix @gol
+-Wmultiple-inheritance @gol
 -Wnamespaces  -Wnarrowing @gol
 -Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
 -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
@@ -2899,6 +2900,14 @@ has virtual functions and non-virtual destructor. It is unsafe to delete
 an instance of a derived class through a pointer to a base class if the
 base class does not have a virtual destructor.  This warning is enabled
 by @option{-Wall}.
+
+@item -Wdeprecated-copy @r{(C++ and Objective-C++ only)}
+@opindex Wdeprecated-copy
+@opindex Wno-deprecated-copy
+Warn that the implicit declaration of a copy constructor or copy
+assignment operator is deprecated if the class has a user-provided
+copy constructor, copy assignment operator, or destructor, in C++11
+and up.  This warning is enabled by @option{-Wall}.
 
 @item -Wliteral-suffix @r{(C++ and Objective-C++ only)}
 @opindex Wliteral-suffix

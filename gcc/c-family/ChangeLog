@@ -1,3 +1,7 @@
+2018-05-18  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wdeprecated-copy): New flag.
+
 2018-05-17  Martin Liska  <mliska@suse.cz>
 
 	* c-warn.c (overflow_warning): Do not use

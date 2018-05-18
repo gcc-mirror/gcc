@@ -2064,9 +2064,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
     {
       type = TREE_TYPE (exp);
 
-      if (complain & tf_warning
-	  && TREE_DEPRECATED (type)
-	  && DECL_ARTIFICIAL (exp))
+      if (DECL_ARTIFICIAL (exp))
 	cp_warn_deprecated_use (type);
     }
   else

@@ -1733,11 +1733,6 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       && !DIRECT_LIST_INIT_P (init))
     flags |= LOOKUP_ONLYCONVERTING;
 
-  if ((VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
-      && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (type)))
-    /* Just know that we've seen something for this node.  */
-    TREE_USED (exp) = 1;
-
   is_global = begin_init_stmts (&stmt_expr, &compound_stmt);
   destroy_temps = stmts_are_full_exprs_p ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
@@ -1747,6 +1742,12 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
   TREE_READONLY (exp) = was_const;
   TREE_THIS_VOLATILE (exp) = was_volatile;
+
+  if ((VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
+      && TREE_SIDE_EFFECTS (stmt_expr)
+      && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (type)))
+    /* Just know that we've seen something for this node.  */
+    TREE_USED (exp) = 1;
 
   return stmt_expr;
 }
