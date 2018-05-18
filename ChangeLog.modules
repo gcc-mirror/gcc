@@ -1,6 +1,18 @@
 2018-05-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_in::{preseed,seed}): New.
+	(trees_out::seeding): New member.
+	(trees_out::seeding_p): New predicate.
+	(trees_out::unmark_trees): Add trees_in parm to preseed.
+	(trees_out::end): Add trees_in parm.
+	(trees_out::set_seed): New.
+	(trees_out::tree_decl): Check seeding_p.
+	(module_state::find_dependencies): Preseed the decl of a defn.
+	gcc/testsuite/
+	* g++.dg/modules/defer-1.C :New.
+
+	gcc/cp/
 	* module.c (depset::hash::add_definition): Add DEFERRABLE parm.
 	(has_definition): Return tristate.
 	(depset::hash::add_{dependency,binding}): Adjust.

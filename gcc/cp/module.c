@@ -2156,6 +2156,15 @@ public:
 
 public:
   int insert (tree);
+
+public:
+  void preseed (unsigned);
+  void seed (unsigned ix, tree node)
+  {
+    gcc_checking_assert (!back_refs[ix]);
+    back_refs[ix] = node;
+  }
+
 private:
   tree finish_type (tree);
 
@@ -2208,6 +2217,7 @@ private:
   ptr_int_hash_map tree_map; 	/* Trees to references */
   depset::hash *dep_hash;    	/* Dependency table.  */
   int ref_num;			/* Back reference number.  */
+  bool seeding;			/* Seeding a tree.  */
 
 public:
   trees_out (module_state *, vec<tree, va_gc> *globals);
@@ -2218,10 +2228,14 @@ public:
   {
     return dep_hash != NULL;
   }
+  bool seeding_p () const
+  {
+    return seeding;
+  }
 
 private:
   void mark_trees ();
-  void unmark_trees ();
+  void unmark_trees (trees_in * = NULL);
 
 public:
   void begin ();
@@ -2229,7 +2243,13 @@ public:
 
 public:
   void begin (depset::hash *);
-  void end ();
+  void end (trees_in *);
+
+public:
+  void set_seed (bool seed)
+  {
+    seeding = seed;
+  }
 
 public:
   void mark_node (tree, bool walk_into = true);
@@ -2294,7 +2314,7 @@ unsigned trees_out::records;
 
 trees_out::trees_out (module_state *state, vec<tree, va_gc> *globals)
   :parent (), state (state), fixed_refs (globals), tree_map (500),
-   dep_hash (NULL), ref_num (0)
+   dep_hash (NULL), ref_num (0), seeding (false)
 {
 }
 
@@ -3016,20 +3036,26 @@ trees_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
   return parent::end (sink, name, crc_ptr);
 }
 
+/* Setup and teardown for a dependency or external seeding walk.  */
 
-/* Setup and teardown for a dependency tree walk.  */
 void
 trees_out::begin (depset::hash *hash)
 {
+  gcc_assert (!dep_hash && !streaming_p ());
+
   dep_hash = hash;
   mark_trees ();
+  /* Do not parent::begin -- we're not streaming.  */
 }
 
 void
-trees_out::end ()
+trees_out::end (trees_in *seed)
 {
-  unmark_trees ();
+  gcc_assert (!streaming_p () && !seeding_p ());
+
+  unmark_trees (seed);
   dep_hash = NULL;
+  /* Do not parent::end -- we weren't streaming.  */
 }
 
 void
@@ -3058,16 +3084,36 @@ trees_out::mark_trees ()
 }
 
 void
-trees_out::unmark_trees ()
+trees_out::unmark_trees (trees_in *seed)
 {
-  /* Unmark all the trees.  */
+  if (seed)
+    seed->preseed (unsigned (-ref_num));
+
+  /* Unmark all the trees.  Seed SEED if non-null.  */
   ptr_int_hash_map::iterator end (tree_map.end ());
+  unsigned seeded = 0;
   for (ptr_int_hash_map::iterator iter (tree_map.begin ()); iter != end; ++iter)
     {
       tree node = reinterpret_cast <tree> ((*iter).first);
-      gcc_checking_assert (TREE_VISITED (node));
+      int ref = (*iter).second;
+      gcc_checking_assert (TREE_VISITED (node) && ref);
       TREE_VISITED (node) = false;
+      if (seed && ref < 0)
+	{
+	  seed->seed (~ref, node);
+	  seeded++;
+	}
     }
+  gcc_assert (!seed || seeded == unsigned (-ref_num));
+}
+
+void
+trees_in::preseed (unsigned size)
+{
+  gcc_checking_assert (back_refs.length ());
+  back_refs.reserve (size);
+  for (unsigned ix = size; ix--;)
+    back_refs.safe_push (NULL);
 }
 
 /* Insert a DECL into the map.  If INTO is true, mark it to be walked
@@ -5289,7 +5335,8 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 	/* Build out dependencies.  */
 	if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, owner);
-	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
+	else if (!seeding_p ()
+		 && DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
 	  dep_hash->add_dependency (decl, looking_inside);
       }
 
@@ -8517,14 +8564,17 @@ module_state::find_dependencies (depset::hash &table)
 		       decl);
       dump.indent ();
       walker.mark_node (decl, true);
-      if (d->is_defn ())
+      walker.set_seed (d->is_defn ());
+      walker.tree_node (decl);
+      // FIXME:voldemort members?
+      if (walker.seeding_p ())
 	{
+	  walker.set_seed (false);
 	  mark_definition (walker, decl, TREE_VISITED (decl));
 	  write_definition (walker, decl);
 	}
-      walker.tree_node (decl);
       dump.outdent ();
-      walker.end ();
+      walker.end (NULL);
     }
 }
 
