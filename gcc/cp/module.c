@@ -2419,27 +2419,27 @@ struct GTY(()) module_state {
 
  private:
   /* Serialize various definitions. */
-  static void mark_definition (trees_out &out, tree decl, bool include_decl);
+  static void mark_definition (trees_out &out, tree decl);
   static void write_definition (trees_out &out, tree decl);
   bool read_definition (trees_in &in, tree decl);
 
-  static void mark_template_def (trees_out &out, tree decl, bool include_decl);
+  static void mark_template_def (trees_out &out, tree decl);
   static void write_template_def (trees_out &out, tree decl);
   bool read_template_def (trees_in &in, tree decl);
 
-  static void mark_function_def (trees_out &out, tree decl, bool include_decl);
+  static void mark_function_def (trees_out &out, tree decl);
   static void write_function_def (trees_out &out, tree decl);
   bool read_function_def (trees_in &in, tree decl);
 
-  static void mark_var_def (trees_out &out, tree decl, bool include_decl);
+  static void mark_var_def (trees_out &out, tree decl);
   static void write_var_def (trees_out &out, tree decl);
   bool read_var_def (trees_in &in, tree decl);
 
-  static void mark_class_def (trees_out &out, tree type, bool include_decl);
+  static void mark_class_def (trees_out &out, tree type);
   static void write_class_def (trees_out &out, tree type);
   bool read_class_def (trees_in &in, tree decl);
 
-  static void mark_enum_def (trees_out &out, tree type, bool include_decl);
+  static void mark_enum_def (trees_out &out, tree type);
   static void write_enum_def (trees_out &out, tree type);
   bool read_enum_def (trees_in &in, tree decl);
 
@@ -7354,7 +7354,7 @@ module_state::write_function_def (trees_out &out, tree decl)
 }
 
 void
-module_state::mark_function_def (trees_out &, tree, bool)
+module_state::mark_function_def (trees_out &, tree)
 {
 }
 
@@ -7419,7 +7419,7 @@ module_state::write_var_def (trees_out &out, tree decl)
 }
 
 void
-module_state::mark_var_def (trees_out &, tree, bool)
+module_state::mark_var_def (trees_out &, tree)
 {
 }
 
@@ -7630,13 +7630,13 @@ module_state::write_class_def (trees_out &out, tree type)
 }
 
 void
-module_state::mark_class_def (trees_out &out, tree type, bool)
+module_state::mark_class_def (trees_out &out, tree type)
 {
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
       out.mark_node (member, true);
       if (has_definition (member))
-	mark_definition (out, member, true);
+	mark_definition (out, member);
     }
 
   if (TYPE_LANG_SPECIFIC (type))
@@ -7645,14 +7645,14 @@ module_state::mark_class_def (trees_out &out, tree type, bool)
       if (as_base && as_base != type)
 	{
 	  out.mark_node (as_base, true);
-	  mark_class_def (out, as_base, true);
+	  mark_class_def (out, as_base);
 	}
 
       for (tree vtables = CLASSTYPE_VTABLES (type);
 	   vtables; vtables = TREE_CHAIN (vtables))
 	{
 	  out.mark_node (vtables, true);
-	  mark_var_def (out, vtables, true);
+	  mark_var_def (out, vtables);
 	}
     }
 }
@@ -7769,7 +7769,7 @@ module_state::write_enum_def (trees_out &out, tree type)
 }
 
 void
-module_state::mark_enum_def (trees_out &out, tree type, bool)
+module_state::mark_enum_def (trees_out &out, tree type)
 {
   if (!UNSCOPED_ENUM_P (type))
     for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
@@ -7803,7 +7803,7 @@ module_state::write_template_def (trees_out &out, tree decl)
 }
 
 void
-module_state::mark_template_def (trees_out &out, tree decl, bool include_decl)
+module_state::mark_template_def (trees_out &out, tree decl)
 {
   tree res = DECL_TEMPLATE_RESULT (decl);
   if (TREE_CODE (res) == TYPE_DECL && CLASS_TYPE_P (TREE_TYPE (res)))
@@ -7819,7 +7819,7 @@ module_state::mark_template_def (trees_out &out, tree decl, bool include_decl)
 	gcc_assert (DECL_CONTEXT (member) == TREE_TYPE (decl));
 	out.mark_node (member);
       }
-  mark_definition (out, res, include_decl);
+  mark_definition (out, res);
 }
 
 bool
@@ -7873,7 +7873,7 @@ module_state::write_definition (trees_out &out, tree decl)
 /* Mark the body of DECL.  */
 
 void
-module_state::mark_definition (trees_out &out, tree decl, bool include_decl)
+module_state::mark_definition (trees_out &out, tree decl)
 {
   switch (TREE_CODE (decl))
     {
@@ -7881,15 +7881,15 @@ module_state::mark_definition (trees_out &out, tree decl, bool include_decl)
       gcc_unreachable ();
 
     case TEMPLATE_DECL:
-      mark_template_def (out, decl, include_decl);
+      mark_template_def (out, decl);
       break;
 
     case FUNCTION_DECL:
-      mark_function_def (out, decl, include_decl);
+      mark_function_def (out, decl);
       break;
 
     case VAR_DECL:
-      mark_var_def (out, decl, include_decl);
+      mark_var_def (out, decl);
       break;
 
     case TYPE_DECL:
@@ -7898,9 +7898,9 @@ module_state::mark_definition (trees_out &out, tree decl, bool include_decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  mark_enum_def (out, type, include_decl);
+	  mark_enum_def (out, type);
 	else
-	  mark_class_def (out, type, include_decl);
+	  mark_class_def (out, type);
       }
       break;
     }
@@ -8031,7 +8031,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  // FIXME:
 	  gcc_assert (TREE_VISITED (decl));
-	  mark_definition (sec, decl, TREE_VISITED (decl));
+	  mark_definition (sec, decl);
 	}
       else
 	{
@@ -8570,7 +8570,7 @@ module_state::find_dependencies (depset::hash &table)
       if (walker.seeding_p ())
 	{
 	  walker.set_seed (false);
-	  mark_definition (walker, decl, TREE_VISITED (decl));
+	  mark_definition (walker, decl);
 	  write_definition (walker, decl);
 	}
       dump.outdent ();
