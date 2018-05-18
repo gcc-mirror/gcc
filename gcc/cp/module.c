@@ -1231,6 +1231,12 @@ public:
     gcc_checking_assert (!data);
   }
 
+public:
+  bool streaming_p () const
+  {
+    return data != NULL;
+  }
+
 protected:
   /* Maximum bytes needed for a SIZE-byte integer in sleb or uleb
      encodings.  Each 7 input bytes need an additional byte of output,
@@ -2113,23 +2119,21 @@ depset::~depset ()
 }
 
 /* Tree tags.  */
-enum tree_tag
-  {
-    tt_backref = -1,	/* Back references.  Must be first.  */
-    tt_null,		/* NULL_TREE.  */
-    tt_fixed,		/* Fixed vector index.  */
-    tt_node,		/* New node.  */
-    tt_id,  		/* Identifier node.  */
-    tt_conv_id,		/* Conversion operator name.  */
-    tt_tinfo_var,	/* Typeinfo object. */
-    tt_tinfo_typedef,	/* Typeinfo typedef.  */
-    tt_named_type,	/* TYPE_DECL for type.  */
-    tt_named_decl,  	/* Named decl. */
-    tt_inst,		/* A template instantiation.  */
-    tt_binfo,		/* A BINFO.  */
-    tt_as_base,		/* An As-Base type.  */
-    tt_vtable		/* A vtable.  */
-  };
+enum tree_tag {
+  tt_null,		/* NULL_TREE.  */
+  tt_fixed,		/* Fixed vector index.  */
+  tt_node,		/* New node.  */
+  tt_id,  		/* Identifier node.  */
+  tt_conv_id,		/* Conversion operator name.  */
+  tt_tinfo_var,	/* Typeinfo object. */
+  tt_tinfo_typedef,	/* Typeinfo typedef.  */
+  tt_named_type,	/* TYPE_DECL for type.  */
+  tt_named_decl,  	/* Named decl. */
+  tt_inst,		/* A template instantiation.  */
+  tt_binfo,		/* A BINFO.  */
+  tt_as_base,		/* An As-Base type.  */
+  tt_vtable		/* A vtable.  */
+};
 
 /* Tree stream reader.  */
 class trees_in : public bytes_in {
@@ -2155,10 +2159,12 @@ private:
   location_t loc ();
 
 public:
+  /* Needed for binfo writing  */
+  bool core_bools (tree);
+
+private:
   /* Stream tree_core, lang_decl_specific and lang_type_specific
      bits.  */
-  bool core_bools (tree);
-private:
   bool core_vals (tree);
   bool lang_type_bools (tree);
   bool lang_type_vals (tree);
@@ -2202,15 +2208,11 @@ public:
   ~trees_out ();
 
 public:
-  bool streaming_p () const
-  {
-    return !dep_hash;
-  }
   bool depending_p () const
   {
-    return dep_hash;
+    return dep_hash != NULL;
   }
-  
+
 private:
   void mark_trees ();
   void unmark_trees ();
@@ -2993,7 +2995,7 @@ trees_out::instrument ()
 void
 trees_out::begin ()
 {
-  gcc_assert (!tree_map.elements ());
+  gcc_assert (!depending_p () && !tree_map.elements ());
 
   mark_trees ();
   parent::begin ();
@@ -5104,7 +5106,7 @@ trees_out::tree_ref (tree t)
 	  const char *kind;
 
 	  refs++;
-	  if (val <= tt_backref)
+	  if (val < 0)
 	    {
 	      /* Back reference -> -ve number  */
 	      i (val);
@@ -5128,7 +5130,7 @@ trees_out::tree_ref (tree t)
 
 /* CTX is a context of some node, with owning module OWNER (if
    known).  Write it out.  */
-
+// FIXME:return indicator if we discoverd a voldemort
 void
 trees_out::tree_ctx (tree ctx, bool looking_inside, unsigned module)
 {
@@ -5540,8 +5542,8 @@ trees_in::tree_node ()
 
     default:
       /* backref, pull it out of the map.  */
-      if (tag <= tt_backref && unsigned (tt_backref - tag) < back_refs.length ())
-	res = back_refs[tt_backref - tag];
+      if (tag < 0 && unsigned (~tag) < back_refs.length ())
+	res = back_refs[~tag];
       else
 	{
 	  error ("unknown tree reference %qd", tag);
@@ -5769,7 +5771,7 @@ trees_in::tree_node ()
 	if (get_overrun ())
 	  {
 	  barf:
-	    back_refs[tt_backref - tag] = NULL_TREE;
+	    back_refs[~tag] = NULL_TREE;
 	    set_overrun ();
 	    res = NULL_TREE;
 	    break;
@@ -5782,7 +5784,7 @@ trees_in::tree_node ()
 	  {
 	    /* Update the mapping.  */
 	    res = found;
-	    back_refs[tt_backref - tag] = res;
+	    back_refs[~tag] = res;
 	    dump () && dump ("Remapping:%d to %C:%N%S", tag,
 			     res ? TREE_CODE (res) : ERROR_MARK, res, res);
 	  }
@@ -7895,22 +7897,22 @@ cluster_cmp (const void *a_, const void *b_)
 
   /* Same decl.  They must be bindings.  Order by identifier hash
      (hey, it's a consistent number).  */
-  gcc_checking_assert (a->is_binding ());
+  gcc_checking_assert (a->is_binding ()
+		       && a->get_name () != b->get_name ());
   return (IDENTIFIER_HASH_VALUE (a->get_name ())
 	  < IDENTIFIER_HASH_VALUE (b->get_name ())
 	  ? -1 : +1);
 }
 
 /* Contents of a cluster.  */
-enum cluster_tag
-  {
-    ct_decl,	/* A decl.  */
-    ct_defn,	/* A defn.  */
-    ct_bind,	/* A binding.  */
-    ct_voldemort,  /* An unnamed decl.  */
-    ct_horcrux,	   /* Preseed reference to unnamed decl.  */
-    ct_hwm
-  };
+enum cluster_tag {
+  ct_decl,	/* A decl.  */
+  ct_defn,	/* A defn.  */
+  ct_bind,	/* A binding.  */
+  ct_voldemort,  /* An unnamed decl.  */
+  ct_horcrux,	   /* Preseed reference to unnamed decl.  */
+  ct_hwm
+};
 
 /* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
    decls < defns < bindings.  */
@@ -7931,6 +7933,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
+      tree decl = b->get_decl ();
 
       if (b->is_decl ())
 	{
@@ -7939,16 +7942,16 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	      /* There is no binding for this decl.  It is therefore
 		 not findable by name.  Determine its horcrux
 		 number.  */
-	      dump () && dump ("Unnamed %u %N", unnamed, b->get_decl ());
+	      dump () && dump ("Unnamed %u %N", unnamed, decl);
 	      b->cluster = ++unnamed;
 	    }
-	  sec.mark_node (b->get_decl ());
+	  sec.mark_node (decl);
 	}
       else if (b->is_defn ())
 	{
-	  // FIXME:we rely on the decl and defn being in the same cluster
-	  gcc_assert (TREE_VISITED (b->get_decl ()));
-	  mark_definition (sec, b->get_decl (), TREE_VISITED (b->get_decl ()));
+	  // FIXME:
+	  gcc_assert (TREE_VISITED (decl));
+	  mark_definition (sec, decl, TREE_VISITED (decl));
 	}
       else
 	{
@@ -7994,7 +7997,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		       : "Writing binding %P",
 		       b->get_decl (),
 		       b->is_binding () ? b->get_name () : NULL_TREE);
-      tree d = b->get_decl ();
+      tree decl = b->get_decl ();
 #if 0
       // FIXME:Violated by global module entities that I get wrong
       gcc_checking_assert ((TREE_CODE (d) == NAMESPACE_DECL
@@ -8010,7 +8013,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       else
 	ct = ct_bind;
       sec.u (ct);
-      sec.tree_ctx (d, false, MODULE_PURVIEW);
+      sec.tree_ctx (decl, false, MODULE_PURVIEW);
       switch (ct)
 	{
 	default:
@@ -8024,7 +8027,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case ct_defn:
-	  write_definition (sec, b->get_decl ());
+	  write_definition (sec, decl);
 	  break;
 
 	case ct_bind:

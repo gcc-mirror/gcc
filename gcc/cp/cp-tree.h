@@ -5700,28 +5700,26 @@ enum auto_deduction_context
 extern void init_reswords (void);
 
 /* Various flags for the overloaded operator information.  */
-enum ovl_op_flags
-  {
-    OVL_OP_FLAG_NONE = 0,	/* Don't care.  */
-    OVL_OP_FLAG_UNARY = 1,	/* Is unary.  */
-    OVL_OP_FLAG_BINARY = 2,	/* Is binary.  */
-    OVL_OP_FLAG_AMBIARY = 3,	/* May be unary or binary.  */
-    OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete.  */
-    OVL_OP_FLAG_DELETE = 1,	/* operator delete.  */
-    OVL_OP_FLAG_VEC = 2		/* vector new or delete.  */
-  };
+enum ovl_op_flags {
+  OVL_OP_FLAG_NONE = 0,	/* Don't care.  */
+  OVL_OP_FLAG_UNARY = 1,	/* Is unary.  */
+  OVL_OP_FLAG_BINARY = 2,	/* Is binary.  */
+  OVL_OP_FLAG_AMBIARY = 3,	/* May be unary or binary.  */
+  OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete.  */
+  OVL_OP_FLAG_DELETE = 1,	/* operator delete.  */
+  OVL_OP_FLAG_VEC = 2		/* vector new or delete.  */
+};
 
 /* Compressed operator codes.  Order is determined by operators.def
    and does not match that of tree_codes.  */
-enum ovl_op_code
-  {
-    OVL_OP_ERROR_MARK,
-    OVL_OP_NOP_EXPR,
+enum ovl_op_code {
+  OVL_OP_ERROR_MARK,
+  OVL_OP_NOP_EXPR,
 #define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS) OVL_OP_##CODE,
 #define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) /* NOTHING */
 #include "operators.def"
-    OVL_OP_MAX
-  };
+  OVL_OP_MAX
+};
 
 struct GTY(()) ovl_op_info_t {
   /* The IDENTIFIER_NODE for the operator.  */

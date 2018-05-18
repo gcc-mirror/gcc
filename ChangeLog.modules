@@ -1,3 +1,14 @@
+2018-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (ovl_op_flags, ovl_op_code): Reindent.
+	* lex.c (atom_preamble_prefix_peek): FIXME.
+	* parser.c (cp_parser_module_preamble): FIXME.
+	* module.c (bytes_out::streaming_p (): New.
+	(trees_out::streaming_p): Delete.
+	(tt_backref): Delete.  Update uses to know -ve == backref
+	(module_state::write_cluster): Some refactoring.
+
 2018-05-16  Nathan Sidwell  <nathan@acm.org>
 
 	Preamble rescanning!

@@ -12756,6 +12756,9 @@ cp_parser_module_proclamation (cp_parser *parser)
 }
 
 /* Read and parse an atom preamble.  */
+// FIXME: we shouldn't parse here.  Insert a magic end-of-preamble
+// token so we can make macros visible at the appropriate point.
+// token could be 'module;' and have parser-module-declaration handle it.
 
 static void
 cp_parser_module_preamble (cp_parser *parser)

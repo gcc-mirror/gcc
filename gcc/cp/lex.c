@@ -371,6 +371,9 @@ interface_strcmp (const char* s)
    return a non-zero state cookie for atom_preamble_prefix_next.
    Otherwise zero.  */
 
+// FIXME: I fail to detec the case of a pragma ending a preamble.
+// That's just as wrong as a #define or whatever.
+
 unsigned
 atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 {
