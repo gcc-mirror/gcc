@@ -2252,7 +2252,8 @@ public:
   }
 
 public:
-  void mark_node (tree, bool walk_into = true);
+  /* Mark a node for by-value streaming.  */
+  void mark_node (tree);
 
 private:
   void tag (int rt)
@@ -3116,31 +3117,28 @@ trees_in::preseed (unsigned size)
     back_refs.safe_push (NULL);
 }
 
-/* Insert a DECL into the map.  If INTO is true, mark it to be walked
-   into by value.  Otherwise give it a fixed ref num -- it doesn't
-   matter which.  May be called on the same node multiple times,
-   seting INTO is sticky.  */
+/* Mark DECL for by-value walking.  We do this by inserting it into
+   the tree map with a reference of zero.  May be called multiple
+   times on the same node.  */
 
 void
-trees_out::mark_node (tree decl, bool into)
+trees_out::mark_node (tree decl)
 {
   gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
 
-  if (!TREE_VISITED (decl) || into)
+  if (TREE_VISITED (decl))
+    gcc_checking_assert (!*tree_map.get (decl));
+  else
     {
-      /* On a dep-walk we don't care what number we're tagging with,
-	 but on an emission walk, we're pre-seeding the table with
-	 specific numbers that the reader will recreate.  */
-      int tag = into ? 0 : --ref_num;
-      bool existed = tree_map.put (decl, tag);
-      gcc_checking_assert (TREE_VISITED (decl) || !existed);
+      bool existed = tree_map.put (decl, 0);
+      gcc_checking_assert (!existed);
       TREE_VISITED (decl) = true;
-    }
 
-  /* If the node is a template, mark the underlying decl too.  (The
-     reverse does not need to be checked for.)  */
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    mark_node (DECL_TEMPLATE_RESULT (decl), into);
+      /* If the node is a template, mark the underlying decl too.  (The
+	 reverse does not need to be checked for.)  */
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	mark_node (DECL_TEMPLATE_RESULT (decl));
+    }
 }
 
 /* Insert T into the map, return its back reference number.  */
@@ -7634,7 +7632,7 @@ module_state::mark_class_def (trees_out &out, tree type)
 {
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
-      out.mark_node (member, true);
+      out.mark_node (member);
       if (has_definition (member))
 	mark_definition (out, member);
     }
@@ -7644,14 +7642,14 @@ module_state::mark_class_def (trees_out &out, tree type)
       tree as_base = CLASSTYPE_AS_BASE (type);
       if (as_base && as_base != type)
 	{
-	  out.mark_node (as_base, true);
+	  out.mark_node (as_base);
 	  mark_class_def (out, as_base);
 	}
 
       for (tree vtables = CLASSTYPE_VTABLES (type);
 	   vtables; vtables = TREE_CHAIN (vtables))
 	{
-	  out.mark_node (vtables, true);
+	  out.mark_node (vtables);
 	  mark_var_def (out, vtables);
 	}
     }
@@ -7773,7 +7771,7 @@ module_state::mark_enum_def (trees_out &out, tree type)
 {
   if (!UNSCOPED_ENUM_P (type))
     for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
-      out.mark_node (TREE_VALUE (values), true);
+      out.mark_node (TREE_VALUE (values));
 }
 
 bool
@@ -8035,9 +8033,11 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	}
       else
 	{
+	  /* Otherwise a binding, of which all the decls should
+	     already be marked.  */
 	  gcc_checking_assert (b->is_binding ());
 	  for (unsigned jx = b->deps.length (); jx--;)
-	    sec.mark_node (b->deps[jx]->get_decl ());
+	    gcc_checking_assert (TREE_VISITED (b->deps[jx]->get_decl ()));
 	}
     }
 
@@ -8563,7 +8563,7 @@ module_state::find_dependencies (depset::hash &table)
       dump () && dump ("%s %N", d->is_decl () ? "Declaration" : "Definition",
 		       decl);
       dump.indent ();
-      walker.mark_node (decl, true);
+      walker.mark_node (decl);
       walker.set_seed (d->is_defn ());
       walker.tree_node (decl);
       // FIXME:voldemort members?
