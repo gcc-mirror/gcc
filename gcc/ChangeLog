@@ -1,3 +1,18 @@
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.c (limit_low): Renamed from limit.
+	(limit_high): New variable.
+	(dbg_cnt_is_enabled): Check for upper limit.
+	(dbg_cnt): Adjust dumping.
+	(dbg_cnt_set_limit_by_index): Add new argument for high
+	value.
+	(dbg_cnt_set_limit_by_name): Likewise.
+	(dbg_cnt_process_single_pair): Parse new format.
+	(dbg_cnt_process_opt): Use strtok.
+	(dbg_cnt_list_all_counters): Remove 'value' and add
+	'limit_high'.
+	* doc/invoke.texi: Document changes.
+
 2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/sourcebuild.texi (scalar_all_fma): Document.

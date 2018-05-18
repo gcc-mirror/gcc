@@ -14331,14 +14331,17 @@ Print the name and the counter upper bound for all debug counters.
 
 @item -fdbg-cnt=@var{counter-value-list}
 @opindex fdbg-cnt
-Set the internal debug counter upper bound.  @var{counter-value-list}
-is a comma-separated list of @var{name}:@var{value} pairs
-which sets the upper bound of each debug counter @var{name} to @var{value}.
+Set the internal debug counter lower and upper bound.  @var{counter-value-list}
+is a comma-separated list of @var{name}:@var{lower_bound}:@var{upper_bound}
+tuples which sets the lower and the upper bound of each debug
+counter @var{name}.  The @var{lower_bound} is optional and is zero
+initialized if not set.
 All debug counters have the initial upper bound of @code{UINT_MAX};
 thus @code{dbg_cnt} returns true always unless the upper bound
 is set by this option.
-For example, with @option{-fdbg-cnt=dce:10,tail_call:0},
-@code{dbg_cnt(dce)} returns true only for first 10 invocations.
+For example, with @option{-fdbg-cnt=dce:2:4,tail_call:10},
+@code{dbg_cnt(dce)} returns true only for third and fourth invocation.
+For @code{dbg_cnt(tail_call)} true is returned for first 10 invocations.
 
 @item -print-file-name=@var{library}
 @opindex print-file-name
