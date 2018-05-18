@@ -1,6 +1,12 @@
 2018-05-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::write_cluster): Break apart unnamed
+	numbering from marking.
+	(module_state::write): Break apart cluster sizing from section
+	numbering.
+
+	gcc/cp/
 	* module.c (trees_out::mark_node): Lose walk_into parm.  Adjust
 	all callers.
 	(module_state::write_cluster): Assert binding already marked.

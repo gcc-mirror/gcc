@@ -2131,7 +2131,7 @@ enum tree_tag {
   tt_node,		/* New node.  */
   tt_id,  		/* Identifier node.  */
   tt_conv_id,		/* Conversion operator name.  */
-  tt_tinfo_var,	/* Typeinfo object. */
+  tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_named_type,	/* TYPE_DECL for type.  */
   tt_named_decl,  	/* Named decl. */
@@ -6071,13 +6071,10 @@ depset::hash::add_definition (depset *decl_dep, bool deferrable)
 
 /* DECL is a newly discovered dependency of current.  Append it to
    current's depset.  Push it into the worklist, if it's not there.
-
-   NOTE:DECLs added here that are not export/module linkage (i.e. all
-   !NEEDS_DEP cases), need not actually be added into the named
-   depset.  We will never need to find them by name from the language
-   POV (after p0923 fixes ADL).  It is a convenience that the
-   inter-module loading uses the same bindings.  We could locate them
-   by a different, module-specific, mechanism.  */
+   The decls discovered at this point are not export or module
+   linkage.  We don't add them to the binding depset -- they are not
+   findable by name.  Note that depending on the resolution of ADL
+   mechanism, we may need to revisit that.   */
 
 void
 depset::hash::add_dependency (tree decl, bool looking_inside)
@@ -6085,6 +6082,7 @@ depset::hash::add_dependency (tree decl, bool looking_inside)
   key_type key = decl_key (decl);
   depset **slot = maybe_insert (key);
   depset *dep = *slot;
+
   if (!dep)
     {
       *slot = dep = new depset (key);
@@ -7987,8 +7985,8 @@ enum cluster_tag {
   ct_decl,	/* A decl.  */
   ct_defn,	/* A defn.  */
   ct_bind,	/* A binding.  */
-  ct_voldemort,  /* An unnamed decl.  */
-  ct_horcrux,	   /* Preseed reference to unnamed decl.  */
+  ct_voldemort, /* An unnamed decl.  */
+  ct_horcrux,	/* Preseed reference to unnamed decl.  */
   ct_hwm
 };
 
@@ -8005,9 +8003,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
   dump.indent ();
 
-  unsigned unnamed_hwm = unnamed;
+  unsigned incoming_unnamed = unnamed;
 
-  /* Mark members for walking.  */
+  /* Determine horcrux numbers, count lazy_defns and refs_unnamed.  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
@@ -8023,25 +8021,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	      dump () && dump ("Unnamed %u %N", unnamed, decl);
 	      b->cluster = ++unnamed;
 	    }
-	  sec.mark_node (decl);
-	}
-      else if (b->is_defn ())
-	{
-	  // FIXME:
-	  gcc_assert (TREE_VISITED (decl));
-	  mark_definition (sec, decl);
-	}
-      else
-	{
-	  /* Otherwise a binding, of which all the decls should
-	     already be marked.  */
-	  gcc_checking_assert (b->is_binding ());
-	  for (unsigned jx = b->deps.length (); jx--;)
-	    gcc_checking_assert (TREE_VISITED (b->deps[jx]->get_decl ()));
 	}
     }
-
-  if (unnamed_hwm)
+  
+  if (incoming_unnamed)
     /* Preseed any unnamed decls we're dependent on.  */
     for (unsigned ix = 0; ix != size; ix++)
       if (scc[ix]->refs_unnamed)
@@ -8051,7 +8034,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  for (unsigned jx = 0; jx != b->deps.length (); jx++)
 	    {
 	      depset *d = b->deps[jx];
-	      if (d->is_unnamed && d->cluster <= unnamed_hwm)
+	      if (d->is_unnamed && d->cluster <= incoming_unnamed)
 		{
 		  tree u_decl = d->get_decl ();
 		  if (!TREE_VISITED (u_decl))
@@ -8067,6 +8050,27 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		}
 	    }
 	}
+
+  /* Mark members for walking.  */
+  for (unsigned ix = 0; ix != size; ix++)
+    {
+      depset *b = scc[ix];
+      tree decl = b->get_decl ();
+
+      if (b->is_decl ())
+	sec.mark_node (decl);
+      else if (b->is_defn ())
+	{
+	  gcc_assert (TREE_VISITED (decl));
+	  mark_definition (sec, decl);
+	}
+      else
+	{
+	  gcc_checking_assert (b->is_binding ());
+	  for (unsigned jx = b->deps.length (); jx--;)
+	    gcc_checking_assert (TREE_VISITED (b->deps[jx]->get_decl ()));
+	}
+    }
 
   /* Now write every member.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -8634,63 +8638,104 @@ module_state::write (elf_out *to)
 	connector.connect (v);
     }
 
+  /* depset::cluster is the cluster number,
+     depset::section is unspecified scratch value.
+
+     The following loops make use of the tarjan property that
+     dependencies will be earlier in the SCCS array.  */
+
+  /* This first loop determines the number of depsets in each SCC, and
+     also the number of namespaces we're dealing with.  During the
+     loop, the meaning of a couple of depset fields now change:
+
+     depset::cluster -> size_of cluster, if first of cluster & !namespace
+     depset::section -> 0. */
+
   unsigned n_spaces = 0;
-  range_t range;
-  range.first = range.second = to->get_num_sections ();
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
 
+      /* Count the members in this cluster.  */
       for (size = 1; ix + size < sccs.length (); size++)
-	if (base[size]->cluster != base[0]->cluster)
-	  break;
+	{
+	  if (base[size]->cluster != base[0]->cluster)
+	    break;
+	  base[size]->cluster = base[size]->section = 0;
+	  gcc_checking_assert (base[size]->is_binding ()
+			       || (TREE_CODE (base[size]->get_decl ())
+				   != NAMESPACE_DECL)
+			       || (DECL_NAMESPACE_ALIAS
+				   (base[size]->get_decl ())));
+	}
+      base[0]->cluster = base[0]->section = 0;
 
-      /* Sort for the ordering write_cluster needs.  */
+      /* Sort for the ordering write_cluster needs.  Later processing
+	 makes use of the ordering of decls < defns < bindings. */
       qsort (base, size, sizeof (depset *), cluster_cmp);
 
-      if (size == 1 && base[0]->is_decl ()
+      if (base[0]->is_decl ()
 	  && TREE_CODE (base[0]->get_decl ()) == NAMESPACE_DECL
 	  && !DECL_NAMESPACE_ALIAS (base[0]->get_decl ()))
+	/* A namespace decl, these are handled specially.  */
+	n_spaces++;
+      else
+	/* Save the size in the first member's cluster slot.  */
+	base[0]->cluster = size;
+    }
+
+  /* Now separate out the namespace decls to the spaces array, and
+     figure out the section numbers.  A depset field meaning changes:
+     depset::section -> section number */
+  range_t range;
+  range.first = range.second = to->get_num_sections ();
+  auto_vec<depset *> spaces (n_spaces);
+  for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
+    {
+      depset **base = &sccs[ix];
+      size = base[0]->cluster;
+
+      if (!size)
 	{
-	  /* A namespace decl.  */
-	  base[0]->section = 0;
-	  n_spaces++;
+	  spaces.quick_push (base[0]);
+	  size = 1;
 	}
       else
 	{
 	  /* Set the section number.  */
 	  for (unsigned jx = size; jx--;)
 	    {
-	      gcc_assert (base[jx]->is_binding ()
-			  || TREE_CODE (base[jx]->get_decl ()) != NAMESPACE_DECL
-			  || DECL_NAMESPACE_ALIAS (base[jx]->get_decl ()));
-	      base[jx]->section = range.second;
-	      base[jx]->cluster = 0;
+	      depset *dep = base[jx];
+
+	      dep->section = range.second;
 	    }
 	  range.second++;
 	}
-      /* Save the size in the first member's cluster slot.  */
-      base[0]->cluster = size;
     }
+  gcc_assert (spaces.length () == n_spaces);
 
-  /* Write the clusters.  */
-  auto_vec<depset *> spaces (n_spaces);
+  /* Write the clusters.  The meaning of depset::cluster again
+     changes, to provide the unnamed-decl count of the depset's
+     decl.  */
   unsigned unnamed = 0;
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
       size = base[0]->cluster;
 
-      /* Cluster is now used to number unnamed decls.  */
-      base[0]->cluster = 0;
-
-      if (!base[0]->section)
-	spaces.quick_push (base[0]);
+      if (!size)
+	/* A namespace  */
+	size = 1;
       else
-	write_cluster (to, base, size, unnamed, &crc);
+	{
+	  /* Cluster is now used to number unnamed decls.  */
+	  base[0]->cluster = 0;
+
+	  write_cluster (to, base, size, unnamed, &crc);
+	}
     }
-  gcc_assert (range.second == to->get_num_sections ()
-	      && spaces.length () == n_spaces);
+  /* We'd better have written as many sections as we predicted.  */
+  gcc_assert (range.second == to->get_num_sections ());
 
   /* Write the namespaces.  */
   (spaces.qsort) (space_cmp);
