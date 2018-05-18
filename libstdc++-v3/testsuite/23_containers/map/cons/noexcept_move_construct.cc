@@ -23,4 +23,25 @@
 
 typedef std::map<int, int> mtype;
 
-static_assert(std::is_nothrow_move_constructible<mtype>::value, "Error");
+static_assert( std::is_nothrow_move_constructible<mtype>::value,
+	       "noexcept move constructor" );
+static_assert( std::is_nothrow_constructible<mtype,
+	       mtype&&, const typename mtype::allocator_type&>::value,
+	       "noexcept move constructor with allocator" );
+
+struct not_noexcept_less
+{
+  not_noexcept_less() = default;
+  not_noexcept_less(const not_noexcept_less&) /* noexcept */
+  { }
+
+  bool
+  operator()(int l, int r) const
+  { return l < r; }
+};
+
+typedef std::map<int, int, not_noexcept_less> emtype;
+
+static_assert( !std::is_nothrow_constructible<emtype, emtype&&,
+	       const typename emtype::allocator_type&>::value,
+	       "except move constructor with allocator" );

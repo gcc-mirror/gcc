@@ -30,3 +30,19 @@ struct cmp
 
 using stype2 = std::set<int, cmp>;
 static_assert( !std::is_nothrow_default_constructible<stype2>::value, "Error");
+
+template<typename _Tp>
+  struct not_noexcept_cons_alloc : std::allocator<_Tp>
+  {
+    not_noexcept_cons_alloc() /* noexcept */
+    { }
+
+    template<typename _Tp1>
+      struct rebind
+      { typedef not_noexcept_cons_alloc<_Tp1> other; };
+  };
+
+using stype3 = std::set<int, std::less<int>,
+			not_noexcept_cons_alloc<int>>;
+
+static_assert(!std::is_nothrow_default_constructible<stype3>::value, "Error");
