@@ -1,3 +1,8 @@
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/ipa-icf-39.c: New test.
+	* gcc.dg/pr68766.c: Adjust pruned output.
+
 2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_scalar_all_fma):
