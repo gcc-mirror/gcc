@@ -1,5 +1,11 @@
 2018-05-18  Nathan Sidwell  <nathan@acm.org>
 
+	Add lazy_module_defn cookie.
+	* cp-tree.h (DECL_MODULE_LAXY_DEGN, MAYBE_DECL_MODULE_LAZY_DEFN): New.
+	(struct lang_decl_min): Add lazy_module_defn field.
+	* module.c (trees_{in,out}::lang_decl_vals): Serialize it.
+	* ptree.c (cxx_print_decl): Print it.
+
 	gcc/cp/
 	* cp-tree.h (ovl_op_flags, ovl_op_code): Reindent.
 	* lex.c (atom_preamble_prefix_peek): FIXME.

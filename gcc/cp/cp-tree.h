@@ -1616,6 +1616,17 @@ check_constraint_info (tree t)
    purview of a module.  */
 #define MAYBE_DECL_MODULE_PURVIEW_P(N)				\
   (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_PURVIEW_P (N) : false)
+
+/* If non-zero, a decl has a definition, it just hasn't been loaded
+   yet.  This is the cookie to load it.  */
+
+#define DECL_MODULE_LAZY_DEFN(N)				\
+  (DECL_LANG_SPECIFIC (N)->u.min.lazy_module_defn)
+
+#define MAYBE_DECL_MODULE_LAZY_DEFN(N)				\
+  (DECL_LANG_SPECIFIC (N) && LANG_DECL_HAS_MIN (N)		\
+   ? DECL_MODULE_LAZY_DEFN (N) : 0)
+
 
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
@@ -2645,7 +2656,9 @@ struct GTY(()) lang_decl_base {
 struct GTY(()) lang_decl_min {
   struct lang_decl_base base; /* 32-bits.  */
 
-  /* 32 bits padding on 64-bit host.  */
+  /* On a 64-bit system, the following would be padding anyway.  */
+  unsigned lazy_module_defn;	/* Lazy module definition cookie (if
+				   non-zero).  */
 
   /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
      THUNK_ALIAS.

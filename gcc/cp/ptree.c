@@ -41,6 +41,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
   if (!CODE_CONTAINS_STRUCT (TREE_CODE (node), TS_DECL_COMMON)
       || !DECL_LANG_SPECIFIC (node))
     return;
+
   if (TREE_CODE (node) == FUNCTION_DECL)
     {
       int flags = TFF_DECL_SPECIFIERS|TFF_RETURN_TYPE
@@ -55,10 +56,17 @@ cxx_print_decl (FILE *file, tree node, int indent)
       fprintf (file, " full-name \"%s\"",
 	       decl_as_string (node, TFF_TEMPLATE_HEADER));
     }
+
   if (unsigned mod = MAYBE_DECL_MODULE_OWNER (node))
     {
       indent_to (file, indent + 3);
       fprintf (file, " module %s", IDENTIFIER_POINTER (module_name (mod)));
+    }
+
+  if (unsigned lazy = MAYBE_DECL_MODULE_LAZY_DEFN (node))
+    {
+      indent_to (file, indent + 3);
+      fprintf (file, " lazy %u", lazy);
     }
 
   indent_to (file, indent + 3);

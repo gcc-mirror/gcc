@@ -4784,6 +4784,8 @@ trees_out::lang_decl_vals (tree t)
       /* FALLTHROUGH.  */
 
     case lds_min:  /* lang_decl_min.  */
+      if (streaming_p ())
+	WU (lang->u.min.lazy_module_defn);
       WT (lang->u.min.template_info);
       WT (lang->u.min.access);
       break;
@@ -4839,6 +4841,7 @@ trees_in::lang_decl_vals (tree t)
       /* FALLTHROUGH.  */
 
     case lds_min:  /* lang_decl_min.  */
+      RU (lang->u.min.lazy_module_defn);
       RT (lang->u.min.template_info);
       RT (lang->u.min.access);
       break;
