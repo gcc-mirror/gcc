@@ -1,3 +1,9 @@
+2018-05-18  Toon Moene  <toon@moene.org>
+
+	* doc/invoke.texi: Move -floop-unroll-and-jam documentation
+	directly after that of -floop-interchange. Indicate that both
+	options are enabled by default when specifying -O3. 
+
 2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vec_set<mode>): Use VALL_F16 mode
