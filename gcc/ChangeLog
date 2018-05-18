@@ -1,6 +1,19 @@
 2018-05-18  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/84846
+	* doc/gcov.texi: Document -t option of gcov tool.
+
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/84846
+	* gcov.c (print_usage): Add new -t option.
+	(process_args): Handle the option.
+	(generate_results): Use stdout as output when requested by
+	the option.
+
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/84846
 	* coverage.c (coverage_init): Write PWD to .gcno file.
 	* doc/gcov.texi: Document how working directory is printed.
 	* gcov-dump.c (dump_gcov_file): Print PWD.

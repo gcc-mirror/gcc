@@ -134,6 +134,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-p}|@option{--preserve-paths}]
      [@option{-r}|@option{--relative-only}]
      [@option{-s}|@option{--source-prefix} @var{directory}]
+     [@option{-t}|@option{--stdout}]
      [@option{-u}|@option{--unconditional-branches}]
      [@option{-x}|@option{--hash-filenames}]
      @var{files}
@@ -318,6 +319,10 @@ coverage files.  This option is useful when building in a separate
 directory, and the pathname to the source directory is not wanted when
 determining the output file names.  Note that this prefix detection is
 applied before determining whether the source file is absolute.
+
+@item -t
+@itemx --stdout
+Output to standard output instead of output files.
 
 @item -u
 @itemx --unconditional-branches
