@@ -1,5 +1,21 @@
 2018-05-18  Martin Liska  <mliska@suse.cz>
 
+	* passes.def: Add pass_lower_switch and pass_lower_switch_O0.
+	* tree-pass.h (make_pass_lower_switch_O0): New function.
+	* tree-switch-conversion.c (node_has_low_bound): Remove.
+	(node_has_high_bound): Likewise.
+	(node_is_bounded): Likewise.
+	(class pass_lower_switch): Make it a template type and create
+	two instances.
+	(pass_lower_switch::execute): Add template argument.
+	(make_pass_lower_switch): New function.
+	(make_pass_lower_switch_O0): New function.
+	(do_jump_if_equal): Remove.
+	(emit_case_nodes): Simplify to just handle all 3 cases and leave
+	all the hard work to tree optimization passes.
+
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
 	* dbgcnt.c (limit_low): Renamed from limit.
 	(limit_high): New variable.
 	(dbg_cnt_is_enabled): Check for upper limit.

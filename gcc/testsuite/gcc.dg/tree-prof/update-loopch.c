@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-ipa-profile-blocks-details -fdump-tree-switchlower-blocks-details" } */
+/* { dg-options "-O2 -fdump-ipa-profile-blocks-details -fdump-tree-switchlower1-blocks-details" } */
 int max = 33333;
 int a[8];
 int

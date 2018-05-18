@@ -1,5 +1,10 @@
 2018-05-18  Martin Liska  <mliska@suse.cz>
 
+	* gcc.dg/tree-ssa/vrp104.c: Adjust dump file that is scanned.
+	* gcc.dg/tree-prof/update-loopch.c: Likewise.
+
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
 	* gcc.dg/ipa/ipa-icf-39.c: New test.
 	* gcc.dg/pr68766.c: Adjust pruned output.
 
