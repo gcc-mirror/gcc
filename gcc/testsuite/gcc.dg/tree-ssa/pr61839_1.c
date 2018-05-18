@@ -1,6 +1,6 @@
 /* PR tree-optimization/61839.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fdisable-tree-evrp -fdump-tree-optimized" } */
 /* { dg-require-effective-target int32plus } */
 
 __attribute__ ((noinline))
