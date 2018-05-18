@@ -1,3 +1,9 @@
+2018-05-18  Kito Cheng <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+	    Jim Wilson <jimw@sifive.com>
+
+	* config/riscv/save-restore.S: Add support for rv32e.
+
 2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/libunwind.S: Update comment relating to armv5.
