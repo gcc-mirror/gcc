@@ -379,9 +379,6 @@ extern bool arm_is_constant_pool_ref (rtx);
    be used.  */
 extern unsigned int tune_flags;
 
-/* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
-extern int arm_arch3m;
-
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 extern int arm_arch4;
 

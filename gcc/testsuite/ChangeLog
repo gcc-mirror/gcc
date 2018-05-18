@@ -1,5 +1,11 @@
 2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/arm/pr62554.c: Delete.
+	* gcc.target/arm/pr69610-1.c: Likewise.
+	* gcc.target/arm/pr69610-2.c: Likewise.
+
+2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/arm/pr40887.c: Update comment.
 	* lib/target-supports.exp: Don't generate effective target checks
 	and related helpers for armv5.  Update comment.
