@@ -1,3 +1,13 @@
+2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_set<mode>): Use VALL_F16 mode
+	iterator.  Delete separate integer-mode vec_set<mode> expander.
+	(aarch64_simd_vec_setv2di): Delete.
+	(vec_setv2di): Delete.
+	(aarch64_simd_vec_set<mode>): Delete all other patterns with that name.
+	Use VALL_F16 mode iterator.  Add LD1 alternative and use vwcore for
+	the "w, r" alternative.
+
 2018-05-18  Martin Liska  <mliska@suse.cz>
 
 	* passes.def: Add pass_lower_switch and pass_lower_switch_O0.

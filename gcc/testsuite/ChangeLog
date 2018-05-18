@@ -1,3 +1,7 @@
+2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/vect-init-ld1.c: New test.
+
 2018-05-18  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/vrp104.c: Adjust dump file that is scanned.
