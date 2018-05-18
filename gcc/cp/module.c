@@ -2262,9 +2262,8 @@ private:
     i (rt);
   }
 public:
-  int insert (tree);
-  int maybe_insert (tree);
-  int force_insert (tree, bool);
+  int insert (tree, bool = false);
+  int maybe_insert_typeof (tree);
 
 private:
   void start (tree_code, tree);
@@ -3141,36 +3140,32 @@ trees_out::mark_node (tree decl)
     }
 }
 
-/* Insert T into the map, return its back reference number.  */
-
-inline int
-trees_out::insert (tree t)
-{
-  int tag = maybe_insert (t);
-  gcc_assert (tag);
-  return tag;
-}
-
-/* Insert T into the map, if it isn't already there.  Return the
-   inserted tag, or 0.  */
+/* Insert T into the map, return its back reference number.
+   FORCING indicates whether it is already expected to have a forcing
+   entry.  */
 
 int
-trees_out::maybe_insert (tree t)
+trees_out::insert (tree t, bool forcing)
 {
-  if (TREE_VISITED (t))
-    return 0;
-
-  return force_insert (t, false);
-}
-
-int
-trees_out::force_insert (tree t, bool force)
-{
-  int tag = --ref_num;
-  bool existed = tree_map.put (t, tag);
-  gcc_assert (TREE_VISITED (t) == force && existed == force);
+  gcc_assert (TREE_VISITED (t) == forcing);
+  bool existed;
+  int &slot = tree_map.get_or_insert (t, &existed);
+  gcc_assert (existed == forcing && (!forcing || !slot));
   TREE_VISITED (t) = true;
-  return tag;
+  slot = --ref_num;
+  return slot;
+}
+
+/* If DECL is the TYPE_NAME of its type, insert the type into the map
+   (unless it's already there).  Return the inserted tag, or 0.  */
+
+int
+trees_out::maybe_insert_typeof (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  if (type && !TREE_VISITED (type) && TYPE_NAME (type) == decl)
+    return insert (type);
+  return 0;
 }
 
 /* Insert T into the backreference array.  Return its back reference
@@ -5357,7 +5352,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
   if (tree type = TREE_TYPE (decl))
     {
       /* Make sure the imported type is in the map too.  */
-      int tag = maybe_insert (type);
+      int tag = maybe_insert_typeof (decl);
       if (streaming_p ())
 	{
 	  u (tag != 0);
@@ -5437,7 +5432,7 @@ trees_out::tree_value (tree t, bool force)
       start (code, t);
     }
 
-  int tag = force_insert (t, force);
+  int tag = insert (t, force);
   if (streaming_p ())
     dump () && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
 		     TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration
@@ -5495,9 +5490,10 @@ trees_out::tree_node (tree t)
 	i (tt_binfo);
       tree_binfo (t, 0, false);
 
+      // FIXME:IS this true?
       /* If the dominating type was an import, we will not have put this
 	 in the map.  Do that now.  */
-      int tag = maybe_insert (t);
+      int tag = TREE_VISITED (t) ? 0 : insert (t);
       if (streaming_p ())
 	{
 	  u (tag != 0);
@@ -7447,7 +7443,7 @@ module_state::write_binfos (trees_out &out, tree type)
       // FIXME:The assertion in this comment is wrong
       /* We might have tagged the binfo during a by-reference walk.
 	 Force a new tag now.  */
-      int tag = out.force_insert (child, TREE_VISITED (child));
+      int tag = out.insert (child, TREE_VISITED (child));
       if (out.streaming_p ())
 	{
 	  out.u (BINFO_N_BASE_BINFOS (child));
@@ -8042,7 +8038,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      sec.u (ct_horcrux);
 		      sec.u (d->cluster - 1);
 		      sec.insert (u_decl);
-		      int type_tag = sec.maybe_insert (TREE_TYPE (u_decl));
+		      int type_tag = sec.maybe_insert_typeof (u_decl);
 		      sec.u (type_tag != 0);
 		      dump () && dump ("Created horcrux:%u for %N",
 				       d->cluster - 1, u_decl);

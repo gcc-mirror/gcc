@@ -1,6 +1,14 @@
 2018-05-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_out::maybe_insert_typeof): New.
+	(trees_out::{force_,maybe_,}insert): Merge, adjust callers.
+	(trees_out::tree_decl): Use maybe_insert_typeof.
+	(module_state::write_cluster): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-3_c.C: Adjust scans.
+
+	gcc/cp/
 	* module.c (module_state::write_cluster): Break apart unnamed
 	numbering from marking.
 	(module_state::write): Break apart cluster sizing from section
