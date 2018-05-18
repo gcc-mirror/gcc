@@ -1463,6 +1463,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case OMP_FOR:
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
+    case OACC_LOOP:
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
       break;
 
