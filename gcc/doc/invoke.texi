@@ -23025,7 +23025,9 @@ conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
 @samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
 implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
 invalid because the ABI requires 64-bit values be passed in F registers, but F
-registers are only 32 bits wide.
+registers are only 32 bits wide.  There is also the @samp{ilp32e} ABI that can
+only be used with the @samp{rv32e} architecture.  This ABI is not well
+specified at present, and is subject to change.
 
 @item -mfdiv
 @itemx -mno-fdiv
@@ -23044,7 +23046,8 @@ these instructions.
 @item -march=@var{ISA-string}
 @opindex march
 Generate code for given RISC-V ISA (e.g.@ @samp{rv64im}).  ISA strings must be
-lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, and @samp{rv32imaf}.
+lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
+@samp{rv32imaf}.
 
 @item -mtune=@var{processor-string}
 @opindex mtune

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 enum riscv_abi_type {
   ABI_ILP32,
+  ABI_ILP32E,
   ABI_ILP32F,
   ABI_ILP32D,
   ABI_LP64,

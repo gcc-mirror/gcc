@@ -3334,7 +3334,14 @@ riscv_compute_frame_info (void)
 
       /* Only use save/restore routines if they don't alter the stack size.  */
       if (RISCV_STACK_ALIGN (num_save_restore * UNITS_PER_WORD) == x_save_size)
-	frame->save_libcall_adjustment = x_save_size;
+	{
+	  /* Libcall saves/restores 3 registers at once, so we need to
+	     allocate 12 bytes for callee-saved register.  */
+	  if (TARGET_RVE)
+	    x_save_size = 3 * UNITS_PER_WORD;
+
+	  frame->save_libcall_adjustment = x_save_size;
+	}
 
       offset += x_save_size;
     }
@@ -4147,6 +4154,9 @@ riscv_option_override (void)
     error ("requested ABI requires -march to subsume the %qc extension",
 	   UNITS_PER_FP_ARG > 8 ? 'Q' : (UNITS_PER_FP_ARG > 4 ? 'D' : 'F'));
 
+  if (TARGET_RVE && riscv_abi != ABI_ILP32E)
+    error ("rv32e requires ilp32e ABI");
+
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
     error ("ABI requires -march=rv%d", POINTER_SIZE);
@@ -4171,6 +4181,19 @@ riscv_option_override (void)
 static void
 riscv_conditional_register_usage (void)
 {
+  /* We have only x0~x15 on RV32E.  */
+  if (TARGET_RVE)
+    {
+      for (int r = 16; r <= 31; r++)
+	fixed_regs[r] = 1;
+    }
+
+  if (riscv_abi == ABI_ILP32E)
+    {
+      for (int r = 16; r <= 31; r++)
+	call_used_regs[r] = 1;
+    }
+
   if (!TARGET_HARD_FLOAT)
     {
       for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)

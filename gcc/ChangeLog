@@ -1,3 +1,26 @@
+2018-05-18  Kito Cheng  <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+	    Jim Wilson <jimw@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_parse_arch_string):
+	Add support to parse rv32e*.  Clear MASK_RVE for rv32i and rv64i.
+	* config.gcc (riscv*-*-*): Add support for rv32e* and ilp32e.
+	* config/riscv/riscv-c.c (riscv_cpu_cpp_builtins): Define
+	__riscv_32e when TARGET_RVE.  Handle ABI_ILP32E as soft-float ABI.
+	* config/riscv/riscv-opts.h (riscv_abi_type): Add ABI_ILP32E.
+	* config/riscv/riscv.c (riscv_compute_frame_info): When TARGET_RVE,
+	compute save_libcall_adjustment properly.
+	(riscv_option_override): Call error if TARGET_RVE and not ABI_ILP32E.
+	(riscv_conditional_register_usage): Handle TARGET_RVE and ABI_ILP32E.
+	* config/riscv/riscv.h (UNITS_PER_FP_ARG): Handle ABI_ILP32E.
+	(STACK_BOUNDARY, ABI_STACK_BOUNDARY): Handle TARGET_RVE.
+	(GP_REG_LAST, MAX_ARGS_IN_REGISTERS): Likewise.
+	(ABI_SPEC): Handle mabi=ilp32e.
+	* config/riscv/riscv.opt (abi_type): Add ABI_ILP32E.
+	(RVE): Add RVE mask.
+	* doc/invoke.texi (RISC-V options) <-mabi>: Add ilp32e info.
+	<-march>: Add rv32e as an example.
+
 2018-05-18  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/82899

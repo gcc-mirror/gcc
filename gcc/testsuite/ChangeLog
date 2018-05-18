@@ -1,3 +1,7 @@
+2018-05-18  Kito Cheng  <kito.cheng@gmail.com>
+
+	* gcc.dg/stack-usage-1.c: Add support for rv32e.
+
 2018-05-18  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/82899
