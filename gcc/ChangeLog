@@ -1,3 +1,9 @@
+2018-05-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/85817
+	* ipa-pure-const.c (malloc_candidate_p): Remove the check integer_zerop
+	for retval and return false if all args to phi are zero.	
+
 2018-05-18  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa-evrp.c (class evrp_folder): Add simplify_stmt_using_ranges
