@@ -220,6 +220,8 @@ dump_gcov_file (const char *filename)
 
   if (!is_data_type)
     {
+      printf ("%s:cwd: %s\n", filename, gcov_read_string ());
+
       /* Support for unexecuted basic blocks.  */
       unsigned support_unexecuted_blocks = gcov_read_unsigned ();
       if (!support_unexecuted_blocks)

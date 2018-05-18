@@ -1,3 +1,13 @@
+2018-05-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/84846
+	* coverage.c (coverage_init): Write PWD to .gcno file.
+	* doc/gcov.texi: Document how working directory is printed.
+	* gcov-dump.c (dump_gcov_file): Print PWD.
+	* gcov.c (output_intermediate_file): Likewise.
+	(read_graph_file): Read PWD string.
+	(output_lines): Print PWD.
+
 2018-05-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/85817

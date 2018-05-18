@@ -189,6 +189,7 @@ one entry per line
 
 @smallexample
 version:@var{gcc_version}
+cwd:@var{working_directory}
 file:@var{source_file_name}
 function:@var{start_line_number},@var{end_line_number},@var{execution_count},@var{function_name}
 lcount:@var{line number},@var{execution_count},@var{has_unexecuted_block}
@@ -210,6 +211,7 @@ Here is a sample when @option{-i} is used in conjunction with @option{-b} option
 
 @smallexample
 version: 8.1.0 20180103
+cwd:/home/gcc/testcase
 file:tmp.cpp
 function:7,7,0,_ZN3FooIcEC2Ev
 function:7,7,1,_ZN3FooIiEC2Ev
@@ -441,6 +443,7 @@ Here is a sample:
 
 @smallexample
         -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1
@@ -508,6 +511,7 @@ counts, and the output looks like this:
 
 @smallexample
         -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1
@@ -596,6 +600,7 @@ When you use the @option{-b} option, your output looks like this:
 
 @smallexample
         -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1

@@ -432,6 +432,9 @@ static unsigned bbg_stamp;
 /* Supports has_unexecuted_blocks functionality.  */
 static unsigned bbg_supports_has_unexecuted_blocks;
 
+/* Working directory in which a TU was compiled.  */
+static const char *bbg_cwd;
+
 /* Name and file pointer of the input file for the count data (gcda).  */
 
 static char *da_file_name;
@@ -1037,6 +1040,7 @@ output_intermediate_file (FILE *gcov_file, source_info *src)
 {
   fprintf (gcov_file, "version:%s\n", version_string);
   fprintf (gcov_file, "file:%s\n", src->name);    /* source file name */
+  fprintf (gcov_file, "cwd:%s\n", bbg_cwd);
 
   std::sort (src->functions.begin (), src->functions.end (),
 	     function_line_start_cmp ());
@@ -1550,6 +1554,7 @@ read_graph_file (void)
 	       bbg_file_name, v, e);
     }
   bbg_stamp = gcov_read_unsigned ();
+  bbg_cwd = xstrdup (gcov_read_string ());
   bbg_supports_has_unexecuted_blocks = gcov_read_unsigned ();
 
   function_info *fn = NULL;
@@ -2918,6 +2923,8 @@ output_lines (FILE *gcov_file, const source_info *src)
   const char *retval;
 
   fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
+  fprintf (gcov_file, DEFAULT_LINE_START "Working directory:%s\n",
+	   bbg_cwd);
   if (!multiple_files)
     {
       fprintf (gcov_file, DEFAULT_LINE_START "Graph:%s\n", bbg_file_name);
