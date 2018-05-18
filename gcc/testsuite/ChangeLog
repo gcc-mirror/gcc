@@ -1,3 +1,8 @@
+2018-05-18  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/82899
+	* g++.dg/pr82899.C: New testcase.
+
 2018-05-18  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/pr68766.c: Change pruned output.
