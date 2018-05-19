@@ -1,3 +1,8 @@
+2018-05-19  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_pack_expansion): Sorry rather than abort
+	on __integer_pack as subexpression of pattern.
+
 2018-05-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58407 - deprecated implicit copy ops.
