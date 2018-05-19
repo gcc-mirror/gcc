@@ -183,8 +183,24 @@ extern void nds32_expand_float_movcc (rtx *);
 extern enum nds32_expand_result_type nds32_expand_extv (rtx *);
 extern enum nds32_expand_result_type nds32_expand_insv (rtx *);
 
+/* Auxiliary functions for expand ICT instruction.  */
+
+extern void nds32_expand_ict_move (rtx *);
+
+/* Auxiliary functions to legitimize address for indirect-call symbol.  */
+
+extern rtx nds32_legitimize_ict_address (rtx);
+
+/* Auxiliary functions to identify indirect-call symbol.  */
+
+extern bool nds32_indirect_call_referenced_p (rtx);
+
 /* Auxiliary functions to identify long-call symbol.  */
 extern bool nds32_long_call_p (rtx);
+
+/* Auxiliary functions to identify SYMBOL_REF and LABEL_REF pattern.  */
+
+extern bool symbolic_reference_mentioned_p (rtx);
 
 /* Auxiliary functions to identify conditional move comparison operand.  */
 

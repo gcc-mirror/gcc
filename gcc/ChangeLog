@@ -1,3 +1,43 @@
+2018-05-19  Kuan-Lin Chen <kuanlinchentw@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/constants.md (unspec_element): Add UNSPEC_ICT.
+	* config/nds32/nds32-md-auxiliary.c
+	(symbolic_reference_mentioned_p): New.
+	(nds32_legitimize_ict_address): New.
+	(nds32_expand_ict_move): New.
+	(nds32_indirect_call_referenced_p): New.
+	(nds32_symbol_binds_local_p): Delete.
+	(nds32_long_call_p): Modify.
+	* config/nds32/nds32-opts.h (nds32_ict_model_type): New enum type.
+	* config/nds32/nds32-protos.h
+	(symbolic_reference_mentioned_p): Declare.
+	(nds32_legitimize_ict_address): Declare.
+	(nds32_expand_ict_move): Declare.
+	(nds32_indirect_call_referenced_p): Declare.
+	* config/nds32/nds32-relax-opt.c (nds32_ict_const_p): New.
+	(nds32_relax_group): Use nds32_ict_const_p as condition.
+	* config/nds32/nds32.c (nds32_attribute_table): Add "indirect_call".
+	(nds32_asm_file_start): Output ict_model directive in asm code.
+	(nds32_legitimate_address_p): Consider indirect call.
+	(nds32_print_operand): Consider indirect call.
+	(nds32_print_operand_address): Consider indirect call.
+	(nds32_insert_attributes): Handle "indirect_call" attribute.
+	(TARGET_LEGITIMATE_ADDRESS_P): Define.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(TARGET_CANNOT_FORCE_CONST_MEM): Define.
+	(TARGET_DELEGITIMIZE_ADDRESS): Define.
+	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
+	* config/nds32/nds32.h (SYMBOLIC_CONST_P): Define.
+	(TARGET_ICT_MODEL_SMALL): Define.
+	(TARGET_ICT_MODEL_LARGE): Define.
+	* config/nds32/nds32.md (movsi): Consider ict model.
+	(call, call_value): Consider ict model.
+	(sibcall, sibcall_value): Consider ict model.
+	* config/nds32/nds32.opt (mict-model): New option.
+	* config/nds32/predicates.md (nds32_symbolic_operand): Consider ict
+	model.
+
 2018-05-18  Kito Cheng  <kito.cheng@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 	    Jim Wilson <jimw@sifive.com>

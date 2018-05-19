@@ -185,6 +185,17 @@ nds32_plus_reg_load_store_p (rtx_insn *insn)
   return false;
 }
 
+/* Return true if x is const and the referance is ict symbol.  */
+static bool
+nds32_ict_const_p (rtx x)
+{
+  if (GET_CODE (x) == CONST)
+    {
+      x = XEXP (x, 0);
+      return nds32_indirect_call_referenced_p (x);
+    }
+  return FALSE;
+}
 /* Group the relax candidates with group id.  */
 static void
 nds32_group_insns (rtx sethi)
@@ -271,7 +282,8 @@ nds32_relax_group (void)
 	  /* Find sethi ra, symbol  instruction.  */
 	  if (recog_memoized (insn) == CODE_FOR_sethi
 	      && nds32_symbolic_operand (XEXP (SET_SRC (PATTERN (insn)), 0),
-					 SImode))
+					 SImode)
+	      && !nds32_ict_const_p (XEXP (SET_SRC (PATTERN (insn)), 0)))
 	    nds32_group_insns (insn);
 	}
     }

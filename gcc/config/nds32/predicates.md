@@ -40,7 +40,9 @@
   (match_code "mult,and,ior,xor"))
 
 (define_predicate "nds32_symbolic_operand"
-  (match_code "const,symbol_ref,label_ref"))
+  (and (match_code "const,symbol_ref,label_ref")
+       (match_test "!(TARGET_ICT_MODEL_LARGE
+		      && nds32_indirect_call_referenced_p (op))")))
 
 (define_predicate "nds32_reg_constant_operand"
   (ior (match_operand 0 "register_operand")
