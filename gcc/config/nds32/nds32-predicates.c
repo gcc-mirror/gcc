@@ -519,6 +519,42 @@ nds32_const_double_range_ok_p (rtx op, machine_mode mode,
   return val >= lower && val < upper;
 }
 
+bool
+nds32_const_unspec_p (rtx x)
+{
+  if (GET_CODE (x) == CONST)
+    {
+      x = XEXP (x, 0);
+
+      if (GET_CODE (x) == PLUS)
+	x = XEXP (x, 0);
+
+      if (GET_CODE (x) == UNSPEC)
+	{
+	  switch (XINT (x, 1))
+	    {
+	    case UNSPEC_GOTINIT:
+	    case UNSPEC_GOT:
+	    case UNSPEC_GOTOFF:
+	    case UNSPEC_PLT:
+	    case UNSPEC_TLSGD:
+	    case UNSPEC_TLSLD:
+	    case UNSPEC_TLSIE:
+	    case UNSPEC_TLSLE:
+	      return false;
+	    default:
+	      return true;
+	    }
+	}
+    }
+
+  if (GET_CODE (x) == SYMBOL_REF
+      && SYMBOL_REF_TLS_MODEL (x))
+    return false;
+
+  return true;
+}
+
 HOST_WIDE_INT
 const_vector_to_hwint (rtx op)
 {

@@ -1,3 +1,25 @@
+2018-05-19  Kuan-Lin Chen <kuanlinchentw@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/constants.md: Add TP_REGNUM constant.
+	(unspec_element): Add UNSPEC_GOTINIT, UNSPEC_GOT, UNSPEC_GOTOFF,
+	UNSPEC_PLT, UNSPEC_TLSGD, UNSPEC_TLSLD, UNSPEC_TLSIE, UNSPEC_TLSLE and
+	UNSPEC_ADD32.
+	* config/nds32/nds32-doubleword.md: Consider flag_pic.
+	* config/nds32/nds32-dspext.md (mov<mode>): Expand TLS and PIC cases.
+	* config/nds32/nds32-predicates.c (nds32_const_unspec_p): New.
+	* config/nds32/nds32-md-auxiliary.c: Implementation that support TLS
+	and PIC code generation.
+	* config/nds32/nds32-protos.h: Declarations that support TLS and PIC
+	code generation.
+	* config/nds32/nds32-relax-opt.c: Consider TLS and PIC for relax
+	optimization.
+	* config/nds32/nds32.md: Support TLS and PIC.
+	* config/nds32/nds32.c: Support TLS and PIC.
+	* config/nds32/nds32.h (nds32_relax_insn_type): New enum type.
+	* config/nds32/predicates.md (nds32_nonunspec_symbolic_operand): New
+	predicate.
+
 2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32-predicates.c (const_vector_to_hwint): Use machine

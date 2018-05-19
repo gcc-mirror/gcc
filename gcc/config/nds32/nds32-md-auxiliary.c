@@ -1364,6 +1364,112 @@ nds32_expand_insv (rtx *operands)
 
 /* ------------------------------------------------------------------------ */
 
+/* Function to generate PC relative jump table.
+   Refer to nds32.md for more details.
+
+   The following is the sample for the case that diff value
+   can be presented in '.short' size.
+
+     addi    $r1, $r1, -(case_lower_bound)
+     slti    $ta, $r1, (case_number)
+     beqz    $ta, .L_skip_label
+
+     la      $ta, .L35             ! get jump table address
+     lh      $r1, [$ta + $r1 << 1] ! load symbol diff from jump table entry
+     addi    $ta, $r1, $ta
+     jr5     $ta
+
+     ! jump table entry
+   L35:
+     .short  .L25-.L35
+     .short  .L26-.L35
+     .short  .L27-.L35
+     .short  .L28-.L35
+     .short  .L29-.L35
+     .short  .L30-.L35
+     .short  .L31-.L35
+     .short  .L32-.L35
+     .short  .L33-.L35
+     .short  .L34-.L35 */
+const char *
+nds32_output_casesi_pc_relative (rtx *operands)
+{
+  machine_mode mode;
+  rtx diff_vec;
+
+  diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[1])));
+
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
+
+  /* Step C: "t <-- operands[1]".  */
+  if (flag_pic)
+    {
+      output_asm_insn ("sethi\t$ta, hi20(%l1@GOTOFF)", operands);
+      output_asm_insn ("ori\t$ta, $ta, lo12(%l1@GOTOFF)", operands);
+      output_asm_insn ("add\t$ta, $ta, $gp", operands);
+    }
+  else
+    output_asm_insn ("la\t$ta, %l1", operands);
+
+  /* Get the mode of each element in the difference vector.  */
+  mode = GET_MODE (diff_vec);
+
+  /* Step D: "z <-- (mem (plus (operands[0] << m) t))",
+     where m is 0, 1, or 2 to load address-diff value from table.  */
+  switch (mode)
+    {
+    case E_QImode:
+      output_asm_insn ("lb\t%2, [$ta + %0 << 0]", operands);
+      break;
+    case E_HImode:
+      output_asm_insn ("lh\t%2, [$ta + %0 << 1]", operands);
+      break;
+    case E_SImode:
+      output_asm_insn ("lw\t%2, [$ta + %0 << 2]", operands);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Step E: "t <-- z + t".
+     Add table label_ref with address-diff value to
+     obtain target case address.  */
+  output_asm_insn ("add\t$ta, %2, $ta", operands);
+
+  /* Step F: jump to target with register t.  */
+  if (TARGET_16_BIT)
+    return "jr5\t$ta";
+  else
+    return "jr\t$ta";
+}
+
+/* Function to generate normal jump table.  */
+const char *
+nds32_output_casesi (rtx *operands)
+{
+  /* Step C: "t <-- operands[1]".  */
+  if (flag_pic)
+    {
+      output_asm_insn ("sethi\t$ta, hi20(%l1@GOTOFF)", operands);
+      output_asm_insn ("ori\t$ta, $ta, lo12(%l1@GOTOFF)", operands);
+      output_asm_insn ("add\t$ta, $ta, $gp", operands);
+    }
+  else
+    output_asm_insn ("la\t$ta, %l1", operands);
+
+  /* Step D: "z <-- (mem (plus (operands[0] << 2) t))".  */
+  output_asm_insn ("lw\t%2, [$ta + %0 << 2]", operands);
+
+  /* No need to perform Step E, which is only used for
+     pc relative jump table.  */
+
+  /* Step F: jump to target with register z.  */
+  if (TARGET_16_BIT)
+    return "jr5\t%2";
+  else
+    return "jr\t%2";
+}
+
 /* Function to return memory format.  */
 enum nds32_16bit_address_type
 nds32_mem_format (rtx op)
@@ -2189,77 +2295,6 @@ nds32_output_return (void)
   return "";
 }
 
-/* Function to generate PC relative jump table.
-   Refer to nds32.md for more details.
-
-   The following is the sample for the case that diff value
-   can be presented in '.short' size.
-
-     addi    $r1, $r1, -(case_lower_bound)
-     slti    $ta, $r1, (case_number)
-     beqz    $ta, .L_skip_label
-
-     la      $ta, .L35             ! get jump table address
-     lh      $r1, [$ta + $r1 << 1] ! load symbol diff from jump table entry
-     addi    $ta, $r1, $ta
-     jr5     $ta
-
-     ! jump table entry
-   L35:
-     .short  .L25-.L35
-     .short  .L26-.L35
-     .short  .L27-.L35
-     .short  .L28-.L35
-     .short  .L29-.L35
-     .short  .L30-.L35
-     .short  .L31-.L35
-     .short  .L32-.L35
-     .short  .L33-.L35
-     .short  .L34-.L35 */
-const char *
-nds32_output_casesi_pc_relative (rtx *operands)
-{
-  machine_mode mode;
-  rtx diff_vec;
-
-  diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[1])));
-
-  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
-
-  /* Step C: "t <-- operands[1]".  */
-  output_asm_insn ("la\t$ta, %l1", operands);
-
-  /* Get the mode of each element in the difference vector.  */
-  mode = GET_MODE (diff_vec);
-
-  /* Step D: "z <-- (mem (plus (operands[0] << m) t))",
-     where m is 0, 1, or 2 to load address-diff value from table.  */
-  switch (mode)
-    {
-    case E_QImode:
-      output_asm_insn ("lb\t%2, [$ta + %0 << 0]", operands);
-      break;
-    case E_HImode:
-      output_asm_insn ("lh\t%2, [$ta + %0 << 1]", operands);
-      break;
-    case E_SImode:
-      output_asm_insn ("lw\t%2, [$ta + %0 << 2]", operands);
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  /* Step E: "t <-- z + t".
-     Add table label_ref with address-diff value to
-     obtain target case address.  */
-  output_asm_insn ("add\t$ta, %2, $ta", operands);
-
-  /* Step F: jump to target with register t.  */
-  if (TARGET_16_BIT)
-    return "jr5\t$ta";
-  else
-    return "jr\t$ta";
-}
 
 /* output a float load instruction */
 const char *
@@ -2417,25 +2452,6 @@ nds32_output_float_store (rtx *operands)
   return "";
 }
 
-/* Function to generate normal jump table.  */
-const char *
-nds32_output_casesi (rtx *operands)
-{
-  /* Step C: "t <-- operands[1]".  */
-  output_asm_insn ("la\t$ta, %l1", operands);
-
-  /* Step D: "z <-- (mem (plus (operands[0] << 2) t))".  */
-  output_asm_insn ("lw\t%2, [$ta + %0 << 2]", operands);
-
-  /* No need to perform Step E, which is only used for
-     pc relative jump table.  */
-
-  /* Step F: jump to target with register z.  */
-  if (TARGET_16_BIT)
-    return "jr5\t%2";
-  else
-    return "jr\t%2";
-}
 
 /* Auxiliary functions for lwm/smw.  */
 bool
@@ -2973,6 +2989,16 @@ nds32_output_unpkd8 (rtx output, rtx input,
   return "";
 }
 
+/* Return true if SYMBOL_REF X binds locally.  */
+
+static bool
+nds32_symbol_binds_local_p (const_rtx x)
+{
+  return (SYMBOL_REF_DECL (x)
+	  ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
+	  : SYMBOL_REF_LOCAL_P (x));
+}
+
 const char *
 nds32_output_call (rtx insn, rtx *operands, rtx symbol, const char *long_call,
 		   const char *call, bool align_p)
@@ -2980,21 +3006,14 @@ nds32_output_call (rtx insn, rtx *operands, rtx symbol, const char *long_call,
   char pattern[100];
   bool noreturn_p;
 
-  if (GET_CODE (symbol) == CONST)
-    {
-      symbol= XEXP (symbol, 0);
-
-      if (GET_CODE (symbol) == PLUS)
-        symbol = XEXP (symbol, 0);
-    }
-
-  gcc_assert (GET_CODE (symbol) == SYMBOL_REF
-	      || REG_P (symbol));
-
   if (nds32_long_call_p (symbol))
     strcpy (pattern, long_call);
   else
     strcpy (pattern, call);
+
+  if (flag_pic && CONSTANT_P (symbol)
+      && !nds32_symbol_binds_local_p (symbol))
+    strcat (pattern, "@PLT");
 
   if (align_p)
     strcat (pattern, "\n\t.align 2");
@@ -3423,6 +3442,113 @@ symbolic_reference_mentioned_p (rtx op)
   return false;
 }
 
+/* Expand PIC code for @GOTOFF and @GOT.
+
+  Example for @GOTOFF:
+
+    la $r0, symbol@GOTOFF
+      -> sethi $ta, hi20(symbol@GOTOFF)
+	 ori $ta, $ta, lo12(symbol@GOTOFF)
+	 add $r0, $ta, $gp
+
+  Example for @GOT:
+
+    la $r0, symbol@GOT
+      -> sethi $ta, hi20(symbol@GOT)
+	 ori $ta, $ta, lo12(symbol@GOT)
+	 lw  $r0, [$ta + $gp]
+*/
+rtx
+nds32_legitimize_pic_address (rtx x)
+{
+  rtx addr = x;
+  rtx reg = gen_reg_rtx (Pmode);
+  rtx pat;
+
+  if (GET_CODE (x) == LABEL_REF
+      || (GET_CODE (x) == SYMBOL_REF
+	  && (CONSTANT_POOL_ADDRESS_P (x)
+	      || SYMBOL_REF_LOCAL_P (x))))
+    {
+      addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_GOTOFF);
+      addr = gen_rtx_CONST (SImode, addr);
+      emit_insn (gen_sethi (reg, addr));
+      emit_insn (gen_lo_sum (reg, reg, addr));
+      x = gen_rtx_PLUS (Pmode, reg, pic_offset_table_rtx);
+    }
+  else if (GET_CODE (x) == SYMBOL_REF)
+    {
+      addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_GOT);
+      addr = gen_rtx_CONST (SImode, addr);
+      emit_insn (gen_sethi (reg, addr));
+      emit_insn (gen_lo_sum (reg, reg, addr));
+
+      x = gen_const_mem (SImode, gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+					       reg));
+    }
+  else if (GET_CODE (x) == CONST)
+    {
+      /* We don't split constant in expand_pic_move because GOTOFF can combine
+	 the addend with the symbol.  */
+      addr = XEXP (x, 0);
+      gcc_assert (GET_CODE (addr) == PLUS);
+
+      rtx op0 = XEXP (addr, 0);
+      rtx op1 = XEXP (addr, 1);
+
+      if ((GET_CODE (op0) == LABEL_REF
+	   || (GET_CODE (op0) == SYMBOL_REF
+	       && (CONSTANT_POOL_ADDRESS_P (op0)
+		   || SYMBOL_REF_LOCAL_P (op0))))
+	  && GET_CODE (op1) == CONST_INT)
+	{
+	  pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0), UNSPEC_GOTOFF);
+	  pat = gen_rtx_PLUS (Pmode, pat, op1);
+	  pat = gen_rtx_CONST (Pmode, pat);
+	  emit_insn (gen_sethi (reg, pat));
+	  emit_insn (gen_lo_sum (reg, reg, pat));
+	  x = gen_rtx_PLUS (Pmode, reg, pic_offset_table_rtx);
+	}
+      else if (GET_CODE (op0) == SYMBOL_REF
+	       && GET_CODE (op1) == CONST_INT)
+	{
+	  /* This is a constant offset from a @GOT symbol reference.  */
+	  addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, op0), UNSPEC_GOT);
+	  addr = gen_rtx_CONST (SImode, addr);
+	  emit_insn (gen_sethi (reg, addr));
+	  emit_insn (gen_lo_sum (reg, reg, addr));
+	  addr = gen_const_mem (SImode, gen_rtx_PLUS (Pmode,
+						      pic_offset_table_rtx,
+						      reg));
+	  emit_move_insn (reg, addr);
+	  if (satisfies_constraint_Is15 (op1))
+	    x = gen_rtx_PLUS (Pmode, reg, op1);
+	  else
+	    {
+	      rtx tmp_reg = gen_reg_rtx (SImode);
+	      emit_insn (gen_movsi (tmp_reg, op1));
+	      x = gen_rtx_PLUS (Pmode, reg, tmp_reg);
+	    }
+	}
+      else
+	{
+	  /* Don't handle this pattern.  */
+	  debug_rtx (x);
+	  gcc_unreachable ();
+	}
+    }
+  return x;
+}
+
+void
+nds32_expand_pic_move (rtx *operands)
+{
+  rtx src;
+
+  src = nds32_legitimize_pic_address (operands[1]);
+  emit_move_insn (operands[0], src);
+}
+
 /* Expand ICT symbol.
     Example for @ICT and ICT model=large:
 
@@ -3489,6 +3615,129 @@ nds32_long_call_p (rtx symbol)
     return TARGET_CMODEL_LARGE;
 }
 
+/* Return true if X contains a thread-local symbol.  */
+bool
+nds32_tls_referenced_p (rtx x)
+{
+  if (!targetm.have_tls)
+   return false;
+
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS)
+    x = XEXP (XEXP (x, 0), 0);
+
+  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x))
+    return true;
+
+  return false;
+}
+
+/* ADDR contains a thread-local SYMBOL_REF.  Generate code to compute
+   this (thread-local) address.  */
+rtx
+nds32_legitimize_tls_address (rtx x)
+{
+  rtx tmp_reg;
+  rtx tp_reg = gen_rtx_REG (Pmode, TP_REGNUM);
+  rtx pat, insns, reg0;
+
+  if (GET_CODE (x) == SYMBOL_REF)
+    switch (SYMBOL_REF_TLS_MODEL (x))
+      {
+      case TLS_MODEL_GLOBAL_DYNAMIC:
+      case TLS_MODEL_LOCAL_DYNAMIC:
+	/* Emit UNSPEC_TLS_DESC rather than expand rtl directly because spill
+	   may destroy the define-use chain anylysis to insert relax_hint.  */
+	if (SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_GLOBAL_DYNAMIC)
+	  pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_TLSGD);
+	else
+	  pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_TLSLD);
+
+	pat = gen_rtx_CONST (SImode, pat);
+	reg0 = gen_rtx_REG (Pmode, 0);
+	/* If we can confirm all clobber reigsters, it doesn't have to use call
+	   instruction.  */
+	insns = emit_call_insn (gen_tls_desc (pat, GEN_INT (0)));
+	use_reg (&CALL_INSN_FUNCTION_USAGE (insns), pic_offset_table_rtx);
+	RTL_CONST_CALL_P (insns) = 1;
+	tmp_reg = gen_reg_rtx (SImode);
+	emit_move_insn (tmp_reg, reg0);
+	x = tmp_reg;
+	break;
+
+      case TLS_MODEL_INITIAL_EXEC:
+	pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_TLSIE);
+	tmp_reg  = gen_reg_rtx (SImode);
+	pat = gen_rtx_CONST (SImode, pat);
+	emit_insn (gen_tls_ie (tmp_reg, pat, GEN_INT (0)));
+	if (flag_pic)
+	  emit_use (pic_offset_table_rtx);
+	x = gen_rtx_PLUS (Pmode, tmp_reg, tp_reg);
+	break;
+
+      case TLS_MODEL_LOCAL_EXEC:
+	/* Expand symbol_ref@TPOFF':
+	     sethi $ta, hi20(symbol_ref@TPOFF)
+	     ori   $ta, $ta, lo12(symbol_ref@TPOFF)
+	     add   $r0, $ta, $tp */
+	tmp_reg  = gen_reg_rtx (SImode);
+	pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_TLSLE);
+	pat = gen_rtx_CONST (SImode, pat);
+	emit_insn (gen_sethi (tmp_reg, pat));
+	emit_insn (gen_lo_sum (tmp_reg, tmp_reg, pat));
+	x = gen_rtx_PLUS (Pmode, tmp_reg, tp_reg);
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+  else if (GET_CODE (x) == CONST)
+    {
+      rtx base, addend;
+      split_const (x, &base, &addend);
+
+      if (SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_LOCAL_EXEC)
+	{
+	  /* Expand symbol_ref@TPOFF':
+	     sethi $ta, hi20(symbol_ref@TPOFF + addend)
+	     ori   $ta, $ta, lo12(symbol_ref@TPOFF + addend)
+	     add   $r0, $ta, $tp */
+	  tmp_reg  = gen_reg_rtx (SImode);
+	  pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, base), UNSPEC_TLSLE);
+	  pat = gen_rtx_PLUS (SImode, pat, addend);
+	  pat = gen_rtx_CONST (SImode, pat);
+	  emit_insn (gen_sethi (tmp_reg, pat));
+	  emit_insn (gen_lo_sum (tmp_reg, tmp_reg, pat));
+	  x = gen_rtx_PLUS (Pmode, tmp_reg, tp_reg);
+	}
+    }
+
+  return x;
+}
+
+void
+nds32_expand_tls_move (rtx *operands)
+{
+  rtx src = operands[1];
+  rtx base, addend;
+
+  if (CONSTANT_P (src))
+    split_const (src, &base, &addend);
+
+  if (SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_LOCAL_EXEC)
+    src = nds32_legitimize_tls_address (src);
+  else
+    {
+      src = nds32_legitimize_tls_address (base);
+      if (addend != const0_rtx)
+	{
+	  src = gen_rtx_PLUS (SImode, src, addend);
+	  src = force_operand (src, operands[0]);
+	}
+    }
+
+  emit_move_insn (operands[0], src);
+}
+
 void
 nds32_expand_constant (machine_mode mode, HOST_WIDE_INT val,
 		       rtx target, rtx source)
@@ -3552,4 +3801,64 @@ rtx nds32_di_low_part_subreg(rtx reg)
   return simplify_gen_subreg (
 	   SImode, reg,
 	   DImode, low_part_offset);
+}
+
+/* ------------------------------------------------------------------------ */
+
+/* Auxiliary function for output TLS patterns.  */
+
+const char *
+nds32_output_tls_desc (rtx *operands)
+{
+  char pattern[1000];
+
+  if (TARGET_RELAX_HINT)
+    snprintf (pattern, sizeof (pattern),
+	      ".relax_hint %%1\n\tsethi $r0, hi20(%%0)\n\t"
+	      ".relax_hint %%1\n\tori $r0, $r0, lo12(%%0)\n\t"
+	      ".relax_hint %%1\n\tlw $r15, [$r0 + $gp]\n\t"
+	      ".relax_hint %%1\n\tadd $r0, $r0, $gp\n\t"
+	      ".relax_hint %%1\n\tjral $r15");
+  else
+    snprintf (pattern, sizeof (pattern),
+	      "sethi $r0, hi20(%%0)\n\t"
+	      "ori $r0, $r0, lo12(%%0)\n\t"
+	      "lw $r15, [$r0 + $gp]\n\t"
+	      "add $r0, $r0, $gp\n\t"
+	      "jral $r15");
+  output_asm_insn (pattern, operands);
+  return "";
+}
+
+const char *
+nds32_output_tls_ie (rtx *operands)
+{
+  char pattern[1000];
+
+  if (flag_pic)
+  {
+      if (TARGET_RELAX_HINT)
+	snprintf (pattern, sizeof (pattern),
+		  ".relax_hint %%2\n\tsethi %%0, hi20(%%1)\n\t"
+		  ".relax_hint %%2\n\tori %%0, %%0, lo12(%%1)\n\t"
+		  ".relax_hint %%2\n\tlw %%0, [%%0 + $gp]");
+      else
+	snprintf (pattern, sizeof (pattern),
+		  "sethi %%0, hi20(%%1)\n\t"
+		  "ori %%0, %%0, lo12(%%1)\n\t"
+		  "lw %%0, [%%0 + $gp]");
+  }
+  else
+    {
+      if (TARGET_RELAX_HINT)
+	snprintf (pattern, sizeof (pattern),
+		  ".relax_hint %%2\n\tsethi %%0, hi20(%%1)\n\t"
+		  ".relax_hint %%2\n\tlwi %%0, [%%0 + lo12(%%1)]");
+      else
+	snprintf (pattern, sizeof (pattern),
+		  "sethi %%0, hi20(%%1)\n\t"
+		  "lwi %%0, [%%0 + lo12(%%1)]");
+    }
+  output_asm_insn (pattern, operands);
+  return "";
 }

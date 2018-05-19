@@ -44,6 +44,12 @@
        (match_test "!(TARGET_ICT_MODEL_LARGE
 		      && nds32_indirect_call_referenced_p (op))")))
 
+(define_predicate "nds32_nonunspec_symbolic_operand"
+  (and (match_code "const,symbol_ref,label_ref")
+       (match_test "!flag_pic && nds32_const_unspec_p (op)
+		    && !(TARGET_ICT_MODEL_LARGE
+			 && nds32_indirect_call_referenced_p (op))")))
+
 (define_predicate "nds32_reg_constant_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_int_operand")))

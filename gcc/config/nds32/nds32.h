@@ -36,6 +36,16 @@
 #define NDS32_SYMBOL_REF_RODATA_P(x) \
   ((SYMBOL_REF_FLAGS (x) & NDS32_SYMBOL_FLAG_RODATA) != 0)
 
+enum nds32_relax_insn_type
+{
+  RELAX_ORI,
+  RELAX_PLT_ADD,
+  RELAX_TLS_ADD_or_LW,
+  RELAX_TLS_ADD_LW,
+  RELAX_TLS_LW_JRAL,
+  RELAX_DONE
+};
+
 /* Classifies expand result for expand helper function.  */
 enum nds32_expand_result_type
 {

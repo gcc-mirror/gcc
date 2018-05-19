@@ -435,7 +435,8 @@ nds32_compute_stack_frame (void)
 
   /* If $gp value is required to be saved on stack, it needs 4 bytes space.
      Check whether we are using PIC code genration.  */
-  cfun->machine->gp_size = (flag_pic) ? 4 : 0;
+  cfun->machine->gp_size =
+    (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM)) ? 4 : 0;
 
   /* If $lp value is required to be saved on stack, it needs 4 bytes space.
      Check whether $lp is ever live.  */
@@ -520,7 +521,8 @@ nds32_compute_stack_frame (void)
 	  && cfun->machine->callee_saved_last_fpr_regno == SP_REGNUM
 	  && !df_regs_ever_live_p (FP_REGNUM)
 	  && !df_regs_ever_live_p (LP_REGNUM)
-	  && cfun->machine->local_size == 0))
+	  && cfun->machine->local_size == 0
+	  && !flag_pic))
     {
       /* Set this function 'naked_p' and other functions can check this flag.
 	 Note that in nds32 port, the 'naked_p = 1' JUST means there is no
@@ -1260,6 +1262,32 @@ nds32_emit_stack_v3pop (unsigned Rb,
 
   /* Add CFI info by manual.  */
   REG_NOTES (parallel_insn) = dwarf;
+}
+
+static void
+nds32_emit_load_gp (void)
+{
+  rtx got_symbol, pat;
+
+  /* Initial GLOBAL OFFSET TABLE don't do the scheduling.  */
+  emit_insn (gen_blockage ());
+
+  got_symbol = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+  /* sethi $gp, _GLOBAL_OFFSET_TABLE_ -8 */
+  pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, got_symbol), UNSPEC_GOTINIT);
+  pat = gen_rtx_CONST (SImode, gen_rtx_PLUS (Pmode, pat, GEN_INT (-8)));
+  emit_insn (gen_sethi (pic_offset_table_rtx,pat));
+
+  /* ori $gp, $gp, _GLOBAL_OFFSET_TABLE_ -4 */
+  pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, got_symbol), UNSPEC_GOTINIT);
+  pat = gen_rtx_CONST (SImode, gen_rtx_PLUS (Pmode, pat, GEN_INT (-4)));
+  emit_insn (gen_lo_sum (pic_offset_table_rtx, pic_offset_table_rtx, pat));
+
+  /* add5.pc $gp */
+  emit_insn (gen_add_pc (pic_offset_table_rtx, pic_offset_table_rtx));
+
+  /* Initial GLOBAL OFFSET TABLE don't do the scheduling.  */
+  emit_insn (gen_blockage ());
 }
 
 /* Function that may creates more instructions
@@ -2213,6 +2241,26 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		? 1
 		: 0);
 
+  if (flag_pic)
+    {
+      fprintf (file, "\tsmw.adm\t$r31, [$r31], $r31, 4\n");
+      fprintf (file, "\tsethi\t%s, hi20(_GLOBAL_OFFSET_TABLE_-8)\n",
+		      reg_names [PIC_OFFSET_TABLE_REGNUM]);
+      fprintf (file, "\tori\t%s, %s, lo12(_GLOBAL_OFFSET_TABLE_-4)\n",
+		      reg_names [PIC_OFFSET_TABLE_REGNUM],
+		      reg_names [PIC_OFFSET_TABLE_REGNUM]);
+
+      if (TARGET_ISA_V3)
+	fprintf (file, "\tadd5.pc\t$gp\n");
+      else
+	{
+	  fprintf (file, "\tmfusr\t$ta, $pc\n");
+	  fprintf (file, "\tadd\t%s, $ta, %s\n",
+			  reg_names [PIC_OFFSET_TABLE_REGNUM],
+			  reg_names [PIC_OFFSET_TABLE_REGNUM]);
+	}
+    }
+
   if (delta != 0)
     {
       if (satisfies_constraint_Is15 (GEN_INT (delta)))
@@ -2237,9 +2285,23 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	}
     }
 
-  fprintf (file, "\tb\t");
-  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
-  fprintf (file, "\n");
+  if (flag_pic)
+    {
+      fprintf (file, "\tla\t$ta, ");
+      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+      fprintf (file, "@PLT\n");
+      fprintf (file, "\t! epilogue\n");
+      fprintf (file, "\tlwi.bi\t%s, [%s], 4\n",
+	       reg_names[PIC_OFFSET_TABLE_REGNUM],
+	       reg_names[STACK_POINTER_REGNUM]);
+      fprintf (file, "\tbr\t$ta\n");
+    }
+  else
+    {
+      fprintf (file, "\tb\t");
+      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+      fprintf (file, "\n");
+    }
 
   final_end_function ();
 }
@@ -2260,10 +2322,12 @@ nds32_function_ok_for_sibcall (tree decl,
      3. We don't want to apply sibling call optimization for indirect
 	sibcall because the pop behavior in epilogue may pollute the
 	content of caller-saved regsiter when the register is used for
-	indirect sibcall.  */
+	indirect sibcall.
+     4. In pic mode, it may use some registers for PLT call.  */
   return (!TARGET_V3PUSH
 	  && (cfun->machine->va_args_size == 0)
-	  && decl);
+	  && decl
+	  && !flag_pic);
 }
 
 /* Determine whether we need to enable warning for function return check.  */
@@ -2579,6 +2643,10 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
     case SYMBOL_REF:
       /* (mem (symbol_ref A)) => [symbol_ref] */
+
+      if (flag_pic || SYMBOL_REF_TLS_MODEL (x))
+	return false;
+
       if (TARGET_ICT_MODEL_LARGE && nds32_indirect_call_referenced_p (x))
 	return false;
 
@@ -2593,7 +2661,8 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	 the 'symbol_ref' is not a valid address during or after
 	 LRA/reload phase.  */
       if (TARGET_CMODEL_MEDIUM
-	  && NDS32_SYMBOL_REF_RODATA_P (x)
+	  && (NDS32_SYMBOL_REF_RODATA_P (x)
+	      || CONSTANT_POOL_ADDRESS_P (x))
 	  && (reload_completed
 	      || reload_in_progress
 	      || lra_in_progress))
@@ -2615,6 +2684,10 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	    {
 	      /* Now we see the [ + const_addr ] pattern, but we need
 		 some further checking.  */
+
+	      if (flag_pic)
+		return false;
+
 	      /* If -mcmodel=large, the 'const_addr' is not a valid address
 		 during or after LRA/reload phase.  */
 	      if (TARGET_CMODEL_LARGE
@@ -2692,8 +2765,17 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
     case LO_SUM:
       /* (mem (lo_sum (reg) (symbol_ref))) */
       /* (mem (lo_sum (reg) (const (plus (symbol_ref) (reg)))) */
+      /* TLS case: (mem (lo_sum (reg) (const (unspec symbol_ref X)))) */
+      /* The LO_SUM is a valid address if and only if we would like to
+	 generate 32-bit full address memory access with any of following
+	 circumstance:
+	   1. -mcmodel=large.
+	   2. -mcmodel=medium and the symbol_ref references to rodata.  */
       {
 	rtx sym = NULL_RTX;
+
+	if (flag_pic)
+	  return false;
 
 	if (!REG_P (XEXP (x, 0)))
 	  return false;
@@ -2736,7 +2818,11 @@ nds32_legitimize_address (rtx x,
 			  rtx oldx ATTRIBUTE_UNUSED,
 			  machine_mode mode ATTRIBUTE_UNUSED)
 {
-  if (TARGET_ICT_MODEL_LARGE && nds32_indirect_call_referenced_p (x))
+  if (nds32_tls_referenced_p (x))
+    x = nds32_legitimize_tls_address (x);
+  else if (flag_pic && SYMBOLIC_CONST_P (x))
+    x = nds32_legitimize_pic_address (x);
+  else if (TARGET_ICT_MODEL_LARGE && nds32_indirect_call_referenced_p (x))
     x = nds32_legitimize_ict_address (x);
 
   return x;
@@ -2766,12 +2852,25 @@ nds32_legitimate_constant_p (machine_mode mode, rtx x)
 	{
 	  switch (XINT (x, 1))
 	    {
+	    case UNSPEC_GOT:
+	    case UNSPEC_GOTOFF:
+	    case UNSPEC_PLT:
+	    case UNSPEC_TLSGD:
+	    case UNSPEC_TLSLD:
+	    case UNSPEC_TLSIE:
+	    case UNSPEC_TLSLE:
 	    case UNSPEC_ICT:
 	      return false;
 	    default:
 	      return true;
 	    }
 	}
+      break;
+    case SYMBOL_REF:
+      /* TLS symbols need a call to resolve in
+	 precompute_register_parameters.  */
+      if (SYMBOL_REF_TLS_MODEL (x))
+	return false;
       break;
     default:
       return true;
@@ -2798,6 +2897,14 @@ nds32_delegitimize_address (rtx x)
 	{
 	  switch (XINT (inner, 1))
 	    {
+	    case UNSPEC_GOTINIT:
+	    case UNSPEC_GOT:
+	    case UNSPEC_GOTOFF:
+	    case UNSPEC_PLT:
+	    case UNSPEC_TLSGD:
+	    case UNSPEC_TLSLD:
+	    case UNSPEC_TLSIE:
+	    case UNSPEC_TLSLE:
 	    case UNSPEC_ICT:
 	      x = XVECEXP (inner, 0, 0);
 	      break;
@@ -2838,9 +2945,15 @@ nds32_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
       /* We don't want to force symbol as constant pool in .text section,
 	 because we use the gp-relatived instruction to load in small
 	 or medium model.  */
-      if (SYMBOL_REF_TLS_MODEL (x)
+      if (flag_pic
+	  || SYMBOL_REF_TLS_MODEL (x)
 	  || TARGET_CMODEL_SMALL
 	  || TARGET_CMODEL_MEDIUM)
+	return true;
+      break;
+    case CONST_INT:
+    case CONST_DOUBLE:
+      if (flag_pic && (lra_in_progress || reload_completed))
 	return true;
       break;
     default:
@@ -2986,6 +3099,9 @@ nds32_asm_file_start (void)
 {
   default_file_start ();
 
+  if (flag_pic)
+    fprintf (asm_out_file, "\t.pic\n");
+
   /* Tell assembler which ABI we are using.  */
   fprintf (asm_out_file, "\t! ABI version\n");
   if (TARGET_HARD_FLOAT)
@@ -3102,6 +3218,37 @@ nds32_asm_output_addr_const_extra (FILE *file, rtx x)
     {
       switch (XINT (x, 1))
 	{
+	case UNSPEC_GOTINIT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  break;
+	case UNSPEC_GOTOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTOFF", file);
+	  break;
+	case UNSPEC_GOT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOT", file);
+	  break;
+	case UNSPEC_PLT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@PLT", file);
+	  break;
+	case UNSPEC_TLSGD:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@TLSDESC", file);
+	  break;
+	case UNSPEC_TLSLD:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@TLSDESC", file);
+	  break;
+	case UNSPEC_TLSIE:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTTPOFF", file);
+	  break;
+	case UNSPEC_TLSLE:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@TPOFF", file);
+	  break;
 	case UNSPEC_ICT:
 	  output_addr_const (file, XVECEXP (x, 0, 0));
 	  fputs ("@ICT", file);
@@ -3870,6 +4017,9 @@ nds32_option_override (void)
       target_flags &= ~MASK_EXT_PERF2;
       /* Under V3M ISA, we need to strictly disable TARGET_EXT_STRING.  */
       target_flags &= ~MASK_EXT_STRING;
+
+      if (flag_pic)
+	error ("not support -fpic option for v3m toolchain");
     }
 
   /* See if we are using reduced-set registers:
@@ -3903,9 +4053,6 @@ nds32_option_override (void)
 	       "must be enable '-mext-fpu-sp' or '-mext-fpu-dp'");
     }
 
-  /* Currently, we don't support PIC code generation yet.  */
-  if (flag_pic)
-    sorry ("position-independent code not supported");
 
   nds32_register_passes ();
 }
@@ -4328,7 +4475,7 @@ nds32_expand_prologue (void)
 
   /* If the function is 'naked',
      we do not have to generate prologue code fragment.  */
-  if (cfun->machine->naked_p)
+  if (cfun->machine->naked_p && !flag_pic)
     return;
 
   /* Get callee_first_regno and callee_last_regno.  */
@@ -4456,6 +4603,10 @@ nds32_expand_prologue (void)
 			       stack_pointer_rtx,
 			       -1 * sp_adjust);
     }
+
+  /* Emit gp setup instructions for -fpic.  */
+  if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
+    nds32_emit_load_gp ();
 
   /* Prevent the instruction scheduler from
      moving instructions across the boundary.  */
@@ -4700,7 +4851,7 @@ nds32_expand_prologue_v3push (void)
 
   /* If the function is 'naked',
      we do not have to generate prologue code fragment.  */
-  if (cfun->machine->naked_p)
+  if (cfun->machine->naked_p && !flag_pic)
     return;
 
   /* Get callee_first_regno and callee_last_regno.  */
@@ -4827,6 +4978,10 @@ nds32_expand_prologue_v3push (void)
 			       stack_pointer_rtx,
 			       -1 * sp_adjust);
     }
+
+  /* Emit gp setup instructions for -fpic.  */
+  if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
+    nds32_emit_load_gp ();
 
   /* Prevent the instruction scheduler from
      moving instructions across the boundary.  */
