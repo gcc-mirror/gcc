@@ -1,3 +1,12 @@
+2018-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82923
+	PR fortran/66694
+	PR fortran/82617
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Set the
+	charlen backend_decl of the rhs expr to ss->info->string_length
+	so that the value in the current scope is used.
+
 2018-05-18  Kito Cheng  <kito.cheng@gmail.com>
 
 	* gcc.dg/stack-usage-1.c: Add support for rv32e.
