@@ -69,10 +69,6 @@ extern unsigned int nds32_dbx_register_number (unsigned int);
 
 /* ------------------------------------------------------------------------ */
 
-/* Auxiliary functions for lwm/smw.  */
-
-extern bool nds32_valid_smw_lwm_base_p (rtx);
-
 /* Auxiliary functions for manipulation DI mode.  */
 
 extern rtx nds32_di_high_part_subreg(rtx);
@@ -246,6 +242,7 @@ extern const char *nds32_output_32bit_load_s (rtx *, int);
 extern const char *nds32_output_float_load(rtx *);
 extern const char *nds32_output_float_store(rtx *);
 extern const char *nds32_output_smw_single_word (rtx *);
+extern const char *nds32_output_smw_double_word (rtx *);
 extern const char *nds32_output_lmw_single_word (rtx *);
 extern const char *nds32_output_double (rtx *, bool);
 extern const char *nds32_output_cbranchsi4_equality_zero (rtx_insn *, rtx *);
@@ -327,6 +324,10 @@ extern bool nds32_valid_CVp5_p (rtx);
 extern bool nds32_valid_CVs5_p (rtx);
 extern bool nds32_valid_CVs2_p (rtx);
 extern bool nds32_valid_CVhi_p (rtx);
+
+/* Auxiliary functions for lwm/smw.  */
+
+extern bool nds32_valid_smw_lwm_base_p (rtx);
 
 extern bool nds32_split_double_word_load_store_p (rtx *,bool);
 
