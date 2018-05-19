@@ -9698,6 +9698,12 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   if (expr2 && rss == gfc_ss_terminator)
     return NULL_TREE;
 
+  /* Ensure that the string length from the current scope is used.  */
+  if (expr2->ts.type == BT_CHARACTER
+      && expr2->expr_type == EXPR_FUNCTION
+      && !expr2->value.function.isym)
+    expr2->ts.u.cl->backend_decl = rss->info->string_length;
+
   gfc_start_block (&fblock);
 
   /* Since the lhs is allocatable, this must be a descriptor type.

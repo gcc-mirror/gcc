@@ -1,3 +1,13 @@
+2018-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82923
+	PR fortran/66694
+	PR fortran/82617
+	Backport from trunk
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Set the
+	charlen backend_decl of the rhs expr to ss->info->string_length
+	so that the value in the current scope is used.
+
 2018-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/85742
