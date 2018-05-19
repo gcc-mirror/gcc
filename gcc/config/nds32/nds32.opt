@@ -85,6 +85,19 @@ mlittle-endian
 Target Undocumented RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
 Generate code in little-endian mode.
 
+mict-model=
+Target Undocumented RejectNegative Joined Enum(nds32_ict_model_type) Var(nds32_ict_model) Init(ICT_MODEL_SMALL)
+Specify the address generation strategy for ICT call's code model.
+
+Enum
+Name(nds32_ict_model_type) Type(enum nds32_ict_model_type)
+Known cmodel types (for use with the -mict-model= option):
+
+EnumValue
+Enum(nds32_ict_model_type) String(small) Value(ICT_MODEL_SMALL)
+
+EnumValue
+Enum(nds32_ict_model_type) String(large) Value(ICT_MODEL_LARGE)
 
 mcmov
 Target Report Mask(CMOV)

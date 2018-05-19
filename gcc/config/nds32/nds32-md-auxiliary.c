@@ -39,6 +39,9 @@
 #include "expr.h"
 #include "emit-rtl.h"
 #include "explow.h"
+#include "stringpool.h"
+#include "attribs.h"
+
 
 /* ------------------------------------------------------------------------ */
 
@@ -2970,16 +2973,6 @@ nds32_output_unpkd8 (rtx output, rtx input,
   return "";
 }
 
-/* Return true if SYMBOL_REF X binds locally.  */
-
-static bool
-nds32_symbol_binds_local_p (const_rtx x)
-{
-  return (SYMBOL_REF_DECL (x)
-	  ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
-	  : SYMBOL_REF_LOCAL_P (x));
-}
-
 const char *
 nds32_output_call (rtx insn, rtx *operands, rtx symbol, const char *long_call,
 		   const char *call, bool align_p)
@@ -3400,11 +3393,100 @@ nds32_split_rotatertdi3 (rtx dst, rtx src, rtx shiftamount)
   emit_insn (gen_cmovnsi (dst_high_part, select_reg,
 			  dst_high_part_l32, dst_high_part_g32));
 }
+
+/* Return true if OP contains a symbol reference.  */
+bool
+symbolic_reference_mentioned_p (rtx op)
+{
+  const char *fmt;
+  int i;
+
+  if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
+    return true;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (op));
+  for (i = GET_RTX_LENGTH (GET_CODE (op)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  int j;
+
+	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
+	    if (symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
+	      return true;
+	}
+
+      else if (fmt[i] == 'e' && symbolic_reference_mentioned_p (XEXP (op, i)))
+	return true;
+    }
+
+  return false;
+}
+
+/* Expand ICT symbol.
+    Example for @ICT and ICT model=large:
+
+    la $r0, symbol@ICT
+      -> sethi $rt, hi20(symbol@ICT)
+	 lwi $r0, [$rt + lo12(symbol@ICT)]
+
+*/
+rtx
+nds32_legitimize_ict_address (rtx x)
+{
+  rtx symbol = x;
+  rtx addr = x;
+  rtx reg = gen_reg_rtx (Pmode);
+  gcc_assert (GET_CODE (x) == SYMBOL_REF
+	      && nds32_indirect_call_referenced_p (x));
+
+  addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, symbol), UNSPEC_ICT);
+  addr = gen_rtx_CONST (SImode, addr);
+  emit_insn (gen_sethi (reg, addr));
+
+  x = gen_const_mem (SImode, gen_rtx_LO_SUM (Pmode, reg, addr));
+
+  return x;
+}
+
+void
+nds32_expand_ict_move (rtx *operands)
+{
+  rtx src = operands[1];
+
+  src = nds32_legitimize_ict_address (src);
+
+  emit_move_insn (operands[0], src);
+}
+
+/* Return true X is a indirect call symbol.  */
+bool
+nds32_indirect_call_referenced_p (rtx x)
+{
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_ICT)
+    x = XVECEXP (x, 0, 0);
+
+  if (GET_CODE (x) == SYMBOL_REF)
+    {
+      tree decl = SYMBOL_REF_DECL (x);
+
+      return decl
+	     && (lookup_attribute("indirect_call",
+				  DECL_ATTRIBUTES(decl))
+		 != NULL);
+    }
+
+  return false;
+}
+
 /* Return true X is need use long call.  */
 bool
 nds32_long_call_p (rtx symbol)
 {
-  return TARGET_CMODEL_LARGE;
+  if (nds32_indirect_call_referenced_p (symbol))
+    return TARGET_ICT_MODEL_LARGE;
+  else
+    return TARGET_CMODEL_LARGE;
 }
 
 void

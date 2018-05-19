@@ -215,6 +215,17 @@
 						  low12_int));
       DONE;
     }
+
+  if ((REG_P (operands[0]) || GET_CODE (operands[0]) == SUBREG)
+       && SYMBOLIC_CONST_P (operands[1]))
+    {
+      if (TARGET_ICT_MODEL_LARGE
+	  && nds32_indirect_call_referenced_p (operands[1]))
+	{
+	  nds32_expand_ict_move (operands);
+	  DONE;
+	}
+    }
 })
 
 (define_insn "*mov<mode>"
@@ -1479,7 +1490,26 @@
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
-  ""
+  {
+    rtx insn;
+    rtx sym = XEXP (operands[0], 0);
+
+    if (TARGET_ICT_MODEL_LARGE
+	&& nds32_indirect_call_referenced_p (sym))
+      {
+	rtx reg = gen_reg_rtx (Pmode);
+	emit_move_insn (reg, sym);
+	operands[0] = gen_const_mem (Pmode, reg);
+      }
+
+    if (flag_pic)
+      {
+	insn = emit_call_insn (gen_call_internal
+			       (XEXP (operands[0], 0), GEN_INT (0)));
+	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+	DONE;
+      }
+  }
 )
 
 (define_insn "call_internal"
@@ -1543,7 +1573,29 @@
 		         (match_operand 2)))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
-  "")
+  ""
+  {
+    rtx insn;
+    rtx sym = XEXP (operands[1], 0);
+
+    if (TARGET_ICT_MODEL_LARGE
+	&& nds32_indirect_call_referenced_p (sym))
+      {
+	rtx reg = gen_reg_rtx (Pmode);
+	emit_move_insn (reg, sym);
+	operands[1] = gen_const_mem (Pmode, reg);
+      }
+
+    if (flag_pic)
+      {
+	insn =
+	  emit_call_insn (gen_call_value_internal
+			  (operands[0], XEXP (operands[1], 0), GEN_INT (0)));
+	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+	DONE;
+      }
+  }
+)
 
 (define_insn "call_value_internal"
   [(parallel [(set (match_operand 0)
@@ -1634,7 +1686,18 @@
 		    (const_int 0))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
-  "")
+  ""
+{
+    rtx sym = XEXP (operands[0], 0);
+
+    if (TARGET_ICT_MODEL_LARGE
+	&& nds32_indirect_call_referenced_p (sym))
+      {
+	rtx reg = gen_reg_rtx (Pmode);
+	emit_move_insn (reg, sym);
+	operands[0] = gen_const_mem (Pmode, reg);
+      }
+})
 
 (define_insn "sibcall_internal"
   [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, i"))
@@ -1684,7 +1747,18 @@
 			 (const_int 0)))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
-  "")
+  ""
+{
+    rtx sym = XEXP (operands[1], 0);
+
+    if (TARGET_ICT_MODEL_LARGE
+	&& nds32_indirect_call_referenced_p (sym))
+      {
+	rtx reg = gen_reg_rtx (Pmode);
+	emit_move_insn (reg, sym);
+	operands[1] = gen_const_mem (Pmode, reg);
+      }
+})
 
 (define_insn "sibcall_value_internal"
   [(parallel [(set (match_operand 0)

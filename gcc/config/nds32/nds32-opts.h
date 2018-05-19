@@ -57,6 +57,13 @@ enum nds32_cmodel_type
   CMODEL_LARGE
 };
 
+/* The code model defines the address generation strategy.  */
+enum nds32_ict_model_type
+{
+  ICT_MODEL_SMALL,
+  ICT_MODEL_LARGE
+};
+
 /* Multiply instruction configuration.  */
 enum nds32_mul_type
 {

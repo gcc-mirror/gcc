@@ -855,6 +855,12 @@ enum nds32_builtins
 #define TARGET_CMODEL_LARGE \
    (nds32_cmodel_option == CMODEL_LARGE)
 
+#define TARGET_ICT_MODEL_SMALL \
+   (nds32_ict_model == ICT_MODEL_SMALL)
+
+#define TARGET_ICT_MODEL_LARGE \
+   (nds32_ict_model == ICT_MODEL_LARGE)
+
 /* When -mcmodel=small or -mcmodel=medium,
    compiler may generate gp-base instruction directly.  */
 #define TARGET_GP_DIRECT \
@@ -1460,6 +1466,11 @@ enum reg_class
 /* Position Independent Code.  */
 
 #define PIC_OFFSET_TABLE_REGNUM GP_REGNUM
+
+#define SYMBOLIC_CONST_P(X)	\
+(GET_CODE (X) == SYMBOL_REF						\
+ || GET_CODE (X) == LABEL_REF						\
+ || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
 
 /* Defining the Output Assembler Language.  */
