@@ -2446,31 +2446,6 @@ nds32_output_float_store (rtx *operands)
   return "";
 }
 
-
-/* Auxiliary functions for lwm/smw.  */
-bool
-nds32_valid_smw_lwm_base_p (rtx op)
-{
-  rtx base_addr;
-
-  if (!MEM_P (op))
-    return false;
-
-  base_addr = XEXP (op, 0);
-
-  if (REG_P (base_addr))
-    return true;
-  else
-    {
-      if (GET_CODE (base_addr) == POST_INC
-	  && REG_P (XEXP (base_addr, 0)))
-        return true;
-    }
-
-  return false;
-}
-
-/* ------------------------------------------------------------------------ */
 const char *
 nds32_output_smw_single_word (rtx *operands)
 {
@@ -2508,6 +2483,56 @@ nds32_output_smw_single_word (rtx *operands)
   else
     {
       sprintf (buff, "smw.bi%s\t%%1, [%%0], %%1", update_base);
+    }
+  output_asm_insn (buff, otherops);
+  return "";
+}
+
+/* ------------------------------------------------------------------------ */
+const char *
+nds32_output_smw_double_word (rtx *operands)
+{
+  char buff[100];
+  unsigned regno;
+  int enable4;
+  bool update_base_p;
+  rtx base_addr = operands[0];
+  rtx base_reg;
+  rtx otherops[3];
+
+  if (REG_P (XEXP (base_addr, 0)))
+    {
+      update_base_p = false;
+      base_reg = XEXP (base_addr, 0);
+    }
+  else
+    {
+      update_base_p = true;
+      base_reg = XEXP (XEXP (base_addr, 0), 0);
+    }
+
+  const char *update_base = update_base_p ? "m" : "";
+
+  regno = REGNO (operands[1]);
+
+  otherops[0] = base_reg;
+  otherops[1] = operands[1];
+  otherops[2] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);;
+
+  if (regno >= 28)
+    {
+      enable4 = nds32_regno_to_enable4 (regno)
+		| nds32_regno_to_enable4 (regno + 1);
+      sprintf (buff, "smw.bi%s\t$sp, [%%0], $sp, %x", update_base, enable4);
+    }
+  else if (regno == 27)
+    {
+      enable4 = nds32_regno_to_enable4 (regno + 1);
+      sprintf (buff, "smw.bi%s\t%%1, [%%0], %%1, %x", update_base, enable4);
+    }
+  else
+    {
+      sprintf (buff, "smw.bi%s\t%%1, [%%0], %%2", update_base);
     }
   output_asm_insn (buff, otherops);
   return "";
@@ -3772,6 +3797,29 @@ nds32_expand_constant (machine_mode mode, HOST_WIDE_INT val,
       emit_move_insn (temp, GEN_INT (val));
       emit_move_insn (target, gen_rtx_fmt_ee (AND, mode, source, temp));
     }
+}
+
+/* Auxiliary functions for lwm/smw.  */
+bool
+nds32_valid_smw_lwm_base_p (rtx op)
+{
+  rtx base_addr;
+
+  if (!MEM_P (op))
+    return false;
+
+  base_addr = XEXP (op, 0);
+
+  if (REG_P (base_addr))
+    return true;
+  else
+    {
+      if (GET_CODE (base_addr) == POST_INC
+	  && REG_P (XEXP (base_addr, 0)))
+	return true;
+    }
+
+  return false;
 }
 
 /* Auxiliary functions for manipulation DI mode.  */

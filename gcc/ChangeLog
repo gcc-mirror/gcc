@@ -1,5 +1,13 @@
 2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-md-auxiliary.c
+	(nds32_valid_smw_lwm_base_p): Refine.
+	(nds32_output_smw_single_word): Refine.
+	(nds32_output_smw_double_word): New.
+	* config/nds32/nds32-protos.h (nds32_output_smw_double_word): New.
+
+2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-md-auxiliary.c (nds32_output_stack_push): Refine.
 	(nds32_output_stack_pop): Refine.
 	(nds32_expand_unaligned_load): Refine.
