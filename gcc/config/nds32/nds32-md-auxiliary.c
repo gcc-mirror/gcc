@@ -2030,11 +2030,8 @@ nds32_output_stack_push (rtx par_rtx)
 
   /* If we step here, we are going to do v3push or multiple push operation.  */
 
-  /* The v3push/v3pop instruction should only be applied on
-     none-isr and none-variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+  /* Refer to nds32.h, where we comment when push25/pop25 are available.  */
+  if (NDS32_V3PUSH_AVAILABLE_P)
     {
       /* For stack v3push:
 	   operands[0]: Re
@@ -2154,11 +2151,8 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
 
   /* If we step here, we are going to do v3pop or multiple pop operation.  */
 
-  /* The v3push/v3pop instruction should only be applied on
-     none-isr and none-variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+  /* Refer to nds32.h, where we comment when push25/pop25 are available.  */
+  if (NDS32_V3PUSH_AVAILABLE_P)
     {
       /* For stack v3pop:
 	   operands[0]: Re
@@ -2598,10 +2592,8 @@ nds32_expand_unaligned_load (rtx *operands, enum machine_mode mode)
   if (mode == DImode)
     {
       /* Load doubleword, we need two registers to access.  */
-      reg[0] = simplify_gen_subreg (SImode, operands[0],
-				    GET_MODE (operands[0]), 0);
-      reg[1] = simplify_gen_subreg (SImode, operands[0],
-				    GET_MODE (operands[0]), 4);
+      reg[0] = nds32_di_low_part_subreg (operands[0]);
+      reg[1] = nds32_di_high_part_subreg (operands[0]);
       /* A register only store 4 byte.  */
       width = GET_MODE_SIZE (SImode) - 1;
     }
@@ -2687,10 +2679,8 @@ nds32_expand_unaligned_store (rtx *operands, enum machine_mode mode)
   if (mode == DImode)
     {
       /* Load doubleword, we need two registers to access.  */
-      reg[0] = simplify_gen_subreg (SImode, operands[1],
-				    GET_MODE (operands[1]), 0);
-      reg[1] = simplify_gen_subreg (SImode, operands[1],
-				    GET_MODE (operands[1]), 4);
+      reg[0] = nds32_di_low_part_subreg (operands[1]);
+      reg[1] = nds32_di_high_part_subreg (operands[1]);
       /* A register only store 4 byte.  */
       width = GET_MODE_SIZE (SImode) - 1;
     }

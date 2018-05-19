@@ -1,3 +1,10 @@
+2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-md-auxiliary.c (nds32_output_stack_push): Refine.
+	(nds32_output_stack_pop): Refine.
+	(nds32_expand_unaligned_load): Refine.
+	(nds32_expand_unaligned_store): Refine.
+
 2018-05-19  Kuan-Lin Chen <kuanlinchentw@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
