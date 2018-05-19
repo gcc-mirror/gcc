@@ -151,6 +151,8 @@ extern int nds32_can_use_bitci_p (int);
 extern bool nds32_const_double_range_ok_p (rtx, machine_mode,
 					   HOST_WIDE_INT, HOST_WIDE_INT);
 
+extern bool nds32_const_unspec_p (rtx x);
+
 /* Auxiliary function for 'Computing the Length of an Insn'.  */
 
 extern int nds32_adjust_insn_length (rtx_insn *, int);
@@ -182,6 +184,26 @@ extern void nds32_expand_float_movcc (rtx *);
 
 extern enum nds32_expand_result_type nds32_expand_extv (rtx *);
 extern enum nds32_expand_result_type nds32_expand_insv (rtx *);
+
+/* Auxiliary functions for expand PIC instruction.  */
+
+extern void nds32_expand_pic_move (rtx *);
+
+/* Auxiliary functions to legitimize PIC address.  */
+
+extern rtx nds32_legitimize_pic_address (rtx);
+
+/* Auxiliary functions for expand TLS instruction.  */
+
+extern void nds32_expand_tls_move (rtx *);
+
+/* Auxiliary functions to legitimize TLS address.  */
+
+extern rtx nds32_legitimize_tls_address (rtx);
+
+/* Auxiliary functions to identify thread-local symbol.  */
+
+extern bool nds32_tls_referenced_p (rtx);
 
 /* Auxiliary functions for expand ICT instruction.  */
 
@@ -236,7 +258,8 @@ extern const char *nds32_output_unpkd8 (rtx, rtx, rtx, rtx, bool);
 
 extern const char *nds32_output_call (rtx, rtx *, rtx,
 				      const char *, const char *, bool);
-
+extern const char *nds32_output_tls_desc (rtx *);
+extern const char *nds32_output_tls_ie (rtx *);
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 

@@ -44,6 +44,20 @@
       convert_move (operands[0], tmp_rtx, false);
       DONE;
     }
+
+  if (REG_P (operands[0]) && SYMBOLIC_CONST_P (operands[1]))
+    {
+      if (nds32_tls_referenced_p (operands [1]))
+	{
+	  nds32_expand_tls_move (operands);
+	  DONE;
+	}
+      else if (flag_pic)
+	{
+	  nds32_expand_pic_move (operands);
+	  DONE;
+	}
+    }
 })
 
 (define_insn "*mov<mode>"

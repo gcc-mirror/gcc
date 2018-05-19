@@ -225,6 +225,16 @@
 	  nds32_expand_ict_move (operands);
 	  DONE;
 	}
+      else if (nds32_tls_referenced_p (operands [1]))
+	{
+	  nds32_expand_tls_move (operands);
+	  DONE;
+	}
+      else if (flag_pic)
+	{
+	  nds32_expand_pic_move (operands);
+	  DONE;
+	}
     }
 })
 
@@ -288,8 +298,8 @@
 ;; We use nds32_symbolic_operand to limit that only CONST/SYMBOL_REF/LABEL_REF
 ;; are able to match such instruction template.
 (define_insn "move_addr"
-  [(set (match_operand:SI 0 "register_operand"       "=l, r")
-	(match_operand:SI 1 "nds32_symbolic_operand" " i, i"))]
+  [(set (match_operand:SI 0 "nds32_general_register_operand"   "=l, r")
+	(match_operand:SI 1 "nds32_nonunspec_symbolic_operand" " i, i"))]
   ""
   "la\t%0, %1"
   [(set_attr "type"  "alu")
@@ -1555,9 +1565,11 @@
 		     (const_int 2)
 		     (const_int 4))
        ;; Alternative 1
-       (if_then_else (match_test "nds32_long_call_p (operands[0])")
-		     (const_int 12)
-		     (const_int 4))
+       (if_then_else (match_test "flag_pic")
+		     (const_int 16)
+		     (if_then_else (match_test "nds32_long_call_p (operands[0])")
+				   (const_int 12)
+				   (const_int 4)))
      ])]
 )
 
@@ -1641,9 +1653,11 @@
 		     (const_int 2)
 		     (const_int 4))
        ;; Alternative 1
-       (if_then_else (match_test "nds32_long_call_p (operands[1])")
-		     (const_int 12)
-		     (const_int 4))
+       (if_then_else (match_test "flag_pic")
+		     (const_int 16)
+		     (if_then_else (match_test "nds32_long_call_p (operands[1])")
+				   (const_int 12)
+				   (const_int 4)))
      ])]
 )
 
@@ -1731,9 +1745,11 @@
 		     (const_int 2)
 		     (const_int 4))
        ;; Alternative 1
-       (if_then_else (match_test "nds32_long_call_p (operands[0])")
-		     (const_int 12)
-		     (const_int 4))
+       (if_then_else (match_test "flag_pic")
+		     (const_int 16)
+		     (if_then_else (match_test "nds32_long_call_p (operands[0])")
+				   (const_int 12)
+				   (const_int 4)))
      ])]
 )
 
@@ -1793,9 +1809,11 @@
 		     (const_int 2)
 		     (const_int 4))
        ;; Alternative 1
-       (if_then_else (match_test "nds32_long_call_p (operands[1])")
-		     (const_int 12)
-		     (const_int 4))
+       (if_then_else (match_test "flag_pic")
+		     (const_int 16)
+		     (if_then_else (match_test "nds32_long_call_p (operands[1])")
+				   (const_int 12)
+				   (const_int 4)))
      ])]
 )
 
@@ -1993,6 +2011,7 @@
 {
   rtx add_tmp;
   rtx reg, test;
+  rtx tmp_reg;
 
   /* Step A: "k <-- (plus (operands[0]) (-operands[1]))".  */
   if (operands[1] != const0_rtx)
@@ -2014,9 +2033,14 @@
   emit_jump_insn (gen_cbranchsi4 (test, operands[0], operands[2],
 				  operands[4]));
 
-  /* Step C, D, E, and F, using another temporary register.  */
-  rtx tmp = gen_reg_rtx (SImode);
-  emit_jump_insn (gen_casesi_internal (operands[0], operands[3], tmp));
+  tmp_reg = gen_reg_rtx (SImode);
+  /* Step C, D, E, and F, using another temporary register tmp_reg.  */
+  if (flag_pic)
+    emit_use (pic_offset_table_rtx);
+
+  emit_jump_insn (gen_casesi_internal (operands[0],
+				       operands[3],
+				       tmp_reg));
   DONE;
 })
 
@@ -2052,8 +2076,11 @@
   else
     return nds32_output_casesi (operands);
 }
-  [(set_attr "length" "20")
-   (set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (match_test "flag_pic")
+		      (const_int 28)
+		      (const_int 20)))])
 
 ;; ----------------------------------------------------------------------------
 
@@ -2129,6 +2156,16 @@
   [(set_attr "length" "0")]
 )
 
+;; Add pc
+(define_insn "add_pc"
+  [(set (match_operand:SI 0 "register_operand"          "=r")
+	(plus:SI (match_operand:SI 1 "register_operand"  "0")
+		 (pc)))]
+  "flag_pic"
+  "add5.pc\t%0"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
 ;; ----------------------------------------------------------------------------
 
 ;; Patterns for exception handling
@@ -2191,5 +2228,59 @@
   emit_move_insn (place, operands[0]);
   DONE;
 })
+
+;; ----------------------------------------------------------------------------
+
+;; Patterns for TLS.
+;; The following two tls patterns don't be expanded directly because the
+;; intermediate value may be spilled into the stack.  As a result, it is
+;; hard to analyze the define-use chain in the relax_opt pass.
+
+
+;; There is a unspec operand to record RELAX_GROUP number because each
+;; emitted instruction need a relax_hint above it.
+(define_insn "tls_desc"
+  [(set (reg:SI 0)
+	(call (unspec_volatile:SI [(match_operand:SI 0 "nds32_symbolic_operand" "i")] UNSPEC_TLS_DESC)
+	      (const_int 1)))
+   (use (unspec [(match_operand:SI 1 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP))
+   (use (reg:SI GP_REGNUM))
+   (clobber (reg:SI LP_REGNUM))
+   (clobber (reg:SI TA_REGNUM))]
+  ""
+  {
+    return nds32_output_tls_desc (operands);
+  }
+  [(set_attr "length" "20")
+   (set_attr "type" "branch")]
+)
+
+;; There is a unspec operand to record RELAX_GROUP number because each
+;; emitted instruction need a relax_hint above it.
+(define_insn "tls_ie"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "nds32_symbolic_operand" "i")] UNSPEC_TLS_IE))
+   (use (unspec [(match_operand:SI 2 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP))
+   (use (reg:SI GP_REGNUM))]
+  ""
+  {
+    return nds32_output_tls_ie (operands);
+  }
+  [(set (attr "length") (if_then_else (match_test "flag_pic")
+				      (const_int 12)
+				      (const_int 8)))
+   (set_attr "type" "misc")]
+)
+
+;; The pattern is for some relaxation groups that have to keep addsi3 in 32-bit mode.
+(define_insn "addsi3_32bit"
+  [(set (match_operand:SI 0 "register_operand"             "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "%r")
+		    (match_operand:SI 2 "register_operand" " r")] UNSPEC_ADD32))]
+  ""
+  "add\t%0, %1, %2";
+  [(set_attr "type"    "alu")
+   (set_attr "length"  "4")
+   (set_attr "feature" "v1")])
 
 ;; ----------------------------------------------------------------------------
