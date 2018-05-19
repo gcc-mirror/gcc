@@ -1,3 +1,9 @@
+2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* common/config/nds32/nds32-common.c (TARGET_DEFAULT_TARGET_FLAGS): Add
+	MASK_HW_ABS.
+	* config/nds32/nds32.md (abssi2): New pattern.
+
 2018-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (rex64namesuffix): New mode attribute.
