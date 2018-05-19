@@ -1,3 +1,8 @@
+2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-predicates.c (const_vector_to_hwint): Use machine
+	mode with E_ prefix.
+
 2018-05-19  Kuan-Lin Chen <kuanlinchentw@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 

@@ -531,12 +531,12 @@ const_vector_to_hwint (rtx op)
 
   switch (GET_MODE (op))
     {
-      case V2HImode:
+      case E_V2HImode:
 	mask = 0xffff;
 	shift_adv = 16;
 	nelem = 2;
 	break;
-      case V4QImode:
+      case E_V4QImode:
 	mask = 0xff;
 	shift_adv = 8;
 	nelem = 4;
