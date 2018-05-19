@@ -1,3 +1,24 @@
+2018-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	Parse after tokenizing
+	libcpp/
+	* lex.c (cpp_peek_token_with_location): Adjust for compiler warning.
+	gcc/cp/
+	* parser.c (module_preamble_end_loc): Rename to ...
+	(module_marker_loc): ... here.
+	(cp_parser_module_declaration): Reimplement.
+	(cp_parser_import_declaration): Adjust.
+	(cp_parser_module_preamble): Don't parse here.  Add artificial end
+	marker.
+	(cp_parser_declaration_seq_opt): Adjust for atom.
+	(cp_parser_fill_main): Whole buffer is to be parsed.
+	(c_parse_file): Don't set end_loc here.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-1.C: Adjust diagnostics.
+	* g++.dg/modules/atom-preamble-1.C: Likewise.
+	* g++.dg/modules/mod-decl-1.C: Likewise.
+	* g++.dg/modules/p0713-[23].C: Likewise.
+
 2018-05-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

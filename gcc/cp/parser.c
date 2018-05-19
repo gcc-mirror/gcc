@@ -12548,8 +12548,9 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 
 /* Modules */
 
-/* Record where the atom preamble ends, for better diagnostic.  */
-static location_t module_preamble_end_loc;
+/* In ATOM mode, record the location of the end of the preamble.
+   In TS mode, record the location of the beginning of global module.  */
+static location_t module_marker_loc;
 
 /* Parse a module-name,
    identifier
@@ -12607,46 +12608,54 @@ check_module_outermost (const cp_token *token, const char *msg)
 /* Module-declaration
      module ;
      module module-name attr-spec-seq-opt ;
-
-   with  fmodule++
-     module module-name attr-spec-seq-opt ;
-     import-decls-opt
 */
 
-static bool
-cp_parser_module_declaration (cp_parser *parser, bool maybe_global,
-			      bool exporting)
+static void
+cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
+  bool atom_p = modules_atom_p ();
 
-  if (maybe_global && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+  if (!exporting && module_marker_loc == UNKNOWN_LOCATION
+      && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)
+      && (atom_p ? token->location == UNKNOWN_LOCATION : first_decl))
     {
-      /* Global module piece.  */
+      if (atom_p)
+	/* In ATOM mode, an injected 'module;' marks the end of the
+	   preamble.  It has an UNKOWN_LOCATION.  We may peek at the
+	   EOF token, which is fine.  */
+	module_marker_loc = cp_lexer_peek_nth_token (parser->lexer, 2)->location;
+      else
+	/* In TS mode we record the existence of the initial module;
+	   in preamble_marker_loc.  */
+	module_marker_loc = token->location;
+
       cp_lexer_consume_token (parser->lexer);
-      return true;
+      return;
     }
 
+  /* module declaration proper.  */
   cp_expr name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
-  if (module_preamble_end_loc)
+  if (!first_decl && (atom_p || !module_marker_loc))
     {
-      error_at (token->location,
-		"module declaration must be within module preamble");
-      inform (module_preamble_end_loc, "module preamble ended here");
-      name = NULL_TREE;
+      error_at (token->location, modules_atom_p ()
+		? "module declaration must be first declaration of module preamble"
+		: "module declaration does not follow global module");
+      if (atom_p)
+	inform (module_marker_loc, "module preamble ended here");
+      name = NULL;
     }
-  
-  if (!modules_atom_p ())
-    module_preamble_end_loc = cp_lexer_peek_token (parser->lexer)->location;
 
   if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
-    return false;
+    return;
   if (!*name)
-    return false;
+    return;
+  if (!check_module_outermost (token, "module declaration"))
+    return;
 
   declare_module (name, exporting, attrs);
-  return false;
 }
 
 /* Import-declaration
@@ -12680,11 +12689,11 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
 
   if (!name)
     ;
-  else if (modules_atom_p () && module_preamble_end_loc)
+  else if (modules_atom_p () && module_marker_loc)
     {
       error_at (token->location,
 		"import declaration must be within module preamble");
-      inform (module_preamble_end_loc, "module preamble ended here");
+      inform (module_marker_loc, "module preamble ended here");
     }
   else if (!check_module_outermost (token, "module-import"))
     gcc_assert (!modules_atom_p ());
@@ -12704,6 +12713,12 @@ cp_parser_module_export (cp_parser *parser)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT));
   cp_token *token = cp_lexer_consume_token (parser->lexer);
+
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE))
+    {
+      cp_parser_module_declaration (parser, false, true);
+      return;
+    }
 
   if (!module_interface_p ())
     error_at (token->location,
@@ -12767,7 +12782,6 @@ cp_parser_module_preamble (cp_parser *parser)
 
   for (bool only_import = false;;)
     {
-      unsigned lwm = lexer->buffer->length ();
       unsigned state = atom_preamble_prefix_peek (true, only_import, parse_in);
 
       if (!state)
@@ -12775,8 +12789,6 @@ cp_parser_module_preamble (cp_parser *parser)
 
       only_import = state & 0x10;
       state &= 0xf;
-      bool exporting_p = state == 4;
-      bool pragma_p = state == 8;
       cp_token tok;
 
       while (state)
@@ -12787,25 +12799,21 @@ cp_parser_module_preamble (cp_parser *parser)
 					     tok.location);
 	  vec_safe_push (lexer->buffer, tok);
 	}
-      
-      if (tok.type != CPP_EOF)
-	vec_safe_push (lexer->buffer, eof_token);
-      lexer->next_token = &(*lexer->buffer)[lwm + exporting_p];
-      lexer->last_token = &lexer->buffer->last ();
-
-      if (pragma_p)
-	cp_parser_pragma (parser, pragma_external, NULL);
-      else if (lexer->next_token->keyword == RID_MODULE)
-	cp_parser_module_declaration (parser, false, exporting_p);
-      else
-	cp_parser_import_declaration (parser, exporting_p);
-
-      /* Remove the extra EOF token.  */
-      if (tok.type != CPP_EOF)
-	lexer->buffer->pop ();
     }
 
-  // FIXME:     module_atom_preamble_end ();
+  /* Mark the end of the preamble.  */
+  vec_safe_reserve (lexer->buffer, 2, false);
+  cp_token *tok = lexer->buffer->quick_push (eof_token);
+  cp_token *stok = lexer->buffer->quick_push (eof_token);
+  gcc_checking_assert (tok + 1 == stok);
+
+  tok[0].type = CPP_KEYWORD;
+  tok[0].keyword = RID_MODULE;
+  tok[0].location = UNKNOWN_LOCATION;
+  tok[0].u.value = get_identifier ("module");
+
+  tok[1].type = CPP_SEMICOLON;
+  tok[1].location = UNKNOWN_LOCATION;
 }
 
 /* Declarations [gram.dcl.dcl] */
@@ -12821,7 +12829,7 @@ cp_parser_module_preamble (cp_parser *parser)
 static void
 cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 {
-  bool in_global = top_level && modules_p () && !modules_atom_p ();
+  bool first = top_level && modules_p ();
 
   while (true)
     {
@@ -12855,38 +12863,23 @@ cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 	  continue;
 	}
 
-      if (in_global)
+      if (first)
 	{
-	  /* Look for module-declaration.  Note, in_global is set to
-	     true on entry if this is toplevel.  */
-	  bool exporting = token->keyword == RID_EXPORT;
+	  first = false;
 
+	  bool exporting = token->keyword == RID_EXPORT;
 	  if (cp_lexer_nth_token_is_keyword (parser->lexer, 1 + exporting,
 					     RID_MODULE))
 	    {
-	      bool maybe_global = top_level;
-
-	      /* Clear top-level, we either have a preamble or we don't.  */
-	      top_level = false;
-
 	      if (exporting)
-		{
-		  cp_lexer_consume_token (parser->lexer);
-		  maybe_global = false;
-		}
+		cp_lexer_consume_token (parser->lexer);
 
-	      in_global = cp_parser_module_declaration
-		(parser, maybe_global, exporting);
-
+	      cp_parser_module_declaration (parser, true, exporting);
 	      continue;
-	    }
-	  else if (top_level)
-	    {
-	      in_global = false;
-	      module_preamble_end_loc = token->location;
 	    }
 	}
 
+      first = false;
       if (token->type == CPP_SEMICOLON)
 	{
 	  /* A declaration consisting of a single semicolon is
@@ -12999,7 +12992,6 @@ cp_parser_declaration (cp_parser* parser)
 	cp_parser_module_export (parser);
     }
   else if (token1.keyword == RID_MODULE)
-    /* This is ill-formed, but parse for diagnostics.  */
     cp_parser_module_declaration (parser, false, false);
 
   /* If the next token is `extern', 'static' or 'inline' and the one
@@ -39300,7 +39292,6 @@ static void
 cp_parser_fill_main (cp_parser *parser, cp_token *tok)
 {
   cp_lexer *lexer = parser->lexer;
-  unsigned lwm = lexer->buffer->length ();
 
   while (tok->type != CPP_EOF)
     {
@@ -39310,7 +39301,7 @@ cp_parser_fill_main (cp_parser *parser, cp_token *tok)
   vec_safe_push (lexer->buffer, *tok);
 
   lexer->last_token = &lexer->buffer->last ();
-  lexer->next_token = &(*lexer->buffer)[lwm];
+  lexer->next_token = &(*lexer->buffer)[0];
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
@@ -39349,8 +39340,6 @@ c_parse_file (void)
       if (modules_atom_p ())
 	cp_parser_module_preamble (the_parser);
       cp_lexer_get_preprocessor_token (0, &first);
-      if (modules_atom_p ())
-	module_preamble_end_loc = first.location;
     }
 
   cp_parser_fill_main (the_parser, &first);

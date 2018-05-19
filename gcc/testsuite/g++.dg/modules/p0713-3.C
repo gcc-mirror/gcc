@@ -1,2 +1,4 @@
-int k; // { dg-message "ended here" }
-module frob; // { dg-error "must be within" }
+// { dg-additional-options -fmodules-ts }
+
+int k;
+module frob; // { dg-error "does not follow" }

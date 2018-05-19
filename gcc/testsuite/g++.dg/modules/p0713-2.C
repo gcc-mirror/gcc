@@ -1,3 +1,5 @@
-int j; // { dg-message "ended here" }
-module; // { dg-error "must be within" }
-// { dg-error "expected" "" { target *-*-* } .-1 }
+// { dg-additional-options -fmodules-ts }
+
+int j;
+module; // { dg-error "does not follow" }
+// { dg-error "expected identifier" "" { target *-*-* } .-1 }

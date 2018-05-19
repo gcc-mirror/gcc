@@ -2523,13 +2523,14 @@ cpp_peek_token_with_location (cpp_reader *pfile, int index,
     pfile->keep_tokens++;
     pfile->cb.line_change = NULL;
 
-    while (count <= index)
+    do
       {
 	count++;
 	peektok = _cpp_lex_token (pfile);
 	if (peektok->type == CPP_EOF)
 	  break;
       }
+    while (count <= index);
 
     _cpp_backup_tokens_direct (pfile, count);
     pfile->keep_tokens--;
