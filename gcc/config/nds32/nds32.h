@@ -933,6 +933,10 @@ enum nds32_builtins
 #define ASM_SPEC \
   " %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
   " %{march=*:-march=%*}" \
+  " %{mno-16-bit|mno-16bit:-mno-16bit-ext}" \
+  " %{march=v3m:%{!mfull-regs:%{!mreduced-regs:-mreduced-regs}}}" \
+  " %{mfull-regs:-mno-reduced-regs}" \
+  " %{mreduced-regs:-mreduced-regs}" \
   " %{mabi=*:-mabi=v%*}" \
   " %{mconfig-fpu=*:-mfpu-freg=%*}" \
   " %{mext-fpu-mac:-mmac}" \
@@ -941,7 +945,8 @@ enum nds32_builtins
   " %{mno-ext-fpu-sp:-mno-fpu-sp-ext}" \
   " %{mext-fpu-dp:-mfpu-dp-ext}" \
   " %{mno-ext-fpu-sp:-mno-fpu-dp-ext}" \
-  " %{mext-dsp:-mdsp-ext}"
+  " %{mext-dsp:-mdsp-ext}" \
+  " %{O|O1|O2|O3|Ofast:-O1;:-Os}"
 
 /* If user issues -mrelax, we need to pass '--relax' to linker.  */
 #define LINK_SPEC \
