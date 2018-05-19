@@ -1,5 +1,9 @@
 2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.h (ASM_SPEC): Adjust spec rule.
+
+2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c
 	(nds32_md_asm_adjust): Consider flag_inline_asm_r15 variable.
 	* config/nds32/nds32.opt (minline-asm-r15): New option.
