@@ -1,3 +1,38 @@
+2018-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (rex64namesuffix): New mode attribute.
+	* config/i386/sse.md (sse_cvtsi2ss<rex64namesuffix><round_name>):
+	Merge insn pattern from sse_cvtsi2ss<round_name> and
+	sse_cvtsi2ssq<round_name> using SWI48 mode iterator.
+	(sse_cvtss2si<rex64namesuffix><round_name>): Merge insn pattern
+	from sse_cvtss2si<round_name> and sse_cvtss2siq<round_name>
+	using SWI48 mode iterator.
+	(sse_cvtss2si<rex64namesuffix>_2): Merge insn pattern from
+	sse_cvtss2si_2 and sse_cvtss2siq_2 using SWI48 mode iterator.
+	(sse_cvttss2si<rex64namesuffix><round_saeonly_name>): Merge insn
+	pattern from sse_cvttss2si<round_saeonly_name>
+	and sse_cvttss2siq<round_saeonly_name> using SWI48 mode iterator.
+	(avx512f_vcvtss2usi<rex64namesuffix><round_name>): Merge insn pattern
+	from avx512f_vcvtss2usi<round_name> and avx512f_vcvtss2usiq<round_name>
+	using SWI48 mode iterator.
+	(avx512f_vcvttss2usi<rex64namesuffix><round_saeonly_name>): Merge
+	insn pattern from avx512f_vcvttss2usi<round_saeonly_name> and
+	avx512f_vcvttss2usiq<round_saeonly_name> using SWI48 mode iterator.
+	(avx512f_vcvtsd2usi<rex64namesuffix><round_name>): Merge insn pattern
+	from avx512f_vcvtsd2usi<round_name> and avx512f_vcvtsd2usiq<round_name>
+	using SWI48 mode iterator.
+	(avx512f_vcvttsd2usi<rex64namesuffix><round_saeonly_name>): Merge
+	insn pattern from avx512f_vcvttsd2usi<round_saeonly_name> and
+	avx512f_vcvttsd2usiq<round_saeonly_name> using SWI48 mode iterator.
+	(sse2_cvtsd2si<rex64namesuffix><round_name>): Merge insn pattern from
+	sse2_cvtsd2si<round_name> and sse2_cvtsd2siq<round_name> using
+	SWI48 mode iterator.
+	(sse2_cvtsd2si<rex64namesuffix>_2): Merge insn pattern from
+	sse2_cvtsd2si_2 and sse2_cvtsd2siq_2 using SWI48 mode iterator.
+	(sse_cvttsd2si<rex64namesuffix><round_saeonly_name>): Merge insn
+	pattern from sse_cvttsd2si<round_saeonly_name>
+	and sse_cvttsd2siq<round_saeonly_name> using SWI48 mode iterator.
+
 2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32-md-auxiliary.c

@@ -4360,18 +4360,18 @@
    (set_attr "prefix_rep" "0")
    (set_attr "mode" "SF")])
 
-(define_insn "sse_cvtsi2ss<round_name>"
+(define_insn "sse_cvtsi2ss<rex64namesuffix><round_name>"
   [(set (match_operand:V4SF 0 "register_operand" "=x,x,v")
 	(vec_merge:V4SF
 	  (vec_duplicate:V4SF
-	    (float:SF (match_operand:SI 2 "<round_nimm_scalar_predicate>" "r,m,<round_constraint3>")))
+	    (float:SF (match_operand:SWI48 2 "<round_nimm_scalar_predicate>" "r,m,<round_constraint3>")))
 	  (match_operand:V4SF 1 "register_operand" "0,0,v")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
-   cvtsi2ss\t{%2, %0|%0, %2}
-   cvtsi2ss\t{%2, %0|%0, %2}
-   vcvtsi2ss\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
+   cvtsi2ss<rex64suffix>\t{%2, %0|%0, %2}
+   cvtsi2ss<rex64suffix>\t{%2, %0|%0, %2}
+   vcvtsi2ss<rex64suffix>\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "vector,double,*")
@@ -4379,123 +4379,66 @@
    (set_attr "bdver1_decode" "double,direct,*")
    (set_attr "btver2_decode" "double,double,double")
    (set_attr "znver1_decode" "double,double,double")
+   (set (attr "length_vex")
+	(if_then_else
+	  (and (match_test "<MODE>mode == DImode")
+	       (eq_attr "alternative" "2"))
+	  (const_string "4")
+	  (const_string "*")))
+   (set (attr "prefix_rex")
+	(if_then_else
+	  (and (match_test "<MODE>mode == DImode")
+	       (eq_attr "alternative" "0,1"))
+	  (const_string "1")
+	  (const_string "*")))
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "SF")])
 
-(define_insn "sse_cvtsi2ssq<round_name>"
-  [(set (match_operand:V4SF 0 "register_operand" "=x,x,v")
-	(vec_merge:V4SF
-	  (vec_duplicate:V4SF
-	    (float:SF (match_operand:DI 2 "<round_nimm_scalar_predicate>" "r,m,<round_constraint3>")))
-	  (match_operand:V4SF 1 "register_operand" "0,0,v")
-	  (const_int 1)))]
-  "TARGET_SSE && TARGET_64BIT"
-  "@
-   cvtsi2ssq\t{%2, %0|%0, %2}
-   cvtsi2ssq\t{%2, %0|%0, %2}
-   vcvtsi2ssq\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
-  [(set_attr "isa" "noavx,noavx,avx")
-   (set_attr "type" "sseicvt")
-   (set_attr "athlon_decode" "vector,double,*")
-   (set_attr "amdfam10_decode" "vector,double,*")
-   (set_attr "bdver1_decode" "double,direct,*")
-   (set_attr "btver2_decode" "double,double,double")
-   (set_attr "length_vex" "*,*,4")
-   (set_attr "prefix_rex" "1,1,*")
-   (set_attr "prefix" "orig,orig,maybe_evex")
-   (set_attr "mode" "SF")])
-
-(define_insn "sse_cvtss2si<round_name>"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(unspec:SI
+(define_insn "sse_cvtss2si<rex64namesuffix><round_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r,r")
+	(unspec:SWI48
 	  [(vec_select:SF
 	     (match_operand:V4SF 1 "<round_nimm_scalar_predicate>" "v,<round_constraint2>")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE"
-  "%vcvtss2si\t{<round_op2>%1, %0|%0, %k1<round_op2>}"
+  "%vcvtss2si<rex64suffix>\t{<round_op2>%1, %0|%0, %k1<round_op2>}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "bdver1_decode" "double,double")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "sse_cvtss2si_2"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(unspec:SI [(match_operand:SF 1 "nonimmediate_operand" "v,m")]
-		   UNSPEC_FIX_NOTRUNC))]
+(define_insn "sse_cvtss2si<rex64namesuffix>_2"
+  [(set (match_operand:SWI48 0 "register_operand" "=r,r")
+	(unspec:SWI48 [(match_operand:SF 1 "nonimmediate_operand" "v,m")]
+		      UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE"
-  "%vcvtss2si\t{%1, %0|%0, %k1}"
+  "%vcvtss2si<rex64suffix>\t{%1, %0|%0, %k1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
    (set_attr "bdver1_decode" "double,double")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "sse_cvtss2siq<round_name>"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(unspec:DI
-	  [(vec_select:SF
-	     (match_operand:V4SF 1 "<round_nimm_scalar_predicate>" "v,<round_constraint2>")
-	     (parallel [(const_int 0)]))]
-	  UNSPEC_FIX_NOTRUNC))]
-  "TARGET_SSE && TARGET_64BIT"
-  "%vcvtss2si{q}\t{<round_op2>%1, %0|%0, %k1<round_op2>}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "athlon_decode" "double,vector")
-   (set_attr "bdver1_decode" "double,double")
-   (set_attr "prefix_rep" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "DI")])
-
-(define_insn "sse_cvtss2siq_2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(unspec:DI [(match_operand:SF 1 "nonimmediate_operand" "v,m")]
-		   UNSPEC_FIX_NOTRUNC))]
-  "TARGET_SSE && TARGET_64BIT"
-  "%vcvtss2si{q}\t{%1, %0|%0, %k1}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "athlon_decode" "double,vector")
-   (set_attr "amdfam10_decode" "double,double")
-   (set_attr "bdver1_decode" "double,double")
-   (set_attr "prefix_rep" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "DI")])
-
-(define_insn "sse_cvttss2si<round_saeonly_name>"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(fix:SI
-	  (vec_select:SF
-	    (match_operand:V4SF 1 "<round_saeonly_nimm_scalar_predicate>" "v,<round_saeonly_constraint2>")
-	    (parallel [(const_int 0)]))))]
-  "TARGET_SSE"
-  "%vcvttss2si\t{<round_saeonly_op2>%1, %0|%0, %k1<round_saeonly_op2>}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "athlon_decode" "double,vector")
-   (set_attr "amdfam10_decode" "double,double")
-   (set_attr "bdver1_decode" "double,double")
-   (set_attr "prefix_rep" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "SI")])
-
-(define_insn "sse_cvttss2siq<round_saeonly_name>"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(fix:DI
+(define_insn "sse_cvttss2si<rex64namesuffix><round_saeonly_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r,r")
+	(fix:SWI48
 	  (vec_select:SF
 	    (match_operand:V4SF 1 "<round_saeonly_nimm_scalar_predicate>" "v,<round_saeonly_constraint>")
 	    (parallel [(const_int 0)]))))]
-  "TARGET_SSE && TARGET_64BIT"
-  "%vcvttss2si{q}\t{<round_saeonly_op2>%1, %0|%0, %k1<round_saeonly_op2>}"
+  "TARGET_SSE"
+  "%vcvttss2si<rex64suffix>\t{<round_saeonly_op2>%1, %0|%0, %k1<round_saeonly_op2>}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
    (set_attr "bdver1_decode" "double,double")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "<MODE>")])
 
 (define_insn "cvtusi2<ssescalarmodesuffix>32<round_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
@@ -4800,9 +4743,9 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "DF")])
 
-(define_insn "avx512f_vcvtss2usi<round_name>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI
+(define_insn "avx512f_vcvtss2usi<rex64namesuffix><round_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(unspec:SWI48
 	  [(vec_select:SF
 	     (match_operand:V4SF 1 "<round_nimm_predicate>" "<round_constraint>")
 	     (parallel [(const_int 0)]))]
@@ -4811,24 +4754,11 @@
   "vcvtss2usi\t{<round_op2>%1, %0|%0, %k1<round_op2>}"
   [(set_attr "type" "sseicvt")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512f_vcvtss2usiq<round_name>"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI
-	  [(vec_select:SF
-	     (match_operand:V4SF 1 "<round_nimm_predicate>" "<round_constraint>")
-	     (parallel [(const_int 0)]))]
-	  UNSPEC_UNSIGNED_FIX_NOTRUNC))]
-  "TARGET_AVX512F && TARGET_64BIT"
-  "vcvtss2usi\t{<round_op2>%1, %0|%0, %k1<round_op2>}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "DI")])
-
-(define_insn "avx512f_vcvttss2usi<round_saeonly_name>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unsigned_fix:SI
+(define_insn "avx512f_vcvttss2usi<rex64namesuffix><round_saeonly_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(unsigned_fix:SWI48
 	  (vec_select:SF
 	    (match_operand:V4SF 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	    (parallel [(const_int 0)]))))]
@@ -4836,23 +4766,11 @@
   "vcvttss2usi\t{<round_saeonly_op2>%1, %0|%0, %k1<round_saeonly_op2>}"
   [(set_attr "type" "sseicvt")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512f_vcvttss2usiq<round_saeonly_name>"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unsigned_fix:DI
-	  (vec_select:SF
-	    (match_operand:V4SF 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
-	    (parallel [(const_int 0)]))))]
-  "TARGET_AVX512F && TARGET_64BIT"
-  "vcvttss2usi\t{<round_saeonly_op2>%1, %0|%0, %k1<round_saeonly_op2>}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "DI")])
-
-(define_insn "avx512f_vcvtsd2usi<round_name>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI
+(define_insn "avx512f_vcvtsd2usi<rex64namesuffix><round_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(unspec:SWI48
 	  [(vec_select:DF
 	     (match_operand:V2DF 1 "<round_nimm_predicate>" "<round_constraint>")
 	     (parallel [(const_int 0)]))]
@@ -4861,24 +4779,11 @@
   "vcvtsd2usi\t{<round_op2>%1, %0|%0, %q1<round_op2>}"
   [(set_attr "type" "sseicvt")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512f_vcvtsd2usiq<round_name>"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI
-	  [(vec_select:DF
-	     (match_operand:V2DF 1 "<round_nimm_predicate>" "<round_constraint>")
-	     (parallel [(const_int 0)]))]
-	  UNSPEC_UNSIGNED_FIX_NOTRUNC))]
-  "TARGET_AVX512F && TARGET_64BIT"
-  "vcvtsd2usi\t{<round_op2>%1, %0|%0, %q1<round_op2>}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "DI")])
-
-(define_insn "avx512f_vcvttsd2usi<round_saeonly_name>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unsigned_fix:SI
+(define_insn "avx512f_vcvttsd2usi<rex64namesuffix><round_saeonly_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(unsigned_fix:SWI48
 	  (vec_select:DF
 	    (match_operand:V2DF 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	    (parallel [(const_int 0)]))))]
@@ -4886,89 +4791,47 @@
   "vcvttsd2usi\t{<round_saeonly_op2>%1, %0|%0, %q1<round_saeonly_op2>}"
   [(set_attr "type" "sseicvt")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512f_vcvttsd2usiq<round_saeonly_name>"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unsigned_fix:DI
-	  (vec_select:DF
-	    (match_operand:V2DF 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
-	    (parallel [(const_int 0)]))))]
-  "TARGET_AVX512F && TARGET_64BIT"
-  "vcvttsd2usi\t{<round_saeonly_op2>%1, %0|%0, %q1<round_saeonly_op2>}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "DI")])
-
-(define_insn "sse2_cvtsd2si<round_name>"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(unspec:SI
+(define_insn "sse2_cvtsd2si<rex64namesuffix><round_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r,r")
+	(unspec:SWI48
 	  [(vec_select:DF
 	     (match_operand:V2DF 1 "<round_nimm_scalar_predicate>" "v,<round_constraint2>")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2"
-  "%vcvtsd2si\t{<round_op2>%1, %0|%0, %q1<round_op2>}"
+  "%vcvtsd2si<rex64suffix>\t{<round_op2>%1, %0|%0, %q1<round_op2>}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "bdver1_decode" "double,double")
    (set_attr "btver2_decode" "double,double")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "sse2_cvtsd2si_2"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(unspec:SI [(match_operand:DF 1 "nonimmediate_operand" "v,m")]
-		   UNSPEC_FIX_NOTRUNC))]
+(define_insn "sse2_cvtsd2si<rex64namesuffix>_2"
+  [(set (match_operand:SWI48 0 "register_operand" "=r,r")
+	(unspec:SWI48 [(match_operand:DF 1 "nonimmediate_operand" "v,m")]
+		      UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2"
-  "%vcvtsd2si\t{%1, %0|%0, %q1}"
+  "%vcvtsd2si<rex64suffix>\t{%1, %0|%0, %q1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
    (set_attr "bdver1_decode" "double,double")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "sse2_cvtsd2siq<round_name>"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(unspec:DI
-	  [(vec_select:DF
-	     (match_operand:V2DF 1 "<round_nimm_scalar_predicate>" "v,<round_constraint2>")
-	     (parallel [(const_int 0)]))]
-	  UNSPEC_FIX_NOTRUNC))]
-  "TARGET_SSE2 && TARGET_64BIT"
-  "%vcvtsd2si{q}\t{<round_op2>%1, %0|%0, %q1<round_op2>}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "athlon_decode" "double,vector")
-   (set_attr "bdver1_decode" "double,double")
-   (set_attr "prefix_rep" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "DI")])
-
-(define_insn "sse2_cvtsd2siq_2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(unspec:DI [(match_operand:DF 1 "nonimmediate_operand" "v,m")]
-		   UNSPEC_FIX_NOTRUNC))]
-  "TARGET_SSE2 && TARGET_64BIT"
-  "%vcvtsd2si{q}\t{%1, %0|%0, %q1}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "athlon_decode" "double,vector")
-   (set_attr "amdfam10_decode" "double,double")
-   (set_attr "bdver1_decode" "double,double")
-   (set_attr "prefix_rep" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "DI")])
-
-(define_insn "sse2_cvttsd2si<round_saeonly_name>"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(fix:SI
+(define_insn "sse2_cvttsd2si<rex64namesuffix><round_saeonly_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r,r")
+	(fix:SWI48
 	  (vec_select:DF
 	    (match_operand:V2DF 1 "<round_saeonly_nimm_scalar_predicate>" "v,<round_saeonly_constraint2>")
 	    (parallel [(const_int 0)]))))]
   "TARGET_SSE2"
-  "%vcvttsd2si\t{<round_saeonly_op2>%1, %0|%0, %q1<round_saeonly_op2>}"
+  "%vcvttsd2si<rex64suffix>\t{<round_saeonly_op2>%1, %0|%0, %q1<round_saeonly_op2>}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
@@ -4976,23 +4839,7 @@
    (set_attr "btver2_decode" "double,double")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "SI")])
-
-(define_insn "sse2_cvttsd2siq<round_saeonly_name>"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(fix:DI
-	  (vec_select:DF
-	    (match_operand:V2DF 1 "<round_saeonly_nimm_scalar_predicate>" "v,<round_saeonly_constraint2>")
-	    (parallel [(const_int 0)]))))]
-  "TARGET_SSE2 && TARGET_64BIT"
-  "%vcvttsd2si{q}\t{<round_saeonly_op2>%1, %0|%0, %q1<round_saeonly_op2>}"
-  [(set_attr "type" "sseicvt")
-   (set_attr "athlon_decode" "double,vector")
-   (set_attr "amdfam10_decode" "double,double")
-   (set_attr "bdver1_decode" "double,double")
-   (set_attr "prefix_rep" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "<MODE>")])
 
 ;; For float<si2dfmode><mode>2 insn pattern
 (define_mode_attr si2dfmode
