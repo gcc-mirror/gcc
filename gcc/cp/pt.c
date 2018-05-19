@@ -12067,8 +12067,13 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	}
       else if (builtin_pack_call_p (parm_pack))
 	{
-	  /* ??? Support use in other patterns.  */
-	  gcc_assert (parm_pack == pattern);
+	  if (parm_pack != pattern)
+	    {
+	      if (complain & tf_error)
+		sorry ("%qE is not the entire pattern of the pack expansion",
+		       parm_pack);
+	      return error_mark_node;
+	    }
 	  return expand_builtin_pack_call (parm_pack, args,
 					   complain, in_decl);
 	}
