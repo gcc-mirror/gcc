@@ -446,3 +446,7 @@ Always save $lp in the stack.
 munaligned-access
 Target Report Var(flag_unaligned_access) Init(0)
 Enable unaligned word and halfword accesses to packed data.
+
+minline-asm-r15
+Target Report Var(flag_inline_asm_r15) Init(0)
+Allow use r15 for inline ASM.
