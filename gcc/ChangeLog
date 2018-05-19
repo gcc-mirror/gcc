@@ -1,3 +1,7 @@
+2018-05-19  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32-fpu.md: Update copyright year.
+
 2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.h (ASM_SPEC): Adjust spec rule.
