@@ -2086,6 +2086,20 @@
 
 ;; Performance Extension
 
+; If -fwrapv option is issued, GCC expects there will be
+; signed overflow situation.  So the ABS(INT_MIN) is still INT_MIN
+; (e.g. ABS(0x80000000)=0x80000000).
+; However, the hardware ABS instruction of nds32 target
+; always performs saturation: abs 0x80000000 -> 0x7fffffff.
+; So that we can only enable abssi2 pattern if flag_wrapv is NOT presented.
+(define_insn "abssi2"
+  [(set (match_operand:SI 0 "register_operand"         "=r")
+	(abs:SI (match_operand:SI 1 "register_operand" " r")))]
+  "TARGET_EXT_PERF && TARGET_HW_ABS && !flag_wrapv"
+  "abs\t%0, %1"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")])
+
 (define_insn "clzsi2"
   [(set (match_operand:SI 0 "register_operand"         "=r")
 	(clz:SI (match_operand:SI 1 "register_operand" " r")))]

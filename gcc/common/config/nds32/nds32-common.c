@@ -103,6 +103,7 @@ static const struct default_options nds32_option_optimization_table[] =
      TARGET_EXT_PERF   : Generate performance extention instrcution.
      TARGET_EXT_PERF2  : Generate performance extention version 2 instrcution.
      TARGET_EXT_STRING : Generate string extention instrcution.
+     TARGET_HW_ABS     : Generate hardware abs instruction.
      TARGET_CMOV       : Generate conditional move instruction.  */
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS		\
@@ -113,6 +114,7 @@ static const struct default_options nds32_option_optimization_table[] =
    | MASK_EXT_PERF				\
    | MASK_EXT_PERF2				\
    | MASK_EXT_STRING				\
+   | MASK_HW_ABS				\
    | MASK_CMOV)
 
 #undef TARGET_HANDLE_OPTION
