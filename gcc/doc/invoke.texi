@@ -29246,7 +29246,7 @@ are not supported, an immediate response may be given.  [Note.
 Deferred queries have not been implemented.  Perhaps a response should
 provide a numeric async cookie?]
 
-@item @samp{FUTURE} @var{$query}
+@item @samp{PEEK} @var{$query}
 Advance notice of a query that may be presented in the future.  The
 response is either `@samp{OK}', or `@samp{ERROR} [@var{msg}]'.  The
 message may be ignored, or might initiate asynchronous build of the

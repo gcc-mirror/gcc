@@ -12552,39 +12552,84 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
    In TS mode, record the location of the beginning of global module.  */
 static location_t module_marker_loc;
 
+/* Extract a module name from an array of peeked tokens.  No errors
+   are issued.  */
+
+static tree
+cp_parser_peek_module_name (const cp_token *tokens, size_t &length)
+{
+  tree name = NULL_TREE;
+  size_t limit = length;
+  unsigned ix = 0;
+  bool atom_p = modules_atom_p ();
+
+  if (!limit)
+    ;
+  else if (atom_p && tokens[0].type == CPP_HEADER_NAME)
+    name = tokens[ix++].u.value;
+  else
+    {
+      if (tokens[0].type == CPP_NAME)
+	name = tokens[ix++].u.value;
+
+      if (ix < limit && ((ix && tokens[ix].type == CPP_DOT)
+			 || (atom_p && tokens[ix].type == CPP_COLON)))
+	{
+	  /* Concatenate dotted identifiers, and partition suffix  */
+	  auto_vec<tree,5> ids;
+	  bool partition = false;
+
+	  if (name)
+	    ids.quick_push (name);
+	  while (ix + 2 <= limit
+		 && tokens[ix].type == CPP_DOT && tokens[ix+1].type == CPP_NAME)
+	    {
+	      ix++;
+	      ids.safe_push (tokens[ix].u.value);
+	      ix++;
+	    }
+	  if (atom_p && ix + 2 <= limit
+	      && tokens[ix].type == CPP_COLON && tokens[ix+1].type == CPP_NAME)
+	    {
+	      ix++;
+	      ids.safe_push (tokens[ix].u.value);
+	      ix++;
+	      partition = true;
+	    }
+
+	  name = make_tree_vec (ids.length ());
+	  for (unsigned ix = ids.length (); ix--;)
+	    TREE_VEC_ELT (name, ix) = ids.pop ();
+	  // FIXME:set partition flag
+	}
+    }
+
+  /* Record how many tokens we peeked.  */
+  length = ix;
+  return name;
+}
+
 /* Parse a module-name,
    identifier
    module-name . identifier
+   module-name : partition
+   header-name (ATOM)
 
    Returns an identifer or TREE_VEC of identifiers, or NULL.   */
 
 static cp_expr
 cp_parser_module_name (cp_parser *parser)
 {
-  cp_token *token = cp_parser_require (parser, CPP_NAME, RT_NAME);
-  if (!token)
-    return NULL;
-  tree name = token->u.value;
-  if (cp_lexer_next_token_is (parser->lexer, CPP_DOT))
-    {
-      /* Concatenate dotted identifiers.  */
-      auto_vec<tree,5> ids;
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  size_t length = token != &eof_token ? parser->lexer->last_token - token : 0;
+  tree name = cp_parser_peek_module_name (token, length);
 
-      for (;;)
-	{
-	  ids.safe_push (name);
-	  if (!cp_lexer_next_token_is (parser->lexer, CPP_DOT))
-	    break;
-	  cp_lexer_consume_token (parser->lexer);
-	  cp_token *tok = cp_parser_require (parser, CPP_NAME, RT_NAME);
-	  if (!tok)
-	    break;
-	  name = tok->u.value;
-	}
-      name = make_tree_vec (ids.length ());
-      for (unsigned ix = ids.length (); ix--;)
-	TREE_VEC_ELT (name, ix) = ids.pop ();
-    }
+  if (name)
+    while (length--)
+      cp_lexer_consume_token (parser->lexer);
+  else
+    cp_parser_error (parser, "expected module-name");
+
   return cp_expr (name, token->location);
 }
 
@@ -12671,12 +12716,9 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
   if (modules_atom_p ())
     {
       cp_token *tok = cp_lexer_peek_token (parser->lexer);
-      if (tok->type == CPP_STRING || tok->type == CPP_HEADER_NAME)
+      if (tok->type == CPP_HEADER_NAME)
 	{
-	  tree cst = tok->u.value;
-	  if (tok->type == CPP_HEADER_NAME)
-	    HEADER_STRING_LITERAL_P (cst) = true;
-	  name = cp_expr (cst, tok->location);
+	  name = cp_expr (tok->u.value, tok->location);
 	  cp_lexer_consume_token (parser->lexer);
 	}
     }
@@ -12697,7 +12739,9 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
     }
   else if (!check_module_outermost (token, "module-import"))
     gcc_assert (!modules_atom_p ());
-  else if (TREE_CODE (*name) == STRING_CST)
+  else if (identifier_p (*name)
+	   && (IDENTIFIER_POINTER (*name)[0] == '"'
+	       || IDENTIFIER_POINTER (*name)[0] == '<'))
     ; // FIXME:Ignore legacy headers for now.
   else
     import_module (name, exporting, attrs);
@@ -12785,16 +12829,29 @@ cp_parser_module_preamble (cp_parser *parser)
 	break;
 
       only_import = state & 0x10;
+      unsigned peek = (state & 0x20
+		       ? lexer->buffer->length () + (state & 0xf) - 2 : 0);
       state &= 0xf;
       cp_token tok;
-
       while (state)
 	{
 	  /* This will swallow comments for us.  */
-	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, &tok);
+	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
+					   | ((state == 2)
+					      ? C_LEX_STRING_IS_HEADER : 0),
+					   &tok);
 	  state = atom_preamble_prefix_next (state, parse_in, tok.type,
 					     tok.location);
 	  vec_safe_push (lexer->buffer, tok);
+	}
+
+      /* Peek an import name.  */
+      if (peek && lexer->buffer->length () > peek)
+	{
+	  size_t length = lexer->buffer->length () - peek;
+	  if (tree name = cp_parser_peek_module_name (&(*lexer->buffer)[peek],
+						      length))
+	    maybe_peek_import (name, (*lexer->buffer)[peek].location);
 	}
     }
 

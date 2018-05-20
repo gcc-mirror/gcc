@@ -3,7 +3,7 @@ module;
 
 extern module foo : void Baz ();
 
-extern module  : void Bar (); // { dg-error "expected identifier" }
+extern module  : void Bar (); // { dg-error "expected module-name" }
 extern module funk void Quux (); // { dg-error "expected ':'" }
 
 export module me;

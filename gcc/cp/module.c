@@ -2602,6 +2602,7 @@ public:
 public:
   char *import_query (tree name, location_t from);
   char *export_query (tree name);
+  void peek_import_query (tree name, location_t from);
   bool export_done (tree name);
 
 private:
@@ -6904,6 +6905,17 @@ module_server::import_export_query (const char *query, tree name, const char *lo
   return filename;
 }
 
+/* Peek import query.  */
+
+void
+module_server::peek_import_query (tree name, location_t loc)
+{
+  dump () && dump ("Peeking import %N", name);
+  fprintf (to, "PEEK BMI %s %s\n", IDENTIFIER_POINTER (name),
+	   LOCATION_FILE (loc));
+  get_response ();
+}
+
 /* Import query.  */
 
 char *
@@ -9137,6 +9149,27 @@ module_interface_p ()
 	  && (*module_state::modules)[MODULE_PURVIEW]->exported);
 }
 
+/* NAME is a vector, turn it into a single identifier.  */
+
+static tree
+make_flat_name (tree name)
+{
+  auto_vec<char> buffer;
+  for (int ix = 0; ix < TREE_VEC_LENGTH (name); ix++)
+    {
+      tree elt = TREE_VEC_ELT (name, ix);
+      size_t l = IDENTIFIER_LENGTH (elt);
+      buffer.reserve (l + 2);
+      if (ix)
+	buffer.quick_push ('.');
+      size_t len = buffer.length ();
+      buffer.quick_grow (len + l);
+      memcpy (&buffer[len], IDENTIFIER_POINTER (elt), l);
+    }
+
+  return get_identifier_with_length (&buffer[0], buffer.length ());
+}
+
 /* Import the module NAME into the current TU.  If MODULE_P is
    true, we're part of module NAME, and EXPORT_P indicates if
    we're the exporting init (true), or not (false).  If MODULE_P
@@ -9155,22 +9188,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 
   tree sname = name;
   if (TREE_CODE (name) == TREE_VEC)
-    {
-      /* Create the flat name */
-      auto_vec<char> buffer;
-      for (int ix = 0; ix < TREE_VEC_LENGTH (name); ix++)
-	{
-	  tree elt = TREE_VEC_ELT (name, ix);
-	  size_t l = IDENTIFIER_LENGTH (elt);
-	  buffer.reserve (l + 2);
-	  if (ix)
-	    buffer.quick_push ('.');
-	  size_t len = buffer.length ();
-	  buffer.quick_grow (len + l);
-	  memcpy (&buffer[len], IDENTIFIER_POINTER (elt), l);
-	}
-      name = get_identifier_with_length (&buffer[0], buffer.length ());
-    }
+    name = make_flat_name (name);
 
   module_state *dflt = module_p ? (*modules)[MODULE_NONE] : NULL;
   module_state *state = get_module (name, dflt);
@@ -9426,6 +9444,26 @@ finish_module ()
   module_server::fini ();
 }
 
+/* Peek a module name, so we may issue a PEEK to the server.  */
+
+void
+maybe_peek_import (tree name, location_t from)
+{
+  dump.push (NULL);
+  if (module_server *server = module_server::get ())
+    {
+      if (TREE_CODE (name) == TREE_VEC)
+	name = make_flat_name (name);
+      server->peek_import_query (name, from);
+    }
+  dump.pop (0);
+}
+
+/* Try and exec ourselves to repeat the preamble scan with
+   foreknowledge of where it ends.  Sure, this way of doing it sucks,
+   performance wise,  but that's one of the ways of encouraging them
+   to explicitly disambiguate the difficult case.  */
+
 void
 maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
 {
@@ -9438,7 +9476,7 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
     return;
 
 #ifdef HAVE_EXECV
-  /* Exec ourselves with a magic 'stop-here' option.  */
+  /* Exec ourselves.  */
   dump.push (NULL);
   dump () && dump ("About to reexec with prefix length %u", count);
   module_state::fini ();
@@ -9455,10 +9493,11 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
   argv[argc++] = fpreamble;
   argv[argc] = NULL;
 
+  /* It's dangerous to go alone!  Take this.  */
   sprintf (fpreamble, "-fmodule-preamble=%d", count);
 
   dump.pop (0);
-  /* It was all a bad dream ...  */
+  /* You have to wake up.  */
   execv (argv[0], argv);
   fatal_error (loc, "I was stung by a Space Bee");
 #endif

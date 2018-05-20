@@ -377,6 +377,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
   static int count;
   static source_location peeked_loc;
 
+  bool peek_p = false;
   bool exporting_p = false;
   unsigned lookahead = 0;
 
@@ -451,14 +452,17 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
       goto another;
     }
 
-  if (!(keyword == RID_IMPORT
-	|| (!only_import && keyword == RID_MODULE)))
+  if (keyword == RID_IMPORT)
+    peek_p = true;
+  else if (!only_import && keyword == RID_MODULE)
+    peek_p = !exporting_p;
+  else
     goto not_preamble;
 
   peeked_loc = 0;
   count++;
 
-  return 0x10 + 3 + exporting_p;
+  return 0x10 + 3 + exporting_p + (peek_p ? 0x20 : 0);
 }
 
 /* We've just eaten a token TOK_TYPE.  Figure out the next state and

@@ -71,10 +71,12 @@ cmd () {
     resp=
     case "$1" in
 	(ASYNC)
+    	    # We respond to async requests immediately
 	    shift
 	    cmd "$@"
 	    ;;
 	(BMI)
+	    # We try and build a BMI from source
 	    file=$(echo $2 | tr . -)
 	    comp=
 	    if ! test -e $file.nms ; then
@@ -93,7 +95,8 @@ cmd () {
 	(DONE)
 	    resp="OK"
 	    ;;
-	(FUTURE)
+	(PEEK)
+	    # we don't do anything with a peek
 	    resp=OK
 	    ;;
 	(HELLO)

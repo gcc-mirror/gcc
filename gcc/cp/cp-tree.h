@@ -380,7 +380,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
-      HEADER_STRING_LITERAL_P (in STRING_CST)
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       ICS_ELLIPSIS_FLAG (in _CONV)
@@ -3818,11 +3817,6 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define PAREN_STRING_LITERAL_P(NODE) \
   TREE_LANG_FLAG_0 (STRING_CST_CHECK (NODE))
 
-/* A string literal is from a CPP_HEADER_NAME token.  */
-
-#define HEADER_STRING_LITERAL_P(NODE) \
-  TREE_LANG_FLAG_1 (STRING_CST_CHECK (NODE))
-
 /* Indicates whether a COMPONENT_REF or a SCOPE_REF has been parenthesized, or
    an INDIRECT_REF comes from parenthesizing a _DECL.  Currently only set some
    of the time in C++14 mode.  */
@@ -6717,6 +6711,7 @@ extern void import_module (const cp_expr &, bool, tree);
 extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
+extern void maybe_peek_import (tree name, location_t from);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 

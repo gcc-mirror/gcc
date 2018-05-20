@@ -1,5 +1,31 @@
 2018-05-20  Nathan Sidwell  <nathan@acm.org>
 
+	Import peeking
+	gcc/c-family/
+	* c-lex.c (c_lex_with_flags) <case CPP_STRING>: Check
+	C_LEX_STRING_IS_HEADER. 
+	* c-pragma.h (C_LEX_STRING_IS_HEADER): New flag.
+	gcc/cp/
+	* cp-tree.h (HEADER_STRING_LITERAL_P): Delete.
+	(maybe_peek_import): Declare.
+	* cxx-module-server.sh: Adjust.
+	* lex.c (atom_preamble_prefix_peek): Add peeking state.
+	* module.c (module_server::peek_import_query): New.
+	(make_flat_name): New.  Broken out of ...
+	(module_state::do_import): ... here.  Call it.
+	(maybe_peek_import): New.
+	* parser.c (cp_parser_peek_module_name): New.
+	(cp_parser_module_name): Use it.
+	(cp_parser_import_declaration): Adjust.
+	(cp_parser_module_preamble): Do peeking.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Tweak server protocol
+	gcc/testsuite/
+	* g++.dg/modules/atom-peek-1_[abc].C: New.
+	* g++.dg/modules/mod-decl-1.C: Adjust diags.
+	* g++.dg/modules/p0713-2.C: Likewise.
+	* g++.dg/modules/proclaim-1.C: Likewise.
+
 	Diagnose pragmas ending preamble.
 	libcpp/
 	* lex.c (cpp_peek_token_with_location): Set peeked_location to

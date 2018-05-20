@@ -2,4 +2,4 @@
 
 int j;
 module; // { dg-error "does not follow" }
-// { dg-error "expected identifier" "" { target *-*-* } .-1 }
+// { dg-error "expected module-name" "" { target *-*-* } .-1 }
