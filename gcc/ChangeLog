@@ -1,3 +1,11 @@
+2018-05-20  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/constraints.md (S): New constraint.
+	* config/nds32/nds32.md (call_internal): Use constraint S.
+	(call_value_internal): Likewise.
+	(sibcall_internal): Likewise.
+	(sibcall_value_internal): Likewise.
+
 2018-05-20  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 

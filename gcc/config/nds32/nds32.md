@@ -1523,7 +1523,7 @@
 )
 
 (define_insn "call_internal"
-  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, i"))
+  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
 		    (match_operand 1))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
@@ -1611,7 +1611,7 @@
 
 (define_insn "call_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, i"))
+		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
 		         (match_operand 2)))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
@@ -1714,7 +1714,7 @@
 })
 
 (define_insn "sibcall_internal"
-  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, i"))
+  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
 		    (match_operand 1))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
@@ -1778,7 +1778,7 @@
 
 (define_insn "sibcall_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, i"))
+		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
 			 (match_operand 2)))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
