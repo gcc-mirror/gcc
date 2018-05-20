@@ -1,3 +1,10 @@
+2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82275
+	Backport from trunk
+	* match.c (gfc_match_type_spec): Go through the array ref and
+	decrement 'rank' for every dimension that is an element.
+
 2018-05-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82923
