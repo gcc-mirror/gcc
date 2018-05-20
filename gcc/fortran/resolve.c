@@ -15870,7 +15870,7 @@ resolve_equivalence (gfc_equiv *eq)
 
 static bool
 flag_fn_result_spec (gfc_expr *expr,
-                     gfc_symbol *sym ATTRIBUTE_UNUSED,
+                     gfc_symbol *sym,
                      int *f ATTRIBUTE_UNUSED)
 {
   gfc_namespace *ns;
@@ -15882,6 +15882,13 @@ flag_fn_result_spec (gfc_expr *expr,
       for (ns = s->ns; ns; ns = ns->parent)
 	if (!ns->parent)
 	  break;
+
+      if (sym == s)
+	{
+	  gfc_error ("Self reference in character length expression "
+		     "for %qs at %L", sym->name, &expr->where);
+	  return true;
+	}
 
       if (!s->fn_result_spec
 	  && s->attr.flavor == FL_PARAMETER)
@@ -15965,7 +15972,7 @@ resolve_fntype (gfc_namespace *ns)
       }
 
   if (sym->ts.type == BT_CHARACTER)
-    gfc_traverse_expr (sym->ts.u.cl->length, NULL, flag_fn_result_spec, 0);
+    gfc_traverse_expr (sym->ts.u.cl->length, sym, flag_fn_result_spec, 0);
 }
 
 
