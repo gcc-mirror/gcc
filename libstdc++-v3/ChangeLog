@@ -1,3 +1,9 @@
+2018-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85843
+	* src/c++11/cow-stdexcept.cc (logic_error, runtime_error): Explicitly
+	initialize base class to avoid warnings.
+
 2018-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/codecvt.cc (__codecvt_utf8_base<wchar_t>::do_in)
