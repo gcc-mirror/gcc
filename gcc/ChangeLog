@@ -1,4 +1,4 @@
-2018-05-19  Chung-Ju Wu  <jasonwucj@gmail.com>
+2018-05-20  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_asm_file_start): Output pipeline model.
 	* config/nds32/nds32.h (TARGET_PIPELINE_N7): Define.
