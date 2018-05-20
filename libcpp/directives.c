@@ -412,9 +412,11 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
    '#' of the directive was indented.  This function is in this file
    to save unnecessarily exporting dtable etc. to lex.c.  Returns
    nonzero if the line of tokens has been handled, zero if we should
-   continue processing the line.  */
+   continue processing the line.  HASH_LOC is the location of the
+   directive's '#', and is used for peeked_directive processing.  */
 int
-_cpp_handle_directive (cpp_reader *pfile, int indented)
+_cpp_handle_directive (cpp_reader *pfile, int indented,
+		       source_location hash_loc)
 {
   const directive *dir = 0;
   const cpp_token *dname;
@@ -494,7 +496,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
 	}
 
       if (dir && !pfile->peeked_directive && (dir->flags & PEEKED))
-	pfile->peeked_directive = dname->src_loc;
+	pfile->peeked_directive = hash_loc;
     }
   else if (dname->type == CPP_EOF)
     ;	/* CPP_EOF is the "null directive".  */

@@ -2629,7 +2629,8 @@ _cpp_lex_token (cpp_reader *pfile)
 		 handles the directive as normal.  */
 	      && pfile->state.parsing_args != 1)
 	    {
-	      if (_cpp_handle_directive (pfile, result->flags & PREV_WHITE))
+	      if (_cpp_handle_directive (pfile, result->flags & PREV_WHITE,
+					 result->src_loc))
 		{
 		  if (pfile->directive_result.type == CPP_PADDING)
 		    continue;

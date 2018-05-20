@@ -1,5 +1,13 @@
 2018-05-20  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* internal.h (_cpp_handle_directive): Add HASH_LOC arg.
+	* directives.c (_cpp_handle_directive): Add HASH_LOC arg, store it.
+	* init.c (read_original_filename): Adjust _cpp_handle_directive call.
+	* lex.c (_cpp_lex_token): Likewise.
+	* traditional.c (_cpp_scan_out_logical_line): Likewise.
+	* directives-only.c (_cpp_preprocess_dir_only): Likewise.
+
 	Import peeking
 	gcc/c-family/
 	* c-lex.c (c_lex_with_flags) <case CPP_STRING>: Check

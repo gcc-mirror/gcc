@@ -696,7 +696,7 @@ extern const char *cpp_named_operator2name (enum cpp_ttype type);
 
 /* In directives.c */
 extern int _cpp_test_assertion (cpp_reader *, unsigned int *);
-extern int _cpp_handle_directive (cpp_reader *, int);
+extern int _cpp_handle_directive (cpp_reader *, int, source_location);
 extern void _cpp_define_builtin (cpp_reader *, const char *);
 extern char ** _cpp_save_pragma_names (cpp_reader *);
 extern void _cpp_restore_pragma_names (cpp_reader *, char **);

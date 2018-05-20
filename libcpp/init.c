@@ -681,7 +681,8 @@ read_original_filename (cpp_reader *pfile)
 
       /* If it's a #line directive, handle it.  */
       if (token1->type == CPP_NUMBER
-	  && _cpp_handle_directive (pfile, token->flags & PREV_WHITE))
+	  && _cpp_handle_directive (pfile, token->flags & PREV_WHITE,
+				    token->src_loc))
 	{
 	  read_original_directory (pfile);
 	  return;
