@@ -12641,7 +12641,7 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   if (!first_decl && (atom_p || !module_marker_loc))
     {
       error_at (token->location, modules_atom_p ()
-		? "module declaration must be first declaration of module preamble"
+		? "module declaration must be first declaration of preamble"
 		: "module declaration does not follow global module");
       if (atom_p)
 	inform (module_marker_loc, "module preamble ended here");
@@ -12770,10 +12770,7 @@ cp_parser_module_proclamation (cp_parser *parser)
   pop_module_export (prev);
 }
 
-/* Read and parse an atom preamble.  */
-// FIXME: we shouldn't parse here.  Insert a magic end-of-preamble
-// token so we can make macros visible at the appropriate point.
-// token could be 'module;' and have parser-module-declaration handle it.
+/* Tokenize an atom preamble.  */
 
 static void
 cp_parser_module_preamble (cp_parser *parser)

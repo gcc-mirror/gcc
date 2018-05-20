@@ -371,16 +371,13 @@ interface_strcmp (const char* s)
    return a non-zero state cookie for atom_preamble_prefix_next.
    Otherwise zero.  */
 
-// FIXME: I fail to detec the case of a pragma ending a preamble.
-// That's just as wrong as a #define or whatever.
-
 unsigned
 atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 {
   static int count;
-  /* Peeking at a possible start?  */
+  static source_location peeked_loc;
+
   bool exporting_p = false;
-  source_location dir_loc;
   unsigned lookahead = 0;
 
   if (count == flag_module_preamble)
@@ -391,7 +388,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
   /* Peeking does not do macro expansion, but does do #if & #include
      expansion.  */
   const cpp_token *cpp_tok
-    = cpp_peek_token_with_location (pfile, lookahead, &dir_loc);
+    = cpp_peek_token_with_location (pfile, lookahead, &peeked_loc);
   lookahead++;
   if (cpp_tok->type == CPP_COMMENT)
     /* Comments come through in -C mode.  */
@@ -415,18 +412,19 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 	 totally suck doing that, and (b) we're allowed to encourage
 	 the user to place a bare semicolon marking the end of the
 	 preamble.  */
-      if (dir_loc && only_import)
+      if (peeked_loc && only_import)
 	{
 	  /* Don't attempt rescanning if we emitted any diagnostics.
 	     We'll just be repeating ourselves.  */
 	  bool no_rescan = errorcount || warningcount || werrorcount;
 
-	  warning_at (dir_loc, 0,
+	  warning_at (peeked_loc, 0,
 		      "module preamble ended immediately before"
 		      " preprocessor directive");
 	  if (for_parser)
 	    {
-	      inform (dir_loc, "explicitly mark the end with an earlier %<;%>");
+	      inform (peeked_loc,
+		      "explicitly mark the end with an earlier %<;%>");
 	      if (!no_rescan)
 		/* This never returns, if successful.  */
 		maybe_repeat_preamble (cpp_tok->src_loc, count, pfile);
@@ -457,6 +455,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 	|| (!only_import && keyword == RID_MODULE)))
     goto not_preamble;
 
+  peeked_loc = 0;
   count++;
 
   return 0x10 + 3 + exporting_p;

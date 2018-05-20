@@ -67,33 +67,15 @@ compile () {
     $cmd || echo "compilation $src failed"
 }
 
-while test "$#" != 0 ; do
-    case "$1" in
-	(-v) verbose=true ;;
-	(-*) echo "Unknown option '$1'" >&2 ; exit 1 ;;
-	(*) break ;;
-    esac
-    shift
-done
-
-# module oracle -> modacle
-while read -a args -p "modacle>" ; do
-    $verbose && echo "$progname< ${args[@]}" >&2
+cmd () {
     resp=
-    case "${args[0]}" in
-	(RESET)
-	    main=""
-	    ;;
-	(HELLO)
-	    if test "${args[1]}" = $VERSION ; then
-		main="${args[2]}"
-		resp="HELLO $VERSION"
-	    else
-		resp="ERROR Bad Version (expect $VERSION)"
-	    fi
+    case "$1" in
+	(ASYNC)
+	    shift
+	    cmd "$@"
 	    ;;
 	(BMI)
-	    file=$(echo ${args[1]} | tr . -)
+	    file=$(echo $2 | tr . -)
 	    comp=
 	    if ! test -e $file.nms ; then
 		resp=$(compile $file)
@@ -105,23 +87,48 @@ while read -a args -p "modacle>" ; do
 	    fi
 	    ;;
 	(EXPORT)
-	    file=$(echo ${args[1]} | tr . -)
+	    file=$(echo $2 | tr . -)
 	    resp="BMI $file.nms"
 	    ;;
 	(DONE)
 	    resp="OK"
 	    ;;
+	(FUTURE)
+	    resp=OK
+	    ;;
+	(HELLO)
+	    if test "$2" = $VERSION ; then
+		main="$3"
+		resp="HELLO $VERSION"
+	    else
+		resp="ERROR Bad version (expect $VERSION)"
+	    fi
+	    ;;
 	(HELP)
-	    case "${args[1]}" in
-		(HELLO) resp="HELLO <ver> <src>" ;;
+	    case "$2" in
+		(query) resp="BMI|SEARCH|PATH" ;;
+		(ASYNC) resp="ASYNC query" ;;
 		(BMI) resp="BMI <module> [<from>]" ;;
-		(EXPORT) resp="EXPORT <module>" ;;
 		(DONE) resp="DONE <module>" ;;
+		(EXPORT) resp="EXPORT <module>" ;;
+		(FUTURE) resp="FUTURE query" ;;
+		(HELLO) resp="HELLO <ver> <src>" ;;
+		(PATH) resp="PATH <module> [<from>]" ;;
+		(SEARCH) resp="SEARCH <module> [<from>]" ;;
 		(*) resp="HELP HELLO, BMI, EXPORT, DONE" ;;
 	    esac
 	    ;;
+	(PATH)
+	    resp="ERROR Unimplemented"
+	    ;;
+	(RESET)
+	    main=""
+	    ;;
+	(SEARCH)
+	    resp="$(echo $2 | tr . -).cc"
+	    ;;
 	(*)
-	    echo "Unknown command '${args[0]}'" >&2
+	    echo "Unknown command '$1'" >&2
 	    resp="ERROR Bad Request"
 	    ;;
     esac
@@ -129,4 +136,20 @@ while read -a args -p "modacle>" ; do
 	$verbose && echo "$progname> $resp" >&2
 	echo "$resp"
     fi
+}
+
+while test "$#" != 0 ; do
+    case "$1" in
+	(-v) verbose=true ;;
+	(-*) echo "Unknown option '$1'" >&2 ; exit 1 ;;
+	(*) break ;;
+    esac
+    shift
+done
+
+
+# module oracle -> modacle
+while read -a args -p "modacle>" ; do
+    $verbose && echo "$progname< ${args[@]}" >&2
+    cmd "${args[@]}"
 done

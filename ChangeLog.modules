@@ -1,3 +1,17 @@
+2018-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	Diagnose pragmas ending preamble.
+	libcpp/
+	* lex.c (cpp_peek_token_with_location): Set peeked_location to
+	incoming location.  Fix pragma unwind.
+	gcc/cp/
+	* cxx-module-server.sh: Add new commands.
+	* lex.c (atom_preamble_prefix_peek): Note trailing pragma.
+	gcc/
+	* doc/invoke.text (C++ Modules): More server commands.
+	gcc/testsuite/
+	* g++.dg/modules/atom-pragma-[123].C: New.
+
 2018-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	Parse after tokenizing

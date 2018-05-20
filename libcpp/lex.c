@@ -2493,8 +2493,8 @@ cpp_peek_token_with_location (cpp_reader *pfile, int index,
   cpp_context *context = pfile->context;
   const cpp_token *peektok;
 
-  if (!index)
-    pfile->peeked_directive = 0;
+  if (!index && peeked_directive)
+    pfile->peeked_directive = *peeked_directive;
 
   /* First, scan through any pending cpp_context objects.  */
   while (context->prev)
@@ -2529,6 +2529,9 @@ cpp_peek_token_with_location (cpp_reader *pfile, int index,
 	peektok = _cpp_lex_token (pfile);
 	if (peektok->type == CPP_EOF)
 	  break;
+	if (peektok->type == CPP_PRAGMA)
+	  /* We'll also have '#' 'pragma' in the buffer.  */
+	  count += 2;
       }
     while (count <= index);
 
@@ -2536,7 +2539,7 @@ cpp_peek_token_with_location (cpp_reader *pfile, int index,
     pfile->keep_tokens--;
     pfile->cb.line_change = line_change;
   }
-  
+
  out:
   /* Record if we peeked past a directive.  */
   if (peeked_directive)

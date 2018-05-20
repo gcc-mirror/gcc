@@ -29217,9 +29217,9 @@ and respond to the following commands:
 
 @itemize
 
-@item @samp{HELLO} @var{$ver} @var{$srcpath}
+@item @samp{HELLO} @var{$ver} @var{$srcname}
 This is the first command.  It informs the server of the name of the
-source file being compiled.  Response is either `@samp{OK}
+source being compiled.  Response is either `@samp{OK}
 @var{$ver}', or `@samp{ERROR} @var{$errormsg}'.
 
 @item @samp{HELLO} @var{$ver} @var{$srcbase} @var{$srcpath}
@@ -29229,7 +29229,7 @@ FIXME
 This command resets the server.  There is no response.  It is used
 if a preamble rescan is needed.
 
-@item [@samp{DEFER}] @var{$query} @var{$module} [@var{$from}]
+@item @var{$query} @var{$module} [@var{$from}]
 A query for an import (including for a module implementation unit).
 The @var{$query} may be a combination of @samp{BMI}, @samp{SEARCH} or
 @samp{PATH}, concatentated with @samp{|}.  The response should be one
@@ -29237,10 +29237,21 @@ of `@samp{BMI} @var{$bmipath}', `@samp{SEARCH} @var{$srcbase}' or
 ``@samp{PATH} @var{$srcpath}' respectively.  If the request is not
 fulfilable, the response is `@samp{ERROR} [@var{msg}]'.  Usually an
 error response will cause compilation to terminate.  When the query is
-multiplicative, the first possible response should be give.  If
-@samp{DEFER} is used, the response may be deferred and
-`@samp{DEFERRED}' is the immediate response.  (Deferred queries have
-not been implemented.)
+multiplicative, the first possible response should be give.
+
+@item @samp{ASYNC} @var{$query}
+An asynchronous query.  As above, but the response may be deferred and
+`@samp{DEFERRED}' is the immediate response.  If deferred responses
+are not supported, an immediate response may be given.  [Note.
+Deferred queries have not been implemented.  Perhaps a response should
+provide a numeric async cookie?]
+
+@item @samp{FUTURE} @var{$query}
+Advance notice of a query that may be presented in the future.  The
+response is either `@samp{OK}', or `@samp{ERROR} [@var{msg}]'.  The
+message may be ignored, or might initiate asynchronous build of the
+desired object.  `@samp{OK}' does not mean the desired entity is
+available.
 
 @item @samp{EXPORT} @var{$module}
 The compilation is of a module interface unit, and will generate a BMI
@@ -29252,11 +29263,12 @@ The compilation has succesfully produced a BMI file for
 compilation may not have completed the object-file generation of the
 interface unit.
 
-@item @samp{DEFERRED}
-Request for a deferred response.  There must be at least one
-outstanding import query.  The response is as for a non-deferred
-query, except it is prefixed by `@samp{DEFERRED} @var{$module}', so it
-may be linked to the orignal request.
+@item @samp{AWAIT}
+Request for an asynchronous response.  There must be at least one
+outstanding import query.  The response is as for a non-asynchronous
+query, except it is prefixed by `@samp{ASYNC} @var{$module}', so it
+may be linked to the orignal request.  [Note. as above, format is
+maleable.]
 
 @item @samp{INCLUDE} @var{$header} @var{$from}
 A @code{#include} directive for @var{$header} is about to be processed
@@ -29278,27 +29290,30 @@ The following metavariables were used:
 
 @itemize
 
-@item @var{$ver}
-A numeric version number, currently 0.
+@item @var{$bmipath}
+Pathname of a BMI file.
 
-@item @var{$srcpath}
-A path to a source file.
-
-@item @var{$srcbase}
-A basename of a source file to search for.
+@item @var{$from}
+The source path of the file containing the import or include.
 
 @item @var{$module}
 A module name.  Legacy header module names are surrounded by @code{<>}
 or @code{""} pairs
 
-@item @var{$from}
-The source path of the file containing the import or include.
-
-@item @var{$bmipath}
-Pathname of a BMI file.
-
 @item @var{$msg}
 A human readable message.  This may contain whitespace.
+
+@item @var{$query}
+A @samp{BMI}, @samp{SEARCH} or @samp{PATH} query.
+
+@item @var{$srcbase}
+A basename of a source file to search for.
+
+@item @var{$srcname}
+The source name used to invoke compilation
+
+@item @var{$ver}
+A numeric version number, currently 0.
 
 @end itemize
 
