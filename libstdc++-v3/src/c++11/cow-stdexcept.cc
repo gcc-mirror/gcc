@@ -56,13 +56,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Copy constructors and assignment operators defined using COW std::string
 
   logic_error::logic_error(const logic_error& e) noexcept
-  : _M_msg(e._M_msg) { }
+  : exception(e), _M_msg(e._M_msg) { }
 
   logic_error& logic_error::operator=(const logic_error& e) noexcept
   { _M_msg = e._M_msg; return *this; }
 
   runtime_error::runtime_error(const runtime_error& e) noexcept
-  : _M_msg(e._M_msg) { }
+  : exception(e), _M_msg(e._M_msg) { }
 
   runtime_error&
   runtime_error::operator=(const runtime_error& e) noexcept
