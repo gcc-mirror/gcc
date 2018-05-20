@@ -136,6 +136,8 @@ void gfc_conv_tmp_array_ref (gfc_se * se);
 /* Translate a reference to an array temporary.  */
 void gfc_conv_tmp_ref (gfc_se *);
 
+/* Obtain the span of an array.  */
+tree gfc_get_array_span (tree, gfc_expr *);
 /* Evaluate an array expression.  */
 void gfc_conv_expr_descriptor (gfc_se *, gfc_expr *);
 /* Convert an array for passing as an actual function parameter.  */

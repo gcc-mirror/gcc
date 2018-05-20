@@ -4966,7 +4966,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       else
 	{
 	  tree ifbody2, elsebody2;
-	  
+
 	  /* We switch to > or >= depending on the value of the BACK argument. */
 	  cond = gfc_create_var (logical_type_node, "cond");
 
@@ -7900,15 +7900,17 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 					      logical_type_node, tmp,
 					      build_int_cst (TREE_TYPE (tmp), 0));
 
-          /* A pointer to an array, call library function _gfor_associated.  */
-          arg1se.want_pointer = 1;
-          gfc_conv_expr_descriptor (&arg1se, arg1->expr);
+	  /* A pointer to an array, call library function _gfor_associated.  */
+	  arg1se.want_pointer = 1;
+	  gfc_conv_expr_descriptor (&arg1se, arg1->expr);
+	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
+	  gfc_add_block_to_block (&se->post, &arg1se.post);
 
-          arg2se.want_pointer = 1;
-          gfc_conv_expr_descriptor (&arg2se, arg2->expr);
-          gfc_add_block_to_block (&se->pre, &arg2se.pre);
-          gfc_add_block_to_block (&se->post, &arg2se.post);
-          se->expr = build_call_expr_loc (input_location,
+	  arg2se.want_pointer = 1;
+	  gfc_conv_expr_descriptor (&arg2se, arg2->expr);
+	  gfc_add_block_to_block (&se->pre, &arg2se.pre);
+	  gfc_add_block_to_block (&se->post, &arg2se.post);
+	  se->expr = build_call_expr_loc (input_location,
 				      gfor_fndecl_associated, 2,
 				      arg1se.expr, arg2se.expr);
 	  se->expr = convert (logical_type_node, se->expr);
