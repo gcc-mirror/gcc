@@ -1,5 +1,16 @@
 2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/80657
+	Backport from trunk
+	* resolve.c (flag_fn_result_spec): Use the 'sym' argument to
+	test for self refs to the function result in the character len
+	expression. If a self reference is found, emit an error and
+	return true.
+	(resolve_fntype): Use the function symbol in the calls to the
+	above.
+
+2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/49636
 	Backport from trunk
 	* trans-array.c (gfc_get_array_span): Renamed from
