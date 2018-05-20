@@ -2118,7 +2118,7 @@ gfc_match_type_spec (gfc_typespec *ts)
      or list item in a type-list of an OpenMP reduction clause.  Need to
      differentiate REAL([KIND]=scalar-int-initialization-expr) from
      REAL(A,[KIND]) and REAL(KIND,A).  Logically, when this code was
-     written the use of LOGICAL as a type-spec or intrinsic subprogram 
+     written the use of LOGICAL as a type-spec or intrinsic subprogram
      was overlooked.  */
 
   m = gfc_match (" %n", name);
@@ -5935,6 +5935,7 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
 {
   gfc_ref *ref;
   gfc_symbol *assoc_sym;
+  int rank = 0;
 
   assoc_sym = associate->symtree->n.sym;
 
@@ -5971,14 +5972,28 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
 	selector->rank = ref->u.ar.dimen;
       else
 	selector->rank = 0;
+
+      rank = selector->rank;
     }
 
-  if (selector->rank)
+  if (rank)
     {
-      assoc_sym->attr.dimension = 1;
-      assoc_sym->as = gfc_get_array_spec ();
-      assoc_sym->as->rank = selector->rank;
-      assoc_sym->as->type = AS_DEFERRED;
+      for (int i = 0; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
+	if (ref->u.ar.dimen_type[i] == DIMEN_ELEMENT
+	    || (ref->u.ar.dimen_type[i] == DIMEN_UNKNOWN
+		&& ref->u.ar.end[i] == NULL
+		&& ref->u.ar.stride[i] == NULL))
+	  rank--;
+
+      if (rank)
+	{
+	  assoc_sym->attr.dimension = 1;
+	  assoc_sym->as = gfc_get_array_spec ();
+	  assoc_sym->as->rank = rank;
+	  assoc_sym->as->type = AS_DEFERRED;
+	}
+      else
+	assoc_sym->as = NULL;
     }
   else
     assoc_sym->as = NULL;
