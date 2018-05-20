@@ -1,5 +1,16 @@
 2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/49636
+	Backport from trunk
+	* trans-array.c (gfc_get_array_span): Renamed from
+	'get_array_span'.
+	(gfc_conv_expr_descriptor): Change references to above.
+	* trans-array.h : Add prototype for 'gfc_get_array_span'.
+	* trans-stmt.c (trans_associate_var): If the associate name is
+	a subref array pointer, use gfc_get_array_span for the span.
+
+2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/82275
 	Backport from trunk
 	* match.c (gfc_match_type_spec): Go through the array ref and

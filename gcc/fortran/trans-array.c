@@ -817,8 +817,8 @@ is_pointer_array (tree expr)
 
 /* Return the span of an array.  */
 
-static tree
-get_array_span (tree desc, gfc_expr *expr)
+tree
+gfc_get_array_span (tree desc, gfc_expr *expr)
 {
   tree tmp;
 
@@ -7061,7 +7061,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 				      subref_array_target, expr);
 
 	      /* ....and set the span field.  */
-	      tmp = get_array_span (desc, expr);
+	      tmp = gfc_get_array_span (desc, expr);
 	      gfc_conv_descriptor_span_set (&se->pre, se->expr, tmp);
 	    }
 	  else if (se->want_pointer)
@@ -7334,7 +7334,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  parmtype = TREE_TYPE (parm);
 
 	  /* ....and set the span field.  */
-	  tmp = get_array_span (desc, expr);
+	  tmp = gfc_get_array_span (desc, expr);
 	  gfc_conv_descriptor_span_set (&loop.pre, parm, tmp);
 	}
       else
