@@ -1,3 +1,20 @@
+2018-05-20  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-cost.c (rtx_cost_model_t): New structure.
+	(insn_size_16bit, insn_size_32bit): New variables for cost evaluation.
+	(nds32_rtx_costs_impl): Simplify.
+	(nds32_address_cost_impl): Simplify.
+	(nds32_init_rtx_costs): New function.
+	(nds32_rtx_costs_speed_prefer): Likewise.
+	(nds32_rtx_costs_size_prefer): Likewise.
+	(nds32_address_cost_speed_prefer): Likewise.
+	(nds32_address_cost_speed_fwprop): Likewise.
+	(nds32_address_cost_size_prefer): Likewise.
+	* config/nds32/nds32-protos.h (nds32_init_rtx_costs): Declare.
+	* config/nds32/nds32.c (nds32_option_override): Use
+	nds32_init_rtx_costs function.
+
 2018-05-20  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_asm_file_start): Output pipeline model.
