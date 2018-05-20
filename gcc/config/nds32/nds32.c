@@ -4096,6 +4096,7 @@ nds32_option_override (void)
 	       "must be enable '-mext-fpu-sp' or '-mext-fpu-dp'");
     }
 
+  nds32_init_rtx_costs ();
 
   nds32_register_passes ();
 }
