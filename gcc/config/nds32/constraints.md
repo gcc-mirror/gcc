@@ -373,4 +373,9 @@
        (match_test "(TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
 		     && nds32_float_mem_operand_p (op)")))
 
+(define_constraint "S"
+  "@internal
+   A constant call address."
+  (match_operand 0 "nds32_symbolic_operand"))
+
 ;; ------------------------------------------------------------------------
