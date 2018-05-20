@@ -3131,6 +3131,49 @@ nds32_asm_file_start (void)
   if (TARGET_ISA_V3M)
     fprintf (asm_out_file, "\t! ISA family\t\t: %s\n", "V3M");
 
+  switch (nds32_cpu_option)
+    {
+    case CPU_N6:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N6");
+      break;
+
+    case CPU_N7:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N7");
+      break;
+
+    case CPU_N8:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N8");
+      break;
+
+    case CPU_E8:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "E8");
+      break;
+
+    case CPU_N9:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N9");
+      break;
+
+    case CPU_N10:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N10");
+      break;
+
+    case CPU_GRAYWOLF:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "Graywolf");
+      break;
+
+    case CPU_N12:
+    case CPU_N13:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N13");
+      break;
+
+    case CPU_SIMPLE:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "SIMPLE");
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
   if (TARGET_CMODEL_SMALL)
     fprintf (asm_out_file, "\t! Code model\t\t: %s\n", "SMALL");
   if (TARGET_CMODEL_MEDIUM)

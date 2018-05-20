@@ -853,8 +853,19 @@ enum nds32_builtins
    || nds32_arch_option == ARCH_V3S)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
 
+#define TARGET_PIPELINE_N7 \
+  (nds32_cpu_option == CPU_N7)
+#define TARGET_PIPELINE_N8 \
+  (nds32_cpu_option == CPU_N6 \
+   || nds32_cpu_option == CPU_N8)
 #define TARGET_PIPELINE_N9 \
   (nds32_cpu_option == CPU_N9)
+#define TARGET_PIPELINE_N10 \
+  (nds32_cpu_option == CPU_N10)
+#define TARGET_PIPELINE_N13 \
+  (nds32_cpu_option == CPU_N12 || nds32_cpu_option == CPU_N13)
+#define TARGET_PIPELINE_GRAYWOLF \
+  (nds32_cpu_option == CPU_GRAYWOLF)
 #define TARGET_PIPELINE_SIMPLE \
   (nds32_cpu_option == CPU_SIMPLE)
 
