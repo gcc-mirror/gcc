@@ -3005,13 +3005,33 @@ nds32_canonicalize_comparison (int *code,
 /* Describing Relative Costs of Operations.  */
 
 static int
-nds32_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
+nds32_register_move_cost (machine_mode mode,
 			  reg_class_t from,
 			  reg_class_t to)
 {
+  /* In garywolf cpu, FPR to GPR is chaper than other cpu.  */
+  if (TARGET_PIPELINE_GRAYWOLF)
+    {
+      if (GET_MODE_SIZE (mode) == 8)
+	{
+	  /* DPR to GPR.  */
+	  if (from == FP_REGS && to != FP_REGS)
+	    return 3;
+	  /* GPR to DPR.  */
+	  if (from != FP_REGS && to == FP_REGS)
+	    return 2;
+	}
+      else
+	{
+	  if ((from == FP_REGS && to != FP_REGS)
+	      || (from != FP_REGS && to == FP_REGS))
+	    return 2;
+	}
+    }
+
   if ((from == FP_REGS && to != FP_REGS)
       || (from != FP_REGS && to == FP_REGS))
-    return 9;
+    return 3;
   else if (from == HIGH_REGS || to == HIGH_REGS)
     return optimize_size ? 6 : 2;
   else
