@@ -1,3 +1,11 @@
+2018-05-21  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline:
+	2018-05-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/85698
+	* gcc.target/powerpc/pr85698.c: New test.
+
 2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80657
