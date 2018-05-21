@@ -1780,6 +1780,10 @@ package body Sem_Elab is
    --  suitable elaboration scenarios and process them. State is the current
    --  state of the Processing phase.
 
+   function Unit_Entity (Unit_Id : Entity_Id) return Entity_Id;
+   pragma Inline (Unit_Entity);
+   --  Return the entity of the initial declaration for unit Unit_Id
+
    procedure Update_Elaboration_Scenario (New_N : Node_Id; Old_N : Node_Id);
    pragma Inline (Update_Elaboration_Scenario);
    --  Update all relevant internal data structures when scenario Old_N is
@@ -2340,6 +2344,13 @@ package body Sem_Elab is
       elsif ASIS_Mode then
          return;
       end if;
+
+      --  Restore the original elaboration model which was in effect when the
+      --  scenarios were first recorded. The model may be specified by pragma
+      --  Elaboration_Checks which appears on the initial declaration of the
+      --  main unit.
+
+      Install_Elaboration_Model (Unit_Entity (Cunit_Entity (Main_Unit)));
 
       --  Examine the context of the main unit and record all units with prior
       --  elaboration with respect to it.
@@ -7120,50 +7131,8 @@ package body Sem_Elab is
      (Unit_1 : Entity_Id;
       Unit_2 : Entity_Id) return Boolean
    is
-      function Is_Subunit (Unit_Id : Entity_Id) return Boolean;
-      pragma Inline (Is_Subunit);
-      --  Determine whether unit Unit_Id is a subunit
-
-      function Normalize_Unit (Unit_Id : Entity_Id) return Entity_Id;
-      --  Strip a potential subunit chain ending with unit Unit_Id and return
-      --  the corresponding spec.
-
-      ----------------
-      -- Is_Subunit --
-      ----------------
-
-      function Is_Subunit (Unit_Id : Entity_Id) return Boolean is
-      begin
-         return Nkind (Parent (Unit_Declaration_Node (Unit_Id))) = N_Subunit;
-      end Is_Subunit;
-
-      --------------------
-      -- Normalize_Unit --
-      --------------------
-
-      function Normalize_Unit (Unit_Id : Entity_Id) return Entity_Id is
-         Result : Entity_Id;
-
-      begin
-         --  Eliminate a potential chain of subunits to reach to proper body
-
-         Result := Unit_Id;
-         while Present (Result)
-           and then Result /= Standard_Standard
-           and then Is_Subunit (Result)
-         loop
-            Result := Scope (Result);
-         end loop;
-
-         --  Obtain the entity of the corresponding spec (if any)
-
-         return Unique_Entity (Result);
-      end Normalize_Unit;
-
-   --  Start of processing for Is_Same_Unit
-
    begin
-      return Normalize_Unit (Unit_1) = Normalize_Unit (Unit_2);
+      return Unit_Entity (Unit_1) = Unit_Entity (Unit_2);
    end Is_Same_Unit;
 
    -----------------
@@ -11152,6 +11121,55 @@ package body Sem_Elab is
          Find_And_Process_Nested_Scenarios;
       end if;
    end Traverse_Body;
+
+   -----------------
+   -- Unit_Entity --
+   -----------------
+
+   function Unit_Entity (Unit_Id : Entity_Id) return Entity_Id is
+      function Is_Subunit (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Subunit);
+      --  Determine whether the entity of an initial declaration denotes a
+      --  subunit.
+
+      ----------------
+      -- Is_Subunit --
+      ----------------
+
+      function Is_Subunit (Id : Entity_Id) return Boolean is
+         Decl : constant Node_Id := Unit_Declaration_Node (Id);
+
+      begin
+         return
+           Nkind_In (Decl, N_Generic_Package_Declaration,
+                           N_Generic_Subprogram_Declaration,
+                           N_Package_Declaration,
+                           N_Protected_Type_Declaration,
+                           N_Subprogram_Declaration,
+                           N_Task_Type_Declaration)
+             and then Present (Corresponding_Body (Decl))
+             and then Nkind (Parent (Unit_Declaration_Node
+                        (Corresponding_Body (Decl)))) = N_Subunit;
+      end Is_Subunit;
+
+      --  Local variables
+
+      Id : Entity_Id;
+
+   --  Start of processing for Unit_Entity
+
+   begin
+      Id := Unique_Entity (Unit_Id);
+
+      --  Skip all subunits found in the scope chain which ends at the input
+      --  unit.
+
+      while Is_Subunit (Id) loop
+         Id := Scope (Id);
+      end loop;
+
+      return Id;
+   end Unit_Entity;
 
    ---------------------------------
    -- Update_Elaboration_Scenario --

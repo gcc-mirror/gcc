@@ -15267,16 +15267,118 @@ package body Sem_Prag is
 
          --  pragma Elaboration_Checks (Static | Dynamic);
 
-         when Pragma_Elaboration_Checks =>
+         when Pragma_Elaboration_Checks => Elaboration_Checks : declare
+            procedure Check_Duplicate_Elaboration_Checks_Pragma;
+            --  Emit an error if the current context list already contains
+            --  a previous Elaboration_Checks pragma. This routine raises
+            --  Pragma_Exit if a duplicate is found.
+
+            procedure Ignore_Elaboration_Checks_Pragma;
+            --  Warn that the effects of the pragma are ignored. This routine
+            --  raises Pragma_Exit.
+
+            -----------------------------------------------
+            -- Check_Duplicate_Elaboration_Checks_Pragma --
+            -----------------------------------------------
+
+            procedure Check_Duplicate_Elaboration_Checks_Pragma is
+               Item : Node_Id;
+
+            begin
+               Item := Prev (N);
+               while Present (Item) loop
+                  if Nkind (Item) = N_Pragma
+                    and then Pragma_Name (Item) = Name_Elaboration_Checks
+                  then
+                     Duplication_Error
+                       (Prag => N,
+                        Prev => Item);
+                     raise Pragma_Exit;
+                  end if;
+
+                  Prev (Item);
+               end loop;
+            end Check_Duplicate_Elaboration_Checks_Pragma;
+
+            --------------------------------------
+            -- Ignore_Elaboration_Checks_Pragma --
+            --------------------------------------
+
+            procedure Ignore_Elaboration_Checks_Pragma is
+            begin
+               Error_Msg_Name_1 := Pname;
+               Error_Msg_N ("??effects of pragma % are ignored", N);
+               Error_Msg_N
+                 ("\place pragma on initial declaration of library unit", N);
+
+               raise Pragma_Exit;
+            end Ignore_Elaboration_Checks_Pragma;
+
+            --  Local variables
+
+            Context : constant Node_Id := Parent (N);
+            Unt     : Node_Id;
+
+         --  Start of processing for Elaboration_Checks
+
+         begin
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_Arg_Is_One_Of (Arg1, Name_Static, Name_Dynamic);
 
-            --  Set flag accordingly (ignore attempt at dynamic elaboration
-            --  checks in SPARK mode).
+            --  The pragma appears in a configuration file
+
+            if No (Context) then
+               Check_Valid_Configuration_Pragma;
+               Check_Duplicate_Elaboration_Checks_Pragma;
+
+            --  The pragma acts as a configuration pragma in a compilation unit
+
+            --    pragma Elaboration_Checks (...);
+            --    package Pack is ...;
+
+            elsif Nkind (Context) = N_Compilation_Unit
+              and then List_Containing (N) = Context_Items (Context)
+            then
+               Check_Valid_Configuration_Pragma;
+               Check_Duplicate_Elaboration_Checks_Pragma;
+
+               Unt := Unit (Context);
+
+               --  The pragma must appear on the initial declaration of a unit.
+               --  If this is not the case, warn that the effects of the pragma
+               --  are ignored.
+
+               if Nkind (Unt) = N_Package_Body then
+                  Ignore_Elaboration_Checks_Pragma;
+
+               --  Check the Acts_As_Spec flag of the compilation units itself
+               --  to determine whether the subprogram body completes since it
+               --  has not been analyzed yet. This is safe because compilation
+               --  units are not overloadable.
+
+               elsif Nkind (Unt) = N_Subprogram_Body
+                 and then not Acts_As_Spec (Context)
+               then
+                  Ignore_Elaboration_Checks_Pragma;
+
+               elsif Nkind (Unt) = N_Subunit then
+                  Ignore_Elaboration_Checks_Pragma;
+               end if;
+
+            --  Otherwise the pragma does not appear at the configuration level
+            --  and is illegal.
+
+            else
+               Pragma_Misplaced;
+            end if;
+
+            --  At this point the pragma is not a duplicate, and appears in the
+            --  proper context. Set the elaboration model in effect.
 
             Dynamic_Elaboration_Checks :=
               Chars (Get_Pragma_Arg (Arg1)) = Name_Dynamic;
+         end Elaboration_Checks;
 
          ---------------
          -- Eliminate --

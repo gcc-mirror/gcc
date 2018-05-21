@@ -2390,6 +2390,12 @@ package body Sem_Ch10 is
 
       Install_SPARK_Mode (Saved_SM, Saved_SMP);
 
+      --  If the subunit is part of a compilation unit which is subject to
+      --  pragma Elaboration_Checks, set the model specified by the pragma
+      --  because it applies to all parts of the unit.
+
+      Install_Elaboration_Model (Par_Unit);
+
       Analyze (Proper_Body (Unit (N)));
       Remove_Context (N);
 

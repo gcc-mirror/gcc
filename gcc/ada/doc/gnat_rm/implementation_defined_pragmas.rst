@@ -1678,18 +1678,23 @@ Syntax:
   pragma Elaboration_Checks (Dynamic | Static);
 
 
-This is a configuration pragma that provides control over the
-elaboration model used by the compilation affected by the
-pragma.  If the parameter is ``Dynamic``,
-then the dynamic elaboration
-model described in the Ada Reference Manual is used, as though
-the *-gnatE* switch had been specified on the command
-line.  If the parameter is ``Static``, then the default GNAT static
-model is used.  This configuration pragma overrides the setting
-of the command line.  For full details on the elaboration models
-used by the GNAT compiler, see the chapter on elaboration order handling
-in the *GNAT User's Guide*.
+This is a configuration pragma which specifies the elaboration model to be
+used during compilation. For more information on the elaboration models of
+GNAT, consult the chapter on elaboration order handling in the *GNAT User's
+Guide*.
 
+The pragma may appear in the following contexts:
+
+* Configuration pragmas file
+
+* Prior to the context clauses of a compilation unit's initial declaration
+
+Any other placement of the pragma will result in a warning and the effects of
+the offending pragma will be ignored.
+
+If the pragma argument is ``Dynamic``, then the dynamic elaboration model is in
+effect. If the pragma argument is ``Static``, then the static elaboration model
+is in effect.
 
 Pragma Eliminate
 ================

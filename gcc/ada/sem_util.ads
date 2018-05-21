@@ -1453,6 +1453,11 @@ package Sem_Util is
    --  whether they have been completed by a full constant declaration or an
    --  Import pragma. Emit the error message if that is not the case.
 
+   procedure Install_Elaboration_Model (Unit_Id : Entity_Id);
+   --  Install the elaboration model specified by pragma Elaboration_Checks
+   --  associated with compilation unit Unit_Id. No action is taken when the
+   --  unit lacks such pragma.
+
    procedure Install_Generic_Formals (Subp_Id : Entity_Id);
    --  Install both the generic formal parameters and the formal parameters of
    --  generic subprogram Subp_Id into visibility.

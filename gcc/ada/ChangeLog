@@ -1,3 +1,29 @@
+2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Install the elaboration
+	model of the compilation unit spec, if any.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Install the elaboration
+	model of the compilation unit spec, if any.
+	* sem_ch10.adb (Analyze_Subunit): Install the elaboration model of the
+	parent compilation unit spec, if any.
+	* sem_elab.adb (Check_Elaboration_Scenarios): Restore the elaboration
+	model of the main unit.
+	(Is_Same_Unit): The routine now uses Unit_Entity.
+	(Is_Subunit): Removed.
+	(Normalize_Unit): Removed.
+	(Unit_Entity): New routine.
+	* sem_prag.adb (Analyze_Pragma): Reimplement the handling of pragma
+	Elaboration_Checks. The analysis now ensures that the pragma appears at
+	the configuration level, and on the initial declaration of a unit.
+	Other placements are either flagged as illegal, or ignored.
+	(Check_Duplicate_Elaboration_Checks_Pragma): New routine.
+	(Ignore_Elaboration_Checks_Pragma): New routine.
+	* sem_util.adb (Install_Elaboration_Model): New routine.
+	* sem_util.ads (Install_Elaboration_Model): New routine.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Update the
+	documentation of pragma Elaboration_Checks.
+	* gnat_rm.texi: Regenerate.
+
 2018-04-04  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-trasym__dwarf.adb (Executable_Name): Return argv[0] instead
