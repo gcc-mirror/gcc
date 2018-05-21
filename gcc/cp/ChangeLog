@@ -1,3 +1,13 @@
+2018-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84588
+	* parser.c (cp_parser_maybe_commit_to_declaration,
+	cp_parser_check_condition_declarator): New.
+	(cp_parser_simple_declaration): Use the first above.
+	(cp_parser_condition): Use both the above; enforce
+	[stmt.stmt]/2 about the declarator not specifying
+	a function or an array; improve error-recovery.
+
 2018-05-20  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/85843 - warning in logic_error copy constructor.
