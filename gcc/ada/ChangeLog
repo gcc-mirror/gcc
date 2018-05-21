@@ -1,3 +1,9 @@
+2018-04-04  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Analyze_Membership_Op): Avoid compiler crash when the
+	spec of a unit has Ada 2012 membership tests with multiple choices and
+	the unit body is not compiled under Ada 2012 mode.
+
 2018-04-04  Doug Rupp  <rupp@adacore.com>
 
 	* sigtramp-vxworks-target.inc: Set cfa_reg properly from sigcontext
