@@ -414,9 +414,10 @@ package body System.Dwarf_Lines is
 
       Success := True;
 
-      --  Get memory bounds
+      --  Get memory bounds for executable code.  Note that such code
+      --  might come from multiple sections.
 
-      Get_Memory_Bounds (C.Obj.all, Lo, Hi);
+      Get_Xcode_Bounds (C.Obj.all, Lo, Hi);
       C.Low  := Storage_Offset (Lo);
       C.High := Storage_Offset (Hi);
 
