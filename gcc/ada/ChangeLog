@@ -1,3 +1,15 @@
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Is_External_State): An abstract state is also external
+	when it is declared with option "synchronous".
+	* einfo.ads: Update the documentation of synthesized attribute
+	Is_External_State.
+	* sem_util.adb (Find_Simple_Properties): New routine.
+	(Is_Enabled_External_Property): New routine.
+	(State_Has_Enabled_Property): Reimplemented. The two flavors of option
+	External have precedence over option Synchronous when determining
+	whether a property is in effect.
+
 2018-04-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_eval.adb (Static_Length): Take into account case of variable of

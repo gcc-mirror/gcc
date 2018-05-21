@@ -2553,7 +2553,7 @@ package Einfo is
 
 --    Is_External_State (synthesized)
 --       Applies to all entities, true for abstract states that are subject to
---       option External.
+--       option External or Synchronous.
 
 --    Is_Finalized_Transient (Flag252)
 --       Defined in constants, loop parameters of generalized iterators, and

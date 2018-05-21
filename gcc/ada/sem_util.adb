@@ -10261,92 +10261,157 @@ package body Sem_Util is
       --------------------------------
 
       function State_Has_Enabled_Property return Boolean is
-         Decl     : constant Node_Id := Parent (Item_Id);
-         Opt      : Node_Id;
-         Opt_Nam  : Node_Id;
-         Prop     : Node_Id;
-         Prop_Nam : Node_Id;
-         Props    : Node_Id;
+         Decl : constant Node_Id := Parent (Item_Id);
+
+         procedure Find_Simple_Properties
+           (Has_External    : out Boolean;
+            Has_Synchronous : out Boolean);
+         --  Extract the simple properties associated with declaration Decl
+
+         function Is_Enabled_External_Property return Boolean;
+         --  Determine whether property Property appears within the external
+         --  property list of declaration Decl, and return its status.
+
+         ----------------------------
+         -- Find_Simple_Properties --
+         ----------------------------
+
+         procedure Find_Simple_Properties
+           (Has_External    : out Boolean;
+            Has_Synchronous : out Boolean)
+         is
+            Opt : Node_Id;
+
+         begin
+            --  Assume that none of the properties are available
+
+            Has_External    := False;
+            Has_Synchronous := False;
+
+            Opt := First (Expressions (Decl));
+            while Present (Opt) loop
+               if Nkind (Opt) = N_Identifier then
+                  if Chars (Opt) = Name_External then
+                     Has_External := True;
+
+                  elsif Chars (Opt) = Name_Synchronous then
+                     Has_Synchronous := True;
+                  end if;
+               end if;
+
+               Next (Opt);
+            end loop;
+         end Find_Simple_Properties;
+
+         ----------------------------------
+         -- Is_Enabled_External_Property --
+         ----------------------------------
+
+         function Is_Enabled_External_Property return Boolean is
+            Opt      : Node_Id;
+            Opt_Nam  : Node_Id;
+            Prop     : Node_Id;
+            Prop_Nam : Node_Id;
+            Props    : Node_Id;
+
+         begin
+            Opt := First (Component_Associations (Decl));
+            while Present (Opt) loop
+               Opt_Nam := First (Choices (Opt));
+
+               if Nkind (Opt_Nam) = N_Identifier
+                 and then Chars (Opt_Nam) = Name_External
+               then
+                  Props := Expression (Opt);
+
+                  --  Multiple properties appear as an aggregate
+
+                  if Nkind (Props) = N_Aggregate then
+
+                     --  Simple property form
+
+                     Prop := First (Expressions (Props));
+                     while Present (Prop) loop
+                        if Chars (Prop) = Property then
+                           return True;
+                        end if;
+
+                        Next (Prop);
+                     end loop;
+
+                     --  Property with expression form
+
+                     Prop := First (Component_Associations (Props));
+                     while Present (Prop) loop
+                        Prop_Nam := First (Choices (Prop));
+
+                        --  The property can be represented in two ways:
+                        --      others   => <value>
+                        --    <property> => <value>
+
+                        if Nkind (Prop_Nam) = N_Others_Choice
+                          or else (Nkind (Prop_Nam) = N_Identifier
+                                    and then Chars (Prop_Nam) = Property)
+                        then
+                           return Is_True (Expr_Value (Expression (Prop)));
+                        end if;
+
+                        Next (Prop);
+                     end loop;
+
+                  --  Single property
+
+                  else
+                     return Chars (Props) = Property;
+                  end if;
+               end if;
+
+               Next (Opt);
+            end loop;
+
+            return False;
+         end Is_Enabled_External_Property;
+
+         --  Local variables
+
+         Has_External    : Boolean;
+         Has_Synchronous : Boolean;
+
+      --  Start of processing for State_Has_Enabled_Property
 
       begin
          --  The declaration of an external abstract state appears as an
-         --  extension aggregate. If this is not the case, properties can never
-         --  be set.
+         --  extension aggregate. If this is not the case, properties can
+         --  never be set.
 
          if Nkind (Decl) /= N_Extension_Aggregate then
             return False;
          end if;
 
-         --  When External appears as a simple option, it automatically enables
-         --  all properties.
+         Find_Simple_Properties (Has_External, Has_Synchronous);
 
-         Opt := First (Expressions (Decl));
-         while Present (Opt) loop
-            if Nkind (Opt) = N_Identifier
-              and then Chars (Opt) = Name_External
-            then
-               return True;
-            end if;
+         --  Simple option External enables all properties (SPARK RM 7.1.2(2))
 
-            Next (Opt);
-         end loop;
+         if Has_External then
+            return True;
 
-         --  When External specifies particular properties, inspect those and
-         --  find the desired one (if any).
+         --  Option External may enable or disable specific properties
 
-         Opt := First (Component_Associations (Decl));
-         while Present (Opt) loop
-            Opt_Nam := First (Choices (Opt));
+         elsif Is_Enabled_External_Property then
+            return True;
 
-            if Nkind (Opt_Nam) = N_Identifier
-              and then Chars (Opt_Nam) = Name_External
-            then
-               Props := Expression (Opt);
+         --  Simple option Synchronous
+         --
+         --    enables                disables
+         --       Asynch_Readers         Effective_Reads
+         --       Asynch_Writers         Effective_Writes
+         --
+         --  Note that both forms of External have higher precedence than
+         --  Synchronous (SPARK RM 7.1.4(10)).
 
-               --  Multiple properties appear as an aggregate
-
-               if Nkind (Props) = N_Aggregate then
-
-                  --  Simple property form
-
-                  Prop := First (Expressions (Props));
-                  while Present (Prop) loop
-                     if Chars (Prop) = Property then
-                        return True;
-                     end if;
-
-                     Next (Prop);
-                  end loop;
-
-                  --  Property with expression form
-
-                  Prop := First (Component_Associations (Props));
-                  while Present (Prop) loop
-                     Prop_Nam := First (Choices (Prop));
-
-                     --  The property can be represented in two ways:
-                     --      others   => <value>
-                     --    <property> => <value>
-
-                     if Nkind (Prop_Nam) = N_Others_Choice
-                       or else (Nkind (Prop_Nam) = N_Identifier
-                                 and then Chars (Prop_Nam) = Property)
-                     then
-                        return Is_True (Expr_Value (Expression (Prop)));
-                     end if;
-
-                     Next (Prop);
-                  end loop;
-
-               --  Single property
-
-               else
-                  return Chars (Props) = Property;
-               end if;
-            end if;
-
-            Next (Opt);
-         end loop;
+         elsif Has_Synchronous then
+            return Nam_In (Property, Name_Async_Readers, Name_Async_Writers);
+         end if;
 
          return False;
       end State_Has_Enabled_Property;

@@ -1,3 +1,7 @@
+2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/sync2.adb, gnat.dg/sync2.ads: New testcase.
+
 2018-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.c-torture/execute/ssad-run.c: New test.
