@@ -5,11 +5,11 @@
 	initialization, if the declaration carries an aspect
 	Suppress_Initialization.
 
-2018-04-04  Daniel Mercier  <mercier@adacore.com>
+2018-05-21  Daniel Mercier  <mercier@adacore.com>
 
 	* pprint.adb: Use mixed case for attribute names.
 
-2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Analyze_Generic_Subprogram_Body): Rename the call to
 	Analyze_Aspect_Specifications_On_Body_Or_Stub.
@@ -32,12 +32,12 @@
 	* sem_prag.adb: Code reformatting.
 	(Analyze_Refined_Depends_Global_Post): Consider task body stubs.
 
-2018-04-04  Jerome Lambourg  <lambourg@adacore.com>
+2018-05-21  Jerome Lambourg  <lambourg@adacore.com>
 
 	* gcc-interface/Makefile.in: Add g-soliop__qnx.ads to the runtime build
 	for QNX.
 
-2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_cg.adb: Remove with and use clause for Exp_Disp.
 	* exp_ch9.adb: Remove with and use clause for Exp_Disp.
@@ -63,7 +63,7 @@
 	(Is_Predefined_Interface_Primitive): Moved from Exp_Disp.
 	(Is_Predefined_Internal_Operation): Moved from Exp_Disp.
 
-2018-04-04  Ed Schonberg  <schonberg@adacore.com>
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Valid_Conversion): Improve error message on an illegal
 	type conversion whose expression has a limited view of a type.
@@ -74,20 +74,20 @@
 	explicit name for iterator loop, preserve that name in expanded
 	construct, for possible use in exit statements.
 
-2018-04-04  Javier Miranda  <miranda@adacore.com>
+2018-05-21  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch4.adb (Analyze_Membership_Op): Avoid compiler crash when the
 	spec of a unit has Ada 2012 membership tests with multiple choices and
 	the unit body is not compiled under Ada 2012 mode.
 
-2018-04-04  Doug Rupp  <rupp@adacore.com>
+2018-05-21  Doug Rupp  <rupp@adacore.com>
 
 	* sigtramp-vxworks-target.inc: Set cfa_reg properly from sigcontext
 	pregs.
 	(CFI_COMMON_REGS): Restore LR jic probed from prologue.
 	(REGNO_PC_OFFSET): Change to correct value for Aarch64.
 
-2018-04-04  Jose Ruiz  <ruiz@adacore.com>
+2018-05-21  Jose Ruiz  <ruiz@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst, exp_attr.adb,
 	libgnarl/s-tassta.adb: Minor typo fixes
@@ -98,13 +98,13 @@
 	indexed call originally in prefix forn is itself the prefix of a
 	further call.
 
-2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_eval.adb (Is_Null_Range): Clarify access to the full view of a
 	type.
 	(Not_Null_Range): Same as above.
 
-2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb: Minor reformatting.
 	* exp_ch6.adb: Likewise.
@@ -112,7 +112,7 @@
 	* inline.adb: Likewise.
 	* sem_util.adb: Likewise.
 
-2018-04-04  Yannick Moy  <moy@adacore.com>
+2018-05-21  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb (Expand_Inlined_Call.Process_Formals): Use a type
 	conversion instead of an unchecked type conversion when inlining a
@@ -121,7 +121,7 @@
 	access types).
 	* opt.ads: Update comment.
 
-2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Install the elaboration
 	model of the compilation unit spec, if any.
@@ -147,20 +147,20 @@
 	documentation of pragma Elaboration_Checks.
 	* gnat_rm.texi: Regenerate.
 
-2018-04-04  Olivier Hainque  <hainque@adacore.com>
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-trasym__dwarf.adb (Executable_Name): Return argv[0] instead
 	of empty string when argv[0] couldn't be found on PATH.
 	(Enable_Cache): Raise Program_Error instead of attempting a null
 	pointer dereference when the Exec_Module initialization failed.
 
-2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* libgnarl/a-reatim.ads (Clock_Time): Remove External aspect.
 	* libgnarl/a-taside.ads (Tasking_State): Likewise.
 	* libgnat/a-calend.ads (Clock_Time): Likewise.
 
-2018-04-04  Yannick Moy  <moy@adacore.com>
+2018-05-21  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch6.adb (Analyze_Procedure_Call): Refine test to recognize prefix
 	call notation in inlined call in GNATprove mode.
@@ -177,12 +177,12 @@
 	External have precedence over option Synchronous when determining
 	whether a property is in effect.
 
-2018-04-04  Yannick Moy  <moy@adacore.com>
+2018-05-21  Yannick Moy  <moy@adacore.com>
 
 	* sem_eval.adb (Static_Length): Take into account case of variable of
 	subtype string literal.
 
-2018-04-04  Olivier Hainque  <hainque@adacore.com>
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-objrea.ads (Get_Memory_Bounds): Rename as Get_Xcode_Bounds.
 	(Object_Section): Rename Flag_Alloc component as Flag_Xcode.
@@ -192,7 +192,7 @@
 	* libgnat/s-dwalin.adb (Open): Adjust to the Get_Memory_Bounds name
 	change.
 
-2018-04-04  Olivier Hainque  <hainque@adacore.com>
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-dwalin.ads (Dwarf_Context): Change type of Load_Address to
 	Address, and type of Low, High to Storage_Offset.
@@ -212,7 +212,7 @@
 	(Multi_Module_Symbolic_Traceback): Compare address in traceback
 	with module Low_Address instead of Low.
 
-2018-04-04  Olivier Hainque  <hainque@adacore.com>
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-dwalin.ads (Dwarf_Context): Rename Load_Slide as
 	Load_Address.
@@ -220,14 +220,14 @@
 	(Set_Load_Address): Likewise.
 	(Symbolic_Traceback): Likewise.
 
-2018-04-04  Olivier Hainque  <hainque@adacore.com>
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-trasym__dwarf.adb (Add_Module_To_Cache): Expect a
 	Load_Address argument and pass it down to Init_Module.
 	* libgnat/s-tsmona__linux.adb (Build_Cache_For_All_Modules): Pass
 	lm.l_addr as the Load_Address to Add_Module_To_Cache.
 
-2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.adb (Has_Discriminants): Stronger assertion.
 	(Set_Has_Discriminants): Stronger assertion.
@@ -241,22 +241,22 @@
 	* sem_ch3.adb (Derived_Type_Declaration): Only call
 	Set_Has_Discriminant on type entities.
 
-2018-04-04  Arnaud Charlet  <charlet@adacore.com>
+2018-05-21  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprogram): Unnest all subprograms relevant for
 	code generation.
 
-2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* lib.ads: Fix typo in enumeration in comment.
 
-2018-04-04  Ed Schonberg  <schonberg@adacore.com>
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case Scalar_Storage_Order): The
 	attribute reference is legal within a generic unit when the prefix is a
 	formal private type.
 
-2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Establish_Transient_Scope): Code cleanup. Do not
 	delegate the secondary stack management when there is no suitable
@@ -278,7 +278,7 @@
 	(Requires_Transient_Scope) to determine that the function will emply
 	the secondary stack.
 
-2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* ada_get_targ.adb: Fix subprogram body headers.
 	* adabkend.adb: Likewise.
