@@ -1,3 +1,8 @@
+2018-04-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): Improve error message on an illegal
+	type conversion whose expression has a limited view of a type.
+
 2018-05-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Build_Formal_Container_Iteration): If source has
