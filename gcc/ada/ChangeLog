@@ -1,3 +1,9 @@
+2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/a-reatim.ads (Clock_Time): Remove External aspect.
+	* libgnarl/a-taside.ads (Tasking_State): Likewise.
+	* libgnat/a-calend.ads (Clock_Time): Likewise.
+
 2018-04-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch6.adb (Analyze_Procedure_Call): Refine test to recognize prefix
