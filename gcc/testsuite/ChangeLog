@@ -1,5 +1,10 @@
 2018-05-21  Pat Haugen  <pthaugen@us.ibm.com>
 
+	PR target/85698
+	* gcc.target/powerpc/vec-setup-be-long.c: Remove XFAIL.
+
+2018-05-21  Pat Haugen  <pthaugen@us.ibm.com>
+
 	Backport from mainline:
 	2018-05-17  Pat Haugen  <pthaugen@us.ibm.com>
 
