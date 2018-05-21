@@ -151,8 +151,8 @@ package body System.Traceback.Symbolic is
 
    function Executable_Name return String;
    --  Returns the executable name as reported by argv[0]. If gnat_argv not
-   --  initialized or if argv[0] executable not found in path, function returns
-   --  an empty string.
+   --  initialized, return an empty string. If the argv[0] executable is not
+   --  found in the PATH, return it unresolved.
 
    function Get_Executable_Load_Address return System.Address;
    pragma Import
@@ -289,6 +289,12 @@ package body System.Traceback.Symbolic is
 
       --  Add all modules
       Init_Exec_Module;
+
+      if Exec_Module_State = Failed then
+         raise Program_Error with
+           "cannot enable cache, executable state initialization failed.";
+      end if;
+
       Cache_Chain := Exec_Module'Access;
 
       if Include_Modules then
@@ -347,17 +353,33 @@ package body System.Traceback.Symbolic is
          return "";
       end if;
 
+      --  See if we can resolve argv[0] to a full path (to a file that we will
+      --  be able to open). If the resolution fails, we were probably spawned
+      --  by an imprecise exec call, typically passing a mere file name as
+      --  argv[0] for a program in the current directory with '.' not on PATH.
+      --  Best we can do is fallback to argv[0] unchanged in this case. If we
+      --  fail opening that downstream, we'll just bail out.
+
       declare
-         Addr : constant System.Address :=
-           locate_exec_on_path (Conv.To_Pointer (Gnat_Argv) (0));
-         Result : constant String := Value (Addr);
+         Argv0 : constant System.Address
+           := Conv.To_Pointer (Gnat_Argv) (0);
+
+         Resolved_Argv0 : constant System.Address
+           := locate_exec_on_path (Argv0);
+
+         Exe_Argv : constant System.Address
+           := (if Resolved_Argv0 /= System.Null_Address
+               then Resolved_Argv0
+               else Argv0);
+
+         Result : constant String := Value (Exe_Argv);
 
       begin
          --  The buffer returned by locate_exec_on_path was allocated using
-         --  malloc, so we should use free to release the memory.
+         --  malloc and we should release this memory.
 
-         if Addr /= Null_Address then
-            System.CRTL.free (Addr);
+         if Resolved_Argv0 /= Null_Address then
+            System.CRTL.free (Resolved_Argv0);
          end if;
 
          return Result;

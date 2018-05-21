@@ -1,3 +1,10 @@
+2018-04-04  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-trasym__dwarf.adb (Executable_Name): Return argv[0] instead
+	of empty string when argv[0] couldn't be found on PATH.
+	(Enable_Cache): Raise Program_Error instead of attempting a null
+	pointer dereference when the Exec_Module initialization failed.
+
 2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
 
 	* libgnarl/a-reatim.ads (Clock_Time): Remove External aspect.
