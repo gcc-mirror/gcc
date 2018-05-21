@@ -104,6 +104,7 @@ namespace __debug
       : _Base(__x, __a) { }
 
       set(set&& __x, const allocator_type& __a)
+      noexcept( noexcept(_Base(std::move(__x._M_base()), __a)) )
       : _Safe(std::move(__x._M_safe()), __a),
 	_Base(std::move(__x._M_base()), __a) { }
 
