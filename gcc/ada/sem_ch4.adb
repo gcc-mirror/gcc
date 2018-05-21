@@ -3199,12 +3199,28 @@ package body Sem_Ch4 is
       Actuals : constant List_Id   := Parameter_Associations (N);
       Prev_T  : constant Entity_Id := Etype (N);
 
+      --  Recognize cases of prefixed calls that have been rewritten in
+      --  various ways. The simplest case is a rewritten selected component,
+      --  but it can also be an already-examined indexed component, or a
+      --  prefix that is itself a rewritten prefixed call that is in turn
+      --  an indexed call (the syntactic ambiguity involving the indexing of
+      --  a function with defaulted parameters that returns an array).
+      --  A flag Maybe_Indexed_Call might be useful here ???
+
       Must_Skip  : constant Boolean := Skip_First
                      or else Nkind (Original_Node (N)) = N_Selected_Component
                      or else
                        (Nkind (Original_Node (N)) = N_Indexed_Component
                           and then Nkind (Prefix (Original_Node (N)))
+                            = N_Selected_Component)
+                     or else
+                       (Nkind (Parent (N)) = N_Function_Call
+                          and then Is_Array_Type (Etype (Name (N)))
+                          and then Etype (Original_Node (N)) =
+                            Component_Type (Etype (Name (N)))
+                          and then Nkind (Original_Node (Parent (N)))
                             = N_Selected_Component);
+
       --  The first formal must be omitted from the match when trying to find
       --  a primitive operation that is a possible interpretation, and also
       --  after the call has been rewritten, because the corresponding actual
@@ -4352,6 +4368,10 @@ package body Sem_Ch4 is
       QE_Scop : Entity_Id;
 
    begin
+      --  The processing is similar to that for quantified expressions,
+      --  which have a similar structure and are eventually transformed
+      --  into a loop.
+
       QE_Scop := New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
       Set_Etype  (QE_Scop, Standard_Void_Type);
       Set_Scope  (QE_Scop, Current_Scope);

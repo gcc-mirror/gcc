@@ -1,3 +1,7 @@
+2018-04-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/array30.adb: New testcase.
+
 2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/sync2.adb, gnat.dg/sync2.ads: New testcase.
