@@ -16664,7 +16664,13 @@ package body Sem_Ch3 is
             Error_Msg_N
               ("elementary or array type cannot have discriminants",
                Defining_Identifier (First (Discriminant_Specifications (N))));
-            Set_Has_Discriminants (T, False);
+
+            --  Unset Has_Discriminants flag to prevent cascaded errors, but
+            --  only if we are not already processing a malformed syntax tree.
+
+            if Is_Type (T) then
+               Set_Has_Discriminants (T, False);
+            end if;
 
          --  The type is allowed to have discriminants
 

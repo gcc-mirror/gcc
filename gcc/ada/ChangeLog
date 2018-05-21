@@ -1,3 +1,17 @@
+2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb (Has_Discriminants): Stronger assertion.
+	(Set_Has_Discriminants): Stronger assertion.
+	* sem_ch13.adb (Push_Scope_And_Install_Discriminants): Adapt to respect
+	the stronger assertion on Has_Discriminant.
+	(Uninstall_Discriminants_And_Pop_Scope): Same as above.
+	* sem_util.adb (New_Copy_Tree): Same as above.
+	* sem_ch7.adb (Generate_Parent_References): Prevent calls to
+	Has_Discriminant on non-type entities that might happen when the
+	compiled code has errors.
+	* sem_ch3.adb (Derived_Type_Declaration): Only call
+	Set_Has_Discriminant on type entities.
+
 2018-04-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprogram): Unnest all subprograms relevant for

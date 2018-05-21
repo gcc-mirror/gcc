@@ -19392,7 +19392,9 @@ package body Sem_Util is
       begin
          --  Discriminant_Constraint
 
-         if Has_Discriminants (Base_Type (Id)) then
+         if Is_Type (Id)
+           and then Has_Discriminants (Base_Type (Id))
+         then
             Set_Discriminant_Constraint (Id, Elist_Id (
               Copy_Field_With_Replacement
                 (Field    => Union_Id (Discriminant_Constraint (Id)),
@@ -19849,7 +19851,9 @@ package body Sem_Util is
 
          --  Discriminant_Constraint
 
-         if Has_Discriminants (Base_Type (Id)) then
+         if Is_Type (Id)
+           and then Has_Discriminants (Base_Type (Id))
+         then
             Visit_Field
               (Field    => Union_Id (Discriminant_Constraint (Id)),
                Semantic => True);
