@@ -6506,7 +6506,7 @@ package body Exp_Attr is
          Save_Validity_Checks_On : constant Boolean := Validity_Checks_On;
          --  Save the validity checking mode. We always turn off validity
          --  checking during process of 'Valid since this is one place
-         --  where we do not want the implicit validity checks to intefere
+         --  where we do not want the implicit validity checks to interfere
          --  with the explicit validity check that the programmer is doing.
 
          function Make_Range_Test return Node_Id;

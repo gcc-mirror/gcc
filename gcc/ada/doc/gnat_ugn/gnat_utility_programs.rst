@@ -4078,8 +4078,8 @@ Alternatively, you may run the script using the following command line:
       for which a body must be created or a library unit body for which subunits
       must be created for the body stubs declared in this body.
       The file name may contain the path information.
-      If the name does not follow GNAT file naming conventions and a set
-      of seitches does not contain a project file that defines naming
+      If the name does not follow GNAT file naming conventions and the set
+      of switches does not contain a project file that defines naming
       conventions, the name of the body file must
       be provided
       explicitly as the value of the :switch:`-o{body-name}` option.
@@ -4146,7 +4146,7 @@ Alternatively, you may run the script using the following command line:
 
   :switch:`--subunits`
     Generate subunits for body stubs. If this switch is specified,
-    ``gnatstub`` expects a library unit body as an agrument file,
+    ``gnatstub`` expects a library unit body as an argument file,
     otherwise a library unit declaration is expected. If a body stub
     already has a corresponding subunit, ``gnatstub`` does not
     generate anything for it.
