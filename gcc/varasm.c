@@ -5652,7 +5652,8 @@ weak_finish (void)
       tree alias_decl = TREE_PURPOSE (t);
       tree target = ultimate_transparent_alias_target (&TREE_VALUE (t));
 
-      if (! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias_decl)))
+      if (! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias_decl))
+         || TREE_SYMBOL_REFERENCED (target))
 	/* Remove alias_decl from the weak list, but leave entries for
 	   the target alone.  */
 	target = NULL_TREE;
