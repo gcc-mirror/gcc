@@ -3,8 +3,8 @@
 	PR target/85657
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Do not
 	define __ibm128 as long double.
-	* config/rs6000/rs6000.c (rs6000_init_builtins): Always create
-	__ibm128 as a distinct type.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Create __ibm128
+	as a distinct type when IEEE 128-bit support is enabled.
 	(init_float128_ieee): Fix up conversions between IFmode and IEEE
 	128-bit types to use the correct functions.
 	(rs6000_expand_float128_convert): Use explicit FLOAT_EXTEND to
