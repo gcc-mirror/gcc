@@ -1,3 +1,7 @@
+2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib.ads: Fix typo in enumeration in comment.
+
 2018-04-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case Scalar_Storage_Order): The
