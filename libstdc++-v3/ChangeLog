@@ -1,3 +1,10 @@
+2018-05-21  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/85845
+	* include/bits/stl_tree.h
+	(_Rb_tree_impl(_Rb_tree_impl&&, _Node_allocator&&)): Fix noexcept
+	qualification.
+
 2018-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/std-ops.cc (absolute): Report an error for empty
