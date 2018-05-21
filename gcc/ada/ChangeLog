@@ -1,5 +1,15 @@
 2018-04-04  Olivier Hainque  <hainque@adacore.com>
 
+	* libgnat/s-objrea.ads (Get_Memory_Bounds): Rename as Get_Xcode_Bounds.
+	(Object_Section): Rename Flag_Alloc component as Flag_Xcode.
+	* libgnat/s-objrea.adb (Get_Xcode_Bounds): Adjust to new subprogram and
+	component name.
+	(Get_Section, ELF case): Set Flag_Xcode from SHF_EXECINSTR.
+	* libgnat/s-dwalin.adb (Open): Adjust to the Get_Memory_Bounds name
+	change.
+
+2018-04-04  Olivier Hainque  <hainque@adacore.com>
+
 	* libgnat/s-dwalin.ads (Dwarf_Context): Change type of Load_Address to
 	Address, and type of Low, High to Storage_Offset.
 	(Low): Rename as Low_Address and convey that the return value is a
