@@ -1,3 +1,7 @@
+2018-05-21  Christian Groessler  <chris@groessler.org>
+
+	* gcc.c-torture/compile/simd-5.c: Fix comment.
+
 2018-05-21  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/85657
