@@ -123,7 +123,8 @@ package body System.Traceback.Symbolic is
    --  Return the String contained in Item, up until the first NUL character
 
    pragma Warnings (Off, "*Add_Module_To_Cache*");
-   procedure Add_Module_To_Cache (Module_Name : String);
+   procedure Add_Module_To_Cache (Module_Name : String;
+                                  Load_Address : System.Address);
    --  To be called by Build_Cache_For_All_Modules to add a new module to the
    --  list. May not be referenced.
 
@@ -217,12 +218,14 @@ package body System.Traceback.Symbolic is
    -- Add_Module_To_Cache --
    -------------------------
 
-   procedure Add_Module_To_Cache (Module_Name : String) is
+   procedure Add_Module_To_Cache (Module_Name : String;
+                                  Load_Address : System.Address)
+   is
       Module  : Module_Cache_Acc;
       Success : Boolean;
    begin
       Module := new Module_Cache;
-      Init_Module (Module.all, Success, Module_Name);
+      Init_Module (Module.all, Success, Module_Name, Load_Address);
       if not Success then
          Free (Module);
          return;
