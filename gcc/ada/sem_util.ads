@@ -1842,6 +1842,18 @@ package Sem_Util is
    --  persistent. A private type is potentially persistent if the full type
    --  is potentially persistent.
 
+   function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation
+
+   function Is_Predefined_Interface_Primitive (E : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-345): Returns True if E is one of the predefined primitives
+   --  required to implement interfaces.
+
+   function Is_Predefined_Internal_Operation (E : Entity_Id) return Boolean;
+   --  Similar to the previous one, but excludes stream operations, because
+   --  these may be overridden, and need extra formals, like user-defined
+   --  operations.
+
    function Is_Preelaborable_Aggregate (Aggr : Node_Id) return Boolean;
    --  Determine whether aggregate Aggr violates the restrictions of
    --  preelaborable constructs as defined in ARM 10.2.1(5-9).

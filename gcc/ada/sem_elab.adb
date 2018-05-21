@@ -2525,6 +2525,13 @@ package body Sem_Elab is
          Region    : Node_Id;
 
       begin
+         --  Nothing to do for predefined primitives because they are artifacts
+         --  of tagged type expansion and cannot override source primitives.
+
+         if Is_Predefined_Dispatching_Operation (Prim) then
+            return;
+         end if;
+
          Body_Id := Corresponding_Body (Prim_Decl);
 
          --  Nothing to do when the primitive does not have a corresponding
