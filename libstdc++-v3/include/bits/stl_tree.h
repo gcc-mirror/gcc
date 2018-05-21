@@ -980,7 +980,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       _Rb_tree(_Rb_tree&& __x, _Node_allocator&& __a)
       noexcept( noexcept(
-	_Rb_tree(std::declval<_Rb_tree>(), std::declval<_Node_allocator>(),
+	_Rb_tree(std::declval<_Rb_tree&&>(), std::declval<_Node_allocator&&>(),
 		 std::declval<typename _Alloc_traits::is_always_equal>())) )
       : _Rb_tree(std::move(__x), std::move(__a),
 		 typename _Alloc_traits::is_always_equal{})
