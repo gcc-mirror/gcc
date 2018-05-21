@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;   use Atree;
+with Csets;   use Csets;
 with Einfo;   use Einfo;
 with Namet;   use Namet;
 with Nlists;  use Nlists;
@@ -272,11 +273,35 @@ package body Pprint is
             when N_Attribute_Reference =>
                if Take_Prefix then
                   declare
+                     function To_Mixed_Case (S : String) return String;
+                     --  Transform given string into the corresponding one in
+                     --  mixed case form.
+
+                     function To_Mixed_Case (S : String) return String is
+                        Ucase  : Boolean := True;
+                        Result : String (S'Range);
+                     begin
+                        for J in S'Range loop
+                           if Ucase then
+                              Result (J) := Fold_Upper (S (J));
+                           else
+                              Result (J) := Fold_Lower (S (J));
+                           end if;
+
+                           Ucase := (S (J) = '_');
+                        end loop;
+
+                        return Result;
+                     end To_Mixed_Case;
+
                      Id     : constant Attribute_Id :=
                                 Get_Attribute_Id (Attribute_Name (Expr));
+
+                     --  Always use mixed case for attributes
                      Str    : constant String :=
                                 Expr_Name (Prefix (Expr)) & "'"
-                                  & Get_Name_String (Attribute_Name (Expr));
+                                  & To_Mixed_Case (Get_Name_String
+                                                      (Attribute_Name (Expr)));
                      N      : Node_Id;
                      Ranges : List_Id;
 
