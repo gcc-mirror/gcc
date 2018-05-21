@@ -2235,7 +2235,7 @@ static void cp_parser_type_specifier_seq
 static tree cp_parser_parameter_declaration_clause
   (cp_parser *);
 static tree cp_parser_parameter_declaration_list
-  (cp_parser *, bool *);
+  (cp_parser *);
 static cp_parameter_declarator *cp_parser_parameter_declaration
   (cp_parser *, bool, bool *);
 static tree cp_parser_default_argument 
@@ -21242,7 +21242,6 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
   tree parameters;
   cp_token *token;
   bool ellipsis_p;
-  bool is_error;
 
   temp_override<bool> cleanup
     (parser->auto_is_implicit_function_template_parm_p);
@@ -21290,12 +21289,12 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
     }
 
   /* Parse the parameter-declaration-list.  */
-  parameters = cp_parser_parameter_declaration_list (parser, &is_error);
+  parameters = cp_parser_parameter_declaration_list (parser);
   /* If a parse error occurred while parsing the
      parameter-declaration-list, then the entire
      parameter-declaration-clause is erroneous.  */
-  if (is_error)
-    return NULL;
+  if (parameters == error_mark_node)
+    return NULL_TREE;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -21335,19 +21334,16 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
 
    Returns a representation of the parameter-declaration-list, as for
    cp_parser_parameter_declaration_clause.  However, the
-   `void_list_node' is never appended to the list.  Upon return,
-   *IS_ERROR will be true iff an error occurred.  */
+   `void_list_node' is never appended to the list.  */
 
 static tree
-cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
+cp_parser_parameter_declaration_list (cp_parser* parser)
 {
   tree parameters = NULL_TREE;
   tree *tail = &parameters;
   bool saved_in_unbraced_linkage_specification_p;
   int index = 0;
 
-  /* Assume all will go well.  */
-  *is_error = false;
   /* The special considerations that apply to a function within an
      unbraced linkage specifications do not apply to the parameters
      to the function.  */
@@ -21389,7 +21385,6 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 	 then the entire parameter-declaration-list is erroneous.  */
       if (decl == error_mark_node)
 	{
-	  *is_error = true;
 	  parameters = error_mark_node;
 	  break;
 	}
@@ -29009,7 +29004,9 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 		{
 		  cp_lexer_consume_token (parser->lexer);
 		  begin_scope (sk_function_parms, NULL_TREE);
-		  cp_parser_parameter_declaration_list (parser, &error);
+		  if (cp_parser_parameter_declaration_list (parser)
+		      == error_mark_node)
+		    error = true;
 		  pop_bindings_and_leave_scope ();
 		}
 	      if (!cp_parser_error_occurred (parser) && !error)
