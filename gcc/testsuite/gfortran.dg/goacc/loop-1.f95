@@ -1,4 +1,5 @@
 ! See also loop-1-2.f95.
+! { dg-additional-options "-std=legacy" }
 
 module test
   implicit none
@@ -32,14 +33,12 @@ subroutine test1
   do 300 d = 1, 30, 6
       i = d
   300 a(i) = 1
-  ! { dg-warning "Deleted feature: Loop variable at .1. must be integer" "" { target *-*-* } 32 }
-  ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 32 }
+  ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 33 }
   !$acc loop
   do d = 1, 30, 5
        i = d
       a(i) = 2
   end do
-  ! { dg-warning "Deleted feature: Loop variable at .1. must be integer" "" { target *-*-* } 38 }
   ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 38 }
   !$acc loop
   do i = 1, 30
@@ -150,8 +149,7 @@ subroutine test1
     do i = 1, 3
         do r = 4, 6
         end do
-        ! { dg-warning "Deleted feature: Loop variable at .1. must be integer" "" { target *-*-* } 151 }
-        ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 151 }
+        ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 150 }
     end do
 
     ! Both seq and independent are not allowed

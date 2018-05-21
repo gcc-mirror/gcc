@@ -1,3 +1,20 @@
+2018-05-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	* libgfortran.h: New macros GFC_STD_OPT_*.
+	* error.c (notify_std_msg): New function.
+	(gfc_notify_std): Adjust such that it can handle combinations of
+	GFC_STD_* flags in the 'std' argument, not just a single one.
+	* match.c (match_arithmetic_if, gfc_match_if): Reject arithmetic if
+	in Fortran 2018.
+	(gfc_match_stopcode): Use GFC_STD_OPT_* macros.
+	* options.c (set_default_std_flags): Warn for F2018 deleted features
+	by default.
+	(gfc_handle_option): F2018 deleted features are allowed in earlier
+	standards.
+	* symbol.c (gfc_define_st_label, gfc_reference_st_label): Reject
+	nonblock do constructs in Fortran 2018.
+
 2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80657

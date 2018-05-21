@@ -1442,7 +1442,8 @@ match_arithmetic_if (void)
       return MATCH_ERROR;
     }
 
-  if (!gfc_notify_std (GFC_STD_F95_OBS, "Arithmetic IF statement at %C"))
+  if (!gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
+		       "Arithmetic IF statement at %C"))
     return MATCH_ERROR;
 
   new_st.op = EXEC_ARITHMETIC_IF;
@@ -1522,7 +1523,8 @@ gfc_match_if (gfc_statement *if_type)
 	  return MATCH_ERROR;
 	}
 
-      if (!gfc_notify_std (GFC_STD_F95_OBS, "Arithmetic IF statement at %C"))
+      if (!gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
+			   "Arithmetic IF statement at %C"))
 	return MATCH_ERROR;
 
       new_st.op = EXEC_ARITHMETIC_IF;
@@ -2938,12 +2940,10 @@ gfc_match_stopcode (gfc_statement st)
   bool f95, f03;
 
   /* Set f95 for -std=f95.  */
-  f95 = gfc_option.allow_std == (GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77
-				 | GFC_STD_F2008_OBS);
+  f95 = (gfc_option.allow_std == GFC_STD_OPT_F95);
 
   /* Set f03 for -std=f2003.  */
-  f03 = gfc_option.allow_std == (GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77
-				 | GFC_STD_F2008_OBS | GFC_STD_F2003);
+  f03 = (gfc_option.allow_std == GFC_STD_OPT_F03);
 
   /* Look for a blank between STOP and the stop-code for F2008 or later.  */
   if (gfc_current_form != FORM_FIXED && !(f95 || f03))

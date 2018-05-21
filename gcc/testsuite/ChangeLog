@@ -1,3 +1,27 @@
+2018-05-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	* gfortran.dg/g77/19990826-3.f: Add option "-std=legacy".
+	* gfortran.dg/g77/20020307-1.f: Ditto.
+	* gfortran.dg/g77/980310-3.f: Ditto.
+	* gfortran.dg/goacc/loop-1-2.f95: Ditto.
+	* gfortran.dg/goacc/loop-1.f95: Ditto.
+	* gfortran.dg/gomp/appendix-a/a.6.1.f90: Ditto.
+	* gfortran.dg/gomp/appendix-a/a.6.2.f90: Ditto.
+	* gfortran.dg/gomp/do-1.f90: Ditto.
+	* gfortran.dg/gomp/omp_do1.f90: Ditto.
+	* gfortran.dg/pr17229.f: Ditto.
+	* gfortran.dg/pr37243.f: Ditto.
+	* gfortran.dg/pr49721-1.f: Ditto.
+	* gfortran.dg/pr58484.f: Ditto.
+	* gfortran.dg/pr81175.f: Ditto.
+	* gfortran.dg/pr81723.f: Ditto.
+	* gfortran.dg/predcom-2.f: Ditto.
+	* gfortran.dg/vect/Ofast-pr50414.f90: Ditto.
+	* gfortran.dg/vect/cost-model-pr34445a.f: Ditto.
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Ditto.
+	* gfortran.dg/vect/pr52580.f: Ditto.
+
 2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80657
