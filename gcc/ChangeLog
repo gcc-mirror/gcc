@@ -1,3 +1,10 @@
+2018-05-21  Alexey Brodkin <abrodkin@synopsys.com>
+
+	* config.gcc: Add arc/t-multilib-linux to tmake_file for
+	arc*-*-linux*.
+	* config/arc/t-multilib-linux: Specify MULTILIB_OPTIONS and
+	MULTILIB_DIRNAMES
+
 2018-05-20  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/constraints.md (S): New constraint.

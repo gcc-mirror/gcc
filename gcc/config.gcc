@@ -1061,7 +1061,7 @@ arc*-*-elf*)
 	;;
 arc*-*-linux*)
 	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arc/linux.h ${tm_file}"
-	tmake_file="${tmake_file} arc/t-arc"
+	tmake_file="${tmake_file} arc/t-multilib-linux arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
 	if test "x$with_cpu" != x; then
 		tm_defines="${tm_defines} TARGET_CPU_BUILD=PROCESSOR_$with_cpu"
