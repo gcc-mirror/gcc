@@ -716,9 +716,8 @@ package body Freeze is
 
          if Present (Init)
            and then (Nkind (Init) /= N_Function_Call
-             or else not Is_Expanded_Build_In_Place_Call (Init))
+                      or else not Is_Expanded_Build_In_Place_Call (Init))
          then
-
             --  Capture initialization value at point of declaration, and make
             --  explicit assignment legal, because object may be a constant.
 
