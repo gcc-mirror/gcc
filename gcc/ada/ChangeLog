@@ -1,3 +1,9 @@
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Build_Formal_Container_Iteration): If source has
+	explicit name for iterator loop, preserve that name in expanded
+	construct, for possible use in exit statements.
+
 2018-04-04  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch4.adb (Analyze_Membership_Op): Avoid compiler crash when the
