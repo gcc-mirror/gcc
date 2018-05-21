@@ -1933,7 +1933,9 @@ package body Sem_Ch6 is
             begin
                if Is_Tagged_Type (Typ)
                  and then Present (First_Formal (Subp))
-                 and then Etype (First_Formal (Subp)) = Typ
+                 and then (Etype (First_Formal (Subp)) = Typ
+                             or else
+                           Class_Wide_Type (Etype (First_Formal (Subp))) = Typ)
                  and then Try_Object_Operation (P)
                then
                   return;
