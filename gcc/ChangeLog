@@ -1,3 +1,12 @@
+2018-05-21  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2018-05-17  Pat Haugen  <pthaugen@us.ibm.com>
+		    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/85698
+	* config/rs6000/rs6000.c (rs6000_output_move_128bit): Check dest operand.
+
 2018-05-18  Toon Moene  <toon@moene.org>
 
 	* doc/invoke.texi: Move -floop-unroll-and-jam documentation
