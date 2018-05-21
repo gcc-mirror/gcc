@@ -3865,11 +3865,11 @@ package body Sem_Ch13 is
       end if;
    end Analyze_Aspect_Specifications;
 
-   ---------------------------------------------------
-   -- Analyze_Aspect_Specifications_On_Body_Or_Stub --
-   ---------------------------------------------------
+   ------------------------------------------------
+   -- Analyze_Aspects_On_Subprogram_Body_Or_Stub --
+   ------------------------------------------------
 
-   procedure Analyze_Aspect_Specifications_On_Body_Or_Stub (N : Node_Id) is
+   procedure Analyze_Aspects_On_Subprogram_Body_Or_Stub (N : Node_Id) is
       Body_Id : constant Entity_Id := Defining_Entity (N);
 
       procedure Diagnose_Misplaced_Aspects (Spec_Id : Entity_Id);
@@ -3985,7 +3985,7 @@ package body Sem_Ch13 is
 
       Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
 
-   --  Start of processing for Analyze_Aspects_On_Body_Or_Stub
+   --  Start of processing for Analyze_Aspects_On_Subprogram_Body_Or_Stub
 
    begin
       --  Language-defined aspects cannot be associated with a subprogram body
@@ -3998,7 +3998,7 @@ package body Sem_Ch13 is
       else
          Analyze_Aspect_Specifications (N, Body_Id);
       end if;
-   end Analyze_Aspect_Specifications_On_Body_Or_Stub;
+   end Analyze_Aspects_On_Subprogram_Body_Or_Stub;
 
    -----------------------
    -- Analyze_At_Clause --

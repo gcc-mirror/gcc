@@ -1502,7 +1502,7 @@ package body Sem_Ch6 is
          --  subprogram body.
 
          if Has_Aspects (N) then
-            Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+            Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
          end if;
 
          Analyze_Declarations (Declarations (N));
@@ -4155,7 +4155,7 @@ package body Sem_Ch6 is
 
       if Nkind (N) = N_Subprogram_Body_Stub then
          if Has_Aspects (N) then
-            Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+            Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
          end if;
 
          goto Leave;
@@ -4370,7 +4370,7 @@ package body Sem_Ch6 is
       --  Analyze any aspect specifications that appear on the subprogram body
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
       end if;
 
       Analyze_Declarations (Declarations (N));

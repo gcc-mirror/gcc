@@ -2010,8 +2010,9 @@ package body Sem_Prag is
      (N        : Node_Id;
       Expr_Val : out Boolean)
    is
-      Arg1     : constant Node_Id := First (Pragma_Argument_Associations (N));
-      Obj_Decl : constant Node_Id := Find_Related_Context (N);
+      Arg1     : constant Node_Id   :=
+                   First (Pragma_Argument_Associations (N));
+      Obj_Decl : constant Node_Id   := Find_Related_Context (N);
       Obj_Id   : constant Entity_Id := Defining_Entity (Obj_Decl);
       Expr     : Node_Id;
 
@@ -4709,27 +4710,12 @@ package body Sem_Prag is
 
          Body_Decl := Find_Related_Declaration_Or_Body (N, Do_Checks => True);
 
-         --  Entry body
-
-         if Nkind (Body_Decl) = N_Entry_Body then
-            null;
-
-         --  Subprogram body
-
-         elsif Nkind (Body_Decl) = N_Subprogram_Body then
-            null;
-
-         --  Subprogram body stub
-
-         elsif Nkind (Body_Decl) = N_Subprogram_Body_Stub then
-            null;
-
-         --  Task body
-
-         elsif Nkind (Body_Decl) = N_Task_Body then
-            null;
-
-         else
+         if not Nkind_In (Body_Decl, N_Entry_Body,
+                                     N_Subprogram_Body,
+                                     N_Subprogram_Body_Stub,
+                                     N_Task_Body,
+                                     N_Task_Body_Stub)
+         then
             Pragma_Misplaced;
             return;
          end if;
@@ -11929,17 +11915,9 @@ package body Sem_Prag is
 
             Pack_Decl := Find_Related_Package_Or_Body (N, Do_Checks => True);
 
-            --  Ensure the proper placement of the pragma. Abstract states must
-            --  be associated with a package declaration.
-
-            if Nkind_In (Pack_Decl, N_Generic_Package_Declaration,
-                                    N_Package_Declaration)
+            if not Nkind_In (Pack_Decl, N_Generic_Package_Declaration,
+                                        N_Package_Declaration)
             then
-               null;
-
-            --  Otherwise the pragma is associated with an illegal construct
-
-            else
                Pragma_Misplaced;
                return;
             end if;
@@ -12858,12 +12836,7 @@ package body Sem_Prag is
 
             --  Object declaration
 
-            if Nkind (Obj_Decl) = N_Object_Declaration then
-               null;
-
-            --  Otherwise the pragma is associated with an illegal construact
-
-            else
+            if Nkind (Obj_Decl) /= N_Object_Declaration then
                Pragma_Misplaced;
                return;
             end if;
@@ -13903,14 +13876,7 @@ package body Sem_Prag is
 
             Obj_Decl := Find_Related_Context (N, Do_Checks => True);
 
-            --  Object declaration
-
-            if Nkind (Obj_Decl) = N_Object_Declaration then
-               null;
-
-            --  Otherwise the pragma is associated with an illegal construct
-
-            else
+            if Nkind (Obj_Decl) /= N_Object_Declaration then
                Pragma_Misplaced;
                return;
             end if;
@@ -17109,17 +17075,9 @@ package body Sem_Prag is
 
             Pack_Decl := Find_Related_Package_Or_Body (N, Do_Checks => True);
 
-            --  Ensure the proper placement of the pragma. Initial_Condition
-            --  must be associated with a package declaration.
-
-            if Nkind_In (Pack_Decl, N_Generic_Package_Declaration,
-                                    N_Package_Declaration)
+            if not Nkind_In (Pack_Decl, N_Generic_Package_Declaration,
+                                        N_Package_Declaration)
             then
-               null;
-
-            --  Otherwise the pragma is associated with an illegal context
-
-            else
                Pragma_Misplaced;
                return;
             end if;
@@ -17223,17 +17181,9 @@ package body Sem_Prag is
 
             Pack_Decl := Find_Related_Package_Or_Body (N, Do_Checks => True);
 
-            --  Ensure the proper placement of the pragma. Initializes must be
-            --  associated with a package declaration.
-
-            if Nkind_In (Pack_Decl, N_Generic_Package_Declaration,
-                                    N_Package_Declaration)
+            if not Nkind_In (Pack_Decl, N_Generic_Package_Declaration,
+                                        N_Package_Declaration)
             then
-               null;
-
-            --  Otherwise the pragma is associated with an illegal construc
-
-            else
                Pragma_Misplaced;
                return;
             end if;
@@ -21442,15 +21392,7 @@ package body Sem_Prag is
 
             Pack_Decl := Find_Related_Package_Or_Body (N, Do_Checks => True);
 
-            --  Ensure the proper placement of the pragma. Refined states must
-            --  be associated with a package body.
-
-            if Nkind (Pack_Decl) = N_Package_Body then
-               null;
-
-            --  Otherwise the pragma is associated with an illegal construct
-
-            else
+            if Nkind (Pack_Decl) /= N_Package_Body then
                Pragma_Misplaced;
                return;
             end if;
