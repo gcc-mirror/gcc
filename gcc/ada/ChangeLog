@@ -1,3 +1,25 @@
+2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Establish_Transient_Scope): Code cleanup. Do not
+	delegate the secondary stack management when there is no suitable
+	transient context, and the transient scope was intended to manage the
+	secondary stack because this causes premature reclamation. Change the
+	transient scope creation logic by special casing assignment statements
+	of controlled components for type initialization procedures.
+	(Find_Node_To_Be_Wrapped): Renamed to Find_Transient_Context. Update
+	the comment on usage.
+	(Find_Transient_Context): Change the initinte loop into a while loop.
+	Iterations schemes and iterator specifications are not valid transient
+	contexts because they rely on special processing. Assignment statements
+	are now treated as a normal transient context, special cases are
+	handled by the caller. Add special processing for pragma Check.
+	(Is_OK_Construct): Removed. Its functionality has been merged in
+	routine Find_Transient_Context.
+	* sem_ch5.adb (Check_Call): Reimplemented. Add code to properly
+	retrieve the subprogram being invoked. Use a more accurate predicate
+	(Requires_Transient_Scope) to determine that the function will emply
+	the secondary stack.
+
 2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
 
 	* ada_get_targ.adb: Fix subprogram body headers.
