@@ -1,3 +1,13 @@
+2018-05-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	ChangeLog for r260480
+        * gfortran.dg/graphite/block-2.f: Adjust testcase for new gfortran
+        warnings for deleted and obsolescent features.
+        * gfortran.dg/graphite/id-19.f: Ditto.
+        * gfortran.dg/graphite/id-20.f: Ditto.
+        * gfortran.dg/graphite/id-27.f90: Ditto.
+        * gfortran.dg/graphite/pr82449.f: Ditto.
+
 2018-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/vec_init_1.c: Scan for LD1 instead of INS for
