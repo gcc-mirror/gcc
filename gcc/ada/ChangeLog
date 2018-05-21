@@ -1,3 +1,10 @@
+2018-04-04  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-trasym__dwarf.adb (Add_Module_To_Cache): Expect a
+	Load_Address argument and pass it down to Init_Module.
+	* libgnat/s-tsmona__linux.adb (Build_Cache_For_All_Modules): Pass
+	lm.l_addr as the Load_Address to Add_Module_To_Cache.
+
 2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.adb (Has_Discriminants): Stronger assertion.
