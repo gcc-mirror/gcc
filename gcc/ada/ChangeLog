@@ -1,3 +1,8 @@
+2018-04-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_eval.adb (Static_Length): Take into account case of variable of
+	subtype string literal.
+
 2018-04-04  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-objrea.ads (Get_Memory_Bounds): Rename as Get_Xcode_Bounds.

@@ -3403,6 +3403,13 @@ package body Sem_Eval is
          if Nkind (Expr) = N_String_Literal then
             return UI_From_Int (String_Length (Strval (Expr)));
 
+         --  With frontend inlining as performed in GNATprove mode, a variable
+         --  may be inserted that has a string literal subtype. Deal with this
+         --  specially as for the previous case.
+
+         elsif Ekind (Etype (Expr)) = E_String_Literal_Subtype then
+            return String_Literal_Length (Etype (Expr));
+
          --  Second easy case, not constrained subtype, so no length
 
          elsif not Is_Constrained (Etype (Expr)) then
