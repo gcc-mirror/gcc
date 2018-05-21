@@ -727,7 +727,7 @@ package Opt is
    --  Set True to activate inlining by front-end expansion (even on GCC
    --  targets, where inlining is normally handled by the back end). Set by
    --  the flag -gnatN (which is now considered obsolescent, since the GCC
-   --  back end can do a better job of inlining than the front end these days.
+   --  back end can do a better job of inlining than the front end these days).
 
    Full_Path_Name_For_Brief_Errors : Boolean := False;
    --  PROJECT MANAGER
