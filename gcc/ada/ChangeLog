@@ -1,3 +1,8 @@
+2018-04-04  Jerome Lambourg  <lambourg@adacore.com>
+
+	* gcc-interface/Makefile.in: Add g-soliop__qnx.ads to the runtime build
+	for QNX.
+
 2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_cg.adb: Remove with and use clause for Exp_Disp.
