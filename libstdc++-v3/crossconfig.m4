@@ -199,6 +199,7 @@ case "${host}" in
     GLIBCXX_CHECK_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+    AC_CHECK_FUNCS(_wfopen)
     ;;
   *-netbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
