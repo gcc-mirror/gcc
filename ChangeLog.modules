@@ -1,3 +1,20 @@
+2018-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	Write lazy decls (no reading yet)
+	gcc/cp/
+	* module.c (elf_out::strtab::named_decl): Add IS_DEFN parm.
+	(elf_out::named_decl): Likewise.
+	(elf_out::strtab::write): Adjust.
+	(FIXED_LIMIT): New.
+	(trees_out::set_seed): Delete.
+	(trees_out::{pre,un,}seed): New.
+	(trees_out::insert): Adjust for seeding.
+	(trees_out::tree_ref): Likewise.
+	(cluster_tag): Add ct_lazy.
+	(module_state::write_cluster): Preseed decls of lazy defns.
+	(module_state::find_dependencies): Adjust seeding changes.
+	(module_state::write): Determine lazy defn section numbers.
+
 2018-05-20  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
