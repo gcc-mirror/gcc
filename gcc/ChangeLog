@@ -1,3 +1,18 @@
+2018-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md ("unspec"): Define UNSPEC_SABAL,
+	UNSPEC_SABDL2, UNSPEC_SADALP, UNSPEC_UABAL, UNSPEC_UABDL2,
+	UNSPEC_UADALP values.
+	* config/aarch64/iterators.md (ABAL): New int iterator.
+	(ABDL2): Likewise.
+	(ADALP): Likewise.
+	(sur): Add mappings for the above.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abdl2<mode>_3):
+	New define_insn.
+	(aarch64_<sur>abal<mode>_4): Likewise.
+	(aarch64_<sur>adalp<mode>_3): Likewise.
+	(<sur>sadv16qi): New define_expand.
+
 2018-05-21  Alexander Nesterovskiy  <alexander.nesterovskiy@intel.com>
 
 	* config/i386/i386.md (*movsf_internal): AVX falsedep fix.

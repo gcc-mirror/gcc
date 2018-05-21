@@ -612,6 +612,67 @@
   [(set_attr "type" "neon_abd<q>")]
 )
 
+(define_insn "aarch64_<sur>abdl2<mode>_3"
+  [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
+	(unspec:<VDBLW> [(match_operand:VDQV_S 1 "register_operand" "w")
+			  (match_operand:VDQV_S 2 "register_operand" "w")]
+	ABDL2))]
+  "TARGET_SIMD"
+  "<sur>abdl2\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_abd<q>")]
+)
+
+(define_insn "aarch64_<sur>abal<mode>_4"
+  [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
+	(unspec:<VDBLW> [(match_operand:VDQV_S 1 "register_operand" "w")
+			  (match_operand:VDQV_S 2 "register_operand" "w")
+			 (match_operand:<VDBLW> 3 "register_operand" "0")]
+	ABAL))]
+  "TARGET_SIMD"
+  "<sur>abal\t%0.<Vwtype>, %1.<Vhalftype>, %2.<Vhalftype>"
+  [(set_attr "type" "neon_arith_acc<q>")]
+)
+
+(define_insn "aarch64_<sur>adalp<mode>_3"
+  [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
+	(unspec:<VDBLW> [(match_operand:VDQV_S 1 "register_operand" "w")
+			  (match_operand:<VDBLW> 2 "register_operand" "0")]
+	ADALP))]
+  "TARGET_SIMD"
+  "<sur>adalp\t%0.<Vwtype>, %1.<Vtype>"
+  [(set_attr "type" "neon_reduc_add<q>")]
+)
+
+;; Emit a sequence to produce a sum-of-absolute-differences of the V16QI
+;; inputs in operands 1 and 2.  The sequence also has to perform a widening
+;; reduction of the difference into a V4SI vector and accumulate that into
+;; operand 3 before copying that into the result operand 0.
+;; Perform that with a sequence of:
+;; UABDL2	tmp.8h, op1.16b, op2.16b
+;; UABAL	tmp.8h, op1.16b, op2.16b
+;; UADALP	op3.4s, tmp.8h
+;; MOV		op0, op3 // should be eliminated in later passes.
+;; The signed version just uses the signed variants of the above instructions.
+
+(define_expand "<sur>sadv16qi"
+  [(use (match_operand:V4SI 0 "register_operand"))
+   (unspec:V16QI [(use (match_operand:V16QI 1 "register_operand"))
+		  (use (match_operand:V16QI 2 "register_operand"))] ABAL)
+   (use (match_operand:V4SI 3 "register_operand"))]
+  "TARGET_SIMD"
+  {
+    rtx reduc = gen_reg_rtx (V8HImode);
+    emit_insn (gen_aarch64_<sur>abdl2v16qi_3 (reduc, operands[1],
+					       operands[2]));
+    emit_insn (gen_aarch64_<sur>abalv16qi_4 (reduc, operands[1],
+					      operands[2], reduc));
+    emit_insn (gen_aarch64_<sur>adalpv8hi_3 (operands[3], reduc,
+					      operands[3]));
+    emit_move_insn (operands[0], operands[3]);
+    DONE;
+  }
+)
+
 (define_insn "aba<mode>_3"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
 	(plus:VDQ_BHSI (abs:VDQ_BHSI (minus:VDQ_BHSI

@@ -1,3 +1,10 @@
+2018-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.c-torture/execute/ssad-run.c: New test.
+	* gcc.c-torture/execute/usad-run.c: Likewise.
+	* gcc.target/aarch64/ssadv16qi.c: Likewise.
+	* gcc.target/aarch64/usadv16qi.c: Likewise.
+
 2018-05-21  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/gcc.target/aarch64/sha3.h (veor3q_u8, veor3q_u32,
