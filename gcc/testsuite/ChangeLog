@@ -1,3 +1,8 @@
+2018-05-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/85814
+	* gcc.dg/torture/pr85814.c: New test.
+
 2018-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84588
