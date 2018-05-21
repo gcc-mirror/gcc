@@ -237,6 +237,15 @@ package body Exp_Ch5 is
                     New_Occurrence_Of (Cursor, Loc)))),
           Statements => Stats,
           End_Label  => Empty);
+
+      --  If the contruct has a specified loop name, preserve it in the
+      --  new loop, for possible use in exit statements.
+
+      if Present (Identifier (N))
+        and then Comes_From_Source (Identifier (N))
+      then
+         Set_Identifier (New_Loop, Identifier (N));
+      end if;
    end Build_Formal_Container_Iteration;
 
    ------------------------------
