@@ -1,4 +1,5 @@
 c { dg-do compile }
+c { dg-options "-std=legacy" }
 c
 c This demonstrates a problem with g77 and pic on x86 where 
 c egcs 1.0.1 and earlier will generate bogus assembler output.
@@ -128,7 +129,7 @@ c     compute right side vector in resulting linear equations
 c
       basl = dlog10(2.0d0)
       do 240 i = low,igh
-         do 240 j = low,igh ! { dg-warning "Obsolescent feature: Shared DO termination" }
+         do 240 j = low,igh
             tb = b(i,j)
             ta = a(i,j)
             if (ta .eq. 0.0d0) go to 220
@@ -242,7 +243,7 @@ c
          ir = wk(i,1)
          fi = 2.0d0**ir
          if (i .lt. low) fi = 1.0d0
-         do 400 j =low,n ! { dg-warning "Obsolescent feature: Shared DO termination" }
+         do 400 j =low,n
             jc = cscale(j)
             fj = 2.0d0**jc
             if (j .le. igh) go to 390

@@ -1,5 +1,6 @@
 ! PR rtl-optimization/37243
 ! { dg-do run }
+! { dg-options "-std=legacy" }
 ! { dg-add-options ieee }
 ! Check if register allocator handles IR flattening correctly.
       SUBROUTINE SCHMD(V,M,N,LDV)
@@ -13,10 +14,10 @@
       DO 160 I = 1,M
       DUMI = ZERO
       DO 100 K = 1,N
-  100 DUMI = DUMI+V(K,I)*V(K,I) ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
+  100 DUMI = DUMI+V(K,I)*V(K,I)
       DUMI = ONE/ SQRT(DUMI)
       DO 120 K = 1,N
-  120 V(K,I) = V(K,I)*DUMI ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
+  120 V(K,I) = V(K,I)*DUMI
       IF (I .EQ. M) GO TO 160
       I1 = I+1
       DO 140 J = I1,M
@@ -34,15 +35,15 @@
   220 J = J+1
       IF (J .GT. N) GO TO 320
       DO 240 K = 1,N
-  240 V(K,I) = ZERO ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
+  240 V(K,I) = ZERO
       CALL DAXPY(N,DUM,V(1,I),1,V(1,I),1)
   260 CONTINUE
       DUMI = ZERO
       DO 280 K = 1,N
-  280 DUMI = DUMI+V(K,I)*V(K,I) ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
+  280 DUMI = DUMI+V(K,I)*V(K,I)
       IF ( ABS(DUMI) .LT. TOL) GO TO 220
       DO 300 K = 1,N
-  300 V(K,I) = V(K,I)*DUMI ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
+  300 V(K,I) = V(K,I)*DUMI
       GO TO 200
   320 END
       program main
