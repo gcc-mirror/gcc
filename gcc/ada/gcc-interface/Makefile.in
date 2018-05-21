@@ -917,6 +917,7 @@ ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
   s-taprop.adb<libgnarl/s-taprop__qnx.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  g-soliop.ads<libgnat/g-soliop__qnx.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-qnx-aarch64.ads
