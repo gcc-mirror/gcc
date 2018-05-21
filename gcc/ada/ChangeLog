@@ -1,3 +1,12 @@
+2018-04-04  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call.Process_Formals): Use a type
+	conversion instead of an unchecked type conversion when inlining a
+	return statement, unless type qualification is required (for character
+	and string literal) or no check can result from the conversion (for
+	access types).
+	* opt.ads: Update comment.
+
 2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Install the elaboration
