@@ -1,3 +1,16 @@
+2018-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84588
+	* g++.dg/cpp0x/cond1.C: New.
+	* g++.dg/cpp1y/pr84588-1.C: Likewise.
+	* g++.dg/cpp1y/pr84588-2.C: Likewise.
+	* g++.dg/cpp1y/pr84588-3.C: Likewise.
+	* g++.dg/parse/cond6.C: Likewise.
+	* g++.dg/parse/cond7.C: Likewise.
+	* g++.dg/parse/cond8.C: Likewise.
+	* g++.dg/cpp1z/decomp16.C: Update.
+	* g++.old-deja/g++.jason/cond.C: Likewise.
+
 2018-05-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	ChangeLog for r260480

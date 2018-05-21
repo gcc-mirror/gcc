@@ -11527,6 +11527,49 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
     }
 }
 
+/* Helper function for cp_parser_condition and cp_parser_simple_declaration.
+   If we have seen at least one decl-specifier, and the next token
+   is not a parenthesis, then we must be looking at a declaration.
+   (After "int (" we might be looking at a functional cast.)  */
+
+static void
+cp_parser_maybe_commit_to_declaration (cp_parser* parser,
+				       bool any_specifiers_p)
+{
+  if (any_specifiers_p
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN)
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
+      && !cp_parser_error_occurred (parser))
+    cp_parser_commit_to_tentative_parse (parser);
+}
+
+/* Helper function for cp_parser_condition.  Enforces [stmt.stmt]/2:
+   The declarator shall not specify a function or an array.  Returns
+   TRUE if the declarator is valid, FALSE otherwise.  */
+
+static bool
+cp_parser_check_condition_declarator (cp_parser* parser,
+                                     cp_declarator *declarator,
+                                     location_t loc)
+{
+  if (function_declarator_p (declarator)
+      || declarator->kind == cdk_array)
+    {
+      if (declarator->kind == cdk_array)
+       error_at (loc, "condition declares an array");
+      else
+       error_at (loc, "condition declares a function");
+      if (parser->fully_implicit_function_template_p)
+       abort_fully_implicit_template (parser);
+      cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+                                            /*or_comma=*/false,
+                                            /*consume_paren=*/false);
+      return false;
+    }
+  else
+    return true;
+}
+
 /* Parse a condition.
 
    condition:
@@ -11563,6 +11606,10 @@ cp_parser_condition (cp_parser* parser)
 				&declares_class_or_enum);
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
+
+  cp_parser_maybe_commit_to_declaration (parser,
+					 type_specifiers.any_specifiers_p);
+
   /* If all is well, we might be looking at a declaration.  */
   if (!cp_parser_error_occurred (parser))
     {
@@ -11571,6 +11618,7 @@ cp_parser_condition (cp_parser* parser)
       tree attributes;
       cp_declarator *declarator;
       tree initializer = NULL_TREE;
+      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
       /* Parse the declarator.  */
       declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
@@ -11601,6 +11649,9 @@ cp_parser_condition (cp_parser* parser)
 	  bool non_constant_p;
 	  int flags = LOOKUP_ONLYCONVERTING;
 
+	  if (!cp_parser_check_condition_declarator (parser, declarator, loc))
+	    return error_mark_node;
+
 	  /* Create the declaration.  */
 	  decl = start_decl (declarator, &type_specifiers,
 			     /*initialized_p=*/true,
@@ -11614,11 +11665,17 @@ cp_parser_condition (cp_parser* parser)
 	      CONSTRUCTOR_IS_DIRECT_INIT (initializer) = 1;
 	      flags = 0;
 	    }
-	  else
+	  else if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
 	    {
 	      /* Consume the `='.  */
-	      cp_parser_require (parser, CPP_EQ, RT_EQ);
-	      initializer = cp_parser_initializer_clause (parser, &non_constant_p);
+	      cp_lexer_consume_token (parser->lexer);
+	      initializer = cp_parser_initializer_clause (parser,
+							  &non_constant_p);
+	    }
+	  else
+	    {
+	      cp_parser_error (parser, "expected initializer");
+	      initializer = error_mark_node;
 	    }
 	  if (BRACE_ENCLOSED_INITIALIZER_P (initializer))
 	    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
@@ -12936,14 +12993,8 @@ cp_parser_simple_declaration (cp_parser* parser,
       goto done;
     }
 
-  /* If we have seen at least one decl-specifier, and the next token
-     is not a parenthesis, then we must be looking at a declaration.
-     (After "int (" we might be looking at a functional cast.)  */
-  if (decl_specifiers.any_specifiers_p
-      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN)
-      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
-      && !cp_parser_error_occurred (parser))
-    cp_parser_commit_to_tentative_parse (parser);
+  cp_parser_maybe_commit_to_declaration (parser,
+					 decl_specifiers.any_specifiers_p);
 
   /* Look for C++17 decomposition declaration.  */
   for (size_t n = 1; ; n++)
