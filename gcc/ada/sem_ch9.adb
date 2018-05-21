@@ -1246,7 +1246,7 @@ package body Sem_Ch9 is
       --  Analyze any aspect specifications that appear on the entry body
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
       end if;
 
       E := First_Entity (P_Type);

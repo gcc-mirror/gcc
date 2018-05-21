@@ -55,6 +55,7 @@ with Sem_Ch3;   use Sem_Ch3;
 with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch7;   use Sem_Ch7;
 with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch13;  use Sem_Ch13;
 with Sem_Dist;  use Sem_Dist;
 with Sem_Prag;  use Sem_Prag;
 with Sem_Util;  use Sem_Util;
@@ -1594,7 +1595,7 @@ package body Sem_Ch10 is
    -------------------------------
 
    procedure Analyze_Package_Body_Stub (N : Node_Id) is
-      Id   : constant Entity_Id := Defining_Identifier (N);
+      Id   : constant Entity_Id := Defining_Entity (N);
       Nam  : Entity_Id;
       Opts : Config_Switches_Type;
 
@@ -1623,9 +1624,15 @@ package body Sem_Ch10 is
          --  generating code, the existence of the body will be confirmed
          --  when we load the proper body.
 
+         Set_Scope (Id, Current_Scope);
+         Set_Ekind (Id, E_Package_Body);
+         Set_Etype (Id, Standard_Void_Type);
+
+         if Has_Aspects (N) then
+            Analyze_Aspect_Specifications (N, Id);
+         end if;
+
          Set_Has_Completion (Nam);
-         Set_Scope (Defining_Entity (N), Current_Scope);
-         Set_Ekind (Defining_Entity (N), E_Package_Body);
          Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Nam);
@@ -1951,7 +1958,9 @@ package body Sem_Ch10 is
    ----------------------------------
 
    procedure Analyze_Protected_Body_Stub (N : Node_Id) is
-      Nam : Entity_Id := Current_Entity_In_Scope (Defining_Identifier (N));
+      Id   : constant Entity_Id := Defining_Entity (N);
+      Nam  : Entity_Id          := Current_Entity_In_Scope (Id);
+      Opts : Config_Switches_Type;
 
    begin
       Check_Stub_Level (N);
@@ -1966,12 +1975,25 @@ package body Sem_Ch10 is
          Error_Msg_N ("missing specification for Protected body", N);
 
       else
-         Set_Scope (Defining_Entity (N), Current_Scope);
-         Set_Ekind (Defining_Entity (N), E_Protected_Body);
+         --  Retain and restore the configuration options of the enclosing
+         --  context as the proper body may introduce a set of its own.
+
+         Save_Opt_Config_Switches (Opts);
+
+         Set_Scope (Id, Current_Scope);
+         Set_Ekind (Id, E_Protected_Body);
+         Set_Etype (Id, Standard_Void_Type);
+
+         if Has_Aspects (N) then
+            Analyze_Aspect_Specifications (N, Id);
+         end if;
+
          Set_Has_Completion (Etype (Nam));
          Set_Corresponding_Spec_Of_Stub (N, Nam);
-         Generate_Reference (Nam, Defining_Identifier (N), 'b');
+         Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Etype (Nam));
+
+         Restore_Opt_Config_Switches (Opts);
       end if;
    end Analyze_Protected_Body_Stub;
 
@@ -2427,8 +2449,9 @@ package body Sem_Ch10 is
    ----------------------------
 
    procedure Analyze_Task_Body_Stub (N : Node_Id) is
+      Id  : constant Entity_Id  := Defining_Entity (N);
       Loc : constant Source_Ptr := Sloc (N);
-      Nam : Entity_Id := Current_Entity_In_Scope (Defining_Identifier (N));
+      Nam : Entity_Id           := Current_Entity_In_Scope (Id);
 
    begin
       Check_Stub_Level (N);
@@ -2443,9 +2466,15 @@ package body Sem_Ch10 is
          Error_Msg_N ("missing specification for task body", N);
 
       else
-         Set_Scope (Defining_Entity (N), Current_Scope);
-         Set_Ekind (Defining_Entity (N), E_Task_Body);
-         Generate_Reference (Nam, Defining_Identifier (N), 'b');
+         Set_Scope (Id, Current_Scope);
+         Set_Ekind (Id, E_Task_Body);
+         Set_Etype (Id, Standard_Void_Type);
+
+         if Has_Aspects (N) then
+            Analyze_Aspect_Specifications (N, Id);
+         end if;
+
+         Generate_Reference (Nam, Id, 'b');
          Set_Corresponding_Spec_Of_Stub (N, Nam);
 
          --  Check for duplicate stub, if so give message and terminate
