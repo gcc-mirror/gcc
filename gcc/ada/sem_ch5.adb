@@ -2779,7 +2779,6 @@ package body Sem_Ch5 is
       ------------------------------------
 
       function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean is
-
          function Check_Call (N : Node_Id) return Traverse_Result;
          --  Check if N is a function call which uses the secondary stack
 
@@ -2788,36 +2787,32 @@ package body Sem_Ch5 is
          ----------------
 
          function Check_Call (N : Node_Id) return Traverse_Result is
-            Nam        : Node_Id;
-            Subp       : Entity_Id;
-            Return_Typ : Entity_Id;
+            Nam  : Node_Id;
+            Subp : Entity_Id;
+            Typ  : Entity_Id;
 
          begin
             if Nkind (N) = N_Function_Call then
                Nam := Name (N);
 
-               --  Call using access to subprogram with explicit dereference
+               --  Obtain the subprogram being invoked
 
-               if Nkind (Nam) = N_Explicit_Dereference then
-                  Subp := Etype (Nam);
+               loop
+                  if Nkind (Nam) = N_Explicit_Dereference then
+                     Nam := Prefix (Nam);
 
-               --  Call using a selected component notation or Ada 2005 object
-               --  operation notation
+                  elsif Nkind (Nam) = N_Selected_Component then
+                     Nam := Selector_Name (Nam);
 
-               elsif Nkind (Nam) = N_Selected_Component then
-                  Subp := Entity (Selector_Name (Nam));
+                  else
+                     exit;
+                  end if;
+               end loop;
 
-               --  Common case
+               Subp := Entity (Nam);
+               Typ  := Etype (Subp);
 
-               else
-                  Subp := Entity (Nam);
-               end if;
-
-               Return_Typ := Etype (Subp);
-
-               if Is_Composite_Type (Return_Typ)
-                 and then not Is_Constrained (Return_Typ)
-               then
+               if Requires_Transient_Scope (Typ) then
                   return Abandon;
 
                elsif Sec_Stack_Needed_For_Return (Subp) then
