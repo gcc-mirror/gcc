@@ -933,9 +933,9 @@ package body Exp_Dist is
       procedure Visit_Nested_Pkg (Nested_Pkg_Decl : Node_Id);
       --  Recurse for the given nested package declaration
 
-      -----------------------
-      -- Visit_Nested_Spec --
-      -----------------------
+      ----------------------
+      -- Visit_Nested_Pkg --
+      ----------------------
 
       procedure Visit_Nested_Pkg (Nested_Pkg_Decl : Node_Id) is
          Nested_Pkg_Spec : constant Node_Id := Specification (Nested_Pkg_Decl);
@@ -9219,9 +9219,9 @@ package body Exp_Dist is
                 Idx));
          end Build_Get_Aggregate_Element;
 
-         -------------------------
-         -- Build_Reposiroty_Id --
-         -------------------------
+         ----------------------------------
+         -- Build_Name_And_Repository_Id --
+         ----------------------------------
 
          procedure Build_Name_And_Repository_Id
            (E           : Entity_Id;

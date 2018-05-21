@@ -9279,7 +9279,7 @@ package body Sem_Util is
    end Get_Iterable_Type_Primitive;
 
    ----------------------------------
-   -- Get_Library_Unit_Name_string --
+   -- Get_Library_Unit_Name_String --
    ----------------------------------
 
    procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id) is

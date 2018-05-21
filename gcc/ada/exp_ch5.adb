@@ -164,7 +164,7 @@ package body Exp_Ch5 is
    --  is the original Assignment node.
 
    --------------------------------------
-   -- Build_Formal_Container_iteration --
+   -- Build_Formal_Container_Iteration --
    --------------------------------------
 
    procedure Build_Formal_Container_Iteration

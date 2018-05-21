@@ -13300,9 +13300,9 @@ package body Exp_Ch9 is
          Insert_Node := Decl;
       end Add;
 
-      --------------------------
-      -- Replace_Discriminant --
-      --------------------------
+      -------------------
+      -- Replace_Bound --
+      -------------------
 
       function Replace_Bound (Bound : Node_Id) return Node_Id is
       begin

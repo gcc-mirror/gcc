@@ -4904,9 +4904,9 @@ package body Sem_Prag is
          end loop;
       end Analyze_Unmodified_Or_Unused;
 
-      -----------------------------------
-      -- Analyze_Unreference_Or_Unused --
-      -----------------------------------
+      ------------------------------------
+      -- Analyze_Unreferenced_Or_Unused --
+      ------------------------------------
 
       procedure Analyze_Unreferenced_Or_Unused
         (Is_Unused : Boolean := False)
@@ -10798,9 +10798,9 @@ package body Sem_Prag is
          pragma No_Return (Bad_Mechanism);
          --  Signal bad mechanism name
 
-         -------------------------
-         -- Bad_Mechanism_Value --
-         -------------------------
+         -------------------
+         -- Bad_Mechanism --
+         -------------------
 
          procedure Bad_Mechanism is
          begin

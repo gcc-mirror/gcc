@@ -1,3 +1,50 @@
+2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ada_get_targ.adb: Fix subprogram body headers.
+	* adabkend.adb: Likewise.
+	* checks.adb: Likewise.
+	* exp_ch3.adb: Likewise.
+	* exp_ch5.adb: Likewise.
+	* exp_ch9.adb: Likewise.
+	* exp_dist.adb: Likewise.
+	* exp_tss.adb: Likewise.
+	* inline.adb: Likewise.
+	* lib-writ.adb: Likewise.
+	* lib-xref-spark_specific.adb: Likewise.
+	* libgnarl/s-osinte__darwin.adb: Likewise.
+	* libgnarl/s-stusta.adb: Likewise.
+	* libgnarl/s-taprop__solaris.adb: Likewise.
+	* libgnarl/s-tposen.adb: Likewise.
+	* libgnarl/s-vxwext__kernel-smp.adb: Likewise.
+	* libgnarl/s-vxwext__kernel.adb: Likewise.
+	* libgnat/a-btgbso.adb: Likewise.
+	* libgnat/a-cfdlli.adb: Likewise.
+	* libgnat/a-cfhama.adb: Likewise.
+	* libgnat/a-cfinve.adb: Likewise.
+	* libgnat/a-cimutr.adb: Likewise.
+	* libgnat/a-coboho.adb: Likewise.
+	* libgnat/a-cofove.adb: Likewise.
+	* libgnat/a-cofuve.adb: Likewise.
+	* libgnat/a-comutr.adb: Likewise.
+	* libgnat/a-exexda.adb: Likewise.
+	* libgnat/a-tags.adb: Likewise.
+	* libgnat/a-tideau.adb: Likewise.
+	* libgnat/a-wtdeau.adb: Likewise.
+	* libgnat/a-ztdeau.adb: Likewise.
+	* libgnat/g-alleve.adb: Likewise.
+	* libgnat/s-excdeb.adb: Likewise.
+	* libgnat/s-parint.adb: Likewise.
+	* libgnat/s-shasto.adb: Likewise.
+	* libgnat/s-traceb__hpux.adb: Likewise.
+	* prepcomp.adb: Likewise.
+	* sem_ch4.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_dist.adb: Likewise.
+	* sem_prag.adb: Likewise.
+	* sem_util.adb: Likewise.
+	* sinfo.adb: Likewise.
+	* switch.adb: Likewise.
+
 2018-05-04  John Marino  <gnugcc@marino.st>
 
 	PR ada/85635

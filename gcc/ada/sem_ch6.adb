@@ -307,9 +307,9 @@ package body Sem_Ch6 is
             --  Tree traversal routine that clones the defining identifier of
             --  iterator and loop parameter specification nodes.
 
-            ----------------
-            -- Check_Node --
-            ----------------
+            --------------
+            -- Clone_Id --
+            --------------
 
             function Clone_Id (Node : Node_Id) return Traverse_Result is
             begin
@@ -10349,7 +10349,7 @@ package body Sem_Ch6 is
          --  conformant with the profile of Subp; return Empty if not found.
 
          ---------------------------------
-         -- Check_Confirming_Parameters --
+         -- Check_Conforming_Parameters --
          ---------------------------------
 
          function Check_Conforming_Parameters
