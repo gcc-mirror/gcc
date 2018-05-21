@@ -66,7 +66,7 @@ package Lib is
 
    --    (a) Corresponding spec for a body
    --    (b) Parent spec of a child library spec
-   --    (d) With'ed specs
+   --    (c) With'ed specs
    --    (d) Parent body of a subunit
    --    (e) Subunits corresponding to any specified stubs
    --    (f) Bodies of inlined subprograms that are called
