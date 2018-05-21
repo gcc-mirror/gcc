@@ -1,3 +1,10 @@
+2018-04-04  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks-target.inc: Set cfa_reg properly from sigcontext
+	pregs.
+	(CFI_COMMON_REGS): Restore LR jic probed from prologue.
+	(REGNO_PC_OFFSET): Change to correct value for Aarch64.
+
 2018-04-04  Jose Ruiz  <ruiz@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst, exp_attr.adb,
