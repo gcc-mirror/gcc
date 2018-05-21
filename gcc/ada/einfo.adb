@@ -1567,7 +1567,7 @@ package body Einfo is
 
    function Has_Discriminants (Id : E) return B is
    begin
-      pragma Assert (Nkind (Id) in N_Entity);
+      pragma Assert (Is_Type (Id));
       return Flag5 (Id);
    end Has_Discriminants;
 
@@ -4730,7 +4730,7 @@ package body Einfo is
 
    procedure Set_Has_Discriminants (Id : E; V : B := True) is
    begin
-      pragma Assert (Nkind (Id) in N_Entity);
+      pragma Assert (Is_Type (Id));
       Set_Flag5 (Id, V);
    end Set_Has_Discriminants;
 

@@ -12307,7 +12307,7 @@ package body Sem_Ch13 is
 
    procedure Push_Scope_And_Install_Discriminants (E : Entity_Id) is
    begin
-      if Has_Discriminants (E) then
+      if Is_Type (E) and then Has_Discriminants (E) then
          Push_Scope (E);
 
          --  Make the discriminants visible for type declarations and protected
@@ -13491,7 +13491,7 @@ package body Sem_Ch13 is
 
    procedure Uninstall_Discriminants_And_Pop_Scope (E : Entity_Id) is
    begin
-      if Has_Discriminants (E) then
+      if Is_Type (E) and then Has_Discriminants (E) then
          Uninstall_Discriminants (E);
          Pop_Scope;
       end if;

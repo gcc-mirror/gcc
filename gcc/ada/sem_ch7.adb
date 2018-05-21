@@ -1399,10 +1399,13 @@ package body Sem_Ch7 is
 
             --  We are looking at an incomplete or private type declaration
             --  with a known_discriminant_part whose full view is an
-            --  Unchecked_Union.
+            --  Unchecked_Union. The seemingly useless check with Is_Type
+            --  prevents cascaded errors when routines defined only for type
+            --  entities are called with non-type entities.
 
             if Nkind_In (Decl, N_Incomplete_Type_Declaration,
                                N_Private_Type_Declaration)
+              and then Is_Type (Defining_Identifier (Decl))
               and then Has_Discriminants (Defining_Identifier (Decl))
               and then Present (Full_View (Defining_Identifier (Decl)))
               and then
