@@ -105,6 +105,7 @@ namespace __debug
       : _Base(__m, __a) { }
 
       multimap(multimap&& __m, const allocator_type& __a)
+      noexcept( noexcept(_Base(std::move(__m._M_base()), __a)) )
       : _Safe(std::move(__m._M_safe()), __a),
 	_Base(std::move(__m._M_base()), __a) { }
 
