@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
 
 program collapse2
   integer :: i, j, k, a(1:3, 4:6, 5:7)
