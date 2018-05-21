@@ -1,4 +1,4 @@
-# Mensajes en español para gcc-4.7.2.
+# Mensajes en español para gcc-8.1.0.
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2016, 2017, 2018 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
@@ -39,10 +39,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 8.1-b20180401\n"
+"Project-Id-Version: gcc 8.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-05-01 20:30+0000\n"
-"PO-Revision-Date: 2018-05-02 18:50+0200\n"
+"PO-Revision-Date: 2018-05-22 01:06+0200\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -6428,10 +6428,8 @@ msgid "Warn about casts which discard qualifiers."
 msgstr "Avisa sobre conversiones que descartan calificadores."
 
 #: c-family/c.opt:397 c-family/c.opt:401
-#, fuzzy
-#| msgid "Warn about comparison of different enum types."
 msgid "Warn about catch handlers of non-reference type."
-msgstr "Avisar sobre comparación de tipos enum diferentes."
+msgstr "Avisa sobre manejadores catch de tipos no referencia."
 
 #: c-family/c.opt:405
 msgid "Warn about subscripts whose type is \"char\"."
@@ -9813,16 +9811,12 @@ msgid "Force indirect call and jump via register."
 msgstr ""
 
 #: config/i386/i386.opt:1053
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation."
 msgid "Support MOVDIRI built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código BMI."
+msgstr "Admite funciones internas y generación de código MOVDIRI."
 
 #: config/i386/i386.opt:1057
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation."
 msgid "Support MOVDIR64B built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código BMI."
+msgstr "Admite funciones internas y generación de código MOVDIR64B."
 
 #: config/pa/pa64-hpux.opt:23
 msgid "Assume code will be linked by GNU ld."
@@ -11372,22 +11366,16 @@ msgid "%<-mvrsave=yes%> is deprecated; use %<-mvrsave%> instead"
 msgstr "%<-mvrsave=yes%> es obsoleto; utilice en su lugar %<-mvrsave%>"
 
 #: config/rs6000/rs6000.opt:334
-#, fuzzy
-#| msgid "Max. count of debug markers to expand or inline."
 msgid "Max number of bytes to move inline."
-msgstr "Máx. número de marcadores de depuración para expandir o poner en línea."
+msgstr "Máx. número de bytes para mover y poner en línea."
 
 #: config/rs6000/rs6000.opt:338
-#, fuzzy
-#| msgid "The maximum number of insns of an unswitched loop."
 msgid "Max number of bytes to compare without loops."
-msgstr "El número máximo de insns en un bucle sin switch."
+msgstr "El número máximo de bytes para comparar sin bucles."
 
 #: config/rs6000/rs6000.opt:342
-#, fuzzy
-#| msgid "The maximum number of insns of an unswitched loop."
 msgid "Max number of bytes to compare with loops."
-msgstr "El número máximo de insns en un bucle sin switch."
+msgstr "El número máximo de bytes para comparar con bucles."
 
 #: config/rs6000/rs6000.opt:346
 #, fuzzy
@@ -11404,16 +11392,12 @@ msgid "%<-misel=yes%> is deprecated; use %<-misel%> instead"
 msgstr "%<-misel=yes%> es obsoleto; utilice en su lugar %<-misel%>"
 
 #: config/rs6000/rs6000.opt:410
-#, fuzzy
-#| msgid "-mtraceback=\tSelect full, part, or no traceback table."
 msgid "-mtraceback=[full,part,no]\tSelect type of traceback table."
-msgstr "-mtraceback=\tSelecciona la tabla full, part, ó sin traceback."
+msgstr "-mtraceback=[full,part,no]\tSelecciona el tipo de tabla traceback."
 
 #: config/rs6000/rs6000.opt:438
-#, fuzzy
-#| msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)."
 msgid "-mlong-double-[64,128]\tSpecify size of long double."
-msgstr "-mlong-double-<n>\tEspecifica el tamaño de long double (64 ó 128 bits)."
+msgstr "-mlong-double-[64,128]\tEspecifica el tamaño de long double."
 
 #: config/rs6000/rs6000.opt:537 config/arc/arc.opt:173 config/arc/arc.opt:339
 #: config/arc/arc.opt:346 config/arc/arc.opt:350 config/arc/arc.opt:354
@@ -11424,26 +11408,20 @@ msgid "%qs is deprecated"
 msgstr "%qs es obsoleto"
 
 #: config/rs6000/sysv4.opt:24
-#, fuzzy
-#| msgid "Select ABI calling convention."
 msgid "-mcall-ABI\tSelect ABI calling convention."
-msgstr "Selecciona el convenio de llamadas ABI."
+msgstr "-mcall-ABI\tSelecciona el convenio de llamadas ABI."
 
 #: config/rs6000/sysv4.opt:28
-#, fuzzy
-#| msgid "Select method for sdata handling."
 msgid "-msdata=[none,data,sysv,eabi]\tSelect method for sdata handling."
-msgstr "Selecciona el método para el manejo de sdata."
+msgstr "-msdata=[none,data,sysv,eabi]\tSelecciona el método para el manejo de sdata."
 
 #: config/rs6000/sysv4.opt:32
 msgid "Allow readonly data in sdata."
 msgstr "Permite datos de solo lectura en sdata."
 
 #: config/rs6000/sysv4.opt:36
-#, fuzzy
-#| msgid "Specify bit size of immediate TLS offsets."
 msgid "-mtls-size=[16,32]\tSpecify bit size of immediate TLS offsets."
-msgstr "Especifica el tamaño de bit para los desplazamientos TLS inmediatos."
+msgstr "mtls-size=[16,32]\tEspecifica el tamaño de bit para los desplazamientos TLS inmediatos."
 
 #: config/alpha/alpha.opt:27
 msgid "Use fp registers."
@@ -12547,15 +12525,15 @@ msgstr "Genera código en modo little endian."
 
 #: config/nds32/nds32.opt:40
 msgid "Specify which ABI type to generate code for: 2, 2fp+."
-msgstr ""
+msgstr "Especifica el tipo de ABI para el cual generar código: 2, 2fp+."
 
 #: config/nds32/nds32.opt:54
 msgid "Specify use soft floating point ABI which mean alias to -mabi=2."
-msgstr ""
+msgstr "Especifica el uso de ABI de coma flotante suave que significa sinónimo de -mabi=2."
 
 #: config/nds32/nds32.opt:58
 msgid "Specify use soft floating point ABI which mean alias to -mabi=2fp+."
-msgstr ""
+msgstr "Especifica el uso de ABI de coma flotante suave que significa sinónimo de -mabi=2fp+."
 
 #: config/nds32/nds32.opt:64
 msgid "Use reduced-set registers for register allocation."
@@ -12628,10 +12606,8 @@ msgid "Known cmodel types (for use with the -mcmodel= option):"
 msgstr "Tipos de modelos de código conocidos (para uso con la opción -mcmodel=):"
 
 #: config/nds32/nds32.opt:171
-#, fuzzy
-#| msgid "Specify the code model."
 msgid "Specify the cpu for pipeline model."
-msgstr "Especifica el modelo de código."
+msgstr "Especifica la cpu para el modelo de «pipeline»."
 
 #: config/nds32/nds32.opt:175
 msgid "Known cpu types (for use with the -mcpu= option):"
@@ -12642,18 +12618,16 @@ msgid "Specify a fpu configuration value from 0 to 7; 0-3 is as FPU spec says, a
 msgstr ""
 
 #: config/nds32/nds32.opt:246
-#, fuzzy
-#| msgid "Known floating-point ABIs (for use with the -mfloat-abi= option):"
 msgid "Known floating-point number of registers (for use with the -mconfig-fpu= option):"
-msgstr "ABIs de coma flotante conocidas (para usar con la opción -mfloat-abi):"
+msgstr "Número de registros de coma flotante conocidas (para usar con la opción -mfloat-fpu=):"
 
 #: config/nds32/nds32.opt:274
 msgid "Specify configuration of instruction mul: fast1, fast2 or slow. The default is fast1."
-msgstr ""
+msgstr "Especifica la configuración de la instrucción mul: fast1, fast2 o slow. La predeterminada es fast1."
 
 #: config/nds32/nds32.opt:293
 msgid "Specify how many read/write ports for n9/n10 cores.  The value should be 3r2w or 2r1w."
-msgstr ""
+msgstr "Especifica cuántos puertos de lectura/escritura para núcleos n9/n10.  El valor debe ser 3r2w o 2r1w."
 
 #: config/nds32/nds32.opt:306
 msgid "Enable constructor/destructor feature."
@@ -12670,20 +12644,16 @@ msgid "Generate floating-point multiply-accumulation instructions."
 msgstr "Genera matemáticas de coma flotante usando el conjunto de instrucciones dado."
 
 #: config/nds32/nds32.opt:318
-#, fuzzy
-#| msgid "Use paired-single floating-point instructions."
 msgid "Generate single-precision floating-point instructions."
-msgstr "Usa instrucciones apareadas-sencillas de coma flotante."
+msgstr "Genera instrucciones de coma flotante de precisión sencilla."
 
 #: config/nds32/nds32.opt:322
-#, fuzzy
-#| msgid "Generate code that uses 68881 floating-point instructions."
 msgid "Generate double-precision floating-point instructions."
-msgstr "Genera código que use las instrucciones de coma flotante del 68881."
+msgstr "Genera instrucciones de coma flotante de doble precisión."
 
 #: config/nds32/nds32.opt:326
 msgid "Always save $lp in the stack."
-msgstr ""
+msgstr "Siempre guarda $lp en la pila."
 
 #: config/iq2000/iq2000.opt:31
 msgid "Specify CPU for code generation purposes."
@@ -15614,10 +15584,8 @@ msgid "Generate debug information in default extended format."
 msgstr "Genera información de depuración en el formato extendido por defecto."
 
 #: common.opt:2925
-#, fuzzy
-#| msgid "Generate a single exit point for each function."
 msgid "Generate extended entry point information for inlined functions"
-msgstr "Genera un solo punto de salida para cada función."
+msgstr "Genera información extendida sobre el punto de entrada para funciones en línea"
 
 #: common.opt:2929
 msgid "Compute locview reset points based on insn length estimates"
@@ -16419,12 +16387,11 @@ msgid "%K%qD writing %E or more bytes into a region of size %E overflows the des
 msgstr "%K%qD: escribir %E bytes o más en una región de tamaño %E desborda el destino"
 
 #: builtins.c:3176
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
 msgid_plural "%K%qD writing %E bytes into a region of size %E overflows the destination"
 msgstr[0] "%K%qD: escribir %E byte en una región de tamaño %E desborda el destino"
-msgstr[1] "%K%qD: escribir %E byte en una región de tamaño %E desborda el destino"
+msgstr[1] "%K%qD: escribir %E bytes en una región de tamaño %E desborda el destino"
 
 #: builtins.c:3191
 #, gcc-internal-format
@@ -16452,12 +16419,11 @@ msgid "%K%qD specified bound between %E and %E exceeds destination size %E"
 msgstr "%K%qD: el límite especificado entre %E y %E excede el tamaño del destino %E"
 
 #: builtins.c:3276
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E byte from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD reading %E byte from a region of size %E"
 msgid_plural "%K%qD reading %E bytes from a region of size %E"
 msgstr[0] "%K%qD leyendo %E byte en una región de tamaño %E"
-msgstr[1] "%K%qD leyendo %E byte en una región de tamaño %E"
+msgstr[1] "%K%qD leyendo %E bytes en una región de tamaño %E"
 
 #: builtins.c:3283
 #, gcc-internal-format
@@ -17592,10 +17558,9 @@ msgid "%<ifunc%> resolver for %qD should return %qT"
 msgstr "el prefijo %qD debe regresar %qT"
 
 #: cgraphunit.c:1379
-#, fuzzy, gcc-internal-format
-#| msgid "Warn about casting functions to incompatible types."
+#, gcc-internal-format
 msgid "%qD alias between functions of incompatible types %qT and %qT"
-msgstr "Advierte de funciones de conversión a tipos incompatibles."
+msgstr "alias %qD entre funciones de tipos incompatibles %qT y %qT"
 
 #: cgraphunit.c:1382 cgraphunit.c:1461
 #, fuzzy, gcc-internal-format
@@ -17614,8 +17579,7 @@ msgid "%q+D aliased to external symbol %qE"
 msgstr "%q+D es un alias del símbolo externo %qE"
 
 #: cgraphunit.c:1458
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D alias in between function and variable is not supported"
+#, gcc-internal-format
 msgid "%q+D alias between function and variable is not supported"
 msgstr "No se admite alias %q+D entre función y variable"
 
@@ -18731,22 +18695,16 @@ msgid "%G%qD destination unchanged after copying no bytes"
 msgstr "destino %G%qD intacto tras no copiar ningún byte"
 
 #: gimple-fold.c:2052 tree-ssa-strlen.c:2050
-#, fuzzy
-#| msgid "specified bound %wu equals the size of the destination"
 msgid "%G%qD specified bound %E equals destination size"
-msgstr "el límite %wu especificado es igual al tamaño del destino"
+msgstr "el límite de %G%qD especificado %E es igual al tamaño del destino"
 
 #: gimple-fold.c:2054
-#, fuzzy
-#| msgid "%K%qD: specified bound %wu exceeds maximum object size %wu"
 msgid "%G%qD specified bound %E exceeds destination size %wu"
-msgstr "%K%qD: el límite %wu especificado excede el tamaño de objeto máximo %wu"
+msgstr "el límite de %G%qD especificado %E excede el tamaño del destino %wu"
 
 #: gimple-fold.c:2070
-#, fuzzy
-#| msgid "specified bound %wu equals the size of the destination"
 msgid "%G%qD specified bound %E equals source length"
-msgstr "el límite %wu especificado es igual al tamaño del destino"
+msgstr "el límite de %G%qD especificado %E es igual a la longitud del origen"
 
 #: gimple-ssa-isolate-paths.c:290
 #, gcc-internal-format
@@ -19262,7 +19220,7 @@ msgstr "el array %qD se declaró aquí"
 
 #: gimple-ssa-warn-restrict.c:1638 gimple-ssa-warn-restrict.c:1644
 msgid "%G%qD pointer overflow between offset %s and size %s"
-msgstr ""
+msgstr "desbordamiento del puntero %g%qD entre el desplazamiento %s y el tamaño %s"
 
 #: gimple-ssa-warn-restrict.c:1662
 msgid "%G%qD forming offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
@@ -19270,17 +19228,15 @@ msgstr ""
 
 #: gimple-ssa-warn-restrict.c:1665
 msgid "%G%qD offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
-msgstr ""
+msgstr "el desplazamiento de %G%qD %s está fuera de los límites [0, %wu] del objeto %qD con tipo %qT"
 
 #: gimple-ssa-warn-restrict.c:1671
 msgid "%G%qD forming offset %s is out of the bounds of object %qD with type %qT"
 msgstr ""
 
 #: gimple-ssa-warn-restrict.c:1673
-#, fuzzy
-#| msgid "array subscript is outside array bounds"
 msgid "%G%qD offset %s is out of the bounds of object %qD with type %qT"
-msgstr "el subíndice de la matriz está fuera de los límites de la matriz"
+msgstr "el desplazamiento de %G%qD %s está fuera de los límites ] del objeto %qD con tipo %qT"
 
 #: gimple-ssa-warn-restrict.c:1678 c/c-decl.c:3603 c/c-decl.c:3874
 #: c/c-typeck.c:8345 cp/class.c:1346 cp/class.c:3098 cp/decl.c:3979
@@ -19297,7 +19253,7 @@ msgstr ""
 
 #: gimple-ssa-warn-restrict.c:1685
 msgid "%G%qD offset %s is out of the bounds [0, %wu]"
-msgstr ""
+msgstr "el desplazamiento de %G%qD %s está fuera de los límites [0, %wu]"
 
 #: gimple-ssa-warn-restrict.c:1690
 #, fuzzy
@@ -19306,18 +19262,16 @@ msgid "%G%qD forming offset %s is out of bounds"
 msgstr "El argumento DIM en %L está fuera de los límites"
 
 #: gimple-ssa-warn-restrict.c:1691
-#, fuzzy
-#| msgid "DIM argument at %L is out of bounds"
 msgid "%G%qD offset %s is out of bounds"
-msgstr "El argumento DIM en %L está fuera de los límites"
+msgstr "El desplazamiento de %G%qD %s está fuera de los límites"
 
 #: gimple-ssa-warn-restrict.c:1702
 msgid "%G%qD offset %s from the object at %qE is out of the bounds of %qT"
-msgstr ""
+msgstr "El desplazamiento de %G%qD %s desde el objeto en %qE está fuera de los límites de %qT"
 
 #: gimple-ssa-warn-restrict.c:1711
 msgid "%G%qD offset %s from the object at %qE is out of the bounds of referenced subobject %qD with type %qT at offset %wu"
-msgstr ""
+msgstr "El desplazamiento de %G%qD %s desde el objeto en %qE está fuera de los límites del subobjeto referenciado %Qd con tipo %qT en el desplazamiento %wu"
 
 #: gimple-ssa-warn-restrict.c:1890
 #, fuzzy
@@ -20240,16 +20194,14 @@ msgid "target does not support function version dispatcher"
 msgstr "el objetivo no admite despachador de versión de función"
 
 #: multiple_target.c:91
-#, fuzzy, gcc-internal-format
-#| msgid "default target_clones attribute was not set"
+#, gcc-internal-format
 msgid "default %<target_clones%> attribute was not set"
-msgstr "no se ha especificado el atributo target_clones predefinido"
+msgstr "no se ha especificado el atributo %<target_clones%> predefinido"
 
 #: multiple_target.c:343
-#, fuzzy, gcc-internal-format
-#| msgid "single target_clones attribute is ignored"
+#, gcc-internal-format
 msgid "single %<target_clones%> attribute is ignored"
-msgstr "se descarta el atributo sencillo target_clones"
+msgstr "se descarta el atributo sencillo %<target_clones%>"
 
 #: multiple_target.c:351
 #, gcc-internal-format
@@ -20267,10 +20219,9 @@ msgid "default target was not set"
 msgstr "no se ha especificado el objetivo predefinido"
 
 #: multiple_target.c:379
-#, fuzzy, gcc-internal-format
-#| msgid "missing value in %<target()%> pragma or attribute"
+#, gcc-internal-format
 msgid "an empty string cannot be in %<target_clones%> attribute"
-msgstr "falta el valor en el pragma o atributo %<target()%>"
+msgstr "no puede haber una cada vacía en el atributo %<target_clones%>"
 
 #: omp-expand.c:2016
 #, gcc-internal-format
@@ -22393,10 +22344,9 @@ msgid "type mismatch in vector widening multiplication"
 msgstr "los tipos no coinciden en la expresión de ensanchado multiplicar-acumular"
 
 #: tree-cfg.c:4248
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in vector permute expression"
+#, gcc-internal-format
 msgid "type mismatch in vector pack expression"
-msgstr "los tipos no coinciden en la expresión de permutación de vector"
+msgstr "los tipos no coinciden en la expresión de empaquetamiento de vector"
 
 #: tree-cfg.c:4281
 #, fuzzy, gcc-internal-format
@@ -22438,7 +22388,7 @@ msgstr "los tipos no coinciden en la expresión fusionada multiplicar-sumar"
 #: tree-cfg.c:4383
 #, gcc-internal-format
 msgid "the first argument of a VEC_COND_EXPR must be of a boolean vector type of the same number of elements as the result"
-msgstr ""
+msgstr "el primer argumento de una VEC_COND_EXPR debe ser de tipo vector de booleanos del mismo número de elementos que el resultado"
 
 #: tree-cfg.c:4395 c/c-typeck.c:5212
 #, gcc-internal-format
@@ -23464,10 +23414,9 @@ msgstr "el tipo es obsoleto"
 #.
 #. Convenience macro for matching individual fields.
 #: tree.c:13043
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "type variant differs by "
+#, gcc-internal-format, gfc-internal-format
 msgid "type variant differs by %s"
-msgstr "tipo variante difiere en "
+msgstr "tipo variante difiere en %s"
 
 #: tree.c:13084
 #, gcc-internal-format
