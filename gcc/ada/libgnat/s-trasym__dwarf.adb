@@ -263,7 +263,7 @@ package body System.Traceback.Symbolic is
 
    function Lt (Left, Right : Module_Cache_Acc) return Boolean is
    begin
-      return Low (Left.C) < Low (Right.C);
+      return Low_Address (Left.C) < Low_Address (Right.C);
    end Lt;
 
    -----------------------------
@@ -469,7 +469,7 @@ package body System.Traceback.Symbolic is
             Hi := Modules_Cache'Last;
             while Lo <= Hi loop
                Mid := (Lo + Hi) / 2;
-               if Addr < Low (Modules_Cache (Mid).C) then
+               if Addr < Low_Address (Modules_Cache (Mid).C) then
                   Hi := Mid - 1;
                elsif Is_Inside (Modules_Cache (Mid).C, Addr) then
                   Multi_Module_Symbolic_Traceback
