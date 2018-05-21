@@ -8439,7 +8439,7 @@ package body Exp_Ch6 is
 
             begin
                while Present (N)
-                 and then Nkind_In (N, N_Pragma, N_Attribute_Reference)
+                 and then Nkind_In (N, N_Attribute_Reference, N_Pragma)
                loop
                   Analyze (N);
                   D := N;

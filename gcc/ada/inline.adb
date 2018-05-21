@@ -2492,8 +2492,8 @@ package body Inline is
                --  type, because those must be resolved to a specific type.
 
                if Nkind_In (Expression (N), N_Aggregate,
-                                            N_Null,
                                             N_Character_Literal,
+                                            N_Null,
                                             N_String_Literal)
                  or else Yields_Universal_Type (Expression (N))
                then
