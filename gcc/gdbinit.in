@@ -230,7 +230,7 @@ b internal_error
 
 # Break on module streaming error
 b bytes_in::set_overrun if !overrun
-b elf::set_error if !error
+b elf::set_error if !err
 
 set complaints 0
 # Don't let abort actually run, as it will make

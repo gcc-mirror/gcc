@@ -1,5 +1,18 @@
 2018-05-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (HAS_DECL_MODULE_LAZY_DEFN_P): New.
+	(MAYBE_DECL_MODULE_LAZY_DEFN): Use it.
+	* module.c (trees_in::{pre,}seed): Adjust.
+	(trees_out::{begin,end}): New overloads.
+	(trees_out::unmark_trees): Adjust.
+	(trees_out::{preseed,insert}): Correct force marking.
+	(trees_in::tree_node): Robustify.
+	(module_state::write_cluster): Fix name, better messages,
+	(module_state::read_cluster): Use ct_no_decl.
+	(module_state::write): Use HAS_DECL_MODULE_LAZY_DEFN_P.
+	(module_state::check_read): Use decl if it makes sense.
+
 	Write lazy decls (no reading yet)
 	gcc/cp/
 	* module.c (elf_out::strtab::named_decl): Add IS_DEFN parm.

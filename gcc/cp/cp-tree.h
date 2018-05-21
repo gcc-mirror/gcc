@@ -1622,9 +1622,14 @@ check_constraint_info (tree t)
 #define DECL_MODULE_LAZY_DEFN(N)				\
   (DECL_LANG_SPECIFIC (N)->u.min.lazy_module_defn)
 
+/* True if there's a module lazy defn flag to look at.  */
+#define HAS_DECL_MODULE_LAZY_DEFN_P(N)				\
+  (DECL_LANG_SPECIFIC (N) && LANG_DECL_HAS_MIN (N))
+
+/* Non-zero if there's a lazy definition.  Zero if inappropriate or
+   there is none.  */
 #define MAYBE_DECL_MODULE_LAZY_DEFN(N)				\
-  (DECL_LANG_SPECIFIC (N) && LANG_DECL_HAS_MIN (N)		\
-   ? DECL_MODULE_LAZY_DEFN (N) : 0)
+  (HAS_DECL_MODULE_LAZY_DEFN_P (N) ? DECL_MODULE_LAZY_DEFN (N) : 0)
 
 
 enum cp_tree_node_structure_enum {

@@ -32,20 +32,20 @@ namespace bar
   export extern auto const Scoped_Const_Three = foo::Scoped::D;
 }
 
-// { dg-final { scan-lang-dump {Lazily loading '::foo::frob'@'foo' section:} module } }
+// { dg-final { scan-lang-dump {Lazily binding '::foo::frob'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* namespace_decl:'::foo'@foo} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* function_decl:'::foo::frob'@foo} module } }
 
-// { dg-final { scan-lang-dump {Lazily loading '::foo::X'@'foo' section:} module } }
+// { dg-final { scan-lang-dump {Lazily binding '::foo::X'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::foo::X'@foo} module } }
 
-// { dg-final { scan-lang-dump {Lazily loading '::foo::Y'@'foo' section:} module } }
+// { dg-final { scan-lang-dump {Lazily binding '::foo::Y'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::foo::Y'@foo} module } }
 
-// { dg-final { scan-lang-dump {Lazily loading '::foo::B'@'foo' section:} module } }
-// { dg-final { scan-lang-dump-not {Lazily loading '::foo::C'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Lazily loading '::foo::Scoped'@'foo' section:} module } }
-// { dg-final { scan-lang-dump-not {Lazily loading '::foo::Scoped::[ABCD]'@'foo' section:} module } }
+// { dg-final { scan-lang-dump {Lazily binding '::foo::B'@'foo' section:} module } }
+// { dg-final { scan-lang-dump-not {Lazily binding '::foo::C'@'foo' section:} module } }
+// { dg-final { scan-lang-dump {Lazily binding '::foo::Scoped'@'foo' section:} module } }
+// { dg-final { scan-lang-dump-not {Lazily binding '::foo::Scoped::[ABCD]'@'foo' section:} module } }
 
 // { dg_final { scan-lang-dump {Wrote named import:-[0-9]* const_decl:'::foo::Plain::C'@foo} module } }
 // { dg_final { scan-lang-dump {Wrote named import:-[0-9]* const_decl:'::foo::Plain::B'@foo} module } }

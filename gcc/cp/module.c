@@ -2145,7 +2145,12 @@ enum tree_tag {
   tt_vtable		/* A vtable.  */
 };
 
-/* Tree stream reader.  */
+class trees_out; /* Forward decl.  */
+
+/* Tree stream reader.  Note that reading a stream doesn't mark the
+   read trees with TREE_VISITED.  Thus it's quite safe to have
+   multiple concurrent readers.  Which is good, because lazy
+   loading. */
 class trees_in : public bytes_in {
   typedef bytes_in parent;
 
@@ -2162,12 +2167,13 @@ public:
   int insert (tree);
 
 public:
-  void preseed (unsigned);
-  void seed (unsigned ix, tree node)
+  unsigned preseed (unsigned);
+  void seed (unsigned cookie, unsigned ix, tree node)
   {
-    gcc_checking_assert (!back_refs[ix]);
+    gcc_checking_assert (back_refs[ix] == (ix < cookie ? node : 0));
     back_refs[ix] = node;
   }
+  unsigned preseed (trees_out *);
 
 private:
   tree finish_type (tree);
@@ -2250,6 +2256,10 @@ public:
 
 public:
   void begin (depset::hash *);
+  void end ();
+
+public:
+  void begin (trees_in *);
   void end (trees_in *);
 
 public:
@@ -2414,12 +2424,15 @@ struct GTY(()) module_state {
   void write (elf_out *to);
   void read (FILE *handle, int e, unsigned *crc_ptr);
 
+  /* Read a section.  */
   void load_section (unsigned snum);
 
-  /* Lazily read a section.  */
-  void maybe_defrost ();
-  bool lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost = false);
+  /* Juggle a limited number of file numbers.  */
   static void freeze_an_elf ();
+  void maybe_defrost ();
+
+  /* Lazily read a section.  */
+  bool lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost = false);
 
  private:
   /* Check or complete a read.  */
@@ -3071,12 +3084,42 @@ trees_out::begin (depset::hash *hash)
 }
 
 void
-trees_out::end (trees_in *seed)
+trees_out::end ()
 {
   gcc_assert (!streaming_p () && !seeding_p ());
 
-  unmark_trees (seed);
+  unmark_trees ();
   dep_hash = NULL;
+  /* Do not parent::end -- we weren't streaming.  */
+}
+
+/* Prepare a seeding walk, taking initial state from SEEDER.  */
+
+void
+trees_out::begin (trees_in *seeder)
+{
+  gcc_assert (!streaming_p () && !depending_p () && !seeding_p ());
+
+  /* Install the fixed trees.  */
+  mark_trees ();
+
+  /* Populate from seeder.  */
+  unsigned inserted = seeder->preseed (this);
+  gcc_assert (inserted == unsigned (-ref_num));
+
+  seed ();
+}
+
+/* Complete a seeding walk, transfering seeded state back to SEEDER.  */
+
+void
+trees_out::end (trees_in *seeder)
+{
+  gcc_assert (!streaming_p () && !depending_p () && seeding_p ());
+
+  unseed (NULL);
+
+  unmark_trees (seeder);
   /* Do not parent::end -- we weren't streaming.  */
 }
 
@@ -3108,8 +3151,9 @@ trees_out::mark_trees ()
 void
 trees_out::unmark_trees (trees_in *seed)
 {
+  unsigned cookie = 0;
   if (seed)
-    seed->preseed (unsigned (-ref_num));
+    cookie = seed->preseed (unsigned (-ref_num));
 
   /* Unmark all the trees.  Seed SEED if non-null.  */
   ptr_int_hash_map::iterator end (tree_map.end ());
@@ -3118,24 +3162,37 @@ trees_out::unmark_trees (trees_in *seed)
     {
       tree node = reinterpret_cast <tree> ((*iter).first);
       int ref = (*iter).second;
-      gcc_checking_assert (TREE_VISITED (node) && ref);
+      gcc_checking_assert (TREE_VISITED (node) && ref && ref < FIXED_LIMIT);
       TREE_VISITED (node) = false;
       if (seed && ref < 0)
 	{
-	  seed->seed (~ref, node);
+	  seed->seed (cookie, ~ref, node);
 	  seeded++;
 	}
     }
   gcc_assert (!seed || seeded == unsigned (-ref_num));
 }
 
-void
+unsigned
 trees_in::preseed (unsigned size)
 {
-  gcc_checking_assert (back_refs.length ());
+  unsigned cookie = back_refs.length ();
   back_refs.reserve (size);
   for (unsigned ix = size; ix--;)
     back_refs.safe_push (NULL);
+  return cookie;
+}
+
+unsigned
+trees_in::preseed (trees_out *seeder)
+{
+  unsigned limit = back_refs.length ();
+  for (unsigned ix = 0; ix != limit; ix++)
+    {
+      int tag = seeder->insert (back_refs[ix]);
+      gcc_checking_assert (unsigned (~tag) == ix);
+    }
+  return limit;
 }
 
 /* Mark DECL for by-value walking.  We do this by inserting it into
@@ -3172,7 +3229,7 @@ trees_out::preseed (tree t)
   gcc_checking_assert (TREE_VISITED (t));
   int *slot = tree_map.get (t);
   gcc_checking_assert (*slot < 0);
-  *slot = FIXED_LIMIT ^ *slot;
+  *slot = FIXED_LIMIT - *slot;
 }
 
 /* Insert T into the map, return its back reference number.
@@ -3192,8 +3249,8 @@ trees_out::insert (tree t, bool forcing)
 
   if (forcing && slot)
     {
-      gcc_checking_assert (slot >= FIXED_LIMIT);
-      slot = FIXED_LIMIT ^ slot;
+      gcc_checking_assert (slot > FIXED_LIMIT);
+      slot = FIXED_LIMIT - slot;
     }
   else
     slot = --ref_num;
@@ -5067,6 +5124,7 @@ trees_out::tree_node_raw (tree t)
   /* The only decls we should stream out are those from this module,
      or the global module.  All other decls should be by name.  */
   gcc_checking_assert (klass != tcc_declaration
+		       || seeding_p ()
 		       || MAYBE_DECL_MODULE_OWNER (t) < MODULE_IMPORT_BASE
 		       || t != get_module_owner (t));
 
@@ -5640,11 +5698,8 @@ trees_in::tree_node ()
       /* backref, pull it out of the map.  */
       if (tag < 0 && unsigned (~tag) < back_refs.length ())
 	res = back_refs[~tag];
-      else
-	{
-	  error ("unknown tree reference %qd", tag);
-	  set_overrun ();
-	}
+      if (!res)
+	set_overrun ();
       if (res)
 	dump () && dump ("Read backref:%d found %C:%N%S", tag,
 			 TREE_CODE (res), res, res);
@@ -5660,7 +5715,8 @@ trees_in::tree_node ()
 	    dump () && dump ("Read fixed:%u %C:%N%S", fix,
 			     TREE_CODE (res), res, res);
 	  }
-	else
+
+	if (!res)
 	  set_overrun ();
       }
       break;
@@ -8040,8 +8096,9 @@ enum cluster_tag {
   ct_defn,	/* A defn.  */
   ct_bind,	/* A binding.  */
   ct_voldemort, /* An unnamed decl.  */
-  ct_horcrux,	/* Preseed reference to unnamed decl.  */
-  ct_lazy,	/* Preseed decls of lazy defns.  */
+  ct_no_decl,   /* Boundary marker.  */
+  ct_horcrux = ct_no_decl,	/* Preseed reference to unnamed decl.  */
+  ct_seed_decl,	/* Preseed decls of lazy defns.  */
   ct_hwm
 };
 
@@ -8060,7 +8117,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   unsigned incoming_unnamed = unnamed;
   unsigned lazy_defns = 0;
-  unsigned first_defn = 0;
+  unsigned first_defn = ~0U;
   bool refs_unnamed_p = false;
 
   /* Determine horcrux numbers for unnamed decls.  Count lazy
@@ -8075,7 +8132,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
       if (b->is_defn ())
 	{
-	  if (!first_defn)
+	  if (first_defn == ~0U)
 	    first_defn = ix;
 	  if (MAYBE_DECL_MODULE_LAZY_DEFN (decl) != 0)
 	    lazy_defns++;
@@ -8123,10 +8180,11 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	 to write each lazy defn as a name (or horcrux), and then to
 	 seed it and its reachable nodes.  */
       gcc_assert (!IMMEDIATE_DEFNS);
-      dump () && dump ("%d lazy definitions", lazy_defns);
-      sec.u (ct_lazy);
+      dump () && dump ("%u lazy definitions", lazy_defns);
+      sec.u (ct_seed_decl);
       sec.u (lazy_defns);
       unsigned ix = first_defn;
+      unsigned lazy_count = 0;
       for (; ix != size && scc[ix]->is_defn (); ix++)
 	{
 	  tree decl = scc[ix]->get_decl ();
@@ -8134,14 +8192,17 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    {
 	      /* This will write by name, or by horcrux specified
 		 above.  */
-	      dump () && dump ("Lazy defn %N", decl);
+	      dump () && dump ("Lazy:%u %N", lazy_count, decl);
 	      sec.tree_node (decl);
-	      /* Now mark its ref to be forced.  */
-	      // FIXME:
+	      lazy_count++;
 	    }
 	}
+      gcc_checking_assert (lazy_count == lazy_defns);
       struct data *cookie = sec.seed ();
-      while (ix-- > first_defn)
+      unsigned upper_ix = ix;
+
+      /* And mark them.  */
+      for (ix = first_defn; ix != upper_ix; ix++)
 	{
 	  tree decl = scc[ix]->get_decl ();
 	  if (MAYBE_DECL_MODULE_LAZY_DEFN (decl) != 0)
@@ -8149,6 +8210,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	}
       sec.unseed (cookie);
     }
+  else if (first_defn == ~0U)
+    first_defn = 0;
 
   /* Mark members for walking.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -8260,7 +8323,7 @@ module_state::read_cluster (unsigned snum)
 	}
 
       tree decl = NULL_TREE;
-      if (ct != ct_horcrux)
+      if (ct < ct_no_decl)
 	{
 	  decl = sec.tree_node ();
 	  if (!decl)
@@ -8270,8 +8333,7 @@ module_state::read_cluster (unsigned snum)
       switch (ct)
 	{
 	default:
-	  sec.set_overrun ();
-	  goto break2;
+	  gcc_unreachable ();
 
 	case ct_horcrux:
 	  {
@@ -8313,6 +8375,9 @@ module_state::read_cluster (unsigned snum)
 	  /* A definition.  */
 	  if (!read_definition (sec, decl))
 	    goto break2;
+	  /* It's not lazy any more.  */
+	  if (HAS_DECL_MODULE_LAZY_DEFN_P (decl))
+	    DECL_MODULE_LAZY_DEFN (decl) = 0;
 	  break;
 
 	case ct_bind:
@@ -8682,7 +8747,7 @@ module_state::find_dependencies (depset::hash &table)
 	  write_definition (walker, decl);
 	}
       dump.outdent ();
-      walker.end (NULL);
+      walker.end ();
     }
 }
 
@@ -8818,8 +8883,7 @@ module_state::write (elf_out *to)
 	      tree decl = dep->get_decl ();
 
 	      dep->section = range.second;
-	      if (!dep->is_binding () &&
-		  DECL_LANG_SPECIFIC (decl) && LANG_DECL_HAS_MIN (decl))
+	      if (!dep->is_binding () && HAS_DECL_MODULE_LAZY_DEFN_P (decl))
 		{
 		  if (dep->is_defn ())
 		    /* Presume it to be lazy.  */
@@ -8985,7 +9049,7 @@ module_state::load_section (unsigned snum)
    name-lookup).  In the latter case NS and ID provide the binding.  */
 
 bool
-module_state::check_read (bool outermost, tree ns, tree id)
+module_state::check_read (bool outermost, tree decl, tree id)
 {
   bool done = loading == ~0u && (from->has_error () || !lazy);
   if (done)
@@ -9002,9 +9066,11 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	 problems, so bail out, if this is the top level.
 	 Otherwise return NULL to let our importer know (and
 	 fail).  */
-      if (lazy && ns)
-	error_at (loc, "failed to lazily load %<%E%s%E@%E%>: %s",
-		  ns, &"::"[ns == global_namespace ? 2 : 0], id, name, err);
+      if (lazy && id)
+	error_at (loc, "failed to load binding %<%E%s%E@%E%>: %s",
+		  decl, &"::"[decl == global_namespace ? 2 : 0], id, name, err);
+      else if (decl)
+	error_at (loc, "failed to load definition %E: %s", decl, err);
       else
 	error_at  (loc, "failed to import module %qE: %s", name, err);
       
@@ -9428,8 +9494,8 @@ module_state::freeze_an_elf ()
   lazy_open++;
 }
 
-/* *SLOT is a yet-to-be loaded binding of module MOD in namepsace NS
-   named ID.  Lazily load it, or die trying.  */
+/* *SLOT is a lazy binding in namepsace NS named ID.  Load it, or die
+   trying.  */
 
 bool
 module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
@@ -9438,7 +9504,7 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
   unsigned n = dump.push (this);
 
   unsigned snum = mslot->get_lazy ();
-  dump () && dump ("Lazily loading %P@%N section:%u", ns, id, name, snum);
+  dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
   if (snum >= loading || !flag_module_lazy)
     from->set_error (elf::E_BAD_LAZY);
   else
