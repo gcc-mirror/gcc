@@ -28130,6 +28130,17 @@ _ACEOF
 fi
 done
 
+  for ac_func in _wfopen
+do :
+  ac_fn_c_check_func "$LINENO" "_wfopen" "ac_cv_func__wfopen"
+if test "x$ac_cv_func__wfopen" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE__WFOPEN 1
+_ACEOF
+
+fi
+done
+
 
   # For iconv support.
 
@@ -66120,6 +66131,17 @@ eval as_val=\$$as_ac_var
    if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+    for ac_func in _wfopen
+do :
+  ac_fn_c_check_func "$LINENO" "_wfopen" "ac_cv_func__wfopen"
+if test "x$ac_cv_func__wfopen" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE__WFOPEN 1
 _ACEOF
 
 fi

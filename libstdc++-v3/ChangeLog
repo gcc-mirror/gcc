@@ -1,3 +1,38 @@
+2018-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Add support for opening file streams from wide character strings.
+	* config/io/basic_file_stdio.cc [_GLIBCXX_HAVE__WFOPEN]
+	(__basic_file<char>::open(const wchar_t*, ios_base::openmode)):
+	Define new overload.
+	* config/io/basic_file_stdio.h [_GLIBCXX_HAVE__WFOPEN]
+	(__basic_file<char>::open(const wchar_t*, ios_base::openmode)):
+	Declare new overload.
+	* configure.ac: Check for _wfopen.
+	* crossconfig.m4: Likewise.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* include/bits/fstream.tcc [_GLIBCXX_HAVE__WFOPEN]
+	(basic_filebuf<C,T>::open(const wchar_t*, ios_base::openmode)):
+	Define new overload.
+	* include/std/fstream [_GLIBCXX_HAVE__WFOPEN]
+	(basic_filebuf<C,T>::open(const wchar_t*, ios_base::openmode)):
+	Declare new overload.
+	[_GLIBCXX_HAVE__WFOPEN]
+	(basic_ifstream<C,T>::basic_ifstream(const wchar_t*, openmode))
+	(basic_ifstream<C,T>::basic_open(const wchar_t*, openmode))
+	(basic_ofstream<C,T>::basic_ifstream(const wchar_t*, openmode))
+	(basic_ofstream<C,T>::basic_open(const wchar_t*, openmode))
+	(basic_fstream<C,T>::basic_ifstream(const wchar_t*, openmode))
+	(basic_fstream<C,T>::basic_open(const wchar_t*, openmode)): Define
+	new overloads.
+	* testsuite/27_io/basic_filebuf/open/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_ifstream/cons/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_ifstream/open/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_ofstream/cons/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_ofstream/open/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_fstream/cons/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_fstream/open/wchar_t/1.cc: New.
+
 2018-05-21  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/85845
