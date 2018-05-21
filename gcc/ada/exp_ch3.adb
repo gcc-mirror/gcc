@@ -8775,9 +8775,9 @@ package body Exp_Ch3 is
       end loop;
    end Init_Secondary_Tags;
 
-   ------------------------
-   -- Is_User_Defined_Eq --
-   ------------------------
+   ------------------------------
+   -- Is_User_Defined_Equality --
+   ------------------------------
 
    function Is_User_Defined_Equality (Prim : Node_Id) return Boolean is
    begin

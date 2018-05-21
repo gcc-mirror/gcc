@@ -565,7 +565,7 @@ is
       end M_Elements_Reversed;
 
       ------------------------
-      -- M_Elements_Swapted --
+      -- M_Elements_Swapped --
       ------------------------
 
       function M_Elements_Swapped

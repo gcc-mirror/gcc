@@ -4288,9 +4288,9 @@ package body Sem_Ch4 is
          end if;
       end Check_High_Bound;
 
-      -----------------------------
-      -- Is_Universal_Expression --
-      -----------------------------
+      --------------------------------
+      -- Check_Universal_Expression --
+      --------------------------------
 
       procedure Check_Universal_Expression (N : Node_Id) is
       begin

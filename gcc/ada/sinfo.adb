@@ -7255,9 +7255,9 @@ package body Sinfo is
              T = V11;
    end Nkind_In;
 
-   -----------------
-   -- Pragma_Name --
-   -----------------
+   --------------------------
+   -- Pragma_Name_Unmapped --
+   --------------------------
 
    function Pragma_Name_Unmapped (N : Node_Id) return Name_Id is
    begin

@@ -173,9 +173,9 @@ package body Exp_Tss is
       return Proc;
    end Find_Inherited_TSS;
 
-   -----------------------
-   -- Get_TSS_Name_Type --
-   -----------------------
+   ------------------
+   -- Get_TSS_Name --
+   ------------------
 
    function Get_TSS_Name (E : Entity_Id) return TSS_Name_Type is
       C1 : Character;

@@ -64,9 +64,9 @@ package body Ada.Containers.Bounded_Holders is
       return Get (Left) = Get (Right);
    end "=";
 
-   -------------
-   -- Element --
-   -------------
+   ---------
+   -- Get --
+   ---------
 
    function Get (Container : Holder) return Element_Type is
    begin

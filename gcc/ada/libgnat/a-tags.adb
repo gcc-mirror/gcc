@@ -1028,9 +1028,9 @@ package body Ada.Tags is
       SSD (T).SSD_Table (Position).Index := Value;
    end Set_Entry_Index;
 
-   -----------------------
-   -- Set_Offset_To_Top --
-   -----------------------
+   -------------------------------
+   -- Set_Dynamic_Offset_To_Top --
+   -------------------------------
 
    procedure Set_Dynamic_Offset_To_Top
      (This         : System.Address;

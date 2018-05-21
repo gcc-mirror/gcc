@@ -429,7 +429,7 @@ is
       procedure Lift_Abstraction_Level (Container : Map) is null;
 
       -----------------------
-      -- Mapping_preserved --
+      -- Mapping_Preserved --
       -----------------------
 
       function Mapping_Preserved

@@ -1669,9 +1669,9 @@ package body Inline is
          --  rewritten (the analysis of the non-inlined body will handle these
          --  pragmas).  A new internal name is associated with Body_To_Inline.
 
-         -----------------------------
-         -- Generate_Body_To_Inline --
-         -----------------------------
+         ------------------------------
+         -- Generate_Subprogram_Body --
+         ------------------------------
 
          procedure Generate_Subprogram_Body
            (N              : Node_Id;
