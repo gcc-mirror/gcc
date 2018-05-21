@@ -1,3 +1,13 @@
+2018-05-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/gcc.target/aarch64/sha3.h (veor3q_u8, veor3q_u32,
+	veor3q_u64, veor3q_s8, veor3q_s16, veor3q_s32, veor3q_s64, vbcaxq_u8,
+	vbcaxq_u32, vbcaxq_u64, vbcaxq_s8, vbcaxq_s16, vbcaxq_s32,
+	vbcaxq_s64): New.
+	* gcc.target/gcc.target/aarch64/sha3_1.c: Likewise.
+	* gcc.target/gcc.target/aarch64/sha3_1.c: Likewise.
+	* gcc.target/gcc.target/aarch64/sha3_1.c: Likewise.
+
 2018-05-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85841

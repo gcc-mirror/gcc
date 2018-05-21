@@ -32068,11 +32068,61 @@ vsha512su1q_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
   return __builtin_aarch64_crypto_sha512su1qv2di_uuuu (__a, __b, __c);
 }
 
+__extension__ extern __inline uint8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+veor3q_u8 (uint8x16_t __a, uint8x16_t __b, uint8x16_t __c)
+{
+  return __builtin_aarch64_eor3qv16qi_uuuu (__a, __b, __c);
+}
+
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 veor3q_u16 (uint16x8_t __a, uint16x8_t __b, uint16x8_t __c)
 {
   return __builtin_aarch64_eor3qv8hi_uuuu (__a, __b, __c);
+}
+
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+veor3q_u32 (uint32x4_t __a, uint32x4_t __b, uint32x4_t __c)
+{
+  return __builtin_aarch64_eor3qv4si_uuuu (__a, __b, __c);
+}
+
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+veor3q_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
+{
+  return __builtin_aarch64_eor3qv2di_uuuu (__a, __b, __c);
+}
+
+
+__extension__ extern __inline int8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+veor3q_s8 (int8x16_t __a, int8x16_t __b, int8x16_t __c)
+{
+  return __builtin_aarch64_eor3qv16qi (__a, __b, __c);
+}
+
+__extension__ extern __inline int16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+veor3q_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return __builtin_aarch64_eor3qv8hi (__a, __b, __c);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+veor3q_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return __builtin_aarch64_eor3qv4si (__a, __b, __c);
+}
+
+__extension__ extern __inline int64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+veor3q_s64 (int64x2_t __a, int64x2_t __b, int64x2_t __c)
+{
+  return __builtin_aarch64_eor3qv2di (__a, __b, __c);
 }
 
 __extension__ extern __inline uint64x2_t
@@ -32089,12 +32139,63 @@ vxarq_u64 (uint64x2_t __a, uint64x2_t __b, const int imm6)
   return __builtin_aarch64_xarqv2di_uuus (__a, __b,imm6);
 }
 
+__extension__ extern __inline uint8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbcaxq_u8 (uint8x16_t __a, uint8x16_t __b, uint8x16_t __c)
+{
+  return __builtin_aarch64_bcaxqv16qi_uuuu (__a, __b, __c);
+}
+
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vbcaxq_u16 (uint16x8_t __a, uint16x8_t __b, uint16x8_t __c)
 {
   return __builtin_aarch64_bcaxqv8hi_uuuu (__a, __b, __c);
 }
+
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbcaxq_u32 (uint32x4_t __a, uint32x4_t __b, uint32x4_t __c)
+{
+  return __builtin_aarch64_bcaxqv4si_uuuu (__a, __b, __c);
+}
+
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbcaxq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
+{
+  return __builtin_aarch64_bcaxqv2di_uuuu (__a, __b, __c);
+}
+
+__extension__ extern __inline int8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbcaxq_s8 (int8x16_t __a, int8x16_t __b, int8x16_t __c)
+{
+  return __builtin_aarch64_bcaxqv16qi (__a, __b, __c);
+}
+
+__extension__ extern __inline int16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbcaxq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return __builtin_aarch64_bcaxqv8hi (__a, __b, __c);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbcaxq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return __builtin_aarch64_bcaxqv4si (__a, __b, __c);
+}
+
+__extension__ extern __inline int64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbcaxq_s64 (int64x2_t __a, int64x2_t __b, int64x2_t __c)
+{
+  return __builtin_aarch64_bcaxqv2di (__a, __b, __c);
+}
+
+
 #pragma GCC pop_options
 
 #pragma GCC push_options

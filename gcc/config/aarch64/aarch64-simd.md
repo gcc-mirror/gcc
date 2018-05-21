@@ -5926,13 +5926,13 @@
 
 ;; sha3
 
-(define_insn "aarch64_eor3qv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=w")
-	(xor:V8HI
-	 (xor:V8HI
-	  (match_operand:V8HI 2 "register_operand" "%w")
-	  (match_operand:V8HI 3 "register_operand" "w"))
-	 (match_operand:V8HI 1 "register_operand" "w")))]
+(define_insn "eor3q<mode>4"
+  [(set (match_operand:VQ_I 0 "register_operand" "=w")
+	(xor:VQ_I
+	 (xor:VQ_I
+	  (match_operand:VQ_I 2 "register_operand" "w")
+	  (match_operand:VQ_I 3 "register_operand" "w"))
+	 (match_operand:VQ_I 1 "register_operand" "w")))]
   "TARGET_SIMD && TARGET_SHA3"
   "eor3\\t%0.16b, %1.16b, %2.16b, %3.16b"
   [(set_attr "type" "crypto_sha3")]
@@ -5962,13 +5962,13 @@
   [(set_attr "type" "crypto_sha3")]
 )
 
-(define_insn "aarch64_bcaxqv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=w")
-	(xor:V8HI
-	 (and:V8HI
-	  (not:V8HI (match_operand:V8HI 3 "register_operand" "w"))
-	  (match_operand:V8HI 2 "register_operand" "w"))
-	 (match_operand:V8HI 1 "register_operand" "w")))]
+(define_insn "bcaxq<mode>4"
+  [(set (match_operand:VQ_I 0 "register_operand" "=w")
+	(xor:VQ_I
+	 (and:VQ_I
+	  (not:VQ_I (match_operand:VQ_I 3 "register_operand" "w"))
+	  (match_operand:VQ_I 2 "register_operand" "w"))
+	 (match_operand:VQ_I 1 "register_operand" "w")))]
   "TARGET_SIMD && TARGET_SHA3"
   "bcax\\t%0.16b, %1.16b, %2.16b, %3.16b"
   [(set_attr "type" "crypto_sha3")]
