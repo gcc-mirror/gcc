@@ -1,5 +1,25 @@
 2018-04-04  Olivier Hainque  <hainque@adacore.com>
 
+	* libgnat/s-dwalin.ads (Dwarf_Context): Change type of Load_Address to
+	Address, and type of Low, High to Storage_Offset.
+	(Low): Rename as Low_Address and convey that the return value is a
+	runtime reference accounting for a load address.
+	* libgnat/s-dwalin.adb (Read_Aranges_Entry): Adjust to the
+	address/offset type changes.
+	(Aranges_Lookup): Likewise.
+	(Symbolic_Address): Likewise.
+	(Symbolic_Traceback): Likewise.
+	(Dump_Cache): Likewise.
+	(Is_Inside): Likewise.
+	(Open): Likewise.
+	(Set_Load_Address): Likewise.
+	(Low_Address): Likewise, and account for C.Load_Address.
+	* libgnat/s-trasym__dwarf.adb (Lt): Use Low_Address instead of Low.
+	(Multi_Module_Symbolic_Traceback): Compare address in traceback
+	with module Low_Address instead of Low.
+
+2018-04-04  Olivier Hainque  <hainque@adacore.com>
+
 	* libgnat/s-dwalin.ads (Dwarf_Context): Rename Load_Slide as
 	Load_Address.
 	* libgnat/s-dwalin.adb (Is_Inside): Adjust accordingly.
