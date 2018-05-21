@@ -1,3 +1,29 @@
+2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_cg.adb: Remove with and use clause for Exp_Disp.
+	* exp_ch9.adb: Remove with and use clause for Exp_Disp.
+	* exp_disp.adb (Is_Predefined_Dispatching_Operation): Moved to Sem_Util.
+	(Is_Predefined_Interface_Primitive): Moved to Sem_Util.
+	(Is_Predefined_Internal_Operation): Moved to Sem_Util.
+	* exp_disp.ads (Is_Predefined_Dispatching_Operation): Moved to Sem_Util.
+	(Is_Predefined_Interface_Primitive): Moved to Sem_Util.
+	(Is_Predefined_Internal_Operation): Moved to Sem_Util.
+	* exp_dist.adb: Remove with and use clause for Exp_Disp.
+	* freeze.adb: Remove with and use clause for Exp_Disp.
+	* sem_cat.adb: Remove with and use clause for Exp_Disp.
+	* sem_ch6.adb: Remove with and use clause for Exp_Disp.
+	* sem_ch12.adb: Remove with and use clause for Exp_Disp.
+	* sem_elab.adb (Check_Overriding_Primitive): Do not process predefined
+	primitives.
+	* sem_util.adb: Remove with and use clause for Exp_Disp.
+	(Is_Predefined_Dispatching_Operation): Moved from Exp_Disp.
+	(Is_Predefined_Interface_Primitive): Moved from Exp_Disp.
+	(Is_Predefined_Internal_Operation): Moved from Exp_Disp.
+	* sem_util.ads (Is_Predefined_Dispatching_Operation): Moved from
+	Exp_Disp.
+	(Is_Predefined_Interface_Primitive): Moved from Exp_Disp.
+	(Is_Predefined_Internal_Operation): Moved from Exp_Disp.
+
 2018-04-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Valid_Conversion): Improve error message on an illegal

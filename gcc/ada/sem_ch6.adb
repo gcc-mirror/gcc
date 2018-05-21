@@ -36,7 +36,6 @@ with Exp_Ch6;   use Exp_Ch6;
 with Exp_Ch7;   use Exp_Ch7;
 with Exp_Ch9;   use Exp_Ch9;
 with Exp_Dbug;  use Exp_Dbug;
-with Exp_Disp;  use Exp_Disp;
 with Exp_Tss;   use Exp_Tss;
 with Exp_Util;  use Exp_Util;
 with Freeze;    use Freeze;

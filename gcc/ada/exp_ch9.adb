@@ -31,7 +31,6 @@ with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
-with Exp_Disp; use Exp_Disp;
 with Exp_Sel;  use Exp_Sel;
 with Exp_Smem; use Exp_Smem;
 with Exp_Tss;  use Exp_Tss;
