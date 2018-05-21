@@ -1,3 +1,10 @@
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Warn_Overlay): Do not emit a wawrning on an object
+	declaration with an explicit address clause and a type with default
+	initialization, if the declaration carries an aspect
+	Suppress_Initialization.
+
 2018-04-04  Daniel Mercier  <mercier@adacore.com>
 
 	* pprint.adb: Use mixed case for attribute names.

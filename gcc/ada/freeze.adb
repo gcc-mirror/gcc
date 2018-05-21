@@ -8690,11 +8690,14 @@ package body Freeze is
       --  tested for because predefined String types are initialized by inline
       --  code rather than by an init_proc). Note that we do not give the
       --  warning for Initialize_Scalars, since we suppressed initialization
-      --  in this case. Also, do not warn if Suppress_Initialization is set.
+      --  in this case. Also, do not warn if Suppress_Initialization is set
+      --  either on the type, or on the object via pragma or aspect.
 
       if Present (Expr)
         and then not Is_Imported (Ent)
         and then not Initialization_Suppressed (Typ)
+        and then not (Ekind (Ent) = E_Variable
+                        and then Initialization_Suppressed (Ent))
         and then (Has_Non_Null_Base_Init_Proc (Typ)
                    or else Is_Access_Type (Typ)
                    or else (Normalize_Scalars
