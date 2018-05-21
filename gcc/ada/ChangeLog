@@ -1,3 +1,9 @@
+2018-04-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case Scalar_Storage_Order): The
+	attribute reference is legal within a generic unit when the prefix is a
+	formal private type.
+
 2018-04-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Establish_Transient_Scope): Code cleanup. Do not
