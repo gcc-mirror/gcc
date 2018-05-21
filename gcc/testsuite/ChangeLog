@@ -1,3 +1,8 @@
+2018-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/vec_init_1.c: Scan for LD1 instead of INS for
+	tiny and large memory models.
+
 2018-04-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/suppress_initialization.adb,
