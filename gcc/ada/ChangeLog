@@ -1,5 +1,13 @@
 2018-04-04  Olivier Hainque  <hainque@adacore.com>
 
+	* libgnat/s-dwalin.ads (Dwarf_Context): Rename Load_Slide as
+	Load_Address.
+	* libgnat/s-dwalin.adb (Is_Inside): Adjust accordingly.
+	(Set_Load_Address): Likewise.
+	(Symbolic_Traceback): Likewise.
+
+2018-04-04  Olivier Hainque  <hainque@adacore.com>
+
 	* libgnat/s-trasym__dwarf.adb (Add_Module_To_Cache): Expect a
 	Load_Address argument and pass it down to Init_Module.
 	* libgnat/s-tsmona__linux.adb (Build_Cache_For_All_Modules): Pass

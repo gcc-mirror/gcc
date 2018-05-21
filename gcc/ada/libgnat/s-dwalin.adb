@@ -372,8 +372,8 @@ package body System.Dwarf_Lines is
 
    function Is_Inside (C : Dwarf_Context; Addr : Address) return Boolean is
    begin
-      return (Addr >= To_Address (To_Integer (C.Low) + C.Load_Slide)
-                and Addr <= To_Address (To_Integer (C.High) + C.Load_Slide));
+      return (Addr >= To_Address (To_Integer (C.Low) + C.Load_Address)
+                and Addr <= To_Address (To_Integer (C.High) + C.Load_Address));
    end Is_Inside;
 
    ---------
@@ -779,7 +779,7 @@ package body System.Dwarf_Lines is
 
    procedure Set_Load_Address (C : in out Dwarf_Context; Addr : Address) is
    begin
-      C.Load_Slide := To_Integer (Addr);
+      C.Load_Address := To_Integer (Addr);
    end Set_Load_Address;
 
    ------------------
@@ -1548,7 +1548,7 @@ package body System.Dwarf_Lines is
          Addr_In_Traceback := PC_For (Traceback (J));
 
          Addr_To_Lookup := To_Address
-           (To_Integer (Addr_In_Traceback) - C.Load_Slide);
+           (To_Integer (Addr_In_Traceback) - C.Load_Address);
 
          Symbolic_Address
            (C,
