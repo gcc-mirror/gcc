@@ -163,7 +163,7 @@ private
    type Search_Array_Access is access Search_Array;
 
    type Dwarf_Context (In_Exception : Boolean := False) is record
-      Load_Slide : System.Storage_Elements.Integer_Address := 0;
+      Load_Address : System.Storage_Elements.Integer_Address := 0;
       Low, High  : Address;
       --  Bounds of the module, per the module object file
 
