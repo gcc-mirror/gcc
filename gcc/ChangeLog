@@ -1,3 +1,11 @@
+2018-05-21  Alexander Nesterovskiy  <alexander.nesterovskiy@intel.com>
+
+	* config/i386/i386.md (*movsf_internal): AVX falsedep fix.
+	(*movdf_internal): Ditto.
+	(*rcpsf2_sse): Ditto.
+	(*rsqrtsf2_sse): Ditto.
+	(*sqrt<mode>2_sse): Ditto.
+
 2018-05-21  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_eor3qv8hi): Change to
