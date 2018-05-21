@@ -78,6 +78,9 @@
 ;; Quad vector modes.
 (define_mode_iterator VQ [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
 
+;; Quad integer vector modes.
+(define_mode_iterator VQ_I [V16QI V8HI V4SI V2DI])
+
 ;; VQ without 2 element modes.
 (define_mode_iterator VQ_NO2E [V16QI V8HI V4SI V8HF V4SF])
 

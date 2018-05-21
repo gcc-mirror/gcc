@@ -1,3 +1,15 @@
+2018-05-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_eor3qv8hi): Change to
+	eor3q<mode>4.
+	(aarch64_bcaxqv8hi): Change to bcaxq<mode>4.
+	* config/aarch64/aarch64-simd-builtins.def (veor3q_u8, veor3q_u32,
+	veor3q_u64, veor3q_s8, veor3q_s16, veor3q_s32, veor3q_s64, vbcaxq_u8,
+	vbcaxq_u32, vbcaxq_u64, vbcaxq_s8, vbcaxq_s16, vbcaxq_s32,
+	vbcaxq_s64): New.
+	* config/aarch64/arm_neon.h: Likewise.
+	* config/aarch64/iterators.md (VQ_I): New.
+
 2018-05-21  Alexey Brodkin <abrodkin@synopsys.com>
 
 	* config.gcc: Add arc/t-multilib-linux to tmake_file for
