@@ -1,3 +1,9 @@
+2018-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/85843 - warning in logic_error copy constructor.
+	* class.c (type_has_user_nondefault_constructor): Check for a
+	user-provided ctor, not user-declared.
+
 2018-05-19  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_pack_expansion): Sorry rather than abort
