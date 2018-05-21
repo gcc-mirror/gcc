@@ -12583,6 +12583,82 @@ package body Sem_Util is
       end loop;
    end Inspect_Deferred_Constant_Completion;
 
+   -------------------------------
+   -- Install_Elaboration_Model --
+   -------------------------------
+
+   procedure Install_Elaboration_Model (Unit_Id : Entity_Id) is
+      function Find_Elaboration_Checks_Pragma (L : List_Id) return Node_Id;
+      --  Try to find pragma Elaboration_Checks in arbitrary list L. Return
+      --  Empty if there is no such pragma.
+
+      ------------------------------------
+      -- Find_Elaboration_Checks_Pragma --
+      ------------------------------------
+
+      function Find_Elaboration_Checks_Pragma (L : List_Id) return Node_Id is
+         Item : Node_Id;
+
+      begin
+         Item := First (L);
+         while Present (Item) loop
+            if Nkind (Item) = N_Pragma
+              and then Pragma_Name (Item) = Name_Elaboration_Checks
+            then
+               return Item;
+            end if;
+
+            Next (Item);
+         end loop;
+
+         return Empty;
+      end Find_Elaboration_Checks_Pragma;
+
+      --  Local variables
+
+      Args  : List_Id;
+      Model : Node_Id;
+      Prag  : Node_Id;
+      Unit  : Node_Id;
+
+   --  Start of processing for Install_Elaboration_Model
+
+   begin
+      --  Nothing to do when the unit does not exist
+
+      if No (Unit_Id) then
+         return;
+      end if;
+
+      Unit := Parent (Unit_Declaration_Node (Unit_Id));
+
+      --  Nothing to do when the unit is not a library unit
+
+      if Nkind (Unit) /= N_Compilation_Unit then
+         return;
+      end if;
+
+      Prag := Find_Elaboration_Checks_Pragma (Context_Items (Unit));
+
+      --  The compilation unit is subject to pragma Elaboration_Checks. Set the
+      --  elaboration model as specified by the pragma.
+
+      if Present (Prag) then
+         Args := Pragma_Argument_Associations (Prag);
+
+         --  Guard against an illegal pragma. The sole argument must be an
+         --  identifier which specifies either Dynamic or Static model.
+
+         if Present (Args) then
+            Model := Get_Pragma_Arg (First (Args));
+
+            if Nkind (Model) = N_Identifier then
+               Dynamic_Elaboration_Checks := Chars (Model) = Name_Dynamic;
+            end if;
+         end if;
+      end if;
+   end Install_Elaboration_Model;
+
    -----------------------------
    -- Install_Generic_Formals --
    -----------------------------
