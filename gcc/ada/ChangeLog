@@ -1,3 +1,9 @@
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): Recognize complex cases where an
+	indexed call originally in prefix forn is itself the prefix of a
+	further call.
+
 2018-04-04  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_eval.adb (Is_Null_Range): Clarify access to the full view of a
