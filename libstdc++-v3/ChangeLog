@@ -1,5 +1,11 @@
 2018-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/std-ops.cc (absolute): Report an error for empty
+	paths.
+	(weakly_canonical(const path&)): Do not call canonical on empty path.
+	(weakly_canonical(const path&, error_code&)): Likewise.
+	* testsuite/27_io/filesystem/operations/absolute.cc: Check for errors.
+
 	PR libstdc++/85818
 	* testsuite/experimental/filesystem/path/preferred_separator.cc: Add
 	dg-require-filesystem-ts.
