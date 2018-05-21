@@ -312,9 +312,9 @@ package body Exp_Unst is
          return;
       end if;
 
-      --  At least for now, do not unnest anything but main source unit
+      --  Only unnest when generating code for the main source unit
 
-      if not In_Extended_Main_Source_Unit (Subp_Body) then
+      if not In_Extended_Main_Code_Unit (Subp_Body) then
          return;
       end if;
 
@@ -1556,7 +1556,7 @@ package body Exp_Unst is
                --  from level STJR.Lev to level STJE.Lev. The general form of
                --  the rewritten reference for entity X is:
 
-               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
+               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECmU.X)
 
                --  where a,b,c,d .. m =
                --    STJR.Lev - 1,  STJR.Lev - 2, .. STJE.Lev
