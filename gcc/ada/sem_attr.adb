@@ -5709,11 +5709,15 @@ package body Sem_Attr is
 
          if not (Is_Record_Type (P_Type) or else Is_Array_Type (P_Type)) then
 
-            --  In GNAT mode, the attribute applies to generic types as well
-            --  as composite types, and for non-composite types always returns
-            --  the default bit order for the target.
+            --  The attribute applies to generic private types (in which case
+            --  the legality rule is applied in the instance) as well as to
+            --  composite types. For noncomposite types it always returns the
+            --  default bit order for the target.
+            --  Allowing formal private types was originally introduced in
+            --  GNAT_Mode only, to compile instances of Sequential_IO, but
+            --  users find it more generally useful in generic units.
 
-            if not (GNAT_Mode and then Is_Generic_Type (P_Type))
+            if not (Is_Generic_Type (P_Type) and then Is_Private_Type (P_Type))
               and then not In_Instance
             then
                Error_Attr_P
@@ -11074,7 +11078,7 @@ package body Sem_Attr is
 
             --  The context may be a constrained access type (however ill-
             --  advised such subtypes might be) so in order to generate a
-            --  constraint check when needed set the type of the attribute
+            --  constraint check we need to set the type of the attribute
             --  reference to the base type of the context.
 
             Set_Etype (N, Btyp);
@@ -11836,6 +11840,8 @@ package body Sem_Attr is
 
       if Attr_Id = Attribute_Elaborated then
          null;
+
+      --  Should this be restricted to Expander_Active???
 
       else
          Freeze_Expression (P);
