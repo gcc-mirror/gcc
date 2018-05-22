@@ -13011,18 +13011,15 @@ package body Sem_Res is
       --  Here we have a real conversion error
 
       else
+         --  Check for missing regular with_clause when only a limited view of
+         --  target is available.
 
-         --  Check for missing regular with_clause when only a limited view
-         --  of target is available.
-
-         if From_Limited_With (Opnd_Type)
-           and then In_Package_Body
-         then
+         if From_Limited_With (Opnd_Type) and then In_Package_Body then
             Conversion_Error_NE
               ("invalid conversion, not compatible with limited view of }",
-                N, Opnd_Type);
-            Conversion_Error_NE ("\add with_clause for& to current unit!", N,
-              Scope (Opnd_Type));
+               N, Opnd_Type);
+            Conversion_Error_NE
+              ("\add with_clause for& to current unit!", N, Scope (Opnd_Type));
 
          elsif Is_Access_Type (Opnd_Type)
            and then From_Limited_With (Designated_Type (Opnd_Type))
@@ -13030,8 +13027,9 @@ package body Sem_Res is
          then
             Conversion_Error_NE
               ("invalid conversion, not compatible with }", N, Opnd_Type);
-            Conversion_Error_NE ("\add with_clause for& to current unit!", N,
-              Scope (Designated_Type (Opnd_Type)));
+            Conversion_Error_NE
+              ("\add with_clause for& to current unit!",
+               N, Scope (Designated_Type (Opnd_Type)));
 
          else
             Conversion_Error_NE

@@ -238,8 +238,8 @@ package body Exp_Ch5 is
           Statements => Stats,
           End_Label  => Empty);
 
-      --  If the contruct has a specified loop name, preserve it in the
-      --  new loop, for possible use in exit statements.
+      --  If the contruct has a specified loop name, preserve it in the new
+      --  loop, for possible use in exit statements.
 
       if Present (Identifier (N))
         and then Comes_From_Source (Identifier (N))
