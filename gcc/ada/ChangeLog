@@ -1,5 +1,12 @@
 2018-05-22  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb (Search_Derivation_Levels): Whenever a parent type is
+	private, use the full view if available, because it may include renamed
+	discriminants whose values are stored in the corresponding
+	Stored_Constraint.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
 	* einfo.ads, einfo.adb: New attribute Hidden_In_Formal_Instance,
 	defined on packages that are actuals for formal packages, in order to
 	set/reset the visibility of the formals of a formal package with given
