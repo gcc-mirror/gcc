@@ -3322,7 +3322,7 @@ cleanup:
 match
 gfc_match_event_post (void)
 {
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "EVENT POST statement at %C"))
+  if (!gfc_notify_std (GFC_STD_F2018, "EVENT POST statement at %C"))
     return MATCH_ERROR;
 
   return event_statement (ST_EVENT_POST);
@@ -3332,7 +3332,7 @@ gfc_match_event_post (void)
 match
 gfc_match_event_wait (void)
 {
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "EVENT WAIT statement at %C"))
+  if (!gfc_notify_std (GFC_STD_F2018, "EVENT WAIT statement at %C"))
     return MATCH_ERROR;
 
   return event_statement (ST_EVENT_WAIT);
@@ -3344,7 +3344,7 @@ gfc_match_event_wait (void)
 match
 gfc_match_fail_image (void)
 {
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "FAIL IMAGE statement at %C"))
+  if (!gfc_notify_std (GFC_STD_F2018, "FAIL IMAGE statement at %C"))
     return MATCH_ERROR;
 
   if (gfc_match_char ('(') == MATCH_YES)
@@ -3368,7 +3368,7 @@ gfc_match_form_team (void)
   match m;
   gfc_expr *teamid,*team;
 
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "FORM TEAM statement at %C"))
+  if (!gfc_notify_std (GFC_STD_F2018, "FORM TEAM statement at %C"))
     return MATCH_ERROR;
 
   if (gfc_match_char ('(') == MATCH_NO)
@@ -3407,7 +3407,7 @@ gfc_match_change_team (void)
   match m;
   gfc_expr *team;
 
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "CHANGE TEAM statement at %C"))
+  if (!gfc_notify_std (GFC_STD_F2018, "CHANGE TEAM statement at %C"))
     return MATCH_ERROR;
 
   if (gfc_match_char ('(') == MATCH_NO)
@@ -3437,7 +3437,7 @@ syntax:
 match
 gfc_match_end_team (void)
 {
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "END TEAM statement at %C"))
+  if (!gfc_notify_std (GFC_STD_F2018, "END TEAM statement at %C"))
     return MATCH_ERROR;
 
   if (gfc_match_char ('(') == MATCH_YES)
@@ -3461,7 +3461,7 @@ gfc_match_sync_team (void)
   match m;
   gfc_expr *team;
 
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "SYNC TEAM statement at %C"))
+  if (!gfc_notify_std (GFC_STD_F2018, "SYNC TEAM statement at %C"))
     return MATCH_ERROR;
 
   if (gfc_match_char ('(') == MATCH_NO)

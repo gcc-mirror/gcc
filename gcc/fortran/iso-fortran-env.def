@@ -86,7 +86,7 @@ NAMED_INTCST (ISOFORTRANENV_FILE_STAT_LOCKED_OTHER_IMAGE, \
 NAMED_INTCST (ISOFORTRANENV_FILE_STAT_STOPPED_IMAGE, "stat_stopped_image", \
               GFC_STAT_STOPPED_IMAGE, GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_FILE_STAT_FAILED_IMAGE, "stat_failed_image", \
-              GFC_STAT_FAILED_IMAGE, GFC_STD_F2008_TS)
+              GFC_STAT_FAILED_IMAGE, GFC_STD_F2018)
 NAMED_INTCST (ISOFORTRANENV_FILE_STAT_UNLOCKED, "stat_unlocked", \
               GFC_STAT_UNLOCKED, GFC_STD_F2008)
 
@@ -126,12 +126,12 @@ NAMED_DERIVED_TYPE (ISOFORTRAN_LOCK_TYPE, "lock_type", \
 NAMED_DERIVED_TYPE (ISOFORTRAN_EVENT_TYPE, "event_type", \
 		    flag_coarray == GFC_FCOARRAY_LIB
 		    ?  get_int_kind_from_node (ptr_type_node)
-		    : gfc_default_integer_kind, GFC_STD_F2008_TS)
+		    : gfc_default_integer_kind, GFC_STD_F2018)
 
 NAMED_DERIVED_TYPE (ISOFORTRAN_TEAM_TYPE, "team_type", \
 		    flag_coarray == GFC_FCOARRAY_LIB
 		    ? get_int_kind_from_node (ptr_type_node)
-		    : gfc_default_integer_kind, GFC_STD_F2008_TS)
+		    : gfc_default_integer_kind, GFC_STD_F2018)
 
 #undef NAMED_INTCST
 #undef NAMED_KINDARRAY
