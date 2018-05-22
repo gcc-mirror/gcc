@@ -1,3 +1,9 @@
+2018-05-22  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/85826
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): Avoid
+	assuming that a DECL necesarily has a constant size.
+
 2018-05-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR middle-end/85862
