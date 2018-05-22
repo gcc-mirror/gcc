@@ -1,3 +1,9 @@
+2018-05-22  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Add documentation for
+	the new --split-line-before-record, --indent-named-statements and
+	--no-align-modes gnatpp switches.
+
 2018-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Handle properly
