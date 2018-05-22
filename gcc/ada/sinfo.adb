@@ -1279,8 +1279,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Raise_Expression
         or else NT (N).Nkind = N_Raise_Statement
-        or else NT (N).Nkind = N_Reduction_Expression
-        or else NT (N).Nkind = N_Reduction_Expression_Parameter
         or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion
         or else NT (N).Nkind = N_Unchecked_Expression
@@ -2217,8 +2215,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iteration_Scheme
-        or else NT (N).Nkind = N_Quantified_Expression
-        or else NT (N).Nkind = N_Reduction_Expression);
+        or else NT (N).Nkind = N_Quantified_Expression);
       return Node2 (N);
    end Iterator_Specification;
 
@@ -2348,8 +2345,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iteration_Scheme
-        or else NT (N).Nkind = N_Quantified_Expression
-        or else NT (N).Nkind = N_Reduction_Expression);
+        or else NT (N).Nkind = N_Quantified_Expression);
       return Node4 (N);
    end Loop_Parameter_Specification;
 
@@ -4746,8 +4742,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Raise_Expression
         or else NT (N).Nkind = N_Raise_Statement
-        or else NT (N).Nkind = N_Reduction_Expression
-        or else NT (N).Nkind = N_Reduction_Expression_Parameter
         or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion
         or else NT (N).Nkind = N_Unchecked_Expression
@@ -5684,8 +5678,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iteration_Scheme
-        or else NT (N).Nkind = N_Quantified_Expression
-        or else NT (N).Nkind = N_Reduction_Expression);
+        or else NT (N).Nkind = N_Quantified_Expression);
       Set_Node2_With_Parent (N, Val);
    end Set_Iterator_Specification;
 
@@ -5815,8 +5808,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iteration_Scheme
-        or else NT (N).Nkind = N_Quantified_Expression
-        or else NT (N).Nkind = N_Reduction_Expression);
+        or else NT (N).Nkind = N_Quantified_Expression);
       Set_Node4_With_Parent (N, Val);
    end Set_Loop_Parameter_Specification;
 
