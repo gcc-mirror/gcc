@@ -1671,7 +1671,10 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   /* Determine the range of the bound argument (if specified).  */
   tree bndrng[2] = { NULL_TREE, NULL_TREE };
   if (bound)
-    get_size_range (bound, bndrng);
+    {
+      STRIP_NOPS (bound);
+      get_size_range (bound, bndrng);
+    }
 
   if (*lenrng)
     {

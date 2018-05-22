@@ -3783,7 +3783,17 @@ expand_builtin_strcpy (tree exp, rtx target)
 		    src, destsize);
     }
 
-  return expand_builtin_strcpy_args (dest, src, target);
+  if (rtx ret = expand_builtin_strcpy_args (dest, src, target))
+    {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      tree fndecl = get_callee_fndecl (exp);
+      maybe_warn_nonstring_arg (fndecl, exp);
+      return ret;
+    }
+
+  return NULL_RTX;
 }
 
 /* Helper function to do the actual work for expand_builtin_strcpy.  The
@@ -4576,14 +4586,14 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
 	}
     }
 
-  /* Check to see if the argument was declared attribute nonstring
-     and if so, issue a warning since at this point it's not known
-     to be nul-terminated.  */
   tree fndecl = get_callee_fndecl (exp);
-  maybe_warn_nonstring_arg (fndecl, exp);
-
   if (result)
     {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      maybe_warn_nonstring_arg (fndecl, exp);
+
       /* Return the value in the proper mode for this function.  */
       machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
       if (GET_MODE (result) == mode)
@@ -4680,14 +4690,14 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 					 arg2_rtx, TREE_TYPE (len), arg3_rtx,
 					 MIN (arg1_align, arg2_align));
 
-  /* Check to see if the argument was declared attribute nonstring
-     and if so, issue a warning since at this point it's not known
-     to be nul-terminated.  */
   tree fndecl = get_callee_fndecl (exp);
-  maybe_warn_nonstring_arg (fndecl, exp);
-
   if (result)
     {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      maybe_warn_nonstring_arg (fndecl, exp);
+
       /* Return the value in the proper mode for this function.  */
       mode = TYPE_MODE (TREE_TYPE (exp));
       if (GET_MODE (result) == mode)
