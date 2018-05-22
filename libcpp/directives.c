@@ -35,6 +35,7 @@ struct if_stack
   bool skip_elses;		/* Can future #else / #elif be skipped?  */
   bool was_skipping;		/* If were skipping on entry.  */
   int type;			/* Most recent conditional for diagnostics.  */
+  source_location hash_loc;     /* Location of '#' of first conditional.  */
 };
 
 /* Contains a registered pragma or pragma namespace.  */
@@ -74,7 +75,7 @@ struct pragma_entry
 #define IN_I		(1 << 3)
 #define EXPAND		(1 << 4)
 #define DEPRECATED	(1 << 5)
-#define PEEKED          (1 << 6)
+#define PEEK_INVISIBLE  (1 << 6)
 
 /* Defines one #-directive, including how to handle it.  */
 typedef void (*directive_handler) (cpp_reader *);
@@ -138,25 +139,25 @@ static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
    where the extension appears to have come from.  */
 
 #define DIRECTIVE_TABLE							\
-  D(define,	T_DEFINE = 0,	KANDR,     IN_I | PEEKED)		\
-  D(include,	T_INCLUDE,	KANDR,     INCL | EXPAND | PEEKED)	\
+  D(define,	T_DEFINE = 0,	KANDR,     IN_I)			\
+  D(include,	T_INCLUDE,	KANDR,     INCL | EXPAND)		\
   D(endif,	T_ENDIF,	KANDR,     COND)			\
-  D(ifdef,	T_IFDEF,	KANDR,     COND | IF_COND | PEEKED)	\
-  D(if,		T_IF,		KANDR, 	   COND | IF_COND | EXPAND | PEEKED) \
-  D(else,	T_ELSE,		KANDR,     COND)	   	\
-  D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND | PEEKED)	\
-  D(undef,	T_UNDEF,	KANDR,     IN_I | PEEKED)		\
-  D(line,	T_LINE,		KANDR,     EXPAND)		\
-  D(elif,	T_ELIF,		STDC89,    COND | EXPAND)	\
-  D(error,	T_ERROR,	STDC89,    PEEKED)			\
-  D(pragma,	T_PRAGMA,	STDC89,    IN_I | PEEKED)		\
-  D(warning,	T_WARNING,	EXTENSION, PEEKED)			\
-  D(include_next, T_INCLUDE_NEXT, EXTENSION, INCL | EXPAND | PEEKED) \
-  D(ident,	T_IDENT,	EXTENSION, IN_I | PEEKED)		\
-  D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND | PEEKED)  /* ObjC */ \
-  D(assert,	T_ASSERT,	EXTENSION, DEPRECATED | PEEKED)	   /* SVR4 */ \
-  D(unassert,	T_UNASSERT,	EXTENSION, DEPRECATED | PEEKED)	   /* SVR4 */ \
-  D(sccs,	T_SCCS,		EXTENSION, IN_I | PEEKED)   /*  SVR4? */
+  D(ifdef,	T_IFDEF,	KANDR,     COND | IF_COND)		\
+  D(if,		T_IF,		KANDR, 	   COND | IF_COND | EXPAND) 	\
+  D(else,	T_ELSE,		KANDR,     COND)	   		\
+  D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND)		\
+  D(undef,	T_UNDEF,	KANDR,     IN_I)			\
+  D(line,	T_LINE,		KANDR,     EXPAND | PEEK_INVISIBLE)	\
+  D(elif,	T_ELIF,		STDC89,    COND | EXPAND)		\
+  D(error,	T_ERROR,	STDC89,    0)				\
+  D(pragma,	T_PRAGMA,	STDC89,    IN_I)			\
+  D(warning,	T_WARNING,	EXTENSION, 0)				\
+  D(include_next, T_INCLUDE_NEXT, EXTENSION, INCL | EXPAND)		\
+  D(ident,	T_IDENT,	EXTENSION, IN_I)			\
+  D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* ObjC */	\
+  D(assert,	T_ASSERT,	EXTENSION, DEPRECATED)	   /* SVR4 */	\
+  D(unassert,	T_UNASSERT,	EXTENSION, DEPRECATED)	   /* SVR4 */	\
+  D(sccs,	T_SCCS,		EXTENSION, IN_I)   	   /*  SVR4? */
 
 /* #sccs is synonymous with #ident.  */
 #define do_sccs do_ident
@@ -201,7 +202,7 @@ DIRECTIVE_TABLE
    did use this notation in its preprocessed output.  */
 static const directive linemarker_dir =
 {
-  do_linemarker, UC"#", 1, KANDR, IN_I
+  do_linemarker, UC"#", 1, KANDR, IN_I | PEEK_INVISIBLE
 };
 
 #define SEEN_EOL() (pfile->cur_token[-1].type == CPP_EOF)
@@ -494,9 +495,6 @@ _cpp_handle_directive (cpp_reader *pfile, int indented,
 	  if (pfile->state.skipping && !(dir->flags & COND))
 	    dir = 0;
 	}
-
-      if (dir && !pfile->peeked_directive && (dir->flags & PEEKED))
-	pfile->peeked_directive = hash_loc;
     }
   else if (dname->type == CPP_EOF)
     ;	/* CPP_EOF is the "null directive".  */
@@ -545,7 +543,28 @@ _cpp_handle_directive (cpp_reader *pfile, int indented,
     prepare_directive_trad (pfile);
 
   if (dir)
-    pfile->directive->handler (pfile);
+    {
+      struct if_stack *next  = pfile->buffer->if_stack;
+      if (!pfile->peeked_directive && !(dir->flags & (PEEK_INVISIBLE | COND)))
+	pfile->peeked_directive = hash_loc;
+
+      pfile->directive->handler (pfile);
+
+      if (dir->flags & COND)
+	{
+	  struct if_stack *ifs = pfile->buffer->if_stack;
+
+	  if (ifs && ifs->next == next)
+	    {
+	      /* Nested.  */
+	      ifs->hash_loc = hash_loc;
+	      next = ifs;
+	    }
+
+	  if (ifs == next && !pfile->peeked_directive && !pfile->state.skipping)
+	    pfile->peeked_directive = ifs->hash_loc;
+	}
+    }
   else if (skip == 0)
     _cpp_backup_tokens (pfile, 1);
 
@@ -2168,6 +2187,8 @@ push_conditional (cpp_reader *pfile, int skip, int type,
   ifs->skip_elses = pfile->state.skipping || !skip;
   ifs->was_skipping = pfile->state.skipping;
   ifs->type = type;
+  ifs->hash_loc = 0;
+
   /* This condition is effectively a test for top-of-file.  */
   if (pfile->mi_valid && pfile->mi_cmacro == 0)
     ifs->mi_cmacro = cmacro;

@@ -1,5 +1,16 @@
 2018-05-21  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* directives.c (struct if_stack): Add hash_loc field.
+	(PEEKED): Replace with ...
+	(PEEK_INVISIBLE): ... this.  Inverted sense.
+	(DIRECTIVE_TABLE): Update.
+	(linemarker_dir): Add PEEK_INVISIBLE.
+	(_cpp_handle_directive): Correctly handle if nests.
+
+	gcc/testsuite/
+	* g++.dg/modules/atom-preamble-2_[def].C: New.
+
 	gcc/cp/
 	* cp-tree.h (HAS_DECL_MODULE_LAZY_DEFN_P): New.
 	(MAYBE_DECL_MODULE_LAZY_DEFN): Use it.
@@ -41,7 +52,7 @@
 	Import peeking
 	gcc/c-family/
 	* c-lex.c (c_lex_with_flags) <case CPP_STRING>: Check
-	C_LEX_STRING_IS_HEADER. 
+	C_LEX_STRING_IS_HEADER.
 	* c-pragma.h (C_LEX_STRING_IS_HEADER): New flag.
 	gcc/cp/
 	* cp-tree.h (HEADER_STRING_LITERAL_P): Delete.
