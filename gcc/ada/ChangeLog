@@ -1,3 +1,7 @@
+2018-05-22  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sigtramp-qnx.c: Fix stack alignment issue in the signal trampoline.
+
 2018-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Fixed_Point_Type): If the first subtype has

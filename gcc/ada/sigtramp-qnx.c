@@ -215,17 +215,18 @@ TCR("ret")
 #define SIGTRAMP_BODY \
   CFI_DEF_CFA \
   CFI_COMMON_REGS \
-  TCR("# Push FP and LR on stack") \
-  TCR("stp x29, x30, [sp, #-16]!") \
+  TCR("# Allocate the frame (16bytes aligned) and push FP and LR") \
+  TCR("stp x29, x30, [sp, #-32]!") \
+  TCR("add x29, sp, 0") \
   TCR("# Push register used to hold the CFA on stack") \
-  TCR("str x" S(CFA_REG) ", [sp, #-8]!")  \
+  TCR("str x" S(CFA_REG) ", [sp, 16]")  \
   TCR("# Set the CFA: x2 value") \
   TCR("mov x" S(CFA_REG) ", x2") \
   TCR("# Call the handler") \
   TCR("blr x3") \
   TCR("# Release our frame and return (should never get here!).") \
-  TCR("ldr x" S(CFA_REG) " , [sp], 8") \
-  TCR("ldp x29, x30, [sp], 16") \
+  TCR("ldr x" S(CFA_REG) ", [sp, 16]") \
+  TCR("ldp x29, x30, [sp], 32") \
   TCR("ret")
 
 #endif /* AARCH64 */
