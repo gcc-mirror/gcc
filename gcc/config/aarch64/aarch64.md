@@ -4790,6 +4790,20 @@
   [(set_attr "type" "bfx")]
 )
 
+;; Match sbfiz pattern in a shift left + shift right operation.
+
+(define_insn "*ashift<mode>_extv_bfiz"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(ashift:GPI (sign_extract:GPI (match_operand:GPI 1 "register_operand" "r")
+				      (match_operand 2 "aarch64_simd_shift_imm_offset_<mode>" "n")
+				      (const_int 0))
+		     (match_operand 3 "aarch64_simd_shift_imm_<mode>" "n")))]
+  "IN_RANGE (INTVAL (operands[2]) + INTVAL (operands[3]),
+	     1, GET_MODE_BITSIZE (<MODE>mode) - 1)"
+  "sbfiz\\t%<w>0, %<w>1, %3, %2"
+  [(set_attr "type" "bfx")]
+)
+
 ;; When the bit position and width of the equivalent extraction add up to 32
 ;; we can use a W-reg LSL instruction taking advantage of the implicit
 ;; zero-extension of the X-reg.
