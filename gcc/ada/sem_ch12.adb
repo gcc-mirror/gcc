@@ -500,7 +500,10 @@ package body Sem_Ch12 is
    --  check on Ada version and the presence of an access definition in N.
 
    procedure Check_Formal_Packages (P_Id : Entity_Id);
-   --  Apply the following to all formal packages in generic associations
+   --  Apply the following to all formal packages in generic associations.
+   --  Restore the visibility of the formals of the instance that are not
+   --  defaulted (see RM 12.7 (10)). Remove the anonymous package declaration
+   --  created for formal instances that are not defaulted.
 
    procedure Check_Formal_Package_Instance
      (Formal_Pack : Entity_Id;
@@ -6561,7 +6564,6 @@ package body Sem_Ch12 is
       E           : Entity_Id;
       Formal_P    : Entity_Id;
       Formal_Decl : Node_Id;
-
    begin
       --  Iterate through the declarations in the instance, looking for package
       --  renaming declarations that denote instances of formal packages. Stop
@@ -6610,6 +6612,21 @@ package body Sem_Ch12 is
                   if not In_Instance_Body then
                      Check_Formal_Package_Instance (Formal_P, E);
                   end if;
+
+                  --  Restore the visibility of formals of the formal instance
+                  --  that are not defaulted, and are hidden within the current
+                  --  generic. These formals may be visible within an enclosing
+                  --  generic.
+
+                  declare
+                     Elmt : Elmt_Id;
+                  begin
+                     Elmt := First_Elmt (Hidden_In_Formal_Instance (Formal_P));
+                     while Present (Elmt) loop
+                        Set_Is_Hidden (Node (Elmt), False);
+                        Next_Elmt (Elmt);
+                     end loop;
+                  end;
 
                   --  After checking, remove the internal validating package.
                   --  It is only needed for semantic checks, and as it may
@@ -9953,13 +9970,14 @@ package body Sem_Ch12 is
       Actual          : Node_Id;
       Analyzed_Formal : Node_Id) return List_Id
    is
-      Loc         : constant Source_Ptr := Sloc (Actual);
-      Actual_Pack : Entity_Id;
-      Formal_Pack : Entity_Id;
-      Gen_Parent  : Entity_Id;
-      Decls       : List_Id;
-      Nod         : Node_Id;
-      Parent_Spec : Node_Id;
+      Loc            : constant Source_Ptr := Sloc (Actual);
+      Hidden_Formals : constant Elist_Id   := New_Elmt_List;
+      Actual_Pack    : Entity_Id;
+      Formal_Pack    : Entity_Id;
+      Gen_Parent     : Entity_Id;
+      Decls          : List_Id;
+      Nod            : Node_Id;
+      Parent_Spec    : Node_Id;
 
       procedure Find_Matching_Actual
        (F    : Node_Id;
@@ -10351,6 +10369,10 @@ package body Sem_Ch12 is
                         end if;
 
                      else
+                        if not Is_Hidden (Actual_Ent) then
+                           Append_Elmt (Actual_Ent, Hidden_Formals);
+                        end if;
+
                         Set_Is_Hidden (Actual_Ent);
                         Set_Is_Potentially_Use_Visible (Actual_Ent, False);
                      end if;
@@ -10409,6 +10431,8 @@ package body Sem_Ch12 is
 
             begin
                Set_Is_Internal (I_Pack);
+               Set_Ekind (I_Pack, E_Package);
+               Set_Hidden_In_Formal_Instance (I_Pack, Hidden_Formals);
 
                Append_To (Decls,
                  Make_Package_Instantiation (Sloc (Actual),

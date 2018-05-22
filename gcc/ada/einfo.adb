@@ -255,6 +255,7 @@ package body Einfo is
    --    Corresponding_Equality          Node30
    --    Last_Aggregate_Assignment       Node30
    --    Static_Initialization           Node30
+   --    Hidden_In_Formal_Instance       Elist30
 
    --    Derived_Type_Link               Node31
    --    Thunk_Entity                    Node31
@@ -1988,6 +1989,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Variable);
       return Node8 (Id);
    end Hiding_Loop_Variable;
+
+   function Hidden_In_Formal_Instance (Id : E) return L is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      return Elist30 (Id);
+   end Hidden_In_Formal_Instance;
 
    function Homonym (Id : E) return E is
    begin
@@ -5166,6 +5173,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Variable);
       Set_Node8 (Id, V);
    end Set_Hiding_Loop_Variable;
+
+   procedure Set_Hidden_In_Formal_Instance (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      Set_Elist30 (Id, V);
+   end Set_Hidden_In_Formal_Instance;
 
    procedure Set_Homonym (Id : E; V : E) is
    begin

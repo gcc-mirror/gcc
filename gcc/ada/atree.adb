@@ -3408,6 +3408,17 @@ package body Atree is
          end if;
       end Elist29;
 
+      function Elist30 (N : Node_Id) return Elist_Id is
+         pragma Assert (Nkind (N) in N_Entity);
+         Value : constant Union_Id := Nodes.Table (N + 5).Field6;
+      begin
+         if Value = 0 then
+            return No_Elist;
+         else
+            return Elist_Id (Value);
+         end if;
+      end Elist30;
+
       function Elist36 (N : Node_Id) return Elist_Id is
          pragma Assert (Nkind (N) in N_Entity);
          Value : constant Union_Id := Nodes.Table (N + 6).Field6;
@@ -6317,6 +6328,13 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 4).Field11 := Union_Id (Val);
       end Set_Elist29;
+
+      procedure Set_Elist30 (N : Node_Id; Val : Elist_Id) is
+      begin
+         pragma Assert (not Locked);
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field6 := Union_Id (Val);
+      end Set_Elist30;
 
       procedure Set_Elist36 (N : Node_Id; Val : Elist_Id) is
       begin
