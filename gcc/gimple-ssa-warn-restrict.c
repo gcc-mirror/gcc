@@ -278,7 +278,10 @@ builtin_memref::builtin_memref (tree expr, tree size)
       && array_at_struct_end_p (ref))
     ;   /* Use the maximum possible offset for last member arrays.  */
   else if (tree basesize = TYPE_SIZE_UNIT (basetype))
-    maxoff = wi::to_offset (basesize);
+    if (TREE_CODE (basesize) == INTEGER_CST)
+      /* Size could be non-constant for a variable-length type such
+	 as a struct with a VLA member (a GCC extension).  */
+      maxoff = wi::to_offset (basesize);
 
   if (offrange[0] >= 0)
     {

@@ -1,3 +1,8 @@
+2018-05-22  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/85826
+	* gcc.dg/Wrestrict-17.c: New test.
+
 2018-05-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.dg/torture/pr85862.c: Rename to...
