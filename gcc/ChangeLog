@@ -1,3 +1,11 @@
+2018-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85863
+	* tree-vect-stmts.c (vect_is_simple_cond): Only widen invariant
+	comparisons when vectype is specified.
+	(vectorizable_condition): Do not specify vectype for
+	vect_is_simple_cond when SLP vectorizing.
+
 2018-05-21  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/85657
