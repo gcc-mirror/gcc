@@ -1,3 +1,8 @@
+2018-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85863
+	* gfortran.fortran-torture/compile/pr85863.f: New testcase.
+
 2018-05-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85841
