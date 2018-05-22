@@ -1962,14 +1962,17 @@ public:
     return key_type (decl, NULL_TREE);
   }
   /* A definition key -- namespace-scope DECL.  */
-  inline static key_type defn_key (tree defn)
+  inline static key_type defn_key (tree defn, bool is_def = true)
   {
-    gcc_checking_assert (TREE_CODE (defn) != NAMESPACE_DECL
-			 || DECL_NAMESPACE_ALIAS (defn));
     /* Create a decl key.  */
     key_type res = decl_key (defn);
-    /* And turn it into a defn key.  */
-    res.second = res.first;
+    if (is_def)
+      {
+	/* And turn it into a defn key.  */
+	gcc_checking_assert (TREE_CODE (defn) != NAMESPACE_DECL
+			     || DECL_NAMESPACE_ALIAS (defn));
+	res.second = res.first;
+      }
     return res;
   }
 
@@ -2079,13 +2082,12 @@ public:
     }
     depset **maybe_insert (const key_type &, bool = true);
     depset *maybe_add_declaration (tree decl);
-    depset *add_definition (depset *decl_dep);
 
   public:
     depset *find (const key_type &);
 
   public:
-    void add_dependency (tree decl, bool looking_inside = false);
+    depset *add_dependency (tree decl, int kind);
     tree add_binding (tree ns, tree name, auto_vec<tree> &decls);
     depset *get_work ()
     {
@@ -5989,37 +5991,6 @@ depset::hash::find (const key_type &key)
   return slot ? *slot : NULL;
 }
 
-/* DECL_DEP is a depset of a decl.  Add a depset for its definition,
-   and return it.   We make the declaration's depset depend on the
-   defintion's.  Thus forcing them into the same cluster and writing
-   out together.  */
-
-depset *
-depset::hash::add_definition (depset *decl_dep)
-{
-  gcc_checking_assert (decl_dep->is_decl ());
-
-  tree decl = decl_dep->get_decl ();
-  key_type key = defn_key (decl);
-  depset **slot = maybe_insert (key, true);
-  depset *defn_dep = *slot;
-  if (!defn_dep)
-    {
-      dump () && dump ("Need definition of %N", decl);
-      defn_dep = new depset (key);
-      *slot = defn_dep;
-      worklist.safe_push (defn_dep);
-
-      /* It depends on the decl.  */
-      defn_dep->deps.safe_push (decl_dep);
-
-      /* And the decl depends on it.  */
-      decl_dep->deps.safe_push (defn_dep);
-    }
-
-  return defn_dep;
-}
-
 /* DECL is a newly discovered dependency of current.  Append it to
    current's depset.  Push it into the worklist, if it's not there.
    The decls discovered at this point are not export or module
@@ -6027,40 +5998,50 @@ depset::hash::add_definition (depset *decl_dep)
    findable by name.  Note that depending on the resolution of ADL
    mechanism, we may need to revisit that.   */
 
-void
-depset::hash::add_dependency (tree decl, bool looking_inside)
+// kind < 0 - binding
+// kind > 0 - containing scope
+// kind = 0 regular
+
+depset *
+depset::hash::add_dependency (tree decl, int kind)
 {
-  key_type key = decl_key (decl);
+  bool has_def = has_definition (decl);
+  key_type key = defn_key (decl, has_def);
   depset **slot = maybe_insert (key);
   depset *dep = *slot;
 
+  gcc_assert (kind <= 0 || has_def
+	      || (TREE_CODE (decl) == NAMESPACE_DECL
+		  && !DECL_NAMESPACE_ALIAS (decl)));
   if (!dep)
     {
       *slot = dep = new depset (key);
       worklist.safe_push (dep);
-      /* Any depset created at this point is not found by name.  */
-      dep->is_unnamed = true;
+
+      if (kind >= 0)
+	/* Any not-for-binding depset is not found by name.  */
+	dep->is_unnamed = true;
     }
 
-  if (dep->is_unnamed)
-    current->refs_unnamed = true;
-
-  if (TREE_CODE (decl) != NAMESPACE_DECL
-      && (looking_inside || has_definition (decl)))
-    dep = add_definition (dep);
-
-  /* A newly discovered dependency. */
-  dump () && dump ("Dependency on %s %N added",
+  dump () && dump ("%s on %s %N added",
+		   kind < 0 ? "Binding" : "Dependency",
 		   dep->is_defn () ? "definition" : "declaration", decl);
-  current->deps.safe_push (dep);
 
-  if (TREE_CODE (decl) == TYPE_DECL
-      && UNSCOPED_ENUM_P (TREE_TYPE (decl))
-      && CP_DECL_CONTEXT (current->get_decl ()) == TREE_TYPE (decl))
-    /* Unscoped enum values are pushed into the containing
-       scope.  Insert a dependency to the current binding, if it
-       is one of the enum constants.  */
-    dep->deps.safe_push (current);
+  if (kind >= 0)
+    {
+      if (dep->is_unnamed)
+	current->refs_unnamed = true;
+      current->deps.safe_push (dep);
+      if (TREE_CODE (decl) == TYPE_DECL
+	  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+	  && CP_DECL_CONTEXT (current->get_decl ()) == TREE_TYPE (decl))
+	/* Unscoped enum values are pushed into the containing
+	   scope.  Insert a dependency to the current binding, if it
+	   is one of the enum constants.  */
+	dep->deps.safe_push (current);
+    }
+
+  return dep;
 }
 
 /* DECLS is a vector of decls that must be written out (export or
@@ -6080,9 +6061,7 @@ depset::hash::add_binding (tree ns, tree name, auto_vec<tree> &decls)
       tree decl = decls[ix];
 
       gcc_checking_assert (DECL_P (decl));
-      depset *dep = new depset (decl_key (decl));
-      insert (dep);
-      worklist.safe_push (dep);
+      depset *dep = add_dependency (decl, -1);
       if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
 	{
 	  gcc_checking_assert (!res);
@@ -6092,8 +6071,6 @@ depset::hash::add_binding (tree ns, tree name, auto_vec<tree> &decls)
 	{
 	  bind->deps.quick_push (dep);
 	  dep->deps.safe_push (bind);
-	  if (has_definition (decl))
-	    add_definition (dep);
 	}
     }
 
@@ -7889,7 +7866,7 @@ module_state::read_definition (trees_in &in, tree decl)
   return false;
 }
 
-/* Compare members of a cluster.  Order decl < defn < bind.  depsets
+/* Compare members of a cluster.  Order defn < decl < bind.  depsets
    of the same kind can be arbitrary, but we want something
    stable.  */
 
@@ -7899,18 +7876,18 @@ cluster_cmp (const void *a_, const void *b_)
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
 
-  bool is_decl = a->is_decl ();
-  if (is_decl != b->is_decl ())
-    /* Exactly one is a decl.  It comes first.  */
-    return is_decl ? -1 : +1;
+  bool is_defn = a->is_defn ();
+  if (is_defn != b->is_defn ())
+    /* Exactly one is a defn.  It comes first.  */
+    return is_defn ? -1 : +1;
 
-  if (!is_decl)
+  if (!is_defn)
     {
-      /* Neither is a decl, try order-by-defn.  */
-      bool is_defn = a->is_defn ();
-      if (is_defn != b->is_defn ())
-	/* Exactly one is a defn.  It comes first.  */
-	return is_defn ? -1 : +1;
+      /* Neither is a defn, try order-by-decl.  */
+      bool is_decl = a->is_decl ();
+      if (is_decl != b->is_decl ())
+	/* Exactly one is a decl.  It comes first.  */
+	return is_decl ? -1 : +1;
     }
 
   /* They are both the same kind.  Order for qsort stability.  */
@@ -7935,14 +7912,12 @@ enum cluster_tag {
   ct_decl,	/* A decl.  */
   ct_defn,	/* A defn.  */
   ct_bind,	/* A binding.  */
-  ct_voldemort, /* An unnamed decl.  */
-  ct_no_decl,   /* Boundary marker.  */
-  ct_horcrux = ct_no_decl,	/* Preseed reference to unnamed decl.  */
+  ct_horcrux,	/* Preseed reference to unnamed decl.  */
   ct_hwm
 };
 
 /* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
-   decls < defns < bindings.  */
+   defns < decls < bindings.  */
 
 void
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
@@ -7955,7 +7930,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump.indent ();
 
   unsigned incoming_unnamed = unnamed;
-  unsigned defn_ix = ~0U;
   bool refs_unnamed_p = false;
 
   /* Determine horcrux numbers for unnamed decls.  Count lazy
@@ -7968,12 +7942,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       if (b->refs_unnamed)
 	refs_unnamed_p = true;
 
-      if (b->is_defn ())
-	{
-	  if (defn_ix == ~0U)
-	    defn_ix = ix;
-	}
-      else if (b->is_decl () && b->is_unnamed)
+      if (b->is_unnamed)
 	{
 	  /* There is no binding for this decl.  It is therefore not
 	     findable by name.  Determine its horcrux number.  */
@@ -7981,7 +7950,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  b->cluster = ++unnamed;
 	}
     }
-  
+
   if (refs_unnamed_p)
     /* We contain references to unnamed decls.  Seed those that are in
        earlier clusters (others will be within this cluster).  */
@@ -8010,27 +7979,21 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    }
 	}
 
-  if (defn_ix == ~0U)
-    defn_ix = 0;
-
   /* Mark members for walking.  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
-      tree decl = b->get_decl ();
 
-      if (b->is_decl ())
-	sec.mark_node (decl);
-      else if (b->is_defn ())
-	{
-	  gcc_checking_assert (TREE_VISITED (decl));
-	  mark_definition (sec, decl);
-	}
+      if (b->is_binding ())
+	for (unsigned jx = b->deps.length (); jx--;)
+	  gcc_checking_assert (TREE_VISITED (b->deps[jx]->get_decl ()));
       else
 	{
-	  gcc_checking_assert (b->is_binding ());
-	  for (unsigned jx = b->deps.length (); jx--;)
-	    gcc_checking_assert (TREE_VISITED (b->deps[jx]->get_decl ()));
+	  tree decl = b->get_decl ();
+
+	  sec.mark_node (decl);
+	  if (b->is_defn ())
+	    mark_definition (sec, decl);
 	}
     }
 
@@ -8050,32 +8013,11 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			    && TREE_PUBLIC (d))
 			   || DECL_MODULE_OWNER (d) == MODULE_PURVIEW);
 #endif
-      cluster_tag ct;
-      if (b->is_decl ())
-	ct = b->is_unnamed ? ct_voldemort : ct_decl;
-      else if (b->is_defn ())
-	ct = ct_defn;
-      else
-	ct = ct_bind;
-      sec.u (ct);
-      sec.tree_ctx (decl, false, MODULE_PURVIEW);
-      switch (ct)
+
+      if (b->is_binding ())
 	{
-	default:
-	  gcc_unreachable ();
-
-	case ct_voldemort:
-	  sec.u (b->cluster - 1);
-	  break;
-
-	case ct_decl:
-	  break;
-
-	case ct_defn:
-	  write_definition (sec, decl);
-	  break;
-
-	case ct_bind:
+	  sec.u (ct_bind);
+	  sec.tree_ctx (decl, false, MODULE_PURVIEW);
 	  sec.tree_node (b->get_name ());
 	  /* Write in forward order, so reading will see the
 	     exports first, thus building the overload chain will be
@@ -8085,13 +8027,23 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  /* Terminate the list.  */
 	  sec.tree_node (NULL);
 	}
+      else
+	{
+	  sec.u (b->is_decl () ? ct_decl : ct_defn);
+	  sec.tree_ctx (decl, false, MODULE_PURVIEW);
+	  if (b->cluster)
+	    dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
+	  sec.u (b->cluster);
+	  if (b->is_defn ()) 
+	    write_definition (sec, decl);
+	}
     }
 
   /* We don't find the section by name.  Use depset's decl's name for
      human friendliness.  Prefer a defn over a decl.  */
-  tree naming_decl = scc[defn_ix]->get_decl ();
-  bool is_defn = scc[defn_ix]->is_defn ();
-  unsigned snum = sec.end (to, to->named_decl (naming_decl, is_defn), crc_ptr);
+  tree naming_decl = scc[0]->get_decl ();
+  unsigned name = to->named_decl (naming_decl, scc[0]->is_defn ());
+  unsigned snum = sec.end (to, name, crc_ptr);
 
   for (unsigned ix = size; ix--;)
     gcc_checking_assert (scc[ix]->section == snum);
@@ -8112,73 +8064,19 @@ module_state::read_cluster (unsigned snum)
 
   dump () && dump ("Reading section:%u", snum);
   dump.indent ();
-  while (sec.more_p ())
+  while (!sec.get_overrun () && sec.more_p ())
     {
-      unsigned ct = cluster_tag (sec.u ());
-      if (ct >= ct_hwm)
-	{
-	  sec.set_overrun ();
-	  break;
-	}
-
-      tree decl = NULL_TREE;
-      if (ct < ct_no_decl)
-	{
-	  decl = sec.tree_node ();
-	  if (!decl)
-	    break;
-	}
-
+      unsigned ct = sec.u ();
       switch (ct)
 	{
 	default:
-	  gcc_unreachable ();
-
-	case ct_horcrux:
-	  {
-	    unsigned index = sec.u ();
-	    if (index < vec_safe_length (unnamed))
-	      {
-		mc_slot *slot = &(*unnamed)[index];
-
-		if (slot->is_lazy ())
-		  lazy_load (NULL, NULL, slot, false);
-		decl = *slot;
-		unsigned tag = sec.insert (decl);
-		if (sec.u ())
-		  sec.insert (TREE_TYPE (decl));
-		dump () && dump ("Inserted horcrux:%d %N", tag, decl);
-	      }
-	    else
-	      sec.set_overrun ();
-	  }
-	  break;
-
-	case ct_voldemort:
-	  {
-	    unsigned index = sec.u ();
-	    if (index < vec_safe_length (unnamed))
-	      {
-		(*unnamed)[index] = decl;
-		dump () && dump ("Voldemort decl %N", decl);
-	      }
-	    else
-	      sec.set_overrun ();
-	  }
-	  break;
-
-	case ct_decl:
-	  break;
-
-	case ct_defn:
-	  /* A definition.  */
-	  if (!read_definition (sec, decl))
-	    goto break2;
+	  sec.set_overrun ();
 	  break;
 
 	case ct_bind:
+	  /* A set of namespace bindings.  */
 	  {
-	    /* A set of namespace bindings.  */
+	    tree ns = sec.tree_node ();
 	    tree name = sec.tree_node ();
 	    tree decls = NULL_TREE;
 	    tree type = NULL_TREE;
@@ -8209,17 +8107,59 @@ module_state::read_cluster (unsigned snum)
 		  decls = decl;
 	      }
 
-	    if (!set_module_binding (decl, name, mod, decls, type))
+	    if (!set_module_binding (ns, name, mod, decls, type))
 	      {
 		sec.set_overrun ();
-		dump () && dump ("Binding of %P", decl, name);
-		goto break2;
+		dump () && dump ("Binding of %P", ns, name);
 	      }
+	  }
+	  break;
+
+	case ct_horcrux:
+	  /* Resurrect a node from a horcrux.  */
+	  {
+	    unsigned index = sec.u ();
+	    if (index < vec_safe_length (unnamed))
+	      {
+		mc_slot *slot = &(*unnamed)[index];
+
+		if (slot->is_lazy ())
+		  lazy_load (NULL, NULL, slot, false);
+		tree decl = *slot;
+		unsigned tag = sec.insert (decl);
+		if (sec.u ())
+		  sec.insert (TREE_TYPE (decl));
+		dump () && dump ("Inserted horcrux:%d %N", tag, decl);
+	      }
+	    else
+	      sec.set_overrun ();
+	  }
+	  break;
+
+	case ct_decl:
+	case ct_defn:
+	  /* A decl or defn.  */
+	  {
+	    tree decl = sec.tree_node ();
+	    if (unsigned voldemort = sec.u ())
+	      {
+		/* An unnamed node, register it.  */
+		if (voldemort - 1 < vec_safe_length (unnamed))
+		  {
+		    (*unnamed)[voldemort - 1] = decl;
+		    dump () && dump ("Voldemort decl:%u %N",
+				     voldemort - 1, decl);
+		  }
+		else
+		  sec.set_overrun ();
+	      }
+	    if (ct == ct_defn)
+	      /* A definition.  */
+	      read_definition (sec, decl);
 	  }
 	  break;
 	}
     }
- break2:
   dump.outdent ();
 
   if (!sec.end (from))
@@ -8609,9 +8549,11 @@ module_state::write (elf_out *to)
      loop, the meaning of a couple of depset fields now change:
 
      depset::cluster -> size_of cluster, if first of cluster & !namespace
-     depset::section -> 0. */
+     depset::section -> section number of cluster (if !namespace). */
 
   unsigned n_spaces = 0;
+  range_t range;
+  range.first = range.second = to->get_num_sections ();
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
@@ -8631,7 +8573,7 @@ module_state::write (elf_out *to)
       base[0]->cluster = base[0]->section = 0;
 
       /* Sort the cluster.  Later processing makes use of the ordering
-	 of decls < defns < bindings. */
+	 of defns < decls < bindings. */
       qsort (base, size, sizeof (depset *), cluster_cmp);
 
       if (base[0]->is_decl ()
@@ -8640,41 +8582,21 @@ module_state::write (elf_out *to)
 	/* A namespace decl, these are handled specially.  */
 	n_spaces++;
       else
-	/* Save the size in the first member's cluster slot.  */
-	base[0]->cluster = size;
-    }
-
-  /* Now separate out the namespace decls to the spaces array, and
-     figure out the section numbers.  This also sets the lazy_defn
-     value for decls that have a separate definition.  A depset field
-     meaning changes:
-     depset::section -> section number of */
-  range_t range;
-  range.first = range.second = to->get_num_sections ();
-  auto_vec<depset *> spaces (n_spaces);
-  for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
-    {
-      depset **base = &sccs[ix];
-      size = base[0]->cluster;
-
-      if (!size)
 	{
-	  spaces.quick_push (base[0]);
-	  size = 1;
-	}
-      else
-	{
+	  /* Save the size in the first member's cluster slot.  */
+	  base[0]->cluster = size;
 	  /* Set the section number.  */
 	  for (unsigned jx = size; jx--;)
 	    base[jx]->section = range.second;
 	  range.second++;
 	}
     }
-  gcc_assert (spaces.length () == n_spaces);
 
-  /* Write the clusters.  The meaning of depset::cluster again
-     changes, to provide the unnamed-decl count of the depset's
-     decl (and remains zero for non-decls and non-unnamed).  */
+  /* Write the clusters.  Namespace decls are put in the spaces array.
+     The meaning of depset::cluster changes to provide the
+     unnamed-decl count of the depset's decl (and remains zero for
+     non-decls and non-unnamed).  */
+  auto_vec<depset *> spaces (n_spaces);
   unsigned unnamed = 0;
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
@@ -8682,8 +8604,11 @@ module_state::write (elf_out *to)
       size = base[0]->cluster;
 
       if (!size)
-	/* A namespace  */
-	size = 1;
+	{
+	  /* A namespace  */
+	  spaces.quick_push (base[0]);
+	  size = 1;
+	}
       else
 	{
 	  /* Cluster is now used to number unnamed decls.  */
@@ -8692,8 +8617,11 @@ module_state::write (elf_out *to)
 	  write_cluster (to, base, size, unnamed, &crc);
 	}
     }
-  /* We'd better have written as many sections as we predicted.  */
-  gcc_assert (range.second == to->get_num_sections ());
+
+  /* We'd better have written as many sections and found as many
+     namespaces as we predicted.  */
+  gcc_assert (range.second == to->get_num_sections ()
+	      && spaces.length () == n_spaces);
 
   /* Write the namespaces.  */
   (spaces.qsort) (space_cmp);

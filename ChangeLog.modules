@@ -1,5 +1,17 @@
 2018-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (depset::defn_key): Add is_def parm.
+	(depset::hash::add_definition): Delete.
+	(depset::hash::add_dependency): Add either decl or defn.
+	(depset::hash::add_binding): Use add_dependency.
+	(cluster_cmp): Swap defns and decls.
+	(cluster_tag): Delete ct_voldemort, ct_no_decl.
+	(module_state::{read,write}_cluster): Voldemorts are implicit.
+	(module_state::write): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/unnamed-1_b.C: Adjust module scan.
+
 	Revert lazy definition patches.  Once one gets into template land
 	it's all very brittle.  We end up with an unmaintained difference
 	betweek 'we need the definition right now', and 'we need the
