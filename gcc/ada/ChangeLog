@@ -1,3 +1,12 @@
+2018-05-22  Javier Miranda  <miranda@adacore.com>
+
+	* locales.c: New implementation for the Ada.Locales package.
+	* libgnat/a-locale.ads: Remove comment indicating that this is not
+	implemented.
+	* doc/gnat_rm/standard_library_routines.rst: Remove comment indicating
+	that this is not implemented.
+	* gnat_rm.texi: Regenerate.
+
 2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch5.adb, freeze.adb, pprint.adb, sem_ch4.adb, sem_res.adb: Minor
