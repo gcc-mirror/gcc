@@ -1202,6 +1202,9 @@ package body System.Dwarf_Lines is
       --  Phase 1: count number of symbols. Phase 2: fill the cache.
       declare
          S               : Object_Symbol;
+         Val             : uint64;
+         Xcode_Low       : constant uint64 := uint64 (C.Low);
+         Xcode_High      : constant uint64 := uint64 (C.High);
          Sz              : uint32;
          Addr, Prev_Addr : uint32;
          Nbr_Symbols     : Natural;
@@ -1211,22 +1214,31 @@ package body System.Dwarf_Lines is
             S           := First_Symbol (C.Obj.all);
             Prev_Addr   := uint32'Last;
             while S /= Null_Symbol loop
-               --  Discard symbols whose length is 0
+               --  Discard symbols of length 0 or located outside of the
+               --  execution code section outer boundaries.
                Sz := uint32 (Size (S));
+               Val := Value (S);
 
-               --  Try to filter symbols at the same address. This is a best
-               --  effort as they might not be consecutive.
-               Addr := uint32 (Value (S) - uint64 (C.Low));
-               if Sz > 0 and then Addr /= Prev_Addr then
-                  Nbr_Symbols := Nbr_Symbols + 1;
-                  Prev_Addr   := Addr;
+               if Sz > 0
+                 and then Val >= Xcode_Low
+                 and then Val <= Xcode_High
+               then
 
-                  if Phase = 2 then
-                     C.Cache (Nbr_Symbols) :=
-                       (First => Addr,
-                        Size  => Sz,
-                        Sym   => uint32 (Off (S)),
-                        Line  => 0);
+                  Addr := uint32 (Val - Xcode_Low);
+
+                  --  Try to filter symbols at the same address. This is a best
+                  --  effort as they might not be consecutive.
+                  if Addr /= Prev_Addr then
+                     Nbr_Symbols := Nbr_Symbols + 1;
+                     Prev_Addr   := Addr;
+
+                     if Phase = 2 then
+                        C.Cache (Nbr_Symbols) :=
+                          (First => Addr,
+                           Size  => Sz,
+                           Sym   => uint32 (Off (S)),
+                           Line  => 0);
+                     end if;
                   end if;
                end if;
 
