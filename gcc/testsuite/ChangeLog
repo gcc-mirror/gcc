@@ -1,3 +1,8 @@
+2018-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/85607
+	* g++.dg/ipa/pr85607.C: New test.
+
 2018-05-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85863
