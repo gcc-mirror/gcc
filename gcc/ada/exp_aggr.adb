@@ -2846,7 +2846,7 @@ package body Exp_Aggr is
 
          In_Place_Expansion :=
            Nkind (Init_Expr) = N_Function_Call
-                and then not Is_Build_In_Place_Result_Type (Comp_Typ);
+             and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
          --  The initialization expression is a controlled function call.
          --  Perform in-place removal of side effects to avoid creating a
@@ -2865,7 +2865,11 @@ package body Exp_Aggr is
             Set_No_Side_Effect_Removal (Init_Expr);
 
             --  Install all hook-related declarations and prepare the clean up
-            --  statements.
+            --  statements. The generated code follows the initialization order
+            --  of individual components and discriminants, rather than being
+            --  inserted prior to the aggregate. This ensures that a transient
+            --  component which mentions a discriminant has proper visibility
+            --  of the discriminant.
 
             Process_Transient_Component
               (Loc        => Loc,
@@ -2873,7 +2877,7 @@ package body Exp_Aggr is
                Init_Expr  => Init_Expr,
                Fin_Call   => Fin_Call,
                Hook_Clear => Hook_Clear,
-               Aggr       => N);
+               Stmts      => Stmts);
          end if;
 
          --  Use the noncontrolled component initialization circuitry to
