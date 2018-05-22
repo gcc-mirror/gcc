@@ -1,3 +1,14 @@
+2018-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	* gfortran.dg/gomp/appendix-a/a.6.1.f90: Replace dg-options by
+	dg-additional-options.
+	* gfortran.dg/graphite/block-2.f: Ditto.
+	* gfortran.dg/graphite/id-19.f: Ditto.
+	* gfortran.dg/vect/Ofast-pr50414.f90: Ditto.
+	* gfortran.dg/vect/cost-model-pr34445a.f: Ditto.
+	* gfortran.dg/vect/pr52580.f: Ditto.
+
 2018-05-22  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* gcc.target/aarch64/ldp_stp_6.c: New.
