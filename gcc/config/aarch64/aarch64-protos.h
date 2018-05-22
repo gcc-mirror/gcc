@@ -534,6 +534,7 @@ int aarch64_ccmp_mode_to_code (machine_mode mode);
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, scalar_mode);
+void aarch64_swap_ldrstr_operands (rtx *, bool);
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
 					      tree, HOST_WIDE_INT);

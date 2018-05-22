@@ -16874,8 +16874,15 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 
       /* In increasing order, the last load can clobber the address.  */
       if (offval_1 > offval_2 && reg_mentioned_p (reg_2, mem_2))
-      return false;
+	return false;
     }
+
+  /* One of the memory accesses must be a mempair operand.
+     If it is not the first one, they need to be swapped by the
+     peephole.  */
+  if (!aarch64_mem_pair_operand (mem_1, GET_MODE (mem_1))
+       && !aarch64_mem_pair_operand (mem_2, GET_MODE (mem_2)))
+    return false;
 
   if (REG_P (reg_1) && FP_REGNUM_P (REGNO (reg_1)))
     rclass_1 = FP_REGS;
@@ -16892,6 +16899,40 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
     return false;
 
   return true;
+}
+
+/* Given OPERANDS of consecutive load/store that can be merged,
+   swap them if they are not in ascending order.  */
+void
+aarch64_swap_ldrstr_operands (rtx* operands, bool load)
+{
+  rtx mem_1, mem_2, base_1, base_2, offset_1, offset_2;
+  HOST_WIDE_INT offval_1, offval_2;
+
+  if (load)
+    {
+      mem_1 = operands[1];
+      mem_2 = operands[3];
+    }
+  else
+    {
+      mem_1 = operands[0];
+      mem_2 = operands[2];
+    }
+
+  extract_base_offset_in_addr (mem_1, &base_1, &offset_1);
+  extract_base_offset_in_addr (mem_2, &base_2, &offset_2);
+
+  offval_1 = INTVAL (offset_1);
+  offval_2 = INTVAL (offset_2);
+
+  if (offval_1 > offval_2)
+    {
+      /* Irrespective of whether this is a load or a store,
+	 we do the same swap.  */
+      std::swap (operands[0], operands[2]);
+      std::swap (operands[1], operands[3]);
+    }
 }
 
 /* Given OPERANDS of consecutive load/store, check if we can merge
@@ -17053,9 +17094,33 @@ bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 			     scalar_mode mode, RTX_CODE code)
 {
-  rtx base, offset, t1, t2;
+  rtx base, offset_1, offset_2, t1, t2;
   rtx mem_1, mem_2, mem_3, mem_4;
   HOST_WIDE_INT off_val, abs_off, adj_off, new_off, stp_off_limit, msize;
+
+  if (load)
+    {
+      mem_1 = operands[1];
+      mem_2 = operands[3];
+    }
+  else
+    {
+      mem_1 = operands[0];
+      mem_2 = operands[2];
+    }
+
+  extract_base_offset_in_addr (mem_1, &base, &offset_1);
+  extract_base_offset_in_addr (mem_2, &base, &offset_2);
+  gcc_assert (base != NULL_RTX && offset_1 != NULL_RTX
+	      && offset_2 != NULL_RTX);
+
+  if (INTVAL (offset_1) > INTVAL (offset_2))
+    {
+      std::swap (operands[0], operands[6]);
+      std::swap (operands[1], operands[7]);
+      std::swap (operands[2], operands[4]);
+      std::swap (operands[3], operands[5]);
+    }
 
   if (load)
     {
@@ -17073,13 +17138,14 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
       gcc_assert (code == UNKNOWN);
     }
 
-  extract_base_offset_in_addr (mem_1, &base, &offset);
-  gcc_assert (base != NULL_RTX && offset != NULL_RTX);
+  /* Extract the offset of the new first address.  */
+  extract_base_offset_in_addr (mem_1, &base, &offset_1);
+  extract_base_offset_in_addr (mem_2, &base, &offset_2);
 
   /* Adjust offset thus it can fit in ldp/stp instruction.  */
   msize = GET_MODE_SIZE (mode);
   stp_off_limit = msize * 0x40;
-  off_val = INTVAL (offset);
+  off_val = INTVAL (offset_1);
   abs_off = (off_val < 0) ? -off_val : off_val;
   new_off = abs_off % stp_off_limit;
   adj_off = abs_off - new_off;
