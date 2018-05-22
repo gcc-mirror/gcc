@@ -1,3 +1,7 @@
+2018-05-22  Bin Cheng <bin.cheng@arm.com>
+
+	* MAINTAINERS (loop-optimizer): Add myself.
+
 2018-05-01  Francois H. Theron  <francois.theron@netronome.com>
 
 	* configure.ac: Added "nfp" target.
