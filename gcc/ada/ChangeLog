@@ -1,3 +1,12 @@
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.ads, exp_ch4.adb, exp_util.adb, expander.adb: Remove mention
+	of N_Reduction_Expression and N_Reduction_Expression_Parameter.
+	* par-ch4.adb: Remove parsing routines for reduction expressions.
+	* sem.adb, sinfo.ads, sinfo.adb, sem_ch4.ads, sem_ch4.adb, sem_res.adb,
+	sem_spark.adb, sprint.adb: Remove analysis routines for reduction
+	expressions.
+
 2018-05-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_ch8.adb (Check_Frozen_Renaming): Do not emit error in
