@@ -9877,6 +9877,12 @@ package body Sem_Ch3 is
               ("a range is not a valid discriminant constraint", Constr);
             Discr_Expr (D) := Error;
 
+         elsif Nkind (Constr) = N_Subtype_Indication then
+            Error_Msg_N
+              ("a subtype indication is not a valid discriminant constraint",
+               Constr);
+            Discr_Expr (D) := Error;
+
          else
             Process_Discriminant_Expression (Constr, Discr);
             Discr_Expr (D) := Constr;
