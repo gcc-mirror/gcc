@@ -2200,8 +2200,8 @@ package body Sem_Attr is
          Rtyp : Entity_Id;
 
       begin
-         --  If we need an object, and we have a prefix that is the name of
-         --  a function entity, convert it into a function call.
+         --  If we need an object, and we have a prefix that is the name of a
+         --  function entity, convert it into a function call.
 
          if Is_Entity_Name (P)
            and then Ekind (Entity (P)) = E_Function
@@ -2601,7 +2601,7 @@ package body Sem_Attr is
 
       procedure Error_Attr is
       begin
-         Set_Etype (N, Any_Type);
+         Set_Etype  (N, Any_Type);
          Set_Entity (N, Any_Type);
          raise Bad_Attribute;
       end Error_Attr;
@@ -6863,7 +6863,10 @@ package body Sem_Attr is
       -- Valid --
       -----------
 
-      when Attribute_Valid =>
+      when Attribute_Valid => Valid : declare
+         Pred_Func : constant Entity_Id := Predicate_Function (P_Type);
+
+      begin
          Check_E0;
 
          --  Ignore check for object if we have a 'Valid reference generated
@@ -6872,53 +6875,76 @@ package body Sem_Attr is
 
          if Comes_From_Source (N) then
             Check_Object_Reference (P);
-         end if;
 
-         if not Is_Scalar_Type (P_Type) then
-            Error_Attr_P ("object for % attribute must be of scalar type");
-         end if;
+            if not Is_Scalar_Type (P_Type) then
+               Error_Attr_P ("object for % attribute must be of scalar type");
+            end if;
 
-         --  If the attribute appears within the subtype's own predicate
-         --  function, then issue a warning that this will cause infinite
-         --  recursion.
+            --  If the attribute appears within the subtype's own predicate
+            --  function, then issue a warning that this will cause infinite
+            --  recursion.
 
-         declare
-            Pred_Func : constant Entity_Id := Predicate_Function (P_Type);
-
-         begin
             if Present (Pred_Func) and then Current_Scope = Pred_Func then
-               Error_Msg_N
-                 ("attribute Valid requires a predicate check??", N);
+               Error_Msg_N ("attribute Valid requires a predicate check??", N);
                Error_Msg_N ("\and will result in infinite recursion??", N);
             end if;
-         end;
+         end if;
 
          Set_Etype (N, Standard_Boolean);
+      end Valid;
 
       -------------------
       -- Valid_Scalars --
       -------------------
 
-      when Attribute_Valid_Scalars =>
+      when Attribute_Valid_Scalars => Valid_Scalars : declare
+      begin
          Check_E0;
-         Check_Object_Reference (P);
-         Set_Etype (N, Standard_Boolean);
-
-         --  Following checks are only for source types
 
          if Comes_From_Source (N) then
-            if not Scalar_Part_Present (P_Type) then
-               Error_Attr_P
-                 ("??attribute % always True, no scalars to check");
-            end if;
+            Check_Object_Reference (P);
 
-            --  Not allowed for unchecked union type
+            --  Do not emit any diagnostics related to private types to avoid
+            --  disclosing the structure of the type.
 
-            if Has_Unchecked_Union (P_Type) then
-               Error_Attr_P
-                 ("attribute % not allowed for Unchecked_Union type");
+            if Is_Private_Type (P_Type) then
+
+               --  Attribute 'Valid_Scalars is not supported on private tagged
+               --  types due to a code generation issue. Is_Visible_Component
+               --  does not allow for a component of a private tagged type to
+               --  be successfully retrieved.
+
+               --  Do not use Error_Attr_P because this bypasses any subsequent
+               --  processing and leaves the attribute with type Any_Type. This
+               --  in turn prevents the proper expansion of the attribute into
+               --  True.
+
+               if Is_Tagged_Type (P_Type) then
+                  Error_Msg_Name_1 := Aname;
+                  Error_Msg_N ("??effects of attribute % are ignored", N);
+               end if;
+
+            --  Otherwise the type is not private
+
+            else
+               if not Scalar_Part_Present (P_Type) then
+                  Error_Attr_P
+                    ("??attribute % always True, no scalars to check");
+               end if;
+
+               --  Attribute 'Valid_Scalars is illegal on unchecked union types
+               --  because it is not always guaranteed that the components are
+               --  retrievable based on whether the discriminants are inferable
+
+               if Has_Unchecked_Union (P_Type) then
+                  Error_Attr_P
+                    ("attribute % not allowed for Unchecked_Union type");
+               end if;
             end if;
          end if;
+
+         Set_Etype (N, Standard_Boolean);
+      end Valid_Scalars;
 
       -----------
       -- Value --

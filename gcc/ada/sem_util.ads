@@ -2575,11 +2575,9 @@ package Sem_Util is
    --  A result of False does not necessarily mean they have different values,
    --  just that it is not possible to determine they have the same value.
 
-   function Scalar_Part_Present (T : Entity_Id) return Boolean;
-   --  Tests if type T can be determined at compile time to have at least one
-   --  scalar part in the sense of the Valid_Scalars attribute. Returns True if
-   --  this is the case, and False if no scalar parts are present (meaning that
-   --  the result of Valid_Scalars applied to T is always vacuously True).
+   function Scalar_Part_Present (Typ : Entity_Id) return Boolean;
+   --  Determine whether arbitrary type Typ is a scalar type, or contains at
+   --  least one scalar subcomponent.
 
    function Scope_Within
      (Inner : Entity_Id;
@@ -2789,6 +2787,12 @@ package Sem_Util is
    pragma Inline (Unqual_Conv);
    --  Similar to Unqualify, but removes qualified expressions, type
    --  conversions, and unchecked conversions.
+
+   function Validated_View (Typ : Entity_Id) return Entity_Id;
+   --  Obtain the "validated view" of arbitrary type Typ which is suitable
+   --  for verification by attributes 'Valid and 'Valid_Scalars. This view
+   --  is the type itself or its full view while stripping away concurrency,
+   --  derivations, and privacy.
 
    function Visible_Ancestors (Typ : Entity_Id) return Elist_Id;
    --  [Ada 2012:AI-0125-1]: Collect all the visible parents and progenitors

@@ -1,3 +1,20 @@
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Build_Array_VS_Func): Reimplemented.
+	(Build_Record_VS_Func): Reimplemented.
+	(Expand_N_Attribute): Reimplement the handling of attribute
+	'Valid_Scalars.
+	* sem_attr.adb (Analyze_Attribute): Reimplement the handling of
+	attribute 'Valid_Scalars.
+	* sem_util.adb (Scalar_Part_Present): Reimplemented.
+	(Validated_View): New routine.
+	* sem_util.ads (Scalar_Part_Present): Update the parameter profile and
+	comment on usage.
+	(Validated_View): New routine.
+	* doc/gnat_rm/implementation_defined_attributes.rst: Update the
+	documentation of attribute 'Valid_Scalars.
+	* gnat_rm.texi: Regenerate.
+
 2018-05-22  Bob Duff  <duff@adacore.com>
 
 	* binde.adb: (Choose): Ignore a pragma Elaborate_Body that appears in
