@@ -1,3 +1,14 @@
+2018-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (trees_out::seed): Reimplement mechanim.
+	(trees_out::{begin,end}): Don't turn seeding on/off here.
+	(trees_out::unmark_trees): Add logging.
+	(trees_in::preseed): Fix addition calculation.
+	(module_state::write_cluster): Adjust lazy defn seeding.
+	(module_state::read_cluster): Add lazy defn seeding.
+	(module_State::find_dependencies): Adjust.
+
 2018-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

@@ -2263,22 +2263,13 @@ public:
   void end (trees_in *);
 
 public:
-  /* Start seeding, return a data cookie.  Doing it like this will
-     ensure we explode if we try an serialize when seeding.  */
-  struct data *seed ()
+  void seed (tree [], unsigned);
+  void seed (tree decl)
   {
-    gcc_checking_assert (!seeding);
+    gcc_checking_assert (!streaming_p () && !seeding_p ());
     seeding = true;
-    struct data *cookie = data;
-    data = NULL;
-    return cookie;
-  }
-  void unseed (struct data *cookie)
-  {
-    gcc_checking_assert (seeding);
+    tree_node (decl);
     seeding = false;
-
-    data = cookie;
   }
 
 public:
@@ -2292,7 +2283,6 @@ private:
     i (rt);
   }
 public:
-  void preseed (tree);
   int insert (tree, bool = false);
   int maybe_insert_typeof (tree);
 
@@ -3106,8 +3096,6 @@ trees_out::begin (trees_in *seeder)
   /* Populate from seeder.  */
   unsigned inserted = seeder->preseed (this);
   gcc_assert (inserted == unsigned (-ref_num));
-
-  seed ();
 }
 
 /* Complete a seeding walk, transfering seeded state back to SEEDER.  */
@@ -3115,9 +3103,7 @@ trees_out::begin (trees_in *seeder)
 void
 trees_out::end (trees_in *seeder)
 {
-  gcc_assert (!streaming_p () && !depending_p () && seeding_p ());
-
-  unseed (NULL);
+  gcc_assert (!streaming_p () && !depending_p () && !seeding_p ());
 
   unmark_trees (seeder);
   /* Do not parent::end -- we weren't streaming.  */
@@ -3153,7 +3139,10 @@ trees_out::unmark_trees (trees_in *seed)
 {
   unsigned cookie = 0;
   if (seed)
-    cookie = seed->preseed (unsigned (-ref_num));
+    {
+      cookie = seed->preseed (unsigned (-ref_num));
+      dump () && dump ("Preseeding [%d,%d)", ref_num, -cookie);
+    }
 
   /* Unmark all the trees.  Seed SEED if non-null.  */
   ptr_int_hash_map::iterator end (tree_map.end ());
@@ -3177,8 +3166,9 @@ unsigned
 trees_in::preseed (unsigned size)
 {
   unsigned cookie = back_refs.length ();
-  back_refs.reserve (size);
-  for (unsigned ix = size; ix--;)
+  unsigned added = size - cookie;
+  back_refs.reserve (added);
+  for (unsigned ix = added; ix--;)
     back_refs.safe_push (NULL);
   return cookie;
 }
@@ -3219,17 +3209,33 @@ trees_out::mark_node (tree decl)
     }
 }
 
-/* T is a node in the map.  Mark it for a forced walk that preserves
-   its number.  We do this by reflecting the -ve number around
-   FIXED_LIMIT.  */
+/* Seed the set of DECLS[NUM].  */
 
 void
-trees_out::preseed (tree t)
+trees_out::seed (tree decls[], unsigned num)
 {
-  gcc_checking_assert (TREE_VISITED (t));
-  int *slot = tree_map.get (t);
-  gcc_checking_assert (*slot < 0);
-  *slot = FIXED_LIMIT - *slot;
+  struct data *cookie = data;
+  data = NULL;
+  seeding = true;
+
+  for (unsigned ix = 0; ix != num; ix++)
+    {
+      tree decl = decls[ix];
+
+      gcc_checking_assert (TREE_VISITED (decl));
+      int *slot = tree_map.get (decl);
+      gcc_checking_assert (*slot < 0);
+      dump () && dump ("Preseeding %d %N", *slot, decl);
+      *slot = FIXED_LIMIT - *slot;
+    }
+
+  int pre_ref = ref_num;
+  for (unsigned ix = 0; ix != num; ix++)
+    tree_node (decls[ix]);
+  dump () && dump ("Seeding allocated [%d,%d)", ref_num, pre_ref);
+
+  seeding = false;
+  data = cookie;
 }
 
 /* Insert T into the map, return its back reference number.
@@ -8116,8 +8122,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump.indent ();
 
   unsigned incoming_unnamed = unnamed;
-  unsigned lazy_defns = 0;
-  unsigned first_defn = ~0U;
+  unsigned lazy_count = 0;
+  unsigned defn_ix = ~0U;
   bool refs_unnamed_p = false;
 
   /* Determine horcrux numbers for unnamed decls.  Count lazy
@@ -8132,10 +8138,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
       if (b->is_defn ())
 	{
-	  if (first_defn == ~0U)
-	    first_defn = ix;
+	  if (defn_ix == ~0U)
+	    defn_ix = ix;
 	  if (MAYBE_DECL_MODULE_LAZY_DEFN (decl) != 0)
-	    lazy_defns++;
+	    lazy_count++;
 	}
       else if (b->is_decl () && b->is_unnamed)
 	{
@@ -8174,18 +8180,20 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    }
 	}
 
-  if (lazy_defns)
+  if (lazy_count)
     {
       /* There may be multiple lazy defns, we need two passes -- one
 	 to write each lazy defn as a name (or horcrux), and then to
 	 seed it and its reachable nodes.  */
       gcc_assert (!IMMEDIATE_DEFNS);
-      dump () && dump ("%u lazy definitions", lazy_defns);
+      dump () && dump ("%u lazy definitions", lazy_count);
+      tree single_lazy;
+      tree *lazy_defns = (lazy_count > 1 ? XNEWVEC (tree, lazy_count)
+			  : &single_lazy);
       sec.u (ct_seed_decl);
-      sec.u (lazy_defns);
-      unsigned ix = first_defn;
-      unsigned lazy_count = 0;
-      for (; ix != size && scc[ix]->is_defn (); ix++)
+      sec.u (lazy_count);
+      unsigned lazy_ix = 0;
+      for (unsigned ix = defn_ix; ix != size && scc[ix]->is_defn (); ix++)
 	{
 	  tree decl = scc[ix]->get_decl ();
 	  if (MAYBE_DECL_MODULE_LAZY_DEFN (decl) != 0)
@@ -8194,24 +8202,16 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		 above.  */
 	      dump () && dump ("Lazy:%u %N", lazy_count, decl);
 	      sec.tree_node (decl);
-	      lazy_count++;
+	      lazy_defns[lazy_ix++] = decl;
 	    }
 	}
-      gcc_checking_assert (lazy_count == lazy_defns);
-      struct data *cookie = sec.seed ();
-      unsigned upper_ix = ix;
-
-      /* And mark them.  */
-      for (ix = first_defn; ix != upper_ix; ix++)
-	{
-	  tree decl = scc[ix]->get_decl ();
-	  if (MAYBE_DECL_MODULE_LAZY_DEFN (decl) != 0)
-	    sec.tree_node (decl);
-	}
-      sec.unseed (cookie);
+      gcc_checking_assert (lazy_count == lazy_ix);
+      sec.seed (lazy_defns, lazy_count);
+      if (lazy_count > 1)
+	XDELETEVEC (lazy_defns);
     }
-  else if (first_defn == ~0U)
-    first_defn = 0;
+  else if (defn_ix == ~0U)
+    defn_ix = 0;
 
   /* Mark members for walking.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -8252,7 +8252,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 #endif
       cluster_tag ct;
       if (b->is_decl ())
-	// FIXME: ct_voldemort needs to preceed lazy_defn
 	ct = b->is_unnamed ? ct_voldemort : ct_decl;
       else if (b->is_defn ())
 	ct = ct_defn;
@@ -8290,8 +8289,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   /* We don't find the section by name.  Use depset's decl's name for
      human friendliness.  Prefer a defn over a decl.  */
-  tree naming_decl = scc[first_defn]->get_decl ();
-  bool is_defn = scc[first_defn]->is_defn ();
+  tree naming_decl = scc[defn_ix]->get_decl ();
+  bool is_defn = scc[defn_ix]->is_defn ();
   unsigned snum = sec.end (to, to->named_decl (naming_decl, is_defn), crc_ptr);
 
   for (unsigned ix = size; ix--;)
@@ -8352,6 +8351,34 @@ module_state::read_cluster (unsigned snum)
 	      }
 	    else
 	      sec.set_overrun ();
+	  }
+	  break;
+
+	case ct_seed_decl:
+	  {
+	    unsigned lazy_count = sec.u ();
+	    if (sec.get_overrun ())
+	      break;
+
+	    dump () && dump ("%u lazy definitions", lazy_count);
+	    tree single_lazy; /* All the Single Lazies! */
+	    tree *lazy_defns = (lazy_count > 1 ? XNEWVEC (tree, lazy_count)
+				: &single_lazy);
+	    for (unsigned ix = 0;
+		 ix != lazy_count && !sec.get_overrun (); ix++)
+	      {
+		lazy_defns[ix] = sec.tree_node ();
+		dump () && dump ("Lazy:%u %N", ix, lazy_defns[ix]);
+	      }
+	    if (!sec.get_overrun ())
+	      {
+		trees_out seeder (this, global_vec);
+		seeder.begin (&sec);
+		seeder.seed (lazy_defns, lazy_count);
+		seeder.end (&sec);
+	      }
+	    if (lazy_count > 1)
+	      XDELETEVEC (lazy_defns);
 	  }
 	  break;
 
@@ -8733,16 +8760,12 @@ module_state::find_dependencies (depset::hash &table)
 		       decl);
       dump.indent ();
       walker.mark_node (decl);
-      if (d->is_defn ())
-	{
-	  void *cookie = walker.seed ();
-	  gcc_checking_assert (!cookie);
-	}
-      walker.tree_node (decl);
       // FIXME:voldemort members?
-      if (walker.seeding_p ())
+      if (d->is_decl ())
+	walker.tree_node (decl);
+      else
 	{
-	  walker.unseed (NULL);
+	  walker.seed (decl);
 	  mark_definition (walker, decl);
 	  write_definition (walker, decl);
 	}
