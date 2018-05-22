@@ -26,6 +26,14 @@
 
 2018-05-22  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/85359
+	* builtins.c (expand_builtin_strcpy): Call maybe_warn_nonstring_arg
+	only when expasion succeeds.
+	(expand_builtin_strcmp): Same.
+	(expand_builtin_strncmp): Same.
+
+2018-05-22  Martin Sebor  <msebor@redhat.com>
+
 	* calls.c (maybe_warn_nonstring_arg): Fix a typo in a comment.
 
 2018-05-22  Jackson Woodruff  <jackson.woodruff@arm.com>
