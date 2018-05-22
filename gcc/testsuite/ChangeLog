@@ -1,3 +1,7 @@
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/controlled8.adb: New testcase.
+
 2018-05-22  Patrick Bernardi  <bernardi@adacore.com>
 
 	* gnat.dg/discr50.adb: New testcase.

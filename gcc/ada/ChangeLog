@@ -1,3 +1,10 @@
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Initialize_Ctrl_Record_Component): Insert the generated
+	code for a transient component in line with the rest of the
+	initialization code, rather than before the aggregate. This ensures
+	that the component has proper visibility of the discriminants.
+
 2018-05-22  Jerome Lambourg  <lambourg@adacore.com>
 
 	* adaint.c: Reorganize QNX-specific macros, use syspage to retreive the
