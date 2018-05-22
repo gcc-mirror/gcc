@@ -1,3 +1,7 @@
+2018-05-22  Luis Machado  <luis.machado@linaro.org>
+
+	* config/aarch64/aarch64.md (*ashift<mode>_extv_bfiz): New pattern.
+
 2018-05-22  Martin Sebor  <msebor@redhat.com>
 
 	* calls.c (maybe_warn_nonstring_arg): Fix a typo in a comment.

@@ -1,3 +1,7 @@
+2018-05-22  Luis Machado  <luis.machado@linaro.org>
+
+	* gcc.target/aarch64/lsl_asr_sbfiz.c: New test.
+
 2018-05-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85841
