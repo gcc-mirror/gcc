@@ -1,3 +1,8 @@
+2018-05-22  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (HAVE_ADJUST_CONTEXT_FOR_RAISE): Don't define on VxWorks7 for
+	AArch64.
+
 2018-05-22  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/a-except.adb (Exception_Propagation.Propagate_Exception):
