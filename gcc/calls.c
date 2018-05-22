@@ -1691,7 +1691,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	}
       else
 	{
-	  /* Replace the bound on the oparation with the upper bound
+	  /* Replace the bound on the operation with the upper bound
 	     of the length of the string if the latter is smaller.  */
 	  if (tree_int_cst_lt (lenrng[1], bndrng[0]))
 	    bndrng[0] = lenrng[1];
