@@ -4844,18 +4844,6 @@ package body Sem_Ch6 is
          Set_Kill_Elaboration_Checks (Designator);
       end if;
 
-      if Scop /= Standard_Standard and then not Is_Child_Unit (Designator) then
-         Set_Categorization_From_Scope (Designator, Scop);
-
-      else
-         --  For a compilation unit, check for library-unit pragmas
-
-         Push_Scope (Designator);
-         Set_Categorization_From_Pragmas (N);
-         Validate_Categorization_Dependency (N, Designator);
-         Pop_Scope;
-      end if;
-
       --  For a compilation unit, set body required. This flag will only be
       --  reset if a valid Import or Interface pragma is processed later on.
 
@@ -4883,18 +4871,34 @@ package body Sem_Ch6 is
          Write_Eol;
       end if;
 
+      --  Indicate that this is a protected operation, because it may be used
+      --  in subsequent declarations within the protected type.
+
       if Is_Protected_Type (Current_Scope) then
-
-         --  Indicate that this is a protected operation, because it may be
-         --  used in subsequent declarations within the protected type.
-
          Set_Convention (Designator, Convention_Protected);
       end if;
 
       List_Inherited_Pre_Post_Aspects (Designator);
 
+      --  Process the aspects before establishing the proper categorization in
+      --  case the subprogram is a compilation unit and one of its aspects is
+      --  converted into a categorization pragma.
+
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Designator);
+      end if;
+
+      if Scop /= Standard_Standard and then not Is_Child_Unit (Designator) then
+         Set_Categorization_From_Scope (Designator, Scop);
+
+      --  Otherwise the unit is a compilation unit and/or a child unit. Set the
+      --  proper categorization of the unit based on its pragmas.
+
+      else
+         Push_Scope (Designator);
+         Set_Categorization_From_Pragmas (N);
+         Validate_Categorization_Dependency (N, Designator);
+         Pop_Scope;
       end if;
    end Analyze_Subprogram_Declaration;
 

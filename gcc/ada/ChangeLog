@@ -1,3 +1,9 @@
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Declaration): Set the proper
+	categorization of the unit after processing the aspects in case one of
+	its aspects is converted into a categorization pragma.
+
 2018-05-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Warn_Overlay): Do not emit a wawrning on an object
