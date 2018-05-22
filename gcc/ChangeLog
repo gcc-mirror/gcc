@@ -1,3 +1,10 @@
+2018-05-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/85814
+	* tree-ssa-strlen.c (get_stridx_plus_constant): Cope with
+	a null return from get_strinfo when unsharing the next
+	strinfo in the chain.
+
 2018-05-21  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline

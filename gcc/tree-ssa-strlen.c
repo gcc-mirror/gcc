@@ -795,9 +795,9 @@ get_stridx_plus_constant (strinfo *basesi, unsigned HOST_WIDE_INT off,
   si = new_strinfo (ptr, idx, build_int_cst (size_type_node, nonzero_chars),
 		    basesi->full_string_p);
   set_strinfo (idx, si);
-  if (chainsi->next)
+  if (strinfo *nextsi = get_strinfo (chainsi->next))
     {
-      strinfo *nextsi = unshare_strinfo (get_strinfo (chainsi->next));
+      nextsi = unshare_strinfo (nextsi);
       si->next = nextsi->idx;
       nextsi->prev = idx;
     }
