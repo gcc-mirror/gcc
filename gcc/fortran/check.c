@@ -1136,7 +1136,7 @@ gfc_check_atomic (gfc_expr *atom, int atom_no, gfc_expr *value, int val_no,
       if (!kind_value_check (stat, stat_no, gfc_default_integer_kind))
 	return false;
 
-      if (!gfc_notify_std (GFC_STD_F2008_TS, "STAT= argument to %s at %L",
+      if (!gfc_notify_std (GFC_STD_F2018, "STAT= argument to %s at %L",
 			   gfc_current_intrinsic, &stat->where))
 	return false;
     }
@@ -1349,7 +1349,7 @@ gfc_check_event_query (gfc_expr *event, gfc_expr *count, gfc_expr *stat)
       if (!variable_check (stat, 2, false))
 	return false;
 
-      if (!gfc_notify_std (GFC_STD_F2008_TS, "STAT= argument to %s at %L",
+      if (!gfc_notify_std (GFC_STD_F2018, "STAT= argument to %s at %L",
 			   gfc_current_intrinsic, &stat->where))
 	return false;
     }
@@ -4745,7 +4745,7 @@ gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
     }
 
   if (fptr->rank > 0 && !is_c_interoperable (fptr, &msg, false, true))
-    return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable array FPTR "
+    return gfc_notify_std (GFC_STD_F2018, "Noninteroperable array FPTR "
 			   "at %L to C_F_POINTER: %s", &fptr->where, msg);
 
   return true;
@@ -4786,7 +4786,7 @@ gfc_check_c_f_procpointer (gfc_expr *cptr, gfc_expr *fptr)
     }
 
   if (!attr.is_bind_c)
-    return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable procedure "
+    return gfc_notify_std (GFC_STD_F2018, "Noninteroperable procedure "
 			   "pointer at %L to C_F_PROCPOINTER", &fptr->where);
 
   return true;
@@ -4829,7 +4829,7 @@ gfc_check_c_funloc (gfc_expr *x)
     }
 
   if (!attr.is_bind_c)
-    return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable procedure "
+    return gfc_notify_std (GFC_STD_F2018, "Noninteroperable procedure "
 			   "at %L to C_FUNLOC", &x->where);
   return true;
 }
@@ -4883,7 +4883,7 @@ gfc_check_c_loc (gfc_expr *x)
 	}
 
       if (x->rank
-	  && !gfc_notify_std (GFC_STD_F2008_TS,
+	  && !gfc_notify_std (GFC_STD_F2018,
 			      "Noninteroperable array at %L as"
 			      " argument to C_LOC: %s", &x->where, msg))
 	  return false;
@@ -5267,7 +5267,7 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
       if (!scalar_check (distance, 0))
 	return false;
 
-      if (!gfc_notify_std (GFC_STD_F2008_TS, "DISTANCE= argument to "
+      if (!gfc_notify_std (GFC_STD_F2018, "DISTANCE= argument to "
 			   "NUM_IMAGES at %L", &distance->where))
 	return false;
     }
@@ -5280,7 +5280,7 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
       if (!scalar_check (failed, 1))
 	return false;
 
-      if (!gfc_notify_std (GFC_STD_F2008_TS, "FAILED= argument to "
+      if (!gfc_notify_std (GFC_STD_F2018, "FAILED= argument to "
 			   "NUM_IMAGES at %L", &failed->where))
 	return false;
     }
@@ -5366,7 +5366,7 @@ gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim, gfc_expr *distance)
       if (!scalar_check (distance, 2))
 	return false;
 
-      if (!gfc_notify_std (GFC_STD_F2008_TS, "DISTANCE= argument to "
+      if (!gfc_notify_std (GFC_STD_F2018, "DISTANCE= argument to "
 			   "THIS_IMAGE at %L", &distance->where))
 	return false;
 

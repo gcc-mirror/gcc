@@ -1,3 +1,21 @@
+2018-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	* gfortran.dg/assumed_rank_5.f90: Update error message.
+	* gfortran.dg/assumed_type_4.f90: Ditto.
+	* gfortran.dg/bind_c_array_params.f03: Ditto.
+	* gfortran.dg/bind_c_usage_28.f90: Ditto.
+	* gfortran.dg/c_funloc_tests_5.f03: Ditto.
+	* gfortran.dg/c_funloc_tests_6.f90: Ditto.
+	* gfortran.dg/c_loc_tests_11.f03: Ditto.
+	* gfortran.dg/coarray_atomic_2.f90: Ditto.
+	* gfortran.dg/coarray_collectives_2.f90: Ditto.
+	* gfortran.dg/coarray_collectives_10.f90: Ditto.
+	* gfortran.dg/coarray_collectives_13.f90: Ditto.
+	* gfortran.dg/rank_3.f90: Ditto.
+	* gfortran.dg/error_stop_4.f90: Replace -std=f2008ts by -std=f2008.
+	* gfortran.dg/implicit_14.f90: Ditto.
+
 2018-05-21  Christian Groessler  <chris@groessler.org>
 
 	* gcc.c-torture/compile/simd-5.c: Fix comment.

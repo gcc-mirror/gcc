@@ -6,6 +6,6 @@
 !
 program test
   implicit none
-  intrinsic co_reduce ! { dg-error "is not available in the current standard settings but new in TS 29113/TS 18508." }
-  intrinsic co_broadcast ! { dg-error "is not available in the current standard settings but new in TS 29113/TS 18508." }
+  intrinsic co_reduce ! { dg-error "is not available in the current standard settings but new in Fortran 2018." }
+  intrinsic co_broadcast ! { dg-error "is not available in the current standard settings but new in Fortran 2018." }
 end program test

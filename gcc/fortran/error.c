@@ -855,8 +855,6 @@ notify_std_msg(int std)
     return _("Fortran 2018 obsolescent feature:");
   else if (std & GFC_STD_F2018)
     return _("Fortran 2018:");
-  else if (std & GFC_STD_F2008_TS)
-    return "TS 29113/TS 18508:";
   else if (std & GFC_STD_F2008_OBS)
     return _("Fortran 2008 obsolescent feature:");
   else if (std & GFC_STD_F2008)

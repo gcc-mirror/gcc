@@ -1,3 +1,28 @@
+2018-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	* libgfortran.h: Remove the macros GFC_STD_F2008_TS and
+	GFC_STD_OPT_F08TS.
+	* error.c (notify_std_msg): Remove GFC_STD_F2008_TS.
+	* options.c (set_default_std_flags): Ditto.
+	(gfc_handle_option): Make -std=f2008ts an alias for -std=f2018.
+	* array.c (gfc_match_array_spec): Replace GFC_STD_F2008_TS by
+	GFC_STD_F2018.
+	* check.c (gfc_check_atomic, gfc_check_event_query,
+	gfc_check_c_f_pointer, gfc_check_c_f_procpointer, gfc_check_c_funloc,
+	gfc_check_c_loc, gfc_check_num_images, gfc_check_this_image): Ditto.
+	* decl.c (gfc_verify_c_interop_param, gfc_match_decl_type_spec): Ditto.
+	* intrinsic.c (add_functions, add_subroutines,
+	gfc_check_intrinsic_standard): Ditto.
+	* iso-c-binding.def: Ditto.
+	* iso-fortran-env.def: Ditto.
+	* match.c (gfc_match_event_post, gfc_match_event_wait,
+	gfc_match_fail_image, gfc_match_form_team, gfc_match_change_team,
+	gfc_match_end_team, gfc_match_sync_team): Ditto.
+	* gfortran.texi: Remove mention of -std=f2008ts.
+	Move TSs into F2018 section.
+	* invoke.texi: Update documentation of -std=f2008ts.
+
 2018-05-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85841
