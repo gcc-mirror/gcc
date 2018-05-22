@@ -1,3 +1,10 @@
+2018-05-22  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Initialize the External_Tag with an empty
+	string when pragma No_Tagged_Streams is applicable to the tagged type,
+	and initialize the Expanded_Name with an empty string when pragma
+	Discard_Names is applicable to the tagged type.
+
 2018-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Check_Conformance): Add RM reference for rule that a

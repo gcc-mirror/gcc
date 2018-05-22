@@ -4511,7 +4511,8 @@ package body Exp_Disp is
       DT_Aggr_List       : List_Id;
       DT_Constr_List     : List_Id;
       DT_Ptr             : Entity_Id;
-      Exname             : Entity_Id;
+      Expanded_Name      : Entity_Id;
+      External_Tag_Name  : Entity_Id;
       HT_Link            : Entity_Id;
       ITable             : Node_Id;
       I_Depth            : Nat := 0;
@@ -4590,12 +4591,44 @@ package body Exp_Disp is
          end if;
       end if;
 
-      DT           := Make_Defining_Identifier (Loc, Name_DT);
-      Exname       := Make_Defining_Identifier (Loc, Name_Exname);
-      HT_Link      := Make_Defining_Identifier (Loc, Name_HT_Link);
-      Predef_Prims := Make_Defining_Identifier (Loc, Name_Predef_Prims);
-      SSD          := Make_Defining_Identifier (Loc, Name_SSD);
-      TSD          := Make_Defining_Identifier (Loc, Name_TSD);
+      DT            := Make_Defining_Identifier (Loc, Name_DT);
+      Expanded_Name := Make_Defining_Identifier (Loc, Name_Exname);
+      HT_Link       := Make_Defining_Identifier (Loc, Name_HT_Link);
+      Predef_Prims  := Make_Defining_Identifier (Loc, Name_Predef_Prims);
+      SSD           := Make_Defining_Identifier (Loc, Name_SSD);
+      TSD           := Make_Defining_Identifier (Loc, Name_TSD);
+
+      --  Expanded_Name
+      --  -------------
+
+      --  We generally initialize the Expanded_Name and the External_Tag of
+      --  tagged types with the same name, unless pragmas Discard_Names or
+      --  No_Tagged_Streams apply: Discard_Names allows us to initialize its
+      --  Expanded_Name with an empty string because in such a case it's
+      --  value is implementation defined (Ada RM Section C.5(7/2)); pragma
+      --  No_Tagged_Streams inhibits the generation of stream routines and
+      --  we initialize its External_Tag with an empty string since Ada.Tags
+      --  services Internal_Tag and External_Tag are mainly used with streams.
+
+      --  Small optimization: when both pragmas apply then there is no need to
+      --  declare two objects initialized with empty strings (since the two
+      --  aggregate components can be initialized with the same object).
+
+      if (Global_Discard_Names or else Discard_Names (Typ))
+        and then Present (No_Tagged_Streams_Pragma (Typ))
+      then
+         External_Tag_Name := Expanded_Name;
+
+      elsif Global_Discard_Names
+        or else Discard_Names (Typ)
+        or else Present (No_Tagged_Streams_Pragma (Typ))
+      then
+         External_Tag_Name :=
+           Make_Defining_Identifier (Loc,
+             New_External_Name (Tname, 'N', Suffix_Index => -1));
+      else
+         External_Tag_Name := Expanded_Name;
+      end if;
 
       --  Initialize Parent_Typ handling private types
 
@@ -5000,20 +5033,72 @@ package body Exp_Disp is
          end if;
       end if;
 
-      --  Generate: Exname : constant String := full_qualified_name (typ);
+      --  Generate: Expanded_Name : constant String := "";
+
+      if Global_Discard_Names or else Discard_Names (Typ) then
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Expanded_Name,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
+             Expression =>
+               Make_String_Literal (Loc, "")));
+
+      --  Generate:
+      --    Expanded_Name : constant String := full_qualified_name (typ);
       --  The type itself may be an anonymous parent type, so use the first
       --  subtype to have a user-recognizable name.
 
-      Append_To (Result,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Exname,
-          Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
-          Expression =>
-            Make_String_Literal (Loc,
-              Strval => Fully_Qualified_Name_String (First_Subtype (Typ)))));
-      Set_Is_Statically_Allocated (Exname);
-      Set_Is_True_Constant (Exname);
+      else
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Expanded_Name,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
+             Expression =>
+               Make_String_Literal (Loc,
+                 Fully_Qualified_Name_String (First_Subtype (Typ)))));
+      end if;
+
+      Set_Is_Statically_Allocated (Expanded_Name);
+      Set_Is_True_Constant (Expanded_Name);
+
+      --  Generate the External_Tag name only when it is required (since in
+      --  most cases we can initialize Expanded_Name and External_Tag using
+      --  the same object).
+
+      if Expanded_Name /= External_Tag_Name then
+
+         --  Generate: External_Tag_Name : constant String := "";
+
+         if Present (No_Tagged_Streams_Pragma (Typ)) then
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => External_Tag_Name,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of
+                                         (Standard_String, Loc),
+                Expression =>
+                  Make_String_Literal (Loc, "")));
+
+         --  Generate:
+         --   External_Tag_Name : constant String := full_qualified_name (typ);
+
+         else
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => External_Tag_Name,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of
+                                         (Standard_String, Loc),
+                Expression =>
+                  Make_String_Literal (Loc,
+                    Fully_Qualified_Name_String (First_Subtype (Typ)))));
+         end if;
+
+         Set_Is_Statically_Allocated (External_Tag_Name);
+         Set_Is_True_Constant (External_Tag_Name);
+      end if;
 
       --  Declare the object used by Ada.Tags.Register_Tag
 
@@ -5033,8 +5118,8 @@ package body Exp_Disp is
       --           (Idepth             => I_Depth,
       --            Access_Level       => Type_Access_Level (Typ),
       --            Alignment          => Typ'Alignment,
-      --            Expanded_Name      => Cstring_Ptr!(Exname'Address))
-      --            External_Tag       => Cstring_Ptr!(Exname'Address))
+      --            Expanded_Name      => Cstring_Ptr!(ExpandedName'Address))
+      --            External_Tag       => Cstring_Ptr!(ExternalName'Address))
       --            HT_Link            => HT_Link'Address,
       --            Transportable      => <<boolean-value>>,
       --            Is_Abstract        => <<boolean-value>>,
@@ -5104,8 +5189,18 @@ package body Exp_Disp is
       Append_To (TSD_Aggr_List,
         Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
           Make_Attribute_Reference (Loc,
-            Prefix         => New_Occurrence_Of (Exname, Loc),
+            Prefix         => New_Occurrence_Of (Expanded_Name, Loc),
             Attribute_Name => Name_Address)));
+
+      --  External_Tag when pragma No_Tagged_Streams applies
+
+      if Present (No_Tagged_Streams_Pragma (Typ)) then
+         New_Node :=
+           Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
+             Make_Attribute_Reference (Loc,
+               Prefix         => New_Occurrence_Of
+                                   (External_Tag_Name, Loc),
+               Attribute_Name => Name_Address));
 
       --  External_Tag of a local tagged type
 
@@ -5134,7 +5229,7 @@ package body Exp_Disp is
       --  specified. That's an odd case for which we have already issued a
       --  warning, where we will not be able to compute the internal tag.
 
-      if not Is_Library_Level_Entity (Typ)
+      elsif not Is_Library_Level_Entity (Typ)
         and then not Has_External_Tag_Rep_Clause (Typ)
       then
          declare
@@ -5189,6 +5284,9 @@ package body Exp_Disp is
                            Right_Opnd =>
                              Make_String_Literal (Loc, Str2_Id)))));
 
+            --  Generate:
+            --    Exname : constant String := Str1 & Str2;
+
             else
                Append_To (Result,
                  Make_Object_Declaration (Loc,
@@ -5234,7 +5332,8 @@ package body Exp_Disp is
                New_Node :=
                  Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
                    Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Exname, Loc),
+                     Prefix         => New_Occurrence_Of
+                                         (External_Tag_Name, Loc),
                      Attribute_Name => Name_Address));
             else
                Old_Val := Strval (Expr_Value_S (Expression (Def)));
@@ -6406,10 +6505,14 @@ package body Exp_Disp is
       --  We check for No_Run_Time_Mode here, because we do not want to pick
       --  up the RE_Check_TSD entity and call it in No_Run_Time mode.
 
+      --  We cannot perform this check if the generation of its expanded name
+      --  was discarded.
+
       if not No_Run_Time_Mode
         and then Ada_Version >= Ada_2005
         and then RTE_Available (RE_Check_TSD)
         and then not Duplicated_Tag_Checks_Suppressed (Typ)
+        and then not (Global_Discard_Names or else Discard_Names (Typ))
       then
          Append_To (Elab_Code,
            Make_Procedure_Call_Statement (Loc,
