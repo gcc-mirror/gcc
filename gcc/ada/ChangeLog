@@ -1,3 +1,25 @@
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Array_Init_Proc): Update the call to
+	Needs_Simple_Initialization.
+	(Build_Init_Statements): Update the call to Get_Simple_Init_Val.
+	(Check_Subtype_Bounds): Renamed to Extract_Subtype_Bounds. Update the
+	profile and comment on usage.
+	(Default_Initialize_Object): Do not use New_Copy_Tree to set the proper
+	Sloc of a value obtained from aspect Default_Value because this could
+	potentially replicate large trees. The proper Sloc is now set in
+	Get_Simple_Init_Val.
+	(Get_Simple_Init_Val): Reorganized by breaking the various cases into
+	separate routines. Eliminate the use of global variables.
+	(Init_Component): Update the call to Get_Simple_Init_Val.
+	(Needs_Simple_Initialization): Update the parameter profile and all
+	uses of T.
+	(Simple_Init_Defaulted_Type): Copy the value of aspect Default_Value
+	and set the proper Sloc.
+	* exp_ch3.ads (Get_Simple_Init_Val): Update the parameter profile and
+	comment on usage.
+	(Needs_Simple_Initialization): Update the parameter profile.
+
 2018-05-22  Patrick Bernardi  <bernardi@adacore.com>
 
 	* sem_ch3.adb (Build_Discriminant_Constraints): Raise an error if the
