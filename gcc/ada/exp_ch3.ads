@@ -91,6 +91,26 @@ package Exp_Ch3 is
    --  want Gigi to see the node. This function can't delete the node itself
    --  since it would confuse any remaining processing of the freeze node.
 
+   function Get_Simple_Init_Val
+     (Typ  : Entity_Id;
+      N    : Node_Id;
+      Size : Uint := No_Uint) return Node_Id;
+   --  Build an expression which represents the required initial value of type
+   --  Typ for which predicate Needs_Simple_Initialization is True. N is a node
+   --  whose source location used in the construction of the expression. Size
+   --  is utilized as follows:
+   --
+   --    * If the size of the object to be initialized it is known, it should
+   --      be passed to the routine.
+   --
+   --    * If the size is unknown or is zero, then the Esize of Typ is used as
+   --      an estimate of the size.
+   --
+   --  The object size is needed to prepare a known invalid value for use by
+   --  Normalize_Scalars. A call to this routine where Typ denotes a scalar
+   --  type is only valid when Normalize_Scalars or Initialize_Scalars is
+   --  active, or if N is the node for a 'Invalid_Value attribute node.
+
    procedure Init_Secondary_Tags
      (Typ            : Entity_Id;
       Target         : Node_Id;
@@ -115,7 +135,7 @@ package Exp_Ch3 is
    --  see Check_Address_Clause.
 
    function Needs_Simple_Initialization
-     (T           : Entity_Id;
+     (Typ         : Entity_Id;
       Consider_IS : Boolean := True) return Boolean;
    --  Certain types need initialization even though there is no specific
    --  initialization routine:
@@ -126,21 +146,5 @@ package Exp_Ch3 is
    --  Regarding Initialize_Scalars mode, this is ignored if Consider_IS is
    --  set to False, but if Consider_IS is set to True, then the cases above
    --  mentioning Normalize_Scalars also apply for Initialize_Scalars mode.
-
-   function Get_Simple_Init_Val
-     (T    : Entity_Id;
-      N    : Node_Id;
-      Size : Uint := No_Uint) return Node_Id;
-   --  For a type which Needs_Simple_Initialization (see above), prepares the
-   --  tree for an expression representing the required initial value. N is a
-   --  node whose source location used in constructing this tree which is
-   --  returned as the result of the call. The Size parameter indicates the
-   --  target size of the object if it is known (indicated by a value that is
-   --  not No_Uint and is greater than zero). If Size is not given (Size set to
-   --  No_Uint, or non-positive), then the Esize of T is used as an estimate of
-   --  the Size. The object size is needed to prepare a known invalid value for
-   --  use by Normalize_Scalars. A call to this routine where T is a scalar
-   --  type is only valid if we are in Normalize_Scalars or Initialize_Scalars
-   --  mode, or if N is the node for a 'Invalid_Value attribute node.
 
 end Exp_Ch3;
