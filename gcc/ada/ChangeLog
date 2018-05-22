@@ -1,3 +1,8 @@
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb, freeze.adb, pprint.adb, sem_ch4.adb, sem_res.adb: Minor
+	reformattings.
+
 2018-05-22  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch12.adb (In_Same_Declarative_Part): Moved to sem_util.

@@ -8697,7 +8697,7 @@ package body Freeze is
         and then not Is_Imported (Ent)
         and then not Initialization_Suppressed (Typ)
         and then not (Ekind (Ent) = E_Variable
-                        and then Initialization_Suppressed (Ent))
+                       and then Initialization_Suppressed (Ent))
         and then (Has_Non_Null_Base_Init_Proc (Typ)
                    or else Is_Access_Type (Typ)
                    or else (Normalize_Scalars

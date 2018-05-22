@@ -277,9 +277,14 @@ package body Pprint is
                      --  Transform given string into the corresponding one in
                      --  mixed case form.
 
+                     -------------------
+                     -- To_Mixed_Case --
+                     -------------------
+
                      function To_Mixed_Case (S : String) return String is
-                        Ucase  : Boolean := True;
                         Result : String (S'Range);
+                        Ucase  : Boolean := True;
+
                      begin
                         for J in S'Range loop
                            if Ucase then
@@ -294,14 +299,17 @@ package body Pprint is
                         return Result;
                      end To_Mixed_Case;
 
-                     Id     : constant Attribute_Id :=
-                                Get_Attribute_Id (Attribute_Name (Expr));
+                     Id : constant Attribute_Id :=
+                            Get_Attribute_Id (Attribute_Name (Expr));
 
                      --  Always use mixed case for attributes
-                     Str    : constant String :=
-                                Expr_Name (Prefix (Expr)) & "'"
-                                  & To_Mixed_Case (Get_Name_String
-                                                      (Attribute_Name (Expr)));
+
+                     Str : constant String :=
+                             Expr_Name (Prefix (Expr))
+                               & "'"
+                               & To_Mixed_Case
+                                   (Get_Name_String (Attribute_Name (Expr)));
+
                      N      : Node_Id;
                      Ranges : List_Id;
 

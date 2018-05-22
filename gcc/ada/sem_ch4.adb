@@ -3217,15 +3217,15 @@ package body Sem_Ch4 is
                      or else Nkind (Original_Node (N)) = N_Selected_Component
                      or else
                        (Nkind (Original_Node (N)) = N_Indexed_Component
-                          and then Nkind (Prefix (Original_Node (N)))
-                            = N_Selected_Component)
+                         and then Nkind (Prefix (Original_Node (N))) =
+                                    N_Selected_Component)
                      or else
                        (Nkind (Parent (N)) = N_Function_Call
-                          and then Is_Array_Type (Etype (Name (N)))
-                          and then Etype (Original_Node (N)) =
-                            Component_Type (Etype (Name (N)))
-                          and then Nkind (Original_Node (Parent (N)))
-                            = N_Selected_Component);
+                         and then Is_Array_Type (Etype (Name (N)))
+                         and then Etype (Original_Node (N)) =
+                                    Component_Type (Etype (Name (N)))
+                         and then Nkind (Original_Node (Parent (N))) =
+                                    N_Selected_Component);
 
       --  The first formal must be omitted from the match when trying to find
       --  a primitive operation that is a possible interpretation, and also
