@@ -1,6 +1,19 @@
 2018-05-22  Jackson Woodruff  <jackson.woodruff@arm.com>
             Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-ldpstp.md: Replace uses of
+	aarch64_mem_pair_operand with memory_operand and delete operand swapping
+	code.
+	* config/aarch64/aarch64.c (aarch64_operands_ok_for_ldpstp):
+	Add check for legitimate_address.
+	(aarch64_gen_adjusted_ldpstp): Swap operands where appropriate.
+	(aarch64_swap_ldrstr_operands): New.
+	* config/aarch64/aarch64-protos.h (aarch64_swap_ldrstr_operands):
+	Define prototype.
+
+2018-05-22  Jackson Woodruff  <jackson.woodruff@arm.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.md: New patterns to generate stp
 	and ldp.
 	(store_pair_sw, store_pair_dw): New patterns to generate stp for
