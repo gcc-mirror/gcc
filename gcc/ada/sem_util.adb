@@ -12024,6 +12024,50 @@ package body Sem_Util is
         and then Reverse_Storage_Order (Btyp);
    end In_Reverse_Storage_Order_Object;
 
+   ------------------------------
+   -- In_Same_Declarative_Part --
+   ------------------------------
+
+   function In_Same_Declarative_Part
+     (Context : Node_Id;
+      N       : Node_Id) return Boolean
+   is
+      Cont : Node_Id := Context;
+      Nod  : Node_Id;
+
+   begin
+      if Nkind (Cont) = N_Compilation_Unit_Aux then
+         Cont := Parent (Cont);
+      end if;
+
+      Nod := Parent (N);
+      while Present (Nod) loop
+         if Nod = Cont then
+            return True;
+
+         elsif Nkind_In (Nod, N_Accept_Statement,
+                              N_Block_Statement,
+                              N_Compilation_Unit,
+                              N_Entry_Body,
+                              N_Package_Body,
+                              N_Package_Declaration,
+                              N_Protected_Body,
+                              N_Subprogram_Body,
+                              N_Task_Body)
+         then
+            return False;
+
+         elsif Nkind (Nod) = N_Subunit then
+            Nod := Corresponding_Stub (Nod);
+
+         else
+            Nod := Parent (Nod);
+         end if;
+      end loop;
+
+      return False;
+   end In_Same_Declarative_Part;
+
    --------------------------------------
    -- In_Subprogram_Or_Concurrent_Unit --
    --------------------------------------
