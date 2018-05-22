@@ -5167,11 +5167,14 @@ package body Freeze is
       --  be frozen in the proper scope after the current generic is analyzed.
       --  However, aspects must be analyzed because they may be queried later
       --  within the generic itself, and the corresponding pragma or attribute
-      --  definition has not been analyzed yet.
+      --  definition has not been analyzed yet. After this, indicate that the
+      --  entity has no further delayed aspects, to prevent a later aspect
+      --  analysis out of the scope of the generic.
 
       elsif Inside_A_Generic and then External_Ref_In_Generic (Test_E) then
          if Has_Delayed_Aspects (E) then
             Analyze_Aspects_At_Freeze_Point (E);
+            Set_Has_Delayed_Aspects (E, False);
          end if;
 
          Result := No_List;
