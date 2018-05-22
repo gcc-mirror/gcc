@@ -1257,6 +1257,8 @@ input_node (struct lto_file_decl_data *file_data,
 	 of ipa passes is done.  Alays forcingly create a fresh node.  */
       node = symtab->create_empty ();
       node->decl = fn_decl;
+      if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (fn_decl)))
+	node->ifunc_resolver = 1;
       node->register_symbol ();
     }
 
