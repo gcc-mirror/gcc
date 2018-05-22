@@ -1618,7 +1618,6 @@ check_constraint_info (tree t)
 
 /* If non-zero, a decl has a definition, it just hasn't been loaded
    yet.  This is the cookie to load it.  */
-
 #define DECL_MODULE_LAZY_DEFN(N)				\
   (DECL_LANG_SPECIFIC (N)->u.min.lazy_module_defn)
 
@@ -6705,6 +6704,7 @@ extern tree get_module_owner (tree);
 extern void set_module_owner (tree);
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
+extern void lazy_load_defn (tree decl);
 extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
 extern int push_module_export (bool, tree = NULL);

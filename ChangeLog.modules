@@ -1,5 +1,17 @@
 2018-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	Almost lazy function definitions.
+	gcc/cp/
+	* constexpr.c (cxx_eval_call_expression): Maybe lazy load.
+	* decl2.c (decl_defined_p): Lazy definitions are ok.
+	(mark_used): Try and lazy load.
+	* module.c (module_state::lazy_load): Lazy load a definition.
+	(trees_out::seed): Mark template result.
+	(trees_in::tree_node): Adjust mark_used.
+	(module_state::write_cluster): Adjust.
+	(module_state::read_cluster): Accept ct_self_used.
+	(lazy_load_defn): New.
+
 	gcc/cp/
 	* module.c (trees_out::seed): Reimplement mechanim.
 	(trees_out::{begin,end}): Don't turn seeding on/off here.

@@ -4207,6 +4207,8 @@ decl_defined_p (tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return (DECL_INITIAL (decl) != NULL_TREE
+	    /* A yet-to-be-loaded definition is available.  */
+	    || MAYBE_DECL_MODULE_LAZY_DEFN (decl)
 	    /* A pending instantiation of a friend temploid is defined.  */
 	    || (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl)
 		&& DECL_INITIAL (DECL_TEMPLATE_RESULT
@@ -5216,11 +5218,19 @@ mark_used (tree decl, tsubst_flags_t complain)
       decl = OVL_FIRST (decl);
     }
 
-  /* Set TREE_USED for the benefit of -Wunused.  */
-  TREE_USED (decl) = 1;
-  /* And for structured bindings also the underlying decl.  */
-  if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_BASE (decl))
-    TREE_USED (DECL_DECOMP_BASE (decl)) = 1;
+  if (!TREE_USED (decl))
+    {
+      /* Set TREE_USED for the benefit of -Wunused.  */
+      TREE_USED (decl) = true;
+
+      /* And for structured bindings also the underlying decl.  */
+      if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_BASE (decl))
+	TREE_USED (DECL_DECOMP_BASE (decl)) = true;
+
+      /* If it has a lazy definition, fetch it now.  */
+      if (MAYBE_DECL_MODULE_LAZY_DEFN (decl))
+	lazy_load_defn (decl);
+    }
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     return true;
