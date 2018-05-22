@@ -2893,9 +2893,11 @@ Alternatively, you may run the script using the following command line:
      * ``=>`` in associations, and
      * ``at`` keywords in the component clauses in record representation clauses.
 
+   In addition, ``in`` and ``out`` in parameter specifications are lined up.
 
    .. index:: --no-alignment (gnatpp)
    .. index:: --alignment (gnatpp)
+   .. index:: --no-align-modes (gnatpp)
 
 
    :switch:`--no-alignment`
@@ -2904,6 +2906,10 @@ Alternatively, you may run the script using the following command line:
 
    :switch:`--alignment`
      Set alignment to ON
+
+
+   :switch:`--no-align-modes`
+     Do not line up ``in`` and ``out`` in parameter specifications.
 
    .. _Casing_Control:
 
@@ -3055,6 +3061,14 @@ Alternatively, you may run the script using the following command line:
 
    :switch:`--pragma-mixed-case`
      Pragma names are mixed case (this is the default)
+
+
+   .. index:: --syntax-only (gnatpp)
+
+   :switch:`--syntax-only`
+     Disable the semantic analysis (name resolution) done by libadalang.
+     This means gnatpp will not be able to support any of the
+     "as-declared" switches.
 
 
    .. index:: --dictionary (gnatpp)
@@ -3236,6 +3250,19 @@ Alternatively, you may run the script using the following command line:
      Same as ``--decimal-grouping``, but for based literals. For
      example, with ``--based-grouping=4``, ``16#0001FFFE#`` will be
      changed to ``16#0001_FFFE#``.
+
+
+   .. index:: --split-line-before-record (gnatpp)
+
+   :switch:`--split-line-before-record`
+     Split the line just before ``record`` in a record type declaration.
+
+
+   .. index:: --indent-named-statements (gnatpp)
+
+   :switch:`--indent-named-statements`
+     Named block and loop statements are indented with respect to
+     the name.
 
 
    .. index:: --split-line-before-op (gnatpp)
