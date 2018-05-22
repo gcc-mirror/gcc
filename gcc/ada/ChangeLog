@@ -1,3 +1,8 @@
+2018-05-22  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-dwalin.adb (Enable_Cache): Skip symbols outside of the
+	executable code section boundaries.
+
 2018-05-22  Javier Miranda  <miranda@adacore.com>
 
 	* locales.c: New implementation for the Ada.Locales package.
