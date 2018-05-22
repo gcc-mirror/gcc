@@ -15,10 +15,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Note that this package is currently not implemented on any platform and
---  functions Language and Country will always return
---  Language_Unknown/Country_Unknown.
-
 package Ada.Locales is
    pragma Preelaborate (Locales);
    pragma Remote_Types (Locales);
