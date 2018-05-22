@@ -23312,24 +23312,25 @@ package body Sem_Util is
    -- Scalar_Part_Present --
    -------------------------
 
-   function Scalar_Part_Present (T : Entity_Id) return Boolean is
-      C : Entity_Id;
+   function Scalar_Part_Present (Typ : Entity_Id) return Boolean is
+      Val_Typ : constant Entity_Id := Validated_View (Typ);
+      Field   : Entity_Id;
 
    begin
-      if Is_Scalar_Type (T) then
+      if Is_Scalar_Type (Val_Typ) then
          return True;
 
-      elsif Is_Array_Type (T) then
-         return Scalar_Part_Present (Component_Type (T));
+      elsif Is_Array_Type (Val_Typ) then
+         return Scalar_Part_Present (Component_Type (Val_Typ));
 
-      elsif Is_Record_Type (T) or else Has_Discriminants (T) then
-         C := First_Component_Or_Discriminant (T);
-         while Present (C) loop
-            if Scalar_Part_Present (Etype (C)) then
+      elsif Is_Record_Type (Val_Typ) then
+         Field := First_Component_Or_Discriminant (Val_Typ);
+         while Present (Field) loop
+            if Scalar_Part_Present (Etype (Field)) then
                return True;
-            else
-               Next_Component_Or_Discriminant (C);
             end if;
+
+            Next_Component_Or_Discriminant (Field);
          end loop;
       end if;
 
@@ -24979,6 +24980,49 @@ package body Sem_Util is
          return Expr;
       end if;
    end Unqual_Conv;
+
+   --------------------
+   -- Validated_View --
+   --------------------
+
+   function Validated_View (Typ : Entity_Id) return Entity_Id is
+      Continue : Boolean;
+      Val_Typ  : Entity_Id;
+
+   begin
+      Continue := True;
+      Val_Typ  := Base_Type (Typ);
+
+      --  Obtain the full view of the input type by stripping away concurrency,
+      --  derivations, and privacy.
+
+      while Continue loop
+         Continue := False;
+
+         if Is_Concurrent_Type (Val_Typ) then
+            if Present (Corresponding_Record_Type (Val_Typ)) then
+               Continue := True;
+               Val_Typ  := Corresponding_Record_Type (Val_Typ);
+            end if;
+
+         elsif Is_Derived_Type (Val_Typ) then
+            Continue := True;
+            Val_Typ  := Etype (Val_Typ);
+
+         elsif Is_Private_Type (Val_Typ) then
+            if Present (Underlying_Full_View (Val_Typ)) then
+               Continue := True;
+               Val_Typ  := Underlying_Full_View (Val_Typ);
+
+            elsif Present (Full_View (Val_Typ)) then
+               Continue := True;
+               Val_Typ  := Full_View (Val_Typ);
+            end if;
+         end if;
+      end loop;
+
+      return Val_Typ;
+   end Validated_View;
 
    -----------------------
    -- Visible_Ancestors --

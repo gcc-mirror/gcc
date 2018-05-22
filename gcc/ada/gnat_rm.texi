@@ -11658,32 +11658,31 @@ which changes element (1,2) to 20 and (3,4) to 30.
 
 @geindex Valid_Scalars
 
-The @code{'Valid_Scalars} attribute is intended to make it easier to
-check the validity of scalar subcomponents of composite objects. It
-is defined for any prefix @code{X} that denotes an object.
-The value of this attribute is of the predefined type Boolean.
-@code{X'Valid_Scalars} yields True if and only if evaluation of
-@code{P'Valid} yields True for every scalar part P of X or if X has
-no scalar parts. It is not specified in what order the scalar parts
-are checked, nor whether any more are checked after any one of them
-is determined to be invalid. If the prefix @code{X} is of a class-wide
-type @code{T'Class} (where @code{T} is the associated specific type),
-or if the prefix @code{X} is of a specific tagged type @code{T}, then
-only the scalar parts of components of @code{T} are traversed; in other
-words, components of extensions of @code{T} are not traversed even if
-@code{T'Class (X)'Tag /= T'Tag} . The compiler will issue a warning if it can
-be determined at compile time that the prefix of the attribute has no
-scalar parts (e.g., if the prefix is of an access type, an interface type,
-an undiscriminated task type, or an undiscriminated protected type).
+The @code{'Valid_Scalars} attribute is intended to make it easier to check the
+validity of scalar subcomponents of composite objects. The attribute is defined
+for any prefix @code{P} which denotes an object. Prefix @code{P} can be any type
+except for tagged private or @code{Unchecked_Union} types. The value of the
+attribute is of type @code{Boolean}.
 
-For scalar types, @code{Valid_Scalars} is equivalent to @code{Valid}. The use
-of this attribute is not permitted for @code{Unchecked_Union} types for which
-in general it is not possible to determine the values of the discriminants.
+@code{P'Valid_Scalars} yields @code{True} if and only if the evaluation of
+@code{C'Valid} yields @code{True} for every scalar subcomponent @code{C} of @code{P}, or if
+@code{P} has no scalar subcomponents. Attribute @code{'Valid_Scalars} is equivalent
+to attribute @code{'Valid} for scalar types.
 
-Note: @code{Valid_Scalars} can generate a lot of code, especially in the case
-of a large variant record. If the attribute is called in many places in the
-same program applied to objects of the same type, it can reduce program size
-to write a function with a single use of the attribute, and then call that
+It is not specified in what order the subcomponents are checked, nor whether
+any more are checked after any one of them is determined to be invalid. If the
+prefix @code{P} is of a class-wide type @code{T'Class} (where @code{T} is the associated
+specific type), or if the prefix @code{P} is of a specific tagged type @code{T}, then
+only the subcomponents of @code{T} are checked; in other words, components of
+extensions of @code{T} are not checked even if @code{T'Class (P)'Tag /= T'Tag}.
+
+The compiler will issue a warning if it can be determined at compile time that
+the prefix of the attribute has no scalar subcomponents.
+
+Note: @code{Valid_Scalars} can generate a lot of code, especially in the case of
+a large variant record. If the attribute is called in many places in the same
+program applied to objects of the same type, it can reduce program size to
+write a function with a single use of the attribute, and then call that
 function from multiple places.
 
 @node Attribute VADS_Size,Attribute Value_Size,Attribute Valid_Scalars,Implementation Defined Attributes
