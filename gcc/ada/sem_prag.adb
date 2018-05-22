@@ -30359,11 +30359,18 @@ package body Sem_Prag is
 
       if Compile_Time_Known_Value (Arg1x) then
          if Is_True (Expr_Value (Arg1x)) then
+
+            --  We have already verified that the second argument is a static
+            --  string expression. Its string value must be retrieved
+            --  explicitly if it is a declared constant, otherwise it has
+            --  been constant-folded previously.
+
             declare
                Cent    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
                Pname   : constant Name_Id   := Pragma_Name_Unmapped (N);
                Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
-               Str     : constant String_Id := Strval (Get_Pragma_Arg (Arg2));
+               Str     : constant String_Id :=
+                           Strval (Expr_Value_S (Get_Pragma_Arg (Arg2)));
                Str_Len : constant Nat       := String_Length (Str);
 
                Force : constant Boolean :=
