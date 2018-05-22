@@ -1,3 +1,7 @@
+2018-05-22  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sigtramp-qnx.c: Properly restore link register in signal trampoline.
+
 2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Strip away any
