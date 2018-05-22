@@ -1,3 +1,8 @@
+2018-05-22  Bob Duff  <duff@adacore.com>
+
+	* binde.adb: (Choose): Ignore a pragma Elaborate_Body that appears in
+	the spec of a SAL_Interface package.
+
 2018-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Entity): When analyzing delayed aspects of an

@@ -1123,6 +1123,14 @@ package body Binde is
            and then Units.Table (Chosen).RCI
          then
             null;
+
+         --  If this unit is an interface to a stand-alone library, then we
+         --  don't want to elaborate the body -- that will happen as part of
+         --  the library.
+
+         elsif Units.Table (Chosen).SAL_Interface then
+            null;
+
          else
             Choose
               (Elab_Order => Elab_Order,
