@@ -1,3 +1,8 @@
+2018-05-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/torture/pr85862.c: Rename to...
+	* gcc.dg/torture/pr85852.c: ...this.
+
 2018-05-22  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/warn14.adb: New testcase.
