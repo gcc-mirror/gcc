@@ -170,33 +170,20 @@ TCR("ret")
 #define REG_OFFSET_GR(n)     (n * 8)
 #define REGNO_GR(n)   n
 
-/* point to the ELR value of the mcontext registers list */
+/* ELR value offset withing the mcontext registers list */
 #define REG_OFFSET_ELR           (32 * 8)
-#define REGNO_PC      30
+/* The register used to hold the PC value to restore. We need a scratch
+   register.  */
+#define REGNO_PC      9
 
 #define CFI_DEF_CFA \
   TCR(".cfi_def_cfa " S(CFA_REG) ", 0")
 
+/* This restores the callee-saved registers, the FP, the LR, and the SP.
+   A scratch register is used as return column to indicate the new value
+   for PC */
 #define CFI_COMMON_REGS \
   CR("# CFI for common registers\n") \
-  TCR(COMMON_CFI(GR(0)))  \
-  TCR(COMMON_CFI(GR(1)))  \
-  TCR(COMMON_CFI(GR(2)))  \
-  TCR(COMMON_CFI(GR(3)))  \
-  TCR(COMMON_CFI(GR(4)))  \
-  TCR(COMMON_CFI(GR(5)))  \
-  TCR(COMMON_CFI(GR(6)))  \
-  TCR(COMMON_CFI(GR(7)))  \
-  TCR(COMMON_CFI(GR(8)))  \
-  TCR(COMMON_CFI(GR(9)))  \
-  TCR(COMMON_CFI(GR(10))) \
-  TCR(COMMON_CFI(GR(11))) \
-  TCR(COMMON_CFI(GR(12))) \
-  TCR(COMMON_CFI(GR(13))) \
-  TCR(COMMON_CFI(GR(14))) \
-  TCR(COMMON_CFI(GR(15))) \
-  TCR(COMMON_CFI(GR(16))) \
-  TCR(COMMON_CFI(GR(17))) \
   TCR(COMMON_CFI(GR(18))) \
   TCR(COMMON_CFI(GR(19))) \
   TCR(COMMON_CFI(GR(20))) \
@@ -209,6 +196,8 @@ TCR("ret")
   TCR(COMMON_CFI(GR(27))) \
   TCR(COMMON_CFI(GR(28))) \
   TCR(COMMON_CFI(GR(29))) \
+  TCR(COMMON_CFI(GR(30))) \
+  TCR(COMMON_CFI(GR(31))) \
   TCR(".cfi_offset " S(REGNO_PC) "," S(REG_OFFSET_ELR)) \
   TCR(".cfi_return_column " S(REGNO_PC))
 
