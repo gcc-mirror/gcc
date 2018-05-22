@@ -1137,6 +1137,30 @@ package Snames is
    Name_Sequential                         : constant Name_Id := N + $;
    Last_Partition_Elaboration_Policy_Name  : constant Name_Id := N + $;
 
+   --  Names of recognized scalar families for pragma Initialize_Scalars
+
+   Name_Short_Float                    : constant Name_Id := N + $; -- GNAT
+   Name_Float                          : constant Name_Id := N + $; -- GNAT
+   Name_Long_Float                     : constant Name_Id := N + $; -- GNAT
+   Name_Long_Long_Float                : constant Name_Id := N + $; -- GNAT
+   Name_Signed_8                       : constant Name_Id := N + $; -- GNAT
+   Name_Signed_16                      : constant Name_Id := N + $; -- GNAT
+   Name_Signed_32                      : constant Name_Id := N + $; -- GNAT
+   Name_Signed_64                      : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_8                     : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_16                    : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_32                    : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_64                    : constant Name_Id := N + $; -- GNAT
+
+   subtype Scalar_Id is Name_Id range
+     Name_Short_Float .. Name_Unsigned_64;
+
+   subtype Float_Scalar_Id is Name_Id range
+     Name_Short_Float .. Name_Long_Long_Float;
+
+   subtype Integer_Scalar_Id is Name_Id range
+     Name_Signed_8 .. Name_Unsigned_64;
+
    --  Names of recognized checks for pragma Suppress
 
    --  Note: the name Atomic_Synchronization can only be specified internally

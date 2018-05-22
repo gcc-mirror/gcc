@@ -72,6 +72,25 @@ with GNAT.HTable; use GNAT.HTable;
 
 package body Sem_Util is
 
+   ---------------------------
+   -- Local Data Structures --
+   ---------------------------
+
+   Invalid_Binder_Values : array (Scalar_Id) of Entity_Id := (others => Empty);
+   --  A collection to hold the entities of the variables declared in package
+   --  System.Scalar_Values which describe the invalid values of scalar types.
+
+   Invalid_Binder_Values_Set : Boolean := False;
+   --  This flag prevents multiple attempts to initialize Invalid_Binder_Values
+
+   Invalid_Floats : array (Float_Scalar_Id) of Ureal := (others => No_Ureal);
+   --  A collection to hold the invalid values of float types as specified by
+   --  pragma Initialize_Scalars.
+
+   Invalid_Integers : array (Integer_Scalar_Id) of Uint := (others => No_Uint);
+   --  A collection to hold the invalid values of integer types as specified
+   --  by pragma Initialize_Scalars.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -83,6 +102,14 @@ package body Sem_Util is
    --  This function builds the subtype for Build_Actual_Subtype_Of_Component
    --  and Build_Discriminal_Subtype_Of_Component. C is a list of constraints,
    --  Loc is the source location, T is the original subtype.
+
+   procedure Examine_Array_Bounds
+     (Typ        : Entity_Id;
+      All_Static : out Boolean;
+      Has_Empty  : out Boolean);
+   --  Inspect the index constraints of array type Typ. Flag All_Static is set
+   --  when all ranges are static. Flag Has_Empty is set only when All_Static
+   --  is set and indicates that at least one range is empty.
 
    function Has_Enabled_Property
      (Item_Id  : Entity_Id;
@@ -7366,6 +7393,91 @@ package body Sem_Util is
    end Entity_Of;
 
    --------------------------
+   -- Examine_Array_Bounds --
+   --------------------------
+
+   procedure Examine_Array_Bounds
+     (Typ        : Entity_Id;
+      All_Static : out Boolean;
+      Has_Empty  : out Boolean)
+   is
+      function Is_OK_Static_Bound (Bound : Node_Id) return Boolean;
+      --  Determine whether bound Bound is a suitable static bound
+
+      ------------------------
+      -- Is_OK_Static_Bound --
+      ------------------------
+
+      function Is_OK_Static_Bound (Bound : Node_Id) return Boolean is
+      begin
+         return
+           not Error_Posted (Bound)
+             and then Is_OK_Static_Expression (Bound);
+      end Is_OK_Static_Bound;
+
+      --  Local variables
+
+      Hi_Bound : Node_Id;
+      Index    : Node_Id;
+      Lo_Bound : Node_Id;
+
+   --  Start of processing for Examine_Array_Bounds
+
+   begin
+      --  An unconstrained array type does not have static bounds, and it is
+      --  not known whether they are empty or not.
+
+      if not Is_Constrained (Typ) then
+         All_Static := False;
+         Has_Empty  := False;
+
+      --  A string literal has static bounds, and is not empty as long as it
+      --  contains at least one character.
+
+      elsif Ekind (Typ) = E_String_Literal_Subtype then
+         All_Static := True;
+         Has_Empty  := String_Literal_Length (Typ) > 0;
+      end if;
+
+      --  Assume that all bounds are static and not empty
+
+      All_Static := True;
+      Has_Empty  := False;
+
+      --  Examine each index
+
+      Index := First_Index (Typ);
+      while Present (Index) loop
+         if Is_Discrete_Type (Etype (Index)) then
+            Get_Index_Bounds (Index, Lo_Bound, Hi_Bound);
+
+            if Is_OK_Static_Bound (Lo_Bound)
+                 and then
+               Is_OK_Static_Bound (Hi_Bound)
+            then
+               --  The static bounds produce an empty range
+
+               if Is_Null_Range (Lo_Bound, Hi_Bound) then
+                  Has_Empty := True;
+               end if;
+
+            --  Otherwise at least one of the bounds is not static
+
+            else
+               All_Static := False;
+            end if;
+
+         --  Otherwise the index is non-discrete, therefore not static
+
+         else
+            All_Static := False;
+         end if;
+
+         Next_Index (Index);
+      end loop;
+   end Examine_Array_Bounds;
+
+   --------------------------
    -- Explain_Limited_Type --
    --------------------------
 
@@ -11372,64 +11484,28 @@ package body Sem_Util is
    -----------------------------
 
    function Has_Static_Array_Bounds (Typ : Node_Id) return Boolean is
-      Ndims : constant Nat := Number_Dimensions (Typ);
-
-      Index : Node_Id;
-      Low   : Node_Id;
-      High  : Node_Id;
+      All_Static : Boolean;
+      Dummy      : Boolean;
 
    begin
-      --  Unconstrained types do not have static bounds
+      Examine_Array_Bounds (Typ, All_Static, Dummy);
 
-      if not Is_Constrained (Typ) then
-         return False;
-      end if;
-
-      --  First treat string literals specially, as the lower bound and length
-      --  of string literals are not stored like those of arrays.
-
-      --  A string literal always has static bounds
-
-      if Ekind (Typ) = E_String_Literal_Subtype then
-         return True;
-      end if;
-
-      --  Treat all dimensions in turn
-
-      Index := First_Index (Typ);
-      for Indx in 1 .. Ndims loop
-
-         --  In case of an illegal index which is not a discrete type, return
-         --  that the type is not static.
-
-         if not Is_Discrete_Type (Etype (Index))
-           or else Etype (Index) = Any_Type
-         then
-            return False;
-         end if;
-
-         Get_Index_Bounds (Index, Low, High);
-
-         if Error_Posted (Low) or else Error_Posted (High) then
-            return False;
-         end if;
-
-         if Is_OK_Static_Expression (Low)
-              and then
-            Is_OK_Static_Expression (High)
-         then
-            null;
-         else
-            return False;
-         end if;
-
-         Next (Index);
-      end loop;
-
-      --  If we fall through the loop, all indexes matched
-
-      return True;
+      return All_Static;
    end Has_Static_Array_Bounds;
+
+   ---------------------------------------
+   -- Has_Static_Non_Empty_Array_Bounds --
+   ---------------------------------------
+
+   function Has_Static_Non_Empty_Array_Bounds (Typ : Node_Id) return Boolean is
+      All_Static : Boolean;
+      Has_Empty  : Boolean;
+
+   begin
+      Examine_Array_Bounds (Typ, All_Static, Has_Empty);
+
+      return All_Static and not Has_Empty;
+   end Has_Static_Non_Empty_Array_Bounds;
 
    ----------------
    -- Has_Stream --
@@ -12728,6 +12804,124 @@ package body Sem_Util is
       SPARK_Mode        := Mode;
       SPARK_Mode_Pragma := Prag;
    end Install_SPARK_Mode;
+
+   --------------------------
+   -- Invalid_Scalar_Value --
+   --------------------------
+
+   function Invalid_Scalar_Value
+     (Loc      : Source_Ptr;
+      Scal_Typ : Scalar_Id) return Node_Id
+   is
+      function Invalid_Binder_Value return Node_Id;
+      --  Return a reference to the corresponding invalid value for type
+      --  Scal_Typ as defined in unit System.Scalar_Values.
+
+      function Invalid_Float_Value return Node_Id;
+      --  Return the invalid value of float type Scal_Typ
+
+      function Invalid_Integer_Value return Node_Id;
+      --  Return the invalid value of integer type Scal_Typ
+
+      procedure Set_Invalid_Binder_Values;
+      --  Set the contents of collection Invalid_Binder_Values
+
+      --------------------------
+      -- Invalid_Binder_Value --
+      --------------------------
+
+      function Invalid_Binder_Value return Node_Id is
+         Val_Id : Entity_Id;
+
+      begin
+         --  Initialize the collection of invalid binder values the first time
+         --  around.
+
+         Set_Invalid_Binder_Values;
+
+         --  Obtain the corresponding variable from System.Scalar_Values which
+         --  holds the invalid value for this type.
+
+         Val_Id := Invalid_Binder_Values (Scal_Typ);
+         pragma Assert (Present (Val_Id));
+
+         return New_Occurrence_Of (Val_Id, Loc);
+      end Invalid_Binder_Value;
+
+      -------------------------
+      -- Invalid_Float_Value --
+      -------------------------
+
+      function Invalid_Float_Value return Node_Id is
+         Value : constant Ureal := Invalid_Floats (Scal_Typ);
+
+      begin
+         --  Pragma Invalid_Scalars did not specify an invalid value for this
+         --  type. Fall back to the value provided by the binder.
+
+         if Value = No_Ureal then
+            return Invalid_Binder_Value;
+         else
+            return Make_Real_Literal (Loc, Realval => Value);
+         end if;
+      end Invalid_Float_Value;
+
+      ---------------------------
+      -- Invalid_Integer_Value --
+      ---------------------------
+
+      function Invalid_Integer_Value return Node_Id is
+         Value : constant Uint := Invalid_Integers (Scal_Typ);
+
+      begin
+         --  Pragma Invalid_Scalars did not specify an invalid value for this
+         --  type. Fall back to the value provided by the binder.
+
+         if Value = No_Uint then
+            return Invalid_Binder_Value;
+         else
+            return Make_Integer_Literal (Loc, Intval => Value);
+         end if;
+      end Invalid_Integer_Value;
+
+      -------------------------------
+      -- Set_Invalid_Binder_Values --
+      -------------------------------
+
+      procedure Set_Invalid_Binder_Values is
+      begin
+         if not Invalid_Binder_Values_Set then
+            Invalid_Binder_Values_Set := True;
+
+            --  Initialize the contents of the collection once since RTE calls
+            --  are not cheap.
+
+            Invalid_Binder_Values :=
+              (Name_Short_Float     => RTE (RE_IS_Isf),
+               Name_Float           => RTE (RE_IS_Ifl),
+               Name_Long_Float      => RTE (RE_IS_Ilf),
+               Name_Long_Long_Float => RTE (RE_IS_Ill),
+               Name_Signed_8        => RTE (RE_IS_Is1),
+               Name_Signed_16       => RTE (RE_IS_Is2),
+               Name_Signed_32       => RTE (RE_IS_Is4),
+               Name_Signed_64       => RTE (RE_IS_Is8),
+               Name_Unsigned_8      => RTE (RE_IS_Iu1),
+               Name_Unsigned_16     => RTE (RE_IS_Iu2),
+               Name_Unsigned_32     => RTE (RE_IS_Iu4),
+               Name_Unsigned_64     => RTE (RE_IS_Iu8));
+         end if;
+      end Set_Invalid_Binder_Values;
+
+   --  Start of processing for Invalid_Scalar_Value
+
+   begin
+      if Scal_Typ in Float_Scalar_Id then
+         return Invalid_Float_Value;
+
+      else pragma Assert (Scal_Typ in Integer_Scalar_Id);
+         return Invalid_Integer_Value;
+      end if;
+   end Invalid_Scalar_Value;
 
    -----------------------------
    -- Is_Actual_Out_Parameter --
@@ -18771,6 +18965,70 @@ package body Sem_Util is
       end if;
    end Needs_One_Actual;
 
+   ---------------------------------
+   -- Needs_Simple_Initialization --
+   ---------------------------------
+
+   function Needs_Simple_Initialization
+     (Typ         : Entity_Id;
+      Consider_IS : Boolean := True) return Boolean
+   is
+      Consider_IS_NS : constant Boolean :=
+        Normalize_Scalars or (Initialize_Scalars and Consider_IS);
+
+   begin
+      --  Never need initialization if it is suppressed
+
+      if Initialization_Suppressed (Typ) then
+         return False;
+      end if;
+
+      --  Check for private type, in which case test applies to the underlying
+      --  type of the private type.
+
+      if Is_Private_Type (Typ) then
+         declare
+            RT : constant Entity_Id := Underlying_Type (Typ);
+         begin
+            if Present (RT) then
+               return Needs_Simple_Initialization (RT);
+            else
+               return False;
+            end if;
+         end;
+
+      --  Scalar type with Default_Value aspect requires initialization
+
+      elsif Is_Scalar_Type (Typ) and then Has_Default_Aspect (Typ) then
+         return True;
+
+      --  Cases needing simple initialization are access types, and, if pragma
+      --  Normalize_Scalars or Initialize_Scalars is in effect, then all scalar
+      --  types.
+
+      elsif Is_Access_Type (Typ)
+        or else (Consider_IS_NS and then (Is_Scalar_Type (Typ)))
+      then
+         return True;
+
+      --  If Initialize/Normalize_Scalars is in effect, string objects also
+      --  need initialization, unless they are created in the course of
+      --  expanding an aggregate (since in the latter case they will be
+      --  filled with appropriate initializing values before they are used).
+
+      elsif Consider_IS_NS
+        and then Is_Standard_String_Type (Typ)
+        and then
+          (not Is_Itype (Typ)
+            or else Nkind (Associated_Node_For_Itype (Typ)) /= N_Aggregate)
+      then
+         return True;
+
+      else
+         return False;
+      end if;
+   end Needs_Simple_Initialization;
+
    ------------------------
    -- New_Copy_List_Tree --
    ------------------------
@@ -23781,6 +24039,40 @@ package body Sem_Util is
 
       Set_Entity (N, Val);
    end Set_Entity_With_Checks;
+
+   ------------------------------
+   -- Set_Invalid_Scalar_Value --
+   ------------------------------
+
+   procedure Set_Invalid_Scalar_Value
+     (Scal_Typ : Float_Scalar_Id;
+      Value    : Ureal)
+   is
+      Slot : Ureal renames Invalid_Floats (Scal_Typ);
+
+   begin
+      --  Detect an attempt to set a different value for the same scalar type
+
+      pragma Assert (Slot = No_Ureal);
+      Slot := Value;
+   end Set_Invalid_Scalar_Value;
+
+   ------------------------------
+   -- Set_Invalid_Scalar_Value --
+   ------------------------------
+
+   procedure Set_Invalid_Scalar_Value
+     (Scal_Typ : Integer_Scalar_Id;
+      Value    : Uint)
+   is
+      Slot : Uint renames Invalid_Integers (Scal_Typ);
+
+   begin
+      --  Detect an attempt to set a different value for the same scalar type
+
+      pragma Assert (Slot = No_Uint);
+      Slot := Value;
+   end Set_Invalid_Scalar_Value;
 
    ------------------------
    -- Set_Name_Entity_Id --

@@ -4918,20 +4918,21 @@ package body Exp_Aggr is
       --  specifically optimized for the target.
 
       function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
-         Ctyp      : Entity_Id;
-         Index     : Entity_Id;
-         Expr      : Node_Id := N;
-         Low       : Node_Id;
-         High      : Node_Id;
          Csiz      : Uint;
+         Ctyp      : Entity_Id;
+         Expr      : Node_Id;
+         High      : Node_Id;
+         Index     : Entity_Id;
+         Low       : Node_Id;
+         Nunits    : Int;
          Remainder : Uint;
          Value     : Uint;
-         Nunits    : Nat;
 
       begin
          --  Recurse as far as possible to find the innermost component type
 
          Ctyp := Etype (N);
+         Expr := N;
          while Is_Array_Type (Ctyp) loop
             if Nkind (Expr) /= N_Aggregate
               or else not Is_Others_Aggregate (Expr)
@@ -5021,6 +5022,15 @@ package body Exp_Aggr is
          --  The expression needs to be analyzed if True is returned
 
          Analyze_And_Resolve (Expr, Ctyp);
+
+         --  Strip away any conversions from the expression as they simply
+         --  qualify the real expression.
+
+         while Nkind_In (Expr, N_Unchecked_Type_Conversion,
+                               N_Type_Conversion)
+         loop
+            Expr := Expression (Expr);
+         end loop;
 
          Nunits := UI_To_Int (Csiz) / System_Storage_Unit;
 

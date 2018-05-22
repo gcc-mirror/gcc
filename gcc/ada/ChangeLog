@@ -1,3 +1,39 @@
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Strip away any
+	conversions before extracting the value of the expression.
+	* exp_ch3.adb (Default_Initialize_Object): Optimize the default
+	initialization of an array of scalars.
+	(Get_Simple_Init_Val): Add processing for array types. Remove the
+	processing of strings because this case is already handled by the array
+	case.
+	(Needs_Simple_Initialization): Moved to Sem_Util.
+	(Simple_Init_Array_Type): New routine.
+	(Simple_Init_Initialize_Scalars_Type): Reimplemented to use the new
+	facilities from Sem_Util.
+	(Simple_Initialization_OK): New routine.
+	* exp_ch3.ads (Needs_Simple_Initialization): Moved to Sem_Util.
+	* exp_ch4.adb (Expand_N_Allocator): Optimize the default allocation of
+	an array of scalars.
+	* sem_prag.adb (Analyze_Float_Value): New routine.
+	(Analyze_Integer_Value): New routine.
+	(Analyze_Pragma): Reimplement the analysis of pragma Initialize_Scalars
+	to handled the extended form of the pragma.
+	(Analyze_Type_Value_Pair): New routine.
+	* sem_util.adb: Add invalid value-related data structures.
+	(Examine_Array_Bounds): New routine.
+	(Has_Static_Array_Bounds): Reimplemented.
+	(Has_Static_Non_Empty_Array_Bounds): New routine.
+	(Invalid_Scalar_Value): New routine.
+	(Needs_Simple_Initialization): Moved from Exp_Ch3.
+	(Set_Invalid_Scalar_Value): New routines.
+	* sem_util.ads (Has_Static_Non_Empty_Array_Bounds): New routine.
+	(Invalid_Scalar_Value): New routine.
+	(Needs_Simple_Initialization): Moved from Exp_Ch3.
+	(Set_Invalid_Scalar_Value): New routines.
+	* snames.ads-tmpl: Add names for the salar type families used by pragma
+	Initialize_Scalars.
+
 2018-05-22  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Make_DT): Initialize the External_Tag with an empty

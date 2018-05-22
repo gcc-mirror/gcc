@@ -5936,6 +5936,11 @@ package body Exp_Ch3 is
          --  Return a new reference to Def_Id with attributes Assignment_OK and
          --  Must_Not_Freeze already set.
 
+         function Simple_Initialization_OK
+           (Init_Typ : Entity_Id) return Boolean;
+         --  Determine whether object declaration N with entity Def_Id needs
+         --  simple initialization, assuming that it is of type Init_Typ.
+
          --------------------------
          -- New_Object_Reference --
          --------------------------
@@ -5956,6 +5961,28 @@ package body Exp_Ch3 is
 
             return Obj_Ref;
          end New_Object_Reference;
+
+         ------------------------------
+         -- Simple_Initialization_OK --
+         ------------------------------
+
+         function Simple_Initialization_OK
+           (Init_Typ : Entity_Id) return Boolean
+         is
+         begin
+            --  Do not consider the object declaration if it comes with an
+            --  initialization expression, or is internal in which case it
+            --  will be assigned later.
+
+            return
+              not Is_Internal (Def_Id)
+                and then not Has_Init_Expression (N)
+                and then Needs_Simple_Initialization
+                           (Typ         => Init_Typ,
+                            Consider_IS =>
+                              Initialize_Scalars
+                                and then No (Following_Address_Clause (N)));
+         end Simple_Initialization_OK;
 
          --  Local variables
 
@@ -6041,6 +6068,41 @@ package body Exp_Ch3 is
                elsif Build_Equivalent_Aggregate then
                   null;
 
+               --  Optimize the default initialization of an array object when
+               --  the following conditions are met:
+               --
+               --    * Pragma Initialize_Scalars or Normalize_Scalars is in
+               --      effect.
+               --
+               --    * The bounds of the array type are static and lack empty
+               --      ranges.
+               --
+               --    * The array type does not contain atomic components or is
+               --      treated as packed.
+               --
+               --    * The component is of a scalar type which requires simple
+               --      initialization.
+               --
+               --  Construct an in-place initialization aggregate which may be
+               --  convert into a fast memset by the backend.
+
+               elsif Init_Or_Norm_Scalars
+                 and then Is_Array_Type (Typ)
+                 and then not Has_Atomic_Components (Typ)
+                 and then not Is_Packed (Typ)
+                 and then Has_Static_Non_Empty_Array_Bounds (Typ)
+                 and then Is_Scalar_Type (Component_Type (Typ))
+                 and then Simple_Initialization_OK (Component_Type (Typ))
+               then
+                  Set_No_Initialization (N, False);
+                  Set_Expression (N,
+                    Get_Simple_Init_Val
+                      (Typ  => Typ,
+                       N    => Obj_Def,
+                       Size => Esize (Def_Id)));
+
+                  Analyze_And_Resolve (Expression (N), Typ);
+
                --  Otherwise invoke the type init proc, generate:
                --    Type_Init_Proc (Obj);
 
@@ -6056,15 +6118,8 @@ package body Exp_Ch3 is
             end if;
 
          --  Provide a default value if the object needs simple initialization
-         --  and does not already have an initial value. A generated temporary
-         --  does not require initialization because it will be assigned later.
 
-         elsif Needs_Simple_Initialization
-                 (Typ, Initialize_Scalars
-                         and then No (Following_Address_Clause (N)))
-           and then not Is_Internal (Def_Id)
-           and then not Has_Init_Expression (N)
-         then
+         elsif Simple_Initialization_OK (Typ) then
             Set_No_Initialization (N, False);
             Set_Expression (N,
               Get_Simple_Init_Val
@@ -7954,6 +8009,9 @@ package body Exp_Ch3 is
       --    * Hi_Bound - Set to No_Unit when there is no information available,
       --      or to the known high bound.
 
+      function Simple_Init_Array_Type return Node_Id;
+      --  Build an expression to initialize array type Typ
+
       function Simple_Init_Defaulted_Type return Node_Id;
       --  Build an expression to initialize type Typ which is subject to
       --  aspect Default_Value.
@@ -7973,9 +8031,6 @@ package body Exp_Ch3 is
 
       function Simple_Init_Scalar_Type return Node_Id;
       --  Build an expression to initialize scalar type Typ
-
-      function Simple_Init_String_Type return Node_Id;
-      --  Build an expression to initialize string type Typ
 
       ----------------------------
       -- Extract_Subtype_Bounds --
@@ -8034,6 +8089,57 @@ package body Exp_Ch3 is
          end loop;
       end Extract_Subtype_Bounds;
 
+      ----------------------------
+      -- Simple_Init_Array_Type --
+      ----------------------------
+
+      function Simple_Init_Array_Type return Node_Id is
+         Comp_Typ : constant Entity_Id := Component_Type (Typ);
+
+         function Simple_Init_Dimension (Index : Node_Id) return Node_Id;
+         --  Initialize a single array dimension with index constraint Index
+
+         --------------------
+         -- Simple_Init_Dimension --
+         --------------------
+
+         function Simple_Init_Dimension (Index : Node_Id) return Node_Id is
+         begin
+            --  Process the current dimension
+
+            if Present (Index) then
+
+               --  Build a suitable "others" aggregate for the next dimension,
+               --  or initialize the component itself. Generate:
+               --
+               --    (others => ...)
+
+               return
+                 Make_Aggregate (Loc,
+                   Component_Associations => New_List (
+                     Make_Component_Association (Loc,
+                       Choices    => New_List (Make_Others_Choice (Loc)),
+                       Expression =>
+                         Simple_Init_Dimension (Next_Index (Index)))));
+
+            --  Otherwise all dimensions have been processed. Initialize the
+            --  component itself.
+
+            else
+               return
+                 Get_Simple_Init_Val
+                   (Typ  => Comp_Typ,
+                    N    => N,
+                    Size => Esize (Comp_Typ));
+            end if;
+         end Simple_Init_Dimension;
+
+      --  Start of processing for Simple_Init_Array_Type
+
+      begin
+         return Simple_Init_Dimension (First_Index (Typ));
+      end Simple_Init_Array_Type;
+
       --------------------------------
       -- Simple_Init_Defaulted_Type --
       --------------------------------
@@ -8080,67 +8186,63 @@ package body Exp_Ch3 is
          Float_Typ : Entity_Id;
          Hi_Bound  : Uint;
          Lo_Bound  : Uint;
-         Val_RE    : RE_Id;
+         Scal_Typ  : Scalar_Id;
 
       begin
          Extract_Subtype_Bounds (Lo_Bound, Hi_Bound);
 
-         --  For float types, use float values from System.Scalar_Values
+         --  Float types
 
          if Is_Floating_Point_Type (Typ) then
             Float_Typ := Root_Type (Typ);
 
             if Float_Typ = Standard_Short_Float then
-               Val_RE := RE_IS_Isf;
+               Scal_Typ := Name_Short_Float;
             elsif Float_Typ = Standard_Float then
-               Val_RE := RE_IS_Ifl;
+               Scal_Typ := Name_Float;
             elsif Float_Typ = Standard_Long_Float then
-               Val_RE := RE_IS_Ilf;
+               Scal_Typ := Name_Long_Float;
             else pragma Assert (Float_Typ = Standard_Long_Long_Float);
-               Val_RE := RE_IS_Ill;
+               Scal_Typ := Name_Long_Long_Float;
             end if;
 
-         --  If zero is invalid, use zero values from System.Scalar_Values
+         --  If zero is invalid, it is a convenient value to use that is for
+         --  sure an appropriate invalid value in all situations.
 
          elsif Lo_Bound /= No_Uint and then Lo_Bound > Uint_0 then
-            if Size_To_Use <= 8 then
-               Val_RE := RE_IS_Iz1;
-            elsif Size_To_Use <= 16 then
-               Val_RE := RE_IS_Iz2;
-            elsif Size_To_Use <= 32 then
-               Val_RE := RE_IS_Iz4;
-            else
-               Val_RE := RE_IS_Iz8;
-            end if;
+            return Make_Integer_Literal (Loc, 0);
 
-         --  For unsigned, use unsigned values from System.Scalar_Values
+         --  Unsigned types
 
          elsif Is_Unsigned_Type (Typ) then
             if Size_To_Use <= 8 then
-               Val_RE := RE_IS_Iu1;
+               Scal_Typ := Name_Unsigned_8;
             elsif Size_To_Use <= 16 then
-               Val_RE := RE_IS_Iu2;
+               Scal_Typ := Name_Unsigned_16;
             elsif Size_To_Use <= 32 then
-               Val_RE := RE_IS_Iu4;
+               Scal_Typ := Name_Unsigned_32;
             else
-               Val_RE := RE_IS_Iu8;
+               Scal_Typ := Name_Unsigned_64;
             end if;
 
-         --  For signed, use signed values from System.Scalar_Values
+         --  Signed types
 
          else
             if Size_To_Use <= 8 then
-               Val_RE := RE_IS_Is1;
+               Scal_Typ := Name_Signed_8;
             elsif Size_To_Use <= 16 then
-               Val_RE := RE_IS_Is2;
+               Scal_Typ := Name_Signed_16;
             elsif Size_To_Use <= 32 then
-               Val_RE := RE_IS_Is4;
+               Scal_Typ := Name_Signed_32;
             else
-               Val_RE := RE_IS_Is8;
+               Scal_Typ := Name_Signed_64;
             end if;
          end if;
 
-         return New_Occurrence_Of (RTE (Val_RE), Loc);
+         --  Use the values specified by pragma Initialize_Scalars or the ones
+         --  provided by the binder. Higher precedence is given to the pragma.
+
+         return Invalid_Scalar_Value (Loc, Scal_Typ);
       end Simple_Init_Initialize_Scalars_Type;
 
       ----------------------------------------
@@ -8308,29 +8410,6 @@ package body Exp_Ch3 is
          return Expr;
       end Simple_Init_Scalar_Type;
 
-      -----------------------------
-      -- Simple_Init_String_Type --
-      -----------------------------
-
-      function Simple_Init_String_Type return Node_Id is
-         Comp_Typ : constant Entity_Id := Component_Type (Typ);
-
-      begin
-         --  Generate:
-         --    (others => Get_Simple_Init_Value)
-
-         return
-           Make_Aggregate (Loc,
-             Component_Associations => New_List (
-               Make_Component_Association (Loc,
-                 Choices    => New_List (Make_Others_Choice (Loc)),
-                 Expression =>
-                   Get_Simple_Init_Val
-                     (Typ  => Comp_Typ,
-                      N    => N,
-                      Size => Esize (Comp_Typ)))));
-      end Simple_Init_String_Type;
-
    --  Start of processing for Get_Simple_Init_Val
 
    begin
@@ -8344,11 +8423,11 @@ package body Exp_Ch3 is
             return Simple_Init_Scalar_Type;
          end if;
 
-      --  [[Wide_]Wide_]String with Initialize or Normalize_Scalars
+      --  Array type with Initialize or Normalize_Scalars
 
-      elsif Is_Standard_String_Type (Typ) then
+      elsif Is_Array_Type (Typ) then
          pragma Assert (Init_Or_Norm_Scalars);
-         return Simple_Init_String_Type;
+         return Simple_Init_Array_Type;
 
       --  Access type is initialized to null
 
@@ -10001,70 +10080,6 @@ package body Exp_Ch3 is
          return Empty;
       end if;
    end Make_Tag_Assignment;
-
-   ---------------------------------
-   -- Needs_Simple_Initialization --
-   ---------------------------------
-
-   function Needs_Simple_Initialization
-     (Typ         : Entity_Id;
-      Consider_IS : Boolean := True) return Boolean
-   is
-      Consider_IS_NS : constant Boolean :=
-        Normalize_Scalars or (Initialize_Scalars and Consider_IS);
-
-   begin
-      --  Never need initialization if it is suppressed
-
-      if Initialization_Suppressed (Typ) then
-         return False;
-      end if;
-
-      --  Check for private type, in which case test applies to the underlying
-      --  type of the private type.
-
-      if Is_Private_Type (Typ) then
-         declare
-            RT : constant Entity_Id := Underlying_Type (Typ);
-         begin
-            if Present (RT) then
-               return Needs_Simple_Initialization (RT);
-            else
-               return False;
-            end if;
-         end;
-
-      --  Scalar type with Default_Value aspect requires initialization
-
-      elsif Is_Scalar_Type (Typ) and then Has_Default_Aspect (Typ) then
-         return True;
-
-      --  Cases needing simple initialization are access types, and, if pragma
-      --  Normalize_Scalars or Initialize_Scalars is in effect, then all scalar
-      --  types.
-
-      elsif Is_Access_Type (Typ)
-        or else (Consider_IS_NS and then (Is_Scalar_Type (Typ)))
-      then
-         return True;
-
-      --  If Initialize/Normalize_Scalars is in effect, string objects also
-      --  need initialization, unless they are created in the course of
-      --  expanding an aggregate (since in the latter case they will be
-      --  filled with appropriate initializing values before they are used).
-
-      elsif Consider_IS_NS
-        and then Is_Standard_String_Type (Typ)
-        and then
-          (not Is_Itype (Typ)
-            or else Nkind (Associated_Node_For_Itype (Typ)) /= N_Aggregate)
-      then
-         return True;
-
-      else
-         return False;
-      end if;
-   end Needs_Simple_Initialization;
 
    ----------------------
    -- Predef_Deep_Spec --
