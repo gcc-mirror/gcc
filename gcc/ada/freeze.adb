@@ -7466,6 +7466,16 @@ package body Freeze is
    --  Start of processing for Freeze_Fixed_Point_Type
 
    begin
+      --  The type, or its first subtype if we are freezing the anonymous
+      --  base, may have a delayed Small aspect. It must be analyzed now,
+      --  so that all characteristics of the type (size, bounds) can be
+      --  computed and validated in the call to Minimum_Size that follows.
+
+      if Has_Delayed_Aspects (First_Subtype (Typ)) then
+         Analyze_Aspects_At_Freeze_Point (First_Subtype (Typ));
+         Set_Has_Delayed_Aspects (First_Subtype (Typ), False);
+      end if;
+
       --  If Esize of a subtype has not previously been set, set it now
 
       if Unknown_Esize (Typ) then
