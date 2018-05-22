@@ -1,3 +1,9 @@
+2018-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85834
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Properly handle
+	non-constant and non-zero memset arguments.
+
 2018-05-22  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/85607

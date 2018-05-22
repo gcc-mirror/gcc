@@ -1,3 +1,9 @@
+2018-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85834
+	* g++.dg/torture/pr85834.C: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-64.c: Likewise.
+
 2018-05-22  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/85607
