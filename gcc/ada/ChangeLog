@@ -1,3 +1,7 @@
+2018-05-22  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks-target.inc: Align stack to 128bits on AArch64.
+
 2018-05-22  Jerome Lambourg  <lambourg@adacore.com>
 
 	* sigtramp-qnx.c: Fix stack alignment issue in the signal trampoline.

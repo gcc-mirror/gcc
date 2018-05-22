@@ -417,17 +417,18 @@ TCR(".cfi_return_column " S(REGNO_PC_OFFSET))
 #ifdef __aarch64__
 #define SIGTRAMP_BODY \
 CR("") \
-TCR("# Push FP and LR on stack") \
-TCR("stp x29, x30, [sp, #-16]!") \
-TCR("# Push register used to hold the CFA on stack (pro forma)") \
-TCR("str x" S(CFA_REG) ", [sp, #-8]!")  \
+TCR("# Allocate the frame (16bytes aligned) and push FP and LR") \
+TCR("stp x29, x30, [sp, #-32]!") \
+TCR("add x29, sp, 0") \
+TCR("# Store register used to hold the CFA on stack (pro forma)") \
+TCR("str x" S(CFA_REG) ", [sp, 16]")  \
 TCR("# Set the CFA reg from the 5th arg") \
 TCR("mov x" S(CFA_REG) ", x4") \
 TCR("# Call the handler") \
 TCR("blr x3") \
 TCR("# Release our frame and return (should never get here!).") \
-TCR("ldr x" S(CFA_REG) " , [sp], 8") \
-TCR("ldp x29, x30, [sp], 16") \
+TCR("ldr x" S(CFA_REG) ", [sp, 16]") \
+TCR("ldp x29, x30, [sp], 32") \
 TCR("ret")
 #else
 #define SIGTRAMP_BODY \
