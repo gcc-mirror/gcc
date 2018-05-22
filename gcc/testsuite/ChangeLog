@@ -6,6 +6,13 @@
 
 2018-05-22  Martin Sebor  <msebor@redhat.com>
 
+	PR c/85623
+	* c-c++-common/attr-nonstring-3.c: Adjust.
+	* c-c++-common/attr-nonstring-4.c: Adjust.
+	* c-c++-common/attr-nonstring-6.c: New test.
+
+2018-05-22  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/85826
 	* gcc.dg/Wrestrict-17.c: New test.
 
