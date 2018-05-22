@@ -25,11 +25,17 @@
 VERSION=0
 progname=${0##*/}
 main=
+
 verbose=false
+compile=true
+default=true
+declare -A mapping
+
 shopt -s extglob nullglob
 
-compile () {
-    local module=$1
+invoke_compiler () {
+    local src=$1
+    local from=$2
     local ign=false
     local cmd="$COLLECT_GCC"
 
@@ -53,18 +59,31 @@ compile () {
     done
 
     # look for something named by the module name
-    src=$(echo $(dirname $main)/$module.@(cc|C|ccm))
-    # dirname could have created ./ prefix
-    src="${src#./}"
-
-    if test -z "$src" -o ! -e "$src" ; then
-	echo "cannot find module source"
-	return
+    if test $from != '.' -a -e "$from/$src" ; then
+	src="$from/$src"
+    elif ! test -e "$src" ; then
+	src=$(dirname $main)/$src
+	if ! test -e "$src" ; then
+	    echo "cannot find module source"
+	    return
+	fi
     fi
 
-    $verbose && echo "$progname: compiling module interface $module ($src)" >&2
+    $verbose && echo "$progname: compiling module interface $src" >&2
     cmd+=" $action $src"
     $cmd || echo "compilation $src failed"
+}
+
+bmi () {
+    local r="${mapping[$1]}"
+    if $default ; then
+	test "$r" || r=$(echo $1 | tr . -).nms
+    fi
+    echo "$r"
+}
+
+search () {
+    echo "$(echo $1 | tr . -).cc"
 }
 
 cmd () {
@@ -77,20 +96,22 @@ cmd () {
 	    ;;
 	(BMI)
 	    # We try and build a BMI from source
-	    file=$(echo $2 | tr . -)
-	    comp=
-	    if ! test -e $file.nms ; then
-		resp=$(compile $file)
-	    fi
-	    if test -e $file.nms ; then
-		resp="BMI $file.nms"
+	    bmi=$(bmi $2)
+	    if test -z "$bmi" ; then
+		resp="ERROR Unknown module name"
 	    else
-		resp="ERROR $resp"
+		if $compile && ! test -e $bmi ; then
+		    resp=$(invoke_compiler $(search $2) $(dirname $3))
+		fi
+		if test -e $bmi ; then
+		    resp="BMI $bmi"
+		else
+		    resp="ERROR $resp"
+		fi
 	    fi
 	    ;;
 	(EXPORT)
-	    file=$(echo $2 | tr . -)
-	    resp="BMI $file.nms"
+	    resp="BMI $(bmi $2)"
 	    ;;
 	(DONE)
 	    resp="OK"
@@ -128,7 +149,7 @@ cmd () {
 	    main=""
 	    ;;
 	(SEARCH)
-	    resp="$(echo $2 | tr . -).cc"
+	    resp="$(search $2)"
 	    ;;
 	(*)
 	    echo "Unknown command '$1'" >&2
@@ -144,6 +165,15 @@ cmd () {
 while test "$#" != 0 ; do
     case "$1" in
 	(-v) verbose=true ;;
+	(--no-compile) compile=false ;;
+	(--mapping)
+	    shift
+	    while read mod file ;
+	    do
+		mapping[$mod]="$file"
+	    done < $1
+	    ;;
+	(--no-default) default=false ;;
 	(-*) echo "Unknown option '$1'" >&2 ; exit 1 ;;
 	(*) break ;;
     esac
