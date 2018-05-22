@@ -1,3 +1,8 @@
+2018-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	* gfortran.dg/pr30667.f: Add option "-std=legacy".
+
 2018-05-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/85359
