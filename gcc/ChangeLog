@@ -1,3 +1,8 @@
+2018-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/85607
+	* ipa-icf.c (sem_item::add_type): Do not ICE for incomplete types.
+
 2018-05-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85863
