@@ -39,7 +39,9 @@
 #define _THREAD_SAFE
 
 /* Use 64 bit Large File API */
-#ifndef _LARGEFILE_SOURCE
+#if defined (__QNX__)
+#define _LARGEFILE64_SOURCE 1
+#elif !defined(_LARGEFILE_SOURCE)
 #define _LARGEFILE_SOURCE
 #endif
 #define _FILE_OFFSET_BITS 64
@@ -81,8 +83,8 @@
 #define __BSD_VISIBLE 1
 #endif
 
-#if defined (__QNX__)
-#define _LARGEFILE64_SOURCE 1
+#ifdef __QNX__
+#include <sys/syspage.h>
 #endif
 
 #ifdef IN_RTS
@@ -2350,8 +2352,11 @@ __gnat_number_of_cpus (void)
 
 #if defined (__linux__) || defined (__sun__) || defined (_AIX) \
   || defined (__APPLE__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
-  || defined (__DragonFly__) || defined (__NetBSD__) || defined (__QNX__)
+  || defined (__DragonFly__) || defined (__NetBSD__)
   cores = (int) sysconf (_SC_NPROCESSORS_ONLN);
+
+#elif defined (__QNX__)
+  cores = (int) _syspage_ptr->num_cpu;
 
 #elif defined (__hpux__)
   struct pst_dynamic psd;
