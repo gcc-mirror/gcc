@@ -4595,7 +4595,7 @@ package body Exp_Ch4 is
       --  first argument to Init must be converted to the task record type.
 
       declare
-         T         : constant Entity_Id := Entity (Expression (N));
+         T         : constant Entity_Id := Etype (Expression (N));
          Args      : List_Id;
          Decls     : List_Id;
          Decl      : Node_Id;
@@ -4617,6 +4617,67 @@ package body Exp_Ch4 is
                  (N           => N,
                   Is_Allocate => True);
             end if;
+
+         --  Optimize the default allocation of an array object when the
+         --  following conditions are met:
+         --
+         --    * Pragma Initialize_Scalars or Normalize_Scalars is in effect
+         --
+         --    * The bounds of the array type are static and lack empty ranges
+         --
+         --    * The array type does not contain atomic components or is
+         --      treated as packed.
+         --
+         --    * The component is of a scalar type which requires simple
+         --      initialization.
+         --
+         --  Construct an in-place initialization aggregate which may be
+         --  convert into a fast memset by the backend.
+
+         elsif Init_Or_Norm_Scalars
+           and then Is_Array_Type (T)
+           and then not Has_Atomic_Components (T)
+           and then not Is_Packed (T)
+           and then Has_Static_Non_Empty_Array_Bounds (T)
+           and then Is_Scalar_Type (Component_Type (T))
+           and then Needs_Simple_Initialization
+                      (Typ         => Component_Type (T),
+                       Consider_IS => True)
+         then
+            Set_Analyzed (N);
+            Temp := Make_Temporary (Loc, 'P');
+
+            --  Generate:
+            --    Temp : Ptr_Typ := new ...;
+
+            Insert_Action
+              (Assoc_Node => N,
+               Ins_Action =>
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Object_Definition   => New_Occurrence_Of (PtrT, Loc),
+                   Expression          => Relocate_Node (N)),
+               Suppress   => All_Checks);
+
+            --  Generate:
+            --    Temp.all := (others => ...);
+
+            Insert_Action
+              (Assoc_Node => N,
+               Ins_Action =>
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Occurrence_Of (Temp, Loc)),
+                   Expression =>
+                     Get_Simple_Init_Val
+                       (Typ  => T,
+                        N    => N,
+                        Size => Esize (Component_Type (T)))),
+               Suppress   => All_Checks);
+
+            Rewrite (N, New_Occurrence_Of (Temp, Loc));
+            Analyze_And_Resolve (N, PtrT);
 
          --  Case of no initialization procedure present
 

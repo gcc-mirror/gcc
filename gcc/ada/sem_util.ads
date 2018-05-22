@@ -1325,6 +1325,9 @@ package Sem_Util is
    function Has_Static_Array_Bounds (Typ : Node_Id) return Boolean;
    --  Return whether an array type has static bounds
 
+   function Has_Static_Non_Empty_Array_Bounds (Typ : Node_Id) return Boolean;
+   --  Determine whether array type Typ has static non-empty bounds
+
    function Has_Stream (T : Entity_Id) return Boolean;
    --  Tests if type T is derived from Ada.Streams.Root_Stream_Type, or in the
    --  case of a composite type, has a component for which this predicate is
@@ -1470,6 +1473,13 @@ package Sem_Util is
 
    procedure Install_SPARK_Mode (Mode : SPARK_Mode_Type; Prag : Node_Id);
    --  Establish the SPARK_Mode and SPARK_Mode_Pragma currently in effect
+
+   function Invalid_Scalar_Value
+     (Loc      : Source_Ptr;
+      Scal_Typ : Scalar_Id) return Node_Id;
+   --  Obtain the invalid value for scalar type Scal_Typ as either specified by
+   --  pragma Initialize_Scalars or by the binder. Return an expression created
+   --  at source location Loc, which denotes the invalid value.
 
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
@@ -2183,6 +2193,19 @@ package Sem_Util is
    --  syntactic ambiguity that results from an indexing of a function call
    --  that returns an array, so that Obj.F (X, Y) may mean F (Ob) (X, Y).
 
+   function Needs_Simple_Initialization
+     (Typ         : Entity_Id;
+      Consider_IS : Boolean := True) return Boolean;
+   --  Certain types need initialization even though there is no specific
+   --  initialization routine:
+   --    Access types (which need initializing to null)
+   --    All scalar types if Normalize_Scalars mode set
+   --    Descendants of standard string types if Normalize_Scalars mode set
+   --    Scalar types having a Default_Value attribute
+   --  Regarding Initialize_Scalars mode, this is ignored if Consider_IS is
+   --  set to False, but if Consider_IS is set to True, then the cases above
+   --  mentioning Normalize_Scalars also apply for Initialize_Scalars mode.
+
    function New_Copy_List_Tree (List : List_Id) return List_Id;
    --  Copy recursively an analyzed list of nodes. Uses New_Copy_Tree defined
    --  below. As for New_Copy_Tree, it is illegal to attempt to copy extended
@@ -2632,6 +2655,18 @@ package Sem_Util is
    --
    --    If restriction No_Implementation_Identifiers is set, then it checks
    --    that the entity is not implementation defined.
+
+   procedure Set_Invalid_Scalar_Value
+     (Scal_Typ : Float_Scalar_Id;
+      Value    : Ureal);
+   --  Associate invalid value Value with scalar type Scal_Typ as specified by
+   --  pragma Initialize_Scalars.
+
+   procedure Set_Invalid_Scalar_Value
+     (Scal_Typ : Integer_Scalar_Id;
+      Value    : Uint);
+   --  Associate invalid value Value with scalar type Scal_Typ as specified by
+   --  pragma Initialize_Scalars.
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);

@@ -134,17 +134,4 @@ package Exp_Ch3 is
    --  clause the assignment is handled as part of the freezing of the object,
    --  see Check_Address_Clause.
 
-   function Needs_Simple_Initialization
-     (Typ         : Entity_Id;
-      Consider_IS : Boolean := True) return Boolean;
-   --  Certain types need initialization even though there is no specific
-   --  initialization routine:
-   --    Access types (which need initializing to null)
-   --    All scalar types if Normalize_Scalars mode set
-   --    Descendants of standard string types if Normalize_Scalars mode set
-   --    Scalar types having a Default_Value attribute
-   --  Regarding Initialize_Scalars mode, this is ignored if Consider_IS is
-   --  set to False, but if Consider_IS is set to True, then the cases above
-   --  mentioning Normalize_Scalars also apply for Initialize_Scalars mode.
-
 end Exp_Ch3;

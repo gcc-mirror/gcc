@@ -17124,24 +17124,190 @@ package body Sem_Prag is
          -- Initialize_Scalars --
          ------------------------
 
-         --  pragma Initialize_Scalars;
+         --  pragma Initialize_Scalars
+         --    [ ( TYPE_VALUE_PAIR {, TYPE_VALUE_PAIR} ) ];
 
-         when Pragma_Initialize_Scalars =>
+         --  TYPE_VALUE_PAIR ::=
+         --    SCALAR_TYPE => static_EXPRESSION
+
+         --  SCALAR_TYPE :=
+         --    Short_Float
+         --  | Float
+         --  | Long_Float
+         --  | Long_Long_Flat
+         --  | Signed_8
+         --  | Signed_16
+         --  | Signed_32
+         --  | Signed_64
+         --  | Unsigned_8
+         --  | Unsigned_16
+         --  | Unsigned_32
+         --  | Unsigned_64
+
+         when Pragma_Initialize_Scalars => Do_Initialize_Scalars : declare
+            Seen : array (Scalar_Id) of Node_Id := (others => Empty);
+            --  This collection holds the individual pairs which specify the
+            --  invalid values of their respective scalar types.
+
+            procedure Analyze_Float_Value
+              (Scal_Typ : Float_Scalar_Id;
+               Val_Expr : Node_Id);
+            --  Analyze a type value pair associated with float type Scal_Typ
+            --  and expression Val_Expr.
+
+            procedure Analyze_Integer_Value
+              (Scal_Typ : Integer_Scalar_Id;
+               Val_Expr : Node_Id);
+            --  Analyze a type value pair associated with integer type Scal_Typ
+            --  and expression Val_Expr.
+
+            procedure Analyze_Type_Value_Pair (Pair : Node_Id);
+            --  Analyze type value pair Pair
+
+            -------------------------
+            -- Analyze_Float_Value --
+            -------------------------
+
+            procedure Analyze_Float_Value
+              (Scal_Typ : Float_Scalar_Id;
+               Val_Expr : Node_Id)
+            is
+            begin
+               Analyze_And_Resolve (Val_Expr, Any_Real);
+
+               if Is_OK_Static_Expression (Val_Expr) then
+                  Set_Invalid_Scalar_Value (Scal_Typ, Expr_Value_R (Val_Expr));
+
+               else
+                  Error_Msg_Name_1 := Scal_Typ;
+                  Error_Msg_N ("value for type % must be static", Val_Expr);
+               end if;
+            end Analyze_Float_Value;
+
+            ---------------------------
+            -- Analyze_Integer_Value --
+            ---------------------------
+
+            procedure Analyze_Integer_Value
+              (Scal_Typ : Integer_Scalar_Id;
+               Val_Expr : Node_Id)
+            is
+            begin
+               Analyze_And_Resolve (Val_Expr, Any_Integer);
+
+               if Is_OK_Static_Expression (Val_Expr) then
+                  Set_Invalid_Scalar_Value (Scal_Typ, Expr_Value (Val_Expr));
+
+               else
+                  Error_Msg_Name_1 := Scal_Typ;
+                  Error_Msg_N ("value for type % must be static", Val_Expr);
+               end if;
+            end Analyze_Integer_Value;
+
+            -----------------------------
+            -- Analyze_Type_Value_Pair --
+            -----------------------------
+
+            procedure Analyze_Type_Value_Pair (Pair : Node_Id) is
+               Scal_Typ  : constant Name_Id := Chars (Pair);
+               Val_Expr  : constant Node_Id := Expression (Pair);
+               Prev_Pair : Node_Id;
+
+            begin
+               if Scal_Typ in Scalar_Id then
+                  Prev_Pair := Seen (Scal_Typ);
+
+                  --  Prevent multiple attempts to set a value for a scalar
+                  --  type.
+
+                  if Present (Prev_Pair) then
+                     Error_Msg_Name_1 := Scal_Typ;
+                     Error_Msg_N
+                       ("cannot specify multiple invalid values for type %",
+                        Pair);
+
+                     Error_Msg_Sloc := Sloc (Prev_Pair);
+                     Error_Msg_N ("previous value set #", Pair);
+
+                     --  Ignore the effects of the pair, but do not halt the
+                     --  analysis of the pragma altogether.
+
+                     return;
+
+                  --  Otherwise capture the first pair for this scalar type
+
+                  else
+                     Seen (Scal_Typ) := Pair;
+                  end if;
+
+                  if Scal_Typ in Float_Scalar_Id then
+                     Analyze_Float_Value (Scal_Typ, Val_Expr);
+
+                  else pragma Assert (Scal_Typ in Integer_Scalar_Id);
+                     Analyze_Integer_Value (Scal_Typ, Val_Expr);
+                  end if;
+
+               --  Otherwise the scalar family is illegal
+
+               else
+                  Error_Msg_Name_1 := Pname;
+                  Error_Msg_N
+                    ("argument of pragma % must denote valid scalar family",
+                     Pair);
+               end if;
+            end Analyze_Type_Value_Pair;
+
+            --  Local variables
+
+            Pairs : constant List_Id := Pragma_Argument_Associations (N);
+            Pair  : Node_Id;
+
+         --  Start of processing for Do_Initialize_Scalars
+
+         begin
             GNAT_Pragma;
-            Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
             Check_Restriction (No_Initialize_Scalars, N);
+
+            --  Ignore the effects of the pragma when No_Initialize_Scalars is
+            --  in effect.
+
+            if Restriction_Active (No_Initialize_Scalars) then
+               null;
 
             --  Initialize_Scalars creates false positives in CodePeer, and
             --  incorrect negative results in GNATprove mode, so ignore this
             --  pragma in these modes.
 
-            if not Restriction_Active (No_Initialize_Scalars)
-              and then not (CodePeer_Mode or GNATprove_Mode)
-            then
+            elsif CodePeer_Mode or GNATprove_Mode then
+               null;
+
+            --  Otherwise analyze the pragma
+
+            else
+               if Present (Pairs) then
+
+                  --  Install Standard in order to provide access to primitive
+                  --  types in case the expressions contain attributes such as
+                  --  Integer'Last.
+
+                  Push_Scope (Standard_Standard);
+
+                  Pair := First (Pairs);
+                  while Present (Pair) loop
+                     Analyze_Type_Value_Pair (Pair);
+                     Next (Pair);
+                  end loop;
+
+                  --  Remove Standard
+
+                  Pop_Scope;
+               end if;
+
                Init_Or_Norm_Scalars := True;
-               Initialize_Scalars := True;
+               Initialize_Scalars   := True;
             end if;
+         end Do_Initialize_Scalars;
 
          -----------------
          -- Initializes --
