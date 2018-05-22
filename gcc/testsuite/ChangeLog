@@ -1,3 +1,8 @@
+2018-05-22  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/pure_function1.adb, gnat.dg/pure_function1.ads,
+	gnat.dg/pure_function2.adb, gnat.dg/pure_function2.ads: New testcases.
+
 2018-05-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR middle-end/85862

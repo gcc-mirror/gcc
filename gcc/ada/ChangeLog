@@ -1,3 +1,15 @@
+2018-05-22  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (In_Same_Declarative_Part): Moved to sem_util.
+	(Freeze_Subprogram_Body, Install_Body): Modify calls to
+	In_Same_Declarative_Part.
+	* sem_prag.adb (Analyze_Pragma-Pragma_Pure_Function): Add check to
+	verify pragma declaration is within the same declarative list with
+	corresponding error message.
+	* sem_util.adb, sem_util.ads (In_Same_Declarative_Part): Moved from
+	sem_ch12.adb and generalized to be useful outside the scope of
+	freezing.
+
 2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Declaration): Set the proper

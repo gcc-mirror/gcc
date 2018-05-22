@@ -1399,6 +1399,12 @@ package Sem_Util is
    --  Returns True if N denotes a component or subcomponent in a record or
    --  array that has Reverse_Storage_Order.
 
+   function In_Same_Declarative_Part
+     (Context : Node_Id;
+      N       : Node_Id) return Boolean;
+   --  True if the node N appears within the same declarative part denoted by
+   --  the node Context.
+
    function In_Subprogram_Or_Concurrent_Unit return Boolean;
    --  Determines if the current scope is within a subprogram compilation unit
    --  (inside a subprogram declaration, subprogram body, or generic subprogram

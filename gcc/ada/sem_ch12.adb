@@ -657,17 +657,6 @@ package body Sem_Ch12 is
    --  not done for the instantiation of the bodies, which only require the
    --  instances of the generic parents to be in scope.
 
-   function In_Same_Declarative_Part
-     (F_Node : Node_Id;
-      Inst   : Node_Id) return Boolean;
-   --  True if the instantiation Inst and the given freeze_node F_Node appear
-   --  within the same declarative part, ignoring subunits, but with no inter-
-   --  vening subprograms or concurrent units. Used to find the proper plave
-   --  for the freeze node of an instance, when the generic is declared in a
-   --  previous instance. If predicate is true, the freeze node of the instance
-   --  can be placed after the freeze node of the previous instance, Otherwise
-   --  it has to be placed at the end of the current declarative part.
-
    function In_Main_Context (E : Entity_Id) return Boolean;
    --  Check whether an instantiation is in the context of the main unit.
    --  Used to determine whether its body should be elaborated to allow
@@ -8664,7 +8653,8 @@ package body Sem_Ch12 is
 
       if Is_Generic_Instance (Par)
         and then Present (Freeze_Node (Par))
-        and then In_Same_Declarative_Part (Freeze_Node (Par), Inst_Node)
+        and then In_Same_Declarative_Part
+                   (Parent (Freeze_Node (Par)), Inst_Node)
       then
          --  The parent was a premature instantiation. Insert freeze node at
          --  the end the current declarative part.
@@ -8711,11 +8701,11 @@ package body Sem_Ch12 is
         and then Present (Freeze_Node (Par))
         and then Present (Enc_I)
       then
-         if In_Same_Declarative_Part (Freeze_Node (Par), Enc_I)
+         if In_Same_Declarative_Part (Parent (Freeze_Node (Par)), Enc_I)
            or else
              (Nkind (Enc_I) = N_Package_Body
-               and then
-                 In_Same_Declarative_Part (Freeze_Node (Par), Parent (Enc_I)))
+               and then In_Same_Declarative_Part
+                          (Parent (Freeze_Node (Par)), Parent (Enc_I)))
          then
             --  The enclosing package may contain several instances. Rather
             --  than computing the earliest point at which to insert its freeze
@@ -8984,46 +8974,6 @@ package body Sem_Ch12 is
       Current_Instantiated_Parent :=
         (Current_Scope, Current_Scope, Assoc_Null);
    end Init_Env;
-
-   ------------------------------
-   -- In_Same_Declarative_Part --
-   ------------------------------
-
-   function In_Same_Declarative_Part
-     (F_Node : Node_Id;
-      Inst   : Node_Id) return Boolean
-   is
-      Decls : constant Node_Id := Parent (F_Node);
-      Nod   : Node_Id;
-
-   begin
-      Nod := Parent (Inst);
-      while Present (Nod) loop
-         if Nod = Decls then
-            return True;
-
-         elsif Nkind_In (Nod, N_Subprogram_Body,
-                              N_Package_Body,
-                              N_Package_Declaration,
-                              N_Task_Body,
-                              N_Protected_Body,
-                              N_Block_Statement)
-         then
-            return False;
-
-         elsif Nkind (Nod) = N_Subunit then
-            Nod := Corresponding_Stub (Nod);
-
-         elsif Nkind (Nod) = N_Compilation_Unit then
-            return False;
-
-         else
-            Nod := Parent (Nod);
-         end if;
-      end loop;
-
-      return False;
-   end In_Same_Declarative_Part;
 
    ---------------------
    -- In_Main_Context --
@@ -9536,7 +9486,7 @@ package body Sem_Ch12 is
             --  Freeze instance of inner generic after instance of enclosing
             --  generic.
 
-            if In_Same_Declarative_Part (Freeze_Node (Par), N) then
+            if In_Same_Declarative_Part (Parent (Freeze_Node (Par)), N) then
 
                --  Handle the following case:
 
@@ -9570,7 +9520,8 @@ package body Sem_Ch12 is
             --  instance of enclosing generic.
 
             elsif Nkind_In (Parent (N), N_Package_Body, N_Subprogram_Body)
-              and then In_Same_Declarative_Part (Freeze_Node (Par), Parent (N))
+              and then In_Same_Declarative_Part
+                         (Parent (Freeze_Node (Par)), Parent (N))
             then
                declare
                   Enclosing :  Entity_Id;

@@ -21043,6 +21043,8 @@ package body Sem_Prag is
             E         : Entity_Id;
             E_Id      : Node_Id;
             Effective : Boolean := False;
+            Orig_Def  : Entity_Id;
+            Same_Decl : Boolean := False;
 
          begin
             GNAT_Pragma;
@@ -21076,11 +21078,27 @@ package body Sem_Prag is
                        ("pragma% requires a function name", Arg1);
                   end if;
 
-                  Set_Is_Pure (Def_Id);
+                  --  When we have a generic function we must jump up a level
+                  --  to the declaration of the wrapper package itself.
 
-                  if not Has_Pragma_Pure_Function (Def_Id) then
-                     Set_Has_Pragma_Pure_Function (Def_Id);
-                     Effective := True;
+                  Orig_Def := Def_Id;
+
+                  if Is_Generic_Instance (Def_Id) then
+                     while Nkind (Orig_Def) /= N_Package_Declaration loop
+                        Orig_Def := Parent (Orig_Def);
+                     end loop;
+                  end if;
+
+                  if In_Same_Declarative_Part (Parent (N), Orig_Def) then
+
+                     Same_Decl := True;
+
+                     Set_Is_Pure (Def_Id);
+
+                     if not Has_Pragma_Pure_Function (Def_Id) then
+                        Set_Has_Pragma_Pure_Function (Def_Id);
+                        Effective := True;
+                     end if;
                   end if;
 
                   exit when From_Aspect_Specification (N);
@@ -21094,6 +21112,10 @@ package body Sem_Prag is
                   Error_Msg_NE
                     ("pragma Pure_Function on& is redundant?r?",
                      N, Entity (E_Id));
+               elsif not Same_Decl then
+                  Error_Pragma_Arg
+                    ("pragma% argument must be in same declarative "
+                     & "part", Arg1);
                end if;
             end if;
          end Pure_Function;
