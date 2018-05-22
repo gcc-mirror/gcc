@@ -1,3 +1,9 @@
+2018-05-22  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_6.c: New.
+	* gcc.target/aarch64/ldp_stp_7.c: New.
+	* gcc.target/aarch64/ldp_stp_8.c: New.
+
 2018-05-22  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/85826

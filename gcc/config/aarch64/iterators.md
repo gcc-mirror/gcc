@@ -69,6 +69,12 @@
 ;; Double vector modes.
 (define_mode_iterator VD [V8QI V4HI V4HF V2SI V2SF])
 
+;; All modes stored in registers d0-d31.
+(define_mode_iterator DREG [V8QI V4HI V4HF V2SI V2SF DF])
+
+;; Copy of the above.
+(define_mode_iterator DREG2 [V8QI V4HI V4HF V2SI V2SF DF])
+
 ;; Advanced SIMD, 64-bit container, all integer modes.
 (define_mode_iterator VD_BHSI [V8QI V4HI V2SI])
 
@@ -238,6 +244,19 @@
 
 ;; Double scalar modes
 (define_mode_iterator DX [DI DF])
+
+;; Duplicate of the above
+(define_mode_iterator DX2 [DI DF])
+
+;; Single scalar modes
+(define_mode_iterator SX [SI SF])
+
+;; Duplicate of the above
+(define_mode_iterator SX2 [SI SF])
+
+;; Single and double integer and float modes
+(define_mode_iterator DSX [DF DI SF SI])
+
 
 ;; Modes available for Advanced SIMD <f>mul lane operations.
 (define_mode_iterator VMUL [V4HI V8HI V2SI V4SI
@@ -858,7 +877,8 @@
 			       (V4HF "V4HI") (V8HF  "V8HI")
 			       (V2SF "V2SI") (V4SF  "V4SI")
 			       (DF   "DI")   (V2DF  "V2DI")
-			       (SF   "SI")   (HF    "HI")
+			       (SF   "SI")   (SI    "SI")
+			       (HF    "HI")
 			       (VNx16QI "VNx16QI")
 			       (VNx8HI  "VNx8HI") (VNx8HF "VNx8HI")
 			       (VNx4SI  "VNx4SI") (VNx4SF "VNx4SI")

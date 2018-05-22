@@ -1,3 +1,32 @@
+2018-05-22  Jackson Woodruff  <jackson.woodruff@arm.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md: New patterns to generate stp
+	and ldp.
+	(store_pair_sw, store_pair_dw): New patterns to generate stp for
+	single words and double words.
+	(load_pair_sw, load_pair_dw): Likewise.
+	(store_pair_sf, store_pair_df, store_pair_si, store_pair_di):
+	Delete.
+	(load_pair_sf, load_pair_df, load_pair_si, load_pair_di):
+	Delete.
+	* config/aarch64/aarch64-ldpstp.md: Modify peephole
+	for different mode ldpstp and add peephole for merged zero stores.
+	Likewise for loads.
+	* config/aarch64/aarch64.c (aarch64_operands_ok_for_ldpstp):
+	Add size check.
+	(aarch64_gen_store_pair): Rename calls to match new patterns.
+	(aarch64_gen_load_pair): Rename calls to match new patterns.
+	* config/aarch64/aarch64-simd.md (load_pair<mode>): Rename to...
+	(load_pair<DREG:mode><DREG2:mode>): ... This.
+	(store_pair<mode>): Rename to...
+	(vec_store_pair<DREG:mode><DREG2:mode>): ... This.
+	* config/aarch64/iterators.md (DREG, DREG2, DX2, SX, SX2, DSX):
+	New mode iterators.
+	(V_INT_EQUIV): Handle SImode.
+	* config/aarch64/predicates.md (aarch64_reg_zero_or_fp_zero):
+	New predicate.
+
 2018-05-22  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/85826

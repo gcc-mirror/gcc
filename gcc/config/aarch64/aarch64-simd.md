@@ -177,30 +177,30 @@
   [(set_attr "type" "neon_store1_1reg<q>")]
 )
 
-(define_insn "load_pair<mode>"
-  [(set (match_operand:VD 0 "register_operand" "=w")
-	(match_operand:VD 1 "aarch64_mem_pair_operand" "Ump"))
-   (set (match_operand:VD 2 "register_operand" "=w")
-	(match_operand:VD 3 "memory_operand" "m"))]
+(define_insn "load_pair<DREG:mode><DREG2:mode>"
+  [(set (match_operand:DREG 0 "register_operand" "=w")
+	(match_operand:DREG 1 "aarch64_mem_pair_operand" "Ump"))
+   (set (match_operand:DREG2 2 "register_operand" "=w")
+	(match_operand:DREG2 3 "memory_operand" "m"))]
   "TARGET_SIMD
    && rtx_equal_p (XEXP (operands[3], 0),
 		   plus_constant (Pmode,
 				  XEXP (operands[1], 0),
-				  GET_MODE_SIZE (<MODE>mode)))"
+				  GET_MODE_SIZE (<DREG:MODE>mode)))"
   "ldp\\t%d0, %d2, %1"
   [(set_attr "type" "neon_ldp")]
 )
 
-(define_insn "store_pair<mode>"
-  [(set (match_operand:VD 0 "aarch64_mem_pair_operand" "=Ump")
-	(match_operand:VD 1 "register_operand" "w"))
-   (set (match_operand:VD 2 "memory_operand" "=m")
-	(match_operand:VD 3 "register_operand" "w"))]
+(define_insn "vec_store_pair<DREG:mode><DREG2:mode>"
+  [(set (match_operand:DREG 0 "aarch64_mem_pair_operand" "=Ump")
+	(match_operand:DREG 1 "register_operand" "w"))
+   (set (match_operand:DREG2 2 "memory_operand" "=m")
+	(match_operand:DREG2 3 "register_operand" "w"))]
   "TARGET_SIMD
    && rtx_equal_p (XEXP (operands[2], 0),
 		   plus_constant (Pmode,
 				  XEXP (operands[0], 0),
-				  GET_MODE_SIZE (<MODE>mode)))"
+				  GET_MODE_SIZE (<DREG:MODE>mode)))"
   "stp\\t%d1, %d3, %0"
   [(set_attr "type" "neon_stp")]
 )

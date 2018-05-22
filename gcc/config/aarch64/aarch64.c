@@ -4279,10 +4279,10 @@ aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
   switch (mode)
     {
     case E_DImode:
-      return gen_store_pairdi (mem1, reg1, mem2, reg2);
+      return gen_store_pair_dw_didi (mem1, reg1, mem2, reg2);
 
     case E_DFmode:
-      return gen_store_pairdf (mem1, reg1, mem2, reg2);
+      return gen_store_pair_dw_dfdf (mem1, reg1, mem2, reg2);
 
     default:
       gcc_unreachable ();
@@ -4299,10 +4299,10 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
   switch (mode)
     {
     case E_DImode:
-      return gen_load_pairdi (reg1, mem1, reg2, mem2);
+      return gen_load_pair_dw_didi (reg1, mem1, reg2, mem2);
 
     case E_DFmode:
-      return gen_load_pairdf (reg1, mem1, reg2, mem2);
+      return gen_load_pair_dw_dfdf (reg1, mem1, reg2, mem2);
 
     default:
       gcc_unreachable ();
@@ -16852,6 +16852,10 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
   /* Check if the bases are same.  */
   if (!rtx_equal_p (base_1, base_2))
     return false;
+
+  /* The operands must be of the same size.  */
+  gcc_assert (known_eq (GET_MODE_SIZE (GET_MODE (mem_1)),
+			 GET_MODE_SIZE (GET_MODE (mem_2))));
 
   offval_1 = INTVAL (offset_1);
   offval_2 = INTVAL (offset_2);
