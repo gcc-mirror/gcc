@@ -99,11 +99,11 @@
 })
 
 (define_peephole2
-  [(set (match_operand:VD 0 "register_operand" "")
-	(match_operand:VD 1 "aarch64_mem_pair_operand" ""))
-   (set (match_operand:VD 2 "register_operand" "")
-	(match_operand:VD 3 "memory_operand" ""))]
-  "aarch64_operands_ok_for_ldpstp (operands, true, <MODE>mode)"
+  [(set (match_operand:DREG 0 "register_operand" "")
+	(match_operand:DREG 1 "aarch64_mem_pair_operand" ""))
+   (set (match_operand:DREG2 2 "register_operand" "")
+	(match_operand:DREG2 3 "memory_operand" ""))]
+  "aarch64_operands_ok_for_ldpstp (operands, true, <DREG:MODE>mode)"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (set (match_dup 2) (match_dup 3))])]
 {
@@ -119,11 +119,12 @@
 })
 
 (define_peephole2
-  [(set (match_operand:VD 0 "aarch64_mem_pair_operand" "")
-	(match_operand:VD 1 "register_operand" ""))
-   (set (match_operand:VD 2 "memory_operand" "")
-	(match_operand:VD 3 "register_operand" ""))]
-  "TARGET_SIMD && aarch64_operands_ok_for_ldpstp (operands, false, <MODE>mode)"
+  [(set (match_operand:DREG 0 "aarch64_mem_pair_operand" "")
+	(match_operand:DREG 1 "register_operand" ""))
+   (set (match_operand:DREG2 2 "memory_operand" "")
+	(match_operand:DREG2 3 "register_operand" ""))]
+  "TARGET_SIMD
+   && aarch64_operands_ok_for_ldpstp (operands, false, <DREG:MODE>mode)"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (set (match_dup 2) (match_dup 3))])]
 {
@@ -137,7 +138,6 @@
       std::swap (operands[1], operands[3]);
     }
 })
-
 
 ;; Handle sign/zero extended consecutive load/store.
 
@@ -174,6 +174,36 @@
 
   extract_base_offset_in_addr (operands[1], &base, &offset_1);
   extract_base_offset_in_addr (operands[3], &base, &offset_2);
+  if (INTVAL (offset_1) > INTVAL (offset_2))
+    {
+      std::swap (operands[0], operands[2]);
+      std::swap (operands[1], operands[3]);
+    }
+})
+
+;; Handle storing of a floating point zero with integer data.
+;; This handles cases like:
+;;   struct pair { int a; float b; }
+;;
+;;   p->a = 1;
+;;   p->b = 0.0;
+;;
+;; We can match modes that won't work for a stp instruction
+;; as aarch64_operands_ok_for_ldpstp checks that the modes are
+;; compatible.
+(define_peephole2
+  [(set (match_operand:DSX 0 "aarch64_mem_pair_operand" "")
+	(match_operand:DSX 1 "aarch64_reg_zero_or_fp_zero" ""))
+   (set (match_operand:<FCVT_TARGET> 2 "memory_operand" "")
+	(match_operand:<FCVT_TARGET> 3 "aarch64_reg_zero_or_fp_zero" ""))]
+  "aarch64_operands_ok_for_ldpstp (operands, false, <V_INT_EQUIV>mode)"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (set (match_dup 2) (match_dup 3))])]
+{
+  rtx base, offset_1, offset_2;
+
+  extract_base_offset_in_addr (operands[0], &base, &offset_1);
+  extract_base_offset_in_addr (operands[2], &base, &offset_2);
   if (INTVAL (offset_1) > INTVAL (offset_2))
     {
       std::swap (operands[0], operands[2]);

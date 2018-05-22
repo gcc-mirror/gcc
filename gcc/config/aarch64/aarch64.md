@@ -1307,15 +1307,15 @@
 
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
-(define_insn "load_pairsi"
-  [(set (match_operand:SI 0 "register_operand" "=r,w")
-	(match_operand:SI 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:SI 2 "register_operand" "=r,w")
-	(match_operand:SI 3 "memory_operand" "m,m"))]
-  "rtx_equal_p (XEXP (operands[3], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[1], 0),
-			       GET_MODE_SIZE (SImode)))"
+(define_insn "load_pair_sw_<SX:mode><SX2:mode>"
+  [(set (match_operand:SX 0 "register_operand" "=r,w")
+	(match_operand:SX 1 "aarch64_mem_pair_operand" "Ump,Ump"))
+   (set (match_operand:SX2 2 "register_operand" "=r,w")
+	(match_operand:SX2 3 "memory_operand" "m,m"))]
+   "rtx_equal_p (XEXP (operands[3], 0),
+		 plus_constant (Pmode,
+				XEXP (operands[1], 0),
+				GET_MODE_SIZE (<SX:MODE>mode)))"
   "@
    ldp\\t%w0, %w2, %1
    ldp\\t%s0, %s2, %1"
@@ -1323,15 +1323,16 @@
    (set_attr "fp" "*,yes")]
 )
 
-(define_insn "load_pairdi"
-  [(set (match_operand:DI 0 "register_operand" "=r,w")
-	(match_operand:DI 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:DI 2 "register_operand" "=r,w")
-	(match_operand:DI 3 "memory_operand" "m,m"))]
-  "rtx_equal_p (XEXP (operands[3], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[1], 0),
-			       GET_MODE_SIZE (DImode)))"
+;; Storing different modes that can still be merged
+(define_insn "load_pair_dw_<DX:mode><DX2:mode>"
+  [(set (match_operand:DX 0 "register_operand" "=r,w")
+	(match_operand:DX 1 "aarch64_mem_pair_operand" "Ump,Ump"))
+   (set (match_operand:DX2 2 "register_operand" "=r,w")
+	(match_operand:DX2 3 "memory_operand" "m,m"))]
+   "rtx_equal_p (XEXP (operands[3], 0),
+		 plus_constant (Pmode,
+				XEXP (operands[1], 0),
+				GET_MODE_SIZE (<DX:MODE>mode)))"
   "@
    ldp\\t%x0, %x2, %1
    ldp\\t%d0, %d2, %1"
@@ -1339,18 +1340,17 @@
    (set_attr "fp" "*,yes")]
 )
 
-
 ;; Operands 0 and 2 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
-(define_insn "store_pairsi"
-  [(set (match_operand:SI 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:SI 1 "aarch64_reg_or_zero" "rZ,w"))
-   (set (match_operand:SI 2 "memory_operand" "=m,m")
-	(match_operand:SI 3 "aarch64_reg_or_zero" "rZ,w"))]
-  "rtx_equal_p (XEXP (operands[2], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[0], 0),
-			       GET_MODE_SIZE (SImode)))"
+(define_insn "store_pair_sw_<SX:mode><SX2:mode>"
+  [(set (match_operand:SX 0 "aarch64_mem_pair_operand" "=Ump,Ump")
+	(match_operand:SX 1 "aarch64_reg_zero_or_fp_zero" "rYZ,w"))
+   (set (match_operand:SX2 2 "memory_operand" "=m,m")
+	(match_operand:SX2 3 "aarch64_reg_zero_or_fp_zero" "rYZ,w"))]
+   "rtx_equal_p (XEXP (operands[2], 0),
+		 plus_constant (Pmode,
+				XEXP (operands[0], 0),
+				GET_MODE_SIZE (<SX:MODE>mode)))"
   "@
    stp\\t%w1, %w3, %0
    stp\\t%s1, %s3, %0"
@@ -1358,88 +1358,21 @@
    (set_attr "fp" "*,yes")]
 )
 
-(define_insn "store_pairdi"
-  [(set (match_operand:DI 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:DI 1 "aarch64_reg_or_zero" "rZ,w"))
-   (set (match_operand:DI 2 "memory_operand" "=m,m")
-	(match_operand:DI 3 "aarch64_reg_or_zero" "rZ,w"))]
-  "rtx_equal_p (XEXP (operands[2], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[0], 0),
-			       GET_MODE_SIZE (DImode)))"
+;; Storing different modes that can still be merged
+(define_insn "store_pair_dw_<DX:mode><DX2:mode>"
+  [(set (match_operand:DX 0 "aarch64_mem_pair_operand" "=Ump,Ump")
+	(match_operand:DX 1 "aarch64_reg_zero_or_fp_zero" "rYZ,w"))
+   (set (match_operand:DX2 2 "memory_operand" "=m,m")
+	(match_operand:DX2 3 "aarch64_reg_zero_or_fp_zero" "rYZ,w"))]
+   "rtx_equal_p (XEXP (operands[2], 0),
+		 plus_constant (Pmode,
+				XEXP (operands[0], 0),
+				GET_MODE_SIZE (<DX:MODE>mode)))"
   "@
    stp\\t%x1, %x3, %0
    stp\\t%d1, %d3, %0"
   [(set_attr "type" "store_16,neon_store1_2reg")
    (set_attr "fp" "*,yes")]
-)
-
-;; Operands 1 and 3 are tied together by the final condition; so we allow
-;; fairly lax checking on the second memory operation.
-(define_insn "load_pairsf"
-  [(set (match_operand:SF 0 "register_operand" "=w,r")
-	(match_operand:SF 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:SF 2 "register_operand" "=w,r")
-	(match_operand:SF 3 "memory_operand" "m,m"))]
-  "rtx_equal_p (XEXP (operands[3], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[1], 0),
-			       GET_MODE_SIZE (SFmode)))"
-  "@
-   ldp\\t%s0, %s2, %1
-   ldp\\t%w0, %w2, %1"
-  [(set_attr "type" "neon_load1_2reg,load_8")
-   (set_attr "fp" "yes,*")]
-)
-
-(define_insn "load_pairdf"
-  [(set (match_operand:DF 0 "register_operand" "=w,r")
-	(match_operand:DF 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:DF 2 "register_operand" "=w,r")
-	(match_operand:DF 3 "memory_operand" "m,m"))]
-  "rtx_equal_p (XEXP (operands[3], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[1], 0),
-			       GET_MODE_SIZE (DFmode)))"
-  "@
-   ldp\\t%d0, %d2, %1
-   ldp\\t%x0, %x2, %1"
-  [(set_attr "type" "neon_load1_2reg,load_16")
-   (set_attr "fp" "yes,*")]
-)
-
-;; Operands 0 and 2 are tied together by the final condition; so we allow
-;; fairly lax checking on the second memory operation.
-(define_insn "store_pairsf"
-  [(set (match_operand:SF 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:SF 1 "aarch64_reg_or_fp_zero" "w,rY"))
-   (set (match_operand:SF 2 "memory_operand" "=m,m")
-	(match_operand:SF 3 "aarch64_reg_or_fp_zero" "w,rY"))]
-  "rtx_equal_p (XEXP (operands[2], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[0], 0),
-			       GET_MODE_SIZE (SFmode)))"
-  "@
-   stp\\t%s1, %s3, %0
-   stp\\t%w1, %w3, %0"
-  [(set_attr "type" "neon_store1_2reg,store_8")
-   (set_attr "fp" "yes,*")]
-)
-
-(define_insn "store_pairdf"
-  [(set (match_operand:DF 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:DF 1 "aarch64_reg_or_fp_zero" "w,rY"))
-   (set (match_operand:DF 2 "memory_operand" "=m,m")
-	(match_operand:DF 3 "aarch64_reg_or_fp_zero" "w,rY"))]
-  "rtx_equal_p (XEXP (operands[2], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[0], 0),
-			       GET_MODE_SIZE (DFmode)))"
-  "@
-   stp\\t%d1, %d3, %0
-   stp\\t%x1, %x3, %0"
-  [(set_attr "type" "neon_store1_2reg,store_16")
-   (set_attr "fp" "yes,*")]
 )
 
 ;; Load pair with post-index writeback.  This is primarily used in function
