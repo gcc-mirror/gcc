@@ -941,6 +941,17 @@ package body Sem_Prag is
 
                     Ekind_In (Item_Id, E_Abstract_State, E_Variable)
                   then
+                     --  A [generic] function is not allowed to have Output
+                     --  items in its dependency relations. Note that "null"
+                     --  and attribute 'Result are still valid items.
+
+                     if Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+                       and then not Is_Input
+                     then
+                        SPARK_Msg_N
+                          ("output item is not applicable to function", Item);
+                     end if;
+
                      --  The item denotes a concurrent type. Note that single
                      --  protected/task types are not considered here because
                      --  they behave as objects in the context of pragma

@@ -1,5 +1,10 @@
 2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Input_Output): Emit an error when a non-null,
+	non-'Result output appears in the output list of a function.
+
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_attr.adb (Build_Array_VS_Func): Reimplemented.
 	(Build_Record_VS_Func): Reimplemented.
 	(Expand_N_Attribute): Reimplement the handling of attribute
