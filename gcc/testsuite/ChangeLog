@@ -1,3 +1,8 @@
+2018-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85345
+	* gcc.target/i386/pr85345.c: New test.
+
 2018-05-22  Luis Machado  <luis.machado@linaro.org>
 
 	* gcc.target/aarch64/lsl_asr_sbfiz.c: New test.

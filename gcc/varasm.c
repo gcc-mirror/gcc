@@ -5833,7 +5833,8 @@ do_assemble_alias (tree decl, tree target)
       globalize_decl (decl);
       maybe_assemble_visibility (decl);
     }
-  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && cgraph_node::get (decl)->ifunc_resolver)
     {
 #if defined (ASM_OUTPUT_TYPE_DIRECTIVE)
       if (targetm.has_ifunc_p ())
@@ -5916,7 +5917,7 @@ assemble_alias (tree decl, tree target)
 # else
       if (!DECL_WEAK (decl))
 	{
-	  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
+	  if (cgraph_node::get (decl)->ifunc_resolver)
 	    error_at (DECL_SOURCE_LOCATION (decl),
 		      "ifunc is not supported in this configuration");
 	  else
@@ -7048,7 +7049,8 @@ default_binds_local_p_3 (const_tree exp, bool shlib, bool weak_dominate,
      weakref alias.  */
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp))
       || (TREE_CODE (exp) == FUNCTION_DECL
-	  && lookup_attribute ("ifunc", DECL_ATTRIBUTES (exp))))
+	  && cgraph_node::get (exp)
+	  && cgraph_node::get (exp)->ifunc_resolver))
     return false;
 
   /* Static variables are always local.  */
