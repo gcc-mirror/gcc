@@ -1,3 +1,10 @@
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Add RM reference for rule that a
+	formal subprogram is never subtype conformqnt, and thus cannot be the
+	prefix of 'Access.  Reject as well the attribute when applied to a
+	renaming of a formal subprogram.
+
 2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Build_Array_Init_Proc): Update the call to
