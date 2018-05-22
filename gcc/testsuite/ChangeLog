@@ -1,5 +1,11 @@
 2018-05-22  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/gen_formal_pkg.adb, gnat.dg/gen_formal_pkg_a.ads,
+	gnat.dg/gen_formal_pkg_b.ads, gnat.dg/gen_formal_pkg_w.ads: New
+	testcase.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/fixedpnt3.adb: New testcase.
 
 2018-05-22  Justin Squirek  <squirek@adacore.com>

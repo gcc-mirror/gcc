@@ -1,3 +1,18 @@
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: New attribute Hidden_In_Formal_Instance,
+	defined on packages that are actuals for formal packages, in order to
+	set/reset the visibility of the formals of a formal package with given
+	actuals, when there are subsequent uses of those formals in the
+	enclosing generic, as required by RN 12.7 (10).
+	* atree.ads, atree.adb: Add operations for Elist30.
+	* atree.h: Add Elist30.
+	* sem_ch12.adb (Analyze_Formal_Package_Instantiation): Collect formals
+	that are not defaulted and are thus not visible within the current
+	instance.
+	(Check_Formal_Packages): Reset visibility of formals of a formal
+	package that are not defaulted, on exit from current instance.
+
 2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Input_Output): Emit an error when a non-null,

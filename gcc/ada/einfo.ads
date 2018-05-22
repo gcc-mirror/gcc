@@ -2172,6 +2172,14 @@ package Einfo is
 --       warning messages if the hidden variable turns out to be unused
 --       or is referenced without being set.
 
+--    Hidden_In_Formal_Instance (Elist30)
+--       Defined on actuals for formal packages. Entities on the list are
+--       formals that are hidden outside of the formal package when this
+--       package is not declared with a box, or the formal itself is not
+--       defaulted (see RM 12.7 (10)). Their visibility is restored on exit
+--       from the current generic, because the actual for the formal package
+--       may be used subsequently in the current unit.
+
 --    Homonym (Node4)
 --       Defined in all entities. Link for list of entities that have the
 --       same source name and that are declared in the same or enclosing
@@ -7210,6 +7218,7 @@ package Einfo is
    function Has_Volatile_Components             (Id : E) return B;
    function Has_Xref_Entry                      (Id : E) return B;
    function Hiding_Loop_Variable                (Id : E) return E;
+   function Hidden_In_Formal_Instance           (Id : E) return L;
    function Homonym                             (Id : E) return E;
    function Ignore_SPARK_Mode_Pragmas           (Id : E) return B;
    function Import_Pragma                       (Id : E) return E;
@@ -7904,6 +7913,7 @@ package Einfo is
    procedure Set_Has_Volatile_Components         (Id : E; V : B := True);
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
+   procedure Set_Hidden_In_Formal_Instance       (Id : E; V : L);
    procedure Set_Homonym                         (Id : E; V : E);
    procedure Set_Ignore_SPARK_Mode_Pragmas       (Id : E; V : B := True);
    procedure Set_Import_Pragma                   (Id : E; V : E);
@@ -8717,6 +8727,7 @@ package Einfo is
    pragma Inline (Has_Volatile_Components);
    pragma Inline (Has_Xref_Entry);
    pragma Inline (Hiding_Loop_Variable);
+   pragma Inline (Hidden_In_Formal_Instance);
    pragma Inline (Homonym);
    pragma Inline (Ignore_SPARK_Mode_Pragmas);
    pragma Inline (Import_Pragma);
@@ -9247,6 +9258,7 @@ package Einfo is
    pragma Inline (Set_Has_Volatile_Components);
    pragma Inline (Set_Has_Xref_Entry);
    pragma Inline (Set_Hiding_Loop_Variable);
+   pragma Inline (Set_Hidden_In_Formal_Instance);
    pragma Inline (Set_Homonym);
    pragma Inline (Set_Ignore_SPARK_Mode_Pragmas);
    pragma Inline (Set_Import_Pragma);
