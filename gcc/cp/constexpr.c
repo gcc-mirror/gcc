@@ -1513,9 +1513,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   if (DECL_CLONED_FUNCTION_P (fun))
     fun = DECL_CLONED_FUNCTION (fun);
 
-  if (MAYBE_DECL_MODULE_LAZY_DEFN (fun))
-    lazy_load_defn (fun);
-
   if (is_ubsan_builtin_p (fun))
     return void_node;
 

@@ -1,5 +1,35 @@
 2018-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	Revert lazy definition patches.  Once one gets into template land
+	it's all very brittle.  We end up with an unmaintained difference
+	betweek 'we need the definition right now', and 'we need the
+	definition at some point'.  I end up not being able to maintin the
+	SCC dependency graph, and my head melted, looking a the rat hole
+	that was appearing.  Until proved otherwise, there are other
+	things to get on with.
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_LAZY_DEFN, HAS_DECL_MODULE_LAZY_DEFN_P)
+	(MAYBE_DECL_MODULE_LAZY_DEFN): Delete.
+	(struct lang_decl_min): Remove lazy_module_defn field.
+	(lazy_load_defn): Delete decl.
+	* constexpr.c (cxx_eval_call_expression): Remove lazy loading.
+	* decl2.c (decl_defined_p, mark_used): Likewise.
+	* module.c (depset::hash::add_definition): Remove DEFERRED parm.
+	(trees_in::{pre,}seed): Delete.
+	(trees_out::seeding{,_p}): Delete.
+	(trees_out::unmark_trees): Seeding not needed.
+	(trees_out::{begin,end}): Delete seeding variants.
+	(trees_out::seed): Remove.
+	(trees_out::insert): Return val, remove seeding.
+	(trees_{in,out}::lang_decl_vals): Remove seeding.
+	(has_definition): Return bool.
+	(ct_seed_decl, ct_self_used): Delete.
+	(module_state::{read,write}_cluster): Remove lazy handling.
+	(module_state::{find_dependencies,write}): Adjust.
+	(module_state::check_read): Adjust.
+	(module_state::lazy_load, lazy_load_defn): Delete.
+	* ptree.c (cxx_print_decl): Remove lazy defn index.
+
 	Almost lazy function definitions.
 	gcc/cp/
 	* constexpr.c (cxx_eval_call_expression): Maybe lazy load.

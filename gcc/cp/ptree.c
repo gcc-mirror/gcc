@@ -63,12 +63,6 @@ cxx_print_decl (FILE *file, tree node, int indent)
       fprintf (file, " module %s", IDENTIFIER_POINTER (module_name (mod)));
     }
 
-  if (unsigned lazy = MAYBE_DECL_MODULE_LAZY_DEFN (node))
-    {
-      indent_to (file, indent + 3);
-      fprintf (file, " lazy %u", lazy);
-    }
-
   indent_to (file, indent + 3);
   if (DECL_EXTERNAL (node) && DECL_NOT_REALLY_EXTERN (node))
     fprintf (file, " not-really-extern");

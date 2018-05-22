@@ -1616,20 +1616,6 @@ check_constraint_info (tree t)
 #define MAYBE_DECL_MODULE_PURVIEW_P(N)				\
   (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_PURVIEW_P (N) : false)
 
-/* If non-zero, a decl has a definition, it just hasn't been loaded
-   yet.  This is the cookie to load it.  */
-#define DECL_MODULE_LAZY_DEFN(N)				\
-  (DECL_LANG_SPECIFIC (N)->u.min.lazy_module_defn)
-
-/* True if there's a module lazy defn flag to look at.  */
-#define HAS_DECL_MODULE_LAZY_DEFN_P(N)				\
-  (DECL_LANG_SPECIFIC (N) && LANG_DECL_HAS_MIN (N))
-
-/* Non-zero if there's a lazy definition.  Zero if inappropriate or
-   there is none.  */
-#define MAYBE_DECL_MODULE_LAZY_DEFN(N)				\
-  (HAS_DECL_MODULE_LAZY_DEFN_P (N) ? DECL_MODULE_LAZY_DEFN (N) : 0)
-
 
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
@@ -2658,10 +2644,6 @@ struct GTY(()) lang_decl_base {
 
 struct GTY(()) lang_decl_min {
   struct lang_decl_base base; /* 32-bits.  */
-
-  /* On a 64-bit system, the following would be padding anyway.  */
-  unsigned lazy_module_defn;	/* Lazy module definition cookie (if
-				   non-zero).  */
 
   /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
      THUNK_ALIAS.
@@ -6704,7 +6686,6 @@ extern tree get_module_owner (tree);
 extern void set_module_owner (tree);
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
-extern void lazy_load_defn (tree decl);
 extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
 extern int push_module_export (bool, tree = NULL);
