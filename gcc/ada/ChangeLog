@@ -1,3 +1,17 @@
+2018-05-22  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/a-except.adb (Exception_Propagation.Propagate_Exception):
+	Expect an Exception_Occurence object, not an Access.
+	(Complete_And_Propagate_Occurrence): Adjust accordingly.
+	(Raise_From_Signal_Handler): Likewise.
+	(Reraise_Occurrence_No_Defer): If we have a Machine_Occurrence
+	available in the provided occurrence object, just re-propagate the
+	latter as a bare "raise;" would do.
+	* libgnat/a-exexpr.adb (Propagate_Exception): Adjust to spec change.
+	* libgnat/a-exstat.adb (String_To_EO): Initialize X.Machine_Occurrence
+	to null, to mark that the occurrence we're crafting from the stream
+	contents is not being propagated (yet).
+
 2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb (Initialize_Ctrl_Record_Component): Insert the generated
