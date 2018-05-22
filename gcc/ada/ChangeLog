@@ -1,3 +1,8 @@
+2018-05-22  Patrick Bernardi  <bernardi@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminant_Constraints): Raise an error if the
+	user tries to use a subtype indication as a discriminant constraint.
+
 2018-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.ads, exp_ch4.adb, exp_util.adb, expander.adb: Remove mention

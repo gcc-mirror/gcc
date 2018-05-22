@@ -1,3 +1,7 @@
+2018-05-22  Patrick Bernardi  <bernardi@adacore.com>
+
+	* gnat.dg/discr50.adb: New testcase.
+
 2018-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/discr49.adb, gnat.dg/discr49_rec1.adb,
