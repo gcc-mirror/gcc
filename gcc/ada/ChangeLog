@@ -1,3 +1,17 @@
+2018-05-22  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Propagate flags from the
+	original function spec into the generated function spec due to
+	expansion of expression functions during analysis.
+	(Analyze_Subprogram_Body_Helper): Modify check on formal parameter
+	references from the body to the subprogram spec in the case of
+	expression functions because of inconsistances related to having a
+	generated body.
+	* libgnarl/s-osinte__android.ads: Flag parameters as unused.
+	* libgnarl/s-osinte__lynxos178e.ads: Likewise.
+	* libgnarl/s-osinte__qnx.adb: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+
 2018-05-22  Doug Rupp  <rupp@adacore.com>
 
 	* init.c (HAVE_ADJUST_CONTEXT_FOR_RAISE): Don't define on VxWorks7 for
