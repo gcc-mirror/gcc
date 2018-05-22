@@ -1,3 +1,7 @@
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/fixedpnt3.adb: New testcase.
+
 2018-05-22  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/pure_function1.adb, gnat.dg/pure_function1.ads,

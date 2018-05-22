@@ -1,3 +1,9 @@
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Fixed_Point_Type): If the first subtype has
+	delayed aspects, analyze them now, os that the representation of the
+	type (size, bounds) can be computed and validated.
+
 2018-05-22  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-dwalin.adb (Enable_Cache): Skip symbols outside of the
