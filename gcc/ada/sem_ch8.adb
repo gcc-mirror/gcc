@@ -4322,7 +4322,10 @@ package body Sem_Ch8 is
                Analyze (B_Node);
             end if;
 
-            if Is_Intrinsic_Subprogram (Old_S) and then not In_Instance then
+            if Is_Intrinsic_Subprogram (Old_S)
+              and then not In_Instance
+              and then not Relaxed_RM_Semantics
+            then
                Error_Msg_N
                  ("subprogram used in renaming_as_body cannot be intrinsic",
                   Name (N));

@@ -1,5 +1,10 @@
 2018-05-22  Arnaud Charlet  <charlet@adacore.com>
 
+	* sem_ch8.adb (Check_Frozen_Renaming): Do not emit error in
+	Relaxed_RM_Semantics mode.
+
+2018-05-22  Arnaud Charlet  <charlet@adacore.com>
+
 	* comperr.adb (Delete_SCIL_Files): Take into account
 	N_Generic_Package_Renaming_Declaration.
 
