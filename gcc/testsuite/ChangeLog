@@ -1,3 +1,8 @@
+2018-05-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR middle-end/85862
+	* gcc.dg/torture/pr85862.c: New test.
+
 2018-05-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85834
