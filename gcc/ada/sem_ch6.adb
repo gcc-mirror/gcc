@@ -490,8 +490,8 @@ package body Sem_Ch6 is
       Orig_N   : Node_Id;
       Ret      : Node_Id;
 
-      Def_Id   : Entity_Id := Empty;
-      Prev     : Entity_Id;
+      Def_Id : Entity_Id := Empty;
+      Prev   : Entity_Id;
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
 
@@ -783,11 +783,44 @@ package body Sem_Ch6 is
             Related_Nod => Original_Node (N));
       end if;
 
-      --  If the return expression is a static constant, we suppress warning
-      --  messages on unused formals, which in most cases will be noise.
+      --  We must enforce checks for unreferenced formals in our newly
+      --  generated function, so we propagate the referenced flag from the
+      --  original spec to the new spec as well as setting Comes_From_Source.
 
-      Set_Is_Trivial_Subprogram
-        (Defining_Entity (New_Body), Is_OK_Static_Expression (Expr));
+      if Present (Parameter_Specifications (New_Spec)) then
+         declare
+            Form_New_Def  : Entity_Id;
+            Form_New_Spec : Entity_Id;
+            Form_Old_Def  : Entity_Id;
+            Form_Old_Spec : Entity_Id;
+         begin
+
+            Form_New_Spec := First (Parameter_Specifications (New_Spec));
+            Form_Old_Spec := First (Parameter_Specifications (Spec));
+
+            while Present (Form_New_Spec) and then Present (Form_Old_Spec) loop
+               Form_New_Def := Defining_Identifier (Form_New_Spec);
+               Form_Old_Def := Defining_Identifier (Form_Old_Spec);
+
+               Set_Comes_From_Source (Form_New_Def, True);
+
+               --  Because of the usefulness of unreferenced controlling
+               --  formals we exempt them from unreferenced warnings by marking
+               --  them as always referenced.
+
+               Set_Referenced
+                 (Form_Old_Def,
+                  (Is_Formal (Form_Old_Def)
+                     and then Is_Controlling_Formal (Form_Old_Def))
+                   or else Referenced (Form_Old_Def));
+                   --  or else Is_Dispatching_Operation
+                   --          (Corresponding_Spec (New_Body)));
+
+               Next (Form_New_Spec);
+               Next (Form_Old_Spec);
+            end loop;
+         end;
+      end if;
    end Analyze_Expression_Function;
 
    ----------------------------------------
@@ -3906,7 +3939,13 @@ package body Sem_Ch6 is
             end if;
          end if;
 
-         if Spec_Id /= Body_Id then
+         --  In the case we are dealing with an expression function we check
+         --  the formals attached to the spec instead of the body - so we don't
+         --  reference body formals.
+
+         if Spec_Id /= Body_Id
+           and then not Is_Expression_Function (Spec_Id)
+         then
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
@@ -4617,9 +4656,17 @@ package body Sem_Ch6 is
             end loop;
          end if;
 
-         --  Check references in body
+         --  Check references of the subprogram spec when we are dealing with
+         --  an expression function due to it having a generated body.
+         --  Otherwise, we simply check the formals of the subprogram body.
 
-         Check_References (Body_Id);
+         if Present (Spec_Id)
+           and then Is_Expression_Function (Spec_Id)
+         then
+            Check_References (Spec_Id);
+         else
+            Check_References (Body_Id);
+         end if;
       end;
 
       --  Check for nested subprogram, and mark outer level subprogram if so

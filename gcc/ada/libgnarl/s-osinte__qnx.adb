@@ -42,13 +42,25 @@ pragma Polling (Off);
 with Interfaces.C; use Interfaces.C;
 package body System.OS_Interface is
 
+   -----------------
+   -- sigaltstack --
+   -----------------
+
+   function sigaltstack
+     (ss  : not null access stack_t;
+      oss : access stack_t) return int
+   is
+      pragma Unreferenced (ss, oss);
+   begin
+      return 0;
+   end sigaltstack;
+
    --------------------
    -- Get_Stack_Base --
    --------------------
 
    function Get_Stack_Base (thread : pthread_t) return Address is
-      pragma Warnings (Off, thread);
-
+      pragma Unreferenced (thread);
    begin
       return Null_Address;
    end Get_Stack_Base;

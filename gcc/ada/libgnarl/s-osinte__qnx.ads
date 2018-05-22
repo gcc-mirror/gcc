@@ -301,7 +301,7 @@ package System.OS_Interface is
    function sigaltstack
      (ss  : not null access stack_t;
       oss : access stack_t) return int
-   is (0);
+     with Inline;
    --  Not supported on QNX
 
    Alternate_Stack : aliased System.Address;
@@ -315,7 +315,7 @@ package System.OS_Interface is
    --  Indicates whether the stack base is available on this target
 
    function Get_Stack_Base (thread : pthread_t) return System.Address
-     with Inline_Always;
+     with Inline;
    --  This is a dummy procedure to share some GNULLI files
 
    function Get_Page_Size return int;
