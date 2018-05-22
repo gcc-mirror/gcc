@@ -1959,7 +1959,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
   if (is_gimple_reg_type (vr->type)
       && gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET)
       && (integer_zerop (gimple_call_arg (def_stmt, 1))
-	  || (INTEGRAL_TYPE_P (vr->type) && known_eq (ref->size, 8)))
+	  || (INTEGRAL_TYPE_P (vr->type)
+	      && CHAR_BIT == 8 && BITS_PER_UNIT == 8
+	      && known_eq (ref->size, 8)
+	      && known_eq (ref->size, maxsize)
+	      && offset.is_constant (&offseti)
+	      && offseti % BITS_PER_UNIT == 0))
       && poly_int_tree_p (gimple_call_arg (def_stmt, 2))
       && (TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR
 	  || TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME))
@@ -2026,7 +2031,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  if (integer_zerop (gimple_call_arg (def_stmt, 1)))
 	    val = build_zero_cst (vr->type);
 	  else
-	    val = fold_convert (vr->type, gimple_call_arg (def_stmt, 1));
+	    {
+	      code_helper rcode = NOP_EXPR;
+	      tree ops[3] = {};
+	      ops[0] = gimple_call_arg (def_stmt, 1);
+	      val = vn_nary_build_or_lookup (rcode, vr->type, ops);
+	      if (!val
+		  || (TREE_CODE (val) == SSA_NAME
+		      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
+		return (void *)-1;
+	    }
 	  return vn_reference_lookup_or_insert_for_pieces
 	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
