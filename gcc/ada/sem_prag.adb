@@ -4444,7 +4444,9 @@ package body Sem_Prag is
                if Present (Cont) then
                   Prag := Pre_Post_Conditions (Cont);
                   while Present (Prag) loop
-                     if Class_Present (Prag) then
+                     if Pragma_Name (Prag) = Name_Precondition
+                       and then Class_Present (Prag)
+                     then
                         return True;
                      end if;
 
