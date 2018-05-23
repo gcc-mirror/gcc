@@ -1758,6 +1758,7 @@ package Sinfo is
    --  Is_Elaboration_Warnings_OK_Node (Flag3-Sem)
    --    Present in the following nodes:
    --
+   --      attribute reference
    --      call marker
    --      entry call statement
    --      function call
@@ -4064,6 +4065,7 @@ package Sinfo is
       --  Associated_Node (Node4-Sem)
       --  Is_Elaboration_Checks_OK_Node (Flag1-Sem)
       --  Is_SPARK_Mode_On_Node (Flag2-Sem)
+      --  Is_Elaboration_Warnings_OK_Node (Flag3-Sem)
       --  Header_Size_Added (Flag11-Sem)
       --  Redundant_Use (Flag13-Sem)
       --  Must_Be_Byte_Aligned (Flag14-Sem)

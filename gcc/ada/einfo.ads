@@ -2522,6 +2522,10 @@ package Einfo is
 --       checks. Such targets are allowed to generate run-time conditional ABE
 --       checks or guaranteed ABE failures.
 
+--    Is_Elaboration_Warnings_OK_Id (Flag304)
+--       Defined in elaboration targets (see terminology in Sem_Elab). Set when
+--       the target appears in a region with elaboration warnings enabled.
+
 --    Is_Elementary_Type (synthesized)
 --       Applies to all entities, true for all elementary types and subtypes.
 --       Either Is_Composite_Type or Is_Elementary_Type (but not both) is true
@@ -5949,6 +5953,7 @@ package Einfo is
    --    Has_Volatile_Components             (Flag87)
    --    Is_Atomic                           (Flag85)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)  (constants only)
+   --    Is_Elaboration_Warnings_OK_Id       (Flag304)  (constants only)
    --    Is_Eliminated                       (Flag124)
    --    Is_Finalized_Transient              (Flag252)
    --    Is_Ignored_Transient                (Flag295)
@@ -6026,6 +6031,7 @@ package Einfo is
    --    Has_Expanded_Contract               (Flag240)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
+   --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Entry_Wrapper                    (Flag297)
    --    Needs_No_Actuals                    (Flag22)
    --    Sec_Stack_Needed_For_Return         (Flag167)
@@ -6166,6 +6172,7 @@ package Einfo is
    --    Is_Discrim_SO_Function              (Flag176)
    --    Is_Discriminant_Check_Function      (Flag264)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
+   --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Eliminated                       (Flag124)
    --    Is_Generic_Actual_Subprogram        (Flag274)  (non-generic case only)
    --    Is_Hidden_Non_Overridden_Subpgm     (Flag2)    (non-generic case only)
@@ -6316,6 +6323,7 @@ package Einfo is
    --    Has_Nested_Subprogram               (Flag282)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
+   --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Primitive                        (Flag218)
@@ -6383,6 +6391,7 @@ package Einfo is
    --    In_Package_Body                     (Flag48)
    --    In_Use                              (Flag8)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
+   --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Instantiated                     (Flag126)
    --    Is_Private_Descendant               (Flag53)
    --    Is_Visible_Lib_Unit                 (Flag116)
@@ -6486,6 +6495,7 @@ package Einfo is
    --    Is_Constructor                      (Flag76)
    --    Is_DIC_Procedure                    (Flag132)  (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
+   --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Eliminated                       (Flag124)
    --    Is_Generic_Actual_Subprogram        (Flag274)  (non-generic case only)
    --    Is_Hidden_Non_Overridden_Subpgm     (Flag2)    (non-generic case only)
@@ -6697,6 +6707,7 @@ package Einfo is
    --    Has_Storage_Size_Clause             (Flag23)   (base type only)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
+   --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
@@ -6745,6 +6756,7 @@ package Einfo is
    --    Has_Volatile_Components             (Flag87)
    --    Is_Atomic                           (Flag85)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
+   --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Eliminated                       (Flag124)
    --    Is_Finalized_Transient              (Flag252)
    --    Is_Ignored_Transient                (Flag295)
@@ -7264,6 +7276,7 @@ package Einfo is
    function Is_Dispatch_Table_Entity            (Id : E) return B;
    function Is_Dispatching_Operation            (Id : E) return B;
    function Is_Elaboration_Checks_OK_Id         (Id : E) return B;
+   function Is_Elaboration_Warnings_OK_Id       (Id : E) return B;
    function Is_Eliminated                       (Id : E) return B;
    function Is_Entry_Formal                     (Id : E) return B;
    function Is_Entry_Wrapper                    (Id : E) return B;
@@ -7959,6 +7972,7 @@ package Einfo is
    procedure Set_Is_Dispatch_Table_Entity        (Id : E; V : B := True);
    procedure Set_Is_Dispatching_Operation        (Id : E; V : B := True);
    procedure Set_Is_Elaboration_Checks_OK_Id     (Id : E; V : B := True);
+   procedure Set_Is_Elaboration_Warnings_OK_Id   (Id : E; V : B := True);
    procedure Set_Is_Eliminated                   (Id : E; V : B := True);
    procedure Set_Is_Entry_Formal                 (Id : E; V : B := True);
    procedure Set_Is_Entry_Wrapper                (Id : E; V : B := True);
@@ -8787,6 +8801,7 @@ package Einfo is
    pragma Inline (Is_Dispatch_Table_Entity);
    pragma Inline (Is_Dispatching_Operation);
    pragma Inline (Is_Elaboration_Checks_OK_Id);
+   pragma Inline (Is_Elaboration_Warnings_OK_Id);
    pragma Inline (Is_Elementary_Type);
    pragma Inline (Is_Eliminated);
    pragma Inline (Is_Entry);
@@ -9303,6 +9318,7 @@ package Einfo is
    pragma Inline (Set_Is_Dispatch_Table_Entity);
    pragma Inline (Set_Is_Dispatching_Operation);
    pragma Inline (Set_Is_Elaboration_Checks_OK_Id);
+   pragma Inline (Set_Is_Elaboration_Warnings_OK_Id);
    pragma Inline (Set_Is_Eliminated);
    pragma Inline (Set_Is_Entry_Formal);
    pragma Inline (Set_Is_Entry_Wrapper);

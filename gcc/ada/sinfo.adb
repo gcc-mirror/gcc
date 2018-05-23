@@ -1929,6 +1929,7 @@ package body Sinfo is
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Call_Marker
         or else NT (N).Nkind = N_Entry_Call_Statement
         or else NT (N).Nkind = N_Function_Call
@@ -5392,6 +5393,7 @@ package body Sinfo is
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Call_Marker
         or else NT (N).Nkind = N_Entry_Call_Statement
         or else NT (N).Nkind = N_Function_Call

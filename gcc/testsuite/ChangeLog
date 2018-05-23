@@ -1,3 +1,8 @@
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/elab4.adb, gnat.dg/elab4_pkg.adb, gnat.dg/elab4_pkg.ads: New
+	testcase.
+
 2018-05-23  Bob Duff  <duff@adacore.com>
 
 	* gnat.dg/addr10.adb: New testcase.
