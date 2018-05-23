@@ -1,3 +1,11 @@
+2018-05-23  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-05-11  Martin Liska  <mliska@suse.cz>
+
+        PR sanitizer/85556
+	* c-c++-common/ubsan/attrib-6.c: New test.
+
 2018-05-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/85643
