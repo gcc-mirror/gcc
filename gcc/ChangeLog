@@ -1,3 +1,10 @@
+2018-05-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cpus.in (mode26): Delete.
+	(armv4): Delete mode26 reference.
+	* config/arm/arm.c (arm_configure_build_target): Delete use of
+	isa_bit_mode26.
+
 2018-05-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*floatuns<SWI48:mode><MODEF:mode>2_avx512):

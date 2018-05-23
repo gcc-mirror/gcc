@@ -3232,16 +3232,7 @@ arm_configure_build_target (struct arm_build_target *target,
 	 switches that require certain abilities from the cpu.  */
 
       if (TARGET_INTERWORK || TARGET_THUMB)
-	{
-	  bitmap_set_bit (sought_isa, isa_bit_thumb);
-
-	  /* There are no ARM processors that support both APCS-26 and
-	     interworking.  Therefore we forcibly remove MODE26 from
-	     from the isa features here (if it was set), so that the
-	     search below will always be able to find a compatible
-	     processor.  */
-	  bitmap_clear_bit (default_isa, isa_bit_mode26);
-	}
+	bitmap_set_bit (sought_isa, isa_bit_thumb);
 
       /* If there are such requirements and the default CPU does not
 	 satisfy them, we need to run over the complete list of

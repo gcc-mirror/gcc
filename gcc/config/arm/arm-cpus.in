@@ -48,9 +48,6 @@
 
 # Features - general convention: all lower case.
 
-# 26-bit mode support
-define feature mode26
-
 # Architecture rel 4
 define feature armv4
 
@@ -274,11 +271,9 @@ begin arch armv4
  tune for arm7tdmi
  tune flags CO_PROC
  base 4
- isa ARMv4 mode26
+ isa ARMv4
 end arch armv4
 
-# Strictly, mode26 is a permitted option for v4t, but there are no
-# implementations that support it, so we will leave it out for now.
 begin arch armv4t
  tune for arm7tdmi
  tune flags CO_PROC
