@@ -1,3 +1,11 @@
+2018-05-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Valid_Scalars): Do not invoke Error_Attr_P to report
+	the warning on occurrences of this attribute whose evaluation is always
+	true (since that subprogram aborts processing the attribute). In
+	addition, replace the node by its boolean result 'True' (required
+	because the backend has no knowledge of this attribute).
+
 2018-05-23  Bob Duff  <duff@adacore.com>
 
 	* libgnat/a-convec.adb: (Insert, Insert_Space): Suppress warnings. The
