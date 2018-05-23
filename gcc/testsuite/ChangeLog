@@ -1,3 +1,10 @@
+2018-05-23  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
+
+	PR target/78849
+	* gcc.target/msp430/msp430.exp: Remove -pedantic-errors from
+	DEFAULT_CFLAGS.
+	* gcc.target/msp430/pr78849.c: New test.
+
 2018-05-23  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp2a/range-for8.C: New test.
