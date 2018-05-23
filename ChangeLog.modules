@@ -1,5 +1,19 @@
 2018-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* diagnostic-code.h (fullname): Delete.
+	* diagnostic.c (fullname): Delete.
+	* toplev.c (general_init): Don't set it.
+	gcc/cp/
+	* module.c: Include opts.h.
+	(module_state::get_option_string): New.
+	(module_state::write_{readme,config}): Write option string.
+	(module_state::read_config): Check it.
+	(module_state::write): Adjust.
+	(module_server::module_server): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/flag-1_[ab].C: New.
+
 	Now with a Sneakoscope!
 	gcc/cp/
 	* module.c (depset::hash): Add a sneakoscope.

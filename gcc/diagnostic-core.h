@@ -36,8 +36,7 @@ typedef enum
   DK_POP
 } diagnostic_t;
 
-extern const char *fullname; /* Full path (if available).  */
-extern const char *progname; /* Basename, points into fullname. */
+extern const char *progname; /* Basename. */
 
 extern const char *trim_filename (const char *);
 

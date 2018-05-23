@@ -149,6 +149,7 @@ Classes used:
 #include "tree-diagnostic.h"
 #include "params.h"
 #include "toplev.h"
+#include "opts.h"
 
 #if defined (HOST_HAS_AF_UNIX) || defined (HOST_HAS_AF_INET6)
 # define HOST_HAS_AF 1
@@ -2399,14 +2400,15 @@ struct GTY(()) module_state {
 
  private:
   /* The README, for human consumption.  */
-  void write_readme (elf_out *to);
+  void write_readme (elf_out *to, const char *opts);
+  static char *get_option_string ();
 
   /* Import tables. */
   void write_imports (bytes_out &cfg, bool direct_p);
   int read_imports (bytes_in &cfg, bool direct_p);
 
   /* The configuration.  */
-  void write_config (elf_out *to, const range_t &sec_range,
+  void write_config (elf_out *to, const char *opts, const range_t &sec_range,
 		     unsigned unnamed, unsigned crc);
   bool read_config (range_t &sec_range, unsigned &unnamed, unsigned *crc_ptr);
 
@@ -6555,12 +6557,15 @@ module_server::module_server (const char *option)
 	{
 	  int flags = PEX_SEARCH;
 
-	  if (defaulting && fullname != progname)
+	  if (defaulting
+	      && save_decoded_options[0].opt_index == OPT_SPECIAL_program_name
+	      && save_decoded_options[0].arg != progname)
 	    {
 	      /* Prepend the invoking path.  */
-	      gcc_checking_assert (count == 1 && argv[0] == name);
-
+	      const char *fullname = save_decoded_options[0].arg;
 	      size_t dir_len = progname - fullname;
+
+	      gcc_checking_assert (count == 1 && argv[0] == name);
 	      argv[0] = XNEWVEC (char, dir_len + len + 1);
 	      memcpy (argv[0], fullname, dir_len);
 	      memcpy (argv[0] + dir_len, name, len + 1);
@@ -6595,9 +6600,8 @@ module_server::module_server (const char *option)
       return;
     }
 
-  /* Line buffering.  */
-  setvbuf (from, NULL, _IOLBF, 0);
-  setvbuf (to, NULL, _IOLBF, 0);
+  setvbuf (from, NULL, _IOLBF, 0); /* We read lines.  */
+  setvbuf (to, NULL, _IONBF, 0); /* We write whole buffers.  */
 
   /* We have a live server.  Say Hello.  */
   dump () && dump ("Initialized server");
@@ -6963,12 +6967,77 @@ module_state::pop_location ()
     }
 }
 
+/* Generate a string of the compilation options.  */
+
+char *
+module_state::get_option_string  ()
+{
+  /* Concatenate important options.  */
+  size_t opt_alloc = MODULE_STAMP ? 2 : 200;
+  size_t opt_len = 0;
+  char *opt_str = XNEWVEC (char, opt_alloc);
+
+  for (unsigned ix = 0; ix != save_decoded_options_count; ix++)
+    {
+      const cl_decoded_option *opt = &save_decoded_options[ix];
+      if (opt->opt_index >= N_OPTS)
+	continue;
+      // FIXME:There's probably a better way to get options we care
+      // about?  What does LTO do?
+      const char *text = opt->orig_option_with_args_text;
+
+      if (opt->opt_index >= N_OPTS)
+	continue;
+
+      /* Some module-related options we don't need to preserve.  */
+      if (opt->opt_index == OPT_fmodule_lazy
+	  || opt->opt_index == OPT_fmodule_preamble_
+	  || opt->opt_index == OPT_fmodule_server_
+	  || opt->opt_index == OPT_fmodules_atom
+	  || opt->opt_index == OPT_fmodules_ts)
+	continue;
+
+      /* -f* -g* -m* -O* -std=* */
+      if (text[0] != '-'
+	  || (!strchr ("fgmO", text[1])
+	      && 0 != strncmp (&text[1], "std=", 4)))
+	continue;
+
+      /* Some random options we shouldn't preserve.  */
+      if (opt->opt_index == OPT_frandom_seed
+	  || opt->opt_index == OPT_frandom_seed_
+	  /* Drop any diagnostic formatting options.  */
+	  || opt->opt_index == OPT_fmessage_length_
+	  || (opt->opt_index >= OPT_fdiagnostics_color_
+	      && opt->opt_index <= OPT_fdiagnostics_show_template_tree)
+	  /* Drop any dump control options.  */
+	  || (opt->opt_index >= OPT_fdump_
+	      && opt->opt_index <= OPT_fdump_unnumbered_links))
+	continue;
+
+      size_t l = strlen (text);
+      if (opt_alloc < opt_len + l + 2)
+	{
+	  opt_alloc = (opt_len + l + 2) * 2;
+	  opt_str = XRESIZEVEC (char, opt_str, opt_alloc);
+	}
+      if (opt_len)
+	opt_str[opt_len++] = ' ';
+      memcpy (&opt_str[opt_len], text, l);
+      opt_len += l;
+    }
+
+  opt_str[opt_len] = 0;
+
+  return opt_str;
+}
+
 /* A human-readable README section.  It is a STRTAB that may be
    extracted with:
      readelf -p.gnu.c++.README $(module).nms */
 
 void
-module_state::write_readme (elf_out *to)
+module_state::write_readme (elf_out *to, const char *options)
 {
   bytes_out readme;
 
@@ -6986,6 +7055,8 @@ module_state::write_readme (elf_out *to)
   /* Module information.  */
   readme.printf ("module:%s", IDENTIFIER_POINTER (name));
   readme.printf ("source:%s", main_input_filename);
+
+  readme.printf ("options:%s", options);
 
   /* Its direct imports.  */
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
@@ -7097,6 +7168,7 @@ module_state::read_imports (bytes_in &cfg, bool direct)
    u:module-name
    u:<target-triplet>
    u:<host-triplet>
+   s:options
 
    u:global_vec->length()
    u32:global_crc
@@ -7108,12 +7180,11 @@ module_state::read_imports (bytes_in &cfg, bool direct)
    u:decl-section-lwm
    u:decl-section-hwm
    u:unnamed
-   // FIXME CPU,ABI and similar tags
-   // FIXME Optimization and similar tags
 */
 
 void
-module_state::write_config (elf_out *to, const range_t &sec_range,
+module_state::write_config (elf_out *to, const char *opt_str,
+			    const range_t &sec_range,
 			    unsigned unnamed, unsigned inner_crc)
 {
   bytes_out cfg;
@@ -7138,6 +7209,8 @@ module_state::write_config (elf_out *to, const range_t &sec_range,
 		   ? target : to->name (HOST_MACHINE));
   cfg.u (target);
   cfg.u (host);
+
+  cfg.str (opt_str);
 
   /* Global tree information.  We write the globals crc separately,
      rather than mix it directly into the overall crc, as it is used
@@ -7251,6 +7324,18 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
       goto fail;
     }
 
+  /* Check compilation options.  For the moment we requre exact
+     match.  */
+  const char *their_opts = cfg.str ();
+  char *our_opts = get_option_string ();
+  if (strcmp (their_opts, our_opts))
+    {
+      error ("compilation options differ %qs, expected %qs",
+	     their_opts, our_opts);
+      goto fail;
+    }
+  XDELETEVEC (our_opts);
+  
   /* Check global trees.  */
   unsigned their_glength = cfg.u ();
   unsigned their_gcrc = cfg.u32 ();
@@ -8555,7 +8640,9 @@ module_state::write (elf_out *to)
 {
   unsigned crc = 0;
 
-  write_readme (to);
+  char *opt_str = get_option_string ();
+  write_readme (to, opt_str);
+
   depset::hash table (200);
 
   /* Find the set of decls we must write out.  */
@@ -8675,7 +8762,9 @@ module_state::write (elf_out *to)
   write_unnamed (to, sccs, unnamed, &crc);
 
   /* And finish up.  */
-  write_config (to, range, unnamed, crc);
+  write_config (to, opt_str, range, unnamed, crc);
+
+  XDELETEVEC (opt_str);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_num_sections ());

@@ -1090,7 +1090,6 @@ general_init (const char *argv0, bool init_signals)
 {
   const char *p;
 
-  fullname = argv0;
   p = argv0 + strlen (argv0);
   while (p != argv0 && !IS_DIR_SEPARATOR (p[-1]))
     --p;
