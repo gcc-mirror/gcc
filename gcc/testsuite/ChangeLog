@@ -1,3 +1,7 @@
+2018-05-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-66.c: New testcase.
+
 2018-05-23  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/84882

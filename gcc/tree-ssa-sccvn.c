@@ -1962,7 +1962,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  || ((TREE_CODE (gimple_call_arg (def_stmt, 1)) == INTEGER_CST
 	       || (INTEGRAL_TYPE_P (vr->type) && known_eq (ref->size, 8)))
 	      && CHAR_BIT == 8 && BITS_PER_UNIT == 8
-	      && known_eq (ref->size, maxsize)
 	      && offset.is_constant (&offseti)
 	      && offseti % BITS_PER_UNIT == 0))
       && poly_int_tree_p (gimple_call_arg (def_stmt, 2))
