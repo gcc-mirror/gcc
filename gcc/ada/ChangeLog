@@ -1,3 +1,11 @@
+2018-05-23  Bob Duff  <duff@adacore.com>
+
+	* gnatbind.adb (List_Applicable_Restrictions): Add
+	No_Implementation_Restrictions to the list of restrictions not to list.
+	Remove double negative "not No_Restriction_List".  Comment the
+	commentary that is output, so it won't cause errors if used directly in
+	a gnat.adc.
+
 2018-05-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Inherit_Class_Wide_Pre): Refine legality check on
