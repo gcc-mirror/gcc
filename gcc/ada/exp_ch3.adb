@@ -6069,29 +6069,43 @@ package body Exp_Ch3 is
                   null;
 
                --  Optimize the default initialization of an array object when
-               --  the following conditions are met:
-               --
-               --    * Pragma Initialize_Scalars or Normalize_Scalars is in
-               --      effect.
-               --
-               --    * The bounds of the array type are static and lack empty
-               --      ranges.
-               --
-               --    * The array type does not contain atomic components or is
-               --      treated as packed.
-               --
-               --    * The component is of a scalar type which requires simple
-               --      initialization.
-               --
+               --  pragma Initialize_Scalars or Normalize_Scalars is in effect.
                --  Construct an in-place initialization aggregate which may be
                --  convert into a fast memset by the backend.
 
                elsif Init_Or_Norm_Scalars
                  and then Is_Array_Type (Typ)
+
+                 --  The array must lack atomic components because they are
+                 --  treated as non-static, and as a result the backend will
+                 --  not initialize the memory in one go.
+
                  and then not Has_Atomic_Components (Typ)
+
+                 --  The array must not be packed because the invalid values
+                 --  in System.Scalar_Values are multiples of Storage_Unit.
+
                  and then not Is_Packed (Typ)
+
+                 --  The array must have static non-empty ranges, otherwise
+                 --  the backend cannot initialize the memory in one go.
+
                  and then Has_Static_Non_Empty_Array_Bounds (Typ)
+
+                 --  The optimization is only relevant for arrays of scalar
+                 --  types.
+
                  and then Is_Scalar_Type (Component_Type (Typ))
+
+                 --  Similar to regular array initialization using a type
+                 --  init proc, predicate checks are not performed because the
+                 --  initialization values are intentionally invalid, and may
+                 --  violate the predicate.
+
+                 and then not Has_Predicates (Component_Type (Typ))
+
+                 --  The component type must have a single initialization value
+
                  and then Simple_Initialization_OK (Component_Type (Typ))
                then
                   Set_No_Initialization (N, False);
