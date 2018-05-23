@@ -1,3 +1,47 @@
+2018-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_UNAME, HAVE_GETHOSTNAME, HAVE_GETPID): Add
+	new tests.
+	* configure.tgt: Add -DUSING_INITIAL_EXEC_TLS to XCFLAGS for Linux.
+	* Makefile.am (libgomp_la_SOURCES): Add affinity-fmt.c.
+	* libgomp.map (OMP_5.0): Export omp_{capture,display}_affinity{,_},
+	and omp_[gs]et_affinity_format{,_}.
+	* libgomp.h (gomp_display_affinity_var, gomp_affinity_format_var,
+	gomp_affinity_format_len): Declare.
+	(GOMP_NEEDS_THREAD_HANDLE): Define if needed.
+	(struct gomp_thread): Add handle field if GOMP_NEEDS_THREAD_HANDLE is
+	defined.
+	(gomp_display_affinity_place): Declare.
+	(gomp_set_affinity_format, gomp_display_string): Likewise.
+	(gomp_thread_handle): New typedef.
+	(gomp_display_affinity, gomp_display_affinity_thread): Declare.
+	(gomp_thread_self, gomp_thread_to_pthread_t): New inline functions.
+	* affinity-fmt.c: New file.
+	* affinity.c (gomp_display_affinity_place): New function.
+	* config/linux/affinity.c (gomp_display_affinity_place): New function.
+	* env.c (gomp_display_affinity_var, gomp_affinity_format_var,
+	gomp_affinity_format_len): New variables.
+	(handle_omp_display_env): Print OMP_DISPLAY_AFFINITY and
+	OMP_AFFINITY_FORMAT.
+	(initialize_env): Handle OMP_DISPLAY_AFFINITY and OMP_AFFINITY_FORMAT
+	env vars.
+	* fortran.c: Include stdio.h and string.h.
+	(omp_set_affinity_format_, omp_get_affinity_format_,
+	omp_display_affinity_, omp_capture_affinity_): New functions.
+	* omp.h.in (omp_set_affinity_format, omp_get_affinity_format,
+	omp_display_affinity, omp_capture_affinity): Declare.
+	* omp_lib.f90.in (omp_set_affinity_format, omp_get_affinity_format,
+	omp_display_affinity, omp_capture_affinity): Add new interfaces.
+	* omp_lib.h.in (omp_set_affinity_format, omp_get_affinity_format,
+	omp_display_affinity, omp_capture_affinity): New externs.
+	* team.c (struct gomp_thread_start_data): Add handle field.
+	(gomp_team_start): Handle OMP_DISPLAY_AFFINITY env var.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* Makefile.in: Regenerated.
+	* testsuite/libgomp.c-c++-common/display-affinity-1.c: New test.
+	* testsuite/libgomp.fortran/display-affinity-1.f90: New test.
+
 2018-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/depend-mutexinout-1.c: New test.

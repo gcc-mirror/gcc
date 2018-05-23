@@ -180,7 +180,8 @@ am_libgomp_la_OBJECTS = alloc.lo atomic.lo barrier.lo critical.lo \
 	sem.lo bar.lo ptrlock.lo time.lo fortran.lo affinity.lo \
 	target.lo splay-tree.lo libgomp-plugin.lo oacc-parallel.lo \
 	oacc-host.lo oacc-init.lo oacc-mem.lo oacc-async.lo \
-	oacc-plugin.lo oacc-cuda.lo priority_queue.lo $(am__objects_1)
+	oacc-plugin.lo oacc-cuda.lo priority_queue.lo affinity-fmt.lo \
+	$(am__objects_1)
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -436,7 +437,7 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	affinity.c target.c splay-tree.c libgomp-plugin.c \
 	oacc-parallel.c oacc-host.c oacc-init.c oacc-mem.c \
 	oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c \
-	$(am__append_3)
+	affinity-fmt.c $(am__append_3)
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -600,6 +601,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/affinity.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/affinity-fmt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bar.Plo@am__quote@

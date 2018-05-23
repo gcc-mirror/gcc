@@ -58,6 +58,7 @@ struct gomp_thread_start_data
   struct gomp_thread_pool *thread_pool;
   unsigned int place;
   bool nested;
+  pthread_t handle;
 };
 
 
@@ -89,6 +90,9 @@ gomp_thread_start (void *xdata)
   thr->ts = data->ts;
   thr->task = data->task;
   thr->place = data->place;
+#ifdef GOMP_NEEDS_THREAD_HANDLE
+  thr->handle = data->handle;
+#endif
 
   thr->ts.team->ordered_release[thr->ts.team_id] = &thr->release;
 
@@ -312,6 +316,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   unsigned int s = 0, rest = 0, p = 0, k = 0;
   unsigned int affinity_count = 0;
   struct gomp_thread **affinity_thr = NULL;
+  bool force_display = false;
 
   thr = gomp_thread ();
   nested = thr->ts.level;
@@ -319,7 +324,12 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   task = thr->task;
   icv = task ? &task->icv : &gomp_global_icv;
   if (__builtin_expect (gomp_places_list != NULL, 0) && thr->place == 0)
-    gomp_init_affinity ();
+    {
+      gomp_init_affinity ();
+      if (__builtin_expect (gomp_display_affinity_var, 0) && nthreads == 1)
+	gomp_display_affinity_thread (gomp_thread_self (), &thr->ts,
+				      thr->place);
+    }
 
   /* Always save the previous state, even if this isn't a nested team.
      In particular, we should save any work share state from an outer
@@ -338,6 +348,9 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 #endif
   thr->ts.static_trip = 0;
   thr->task = &team->implicit_task[0];
+#ifdef GOMP_NEEDS_THREAD_HANDLE
+  thr->handle = pthread_self ();
+#endif
   nthreads_var = icv->nthreads_var;
   if (__builtin_expect (gomp_nthreads_var_list != NULL, 0)
       && thr->ts.level < gomp_nthreads_var_list_len)
@@ -465,7 +478,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	  pool->threads
 	    = gomp_realloc (pool->threads,
 			    pool->threads_size
-			    * sizeof (struct gomp_thread_data *));
+			    * sizeof (struct gomp_thread *));
 	}
 
       /* Release existing idle threads.  */
@@ -540,6 +553,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 						+ place_partition_len))
 		{
 		  unsigned int l;
+		  force_display = true;
 		  if (affinity_thr == NULL)
 		    {
 		      unsigned int j;
@@ -719,12 +733,11 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
     }
 
   start_data = gomp_alloca (sizeof (struct gomp_thread_start_data)
-			    * (nthreads-i));
+			    * (nthreads - i));
 
   /* Launch new threads.  */
   for (; i < nthreads; ++i)
     {
-      pthread_t pt;
       int err;
 
       start_data->ts.place_partition_off = thr->ts.place_partition_off;
@@ -814,7 +827,9 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       start_data->nested = nested;
 
       attr = gomp_adjust_thread_attr (attr, &thread_attr);
-      err = pthread_create (&pt, attr, gomp_thread_start, start_data++);
+      err = pthread_create (&start_data->handle, attr, gomp_thread_start,
+			    start_data);
+      start_data++;
       if (err != 0)
 	gomp_fatal ("Thread creation failed: %s", strerror (err));
     }
@@ -853,6 +868,42 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       gomp_managed_threads += diff;
       gomp_mutex_unlock (&gomp_managed_threads_lock);
 #endif
+    }
+  if (__builtin_expect (gomp_display_affinity_var, 0))
+    {
+      if (nested
+	  || nthreads != old_threads_used
+	  || force_display)
+	{
+	  gomp_display_affinity_thread (gomp_thread_self (), &thr->ts,
+					thr->place);
+	  if (nested)
+	    {
+	      start_data -= nthreads - 1;
+	      for (i = 1; i < nthreads; ++i)
+		{
+		  gomp_display_affinity_thread (
+#ifdef LIBGOMP_USE_PTHREADS
+						start_data->handle,
+#else
+						gomp_thread_self (),
+#endif
+						&start_data->ts,
+						start_data->place);
+		  start_data++;
+		}
+	    }
+	  else
+	    {
+	      for (i = 1; i < nthreads; ++i)
+		{
+		  gomp_thread_handle handle
+		    = gomp_thread_to_pthread_t (pool->threads[i]);
+		  gomp_display_affinity_thread (handle, &pool->threads[i]->ts,
+						pool->threads[i]->place);
+		}
+	    }
+	}
     }
   if (__builtin_expect (affinity_thr != NULL, 0)
       && team->prev_ts.place_partition_len > 64)

@@ -28,6 +28,8 @@
 #include "libgomp.h"
 #include "libgomp_f.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <limits.h>
 
 #ifdef HAVE_ATTRIBUTE_ALIAS
@@ -575,4 +577,85 @@ int32_t
 omp_get_max_task_priority_ (void)
 {
   return omp_get_max_task_priority ();
+}
+
+void
+omp_set_affinity_format_ (const char *format, size_t format_len)
+{
+  gomp_set_affinity_format (format, format_len);
+}
+
+int32_t
+omp_get_affinity_format_ (char *buffer, size_t buffer_len)
+{
+  size_t len = strlen (gomp_affinity_format_var);
+  if (buffer_len)
+    {
+      if (len < buffer_len)
+	{
+	  memcpy (buffer, gomp_affinity_format_var, len);
+	  memset (buffer + len, ' ', buffer_len - len);
+	}
+      else
+	memcpy (buffer, gomp_affinity_format_var, buffer_len);
+    }
+  return len;
+}
+
+void
+omp_display_affinity_ (const char *format, size_t format_len)
+{
+  char *fmt = NULL, fmt_buf[256];
+  char buf[512];
+  if (format_len)
+    {
+      fmt = format_len < 256 ? fmt_buf : gomp_malloc (format_len + 1);
+      memcpy (fmt, format, format_len);
+      fmt[format_len] = '\0';
+    }
+  struct gomp_thread *thr = gomp_thread ();
+  size_t ret
+    = gomp_display_affinity (buf, sizeof buf,
+			     format_len ? fmt : gomp_affinity_format_var,
+			     gomp_thread_self (), &thr->ts, thr->place);
+  if (ret < sizeof buf)
+    {
+      buf[ret] = '\n';
+      fwrite (buf, 1, ret + 1, stderr);
+    }
+  else
+    {
+      char *b = gomp_malloc (ret + 1);
+      gomp_display_affinity (buf, sizeof buf,
+			     format_len ? fmt : gomp_affinity_format_var,
+			     gomp_thread_self (), &thr->ts, thr->place);
+      b[ret] = '\n';
+      fwrite (b, 1, ret + 1, stderr);
+      free (b);
+    }
+  if (fmt && fmt != fmt_buf)
+    free (fmt);
+}
+
+int32_t
+omp_capture_affinity_ (char *buffer, const char *format,
+		       size_t buffer_len, size_t format_len)
+{
+  char *fmt = NULL, fmt_buf[256];
+  if (format_len)
+    {
+      fmt = format_len < 256 ? fmt_buf : gomp_malloc (format_len + 1);
+      memcpy (fmt, format, format_len);
+      fmt[format_len] = '\0';
+    }
+  struct gomp_thread *thr = gomp_thread ();
+  size_t ret
+    = gomp_display_affinity (buffer, buffer_len,
+			     format_len ? fmt : gomp_affinity_format_var,
+			     gomp_thread_self (), &thr->ts, thr->place);
+  if (fmt && fmt != fmt_buf)
+    free (fmt);
+  if (ret < buffer_len)
+    memset (buffer + ret, ' ', buffer_len - ret);
+  return ret;
 }

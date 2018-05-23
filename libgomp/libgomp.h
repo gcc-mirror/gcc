@@ -365,6 +365,9 @@ extern void **gomp_places_list;
 extern unsigned long gomp_places_list_len;
 extern unsigned int gomp_num_teams_var;
 extern int gomp_debug_var;
+extern bool gomp_display_affinity_var;
+extern char *gomp_affinity_format_var;
+extern size_t gomp_affinity_format_len;
 extern int goacc_device_num;
 extern char *goacc_device_type;
 
@@ -613,6 +616,19 @@ struct gomp_thread
 
   /* User pthread thread pool */
   struct gomp_thread_pool *thread_pool;
+
+#if defined(LIBGOMP_USE_PTHREADS) \
+    && (!defined(HAVE_TLS) \
+	|| !defined(__GLIBC__) \
+	|| !defined(USING_INITIAL_EXEC_TLS))
+  /* pthread_t of the thread containing this gomp_thread.
+     On Linux when using initial-exec TLS,
+     (typeof (pthread_t)) gomp_thread () - pthread_self ()
+     is constant in all threads, so we can optimize and not
+     store it.  */
+#define GOMP_NEEDS_THREAD_HANDLE 1
+  pthread_t handle;
+#endif
 };
 
 
@@ -709,6 +725,24 @@ extern bool gomp_affinity_finalize_place_list (bool);
 extern bool gomp_affinity_init_level (int, unsigned long, bool);
 extern void gomp_affinity_print_place (void *);
 extern void gomp_get_place_proc_ids_8 (int, int64_t *);
+extern void gomp_display_affinity_place (char *, size_t, size_t *, int);
+
+/* affinity-fmt.c */
+
+extern void gomp_set_affinity_format (const char *, size_t);
+extern void gomp_display_string (char *, size_t, size_t *, const char *,
+				 size_t);
+#ifdef LIBGOMP_USE_PTHREADS
+typedef pthread_t gomp_thread_handle;
+#else
+typedef struct {} gomp_thread_handle;
+#endif
+extern size_t gomp_display_affinity (char *, size_t, const char *,
+				     gomp_thread_handle,
+				     struct gomp_team_state *, unsigned int);
+extern void gomp_display_affinity_thread (gomp_thread_handle,
+					  struct gomp_team_state *,
+					  unsigned int) __attribute__((cold));
 
 /* iter.c */
 
@@ -1131,4 +1165,42 @@ task_to_priority_node (enum priority_queue_type type,
   return (struct priority_node *) ((char *) task
 				   + priority_queue_offset (type));
 }
+
+#ifdef LIBGOMP_USE_PTHREADS
+static inline gomp_thread_handle
+gomp_thread_self (void)
+{
+  return pthread_self ();
+}
+
+static inline gomp_thread_handle
+gomp_thread_to_pthread_t (struct gomp_thread *thr)
+{
+  struct gomp_thread *this_thr = gomp_thread ();
+  if (thr == this_thr)
+    return pthread_self ();
+#ifdef GOMP_NEEDS_THREAD_HANDLE
+  return thr->handle;
+#else
+  /* On Linux with initial-exec TLS, the pthread_t of the thread containing
+     thr can be computed from thr, this_thr and pthread_self (),
+     as the distance between this_thr and pthread_self () is constant.  */
+  return pthread_self () + ((uintptr_t) thr - (uintptr_t) this_thr);
+#endif
+}
+#else
+static inline gomp_thread_handle
+gomp_thread_self (void)
+{
+  return (gomp_thread_handle) {};
+}
+
+static inline gomp_thread_handle
+gomp_thread_to_pthread_t (struct gomp_thread *thr)
+{
+  (void) thr;
+  return gomp_thread_self ();
+}
+#endif
+
 #endif /* LIBGOMP_H */

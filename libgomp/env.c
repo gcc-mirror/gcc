@@ -88,6 +88,9 @@ void **gomp_places_list;
 unsigned long gomp_places_list_len;
 int gomp_debug_var;
 unsigned int gomp_num_teams_var;
+bool gomp_display_affinity_var;
+char *gomp_affinity_format_var = "level %L thread %T affinity %a";
+size_t gomp_affinity_format_len;
 char *goacc_device_type;
 int goacc_device_num;
 
@@ -1197,6 +1200,10 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
 	   gomp_global_icv.default_device_var);
   fprintf (stderr, "  OMP_MAX_TASK_PRIORITY = '%d'\n",
 	   gomp_max_task_priority_var);
+  fprintf (stderr, "  OMP_DISPLAY_AFFINITY = '%s'\n",
+	   gomp_display_affinity_var ? "TRUE" : "FALSE");
+  fprintf (stderr, "  OMP_AFFINITY_FORMAT = '%s'\n",
+	   gomp_affinity_format_var);
 
   if (verbose)
     {
@@ -1228,6 +1235,7 @@ initialize_env (void)
   parse_boolean ("OMP_DYNAMIC", &gomp_global_icv.dyn_var);
   parse_boolean ("OMP_NESTED", &gomp_global_icv.nest_var);
   parse_boolean ("OMP_CANCELLATION", &gomp_cancel_var);
+  parse_boolean ("OMP_DISPLAY_AFFINITY", &gomp_display_affinity_var);
   parse_int ("OMP_DEFAULT_DEVICE", &gomp_global_icv.default_device_var, true);
   parse_int ("OMP_MAX_TASK_PRIORITY", &gomp_max_task_priority_var, true);
   parse_unsigned_long ("OMP_MAX_ACTIVE_LEVELS", &gomp_max_active_levels_var,
@@ -1277,6 +1285,13 @@ initialize_env (void)
     }
   if (gomp_global_icv.bind_var != omp_proc_bind_false)
     gomp_init_affinity ();
+
+  {
+    const char *env = getenv ("OMP_AFFINITY_FORMAT");
+    if (env != NULL)
+      gomp_set_affinity_format (env, strlen (env));
+  }
+
   wait_policy = parse_wait_policy ();
   if (!parse_spincount ("GOMP_SPINCOUNT", &gomp_spin_count_var))
     {

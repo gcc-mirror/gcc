@@ -266,6 +266,41 @@ if test $ac_cv_func_clock_gettime = no; then
 	       [Define to 1 if you have the `clock_gettime' function.])])
 fi
 
+# Check for uname.
+AC_COMPILE_IFELSE(
+ [AC_LANG_PROGRAM(
+  [#include <string.h>
+   #include <stdlib.h>
+   #include <sys/utsname.h>],
+  [struct utsname buf;
+   volatile size_t len = 0;
+   if (!uname (buf))
+     len = strlen (buf.nodename);])],
+  AC_DEFINE(HAVE_UNAME, 1,
+[	Define if uname is supported and struct utsname has nodename field.]))
+
+# Check for gethostname.
+AC_COMPILE_IFELSE(
+ [AC_LANG_PROGRAM(
+  [#include <unistd.h>],
+  [
+changequote(,)dnl
+   char buf[256];
+   if (gethostname (buf, sizeof (buf) - 1) == 0)
+     buf[255] = '\0';
+changequote([,])dnl
+  ])],
+  AC_DEFINE(HAVE_GETHOSTNAME, 1,
+[	Define if gethostname is supported.]))
+
+# Check for getpid.
+AC_COMPILE_IFELSE(
+ [AC_LANG_PROGRAM(
+  [#include <unistd.h>],
+  [int pid = getpid ();])],
+  AC_DEFINE(HAVE_GETPID, 1,
+[	Define if getpid is supported.]))
+
 # See if we support thread-local storage.
 GCC_CHECK_TLS
 
