@@ -3187,6 +3187,100 @@ package body Freeze is
       -------------------------------
 
       procedure Freeze_Object_Declaration (E : Entity_Id) is
+
+         procedure Check_Large_Modular_Array (Typ : Entity_Id);
+         --  Check that the size of array type Typ can be computed without
+         --  overflow, and generates a Storage_Error otherwise. This is only
+         --  relevant for array types whose index is a (mod 2**64) type, where
+         --  wrap-around arithmetic might yield a meaningless value for the
+         --  length of the array, or its corresponding attribute.
+
+         -------------------------------
+         -- Check_Large_Modular_Array --
+         -------------------------------
+
+         procedure Check_Large_Modular_Array (Typ : Entity_Id) is
+            Obj_Loc : constant Source_Ptr := Sloc (E);
+            Idx_Typ : Entity_Id;
+
+         begin
+            --  Nothing to do when expansion is disabled because this routine
+            --  generates a runtime check.
+
+            if not Expander_Active then
+               return;
+
+            --  Nothing to do for String literal subtypes because their index
+            --  cannot be a modular type.
+
+            elsif Ekind (Typ) = E_String_Literal_Subtype then
+               return;
+
+            --  Nothing to do for an imported object because the object will
+            --  be created on the exporting side.
+
+            elsif Is_Imported (E) then
+               return;
+
+            --  Nothing to do for unconstrained array types. This case arises
+            --  when the object declaration is illegal.
+
+            elsif not Is_Constrained (Typ) then
+               return;
+            end if;
+
+            Idx_Typ := Etype (First_Index (Typ));
+
+            --  To prevent arithmetic overflow with large values, we raise
+            --  Storage_Error under the following guard:
+            --
+            --    (Arr'Last / 2 - Arr'First / 2) > (2 ** 30)
+            --
+            --  This takes care of the boundary case, but it is preferable to
+            --  use a smaller limit, because even on 64-bit architectures an
+            --  array of more than 2 ** 30 bytes is likely to raise
+            --  Storage_Error.
+
+            if Is_Modular_Integer_Type (Idx_Typ)
+              and then RM_Size (Idx_Typ) = RM_Size (Standard_Long_Long_Integer)
+            then
+               Insert_Action (Declaration_Node (E),
+                 Make_Raise_Storage_Error (Obj_Loc,
+                   Condition =>
+                     Make_Op_Ge (Obj_Loc,
+                       Left_Opnd  =>
+                         Make_Op_Subtract (Obj_Loc,
+                           Left_Opnd  =>
+                             Make_Op_Divide (Obj_Loc,
+                               Left_Opnd  =>
+                                 Make_Attribute_Reference (Obj_Loc,
+                                   Prefix         =>
+                                     New_Occurrence_Of (Typ, Obj_Loc),
+                                   Attribute_Name => Name_Last),
+                               Right_Opnd =>
+                                 Make_Integer_Literal (Obj_Loc, Uint_2)),
+                           Right_Opnd =>
+                             Make_Op_Divide (Obj_Loc,
+                               Left_Opnd =>
+                                 Make_Attribute_Reference (Obj_Loc,
+                                   Prefix         =>
+                                     New_Occurrence_Of (Typ, Obj_Loc),
+                                   Attribute_Name => Name_First),
+                               Right_Opnd =>
+                                 Make_Integer_Literal (Obj_Loc, Uint_2))),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Obj_Loc, (Uint_2 ** 30))),
+                   Reason    => SE_Object_Too_Large));
+            end if;
+         end Check_Large_Modular_Array;
+
+         --  Local variables
+
+         Typ : constant Entity_Id := Etype (E);
+         Def : Node_Id;
+
+      --  Start of processing for Freeze_Object_Declaration
+
       begin
          --  Abstract type allowed only for C++ imported variables or constants
 
@@ -3195,22 +3289,20 @@ package body Freeze is
          --  x'Class'Input where x is abstract) where we legitimately
          --  generate an abstract object.
 
-         if Is_Abstract_Type (Etype (E))
+         if Is_Abstract_Type (Typ)
            and then Comes_From_Source (Parent (E))
-           and then not (Is_Imported (E) and then Is_CPP_Class (Etype (E)))
+           and then not (Is_Imported (E) and then Is_CPP_Class (Typ))
          then
-            Error_Msg_N ("type of object cannot be abstract",
-                         Object_Definition (Parent (E)));
+            Def := Object_Definition (Parent (E));
+
+            Error_Msg_N ("type of object cannot be abstract", Def);
 
             if Is_CPP_Class (Etype (E)) then
-               Error_Msg_NE
-                 ("\} may need a cpp_constructor",
-                  Object_Definition (Parent (E)), Etype (E));
+               Error_Msg_NE ("\} may need a cpp_constructor", Def, Typ);
 
             elsif Present (Expression (Parent (E))) then
                Error_Msg_N --  CODEFIX
-                 ("\maybe a class-wide type was meant",
-                  Object_Definition (Parent (E)));
+                 ("\maybe a class-wide type was meant", Def);
             end if;
          end if;
 
@@ -3221,20 +3313,20 @@ package body Freeze is
 
          Validate_Object_Declaration (Declaration_Node (E));
 
-         --  If there is an address clause, check that it is valid
-         --  and if need be move initialization to the freeze node.
+         --  If there is an address clause, check that it is valid and if need
+         --  be move initialization to the freeze node.
 
          Check_Address_Clause (E);
 
-         --  Similar processing is needed for aspects that may affect
-         --  object layout, like Alignment, if there is an initialization
-         --  expression. We don't do this if there is a pragma Linker_Section,
-         --  because it would prevent the back end from statically initializing
-         --  the object; we don't want elaboration code in that case.
+         --  Similar processing is needed for aspects that may affect object
+         --  layout, like Alignment, if there is an initialization expression.
+         --  We don't do this if there is a pragma Linker_Section, because it
+         --  would prevent the back end from statically initializing the
+         --  object; we don't want elaboration code in that case.
 
          if Has_Delayed_Aspects (E)
            and then Expander_Active
-           and then Is_Array_Type (Etype (E))
+           and then Is_Array_Type (Typ)
            and then Present (Expression (Parent (E)))
            and then No (Linker_Section_Pragma (E))
          then
@@ -3243,7 +3335,6 @@ package body Freeze is
                Lhs  : constant Node_Id := New_Occurrence_Of (E, Loc);
 
             begin
-
                --  Capture initialization value at point of declaration, and
                --  make explicit assignment legal, because object may be a
                --  constant.
@@ -3251,7 +3342,7 @@ package body Freeze is
                Remove_Side_Effects (Expression (Decl));
                Set_Assignment_OK (Lhs);
 
-               --  Move initialization to freeze actions.
+               --  Move initialization to freeze actions
 
                Append_Freeze_Action (E,
                  Make_Assignment_Statement (Loc,
@@ -3283,7 +3374,7 @@ package body Freeze is
          --  a dispatch table entry, then we mean it.
 
          if Ekind (E) /= E_Constant
-           and then (Is_Aliased (E) or else Is_Aliased (Etype (E)))
+           and then (Is_Aliased (E) or else Is_Aliased (Typ))
            and then not Is_Internal_Name (Chars (E))
          then
             Set_Is_True_Constant (E, False);
@@ -3304,11 +3395,11 @@ package body Freeze is
            and then not Is_Imported (E)
            and then not Has_Init_Expression (Declaration_Node (E))
            and then
-             ((Has_Non_Null_Base_Init_Proc (Etype (E))
+             ((Has_Non_Null_Base_Init_Proc (Typ)
                 and then not No_Initialization (Declaration_Node (E))
-                and then not Initialization_Suppressed (Etype (E)))
+                and then not Initialization_Suppressed (Typ))
               or else
-                (Needs_Simple_Initialization (Etype (E))
+                (Needs_Simple_Initialization (Typ)
                   and then not Is_Internal (E)))
          then
             Has_Default_Initialization := True;
@@ -3316,9 +3407,9 @@ package body Freeze is
               (No_Default_Initialization, Declaration_Node (E));
          end if;
 
-         --  Check that a Thread_Local_Storage variable does not have
-         --  default initialization, and any explicit initialization must
-         --  either be the null constant or a static constant.
+         --  Check that a Thread_Local_Storage variable does not have default
+         --  initialization, and any explicit initialization must either be the
+         --  null constant or a static constant.
 
          if Has_Pragma_Thread_Local_Storage (E) then
             declare
@@ -3356,37 +3447,40 @@ package body Freeze is
             Set_Is_Public (E);
          end if;
 
-         --  For source objects that are not Imported and are library
-         --  level, if no linker section pragma was given inherit the
-         --  appropriate linker section from the corresponding type.
+         --  For source objects that are not Imported and are library level, if
+         --  no linker section pragma was given inherit the appropriate linker
+         --  section from the corresponding type.
 
          if Comes_From_Source (E)
            and then not Is_Imported (E)
            and then Is_Library_Level_Entity (E)
            and then No (Linker_Section_Pragma (E))
          then
-            Set_Linker_Section_Pragma
-              (E, Linker_Section_Pragma (Etype (E)));
+            Set_Linker_Section_Pragma (E, Linker_Section_Pragma (Typ));
          end if;
 
-         --  For convention C objects of an enumeration type, warn if the
-         --  size is not integer size and no explicit size given. Skip
-         --  warning for Boolean, and Character, assume programmer expects
-         --  8-bit sizes for these cases.
+         --  For convention C objects of an enumeration type, warn if the size
+         --  is not integer size and no explicit size given. Skip warning for
+         --  Boolean and Character, and assume programmer expects 8-bit sizes
+         --  for these cases.
 
          if (Convention (E) = Convention_C
                or else
              Convention (E) = Convention_CPP)
-           and then Is_Enumeration_Type (Etype (E))
-           and then not Is_Character_Type (Etype (E))
-           and then not Is_Boolean_Type (Etype (E))
-           and then Esize (Etype (E)) < Standard_Integer_Size
+           and then Is_Enumeration_Type (Typ)
+           and then not Is_Character_Type (Typ)
+           and then not Is_Boolean_Type (Typ)
+           and then Esize (Typ) < Standard_Integer_Size
            and then not Has_Size_Clause (E)
          then
             Error_Msg_Uint_1 := UI_From_Int (Standard_Integer_Size);
             Error_Msg_N
               ("??convention C enumeration object has size less than ^", E);
             Error_Msg_N ("\??use explicit size clause to set size", E);
+         end if;
+
+         if Is_Array_Type (Typ) then
+            Check_Large_Modular_Array (Typ);
          end if;
       end Freeze_Object_Declaration;
 

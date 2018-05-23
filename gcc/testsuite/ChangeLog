@@ -1,3 +1,7 @@
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/import2.adb: New testcase.
+
 2018-05-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/discr51.adb: New testcase.
