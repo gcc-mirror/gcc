@@ -6929,8 +6929,10 @@ package body Sem_Attr is
 
             else
                if not Scalar_Part_Present (P_Type) then
-                  Error_Attr_P
-                    ("??attribute % always True, no scalars to check");
+                  Error_Msg_Name_1 := Aname;
+                  Error_Msg_F
+                    ("??attribute % always True, no scalars to check", P);
+                  Set_Boolean_Result (N, True);
                end if;
 
                --  Attribute 'Valid_Scalars is illegal on unchecked union types
