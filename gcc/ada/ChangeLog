@@ -1,3 +1,12 @@
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Preanalyze_Range): The pre-analysis of the domain of
+	iteration of an Ada2012 loop is performed to determine the type of the
+	domain, but full analysis is performed once the loop is rewritten as a
+	while-loop during expansion. The pre-analysis suppresses expansion; it
+	must also suppress the generation of freeze nodes, which may otherwise
+	appear in the wrong scope before rewritting.
+
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb: Update the section on suppressing elaboration warnings.
