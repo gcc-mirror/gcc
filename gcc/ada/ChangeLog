@@ -1,3 +1,7 @@
+2018-05-23  Maroua Maalej  <maalej@adacore.com>
+
+	* sem_spark.adb: Fix of some permission rules of pointers in SPARK.
+
 2018-05-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Preanalyze_Range): The pre-analysis of the domain of
