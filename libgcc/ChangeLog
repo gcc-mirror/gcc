@@ -1,3 +1,8 @@
+2018-05-23  Kalamatee  <kalamatee@gmail.com>
+
+	* config/m68k/lb1sf68.S (Laddsf$nf): Fix sign bit handling in
+	path to Lf$finfty.
+
 2018-05-18  Kito Cheng <kito.cheng@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 	    Jim Wilson <jimw@sifive.com>
