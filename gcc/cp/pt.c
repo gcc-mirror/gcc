@@ -18433,7 +18433,9 @@ tsubst_copy_and_build (tree t,
 	      /* Unsupported internal function with arguments.  */
 	      gcc_unreachable ();
 	    }
-	else if (TREE_CODE (function) == OFFSET_REF)
+	else if (TREE_CODE (function) == OFFSET_REF
+		 || TREE_CODE (function) == DOTSTAR_EXPR
+		 || TREE_CODE (function) == MEMBER_REF)
 	  ret = build_offset_ref_call_from_tree (function, &call_args,
 						 complain);
 	else if (TREE_CODE (function) == COMPONENT_REF)
