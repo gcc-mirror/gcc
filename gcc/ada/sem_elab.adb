@@ -500,6 +500,14 @@ package body Sem_Elab is
    --           As a result, the assertion expressions of the pragmas are not
    --           processed.
    --
+   --  -gnatd_s stop elaboration checks on synchronous suspension
+   --
+   --           The ABE mechanism stops the traversal of a task body when it
+   --           encounters a call to one of the following routines:
+   --
+   --             Ada.Synchronous_Barriers.Wait_For_Release
+   --             Ada.Synchronous_Task_Control.Suspend_Until_True
+   --
    --  -gnatd.U ignore indirect calls for static elaboration
    --
    --           The ABE mechanism does not consider '[Unrestricted_]Access of
@@ -554,6 +562,7 @@ package body Sem_Elab is
    --              -gnatd_i
    --              -gnatdL
    --              -gnatd_p
+   --              -gnatd_s
    --              -gnatd.U
    --              -gnatd.y
    --
@@ -1339,6 +1348,10 @@ package body Sem_Elab is
    --  context ignoring enclosing library levels. Nested_OK should be set when
    --  the context of N1 can enclose that of N2.
 
+   function In_Task_Body (N : Node_Id) return Boolean;
+   pragma Inline (In_Task_Body);
+   --  Determine whether arbitrary node N appears within a task body
+
    procedure Info_Call
      (Call      : Node_Id;
       Target_Id : Entity_Id;
@@ -1591,6 +1604,14 @@ package body Sem_Elab is
    pragma Inline (Is_Suitable_Variable_Reference);
    --  Determine whether arbitrary node N is a suitable variable reference for
    --  ABE processing.
+
+   function Is_Synchronous_Suspension_Call (N : Node_Id) return Boolean;
+   pragma Inline (Is_Synchronous_Suspension_Call);
+   --  Determine whether arbitrary node N denotes a call to one the following
+   --  routines:
+   --
+   --    Ada.Synchronous_Barriers.Wait_For_Release
+   --    Ada.Synchronous_Task_Control.Suspend_Until_True
 
    function Is_Task_Entry (Id : Entity_Id) return Boolean;
    pragma Inline (Is_Task_Entry);
@@ -6170,6 +6191,39 @@ package body Sem_Elab is
       return False;
    end In_Same_Context;
 
+   ------------------
+   -- In_Task_Body --
+   ------------------
+
+   function In_Task_Body (N : Node_Id) return Boolean is
+      Par : Node_Id;
+
+   begin
+      --  Climb the parent chain looking for a task body [procedure]
+
+      Par := N;
+      while Present (Par) loop
+         if Nkind (Par) = N_Task_Body then
+            return True;
+
+         elsif Nkind (Par) = N_Subprogram_Body
+           and then Is_Task_Body_Procedure (Par)
+         then
+            return True;
+
+         --  Prevent the search from going too far. Note that this predicate
+         --  shares nodes with the two cases above, and must come last.
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            return False;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return False;
+   end In_Task_Body;
+
    ----------------
    -- Initialize --
    ----------------
@@ -7553,6 +7607,33 @@ package body Sem_Elab is
       return Nkind (N) = N_Variable_Reference_Marker;
    end Is_Suitable_Variable_Reference;
 
+   ------------------------------------
+   -- Is_Synchronous_Suspension_Call --
+   ------------------------------------
+
+   function Is_Synchronous_Suspension_Call (N : Node_Id) return Boolean is
+      Call_Attrs : Call_Attributes;
+      Target_Id  : Entity_Id;
+
+   begin
+      --  To qualify, the call must invoke one of the runtime routines which
+      --  perform synchronous suspension.
+
+      if Is_Suitable_Call (N) then
+         Extract_Call_Attributes
+           (Call      => N,
+            Target_Id => Target_Id,
+            Attrs     => Call_Attrs);
+
+         return
+           Is_RTE (Target_Id, RE_Suspend_Until_True)
+             or else
+           Is_RTE (Target_Id, RE_Wait_For_Release);
+      end if;
+
+      return False;
+   end Is_Synchronous_Suspension_Call;
+
    -------------------
    -- Is_Task_Entry --
    -------------------
@@ -7770,7 +7851,7 @@ package body Sem_Elab is
                      return Decl;
 
                   --  Otherwise the construct terminates the region where the
-                  --  preelabortion-related pragma may appear.
+                  --  preelaboration-related pragma may appear.
 
                   else
                      exit;
@@ -11110,24 +11191,52 @@ package body Sem_Elab is
             if Is_Non_Library_Level_Encapsulator (Nod) then
                return Skip;
 
-            --  Terminate the traversal of a task body with an accept statement
-            --  when no entry calls in elaboration are allowed because the task
-            --  will block at run-time and the remaining statements will not be
-            --  executed.
+            --  Terminate the traversal of a task body when encountering an
+            --  accept or select statement, and
+            --
+            --    * Entry calls during elaboration are not allowed. In this
+            --      case the accept or select statement will cause the task
+            --      to block at elaboration time because there are no entry
+            --      calls to unblock it.
+            --
+            --  or
+            --
+            --    * Switch -gnatd_a (stop elaboration checks on accept or
+            --      select statement) is in effect.
 
-            elsif Nkind_In (Original_Node (Nod), N_Accept_Statement,
-                                                 N_Selective_Accept)
+            elsif (Debug_Flag_Underscore_A
+                    or else Restriction_Active
+                              (No_Entry_Calls_In_Elaboration_Code))
+              and then Nkind_In (Original_Node (Nod), N_Accept_Statement,
+                                                      N_Selective_Accept)
             then
-               if Restriction_Active (No_Entry_Calls_In_Elaboration_Code) then
-                  return Abandon;
+               return Abandon;
 
-               --  The same behavior is achieved when switch -gnatd_a (stop
-               --  elabortion checks on accept or select statement) is in
-               --  effect.
+            --  Terminate the traversal of a task body when encountering a
+            --  suspension call, and
+            --
+            --    * Entry calls during elaboration are not allowed. In this
+            --      case the suspension call emulates an entry call and will
+            --      cause the task to block at elaboration time.
+            --
+            --  or
+            --
+            --    * Switch -gnatd_s (stop elaboration checks on synchronous
+            --      suspension) is in effect.
+            --
+            --  Note that the guard should not be checking the state of flag
+            --  Within_Task_Body because only suspension calls which appear
+            --  immediately within the statements of the task are supported.
+            --  Flag Within_Task_Body carries over to deeper levels of the
+            --  traversal.
 
-               elsif Debug_Flag_Underscore_A then
-                  return Abandon;
-               end if;
+            elsif (Debug_Flag_Underscore_S
+                    or else Restriction_Active
+                              (No_Entry_Calls_In_Elaboration_Code))
+              and then Is_Synchronous_Suspension_Call (Nod)
+              and then In_Task_Body (Nod)
+            then
+               return Abandon;
 
             --  Certain nodes carry semantic lists which act as repositories
             --  until expansion transforms the node and relocates the contents.

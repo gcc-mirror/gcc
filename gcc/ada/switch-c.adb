@@ -974,6 +974,8 @@ package body Switch.C is
                --    -gnatd_i (ignore activations and calls to instances for
                --              elaboration)
                --    -gnatd_p (ignore assertion pragmas for elaboration)
+               --    -gnatd_s (stop elaboration checks on synchronous
+               --              suspension)
                --    -gnatdL  (ignore external calls from instances for
                --              elaboration)
 
@@ -982,6 +984,7 @@ package body Switch.C is
                   Debug_Flag_Underscore_E := True;
                   Debug_Flag_Underscore_I := True;
                   Debug_Flag_Underscore_P := True;
+                  Debug_Flag_Underscore_S := True;
                   Debug_Flag_LL           := True;
                end if;
 
