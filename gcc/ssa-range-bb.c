@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "ssa-range-bb.h"
 
-/* Is the last stmt in a block interesting to look at for range info.  */
+// Return the last stmt in block BB if it is interesting for range info. 
 static inline gimple *
 last_stmt_gori (basic_block bb)
 {
@@ -56,7 +56,19 @@ last_stmt_gori (basic_block bb)
     return stmt;
   return NULL;
 }
-   
+
+// If NAME is defined in block BB, return the gimple statement pointer, 
+// otherwise return NULL>
+inline gimple *
+ssa_name_same_bb_p (tree name, basic_block bb)
+{
+  gimple *g = SSA_NAME_DEF_STMT (name);
+  if (!g || gimple_bb (g) != bb)
+   return NULL;
+  return g;
+}
+
+  
 /* GORI_MAP is used to determine what ssa-names in a block can generate range
    information, and provides tools for the block ranger to enable it to
    efficiently calculate these ranges.
@@ -67,8 +79,8 @@ last_stmt_gori (basic_block bb)
    is little overhead.
    
    2 bitmaps are maintained for each basic block:
-   outgoing  : a set bit indicates a range can be generated for a name.
-   incoming  : a set bit means a this name come from outside the block and is
+   m_outgoing  : a set bit indicates a range can be generated for a name.
+   m_incoming  : a set bit means a this name come from outside the block and is
 	       used in the calculation of some outgoing range.
 
    The def_chain bitmaps is indexed by ssa_name. Bit are set within this 
@@ -98,21 +110,12 @@ last_stmt_gori (basic_block bb)
     imports as the dont really reside in the block, but rather are
     accumulators of values from incoming edges.
     
-    Def chains also only include statements which are valie range_stmt's. so
+    Def chains also only include statements which are valid range_stmt's. so
     a def chain will only span statements for which the range engine
     implements operations.  */
 
 class gori_map
 {
-  vec<bitmap> outgoing;		/* BB: Outgoing ranges generated.  */
-  vec<bitmap> incoming;		/* BB: ranges coming in.  */
-  vec<bitmap> def_chain;	/* SSA_NAME : def chain components. */
-  void calculate_gori (basic_block bb);
-  bool in_chain_p (unsigned name, unsigned def);
-  bitmap imports (basic_block bb);
-  bitmap exports (basic_block bb);
-  bitmap calc_def_chain (tree name, basic_block bb);
-  void process_stmt (range_stmt stmt, bitmap result, basic_block bb);
 public:
   gori_map ();
   ~gori_map ();
@@ -122,45 +125,55 @@ public:
   tree single_import (tree name);
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb);
+private:
+  vec<bitmap> m_outgoing;	/* BB: Outgoing ranges generated.  */
+  vec<bitmap> m_incoming;	/* BB: ranges coming in.  */
+  vec<bitmap> m_def_chain;	/* SSA_NAME : def chain components. */
+  void calculate_gori (basic_block bb);
+  bool in_chain_p (unsigned name, unsigned def);
+  bitmap imports (basic_block bb);
+  bitmap exports (basic_block bb);
+  bitmap calc_def_chain (tree name, basic_block bb);
+  void process_stmt (range_stmt stmt, bitmap result, basic_block bb);
 };
 
 
 gori_map::gori_map ()
 {
-  outgoing.create (0);
-  outgoing.safe_grow_cleared (last_basic_block_for_fn (cfun));
-  incoming.create (0);
-  incoming.safe_grow_cleared (last_basic_block_for_fn (cfun));
-  def_chain.create (0);
-  def_chain.safe_grow_cleared (num_ssa_names);
+  m_outgoing.create (0);
+  m_outgoing.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_incoming.create (0);
+  m_incoming.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_def_chain.create (0);
+  m_def_chain.safe_grow_cleared (num_ssa_names);
 }
 
 gori_map::~gori_map ()
 {
   unsigned x, bb;
-  for (bb = 0; bb < outgoing.length (); ++bb)
-    if (outgoing[bb])
-      BITMAP_FREE (outgoing[bb]);
-  outgoing.release ();
+  for (bb = 0; bb < m_outgoing.length (); ++bb)
+    if (m_outgoing[bb])
+      BITMAP_FREE (m_outgoing[bb]);
+  m_outgoing.release ();
 
-  for (bb = 0; bb < incoming.length (); ++bb)
-    if (incoming[bb])
-      BITMAP_FREE (incoming[bb]);
-  incoming.release ();
+  for (bb = 0; bb < m_incoming.length (); ++bb)
+    if (m_incoming[bb])
+      BITMAP_FREE (m_incoming[bb]);
+  m_incoming.release ();
 
-  for (x = 0; x < def_chain.length (); ++x)
-    if (def_chain[x])
-      BITMAP_FREE (def_chain[x]);
-  def_chain.release ();
+  for (x = 0; x < m_def_chain.length (); ++x)
+    if (m_def_chain[x])
+      BITMAP_FREE (m_def_chain[x]);
+  m_def_chain.release ();
 }
 
 // Return the bitmap vector of all imports to BB. Calculate if necessary
 bitmap
 gori_map::imports (basic_block bb)
 {
-  if (!incoming[bb->index])
+  if (!m_incoming[bb->index])
     calculate_gori (bb);
-  return incoming[bb->index];
+  return m_incoming[bb->index];
 }
 
 // Return true if NAME is an import to basic block BB
@@ -174,9 +187,9 @@ gori_map::is_import_p (tree name, basic_block bb)
 bitmap
 gori_map::exports (basic_block bb)
 {
-  if (!outgoing[bb->index])
+  if (!m_outgoing[bb->index])
     calculate_gori (bb);
-  return outgoing[bb->index];
+  return m_outgoing[bb->index];
 }
 
 // Return true if NAME is can have ranges generated for it from basic block BB.
@@ -213,7 +226,7 @@ gori_map::in_chain_p (tree name, tree def, basic_block bb)
     bb = gimple_bb (stmt);
 
   // Calculate gori info for the block if it hasnt been done yet.
-  if (outgoing[bb->index] == NULL)
+  if (m_outgoing[bb->index] == NULL)
     calculate_gori (bb);
 
   return in_chain_p (name_index, def_index);
@@ -225,9 +238,9 @@ gori_map::in_chain_p (tree name, tree def, basic_block bb)
 bool
 gori_map::in_chain_p (unsigned name, unsigned def)
 {
-  if (def_chain[def] == NULL)
+  if (m_def_chain[def] == NULL)
     return false;
-  return bitmap_bit_p (def_chain[def], name);
+  return bitmap_bit_p (m_def_chain[def], name);
 }
 
 // If NAME has a definition chain, and the chain has a single import into
@@ -242,13 +255,13 @@ gori_map::single_import (tree name)
   bitmap_iterator bi;
 
   bb = gimple_bb (SSA_NAME_DEF_STMT (name));
-  if (bb && !incoming[bb->index])
+  if (bb && !m_incoming[bb->index])
     calculate_gori (bb);
-  if (def_chain [name_index] == NULL)
+  if (m_def_chain [name_index] == NULL)
     return NULL_TREE;
 
   // Now make sure it is the ONLY import. 
-  EXECUTE_IF_AND_IN_BITMAP (def_chain [name_index], incoming[bb->index], 0,
+  EXECUTE_IF_AND_IN_BITMAP (m_def_chain [name_index], m_incoming[bb->index], 0,
 			    index, bi)
     {
       if (!ret)
@@ -259,7 +272,7 @@ gori_map::single_import (tree name)
   return ret;
 }
 
-// Process STMT to build def_chains in BB.. Recursively create def_chains
+// Process STMT to build m_def_chains in BB.. Recursively create m_def_chains
 // for any operand contained in STMT, and set the def chain bits in RESULT.
 void
 gori_map::process_stmt (range_stmt stmt, bitmap result, basic_block bb)
@@ -296,7 +309,7 @@ gori_map::process_stmt (range_stmt stmt, bitmap result, basic_block bb)
 
 
 // Calculate the def chain for NAME, but only using names in BB.  Return 
-// the bimap of all names in the def_chain
+// the bimap of all names in the m_def_chain
 bitmap
 gori_map::calc_def_chain (tree name, basic_block bb)
 {
@@ -307,18 +320,18 @@ gori_map::calc_def_chain (tree name, basic_block bb)
   if (!stmt || gimple_bb (stmt) != bb || is_a <gphi *> (stmt))
     {
       // If its an import, set the bit.
-      bitmap_set_bit (incoming[bb->index], v);
+      bitmap_set_bit (m_incoming[bb->index], v);
       return NULL;
     }
   // If it has already been processed, just return the cached value.
-  if (def_chain[v])
-    return def_chain[v];
+  if (m_def_chain[v])
+    return m_def_chain[v];
 
   // Allocate a new bitmap and initialize it.
-  def_chain[v] = BITMAP_ALLOC (NULL);
-  process_stmt (stmt, def_chain[v], bb);
+  m_def_chain[v] = BITMAP_ALLOC (NULL);
+  process_stmt (stmt, m_def_chain[v], bb);
 
-  return def_chain[v];
+  return m_def_chain[v];
 }
 
 // Calculate all the required information for BB.
@@ -326,15 +339,15 @@ void
 gori_map::calculate_gori (basic_block bb)
 {
   gimple *stmt;
-  gcc_assert (outgoing[bb->index] == NULL);
-  outgoing[bb->index] = BITMAP_ALLOC (NULL);
-  incoming[bb->index] = BITMAP_ALLOC (NULL);
+  gcc_assert (m_outgoing[bb->index] == NULL);
+  m_outgoing[bb->index] = BITMAP_ALLOC (NULL);
+  m_incoming[bb->index] = BITMAP_ALLOC (NULL);
 
   // If this block's last statement may generate range informaiton, 
   // go calculate it.
   stmt = last_stmt_gori (bb);
   if (stmt)
-    process_stmt (stmt, outgoing[bb->index], bb);
+    process_stmt (stmt, m_outgoing[bb->index], bb);
 }
 
 // Dump the table information for BB to file F.
@@ -345,7 +358,7 @@ gori_map::dump(FILE *f, basic_block bb)
   unsigned x, y;
   bitmap_iterator bi;
 
-  if (!outgoing[bb->index])
+  if (!m_outgoing[bb->index])
     {
       fprintf (f, "BB%d was not processed.\n", bb->index);
       return;
@@ -358,8 +371,8 @@ gori_map::dump(FILE *f, basic_block bb)
       if (!name)
 	continue;
       gimple *stmt = SSA_NAME_DEF_STMT (name);
-      if (stmt && gimple_bb (stmt) == bb && def_chain[x] &&
-	  !bitmap_empty_p (def_chain[x]))
+      if (stmt && gimple_bb (stmt) == bb && m_def_chain[x] &&
+	  !bitmap_empty_p (m_def_chain[x]))
         {
 	  print_generic_expr (f, name, TDF_SLIM);
 	  if ((t = single_import (name)))
@@ -369,7 +382,7 @@ gori_map::dump(FILE *f, basic_block bb)
 	      fprintf (f, ")");
 	    }
 	  fprintf (f, "  :");
-	  EXECUTE_IF_SET_IN_BITMAP (def_chain[x], 0, y, bi)
+	  EXECUTE_IF_SET_IN_BITMAP (m_def_chain[x], 0, y, bi)
 	    {
 	      print_generic_expr (f, ssa_name (y), TDF_SLIM);
 	      fprintf (f, "  ");
@@ -380,7 +393,7 @@ gori_map::dump(FILE *f, basic_block bb)
 
   // Now dump the incoming vector.
   fprintf (f, "BB%d imports: ",bb->index);
-  EXECUTE_IF_SET_IN_BITMAP (incoming[bb->index], 0, y, bi)
+  EXECUTE_IF_SET_IN_BITMAP (m_incoming[bb->index], 0, y, bi)
     {
       print_generic_expr (f, ssa_name (y), TDF_SLIM);
       fprintf (f, "  ");
@@ -388,7 +401,7 @@ gori_map::dump(FILE *f, basic_block bb)
 
   // Now dump the export vector.
   fprintf (f, "\nBB%d exports: ",bb->index);
-  EXECUTE_IF_SET_IN_BITMAP (outgoing[bb->index], 0, y, bi)
+  EXECUTE_IF_SET_IN_BITMAP (m_outgoing[bb->index], 0, y, bi)
     {
       print_generic_expr (f, ssa_name (y), TDF_SLIM);
       fprintf (f, "  ");
@@ -411,15 +424,15 @@ gori_map::dump(FILE *f)
 
 /* -------------------------------------------------------------------------*/
 
-block_ranger::block_ranger () : bool_zero (boolean_type_node, 0, 0),
-				bool_one (boolean_type_node, 1, 1)
+block_ranger::block_ranger () : m_bool_zero (boolean_type_node, 0, 0),
+				m_bool_one (boolean_type_node, 1, 1)
 {
-  gori = new gori_map ();
+  m_gori = new gori_map ();
 }
 
 block_ranger::~block_ranger ()
 {
-  delete gori;
+  delete m_gori;
 }
 
 // This routine will return a range for any kind of operator possible. 
@@ -484,8 +497,8 @@ block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
   op1 = stmt.operand1 ();
   op2 = stmt.operand2 ();
 
-  op1_in_chain = gori->in_chain_p (name, op1);
-  op2_in_chain = gori->in_chain_p (name, op2);
+  op1_in_chain = m_gori->in_chain_p (name, op1);
+  op2_in_chain = m_gori->in_chain_p (name, op2);
 
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)
@@ -496,9 +509,9 @@ block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
   if (op1_in_chain)
     {
       ret = get_range_from_stmt (SSA_NAME_DEF_STMT (op1), op1_true, name,
-				 bool_one);
+				 m_bool_one);
       ret &= get_range_from_stmt (SSA_NAME_DEF_STMT (op1), op1_false, name,
-				  bool_zero);
+				  m_bool_zero);
     }
   else
     {
@@ -513,9 +526,9 @@ block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
       if (op2_in_chain)
 	{
 	  ret &= get_range_from_stmt (SSA_NAME_DEF_STMT (op2), op2_true,
-				      name, bool_one);
+				      name, m_bool_one);
 	  ret &= get_range_from_stmt (SSA_NAME_DEF_STMT (op2), op2_false,
-				      name, bool_zero);
+				      name, m_bool_zero);
 	}
       else
 	{
@@ -582,8 +595,8 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
 
   // Reaching this point means NAME is not in this stmt, but one of the
   // names in it ought to be derived from it. 
-  op1_in_chain = gori->in_chain_p (name, op1);
-  op2_in_chain = op2 && gori->in_chain_p (name, op2);
+  op1_in_chain = m_gori->in_chain_p (name, op1);
+  op2_in_chain = op2 && m_gori->in_chain_p (name, op2);
 
   // If neither operand is derived, then this stmt tells us nothing.
   if (!op1_in_chain && !op2_in_chain)
@@ -639,6 +652,7 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
   return get_range_from_stmt (SSA_NAME_DEF_STMT (op2), r, name, op2_range);
 }
  
+
 // Dump the bvlock rangers data structures.
 void
 block_ranger::dump (FILE *f)
@@ -648,20 +662,20 @@ block_ranger::dump (FILE *f)
     return;
 
   fprintf (f, "\nDUMPING GORI MAP\n");
-  gori->dump (f);
+  m_gori->dump (f);
   fprintf (f, "\n");
 }
 
 tree
 block_ranger::single_import (tree name)
 {
-  return gori->single_import (name);
+  return m_gori->single_import (name);
 }
 
 bool
 block_ranger::range_p (basic_block bb, tree name)
 {
-  return gori->is_export_p (name, bb);
+  return m_gori->is_export_p (name, bb);
 }
 
 
@@ -684,10 +698,10 @@ block_ranger::range_on_edge (irange& r, tree name, edge e)
 
   // Generate a range for either the TRUE or FALSE edge.
   if (e->flags & EDGE_TRUE_VALUE)
-    return get_range_from_stmt (stmt, r, name, bool_one);
+    return get_range_from_stmt (stmt, r, name, m_bool_one);
 
   if (e->flags & EDGE_FALSE_VALUE)
-    return get_range_from_stmt (stmt, r, name, bool_zero);
+    return get_range_from_stmt (stmt, r, name, m_bool_zero);
 
   return false;
 }

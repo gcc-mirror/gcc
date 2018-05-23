@@ -25,8 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 
 class ssa_global_cache
 {
-private:
-  vec<irange_storage *> tab;
 public:
   ssa_global_cache ();
   ~ssa_global_cache ();
@@ -35,6 +33,8 @@ public:
   void clear_global_range (tree name);
   void clear ();
   void dump (FILE *f = stderr);
+private:
+  vec<irange_storage *> m_tab;
 };
 
 #endif /* GCC_SSA_RANGE_GLOBAL_H  */

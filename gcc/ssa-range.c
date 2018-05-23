@@ -61,13 +61,13 @@ along with GCC; see the file COPYING3.  If not see
 
 class non_null_ref
 {
-private:
-  vec <bitmap> m_nn;
-  void process_name (tree name);
 public:
   non_null_ref ();
   ~non_null_ref ();
   bool non_null_deref_p (tree name, basic_block bb);
+private:
+  vec <bitmap> m_nn;
+  void process_name (tree name);
 };
 
 // During contructor, Allocate the vector of ssa_names.
@@ -152,10 +152,6 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb)
 // to this cached one rather than create a new one each time.
 class ssa_block_ranges
 {
-private:
-  vec<irange_storage *> tab;
-  irange_storage *type_range;
-  tree type;
 public:
   ssa_block_ranges (tree t);
   ~ssa_block_ranges ();
@@ -166,6 +162,10 @@ public:
   bool bb_range_p (const basic_block bb);
 
   void dump(FILE *f);
+private:
+  vec<irange_storage *> m_tab;
+  irange_storage *m_type_range;
+  tree m_type;
 };
 
 // Initialize a block cache for an ssa_name of type T
@@ -173,44 +173,44 @@ ssa_block_ranges::ssa_block_ranges (tree t)
 {
   irange tr;
   gcc_assert (TYPE_P (t));
-  type = t;
+  m_type = t;
 
-  tab.create (0);
-  tab.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_tab.create (0);
+  m_tab.safe_grow_cleared (last_basic_block_for_fn (cfun));
 
   // Create the cached type range.
   tr.set_range_for_type (t);
-  type_range = irange_storage::ggc_alloc_init (tr);
+  m_type_range = irange_storage::ggc_alloc_init (tr);
 
-  tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = type_range;
+  m_tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = m_type_range;
 }
 
 // Destruct block range.
 ssa_block_ranges::~ssa_block_ranges ()
 {
-  tab.release ();
+  m_tab.release ();
 }
 
 // Set the range for block BB to be R.
 void
 ssa_block_ranges::set_bb_range (const basic_block bb, const irange& r)
 {
-  irange_storage *m = tab[bb->index];
+  irange_storage *m = m_tab[bb->index];
 
   // If there is already range memory for this block, reuse it.
-  if (m && m != type_range)
+  if (m && m != m_type_range)
     m->set_irange (r);
   else
     m = irange_storage::ggc_alloc_init (r);
 
-  tab[bb->index] = m;
+  m_tab[bb->index] = m;
 }
 
 // Set the range for block BB to the range for the type.
 void
 ssa_block_ranges::set_bb_range_for_type (const basic_block bb)
 {
-  tab[bb->index] = type_range;
+  m_tab[bb->index] = m_type_range;
 }
 
 // Return the range associated with block BB in R. Return false if there is no
@@ -218,10 +218,10 @@ ssa_block_ranges::set_bb_range_for_type (const basic_block bb)
 bool
 ssa_block_ranges::get_bb_range (irange& r, const basic_block bb)
 {
-  irange_storage *m = tab[bb->index];
+  irange_storage *m = m_tab[bb->index];
   if (m)
     {
-      r.set_range (m, type);
+      r.set_range (m, m_type);
       return true;
     }
   return false;
@@ -232,7 +232,7 @@ ssa_block_ranges::get_bb_range (irange& r, const basic_block bb)
 bool
 ssa_block_ranges::bb_range_p (const basic_block bb)
 {
-  return tab[bb->index] != NULL;
+  return m_tab[bb->index] != NULL;
 }
 
 // Print the list of known ranges for file F in a nice format.
@@ -257,47 +257,79 @@ ssa_block_ranges::dump (FILE *f)
 // all ssa-names.
 class block_range_cache
 {
-private:
-  vec<ssa_block_ranges *> ssa_ranges;
 public:
   block_range_cache ();
   ~block_range_cache ();
-  ssa_block_ranges& get_block_ranges (tree name);
+
+  // Hide the details of the block cache with these wrappers
+  void set_bb_range (tree name, const basic_block bb, const irange &r);
+  void set_bb_range_for_type (tree name, const basic_block bb);
+  bool get_bb_range (irange& r, tree name, const basic_block bb);
+  bool bb_range_p (tree name, const basic_block bb);
 
   void dump (FILE *f);
+private:
+  vec<ssa_block_ranges *> m_ssa_ranges;
+  ssa_block_ranges& get_block_ranges (tree name);
 };
 
 // Initialize the block cache.
 block_range_cache::block_range_cache ()
 {
-  ssa_ranges.create (0);
-  ssa_ranges.safe_grow_cleared (num_ssa_names);
+  m_ssa_ranges.create (0);
+  m_ssa_ranges.safe_grow_cleared (num_ssa_names);
 }
 
-// Remove any block_caches which have been created.
+// Remove any m_block_caches which have been created.
 block_range_cache::~block_range_cache ()
 {
   unsigned x;
-  for (x = 0; x < ssa_ranges.length (); ++x)
+  for (x = 0; x < m_ssa_ranges.length (); ++x)
     {
-      if (ssa_ranges[x])
-	delete ssa_ranges[x];
+      if (m_ssa_ranges[x])
+	delete m_ssa_ranges[x];
     }
   // Release the vector itself.
-  ssa_ranges.release ();
+  m_ssa_ranges.release ();
 }
 
-// Return a reference to the block_cache for NAME. If it has not been accessed
+// Return a reference to the m_block_cache for NAME. If it has not been accessed
 // yet, allocate it.
 ssa_block_ranges&
 block_range_cache::get_block_ranges (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
-  if (!ssa_ranges[v])
-    ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name));
+  if (!m_ssa_ranges[v])
+    m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name));
 
-  return *(ssa_ranges[v]);
+  return *(m_ssa_ranges[v]);
 }
+
+void
+block_range_cache::set_bb_range (tree name, const basic_block bb,
+				 const irange &r)
+{
+  return get_block_ranges (name).set_bb_range (bb, r);
+}
+
+void
+block_range_cache::set_bb_range_for_type (tree name, const basic_block bb)
+{
+  return get_block_ranges (name).set_bb_range_for_type (bb);
+}
+
+bool 
+block_range_cache::get_bb_range (irange& r, tree name, const basic_block bb)
+{
+  return get_block_ranges (name).get_bb_range (r, bb);
+}
+
+bool 
+block_range_cache::bb_range_p (tree name, const basic_block bb)
+{
+  return get_block_ranges (name).bb_range_p (bb);
+}
+
 
 // Print all known block caches to file F.
 void
@@ -306,12 +338,12 @@ block_range_cache::dump (FILE *f)
   unsigned x;
   for (x = 0; x < num_ssa_names; ++x)
     {
-      if (ssa_ranges[x])
+      if (m_ssa_ranges[x])
         {
 	  fprintf (f, " Ranges for ");
 	  print_generic_expr (f, ssa_name (x), 0);
 	  fprintf (f, ":\n");
-	  ssa_ranges[x]->dump (f);
+	  m_ssa_ranges[x]->dump (f);
 	}
     }
   
@@ -321,24 +353,24 @@ block_range_cache::dump (FILE *f)
 // Initialize a path_ranger.
 path_ranger::path_ranger () 
 {
-  block_cache = new block_range_cache ();
-  globals = new ssa_global_cache ();
-  non_null = new non_null_ref ();
+  m_block_cache = new block_range_cache ();
+  m_globals = new ssa_global_cache ();
+  m_non_null = new non_null_ref ();
 }
 
 // Deallocate path_ranger members.
 path_ranger::~path_ranger () 
 {
-  delete block_cache;
-  delete globals;
-  delete non_null;
+  delete m_block_cache;
+  delete m_globals;
+  delete m_non_null;
 }
 
 // Print everything known about the global cache to file F.
 inline void
 path_ranger::dump_global_ssa_range (FILE *f)
 {
-  globals->dump (f);
+  m_globals->dump (f);
 }
 
 // Return the global range for NAME in R, if it has one. Otherwise return false.
@@ -348,7 +380,7 @@ path_ranger::has_global_ssa_range (irange& r, tree name)
   if (!valid_irange_ssa (name))
     return false;
 
-  if (globals->get_global_range (r, name))
+  if (m_globals->get_global_range (r, name))
     return true;
   return false;
 }
@@ -364,20 +396,20 @@ path_ranger::get_global_ssa_range (irange& r, tree name)
   if (!valid_irange_ssa (name))
     return false;
 
-  if (globals->get_global_range (r, name))
+  if (m_globals->get_global_range (r, name))
     return true;
 
   // No range set so try to evaluate the definition.
   s = SSA_NAME_DEF_STMT (name);
   if (s && path_range_stmt (r, s))
     {
-      globals->set_global_range (name, r);
+      m_globals->set_global_range (name, r);
       return true;
     }
 
   // No good range determined, use default value.
   r.set_range (name);
-  globals->set_global_range (name, r);
+  m_globals->set_global_range (name, r);
   return true;
 }
 
@@ -385,14 +417,14 @@ path_ranger::get_global_ssa_range (irange& r, tree name)
 inline void
 path_ranger::set_global_ssa_range (tree name, const irange&r)
 {
-  globals->set_global_range (name, r);
+  m_globals->set_global_range (name, r);
 }
 
 // clear any global range for NAME.
 void
 path_ranger::clear_global_ssa_range (tree name) 
 {
-  globals->clear_global_range (name);
+  m_globals->clear_global_range (name);
 }
 
 // Return true if there is a non-null dereference of name in BB somewhere and
@@ -403,7 +435,7 @@ path_ranger::non_null_deref_in_block (irange &r, tree name, basic_block bb)
   tree type = TREE_TYPE (name);
   if (!POINTER_TYPE_P (type))
     return false;
-  if (non_null->non_null_deref_p (name, bb))
+  if (m_non_null->non_null_deref_p (name, bb))
     {
       r.set_range (type, 0, 0, irange::INVERSE);
       return true;
@@ -428,11 +460,11 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     return;
 
   // If the block cache is set, then we've already visited this block.
-  if (block_cache->get_block_ranges (name).bb_range_p (bb))
+  if (m_block_cache->bb_range_p (name, bb))
     return;
 
   // Avoid infinite recursion by marking this block as calculated now.
-  block_cache->get_block_ranges (name).set_bb_range_for_type (bb);
+  m_block_cache->set_bb_range_for_type (name, bb);
 
   // Visit each predecessor to resolve them.
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -453,8 +485,7 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
 	  bool res;
 	  // We know this has been evaluated, just get the range on entry to 
 	  // the predecessor block.
-	  res = block_cache->get_block_ranges (name).get_bb_range (pred_range,
-								   src);
+	  res = m_block_cache->get_bb_range (pred_range, name, src);
 	  gcc_assert (res);
 	}
 
@@ -480,9 +511,9 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     }
 
   if (block_result.range_for_type_p ())
-    block_cache->get_block_ranges (name).set_bb_range_for_type (bb);
+    m_block_cache->set_bb_range_for_type (name, bb);
   else
-    block_cache->get_block_ranges (name).set_bb_range (bb, block_result);
+    m_block_cache->set_bb_range (name, bb, block_result);
 }
 
 
@@ -496,7 +527,7 @@ path_ranger::range_for_bb (irange &r, tree name, basic_block bb,
 {
   bool res;
   determine_block (name, bb, def_bb);
-  res = block_cache->get_block_ranges (name).get_bb_range (r, bb);
+  res = m_block_cache->get_bb_range (r, name, bb);
   gcc_assert (res);
 }
 
@@ -937,7 +968,7 @@ path_ranger::exercise (FILE *output)
 		// Check for a pointer and it is dereferences in this block
 		// and it had no range coming in.
 		if (ssa_name (x)
-		    && non_null->non_null_deref_p (ssa_name(x), bb)
+		    && m_non_null->non_null_deref_p (ssa_name(x), bb)
 		    && !path_range_entry (range, ssa_name (x), bb))
 		  {
 		    if (!printed)

@@ -51,13 +51,13 @@ along with GCC; see the file COPYING3.  If not see
 tree
 range_stmt::operand1 () const
 {
-  switch (gimple_code (g))
+  switch (gimple_code (m_g))
     {
       case GIMPLE_COND:
-        return gimple_cond_lhs (g);
+        return gimple_cond_lhs (m_g);
       case GIMPLE_ASSIGN:
         {
-	  tree expr = gimple_assign_rhs1 (g);
+	  tree expr = gimple_assign_rhs1 (m_g);
 	  if (get_code() == ADDR_EXPR)
 	    {
 	      // If the base address is an SSA_NAME, return it. 
@@ -93,15 +93,15 @@ range_stmt::validate_stmt (gimple *s)
     {
       case GIMPLE_COND:
       case GIMPLE_ASSIGN:
-	g = s;
+	m_g = s;
         break;
 
       default:
-        g = NULL;
+        m_g = NULL;
     }
 
   // Must have a ranger operation handler as well.
-  if (g && handler ())
+  if (m_g && handler ())
     {
       // Now verify all the operanmds are compatible
       tree op1 = operand1 ();
@@ -118,7 +118,7 @@ range_stmt::validate_stmt (gimple *s)
 	   return;
 	}
     }
-  g = NULL;
+  m_g = NULL;
 }
 
 
@@ -244,7 +244,7 @@ bool
 range_stmt::fold (irange &res, const irange& r1) const
 {
   irange r2;
-  tree lhs = gimple_get_lhs (g);
+  tree lhs = gimple_get_lhs (m_g);
   /* Single ssa operations require the LHS type as the second range.  */
   if (lhs)
     r2.set_range_for_type (TREE_TYPE (lhs));
@@ -321,7 +321,7 @@ range_stmt::op2_irange (irange& r, const irange& lhs_range,
 void
 range_stmt::dump (FILE *f) const
 {
-  tree lhs = gimple_get_lhs (g);
+  tree lhs = gimple_get_lhs (m_g);
   tree op1 = operand1 ();
   tree op2 = operand2 ();
 

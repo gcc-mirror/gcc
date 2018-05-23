@@ -37,16 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 
 class block_ranger
 {
-  class gori_map *gori; 	/* Generates Outgoing Range Info.  */
-  irange bool_zero;		/* Bolean zero cached.  */
-  irange bool_one;		/* Bolean true cached.  */
-  bool process_logical (range_stmt stmt, irange& r, tree name,
-			const irange& lhs);
-  bool get_range_from_stmt (range_stmt stmt, irange& r, tree name,
-			    const irange& lhs);
-  gimple *ssa_name_same_bb_p (tree name, basic_block bb);
-protected:
-  virtual bool get_operand_range (irange& r, tree op, gimple *s = NULL);
 public:
   block_ranger ();
   ~block_ranger ();
@@ -65,18 +55,16 @@ public:
   tree single_import (tree name);
   void dump (FILE *f);
   void exercise (FILE *f);
+protected:
+  virtual bool get_operand_range (irange& r, tree op, gimple *s = NULL);
+private:
+  class gori_map *m_gori; 	/* Generates Outgoing Range Info.  */
+  irange m_bool_zero;		/* Bolean zero cached.  */
+  irange m_bool_one;		/* Bolean true cached.  */
+  bool process_logical (range_stmt stmt, irange& r, tree name,
+			const irange& lhs);
+  bool get_range_from_stmt (range_stmt stmt, irange& r, tree name,
+			    const irange& lhs);
 };
-
-
-// If NAME is defined in block BB, return the gimple statement pointer, 
-// otherwise return NULL>
-inline gimple *
-block_ranger::ssa_name_same_bb_p (tree name, basic_block bb)
-{
-  gimple *g = SSA_NAME_DEF_STMT (name);
-  if (!g || gimple_bb (g) != bb)
-   return NULL;
-  return g;
-}
 
 #endif /* GCC_SSA_RANGE_BB_H */

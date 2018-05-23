@@ -53,14 +53,14 @@ along with GCC; see the file COPYING3.  If not see
 /* Initialize a global cache.  */
 ssa_global_cache::ssa_global_cache ()
 {
-  tab.create (0);
-  tab.safe_grow_cleared (num_ssa_names);
+  m_tab.create (0);
+  m_tab.safe_grow_cleared (num_ssa_names);
 }
 
 /* Deconstruct a global cache.  */
 ssa_global_cache::~ssa_global_cache ()
 {
-  tab.release ();
+  m_tab.release ();
 }
 
 /* Retrieve the global range of NAME from cache memory if it exists.  Return
@@ -68,7 +68,7 @@ ssa_global_cache::~ssa_global_cache ()
 bool
 ssa_global_cache::get_global_range (irange &r, tree name) const
 {
-  irange_storage *stow = tab[SSA_NAME_VERSION (name)];
+  irange_storage *stow = m_tab[SSA_NAME_VERSION (name)];
   if (stow)
     {
       r.set_range (stow, TREE_TYPE (name));
@@ -82,14 +82,14 @@ ssa_global_cache::get_global_range (irange &r, tree name) const
 void
 ssa_global_cache::set_global_range (tree name, const irange& r)
 {
-  irange_storage *m = tab[SSA_NAME_VERSION (name)];
+  irange_storage *m = m_tab[SSA_NAME_VERSION (name)];
 
   if (m)
     m->set_irange (r);
   else
     {
       m = irange_storage::ggc_alloc_init (r);
-      tab[SSA_NAME_VERSION (name)] = m;
+      m_tab[SSA_NAME_VERSION (name)] = m;
     }
 }
 
@@ -97,14 +97,14 @@ ssa_global_cache::set_global_range (tree name, const irange& r)
 void
 ssa_global_cache::clear_global_range (tree name)
 {
-  tab[SSA_NAME_VERSION (name)] = NULL;
+  m_tab[SSA_NAME_VERSION (name)] = NULL;
 }
 
 /* Clear the global cache.  */
 void
 ssa_global_cache::clear ()
 {
-  memset (tab.address(), 0, tab.length () * sizeof (irange_storage *));
+  memset (m_tab.address(), 0, m_tab.length () * sizeof (irange_storage *));
 }
 
 /* Dump the contents of the global cache to F.  */

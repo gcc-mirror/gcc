@@ -41,11 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 
 class range_stmt
 {
-private:
-  gimple *g;
-  void validate_stmt (gimple *s);
-  class irange_operator *handler() const;
-  tree_code get_code () const;
 public:
   range_stmt ();
   range_stmt (gimple *stmt);
@@ -74,6 +69,11 @@ public:
 		     const irange& op2_false) const;
 
   void dump (FILE *f) const;
+private:
+  gimple *m_g;
+  void validate_stmt (gimple *s);
+  class irange_operator *handler() const;
+  tree_code get_code () const;
 };
 
 
@@ -81,7 +81,7 @@ public:
 inline
 range_stmt::range_stmt ()
 {
-  g = NULL;
+  m_g = NULL;
 }
 
 /* Initialize a range statement from gimple statement S.  */
@@ -103,19 +103,19 @@ range_stmt::operator= (gimple *s)
 inline bool
 range_stmt::valid () const
 {
-  return g != NULL;
+  return m_g != NULL;
 }
 
 inline 
 range_stmt::operator gimple *() const
 {
-  return g;
+  return m_g;
 }
 
 inline tree_code
 range_stmt::get_code () const
 {
-  return gimple_expr_code (g);
+  return gimple_expr_code (m_g);
 }
 
 /* Return the second operand of the statement, if there is one.  Otherwise
@@ -123,13 +123,13 @@ range_stmt::get_code () const
 inline tree
 range_stmt::operand2 () const
 {
-  switch (gimple_code (g))
+  switch (gimple_code (m_g))
     {
       case GIMPLE_COND:
-        return gimple_cond_rhs (g);
+        return gimple_cond_rhs (m_g);
       case GIMPLE_ASSIGN:
-        if (gimple_num_ops (g) >= 3)
-	  return gimple_assign_rhs2 (g);
+        if (gimple_num_ops (m_g) >= 3)
+	  return gimple_assign_rhs2 (m_g);
 	else
 	  return NULL_TREE;
       default:

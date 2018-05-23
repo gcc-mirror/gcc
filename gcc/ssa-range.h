@@ -35,25 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 
 class path_ranger : public block_ranger
 {
-private:
-  class block_range_cache *block_cache;
-  class ssa_global_cache *globals;
-  class non_null_ref *non_null;
-
-  void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
-  void determine_block (tree name, basic_block bb, basic_block def_bb);
-  bool path_range_list_reverse (irange &r, tree name, const vec<basic_block> &);
-  bool process_phi (irange &r, gphi *phi);
-  bool process_call (irange &r, gimple *call);
-  bool non_null_deref_in_block (irange &r, tree name, basic_block bb);
-
-  void dump_global_ssa_range (FILE *f);
-  bool has_global_ssa_range (irange& r, tree name);
-  bool get_global_ssa_range (irange& r, tree name);
-  void set_global_ssa_range (tree name, const irange&r);
-  void clear_global_ssa_range (tree name);
-protected:
-  virtual bool get_operand_range (irange &r, tree op, gimple *s = NULL);
 public:
   enum path_range_direction { FORWARD, REVERSE };
   path_ranger ();
@@ -72,6 +53,25 @@ public:
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
+protected:
+  virtual bool get_operand_range (irange &r, tree op, gimple *s = NULL);
+private:
+  class block_range_cache *m_block_cache;
+  class ssa_global_cache *m_globals;
+  class non_null_ref *m_non_null;
+
+  void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
+  void determine_block (tree name, basic_block bb, basic_block def_bb);
+  bool path_range_list_reverse (irange &r, tree name, const vec<basic_block> &);
+  bool process_phi (irange &r, gphi *phi);
+  bool process_call (irange &r, gimple *call);
+  bool non_null_deref_in_block (irange &r, tree name, basic_block bb);
+
+  void dump_global_ssa_range (FILE *f);
+  bool has_global_ssa_range (irange& r, tree name);
+  bool get_global_ssa_range (irange& r, tree name);
+  void set_global_ssa_range (tree name, const irange&r);
+  void clear_global_ssa_range (tree name);
 };
 
 #endif /* GCC_SSA_RANGE_H */
