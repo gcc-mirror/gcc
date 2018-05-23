@@ -4493,7 +4493,7 @@ package body Exp_Disp is
       Discard_Names : constant Boolean :=
                         Present (No_Tagged_Streams_Pragma (Typ))
                           and then (Global_Discard_Names
-                                      or else Einfo.Discard_Names (Typ));
+                                     or else Einfo.Discard_Names (Typ));
 
       --  The following name entries are used by Make_DT to generate a number
       --  of entities related to a tagged type. These entities may be generated

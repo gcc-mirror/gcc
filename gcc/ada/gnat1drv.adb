@@ -249,6 +249,7 @@ procedure Gnat1drv is
 
          --  Turn off length expansion. CodePeer has its own mechanism to
          --  handle length attribute.
+
          Debug_Flag_Dot_PP := True;
 
          --  Turn off C tree generation, not compatible with CodePeer mode. We
@@ -257,8 +258,8 @@ procedure Gnat1drv is
          --  this way when we are doing CodePeer tests on existing test suites
          --  that may have -gnateg set, to avoid the need for special casing.
 
-         Modify_Tree_For_C := False;
-         Generate_C_Code := False;
+         Modify_Tree_For_C      := False;
+         Generate_C_Code        := False;
          Unnest_Subprogram_Mode := False;
 
          --  Turn off inlining, confuses CodePeer output and gains nothing

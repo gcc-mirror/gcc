@@ -716,6 +716,7 @@ package body Freeze is
          --  limited objects.
 
          if Present (Init) and then not Is_Limited_View (Typ) then
+
             --  Capture initialization value at point of declaration, and make
             --  explicit assignment legal, because object may be a constant.
 
