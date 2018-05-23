@@ -7315,13 +7315,19 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
     type = cv_unqualified (type);
 
   /* [expr.reinterpret.cast]
-     An lvalue expression of type T1 can be cast to the type
+     A glvalue expression of type T1 can be cast to the type
      "reference to T2" if an expression of type "pointer to T1" can be
      explicitly converted to the type "pointer to T2" using a
      reinterpret_cast.  */
   if (TYPE_REF_P (type))
     {
-      if (! lvalue_p (expr))
+      if (TYPE_REF_IS_RVALUE (type))
+	{
+	  if (!obvalue_p (expr))
+	    /* Perform the temporary materialization conversion.  */
+	    expr = get_target_expr_sfinae (expr, complain);
+	}
+      else if (!lvalue_p (expr))
 	{
           if (complain & tf_error)
             error ("invalid cast of an rvalue expression of type "

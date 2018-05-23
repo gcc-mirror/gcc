@@ -381,7 +381,8 @@ diagnose_ref_binding (location_t loc, tree reftype, tree intype, tree decl)
 {
   tree ttl = TREE_TYPE (reftype);
 
-  if (!CP_TYPE_CONST_NON_VOLATILE_P (ttl))
+  if (!TYPE_REF_IS_RVALUE (reftype)
+      && !CP_TYPE_CONST_NON_VOLATILE_P (ttl))
     {
       const char *msg;
 
