@@ -1,3 +1,7 @@
+2018-05-23  Boris Yakobowski  <yakobowski@adacore.com>
+
+	* libgnat/a-ngelfu.ads (Arctanh, Arccoth): Fix faulty preconditions.
+
 2018-05-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* checks.adb (Minimize_Eliminate_Overflows): Default initialize Lo and

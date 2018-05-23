@@ -196,10 +196,10 @@ is
        and then (if X = 1.0 then Arccosh'Result = 0.0);
 
    function Arctanh (X : Float_Type'Base) return Float_Type'Base with
-     Pre  => abs X /= 1.0,
+     Pre  => abs X < 1.0,
      Post => (if X = 0.0 then Arctanh'Result = 0.0);
 
    function Arccoth (X : Float_Type'Base) return Float_Type'Base with
-     Pre => X <= 1.0 and abs X /= 1.0;
+     Pre => abs X > 1.0;
 
 end Ada.Numerics.Generic_Elementary_Functions;
