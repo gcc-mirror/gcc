@@ -4076,6 +4076,17 @@ package body Sem_Ch5 is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
+      --  In addition to the above we must ecplicity suppress the
+      --  generation of freeze nodes which might otherwise be generated
+      --  during resolution of the range (e.g. if given by an attribute
+      --  that will freeze its prefix).
+
+      Set_Must_Not_Freeze (R_Copy);
+
+      if Nkind (R_Copy) = N_Attribute_Reference then
+         Set_Must_Not_Freeze (Prefix (R_Copy));
+      end if;
+
       Analyze (R_Copy);
 
       if Nkind (R_Copy) in N_Subexpr and then Is_Overloaded (R_Copy) then
