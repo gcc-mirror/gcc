@@ -2865,7 +2865,7 @@ package Einfo is
 --
 --       For types and subtypes, the flag is set if all possible bit patterns
 --       of length Object_Size (i.e. Esize of the type) represent valid values
---       of the type. In general for such tytpes, all values are valid, the
+--       of the type. In general for such types, all values are valid, the
 --       only exception being the case where an object of the type has an
 --       explicit size that is greater than Object_Size.
 --

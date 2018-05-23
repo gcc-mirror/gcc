@@ -4136,7 +4136,7 @@ package Sinfo is
       --  makes no attempt to enforce consistency here, so it is up to the
       --  semantic phase to make sure that the aggregate is consistent (i.e.
       --  that it is not a "half-and-half" case that mixes record and array
-      --  syntax. In particular, for a record aggregate, the expressions
+      --  syntax). In particular, for a record aggregate, the expressions
       --  field will be set if there are positional associations.
 
       --  Note: N_Aggregate is not used for all aggregates; in particular,
