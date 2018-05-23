@@ -1,3 +1,12 @@
+2018-05-23  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-05-11  Martin Liska  <mliska@suse.cz>
+
+        PR sanitizer/85556
+	* doc/extend.texi: Document LLVM style format for no_sanitize
+	attribute.
+
 2018-05-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/85643
