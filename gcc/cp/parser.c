@@ -3493,6 +3493,7 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
   unsigned paren_depth = 0;
   unsigned brace_depth = 0;
   unsigned square_depth = 0;
+  unsigned condop_depth = 0;
 
   if (recovering && or_ttype == CPP_EOF
       && cp_parser_uncommitted_to_tentative_parse_p (parser))
@@ -3504,7 +3505,7 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 
       /* Have we found what we're looking for before the closing paren?  */
       if (token->type == or_ttype && or_ttype != CPP_EOF
-	  && !brace_depth && !paren_depth && !square_depth)
+	  && !brace_depth && !paren_depth && !square_depth && !condop_depth)
 	return -1;
 
       switch (token->type)
@@ -3549,6 +3550,16 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 		cp_lexer_consume_token (parser->lexer);
 	      return 1;
 	    }
+	  break;
+
+	case CPP_QUERY:
+	  if (!brace_depth && !paren_depth && !square_depth)
+	    ++condop_depth;
+	  break;
+
+	case CPP_COLON:
+	  if (!brace_depth && !paren_depth && !square_depth && condop_depth > 0)
+	    condop_depth--;
 	  break;
 
 	default:
@@ -11255,6 +11266,40 @@ cp_parser_statement_seq_opt (cp_parser* parser, tree in_statement_expr)
     }
 }
 
+/* Return true if this is the C++20 version of range-based-for with
+   init-statement.  */
+
+static bool
+cp_parser_range_based_for_with_init_p (cp_parser *parser)
+{
+  bool r = false;
+
+  /* Save tokens so that we can put them back.  */
+  cp_lexer_save_tokens (parser->lexer);
+
+  /* There has to be an unnested ; followed by an unnested :.  */
+  if (cp_parser_skip_to_closing_parenthesis_1 (parser,
+					       /*recovering=*/false,
+					       CPP_SEMICOLON,
+					       /*consume_paren=*/false) != -1)
+    goto out;
+
+  /* We found the semicolon, eat it now.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  /* Now look for ':' that is not nested in () or {}.  */
+  r = (cp_parser_skip_to_closing_parenthesis_1 (parser,
+						/*recovering=*/false,
+						CPP_COLON,
+						/*consume_paren=*/false) == -1);
+
+out:
+  /* Roll back the tokens we skipped.  */
+  cp_lexer_rollback_tokens (parser->lexer);
+
+  return r;
+}
+
 /* Return true if we're looking at (init; cond), false otherwise.  */
 
 static bool
@@ -12299,7 +12344,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
      simple-declaration  */
 
 static bool
-cp_parser_init_statement (cp_parser* parser, tree *decl)
+cp_parser_init_statement (cp_parser *parser, tree *decl)
 {
   /* If the next token is a `;', then we have an empty
      expression-statement.  Grammatically, this is also a
@@ -12311,6 +12356,29 @@ cp_parser_init_statement (cp_parser* parser, tree *decl)
     {
       bool is_range_for = false;
       bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
+
+      /* Try to parse the init-statement.  */
+      if (cp_parser_range_based_for_with_init_p (parser))
+	{
+	  tree dummy;
+	  cp_parser_parse_tentatively (parser);
+	  /* Parse the declaration.  */
+	  cp_parser_simple_declaration (parser,
+					/*function_definition_allowed_p=*/false,
+					&dummy);
+	  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+	  if (!cp_parser_parse_definitely (parser))
+	    /* That didn't work, try to parse it as an expression-statement.  */
+	    cp_parser_expression_statement (parser, NULL_TREE);
+
+	  if (cxx_dialect < cxx2a)
+	    {
+	      pedwarn (cp_lexer_peek_token (parser->lexer)->location, 0,
+		       "range-based %<for%> loops with initializer only "
+		       "available with -std=c++2a or -std=gnu++2a");
+	      *decl = error_mark_node;
+	    }
+	}
 
       /* A colon is used in range-based for.  */
       parser->colon_corrects_to_scope_p = false;
@@ -12325,7 +12393,7 @@ cp_parser_init_statement (cp_parser* parser, tree *decl)
       parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
       if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
 	{
-	  /* It is a range-for, consume the ':' */
+	  /* It is a range-for, consume the ':'.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  is_range_for = true;
 	  if (cxx_dialect < cxx11)
@@ -12337,9 +12405,9 @@ cp_parser_init_statement (cp_parser* parser, tree *decl)
 	    }
 	}
       else
-	  /* The ';' is not consumed yet because we told
-	     cp_parser_simple_declaration not to.  */
-	  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+	/* The ';' is not consumed yet because we told
+	   cp_parser_simple_declaration not to.  */
+	cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
       if (cp_parser_parse_definitely (parser))
 	return is_range_for;
