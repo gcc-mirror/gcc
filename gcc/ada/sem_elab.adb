@@ -394,33 +394,38 @@ package body Sem_Elab is
    --  suppressed.
    --
    --  In addition to switch -gnatwL, pragma Warnings may be used to suppress
-   --  elaboration-related warnings by wrapping a construct in the following
-   --  manner:
+   --  elaboration-related warnings when used in the following manner:
    --
    --    pragma Warnings ("L");
-   --    <construct>
-   --    pragma Warnings ("l");
+   --    <scenario-or-target>
+   --
+   --    <target>
+   --    pragma Warnings (Off, target);
+   --
+   --    pragma Warnings (Off);
+   --    <scenario-or-target>
    --
    --  * To suppress elaboration warnings for '[Unrestricted_]Access of
    --    entries, operators, and subprograms, either:
    --
-   --      - Wrap the entry, operator, or subprogram, or
-   --      - Wrap the attribute, or
+   --      - Suppress the entry, operator, or subprogram, or
+   --      - Suppress the attribute, or
    --      - Use switch -gnatw.f
    --
    --  * To suppress elaboration warnings for calls to entries, operators,
    --    and subprograms, either:
    --
-   --      - Wrap the entry, operator, or subprogram, or
-   --      - Wrap the call
+   --      - Suppress the entry, operator, or subprogram, or
+   --      - Suppress the call
    --
-   --  * To suppress elaboration warnings for instantiations, wrap the
+   --  * To suppress elaboration warnings for instantiations, suppress the
    --    instantiation.
    --
    --  * To suppress elaboration warnings for task activations, either:
    --
-   --      - Wrap the task object, or
-   --      - Wrap the task type
+   --      - Suppress the task object, or
+   --      - Suppress the task type, or
+   --      - Suppress the activation call
 
    --------------
    -- Switches --

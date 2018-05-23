@@ -1,5 +1,9 @@
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_elab.adb: Update the section on suppressing elaboration warnings.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* einfo.adb (Is_Elaboration_Checks_OK_Id): Use predicate
 	Is_Elaboration_Target.
 	(Is_Elaboration_Target): New routine.
