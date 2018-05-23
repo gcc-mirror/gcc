@@ -1,3 +1,8 @@
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_disp.adb, freeze.adb, gnat1drv.adb, sem_ch5.adb, sem_spark.adb:
+	Minor reformattings.
+
 2018-05-23  Pascal Obry  <obry@adacore.com>
 
 	* adaint.c (win32_wait): Properly free the handle/pid lists when

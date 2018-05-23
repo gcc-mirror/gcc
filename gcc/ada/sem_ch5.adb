@@ -2058,6 +2058,14 @@ package body Sem_Ch5 is
    ------------------------------------
 
    procedure Analyze_Iterator_Specification (N : Node_Id) is
+      Def_Id    : constant Node_Id    := Defining_Identifier (N);
+      Iter_Name : constant Node_Id    := Name (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Subt      : constant Node_Id    := Subtype_Indication (N);
+
+      Bas : Entity_Id := Empty;  -- initialize to prevent warning
+      Typ : Entity_Id;
+
       procedure Check_Reverse_Iteration (Typ : Entity_Id);
       --  For an iteration over a container, if the loop carries the Reverse
       --  indicator, verify that the container type has an Iterate aspect that
@@ -2071,16 +2079,6 @@ package body Sem_Ch5 is
       --  For containers with Iterator and related aspects, the cursor is
       --  obtained by locating an entity with the proper name in the scope
       --  of the type.
-
-      --  Local variables
-
-      Def_Id    : constant Node_Id    := Defining_Identifier (N);
-      Iter_Name : constant Node_Id    := Name (N);
-      Loc       : constant Source_Ptr := Sloc (N);
-      Subt      : constant Node_Id    := Subtype_Indication (N);
-
-      Bas       : Entity_Id := Empty;  -- initialize to prevent warning
-      Typ       : Entity_Id;
 
       -----------------------------
       -- Check_Reverse_Iteration --

@@ -1042,18 +1042,23 @@ package body Sem_SPARK is
    begin
       case N_Declaration'(Nkind (Decl)) is
          when N_Full_Type_Declaration =>
+
             --  Nothing to do here ??? NOT TRUE IF CONSTRAINT ON TYPE
+
             null;
 
          when N_Object_Declaration =>
+
             --  First move the right-hand side
+
             Current_Checking_Mode := Move;
             Check_Node (Expression (Decl));
 
             declare
-               Elem : Perm_Tree_Access;
                Deep : constant Boolean :=
-                 Is_Deep (Etype (Defining_Identifier (Decl)));
+                        Is_Deep (Etype (Defining_Identifier (Decl)));
+               Elem : Perm_Tree_Access;
+
             begin
                Elem := new Perm_Tree_Wrapper'
                  (Tree =>
@@ -1064,14 +1069,17 @@ package body Sem_SPARK is
 
                --  If unitialized declaration, then set to Write_Only. If a
                --  pointer declaration, it has a null default initialization.
+
                if No (Expression (Decl))
                  and then not Has_Full_Default_Initialization
-                   (Etype (Defining_Identifier (Decl)))
+                                (Etype (Defining_Identifier (Decl)))
                  and then not Is_Access_Type
-                   (Etype (Defining_Identifier (Decl)))
+                                (Etype (Defining_Identifier (Decl)))
+
                  --  Objects of shallow types are considered as always
                  --  initialized, leaving the checking of initialization to
                  --  flow analysis.
+
                  and then Deep
                then
                   Elem.all.Tree.Permission := Write_Only;
@@ -1084,9 +1092,7 @@ package body Sem_SPARK is
                     Unique_Entity (Defining_Identifier (Decl)),
                     Elem);
 
-               pragma Assert (Get_First (Current_Perm_Env)
-                              /= null);
-
+               pragma Assert (Get_First (Current_Perm_Env) /= null);
             end;
 
          when N_Subtype_Declaration =>
@@ -2360,7 +2366,7 @@ package body Sem_SPARK is
             | N_Use_Type_Clause
             | N_Validate_Unchecked_Conversion
             | N_Variable_Reference_Marker
-            =>
+         =>
             null;
 
          --  The following nodes are rewritten by semantic analysis
@@ -4240,8 +4246,8 @@ package body Sem_SPARK is
 
    procedure Process_Path (N : Node_Id) is
       Root : constant Entity_Id := Get_Enclosing_Object (N);
-   begin
 
+   begin
       --  We ignore if yielding to synchronized
 
       if Present (Root)
@@ -4609,17 +4615,14 @@ package body Sem_SPARK is
       --  Shallow unaliased parameters and globals cannot introduce pointer
       --  aliasing.
 
-      if not Has_Alias (Id)
-        and then Is_Shallow (Etype (Id))
-      then
+      if not Has_Alias (Id) and then Is_Shallow (Etype (Id)) then
          null;
 
       --  Observed IN parameters and globals need not return a permission to
       --  the caller.
 
       elsif Mode = E_In_Parameter
-        and then (not Is_Borrowed_In (Id)
-                   or else Global_Var)
+        and then (not Is_Borrowed_In (Id) or else Global_Var)
       then
          null;
 
@@ -4884,10 +4887,7 @@ package body Sem_SPARK is
    -- Set_Perm_Prefixes_Assign --
    ------------------------------
 
-   function Set_Perm_Prefixes_Assign
-     (N : Node_Id)
-       return Perm_Tree_Access
-   is
+   function Set_Perm_Prefixes_Assign (N : Node_Id) return Perm_Tree_Access is
       C : constant Perm_Tree_Access := Get_Perm_Tree (N);
 
    begin
@@ -4900,7 +4900,9 @@ package body Sem_SPARK is
       case Kind (C) is
          when Entire_Object =>
             pragma Assert (Children_Permission (C) = Read_Write);
+
             --  Maroua: Children could have read_only perm. Why Read_Write?
+
             C.all.Tree.Permission := Read_Write;
 
          when Reference =>
@@ -4912,21 +4914,21 @@ package body Sem_SPARK is
          when Array_Component =>
             pragma Assert (C.all.Tree.Get_Elem /= null);
 
-           --  Given that it is not possible to know which element has been
-           --  assigned, then the permissions do not get changed in case of
-           --  Array_Component.
+            --  Given that it is not possible to know which element has been
+            --  assigned, then the permissions do not get changed in case of
+            --  Array_Component.
 
             null;
 
          when Record_Component =>
             declare
+               Comp : Perm_Tree_Access;
                Perm : Perm_Kind := Read_Write;
 
-               Comp : Perm_Tree_Access;
-
             begin
-            --  We take the Glb of all the descendants, and then update the
-            --  permission of the node with it.
+               --  We take the Glb of all the descendants, and then update the
+               --  permission of the node with it.
+
                Comp := Perm_Tree_Maps.Get_First (Component (C));
                while Comp /= null loop
                   Perm := Glb (Perm, Permission (Comp));
@@ -4940,6 +4942,7 @@ package body Sem_SPARK is
       end case;
 
       case Nkind (N) is
+
          --  Base identifier. End recursion here.
 
          when N_Identifier
@@ -6212,4 +6215,5 @@ package body Sem_SPARK is
          Next_Formal (Formal);
       end loop;
    end Setup_Parameters;
+
 end Sem_SPARK;
