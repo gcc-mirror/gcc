@@ -1,3 +1,23 @@
+2018-05-23  Luis Machado  <luis.machado@linaro.org>
+
+	* config/aarch64/aarch64-protos.h (cpu_prefetch_tune)
+	<minimum_stride>: New const int field.
+	* config/aarch64/aarch64.c (generic_prefetch_tune): Update to include
+	minimum_stride field defaulting to -1.
+	(exynosm1_prefetch_tune): Likewise.
+	(thunderxt88_prefetch_tune): Likewise.
+	(thunderx_prefetch_tune): Likewise.
+	(thunderx2t99_prefetch_tune): Likewise.
+	(qdf24xx_prefetch_tune) <minimum_stride>: Set to 2048.
+	<default_opt_level>: Set to 3.
+	(aarch64_override_options_internal): Update to set
+	PARAM_PREFETCH_MINIMUM_STRIDE.
+	* doc/invoke.texi (prefetch-minimum-stride): Document new option.
+	* params.def (PARAM_PREFETCH_MINIMUM_STRIDE): New.
+	* params.h (PARAM_PREFETCH_MINIMUM_STRIDE): Define.
+	* tree-ssa-loop-prefetch.c (should_issue_prefetch_p): Return false if
+	stride is constant and is below the minimum stride threshold.
+
 2018-05-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cpus.in (mode26): Delete.
