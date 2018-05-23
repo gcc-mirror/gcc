@@ -616,22 +616,22 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
   else
     {
       expr = mark_lvalue_use (expr);
-
-      exprtype = build_reference_type (TREE_TYPE (expr));
+      exprtype = TREE_TYPE (expr);
 
       /* T is a reference type, v shall be an lvalue of a complete class
 	 type, and the result is an lvalue of the type referred to by T.  */
-
-      if (! MAYBE_CLASS_TYPE_P (TREE_TYPE (exprtype)))
+      if (! MAYBE_CLASS_TYPE_P (exprtype))
 	{
 	  errstr = _("source is not of class type");
 	  goto fail;
 	}
-      if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (exprtype))))
+      if (!COMPLETE_TYPE_P (complete_type (exprtype)))
 	{
 	  errstr = _("source is of incomplete class type");
 	  goto fail;
 	}
+
+      exprtype = cp_build_reference_type (exprtype, !lvalue_p (expr));
     }
 
   /* The dynamic_cast operator shall not cast away constness.  */

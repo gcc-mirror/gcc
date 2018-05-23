@@ -2734,7 +2734,10 @@ finish_compound_literal (tree type, tree compound_literal,
       compound_literal
 	= finish_compound_literal (TREE_TYPE (type), compound_literal,
 				   complain, fcl_context);
-      return cp_build_c_cast (type, compound_literal, complain);
+      /* The prvalue is then used to direct-initialize the reference.  */
+      tree r = (perform_implicit_conversion_flags
+		(type, compound_literal, complain, LOOKUP_NORMAL));
+      return convert_from_reference (r);
     }
 
   if (!TYPE_OBJ_P (type))
