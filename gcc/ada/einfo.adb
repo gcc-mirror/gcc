@@ -2253,23 +2253,13 @@ package body Einfo is
 
    function Is_Elaboration_Checks_OK_Id (Id : E) return B is
    begin
-      pragma Assert
-        (Ekind_In (Id, E_Constant, E_Variable)
-          or else Is_Entry (Id)
-          or else Is_Generic_Unit (Id)
-          or else Is_Subprogram (Id)
-          or else Is_Task_Type (Id));
+      pragma Assert (Is_Elaboration_Target (Id));
       return Flag148 (Id);
    end Is_Elaboration_Checks_OK_Id;
 
    function Is_Elaboration_Warnings_OK_Id (Id : E) return B is
    begin
-      pragma Assert
-        (Ekind_In (Id, E_Constant, E_Variable, E_Void)
-          or else Is_Entry (Id)
-          or else Is_Generic_Unit (Id)
-          or else Is_Subprogram (Id)
-          or else Is_Task_Type (Id));
+      pragma Assert (Is_Elaboration_Target (Id) or else Ekind (Id) = E_Void);
       return Flag304 (Id);
    end Is_Elaboration_Warnings_OK_Id;
 
@@ -5478,23 +5468,13 @@ package body Einfo is
 
    procedure Set_Is_Elaboration_Checks_OK_Id (Id : E; V : B := True) is
    begin
-      pragma Assert
-        (Ekind_In (Id, E_Constant, E_Variable)
-          or else Is_Entry (Id)
-          or else Is_Generic_Unit (Id)
-          or else Is_Subprogram (Id)
-          or else Is_Task_Type (Id));
+      pragma Assert (Is_Elaboration_Target (Id));
       Set_Flag148 (Id, V);
    end Set_Is_Elaboration_Checks_OK_Id;
 
    procedure Set_Is_Elaboration_Warnings_OK_Id (Id : E; V : B := True) is
    begin
-      pragma Assert
-        (Ekind_In (Id, E_Constant, E_Variable)
-          or else Is_Entry (Id)
-          or else Is_Generic_Unit (Id)
-          or else Is_Subprogram (Id)
-          or else Is_Task_Type (Id));
+      pragma Assert (Is_Elaboration_Target (Id));
       Set_Flag304 (Id, V);
    end Set_Is_Elaboration_Warnings_OK_Id;
 
@@ -8111,6 +8091,20 @@ package body Einfo is
         or else (Kind = N_Attribute_Reference
                   and then Is_Entity_Attribute_Name (Attribute_Name (N)));
    end Is_Entity_Name;
+
+   ---------------------------
+   -- Is_Elaboration_Target --
+   ---------------------------
+
+   function Is_Elaboration_Target (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind_In (Id, E_Constant, E_Variable)
+          or else Is_Entry        (Id)
+          or else Is_Generic_Unit (Id)
+          or else Is_Subprogram   (Id)
+          or else Is_Task_Type    (Id);
+   end Is_Elaboration_Target;
 
    -----------------------
    -- Is_External_State --

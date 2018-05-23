@@ -1,3 +1,18 @@
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Is_Elaboration_Checks_OK_Id): Use predicate
+	Is_Elaboration_Target.
+	(Is_Elaboration_Target): New routine.
+	(Is_Elaboration_Warnings_OK_Id): Use predicate Is_Elaboration_Target.
+	(Set_Is_Elaboration_Checks_OK_Id): Use predicate Is_Elaboration_Target.
+	(Set_Is_Elaboration_Warnings_OK_Id): Use predicate
+	Is_Elaboration_Target.
+	* einfo.ads: Add new synthesized attribute Is_Elaboration_Target along
+	with occurrences in nodes.
+	(Is_Elaboration_Target): New routine.
+	* sem_prag.adb (Analyze_Pragma): Suppress elaboration warnings when an
+	elaboration target is subject to pragma Warnings (Off, ...).
+
 2018-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Type_Info): Remove obsolete stuff.
