@@ -11298,7 +11298,7 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
   { "fix-cortex-a53-843419", aarch64_attr_bool, true, NULL,
      OPT_mfix_cortex_a53_843419 },
   { "cmodel", aarch64_attr_enum, false, NULL, OPT_mcmodel_ },
-  { "strict-align", aarch64_attr_mask, false, NULL, OPT_mstrict_align },
+  { "strict-align", aarch64_attr_mask, true, NULL, OPT_mstrict_align },
   { "omit-leaf-frame-pointer", aarch64_attr_bool, true, NULL,
      OPT_momit_leaf_frame_pointer },
   { "tls-dialect", aarch64_attr_enum, false, NULL, OPT_mtls_dialect_ },
@@ -11661,16 +11661,13 @@ aarch64_can_inline_p (tree caller, tree callee)
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
 
-  /* If callee has no option attributes, then it is ok to inline.  */
-  if (!callee_tree)
-    return true;
-
   struct cl_target_option *caller_opts
 	= TREE_TARGET_OPTION (caller_tree ? caller_tree
 					   : target_option_default_node);
 
-  struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
-
+  struct cl_target_option *callee_opts
+	= TREE_TARGET_OPTION (callee_tree ? callee_tree
+					   : target_option_default_node);
 
   /* Callee's ISA flags should be a subset of the caller's.  */
   if ((caller_opts->x_aarch64_isa_flags & callee_opts->x_aarch64_isa_flags)

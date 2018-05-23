@@ -85,7 +85,7 @@ Target RejectNegative Joined Enum(cmodel) Var(aarch64_cmodel_var) Init(AARCH64_C
 Specify the code model.
 
 mstrict-align
-Target Report RejectNegative Mask(STRICT_ALIGN) Save
+Target Report Mask(STRICT_ALIGN) Save
 Don't assume that unaligned accesses are handled by the system.
 
 momit-leaf-frame-pointer

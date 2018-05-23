@@ -1,3 +1,9 @@
+2018-05-23  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/84882
+	* gcc.target/aarch64/pr84882.c: New test.
+	* gcc.target/aarch64/target_attr_18.c: Likewise.
+
 2018-05-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85853

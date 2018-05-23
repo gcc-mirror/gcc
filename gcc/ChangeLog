@@ -1,3 +1,17 @@
+2018-05-23  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/84882
+	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
+	Check val before adding MASK_STRICT_ALIGN to opts->x_target_flags.
+	* config/aarch64/aarch64.opt (mstrict-align): Remove RejectNegative.
+	* config/aarch64/aarch64.c (aarch64_attributes): Mark allow_neg
+	as true for strict-align.
+	(aarch64_can_inline_p): Perform checks even when callee has no
+	attributes to check for strict alignment.
+	* doc/extend.texi (AArch64 Function Attributes): Document
+	no-strict-align.
+	* doc/invoke.texi: (AArch64 Options): Likewise.
+
 2018-05-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85853
