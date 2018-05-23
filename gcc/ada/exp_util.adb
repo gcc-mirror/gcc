@@ -9261,7 +9261,8 @@ package body Exp_Util is
       Func_Id : Entity_Id;
 
    begin
-      pragma Assert (Present (Predicate_Function (Typ)));
+      Func_Id := Predicate_Function (Typ);
+      pragma Assert (Present (Func_Id));
 
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the call is properly marked as Ghost.
@@ -9272,8 +9273,6 @@ package body Exp_Util is
 
       if Mem and then Present (Predicate_Function_M (Typ)) then
          Func_Id := Predicate_Function_M (Typ);
-      else
-         Func_Id := Predicate_Function (Typ);
       end if;
 
       --  Case of calling normal predicate function

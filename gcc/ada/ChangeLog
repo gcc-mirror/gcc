@@ -1,3 +1,33 @@
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: New attribute on types: Predicated_Parent, to simplify the
+	retrieval of the applicable predicate function to an itype created for
+	a constrained array component.
+	* einfo.adb: Subprograms for Predicated_Parent.
+	(Predicate_Function): Use new attribute.
+	* exp_util.adb (Make_Predicate_Call): If the predicate function is not
+	available for a subtype, retrieve it from the base type, which may have
+	been frozen after the subtype declaration and not captured by the
+	subtype declaration.
+	* sem_aggr.adb (Resolve_Array_Aggregate): An Others association is
+	legal within a generated initiqlization procedure, as may happen with a
+	predicate check on a component, when the predicate function applies to
+	the base type of the component.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Clean up inheritance of
+	predicates for subtype declarations and for subtype indications in
+	other contexts.
+	(Process_Subtype): Likewise. Handle properly the case of a private type
+	with unknown discriminants whose full view is an unconstrained array.
+	Use Predicated_Parent to indicate source of predicate function on an
+	itype whose parent is itself an itype.
+	(Complete_Private_Subtype): If the private view has unknown
+	discriminants and the full view is an unconstrained array, set base
+	type of completion to the full view of parent.
+	(Inherit_Predicate_Flags): Prevent double assignment of predicate
+	function and flags.
+	(Build_Subtype): For a constrained array component, propagate predicate
+	information from original component type declaration.
+
 2018-05-23  Boris Yakobowski  <yakobowski@adacore.com>
 
 	* libgnat/a-ngelfu.ads (Arctanh, Arccoth): Fix faulty preconditions.

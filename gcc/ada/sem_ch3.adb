@@ -5338,11 +5338,13 @@ package body Sem_Ch3 is
          if not Comes_From_Source (N) then
             Set_Ekind (Id, Ekind (T));
 
-            if Present (Predicate_Function (T)) then
+            if Present (Predicate_Function (Id)) then
+               null;
+
+            elsif Present (Predicate_Function (T)) then
                Set_Predicate_Function (Id, Predicate_Function (T));
 
             elsif Present (Ancestor_Subtype (T))
-              and then Has_Predicates (Ancestor_Subtype (T))
               and then Present (Predicate_Function (Ancestor_Subtype (T)))
             then
                Set_Predicate_Function (Id,
@@ -5443,7 +5445,6 @@ package body Sem_Ch3 is
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
                Set_RM_Size              (Id, RM_Size            (T));
-               Inherit_Predicate_Flags  (Id, T);
 
             when Ordinary_Fixed_Point_Kind =>
                Set_Ekind                (Id, E_Ordinary_Fixed_Point_Subtype);
@@ -5469,7 +5470,6 @@ package body Sem_Ch3 is
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
                Set_RM_Size              (Id, RM_Size            (T));
-               Inherit_Predicate_Flags  (Id, T);
 
             when Modular_Integer_Kind =>
                Set_Ekind                (Id, E_Modular_Integer_Subtype);
@@ -5477,7 +5477,6 @@ package body Sem_Ch3 is
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
                Set_RM_Size              (Id, RM_Size            (T));
-               Inherit_Predicate_Flags  (Id, T);
 
             when Class_Wide_Kind =>
                Set_Ekind                (Id, E_Class_Wide_Subtype);
@@ -5694,6 +5693,11 @@ package body Sem_Ch3 is
             when others =>
                raise Program_Error;
          end case;
+
+         --  If there is no constraint in the subtype indication, the
+         --  declared entity inherits predicates from the parent.
+
+         Inherit_Predicate_Flags (Id, T);
       end if;
 
       if Etype (Id) = Any_Type then
@@ -12345,6 +12349,15 @@ package body Sem_Ch3 is
       Set_RM_Size          (Full, RM_Size (Full_Base));
       Set_Is_Itype         (Full);
 
+      --  For the unusual case of a type with unknown discriminants whose
+      --  completion is an array, use the proper full base.
+
+      if Is_Array_Type (Full_Base)
+        and then Has_Unknown_Discriminants (Priv)
+      then
+         Set_Etype (Full, Full_Base);
+      end if;
+
       --  A subtype of a private-type-without-discriminants, whose full-view
       --  has discriminants with default expressions, is not constrained.
 
@@ -13426,6 +13439,27 @@ package body Sem_Ch3 is
          --  Itypes must be analyzed with checks off (see package Itypes)
 
          Analyze (Subtyp_Decl, Suppress => All_Checks);
+
+         if Is_Itype (Def_Id) and then Has_Predicates (T) then
+            Inherit_Predicate_Flags (Def_Id, T);
+
+            --  Indicate where the predicate function may be found.
+
+            if Is_Itype (T) then
+               if Present (Predicate_Function (Def_Id)) then
+                  null;
+
+               elsif Present (Predicate_Function (T)) then
+                  Set_Predicate_Function (Def_Id, Predicate_Function (T));
+
+               else
+                  Set_Predicated_Parent (Def_Id, Predicated_Parent (T));
+               end if;
+
+            elsif No (Predicate_Function (Def_Id)) then
+               Set_Predicated_Parent (Def_Id, T);
+            end if;
+         end if;
 
          return Def_Id;
       end Build_Subtype;
@@ -18550,6 +18584,10 @@ package body Sem_Ch3 is
 
    procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id) is
    begin
+      if Present (Predicate_Function (Subt)) then
+         return;
+      end if;
+
       Set_Has_Predicates (Subt, Has_Predicates (Par));
       Set_Has_Static_Predicate_Aspect
         (Subt, Has_Static_Predicate_Aspect (Par));
@@ -21606,7 +21644,6 @@ package body Sem_Ch3 is
 
             when Enumeration_Kind =>
                Constrain_Enumeration (Def_Id, S);
-               Inherit_Predicate_Flags (Def_Id, Subtype_Mark_Id);
 
             when Ordinary_Fixed_Point_Kind =>
                Constrain_Ordinary_Fixed (Def_Id, S);
@@ -21616,7 +21653,6 @@ package body Sem_Ch3 is
 
             when Integer_Kind =>
                Constrain_Integer (Def_Id, S);
-               Inherit_Predicate_Flags (Def_Id, Subtype_Mark_Id);
 
             when Class_Wide_Kind
                | E_Incomplete_Type
@@ -21630,7 +21666,21 @@ package body Sem_Ch3 is
                end if;
 
             when Private_Kind =>
-               Constrain_Discriminated_Type (Def_Id, S, Related_Nod);
+
+               --  A private type with unknown discriminants may be completed
+               --  by an unconstrained array type.
+
+               if Has_Unknown_Discriminants (Subtype_Mark_Id)
+                 and then Present (Full_View (Subtype_Mark_Id))
+                 and then Is_Array_Type (Full_View (Subtype_Mark_Id))
+               then
+                  Constrain_Array (Def_Id, S, Related_Nod, Related_Id, Suffix);
+
+                  --  ... but more comonly by a discriminated record type.
+
+               else
+                  Constrain_Discriminated_Type (Def_Id, S, Related_Nod);
+               end if;
 
                --  The base type may be private but Def_Id may be a full view
                --  in an instance.
@@ -21695,6 +21745,19 @@ package body Sem_Ch3 is
          Set_Size_Info  (Def_Id,            (Subtype_Mark_Id));
          Set_Rep_Info   (Def_Id,            (Subtype_Mark_Id));
          Set_Convention (Def_Id, Convention (Subtype_Mark_Id));
+
+         --  The anonymous subtype created for the subtype indication
+         --  inherits the predicates of the parent.
+
+         if Has_Predicates (Subtype_Mark_Id) then
+            Inherit_Predicate_Flags (Def_Id, Subtype_Mark_Id);
+
+            --  Indicate where the predicate function may be found.
+
+            if No (Predicate_Function (Def_Id)) then
+               Set_Predicated_Parent (Def_Id, Subtype_Mark_Id);
+            end if;
+         end if;
 
          return Def_Id;
       end if;
