@@ -1,5 +1,10 @@
 2018-05-23  Pascal Obry  <obry@adacore.com>
 
+	* adaint.c (win32_wait): Properly free the handle/pid lists when
+	WaitForMultipleObjects fails (return WAIT_FAILED).
+
+2018-05-23  Pascal Obry  <obry@adacore.com>
+
 	* adaint.c (win32_wait): Add missing parentheses.
 
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>

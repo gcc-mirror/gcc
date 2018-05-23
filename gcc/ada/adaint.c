@@ -2607,6 +2607,8 @@ win32_wait (int *status)
   /* If there was an error, exit now */
   if (res == WAIT_FAILED)
     {
+      free (hl);
+      free (pidl);
       errno = EINVAL;
       return -1;
     }
