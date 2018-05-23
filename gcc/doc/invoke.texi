@@ -596,7 +596,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mabi=@var{name}  -mbig-endian  -mlittle-endian @gol
 -mgeneral-regs-only @gol
 -mcmodel=tiny  -mcmodel=small  -mcmodel=large @gol
--mstrict-align @gol
+-mstrict-align -mno-strict-align @gol
 -momit-leaf-frame-pointer @gol
 -mtls-dialect=desc  -mtls-dialect=traditional @gol
 -mtls-size=@var{size} @gol
@@ -14594,9 +14594,11 @@ Generate code for the large code model.  This makes no assumptions about
 addresses and sizes of sections.  Programs can be statically linked only.
 
 @item -mstrict-align
+@itemx -mno-strict-align
 @opindex mstrict-align
-Avoid generating memory accesses that may not be aligned on a natural object
-boundary as described in the architecture specification.
+@opindex mno-strict-align
+Avoid or allow generating memory accesses that may not be aligned on a natural
+object boundary as described in the architecture specification.
 
 @item -momit-leaf-frame-pointer
 @itemx -mno-omit-leaf-frame-pointer

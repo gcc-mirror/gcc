@@ -3612,10 +3612,13 @@ this function.  The behavior and permissible arguments are the same as
 for the command line option @option{-mcmodel=}.
 
 @item strict-align
+@itemx no-strict-align
 @cindex @code{strict-align} function attribute, AArch64
-Indicates that the compiler should not assume that unaligned memory references
-are handled by the system.  The behavior is the same as for the command-line
-option @option{-mstrict-align}.
+@code{strict-align} indicates that the compiler should not assume that unaligned
+memory references are handled by the system.  To allow the compiler to assume
+that aligned memory references are handled by the system, the inverse attribute
+@code{no-strict-align} can be specified.  The behavior is same as for the
+command-line option @option{-mstrict-align} and @option{-mno-strict-align}.
 
 @item omit-leaf-frame-pointer
 @cindex @code{omit-leaf-frame-pointer} function attribute, AArch64
