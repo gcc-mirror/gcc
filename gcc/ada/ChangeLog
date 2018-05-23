@@ -1,3 +1,7 @@
+2018-05-23  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (win32_wait): Add missing parentheses.
+
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Check_Large_Modular_Array): Moved to Freeze.
