@@ -1,3 +1,8 @@
+2018-05-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Enclosing_Declaration): Fix the case of a named number
+	declaration, which was not taken into account.
+
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* debug.adb: Switch -gnatd_s is now used to stop elaboration checks on
