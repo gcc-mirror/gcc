@@ -1959,9 +1959,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
   if (is_gimple_reg_type (vr->type)
       && gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET)
       && (integer_zerop (gimple_call_arg (def_stmt, 1))
-	  || (INTEGRAL_TYPE_P (vr->type)
+	  || ((TREE_CODE (gimple_call_arg (def_stmt, 1)) == INTEGER_CST
+	       || (INTEGRAL_TYPE_P (vr->type) && known_eq (ref->size, 8)))
 	      && CHAR_BIT == 8 && BITS_PER_UNIT == 8
-	      && known_eq (ref->size, 8)
 	      && known_eq (ref->size, maxsize)
 	      && offset.is_constant (&offseti)
 	      && offseti % BITS_PER_UNIT == 0))
@@ -2030,7 +2030,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  tree val;
 	  if (integer_zerop (gimple_call_arg (def_stmt, 1)))
 	    val = build_zero_cst (vr->type);
-	  else
+	  else if (INTEGRAL_TYPE_P (vr->type)
+		   && known_eq (ref->size, 8))
 	    {
 	      code_helper rcode = NOP_EXPR;
 	      tree ops[3] = {};
@@ -2039,6 +2040,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	      if (!val
 		  || (TREE_CODE (val) == SSA_NAME
 		      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
+		return (void *)-1;
+	    }
+	  else
+	    {
+	      unsigned len = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vr->type));
+	      unsigned char *buf = XALLOCAVEC (unsigned char, len);
+	      memset (buf, TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 1)),
+		      len);
+	      val = native_interpret_expr (vr->type, buf, len);
+	      if (!val)
 		return (void *)-1;
 	    }
 	  return vn_reference_lookup_or_insert_for_pieces

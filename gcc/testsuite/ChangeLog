@@ -1,3 +1,7 @@
+2018-05-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-65.c: New testcase.
+
 2018-05-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85841
