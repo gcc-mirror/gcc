@@ -1012,8 +1012,8 @@ should_issue_prefetch_p (struct mem_ref *ref)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "Step for reference %u:%u (%ld) is less than the mininum "
-		 "required stride of %d\n",
+		 "Step for reference %u:%u (" HOST_WIDE_INT_PRINT_DEC
+		 ") is less than the mininum required stride of %d\n",
 		 ref->group->uid, ref->uid, int_cst_value (ref->group->step),
 		 PREFETCH_MINIMUM_STRIDE);
       return false;

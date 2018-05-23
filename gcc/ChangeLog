@@ -1,3 +1,8 @@
+2018-05-23  Luis Machado  <luis.machado@linaro.org>
+
+	* tree-ssa-loop-prefetch.c (should_issue_prefetch_p): Use correct type
+	modifier for printing the step amount.
+
 2018-05-23  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
 
 	PR target/78849
