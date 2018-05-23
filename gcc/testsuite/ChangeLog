@@ -1,3 +1,11 @@
+2018-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/cvt-3.c: New test.
+
+2018-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/cvt-2.c: New test.
+
 2018-05-23  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.dg/pr79985.c: New testcase.

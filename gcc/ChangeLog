@@ -1,3 +1,21 @@
+2018-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*floatuns<SWI48:mode><MODEF:mode>2_avx512):
+	New insn pattern.
+	(floatunssi<mode>2): Also enable for AVX512F and TARGET_SSE_MATH.
+	Rewrite expander pattern.  Emit gen_floatunssi<mode>2_i387_with_xmm
+	for non-SSE modes.
+	(floatunsdisf2): Rewrite expander pattern.  Hanlde TARGET_AVX512F.
+	(floatunsdidf2): Ditto.
+
+2018-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fixuns_trunc<mode>di2): New insn pattern.
+	(fixuns_trunc<mode>si2_avx512f): Ditto.
+	(*fixuns_trunc<mode>si2_avx512f_zext): Ditto.
+	(fixuns_trunc<mode>si2): Also enable for AVX512F and TARGET_SSE_MATH.
+	Emit fixuns_trunc<mode>si2_avx512f for AVX512F targets.
+
 2018-05-23  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/79985
