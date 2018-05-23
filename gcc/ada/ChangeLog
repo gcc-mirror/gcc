@@ -1,3 +1,8 @@
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb, exp_disp.adb, sem_ch3.adb, sem_ch6.adb, sem_prag.adb:
+	Minor reformatting.
+
 2018-05-22  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch6.adb (Analyze_Expression_Function): Propagate flags from the

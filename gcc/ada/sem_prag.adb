@@ -21267,9 +21267,7 @@ package body Sem_Prag is
                   end if;
 
                   if In_Same_Declarative_Part (Parent (N), Orig_Def) then
-
                      Same_Decl := True;
-
                      Set_Is_Pure (Def_Id);
 
                      if not Has_Pragma_Pure_Function (Def_Id) then
@@ -21289,10 +21287,11 @@ package body Sem_Prag is
                   Error_Msg_NE
                     ("pragma Pure_Function on& is redundant?r?",
                      N, Entity (E_Id));
+
                elsif not Same_Decl then
                   Error_Pragma_Arg
-                    ("pragma% argument must be in same declarative "
-                     & "part", Arg1);
+                    ("pragma% argument must be in same declarative part",
+                     Arg1);
                end if;
             end if;
          end Pure_Function;
