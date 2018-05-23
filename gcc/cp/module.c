@@ -2061,11 +2061,12 @@ public:
 
   public:
     vec<depset *> worklist;  /* Worklist of decls to walk.  */
-    depset *current;
+    depset *current;         /* Current depset being depended.  */
+    bool sneakoscope;        /* Detecting dark magic (of a voldemort type).  */
 
   public:
     hash (size_t size)
-      : parent (size), worklist (), current (NULL)
+      : parent (size), worklist (), current (NULL), sneakoscope (false)
     {
       worklist.reserve (size);
     }
@@ -5271,7 +5272,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 		    || TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
 		    || DECL_MEMBER_TEMPLATE_P (decl)
 		    || owner < MODULE_IMPORT_BASE);
-    
+
 	if (TREE_CODE (owner_decl) == FUNCTION_DECL
 	    && owner_decl != decl
 	    && (TREE_CODE (decl) != TEMPLATE_DECL
@@ -5289,6 +5290,20 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 
     bool is_import = owner >= MODULE_IMPORT_BASE;
     tree ctx = CP_DECL_CONTEXT (decl);
+
+    if (TREE_CODE (ctx) == FUNCTION_DECL)
+      {
+	/* Some internal decl of the function.  */
+	if (!DECL_IMPLICIT_TYPEDEF_P (decl))
+	  return true;
+
+	if (depending_p () && dep_hash->sneakoscope)
+	  {
+	    /* The sneakoscope is whistling.  We've found a voldemort type.  */
+	    gcc_unreachable ();
+	    // FIXME: Something Must Be Done
+	  }
+      }
 
     /* A named decl -> tt_named_decl.  */
     if (streaming_p ())
@@ -8493,10 +8508,12 @@ module_state::find_dependencies (depset::hash &table)
 		       decl);
       dump.indent ();
       walker.mark_node (decl);
-      // FIXME:voldemort members?
       if (d->is_defn ())
 	mark_definition (walker, decl);
+      /* Turn the Sneakoscope on when depending the decl.  */
+      table.sneakoscope = true;
       walker.tree_node (decl);
+      table.sneakoscope = false;
       if (d->is_defn ())
 	write_definition (walker, decl);
       dump.outdent ();
@@ -8892,7 +8909,8 @@ module_exporting_level ()
 /* Return the decl that determines the owning module of DECL.  That
    may be DECL itself, or it may DECL's context, or it may be some
    other DECL (for instance an unscoped enum's CONST_DECLs are owned
-   by the TYPE_DECL).  */
+   by the TYPE_DECL).  It might not be an outermost namespace-scope
+   decl.  */
 
 tree
 get_module_owner (tree decl)

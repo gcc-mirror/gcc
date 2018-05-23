@@ -1,5 +1,13 @@
 2018-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	Now with a Sneakoscope!
+	gcc/cp/
+	* module.c (depset::hash): Add a sneakoscope.
+	(module_state::find_dependencies): Turn it on.
+	(trees_out::tree_decl): Check it.
+	gcc/testsuite/
+	* g++.dg/modules/local-1_[ab}.C: New.
+
 	gcc/cp/
 	* cxx-module-server.sh: Remove --no-default.
 	* module.c (module_server::send_command): New.
