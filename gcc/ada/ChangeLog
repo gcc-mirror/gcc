@@ -1,3 +1,20 @@
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Switch -gnatd_s is now used to stop elaboration checks on
+	synchronized suspension.
+	* rtsfind.ads: Add entries for units Ada.Synchronous_Barriers and
+	Ada.Synchronous_Task_Control and routines Suspend_Until_True and
+	Wait_For_Release.
+	* sem_elab.adb: Document switch -gnatd_s.
+	(In_Task_Body): New routine.
+	(Is_Potential_Scenario): Code cleanup. Stop the traversal of a task
+	body when the current construct denotes a synchronous suspension call,
+	and restriction No_Entry_Calls_In_Elaboration_Code or switch -gnatd_s
+	is in effect.
+	(Is_Synchronous_Suspension_Call): New routine.
+	* switch-c.adb (Scan_Front_End_Switches): Switch -gnatJ now sets switch
+	-gnatd_s.
+
 2018-05-23  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Make_DT): Restrict the initialization of
