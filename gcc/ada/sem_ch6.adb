@@ -5396,12 +5396,12 @@ package body Sem_Ch6 is
          elsif Is_Formal_Subprogram (Old_Id)
            or else Is_Formal_Subprogram (New_Id)
            or else (Is_Subprogram (New_Id)
-             and then Present (Alias (New_Id))
-             and then Is_Formal_Subprogram (Alias (New_Id)))
+                     and then Present (Alias (New_Id))
+                     and then Is_Formal_Subprogram (Alias (New_Id)))
          then
             Conformance_Error
-               ("\formal subprograms are not subtype conformant "
-                 & "(RM 6.3.1 (17/3))");
+              ("\formal subprograms are not subtype conformant "
+               & "(RM 6.3.1 (17/3))");
          end if;
       end if;
 

@@ -253,13 +253,13 @@ package body Einfo is
    --    Access_Disp_Table_Elab_Flag     Node30
    --    Anonymous_Object                Node30
    --    Corresponding_Equality          Node30
+   --    Hidden_In_Formal_Instance       Elist30
    --    Last_Aggregate_Assignment       Node30
    --    Static_Initialization           Node30
-   --    Hidden_In_Formal_Instance       Elist30
 
+   --    Activation_Record_Component     Node31
    --    Derived_Type_Link               Node31
    --    Thunk_Entity                    Node31
-   --    Activation_Record_Component     Node31
 
    --    Corresponding_Function          Node32
    --    Corresponding_Procedure         Node32

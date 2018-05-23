@@ -17981,16 +17981,16 @@ package body Sem_Ch3 is
          then
             Result :=
               Search_Derivation_Levels (Ti, Stored_Constraint (Ti), True);
+
          else
             declare
                Td : Entity_Id := Etype (Ti);
 
             begin
-
                --  If the parent type is private, the full view may include
-               --  renamed discriminants, and it is those stored values
-               --  that may be needed (the partial view never has more
-               --  information than the full view).
+               --  renamed discriminants, and it is those stored values that
+               --  may be needed (the partial view never has more information
+               --  than the full view).
 
                if Is_Private_Type (Td) and then Present (Full_View (Td)) then
                   Td := Full_View (Td);

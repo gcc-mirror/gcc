@@ -5021,7 +5021,7 @@ package body Exp_Disp is
                 Constant_Present    => True,
                 Object_Definition   =>
                   New_Occurrence_Of (RTE (RE_Address), Loc),
-                Expression =>
+                Expression          =>
                   Make_Attribute_Reference (Loc,
                     Prefix         =>
                       Make_Selected_Component (Loc,
@@ -5033,7 +5033,8 @@ package body Exp_Disp is
          end if;
       end if;
 
-      --  Generate: Expanded_Name : constant String := "";
+      --  Generate:
+      --    Expanded_Name : constant String := "";
 
       if Global_Discard_Names or else Discard_Names (Typ) then
          Append_To (Result,
@@ -5069,29 +5070,30 @@ package body Exp_Disp is
 
       if Expanded_Name /= External_Tag_Name then
 
-         --  Generate: External_Tag_Name : constant String := "";
+         --  Generate:
+         --    External_Tag_Name : constant String := "";
 
          if Present (No_Tagged_Streams_Pragma (Typ)) then
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => External_Tag_Name,
                 Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of
-                                         (Standard_String, Loc),
-                Expression =>
-                  Make_String_Literal (Loc, "")));
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_String, Loc),
+                Expression          => Make_String_Literal (Loc, "")));
 
          --  Generate:
-         --   External_Tag_Name : constant String := full_qualified_name (typ);
+         --    External_Tag_Name : constant String :=
+         --                          full_qualified_name (typ);
 
          else
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => External_Tag_Name,
                 Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of
-                                         (Standard_String, Loc),
-                Expression =>
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_String, Loc),
+                Expression          =>
                   Make_String_Literal (Loc,
                     Fully_Qualified_Name_String (First_Subtype (Typ)))));
          end if;
@@ -5198,8 +5200,7 @@ package body Exp_Disp is
          New_Node :=
            Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
              Make_Attribute_Reference (Loc,
-               Prefix         => New_Occurrence_Of
-                                   (External_Tag_Name, Loc),
+               Prefix         => New_Occurrence_Of (External_Tag_Name, Loc),
                Attribute_Name => Name_Address));
 
       --  External_Tag of a local tagged type
@@ -5332,8 +5333,8 @@ package body Exp_Disp is
                New_Node :=
                  Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
                    Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of
-                                         (External_Tag_Name, Loc),
+                     Prefix         =>
+                       New_Occurrence_Of (External_Tag_Name, Loc),
                      Attribute_Name => Name_Address));
             else
                Old_Val := Strval (Expr_Value_S (Expression (Def)));
