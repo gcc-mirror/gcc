@@ -4268,6 +4268,23 @@ package body Sem_Ch3 is
             Set_Etype (E, T);
 
          else
+
+            --  If the expression is a formal that is a "subprogram pointer"
+            --  this is illegal in accessibility terms. Add an explicit
+            --  conversion to force the corresponding check, as is done for
+            --  assignments.
+
+            if Comes_From_Source (N)
+              and then Is_Entity_Name (E)
+              and then Present (Entity (E))
+              and then Is_Formal (Entity (E))
+              and then
+                Ekind (Etype (Entity (E))) = E_Anonymous_Access_Subprogram_Type
+              and then Ekind (T) /= E_Anonymous_Access_Subprogram_Type
+            then
+               Rewrite (E, Convert_To (T, Relocate_Node (E)));
+            end if;
+
             Resolve (E, T);
          end if;
 
