@@ -1313,8 +1313,8 @@ package body Repinfo is
          null;
 
       else
-         --  If Esize and RM_Size are the same and known, list as Size. This
-         --  is a common case, which we may as well list in simple form.
+         --  If Esize and RM_Size are the same, list as Size. This is a common
+         --  case, which we may as well list in simple form.
 
          if Esize (Ent) = RM_Size (Ent) then
             Write_Str ("for ");
@@ -1323,18 +1323,7 @@ package body Repinfo is
             Write_Val (Esize (Ent));
             Write_Line (";");
 
-         --  For now, temporary case, to be removed when gigi properly back
-         --  annotates RM_Size, if RM_Size is not set, then list Esize as Size.
-         --  This avoids odd Object_Size output till we fix things???
-
-         elsif Unknown_RM_Size (Ent) then
-            Write_Str ("for ");
-            List_Name (Ent);
-            Write_Str ("'Size use ");
-            Write_Val (Esize (Ent));
-            Write_Line (";");
-
-         --  Otherwise list size values separately if they are set
+         --  Otherwise list size values separately
 
          else
             Write_Str ("for ");
@@ -1342,9 +1331,6 @@ package body Repinfo is
             Write_Str ("'Object_Size use ");
             Write_Val (Esize (Ent));
             Write_Line (";");
-
-            --  Note on following check: The RM_Size of a discrete type can
-            --  legitimately be set to zero, so a special check is needed.
 
             Write_Str ("for ");
             List_Name (Ent);
