@@ -1,5 +1,12 @@
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch3.adb (Default_Initialize_Object): Do not optimize scalar array
+	initialization when the component type has predicates.
+	* exp_ch4.adb (Expand_N_Allocator): Do not optimize scalar array
+	allocation when the component type has predicates.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* einfo.adb, exp_disp.adb, sem_ch3.adb, sem_ch6.adb, sem_prag.adb:
 	Minor reformatting.
 
