@@ -1,3 +1,8 @@
+2017-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_effective_target_be): New.
+	(check_effective_target_le): New.
+
 2018-05-23  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp2a/range-for1.C: New test.

@@ -1,3 +1,7 @@
+2017-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/sourcebuild.texi (Endianness): New subsubsection.
+
 2018-05-23  Luis Machado  <luis.machado@linaro.org>
 
 	* config/aarch64/aarch64-protos.h (cpu_prefetch_tune)
