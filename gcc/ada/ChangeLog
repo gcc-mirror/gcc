@@ -1,3 +1,7 @@
+2018-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
 2018-05-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): If expression is an
