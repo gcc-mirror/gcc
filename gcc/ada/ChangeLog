@@ -1,3 +1,10 @@
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Inherit_Class_Wide_Pre): Refine legality check on
+	class-wide precondition on a type extension when ancestor does not have
+	a class-wide precondition.  Previously the compiler accepted such a
+	precondition when the ancestor had a class-wide postcondition.
+
 2018-05-23  Javier Miranda  <miranda@adacore.com>
 
 	* sem_attr.adb (Valid_Scalars): Do not invoke Error_Attr_P to report
