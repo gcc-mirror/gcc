@@ -21676,7 +21676,8 @@ package body Sem_Ch3 is
                then
                   Constrain_Array (Def_Id, S, Related_Nod, Related_Id, Suffix);
 
-                  --  ... but more comonly by a discriminated record type.
+               --  ... but more commonly is completed by a discriminated record
+               --  type.
 
                else
                   Constrain_Discriminated_Type (Def_Id, S, Related_Nod);

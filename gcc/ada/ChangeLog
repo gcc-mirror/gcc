@@ -1,3 +1,13 @@
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Check_Large_Modular_Array): Moved to Freeze.
+	(Expand_N_Object_Declaration): Do not check for a large modular array
+	here.
+	* freeze.adb (Check_Large_Modular_Array): Moved from Exp_Ch3.
+	(Freeze_Object_Declaration): Code cleanup. Check for a large modular
+	array.
+	* sem_ch3.adb: Minor reformatting.
+
 2018-05-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads: New attribute on types: Predicated_Parent, to simplify the
