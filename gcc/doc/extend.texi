@@ -9554,11 +9554,21 @@ After defining a global register variable, for the current compilation
 unit:
 
 @itemize @bullet
-@item The register is reserved entirely for this use, and will not be 
-allocated for any other purpose.
-@item The register is not saved and restored by any functions.
-@item Stores into this register are never deleted even if they appear to be 
-dead, but references may be deleted, moved or simplified.
+@item If the register is a call-saved register, call ABI is affected:
+the register will not be restored in function epilogue sequences after
+the variable has been assigned.  Therefore, functions cannot safely
+return to callers that assume standard ABI.
+@item Conversely, if the register is a call-clobbered register, making
+calls to functions that use standard ABI may lose contents of the variable.
+Such calls may be created by the compiler even if none are evident in
+the original program, for example when libgcc functions are used to
+make up for unavailable instructions.
+@item Accesses to the variable may be optimized as usual and the register
+remains available for allocation and use in any computations, provided that
+observable values of the variable are not affected.
+@item If the variable is referenced in inline assembly, the type of access
+must be provided to the compiler via constraints (@pxref{Constraints}).
+Accesses from basic asms are not supported.
 @end itemize
 
 Note that these points @emph{only} apply to code that is compiled with the
@@ -9600,7 +9610,10 @@ the comparison function unless the @code{qsort} function itself is rebuilt.
 Similarly, it is not safe to access the global register variables from signal
 handlers or from more than one thread of control. Unless you recompile 
 them specially for the task at hand, the system library routines may 
-temporarily use the register for other things.
+temporarily use the register for other things.  Furthermore, since the register
+is not reserved exclusively for the variable, accessing it from handlers of
+asynchronous signals may observe unrelated temporary values residing in the
+register.
 
 @cindex register variable after @code{longjmp}
 @cindex global register after @code{longjmp}
@@ -9614,10 +9627,6 @@ register variables. To be portable, the function that called @code{setjmp}
 should make other arrangements to save the values of the global register
 variables, and to restore them in a @code{longjmp}. This way, the same
 thing happens regardless of what @code{longjmp} does.
-
-Eventually there may be a way of asking the compiler to choose a register 
-automatically, but first we need to figure out how it should choose and 
-how to enable you to guide the choice.  No solution is evident.
 
 @node Local Register Variables
 @subsubsection Specifying Registers for Local Variables
