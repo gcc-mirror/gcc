@@ -11061,7 +11061,9 @@ extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups)
   if (TREE_CODE (sub) != ADDR_EXPR)
     return init;
   /* Deal with binding to a subobject.  */
-  for (p = &TREE_OPERAND (sub, 0); TREE_CODE (*p) == COMPONENT_REF; )
+  for (p = &TREE_OPERAND (sub, 0);
+       (TREE_CODE (*p) == COMPONENT_REF
+	|| TREE_CODE (*p) == ARRAY_REF); )
     p = &TREE_OPERAND (*p, 0);
   if (TREE_CODE (*p) == TARGET_EXPR)
     {
