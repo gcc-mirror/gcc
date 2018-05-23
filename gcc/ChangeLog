@@ -1,3 +1,9 @@
+2018-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85874
+	* tree-data-ref.c (create_runtime_alias_checks): Defer
+	and ignore overflow warnings.
+
 2018-05-23  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
