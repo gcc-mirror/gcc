@@ -1,3 +1,12 @@
+2018-05-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/85853
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Split out
+	the handling of the root of the node to...
+	(vect_slp_analyze_node_operations_1): ...this new function,
+	and run the whole thing with the child nodes' def types
+	set according to their SLP node's def type.
+
 2018-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85874
