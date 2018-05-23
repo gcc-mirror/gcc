@@ -4494,27 +4494,27 @@ package body Sem_Elab is
 
       procedure Transition_Body_Declarations
         (Bod  : Node_Id;
-         Curr : in out Node_Id);
+         Curr : out Node_Id);
       pragma Inline (Transition_Body_Declarations);
       --  Update the Curr and Start pointers when construct Bod denotes a block
       --  statement or a suitable body. This routine raises ECR_Found.
 
       procedure Transition_Handled_Statements
         (HSS  : Node_Id;
-         Curr : in out Node_Id);
+         Curr : out Node_Id);
       pragma Inline (Transition_Handled_Statements);
       --  Update the Curr and Start pointers when node HSS denotes a handled
       --  sequence of statements. This routine raises ECR_Found.
 
       procedure Transition_Spec_Declarations
         (Spec : Node_Id;
-         Curr : in out Node_Id);
+         Curr : out Node_Id);
       pragma Inline (Transition_Spec_Declarations);
       --  Update the Curr and Start pointers when construct Spec denotes
       --  a concurrent definition or a package spec. This routine raises
       --  ECR_Found.
 
-      procedure Transition_Unit (Unit : Node_Id; Curr : in out Node_Id);
+      procedure Transition_Unit (Unit : Node_Id; Curr : out Node_Id);
       pragma Inline (Transition_Unit);
       --  Update the Curr and Start pointers when node Unit denotes a potential
       --  compilation unit. This routine raises ECR_Found.
@@ -4907,7 +4907,7 @@ package body Sem_Elab is
 
       procedure Transition_Body_Declarations
         (Bod  : Node_Id;
-         Curr : in out Node_Id)
+         Curr : out Node_Id)
       is
          Decls : constant List_Id := Declarations (Bod);
 
@@ -4935,7 +4935,7 @@ package body Sem_Elab is
 
       procedure Transition_Handled_Statements
         (HSS  : Node_Id;
-         Curr : in out Node_Id)
+         Curr : out Node_Id)
       is
          Bod   : constant Node_Id := Parent (HSS);
          Decls : constant List_Id := Declarations (Bod);
@@ -4986,7 +4986,7 @@ package body Sem_Elab is
 
       procedure Transition_Spec_Declarations
         (Spec : Node_Id;
-         Curr : in out Node_Id)
+         Curr : out Node_Id)
       is
          Prv_Decls : constant List_Id := Private_Declarations (Spec);
          Vis_Decls : constant List_Id := Visible_Declarations (Spec);
@@ -5048,7 +5048,7 @@ package body Sem_Elab is
 
       procedure Transition_Unit
         (Unit : Node_Id;
-         Curr : in out Node_Id)
+         Curr : out Node_Id)
       is
          Context : constant Node_Id := Parent (Unit);
 

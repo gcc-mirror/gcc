@@ -1,3 +1,10 @@
+2018-05-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* checks.adb (Minimize_Eliminate_Overflows): Default initialize Lo and
+	Hi.
+	* sem_elab.adb: Make "out" parameters instead of "in out" when
+	relevant.
+
 2018-05-23  Bob Duff  <duff@adacore.com>
 
 	* gnatbind.adb (List_Applicable_Restrictions): Add
