@@ -276,6 +276,7 @@ package body Einfo is
 
    --    Nested_Scenarios                Elist36
    --    Validated_Object                Node36
+   --    Predicated_Parent               Node36
 
    --    Class_Wide_Clone                Node38
 
@@ -3081,6 +3082,12 @@ package body Einfo is
                                    E_Procedure));
       return Node14 (Id);
    end Postconditions_Proc;
+
+   function Predicated_Parent (Id : E) return E is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Node36 (Id);
+   end Predicated_Parent;
 
    function Predicates_Ignored (Id : E) return B is
    begin
@@ -6311,6 +6318,12 @@ package body Einfo is
       Set_Node14 (Id, V);
    end Set_Postconditions_Proc;
 
+   procedure Set_Predicated_Parent (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Node36 (Id, V);
+   end Set_Predicated_Parent;
+
    procedure Set_Predicates_Ignored (Id : E; V : B) is
    begin
       pragma Assert (Is_Type (Id));
@@ -8829,6 +8842,9 @@ package body Einfo is
       then
          Typ := Full_View (Id);
 
+      elsif Is_Itype (Id) and then Present (Predicated_Parent (Id)) then
+         Typ := Predicated_Parent (Id);
+
       else
          Typ := Id;
       end if;
@@ -11199,6 +11215,11 @@ package body Einfo is
 
          when E_Variable =>
             Write_Str ("Validated_Object");
+
+         when E_Array_Subtype
+            | E_Record_Subtype
+         =>
+            Write_Str ("predicated parent");
 
          when others =>
             Write_Str ("Field36??");

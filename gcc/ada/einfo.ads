@@ -3932,6 +3932,14 @@ package Einfo is
 --       is the special version created for membership tests, where if one of
 --       these raise expressions is executed, the result is to return False.
 
+--    Predicated_Parent (Node36)
+--       Defined on itypes created by subtype indications, when the parent
+--       subtype has predicates. The itype shares the Predicate_Function
+--       of the predicated parent, but this function may not have been built
+--       at the point the Itype is constructed, so this attribute allows its
+--       retrieval at the point a predicate check needs to be generated.
+--       The utility Predicate_Function takes this link into account.
+
 --    Predicates_Ignored (Flag288)
 --       Defined on all types. Indicates whether the subtype declaration is in
 --       a context where Assertion_Policy is Ignore, in which case no checks
@@ -7427,6 +7435,7 @@ package Einfo is
    function Partial_View_Has_Unknown_Discr      (Id : E) return B;
    function Pending_Access_Types                (Id : E) return L;
    function Postconditions_Proc                 (Id : E) return E;
+   function Predicated_Parent                   (Id : E) return E;
    function Predicates_Ignored                  (Id : E) return B;
    function Prival                              (Id : E) return E;
    function Prival_Link                         (Id : E) return E;
@@ -7789,6 +7798,7 @@ package Einfo is
    procedure Set_Depends_On_Private              (Id : E; V : B := True);
    procedure Set_Derived_Type_Link               (Id : E; V : E);
    procedure Set_Digits_Value                    (Id : E; V : U);
+   procedure Set_Predicated_Parent               (Id : E; V : E);
    procedure Set_Predicates_Ignored              (Id : E; V : B);
    procedure Set_Direct_Primitive_Operations     (Id : E; V : L);
    procedure Set_Directly_Designated_Type        (Id : E; V : E);
@@ -8988,6 +8998,7 @@ package Einfo is
    pragma Inline (Partial_View_Has_Unknown_Discr);
    pragma Inline (Pending_Access_Types);
    pragma Inline (Postconditions_Proc);
+   pragma Inline (Predicated_Parent);
    pragma Inline (Predicates_Ignored);
    pragma Inline (Prival);
    pragma Inline (Prival_Link);
@@ -9475,6 +9486,7 @@ package Einfo is
    pragma Inline (Set_Partial_View_Has_Unknown_Discr);
    pragma Inline (Set_Pending_Access_Types);
    pragma Inline (Set_Postconditions_Proc);
+   pragma Inline (Set_Predicated_Parent);
    pragma Inline (Set_Predicates_Ignored);
    pragma Inline (Set_Prival);
    pragma Inline (Set_Prival_Link);
