@@ -3664,7 +3664,7 @@ package body Sem_Ch3 is
       function Delayed_Aspect_Present return Boolean;
       --  If the declaration has an expression that is an aggregate, and it
       --  has aspects that require delayed analysis, the resolution of the
-      --  aggregate must be deferred to the freeze point of the objet. This
+      --  aggregate must be deferred to the freeze point of the object. This
       --  special processing was created for address clauses, but it must
       --  also apply to Alignment. This must be done before the aspect
       --  specifications are analyzed because we must handle the aggregate

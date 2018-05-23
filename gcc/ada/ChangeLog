@@ -1,3 +1,9 @@
+2018-05-23  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+	* sem_ch3.adb: Likewise.
+	* sinfo.ads: Likewise.
+
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Default_Initialize_Object): Do not optimize scalar array
