@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Apr 20, 2018
+GNAT Reference Manual , Apr 23, 2018
 
 AdaCore
 
@@ -5327,6 +5327,11 @@ Once the pragma has been given for a particular root tagged type, all subtypes
 and derived types of this type inherit the pragma automatically, so the effect
 applies to a complete hierarchy (this is necessary to deal with the class-wide
 dispatching versions of the stream routines).
+
+When pragmas @code{Discard_Names} and @code{No_Tagged_Streams} are simultaneously
+applied to a tagged type its Expanded_Name and External_Tag are initialized
+with empty strings. This is useful to avoid exposing entity names at binary
+level but has a negative impact on the debuggability of tagged types.
 
 @node Pragma Normalize_Scalars,Pragma Obsolescent,Pragma No_Tagged_Streams,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-normalize-scalars}@anchor{a8}
@@ -17142,6 +17147,11 @@ Pragma @code{Discard_Names} causes names of enumeration literals to
 be suppressed.  In the presence of this pragma, the Image attribute
 provides the image of the Pos of the literal, and Value accepts
 Pos values.
+
+For tagged types, when pragmas @code{Discard_Names} and @code{No_Tagged_Streams}
+simultaneously apply, their Expanded_Name and External_Tag are initialized
+with empty strings. This is useful to avoid exposing entity names at binary
+level.
 
 
 @itemize *
