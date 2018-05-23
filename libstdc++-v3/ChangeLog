@@ -1,3 +1,16 @@
+2018-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_M_type): Change default member
+	initializer to _Filename.
+	(path::begin): Create past-the-end iterator for empty path.
+	* src/filesystem/std-path.cc (path::remove_filename()): Remove
+	debugging check.
+	(path::has_relative_path()): Return false for empty filenames.
+	(path::_M_split_cmpts): Set _M_type to _Filename for empty paths.
+	Fix offset of empty final component.
+	* testsuite/27_io/filesystem/path/itr/components.cc: New.
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: Add new inputs.
+
 2018-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	Add support for opening file streams from wide character strings.
