@@ -1,3 +1,9 @@
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): If expression is an
+	anonymous_access_to_ subprogram formal, apply a conversion to force an
+	accsssibility check that will fail statically, enforcing 3.10.2 (13).
+
 2018-05-23  Daniel Mercier  <mercier@adacore.com>
 
 	* gnat1drv.adb: Turn off length expansion in CodePeer mode.
