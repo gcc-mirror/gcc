@@ -3564,8 +3564,9 @@ package body Sem_Ch12 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => Id,
-         Checks => True);
+        (N_Id     => Id,
+         Checks   => True,
+         Warnings => True);
 
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
@@ -3738,8 +3739,9 @@ package body Sem_Ch12 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => Id,
-         Checks => True);
+        (N_Id     => Id,
+         Checks   => True,
+         Warnings => True);
 
       Formals := Parameter_Specifications (Spec);
 

@@ -18399,12 +18399,13 @@ package body Sem_Util is
               Elaboration_Checks_OK
                 (Target_Id  => Id,
                  Context_Id => Scope (Id)));
+         end if;
 
-         --  Entities do not need to capture their enclosing level. The Ghost
-         --  and SPARK modes in effect are already marked during analysis.
+         --  Mark the status of elaboration warnings in effect. Do not reset
+         --  the status in case the entity is reanalyzed with warnings off.
 
-         else
-            null;
+         if Warnings and then not Is_Elaboration_Warnings_OK_Id (Id) then
+            Set_Is_Elaboration_Warnings_OK_Id (Id, Elab_Warnings);
          end if;
       end Mark_Elaboration_Attributes_Id;
 

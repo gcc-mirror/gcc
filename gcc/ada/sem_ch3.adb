@@ -4758,8 +4758,9 @@ package body Sem_Ch3 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => Id,
-         Checks => True);
+        (N_Id     => Id,
+         Checks   => True,
+         Warnings => True);
 
       --  Initialize alignment and size and capture alignment setting
 

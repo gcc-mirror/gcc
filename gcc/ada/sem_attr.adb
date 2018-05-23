@@ -813,9 +813,10 @@ package body Sem_Attr is
          --  analysis, resolution, and expansion are over.
 
          Mark_Elaboration_Attributes
-           (N_Id   => N,
-            Checks => True,
-            Modes  => True);
+           (N_Id     => N,
+            Checks   => True,
+            Modes    => True,
+            Warnings => True);
 
          --  Save the scenario for later examination by the ABE Processing
          --  phase.

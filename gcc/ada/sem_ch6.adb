@@ -236,8 +236,9 @@ package body Sem_Ch6 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => Subp_Id,
-         Checks => True);
+        (N_Id     => Subp_Id,
+         Checks   => True,
+         Warnings => True);
 
       Set_Is_Abstract_Subprogram (Subp_Id);
       New_Overloaded_Entity (Subp_Id);
@@ -4148,6 +4149,17 @@ package body Sem_Ch6 is
          end if;
       end if;
 
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      if No (Spec_Id) then
+         Mark_Elaboration_Attributes
+           (N_Id     => Body_Id,
+            Checks   => True,
+            Warnings => True);
+      end if;
+
       --  If this is the proper body of a stub, we must verify that the stub
       --  conforms to the body, and to the previous spec if one was present.
       --  We know already that the body conforms to that spec. This test is
@@ -4785,8 +4797,9 @@ package body Sem_Ch6 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => Designator,
-         Checks => True);
+        (N_Id     => Designator,
+         Checks   => True,
+         Warnings => True);
 
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");

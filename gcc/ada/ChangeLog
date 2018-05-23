@@ -1,3 +1,78 @@
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag304 is now Is_Elaboration_Warnings_OK_Id.
+	(Is_Elaboration_Warnings_OK_Id): New routine.
+	(Set_Is_Elaboration_Warnings_OK_Id): New routine.
+	(Write_Entity_Flags): Output Flag304.
+	* einfo.ads: Add new attribute Is_Elaboration_Warnings_OK_Id along with
+	occurrences in entities.
+	(Is_Elaboration_Warnings_OK_Id): New routine along with pragma Inline.
+	(Set_Is_Elaboration_Warnings_OK_Id): New routine along with pragma
+	Inline.
+	* sem_attr.adb (Analyze_Access_Attribute): Capture the state of
+	elaboration warnings.
+	* sem_ch3.adb (Analyze_Object_Declaration): Capture the state of
+	elaboration warnings.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): Capture the
+	state of elaboration warnings.
+	(Analyze_Subprogram_Body_Helper): Capture the state of elaboration
+	warnings.
+	(Analyze_Subprogram_Declaration): Capture the state of elaboration
+	warnings.
+	* sem_ch9.adb (Analyze_Entry_Declaration): Capture the state of
+	elaboration warnings.
+	(Analyze_Single_Task_Declaration): Capture the state of elaboration
+	warnings.
+	(Analyze_Task_Type_Declaration): Capture the state of elaboration
+	warnings.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Capture the state
+	of elaboration warnings.
+	(Analyze_Generic_Subprogram_Declaration): Capture the state of
+	elaboration warnings.
+	* sem_elab.adb: Add a section on suppressing elaboration warnings.
+	Type Processing_Attributes includes component Suppress_Warnings
+	intended to suppress any elaboration warnings along a path in the
+	graph.  Update Initial_State to include a value for this component.
+	Types Target_Attributes and Task_Attriutes include component
+	Elab_Warnings_OK to indicate whether the target or task has elaboration
+	warnings enabled.  component Elab_Warnings_OK.
+	(Build_Access_Marker): Propagate attribute
+	Is_Elaboration_Warnings_OK_Node from the attribute to the generated
+	call marker.
+	(Extract_Instantiation_Attributes): Set the value for Elab_Warnings_OK.
+	(Extract_Target_Attributes): Set the value for Elab_Warnings_OK.
+	(Extract_Task_Attributes): Set the value for Elab_Warnings_OK.
+	(Process_Conditional_ABE_Access): Suppress futher elaboration warnings
+	when already in this mode or when the attribute or target have warnings
+	suppressed.
+	(Process_Conditional_ABE_Activation_Impl): Do not emit any diagnostics
+	if warnings are suppressed.
+	(Process_Conditional_ABE_Call): Suppress further elaboration warnings
+	when already in this mode, or the target or call have warnings
+	suppressed.
+	(Process_Conditional_ABE_Call_Ada): Do not emit any diagnostics if
+	warnings are suppressed.
+	(Process_Conditional_ABE_Call_SPARK): Do not emit any diagnostics if
+	warnings are suppressed.
+	(Process_Conditional_ABE_Instantiation): Suppress further elaboration
+	warnings when already in this mode or when the instantiation has
+	warnings suppressed.
+	(Process_Conditional_ABE_Instantiation_Ada): Do not emit any
+	diagnostics if warnings are suppressed.
+	(Process_Conditional_ABE_Variable_Assignment_Ada): Use the more
+	specific Is_Elaboration_Warnings_OK_Id rather than Warnings_Off.
+	(Process_Conditional_ABE_Variable_Assignment_SPARK): Use the more
+	specific Is_Elaboration_Warnings_OK_Id rather than Warnings_Off.
+	(Process_Task_Object): Suppress further elaboration warnings when
+	already in this mode, or when the object, activation call, or task type
+	have warnings suppressed. Update the processing state to indicate that
+	the path goes through a task body.
+	* sinfo.adb (Is_Elaboration_Warnings_OK_Node): Accept attribute
+	references.
+	(Set_Is_Elaboration_Warnings_OK_Node): Accept attribute references.
+	* sinfo.ads: Attribute Is_Elaboration_Warnings_OK_Node now applies to
+	attribute references.
+
 2018-05-23  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.ads: Minor reformatting.

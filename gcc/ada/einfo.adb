@@ -627,8 +627,8 @@ package body Einfo is
    --    Ignore_SPARK_Mode_Pragmas       Flag301
    --    Is_Initial_Condition_Procedure  Flag302
    --    Suppress_Elaboration_Warnings   Flag303
+   --    Is_Elaboration_Warnings_OK_Id   Flag304
 
-   --    (unused)                        Flag304
    --    (unused)                        Flag305
    --    (unused)                        Flag306
    --    (unused)                        Flag307
@@ -2261,6 +2261,17 @@ package body Einfo is
           or else Is_Task_Type (Id));
       return Flag148 (Id);
    end Is_Elaboration_Checks_OK_Id;
+
+   function Is_Elaboration_Warnings_OK_Id (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Constant, E_Variable, E_Void)
+          or else Is_Entry (Id)
+          or else Is_Generic_Unit (Id)
+          or else Is_Subprogram (Id)
+          or else Is_Task_Type (Id));
+      return Flag304 (Id);
+   end Is_Elaboration_Warnings_OK_Id;
 
    function Is_Eliminated (Id : E) return B is
    begin
@@ -5475,6 +5486,17 @@ package body Einfo is
           or else Is_Task_Type (Id));
       Set_Flag148 (Id, V);
    end Set_Is_Elaboration_Checks_OK_Id;
+
+   procedure Set_Is_Elaboration_Warnings_OK_Id (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Constant, E_Variable)
+          or else Is_Entry (Id)
+          or else Is_Generic_Unit (Id)
+          or else Is_Subprogram (Id)
+          or else Is_Task_Type (Id));
+      Set_Flag304 (Id, V);
+   end Set_Is_Elaboration_Warnings_OK_Id;
 
    procedure Set_Is_Eliminated (Id : E; V : B := True) is
    begin
@@ -9685,6 +9707,7 @@ package body Einfo is
       W ("Is_Dispatch_Table_Entity",        Flag234 (Id));
       W ("Is_Dispatching_Operation",        Flag6   (Id));
       W ("Is_Elaboration_Checks_OK_Id",     Flag148 (Id));
+      W ("Is_Elaboration_Warnings_OK_Id",   Flag304 (Id));
       W ("Is_Eliminated",                   Flag124 (Id));
       W ("Is_Entry_Formal",                 Flag52  (Id));
       W ("Is_Exception_Handler",            Flag286 (Id));
