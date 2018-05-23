@@ -1,4 +1,10 @@
-2017-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+2018-05-23  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
+
+	PR target/78849
+	* gcc/tree.c (build_common_tree_nodes): Dont set TYPE_SIZE for __intN
+	types.
+
+2018-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/sourcebuild.texi (Endianness): New subsubsection.
 
