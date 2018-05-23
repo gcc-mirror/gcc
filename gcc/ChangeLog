@@ -1,5 +1,11 @@
 2018-05-23  Alexander Monakov  <amonakov@ispras.ru>
 
+	PR rtl-optimization/79985
+	* df-scan.c (df_insn_refs_collect): Remove special case for
+	global registers and asm statements.
+
+2018-05-23  Alexander Monakov  <amonakov@ispras.ru>
+
 	* extend.texi (Global Register Variables): Rewrite the bullet list.
 	Note that the register is available for allocation. Note that access
 	via inline asm must use constraints. Add note about async-signal
