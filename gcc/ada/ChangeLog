@@ -1,5 +1,10 @@
 2018-05-23  Bob Duff  <duff@adacore.com>
 
+	* freeze.adb: (Check_Address_Clause): Deal with build-in-place
+	aggregates in addition to build-in-place calls.
+
+2018-05-23  Bob Duff  <duff@adacore.com>
+
 	* einfo.ads: Minor reformatting.
 	* sem_ch3.adb: Likewise.
 	* sinfo.ads: Likewise.
