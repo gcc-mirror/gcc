@@ -2063,10 +2063,24 @@ package body Sem_Ch5 is
       --  indicator, verify that the container type has an Iterate aspect that
       --  implements the reversible iterator interface.
 
+      procedure Check_Subtype_Indication (Comp_Type : Entity_Id);
+      --  If a subtype indication is present, verify that it is consistent
+      --  with the component type of the array or container name.
+
       function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id;
       --  For containers with Iterator and related aspects, the cursor is
       --  obtained by locating an entity with the proper name in the scope
       --  of the type.
+
+      --  Local variables
+
+      Def_Id    : constant Node_Id    := Defining_Identifier (N);
+      Iter_Name : constant Node_Id    := Name (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Subt      : constant Node_Id    := Subtype_Indication (N);
+
+      Bas       : Entity_Id := Empty;  -- initialize to prevent warning
+      Typ       : Entity_Id;
 
       -----------------------------
       -- Check_Reverse_Iteration --
@@ -2090,6 +2104,26 @@ package body Sem_Ch5 is
             end if;
          end if;
       end Check_Reverse_Iteration;
+
+      -------------------------------
+      --  Check_Subtype_Indication --
+      -------------------------------
+
+      procedure Check_Subtype_Indication (Comp_Type : Entity_Id) is
+      begin
+         if Present (Subt)
+           and then (not Covers (Base_Type ((Bas)), Comp_Type)
+                      or else not Subtypes_Statically_Match (Bas, Comp_Type))
+         then
+            if Is_Array_Type (Typ) then
+               Error_Msg_N
+                 ("subtype indication does not match component type", Subt);
+            else
+               Error_Msg_N
+                 ("subtype indication does not match element type", Subt);
+            end if;
+         end if;
+      end Check_Subtype_Indication;
 
       ---------------------
       -- Get_Cursor_Type --
@@ -2126,16 +2160,6 @@ package body Sem_Ch5 is
 
          return Etype (Ent);
       end Get_Cursor_Type;
-
-      --  Local variables
-
-      Def_Id    : constant Node_Id    := Defining_Identifier (N);
-      Iter_Name : constant Node_Id    := Name (N);
-      Loc       : constant Source_Ptr := Sloc (N);
-      Subt      : constant Node_Id    := Subtype_Indication (N);
-
-      Bas : Entity_Id := Empty;  -- initialize to prevent warning
-      Typ : Entity_Id;
 
    --   Start of processing for Analyze_Iterator_Specification
 
@@ -2394,15 +2418,7 @@ package body Sem_Ch5 is
                   & "component of a mutable object", N);
             end if;
 
-            if Present (Subt)
-              and then
-                (Base_Type (Bas) /= Base_Type (Component_Type (Typ))
-                  or else
-                    not Subtypes_Statically_Match (Bas, Component_Type (Typ)))
-            then
-               Error_Msg_N
-                 ("subtype indication does not match component type", Subt);
-            end if;
+            Check_Subtype_Indication (Component_Type (Typ));
 
          --  Here we have a missing Range attribute
 
@@ -2452,6 +2468,8 @@ package body Sem_Ch5 is
                   end if;
                end;
 
+               Check_Subtype_Indication (Etype (Def_Id));
+
             --  For a predefined container, The type of the loop variable is
             --  the Iterator_Element aspect of the container type.
 
@@ -2477,18 +2495,7 @@ package body Sem_Ch5 is
                      Cursor_Type := Get_Cursor_Type (Typ);
                      pragma Assert (Present (Cursor_Type));
 
-                     --  If subtype indication was given, verify that it covers
-                     --  the element type of the container.
-
-                     if Present (Subt)
-                       and then (not Covers (Bas, Etype (Def_Id))
-                                  or else not Subtypes_Statically_Match
-                                                (Bas, Etype (Def_Id)))
-                     then
-                        Error_Msg_N
-                          ("subtype indication does not match element type",
-                           Subt);
-                     end if;
+                     Check_Subtype_Indication (Etype (Def_Id));
 
                      --  If the container has a variable indexing aspect, the
                      --  element is a variable and is modifiable in the loop.
