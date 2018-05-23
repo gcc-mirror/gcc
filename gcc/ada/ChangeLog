@@ -1,3 +1,14 @@
+2018-05-23  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Restrict the initialization of
+	External_Tag and Expanded_Name to an empty string to the case where
+	both pragmas apply (i.e. No_Tagged_Streams and Discard_Names), since
+	restricted runtimes are compiled with pragma Discard_Names.
+	* doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_rm/implementation_defined_characteristics.rst: Add
+	documentation.
+	* gnat_rm.texi: Regenerate.
+
 2018-05-23  Maroua Maalej  <maalej@adacore.com>
 
 	* sem_spark.adb: Fix of some permission rules of pointers in SPARK.

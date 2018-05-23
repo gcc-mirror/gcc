@@ -3892,6 +3892,11 @@ and derived types of this type inherit the pragma automatically, so the effect
 applies to a complete hierarchy (this is necessary to deal with the class-wide
 dispatching versions of the stream routines).
 
+When pragmas ``Discard_Names`` and ``No_Tagged_Streams`` are simultaneously
+applied to a tagged type its Expanded_Name and External_Tag are initialized
+with empty strings. This is useful to avoid exposing entity names at binary
+level but has a negative impact on the debuggability of tagged types.
+
 Pragma Normalize_Scalars
 ========================
 
