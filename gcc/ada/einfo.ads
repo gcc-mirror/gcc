@@ -2522,12 +2522,16 @@ package Einfo is
 --       checks. Such targets are allowed to generate run-time conditional ABE
 --       checks or guaranteed ABE failures.
 
+--    Is_Elaboration_Target (synthesized)
+--       Applies to all entities, True only for elaboration targets (see the
+--       terminology in Sem_Elab).
+
 --    Is_Elaboration_Warnings_OK_Id (Flag304)
 --       Defined in elaboration targets (see terminology in Sem_Elab). Set when
 --       the target appears in a region with elaboration warnings enabled.
 
 --    Is_Elementary_Type (synthesized)
---       Applies to all entities, true for all elementary types and subtypes.
+--       Applies to all entities, True for all elementary types and subtypes.
 --       Either Is_Composite_Type or Is_Elementary_Type (but not both) is true
 --       of any type.
 
@@ -5971,6 +5975,7 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
    --    Is_Atomic_Or_VFA                    (synth)
+   --    Is_Elaboration_Target               (synth)
    --    Size_Clause                         (synth)
 
    --  E_Decimal_Fixed_Point_Type
@@ -6041,6 +6046,7 @@ package Einfo is
    --    Entry_Index_Type                    (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
+   --    Is_Elaboration_Target               (synth)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
    --    Scope_Depth                         (synth)
@@ -6202,6 +6208,7 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
+   --    Is_Elaboration_Target               (synth)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
    --    Scope_Depth                         (synth)
@@ -6329,6 +6336,7 @@ package Einfo is
    --    Is_Primitive                        (Flag218)
    --    Is_Pure                             (Flag44)
    --    SPARK_Pragma_Inherited              (Flag265)
+   --    Is_Elaboration_Target               (synth)
    --    Aren't there more flags and fields? seems like this list should be
    --    more similar to the E_Function list, which is much longer ???
 
@@ -6401,6 +6409,7 @@ package Einfo is
    --    Static_Elaboration_Desired          (Flag77)   (non-generic case only)
    --    Has_Non_Null_Abstract_State         (synth)
    --    Has_Null_Abstract_State             (synth)
+   --    Is_Elaboration_Target               (synth)
    --    Is_Wrapper_Package                  (synth)    (non-generic case only)
    --    Scope_Depth                         (synth)
 
@@ -6525,6 +6534,7 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
+   --    Is_Elaboration_Target               (synth)
    --    Is_Finalizer                        (synth)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
@@ -6712,6 +6722,7 @@ package Einfo is
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)
+   --    Is_Elaboration_Target               (synth)
    --    Number_Entries                      (synth)
    --    Scope_Depth                         (synth)
    --    (plus type attributes)
@@ -6777,6 +6788,7 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
    --    Is_Atomic_Or_VFA                    (synth)
+   --    Is_Elaboration_Target               (synth)
    --    Size_Clause                         (synth)
 
    --  E_Void
@@ -7595,6 +7607,7 @@ package Einfo is
    function Is_Controlled                       (Id : E) return B;
    function Is_Discriminal                      (Id : E) return B;
    function Is_Dynamic_Scope                    (Id : E) return B;
+   function Is_Elaboration_Target               (Id : E) return B;
    function Is_External_State                   (Id : E) return B;
    function Is_Finalizer                        (Id : E) return B;
    function Is_Null_State                       (Id : E) return B;

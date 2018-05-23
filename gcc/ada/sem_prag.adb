@@ -24696,6 +24696,13 @@ package body Sem_Prag is
                                 (E, (Chars (Get_Pragma_Arg (Arg1)) =
                                       Name_Off));
 
+                              --  Suppress elaboration warnings if the entity
+                              --  denotes an elaboration target.
+
+                              if Is_Elaboration_Target (E) then
+                                 Set_Is_Elaboration_Warnings_OK_Id (E, False);
+                              end if;
+
                               --  For OFF case, make entry in warnings off
                               --  pragma table for later processing. But we do
                               --  not do that within an instance, since these
