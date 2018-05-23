@@ -2476,49 +2476,16 @@ _bb_vec_info::~_bb_vec_info ()
   bb->aux = NULL;
 }
 
-
-/* Analyze statements contained in SLP tree NODE after recursively analyzing
-   the subtree.  NODE_INSTANCE contains NODE and VINFO contains INSTANCE.
-
-   Return true if the operations are supported.  */
+/* Subroutine of vect_slp_analyze_node_operations.  Handle the root of NODE,
+   given then that child nodes have already been processed, and that
+   their def types currently match their SLP node's def type.  */
 
 static bool
-vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
-				  slp_instance node_instance,
-				  scalar_stmts_to_slp_tree_map_t *visited,
-				  scalar_stmts_to_slp_tree_map_t *lvisited,
-				  stmt_vector_for_cost *cost_vec)
+vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
+				    slp_instance node_instance,
+				    stmt_vector_for_cost *cost_vec)
 {
-  bool dummy;
-  int i, j;
-  gimple *stmt;
-  slp_tree child;
-
-  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
-    return true;
-
-  /* If we already analyzed the exact same set of scalar stmts we're done.
-     We share the generated vector stmts for those.  */
-  slp_tree *leader;
-  if ((leader = visited->get (SLP_TREE_SCALAR_STMTS (node)))
-      || (leader = lvisited->get (SLP_TREE_SCALAR_STMTS (node))))
-    {
-      SLP_TREE_NUMBER_OF_VEC_STMTS (node)
-	= SLP_TREE_NUMBER_OF_VEC_STMTS (*leader);
-      return true;
-    }
-
-  /* The SLP graph is acyclic so not caching whether we failed or succeeded
-     doesn't result in any issue since we throw away the lvisited set
-     when we fail.  */
-  lvisited->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
-
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (!vect_slp_analyze_node_operations (vinfo, child, node_instance,
-					   visited, lvisited, cost_vec))
-      return false;
-
-  stmt = SLP_TREE_SCALAR_STMTS (node)[0];
+  gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0];
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   gcc_assert (stmt_info);
   gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
@@ -2545,6 +2512,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	}
 
       gimple *sstmt;
+      unsigned int i;
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, sstmt)
 	STMT_VINFO_VECTYPE (vinfo_for_stmt (sstmt)) = vectype;
     }
@@ -2572,12 +2540,56 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	= vect_get_num_vectors (vf * group_size, vectype);
     }
 
+  bool dummy;
+  return vect_analyze_stmt (stmt, &dummy, node, node_instance, cost_vec);
+}
+
+/* Analyze statements contained in SLP tree NODE after recursively analyzing
+   the subtree.  NODE_INSTANCE contains NODE and VINFO contains INSTANCE.
+
+   Return true if the operations are supported.  */
+
+static bool
+vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
+				  slp_instance node_instance,
+				  scalar_stmts_to_slp_tree_map_t *visited,
+				  scalar_stmts_to_slp_tree_map_t *lvisited,
+				  stmt_vector_for_cost *cost_vec)
+{
+  int i, j;
+  slp_tree child;
+
+  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
+    return true;
+
+  /* If we already analyzed the exact same set of scalar stmts we're done.
+     We share the generated vector stmts for those.  */
+  slp_tree *leader;
+  if ((leader = visited->get (SLP_TREE_SCALAR_STMTS (node)))
+      || (leader = lvisited->get (SLP_TREE_SCALAR_STMTS (node))))
+    {
+      SLP_TREE_NUMBER_OF_VEC_STMTS (node)
+	= SLP_TREE_NUMBER_OF_VEC_STMTS (*leader);
+      return true;
+    }
+
+  /* The SLP graph is acyclic so not caching whether we failed or succeeded
+     doesn't result in any issue since we throw away the lvisited set
+     when we fail.  */
+  lvisited->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
+
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    if (!vect_slp_analyze_node_operations (vinfo, child, node_instance,
+					   visited, lvisited, cost_vec))
+      return false;
+
   /* Push SLP node def-type to stmt operands.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
       STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0]))
 	= SLP_TREE_DEF_TYPE (child);
-  bool res = vect_analyze_stmt (stmt, &dummy, node, node_instance, cost_vec);
+  bool res = vect_slp_analyze_node_operations_1 (vinfo, node, node_instance,
+						 cost_vec);
   /* Restore def-types.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
