@@ -550,6 +550,7 @@ static const cpu_prefetch_tune generic_prefetch_tune =
   -1,			/* l1_cache_size  */
   -1,			/* l1_cache_line_size  */
   -1,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
   -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
@@ -560,6 +561,7 @@ static const cpu_prefetch_tune exynosm1_prefetch_tune =
   -1,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
   -1,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
   -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
@@ -570,6 +572,7 @@ static const cpu_prefetch_tune qdf24xx_prefetch_tune =
   32,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
   512,			/* l2_cache_size  */
+  false,		/* prefetch_dynamic_strides */
   2048,			/* minimum_stride */
   3			/* default_opt_level  */
 };
@@ -580,6 +583,7 @@ static const cpu_prefetch_tune thunderxt88_prefetch_tune =
   32,			/* l1_cache_size  */
   128,			/* l1_cache_line_size  */
   16*1024,		/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
   -1,			/* minimum_stride */
   3			/* default_opt_level  */
 };
@@ -590,6 +594,7 @@ static const cpu_prefetch_tune thunderx_prefetch_tune =
   32,			/* l1_cache_size  */
   128,			/* l1_cache_line_size  */
   -1,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
   -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
@@ -600,6 +605,7 @@ static const cpu_prefetch_tune thunderx2t99_prefetch_tune =
   32,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
   256,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
   -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
@@ -10633,6 +10639,11 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (aarch64_tune_params.prefetch->l2_cache_size >= 0)
     maybe_set_param_value (PARAM_L2_CACHE_SIZE,
 			   aarch64_tune_params.prefetch->l2_cache_size,
+			   opts->x_param_values,
+			   global_options_set.x_param_values);
+  if (!aarch64_tune_params.prefetch->prefetch_dynamic_strides)
+    maybe_set_param_value (PARAM_PREFETCH_DYNAMIC_STRIDES,
+			   0,
 			   opts->x_param_values,
 			   global_options_set.x_param_values);
   if (aarch64_tune_params.prefetch->minimum_stride >= 0)
