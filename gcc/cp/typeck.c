@@ -5860,11 +5860,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	{
 	  if (!(complain & tf_error))
 	    return error_mark_node;
-	  if (kind & clk_class)
-	    /* Make this a permerror because we used to accept it.  */
-	    permerror (input_location, "taking address of temporary");
-	  else
-	    error ("taking address of xvalue (rvalue reference)");
+	  /* Make this a permerror because we used to accept it.  */
+	  permerror (input_location, "taking address of rvalue");
 	}
     }
 
@@ -9866,11 +9863,8 @@ lvalue_or_else (tree ref, enum lvalue_use use, tsubst_flags_t complain)
     {
       if (!(complain & tf_error))
 	return 0;
-      if (kind & clk_class)
-	/* Make this a permerror because we used to accept it.  */
-	permerror (input_location, "using temporary as lvalue");
-      else
-	error ("using xvalue (rvalue reference) as lvalue");
+      /* Make this a permerror because we used to accept it.  */
+      permerror (input_location, "using rvalue as lvalue");
     }
   return 1;
 }

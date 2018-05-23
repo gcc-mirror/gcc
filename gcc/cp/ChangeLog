@@ -1,3 +1,12 @@
+2018-05-23  Jason Merrill  <jason@redhat.com>
+
+	CWG 616, 1213 - value category of subobject references.
+	* tree.c (lvalue_kind): A reference to a subobject of a prvalue is
+	an xvalue.
+	* typeck2.c (build_m_component_ref): Likewise.
+	* typeck.c (cp_build_addr_expr_1, lvalue_or_else): Remove diagnostic
+	distinction between temporary and xvalue.
+
 2018-05-23  Marek Polacek  <polacek@redhat.com>
 
 	Implement P0614R1, Range-based for statements with initializer.
