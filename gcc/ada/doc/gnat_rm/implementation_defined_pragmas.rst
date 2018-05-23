@@ -7456,6 +7456,10 @@ In this usage, the pattern string must match in the Off and On
 pragmas, and (if *-gnatw.w* is given) at least one matching
 warning must be suppressed.
 
+Note: if the ON form is not found, then the effect of the OFF form extends
+until the end of the file (pragma Warnings is purely textual, so its effect
+does not stop at the end of the enclosing scope).
+
 Note: to write a string that will match any warning, use the string
 ``"***"``. It will not work to use a single asterisk or two
 asterisks since this looks like an operator name. This form with three
