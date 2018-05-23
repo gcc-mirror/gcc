@@ -1,3 +1,10 @@
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If a subtype indication
+	is present, verify its legality when the domain of iteration is a
+	GNAT-specific formal container, as is already done for arrays and
+	predefined containers.
+
 2018-05-23  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Enclosing_Declaration): Fix the case of a named number

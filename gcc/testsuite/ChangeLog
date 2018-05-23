@@ -1,3 +1,7 @@
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/iter1.adb, gnat.dg/iter1.ads: New testcase.
+
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/elab5.adb, gnat.dg/elab5_pkg.adb, gnat.dg/elab5_pkg.ads: New
