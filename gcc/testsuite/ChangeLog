@@ -1,3 +1,9 @@
+2018-05-23  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp2a/range-for8.C: New test.
+	* g++.dg/cpp2a/range-for9.C: New test.
+	* g++.dg/cpp2a/range-for10.C: New test.
+
 2017-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* lib/target-supports.exp (check_effective_target_be): New.
