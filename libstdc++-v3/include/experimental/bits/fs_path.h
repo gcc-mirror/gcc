@@ -79,8 +79,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   /// A filesystem path.
   class path
   {
-    template<typename _CharT>
-      struct __is_encoded_char : std::false_type { };
+    template<typename _CharT,
+	     typename _Ch = typename remove_const<_CharT>::type>
+      using __is_encoded_char
+	= __or_<is_same<_Ch, char>, is_same<_Ch, wchar_t>,
+		is_same<_Ch, char16_t>, is_same<_Ch, char32_t>>;
 
     template<typename _Iter,
 	     typename _Iter_traits = std::iterator_traits<_Iter>>
@@ -161,8 +164,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     template<typename _Tp,
 	     typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
 	     typename _Val = typename std::iterator_traits<_Iter>::value_type>
-      using __value_type_is_char
-	= typename std::enable_if<std::is_same<_Val, char>::value>::type;
+      using __value_type_is_char = typename std::enable_if<
+	std::is_same<typename std::remove_const<_Val>::type, char>::value
+	>::type;
 
   public:
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
@@ -378,6 +382,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     iterator begin() const;
     iterator end() const;
 
+    // Create a basic_string by reading until a null character.
+    template<typename _InputIterator,
+	     typename _Traits = std::iterator_traits<_InputIterator>,
+	     typename _CharT
+	       = typename std::remove_cv<typename _Traits::value_type>::type>
+      static std::basic_string<_CharT>
+      _S_string_from_iter(_InputIterator __source)
+      {
+	std::basic_string<_CharT> __str;
+	for (_CharT __ch = *__source; __ch != _CharT(); __ch = *++__source)
+	  __str.push_back(__ch);
+	return __str;
+      }
+
   private:
     enum class _Type : unsigned char {
 	_Multi, _Root_name, _Root_dir, _Filename
@@ -427,11 +445,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static string_type
       _S_convert(_InputIterator __src, __null_terminated)
       {
-	using _Tp = typename std::iterator_traits<_InputIterator>::value_type;
-	std::basic_string<typename remove_cv<_Tp>::type> __tmp;
-	for (; *__src != _Tp{}; ++__src)
-	  __tmp.push_back(*__src);
-	return _S_convert(__tmp.c_str(), __tmp.c_str() + __tmp.size());
+	auto __s = _S_string_from_iter(__src);
+	return _S_convert(__s.c_str(), __s.c_str() + __s.size());
       }
 
     static string_type
@@ -451,10 +466,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_convert_loc(_InputIterator __src, __null_terminated,
 		     const std::locale& __loc)
       {
-	std::string __tmp;
-	while (*__src != '\0')
-	  __tmp.push_back(*__src++);
-	return _S_convert_loc(__tmp.data(), __tmp.data()+__tmp.size(), __loc);
+	std::string __s = _S_string_from_iter(__src);
+	return _S_convert_loc(__s.data(), __s.data() + __s.size(), __loc);
       }
 
     bool _S_is_dir_sep(value_type __ch)
@@ -593,25 +606,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path _M_path2;
     std::string _M_what = _M_gen_what();
   };
-
-  template<>
-    struct path::__is_encoded_char<char> : std::true_type
-    { using value_type = char; };
-
-  template<>
-    struct path::__is_encoded_char<wchar_t> : std::true_type
-    { using value_type = wchar_t; };
-
-  template<>
-    struct path::__is_encoded_char<char16_t> : std::true_type
-    { using value_type = char16_t; };
-
-  template<>
-    struct path::__is_encoded_char<char32_t> : std::true_type
-    { using value_type = char32_t; };
-
-  template<typename _Tp>
-    struct path::__is_encoded_char<const _Tp> : __is_encoded_char<_Tp> { };
 
   struct path::_Cmpt : path
   {

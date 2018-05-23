@@ -1,5 +1,34 @@
 2018-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_path.h (path::__is_encoded_char): Change from class
+	template to alias template.
+	(path::__value_type_is_char): Use remove_const_t.
+	(path:_S_string_from_iter): New helper function.
+	(path::_S_convert(InputIter, __null_terminated))
+	(path::_S_convert_loc(InputIter, __null_terminated, const locale&)):
+	Use _S_string_from_iter.
+	(path::string<_CharT, _Allocator>(const _Allocator&)): Allow sharing
+	rep for COW strings.
+	* include/experimental/bits/fs_path.h (path::__is_encoded_char):
+	Change from class template to alias template.
+	(path::__value_type_is_char): Use remove_const.
+	(path:_S_string_from_iter): New helper function.
+	(path::_S_convert(InputIter, __null_terminated))
+	(path::_S_convert_loc(InputIter, __null_terminated, const locale&)):
+	Use _S_string_from_iter.
+	* testsuite/27_io/filesystem/path/append/source.cc: Test appending
+	wide strings.
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Check for exact
+	string equality, not path equivalence.
+	* testsuite/27_io/filesystem/path/construct/format.cc: Check
+	construction from std::string and std::wstring and input iterators.
+	* testsuite/27_io/filesystem/path/construct/locale.cc: Check
+	construction from iterators.
+	* testsuite/experimental/filesystem/path/concat/strings.cc: Check for
+	exact string equality, not path equivalence.
+	* testsuite/experimental/filesystem/path/construct/locale.cc: Check
+	construction from iterators.
+
 	* include/bits/fs_path.h (path::_M_type): Change default member
 	initializer to _Filename.
 	(path::begin): Create past-the-end iterator for empty path.
