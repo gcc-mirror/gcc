@@ -1,3 +1,7 @@
+2018-05-23  Daniel Mercier  <mercier@adacore.com>
+
+	* gnat1drv.adb: Turn off length expansion in CodePeer mode.
+
 2018-05-23  Bob Duff  <duff@adacore.com>
 
 	* freeze.adb: (Check_Address_Clause): Deal with build-in-place
