@@ -1,4 +1,19 @@
+2018-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cxx-module-server.sh: Remove --no-default.
+	* module.c (module_server::send_command): New.
+	(module_server::{reset,handshake,import_export_query,export_done}):
+	Use it.
+	gcc/testsuite/
+	* g++.dg/modules/atom-peek-1_[bc].C: Adjust scans.
+	* g++.dg/modules/indirect-1_c.C: Likewise.
+
 2018-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cxx-module-server.sh: Add --no-compile, --no-default and
+	--mapping options.
 
 	gcc/cp/
 	* module.c (depset::defn_key): Add is_def parm.
@@ -36,6 +51,7 @@
 	(trees_{in,out}::lang_decl_vals): Remove seeding.
 	(has_definition): Return bool.
 	(ct_seed_decl, ct_self_used): Delete.
+
 	(module_state::{read,write}_cluster): Remove lazy handling.
 	(module_state::{find_dependencies,write}): Adjust.
 	(module_state::check_read): Adjust.

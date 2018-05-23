@@ -49,5 +49,5 @@ int main ()
 // { dg-final { scan-lang-dump {Lazily binding '::bar::Plain_Const_Three'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {Lazily binding '::bar::Scoped_Const_Three'@'bar' section} module } }
 
-// { dg-final { scan-lang-dump {Query BMI 'bar'} module } }
-// { dg-final { scan-lang-dump-not {Query BMI 'foo'} module } }
+// { dg-final { scan-lang-dump {Server request:BMI bar } module } }
+// { dg-final { scan-lang-dump-not {Server request:BMI foo } module } }

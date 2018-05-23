@@ -2,5 +2,5 @@
 
 module pop;
 
-// { dg-final { scan-lang-dump {Peeking import 'pop'} module } }
-// { dg-final { scan-lang-dump {Query BMI 'pop'} module } }
+// { dg-final { scan-lang-dump {Server request:PEEK BMI pop } module } }
+// { dg-final { scan-lang-dump {Server request:BMI pop } module } }

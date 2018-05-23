@@ -28,7 +28,6 @@ main=
 
 verbose=false
 compile=true
-default=true
 declare -A mapping
 
 shopt -s extglob nullglob
@@ -75,11 +74,11 @@ invoke_compiler () {
 }
 
 bmi () {
-    local r="${mapping[$1]}"
-    if $default ; then
-	test "$r" || r=$(echo $1 | tr . -).nms
+    if test ${#mapping[@]} -ne 0 ; then
+	echo "${mapping[$1]}"
+    else
+	echo "$(echo $1 | tr . -).nms"
     fi
-    echo "$r"
 }
 
 search () {
@@ -173,7 +172,6 @@ while test "$#" != 0 ; do
 		mapping[$mod]="$file"
 	    done < $1
 	    ;;
-	(--no-default) default=false ;;
 	(-*) echo "Unknown option '$1'" >&2 ; exit 1 ;;
 	(*) break ;;
     esac

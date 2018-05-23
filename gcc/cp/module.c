@@ -2601,6 +2601,7 @@ private:
   void reset ();
   bool handshake (const char *main_src);
   char *import_export_query (const char *, tree name, const char *);
+  void send_command (const char *, ...) ATTRIBUTE_PRINTF_2;
   void get_response ();
   char *response_token ();
   int response_word (const char *, ...);
@@ -6586,6 +6587,8 @@ module_server::module_server (const char *option)
   /* We have a live server.  Say Hello.  */
   dump () && dump ("Initialized server");
 
+  buffer = XNEWVEC (char, size);
+
   if (!handshake (main_input_filename))
     kill ();
 }
@@ -6617,6 +6620,9 @@ module_server::kill ()
     fclose (from);
 
   from = to = NULL;
+
+  XDELETEVEC (buffer);
+  buffer = NULL;
 }
 
 /* Create a new server connecting to OPTION.  */
@@ -6632,15 +6638,34 @@ module_server::make (const char *option)
   return new module_server (option);
 }
 
+/* Send a command to the server.  */
+
+void
+module_server::send_command (const char *format, ...)
+{
+ again:
+  va_list args;
+  va_start (args, format);
+  size_t actual = vsnprintf (buffer, size - 1, format, args);
+  va_end (args);
+  if (actual > size - 1)
+    {
+      size = actual + 20;
+      buffer = XRESIZEVEC (char, buffer, size);
+      goto again;
+    }
+
+  dump () && dump ("Server request:%s", buffer);
+  buffer[actual++] = '\n';
+  fwrite (buffer, 1, actual, to);
+}
+
 /* Read a response from the server.   Server may die.  */
 
 void
 module_server::get_response ()
 {
   size_t off = 0;
-
-  if (!buffer)
-    buffer = XNEWVEC (char, size);
 
  more:
   if (!fgets (buffer + off, size - off, from))
@@ -6667,6 +6692,7 @@ module_server::get_response ()
   while (ISSPACE (*buffer))
     buffer++;
   pos = buffer;
+  dump () && dump ("Server response:%s", pos);
 }
 
 void
@@ -6764,7 +6790,7 @@ module_server::response_word (const char *option, ...)
 void
 module_server::reset ()
 {
-  fprintf (to, "RESET\n");
+  send_command ("RESET");
 }
 
 /* Start handshake.  */
@@ -6772,7 +6798,7 @@ module_server::reset ()
 bool
 module_server::handshake (const char *main_file)
 {
-  fprintf (to, "HELLO %d %s\n", SERVER_VERSION, main_file);
+  send_command ("HELLO %d %s", SERVER_VERSION, main_file);
 
   get_response ();
   switch (response_word ("HELLO", "ERROR", NULL))
@@ -6796,14 +6822,13 @@ module_server::handshake (const char *main_file)
 char *
 module_server::import_export_query (const char *query, tree name, const char *loc)
 {
-  dump () && dump ("Query %s %N", query, name);
   if (noisy_p ())
     {
       fprintf (stderr, " query:%s", IDENTIFIER_POINTER (name));
       fflush (stderr);
     }
 
-  fprintf (to, "%s %s %s\n", query, IDENTIFIER_POINTER (name), loc);
+  send_command ("%s %s %s", query, IDENTIFIER_POINTER (name), loc);
   get_response ();
   char *filename = NULL;
 
@@ -6829,9 +6854,8 @@ module_server::import_export_query (const char *query, tree name, const char *lo
 void
 module_server::peek_import_query (tree name, location_t loc)
 {
-  dump () && dump ("Peeking import %N", name);
-  fprintf (to, "PEEK BMI %s %s\n", IDENTIFIER_POINTER (name),
-	   LOCATION_FILE (loc));
+  send_command ("PEEK BMI %s %s", IDENTIFIER_POINTER (name),
+		LOCATION_FILE (loc));
   get_response ();
 }
 
@@ -6857,7 +6881,7 @@ bool
 module_server::export_done (tree name)
 {
   dump () && dump ("Completed server");
-  fprintf (to, "DONE %s\n", IDENTIFIER_POINTER (name));
+  send_command ("DONE %s", IDENTIFIER_POINTER (name));
   get_response ();
   return response_word ("OK", NULL) == 0;
 }
