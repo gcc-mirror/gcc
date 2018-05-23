@@ -710,13 +710,12 @@ package body Freeze is
             end;
          end if;
 
-         --  Remove side effects from initial expression, except in the case
-         --  of a build-in-place call, which has its own later expansion.
+         --  Remove side effects from initial expression, except in the case of
+         --  limited build-in-place calls and aggregates, which have their own
+         --  expansion elsewhere. This exception is necessary to avoid copying
+         --  limited objects.
 
-         if Present (Init)
-           and then (Nkind (Init) /= N_Function_Call
-                      or else not Is_Expanded_Build_In_Place_Call (Init))
-         then
+         if Present (Init) and then not Is_Limited_View (Typ) then
             --  Capture initialization value at point of declaration, and make
             --  explicit assignment legal, because object may be a constant.
 
@@ -735,7 +734,7 @@ package body Freeze is
 
             Set_No_Initialization (Decl);
 
-            --  If the objet is tagged, check whether the tag must be
+            --  If the object is tagged, check whether the tag must be
             --  reassigned explicitly.
 
             Tag_Assign := Make_Tag_Assignment (Decl);
