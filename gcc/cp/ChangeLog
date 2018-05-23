@@ -1,3 +1,11 @@
+2018-05-23  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0614R1, Range-based for statements with initializer.
+	* parser.c (cp_parser_range_based_for_with_init_p): New.
+	(cp_parser_init_statement): Use it.  Parse the optional init-statement
+	for a range-based for loop.
+	(cp_parser_skip_to_closing_parenthesis_1): Handle balancing ?:.
+
 2018-05-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81420 - not extending temporary lifetime.
