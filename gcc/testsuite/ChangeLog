@@ -1,3 +1,8 @@
+2018-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85874
+	* gcc.dg/Wstrict-overflow-27.c: New testcase.
+
 2018-05-23  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
