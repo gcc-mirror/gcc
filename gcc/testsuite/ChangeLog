@@ -1,6 +1,14 @@
 2018-05-23  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-05-23  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/85822
+	* c-c++-common/pr85822.c: New test.
+
+2018-05-23  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-05-11  Martin Liska  <mliska@suse.cz>
 
         PR sanitizer/85556
