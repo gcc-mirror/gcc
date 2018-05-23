@@ -1,3 +1,9 @@
+2018-05-23  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-convec.adb: (Insert, Insert_Space): Suppress warnings. The
+	code in question is not reachable in the case where Count_Type'Last is
+	out of range.
+
 2018-05-23  Yannick Moy  <moy@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Clarify meaning of
