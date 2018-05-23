@@ -1,3 +1,8 @@
+2018-05-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Remove restriction
+	of fixed offset from memset VN.
+
 2018-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (struct slsr_cand_d): Add
