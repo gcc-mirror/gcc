@@ -91,6 +91,19 @@ package body GNAT.Exception_Actions is
 
    procedure Core_Dump (Occurrence : Exception_Occurrence) is separate;
 
+   --------------------------
+   -- Is_Foreign_Exception --
+   --------------------------
+
+   function Is_Foreign_Exception (E : Exception_Occurrence) return Boolean is
+      Foreign_Exception : aliased Exception_Data;
+      pragma Import
+        (Ada, Foreign_Exception, "system__exceptions__foreign_exception");
+   begin
+      return (To_Data (Exception_Identity (E))
+                = Foreign_Exception'Unchecked_Access);
+   end Is_Foreign_Exception;
+
    ----------------
    -- Name_To_Id --
    ----------------

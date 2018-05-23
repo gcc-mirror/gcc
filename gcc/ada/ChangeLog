@@ -1,3 +1,8 @@
+2018-05-23  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/g-excact.ads (Is_Foreign_Exception): New predicate.
+	* libgnat/g-excact.adb: Implement.
+
 2018-05-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iterator_Specification): If a subtype indication
