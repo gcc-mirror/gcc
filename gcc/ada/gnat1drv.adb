@@ -247,6 +247,10 @@ procedure Gnat1drv is
          GNATprove_Mode := False;
          Debug_Flag_Dot_FF := False;
 
+         --  Turn off length expansion. CodePeer has its own mechanism to
+         --  handle length attribute.
+         Debug_Flag_Dot_PP := True;
+
          --  Turn off C tree generation, not compatible with CodePeer mode. We
          --  do not expect this to happen in normal use, since both modes are
          --  enabled by special tools, but it is useful to turn off these flags
