@@ -1,3 +1,7 @@
+2018-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Type_Info): Remove obsolete stuff.
+
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb: Flag304 is now Is_Elaboration_Warnings_OK_Id.
