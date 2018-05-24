@@ -1,3 +1,8 @@
+2018-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tree-prof/update-loopch.c: Fix dumpfile name in
+	scan-tree-dump*.
+
 2018-05-24  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR target/83009
