@@ -1,3 +1,9 @@
+2018-05-24  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Pedwarn on a non-standard position of a C++ attribute.
+	* parser.c (cp_parser_namespace_definition): Pedwarn about attributes
+	after the namespace name.
+
 2018-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (INDIRECT_TYPE_P): New.

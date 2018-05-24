@@ -18656,6 +18656,11 @@ cp_parser_namespace_definition (cp_parser* parser)
 	{
 	  identifier = cp_parser_identifier (parser);
 
+	  if (cp_next_tokens_can_be_std_attribute_p (parser))
+	    pedwarn (input_location, OPT_Wpedantic,
+		     "standard attributes on namespaces must precede "
+		     "the namespace name");
+
 	  /* Parse any attributes specified after the identifier.  */
 	  attribs = attr_chainon (attribs, cp_parser_attributes_opt (parser));
 	}
