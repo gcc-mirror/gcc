@@ -1,3 +1,11 @@
+2018-05-24  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Abstract_Interface_List): Add missing support for
+	private types whose full view is a synchronized type.
+	* sem_ch3.adb (Build_Derived_Private_Type): Skip building the full
+	derivation of a private type parent type is a task type with
+	discriminants as gigi does not use such type directly.
+
 2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb (Build_Variable_Reference_Marker): Do not create a
