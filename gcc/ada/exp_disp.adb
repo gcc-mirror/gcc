@@ -1030,12 +1030,12 @@ package body Exp_Disp is
                Next_Formal (Old_Formal);
                exit when No (Old_Formal);
 
-               Set_Next_Entity (New_Formal, New_Copy (Old_Formal));
-               Next_Entity (New_Formal);
-               Next_Actual (Param);
+               Link_Entities (New_Formal, New_Copy (Old_Formal));
+               Next_Entity   (New_Formal);
+               Next_Actual   (Param);
             end loop;
 
-            Set_Next_Entity (New_Formal, Empty);
+            Unlink_Next_Entity (New_Formal);
             Set_Last_Entity (Subp_Typ, Extra);
          end if;
 

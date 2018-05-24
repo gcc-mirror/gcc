@@ -4321,7 +4321,7 @@ package body Freeze is
 
                   else
                      if Present (Prev) then
-                        Set_Next_Entity (Prev, Next_Entity (Comp));
+                        Link_Entities (Prev, Next_Entity (Comp));
                      else
                         Set_First_Entity (Rec, Next_Entity (Comp));
                      end if;

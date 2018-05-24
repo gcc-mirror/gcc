@@ -9201,8 +9201,8 @@ package body Exp_Ch6 is
       declare
          Next_Id : constant Entity_Id := Next_Entity (New_Id);
       begin
-         Set_Next_Entity (New_Id, Next_Entity (Orig_Id));
-         Set_Next_Entity (Orig_Id, Next_Id);
+         Link_Entities (New_Id, Next_Entity (Orig_Id));
+         Link_Entities (Orig_Id, Next_Id);
       end;
 
       Set_Homonym (New_Id, Homonym (Orig_Id));

@@ -6609,6 +6609,7 @@ package body Sem_Ch3 is
                            Create_Itype (Ekind (Pbase), N, Derived_Type, 'B');
             Svg_Chars  : constant Name_Id   := Chars (Ibase);
             Svg_Next_E : constant Entity_Id := Next_Entity (Ibase);
+            Svg_Prev_E : constant Entity_Id := Prev_Entity (Ibase);
 
          begin
             Copy_Node (Pbase, Ibase);
@@ -6619,6 +6620,7 @@ package body Sem_Ch3 is
             Set_Associated_Node_For_Itype (Ibase, N);
 
             Set_Chars             (Ibase, Svg_Chars);
+            Set_Prev_Entity       (Ibase, Svg_Prev_E);
             Set_Next_Entity       (Ibase, Svg_Next_E);
             Set_Sloc              (Ibase, Sloc (Derived_Type));
             Set_Scope             (Ibase, Scope (Derived_Type));
@@ -7042,7 +7044,7 @@ package body Sem_Ch3 is
             if No (Next_Entity (Old_Disc))
               or else Ekind (Next_Entity (Old_Disc)) /= E_Discriminant
             then
-               Set_Next_Entity
+               Link_Entities
                  (Last_Entity (Derived_Type), Next_Entity (Old_Disc));
                exit;
             end if;
@@ -9431,8 +9433,8 @@ package body Sem_Ch3 is
          --  Restore the fields saved prior to the New_Copy_Tree call
          --  and compute the stored constraint.
 
-         Set_Etype       (Derived_Type, Save_Etype);
-         Set_Next_Entity (Derived_Type, Save_Next_Entity);
+         Set_Etype     (Derived_Type, Save_Etype);
+         Link_Entities (Derived_Type, Save_Next_Entity);
 
          if Has_Discriminants (Derived_Type) then
             Set_Discriminant_Constraint
@@ -12324,7 +12326,7 @@ package body Sem_Ch3 is
             Set_Sloc          (Full, Sloc (Priv));
       end case;
 
-      Set_Next_Entity               (Full, Save_Next_Entity);
+      Link_Entities                 (Full, Save_Next_Entity);
       Set_Homonym                   (Full, Save_Homonym);
       Set_Associated_Node_For_Itype (Full, Related_Nod);
 
@@ -14424,6 +14426,7 @@ package body Sem_Ch3 is
       Set_Is_Volatile                (Full, Is_Volatile             (Priv));
       Set_Treat_As_Volatile          (Full, Treat_As_Volatile       (Priv));
       Set_Scope                      (Full, Scope                   (Priv));
+      Set_Prev_Entity                (Full, Prev_Entity             (Priv));
       Set_Next_Entity                (Full, Next_Entity             (Priv));
       Set_First_Entity               (Full, First_Entity            (Priv));
       Set_Last_Entity                (Full, Last_Entity             (Priv));
@@ -18942,6 +18945,7 @@ package body Sem_Ch3 is
       CW_Type : Entity_Id;
       CW_Name : Name_Id;
       Next_E  : Entity_Id;
+      Prev_E  : Entity_Id;
 
    begin
       if Present (Class_Wide_Type (T)) then
@@ -18974,10 +18978,12 @@ package body Sem_Ch3 is
 
       CW_Name := Chars (CW_Type);
       Next_E  := Next_Entity (CW_Type);
+      Prev_E  := Prev_Entity (CW_Type);
       Copy_Node (T, CW_Type);
       Set_Comes_From_Source (CW_Type, False);
       Set_Chars (CW_Type, CW_Name);
       Set_Parent (CW_Type, Parent (T));
+      Set_Prev_Entity (CW_Type, Prev_E);
       Set_Next_Entity (CW_Type, Next_E);
 
       --  Ensure we have a new freeze node for the class-wide type. The partial
@@ -21761,7 +21767,7 @@ package body Sem_Ch3 is
 
             --  Indicate where the predicate function may be found
 
-            if No (Predicate_Function (Def_Id)) then
+            if No (Predicate_Function (Def_Id)) and then Is_Itype (Def_Id) then
                Set_Predicated_Parent (Def_Id, Subtype_Mark_Id);
             end if;
          end if;
