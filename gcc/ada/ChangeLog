@@ -1,3 +1,7 @@
+2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sinfo.ads: Fix grammar in comment.
+
 2018-05-24  Justin Squirek  <squirek@adacore.com>
 
 	* einfo.ads, einfo.adb (Append_Entity): Modified to use Link_Entities

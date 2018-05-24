@@ -2863,7 +2863,7 @@ package Sinfo is
       --  Einfo.
 
       --  Note: N_Defining_Identifier is an extended node whose fields are
-      --  deliberate layed out to match the layout of fields in an ordinary
+      --  deliberately layed out to match the layout of fields in an ordinary
       --  N_Identifier node allowing for easy alteration of an identifier
       --  node into a defining identifier node. For details, see procedure
       --  Sinfo.CN.Change_Identifier_To_Defining_Identifier.
