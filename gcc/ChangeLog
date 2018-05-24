@@ -1,3 +1,9 @@
+2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85903
+	* config/i386/sse.md (movdi_to_sse): Do not generate pseudo
+	when memory input operand is handled.
+
 2018-05-24  Luis Machado  <luis.machado@linaro.org>
 
 	* config/aarch64/aarch64.c (qdf24xx_addrcost_table): New static
