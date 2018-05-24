@@ -5172,13 +5172,24 @@ package body Freeze is
 
             --  Build the call
 
+            --  An imported function whose result type is anonymous access
+            --  creates a new anonynous access type when it is relocated into
+            --  the declarations of the body generated below. As a result, the
+            --  accessibility level of these two anonymous access types may not
+            --  be compatible even though they are essentially the same type.
+            --  Use an unchecked type conversion to reconcile this case. Note
+            --  that the conversion is safe because in the named access type
+            --  case, both the body and imported function utilize the same
+            --  type.
+
             if Ekind_In (E, E_Function, E_Generic_Function) then
                Stmt :=
                  Make_Simple_Return_Statement (Loc,
                    Expression =>
-                     Make_Function_Call (Loc,
-                       Name                   => Make_Identifier (Loc, CE),
-                       Parameter_Associations => Parms));
+                     Unchecked_Convert_To (Etype (E),
+                       Make_Function_Call (Loc,
+                         Name                   => Make_Identifier (Loc, CE),
+                         Parameter_Associations => Parms)));
 
             else
                Stmt :=
