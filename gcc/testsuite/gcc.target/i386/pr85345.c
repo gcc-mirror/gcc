@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcf-protection" } */
+/* { dg-require-ifunc "" } */
 /* { dg-final { scan-assembler-times {\mendbr} 4 } } */
 
 int resolver_fn = 0;
