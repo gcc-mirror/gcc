@@ -5917,7 +5917,8 @@ assemble_alias (tree decl, tree target)
 # else
       if (!DECL_WEAK (decl))
 	{
-	  if (cgraph_node::get (decl)->ifunc_resolver)
+	  if (TREE_CODE (decl) == FUNCTION_DECL
+	      && cgraph_node::get (decl)->ifunc_resolver)
 	    error_at (DECL_SOURCE_LOCATION (decl),
 		      "ifunc is not supported in this configuration");
 	  else
