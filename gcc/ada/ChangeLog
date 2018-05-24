@@ -1,5 +1,11 @@
 2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_util.adb (Expand_Static_Predicates_In_Choices): Indicate that the
+	construct with discrete choices no longer contains a subtype with
+	predicates since the expansion already handled this case.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* freeze.adb (Wrap_Imported_Subprogram): Generate an unchecked
 	conversion to the return type to avoid a side effect where an imported
 	relocated function generates a new anonymous access type, whose
