@@ -7856,12 +7856,12 @@ package body Sem_Ch3 is
          --  Build the full derivation if this is not the anonymous derived
          --  base type created by Build_Derived_Record_Type in the constrained
          --  case (see point 5. of its head comment) since we build it for the
-         --  derived subtype. And skip it for protected types altogether, as
+         --  derived subtype. And skip it for synchronized types altogether, as
          --  gigi does not use these types directly.
 
          if Present (Full_View (Parent_Type))
            and then not Is_Itype (Derived_Type)
-           and then not (Ekind (Full_View (Parent_Type)) in Protected_Kind)
+           and then not (Is_Concurrent_Type (Full_View (Parent_Type)))
          then
             declare
                Der_Base   : constant Entity_Id := Base_Type (Derived_Type);
