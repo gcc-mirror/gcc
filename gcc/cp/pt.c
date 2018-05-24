@@ -25212,6 +25212,7 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 	 TREE_TYPE.  */
     case TREE_LIST:
     case TREE_VEC:
+    case NONTYPE_ARGUMENT_PACK:
       return NULL_TREE;
 
     case TEMPLATE_PARM_INDEX:
