@@ -1,3 +1,12 @@
+2018-05-24  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Ignore raising an error in
+	expansion for limited tagged types when the node to be expanded is a
+	raise expression due to it not representing a valid object.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Add exception to error
+	message regarding assignments to limited types to ignore genereated
+	code.
+
 2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb (New_Class_Wide_Subtype): Capture and restore relevant

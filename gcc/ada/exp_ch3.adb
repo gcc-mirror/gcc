@@ -6952,9 +6952,11 @@ package body Exp_Ch3 is
 
                --  If we cannot convert the expression into a renaming we must
                --  consider it an internal error because the backend does not
-               --  have support to handle it.
+               --  have support to handle it. Also, when a raise expression is
+               --  encountered we ignore it since it doesn't return a value and
+               --  thus cannot trigger a copy.
 
-               else
+               elsif Nkind (Original_Node (Expr_Q)) /= N_Raise_Expression then
                   pragma Assert (False);
                   raise Program_Error;
                end if;

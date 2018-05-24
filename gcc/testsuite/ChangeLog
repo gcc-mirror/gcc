@@ -1,3 +1,7 @@
+2018-05-24  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/raise_expr.adb: New testcase.
+
 2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/formal_containers.adb: New testcase.
