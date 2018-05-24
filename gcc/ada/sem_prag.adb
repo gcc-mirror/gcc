@@ -29765,23 +29765,19 @@ package body Sem_Prag is
    -------------------------
 
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id is
-      Result : Entity_Id;
-
    begin
       --  Follow subprogram renaming chain
 
-      Result := Def_Id;
-
-      if Is_Subprogram (Result)
+      if Is_Subprogram (Def_Id)
         and then
-          Nkind (Parent (Declaration_Node (Result))) =
+          Nkind (Parent (Declaration_Node (Def_Id))) =
                                          N_Subprogram_Renaming_Declaration
-        and then Present (Alias (Result))
+        and then Present (Alias (Def_Id))
       then
-         Result := Alias (Result);
+         return Alias (Def_Id);
+      else
+         return Def_Id;
       end if;
-
-      return Result;
    end Get_Base_Subprogram;
 
    -----------------------

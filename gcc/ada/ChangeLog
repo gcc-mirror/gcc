@@ -1,3 +1,9 @@
+2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_elab.adb (Non_Private_View): Simplify by removing a local Result
+	variable.
+	* sem_prag.adb (Get_Base_Subprogram): Same as above.
+
 2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h (Set_Normalized_First_Bit): Declare.
