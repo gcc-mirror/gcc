@@ -1,3 +1,8 @@
+2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
+
+	* layout.ads, repinfo.ads: Fix references to renamed Backend_Layout
+	configuration parameter.
+
 2018-05-24  Doug Rupp  <rupp@adacore.com>
 
 	* argv-lynxos178-raven-cert.c: New file.
