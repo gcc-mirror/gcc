@@ -6785,8 +6785,8 @@ package body Exp_Ch3 is
                                    SPARK_Pragma_Inherited (Def_Id);
 
                   begin
-                     Set_Next_Entity (New_Id, Next_Entity (Def_Id));
-                     Set_Next_Entity (Def_Id, Next_Temp);
+                     Link_Entities (New_Id, Next_Entity (Def_Id));
+                     Link_Entities (Def_Id, Next_Temp);
 
                      Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
                      Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));

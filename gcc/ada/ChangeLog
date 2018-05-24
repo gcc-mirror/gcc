@@ -1,3 +1,61 @@
+2018-05-24  Justin Squirek  <squirek@adacore.com>
+
+	* einfo.ads, einfo.adb (Append_Entity): Modified to use Link_Entities
+	and manage doubly-linked entity chain.
+	(Nested_Scenarios): Removed entity field used for optimization during
+	 elaboration to make room for the new field Prev_Entity.
+	(Link_Entities): Added to replace redundant calls to Set_Next_Entity
+	and Set_Prev_Entity as well as centralize changes to the entity chain.
+	(Predicated_Parent): Modified to use Node38.
+	(Prev_Entity): Added to fetch new node field Prev_Entity in all entity
+	types.
+	(Remove_Entity): Moved from sem_util.
+	(Set_Nested_Scenarios): Deleted.
+	(Set_Predicated_Parent): Modified to use Node38.
+	(Set_Prev_Entity): Added to set Prev_Entity field.
+	(Set_Validated_Object): Modified to use Node38.
+	(Unlink_Next_Entity): Added to process Prev_Entity when an unlinking
+	action is required.
+	(Validated_Object): Modified to use Node38.
+	(Write_Field36_Name): Remove Nested_Scenarios, Validated_Object, and
+	predicated parent cases.
+	(Write_Field38_Name): Add predicated parent and Validated_Object cases.
+	* sem_ch3.adb (Process_Subtype): Add guard to protect against
+	inappropriate marking of Predicated_Parent to non-itype subtypes.
+	(Make_Class_Wide_Type): Preserve Prev_Entity field and set in new type.
+	(Copy_And_Swap): Add setting of Prev_Entity.
+	(Build_derived_Record_Type): Replace Set_Next_Entity w/ Link_Entities.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Replace Set_Next_Entity
+	w/ Link_Entities.
+	(New_Overloaded_Entity): Remove block created to search for previous
+	entities in the entity chain with relevant calls to Prev_Entity as well
+	as replace duplicated code from Remove_Entity_And_Homonym with a call
+	to that subprogram.
+	* sem_ch7.adb (Exchange_Declarations): Replace Set_Next_Entity w/
+	Link_Entities.
+	* sem_elab.adb (Find_And_Process_Nested_Scenarios): Remove global and
+	initial subprogram declarations related to Nested_Scenarios.
+	(Process_Nested_Scenarios): Deleted.
+	(Save_Scenario): Deleted.
+	(Traverse_Body): Remove optimization for Nested_Scenarios so as to free
+	node space in the entity tree.
+	* sem_util.adb, sem_util.ads (Remove_Entity): Moved to einfo.
+	(Remove_Entity_And_Homonym): Added to separate functionality of
+	Remove_Entity from the homonym chain directly.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Replace Set_Next_Entity
+	w/ Link_Entities and Unlink_Next_Entity.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Replace Set_Next_Entity w/
+	Link_Entities.
+	* exp_ch6.adb (Replace_Renaming_Declaration_Id): Replace
+	Set_Next_Entity w/ Link_Entities.
+	* exp_disp.adb (Expand_Dispatching_Call): Replace Set_Next_Entity w/
+	Link_Entities and Unlink_Next_Entity.
+	* exp_spark.adb (Expand_SPARK_N_Object_Renaming_Declaration): Replace
+	call to Remove_Entity with its new incarnation.
+	* exp_util.adb (New_Class_Wide_Subtype): Add setting of Prev_Entity.
+	* freeze.adb (Freeze_Record_Type): Replace Set_Next_Entity w/
+	Link_Entities.
+
 2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch10.adb (Expand_Limited_With_Clause): Update the call to

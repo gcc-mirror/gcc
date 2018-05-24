@@ -10613,6 +10613,7 @@ package body Exp_Util is
       Set_Is_Itype                  (Res);
       Set_Is_Public                 (Res, False);
       Set_Next_Entity               (Res, Empty);
+      Set_Prev_Entity               (Res, Empty);
       Set_Sloc                      (Res, Sloc (N));
 
       Set_Public_Status (Res);

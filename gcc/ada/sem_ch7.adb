@@ -2159,12 +2159,12 @@ package body Sem_Ch7 is
 
       Exchange_Entities (Id, Full_Id);
 
-      Set_Next_Entity (Id, Next1);
-      Set_Homonym     (Id, H1);
+      Link_Entities (Id, Next1);
+      Set_Homonym   (Id, H1);
 
-      Set_Full_View   (Full_Id, Id);
-      Set_Next_Entity (Full_Id, Next2);
-      Set_Homonym     (Full_Id, H2);
+      Set_Full_View (Full_Id, Id);
+      Link_Entities (Full_Id, Next2);
+      Set_Homonym   (Full_Id, H2);
    end Exchange_Declarations;
 
    ----------------------------

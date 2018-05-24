@@ -2489,14 +2489,14 @@ package Sem_Util is
    --  Returns True if the expression Expr contains any references to a generic
    --  type. This can only happen within a generic template.
 
-   procedure Remove_Entity (Id : Entity_Id);
+   procedure Remove_Entity_And_Homonym (Id : Entity_Id);
    --  Remove arbitrary entity Id from both the homonym and scope chains. Use
    --  Remove_Overloaded_Entity for overloadable entities. Note: the removal
    --  performed by this routine does not affect the visibility of existing
    --  homonyms.
 
-   procedure Remove_Homonym (E : Entity_Id);
-   --  Removes E from the homonym chain
+   procedure Remove_Homonym (Id : Entity_Id);
+   --  Removes entity Id from the homonym chain
 
    procedure Remove_Overloaded_Entity (Id : Entity_Id);
    --  Remove arbitrary entity Id from the homonym chain, the scope chain and

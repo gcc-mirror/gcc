@@ -727,7 +727,7 @@ package body Sem_Util is
         and then Scop = Current_Scope
       then
          --  The inherited operation is available at the earliest place after
-         --  the derived type declaration ( RM 7.3.1 (6/1)). This is only
+         --  the derived type declaration (RM 7.3.1 (6/1)). This is only
          --  relevant for type extensions. If the parent operation appears
          --  after the type extension, the operation is not visible.
 
@@ -740,8 +740,8 @@ package body Sem_Util is
             then
                if Sloc (Decl) > Sloc (Par) then
                   Next_E := Next_Entity (Par);
-                  Set_Next_Entity (Par, S);
-                  Set_Next_Entity (S, Next_E);
+                  Link_Entities (Par, S);
+                  Link_Entities (S, Next_E);
                   return;
 
                else
@@ -7043,7 +7043,7 @@ package body Sem_Util is
                   null;
 
                else
-                  Set_Next_Entity (Prev, Next_Entity (E));
+                  Link_Entities (Prev, Next_Entity (E));
 
                   if No (Next_Entity (Prev)) then
                      Set_Last_Entity (Current_Scope, Prev);
@@ -19996,6 +19996,13 @@ package body Sem_Util is
             end if;
          end if;
 
+         --  Prev_Entity
+
+         Set_Prev_Entity (Id, Node_Id (
+           Copy_Field_With_Replacement
+             (Field    => Union_Id (Prev_Entity (Id)),
+              Semantic => True)));
+
          --  Next_Entity
 
          Set_Next_Entity (Id, Node_Id (
@@ -22980,92 +22987,43 @@ package body Sem_Util is
       end if;
    end References_Generic_Formal_Type;
 
-   -------------------
-   -- Remove_Entity --
-   -------------------
+   -------------------------------
+   -- Remove_Entity_And_Homonym --
+   -------------------------------
 
-   procedure Remove_Entity (Id : Entity_Id) is
-      Scop    : constant Entity_Id := Scope (Id);
-      Prev_Id : Entity_Id;
-
+   procedure Remove_Entity_And_Homonym (Id : Entity_Id) is
    begin
-      --  Remove the entity from the homonym chain. When the entity is the
-      --  head of the chain, associate the entry in the name table with its
-      --  homonym effectively making it the new head of the chain.
-
-      if Current_Entity (Id) = Id then
-         Set_Name_Entity_Id (Chars (Id), Homonym (Id));
-
-      --  Otherwise link the previous and next homonyms
-
-      else
-         Prev_Id := Current_Entity (Id);
-         if Present (Prev_Id) then
-            while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
-               Prev_Id := Homonym (Prev_Id);
-            end loop;
-
-            Set_Homonym (Prev_Id, Homonym (Id));
-         end if;
-      end if;
-
-      --  Remove the entity from the scope entity chain. When the entity is
-      --  the head of the chain, set the next entity as the new head of the
-      --  chain.
-
-      if First_Entity (Scop) = Id then
-         Prev_Id := Empty;
-         Set_First_Entity (Scop, Next_Entity (Id));
-
-      --  Otherwise the entity is either in the middle of the chain or it acts
-      --  as its tail. Traverse and link the previous and next entities.
-
-      else
-         Prev_Id := First_Entity (Scop);
-         while Present (Prev_Id) and then Next_Entity (Prev_Id) /= Id loop
-            Next_Entity (Prev_Id);
-         end loop;
-
-         if Present (Prev_Id) then
-            Set_Next_Entity (Prev_Id, Next_Entity (Id));
-         end if;
-      end if;
-
-      --  Handle the case where the entity acts as the tail of the scope entity
-      --  chain.
-
-      if Last_Entity (Scop) = Id then
-         Set_Last_Entity (Scop, Prev_Id);
-      end if;
-   end Remove_Entity;
+      Remove_Entity (Id);
+      Remove_Homonym (Id);
+   end Remove_Entity_And_Homonym;
 
    --------------------
    -- Remove_Homonym --
    --------------------
 
-   procedure Remove_Homonym (E : Entity_Id) is
-      Prev  : Entity_Id := Empty;
-      H     : Entity_Id;
+   procedure Remove_Homonym (Id : Entity_Id) is
+      Hom  : Entity_Id;
+      Prev : Entity_Id := Empty;
 
    begin
-      if E = Current_Entity (E) then
-         if Present (Homonym (E)) then
-            Set_Current_Entity (Homonym (E));
+      if Id = Current_Entity (Id) then
+         if Present (Homonym (Id)) then
+            Set_Current_Entity (Homonym (Id));
          else
-            Set_Name_Entity_Id (Chars (E), Empty);
+            Set_Name_Entity_Id (Chars (Id), Empty);
          end if;
 
       else
-         H := Current_Entity (E);
-         while Present (H) and then H /= E loop
-            Prev := H;
-            H    := Homonym (H);
+         Hom := Current_Entity (Id);
+         while Present (Hom) and then Hom /= Id loop
+            Prev := Hom;
+            Hom  := Homonym (Hom);
          end loop;
 
-         --  If E is not on the homonym chain, nothing to do
+         --  If Id is not on the homonym chain, nothing to do
 
-         if Present (H) then
-            Set_Homonym (Prev, Homonym (E));
+         if Present (Hom) then
+            Set_Homonym (Prev, Homonym (Id));
          end if;
       end if;
    end Remove_Homonym;
@@ -23103,9 +23061,7 @@ package body Sem_Util is
    --  Start of processing for Remove_Overloaded_Entity
 
    begin
-      --  Remove the entity from both the homonym and scope chains
-
-      Remove_Entity (Id);
+      Remove_Entity_And_Homonym (Id);
 
       --  The entity denotes a primitive subprogram. Remove it from the list of
       --  primitives of the associated controlling type.
@@ -24656,7 +24612,7 @@ package body Sem_Util is
          --  destination scope.
 
          if Present (Last_Entity (To)) then
-            Set_Next_Entity (Last_Entity (To), Id);
+            Link_Entities (Last_Entity (To), Id);
          else
             Set_First_Entity (To, Id);
          end if;
