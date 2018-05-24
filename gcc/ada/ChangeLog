@@ -1,3 +1,12 @@
+2018-05-24  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Is_Visible_Component): For untagged types add missing
+	check for renamed discriminants.
+	* sem_ch4.adb (Analyze_Overloaded_Selected_Component,
+	Analyze_Selected_Component, Check_Misspelled_Selector): For calls to
+	Is_Visible_Component pass the associated selector node to allow
+	checking renamed discriminants on untagged types.
+
 2018-05-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Analyze_Use_Type): Do not assign the Prev_Use_Clause

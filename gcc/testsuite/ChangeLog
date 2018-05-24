@@ -1,3 +1,7 @@
+2018-05-24  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/discr52.adb: New testcase.
+
 2018-05-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/others1.adb: New testcase.
