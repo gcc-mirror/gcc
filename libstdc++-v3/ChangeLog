@@ -1,3 +1,42 @@
+2018-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69769
+	PR libstdc++/85886
+	* include/bits/atomic_base.h (__atomic_base::value_type)
+	(__atomic_base::difference_type): Add new typedefs.
+	* include/std/atomic (atomic<bool>::value_type, atomic<T>::value_type)
+	(atomic<T*>::value_type, atomic<T*>::difference_type): Likewise.
+	(atomic<T*>::operator++, atomic<T*>::operator--)
+	(atomic<T*>::operator+=, atomic<T*>::operator-=)
+	(atomic<T*>::fetch_add, atomic<T*>::fetch_sub): Add static assertion
+	to enforce C++17 requirement on pointer arithmetic.
+	(__atomic_val_t, __atomic_diff_t): New alias templates.
+	(atomic_init, atomic_store_explicit, atomic_exchange_explicit)
+	(atomic_compare_exchange_weak_explicit)
+	(atomic_compare_exchange_strong_explicit, atomic_store)
+	(atomic_exchange, atomic_compare_exchange_weak)
+	(atomic_compare_exchange_strong): Use __atomic_val_t to make
+	scalar parameters be non-deduced contexts.
+	(atomic_fetch_add_explicit, atomic_fetch_sub_explicit)
+	(atomic_fetch_add, atomic_fetch_sub): Change first parameter to be
+	atomic instead of __atomic_base, and use __atomic_diff_t for scalar
+	parameters.
+	(atomic_fetch_and_explicit, atomic_fetch_or_explicit)
+	(atomic_fetch_xor_explicit, atomic_fetch_and, atomic_fetch_or)
+	(atomic_fetch_xor): Use __atomic_val_t for scalar parameters.
+	(atomic_fetch_add_explicit, atomic_fetch_sub_explicit)
+	(atomic_fetch_add, atomic_fetch_sub): Remove overloads for atomic
+	address types.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error lineno.
+	* testsuite/29_atomics/atomic/69769.cc: New test.
+	* testsuite/29_atomics/atomic/nonmembers.cc: New test.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
+	Disable test for C++17 and later.
+	* testsuite/29_atomics/atomic/requirements/typedefs.cc: New test.
+	* testsuite/29_atomics/atomic_integral/nonmembers.cc: New test.
+	* testsuite/29_atomics/atomic_integral/requirements/typedefs.cc: New
+	test.
+
 2018-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_path.h (path::__is_encoded_char): Change from class

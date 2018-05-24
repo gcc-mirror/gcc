@@ -1,8 +1,4 @@
-// { dg-do compile { target c++11 } }
-// { dg-require-atomic-builtins "" }
-// { dg-options "-Wno-pedantic" }
-
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +15,22 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
+// { dg-require-atomic-builtins "" }
+
 #include <atomic>
 
-// libstdc++/60695
+template<typename T>
+constexpr bool check()
+{
+  typename std::atomic<T>::value_type* pv = (T*)nullptr;
+  typename std::atomic<T>::difference_type* pd = (std::ptrdiff_t*)nullptr;
+  return true;
+}
 
-struct X {
-  char stuff[0]; // GNU extension, type has zero size
-};
-
-std::atomic<X> a;  // { dg-error "not supported" "" { target *-*-* } 194 }
+static_assert( check<int*>(), "" );
+static_assert( check<void*>(), "" );
+static_assert( check<void(*)()>(), "" );
+struct X { };
+static_assert( check<X*>(), "" );
