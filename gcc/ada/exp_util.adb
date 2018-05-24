@@ -10580,26 +10580,44 @@ package body Exp_Util is
      (CW_Typ : Entity_Id;
       N      : Node_Id) return Entity_Id
    is
-      Res       : constant Entity_Id := Create_Itype (E_Void, N);
-      Res_Name  : constant Name_Id   := Chars (Res);
-      Res_Scope : constant Entity_Id := Scope (Res);
+      Res : constant Entity_Id := Create_Itype (E_Void, N);
+
+      --  Capture relevant attributes of the class-wide subtype which must be
+      --  restored after the copy.
+
+      Res_Chars  : constant Name_Id   := Chars (Res);
+      Res_Is_CGE : constant Boolean   := Is_Checked_Ghost_Entity (Res);
+      Res_Is_IGE : constant Boolean   := Is_Ignored_Ghost_Entity (Res);
+      Res_Is_IGN : constant Boolean   := Is_Ignored_Ghost_Node   (Res);
+      Res_Scope  : constant Entity_Id := Scope (Res);
 
    begin
       Copy_Node (CW_Typ, Res);
-      Set_Comes_From_Source (Res, False);
-      Set_Sloc (Res, Sloc (N));
-      Set_Is_Itype (Res);
+
+      --  Restore the relevant attributes of the class-wide subtype
+
+      Set_Chars                   (Res, Res_Chars);
+      Set_Is_Checked_Ghost_Entity (Res, Res_Is_CGE);
+      Set_Is_Ignored_Ghost_Entity (Res, Res_Is_IGE);
+      Set_Is_Ignored_Ghost_Node   (Res, Res_Is_IGN);
+      Set_Scope                   (Res, Res_Scope);
+
+      --  Decorate the class-wide subtype
+
       Set_Associated_Node_For_Itype (Res, N);
-      Set_Is_Public (Res, False);   --  By default, may be changed below.
+      Set_Comes_From_Source         (Res, False);
+      Set_Ekind                     (Res, E_Class_Wide_Subtype);
+      Set_Etype                     (Res, Base_Type (CW_Typ));
+      Set_Freeze_Node               (Res, Empty);
+      Set_Is_Frozen                 (Res, False);
+      Set_Is_Itype                  (Res);
+      Set_Is_Public                 (Res, False);
+      Set_Next_Entity               (Res, Empty);
+      Set_Sloc                      (Res, Sloc (N));
+
       Set_Public_Status (Res);
-      Set_Chars (Res, Res_Name);
-      Set_Scope (Res, Res_Scope);
-      Set_Ekind (Res, E_Class_Wide_Subtype);
-      Set_Next_Entity (Res, Empty);
-      Set_Etype (Res, Base_Type (CW_Typ));
-      Set_Is_Frozen (Res, False);
-      Set_Freeze_Node (Res, Empty);
-      return (Res);
+
+      return Res;
    end New_Class_Wide_Subtype;
 
    --------------------------------
