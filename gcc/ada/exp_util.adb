@@ -4995,6 +4995,8 @@ package body Exp_Util is
 
          Choice := Next_C;
       end loop;
+
+      Set_Has_SP_Choice (N, False);
    end Expand_Static_Predicates_In_Choices;
 
    ------------------------------
