@@ -1,14 +1,14 @@
 2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/85903
-	* config/i386/sse.md (movdi_to_sse): Do not generate pseudo
-	when memory input operand is handled.
-2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
-
 	* config/i386/sse.md (cvtusi2<ssescalarmodesuffix>64<round_name>):
 	Add {q} suffix to insn mnemonic.
 
-	
+2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85903
+	* config/i386/sse.md (movdi_to_sse): Do not generate pseudo
+	when memory input operand is handled.
+
 2018-05-23  Bin Cheng  <bin.cheng@arm.com>
 
 	Backport from mainline
