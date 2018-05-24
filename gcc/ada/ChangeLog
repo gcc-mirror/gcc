@@ -1,3 +1,18 @@
+2018-05-24  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch8.adb (Build_Body_For_Renaming): Adding support to build the
+	body of a variant record equality renaming.
+	(Expand_N_Subprogram_Renaming_Declaration): Adapt the code to the new
+	implementation of Build_Body_For_Renaming.
+	* exp_ch3.ads (Build_Variant_Record_Equality): New library level
+	function that factorizes the functionality needed by
+	Build_Body_For_Renaming and Expand_Freeze_Record_Type to build the body
+	of a variant record equality subprogram.
+	* exp_ch3.adb (Build_Variant_Record_Equality): New subprogram.
+	(Build_Variant_Record_Equality): New local procedure of
+	Expand_Freeze_Record_Type containing all the code specific for freezing
+	the record type that cannot be place in the new library level function.
+
 2018-05-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads, einfo.adb (Is_Activation_Record): New flag on
