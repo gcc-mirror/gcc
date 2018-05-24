@@ -612,6 +612,15 @@ package body Exp_Unst is
                               end if;
                            end if;
                         end if;
+                     when Attribute_First
+                        | Attribute_Last
+                        | Attribute_Length
+                     =>
+                        declare
+                           DT : Boolean := False;
+                        begin
+                           Check_Static_Type (Etype (Prefix (N)), DT);
+                        end;
 
                      when others =>
                         null;
@@ -1178,13 +1187,14 @@ package body Exp_Unst is
                   begin
                      --  Decorate the new formal entity
 
-                     Set_Scope               (Form, STJ.Ent);
-                     Set_Ekind               (Form, E_In_Parameter);
-                     Set_Etype               (Form, STJE.ARECnPT);
-                     Set_Mechanism           (Form, By_Copy);
-                     Set_Never_Set_In_Source (Form, True);
-                     Set_Analyzed            (Form, True);
-                     Set_Comes_From_Source   (Form, False);
+                     Set_Scope                (Form, STJ.Ent);
+                     Set_Ekind                (Form, E_In_Parameter);
+                     Set_Etype                (Form, STJE.ARECnPT);
+                     Set_Mechanism            (Form, By_Copy);
+                     Set_Never_Set_In_Source  (Form, True);
+                     Set_Analyzed             (Form, True);
+                     Set_Comes_From_Source    (Form, False);
+                     Set_Is_Activation_Record (Form, True);
 
                      --  Case of only body present
 

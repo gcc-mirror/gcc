@@ -630,8 +630,8 @@ package body Einfo is
    --    Is_Initial_Condition_Procedure  Flag302
    --    Suppress_Elaboration_Warnings   Flag303
    --    Is_Elaboration_Warnings_OK_Id   Flag304
+   --    Is_Activation_Record            Flag305
 
-   --    (unused)                        Flag305
    --    (unused)                        Flag306
    --    (unused)                        Flag307
    --    (unused)                        Flag308
@@ -2099,6 +2099,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       return Flag69 (Id);
    end Is_Access_Constant;
+
+   function Is_Activation_Record (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_In_Parameter);
+      return Flag305 (Id);
+   end Is_Activation_Record;
 
    function Is_Actual_Subtype (Id : E) return B is
    begin
@@ -5303,6 +5309,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       Set_Flag69 (Id, V);
    end Set_Is_Access_Constant;
+
+   procedure Set_Is_Activation_Record (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_In_Parameter);
+      Set_Flag305 (Id, V);
+   end Set_Is_Activation_Record;
 
    procedure Set_Is_Actual_Subtype (Id : E; V : B := True) is
    begin
