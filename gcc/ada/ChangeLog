@@ -1,3 +1,9 @@
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (New_Class_Wide_Subtype): Capture and restore relevant
+	Ghost-related attributes of the class-wide subtype because the copy
+	clobbers them.
+
 2018-05-24  Justin Squirek  <squirek@adacore.com>
 
 	* sem_res.adb (Resolve_Entity_Name): Add guard to protect against
