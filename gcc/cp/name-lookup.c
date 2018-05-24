@@ -3550,9 +3550,6 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
       tree decl = *iter;
 
       // FIXME using decls, hidden decls
-      if (TREE_CODE (decl) == TEMPLATE_DECL)
-	// FIXME: this smells wrong.  There maybe an undo of this in module.c
-	decl = DECL_TEMPLATE_RESULT (decl);
 
       /* Ignore not this module.  */
       if (MAYBE_DECL_MODULE_PURVIEW_P (decl) != MODULE_PURVIEW)
@@ -3564,11 +3561,12 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
 	  && DECL_TINFO_P (decl))
 	continue;
 
+      tree not_tpl = STRIP_TEMPLATE (decl);
       /* Ignore internal-linkage things.  */
-      if (!TREE_PUBLIC (decl)
-	  && (TREE_CODE (decl) == FUNCTION_DECL
-	      || TREE_CODE (decl) == VAR_DECL
-	      || TREE_CODE (decl) == NAMESPACE_DECL))
+      if (!TREE_PUBLIC (not_tpl)
+	  && (TREE_CODE (not_tpl) == FUNCTION_DECL
+	      || TREE_CODE (not_tpl) == VAR_DECL
+	      || TREE_CODE (not_tpl) == NAMESPACE_DECL))
 	continue;
 
       name = DECL_NAME (*iter);

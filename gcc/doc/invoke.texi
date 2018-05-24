@@ -29286,8 +29286,10 @@ if a preamble rescan is needed.
 It is recommended that any unrecognized command causes an @samp{ERROR}
 response with a suitable message.
 
-FIXME: Character encodings are not yet considered.  The following
-metavariables were used:
+FIXME: Character encodings are not yet considered.
+FIXME: Consider some kind of batching mechanism.
+
+The following metavariables were used:
 
 @itemize
 

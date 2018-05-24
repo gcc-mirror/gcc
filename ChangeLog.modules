@@ -1,5 +1,11 @@
 2018-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (extract_module_decls): Don't strip template of
+	result.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Consider batching.
+
 	gcc/
 	* doc/invoke.texi (C++ ModuleS): Update server docs.
 	gcc/cp/
