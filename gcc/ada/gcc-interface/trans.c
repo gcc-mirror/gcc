@@ -4989,46 +4989,48 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 static tree
 Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 {
+  /* If just annotating, ignore all EH and cleanups.  */
+  const bool gcc_eh
+    = (!type_annotate_only
+       && Present (Exception_Handlers (gnat_node))
+       && Back_End_Exceptions ());
+  const bool fe_sjlj_eh
+    = (!type_annotate_only
+       && Present (Exception_Handlers (gnat_node))
+       && Exception_Mechanism == Front_End_SJLJ);
+  const bool at_end = !type_annotate_only && Present (At_End_Proc (gnat_node));
+  const bool binding_for_block = (at_end || gcc_eh || fe_sjlj_eh);
   tree gnu_jmpsave_decl = NULL_TREE;
   tree gnu_jmpbuf_decl = NULL_TREE;
-  /* If just annotating, ignore all EH and cleanups.  */
-  bool gcc_eh = (!type_annotate_only
-                 && Present (Exception_Handlers (gnat_node))
-                 && Back_End_Exceptions ());
-  bool fe_sjlj
-    = (!type_annotate_only && Present (Exception_Handlers (gnat_node))
-       && Exception_Mechanism == Front_End_SJLJ);
-  bool at_end = !type_annotate_only && Present (At_End_Proc (gnat_node));
-  bool binding_for_block = (at_end || gcc_eh || fe_sjlj);
   tree gnu_inner_block; /* The statement(s) for the block itself.  */
   tree gnu_result;
   tree gnu_expr;
   Node_Id gnat_temp;
 
   /* The GCC exception handling mechanism can handle both ZCX and SJLJ schemes
-     and we have our own SJLJ mechanism.  To call the GCC mechanism, we call
-     add_cleanup, and when we leave the binding, end_stmt_group will create
-     the TRY_FINALLY_EXPR.
+     and the front-end has its own SJLJ mechanism.  To call the GCC mechanism,
+     we call add_cleanup, and when we leave the binding, end_stmt_group will
+     create the TRY_FINALLY_EXPR construct.
 
      ??? The region level calls down there have been specifically put in place
      for a ZCX context and currently the order in which things are emitted
-     (region/handlers) is different from the SJLJ case. Instead of putting
+     (region/handlers) is different from the SJLJ case.  Instead of putting
      other calls with different conditions at other places for the SJLJ case,
      it seems cleaner to reorder things for the SJLJ case and generalize the
      condition to make it not ZCX specific.
 
      If there are any exceptions or cleanup processing involved, we need an
-     outer statement group (for Fe_Sjlj) and binding level.  */
+     outer statement group (for front-end SJLJ) and binding level.  */
   if (binding_for_block)
     {
       start_stmt_group ();
       gnat_pushlevel ();
     }
 
-  /* If using fe_sjlj, make the variables for the setjmp buffer and save
+  /* If using fe_sjlj_eh, make the variables for the setjmp buffer and save
      area for address of previous buffer.  Do this first since we need to have
      the setjmp buf known for any decls in this block.  */
-  if (fe_sjlj)
+  if (fe_sjlj_eh)
     {
       gnu_jmpsave_decl
 	= create_var_decl (get_identifier ("JMPBUF_SAVE"), NULL_TREE,
@@ -5038,7 +5040,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 			   NULL, gnat_node);
 
       /* The __builtin_setjmp receivers will immediately reinstall it.  Now
-	 because of the unstructured form of EH used by fe_sjlj, there
+	 because of the unstructured form of EH used by fe_sjlj_eh, there
 	 might be forward edges going to __builtin_setjmp receivers on which
 	 it is uninitialized, although they will never be actually taken.  */
       TREE_NO_WARNING (gnu_jmpsave_decl) = 1;
@@ -5081,7 +5083,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
      If this is SJLJ, set our jmp_buf as the current buffer.  */
   start_stmt_group ();
 
-  if (fe_sjlj)
+  if (fe_sjlj_eh)
     {
       gnu_expr = build_call_n_expr (set_jmpbuf_decl, 1,
 				    build_unary_op (ADDR_EXPR, NULL_TREE,
@@ -5100,11 +5102,12 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 		    : First (Statements (gnat_node)));
        Present (gnat_temp); gnat_temp = Next (gnat_temp))
     add_stmt (gnat_to_gnu (gnat_temp));
+
   gnu_inner_block = end_stmt_group ();
 
   /* Now generate code for the two exception models, if either is relevant for
      this block.  */
-  if (fe_sjlj)
+  if (fe_sjlj_eh)
     {
       tree *gnu_else_ptr = 0;
       tree gnu_handler;
@@ -7472,18 +7475,17 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Exception_Handler:
-      if (Exception_Mechanism == Front_End_SJLJ)
-	gnu_result = Exception_Handler_to_gnu_fe_sjlj (gnat_node);
-      else if (Back_End_Exceptions ())
+      if (Back_End_Exceptions ())
 	gnu_result = Exception_Handler_to_gnu_gcc (gnat_node);
+      else if (Exception_Mechanism == Front_End_SJLJ)
+	gnu_result = Exception_Handler_to_gnu_fe_sjlj (gnat_node);
       else
 	gcc_unreachable ();
       break;
 
     case N_Raise_Statement:
       /* Only for reraise in back-end exceptions mode.  */
-      gcc_assert (No (Name (gnat_node))
-                  && Back_End_Exceptions ());
+      gcc_assert (No (Name (gnat_node)) && Back_End_Exceptions ());
 
       start_stmt_group ();
       gnat_pushlevel ();

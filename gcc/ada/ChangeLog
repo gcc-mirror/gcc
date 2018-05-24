@@ -1,3 +1,10 @@
+2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu):
+	Constify and rename variables.  Fix formatting.
+	(gnat_to_gnu) <N_Exception_Handler>: Minor tweak.
+	<N_Raise_Statement>: Likewise.
+
 2018-05-24  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch8.adb (Build_Body_For_Renaming): Adding support to build the
