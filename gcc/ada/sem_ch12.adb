@@ -3909,6 +3909,7 @@ package body Sem_Ch12 is
       Loc            : constant Source_Ptr := Sloc (N);
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM   : constant SPARK_Mode_Type := SPARK_Mode;
@@ -4736,8 +4737,8 @@ package body Sem_Ch12 is
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
       Style_Check := Saved_Style_Check;
 
    exception
@@ -4751,8 +4752,8 @@ package body Sem_Ch12 is
          end if;
 
          Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-         Restore_Ghost_Mode (Saved_GM);
-         Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
          Style_Check := Saved_Style_Check;
    end Analyze_Package_Instantiation;
 
@@ -5399,6 +5400,7 @@ package body Sem_Ch12 is
       --  Local variables
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM   : constant SPARK_Mode_Type := SPARK_Mode;
@@ -5773,8 +5775,8 @@ package body Sem_Ch12 is
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
 
    exception
       when Instantiation_Error =>
@@ -5787,8 +5789,8 @@ package body Sem_Ch12 is
          end if;
 
          Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-         Restore_Ghost_Mode (Saved_GM);
-         Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
@@ -11271,6 +11273,7 @@ package body Sem_Ch12 is
       --  Local variables
 
       Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
       Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -11600,8 +11603,8 @@ package body Sem_Ch12 is
 
    <<Leave>>
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
       Style_Check := Saved_Style_Check;
    end Instantiate_Package_Body;
 
@@ -11628,6 +11631,7 @@ package body Sem_Ch12 is
                       Defining_Unit_Name (Parent (Act_Decl));
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM   : constant SPARK_Mode_Type := SPARK_Mode;
@@ -11929,8 +11933,8 @@ package body Sem_Ch12 is
 
    <<Leave>>
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
       Style_Check := Saved_Style_Check;
    end Instantiate_Subprogram_Body;
 

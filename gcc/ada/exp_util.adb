@@ -1578,8 +1578,9 @@ package body Exp_Util is
 
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       DIC_Prag     : Node_Id;
       DIC_Typ      : Entity_Id;
@@ -1814,7 +1815,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_DIC_Procedure_Body;
 
    -------------------------------------
@@ -1828,8 +1829,9 @@ package body Exp_Util is
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       DIC_Prag  : Node_Id;
       DIC_Typ   : Entity_Id;
@@ -2015,7 +2017,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_DIC_Procedure_Declaration;
 
    ------------------------------------
@@ -2945,8 +2947,9 @@ package body Exp_Util is
 
       --  Local variables
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Dummy        : Entity_Id;
       Priv_Item    : Node_Id;
@@ -3286,7 +3289,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_Invariant_Procedure_Body;
 
    -------------------------------------------
@@ -3303,8 +3306,9 @@ package body Exp_Util is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Proc_Decl : Node_Id;
       Proc_Id   : Entity_Id;
@@ -3519,7 +3523,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_Invariant_Procedure_Declaration;
 
    --------------------------
@@ -9256,8 +9260,9 @@ package body Exp_Util is
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Call    : Node_Id;
       Func_Id : Entity_Id;
@@ -9296,7 +9301,7 @@ package body Exp_Util is
              Parameter_Associations => New_List (Relocate_Node (Expr)));
       end if;
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       return Call;
    end Make_Predicate_Call;

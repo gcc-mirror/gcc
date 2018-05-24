@@ -106,7 +106,16 @@ package body Sem_Disp is
       --  for the construction of function wrappers). The list of primitive
       --  operations must not contain duplicates.
 
-      Append_Unique_Elmt (New_Op, List);
+      --  The Default_Initial_Condition and invariant procedures are not added
+      --  to the list of primitives even when they are generated for a tagged
+      --  type. These routines must not be targets of dispatching calls and
+      --  therefore must not appear in the dispatch table because they already
+      --  utilize class-wide-precondition semantics to handle inheritance and
+      --  overriding.
+
+      if Is_Suitable_Primitive (New_Op) then
+         Append_Unique_Elmt (New_Op, List);
+      end if;
    end Add_Dispatching_Operation;
 
    --------------------------
@@ -1472,7 +1481,7 @@ package body Sem_Disp is
          --  Attach operation to list of primitives of the synchronized type
          --  itself, for ASIS use.
 
-         Append_Elmt (Subp, Direct_Primitive_Operations (Tagged_Type));
+         Add_Dispatching_Operation (Tagged_Type, Subp);
 
       --  If no old subprogram, then we add this as a dispatching operation,
       --  but we avoid doing this if an error was posted, to prevent annoying
@@ -1783,7 +1792,7 @@ package body Sem_Disp is
          --  Add Old_Subp to primitive operations if not already present
 
          if Present (Tagged_Type) and then Is_Tagged_Type (Tagged_Type) then
-            Append_Unique_Elmt (Old_Subp, Primitive_Operations (Tagged_Type));
+            Add_Dispatching_Operation (Tagged_Type, Old_Subp);
 
             --  If Old_Subp isn't already marked as dispatching then this is
             --  the case of an operation of an untagged private type fulfilled
@@ -2541,7 +2550,7 @@ package body Sem_Disp is
                         Find_Dispatching_Type (Alias (Prev_Op)))
       then
          Remove_Elmt (Primitive_Operations (Tagged_Type), Elmt);
-         Append_Elmt (New_Op, Primitive_Operations (Tagged_Type));
+         Add_Dispatching_Operation (Tagged_Type, New_Op);
 
       --  The new primitive replaces the overridden entity. Required to ensure
       --  that overriding primitive is assigned the same dispatch table slot.

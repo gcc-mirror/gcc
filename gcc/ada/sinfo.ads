@@ -531,75 +531,89 @@ package Sinfo is
    --  The SPARK RM 6.9 defines two classes of constructs - Ghost entities and
    --  Ghost statements. The intent of the feature is to treat Ghost constructs
    --  as non-existent when Ghost assertion policy Ignore is in effect.
-
+   --
    --  The corresponding nodes which map to Ghost constructs are:
-
+   --
    --    Ghost entities
    --      Declaration nodes
    --      N_Package_Body
    --      N_Subprogram_Body
-
+   --
    --    Ghost statements
    --      N_Assignment_Statement
    --      N_Procedure_Call_Statement
    --      N_Pragma
-
+   --
    --  In addition, the compiler treats instantiations as Ghost entities
-
+   --
    --  To achieve the removal of ignored Ghost constructs, the compiler relies
-   --  on global variable Ghost_Mode and a mechanism called "Ghost regions".
-   --  The values of the global variable are as follows:
-
+   --  on global variables Ghost_Mode and Ignored_Ghost_Region, which comprise
+   --  a mechanism called "Ghost regions".
+   --
+   --  The values of Ghost_Mode are as follows:
+   --
    --    1. Check - All static semantics as defined in SPARK RM 6.9 are in
    --       effect. The Ghost region has mode Check.
-
+   --
    --    2. Ignore - Same as Check, ignored Ghost code is not present in ALI
    --       files, object files, and the final executable. The Ghost region
    --       has mode Ignore.
-
+   --
    --    3. None - No Ghost region is in effect
-
+   --
+   --  The value of Ignored_Ghost_Region captures the node which initiates an
+   --  ignored Ghost region.
+   --
    --  A Ghost region is a compiler operating mode, similar to Check_Syntax,
    --  however a region is much more finely grained and depends on the policy
    --  in effect. The region starts prior to the analysis of a Ghost construct
    --  and ends immediately after its expansion. The region is established as
    --  follows:
-
+   --
    --    1. Declarations - Prior to analysis, if the declaration is subject to
    --       pragma Ghost.
-
+   --
    --    2. Renaming declarations - Same as 1) or when the renamed entity is
    --       Ghost.
-
+   --
    --    3. Completing declarations - Same as 1) or when the declaration is
    --       partially analyzed and the declaration completes a Ghost entity.
-
+   --
    --    4. N_Package_Body, N_Subprogram_Body - Same as 1) or when the body is
    --       partially analyzed and completes a Ghost entity.
-
+   --
    --    5. N_Assignment_Statement - After the left hand side is analyzed and
    --       references a Ghost entity.
-
+   --
    --    6. N_Procedure_Call_Statement - After the name is analyzed and denotes
    --       a Ghost procedure.
-
+   --
    --    7. N_Pragma - During analysis, when the related entity is Ghost or the
    --       pragma encloses a Ghost entity.
-
+   --
    --    8. Instantiations - Save as 1) or when the instantiation is partially
    --       analyzed and the generic template is Ghost.
-
-   --  Routines Mark_And_Set_Ghost_xxx and Set_Ghost_Mode install a new Ghost
-   --  region and routine Restore_Ghost_Mode ends a Ghost region. A region may
-   --  be reinstalled similarly to scopes for decoupled expansion such as the
-   --  generation of dispatch tables or the creation of a predicate function.
-
+   --
+   --  The following routines install a new Ghost region:
+   --
+   --     Install_Ghost_Region
+   --     Mark_And_Set_Ghost_xxx
+   --     Set_Ghost_Mode
+   --
+   --  The following routine ends a Ghost region:
+   --
+   --     Restore_Ghost_Region
+   --
+   --  A region may be reinstalled similarly to scopes for decoupled expansion
+   --  such as the generation of dispatch tables or the creation of a predicate
+   --  function.
+   --
    --  If the mode of a Ghost region is Ignore, any newly created nodes as well
    --  as source entities are marked as ignored Ghost. In additon, the marking
    --  process signals all enclosing scopes that an ignored Ghost node resides
    --  within. The compilation unit where the node resides is also added to an
    --  auxiliary table for post processing.
-
+   --
    --  After the analysis and expansion of all compilation units takes place
    --  as well as the instantiation of all inlined [generic] bodies, the GNAT
    --  driver initiates a separate pass which removes all ignored Ghost nodes

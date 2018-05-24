@@ -2165,7 +2165,12 @@ package body Freeze is
       N                 : Node_Id;
       Do_Freeze_Profile : Boolean := True) return List_Id
    is
-      Loc    : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
       Atype  : Entity_Id;
       Comp   : Entity_Id;
       F_Node : Node_Id;
@@ -2181,8 +2186,8 @@ package body Freeze is
       Test_E : Entity_Id := E;
       --  This could use a comment ???
 
-      procedure Add_To_Result (N : Node_Id);
-      --  N is a freezing action to be appended to the Result
+      procedure Add_To_Result (Fnod : Node_Id);
+      --  Add freeze action Fnod to list Result
 
       function After_Last_Declaration return Boolean;
       --  If Loc is a freeze_entity that appears after the last declaration
@@ -2244,12 +2249,24 @@ package body Freeze is
       -- Add_To_Result --
       -------------------
 
-      procedure Add_To_Result (N : Node_Id) is
+      procedure Add_To_Result (Fnod : Node_Id) is
       begin
-         if No (Result) then
-            Result := New_List (N);
+         --  The Ghost mode of the enclosing context is ignored, while the
+         --  entity being frozen is living. Insert the freezing action prior
+         --  to the start of the enclosing ignored Ghost region. As a result
+         --  the freezeing action will be preserved when the ignored Ghost
+         --  context is eliminated.
+
+         if Saved_GM = Ignore
+           and then Ghost_Mode /= Ignore
+           and then Present (Ignored_Ghost_Region)
+         then
+            Insert_Action (Ignored_Ghost_Region, Fnod);
+
+         --  Otherwise add the freezing action to the result list
+
          else
-            Append (N, Result);
+            Append_New_To (Result, Fnod);
          end if;
       end Add_To_Result;
 
@@ -3188,7 +3205,6 @@ package body Freeze is
       -------------------------------
 
       procedure Freeze_Object_Declaration (E : Entity_Id) is
-
          procedure Check_Large_Modular_Array (Typ : Entity_Id);
          --  Check that the size of array type Typ can be computed without
          --  overflow, and generates a Storage_Error otherwise. This is only
@@ -5173,7 +5189,7 @@ package body Freeze is
             --  Build the call
 
             --  An imported function whose result type is anonymous access
-            --  creates a new anonynous access type when it is relocated into
+            --  creates a new anonymous access type when it is relocated into
             --  the declarations of the body generated below. As a result, the
             --  accessibility level of these two anonymous access types may not
             --  be compatible even though they are essentially the same type.
@@ -5230,11 +5246,6 @@ package body Freeze is
             Set_Is_Public (E);
          end if;
       end Wrap_Imported_Subprogram;
-
-      --  Local variables
-
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
 
    --  Start of processing for Freeze_Entity
 
@@ -6854,7 +6865,7 @@ package body Freeze is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       return Result;
    end Freeze_Entity;
