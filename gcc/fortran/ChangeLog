@@ -1,3 +1,9 @@
+2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85895
+	* resolve.c (resolve_sync): Resolve expression before checking for
+	an error.
+
 2018-05-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85841
