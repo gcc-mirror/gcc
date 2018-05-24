@@ -1,3 +1,10 @@
+2018-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+        * fold-const.c (tree_nonzero_bits): New function.
+        * fold-const.h (tree_nonzero_bits): Likewise.
+        * match.pd (POPCOUNT): New patterns to fold BUILTIN_POPCOUNT and
+        friends.  POPCOUNT(x&1) => x&1, POPCOUNT(x)==0 => x==0, etc.
+
 2018-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85900

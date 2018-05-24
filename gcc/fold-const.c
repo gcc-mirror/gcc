@@ -14571,6 +14571,74 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen)
   return string + offset;
 }
 
+/* Given a tree T, compute which bits in T may be nonzero.  */
+
+wide_int
+tree_nonzero_bits (const_tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case INTEGER_CST:
+      return wi::to_wide (t);
+    case SSA_NAME:
+      return get_nonzero_bits (t);
+    case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
+      return tree_nonzero_bits (TREE_OPERAND (t, 0));
+    case BIT_AND_EXPR:
+      return wi::bit_and (tree_nonzero_bits (TREE_OPERAND (t, 0)),
+			  tree_nonzero_bits (TREE_OPERAND (t, 1)));
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      return wi::bit_or (tree_nonzero_bits (TREE_OPERAND (t, 0)),
+			 tree_nonzero_bits (TREE_OPERAND (t, 1)));
+    case COND_EXPR:
+      return wi::bit_or (tree_nonzero_bits (TREE_OPERAND (t, 1)),
+			 tree_nonzero_bits (TREE_OPERAND (t, 2)));
+    CASE_CONVERT:
+      return wide_int::from (tree_nonzero_bits (TREE_OPERAND (t, 0)),
+			     TYPE_PRECISION (TREE_TYPE (t)),
+			     TYPE_SIGN (TREE_TYPE (TREE_OPERAND (t, 0))));
+    case PLUS_EXPR:
+      if (INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	{
+	  wide_int nzbits1 = tree_nonzero_bits (TREE_OPERAND (t, 0));
+	  wide_int nzbits2 = tree_nonzero_bits (TREE_OPERAND (t, 1));
+	  if (wi::bit_and (nzbits1, nzbits2) == 0)
+	    return wi::bit_or (nzbits1, nzbits2);
+	}
+      break;
+    case LSHIFT_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
+	{
+	  tree type = TREE_TYPE (t);
+	  wide_int nzbits = tree_nonzero_bits (TREE_OPERAND (t, 0));
+	  wide_int arg1 = wi::to_wide (TREE_OPERAND (t, 1),
+				       TYPE_PRECISION (type));
+	  return wi::neg_p (arg1)
+		 ? wi::rshift (nzbits, -arg1, TYPE_SIGN (type))
+		 : wi::lshift (nzbits, arg1);
+	}
+      break;
+    case RSHIFT_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
+        {
+	  tree type = TREE_TYPE (t);
+	  wide_int nzbits = tree_nonzero_bits (TREE_OPERAND (t, 0));
+	  wide_int arg1 = wi::to_wide (TREE_OPERAND (t, 1),
+				       TYPE_PRECISION (type));
+	  return wi::neg_p (arg1)
+		 ? wi::lshift (nzbits, -arg1)
+		 : wi::rshift (nzbits, arg1, TYPE_SIGN (type));
+        }
+      break;
+    default:
+      break;
+    }
+
+  return wi::shwi (-1, TYPE_PRECISION (TREE_TYPE (t)));
+}
+
 #if CHECKING_P
 
 namespace selftest {

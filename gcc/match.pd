@@ -4760,3 +4760,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (negate (IFN_FNMS@3 @0 @1 @2))
   (if (single_use (@3))
    (IFN_FMA @0 @1 @2))))
+
+/* POPCOUNT simplifications.  */
+(for popcount (BUILT_IN_POPCOUNT BUILT_IN_POPCOUNTL BUILT_IN_POPCOUNTLL
+	       BUILT_IN_POPCOUNTIMAX)
+  /* popcount(X&1) is nop_expr(X&1).  */
+  (simplify
+    (popcount @0)
+    (if (tree_nonzero_bits (@0) == 1)
+      (convert @0)))
+  /* popcount(X) + popcount(Y) is popcount(X|Y) when X&Y must be zero.  */
+  (simplify
+    (plus (popcount:s @0) (popcount:s @1))
+    (if (wi::bit_and (tree_nonzero_bits (@0), tree_nonzero_bits (@1)) == 0)
+      (popcount (bit_ior @0 @1))))
+  /* popcount(X) == 0 is X == 0, and related (in)equalities.  */
+  (for cmp (le eq ne gt)
+       rep (eq eq ne ne)
+    (simplify
+      (cmp (popcount @0) integer_zerop)
+      (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
