@@ -3905,8 +3905,9 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Related_Id : Entity_Id;
 
@@ -4970,7 +4971,7 @@ package body Sem_Ch3 is
          Check_No_Hidden_State (Id);
       end if;
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -15003,15 +15004,16 @@ package body Sem_Ch3 is
      (Parent_Type : Entity_Id;
       Tagged_Type : Entity_Id)
    is
-      E          : Entity_Id;
-      Elmt       : Elmt_Id;
-      Iface      : Entity_Id;
-      Iface_Elmt : Elmt_Id;
-      Iface_Subp : Entity_Id;
-      New_Subp   : Entity_Id := Empty;
-      Prim_Elmt  : Elmt_Id;
-      Subp       : Entity_Id;
-      Typ        : Entity_Id;
+      E           : Entity_Id;
+      Elmt        : Elmt_Id;
+      Iface       : Entity_Id;
+      Iface_Alias : Entity_Id;
+      Iface_Elmt  : Elmt_Id;
+      Iface_Subp  : Entity_Id;
+      New_Subp    : Entity_Id := Empty;
+      Prim_Elmt   : Elmt_Id;
+      Subp        : Entity_Id;
+      Typ         : Entity_Id;
 
    begin
       pragma Assert (Ada_Version >= Ada_2005
@@ -15082,7 +15084,8 @@ package body Sem_Ch3 is
 
             Prim_Elmt := First_Elmt (Primitive_Operations (Iface));
             while Present (Prim_Elmt) loop
-               Iface_Subp := Node (Prim_Elmt);
+               Iface_Subp  := Node (Prim_Elmt);
+               Iface_Alias := Ultimate_Alias (Iface_Subp);
 
                --  Exclude derivation of predefined primitives except those
                --  that come from source, or are inherited from one that comes
@@ -15093,11 +15096,12 @@ package body Sem_Ch3 is
                --     function "=" (Left, Right : Iface) return Boolean;
 
                if not Is_Predefined_Dispatching_Operation (Iface_Subp)
-                 or else Comes_From_Source (Ultimate_Alias (Iface_Subp))
+                 or else Comes_From_Source (Iface_Alias)
                then
-                  E := Find_Primitive_Covering_Interface
-                         (Tagged_Type => Tagged_Type,
-                          Iface_Prim  => Iface_Subp);
+                  E :=
+                    Find_Primitive_Covering_Interface
+                      (Tagged_Type => Tagged_Type,
+                       Iface_Prim  => Iface_Subp);
 
                   --  If not found we derive a new primitive leaving its alias
                   --  attribute referencing the interface primitive.
@@ -20265,7 +20269,9 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Full_Indic  : Node_Id;
       Full_Parent : Entity_Id;
@@ -20749,7 +20755,6 @@ package body Sem_Ch3 is
 
                else
                   Full_List := Primitive_Operations (Full_T);
-
                   while Present (Prim_Elmt) loop
                      Prim := Node (Prim_Elmt);
 
@@ -20791,16 +20796,17 @@ package body Sem_Ch3 is
                      then
                         Check_Controlling_Formals (Full_T, Prim);
 
-                        if not Is_Dispatching_Operation (Prim) then
+                        if Is_Suitable_Primitive (Prim)
+                          and then not Is_Dispatching_Operation (Prim)
+                        then
                            Append_Elmt (Prim, Full_List);
-                           Set_Is_Dispatching_Operation (Prim, True);
+                           Set_Is_Dispatching_Operation (Prim);
                            Set_DT_Position_Value (Prim, No_Uint);
                         end if;
 
                      elsif Is_Dispatching_Operation (Prim)
                        and then Disp_Typ /= Full_T
                      then
-
                         --  Verify that it is not otherwise controlled by a
                         --  formal or a return value of type T.
 
@@ -20927,7 +20933,7 @@ package body Sem_Ch3 is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Process_Full_View;
 
    -----------------------------------

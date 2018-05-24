@@ -46,6 +46,10 @@ with Table;
 
 package body Ghost is
 
+   ---------------------
+   -- Data strictures --
+   ---------------------
+
    --  The following table contains the N_Compilation_Unit node for a unit that
    --  is either subject to pragma Ghost with policy Ignore or contains ignored
    --  Ghost code. The table is used in the removal of ignored Ghost code from
@@ -60,16 +64,21 @@ package body Ghost is
      Table_Name           => "Ignored_Ghost_Units");
 
    -----------------------
-   -- Local Subprograms --
+   -- Local subprograms --
    -----------------------
 
    function Ghost_Entity (N : Node_Id) return Entity_Id;
    --  Find the entity of a reference to a Ghost entity. Return Empty if there
    --  is no such entity.
 
-   procedure Install_Ghost_Mode (Mode : Name_Id);
-   --  Install a specific Ghost mode denoted by Mode by setting global variable
-   --  Ghost_Mode.
+   procedure Install_Ghost_Mode (Mode : Ghost_Mode_Type);
+   pragma Inline (Install_Ghost_Mode);
+   --  Install Ghost mode Mode as the Ghost mode in effect
+
+   procedure Install_Ghost_Region (Mode : Name_Id; N : Node_Id);
+   pragma Inline (Install_Ghost_Region);
+   --  Install a Ghost region comprised of mode Mode and ignored region start
+   --  node N.
 
    function Is_Subject_To_Ghost (N : Node_Id) return Boolean;
    --  Determine whether declaration or body N is subject to aspect or pragma
@@ -83,6 +92,11 @@ package body Ghost is
    --  Mark the defining entity of declaration or body N as Ghost depending on
    --  mode Mode. Mark all formals parameters when N denotes a subprogram or a
    --  body.
+
+   function Name_To_Ghost_Mode (Mode : Name_Id) return Ghost_Mode_Type;
+   pragma Inline (Name_To_Ghost_Mode);
+   --  Convert a Ghost mode denoted by name Mode into its respective enumerated
+   --  value.
 
    procedure Propagate_Ignored_Ghost_Code (N : Node_Id);
    --  Signal all enclosing scopes that they now contain at least one ignored
@@ -908,21 +922,40 @@ package body Ghost is
 
    procedure Install_Ghost_Mode (Mode : Ghost_Mode_Type) is
    begin
-      Ghost_Mode := Mode;
+      Install_Ghost_Region (Mode, Empty);
    end Install_Ghost_Mode;
 
-   procedure Install_Ghost_Mode (Mode : Name_Id) is
+   --------------------------
+   -- Install_Ghost_Region --
+   --------------------------
+
+   procedure Install_Ghost_Region (Mode : Ghost_Mode_Type; N : Node_Id) is
    begin
-      if Mode = Name_Check then
-         Ghost_Mode := Check;
+      --  The context is already within an ignored Ghost region. Maintain the
+      --  start of the outermost ignored Ghost region.
 
-      elsif Mode = Name_Ignore then
-         Ghost_Mode := Ignore;
+      if Present (Ignored_Ghost_Region) then
+         null;
 
-      elsif Mode = Name_None then
-         Ghost_Mode := None;
+      --  The current region is the outermost ignored Ghost region. Save its
+      --  starting node.
+
+      elsif Present (N) and then Mode = Ignore then
+         Ignored_Ghost_Region := N;
+
+      --  Otherwise the current region is not ignored, nothing to save
+
+      else
+         Ignored_Ghost_Region := Empty;
       end if;
-   end Install_Ghost_Mode;
+
+      Ghost_Mode := Mode;
+   end Install_Ghost_Region;
+
+   procedure Install_Ghost_Region (Mode : Name_Id; N : Node_Id) is
+   begin
+      Install_Ghost_Region (Name_To_Ghost_Mode (Mode), N);
+   end Install_Ghost_Region;
 
    -------------------------
    -- Is_Ghost_Assignment --
@@ -1162,10 +1195,10 @@ package body Ghost is
 
       if Present (Id) then
          if Is_Checked_Ghost_Entity (Id) then
-            Install_Ghost_Mode (Check);
+            Install_Ghost_Region (Check, N);
 
          elsif Is_Ignored_Ghost_Entity (Id) then
-            Install_Ghost_Mode (Ignore);
+            Install_Ghost_Region (Ignore, N);
 
             Set_Is_Ignored_Ghost_Node (N);
             Propagate_Ignored_Ghost_Code (N);
@@ -1222,9 +1255,9 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
 
-      --  Install the appropriate Ghost mode
+      --  Install the appropriate Ghost region
 
-      Install_Ghost_Mode (Policy);
+      Install_Ghost_Region (Policy, N);
    end Mark_And_Set_Ghost_Body;
 
    -----------------------------------
@@ -1269,9 +1302,9 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
 
-      --  Install the appropriate Ghost mode
+      --  Install the appropriate Ghost region
 
-      Install_Ghost_Mode (Policy);
+      Install_Ghost_Region (Policy, N);
    end Mark_And_Set_Ghost_Completion;
 
    ------------------------------------
@@ -1326,9 +1359,9 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
 
-      --  Install the appropriate Ghost mode
+      --  Install the appropriate Ghost region
 
-      Install_Ghost_Mode (Policy);
+      Install_Ghost_Region (Policy, N);
    end Mark_And_Set_Ghost_Declaration;
 
    --------------------------------------
@@ -1406,11 +1439,11 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
 
-      --  Install the appropriate Ghost mode
+      --  Install the appropriate Ghost region
 
-      Install_Ghost_Mode (Policy);
+      Install_Ghost_Region (Policy, N);
 
-      --  Check ghost actuals. Given that this routine is unconditionally
+      --  Check Ghost actuals. Given that this routine is unconditionally
       --  invoked with subprogram and package instantiations, this check
       --  verifies the context of all the ghost entities passed in generic
       --  instantiations.
@@ -1433,10 +1466,10 @@ package body Ghost is
 
       if Present (Id) then
          if Is_Checked_Ghost_Entity (Id) then
-            Install_Ghost_Mode (Check);
+            Install_Ghost_Region (Check, N);
 
          elsif Is_Ignored_Ghost_Entity (Id) then
-            Install_Ghost_Mode (Ignore);
+            Install_Ghost_Region (Ignore, N);
 
             Set_Is_Ignored_Ghost_Node (N);
             Propagate_Ignored_Ghost_Code (N);
@@ -1576,6 +1609,31 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
    end Mark_Ghost_Renaming;
+
+   ------------------------
+   -- Name_To_Ghost_Mode --
+   ------------------------
+
+   function Name_To_Ghost_Mode (Mode : Name_Id) return Ghost_Mode_Type is
+   begin
+      if Mode = Name_Check then
+         return Check;
+
+      elsif Mode = Name_Ignore then
+         return Ignore;
+
+      --  Otherwise the mode must denote one of the following:
+      --
+      --    * Disable indicates that the Ghost policy in effect is Disable
+      --
+      --    * None or No_Name indicates that the associated construct is not
+      --      subject to any Ghost annotation.
+
+      else
+         pragma Assert (Nam_In (Mode, Name_Disable, Name_None, No_Name));
+         return None;
+      end if;
+   end Name_To_Ghost_Mode;
 
    ----------------------------------
    -- Propagate_Ignored_Ghost_Code --
@@ -1742,14 +1800,15 @@ package body Ghost is
       end loop;
    end Remove_Ignored_Ghost_Code;
 
-   ------------------------
-   -- Restore_Ghost_Mode --
-   ------------------------
+   --------------------------
+   -- Restore_Ghost_Region --
+   --------------------------
 
-   procedure Restore_Ghost_Mode (Mode : Ghost_Mode_Type) is
+   procedure Restore_Ghost_Region (Mode : Ghost_Mode_Type; N : Node_Id) is
    begin
-      Ghost_Mode := Mode;
-   end Restore_Ghost_Mode;
+      Ghost_Mode           := Mode;
+      Ignored_Ghost_Region := N;
+   end Restore_Ghost_Region;
 
    --------------------
    -- Set_Ghost_Mode --

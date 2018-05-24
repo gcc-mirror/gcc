@@ -1,3 +1,66 @@
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* expander.adb (Expand): Update the save and restore of the Ghost
+	region.
+	* exp_ch3.adb (Freeze_Type): Likewise.
+	* exp_disp.adb (Make_DT): Likewise.
+	* exp_util.adb (Build_DIC_Procedure_Body): Likewise.
+	(Build_DIC_Procedure_Declaration): Likewise.
+	(Build_Invariant_Procedure_Body): Likewise.
+	(Build_Invariant_Procedure_Declaration): Likewise.
+	(Make_Predicate_Call): Likewise.
+	* freeze.adb (Add_To_Result): Insert the freeze action of a living
+	entity prior to the start of the enclosing ignored Ghost region.
+	(Freeze_Entity): Update the save and restore of the Ghost region.
+	* ghost.adb (Install_Ghost_Mode): Reimplemented.
+	(Install_Ghost_Region): New routine.
+	(Mark_And_Set_Ghost_Assignment): Install a region rather than a mode.
+	(Mark_And_Set_Ghost_Body): Likewise.
+	(Mark_And_Set_Ghost_Completion): Likewise.
+	(Mark_And_Set_Ghost_Declaration): Likewise.
+	(Mark_And_Set_Ghost_Instantiation): Likewise.
+	(Mark_And_Set_Ghost_Procedure_Call): Likewise.
+	(Name_To_Ghost_Mode): New routine.
+	(Restore_Ghost_Region): New routine.
+	* ghost.ads (Install_Ghost_Region): New routine.
+	(Restore_Ghost_Region): New routine.
+	* opt.ads: Add new global variable Ignored_Ghost_Region.
+	* rtsfind.adb (Load_RTU): Update the save and restore of the Ghost
+	region. Install a clean region.
+	* sem.adb (Analyze): Likewise.
+	(Do_Analyze): Likewise.
+	* sem_ch3.adb (Analyze_Object_Declaration): Likewise
+	(Derive_Progenitor_Subprograms): Use local variable Iface_Alias to
+	capture the ultimate alias of the current primitive.
+	(Process_Full_View): Update the save and restore of the Ghost region.
+	Do not inherit DIC and invariant procedures.
+	* sem_ch5.adb (Analyze_Assignment): Update the save and restore of the
+	Ghost region.
+	* sem_ch6.adb (Analyze_Procedure_Call): Likewise.
+	(Analyze_Subprogram_Body_Helper): Likewise.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Likewise.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Likewise.
+	(Analyze_Subprogram_Instantiation): Likewise.
+	(Instantiate_Package_Body): Likewise.
+	(Instantiate_Subprogram_Body): Likewise.
+	* sem_ch13.adb (Build_Predicate_Functions): Likewise.
+	(Build_Predicate_Function_Declaration): Likewise.
+	* sem_disp.adb
+	(Add_Dispatching_Operation): Do not consider DIC and invariant
+	procedures.
+	(Check_Dispatching_Operation): Use Add_Dispatching_Operation to collect
+	a dispatching subprogram.
+	(Check_Operation_From_Private_View): Likewise.
+	(Override_Dispatching_Operation): Likewise.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part): Update the save
+	and restore of the Ghost region.
+	(Analyze_Initial_Condition_In_Decl_Part): Likewise.
+	(Analyze_Pragma): Update the save and restore of the Ghost region.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Likewise.
+	* sem_util.adb (Is_Suitable_Primitive): New routine.
+	* sem_util.ads (Is_Suitable_Primitive): New routine.
+	* sinfo.ads: Update the section of Ghost regions.
+
 2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst (Contract_Cases):

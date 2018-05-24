@@ -468,8 +468,9 @@ package body Sem_Prag is
 
       CCases : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       CCase         : Node_Id;
       Restore_Scope : Boolean := False;
@@ -536,7 +537,7 @@ package body Sem_Prag is
 
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Contract_Cases_In_Decl_Part;
 
    ----------------------------------
@@ -2720,8 +2721,9 @@ package body Sem_Prag is
       Pack_Id   : constant Entity_Id := Defining_Entity (Pack_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Pack_Id));
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
    begin
       --  Do not analyze the pragma multiple times
@@ -2744,7 +2746,7 @@ package body Sem_Prag is
       Preanalyze_Assert_Expression (Expr, Standard_Boolean);
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Initial_Condition_In_Decl_Part;
 
    --------------------------------------
@@ -13224,8 +13226,9 @@ package body Sem_Prag is
          --  restore the Ghost mode.
 
          when Pragma_Check => Check : declare
-            Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-            --  Save the Ghost mode to restore on exit
+            Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+            Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+            --  Save the Ghost-related attributes to restore on exit
 
             Cname : Name_Id;
             Eloc  : Source_Ptr;
@@ -13420,7 +13423,7 @@ package body Sem_Prag is
                In_Assertion_Expr := In_Assertion_Expr - 1;
             end if;
 
-            Restore_Ghost_Mode (Saved_GM);
+            Restore_Ghost_Region (Saved_GM, Saved_IGR);
          end Check;
 
          --------------------------
@@ -24968,9 +24971,11 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Expr     : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Expr : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Errors        : Nat;
       Restore_Scope : Boolean := False;
@@ -25069,7 +25074,7 @@ package body Sem_Prag is
       Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Pre_Post_Condition_In_Decl_Part;
 
    ------------------------------------------

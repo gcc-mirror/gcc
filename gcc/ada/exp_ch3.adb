@@ -7554,8 +7554,9 @@ package body Exp_Ch3 is
 
       Def_Id : constant Entity_Id := Entity (N);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Result : Boolean := False;
 
@@ -7920,13 +7921,13 @@ package body Exp_Ch3 is
          end if;
       end if;
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       return Result;
 
    exception
       when RE_Not_Available =>
-         Restore_Ghost_Mode (Saved_GM);
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
          return False;
    end Freeze_Type;
