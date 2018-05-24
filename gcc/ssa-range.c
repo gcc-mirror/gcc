@@ -607,6 +607,7 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
 bool
 path_ranger::process_phi (irange &r, gphi *phi)
 {
+  irange phi_range;
   tree phi_def = gimple_phi_result (phi);
   unsigned x;
 
@@ -618,8 +619,8 @@ path_ranger::process_phi (irange &r, gphi *phi)
     return true;
 
   // Avoid infinite recursion by initializing global cache 
-  r.set_range (phi_def);
-  set_global_ssa_range (phi_def, r);
+  phi_range.set_range (phi_def);
+  set_global_ssa_range (phi_def, phi_range);
  
   // And start with an empty range, unioning in each argument's range.
   r.clear (TREE_TYPE (phi_def));
@@ -643,6 +644,8 @@ path_ranger::process_phi (irange &r, gphi *phi)
 	break;
     }
 
+  // Intersect any global info we have about PHI_DEF with what was calculated.
+  r.intersect (phi_range);
   // This now becomes the global range for PHI_DEF.
   set_global_ssa_range (phi_def, r);
   return true;
