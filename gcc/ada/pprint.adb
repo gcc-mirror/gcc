@@ -51,7 +51,7 @@ package body Pprint is
       From_Source  : constant Boolean :=
                        Comes_From_Source (Expr)
                          and then not Opt.Debug_Generated_Code;
-      Append_Paren : Boolean := False;
+      Append_Paren : Natural := 0;
       Left         : Node_Id := Original_Node (Expr);
       Right        : Node_Id := Original_Node (Expr);
 
@@ -732,7 +732,9 @@ package body Pprint is
             when N_Range =>
                Left := Original_Node (Low_Bound (Left));
 
-            when N_Type_Conversion =>
+            when N_Qualified_Expression
+               | N_Type_Conversion
+            =>
                Left := Original_Node (Subtype_Mark (Left));
 
             --  For any other item, quit loop
@@ -756,6 +758,20 @@ package body Pprint is
             =>
                Right := Original_Node (Selector_Name (Right));
 
+            when N_Qualified_Expression
+               | N_Type_Conversion
+            =>
+               Right := Original_Node (Expression (Right));
+
+               --  If argument does not already account for a closing
+               --  parenthesis, count one here.
+
+               if not Nkind_In (Right, N_Quantified_Expression,
+                                       N_Aggregate)
+               then
+                  Append_Paren := Append_Paren + 1;
+               end if;
+
             when N_Designator =>
                Right := Original_Node (Identifier (Right));
 
@@ -768,9 +784,16 @@ package body Pprint is
             when N_Parameter_Association =>
                Right := Original_Node (Explicit_Actual_Parameter (Right));
 
+            when N_Component_Association =>
+               if Present (Expression (Right)) then
+                  Right := Expression (Right);
+               else
+                  Right := Last (Choices (Right));
+               end if;
+
             when N_Indexed_Component =>
                Right := Original_Node (Last (Sinfo.Expressions (Right)));
-               Append_Paren := True;
+               Append_Paren := Append_Paren + 1;
 
             when N_Function_Call =>
                if Present (Sinfo.Parameter_Associations (Right)) then
@@ -787,12 +810,15 @@ package body Pprint is
                      while Present (Rover) loop
                         if Comes_From_Source (Original_Node (Rover)) then
                            Right := Original_Node (Rover);
-                           Append_Paren := True;
                            Found := True;
                         end if;
 
                         Next (Rover);
                      end loop;
+
+                     if Found then
+                        Append_Paren := Append_Paren + 1;
+                     end if;
 
                      --  Quit loop if no Comes_From_Source parameters
 
@@ -807,6 +833,33 @@ package body Pprint is
 
             when N_Quantified_Expression =>
                Right := Original_Node (Condition (Right));
+               Append_Paren := Append_Paren + 1;
+
+            when N_Aggregate =>
+               declare
+                  Aggr : constant Node_Id := Right;
+                  Sub  : Node_Id;
+               begin
+                  Sub := First (Expressions (Aggr));
+                  while Present (Sub) loop
+                     if Sloc (Sub) > Sloc (Right) then
+                        Right := Sub;
+                     end if;
+                     Next (Sub);
+                  end loop;
+
+                  Sub := First (Component_Associations (Aggr));
+                  while Present (Sub) loop
+                     if Sloc (Sub) > Sloc (Right) then
+                        Right := Sub;
+                     end if;
+                     Next (Sub);
+                  end loop;
+
+                  exit when Right = Aggr;
+
+                  Append_Paren := Append_Paren + 1;
+               end;
 
             --  For all other items, quit the loop
 
@@ -886,11 +939,9 @@ package body Pprint is
                   end if;
                end;
 
-            elsif Append_Paren then
-               return Buffer (1 .. Index) & Expr_Name (Right, False) & ')';
-
             else
-               return Buffer (1 .. Index) & Expr_Name (Right, False);
+               return Buffer (1 .. Index) & Expr_Name (Right, False)
+                 & (1 .. Append_Paren => ')');
             end if;
          end;
       end;
