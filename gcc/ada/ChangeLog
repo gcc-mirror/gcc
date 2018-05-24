@@ -1,3 +1,8 @@
+2018-05-24  Doug Rupp  <rupp@adacore.com>
+
+	* argv-lynxos178-raven-cert.c: New file.
+	* libgnat/system-lynxos178-x86.ads: New file.
+
 2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_disp.adb, freeze.adb, gnat1drv.adb, sem_ch5.adb, sem_spark.adb:
