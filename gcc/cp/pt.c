@@ -17635,6 +17635,17 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       register_parameter_specializations (oldfn, fn);
 
+      if (oldtmpl)
+	{
+	  /* We might not partially instantiate some parts of the function, so
+	     copy these flags from the original template.  */
+	  language_function *ol = DECL_STRUCT_FUNCTION (oldfn)->language;
+	  current_function_returns_value = ol->returns_value;
+	  current_function_returns_null = ol->returns_null;
+	  current_function_returns_abnormally = ol->returns_abnormally;
+	  current_function_infinite_loop = ol->infinite_loop;
+	}
+
       tsubst_expr (DECL_SAVED_TREE (oldfn), args, complain, r,
 		   /*constexpr*/false);
 

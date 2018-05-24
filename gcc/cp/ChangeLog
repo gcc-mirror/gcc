@@ -1,5 +1,9 @@
 2018-05-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85842 - -Wreturn-type, constexpr if and generic lambda.
+	* pt.c (tsubst_lambda_expr): Copy current_function_returns_* to
+	generic lambda.
+
 	PR c++/85864 - literal template and default template arg.
 	* pt.c (instantiation_dependent_r): Handle NONTYPE_ARGUMENT_PACK.
 
