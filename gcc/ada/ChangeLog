@@ -1,5 +1,10 @@
 2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma): Use the full view of an internally
+	generated incomplete type.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* expander.adb (Expand): Update the save and restore of the Ghost
 	region.
 	* exp_ch3.adb (Freeze_Type): Likewise.
