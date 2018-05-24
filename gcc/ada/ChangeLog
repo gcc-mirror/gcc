@@ -1,3 +1,11 @@
+2018-05-24  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb (Expand_Cleanup_Actions): Create a mark unconditionally
+	for build-in-place functions with a caller-unknown-size result.
+	(Create_Finalizer): For build-in-place functions with a
+	caller-unknown-size result, check at run time whether we need to
+	release the secondary stack.
+
 2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Use the full view of an internally
