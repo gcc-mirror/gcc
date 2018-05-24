@@ -4703,59 +4703,60 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		      wi::to_wide (@ipos) + isize))
     (BIT_FIELD_REF @0 @rsize @rpos)))))
 
-(for fmas (FMA)
+(if (canonicalize_math_after_vectorization_p ())
+ (for fmas (FMA)
+  (simplify
+   (fmas:c (negate @0) @1 @2)
+   (IFN_FNMA @0 @1 @2))
+  (simplify
+   (fmas @0 @1 (negate @2))
+   (IFN_FMS @0 @1 @2))
+  (simplify
+   (fmas:c (negate @0) @1 (negate @2))
+   (IFN_FNMS @0 @1 @2))
+  (simplify
+   (negate (fmas@3 @0 @1 @2))
+   (if (single_use (@3))
+    (IFN_FNMS @0 @1 @2))))
+
  (simplify
-  (fmas:c (negate @0) @1 @2)
-  (IFN_FNMA @0 @1 @2))
- (simplify
-  (fmas @0 @1 (negate @2))
-  (IFN_FMS @0 @1 @2))
- (simplify
-  (fmas:c (negate @0) @1 (negate @2))
+  (IFN_FMS:c (negate @0) @1 @2)
   (IFN_FNMS @0 @1 @2))
  (simplify
-  (negate (fmas@3 @0 @1 @2))
+  (IFN_FMS @0 @1 (negate @2))
+  (IFN_FMA @0 @1 @2))
+ (simplify
+  (IFN_FMS:c (negate @0) @1 (negate @2))
+  (IFN_FNMA @0 @1 @2))
+ (simplify
+  (negate (IFN_FMS@3 @0 @1 @2))
+   (if (single_use (@3))
+    (IFN_FNMA @0 @1 @2)))
+
+ (simplify
+  (IFN_FNMA:c (negate @0) @1 @2)
+  (IFN_FMA @0 @1 @2))
+ (simplify
+  (IFN_FNMA @0 @1 (negate @2))
+  (IFN_FNMS @0 @1 @2))
+ (simplify
+  (IFN_FNMA:c (negate @0) @1 (negate @2))
+  (IFN_FMS @0 @1 @2))
+ (simplify
+  (negate (IFN_FNMA@3 @0 @1 @2))
   (if (single_use (@3))
-   (IFN_FNMS @0 @1 @2))))
+   (IFN_FMS @0 @1 @2)))
 
-(simplify
- (IFN_FMS:c (negate @0) @1 @2)
- (IFN_FNMS @0 @1 @2))
-(simplify
- (IFN_FMS @0 @1 (negate @2))
- (IFN_FMA @0 @1 @2))
-(simplify
- (IFN_FMS:c (negate @0) @1 (negate @2))
- (IFN_FNMA @0 @1 @2))
-(simplify
- (negate (IFN_FMS@3 @0 @1 @2))
+ (simplify
+  (IFN_FNMS:c (negate @0) @1 @2)
+  (IFN_FMS @0 @1 @2))
+ (simplify
+  (IFN_FNMS @0 @1 (negate @2))
+  (IFN_FNMA @0 @1 @2))
+ (simplify
+  (IFN_FNMS:c (negate @0) @1 (negate @2))
+  (IFN_FMA @0 @1 @2))
+ (simplify
+  (negate (IFN_FNMS@3 @0 @1 @2))
   (if (single_use (@3))
-   (IFN_FNMA @0 @1 @2)))
-
-(simplify
- (IFN_FNMA:c (negate @0) @1 @2)
- (IFN_FMA @0 @1 @2))
-(simplify
- (IFN_FNMA @0 @1 (negate @2))
- (IFN_FNMS @0 @1 @2))
-(simplify
- (IFN_FNMA:c (negate @0) @1 (negate @2))
- (IFN_FMS @0 @1 @2))
-(simplify
- (negate (IFN_FNMA@3 @0 @1 @2))
- (if (single_use (@3))
-  (IFN_FMS @0 @1 @2)))
-
-(simplify
- (IFN_FNMS:c (negate @0) @1 @2)
- (IFN_FMS @0 @1 @2))
-(simplify
- (IFN_FNMS @0 @1 (negate @2))
- (IFN_FNMA @0 @1 @2))
-(simplify
- (IFN_FNMS:c (negate @0) @1 (negate @2))
- (IFN_FMA @0 @1 @2))
-(simplify
- (negate (IFN_FNMS@3 @0 @1 @2))
- (if (single_use (@3))
-  (IFN_FMA @0 @1 @2)))
+   (IFN_FMA @0 @1 @2))))
