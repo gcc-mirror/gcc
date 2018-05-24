@@ -1,3 +1,9 @@
+2018-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85842 - -Wreturn-type, constexpr if and generic lambda.
+	* pt.c (tsubst_lambda_expr): Copy current_function_returns_* to
+	generic lambda.
+
 2018-05-24  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Pedwarn on a non-standard position of a C++ attribute.
