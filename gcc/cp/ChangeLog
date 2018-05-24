@@ -1,5 +1,8 @@
 2018-05-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85864 - literal template and default template arg.
+	* pt.c (instantiation_dependent_r): Handle NONTYPE_ARGUMENT_PACK.
+
 	PR c++/81420 - not extending temporary lifetime.
 	* call.c (extend_ref_init_temps_1): Handle ARRAY_REF.
 	* class.c (build_base_path): Avoid redundant move of an rvalue.
