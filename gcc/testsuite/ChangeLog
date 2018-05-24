@@ -1,3 +1,11 @@
+2018-05-23  Bin Cheng  <bin.cheng@arm.com>
+
+	Backport from mainline
+	2018-05-17  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/85793
+	* gcc.dg/vect/pr85793.c: New test.
+
 2018-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85874

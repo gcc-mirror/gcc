@@ -7653,6 +7653,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
 	}
+      /* Load vector(1) scalar_type if it's 1 element-wise vectype.  */
+      else if (nloads == 1)
+	ltype = vectype;
+
       if (slp)
 	{
 	  /* For SLP permutation support we need to load the whole group,
