@@ -1,3 +1,11 @@
+2018-05-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Type): Do not assign the Prev_Use_Clause
+	link to a use_type clause if this would cause an infinite loop in the
+	machinery that detects redundant use clauses. This may happen when the
+	redundant clauses appear in the context of a child unit and the context
+	of its parent.
+
 2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sinfo.ads: Fix grammar in comment.

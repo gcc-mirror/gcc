@@ -3916,10 +3916,14 @@ package body Sem_Ch8 is
       --  manipulation of the scope stack so we much guard against those cases
       --  here, otherwise, we must add the new use_type_clause to the previous
       --  use_type_clause chain in order to mark redundant use_type_clauses as
-      --  used.
+      --  used. When the redundant use-type clauses appear in a parent unit and
+      --  a child unit we must prevent a circularity in the chain that would
+      --  otherwise result from the separate steps of analysis and installation
+      --  of the parent context.
 
       if Present (Current_Use_Clause (E))
         and then Current_Use_Clause (E) /= N
+        and then Prev_Use_Clause (Current_Use_Clause (E)) /= N
         and then No (Prev_Use_Clause (N))
       then
          Set_Prev_Use_Clause (N, Current_Use_Clause (E));
