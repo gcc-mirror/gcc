@@ -8077,16 +8077,12 @@ package body Sem_Elab is
    ----------------------
 
    function Non_Private_View (Typ : Entity_Id) return Entity_Id is
-      Result : Entity_Id;
-
    begin
-      Result := Typ;
-
-      if Is_Private_Type (Result) and then Present (Full_View (Result)) then
-         Result := Full_View (Result);
+      if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+         return Full_View (Typ);
+      else
+         return Typ;
       end if;
-
-      return Result;
    end Non_Private_View;
 
    -----------------------------
