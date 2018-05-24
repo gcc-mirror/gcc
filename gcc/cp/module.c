@@ -2539,7 +2539,7 @@ const std::pair<tree *, unsigned> module_state::global_trees[] =
     std::pair<tree *, unsigned> (cp_global_trees, CPTI_MAX),
     std::pair<tree *, unsigned> (NULL, 0)
   };
-vec<tree, va_gc> GTY (()) *module_state::global_vec;
+GTY(()) vec<tree, va_gc> *module_state::global_vec;
 unsigned module_state::global_crc;
 
 /* Nesting of lazy loaders.  */
@@ -2548,7 +2548,7 @@ unsigned module_state::lazy_open;
 GTY((deletable)) vec<module_state *, va_gc_atomic> *module_state::importing;
 
 /* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
-vec<module_state *, va_gc> GTY(()) *module_state::modules;
+GTY(()) vec<module_state *, va_gc> *module_state::modules;
 
 /* Has of module state, findable by NAME. */
 hash_table<module_state_hash> *module_state::hash;

@@ -1,5 +1,15 @@
 2018-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (C++ ModuleS): Update server docs.
+	gcc/cp/
+	* cxx-module-server.sh: Add INCLUDE.
+	* semantics.c (deferred_access): Move GTY.
+	* module.c (module_state::global_vec): Move GTY.
+	(module_state::modules): Likewise.
+	* parser.c (cp_parser_peek_module_name): Remove incomplete
+	partition work.
+
 	DECL_DISCRIMINATOR for local classes, merge local var disc.
 	gcc/cp/
 	* cp-tree.h (language_function): Remove x_local_names.

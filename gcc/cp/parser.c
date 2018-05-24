@@ -12577,7 +12577,6 @@ cp_parser_peek_module_name (const cp_token *tokens, size_t &length)
 	{
 	  /* Concatenate dotted identifiers, and partition suffix  */
 	  auto_vec<tree,5> ids;
-	  bool partition = false;
 
 	  if (name)
 	    ids.quick_push (name);
@@ -12594,7 +12593,6 @@ cp_parser_peek_module_name (const cp_token *tokens, size_t &length)
 	      ix++;
 	      ids.safe_push (tokens[ix].u.value);
 	      ix++;
-	      partition = true;
 	    }
 
 	  name = make_tree_vec (ids.length ());

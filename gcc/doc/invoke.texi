@@ -29217,18 +29217,6 @@ and respond to the following commands:
 
 @itemize
 
-@item @samp{HELLO} @var{$ver} @var{$srcname}
-This is the first command.  It informs the server of the name of the
-source being compiled.  Response is either `@samp{OK}
-@var{$ver}', or `@samp{ERROR} @var{$errormsg}'.
-
-@item @samp{HELLO} @var{$ver} @var{$srcbase} @var{$srcpath}
-FIXME
-
-@item @samp{RESET}
-This command resets the server.  There is no response.  It is used
-if a preamble rescan is needed.
-
 @item @var{$query} @var{$module} [@var{$from}]
 A query for an import (including for a module implementation unit).
 The @var{$query} may be a combination of @samp{BMI}, @samp{SEARCH} or
@@ -29239,6 +29227,13 @@ fulfilable, the response is `@samp{ERROR} [@var{msg}]'.  Usually an
 error response will cause compilation to terminate.  When the query is
 multiplicative, the first possible response should be give.
 
+@item @samp{ASYNC}
+Request for an asynchronous response.  There must be at least one
+outstanding import query.  The response is as for a non-asynchronous
+query, except it is prefixed by `@samp{ASYNC} @var{$module}', so it
+may be linked to the orignal request.  [Note. as above, format is
+maleable.]
+
 @item @samp{ASYNC} @var{$query}
 An asynchronous query.  As above, but the response may be deferred and
 `@samp{DEFERRED}' is the immediate response.  If deferred responses
@@ -29246,29 +29241,26 @@ are not supported, an immediate response may be given.  [Note.
 Deferred queries have not been implemented.  Perhaps a response should
 provide a numeric async cookie?]
 
-@item @samp{PEEK} @var{$query}
-Advance notice of a query that may be presented in the future.  The
-response is either `@samp{OK}', or `@samp{ERROR} [@var{msg}]'.  The
-message may be ignored, or might initiate asynchronous build of the
-desired object.  `@samp{OK}' does not mean the desired entity is
-available.
-
-@item @samp{EXPORT} @var{$module}
-The compilation is of a module interface unit, and will generate a BMI
-for @var{module-name}.  The response should be `@samp{BMI} @var{bmifile}'.
-
 @item @samp{DONE} @var{$module}
 The compilation has succesfully produced a BMI file for
 @var{module-name}.  The response should be `@samp{OK}'.  Note that the
 compilation may not have completed the object-file generation of the
 interface unit.
 
-@item @samp{AWAIT}
-Request for an asynchronous response.  There must be at least one
-outstanding import query.  The response is as for a non-asynchronous
-query, except it is prefixed by `@samp{ASYNC} @var{$module}', so it
-may be linked to the orignal request.  [Note. as above, format is
-maleable.]
+@item @samp{EXPORT} @var{$module}
+The compilation is of a module interface unit, and will generate a BMI
+for @var{module-name}.  The response should be `@samp{BMI} @var{bmifile}'.
+
+@item @samp{HELLO} @var{$ver} @var{$srcname}
+This is the first command.  It informs the server of the name of the
+source being compiled.  Response is either `@samp{OK}
+@var{$ver}', or `@samp{ERROR} @var{$errormsg}'.
+
+@item @samp{HELLO} @var{$ver} @var{$srcbase} @var{$srcpath}
+FIXME
+
+@item @samp{HELP} [@var{$cmd}]
+A help request.  The response is `@samp{HELP} @var{$msg}'.
 
 @item @samp{INCLUDE} @var{$header} @var{$from}
 A @code{#include} directive for @var{$header} is about to be processed
@@ -29278,15 +29270,24 @@ informs the compiler how to treat the inclusion.  A response of
 `@samp{IMPORT}' causes importation.  (A subsequent import query will
 be forthcoming.)  (This is not implemented.)
 
-@item @samp{HELP} [@var{$cmd}]
-A help request.  The response is `@samp{HELP} @var{$msg}'.
+@item @samp{PEEK} @var{$query}
+Advance notice of a query that may be presented in the future.  The
+response is either `@samp{OK}', or `@samp{ERROR} [@var{msg}]'.  The
+message may be ignored, or might initiate asynchronous build of the
+desired object.  `@samp{OK}' does not mean the desired entity is
+available.
+
+@item @samp{RESET}
+This command resets the server.  There is no response.  It is used
+if a preamble rescan is needed.
 
 @end itemize
 
 It is recommended that any unrecognized command causes an @samp{ERROR}
 response with a suitable message.
 
-The following metavariables were used:
+FIXME: Character encodings are not yet considered.  The following
+metavariables were used:
 
 @itemize
 

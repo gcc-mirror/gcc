@@ -141,6 +141,10 @@ cmd () {
 		(*) resp="HELP HELLO, BMI, EXPORT, DONE" ;;
 	    esac
 	    ;;
+	(INCLUDE)
+	    # We have no legacy header support.  Always include.
+	    resp="INCLUDE"
+	    ;;
 	(PATH)
 	    resp="ERROR Unimplemented"
 	    ;;
