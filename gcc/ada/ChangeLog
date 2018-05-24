@@ -1,5 +1,15 @@
 2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* fe.h (Set_Normalized_First_Bit): Declare.
+	(Set_Normalized_Position): Likewise.
+	* repinfo.adb (List_Record_Layout): Do not use irregular output for a
+	variable position.  Fix minor spacing issue.
+	* gcc-interface/decl.c (annotate_rep): If a field has a variable
+	offset, compute the normalized position and annotate it in addition to
+	the bit offset.
+
+2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu):
 	Constify and rename variables.  Fix formatting.
 	(gnat_to_gnu) <N_Exception_Handler>: Minor tweak.
