@@ -7293,7 +7293,13 @@ package body Sem_Res is
          end if;
       end if;
 
-      Mark_Use_Clauses (E);
+      --  We may be resolving an entity within expanded code, so a reference
+      --  to an entity should be ignored when calculating effective use clauses
+      --  to avoid inappropriate marking.
+
+      if Comes_From_Source (N) then
+         Mark_Use_Clauses (E);
+      end if;
    end Resolve_Entity_Name;
 
    -------------------
