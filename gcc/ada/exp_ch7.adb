@@ -1781,15 +1781,20 @@ package body Exp_Ch7 is
 
          if Present (Mark_Id) then
             declare
-               Release : Node_Id :=
-                 Build_SS_Release_Call (Loc, Mark_Id);
+               Release : Node_Id := Build_SS_Release_Call (Loc, Mark_Id);
+
             begin
-               --  If this is a build-in-place function, then we need to
-               --  release the secondary stack, unless we are returning on the
-               --  secondary stack. We wrap the release call in:
-               --    if BIP_Alloc_Form /= Secondary_Stack then ...
-               --  If we are returning on the secondary stack, then releasing
-               --  is the caller's responsibility (or caller's caller, or ...).
+               --  If the context is a build-in-place function, the secondary
+               --  stack must be released, unless the build-in-place function
+               --  itself is returning on the secondary stack. Generate:
+               --
+               --    if BIP_Alloc_Form /= Secondary_Stack then
+               --       SS_Release (Mark_Id);
+               --    end if;
+               --
+               --  Note that if the function returns on the secondary stack,
+               --  then the responsibility of reclaiming the space is always
+               --  left to the caller (recursively if needed).
 
                if Nkind (N) = N_Subprogram_Body then
                   declare
@@ -1802,7 +1807,7 @@ package body Exp_Ch7 is
                      if BIP_SS then
                         Release :=
                           Make_If_Statement (Loc,
-                            Condition =>
+                            Condition       =>
                               Make_Op_Ne (Loc,
                                 Left_Opnd  =>
                                   New_Occurrence_Of
@@ -1810,8 +1815,9 @@ package body Exp_Ch7 is
                                       (Spec_Id, BIP_Alloc_Form), Loc),
                                 Right_Opnd =>
                                   Make_Integer_Literal (Loc,
-                                    UI_From_Int (BIP_Allocation_Form'Pos
-                                                   (Secondary_Stack)))),
+                                    UI_From_Int
+                                      (BIP_Allocation_Form'Pos
+                                        (Secondary_Stack)))),
 
                             Then_Statements => New_List (Release));
                      end if;

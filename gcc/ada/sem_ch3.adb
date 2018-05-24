@@ -7862,7 +7862,7 @@ package body Sem_Ch3 is
 
          if Present (Full_View (Parent_Type))
            and then not Is_Itype (Derived_Type)
-           and then not (Is_Concurrent_Type (Full_View (Parent_Type)))
+           and then not Is_Concurrent_Type (Full_View (Parent_Type))
          then
             declare
                Der_Base   : constant Entity_Id := Base_Type (Derived_Type);
@@ -13444,7 +13444,7 @@ package body Sem_Ch3 is
          if Is_Itype (Def_Id) and then Has_Predicates (T) then
             Inherit_Predicate_Flags (Def_Id, T);
 
-            --  Indicate where the predicate function may be found.
+            --  Indicate where the predicate function may be found
 
             if Is_Itype (T) then
                if Present (Predicate_Function (Def_Id)) then
@@ -21759,7 +21759,7 @@ package body Sem_Ch3 is
          if Has_Predicates (Subtype_Mark_Id) then
             Inherit_Predicate_Flags (Def_Id, Subtype_Mark_Id);
 
-            --  Indicate where the predicate function may be found.
+            --  Indicate where the predicate function may be found
 
             if No (Predicate_Function (Def_Id)) then
                Set_Predicated_Parent (Def_Id, Subtype_Mark_Id);
