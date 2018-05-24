@@ -1,3 +1,21 @@
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Expand_Limited_With_Clause): Update the call to
+	Install_Limited_Withed_Unit.
+	(Expand_With_Clause): Update the call to Install_Withed_Unit.
+	(Implicit_With_On_Parent): Update the call to Install_Withed_Unit.
+	(Install_Context_Clauses): Update the call to Install_Withed_Unit.
+	(Install_Limited_Context_Clauses): Update the calls to
+	 Install_Limited_Withed_Unit.
+	(Install_Limited_Withed_Unit): Renamed to better illustrate its
+	purpose.
+	(Install_Private_With_Clauses): Update the calls to Install_Withed_Unit
+	and Install_Limited_Withed_Unit.
+	(Install_With_Clause): Uninstall a limited with clause if a [private]
+	with clause is given for the same package.
+	(Install_Withed_Unit): Renamed to better illustrate its purpose.
+	(Remove_Limited_With_Unit): New routine.
+
 2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* raise-gcc.c (__gnat_SEH_error_handler): Remove prototype.
