@@ -1,3 +1,10 @@
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Build_Variable_Reference_Marker): Do not create a
+	variable marker when the reference appears in the formal part of a
+	compilation unit instance because there is no place to insert it.
+	(In_Compilation_Instance_Formal_Part): New routine.
+
 2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
 
 	* layout.ads, repinfo.ads: Fix references to renamed Backend_Layout
