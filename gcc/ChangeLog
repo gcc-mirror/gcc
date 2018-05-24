@@ -1,3 +1,69 @@
+2018-05-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gimple-match.h (gimple_match_op): New class.
+	(mprts_hook): Replace parameters with a gimple_match_op *.
+	(maybe_build_generic_op): Likewise.
+	(gimple_simplified_result_is_gimple_val): Replace parameters with
+	a const gimple_match_op *.
+	(gimple_simplify): Replace code_helper * and tree * parameters with
+	a gimple_match_op * parameter.
+	(gimple_resimplify1): Replace code_helper *, tree and tree *
+	parameters with a gimple_match_op * parameter.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(maybe_push_res_to_seq): Replace code_helper, tree and tree *
+	parameters with a gimple_match_op * parameter.
+	* gimple-match-head.c (gimple_simplify): Change prototypes of
+	auto-generated functions to take a gimple_match_op * instead of
+	separate code_helper * and tree * parameters.  Make the same
+	change in the top-level overload and update calls to the
+	gimple_resimplify routines.  Update calls to the auto-generated
+	functions and to maybe_push_res_to_seq in the publicly-facing
+	operation-specific gimple_simplify overloads.
+	(gimple_match_op::MAX_NUM_OPS): Define.
+	(gimple_resimplify1): Replace rcode and ops with a single res_op
+	parameter.  Update call to gimple_simplify.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(mprts_hook): Replace parameters with a gimple_match_op *.
+	(maybe_build_generic_op): Likewise.
+	(build_call_internal): Replace type, nargs and ops with
+	a gimple_match_op *.
+	(maybe_push_res_to_seq): Replace res_code, type and ops parameters
+	with a single gimple_match_op *.  Update calls to mprts_hook,
+	build_call_internal and gimple_simplified_result_is_gimple_val.
+	Factor out code that is common to the tree_code and combined_fn cases.
+	* genmatch.c (expr::gen_transform): Replace tem_code and
+	tem_ops with a gimple_match_op called tem_op.  Update calls
+	to the gimple_resimplify functions and maybe_push_res_to_seq.
+	(dt_simplify::gen_1): Manipulate res_op instead of res_code and
+	res_ops.  Update call to the gimple_resimplify functions.
+	(dt_simplify::gen): Pass res_op instead of res_code and res_ops.
+	(decision_tree::gen): Make the functions take a gimple_match_op *
+	called res_op instead of separate res_code and res_ops parameters.
+	Update call accordingly.
+	* gimple-fold.c (replace_stmt_with_simplification): Replace rcode
+	and ops with a single res_op parameter.  Update calls to
+	maybe_build_generic_op and maybe_push_res_to_seq.
+	(fold_stmt_1): Update calls to gimple_simplify and
+	replace_stmt_with_simplification.
+	(gimple_fold_stmt_to_constant_1): Update calls to gimple_simplify
+	and gimple_simplified_result_is_gimple_val.
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): Update call to
+	gimple_simplify.
+	* tree-ssa-sccvn.c (vn_lookup_simplify_result): Replace parameters
+	with a gimple_match_op *.
+	(vn_nary_build_or_lookup): Likewise.  Update call to
+	vn_nary_build_or_lookup_1.
+	(vn_nary_build_or_lookup_1): Replace rcode, type and ops with a
+	gimple_match_op *.  Update calls to the gimple_resimplify routines
+	and to gimple_simplified_result_is_gimple_val.
+	(vn_nary_simplify): Update call to vn_nary_build_or_lookup_1.
+	Use gimple_match_op::MAX_NUM_OPS instead of a hard-coded 3.
+	(vn_reference_lookup_3): Update call to vn_nary_build_or_lookup.
+	(visit_nary_op): Likewise.
+	(visit_reference_op_load): Likewise.
+
 2018-05-23  Luis Machado  <luis.machado@linaro.org>
 
 	* tree-ssa-loop-prefetch.c (should_issue_prefetch_p): Use correct type
