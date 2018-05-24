@@ -1,3 +1,8 @@
+2018-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85864 - literal template and default template arg.
+	* pt.c (instantiation_dependent_r): Handle NONTYPE_ARGUMENT_PACK.
+
 2018-05-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85847
