@@ -2302,6 +2302,11 @@ package Einfo is
 --    Is_Access_Type (synthesized)
 --       Applies to all entities, true for access types and subtypes
 
+--    Is_Activation_Record (Flag305)
+--       Applies to In_Parameters generated in Exp_Unst for nested
+--       subprograms, to mark the added formal that carries the activation
+--       record created in the enclosing subprogram.
+
 --    Is_Actual_Subtype (Flag293)
 --       Defined on all types, true for the generated constrained subtypes
 --       that are built for unconstrained composite actuals.
@@ -6275,6 +6280,7 @@ package Einfo is
    --    Is_Only_Out_Parameter               (Flag226)
    --    Low_Bound_Tested                    (Flag205)
    --    Is_Return_Object                    (Flag209)
+   --    Is_Activation_Record                (Flag305)
    --    Parameter_Mode                      (synth)
 
    --  E_Label
@@ -7264,6 +7270,7 @@ package Einfo is
    function Is_Abstract_Subprogram              (Id : E) return B;
    function Is_Abstract_Type                    (Id : E) return B;
    function Is_Access_Constant                  (Id : E) return B;
+   function Is_Activation_Record                (Id : E) return B;
    function Is_Actual_Subtype                   (Id : E) return B;
    function Is_Ada_2005_Only                    (Id : E) return B;
    function Is_Ada_2012_Only                    (Id : E) return B;
@@ -7963,6 +7970,7 @@ package Einfo is
    procedure Set_Is_Abstract_Subprogram          (Id : E; V : B := True);
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
    procedure Set_Is_Access_Constant              (Id : E; V : B := True);
+   procedure Set_Is_Activation_Record            (Id : E; V : B := True);
    procedure Set_Is_Actual_Subtype               (Id : E; V : B := True);
    procedure Set_Is_Ada_2005_Only                (Id : E; V : B := True);
    procedure Set_Is_Ada_2012_Only                (Id : E; V : B := True);
@@ -8789,6 +8797,7 @@ package Einfo is
    pragma Inline (Is_Abstract_Subprogram);
    pragma Inline (Is_Abstract_Type);
    pragma Inline (Is_Access_Constant);
+   pragma Inline (Is_Activation_Record);
    pragma Inline (Is_Actual_Subtype);
    pragma Inline (Is_Access_Protected_Subprogram_Type);
    pragma Inline (Is_Access_Subprogram_Type);
@@ -9325,6 +9334,7 @@ package Einfo is
    pragma Inline (Set_Is_Abstract_Subprogram);
    pragma Inline (Set_Is_Abstract_Type);
    pragma Inline (Set_Is_Access_Constant);
+   pragma Inline (Set_Is_Activation_Record);
    pragma Inline (Set_Is_Actual_Subtype);
    pragma Inline (Set_Is_Ada_2005_Only);
    pragma Inline (Set_Is_Ada_2012_Only);

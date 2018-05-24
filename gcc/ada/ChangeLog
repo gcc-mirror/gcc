@@ -1,3 +1,14 @@
+2018-05-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Activation_Record): New flag on
+	in_parameters, used when unesting subprograms for LLVM, to indicate
+	that a generated parameter carries the activation record from the
+	enclosing subprogram.
+	* exp_unst.adb (Check_Static_Type): Handle array attributes of types
+	whose bounds may contain up-level references that need to be added to
+	an activation recoord.
+	(Add_Extra_Formal): Set Is_Activation_Record on new formal.
+
 2018-05-24  Yannick Moy  <moy@adacore.com>
 
 	* pprint.adb (Expression_Image): Improve the printing of expressions,
