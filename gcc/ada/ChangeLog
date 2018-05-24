@@ -1,3 +1,10 @@
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Wrap_Imported_Subprogram): Generate an unchecked
+	conversion to the return type to avoid a side effect where an imported
+	relocated function generates a new anonymous access type, whose
+	accessibility level does not agree with with that of the wrapper.
+
 2018-05-24  Javier Miranda  <miranda@adacore.com>
 
 	* sem_util.adb (Abstract_Interface_List): Add missing support for
