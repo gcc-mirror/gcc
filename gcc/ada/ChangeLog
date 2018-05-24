@@ -1,3 +1,9 @@
+2018-05-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Flatten): Add a warning on an others clause in an array
+	aggregate with static bounds when named associations cover all index
+	positions and the others clause is redundant.
+
 2018-05-24  Raphael Amiard  <amiard@adacore.com>
 
 	* libgnat/a-cohama.ads: Add documentation.

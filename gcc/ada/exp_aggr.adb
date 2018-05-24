@@ -4581,6 +4581,12 @@ package body Exp_Aggr is
                         end if;
                      end loop;
 
+                     if Rep_Count = 0
+                       and then Warn_On_Redundant_Constructs
+                     then
+                        Error_Msg_N ("there are no others?r?", Elmt);
+                     end if;
+
                      exit Component_Loop;
 
                   --  Case of a subtype mark, identifier or expanded name
