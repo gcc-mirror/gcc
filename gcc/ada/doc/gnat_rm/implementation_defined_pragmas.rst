@@ -1173,9 +1173,9 @@ are equivalent to
   pragma Postcondition (if C2 then Pred2);
 
 
-The precondition ensures that one and only one of the conditions is
+The precondition ensures that one and only one of the case guards is
 satisfied on entry to the subprogram.
-The postcondition ensures that for the condition that was True on entry,
+The postcondition ensures that for the case guard that was True on entry,
 the corrresponding consequence is True on exit. Other consequence expressions
 are not evaluated.
 
@@ -1190,13 +1190,13 @@ expressed as contract cases:
 The placement and visibility rules for ``Contract_Cases`` pragmas are
 identical to those described for preconditions and postconditions.
 
-The compiler checks that boolean expressions given in conditions and
-consequences are valid, where the rules for conditions are the same as
+The compiler checks that boolean expressions given in case guards and
+consequences are valid, where the rules for case guards are the same as
 the rule for an expression in ``Precondition`` and the rules for
 consequences are the same as the rule for an expression in
 ``Postcondition``. In particular, attributes ``'Old`` and
 ``'Result`` can only be used within consequence expressions.
-The condition for the last contract case may be ``others``, to denote
+The case guard for the last contract case may be ``others``, to denote
 any case not captured by the previous cases. The
 following is an example of use within a package spec:
 
@@ -1214,7 +1214,7 @@ following is an example of use within a package spec:
 
 
 The meaning of contract cases is that only one case should apply at each
-call, as determined by the corresponding condition evaluating to True,
+call, as determined by the corresponding case guard evaluating to True,
 and that the consequence for this case should hold when the subprogram
 returns.
 
