@@ -1,3 +1,10 @@
+2018-05-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85847
+	* init.c (build_new_1): Use fold_non_dependent_expr.  Use a dedicated
+	variable for its result.  Fix a condition.
+	(build_new): Use fold_non_dependent_expr.  Tweak a condition.
+
 2018-05-23  Jason Merrill  <jason@redhat.com>
 
 	Fix cast to rvalue reference from prvalue.
