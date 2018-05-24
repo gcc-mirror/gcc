@@ -1,3 +1,13 @@
+2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc.c (__gnat_SEH_error_handler): Remove prototype.
+	(__gnat_personality_seh0): Adjust and beef up comments, and
+	fix formatting throughout.
+	(__gnat_adjust_context): Deal minimally with version 2.
+	* seh_init.c (__gnat_map_SEH): Fix formatting.
+	(_gnat_SEH_error_handler): Adjust comments.
+	(__gnat_install_SEH_handler): Fix formatting.
+
 2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb, sem_ch3.adb, sem_res.adb: Minor reformatting.
