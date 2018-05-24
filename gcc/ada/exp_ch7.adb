@@ -1777,10 +1777,49 @@ package body Exp_Ch7 is
             Set_At_End_Proc (HSS, Empty);
          end if;
 
-         --  Release the secondary stack mark
+         --  Release the secondary stack
 
          if Present (Mark_Id) then
-            Append_To (Finalizer_Stmts, Build_SS_Release_Call (Loc, Mark_Id));
+            declare
+               Release : Node_Id :=
+                 Build_SS_Release_Call (Loc, Mark_Id);
+            begin
+               --  If this is a build-in-place function, then we need to
+               --  release the secondary stack, unless we are returning on the
+               --  secondary stack. We wrap the release call in:
+               --    if BIP_Alloc_Form /= Secondary_Stack then ...
+               --  If we are returning on the secondary stack, then releasing
+               --  is the caller's responsibility (or caller's caller, or ...).
+
+               if Nkind (N) = N_Subprogram_Body then
+                  declare
+                     Spec_Id : constant Entity_Id :=
+                                 Unique_Defining_Entity (N);
+                     BIP_SS  : constant Boolean :=
+                                 Is_Build_In_Place_Function (Spec_Id)
+                                   and then Needs_BIP_Alloc_Form (Spec_Id);
+                  begin
+                     if BIP_SS then
+                        Release :=
+                          Make_If_Statement (Loc,
+                            Condition =>
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  =>
+                                  New_Occurrence_Of
+                                    (Build_In_Place_Formal
+                                      (Spec_Id, BIP_Alloc_Form), Loc),
+                                Right_Opnd =>
+                                  Make_Integer_Literal (Loc,
+                                    UI_From_Int (BIP_Allocation_Form'Pos
+                                                   (Secondary_Stack)))),
+
+                            Then_Statements => New_List (Release));
+                     end if;
+                  end;
+               end if;
+
+               Append_To (Finalizer_Stmts, Release);
+            end;
          end if;
 
          --  Protect the statements with abort defer/undefer. This is only when
@@ -4327,10 +4366,22 @@ package body Exp_Ch7 is
                                    and then Is_Task_Allocation_Block (N);
       Is_Task_Body           : constant Boolean :=
                                  Nkind (Original_Node (N)) = N_Task_Body;
+
+      --  We mark the secondary stack if it is used in this construct, and
+      --  we're not returning a function result on the secondary stack, except
+      --  that a build-in-place function that might or might not return on the
+      --  secondary stack always needs a mark. A run-time test is required in
+      --  the case where the build-in-place function has a BIP_Alloc extra
+      --  parameter (see Create_Finalizer).
+
       Needs_Sec_Stack_Mark   : constant Boolean :=
-                                 Uses_Sec_Stack (Scop)
-                                   and then
-                                     not Sec_Stack_Needed_For_Return (Scop);
+                                   (Uses_Sec_Stack (Scop)
+                                     and then
+                                       not Sec_Stack_Needed_For_Return (Scop))
+                                 or else
+                                   (Is_Build_In_Place_Function (Scop)
+                                     and then Needs_BIP_Alloc_Form (Scop));
+
       Needs_Custom_Cleanup   : constant Boolean :=
                                  Nkind (N) = N_Block_Statement
                                    and then Present (Cleanup_Actions (N));
