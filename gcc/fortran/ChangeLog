@@ -1,5 +1,10 @@
 2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/85779
+	* decl.c (gfc_match_derived_decl): Fix NULL point dereference.
+
+2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/85895
 	* resolve.c (resolve_sync): Resolve expression before checking for
 	an error.
