@@ -56,13 +56,13 @@ package Repinfo is
    --       for example in the case where representation clauses or
    --       pragmas specify the values.
 
-   --    2. If Backend_Layout is True, then the backend is responsible
+   --    2. If Frontend_Layout is False, then the backend is responsible
    --       for layout of all types and objects not laid out by the
    --       front end. This includes all dynamic values, and also
    --       static values (e.g. record sizes) when not set by the
    --       front end.
 
-   --    3. If Backend_Layout is False, then the front end lays out
+   --    3. If Frontend_Layout is True, then the front end lays out
    --       all data, according to target dependent size and alignment
    --       information, creating dynamic inlinable functions where
    --       needed in the case of sizes not known till runtime.
@@ -71,7 +71,7 @@ package Repinfo is
    -- Back-Annotation by Gigi --
    -----------------------------
 
-   --  The following interface is used by gigi if Backend_Layout is True
+   --  The following interface is used by gigi if Frontend_Layout is False
 
    --  As part of the processing in gigi, the types are laid out and
    --  appropriate values computed for the sizes and component positions
@@ -209,7 +209,7 @@ package Repinfo is
    -- Front-End Interface for Dynamic Size/Offset Values --
    --------------------------------------------------------
 
-   --  If Backend_Layout is False, then the front-end deals with all
+   --  If Frontend_Layout is True, then the front-end deals with all
    --  dynamic size and offset fields. There are two cases:
 
    --    1. The value can be computed at the time of type freezing, and
