@@ -1287,7 +1287,7 @@ cp_build_qualified_type_real (tree type,
   if ((type_quals & TYPE_QUAL_RESTRICT)
       && TREE_CODE (type) != TEMPLATE_TYPE_PARM
       && TREE_CODE (type) != TYPENAME_TYPE
-      && !POINTER_TYPE_P (type))
+      && !INDIRECT_TYPE_P (type))
     {
       bad_quals |= TYPE_QUAL_RESTRICT;
       type_quals &= ~TYPE_QUAL_RESTRICT;

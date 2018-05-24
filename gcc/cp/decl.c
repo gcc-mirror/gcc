@@ -12783,7 +12783,7 @@ grokparms (tree parmlist, tree *parms)
 	    }
 	  else if (abstract_virtuals_error (decl, type))
 	    any_error = 1;  /* Seems like a good idea.  */
-	  else if (cxx_dialect < cxx17 && POINTER_TYPE_P (type))
+	  else if (cxx_dialect < cxx17 && INDIRECT_TYPE_P (type))
 	    {
 	      /* Before C++17 DR 393:
 		 [dcl.fct]/6, parameter types cannot contain pointers
@@ -16138,7 +16138,7 @@ static_fn_type (tree memfntype)
 
   if (TYPE_PTRMEMFUNC_P (memfntype))
     memfntype = TYPE_PTRMEMFUNC_FN_TYPE (memfntype);
-  if (POINTER_TYPE_P (memfntype)
+  if (INDIRECT_TYPE_P (memfntype)
       || TREE_CODE (memfntype) == FUNCTION_DECL)
     memfntype = TREE_TYPE (memfntype);
   if (TREE_CODE (memfntype) == FUNCTION_TYPE)

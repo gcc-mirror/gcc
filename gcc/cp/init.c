@@ -2600,7 +2600,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
     }
 
   tree opertype = TREE_TYPE (oper);
-  if ((addr_expr || !POINTER_TYPE_P (opertype))
+  if ((addr_expr || !INDIRECT_TYPE_P (opertype))
       && (VAR_P (oper)
 	  || TREE_CODE (oper) == FIELD_DECL
 	  || TREE_CODE (oper) == PARM_DECL))

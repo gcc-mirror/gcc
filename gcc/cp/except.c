@@ -301,7 +301,7 @@ initialize_handler_parm (tree decl, tree exp)
      adjusted by value from __cxa_begin_catch.  Others are returned by
      reference.  */
   init_type = TREE_TYPE (decl);
-  if (!POINTER_TYPE_P (init_type))
+  if (!INDIRECT_TYPE_P (init_type))
     init_type = build_reference_type (init_type);
 
   /* Since pointers are passed by value, initialize a reference to
@@ -1024,7 +1024,7 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
          We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
       tree fn = cp_get_callee (t);
       tree type = TREE_TYPE (fn);
-      gcc_assert (POINTER_TYPE_P (type));
+      gcc_assert (INDIRECT_TYPE_P (type));
       type = TREE_TYPE (type);
 
       STRIP_NOPS (fn);

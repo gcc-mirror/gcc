@@ -1868,12 +1868,12 @@ check_final_overrider (tree overrider, tree basefn)
     /* OK */;
   else if ((CLASS_TYPE_P (over_return) && CLASS_TYPE_P (base_return))
 	   || (TREE_CODE (base_return) == TREE_CODE (over_return)
-	       && POINTER_TYPE_P (base_return)))
+	       && INDIRECT_TYPE_P (base_return)))
     {
       /* Potentially covariant.  */
       unsigned base_quals, over_quals;
 
-      fail = !POINTER_TYPE_P (base_return);
+      fail = !INDIRECT_TYPE_P (base_return);
       if (!fail)
 	{
 	  fail = cp_type_quals (base_return) != cp_type_quals (over_return);

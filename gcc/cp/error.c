@@ -2412,8 +2412,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	tree optype = TREE_TYPE (op);
 
 	if (TREE_CODE (ttype) != TREE_CODE (optype)
-	    && POINTER_TYPE_P (ttype)
-	    && POINTER_TYPE_P (optype)
+	    && INDIRECT_TYPE_P (ttype)
+	    && INDIRECT_TYPE_P (optype)
 	    && same_type_p (TREE_TYPE (optype),
 			    TREE_TYPE (ttype)))
 	  {

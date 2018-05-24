@@ -1032,7 +1032,7 @@ grokbitfield (const cp_declarator *declarator,
     return void_type_node;
 
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value))
-      && (POINTER_TYPE_P (value)
+      && (INDIRECT_TYPE_P (value)
           || !dependent_type_p (TREE_TYPE (value))))
     {
       error ("bit-field %qD with non-integral type", value);

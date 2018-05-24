@@ -2363,7 +2363,7 @@ build_class_member_access_expr (cp_expr object, tree member,
     {
       if (complain & tf_error)
 	{
-	  if (POINTER_TYPE_P (object_type)
+	  if (INDIRECT_TYPE_P (object_type)
 	      && CLASS_TYPE_P (TREE_TYPE (object_type)))
 	    error ("request for member %qD in %qE, which is of pointer "
 		   "type %qT (maybe you meant to use %<->%> ?)",
@@ -2804,7 +2804,7 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
     {
       if (complain & tf_error)
 	{
-	  if (POINTER_TYPE_P (object_type)
+	  if (INDIRECT_TYPE_P (object_type)
 	      && CLASS_TYPE_P (TREE_TYPE (object_type)))
 	    error ("request for member %qD in %qE, which is of pointer "
 		   "type %qT (maybe you meant to use %<->%> ?)",
@@ -3079,7 +3079,7 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
   if (processing_template_decl)
     {
       /* Retain the type if we know the operand is a pointer.  */
-      if (TREE_TYPE (expr) && POINTER_TYPE_P (TREE_TYPE (expr)))
+      if (TREE_TYPE (expr) && INDIRECT_TYPE_P (TREE_TYPE (expr)))
 	return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
       if (type_dependent_expression_p (expr))
 	return build_min_nt_loc (loc, INDIRECT_REF, expr);
@@ -3130,7 +3130,7 @@ cp_build_indirect_ref_1 (tree ptr, ref_operator errorstring,
 
   type = TREE_TYPE (pointer);
 
-  if (POINTER_TYPE_P (type))
+  if (INDIRECT_TYPE_P (type))
     {
       /* [expr.unary.op]
 
@@ -4456,7 +4456,7 @@ cp_build_binary_op (location_t location,
 	    type0 = TREE_TYPE (type0);
 	  if (!TYPE_P (type1))
 	    type1 = TREE_TYPE (type1);
-	  if (POINTER_TYPE_P (type0) && same_type_p (TREE_TYPE (type0), type1)
+	  if (INDIRECT_TYPE_P (type0) && same_type_p (TREE_TYPE (type0), type1)
 	      && !(TREE_CODE (first_arg) == PARM_DECL
 		   && DECL_ARRAY_PARAMETER_P (first_arg)
 		   && warn_sizeof_array_argument)
@@ -7552,7 +7552,7 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
   if (valid_p)
     *valid_p = false;
 
-  if (!POINTER_TYPE_P (dst_type) && !TYPE_PTRDATAMEM_P (dst_type))
+  if (!INDIRECT_TYPE_P (dst_type) && !TYPE_PTRDATAMEM_P (dst_type))
     {
       if (complain & tf_error)
 	error ("invalid use of const_cast with type %qT, "

@@ -4237,6 +4237,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TYPE_REF_P(NODE)			\
   (TREE_CODE (NODE) == REFERENCE_TYPE)
 
+/* Returns true if NODE is a pointer or a reference.  */
+#define INDIRECT_TYPE_P(NODE)			\
+  (TYPE_PTR_P (NODE) || TYPE_REF_P (NODE))
+
 /* Returns true if NODE is an object type:
 
      [basic.types]
