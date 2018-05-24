@@ -1,3 +1,10 @@
+2018-05-24  Yannick Moy  <moy@adacore.com>
+
+	* pprint.adb (Expression_Image): Improve the printing of expressions,
+	by taking more cases into account, in particular qualified expressions
+	and aggregates.  Also count more the number of parentheses to close
+	after the expression.
+
 2018-05-24  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Is_Visible_Component): For untagged types add missing
