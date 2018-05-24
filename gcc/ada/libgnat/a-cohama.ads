@@ -37,14 +37,57 @@ private with Ada.Containers.Hash_Tables;
 private with Ada.Finalization;
 private with Ada.Streams;
 
+--  The language-defined generic package Containers.Hashed_Maps provides
+--  private types Map and Cursor, and a set of operations for each type. A map
+--  container allows an arbitrary type to be used as a key to find the element
+--  associated with that key. A hashed map uses a hash function to organize the
+--  keys.
+--
+--  A map contains pairs of keys and elements, called nodes. Map cursors
+--  designate nodes, but also can be thought of as designating an element (the
+--  element contained in the node) for consistency with the other containers.
+--  There exists an equivalence relation on keys, whose definition is different
+--  for hashed maps and ordered maps. A map never contains two or more nodes
+--  with equivalent keys. The length of a map is the number of nodes it
+--  contains.
+--
+--  Each nonempty map has two particular nodes called the first node and the
+--  last node (which may be the same). Each node except for the last node has a
+--  successor node. If there are no other intervening operations, starting with
+--  the first node and repeatedly going to the successor node will visit each
+--  node in the map exactly once until the last node is reached.
+
 generic
    type Key_Type is private;
    type Element_Type is private;
 
    with function Hash (Key : Key_Type) return Hash_Type;
-   with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
-   with function "=" (Left, Right : Element_Type) return Boolean is <>;
+   --  The actual function for the generic formal function Hash is expected to
+   --  return the same value each time it is called with a particular key
+   --  value. For any two equivalent key values, the actual for Hash is
+   --  expected to return the same value. If the actual for Hash behaves in
+   --  some other manner, the behavior of this package is unspecified. Which
+   --  subprograms of this package call Hash, and how many times they call it,
+   --  is unspecified.
 
+   with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
+   --  The actual function for the generic formal function Equivalent_Keys on
+   --  Key_Type values is expected to return the same value each time it is
+   --  called with a particular pair of key values. It should define an
+   --  equivalence relationship, that is, be reflexive, symmetric, and
+   --  transitive. If the actual for Equivalent_Keys behaves in some other
+   --  manner, the behavior of this package is unspecified. Which subprograms
+   --  of this package call Equivalent_Keys, and how many times they call it,
+   --  is unspecified.
+
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
+   --  The actual function for the generic formal function "=" on Element_Type
+   --  values is expected to define a reflexive and symmetric relationship and
+   --  return the same result value each time it is called with a particular
+   --  pair of values.  If it behaves in some other manner, the function "=" on
+   --  map values returns an unspecified value. The exact arguments and number
+   --  of calls of this generic formal function by the function "=" on map
+   --  values are unspecified.
 package Ada.Containers.Hashed_Maps is
    pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
@@ -71,21 +114,27 @@ package Ada.Containers.Hashed_Maps is
    --  initialized to the value No_Element.
 
    function Has_Element (Position : Cursor) return Boolean;
-   --  Equivalent to Position /= No_Element
+   --  Returns True if Position designates an element, and returns False
+   --  otherwise.
 
    package Map_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function "=" (Left, Right : Map) return Boolean;
-   --  For each key/element pair in Left, equality attempts to find the key in
-   --  Right; if a search fails the equality returns False. The search works by
-   --  calling Hash to find the bucket in the Right map that corresponds to the
-   --  Left key. If bucket is non-empty, then equality calls Equivalent_Keys
-   --  to compare the key (in Left) to the key of each node in the bucket (in
-   --  Right); if the keys are equivalent, then the equality test for this
-   --  key/element pair (in Left) completes by calling the element equality
-   --  operator to compare the element (in Left) to the element of the node
-   --  (in Right) whose key matched.
+   --  If Left and Right denote the same map object, then the function returns
+   --  True. If Left and Right have different lengths, then the function
+   --  returns False. Otherwise, for each key K in Left, the function returns
+   --  False if:
+   --
+   --  * a key equivalent to K is not present in Right; or
+   --
+   --  * the element associated with K in Left is not equal to the
+   --    element associated with K in Right (using the generic formal
+   --    equality operator for elements).
+   --
+   --  If the function has not returned a result after checking all of the
+   --  keys, it returns True. Any exception raised during evaluation of key
+   --  equivalence or element equality is propagated.
 
    function Capacity (Container : Map) return Count_Type;
    --  Returns the current capacity of the map. Capacity is the maximum length
@@ -111,31 +160,55 @@ package Ada.Containers.Hashed_Maps is
    --  Removes all of the items from the map
 
    function Key (Position : Cursor) return Key_Type;
-   --  Returns the key of the node designated by the cursor
+   --  Key returns the key component of the node designated by Position.
+   --
+   --  If Position equals No_Element, then Constraint_Error is propagated.
 
    function Element (Position : Cursor) return Element_Type;
-   --  Returns the element of the node designated by the cursor
+   --  Element returns the element component of the node designated
+   --  by Position.
+   --
+   --  If Position equals No_Element, then Constraint_Error is propagated.
 
    procedure Replace_Element
      (Container : in out Map;
       Position  : Cursor;
       New_Item  : Element_Type);
-   --  Assigns the value New_Item to the element designated by the cursor
+   --  Replace_Element assigns New_Item to the element of the node designated
+   --  by Position.
+   --
+   --  If Position equals No_Element, then Constraint_Error is propagated; if
+   --  Position does not designate an element in Container, then Program_Error
+   --  is propagated.
 
    procedure Query_Element
      (Position : Cursor;
       Process  : not null access
                    procedure (Key : Key_Type; Element : Element_Type));
-   --  Calls Process with the key and element (both having only a constant
-   --  view) of the node designed by the cursor.
+   --  Query_Element calls Process.all with the key and element from the node
+   --  designated by Position as the arguments.
+   --
+   --  If Position equals No_Element, then Constraint_Error is propagated.
+   --
+   --  Tampering with the elements of the map that contains the element
+   --  designated by Position is prohibited during the execution of the call on
+   --  Process.all. Any exception raised by Process.all is propagated.
 
    procedure Update_Element
      (Container : in out Map;
       Position  : Cursor;
       Process   : not null access
                     procedure (Key : Key_Type; Element : in out Element_Type));
-   --  Calls Process with the key (with only a constant view) and element (with
-   --  a variable view) of the node designed by the cursor.
+   --  Update_Element calls Process.all with the key and element from the node
+   --  designated by Position as the arguments.
+   --
+   --  If Position equals No_Element, then Constraint_Error is propagated; if
+   --  Position does not designate an element in Container, then Program_Error
+   --  is propagated.
+   --
+   --  Tampering with the elements of Container is prohibited during the
+   --  execution of the call on Process.all. Any exception raised by
+   --  Process.all is propagated.
 
    type Constant_Reference_Type
       (Element : not null access constant Element_Type) is private
@@ -150,29 +223,60 @@ package Ada.Containers.Hashed_Maps is
      (Container : aliased Map;
       Position  : Cursor) return Constant_Reference_Type;
    pragma Inline (Constant_Reference);
+   --  This function (combined with the Constant_Indexing and
+   --  Implicit_Dereference aspects) provides a convenient way to gain read
+   --  access to an individual element of a map given a cursor.
+   --  Constant_Reference returns an object whose discriminant is an access
+   --  value that designates the element designated by Position.
+   --
+   --  If Position equals No_Element, then Constraint_Error is propagated; if
+   --  Position does not designate an element in Container, then Program_Error
+   --  is propagated.
+   --
+   --  Tampering with the elements of Container is prohibited
+   --  while the object returned by Constant_Reference exists and has not been
+   --  finalized.
 
    function Reference
      (Container : aliased in out Map;
       Position  : Cursor) return Reference_Type;
    pragma Inline (Reference);
+   --  This function (combined with the Variable_Indexing and
+   --  Implicit_Dereference aspects) provides a convenient way to gain read and
+   --  write access to an individual element of a map given a cursor.
+   --  Reference returns an object whose discriminant is an access value that
+   --  designates the element designated by Position.
+   --
+   --  If Position equals No_Element, then Constraint_Error is propagated; if
+   --  Position does not designate an element in Container, then Program_Error
+   --  is propagated.
+   --
+   --  Tampering with the elements of Container is prohibited while the object
+   --  returned by Reference exists and has not been finalized.
 
    function Constant_Reference
      (Container : aliased Map;
       Key       : Key_Type) return Constant_Reference_Type;
    pragma Inline (Constant_Reference);
+   --  Equivalent to Constant_Reference (Container, Find (Container, Key)).
 
    function Reference
      (Container : aliased in out Map;
       Key       : Key_Type) return Reference_Type;
    pragma Inline (Reference);
+   --  Equivalent to Reference (Container, Find (Container, Key)).
 
    procedure Assign (Target : in out Map; Source : Map);
+   --  If Target denotes the same object as Source, the operation has no
+   --  effect. Otherwise, the key/element pairs of Source are copied to Target
+   --  as for an assignment_statement assigning Source to Target.
 
    function Copy (Source : Map; Capacity : Count_Type := 0) return Map;
 
    procedure Move (Target : in out Map; Source : in out Map);
-   --  Clears Target (if it's not empty), and then moves (not copies) the
-   --  buckets array and nodes from Source to Target.
+   --  If Target denotes the same object as Source, then the operation has no
+   --  effect. Otherwise, the operation is equivalent to Assign (Target,
+   --  Source) followed by Clear (Source).
 
    procedure Insert
      (Container : in out Map;
@@ -180,105 +284,86 @@ package Ada.Containers.Hashed_Maps is
       New_Item  : Element_Type;
       Position  : out Cursor;
       Inserted  : out Boolean);
-   --  Conditionally inserts New_Item into the map. If Key is already in the
-   --  map, then Inserted returns False and Position designates the node
-   --  containing the existing key/element pair (neither of which is modified).
-   --  If Key is not already in the map, the Inserted returns True and Position
-   --  designates the newly-inserted node container Key and New_Item. The
-   --  search for the key works as follows. Hash is called to determine Key's
-   --  bucket; if the bucket is non-empty, then Equivalent_Keys is called to
-   --  compare Key to each node in that bucket. If the bucket is empty, or
-   --  there were no matching keys in the bucket, the search "fails" and the
-   --  key/item pair is inserted in the map (and Inserted returns True);
-   --  otherwise, the search "succeeds" (and Inserted returns False).
+   --  Insert checks if a node with a key equivalent to Key is already present
+   --  in Container. If a match is found, Inserted is set to False and Position
+   --  designates the element with the matching key.  Otherwise, Insert
+   --  allocates a new node, initializes it to Key and New_Item, and adds it to
+   --  Container; Inserted is set to True and Position designates the
+   --  newly-inserted node. Any exception raised during allocation is
+   --  propagated and Container is not modified.
 
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
       Position  : out Cursor;
       Inserted  : out Boolean);
-   --  The same as the (conditional) Insert that accepts an element parameter,
-   --  with the difference that if Inserted returns True, then the element of
-   --  the newly-inserted node is initialized to its default value.
+   --  Insert inserts Key into Container as per the five-parameter Insert, with
+   --  the difference that an element initialized by default (see 3.3.1) is
+   --  inserted.
 
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type);
-   --  Attempts to insert Key into the map, performing the usual search (which
-   --  involves calling both Hash and Equivalent_Keys); if the search succeeds
-   --  (because Key is already in the map), then it raises Constraint_Error.
-   --  (This version of Insert is similar to Replace, but having the opposite
-   --  exception behavior. It is intended for use when you want to assert that
-   --  Key is not already in the map.)
+   --  Insert inserts Key and New_Item into Container as per the five-parameter
+   --  Insert, with the difference that if a node with a key equivalent to Key
+   --  is already in the map, then Constraint_Error is propagated.
 
    procedure Include
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type);
-   --  Attempts to insert Key into the map. If Key is already in the map, then
-   --  both the existing key and element are assigned the values of Key and
-   --  New_Item, respectively. (This version of Insert only raises an exception
-   --  if cursor tampering occurs. It is intended for use when you want to
-   --  insert the key/element pair in the map, and you don't care whether Key
-   --  is already present.)
+   --  Include inserts Key and New_Item into Container as per the
+   --  five-parameter Insert, with the difference that if a node with a key
+   --  equivalent to Key is already in the map, then this operation assigns Key
+   --  and New_Item to the matching node. Any exception raised during
+   --  assignment is propagated.
 
    procedure Replace
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type);
-   --  Searches for Key in the map; if the search fails (because Key was not in
-   --  the map), then it raises Constraint_Error. Otherwise, both the existing
-   --  key and element are assigned the values of Key and New_Item rsp. (This
-   --  is similar to Insert, but with the opposite exception behavior. It is to
-   --  be used when you want to assert that Key is already in the map.)
+   --  Replace checks if a node with a key equivalent to Key is present in
+   --  Container. If a match is found, Replace assigns Key and New_Item to the
+   --  matching node; otherwise, Constraint_Error is propagated.
 
    procedure Exclude (Container : in out Map; Key : Key_Type);
-   --  Searches for Key in the map, and if found, removes its node from the map
-   --  and then deallocates it. The search works as follows. The operation
-   --  calls Hash to determine the key's bucket; if the bucket is not empty, it
-   --  calls Equivalent_Keys to compare Key to each key in the bucket. (This is
-   --  the deletion analog of Include. It is intended for use when you want to
-   --  remove the item from the map, but don't care whether the key is already
-   --  in the map.)
+   --  Exclude checks if a node with a key equivalent to Key is present in
+   --  Container. If a match is found, Exclude removes the node from the map.
 
    procedure Delete (Container : in out Map; Key : Key_Type);
-   --  Searches for Key in the map (which involves calling both Hash and
-   --  Equivalent_Keys). If the search fails, then the operation raises
-   --  Constraint_Error. Otherwise it removes the node from the map and then
-   --  deallocates it. (This is the deletion analog of non-conditional
-   --  Insert. It is intended for use when you want to assert that the item is
-   --  already in the map.)
+   --  Delete checks if a node with a key equivalent to Key is present in
+   --  Container. If a match is found, Delete removes the node from the map;
+   --  otherwise, Constraint_Error is propagated.
 
    procedure Delete (Container : in out Map; Position : in out Cursor);
-   --  Removes the node designated by Position from the map, and then
-   --  deallocates the node. The operation calls Hash to determine the bucket,
-   --  and then compares Position to each node in the bucket until there's a
-   --  match (it does not call Equivalent_Keys).
+   --  Delete removes the node designated by Position from the map. Position is
+   --  set to No_Element on return.
+   --
+   --  If Position equals No_Element, then Constraint_Error is propagated. If
+   --  Position does not designate an element in Container, then Program_Error
+   --  is propagated.
 
    function First (Container : Map) return Cursor;
-   --  Returns a cursor that designates the first non-empty bucket, by
-   --  searching from the beginning of the buckets array.
+   --  If Length (Container) = 0, then First returns No_Element.  Otherwise,
+   --  First returns a cursor that designates the first node in Container.
 
    function Next (Position : Cursor) return Cursor;
-   --  Returns a cursor that designates the node that follows the current one
-   --  designated by Position. If Position designates the last node in its
-   --  bucket, the operation calls Hash to compute the index of this bucket,
-   --  and searches the buckets array for the first non-empty bucket, starting
-   --  from that index; otherwise, it simply follows the link to the next node
-   --  in the same bucket.
+   --  Returns a cursor that designates the successor of the node designated by
+   --  Position. If Position designates the last node, then No_Element is
+   --  returned. If Position equals No_Element, then No_Element is returned.
 
    procedure Next (Position : in out Cursor);
    --  Equivalent to Position := Next (Position)
 
    function Find (Container : Map; Key : Key_Type) return Cursor;
-   --  Searches for Key in the map. Find calls Hash to determine the key's
-   --  bucket; if the bucket is not empty, it calls Equivalent_Keys to compare
-   --  Key to each key in the bucket. If the search succeeds, Find returns a
-   --  cursor designating the matching node; otherwise, it returns No_Element.
+   --  If Length (Container) equals 0, then Find returns No_Element.
+   --  Otherwise, Find checks if a node with a key equivalent to Key is present
+   --  in Container. If a match is found, a cursor designating the matching
+   --  node is returned; otherwise, No_Element is returned.
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
-   --  Equivalent to Find (Container, Key) /= No_Element
+   --  Equivalent to Find (Container, Key) /= No_Element.
 
    function Element (Container : Map; Key : Key_Type) return Element_Type;
    --  Equivalent to Element (Find (Container, Key))
@@ -298,7 +383,11 @@ package Ada.Containers.Hashed_Maps is
    procedure Iterate
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
-   --  Calls Process for each node in the map
+   --  Iterate calls Process.all with a cursor that designates each node in
+   --  Container, starting with the first node and moving the cursor according
+   --  to the successor relation. Tampering with the cursors of Container is
+   --  prohibited during the execution of a call on Process.all. Any exception
+   --  raised by Process.all is propagated.
 
    function Iterate
      (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'Class;
