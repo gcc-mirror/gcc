@@ -1,3 +1,9 @@
+2018-05-24  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/83009
+	* config/aarch64/predicates.md (aarch64_mem_pair_lanes_operand): Make
+	address check not strict.
+
 2018-05-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gimple-match.h (gimple_match_op): New class.

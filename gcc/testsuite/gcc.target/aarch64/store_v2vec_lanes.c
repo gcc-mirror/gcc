@@ -22,10 +22,32 @@ construct_lane_2 (long long *y, v2di *z)
   z[2] = x;
 }
 
+void
+construct_lane_3 (double **py, v2df **pz)
+{
+  double *y = *py;
+  v2df *z = *pz;
+  double y0 = y[0] + 1;
+  double y1 = y[1] + 2;
+  v2df x = {y0, y1};
+  z[2] = x;
+}
+
+void
+construct_lane_4 (long long **py, v2di **pz)
+{
+  long long *y = *py;
+  v2di *z = *pz;
+  long long y0 = y[0] + 1;
+  long long y1 = y[1] + 2;
+  v2di x = {y0, y1};
+  z[2] = x;
+}
+
 /* We can use the load_pair_lanes<mode> pattern to vec_concat two DI/DF
    values from consecutive memory into a 2-element vector by using
    a Q-reg LDR.  */
 
-/* { dg-final { scan-assembler-times "stp\td\[0-9\]+, d\[0-9\]+" 1 { xfail ilp32 } } } */
-/* { dg-final { scan-assembler-times "stp\tx\[0-9\]+, x\[0-9\]+" 1 { xfail ilp32 } } } */
-/* { dg-final { scan-assembler-not "ins\t" { xfail ilp32 } } } */
+/* { dg-final { scan-assembler-times "stp\td\[0-9\]+, d\[0-9\]+" 2 } } */
+/* { dg-final { scan-assembler-times "stp\tx\[0-9\]+, x\[0-9\]+" 2 } } */
+/* { dg-final { scan-assembler-not "ins\t" } } */
