@@ -1,7 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler-times "vcvtusi2ss\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvtusi2ss\[ \\t\]+\[^%\n\]*%r\[^\{\n\]*\{rz-sae\}\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvtusi2ssq\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvtusi2ssq\[ \\t\]+\[^%\n\]*%r\[^\{\n\]*\{rz-sae\}\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 
