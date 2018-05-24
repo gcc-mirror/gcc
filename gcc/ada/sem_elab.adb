@@ -2274,8 +2274,43 @@ package body Sem_Elab is
       Read  : Boolean;
       Write : Boolean)
    is
+      function In_Compilation_Instance_Formal_Part
+        (Nod : Node_Id) return Boolean;
+      --  Determine whether arbitrary node Nod appears within the formal part
+      --  of an instantiation which acts as a compilation unit.
+
       function In_Pragma (Nod : Node_Id) return Boolean;
       --  Determine whether arbitrary node Nod appears within a pragma
+
+      -----------------------------------------
+      -- In_Compilation_Instance_Formal_Part --
+      -----------------------------------------
+
+      function In_Compilation_Instance_Formal_Part
+        (Nod : Node_Id) return Boolean
+      is
+         Par : Node_Id;
+
+      begin
+         Par := Nod;
+         while Present (Par) loop
+            if Nkind (Par) = N_Generic_Association
+              and then Nkind (Parent (Par)) in N_Generic_Instantiation
+              and then Nkind (Parent (Parent (Par))) = N_Compilation_Unit
+            then
+               return True;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return False;
+      end In_Compilation_Instance_Formal_Part;
 
       ---------------
       -- In_Pragma --
@@ -2348,6 +2383,15 @@ package body Sem_Elab is
                   and then Ekind (Entity (N)) = E_Variable
                   and then Entity (N) /= Any_Id)
       then
+         return;
+
+      --  Nothing to do when the reference appears within the formal part of
+      --  an instantiation which acts as compilation unit because there is no
+      --  proper context for the insertion of the marker.
+
+      --  Performance note: parent traversal
+
+      elsif In_Compilation_Instance_Formal_Part (N) then
          return;
       end if;
 
