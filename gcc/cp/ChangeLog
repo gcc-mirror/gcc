@@ -1,3 +1,40 @@
+2018-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (INDIRECT_TYPE_P): New.
+	* call.c (build_trivial_dtor_call, maybe_warn_class_memaccess,
+	joust): Use it instead of POINTER_TYPE_P.
+	* class.c (update_vtable_entry_for_fn, find_flexarrays,
+	* fixed_type_or_null, resolves_to_fixed_type_p): Likewise.
+	* constexpr.c (cxx_eval_binary_expression, cxx_fold_indirect_ref,
+	* cxx_eval_increment_expression, potential_constant_expression_1):
+	Likewise.
+	* cp-gimplify.c (cp_gimplify_expr, cp_genericize_r): Likewise.
+	* cp-objcp-common.c (cxx_get_alias_set): Likewise.
+	* cp-ubsan.c (cp_ubsan_maybe_instrument_member_call,
+	cp_ubsan_maybe_instrument_downcast): Likewise.
+	* cvt.c (cp_convert_to_pointer, ocp_convert,
+	cp_get_fndecl_from_callee, maybe_warn_nodiscard, convert): Likewise.
+	* cxx-pretty-print.c (cxx_pretty_printer::abstract_declarator,
+	pp_cxx_offsetof_expression_1): Likewise.
+	* decl.c (grokparms, static_fn_type): Likewise.
+	* decl2.c (grokbitfield): Likewise.
+	* error.c (dump_expr): Likewise.
+	* except.c (initialize_handler_parm, check_noexcept_r): Likewise.
+	* init.c (warn_placement_new_too_small): Likewise.
+	* lambda.c (build_capture_proxy, add_capture): Likewise.
+	* parser.c (cp_parser_omp_for_loop): Likewise.
+	* pt.c (convert_nontype_argument, fn_type_unification,
+	uses_deducible_template_parms, check_cv_quals_for_unify,
+	dependent_type_p_r): Likewise.
+	* search.c (check_final_overrider): Likewise.
+	* semantics.c (handle_omp_array_sections, finish_omp_clauses,
+	finish_omp_for): Likewise.
+	* tree.c (cp_build_qualified_type_real): Likewise.
+	* typeck.c (build_class_member_access_expr,
+	finish_class_member_access_expr, build_x_indirect_ref,
+	cp_build_indirect_ref_1, cp_build_binary_op, build_const_cast_1):
+	Likewise.
+
 2018-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85864 - literal template and default template arg.

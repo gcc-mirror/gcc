@@ -5001,7 +5001,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      tree type = build_array_type (eltype, index_type);
 	      tree ptype = build_pointer_type (eltype);
 	      if (TYPE_REF_P (TREE_TYPE (t))
-		  && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (t))))
+		  && INDIRECT_TYPE_P (TREE_TYPE (TREE_TYPE (t))))
 		t = convert_from_reference (t);
 	      else if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 		t = build_fold_addr_expr (t);
@@ -5076,7 +5076,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 				ptrdiff_type_node, t);
 	  tree ptr = OMP_CLAUSE_DECL (c2);
 	  ptr = convert_from_reference (ptr);
-	  if (!POINTER_TYPE_P (TREE_TYPE (ptr)))
+	  if (!INDIRECT_TYPE_P (TREE_TYPE (ptr)))
 	    ptr = build_fold_addr_expr (ptr);
 	  t = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MINUS_EXPR,
 			       ptrdiff_type_node, t,
@@ -5088,7 +5088,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	  ptr = OMP_CLAUSE_DECL (c2);
 	  if (OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
 	      && TYPE_REF_P (TREE_TYPE (ptr))
-	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (ptr))))
+	      && INDIRECT_TYPE_P (TREE_TYPE (TREE_TYPE (ptr))))
 	    {
 	      tree c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					  OMP_CLAUSE_MAP);
@@ -6537,7 +6537,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   && !TYPE_PTR_P (TREE_TYPE (t))
 		   && TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE
 		   && (!TYPE_REF_P (TREE_TYPE (t))
-		       || (!POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (t)))
+		       || (!INDIRECT_TYPE_P (TREE_TYPE (TREE_TYPE (t)))
 			   && (TREE_CODE (TREE_TYPE (TREE_TYPE (t)))
 			       != ARRAY_TYPE))))
 	    {
@@ -6790,7 +6790,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		   && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FORCE_DEVICEPTR
 		   && !type_dependent_expression_p (t)
-		   && !POINTER_TYPE_P (TREE_TYPE (t)))
+		   && !INDIRECT_TYPE_P (TREE_TYPE (t)))
 	    {
 	      error ("%qD is not a pointer variable", t);
 	      remove = true;
@@ -8283,14 +8283,14 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	    case POSTINCREMENT_EXPR:
 	      /* c_omp_for_incr_canonicalize_ptr() should have been
 		 called to massage things appropriately.  */
-	      gcc_assert (!POINTER_TYPE_P (TREE_TYPE (decl)));
+	      gcc_assert (!INDIRECT_TYPE_P (TREE_TYPE (decl)));
 	      OMP_CLAUSE_LINEAR_STEP (c) = build_int_cst (TREE_TYPE (decl), 1);
 	      break;
 	    case PREDECREMENT_EXPR:
 	    case POSTDECREMENT_EXPR:
 	      /* c_omp_for_incr_canonicalize_ptr() should have been
 		 called to massage things appropriately.  */
-	      gcc_assert (!POINTER_TYPE_P (TREE_TYPE (decl)));
+	      gcc_assert (!INDIRECT_TYPE_P (TREE_TYPE (decl)));
 	      OMP_CLAUSE_LINEAR_STEP (c)
 		= build_int_cst (TREE_TYPE (decl), -1);
 	      break;
@@ -8314,7 +8314,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		  gcc_unreachable ();
 		}
 	      stept = TREE_TYPE (decl);
-	      if (POINTER_TYPE_P (stept))
+	      if (INDIRECT_TYPE_P (stept))
 		stept = sizetype;
 	      step = fold_convert (stept, step);
 	      if (TREE_CODE (incr) == MINUS_EXPR)

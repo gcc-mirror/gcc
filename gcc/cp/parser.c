@@ -35348,7 +35348,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	  if (real_decl
 	      && ((processing_template_decl
 		   && (TREE_TYPE (real_decl) == NULL_TREE
-		       || !POINTER_TYPE_P (TREE_TYPE (real_decl))))
+		       || !INDIRECT_TYPE_P (TREE_TYPE (real_decl))))
 		  || CLASS_TYPE_P (TREE_TYPE (real_decl))))
 	    incr = cp_parser_omp_for_incr (parser, real_decl);
 	  else

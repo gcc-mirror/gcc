@@ -2088,7 +2088,7 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
     *non_constant_p = true;
   /* Don't VERIFY_CONSTANT if this might be dealing with a pointer to
      a local array in a constexpr function.  */
-  bool ptr = POINTER_TYPE_P (TREE_TYPE (lhs));
+  bool ptr = INDIRECT_TYPE_P (TREE_TYPE (lhs));
   if (!ptr)
     VERIFY_CONSTANT (r);
   return r;
@@ -3082,7 +3082,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
-  if (!POINTER_TYPE_P (subtype))
+  if (!INDIRECT_TYPE_P (subtype))
     return NULL_TREE;
 
   if (TREE_CODE (sub) == ADDR_EXPR)
@@ -3784,14 +3784,14 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
 				    non_constant_p, overflow_p);
   /* Don't VERIFY_CONSTANT if this might be dealing with a pointer to
      a local array in a constexpr function.  */
-  bool ptr = POINTER_TYPE_P (TREE_TYPE (val));
+  bool ptr = INDIRECT_TYPE_P (TREE_TYPE (val));
   if (!ptr)
     VERIFY_CONSTANT (val);
 
   /* The modified value.  */
   bool inc = (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR);
   tree mod;
-  if (POINTER_TYPE_P (type))
+  if (INDIRECT_TYPE_P (type))
     {
       /* The middle end requires pointers to use POINTER_PLUS_EXPR.  */
       offset = convert_to_ptrofftype (offset);
@@ -4613,7 +4613,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    return cp_fold_convert (type, op);
 	  }
 
-	if (POINTER_TYPE_P (type) && TREE_CODE (op) == INTEGER_CST)
+	if (INDIRECT_TYPE_P (type) && TREE_CODE (op) == INTEGER_CST)
 	  {
 	    if (integer_zerop (op))
 	      {
@@ -5499,7 +5499,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	 may change to something more specific to type-punning (DR 1312).  */
       {
         tree from = TREE_OPERAND (t, 0);
-	if (POINTER_TYPE_P (TREE_TYPE (t))
+	if (INDIRECT_TYPE_P (TREE_TYPE (t))
 	    && TREE_CODE (from) == INTEGER_CST
 	    && !integer_zerop (from))
 	  {

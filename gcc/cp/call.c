@@ -7622,7 +7622,7 @@ build_trivial_dtor_call (tree instance)
       return fold_convert (void_type_node, instance);
     }
 
-  if (POINTER_TYPE_P (TREE_TYPE (instance)))
+  if (INDIRECT_TYPE_P (TREE_TYPE (instance)))
     {
       if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (instance))))
 	goto no_clobber;
@@ -8511,7 +8511,7 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
   unsigned srcidx = !dstidx;
 
   tree dest = (*args)[dstidx];
-  if (!TREE_TYPE (dest) || !POINTER_TYPE_P (TREE_TYPE (dest)))
+  if (!TREE_TYPE (dest) || !INDIRECT_TYPE_P (TREE_TYPE (dest)))
     return;
 
   tree srctype = NULL_TREE;
@@ -8643,7 +8643,7 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
     case BUILT_IN_MEMPCPY:
       /* Determine the type of the source object.  */
       srctype = TREE_TYPE ((*args)[srcidx]);
-      if (!srctype || !POINTER_TYPE_P (srctype))
+      if (!srctype || !INDIRECT_TYPE_P (srctype))
 	srctype = void_type_node;
       else
 	srctype = TREE_TYPE (srctype);
@@ -10210,7 +10210,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  tree t = TREE_TYPE (TREE_TYPE (l->fn));
 	  tree f = TREE_TYPE (TREE_TYPE (w->fn));
 
-	  if (TREE_CODE (t) == TREE_CODE (f) && POINTER_TYPE_P (t))
+	  if (TREE_CODE (t) == TREE_CODE (f) && INDIRECT_TYPE_P (t))
 	    {
 	      t = TREE_TYPE (t);
 	      f = TREE_TYPE (f);
@@ -10226,7 +10226,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       else if (warn)
 	{
 	  tree source = source_type (w->convs[0]);
-	  if (POINTER_TYPE_P (source))
+	  if (INDIRECT_TYPE_P (source))
 	    source = TREE_TYPE (source);
 	  if (warning (OPT_Wconversion, "choosing %qD over %qD", w->fn, l->fn)
 	      && warning (OPT_Wconversion, "  for conversion from %qH to %qI",
