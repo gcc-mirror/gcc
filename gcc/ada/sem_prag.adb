@@ -16999,6 +16999,38 @@ package body Sem_Prag is
 
             E := Entity (E_Id);
 
+            --  A record type with a self-referential component of anonymous
+            --  access type is given an incomplete view in order to handle the
+            --  self reference:
+            --
+            --    type Rec is record
+            --       Self : access Rec;
+            --    end record;
+            --
+            --  becomes
+            --
+            --    type Rec;
+            --    type Ptr is access Rec;
+            --    type Rec is record
+            --       Self : Ptr;
+            --    end record;
+            --
+            --  Since the incomplete view is now the initial view of the type,
+            --  the argument of the pragma will reference the incomplete view,
+            --  but this view is illegal according to the semantics of the
+            --  pragma.
+            --
+            --  Obtain the full view of an internally-generated incomplete type
+            --  only. This way an attempt to associate the pragma with a source
+            --  incomplete type is still caught.
+
+            if Ekind (E) = E_Incomplete_Type
+              and then not Comes_From_Source (E)
+              and then Present (Full_View (E))
+            then
+               E := Full_View (E);
+            end if;
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
