@@ -1890,7 +1890,7 @@ struct GTY(()) language_function {
   hash_table<named_label_hash> *x_named_labels;
 
   cp_binding_level *bindings;
-  vec<tree, va_gc> *x_local_names;
+
   /* Tracking possibly infinite loops.  This is a vec<tree> only because
      vec<bool> doesn't work with gtype.  */
   vec<tree, va_gc> *infinite_loops;
@@ -2654,8 +2654,8 @@ struct GTY(()) lang_decl_min {
 
   /* In a DECL_THUNK_P FUNCTION_DECL, this is THUNK_VIRTUAL_OFFSET.
      In a lambda-capture proxy VAR_DECL, this is DECL_CAPTURED_VARIABLE.
-     In a function-scope VAR_DECL, this can be DECL_DISCRIMINATOR
-     (only set for TREE_STATIC vars).
+     In a function-scope TREE_STATIC VAR_DECL or IMPLICIT_TYPEDEF_P TYPE_DECL,
+     this is DECL_DISCRIMINATOR.
      Otherwise, in a class-scope DECL, this is DECL_ACCESS.   */
   tree access;
 };
@@ -2931,13 +2931,10 @@ struct GTY(()) lang_decl {
 	 CLONE = DECL_CHAIN (CLONE))
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
-#define DECL_DISCRIMINATOR_P(NODE)	\
-  (VAR_P (NODE) && DECL_FUNCTION_SCOPE_P (NODE))
-
-/* Nonzero if NODE has DECL_DISCRIMINATOR set to non-null.  */
-#define DECL_DISCRIMINATOR_SET_P(NODE)	\
-  (TREE_STATIC (NODE) && DECL_LANG_SPECIFIC (NODE)\
-   && DECL_DISCRIMINATOR (NODE) != NULL_TREE)
+#define DECL_DISCRIMINATOR_P(NODE)				\
+  (((TREE_CODE (NODE) == VAR_DECL && TREE_STATIC (NODE))	\
+    || DECL_IMPLICIT_TYPEDEF_P (NODE))				\
+   && DECL_FUNCTION_SCOPE_P (NODE))
 
 /* Discriminator for name mangling.  */
 #define DECL_DISCRIMINATOR(NODE) (LANG_DECL_MIN_CHECK (NODE)->access)
@@ -5319,10 +5316,6 @@ struct local_specialization_stack
 
 extern int current_class_depth;
 
-/* An array of all local classes present in this translation unit, in
-   declaration order.  */
-extern GTY(()) vec<tree, va_gc> *local_classes;
-
 /* in decl.c */
 
 /* An array of static vars & fns.  */
@@ -6361,6 +6354,7 @@ extern void pop_switch				(void);
 extern void note_break_stmt			(void);
 extern bool note_iteration_stmt_body_start	(void);
 extern void note_iteration_stmt_body_end	(bool);
+extern void determine_local_discriminator	(tree);
 extern tree make_lambda_name			(void);
 extern int decls_match				(tree, tree, bool = true);
 extern bool maybe_version_functions		(tree, tree, bool);

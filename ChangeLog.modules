@@ -1,3 +1,30 @@
+2018-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	DECL_DISCRIMINATOR for local classes, merge local var disc.
+	gcc/cp/
+	* cp-tree.h (language_function): Remove x_local_names.
+	(DECL_DISCRIMINATOR_P): Allow IMPLICIT_TyPEDEF too.
+	(DECL_DISCRIMINATOR_SET_P): Delete.
+	(local_classes): Delete declaration.
+	(determine_local_discriminator): Declare.
+	* class.c (local_classes): Delete.
+	(init_class_processing): Don't init it.
+	* decl.c (local_names): Delete.
+	(local_entities): New.
+	(push_local_name): Replace with ...
+	(determine_local_discriminator): ... this.
+	(cp_finish_decl): Adjust.
+	(save_function_data, finish_function): Remove local_name handling.
+	* decl2.c (finish_anon_union): Set discriminator.
+	* mangle.c (write_unnamed_type_name): Use discriminator_for_local_entity.
+	(local_class_index): Delete.
+	(discriminator_for_local_entity): Use DECL_DISCRIMINATOR for both
+	cases.
+	(write_local_name): Adjust.
+	* name-lookup.c (do_pushtag): Use determine_local_discriminator.
+	gcc/testsuite/
+	* g++.dg/abi/anon5.C: New.
+
 2018-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
