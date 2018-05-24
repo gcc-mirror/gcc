@@ -1,5 +1,9 @@
 2018-05-24  Raphael Amiard  <amiard@adacore.com>
 
+	* libgnat/a-cohama.ads: Add documentation.
+
+2018-05-24  Raphael Amiard  <amiard@adacore.com>
+
 	* libgnat/a-convec.ads: Add documentation.
 
 2018-05-24  Justin Squirek  <squirek@adacore.com>
