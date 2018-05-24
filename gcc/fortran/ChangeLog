@@ -1,5 +1,10 @@
 2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/85780
+	* resolve.c (resolve_fl_procedure): Avoid NULL dereference.
+
+2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/85779
 	* decl.c (gfc_match_derived_decl): Fix NULL point dereference.
 
