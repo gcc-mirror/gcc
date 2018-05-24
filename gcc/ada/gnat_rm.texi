@@ -755,7 +755,7 @@ The GNAT Library
 * GNAT.Encode_UTF8_String (g-enutst.ads): GNAT Encode_UTF8_String g-enutst ads. 
 * GNAT.Exception_Actions (g-excact.ads): GNAT Exception_Actions g-excact ads. 
 * GNAT.Exception_Traces (g-exctra.ads): GNAT Exception_Traces g-exctra ads. 
-* GNAT.Exceptions (g-expect.ads): GNAT Exceptions g-expect ads. 
+* GNAT.Exceptions (g-except.ads): GNAT Exceptions g-except ads. 
 * GNAT.Expect (g-expect.ads): GNAT Expect g-expect ads. 
 * GNAT.Expect.TTY (g-exptty.ads): GNAT Expect TTY g-exptty ads. 
 * GNAT.Float_Control (g-flocon.ads): GNAT Float_Control g-flocon ads. 
@@ -22812,7 +22812,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Encode_UTF8_String (g-enutst.ads): GNAT Encode_UTF8_String g-enutst ads. 
 * GNAT.Exception_Actions (g-excact.ads): GNAT Exception_Actions g-excact ads. 
 * GNAT.Exception_Traces (g-exctra.ads): GNAT Exception_Traces g-exctra ads. 
-* GNAT.Exceptions (g-expect.ads): GNAT Exceptions g-expect ads. 
+* GNAT.Exceptions (g-except.ads): GNAT Exceptions g-except ads. 
 * GNAT.Expect (g-expect.ads): GNAT Expect g-expect ads. 
 * GNAT.Expect.TTY (g-exptty.ads): GNAT Expect TTY g-exptty ads. 
 * GNAT.Float_Control (g-flocon.ads): GNAT Float_Control g-flocon ads. 
@@ -24058,7 +24058,7 @@ Provides callbacks when an exception is raised. Callbacks can be registered
 for specific exceptions, or when any exception is raised. This
 can be used for instance to force a core dump to ease debugging.
 
-@node GNAT Exception_Traces g-exctra ads,GNAT Exceptions g-expect ads,GNAT Exception_Actions g-excact ads,The GNAT Library
+@node GNAT Exception_Traces g-exctra ads,GNAT Exceptions g-except ads,GNAT Exception_Actions g-excact ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-exception-traces-g-exctra-ads}@anchor{35e}@anchor{gnat_rm/the_gnat_library id75}@anchor{35f}
 @section @code{GNAT.Exception_Traces} (@code{g-exctra.ads})
 
@@ -24072,12 +24072,12 @@ can be used for instance to force a core dump to ease debugging.
 Provides an interface allowing to control automatic output upon exception
 occurrences.
 
-@node GNAT Exceptions g-expect ads,GNAT Expect g-expect ads,GNAT Exception_Traces g-exctra ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id76}@anchor{360}@anchor{gnat_rm/the_gnat_library gnat-exceptions-g-expect-ads}@anchor{361}
-@section @code{GNAT.Exceptions} (@code{g-expect.ads})
+@node GNAT Exceptions g-except ads,GNAT Expect g-expect ads,GNAT Exception_Traces g-exctra ads,The GNAT Library
+@anchor{gnat_rm/the_gnat_library id76}@anchor{360}@anchor{gnat_rm/the_gnat_library gnat-exceptions-g-except-ads}@anchor{361}
+@section @code{GNAT.Exceptions} (@code{g-except.ads})
 
 
-@geindex GNAT.Exceptions (g-expect.ads)
+@geindex GNAT.Exceptions (g-except.ads)
 
 @geindex Exceptions
 @geindex Pure
@@ -24093,7 +24093,7 @@ facility for getting around this limitation for a few
 predefined exceptions, and for example allow raising
 @code{Constraint_Error} with a message from a pure subprogram.
 
-@node GNAT Expect g-expect ads,GNAT Expect TTY g-exptty ads,GNAT Exceptions g-expect ads,The GNAT Library
+@node GNAT Expect g-expect ads,GNAT Expect TTY g-exptty ads,GNAT Exceptions g-except ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-expect-g-expect-ads}@anchor{362}@anchor{gnat_rm/the_gnat_library id77}@anchor{363}
 @section @code{GNAT.Expect} (@code{g-expect.ads})
 
