@@ -1,3 +1,16 @@
+2018-05-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83628
+	* config/alpha/alpha.md (ashlsi3): New insn pattern.
+	(*ashlsi_se): Rename from *ashldi_se.  Define as sign
+	extension of SImode operation.  Use const123_operand predicate.
+	(*saddsi_1): Remove.
+	(*saddl_se_1): Ditto.
+	(*ssubsi_1): Ditto.
+	(*ssubl_se_1): Ditto.
+	* config/alpha/predicates.md (const123_operand): New predicate.
+	* config/alpha/constraints.md (P): Use IN_RANGE.
+
 2018-05-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-alias.h (refs_may_alias_p): Add tbaa_p bool parameter,
