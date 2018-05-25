@@ -2370,6 +2370,18 @@ get_operand_type (id_base *op, unsigned pos,
   else if (*op == COND_EXPR
 	   && pos == 0)
     return "boolean_type_node";
+  else if (strncmp (op->id, "CFN_COND_", 9) == 0)
+    {
+      /* IFN_COND_* operands 1 and later by default have the same type
+	 as the result.  The type of operand 0 needs to be specified
+	 explicitly.  */
+      if (pos > 0 && expr_type)
+	return expr_type;
+      else if (pos > 0 && in_type)
+	return in_type;
+      else
+	return NULL;
+    }
   else
     {
       /* Otherwise all types should match - choose one in order of
@@ -2429,7 +2441,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       in_type = NULL;
     }
   else if (*opr == COND_EXPR
-	   || *opr == VEC_COND_EXPR)
+	   || *opr == VEC_COND_EXPR
+	   || strncmp (opr->id, "CFN_COND_", 9) == 0)
     {
       /* Conditions are of the same type as their first alternative.  */
       sprintf (optype, "TREE_TYPE (ops%d[1])", depth);
@@ -3737,7 +3750,7 @@ decision_tree::gen (FILE *f, bool gimple)
     }
   fprintf (stderr, "removed %u duplicate tails\n", rcnt);
 
-  for (unsigned n = 1; n <= 3; ++n)
+  for (unsigned n = 1; n <= 4; ++n)
     {
       /* First generate split-out functions.  */
       for (unsigned i = 0; i < root->kids.length (); i++)

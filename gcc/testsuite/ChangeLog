@@ -1,3 +1,15 @@
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_double_cond_arith): New proc.
+	* gcc.dg/vect/vect-cond-arith-1.c: New test.
+	* gcc.target/aarch64/sve/vcond_8.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_8_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_9.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_9_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_12.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_12_run.c: Likewise.
+
 2018-05-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85839

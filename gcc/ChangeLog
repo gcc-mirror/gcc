@@ -1,3 +1,36 @@
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/sourcebuild.texi (vect_double_cond_arith: Document.
+	* gimple-match.h (gimple_match_op::MAX_NUM_OPS): Bump to 4.
+	(gimple_match_op::gimple_match_op): Add an overload for 4 operands.
+	(gimple_match_op::set_op): Likewise.
+	(gimple_resimplify4): Declare.
+	* genmatch.c (get_operand_type): Handle CFN_COND_* functions.
+	(expr::gen_transform): Likewise.
+	(decision_tree::gen): Generate a simplification routine for 4 operands.
+	* gimple-match-head.c (gimple_simplify): Add an overload for
+	4 operands.  In the top-level function, handle up to 4 call
+	arguments and call gimple_resimplify4.
+	(gimple_resimplify4): New function.
+	(build_call_internal): Pass a fourth operand.
+	(maybe_push_to_seq): Likewise.
+	* match.pd (UNCOND_BINARY, COND_BINARY): New operator lists.
+	Fold VEC_COND_EXPRs of an operation and a default value into
+	an IFN_COND_* function if possible.
+	* config/aarch64/iterators.md (UNSPEC_COND_MAX, UNSPEC_COND_MIN):
+	New unspecs.
+	(SVE_COND_FP_BINARY): Include them.
+	(optab, sve_fp_op): Handle them.
+	(SVE_INT_BINARY_REV): New code iterator.
+	(SVE_COND_FP_BINARY_REV): New int iterator.
+	(commutative): New int attribute.
+	* config/aarch64/aarch64-protos.h (aarch64_sve_prepare_conditional_op):
+	Declare.
+	* config/aarch64/aarch64.c (aarch64_sve_prepare_conditional_op): New
+	function.
+	* config/aarch64/aarch64-sve.md (cond_<optab><mode>): Use it.
+	(*cond_<optab><mode>): New patterns for reversed operands.
+
 2018-05-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (STMT_VINFO_GROUP_*, GROUP_*): Remove.
