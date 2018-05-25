@@ -1,3 +1,8 @@
+2018-05-25  Nicolas Roche  <roche@adacore.com>
+
+	* libgnat/s-valrea.adb (Scan_Real): Abort computation once it is sure
+	that the result will be either -infinite or +infinite.
+
 2018-05-25  Patrick Bernardi  <bernardi@adacore.com>
 
 	* libgnat/s-parame.ads, libgnat/s-parame__vxworks.ads,
