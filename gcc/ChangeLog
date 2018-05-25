@@ -1,5 +1,14 @@
 2018-05-25  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/85720
+	* tree-loop-distribution.c (break_alias_scc_partitions): Don't merge
+	SCC if all partitions are builtins.
+	(version_loop_by_alias_check): New parameter.  Generate cancelable
+	runtime alias check if all partitions are builtins.
+	(distribute_loop): Update call to above function.
+
+2018-05-25  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-outof-ssa.c (tree-ssa.h, tree-dfa.h): Include header files.
 	(create_default_def, for_all_parms): Moved from tree-ssa-coalesce.c.
 	(parm_default_def_partition_arg): Ditto.
