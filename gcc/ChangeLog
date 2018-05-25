@@ -1,3 +1,9 @@
+2018-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR c++/85912
+	* tree-dump.c (dequeue_and_dump): Remove access to removed
+	operand 2 of a SWITCH_EXPR.
+
 2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (cvtusi2<ssescalarmodesuffix>64<round_name>):
