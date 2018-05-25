@@ -538,7 +538,7 @@ typedef struct {
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   memset (&(CUM), 0, sizeof (CUM))
 
-#define EPILOGUE_USES(REGNO)	((REGNO) == RETURN_ADDR_REGNUM)
+#define EPILOGUE_USES(REGNO)	riscv_epilogue_uses (REGNO)
 
 /* Align based on stack boundary, which might have been set by the user.  */
 #define RISCV_STACK_ALIGN(LOC) \

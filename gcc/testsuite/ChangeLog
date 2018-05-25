@@ -1,3 +1,11 @@
+2018-05-25  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/interrupt-1.c: New.
+	* gcc.target/riscv/interrupt-2.c: New.
+	* gcc.target/riscv/interrupt-3.c: New.
+	* gcc.target/riscv/interrupt-4.c: New.
+	* gcc.target/riscv/interrupt-5.c: New.
+
 2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85786
