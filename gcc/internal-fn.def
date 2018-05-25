@@ -145,6 +145,12 @@ DEF_INTERNAL_OPTAB_FN (FNMS, ECF_CONST, fnms, ternary)
 
 DEF_INTERNAL_OPTAB_FN (COND_ADD, ECF_CONST, cond_add, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_SUB, ECF_CONST, cond_sub, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_MUL, ECF_CONST, cond_smul, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_DIV, ECF_CONST, first,
+			      cond_sdiv, cond_udiv, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MOD, ECF_CONST, first,
+			      cond_smod, cond_umod, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_RDIV, ECF_CONST, cond_sdiv, cond_binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MIN, ECF_CONST, first,
 			      cond_smin, cond_umin, cond_binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MAX, ECF_CONST, first,

@@ -464,6 +464,8 @@
     UNSPEC_UMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_COND_ADD	; Used in aarch64-sve.md.
     UNSPEC_COND_SUB	; Used in aarch64-sve.md.
+    UNSPEC_COND_MUL	; Used in aarch64-sve.md.
+    UNSPEC_COND_DIV	; Used in aarch64-sve.md.
     UNSPEC_COND_MAX	; Used in aarch64-sve.md.
     UNSPEC_COND_MIN	; Used in aarch64-sve.md.
     UNSPEC_COND_LT	; Used in aarch64-sve.md.
@@ -1202,7 +1204,7 @@
 ;; SVE floating-point unary operations.
 (define_code_iterator SVE_FP_UNARY [neg abs sqrt])
 
-(define_code_iterator SVE_INT_BINARY [plus minus smax umax smin umin
+(define_code_iterator SVE_INT_BINARY [plus minus mult smax umax smin umin
 				      and ior xor])
 
 (define_code_iterator SVE_INT_BINARY_REV [minus])
@@ -1239,6 +1241,7 @@
 			 (neg "neg")
 			 (plus "add")
 			 (minus "sub")
+			 (mult "mul")
 			 (div "div")
 			 (udiv "udiv")
 			 (ss_plus "qadd")
@@ -1382,6 +1385,7 @@
 ;; The integer SVE instruction that implements an rtx code.
 (define_code_attr sve_int_op [(plus "add")
 			      (minus "sub")
+			      (mult "mul")
 			      (div "sdiv")
 			      (udiv "udiv")
 			      (neg "neg")
@@ -1540,9 +1544,10 @@
 (define_int_iterator MUL_HIGHPART [UNSPEC_SMUL_HIGHPART UNSPEC_UMUL_HIGHPART])
 
 (define_int_iterator SVE_COND_FP_BINARY [UNSPEC_COND_ADD UNSPEC_COND_SUB
+					 UNSPEC_COND_MUL UNSPEC_COND_DIV
 					 UNSPEC_COND_MAX UNSPEC_COND_MIN])
 
-(define_int_iterator SVE_COND_FP_BINARY_REV [UNSPEC_COND_SUB])
+(define_int_iterator SVE_COND_FP_BINARY_REV [UNSPEC_COND_SUB UNSPEC_COND_DIV])
 
 (define_int_iterator SVE_COND_FP_CMP [UNSPEC_COND_LT UNSPEC_COND_LE
 				      UNSPEC_COND_EQ UNSPEC_COND_NE
@@ -1573,6 +1578,8 @@
 			(UNSPEC_XORV "xor")
 			(UNSPEC_COND_ADD "add")
 			(UNSPEC_COND_SUB "sub")
+			(UNSPEC_COND_MUL "mul")
+			(UNSPEC_COND_DIV "div")
 			(UNSPEC_COND_MAX "smax")
 			(UNSPEC_COND_MIN "smin")])
 
@@ -1787,10 +1794,14 @@
 
 (define_int_attr sve_fp_op [(UNSPEC_COND_ADD "fadd")
 			    (UNSPEC_COND_SUB "fsub")
+			    (UNSPEC_COND_MUL "fmul")
+			    (UNSPEC_COND_DIV "fdiv")
 			    (UNSPEC_COND_MAX "fmaxnm")
 			    (UNSPEC_COND_MIN "fminnm")])
 
 (define_int_attr commutative [(UNSPEC_COND_ADD "true")
 			      (UNSPEC_COND_SUB "false")
+			      (UNSPEC_COND_MUL "true")
+			      (UNSPEC_COND_DIV "false")
 			      (UNSPEC_COND_MIN "true")
 			      (UNSPEC_COND_MAX "true")])

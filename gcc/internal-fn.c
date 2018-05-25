@@ -3246,6 +3246,12 @@ get_conditional_internal_fn (tree_code code)
       return IFN_COND_MIN;
     case MAX_EXPR:
       return IFN_COND_MAX;
+    case TRUNC_DIV_EXPR:
+      return IFN_COND_DIV;
+    case TRUNC_MOD_EXPR:
+      return IFN_COND_MOD;
+    case RDIV_EXPR:
+      return IFN_COND_RDIV;
     case BIT_AND_EXPR:
       return IFN_COND_AND;
     case BIT_IOR_EXPR:

@@ -1,5 +1,28 @@
 2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* doc/sourcebuild.texi (vect_double_cond_arith): Include
+	multiplication and division.
+	* doc/md.texi (cond_mul@var{m}, cond_div@var{m}, cond_mod@var{m})
+	(cond_udiv@var{m}, cond_umod@var{m}): Document.
+	* optabs.def (cond_smul_optab, cond_sdiv_optab, cond_smod_optab)
+	(cond_udiv_optab, cond_umod_optab): New optabs.
+	* internal-fn.def (IFN_COND_MUL, IFN_COND_DIV, IFN_COND_MOD)
+	(IFN_COND_RDIV): New internal functions.
+	* internal-fn.c (get_conditional_internal_fn): Handle TRUNC_DIV_EXPR,
+	TRUNC_MOD_EXPR and RDIV_EXPR.
+	* match.pd (UNCOND_BINARY, COND_BINARY): Handle them.
+	* config/aarch64/iterators.md (UNSPEC_COND_MUL, UNSPEC_COND_DIV):
+	New unspecs.
+	(SVE_INT_BINARY): Include mult.
+	(SVE_COND_FP_BINARY): Include UNSPEC_MUL and UNSPEC_DIV.
+	(optab, sve_int_op): Handle mult.
+	(optab, sve_fp_op, commutative): Handle UNSPEC_COND_MUL and
+	UNSPEC_COND_DIV.
+	* config/aarch64/aarch64-sve.md (cond_<optab><mode>): New pattern
+	for SVE_INT_BINARY_SD.
+
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/iterators.md (SVE_INT_BINARY_SD): New code iterator.
 	(optab, sve_int_op): Handle div and udiv.
 	* config/aarch64/aarch64-sve.md (<optab><mode>3): New expander

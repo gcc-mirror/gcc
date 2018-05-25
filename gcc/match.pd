@@ -78,10 +78,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Binary operations and their associated IFN_COND_* function.  */
 (define_operator_list UNCOND_BINARY
   plus minus
+  mult trunc_div trunc_mod rdiv
   min max
   bit_and bit_ior bit_xor)
 (define_operator_list COND_BINARY
   IFN_COND_ADD IFN_COND_SUB
+  IFN_COND_MUL IFN_COND_DIV IFN_COND_MOD IFN_COND_RDIV
   IFN_COND_MIN IFN_COND_MAX
   IFN_COND_AND IFN_COND_IOR IFN_COND_XOR)
     
