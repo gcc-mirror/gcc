@@ -1,5 +1,11 @@
 2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-patterns.c: Include predict.h.
+	(vect_recog_divmod_pattern): Restrict check for division support
+	to when optimizing for size.
+
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* doc/sourcebuild.texi (vect_double_cond_arith: Document.
 	* gimple-match.h (gimple_match_op::MAX_NUM_OPS): Bump to 4.
 	(gimple_match_op::gimple_match_op): Add an overload for 4 operands.
