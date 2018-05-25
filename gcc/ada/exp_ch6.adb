@@ -6759,7 +6759,13 @@ package body Exp_Ch6 is
       --  conversion or a formal parameter, because in that case the tag of
       --  the expression might differ from the tag of the specific result type.
 
-      if Is_Tagged_Type (Utyp)
+      --  We must also verify an underlying type exists for the return type in
+      --  case it is incomplete - in which case is not necessary to generate a
+      --  check anyway since an incomplete limited tagged return type would
+      --  qualify as a premature usage.
+
+      if Present (Utyp)
+        and then Is_Tagged_Type (Utyp)
         and then not Is_Class_Wide_Type (Utyp)
         and then (Nkind_In (Exp, N_Type_Conversion,
                                  N_Unchecked_Type_Conversion)
