@@ -1,3 +1,9 @@
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Verify that the actual
+	for a formal derived type implements all the interfaces declared for
+	the formal.
+
 2018-05-25  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Check_Applicable_Policy): Deal specially with CodePeer

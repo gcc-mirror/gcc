@@ -1,5 +1,9 @@
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/interface6.adb: New testcase.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/static_pred1.adb, gnat.dg/static_pred1.ads: New testcase.
 
 2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
