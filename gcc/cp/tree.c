@@ -95,14 +95,24 @@ lvalue_kind (const_tree ref)
     case TRY_CATCH_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-    case ARRAY_REF:
     case VIEW_CONVERT_EXPR:
-      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
-      if (op1_lvalue_kind == clk_class)
-	/* in the case of an array operand, the result is an lvalue if that
-	   operand is an lvalue and an xvalue otherwise */
-	op1_lvalue_kind = clk_rvalueref;
-      return op1_lvalue_kind;
+      return lvalue_kind (TREE_OPERAND (ref, 0));
+
+    case ARRAY_REF:
+      {
+	tree op1 = TREE_OPERAND (ref, 0);
+	if (TREE_CODE (TREE_TYPE (op1)) == ARRAY_TYPE)
+	  {
+	    op1_lvalue_kind = lvalue_kind (op1);
+	    if (op1_lvalue_kind == clk_class)
+	      /* in the case of an array operand, the result is an lvalue if
+		 that operand is an lvalue and an xvalue otherwise */
+	      op1_lvalue_kind = clk_rvalueref;
+	    return op1_lvalue_kind;
+	  }
+	else
+	  return clk_ordinary;
+      }
 
     case MEMBER_REF:
     case DOTSTAR_EXPR:
