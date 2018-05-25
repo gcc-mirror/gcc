@@ -2781,7 +2781,7 @@ package Sem_Util is
    --  specified we check only for the given stream operation.
 
    function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
-   --  Return the entity which represents declaration N, so that different
+   --  Return the entity that represents declaration N, so that different
    --  views of the same entity have the same unique defining entity:
    --    * private view and full view of a deferred constant
    --        --> full view
