@@ -503,6 +503,7 @@ private
      (Object : in out Unbounded_Wide_Wide_String);
    overriding procedure Finalize
      (Object : in out Unbounded_Wide_Wide_String);
+   pragma Inline (Initialize, Adjust);
 
    Null_Unbounded_Wide_Wide_String : constant Unbounded_Wide_Wide_String :=
                                        (AF.Controlled with
