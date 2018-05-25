@@ -1774,40 +1774,12 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
   return 1;
 }
 
-
-/* Function vect_analyze_loop_2.
-
-   Apply a set of analyses on LOOP, and create a loop_vec_info struct
-   for it.  The different analyses will record information in the
-   loop_vec_info struct.  */
 static bool
-vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
+vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
+			   vec<data_reference_p> *datarefs,
+			   unsigned int *n_stmts)
 {
-  bool ok;
-  int res;
-  unsigned int max_vf = MAX_VECTORIZATION_FACTOR;
-  poly_uint64 min_vf = 2;
-  unsigned int n_stmts = 0;
-
-  /* The first group of checks is independent of the vector size.  */
-  fatal = true;
-
-  /* Find all data references in the loop (which correspond to vdefs/vuses)
-     and analyze their evolution in the loop.  */
-
-  basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
-
-  loop_p loop = LOOP_VINFO_LOOP (loop_vinfo);
-  if (!find_loop_nest (loop, &LOOP_VINFO_LOOP_NEST (loop_vinfo)))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: loop nest containing two "
-			 "or more consecutive inner loops cannot be "
-			 "vectorized\n");
-      return false;
-    }
-
+  *n_stmts = 0;
   for (unsigned i = 0; i < loop->num_nodes; i++)
     for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
 	 !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1815,9 +1787,8 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
 	gimple *stmt = gsi_stmt (gsi);
 	if (is_gimple_debug (stmt))
 	  continue;
-	++n_stmts;
-	if (!find_data_references_in_stmt (loop, stmt,
-					   &LOOP_VINFO_DATAREFS (loop_vinfo)))
+	++(*n_stmts);
+	if (!vect_find_stmt_data_reference (loop, stmt, datarefs))
 	  {
 	    if (is_gimple_call (stmt) && loop->safelen)
 	      {
@@ -1849,14 +1820,55 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
 		      }
 		  }
 	      }
-	    if (dump_enabled_p ())
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "not vectorized: loop contains function "
-			       "calls or data references that cannot "
-			       "be analyzed\n");
 	    return false;
 	  }
       }
+  return true;
+}
+
+/* Function vect_analyze_loop_2.
+
+   Apply a set of analyses on LOOP, and create a loop_vec_info struct
+   for it.  The different analyses will record information in the
+   loop_vec_info struct.  */
+static bool
+vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
+{
+  bool ok;
+  int res;
+  unsigned int max_vf = MAX_VECTORIZATION_FACTOR;
+  poly_uint64 min_vf = 2;
+
+  /* The first group of checks is independent of the vector size.  */
+  fatal = true;
+
+  /* Find all data references in the loop (which correspond to vdefs/vuses)
+     and analyze their evolution in the loop.  */
+
+  loop_p loop = LOOP_VINFO_LOOP (loop_vinfo);
+  if (!find_loop_nest (loop, &LOOP_VINFO_LOOP_NEST (loop_vinfo)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: loop nest containing two "
+			 "or more consecutive inner loops cannot be "
+			 "vectorized\n");
+      return false;
+    }
+
+  /* Gather the data references and count stmts in the loop.  */
+  unsigned int n_stmts;
+  if (!vect_get_datarefs_in_loop (loop, LOOP_VINFO_BBS (loop_vinfo),
+				  &LOOP_VINFO_DATAREFS (loop_vinfo),
+				  &n_stmts))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: loop contains function "
+			 "calls or data references that cannot "
+			 "be analyzed\n");
+      return false;
+    }
 
   /* Analyze the data references and also adjust the minimal
      vectorization factor according to the loads and stores.  */
