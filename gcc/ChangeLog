@@ -1,3 +1,10 @@
+2018-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85832
+	* config/i386/sse.md (<avx512>_eq<mode>3<mask_scalar_merge_name>_1):
+	Add (=Yk,v,C) variant using vptestm insn.  Use TARGET_AVX512BW
+	in test instead of TARGET_AVX512F for VI12_AVX512VL iterator.
+
 2018-05-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_find_stmt_data_reference): New
