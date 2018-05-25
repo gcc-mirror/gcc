@@ -1,5 +1,13 @@
 2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/iterators.md (SVE_INT_BINARY_SD): New code iterator.
+	(optab, sve_int_op): Handle div and udiv.
+	* config/aarch64/aarch64-sve.md (<optab><mode>3): New expander
+	for SVE_INT_BINARY_SD.
+	(*<optab><mode>3): New insn for the same.
+
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-patterns.c: Include predict.h.
 	(vect_recog_divmod_pattern): Restrict check for division support
 	to when optimizing for size.
