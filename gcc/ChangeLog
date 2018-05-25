@@ -1,3 +1,15 @@
+2018-05-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (STMT_VINFO_GROUP_*, GROUP_*): Remove.
+	(DR_GROUP_*): New, assert we have non-NULL ->data_ref_info.
+	(REDUC_GROUP_*): New, assert we have NULL ->data_ref_info.
+	(STMT_VINFO_GROUPED_ACCESS): Adjust.
+	* tree-vect-data-refs.c (everywhere): Adjust users.
+	* tree-vect-loop.c (everywhere): Likewise.
+	* tree-vect-slp.c (everywhere): Likewise.
+	* tree-vect-stmts.c (everywhere): Likewise.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Likewise.
+
 2018-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_section_has_e): Move to common section.

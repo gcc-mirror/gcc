@@ -1017,7 +1017,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
      so we want the DR for the first statement.  */
   if (!slp_node && grouped_access_p)
     {
-      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
       dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
     }
 
@@ -1027,7 +1027,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   bool first_stmt_p = (first_stmt == STMT_VINFO_STMT (stmt_info));
 
   /* We assume that the cost of a single store-lanes instruction is
-     equivalent to the cost of GROUP_SIZE separate stores.  If a grouped
+     equivalent to the cost of DR_GROUP_SIZE separate stores.  If a grouped
      access is instead being provided by a permute-and-store operation,
      include the cost of the permutes.  */
   if (first_stmt_p
@@ -1035,7 +1035,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     {
       /* Uses a high and low interleave or shuffle operations for each
 	 needed permute.  */
-      int group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      int group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
       int nstmts = ncopies * ceil_log2 (group_size) * group_size;
       inside_cost = record_stmt_cost (cost_vec, nstmts, vec_perm,
 				      stmt_info, 0, vect_body);
@@ -1159,7 +1159,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
     {
       /* If the load is permuted then the alignment is determined by
 	 the first group element not by the first scalar stmt DR.  */
-      gimple *stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      gimple *stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
       stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
       /* Record the cost for the permutation.  */
       unsigned n_perms;
@@ -1173,14 +1173,14 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
 				       stmt_info, 0, vect_body);
       /* And adjust the number of loads performed.  This handles
 	 redundancies as well as loads that are later dead.  */
-      auto_sbitmap perm (GROUP_SIZE (stmt_info));
+      auto_sbitmap perm (DR_GROUP_SIZE (stmt_info));
       bitmap_clear (perm);
       for (unsigned i = 0;
 	   i < SLP_TREE_LOAD_PERMUTATION (slp_node).length (); ++i)
 	bitmap_set_bit (perm, SLP_TREE_LOAD_PERMUTATION (slp_node)[i]);
       ncopies = 0;
       bool load_seen = false;
-      for (unsigned i = 0; i < GROUP_SIZE (stmt_info); ++i)
+      for (unsigned i = 0; i < DR_GROUP_SIZE (stmt_info); ++i)
 	{
 	  if (i % assumed_nunits == 0)
 	    {
@@ -1194,7 +1194,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
       if (load_seen)
 	ncopies++;
       gcc_assert (ncopies
-		  <= (GROUP_SIZE (stmt_info) - GROUP_GAP (stmt_info)
+		  <= (DR_GROUP_SIZE (stmt_info) - DR_GROUP_GAP (stmt_info)
 		      + assumed_nunits - 1) / assumed_nunits);
     }
 
@@ -1205,7 +1205,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
      so we want the DR for the first statement.  */
   if (!slp_node && grouped_access_p)
     {
-      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
       dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
     }
 
@@ -1215,7 +1215,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
   bool first_stmt_p = (first_stmt == STMT_VINFO_STMT (stmt_info));
 
   /* We assume that the cost of a single load-lanes instruction is
-     equivalent to the cost of GROUP_SIZE separate loads.  If a grouped
+     equivalent to the cost of DR_GROUP_SIZE separate loads.  If a grouped
      access is instead being provided by a load-and-permute operation,
      include the cost of the permutes.  */
   if (first_stmt_p
@@ -1223,7 +1223,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
     {
       /* Uses an even and odd extract operations or shuffle operations
 	 for each needed permute.  */
-      int group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      int group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
       int nstmts = ncopies * ceil_log2 (group_size) * group_size;
       inside_cost += record_stmt_cost (cost_vec, nstmts, vec_perm,
 				       stmt_info, 0, vect_body);
@@ -2211,12 +2211,12 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
   vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
-  gimple *first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+  gimple *first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
   data_reference *first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-  unsigned int group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+  unsigned int group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
   bool single_element_p = (stmt == first_stmt
-			   && !GROUP_NEXT_ELEMENT (stmt_info));
-  unsigned HOST_WIDE_INT gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
+			   && !DR_GROUP_NEXT_ELEMENT (stmt_info));
+  unsigned HOST_WIDE_INT gap = DR_GROUP_GAP (vinfo_for_stmt (first_stmt));
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   /* True if the vectorized statements would access beyond the last
@@ -2241,7 +2241,7 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
     {
       if (STMT_VINFO_STRIDED_P (stmt_info))
 	{
-	  /* Try to use consecutive accesses of GROUP_SIZE elements,
+	  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
 	     separated by the stride, until we have a complete vector.
 	     Fall back to scalar accesses if that isn't possible.  */
 	  if (multiple_p (nunits, group_size))
@@ -2347,7 +2347,7 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
     {
       /* STMT is the leader of the group. Check the operands of all the
 	 stmts of the group.  */
-      gimple *next_stmt = GROUP_NEXT_ELEMENT (stmt_info);
+      gimple *next_stmt = DR_GROUP_NEXT_ELEMENT (stmt_info);
       while (next_stmt)
 	{
 	  tree op = vect_get_store_rhs (next_stmt);
@@ -2360,7 +2360,7 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
 				 "use not simple.\n");
 	      return false;
 	    }
-	  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+	  next_stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
 	}
     }
 
@@ -2512,9 +2512,9 @@ get_load_store_type (gimple *stmt, tree vectype, bool slp, bool masked_p,
      traditional behavior until that can be fixed.  */
   if (*memory_access_type == VMAT_ELEMENTWISE
       && !STMT_VINFO_STRIDED_P (stmt_info)
-      && !(stmt == GROUP_FIRST_ELEMENT (stmt_info)
-	   && !GROUP_NEXT_ELEMENT (stmt_info)
-	   && !pow2p_hwi (GROUP_SIZE (stmt_info))))
+      && !(stmt == DR_GROUP_FIRST_ELEMENT (stmt_info)
+	   && !DR_GROUP_NEXT_ELEMENT (stmt_info)
+	   && !pow2p_hwi (DR_GROUP_SIZE (stmt_info))))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6182,7 +6182,7 @@ get_group_alias_ptr_type (gimple *first_stmt)
   gimple *next_stmt;
 
   first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (first_stmt));
+  next_stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (first_stmt));
   while (next_stmt)
     {
       next_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (next_stmt));
@@ -6194,7 +6194,7 @@ get_group_alias_ptr_type (gimple *first_stmt)
 			     "conflicting alias set types.\n");
 	  return ptr_type_node;
 	}
-      next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+      next_stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
     }
   return reference_alias_ptr_type (DR_REF (first_dr));
 }
@@ -6385,9 +6385,9 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		   && (slp || memory_access_type != VMAT_CONTIGUOUS));
   if (grouped_store)
     {
-      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
       first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
     }
   else
     {
@@ -6568,8 +6568,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
-      gimple *group_stmt = GROUP_FIRST_ELEMENT (stmt_info);
-      GROUP_STORE_COUNT (vinfo_for_stmt (group_stmt))++;
+      gimple *group_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      DR_GROUP_STORE_COUNT (vinfo_for_stmt (group_stmt))++;
     }
 
   if (grouped_store)
@@ -6579,8 +6579,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       /* We vectorize all the stmts of the interleaving group when we
 	 reach the last stmt in the group.  */
-      if (GROUP_STORE_COUNT (vinfo_for_stmt (first_stmt))
-	  < GROUP_SIZE (vinfo_for_stmt (first_stmt))
+      if (DR_GROUP_STORE_COUNT (vinfo_for_stmt (first_stmt))
+	  < DR_GROUP_SIZE (vinfo_for_stmt (first_stmt))
 	  && !slp)
 	{
 	  *vec_stmt = NULL;
@@ -6594,7 +6594,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
              group.  */
           vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
           first_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[0]; 
-	  gcc_assert (GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_stmt)) == first_stmt);
+	  gcc_assert (DR_GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_stmt)) == first_stmt);
           first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
 	  op = vect_get_store_rhs (first_stmt);
         } 
@@ -6848,7 +6848,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		    }
 		}
 	    }
-	  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+	  next_stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
 	  if (slp)
 	    break;
 	}
@@ -6965,21 +6965,21 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		 used as an input to vect_permute_store_chain(), and OPRNDS as
 		 an input to vect_get_vec_def_for_stmt_copy() for the next copy.
 
-		 If the store is not grouped, GROUP_SIZE is 1, and DR_CHAIN and
+		 If the store is not grouped, DR_GROUP_SIZE is 1, and DR_CHAIN and
 		 OPRNDS are of size 1.  */
 	      next_stmt = first_stmt;
 	      for (i = 0; i < group_size; i++)
 		{
 		  /* Since gaps are not supported for interleaved stores,
-		     GROUP_SIZE is the exact number of stmts in the chain.
+		     DR_GROUP_SIZE is the exact number of stmts in the chain.
 		     Therefore, NEXT_STMT can't be NULL_TREE.  In case that
-		     there is no interleaving, GROUP_SIZE is 1, and only one
+		     there is no interleaving, DR_GROUP_SIZE is 1, and only one
 		     iteration of the loop will be executed.  */
 		  op = vect_get_store_rhs (next_stmt);
 		  vec_oprnd = vect_get_vec_def_for_operand (op, next_stmt);
 		  dr_chain.quick_push (vec_oprnd);
 		  oprnds.quick_push (vec_oprnd);
-		  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+		  next_stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
 		}
 	      if (mask)
 		vec_mask = vect_get_vec_def_for_operand (mask, stmt,
@@ -7025,7 +7025,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	     DR_CHAIN is then used as an input to vect_permute_store_chain(),
 	     and OPRNDS as an input to vect_get_vec_def_for_stmt_copy() for the
 	     next copy.
-	     If the store is not grouped, GROUP_SIZE is 1, and DR_CHAIN and
+	     If the store is not grouped, DR_GROUP_SIZE is 1, and DR_CHAIN and
 	     OPRNDS are of size 1.  */
 	  for (i = 0; i < group_size; i++)
 	    {
@@ -7229,7 +7229,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      if (slp)
 		continue;
 
-	      next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+	      next_stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
 	      if (!next_stmt)
 		break;
 	    }
@@ -7545,8 +7545,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       gcc_assert (!nested_in_vect_loop);
       gcc_assert (!STMT_VINFO_GATHER_SCATTER_P (stmt_info));
 
-      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
-      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
 
       if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
 	slp_perm = true;
@@ -7568,10 +7568,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       /* Similarly when the stmt is a load that is both part of a SLP
          instance and a loop vectorized stmt via the same-dr mechanism
 	 we have to give up.  */
-      if (STMT_VINFO_GROUP_SAME_DR_STMT (stmt_info)
+      if (DR_GROUP_SAME_DR_STMT (stmt_info)
 	  && (STMT_SLP_TYPE (stmt_info)
 	      != STMT_SLP_TYPE (vinfo_for_stmt
-				 (STMT_VINFO_GROUP_SAME_DR_STMT (stmt_info)))))
+				 (DR_GROUP_SAME_DR_STMT (stmt_info)))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7676,7 +7676,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       if (grouped_load)
 	{
-	  first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+	  first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
 	  first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
 	}
       else
@@ -7686,7 +7686,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	}
       if (slp && grouped_load)
 	{
-	  group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+	  group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
 	  ref_type = get_group_alias_ptr_type (first_stmt);
 	}
       else
@@ -7899,8 +7899,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   if (grouped_load)
     {
-      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
-      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
       /* For SLP vectorization we directly vectorize a subchain
          without permutation.  */
       if (slp && ! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
@@ -8525,7 +8525,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 	      /* With SLP permutation we load the gaps as well, without
 	         we need to skip the gaps after we manage to fully load
-		 all elements.  group_gap_adj is GROUP_SIZE here.  */
+		 all elements.  group_gap_adj is DR_GROUP_SIZE here.  */
 	      group_elt += nunits;
 	      if (maybe_ne (group_gap_adj, 0U)
 		  && !slp_perm
@@ -9685,8 +9685,8 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
 	     meanwhile.  */
 	  *grouped_store = true;
 	  stmt_vec_info group_info
-	    = vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info));
-	  if (GROUP_STORE_COUNT (group_info) == GROUP_SIZE (group_info))
+	    = vinfo_for_stmt (DR_GROUP_FIRST_ELEMENT (stmt_info));
+	  if (DR_GROUP_STORE_COUNT (group_info) == DR_GROUP_SIZE (group_info))
 	    is_store = true;
 	}
       else
@@ -9802,7 +9802,7 @@ vect_remove_stores (gimple *first_stmt)
     {
       stmt_vec_info stmt_info = vinfo_for_stmt (next);
 
-      tmp = GROUP_NEXT_ELEMENT (stmt_info);
+      tmp = DR_GROUP_NEXT_ELEMENT (stmt_info);
       if (is_pattern_stmt_p (stmt_info))
 	next = STMT_VINFO_RELATED_STMT (stmt_info);
       /* Free the attached stmt_vec_info and remove the stmt.  */
@@ -9851,12 +9851,12 @@ new_stmt_vec_info (gimple *stmt, vec_info *vinfo)
   STMT_SLP_TYPE (res) = loop_vect;
   STMT_VINFO_NUM_SLP_USES (res) = 0;
 
-  GROUP_FIRST_ELEMENT (res) = NULL;
-  GROUP_NEXT_ELEMENT (res) = NULL;
-  GROUP_SIZE (res) = 0;
-  GROUP_STORE_COUNT (res) = 0;
-  GROUP_GAP (res) = 0;
-  GROUP_SAME_DR_STMT (res) = NULL;
+  res->first_element = NULL; /* GROUP_FIRST_ELEMENT */
+  res->next_element = NULL; /* GROUP_NEXT_ELEMENT */
+  res->size = 0; /* GROUP_SIZE */
+  res->store_count = 0; /* GROUP_STORE_COUNT */
+  res->gap = 0; /* GROUP_GAP */
+  res->same_dr_stmt = NULL; /* GROUP_SAME_DR_STMT */
 
   return res;
 }
