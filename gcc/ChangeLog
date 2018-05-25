@@ -1,3 +1,22 @@
+2018-05-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.h (refs_may_alias_p): Add tbaa_p bool parameter,
+	defaulted to true.
+	(ref_maybe_used_by_stmt_p): Likewise.
+	(stmt_may_clobber_ref_p): Likewise.
+	(stmt_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-alias.c (refs_may_alias_p): Add tbaa_p bool parameter
+	and pass it along.
+	(ref_maybe_used_by_stmt_p): Likewise.
+	(stmt_may_clobber_ref_p): Likewise.
+	(stmt_may_clobber_ref_p_1): Likewise.
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences): Use
+	the alias oracle to disambiguate DRs with stmts DR analysis
+	couldn't handle.
+	(vect_analyze_data_refs): Do not give up on not analyzable
+	DRs for BB vectorization.  Remove code truncating the dataref
+	vector.
+
 2018-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85832
