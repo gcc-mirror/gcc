@@ -1,5 +1,11 @@
 2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/85779
+	Backport from trunk
+	* decl.c (gfc_match_derived_decl): Fix NULL pointer dereference.
+
+2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/85543
 	Backport from trunk
 	* resolve.c (update_current_proc_array_outer_dependency): Avoid NULL
