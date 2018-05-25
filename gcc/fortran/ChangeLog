@@ -1,3 +1,10 @@
+2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85895
+	Backport from trunk
+	* resolve.c (resolve_sync): Resolve expression before checking for
+	an error.
+
 2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80657
