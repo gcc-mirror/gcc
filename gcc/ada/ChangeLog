@@ -1,3 +1,8 @@
+2018-05-25  Patrick Bernardi  <bernardi@adacore.com>
+
+	* switch-b.adb (Scan_Binder_Switches): binder switch -Q accepts Natural
+	numbers.
+
 2018-05-25  Doug Rupp  <rupp@adacore.com>
 
 	* tracebak.c (aarch64-linux): Implement.
