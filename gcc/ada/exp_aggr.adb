@@ -284,14 +284,14 @@ package body Exp_Aggr is
 
    procedure Convert_To_Positional
      (N                    : Node_Id;
-      Max_Others_Replicate : Nat     := 5;
+      Max_Others_Replicate : Nat     := 32;
       Handle_Bit_Packed    : Boolean := False);
    --  If possible, convert named notation to positional notation. This
    --  conversion is possible only in some static cases. If the conversion is
    --  possible, then N is rewritten with the analyzed converted aggregate.
    --  The parameter Max_Others_Replicate controls the maximum number of
    --  values corresponding to an others choice that will be converted to
-   --  positional notation (the default of 5 is the normal limit, and reflects
+   --  positional notation (the default of 32 is the normal limit, and reflects
    --  the fact that normally the loop is better than a lot of separate
    --  assignments). Note that this limit gets overridden in any case if
    --  either of the restrictions No_Elaboration_Code or No_Implicit_Loops is
@@ -300,11 +300,6 @@ package body Exp_Aggr is
    --  of conversion is pointless), but in the special case of a call from
    --  Packed_Array_Aggregate_Handled, we set this parameter to True, since
    --  these are cases we handle in there.
-
-   --  It would seem useful to have a higher default for Max_Others_Replicate,
-   --  but aggregates in the compiler make this impossible: the compiler
-   --  bootstrap fails if Max_Others_Replicate is greater than 25. This
-   --  is unexpected ???
 
    procedure Expand_Array_Aggregate (N : Node_Id);
    --  This is the top-level routine to perform array aggregate expansion.
@@ -4296,7 +4291,7 @@ package body Exp_Aggr is
 
    procedure Convert_To_Positional
      (N                    : Node_Id;
-      Max_Others_Replicate : Nat     := 5;
+      Max_Others_Replicate : Nat     := 32;
       Handle_Bit_Packed    : Boolean := False)
    is
       Typ : constant Entity_Id := Etype (N);
