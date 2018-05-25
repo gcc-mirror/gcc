@@ -1,5 +1,10 @@
 2018-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85815 - reference to member of enclosing template.
+	* search.c (lookup_base): Use currently_open_class.
+	(lookup_member): Use it regardless of -fconcepts.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Check it.
+
 	CWG 616, 1213 - value category of subobject references.
 	* tree.c (lvalue_kind): Fix handling of ARRAY_REF of pointer.
 
