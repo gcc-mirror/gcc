@@ -286,8 +286,7 @@ maybe_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
   /* Don't call the ranger if we have no CFG.  */
   if (DECL_SAVED_TREE (cfun->decl))
     return false;
-  path_ranger ranger;
-  return ranger.path_range_on_stmt (r, ssa, stmt);
+  return on_demand_get_range_on_stmt (r, ssa, stmt);
 }
 
 /* Return true if the range in R is the inverse of a range and store

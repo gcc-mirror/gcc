@@ -74,4 +74,21 @@ private:
   void clear_global_ssa_range (tree name);
 };
 
+/* Like path_ranger::path_range_on_stmt(), but make an on-the-fly ranger.
+
+   Return TRUE if SSA as seen from within STMT has a known range.  Set
+   the known range in R.
+
+   NOTE: There is a small overhead involved with this function, so it
+   should only be used for very lightweight or unrelated range
+   queries.  This function is mostly meant for range queries that
+   don't need caching in subsequent calls.  */
+
+static inline bool
+on_demand_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
+{
+  path_ranger ranger;
+  return ranger.path_range_on_stmt (r, ssa, stmt);
+}
+
 #endif /* GCC_SSA_RANGE_H */
