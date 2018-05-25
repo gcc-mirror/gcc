@@ -1757,14 +1757,31 @@
   "<maxmin_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
 )
 
+;; Predicated integer operations with select.
+(define_expand "cond_<optab><mode>"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (SVE_INT_BINARY:SVE_I
+	     (match_operand:SVE_I 2 "register_operand")
+	     (match_operand:SVE_I 3 "register_operand"))
+	   (match_operand:SVE_I 4 "register_operand")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+{
+  gcc_assert (rtx_equal_p (operands[2], operands[4]));
+})
+
 ;; Predicated integer operations.
-(define_insn "cond_<optab><mode>"
+(define_insn "*cond_<optab><mode>"
   [(set (match_operand:SVE_I 0 "register_operand" "=w")
 	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (match_operand:SVE_I 2 "register_operand" "0")
-	   (match_operand:SVE_I 3 "register_operand" "w")]
-	  SVE_COND_INT_OP))]
+	   (SVE_INT_BINARY:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "0")
+	     (match_operand:SVE_I 3 "register_operand" "w"))
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
   "TARGET_SVE"
   "<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
 )
@@ -2536,14 +2553,35 @@
   }
 )
 
+;; Predicated floating-point operations with select.
+(define_expand "cond_<optab><mode>"
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (unspec:SVE_F
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "register_operand")]
+	     SVE_COND_FP_BINARY)
+	   (match_operand:SVE_F 4 "register_operand")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+{
+  gcc_assert (rtx_equal_p (operands[2], operands[4]));
+})
+
 ;; Predicated floating-point operations.
-(define_insn "cond_<optab><mode>"
+(define_insn "*cond_<optab><mode>"
   [(set (match_operand:SVE_F 0 "register_operand" "=w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (match_operand:SVE_F 2 "register_operand" "0")
-	   (match_operand:SVE_F 3 "register_operand" "w")]
-	  SVE_COND_FP_OP))]
+	   (unspec:SVE_F
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand" "0")
+	      (match_operand:SVE_F 3 "register_operand" "w")]
+	     SVE_COND_FP_BINARY)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
   "TARGET_SVE"
   "<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
 )

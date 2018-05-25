@@ -7222,8 +7222,9 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 		}
 	      tree mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
 					      vectype_in, i * ncopies + j);
-	      gcall *call = gimple_build_call_internal (cond_fn, 3, mask,
-							vop[0], vop[1]);
+	      gcall *call = gimple_build_call_internal (cond_fn, 4, mask,
+							vop[0], vop[1],
+							vop[0]);
 	      new_temp = make_ssa_name (vec_dest, call);
 	      gimple_call_set_lhs (call, new_temp);
 	      gimple_call_set_nothrow (call, true);
