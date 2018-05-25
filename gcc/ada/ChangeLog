@@ -1,5 +1,14 @@
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (Visit_Node): Restrict check for uplevel references in
+	prefixes of array attributes, to prefixes that are entity names whose
+	type is constrained.
+	(Note_Uplevel_Bound): Verify that the bound is declared in an enclosing
+	subprogram, as itype created for loops in pre/postcondition may appear
+	in loops at the library level.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch13.adb (Build_Predicate_Functions): The predicate function
 	declaration is inserted into the tree and analyzed at that point, so
 	should not be reinserted when the body is constructed. Inside a
