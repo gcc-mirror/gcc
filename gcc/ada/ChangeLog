@@ -1,3 +1,10 @@
+2018-05-25  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/s-parame.ads, libgnat/s-parame__vxworks.ads,
+	libgnat/s-parame__ae653.ads, libgnat/s-parame__hpux.ads (Size_Type):
+	Expand range of type to match the address space of the target.
+	(Task_Storage_Size): Remove unused type.
+
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Set_Mixed_Mode_Operand): If the operand is an expression
