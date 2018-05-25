@@ -6449,7 +6449,7 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
     {
       if (!(flags & SECTION_DEBUG))
 	*f++ = 'a';
-#if defined (HAVE_GAS_SECTION_EXCLUDE) && HAVE_GAS_SECTION_EXCLUDE == 1
+#if HAVE_GAS_SECTION_EXCLUDE
       if (flags & SECTION_EXCLUDE)
 	*f++ = 'e';
 #endif

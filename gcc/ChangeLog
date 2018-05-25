@@ -1,3 +1,19 @@
+2018-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_section_has_e): Move to common section.
+	Rename to...
+	(gcc_cv_as_section_exclude): ... this.
+	Try Solaris as #exclude syntax.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/i386.c (i386_solaris_elf_named_section): Handle
+	SECTION_EXCLUDE.
+	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section)
+	[HAVE_GAS_SECTION_EXCLUDE]: Handle SECTION_EXCLUDE.
+
+	* varasm.c (default_elf_asm_named_section): Don't check if
+	HAVE_GAS_SECTION_EXCLUDE is defined.
+
 2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/md.texi: Update the documentation of the cond_* optabs

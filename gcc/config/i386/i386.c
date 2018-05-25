@@ -45905,6 +45905,15 @@ i386_solaris_elf_named_section (const char *name, unsigned int flags,
       solaris_elf_asm_comdat_section (name, flags, decl);
       return;
     }
+
+  /* Solaris/x86 as uses the same syntax for the SHF_EXCLUDE flags as the
+     SPARC assembler.  One cannot mix single-letter flags and #exclude, so
+     only emit the latter here.  */
+  if (flags & SECTION_EXCLUDE)
+    {
+      fprintf (asm_out_file, "\t.section\t%s,#exclude\n", name);
+      return;
+    }
 #endif
 
   default_elf_asm_named_section (name, flags, decl);
