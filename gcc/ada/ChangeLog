@@ -1,3 +1,8 @@
+2018-05-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Applicable_Policy): Deal specially with CodePeer
+	and GNATprove modes when applicable policy is Ignore.
+
 2018-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* freeze.adb (Freeze_Enumeration_Type): Do not give integer size to a
