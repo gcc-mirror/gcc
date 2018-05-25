@@ -2700,7 +2700,7 @@ appropriate options.
   ``gnatelim`` is a project-aware tool.
   (See :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
   the project-related switches but note that ``gnatelim`` does not support
-  the :samp:`-U`, :samp:`-U {main_unit}`, :samp:`--subdirs={dir}`, or
+  the :samp:`-U {main_unit}`, :samp:`--subdirs={dir}`, or
   :samp:`--no_objects_dir` switches.)
   The project file package that can specify
   ``gnatelim`` switches is named ``Eliminate``.
@@ -2729,6 +2729,10 @@ appropriate options.
   If a set of source files is specified as ``gnatelim`` arguments, it
   treats these files as a complete set of sources making up a program to
   analyse, and analyses only these sources.
+
+  If ``gnatelim`` is called with a project file and :samp:`-U` option is
+  used, then in process all the files from the argument project but
+  not just the closure of the main subprogram.
 
   After a full successful build of the main subprogram ``gnatelim`` can be
   called without  specifying sources to analyse, in this case it computes
@@ -2812,6 +2816,15 @@ appropriate options.
   :samp:`--RTS={rts-path}`
     Specifies the default location of the runtime library. Same meaning as the
     equivalent ``gnatmake`` flag (:ref:`Switches_for_gnatmake`).
+
+
+  .. index:: -U (gnatelim)
+
+  :samp:`-U`
+    Process all the sources from the argument project. If no project file
+    is specified, this option has no effect. If this option is used with the
+    project file, ``gnatelim`` does not require the preliminary build of the
+    argument main subprogram.
 
 
   .. index:: -files (gnatelim)
@@ -2923,6 +2936,12 @@ appropriate options.
   the configuration file indicated in the error message. You should recompile
   your program from scratch after that, because you need a consistent
   configuration file(s) during the entire compilation.
+
+  If ``gnatelim`` is called with a project file and with ``-U`` option
+  the generated set of pragmas may contain pragmas for subprograms that
+  does not belong to the closure of the argument main subprogram. These
+  pragmas has no effect when the set of pragmas is used to reduce the size
+  of executable.
 
 
   .. _Making_Your_Executables_Smaller:
