@@ -18,5 +18,4 @@ main ()
 /* { dg-final-use-not-autofdo { scan-ipa-dump "loop depth 1, count 33334" "profile"} } */
 /* { dg-final-use-not-autofdo { scan-tree-dump "loop depth 1, count 33333" "switchlower1"} } */
 /* { dg-final-use-not-autofdo { scan-tree-dump-not "loop depth 1, count 33332" "switchlower1"} } */
-/* { dg-final-use-not-autofdo { scan-tree-dump "Removing basic block" "switchlower1"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "switchlower1"} } */
